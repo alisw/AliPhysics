@@ -22,7 +22,7 @@
 #include "AliAnalysisTaskMaterialHistos.h"
 #include "TChain.h"
 #include "AliAnalysisManager.h"
-#include "TParticle.h"
+#include "AliMCParticle.h"
 #include "TVectorF.h"
 #include "AliPIDResponse.h"
 #include "AliESDtrackCuts.h"
@@ -1099,43 +1099,43 @@ void AliAnalysisTaskMaterialHistos::ProcessMCPhotons(){
 
       Double_t mesonY = 1.e30;
       Double_t ratio  = 0;
-      if (particle->Energy() != TMath::Abs(particle->Pz())){
-	ratio         = (particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz());
+      if (particle->E() != TMath::Abs(particle->Pz())){
+	ratio         = (particle->E()+particle->Pz()) / (particle->E()-particle->Pz());
       }
       if( !(ratio <= 0) ){
 	mesonY = particle->Y()-fiEventCut->GetEtaShift();
       }
       
       if ((mesonY > -fiPhotonCut->GetEtaCut() ) && (mesonY < fiPhotonCut->GetEtaCut())){   // including proton/antiproton
-	if ( particle->GetPdgCode() == 211 ){  // positve pions
+	if ( particle->PdgCode() == 211 ){  // positve pions
 	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),0.,fWeightMultMC);
-	} else if ( particle->GetPdgCode() == -211 ){  // negative pions
+	} else if ( particle->PdgCode() == -211 ){  // negative pions
 	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),1.,fWeightMultMC);
-	} else if ( particle->GetPdgCode() == 321 ){  // positve kaons
+	} else if ( particle->PdgCode() == 321 ){  // positve kaons
 	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),2.,fWeightMultMC);
-	} else if ( particle->GetPdgCode() == -321 ){  // negative kaons
+	} else if ( particle->PdgCode() == -321 ){  // negative kaons
 	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),3.,fWeightMultMC);
-	} else if ( TMath::Abs(particle->GetPdgCode()) == 310 ){  // K0s
+	} else if ( TMath::Abs(particle->PdgCode()) == 310 ){  // K0s
 	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),4.,fWeightMultMC);
-	} else if ( TMath::Abs(particle->GetPdgCode()) == 130 ){  // K0l
+	} else if ( TMath::Abs(particle->PdgCode()) == 130 ){  // K0l
 	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),5.,fWeightMultMC);
-	} else if ( TMath::Abs(particle->GetPdgCode()) == 3122 ){  // Lambda/ AntiLambda
+	} else if ( TMath::Abs(particle->PdgCode()) == 3122 ){  // Lambda/ AntiLambda
 	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),6.,fWeightMultMC);
-	} else if ( TMath::Abs(particle->GetPdgCode()) == 223 ){  // Omega
+	} else if ( TMath::Abs(particle->PdgCode()) == 223 ){  // Omega
 	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),7.,fWeightMultMC);
-	} else if ( TMath::Abs(particle->GetPdgCode()) == 333 ){  // Phi
+	} else if ( TMath::Abs(particle->PdgCode()) == 333 ){  // Phi
 	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),8.,fWeightMultMC);
-	} else if ( TMath::Abs(particle->GetPdgCode()) == 113 ){  // Rho0
+	} else if ( TMath::Abs(particle->PdgCode()) == 113 ){  // Rho0
 	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),9.,fWeightMultMC);
-	} else if ( particle->GetPdgCode() == 2212 ){  // Proton
+	} else if ( particle->PdgCode() == 2212 ){  // Proton
 	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),10.,fWeightMultMC);
-	} else if ( particle->GetPdgCode() == -2212 ){  // antiproton
+	} else if ( particle->PdgCode() == -2212 ){  // antiproton
 	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),11.,fWeightMultMC);
 	}
 
-	if ( particle->GetPdgCode() == 211 || particle->GetPdgCode() == -211 ||
-	     particle->GetPdgCode() == 321 || particle->GetPdgCode() == -321 ||
-	     particle->GetPdgCode() == 2212 || particle->GetPdgCode() == -2212 ){
+	if ( particle->PdgCode() == 211 || particle->PdgCode() == -211 ||
+	     particle->PdgCode() == 321 || particle->PdgCode() == -321 ||
+	     particle->PdgCode() == 2212 || particle->PdgCode() == -2212 ){
 	  fHistoMCPhysicalPrimaryPt[fiCut]->Fill(particle->Pt(),fWeightMultMC);
 	}
 	if(fMCEvent->IsPhysicalPrimary(i)){
@@ -1768,10 +1768,11 @@ void AliAnalysisTaskMaterialHistos::ProcessPrimaryCandidates(){
 	  Int_t labelCurTrack = TMath::Abs( curTrack->GetLabel() );
 	  Bool_t curTrackIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, labelCurTrack, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 	  if( labelCurTrack>-1 && labelCurTrack < fMCEvent->GetNumberOfTracks() ){
-	    TParticle* curTrackMC = fMCEvent->Particle(labelCurTrack);
-	    if( curTrackMC->GetPdgCode() ==   -211 || curTrackMC->GetPdgCode() ==  211 ||    
-		curTrackMC->GetPdgCode() ==  -2212 || curTrackMC->GetPdgCode() == 2212 ||
-		curTrackMC->GetPdgCode() ==   -321 || curTrackMC->GetPdgCode() ==  321  ){
+          //ALERT
+	    AliMCParticle* curTrackMC = (AliMCParticle*) fMCEvent->GetTrack(labelCurTrack);
+	    if( curTrackMC->PdgCode() ==   -211 || curTrackMC->PdgCode() ==  211 ||
+		curTrackMC->PdgCode() ==  -2212 || curTrackMC->PdgCode() == 2212 ||
+		curTrackMC->PdgCode() ==   -321 || curTrackMC->PdgCode() ==  321  ){
 	      if(curTrackIsPrimary){
 		fHistoMCTruePhysicalPrimaryPt[fiCut]->Fill(curTrack->Pt());
 		fHistoMCTruePhysicalPrimaryMCPt[fiCut]->Fill(curTrackMC->Pt());

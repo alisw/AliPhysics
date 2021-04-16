@@ -2724,10 +2724,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessMCParticles()
                 fHistoMCAllOmegaAlphaPt[fiCut]->Fill(particle->Pt(),alpha,fWeightJetJetMC);
 
                 //check whether pi0 decayed into two gammas
-                if (pi0->GetNDaughters()==2 && pi0->GetFirstDaughter()>-1 && pi0->GetLastDaughter()>-1){
-                  TParticle *gamma0 = (TParticle*)fMCEvent->Particle(pi0->GetFirstDaughter());
-                  TParticle *gamma1 = (TParticle*)fMCEvent->Particle(pi0->GetLastDaughter());
-                  if (gamma0->GetPdgCode()==22 && gamma1->GetPdgCode()==22){
+                if (pi0->GetNDaughters()==2 && pi0->GetDaughterFirst()>-1 && pi0->GetDaughterLast()>-1){
+                  AliMCParticle *gamma0 = (AliMCParticle*)fMCEvent->GetTrack(pi0->GetDaughterFirst());
+                  AliMCParticle *gamma1 = (AliMCParticle*)fMCEvent->GetTrack(pi0->GetDaughterLast());
+                  if (gamma0->PdgCode()==22 && gamma1->PdgCode()==22){
 
                     //plot pi0 alpha
                     Double_t pi0alpha = (gamma0->Energy() - gamma1->Energy())/(gamma0->Energy() + gamma1->Energy());

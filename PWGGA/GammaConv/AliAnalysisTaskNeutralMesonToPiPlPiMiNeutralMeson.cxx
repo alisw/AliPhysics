@@ -6963,10 +6963,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   } else{
     // not a three pion decay, Contamination
     isContaminationMeson        = kTRUE;
-    if (!(TMath::Abs(negativeMC->GetPdgCode())==211)){
+    if (!(TMath::Abs(negativeMC->PdgCode())==211)){
         isPiMiWronglyIdentified     = kTRUE;
     }
-    if (!(TMath::Abs(positiveMC->GetPdgCode())==211)){
+    if (!(TMath::Abs(positiveMC->PdgCode())==211)){
         isPiPlWronglyIdentified     = kTRUE;
         if (isPiMiWronglyIdentified){
             isMultipleWronglyIdentified = kTRUE;
@@ -7044,8 +7044,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
 
 
     AliAODConversionMother PosPiontmp, NegPiontmp;
-    PosPiontmp.SetPxPyPzE(positiveMC->Px(), positiveMC->Py(), positiveMC->Pz(), positiveMC->Energy());
-    NegPiontmp.SetPxPyPzE(negativeMC->Px(), negativeMC->Py(), negativeMC->Pz(), negativeMC->Energy());
+    PosPiontmp.SetPxPyPzE(positiveMC->Px(), positiveMC->Py(), positiveMC->Pz(), positiveMC->E());
+    NegPiontmp.SetPxPyPzE(negativeMC->Px(), negativeMC->Py(), negativeMC->Pz(), negativeMC->E());
     if(!fDoLightOutput){
       fHistoTrueAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp.Angle(mesoncand->Vect()))+(NegPiontmp.Angle(PosPiontmp.Vect()))+(PosPiontmp.Angle(TrueNeutralDecayMesonCandidate->Vect()))));
       fHistoTrueHNMesonPtvsNDMPt[fiCut]->Fill(mesoncand->Pt(),TrueNeutralDecayMesonCandidate->Pt(),weighted);
