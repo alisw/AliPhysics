@@ -5931,8 +5931,8 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                 if (firedTrigClass.Contains("7DGA") || firedTrigClass.Contains("8DGA")) hTriggerClassesCorrelated->Fill(14);
                 if (firedTrigClass.Contains("7DG1") || firedTrigClass.Contains("8DG1")) hTriggerClassesCorrelated->Fill(15);
                 if (firedTrigClass.Contains("7DG2") || firedTrigClass.Contains("8DG2")) hTriggerClassesCorrelated->Fill(16);
-                if (firedTrigClass.Contains("CENT")) hTriggerClassesCorrelated->Fill(17);
-                if (firedTrigClass.Contains("NOTRD")) hTriggerClassesCorrelated->Fill(18);
+                if (firedTrigClass.Contains("CENT-")&&(!firedTrigClass.Contains("NOTRD"))) hTriggerClassesCorrelated->Fill(17);
+                if (!firedTrigClass.Contains("CENT-")&&(firedTrigClass.Contains("NOTRD")))  hTriggerClassesCorrelated->Fill(18);
               }
             } else if ( fSpecialTrigger == 10 ){
               if (hTriggerClassesCorrelated){
@@ -5954,8 +5954,8 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                   if (firedTrigClass.Contains("7DGA") || firedTrigClass.Contains("8DGA")) hTriggerClassesCorrelated->Fill(14);
                   if (firedTrigClass.Contains("7DG1") || firedTrigClass.Contains("8DG1")) hTriggerClassesCorrelated->Fill(15);
                   if (firedTrigClass.Contains("7DG2") || firedTrigClass.Contains("8DG2")) hTriggerClassesCorrelated->Fill(16);
-                  if (firedTrigClass.Contains("CENT")) hTriggerClassesCorrelated->Fill(17);
-                  if (firedTrigClass.Contains("NOTRD")) hTriggerClassesCorrelated->Fill(18);
+                  if (firedTrigClass.Contains("CENT-")&&(!firedTrigClass.Contains("NOTRD"))) hTriggerClassesCorrelated->Fill(17);
+                  if (!firedTrigClass.Contains("CENT-")&&(firedTrigClass.Contains("NOTRD")))  hTriggerClassesCorrelated->Fill(18);
                 }
               }
             }
