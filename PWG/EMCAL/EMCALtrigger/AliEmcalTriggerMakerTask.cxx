@@ -254,9 +254,13 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       std::cout << "EMCAL trigger maker: No valid configuration found for the given dataset - trigger maker run loop disabled" << std::endl;
     }
 
-    if(fRunSmearing && !fTriggerMaker->HasSmearModel()){
-      std::cout << "EMCAL trigger maker: Initialize standard smear model" << std::endl;
-      InitializeSmearModel(); // Initialize smear model if not yet set from outside
+    if(fRunSmearing || fTriggerMaker->HasSmearModel()) {
+      if(!fTriggerMaker->HasSmearModel()){
+        std::cout << "EMCAL trigger maker: Smear mode - Initialize standard smear model" << std::endl;
+        InitializeSmearModel(); // Initialize smear model if not yet set from outside
+      }
+      fRunSmearing = true;
+      std::cout << "EMCAL trigger maker: Smear mode - require online bad channel map for smeared signal" << std::endl;
       fTriggerMaker->SetApplyOnlineBadChannelMaskingToSmeared();
     } 
 
