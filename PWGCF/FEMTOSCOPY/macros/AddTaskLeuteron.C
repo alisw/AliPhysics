@@ -5,6 +5,7 @@
  *	Author:	Michael Jung
  */
 
+
 AliAnalysisTaskSE *AddTaskLeuteron(
   bool isFullBlastQA = false,
   bool isMC = false,
@@ -69,7 +70,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
   // Protons
-  TrackCuts1->SetPlotDCADist(true);			// plot DCA_xy vs. pT
+  TrackCuts1->SetPlotDCADist(isFullBlastQA);		// plot DCA_xy vs. pT
   TrackCuts1->SetPlotCombSigma(false);			// plot combined sigma: nSigmaTOF vs. nSigmaTPC vs. momentum
   TrackCuts1->SetIsMonteCarlo(isMC);
   TrackCuts1->SetCutCharge(1);				// set electrical charge of particle 1
@@ -105,7 +106,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
   // Antiprotons
-  TrackCuts2->SetPlotDCADist(true);
+  TrackCuts2->SetPlotDCADist(isFullBlastQA);
   TrackCuts2->SetPlotCombSigma(false);
   TrackCuts2->SetIsMonteCarlo(isMC);
   TrackCuts2->SetCutCharge(-1);
@@ -135,7 +136,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
   // Deuterons
-  TrackCuts3->SetPlotDCADist(true);
+  TrackCuts3->SetPlotDCADist(isFullBlastQA);
   TrackCuts3->SetPlotCombSigma(false);
   TrackCuts3->SetIsMonteCarlo(isMC);
   TrackCuts3->SetCutCharge(1);
@@ -170,7 +171,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
   // Antideuterons
-  TrackCuts4->SetPlotDCADist(true);
+  TrackCuts4->SetPlotDCADist(isFullBlastQA);
   TrackCuts4->SetPlotCombSigma(false);
   TrackCuts4->SetIsMonteCarlo(isMC);
   TrackCuts4->SetCutCharge(-1);
@@ -588,16 +589,6 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     printf("x-x-> AddTaskLeuteron: Cuts for the Antilambda (LambdaCuts6) set\n");
   }
 
-  if(!isFullBlastQA){
-    evtCuts->SetMinimalBooking(true);
-    TrackCuts1->SetMinimalBooking(true);
-    TrackCuts2->SetMinimalBooking(true);
-    TrackCuts3->SetMinimalBooking(true);
-    TrackCuts4->SetMinimalBooking(true);
-    LambdaCuts5->SetMinimalBooking(true);
-    LambdaCuts6->SetMinimalBooking(true);
-  }
-
   std::vector<bool> CloseRejection;
   std::vector<int> NBins;		// number of bins
   std::vector<float> kMin;		// minimum value of k*
@@ -637,6 +628,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   CloseRejection[13] = true;  // 13. LambdaDeuteron
   CloseRejection[17] = true;  // 17. AntilambdaAntideuteron
 
+  
   pairQA[0]= 11;  // 0. ProtonProton
   pairQA[2]= 11;  // 2. DeuteronProton
   pairQA[6]= 11;  // 6. AntiprotonAntiproton
@@ -713,16 +705,26 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   config->SetExtendedQAPairs(pairQA);
   config->SetSummedPtCut(0.0,999.0);
   
-  if(isFullBlastQA){
-    config->SetPtQA(true);
-  }
-
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Values handed over to the config\n");
   }
 
   AliAnalysisTaskLeuteronNanoAOD *taskNanoAOD;
   AliAnalysisTaskLeuteronAOD *taskAOD;
+
+  if(!isFullBlastQA){
+    evtCuts->SetMinimalBooking(true);
+    TrackCuts1->SetMinimalBooking(true);
+    TrackCuts2->SetMinimalBooking(true);
+    TrackCuts3->SetMinimalBooking(true);
+    TrackCuts4->SetMinimalBooking(true);
+    LambdaCuts5->SetMinimalBooking(true);
+    LambdaCuts6->SetMinimalBooking(true);
+    config->SetMinimalBookingME(true);
+    config->SetMinimalBookingSample(true);
+  }else{
+    config->SetPtQA(true);
+  }
 
 
   if(isNanoAOD){
@@ -759,7 +761,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   
   } else{
 
-    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,isSidebandSignal,isUpperSideband,isLowerSideband);
+    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,isSidebandSignal,isUpperSideband,isLowerSideband,isFullBlastQA,isFullBlastQA);
 
     if(!taskAOD){				  // check if the AOD task is there
       printf("taskAOD not found\n");
