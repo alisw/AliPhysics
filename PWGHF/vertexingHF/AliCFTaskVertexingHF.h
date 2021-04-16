@@ -252,6 +252,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetPtWeightsFromFONLL5overLHC18a4a2();
   void SetPtWeightsFromFONLL5anddataoverLHC20g2a();
   void SetPtWeightsFromFONLL5anddataoverLHC20g2b();
+  void SetPtWeightsFromFONLL5andMCatSHQoverLHC20g2a();
+  void SetPtWeightsFromFONLL5andMCatSHQoverLHC20g2b();
 
   void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
   UInt_t GetResonantDecay() const {return fResonantDecay;}
@@ -369,7 +371,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Bool_t fKeepOnlyOOBPileupEvents; /// flag to keep only events with simulated pileup
 
   /// \cond CLASSIMP
-  ClassDef(AliCFTaskVertexingHF,30); /// class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHF,31); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 
