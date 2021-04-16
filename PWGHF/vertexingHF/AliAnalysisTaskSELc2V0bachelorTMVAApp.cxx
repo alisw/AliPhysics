@@ -2260,16 +2260,16 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       for (int ivar = 0; ivar < (int)fInputNamesVec.size(); ++ivar) {
 	if (fInputNamesVec[ivar] == "DecayLengthK0S*0.497/v0P") {
 	  //	  std::cout << "Adding " << fInputNamesVec[ivar] << std::endl;
-	  inputVars[ivar] = (part->DecayLengthV0())*0.497/(v0part->P());
-	  fVarsTMVA[ivar] = inputVars[ivar];    // note that fInputNamesVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
+	  inputVars[ivar] = (Double_t)(part->DecayLengthV0())*0.497/(v0part->P());
+	  fVarsTMVA[ivar] = (part->DecayLengthV0())*0.497/(v0part->P());    // note that fInputNamesVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
 	  ++foundVars;
 	  continue;
 	}	
 	for (int iname = 0; iname < fNTreeVars; ++iname) {
 	  if (fInputNamesVec[ivar] == fCandidateVariableNames[iname]) {
 	    //	    std::cout << "Adding " << fInputNamesVec[ivar] << std::endl;
-	    inputVars[ivar] = fCandidateVariables[iname];
-	    fVarsTMVA[ivar] = inputVars[ivar];    // note that fInputNamesVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
+	    inputVars[ivar] = (Double_t)fCandidateVariables[iname];
+	    fVarsTMVA[ivar] = fCandidateVariables[iname];    // note that fInputNamesVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
 	    ++foundVars;
 	    break;
 	  }
