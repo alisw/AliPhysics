@@ -52,10 +52,12 @@ TH1D* LoadPYTHIA13TeV_promptD0();
 TH1D* LoadPYTHIA13TeV_promptDplus();
 TH1D* LoadPYTHIA13TeV_promptDstar();
 TH1D* LoadPYTHIA13TeV_promptDs();
+TH1D* LoadPYTHIA13TeV_promptLc();
 TH1D* LoadPYTHIA13TeV_feeddownD0();
 TH1D* LoadPYTHIA13TeV_feeddownDplus();
 TH1D* LoadPYTHIA13TeV_feeddownDstar();
 TH1D* LoadPYTHIA13TeV_feeddownDs();
+TH1D* LoadPYTHIA13TeV_feeddownLc();
 
 
 
@@ -220,6 +222,9 @@ void ComputeAcceptance(){
     }else if (fDDecay==kDsKKpi){
       histPt = LoadPYTHIA13TeV_promptDs();
       outFileName.Append("promptDs");
+    }else if (fDDecay==kLcpKpi){
+      histPt = LoadPYTHIA13TeV_promptLc();
+      outFileName.Append("promptLc");
     }else{
       histPt = LoadPYTHIA13TeV_promptD0();
       outFileName.Append("promptD0");
@@ -235,6 +240,9 @@ void ComputeAcceptance(){
     }else if (fDDecay==kDsKKpi){
       histPt = LoadPYTHIA13TeV_feeddownDs();
       outFileName.Append("feeddownDs");
+    }else if (fDDecay==kLcpKpi){
+      histPt = LoadPYTHIA13TeV_feeddownLc();
+      outFileName.Append("feeddownLc");
     }else{
       histPt = LoadPYTHIA13TeV_feeddownD0();
       outFileName.Append("feeddownD0");
@@ -681,6 +689,26 @@ TH1D* LoadPYTHIA13TeV_promptDs()
 }
 
 
+//___________________________________________________
+TH1D* LoadPYTHIA13TeV_promptLc()
+{
+  // coarse binning (1 GeV/c)
+  /*TH1D *hPYTHIA13 = new TH1D("hPYTHIA13TeV_Lc", "", 40, 0., 40.);
+  Float_t val[40] = {
+    307191, 504151, 400086, 264143, 161012, 96421, 57765, 35876, 22207, 14852, 9760, 6853, 4814, 3453, 2594, 1838, 1457, 1091, 850, 702, 593, 402, 366, 284, 250, 213, 171, 127, 128, 109, 89, 72, 54, 48, 42, 34, 30, 34, 39, 20
+  };
+  for (Int_t ibin=0; ibin<40; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);*/
+
+  // fine binning (0.2 GeV/c)
+  TH1D *hPYTHIA13 = new TH1D("hPYTHIA13TeV_Lc", "", 200, 0., 40.);
+  Float_t val[200] = {
+    14916, 43781, 67845, 84755, 95894, 101546, 103271, 103306, 99662, 96366, 91138, 86070, 80051, 74407, 68420, 63088, 57682, 52478, 47917, 42978, 39055, 35664, 31415, 28898, 25980, 23237, 21098, 19134, 17419, 15533, 13903, 12743, 11387, 10418, 9314, 8665, 7697, 7079, 6486, 5949, 5237, 4785, 4378, 4130, 3677, 3532, 3150, 2950, 2764, 2456, 2245, 2022, 2007, 1781, 1705, 1554, 1476, 1395, 1316, 1112, 1096, 1023, 937, 888, 870, 787, 723, 698, 627, 618, 569, 556, 510, 478, 481, 401, 390, 370, 355, 322, 358, 308, 275, 258, 258, 246, 220, 227, 194, 204, 188, 185, 171, 157, 149, 144, 151, 143, 138, 126, 132, 120, 113, 105, 123, 89, 85, 85, 67, 76, 79, 73, 65, 74, 75, 62, 63, 57, 53, 49, 45, 37, 62, 53, 53, 45, 37, 41, 43, 47, 47, 33, 38, 30, 23, 32, 24, 25, 16, 30, 26, 22, 28, 24, 28, 25, 21, 24, 21, 18, 16, 18, 28, 15, 12, 15, 16, 16, 13, 12, 10, 9, 12, 14, 9, 10, 8, 9, 8, 13, 11, 6, 16, 3, 6, 7, 9, 5, 4, 9, 3, 8, 5, 6, 8, 5, 9, 8, 9, 3, 10, 10, 6, 11, 2, 6, 3, 5, 3, 3
+  };
+  for (Int_t ibin=0; ibin<200; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);
+
+  return hPYTHIA13;
+}
+
 
 //___________________________________________________
 TH1D* LoadPYTHIA13TeV_feeddownD0()
@@ -744,6 +772,27 @@ TH1D* LoadPYTHIA13TeV_feeddownDs()
     112, 91, 69, 66, 54, 57, 39, 33, 31, 25
   };
   for (Int_t ibin=0; ibin<40; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);
+
+  return hPYTHIA13;
+}
+
+
+//___________________________________________________
+TH1D* LoadPYTHIA13TeV_feeddownLc()
+{
+  // coarse binning (1 GeV/c)
+  /*TH1D *hPYTHIA13 = new TH1D("hPYTHIA13_feeddownLc", "", 40, 0., 40.);
+  Float_t val[40] = {
+    274999, 525408, 449454, 306100, 193183, 119904, 75652, 47853, 31371, 20955, 14419, 9906, 7140, 5232, 3752, 2808, 2125, 1672, 1305, 994, 800, 659, 540, 446, 354, 301, 246, 209, 173, 125, 129, 93, 107, 83, 78, 54, 48, 46, 42, 38
+  };
+  for (Int_t ibin=0; ibin<40; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);*/
+
+  // fine binning (0.2 GeV/c)
+  TH1D *hPYTHIA13 = new TH1D("hPYTHIA13_feeddownLc", "", 200, 0., 40.);
+  Float_t val[200] = {
+    12725, 37018, 58333, 76501, 90422, 99701, 105650, 107472, 107723, 104862, 101013, 95436, 90881, 84179, 77945, 72814, 66631, 60966, 55052, 50637, 46183, 42126, 38369, 34844, 31661, 28670, 26343, 23685, 21596, 19610, 18195, 16580, 14852, 13551, 12474, 11219, 10293, 9498, 8785, 8058, 7335, 6842, 6183, 5762, 5249, 4956, 4482, 4147, 3808, 3562, 3328, 3070, 2831, 2694, 2496, 2269, 2131, 2015, 1770, 1721, 1581, 1530, 1390, 1380, 1259, 1184, 1111, 1079, 980, 878, 864, 798, 741, 646, 703, 661, 564, 575, 524, 484, 442, 457, 446, 401, 379, 375, 342, 348, 328, 279, 271, 267, 280, 241, 246, 226, 207, 207, 181, 173, 168, 155, 169, 160, 148, 136, 128, 151, 132, 112, 116, 114, 110, 96, 104, 98, 92, 98, 78, 80, 69, 72, 75, 62, 76, 72, 61, 65, 59, 44, 48, 52, 51, 61, 34, 48, 51, 33, 34, 43, 43, 23, 39, 30, 38, 22, 28, 29, 25, 21, 23, 37, 19, 24, 26, 24, 18, 15, 18, 18, 23, 20, 20, 25, 19, 20, 22, 17, 10, 14, 19, 13, 14, 13, 19, 7, 16, 8, 9, 14, 12, 8, 11, 11, 6, 7, 9, 15, 10, 5, 8, 5, 17, 6, 6, 10, 9, 7, 6, 6
+  };
+  for (Int_t ibin=0; ibin<200; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);
 
   return hPYTHIA13;
 }
