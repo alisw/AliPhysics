@@ -1332,8 +1332,8 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
 }
 
 Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
-	if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0",fAOD->GetRunNumber()));
-        else fPtWeightsSystematics = (TH1D*)fFlowWeightsList->FindObject(Form("EffRescaled_Cent0_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
+	if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0"));
+        else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0_SystFlag%i_", fCurrSystFlag));
 	if(!fPtWeightsSystematics)
         {
             printf("PtWeights could not be found in list!\n");
