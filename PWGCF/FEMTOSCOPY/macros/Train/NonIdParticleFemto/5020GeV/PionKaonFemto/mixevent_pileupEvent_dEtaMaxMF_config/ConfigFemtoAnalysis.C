@@ -52,7 +52,7 @@
 #include "AliFemtoPairCutRadialDistanceAsymmetric.h"
 #include "AliFemtoKKTrackCut.h"
 #include "AliFemtoKKTrackCutFull.h"
-#include "AliFemtoPairCutMergedFraction.h"
+#include "AliFemtoPairCutMergedFraction_pik.h"
 #include "AliFemtoCorrFctnDPhiStarKStarMergedFraction.h"
 #include "AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.h"
 #include "AliFemtoBetaTPairCut.h"
@@ -335,8 +335,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
           //sqpcetaphitpcRD[aniter] = new AliFemtoPairCutRadialDistanceLM();
 
 	  if (paircutmergedfractionon == 1) 
-	    sqpcetaphitpc[aniter] = new AliFemtoPairCutMergedFraction(distance, fraction1, 0.01, 0.8, 2.5);
-	    sqpcetaphitpc[aniter]->SetDEtaMax(maxdeta);
+	    sqpcetaphitpc[aniter] = new AliFemtoPairCutMergedFraction_pik(distance, fraction1, 0.01, 0.8, 2.5);
+	  //	    sqpcetaphitpc[aniter]->SetDEtaMax(maxdeta);
 	  else
 	    sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
 	  
