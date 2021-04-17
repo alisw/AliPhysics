@@ -39,8 +39,20 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   std::cout << "Configpath:  " << configFilePath << std::endl;
   std::cout << "Libpath:  " << libFilePath << std::endl;
 
-  gROOT->LoadMacro(libFilePath.Data());//library first
-  gROOT->LoadMacro(configFilePath.Data());
+  //gROOT->LoadMacro(libFilePath.Data());//library first
+  //gROOT->LoadMacro(configFilePath.Data());
+
+  if (!gROOT->GetListOfClasses()->FindObject("LMEECutLib")) {
+    printf("Load library now\n");
+    gROOT->LoadMacro(libFilePath.Data());
+    gROOT->AddClass(LMEECutLib::Class());
+  }
+
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject("Config_dsekihat_ElectronEfficiencyV2_PbPb")) {
+    printf("Load macro now\n");
+    gROOT->LoadMacro(configFilePath.Data());
+  }
+
 
 	TString suffix = "";
 	if(generators.Contains("Pythia CC") && (generators.Contains("Pythia BB") || generators.Contains("Pythia B"))) suffix = "_CC_BB";
