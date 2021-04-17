@@ -20,7 +20,7 @@ ClassImp(AliFemtoPairCutMergedFraction_pik)
 
 //__________________
 AliFemtoPairCutMergedFraction_pik::AliFemtoPairCutMergedFraction_pik(Double_t aDistanceMax, Double_t aMergedFractionLimit, Double_t aDEtaMax, Double_t aRadiusMin, Double_t aRadiusMax) :
-AliFemtoPairCutAntiGamma_pik(),
+AliFemtoPairCutAntiGamma(),
   fDistanceMax(0.03),
   fMergedFractionLimit(0.01),
   fDEtaMax(0.012),
