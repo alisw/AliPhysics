@@ -19,6 +19,8 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                 TString         fPeriod                 = "LHC15o",
                 TString         fNtrksName              = "Mult",
 		TString		uniqueID        	= ""
+	        Bool_t		fNUA			= true;
+	        Bool_t		fNUE 			= true;
 		)
 {
         // The common parameters
@@ -35,8 +37,6 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	Int_t		IsSample			= 10;
 	Short_t		nCentFl				= 0;
 	Bool_t		fLS				= false;
-	Bool_t		fNUE 				= true;
-	Bool_t		fNUA				= true;
 
 	// Creates a pid task and adds it to the analysis manager
 	// Get the pointer to the existing analysis manager via the static
@@ -180,13 +180,25 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	}
 
 	if(fNUE) {
+
+                TFile *inNUE;
+
 		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
-		TFile *inNUE = (fFilterbit==96)?TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root"): TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR_FB768.root");
+                if (fPeriod.EqualTo("LHC15o")) {
+			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC18e1_MBEff_FD_wSyst_v2.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+                } else {
+			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC17d20a1_WithModEff_Syst.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+		}
+
 		if(!inNUE) {
 			printf("Could not open efficiency file!\n");
 			return 0;
 		}
-		cin_NUE->SetData(inNUE);
+                TList* weight_list = NULL;
+		weight_list = dynamic_cast<TList*>(inNUE->Get("EffAndFD"));
+		cin_NUE->SetData(weight_list);
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUE);
 		inSlotCounter++;
 	} 

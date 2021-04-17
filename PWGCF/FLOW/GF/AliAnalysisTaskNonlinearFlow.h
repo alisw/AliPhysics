@@ -172,7 +172,7 @@ class PhysicsProfile : public TObject {
 		TProfile*        fChcn4_3subRRML[6];            //! <<4>> 3subevent method
 		TProfile*        fChcn4_3subGap2[6];            //! <<4>> 3subevent method |#Delta#eta| > 0.2
 		private:
-		ClassDef(PhysicsProfile, 2);    //Analysis task
+		ClassDef(PhysicsProfile, 4);    //Analysis task
 };
 
 class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
@@ -247,6 +247,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		double 			GetPtWeight(double pt, double eta, float vz, double runNumber);
 
 		Bool_t                  LoadWeights();
+		Bool_t                  LoadPtWeights();
 		Bool_t                  LoadWeightsSystematics();
 
 		Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
@@ -311,6 +312,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		//
 		TList*                  fFlowWeightsList;               //! flowWightsList
+		TList*                  fFlowPtWeightsList;             //! PtflowWightsList
 		TList*			fPhiWeight;	                //! file with phi weights
 		TList*			fPhiWeightPlus;	                //! file with phi weights
 		TList*			fPhiWeightMinus;                //! file with phi weights
@@ -319,6 +321,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH2D*                   fh2AfterWeights[kUnknown];      //! distribution after applying GF weights - lightweight QA (phi)
                 TH3D*                   fh3AfterWeights[kUnknown];      //! distribution after applying GF weights - full QA (phi,eta,pt)
 		AliGFWWeights*          fWeightsSystematics;            //! Weights for systematics
+		TH1D*                   fPtWeightsSystematics;          //! PtWeights for systematics
 
 
 		TH3F*			hPhiWeight;			//! 3D weight for all periods except LHC15ijl
@@ -423,7 +426,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 3);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 4);    //Analysis task
 };
 
 #endif

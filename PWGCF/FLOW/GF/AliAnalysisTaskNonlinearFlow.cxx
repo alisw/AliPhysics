@@ -514,7 +514,8 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 		inSlotCounter++;
 	};
 	if(fNUE) {
-		fTrackEfficiency = (TFile*)GetInputData(inSlotCounter);
+		fFlowPtWeightsList = (TList*) GetInputData(inSlotCounter);
+		// fTrackEfficiency = (TFile*)GetInputData(inSlotCounter);
 		inSlotCounter++;
 	};
 
@@ -625,12 +626,8 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
         // checking the run number for aplying weights & loading TList with weights
         //
         // if (fCurrSystFlag == 0) 
-        if ( !fPeriod.EqualTo("LHC15o") ) {
-		if (fNUA && !LoadWeights()) { AliFatal("Weights not loaded! at pp"); return; }
-        } else {
-		if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded! for LHC15o"); return; }
-        }
-
+	if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded!"); return; }
+        if (fNUE && !LoadPtWeights()) { AliFatal("PtWeights not loaded!"); return; }
 
 
 	fGFWSelection->SetupCuts(fCurrSystFlag); 
@@ -1265,16 +1262,11 @@ int AliAnalysisTaskNonlinearFlow::GetRunPart(int run)
 //____________________________________________________________________
 double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
-        return 1;
-	hTrackEfficiencyRun = (TH3F*)fTrackEfficiency->Get(Form("eff_LHC15o_HIJING_%.0lf", runNumber));
-	double binPt = hTrackEfficiencyRun->GetXaxis()->FindBin(pt);
-	double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
-	double binVz = hTrackEfficiencyRun->GetZaxis()->FindBin(vz);
-	//..take into account error on efficiency: randomly get number from gaussian distribution of eff. where width = error
-	double eff = hTrackEfficiencyRun->GetBinContent(binPt, binEta, binVz);
-	double error = hTrackEfficiencyRun->GetBinError(binPt, binEta, binVz);
-
+	double binPt = fPtWeightsSystematics->GetXaxis()->FindBin(pt);
+	double eff = fPtWeightsSystematics->GetBinContent(binPt);
+	double error = fPtWeightsSystematics->GetBinError(binPt);
 	double weight = 1;
+	//..take into account error on efficiency: randomly get number from gaussian distribution of eff. where width = error
 	if((eff < 0.03) || ((error/eff) > 0.1)) weight = 1;
 	else{
 		TRandom3 r(0);
@@ -1285,6 +1277,10 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
 	}
 
 	return weight;
+	double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
+	double binVz = hTrackEfficiencyRun->GetZaxis()->FindBin(vz);
+	eff = hTrackEfficiencyRun->GetBinContent(binPt, binEta, binVz);
+	error = hTrackEfficiencyRun->GetBinError(binPt, binEta, binVz);
 
 }
 //____________________________________________________________________
@@ -1333,6 +1329,18 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
         }
         fWeightsSystematics->CreateNUA();
         return kTRUE;
+}
+
+Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
+	if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0",fAOD->GetRunNumber()));
+        else fPtWeightsSystematics = (TH1D*)fFlowWeightsList->FindObject(Form("EffRescaled_Cent0_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
+	if(!fPtWeightsSystematics)
+        {
+            printf("PtWeights could not be found in list!\n");
+            return kFALSE;
+        }
+        return kTRUE;
+
 }
 
 Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species) {
