@@ -176,6 +176,137 @@ rand(32213)
 
 }
 //______________________________________________________________________________
+AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int _fNUA, int _fNUE):
+	AliAnalysisTaskSE(name),
+	fAOD(0),
+	fitssatrackcuts(0),
+	fFilterbit(96),
+	fFilterbitDefault(96),
+	fEtaCut(0.8),
+	fVtxCut(10.0),
+	fMinPt(0.2),
+	fMaxPt(3.0),
+	fTPCclusters(70),
+	fMinITSClus(0),
+	fMaxChi2(0),
+	fUseDCAzCut(0),
+	fDCAz(0),
+	fDCAzDefault(0),
+	fUseDCAxyCut(0),
+	fDCAxy(0),
+	fDCAxyDefault(0),
+	fSample(1),
+	fCentFlag(0),
+	fTrigger(0),
+	fAliTrigger(0),
+	fLS(false),
+	fNUE(_fNUE),
+	fNUA(_fNUA),
+        fNtrksName("Mult"),
+	//....
+	fPeriod("LHC15o"),
+
+	fListOfObjects(0),
+
+	fMultTOFLowCut(0),
+	fMultTOFHighCut(0),
+	fMultCentLowCut(0),
+
+	fTrackEfficiency(0),
+	hTrackEfficiency(0),
+	hTrackEfficiencyRun(0),
+
+        fFlowRunByRunWeights(false),
+        fFlowPeriodWeights(false),
+        fFlowUse3Dweights(false),
+        fFlowWeightsList(nullptr),
+
+	fPhiWeight(0),
+	fPhiWeightPlus(0),
+	fPhiWeightMinus(0),
+	hPhiWeight(0),
+	hPhiWeight1D(0),
+	hPhiWeight_LHC15i_part1(0),
+	hPhiWeight_LHC15i_part2(0),
+	hPhiWeight_LHC15j_part1(0),
+	hPhiWeight_LHC15j_part2(0),
+	hPhiWeight_LHC15l_part1(0),
+	hPhiWeight_LHC15l_part2(0),
+	hPhiWeight_LHC15l_part3(0),
+	hPhiWeightPlus_LHC15i_part1(0),
+	hPhiWeightPlus_LHC15i_part2(0),
+	hPhiWeightPlus_LHC15j_part1(0),
+	hPhiWeightPlus_LHC15j_part2(0),
+	hPhiWeightPlus_LHC15l_part1(0),
+	hPhiWeightPlus_LHC15l_part2(0),
+	hPhiWeightPlus_LHC15l_part3(0),
+	hPhiWeightMinus_LHC15i_part1(0),
+	hPhiWeightMinus_LHC15i_part2(0),
+	hPhiWeightMinus_LHC15j_part1(0),
+	hPhiWeightMinus_LHC15j_part2(0),
+	hPhiWeightMinus_LHC15l_part1(0),
+	hPhiWeightMinus_LHC15l_part2(0),
+	hPhiWeightMinus_LHC15l_part3(0),
+
+	hEventCount(0),
+	hMult(0),
+	fVtxAfterCuts(0),
+	fCentralityDis(0),
+	fV0CentralityDis(0),
+	hMultV0vsNtrksAfterCuts(0),
+	hMultSPDvsNtrksAfterCuts(0),
+	hNtrksVSmultPercentile(0),
+	fCentralityV0MCL1(0),
+	fCentralityV0MCL0(0),
+	fCentralityCL0CL1(0),
+	fMultvsCentr(0),
+	fMult128vsCentr(0),
+	fMultTPCvsTOF(0),
+	fMultTPCvsESD(0),
+
+	hSPDClsVsTrk(0),
+	hV0C012vsTkl(0),
+	hV0C012vsV0C3(0),
+	hV0MOnVsOf(0),
+	hSPDOnVsOf(0),
+
+	fPhiDis1D(0),
+	fPhiDis(0),
+	fEtaDis(0),
+	fEtaBefore(0),
+	fPtDis(0),
+	fPtBefore(0),
+	hDCAxyBefore(0),
+	hDCAzBefore(0),
+	hITSclustersBefore(0),
+	hChi2Before(0),
+	hDCAxy(0),
+	hDCAz(0),
+	hITSclusters(0),
+	hChi2(0),
+	rand(32213) {
+
+		// Output slot #1 writes into a TList
+		DefineOutput(1, TList::Class());
+		DefineOutput(2, TList::Class());
+                int outputslot = 2;
+                for (int i = 0; i < 30; i++) {
+		    outputslot++;
+		    DefineOutput(outputslot, TList::Class());
+                }
+		// DefineOutput(2, TList::Class());
+		int inputslot = 1;
+		if (fNUA) {
+			DefineInput(inputslot, TFile::Class());
+			inputslot++;
+                }
+		if (fNUE) {
+			DefineInput(inputslot, TFile::Class());
+			inputslot++;
+		}
+	}
+
+//______________________________________________________________________________
 AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	AliAnalysisTaskSE(name),
 	fAOD(0),
@@ -295,6 +426,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 		    DefineOutput(outputslot, TList::Class());
                 }
 		// DefineOutput(2, TList::Class());
+		int inputslot = 1;
 		DefineInput(1, TFile::Class());
 		DefineInput(2, TFile::Class());
 	}
@@ -305,8 +437,7 @@ AliAnalysisTaskNonlinearFlow::~AliAnalysisTaskNonlinearFlow()
 	// Destructor
 	// histograms are in the output list and deleted when the output
 	// list is deleted by the TSelector dtor
-	if (fListOfObjects)
-		delete fListOfObjects;
+	if (fListOfObjects) delete fListOfObjects;
 	if (fListOfProfile) delete fListOfProfile;
         for (int i = 0; i < 30; i++) {
 	  if (fListOfProfiles[i]) delete fListOfProfiles[i];
@@ -368,13 +499,13 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 	fV0CentralityDis = new TH1F("fV0CentralityDis", "centrality V0/<V0> distribution; centrality; Counts", 100, 0, 10);
 	fListOfObjects->Add(fV0CentralityDis);
 
-	hMultV0vsNtrksAfterCuts = new TH2F("hMultV0vsNtrksAfterCuts","V0 mult vs. number of tracks; V0 mult; number of tracks", 100, 0, 10, nn, xbins);
+	hMultV0vsNtrksAfterCuts = new TH2F("hMultV0vsNtrksAfterCuts","V0 mult vs. number of tracks; V0 mult; number of tracks", 100, 0, 10, 100, 0, 3000);
 	fListOfObjects->Add(hMultV0vsNtrksAfterCuts);
 
-	hMultSPDvsNtrksAfterCuts = new TH2F("hMultSPDvsNtrksAfterCuts","SPD mult vs. number of tracks; SPD mult; number of tracks", 100, 0, 10, nn, xbins);
+	hMultSPDvsNtrksAfterCuts = new TH2F("hMultSPDvsNtrksAfterCuts","SPD mult vs. number of tracks; SPD mult; number of tracks", 100, 0, 10, 100, 0, 3000);
 	fListOfObjects->Add(hMultSPDvsNtrksAfterCuts);
 
-	hNtrksVSmultPercentile = new TH2F("hNtrksVSmultPercentile", ";Multiplicity percentile;ITSsa tracks", 100, 0, 100, 1000, 0, 2000);
+	hNtrksVSmultPercentile = new TH2F("hNtrksVSmultPercentile", ";Multiplicity percentile;ITSsa tracks", 100, 0, 100, 100, 0, 3000);
 	fListOfObjects->Add(hNtrksVSmultPercentile);
 
 	Int_t inSlotCounter=1;
@@ -383,7 +514,8 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 		inSlotCounter++;
 	};
 	if(fNUE) {
-		fTrackEfficiency = (TFile*)GetInputData(inSlotCounter);
+		fFlowPtWeightsList = (TList*) GetInputData(inSlotCounter);
+		// fTrackEfficiency = (TFile*)GetInputData(inSlotCounter);
 		inSlotCounter++;
 	};
 
@@ -434,6 +566,12 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
         if (!AcceptAOD(fAOD) ) {
 	    PostData(1,fListOfObjects);
+	    int outputslot = 2;
+	    PostData(2, fListOfProfile);
+	    for (int i = 0; i < 30; i++) {
+	        outputslot++; 
+	        PostData(outputslot, fListOfProfiles[i]);
+	    }
             return;
         }
 	hEventCount->Fill("after fEventCuts", 1.);
@@ -442,14 +580,32 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 	//..filling Vz distribution
 	AliVVertex *vtx = fAOD->GetPrimaryVertex();
 	float fVtxZ = vtx->GetZ();
-	if(TMath::Abs(fVtxZ) > fVtxCutDefault) return;
+	if(TMath::Abs(fVtxZ) > fVtxCutDefault) {
+	    PostData(1,fListOfObjects);
+	    int outputslot = 2;
+	    PostData(2, fListOfProfile);
+	    for (int i = 0; i < 30; i++) {
+	        outputslot++; 
+	        PostData(outputslot, fListOfProfiles[i]);
+	    }
+            return;
+        }
         NTracksCalculation(fInputEvent);
-	if(TMath::Abs(fVtxZ) > fVtxCut) return;
+	if(TMath::Abs(fVtxZ) > fVtxCut) {
+	    PostData(1,fListOfObjects);
+	    int outputslot = 2;
+	    PostData(2, fListOfProfile);
+	    for (int i = 0; i < 30; i++) {
+	        outputslot++; 
+	        PostData(outputslot, fListOfProfiles[i]);
+	    }
+	    return;
+        }
 	fVtxAfterCuts->Fill(fVtxZ);
 
 	hMult->Fill(NtrksCounter);
-	//..standard event plots (cent. percentiles, mult-vs-percentile)
 
+	//..standard event plots (cent. percentiles, mult-vs-percentile)
 	const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
 	const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
 	float fMultV0Meq = 0;
@@ -469,24 +625,24 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
         // checking the run number for aplying weights & loading TList with weights
         //
-        // if (fCurrSystFlag == 0) {
-        if ( !fPeriod.EqualTo("LHC15o") ) {
-		if (fNUA && !LoadWeights()) { AliFatal("Weights not loaded! at pp"); return; }
-        } else {
-		if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded! for LHC15o"); return; }
-        }
-
+        // if (fCurrSystFlag == 0) 
+	if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded!"); return; }
+        if (fNUE && !LoadPtWeights()) { AliFatal("PtWeights not loaded!"); return; }
 
 
 	fGFWSelection->SetupCuts(fCurrSystFlag); 
 	//..all charged particles
-	if(fLS == true){
-		AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
-		AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, true);
-	} else AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
+	AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
 
 	// Post output data.
 	PostData(1, fListOfObjects);
+	int outputslot = 2;
+        PostData(2, fListOfProfile);
+        for (int i = 0; i < 30; i++) {
+            outputslot++; 
+	    PostData(outputslot, fListOfProfiles[i]);
+        }
+
 }
 
 void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
@@ -1106,16 +1262,11 @@ int AliAnalysisTaskNonlinearFlow::GetRunPart(int run)
 //____________________________________________________________________
 double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
-        return 1;
-	hTrackEfficiencyRun = (TH3F*)fTrackEfficiency->Get(Form("eff_LHC15o_HIJING_%.0lf", runNumber));
-	double binPt = hTrackEfficiencyRun->GetXaxis()->FindBin(pt);
-	double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
-	double binVz = hTrackEfficiencyRun->GetZaxis()->FindBin(vz);
-	//..take into account error on efficiency: randomly get number from gaussian distribution of eff. where width = error
-	double eff = hTrackEfficiencyRun->GetBinContent(binPt, binEta, binVz);
-	double error = hTrackEfficiencyRun->GetBinError(binPt, binEta, binVz);
-
+	double binPt = fPtWeightsSystematics->GetXaxis()->FindBin(pt);
+	double eff = fPtWeightsSystematics->GetBinContent(binPt);
+	double error = fPtWeightsSystematics->GetBinError(binPt);
 	double weight = 1;
+	//..take into account error on efficiency: randomly get number from gaussian distribution of eff. where width = error
 	if((eff < 0.03) || ((error/eff) > 0.1)) weight = 1;
 	else{
 		TRandom3 r(0);
@@ -1126,6 +1277,10 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
 	}
 
 	return weight;
+	double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
+	double binVz = hTrackEfficiencyRun->GetZaxis()->FindBin(vz);
+	eff = hTrackEfficiencyRun->GetBinContent(binPt, binEta, binVz);
+	error = hTrackEfficiencyRun->GetBinError(binPt, binEta, binVz);
 
 }
 //____________________________________________________________________
@@ -1174,6 +1329,18 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
         }
         fWeightsSystematics->CreateNUA();
         return kTRUE;
+}
+
+Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
+	if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0"));
+        else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0_SystFlag%i_", fCurrSystFlag));
+	if(!fPtWeightsSystematics)
+        {
+            printf("PtWeights could not be found in list!\n");
+            return kFALSE;
+        }
+        return kTRUE;
+
 }
 
 Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species) {
