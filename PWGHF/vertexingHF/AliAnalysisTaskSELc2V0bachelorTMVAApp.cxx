@@ -257,7 +257,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fHistoVzVsNtrUnCorr(0),
   fHistoVzVsNtrCorr(0),
   fInputNamesVec(0),
-  fNTreeVars(29)
+  fNTreeVars(30)
 {
   /// Default ctor
   //
@@ -434,7 +434,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fHistoVzVsNtrUnCorr(0),
   fHistoVzVsNtrCorr(0),
   fInputNamesVec(0),
-  fNTreeVars(29)
+  fNTreeVars(30)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -627,7 +627,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fVariablesTreeSgn = new TTree(Form("%s_Sgn", nameoutput), "Candidates variables tree, Signal");
   fVariablesTreeBkg = new TTree(Form("%s_Bkg", nameoutput), "Candidates variables tree, Background");
 
-  if (fUseMCInfo) fNTreeVars = 37; //"full" tree if MC
+  if (fUseMCInfo) fNTreeVars = 38; //"full" tree if MC
   
   fCandidateVariables = new Float_t[fNTreeVars];
   fCandidateVariableNames = new TString[fNTreeVars];
@@ -662,32 +662,32 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[16] = "bachelorEta";
     //fCandidateVariableNames[26] = "LcP";  // CZ 16/04/2021
     //fCandidateVariableNames[27] = "bachelorP";  // CZ 16/04/2021
-    //fCandidateVariableNames[28] = "v0P";  // CZ 16/04/2021
+    fCandidateVariableNames[17] = "v0P";  
     //fCandidateVariableNames[29] = "V0positiveP";  // CZ 16/04/2021
     //fCandidateVariableNames[30] = "V0negativeP";  // CZ 16/04/2021
-    fCandidateVariableNames[17] = "v0Eta";
-    fCandidateVariableNames[18] = "LcPtMC";
-    fCandidateVariableNames[19] = "DecayLengthK0S";
+    fCandidateVariableNames[18] = "v0Eta";
+    fCandidateVariableNames[19] = "LcPtMC";
+    fCandidateVariableNames[20] = "DecayLengthK0S";
     //fCandidateVariableNames[34] = "bachCode";  // CZ 16/04/2021
     //fCandidateVariableNames[35] = "k0SCode";  // CZ 16/04/2021
-    fCandidateVariableNames[20] = "alphaArm";
-    fCandidateVariableNames[21] = "ptArm";
-    fCandidateVariableNames[22] = "CosThetaStar";
-    fCandidateVariableNames[23] = "weightPtFlat";
-    fCandidateVariableNames[24] = "weightFONLL5overLHC13d3";
-    fCandidateVariableNames[25] = "weightFONLL5overLHC13d3Lc";
-    fCandidateVariableNames[26] = "weightNch";
-    fCandidateVariableNames[27] = "NtrkRaw";
-    fCandidateVariableNames[28] = "NtrkCorr";
-    fCandidateVariableNames[29] = "signd0";
-    fCandidateVariableNames[30] = "centrality";
-    fCandidateVariableNames[31] = "NtrkAll";
-    fCandidateVariableNames[32] = "origin";
-    fCandidateVariableNames[33] = "nSigmaTPCpi";
-    fCandidateVariableNames[34] = "nSigmaTPCka";
+    fCandidateVariableNames[21] = "alphaArm";
+    fCandidateVariableNames[22] = "ptArm";
+    fCandidateVariableNames[23] = "CosThetaStar";
+    fCandidateVariableNames[24] = "weightPtFlat";
+    fCandidateVariableNames[25] = "weightFONLL5overLHC13d3";
+    fCandidateVariableNames[26] = "weightFONLL5overLHC13d3Lc";
+    fCandidateVariableNames[27] = "weightNch";
+    fCandidateVariableNames[28] = "NtrkRaw";
+    fCandidateVariableNames[29] = "NtrkCorr";
+    fCandidateVariableNames[30] = "signd0";
+    fCandidateVariableNames[31] = "centrality";
+    fCandidateVariableNames[32] = "NtrkAll";
+    fCandidateVariableNames[33] = "origin";
+    fCandidateVariableNames[34] = "nSigmaTPCpi";
+    fCandidateVariableNames[35] = "nSigmaTPCka";
     //fCandidateVariableNames[51] = "bachTPCmom";  // AA 15/01/2021
-    fCandidateVariableNames[35] = "nSigmaTOFka";
-    fCandidateVariableNames[36] = "RadiusV0";
+    fCandidateVariableNames[36] = "nSigmaTOFka";
+    fCandidateVariableNames[37] = "RadiusV0";
   }
   else {   // "light mode"
     fCandidateVariableNames[0] = "massLc2K0Sp";
@@ -715,19 +715,19 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     //fCandidateVariableNames[20] = "V0positiveEta";  // CZ 16/04/2021
     fCandidateVariableNames[16] = "bachelorP"; // we replaced the V0negativeEta with the bachelor P as this is more useful (for PID) while the V0 daughters' eta we don't use... And are practically the same (positive and negative)
     //fCandidateVariableNames[22] = "bachelorEta";  // CZ 16/04/2021
-    //fCandidateVariableNames[23] = "v0P";  // CZ 16/04/2021
-    fCandidateVariableNames[17] = "DecayLengthK0S";
-    fCandidateVariableNames[18] = "nSigmaTPCpi";
-    fCandidateVariableNames[19] = "nSigmaTPCka";
-    fCandidateVariableNames[20] = "NtrkRaw";
-    fCandidateVariableNames[21] = "NtrkCorr";
-    fCandidateVariableNames[22] = "CosThetaStar";
-    fCandidateVariableNames[23] = "signd0";        
-    fCandidateVariableNames[24] = "centrality"; 
-    fCandidateVariableNames[25] = "NtrkAll";
-    fCandidateVariableNames[26] = "origin";
-    fCandidateVariableNames[27] = "ptArm";
-    fCandidateVariableNames[28] = "RadiusV0";
+    fCandidateVariableNames[17] = "v0P"; 
+    fCandidateVariableNames[18] = "DecayLengthK0S";
+    fCandidateVariableNames[19] = "nSigmaTPCpi";
+    fCandidateVariableNames[20] = "nSigmaTPCka";
+    fCandidateVariableNames[21] = "NtrkRaw";
+    fCandidateVariableNames[22] = "NtrkCorr";
+    fCandidateVariableNames[23] = "CosThetaStar";
+    fCandidateVariableNames[24] = "signd0";        
+    fCandidateVariableNames[25] = "centrality"; 
+    fCandidateVariableNames[26] = "NtrkAll";
+    fCandidateVariableNames[27] = "origin";
+    fCandidateVariableNames[28] = "ptArm";
+    fCandidateVariableNames[29] = "RadiusV0";
   }
   
   for(Int_t ivar=0; ivar < fNTreeVars; ivar++){
@@ -1410,7 +1410,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserExec(Option_t *)
     if(fHistoMCNch) nchWeight *= fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(fNTracklets_1));
   }
 
-
   PostData(1, fOutput);
   PostData(2, fListCounters);
   PostData(4, fVariablesTreeSgn);
@@ -1759,7 +1758,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
   */
 
   //Downscaling for Pb-Pb data tree at low pt
-  if(ffraction > -1 && fFillTree && !fUseMCInfo && part->Pt() < fPtLimForDownscaling && fCurrentEvent%ffraction != 0) return;
+  if(ffraction > -1 && fFillTree && !fUseMCInfo && part->Pt() < fPtLimForDownscaling && fCurrentEvent%ffraction != 0) {
+    return;
+  }
   
   Double_t invmassLc = part->InvMassLctoK0sP();
 
@@ -2160,37 +2161,37 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[16] = bachelor->Eta();      
       //fCandidateVariables[26] = part->P();
       //fCandidateVariables[27] = bachelor->P();
-      //fCandidateVariables[28] = v0part->P();
+      fCandidateVariables[17] = v0part->P();
       //fCandidateVariables[29] = v0pos->P();
       //fCandidateVariables[30] = v0neg->P();
-      fCandidateVariables[17] = v0part->Eta();
-      fCandidateVariables[18] = ptLcMC;
-      fCandidateVariables[19] = part->DecayLengthV0();
+      fCandidateVariables[18] = v0part->Eta();
+      fCandidateVariables[19] = ptLcMC;
+      fCandidateVariables[20] = part->DecayLengthV0();
       //fCandidateVariables[34] = bachCode;
       //fCandidateVariables[35] = k0SCode;
-      fCandidateVariables[20] = v0part->AlphaV0();
-      fCandidateVariables[21] = v0part->PtArmV0();
+      fCandidateVariables[21] = v0part->AlphaV0();
+      fCandidateVariables[22] = v0part->PtArmV0();
       
       AliDebug(2, Form("v0pos->GetStatus() & AliESDtrack::kITSrefit= %d, v0neg->GetStatus() & AliESDtrack::kITSrefit = %d, v0pos->GetTPCClusterInfo(2, 1)= %f, v0neg->GetTPCClusterInfo(2, 1) = %f", (Int_t)(v0pos->GetStatus() & AliESDtrack::kITSrefit), (Int_t)(v0pos->GetStatus() & AliESDtrack::kITSrefit), v0pos->GetTPCClusterInfo(2, 1), v0neg->GetTPCClusterInfo(2, 1)));
-      fCandidateVariables[22] = cts;
-      fCandidateVariables[23] = weightPythia;
-      fCandidateVariables[24] = weight5LHC13d3;
-      fCandidateVariables[25] = weight5LHC13d3Lc;
-      fCandidateVariables[26] = weightNch;
-      fCandidateVariables[27] = fNTracklets_1;      
-      fCandidateVariables[28] = countTreta1corr;
-      fCandidateVariables[29] = signd0;
-      fCandidateVariables[30] = fCentrality;
-      fCandidateVariables[31] = fNTracklets_All;
+      fCandidateVariables[23] = cts;
+      fCandidateVariables[24] = weightPythia;
+      fCandidateVariables[25] = weight5LHC13d3;
+      fCandidateVariables[26] = weight5LHC13d3Lc;
+      fCandidateVariables[27] = weightNch;
+      fCandidateVariables[28] = fNTracklets_1;      
+      fCandidateVariables[29] = countTreta1corr;
+      fCandidateVariables[30] = signd0;
+      fCandidateVariables[31] = fCentrality;
+      fCandidateVariables[32] = fNTracklets_All;
       if (partLcMC) 
-	fCandidateVariables[32] = fUtils->CheckOrigin(mcArray, partLcMC, kTRUE);
+	fCandidateVariables[33] = fUtils->CheckOrigin(mcArray, partLcMC, kTRUE);
       else
-	fCandidateVariables[32] = -1;
-      fCandidateVariables[33] = nSigmaTPCpi;
-      fCandidateVariables[34] = nSigmaTPCka;
+	fCandidateVariables[33] = -1;
+      fCandidateVariables[34] = nSigmaTPCpi;
+      fCandidateVariables[35] = nSigmaTPCka;
       //fCandidateVariables[51] = bachelor->GetTPCmomentum();
-      fCandidateVariables[35] = nSigmaTOFka;
-      fCandidateVariables[36] = radiusV0;
+      fCandidateVariables[36] = nSigmaTOFka;
+      fCandidateVariables[37] = radiusV0;
     }      
     else { //remove MC-only variables from tree if data
       fCandidateVariables[0] = invmassLc;
@@ -2218,21 +2219,23 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       //fCandidateVariables[20] = v0pos->Eta();
       fCandidateVariables[16] = bachelor->P();
       //fCandidateVariables[22] = bachelor->Eta();
-      //fCandidateVariables[23] = v0part->P();
-      fCandidateVariables[17] = part->DecayLengthV0();
-      fCandidateVariables[18] = nSigmaTPCpi;
-      fCandidateVariables[19] = nSigmaTPCka;
-      fCandidateVariables[20] = fNTracklets_1;
-      fCandidateVariables[21] = countTreta1corr;
-      fCandidateVariables[22] = cts;
-      fCandidateVariables[23] = signd0;       
-      fCandidateVariables[24] = fCentrality;
-      fCandidateVariables[25] = fNTracklets_All;
-      fCandidateVariables[26] = -1;
-      fCandidateVariables[27] = v0part->PtArmV0();
-      fCandidateVariables[28] = radiusV0;
+      fCandidateVariables[17] = v0part->P();
+      fCandidateVariables[18] = part->DecayLengthV0();
+      fCandidateVariables[19] = nSigmaTPCpi;
+      fCandidateVariables[20] = nSigmaTPCka;
+      fCandidateVariables[21] = fNTracklets_1;
+      fCandidateVariables[22] = countTreta1corr;
+      fCandidateVariables[23] = cts;
+      fCandidateVariables[24] = signd0;       
+      fCandidateVariables[25] = fCentrality;
+      fCandidateVariables[26] = fNTracklets_All;
+      fCandidateVariables[27] = -1;
+      fCandidateVariables[28] = v0part->PtArmV0();
+      fCandidateVariables[29] = radiusV0;
     }
     
+    //    Printf("centrality = %f", fCentrality);
+
     // fill multiplicity histograms for events with a candidate   
     //fHistNtrUnCorrEvWithCand->Fill(fNTracklets_1, weightNch);
     //fHistNtrCorrEvWithCand->Fill(countTreta1corr, weightNch);
