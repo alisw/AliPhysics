@@ -21,8 +21,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
 		return 0;
 	}
 
-  TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
-	//TString configBasePath("./");
+  //TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
+	TString configBasePath("./");
   if (!gSystem->AccessPathName(configFile) && !gSystem->AccessPathName(libFile) ) {
     printf("Configfile already present\n");
     configBasePath=Form("%s/",gSystem->pwd());
@@ -39,19 +39,19 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   std::cout << "Configpath:  " << configFilePath << std::endl;
   std::cout << "Libpath:  " << libFilePath << std::endl;
 
-  //gROOT->LoadMacro(libFilePath.Data());//library first
-  //gROOT->LoadMacro(configFilePath.Data());
+  gROOT->LoadMacro(libFilePath.Data());//library first
+  gROOT->LoadMacro(configFilePath.Data());
 
-  if (!gROOT->GetListOfClasses()->FindObject("LMEECutLib")) {
-    printf("Load library now\n");
-    gROOT->LoadMacro(libFilePath.Data());
-    gROOT->AddClass(LMEECutLib::Class());
-  }
+  //if (!gROOT->GetListOfClasses()->FindObject("LMEECutLib")) {
+  //  printf("Load library now\n");
+  //  gROOT->LoadMacro(libFilePath.Data());
+  //  //gROOT->AddClass(LMEECutLib::Class());
+  //}
 
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject("Config_dsekihat_ElectronEfficiencyV2_PbPb")) {
-    printf("Load macro now\n");
-    gROOT->LoadMacro(configFilePath.Data());
-  }
+  //if (!gROOT->GetListOfGlobalFunctions()->FindObject("Config_dsekihat_ElectronEfficiencyV2_PbPb")) {
+  //  printf("Load macro now\n");
+  //  gROOT->LoadMacro(configFilePath.Data());
+  //}
 
 
 	TString suffix = "";
