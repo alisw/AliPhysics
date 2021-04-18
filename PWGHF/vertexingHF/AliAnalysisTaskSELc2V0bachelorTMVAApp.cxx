@@ -2234,8 +2234,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[29] = radiusV0;
     }
     
-    //    Printf("centrality = %f", fCentrality);
-
     // fill multiplicity histograms for events with a candidate   
     //fHistNtrUnCorrEvWithCand->Fill(fNTracklets_1, weightNch);
     //fHistNtrCorrEvWithCand->Fill(countTreta1corr, weightNch);
