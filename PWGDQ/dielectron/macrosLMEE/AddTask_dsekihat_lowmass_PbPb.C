@@ -20,8 +20,8 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 	}
 
 	//Base Directory for GRID / LEGO Train
-	TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-	//TString configBasePath= "./";
+	//TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
+	TString configBasePath= "./";
   if (!gSystem->AccessPathName(cFileName) && !gSystem->AccessPathName(lFileName)  ) {
     printf("Configfile already present\n");
     configBasePath=Form("%s/",gSystem->pwd());
@@ -38,20 +38,19 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 	std::cout << "Configpath:  " << configFilePath << std::endl;
 	std::cout << "Libpath:  "    << libFilePath << std::endl;
 	//add dielectron analysis with different cuts to the task
-	//gROOT->LoadMacro(libFilePath.Data());//library first
-	//gROOT->LoadMacro(configFilePath.Data());
+	gROOT->LoadMacro(libFilePath.Data());//library first
+	gROOT->LoadMacro(configFilePath.Data());
 
+  //if (!gROOT->GetListOfClasses()->FindObject("LMEECutLib")) {
+  //  printf("Load library now\n");
+  //  gROOT->LoadMacro(libFilePath.Data());
+  //  //gROOT->AddClass(LMEECutLib::Class());
+  //}
 
-  if (!gROOT->GetListOfClasses()->FindObject("LMEECutLib")) {
-    printf("Load library now\n");
-    gROOT->LoadMacro(libFilePath.Data());
-    gROOT->AddClass(LMEECutLib::Class());
-  }
-
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject("Config_dsekihat_lowmass_PbPb")) {
-    printf("Load macro now\n");
-    gROOT->LoadMacro(configFilePath.Data());
-  }
+  //if (!gROOT->GetListOfGlobalFunctions()->FindObject("Config_dsekihat_lowmass_PbPb")) {
+  //  printf("Load macro now\n");
+  //  gROOT->LoadMacro(configFilePath.Data());
+  //}
 
 
 	TString triggername = "NULL";
