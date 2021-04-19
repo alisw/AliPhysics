@@ -14,7 +14,17 @@ void runLocal() {
   // load the addtask macro and create the task
   AliAnalysisTaskLegendreCoef *task = reinterpret_cast<AliAnalysisTaskLegendreCoef*>(gInterpreter->ExecuteMacro("macros/AddTaskLegendreCoef.C"));
   task->SetPileUpRead(kTRUE);
-  task->SetBuildBackground(kTRUE);
+  // task->SetBuildBackground(kTRUE);
+  TFile *f1 = new TFile("/home/alidock/localtest/AnalysisResults9599.root");
+  TList* histlist = (TList*)f1->Get("LongFluctuations/EtaBG");
+  if(!histlist) printf("error!!!!!!!! no list\n");
+  if(!(TH2D*)histlist->FindObject("PosBGHistOut")) printf("error!!!!!!!! no hist\n");
+
+  task->GetPosBackground((TH2D*)histlist->FindObject("PosBGHistOut"));
+  task->GetNegBackground((TH2D*)histlist->FindObject("NegBGHistOut"));
+  task->GetChargedBackground((TH2D*)histlist->FindObject("ChargedBGHistOut"));
+
+  task->SetBuildLegendre(kTRUE);
 
 
   if(!mgr->InitAnalysis()) return;
