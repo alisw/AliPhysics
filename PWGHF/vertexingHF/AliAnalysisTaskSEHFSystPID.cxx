@@ -392,11 +392,11 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
     if(!fFillTreeWithNsigmaPIDOnly) {
       if(fEnabledDet[kITS]) {
         fPIDtree->Branch("dEdxITS",&fdEdxITS,"dEdxITS/s");
-        fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
+        fPIDtree->Branch("ITSclsMap",&fITSclsMap,"ITSclsMap/b");
       }
       if(fEnabledDet[kTPC]) {
         fPIDtree->Branch("dEdxTPC",&fdEdxTPC,"dEdxTPC/s");
-        fPIDtree->Branch("ITSclsMap",&fITSclsMap,"ITSclsMap/b");
+        fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
       }
       if(fEnabledDet[kTOF]) {
         fPIDtree->Branch("ToF",&fToF,"ToF/s");
