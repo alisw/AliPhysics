@@ -169,11 +169,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                 } 
 					
                 TList* weight_list = NULL;
-		if (fSystFlag == 0 && !fPeriod.EqualTo("LHC15o")) {
-			weight_list = dynamic_cast<TList*>(inNUA->Get("weights"));
-		} else {
-			weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
-		}
+		weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
 		cin_NUA->SetData(weight_list);
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUA);
 		inSlotCounter++;
