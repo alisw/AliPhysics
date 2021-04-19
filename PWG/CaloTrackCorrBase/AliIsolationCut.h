@@ -48,7 +48,7 @@ class AliIsolationCut : public TObject {
                     kSumPtFracIC ,           ///< Isolated if sum pt particle in cone < fPtFraction*pt Candidate 
                     kSumDensityIC,           ///< Isolated if sum pt particle in cone < fPtFraction* cell density, old not to be used
                     kSumBkgSubIC ,           ///< Same as kSumPtIC, but sum pt particle in cone subtracted from UE estimated in perpendicular cones.
-                    kSumBkgSubJetRhoIC,      ///< Same as kSumPtIC, but sum pt particle in cone subtracted from UE estimated in Jet using tasks EMCalJetFinderBackground which and JetRhoSparseTask.
+                    kSumBkgSubJetRhoIC,      ///< Same as kSumPtIC, but sum pt particle in cone subtracted from UE estimated in Jet using tasks EMCalJetFinderBackground and JetRhoSparseTask.
                     kSumBkgSubEtaBandIC ,    ///< Same as kSumPtIC, but sum pt particle in cone subtracted from UE estimated in eta band. 
                     kSumBkgSubPhiBandIC,     ///< Same as kSumPtIC, but sum pt particle in cone subtracted from UE estimated in phi band.
                                              ///< Caveat, jet contributors might still be in band and bias.
@@ -219,12 +219,6 @@ class AliIsolationCut : public TObject {
   void       SetJetRhoTaskContainerName(TString name)          { fJetRhoTaskName = name ; }
   TString    GetJetRhoTaskContainerName()                const { return fJetRhoTaskName ; }
 
-  void       SetCentralityLimitForJetRhoSparse(Float_t cen)    { fJetRhoSparseCentralityLimit = cen  ; }
-  Float_t    GetCentralityLimitForJetRhoSparse()         const { return fJetRhoSparseCentralityLimit ; }
-
-  void       SwitchOnJetRhoCentralityChange ()                 { fJetRhoCheckCentrality = kTRUE  ; }
-  void       SwitchOffJetRhoCentralityChange()                 { fJetRhoCheckCentrality = kFALSE ; }
-
   void       SwitchOnUseMaxPtUECut ()                          { fUseMaxPtUE = kTRUE  ; }
   void       SwitchOffUseMaxPtUECut()                          { fUseMaxPtUE = kFALSE ; }
 
@@ -282,8 +276,6 @@ class AliIsolationCut : public TObject {
   Float_t    fMaxPtUE;                                 ///< Maximum pt for UE estimation
 
   TString    fJetRhoTaskName;                          ///< Name of the container of the jet rho task calculation
-  Float_t    fJetRhoSparseCentralityLimit;             ///< Use Sparse Rho calculation for peripheral events avobe this centrality
-  Bool_t     fJetRhoCheckCentrality;                   ///< Activate Rho method calculation switch depending centrality
 
   Int_t      fDebug;                                   ///< Debug level.
 
