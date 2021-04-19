@@ -24,6 +24,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     virtual void    UserExec(Option_t* option);
     virtual void    Terminate(Option_t* option);
 
+
     void            SetMCRead(Bool_t flag) { fIsMC = flag; }
     void            SetChi2DoF(Double_t Chi2DoF) { fChi2DoF = Chi2DoF; }
     void            SetNclTPC(Int_t ncl) { fTPCNcls = ncl; }
@@ -40,8 +41,14 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            GetMCChargedBackground(TH2D* hist) { fMCChargedBackgroundHist = hist; }
 
   private:
+    Double_t GetSingleAnCoef(int order, TH1D *hist); //method to get direct an
+    Double_t LegPol(int order, Double_t x);
+    void    BuildBackground();
+    void    BuildSignal();
+    void    BuildCoefficients(TH1D *signal, TH1D *background, Float_t centrality, char *type);
     AliAODEvent*    fAOD;                 //! input event
     TList*          fOutputList;          //! output list
+
   
     Bool_t fIsMC; //MC flag
     Double_t fChi2DoF; //limit for chi2
