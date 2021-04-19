@@ -240,7 +240,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Float_t                     fPhiPz          [1024];     //! Phi Pz
     UChar_t                     fiKaon          [1024];     //! iKaon
     UChar_t                     fjKaon          [1024];     //! jKaon
-    UChar_t                     fNature         [1024];     //! Nature
+    Float_t                     fTrueInvMass    [1024];     //! True Invariant Mass
     //
     TTree                      *fKaonCandidate;             //! output tree for Signal
     UChar_t                     fnKaon;                     //! Number of Phis produced found
