@@ -1320,6 +1320,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                         //cout << "IsoEnergy = " << IsoEnergy << endl;
                         //cout << "IsoEnergyTrack = " << IsoEnergyTrack << endl;
 
+                        Bool_t iIsocut = kFALSE;
+
                         //if(TrkPt>10.0 && TMath::Abs(pdgorg)==24)
                         if(TrkPt>10.0 && icaliso)
                            {
@@ -1339,6 +1341,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             //cout <<"isoarray = " << isoarray[7] << endl;
                             fIsoArray->Fill(isoarray);
                             if(IsoEnergy<0.05)fDCAxy_Pt_We->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+                            if(IsoEnergy < 0.05 && NtrackCone <3)iIsocut=kTRUE;
                            }
 
                         if(TrkPt>10.0 && ((pid_eleD) || (pid_eleB)))
@@ -1372,7 +1375,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				fM20_2->Fill(TrkPt,m20);
 
 				///////-----Identify Non-HFE////////////////////////////
-				SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt,DCA[0],Bsign,IsoEnergy);
+				SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt,DCA[0],Bsign,iIsocut);
 				//IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD);
 				if(fFlagIsolation)
                                     {
@@ -1455,7 +1458,7 @@ void AliAnalysisTaskCaloHFEpp::Terminate(Option_t *)
 	// called at the END of the analysis (when all events are processed)
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt, Double_t DCAxy, Int_t Bsign, Double_t Eiso)
+void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt, Double_t DCAxy, Int_t Bsign, Bool_t &iIsocut)
 {
 	////// ////////////////////////////////////
 	//////Non-HFE - Invariant mass method//////
@@ -1555,7 +1558,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 			if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;
 			if(mass < 0.002)cout <<"Px="<<track->Px() <<" Py="<<track->Py()<<" Pz="<<track->Pz()<<endl;
 			if(track->Pt()>1){
-				if(Eiso<0.05)fInv_pT_LS_forW->Fill(TrkPt,mass);
+				if(iIsocut)fInv_pT_LS_forW->Fill(TrkPt,mass);
 				fInv_pT_LS->Fill(TrkPt,mass);
 				if(mass<CutmassMin)fDCAxy_Pt_LS->Fill(TrkPt,DCAxy*charge*Bsign);
 			}
@@ -1563,7 +1566,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		if(fFlagULS){
 			if(track->Pt()>1){
 				fInv_pT_ULS->Fill(TrkPt,mass);
-				if(Eiso<0.05)fInv_pT_ULS_forW->Fill(TrkPt,mass);
+				if(iIsocut)fInv_pT_ULS_forW->Fill(TrkPt,mass);
 				if(mass<CutmassMin)fDCAxy_Pt_ULS->Fill(TrkPt,DCAxy*charge*Bsign);
 			}
 		}
