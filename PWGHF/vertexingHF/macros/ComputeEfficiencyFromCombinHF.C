@@ -134,8 +134,8 @@ void ComputeEfficiencyFromCombinHF(TString configInput=""){
 
   // aceptance from toy MC
   TFile* fileAccToy=new TFile(fileNameToy.Data());
-  TH2D*hPtVsYGenAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenAcc");
-  TH2D*hPtVsYGenLimAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenLimAcc");
+  TH2D* hPtVsYGenAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenAcc");
+  TH2D* hPtVsYGenLimAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenLimAcc");
 
   TH1D* hPtGenAccToy=(TH1D*)fileAccToy->Get("hPtGenAcc");
   TH1D* hPtGenLimAccToy=(TH1D*)fileAccToy->Get("hPtGenLimAcc");
