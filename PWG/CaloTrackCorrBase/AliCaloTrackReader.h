@@ -819,9 +819,9 @@ public:
   
   // Methods to reject generated MC event or particles
   // Implemented in ESD/AOD reader
-  virtual Bool_t IsMCParticleFromOutOfBunchPileupCollision(Int_t index)  const { return kFALSE; }
-  virtual Bool_t IsPileupInGeneratedMCEvent(TString genname="")          const { return kFALSE; }
-  virtual Bool_t IsSameBunchPileupInGeneratedMCEvent(TString genname="") const { return kFALSE; }
+  virtual Bool_t IsMCParticleFromOutOfBunchPileupCollision(Int_t /*index*/)  const { return kFALSE; }
+  virtual Bool_t IsPileupInGeneratedMCEvent(TString /*genname=""*/)          const { return kFALSE; }
+  virtual Bool_t IsSameBunchPileupInGeneratedMCEvent(TString /*genname=""*/) const { return kFALSE; }
 
   virtual void   SwitchOnMCParticlePileUpRejection()       { fRejectPileUpMCParticle = kTRUE  ; }
   virtual void   SwitchOffMCParticlePileUpRejection()      { fRejectPileUpMCParticle = kFALSE ; }
