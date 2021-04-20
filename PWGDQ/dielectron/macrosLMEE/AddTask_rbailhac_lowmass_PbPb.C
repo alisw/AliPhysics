@@ -8,7 +8,9 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
 					       const Bool_t isMix = kTRUE,
 					       const Int_t Nmix   = 10,
 					       const TString outputFileName="LMEE.root",
-					       Int_t rejpileup = 1
+					       Int_t rejpileup = 1,
+					       Int_t vermix = 0,
+					       Int_t version = 0
 					       )
 {
 
@@ -50,7 +52,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
   
   //create task and add it to the manager (MB)
   TString appendix;
-  appendix += TString::Format("Cen%d_%d_%s_rejpileup%d",CenMin,CenMax,triggername.Data(),rejpileup);
+  appendix += TString::Format("Cen%d_%d_%s_rejpileup%d_%d",CenMin,CenMax,triggername.Data(),rejpileup,version);
   printf("appendix %s\n", appendix.Data());
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%s",appendix.Data()));
   task->UsePhysicsSelection();
@@ -182,8 +184,56 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
       printf("Add event mixing handler\n");
       AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
       mix->SetMixType(AliDielectronMixingHandler::kAll);
-      mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
-      mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+      if(vermix == 0) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+      }
+      if(vermix == 1) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -9., -8., -7., -6., -5., -4., -3., -2. , -1., 0., 1., 2., 3., 4., 5., 6., 7., 8. , 9., 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+      }
+      if(vermix == 2) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5. , 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+      }
+      if(vermix == 3) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,60,70,80,90,101");
+      }
+      if(vermix == 4) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,60,70,80,90,101");
+      }
+      if(vermix == 5) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+	mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 4, TMath::Pi()/-2., TMath::Pi()/2.);
+      }
+      if(vermix == 6) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+	mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 6, TMath::Pi()/-2., TMath::Pi()/2.);
+      }
+      if(vermix == 7) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+	mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 8, TMath::Pi()/-2., TMath::Pi()/2.);
+      }
+      if(vermix == 8) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+	mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 4, TMath::Pi()/-2., TMath::Pi()/2.);
+      }
+      if(vermix == 9) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+	mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 6, TMath::Pi()/-2., TMath::Pi()/2.);
+      }
+      if(vermix == 10) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+	mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 8, TMath::Pi()/-2., TMath::Pi()/2.);
+      }
       mix->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
       mix->SetDepth(Nmix);
       if(!isMC) diel->SetMixingHandler(mix);

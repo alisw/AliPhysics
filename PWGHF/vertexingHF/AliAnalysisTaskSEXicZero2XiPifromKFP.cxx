@@ -4550,7 +4550,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0 = new TTree(nameoutput, "Xic0 variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0 = new TTree(nameoutput, "Omegac0 variables tree");
-  Int_t nVar = 43;
+  Int_t nVar = 45;
   fVar_Xic0 = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -4603,6 +4603,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   fVarNames[37] = "DCA_Xic0Dau_KF"; // DCA of Xic0's daughters (calculated from KF after Xi mass constraint)
   fVarNames[38] = "DCAxy_XiToPV_KF"; // DCA of Xi to PV in x-y plane (calculated from KF after Xi mass constraint)
   fVarNames[39] = "mass_Omega"; // mass of Omega
+  fVarNames[40] = "chi2topo_Xic0ToPV"; // chi2_topo of Xic0 to PV
+  fVarNames[41] = "PA_Xic0ToPV"; // pointing angle of Xic0 (pointing back to PV)
   }
 
   if (fIsAnaOmegac0) {
@@ -4652,10 +4654,12 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
     fVarNames[37] = "DCA_Omegac0Dau_KF"; // DCA of Omegac0's daughters (calculated from KF after Omega mass constraint)
     fVarNames[38] = "DCAxy_OmegaToPV_KF"; // DCA of Omega to PV in x-y plane (calculated from KF after Omega mass constraint)
     fVarNames[39] = "mass_Xi"; // mass of Xi
+    fVarNames[40] = "chi2topo_Omegac0ToPV"; // chi2_topo of Omegac0 to PV
+    fVarNames[41] = "PA_Omegac0ToPV"; // pointing angle of Omegac0 (pointing back to PV)
   }
-  fVarNames[40] = "weight";
-  fVarNames[41] = "weight_up";
-  fVarNames[42] = "weight_dw";
+  fVarNames[42] = "weight";
+  fVarNames[43] = "weight_up";
+  fVarNames[44] = "weight_dw";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -5342,9 +5346,9 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
       AliAODMCParticle *mcPiFromXic0 = static_cast<AliAODMCParticle*>(mcArray->At(labelPiFromXic0));
       Int_t IndexXic0 = mcPiFromXic0->GetMother();
       AliAODMCParticle *mcXic0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexXic0));
-      fVar_Xic0[40] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
-      fVar_Xic0[41] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
       fVar_Xic0[42] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
+      fVar_Xic0[43] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
+      fVar_Xic0[44] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
     }
   }
 
@@ -5357,6 +5361,10 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
   Float_t massCasc_Rej, err_massCasc_Rej;
   kfpCasc_Rej.GetMass(massCasc_Rej, err_massCasc_Rej);
   fVar_Xic0[39] = massCasc_Rej;
+
+  fVar_Xic0[40] = kfpXic0_PV.GetChi2()/kfpXic0_PV.GetNDF(); // chi2topo_Xic0ToPV
+  Double_t cosPA_Xic0ToPV = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXic0, PV);
+  fVar_Xic0[41] = TMath::ACos(cosPA_Xic0ToPV); // PA_Xic0ToPV
 
   fTree_Xic0->Fill();
 

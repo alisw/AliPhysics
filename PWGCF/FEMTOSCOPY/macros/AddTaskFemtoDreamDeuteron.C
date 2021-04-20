@@ -6,6 +6,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     bool SystematicLowpT = false,//3
     bool SidebandStudy = false, //4
     bool SystematicFullpT = false,//5
+    bool RandCheck = false,//6,
     const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -51,6 +52,57 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   PDGParticles.push_back(2212);
   PDGParticles.push_back(1000010020);
   PDGParticles.push_back(1000010020);
+
+// if we need ITS
+  TrackCutsDeuteronDCA->SetITSnSigmaCut(true);
+  TrackCutsAntiDeuteronDCA->SetITSnSigmaCut(true);
+  TrackCutsDeuteronDCA->SetCutITSPID(1.4, -2.0, 1e30);
+  TrackCutsAntiDeuteronDCA->SetCutITSPID(1.4, -2.0, 1e30);
+
+//Lets do some checks to compare with michael,
+  if (RandCheck) {
+
+    if (suffix == "0") {
+      TrackCutsDeuteronDCA->SetITSnSigmaCut(true);
+      TrackCutsAntiDeuteronDCA->SetITSnSigmaCut(true);
+      TrackCutsDeuteronDCA->SetCutITSPID(1.4, -2.0, 1e30);
+      TrackCutsAntiDeuteronDCA->SetCutITSPID(1.4, -2.0, 1e30);
+      TrackCutsDeuteronDCA->SetPtRange(0.4, 1.4);
+      TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 1.4);
+      TrackCutsProtonDCA->SetPtRange(0.4, 1.4);
+      TrackCutsAntiProtonDCA->SetPtRange(0.4, 1.4);
+    } else if (suffix == "1") {
+      TrackCutsDeuteronDCA->SetITSnSigmaCut(false);
+      TrackCutsAntiDeuteronDCA->SetITSnSigmaCut(false);
+      TrackCutsDeuteronDCA->SetCutITSPID(1.4, -2.0, 1e30);
+      TrackCutsAntiDeuteronDCA->SetCutITSPID(1.4, -2.0, 1e30);
+      TrackCutsDeuteronDCA->SetPtRange(0.4, 1.4);
+      TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 1.4);
+      TrackCutsProtonDCA->SetPtRange(0.4, 1.4);
+      TrackCutsAntiProtonDCA->SetPtRange(0.4, 1.4);
+    } else if (suffix == "2") {
+      TrackCutsDeuteronDCA->SetITSnSigmaCut(true);
+      TrackCutsAntiDeuteronDCA->SetITSnSigmaCut(true);
+      TrackCutsDeuteronDCA->SetCutITSPID(1.4, -2.0, 1e30);
+      TrackCutsAntiDeuteronDCA->SetCutITSPID(1.4, -2.0, 1e30);
+      TrackCutsDeuteronDCA->SetPtRange(0.5, 1.4);
+      TrackCutsAntiDeuteronDCA->SetPtRange(0.5, 1.4);
+      TrackCutsProtonDCA->SetPtRange(0.5, 1.4);
+      TrackCutsAntiProtonDCA->SetPtRange(0.5, 1.4);
+    } else if (suffix == "3") {
+      TrackCutsDeuteronDCA->SetITSnSigmaCut(false);
+      TrackCutsAntiDeuteronDCA->SetITSnSigmaCut(false);
+      TrackCutsDeuteronDCA->SetCutITSPID(1.4, -2.0, 1e30);
+      TrackCutsAntiDeuteronDCA->SetCutITSPID(1.4, -2.0, 1e30);
+      TrackCutsDeuteronDCA->SetPtRange(0.5, 1.4);
+      TrackCutsAntiDeuteronDCA->SetPtRange(0.5, 1.4);
+      TrackCutsProtonDCA->SetPtRange(0.5, 1.4);
+      TrackCutsAntiProtonDCA->SetPtRange(0.5, 1.4);
+    }
+  }
+
+
+
   std::vector<bool> closeRejection;
  // std::vector<float> mTBins;
 //  mTBins.push_back(1.14);

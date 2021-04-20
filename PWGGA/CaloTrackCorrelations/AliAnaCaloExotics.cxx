@@ -1301,10 +1301,12 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
     if ( fFillExoEnMinCut )
     {
       // Recalculate exoticity with different cell minimum energy thresholds
+      Float_t orgEnMinInCross = GetCaloUtils()->GetEMCALRecoUtils()->GetExoticCellInCrossMinAmplitudeCut();
       for(Int_t imin = 0; imin < 41; imin++)
       {
         Float_t enCellMin  = 0.1 + imin*0.05;
-        Float_t exoMod = 1-GetCaloUtils()->GetECross(absIdMax,cells,bc,enCellMin)/ampMax;
+        GetCaloUtils()->GetEMCALRecoUtils()->SetExoticCellInCrossMinAmplitudeCut(enCellMin);
+        Float_t exoMod = 1-GetCaloUtils()->GetECross(absIdMax,cells,bc)/ampMax;
         //        if(en > 5 && exoticity > 0.97 && imin == 0)
         //        {
         //          printf("en %f, imin %d, emin %f exo org %f; exoW %f, exo recalc %f\n",
@@ -1313,7 +1315,9 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
         
         fhExoticityECellMinCut->Fill(en, exoMod, enCellMin, GetEventWeight());
       }
-      
+      // Set back min En cell cross cut
+      GetCaloUtils()->GetEMCALRecoUtils()->SetExoticCellInCrossMinAmplitudeCut(orgEnMinInCross);
+
       // Calculate exoticity with cut on w
       //
       Float_t exoticityW = 1-GetCaloUtils()->GetECross(absIdMax,cells,bc,0,kTRUE,en)/ampMax;

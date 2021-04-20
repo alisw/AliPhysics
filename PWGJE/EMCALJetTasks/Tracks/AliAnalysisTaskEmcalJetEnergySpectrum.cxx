@@ -69,6 +69,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fNameJetContainer("datajets"),
   fRequestTriggerClusters(true),
   fRequestCentrality(false),
+  fFillHistosWeighted(false),
   fUseRun1Range(false),
   fUseSumw2(false),
   fUseMuonCalo(false),
@@ -99,6 +100,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fNameJetContainer("datajets"),
   fRequestTriggerClusters(true),
   fRequestCentrality(false),
+  fFillHistosWeighted(false),
   fUseRun1Range(false),
   fUseSumw2(false),
   fUseMuonCalo(false),
@@ -274,6 +276,13 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   Double_t weight = 1.;
   if(fUseDownscaleWeight) {
     weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fInputEvent->GetFiredTriggerClasses().Data(), fTriggerSelectionString.Data(), fUseMuonCalo));
+  }
+  if(fFillHistosWeighted && isMC) {
+    // Get cross section weight from supported generator event header
+    auto crossSectionWeight = GetCrossSectionFromHeader();
+    if(crossSectionWeight > 0) {
+      weight *= crossSectionWeight;
+    }
   }
   AliDebugStream(2) << "Found downscale weight " << weight << " for trigger " << fTriggerSelectionString << std::endl;
   fHistos->FillTH1("hEventCounterAbs", 1.);

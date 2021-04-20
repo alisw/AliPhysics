@@ -53,6 +53,7 @@ set(SRCS
     AliAnalysisTaskSENonPromptLc.cxx
     AliAnalysisTaskSECharmHadronMLSelector.cxx
     AliAnalysisTaskSECharmHadronvn.cxx
+    AliAnalysisTaskSECheckCharmHadronBkg.cxx
     AliAnalysisTaskSEHFTreeCreatorApply.cxx
     AliHFTreeHandlerApply.cxx
     AliHFTreeHandlerApplyDstoKKpi.cxx

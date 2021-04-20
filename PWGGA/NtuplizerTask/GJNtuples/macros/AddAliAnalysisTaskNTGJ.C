@@ -45,7 +45,44 @@ AddAliAnalysisTaskNTGJ(TString name,
   fprintf(stderr, "%s:%d: skim_cluster_min_e = %f\n", __FILE__,
           __LINE__, skim_cluster_min_e);
 
- 
+   if (is_embed) {
+ #ifndef __CLING__
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/"
+                      "macros/AddTaskEmcalEmbeddingHelper.C");
+ #endif // __CLING__
+
+     // Create the Embedding Helper
+     AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AddTaskEmcalEmbeddingHelper();
+     // Set the file pattern. This example uses ptHardBin 4 of LHC12a15e_fix.
+     // The pT hard bin and anchor run can also be set by adding a printf() wild card to the string (ie %d)
+     // See the documentation of AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
+     // For the grid. Include "alien://" and don't use this locally!! It will be very slow and cause strain on the grid!
+     if (embed_grid_file_pattern != "") {
+       embeddingHelper->SetFilePattern(embed_grid_file_pattern);
+     }
+     // For local use. File should be formatted the same as the normal list of input files (one filename per line).
+     // Again, don't use AliEn locally!! It will be very slow and cause strain on the grid!
+     if (embed_local_file_list != "") {
+       embeddingHelper->SetFileListFilename(embed_local_file_list);
+     }
+     // If the embedded file is an ESD, then set:
+     // embeddingHelper->SetESD();
+     embeddingHelper->SetAOD();
+     // Add additional configure as desired.
+     // For some examples...
+     // ... randomly select which file to start from:
+     embeddingHelper->SetRandomFileAccess(kTRUE);
+     // ... Start from a random event within each file
+     embeddingHelper->SetRandomEventNumberAccess(kTRUE);
+     // ... Set pt hard bin properties
+     // embeddingHelper->SetPtHardBin(1);
+     // embeddingHelper->SetNPtHardBins(11);
+     // etc..
+     // As your last step, always initialize the helper!
+     embeddingHelper->Initialize();
+   }
+    
+
   AliAnalysisTaskNTGJ *task =
     new AliAnalysisTaskNTGJ(name.Data());
 

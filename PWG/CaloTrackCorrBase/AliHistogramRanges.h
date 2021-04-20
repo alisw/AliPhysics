@@ -503,6 +503,17 @@ public:
   void    SetHistoExoticityRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoExoticityBins = n ; fHistoExoticityMax = max ; fHistoExoticityMin = min ; }
   
+  // Spherocity
+
+  Int_t   GetHistoSpherocityBins()       const { return fHistoSpherocityBins    ; }
+  Float_t GetHistoSpherocityMin()        const { return fHistoSpherocityMin     ; }
+  Float_t GetHistoSpherocityMax()        const { return fHistoSpherocityMax     ; }
+  TArrayD GetHistoSpherocityArr()        const { return fHistoSpherocityArr     ; }
+  void    SetHistoSpherocityArr(TArrayD &arr)  { arr.Copy(fHistoSpherocityArr)  ; }
+
+  void    SetHistoSpherocityRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoSpherocityBins = n ; fHistoSpherocityMax = max ; fHistoSpherocityMin = min ; }
+
 private:    
   
   Int_t    fHistoPtBins    ;                  ///< Number of bins in pt axis.
@@ -669,6 +680,11 @@ private:
   Float_t  fHistoExoticityMax ;               ///< Maximum value of exoticity histogram range.
   Float_t  fHistoExoticityMin ;               ///< Minimum value of exoticity histogram range.
   TArrayD  fHistoExoticityArr ;               ///< Exoticity histogram lower limit bins.
+  Int_t    fHistoSpherocityBins;              ///< Number of bins in number of spherocity.
+  Float_t  fHistoSpherocityMax ;              ///< Maximum value of spherocity histogram range.
+  Float_t  fHistoSpherocityMin ;              ///< Minimum value of spherocity histogram range.
+  TArrayD  fHistoSpherocityArr ;              ///< Spherocity histogram lower limit bins.
+
   /// Copy constructor not implemented.
   AliHistogramRanges(              const AliHistogramRanges & h) ; 
   
@@ -676,7 +692,7 @@ private:
   AliHistogramRanges & operator = (const AliHistogramRanges & h) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliHistogramRanges,10) ;
+  ClassDef(AliHistogramRanges,11) ;
   /// \endcond
 
 } ;

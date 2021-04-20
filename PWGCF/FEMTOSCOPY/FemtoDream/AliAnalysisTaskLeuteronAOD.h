@@ -28,7 +28,7 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
   public:
 
     AliAnalysisTaskLeuteronAOD();									// class constructor without parameters
-    AliAnalysisTaskLeuteronAOD(const char* name,bool isMC,bool isHighMultV0,bool BruteForceDebugging,bool DeuteronSideband, bool UpperSideband, bool LowerSideband, bool Signal);	// class constructor with parameters
+    AliAnalysisTaskLeuteronAOD(const char* name,bool isMC,bool isHighMultV0,bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband,bool doEventQAPlots, bool doResultsQAPlots);	// class constructor with parameters
     AliAnalysisTaskLeuteronAOD& operator = (const AliAnalysisTaskLeuteronAOD &task);			// copy assignment operator
     AliAnalysisTaskLeuteronAOD(const AliAnalysisTaskLeuteronAOD &task);					// copy constructor
     virtual ~AliAnalysisTaskLeuteronAOD();								// class destructor
@@ -73,11 +73,10 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     bool fIsMC;							// run over data "fIsMC(false)" or over Monte Carlo data "fIsMC(true)"
     bool fIsHighMultV0;
     bool fBruteForceDebugging;
-    bool fDeuteronSideband;
-    bool fUpperSideband;
-    bool fLowerSideband;
-    bool fSignal;
-    int fTrackBufferSize;						
+    bool fisSidebandSignal;
+    bool fisUpperSideband;
+    bool fisLowerSideband;
+    int fTrackBufferSize;			  
 
     TList			    *fEventList;		// list for the event cuts
     TList			    *fProtonList;		// list for the proton cuts
@@ -91,6 +90,7 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     TList			    *fPairCleanerList;		// list for the pair cleaner
     TList			    *fResultsList;		// list for the results
     TList			    *fResultsQAList;		// list for the QA of the results
+    TH1F			    *fSimpleEventCounter;	// count the number of events
 
     AliFemtoDreamEvent		    *fEvent;
     AliFemtoDreamTrack		    *fTrack;
@@ -105,6 +105,8 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     AliFemtoDreamv0Cuts		    *fv0CutsPart6;		// cuts for the tracks of particle 6 (Antilambdas)
 
     AliFemtoDreamCollConfig	    *fConfig;			// store the configurations needed for the calculation of the correlation function
+    bool fEnableEventQAPlots;
+    bool fEnableResultsQAPlots;
     AliFemtoDreamPairCleaner	    *fPairCleaner;
     AliFemtoDreamPartCollection	    *fPartColl;
     AliAODTrack			    **fGTI;			// global track information (GTI)

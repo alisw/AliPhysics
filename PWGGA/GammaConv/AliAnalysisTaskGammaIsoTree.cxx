@@ -215,7 +215,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fCaloPt(NULL),
   fTrackPt(NULL),
   fTrackEta(NULL),
-  fTrackPhi(NULL),
+  fTrackPhiPt(NULL),
   fTrackPtHybridOnlyPosID(NULL),
   fTrackEtaHybridOnlyPosID(NULL),
   fTrackPhiHybridOnlyPosID(NULL),
@@ -653,7 +653,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fCaloPt(NULL),
   fTrackPt(NULL),
   fTrackEta(NULL),
-  fTrackPhi(NULL),
+  fTrackPhiPt(NULL),
   fTrackPtHybridOnlyPosID(NULL),
   fTrackEtaHybridOnlyPosID(NULL),
   fTrackPhiHybridOnlyPosID(NULL),
@@ -1607,7 +1607,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fCaloPt = new TH1F("fCaloPt","calo photons in EMC acc;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
   fTrackPt = new TH1F("fTrackPt","pt distribution of hybrid tracks;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
   fTrackEta = new TH1F("fTrackEta","#eta distribution of hybrid tracks;#eta; counts",200,-0.9,0.9);
-  fTrackPhi = new TH1F("fTrackPhi","#phi distribution of hybrid tracks;#phi; counts",200,0,2*TMath::Pi());
+  fTrackPhiPt = new TH2F("fTrackPhiPt","#phi distribution of hybrid tracks;#phi; counts",200,0,2*TMath::Pi(),nPtBins,minPt,maxPt);
   
   fTrackPtHybridOnlyPosID = new TH1F("fTrackPtHybridOnlyPosID","pt distribution of hybrid tracks;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
   fTrackEtaHybridOnlyPosID = new TH1F("fTrackEtaHybridOnlyPosID","#eta distribution of hybrid tracks;#eta; counts",200,-0.9,0.9);
@@ -1616,14 +1616,14 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fCaloPt->Sumw2();
   fTrackPt->Sumw2();
   fTrackEta->Sumw2();
-  fTrackPhi->Sumw2();
+  fTrackPhiPt->Sumw2();
   fTrackPtHybridOnlyPosID->Sumw2();
   fTrackEtaHybridOnlyPosID->Sumw2();
   fTrackPhiHybridOnlyPosID->Sumw2();
   fCaloFolderRec->Add(fCaloPt);
   fCaloFolderRec->Add(fTrackPt);
   fCaloFolderRec->Add(fTrackEta);
-  fCaloFolderRec->Add(fTrackPhi);
+  fCaloFolderRec->Add(fTrackPhiPt);
 
   fCaloFolderRec->Add(fTrackPtHybridOnlyPosID);
   fCaloFolderRec->Add(fTrackEtaHybridOnlyPosID);
@@ -2837,8 +2837,6 @@ void AliAnalysisTaskGammaIsoTree::ProcessConversionPhotons(){
 
 
     if(!fConvCuts->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
-    Bool_t isWithinTPC =IsWithinRadiusTPC(PhotonCandidate->Eta(),PhotonCandidate->Phi(),fExclusionRadius);
-    if(!isWithinTPC) continue;
     if(fIsFromDesiredHeader){
       // new((*fConversionCandidates)[pos]) AliAODConversionPhoton(*PhotonCandidate);
 
@@ -3722,14 +3720,6 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
      }
 
       // AliInfo(Form("photoncandidate (second check) %i \t E=%f \n",c,PhotonCandidate->E()));
-
-     // Only consider clusters that allow for a cone of 0.4 with tracking
-     Bool_t isWithinTPC =IsWithinRadiusTPC(PhotonCandidate->Eta(),PhotonCandidate->Phi(),fExclusionRadius);
-    if(!isWithinTPC){
-      if(tmpvec)  delete tmpvec;
-      if(PhotonCandidate) delete PhotonCandidate;
-      continue;
-     }
      if(fUseHistograms) FillCaloHistosPurity(clus,PhotonCandidate,isoCharged.isolationCone,isoNeutral,isoCell,tmp_tag,clusWeights.at(c));
      
      if(!fUseHistograms) {
@@ -3816,7 +3806,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessTracks(){
       // for QA to check for dead TPC sectors
       fTrackPt->Fill(fCurrentTrack->Pt(),fWeightJetJetMC);
       fTrackEta->Fill(eta,fWeightJetJetMC);
-      fTrackPhi->Fill(phi,fWeightJetJetMC);
+      fTrackPhiPt->Fill(phi,fCurrentTrack->Pt(),fWeightJetJetMC);
       prim++;
   }
   fBuffer_EventNPrimaryTracks = prim;
@@ -3935,8 +3925,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCParticles(){
       
       // in EMC acceptance and not gamma as mother to avoid double counting
       // this should only count photon highest up the chain, technically could have wrong pT
-      Bool_t isWithinTPC =IsWithinRadiusTPC(particle->Eta(),particle->Phi(),fExclusionRadius);
-      if (fClusterCutsEMC->ClusterIsSelectedAODMC(particle,fAODMCTrackArray) && isWithinTPC)
+      if (fClusterCutsEMC->ClusterIsSelectedAODMC(particle,fAODMCTrackArray))
       {
          // if(!particle->IsPhysicalPrimary()) AliInfo("none physical primary selected!");
          isoValues mcIso;
@@ -4292,6 +4281,18 @@ isoValues AliAnalysisTaskGammaIsoTree::ProcessChargedIsolation(AliAODCaloCluster
         }
 
     }
+    
+    Float_t cf = 1; 
+    // Correct isolation for curren position in eta in case cone does not fit
+    for (Int_t r : fTrackIsolationR)
+    {
+        cf = CalculateIsoCorrectionFactor(clusterEta, fEtaCut, fTrackIsolationR.at(r));
+        isoV.isolationCone.at(r) /= cf;
+        isoV.backgroundLeft.at(r) /= cf;
+        isoV.backgroundRight.at(r) /= cf;
+        isoV.backgroundBack.at(r) /= cf;
+    }
+
     if(fUseHistograms) fHistoChargedIso->Fill(isoV.isolationCone.at(0)); // debug only
     return isoV;
 }
@@ -4681,6 +4682,16 @@ isoValues AliAnalysisTaskGammaIsoTree::ProcessMCIsolation(Int_t mclabel){
       }
 
 
+  }
+  Float_t cf = 1; 
+  // Correct isolation for curren position in eta in case cone does not fit
+  for (Int_t r : fTrackIsolationR)
+  {
+      cf = CalculateIsoCorrectionFactor(thisEta, fEtaCut, fTrackIsolationR.at(r));
+      isoV.isolationCone.at(r) /= cf;
+      isoV.backgroundLeft.at(r) /= cf;
+      isoV.backgroundRight.at(r) /= cf;
+      isoV.backgroundBack.at(r) /= cf;
   }
   return isoV;
 }
@@ -5589,8 +5600,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
               MCPhoton = Mother;
             }
          }
-        Bool_t isWithinTPC =IsWithinRadiusTPC(MCPhoton->Eta(),MCPhoton->Phi(),fExclusionRadius);
-        if (fClusterCutsEMC->ClusterIsSelectedAODMC(MCPhoton,fAODMCTrackArray) && isWithinTPC){
+        if (fClusterCutsEMC->ClusterIsSelectedAODMC(MCPhoton,fAODMCTrackArray)){
           if(isPrimary){
             isTruePhoton = kTRUE;
             if(photon->IsLargestComponentElectron() && photon->IsConversion()){
@@ -6464,4 +6474,28 @@ Int_t AliAnalysisTaskGammaIsoTree::GetProperLabel(AliAODMCParticle* mcpart){
     }
   }
   return label;
+}
+
+Float_t AliAnalysisTaskGammaIsoTree::CalculateIsoCorrectionFactor(Double_t cEta, Double_t maxEta, Double_t r){
+  Float_t frac = 1.;
+
+  // distance of cluster eta to detector limit eta
+  Double_t distanceEta = TMath::Abs(maxEta) - TMath::Abs(cEta);
+  
+  // if cluster is further away from border than r, no need to carry on. Everything fits
+  if(distanceEta > r) return frac;
+
+  // calculate angle 
+  Double_t angleBeta = 2* TMath::ACos(distanceEta/r);
+
+  // calculate sector of circle
+  Double_t areaExcess = 0.5 * r * r * (angleBeta - TMath::Sin(angleBeta));
+
+  // calculate fraction of are covered
+  Double_t totalArea = TMath::Pi()*r*r;
+  Double_t coveredArea = totalArea - areaExcess;
+
+  frac = coveredArea/totalArea;
+
+  return frac;
 }

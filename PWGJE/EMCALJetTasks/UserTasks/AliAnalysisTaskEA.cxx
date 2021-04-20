@@ -212,7 +212,8 @@ fMultFramework(kFALSE),
 fRho(0.),
 fRhoMC(0.),
 fRhoEMB(0.),
-fRunnumber(0)
+fRunnumber(0),
+fMaxFacPtHard(0)
 {
    //default constructor
 
@@ -593,7 +594,8 @@ fMultFramework(kFALSE),
 fRho(0.),
 fRhoMC(0.),
 fRhoEMB(0.),
-fRunnumber(0)
+fRunnumber(0),
+fMaxFacPtHard(0)
 {
    //Constructor
 
@@ -980,7 +982,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
          jetContRec->ConnectParticleContainer(trackCont);
          jetContRec->SetPercAreaCut(acut);
          jetContRec->SetMinPt(0.150);
-         jetContRec->SetMaxTrackPt(100.);
+         jetContRec->SetMaxTrackPt(100.0);
          jetContRec->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
 
@@ -993,7 +995,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
          jetContRecKT->ConnectParticleContainer(trackCont);
          //jetContRecKT->SetPercAreaCut(acut);
          jetContRecKT->SetMinPt(0.);
-         jetContRecKT->SetMaxTrackPt(100.);
+         jetContRecKT->SetMaxTrackPt(100.0);
          jetContRecKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRecKT->SetJetEtaLimits(-jetEtaRangekt,jetEtaRangekt);
 
@@ -1010,6 +1012,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
          jetContTrue->SetMinPt(0.15);
          jetContTrue->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
+         jetContTrue->SetMaxTrackPt(1000.0); // added by K.A.
       }
 
       //KT JETS PARTICLE LEVEL
@@ -1020,6 +1023,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
          jetContTrueKT->SetMinPt(0.);
          jetContTrueKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrueKT->SetJetEtaLimits(-jetEtaRangekt,jetEtaRangekt);
+         jetContTrueKT->SetMaxTrackPt(1000.0); // added by K.A.
       }
    }
 
@@ -1030,7 +1034,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
       if(jetContDet) {
          jetContDet->SetPercAreaCut(acut);
          jetContDet->SetMinPt(0.150);
-         jetContDet->SetMaxTrackPt(100.);
+         jetContDet->SetMaxTrackPt(100.0);
          jetContDet->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContDet->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
@@ -1041,7 +1045,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
       if(jetContDetKT) {
          //jetContDetKT->SetPercAreaCut(acut);
          jetContDetKT->SetMinPt(0.0);
-         jetContDetKT->SetMaxTrackPt(100.);
+         jetContDetKT->SetMaxTrackPt(100.0);
          jetContDetKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContDetKT->SetJetEtaLimits(-jetEtaRangekt,jetEtaRangekt);
       }
@@ -1113,10 +1117,11 @@ Bool_t AliAnalysisTaskEA::PassedMinBiasTrigger(){
 
   if(fMode == AliAnalysisTaskEA::kMC){
      //mc simulation emulate V0 coincidence trigger
-     AliVVZERO *vzeroAOD = InputEvent()->GetVZEROData();
+     /*AliVVZERO *vzeroAOD = InputEvent()->GetVZEROData();
      if(vzeroAOD){
         if(vzeroAOD->GetMTotV0A() > 0 && vzeroAOD->GetMTotV0C() > 0)  passedTrigger = kTRUE;
-     }
+     }*/
+     passedTrigger = kTRUE;
   }else if(fMode == AliAnalysisTaskEA::kKine){
      passedTrigger = kTRUE;
   }else{
@@ -1261,7 +1266,7 @@ Bool_t AliAnalysisTaskEA::IsEventInAcceptance(AliVEvent* event){
    //___________________________________________________
    //MULTIPLICITY SELECTIONS
 
-   //if(fMode == AliAnalysisTaskEA::kNormal){
+   if(fMode == AliAnalysisTaskEA::kNormal){
       fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
       if(!fMultSelection ||
          //!fMultSelection->IsEventSelected() ||
@@ -1273,7 +1278,7 @@ Bool_t AliAnalysisTaskEA::IsEventInAcceptance(AliVEvent* event){
          fHistEvtSelection->Fill(7.5); //count events rejected by multiplicity selection
          return kFALSE;
       }
-   //}
+   }
 
 
    //BEFORE VERTEX CUT
@@ -1339,6 +1344,62 @@ void AliAnalysisTaskEA::ExecOnceLocal(){
 
    return;
 }
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEA::IsOutlier(){ //FK// whole function
+   //Checks that this event is pthard bin outlier
+   //inspired by Bool_t AliConvEventCuts::IsJetJetMCEventAccepted  
+
+   if(TMath::Abs(fMaxFacPtHard) < 1e-6) return kFALSE; //FK// skip 
+
+   TList *genHeaders         = 0x0;
+   AliGenEventHeader* gh     = 0;
+   Float_t ptHard;
+   AliEmcalJet* jetMC = 0x0;
+ 
+   Bool_t bPythiaHeader = 0; // flag whether pythia header was found
+
+   if(MCEvent()){
+      genHeaders = MCEvent()->GetCocktailList(); //get list of MC cocktail headers 
+   }
+
+   if(genHeaders){
+      for(Int_t i = 0; i<genHeaders->GetEntries(); i++){
+         gh = (AliGenEventHeader*)genHeaders->At(i);
+
+         AliGenPythiaEventHeader* pyhead= dynamic_cast<AliGenPythiaEventHeader*>(gh); //identify pythia header
+
+         if(pyhead){
+            bPythiaHeader = 1;
+            ptHard = pyhead->GetPtHard();
+
+	    for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
+               // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+               jetMC = jetIterator.second;  // Get the pointer to jet object
+               if(!jetMC)  continue;
+               
+               //Compare jet pT and pt Hard
+               if(jetMC->Pt() > fMaxFacPtHard * ptHard){
+                  return kTRUE;
+               }
+            }
+         }
+      }
+      if(!bPythiaHeader){ //ptyhia header was not found
+          AliWarning("AliAnalysisTaskEA MC header not found");
+          fHistEvtSelection->Fill(9.5);
+          return kTRUE; //skip the event
+      }
+
+      return kFALSE;  //there was not outlier all jets have pT below fMaxFacPtHard * ptHard
+
+   }else{
+      fHistEvtSelection->Fill(9.5);
+      AliWarning("AliAnalysisTaskEA MC header not found");
+      return kTRUE; //MC header not found
+   }
+}
+
 
 //________________________________________________________________________
 //Int_t  AliAnalysisTaskEA::GetMaxDistanceFromBorder(AliVCluster* cluster){
@@ -1529,6 +1590,9 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
       fRhoEMB = GetMyRho(fKTJetContainerDetLevelEMB); //estimated backround pt density
    }
 
+   if(fMode == AliAnalysisTaskEA::kMC  || fMode == AliAnalysisTaskEA::kKine){ 
+      if(IsOutlier()) return kFALSE;
+   }
    //_________________________________________________________________
    // DECIDE WHETHER TO FILL SIGNAL TT OR REFERENCE TT  DEPENDING ON RANDOM  NUMBER
    fFillSigTT = kTRUE;
@@ -3383,7 +3447,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    fRandom = new TRandom3(0);
    //__________________________________________________________
    // Event statistics
-   fHistEvtSelection = new TH1D("fHistEvtSelection", "event selection", 9, 0, 9);
+   fHistEvtSelection = new TH1D("fHistEvtSelection", "event selection", 10, 0, 10);
    fHistEvtSelection->GetXaxis()->SetBinLabel(1,"events IN"); //0-1
    fHistEvtSelection->GetXaxis()->SetBinLabel(2,"incomplete DAQ (rejected)"); //1-2
    fHistEvtSelection->GetXaxis()->SetBinLabel(3,"pile up (rejected)"); //2-3
@@ -3393,6 +3457,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    fHistEvtSelection->GetXaxis()->SetBinLabel(7,"High Mult"); //6-7
    fHistEvtSelection->GetXaxis()->SetBinLabel(8,"IsEventSelected"); //7-8
    fHistEvtSelection->GetXaxis()->SetBinLabel(9,"MC MB events"); //8-9
+   fHistEvtSelection->GetXaxis()->SetBinLabel(10,"IsOutlier"); //9-10
 
 
    fOutput->Add(fHistEvtSelection);

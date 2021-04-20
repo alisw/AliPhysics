@@ -13,7 +13,7 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
     Int_t AddPileUpCut=kFALSE, Int_t hadCutCase=2,  Bool_t FillEHCorrel=kTRUE,
     Bool_t  CalcHadronTrackEffi=kFALSE, Bool_t CalculateNonHFEEffi=kFALSE, Bool_t CalPi0EtaWeight=kFALSE,
-    Bool_t applyEleEffi=kFALSE)
+    Bool_t applyEleEffi=kFALSE, Int_t nBins=32, Bool_t isMC=kFALSE)
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -83,6 +83,8 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     taskHFEeh->SwitchFillEHCorrel(FillEHCorrel);
     taskHFEeh->SetWeightCal(CalPi0EtaWeight);
     taskHFEeh->SetNonHFEEffi(CalculateNonHFEEffi);
+    taskHFEeh->SetNDeltaPhiBins(nBins);
+    taskHFEeh->IsMC(isMC);
 
     TString containerName = mgr->GetCommonFileName();
     TString SubcontainerName = ContNameExt;

@@ -2016,6 +2016,24 @@ Bool_t Config_Lambdakx(
         out->SetMotherMass(0.493677);
         out->SetPairCuts(cutsPairK);
         out->AddAxis(ptID,200,0.0,20.0);
+             
+        out = task->CreateOutput("Lambdakx_Kp_mother_REC", "HIST", "SINGLEREC");
+        out->SetDaughter(0, AliRsnDaughter::kUnknown);
+        out->SetDaughter(1, AliRsnDaughter::kUnknown);
+        out->SetMotherPDG(321);
+        out->SetCutID(0,iCutK);
+        out->SetMotherMass(0.493677);
+        out->SetPairCuts(cutsPairK);
+        out->AddAxis(ptID,200,0.0,20.0);
+        
+        out = task->CreateOutput("Lambdakx_Km_mother_REC", "HIST", "SINGLEREC");
+        out->SetDaughter(0, AliRsnDaughter::kUnknown);
+        out->SetDaughter(1, AliRsnDaughter::kUnknown);
+        out->SetMotherPDG(-321);
+        out->SetCutID(0,iCutK);
+        out->SetMotherMass(0.493677);
+        out->SetPairCuts(cutsPairK);
+        out->AddAxis(ptID,200,0.0,20.0);
         
         //for efficiency of (anti-)Lambda
         AliRsnCutMiniPair* cutetaV0=new AliRsnCutMiniPair("cutPseudorapidityV0", AliRsnCutMiniPair::kPseudorapidityRangeMC);
@@ -2681,6 +2699,24 @@ Bool_t Config_Lambdap(
         out->SetDaughter(0, AliRsnDaughter::kUnknown);
         out->SetDaughter(1, AliRsnDaughter::kUnknown);
         out->SetMotherPDG(-2212);
+        out->SetMotherMass(0.938272);
+        out->SetPairCuts(cutsPairP);
+        out->AddAxis(ptID,200,0.0,20.0);
+             
+        out = task->CreateOutput("Lambdap_Pp_mother_REC", "HIST", "SINGLEREC");
+        out->SetDaughter(0, AliRsnDaughter::kUnknown);
+        out->SetDaughter(1, AliRsnDaughter::kUnknown);
+        out->SetMotherPDG(2212);
+        out->SetCutID(0,iCutP);
+        out->SetMotherMass(0.938272);
+        out->SetPairCuts(cutsPairP);
+        out->AddAxis(ptID,200,0.0,20.0);
+        
+        out = task->CreateOutput("Lambdap_Pm_mother_REC", "HIST", "SINGLEREC");
+        out->SetDaughter(0, AliRsnDaughter::kUnknown);
+        out->SetDaughter(1, AliRsnDaughter::kUnknown);
+        out->SetMotherPDG(-2212);
+        out->SetCutID(0,iCutP);
         out->SetMotherMass(0.938272);
         out->SetPairCuts(cutsPairP);
         out->AddAxis(ptID,200,0.0,20.0);

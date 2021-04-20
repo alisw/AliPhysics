@@ -4,6 +4,7 @@
  * @author Patrick Huhn
  * @date 25/10/2019
  */
+#include "AliAnalysisUtils.h"
 #include "AliMCEvent.h"
 #include "AliMCSpectraWeights.h"
 #include "AliStack.h"
@@ -14,15 +15,15 @@
 #include "TObjArray.h"
 #include "TParticle.h"
 #include "TParticlePDG.h"
-#include "AliAnalysisUtils.h"
+#include "TDirectory.h"
+#include <algorithm>
+#include <array>
+#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <math.h>
-#include <string>
-#include <algorithm>
-#include <array>
 #include <memory>
-#include <chrono>
+#include <string>
 
 #ifdef __AliMCSpectraWeights_DebugPCC__
 #define DebugPCC(x) std::cout << x
@@ -50,15 +51,16 @@ void FillTH3WithValue(TH3F* h, std::array<float, 3> _xyzValue, float _value) {
  * @brief default constructor
  */
 AliMCSpectraWeights::AliMCSpectraWeights()
-    : TNamed(), fstCollisionSystem("pp"), fstFileMCSpectra(""), fstFilePublished(""),
-      fstSavedObjName("fMCSpectraWeights"), fstSavedListName("dNdPt_ParCor"),
-      fstPartTypes(0), fstCentralities(0), fBinsMultCent{0}, fBinsPt{0},
-      fHistMCGenPrimTrackParticle(nullptr), fHistDataFractions(nullptr),
-      fHistMCFractions(nullptr), fHistMCWeights(nullptr), fMCEvent(nullptr),
-      fMultOrCent(0), fNPartTypes(6), fNCentralities(0),
-      fbTaskStatus(AliMCSpectraWeights::TaskState::kAllEmpty),
-      fFlag(AliMCSpectraWeights::SysFlag::kNominal), fUseMultiplicity(kTRUE),
-      fUseMBFractions(kFALSE) {}
+: TNamed(), fstCollisionSystem("pp"), fstFileMCSpectra(""),
+fstFilePublished(""), fstSavedObjName("fMCSpectraWeights"),
+fstSavedListName("AliMCWeightsTask"), fstPartTypes(0),
+fstCentralities(0), fBinsMultCent{0}, fBinsPt{0},
+fHistMCGenPrimTrackParticle(nullptr), fHistDataFractions(nullptr),
+fHistMCFractions(nullptr), fHistMCWeights(nullptr), fMCEvent(nullptr),
+fMultOrCent(0), fNPartTypes(6), fNCentralities(0),
+fbTaskStatus(AliMCSpectraWeights::TaskState::kAllEmpty),
+fFlag(AliMCSpectraWeights::SysFlag::kNominal), fUseMultiplicity(kTRUE),
+fUseMBFractions(kFALSE) {}
 
 /**
  *  @brief standard way for constuctor
@@ -71,24 +73,26 @@ AliMCSpectraWeights::AliMCSpectraWeights()
 AliMCSpectraWeights::AliMCSpectraWeights(std::string const& collisionSystem,
                                          std::string const& stName,
                                          AliMCSpectraWeights::SysFlag flag)
-    : TNamed(stName.c_str(), stName.c_str()), fstCollisionSystem("pp"), fstFileMCSpectra(""), fstFilePublished(""),
-      fstSavedObjName("fMCSpectraWeights"), fstSavedListName("dNdPt_ParCor"),
-      fstPartTypes(), fstCentralities(), fBinsMultCent{0}, fBinsPt{0},
-      fHistMCGenPrimTrackParticle(nullptr), fHistDataFractions(nullptr),
-      fHistMCFractions(nullptr), fHistMCWeights(nullptr), fMCEvent(nullptr),
-      fMultOrCent(0), fNPartTypes(6), fNCentralities(0),
-      fbTaskStatus(AliMCSpectraWeights::TaskState::kAllEmpty), fFlag(flag),
-      fUseMultiplicity(kTRUE), fUseMBFractions(kFALSE) {
+: TNamed(stName.c_str(), stName.c_str()), fstCollisionSystem("pp"),
+fstFileMCSpectra(""), fstFilePublished(""),
+fstSavedObjName("fMCSpectraWeights"), fstSavedListName("AliMCWeightsTask"),
+fstPartTypes(), fstCentralities(), fBinsMultCent{0}, fBinsPt{0},
+fHistMCGenPrimTrackParticle(nullptr), fHistDataFractions(nullptr),
+fHistMCFractions(nullptr), fHistMCWeights(nullptr), fMCEvent(nullptr),
+fMultOrCent(0), fNPartTypes(6), fNCentralities(0),
+fbTaskStatus(AliMCSpectraWeights::TaskState::kAllEmpty), fFlag(flag),
+fUseMultiplicity(kTRUE), fUseMBFractions(kFALSE) {
 #ifdef __AliMCSpectraWeights_DebugTiming__
-          auto t1 = std::chrono::high_resolution_clock::now();
+    auto t1 = std::chrono::high_resolution_clock::now();
 #endif
-    fstCollisionSystem = collisionSystem; //copy here; ok
+    fstCollisionSystem = collisionSystem; // copy here; ok
     std::for_each(
-        fstCollisionSystem.begin(), fstCollisionSystem.end(),
-        [](char& c) { c = std::tolower(static_cast<unsigned char>(c)); });
+                  fstCollisionSystem.begin(), fstCollisionSystem.end(),
+                  [](char& c) { c = std::tolower(static_cast<unsigned char>(c)); });
 
-    DebugPCC("AliMCSpectraWeights with DebugPCC info for " << fstCollisionSystem << " collisions\n");
-          
+    DebugPCC("AliMCSpectraWeights with DebugPCC info for " << fstCollisionSystem
+             << " collisions\n");
+
     // setting uniform name
     if (fstCollisionSystem == "pp" || fstCollisionSystem == "p-p")
         fstCollisionSystem = "pp";
@@ -107,12 +111,12 @@ AliMCSpectraWeights::AliMCSpectraWeights(std::string const& collisionSystem,
     // set default Binning
     // pT binning
     fBinsPt = {0.0,  0.15, 0.2,  0.25, 0.3,  0.35, 0.4,   0.45, 0.5,
-               0.55, 0.6,  0.65, 0.7,  0.75, 0.8,  0.85,  0.9,  0.95,
-               1.0,  1.1,  1.2,  1.4,  1.6,  1.8,  2.0,   2.2,  2.4,
-               2.6,  2.8,  3.0,  3.2,  3.6,  4.0,  5.0,   6.0,  8.0,
-               10.0, 13.0, 20.0, 30.0, 50.0, 80.0, 100.0, 200.0};
+        0.55, 0.6,  0.65, 0.7,  0.75, 0.8,  0.85,  0.9,  0.95,
+        1.0,  1.1,  1.2,  1.4,  1.6,  1.8,  2.0,   2.2,  2.4,
+        2.6,  2.8,  3.0,  3.2,  3.6,  4.0,  5.0,   6.0,  8.0,
+        10.0, 13.0, 20.0, 30.0, 50.0, 80.0, 100.0, 200.0};
     // multiplicity binning
-    if (fstCollisionSystem=="pp") {
+    if (fstCollisionSystem == "pp") {
         fNCentralities = 10;
         std::vector<std::string> tmpCent{};
         tmpCent.reserve(fNCentralities);
@@ -145,71 +149,73 @@ AliMCSpectraWeights::AliMCSpectraWeights(std::string const& collisionSystem,
             fBinsMultCent.push_back(i);
         }
     }
-//    if (fstCollisionSystem.find("pp") == std::string::npos) {
-//        std::vector<std::string> cent{"MB",    "c0005", "c0510", "c0010",
-//                                      "c1020", "c2040", "c4060", "c6080"};
-//        fNCentralities = 8;
-//        fstCentralities.clear();
-//        fstCentralities = cent;
-//    }
+    //    if (fstCollisionSystem.find("pp") == std::string::npos) {
+    //        std::vector<std::string> cent{"MB",    "c0005", "c0510", "c0010",
+    //                                      "c1020", "c2040", "c4060", "c6080"};
+    //        fNCentralities = 8;
+    //        fstCentralities.clear();
+    //        fstCentralities = cent;
+    //    }
     fstPartTypes = {"Pion",       "Proton",    "Kaon",
-                    "SigmaMinus", "SigmaPlus", "Rest"};
+        "SigmaMinus", "SigmaPlus", "Rest"};
 
     // setup systematics
-    fAllSystematicFlags = {AliMCSpectraWeights::SysFlag::kNominal,
-                           AliMCSpectraWeights::SysFlag::kPionUp,
-//                           AliMCSpectraWeights::SysFlag::kPionDown,
-                           AliMCSpectraWeights::SysFlag::kProtonUp,
-//                           AliMCSpectraWeights::SysFlag::kProtonDown,
-                           AliMCSpectraWeights::SysFlag::kKaonUp,
-//                           AliMCSpectraWeights::SysFlag::kKaonDown,
-                           AliMCSpectraWeights::SysFlag::kSigmaPlusUp,
-//                           AliMCSpectraWeights::SysFlag::kSigmaPlusDown,
-                           AliMCSpectraWeights::SysFlag::kSigmaMinusUp,
-//                           AliMCSpectraWeights::SysFlag::kSigmaMinusDown
+    fAllSystematicFlags = {
+        AliMCSpectraWeights::SysFlag::kNominal,
+        AliMCSpectraWeights::SysFlag::kPionUp,
+        //                           AliMCSpectraWeights::SysFlag::kPionDown,
+        AliMCSpectraWeights::SysFlag::kProtonUp,
+        //                           AliMCSpectraWeights::SysFlag::kProtonDown,
+        AliMCSpectraWeights::SysFlag::kKaonUp,
+        //                           AliMCSpectraWeights::SysFlag::kKaonDown,
+        AliMCSpectraWeights::SysFlag::kSigmaPlusUp,
+        //                           AliMCSpectraWeights::SysFlag::kSigmaPlusDown,
+        AliMCSpectraWeights::SysFlag::kSigmaMinusUp,
+        //                           AliMCSpectraWeights::SysFlag::kSigmaMinusDown
 
     };
 
     if ("pp" == fstCollisionSystem) {
         fAllSystematicFlags.push_back(
-            AliMCSpectraWeights::SysFlag::kBylinkinUpper);
+                                      AliMCSpectraWeights::SysFlag::kBylinkinUpper);
         fAllSystematicFlags.push_back(
-            AliMCSpectraWeights::SysFlag::kBylinkinLower);
+                                      AliMCSpectraWeights::SysFlag::kBylinkinLower);
         fAllSystematicFlags.push_back(AliMCSpectraWeights::SysFlag::kHagedorn);
         fAllSystematicFlags.push_back(
-            AliMCSpectraWeights::SysFlag::kHagedornUpper);
+                                      AliMCSpectraWeights::SysFlag::kHagedornUpper);
         fAllSystematicFlags.push_back(
-            AliMCSpectraWeights::SysFlag::kHagedornLower);
+                                      AliMCSpectraWeights::SysFlag::kHagedornLower);
     } else if ("ppb" == fstCollisionSystem) {
         fAllSystematicFlags.push_back(
-            AliMCSpectraWeights::SysFlag::kBylinkinUpper);
+                                      AliMCSpectraWeights::SysFlag::kBylinkinUpper);
         fAllSystematicFlags.push_back(
-            AliMCSpectraWeights::SysFlag::kBylinkinLower);
+                                      AliMCSpectraWeights::SysFlag::kBylinkinLower);
         fAllSystematicFlags.push_back(AliMCSpectraWeights::SysFlag::kHagedorn);
         fAllSystematicFlags.push_back(
-            AliMCSpectraWeights::SysFlag::kHagedornUpper);
+                                      AliMCSpectraWeights::SysFlag::kHagedornUpper);
         fAllSystematicFlags.push_back(
-            AliMCSpectraWeights::SysFlag::kHagedornLower);
+                                      AliMCSpectraWeights::SysFlag::kHagedornLower);
     } else if ("pbpb" == fstCollisionSystem || "xexe" == fstCollisionSystem) {
         fAllSystematicFlags.push_back(
-            AliMCSpectraWeights::SysFlag::kBlastwaveUpper);
+                                      AliMCSpectraWeights::SysFlag::kBlastwaveUpper);
         fAllSystematicFlags.push_back(
-            AliMCSpectraWeights::SysFlag::kBlastwaveLower);
+                                      AliMCSpectraWeights::SysFlag::kBlastwaveLower);
         fAllSystematicFlags.push_back(AliMCSpectraWeights::SysFlag::kHagedorn);
         fAllSystematicFlags.push_back(
-            AliMCSpectraWeights::SysFlag::kHagedornUpper);
+                                      AliMCSpectraWeights::SysFlag::kHagedornUpper);
         fAllSystematicFlags.push_back(
-            AliMCSpectraWeights::SysFlag::kHagedornLower);
+                                      AliMCSpectraWeights::SysFlag::kHagedornLower);
     }
 
     fNSysFlags = fAllSystematicFlags.size();
     fbTaskStatus = AliMCSpectraWeights::TaskState::kAllEmpty;
     fstFilePublished =
-        "alien:///alice/cern.ch/user/p/phuhn/AllPublishedFractions.root";
+    "alien:///alice/cern.ch/user/p/phuhn/AllPublishedFractions.root";
 #ifdef __AliMCSpectraWeights_DebugTiming__
-          auto t2 = std::chrono::high_resolution_clock::now();
-          auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-          DebugChrono("Construction took " << duration << " microseconds\n");
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto duration =
+    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    DebugChrono("Construction took " << duration << " microseconds\n");
 #endif
 }
 
@@ -245,33 +251,34 @@ void AliMCSpectraWeights::Init() {
         TFile* fInput = TFile::Open(fstFileMCSpectra.c_str());
         if (fInput) {
             if (fInput->GetNkeys() != 1) {
-                if (!fInput->Get("dNdPt_ParCor"))
+                if (!fInput->Get("AliMCWeightsTask"))
                     std::cerr << "AliMCSpectraWeights::WARNING: more than 1 "
-                                 "list in the streamed file; please specify; "
-                                 "using 1st list;\n\n";
+                    "list in the streamed file; please specify; "
+                    "using 1st list;\n\n";
             } else
                 fstSavedListName = fInput->GetListOfKeys()->At(0)->GetName();
             // printf("AliMCSpectraWeights:: Loading %s from list %s\n",
             // fstSavedObjName.Data(), fstSavedListName.Data());
-            TList* listMC = (TList*)fInput->Get(fstSavedListName.c_str());
+            auto dir = (TDirectory*)fInput->Get(fstSavedListName.c_str());
+            TList* listMC = (TList*)dir->Get(fstSavedListName.c_str());
             if (!listMC) {
                 std::cerr << "AliMCSpectraWeights::ERROR: could not load list "
-                             "in streamed "
-                             "file\n";
+                "in streamed "
+                "file\n";
             } else {
                 auto tmpHist =
-                    (TH3F*)listMC->FindObject("fHistMCGenPrimTrackParticle");
+                (TH3F*)listMC->FindObject("fHistMCGenPrimTrackParticle");
                 if (!tmpHist) {
                     std::cerr << "AliMCSpectraWeights::WARNING: Couln't get "
-                                 "fHistMCGenPrimTrackParticle\n";
+                    "fHistMCGenPrimTrackParticle\n";
                 } else {
                     fHistMCGenPrimTrackParticle = (TH3F*)tmpHist->Clone(
-                        "fHistMCGenPrimTrackParticle_prev");
+                                                                        "fHistMCGenPrimTrackParticle_prev");
                     fHistMCGenPrimTrackParticle->SetDirectory(0);
                     if (fHistMCGenPrimTrackParticle->GetEntries() > 0) {
                         DebugPCC("Previous train has mc tracks\n");
                         fbTaskStatus =
-                            AliMCSpectraWeights::TaskState::kMCSpectraObtained;
+                        AliMCSpectraWeights::TaskState::kMCSpectraObtained;
                         AliMCSpectraWeights::CalcMCFractions();
                     }
                 }
@@ -282,16 +289,26 @@ void AliMCSpectraWeights::Init() {
     }
 
     if (fDoSystematics) {
-        for (auto const& flag : fAllSystematicFlags) {
-            fFlag = flag;
-            fbTaskStatus = AliMCSpectraWeights::TaskState::kMCSpectraObtained;
-            AliMCSpectraWeights::LoadMeasuredFractions();
-            fbTaskStatus = AliMCSpectraWeights::TaskState::kDataFractionLoaded;
-            if (AliMCSpectraWeights::CorrectFractionsforRest() &&
-                AliMCSpectraWeights::CalculateMCWeights()) {
+        if (fbTaskStatus ==
+            AliMCSpectraWeights::TaskState::kMCSpectraObtained) {
+            for (auto const& flag : fAllSystematicFlags) {
+                fFlag = flag;
                 fbTaskStatus =
+                AliMCSpectraWeights::TaskState::kMCSpectraObtained;
+                AliMCSpectraWeights::LoadMeasuredFractions();
+                fbTaskStatus =
+                AliMCSpectraWeights::TaskState::kDataFractionLoaded;
+                if (AliMCSpectraWeights::CorrectFractionsforRest() &&
+                    AliMCSpectraWeights::CalculateMCWeights()) {
+                    fbTaskStatus =
                     AliMCSpectraWeights::TaskState::kMCWeightCalculated;
+                }
             }
+            // Set final outputs to nominal again;
+            fFlag = AliMCSpectraWeights::SysFlag::kNominal;
+            AliMCSpectraWeights::LoadMeasuredFractions();
+            AliMCSpectraWeights::CorrectFractionsforRest();
+            AliMCSpectraWeights::CalculateMCWeights();
         }
     } else {
         // Loading measured fractions
@@ -306,17 +323,18 @@ void AliMCSpectraWeights::Init() {
             if (AliMCSpectraWeights::CorrectFractionsforRest() &&
                 AliMCSpectraWeights::CalculateMCWeights()) {
                 fbTaskStatus =
-                    AliMCSpectraWeights::TaskState::kMCWeightCalculated;
+                AliMCSpectraWeights::TaskState::kMCWeightCalculated;
             }
         }
     }
 
-    DebugPCC("AliMCSpectraWeights::INFO: Init finished with status "
-             << fbTaskStatus << std::endl);
+DebugPCC("AliMCSpectraWeights::INFO: Init finished with status " << fbTaskStatus
+         << std::endl);
 #ifdef __AliMCSpectraWeights_DebugTiming__
-    auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-    DebugChrono("Init took " << duration << " microseconds\n");
+auto t2 = std::chrono::high_resolution_clock::now();
+auto duration =
+std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+DebugChrono("Init took " << duration << " microseconds\n");
 #endif
 }
 
@@ -343,7 +361,7 @@ void AliMCSpectraWeights::InitHistos() {
     if (!fUseMBFractions) {
         for (auto const& cent : fstCentralities) {
             auto const _Nch =
-                AliMCSpectraWeights::GetMultTupleFromCent(std::stoi(cent));
+            AliMCSpectraWeights::GetMultTupleFromCent(std::stoi(cent));
             auto const _front = _Nch.front();
             auto const _back = _Nch.back();
             if (_NchBinning.size() < 1) {
@@ -367,7 +385,7 @@ void AliMCSpectraWeights::InitHistos() {
         _NchBinning.push_back(0.5);
     }
     std::reverse(_NchBinning.begin(), _NchBinning.end());
-    if(fUseMBFractions && "pp"==fstCollisionSystem){
+    if (fUseMBFractions && "pp" == fstCollisionSystem) {
         fNCentralities = 1;
         fstCentralities = {"0"};
         fBinsMultCent = _NchBinning;
@@ -377,75 +395,76 @@ void AliMCSpectraWeights::InitHistos() {
     //    std::cout << "\n .. done" << std::endl;
 
     fHistMCGenPrimTrackParticle =
-        new TH3F("fHistMCGenPrimTrackParticle",
-                 "histogram for charged particle composition;#it{p}_{T} "
-                 "(GeV/#it{c});multiplicity or centrality;Particle type",
-                 static_cast<int>(fBinsPt.size()) - 1,
-                 static_cast<float*>(fBinsPt.data()),
-                 static_cast<int>(fBinsMultCent.size()) - 1,
-                 static_cast<float*>(fBinsMultCent.data()),
-                 static_cast<int>(partArray.size()) - 1,
-                 static_cast<float*>(partArray.data()));
+    new TH3F("fHistMCGenPrimTrackParticle",
+             "histogram for charged particle composition;#it{p}_{T} "
+             "(GeV/#it{c});multiplicity or centrality;Particle type",
+             static_cast<int>(fBinsPt.size()) - 1,
+             static_cast<float*>(fBinsPt.data()),
+             static_cast<int>(fBinsMultCent.size()) - 1,
+             static_cast<float*>(fBinsMultCent.data()),
+             static_cast<int>(partArray.size()) - 1,
+             static_cast<float*>(partArray.data()));
 
     fHistDataFractions =
-        new TH3F("fHistDataFractions",
-                 "DATA fractions histogram;#it{p}_{T} "
-                 "(GeV/#it{c});multiplicity or centrality;Particle type",
-                 static_cast<int>(fBinsPt.size()) - 1,
-                 static_cast<float*>(fBinsPt.data()),
-                 static_cast<int>(_NchBinning.size()) - 1,
-                 static_cast<float*>(_NchBinning.data()),
-                 static_cast<int>(partArrayDATA.size()) - 1,
-                 static_cast<float*>(partArrayDATA.data()));
+    new TH3F("fHistDataFractions",
+             "DATA fractions histogram;#it{p}_{T} "
+             "(GeV/#it{c});multiplicity or centrality;Particle type",
+             static_cast<int>(fBinsPt.size()) - 1,
+             static_cast<float*>(fBinsPt.data()),
+             static_cast<int>(_NchBinning.size()) - 1,
+             static_cast<float*>(_NchBinning.data()),
+             static_cast<int>(partArrayDATA.size()) - 1,
+             static_cast<float*>(partArrayDATA.data()));
 
     fHistMCFractions =
-        new TH3F("fHistMCFractions",
-                 "MC fractions histogram;#it{p}_{T} (GeV/#it{c});multiplicity "
-                 "or centrality;Particle type",
-                 static_cast<int>(fBinsPt.size()) - 1,
-                 static_cast<float*>(fBinsPt.data()),
-                 static_cast<int>(_NchBinning.size()) - 1,
-                 static_cast<float*>(_NchBinning.data()),
-                 static_cast<int>(partArray.size()) - 1,
-                 static_cast<float*>(partArray.data()));
+    new TH3F("fHistMCFractions",
+             "MC fractions histogram;#it{p}_{T} (GeV/#it{c});multiplicity "
+             "or centrality;Particle type",
+             static_cast<int>(fBinsPt.size()) - 1,
+             static_cast<float*>(fBinsPt.data()),
+             static_cast<int>(_NchBinning.size()) - 1,
+             static_cast<float*>(_NchBinning.data()),
+             static_cast<int>(partArray.size()) - 1,
+             static_cast<float*>(partArray.data()));
 
     fHistMCWeights = new TH3F(
-        "fHistMCWeights",
-        "MC weight histogram for charged particle composition;#it{p}_{T} "
-        "(GeV/#it{c});multiplicity or centrality;Particle type",
-        static_cast<int>(fBinsPt.size()) - 1,
-        static_cast<float*>(fBinsPt.data()),
-        static_cast<int>(_NchBinning.size()) - 1,
-        static_cast<float*>(_NchBinning.data()),
-        static_cast<int>(partArrayDATA.size()) - 1,
-        static_cast<float*>(partArrayDATA.data()));
+                              "fHistMCWeights",
+                              "MC weight histogram for charged particle composition;#it{p}_{T} "
+                              "(GeV/#it{c});multiplicity or centrality;Particle type",
+                              static_cast<int>(fBinsPt.size()) - 1,
+                              static_cast<float*>(fBinsPt.data()),
+                              static_cast<int>(_NchBinning.size()) - 1,
+                              static_cast<float*>(_NchBinning.data()),
+                              static_cast<int>(partArrayDATA.size()) - 1,
+                              static_cast<float*>(partArrayDATA.data()));
     DebugPCC("AliMCSpectraWeights: init histos successful\n");
 
     if (fDoSystematics) {
         DebugPCC("AliMCSpectraWeights: Init sys histos\n");
         for (auto const& flag : fAllSystematicFlags) {
             std::string const _histName{"fHistMCWeights" +
-                                        GetFunctionFromSysFlag(flag) +
-                                        GetSysVarFromSysFlag(flag)};
+                GetFunctionFromSysFlag(flag) +
+                GetSysVarFromSysFlag(flag)};
             DebugPCC("\tHist name: " << _histName << "\n");
 
             fHistMCWeightsSys[flag] = new TH3F(
-                _histName.c_str(),
-                "MC weight histogram for charged particle "
-                "composition;#it{p}_{T} "
-                "(GeV/#it{c});multiplicity or centrality;Particle type",
-                static_cast<int>(fBinsPt.size()) - 1,
-                static_cast<float*>(fBinsPt.data()),
-                static_cast<int>(_NchBinning.size()) - 1,
-                static_cast<float*>(_NchBinning.data()),
-                static_cast<int>(partArrayDATA.size()) - 1,
-                static_cast<float*>(partArrayDATA.data()));
+                                               _histName.c_str(),
+                                               "MC weight histogram for charged particle "
+                                               "composition;#it{p}_{T} "
+                                               "(GeV/#it{c});multiplicity or centrality;Particle type",
+                                               static_cast<int>(fBinsPt.size()) - 1,
+                                               static_cast<float*>(fBinsPt.data()),
+                                               static_cast<int>(_NchBinning.size()) - 1,
+                                               static_cast<float*>(_NchBinning.data()),
+                                               static_cast<int>(partArrayDATA.size()) - 1,
+                                               static_cast<float*>(partArrayDATA.data()));
         }
         DebugPCC("AliMCSpectraWeights: init histos systematics successful\n");
     }
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    auto duration =
+    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     DebugChrono("InitHistos took " << duration << " microseconds\n");
 #endif
 }
@@ -461,38 +480,37 @@ void AliMCSpectraWeights::LoadMeasuredFractions() {
     auto fMeasuredFile = TFile::Open(fstFilePublished.c_str());
     if (!fMeasuredFile) {
         std::cerr << "AliMCSpectraWeights::Error: Could not load measured "
-                     "fractions in "
-                  << fstFilePublished << "\n";
+        "fractions in "
+        << fstFilePublished << "\n";
         return;
     }
-    if (fHistDataFractions)
         fHistDataFractions->Reset(); // clean up for new input
     for (auto& part : fstPartTypes) {
-//        DebugPCC("\tPart: " << part << "\n");
+        //        DebugPCC("\tPart: " << part << "\n");
         if (part.find("Rest") != std::string::npos ||
             part.find("rest") != std::string::npos)
             continue; // there is no rest particles in measurement
         int const _iPart = GetPartTypeNumber(part);
         int iCent = 0;
         for (auto& cent : fstCentralities) {
-//            DebugPCC("\t\tCent: " << cent << "\n");
+            //            DebugPCC("\t\tCent: " << cent << "\n");
             // CollisionSystem:ParticleType:CentNumber:Stat/Sys:Function:FunctionVar
             std::string stHistName{fstCollisionSystem};
             stHistName += part;
             stHistName += cent;
             stHistName += AliMCSpectraWeights::GetFunctionFromSysFlag(fFlag);
             stHistName += AliMCSpectraWeights::GetSysVarFromSysFlag(fFlag);
-//            DebugPCC("\t\t\tLoading hist " << stHistName << "\n");
+            //            DebugPCC("\t\t\tLoading hist " << stHistName << "\n");
             if (fUseMBFractions) {
                 stHistName = fstCollisionSystem + part + std::to_string(iCent) +
-                             "PublishedFractions";
-                if(fstCollisionSystem=="pp")
+                "PublishedFractions";
+                if (fstCollisionSystem == "pp")
                     stHistName = fstCollisionSystem + part + "MB";
             }
             TH1D* hist = (TH1D*)fMeasuredFile->Get(stHistName.c_str());
             if (!hist) {
                 std::cerr << "AliMCSpectraWeights::Error: could not find "
-                          << stHistName << "\n";
+                << stHistName << "\n";
                 continue;
             }
 
@@ -507,7 +525,7 @@ void AliMCSpectraWeights::LoadMeasuredFractions() {
                 binEntry[1] = AliMCSpectraWeights::GetMultFromCent(cent);
             DebugPCC("\t\t\tWriting to fHistDataFractions\n");
             DebugPCC("\t\t\t part: " << binEntry[2]
-                                     << "\t mult: " << binEntry[1] << "\n");
+                     << "\t mult: " << binEntry[1] << "\n");
             for (int ipt = 0; ipt < fHistDataFractions->GetNbinsX(); ++ipt) {
                 binEntry[0] = fHistDataFractions->GetXaxis()->GetBinCenter(ipt);
                 if (binEntry[0] <
@@ -515,7 +533,7 @@ void AliMCSpectraWeights::LoadMeasuredFractions() {
                     continue;
                 //                DebugPCC("\t\t pT: " << binEntry[0]<<"\n");
                 auto const _FractionValue =
-                    hist->GetBinContent(hist->FindBin(binEntry[0]));
+                hist->GetBinContent(hist->FindBin(binEntry[0]));
                 DebugPCC("\t\t\t\t fraction: " << _FractionValue << "\n");
                 FillTH3WithValue(fHistDataFractions, binEntry, _FractionValue);
             }
@@ -525,7 +543,8 @@ void AliMCSpectraWeights::LoadMeasuredFractions() {
     fMeasuredFile->Close();
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    auto duration =
+    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     DebugChrono("LoadMeasuredFractions took " << duration << " microseconds\n");
 #endif
 }
@@ -546,6 +565,7 @@ bool AliMCSpectraWeights::CalcMCFractions() {
     std::array<std::array<TH1D*, 10>, 20> _histMCFractions{
         nullptr}; // FIXME: WARNING HARD CODED RANGES
     std::array<TH1D*, 20> _h1pTMCAll{nullptr};
+    fHistMCFractions->Reset(); // clean up for new input
     for (int icent = 0; icent < fNCentralities; ++icent) {
         if (fUseMBFractions && "pp" == fstCollisionSystem && icent > 0)
             continue;
@@ -558,66 +578,68 @@ bool AliMCSpectraWeights::CalcMCFractions() {
             _multBack = 49.9;
         }
 
-//        DebugPCC("\t cent: " << icent << " => " << _multFront << " - "
-//                             << _multBack << "\n");
+        //        DebugPCC("\t cent: " << icent << " => " << _multFront << " - "
+        //                             << _multBack << "\n");
 
         auto const _multBin1 =
-            fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multFront);
+        fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multFront);
         auto const _multBbin2 =
-            fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multBack);
+        fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multBack);
 
         for (int ipart = 0; ipart < fNPartTypes;
              ++ipart) { // calculate pt spectra of pi+k+p+Sigma+Rest
             int const _iPart =
-                AliMCSpectraWeights::GetPartTypeNumber(fstPartTypes[ipart]);
+            AliMCSpectraWeights::GetPartTypeNumber(fstPartTypes[ipart]);
             int const _iPartBin =
-                fHistMCGenPrimTrackParticle->GetZaxis()->FindBin(_iPart);
-//            DebugPCC("\t\t project spectra of " << fstPartTypes[ipart] << "\n");
+            fHistMCGenPrimTrackParticle->GetZaxis()->FindBin(_iPart);
+            //            DebugPCC("\t\t project spectra of " <<
+            //            fstPartTypes[ipart] << "\n");
             _histMCFractions[icent][ipart] =
-                static_cast<TH1D*>(fHistMCGenPrimTrackParticle->ProjectionX(
-                    Form("h1MCFraction_%s_%d", fstPartTypes[ipart].c_str(),
-                         icent),
-                    _multBin1, _multBbin2, _iPartBin, _iPartBin, "e"));
+            static_cast<TH1D*>(fHistMCGenPrimTrackParticle->ProjectionX(
+                                                                        Form("h1MCFraction_%s_%d", fstPartTypes[ipart].c_str(),
+                                                                             icent),
+                                                                        _multBin1, _multBbin2, _iPartBin, _iPartBin, "e"));
             if (!_histMCFractions[icent][ipart]) {
                 std::cerr << "AliMCSpectraWeights::ERROR could not create "
-                             "h1MCFraction\n";
+                "h1MCFraction\n";
                 return false;
             }
             _histMCFractions[icent][ipart]->Scale(1, "width");
             if (!_h1pTMCAll[icent]) {
-//                DebugPCC("\t\t Clone spectra to _h1pTMCAll\n");
+                //                DebugPCC("\t\t Clone spectra to
+                //                _h1pTMCAll\n");
                 _h1pTMCAll[icent] =
-                    (TH1D*)_histMCFractions[icent][ipart]->Clone(
-                        Form("h1pTMCAll_%d", icent));
+                (TH1D*)_histMCFractions[icent][ipart]->Clone(
+                                                             Form("h1pTMCAll_%d", icent));
             } else {
-//                DebugPCC("\t\t Add spectra to _h1pTMCAll\n");
+                //                DebugPCC("\t\t Add spectra to _h1pTMCAll\n");
                 _h1pTMCAll[icent]->Add(_histMCFractions[icent][ipart]);
             }
         }
-//        DebugPCC("\t spectra and _h1pTMCAll created and filled\n");
+        //        DebugPCC("\t spectra and _h1pTMCAll created and filled\n");
         // all hist calculated
         // ------------------
         // calculate fractions
-//        DebugPCC("\t Calculate fractions in MC now\n");
-        for (int ipart = 0; ipart < fNPartTypes;
-             ++ipart) {
+        //        DebugPCC("\t Calculate fractions in MC now\n");
+        for (int ipart = 0; ipart < fNPartTypes; ++ipart) {
             if (nullptr == _histMCFractions[icent][ipart]) {
                 std::cerr << "AliMCSpectraWeights::ERROR could not calculate "
-                             "fraction\n";
+                "fraction\n";
                 continue;
             }
 
             int const _iPart =
-                AliMCSpectraWeights::GetPartTypeNumber(fstPartTypes[ipart]);
-//            DebugPCC("\n\n ipart: " << ipart << "\n\n");
-            TH1D* h1MCFraction =
-                (TH1D*)_histMCFractions[icent][ipart]->Clone(Form("%s_fraction", _histMCFractions[icent][ipart]->GetName()));
+            AliMCSpectraWeights::GetPartTypeNumber(fstPartTypes[ipart]);
+            //            DebugPCC("\n\n ipart: " << ipart << "\n\n");
+            TH1D* h1MCFraction = (TH1D*)_histMCFractions[icent][ipart]->Clone(
+                                                                              Form("%s_fraction", _histMCFractions[icent][ipart]->GetName()));
             h1MCFraction->Divide(_h1pTMCAll[icent]);
             // Set content of fractions to fHistMCFractions
-//            DebugPCC("\t Write MC fraction to fHistMCFractions\n");
+            //            DebugPCC("\t Write MC fraction to
+            //            fHistMCFractions\n");
             for (int ipt = 0; ipt < fHistMCFractions->GetNbinsX(); ++ipt) {
                 float const pt =
-                    fHistMCFractions->GetXaxis()->GetBinCenter(ipt);
+                fHistMCFractions->GetXaxis()->GetBinCenter(ipt);
                 if (pt < 0)
                     continue;
                 // fHistMCFractions : pt-mult-ipart
@@ -627,17 +649,20 @@ bool AliMCSpectraWeights::CalcMCFractions() {
                 if (fUseMBFractions && "pp" == fstCollisionSystem)
                     binEntry[1] = 1.0;
                 auto const _FractionValue =
-                    h1MCFraction->GetBinContent(h1MCFraction->FindBin(pt));
-//                DebugPCC("\t\t pT: " << binEntry[0] << " mult: " << binEntry[1]
-//                                     << " part: " << binEntry[2]
-//                                     << " val: " << _FractionValue << "\n");
+                h1MCFraction->GetBinContent(h1MCFraction->FindBin(pt));
+                //                DebugPCC("\t\t pT: " << binEntry[0] << " mult:
+                //                " << binEntry[1]
+                //                                     << " part: " <<
+                //                                     binEntry[2]
+                //                                     << " val: " <<
+                //                                     _FractionValue << "\n");
                 FillTH3WithValue(fHistMCFractions, binEntry, _FractionValue);
             }
             delete h1MCFraction;
         }
-//        DebugPCC("\t Fractions in MC calculated\n");
+        //        DebugPCC("\t Fractions in MC calculated\n");
     }
-//    DebugPCC("\t delete tmp histos\n");
+    //    DebugPCC("\t delete tmp histos\n");
     for (auto& histArray : _histMCFractions) {
         for (auto& hist : histArray) {
             if (hist) {
@@ -655,7 +680,8 @@ bool AliMCSpectraWeights::CalcMCFractions() {
     DebugPCC("\t ...worked\n");
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    auto duration =
+    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     DebugChrono("CalcMCFractions took " << duration << " microseconds\n");
 #endif
     return true;
@@ -676,7 +702,8 @@ bool AliMCSpectraWeights::CorrectFractionsforRest() {
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();
 #endif
-//    DebugPCC("Correct data fractions for not having rest particles measured\n");
+    //    DebugPCC("Correct data fractions for not having rest particles
+    //    measured\n");
     for (int icent = 0; icent < fNCentralities; ++icent) {
         if (fUseMBFractions && "pp" == fstCollisionSystem && icent > 0)
             continue;
@@ -687,32 +714,34 @@ bool AliMCSpectraWeights::CorrectFractionsforRest() {
             _multFront = 0;
             _multBack = 49.9;
         }
-//        DebugPCC("\t cent: " << icent << " = " << _multFront << "-" << _multBack
-//                             << "\n");
+        //        DebugPCC("\t cent: " << icent << " = " << _multFront << "-" <<
+        //        _multBack
+        //                             << "\n");
         auto _bin1 =
-            fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multFront);
+        fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multFront);
         auto _bin2 =
-            fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multBack);
+        fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multBack);
 
         auto h1pTMCAll = (TH1D*)fHistMCGenPrimTrackParticle->ProjectionX(
-            "h1pTMCAll", _bin1, _bin2, 1,
-            fHistMCGenPrimTrackParticle->GetNbinsZ(), "e");
+                                                                         "h1pTMCAll", _bin1, _bin2, 1,
+                                                                         fHistMCGenPrimTrackParticle->GetNbinsZ(), "e");
         if (!h1pTMCAll) {
             std::cerr
-                << "AliMCSpectraWeights::ERROR could not create h1pTMCAll\n";
+            << "AliMCSpectraWeights::ERROR could not create h1pTMCAll\n";
             return false;
         }
-//        DebugPCC("\t created MC all spectra\n");
+        //        DebugPCC("\t created MC all spectra\n");
         auto const _iRestPos = AliMCSpectraWeights::GetPartTypeNumber("Rest");
         auto const _RestBin =
-            fHistMCGenPrimTrackParticle->GetZaxis()->FindBin(_iRestPos);
+        fHistMCGenPrimTrackParticle->GetZaxis()->FindBin(_iRestPos);
         auto h1RestCorrFactor = fHistMCGenPrimTrackParticle->ProjectionX(
-            Form("h1RestCorrFactor_%d", icent), _bin1, _bin2, 1, _RestBin - 1,
-            "e");
+                                                                         Form("h1RestCorrFactor_%d", icent), _bin1, _bin2, 1, _RestBin - 1,
+                                                                         "e");
         h1RestCorrFactor->Divide(h1pTMCAll);
-//        DebugPCC("\t calculated correction factor\n");
+        //        DebugPCC("\t calculated correction factor\n");
         for (int ipart = 0; ipart < fNPartTypes; ++ipart) {
-//            DebugPCC("\t\t correct " << fstPartTypes[ipart] << "\n");
+            //            DebugPCC("\t\t correct " << fstPartTypes[ipart] <<
+            //            "\n");
             if ("Rest" == fstPartTypes[ipart])
                 continue;
             for (int ipt = 0; ipt < fHistDataFractions->GetNbinsX(); ++ipt) {
@@ -721,19 +750,21 @@ bool AliMCSpectraWeights::CorrectFractionsforRest() {
                 std::array<float, 3> binEntry{
                     pt,
                     static_cast<float>(
-                        AliMCSpectraWeights::GetMultFromCent(icent)),
+                                       AliMCSpectraWeights::GetMultFromCent(icent)),
                     static_cast<float>(AliMCSpectraWeights::GetPartTypeNumber(
-                        fstPartTypes[ipart]))};
+                                                                              fstPartTypes[ipart]))};
                 if (fUseMBFractions && "pp" == fstCollisionSystem)
                     binEntry[1] = 1.0;
-//                DebugPCC("\t\t\t pT: " << binEntry[0]
-//                                       << " mult: " << binEntry[1]
-//                                       << " part: " << binEntry[2] << "\n");
+                //                DebugPCC("\t\t\t pT: " << binEntry[0]
+                //                                       << " mult: " <<
+                //                                       binEntry[1]
+                //                                       << " part: " <<
+                //                                       binEntry[2] << "\n");
                 int const _iBinFind = fHistDataFractions->FindBin(
-                    binEntry[0], binEntry[1], binEntry[2]);
+                                                                  binEntry[0], binEntry[1], binEntry[2]);
                 float value = fHistDataFractions->GetBinContent(_iBinFind);
                 auto _RestCorrVal = h1RestCorrFactor->GetBinContent(
-                    h1RestCorrFactor->FindBin(pt));
+                                                                    h1RestCorrFactor->FindBin(pt));
                 if (0 == _RestCorrVal)
                     _RestCorrVal = 1;
 
@@ -747,8 +778,10 @@ bool AliMCSpectraWeights::CorrectFractionsforRest() {
     DebugPCC("\t ...correction finished\n");
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-    DebugChrono("CorrectFractionsforRest took " << duration << " microseconds\n");
+    auto duration =
+    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    DebugChrono("CorrectFractionsforRest took " << duration
+                << " microseconds\n");
 #endif
     return true;
 }
@@ -768,13 +801,14 @@ bool AliMCSpectraWeights::CalculateMCWeights() {
     DebugPCC("Calculate weight factors\n");
     // correction of rest particles not measured in data fractions (see
     // AnalysisNote)
-
+    fHistMCWeights->Reset(); // clean up for new input
     for (int icent = 0; icent < fNCentralities; icent++) {
         if (fUseMBFractions && "pp" == fstCollisionSystem && icent > 0)
             continue;
-//        DebugPCC("\t cent: " << icent << "\n");
+        //        DebugPCC("\t cent: " << icent << "\n");
         for (int ipart = 0; ipart < fNPartTypes; ipart++) {
-//            DebugPCC("\t\t part: " << fstPartTypes[ipart] << "\n");
+            //            DebugPCC("\t\t part: " << fstPartTypes[ipart] <<
+            //            "\n");
             for (int ipt = 0; ipt < static_cast<int>(fBinsPt.size()); ++ipt) {
                 float pt = fHistMCWeights->GetXaxis()->GetBinCenter(ipt);
                 if (pt < 0)
@@ -782,37 +816,40 @@ bool AliMCSpectraWeights::CalculateMCWeights() {
                 std::array<float, 3> binEntry{
                     pt, static_cast<float>(GetMultFromCent(icent)),
                     static_cast<float>(AliMCSpectraWeights::GetPartTypeNumber(
-                        fstPartTypes[ipart]))};
+                                                                              fstPartTypes[ipart]))};
                 // Double_t binEntryData[3] = {pt, static_cast<Double_t>(icent),
                 // static_cast<Double_t>(ipart)};
                 if (fUseMBFractions && "pp" == fstCollisionSystem)
                     binEntry[1] = 1.0;
-//                DebugPCC("\t\t\t pT: " << binEntry[0]
-//                                       << " mult: " << binEntry[1]
-//                                       << " part: " << binEntry[2] << "\n");
+                //                DebugPCC("\t\t\t pT: " << binEntry[0]
+                //                                       << " mult: " <<
+                //                                       binEntry[1]
+                //                                       << " part: " <<
+                //                                       binEntry[2] << "\n");
 
                 auto const _iBinMC = fHistMCFractions->FindBin(
-                    binEntry[0], binEntry[1], binEntry[2]);
+                                                               binEntry[0], binEntry[1], binEntry[2]);
                 auto const _iBinData = fHistDataFractions->FindBin(
-                    binEntry[0], binEntry[1], binEntry[2]);
+                                                                   binEntry[0], binEntry[1], binEntry[2]);
 
                 float const dFractionMC =
-                    fHistMCFractions->GetBinContent(_iBinMC);
+                fHistMCFractions->GetBinContent(_iBinMC);
 
                 float const dFractionData =
-                    fHistDataFractions->GetBinContent(_iBinData);
+                fHistDataFractions->GetBinContent(_iBinData);
 
                 auto const _iBinWeight = fHistMCWeights->FindBin(
-                    binEntry[0], binEntry[1], binEntry[2]);
+                                                                 binEntry[0], binEntry[1], binEntry[2]);
 
                 float value = 1;
                 if (dFractionMC != 0 && fstPartTypes[ipart] != "Rest") {
                     value = dFractionData / dFractionMC;
                 }
-//                DebugPCC("\t\t\t fractionMC: "
-//                         << dFractionMC << "\t fractionData: " << dFractionData
-//                         << "\t weight factor: " << value
-//                         << "\n");
+                //                DebugPCC("\t\t\t fractionMC: "
+                //                         << dFractionMC << "\t fractionData: "
+                //                         << dFractionData
+                //                         << "\t weight factor: " << value
+                //                         << "\n");
                 if (fDoSystematics) {
                     fHistMCWeightsSys[fFlag]->SetBinContent(_iBinWeight, value);
                     fHistMCWeightsSys[fFlag]->SetBinError(_iBinWeight, 1e-30);
@@ -826,7 +863,8 @@ bool AliMCSpectraWeights::CalculateMCWeights() {
     DebugPCC("... calculation completed\n");
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    auto duration =
+    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     DebugChrono("CalculateMCWeights took " << duration << " microseconds\n");
 #endif
     return true;
@@ -857,7 +895,8 @@ void AliMCSpectraWeights::CountEventMult() {
         TParticle* mcGenParticle = fMCStack->Particle(ipart);
         if (!mcGenParticle)
             continue;
-        if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart, fMCEvent))
+        if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart,
+                                                                      fMCEvent))
             continue;
         if (!fMCStack->IsPhysicalPrimary(ipart))
             continue; // secondary rejection
@@ -874,26 +913,33 @@ void AliMCSpectraWeights::CountEventMult() {
     DebugPCC("... counted " << fMultOrCent << " charged particles\n");
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    auto duration =
+    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     DebugChrono("CountEventMult took " << duration << " microseconds\n");
 #endif
 }
 
- /**
-  *  @brief select randomly a systematic variation
-  */
-void AliMCSpectraWeights::SelectRndSysFlagForEvent(){
+/**
+ *  @brief select randomly a systematic variation
+ */
+void AliMCSpectraWeights::SelectRndSysFlagForEvent() {
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();
 #endif
     int const _SysIndex =
-    static_cast<int>(std::round(frndGen.Uniform(-0.5, fNSysFlags-0.5)));
+    static_cast<int>(std::round(frndGen.Uniform(-0.5, fNSysFlags - 0.5)));
     fFlag = fAllSystematicFlags[_SysIndex];
-    DebugPCC("SysFlag: " << _SysIndex << " " << GetFunctionFromSysFlag(fAllSystematicFlags[_SysIndex]) << GetSysVarFromSysFlag(fAllSystematicFlags[_SysIndex]) <<  "\n");
+    DebugPCC(
+             "SysFlag: " << _SysIndex << " "
+             << GetFunctionFromSysFlag(fAllSystematicFlags[_SysIndex])
+             << GetSysVarFromSysFlag(fAllSystematicFlags[_SysIndex])
+             << "\n");
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-    DebugChrono("SelectRndSysFlagForEvent took " << duration << " microseconds\n");
+    auto duration =
+    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    DebugChrono("SelectRndSysFlagForEvent took " << duration
+                << " microseconds\n");
 #endif
 }
 
@@ -904,11 +950,11 @@ void AliMCSpectraWeights::SelectRndSysFlagForEvent(){
  *  @return
  */
 float const AliMCSpectraWeights::GetMCSpectraWeight(TParticle* mcGenParticle,
-                                              AliMCEvent* mcEvent) {
+                                                    AliMCEvent* mcEvent) {
     return AliMCSpectraWeights::GetMCSpectraWeightNominal(mcGenParticle);
 }
 
-int const AliMCSpectraWeights::CheckAndIdentifyParticle(TParticle* part){
+int const AliMCSpectraWeights::CheckAndIdentifyParticle(TParticle* part) {
     if (!part->GetPDG()) {
         DebugPCC("Warning: particle has no PDG; skipped\n");
         return -2;
@@ -920,46 +966,49 @@ int const AliMCSpectraWeights::CheckAndIdentifyParticle(TParticle* part){
     return AliMCSpectraWeights::IdentifyMCParticle(part);
 }
 
-int const AliMCSpectraWeights::FindBinEntry(float pt, int const part){
-    auto const icent =
-    AliMCSpectraWeights::GetCentFromMult(fMultOrCent);
-    if (pt < 0.15){
+int const AliMCSpectraWeights::FindBinEntry(float pt, int const part) {
+    auto const icent = AliMCSpectraWeights::GetCentFromMult(fMultOrCent);
+    if (pt < 0.15) {
         DebugPCC("Warning: pt too low; pt = " << pt << "\n");
         return -1;
     }
-    if (pt >= 20){
+    if (pt >= 20) {
         DebugPCC("Info: pt too high; pt = " << pt << "; set to 19.9\n");
         pt = 19.9;
     }
     std::array<float, 3> binEntry{
         pt, static_cast<float>(AliMCSpectraWeights::GetMultFromCent(icent)),
         static_cast<float>(part)};
-    auto const _iBin =  GetBinFromTH3(fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal], binEntry);
+    auto const _iBin = GetBinFromTH3(
+                                     fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal], binEntry);
     DebugPCC("Found bin at " << _iBin << "\n");
     return _iBin;
 }
 
 float const
-AliMCSpectraWeights::GetMCSpectraWeightNominal(TParticle* mcGenParticle){
+AliMCSpectraWeights::GetMCSpectraWeightNominal(TParticle* mcGenParticle) {
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();
 #endif
-    if(fbTaskStatus < AliMCSpectraWeights::TaskState::kMCWeightCalculated){
+    if (fbTaskStatus < AliMCSpectraWeights::TaskState::kMCWeightCalculated) {
         DebugPCC("Warning: Status not kMCWeightCalculated\n");
         return 1;
     }
-    int const particleType = AliMCSpectraWeights::CheckAndIdentifyParticle(mcGenParticle);
-    if(particleType < 0){
+    int const particleType =
+    AliMCSpectraWeights::CheckAndIdentifyParticle(mcGenParticle);
+    if (particleType < 0) {
         DebugPCC("Can't find particle type\n");
         return 1;
     }
-    auto const _iBin = AliMCSpectraWeights::FindBinEntry(mcGenParticle->Pt(), particleType);
-    if(_iBin < 0){
+    auto const _iBin =
+    AliMCSpectraWeights::FindBinEntry(mcGenParticle->Pt(), particleType);
+    if (_iBin < 0) {
         DebugPCC("Can't find bin\n");
         return 1;
     }
-    float weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin);
-    if (weight <= 0){
+    float weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]
+    ->GetBinContent(_iBin);
+    if (weight <= 0) {
         DebugPCC("ERROR: negative weight; set to 1\n");
         weight = 1;
     }
@@ -969,33 +1018,37 @@ AliMCSpectraWeights::GetMCSpectraWeightNominal(TParticle* mcGenParticle){
     DebugPCC("weight: " << weight << "\n");
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-    DebugChrono("GetMCSpectraWeightNominal took " << duration << " microseconds\n");
+    auto duration =
+    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    DebugChrono("GetMCSpectraWeightNominal took " << duration
+                << " microseconds\n");
 #endif
     return weight;
 }
 
 float const
-AliMCSpectraWeights::GetMCSpectraWeightSystematics(TParticle* mcGenParticle){
+AliMCSpectraWeights::GetMCSpectraWeightSystematics(TParticle* mcGenParticle) {
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();
 #endif
-    if(fbTaskStatus < AliMCSpectraWeights::TaskState::kMCWeightCalculated){
+    if (fbTaskStatus < AliMCSpectraWeights::TaskState::kMCWeightCalculated) {
         DebugPCC("Warning: Status not kMCWeightCalculated\n");
         return 1;
     }
-    int const particleType = AliMCSpectraWeights::CheckAndIdentifyParticle(mcGenParticle);
-    if(particleType < 0){
+    int const particleType =
+    AliMCSpectraWeights::CheckAndIdentifyParticle(mcGenParticle);
+    if (particleType < 0) {
         DebugPCC("Can't find particle type\n");
         return 1;
     }
-    auto const _iBin = AliMCSpectraWeights::FindBinEntry(mcGenParticle->Pt(), particleType);
-    if(_iBin < 0){
+    auto const _iBin =
+    AliMCSpectraWeights::FindBinEntry(mcGenParticle->Pt(), particleType);
+    if (_iBin < 0) {
         DebugPCC("Can't find bin\n");
         return 1;
     }
     float weight = fHistMCWeightsSys[fFlag]->GetBinContent(_iBin);
-    if (weight <= 0){
+    if (weight <= 0) {
         DebugPCC("ERROR: negative weight; set to 1\n");
         weight = 1;
     }
@@ -1005,23 +1058,25 @@ AliMCSpectraWeights::GetMCSpectraWeightSystematics(TParticle* mcGenParticle){
     DebugPCC("weight: " << weight << "\n");
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-    DebugChrono("GetMCSpectraWeightSystematics took " << duration << " microseconds\n");
+    auto duration =
+    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    DebugChrono("GetMCSpectraWeightSystematics took " << duration
+                << " microseconds\n");
 #endif
     return weight;
 }
 
-
-void AliMCSpectraWeights::StartNewEvent(){
+void AliMCSpectraWeights::StartNewEvent() {
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();
 #endif
     AliMCSpectraWeights::CountEventMult();
-    if(fDoSystematics)
+    if (fDoSystematics)
         AliMCSpectraWeights::SelectRndSysFlagForEvent();
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    auto duration =
+    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     DebugChrono("StartNewEvent took " << duration << " microseconds\n");
 #endif
 }
@@ -1053,7 +1108,7 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         TParticle* mcGenParticle = MCStack->Particle(iParticle);
         if (!mcGenParticle) {
             printf(
-                "AliMCSpectraWeights::WARNING: mcGenParticle not available\n");
+                   "AliMCSpectraWeights::WARNING: mcGenParticle not available\n");
             continue;
         }
         if (!mcGenParticle->GetPDG())
@@ -1069,7 +1124,7 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         if (TMath::Abs(partEta) > _maxEta)
             continue; // apply same acceptance as in published spectra
         int particleType =
-            AliMCSpectraWeights::IdentifyMCParticle(mcGenParticle);
+        AliMCSpectraWeights::IdentifyMCParticle(mcGenParticle);
         if (particleType < 0)
             continue;
         //        std::array<float, 3>
@@ -1078,14 +1133,15 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         //                                      static_cast<float>(particleType)};
         DebugPCC("\t Fill with:\n");
         DebugPCC("\t\tpT: " << mcGenParticle->Pt() << "\t mult: " << fMultOrCent
-                            << "\t particle: " << particleType << "\n");
+                 << "\t particle: " << particleType << "\n");
         fHistMCGenPrimTrackParticle->Fill(
-            static_cast<float>(mcGenParticle->Pt()), fMultOrCent,
-            static_cast<float>(particleType));
+                                          static_cast<float>(mcGenParticle->Pt()), fMultOrCent,
+                                          static_cast<float>(particleType));
     }
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    auto duration =
+    std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     DebugChrono("FillMCSpectra took " << duration << " microseconds\n");
 #endif
 }
@@ -1097,8 +1153,8 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
  */
 int const AliMCSpectraWeights::IdentifyMCParticle(TParticle* mcParticle) {
     int ipdg = TMath::Abs(
-        mcParticle
-            ->GetPdgCode()); // Abs() because antiparticles are negaitve...
+                          mcParticle
+                          ->GetPdgCode()); // Abs() because antiparticles are negaitve...
     if (ipdg == 211)
         return GetPartTypeNumber(AliMCSpectraWeights::ParticleType::kPion);
     if (ipdg == 321)
@@ -1109,7 +1165,7 @@ int const AliMCSpectraWeights::IdentifyMCParticle(TParticle* mcParticle) {
         return GetPartTypeNumber(AliMCSpectraWeights::ParticleType::kSigmaPlus);
     if (ipdg == 3112)
         return GetPartTypeNumber(
-            AliMCSpectraWeights::ParticleType::kSigmaMinus);
+                                 AliMCSpectraWeights::ParticleType::kSigmaMinus);
     // if(ipdg==3334) return AliMCSpectraWeights::ParticleType::kOmegaMinus;
     // if(ipdg==3312) return AliMCSpectraWeights::ParticleType::kXiMinus;
     // if(ipdg==11) return AliMCSpectraWeights::ParticleType::kElectron;
@@ -1127,99 +1183,99 @@ float const AliMCSpectraWeights::GetMultFromCent(int CentBin) const {
     if (fstCollisionSystem == "pp") {
         // for | eta | < 0.5
         switch (CentBin) {
-        case 0:
-            return 21.3;
-        case 1:
-            return 16.5;
-        case 2:
-            return 13.5;
-        case 3:
-            return 11.5;
-        case 4:
-            return 10.1;
-        case 5:
-            return 8.45;
-        case 6:
-            return 6.72;
-        case 7:
-            return 5.4;
-        case 8:
-            return 3.9;
-        case 9:
-            return 2.26;
-        default:
-            return -2.0;
+            case 0:
+                return 21.3;
+            case 1:
+                return 16.5;
+            case 2:
+                return 13.5;
+            case 3:
+                return 11.5;
+            case 4:
+                return 10.1;
+            case 5:
+                return 8.45;
+            case 6:
+                return 6.72;
+            case 7:
+                return 5.4;
+            case 8:
+                return 3.9;
+            case 9:
+                return 2.26;
+            default:
+                return -2.0;
         }
-    } else if (fstCollisionSystem=="ppb") {
+    } else if (fstCollisionSystem == "ppb") {
         // for | eta | < 0.5
         switch (CentBin) {
-        case 0:
-            return 45.0;
-        case 1:
-            return 36.2;
-        case 2:
-            return 30.5;
-        case 3:
-            return 23.2;
-        case 4:
-            return 16.1;
-        case 5:
-            return 9.8;
-        case 6:
-            return 4.4;
-        default:
-            return -2.0;
+            case 0:
+                return 45.0;
+            case 1:
+                return 36.2;
+            case 2:
+                return 30.5;
+            case 3:
+                return 23.2;
+            case 4:
+                return 16.1;
+            case 5:
+                return 9.8;
+            case 6:
+                return 4.4;
+            default:
+                return -2.0;
         }
-    } else if (fstCollisionSystem=="pbpb") {
+    } else if (fstCollisionSystem == "pbpb") {
         // for | eta | < 0.5
         //        Centrality 0–5% 5–10% 10–20% 20–30% 30–40% 40–50% 50–60%
         //        60–70% 70–80% dNch /dη 1601 ± 60 1294 ± 49 966±37 649±23
         //        426±15 261±9 149±6 76±4 35±2
         switch (CentBin) {
-        case 0:
-            return 1601;
-        case 1:
-            return 1294;
-        case 2:
-            return 966;
-        case 3:
-            return 649;
-        case 4:
-            return 426;
-        case 5:
-            return 261;
-        case 6:
-            return 149;
-        case 7:
-            return 76;
-        case 8:
-            return 35;
-        default:
-            return -2.0;
+            case 0:
+                return 1601;
+            case 1:
+                return 1294;
+            case 2:
+                return 966;
+            case 3:
+                return 649;
+            case 4:
+                return 426;
+            case 5:
+                return 261;
+            case 6:
+                return 149;
+            case 7:
+                return 76;
+            case 8:
+                return 35;
+            default:
+                return -2.0;
         }
-    } else if (fstCollisionSystem=="xexe") {
+    } else if (fstCollisionSystem == "xexe") {
         // for | eta | < 0.5
         switch (CentBin) {
-        case 0:
-            return 1167;
-        case 1:
-            return 939;
-        case 2:
-            return 706;
-        case 3:
-            return 478;
-        case 4:
-            return 315;
-        case 5:
-            return 198;
-        case 6:
-            return 118;
-        case 7:
-            return 64.7;
-        case 8:
-            return 32;
-        default:
-            return -2.0;
+            case 0:
+                return 1167;
+            case 1:
+                return 939;
+            case 2:
+                return 706;
+            case 3:
+                return 478;
+            case 4:
+                return 315;
+            case 5:
+                return 198;
+            case 6:
+                return 118;
+            case 7:
+                return 64.7;
+            case 8:
+                return 32;
+            default:
+                return -2.0;
         }
     }
 
@@ -1231,7 +1287,8 @@ float const AliMCSpectraWeights::GetMultFromCent(int CentBin) const {
  *  @param[in] cent
  *  @return
  */
-float const AliMCSpectraWeights::GetMultFromCent(std::string const& cent) const {
+float const
+AliMCSpectraWeights::GetMultFromCent(std::string const& cent) const {
     return GetMultFromCent(GetCentFromString(cent));
 }
 
@@ -1278,7 +1335,8 @@ AliMCSpectraWeights::GetMultTupleFromCent(int CentBin) const {
  *  @param[in] cent
  *  @return
  */
-int const AliMCSpectraWeights::GetCentFromString(std::string const& cent) const {
+int const
+AliMCSpectraWeights::GetCentFromString(std::string const& cent) const {
     for (int i = 0; i < static_cast<int>(fstCentralities.size()); ++i) {
         if (fstCentralities[i].find(cent) != std::string::npos)
             return i;
@@ -1349,23 +1407,23 @@ float const AliMCSpectraWeights::GetCentFromMult(float const dMult) const {
  *  @return
  */
 int const AliMCSpectraWeights::GetPartTypeNumber(
-    AliMCSpectraWeights::ParticleType type) const {
+                                                 AliMCSpectraWeights::ParticleType type) const {
     switch (type) {
-    case AliMCSpectraWeights::ParticleType::kPion:
-        return AliMCSpectraWeights::ParticleType::kPion;
-    case AliMCSpectraWeights::ParticleType::kProtons:
-        return AliMCSpectraWeights::ParticleType::kProtons;
-    case AliMCSpectraWeights::ParticleType::kKaon:
-        return AliMCSpectraWeights::ParticleType::kKaon;
-    case AliMCSpectraWeights::ParticleType::kSigmaMinus:
-        return AliMCSpectraWeights::ParticleType::kSigmaMinus;
-    case AliMCSpectraWeights::ParticleType::kSigmaPlus:
-        return AliMCSpectraWeights::ParticleType::kSigmaPlus;
-    case AliMCSpectraWeights::ParticleType::kRest:
-        return AliMCSpectraWeights::ParticleType::kRest;
-    default:
-        return -1;
-        break;
+        case AliMCSpectraWeights::ParticleType::kPion:
+            return AliMCSpectraWeights::ParticleType::kPion;
+        case AliMCSpectraWeights::ParticleType::kProtons:
+            return AliMCSpectraWeights::ParticleType::kProtons;
+        case AliMCSpectraWeights::ParticleType::kKaon:
+            return AliMCSpectraWeights::ParticleType::kKaon;
+        case AliMCSpectraWeights::ParticleType::kSigmaMinus:
+            return AliMCSpectraWeights::ParticleType::kSigmaMinus;
+        case AliMCSpectraWeights::ParticleType::kSigmaPlus:
+            return AliMCSpectraWeights::ParticleType::kSigmaPlus;
+        case AliMCSpectraWeights::ParticleType::kRest:
+            return AliMCSpectraWeights::ParticleType::kRest;
+        default:
+            return -1;
+            break;
     }
 }
 
@@ -1374,25 +1432,26 @@ int const AliMCSpectraWeights::GetPartTypeNumber(
  *  @param[in] Particle
  *  @return
  */
-int const AliMCSpectraWeights::GetPartTypeNumber(std::string const& Particle) const {
+int const
+AliMCSpectraWeights::GetPartTypeNumber(std::string const& Particle) const {
     if (Particle == "Pion") {
         return AliMCSpectraWeights::GetPartTypeNumber(
-            AliMCSpectraWeights::ParticleType::kPion);
-    } else if (Particle=="Proton") {
+                                                      AliMCSpectraWeights::ParticleType::kPion);
+    } else if (Particle == "Proton") {
         return AliMCSpectraWeights::GetPartTypeNumber(
-            AliMCSpectraWeights::ParticleType::kProtons);
-    } else if (Particle=="Kaon") {
+                                                      AliMCSpectraWeights::ParticleType::kProtons);
+    } else if (Particle == "Kaon") {
         return AliMCSpectraWeights::GetPartTypeNumber(
-            AliMCSpectraWeights::ParticleType::kKaon);
-    } else if (Particle=="SigmaMinus") {
+                                                      AliMCSpectraWeights::ParticleType::kKaon);
+    } else if (Particle == "SigmaMinus") {
         return AliMCSpectraWeights::GetPartTypeNumber(
-            AliMCSpectraWeights::ParticleType::kSigmaMinus);
-    } else if (Particle=="SigmaPlus") {
+                                                      AliMCSpectraWeights::ParticleType::kSigmaMinus);
+    } else if (Particle == "SigmaPlus") {
         return AliMCSpectraWeights::GetPartTypeNumber(
-            AliMCSpectraWeights::ParticleType::kSigmaPlus);
-    } else if (Particle=="Rest") {
+                                                      AliMCSpectraWeights::ParticleType::kSigmaPlus);
+    } else if (Particle == "Rest") {
         return AliMCSpectraWeights::GetPartTypeNumber(
-            AliMCSpectraWeights::ParticleType::kRest);
+                                                      AliMCSpectraWeights::ParticleType::kRest);
     } else
         return -1;
 }
@@ -1402,77 +1461,80 @@ int const AliMCSpectraWeights::GetPartTypeNumber(std::string const& Particle) co
  *  @param[in] flag
  *  @return
  */
-std::string const AliMCSpectraWeights::GetFunctionFromSysFlag(SysFlag flag) const {
+std::string const
+AliMCSpectraWeights::GetFunctionFromSysFlag(SysFlag flag) const {
     std::string _default{"Bylinkin"};
-    if (fstCollisionSystem=="pbpb") {
+    if (fstCollisionSystem == "pbpb") {
         _default = "Blastwave";
     }
 
     switch (flag) {
-    case SysFlag::kNominal:
-        return _default;
-    case SysFlag::kBylinkinLower:
-        return "BylinkinLower";
-    case SysFlag::kBylinkinUpper:
-        return "BylinkinUpper";
-    case SysFlag::kHagedorn:
-        return "Hagedorn";
-    case SysFlag::kHagedornUpper:
-        return "HagedornUpper";
-    case SysFlag::kHagedornLower:
-        return "HagedornLower";
-    case SysFlag::kExponential:
-        return "Exponential";
-    case SysFlag::kExponentialUpper:
-        return "ExponentialUpper";
-    case SysFlag::kExponentialLower:
-        return "ExponentialLower";
-    case SysFlag::kBlastwave:
-        return "Blastwave";
-    case SysFlag::kBlastwaveUpper:
-        return "BlastwaveUpper";
-    case SysFlag::kBlastwaveLower:
-        return "BlastwaveLower";
-    default:
-        return _default;
+        case SysFlag::kNominal:
+            return _default;
+        case SysFlag::kBylinkinLower:
+            return "BylinkinLower";
+        case SysFlag::kBylinkinUpper:
+            return "BylinkinUpper";
+        case SysFlag::kHagedorn:
+            return "Hagedorn";
+        case SysFlag::kHagedornUpper:
+            return "HagedornUpper";
+        case SysFlag::kHagedornLower:
+            return "HagedornLower";
+        case SysFlag::kExponential:
+            return "Exponential";
+        case SysFlag::kExponentialUpper:
+            return "ExponentialUpper";
+        case SysFlag::kExponentialLower:
+            return "ExponentialLower";
+        case SysFlag::kBlastwave:
+            return "Blastwave";
+        case SysFlag::kBlastwaveUpper:
+            return "BlastwaveUpper";
+        case SysFlag::kBlastwaveLower:
+            return "BlastwaveLower";
+        default:
+            return _default;
     }
 
     return _default;
 }
-std::string const AliMCSpectraWeights::GetSysVarFromSysFlag(SysFlag flag) const {
+std::string const
+AliMCSpectraWeights::GetSysVarFromSysFlag(SysFlag flag) const {
     switch (flag) {
-    case SysFlag::kPionUp:
-        return "PionUp";
-    case SysFlag::kPionDown:
-        return "PionDown";
-    case SysFlag::kProtonUp:
-        return "ProtonUp";
-    case SysFlag::kProtonDown:
-        return "ProtonDown";
-    case SysFlag::kKaonUp:
-        return "KaonUp";
-    case SysFlag::kKaonDown:
-        return "KaonDown";
-    case SysFlag::kSigmaPlusUp:
-        return "SigmaPlusUp";
-    case SysFlag::kSigmaPlusDown:
-        return "SigmaPlusDown";
-    case SysFlag::kSigmaMinusUp:
-        return "SigmaMinusUp";
-    case SysFlag::kSigmaMinusDown:
-        return "SigmaMinusDown";
-    default:
-        return "";
+        case SysFlag::kPionUp:
+            return "PionUp";
+        case SysFlag::kPionDown:
+            return "PionDown";
+        case SysFlag::kProtonUp:
+            return "ProtonUp";
+        case SysFlag::kProtonDown:
+            return "ProtonDown";
+        case SysFlag::kKaonUp:
+            return "KaonUp";
+        case SysFlag::kKaonDown:
+            return "KaonDown";
+        case SysFlag::kSigmaPlusUp:
+            return "SigmaPlusUp";
+        case SysFlag::kSigmaPlusDown:
+            return "SigmaPlusDown";
+        case SysFlag::kSigmaMinusUp:
+            return "SigmaMinusUp";
+        case SysFlag::kSigmaMinusDown:
+            return "SigmaMinusDown";
+        default:
+            return "";
     }
 
     return "";
 }
 
-
 AliMCSpectraWeightsHandler::AliMCSpectraWeightsHandler() : TNamed() {
     fMCSpectraWeight = nullptr;
 }
 
-AliMCSpectraWeightsHandler::AliMCSpectraWeightsHandler(AliMCSpectraWeights* fMCWeight, const char* name) : TNamed(name, name) {
+AliMCSpectraWeightsHandler::AliMCSpectraWeightsHandler(
+                                                       AliMCSpectraWeights* fMCWeight, const char* name)
+: TNamed(name, name) {
     fMCSpectraWeight = fMCWeight;
 }

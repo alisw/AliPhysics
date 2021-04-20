@@ -122,7 +122,9 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fIsKaonAnalysis(kFALSE),
   fIsProtonAnalysis(kFALSE),
   fIsPionAnalysis(kFALSE),
-  fIsElectronAnalysis(kFALSE)
+  fIsElectronAnalysis(kFALSE),
+  fjets(0), //ML
+  fPtmax(0)  //ML
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -206,8 +208,9 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fIsDeuteronAnalysis(aReader.fIsDeuteronAnalysis),
   fIsTritonAnalysis(aReader.fIsTritonAnalysis),
   fIsHe3Analysis(aReader.fIsHe3Analysis),
-  fIsAlphaAnalysis(aReader.fIsAlphaAnalysis)
-
+  fIsAlphaAnalysis(aReader.fIsAlphaAnalysis),
+  fjets(aReader.fjets), //ML
+  fPtmax(aReader.fPtmax)  //ML
 {
   // copy constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -311,6 +314,8 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fIsProtonAnalysis = aReader.fIsProtonAnalysis;
   fIsPionAnalysis = aReader.fIsPionAnalysis;
   fIsElectronAnalysis = aReader.fIsElectronAnalysis;
+  fjets = aReader.fjets;  //ML
+  fPtmax = aReader.fPtmax; //ML
 
   return *this;
 }
@@ -507,6 +512,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     tEvent->SetReactionPlaneAngle(event_plane_angle);
   }
 
+
+
   AliCentrality *cent = fEvent->GetCentrality();
 
   if (!fEstEventMult && cent && fUsePreCent) {
@@ -540,6 +547,13 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
   // looking for global tracks and saving their numbers to copy from
   // them PID information to TPC-only tracks in the main loop over tracks
+
+//--ML
+   Double_t Ptmax=0; 
+   Double_t Phimax=0; 
+   Double_t Etamax=0; 
+//-- 
+
   for (int i = 0; i < nofTracks; i++) {
     const auto *aodtrack = static_cast<AliAODTrack *>(fEvent->GetTrack(i));
 
@@ -556,7 +570,26 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       }
       labels[id] = i;
     }
-  }
+
+
+//ML--
+ if(fjets>0){
+    Double_t NewPhi = aodtrack->Phi();
+    Double_t NewPt =  aodtrack->Pt();
+    Double_t NewEta = aodtrack->Eta();
+
+    if(NewPt > Ptmax){
+      Ptmax = NewPt;
+      Phimax = NewPhi;
+      Etamax = NewEta;
+    }
+
+ }
+//---
+     
+  } 
+
+
 
   int tNormMult = 0;
   Int_t norm_mult = 0;
@@ -579,6 +612,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       continue;
     }
 
+
     // Counting particles to set multiplicity
     if ((fEstEventMult == kGlobalCount)
       //&& (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
@@ -588,6 +622,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         && (TMath::Abs(aodtrack->Eta()) < 0.8)) {
       tNormMult++;
     }
+
+
 
     norm_mult = tracksPrim;
 
@@ -649,6 +685,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       }
     }
 
+
+ 
     tEvent->SetNormalizedMult(norm_mult);
 
     std::unique_ptr<AliFemtoTrack> trackCopy(CopyAODtoFemtoTrack(aodtrack));
@@ -656,6 +694,10 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     trackCopy->SetMultiplicity(norm_mult);
     trackCopy->SetZvtx(fV1[2]);
 
+
+
+
+    ///////////////////////////////////
     // copying PID information from the correspondent track
     //  const AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
 
@@ -694,6 +736,24 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         continue;
       }
     }
+
+
+
+//ML -------------- Select same/diff jets 
+   if(fjets>0){
+    Bool_t isSelected;
+    Double_t tPhi = aodtrack->Phi();
+    Double_t dphi= TMath::Abs(Phimax-tPhi);
+    if(fjets==1)isSelected = (Ptmax>fPtmax && dphi<1.0);
+    if(fjets==2)isSelected = (Ptmax>fPtmax && dphi>=2.0 && dphi<=4.0); 
+    if(!isSelected){
+//    std::cout<<" AOD reader bad -----> "<<Ptmax<<" dphi "<<dphi<<std::endl;
+    continue;
+    }
+//    std::cout<<" AOD reader GOOD -----> "<<Ptmax<<" dphi "<<dphi<<std::endl;
+   }
+//----------
+
 
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy.get());
 
@@ -840,6 +900,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
       Bool_t trackAccept = true;
 
+
+
       if (fIsKaonAnalysis == true && TMath::Abs(pdg) != 321) {
         trackAccept = false;
       }
@@ -885,6 +947,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   }
   //cout<<"======================> realnofTracks"<<realnofTracks<<endl;
   tEvent->SetNumberOfTracks(realnofTracks); // Setting number of track which we read in event
+  
+   
+
 
   if (cent) {
     tEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
@@ -2687,3 +2752,12 @@ void AliFemtoEventReaderAOD::SetAlphaAnalysis(Bool_t aSetAlphaAna)
 }
 //
 /*************************************************/
+//ML
+void AliFemtoEventReaderAOD::SetCalcJets(Int_t ajets)
+{
+  fjets = ajets;
+}
+void AliFemtoEventReaderAOD::SetPtmaxJets(Double_t aptmax)
+{
+  fPtmax = aptmax;
+}

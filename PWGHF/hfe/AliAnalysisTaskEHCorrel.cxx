@@ -157,6 +157,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fEMCClsTimeCut(kFALSE),
   fMCarray(0),
   fMCHeader(0),
+  fIsMC(kFALSE),
   fApplyElectronEffi(kFALSE),
   fEffi(1.0),
   fWeight(1.0),
@@ -174,6 +175,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fNpureMC(0),
   fNembMCpi0(0),
   fNembMCeta(0),
+  fNDelPhiBins(32),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -349,6 +351,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fEMCClsTimeCut(kFALSE),
   fMCarray(0),
   fMCHeader(0),
+  fIsMC(kFALSE),
   fApplyElectronEffi(kFALSE),
   fEffi(1.0),
   fWeight(1.0),
@@ -366,6 +369,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fNpureMC(0),
   fNembMCpi0(0),
   fNembMCeta(0),
+  fNDelPhiBins(32),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -980,7 +984,7 @@ if(fFlagFillMECorr){
   // Int_t bin[6] = {30,20,32,50,nZvtxBins,nCentralityBinsPbPb}; //ptElec, ptHad,Dphi, Deta
   // Double_t xmin[6] = {0,0,-TMath::Pi()/2,-1.8,0,0};
   // Double_t xmax[6] = {30,20,(3*TMath::Pi())/2,1.8,6,6};
-  Int_t bin[4] = {30,20,32,50}; //ptElec, ptHad,Dphi, Deta
+  Int_t bin[4] = {30,20,fNDelPhiBins,50}; //ptElec, ptHad,Dphi, Deta
   Double_t xmin[4] = {0,0,-TMath::Pi()/2,-1.8};
   Double_t xmax[4] = {30,20,(3*TMath::Pi())/2,1.8};
 
@@ -1292,12 +1296,17 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
 
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+        
+      if(!fIsMC)
+          if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
 
       Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
 
-      if(fEMCClsTimeCut)
-        if(TMath::Abs(clustTime) > 50) continue;
-
+      if(fEMCClsTimeCut){
+        if(!fIsMC)
+            if(TMath::Abs(clustTime) > 50) continue;
+      }
+        
       ////////////////////////////////////////////////////////////////////////////////
       //Properties of tracks matched to the EMCAL//
       ////////////////////////////////////////////////////////////////////////////////
@@ -2003,7 +2012,7 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
   Int_t Nclust = -999;
   TVector3 clustpos;
   Float_t  emcx[3]; // cluster pos
-  Double_t clustE=-999, emcphi = -999, emceta=-999;
+  Double_t clustE=-999, emcphi = -999, emceta=-999, m02=-999;
   Float_t tof=-999;
 
   if(!fUseTender) Nclust = fVevent->GetNumberOfCaloClusters();
@@ -2018,6 +2027,12 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
     Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;  
     if(clust && clust->IsEMCAL())
     {
+        //Removing exotic clusters using IsExotic function in data and using M02 min cut
+      if(!fIsMC)
+          if(clust->GetIsExotic()) continue;
+      m02 = clust->GetM02();
+        if(m02 < 0.02) continue;
+        
       clustE = clust->E();
       if(clustE < 0.3) continue;
 
@@ -2039,8 +2054,10 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
 
-      if(fEMCClsTimeCut)
-        if(TMath::Abs(tof) > 50) continue;
+      if(fEMCClsTimeCut){
+        if(!fIsMC)
+            if(TMath::Abs(tof) > 50) continue;
+      }
 
       fHistClustE->Fill(clustE);
       fEMCClsEtaPhi->Fill(emceta,emcphi);

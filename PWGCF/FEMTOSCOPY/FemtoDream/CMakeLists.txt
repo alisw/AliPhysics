@@ -80,6 +80,7 @@ set(SRCS
   AliAnalysisTaskNanoAODSigma0Femto.cxx
   AliAnalysisTaskNanoSigmaPlus.cxx
   AliAnalysisTaskNanoLD.cxx
+  AliAnalysisTaskLD.cxx
   AliAnalysisTaskGrandma.cxx
   AliAnalysisTaskOtonOmega.cxx
   AliOtonOmegaAnalysis.cxx

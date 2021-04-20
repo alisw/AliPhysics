@@ -36,6 +36,7 @@
 
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliDataFile.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerBitConfig.h"
 #include "AliEMCALTriggerDCSConfig.h"
@@ -238,6 +239,10 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       // Configuration starting with LHC15f
       fTriggerMaker->ConfigureForPP2015();
       dataset = "pp 2015-2018";
+      if(!MCEvent()) {
+        // In case of data load masked fastORs from OADB
+        fMaskedFastorOADB = "oadb";
+      }
     } else if((runnumber >= 244824 && runnumber <= 246994) || (runnumber >= 295581)){
       fTriggerMaker->ConfigureForPbPb2015();
       dataset = "Pb-Pb 2015";
@@ -249,9 +254,13 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       std::cout << "EMCAL trigger maker: No valid configuration found for the given dataset - trigger maker run loop disabled" << std::endl;
     }
 
-    if(fRunSmearing && !fTriggerMaker->HasSmearModel()){
-      std::cout << "EMCAL trigger maker: Initialize standard smear model" << std::endl;
-      InitializeSmearModel(); // Initialize smear model if not yet set from outside
+    if(fRunSmearing || fTriggerMaker->HasSmearModel()) {
+      if(!fTriggerMaker->HasSmearModel()){
+        std::cout << "EMCAL trigger maker: Smear mode - Initialize standard smear model" << std::endl;
+        InitializeSmearModel(); // Initialize smear model if not yet set from outside
+      }
+      fRunSmearing = true;
+      std::cout << "EMCAL trigger maker: Smear mode - require online bad channel map for smeared signal" << std::endl;
       fTriggerMaker->SetApplyOnlineBadChannelMaskingToSmeared();
     } 
 
@@ -476,10 +485,16 @@ void AliEmcalTriggerMakerTask::InitializeSmearModel(){
 }
 
 void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOADB(){
-  AliInfoStream() << "Initializing masked fastors from OADB container " << fMaskedFastorOADB.Data() << std::endl;
-  if(fMaskedFastorOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien");
+  TString containername;
+  if(fMaskedFastorOADB == "oadb") {
+    containername = AliDataFile::GetFileNameOADB("EMCAL/MaskedFastors.root").data();
+  } else {
+    containername = fMaskedFastorOADB;
+  }
+  AliInfoStream() << "Initializing masked fastors from OADB container " << containername << std::endl;
+  if(containername.Contains("alien://") && !gGrid) TGrid::Connect("alien");
   AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
-  badchannelDB.InitFromFile(fMaskedFastorOADB, "AliEmcalMaskedFastors");
+  badchannelDB.InitFromFile(containername, "AliEmcalMaskedFastors");
   TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
   if(!badchannelmap || !badchannelmap->GetEntries()) return;
   for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){

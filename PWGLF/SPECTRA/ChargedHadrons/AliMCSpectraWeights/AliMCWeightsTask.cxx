@@ -128,12 +128,25 @@ void AliMCWeightsTask::UserExec(Option_t* option) {
         fMCSpectraWeights->SetCurrentEvent(fMCEvent);
         fMCSpectraWeights->StartNewEvent();
 
+#ifdef __AliMCWeightsTask_DebugTiming__
+        auto t3 = std::chrono::high_resolution_clock::now();
+#endif
         TString fStoredObjectName = "fMCSpectraWeights";
         // Add to AliVEvent
         auto tmpObject = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject(fStoredObjectName.Data()));
+#ifdef __AliMCWeightsTask_DebugTiming__
+        auto t4 = std::chrono::high_resolution_clock::now();
+        auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>( t4 - t3 ).count();
+        DebugChrono("- Searching fMCSpectraWeights took " << duration2 << " microseconds\n");
+#endif
         if (!tmpObject) {
             AliMCSpectraWeightsHandler* handler = new AliMCSpectraWeightsHandler(fMCSpectraWeights, fStoredObjectName.Data());
             fEvent->AddObject(handler);
+#ifdef __AliMCWeightsTask_DebugTiming__
+            auto t5 = std::chrono::high_resolution_clock::now();
+            auto duration3 = std::chrono::duration_cast<std::chrono::microseconds>( t5 - t4 ).count();
+            DebugChrono("- Adding fMCSpectraWeights took " << duration3 << " microseconds\n");
+#endif
             DebugPCC("Added fMCSpectraWeights to event\n");
         }
         else{
@@ -151,7 +164,7 @@ void AliMCWeightsTask::UserExec(Option_t* option) {
 }
 
 AliMCWeightsTask*
-AliMCWeightsTask::AddTaskAliMCWeightsTask() {
+AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* collisionType) {
 #ifdef __AliMCWeightsTask_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();
 #endif
@@ -180,25 +193,29 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask() {
     //===========================================================================
     std::string stTrainOutputPath;
     std::string collisionSystem;
-//    switch (genType) { // TODO: fill path here
-//        case MCGeneratorType::PP_PYTHIA:
-//            stTrainOutputPath = "~/particle-composition-correction/data/train/"
-//            "pp_PCC_LHC17l3b_CENT_wSDD.root";
+    switch (gen) { // TODO: fill path here
+        case MCGeneratorType::PP_PYTHIA:
             stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
-                                "pp_PCC_LHC17l3b_CENT_wSDD.root";
+                                "pp_5TeV_FirstTrain_LHC17l3b_p_210329.root";
             collisionSystem = "pp";
-//            break;
-//        case MCGeneratorType::PPB_EPOS:
-//            stTrainOutputPath = "";
-//            collisionSystem = "ppb";
-//            break;
-//        case MCGeneratorType::PBPB_HIJING:
-//            stTrainOutputPath = "";
-//            collisionSystem = "pbpb";
-//            break;
-//        default:
-//            break;
-//    }
+            break;
+        case MCGeneratorType::PP_PYTHIA_OLD:
+            stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
+                                "pp_5TeV_FirstTrain_LHC16k5_ab_210329.root";
+            collisionSystem = "pp";
+            break;
+        case MCGeneratorType::PPB_EPOS:
+            stTrainOutputPath = "";
+            collisionSystem = "ppb";
+            break;
+        case MCGeneratorType::PBPB_HIJING:
+            stTrainOutputPath = "";
+            collisionSystem = "pbpb";
+            break;
+        default:
+            break;
+    }
+    if(collisionType) collisionSystem=collisionType;
 
     AliMCSpectraWeights* fMCSpectraWeights =
     new AliMCSpectraWeights(collisionSystem, "fMCSpectraWeights",

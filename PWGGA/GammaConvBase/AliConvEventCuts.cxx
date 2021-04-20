@@ -620,7 +620,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistograms->Add(hTriggerClassSelected);
 
     if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 || fSpecialTrigger == 10){
-      hTriggerClassesCorrelated= new TH1F(Form("TriggerCorrelations %s",GetCutNumber().Data()),"Triggers Correlated with EMCal triggers",17,-0.5,16.5);
+      hTriggerClassesCorrelated= new TH1F(Form("TriggerCorrelations %s",GetCutNumber().Data()),"Triggers Correlated with EMCal triggers",19,-0.5,18.5);
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 1,"kMB");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 2,"kINT7");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 3,"kEMC1");
@@ -638,6 +638,8 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 15,"kDMCDGA");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 16,"kDMCDG1");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 17,"kDMCDG2");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 18,"partition CENT");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 19,"partition woTRD");
       fHistograms->Add(hTriggerClassesCorrelated);
     }
 
@@ -4872,6 +4874,12 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
               weight = weightsBins[pthardbin-1];
               if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
             }
+        } else{ // smaller than lowest border
+            weight = weightsBins[0];
+            if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+            }
         }
       } else if ( fPeriodEnum == kLHC17g5c ){ // preliminary weights obtained from local running
         Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48, 66, 10000};
@@ -4883,6 +4891,12 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if(fUseFilePathForPthard && (pthardbin > -1)){
               weight = weightsBins[pthardbin-1];
               if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+            }
+        } else{ // smaller than lowest border
+            weight = weightsBins[0];
+            if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
             }
         }
       } else if ( fPeriodEnum == kLHC17g6b2a ){ // preliminary weights obtained from local running
@@ -4896,6 +4910,12 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
               weight = weightsBins[pthardbin-1];
               if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
             }
+        } else{ // smaller than lowest border
+          weight = weightsBins[0];
+          if(fUseFilePathForPthard && (pthardbin > -1)){
+          weight = weightsBins[pthardbin-1];
+          if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
         }
       } else if ( fPeriodEnum == kLHC17g6b2b ){ // preliminary weights obtained from local running
         Double_t ptHardBinRanges[7]  = { 5, 7, 9, 12, 16, 21, 10000};
@@ -4908,6 +4928,12 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
               weight = weightsBins[pthardbin-1];
               if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
             }
+        } else{ // smaller than lowest border
+          weight = weightsBins[0];
+          if(fUseFilePathForPthard && (pthardbin > -1)){
+          weight = weightsBins[pthardbin-1];
+          if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
         }
       } else if ( fPeriodEnum == kLHC17g6b3a ){ // preliminary weights obtained from local running
         Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48, 66, 10000};
@@ -4920,6 +4946,12 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
               weight = weightsBins[pthardbin-1];
               if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
             }
+        } else{ // smaller than lowest border
+          weight = weightsBins[0];
+          if(fUseFilePathForPthard && (pthardbin > -1)){
+          weight = weightsBins[pthardbin-1];
+          if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
         }
       } else if ( fPeriodEnum == kLHC17g6b3b ){ // preliminary weights obtained from local running
         Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48, 66, 10000};
@@ -4932,6 +4964,12 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
               weight = weightsBins[pthardbin-1];
               if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
             }
+        } else{ // smaller than lowest border
+          weight = weightsBins[0];
+          if(fUseFilePathForPthard && (pthardbin > -1)){
+          weight = weightsBins[pthardbin-1];
+          if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
         }
     } else {
       weight = 1;
@@ -5893,6 +5931,8 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                 if (firedTrigClass.Contains("7DGA") || firedTrigClass.Contains("8DGA")) hTriggerClassesCorrelated->Fill(14);
                 if (firedTrigClass.Contains("7DG1") || firedTrigClass.Contains("8DG1")) hTriggerClassesCorrelated->Fill(15);
                 if (firedTrigClass.Contains("7DG2") || firedTrigClass.Contains("8DG2")) hTriggerClassesCorrelated->Fill(16);
+                if (firedTrigClass.Contains("CENT")) hTriggerClassesCorrelated->Fill(17);
+                if (firedTrigClass.Contains("NOTRD")) hTriggerClassesCorrelated->Fill(18);
               }
             } else if ( fSpecialTrigger == 10 ){
               if (hTriggerClassesCorrelated){
@@ -5914,6 +5954,8 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                   if (firedTrigClass.Contains("7DGA") || firedTrigClass.Contains("8DGA")) hTriggerClassesCorrelated->Fill(14);
                   if (firedTrigClass.Contains("7DG1") || firedTrigClass.Contains("8DG1")) hTriggerClassesCorrelated->Fill(15);
                   if (firedTrigClass.Contains("7DG2") || firedTrigClass.Contains("8DG2")) hTriggerClassesCorrelated->Fill(16);
+                  if (firedTrigClass.Contains("CENT")) hTriggerClassesCorrelated->Fill(17);
+                  if (firedTrigClass.Contains("NOTRD")) hTriggerClassesCorrelated->Fill(18);
                 }
               }
             }

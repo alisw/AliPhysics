@@ -108,7 +108,7 @@ class AliCaloPhoton :public TLorentzVector{
    void SetTagged(Bool_t bit){fIsTagged=bit;}
    void SetTagged(Bool_t bit,Int_t i,Int_t k){fIsTagged_reg[i][k]=bit;}
    void SetTagInfo(Int_t bits){fTagInfo=bits;}
-   void ResetTagWeights(){for(int i=0;i<18; i++)fTagWeights[i]=1.;}
+   void ResetTagWeights(){for(int i=0;i<18; i++)fTagWeights[i]=0.;}
    void SetTagWeight(Int_t i,Double_t w){fTagWeights[i]=w;}
    Float_t GetTagWeight(Int_t i){return fTagWeights[i];}
    void SetTime(Double_t t) {fTime=t ;}

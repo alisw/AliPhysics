@@ -22,7 +22,7 @@ class AliHFSystErr : public TNamed
 {
  public:
 
-  AliHFSystErr(const Char_t* name="HFSystErr", const Char_t* title="");
+  AliHFSystErr(const Char_t* name="AliHFSystErr", const Char_t* title="");
 
   virtual ~AliHFSystErr();
 
@@ -390,6 +390,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2018PbPb010();
   void InitD0toKpi2018PbPb3050();
   void InitD0toKpi2018PbPb010LowPtAn();
+  void InitD0toKpi2018PbPb3050LowPtAn();
 
   void InitLctopKpiFromScpp13TeV201620172018(); // Lc(<-Sc)
   void InitScpp13TeV201620172018(); // Sc

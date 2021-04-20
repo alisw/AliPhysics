@@ -40,11 +40,12 @@ public:
   void SetUpdateSecVertCovMat(Bool_t flag=kTRUE) { fUpdateSecVertCovMat=flag; return; }
   void SetUpdateSTCovMatrix(Bool_t opt=kTRUE){fUpdateSTCovMatrix=opt;}
   void SetUpdatePulls(Bool_t opt=kTRUE){fUpdatePulls=opt;}
-  void SetMimicData(Bool_t opt=kFALSE){fMimicData=opt;}
+  void SetMimicData(Bool_t opt=kTRUE){fMimicData=opt;}
   void SetAOD(Bool_t flag=kTRUE) { fIsAOD=flag; return; }
   void SetSmearOnlySignal(Bool_t opt=kTRUE) {fSmearOnlySignal=opt;}
   void SetImproverSuffix(TString suffix="central") {fImproverSuffix=suffix;}
-
+  void SetScalingFactorRPhiResol(Double_t scalFact){fRescaledd0rphi=scalFact;}
+  
 private:
   AliAnalysisTaskSEImproveITSCVMFS(const AliAnalysisTaskSEImproveITSCVMFS&);
   AliAnalysisTaskSEImproveITSCVMFS& operator=(const AliAnalysisTaskSEImproveITSCVMFS&); 
@@ -268,8 +269,9 @@ private:
   TString fImproverSuffix; /// suffix for path of correction file on grid 
   TString fOverridePeriodName; /// custom name for overriding auto period name
   Bool_t fFilesOpen; 	 /// check to ensure improver files from CVMFS are accessed only once
+  Double_t fRescaledd0rphi; /// scaling factor that can be used for fast checks also for systematic uncertainties
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEImproveITSCVMFS,13);
+  ClassDef(AliAnalysisTaskSEImproveITSCVMFS,14);
   /// \endcond
 };
 

@@ -148,7 +148,7 @@ fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
 fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 0.5, 0.8, 70., 0.8, 5., 20., 30., -95.},
-fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 0.005, 1., 0.99, 0.1, 0.1, -95., 0.5, 0.8, 3., 3., 3., 0.2, 0.2, 0.99999},
+fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 0.005, 1., 0.99, 0.1, 0.1, -95., 0.5, 0.8, 3., 3., 3., 0.2, 0.2, 0.9995},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
 //variables for V0 cuts
@@ -417,14 +417,33 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
     return; 
   }
 
-  //fill multiplicity/centrality percentile histogram
-  if (((lPercentile>0. && lPercentile<10.) && fTriggerMask&AliVEvent::kCentral) || 
-      ((lPercentile>30. && lPercentile<50.) && fTriggerMask&AliVEvent::kSemiCentral) || 
-      (((lPercentile>10. && lPercentile<30.) || (lPercentile>50. && lPercentile<90.)) && fTriggerMask&AliVEvent::kINT7)) {
-    fHistos_eve->FillTH1("hcent", lPercentile);
+  //get run number
+  int runNumber = (isESD) ? lESDevent->GetRunNumber() : lAODevent->GetRunNumber();
+
+  //fill multiplicity/centrality percentile histogram (depending on trigger and data taking period)
+  if (runNumber>290000) {
+    if (((lPercentile>0. && lPercentile<10.) && fTriggerMask&AliVEvent::kCentral) || 
+        ((lPercentile>30. && lPercentile<50.) && fTriggerMask&AliVEvent::kSemiCentral) || 
+        (((lPercentile>10. && lPercentile<30.) || (lPercentile>50. && lPercentile<90.)) && fTriggerMask&AliVEvent::kINT7)) {
+      fHistos_eve->FillTH1("hcent", lPercentile);
+    } else {
+      DataPosting(); 
+      return; 
+    }
+  } else if (runNumber>200000 && runNumber<=290000) {
+    if ((lPercentile>0. && lPercentile<90.) && fTriggerMask&AliVEvent::kINT7) {
+      fHistos_eve->FillTH1("hcent", lPercentile);
+    } else {
+      DataPosting(); 
+      return; 
+    }
   } else {
-    DataPosting(); 
-    return; 
+    if ((lPercentile>0. && lPercentile<90.) && fTriggerMask&AliVEvent::kMB) {
+      fHistos_eve->FillTH1("hcent", lPercentile);
+    } else {
+      DataPosting(); 
+      return; 
+    }
   }
 
   //get MC header and MC array
@@ -1074,7 +1093,7 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kTRUE, kCasc_V0Rad, 11, 1., 5.);
   SetCutVariation(kTRUE, kCasc_DcaMesToPV, 11, 0.1, 0.3);
   SetCutVariation(kTRUE, kCasc_DcaBarToPV, 11, 0.1, 0.3);
-  SetCutVariation(kTRUE, kCasc_BacBarCosPA, 21, 0.9999, 0.999999);
+  SetCutVariation(kTRUE, kCasc_BacBarCosPA, 10, 0.999, 0.99999);
 }
 
 //________________________________________________________________________

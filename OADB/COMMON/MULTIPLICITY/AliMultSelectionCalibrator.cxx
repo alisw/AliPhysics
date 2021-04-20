@@ -25,6 +25,7 @@
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "TList.h"
+#include "TDirectory.h"
 #include "TFile.h"
 #include "TProfile.h"
 #include "TStopwatch.h"
@@ -608,6 +609,24 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
   // Determine Calibration Information
   //=========================================
   
+  //Open Run 3 - compliant calibration object, create structure
+  TString lRun3File = fOutputFileName.Data();
+  lRun3File.Prepend("Run3-");
+  TFile *fRun3 = new TFile(lRun3File.Data(), "RECREATE");
+  //Do not use custom objects, ROOT compliance only
+  
+  fRun3->cd();
+  //Master list to store all calibration objects
+  TList *lR3List = new TList();
+  TH1F *hR3EventSelection[500];
+  TProfile *hR3CalibDataVtx[500][AliMultInput::kNVariables];
+  TH1F *hR3DefData[500][lNEstimators];
+  TH1F *hR3CalibData[500][lNEstimators];
+  TH1F *hR3EventSelectionDefault;
+  TProfile *hR3CalibDataVtxDefault[AliMultInput::kNVariables];
+  TH1F *hR3DefDataDefault[lNEstimators];
+  TH1F *hR3CalibDataDefault[lNEstimators];
+  
   //Open output OADB file, generate everything within loop
   TFile * f = new TFile (fOutputFileName.Data(), "recreate");
   AliOADBContainer * oadbContMS = new AliOADBContainer("MultSel");
@@ -777,42 +796,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
       }
       //==== End Floating Point Calibration Engine ====
     }
-    /* DEPRECATED
-     else {
-     //==== Integer Value Calibration Engine ====
-     //Procedure: Create histogram to be filled
-     cout<<"Integer calibration engine started!"<<endl;
-     const Long_t lNBins    = lMaxEst[iEst][iRun]-lMinEst[iEst][iRun]+1;
-     Float_t lLowEdge = lMinEst[iEst][iRun]-0.5;
-     Float_t lHighEdge= lMaxEst[iEst][iRun]+0.5;
-     cout<<"Inspect: "<<lNBins<<", low "<<lLowEdge<<", high "<<lHighEdge<<endl;
-     if( sTree[iRun]->GetEntries() < 1 ) {
-     //Case of an empty run!
-     hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",1,0,1);
-     hCalib[iRun][iEst]->SetDirectory(0);
-     } else {
-     TH1F *hTemporary = new TH1F("hTemporary", "", lNBins, lMinEst[iEst][iRun]-0.5, lMaxEst[iEst][iRun]+0.5 );
-     //hTemporary->SetDirectory(0);
-     lRunStats[iRun] = sTree[iRun]->Draw(Form("%s*(AliMultSelectionCalibrator::VtxCorrection(fEvSel_VtxZ))>>hTemporary",fSelection->GetEstimator(iEst)->GetDefinition().Data()),"","goff");
-     cout<<"entries = "<<lRunStats[iRun]<<endl;
-     //In memory now: histogram with content, please normalize to unity
-     hTemporary->Scale(1./((double)(lRunStats[iRun])));
-     
-     Float_t lBoundaries[lNBins+1]; //to store cumulative function
-     lBoundaries[0] = 0;
-     for(Long_t iB=1; iB<hTemporary->GetNbinsX()+1; iB++) {
-     lBoundaries[iB] = lBoundaries[iB-1]+hTemporary->GetBinContent(iB);
-     }
-     //This won't follow what was requested (it cannot, mathematically)
-     hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",lNBins,lLowEdge,lHighEdge);
-     hCalib[iRun][iEst]->SetDirectory(0);
-     for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++) hCalib[iRun][iEst] -> SetBinContent(ibin, 100.0-50.0*(lBoundaries[ibin-1]+lBoundaries[ibin]));
-     //Enough info for calibration determined...
-     delete hTemporary;
-     hTemporary = 0x0;
-     }
-     } */
-    
+
     //Write OADB object
     if ( !lAutoDiscover ){
       cout<<"--- Processing run range "<<fFirstRun[iRun]<<"-"<<fLastRun[iRun]<<" ("<<iRun<<"/"<<fNRunRanges<<")..."<<endl;
@@ -829,6 +813,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     
     for ( Int_t iVar=0; iVar<AliMultInput::kNVariables; iVar++) {
       hCalibDataVtx[iVar] = (TProfile*) hCalibVtx[iRun][iVar]->Clone( Form("hCalibVtx_%s",AliMultInput::VarName[iVar].Data() ) );
+      hCalibDataVtx[iVar]->SetDirectory(0);
       if( VarDoAutocalib[iVar] ) oadbMultSelection->AddCalibHistoVtx( hCalibDataVtx[iVar] );
     }
     
@@ -838,9 +823,8 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
       // hCalibVtx[iRun][iEst] = (TProfile*)gDirectory->Get(Form("hCalibVtx_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()));
       //Beware similar names! Will be saved ...
       hCalibData[iEst] = (TH1F*) hCalib[iRun][iEst]->Clone( Form("hCalib_%s",fSelection->GetEstimator(iEst)->GetName()) );
-      oadbMultSelection->AddCalibHisto( hCalibData[iEst] );
       hCalibData[iEst]->SetDirectory(0);
-      hCalibDataVtx[iEst]->SetDirectory(0);
+      oadbMultSelection->AddCalibHisto( hCalibData[iEst] );
     }
     cout<<"=================================================================================="<<endl;
     if ( !lAutoDiscover ){
@@ -861,6 +845,67 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
       }
     }
     
+    TString lR3ListName = lAutoDiscover?Form("single_%i_", lRunNumbers[iRun]):Form("range_%i_%i_", fFirstRun[iRun], fLastRun[iRun]);
+    
+    //Run 3 calibration object save
+    fRun3->cd();
+    
+    hR3EventSelection[iRun] = new TH1F(Form("%s_hEventSelection",lR3ListName.Data()), "Event selection requirements", 10,0,10);
+    hR3EventSelection[iRun]->GetXaxis()->SetBinLabel(1,"Phys. Sel.");
+    hR3EventSelection[iRun]->GetXaxis()->SetBinLabel(2,"INEL > 0");
+    hR3EventSelection[iRun]->GetXaxis()->SetBinLabel(3,"Vtx-Z cut");
+    hR3EventSelection[iRun]->GetXaxis()->SetBinLabel(4,"SPD Pileup in Mult bins");
+    hR3EventSelection[iRun]->GetXaxis()->SetBinLabel(5,"SPD/Track vtx consistency");
+    hR3EventSelection[iRun]->GetXaxis()->SetBinLabel(6,"Tracklets vs clusters");
+    hR3EventSelection[iRun]->GetXaxis()->SetBinLabel(7,"Non zero contrib to vtx");
+    hR3EventSelection[iRun]->GetXaxis()->SetBinLabel(8,"DEPRECATED");
+    hR3EventSelection[iRun]->GetXaxis()->SetBinLabel(9,"Incomplete DAQ");
+    hR3EventSelection[iRun]->GetXaxis()->SetBinLabel(10,"DEPRECATED");
+    
+    hR3EventSelection[iRun]->SetBinContent(1, cuts->GetTriggerCut() );
+    hR3EventSelection[iRun]->SetBinContent(2, cuts->GetINELgtZEROCut() );
+    hR3EventSelection[iRun]->SetBinContent(3, cuts->GetVzCut() );
+    hR3EventSelection[iRun]->SetBinContent(4, cuts->GetRejectPileupInMultBinsCut() );
+    hR3EventSelection[iRun]->SetBinContent(5, cuts->GetVertexConsistencyCut() );
+    hR3EventSelection[iRun]->SetBinContent(6, cuts->GetTrackletsVsClustersCut() );
+    hR3EventSelection[iRun]->SetBinContent(7, cuts->GetNonZeroNContribs() );
+    hR3EventSelection[iRun]->SetBinContent(8, cuts->GetIsNotAsymmetricInVZERO() );
+    hR3EventSelection[iRun]->SetBinContent(9, cuts->GetIsNotIncompleteDAQ() );
+    hR3EventSelection[iRun]->SetBinContent(10, cuts->GetHasGoodVertex2016() );
+    
+    lR3List -> Add(hR3EventSelection[iRun]);
+    
+    //Variable calibration
+    for ( Int_t iVar=0; iVar<AliMultInput::kNVariables; iVar++) {
+      hR3CalibDataVtx[iRun][iVar] = (TProfile*) hCalibVtx[iRun][iVar]->Clone( Form("%s_hVtx_%s",lR3ListName.Data(),AliMultInput::VarName[iVar].Data() ) );
+      hR3CalibDataVtx[iRun][iVar]->SetDirectory(0);
+      if( VarDoAutocalib[iVar] ) lR3List -> Add(hR3CalibDataVtx[iRun][iVar]);
+    }
+    //Estimator definition and properties
+    for ( Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) {
+      hR3DefData[iRun][iEst] = new TH1F( Form("%s_hEstimatorDef_%s",lR3ListName.Data(),fSelection->GetEstimator(iEst)->GetName()) , "", 5,0,5 );
+      hR3DefData[iRun][iEst]->SetTitle(fSelection->GetEstimator(iEst)->GetDefinition());
+      
+      hR3DefData[iRun][iEst]->GetXaxis()->SetBinLabel(1,"Is Integer");
+      hR3DefData[iRun][iEst]->GetXaxis()->SetBinLabel(2,"Mean value");
+      hR3DefData[iRun][iEst]->GetXaxis()->SetBinLabel(3,"Is anchored");
+      hR3DefData[iRun][iEst]->GetXaxis()->SetBinLabel(4,"Anchor point");
+      hR3DefData[iRun][iEst]->GetXaxis()->SetBinLabel(5,"Anchor percentile");
+      
+      hR3DefData[iRun][iEst]->SetBinContent(1, fSelection->GetEstimator(iEst)->IsInteger());
+      hR3DefData[iRun][iEst]->SetBinContent(2, fSelection->GetEstimator(iEst)->GetMean());
+      hR3DefData[iRun][iEst]->SetBinContent(3, fSelection->GetEstimator(iEst)->GetUseAnchor());
+      hR3DefData[iRun][iEst]->SetBinContent(4, fSelection->GetEstimator(iEst)->GetAnchorPoint());
+      hR3DefData[iRun][iEst]->SetBinContent(5, fSelection->GetEstimator(iEst)->GetAnchorPercentile());
+      
+      lR3List -> Add(hR3DefData[iRun][iEst]);
+    }
+    //Estimator calibration
+    for ( Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) {
+      hR3CalibData[iRun][iEst] = (TH1F*) hCalib[iRun][iEst]->Clone( Form("%s_hMultSelCalib_%s",lR3ListName.Data(),fSelection->GetEstimator(iEst)->GetName()) );
+      lR3List -> Add(hR3CalibData[iRun][iEst]);
+    }
+        
     Bool_t lThisIsReference = kFALSE;
     if(!lAutoDiscover){
       if ( fFirstRun[iRun] <= fRunToUseAsDefault && fRunToUseAsDefault <= fLastRun[iRun]) lThisIsReference = kTRUE;
@@ -882,6 +927,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
       TProfile * hDummyVtxZ[AliMultInput::kNVariables];
       for ( Int_t iVar=0; iVar<AliMultInput::kNVariables; iVar++) {
         hDummyVtxZ[iVar] = (TProfile*) hCalibVtx[iRun][iVar]->Clone( Form("hCalibVtx_%s",AliMultInput::VarName[iVar].Data() ) );
+        hDummyVtxZ[iVar] -> SetDirectory(0);
         if( VarDoAutocalib[iVar] ) oadbMultSelection->AddCalibHistoVtx( hDummyVtxZ[iVar] );
       }
       
@@ -907,6 +953,69 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
       oadbContMS->AddDefaultObject(oadbMultSelection);
       //DEFAULT OADB Object saving procedure ENDS here
       //========================================================================
+      
+      TString lR3ListName = "Default";
+      
+      //Run 3 calibration object save
+      fRun3->cd();
+      
+      hR3EventSelectionDefault = new TH1F("default_hEventSelection", "Event selection requirements", 10,0,10);
+      hR3EventSelectionDefault->GetXaxis()->SetBinLabel(1,"Phys. Sel.");
+      hR3EventSelectionDefault->GetXaxis()->SetBinLabel(2,"INEL > 0");
+      hR3EventSelectionDefault->GetXaxis()->SetBinLabel(3,"Vtx-Z cut");
+      hR3EventSelectionDefault->GetXaxis()->SetBinLabel(4,"SPD Pileup in Mult bins");
+      hR3EventSelectionDefault->GetXaxis()->SetBinLabel(5,"SPD/Track vtx consistency");
+      hR3EventSelectionDefault->GetXaxis()->SetBinLabel(6,"Tracklets vs clusters");
+      hR3EventSelectionDefault->GetXaxis()->SetBinLabel(7,"Non zero contrib to vtx");
+      hR3EventSelectionDefault->GetXaxis()->SetBinLabel(8,"DEPRECATED");
+      hR3EventSelectionDefault->GetXaxis()->SetBinLabel(9,"Incomplete DAQ");
+      hR3EventSelectionDefault->GetXaxis()->SetBinLabel(10,"DEPRECATED");
+      
+      hR3EventSelectionDefault->SetBinContent(1, cuts->GetTriggerCut() );
+      hR3EventSelectionDefault->SetBinContent(2, cuts->GetINELgtZEROCut() );
+      hR3EventSelectionDefault->SetBinContent(3, cuts->GetVzCut() );
+      hR3EventSelectionDefault->SetBinContent(4, cuts->GetRejectPileupInMultBinsCut() );
+      hR3EventSelectionDefault->SetBinContent(5, cuts->GetVertexConsistencyCut() );
+      hR3EventSelectionDefault->SetBinContent(6, cuts->GetTrackletsVsClustersCut() );
+      hR3EventSelectionDefault->SetBinContent(7, cuts->GetNonZeroNContribs() );
+      hR3EventSelectionDefault->SetBinContent(8, cuts->GetIsNotAsymmetricInVZERO() );
+      hR3EventSelectionDefault->SetBinContent(9, cuts->GetIsNotIncompleteDAQ() );
+      hR3EventSelectionDefault->SetBinContent(10, cuts->GetHasGoodVertex2016() );
+      
+      lR3List -> Add(hR3EventSelectionDefault);
+      
+      //Variable calibration
+      for ( Int_t iVar=0; iVar<AliMultInput::kNVariables; iVar++) {
+        hR3CalibDataVtxDefault[iVar] = (TProfile*) hCalibVtx[iRun][iVar]->Clone( Form("default_hVtx_%s",AliMultInput::VarName[iVar].Data() ) );
+        hR3CalibDataVtxDefault[iVar]->SetDirectory(0);
+        if( VarDoAutocalib[iVar] ) lR3List -> Add(hR3CalibDataVtxDefault[iVar]);
+      }
+      //Estimator definition and properties
+      for ( Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) {
+        hR3DefDataDefault[iEst] = new TH1F( Form("default_hEstimatorDef_%s",fSelection->GetEstimator(iEst)->GetName()) , "", 5,0,5 );
+        hR3DefDataDefault[iEst]->SetTitle(fSelection->GetEstimator(iEst)->GetDefinition());
+        
+        hR3DefDataDefault[iEst]->GetXaxis()->SetBinLabel(1,"Is Integer");
+        hR3DefDataDefault[iEst]->GetXaxis()->SetBinLabel(2,"Mean value");
+        hR3DefDataDefault[iEst]->GetXaxis()->SetBinLabel(3,"Is anchored");
+        hR3DefDataDefault[iEst]->GetXaxis()->SetBinLabel(4,"Anchor point");
+        hR3DefDataDefault[iEst]->GetXaxis()->SetBinLabel(5,"Anchor percentile");
+        
+        hR3DefDataDefault[iEst]->SetBinContent(1, fSelection->GetEstimator(iEst)->IsInteger());
+        hR3DefDataDefault[iEst]->SetBinContent(2, fSelection->GetEstimator(iEst)->GetMean());
+        hR3DefDataDefault[iEst]->SetBinContent(3, fSelection->GetEstimator(iEst)->GetUseAnchor());
+        hR3DefDataDefault[iEst]->SetBinContent(4, fSelection->GetEstimator(iEst)->GetAnchorPoint());
+        hR3DefDataDefault[iEst]->SetBinContent(5, fSelection->GetEstimator(iEst)->GetAnchorPercentile());
+        
+        lR3List -> Add(hR3DefDataDefault[iEst]);
+      }
+      //Estimator calibration
+      for ( Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) {
+        hR3CalibDataDefault[iEst] = (TH1F*) hCalib[iRun][iEst]->Clone( Form("default_hMultSelCalib_%s",fSelection->GetEstimator(iEst)->GetName()) );
+        lR3List -> Add(hR3CalibDataDefault[iEst]);
+      }
+           
+      
     }
     //Cleanup
     for(int ii = 0; ii < lNEstimatorsThis; ii++){
@@ -954,7 +1063,9 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
   }
   
   cout<<"All done, will write OADB..."<<endl;
-  
+  fRun3->Write();
+  lR3List->Write("multSel",1);
+  f->cd();
   oadbContMS->Write();
   cout<<" Done!"<<endl;
   return kTRUE;

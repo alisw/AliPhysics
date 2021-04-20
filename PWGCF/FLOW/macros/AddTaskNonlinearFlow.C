@@ -18,7 +18,9 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                 Int_t           fSystFlag               = 0,
                 TString         fPeriod                 = "LHC15o",
                 TString         fNtrksName              = "Mult",
-		TString		uniqueID        	= ""
+		TString		uniqueID        	= "",
+	        Bool_t		fNUA			= true,
+	        Bool_t		fNUE 			= true
 		)
 {
         // The common parameters
@@ -35,8 +37,6 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	Int_t		IsSample			= 10;
 	Short_t		nCentFl				= 0;
 	Bool_t		fLS				= false;
-	Bool_t		fNUE 				= true;
-	Bool_t		fNUA				= true;
 
 	// Creates a pid task and adds it to the analysis manager
 	// Get the pointer to the existing analysis manager via the static
@@ -61,7 +61,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	//========================================================================
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
-	AliAnalysisTaskNonlinearFlow* taskFlowEp = new AliAnalysisTaskNonlinearFlow("taskFlowEp");
+	AliAnalysisTaskNonlinearFlow* taskFlowEp = new AliAnalysisTaskNonlinearFlow("taskFlowEp", fNUA, fNUE);
 	taskFlowEp->SetDebugLevel(3);
 	taskFlowEp->SetFilterbit(fFilterbit); // For systematics
 	taskFlowEp->SetFilterbitDefault(fFilterbit);
@@ -106,27 +106,35 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	//TString fileName = AliAnalysisManager::GetCommonFileName();
 	//fileName+=suffixName;
 	AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *cout_hist = mgr->CreateContainer(Form("output_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
+	AliAnalysisDataContainer *cout_hist = mgr->CreateContainer(Form("QA_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
 	mgr->ConnectInput (taskFlowEp, 0, cinput);
 	mgr->ConnectOutput(taskFlowEp, 1, cout_hist);
+	AliAnalysisDataContainer *physics_hist = mgr->CreateContainer(Form("output_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
+	mgr->ConnectOutput(taskFlowEp, 2, physics_hist);
+        int outSlotCounter=2;
+        for (int i = 0; i < 30; i++) {
+            outSlotCounter++;
+	    AliAnalysisDataContainer *physics_hist_i = mgr->CreateContainer(Form("output_%s_%d", uniqueID.Data(), i), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
+	    mgr->ConnectOutput(taskFlowEp, outSlotCounter, physics_hist_i);
+        }
+        
 	Int_t inSlotCounter=1;
-	if(fNUA || fNUE)
-		TGrid::Connect("alien:");
+	TGrid::Connect("alien:");
 	if(fNUA) {
 		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
                
                 TFile *inNUA;
 
                 if (fPeriod.EqualTo("LHC15o")) {
-			// inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/LHC15o/RBRweights.root");
-			inNUA = TFile::Open("alien:///alice/cern.ch/user/e/enielsen/WeightsPbPb15o.root");
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/WeightsPbPb15o.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
                 } else if (fPeriod.EqualTo("LHC17")) {
 	            taskFlowEp->SetUsePeriodWeigths(true);
                     if (trigger == 0) {
                         inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC17/weights_LHC17_MB_periods.root");
                     } else {
-                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC17/weights_LHC17_HM_periods.root");
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/Weights_pp17.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
                     }
                 } else if (fPeriod.EqualTo("LHC15i")) {
 	            taskFlowEp->SetUsePeriodWeigths(true);
@@ -147,38 +155,49 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		    if (trigger == 0) {
                         inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC16/weights_LHC16_MB_periods.root");
                     } else {
-                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC16/weights_LHC16_periods.root");
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/Weights_pp16.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
                     }
                 } else if (fPeriod.EqualTo("LHC18")) {
 	            taskFlowEp->SetUsePeriodWeigths(true);
 		    if (trigger == 0) {
                         inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_MB_periods.root");
                     } else {
-                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_periods.root");
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/Weights_pp18.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
                     }
                 } 
 					
                 TList* weight_list = NULL;
-		if (fSystFlag == 0 && !fPeriod.EqualTo("LHC15o")) {
-			weight_list = dynamic_cast<TList*>(inNUA->Get("weights"));
-		} else {
-			weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
-		}
+		weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
 		cin_NUA->SetData(weight_list);
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUA);
 		inSlotCounter++;
 	}
+
 	if(fNUE) {
+
+                TFile *inNUE;
+
 		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
-		TFile *inNUE = (fFilterbit==96)?TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root"): TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR_FB768.root");
+                if (fPeriod.EqualTo("LHC15o")) {
+			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC18e1_MBEff_FD_wSyst_v2.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+                } else {
+			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC17d20a1_WithModEff_Syst.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+		}
+
 		if(!inNUE) {
 			printf("Could not open efficiency file!\n");
 			return 0;
 		}
-		cin_NUE->SetData(inNUE);
+                TList* weight_list = NULL;
+		weight_list = dynamic_cast<TList*>(inNUE->Get("EffAndFD"));
+		cin_NUE->SetData(weight_list);
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUE);
 		inSlotCounter++;
-	}
+	} 
 
 	// Return task pointer at the end
 	return taskFlowEp;

@@ -302,12 +302,13 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Int_t fh1, fh2, fh3, fh4, fh5, fh6, fh7;  //harmonics
   Int_t fi1, fi2, fi3, fi4, fi5, fi6, fi7;  //eigth set of harmonics 
   
-  TComplex fQvector[113][15];       	// //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
+  TComplex fQvector[113][15];       	// //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] 
 
   // 4.) Final results:
    
   TProfile *fResults[16];         	//! final centrality result
   TProfile *fCovResults[16];         	//! TProfile to store terms needed for Covariance 
+  TProfile *fJoinedCovResults[16];      //! TProfile to store joined Covariance term calculated as one correlator <z> instead of product of two correlators <x*y> 
   TProfile *fMixedParticleHarmonics[16];//! Stores output for special mixed particle analysis
   Bool_t bDoMixed;		 	// if kTRUE: Do special mixed particle analysis, default kFALSE (MainTask)
   Bool_t bDifferentCharge; 	 	// used in DoMixed: if kTRUE mixed particle analysis between positiv and negativ
@@ -323,7 +324,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,38); 
+  ClassDef(AliAnalysisTaskStudentsML,39); 
 
 };
 

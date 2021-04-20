@@ -92,7 +92,8 @@ public:
     kBeamTestNS = 18,          // Custom fit of all avail. TB points and E>100 GeV data
     kPi0MCNS = 19,             // Custom fit of all avail. TB points and E>100 GeV MC
     kTestBeamShaper = 20,      // Final/official fit of all avail. TB points and E>100 GeV data corrected for shaper NL
-    kTestBeamFinalMC = 21      // Final/official fit of all avail. TB points and E>100 GeV MC
+    kTestBeamFinalMC = 21,      // Final/official fit of all avail. TB points and E>100 GeV MC
+    kTestBeamShaperWoScale = 22       // Final/official fit of all avail. TB points and E>100 GeV data corrected for shaper NL wo scale shift
   };
 
   /// NCell efficiency enum list of possible parametrizations.
@@ -545,14 +546,16 @@ public:
   void     SwitchOffRejectExoticCell()                { fRejectExoticCells = kFALSE    ; }
   Bool_t   IsRejectExoticCell()                 const { return fRejectExoticCells      ; }
   Float_t  GetECross(Int_t absID, Double_t tcell, AliVCaloCells* cells, Int_t bc,
-                     Float_t cellMinEn = 0., Bool_t useWeight = kFALSE, Float_t energyClus = 0.);
+                     Bool_t useWeight = kFALSE, Float_t energyClus = 0.);
   Bool_t   IsCellNextToCluster(Int_t absID, Float_t eThresh, AliVCaloCells* cells, Int_t bc = -1);
   Float_t  GetExoticCellFractionCut()           const { return fExoticCellFraction     ; }
   Float_t  GetExoticCellDiffTimeCut()           const { return fExoticCellDiffTime     ; }
   Float_t  GetExoticCellMinAmplitudeCut()       const { return fExoticCellMinAmplitude ; }
+  Float_t  GetExoticCellInCrossMinAmplitudeCut() const { return fExoticCellInCrossMinAmplitude ; }
   void     SetExoticCellFractionCut(Float_t f)        { fExoticCellFraction     = f    ; }
   void     SetExoticCellDiffTimeCut(Float_t dt)       { fExoticCellDiffTime     = dt   ; }
   void     SetExoticCellMinAmplitudeCut(Float_t ma)   { fExoticCellMinAmplitude = ma   ; }
+  void     SetExoticCellInCrossMinAmplitudeCut(Float_t ma) { fExoticCellInCrossMinAmplitude = ma ; }
   Bool_t   IsExoticCluster(const AliVCluster *cluster, AliVCaloCells* cells, Int_t bc=0) ;
   void     SwitchOnRejectExoticCluster()              { fRejectExoticCluster = kTRUE   ;
     fRejectExoticCells   = kTRUE   ; }
@@ -675,6 +678,7 @@ private:
   Float_t    fExoticCellFraction;        ///< Good cell if fraction < 1-ecross/ecell
   Float_t    fExoticCellDiffTime;        ///< If time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
   Float_t    fExoticCellMinAmplitude;    ///< Check for exotic only if amplitud is larger than this value
+  Float_t    fExoticCellInCrossMinAmplitude;///< Minimum energy of cells in cross, if lower not considered in cross
 
   // PID
   AliEMCALPIDUtils * fPIDUtils;          ///< Recalculate PID parameters
@@ -728,7 +732,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 37) ;
+  ClassDef(AliEMCALRecoUtils, 38) ;
   /// \endcond
 
 };

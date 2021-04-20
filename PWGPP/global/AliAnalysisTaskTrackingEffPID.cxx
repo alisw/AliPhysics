@@ -170,7 +170,7 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   else if(fMultEstimator==4) axTit[3]="N_{TPCclusters}/1000";
   const int nPtBins=32;
   const int nMultBins=10;
-  int nbins[6]={10,18,nPtBins,nMultBins,4,30};
+  int nbins[6]={10,18,nPtBins,nMultBins,4,60};
   double xmin[6]={-1.,0.,0.,0,-10.,0.};
   double xmax[6]={1.,2*TMath::Pi(),30.,200.,10.,3.};
   TString charge[2] = {"pos","neg"};

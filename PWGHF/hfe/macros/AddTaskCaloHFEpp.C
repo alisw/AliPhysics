@@ -166,10 +166,10 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 
     // MC get estimator file
     const Char_t* profilebasenameMC="SPDTrklMC";
-    const Char_t* periodNamesMC[2] = {"LHC16k","LHC16l"};
-    TProfile* multEstimatorAvgMC[2];
+    const Char_t* periodNamesMC[3] = {"LHC16k","LHC16l","LHC17"};
+    TProfile* multEstimatorAvgMC[3];
 
-    for(Int_t ip=0; ip<2; ip++) {
+    for(Int_t ip=0; ip<3; ip++) {
 	    cout<< " Trying to get "<<Form("%s_%s",profilebasenameMC,periodNamesMC[ip])<<endl;
 	    multEstimatorAvgMC[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasenameMC,periodNamesMC[ip]))->Clone(Form("%s_%s_clone",profilebasenameMC,periodNamesMC[ip])));
 	    if(!multEstimatorAvgMC[ip]){
@@ -179,6 +179,7 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
     }
     task->SetMultiProfileMCLHC16k(multEstimatorAvgMC[0]);
     task->SetMultiProfileMCLHC16l(multEstimatorAvgMC[1]);
+    task->SetMultiProfileMCLHC17(multEstimatorAvgMC[2]);
 
 
     // Get weight for N_{tracklet}
