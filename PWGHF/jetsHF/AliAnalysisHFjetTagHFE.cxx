@@ -2311,7 +2311,7 @@ void AliAnalysisHFjetTagHFE::CountNch()
 						}
 				}
 		}
-		return;
+		return Nch;
 }
 
 
