@@ -133,7 +133,8 @@ ClassImp(AliAnalysisTaskGenUeVsMult) // classimp: necessary for root
 
 AliAnalysisTaskGenUeVsMult::AliAnalysisTaskGenUeVsMult() : AliAnalysisTaskSE(),
     
-    fMC(0x0),fMcHandler(0x0),fMCStack(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0),fDeltaphiNS(0x0),fDeltaphiAS(0x0),fDeltaphiTS(0x0),fMultiplicyNS(0x0),fMultiplicyAS(0x0),fMultiplicyTS(0x0),hGenEta(0)
+    fMC(0x0),fMcHandler(0x0),fMCStack(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0),fDeltaphiNS(0x0),fDeltaphiAS(0x0),fDeltaphiTS(0x0),fMultiplicyNS(0x0),fMultiplicyAS(0x0),fMultiplicyTS(0x0),fHistNchTotVsV0M(0x0),
+    fHistNchTotVsV0A(0x0),hGenEta(0)
 
 
 {
@@ -143,9 +144,10 @@ AliAnalysisTaskGenUeVsMult::AliAnalysisTaskGenUeVsMult() : AliAnalysisTaskSE(),
 		pNumDenTrueAll[i]=0;
 		pSumPtTrueAll[i]=0;
         
-        hNumDen[i]=0;
-        hSumPt[i]=0;
-        
+        for(Int_t i_est=0; i_est<4; ++i_est){
+        hNumDen[i][i_est] = 0;
+        hSumPt[i][i_est] = 0;
+        }
 		
 
 		pNumDenTrue[i]=0;
@@ -173,7 +175,8 @@ AliAnalysisTaskGenUeVsMult::AliAnalysisTaskGenUeVsMult() : AliAnalysisTaskSE(),
 //_____________________________________________________________________________
 AliAnalysisTaskGenUeVsMult::AliAnalysisTaskGenUeVsMult(const char* name) : AliAnalysisTaskSE(name),
 	
-    fMC(0x0),fMcHandler(0x0),fMCStack(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0),fDeltaphiNS(0x0),fDeltaphiAS(0x0),fDeltaphiTS(0x0),fMultiplicyNS(0x0),fMultiplicyAS(0x0),fMultiplicyTS(0x0),hGenEta(0)
+    fMC(0x0),fMcHandler(0x0),fMCStack(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0),fDeltaphiNS(0x0),fDeltaphiAS(0x0),fDeltaphiTS(0x0),fMultiplicyNS(0x0),fMultiplicyAS(0x0),fMultiplicyTS(0x0),fHistNchTotVsV0M(0x0),
+    fHistNchTotVsV0A(0x0),hGenEta(0)
 
 
 {
@@ -183,8 +186,10 @@ AliAnalysisTaskGenUeVsMult::AliAnalysisTaskGenUeVsMult(const char* name) : AliAn
 		pNumDenTrueAll[i]=0;
 		pSumPtTrueAll[i]=0;
         
-        hNumDen[i]=0;
-        hSumPt[i]=0;
+        for(Int_t i_est=0; i_est<4; ++i_est){
+        hNumDen[i][i_est] = 0;
+        hSumPt[i][i_est] = 0;
+        }
     
 		pNumDenTrue[i]=0;
 		pSumPtTrue[i]=0;
@@ -228,6 +233,12 @@ AliAnalysisTaskGenUeVsMult::~AliAnalysisTaskGenUeVsMult()
 void AliAnalysisTaskGenUeVsMult::UserCreateOutputObjects()
 {
 
+    Double_t MultiBins[nMultiBins+1]={0x0};
+       for(Int_t i=0;i<nMultiBins;++i){
+           MultiBins[i]=i*1.0-0.5;
+       }
+       MultiBins[nMultiBins]=499.5;
+    
 	// create output objects
 
 	OpenFile(1);
@@ -288,12 +299,13 @@ void AliAnalysisTaskGenUeVsMult::UserCreateOutputObjects()
 		// UE analysis
 		for(Int_t i=0;i<3;++i){
 			
+          for(Int_t j=0;j<4;++j){
             
-            hNumDen[i]= new TH2D(Form("hNumDen_%s",Nameofregions[i]),"",PtNBinSL,PtNBinS1L,NchNBins,nchbiNs);
-            fOutputList->Add(hNumDen[i]);
-            hSumPt[i]= new TH2D(Form("hSumPt_%s",Nameofregions[i]),"",PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1);
-            fOutputList->Add(hSumPt[i]);
-            
+            hNumDen[i][j]= new TH3D(Form("hNumDen%s_%s",Nameofregions[i],NameOfEstimtr[j]),"NumDen; #it{p}_{T}^{leading};Nch;Multi",PtNBinSL,PtNBinS1L,nMultiBins,MultiBins,nMultiBins,MultiBins);
+            fOutputList->Add(hNumDen[i][j]);
+            hSumPt[i][j]= new TH3D(Form("hSumPt%s_%s",Nameofregions[i],NameOfEstimtr[j]),"SumPt; #it{p}_{T}^{leading};Nch;Multi",PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1,nMultiBins,MultiBins);
+            fOutputList->Add(hSumPt[i][j]);
+            }
 			hPtVsPtLeadingTrue[i] = new TH2D(Form("hPtVsPtLeadingTrue_%s",Nameofregions[i]),"",PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1);
 			fOutputList->Add(hPtVsPtLeadingTrue[i]);
 
@@ -304,13 +316,7 @@ void AliAnalysisTaskGenUeVsMult::UserCreateOutputObjects()
 			fOutputList->Add(pSumPtTrue[i]);
 		}
     
-    Double_t MultiBins[nMultiBins+1]={0x0};
-    for(Int_t i=0;i<nMultiBins;++i){
-        MultiBins[i]=i*1.0-0.5;
-    }
-    MultiBins[nMultiBins]=499.5;
-    
-    
+
     for(Int_t i=0; i<4; ++i){
 
         fMult[i] = 0;
@@ -319,21 +325,28 @@ void AliAnalysisTaskGenUeVsMult::UserCreateOutputObjects()
 
     }
    
+    fHistNchTotVsV0M=0;
+        fHistNchTotVsV0M=new TH2D("fHistNchTotVsV0M", "Generated NchTot distribution vs V0M;Nch;V0M",nMultiBins,MultiBins,nMultiBins, MultiBins);
+    fOutputList->Add(fHistNchTotVsV0M);
+
+    fHistNchTotVsV0A=0;
+        fHistNchTotVsV0A=new TH2D("fHistNchTotVsV0A", "Generated NchTot distribution vs V0A;Nch;V0A",nMultiBins,MultiBins,nMultiBins, MultiBins);
+    fOutputList->Add(fHistNchTotVsV0A);
    
 
     for(Int_t i_est=0; i_est<4; ++i_est){
       //  for(Int_t i_pid=0; i_pid<12; ++i_pid){
 
-            fHistPtLeadingVsNchNS[i_est]=0;
-            fHistPtLeadingVsNchNS[i_est]=new TH3D(Form("fHistPtLeadingVsNchNS_%s",NameOfEstimtr[i_est]), Form("Generated #it{p}_{T} distribution NS_%s; %s;#it{p}_{T}^{leading};Nch",NameOfEstimtr[i_est],NameOfEstimtr[i_est]),nMultiBins, MultiBins,PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1);
+          fHistPtLeadingVsNchNS[i_est]=0;
+            fHistPtLeadingVsNchNS[i_est]=new TH3D(Form("fHistPtLeadingVsNchNS_%s",NameOfEstimtr[i_est]), Form("Generated #it{p}_{T} distribution NS_%s; #it{p}_{T}^{leading};Nch;%s",NameOfEstimtr[i_est],NameOfEstimtr[i_est]),PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1,nMultiBins, MultiBins);
             fOutputList->Add(fHistPtLeadingVsNchNS[i_est]);
 
             fHistPtLeadingVsNchAS[i_est]=0;
-            fHistPtLeadingVsNchAS[i_est]=new TH3D(Form("fHistPtLeadingVsNchAS_%s",NameOfEstimtr[i_est]), Form("Generated #it{p}_{T} distribution AS_%s; %s;#it{p}_{T}^{leading};Nch",NameOfEstimtr[i_est],NameOfEstimtr[i_est]),nMultiBins, MultiBins,PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1);
+            fHistPtLeadingVsNchAS[i_est]=new TH3D(Form("fHistPtLeadingVsNchAS_%s",NameOfEstimtr[i_est]), Form("Generated #it{p}_{T} distribution AS_%s; #it{p}_{T}^{leading};Nch;%s",NameOfEstimtr[i_est],NameOfEstimtr[i_est]),PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1,nMultiBins, MultiBins);
              fOutputList->Add(fHistPtLeadingVsNchAS[i_est]);
 
             fHistPtLeadingVsNchTS[i_est]=0;
-            fHistPtLeadingVsNchTS[i_est]=new TH3D(Form("fHistPtLeadingVsNchTS_%s",NameOfEstimtr[i_est]), Form("Generated #it{p}_{T} distribution TS_%s; %s;#it{p}_{T}^{leading};Nch",NameOfEstimtr[i_est],NameOfEstimtr[i_est]),nMultiBins, MultiBins,PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1);
+            fHistPtLeadingVsNchTS[i_est]=new TH3D(Form("fHistPtLeadingVsNchTS_%s",NameOfEstimtr[i_est]), Form("Generated #it{p}_{T} distribution TS_%s; #it{p}_{T}^{leading};Nch;%s",NameOfEstimtr[i_est],NameOfEstimtr[i_est]),PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1,nMultiBins, MultiBins);
             fOutputList->Add(fHistPtLeadingVsNchTS[i_est]);
 
        // }
@@ -436,9 +449,9 @@ void AliAnalysisTaskGenUeVsMult::UserExec(Option_t *)
 	
 			if(isGoodVtxPosMC){
 				// UE analysis
-				//if(fGenLeadPt>=fPtMin){
+				if(fGenLeadPt>=fPtMin){
 				GetMultiVsUEObservables(mult_estimators,region_multi);
-			//}
+			}
 
 		}
 	
@@ -539,24 +552,20 @@ void AliAnalysisTaskGenUeVsMult::GetMultLeadingObject() {
 	Double_t flPt = 0;// leading pT
 	Double_t flPhi = 0;
 	Int_t flIndex = 0;
-    Double_t qPart = 0;
 	
 		for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
-			//AliMCParticle* particle = (AliMCParticle*)fMC->Particle(i);
-            TParticle* particle         = 0x0;
-            particle                    = (TParticle *)fMC->Particle(i);
+			AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+            
 			if (!particle) continue;
-            if(!(particle->GetPDG())) continue;
+            
             FillHisto("fHistEvt",1.5);
             
             
 			if (!fMC->IsPhysicalPrimary(i)) continue;  //  Particles produced including products of strong and electromagnetic decays but excluding feed-down from weak decays of strange particles like Ks,Lambda etc)
-			//if (particle->Charge() == 0) continue;
-            qPart = particle->GetPDG()->Charge()/3.;
-            if(TMath::Abs(qPart)<0.001) continue;
+			if (particle->Charge() == 0) continue;
 			if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
-			//if( particle->Pt() < fPtMin)continue;
+			if( particle->Pt() < fPtMin)continue;
 
             hGenEta->Fill(particle->Eta());
             
@@ -593,6 +602,7 @@ Int_t AliAnalysisTaskGenUeVsMult::GetMultipliciy(vector<Int_t> &multArray,vector
     Int_t mult_AS   = 0;
     Int_t mult_TS   = 0;
 
+    Int_t mult_Totl   = 0;
     Int_t mult_Eta8   = 0;
     Int_t mult_Eta1   = 0;
     Int_t mult_VZEROM = 0;
@@ -616,6 +626,7 @@ Int_t AliAnalysisTaskGenUeVsMult::GetMultipliciy(vector<Int_t> &multArray,vector
             continue;
 
         etaPart = particle -> Eta();
+        mult_Totl++;
         if( TMath::Abs(etaPart) < fEtaCut ){
             mult_Eta8++;
             // only events with well defined leading particle
@@ -665,6 +676,7 @@ Int_t AliAnalysisTaskGenUeVsMult::GetMultipliciy(vector<Int_t> &multArray,vector
     multArray.push_back(mult_VZEROM);
     multArray.push_back(mult_VZEROA);
     multArray.push_back(mult_Eta1);
+    multArray.push_back(mult_Totl);
 
     return 1;
 }
@@ -681,62 +693,73 @@ void AliAnalysisTaskGenUeVsMult::GetMultiVsUEObservables(vector<Int_t> &mult,vec
    // Int_t pidCodeMC = 0;
     //Double_t ipt = 0.;
    // Double_t phiPart = -10.0;
-    Bool_t isPhysPrim = kFALSE;
-    Double_t qPart = 0;
-    Int_t pPDG = -10;
+   // Bool_t isPhysPrim = kFALSE;
+   // Double_t qPart = 0;
+    //Int_t pPDG = -10;
 
     fMultiplicyNS->Fill(region[0]);
     fMultiplicyAS->Fill(region[1]);
     fMultiplicyTS->Fill(region[2]);
     
+    fHistNchTotVsV0M->Fill(mult[4],mult[1]);
+    fHistNchTotVsV0A->Fill(mult[4],mult[2]);
+    
     for (Int_t ipart = 0; ipart < fMC->GetNumberOfTracks(); ipart++) {
 
-        if(fGenLeadIn==ipart)
+        if(ipart==fGenLeadIn)
             continue;
 
-        TParticle* particle         = 0x0;
-        particle                    = (TParticle *)fMC->Particle(ipart);
-       // AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(ipart);
+        
+        AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(ipart);
         if (!particle) continue;
 
         if (!fMC->IsPhysicalPrimary(ipart)) continue;
-        //if (particle->Charge() == 0) continue;
-        qPart = particle->GetPDG()->Charge()/3.;
-       // pPDG = TMath::Abs(particle->GetPdgCode());
-       // pidCodeMC = GetPidCode(pPDG);
+        if (particle->Charge() == 0) continue;
+       
         if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
         if( particle->Pt() < fPtMin)continue;
 
         Double_t DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
 
-     for(Int_t j=0; j<4; j++){// mult estimators
 
         // definition of the topological regions
         if(TMath::Abs(DPhi)<pi/3.0){// near side
             nch_top[0]++; sumpt_top[0]+=particle->Pt();
             hPtVsPtLeadingTrue[0]->Fill(fGenLeadPt,particle->Pt());
             
-            fHistPtLeadingVsNchNS[j]->Fill(1.0*mult[j],fGenLeadPt,particle->Pt());
+            fHistPtLeadingVsNchNS[0]->Fill(fGenLeadPt,particle->Pt(),1.0*mult[0]);
+            fHistPtLeadingVsNchNS[1]->Fill(fGenLeadPt,particle->Pt(),1.0*mult[1]);
+            fHistPtLeadingVsNchNS[2]->Fill(fGenLeadPt,particle->Pt(),1.0*mult[2]);
+            fHistPtLeadingVsNchNS[3]->Fill(fGenLeadPt,particle->Pt(),1.0*mult[3]);
         }
         else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
             nch_top[1]++; sumpt_top[1]+=particle->Pt();
             hPtVsPtLeadingTrue[1]->Fill(fGenLeadPt,particle->Pt());
-             fHistPtLeadingVsNchAS[j]->Fill(1.0*mult[j],fGenLeadPt,particle->Pt());
+             fHistPtLeadingVsNchAS[0]->Fill(fGenLeadPt,particle->Pt(),1.0*mult[0]);
+             fHistPtLeadingVsNchAS[1]->Fill(fGenLeadPt,particle->Pt(),1.0*mult[1]);
+             fHistPtLeadingVsNchAS[2]->Fill(fGenLeadPt,particle->Pt(),1.0*mult[2]);
+             fHistPtLeadingVsNchAS[3]->Fill(fGenLeadPt,particle->Pt(),1.0*mult[3]);
             
         }
         else{// transverse side
             nch_top[2]++; sumpt_top[2]+=particle->Pt();
             hPtVsPtLeadingTrue[2]->Fill(fGenLeadPt,particle->Pt());
-             fHistPtLeadingVsNchTS[j]->Fill(1.0*mult[j],fGenLeadPt,particle->Pt());
-        }
-     }
+             fHistPtLeadingVsNchTS[0]->Fill(fGenLeadPt,particle->Pt(),1.0*mult[0]);
+                 fHistPtLeadingVsNchTS[1]->Fill(fGenLeadPt,particle->Pt(),1.0*mult[1]);
+                 fHistPtLeadingVsNchTS[2]->Fill(fGenLeadPt,particle->Pt(),1.0*mult[2]);
+                 fHistPtLeadingVsNchTS[3]->Fill(fGenLeadPt,particle->Pt(),1.0*mult[3]);
+             }
+       // }
+     //}
     }// end particle loop
     for(Int_t l=0;l<3;++l){
         
         pNumDenTrue[l]->Fill(fGenLeadPt,nch_top[l]);
         pSumPtTrue[l]->Fill(fGenLeadPt,sumpt_top[l]);
-        hNumDen[l]->Fill(fGenLeadPt,nch_top[l]);
-        hSumPt[l]->Fill(fGenLeadPt,sumpt_top[l]);
+        for(Int_t j=0; j<4; j++){
+                hNumDen[l][j]->Fill(fGenLeadPt,nch_top[l],1.0*mult[j]);
+                hSumPt[l][j]->Fill(fGenLeadPt,sumpt_top[l],1.0*mult[j]);
+        }
     }
     hPtLeadingTrue->Fill(fGenLeadPt);
 
