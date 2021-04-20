@@ -4411,6 +4411,9 @@ void  AliIsolationCut::MakeIsolationCut
     else if ( fICMethod == kSumBkgSubJetRhoIC )
     {
       // Rely on Jet group methods to get the UE density.
+      // https://alice-notes.web.cern.ch/system/files/notes/analysis/178/2015-Mar-02-analysis_note-fulltext.pdf
+      //   "normal" rho approach is Sec. 5.1.1, sparse event 5.1.2
+
       AliRhoParameter * outrho = (AliRhoParameter*) reader->GetInputEvent()->FindListObject(fJetRhoTaskName);
 
       if ( !outrho )
