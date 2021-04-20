@@ -594,7 +594,8 @@ private:
   TFile * fOutputFile = 0x0; ///! Pointer to the output file
   TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
 
-  FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks between RUN2 and RUN3 coordinates
+  FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
+  FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
   ClassDef(AliAnalysisTaskAO2Dconverter, 16);
 };

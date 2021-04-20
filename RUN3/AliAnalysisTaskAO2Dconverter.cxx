@@ -2572,7 +2572,7 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   SMatrix55Std jacobian;
   SMatrix55Sym convertedCovariances;
   TMatrixD inputCovariances;
-  MUONTrack.GetCovariances(inputCovariances);
+  MUONTrack.GetCovMatrix(&inputCovariances);
 
   auto K = alpha1 * alpha1 + alpha3 * alpha3;
   auto K32 = K * TMath::Sqrt(K);
