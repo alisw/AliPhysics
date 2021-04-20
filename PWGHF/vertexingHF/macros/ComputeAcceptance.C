@@ -16,6 +16,7 @@
 #include <TStyle.h>
 #include <TPythia6Decayer.h>
 #include <TPaveStats.h>
+#include "AliVertexingHFUtils.h"
 #endif
 
 enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp,kLcpiL,kDplusKKpi};
@@ -350,8 +351,7 @@ void ComputeAcceptance(){
   hPtGenLimAcc->GetYaxis()->SetTitle("Entries");
   hPtGenAcc->Sumw2();
   hPtGenLimAcc->Sumw2();
-  TH1D* hAccVsPt=(TH1D*)hPtGenAcc->Clone("hAccVsPt");
-  hAccVsPt->Divide(hPtGenAcc,hPtGenLimAcc,1,1,"B");
+  TH1D* hAccVsPt=AliVertexingHFUtils::ComputeGenAccOverGenLimAcc(hPtVsYGenAcc,hPtVsYGenLimAcc);
   hAccVsPt->GetYaxis()->SetTitle("Acceptance");
   hAccVsPt->SetStats(0);
 
