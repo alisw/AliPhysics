@@ -649,6 +649,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree *tFwdTrack = CreateTree(kFwdTrack);
   if (fTreeStatus[kFwdTrack])
   {
+    tFwdTrack->Branch("fIndexCollisions", &fwdtracks.fIndexCollisions, "fIndexCollisions/I");
     tFwdTrack->Branch("fIndexBCs", &fwdtracks.fIndexBCs, "fIndexBCs/I");
     tFwdTrack->Branch("fTrackType", &fwdtracks.fTrackType, "fTrackType/I");
     tFwdTrack->Branch("fX", &fwdtracks.fX, "fX/F");
@@ -1668,6 +1669,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   {
     AliESDMuonTrack *mutrk = fESD->GetMuonTrack(imu);
     fwdtracks = MUONtoFwdTrack(*mutrk);
+    fwdtracks.fIndexCollisions = fCollisionCount;
     fwdtracks.fIndexBCs = fBCCount;
 
     // Now MUON clusters for the current track
@@ -2028,6 +2030,10 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
 
   FwdTrackPars convertedTrack;
 
+  //pxdca
+  double pdca;
+  pdca= MUONTrack.P() * MUONTrack.GetDCA();
+
   // Parameter conversion
   double alpha1, alpha3, alpha4, x2, x3, x4;
 
@@ -2036,7 +2042,10 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   alpha4 = MUONTrack.GetInverseBendingMomentum();
 
   x2 = TMath::ATan2(-alpha3, -alpha1);
-  x3 = -1. / TMath::Sqrt(alpha3 * alpha3 + alpha1 * alpha1);
+  if (alpha3 != 0 || alpha1 != 0) 
+    x3 = -1. / TMath::Sqrt(alpha3 * alpha3 + alpha1 * alpha1);
+  else 
+    x3 = 0;
   x4 = alpha4 * -x3 * TMath::Sqrt(1 + alpha3 * alpha3);
 
   // Set output parameters
@@ -2048,6 +2057,8 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   convertedTrack.fSigned1Pt = AliMathBase::TruncateFloatFraction(x4, mMuonTr1P);
   convertedTrack.fChi2 = AliMathBase::TruncateFloatFraction(MUONTrack.GetChi2(), mMuonTrCov);
   convertedTrack.fChi2MatchMCHMID = AliMathBase::TruncateFloatFraction(MUONTrack.GetChi2MatchTrigger(), mMuonTrCov);
+  convertedTrack.fRAtAbsorberEnd = AliMathBase::TruncateFloatFraction(MUONTrack.GetRAtAbsorberEnd(), mMuonTrCov);
+  convertedTrack.fPDca = AliMathBase::TruncateFloatFraction(pdca, mMuonTrCov);
 
   // Covariances matrix conversion
   using SMatrix55Std = ROOT::Math::SMatrix<double, 5>;
@@ -2085,36 +2096,89 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
 
   jacobian(1, 2) = 1;
 
-  jacobian(2, 1) = -alpha3 / K;
-  jacobian(2, 3) = alpha1 / K;
+  if(K32 != 0) {
+     jacobian(2, 1) = -alpha3 / K;
+     jacobian(2, 3) = alpha1 / K;
 
-  jacobian(3, 1) = alpha1 / K32;
-  jacobian(3, 3) = alpha3 / K32;
+     jacobian(3, 1) = alpha1 / K32;
+     jacobian(3, 3) = alpha3 / K32;
 
-  jacobian(4, 1) = -alpha1 * alpha4 * L / K32;
-  jacobian(4, 3) = alpha3 * alpha4 * (1 / (TMath::Sqrt(K) * L) - L / K32);
-  jacobian(4, 4) = L / TMath::Sqrt(K);
+     jacobian(4, 1) = -alpha1 * alpha4 * L / K32;
+     jacobian(4, 3) = alpha3 * alpha4 * (1 / (TMath::Sqrt(K) * L) - L / K32);
+     jacobian(4, 4) = L / TMath::Sqrt(K);
+  }
+  else
+  {
+     jacobian(2, 1) = 0; 
+     jacobian(2, 3) = 0; 
+
+     jacobian(3, 1) = 0; 
+     jacobian(3, 3) = 0; 
+
+     jacobian(4, 1) = 0; 
+     jacobian(4, 3) = 0; 
+     jacobian(4, 4) = 0; 
+  }
 
   // jacobian*covariances*jacobian^T
   convertedCovariances = ROOT::Math::Similarity(jacobian, convertedCovariances);
 
   // Set output covariances
-  convertedTrack.fSigmaX = AliMathBase::TruncateFloatFraction(TMath::Sqrt(convertedCovariances(0,0)), mTrackCovDiag);
-  convertedTrack.fSigmaY = AliMathBase::TruncateFloatFraction(TMath::Sqrt(convertedCovariances(1,1)), mTrackCovDiag);
+  convertedTrack.fSigmaX   = AliMathBase::TruncateFloatFraction(TMath::Sqrt(convertedCovariances(0,0)), mTrackCovDiag);
+  convertedTrack.fSigmaY   = AliMathBase::TruncateFloatFraction(TMath::Sqrt(convertedCovariances(1,1)), mTrackCovDiag);
   convertedTrack.fSigmaPhi = AliMathBase::TruncateFloatFraction(TMath::Sqrt(convertedCovariances(2,2)), mTrackCovDiag);
   convertedTrack.fSigmaTgl = AliMathBase::TruncateFloatFraction(TMath::Sqrt(convertedCovariances(3,3)), mTrackCovDiag);
   convertedTrack.fSigma1Pt = AliMathBase::TruncateFloatFraction(TMath::Sqrt(convertedCovariances(4,4)), mTrackCovDiag);
 
-  convertedTrack.fRhoXY  = (Char_t)(128. * convertedCovariances(0,1) / fwdtracks.fSigmaX / fwdtracks.fSigmaY);
-  convertedTrack.fRhoPhiX = (Char_t)(128. * convertedCovariances(0,2) / fwdtracks.fSigmaPhi / fwdtracks.fSigmaX);
-  convertedTrack.fRhoPhiY = (Char_t)(128. * convertedCovariances(1,2) / fwdtracks.fSigmaPhi / fwdtracks.fSigmaY);
-  convertedTrack.fRhoTglX = (Char_t)(128. * convertedCovariances(3,0) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaX);
-  convertedTrack.fRhoTglY = (Char_t)(128. * convertedCovariances(3,1) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaY);
-  convertedTrack.fRhoTglPhi = (Char_t)(128. * convertedCovariances(3,2) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaPhi);
-  convertedTrack.fRho1PtX = (Char_t)(128. * convertedCovariances(4,0) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaX);
-  convertedTrack.fRho1PtY = (Char_t)(128. * convertedCovariances(4,1) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaY);
-  convertedTrack.fRho1PtPhi = (Char_t)(128. * convertedCovariances(4,2) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaPhi);
-  convertedTrack.fRho1PtTgl = (Char_t)(128. * convertedCovariances(4,3) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaTgl);
+  if(fwdtracks.fSigmaX != 0 && fwdtracks.fSigmaY != 0)
+      convertedTrack.fRhoXY = (Char_t)(128. * convertedCovariances(0,1) / fwdtracks.fSigmaX / fwdtracks.fSigmaY);
+  else 
+     convertedTrack.fRhoXY = 0;
+ 
+  if(fwdtracks.fSigmaPhi != 0 && fwdtracks.fSigmaX != 0) 
+     convertedTrack.fRhoPhiX = (Char_t)(128. * convertedCovariances(0,2) / fwdtracks.fSigmaPhi / fwdtracks.fSigmaX);
+  else 
+     convertedTrack.fRhoPhiX = 0;
+
+  if(fwdtracks.fSigmaPhi != 0 && fwdtracks.fSigmaY != 0) 
+     convertedTrack.fRhoPhiY = (Char_t)(128. * convertedCovariances(1,2) / fwdtracks.fSigmaPhi / fwdtracks.fSigmaY);
+  else 
+     convertedTrack.fRhoPhiY = 0;
+
+  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaX != 0) 
+     convertedTrack.fRhoTglX = (Char_t)(128. * convertedCovariances(3,0) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaX);
+  else 
+     convertedTrack.fRhoTglX = 0;
+
+  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaY != 0) 
+     convertedTrack.fRhoTglY = (Char_t)(128. * convertedCovariances(3,1) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaY);
+  else 
+     convertedTrack.fRhoTglY = 0;
+
+  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaPhi != 0) 
+     convertedTrack.fRhoTglPhi = (Char_t)(128. * convertedCovariances(3,2) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaPhi);
+  else 
+     convertedTrack.fRhoTglPhi = 0;
+
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaX != 0) 
+     convertedTrack.fRho1PtX = (Char_t)(128. * convertedCovariances(4,0) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaX);
+  else
+     convertedTrack.fRho1PtX = 0;
+
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaY != 0) 
+     convertedTrack.fRho1PtY = (Char_t)(128. * convertedCovariances(4,1) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaY);
+  else 
+     convertedTrack.fRho1PtY = 0;
+
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaPhi != 0) 
+     convertedTrack.fRho1PtPhi = (Char_t)(128. * convertedCovariances(4,2) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaPhi);
+  else 
+     convertedTrack.fRho1PtPhi = 0;
+
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaTgl != 0) 
+    convertedTrack.fRho1PtTgl = (Char_t)(128. * convertedCovariances(4,3) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaTgl);
+  else 
+    convertedTrack.fRho1PtTgl = 0;
 
   return convertedTrack;
 }

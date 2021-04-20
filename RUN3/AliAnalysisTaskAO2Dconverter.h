@@ -401,6 +401,7 @@ private:
   } calotrigger;                  //! structure to keep calo trigger info
 
   struct FwdTrackPars {   /// Forward track parameters
+    Int_t   fIndexCollisions = -1;    /// The index of the collision vertex in the TF, to which the track is attached
     Int_t fIndexBCs = 0u; /// Index to BC table
     Int_t fTrackType = 3; /// MuonStandaloneTrack on ForwardTrackTypeEnum (O2 Framework/DataTypes.h)
     Float_t fX = -999.f;
@@ -551,7 +552,7 @@ private:
 
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 15);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 16);
 };
 
 #endif
