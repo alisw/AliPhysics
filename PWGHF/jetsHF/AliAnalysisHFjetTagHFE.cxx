@@ -251,11 +251,19 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   iMCEtaFull(kFALSE),
   iSSlong(kFALSE),
   fPtHardMax(0.0),
-  fzvtx_Ntrkl(0),
-  fzvtx_Ntrkl_Corr(0),
-	
+	fzvtx_Ntrkl(0),
+	fzvtx_Ntrkl_Corr(0),
+	fNchNtr(0),
+  fCorrZvtx(0),
+	fCorrNtrkl(0),
+	fzvtx_Corr(0),
+	fNtrkl_Corr(0),
+	fzvtx_Nch(0),
+	fweightNtrkl(0),
+	fNchNtr_Corr(0),
 //======parameter============
- fNref(0)
+ fNref(0),
+	Nch(0)
   //fmcData(kFALSE)
 {
   // Default constructor.
@@ -283,195 +291,204 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
 
 //________________________________________________________________________
 AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) : 
-  AliAnalysisTaskEmcalJet(name, kTRUE),
-  fVevent(0),
-  fMultSelection(0),
-	fMultiEstimatorAvg(0),
-  ftrack(0),
-  fCaloClusters(0),
-  fMCheader(0),
-  fpidResponse(0),
-  fcentMim(0), 
-  fcentMax(10.0), 
-  idbHFEj(kFALSE),
-  iHybrid(kTRUE),
-  iOccCorr(kFALSE),
-  ippcoll(kFALSE),
-  fEMCEG1(kFALSE),
-  fEMCEG2(kFALSE),
-  fmimSig(-1.0),
-  fmimEop(0.8),
-  fmimM20(0.01),
-  fmaxM20(0.35),
-  fJetEtaCut(0.6),
-  fEleEtaCut(0.6),
-  fInvmassCut(0.1),
-  fptAssocut(0.15),
-  NembMCpi0(0),
-  NembMCeta(0),
-  NpureMCproc(0),
-  fHistTracksPt(0),
-  fHistClustersPt(0),
-  fHistLeadingJetPt(0),
-  fHistJetsPhiEta(0),
-  fHistJetsPtArea(0),
-  fHistJetsPtLeadHad(0),
-  fHistJetsCorrPtArea(0),
-  fHistPtDEtaDPhiTrackClus(0),
-  fHistPtDEtaDPhiClusTrack(0),
-  fHistClustDx(0),
-  fHistClustDz(0),
-  fHistMultCent(0),
-  fHistZcorr(0),
-  fHistCent(0),
-  fHistTPCnSigma(0),//my
-  fHistTPCnSigma_ele(0),
-  fHistTPCnSigma_had(0),
-  fHistTPCnSigma_eMC(0),
-  fHistEopNsig(0),
-  fHistEop(0),
-  fHistEopHFE(0),
-  fHistEopHad(0),
-  fHistEopIso(0),
-  fHistEopHFjet(0),
-  fHistNsigHFjet(0),
-  fHistEtaHFjet(0),
-  fHistJetOrg(0),
-  fHistJetOrgArea(0),
-  fHistJetBG(0),
-  fHistJetSub(0),
-  fHisteJetOrg(0),
-  fHisteJetBG(0),
-  fHisteJetSub(0),
-  fHistIncEle(0),
-  fHistIncEle2(0),
-  fHistIncEleInJet0(0),
-  fHistIncEleInJet1(0),
-  fHistHfEleMC(0),
-  fHistHfEleMCreco(0),
-  fHistHfEleMCiso(0),
-  fHistEleiso(0),
-  fHistEle_wISO(0),
-  fHistEle_woISO(0),
-  fHistPhoEleMC(0),
-  fHistPhoEleMCpi0(0),
-  fHistPhoEleMCeta(0),
-  fHistPhoEleMCreco(0),
-  fHistPhoEleMCrecopi0(0),
-  fHistPhoEleMCrecoeta(0),
-  fHistMCorgPi0(0),
-  fHistMCorgEta(0),
-  fHistIncjet(0),
-  fHistIncjetFrac(0),
-  fHistIncjetOrg(0),
-  fHistIncjetBG(0),
-  fHistHFjet(0),
-  fHistHFdijet(0),
-  fHistHFdijetCorr(0),
-  fHistULSjet(0),
-  fHistLSjet(0),
-  fHistHadjet(0),
-  fHistHFjet_DCA(0),
-  fHistULSjet_DCA(0),
-  fHistLSjet_DCA(0),
-  fHistHadjet_DCA(0),
-  fHistHFjet_ridge(0),
-  fHistHFjetOrder(0),
-  fHistDiJetPhi(0), 
-  fHistDiJetMomBalance(0), 
-  fHistDiJetMomBalance_All(0), 
-  fHistDiJetPhi_MC(0), 
-  fHistDiJetMomBalance_MC(0),
-  fHistQjet(0),
-  fHistQjet_mult(0),
-  fHistGjet_mult(0),
-  fHistJetWidthIncjet(0),
-  fHistJetWidthQjet(0),
-  fHistIncjetCont(0),
-  fHistQjetCont(0),
-  fHistIncjetR(0),
-  fHistQjetR(0),
-  fHistIncjetPhi(0),
-  fHistQjetPhi(0),
-  fHistIncjetPtD(0),
-  fHistQjetPtD(0),
-  fInvmassULS(0),
-  fInvmassLS(0),//my
-  fInvmassHFuls(0),//my
-  fInvmassHFls(0),//my
-  fLxy_ls(0),
-  fLxy_uls(0),
-  feJetCorr(0),
-  HFjetCorr0(0),
-  HFjetCorr1(0),
-  HFjetCorr2(0),
-  HFjetCorr3(0),
-  HFjetParticle(0),
-  HFjetDCA_c(0),
-  HFjetDCA_b(0),
-  HFjetDCA_b_FONLL(0),
-  HFjetDCA_Dp(0),
-  HFjetDCA_Dz(0),
-  HFjetDCA_Ds(0),
-  HFjetDCA_Lc(0),
-  HFjetDCA_Dp_FONLL(0),
-  HFjetDCA_Dz_FONLL(0),
-  HFjetDCA_Ds_FONLL(0),
-  HFjetDCA_Lc_FONLL(0),
-  fQAHistJetPhi(0),
-  fQAHistTrPhiJet(0),
-  fQAHistTrPhi(0),
-  fQAHistNits(0),
-  fQAHistEleDCAxy(0),
-  fQAHistEleDCAz(0),
-  fQAHistTrPtJet(0),
-  fHistClustE(0),
-  fHistClustEtime(0),
-  fEMCClsEtaPhi(0),
-  fHistRho(0),
-  fHistBGfrac(0),
-  fHistBGfracHFEev(0),
-  fHistBGrandHFEev(0),
-  fHistJetEnergyReso(0),
-  fHistNmatchJet(0),
-  fHistJetEtaCorr0(0),
-  fHistJetEtaCorr1(0),
-  fHistJetEtaCorr2(0),
-  fHistDp_POWHEG(0),
-  fHistDz_POWHEG(0),
-  fHistDs_POWHEG(0),
-  fHistLc_POWHEG(0),
-  fHistB_POWHEG(0),
-  fHistHFEinJet(0),
-  fHistHadroninJet(0),
-  fPi0Weight(0),
-  fEtaWeight(0),
-  fpythia_b(0),
-  fpowheg_b(0),
-  fpythia_c(0),
-  fpowheg_c(0),
-  fFONLL_D(0),
-  fFONLL_Lc(0),
-  fFONLL_B(0),
-  generator(0),
-  fJetsCont(0),
-  fJetsContPart(0),
-  fTracksCont(0),
-  fCaloClustersCont(0),
-  fAOD(0),
-  fMCarray(0),
-  fMCparticle(0),
-  fMCparticleMother(0),
-  iMCcorr(kTRUE),
-  iDCApTweight(kTRUE),
-  iMCEtaFull(kFALSE),
-  iSSlong(kFALSE),
-  fPtHardMax(0.0),
-  fzvtx_Ntrkl(0),
-  fzvtx_Ntrkl_Corr(0),
-	
+		AliAnalysisTaskEmcalJet(name, kTRUE),
+		fVevent(0),
+		fMultSelection(0),
+		fMultiEstimatorAvg(0),
+		ftrack(0),
+		fCaloClusters(0),
+		fMCheader(0),
+		fpidResponse(0),
+		fcentMim(0), 
+		fcentMax(10.0), 
+		idbHFEj(kFALSE),
+		iHybrid(kTRUE),
+		iOccCorr(kFALSE),
+		ippcoll(kFALSE),
+		fEMCEG1(kFALSE),
+		fEMCEG2(kFALSE),
+		fmimSig(-1.0),
+		fmimEop(0.8),
+		fmimM20(0.01),
+		fmaxM20(0.35),
+		fJetEtaCut(0.6),
+		fEleEtaCut(0.6),
+		fInvmassCut(0.1),
+		fptAssocut(0.15),
+		NembMCpi0(0),
+		NembMCeta(0),
+		NpureMCproc(0),
+		fHistTracksPt(0),
+		fHistClustersPt(0),
+		fHistLeadingJetPt(0),
+		fHistJetsPhiEta(0),
+		fHistJetsPtArea(0),
+		fHistJetsPtLeadHad(0),
+		fHistJetsCorrPtArea(0),
+		fHistPtDEtaDPhiTrackClus(0),
+		fHistPtDEtaDPhiClusTrack(0),
+		fHistClustDx(0),
+		fHistClustDz(0),
+		fHistMultCent(0),
+		fHistZcorr(0),
+		fHistCent(0),
+		fHistTPCnSigma(0),//my
+		fHistTPCnSigma_ele(0),
+		fHistTPCnSigma_had(0),
+		fHistTPCnSigma_eMC(0),
+		fHistEopNsig(0),
+		fHistEop(0),
+		fHistEopHFE(0),
+		fHistEopHad(0),
+		fHistEopIso(0),
+		fHistEopHFjet(0),
+		fHistNsigHFjet(0),
+		fHistEtaHFjet(0),
+		fHistJetOrg(0),
+		fHistJetOrgArea(0),
+		fHistJetBG(0),
+		fHistJetSub(0),
+		fHisteJetOrg(0),
+		fHisteJetBG(0),
+		fHisteJetSub(0),
+		fHistIncEle(0),
+		fHistIncEle2(0),
+		fHistIncEleInJet0(0),
+		fHistIncEleInJet1(0),
+		fHistHfEleMC(0),
+		fHistHfEleMCreco(0),
+		fHistHfEleMCiso(0),
+		fHistEleiso(0),
+		fHistEle_wISO(0),
+		fHistEle_woISO(0),
+		fHistPhoEleMC(0),
+		fHistPhoEleMCpi0(0),
+		fHistPhoEleMCeta(0),
+		fHistPhoEleMCreco(0),
+		fHistPhoEleMCrecopi0(0),
+		fHistPhoEleMCrecoeta(0),
+		fHistMCorgPi0(0),
+		fHistMCorgEta(0),
+		fHistIncjet(0),
+		fHistIncjetFrac(0),
+		fHistIncjetOrg(0),
+		fHistIncjetBG(0),
+		fHistHFjet(0),
+		fHistHFdijet(0),
+		fHistHFdijetCorr(0),
+		fHistULSjet(0),
+		fHistLSjet(0),
+		fHistHadjet(0),
+		fHistHFjet_DCA(0),
+		fHistULSjet_DCA(0),
+		fHistLSjet_DCA(0),
+		fHistHadjet_DCA(0),
+		fHistHFjet_ridge(0),
+		fHistHFjetOrder(0),
+		fHistDiJetPhi(0), 
+		fHistDiJetMomBalance(0), 
+		fHistDiJetMomBalance_All(0), 
+		fHistDiJetPhi_MC(0), 
+		fHistDiJetMomBalance_MC(0),
+		fHistQjet(0),
+		fHistQjet_mult(0),
+		fHistGjet_mult(0),
+		fHistJetWidthIncjet(0),
+		fHistJetWidthQjet(0),
+		fHistIncjetCont(0),
+		fHistQjetCont(0),
+		fHistIncjetR(0),
+		fHistQjetR(0),
+		fHistIncjetPhi(0),
+		fHistQjetPhi(0),
+		fHistIncjetPtD(0),
+		fHistQjetPtD(0),
+		fInvmassULS(0),
+		fInvmassLS(0),//my
+		fInvmassHFuls(0),//my
+		fInvmassHFls(0),//my
+		fLxy_ls(0),
+		fLxy_uls(0),
+		feJetCorr(0),
+		HFjetCorr0(0),
+		HFjetCorr1(0),
+		HFjetCorr2(0),
+		HFjetCorr3(0),
+		HFjetParticle(0),
+		HFjetDCA_c(0),
+		HFjetDCA_b(0),
+		HFjetDCA_b_FONLL(0),
+		HFjetDCA_Dp(0),
+		HFjetDCA_Dz(0),
+		HFjetDCA_Ds(0),
+		HFjetDCA_Lc(0),
+		HFjetDCA_Dp_FONLL(0),
+		HFjetDCA_Dz_FONLL(0),
+		HFjetDCA_Ds_FONLL(0),
+		HFjetDCA_Lc_FONLL(0),
+		fQAHistJetPhi(0),
+		fQAHistTrPhiJet(0),
+		fQAHistTrPhi(0),
+		fQAHistNits(0),
+		fQAHistEleDCAxy(0),
+		fQAHistEleDCAz(0),
+		fQAHistTrPtJet(0),
+		fHistClustE(0),
+		fHistClustEtime(0),
+		fEMCClsEtaPhi(0),
+		fHistRho(0),
+		fHistBGfrac(0),
+		fHistBGfracHFEev(0),
+		fHistBGrandHFEev(0),
+		fHistJetEnergyReso(0),
+		fHistNmatchJet(0),
+		fHistJetEtaCorr0(0),
+		fHistJetEtaCorr1(0),
+		fHistJetEtaCorr2(0),
+		fHistDp_POWHEG(0),
+		fHistDz_POWHEG(0),
+		fHistDs_POWHEG(0),
+		fHistLc_POWHEG(0),
+		fHistB_POWHEG(0),
+		fHistHFEinJet(0),
+		fHistHadroninJet(0),
+		fPi0Weight(0),
+		fEtaWeight(0),
+		fpythia_b(0),
+		fpowheg_b(0),
+		fpythia_c(0),
+		fpowheg_c(0),
+		fFONLL_D(0),
+		fFONLL_Lc(0),
+		fFONLL_B(0),
+		generator(0),
+		fJetsCont(0),
+		fJetsContPart(0),
+		fTracksCont(0),
+		fCaloClustersCont(0),
+		fAOD(0),
+		fMCarray(0),
+		fMCparticle(0),
+		fMCparticleMother(0),
+		iMCcorr(kTRUE),
+		iDCApTweight(kTRUE),
+		iMCEtaFull(kFALSE),
+		iSSlong(kFALSE),
+		fPtHardMax(0.0),
+		fzvtx_Ntrkl(0),
+		fzvtx_Ntrkl_Corr(0),
+		fNchNtr(0),
+    fCorrZvtx(0),
+	  fCorrNtrkl(0),
+		fzvtx_Corr(0),
+		fNtrkl_Corr(0),
+		fzvtx_Nch(0),
+		fweightNtrkl(0),
+		fNchNtr_Corr(0),
+
 //======parameter============
-  fNref(0)
+  fNref(0),
+	Nch(0)
   //fmcData(kFALSE)
 {
   // Standard constructor.
@@ -500,7 +517,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 //________________________________________________________________________
 AliAnalysisHFjetTagHFE::~AliAnalysisHFjetTagHFE()
 {
-  // Destructor.
+  // Destructor
   delete ftrack;
   delete fCaloClusters;
 }
@@ -1035,8 +1052,29 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","zvertex vs n tracklet; zvtx; spd tracklets",400,-20.,20.,301,-0.5,300.5); 
   fOutput->Add(fzvtx_Ntrkl);
 
-  fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","zvertex vs n tracklet after correction; zvtx; spd tracklets",400,-20.,20.,301,-0.5,300.5);
-  fOutput->Add (fzvtx_Ntrkl_Corr);
+	fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","zvertex vs n tracklet after correction; zvtx; spd tracklets",400,-20.,20.,301,-0.5,300.5);
+	fOutput->Add(fzvtx_Ntrkl_Corr);
+
+	fCorrZvtx = new TF1("fCorrZvtx","pol4");
+	fCorrZvtx->SetParameters(0.989494,-0.000148672,0.00145737,4.02038e-05,-2.07891e-05);
+
+	fCorrNtrkl = new TF1("fCorrNtrkl","pol8");
+	fCorrNtrkl->SetParameters(1.32267,-0.186463,0.0300275,-0.00205886,7.30481e-05,-1.45858e-06,1.65515e-08,-9.94577e-11,2.45483e-13);
+
+	fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
+	fOutput->Add(fNchNtr);
+
+	fzvtx_Corr = new TH1F("fzvtx_Corr","Zvertex after correction; zvtx; counts",400,-20.,20.);
+	fOutput->Add(fzvtx_Corr);
+
+	fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",301,-0.5,300.5);
+	fOutput->Add(fNtrkl_Corr);
+
+	fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",400,-20.,20.,301,-0.5,300.5);
+	fOutput->Add(fzvtx_Nch);
+
+	fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
+	fOutput->Add(fNchNtr_Corr);
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
@@ -1341,7 +1379,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	      fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
 	      //============Tracklet correction=================
-
+       
+				CountNch();
 				Double_t correctednAcc   = nAcc;
 				Double_t WeightNtrkl = -1.;
 				Double_t WeightZvtx = -1.;
@@ -1352,7 +1391,18 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 				}
 				fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
-      }
+				  fNchNtr->Fill(correctednAcc,Nch);
+
+					if(fMCarray){
+							WeightZvtx = fCorrZvtx->Eval(Zvertex);
+							WeightNtrkl = fweightNtrkl->GetBinContent(fweightNtrkl->FindBin(correctednAcc));
+							fzvtx_Corr->Fill(Zvertex,WeightZvtx);
+							fNtrkl_Corr->Fill(correctednAcc,WeightNtrkl);
+							fzvtx_Nch->Fill(Zvertex,Nch,WeightZvtx);
+							fNchNtr_Corr->Fill(correctednAcc,Nch,WeightNtrkl);
+
+					}
+			}
 
 
   // track
@@ -2243,6 +2293,28 @@ Bool_t AliAnalysisHFjetTagHFE::tagHFjet(AliEmcalJet* jetC, double *epT, int MCpi
  return HFjetTag;
 }
 
+Int_t AliAnalysisHFjetTagHFE::CountNch()
+{
+		Nch = 0;
+		for(int imc=0; imc<fMCarray->GetEntriesFast(); imc++)
+		{ 
+		   Int_t chargetrue = fMCparticle->Charge();
+			 Double_t pdgEta = fMCparticle->Eta();
+			 Bool_t isPhysPrim = fMCparticle->IsPhysicalPrimary();
+				if(chargetrue!=0){
+						if(TMath::Abs(pdgEta)<1.0){
+
+
+								if(isPhysPrim){
+										Nch++;
+								}
+						}
+				}
+		}
+		return Nch;
+}
+
+
 
 void AliAnalysisHFjetTagHFE::MakePriorPbPb(AliEmcalJet* jetC, double *epT)
 {
@@ -2914,9 +2986,8 @@ TProfile* AliAnalysisHFjetTagHFE::GetEstimatorHistogram(const AliAODEvent* fAOD)
 {
 		return fMultiEstimatorAvg;
 }
-
-//________________________________________________________________________
 void AliAnalysisHFjetTagHFE::Terminate(Option_t *) 
-{
-  // Called once at the end of the analysis.
-}
+ {
+   // Called once at the end of the analysis.
+ }
+//______________________________________________
