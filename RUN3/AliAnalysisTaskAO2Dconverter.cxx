@@ -2096,7 +2096,7 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
 
   jacobian(1, 2) = 1;
 
-  if(K23 != 0) {
+  if(K32 != 0) {
      jacobian(2, 1) = -alpha3 / K;
      jacobian(2, 3) = alpha1 / K;
 
