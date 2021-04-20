@@ -2293,7 +2293,7 @@ Bool_t AliAnalysisHFjetTagHFE::tagHFjet(AliEmcalJet* jetC, double *epT, int MCpi
  return HFjetTag;
 }
 
-void AliAnalysisHFjetTagHFE::CountNch()
+Int_t AliAnalysisHFjetTagHFE::CountNch()
 {
 		Nch = 0;
 		for(int imc=0; imc<fMCarray->GetEntriesFast(); imc++)
