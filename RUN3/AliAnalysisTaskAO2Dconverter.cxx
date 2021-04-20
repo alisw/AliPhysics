@@ -23,6 +23,7 @@
 #include <TChain.h>
 #include <TTree.h>
 #include <TMath.h>
+#include <Math/SMatrix.h>
 #include <TTimeStamp.h>
 #include <TSystem.h>
 #include "AliAnalysisTask.h"
@@ -68,9 +69,9 @@
 
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc", "O2run2bcinfo" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2fwdtrack", "O2fwdtrackcov", "O2calo",  "O2calotrigger", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc", "O2run2bcinfo" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info", "Run 2 BC Info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Forward tracks Parameters", "Forward tracks Covariances", "Calorimeter cells", "Calorimeter triggers", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info", "Run 2 BC Info" };
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
 
@@ -138,7 +139,7 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char *name)
       tofClusters()
 #endif
       ,
-      calo(), calotrigger(), muons(), mucls(), zdc(), fv0a(), fv0c(), ft0(), fdd(), v0s(), cascs()
+      calo(), calotrigger(), fwdtracks(), mucls(), zdc(), fv0a(), fv0c(), ft0(), fdd(), v0s(), cascs()
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -546,7 +547,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tBC->Branch("fTriggerMask", &bc.fTriggerMask, "fTriggerMask/l");
     tBC->SetBasketSize("*", fBasketSizeEvents);
   }
-  
+
   // Associate branches for Run 2 BC info
   TTree* tRun2BCInfo = CreateTree(kRun2BCInfo);
   if (fTreeStatus[kRun2BCInfo]) {
@@ -571,7 +572,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tTracks->Branch("fSigned1Pt", &tracks.fSigned1Pt, "fSigned1Pt/F");
     tTracks->SetBasketSize("*", fBasketSizeTracks);
   }
-  
+
   TTree* tTracksCov = CreateTree(kTracksCov);
   if (fTreeStatus[kTracksCov]) {
     // Modified covariance matrix
@@ -644,26 +645,54 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tCaloTrigger->SetBasketSize("*", fBasketSizeEvents);
   }
 
-  // Associuate branches for MUON tracks
-  TTree *tMuon = CreateTree(kMuon);
-  if (fTreeStatus[kMuon])
+  // Associate FwdTrack branches for MUON tracks
+  TTree *tFwdTrack = CreateTree(kFwdTrack);
+  if (fTreeStatus[kFwdTrack])
   {
-    tMuon->Branch("fIndexBCs", &muons.fIndexBCs, "fIndexBCs/I");
-    //    tMuon->Branch("fClusterIndex", &muons.fClusterIndex, "fClusterIndex/I");
-    //    tMuon->Branch("fNclusters", &muons.fNclusters, "fNclusters/I");
-    tMuon->Branch("fInverseBendingMomentum", &muons.fInverseBendingMomentum, "fInverseBendingMomentum/F");
-    tMuon->Branch("fThetaX", &muons.fThetaX, "fThetaX/F");
-    tMuon->Branch("fThetaY", &muons.fThetaY, "fThetaY/F");
-    tMuon->Branch("fZMu", &muons.fZMu, "fZMu/F");
-    tMuon->Branch("fBendingCoor", &muons.fBendingCoor, "fBendingCoor/F");
-    tMuon->Branch("fNonBendingCoor", &muons.fNonBendingCoor, "fNonBendingCoor/F");
-    tMuon->Branch("fCovariances", muons.fCovariances, "fCovariances[15]/F");
-    tMuon->Branch("fChi2", &muons.fChi2, "fChi2/F");
-    tMuon->Branch("fChi2MatchTrigger", &muons.fChi2MatchTrigger, "fChi2MatchTrigger/F");
-    tMuon->SetBasketSize("*", fBasketSizeEvents);
+    tFwdTrack->Branch("fIndexCollisions", &fwdtracks.fIndexCollisions, "fIndexCollisions/I");
+    tFwdTrack->Branch("fIndexBCs", &fwdtracks.fIndexBCs, "fIndexBCs/I");
+    tFwdTrack->Branch("fTrackType", &fwdtracks.fTrackType, "fTrackType/I");
+    tFwdTrack->Branch("fX", &fwdtracks.fX, "fX/F");
+    tFwdTrack->Branch("fY", &fwdtracks.fY, "fY/F");
+    tFwdTrack->Branch("fZ", &fwdtracks.fZ, "fZ/F");
+    tFwdTrack->Branch("fPhi", &fwdtracks.fPhi, "fPhi/F");
+    tFwdTrack->Branch("fTgl", &fwdtracks.fTgl, "fTgl/F");
+    tFwdTrack->Branch("fSigned1Pt", &fwdtracks.fSigned1Pt, "fSigned1Pt/F");
+    tFwdTrack->Branch("fNClusters", &fwdtracks.fNClusters, "fNClusters/I");
+    tFwdTrack->Branch("fPDca", &fwdtracks.fPDca, "fPDca/F");
+    tFwdTrack->Branch("fRAtAbsorberEnd", &fwdtracks.fRAtAbsorberEnd, "fRAtAbsorberEnd/F");
+    tFwdTrack->Branch("fChi2", &fwdtracks.fChi2, "fChi2/F");
+    tFwdTrack->Branch("fChi2MatchMCHMID", &fwdtracks.fChi2MatchMCHMID, "fChi2MatchMCHMID/F");
+    tFwdTrack->Branch("fChi2MatchMCHMFT", &fwdtracks.fChi2MatchMCHMFT, "fChi2MatchMCHMFT/F");
+    tFwdTrack->Branch("fMatchScoreMCHMFT", &fwdtracks.fMatchScoreMCHMFT, "fMatchScoreMCHMFT/F");
+    tFwdTrack->Branch("fMatchMFTTrackID", &fwdtracks.fMatchMFTTrackID, "fMatchMFTTrackID/I");
+    tFwdTrack->Branch("fMatchMCHTrackID", &fwdtracks.fMatchMCHTrackID, "fMatchMCHTrackID/I");
+    tFwdTrack->SetBasketSize("*", fBasketSizeEvents);
   }
 
-  // Associate branches for MUON tracks
+  // Associate FwdTrack covariances for MUON tracks
+  TTree *tFwdTrackCov = CreateTree(kFwdTrackCov);
+  if (fTreeStatus[kFwdTrackCov])
+  {
+    tFwdTrackCov->Branch("fSigmaX", &fwdtracks.fSigmaX, "fSigmaX/F");
+    tFwdTrackCov->Branch("fSigmaY", &fwdtracks.fSigmaY, "fSigmaY/F");
+    tFwdTrackCov->Branch("fSigmaPhi", &fwdtracks.fSigmaPhi, "fSigmaPhi/F");
+    tFwdTrackCov->Branch("fSigmaTgl", &fwdtracks.fSigmaTgl, "fSigmaTgl/F");
+    tFwdTrackCov->Branch("fSigma1Pt", &fwdtracks.fSigma1Pt, "fSigma1Pt/F");
+    tFwdTrackCov->Branch("fRhoXY", &fwdtracks.fRhoXY, "fRhoXY/B");
+    tFwdTrackCov->Branch("fRhoPhiX", &fwdtracks.fRhoPhiX, "fRhoPhiX/B");
+    tFwdTrackCov->Branch("fRhoPhiY", &fwdtracks.fRhoPhiY, "fRhoPhiY/B");
+    tFwdTrackCov->Branch("fRhoTglX", &fwdtracks.fRhoTglX, "fRhoTglX/B");
+    tFwdTrackCov->Branch("fRhoTglY", &fwdtracks.fRhoTglY, "fRhoTglY/B");
+    tFwdTrackCov->Branch("fRhoTglPhi", &fwdtracks.fRhoTglPhi, "fRhoTglPhi/B");
+    tFwdTrackCov->Branch("fRho1PtX", &fwdtracks.fRho1PtX, "fRho1PtX/B");
+    tFwdTrackCov->Branch("fRho1PtY", &fwdtracks.fRho1PtY, "fRho1PtY/B");
+    tFwdTrackCov->Branch("fRho1PtPhi", &fwdtracks.fRho1PtPhi, "fRho1PtPhi/B");
+    tFwdTrackCov->Branch("fRho1PtTgl", &fwdtracks.fRho1PtTgl, "fRho1PtTgl/B");
+    tFwdTrack->SetBasketSize("*", fBasketSizeEvents);
+  }
+
+  // Associate branches for MUON clusters
   TTree *tMuonCls = CreateTree(kMuonCls);
   if (fTreeStatus[kMuonCls])
   {
@@ -920,7 +949,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
   //---------------------------------------------------------------------------
   // Collision data
-  if (fillCollision) 
+  if (fillCollision)
   {
     eventextra.fNentries[kEvents] = 1; // one entry per vertex
     collision.fIndexBCs = fBCCount;
@@ -993,41 +1022,41 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   bc.fTriggerMask = fESD->GetTriggerMask();
   // NOTE upper 64 bit of trigger classes stored few lines below in run2bcinfo.fTriggerMaskNext50
   FillTree(kBC);
-  
+
   //---------------------------------------------------------------------------
   // Run 2 BC information
   run2bcinfo.fTriggerMaskNext50 = fESD->GetTriggerMaskNext50();
   run2bcinfo.fSPDClustersL0 = (fESD->GetNumberOfITSClusters(0) > USHRT_MAX) ? USHRT_MAX : fESD->GetNumberOfITSClusters(0);
   run2bcinfo.fSPDClustersL1 = (fESD->GetNumberOfITSClusters(1) > USHRT_MAX) ? USHRT_MAX : fESD->GetNumberOfITSClusters(1);
   run2bcinfo.fEventCuts = 0;
-  
+
   // Get multiplicity selection
   AliMultSelection *multSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
   if (!multSelection)
     AliFatal("MultSelection not found in input event");
-  
+
   if( multSelection->GetThisEventINELgtZERO() )
     SETBIT (run2bcinfo.fEventCuts, kINELgtZERO);
-  
+
   if( multSelection->GetThisEventIsNotPileupInMultBins() )
     SETBIT (run2bcinfo.fEventCuts, kPileupInMultBins);
-  
+
   if( multSelection->GetThisEventHasNoInconsistentVertices() )
     SETBIT (run2bcinfo.fEventCuts, kConsistencySPDandTrackVertices);
-  
+
   if( multSelection->GetThisEventPassesTrackletVsCluster() )
     SETBIT (run2bcinfo.fEventCuts, kTrackletsVsClusters);
-  
+
   if( fESD->GetPrimaryVertex()->GetNContributors()>0 )
     SETBIT (run2bcinfo.fEventCuts, kNonZeroNContribs);
-  
+
   if( multSelection->GetThisEventIsNotIncompleteDAQ() )
     SETBIT (run2bcinfo.fEventCuts, kIncompleteDAQ);
-  
+
   // TODO add AliEventCuts information bits
-  
+
   FillTree(kRun2BCInfo);
-  
+
   //---------------------------------------------------------------------------
   // MC kinematic tree
   // It has to be done before the reconstructed tracks,
@@ -1509,11 +1538,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         if (fTreeStatus[kTracks]) ntracklet_filled++;
       }
     } // end loop on tracklets
-    eventextra.fNentries[kTracks] = ntrk_filled + ntracklet_filled; 
+    eventextra.fNentries[kTracks] = ntrk_filled + ntracklet_filled;
     eventextra.fNentries[kTracksCov] = eventextra.fNentries[kTracks];
     eventextra.fNentries[kTracksExtra] = eventextra.fNentries[kTracks];
   }
-  
+
   //---------------------------------------------------------------------------
   // Calorimeter data
 
@@ -1631,8 +1660,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   eventextra.fNentries[kCalo] = nphoscells_filled;
 
   //---------------------------------------------------------------------------
-  // Muon tracks
-  muons.fIndexBCs = fBCCount;
+  // Muon tracks -> fwdtracks
 
   Int_t nmu = fESD->GetNumberOfMuonTracks();
   Int_t nmu_filled = 0;   // total number of muons filled per event
@@ -1640,26 +1668,14 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   for (Int_t imu = 0; imu < nmu; ++imu)
   {
     AliESDMuonTrack *mutrk = fESD->GetMuonTrack(imu);
-
-    muons.fInverseBendingMomentum = AliMathBase::TruncateFloatFraction(mutrk->GetInverseBendingMomentum(), mMuonTr1P);
-    muons.fThetaX = AliMathBase::TruncateFloatFraction(mutrk->GetThetaX(), mMuonTrThetaX);
-    muons.fThetaY = AliMathBase::TruncateFloatFraction(mutrk->GetThetaY(), mMuonTrThetaY);
-    muons.fZMu = AliMathBase::TruncateFloatFraction(mutrk->GetZ(), mMuonTrZmu);
-    muons.fBendingCoor = AliMathBase::TruncateFloatFraction(mutrk->GetBendingCoor(), mMuonTrBend);
-    muons.fNonBendingCoor = AliMathBase::TruncateFloatFraction(mutrk->GetNonBendingCoor(), mMuonTrNonBend);
-
-    TMatrixD cov;
-    mutrk->GetCovariances(cov);
-    for (Int_t i = 0; i < 5; i++)
-      for (Int_t j = 0; j <= i; j++)
-        muons.fCovariances[i * (i + 1) / 2 + j] = AliMathBase::TruncateFloatFraction(cov(i, j), mMuonTrCov);
-
-    muons.fChi2 = AliMathBase::TruncateFloatFraction(mutrk->GetChi2(), mMuonTrCov);
-    muons.fChi2MatchTrigger = AliMathBase::TruncateFloatFraction(mutrk->GetChi2MatchTrigger(), mMuonTrCov);
+    fwdtracks = MUONtoFwdTrack(*mutrk);
+    fwdtracks.fIndexCollisions = fCollisionCount;
+    fwdtracks.fIndexBCs = fBCCount;
 
     // Now MUON clusters for the current track
     Int_t muTrackID = fOffsetMuTrackID + imu;
     Int_t nmucl = mutrk->GetNClusters();
+
     for (Int_t imucl = 0; imucl < nmucl; ++imucl)
     {
       AliESDMuonCluster *muCluster = fESD->FindMuonCluster(mutrk->GetClusterId(imucl));
@@ -1675,16 +1691,17 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (fTreeStatus[kMuonCls])
         nmucl_filled++;
     } // End loop on muon clusters for the current muon track
-
     // In case we need connection to clusters, activate next lines
-    // muons.fClusterIndex += muons.fNclusters;
-    // muons.fNclusters = nmucl_filled;
+    // fwdtracks.fClusterIndex += fwdtracks.fNclusters;
+    fwdtracks.fNClusters = nmucl;
 
-    FillTree(kMuon);
-    if (fTreeStatus[kMuon])
+    FillTree(kFwdTrack);
+    FillTree(kFwdTrackCov);
+    if (fTreeStatus[kFwdTrack])
       nmu_filled++;
   } // End loop on muon tracks
-  eventextra.fNentries[kMuon] = nmu_filled;
+  eventextra.fNentries[kFwdTrack] = nmu_filled;
+  eventextra.fNentries[kFwdTrackCov] = nmu_filled;
   eventextra.fNentries[kMuonCls] = nmucl_filled;
 
   //---------------------------------------------------------------------------
@@ -2005,5 +2022,165 @@ Bool_t AliAnalysisTaskAO2Dconverter::Select(TParticle *part, Float_t rv, Float_t
   return kFALSE;
 
 } // AliAnalysisTaskAO2Dconverter::Select(TParticle* part, Float_t rv, Float_t zv)
+
+//_________________________________________________________________________________________________
+AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoFwdTrack(AliESDMuonTrack &MUONTrack) {
+  // Convert MCH Track parameters and covarianceS matrix to the RUN3 Forward track coordinate system
+
+
+  FwdTrackPars convertedTrack;
+
+  //pxdca
+  double pdca;
+  pdca= MUONTrack.P() * MUONTrack.GetDCA();
+
+  // Parameter conversion
+  double alpha1, alpha3, alpha4, x2, x3, x4;
+
+  alpha1 = TMath::Tan(MUONTrack.GetThetaX());
+  alpha3 = TMath::Tan(MUONTrack.GetThetaY());
+  alpha4 = MUONTrack.GetInverseBendingMomentum();
+
+  x2 = TMath::ATan2(-alpha3, -alpha1);
+  if (alpha3 != 0 || alpha1 != 0) 
+    x3 = -1. / TMath::Sqrt(alpha3 * alpha3 + alpha1 * alpha1);
+  else 
+    x3 = 0;
+  x4 = alpha4 * -x3 * TMath::Sqrt(1 + alpha3 * alpha3);
+
+  // Set output parameters
+  convertedTrack.fX = AliMathBase::TruncateFloatFraction(MUONTrack.GetNonBendingCoor(), mMuonTrNonBend);
+  convertedTrack.fY = AliMathBase::TruncateFloatFraction(MUONTrack.GetBendingCoor(), mMuonTrBend);
+  convertedTrack.fZ = AliMathBase::TruncateFloatFraction(MUONTrack.GetZ(), mMuonTrZmu);
+  convertedTrack.fPhi = AliMathBase::TruncateFloatFraction(x2, mMuonTrThetaX);
+  convertedTrack.fTgl = AliMathBase::TruncateFloatFraction(x3, mMuonTrThetaX);
+  convertedTrack.fSigned1Pt = AliMathBase::TruncateFloatFraction(x4, mMuonTr1P);
+  convertedTrack.fChi2 = AliMathBase::TruncateFloatFraction(MUONTrack.GetChi2(), mMuonTrCov);
+  convertedTrack.fChi2MatchMCHMID = AliMathBase::TruncateFloatFraction(MUONTrack.GetChi2MatchTrigger(), mMuonTrCov);
+  convertedTrack.fRAtAbsorberEnd = AliMathBase::TruncateFloatFraction(MUONTrack.GetRAtAbsorberEnd(), mMuonTrCov);
+  convertedTrack.fPDca = AliMathBase::TruncateFloatFraction(pdca, mMuonTrCov);
+
+  // Covariances matrix conversion
+  using SMatrix55Std = ROOT::Math::SMatrix<double, 5>;
+  using SMatrix55Sym = ROOT::Math::SMatrix<double, 5, 5, ROOT::Math::MatRepSym<double, 5>>;
+  SMatrix55Std jacobian;
+  SMatrix55Sym convertedCovariances;
+  TMatrixD inputCovariances;
+  MUONTrack.GetCovariances(inputCovariances);
+
+  auto K = alpha1 * alpha1 + alpha3 * alpha3;
+  auto K32 = K * TMath::Sqrt(K);
+  auto L = TMath::Sqrt(alpha3 * alpha3 + 1);
+
+  convertedCovariances(0, 0) = inputCovariances(0, 0);
+  convertedCovariances(0, 1) = inputCovariances(0, 1);
+  convertedCovariances(0, 2) = inputCovariances(0, 2);
+  convertedCovariances(0, 3) = inputCovariances(0, 3);
+  convertedCovariances(0, 4) = inputCovariances(0, 4);
+
+  convertedCovariances(1, 1) = inputCovariances(1, 1);
+  convertedCovariances(1, 2) = inputCovariances(1, 2);
+  convertedCovariances(1, 3) = inputCovariances(1, 3);
+  convertedCovariances(1, 4) = inputCovariances(1, 4);
+
+  convertedCovariances(2, 2) = inputCovariances(2, 2);
+  convertedCovariances(2, 3) = inputCovariances(2, 3);
+  convertedCovariances(2, 4) = inputCovariances(2, 4);
+
+  convertedCovariances(3, 3) = inputCovariances(3, 3);
+  convertedCovariances(3, 4) = inputCovariances(3, 4);
+
+  convertedCovariances(4, 4) = inputCovariances(4, 4);
+
+  jacobian(0, 0) = 1;
+
+  jacobian(1, 2) = 1;
+
+  if(K32 != 0) {
+     jacobian(2, 1) = -alpha3 / K;
+     jacobian(2, 3) = alpha1 / K;
+
+     jacobian(3, 1) = alpha1 / K32;
+     jacobian(3, 3) = alpha3 / K32;
+
+     jacobian(4, 1) = -alpha1 * alpha4 * L / K32;
+     jacobian(4, 3) = alpha3 * alpha4 * (1 / (TMath::Sqrt(K) * L) - L / K32);
+     jacobian(4, 4) = L / TMath::Sqrt(K);
+  }
+  else
+  {
+     jacobian(2, 1) = 0; 
+     jacobian(2, 3) = 0; 
+
+     jacobian(3, 1) = 0; 
+     jacobian(3, 3) = 0; 
+
+     jacobian(4, 1) = 0; 
+     jacobian(4, 3) = 0; 
+     jacobian(4, 4) = 0; 
+  }
+
+  // jacobian*covariances*jacobian^T
+  convertedCovariances = ROOT::Math::Similarity(jacobian, convertedCovariances);
+
+  // Set output covariances
+  convertedTrack.fSigmaX   = AliMathBase::TruncateFloatFraction(TMath::Sqrt(convertedCovariances(0,0)), mTrackCovDiag);
+  convertedTrack.fSigmaY   = AliMathBase::TruncateFloatFraction(TMath::Sqrt(convertedCovariances(1,1)), mTrackCovDiag);
+  convertedTrack.fSigmaPhi = AliMathBase::TruncateFloatFraction(TMath::Sqrt(convertedCovariances(2,2)), mTrackCovDiag);
+  convertedTrack.fSigmaTgl = AliMathBase::TruncateFloatFraction(TMath::Sqrt(convertedCovariances(3,3)), mTrackCovDiag);
+  convertedTrack.fSigma1Pt = AliMathBase::TruncateFloatFraction(TMath::Sqrt(convertedCovariances(4,4)), mTrackCovDiag);
+
+  if(fwdtracks.fSigmaX != 0 && fwdtracks.fSigmaY != 0)
+      convertedTrack.fRhoXY = (Char_t)(128. * convertedCovariances(0,1) / fwdtracks.fSigmaX / fwdtracks.fSigmaY);
+  else 
+     convertedTrack.fRhoXY = 0;
+ 
+  if(fwdtracks.fSigmaPhi != 0 && fwdtracks.fSigmaX != 0) 
+     convertedTrack.fRhoPhiX = (Char_t)(128. * convertedCovariances(0,2) / fwdtracks.fSigmaPhi / fwdtracks.fSigmaX);
+  else 
+     convertedTrack.fRhoPhiX = 0;
+
+  if(fwdtracks.fSigmaPhi != 0 && fwdtracks.fSigmaY != 0) 
+     convertedTrack.fRhoPhiY = (Char_t)(128. * convertedCovariances(1,2) / fwdtracks.fSigmaPhi / fwdtracks.fSigmaY);
+  else 
+     convertedTrack.fRhoPhiY = 0;
+
+  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaX != 0) 
+     convertedTrack.fRhoTglX = (Char_t)(128. * convertedCovariances(3,0) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaX);
+  else 
+     convertedTrack.fRhoTglX = 0;
+
+  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaY != 0) 
+     convertedTrack.fRhoTglY = (Char_t)(128. * convertedCovariances(3,1) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaY);
+  else 
+     convertedTrack.fRhoTglY = 0;
+
+  if(fwdtracks.fSigmaTgl != 0 && fwdtracks.fSigmaPhi != 0) 
+     convertedTrack.fRhoTglPhi = (Char_t)(128. * convertedCovariances(3,2) / fwdtracks.fSigmaTgl / fwdtracks.fSigmaPhi);
+  else 
+     convertedTrack.fRhoTglPhi = 0;
+
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaX != 0) 
+     convertedTrack.fRho1PtX = (Char_t)(128. * convertedCovariances(4,0) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaX);
+  else
+     convertedTrack.fRho1PtX = 0;
+
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaY != 0) 
+     convertedTrack.fRho1PtY = (Char_t)(128. * convertedCovariances(4,1) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaY);
+  else 
+     convertedTrack.fRho1PtY = 0;
+
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaPhi != 0) 
+     convertedTrack.fRho1PtPhi = (Char_t)(128. * convertedCovariances(4,2) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaPhi);
+  else 
+     convertedTrack.fRho1PtPhi = 0;
+
+  if(fwdtracks.fSigma1Pt != 0 && fwdtracks.fSigmaTgl != 0) 
+    convertedTrack.fRho1PtTgl = (Char_t)(128. * convertedCovariances(4,3) / fwdtracks.fSigma1Pt / fwdtracks.fSigmaTgl);
+  else 
+    convertedTrack.fRho1PtTgl = 0;
+
+  return convertedTrack;
+}
 
 ////////////////////////////////////////////////////////////

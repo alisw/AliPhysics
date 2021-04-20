@@ -7,6 +7,7 @@
 
 #include "AliAnalysisFilter.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliESDMuonTrack.h"
 #include "AliEventCuts.h"
 
 #include <TString.h>
@@ -53,9 +54,10 @@ public:
     kTracks,
     kTracksCov,
     kTracksExtra,
+    kFwdTrack,
+    kFwdTrackCov,
     kCalo,
     kCaloTrigger,
-    kMuon,
     kMuonCls,
     kZdc,
     kFV0A,
@@ -148,7 +150,7 @@ private:
   AliEventCuts fEventCuts;      //! Standard event cuts
   AliESDEvent *fESD = nullptr;  //! input event
   TList *fOutputList = nullptr; //! output list
-  
+
   Int_t fCollisionCount = 0; //! collision count
   Int_t fBCCount = 0;        //! BC count
   Bool_t fTfInitialized = false; //!
@@ -199,7 +201,7 @@ private:
     UChar_t fCollisionTimeMask = 0u;    /// Mask with the method used to compute the event time (0x1=T0-TOF,0x2=T0A,0x3=TOC) for each momentum bins
 
   } collision; //! structure to keep the primary vertex (avoid name conflicts)
-  
+
   struct {
     // Start indices and numbers of elements for data in the other trees matching this vertex.
     // Needed for random access of collision-related data, allowing skipping data discarded by the user
@@ -212,26 +214,26 @@ private:
     ULong64_t fGlobalBC = 0u;    /// Unique bunch crossing id. Contains period, orbit and bunch crossing numbers
     ULong64_t fTriggerMask = 0u; /// Trigger class mask
   } bc; //! structure to keep trigger-related info
-  
+
   struct {
     UInt_t fEventCuts = 0;             /// Event selections from AliMultSelection and AliEventCuts
     ULong64_t fTriggerMaskNext50 = 0u; /// Upper 50 trigger class
     UShort_t fSPDClustersL0 = 0;       /// number of clusters in SPD L0
     UShort_t fSPDClustersL1 = 0;       /// number of clusters in SPD L1
-  } run2bcinfo; //! structure to keep run 2 only related info 
+  } run2bcinfo; //! structure to keep run 2 only related info
 
   struct {
     // Track data
 
     Int_t   fIndexCollisions = -1;    /// The index of the collision vertex in the TF, to which the track is attached
-    
+
     uint8_t fTrackType = 0;       // Type of track: global, ITS standalone, tracklet, ...
-    
+
     // In case we need connection to TOF clusters, activate next lines
     // Int_t   fTOFclsIndex;     /// The index of the associated TOF cluster
     // Int_t   fNTOFcls;         /// The number of TOF clusters
-    
-    
+
+
 
     // Coordinate system parameters
     Float_t fX = -999.f;     /// X coordinate for the point of parametrisation
@@ -317,21 +319,21 @@ private:
                            /// Bit 7-9: # of TPC mismatches in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
                            /// Bit 10: TRD, bit 11: TOF, bit 15: negative label sign
   } mctracklabel; //! Track labels
-  
+
   struct {
     // Calo cluster label to find the corresponding MC particle
     Int_t fIndexMcParticles = 0;       /// Calo label
     UShort_t fMcMask = 0;    /// Bit mask to indicate detector mismatches (bit ON means mismatch)
                              /// bit 15: negative label sign
   } mccalolabel; //! Calo labels
-  
+
   struct {
     // MC collision label
     Int_t fIndexMcCollisions = 0;       /// Collision label
     UShort_t fMcMask = 0;    /// Bit mask to indicate collision mismatches (bit ON means mismatch)
                              /// bit 15: negative label sign
   } mccollisionlabel; //! Collision labels
-  
+
   struct {
     // MC particle
 
@@ -385,7 +387,7 @@ private:
     Char_t fCellType = -1;        /// EMCAL: Low Gain: 0 / High Gain: 1 / TRU: 2 / LEDmon 3 (see DataFromatsEMCAL/Constants.h)
     Char_t fCaloType = -1;        /// Cell type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calo;                         //! structure to keep EMCAL info
-  
+
   struct {
     // Calorimeter trigger data (EMCAL & PHOS)
     Int_t fIndexBCs = 0u;        /// Index to BC table
@@ -398,38 +400,51 @@ private:
     Char_t fCaloType = -1;            /// Calorimeter type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calotrigger;                  //! structure to keep calo trigger info
 
-  struct {
-    // MUON track data
+  struct FwdTrackPars {   /// Forward track parameters
+    Int_t   fIndexCollisions = -1;    /// The index of the collision vertex in the TF, to which the track is attached
+    Int_t fIndexBCs = 0u; /// Index to BC table
+    Int_t fTrackType = 3; /// MuonStandaloneTrack on ForwardTrackTypeEnum (O2 Framework/DataTypes.h)
+    Float_t fX = -999.f;
+    Float_t fY = -999.f;
+    Float_t fZ = -999.f;
+    Float_t fPhi = -999.f;
+    Float_t fTgl = -999.f;
+    Float_t fSigned1Pt = -999.f;
+    Int_t fNClusters = -1;
+    Float_t fPDca = -999.f;
+    Float_t fRAtAbsorberEnd = -999.f;
+    Float_t fChi2 = -999.f;
+    Float_t fChi2MatchMCHMID = -999.f;
+    Float_t fChi2MatchMCHMFT = -999.f;
+    Float_t fMatchScoreMCHMFT = -999.f;
+    Int_t fMatchMFTTrackID = -1;
+    Int_t fMatchMCHTrackID = -1;
 
-    Int_t fIndexBCs = 0u;            /// Index to BC table
-    // In case we need connection to muon clusters, activate next lines
-    // Int_t   fClusterIndex;        /// The index of the associated MUON clusters
-    // Int_t   fNclusters;           /// The number of MUON clusters
+    // "Covariance matrix"
+    // The diagonal elements represent the errors = Sqrt(C[i,i])
+    // The off-diagonal elements are the correlations = C[i,j]/Sqrt(C[i,i])/Sqrt(C[j,j])
+    // The off-diagonal elements are multiplied by 128 (7bits) and packed in Char_t
+    Float_t fSigmaX      = -999.f; /// Sqrt(fC[0,0])
+    Float_t fSigmaY      = -999.f; /// Sqrt(fC[1,1])
+    Float_t fSigmaPhi    = -999.f; /// Sqrt(fC[2,2])
+    Float_t fSigmaTgl    = -999.f; /// Sqrt(fC[3,3])
+    Float_t fSigma1Pt    = -999.f; /// Sqrt(fC[4,4])
+    Char_t fRhoXY        = 0;      /// 128*fC[0,1]/SigmaX/SigmaY
+    Char_t fRhoPhiX      = 0;      /// 128*fC[0,2]/SigmaPhi/SigmaX
+    Char_t fRhoPhiY      = 0;      /// 128*fC[1,2]/SigmaPhi/SigmaY
+    Char_t fRhoTglX      = 0;      /// 128*fC[0,3]/SigmaTgl/SigmaX
+    Char_t fRhoTglY      = 0;      /// 128*fC[1,3]/SigmaTgl/SigmaY
+    Char_t fRhoTglPhi    = 0;      /// 128*fC[2,3]/SigmaTgl/SigmaPhi
+    Char_t fRho1PtX      = 0;      /// 128*fC[0,4]/Sigma1Pt/SigmaX
+    Char_t fRho1PtY      = 0;      /// 128*fC[1,4]/Sigma1Pt/SigmaY
+    Char_t fRho1PtPhi    = 0;      /// 128*fC[2,4]/Sigma1Pt/SigmaPhi
+    Char_t fRho1PtTgl    = 0;      /// 128*fC[3,4]/Sigma1Pt/SigmaTgl
 
-    /// Parameters at vertex
-    Float_t fInverseBendingMomentum = 0.f; ///< Inverse bending momentum (GeV/c ** -1) times the charge 
-    Float_t fThetaX = -999.f;              ///< Angle of track at vertex in X direction (rad)
-    Float_t fThetaY = -999.f;              ///< Angle of track at vertex in Y direction (rad)
-    Float_t fZMu = -999.f;                 ///< Z coordinate (cm)
-    Float_t fBendingCoor = -999.f;         ///< bending coordinate (cm)
-    Float_t fNonBendingCoor = -999.f;      ///< non bending coordinate (cm)
-
-    /// Reduced covariance matrix of UNCORRECTED track parameters, ordered as follow:      <pre>
-    /// [0] =  <X,X>
-    /// [1] =<X,ThetaX>  [2] =<ThetaX,ThetaX>
-    /// [3] =  <X,Y>     [4] =  <Y,ThetaX>     [5] =  <Y,Y>
-    /// [6] =<X,ThetaY>  [7] =<ThetaX,ThetaY>  [8] =<Y,ThetaY>  [9] =<ThetaY,ThetaY>
-    /// [10]=<X,InvP_yz> [11]=<ThetaX,InvP_yz> [12]=<Y,InvP_yz> [13]=<ThetaY,InvP_yz> [14]=<InvP_yz,InvP_yz>  </pre>
-    Float_t fCovariances[15] = {-999.}; ///< \brief reduced covariance matrix of parameters AT FIRST CHAMBER
-
-    /// Global tracking info
-    Float_t fChi2 = 999.f;                ///< chi2 in the MUON track fit
-    Float_t fChi2MatchTrigger = 999.f;    ///< chi2 of trigger/track matching
-  } muons;                        //! structure to keep muons information
+  } fwdtracks; //! structure to keep forward tracks parameters and covariances
 
   struct {
     // Muon cluster data
-    
+
     Int_t   fIndexMuons = -1; /// The index of the muon track to which the clusters are attached
     Float_t fX = -999.f;         ///< cluster X position
     Float_t fY = -999.f;         ///< cluster Y position
@@ -452,12 +467,12 @@ private:
     Float_t fEnergySectorZNC[4] = {0.f}; ///< E in 4 ZNC sectors - high gain chain
     Float_t fEnergySectorZPA[4] = {0.f}; ///< E in 4 ZPA sectors - high gain chain
     Float_t fEnergySectorZPC[4] = {0.f}; ///< E in 4 ZPC sectors - high gain chain
-    Float_t fTimeZEM1 = 0.f;             ///< Corrected time in ZEM1      
+    Float_t fTimeZEM1 = 0.f;             ///< Corrected time in ZEM1
     Float_t fTimeZEM2 = 0.f;             ///< Corrected time in ZEM2
     Float_t fTimeZNA = 0.f;              ///< Corrected time in ZNA
-    Float_t fTimeZNC = 0.f;              ///< Corrected time in ZNC     
-    Float_t fTimeZPA = 0.f;              ///< Corrected time in ZPA     
-    Float_t fTimeZPC = 0.f;              ///< Corrected time in ZPC     
+    Float_t fTimeZNC = 0.f;              ///< Corrected time in ZNC
+    Float_t fTimeZPA = 0.f;              ///< Corrected time in ZPA
+    Float_t fTimeZPC = 0.f;              ///< Corrected time in ZPC
   } zdc;                                 //! structure to keep ZDC information
 
   struct {
@@ -467,7 +482,7 @@ private:
     Float_t fTime = 0.f;              /// Average A-side time
     uint8_t fTriggerMask = 0;         /// Trigger info
   } fv0a;                             //! structure to keep V0A information
-  
+
   struct {
     /// V0C  (32 cells in Run2)
     Int_t fIndexBCs = 0u;                /// Index to BC table
@@ -484,9 +499,9 @@ private:
     Float_t fTimeC = 0.f;             /// Average C-side time
     uint8_t fTriggerMask = 0;         /// Trigger info
   } ft0;                              //! structure to keep FT0 information
-  
+
   struct {
-    /// FDD (AD)  
+    /// FDD (AD)
     Int_t fIndexBCs = 0u;                /// Index to BC table
     Float_t fAmplitudeA[4] = {0.f};   /// Multiplicity for each A-side channel
     Float_t fAmplitudeC[4] = {0.f};   /// Multiplicity for each C-side channel
@@ -534,8 +549,10 @@ private:
   /// Pointer to the output file
   TFile * fOutputFile = 0x0; ///! Pointer to the output file
   TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
-  
-  ClassDef(AliAnalysisTaskAO2Dconverter, 15);
+
+  FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks between RUN2 and RUN3 coordinates
+
+  ClassDef(AliAnalysisTaskAO2Dconverter, 16);
 };
 
 #endif
