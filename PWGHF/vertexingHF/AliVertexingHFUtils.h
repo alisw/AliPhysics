@@ -267,8 +267,8 @@ class AliVertexingHFUtils : public TObject{
   static Double_t DecayLengthXYFromKF(KFParticle kfpParticle, KFParticle PV);
   static Double_t ldlFromKF(KFParticle kfpParticle, KFParticle PV); /// l/dl
   static Double_t ldlXYFromKF(KFParticle kfpParticle, KFParticle PV); /// l/dl
-  static TH1D* ComputeGenAccOverGenLimAcc(TFile* fileToyMCoutput, Int_t nPtBins, Double_t* binLims,Bool_t useSimpleFormula=kFALSE);
-  static TH1D* ComputeGenAccOverGenLimAcc(TH2D* hPtVsYGenAccToy, TH2D* hPtVsYGenLimAccToy, Int_t nPtBins, Double_t* binLims,Bool_t useSimpleFormula=kFALSE);
+  static TH1D* ComputeGenAccOverGenLimAcc(TFile* fileToyMCoutput, Int_t nPtBins=0, Double_t* binLims=0x0,Bool_t useSimpleFormula=kFALSE);
+  static TH1D* ComputeGenAccOverGenLimAcc(TH2D* hPtVsYGenAccToy, TH2D* hPtVsYGenLimAccToy, Int_t nPtBins=0, Double_t* binLims=0x0,Bool_t useSimpleFormula=kFALSE);
 
 
  private:
