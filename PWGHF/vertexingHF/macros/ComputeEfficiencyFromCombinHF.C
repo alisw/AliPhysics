@@ -30,10 +30,9 @@ TString ptDWeight="";
 TString ptBWeight="";
 Double_t maxMult=-1;//200;
 
-TH1F* hAccToyFine=0x0;
-TH1F* hAccToy=0x0;
-TH2D* hPtVsYGenAccToy=0x0;
-TH2D* hPtVsYGenLimAccToy=0x0;
+TH1D* hAccToyFine=0x0;
+TH1D* hAccToy=0x0;
+TH1D* hr3=0x0;
 
 TF1* funcPtWeight=0x0;
 TF1* funcPtBWeight=0x0;
@@ -135,31 +134,185 @@ void ComputeEfficiencyFromCombinHF(TString configInput=""){
 
   // aceptance from toy MC
   TFile* fileAccToy=new TFile(fileNameToy.Data());
-  hPtVsYGenAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenAcc");
-  hPtVsYGenLimAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenLimAcc");
+  TH2D*hPtVsYGenAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenAcc");
+  TH2D*hPtVsYGenLimAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenLimAcc");
 
-  TH1F* hPtGenAccToy=(TH1F*)fileAccToy->Get("hPtGenAcc");
-  TH1F* hPtGenLimAccToy=(TH1F*)fileAccToy->Get("hPtGenLimAcc");
-  hAccToyFine=(TH1F*)fileAccToy->Get("hAccVsPt");
-  TH1F* hPtGenAccToyR=(TH1F*)hPtGenAccToy->Rebin(nPtBins,"hPtGenAccToyReb",binLims);
-  TH1F* hPtGenLimAccToyR=(TH1F*)hPtGenLimAccToy->Rebin(nPtBins,"hPtGenLimAccToyReb",binLims);
-  hAccToy=(TH1F*)hPtGenAccToyR->Clone("hAccToy");
+  TH1D* hPtGenAccToy=(TH1D*)fileAccToy->Get("hPtGenAcc");
+  TH1D* hPtGenLimAccToy=(TH1D*)fileAccToy->Get("hPtGenLimAcc");
+  hAccToyFine=(TH1D*)fileAccToy->Get("hAccVsPt");
+  TH1D* hPtGenAccToyR=(TH1D*)hPtGenAccToy->Rebin(nPtBins,"hPtGenAccToyReb",binLims);
+  TH1D* hPtGenLimAccToyR=(TH1D*)hPtGenLimAccToy->Rebin(nPtBins,"hPtGenLimAccToyReb",binLims);
+  TH1D* hAccToyB=(TH1D*)hPtGenAccToyR->Clone("hAccToyB");
   hPtGenAccToyR->Sumw2();
   hPtGenLimAccToyR->Sumw2();
-  hAccToy->Divide(hPtGenAccToyR,hPtGenLimAccToyR,1,1,"B");
-  hAccToy->SetLineColor(kGreen+2);
-  hAccToy->SetLineWidth(3);
-  hAccToy->SetMarkerStyle(27);
-  hAccToy->SetMarkerSize(1.8);
-  hAccToy->SetMarkerColor(kGreen+2);
-  hAccToy->SetStats(0);
+  hAccToyB->Divide(hPtGenAccToyR,hPtGenLimAccToyR,1,1,"B");
+  hAccToyB->SetLineColor(kGreen+2);
+  hAccToyB->SetLineWidth(3);
+  hAccToyB->SetMarkerStyle(27);
+  hAccToyB->SetMarkerSize(1.8);
+  hAccToyB->SetMarkerColor(kGreen+2);
+  hAccToyB->SetStats(0);
   hAccToyFine->SetLineColor(kGreen+2);
+
+  Int_t iybin1=hPtVsYGenAccToy->GetYaxis()->FindBin(-0.499999);
+  Int_t iybin2=hPtVsYGenAccToy->GetYaxis()->FindBin(0.499999);
+  TH1D* hptga=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga");
+  TH1D* hptgay05=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga05",iybin1,iybin2);
+  TH1D* hptgla=(TH1D*)hPtVsYGenLimAccToy->ProjectionX("hptgla");
+  TH1D* hptgaR=(TH1D*)hptga->Rebin(nPtBins,"hptgaR",binLims);
+  TH1D* hptglaR=(TH1D*)hptgla->Rebin(nPtBins,"hptglaR",binLims);
+  TH1D* hptgay05R=(TH1D*)hptgay05->Rebin(nPtBins,"hptgay05R",binLims);
+  TH1D* hr1=(TH1D*)hptgay05R->Clone("hr1");
+  hr1->Divide(hptgay05R,hptgaR,1,1,"B");
+  TH1D* hr2=(TH1D*)hptgay05R->Clone("hr2");
+  hr2->Divide(hptgay05R,hptglaR,1,1,"B");
+  hr3=(TH1D*)hr1->Clone("hr3");
+  hr3->Multiply(hr1,hr2);
+  TGraph* g1=new TGraph(0);
+  TGraph* g2=new TGraph(0);
+  TGraph* g3=new TGraph(0);
+  for(Int_t ip=0; ip<hptgay05R->GetNbinsX(); ip++){
+    double ptcent=hptgay05R->GetBinCenter(ip+1);
+    Double_t yfid=0.8;
+    if(ptcent<5) yfid=-0.2/15*ptcent*ptcent+1.9/15*ptcent+0.5;
+    g1->SetPoint(ip,ptcent,0.5/yfid);
+    double acc=hAccToyB->GetBinContent(hAccToyB->FindBin(ptcent));
+    g2->SetPoint(ip,ptcent,acc/1.6);
+    g3->SetPoint(ip,ptcent,0.5/yfid*acc/1.6);
+  }
+
+  hr1->SetStats(0);
+  hr2->SetStats(0);
+  hr3->SetStats(0);
+  hr1->SetMinimum(0.3);
+  hr1->SetMaximum(1.03);
+  hr2->SetMinimum(0.3);
+  hr2->SetMaximum(1.03);
+  hr3->SetMinimum(0.3);
+  hr3->SetMaximum(1.03);
+  hr1->SetLineWidth(2);
+  hr2->SetLineWidth(2);
+  hr3->SetLineWidth(2);
+  hr1->GetYaxis()->SetTitle("N(GenAcc && |y|<0.5) / N(GenAcc)");
+  hr2->GetYaxis()->SetTitle("N(GenAcc && |y|<0.5) / N(|y|<0.5)");
+  hr3->GetYaxis()->SetTitle("N(GenAcc && |y|<0.5)^{2} /  (N(GenAcc) * N(|y|<0.5))");
+  hr1->GetYaxis()->SetTitleOffset(1.3);
+  hr2->GetYaxis()->SetTitleOffset(1.3);
+  hr3->GetYaxis()->SetTitleOffset(1.3);
+
+  TCanvas* crho=new TCanvas("crho","covariance ToyMC",1600,600);
+  crho->Divide(3,1);
+  crho->cd(1);
+  gPad->SetLeftMargin(0.12);
+  gPad->SetRightMargin(0.05);
+  hr1->Draw();
+  g1->SetLineColor(2);
+  g1->SetLineWidth(2);
+  g1->Draw("csame");
+  TLegend* l1=new TLegend(0.5,0.7,0.9,0.89);
+  l1->SetTextFont(43);
+  l1->SetTextSize(22);
+  l1->AddEntry(hr1,"Toy MC","L");
+  l1->AddEntry(g1,"0.5/y_{fid}","L")->SetTextColor(2);
+  l1->Draw();
+  crho->cd(2);
+  gPad->SetLeftMargin(0.12);
+  gPad->SetRightMargin(0.05);
+  hr2->Draw();
+  g2->SetLineColor(2);
+  g2->SetLineWidth(2);
+  g2->Draw("csame");
+  TLegend* l2=new TLegend(0.3,0.2,0.9,0.39);
+  l2->SetTextFont(43);
+  l2->SetTextSize(22);
+  l2->AddEntry(hr2,"Toy MC","L");
+  l2->AddEntry(g2,"(GenAcc/GenLimAcc)/1.6","L")->SetTextColor(2);
+  l2->Draw();
+  crho->cd(3);
+  gPad->SetLeftMargin(0.12);
+  gPad->SetRightMargin(0.05);
+  hr3->Draw();
+  g3->SetLineColor(2);
+  g3->SetLineWidth(2);
+  g3->Draw("csame");
+  TLegend* l3=new TLegend(0.2,0.7,0.9,0.89);
+  l3->SetMargin(0.15);
+  l3->SetTextFont(43);
+  l3->SetTextSize(22);
+  l3->AddEntry(hr3,"Toy MC","L");
+  l3->AddEntry(g3,"0.5/y_{fid}*(GenAcc/GenLimAcc)/1.6","L")->SetTextColor(2);
+  l3->Draw();
+  
+
+  TH1D* hStatB=new TH1D("hStatB",";p_{T} (GeV/c); Relative Uncertainty (%)",nPtBins,binLims);
+  TH1D* hStatCovToy=new TH1D("hStatCovToy",";p_{T} (GeV/c); Relative Uncertainty (%)",nPtBins,binLims);
+  TH1D* hStatCovSimple=new TH1D("hStatCovSimple",";p_{T} (GeV/c); Relative Uncertainty (%)",nPtBins,binLims);
+  hAccToy = new TH1D("hAccToy",";p_{T} (GeV/c); GenAcc/GenLimAcc",nPtBins,binLims);
+  for(Int_t ib=1; ib<=nPtBins; ib++){
+    hStatB->SetBinContent(ib,hAccToyB->GetBinError(ib)/hAccToyB->GetBinContent(ib)*100);
+    hStatB->SetBinError(ib,0.0000001);
+    Double_t acc1=hAccToyB->GetBinContent(ib);
+    Double_t yfid=0.8;
+    Double_t ptcent=hAccToyB->GetBinCenter(ib);
+    if(ptcent<5) yfid=-0.2/15*ptcent*ptcent+1.9/15*ptcent+0.5;
+    Double_t rho=TMath::Sqrt(0.5/yfid*acc1/1.6);
+    Double_t rhoToy=TMath::Sqrt(hr3->GetBinContent(hr3->FindBin(ptcent)));
+    Double_t countGenAcc=hPtGenAccToyR->GetBinContent(hPtGenAccToyR->FindBin(ptcent));
+    Double_t countGenLimAcc=hPtGenLimAccToyR->GetBinContent(hPtGenLimAccToyR->FindBin(ptcent));
+    Double_t erracc1=acc1*TMath::Sqrt(1./countGenAcc+1./countGenLimAcc-2*rho*1/TMath::Sqrt(countGenAcc*countGenLimAcc));
+    Double_t erracc1b=acc1*TMath::Sqrt(1./countGenAcc+1./countGenLimAcc-2*rhoToy*1/TMath::Sqrt(countGenAcc*countGenLimAcc));
+    hStatCovSimple->SetBinContent(ib,erracc1/acc1*100);
+    hStatCovSimple->SetBinError(ib,0.0000001);
+    hStatCovToy->SetBinContent(ib,erracc1b/acc1*100);
+    hStatCovToy->SetBinError(ib,0.0000001);
+    hAccToy->SetBinContent(ib,acc1);
+    hAccToy->SetBinError(ib,erracc1b);
+  }
+  hStatB->SetStats(0);
+  hStatB->SetLineColor(4);
+  hStatB->SetLineWidth(2);
+  hStatB->SetMarkerStyle(20);
+  hStatB->SetMarkerColor(4);
+  hStatCovToy->SetLineColor(1);
+  hStatCovToy->SetMarkerStyle(25);
+  hStatCovSimple->SetLineColor(2);
+  hStatCovSimple->SetMarkerColor(2);
+  hStatCovSimple->SetMarkerStyle(24);
+  hStatCovSimple->SetLineWidth(2);
+  hStatCovToy->SetLineWidth(2);
+
+  
+  TCanvas* cu=new TCanvas("cu","Stat Unc ToyMC",1600,800);
+  cu->Divide(2,1);
+  cu->cd(1);
+  gPad->SetLeftMargin(0.14);
+  gPad->SetRightMargin(0.06);
+  hAccToy->SetStats(0);
+  hAccToy->SetLineColor(kMagenta+1);
+  hAccToy->GetYaxis()->SetTitle("GenAcc/GenLimAcc (ToyMC)");
+  hAccToy->SetLineWidth(2);
+  hAccToy->GetYaxis()->SetTitleOffset(1.6);
+  hAccToy->GetXaxis()->SetTitleOffset(1.1);
+  hAccToy->Draw();
+  cu->cd(2);
+  gPad->SetLeftMargin(0.14);
+  gPad->SetRightMargin(0.06);
+  hStatB->GetYaxis()->SetTitleOffset(1.6);
+  hStatB->GetXaxis()->SetTitleOffset(1.1);
+  hStatB->Draw();
+  hStatB->SetMaximum(1.02*TMath::Max(hStatB->GetMaximum(),hStatCovSimple->GetMaximum()));
+  hStatCovToy->Draw("same");  
+  hStatCovSimple->Draw("same");
+  TLegend* leg=new TLegend(0.16,0.65,0.6,0.89);
+  leg->SetHeader("GenAcc/GenLimAcc (ToyMC)");
+  leg->AddEntry(hStatB,"TH1::Divide(\"B\")","PL");
+  leg->AddEntry(hStatCovSimple,"Covariance, simplified formula","PL");
+  leg->AddEntry(hStatCovToy,"Covariance, ToyMC","PL");
+  leg->Draw();
 
   TFile* out=new TFile(Form("outputEff%s.root",suffix.Data()),"recreate");
   hAccToy->Write();
   out->Close();
-
-
 
   TH2F* hEventMultZv=(TH2F*)l->FindObject("hEventMultZv");
   if(hEventMultZv){
@@ -1317,97 +1470,6 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   hErrAxe4->SetStats(0);
   hErrAxe5->SetStats(0);
 
-  Int_t iybin1=hPtVsYGenAccToy->GetYaxis()->FindBin(-0.499999);
-  Int_t iybin2=hPtVsYGenAccToy->GetYaxis()->FindBin(0.499999);
-  TH1D* hptga=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga");
-  TH1D* hptgay05=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga05",iybin1,iybin2);
-  TH1D* hptgla=(TH1D*)hPtVsYGenLimAccToy->ProjectionX("hptgla");
-  TH1D* hptgaR=(TH1D*)hptga->Rebin(nPtBins,"hptgaR",binLims);
-  TH1D* hptglaR=(TH1D*)hptgla->Rebin(nPtBins,"hptglaR",binLims);
-  TH1D* hptgay05R=(TH1D*)hptgay05->Rebin(nPtBins,"hptgay05R",binLims);
-  TH1D* hr1=(TH1D*)hptgay05R->Clone("hr1");
-  hr1->Divide(hptgay05R,hptgaR,1,1,"B");
-  TH1D* hr2=(TH1D*)hptgay05R->Clone("hr2");
-  hr2->Divide(hptgay05R,hptglaR,1,1,"B");
-  TH1D* hr3=(TH1D*)hr1->Clone("hr3");
-  hr3->Multiply(hr1,hr2);
-  TGraph* g1=new TGraph(0);
-  TGraph* g2=new TGraph(0);
-  TGraph* g3=new TGraph(0);
-  for(Int_t ip=0; ip<hptgay05R->GetNbinsX(); ip++){
-    double ptcent=hptgay05R->GetBinCenter(ip+1);
-    Double_t yfid=0.8;
-    if(ptcent<5) yfid=-0.2/15*ptcent*ptcent+1.9/15*ptcent+0.5;
-    g1->SetPoint(ip,ptcent,0.5/yfid);
-    double acc=hAccToy->GetBinContent(hAccToy->FindBin(ptcent));
-    g2->SetPoint(ip,ptcent,acc/1.6);
-    g3->SetPoint(ip,ptcent,0.5/yfid*acc/1.6);
-  }
-
-  hr1->SetStats(0);
-  hr2->SetStats(0);
-  hr3->SetStats(0);
-  hr1->SetMinimum(0.3);
-  hr1->SetMaximum(1.03);
-  hr2->SetMinimum(0.3);
-  hr2->SetMaximum(1.03);
-  hr3->SetMinimum(0.3);
-  hr3->SetMaximum(1.03);
-  hr1->SetLineWidth(2);
-  hr2->SetLineWidth(2);
-  hr3->SetLineWidth(2);
-  hr1->GetYaxis()->SetTitle("N(GenAcc && |y|<0.5) / N(GenAcc)");
-  hr2->GetYaxis()->SetTitle("N(GenAcc && |y|<0.5) / N(|y|<0.5)");
-  hr3->GetYaxis()->SetTitle("N(GenAcc && |y|<0.5)^{2} /  (N(GenAcc) * N(|y|<0.5))");
-  hr1->GetYaxis()->SetTitleOffset(1.3);
-  hr2->GetYaxis()->SetTitleOffset(1.3);
-  hr3->GetYaxis()->SetTitleOffset(1.3);
-
-  if(dCase=="Prompt"){
-    TCanvas* crho=new TCanvas("crho","coveriance",1600,600);
-    crho->Divide(3,1);
-    crho->cd(1);
-    gPad->SetLeftMargin(0.12);
-    gPad->SetRightMargin(0.05);
-    hr1->Draw();
-    g1->SetLineColor(2);
-    g1->SetLineWidth(2);
-    g1->Draw("csame");
-    TLegend* l1=new TLegend(0.5,0.7,0.9,0.89);
-    l1->SetTextFont(43);
-    l1->SetTextSize(22);
-    l1->AddEntry(hr1,"Toy MC, Fonll y","L");
-    l1->AddEntry(g1,"0.5/y_{fid}","L")->SetTextColor(2);
-    l1->Draw();
-    crho->cd(2);
-    gPad->SetLeftMargin(0.12);
-    gPad->SetRightMargin(0.05);
-    hr2->Draw();
-    g2->SetLineColor(2);
-    g2->SetLineWidth(2);
-    g2->Draw("csame");
-    TLegend* l2=new TLegend(0.3,0.2,0.9,0.39);
-    l2->SetTextFont(43);
-    l2->SetTextSize(22);
-    l2->AddEntry(hr2,"Toy MC, Fonll y","L");
-    l2->AddEntry(g2,"(GenAcc/GenLimAcc)/1.6","L")->SetTextColor(2);
-    l2->Draw();
-    crho->cd(3);
-    gPad->SetLeftMargin(0.12);
-    gPad->SetRightMargin(0.05);
-    hr3->Draw();
-    g3->SetLineColor(2);
-    g3->SetLineWidth(2);
-    g3->Draw("csame");
-    TLegend* l3=new TLegend(0.2,0.7,0.9,0.89);
-    l3->SetMargin(0.15);
-    l3->SetTextFont(43);
-    l3->SetTextSize(22);
-    l3->AddEntry(hr3,"Toy MC, Fonll y","L");
-    l3->AddEntry(g3,"0.5/y_{fid}*(GenAcc/GenLimAcc)/1.6","L")->SetTextColor(2);
-    l3->Draw();
-  }
-  
   for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++){
     printf("---- Pt range %.1f - %.1f ----\n",binLims[iPtBin],binLims[iPtBin+1]);
     Double_t eff1=countNumer[iPtBin]/countDenom[iPtBin];
