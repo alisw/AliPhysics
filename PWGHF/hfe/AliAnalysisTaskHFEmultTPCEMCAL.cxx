@@ -1416,7 +1416,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 				  energy = clu->E();
 				  ncells= clu->GetNCells();
 				  
-				  if(clu->GetIsExotic()) continue; //remove exotic clusters
+				  //if(clu->GetIsExotic()) continue; //remove exotic clusters
 				  //if(fEMCClsTimeCut) if(TMath::Abs(clut) > 50) continue;
 				  
 				  //fClusPhi->Fill(cluphi);
@@ -1518,7 +1518,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
     	if(clustMatch && clustMatch->IsEMCAL())
     	{
     	 
-    	 	  if(clustMatch->GetIsExotic()) continue;
+    	 	  //if(clustMatch->GetIsExotic()) continue;
 		  Double_t fPhiDiff = -999, fEtaDiff = -999;
 		  GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
 		  fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
