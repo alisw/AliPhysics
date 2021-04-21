@@ -2072,7 +2072,7 @@ void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetI
     for(int iTrack=0;iTrack<nGoodIPTracks;iTrack++){
       ipvalsig.push_back(sImpParXYSig.at(iTrack).first);
       ipval.push_back(sImpParXY.at(iTrack).first);
-      chi2val.push_back(sImpParXY.at(iTrack).trackchi2);
+      chi2val.push_back(sImpParXY.at(iTrack).trackpt);
       //printf("HasIP0, ipval[%i]=%f, ipvalsig[%i]=%f, chi2=%f\n", iTrack, ipval[iTrack], iTrack, ipvalsig[iTrack], chi2val.back());
     }
     if(((int)ipvalsig.size()!=nGoodIPTracks)||((int)ipval.size()!=nGoodIPTracks)) AliError("Size of IP vector not valid!\n");
