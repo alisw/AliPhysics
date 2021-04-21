@@ -28,9 +28,6 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
 
 	 //Get weight for N_{tracklet}
 	 TH1D* weightNtrkl = (TH1D*)fEstimator->Get("weightNtrkl")->Clone("weightNtrkl_clone");
-	 if(!fweightNtrkl){
-			 return 0x0;
-	 }
    jettask->SetWeightNtrkl(weightNtrkl);
 	 
   // Get the pointer to the existing analysis manager via the static access method.
