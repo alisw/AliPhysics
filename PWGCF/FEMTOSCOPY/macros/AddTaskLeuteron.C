@@ -580,6 +580,58 @@ AliAnalysisTaskSE *AddTaskLeuteron(
       TrackCuts1->SetFilterBit(256);
       TrackCuts2->SetFilterBit(256);
 
+    }else if(suffix == "32"){
+    
+      // Protons and Antiprotons
+      TrackCuts1->SetFilterBit(96);
+      TrackCuts2->SetFilterBit(96);
+      TrackCuts1->SetDCAReCalculation(false);
+      TrackCuts2->SetDCAReCalculation(false);
+    
+    }else if(suffix == "33"){
+    
+      // Protons and Antiprotons
+      TrackCuts1->SetPtRange(0.2,4.0);
+      TrackCuts2->SetPtRange(0.2,4.0);
+
+      // Deuterons and Antideuterons
+      TrackCuts3->SetPtRange(0.2,2.0);
+      TrackCuts4->SetPtRange(0.2,2.0);
+
+      // Lambdas and Antilambdas
+      LambdaCuts5->SetPtRange(0.2,999.0);
+      LambdaCuts6->SetPtRange(0.2,999.0);
+    
+    }else if(suffix == "34"){
+    
+      // Protons
+      TrackCuts1->SetPtRange(0.2,4.0);
+      TrackCuts1->SetFilterBit(256);
+      TrackCuts1->SetCutITSPID(0.7,-4.5,1e30);
+      TrackCuts1->SetITSnSigmaCut(true);
+
+      // Antiprotons
+      TrackCuts2->SetPtRange(0.2,4.0);
+      TrackCuts2->SetFilterBit(256);
+      TrackCuts2->SetCutITSPID(0.7,-4.5,1e30);
+      TrackCuts2->SetITSnSigmaCut(true);
+
+      // Deuterons
+      TrackCuts3->SetPtRange(0.2,2.0);
+      TrackCuts3->SetFilterBit(256);
+      TrackCuts3->SetCutITSPID(1.5,-2.0,1e30);
+      TrackCuts3->SetITSnSigmaCut(true);
+
+      // Antideuterons
+      TrackCuts4->SetPtRange(0.2,2.0);
+      TrackCuts4->SetFilterBit(256);
+      TrackCuts4->SetCutITSPID(1.5,-2.0,1e30);
+      TrackCuts4->SetITSnSigmaCut(true);
+
+      // Lambdas and Antilambdas
+      LambdaCuts5->SetPtRange(0.2,999.0);
+      LambdaCuts6->SetPtRange(0.2,999.0);
+    
     }
 
   } // end of systematics if statement
