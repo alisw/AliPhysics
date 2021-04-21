@@ -18,9 +18,9 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                 Int_t           fSystFlag               = 0,
                 TString         fPeriod                 = "LHC15o",
                 TString         fNtrksName              = "Mult",
-		TString		uniqueID        	= "",
 	        Bool_t		fNUA			= true,
-	        Bool_t		fNUE 			= true
+	        Bool_t		fNUE 			= true,
+		TString		uniqueID        	= ""
 		)
 {
         // The common parameters
