@@ -1,5 +1,5 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t period = 0, double ptmin = 0.5){
+AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t period = 0, double ptmin = 0.5, Bool_t removebadarea = kFALSE){
 	// Load Custom Configuration and parameters
 	enum { lhc15o=0, lhc18q=1, lhc18r=2 };
 	TString speriod[3]= {"15o","18q","18r"}; //needed string to load correct map config based on string
@@ -57,6 +57,7 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 		myTask[i]->SetPtRange(ptmin, 5.0);
 		myTask[i]->SetEffConfig(0,hybridCut);
 		myTask[i]->SetPhiCorrectionIndex(i);//cmaptask->EnablePhiCorrection(i,MAPfilenames[i]);
+		myTask[i]->SetRemoveBadArea(removebadarea);
 	}
 	// s_global
 	int iS = 1;
