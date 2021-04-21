@@ -2852,7 +2852,6 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculateBackground(){
               }
             } else {
               hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
-              cout<<currentEventGoodV0.M()<<", Electron Cut 4"<<endl;
               if(fDoTHnSparse){
                 Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
                 sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
