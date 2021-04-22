@@ -198,6 +198,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     THnSparseF                        **sESDMotherInvMassPtZM;                      //!
     TH2F                              **hESDMotherBackInvMassPt;                    //!
     THnSparseF                        **sESDMotherBackInvMassPtZM;                  //!
+    TH2F                              **hESDInvMassPtNoMassCut;                     //!
+    TH2F                              **hESDInvMassMCPtNoMassCut;                   //!
+    TH2F                              **hESDInvMassBackgroundPtNoMassCut;           //!
     TH1F                              **hESDInvMassElectronPositronPi0;             //!
     TH1F                              **hESDInvMassElectronPositronPi0MC;           //!
     TH1F                              **hESDInvMassElectronPositronPi0Background;   //!
@@ -353,7 +356,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
     AliAnalysisTaskGammaConvDalitzV1& operator=( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 
-  ClassDef( AliAnalysisTaskGammaConvDalitzV1, 10 );
+  ClassDef( AliAnalysisTaskGammaConvDalitzV1, 11 );
 };
 
 #endif // ALIANALYSISTASKGAMMACONVDALITZV1_H
