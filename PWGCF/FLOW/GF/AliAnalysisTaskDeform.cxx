@@ -335,7 +335,7 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     fDCAxy = new TH1D("DCAxy","DCAxy;|DCA_{xy}|;Counts",200,0.0,1.0);
     fDCAxyVsPt = new TH2D("DCAxy_vs_pt","DCAxy_vs_pt;p_{T};|DCA_{xy}|",fNPtBins,fPtBins,200,0.0,1.0);
     fDCAzVsPt = new TH2D("DCAz_vs_pt","DCAz_vs_pt;p_{T};|DCA_{z}|",fNPtBins,fPtBins,200,0.0,2.0);
-    fdPt = new TH1D("dPt","dPt",100,0.1,0.1);
+    fdPt = new TH1D("dPt","dPt",100,-0.1,0.1);
     fptVarList->Add(fDCAxy);
     fptVarList->Add(fDCAxyVsPt);
     fptVarList->Add(fDCAzVsPt);
