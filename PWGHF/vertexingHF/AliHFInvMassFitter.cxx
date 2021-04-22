@@ -126,8 +126,8 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fSigmaSgn2Gaus(0.012),
   fFixedMean(kFALSE),
   fBoundMean(kFALSE),
-  fMassLowerLim(0);
-  fMassUpperLim(0);
+  fMassLowerLim(0),
+  fMassUpperLim(0),
   fFixedSigma(kFALSE),
   fBoundSigma(kFALSE),
   fSigmaVar(0.012),
