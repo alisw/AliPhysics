@@ -1115,7 +1115,8 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureFromYAML(const char *configf
   configuration.GetProperty("energysource", energysource);
   configuration.GetProperty("triggerclasses", triggerclasses);
   bool isOfflineSimple = energysource.find("Offline") != std::string::npos,
-       isRecalc = energysource.find("Recalc") != std::string::npos;
+       isRecalc = energysource.find("Recalc") != std::string::npos,
+       isOnline = energysource.find("Online") != std::string::npos;
 
   SetGlobalDecisionContainerName(namecontainer.data());
 
@@ -1145,6 +1146,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureFromYAML(const char *configf
     cuts->SetSelectionMethod(selectionmethod);
     if(isOfflineSimple) cuts->SetUseSimpleOfflinePatches();
     if(isRecalc) cuts->SetUseRecalcPatches();
+    if(isOnline) cuts->SetUseOnlinePatches();
     cuts->SetThreshold(threshold);
     this->AddTriggerSelection(new AliEmcalTriggerSelection(t.data(), cuts));
   }
