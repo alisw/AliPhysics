@@ -42,7 +42,7 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
          //addTaskFullPath = alirootPath.Data();
          addTaskFullPath = pathForMacros.Data();
       }
-      addTaskFullPath += "/AddTask_";
+      addTaskFullPath += "AddTask_";
       addTaskFullPath += tasksArray->At(0)->GetName();
       addTaskFullPath += ".C";
       if (!gROOT->GetListOfGlobalFunctions()->FindObject(Form("AddTask_%s", tasksArray->At(0)->GetName()))){
@@ -51,7 +51,6 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
 				std::stringstream addtaskload;
 				addtaskload << ".L " << addTaskFullPath;
 				std::string addtaskloadstring = addtaskload.str();
-				std::cout << "Calling Load macro using command string " << addtaskloadstring << std::endl;
 				gROOT->ProcessLine(addtaskloadstring.c_str());
 #else
 				// ROOT5 version, allows loading a macro
@@ -89,14 +88,13 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
          //addTaskFullPath = alirootPath.Data();
          addTaskFullPath = pathForMacros.Data();
       }
-      addTaskFullPath = Form("%s/AddTask_%s.C", addTaskFullPath.Data(), task.Data());
+      addTaskFullPath = Form("%sAddTask_%s.C", addTaskFullPath.Data(), task.Data());
       if (!gROOT->GetListOfGlobalFunctions()->FindObject(Form("AddTask_%s", task.Data()))){
 #ifdef __CLING__
 				// ROOT6 version of the Config macro. It cannot handle load and execute macro (compiler error) - need to call via gROOT->ProcessLine(...)
 				std::stringstream addtaskload;
 				addtaskload << ".L " << addTaskFullPath;
 				std::string addtaskloadstring = addtaskload.str();
-				std::cout << "Calling Load macro using command string " << addtaskloadstring << std::endl;
 				gROOT->ProcessLine(addtaskloadstring.c_str());
 #else
 				// ROOT5 version, allows loading a macro
