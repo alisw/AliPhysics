@@ -111,7 +111,6 @@ AliAnalysisTaskSEpPbCorrelationsJetV2::AliAnalysisTaskSEpPbCorrelationsJetV2()
       fReduceDphi(1.5707),
       fAnaMode("V0AV0C"),
       fasso("Phi"),
-      fPID(kFALSE),
       fSymmetricFMD(kFALSE),
       fLikeSign(kTRUE),
       fCentType("ZNA"),
@@ -147,8 +146,6 @@ AliAnalysisTaskSEpPbCorrelationsJetV2::AliAnalysisTaskSEpPbCorrelationsJetV2()
       fvzero(0),
       fPoolMgr(0),
       fPoolMgr1(0),
-      poolmin(0),
-      poolmax(0),
       fPoolMaxNEvents(2000),
       fPoolMinNTracks(50000),
       fMinEventsToMix(5),
@@ -237,7 +234,6 @@ AliAnalysisTaskSEpPbCorrelationsJetV2::AliAnalysisTaskSEpPbCorrelationsJetV2(con
       fReduceDphi(1.5707),
       fAnaMode("V0AV0C"),
       fasso("Phi"),
-      fPID(kFALSE),
       fSymmetricFMD(kFALSE), 
       fLikeSign(kTRUE), 
       fCentType("ZNA"),
@@ -273,8 +269,6 @@ AliAnalysisTaskSEpPbCorrelationsJetV2::AliAnalysisTaskSEpPbCorrelationsJetV2(con
       fvzero(0),
       fPoolMgr(0),
       fPoolMgr1(0),
-      poolmin(0),
-      poolmax(0),
       fPoolMaxNEvents(2000),
       fPoolMinNTracks(50000),
       fMinEventsToMix(5),
@@ -373,12 +367,6 @@ AliAnalysisTaskSEpPbCorrelationsJetV2::~AliAnalysisTaskSEpPbCorrelationsJetV2()
     delete fOutputList2;
     fOutputList2 = 0x0;
   }
-/*  
-  if (fPIDResponse) {
-    delete fPIDResponse;
-    fPIDResponse = 0;
-  }
-*/
 }
 void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
   fOutputList = new TList();
@@ -494,7 +482,6 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
    fOutputList2->Add(mixedDist2);
 
 
-   Double_t binning_cent[16] = {0.,  1.,  2.,  3.,  4.,  5.,  10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1};
    Double_t binning_zvx[11] = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
 
 
@@ -644,36 +631,24 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
 					    3.0,3.1,3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,
 					    4.0,4.1,4.2,4.3,4.4,4.5,4.6,4.7,4.8,4.9};
 	 
-	 const Int_t binfmdsec[5]={160,50,15,20,10};
-	 fhSecFMD= new AliTHn("fhSecFMD","fhSecFMD",2,5,binfmdsec);
-	 fhSecFMD->SetBinLimits(0,-4.025,3.975);
-	 fhSecFMD->SetBinLimits(1,binning_etafmd);
-	 fhSecFMD->SetBinLimits(2,binning_cent);
-	 fhSecFMD->SetBinLimits(3,-0.55*TMath::Pi(),1.45*TMath::Pi());
-	 fhSecFMD->SetBinLimits(4,binning_zvx);
-	 fhSecFMD->SetVarTitle(0,"#Delta#eta");
-	 fhSecFMD->SetVarTitle(1,"FMD Eta");
-	 fhSecFMD->SetVarTitle(2,"centrality");
-	 fhSecFMD->SetVarTitle(3,"#Delta#phi");
-	 fhSecFMD->SetVarTitle(4,"z vertex");
-// old	 fOutputList2->Add(fhSecFMD);
- }
+	  }
 
  void AliAnalysisTaskSEpPbCorrelationsJetV2::DefineCorrOutput() {
 
-   Double_t binning_pt_assoc[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 8.0, 14.0, 20.0};
+//========================= For Jet v2
+   //Double_t binning_pt_assoc[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 8.0, 14.0, 20.0};
+   Double_t binning_pt_assoc[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0}; //For local test
    Int_t nbins_pt_assoc = sizeof(binning_pt_assoc) / sizeof(Double_t) - 1;
 
-   Double_t binning_pt_lead[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 8.0, 14.0, 20.0};
+   //Double_t binning_pt_lead[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 8.0, 14.0, 20.0};
+   Double_t binning_pt_lead[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0}; //For local test
    Int_t nbins_pt_lead  = sizeof(binning_pt_lead) / sizeof(Double_t) - 1;
+//==========================
 
-   //Double_t binning_pt_leadTPC[] = {0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 16.0, 20.0};
+//=========================== For Inc v2
    Double_t binning_pt_leadTPC[] = {0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 4.0, 5.0, 6.0, 7.0, 10.0};
    Int_t nbins_pt_leadTPC  = sizeof(binning_pt_leadTPC) / sizeof(Double_t) - 1;
 
-
-   Double_t binning_cent[12] = {0., 5.,  10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1};
-  
    Double_t binning_dphi[73] = {
        -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464,
        -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865,
@@ -689,12 +664,9 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
        4.188790,  4.276057,  4.363323,  4.450590,  4.537856,  4.625123,
        4.712389};
 
-   Int_t nCFStepstrig=1;
+//=========================
 
-     Double_t binning_cent_trig[] = {0., 10., 60., 100.1};
-     Int_t nbinning_cent_trig = sizeof(binning_cent_trig) /sizeof(Double_t) - 1;
-     Double_t binning_cent_trig_PbPb[9] = {0., 10.,  20., 30., 40., 50.,60.,70.,80.};
-     Double_t binning_mult_trig[10]={0,20,40,60,80,100,120,140,160,200};
+    Int_t nCFStepstrig=1;
 
     if(fAnaMode=="TPCTPCFMDA" || fAnaMode=="TPCTPCFMDC")
     {
@@ -719,6 +691,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
      fHistTriggerTrack->SetVarTitle(3, "zvertex");
     }     
 
+//======================= AliTHn to Store Trigger particle in same event
    if(fAnaMode=="TPCFMDA" || fAnaMode=="TPCFMDC")
    {
     const Int_t iEvtBinTPCFMD[] = {nbins_pt_leadTPC, 10};
@@ -746,7 +719,9 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
     fHistTriggerTrack->SetVarTitle(1, "zvertex");
     fHistTriggerTrack->SetVarTitle(2, "Random Number");
    }
+//=======================
 
+//======================= AliTHn to Store Trigger particle in mix event
 
    const Int_t nEvtVars = 2;
    const Int_t iEvtBin[2] = {nbins_pt_lead, 12};
@@ -760,25 +735,17 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
 
    fOutputList1->Add(fHistTriggerTrack);
    fOutputList1->Add(fHistTriggerTrackMix);
-   
-   const Int_t nTrackVars = 5;
-   const Int_t iTrackBin[5] = {48, 11, 11, 15, 72};
+//==========================   
    //////////////////////////////////////////
    //Containers two particle correlation
    //////////////////////////////////////////
 
    Int_t nCFSteps = 1;
-/*
-   if(fasso=="hadron")    nCFSteps=1;
-   else if (fasso == "V0" || fasso == "Phi")    nCFSteps = 7;
-   else  if (fasso == "Cascade")    nCFSteps = 6;
-   else    if(fasso=="PID")    nCFSteps=3;
-*/
+
    if(fAnaMode=="TPCTPC") {
      Double_t binning_deta_tpctpc[33] = {-1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5,
 					 -0.4, -0.3, -0.2, -0.1, 0,    0.1,  0.2,  0.3,  0.4,  0.5, 
                                          0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5, 1.6};
-     //const Double_t binning_cent_tpctpc[8]={0.,5.,10.,20.,40.,60.,70.,100.1};
      const Int_t iTrackBin_TPCTPC[5] = {32,nbins_pt_assoc,nbins_pt_lead, 72, 10};
      fHistReconstTrack = new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, 5, iTrackBin_TPCTPC);
      fHistReconstTrack->SetBinLimits(0, binning_deta_tpctpc);
@@ -952,8 +919,6 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
     return;
    }
 
-//   fPIDResponse = inEvMain->GetPIDResponse();
-//   if (!fPIDResponse)    return;
 
    fHist_Stat->Fill(0);
 
@@ -974,11 +939,6 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
 // Multiplicity Selection for Run-2
    AliMultSelection *multSelection = (AliMultSelection *)fEvent->FindListObject("MultSelection");
    if(!multSelection) return;
-//   if(!fcentcalib)
-//   {
-//    multSelection = (AliMultSelection *)fEvent->FindListObject("MultSelection");
-//    if(!multSelection) return;
-//   }
    fHist_Stat->Fill(2);
  
    
@@ -1033,10 +993,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
 
    fHist_Stat->Fill(4);  // Basic centrality
 
-   Double_t *CentBins = fCentBins;
-   poolmin = CentBins[0];
-   poolmax = CentBins[fNCentBins];
-//===================== Particle Level Information
+   //===================== Particle Level Information
    if(!fDataType && fprimFMD)
    {
     AliAODMCHeader* aodMCheader=(AliAODMCHeader*)fEvent->FindListObject(AliAODMCHeader::StdBranchName());
@@ -1096,8 +1053,10 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::MakeAna() {
 
    TObjArray *selectedTracksLeading = new TObjArray;
    selectedTracksLeading->SetOwner(kTRUE);
+
    TObjArray *selectedTracksAssociated = new TObjArray;
    selectedTracksAssociated->SetOwner(kTRUE);
+
    TObjArray* selectedTracksMC1=new TObjArray;
    selectedTracksMC1->SetOwner(kTRUE);
    TObjArray* selectedTracksMC2=new TObjArray;
@@ -1150,14 +1109,12 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::MakeAna() {
              if (!fSymmetricFMD || (eta < 3.2))
              {                     
 	      Int_t nfmdetabin1=frefetaa->FindBin(eta);
-	      Double_t runbin1=ConvertRunNumber(fEvent->GetRunNumber());
 	      if(fAnaMode=="TPCTPCFMDA" || fAnaMode=="ITSFMD" || fAnaMode=="TPCFMDA") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	
 	      else if(fAnaMode=="FMDFMD_Ctrig")	       selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));		
               fhFMDmultchannel_actual->Fill(eta,mostProbableN);
              }
 	   }else if( eta < -1.8 && eta > -3.2){
 	      Int_t nfmdetabin=frefetac->FindBin(eta);
-	      Double_t runbin=ConvertRunNumber(fEvent->GetRunNumber());
 	      if(fAnaMode=="TPCTPCFMDC" || fAnaMode=="ITSFMDC" ||fAnaMode=="FMDFMD" || fAnaMode == "TPCFMDC") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));
               fhFMDmultchannel_actual->Fill(eta,mostProbableN);
            }
@@ -1476,31 +1433,28 @@ if(fAnaMode=="TPCTPC"){
  
  DumpTObjTable("End of TPC/ITS track fill");
 
+
+//================== For Jet v2
  TObjArray *selectedTracksAssociated_TPC = new TObjArray; selectedTracksAssociated_TPC->SetOwner(kTRUE);
-
- //if(fprimTPC) selectedTracksAssociated_TPC = selectedTracksMC1; 
- //else 
-
  selectedTracksAssociated_TPC = GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksAssociated_TPC);
-
  TObjArray *selected_TPC_Pairs = new TObjArray; selected_TPC_Pairs->SetOwner(kTRUE);
-
+//================= 
 
  if(!fprimFMD){
-  FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,selectedTracksAssociated_TPC,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0, selected_TPC_Pairs);
-  FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,selectedTracksAssociated_TPC,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0,selected_TPC_Pairs);
+  FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,selectedTracksAssociated_TPC,fHistTriggerTrack,fHistReconstTrack,bSign,0, selected_TPC_Pairs);
+  FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),selectedTracksLeading,selectedTracksAssociated,selectedTracksAssociated_TPC,fHistTriggerTrackMix,fHistReconstTrackMix,bSign,0,selected_TPC_Pairs);
   DumpTObjTable("End of fill  Correlation");
  }
  else if(fprimTPC)
  {
-  FillCorrelationTracks(lCentrality,selectedTracksMC1,selectedTracksMC2,selectedTracksMC1,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0, selected_TPC_Pairs);
-  FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksMC1,selectedTracksMC2,selectedTracksAssociated_TPC,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0,selected_TPC_Pairs);
+  FillCorrelationTracks(lCentrality,selectedTracksMC1,selectedTracksMC2,selectedTracksMC1,fHistTriggerTrack,fHistReconstTrack,bSign,0, selected_TPC_Pairs);
+  FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),selectedTracksMC1,selectedTracksMC2,selectedTracksMC1,fHistTriggerTrackMix,fHistReconstTrackMix,bSign,0,selected_TPC_Pairs);
   DumpTObjTable("End of fill  Correlation");
  }
  else
  {
-  FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksMC2,selectedTracksAssociated_TPC,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0, selected_TPC_Pairs);
-  FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksMC2,selectedTracksAssociated_TPC,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0,selected_TPC_Pairs);
+  FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksMC2,selectedTracksAssociated_TPC,fHistTriggerTrack,fHistReconstTrack,bSign,0, selected_TPC_Pairs);
+  FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),selectedTracksLeading,selectedTracksMC2,selectedTracksAssociated_TPC,fHistTriggerTrackMix,fHistReconstTrackMix,bSign,0,selected_TPC_Pairs);
   DumpTObjTable("End of fill  Correlation");
  }
 
@@ -1616,16 +1570,12 @@ Bool_t AliAnalysisTaskSEpPbCorrelationsJetV2::IsAcceptedTrack(const AliAODTrack 
   return kTRUE;
 }
 
-void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t centrality, TObjArray *triggerArray, TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut, Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius,Float_t bSign, Int_t step, TObjArray *selected_TPC_Pairs)
+void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t centrality, TObjArray *triggerArray, TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Float_t bSign, Int_t step, TObjArray *selected_TPC_Pairs)
 {
- twoTrackEfficiencyCut=kFALSE;
- twoTrackEfficiencyCutValue=0;
- fTwoTrackCutMinRadius=0;
- bSign=0;
+ bSign=0;// default
  step=1;//default
  
  if (!triggerHist || !associateHist)    return;
-
 
 //========= For TPC-TPC
  Double_t binscontTrigTPCTPC[3];
@@ -1640,7 +1590,6 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
 //========== For TPC-FMDA or TPC-FMDC
  Double_t binscontTrigTPCFMD[2];
  Double_t binscontTPCFMD[4] = {0.};
-
  
  for(Int_t i = 0; i < triggerArray->GetEntriesFast(); i++)
  {  
@@ -1752,18 +1701,11 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
 
 }
 
-void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracksMixing(Double_t centrality, Double_t pvxMix, Double_t poolmax, Double_t poolmin, TObjArray *triggerArray, TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut,    Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius, Float_t bSign, Int_t step, TObjArray *selected_TPC_Pairs)
+void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracksMixing(Double_t centrality, Double_t pvxMix, TObjArray *triggerArray, TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Float_t bSign, Int_t step, TObjArray *selected_TPC_Pairs)
 {
-  Bool_t twoTrackEfficiencyCut_1= twoTrackEfficiencyCut;
-  Double_t   twoTrackEfficiencyCutValue_1=  twoTrackEfficiencyCutValue;
-  Double_t fTwoTrackCutMinRadius1=fTwoTrackCutMinRadius;
   Float_t bSign1=bSign;
   Int_t step1=step;
 
-  Double_t poolmax1=poolmax;
-  Double_t poolmin1=poolmin;
-
-  Double_t counterMix = 0;
   AliEventPool *pool = fPoolMgr->GetEventPool(centrality, pvxMix);
   if (!pool){
     AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centrality,
@@ -1839,8 +1781,6 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracksMixing(Double_t
        }
       }
  
-   
-
       if(fAnaMode=="TPCTPC")
       {
        Double_t binscont[5];
@@ -1924,480 +1864,5 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::DumpTObjTable(const char* note)
   //  gObjectTable->Print();
 }
 
- Int_t AliAnalysisTaskSEpPbCorrelationsJetV2::ConvertRunNumber(Int_t run){
-   if( (265308<run && run< 265526) || (267160<run && run<267167)){
-   switch(run){
-   case  265309 : return 0;
-   case  265332 : return 1;
-   case  265334 : return 2;
-   case  265336 : return 3;
-   case  265338 : return 4;
-   case  265339 : return 5;
-  case  265342 : return 6;
-  case  265343 : return 7;
-  case  265344 : return 8;
-  case  265377 : return 9;
-  case  265378 : return 10;
-  case  265381 : return 11;
-  case  265383 : return 12;
-  case  265384 : return 13;
-  case  265385 : return 14;
-  case  265387 : return 15;
-  case  265388 : return 16;
-  case  265419 : return 17;
-  case  265420 : return 18;
-  case  265421 : return 19;
-  case  265422 : return 20;
-  case  265424 : return 21;
-  case  265425 : return 22;
-  case  265426 : return 23;
-  case  265427 : return 24;
-  case  265435 : return 25;
-  case  265499 : return 26;
-  case  265500 : return 27;
-  case  265501 : return 28;
-  case  265521 : return 29;
-  case  265525 : return 30;
-  case  267166 : return 31; //16t
-  case  267165 : return 32; //16t
-  case  267164 : return 33; //16t
-  case  267163 : return 34; //16t
-  case  267161 : return 35; //16t
-  default : return 199;
-  }
- } else if(run> 280281 && run<281962){
-     switch(run){
-     case 281961  : return 0;
-       //     case 281959 : return 1;
-     case 281956 : return 1;
-     case 281953:return 2;
-     case 281940:return 3;
-     case 281939:return 4;
-     case 281932:return 5;
-     case 281931:return 6;
-     case 281928:return 7;
-     case 281920:return 8;
-     case 281918:return 9;
-     case 281915:return 10;//
-     case 281895:return 11;//
-     case 281894:return 12;//
-     case 281892:return 13;//
-     case 281633:return 14;//
-     case 281583:return 15;
-       //     case 281581:return 12;
-       //     case 281580:return 13;
-     case 281574:return 16;
-     case 281569:return 17;
-     case 281568:return 18;
-     case 281562:return 19;
-     case 281557:return 20;
-     case 281511:return 21;
-     case 281509:return 22;
-     case 281477:return 23;
-     case 281475:return 24;
-     case 281450:return 25;
-     case 281449:return 26;
-     case 281444:return 27;
-     case 281443:return 28;
-     case 281441:return 29;
-     case 281415:return 30;
-     case 281321:return 31;
-     case 281301:return 32;
-     case 281277:return 33;
-     case 281275:return 34;
-     case 281273:return 35;
-     case 281271:return 36;
-     case 281243:return 37;
-     case 281242:return 38;
-     case 281241:return 39;
-     case 281240:return 40;
-     case 281213:return 41;
-     case 281212:return 42;
-     case 281191:return 43;
-     case 281190:return 44;
-     case 281189:return 45;
-     case 281181:return 46;
-     case 281180:return 47;//
-     case 281179:return 48;
-     case 281081:return 49;
-     case 281080:return 50;
-     case 281062:return 51;
-     case 281061:return 52;
-     case 281060:return 53;
-     case 280999:return 54;
-     case 280998:return 55;
-     case 280997:return 56;
-     case 280994:return 57;
-     case 280990:return 58;
-     case 280947:return 59;
-     case 280940:return 60;
-     case 280936:return 61;
-     case 280897:return 62;
-     case 280890:return 63;//
-     case 280881:return 64;//
-     case 280880:return 65;
-     case 280856:return 66;
-     case 280849:return 67;
-     case 280848:return 68;
-     case 280847:return 69;
-     case 280845:return 70;//
-     case 280844:return 71;
-     case 280842:return 72;
-     case 280793:return 73;
-     case 280792:return 74;
-     case 280787:return 75;
-     case 280786:return 76;
-     case 280768:return 77;
-     case 280767:return 78;
-     case 280766:return 79;
-     case 280765:return 80;
-     case 280764:return 81;
-     case 280763:return 82;
-     case 280762:return 83;
-     case 280761:return 84;
-     case 280757:return 85;
-     case 280756:return 86;
-     case 280755:return 87;
-     case 280754:return 88;
-     case 280753:return 89;
-     case 280729:return 90;
-     case 280706:return 91;
-     case 280705:return 92;
-     case 280681:return 93;
-     case 280679:return 94;
-       //     case 280676:return 88;
-       //     case 280673:return 89;
-     case 280671:return 95;
-       //     case 280650:return 91;
-       //     case 280648:return 92;
-     case 280647:return 96;
-     case 280645:return 97;
-     case 280639:return 98;
-     case 280637:return 99;
-     case 280636:return 100;
-     case 280634:return 101;
-     case 280613:return 102;
-     case 280583:return 103;
-     case 280581:return 104;
-     case 280576:return 105;//
-     case 280575:return 106;//
-     case 280574:return 107;
-     case 280551:return 108;
-     case 280550:return 109;
-     case 280547:return 110;
-     case 280546:return 111;
-     case 280519:return 112;
-     case 280518:return 113;
-     case 280499:return 114;
-     case 280448:return 115;
-     case 280447:return 116;
-     case 280446:return 117;
-     case 280445:return 118;
-     case 280443:return 119;
-     case 280419:return 120;
-     case 280415:return 121;
-     case 280413:return 122;//
-     case 280406:return 123;
-     case 280405:return 124;
-     case 280403:return 125;
-     case 280375:return 126;
-     case 280374:return 127;
-       //     case 280352:return 122;
-     case 280351:return 128;
-     case 280350:return 129;
-     case 280349:return 130;
-     case 280348:return 131;
-     case 280312:return 132;
-     case 280310:return 133;
-     case 280290:return 134;
-     case 280286:return 135;
-     case 280285:return 136;
-     case 280284:return 137;
-     case 280283:return 138;
-     case 280282:return 139;
-     default : return 199;
-     }
-   }     else if (run>274689  && run<286509){
-     switch(run){
-       //LHC17k
-     case 276508:return 0;
-     case 276507:return 1;
-     case 276506:return 2;
-     case 276462:return 3;
-     case 276439:return 4;
-     case 276438:return 5;
-     case 276437:return 6;
-     case 276435:return 7;
-     case 276351:return 8;
-     case 276348:return 9;       
-     case 276312:return 10;
-     case 276307:return 11;
-     case 276302:return 12;
-     case 276297:return 13;
-     case 276294:return 14;
-     case 276292:return 15;
-     case 276291:return 16;
-     case 276290:return 17;
-     case 276259:return 18;
-     case 276257:return 19;
-     case 276230:return 20;
-     case 276205:return 21;
-     case 276178:return 22;
-     case 276170:return 23;
-     case 276104:return 24;
-     case 276102:return 25;
-     case 276099:return 26;
-     case 276098:return 27;
-     case 276097:return 28;
-     case 276045:return 29;
-     case 276041:return 30;
-     case 276040:return 31;
-     case 276020:return 32;
-     case 276019:return 33;
-     case 276017:return 34;
-     case 276013:return	35;
-     case 276012:return 36;
-     case 275925:return 37;
-     case 275924:return 38;
-     case 275847:return 39;
-     case 275664:return 40;
-     case 275661:return 41;
-     case 275657:return 42;
-     case 275650:return 43;
-     case 275648:return 44;
-     case 275647:return 45;
-     case 275624:return 46;
-     case 275623:return 47;       
-     case 275622:return 48;
-     case 275621:return 49;
-     case 275617:return 50;
-     case 275612:return 51;
-     case 275559:return 52;
-     case 275558:return 53;
-     case 275515:return 54;
-     case 275472:return 55;
-     case 275471:return 56;
-     case 275467:return 57;
-     case 275459:return 58;
-     case 275457:return 59;
-     case 275456:return 60;
-     case 275453:return 61;
-     case 275452:return 62;
-     case 275448:return 63;
-     case 275443:return 64;
-     case 275406:return 65;
-     case 275404:return 66;
-     case 275401:return 67;
-     case 275395:return 68;
-     case 275394:return 69;
-     case 275372:return 70;
-     case 275369:return 71;
-     case 275361:return 72;
-     case 275360:return 73;
-     case 275333:return 74;
-     case 275332:return 75;
-     case 275328:return 76;
-     case 275326:return 77;
-     case 275324:return 78;
-     case 275322:return 79;
-     case 275314:return 80;
-     case 275283:return 81;
-     case 275247:return 82;
-     case 275246:return 83;
-     case 275245:return 84;
-     case 275239:return 85;
-     case 275188:return 86;
-     case 275184:return 87;
-     case 275180:return 88;
-     case 275177:return 89;
-     case 275174:return 90;
-     case 275173:return 91;
-     case 275151:return 92;
-     case 275150:return 93;
-     case 275149:return 94;
-     case 275076:return 95;
-     case 275075:return 96;
-     case 275073:return 97;
-     case 275068:return 98;
-     case 275067:return 99;
-     case 274979:return 100;
-     case 274978:return 101;
-     case 274886:return 102;
-     case 274882:return 103;
-     case 274878:return 104;
-     case 274877:return 105;
-     case 274822:return 106;
-     case 274821:return 107;
-     case 274817:return 108;
-     case 274815:return 109;
-     case 274811:return 110;
-     case 274807:return 111;
-     case 274806:return 112;
-     case 274803:return 113;
-     case 274802:return 114;
-     case 274801:return 115;
-     case 274708:return 116;
-     case 274690:return 117;
-     default:return 199;
-     }
-   }     else if (run> 271867 && run<273104){
-     switch(run){
-       //LHC17h
-     case 273103:return 0;
-     case 273100:return 1;
-     case 273099:return 2;
-     case 272949:return 3;
-     case 272947:return 4;
-     case 272939:return 5;
-     case 272935:return 6;
-     case 272934:return 7;
-     case 272933:return 8;
-     case 272932:return 9;
-     case 272905:return 10;
-     case 272903:return 11;
-     case 272871:return 12;
-     case 272870:return 13;
-     case 272836:return 14;
-     case 272833:return 15;
-     case 272829:return 16;
-     case 272828:return 17;
-     case 272784:return 18;
-     case 272782:return 19;
-     case 272764:return 20;
-     case 272763:return 21;
-     case 272760:return 22;
-     case 272749:return 23;
-     case 272747:return 24;
-     case 272746:return 25;
-     case 272712:return 26;
-     case 272692:return 27;
-     case 272610:return 28;
-     case 272608:return 29;
-     case 272607:return 30;
-     case 272585:return 31;
-     case 272577:return 32;
-     case 272575:return 33;
-     case 272574:return 34;
-     case 272521:return 35;
-     case 272468:return 36;
-     case 272463:return 37;
-     case 272462:return 38;
-     case 272461:return 39;
-     case 272413:return 40;
-     case 272411:return 41;
-     case 272400:return 42;
-     case 272399:return 43;
-     case 272395:return 44;
-     case 272394:return 45;
-     case 272389:return 46;
-     case 272388:return 47;
-     case 272360:return 48;
-     case 272359:return 49;
-     case 272335:return 50;
-     case 272194:return 51;
-     case 272156:return 52;
-     case 272155:return 53;
-     case 272154:return 54;
-     case 272153:return 55;
-     case 272152:return 56;
-     case 272123:return 57;
-     case 272101:return 58;
-     case 272100:return 59;
-     case 272041:return 60;
-     case 272040:return 61;
-     case 272039:return 62;
-     case 272038:return 63;
-     case 272036:return 64;
-     case 271886:return 65;
-     case 271881:return 66;
-     case 271880:return 67;
-     case 271874:return 68;
-     case 271873:return 69;
-     case 271871:return 70;
-     case 271870:return 71;
-     case 271868:return 72;
-     default:return 199;
-     }
-   }     else if (run>273590  && run<27443){
-     switch(run){
-       //LHC17k
-     case 274442:return 0;
-     case 274390:return 1;
-     case 274389:return 2;
-     case 274388:return 3;
-     case 274387:return 4;
-     case 274386:return 5;
-     case 274385:return 6;
-     case 274364:return 7;
-     case 274363:return 8;
-     case 274360:return 9;
-     case 274352:return 10;
-     case 274351:return 11;
-     case 274329:return 12;
-     case 274283:return 13;
-     case 274281:return 14;
-     case 274280:return 15;
-     case 274278:return 16;
-     case 274276:return 17;
-     case 274271:return 18;
-     case 274270:return 19;
-     case 274269:return 20;
-     case 274268:return 21;
-     case 274266:return 22;
-     case 274264:return 23;
-     case 274263:return 24;
-     case 274259:return 25;
-     case 274258:return 26;
-     case 274232:return 27;
-     case 274212:return 28;
-     case 274174:return 29;
-     case 274148:return 30;
-     case 274147:return 31;
-     case 274125:return 32;
-     case 274094:return 33;
-     case 274092:return 34;
-     case 274064:return 35;
-     case 274058:return 36;
-     case 273986:return 37;
-     case 273985:return 38;
-     case 273946:return 39;
-     case 273943:return 40;
-     case 273942:return 41;
-     case 273918:return 42;
-     case 273889:return 43;
-     case 273887:return 44;
-     case 273886:return 45;
-     case 273885:return 46;
-     case 273825:return 47;
-     case 273824:return 48;
-     case 273719:return 49;
-     case 273711:return 50;
-     case 273709:return 51;
-     case 273695:return 52;
-     case 273690:return 53;
-     case 273689:return 54;
-     case 273687:return 55;
-     case 273654:return 56;
-     case 273653:return 57;
-     case 273593:return 58;
-     case 273592:return 59;
-     case 273591:return 60;
-     default :return 199;
-       }
-   }     else if (run>274652 && run<274672){
-     switch(run){
-       //LHC17j
-     case 274671:return 0;
-     case 274669:return 1;
-     case 274667:return 2;
-     case 274657:return 3;
-     case 274653:return 4;
-     default:return 199;
-     }
-   } else{
-     return 199;
-   }
-
-}
-
+ 
 
