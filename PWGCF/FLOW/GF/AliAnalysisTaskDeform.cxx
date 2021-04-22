@@ -332,10 +332,10 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
       fptVarList->Add(fNchTrueVsReco);
     }
-    fDCAxy = new TH1D("DCAxy","DCAxy;|DCA_{xy}|;Counts",100,0.0,4.0);
-    fDCAxyVsPt = new TH2D("DCAxy_vs_pt","DCAxy_vs_pt;p_{T};|DCA_{xy}|",fNPtBins,fPtBins,100,0.0,4.0);
-    fDCAzVsPt = new TH2D("DCAz_vs_pt","DCAz_vs_pt;p_{T};|DCA_{z}|",fNPtBins,fPtBins,100,0.0,4.0);
-    fdPt = new TH1D("dPt","dPt",100,0.1,0.1);
+    fDCAxy = new TH1D("DCAxy","DCAxy;|DCA_{xy}|;Counts",200,0.0,1.0);
+    fDCAxyVsPt = new TH2D("DCAxy_vs_pt","DCAxy_vs_pt;p_{T};|DCA_{xy}|",fNPtBins,fPtBins,200,0.0,1.0);
+    fDCAzVsPt = new TH2D("DCAz_vs_pt","DCAz_vs_pt;p_{T};|DCA_{z}|",fNPtBins,fPtBins,200,0.0,2.0);
+    fdPt = new TH1D("dPt","dPt",100,-0.1,0.1);
     fptVarList->Add(fDCAxy);
     fptVarList->Add(fDCAxyVsPt);
     fptVarList->Add(fDCAzVsPt);
