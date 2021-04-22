@@ -22,7 +22,6 @@
 #include <AliLog.h>
 #include <AliAnalysisTaskSE.h>
 #include <AliJCatalystTask.h>
-#include "AliJEfficiency.h"
 #include "AliAnalysisAnaTwoMultiCorrelations.h" // Cindy's ana code
 
 
