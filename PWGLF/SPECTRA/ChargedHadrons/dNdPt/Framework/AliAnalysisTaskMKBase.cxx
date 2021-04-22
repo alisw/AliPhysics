@@ -420,8 +420,7 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
   
   // apply event cuts
   fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
-  fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
-    
+
   //FIXME: in principle all of the following is not necessary if event will be rejected anyway...
   
   if(fNeedEventVertex)  InitEventVertex();
@@ -462,20 +461,20 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
   }
   
   // FIXME: what is this??
-  fNTracksAcc = 0;
-  if (fESDtrackCutsM) {
-    for (Int_t i = 0; i < fNTracksESD; i++) {
-      AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
-      if (!track)
-        continue;
-      if (fESDtrackCutsM->AcceptTrack(track)) {
-        ++fNTracksAcc;
-      }
-    }
-  } else {
-    fNTracksAcc = fNTracksESD;
-    Log("noAliESDTrackCutsM");
-  }
+//  fNTracksAcc = 0;
+//  if (fESDtrackCutsM) {
+//    for (Int_t i = 0; i < fNTracksESD; i++) {
+//      AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
+//      if (!track)
+//        continue;
+//      if (fESDtrackCutsM->AcceptTrack(track)) {
+//        ++fNTracksAcc;
+//      }
+//    }
+//  } else {
+//    fNTracksAcc = fNTracksESD;
+//    Log("noAliESDTrackCutsM");
+//  }
   
   return kTRUE;
 }
