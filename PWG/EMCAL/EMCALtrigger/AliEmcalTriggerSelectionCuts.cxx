@@ -44,6 +44,7 @@ AliEmcalTriggerSelectionCuts::AliEmcalTriggerSelectionCuts() :
   fThreshold(0),
   fUseSimpleOffline(kFALSE),
   fUseRecalc(kFALSE),
+  fUseOnlinePatches(kFALSE),
   fSubtractRho(kFALSE),
   fRhoMethod(kNoRho)
 {
@@ -113,7 +114,8 @@ Bool_t AliEmcalTriggerSelectionCuts::SelectPatchType(const AliEMCALTriggerPatchI
     if(patch->IsGammaLowRecalc() && ((fPatchType == kL1GammaPatch) || (fPatchType == kL1GammaLowPatch))) return kTRUE;
     if(patch->IsGammaHighRecalc() && ((fPatchType == kL1GammaPatch) || (fPatchType == kL1GammaHighPatch))) return kTRUE;
     if(patch->IsLevel0Recalc() && fPatchType == kL0Patch) return kTRUE;
-  } else {
+  } else if(fUseOnlinePatches) {
+    // Online patches: Require STU L1 decision (L1 trigger only)
     if(patch->IsJetLow() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetLowPatch))) return kTRUE;
     if(patch->IsJetHigh() && ((fPatchType == kL1JetPatch) || (fPatchType == kL1JetHighPatch))) return kTRUE;
     if(patch->IsGammaLow() && ((fPatchType == kL1GammaPatch) || (fPatchType == kL1GammaLowPatch))) return kTRUE;
@@ -153,6 +155,7 @@ void AliEmcalTriggerSelectionCuts::PrintStream(std::ostream &stream) const {
   stream << "    acceptance:      " << acceptancetext.find(fAcceptanceType)->second << std::endl;
   stream << "    patchtype:       " << patchtypetext.find(fPatchType)->second << std::endl;
   stream << "    sel mode:        " << selmodetext.find(fSelectionMethod)->second << std::endl;
+  stream << "    Online Patches:  " << (fUseOnlinePatches ? "yes" : "no") << std::endl;
   stream << "    Offline Patches: " << (fUseSimpleOffline ? "yes" : "no") << std::endl;
   stream << "    Recalc Patches:  " << (fUseRecalc ? "yes" : "no") << std::endl;
   stream << "    Threshold:       " << fThreshold << std::endl;
