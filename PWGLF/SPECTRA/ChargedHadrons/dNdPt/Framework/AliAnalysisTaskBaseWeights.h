@@ -54,8 +54,6 @@ class AliAnalysisTaskBaseWeights : public AliAnalysisTaskMKBase
         virtual void            AddOutput();                     //called at the beginning
         virtual Bool_t          IsEventSelected();               //called for each event
         virtual void            AnaEventMC();                      //called once for every selected event
-        virtual void            LoopOverAllTracks(Int_t flag = 0);
-        virtual void            LoopOverAllParticles(Int_t flag = 0);
         virtual void            AnaTrackMC(Int_t flag = 0);      //called once for every track in DATA event
         virtual void            AnaParticleMC(Int_t flag = 0);   //called once for every track in MC event
 
@@ -87,8 +85,20 @@ class AliAnalysisTaskBaseWeights : public AliAnalysisTaskMKBase
         Double_t                fNaccWeightedSys;
         Double_t                fNaccWeightedSysRandom;
 
-        Hist::Hist<THnF>        fHistEffCont;         //-> efficiency/contamination histogram pure/weighted/randomWeight
-        Hist::Hist<THnF>        fHistMultCorrelation; //!<! N_acc vs N_ch pure/weighted/randomWeight
+        Hist::Hist<THnF>        fHistEffContNominal;         //-> efficiency/contamination histogram pure/weighted/randomWeight
+        Hist::Hist<THnF>        fHistEffContWeighted;
+        Hist::Hist<THnF>        fHistEffContWeightedRandom;
+        Hist::Hist<THnF>        fHistEffContWeightedSys;
+        Hist::Hist<THnF>        fHistEffContWeightedSysRandom;
+
+        Hist::Hist<THnF>        fHistMultCorrelationNominal; //!<! N_acc vs N_ch pure/weighted/randomWeight
+        Hist::Hist<THnF>        fHistMultCorrelationWeighted;
+        Hist::Hist<THnF>        fHistMultCorrelationWeightedRandom;
+        Hist::Hist<THnF>        fHistMultCorrelationWeightedSys;
+        Hist::Hist<THnF>        fHistMultCorrelationWeightedSysRandom;
+
+        Hist::Hist<TH2D>        fHistPionRec;
+        Hist::Hist<TH2D>        fHistPionGen;
     private:
         AliAnalysisTaskBaseWeights(const AliAnalysisTaskBaseWeights&); // not implemented
         AliAnalysisTaskBaseWeights& operator=(const AliAnalysisTaskBaseWeights&); // not implemented
