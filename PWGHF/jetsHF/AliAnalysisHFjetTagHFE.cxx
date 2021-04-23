@@ -1382,8 +1382,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	      fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
 	      //============Tracklet correction=================
-       
-				aountNch();
+                                CountNch();
 				Double_t correctednAcc   = nAcc;
 				Double_t WeightNtrkl = -1.;
 				Double_t WeightZvtx = -1.;
