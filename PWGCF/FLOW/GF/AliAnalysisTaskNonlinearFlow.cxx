@@ -626,8 +626,10 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
         // checking the run number for aplying weights & loading TList with weights
         //
         // if (fCurrSystFlag == 0) 
-	if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded!"); return; }
-        if (fNUE && !LoadPtWeights()) { AliFatal("PtWeights not loaded!"); return; }
+        if (lastRunNumber != fAOD->GetRunNumber()) {
+	    if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded!"); return; }
+	    if (fNUE && !LoadPtWeights()) { AliFatal("PtWeights not loaded!"); return; }
+        }
 
 
 	fGFWSelection->SetupCuts(fCurrSystFlag); 

@@ -393,36 +393,38 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH1F*				hChi2; 			//!
 
 		// Global variables
-		int NtrksCounter = 0;
-		int NtrksAfter = 0;
-		int NtrksAfterGap0M = 0;
-		int NtrksAfterGap0P = 0;
-		int NtrksAfterGap2M = 0;
-		int NtrksAfterGap2P = 0;
-		int NtrksAfterGap4M = 0;
-		int NtrksAfterGap4P = 0;
-		int NtrksAfterGap6M = 0;
-		int NtrksAfterGap6P = 0;
-		int NtrksAfterGap8M = 0;
-		int NtrksAfterGap8P = 0;
-		int NtrksAfterGap10M = 0;
-		int NtrksAfterGap10P = 0;
-		int NtrksAfterGap14M = 0;
-		int NtrksAfterGap14P = 0;
-		int NtrksAfter3subL = 0;
-		int NtrksAfter3subM = 0;
-		int NtrksAfter3subR = 0;
+		int NtrksCounter = 0;        //!
+		int NtrksAfter = 0;          //!
+		int NtrksAfterGap0M = 0;     //!
+		int NtrksAfterGap0P = 0;     //!
+		int NtrksAfterGap2M = 0;     //!
+		int NtrksAfterGap2P = 0;     //!
+		int NtrksAfterGap4M = 0;     //!
+		int NtrksAfterGap4P = 0;     //!
+		int NtrksAfterGap6M = 0;     //!
+		int NtrksAfterGap6P = 0;     //!
+		int NtrksAfterGap8M = 0;     //!
+		int NtrksAfterGap8P = 0;     //!
+		int NtrksAfterGap10M = 0;    //!
+		int NtrksAfterGap10P = 0;    //!
+		int NtrksAfterGap14M = 0;    //!
+		int NtrksAfterGap14P = 0;    //!
+		int NtrksAfter3subL = 0;     //!
+		int NtrksAfter3subM = 0;     //!
+		int NtrksAfter3subR = 0;     //!
 
-		PhysicsProfile multProfile;
-		PhysicsProfile multProfile_bin[30];
+                int lastRunNumber = 0;
+
+		PhysicsProfile multProfile; //!
+		PhysicsProfile multProfile_bin[30]; //!
 
 		TRandom3 rand;
-		Int_t bootstrap_value;
+		Int_t bootstrap_value; //!
 
-		CorrelationCalculator correlator;
+		CorrelationCalculator correlator; //!
 
 		double xbins[3000+10]; //!
-		int nn;
+		int nn; //!
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
