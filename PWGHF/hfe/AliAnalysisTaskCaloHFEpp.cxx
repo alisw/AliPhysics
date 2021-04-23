@@ -957,7 +957,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 
 	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
-	if(fMCarray)GetMClevelWdecay(fMCheader);
+	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
 
 
 	fNchNtr->Fill(correctednAcc,Nch);
@@ -1768,7 +1768,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader)
+void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader, Double_t CutEta)
 {
  //cout << "============= check W decay ============= " << endl;
 
@@ -1796,7 +1796,7 @@ void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader)
 	 Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
 	 Int_t pdgStatus = fMCparticle->GetStatus();
 
-	 if(TMath::Abs(fMCparticle->Eta())>0.6)continue; 
+	 if(TMath::Abs(fMCparticle->Eta())>CutEta)continue; 
 
          if(TMath::Abs(pdgGen)==11)
             {
