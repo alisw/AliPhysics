@@ -3314,7 +3314,8 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 	  AliAODMCParticle* particleV0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
 	  if (!particleV0) continue;
 	  if((particleV0->GetPdgCode())!=310) continue;
-	  //	  if(TMath::Abs(particleV0->Eta())> fEtaV0Assoc)continue;
+	  //selection on eta K0s applied online to reduce tree size
+	  if(TMath::Abs(particleV0->Eta())> fEtaV0Assoc)continue;
 	  if (!(particleV0->IsPhysicalPrimary()))continue; 
 	  if(!(particleV0->Pt()> fminPtV0 && particleV0->Pt()<fmaxPtV0) )continue;
 
