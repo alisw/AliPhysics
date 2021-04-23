@@ -45,9 +45,6 @@
 
 /// \class AliAnalysisTaskSELc2V0bachelorTMVAApp
 
-class IClassifierReader;
-class ReadBDT_Default;
-
 class TH1F;
 class TH1D;
 
@@ -99,15 +96,6 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 			       TClonesArray *mcArray,
 			       Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal, 
 			       TClonesArray *array3Prong, AliAODMCHeader *aodheader);
-  
-  void SetMVReader(IClassifierReader* r) {fBDTReader = r;}
-  IClassifierReader* const GetMVReader() {return fBDTReader;}
-  void SetTMVAlibName(const char* libName) {fTMVAlibName = libName;}
-  TString GetTMVAlibName() {return fTMVAlibName;}
-  void SetTMVAlibPtBin(const char* libPtBin) {fTMVAlibPtBin = libPtBin;}
-  TString GetTMVAlibPtBin() {return fTMVAlibPtBin;}
-  void SetNamesTMVAVariables(TString names) {fNamesTMVAVar = names;}
-  TString GetNamesTMVAVariables() {return fNamesTMVAVar;}
   
   /// set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
@@ -168,36 +156,29 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   void SetUsePIDresponseForNsigma(Bool_t flag) {fUsePIDresponseForNsigma = flag;}
   Bool_t GetUsePIDresponseForNsigma() const {return fUsePIDresponseForNsigma;}
 
-  void SetNVars(Int_t n) {fNVars = n;}
-  Int_t GetNVars() const {return fNVars;}
-
   void SetTimestampCut(UInt_t value) {fTimestampCut = value;}
   UInt_t GetTimestampCut() const {return fTimestampCut;}
 
-  void SetTMVAReader(TMVA::Reader* r) {fReader = r;}
-  TMVA::Reader* GetTMVAReader() const {return fReader;}
+  void SetNVars(std::vector<int> n);
+  std::vector<int> GetNVars() const {return fNVars;}
 
-  void SetNVarsSpectators(Int_t n) {fNVarsSpectators = n;}
-  Int_t GetNVarsSpectators() const {return fNVarsSpectators;}
+  void SetNamesTMVAVariables(std::vector<TString> names);
+  std::vector<TString> GetNamesTMVAVariables() {return fNamesTMVAVar;}
+  
+  void SetNVarsSpectators(std::vector<int> n);
+  std::vector<int> GetNVarsSpectators() const {return fNVarsSpectators;}
 
-  void SetNamesTMVAVariablesSpectators(TString names) {fNamesTMVAVarSpectators = names;}
-  TString GetNamesTMVAVariablesSpectators() {return fNamesTMVAVarSpectators;}
+  void SetNamesTMVAVariablesSpectators(std::vector<TString> names);
+  std::vector<TString> GetNamesTMVAVariablesSpectators() {return fNamesTMVAVarSpectators;}
 
-  void SetUseXmlWeightsFile(Bool_t flag) {fUseXmlWeightsFile = flag;}
-  Bool_t GetUseXmlWeightsFile() const {return fUseXmlWeightsFile;}
+  void SetXmlWeightsFile(std::vector<TString> fileName);
+  std::vector<TString> GetXmlWeightsFile() const {return fXmlWeightsFile;}
 
-  void SetUseWeightsLibrary(Bool_t flag) {fUseWeightsLibrary = flag;}
-  Bool_t GetUseWeightsLibrary() const {return fUseWeightsLibrary;}
+  void SetUseXmlWeightsFileFromCVMFS(Bool_t flag) {fUseXmlWeightsFileFromCVMFS = flag;}
+  Bool_t GetUseXmlWeightsFileFromCVMFS() const {return fUseXmlWeightsFileFromCVMFS;}
 
-  void SetXmlWeightsFile(TString fileName) {fXmlWeightsFile = fileName;}
-  TString GetXmlWeightsFile() const {return fXmlWeightsFile;}
-
-  void SetUseXmlFileFromCVMFS(Bool_t flag) {fUseXmlFileFromCVMFS = flag;}
-  Bool_t GetUseXmlFileFromCVMFS() const {return fUseXmlFileFromCVMFS;}
-
-  void SetXmlFileFromCVMFS(TString fileName) {fXmlFileFromCVMFS = fileName;}
-  TString GetXmlFileFromCVMFS() const {return fXmlFileFromCVMFS;}
-
+  void ResetTMVAConfig();
+  
   void SetUseMultiplicityCorrection(Bool_t flag){fUseMultCorrection=flag;}
 
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
@@ -416,6 +397,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
  private:
   
+  void SetNReaders(Int_t n); 
+
   EBachelor CheckBachelor(AliAODRecoCascadeHF *part, AliAODTrack* bachelor, TClonesArray *mcArray);
   EK0S CheckK0S(AliAODRecoCascadeHF *part, AliAODv0* v0part, TClonesArray *mcArray);
   Int_t FindV0Label(AliAODRecoDecay* v0part, TClonesArray *mcArray) const;
@@ -573,11 +556,6 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   
   Bool_t fFillTree;                    /// flag to decide whether to fill the sgn and bkg trees
 
-  Bool_t fUseWeightsLibrary;           // flag to decide whether to use or not the BDT class
-  IClassifierReader *fBDTReader;       //!<! BDT reader using BDT class
-  TString fTMVAlibName;                /// Name of the library to load to have the TMVA weights
-  TString fTMVAlibPtBin;               /// Pt bin that will be in the library to be loaded for the TMVA
-  TString fNamesTMVAVar;               /// vector of the names of the input variables
   TH2D *fBDTHisto;                     //!<!
   TH2D *fBDTHistoVsMassK0S;            //!<! BDT classifier vs mass (pi+pi-) pairs
   TH2D *fBDTHistoVstImpParBach;        //!<! BDT classifier vs proton d0
@@ -604,23 +582,24 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   Bool_t fUsePIDresponseForNsigma;  /// flag to decide if to take the nSigma from the PIDresponse or from AliAODPidHF
 
-  Int_t fNVars;  /// Number of training variables
   Int_t ffraction;  /// Number for tree downscaling at low pt
   Float_t fPtLimForDownscaling;  /// Lc pt threshold for tree downscaling
   
   UInt_t fTimestampCut; // cut on timestamp
 
-  Bool_t fUseXmlWeightsFile;                   // flag to decide whether to use or not the xml file
-  TMVA::Reader *fReader;                // TMVA reader using xml file
-  Float_t* fVarsTMVA;                   //[fNVars] // variables to be used by TMVA
-  Int_t fNVarsSpectators;               // number of spectator variables
-  Float_t* fVarsTMVASpectators;         //[fNVarsSpectators] // variables to be used by TMVA
-  TString fNamesTMVAVarSpectators;      // vector of the names of the spectators variables
-  TString fXmlWeightsFile;              // file with TMVA weights
-  TH2D *fBDTHistoTMVA;                  //!<! BDT histo file for the case in which the xml file is used
+  Int_t fNReaders;                       // number of TMVA readers that will be used
+  bool fNReadersSet;                     // flag signaling that the number of readers has been set
+  std::vector<TMVA::Reader*> fReader;           // TMVA reader using xml file
+  std::vector<int>fNVars;                // Number of training variables
+  std::vector<TString> fNamesTMVAVar;                 /// vector of the names of the input variables
+  std::vector<Float_t*> fVarsTMVA;   // variables to be used by TMVA
+  std::vector<int> fNVarsSpectators;           // number of spectator variables
+  std::vector<TString> fNamesTMVAVarSpectators;      // vector of the names of the spectators variables
+  std::vector<Float_t*> fVarsTMVASpectators;  // spectator variables to be used by TMVA
+  std::vector<TH2D*>fBDTHistoTMVA;                  //!<! BDT histo file for the case in which the xml file is used
   TH3D *fBDTHistoTMVA3d;                  //!<! BDT histo file for the case in which the xml file is used; 3D to use also signd0 (for special studies)
-  Bool_t fUseXmlFileFromCVMFS;          // Boolean to acces Xml from CVMFS path
-  TString fXmlFileFromCVMFS;            // Path in CVMFS directory
+  std::vector<TString> fXmlWeightsFile;              // file with TMVA weights
+  Bool_t fUseXmlWeightsFileFromCVMFS;          // Boolean to acces Xml from CVMFS path
   
   // Multiplicity corrections
   TProfile* GetEstimatorHistogram(const AliVEvent *event);
@@ -639,11 +618,11 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2F* fHistoVzVsNtrUnCorr;         //!<! hist. Vz vs UNCORRECTED tracklets
   TH2F* fHistoVzVsNtrCorr;           //!<! hist. Vz vs corrected tracklets
   
-  std::vector<std::string> fInputNamesVec;        // vector with names of TMVA variables
+  std::vector<std::vector<std::string>> fNamesTMVAVarVec;        // vector with names of TMVA variables
   int fNTreeVars;                    // number of variables to fill the tree
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 14); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 15); /// class for Lc->p K0
   /// \endcond    
 };
 

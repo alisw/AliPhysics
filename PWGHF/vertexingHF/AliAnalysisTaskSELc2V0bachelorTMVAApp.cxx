@@ -76,8 +76,6 @@
 #include <TMVA/Reader.h>
 #include <TMVA/MethodCuts.h>
 
-#include "IClassifierReader.h"
-
 using std::cout;
 using std::endl;
 
@@ -202,11 +200,6 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fNTracklets_All(0),
   fCentrality(0),
   fFillTree(0),
-  fUseWeightsLibrary(kFALSE),
-  fBDTReader(0),
-  fTMVAlibName(""),
-  fTMVAlibPtBin(""),
-  fNamesTMVAVar(""),
   fBDTHisto(0),
   fBDTHistoVsMassK0S(0),
   fBDTHistoVstImpParBach(0),
@@ -229,21 +222,22 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fDebugHistograms(kFALSE),
   fAODProtection(0),
   fUsePIDresponseForNsigma(kFALSE),
-  fNVars(14),
   ffraction(-1),
   fPtLimForDownscaling(0),
   fTimestampCut(0),
-  fUseXmlWeightsFile(kTRUE),
+  fNReaders(0),
+  fNReadersSet(false),
   fReader(0),
+  fNVars(0),
+  fNamesTMVAVar(0),
   fVarsTMVA(0),
   fNVarsSpectators(0),
+  fNamesTMVAVarSpectators(0),
   fVarsTMVASpectators(0),
-  fNamesTMVAVarSpectators(""),
-  fXmlWeightsFile(""),
   fBDTHistoTMVA(0),  
   fBDTHistoTMVA3d(0),  
-  fUseXmlFileFromCVMFS(kFALSE),
-  fXmlFileFromCVMFS(""),
+  fXmlWeightsFile(0),
+  fUseXmlWeightsFileFromCVMFS(kTRUE),
   fUseMultCorrection(kFALSE),
   fRefMult(9.26),
   fYearNumber(16),
@@ -256,7 +250,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fHistoNtrCorr(0),
   fHistoVzVsNtrUnCorr(0),
   fHistoVzVsNtrCorr(0),
-  fInputNamesVec(0),
+  fNamesTMVAVarVec(0),
   fNTreeVars(30)
 {
   /// Default ctor
@@ -379,11 +373,6 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fNTracklets_All(0),
   fCentrality(0),  
   fFillTree(0),
-  fUseWeightsLibrary(kFALSE),
-  fBDTReader(0),
-  fTMVAlibName(""),
-  fTMVAlibPtBin(""),
-  fNamesTMVAVar(""),
   fBDTHisto(0),
   fBDTHistoVsMassK0S(0),
   fBDTHistoVstImpParBach(0),
@@ -406,21 +395,22 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fDebugHistograms(kFALSE),
   fAODProtection(0),
   fUsePIDresponseForNsigma(kFALSE),
-  fNVars(14),
   ffraction(-1),
   fPtLimForDownscaling(0),
   fTimestampCut(0),
-  fUseXmlWeightsFile(kTRUE),
+  fNReaders(0),
+  fNReadersSet(false),
   fReader(0),
+  fNVars(0),
+  fNamesTMVAVar(0),
   fVarsTMVA(0),
   fNVarsSpectators(0),
+  fNamesTMVAVarSpectators(0),
   fVarsTMVASpectators(0),
-  fNamesTMVAVarSpectators(""),
-  fXmlWeightsFile(""),
   fBDTHistoTMVA(0),  
   fBDTHistoTMVA3d(0),  
-  fUseXmlFileFromCVMFS(kFALSE),
-  fXmlFileFromCVMFS(""),
+  fXmlWeightsFile(0),
+  fUseXmlWeightsFileFromCVMFS(kTRUE),
   fUseMultCorrection(kFALSE),
   fRefMult(9.26),
   fYearNumber(16),
@@ -433,7 +423,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fHistoNtrCorr(0),
   fHistoVzVsNtrUnCorr(0),
   fHistoVzVsNtrCorr(0),
-  fInputNamesVec(0),
+  fNamesTMVAVarVec(0),
   fNTreeVars(30)
 {
   //
@@ -522,24 +512,21 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::~AliAnalysisTaskSELc2V0bachelorTMVAApp() 
     fUtils = 0;
   }
   
-  if (fBDTReader) {
-    //delete fBDTReader;
-    fBDTReader = 0;
-  }
+  for (int i = 0; i < fNReaders; ++i) {
+    if (fReader[i]) {
+      delete fReader[i];
+      fReader[i] = 0;
+    }
 
-  if (fReader) {
-    delete fReader;
-    fReader = 0;
-  }
+    if (fVarsTMVA[i]) {
+      delete fVarsTMVA[i];
+      fVarsTMVA[i] = 0;
+    }
 
-  if (fVarsTMVA) {
-    delete fVarsTMVA;
-    fVarsTMVA = 0;
-  }
-
-  if (fVarsTMVASpectators) {
-    delete fVarsTMVASpectators;
-    fVarsTMVASpectators = 0;
+    if (fVarsTMVASpectators[i]) {
+      delete fVarsTMVASpectators[i];
+      fVarsTMVASpectators[i] = 0;
+    }
   }
 
   for(Int_t i=0; i<14; i++){
@@ -611,6 +598,140 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::Terminate(Option_t*)
   }
 
   return;
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNReaders(Int_t n) {
+
+  // setting the number of readers that will be used
+
+  fNReaders = n;
+  fReader.resize(fNReaders);
+  fNVars.resize(fNReaders);
+  fVarsTMVA.resize(fNReaders);
+  fNamesTMVAVar.resize(fNReaders);
+  fNVarsSpectators.resize(fNReaders);
+  fVarsTMVASpectators.resize(fNReaders);
+  fNamesTMVAVarSpectators.resize(fNReaders);
+  fBDTHistoTMVA.resize(fNReaders);
+  fXmlWeightsFile.resize(fNReaders);
+  fNamesTMVAVarVec.resize(fNReaders);
+  fNReadersSet = true;
+  
+  return;
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::ResetTMVAConfig() {
+
+  // to reset the vectors for TMVA
+  fNReaders = 0;
+  fReader.clear();
+  fNVars.clear();
+  fVarsTMVA.clear();
+  fNamesTMVAVar.clear();
+  fNVarsSpectators.clear();
+  fVarsTMVASpectators.clear();
+  fNamesTMVAVarSpectators.clear();
+  fBDTHistoTMVA.clear();
+  fXmlWeightsFile.clear();
+  fNamesTMVAVarVec.clear();
+  fNReadersSet = false;
+
+  return;
+}
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNVars(std::vector<int> nvars) {
+
+  // setting the number of variables used for each reader
+  if (!fNReadersSet) SetNReaders((int)nvars.size());
+  else {
+    if ((int)nvars.size() != fNReaders) {
+      AliFatal(Form("wrong number of readers with respect to the vector with the number of variables! (%d, should be %d)", fNReaders, (int)nvars.size()));
+    }
+  }
+  fNVars = nvars;
+  for (int iR = 0; iR < fNReaders; ++iR) {
+    fVarsTMVA[iR] = new Float_t[fNVars[iR]];
+    fNamesTMVAVarVec[iR].resize(fNVars[iR]);
+  }
+  return; 
+
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNamesTMVAVariables(std::vector<TString> names) {
+
+  // setting the variables names for the various readers
+  if (!fNReadersSet) SetNReaders((int)names.size());
+  else {
+    if ((int)names.size() != fNReaders) {
+      AliFatal(Form("wrong number of readers with respect to the vector with the names of variables! (%d, should be %d)", fNReaders, (int)names.size()));
+    }
+  }
+  fNamesTMVAVar = names;
+  for (int iR = 0; iR < fNReaders; ++iR) {
+    TObjArray *tokens = fNamesTMVAVar[iR].Tokenize(",");
+    int nVars = tokens->GetEntries();
+    if (nVars != fNVars[iR]) {
+      AliFatal(Form("Number of variables declared for reader %d differs from the expected one (%d, should be %d)", iR, nVars, fNVars[iR]));
+    }
+    for(Int_t i = 0; i < tokens->GetEntries(); i++){
+      TString variable = ((TObjString*)(tokens->At(i)))->String();
+      fNamesTMVAVarVec[iR][i] = variable.Data();
+    }
+    delete tokens;
+  }
+  return;
+  
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNVarsSpectators(std::vector<int> nvars) {
+
+  // setting the number of spectator variables used for each reader
+  if (!fNReadersSet) SetNReaders((int)nvars.size());
+  else {
+    if ((int)nvars.size() != fNReaders) {
+      AliFatal(Form("wrong number of readers with respect to the vector with the number of spectators! (%d, should be %d)", fNReaders, (int)nvars.size()));
+    }
+  }
+  fNVarsSpectators = nvars;
+  for (int iR = 0; iR < fNReaders; ++iR) {
+    fVarsTMVASpectators[iR] = new Float_t[fNVarsSpectators[iR]];
+  }
+  return; 
+
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNamesTMVAVariablesSpectators(std::vector<TString> names) {
+
+  // setting the variables names for the various readers
+  if (!fNReadersSet) SetNReaders((int)names.size());
+  else {
+    if ((int)names.size() != fNReaders) {
+      AliFatal(Form("wrong number of readers with respect to the vector with the names of spectators! (%d, should be %d)", fNReaders, (int)names.size()));
+    }
+  }
+  fNamesTMVAVarSpectators = names;
+  return;
+  
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetXmlWeightsFile(std::vector<TString> filenames) {
+
+  // setting the variables names for the various readers
+  if (!fNReadersSet) SetNReaders((int)filenames.size());
+  else {
+   if ((int)filenames.size() != fNReaders) {
+     AliFatal("wrong number of readers with respect to the vector with the names weight files!");
+   }
+  }
+  fXmlWeightsFile = filenames;
+  return;
+  
 }
 
 //___________________________________________________________________________
@@ -744,9 +865,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   }
 
   fHistoTracklets_1 = new TH1F("fHistoTracklets_1", "fHistoTracklets_1", 1000, 0, 5000);
-  fHistoTracklets_1_cent = new TH2F("fHistoTracklets_1_cent", "fHistoTracklets_1_cent; centrality; SPD tracklets [-1, 1]", 100, 0., 100., 1000, 0, 5000);
   fHistoTracklets_All = new TH1F("fHistoTracklets_All", "fHistoTracklets_All", 1000, 0, 5000);
-  fHistoTracklets_All_cent = new TH2F("fHistoTracklets_All_cent", "fHistoTracklets_All_cent; centrality; SPD tracklets [-999, 999]", 100, 0., 100., 1000, 0, 5000);
 
   fHistoLc = new TH1F("fHistoLc", "fHistoLc", 2, -0.5, 1.5);
 
@@ -805,28 +924,17 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
 
   fHistoV0Radius = new TH2D("fHistoV0Radius", "V0 Radius; radius; bkg/signal", 900, 0., 300., 2, -0.5, 1.5);
   
-  // //code to run the BDT Application on-the-fly
-  // TString inputVariablesBDT = "massK0S,tImpParBach,tImpParV0,bachelorPt,combinedProtonProb,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
-  // TObjArray *tokens = inputVariablesBDT.Tokenize(",");
-  // tokens->Print();
-  // std::vector<std::string> inputNamesVec;
-  // for(Int_t i=0; i<tokens->GetEntries(); i++){
-  //   TString variable = ((TObjString*)(tokens->At(i)))->String();
-  //   string tmpvar = variable.Data();
-  //   inputNamesVec.push_back(tmpvar);
-  // }
-  // Printf("************************************************ fBDTReader = %p", fBDTReader);
-  // //fBDTReader = new ReadBDT_Default(inputNamesVec);
-  
-
-  if (fUseWeightsLibrary) fBDTHisto = new TH2D("fBDTHisto", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
   if (fMake3DHisto) {
     fBDTHistoTMVA3d = new TH3D("fBDTHistoTMVA3d", "Lc inv mass vs bdt output vs signd0; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 200, -1, 1, 500, 2.05, 2.55, 200, -1, 1);
   }
   else {
-    fBDTHistoTMVA = new TH2D("fBDTHistoTMVA", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
+    for (int i = 0; i < fNReaders; ++i) {
+      fBDTHistoTMVA[i] = new TH2D(Form("fBDTHistoTMVA_%d", i), Form("Lc inv mass vs bdt output, reader %d; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", i), 2000, -1, 1, 500, 2.05, 2.55);
+    }
   }
   if (fDebugHistograms) {    
+    fHistoTracklets_1_cent = new TH2F("fHistoTracklets_1_cent", "fHistoTracklets_1_cent; centrality; SPD tracklets [-1, 1]", 100, 0., 100., 1000, 0, 5000);
+    fHistoTracklets_All_cent = new TH2F("fHistoTracklets_All_cent", "fHistoTracklets_All_cent; centrality; SPD tracklets [-999, 999]", 100, 0., 100., 1000, 0, 5000);
     fBDTHistoVsMassK0S = new TH2D("fBDTHistoVsMassK0S", "K0S inv mass vs bdt output; bdt; m_{inv}(#pi^{+}#pi^{#minus})[GeV/#it{c}^{2}]", 1000, -1, 1, 1000, 0.485, 0.51);
     fBDTHistoVstImpParBach = new TH2D("fBDTHistoVstImpParBach", "d0 bachelor vs bdt output; bdt; d_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
     fBDTHistoVstImpParV0 = new TH2D("fBDTHistoVstImpParV0", "d0 K0S vs bdt output; bdt; d_{0, V0}[cm]", 1000, -1, 1, 100, -1, 1);
@@ -848,9 +956,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   
   fOutput->Add(fHistoEvents);
   fOutput->Add(fHistoTracklets_1);
-  fOutput->Add(fHistoTracklets_1_cent);
   fOutput->Add(fHistoTracklets_All);
-  fOutput->Add(fHistoTracklets_All_cent);
   fOutput->Add(fHistoLc);
   fOutput->Add(fHistoLcOnTheFly);
   fOutput->Add(fHistoLcBeforeCuts);
@@ -863,15 +969,18 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fOutput->Add(fHistoMCLcK0SpGenAcc);
   fOutput->Add(fHistoMCLcK0SpGenLimAcc);
   fOutput->Add(fHistoCentrality);
-  if (fUseWeightsLibrary) fOutput->Add(fBDTHisto);
   if (fMake3DHisto) {
     fOutput->Add(fBDTHistoTMVA3d);
   }
   else {
-    fOutput->Add(fBDTHistoTMVA);
+    for (int i = 0; i < fNReaders; ++i) {
+      fOutput->Add(fBDTHistoTMVA[i]);
+    }
   }
   fOutput->Add(fHistoV0Radius);
   if (fDebugHistograms) {    
+    fOutput->Add(fHistoTracklets_1_cent);
+    fOutput->Add(fHistoTracklets_All_cent);
     fOutput->Add(fBDTHistoVsMassK0S);
     fOutput->Add(fBDTHistoVstImpParBach);
     fOutput->Add(fBDTHistoVstImpParV0);
@@ -1122,44 +1231,33 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   PostData(7, fListWeight);
 
   if (!fFillTree) {
-    Printf("Booking methods");
-    // creating the BDT and TMVA reader
-    fVarsTMVA = new Float_t[fNVars];
-    fVarsTMVASpectators = new Float_t[fNVarsSpectators];
-    fReader = new TMVA::Reader( "!Color:!Silent" );
-    TObjArray *tokens = fNamesTMVAVar.Tokenize(",");
-    for(Int_t i = 0; i < tokens->GetEntries(); i++){
-      TString variable = ((TObjString*)(tokens->At(i)))->String();
-      std::string tmpvar = variable.Data();
-      fInputNamesVec.push_back(tmpvar);
-      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) fReader->AddVariable(variable.Data(), &fVarsTMVA[i]);
-    }      
-    delete tokens;
-    if ((int)fInputNamesVec.size() != fNVars) {
-      AliFatal(Form("The vector of input variables does not have the correct size: %ld, should be %d", fInputNamesVec.size(), fNVars));
-    }
-    TObjArray *tokensSpectators = fNamesTMVAVarSpectators.Tokenize(",");
-    for(Int_t i = 0; i < tokensSpectators->GetEntries(); i++){
-      TString variable = ((TObjString*)(tokensSpectators->At(i)))->String();
-      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) fReader->AddSpectator(variable.Data(), &fVarsTMVASpectators[i]);
-    }
-    delete tokensSpectators;
-    if (fUseWeightsLibrary) {
-      void* lib = dlopen(fTMVAlibName.Data(), RTLD_NOW);
-      void* p = dlsym(lib, Form("%s", fTMVAlibPtBin.Data()));
-      IClassifierReader* (*maker1)(std::vector<std::string>&) = (IClassifierReader* (*)(std::vector<std::string>&)) p;
-      fBDTReader = maker1(fInputNamesVec);
-    }
-    
-    if (fUseXmlWeightsFile) fReader->BookMVA("BDT method", fXmlWeightsFile);
-
-    if (fUseXmlFileFromCVMFS){
-       TString pathToFileCVMFS = AliDataFile::GetFileName(fXmlFileFromCVMFS.Data());
-       if (pathToFileCVMFS.IsNull()){
+    Printf("\n\n\n\nBooking methods");
+    for (int iR = 0; iR < fNReaders; ++iR) {
+      fReader[iR] = new TMVA::Reader( "!Color:!Silent" );
+      for (int iVar = 0; iVar < fNVars[iR]; ++iVar) {
+	fReader[iR]->AddVariable(fNamesTMVAVarVec[iR][iVar], &fVarsTMVA[iR][iVar]);
+      }      
+      TObjArray *tokensSpectators = fNamesTMVAVarSpectators[iR].Tokenize(",");
+      int nSpectators = tokensSpectators->GetEntries();
+      if (nSpectators != fNVarsSpectators[iR]) {
+	AliFatal(Form("Number of spectators for reader %d does not match the expected one (%d, should be %d)", iR, nSpectators, fNVarsSpectators[iR]));
+      }
+      for(Int_t i = 0; i < nSpectators; i++){
+	TString variable = ((TObjString*)(tokensSpectators->At(i)))->String();
+	fReader[iR]->AddSpectator(variable.Data(), &fVarsTMVASpectators[iR][i]);
+      }
+      delete tokensSpectators;
+      TString pathToFileCVMFS = "";
+      if (fUseXmlWeightsFileFromCVMFS){
+	pathToFileCVMFS = AliDataFile::GetFileName(fXmlWeightsFile[iR].Data());
+	if (pathToFileCVMFS.IsNull()){
           AliFatal("Cannot access data files from CVMFS");
-       }
-       fReader->BookMVA("BDT method", pathToFileCVMFS); 
+	}
+      }
+      Printf("Booking method %d with file %s", iR, fUseXmlWeightsFileFromCVMFS ? pathToFileCVMFS.Data() : fXmlWeightsFile[iR].Data());
+      fReader[iR]->BookMVA("BDT method", fUseXmlWeightsFileFromCVMFS ? pathToFileCVMFS : fXmlWeightsFile[iR]); 
     }
+    Printf("\n\n\n\n");
   }
   
   return;
@@ -1379,9 +1477,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserExec(Option_t *)
 
   fHistoTracklets_1->Fill(fNTracklets_1);
   fHistoTracklets_All->Fill(fNTracklets_All);
-  fHistoTracklets_1_cent->Fill(fCentrality, fNTracklets_1);
-  fHistoTracklets_All_cent->Fill(fCentrality, fNTracklets_All);
-
+  if (fDebugHistograms) {    
+    fHistoTracklets_1_cent->Fill(fCentrality, fNTracklets_1);
+    fHistoTracklets_All_cent->Fill(fCentrality, fNTracklets_All);
+  }
   fHistoCentrality->Fill(fCentrality);
     
   if(fUseMultCorrection){
@@ -2256,70 +2355,84 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     }
     
     if(!fFillTree) {   
-      std::vector<Double_t> inputVars(fNVars);
-      int foundVars = 0; 
-      for (int ivar = 0; ivar < (int)fInputNamesVec.size(); ++ivar) {
-	if (fInputNamesVec[ivar] == "DecayLengthK0S*0.497/v0P") {
-	  //	  std::cout << "Adding " << fInputNamesVec[ivar] << std::endl;
-	  inputVars[ivar] = (Double_t)(part->DecayLengthV0())*0.497/(v0part->P());
-	  fVarsTMVA[ivar] = (part->DecayLengthV0())*0.497/(v0part->P());    // note that fInputNamesVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
-	  ++foundVars;
-	  continue;
-	}	
-	for (int iname = 0; iname < fNTreeVars; ++iname) {
-	  if (fInputNamesVec[ivar] == fCandidateVariableNames[iname]) {
-	    //	    std::cout << "Adding " << fInputNamesVec[ivar] << std::endl;
-	    inputVars[ivar] = (Double_t)fCandidateVariables[iname];
-	    fVarsTMVA[ivar] = fCandidateVariables[iname];    // note that fInputNamesVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
+      for (int iR = 0; iR < fNReaders; ++iR) {
+	int foundVars = 0; 
+	for (int ivar = 0; ivar < fNVars[iR]; ++ivar) {
+	  if (fNamesTMVAVarVec[iR][ivar] == "DecayLengthK0S*0.497/v0P") {
+	    //	  std::cout << "Adding " << fNamesTMVAVarVec[ivar] << std::endl;
+	    fVarsTMVA[iR][ivar] = (part->DecayLengthV0())*0.497/(v0part->P());    // note that fNamesTMVAVarVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
 	    ++foundVars;
-	    break;
+	    continue;
+	  }
+	  if (fNamesTMVAVarVec[iR][ivar] == "combinedProtonProbD2H") {
+	    if (nSigmaTPCpr > -998. && nSigmaTOFpr > -998.) {
+	      fVarsTMVA[iR][ivar] = TMath::Sqrt((nSigmaTPCpr * nSigmaTPCpr + nSigmaTOFpr * nSigmaTOFpr) / 2);
+	    }
+	    else if (nSigmaTPCpr > -998. && nSigmaTOFpr < -998.) {
+	      fVarsTMVA[iR][ivar] = TMath::Abs(nSigmaTPCpr);
+	    }
+	    else if (nSigmaTPCpr < -998. && nSigmaTOFpr > -998.) {
+	      fVarsTMVA[iR][ivar] = TMath::Abs(nSigmaTOFpr);
+	    }
+	    else {
+	      fVarsTMVA[iR][ivar] = -999.;
+	    }
+	    ++foundVars;
+	    continue;
+	  }
+	  if (fNamesTMVAVarVec[iR][ivar] == "ptArm/TMath::Abs(alphaArm)") {
+	    fVarsTMVA[iR][ivar] = v0part->PtArmV0()/TMath::Abs(v0part->AlphaV0());
+	    ++foundVars;
+	    continue;
+	  }
+	  for (int iname = 0; iname < fNTreeVars; ++iname) {
+	    if (fNamesTMVAVarVec[iR][ivar] == fCandidateVariableNames[iname]) {
+	      //	    std::cout << "Adding " << fNamesTMVAVarVec[ivar] << std::endl;
+	      fVarsTMVA[iR][ivar] = fCandidateVariables[iname];    // note that fNamesTMVAVarVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
+	      ++foundVars;
+	      break;
+	    }
 	  }
 	}
-      }
-      if (foundVars != fNVars) {
-	AliFatal(Form("Not all variables for TMVA have been found!! %d, should be %d", foundVars, fNVars));
-      }
-      Double_t BDTResponse = -1;
-      Double_t tmva = -1;
-      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) tmva = fReader->EvaluateMVA("BDT method");
-      if (fUseWeightsLibrary) BDTResponse = fBDTReader->GetMvaValue(inputVars);
-      //Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc);
-      //Printf("tmva = %f", tmva); 
-      if (fUseWeightsLibrary) fBDTHisto->Fill(BDTResponse, invmassLc);
-      if (fMake3DHisto) {
-	fBDTHistoTMVA3d->Fill(tmva, invmassLc, signd0);
-      }
-      else {
-	fBDTHistoTMVA->Fill(tmva, invmassLc); 
+	if (foundVars != fNVars[iR]) {
+	  AliFatal(Form("Not all variables for TMVA for reader %d have been found!! %d, should be %d", iR, foundVars, fNVars[iR]));
+	}
+	Double_t tmva = -1;
+	tmva = fReader[iR]->EvaluateMVA("BDT method");
+	if (fMake3DHisto) {
+	  if (iR == 0) { // the 3D histogram gets filled only with the first model - we do not foresee to run with more models if we want the 3D histogram
+	    fBDTHistoTMVA3d->Fill(tmva, invmassLc, signd0);
+	  }
+	}
+	else {
+	  fBDTHistoTMVA[iR]->Fill(tmva, invmassLc); 
+	}
+	if (fDebugHistograms && iR == 0) {
+	  fBDTHistoVsMassK0S->Fill(tmva, invmassK0s);
+	  fBDTHistoVstImpParBach->Fill(tmva, part->Getd0Prong(0));
+	  fBDTHistoVstImpParV0->Fill(tmva, part->Getd0Prong(1));
+	  fBDTHistoVsBachelorPt->Fill(tmva, bachelor->Pt());
+	  fBDTHistoVsCombinedProtonProb->Fill(tmva, probProton);
+	  fBDTHistoVsCtau->Fill(tmva, (part->DecayLengthV0())*0.497/(v0part->P()));
+	  fBDTHistoVsCosPAK0S->Fill(tmva, part->CosV0PointingAngle());
+	  fBDTHistoVsSignd0->Fill(tmva, signd0);
+	  fBDTHistoVsCosThetaStar->Fill(tmva, cts);
+	  fBDTHistoVsnSigmaTPCpr->Fill(tmva, nSigmaTPCpr);
+	  fBDTHistoVsnSigmaTOFpr->Fill(tmva, nSigmaTOFpr);
+	  fBDTHistoVsnSigmaTPCpi->Fill(tmva, nSigmaTPCpi);
+	  fBDTHistoVsnSigmaTPCka->Fill(tmva, nSigmaTPCka);
+	  fBDTHistoVsBachelorP->Fill(tmva, bachelor->P());
+	  fBDTHistoVsBachelorTPCP->Fill(tmva, bachelor->GetTPCmomentum());
+	  fHistoNsigmaTPC->Fill(bachelor->P(), nSigmaTPCpr);
+	  fHistoNsigmaTOF->Fill(bachelor->P(), nSigmaTOFpr);
+	}
       }
       fHistoV0Radius->Fill(radiusV0, isLc);
-      if (fDebugHistograms) {
-	if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) BDTResponse = tmva; // we fill the debug histogram with the output from the xml file
-	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);
-	fBDTHistoVstImpParBach->Fill(BDTResponse, part->Getd0Prong(0));
-	fBDTHistoVstImpParV0->Fill(BDTResponse, part->Getd0Prong(1));
-	fBDTHistoVsBachelorPt->Fill(BDTResponse, bachelor->Pt());
-	fBDTHistoVsCombinedProtonProb->Fill(BDTResponse, probProton);
-	fBDTHistoVsCtau->Fill(BDTResponse, (part->DecayLengthV0())*0.497/(v0part->P()));
-	fBDTHistoVsCosPAK0S->Fill(BDTResponse, part->CosV0PointingAngle());
-	fBDTHistoVsSignd0->Fill(BDTResponse, signd0);
-	fBDTHistoVsCosThetaStar->Fill(BDTResponse, cts);
-	fBDTHistoVsnSigmaTPCpr->Fill(BDTResponse, nSigmaTPCpr);
-	fBDTHistoVsnSigmaTOFpr->Fill(BDTResponse, nSigmaTOFpr);
-	fBDTHistoVsnSigmaTPCpi->Fill(BDTResponse, nSigmaTPCpi);
-	fBDTHistoVsnSigmaTPCka->Fill(BDTResponse, nSigmaTPCka);
-	fBDTHistoVsBachelorP->Fill(BDTResponse, bachelor->P());
-	fBDTHistoVsBachelorTPCP->Fill(BDTResponse, bachelor->GetTPCmomentum());
-	fHistoNsigmaTPC->Fill(bachelor->P(), nSigmaTPCpr);
-	fHistoNsigmaTOF->Fill(bachelor->P(), nSigmaTOFpr);
-      }
     }
-    
   }
-  
+ 
   return;
-  
-  
+   
 }
 
 //________________________________________________________________________
