@@ -13,9 +13,9 @@ AliAnalysisTask *AddTaskJFFlucMapMaster10h(TString taskName="JFFlucMaster", doub
 		"hybrid", // 1
 		"nqq",    // 
 		"subA",
-		"SPD",    // 4
-		"zvtx",
-		"pileup"  // 6
+		"V0M",    // 4
+		"zvtx6",
+		"zvtx12"  // 6
 	};
 	Int_t tpconlyCut = 128;
    	Int_t hybridCut = 768;
@@ -26,13 +26,13 @@ AliAnalysisTask *AddTaskJFFlucMapMaster10h(TString taskName="JFFlucMaster", doub
 	for(int i=0;i<Nsets;i++) {
 		myTask[i] = new AliJFFlucTask(Form("%s_s_%s",taskName.Data(), configNames[i].Data()));
 		if(i!=6) {
-			myTask[i]->AddFlags(AliJFFlucTask::FLUC_CUT_OUTLIERS|AliJFFlucTask::FLUC_EBE_WEIGHTING);
+			myTask[i]->AddFlags(AliJFFlucTask::FLUC_EBE_WEIGHTING);
 		}
 		myTask[i]->SelectCollisionCandidates( selEvt );
-		myTask[i]->SetCentDetName("V0M");
+		myTask[i]->SetCentDetName("CL1");
 		myTask[i]->SelectSubevents(AliJFFlucTask::SUBEVENT_A|AliJFFlucTask::SUBEVENT_B);
 		myTask[i]->SetTestFilterBit(tpconlyCut);
-		myTask[i]->SetEtaRange(0.4, 0.8);
+		myTask[i]->SetEtaRange(0.4, 0.8); // nothing to do with map
 		myTask[i]->SetPtRange(ptmin, 5.0);
 		myTask[i]->SetEffConfig(0,tpconlyCut);
 	}
@@ -48,15 +48,15 @@ AliAnalysisTask *AddTaskJFFlucMapMaster10h(TString taskName="JFFlucMaster", doub
 	myTask[iS]->SelectSubevents(AliJFFlucTask::SUBEVENT_A); // subA
 	//
 	//----------- Event related Check -------------
-	// s_SPD
+	// s_VOM
 	iS = 4;
-	myTask[iS]->SetCentDetName("CL1");
-	// s_zvtx
+	myTask[iS]->SetCentDetName("V0M");
+	// s_zvtx 6
 	iS = 5;
-	myTask[iS]->SetZVertexCut(8);
-	// s_pileup
+	myTask[iS]->SetZVertexCut(6);
+    // s_zvtx 12
 	iS = 6;
-	myTask[iS]->AddFlags(AliJFFlucTask::FLUC_EBE_WEIGHTING); 	
+	myTask[iS]->SetZVertexCut(12);
 	// Must add the tasks
 	for(int i=0;i<Nsets;i++) mgr->AddTask((AliAnalysisTask*) myTask[i]);
 	// Create containers for input/output
