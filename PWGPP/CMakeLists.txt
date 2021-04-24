@@ -212,6 +212,8 @@ set ( SRCS13
 #file ( GLOB SRCS14 "T0/*.cxx" )
 set ( SRCS14
   T0/AliT0AnalysisTaskQA.cxx
+  T0/spectrum/AliAnalysisTaskSpectrumT0.cxx
+  T0/spectrum/EventStruct.cxx
   )
 #file ( GLOB SRCS15 "VZERO/*PbPb.cxx" )
 set (SRCS15
@@ -332,6 +334,10 @@ install(FILES HMPID/AddTaskHmpidQA.C DESTINATION PWGPP/HMPID)
 install(FILES HMPID/macros/copyHMPQAfiles.C
  	      HMPID/macros/makeHMPQA.C DESTINATION PWGPP/HMPID/macros)
 install(FILES T0/AddTaskT0QA.C
+        T0/spectrum/AddAnalysisTaskSpectrumT0.C
+        T0/spectrum/runListRCT2016_pp_tzero.root
+        T0/spectrum/runListRCT2017_pp_tzero.root
+        T0/spectrum/runListRCT2018_pp_tzero.root
 	      T0/MakeTrendT0.C
 	      T0/drawPerformanceT0QATrends.C
 	      DESTINATION PWGPP/T0)
