@@ -626,8 +626,10 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
         // checking the run number for aplying weights & loading TList with weights
         //
         // if (fCurrSystFlag == 0) 
-	if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded!"); return; }
-        if (fNUE && !LoadPtWeights()) { AliFatal("PtWeights not loaded!"); return; }
+        if (lastRunNumber != fAOD->GetRunNumber()) {
+	    if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded!"); return; }
+	    if (fNUE && !LoadPtWeights()) { AliFatal("PtWeights not loaded!"); return; }
+        }
 
 
 	fGFWSelection->SetupCuts(fCurrSystFlag); 
@@ -769,11 +771,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 		//..get phi-weight for NUA correction
 		double weight = 1;
 		if(fNUA == 1) {
-			if ( !fPeriod.EqualTo("LHC15o") ) {
-				weight = GetFlowWeight(aodTrk, fVtxZ, kRefs);
-			} else {
-				weight = GetFlowWeightSystematics(aodTrk, fVtxZ, kRefs);
-			}
+		    weight = GetFlowWeightSystematics(aodTrk, fVtxZ, kRefs);
 		}
 		double weightPt = 1;
 		if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
