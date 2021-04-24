@@ -154,7 +154,7 @@ private:
     Double_t         fCutDCAxy;
     Double_t         fCutDCAz;
     Double_t         fCutTrackEta;
-    Double_t         fCutpTMin;//!
+    Double_t         fCutpTMin;
     //--------------------PID Cut------------------
     Double_t         fCutEopEMin;
     Double_t         fCutEopEMax;
@@ -163,12 +163,12 @@ private:
     Double_t         fCutM02Min;
     Double_t         fCutM02Max;
     //--------------------Loose cuts for photonic electron pair------------------
-    Int_t         fAssoTPCCluster;//!
-    Int_t         fAssoITSCluster;//!
+    Int_t         fAssoTPCCluster;
+    Int_t         fAssoITSCluster;
     Double_t         fCutAssoEPt;
     Double_t         fCutAssoEEta;
     Double_t         fCutAssoENsigma;
-    Bool_t         fAssoITSRefit;//!
+    Bool_t         fAssoITSRefit;
     //--------------------Mass Cut for photonic electron pair------------------
     Double_t         fCutInvmass;
     
@@ -189,7 +189,7 @@ private:
     Bool_t                fUseTender;// switch to add tender
     Bool_t                fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t                fFlagClsTypeDCAL;//switch to select DCAL c
-    Double_t              fTPCnSigma;//!
+    Double_t              fTPCnSigma;
     Bool_t                fEMCEG1;//EMcal Threshold EG1
     Bool_t                fEMCEG2;//EMcal Threshold SetReferenceMultiplicityEG2
     Bool_t                fDCalDG1;//DCal Threshold DG1
