@@ -246,7 +246,7 @@ const std::vector<AliAnalysisTaskSpectrumT0::FunctorStruct> AliAnalysisTaskSpect
    }},
 
   {"PS","Physics selection",[](const EventStruct& data) {
-     return !data.fIsPhysSel;
+     return data.fIsPhysSel;
    }},
 
   {"PU","Pileup rejection",[](const EventStruct& data) {
@@ -255,7 +255,7 @@ const std::vector<AliAnalysisTaskSpectrumT0::FunctorStruct> AliAnalysisTaskSpect
 
   {"PUlm","Pileup rejection(low mult)",
    [](const EventStruct& data) {
-     return data.fIsPileupLowMult;
+     return !data.fIsPileupLowMult;
    }},
 
   {"INT7","CINT7-B",
