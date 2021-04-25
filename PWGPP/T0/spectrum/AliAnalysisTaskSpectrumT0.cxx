@@ -246,11 +246,11 @@ const std::vector<AliAnalysisTaskSpectrumT0::FunctorStruct> AliAnalysisTaskSpect
    }},
 
   {"PS","Physics selection",[](const EventStruct& data) {
-     return data.fIsPhysSel;
+     return !data.fIsPhysSel;
    }},
 
   {"PU","Pileup rejection",[](const EventStruct& data) {
-     return data.fIsPileup;
+     return !data.fIsPileup;
    }},
 
   {"PUlm","Pileup rejection(low mult)",
