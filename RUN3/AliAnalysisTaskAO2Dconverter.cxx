@@ -2389,10 +2389,10 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   alpha4 = MUONTrack.GetInverseBendingMomentum();
 
   x2 = TMath::ATan2(-alpha3, -alpha1);
-  if (alpha3 != 0 || alpha1 != 0) 
+  if (alpha3 != 0 || alpha1 != 0)
     x3 = -1. / TMath::Sqrt(alpha3 * alpha3 + alpha1 * alpha1);
-  else 
-    x3 = 0;
+  else
+    x3 = FLT_MAX;
   x4 = alpha4 * -x3 * TMath::Sqrt(1 + alpha3 * alpha3);
 
   // Set output parameters
