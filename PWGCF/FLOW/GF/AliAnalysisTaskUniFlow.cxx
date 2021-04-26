@@ -3186,6 +3186,12 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, AliVParticle* tra
     fh2PIDTOFnSigmaProton[iPID]->Fill(dPt,dNumSigmaTOF[4]);
   }
 
+  if(bUsedTPC && bUsedTOF) {
+    fh3PIDTPCTOFnSigmaPion[iPID]->Fill(dPt,dNumSigmaTPC[2],dNumSigmaTOF[2]);
+    fh3PIDTPCTOFnSigmaKaon[iPID]->Fill(dPt,dNumSigmaTPC[3],dNumSigmaTOF[3]);
+    fh3PIDTPCTOFnSigmaProton[iPID]->Fill(dPt,dNumSigmaTPC[4],dNumSigmaTOF[4]);
+  }
+
   return;
 }
 // ============================================================================
@@ -7592,6 +7598,14 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
       fQAPID->Add(fh2PIDBayesKaon[iPID]);
       fh2PIDBayesProton[iPID] = new TH2D(Form("fh2PID%sBayesProton",sNamePID[iPID].Data()),Form("PID: %s: Bayes probability (p hyp.); #it{p}_{T} (GeV/#it{c}); Bayes prob.",sLabelPID[iPID].Data()), fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, 50,0,1);
       fQAPID->Add(fh2PIDBayesProton[iPID]);
+
+      //3D
+      fh3PIDTPCTOFnSigmaPion[iPID] = new TH3D(Form("fh3PID%sTPCTOFnSigmaPion",sNamePID[iPID].Data()),Form("PID: %s: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma; TOF n#sigma",sLabelPID[iPID].Data()), fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, 21,-11,10, 21,-11,10);
+      fQAPID->Add(fh3PIDTPCTOFnSigmaPion[iPID]);
+      fh3PIDTPCTOFnSigmaKaon[iPID] = new TH3D(Form("fh3PID%sTPCTOFnSigmaKaon",sNamePID[iPID].Data()),Form("PID: %s: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma; TOF n#sigma",sLabelPID[iPID].Data()), fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, 21,-11,10, 21,-11,10);
+      fQAPID->Add(fh3PIDTPCTOFnSigmaKaon[iPID]);
+      fh3PIDTPCTOFnSigmaProton[iPID] = new TH3D(Form("fh3PID%sTPCTOFnSigmaProton",sNamePID[iPID].Data()),Form("PID: %s: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma; TOF n#sigma",sLabelPID[iPID].Data()), fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, 21,-11,10, 21,-11,10);
+      fQAPID->Add(fh3PIDTPCTOFnSigmaProton[iPID]);
     } //end-if {fProcessSpec[kPion]}
 
     if(fProcessSpec[kPhi])
