@@ -100,6 +100,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   ,fPileUpPbPb2018cut(0)
   ,fAliEventCuts(0)
   ,fKeepOnlyPileUp(kFALSE)
+  ,fnBinsDCAxy_histTpcItsMatch(30)
 {
 
   fAliEventCuts.SetManualMode();
@@ -153,6 +154,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   ,fPileUpPbPb2018cut(0)
   ,fAliEventCuts(0)
   ,fKeepOnlyPileUp(kFALSE)
+  ,fnBinsDCAxy_histTpcItsMatch(30)
 {
   //
   // standard constructur
@@ -995,7 +997,7 @@ void AliAnalysisTrackingUncertaintiesAOT::InitializeTrackCutHistograms() {
   //  match TPC->ITS
   //                                  0-is matched, 1-pt, 2-eta,   3-phi,   4-pid(0-3 -> electron-proton, 4 -> undef, 5 -> all) 6-bcTOF 7-DCAxy
   Int_t nEtaBins = 2*fMaxEta/0.1;
-  Int_t    binsTpcItsMatch[kNumberOfAxes] = {    2,   29, nEtaBins,            18,  6,      3,    2,  30};
+  Int_t    binsTpcItsMatch[kNumberOfAxes] = {    2,   29, nEtaBins,            18,  6,      3,    2,  fnBinsDCAxy_histTpcItsMatch};
   Double_t minTpcItsMatch[kNumberOfAxes]  = { -0.5,  0.5, -fMaxEta,             0, -0.5, -1.5, -0.5, -3.};
   Double_t maxTpcItsMatch[kNumberOfAxes]  = {  1.5, 15.0,  fMaxEta, 2*TMath::Pi(),  5.5,  1.5,  1.5,  3.};
   //

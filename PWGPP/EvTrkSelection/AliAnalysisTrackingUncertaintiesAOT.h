@@ -112,6 +112,9 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
     fPileUpPbPb2018cut = which_PileUpcut;
     fKeepOnlyPileUp    = keep_only_pileup;
   }
+  
+  // number of bins for histTpcItsMatch
+  void SetnBinsDCAxy_histTpcItsMatch(Int_t n)  {fnBinsDCAxy_histTpcItsMatch = n;}
 
  private:
     
@@ -186,10 +189,13 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   Int_t        fPileUpPbPb2018cut;  /// option for additional out-of-bunch pileup cut based on ITS-TPC correlation (0=no cut, 1=tight cut, 2=intermediate cut, 3=loose cut)
   AliEventCuts fAliEventCuts;       ///
 
+  // number of bins for histTpcItsMatch
+  Int_t fnBinsDCAxy_histTpcItsMatch; ///
+
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 12);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 13);
 };
 
 #endif
