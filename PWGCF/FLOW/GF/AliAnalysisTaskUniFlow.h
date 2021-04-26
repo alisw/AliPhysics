@@ -561,6 +561,10 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*                   fh2PIDTOFnSigmaKaon[3]; //! TOF nSigma vs pT for selected pions (kaon hypothesis)
       TH2D*                   fh2PIDTPCnSigmaProton[3]; //! TPC nSigma vs pT for selected pions (proton hypothesis)
       TH2D*                   fh2PIDTOFnSigmaProton[3]; //! TOF nSigma vs pT for selected pions (proton hypothesis)
+      //3D
+      TH3D*                   fh3PIDTPCTOFnSigmaPion[3]; //! TPC nSigma vs pT for selected pions (pion hypothesis)
+      TH3D*                   fh3PIDTPCTOFnSigmaKaon[3]; //! TPC nSigma vs pT for selected pions (kaon hypothesis)
+      TH3D*                   fh3PIDTPCTOFnSigmaProton[3]; //! TPC nSigma vs pT for selected pions (proton hypothesis)
       // MC
       TH2D*                   fh2MCPtEtaGen[kUnknown]; //! (pt,eta) dist for generated particles
       TH2D*                   fh2MCPtEtaReco[kUnknown]; //! (pt,eta) dist for reconstructed particles
