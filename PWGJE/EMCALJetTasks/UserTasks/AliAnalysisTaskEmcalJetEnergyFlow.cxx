@@ -55,7 +55,7 @@ AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow(const char*
 AliAnalysisTaskEmcalJet(name, kTRUE),
 fHistManager(name) // ,fOutput{0}
 {
-	SetMakeGeneralHistograms(kFALSE);
+	SetMakeGeneralHistograms(kTRUE);
 //	DefineInput(0, TChain::Class());
 //	DefineOutput(1,TList::Class());
 
