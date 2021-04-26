@@ -2297,7 +2297,8 @@ void AliAnalysisHFjetTagHFE::CountNch()
 {
 		Nch = 0;
 		for(int imc=0; imc<fMCarray->GetEntriesFast(); imc++)
-		{ 
+		{  
+			 fMCparticle = (AliAODMCParticle*)fMCarray->At(imc); 
 		   Int_t chargetrue = fMCparticle->Charge();
 			 Double_t pdgEta = fMCparticle->Eta();
 			 Bool_t isPhysPrim = fMCparticle->IsPhysicalPrimary();
