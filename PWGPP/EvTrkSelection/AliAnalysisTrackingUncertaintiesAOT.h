@@ -48,7 +48,8 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
     kStdITSTPCTrkCuts2009,
     kStdITSTPCTrkCuts2010,
     kStdITSTPCTrkCuts2011,
-    kStdITSTPCTrkCuts2015PbPb
+    kStdITSTPCTrkCuts2015PbPb,
+    kStdITSTPCTrkCuts2011TightChi2TPC
     // to be implemented, if needed
     //kStdITSSATrkCuts2009,
     //kStdITSSATrkCuts2010,

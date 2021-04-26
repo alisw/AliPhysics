@@ -227,6 +227,14 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
     fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,fTPCclstCut);
     break;
 
+  case kStdITSTPCTrkCuts2011TightChi2TPC:
+    printf("\n### kStdITSTPCTrkCuts2011TightChi2TPC case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,%d)\n",fTPCclstCut);
+    printf("### (on top) esdTrackCuts->SetMaxChi2PerClusterTPC(2.5);");
+    if(fTPCclstCut==0)  printf("   ---> cut on TPC # clusters\n\n");
+    else if(fTPCclstCut==1) printf("   ---> cuts on the number of crossed rows and on the ration crossed rows/findable clusters\n\n");
+    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011TighterChi2(kFALSE,fTPCclstCut);
+    break;
+
   case kStdITSTPCTrkCuts2015PbPb:
     printf("\n### kStdITSTPCTrkCuts2015PbPb case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kFALSE,%d,kTRUE,kFALSE)\n\n",fTPCclstCut);
     if(fTPCclstCut==0)  printf("   ---> cut on TPC # clusters\n\n");
