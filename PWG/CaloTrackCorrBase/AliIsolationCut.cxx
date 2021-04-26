@@ -47,7 +47,7 @@ ClassImp(AliIsolationCut) ;
 AliIsolationCut::AliIsolationCut() :
 TObject(),
 fFillHistograms(0),        fFillEtaPhiHistograms(0), fEtaPhiHistogramsMinPt(0), 
-fFillLeadingHistograms(0), fFillHighMultHistograms(0), 
+fFillLeadingHistograms(0), fFillLeadingVsUESubHisto(0), fFillHighMultHistograms(0),
 fMakeConeExcessCorr(0),    fFillFractionExcessHistograms(0),
 fConeSize(0.),       fConeSizeBandGap(0.),
 fPtThreshold(0.),    fPtThresholdMax(10000.),
@@ -2090,45 +2090,48 @@ TList * AliIsolationCut::GetCreateOutputObjects()
   {
     if ( !fFillHighMultHistograms )
     {
-      fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt = new TH3F
-      ("hTrigPtVsSumPtUEBandSubVsLeadClusterInConePt",Form("%s",parTitleR.Data()),
-        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-       ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
-       sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-      fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt->SetYTitle("#it{p}^{lead}_{cluster} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-      outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt) ;
+      if ( fFillLeadingVsUESubHisto )
+      {
+        fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt = new TH3F
+        ("hTrigPtVsSumPtUEBandSubVsLeadClusterInConePt",Form("%s",parTitleR.Data()),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+         sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+        fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt->SetYTitle("#it{p}^{lead}_{cluster} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt) ;
 
-      fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt = new TH3F
-      ("hTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt",Form("%s",parTitleR.Data()),
-        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-       ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
-       sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-      fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt->SetYTitle("#it{p}^{lead UE}_{cluster} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-      outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt) ;
+        fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt = new TH3F
+        ("hTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt",Form("%s",parTitleR.Data()),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+         sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+        fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt->SetYTitle("#it{p}^{lead UE}_{cluster} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt) ;
 
-      fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead = new TH3F
-      ("hTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead",Form("%s",parTitleR.Data()),
-        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-       ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
-       sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-      fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead->SetYTitle("#it{p}^{lead}_{cluster} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-      outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead) ;
+        fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead = new TH3F
+        ("hTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead",Form("%s",parTitleR.Data()),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+         sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+        fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead->SetYTitle("#it{p}^{lead}_{cluster} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead) ;
 
-      fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt = new TH3F
-      ("hTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt",Form("%s",parTitleR.Data()),
-        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-       lfrBinsArray.GetSize() - 1, lfrBinsArray.GetArray(),
-       sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-      fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt->SetYTitle("#it{p}^{lead}_{track} Cone / UE ");
-      fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-      outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt) ;
+        fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt = new TH3F
+        ("hTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt",Form("%s",parTitleR.Data()),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         lfrBinsArray.GetSize() - 1, lfrBinsArray.GetArray(),
+         sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+        fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt->SetYTitle("#it{p}^{lead}_{track} Cone / UE ");
+        fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt) ;
+      }
 
       fhConeSumPtUESubClusterCutMax  = new TH2F
       ("hConePtSumUESubClusterCutMax",
@@ -2558,45 +2561,48 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     // UE bands
     if ( !fFillHighMultHistograms  )
     {
-      fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt = new TH3F
-      ("hTrigPtVsSumPtUEBandSubVsLeadTrackInConePt",Form("%s",parTitleR.Data()),
-        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-       ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
-       sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-      fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt->SetYTitle("#it{p}^{lead}_{track} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-      outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt) ;
+      if ( fFillLeadingVsUESubHisto )
+      {
+        fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt = new TH3F
+        ("hTrigPtVsSumPtUEBandSubVsLeadTrackInConePt",Form("%s",parTitleR.Data()),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+         sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+        fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt->SetYTitle("#it{p}^{lead}_{track} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt) ;
 
-      fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead = new TH3F
-      ("hTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead",Form("%s",parTitleR.Data()),
-        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-       ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
-       sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-      fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead->SetYTitle("#it{p}^{lead}_{track} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-      outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead) ;
+        fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead = new TH3F
+        ("hTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead",Form("%s",parTitleR.Data()),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+         sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+        fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead->SetYTitle("#it{p}^{lead}_{track} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead) ;
 
-      fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt = new TH3F
-      ("hTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt",Form("%s",parTitleR.Data()),
-        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-       ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
-       sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-      fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt->SetYTitle("#it{p}^{lead UE}_{track} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-      outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt) ;
+        fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt = new TH3F
+        ("hTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt",Form("%s",parTitleR.Data()),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+         sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+        fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt->SetYTitle("#it{p}^{lead UE}_{track} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt) ;
 
-      fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt = new TH3F
-      ("hTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt",Form("%s",parTitleR.Data()),
-        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-       lfrBinsArray.GetSize() - 1, lfrBinsArray.GetArray(),
-       sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-      fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt->SetYTitle("#it{p}^{lead}_{track} Cone / UE ");
-      fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-      outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt) ;
+        fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt = new TH3F
+        ("hTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt",Form("%s",parTitleR.Data()),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         lfrBinsArray.GetSize() - 1, lfrBinsArray.GetArray(),
+         sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+        fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt->SetYTitle("#it{p}^{lead}_{track} Cone / UE ");
+        fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt) ;
+      }
 
       fhConeSumPtUESubTrackCutMax  = new TH2F
       ("hConePtSumUESubTrackCutMax",
@@ -3637,51 +3643,55 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeSumPtUESubClusterCutLeadFactorCent->SetZTitle("Centrality (%)");
         outputContainer->Add(fhConeSumPtUESubClusterCutLeadFactorCent) ;
 
-        fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent = new TH3F*[fNCentBins] ;
-        fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent = new TH3F*[fNCentBins] ;
-        fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent = new TH3F*[fNCentBins] ;
-        fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent = new TH3F*[fNCentBins] ;
-        for (Int_t icent = 0; icent < fNCentBins; icent++)
+        if ( fFillLeadingVsUESubHisto )
         {
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent[icent] = new TH3F
-          (Form("hTrigPtVsSumPtUEBandSubVsLeadClusterInConePt_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
-            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-           ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
-           sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent[icent]->SetYTitle("#it{p}^{lead}_{cluster} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-          outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent[icent]) ;
+          fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent          = new TH3F*[fNCentBins] ;
+          fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent        = new TH3F*[fNCentBins] ;
+          fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent      = new TH3F*[fNCentBins] ;
+          fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent = new TH3F*[fNCentBins] ;
 
-          fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent[icent] = new TH3F
-          (Form("hTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
-            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-           ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
-           sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-          fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent[icent]->SetYTitle("#it{p}^{lead}_{cluster} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-          outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent[icent]) ;
+          for (Int_t icent = 0; icent < fNCentBins; icent++)
+          {
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent[icent] = new TH3F
+            (Form("hTrigPtVsSumPtUEBandSubVsLeadClusterInConePt_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+             sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent[icent]->SetYTitle("#it{p}^{lead}_{cluster} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent[icent]) ;
 
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent[icent] = new TH3F
-          (Form("hTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
-            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-           ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
-           sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent[icent]->SetYTitle("#it{p}^{lead}_{cluster} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-          outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent[icent]) ;
+            fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent[icent] = new TH3F
+            (Form("hTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+             sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+            fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent[icent]->SetYTitle("#it{p}^{lead}_{cluster} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent[icent]) ;
 
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent[icent] = new TH3F
-          (Form("hTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt_Cent%d",icent),Form("%s",parTitleR.Data()),
-            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-           lfrBinsArray.GetSize() - 1, lfrBinsArray.GetArray(),
-           sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent[icent]->SetYTitle("#it{p}^{lead}_{track} Cone / UE ");
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-          outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent[icent]) ;
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent[icent] = new TH3F
+            (Form("hTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+             sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent[icent]->SetYTitle("#it{p}^{lead}_{cluster} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent[icent]) ;
+
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent[icent] = new TH3F
+            (Form("hTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt_Cent%d",icent),Form("%s",parTitleR.Data()),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             lfrBinsArray.GetSize() - 1, lfrBinsArray.GetArray(),
+             sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent[icent]->SetYTitle("#it{p}^{lead}_{track} Cone / UE ");
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent[icent]) ;
+          }
         }
 
         if ( fICMethod == kSumBkgSubEtaBandIC )
@@ -3768,51 +3778,55 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeSumPtUESubTrackCutLeadFactorCent->SetZTitle("Centrality (%)");
         outputContainer->Add(fhConeSumPtUESubTrackCutLeadFactorCent) ;
 
-        fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent = new TH3F*[fNCentBins] ;
-        fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent = new TH3F*[fNCentBins] ;
-        fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent = new TH3F*[fNCentBins] ;
-        fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent = new TH3F*[fNCentBins] ;
-        for (Int_t icent = 0; icent < fNCentBins; icent++)
+        if ( fFillLeadingVsUESubHisto )
         {
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent[icent] = new TH3F
-          (Form("hTrigPtVsSumPtUEBandSubVsLeadTrackInConePt_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
-            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-           ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
-           sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent[icent]->SetYTitle("#it{p}^{lead}_{track} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-          outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent[icent]) ;
+          fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent          = new TH3F*[fNCentBins] ;
+          fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent        = new TH3F*[fNCentBins] ;
+          fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent      = new TH3F*[fNCentBins] ;
+          fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent = new TH3F*[fNCentBins] ;
 
-          fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent[icent] = new TH3F
-          (Form("hTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
-            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-           ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
-           sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-          fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent[icent]->SetYTitle("#it{p}^{lead UE}_{track} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-          outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent[icent]) ;
+          for (Int_t icent = 0; icent < fNCentBins; icent++)
+          {
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent[icent] = new TH3F
+            (Form("hTrigPtVsSumPtUEBandSubVsLeadTrackInConePt_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+             sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent[icent]->SetYTitle("#it{p}^{lead}_{track} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent[icent]) ;
 
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent[icent] = new TH3F
-          (Form("hTrigPtVsSumPtUEBandSubVsTrackLeadInConePtLowUELead_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
-            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-           ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
-           sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent[icent]->SetYTitle("#it{p}^{lead}_{track} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-          outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent[icent]) ;
+            fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent[icent] = new TH3F
+            (Form("hTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+             sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+            fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent[icent]->SetYTitle("#it{p}^{lead UE}_{track} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent[icent]) ;
 
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent[icent] = new TH3F
-          (Form("hTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt_Cent%d",icent),Form("%s",parTitleR.Data()),
-            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-           lfrBinsArray.GetSize() - 1, lfrBinsArray.GetArray(),
-           sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent[icent]->SetYTitle("#it{p}^{lead}_{track} Cone / UE ");
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-          outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent[icent]) ;
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent[icent] = new TH3F
+            (Form("hTrigPtVsSumPtUEBandSubVsTrackLeadInConePtLowUELead_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+             sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent[icent]->SetYTitle("#it{p}^{lead}_{track} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent[icent]) ;
+
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent[icent] = new TH3F
+            (Form("hTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt_Cent%d",icent),Form("%s",parTitleR.Data()),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             lfrBinsArray.GetSize() - 1, lfrBinsArray.GetArray(),
+             sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent[icent]->SetYTitle("#it{p}^{lead}_{track} Cone / UE ");
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent[icent]) ;
+          }
         }
 
         if ( fICMethod == kSumBkgSubEtaBandIC )
@@ -4822,41 +4836,49 @@ void  AliIsolationCut::MakeIsolationCut
       {
         if ( !fFillHighMultHistograms )
         {
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt->Fill(ptC, coneptLeadTrack,
-                                                            coneptsumUESubTrack*excessAreaTrkEta,
-                                                            histoWeight);
-          fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt->Fill(ptC, ueptLeadTrack,
-                                                              coneptsumUESubTrack*excessAreaTrkEta,
-                                                              histoWeight);
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt->Fill(ptC, fracLeadTrack,
-                                                              coneptsumUESubTrack*excessAreaTrkEta,
-                                                              histoWeight);
-          if ( ueptLeadTrack < coneptLeadTrack )
+          if ( fFillLeadingVsUESubHisto )
           {
-            fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead->Fill(ptC, coneptLeadTrack,
-                                                                       coneptsumUESubTrack*excessAreaTrkEta,
-                                                                       histoWeight);
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt->Fill(ptC, coneptLeadTrack,
+                                                              coneptsumUESubTrack*excessAreaTrkEta,
+                                                              histoWeight);
+            fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePt->Fill(ptC, ueptLeadTrack,
+                                                                coneptsumUESubTrack*excessAreaTrkEta,
+                                                                histoWeight);
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePt->Fill(ptC, fracLeadTrack,
+                                                                  coneptsumUESubTrack*excessAreaTrkEta,
+                                                                  histoWeight);
+            if ( ueptLeadTrack < coneptLeadTrack )
+            {
+              fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELead->Fill(ptC, coneptLeadTrack,
+                                                                         coneptsumUESubTrack*excessAreaTrkEta,
+                                                                         histoWeight);
+            }
           }
+
           fhConeSumPtUESubTrackCutMax       ->Fill(ptC, coneptsumTrackSubCutMax        * excessAreaTrkEta, histoWeight);
           fhConeSumPtUESubTrackCutLeadFactor->Fill(ptC, coneptsumTrackSubCutLeadFactor * excessAreaTrkEta, histoWeight);
         }
         else if ( cenBin < fNCentBins && cenBin >= 0 )
         {
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent[cenBin]->Fill(ptC, coneptLeadTrack,
-                                                                        coneptsumUESubTrack*excessAreaTrkEta,
-                                                                        histoWeight);
-          fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent[cenBin]->Fill(ptC, ueptLeadTrack,
+          if ( fFillLeadingVsUESubHisto )
+          {
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent[cenBin]->Fill(ptC, coneptLeadTrack,
                                                                           coneptsumUESubTrack*excessAreaTrkEta,
                                                                           histoWeight);
-          fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent[cenBin]->Fill(ptC, fracLeadTrack,
+            fhTrigPtVsSumPtUEBandSubVsLeadUETrackInConePtCent[cenBin]->Fill(ptC, ueptLeadTrack,
                                                                             coneptsumUESubTrack*excessAreaTrkEta,
                                                                             histoWeight);
-          if ( ueptLeadTrack < coneptLeadTrack )
-          {
-            fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent[cenBin]->Fill(ptC, coneptLeadTrack,
-                                                                                   coneptsumUESubTrack*excessAreaTrkEta,
-                                                                                   histoWeight);
+            fhTrigPtVsSumPtUEBandSubVsLeadTrackFracInConePtCent[cenBin]->Fill(ptC, fracLeadTrack,
+                                                                              coneptsumUESubTrack*excessAreaTrkEta,
+                                                                              histoWeight);
+            if ( ueptLeadTrack < coneptLeadTrack )
+            {
+              fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtLowUELeadCent[cenBin]->Fill(ptC, coneptLeadTrack,
+                                                                                     coneptsumUESubTrack*excessAreaTrkEta,
+                                                                                     histoWeight);
+            }
           }
+
           fhConeSumPtUESubTrackCutMaxCent       ->Fill(ptC, coneptsumTrackSubCutMax        * excessAreaTrkEta, centrality, histoWeight);
           fhConeSumPtUESubTrackCutLeadFactorCent->Fill(ptC, coneptsumTrackSubCutLeadFactor * excessAreaTrkEta, centrality, histoWeight);
         }
@@ -4866,41 +4888,49 @@ void  AliIsolationCut::MakeIsolationCut
       {
         if ( !fFillHighMultHistograms )
         {
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt->Fill(ptC, coneptLeadCluster,
-                                                              coneptsumUESubCluster*excessAreaClsEta*excessAreaClsPhi,
-                                                              histoWeight);
-          fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt->Fill(ptC, ueptLeadCluster,
+          if ( fFillLeadingVsUESubHisto )
+          {
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt->Fill(ptC, coneptLeadCluster,
                                                                 coneptsumUESubCluster*excessAreaClsEta*excessAreaClsPhi,
                                                                 histoWeight);
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt->Fill(ptC, fracLeadCluster,
+            fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePt->Fill(ptC, ueptLeadCluster,
                                                                   coneptsumUESubCluster*excessAreaClsEta*excessAreaClsPhi,
                                                                   histoWeight);
-          if ( ueptLeadCluster < coneptLeadCluster )
-          {
-            fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead->Fill(ptC, coneptLeadCluster,
-                                                                         coneptsumUESubCluster*excessAreaClsEta*excessAreaClsPhi,
-                                                                         histoWeight);
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePt->Fill(ptC, fracLeadCluster,
+                                                                    coneptsumUESubCluster*excessAreaClsEta*excessAreaClsPhi,
+                                                                    histoWeight);
+            if ( ueptLeadCluster < coneptLeadCluster )
+            {
+              fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELead->Fill(ptC, coneptLeadCluster,
+                                                                           coneptsumUESubCluster*excessAreaClsEta*excessAreaClsPhi,
+                                                                           histoWeight);
+            }
           }
+
           fhConeSumPtUESubClusterCutMax       ->Fill(ptC, coneptsumClusterSubCutMax        * excessAreaClsEta*excessAreaClsPhi, histoWeight);
           fhConeSumPtUESubClusterCutLeadFactor->Fill(ptC, coneptsumClusterSubCutLeadFactor * excessAreaClsEta*excessAreaClsPhi, histoWeight);
         }
         else if ( cenBin < fNCentBins && cenBin >= 0 )
         {
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent[cenBin]->Fill(ptC, coneptLeadCluster,
-                                                                          coneptsumUESubCluster*excessAreaClsEta*excessAreaClsPhi,
-                                                                          histoWeight);
-          fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent[cenBin]->Fill(ptC, ueptLeadCluster,
+          if ( fFillLeadingVsUESubHisto )
+          {
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent[cenBin]->Fill(ptC, coneptLeadCluster,
                                                                             coneptsumUESubCluster*excessAreaClsEta*excessAreaClsPhi,
                                                                             histoWeight);
-          fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent[cenBin]->Fill(ptC, fracLeadCluster,
+            fhTrigPtVsSumPtUEBandSubVsLeadUEClusterInConePtCent[cenBin]->Fill(ptC, ueptLeadCluster,
                                                                               coneptsumUESubCluster*excessAreaClsEta*excessAreaClsPhi,
                                                                               histoWeight);
-          if ( ueptLeadCluster < coneptLeadCluster )
-          {
-            fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent[cenBin]->Fill(ptC, coneptLeadCluster,
-                                                                                     coneptsumUESubCluster*excessAreaClsEta*excessAreaClsPhi,
-                                                                                     histoWeight);
+            fhTrigPtVsSumPtUEBandSubVsLeadClusterFracInConePtCent[cenBin]->Fill(ptC, fracLeadCluster,
+                                                                                coneptsumUESubCluster*excessAreaClsEta*excessAreaClsPhi,
+                                                                                histoWeight);
+            if ( ueptLeadCluster < coneptLeadCluster )
+            {
+              fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtLowUELeadCent[cenBin]->Fill(ptC, coneptLeadCluster,
+                                                                                       coneptsumUESubCluster*excessAreaClsEta*excessAreaClsPhi,
+                                                                                       histoWeight);
+            }
           }
+
           fhConeSumPtUESubClusterCutMaxCent       ->Fill(ptC, coneptsumClusterSubCutMax        * excessAreaClsEta*excessAreaClsPhi, centrality, histoWeight);
           fhConeSumPtUESubClusterCutLeadFactorCent->Fill(ptC, coneptsumClusterSubCutLeadFactor * excessAreaClsEta*excessAreaClsPhi, centrality, histoWeight);
         }

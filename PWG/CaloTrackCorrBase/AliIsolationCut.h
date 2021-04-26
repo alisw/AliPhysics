@@ -206,6 +206,9 @@ class AliIsolationCut : public TObject {
 
   void       SwitchOnFillLeadingParticleHistograms ()          { fFillLeadingHistograms = kTRUE  ; }
   void       SwitchOffFillLeadingParticleHistograms()          { fFillLeadingHistograms = kFALSE ; }
+
+  void       SwitchOnFillLeadingVsUESubHistograms ()           { fFillLeadingVsUESubHisto = kTRUE  ; }
+  void       SwitchOffFillLeadingVsUESubHistograms()           { fFillLeadingVsUESubHisto = kFALSE ; }
   
   void       SwitchOnFillHighMultHistograms ()                 { fFillHighMultHistograms = kTRUE  ; }
   void       SwitchOffFillHighMultHistograms()                 { fFillHighMultHistograms = kFALSE ; }
@@ -221,9 +224,11 @@ class AliIsolationCut : public TObject {
 
   void       SwitchOnUseMaxPtUECut ()                          { fUseMaxPtUE = kTRUE  ; }
   void       SwitchOffUseMaxPtUECut()                          { fUseMaxPtUE = kFALSE ; }
+  Bool_t     IsMaxPtUECutUsed()                          const { return fUseMaxPtUE   ; }
 
   void       SwitchOnUseLeadingPtUEFactorCut ()                { fUseLeadingPtUEFactor = kTRUE  ; }
   void       SwitchOffUseLeadingPtUEFactorCut()                { fUseLeadingPtUEFactor = kFALSE ; }
+  Bool_t     IsLeadingPtUEFactorCutUsed()                const { return fUseLeadingPtUEFactor   ; }
 
  private:
 
@@ -233,8 +238,10 @@ class AliIsolationCut : public TObject {
 
   Float_t    fEtaPhiHistogramsMinPt;                   ///< Fill eta vs phi histograms above a certain pT
   
-  Bool_t     fFillLeadingHistograms;                    ///< Fill histograms if GetCreateOuputObjects() was called with leadiing particle related histograms 
+  Bool_t     fFillLeadingHistograms;                   ///< Fill histograms if GetCreateOuputObjects() was called with leadiing particle related histograms
   
+  Bool_t     fFillLeadingVsUESubHisto;                 ///< Fill histograms correlating leading particle in cone pT and UE subtracted isolation energy
+
   Bool_t     fFillHighMultHistograms;                  ///< Fill histograms if GetCreateOuputObjects() was called with centrality dependent histograms 
   
   Bool_t     fMakeConeExcessCorr;                      ///< Make cone excess from detector correction. 
@@ -572,7 +579,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,28) ;
+  ClassDef(AliIsolationCut,29) ;
   /// \endcond
 
 } ;

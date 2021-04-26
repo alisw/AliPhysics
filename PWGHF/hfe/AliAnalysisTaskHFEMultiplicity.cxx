@@ -762,8 +762,8 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
         
         fEtaWeight = new TF1("fEtaWeight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
         
-        fPi0Weight->SetParameters( 1.46837e+03,-1.02586e-01, 1.18596e-03,1.73410,5.06623);
-        fEtaWeight->SetParameters(   3.67328e+02,-5.34727e-02,2.39322e-05,1.96562,5.23828);
+        fPi0Weight->SetParameters( 1.62474e+03,-1.17372e-01,1.42964e-03,1.64427e+00,4.93761e+00);
+        fEtaWeight->SetParameters(   3.67236e+02,-5.41467e-02,3.76799e-05,1.96809e+00,5.23929e+00);
     }
     fTrkMatchTrkPt->Sumw2();
     fSparseElectron->Sumw2();
