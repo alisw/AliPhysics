@@ -440,29 +440,31 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 		    printf("****** START FIT OF HISTO %s WITH REBIN %d FIRST BIN %d MASS RANGE %f-%f BACKGROUND FIT FUNCTION=%d CONFIG SIGMA/MEAN=%d %d\n",hInvMassHisto->GetName(),rebin,iFirstBin,minMassForFit,maxMassForFit,typeb,igs,igm);
 		    out=fitter->MassFitter(0);
 		    chisq=fitter->GetReducedChiSquare();
-		    fitter->Significance(fnSigmaForBkgEval,significance,erSignif);
-		    sigma=fitter->GetSigma();
-		    pos=fitter->GetMean();
-		    esigma=fitter->GetSigmaUncertainty();
-		    if(esigma<0.00001) esigma=0.0001;
-		    epos=fitter->GetMeanUncertainty();
-		    if(epos<0.00001) epos=0.0001;
-		    ry=fitter->GetRawYield();
-		    ery=fitter->GetRawYieldError();
-		    fitter->Background(fnSigmaForBkgEval,bkg,erbkg);
-		    fitter->Signal(fnSigmaForBkgEval,sgn,ersgn);
-		    Double_t minval = hInvMassHisto->GetXaxis()->GetBinLowEdge(hInvMassHisto->FindBin(pos-fnSigmaForBkgEval*sigma));
-		    Double_t maxval = hInvMassHisto->GetXaxis()->GetBinUpEdge(hInvMassHisto->FindBin(pos+fnSigmaForBkgEval*sigma));
-		    fitter->Background(minval,maxval,bkgBEdge,erbkgBEdge);
-		    if(out && fDrawIndividualFits && thePad){
-		      thePad->Clear();
-		      fitter->DrawHere(thePad, fnSigmaForBkgEval);
-		      fMassFitters.push_back(fitter);
-		      mustDeleteFitter = kFALSE;
-		      for (auto format : fInvMassFitSaveAsFormats) {
-			thePad->SaveAs(Form("FitOutput_%s_Trial%d.%s",hInvMassHisto->GetName(),globBin, format.c_str()));
+        if(out){
+		      fitter->Significance(fnSigmaForBkgEval,significance,erSignif);
+		      sigma=fitter->GetSigma();
+		      pos=fitter->GetMean();
+		      esigma=fitter->GetSigmaUncertainty();
+		      if(esigma<0.00001) esigma=0.0001;
+		      epos=fitter->GetMeanUncertainty();
+		      if(epos<0.00001) epos=0.0001;
+		      ry=fitter->GetRawYield();
+		      ery=fitter->GetRawYieldError();
+		      fitter->Background(fnSigmaForBkgEval,bkg,erbkg);
+		      fitter->Signal(fnSigmaForBkgEval,sgn,ersgn);
+		      Double_t minval = hInvMassHisto->GetXaxis()->GetBinLowEdge(hInvMassHisto->FindBin(pos-fnSigmaForBkgEval*sigma));
+		      Double_t maxval = hInvMassHisto->GetXaxis()->GetBinUpEdge(hInvMassHisto->FindBin(pos+fnSigmaForBkgEval*sigma));
+		      fitter->Background(minval,maxval,bkgBEdge,erbkgBEdge);
+		      if(fDrawIndividualFits && thePad){
+		        thePad->Clear();
+		        fitter->DrawHere(thePad, fnSigmaForBkgEval);
+		        fMassFitters.push_back(fitter);
+		        mustDeleteFitter = kFALSE;
+		        for (auto format : fInvMassFitSaveAsFormats) {
+			        thePad->SaveAs(Form("FitOutput_%s_Trial%d.%s",hInvMassHisto->GetName(),globBin, format.c_str()));
+		        }
 		      }
-		    }
+        }
 		  }
 		  xnt[8]=chisq;
 		  if(out && chisq>0. && sigma>0.5*fSigmaGausMC && sigma<2.0*fSigmaGausMC){
