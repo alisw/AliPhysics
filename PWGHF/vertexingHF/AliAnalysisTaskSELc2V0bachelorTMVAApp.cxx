@@ -527,6 +527,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::~AliAnalysisTaskSELc2V0bachelorTMVAApp() 
       delete fVarsTMVASpectators[i];
       fVarsTMVASpectators[i] = 0;
     }
+
   }
 
   for(Int_t i=0; i<14; i++){
@@ -613,10 +614,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNReaders(Int_t n) {
   fNVarsSpectators.resize(fNReaders);
   fVarsTMVASpectators.resize(fNReaders);
   fNamesTMVAVarSpectators.resize(fNReaders);
-  fBDTHistoTMVA.resize(fNReaders);
   fXmlWeightsFile.resize(fNReaders);
   fNamesTMVAVarVec.resize(fNReaders);
   fNReadersSet = true;
+
+  AliInfo(Form("Number of readers = %d", fNReaders));
   
   return;
 }
@@ -633,7 +635,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::ResetTMVAConfig() {
   fNVarsSpectators.clear();
   fVarsTMVASpectators.clear();
   fNamesTMVAVarSpectators.clear();
-  fBDTHistoTMVA.clear();
   fXmlWeightsFile.clear();
   fNamesTMVAVarVec.clear();
   fNReadersSet = false;
@@ -652,6 +653,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNVars(std::vector<int> nvars) {
   }
   fNVars = nvars;
   for (int iR = 0; iR < fNReaders; ++iR) {
+    AliInfo(Form("Reader %d has %d variables", iR, fNVars[iR]));
     fVarsTMVA[iR] = new Float_t[fNVars[iR]];
     fNamesTMVAVarVec[iR].resize(fNVars[iR]);
   }
@@ -676,8 +678,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNamesTMVAVariables(std::vector<TS
     if (nVars != fNVars[iR]) {
       AliFatal(Form("Number of variables declared for reader %d differs from the expected one (%d, should be %d)", iR, nVars, fNVars[iR]));
     }
+    AliInfo(Form("Reader %d has the following variables:", iR));
     for(Int_t i = 0; i < tokens->GetEntries(); i++){
       TString variable = ((TObjString*)(tokens->At(i)))->String();
+      AliInfo(Form("%d --> %s", i, variable.Data())); 
       fNamesTMVAVarVec[iR][i] = variable.Data();
     }
     delete tokens;
@@ -698,6 +702,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNVarsSpectators(std::vector<int> 
   }
   fNVarsSpectators = nvars;
   for (int iR = 0; iR < fNReaders; ++iR) {
+    AliInfo(Form("Reader %d has %d spectators", iR, fNVarsSpectators[iR]));
     fVarsTMVASpectators[iR] = new Float_t[fNVarsSpectators[iR]];
   }
   return; 
@@ -924,32 +929,39 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
 
   fHistoV0Radius = new TH2D("fHistoV0Radius", "V0 Radius; radius; bkg/signal", 900, 0., 300., 2, -0.5, 1.5);
   
-  if (fMake3DHisto) {
-    fBDTHistoTMVA3d = new TH3D("fBDTHistoTMVA3d", "Lc inv mass vs bdt output vs signd0; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 200, -1, 1, 500, 2.05, 2.55, 200, -1, 1);
-  }
-  else {
-    for (int i = 0; i < fNReaders; ++i) {
-      fBDTHistoTMVA[i] = new TH2D(Form("fBDTHistoTMVA_%d", i), Form("Lc inv mass vs bdt output, reader %d; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", i), 2000, -1, 1, 500, 2.05, 2.55);
+  if(!fFillTree) {   
+    if (fMake3DHisto) {
+      fBDTHistoTMVA3d = new TH3D("fBDTHistoTMVA3d", "Lc inv mass vs bdt output vs signd0; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 200, -1, 1, 500, 2.05, 2.55, 200, -1, 1);
+    }
+    else {
+      fBDTHistoTMVA = new TH2D*[fNReaders];
+      for (int i = 0; i < fNReaders; ++i) {
+	AliInfo(Form("Booking histogram for reader = %d", i));
+	fBDTHistoTMVA[i] = new TH2D(Form("fBDTHistoTMVA_%d", i), Form("Lc inv mass vs bdt output, reader %d; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", i), 2000, -1, 1, 500, 2.05, 2.55);
+	AliInfo("done");
+      }
     }
   }
   if (fDebugHistograms) {    
     fHistoTracklets_1_cent = new TH2F("fHistoTracklets_1_cent", "fHistoTracklets_1_cent; centrality; SPD tracklets [-1, 1]", 100, 0., 100., 1000, 0, 5000);
     fHistoTracklets_All_cent = new TH2F("fHistoTracklets_All_cent", "fHistoTracklets_All_cent; centrality; SPD tracklets [-999, 999]", 100, 0., 100., 1000, 0, 5000);
-    fBDTHistoVsMassK0S = new TH2D("fBDTHistoVsMassK0S", "K0S inv mass vs bdt output; bdt; m_{inv}(#pi^{+}#pi^{#minus})[GeV/#it{c}^{2}]", 1000, -1, 1, 1000, 0.485, 0.51);
-    fBDTHistoVstImpParBach = new TH2D("fBDTHistoVstImpParBach", "d0 bachelor vs bdt output; bdt; d_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
-    fBDTHistoVstImpParV0 = new TH2D("fBDTHistoVstImpParV0", "d0 K0S vs bdt output; bdt; d_{0, V0}[cm]", 1000, -1, 1, 100, -1, 1);
-    fBDTHistoVsBachelorPt = new TH2D("fBDTHistoVsBachelorPt", "bachelor pT vs bdt output; bdt; p_{T, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
-    fBDTHistoVsCombinedProtonProb = new TH2D("fBDTHistoVsCombinedProtonProb", "combined proton probability vs bdt output; bdt; Bayesian PID_{bachelor}", 1000, -1, 1, 100, 0, 1);
-    fBDTHistoVsCtau = new TH2D("fBDTHistoVsCtau", "K0S ctau vs bdt output; bdt; c#tau_{V0}[cm]",  1000, -1, 1, 1000, 0, 100);
-    fBDTHistoVsCosPAK0S = new TH2D("fBDTHistoVsCosPAK0S", "V0 cosine pointing angle vs bdt output; bdt; CosPAK^{0}_{S}", 1000, -1, 1, 100, 0.9, 1);
-    fBDTHistoVsCosThetaStar = new TH2D("fBDTHistoVsCosThetaStar", "proton emission angle in pK0s pair rest frame vs bdt output; bdt; Cos#Theta*", 1000, -1, 1, 100, -1, 1);
-    fBDTHistoVsSignd0 = new TH2D("fBDTHistoVsSignd0", "signed d0 bachelor vs bdt output; bdt; signd_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
-    fBDTHistoVsnSigmaTPCpr = new TH2D("fBDTHistoVsnSigmaTPCpr", "nSigmaTPCpr vs bdt output; bdt; n_{#sigma}^{TPC}_{pr}", 1000, -1, 1, 1000, -10, 10);
-    fBDTHistoVsnSigmaTOFpr = new TH2D("fBDTHistoVsnSigmaTOFpr", "nSigmaTOFpr vs bdt output; bdt; n_{#sigma}^{TOF}_{pr}", 1000, -1, 1, 1000, -10, 10);
-    fBDTHistoVsnSigmaTPCpi = new TH2D("fBDTHistoVsnSigmaTPCpi", "nSigmaTPCpi vs bdt output; bdt; n_{#sigma}^{TPC}_{pi}", 1000, -1, 1, 1000, -10, 10);
-    fBDTHistoVsnSigmaTPCka = new TH2D("fBDTHistoVsnSigmaTPCka", "nSigmaTPCka vs bdt output; bdt; n_{#sigma}^{TPC}_{ka}", 1000, -1, 1, 1000, -10, 10);
-    fBDTHistoVsBachelorP = new TH2D("fBDTHistoVsBachelorP", "bachelor p vs bdt output; bdt; p_{bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
-    fBDTHistoVsBachelorTPCP = new TH2D("fBDTHistoVsBachelorTPCP", "bachelor TPC momentum vs bdt output; bdt; p_{TPC, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
+    if (!fFillTree) { 
+      fBDTHistoVsMassK0S = new TH2D("fBDTHistoVsMassK0S", "K0S inv mass vs bdt output; bdt; m_{inv}(#pi^{+}#pi^{#minus})[GeV/#it{c}^{2}]", 1000, -1, 1, 1000, 0.485, 0.51);
+      fBDTHistoVstImpParBach = new TH2D("fBDTHistoVstImpParBach", "d0 bachelor vs bdt output; bdt; d_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
+      fBDTHistoVstImpParV0 = new TH2D("fBDTHistoVstImpParV0", "d0 K0S vs bdt output; bdt; d_{0, V0}[cm]", 1000, -1, 1, 100, -1, 1);
+      fBDTHistoVsBachelorPt = new TH2D("fBDTHistoVsBachelorPt", "bachelor pT vs bdt output; bdt; p_{T, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
+      fBDTHistoVsCombinedProtonProb = new TH2D("fBDTHistoVsCombinedProtonProb", "combined proton probability vs bdt output; bdt; Bayesian PID_{bachelor}", 1000, -1, 1, 100, 0, 1);
+      fBDTHistoVsCtau = new TH2D("fBDTHistoVsCtau", "K0S ctau vs bdt output; bdt; c#tau_{V0}[cm]",  1000, -1, 1, 1000, 0, 100);
+      fBDTHistoVsCosPAK0S = new TH2D("fBDTHistoVsCosPAK0S", "V0 cosine pointing angle vs bdt output; bdt; CosPAK^{0}_{S}", 1000, -1, 1, 100, 0.9, 1);
+      fBDTHistoVsCosThetaStar = new TH2D("fBDTHistoVsCosThetaStar", "proton emission angle in pK0s pair rest frame vs bdt output; bdt; Cos#Theta*", 1000, -1, 1, 100, -1, 1);
+      fBDTHistoVsSignd0 = new TH2D("fBDTHistoVsSignd0", "signed d0 bachelor vs bdt output; bdt; signd_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
+      fBDTHistoVsnSigmaTPCpr = new TH2D("fBDTHistoVsnSigmaTPCpr", "nSigmaTPCpr vs bdt output; bdt; n_{#sigma}^{TPC}_{pr}", 1000, -1, 1, 1000, -10, 10);
+      fBDTHistoVsnSigmaTOFpr = new TH2D("fBDTHistoVsnSigmaTOFpr", "nSigmaTOFpr vs bdt output; bdt; n_{#sigma}^{TOF}_{pr}", 1000, -1, 1, 1000, -10, 10);
+      fBDTHistoVsnSigmaTPCpi = new TH2D("fBDTHistoVsnSigmaTPCpi", "nSigmaTPCpi vs bdt output; bdt; n_{#sigma}^{TPC}_{pi}", 1000, -1, 1, 1000, -10, 10);
+      fBDTHistoVsnSigmaTPCka = new TH2D("fBDTHistoVsnSigmaTPCka", "nSigmaTPCka vs bdt output; bdt; n_{#sigma}^{TPC}_{ka}", 1000, -1, 1, 1000, -10, 10);
+      fBDTHistoVsBachelorP = new TH2D("fBDTHistoVsBachelorP", "bachelor p vs bdt output; bdt; p_{bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
+      fBDTHistoVsBachelorTPCP = new TH2D("fBDTHistoVsBachelorTPCP", "bachelor TPC momentum vs bdt output; bdt; p_{TPC, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
+    }
     fHistoNsigmaTPC = new TH2D("fHistoNsigmaTPC", "; #it{p} (GeV/#it{c}); n_{#sigma}^{TPC} (proton hypothesis)", 500, 0, 5, 1000, -5, 5);
     fHistoNsigmaTOF = new TH2D("fHistoNsigmaTOF", "; #it{p} (GeV/#it{c}); n_{#sigma}^{TOF} (proton hypothesis)", 500, 0, 5, 1000, -5, 5);
   }
@@ -969,33 +981,37 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fOutput->Add(fHistoMCLcK0SpGenAcc);
   fOutput->Add(fHistoMCLcK0SpGenLimAcc);
   fOutput->Add(fHistoCentrality);
-  if (fMake3DHisto) {
-    fOutput->Add(fBDTHistoTMVA3d);
-  }
-  else {
-    for (int i = 0; i < fNReaders; ++i) {
-      fOutput->Add(fBDTHistoTMVA[i]);
+  if (!fFillTree) { 
+    if (fMake3DHisto) {
+      fOutput->Add(fBDTHistoTMVA3d);
+    }
+    else {
+      for (int i = 0; i < fNReaders; ++i) {
+	fOutput->Add(fBDTHistoTMVA[i]);
+      }
     }
   }
   fOutput->Add(fHistoV0Radius);
   if (fDebugHistograms) {    
     fOutput->Add(fHistoTracklets_1_cent);
     fOutput->Add(fHistoTracklets_All_cent);
-    fOutput->Add(fBDTHistoVsMassK0S);
-    fOutput->Add(fBDTHistoVstImpParBach);
-    fOutput->Add(fBDTHistoVstImpParV0);
-    fOutput->Add(fBDTHistoVsBachelorPt);
-    fOutput->Add(fBDTHistoVsCombinedProtonProb);
-    fOutput->Add(fBDTHistoVsCtau);
-    fOutput->Add(fBDTHistoVsCosPAK0S);
-    fOutput->Add(fBDTHistoVsCosThetaStar);
-    fOutput->Add(fBDTHistoVsSignd0);
-    fOutput->Add(fBDTHistoVsnSigmaTPCpr);
-    fOutput->Add(fBDTHistoVsnSigmaTOFpr);
-    fOutput->Add(fBDTHistoVsnSigmaTPCpi);
-    fOutput->Add(fBDTHistoVsnSigmaTPCka);
-    fOutput->Add(fBDTHistoVsBachelorP);
-    fOutput->Add(fBDTHistoVsBachelorTPCP);
+    if (!fFillTree) {
+      fOutput->Add(fBDTHistoVsMassK0S);
+      fOutput->Add(fBDTHistoVstImpParBach);
+      fOutput->Add(fBDTHistoVstImpParV0);
+      fOutput->Add(fBDTHistoVsBachelorPt);
+      fOutput->Add(fBDTHistoVsCombinedProtonProb);
+      fOutput->Add(fBDTHistoVsCtau);
+      fOutput->Add(fBDTHistoVsCosPAK0S);
+      fOutput->Add(fBDTHistoVsCosThetaStar);
+      fOutput->Add(fBDTHistoVsSignd0);
+      fOutput->Add(fBDTHistoVsnSigmaTPCpr);
+      fOutput->Add(fBDTHistoVsnSigmaTOFpr);
+      fOutput->Add(fBDTHistoVsnSigmaTPCpi);
+      fOutput->Add(fBDTHistoVsnSigmaTPCka);
+      fOutput->Add(fBDTHistoVsBachelorP);
+      fOutput->Add(fBDTHistoVsBachelorTPCP);
+    }
     fOutput->Add(fHistoNsigmaTPC);
     fOutput->Add(fHistoNsigmaTOF);
   }

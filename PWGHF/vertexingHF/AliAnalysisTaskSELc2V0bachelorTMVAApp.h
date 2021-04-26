@@ -596,8 +596,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   std::vector<int> fNVarsSpectators;           // number of spectator variables
   std::vector<TString> fNamesTMVAVarSpectators;      // vector of the names of the spectators variables
   std::vector<Float_t*> fVarsTMVASpectators;  // spectator variables to be used by TMVA
-  std::vector<TH2D*>fBDTHistoTMVA;                  //!<! BDT histo file for the case in which the xml file is used
-  TH3D *fBDTHistoTMVA3d;                  //!<! BDT histo file for the case in which the xml file is used; 3D to use also signd0 (for special studies)
+  TH2D** fBDTHistoTMVA;                  //! [fNReaders]
+                                        // BDT histo file for the case in which the xml file is used
+  TH3D* fBDTHistoTMVA3d;                  //!<! BDT histo file for the case in which the xml file is used; 3D to use also signd0 (for special studies)
   std::vector<TString> fXmlWeightsFile;              // file with TMVA weights
   Bool_t fUseXmlWeightsFileFromCVMFS;          // Boolean to acces Xml from CVMFS path
   
