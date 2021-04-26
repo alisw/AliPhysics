@@ -655,7 +655,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   AliKFParticle::SetField(bz);
   
   //Fill event wise information
-  fReducedEvent->ClearEvent();  
+  fReducedEvent->ClearEvent();
   FillEventInfo();
   if(fFillCaloClusterInfo) FillCaloClusters();
   if(fFillFMDInfo) FillFMDInfo(isAOD);
@@ -701,19 +701,19 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
       FillStatisticsHistograms(Bool_t(isPhysSel), isPhysSel, trdtrgtype, emcaltrgtype, 11., percentileEstimators, nCentEstimators);
     
     // check whether the event has to be written because it contains V0s
-    Bool_t v0FilterAccepted = kFALSE;
+    Bool_t hasV0s = kFALSE;
     if(fWriteEventsWithOnlyV0s) {
       for(Int_t itype=0;itype<4;++itype) {
         if(fNSelectedFullTracks[fTrackFilter.GetEntries()+itype]>0) {
-          v0FilterAccepted = kTRUE;
+          hasV0s = kTRUE;
           break;
         }
       }
     }
-    if(v0FilterAccepted)
+    if(fWriteEventsWithOnlyV0s && hasV0s)
       FillStatisticsHistograms(Bool_t(isPhysSel), isPhysSel, trdtrgtype, emcaltrgtype, 13., percentileEstimators, nCentEstimators);
     
-    if(trackFilterAccepted || unbiasedEvent || v0FilterAccepted) {
+    if(trackFilterAccepted || unbiasedEvent || (fWriteEventsWithOnlyV0s && hasV0s)) {
       fTree->Fill();
       FillTrackStatisticsHistogram();
     }

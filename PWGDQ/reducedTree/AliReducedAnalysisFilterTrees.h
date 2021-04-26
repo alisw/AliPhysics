@@ -77,6 +77,9 @@ public:
      if(fLegCandidatesMCcuts.GetEntries()>=32) return;
      fLegCandidatesMCcuts.Add(cut);
   }*/
+ // NOTE: The MC truth selection works with just one MC truth cut. It is not implemented properly for asymmetric decay channels,
+ //         just one MC selection is applied to both legs.
+ //       In the case that an MC truth selection is applied, then only built pairs which fulfill the MC truth will be written in the filtered trees.
  void SetLegCandidateMCcut(AliReducedInfoCut* cut) {
      //if(fLegCandidatesMCcuts.GetEntries()>=32) return;
      fLegCandidatesMCcuts  = cut;
@@ -159,7 +162,7 @@ protected:
    Bool_t IsCandidateLegPrefilterSelected(AliReducedBaseTrack* track, Float_t* values=0x0, Int_t whichLeg=1);
    Bool_t IsCandidateLegPairPrefilterSelected(Float_t* values, Int_t whichLeg=1);
    void BuildCandidatePairs();
-   void RunCandidateLegsSelection();
+   void RunCandidateLegsSelection(Int_t arrayOption /*=1*/);
    void RunCandidateLegsPrefilter(Int_t leg);
    void RunSameEventPairing();
    void SetupPair(AliReducedPairInfo* pair, Float_t* values);
