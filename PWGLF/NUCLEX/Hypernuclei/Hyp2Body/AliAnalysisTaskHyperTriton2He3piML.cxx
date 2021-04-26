@@ -785,7 +785,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     }
   }
 
-  if (fRHyperTriton.size() != 0 || fRHyperTritonFull.size() != 0 || fStoreAllEvents)
+  if (fRHyperTriton.size() != 0 || fRHyperTritonFull.size() != 0 || fStoreAllEvents || fMC)
     fTreeV0->Fill();
 
   PostData(1, fListHist);
