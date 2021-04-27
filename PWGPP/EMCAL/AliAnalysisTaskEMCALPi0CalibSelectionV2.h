@@ -320,29 +320,29 @@ protected:
   // tree
   TTree*    fCellTree;                                                             //!<! 
 
-  Int_t         fVBuffer_NCells;
+  Int_t      fVBuffer_NCells;
 
-  Float_t       fBuffer_EventWeight;
-  Float_t       fBuffer_Event_VertexZ;
+  Float_t       fBuffer_EventWeight;              
+  Short_t       fBuffer_Event_VertexZ;            // Float_t * 100
   Float_t       fBuffer_Event_Multiplicity;
   Float_t       fBuffer_Event_V0Centrality;
 
-  Int_t*        fVBuffer_Cell_ID;
-  Float_t*      fVBuffer_Cell_E;
-  Float_t*      fVBuffer_Cell_t;
-  Bool_t*       fVBuffer_Cell_gain;
-  Int_t*        fVBuffer_Cell_MCParticleID;
-  Float_t*      fVBuffer_Cell_MCParticleFracE;
+  UShort_t*     fVBuffer_Cell_ID;                 
+  UShort_t*     fVBuffer_Cell_E;                  // Float_t * 1000
+  Short_t*      fVBuffer_Cell_t;                  // Float_t * 1e9
+  Bool_t*       fVBuffer_Cell_gain;               
+  Short_t*      fVBuffer_Cell_MCParticleID;       
+  UShort_t*     fVBuffer_Cell_MCParticleFracE;    // Float_t * 1000
 
-  Int_t         fBuffer_NClusters;
-  Float_t*      fVBuffer_Cluster_E;
-  Float_t*      fVBuffer_Cluster_Eta;
-  Float_t*      fVBuffer_Cluster_Phi;
-  Float_t*      fVBuffer_Cluster_t;
-  Int_t*        fVBuffer_Cluster_NCells;
-  Int_t*        fVBuffer_Cluster_M02;
-  Int_t*        fVBuffer_Cluster_LeadCellId;
-  Int_t*        fVBuffer_TrueCluster_MCId;
+  UShort_t      fBuffer_NClusters;
+  UShort_t*     fVBuffer_Cluster_E;               // Float_t * 1000
+  Short_t*      fVBuffer_Cluster_Eta;             // Float_t * 1000
+  UShort_t*     fVBuffer_Cluster_Phi;             // Float_t * 1000
+  Short_t*      fVBuffer_Cluster_t;
+  UShort_t*     fVBuffer_Cluster_NCells;
+  UShort_t*     fVBuffer_Cluster_M02;             // Float_t * 100
+  UShort_t*     fVBuffer_Cluster_LeadCellId;
+  Short_t*      fVBuffer_TrueCluster_MCId;
 
   /// Copy constructor not implemented.
   // AliAnalysisTaskEMCALPi0CalibSelectionV2(           const AliAnalysisTaskEMCALPi0CalibSelectionV2&) ;
