@@ -369,7 +369,7 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
   }
 
   //normalizing signal hist
-  signal->Scale(1.0/signal->Integral());
+ // signal->Scale(1.0/signal->Integral());
   signal->Divide(background);
 
   //calculating the an coefficients  
