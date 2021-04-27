@@ -110,7 +110,7 @@ public:
 		FLUC_KINEONLYEXT = 0x8,
 		FLUC_CENT_FLATTENING = 0x100,
 		FLUC_CUT_OUTLIERS = 0x200,
-		FLUC_ALICE_IPINFO = 0x400,
+		FLUC_ALICE_IPINFO = 0x400
 		//FLUC_PHI_CORRECTION  = 0x800,
 	};
 	void AddFlags(UInt_t nflags){flags |= nflags;}
