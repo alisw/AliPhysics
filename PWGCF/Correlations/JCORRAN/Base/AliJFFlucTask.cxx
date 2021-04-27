@@ -398,7 +398,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 				}else continue;
 				
 				// Removal of bad area, now only with eta symmetric
-				Bool_t isBadArea = TMath::Abs(track->Eta()) > 0.7;
+				Bool_t isBadArea = TMath::Abs(track->Eta()) > 0.6;
 				if(fremovebadarea) {
 					if(isBadArea) continue;
 				} 
