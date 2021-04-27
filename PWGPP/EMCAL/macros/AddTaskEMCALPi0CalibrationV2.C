@@ -31,6 +31,8 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// \param trigger   : TString, event that triggered must contain this string. Leave for backward compatibility with old wagons
 /// \param recalE    : Bool, recalibrate EMCal energy all other settings for clusterization & EMCal calibration are handled by correction frame work and correspodning yaml file
 /// \param simu      : Int, 0: data, 1: MC, 2: JJ MC
+/// \param fSaveCells: Bool, save the tree output for cells
+/// \param fSaveClusters : Bool, save the tree output for clusters
 /// \param minClusterEnergy : Double, minimum cluster energy used for pairing (GeV)
 /// \param maxClusterEnergy : Double, maximum cluster energy used for pairing (GeV)
 /// \param minNCells : Int, minimum number of cells for clusters
@@ -102,6 +104,7 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   
   pi0calib->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   pi0calib->SwitchOnLoadOwnGeometryMatrices();
+  // pi0calib->SetOADBFilePath("/home/ewa/alice/AliPhysics/OADB/OADB/EMCAL");
 
   if( simu == 1 ) {
     pi0calib->SetIsMC();
@@ -139,14 +142,14 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   if( wagon.Length()==0 ){
     coutput1 = mgr->CreateContainer(Form("Pi0Calibration_Trig%s",trigger.Data()), TList::Class(), 
                                    AliAnalysisManager::kOutputContainer,outputFile.Data());
-    coutput2 = mgr->CreateContainer(Form("Pi0Calibration_Trig%s_tree",trigger.Data()), TTree::Class(), 
+    if( fSaveCells || fSaveClusters) coutput2 = mgr->CreateContainer(Form("Pi0Calibration_Trig%s_tree",trigger.Data()), TTree::Class(), 
                                    AliAnalysisManager::kOutputContainer,Form("%s_tree",outputFile.Data()));
   } else {
     TString containerName = "Pi0Calibration";
     coutput1 = mgr->CreateContainer(wagon, TList::Class(), 
                                    AliAnalysisManager::kOutputContainer,Form("%s:%s",outputFile.Data(),containerName.Data()));
   
-    coutput2 = mgr->CreateContainer(Form("%s_tree",trigger.Data()), TTree::Class(), 
+    if( fSaveCells || fSaveClusters ) coutput2 = mgr->CreateContainer(Form("%s_tree",trigger.Data()), TTree::Class(), 
                                    AliAnalysisManager::kOutputContainer,Form("%s:%s_tree",outputFile.Data(),containerName.Data()));
   }  
   
@@ -154,7 +157,7 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
                                                              
   mgr->ConnectInput  (pi0calib, 0, cinput1);
   mgr->ConnectOutput (pi0calib, 1, coutput1);
-  mgr->ConnectOutput( pi0calib, 2, coutput2);
+  if(fSaveCells || fSaveClusters) mgr->ConnectOutput( pi0calib, 2, coutput2);
 
   return pi0calib;
 }
