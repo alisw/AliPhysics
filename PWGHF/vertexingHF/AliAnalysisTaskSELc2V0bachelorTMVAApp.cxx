@@ -627,6 +627,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNReaders(Int_t n) {
 void AliAnalysisTaskSELc2V0bachelorTMVAApp::ResetTMVAConfig() {
 
   // to reset the vectors for TMVA
+  for (int iR = 0; iR < fNReaders; ++iR) {
+    delete fVarsTMVA[iR];
+    delete fVarsTMVASpectators[iR];
+  }
   fNReaders = 0;
   fReader.clear();
   fNVars.clear();
@@ -654,7 +658,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNVars(std::vector<int> nvars) {
   fNVars = nvars;
   for (int iR = 0; iR < fNReaders; ++iR) {
     AliInfo(Form("Reader %d has %d variables", iR, fNVars[iR]));
-    fVarsTMVA[iR] = new Float_t[fNVars[iR]];
     fNamesTMVAVarVec[iR].resize(fNVars[iR]);
   }
   return; 
@@ -701,10 +704,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::SetNVarsSpectators(std::vector<int> 
     }
   }
   fNVarsSpectators = nvars;
-  for (int iR = 0; iR < fNReaders; ++iR) {
-    AliInfo(Form("Reader %d has %d spectators", iR, fNVarsSpectators[iR]));
-    fVarsTMVASpectators[iR] = new Float_t[fNVarsSpectators[iR]];
-  }
   return; 
 
 }
@@ -929,7 +928,22 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
 
   fHistoV0Radius = new TH2D("fHistoV0Radius", "V0 Radius; radius; bkg/signal", 900, 0., 300., 2, -0.5, 1.5);
   
-  if(!fFillTree) {   
+  if(!fFillTree) {
+
+    for (int iR = 0; iR < fNReaders; ++iR) {
+      AliInfo(Form("Reader %d has %d variables", iR, fNVars[iR]));
+      Printf("************************** Reader %d has %d variables", iR, fNVars[iR]);
+      fVarsTMVA[iR] = new Float_t[fNVars[iR]];
+      for (int iVar = 0; iVar < fNVars[iR]; ++iVar) {
+	fVarsTMVA[iR][iVar] = -999999999; // dummy initialization
+      }
+      AliInfo(Form("Reader %d has %d spectators", iR, fNVarsSpectators[iR]));
+      fVarsTMVASpectators[iR] = new Float_t[fNVarsSpectators[iR]];
+      for (int iS = 0; iS < fNVarsSpectators[iR]; ++iS) {
+	fVarsTMVASpectators[iR][iS] = -999999999; // dummy initialization
+      }
+    }
+    
     if (fMake3DHisto) {
       fBDTHistoTMVA3d = new TH3D("fBDTHistoTMVA3d", "Lc inv mass vs bdt output vs signd0; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 200, -1, 1, 500, 2.05, 2.55, 200, -1, 1);
     }
@@ -1873,10 +1887,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
   */
 
   //Downscaling for Pb-Pb data tree at low pt
+
   if(ffraction > -1 && fFillTree && !fUseMCInfo && part->Pt() < fPtLimForDownscaling && fCurrentEvent%ffraction != 0) {
     return;
   }
-  
+
   Double_t invmassLc = part->InvMassLctoK0sP();
 
   AliAODv0 * v0part = part->Getv0();
@@ -2125,7 +2140,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     cutsAnal->GetPidHF()->GetnSigmaTOF(bachelor, (AliPID::kKaon), nSigmaTOFka);
     cutsAnal->GetPidHF()->GetnSigmaTOF(bachelor, (AliPID::kProton), nSigmaTOFpr);    
   }
-  
+
   Double_t ptLcMC = -1;
   Double_t weightPythia = -1, weight5LHC13d3 = -1, weight5LHC13d3Lc = -1; 
 
@@ -2245,7 +2260,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     if(innerpro<0.) signd0 = -1.;
     
     signd0 = signd0*TMath::Abs(d0z0bach[0]);
-    
+
     if (fUseMCInfo) {   //  save full tree if on MC
       fCandidateVariables[0] = invmassLc;
       //fCandidateVariables[1] = invmassLc2Lpi;
@@ -2348,7 +2363,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[28] = v0part->PtArmV0();
       fCandidateVariables[29] = radiusV0;
     }
-    
+
     // fill multiplicity histograms for events with a candidate   
     //fHistNtrUnCorrEvWithCand->Fill(fNTracklets_1, weightNch);
     //fHistNtrCorrEvWithCand->Fill(countTreta1corr, weightNch);
@@ -2370,12 +2385,12 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       if(fFillTree) fVariablesTreeSgn->Fill();
     }
     
-    if(!fFillTree) {   
+    if(!fFillTree) {
       for (int iR = 0; iR < fNReaders; ++iR) {
 	int foundVars = 0; 
 	for (int ivar = 0; ivar < fNVars[iR]; ++ivar) {
 	  if (fNamesTMVAVarVec[iR][ivar] == "DecayLengthK0S*0.497/v0P") {
-	    //	  std::cout << "Adding " << fNamesTMVAVarVec[ivar] << std::endl;
+	    //std::cout << "Adding " << fNamesTMVAVarVec[iR][ivar] << std::endl;
 	    fVarsTMVA[iR][ivar] = (part->DecayLengthV0())*0.497/(v0part->P());    // note that fNamesTMVAVarVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
 	    ++foundVars;
 	    continue;
@@ -2403,7 +2418,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 	  }
 	  for (int iname = 0; iname < fNTreeVars; ++iname) {
 	    if (fNamesTMVAVarVec[iR][ivar] == fCandidateVariableNames[iname]) {
-	      //	    std::cout << "Adding " << fNamesTMVAVarVec[ivar] << std::endl;
+	      //std::cout << "Adding " << fNamesTMVAVarVec[iR][ivar] << std::endl;
+	      //std::cout << "Value will be " << fCandidateVariables[iname] << std::endl;
+	      //std::cout << "fVarsTMVA.size() = " << fVarsTMVA.size() << std::endl;
 	      fVarsTMVA[iR][ivar] = fCandidateVariables[iname];    // note that fNamesTMVAVarVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
 	      ++foundVars;
 	      break;
@@ -2415,6 +2432,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 	}
 	Double_t tmva = -1;
 	tmva = fReader[iR]->EvaluateMVA("BDT method");
+	//Printf("tmva = %f", tmva);
 	if (fMake3DHisto) {
 	  if (iR == 0) { // the 3D histogram gets filled only with the first model - we do not foresee to run with more models if we want the 3D histogram
 	    fBDTHistoTMVA3d->Fill(tmva, invmassLc, signd0);
