@@ -1422,8 +1422,14 @@ TLorentzVector AliMCAnalysisUtils::GetFirstMotherWithPDGAndPrimary
       fGMotherMom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->E());
       gparentlabel  = grandmomLabel ;
       
-      grandmomP     = mcevent->GetTrack(grandmomLabel);
-      grandmomLabel = grandmomP->GetMother();
+      if ( grandmomLabel >= 0)
+      {
+        grandmomP = mcevent->GetTrack(grandmomLabel);
+        if ( grandmomP )
+          grandmomLabel = grandmomP->GetMother();
+        else AliInfo(Form("Grandmother not found for label %d !",grandmomLabel));
+      }
+
       break;
     }
   }
