@@ -5408,7 +5408,10 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         // EMCal L1 G2 trigger
         else if((fSpecialTrigger == 6) && (fSpecialSubTriggerName.CompareTo("CPHI7")==0 )) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("PHOSL0");
         // return true if mimicking for fSpecialTrigger is not defined
-        else return kTRUE;
+        else {
+          AliError(Form("Selected a trigger (%s) that is not available for mimicking. Please add the trigger!", fSpecialSubTriggerName.Data()));
+          return kFALSE;
+        }
 
         if(!fHistoTriggThresh){
           AliFatal(Form("No histogram for trigger threshold found for run number: %d", runnumber));
@@ -5671,6 +5674,10 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                   if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
                   if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                  if(isSelected != 0 && fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!(triggercont->IsEventSelected("EG1") || triggercont->IsEventSelected("DG1"))) isSelected = 0;
+                  }
                 } else if ((fSpecialSubTriggerName.CompareTo("8EG1") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("8DG1") == 0)
                     || (fSpecialSubTriggerName.CompareTo("7EG1_EGA_sw") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG1_EGA_sw") == 0)
                   ){
@@ -5678,16 +5685,28 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                   if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
                   if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
+                  if(isSelected != 0 && fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!(triggercont->IsEventSelected("EG1") || triggercont->IsEventSelected("DG1"))) isSelected = 0;
+                  }
                 } else if ((fSpecialSubTriggerName.CompareTo("7EG2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG2") == 0)
                     || (fSpecialSubTriggerName.CompareTo("7EG2_EGA_sw") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG2_EGA_sw") == 0)
                   ){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if(isSelected != 0 && fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!(triggercont->IsEventSelected("EG2") || triggercont->IsEventSelected("DG2"))) isSelected = 0;
+                  }
                 } else if ((fSpecialSubTriggerName.CompareTo("8EG2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("8DG2") == 0)
                     || (fSpecialSubTriggerName.CompareTo("7EG2_EGA_sw") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG2_EGA_sw") == 0)
                   ){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if(isSelected != 0 && fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!(triggercont->IsEventSelected("EG2") || triggercont->IsEventSelected("DG2"))) isSelected = 0;
+                  }
                 }
               } else {
                 // separate rejection for EMC and DMC triggers
@@ -5695,30 +5714,62 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                   if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+                  if(isSelected != 0 && fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("EG1")) isSelected = 0;
+                  }
                 } else if (fSpecialSubTriggerName.CompareTo("8EG1") == 0){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                   if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
+                  if(isSelected != 0 && fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("EG1")) isSelected = 0;
+                  }
                 } else if (fSpecialSubTriggerName.CompareTo("7EG2") == 0){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if(isSelected != 0 && fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("EG2")) isSelected = 0;
+                  }
                 } else if (fSpecialSubTriggerName.CompareTo("8EG2") == 0){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if(isSelected != 0 && fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("EG2")) isSelected = 0;
+                  }
                 } else if (fSpecialSubTriggerName.CompareTo("7DG1") == 0){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                   if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                  if(isSelected != 0 && fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("DG1")) isSelected = 0;
+                  }
                 } else if (fSpecialSubTriggerName.CompareTo("8DG1") == 0){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                   if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
+                  if(isSelected != 0 && fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("DG1")) isSelected = 0;
+                  }
                 } else if (fSpecialSubTriggerName.CompareTo("7DG2") == 0){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if(isSelected != 0 && fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("DG2")) isSelected = 0;
+                  }
                 } else if (fSpecialSubTriggerName.CompareTo("8DG2") == 0){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                  if(isSelected != 0 && fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("DG2")) isSelected = 0;
+                  }
                 }
               }
             }
@@ -5960,7 +6011,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
               }
             }
           }
-
+          
         } else if (isMC){
           if (fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
             // isSelected = 0;
@@ -5971,6 +6022,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
             // }
           }
         }
+
         //if for specific centrality trigger selection
         if(fSpecialSubTrigger == 1){
           if(fSpecialSubTriggerName.Contains("|")  && GetCentrality(event) <= 10.){
