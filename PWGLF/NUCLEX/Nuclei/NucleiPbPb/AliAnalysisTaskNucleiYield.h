@@ -60,6 +60,7 @@ struct SLightNucleus {
   };
   float pt;
   float eta;
+  float absCt;
   int   pdg;
   int   flag;
   char  centrality;
@@ -220,6 +221,8 @@ private:
   float                 fCharge;                ///<  Charge of the particle of interest (absolute value)
   Bool_t                fIsMC;                  ///<  Switch between MC and data
   Bool_t                fFillOnlyEventHistos;   ///<  Set treu to fill only event related histograms
+
+  Double_t              fAbsorptionCt;          ///<  Absorption ct
 
   AliPIDResponse       *fPID;                   //!<! PID response class
   ULong64_t             fTriggerMask;           //!<  Trigger Mask of the Event
