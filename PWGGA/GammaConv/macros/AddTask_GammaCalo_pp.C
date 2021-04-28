@@ -3236,14 +3236,15 @@ void AddTask_GammaCalo_pp(
     //*************************************************************************************************
     // NCell efficiency applied on MC
   } else if (trainConfig == 2500) {
-    cuts.AddCutCalo("00010113","411792109fe3h220000","0r631031000000d0"); // INT7 NL 12 + TB
-    cuts.AddCutCalo("00010113","411792109fe3i220000","0r631031000000d0"); // INT7 NL 12 + TB
-    cuts.AddCutCalo("00010113","411792109fe3l220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411792109fe3o220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: TB for all clus
+    cuts.AddCutCalo("00010113","411792109fe3p220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: P2 for all clus
+    cuts.AddCutCalo("00010113","411792109fe3q220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: TB for gamma clus
+    cuts.AddCutCalo("00010113","411792109fe3r220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: P2 for gamma clus
   } else if (trainConfig == 2501) { // new calculation
-    cuts.AddCutCalo("00010113","411792109fe3m220000","0r631031000000d0"); // INT7 NL 12 + TB
-    cuts.AddCutCalo("00010113","411792109fe3n220000","0r631031000000d0"); // INT7 NL 12 + TB
-    cuts.AddCutCalo("00010113","411792109fe3o220000","0r631031000000d0"); // INT7 NL 12 + TB
-    cuts.AddCutCalo("00010113","411792109fe3p220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411792109fe3u220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: PCMEDC pi0 tagging for all clus
+    cuts.AddCutCalo("00010113","411792109fe3v220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: PCMEDC pi0 tagging for gamma clus
+    cuts.AddCutCalo("00010113","411792109fe3w220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: PCMEDC pi0 tagging for all clus, no NL fine tuning
+    cuts.AddCutCalo("00010113","411792109fe3x220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: EDC pi0 tagging for all clus
   } else if (trainConfig == 2502) { // new calculation TB variations
     cuts.AddCutCalo("00010113","411792109fe3q220000","0r631031000000d0"); // INT7 NL 12 + TB
     cuts.AddCutCalo("00010113","411792109fe3r220000","0r631031000000d0"); // INT7 NL 12 + TB

@@ -2402,44 +2402,17 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
             failed = kTRUE;
           }
         }
-      } else if (fUseNCells == 5){
-        if(isMC){
-          if(  (cluster->GetNCells() < fMinNCells)){
-            if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-            if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
-            Int_t tmpLabel = cluster->GetLabelAt(0);
-            AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
-            if(particle->GetPdgCode() == 22){ // only evalute ncell effi for gamma clusters
-              // evaluate effi function and compare to random number between 1 and 2
-              // if function value greater than random number, reject cluster. otherwise let it pass
-              // function is 1 for E>4 GeV -> will apply standard NCell cut then
-              fRandom.SetSeed(0);
-              if( (fRandom.Uniform(0,1) > fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) ){
-                failed = kTRUE;
-              } else {
-                passedNCellSpecial = kTRUE;
-              }
-            } else {
-              failed = kTRUE;
-            }
-          }
-        } else {
-          if (cluster->GetNCells() < fMinNCells)
-            failed = kTRUE;
-        }
-      } else if ( fUseNCells == 6 ){
-        if (cluster->GetNCells() < fMinNCells || cluster->GetNCells() > fMaxNCells )
-          failed = kTRUE;
-      } else if (fUseNCells == 7){
+      } else if (fUseNCells == 5 || fUseNCells == 7){
         if(isMC){
           fRandom.SetSeed(0);
           if(  (cluster->GetNCells() < fMinNCells)){
+
             if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
             if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
             Int_t tmpLabel = cluster->GetLabelAt(0);
             AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
 
-            if(particle->GetPdgCode() == 22){ // only evalute ncell effi for gamma clusters
+            if(particle->GetPdgCode() == 22 || fUseNCells == 5){ // only evalute ncell effi for gamma clusters
               Bool_t isCellIso = kTRUE;
               AliVCaloCells* cells    = NULL;
               if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
@@ -2462,6 +2435,9 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           if (cluster->GetNCells() < fMinNCells)
             failed = kTRUE;
         }
+      } else if ( fUseNCells == 6 ){
+        if (cluster->GetNCells() < fMinNCells || cluster->GetNCells() > fMaxNCells )
+          failed = kTRUE;
       } else if (fUseNCells == 8){
         if(isMC){
           if( cluster->GetNCells() == 1){
@@ -2568,52 +2544,20 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         return kFALSE;
       }
     }
-  // special case for EMCal MC (allow passing of NCell<2 clusters depending on cut efficiency) only reject photon clusters
-  } else if (fUseNCells == 5){
+    // special case for EMCal MC (allow passing of NCell<2 clusters depending on cut efficiency) for case 7: only reject photon clusters
+  } else if (fUseNCells == 5 || fUseNCells == 7){
     if(isMC>0){
       if( cluster->GetNCells() < fMinNCells ){
-        // check if cluster is gamma cluster
-        if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-        if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
-        Int_t tmpLabel = cluster->GetLabelAt(0);
-        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
-        if(particle->GetPdgCode() != 22){ // if no gamma cluster return
-          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
-          return kFALSE;
-        }
-        fRandom.SetSeed(0);
-        // evaluate effi function and compare to random number between 1 and 2
-        // if function value greater than random number, reject cluster. otherwise let it pass
-        if((fRandom.Uniform(0,1) < fFuncNCellCutEfficiencyEMCal->Eval(cluster->E()) ) ){
-          passedSpecialNCell = kTRUE;
-        } else {
-          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
-          return kFALSE;
-        }
-      }
-    } else {
-      if (cluster->GetNCells() < fMinNCells){
-        if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
-        return kFALSE;
-      }
-    }
-  } else if ( fUseNCells == 6 ){
-    if (cluster->GetNCells() < fMinNCells || cluster->GetNCells() > fMaxNCells ){
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
-      return kFALSE;
-    }
-  // special case for EMCal MC (allow passing of NCell<2 clusters depending on cut efficiency) only reject photon clusters
-  } else if (fUseNCells == 7){
-    if(isMC>0){
-      if( cluster->GetNCells() < fMinNCells ){
-        // check if cluster is gamma cluster
-        if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-        if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
-        Int_t tmpLabel = cluster->GetLabelAt(0);
-        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
-        if(particle->GetPdgCode() != 22){ // if no gamma cluster return
-          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
-          return kFALSE;
+        if(fUseNCells == 7){
+          // check if cluster is gamma cluster
+          if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+          if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
+          Int_t tmpLabel = cluster->GetLabelAt(0);
+          AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+          if(particle->GetPdgCode() != 22){ // if no gamma cluster return
+            if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+            return kFALSE;
+          }
         }
         // evaluate if cluster is isolated
         Bool_t isCellIso = kTRUE;
@@ -2637,6 +2581,11 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
         return kFALSE;
       }
+    }
+  } else if ( fUseNCells == 6 ){
+    if (cluster->GetNCells() < fMinNCells || cluster->GetNCells() > fMaxNCells ){
+      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+      return kFALSE;
     }
   } else if (fUseNCells == 8){ // correction from correction framework
     if(isMC){
@@ -6294,33 +6243,33 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus(0)");
     fFuncNCellCutEfficiencyEMCal->SetParameters(2.71596e-01, 1.80393, 6.50026e-01);
     break;
-    // From TestBeam applied on gamma cluster
+    // From TestBeam applied on all clusters. Only on "isolated" clusters
   case 24: // o
-    if (!fUseNCells) fUseNCells=5;
+    if (fUseNCells!=5) fUseNCells=5;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
     fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118);
     break;
-    // From ALICE applied on gamma cluster
+    // From ALICE applied on all cluster. Only on "isolated" clusters
   case 25: // p
-    if (!fUseNCells) fUseNCells=5;
+    if (fUseNCells=5) fUseNCells=5;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus(0)");
     fFuncNCellCutEfficiencyEMCal->SetParameters(2.71596e-01, 1.80393, 6.50026e-01);
     break;
-    // From TestBeam applied on gamma cluster variation 1
+    // From TestBeam applied on gamma clusters. Only on "isolated" clusters
   case 26: // q
-    if (!fUseNCells) fUseNCells=7;
+    if (fUseNCells!=7) fUseNCells=7;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.210779, -0.0703785);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118);
     break;
-    // From TestBeam applied on gamma cluster variation 2
+    // From ALICE applied on gamma cluster. Only on "isolated" clusters
   case 27: // r
-    if (!fUseNCells) fUseNCells=7;
+    if (fUseNCells!=7) fUseNCells=7;
     fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.207472, -0.0871395);
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus(0)");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(2.71596e-01, 1.80393, 6.50026e-01);
     break;
     // take only 1 cell clusters
   case 28: // s
@@ -6334,33 +6283,33 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fMinNCells=2;
     fMaxNCells=2;
     break;
-    // From TestBeam applied on "isolated" gamma cluster
+    // From pi0 tagging with PCM-EDC with TBNL+scale+FT applied on all clusters
   case 30: // u
-    if (fUseNCells!=7) fUseNCells=7;
+    fUseNCells=5;
     fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118);
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0377925, 0.160758, -0.00357992);
     break;
-    // From ALICE applied on "isolated" gamma cluster
+    // From pi0 tagging with PCM-EDC with TBNL+scale+FT applied on only gamma clusters
   case 31: // v
-    if (fUseNCells!=7) fUseNCells=7;
+    fUseNCells=7;
     fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus(0)");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(2.71596e-01, 1.80393, 6.50026e-01);
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0377925, 0.160758, -0.00357992);
     break;
-    // From TestBeam applied on all cluster var. 1
+    // From pi0 tagging with PCM-EDC with TBNL+scale applied on all clusters
   case 32: // w
-    if (!fUseNCells) fUseNCells=3;
+    fUseNCells=5;
     fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.210779, -0.0703785);
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0387877, 0.104607, 0.0793534);
     break;
-    // From TestBeam applied on all cluster var. 2
+    // From pi0 tagging with EDC with TBNL+scale+FT on all clusters
   case 33: // x
-    if (!fUseNCells) fUseNCells=3;
+    fUseNCells=5;
     fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.207472, -0.0871395);
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0124651, -0.0961889, 0.16844);
     break;
     // Correction applied in Correction Framework
     // can be accessed by the chi2() variable of the cluster
