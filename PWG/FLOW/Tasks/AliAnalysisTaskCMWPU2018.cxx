@@ -1546,6 +1546,8 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
 	  
 	  fHistv2AchChrgNeg[0][iCent]->Fill(fAchrgNet,   (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgt);
 
+	  fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+		    
 	  if(trkEta > fEtaGapPos){
 	    sumQ2xChrgNegEtaPos += trkWgt*uqRe;
 	    sumQ2yChrgNegEtaPos += trkWgt*uqIm;
@@ -1956,8 +1958,8 @@ Bool_t AliAnalysisTaskCMWPU2018::CheckEventIsPileUp2018(AliAODEvent *faod) {
   if (faod->IsIncompleteDAQ())
     BisPileup=kTRUE;
         
-  if (nclsDif > 200000)//can be increased to 200000
-    BisPileup=kTRUE;
+  //if (nclsDif > 200000)//can be increased to 200000
+  // BisPileup=kTRUE;
 
 
 
