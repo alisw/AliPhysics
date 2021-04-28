@@ -471,6 +471,8 @@ AliAnalysisTaskAO2Dconverter *AliAnalysisTaskAO2Dconverter::AddTask(TString suff
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   // same for the output
   mgr->ConnectOutput(task, 1, mgr->CreateContainer("QAlist", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  // we need to register an unconnected output container to register the output file in the lego system
+  mgr->CreateContainer("AO2D", TTree::Class(), AliAnalysisManager::kOutputContainer, "AO2D.root");
   // for (Int_t i = 0; i < kTrees; i++)
   //   mgr->ConnectOutput(task, 2 + i, mgr->CreateContainer(TreeName[i], TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   // in the end, this macro returns a pointer to your task. this will be convenient later on
