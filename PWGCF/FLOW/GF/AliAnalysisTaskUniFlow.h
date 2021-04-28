@@ -173,7 +173,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       //correlations related setters
       void            SetDoCorrelationsUsingGF(Bool_t use = kTRUE) { fCorrUsingGF = use;}
       void            SetDoCorrelations(Bool_t use = kTRUE) { fCorrFill = use;}
-      void            SetDoMixedJustForGF(Bool_t use = kTRUE) { fMixedOnlyForGF = use;}
+      void            SetDoMixedJustForGF(Bool_t use = kTRUE) { fMixedOnlyForGF = use; fCorrFill = use; fFillMixed = use; }
       void            SetDEta(Int_t nBins, Double_t min, Double_t max) { fCorrDEtaBinNum = nBins; fCorrdEtaMin = min; fCorrdEtaMax = max; }
       void            SetDPhi(Int_t nBins, Double_t min, Double_t max) { fCorrDPhiBinNum = nBins; fCorrdPhiMin = min; fCorrdPhiMax = max; }
       void            SetDisablePtBinnedPool(Bool_t dis = kFALSE) {fUsePtBinnedEventPool = dis; }
@@ -262,8 +262,9 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       //dihadron corr related method
       void                    ResetFlowVectorQdih(TComplex (&array)[fFlowBinNumberEtaSlices][6][3], Int_t harm); // set values to TComplex(0,0,0) for given array
       void                    FillFlowQVectorsForDih(Double_t dWeight, Double_t dPhi, Double_t dEta, Int_t harm); // fill flow vector Q with RFPs for dihadron correlation study
+      void                    FillFlowQVectorsMEForDih(Double_t dWeight, Double_t dPhi, Double_t dEta, Int_t harm); // fill flow vector Q with RFPs for dihadron correlation study (mixed events)
       void                    CalculateDihCorr(const AliUniFlowCorrTask* task) const;
-      void                    CalculateDihCorrMixed(const AliUniFlowCorrTask* task) const;
+      void                    CalculateDihCorrMixed(const AliUniFlowCorrTask* task);
 
       TComplex                Q(Int_t n, Int_t p) const;
       TComplex                QGapPos(Int_t n, Int_t p) const;
@@ -364,8 +365,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TComplex                fFlowVecSneg[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
       TComplex                fFlowVecSmid[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
 
-      TComplex                fFlowVecQ[fFlowBinNumberEtaSlices][6][3]; // flow vector array for flow calculation in very narrow delta eta slices (for the correlation study)
-      TComplex                fFlowVecQMixed[fFlowBinNumberEtaSlices][6][3]; // flow vector array for flow calculation in very narrow delta eta slices (for the correlation study)
+      TComplex                fFlowVecQSE[fFlowBinNumberEtaSlices][6][3]; // flow vector array for flow calculation in very narrow delta eta slices (for the correlation study)
+      TComplex                fFlowVecQME[fFlowBinNumberEtaSlices][6][3]; // flow vector array for flow calculation in very narrow delta eta slices (for the correlation study)
 
 
       std::vector<AliUniFlowCorrTask*>  fVecCorrTask; //
@@ -408,7 +409,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Bool_t                  fCorrUsingGF; // [kFALSE] fill correlations flag (but using GF and Q-cumulants)
       Bool_t                  fCorrFill; // [kFALSE] fill correlations flag
       Bool_t		              fFillMixed;		// [kTRUE] enable event mixing
-      Bool_t		              fMixedOnlyForGF;		// [kFALSE] enable event mixing
+      Bool_t		              fMixedOnlyForGF;		// [kFALSE] mixing of events only with GF
       Bool_t		              fUsePtBinnedEventPool;		// [kTRUE] enable filling mixed events based on pT dependence
       Int_t                   fPoolSize; // [-1] maximum number of events, -1 means no limit
       Int_t  		              fMixingTracks;	// [5000] size of track buffer for event mixing
