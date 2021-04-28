@@ -284,6 +284,10 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2015MCPP5TeV(const char *dataset)
 Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2016MCPP(const char *dataset) const {
   std::vector<TString> supportedProductions = {"lhc17f8", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3", "lhc20k1",  // Pythia jet-jet anchored to pass1
                                                "lhc17h2f", "lhc17h2g", "lhc17h2h2", "lhc17h2i2", "lhc17h2j", "lhc17h2k","lhc18b1a", "lhc19c6" // J/Psi production anchored to pass1
+                                               "lhc20b1a1", "lhc18l6a1", "lhc19i3a1", // gamma-jet samples, anchored to pp 13 TeV pass1
+                                               "lhc20b1b1", "lhc18l6b1", "lhc19i3b1", // jet-jet samples, anchored to pp 13 TeV pass1, triggered by 3.5 GeV decay photons
+                                               "lhc20b1c1", "lhc18l6c1", "lhc19i3c1", // jet-jet samples, anchored to pp 13 TeV pass1, triggered by 7 GeV decay photons
+                                               "lhc20b2a", "lhc20b2b", "lhc20b2c" // jet-jet samples, anchored to pp 13 TeV pass1, triggered by 28 GeV decay photons
   };
   return IsSupportedMCSample(dataset, supportedProductions);
 }
