@@ -49,7 +49,7 @@ AliJCatalystTask::AliJCatalystTask():
 	AliAnalysisTaskSE(),
 	fInputList(0),
 	fInputListALICE(0),
-	fOutput(0),
+	//fOutput(0),
 	fCentDetName("V0M"),
 	paodEvent(0),
 	fcent(-999),
@@ -86,7 +86,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	AliAnalysisTaskSE(name),
 	fInputList(0),
 	fInputListALICE(0),
-	fOutput(0),
+	//fOutput(0),
 	fTaskName(name),
 	fCentDetName("V0M"),
 	paodEvent(0),
@@ -125,7 +125,7 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
 	AliAnalysisTaskSE(ap.GetName()),
 	fInputList(ap.fInputList),
 	fInputListALICE(ap.fInputListALICE),
-	fOutput(ap.fOutput),
+	//fOutput(ap.fOutput),
 	fcent(ap.fcent),
 	fZvert(ap.fZvert),
 	fnoCentBin(ap.fnoCentBin),
@@ -156,7 +156,7 @@ AliJCatalystTask::~AliJCatalystTask()
 {
 	delete fInputList;
 	delete fInputListALICE;
-	delete fOutput;
+	//delete fOutput;
 }
 
 //________________________________________________________________________
@@ -177,10 +177,10 @@ void AliJCatalystTask::UserCreateOutputObjects()
 
 	gRandom->SetSeed();
 
-	OpenFile(1);
-	fOutput = gDirectory;
-	fOutput->cd();
-	PostData(1, fOutput);
+	//OpenFile(1);
+	//fOutput = gDirectory;
+	//fOutput->cd();
+	//PostData(1, fOutput);
 }
 
 //______________________________________________________________________________

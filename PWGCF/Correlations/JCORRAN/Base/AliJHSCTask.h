@@ -52,6 +52,7 @@ class AliJHSCTask : public AliAnalysisTaskSE {
 
   // Methods specific for this class
   void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
+  TString GetJCatalystTaskName(){ return fJCatalystTaskName; } // Setter for filter task name
 
  private:
 

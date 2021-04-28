@@ -122,7 +122,7 @@ public:
 private:
 	TClonesArray * fInputList;  // tracklist
 	TClonesArray * fInputListALICE;  // tracklist ALICE acceptance +-0.8 eta
-	TDirectory *fOutput;     // output
+	//TDirectory *fOutput;     // output
 	TString fTaskName; //
 	TString fCentDetName; //
 	AliAODEvent *paodEvent; //
