@@ -110,6 +110,7 @@ AliHFInvMassMultiTrialFit::AliHFInvMassMultiTrialFit() :
   fhTemplRefl(0x0),
   fhTemplSign(0x0),
   fFixRefloS(1.),
+  fReflOpt("2gaus"),
   fNtupleMultiTrials(0x0),
   fNtupleBinCount(0x0),
   fMinYieldGlob(0),
@@ -374,7 +375,7 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 		  if(fhTemplRefl && fhTemplSign){
 		    TH1F *hReflModif=(TH1F*)AliVertexingHFUtils::AdaptTemplateRangeAndBinning(fhTemplRefl,hRebinned,minMassForFit,maxMassForFit);
 		    TH1F *hSigModif=(TH1F*)AliVertexingHFUtils::AdaptTemplateRangeAndBinning(fhTemplSign,hRebinned,minMassForFit,maxMassForFit);
-		    TH1F* hrfl=fitter->SetTemplateReflections(hReflModif,"2gaus",minMassForFit,maxMassForFit);
+		    TH1F* hrfl=fitter->SetTemplateReflections(hReflModif,fReflOpt.Data(),minMassForFit,maxMassForFit);
 		    if(!hrfl) printf("ERROR in SetTemplateReflections\n");
 		    if(fFixRefloS>0){
 		      Double_t fixSoverRefAt=fFixRefloS*(hReflModif->Integral(hReflModif->FindBin(minMassForFit*1.0001),hReflModif->FindBin(maxMassForFit*0.999))/hSigModif->Integral(hSigModif->FindBin(minMassForFit*1.0001),hSigModif->FindBin(maxMassForFit*0.999)));
@@ -692,12 +693,20 @@ Bool_t AliHFInvMassMultiTrialFit::DoFitWithPol3Bkg(TH1F* histoToFit, Double_t  h
   return kTRUE;
 }
 //__________________________________________________________________________________
-void AliHFInvMassMultiTrialFit::SetTemplatesForReflections(const TH1F *hr, const TH1F *hs) {
+void AliHFInvMassMultiTrialFit::SetTemplatesForReflections(const TH1F *hr, const TH1F *hs, TString option) {
   /// signal and reflection templates
+  /// option could be:
+  ///    "template"                use MC histograms
+  ///    "1gaus" ot "singlegaus"   single gaussian function fit to MC templates
+  ///    "2gaus" ot "doublegaus"   double gaussian function fit to MC templates
+  ///    "pol3"                    3rd order polynomial fit to MC templates
+  ///    "pol6"                    6th order polynomial fit to MC templates
+  
   if(fhTemplSign) delete fhTemplSign;
   if(fhTemplRefl) delete fhTemplRefl;
   fhTemplRefl=(TH1F*)hr->Clone("hTemplRefl");
   fhTemplSign=(TH1F*)hs->Clone("hTemplSign");
+  fReflOpt=option.Data();
   return;
 }
 
