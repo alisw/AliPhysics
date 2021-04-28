@@ -60,6 +60,7 @@ struct SLightNucleus {
   };
   float pt;
   float eta;
+  float absCt;
   int   pdg;
   int   flag;
   char  centrality;
@@ -82,7 +83,6 @@ struct RLightNucleus {
   Double32_t dcaz;           //[-2,2,10]
   Double32_t tofNsigma;      //[-12.8,12.8,12]
   Double32_t tpcNsigma;      //[-6.4,6.4,8]
-  float      absCt;
   char       centrality;
   char       trackingPID;
   unsigned char tpcPIDcls;
@@ -377,7 +377,6 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kPrimary) ? RLightNucleus::kPrimary : 0;
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryWeakDecay) ? RLightNucleus::kSecondaryWeakDecay : 0;
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryMaterial) ? RLightNucleus::kSecondaryMaterial : 0;
-        fRecNucleus.absCt = fAbsorptionCt;
       }
       fRecNucleus.trackingPID = track->GetPIDForTracking();
       fRecNucleus.flag |= (beta > EPS) ? RLightNucleus::kHasTOF : 0;

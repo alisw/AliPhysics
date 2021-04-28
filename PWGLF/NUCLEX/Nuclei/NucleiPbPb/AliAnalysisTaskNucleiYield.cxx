@@ -576,6 +576,18 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       if (fIsMC) fProduction->Fill(mult * part->P());
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (fSaveTrees) {
+        if(part->GetNDaughters()>0){
+          for (int c = part->GetDaughterFirst(); c <= part->GetDaughterLast(); ++c)
+          {
+            AliVParticle *dPart = (AliAODMCParticle*)stack->UncheckedAt(c);
+            int dPartPDG = std::abs(dPart->PdgCode());
+            if (dPartPDG != 22 && dPartPDG != 11)
+            {
+              fAbsorptionCt = ComputeHe3Ct(part, dPart);
+              break;
+            }
+          }
+        }
         SetSLightNucleus(part,fSimNucleus);
         fSTree->Fill();
       }
@@ -590,20 +602,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     if (nanoHeader)
       TrackLoop(nanoTrack, true);
     else {
-      if (fIsMC) { // absorption studies
-        if(aodTrack->GetNDaughters()>0){
-          for (int c = aodTrack->GetDaughterFirst(); c <= aodTrack->GetDaughterLast(); ++c)
-          {
-            AliVParticle *dPart = ev->GetTrack(c);
-            int dPartPDG = std::abs(dPart->PdgCode());
-            if (dPartPDG != 22 && dPartPDG != 11)
-            {
-              fAbsorptionCt = ComputeHe3Ct(aodTrack, dPart);
-              break;
-            }
-          }
-        }
-      }
       TrackLoop(aodTrack, false);
     }
   } // End AOD track loop
@@ -898,6 +896,7 @@ int AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(AliVTrack *track,
 void AliAnalysisTaskNucleiYield::SetSLightNucleus(AliAODMCParticle* part, SLightNucleus& snucl) {
   snucl.pt = part->Pt();
   snucl.eta = part->Eta();
+  snucl.absCt = fAbsorptionCt;
   snucl.centrality = fCentrality;
   snucl.pdg = part->GetPdgCode();
   if (part->IsPhysicalPrimary())
