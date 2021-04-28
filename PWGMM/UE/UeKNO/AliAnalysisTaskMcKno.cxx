@@ -952,6 +952,7 @@ void AliAnalysisTaskMcKno::UserExec(Option_t *)
     {
       if(fIsMCclosure){
           Double_t randomUE = gRandom->Uniform(0.0,1.0);
+          gRandom->SetSeed(0);
 	if(randomUE<0.5){                   // corrections (50% stat.)
 	  if(isGoodVtxPosMC){
 	    // KNO scaling
