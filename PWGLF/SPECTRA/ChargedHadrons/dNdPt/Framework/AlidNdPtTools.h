@@ -36,8 +36,8 @@ public:
     kEl = 5,
     kMu = 6,
     kXi = 7,
-    kOmega = 8
-    kOther = 9,
+    kOmega = 8,
+    kOther = 9
   };
   enum ProductionType
   {
