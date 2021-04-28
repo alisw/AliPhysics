@@ -140,8 +140,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fCharge{1.f}
    ,fIsMC{false}
    ,fFillOnlyEventHistos{false}
-   ,fDecayCt{0}
-   ,fIsAbsorbed{false}
+   ,fAbsorptionCt{-1.f}
    ,fPID{nullptr}
    ,fTriggerMask{0}
    ,fMagField{0.f}
@@ -592,7 +591,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       TrackLoop(nanoTrack, true);
     else {
       if (fIsMC) { // absorption studies
-        fDecayCt = gRandom->Exp(7.6);
         if(aodTrack->GetNDaughters()>0){
           for (int c = aodTrack->GetDaughterFirst(); c <= aodTrack->GetDaughterLast(); ++c)
           {
@@ -600,8 +598,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
             int dPartPDG = std::abs(dPart->PdgCode());
             if (dPartPDG != 22 && dPartPDG != 11)
             {
-              double absCt = ComputeHe3Ct(aodTrack, dPart);
-              fIsAbsorbed = absCt < fDecayCt;
+              fAbsorptionCt = ComputeHe3Ct(aodTrack, dPart);
               break;
             }
           }

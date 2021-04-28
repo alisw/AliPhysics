@@ -82,12 +82,11 @@ struct RLightNucleus {
   Double32_t dcaz;           //[-2,2,10]
   Double32_t tofNsigma;      //[-12.8,12.8,12]
   Double32_t tpcNsigma;      //[-6.4,6.4,8]
-  float      decCt;
+  float      absCt;
   char       centrality;
   char       trackingPID;
   unsigned char tpcPIDcls;
   unsigned char flag;       //
-  bool       absorbed;
 };
 
 class AliAnalysisTaskNucleiYield : public AliAnalysisTaskSE {
@@ -223,8 +222,7 @@ private:
   Bool_t                fIsMC;                  ///<  Switch between MC and data
   Bool_t                fFillOnlyEventHistos;   ///<  Set treu to fill only event related histograms
 
-  Double_t              fDecayCt;               ///<  Decay ct sampled from the hypertriton exponential decay distribution
-  Bool_t                fIsAbsorbed;            ///<  Flag storing information about absorption
+  Double_t              fAbsorptionCt;          ///<  Absorption ct
 
   AliPIDResponse       *fPID;                   //!<! PID response class
   ULong64_t             fTriggerMask;           //!<  Trigger Mask of the Event
@@ -379,8 +377,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kPrimary) ? RLightNucleus::kPrimary : 0;
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryWeakDecay) ? RLightNucleus::kSecondaryWeakDecay : 0;
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryMaterial) ? RLightNucleus::kSecondaryMaterial : 0;
-        fRecNucleus.decCt = fDecayCt;
-        fRecNucleus.absorbed = fIsAbsorbed;
+        fRecNucleus.absCt = fAbsorptionCt;
       }
       fRecNucleus.trackingPID = track->GetPIDForTracking();
       fRecNucleus.flag |= (beta > EPS) ? RLightNucleus::kHasTOF : 0;
