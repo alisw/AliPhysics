@@ -103,6 +103,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fSpecialSubTrigger(0),
   fRemovePileUp(kFALSE),
   fRemovePileUpSPD(kFALSE),
+  fRemovePileUpPbPb(kFALSE),
   fUseSphericity(0),
   fUseSphericityTrue(kFALSE),
   fPastFutureRejectionLow(0),
@@ -126,6 +127,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fCutString(NULL),
   fCutStringRead(""),
   fUtils(NULL),
+  fEventCuts(1),
   fEtaShift(0.0),
   fDoEtaShift(kFALSE),
   fUseJetFinderForOutlier(kFALSE),
@@ -245,6 +247,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fSpecialSubTrigger(ref.fSpecialSubTrigger),
   fRemovePileUp(ref.fRemovePileUp),
   fRemovePileUpSPD(ref.fRemovePileUpSPD),
+  fRemovePileUpPbPb(ref.fRemovePileUpPbPb),
   fUseSphericity(ref.fUseSphericity),
   fUseSphericityTrue(ref.fUseSphericityTrue),
   fPastFutureRejectionLow(ref.fPastFutureRejectionLow),
@@ -268,6 +271,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fCutString(NULL),
   fCutStringRead(""),
   fUtils(NULL),
+  fEventCuts(1),
   fEtaShift(ref.fEtaShift),
   fDoEtaShift(ref.fDoEtaShift),
   fUseJetFinderForOutlier(ref.fUseJetFinderForOutlier),
@@ -2643,7 +2647,11 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
 
     fFPileUpRejectSDDSSDTPC = new TF1("fFPileUpRejectSDDSSDTPC", "[0]+[1]*x+[2]*x*x", 0., 1.e+7);
     fFPileUpRejectSDDSSDTPC->SetParameters(-3000., 0.0099,9.426e-10);
-
+    break;
+  case 14: // e         new standardized pileup cut for LHC15o LHC18qr
+    fRemovePileUp = kTRUE;
+    fRemovePileUpPbPb = kTRUE;
+    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
     break;
   default:
     AliError("RemovePileUpCut not defined");
@@ -6752,6 +6760,12 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
         || (fRemovePileUpSDDSSDTPC && IsPileUpSDDSSDTPC(event))) {
       return 13;
      }
+  }
+  if(fRemovePileUpPbPb){
+    Bool_t acceptEventCuts = fEventCuts.AcceptEvent(event);
+    if(!acceptEventCuts){
+      return 13;
+    }
   }
 
   if(fUseSphericity > 0){
