@@ -70,7 +70,7 @@
 #include <iostream>
 using namespace std;
 
-const Int_t nTSBins=3000;
+const Int_t nTSBins=5000;
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
 const Char_t * estNames[5] = {"TS","Eta08","V0M","V0A","Eta10"};
 const Char_t * PidNames[12] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero", "Charged" };
@@ -213,7 +213,7 @@ void AliAnalysisTaskGenMcKno::UserCreateOutputObjects(){
 	fListOfObjects->Add(fDphiTS);
 
 	fMultTS = 0;
-	fMultTS = new TH1D("fMultTS","",700,-0.5,699.5);
+	fMultTS = new TH1D("fMultTS","",500,-0.5,10000.5);
 	fListOfObjects->Add(fMultTS);
 
 	fptL = 0;
@@ -222,9 +222,9 @@ void AliAnalysisTaskGenMcKno::UserCreateOutputObjects(){
 
 	Double_t TSBins[nTSBins+1]={0x0};
 	for(Int_t i=0;i<nTSBins;++i){
-		TSBins[i]=i*1.0-0.5;
+		TSBins[i]=i*2.0-0.5;
 	}
-	TSBins[nTSBins]=1.0*nTSBins-0.5;
+	TSBins[nTSBins]=2.0*nTSBins-0.5;
 
 	for(Int_t i_est=0; i_est<5; ++i_est){
 		for(Int_t i_pid=0; i_pid<12; ++i_pid){
