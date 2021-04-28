@@ -34,7 +34,7 @@ class AliJHSCTask : public AliAnalysisTaskSE {
 
  public:
   AliJHSCTask();
-  AliJHSCTask(const char *name,  TString inputformat);
+  AliJHSCTask(const char *name);
   AliJHSCTask(const AliJHSCTask& ap);   
   AliJHSCTask& operator = (const AliJHSCTask& ap);
   virtual ~AliJHSCTask();

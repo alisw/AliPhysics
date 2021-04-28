@@ -41,7 +41,7 @@ AliJHSCTask::AliJHSCTask() :
 }
 
 //______________________________________________________________________________
-AliJHSCTask::AliJHSCTask(const char *name, TString inputformat):
+AliJHSCTask::AliJHSCTask(const char *name):
 	AliAnalysisTaskSE(name), 
 	fJCatalystTask(NULL),
 	fJCatalystTaskName("JCatalystTask"),
@@ -85,7 +85,7 @@ AliJHSCTask& AliJHSCTask::operator = (const AliJHSCTask& ap)
 AliJHSCTask::~AliJHSCTask()
 {
 	// destructor 
-	delete fOutput;
+	//delete fOutput;
 	delete fTwoMultiAna;
 
 }
@@ -101,10 +101,7 @@ void AliJHSCTask::UserCreateOutputObjects()
 
 	fJCatalystTask = (AliJCatalystTask*)(man->GetTask( fJCatalystTaskName ));
 	fTwoMultiAna = new AliAnalysisAnaTwoMultiCorrelations("TwoMultiCorrelations",kFALSE);
-	fTwoMultiAna->SetJWeights(!fIsMC, fJCatalystTask->GetEffFilterBit());
-	//OpenFile(1);
-	//fOutput = gDirectory;
-	//fOutput->cd();
+	OpenFile(1);
 
 	fTwoMultiAna->UserCreateOutputObjects();
 	fFirstEvent = kTRUE;
@@ -116,16 +113,15 @@ void AliJHSCTask::UserExec(Option_t* /*option*/)
 {
 	// Processing of one event
 	if(fDebug > 5) cout << "------- AliJHSCTask Exec-------"<<endl;
-	if(!((Entry()-1)%1000))  AliInfo(Form(" Processing event # %lld",  Entry())); 
+	if(!((Entry()-1)%1))  AliInfo(Form(" Processing event # %lld",  Entry())); 
 	if( fJCatalystTask->GetJCatalystEntry() != fEntry ) return;
 	if( fFirstEvent ) {
 	    fFirstEvent = kFALSE;
 	}
+	cout << "Nch = "<< fJCatalystTask->GetInputList()->GetEntriesFast() << endl;
 	fTwoMultiAna->SetInputList( fJCatalystTask->GetInputList() );
 	fTwoMultiAna->SetEventCentrality( fJCatalystTask->GetCentrality() );
 	fTwoMultiAna->UserExec("");
-	//PostData(1, fOutput);
-	//PostData(1, fTwoMultiAna->GetTList());
 }
 
 //______________________________________________________________________________
