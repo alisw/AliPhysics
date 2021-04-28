@@ -20,6 +20,7 @@
 #include "TRandom3.h"
 #include "AliVCaloTrigger.h"
 #include "AliTimeRangeCut.h"
+#include "AliEventCuts.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -682,6 +683,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fSpecialSubTrigger;                     ///< flag
       Bool_t                      fRemovePileUp;                          ///< flag specifies if any pileup cut is applied
       Bool_t                      fRemovePileUpSPD;                       ///< flag specifies if SPD pileup cuts are applied
+      Bool_t                      fRemovePileUpPbPb;                      ///< flag specifies if any pileup cut is applied
       Int_t                       fUseSphericity;                         ///< flag that specifies the sphericityCut
       Bool_t                      fUseSphericityTrue;                     ///< switch for true sphericity cuts
       Int_t                       fPastFutureRejectionLow;                ///< sets bunch crossing event rejection in past
@@ -706,6 +708,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TObjString*                 fCutString;                             ///< cut number used for analysis
       TString                     fCutStringRead;                         ///<
       AliAnalysisUtils*           fUtils;                                 ///<
+      AliEventCuts                fEventCuts;                             ///< Event selection utility
       Double_t                    fEtaShift;                              ///<
       Bool_t                      fDoEtaShift;                            ///< Flag for Etashift
       Bool_t                      fUseJetFinderForOutlier;                ///< Flag for Etashift
@@ -799,7 +802,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,84)
+      ClassDef(AliConvEventCuts,85)
       /// \endcond
 };
 
