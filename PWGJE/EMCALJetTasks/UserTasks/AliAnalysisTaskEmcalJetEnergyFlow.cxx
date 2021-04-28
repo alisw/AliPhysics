@@ -74,7 +74,7 @@ AliAnalysisTaskEmcalJetEnergyFlow::~AliAnalysisTaskEmcalJetEnergyFlow()
  */
 void AliAnalysisTaskEmcalJetEnergyFlow::UserCreateOutputObjects()
 {
-	AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+	AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
 	AllocateJetHistograms();
 	AllocateTrackHistograms();
@@ -84,6 +84,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::UserCreateOutputObjects()
 
   TIter next(fHistManager.GetListOfHistograms());
   TObject* obj = 0;
+  fOutput->SetUseScaling(kTRUE);
   while ((obj = next())) {
     fOutput->Add(obj);
   }
