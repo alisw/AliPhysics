@@ -1447,13 +1447,15 @@ void AliAnalysisTaskRidge::FillTracks(){
 //					min(track1-> Pt(),track2-> Pt()) },
 //					1.0/ ( NTracksPerPtBin[binTPt.FindBin( max(track1->Pt(),track2-> Pt()) )-1]*eff1*eff2 ) );
 				FillTHnSparse("hRidgeLT",{fCent, deltaphi, deltaeta,
-					max(track1-> Pt(),track2-> Pt()),
-					min(track1-> Pt(),track2-> Pt()),MaxPt},
+//					max(track1-> Pt(),track2-> Pt()),
+//					min(track1-> Pt(),track2-> Pt()),MaxPt},
+					track1-> Pt(),track2-> Pt(),MaxPt},
 					1.0/ ( eff1*eff2 ) );
 
                                 FillTHnSparse("hRidgeJet",{fCent, deltaphi, deltaeta,
-                                        max(track1-> Pt(),track2-> Pt()),
-                                        min(track1-> Pt(),track2-> Pt()),fJetPt},
+//                                        max(track1-> Pt(),track2-> Pt()),
+//                                        min(track1-> Pt(),track2-> Pt()),fJetPt},
+					track1-> Pt(),track2-> Pt(),fJetPt},
                                         1.0/ ( eff1*eff2 ) );
 			}
 //			FillTHnSparse("hRidgeNTrig",{fCent, deltaphi, deltaeta,
@@ -1602,14 +1604,16 @@ void AliAnalysisTaskRidge::FillTracks(){
 //						min(track1-> Pt(),track2-> Pt()) },
 //						1.0/(NTracksPerPtBin[binTPt.FindBin( max(track1->Pt(),track2-> Pt()) )-1]*eff1*eff2) );
 					FillTHnSparse("hRidgeMixingSLT",{fCent, deltaphi, deltaeta,
-						max(track1-> Pt(),track2-> Pt()),
-						min(track1-> Pt(),track2-> Pt()),MaxPt},
+//						max(track1-> Pt(),track2-> Pt()),
+//						min(track1-> Pt(),track2-> Pt()),MaxPt},
+						track1-> Pt(),track2-> Pt(),MaxPt},
 						1.0/(eff1*eff2) );
 
 
                                         FillTHnSparse("hRidgeMixingSJet",{fCent, deltaphi, deltaeta,
-                                                max(track1-> Pt(),track2-> Pt()),
-                                                min(track1-> Pt(),track2-> Pt()),fJetPt},
+//                                                max(track1-> Pt(),track2-> Pt()),
+//                                                min(track1-> Pt(),track2-> Pt()),fJetPt},
+						track1-> Pt(),track2-> Pt(),fJetPt},
                                                 1.0/(eff1*eff2) );
 				}
 //				FillTHnSparse("hRidgeMixingSNTrig",{fCent, deltaphi, deltaeta,
