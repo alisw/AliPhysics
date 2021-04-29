@@ -79,7 +79,7 @@ AliAnalysisTaskUpc4Pi::AliAnalysisTaskUpc4Pi()
 	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0),
 	fHistdEdxVsP1(0),fHistdEdxVsP2(0),fHistdEdxVsP3(0),fHistdEdxVsP4(0),fHistdEdxVsP5(0),
 	fHistdEdxVsP6(0),fHistdEdxVsP7(0),fHistdEdxVsP8(0),fHistdEdxVsP9(0) , fDeltaPhiRho(0), 
-	fDeltaPhiEe(0)
+	fDeltaPhiEe(0), FORChip(0)
 {
 //Dummy constructor
 }
@@ -102,7 +102,7 @@ AliAnalysisTaskUpc4Pi::AliAnalysisTaskUpc4Pi(const char *name, Bool_t _isMC)
 	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0),
 	fHistdEdxVsP1(0),fHistdEdxVsP2(0),fHistdEdxVsP3(0),fHistdEdxVsP4(0),fHistdEdxVsP5(0),
 	fHistdEdxVsP6(0),fHistdEdxVsP7(0),fHistdEdxVsP8(0),fHistdEdxVsP9(0), fDeltaPhiRho(0), 
-	fDeltaPhiEe(0)
+	fDeltaPhiEe(0), FORChip(0)
 {
   if(debugMode) std::cout<<"Initialization..."<<std::endl;
   Init();
@@ -143,6 +143,10 @@ void AliAnalysisTaskUpc4Pi::Init()
 		PIDTPCPion_T[i] = -20;
 		PIDTPCElectron_T[i] = -20;
 		TPCsignal_T[i] = -1;
+		TPCrefit_T[i] = -1;
+		ITSrefit_T[i] = -1;
+		TPCNcls_T[i] = -1;
+		TPCchi2_T[i] = -1;
 		TrackP_T[i] = -1;
 		TrackC_T[i] = 0;
 		TrackEta_T[i] = -9;
@@ -156,6 +160,7 @@ void AliAnalysisTaskUpc4Pi::Init()
 		ZDCAtime_T[i] = -99;
 		ZDCCtime_T[i] = -99;
 	}
+	FORChip.reserve(1084);
 }
 
 void AliAnalysisTaskUpc4Pi::UserCreateOutputObjects() 
@@ -186,13 +191,17 @@ void AliAnalysisTaskUpc4Pi::UserCreateOutputObjects()
 	f4PiTree1->Branch("ZPCenergy1_T",&ZPCenergy_T,"ZPCenergy_T/F");
 	f4PiTree1->Branch("ZDCAtime1_T",&ZDCAtime_T,"ZDCAtime_T[4]/F");
 	f4PiTree1->Branch("ZDCCtime1_T",&ZDCCtime_T,"ZDCCtime_T[4]/F");
-	f4PiTree1->Branch("PIDTPCPion1_T",&PIDTPCPion_T,"PIDTPCPion_T[8]/F");
-	f4PiTree1->Branch("PIDTPCElectron1_T",&PIDTPCElectron_T,"PIDTPCElectron_T[8]/F");
-	f4PiTree1->Branch("TPCsignal1_T",&TPCsignal_T,"TPCsignal_T[8]/I");
-	f4PiTree1->Branch("TrackP1_T",&TrackP_T,"TrackP_T[8]/F");
-	f4PiTree1->Branch("TrackC1_T",&TrackC_T,"TrackC_T[8]/I");
-	f4PiTree1->Branch("TrackEta1_T",&TrackEta_T,"TrackEta_T[8]/F");
-	f4PiTree1->Branch("TrackPhi1_T",&TrackPhi_T,"TrackPhi_T[8]/F");
+	f4PiTree1->Branch("PIDTPCPion1_T",&PIDTPCPion_T,"PIDTPCPion_T[18]/F");
+	f4PiTree1->Branch("PIDTPCElectron1_T",&PIDTPCElectron_T,"PIDTPCElectron_T[MAxtrk]/F");
+	f4PiTree1->Branch("TPCsignal1_T",&TPCsignal_T,"TPCsignal_T[18]/I");
+	f4PiTree1->Branch("TPCrefit1_T",&TPCrefit_T,"TPCrefit_T[18]/O");
+	f4PiTree1->Branch("TPCNcls1_T",&TPCNcls_T,"TPCNcls_T[18]/I");
+	f4PiTree1->Branch("TPCchi21_T",&TPCchi2_T,"TPCchi2_T[18]/F");
+	f4PiTree1->Branch("ISTrefit1_T",&ITSrefit_T,"ITSrefit_T[18]/O");
+	f4PiTree1->Branch("TrackP1_T",&TrackP_T,"TrackP_T[18]/F");
+	f4PiTree1->Branch("TrackC1_T",&TrackC_T,"TrackC_T[18]/I");
+	f4PiTree1->Branch("TrackEta1_T",&TrackEta_T,"TrackEta_T[18]/F");
+	f4PiTree1->Branch("TrackPhi1_T",&TrackPhi_T,"TrackPhi_T[18]/F");
 //	f4PiTree1->Branch("TrackPx1_T",&TrackPx_T,"TrackPx_T[8]/F");
 //	f4PiTree1->Branch("TrackPy1_T",&TrackPy_T,"TrackPy_T[8]/F");
 //	f4PiTree1->Branch("TrackPz1_T",&TrackPz_T,"TrackPz_T[8]/F");
@@ -218,6 +227,7 @@ void AliAnalysisTaskUpc4Pi::UserCreateOutputObjects()
 //	f4PiTree1->Branch("Ntracklets1_T",&Ntracklets_T,"Ntracklets_T/I");
 	// fRhoTree->Branch("ITSModule_T",&ITSModule_T,"ITSModule_T/I");
 	f4PiTree1->Branch("ChipCut1_T",&ChipCut_T,"ChipCut_T/O");
+	//f4PiTree1->Branch("FORChip1_T",&FORChip);
 //	f4PiTree1->Branch("TriggerSPD1_T",&TriggerSPD_T,"TriggerSPD_T/O");
 //	f4PiTree1->Branch("TriggerTOF1_T",&TriggerTOF_T,"TriggerTOF_T/O");
 
@@ -238,16 +248,20 @@ void AliAnalysisTaskUpc4Pi::UserCreateOutputObjects()
 	f4PiTree->Branch("ZPCenergy_T",&ZPCenergy_T,"ZPCenergy_T/F");
 	f4PiTree->Branch("ZDCAtime_T",&ZDCAtime_T,"ZDCAtime_T[4]/F");
 	f4PiTree->Branch("ZDCCtime_T",&ZDCCtime_T,"ZDCCtime_T[4]/F");
-	f4PiTree->Branch("PIDTPCPion_T",&PIDTPCPion_T,"PIDTPCPion_T[8]/F");
-	f4PiTree->Branch("PIDTPCElectron_T",&PIDTPCElectron_T,"PIDTPCElectron_T[8]/F");
-	f4PiTree->Branch("TPCsignal_T",&TPCsignal_T,"TPCsignal_T[8]/I");
+	f4PiTree->Branch("PIDTPCPion_T",&PIDTPCPion_T,"PIDTPCPion_T[18]/F");
+	f4PiTree->Branch("PIDTPCElectron_T",&PIDTPCElectron_T,"PIDTPCElectron_T[18]/F");
+	f4PiTree->Branch("TPCsignal_T",&TPCsignal_T,"TPCsignal_T[18]/I");
+	f4PiTree->Branch("TPCrefit_T",&TPCrefit_T,"TPCrefit_T[18]/O");
+	f4PiTree->Branch("TPCNcls_T",&TPCNcls_T,"TPCNcls_T[18]/I");
+	f4PiTree->Branch("TPCchi2_T",&TPCchi2_T,"TPCchi2_T[18]/F");
+	f4PiTree->Branch("ISTrefit_T",&ITSrefit_T,"ITSrefit_T[18]/O");
 	f4PiTree->Branch("NTracks_T",&NTracks_T,"NTracks_T/I");
-	f4PiTree->Branch("TrackP_T",&TrackP_T,"TrackP_T[8]/F");
-	f4PiTree->Branch("TrackEta_T",&TrackEta_T,"TrackEta_T[8]/F");
-	f4PiTree->Branch("TrackPhi_T",&TrackPhi_T,"TrackPhi_T[8]/F");
-	f4PiTree->Branch("TrackPx_T",&TrackPx_T,"TrackPx_T[8]/F");
-	f4PiTree->Branch("TrackPy_T",&TrackPy_T,"TrackPy_T[8]/F");
-	f4PiTree->Branch("TrackPz_T",&TrackPz_T,"TrackPz_T[8]/F");
+	f4PiTree->Branch("TrackP_T",&TrackP_T,"TrackP_T[18]/F");
+	f4PiTree->Branch("TrackEta_T",&TrackEta_T,"TrackEta_T[18]/F");
+	f4PiTree->Branch("TrackPhi_T",&TrackPhi_T,"TrackPhi_T[18]/F");
+	f4PiTree->Branch("TrackPx_T",&TrackPx_T,"TrackPx_T[18]/F");
+	f4PiTree->Branch("TrackPy_T",&TrackPy_T,"TrackPy_T[18]/F");
+	f4PiTree->Branch("TrackPz_T",&TrackPz_T,"TrackPz_T[18]/F");
 	f4PiTree->Branch("VtxX_T",&Vertex_T[0],"VtxX_T/F");
 	f4PiTree->Branch("VtxY_T",&Vertex_T[1],"VtxY_T/F");
 	f4PiTree->Branch("VtxZ_T",&Vertex_T[2],"VtxZ_T/F");
@@ -271,6 +285,7 @@ void AliAnalysisTaskUpc4Pi::UserCreateOutputObjects()
 	f4PiTree->Branch("ChipCut_T",&ChipCut_T,"ChipCut_T/O");
 	f4PiTree->Branch("TriggerSPD_T",&TriggerSPD_T,"TriggerSPD_T/O");
 	f4PiTree->Branch("TriggerTOF_T",&TriggerTOF_T,"TriggerTOF_T/O");
+	//f4PiTree->Branch("FORChip_T",&FORChip);
 
 	if(debugMode) std::cout<<"Defining MC ttree..."<<std::endl;
 	// MC tree
@@ -451,11 +466,11 @@ for (Int_t it=0;it < Maxtrk; it++){
 	if (fOption.Contains("GeoCut")) esdTrackCuts->SetCutGeoNcrNcl(3.,130.,1.5,0.85,0.7);
 
     if( !trk ) continue;
- 	if( trk->IsOn(AliESDtrack::kITSpureSA) ) continue;
-    if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-    if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-    if(trk->GetTPCNcls() < fTPCNcls)continue;
-    if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
+// 	if( trk->IsOn(AliESDtrack::kITSpureSA) ) continue;
+//    if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+//    if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+//    if(trk->GetTPCNcls() < fTPCNcls)continue;
+//    if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
     if(!((trk->HasPointOnITSLayer(0))&&(trk->HasPointOnITSLayer(1)))) continue;
     Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
     if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
@@ -466,6 +481,10 @@ for (Int_t it=0;it < Maxtrk; it++){
 
 	// store good track index
 	TrackIndex[nGoodTracks] = itr;
+	TPCrefit_T[nGoodTracks] = trk->GetStatus() & AliESDtrack::kTPCrefit;
+	ITSrefit_T[nGoodTracks] = trk->GetStatus() & AliESDtrack::kITSrefit;
+	TPCNcls_T[nGoodTracks] = trk->GetTPCNcls();
+	TPCchi2_T[nGoodTracks] = trk->GetTPCchi2();
 	ntrk++;
     nGoodTracks++;
     // std::cout<<nGoodTracks<<" good tracks"<<endl;
@@ -665,6 +684,7 @@ for (Int_t it=0;it < Maxtrk; it++){
   		if (esd->GetMultiplicity()->TestFastOrFiredChips(chipkey)){
   			fFOchip->Fill(chipkey);
   			fFOcounter++;
+			FORChip.push_back(chipkey);
  		}
   	}
   	fFOcount->Fill(fFOcounter);
@@ -672,7 +692,8 @@ for (Int_t it=0;it < Maxtrk; it++){
 
   //fill
   f4PiTree ->Fill();
- if (/*nGoodTracks == 4 &&*/ LikeSign_T==0) f4PiTree1->Fill();
+// if (/*nGoodTracks == 4 &&*/ LikeSign_T==0)
+ f4PiTree1->Fill();
 
   } // end four good tracks
   if(debugMode) std::cout<<"saving data"<<std::endl;
