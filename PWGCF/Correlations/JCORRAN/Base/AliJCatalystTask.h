@@ -155,7 +155,7 @@ private:
 	TH1 *pPhiWeights;
 	TGraphErrors *grEffCor; // for one cent
 	TAxis *fCentBinEff; // for different cent bin for MC eff
-	UInt_t phiMapIndex;
+	UInt_t phiMapIndex; //
 
 	ClassDef(AliJCatalystTask, 1);
 

@@ -110,7 +110,8 @@ public:
   virtual void  ComputeSCsCorrelators(long long numberOfParticles, Float_t angles[], Float_t pWeights[]);
   virtual void  ComputeACsCorrelators(long long numberOfParticles, Float_t angles[], Float_t pWeights[]);
   virtual void  ComputeTPCWithEtaGaps(long long numberOfParticles, Float_t angles[], Float_t pWeights[], Float_t pseudorapidity[]);
-
+  void SetDebugLevel(int debuglevel){
+    fDebugLevel = debuglevel; cout <<"setting Debug Level = " << fDebugLevel << endl;}
 /* Methods called in "Terminate"............................................................ */
 
 /* Methods called in "UserCreateOutputObjects".............................................. */
@@ -177,7 +178,7 @@ private:
   Bool_t fComputeEtaGaps;   // kTRUE: compute the 2-particle correlator with eta gaps.
   TList *fTPCEtaList;       //! Daughter list with the 2-p correlators calculated with eta gaps.
   TProfile *fProfileTPCEta[9][11]; //! <2>_{j,-j} for j = 1..8 with eta gaps (8 bins per profile).
-
+  int fDebugLevel; //
 /* ----------------------------------------------------------------------------------------- */
 /* Version number to handle the objects through the iterations of the code.                  */
   ClassDef(AliAnalysisAnaTwoMultiCorrelations, 20);
