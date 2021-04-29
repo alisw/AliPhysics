@@ -291,6 +291,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 
 //Vertex selection
 	Float_t					   fZvtx;
+    Float_t                    fXvtx;
+    Float_t                    fYvtx;
     
     
 //global multiplicity values
@@ -333,6 +335,9 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     
     TH1F                *fECluster_eg1;
     TH1F                *fECluster_eg2;
+    
+    TH1F                *fECluster_ET_eg1;
+    TH1F                *fECluster_ET_eg2;
     
 	TH1F				**fECluster_emcal;
 	TH1F				**fECluster_dcal;
