@@ -204,6 +204,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fMassCutMax(3.16)
 
 ,fZvtx(0)
+,fXvtx(0)
+,fYvtx(0)
 ,feg1(0)
 ,fdg1(0)
 ,feg2(0)
@@ -244,6 +246,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fECluster(0)
 ,fECluster_eg1(0)
 ,fECluster_eg2(0)
+,fECluster_ET_eg1(0)
+,fECluster_ET_eg2(0)
 ,fECluster_emcal(0)
 ,fECluster_dcal(0)
 ,fTracksPt(0)
@@ -620,6 +624,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fMassCutMax(3.16)
 
 ,fZvtx(0)
+,fXvtx(0)
+,fYvtx(0)
 ,feg1(0)
 ,fdg1(0)
 ,feg2(0)
@@ -660,6 +666,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fECluster(0)
 ,fECluster_eg1(0)
 ,fECluster_eg2(0)
+,fECluster_ET_eg1(0)
+,fECluster_ET_eg2(0)
 ,fECluster_emcal(0)
 ,fECluster_dcal(0)
 ,fECluster_pure(0)
@@ -1113,6 +1121,12 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     fECluster_eg2 = new TH1F("ECluster_eg2", ";ECluster;Counts",50, 0, 50);
     fOutputList->Add(fECluster_eg1);
     fOutputList->Add(fECluster_eg2);
+    
+    //ET
+    fECluster_ET_eg1 = new TH1F("ECluster_ET_eg1", ";ECluster ET;Counts",50, 0, 50);
+    fECluster_ET_eg2 = new TH1F("ECluster_ET_eg2", ";ECluster ET;Counts",50, 0, 50);
+    fOutputList->Add(fECluster_ET_eg1);
+    fOutputList->Add(fECluster_ET_eg2);
     
     
     for(Int_t i = 0; i < 4; i++)
@@ -1725,10 +1739,13 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
             //x
             Float_t xvtx = -100;
             xvtx=trkVtx->GetX();
+            fXvtx=xvtx;
         
             //y
             Float_t yvtx = -100;
             yvtx=trkVtx->GetY();
+            fYvtx=yvtx;
+        
         
             //events without vertex
             if(zvtx==0 && xvtx==0 && yvtx==0) fNevent->Fill(35);
@@ -1806,6 +1823,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	}
 
 	fNevent->Fill(24);
+    
+    //printf("Printing vertex = %f, %f, %f \n", fXvtx, fYvtx, fZvtx);
     
 //Look for kink mother for AOD
 	if(fIsAOD)
@@ -3008,15 +3027,13 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                     }
                 }
                 
-                
-                
+ 
 				if(!fIs_sys)fdEta_dPhi[1]->Fill(fClus->GetTrackDx(), fClus->GetTrackDz());
 				//if(TMath::Abs(fClus->GetTrackDx())<=0.05 && TMath::Abs(fClus->GetTrackDz())<=0.05)
 			  //{
 			      if(!fIs_sys)fEoverP_pt[1]->Fill(fPt,(fClus->E() / fP));
                 
-                
-				   
+         
 				  Float_t Energy	= fClus->E();
 				  fECluster[1]->Fill(Energy);
                   if(!fIs_sys)fTracksQAPt[0]->Fill(fPt);
@@ -3077,8 +3094,25 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                 
                 
                 //to check trigger efficiency using Energy
-                if(feg1 || fdg1)fECluster_eg1->Fill(fClus->E()); //reconstructed pT
-                if(feg2 || fdg2)fECluster_eg2->Fill(fClus->E()); //reconstructed pT
+                if(feg1 || fdg1)fECluster_eg1->Fill(fClus->E());
+                if(feg2 || fdg2)fECluster_eg2->Fill(fClus->E());
+                
+                //checking ET
+                Double_t fvertex_vector[3]={fXvtx, fYvtx, fZvtx};
+                
+                
+                TLorentzVector cluster_vector;
+                fClus->GetMomentum(cluster_vector,fvertex_vector);
+                
+                //Getting Et
+                Float_t ET = cluster_vector.Pt();
+                //printf("Getting ET from TLorentzVector: Ex = %f, Ey = %f, Ez = %f,E_total = %f,  ET = %f\n", cluster_vector[0], cluster_vector[1], cluster_vector[2], cluster_vector[3],ET);
+                
+                //printf("Energy from fClus->E() = %f \n", fClus->E());
+                
+                //to check trigger efficiency using Energy
+                if(feg1 || fdg1)fECluster_ET_eg1->Fill(ET);
+                if(feg2 || fdg2)fECluster_ET_eg2->Fill(ET);
 			  
 			    //}
                 //EID THnsparse
