@@ -62,7 +62,6 @@ class AliJHSCTask : public AliAnalysisTaskSE {
   Bool_t      fIsMC;       // MC data or real data
   AliAnalysisAnaTwoMultiCorrelations *fTwoMultiAna;
   
-  TDirectory     *fOutput; // Output directory
 
   ClassDef(AliJHSCTask, 1); 
 };

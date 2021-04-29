@@ -9,11 +9,7 @@ AliAnalysisTask *AddTaskJHSCMaster (TString taskName = "JHSCMaster", UInt_t peri
     endl;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager ();
 
-//-------- Loading Correction Maps ----------
-
-//-------- JHSC Wagons -------
   const int Nsets = 4;		// Number of configurations.
-  AliJHSCTask *myTask[Nsets];
   TString configNames[Nsets] = {
     "hybrid",			// 0 = default.
     "global",			// 1 for filtering.
@@ -53,8 +49,7 @@ AliAnalysisTask *AddTaskJHSCMaster (TString taskName = "JHSCMaster", UInt_t peri
     }				// Minimum bias.
   else if (period == lhc18q || period == lhc18r)
     {
-      selEvt =
-	AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+      selEvt = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
     }				// Minimum bias + central + semicentral.
 
 // Setting the JCatalystTasks for the event and track selection.
@@ -85,11 +80,12 @@ AliAnalysisTask *AddTaskJHSCMaster (TString taskName = "JHSCMaster", UInt_t peri
 
   }				// End for.
 // Configuration of the analysis task itself.
-
+  //-------- JHSC Wagons -------
+  AliJHSCTask *myTask[Nsets];
   for (int i = 0; i < Nsets; i++) {
   	myTask[i] = new AliJHSCTask (Form("%s_s_%s", taskName.Data (), configNames[i].Data ()));
-	myTask[i]->SetJCatalystTaskName (fJCatalyst[i]->GetJCatalystTaskName());
-	//myTask[i]->SetDebugLevel(6);
+  	myTask[i]->SetJCatalystTaskName (fJCatalyst[i]->GetJCatalystTaskName());
+	myTask[i]->SetDebugLevel(0);
   }
 
   // Must add the tasks
@@ -107,7 +103,7 @@ AliAnalysisTask *AddTaskJHSCMaster (TString taskName = "JHSCMaster", UInt_t peri
       AliAnalysisDataContainer *jHist = mgr->CreateContainer (Form ("%scontainer", myTask[i]->GetName ()), TList::Class (), AliAnalysisManager::kOutputContainer, Form ("%s:%s",
 				    AliAnalysisManager::GetCommonFileName (),myTask[i]->GetName ()));
       mgr->ConnectOutput (myTask[i], 1, jHist);
-      mgr->ConnectOutput (fJCatalyst[i], 1, jHist);
+      //mgr->ConnectOutput (fJCatalyst[i], 1, jHist);
     }
 
   return myTask[0];

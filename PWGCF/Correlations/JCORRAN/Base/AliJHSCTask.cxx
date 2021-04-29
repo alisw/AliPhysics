@@ -35,8 +35,7 @@ AliJHSCTask::AliJHSCTask() :
 	fJCatalystTaskName("JCatalystTask"),
     fFirstEvent(kTRUE),
 	fIsMC(kFALSE),
-	fTwoMultiAna(NULL),
-	fOutput(NULL)
+	fTwoMultiAna(NULL)
 {
 }
 
@@ -47,8 +46,7 @@ AliJHSCTask::AliJHSCTask(const char *name):
 	fJCatalystTaskName("JCatalystTask"),
     fFirstEvent(kTRUE),
 	fIsMC(kFALSE),
-	fTwoMultiAna(NULL),
-	fOutput(NULL)
+	fTwoMultiAna(NULL)
 {
 	// Constructor
 	AliInfo("---- AliJHSCTask Constructor ----");
@@ -62,8 +60,7 @@ AliJHSCTask::AliJHSCTask(const AliJHSCTask& ap) :
 	fJCatalystTaskName(ap.fJCatalystTaskName),
     fFirstEvent(ap.fFirstEvent),
 	fIsMC(ap.fIsMC),
-	fTwoMultiAna(ap.fTwoMultiAna),
-	fOutput( ap.fOutput )
+	fTwoMultiAna(ap.fTwoMultiAna)
 { 
 
 	AliInfo("----DEBUG AliJHSCTask COPY ----");
@@ -101,6 +98,7 @@ void AliJHSCTask::UserCreateOutputObjects()
 	cout<< "AliJCatalystTask Name = " << fJCatalystTaskName << endl;
 	fJCatalystTask = (AliJCatalystTask*)(man->GetTask( fJCatalystTaskName ));
 	fTwoMultiAna = new AliAnalysisAnaTwoMultiCorrelations("TwoMultiCorrelations",kFALSE);
+	fTwoMultiAna->SetDebugLevel(fDebug);
 	OpenFile(1);
 
 	fTwoMultiAna->UserCreateOutputObjects();
@@ -113,14 +111,15 @@ void AliJHSCTask::UserExec(Option_t* /*option*/)
 {
 	// Processing of one event
 	if(fDebug > 5) cout << "------- AliJHSCTask Exec-------"<<endl;
-	if(!((Entry()-1)%1))  AliInfo(Form(" Processing event # %lld",  Entry())); 
+	if(!((Entry()-1)%100))  AliInfo(Form(" Processing event # %lld",  Entry())); 
 
 	if( fJCatalystTask->GetJCatalystEntry() != fEntry ) return;
 	if( fFirstEvent ) {
 	    fFirstEvent = kFALSE;
 	}
-	if(fJCatalystTask->GetCentrality()>100. || fJCatalystTask->GetInputList()->GetEntriesFast()<1) return;
-	if(fDebug > 5) cout << Form("Nch = %d, cent=%.0f",fJCatalystTask->GetInputList()->GetEntriesFast(), fJCatalystTask->GetCentrality()) << endl;
+	if(fJCatalystTask->GetCentrality()>80. || fJCatalystTask->GetCentrality()<0.) return;
+	if(fDebug > 5) cout << Form("Event %d:%d",fEntry, fJCatalystTask->GetJCatalystEntry()) << endl;
+	if(fDebug > 5) cout << Form("%s, Nch = %d, cent=%.0f",GetJCatalystTaskName().Data(), fJCatalystTask->GetInputList()->GetEntriesFast(), fJCatalystTask->GetCentrality()) << endl;
 	fTwoMultiAna->SetInputList( fJCatalystTask->GetInputList() );
 	fTwoMultiAna->SetEventCentrality( fJCatalystTask->GetCentrality() );
 	fTwoMultiAna->UserExec("");
