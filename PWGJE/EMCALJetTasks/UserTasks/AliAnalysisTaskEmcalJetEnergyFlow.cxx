@@ -84,6 +84,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::UserCreateOutputObjects()
 
   TIter next(fHistManager.GetListOfHistograms());
   TObject* obj = 0;
+fOutput->SetUseScaling(kTRUE);
   while ((obj = next())) {
     fOutput->Add(obj);
   }
