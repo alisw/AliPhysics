@@ -3,7 +3,9 @@ AliProfileBS::AliProfileBS():
   TProfile(),
   fListOfEntries(0),
   fProfInitialized(kFALSE),
-  fNSubs(0)
+  fNSubs(0),
+  fMultiRebin(0),
+  fMultiRebinEdges(0)
 {
 };
 AliProfileBS::~AliProfileBS() {
@@ -13,13 +15,17 @@ AliProfileBS::AliProfileBS(const char* name, const char* title, Int_t nbinsx, co
   TProfile(name,title,nbinsx,xbins),
   fListOfEntries(0),
   fProfInitialized(kTRUE),
-  fNSubs(0)
+  fNSubs(0),
+  fMultiRebin(0),
+  fMultiRebinEdges(0)
 {};
 AliProfileBS::AliProfileBS(const char* name, const char* title, Int_t nbinsx, Double_t xlow, Double_t xup):
   TProfile(name,title,nbinsx,xlow,xup),
   fListOfEntries(0),
   fProfInitialized(kFALSE),
-  fNSubs(0)
+  fNSubs(0),
+  fMultiRebin(0),
+  fMultiRebinEdges(0)
 {};
 void AliProfileBS::InitializeSubsamples(Int_t nSub) {
   if(nSub<1) {printf("Number of subprofiles has to be > 0!\n"); return; };
@@ -51,11 +57,11 @@ void AliProfileBS::RebinMulti(Int_t nbins) {
 }
 TH1 *AliProfileBS::getHist(Int_t ind) {
   if(ind<0) {
-    if((TProfile*)this) return ((TProfile*)this)->ProjectionX(Form("%s_hist",this->GetName()));
+    if((TProfile*)this) return getHistRebinned((TProfile*)this);//((TProfile*)this)->ProjectionX(Form("%s_hist",this->GetName()));
     else { printf("Empty AliProfileBS addressed, cannot get a histogram\n"); return 0; };
   } else {
     if(!fListOfEntries) { printf("No subprofiles exist!\n"); return 0; };
-    if(ind<fNSubs) return ((TProfile*)fListOfEntries->At(ind))->ProjectionX(Form("%s_sub%i",((TProfile*)fListOfEntries->At(ind))->GetName(),ind));
+    if(ind<fNSubs) return getHistRebinned((TProfile*)fListOfEntries->At(ind));////((TProfile*)fListOfEntries->At(ind))->ProjectionX(Form("%s_sub%i",((TProfile*)fListOfEntries->At(ind))->GetName(),ind));
     else { printf("Trying to fetch subprofile no %i out of %i, not possible\n",ind,fNSubs); return 0;};
   }
   return 0;
@@ -77,3 +83,18 @@ Long64_t AliProfileBS::Merge(TCollection *collist) {
   };
   return nmergedpf;
 };
+void AliProfileBS::RebinMulti(Int_t nbins, Double_t *binedges) {
+  if(fMultiRebinEdges) {delete [] fMultiRebinEdges; fMultiRebinEdges=0;};
+  if(nbins<=0) { fMultiRebin=0; return; };
+  fMultiRebin = nbins;
+  fMultiRebinEdges = new Double_t[nbins+1];
+  for(Int_t i=0;i<=fMultiRebin;i++) fMultiRebinEdges[i] = binedges[i];
+}
+TH1 *AliProfileBS::getHistRebinned(TProfile *inpf) {
+  if(!inpf) return 0;
+  if(fMultiRebin<=0) return ((TProfile*)inpf)->ProjectionX(Form("%s_hist",inpf->GetName()));
+  TProfile *temppf = (TProfile*)inpf->Rebin(fMultiRebin,"tempProfile",fMultiRebinEdges);
+  TH1 *reth = (TH1*)temppf->ProjectionX(Form("%s_hist",inpf->GetName()));
+  delete temppf;
+  return reth;
+}
