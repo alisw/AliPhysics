@@ -98,7 +98,7 @@ void AliJHSCTask::UserCreateOutputObjects()
 	if(fDebug > 1) printf("AliJHSCTask::UserCreateOutPutData() \n");
 	//=== Get AnalysisManager
 	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-
+	cout<< "AliJCatalystTask Name = " << fJCatalystTaskName << endl;
 	fJCatalystTask = (AliJCatalystTask*)(man->GetTask( fJCatalystTaskName ));
 	fTwoMultiAna = new AliAnalysisAnaTwoMultiCorrelations("TwoMultiCorrelations",kFALSE);
 	OpenFile(1);
@@ -114,11 +114,13 @@ void AliJHSCTask::UserExec(Option_t* /*option*/)
 	// Processing of one event
 	if(fDebug > 5) cout << "------- AliJHSCTask Exec-------"<<endl;
 	if(!((Entry()-1)%1))  AliInfo(Form(" Processing event # %lld",  Entry())); 
+
 	if( fJCatalystTask->GetJCatalystEntry() != fEntry ) return;
 	if( fFirstEvent ) {
 	    fFirstEvent = kFALSE;
 	}
-	cout << "Nch = "<< fJCatalystTask->GetInputList()->GetEntriesFast() << endl;
+	if(fJCatalystTask->GetCentrality()>100. || fJCatalystTask->GetInputList()->GetEntriesFast()<1) return;
+	if(fDebug > 5) cout << Form("Nch = %d, cent=%.0f",fJCatalystTask->GetInputList()->GetEntriesFast(), fJCatalystTask->GetCentrality()) << endl;
 	fTwoMultiAna->SetInputList( fJCatalystTask->GetInputList() );
 	fTwoMultiAna->SetEventCentrality( fJCatalystTask->GetCentrality() );
 	fTwoMultiAna->UserExec("");

@@ -62,6 +62,7 @@ AliAnalysisTask *AddTaskJHSCMaster (TString taskName = "JHSCMaster", UInt_t peri
 
   for (int i = 0; i < Nsets; i++) {
       fJCatalyst[i] = new AliJCatalystTask (Form ("JCatalystTask_%s", configNames[i].Data ()));
+      cout << fJCatalyst[i]->GetJCatalystTaskName() << endl;
       // Set the correct flags to use.
       if (i != 3) fJCatalyst[i]->AddFlags (AliJCatalystTask::FLUC_CUT_OUTLIERS);
       if (period == lhc18q || period == lhc18r)	fJCatalyst[i]->AddFlags (AliJCatalystTask::FLUC_CENT_FLATTENING);
@@ -83,24 +84,30 @@ AliAnalysisTask *AddTaskJHSCMaster (TString taskName = "JHSCMaster", UInt_t peri
       fJCatalyst[i]->SetPhiCorrectionIndex (i);
 
   }				// End for.
-
 // Configuration of the analysis task itself.
+
   for (int i = 0; i < Nsets; i++) {
   	myTask[i] = new AliJHSCTask (Form("%s_s_%s", taskName.Data (), configNames[i].Data ()));
 	myTask[i]->SetJCatalystTaskName (fJCatalyst[i]->GetJCatalystTaskName());
+	//myTask[i]->SetDebugLevel(6);
   }
 
   // Must add the tasks
-  for (int i = 0; i < Nsets; i++) mgr->AddTask ((AliAnalysisTask *) myTask[i]);
+  for (int i = 0; i < Nsets; i++) {
+  	mgr->AddTask ((AliAnalysisTask *) fJCatalyst[i]);
+  	mgr->AddTask ((AliAnalysisTask *) myTask[i]);
+  }
   // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer ();
 
   // Connect input/output
   for (int i = 0; i < Nsets; i++) {
-      mgr->ConnectInput (myTask[i], 0, cinput);
+      mgr->ConnectInput (fJCatalyst[i], 0, cinput); // MUST
+      mgr->ConnectInput (myTask[i], 0, cinput); // MUST
       AliAnalysisDataContainer *jHist = mgr->CreateContainer (Form ("%scontainer", myTask[i]->GetName ()), TList::Class (), AliAnalysisManager::kOutputContainer, Form ("%s:%s",
 				    AliAnalysisManager::GetCommonFileName (),myTask[i]->GetName ()));
       mgr->ConnectOutput (myTask[i], 1, jHist);
+      mgr->ConnectOutput (fJCatalyst[i], 1, jHist);
     }
 
   return myTask[0];
