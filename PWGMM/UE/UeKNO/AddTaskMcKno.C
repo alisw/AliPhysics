@@ -16,7 +16,8 @@ AliAnalysisTaskMcKno* AddTaskMcKno(const Char_t* taskname="McKno",
                                    Double_t V0Mmin = 0.0,
                                    Double_t V0Mmax = 100.0,
                                    Bool_t IsTPCOnlyTrkCuts = kTRUE,
-                                   Bool_t SelectHybridTrks = kTRUE,
+                                   Bool_t Is2015TrkCuts = kTRUE,
+                                   Bool_t SelectHybridTrks = kFALSE,
                                    Bool_t TPCclustersVar1 = kFALSE,
                                    Bool_t TPCclustersVar2 = kFALSE,
                                    Bool_t NcrVar1 = kFALSE,
@@ -59,7 +60,8 @@ AliAnalysisTaskMcKno* AddTaskMcKno(const Char_t* taskname="McKno",
     taskKno->SetLeadingPtMax(PtLmax);
     taskKno->SetV0Mmin(V0Mmin);
     taskKno->SetV0Mmax(V0Mmax);
-    taskKno->SetTrackCutsType(IsTPCOnlyTrkCuts);
+    taskKno->SetTrackCutsTypeTPC(IsTPCOnlyTrkCuts);
+    taskKno->SetTrackCutsType2015(Is2015TrkCuts);
     taskKno->SetHybridTracks(SelectHybridTrks);
     // Systematic -------------------------------
     taskKno->SetNchTScut(IsTPCOnlyTrkCuts);
