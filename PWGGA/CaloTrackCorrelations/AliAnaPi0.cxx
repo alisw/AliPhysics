@@ -4903,12 +4903,12 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 // Same sector
                 Int_t isector1 = module1/2;
                 Int_t isector2 = module2/2;
-                if ( isector1==isector2 ) 
+                if ( isector1==isector2 && fhMiSameSectorEMCALMod )
                 {
                   fhMiSameSectorEMCALMod[isector1]->Fill(pt, m, GetEventWeight()) ;
                 }
                 // Same side
-                else if ( TMath::Abs(isector2-isector1) == 1 )
+                else if ( TMath::Abs(isector2-isector1) == 1 && fhMiSameSideEMCALMod )
                 {
                   Int_t iside1 = module1;
                   Int_t iside2 = module2;
@@ -4922,7 +4922,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                     fhMiSameSideEMCALMod[iside2]->Fill(pt, m, GetEventWeight());
                 }
               } // EMCAL
-              else if ( GetCalorimeter() == kPHOS )
+              else if ( GetCalorimeter() == kPHOS && fhMiDiffPHOSMod )
               { // PHOS
                 if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
                 if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
