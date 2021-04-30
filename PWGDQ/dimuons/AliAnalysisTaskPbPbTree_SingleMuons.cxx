@@ -251,7 +251,7 @@ void AliAnalysisTaskPbPbTree_SingleMuons::UserExec(Option_t *)
           if(!fMuonTrackCuts->IsSelected(mu0)) continue;
 
 
-          Int_t pdg;
+          Int_t pdg=999;
           if(mu0->Charge()==-1) pdg=13;
           else if(mu0->Charge()==1) pdg = -13;
           Int_t status=0;
