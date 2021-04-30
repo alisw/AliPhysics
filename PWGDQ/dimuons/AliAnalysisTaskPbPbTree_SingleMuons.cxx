@@ -198,8 +198,7 @@ void AliAnalysisTaskPbPbTree_SingleMuons::UserExec(Option_t *)
    Bool_t TriggerSelected_CMSH7=kFALSE;
    Bool_t TriggerSelected_CINT7_CENT=kFALSE;
 
-  if(firedtrigger.Contains("CMUL7-B-NOPF-MUFAST")) TriggerSelected = kTRUE;
-  else TriggerSelected = kFALSE;
+
   if(firedtrigger.Contains("CINT7-B-NOPF-MUFAST")) TriggerSelected_CINT7 = kTRUE;
   else TriggerSelected_CINT7 = kFALSE;
   if(firedtrigger.Contains("CMUL7-B-NOPF-MUFAST")) TriggerSelected_CMUL7 = kTRUE;
