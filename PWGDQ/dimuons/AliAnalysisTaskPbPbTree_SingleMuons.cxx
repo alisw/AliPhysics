@@ -252,8 +252,8 @@ void AliAnalysisTaskPbPbTree_SingleMuons::UserExec(Option_t *)
 
 
           Int_t pdg;
-          if(mu0->Charge()==1) pdg=13;
-          else if(mu0->Charge()==-1) pdg = -13;
+          if(mu0->Charge()==-1) pdg=13;
+          else if(mu0->Charge()==1) pdg = -13;
           Int_t status=0;
           Int_t mother1=0;
           Int_t mother2=0;
