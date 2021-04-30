@@ -5970,7 +5970,6 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
             }
           }
           if (isSelected != 0 ){
-            // cout << "I am here" << " :" << fSpecialSubTriggerName.Data() <<endl;
             if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 ){
               if (hTriggerClassesCorrelated){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassesCorrelated->Fill(0);
@@ -5990,8 +5989,16 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                 if (firedTrigClass.Contains("7DGA") || firedTrigClass.Contains("8DGA")) hTriggerClassesCorrelated->Fill(14);
                 if (firedTrigClass.Contains("7DG1") || firedTrigClass.Contains("8DG1")) hTriggerClassesCorrelated->Fill(15);
                 if (firedTrigClass.Contains("7DG2") || firedTrigClass.Contains("8DG2")) hTriggerClassesCorrelated->Fill(16);
-                if (firedTrigClass.Contains("CENT-")&&(!firedTrigClass.Contains("NOTRD"))) hTriggerClassesCorrelated->Fill(17);
-                if (!firedTrigClass.Contains("CENT-")&&(firedTrigClass.Contains("NOTRD")))  hTriggerClassesCorrelated->Fill(18);
+
+                if(fEnergyEnum == kpPb8TeV){
+                    if (firedTrigClass.Contains("CENTNOPMD")&&(!firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(17); // CENT
+                    if (firedTrigClass.Contains("CENTNOPMD")&&(firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(17); // if both count also as cent
+                    if (!firedTrigClass.Contains("CENTNOPMD")&&(firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(18); // noTRD
+                } else{
+                    if (firedTrigClass.Contains("CENT-")&&(!firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(17);
+                    if (!firedTrigClass.Contains("CENT-")&&(firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(18);          
+                }
+            
               }
             } else if ( fSpecialTrigger == 10 ){
               if (hTriggerClassesCorrelated){
@@ -6013,8 +6020,14 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                   if (firedTrigClass.Contains("7DGA") || firedTrigClass.Contains("8DGA")) hTriggerClassesCorrelated->Fill(14);
                   if (firedTrigClass.Contains("7DG1") || firedTrigClass.Contains("8DG1")) hTriggerClassesCorrelated->Fill(15);
                   if (firedTrigClass.Contains("7DG2") || firedTrigClass.Contains("8DG2")) hTriggerClassesCorrelated->Fill(16);
-                  if (firedTrigClass.Contains("CENT-")&&(!firedTrigClass.Contains("NOTRD"))) hTriggerClassesCorrelated->Fill(17);
-                  if (!firedTrigClass.Contains("CENT-")&&(firedTrigClass.Contains("NOTRD")))  hTriggerClassesCorrelated->Fill(18);
+                  if(fEnergyEnum == kpPb8TeV){
+                      if (firedTrigClass.Contains("CENTNOPMD")&&(!firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(17); // CENT
+                      if (firedTrigClass.Contains("CENTNOPMD")&&(firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(17); // CENT
+                      if (!firedTrigClass.Contains("CENTNOPMD")&&(firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(18); // noTRD
+                  } else{
+                      if (firedTrigClass.Contains("CENT-")&&(!firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(17);
+                      if (!firedTrigClass.Contains("CENT-")&&(firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(18);          
+                  }
                 }
               }
             }
