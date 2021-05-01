@@ -14,7 +14,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoCutVariation(int trigger = 0, bool fullB
                                      bool isMC = false, bool isNano = true, bool triggerOn = false,
                                      const char *triggerVariation = "0", bool turnoffClosePairRejectionCompletely = false, 
                                      bool ClosePairRejectionForAll = false,  bool plotAdditionalPlots=true, 
-                                     bool ClosePairRejectionPPPorPPL = false, const char *cutVariation = "0") {
+                                     bool ClosePairRejectionPPPorPPL = false, double Q3LimitForDeltaPhiDeltaEta=0.4, 
+                                     const char *cutVariation = "0") {
 
 
 
@@ -1542,6 +1543,10 @@ if(suffixTrigger=="5"){
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     taskNano->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
     taskNano->SetClosePairRejectionPPPorPPL(ClosePairRejectionPPPorPPL);
+
+    taskNano->SetQ3LimitForDeltaPhiDeltaEta( Q3LimitForDeltaPhiDeltaEta);
+
+
 
     taskNano->SetRunPlotPhiTheta(true); // test for preliminaries
 
