@@ -301,6 +301,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16rP1JJ,          //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
         kLHC16sP1JJ,          //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
         kLHC16rsGJ,           //!< anchored LHC16rs pass 1 - Gamma-jet MC in EMCal acc
+        kLHC16rsP2GJ,         //!< anchored LHC16rs pass 2 - Gamma-jet MC in EMCal+DCAL acc
+        kLHC16rsP2JJLow,      //!< anchored LHC16rs pass 2 - Jet-Jet MC in EMCal+DCAL acc gamma 3.5GeV
+        kLHC16rsP2JJHigh,     //!< anchored LHC16rs pass 2 - Jet-jet MC in EMCal+DCAL acc gamma 7.0GeV
 
         //heavy flavour MC pPb k17d2a_fast,
         kLHC17d2a,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
@@ -802,7 +805,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,85)
+      ClassDef(AliConvEventCuts,86)
       /// \endcond
 };
 

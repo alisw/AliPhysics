@@ -474,6 +474,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fTrackPt;//!
     TH1F*                       fTrackEta;//!
     TH2F*                       fTrackPhiPt;//!
+    TH2F*                       fTrackPhiMaxClusE;//!
     TH1F*                       fTrackPtHybridOnlyPosID;//!
     TH1F*                       fTrackEtaHybridOnlyPosID;//!
     TH1F*                       fTrackPhiHybridOnlyPosID;//!
@@ -697,12 +698,13 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Double_t                    fExclusionRadius;//
 
     Int_t                       fDebug;// debug flag
-
+    Double_t                    fMaxClusterE;//
     AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     // MC cluster & headers 
     Bool_t                fIsFromDesiredHeader;                                 // flag for MC headers
     Bool_t                fIsOverlappingWithOtherHeader;                        // flag for particles in MC overlapping between headers
     Bool_t                fAllowOverlapHeaders;                                 // enable overlapping headers for cluster selection
+    
     // //
     // // ─── FOR LIGHT TREE ──────────────────────────────────────────────
     // //
@@ -811,7 +813,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Float_t CalculateIsoCorrectionFactor(Double_t cEta, Double_t maxEta, Double_t r);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 39);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 40);
 
 };
 
