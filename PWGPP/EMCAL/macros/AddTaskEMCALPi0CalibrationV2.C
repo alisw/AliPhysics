@@ -135,29 +135,34 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   if(outputFile.Length()==0) outputFile = AliAnalysisManager::GetCommonFileName(); 
 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-                                                                                                
-                                                                                                
-  AliAnalysisDataContainer *coutput1 = 0;
-  AliAnalysisDataContainer *coutput2 = 0;
+                                                                                                                                                              
+  AliAnalysisDataContainer *couthistos  = 0;
+  AliAnalysisDataContainer *couttree    = 0;
   if( wagon.Length()==0 ){
-    coutput1 = mgr->CreateContainer(Form("Pi0Calibration_Trig%s",trigger.Data()), TList::Class(), 
-                                   AliAnalysisManager::kOutputContainer,outputFile.Data());
-    if( fSaveCells || fSaveClusters) coutput2 = mgr->CreateContainer(Form("Pi0Calibration_Trig%s_tree",trigger.Data()), TTree::Class(), 
-                                   AliAnalysisManager::kOutputContainer,Form("%s_tree",outputFile.Data()));
+    couthistos  = mgr->CreateContainer( Form( "Pi0Calibration_Trig%s",trigger.Data() ),
+                                        TList::Class(),
+                                        AliAnalysisManager::kOutputContainer,
+                                        outputFile.Data() );
+    if( fSaveCells || fSaveClusters )   couttree    = mgr->CreateContainer( Form("Pi0Calibration_Trig%s",trigger.Data()),
+                                                                            TTree::Class(),
+                                                                            AliAnalysisManager::kOutputContainer,
+                                                                            "Pi0CalibrationTree.root"); 
   } else {
     TString containerName = "Pi0Calibration";
-    coutput1 = mgr->CreateContainer(wagon, TList::Class(), 
-                                   AliAnalysisManager::kOutputContainer,Form("%s:%s",outputFile.Data(),containerName.Data()));
-  
-    if( fSaveCells || fSaveClusters ) coutput2 = mgr->CreateContainer(Form("%s_tree",trigger.Data()), TTree::Class(), 
-                                   AliAnalysisManager::kOutputContainer,Form("%s:%s_tree",outputFile.Data(),containerName.Data()));
+    couthistos  = mgr->CreateContainer( wagon,
+                                        TList::Class(),
+                                        AliAnalysisManager::kOutputContainer,
+                                        Form("%s:%s",outputFile.Data(),containerName.Data()) );
+    if( fSaveCells || fSaveClusters )   couttree    = mgr->CreateContainer( Form("Pi0Calibration_Trig%s",trigger.Data()),
+                                                                            TTree::Class(),
+                                                                            AliAnalysisManager::kOutputContainer,
+                                                                            "Pi0CalibrationTree.root"); 
   }  
   
   mgr->AddTask(pi0calib);
-                                                             
-  mgr->ConnectInput  (pi0calib, 0, cinput1);
-  mgr->ConnectOutput (pi0calib, 1, coutput1);
-  if(fSaveCells || fSaveClusters) mgr->ConnectOutput( pi0calib, 2, coutput2);
+  mgr->ConnectInput(pi0calib, 0, cinput1);                                
+  mgr->ConnectOutput (pi0calib, 1, couthistos);
+  if(fSaveCells || fSaveClusters) mgr->ConnectOutput( pi0calib, 2, couttree);
 
   return pi0calib;
 }
