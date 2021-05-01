@@ -9017,6 +9017,10 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   // pPb 8 TeV 2016 GJ MC
   else if ( namePeriod.CompareTo("LHC17g6b1a") == 0  )    return k17g6b1a;
 
+  // pPb 8 TeV 2016 pass2 MC
+   else if ( namePeriod.CompareTo("LHC21d2a") == 0  )    return kLHC21d2a;
+   else if ( namePeriod.CompareTo("LHC21d2b") == 0  )    return kLHC21d2b;
+   else if ( namePeriod.CompareTo("LHC21d2c") == 0  )    return kLHC21d2c;
   //pp 13 TeV LHC17
   else if ( namePeriod.CompareTo("LHC17k1") ==0 )       return k17k1; // HF low B
   else if ( namePeriod.CompareTo("LHC17P1Pyt8NomB") ==0 ||
