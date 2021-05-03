@@ -1843,13 +1843,15 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
           fHistoMotherBackInvMassECalibPCM[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
           fHistoMotherBackInvMassECalibPCM[iCut]->SetYTitle("E_{PCM #gamma}(GeV)");
           fESDList[iCut]->Add(fHistoMotherBackInvMassECalibPCM[iCut]);
+          if (fIsMC > 1){
+            fHistoMotherInvMassECalibPCM[iCut]->Sumw2();
+            fHistoMotherBackInvMassECalibPCM[iCut]->Sumw2();
+          }
         }
 
         if (fIsMC > 1){
           fHistoMotherInvMassECalib[iCut]->Sumw2();
           fHistoMotherBackInvMassECalib[iCut]->Sumw2();
-          fHistoMotherInvMassECalibPCM[iCut]->Sumw2();
-          fHistoMotherBackInvMassECalibPCM[iCut]->Sumw2();
         }
       }
 
