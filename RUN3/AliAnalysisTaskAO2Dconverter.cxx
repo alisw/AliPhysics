@@ -1909,6 +1909,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     for (Int_t imu = 0; imu < nmu; ++imu)
     {
       AliESDMuonTrack *mutrk = fESD->GetMuonTrack(imu);
+      if (mutrk->GetInverseBendingMomentum()==FLT_MAX && mutrk->GetThetaX()==0 && mutrk->GetThetaY()==0 && mutrk->GetZ()==0) continue; //skip tracks whose parameter values are still at their default (not real muon tracks)
       fwdtracks = MUONtoFwdTrack(*mutrk);
       fwdtracks.fIndexCollisions = fCollisionCount;
       fwdtracks.fIndexBCs = fBCCount;
@@ -2394,7 +2395,7 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   if (alpha3 != 0 || alpha1 != 0)
     x3 = -1. / TMath::Sqrt(alpha3 * alpha3 + alpha1 * alpha1);
   else
-    x3 = FLT_MAX;
+    x3 = -FLT_MAX;
   x4 = alpha4 * -x3 * TMath::Sqrt(1 + alpha3 * alpha3);
 
   // Set output parameters
