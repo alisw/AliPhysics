@@ -1,6 +1,6 @@
 
 //_____________________________________________________________________________________________________
-AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="LHC10h", Int_t reducedEventType=-1, Bool_t writeTree=kTRUE, TString tasks="dst", TString pathForMacros="$ALICE_PHYSICS/PWGDQ/reducedTree/macros") {
+AliAnalysisTask* AddTask_TrainTreeAnalysis_root6(Bool_t isGrid=kFALSE, TString prod="LHC10h", Int_t reducedEventType=-1, Bool_t writeTree=kTRUE, TString tasks="dst", TString pathForMacros="$ALICE_PHYSICS/PWGDQ/reducedTree/macros") {
    //
    //  AddTask macro for the TreeMaker analysis task and eventual other dependent tasks
    //
