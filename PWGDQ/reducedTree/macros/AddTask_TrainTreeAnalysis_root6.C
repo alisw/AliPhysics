@@ -1,6 +1,6 @@
 
 //_____________________________________________________________________________________________________
-AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="LHC10h", Int_t reducedEventType=-1, Bool_t writeTree=kTRUE, TString tasks="dst", TString pathForMacros="$ALICE_PHYSICS/PWGDQ/reducedTree/macros") {
+AliAnalysisTask* AddTask_TrainTreeAnalysis_root6(Bool_t isGrid=kFALSE, TString prod="LHC10h", Int_t reducedEventType=-1, Bool_t writeTree=kTRUE, TString tasks="dst", TString pathForMacros="$ALICE_PHYSICS/PWGDQ/reducedTree/macros") {
    //
    //  AddTask macro for the TreeMaker analysis task and eventual other dependent tasks
    //
@@ -42,7 +42,7 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
          //addTaskFullPath = alirootPath.Data();
          addTaskFullPath = pathForMacros.Data();
       }
-      addTaskFullPath += "/AddTask_";
+      addTaskFullPath += "AddTask_";
       addTaskFullPath += tasksArray->At(0)->GetName();
       addTaskFullPath += ".C";
       if (!gROOT->GetListOfGlobalFunctions()->FindObject(Form("AddTask_%s", tasksArray->At(0)->GetName()))){
@@ -88,7 +88,7 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
          //addTaskFullPath = alirootPath.Data();
          addTaskFullPath = pathForMacros.Data();
       }
-      addTaskFullPath = Form("%s/AddTask_%s.C", addTaskFullPath.Data(), task.Data());
+      addTaskFullPath = Form("%sAddTask_%s.C", addTaskFullPath.Data(), task.Data());
       if (!gROOT->GetListOfGlobalFunctions()->FindObject(Form("AddTask_%s", task.Data()))){
 #ifdef __CLING__
 				// ROOT6 version of the Config macro. It cannot handle load and execute macro (compiler error) - need to call via gROOT->ProcessLine(...)
