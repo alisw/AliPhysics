@@ -581,6 +581,15 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 			fCent = sel->GetMultiplicityPercentile("V0A");
 			v0amplitude = 0.0;
 			for(int i=32;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
+			if( fOption.Contains("UseV0M") ){
+				fCent = sel->GetMultiplicityPercentile("V0M");
+				v0amplitude = 0.0;
+				for(int i=32;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
+			} else if( fOption.Contains("UseZNA") ){
+				fCent = sel->GetMultiplicityPercentile("ZNA");
+				v0amplitude = 0.0;
+				for(int i=32;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
+			}
 		}
 	}
 
