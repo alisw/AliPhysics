@@ -103,6 +103,9 @@
 #include "AliAnalysisTaskEmcalTriggerSelection.h"
 #include "AliEmcalTriggerMakerTask.h"
 
+//SM
+#include "AliEMCALGeometry.h"
+
 //______________________________________________________________________
 
 //______________________________________________________________________
@@ -248,6 +251,16 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fECluster_eg2(0)
 ,fECluster_ET_eg1(0)
 ,fECluster_ET_eg2(0)
+//SM
+,fECluster_eg1_SM(0)
+,fECluster_eg2_SM(0)
+,fECluster_ET_eg1_SM(0)
+,fECluster_ET_eg2_SM(0)
+
+,fPt_mb_SM(0)
+,fPt_eg1_SM(0)
+,fPt_eg2_SM(0)
+
 ,fECluster_emcal(0)
 ,fECluster_dcal(0)
 ,fTracksPt(0)
@@ -668,6 +681,17 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fECluster_eg2(0)
 ,fECluster_ET_eg1(0)
 ,fECluster_ET_eg2(0)
+
+//SM
+,fECluster_eg1_SM(0)
+,fECluster_eg2_SM(0)
+,fECluster_ET_eg1_SM(0)
+,fECluster_ET_eg2_SM(0)
+
+,fPt_mb_SM(0)
+,fPt_eg1_SM(0)
+,fPt_eg2_SM(0)
+
 ,fECluster_emcal(0)
 ,fECluster_dcal(0)
 ,fECluster_pure(0)
@@ -1107,26 +1131,47 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         }
     }//close flag fIs_sys
     
-    fTPCnsigma_p_beforeCalibration = new TH2F("fTPCnsigma_p_beforeCalibration",";p (GeV/c);TPC Electron N#sigma (bef. calibration)",40,0,40,50,-15,10);
-    fTPCnsigma_p_afterCalibration = new TH2F("fTPCnsigma_p_afterCalibration", ";p (GeV/c);TPC Electron N#sigma (aft. calibration)",40,0,40,50,-15,10);
+    if(!fIs_sys){
+        fTPCnsigma_p_beforeCalibration = new TH2F("fTPCnsigma_p_beforeCalibration",";p (GeV/c);TPC Electron N#sigma (bef. calibration)",40,0,40,50,-15,10);
+        fTPCnsigma_p_afterCalibration = new TH2F("fTPCnsigma_p_afterCalibration", ";p (GeV/c);TPC Electron N#sigma (aft. calibration)",40,0,40,50,-15,10);
     
-    fOutputList->Add(fTPCnsigma_p_beforeCalibration);
-    fOutputList->Add(fTPCnsigma_p_afterCalibration);
-    
+        fOutputList->Add(fTPCnsigma_p_beforeCalibration);
+        fOutputList->Add(fTPCnsigma_p_afterCalibration);
+    }
     //pileup check
     if(!fIs_sys) fTPC_vs_ITScls= new TH2F *[4];
     fECluster= new TH1F *[4];
     
-    fECluster_eg1 = new TH1F("ECluster_eg1", ";ECluster;Counts",50, 0, 50);
-    fECluster_eg2 = new TH1F("ECluster_eg2", ";ECluster;Counts",50, 0, 50);
+    fECluster_eg1 = new TH1F("ECluster_eg1", ";ECluster;Counts",20, 0, 40);
+    fECluster_eg2 = new TH1F("ECluster_eg2", ";ECluster;Counts",20, 0, 40);
     fOutputList->Add(fECluster_eg1);
     fOutputList->Add(fECluster_eg2);
     
     //ET
-    fECluster_ET_eg1 = new TH1F("ECluster_ET_eg1", ";ECluster ET;Counts",50, 0, 50);
-    fECluster_ET_eg2 = new TH1F("ECluster_ET_eg2", ";ECluster ET;Counts",50, 0, 50);
+    fECluster_ET_eg1 = new TH1F("ECluster_ET_eg1", ";ECluster ET;Counts",20, 0, 40);
+    fECluster_ET_eg2 = new TH1F("ECluster_ET_eg2", ";ECluster ET;Counts",20, 0, 40);
     fOutputList->Add(fECluster_ET_eg1);
     fOutputList->Add(fECluster_ET_eg2);
+    
+    //SM --> 2D
+    fECluster_eg1_SM = new TH2F("ECluster_eg1_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fECluster_eg2_SM = new TH2F("ECluster_eg2_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fOutputList->Add(fECluster_eg1_SM);
+    fOutputList->Add(fECluster_eg2_SM);
+    
+    //ET
+    fECluster_ET_eg1_SM = new TH2F("ECluster_ET_eg1_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fECluster_ET_eg2_SM = new TH2F("ECluster_ET_eg2_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fOutputList->Add(fECluster_ET_eg1_SM);
+    fOutputList->Add(fECluster_ET_eg2_SM);
+    
+    //Pt
+    fPt_mb_SM = new TH2F("Pt_mb_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fPt_eg1_SM = new TH2F("Pt_eg1_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fPt_eg2_SM = new TH2F("Pt_eg2_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fOutputList->Add(fPt_mb_SM);
+    fOutputList->Add(fPt_eg1_SM);
+    fOutputList->Add(fPt_eg2_SM);
     
     
     for(Int_t i = 0; i < 4; i++)
@@ -2421,6 +2466,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     Bool_t hasCls_aboveEG2=kFALSE;
 	
 	AliVCluster *clust = 0x0;
+    
+    //SM
+    AliEMCALGeometry *fGeom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+    
+    Int_t supermoduleID = -1;
+    Bool_t isEMCAL(kFALSE);
 	
 	if(!fUseTender){
 		if(fIsAOD){
@@ -2466,14 +2517,27 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 					TVector3 vpos(pos[0],pos[1],pos[2]);
 					Double_t cphi = vpos.Phi();
 					Double_t ceta = vpos.Eta();
-					
-					
-
+                    
+                    
+                    
+                    isEMCAL = fGeom->SuperModuleNumberFromEtaPhi(ceta, cphi, supermoduleID);
+                    
+                   // printf("eta = %f, phi = %f, supermoduleID = %d \n", ceta, cphi, supermoduleID);
 					
 					///from emcal QA task
 					if(cphi < 0) cphi = cphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
 															  // if(cphi > 1.39 && cphi < 3.265) ; //EMCAL : 80 < phi < 187
 															  // if(cphi > 4.53 && cphi < 5.708) ; //DCAL  : 260 < phi < 327
+                    
+                    
+                    
+                    Int_t supermoduleID = -1;
+                    Bool_t isEMCAL(kFALSE);
+                    isEMCAL = fGeom->SuperModuleNumberFromEtaPhi(ceta, cphi, supermoduleID);
+                    
+                    //printf("eta = %f, phi = %f, supermoduleID = %d \n", ceta, cphi, supermoduleID);
+                    
+                    
                     
                     if(!fIs_sys)fEtaPhi_both->Fill(cphi,ceta);
 
@@ -2576,11 +2640,19 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				Double_t cphi = vpos.Phi();
 				Double_t ceta = vpos.Eta();
                 
+                
+                isEMCAL = fGeom->SuperModuleNumberFromEtaPhi(ceta, cphi, supermoduleID);
+                
+               // printf("eta = %f, phi = %f, supermoduleID = %d \n", ceta, cphi, supermoduleID);
+                
                 ///from emcal QA task
                 if(cphi < 0) cphi = cphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
                 // if(cphi > 1.39 && cphi < 3.265) ; //EMCAL : 80 < phi < 187
                 // if(cphi > 4.53 && cphi < 5.708) ; //DCAL  : 260 < phi < 327
 				
+                
+                
+                
                 if(!fIs_sys){
                     fEtaPhi_both->Fill(cphi,ceta);
 				
@@ -2708,12 +2780,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
         
         //Apply TPC calibration here!
-        fTPCnsigma_p_beforeCalibration->Fill(fP,fTPCnSigma_old);
+        if(!fIs_sys)fTPCnsigma_p_beforeCalibration->Fill(fP,fTPCnSigma_old);
         
         if(fIs_TPC_calibration) fTPCnSigma = GetTPCCalibration(fAOD->GetRunNumber(), fTPCnSigma_old);
         if(!fIs_TPC_calibration) fTPCnSigma = fTPCnSigma_old;
         
-        fTPCnsigma_p_afterCalibration->Fill(fP,fTPCnSigma);
+        if(!fIs_sys)fTPCnsigma_p_afterCalibration->Fill(fP,fTPCnSigma);
         
         //TOF
         fTOFsignal = track->GetTOFsignal();
@@ -3070,6 +3142,15 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				  TVector3 vpos1(pos1[0],pos1[1],pos1[2]);
 				  Double_t cphi = vpos1.Phi();
 				  Double_t ceta = vpos1.Eta();
+                
+                
+                  Int_t supermoduleID = -1;
+                  Bool_t isEMCAL(kFALSE);
+                  isEMCAL = fGeom->SuperModuleNumberFromEtaPhi(ceta, cphi, supermoduleID);
+                
+                 // printf("eta = %f, phi = %f, supermoduleID = %d \n", ceta, cphi, supermoduleID);
+                
+                
 		
 				//======================================
 				///from emcal QA task
@@ -3093,27 +3174,45 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                 fIsTrack1Emcal=kTRUE;
                 
                 
-                //to check trigger efficiency using Energy
-                if(feg1 || fdg1)fECluster_eg1->Fill(fClus->E());
-                if(feg2 || fdg2)fECluster_eg2->Fill(fClus->E());
+                //only electrons after TPC eID
+                  if(fTPCnSigma >= fTPCnsigmaCutMin && fTPCnSigma <= fTPCnsigmaCutMax){
                 
-                //checking ET
-                Double_t fvertex_vector[3]={fXvtx, fYvtx, fZvtx};
+                      //to check trigger efficiency using Energy
+                      if(feg1 || fdg1)fECluster_eg1->Fill(fClus->E());
+                      if(feg2 || fdg2)fECluster_eg2->Fill(fClus->E());
+                
+                      //to check trigger efficiency using Energy for each super module
+                      if(feg1 || fdg1)fECluster_eg1_SM->Fill(supermoduleID,fClus->E());
+                      if(feg2 || fdg2)fECluster_eg2_SM->Fill(supermoduleID,fClus->E());
+                
+                      //not true e from true J/psi, track is on emcal necessarily
+                      fPt_mb_SM->Fill(supermoduleID,fPt);//MB
+                      if(feg1 || fdg1)fPt_eg1_SM->Fill(supermoduleID,fPt);
+                      if(feg2 || fdg2)fPt_eg2_SM->Fill(supermoduleID,fPt);
+                
+                      //checking ET
+                      Double_t fvertex_vector[3]={fXvtx, fYvtx, fZvtx};
                 
                 
-                TLorentzVector cluster_vector;
-                fClus->GetMomentum(cluster_vector,fvertex_vector);
+                      TLorentzVector cluster_vector;
+                      fClus->GetMomentum(cluster_vector,fvertex_vector);
                 
-                //Getting Et
-                Float_t ET = cluster_vector.Pt();
-                //printf("Getting ET from TLorentzVector: Ex = %f, Ey = %f, Ez = %f,E_total = %f,  ET = %f\n", cluster_vector[0], cluster_vector[1], cluster_vector[2], cluster_vector[3],ET);
+                      //Getting Et
+                      Float_t ET = cluster_vector.Pt();
+                      //printf("Getting ET from TLorentzVector: Ex = %f, Ey = %f, Ez = %f,E_total = %f,  ET = %f\n", cluster_vector[0], cluster_vector[1], cluster_vector[2], cluster_vector[3],ET);
                 
-                //printf("Energy from fClus->E() = %f \n", fClus->E());
+                      //printf("Energy from fClus->E() = %f \n", fClus->E());
                 
-                //to check trigger efficiency using Energy
-                if(feg1 || fdg1)fECluster_ET_eg1->Fill(ET);
-                if(feg2 || fdg2)fECluster_ET_eg2->Fill(ET);
+                      //to check trigger efficiency using Energy
+                      if(feg1 || fdg1)fECluster_ET_eg1->Fill(ET);
+                      if(feg2 || fdg2)fECluster_ET_eg2->Fill(ET);
+                
+                      //to check trigger efficiency using Energy for each super module
+                      if(feg1 || fdg1)fECluster_ET_eg1_SM->Fill(supermoduleID,ET);
+                      if(feg2 || fdg2)fECluster_ET_eg2_SM->Fill(supermoduleID,ET);
 			  
+                      
+                  }
 			    //}
                 //EID THnsparse
 				

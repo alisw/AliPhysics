@@ -339,6 +339,19 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH1F                *fECluster_ET_eg1;
     TH1F                *fECluster_ET_eg2;
     
+    //SM
+    TH2F                *fECluster_eg1_SM;
+    TH2F                *fECluster_eg2_SM;
+    TH2F                *fECluster_ET_eg1_SM;
+    TH2F                *fECluster_ET_eg2_SM;
+    
+    TH2F                *fPt_mb_SM;
+    TH2F                *fPt_eg1_SM;
+    TH2F                *fPt_eg2_SM;
+    
+    
+    
+    
 	TH1F				**fECluster_emcal;
 	TH1F				**fECluster_dcal;
 	
