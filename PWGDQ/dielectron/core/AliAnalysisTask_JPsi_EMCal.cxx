@@ -247,19 +247,34 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fTOFnsigma_p(0)
 ,fTPCnsigma_EoverP(0)
 ,fECluster(0)
+
+,fECluster_mb(0)
 ,fECluster_eg1(0)
 ,fECluster_eg2(0)
+,fECluster_dg1(0)
+,fECluster_dg2(0)
+,fECluster_ET_mb(0)
 ,fECluster_ET_eg1(0)
 ,fECluster_ET_eg2(0)
+,fECluster_ET_dg1(0)
+,fECluster_ET_dg2(0)
 //SM
+,fECluster_mb_SM(0)
 ,fECluster_eg1_SM(0)
 ,fECluster_eg2_SM(0)
+,fECluster_dg1_SM(0)
+,fECluster_dg2_SM(0)
+,fECluster_ET_mb_SM(0)
 ,fECluster_ET_eg1_SM(0)
 ,fECluster_ET_eg2_SM(0)
+,fECluster_ET_dg1_SM(0)
+,fECluster_ET_dg2_SM(0)
 
 ,fPt_mb_SM(0)
 ,fPt_eg1_SM(0)
 ,fPt_eg2_SM(0)
+,fPt_dg1_SM(0)
+,fPt_dg2_SM(0)
 
 ,fECluster_emcal(0)
 ,fECluster_dcal(0)
@@ -677,20 +692,35 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fTOFnsigma_p(0)
 ,fTPCnsigma_EoverP(0)
 ,fECluster(0)
+
+
+,fECluster_mb(0)
 ,fECluster_eg1(0)
 ,fECluster_eg2(0)
+,fECluster_dg1(0)
+,fECluster_dg2(0)
+,fECluster_ET_mb(0)
 ,fECluster_ET_eg1(0)
 ,fECluster_ET_eg2(0)
-
+,fECluster_ET_dg1(0)
+,fECluster_ET_dg2(0)
 //SM
+,fECluster_mb_SM(0)
 ,fECluster_eg1_SM(0)
 ,fECluster_eg2_SM(0)
+,fECluster_dg1_SM(0)
+,fECluster_dg2_SM(0)
+,fECluster_ET_mb_SM(0)
 ,fECluster_ET_eg1_SM(0)
 ,fECluster_ET_eg2_SM(0)
+,fECluster_ET_dg1_SM(0)
+,fECluster_ET_dg2_SM(0)
 
 ,fPt_mb_SM(0)
 ,fPt_eg1_SM(0)
 ,fPt_eg2_SM(0)
+,fPt_dg1_SM(0)
+,fPt_dg2_SM(0)
 
 ,fECluster_emcal(0)
 ,fECluster_dcal(0)
@@ -1142,36 +1172,64 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     if(!fIs_sys) fTPC_vs_ITScls= new TH2F *[4];
     fECluster= new TH1F *[4];
     
+    fECluster_mb = new TH1F("ECluster_mb", ";ECluster;Counts",20, 0, 40);
     fECluster_eg1 = new TH1F("ECluster_eg1", ";ECluster;Counts",20, 0, 40);
     fECluster_eg2 = new TH1F("ECluster_eg2", ";ECluster;Counts",20, 0, 40);
+    fECluster_dg1 = new TH1F("ECluster_dg1", ";ECluster;Counts",20, 0, 40);
+    fECluster_dg2 = new TH1F("ECluster_dg2", ";ECluster;Counts",20, 0, 40);
+    fOutputList->Add(fECluster_mb);
     fOutputList->Add(fECluster_eg1);
     fOutputList->Add(fECluster_eg2);
+    fOutputList->Add(fECluster_dg1);
+    fOutputList->Add(fECluster_dg2);
     
     //ET
+    fECluster_ET_mb = new TH1F("ECluster_ET_mb", ";ECluster ET;Counts",20, 0, 40);
     fECluster_ET_eg1 = new TH1F("ECluster_ET_eg1", ";ECluster ET;Counts",20, 0, 40);
     fECluster_ET_eg2 = new TH1F("ECluster_ET_eg2", ";ECluster ET;Counts",20, 0, 40);
+    fECluster_ET_dg1 = new TH1F("ECluster_ET_dg1", ";ECluster ET;Counts",20, 0, 40);
+    fECluster_ET_dg2 = new TH1F("ECluster_ET_dg2", ";ECluster ET;Counts",20, 0, 40);
+    fOutputList->Add(fECluster_ET_mb);
     fOutputList->Add(fECluster_ET_eg1);
     fOutputList->Add(fECluster_ET_eg2);
+    fOutputList->Add(fECluster_ET_dg1);
+    fOutputList->Add(fECluster_ET_dg2);
     
     //SM --> 2D
+    fECluster_mb_SM = new TH2F("ECluster_mb_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
     fECluster_eg1_SM = new TH2F("ECluster_eg1_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
     fECluster_eg2_SM = new TH2F("ECluster_eg2_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fECluster_dg1_SM = new TH2F("ECluster_dg1_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fECluster_dg2_SM = new TH2F("ECluster_dg2_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fOutputList->Add(fECluster_mb_SM);
     fOutputList->Add(fECluster_eg1_SM);
     fOutputList->Add(fECluster_eg2_SM);
+    fOutputList->Add(fECluster_dg1_SM);
+    fOutputList->Add(fECluster_dg2_SM);
     
     //ET
+    fECluster_ET_mb_SM = new TH2F("ECluster_ET_mb_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
     fECluster_ET_eg1_SM = new TH2F("ECluster_ET_eg1_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
     fECluster_ET_eg2_SM = new TH2F("ECluster_ET_eg2_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fECluster_ET_dg1_SM = new TH2F("ECluster_ET_dg1_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fECluster_ET_dg2_SM = new TH2F("ECluster_ET_dg2_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fOutputList->Add(fECluster_ET_mb_SM);
     fOutputList->Add(fECluster_ET_eg1_SM);
     fOutputList->Add(fECluster_ET_eg2_SM);
+    fOutputList->Add(fECluster_ET_dg1_SM);
+    fOutputList->Add(fECluster_ET_dg2_SM);
     
     //Pt
     fPt_mb_SM = new TH2F("Pt_mb_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
     fPt_eg1_SM = new TH2F("Pt_eg1_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
     fPt_eg2_SM = new TH2F("Pt_eg2_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fPt_dg1_SM = new TH2F("Pt_dg1_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fPt_dg2_SM = new TH2F("Pt_dg2_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
     fOutputList->Add(fPt_mb_SM);
     fOutputList->Add(fPt_eg1_SM);
     fOutputList->Add(fPt_eg2_SM);
+    fOutputList->Add(fPt_dg1_SM);
+    fOutputList->Add(fPt_dg2_SM);
     
     
     for(Int_t i = 0; i < 4; i++)
@@ -3178,17 +3236,28 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                   if(fTPCnSigma >= fTPCnsigmaCutMin && fTPCnSigma <= fTPCnsigmaCutMax){
                 
                       //to check trigger efficiency using Energy
-                      if(feg1 || fdg1)fECluster_eg1->Fill(fClus->E());
-                      if(feg2 || fdg2)fECluster_eg2->Fill(fClus->E());
+                      fECluster_mb->Fill(fClus->E());
+                      if(feg1)fECluster_eg1->Fill(fClus->E());
+                      if(feg2)fECluster_eg2->Fill(fClus->E());
+                      
+                      if(fdg1)fECluster_dg1->Fill(fClus->E());
+                      if(fdg2)fECluster_dg2->Fill(fClus->E());
                 
                       //to check trigger efficiency using Energy for each super module
-                      if(feg1 || fdg1)fECluster_eg1_SM->Fill(supermoduleID,fClus->E());
-                      if(feg2 || fdg2)fECluster_eg2_SM->Fill(supermoduleID,fClus->E());
+                      fECluster_mb_SM->Fill(supermoduleID,fClus->E());
+                      if(feg1)fECluster_eg1_SM->Fill(supermoduleID,fClus->E());
+                      if(feg2)fECluster_eg2_SM->Fill(supermoduleID,fClus->E());
+                      
+                      if(fdg1)fECluster_dg1_SM->Fill(supermoduleID,fClus->E());
+                      if(fdg2)fECluster_dg2_SM->Fill(supermoduleID,fClus->E());
                 
                       //not true e from true J/psi, track is on emcal necessarily
                       fPt_mb_SM->Fill(supermoduleID,fPt);//MB
-                      if(feg1 || fdg1)fPt_eg1_SM->Fill(supermoduleID,fPt);
-                      if(feg2 || fdg2)fPt_eg2_SM->Fill(supermoduleID,fPt);
+                      if(feg1)fPt_eg1_SM->Fill(supermoduleID,fPt);
+                      if(feg2)fPt_eg2_SM->Fill(supermoduleID,fPt);
+                      
+                      if(fdg1)fPt_dg1_SM->Fill(supermoduleID,fPt);
+                      if(fdg2)fPt_dg2_SM->Fill(supermoduleID,fPt);
                 
                       //checking ET
                       Double_t fvertex_vector[3]={fXvtx, fYvtx, fZvtx};
@@ -3204,12 +3273,20 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                       //printf("Energy from fClus->E() = %f \n", fClus->E());
                 
                       //to check trigger efficiency using Energy
-                      if(feg1 || fdg1)fECluster_ET_eg1->Fill(ET);
-                      if(feg2 || fdg2)fECluster_ET_eg2->Fill(ET);
+                      fECluster_ET_mb->Fill(ET);
+                      if(feg1)fECluster_ET_eg1->Fill(ET);
+                      if(feg2)fECluster_ET_eg2->Fill(ET);
+                      
+                      if(fdg1)fECluster_ET_dg1->Fill(ET);
+                      if(fdg2)fECluster_ET_dg2->Fill(ET);
                 
                       //to check trigger efficiency using Energy for each super module
-                      if(feg1 || fdg1)fECluster_ET_eg1_SM->Fill(supermoduleID,ET);
-                      if(feg2 || fdg2)fECluster_ET_eg2_SM->Fill(supermoduleID,ET);
+                      fECluster_ET_mb_SM->Fill(supermoduleID,ET);
+                      if(feg1)fECluster_ET_eg1_SM->Fill(supermoduleID,ET);
+                      if(feg2)fECluster_ET_eg2_SM->Fill(supermoduleID,ET);
+                      
+                      if(fdg1)fECluster_ET_dg1_SM->Fill(supermoduleID,ET);
+                      if(fdg2)fECluster_ET_dg2_SM->Fill(supermoduleID,ET);
 			  
                       
                   }
