@@ -60,6 +60,7 @@ set(SRCS
   AliRDHFCutsB0toDStarPi.cxx
   AliRDHFCutsBPlustoD0Pi.cxx
   AliRDHFCutsD0toKpi.cxx
+  AliRDHFCutsD0toKpiBDT.cxx
   AliRDHFCutsJpsitoee.cxx
   AliRDHFCutsDplustoKpipi.cxx
   AliRDHFCutsDplustoK0spi.cxx
