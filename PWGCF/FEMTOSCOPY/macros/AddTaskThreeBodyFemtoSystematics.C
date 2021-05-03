@@ -1112,6 +1112,20 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
     v0Cuts->SetCutDCADaugToPrimVtx(0.06);
     Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
   }
+  else if (suffix == "100") {
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+  }
+  else if (suffix == "101") {
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+  }
+  else if (suffix == "102") {
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+  }
 
 
 
@@ -1256,6 +1270,10 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
   AliAnalysisDataContainer *coutputAntiv0CutsTrigger;
  
 
+  bool ClosePairRejectionForAll = false;
+  bool turnoffClosePairRejectionCompletely = false;
+  bool ClosePairRejectionPPPorPPL = true;
+
   AliAnalysisTaskThreeBodyFemto* taskNano;
   AliAnalysisTaskThreeBodyFemtoAOD* taskAOD;
   if(isNano){
@@ -1293,6 +1311,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
     taskNano->SetCorrelationConfig(config); 
     taskNano->SetRunThreeBodyHistograms(true);
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
+    taskNano->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
+    taskNano->SetClosePairRejectionPPPorPPL(ClosePairRejectionPPPorPPL);
     mgr->AddTask(taskNano); 
     
     mgr->ConnectInput(taskNano, 0, cinput); 
