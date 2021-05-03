@@ -97,9 +97,9 @@ void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_ty
 	TGraph *gr_raw_bkgd = new TGraph(n_sep,sep,raw_bkgd);
 	gr_raw_bkgd->SetMarkerStyle(20);gr_raw_bkgd->SetMarkerColor(1);
 	TGraph *gr_bkgd_pu = new TGraph(n_sep,sep,bkgd_pu);
-	gr_bkgd_pu->SetMarkerStyle(20);gr_bkgd_pu->SetMarkerColor(2);  
+	gr_bkgd_pu->SetMarkerStyle(24);gr_bkgd_pu->SetMarkerColor(2);  
 	TGraph *gr_pu_all = new TGraph(n_sep,sep,pu_all);
-	gr_pu_all->SetMarkerStyle(20);gr_pu_all->SetMarkerColor(4);  
+	gr_pu_all->SetMarkerStyle(24);gr_pu_all->SetMarkerColor(4);  
 
 	// plot graphs
 	gStyle->SetOptStat(0);
@@ -116,7 +116,7 @@ void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_ty
 	legend->AddEntry(gr_pu_all,"Pileup/Intensity","p");  
 	legend->Draw();
 
-	corr_C->Print(Form("QAcorrSep_Fill%i_%s_scanT%i_scan%i_bc%i.png", Fill, rate_name, scan_type, scan, bc));
+	corr_C->Print(Form("c2b_QAcorrSep_Fill%i_%s_scanT%i_scan%i_bc%i.png", Fill, rate_name, scan_type, scan, bc));
 
 	// clean up
 	delete [] raw;
