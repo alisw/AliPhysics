@@ -590,6 +590,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         }
         SetSLightNucleus(part,fSimNucleus);
         fSTree->Fill();
+        fAbsorptionCt = -1;
       }
       if (part->IsPhysicalPrimary() && fIsMC) fTotal[iC]->Fill(fCentrality,part->Pt());
     }
