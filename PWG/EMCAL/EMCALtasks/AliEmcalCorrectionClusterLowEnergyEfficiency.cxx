@@ -3,10 +3,11 @@
 
 #include "AliEmcalCorrectionClusterLowEnergyEfficiency.h"
 
-// #include <TList.h>
 #include "AliInputEventHandler.h"
-
 #include "AliClusterContainer.h"
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
+#include "AliMCParticle.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionClusterLowEnergyEfficiency);
@@ -19,7 +20,8 @@ const std::map <std::string, AliEMCALRecoUtils::NCellEfficiencyFunctions> AliEmc
     { "kNoCorrection", AliEMCALRecoUtils::kNCeNoCorrection },
     { "kAllClusters", AliEMCALRecoUtils::kNCeAllClusters },
     { "kTestBeam", AliEMCALRecoUtils::kNCeTestBeam },
-    { "kGammaAndElec", AliEMCALRecoUtils::kNCeGammaAndElec }
+    { "kGammaAndElec", AliEMCALRecoUtils::kNCeGammaAndElec },
+    { "kPi0TaggedPCMEMC", AliEMCALRecoUtils::kNCePi0TaggedPCMEMC }
 };
 
 /**
@@ -29,7 +31,8 @@ AliEmcalCorrectionClusterLowEnergyEfficiency::AliEmcalCorrectionClusterLowEnergy
   AliEmcalCorrectionComponent("AliEmcalCorrectionClusterLowEnergyEfficiency"),
   fNCellDistBefore(0),
   fNCellDistAfter(0),
-  fRejectNextToClus(0)
+  fRejectNextToClus(0),
+  fApplyToGammaOnly(0)
 {
 }
 
@@ -53,6 +56,9 @@ Bool_t AliEmcalCorrectionClusterLowEnergyEfficiency::Initialize()
 
   fRejectNextToClus = false;
   GetProperty("setRejectNextToClus", fRejectNextToClus);
+
+  fApplyToGammaOnly = false;
+  GetProperty("setApplyToGammaOnly", fApplyToGammaOnly);
 
   // init reco utils
   if (!fRecoUtils)
@@ -116,14 +122,19 @@ Bool_t AliEmcalCorrectionClusterLowEnergyEfficiency::Run()
       if (fRecoUtils) {
         if(clus->GetNCells() == 1){
           if (fRecoUtils->GetNCellEfficiencyFunction() != AliEMCALRecoUtils::kNCeNoCorrection) {
-            Bool_t isAccepted = fRecoUtils->GetIsNCellCorrected(clus, (AliVCaloCells*) fEventManager.InputEvent()->GetEMCALCells());
+            // if fApplyToGammaOnly enabled in yaml file: check if cluster is photon, else skip cluster
+            if(fApplyToGammaOnly){
+              AliMCParticle* part = static_cast<AliMCParticle*>(fMCEvent->GetTrack(clus->GetLabel()));
+              if(part->PdgCode() != 22) continue;
+            }
+            Bool_t isAccepted = fRecoUtils->GetIsNCellCorrected(clus, (AliVCaloCells*) fEventManager.InputEvent()->GetEMCALCells(), fRejectNextToClus);
             if ( isAccepted ) clus->SetChi2(1);
           }
         }
       }
 
       if (fCreateHisto) {
-        // case if a cluster has only one cell but its rtificielly widened
+        // case if a cluster has only one cell but its artificielly widened
         if(clus->Chi2() == 1. && clus->GetNCells() == 1){
           fNCellDistAfter->Fill(2);
         } else {
