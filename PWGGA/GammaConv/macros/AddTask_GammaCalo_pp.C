@@ -3284,15 +3284,18 @@ void AddTask_GammaCalo_pp(
 
     // multiple configs for different settings in the correction framework
   } else if (trainConfig == 2513) { // NCellEfficiency calculated in the correction framework
-    cuts.AddCutCalo("00010113","411792109fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411790009fe3y220000","0r631031000000d0"); // INT7 TB and NL applied in CF!
   } else if (trainConfig == 2514) { // NCellEfficiency calculated in the correction framework
-    cuts.AddCutCalo("00010113","411792109fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411790009fe3y220000","0r631031000000d0"); // INT7 TB and NL applied in CF!
   } else if (trainConfig == 2515) { // NCellEfficiency calculated in the correction framework
-    cuts.AddCutCalo("00010113","411792109fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411790009fe3y220000","0r631031000000d0"); // INT7 TB and NL applied in CF!
   } else if (trainConfig == 2516) { // NCellEfficiency calculated in the correction framework
-    cuts.AddCutCalo("00010113","411792109fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411790009fe3y220000","0r631031000000d0"); // INT7 TB and NL applied in CF!
   } else if (trainConfig == 2517) { // NCellEfficiency calculated in the correction framework
-    cuts.AddCutCalo("00010113","411792109fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411790009fe3y220000","0r631031000000d0"); // INT7 TB and NL applied in CF!
+  // with standard NCell 2 cut
+  } else if (trainConfig == 2518) { // NCellEfficiency calculated in the correction framework
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0"); // INT7 TB and NL applied in CF!
 
   // 3x3 clusterizer
   } else if (trainConfig == 2520) { // 3x3 clusterizer
