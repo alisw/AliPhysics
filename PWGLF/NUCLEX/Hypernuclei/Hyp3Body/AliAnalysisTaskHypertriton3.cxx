@@ -444,33 +444,34 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
   {
     for (const auto &deu : helpers[kDeuteron][indices[idx][0]])
     {
-      for (const auto &p : helpers[kProton][indices[idx][1]])
+      int rotations{0};
+      auto deuTrackSnapshot = *deu.track;
+      double alpha = deu.track->GetAlpha();
+      do
       {
-        if (deu.track == p.track)
-          continue;
-
-        for (const auto &pi : helpers[kPion][indices[idx][2]])
+        o2RecHyp.rotation = rotations;
+        if (rotations)
         {
-          if (p.track == pi.track || deu.track == pi.track || deu.track == p.track)
+          double deltaAngle{rotations * TMath::TwoPi() / (fTrackRotations + 1)};
+          deuTrackSnapshot.SetParamOnly(deu.track->GetX(), alpha + deltaAngle, deu.track->getParams());
+        }
+        for (const auto &p : helpers[kProton][indices[idx][1]])
+        {
+          if (deu.track == p.track)
             continue;
 
-          int rotations{0};
-          do
+          for (const auto &pi : helpers[kPion][indices[idx][2]])
           {
+            if (p.track == pi.track || deu.track == pi.track || deu.track == p.track)
+              continue;
+
             ROOT::Math::SVector<double, 3U> vert;
             lVector ldeu, lpro, lpi;
             int nVert{0};
 
-            if (rotations) {
-              double deltaAngle{rotations * TMath::TwoPi() / (fTrackRotations + 1)};
-              double alpha = deu.track->GetAlpha();
-              deu.track->Rotate(deu.track->GetAlpha() + deltaAngle);
-              deu.track->SetParamOnly(deu.track->GetX(), alpha, deu.track->getParams());
-            }
-
             try
             {
-              nVert = fVertexer.process(*deu.track, *p.track, *pi.track);
+              nVert = fVertexer.process(deuTrackSnapshot, *p.track, *pi.track);
             }
             catch (std::runtime_error &e)
             {
@@ -551,9 +552,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
             {
               fTreeHyp3->Fill();
             }
-          } while (rotations++ < fTrackRotations);
+          }
         }
-      }
+      } while (rotations++ < fTrackRotations);
     }
   }
   if (fEnableEventMixing)
