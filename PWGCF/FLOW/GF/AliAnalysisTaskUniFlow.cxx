@@ -3260,6 +3260,7 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
         Double_t ptTrig = trackTr->Pt();
 
         if(ptTrig < ptAs) continue;
+        if(trackTr->GetID() == track->GetID()) continue;
 
         Double_t etaTrig = trackTr->Eta();
         Double_t phiTrig = trackTr->Phi();
