@@ -85,6 +85,8 @@ public:
   void SetCompetingMassCut(float omega = 0.008 /*GeV/c^2*/, float xi = 0. /*GeV/c^2*/) {fCutCompetingMass[0]=xi; fCutCompetingMass[1]=omega;}
   void SetTPCcluCut(int cut = 70) {fCutTPCclu=cut;}
   void SetSaveOnlyTrueCandidates(bool cut = true) { fOnlyTrueCandidates = cut; }
+  void SetTPCRowsCut(float cut = 80.) {fCutTPCrows=cut;}
+  void SetTPCRowOvFCut(float cut = 0.8) {fCutRowsOvF=cut;}
 
 private:
   AliAnalysisTaskStrangenessRatios (const AliAnalysisTaskStrangenessRatios &source);
@@ -118,6 +120,10 @@ private:
   float fCutCtV0 = 30;
   float fCutCompetingMass[2]{0.,0.};
   int fCutTPCclu = 70;
+  float fCutTPCrows = 80.;
+  float fCutRowsOvF = 0.8;
+  double fCasc_LeastCRaws;
+  double fCasc_LeastCRawsOvF;
 
   bool IsTopolSelected(bool isXi = true);
   float Eta2y(float pt, float m, float eta) const;
