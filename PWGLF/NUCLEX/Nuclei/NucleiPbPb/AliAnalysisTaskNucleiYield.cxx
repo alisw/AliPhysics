@@ -576,6 +576,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       if (fIsMC) fProduction->Fill(mult * part->P());
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (fSaveTrees) {
+        fAbsorptionCt = -1;
         if(part->GetNDaughters()>0){
           for (int c = part->GetDaughterFirst(); c <= part->GetDaughterLast(); ++c)
           {
@@ -590,7 +591,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         }
         SetSLightNucleus(part,fSimNucleus);
         fSTree->Fill();
-        fAbsorptionCt = -1;
       }
       if (part->IsPhysicalPrimary() && fIsMC) fTotal[iC]->Fill(fCentrality,part->Pt());
     }
