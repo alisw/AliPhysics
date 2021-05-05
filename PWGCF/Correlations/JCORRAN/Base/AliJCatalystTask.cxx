@@ -68,6 +68,7 @@ AliJCatalystTask::AliJCatalystTask():
 	fPt_min(0.2),
 	fPt_max(5.0),
 	fzvtxCut(10.0),
+	fremovebadarea(kFALSE),
 	flags(0),
 	fJCatalystEntry(0),
 	fIsGoodEvent(false),
@@ -106,6 +107,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	fPt_min(0.2),
 	fPt_max(5.0),
 	fzvtxCut(10.0),
+	fremovebadarea(kFALSE),
 	flags(0),
 	fJCatalystEntry(0),
 	fIsGoodEvent(false),
@@ -386,7 +388,13 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 						continue;
 				}else continue;
 
-                                if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
+                if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
+                // Removal of bad area, now only with eta symmetric
+				Bool_t isBadArea = TMath::Abs(track->Eta()) > 0.6;
+				if(fremovebadarea) {
+					if(isBadArea) continue;
+				} 
+				
 				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++]) AliJBaseTrack;
 				itrack->SetID( TrackList->GetEntriesFast() );
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
