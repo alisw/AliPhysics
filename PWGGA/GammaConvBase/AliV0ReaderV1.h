@@ -11,7 +11,6 @@
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
 #include "AliGAKFParticle.h"
-#include "TParticle.h"
 #include <iterator>
 #include <vector>
 #include "AliESDpid.h"

@@ -1838,32 +1838,29 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliMCEvent *mcEvent, AliMCPartic
       return kFALSE;
     }
 
-    TParticle* ePosPart = ePos->Particle();
-    TParticle* eNegPart = eNeg->Particle();
-
     // check if electrons are in correct eta window
-    if( TMath::Abs(ePosPart->Eta()) > etaMax ||
-      TMath::Abs(eNegPart->Eta()) > etaMax )
+    if( TMath::Abs(ePos->Eta()) > etaMax ||
+      TMath::Abs(eNeg->Eta()) > etaMax )
       return kFALSE;
 
     // check if photons have converted in reconstructable range
-    if(ePosPart->R() > rMax){
+    if(TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv()) > rMax){
       return kFALSE; // cuts on distance from collision point
     }
-    if(TMath::Abs(ePosPart->Vz()) > zMax){
+    if(TMath::Abs(ePos->Zv()) > zMax){
       return kFALSE;  // outside material
     }
-    if(TMath::Abs(eNegPart->Vz()) > zMax){
+    if(TMath::Abs(eNeg->Zv()) > zMax){
       return kFALSE;  // outside material
     }
 
 
     Double_t lineCutZRSlope = tan(2*atan(exp(-etaMax)));
     Double_t lineCutZValue = 7.;
-    if( ePosPart->R() <= ((TMath::Abs(ePosPart->Vz()) * lineCutZRSlope) - lineCutZValue)){
+    if( TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv()) <= ((TMath::Abs(ePos->Zv()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE;  // line cut to exclude regions where we do not reconstruct
     }
-    if( eNegPart->R() <= ((TMath::Abs(eNegPart->Vz()) * lineCutZRSlope) - lineCutZValue)){
+    if( TMath::Sqrt(eNeg->Xv()*eNeg->Xv()+eNeg->Yv()*eNeg->Yv()) <= ((TMath::Abs(eNeg->Zv()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
     }
 

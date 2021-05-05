@@ -2152,7 +2152,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(AliMCParticle *particle, AliMCEven
       if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
       if ( fClusterType == 3 && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
     }
-    // if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+    // if(particle->GetMother() >-1 && mcEvent->Particle(particle->GetMother())->GetPdgCode() == 22){
     //   return kFALSE;// no photon as mothers!
     // }
     // reject photons with daughter photons instead, to end up only with final photon, not initial
@@ -9650,7 +9650,7 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
   if (isESD){
     if (cluster->GetNLabels()>0){
       AliMCParticle* particleLead = (AliMCParticle*) mcEvent->GetTrack(mclabelsCluster[0]);
-      Double_t charge             = ((TParticlePDG*) particleLead->Particle()->GetPDG())->Charge();
+      Double_t charge             = particleLead->Charge();
       if (charge == 0 || charge == -0){
         classification        = 0;
         if (particleLead->PdgCode() == 22)
@@ -9685,7 +9685,7 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
         Bool_t goOut = kFALSE;
         for (UInt_t i = 1; (i< cluster->GetNLabels() && !goOut); i++){
           AliMCParticle* particleSub = (AliMCParticle*) mcEvent->GetTrack(mclabelsCluster[i]);
-          Double_t charge            = ((TParticlePDG*) particleSub->Particle()->GetPDG())->Charge();
+          Double_t charge            = particleSub->Charge();
           if (!(charge == 0 || charge == -0)){
             classification++;
             goOut = kTRUE;

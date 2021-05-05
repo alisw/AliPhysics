@@ -23,7 +23,6 @@
 #include "TChain.h"
 #include "TRandom.h"
 #include "AliAnalysisManager.h"
-#include "TParticle.h"
 #include "TVectorF.h"
 #include "AliPIDResponse.h"
 #include "TFile.h"
