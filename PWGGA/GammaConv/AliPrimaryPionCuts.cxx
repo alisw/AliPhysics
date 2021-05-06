@@ -1463,9 +1463,9 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
             fDoMassCut = kTRUE;
             fDoMassCut_WithNDM= kTRUE;
             fMassCut = 0.650;
-            fMassCut_WithNDM = 0.85;
+            fMassCut_WithNDM = 1.;
             break;
-        case 17: //h overload mass cut for chi2 of vParticle
+        case 18: //i overload mass cut for chi2 of vParticle
             fUse4VecForMass = kTRUE;
             fDoMassCut = kTRUE;
             fDoMassCut_WithNDM= kTRUE;
