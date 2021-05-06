@@ -2817,20 +2817,20 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fl3m220000","0163103100000010"); //  Exotics > 6 GeV
 
     // NCell effi from correction framework
-  } else if (trainConfig == 2150){ // std. cuts
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe32220000","0163103100000010"); // NCell from CF
+  } else if (trainConfig == 2150){ // std. cuts no NL (to be applied in the CF)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // std but no NL
   } else if (trainConfig == 2151){ // no NCell cut
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","0163103100000010"); // NCell from CF
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe30220000","0163103100000010"); // no NCell cut and no NL
   } else if (trainConfig == 2152){ // NCell from correction framework
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe3y220000","0163103100000010"); // NCell from CF
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe3y220000","0163103100000010"); // NCell from CF
   } else if (trainConfig == 2153){ // NCell from correction framework
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe3y220000","0163103100000010"); // NCell from CF
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe3y220000","0163103100000010"); // NCell from CF
   } else if (trainConfig == 2154){ // NCell from correction framework
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe3y220000","0163103100000010"); // NCell from CF
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe3y220000","0163103100000010"); // NCell from CF
   } else if (trainConfig == 2155){ // NCell from correction framework
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe3y220000","0163103100000010"); // NCell from CF
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe3y220000","0163103100000010"); // NCell from CF
   } else if (trainConfig == 2156){ // NCell from correction framework
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe3y220000","0163103100000010"); // NCell from CF
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe3y220000","0163103100000010"); // NCell from CF
 
   // PCM-EDC systematics
   } else if (trainConfig == 2200){ // PCM based systematics
