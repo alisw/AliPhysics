@@ -5831,6 +5831,20 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
     }
     if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
 
+    Bool_t previouslyNotFoundTrueMesons = kFALSE;
+    Int_t tmpGammaMotherlabel = gamma0MotherLabel;
+    while (tmpGammaMotherlabel > 0) {
+        if(((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 111 && ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 221) {
+            tmpGammaMotherlabel = ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->GetMother();
+        } else {
+            if (tmpGammaMotherlabel != gamma0MotherLabel) {
+                previouslyNotFoundTrueMesons = kTRUE;
+            }
+            gamma0MotherLabel = tmpGammaMotherlabel;
+            break;
+        }
+    }
+
     Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); // get most probable MC label
     Int_t gamma1MotherLabel = -1;
     // check if
@@ -5840,6 +5854,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
       // Daughters Gamma 1
       gammaMC1 = (TParticle*)fMCEvent->Particle(gamma1MCLabel);
       if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){    // largest component is electro magnetic
+        tmpGammaMotherlabel = gammaMC1->GetMother(0);
         // get mother of interest (pi0 or eta)
         if (TrueGammaCandidate1->IsLargestComponentPhoton()){                            // for photons its the direct mother
           gamma1MotherLabel=gammaMC1->GetMother(0);
@@ -5850,21 +5865,8 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
       }else {
         if (fDoMesonQA > 0 && fIsMC < 2) fHistoTrueMotherCaloEMNonLeadingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
       }
-    }
-    Bool_t previouslyNotFoundTrueMesons = kFALSE;
-    Int_t tmpGammaMotherlabel = gamma0MotherLabel;
-    while (tmpGammaMotherlabel > 0) {
-        if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
-            tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
-        } else {
-            if (tmpGammaMotherlabel != gamma0MotherLabel) {
-                previouslyNotFoundTrueMesons = kTRUE;
-            }
-            gamma0MotherLabel = tmpGammaMotherlabel;
-            break;
-        }
-    }
-    tmpGammaMotherlabel = gamma1MotherLabel;
+    }    
+    
     while (tmpGammaMotherlabel > 0) {
         if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
             tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
