@@ -133,7 +133,10 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fHistSelectPt(0),
 	fHist_ClustE(0),
 	fHist_SelectClustE(0),
+	fHist_SelectClustE_time(0),
 	fHistMatchE(0),
+	fHistMatchE_time(0),
+	fHistoTimeEMC(0),
 	fdEdx(0),
 	fTPCnsig(0),
 	fHistNsigEop(0),
@@ -308,7 +311,10 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fHistSelectPt(0),
 	fHist_ClustE(0),
 	fHist_SelectClustE(0),
+	fHist_SelectClustE_time(0),
 	fHistMatchE(0),
+	fHistMatchE_time(0),
+	fHistoTimeEMC(0),
 	fdEdx(0),
 	fTPCnsig(0),
 	fHistNsigEop(0),
@@ -448,7 +454,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistSelectPt = new TH1F("fHistSelectPt", "EMCAL Slected cluster pt distributiont; pt(GeV/c); counts", 1000, 0, 100);       // create your histogra
 	fHist_ClustE = new TH1F("fHist_ClustE", "fHist_ClustE; EMCAL cluster energy distribution; counts", 1000, 0, 100);      
 	fHist_SelectClustE = new TH1F("fHist_SelectClustE", "fHistE; EMCAL cluster energy distribution before selection; counts", 1000, 0, 100);      
+	fHist_SelectClustE_time = new TH1F("fHist_SelectClustE_time", "fHistE; EMCAL cluster energy distribution before selection; counts", 1000, 0, 100);      
 	fHistMatchE = new TH1F("fHistMatchE", "fHistMatchE; EMCAL Matched cluster energy distribution; counts", 1000, 0, 100);      
+	fHistMatchE_time = new TH1F("fHistMatchE_time", "fHistMatchE_time; EMCAL Matched cluster energy distribution; counts", 1000, 0, 100);      
+        fHistoTimeEMC = new TH2F("fHistoTimeEMC","EMCAL Time;E (GeV); t(ns)",500,0,50,1800,-900,900);
 	fHistEta_track = new TH1F("fHistEta_track", "Track #eta distribution; pt(GeV/c); counts", 200, -4, 4);    
 	fHistPhi_track = new TH1F("fHistPhi_track", "Track #phi distribution; #phi; counts", 200, 0, 10);    
 	fHistEta_EMcal = new TH1F("fHistEta_EMcal", "EMCAL selected cluster #eta distribution; #eta; counts", 200, -4, 4);    
@@ -638,7 +647,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHistSelectPt);          
 	fOutputList->Add(fHist_ClustE);          
 	fOutputList->Add(fHist_SelectClustE);          
+	fOutputList->Add(fHist_SelectClustE_time);          
 	fOutputList->Add(fHistMatchE);          
+	fOutputList->Add(fHistMatchE_time);          
+        fOutputList->Add(fHistoTimeEMC);
 	fOutputList->Add(fdEdx);
 	fOutputList->Add(fTPCnsig);
 	fOutputList->Add(fHistNsigEop);
@@ -999,8 +1011,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 		if(clust && clust->IsEMCAL())
 		{
+
+                        Float_t tof = clust->GetTOF()*1e+9; // ns
+
 			Double_t clustE = clust->E();
 			fHist_SelectClustE -> Fill(clustE);
+			if(tof>-20.0 && tof<15.0)fHist_SelectClustE_time -> Fill(clustE);
 
 			Float_t clustpos[3] = {0.};
 			clust->GetPosition(clustpos);
@@ -1227,6 +1243,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		{
 			fHistMatchPt->Fill(TrkPt);
 
+                        Float_t tof = clustMatch->GetTOF()*1e+9; // ns
+
 			///////get position of clustMatch/////////
 			Float_t clustMatchpos[3] = {0.};
 			clustMatch->GetPosition(clustMatchpos);
@@ -1286,6 +1304,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 			Double_t m20 = clustMatch->GetM20();
 			Double_t m02 = clustMatch->GetM02();
 			fHistMatchE -> Fill(clE);
+                        fHistoTimeEMC->Fill(clE,tof);
+			if(tof>-20.0 && tof<15.0)fHistMatchE_time -> Fill(clE);
 			if(TrkP>0)eop= clE/TrkP;
 
 			fM02->Fill(TrkPt,m02);
