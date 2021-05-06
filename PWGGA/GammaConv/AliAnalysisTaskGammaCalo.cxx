@@ -6100,6 +6100,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
   }
   Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0);   // get most probable MC label
   Int_t gamma1MotherLabel = -1;
+  tmpGammaMotherlabel = -1;
   // check if
 
   TParticle * gammaMC1 = 0x0;
