@@ -8387,8 +8387,8 @@ void AliHFSystErr::InitLctopKpi20161718pp13TeVFineBins() {
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
   fCutsEff->SetBinContent(1,0.10);//1-2
   for(Int_t i=2;i<=2;i++) fCutsEff->SetBinContent(i,0.10); // 1-2
-  for(Int_t i=3;i<=5;i++) fCutsEff->SetBinContent(i,0.10); // 2-3
-  for(Int_t i=6;i<=24;i++) fCutsEff->SetBinContent(i,0.08); // from 3-4
+  for(Int_t i=3;i<=4;i++) fCutsEff->SetBinContent(i,0.10); // 2-4
+  for(Int_t i=5;i<=24;i++) fCutsEff->SetBinContent(i,0.05); // from 3-4
 
   // PID efficiency (variation of Bayes PID criterion, 5% everywhere confirmed from fine-binning analysis)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
