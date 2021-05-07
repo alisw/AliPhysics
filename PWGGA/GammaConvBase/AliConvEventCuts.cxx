@@ -624,7 +624,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistograms->Add(hTriggerClassSelected);
 
     if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 || fSpecialTrigger == 10){
-      hTriggerClassesCorrelated= new TH1F(Form("TriggerCorrelations %s",GetCutNumber().Data()),"Triggers Correlated with EMCal triggers",19,-0.5,18.5);
+      hTriggerClassesCorrelated= new TH1F(Form("TriggerCorrelations %s",GetCutNumber().Data()),"Triggers Correlated with EMCal triggers",21,-0.5,20.5);
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 1,"kMB");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 2,"kINT7");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 3,"kEMC1");
@@ -644,6 +644,8 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 17,"kDMCDG2");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 18,"partition CENT");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 19,"partition woTRD");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 20,"HM SPD");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 21,"HM V0M");
       fHistograms->Add(hTriggerClassesCorrelated);
     }
 
@@ -4006,7 +4008,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
         } else if ( fPeriodEnum == kLHC16rsP2JJHigh ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48,66, 10000};
-          Double_t weightsBins[8]      = {7.07365616e-04, 1.50797374e-03, 1.62292166e-03, 1.58473628e-03, 1.19475130e-03,	8.14491533e-04, 4.48858129e-04, 3.38966554e-04};	
+          Double_t weightsBins[8]      = {7.07365616e-04, 1.50797374e-03, 1.62292166e-03, 1.58473628e-03, 1.19475130e-03,	8.14491533e-04, 4.48858129e-04, 3.38966554e-04};
           Int_t bin = 0;
           if(ptHard >= ptHardBinRanges[0]){
             while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -4689,7 +4691,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         }
       } else if ( fPeriodEnum == kLHC16rsP2JJHigh ){ // preliminary weights obtained from local running
         Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48,66, 10000};
-        Double_t weightsBins[8]      = {7.07365616e-04, 1.50797374e-03, 1.62292166e-03, 1.58473628e-03, 1.19475130e-03,	8.14491533e-04, 4.48858129e-04, 3.38966554e-04};	
+        Double_t weightsBins[8]      = {7.07365616e-04, 1.50797374e-03, 1.62292166e-03, 1.58473628e-03, 1.19475130e-03,	8.14491533e-04, 4.48858129e-04, 3.38966554e-04};
         Int_t bin = 0;
         if(ptHard >= ptHardBinRanges[0]){
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -6077,9 +6079,11 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                     if (!firedTrigClass.Contains("CENTNOPMD")&&(firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(18); // noTRD
                 } else{
                     if (firedTrigClass.Contains("CENT-")&&(!firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(17);
-                    if (!firedTrigClass.Contains("CENT-")&&(firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(18);          
+                    if (!firedTrigClass.Contains("CENT-")&&(firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(18);
                 }
-            
+                if (firedTrigClass.Contains("CVHMSH2-B")) hTriggerClassesCorrelated->Fill(19);
+                if (firedTrigClass.Contains("CVHMV0M-B")) hTriggerClassesCorrelated->Fill(20);
+
               }
             } else if ( fSpecialTrigger == 10 ){
               if (hTriggerClassesCorrelated){
@@ -6107,13 +6111,15 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                       if (!firedTrigClass.Contains("CENTNOPMD")&&(firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(18); // noTRD
                   } else{
                       if (firedTrigClass.Contains("CENT-")&&(!firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(17);
-                      if (!firedTrigClass.Contains("CENT-")&&(firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(18);          
+                      if (!firedTrigClass.Contains("CENT-")&&(firedTrigClass.Contains("CENTNOTRD"))) hTriggerClassesCorrelated->Fill(18);
                   }
+                  if (firedTrigClass.Contains("CVHMSH2-B")) hTriggerClassesCorrelated->Fill(19);
+                  if (firedTrigClass.Contains("CVHMV0M-B")) hTriggerClassesCorrelated->Fill(20);
                 }
               }
             }
           }
-          
+
         } else if (isMC){
           if (fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
             // isSelected = 0;
