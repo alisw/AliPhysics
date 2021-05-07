@@ -51,6 +51,7 @@ void AddTask_GammaCaloMerged_pp(
   Int_t     minAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
   Int_t     maxAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
   Bool_t    doOverlapsFromCluster         = kFALSE, // overlaps as event criteria (false) or from single clusters (true)
+  TString   ElecCuts                      = "",     // enables identification of primary electrons (204b6200263202223710)
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ) {
@@ -2216,6 +2217,28 @@ void AddTask_GammaCaloMerged_pp(
   task->SetOverlapFromCluster(doOverlapsFromCluster);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if (enableDetailedPrintout) task->SetEnableDetailedPrintout(enableDetailedPrintout);//Attention new switch small for Cluster QA
+
+  //========= Add Electron Selector ================
+  if( ElecCuts.Sizeof() == 21 ){
+    if( !(AliDalitzElectronSelector*)mgr->GetTask("ElectronSelector") ){
+      AliDalitzElectronSelector *fElectronSelector = new AliDalitzElectronSelector("ElectronSelector");
+      //ConfigV0ReaderV1(fV0ReaderV1,ConvCutnumber,IsHeavyIon);
+      // Set AnalysisCut Number
+      AliDalitzElectronCuts *fElecCuts=0;
+
+      fElecCuts= new AliDalitzElectronCuts(ElecCuts.Data(),ElecCuts.Data());
+      if(fElecCuts->InitializeCutsFromCutString(ElecCuts.Data())){
+        fElecCuts->SetFillCutHistograms("",kTRUE);
+        fElectronSelector->SetDalitzElectronCuts(ElecCuts);
+      }
+      fElectronSelector->Init();
+      mgr->AddTask(fElectronSelector);
+      //connect input fElectronSelector
+      mgr->ConnectInput (fElectronSelector,0,cinput);
+    }
+    task->SetCalcElectronContribution(1);
+  }
+
   //connect containers
   AliAnalysisDataContainer *coutput =
     mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCaloMerged_%i",trainConfig) : Form("GammaCaloMerged_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
