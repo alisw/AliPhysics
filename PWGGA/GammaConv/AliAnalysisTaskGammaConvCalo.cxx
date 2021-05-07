@@ -5833,7 +5833,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 
     Bool_t previouslyNotFoundTrueMesons = kFALSE;
     Int_t tmpGammaMotherlabel = gamma0MotherLabel;
-    while (tmpGammaMotherlabel > 0) {
+    Int_t SaftyLoopCounter = 0;
+    while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
+        SaftyLoopCounter++;
         if(((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 111 && ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 221) {
             tmpGammaMotherlabel = ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->GetMother();
         } else {
@@ -5867,7 +5869,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
       }
     }    
     
-    while (tmpGammaMotherlabel > 0) {
+    SaftyLoopCounter = 0;
+    while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
+        SaftyLoopCounter++;
         if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
             tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
         } else {
@@ -5878,6 +5882,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
             break;
         }
     }
+
 
     if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
       if(((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
