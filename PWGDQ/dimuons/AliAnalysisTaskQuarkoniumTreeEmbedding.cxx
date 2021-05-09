@@ -73,6 +73,8 @@ AliAnalysisTaskQuarkoniumTreeEmbedding::AliAnalysisTaskQuarkoniumTreeEmbedding()
     fCharge_rec[i]=999;
     fRAtAbsEnd_rec[i]=999;
     fpDCA_rec[i] = 999.;
+    fPhi_rec[i] = 999.;
+    fTheta_rec[i] = 999.;
   }
   for(Int_t i=0; i<1000;i++){
     fDimuPt_gen[i]=999.;
@@ -92,6 +94,9 @@ AliAnalysisTaskQuarkoniumTreeEmbedding::AliAnalysisTaskQuarkoniumTreeEmbedding()
     fDimuCharge_rec[i]=999;
     fDimuMatch_rec[i]=999;
     for(Int_t k=0;k<2;k++) fDimuMu_rec[i][k]=999;
+    fDimuPhi_rec[i] = 999.;
+    fDimuTheta_rec[i] = 999.;
+
   }
 
   fMuonTrackCuts = new AliMuonTrackCuts("StandardMuonTrackCuts", "StandardMuonTrackCuts");
@@ -133,6 +138,8 @@ AliAnalysisTaskQuarkoniumTreeEmbedding::AliAnalysisTaskQuarkoniumTreeEmbedding(c
      fCharge_rec[i]=999;
      fRAtAbsEnd_rec[i]=999;
      fpDCA_rec[i] = 999.;
+     fPhi_rec[i] = 999.;
+     fTheta_rec[i] = 999.;
    }
    for(Int_t i=0; i<1000;i++){
      fDimuPt_gen[i]=999.;
@@ -152,6 +159,9 @@ AliAnalysisTaskQuarkoniumTreeEmbedding::AliAnalysisTaskQuarkoniumTreeEmbedding(c
      fDimuCharge_rec[i]=999;
      fDimuMatch_rec[i]=999;
      for(Int_t k=0;k<2;k++) fDimuMu_rec[i][k]=999;
+     fDimuPhi_rec[i] = 999.;
+     fDimuTheta_rec[i] = 999.;
+
    }
 
   fMuonTrackCuts = new AliMuonTrackCuts("StandardMuonTrackCuts", "StandardMuonTrackCuts");
@@ -241,7 +251,9 @@ void AliAnalysisTaskQuarkoniumTreeEmbedding::UserCreateOutputObjects(){
  fOutputTree->Branch("Charge_rec",fCharge_rec,"Charge_rec[NMuons_rec]/I");
  fOutputTree->Branch("RAtAbsEnd_rec",fRAtAbsEnd_rec,"RAtAbsEnd_rec[NMuons_rec]/D");
  fOutputTree->Branch("pDCA_rec",fpDCA_rec,"pDCA[NMuons_rec]/I");
-
+ fOutputTree->Branch("Phi_rec",fPhi_rec,"Phi_rec[NMuons_rec]/D");
+ fOutputTree->Branch("Theta_rec",fTheta_rec,"Theta_rec[NMuons_rec]/D");
+ 
  fOutputTree->Branch("NDimu_rec",&fNDimu_rec,"NDimu_rec/I");
  fOutputTree->Branch("DimuMu_rec",fDimuMu_rec,"DimuMu_rec[NDimu_rec][2]/I");
  fOutputTree->Branch("DimuPt_rec",fDimuPt_rec,"DimuPt_rec[NDimu_rec]/D");
@@ -252,6 +264,8 @@ void AliAnalysisTaskQuarkoniumTreeEmbedding::UserCreateOutputObjects(){
  fOutputTree->Branch("DimuMass_rec",fDimuMass_rec,"DimuMass_rec[NDimu_rec]/D");
  fOutputTree->Branch("DimuCharge_rec",fDimuCharge_rec,"DimuCharge_rec[NDimu_rec]/I");
  fOutputTree->Branch("DimuMatch_rec",fDimuMatch_rec,"DimuMatch_rec[NDimu_rec]/I");
+ fOutputTree->Branch("DimuPhi_rec",fDimuPhi_rec,"DimuPhi_rec[NDimu_rec]/D");
+ fOutputTree->Branch("DimuTheta_rec",fDimuTheta_rec,"DimuTheta_rec[NDimu_rec]/D");
 
  fOutputTree->ls();
 
@@ -279,6 +293,9 @@ void AliAnalysisTaskQuarkoniumTreeEmbedding::UserExec(Option_t *)
     fCharge_rec[i]=999;
     fRAtAbsEnd_rec[i]=999;
     fpDCA_rec[i]=999;
+    fPhi_rec[i] = 999.;
+    fTheta_rec[i] = 999.;
+
   }
   for(Int_t i=0; i<1000;i++){
     fDimuPt_gen[i]=999.;
@@ -297,6 +314,9 @@ void AliAnalysisTaskQuarkoniumTreeEmbedding::UserExec(Option_t *)
     fDimuMass_rec[i]=999.;
     fDimuCharge_rec[i]=999.;
     for(Int_t k=0;k<2;k++) fDimuMu_rec[i][k]=999;
+    fDimuPhi_rec[i] = 999.;
+    fDimuTheta_rec[i] = 999.;
+
   }
 
 //---------------------------------------------------
@@ -387,6 +407,8 @@ for(int i=0;i<numtracks;i++) {
     fDimuPz_rec[ndimu] = dimu->Pz();
     fDimuY_rec[ndimu] = dimu->Y();
     fDimuCharge_rec[ndimu]= dimu->Charge();
+    fDimuPhi_rec[ndimu]= dimu->Phi();
+    fDimuTheta_rec[ndimu]= dimu->Theta();
 
     if(mu0->GetMatchTrigger()>1 || mu1->GetMatchTrigger()>1) fDimuMatch_rec[ndimu]=1;
     if(mu0->GetMatchTrigger()>1 && mu1->GetMatchTrigger()>1) fDimuMatch_rec[ndimu]=2;
@@ -417,6 +439,9 @@ for(int i=0;i<numtracks;i++) {
         fMatchTrigChi2_rec[nmu]= mu0->GetChi2MatchTrigger();
         fRAtAbsEnd_rec[nmu] = mu0->GetRAtAbsorberEnd();
         if(fMuonTrackCuts->IsSelected(mu0)) fpDCA_rec[nmu] = 1;
+	fPhi_rec[nmu]= mu0->Phi();
+        fTheta_rec[nmu]= mu0->Theta();
+
       }
       nmu++;
     }

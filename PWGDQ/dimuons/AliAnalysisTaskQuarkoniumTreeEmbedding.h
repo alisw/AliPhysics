@@ -62,6 +62,8 @@ class AliAnalysisTaskQuarkoniumTreeEmbedding : public AliAnalysisTaskSE {
   Int_t	        fCharge_rec[100];		// single mu charge
   Double_t	fRAtAbsEnd_rec[100];		// single mu distance from beam center at end abs
   Int_t	        fpDCA_rec[100];		// single mu charge
+  Double_t      fPhi_rec[100];          // single mu phi
+  Double_t      fTheta_rec[100];        // single mu theta 
 
   Double_t	fDimuPt_gen[1000];			    // dimuon pT
   Double_t	fDimuPx_gen[1000]; 		    // dimuon px
@@ -80,6 +82,8 @@ class AliAnalysisTaskQuarkoniumTreeEmbedding : public AliAnalysisTaskSE {
   Double_t	fDimuMass_rec[1000];		// dimuon invariant mass
   Int_t	        fDimuCharge_rec[1000];		// dimuon charge
   Int_t	        fDimuMatch_rec[1000];		// dimuon match
+  Double_t      fDimuPhi_rec[1000];          // dimuon phi
+  Double_t      fDimuTheta_rec[1000];        // dimuon theta 
 
 
  ClassDef(AliAnalysisTaskQuarkoniumTreeEmbedding,1);
