@@ -72,6 +72,8 @@ class AliAnalysisTaskQuarkoniumTreeEmbedding : public AliAnalysisTaskSE {
   Double_t	fDimuY_gen[1000];			// dimuon y
   Double_t	fDimuMass_gen[1000];		// dimuon invariant mass
   Int_t	        fDimuCharge_gen[1000];		// dimuon charge
+  Double_t      fDimuPhi_gen[1000];          // dimuon phi
+  Double_t      fDimuTheta_gen[1000];        // dimuon theta 
 
   Int_t		fDimuMu_rec[1000][2];	// reference to single mus
   Double_t	fDimuPt_rec[1000];			    // dimuon pT
