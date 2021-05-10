@@ -6965,7 +6965,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       //Asymmetry Plot
       if (fEnableAsymmetryPlotCombCPionVsNPion){
           Double_t asymmetry_alpha = GetAlphaLFromLorentz(PosNegPionTLVtmp, NDMTLVtmp);
-          fHistoAsymmetryPlotCombCPionVsNPion[fiCut]->Fill(asymmetry_alpha, mesoncand->Pt(),weighted);
+          fHistoTrueMotherPiPlPiMiNDMAsymmetryPlotCombCPionVsNPion[fiCut]->Fill(asymmetry_alpha, mesoncand->Pt(),weighted);
       }
       //Dalitz All Pt
       if (enableDalitzAllPt){
