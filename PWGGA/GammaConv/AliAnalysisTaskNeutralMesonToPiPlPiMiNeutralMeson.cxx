@@ -5786,7 +5786,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
 
               if(fDoMesonQA>0){
                 //Asymmetry Plot
-                Double_t asymmetry_alpha = GetAlphaFromLorentz(PosNegPionTLVtmp, NDMTLVtmp);
+                Double_t asymmetry_alpha = GetAlphaLFromLorentz(PosNegPionTLVtmp, NDMTLVtmp);
                 if (fEnableAsymmetryPlotCombCPionVsNPion){
                     fHistoAsymmetryPlotCombCPionVsNPion[fiCut]->Fill(asymmetry_alpha, mesoncand->Pt(), fWeightJetJetMC);
                 }
@@ -6964,7 +6964,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       NegPionNDMSubTLVtmp = NegPionTLVtmp + NDMSubTLVtmp;
       //Asymmetry Plot
       if (fEnableAsymmetryPlotCombCPionVsNPion){
-          Double_t asymmetry_alpha = GetAlphaFromLorentz(PosNegPionTLVtmp, NDMTLVtmp);
+          Double_t asymmetry_alpha = GetAlphaLFromLorentz(PosNegPionTLVtmp, NDMTLVtmp);
           fHistoAsymmetryPlotCombCPionVsNPion[fiCut]->Fill(asymmetry_alpha, mesoncand->Pt(),weighted);
       }
       //Dalitz All Pt
