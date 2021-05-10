@@ -381,6 +381,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
   Double_t lEventsPerSecond = 0;
   
   AliMultVariable *lVtxZLocalPointer = fInput -> GetVariable("fEvSel_VtxZ");
+  if( ! lVtxZLocalPointer ) cout<<"PROBLEM singling out vtx-Z variable"<<endl; 
   
   for(Long64_t iEv = 0; iEv<fTree->GetEntries(); iEv++) {
     if ( iEv % 100000 == 0 ) {
@@ -463,6 +464,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         for(Int_t iVar=0; iVar<AliMultInput::kNVariables; iVar++) {
           if(VarDoAutocalib[iVar]){
             AliMultVariable *v1 = fInput->GetVariable(iVar);
+            if(!v1) cout<<"PROBLEM finding this variable"<<endl;
             hCalibVtx[lIndex][iVar]->Fill( lVtxZLocalPointer->GetValue(), v1->IsInteger() ? v1->GetValueInteger() : v1->GetValue() );
           }
         }
