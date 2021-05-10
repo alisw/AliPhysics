@@ -593,12 +593,10 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option, int _cutM
   o.ToLower();
 
   Bool_t isTightChi2TPCCutRequired = kFALSE;
-  if(!isTightChi2TPCCutRequired) std::cout <<"NOTokidoke\n\n";
   if(o.Contains("tightchi2tpccut")){
     isTightChi2TPCCutRequired = kTRUE;
     o.ReplaceAll("tightchi2tpccut", "");
   }
-  if(isTightChi2TPCCutRequired) std::cout <<"Okidoke\n\n";
 
   // if eta ranges is provided set the eta range
   // and remove the part of the string containting the eta range
@@ -618,7 +616,6 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option, int _cutM
     o.ReplaceAll("eta10", "");
   }
 
-  std::cout << o << std::endl;
   // as default use the cuts with geometric length cut
   if((o.EqualTo("")) || (o.EqualTo("default")) || 100 != _cutMode)
   {
