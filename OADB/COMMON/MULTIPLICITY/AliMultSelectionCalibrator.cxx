@@ -355,6 +355,11 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
   
   //Vertex Z profiles
   TProfile *hCalibVtx[1000][AliMultInput::kNVariables];
+  for(Int_t ii=0; ii<1000; ii++){
+    for(Int_t jj=0; jj<AliMultInput::kNVariables; jj++){
+      hCalibVtx[ii][jj]=0x0; //init to null to be sure 
+    }
+  }
   
   if( !lAutoDiscover ){
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
@@ -430,6 +435,13 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
       //Consult map for run range equivalency
       if ( fRunRangesMap.find( fRunNumber ) != fRunRangesMap.end() ) {
         lIndex = fRunRangesMap[ fRunNumber ];
+        //Create vertex-Z calibration object if it does not exist
+        for(Int_t iVar=0; iVar<AliMultInput::kNVariables; iVar++) {
+          if( !hCalibVtx[lIndex][iVar] ){
+            hCalibVtx[lIndex][iVar] = new TProfile(Form("hCalibVtx_%i_%s",fRunNumber,AliMultInput::VarName[iVar].Data()),"",100, -20, 20);
+            hCalibVtx[lIndex][iVar] ->SetDirectory(0);
+          }
+        }
       }else{
         lSaveThisEvent = kFALSE;
       }
