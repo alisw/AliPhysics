@@ -110,7 +110,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fPDGMassChargedPion(-1),
   fPDGCodeNDM(-1),
   fPDGCodeAnalyzedMeson(-1),
-  enableAsymmetryPlotCombCPionVsNPion(kFALSE),
+  fEnableAsymmetryPlotCombCPionVsNPion(kFALSE),
   enableDalitzAllPt(kFALSE),
   enableDalitzLowPt(kFALSE),
   enableDalitzMidPt(kFALSE),
@@ -414,7 +414,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fPDGMassChargedPion(-1),
   fPDGCodeNDM(-1),
   fPDGCodeAnalyzedMeson(-1),
-  enableAsymmetryPlotCombCPionVsNPion(kFALSE),
+  fEnableAsymmetryPlotCombCPionVsNPion(kFALSE),
   enableDalitzAllPt(kFALSE),
   enableDalitzLowPt(kFALSE),
   enableDalitzMidPt(kFALSE),
@@ -839,17 +839,17 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     //fNDMRecoMode: 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     //fClusterCutArray->At(iCut))->GetClusterType(): 1=EMCAL, 2=PHOS, 3=DCAL, 4=EMCAL+DCAL, 0=All
     if (fNDMRecoMode == 0){ //PCM-PCM
-        enableAsymmetryPlotCombCPionVsNPion=kTRUE;
+        fEnableAsymmetryPlotCombCPionVsNPion=kTRUE;
         enableDalitzLowPt=kTRUE;
         enableDalitzMidPt=kTRUE;
         enableDalitzHighPt=kTRUE;
     } else if (fNDMRecoMode == 1){ //PCM-Calo
-        enableAsymmetryPlotCombCPionVsNPion=kTRUE;
+        fEnableAsymmetryPlotCombCPionVsNPion=kTRUE;
         enableDalitzLowPt=kTRUE;
         enableDalitzMidPt=kTRUE;
         enableDalitzHighPt=kTRUE;
     } else { //Calo-Calo
-        enableAsymmetryPlotCombCPionVsNPion=kTRUE;
+        fEnableAsymmetryPlotCombCPionVsNPion=kTRUE;
         enableDalitzLowPt=kTRUE;
         enableDalitzMidPt=kTRUE;
         enableDalitzHighPt=kTRUE;
@@ -1016,7 +1016,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoPionDCAz              = new TH2F*[fnCuts];
       fHistoPionTPCdEdxNSigma     = new TH2F*[fnCuts];
       fHistoPionTPCdEdx           = new TH2F*[fnCuts];
-      if (enableAsymmetryPlotCombCPionVsNPion){
+      if (fEnableAsymmetryPlotCombCPionVsNPion){
         fHistoAsymmetryPlotCombCPionVsNPion   = new TH2F*[fnCuts];
       }
       if (enableDalitzAllPt){
@@ -1338,7 +1338,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fESDList[iCut]->Add(fHistoPionTPCdEdx[iCut]);
         //---------------------------------------
         //Asymmetry Plots
-        if (enableAsymmetryPlotCombCPionVsNPion){
+        if (fEnableAsymmetryPlotCombCPionVsNPion){
           fHistoAsymmetryPlotCombCPionVsNPion[iCut]    = new TH2F("ESD_Asymmetry_CombCPionVsNPion","ESD_Asymmetry_CombCPionVsNPion", 200, -1., 1., HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistoAsymmetryPlotCombCPionVsNPion[iCut]->GetYaxis()->SetTitle(Form("p_{T, %s} (GeV/c^{2})", NameNeutralMesonAnalyzedLatex.Data()));
           fHistoAsymmetryPlotCombCPionVsNPion[iCut]->GetXaxis()->SetTitle(Form("alpha = (p_{L, #pi^{+}#pi^{-}}-p_{L, %s})/(p_{L, #pi^{+}#pi^{-}}+p_{L, %s})", NameNDMLatex.Data(), NameNDMLatex.Data()));
@@ -1740,7 +1740,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt   = new TH2F*[fnCuts];
         fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt     = new TH2F*[fnCuts];
         //AsymmetryPlot
-        if (enableAsymmetryPlotCombCPionVsNPion){
+        if (fEnableAsymmetryPlotCombCPionVsNPion){
             fHistoTrueMotherPiPlPiMiNDMAsymmetryPlotCombCPionVsNPion  = new TH2F*[fnCuts];
         }
         //Dalitz All Pt
@@ -2505,7 +2505,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt[iCut]);
           //---------------------------------------
           //AsymmetryPlot
-          if (enableAsymmetryPlotCombCPionVsNPion){
+          if (fEnableAsymmetryPlotCombCPionVsNPion){
               fHistoTrueMotherPiPlPiMiNDMAsymmetryPlotCombCPionVsNPion[iCut] = new TH2F("ESD_TrueMotherPiPlPiMiNDMAsymmetry_CombCPionVsNPion","ESD_TrueMotherPiPlPiMiNDMAsymmetry_CombCPionVsNPion", 200, -1., 1., HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
               fHistoTrueMotherPiPlPiMiNDMAsymmetryPlotCombCPionVsNPion[iCut]->Sumw2();
               fHistoTrueMotherPiPlPiMiNDMAsymmetryPlotCombCPionVsNPion[iCut]->GetYaxis()->SetTitle(Form("p_{T, %s} (GeV/c^{2})", NameNeutralMesonAnalyzedLatex.Data()));
@@ -5787,7 +5787,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
               if(fDoMesonQA>0){
                 //Asymmetry Plot
                 Double_t asymmetry_alpha = GetAlphaFromLorentz(PosNegPionTLVtmp, NDMTLVtmp);
-                if (enableAsymmetryPlotCombCPionVsNPion){
+                if (fEnableAsymmetryPlotCombCPionVsNPion){
                     fHistoAsymmetryPlotCombCPionVsNPion[fiCut]->Fill(asymmetry_alpha, mesoncand->Pt());
                 }
                 //Dalitz All Pt
@@ -6963,7 +6963,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       PosPionNDMSubTLVtmp = PosPionTLVtmp + NDMSubTLVtmp;
       NegPionNDMSubTLVtmp = NegPionTLVtmp + NDMSubTLVtmp;
       //Asymmetry Plot
-      if (enableAsymmetryPlotCombCPionVsNPion){
+      if (fEnableAsymmetryPlotCombCPionVsNPion){
           Double_t asymmetry_alpha = GetAlphaFromLorentz(PosNegPionTLVtmp, NDMTLVtmp);
           fHistoAsymmetryPlotCombCPionVsNPion[fiCut]->Fill(asymmetry_alpha, mesoncand->Pt());
       }

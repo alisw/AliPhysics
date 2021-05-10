@@ -198,7 +198,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Float_t                           fPDGMassChargedPion;                                ///< PDG mass of either pi0 or eta
     Int_t                             fPDGCodeNDM;                                        ///< PDG code of either pi0 or eta
     Int_t                             fPDGCodeAnalyzedMeson;                              ///< PDG code of the analyzed heavy netural meson
-    Bool_t                            enableAsymmetryPlotCombCPionVsNPion;                ///< Turn On or Off if Histograms are created and used
+    Bool_t                            fEnableAsymmetryPlotCombCPionVsNPion;                ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzAllPt;                                  ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzLowPt;                                  ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzMidPt;                                  ///< Turn On or Off if Histograms are created and used
