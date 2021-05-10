@@ -59,6 +59,7 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   Float_t maxDiffTimeClusterPair = 100,  //  20 ns in Run1  
   Bool_t bSameSM                 = kTRUE,
   TString outputFile             = "", // AnalysisResults.root
+  TString periodName             = "",
   const char *trigSuffix         = ""
 ) 
 {
@@ -90,6 +91,8 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   pi0calib->SetNCellsGroup(0);
   if (bSameSM) pi0calib->SwitchOnSameSM();
     else pi0calib->SwitchOffSameSM();
+
+  pi0calib->SetPeriodName(periodName);
   
   // Timing cuts
   pi0calib->SetPairDTimeCut(maxDiffTimeClusterPair);   

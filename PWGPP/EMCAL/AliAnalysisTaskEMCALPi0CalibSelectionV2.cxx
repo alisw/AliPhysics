@@ -23,8 +23,10 @@
 #include "AliAnalysisTaskEMCALPi0CalibSelectionV2.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliMCEventHandler.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliMCEvent.h"
 #include "AliMultSelection.h"
 #include "AliEMCALGeometry.h"
 #include "AliVCluster.h"
@@ -35,6 +37,12 @@
 #include "AliEmcalCorrectionTask.h"
 #include "AliEmcalCorrectionComponent.h"
 #include "AliEmcalCorrectionClusterNonLinearity.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEMCALPi0CalibSelectionV2) ;
@@ -49,6 +57,7 @@ fEMCALGeo(0x0),           fLoadMatrices(0),
 fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fTriggerName("EMC"),      
 fRecoUtils(NULL),
+fPeriodName(""),
 fEMCALInitialized(kFALSE),
 fIsMC(0),                 fSaveCells(kFALSE),     
 fSaveClusters(kFALSE),    fIsHeavyIon(kFALSE),
@@ -85,11 +94,12 @@ fhCentrality(0x0),        fhCentralitySelected(0x0),
 fhClusterTime(0x0),
 //Trees
 fCellTree(NULL),
-fVBuffer_NCells(0),         fBuffer_EventWeight(0),
+fVBuffer_NCells(0),         fBuffer_EventWeight(0),         fBuffer_ptHard(0),
 fBuffer_Event_VertexZ(0),   fBuffer_Event_Multiplicity(0),  fBuffer_Event_V0Centrality(0),
 fVBuffer_Cell_ID(0),        fVBuffer_Cell_E(0),             fVBuffer_Cell_t(0),
 fVBuffer_Cell_gain(0),      fVBuffer_Cell_MCParticleID(0), 
 fVBuffer_Cell_MCParticleFracE(0),
+fBuffer_NClusters(0),
 fVBuffer_Cluster_E(0),      fVBuffer_Cluster_Eta(0),    fVBuffer_Cluster_Phi(0),
 fVBuffer_Cluster_t(0),
 fVBuffer_Cluster_NCells(0), fVBuffer_Cluster_M02(0),    fVBuffer_Cluster_LeadCellId(0),
@@ -130,22 +140,6 @@ fVBuffer_TrueCluster_MCId(0) {
     fhClusterTimeSM[iSM]                  = 0;
   }
 
-  fVBuffer_Cell_ID                = new UShort_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_E                 = new UShort_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_t                 = new Short_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_gain              = new Bool_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_MCParticleID      = new Short_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_MCParticleFracE   = new UShort_t[kMaxActiveCells_calib]; 
-
-  fVBuffer_Cluster_E              = new UShort_t[kMaxActiveCluster];
-  fVBuffer_Cluster_Eta            = new Short_t[kMaxActiveCluster];
-  fVBuffer_Cluster_Phi            = new UShort_t[kMaxActiveCluster];
-  fVBuffer_Cluster_t              = new Short_t[kMaxActiveCluster];
-  fVBuffer_Cluster_NCells         = new UShort_t[kMaxActiveCluster];
-  fVBuffer_Cluster_M02            = new UShort_t[kMaxActiveCluster];
-  fVBuffer_Cluster_LeadCellId     = new UShort_t[kMaxActiveCluster];
-  fVBuffer_TrueCluster_MCId       = new Short_t[kMaxActiveCluster];
-
 }
 
 
@@ -160,6 +154,7 @@ fEMCALGeo(0x0),           fLoadMatrices(0),
 fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fTriggerName("EMC"),      
 fRecoUtils(NULL),
+fPeriodName(""),
 fEMCALInitialized(kFALSE),
 fIsMC(0),                 fSaveCells(kFALSE),     
 fSaveClusters(kFALSE),    fIsHeavyIon(kFALSE),
@@ -197,11 +192,12 @@ fhCentrality(0x0),        fhCentralitySelected(0x0),
 fhClusterTime(0x0),
 //Trees
 fCellTree(NULL),
-fVBuffer_NCells(0),         fBuffer_EventWeight(0),
+fVBuffer_NCells(0),         fBuffer_EventWeight(0), fBuffer_ptHard(0),
 fBuffer_Event_VertexZ(0),   fBuffer_Event_Multiplicity(0),  fBuffer_Event_V0Centrality(0),
 fVBuffer_Cell_ID(0),        fVBuffer_Cell_E(0),         fVBuffer_Cell_t(0),
 fVBuffer_Cell_gain(0),      fVBuffer_Cell_MCParticleID(0), 
 fVBuffer_Cell_MCParticleFracE(0),
+fBuffer_NClusters(0),
 fVBuffer_Cluster_E(0),      fVBuffer_Cluster_Eta(0),    fVBuffer_Cluster_Phi(0),
 fVBuffer_Cluster_t(0),
 fVBuffer_Cluster_NCells(0), fVBuffer_Cluster_M02(0),    fVBuffer_Cluster_LeadCellId(0),
@@ -241,22 +237,6 @@ fVBuffer_TrueCluster_MCId(0)
     fMatrix[iSM]                     = 0x0;
     fhClusterTimeSM[iSM]             = 0;
   }
-
-  fVBuffer_Cell_ID                = new UShort_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_E                 = new UShort_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_t                 = new Short_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_gain              = new Bool_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_MCParticleID      = new Short_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_MCParticleFracE   = new UShort_t[kMaxActiveCells_calib]; 
-
-  fVBuffer_Cluster_E              = new UShort_t[kMaxActiveCluster];
-  fVBuffer_Cluster_Eta            = new Short_t[kMaxActiveCluster];
-  fVBuffer_Cluster_Phi            = new UShort_t[kMaxActiveCluster];
-  fVBuffer_Cluster_t              = new Short_t[kMaxActiveCluster];
-  fVBuffer_Cluster_NCells         = new UShort_t[kMaxActiveCluster];
-  fVBuffer_Cluster_M02            = new UShort_t[kMaxActiveCluster];
-  fVBuffer_Cluster_LeadCellId     = new UShort_t[kMaxActiveCluster];
-  fVBuffer_TrueCluster_MCId       = new Short_t[kMaxActiveCluster];
     
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -556,10 +536,13 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserCreateOutputObjects() {
   fOutputContainer->SetOwner(kTRUE);
   PostData(1,fOutputContainer);
 
+
+  if( fSaveCells || fSaveClusters ){
     fCellTree = new TTree("EMCAL_Cells","EMCAL_Cells");
 
-    if( fIsMC > 1) {
-      fCellTree->Branch("EventWeight",         &fBuffer_EventWeight, "EventWeight/F");
+    if( fIsMC > 1 ) {
+      fCellTree->Branch("EventWeight",          &fBuffer_EventWeight, "EventWeight/D");
+      fCellTree->Branch("ptHard",               &fBuffer_ptHard,      "ptHard/F");
     }
 
     fCellTree->Branch("VertexZ",                &fBuffer_Event_VertexZ,       "VertexZ/S");
@@ -568,33 +551,34 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserCreateOutputObjects() {
     if( fIsHeavyIon ){
       fCellTree->Branch("V0Centrality",         &fBuffer_Event_V0Centrality,  "V0Centrality/F");
     }
+  }
 
   if( fSaveCells ){
       fCellTree->Branch("NCells",                 &fVBuffer_NCells,             "NCells/I");
-      fCellTree->Branch("Cell_ID",                fVBuffer_Cell_ID,             "Cell_ID[NCells]/s");
-      fCellTree->Branch("Cell_E",                 fVBuffer_Cell_E,              "Cell_E[NCells]/s");
-      fCellTree->Branch("Cell_time",              fVBuffer_Cell_t,              "Cell_t[NCells]/S");
-      fCellTree->Branch("Cell_highGain",          fVBuffer_Cell_gain,           "Cell_gain[NCells]/O");
+      fCellTree->Branch("Cell_ID",                &fVBuffer_Cell_ID);
+      fCellTree->Branch("Cell_E",                 &fVBuffer_Cell_E);
+      fCellTree->Branch("Cell_time",              &fVBuffer_Cell_t);
+      fCellTree->Branch("Cell_highGain",          &fVBuffer_Cell_gain);
 
       if( fIsMC ){
-        fCellTree->Branch("Cell_MCParticleID",    fVBuffer_Cell_MCParticleID,      "Cell_MCParticleID[NCells]/S");
-        fCellTree->Branch("Cell_MCFracEnergy",    fVBuffer_Cell_MCParticleFracE,   "Cell_MCFracE[NCells]/s");
+        fCellTree->Branch("Cell_MCParticleID",    &fVBuffer_Cell_MCParticleID);
+        fCellTree->Branch("Cell_MCFracEnergy",    &fVBuffer_Cell_MCParticleFracE);
       }
 
   }
 
   if( fSaveClusters ){
     fCellTree->Branch("NClusters",            &fBuffer_NClusters,               "NClusters/s");
-    fCellTree->Branch("Cluster_E",            fVBuffer_Cluster_E,               "Cluster_E[NClusters]/s");
-    fCellTree->Branch("Cluster_Eta",          fVBuffer_Cluster_Eta,             "Cluster_Eta[NClusters]/S");
-    fCellTree->Branch("Cluster_Phi",          fVBuffer_Cluster_Phi,             "Cluster_Phi[NClusters]/s");
-    fCellTree->Branch("Cluster_t",            fVBuffer_Cluster_t,               "Cluster_t[NClusters]/S");
-    fCellTree->Branch("Cluster_NCells",       fVBuffer_Cluster_NCells,          "Cluster_NCells[NClusters]/s");
-    fCellTree->Branch("Cluster_M02",          fVBuffer_Cluster_M02,             "Cluster_M02[NClusters]/s");
-    fCellTree->Branch("Cluster_LeadCellId",   fVBuffer_Cluster_LeadCellId,      "Cluster_LeadCellId[NClusters]/s");
+    fCellTree->Branch("Cluster_E",            &fVBuffer_Cluster_E);
+    fCellTree->Branch("Cluster_Eta",          &fVBuffer_Cluster_Eta);
+    fCellTree->Branch("Cluster_Phi",          &fVBuffer_Cluster_Phi);
+    fCellTree->Branch("Cluster_t",            &fVBuffer_Cluster_t);
+    fCellTree->Branch("Cluster_NCells",       &fVBuffer_Cluster_NCells);
+    fCellTree->Branch("Cluster_M02",          &fVBuffer_Cluster_M02);
+    fCellTree->Branch("Cluster_LeadCellId",   &fVBuffer_Cluster_LeadCellId);
     
     if( fIsMC ){
-      fCellTree->Branch("TrueCluster_MCId",   fVBuffer_TrueCluster_MCId,        "TrueCluster_MCId[NClusters]/S");
+      fCellTree->Branch("TrueCluster_MCId",   &fVBuffer_TrueCluster_MCId);
     }
   }
 
@@ -793,20 +777,20 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessCells() {
   Int_t   nCells          = 0;
   nCells    =   fEMCALCells->GetNumberOfCells();
   if( nCells == 0 ) return;
-  if( nCells > kMaxActiveCells_calib ) nCells = kMaxActiveCells_calib;
-
+  
   fVBuffer_NCells = fEMCALCells->GetNumberOfCells();
 
   for(Long_t i=0; i<nCells; i++){
-    if(fEMCALCells->GetCellAmplitude(i) < 0.05 ) {          // 50 MeV cut on cell energy
-      fVBuffer_Cell_ID[i]     =  fEMCALCells->GetCellNumber(i);
-      fVBuffer_Cell_E[i]      =  (UShort_t) (fEMCALCells->GetCellAmplitude(i)*1000);
-      fVBuffer_Cell_t[i]      =  (Short_t) (fEMCALCells->GetCellTime(i)*1e9);
-      fVBuffer_Cell_gain[i]   =  fEMCALCells->GetCellHighGain(i);
+    if(fEMCALCells->GetCellAmplitude(i) > 0.05 ) {          // 50 MeV cut on cell energy
+
+      fVBuffer_Cell_ID.push_back( static_cast<UShort_t>(fEMCALCells->GetCellNumber(i)) );
+      fVBuffer_Cell_E.push_back( static_cast<UShort_t>(fEMCALCells->GetCellAmplitude(i)*1000) );
+      fVBuffer_Cell_t.push_back( static_cast<Short_t>(fEMCALCells->GetCellTime(i)*1e9) );
+      fVBuffer_Cell_gain.push_back( fEMCALCells->GetCellHighGain(i) );
 
       if( fIsMC ){
-        fVBuffer_Cell_MCParticleID[i]       =    fEMCALCells->GetCellMCLabel(i);
-        fVBuffer_Cell_MCParticleFracE[i]    =    (UShort_t)(fEMCALCells->GetCellEFraction(i)*1000);
+        fVBuffer_Cell_MCParticleID.push_back( static_cast<Short_t>(fEMCALCells->GetCellMCLabel(i)) );
+        fVBuffer_Cell_MCParticleFracE.push_back( static_cast<UShort_t>(fEMCALCells->GetCellEFraction(i)*1000) );
       }
     }
   }
@@ -825,7 +809,7 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessClusters() {
   Bool_t shared     = kFALSE;
 
   fBuffer_NClusters = (UShort_t)fCaloClustersArr->GetEntriesFast();
-  if( fBuffer_NClusters > 200 ) return;
+  // if( fBuffer_NClusters > 200 ) return;
 
   for(Int_t iClu=0; iClu<fCaloClustersArr->GetEntriesFast()-1; iClu++){
     AliVCluster *c1 = (AliVCluster* ) fCaloClustersArr->At(iClu);
@@ -841,21 +825,22 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessClusters() {
     Float_t     clusPos[3];
     c1->GetPosition(clusPos);
     TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
-    Float_t     etaCluster            = (Float_t) clusterVector.Eta();
-    Float_t     phiCluster            = (Float_t) clusterVector.Phi();
+    Float_t     etaCluster            = (Float_t) (clusterVector.Eta());
+    Float_t     phiCluster            = (Float_t) (clusterVector.Phi());
     if( phiCluster < 0 ) phiCluster  += 2*TMath::Pi();
 
+    if( c1->E() < 0.6 ) continue;     // 600 MeV cut
 
-    fVBuffer_Cluster_E[iClu]          = (UShort_t)(c1->E()*1000);
-    fVBuffer_Cluster_Eta[iClu]        = (Short_t)(etaCluster*1000);
-    fVBuffer_Cluster_Phi[iClu]        = (UShort_t)(phiCluster*1000);
-    fVBuffer_Cluster_t[iClu]          = (Short_t)(c1->GetTOF()*1.e9);
-    fVBuffer_Cluster_NCells[iClu]     = (UShort_t)c1->GetNCells();
-    fVBuffer_Cluster_M02[iClu]        = (UShort_t)(c1->GetM02()*100);
-    fVBuffer_Cluster_LeadCellId[iClu] = absId;
+    fVBuffer_Cluster_E.push_back( static_cast<UShort_t>(c1->E()*1000) );
+    fVBuffer_Cluster_Eta.push_back( static_cast<Short_t>(etaCluster*1000) );
+    fVBuffer_Cluster_Phi.push_back( static_cast<UShort_t>(phiCluster*1000) );
+    fVBuffer_Cluster_t.push_back( static_cast<Short_t>(c1->GetTOF()*1.e9) );
+    fVBuffer_Cluster_NCells.push_back( static_cast<UShort_t>(c1->GetNCells()) );
+    fVBuffer_Cluster_M02.push_back( static_cast<UShort_t>(c1->GetM02()*100) );
+    fVBuffer_Cluster_LeadCellId.push_back( static_cast<UShort_t>(absId) );
 
     if ( fIsMC ){
-      fVBuffer_TrueCluster_MCId[iClu]             = c1->GetLabel();
+      fVBuffer_TrueCluster_MCId.push_back( static_cast<Short_t>(c1->GetLabel()) );
     }
 
     return;
@@ -943,19 +928,21 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
 
   if( !fSaveCells && !fSaveClusters) FillHistograms();  
 
-  // Float_t fWeighJetJetMC = 1;
-  // if( fIsMC > 1 ){
-  //   Float_t pthard = -1;
-  //   Bool_t isMCJet = ((AliConvEventCuts*)fEventCuts)->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC,pthard, event );
-  //   if (!isMCJet ) return;
-  //   fBuffer_EventWeight = fWeightJetJetMC;
-  // }
-
   PostData(1,fOutputContainer);
 
   if( fSaveCells )   ProcessCells();
   if( fSaveClusters ) ProcessClusters();
   if( fSaveCells || fSaveClusters) {
+
+    Double_t fWeightJetJetMC = 1;
+    if( fIsMC > 1 ){
+      Float_t pthard = -1;
+      Bool_t isMCJet = IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC, pthard, event, fPeriodName );
+      if (!isMCJet ) return;
+      fBuffer_EventWeight = fWeightJetJetMC;
+      fBuffer_ptHard      = pthard;
+    }
+
     fCellTree->Fill();
     ResetBuffer();
     // PostData(2,fCellTree);
@@ -1068,6 +1055,164 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(AliVEvent *eve
 
 }
 
+///
+/// Return JJ MC weights
+///
+//____________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsJetJetMCEventAccepted( AliMCEvent *mcEvent, Double_t& weight, Float_t& pthard, AliVEvent* event, TString fPeriodName ){
+  if(fPeriodName.CompareTo("LHC16P1JJ") != 0 && fPeriodName.CompareTo("LHC17P1JJ") != 0 && fPeriodName.CompareTo("LHC18P1JJ") != 0 && !fPeriodName.Contains("LHC19d3") ){
+    std::cout << "Weights not implemented for given period" << std::endl;
+    weight = 1;
+    return kFALSE;
+  }
+
+  AliGenCocktailEventHeader *cHeader   = 0x0;
+  Bool_t headerFound                   = kFALSE;
+  weight                               = -1;
+  Double_t fMaxPtJetMC                 = 0;
+  Bool_t eventAccepted = kTRUE;
+
+  if(mcEvent){
+    cHeader           = dynamic_cast<AliGenCocktailEventHeader*>(mcEvent->GenEventHeader());
+    if(cHeader) headerFound   = kTRUE;
+  } else {
+    //no mcEvent available -> not running on MC
+    weight = 1;
+    return kTRUE;
+  }
+
+  if(headerFound) {
+    TList *genHeaders         = 0x0;
+    if(cHeader) genHeaders    = cHeader->GetHeaders();
+    AliGenEventHeader* gh     = 0;
+
+    for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+      gh = (AliGenEventHeader*)genHeaders->At(i);
+      TString GeneratorName = gh->GetName();
+      Int_t nTriggerJets = dynamic_cast<AliGenPythiaEventHeader*>(gh)->NTriggerJets();
+      Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(gh)->GetPtHard();
+      Float_t tmpjet[]={0,0,0,0};
+
+      for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
+        dynamic_cast<AliGenPythiaEventHeader*>(gh)->TriggerJet(ijet, tmpjet);
+        TParticle jet(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+        //Compare jet pT and pt Hard
+        if(jet.Pt() > 2.5 * ptHard){
+          eventAccepted= kFALSE;
+        }
+        //set highest jet pT
+        if (jet.Pt() > fMaxPtJetMC) fMaxPtJetMC = jet.Pt();
+      }
+
+      if (mcEvent){
+        for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
+          AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(i);
+          if (!particle) continue;
+          // if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
+              if (particle->Pt() > 1.5*ptHard && TMath::Abs(particle->PdgCode()) > 21){
+                eventAccepted= kFALSE;
+              }
+          // }
+        }
+      }
+
+      Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
+                                              21, 28, 36, 45, 57,
+                                              70, 85, 99, 115, 132,
+                                              150, 169, 190, 212, 235,
+                                              1000000};
+      Double_t weightsBins[20]      = { 43.8654,  13.6215, 6.79856, 2.67526, 0.978794,
+                                        0.390797,  0.127769, 0.0465714, 0.0206173, 0.00750282,
+                                        0.00318773,  0.00122533, 0.000644385, 0.000321225,  0.00016846,
+                                        9.18305e-05, 5.33507e-05, 3.00677e-05, 1.74608e-05, 2.80823e-05};
+      Int_t bin = 0;
+      if(ptHard >= ptHardBinRanges[0]){
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 20) weight = weightsBins[bin];
+      }
+    }
+  } else {
+    AliGenEventHeader * eventHeader = mcEvent->GenEventHeader();
+    TString eventHeaderName     = eventHeader->ClassName();
+    Bool_t eventAccepted = kFALSE;
+    if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0 || eventHeaderName.Contains("Pythia8Jets")){
+      eventAccepted = kTRUE;
+    }else { //special case for pythia8jets embedded in EPOSLHC for AODs
+      if(event->IsA()==AliAODEvent::Class()){
+        AliAODMCHeader *mch = NULL;
+        AliAODEvent * aod = dynamic_cast<AliAODEvent*> (event);
+        if(aod){
+          mch = dynamic_cast<AliAODMCHeader*>(aod->FindListObject("mcHeader"));
+          if ( mch ){
+            Int_t nGenerators = mch->GetNCocktailHeaders();
+            if ( nGenerators > 0  ){
+              for(Int_t igen = 0; igen < nGenerators; igen++)
+              {
+                AliGenEventHeader * eventHeaderGen = mch->GetCocktailHeader(igen) ;
+                TString name = eventHeaderGen->GetName();
+                if (name.CompareTo("AliGenPythiaEventHeader") == 0 || name.Contains("Pythia8Jets") || name.Contains("Pythia8GammaJet")){
+                  eventAccepted = kTRUE;
+                  eventHeader = eventHeaderGen;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if(eventAccepted){
+      Int_t nTriggerJets =  dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->NTriggerJets();
+      Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
+      pthard = ptHard;
+      Float_t tmpjet[]={0,0,0,0};
+
+        for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
+          dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->TriggerJet(ijet, tmpjet);
+          TParticle jet(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+          //Compare jet pT and pt Hard
+          if(jet.Pt() > 2.5 * ptHard){
+            eventAccepted= kFALSE;
+          }
+          //set highest jet pT
+          if (jet.Pt() > fMaxPtJetMC){
+            fMaxPtJetMC = jet.Pt();
+          }
+        }
+
+      if (mcEvent){
+        for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
+          // TParticle* particle = (TParticle *)mcEvent->Particle(i);
+          AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(i);
+          if (!particle) continue;
+          // if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
+              if (particle->Pt() > 1.5*ptHard && TMath::Abs(particle->PdgCode()) > 21){
+                eventAccepted= kFALSE;
+              }
+          // }
+        }
+      }
+
+        Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
+                                          21, 28, 36, 45, 57,
+                                          70, 85, 99, 115, 132,
+                                          150, 169, 190, 212, 235,
+                                          1000000};
+        Double_t weightsBins[20]      = { 43.8654,  13.6215, 6.79856, 2.67526, 0.978794,
+                                          0.390797,  0.127769, 0.0465714, 0.0206173, 0.00750282,
+                                          0.00318773,  0.00122533, 0.000644385, 0.000321225,  0.00016846,
+                                          9.18305e-05, 5.33507e-05, 3.00677e-05, 1.74608e-05, 2.80823e-05};
+
+        Int_t bin = 0;
+        if(ptHard >= ptHardBinRanges[0]){
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 20) weight = weightsBins[bin];
+        }
+      }
+
+  }
+  if(weight == -1) return kFALSE;
+  else return eventAccepted;
+}
 
 ///
 /// Set the total number of columns to be masked in the analysis
@@ -1117,31 +1262,44 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::MaskFrameCluster(Int_t iSM, Int_
 ///_____________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelectionV2::ResetBuffer() {
 
-  fVBuffer_NCells               = 0;
-  fBuffer_Event_VertexZ         = 0;
-  fBuffer_Event_Multiplicity    = 0;
-  fBuffer_Event_V0Centrality    = 0;
-  fBuffer_NClusters             = 0;
+  // fVBuffer_NCells               = 0;
+  // fBuffer_Event_VertexZ         = 0;
+  // fBuffer_Event_Multiplicity    = 0;
+  // fBfffer_ptHard                = 0;
+  // fBuffer_Event_V0Centrality    = 0;
+  // fBuffer_NClusters             = 0;
 
-  for(Int_t ncell = 0; ncell < kMaxActiveCells_calib; ncell++){
-    fVBuffer_Cell_ID[ncell]               = 0;
-    fVBuffer_Cell_E[ncell]                = 0;
-    fVBuffer_Cell_t[ncell]                = 0;
-    fVBuffer_Cell_gain[ncell]             = 0;
-    fVBuffer_Cell_MCParticleID[ncell]     = -1;
-    fVBuffer_Cell_MCParticleFracE[ncell]  = -1;
-  }
+  fVBuffer_Cell_ID.clear();
+  fVBuffer_Cell_E.clear();
+  fVBuffer_Cell_t.clear();
+  fVBuffer_Cell_gain.clear();
+  fVBuffer_Cell_MCParticleID.clear();
+  fVBuffer_Cell_MCParticleFracE.clear();
 
-  for(Int_t ncluster=0; ncluster < kMaxActiveCluster; ncluster++){
-    fVBuffer_Cluster_E[ncluster]                      = 0;
-    fVBuffer_Cluster_Eta[ncluster]                    = 0;
-    fVBuffer_Cluster_Phi[ncluster]                    = 0;
-    fVBuffer_Cluster_t[ncluster]                      = 0;
-    fVBuffer_Cluster_NCells[ncluster]                 = 0;
-    fVBuffer_Cluster_M02[ncluster]                    = 0;
-    fVBuffer_Cluster_LeadCellId[ncluster]             = 0;
-    fVBuffer_TrueCluster_MCId[ncluster]               = -1;
-  }
+  fVBuffer_Cell_ID.resize(0);
+  fVBuffer_Cell_E.resize(0);
+  fVBuffer_Cell_t.resize(0);
+  fVBuffer_Cell_gain.resize(0);
+  fVBuffer_Cell_MCParticleID.resize(0);
+  fVBuffer_Cell_MCParticleFracE.resize(0);
+
+  fVBuffer_Cluster_E.clear();
+  fVBuffer_Cluster_Eta.clear();
+  fVBuffer_Cluster_Phi.clear();
+  fVBuffer_Cluster_t.clear();
+  fVBuffer_Cluster_NCells.clear();
+  fVBuffer_Cluster_M02.clear();
+  fVBuffer_Cluster_LeadCellId.clear();
+  fVBuffer_TrueCluster_MCId.clear();
+
+  fVBuffer_Cluster_E.resize(0);
+  fVBuffer_Cluster_Eta.resize(0);
+  fVBuffer_Cluster_Phi.resize(0);
+  fVBuffer_Cluster_t.resize(0);
+  fVBuffer_Cluster_NCells.resize(0);
+  fVBuffer_Cluster_M02.resize(0);
+  fVBuffer_Cluster_LeadCellId.resize(0);
+  fVBuffer_TrueCluster_MCId.resize(0);
 }
 
 ///
