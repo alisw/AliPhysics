@@ -5,6 +5,7 @@
 #include "TGraph.h"
 #include "THnSparse.h"
 #include "TPDGCode.h"
+#include <iostream>
 
 class AlidNdPtTools;
 
@@ -591,6 +592,14 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option, int _cutM
   AliESDtrackCuts* cuts = new AliESDtrackCuts(o.Data());
   o.ToLower();
 
+  Bool_t isTightChi2TPCCutRequired = kFALSE;
+  if(!isTightChi2TPCCutRequired) std::cout <<"NOTokidoke\n\n";
+  if(o.Contains("tightchi2tpccut")){
+    isTightChi2TPCCutRequired = kTRUE;
+    o.ReplaceAll("tightchi2tpccut", "");
+  }
+  if(isTightChi2TPCCutRequired) std::cout <<"Okidoke\n\n";
+
   // if eta ranges is provided set the eta range
   // and remove the part of the string containting the eta range
   if(o.Contains("eta05"))
@@ -609,6 +618,7 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option, int _cutM
     o.ReplaceAll("eta10", "");
   }
 
+  std::cout << o << std::endl;
   // as default use the cuts with geometric length cut
   if((o.EqualTo("")) || (o.EqualTo("default")) || 100 != _cutMode)
   {
@@ -621,6 +631,7 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option, int _cutM
     cuts->SetRequireTPCRefit(kTRUE);
     cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     cuts->SetMaxChi2PerClusterTPC(4);
+    if(isTightChi2TPCCutRequired) cuts->SetMaxChi2PerClusterTPC(2.5);
     cuts->SetMaxFractionSharedTPCClusters(0.4);
     cuts->SetRequireITSRefit(kTRUE);
     cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
@@ -649,10 +660,12 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option, int _cutM
     if(_cutMode == 103)
     {
       cuts->SetMaxChi2PerClusterTPC(3.0);
+      if(isTightChi2TPCCutRequired) cuts->SetMaxChi2PerClusterTPC(1.7);
     }
     if(_cutMode == 104)
     {
       cuts->SetMaxChi2PerClusterTPC(5.0);
+      if(isTightChi2TPCCutRequired) cuts->SetMaxChi2PerClusterTPC(3.4);
     }
 
     if(_cutMode == 105)
