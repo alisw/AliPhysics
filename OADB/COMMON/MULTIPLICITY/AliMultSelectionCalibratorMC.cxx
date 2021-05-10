@@ -610,7 +610,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
   for(Int_t iRun=0; iRun<lNRuns; iRun++) {
     for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
       //Data Loop
-      cout << "\r" << "---["<<iRun<<"/"<<lNRuns<<"]["<<iEst<<"/"<<lNEstikmators<<"] Looping over data tree [ 0% ] "<< flush;
+      cout << "\r" << "---["<<iRun<<"/"<<lNRuns<<"]["<<iEst<<"/"<<lNEstimators<<"] Looping over data tree [ 0% ] "<< flush;
       for( Long64_t iEntry=0; iEntry<sTree[iRun]->GetEntries(); iEntry++) {
         if ( iEntry % 10000 == 0 ) {
           cout << "\r" << "--- Looping over data tree [ "<<Form("%.3f",100.*iEntry/sTree[iRun]->GetEntries())<<"% ] [ ETA: "<< flush;
@@ -634,7 +634,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
       cout<<endl;
       
       //Data Loop
-      cout << "\r" << "---["<<iRun<<"/"<<lNRuns<<"]["<<iEst<<"/"<<lNEstikmators<<"] Looping over MC tree [ 0% ] "<< flush;
+      cout << "\r" << "---["<<iRun<<"/"<<lNRuns<<"]["<<iEst<<"/"<<lNEstimators<<"] Looping over MC tree [ 0% ] "<< flush;
       for( Long64_t iEntry=0; iEntry<sTreeMC[iRun]->GetEntries(); iEntry++) {
         if ( iEntry % 1000 == 0 ) {
           cout << "\r" << "--- Looping over MC tree [ "<<Form("%.3f",100.*iEntry/sTreeMC[iRun]->GetEntries())<<"% ] [ ETA: "<< flush;
