@@ -1206,14 +1206,14 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiZeroGamma(AliAODMCParticle 
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionMother *omega, AliAODConversionMother *pi0, AliAODConversionPhoton *gamma, Bool_t DoPiZeroAngleCut, TF1 *maxfit, Double_t lowerFactor, Double_t upperFactor){
+Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionMother *omega, AliAODConversionMother *pi0, AliAODConversionPhoton *gamma, Bool_t DoPiZeroAngleCut, TF1 *maxfit, TF1 *minfit){
 
   if(!DoPiZeroAngleCut) return kTRUE;
 
   Double_t PiZeroGammaAngle = pi0->Angle(gamma->Vect());
   Double_t omegaPt = omega->Pt();
 
-  if(PiZeroGammaAngle > lowerFactor * maxfit->Eval(omegaPt) && PiZeroGammaAngle < upperFactor * maxfit->Eval(omegaPt)) return kTRUE;
+  if(PiZeroGammaAngle > minfit->Eval(omegaPt) && PiZeroGammaAngle < maxfit->Eval(omegaPt)) return kTRUE;
   return kFALSE;
 
 }
