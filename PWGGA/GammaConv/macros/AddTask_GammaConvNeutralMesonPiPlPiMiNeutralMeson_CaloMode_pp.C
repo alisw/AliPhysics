@@ -1097,17 +1097,17 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //-----
     //Primary Pion Variations
     //-----
-  } else if(trainConfig == 920)  { //Standard EDC 13TeV MB, Ch.Pi 650MeV
+  } else if(trainConfig == 920)  { //EDC 13TeV MB, Ch.Pi 650MeV
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070f","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 921)  { //Standard EDC 13TeV MB, Ch.Pi 700MeV
+  } else if(trainConfig == 921)  { //EDC 13TeV MB, Ch.Pi 700MeV
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070g","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 922)  { //Standard EDC 13TeV MB, Ch.Pi 750MeV
+  } else if(trainConfig == 922)  { //EDC 13TeV MB, Ch.Pi 750MeV
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 923)  { //Standard EDC 13TeV MB, Ch.Pi 850MeV, Ch.Neu.Pi 1000MeV
+  } else if(trainConfig == 923)  { //EDC 13TeV MB, Ch.Pi 850MeV, Ch.Neu.Pi 1000MeV
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070c","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 924)  { //Standard EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 1000MeV
+  } else if(trainConfig == 924)  { //EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 1000MeV
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070h","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 925)  { //Standard EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 850MeV
+  } else if(trainConfig == 925)  { //EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 850MeV
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070i","0103103100000000","0453503000000000"); // INT7
 
     //-----
@@ -1144,17 +1144,17 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //-----
     //Trigger EG2: Primary Pion Variations
     //-----
-  } else if(trainConfig == 1020)  { //Standard EDC 13TeV MB, Ch.Pi 650MeV
+  } else if(trainConfig == 1020)  { //EDC 13TeV MB, Ch.Pi 650MeV
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070f","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 1021)  { //Standard EDC 13TeV MB, Ch.Pi 700MeV
+  } else if(trainConfig == 1021)  { //EDC 13TeV MB, Ch.Pi 700MeV
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070g","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 1022)  { //Standard EDC 13TeV MB, Ch.Pi 750MeV
+  } else if(trainConfig == 1022)  { //EDC 13TeV MB, Ch.Pi 750MeV
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070a","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 1023)  { //Standard EDC 13TeV MB, Ch.Pi 850MeV, Ch.Neu.Pi 1000MeV
+  } else if(trainConfig == 1023)  { //EDC 13TeV MB, Ch.Pi 850MeV, Ch.Neu.Pi 1000MeV
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070c","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 1024)  { //Standard EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 1000MeV
+  } else if(trainConfig == 1024)  { //EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 1000MeV
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070h","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 1025)  { //Standard EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 850MeV
+  } else if(trainConfig == 1025)  { //EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 850MeV
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070i","0103103100000000","0453503000000000"); // INT7
 
 
@@ -1192,17 +1192,17 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //-----
     //Trigger EG1: Primary Pion Variations
     //-----
-  } else if(trainConfig == 1120)  { //Standard EDC 13TeV MB, Ch.Pi 650MeV
+  } else if(trainConfig == 1120)  { //EDC 13TeV MB, Ch.Pi 650MeV
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070f","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 1121)  { //Standard EDC 13TeV MB, Ch.Pi 700MeV
+  } else if(trainConfig == 1121)  { //EDC 13TeV MB, Ch.Pi 700MeV
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070g","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 1122)  { //Standard EDC 13TeV MB, Ch.Pi 750MeV
+  } else if(trainConfig == 1122)  { //EDC 13TeV MB, Ch.Pi 750MeV
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 1123)  { //Standard EDC 13TeV MB, Ch.Pi 850MeV, Ch.Neu.Pi 1000MeV
+  } else if(trainConfig == 1123)  { //EDC 13TeV MB, Ch.Pi 850MeV, Ch.Neu.Pi 1000MeV
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070c","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 1124)  { //Standard EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 1000MeV
+  } else if(trainConfig == 1124)  { //EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 1000MeV
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070h","0103103100000000","0453503000000000"); // INT7
-  } else if(trainConfig == 1125)  { //Standard EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 850MeV
+  } else if(trainConfig == 1125)  { //EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 850MeV
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070i","0103103100000000","0453503000000000"); // INT7
 
   } else {
