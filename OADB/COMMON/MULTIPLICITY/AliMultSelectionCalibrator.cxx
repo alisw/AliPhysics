@@ -357,7 +357,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
   TProfile *hCalibVtx[1000][AliMultInput::kNVariables];
   for(Int_t ii=0; ii<1000; ii++){
     for(Int_t jj=0; jj<AliMultInput::kNVariables; jj++){
-      hCalibVtx[ii][jj]=0x0; //init to null to be sure 
+      hCalibVtx[ii][jj]=0x0; //init to null to be sure
     }
   }
   
@@ -477,6 +477,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
           if(VarDoAutocalib[iVar]){
             AliMultVariable *v1 = fInput->GetVariable(iVar);
             if(!v1) cout<<"PROBLEM finding this variable"<<endl;
+            if(!hCalibVtx[lIndex][iVar]) cout<<"Undefined vertex-Z calib histo at indices "<<lIndex<<", "<<iVar<<", please debug"<<endl;
             hCalibVtx[lIndex][iVar]->Fill( lVtxZLocalPointer->GetValue(), v1->IsInteger() ? v1->GetValueInteger() : v1->GetValue() );
           }
         }
