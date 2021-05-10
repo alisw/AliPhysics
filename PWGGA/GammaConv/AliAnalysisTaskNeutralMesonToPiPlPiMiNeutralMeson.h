@@ -137,7 +137,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void RelabelAODPhotonCandidates(Bool_t mode);
     AliExternalTrackParam* GetConstrainedParameterAOD(const AliAODTrack* aodTr, const AliAODVertex* vtx, double bz);
     Double32_t CalculateP2(Double_t xyz[3],Double_t pxpypz[3]);
-    Double_t GetAlphaFromLorentz(TLorentzVector Particle1, TLorentzVector Particle2);
+    Double_t GetAlphaLFromLorentz(TLorentzVector Particle1, TLorentzVector Particle2);
 
 
     AliV0ReaderV1*                    fV0Reader;                                          //!<! V0Reader for basic conversion photon selection
