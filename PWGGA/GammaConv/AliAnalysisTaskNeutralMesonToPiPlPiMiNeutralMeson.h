@@ -137,6 +137,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void RelabelAODPhotonCandidates(Bool_t mode);
     AliExternalTrackParam* GetConstrainedParameterAOD(const AliAODTrack* aodTr, const AliAODVertex* vtx, double bz);
     Double32_t CalculateP2(Double_t xyz[3],Double_t pxpypz[3]);
+    Double_t GetAlphaLFromLorentz(TLorentzVector Particle1, TLorentzVector Particle2);
 
 
     AliV0ReaderV1*                    fV0Reader;                                          //!<! V0Reader for basic conversion photon selection
@@ -197,6 +198,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Float_t                           fPDGMassChargedPion;                                ///< PDG mass of either pi0 or eta
     Int_t                             fPDGCodeNDM;                                        ///< PDG code of either pi0 or eta
     Int_t                             fPDGCodeAnalyzedMeson;                              ///< PDG code of the analyzed heavy netural meson
+    Bool_t                            fEnableAsymmetryPlotCombCPionVsNPion;                ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzAllPt;                                  ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzLowPt;                                  ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzMidPt;                                  ///< Turn On or Off if Histograms are created and used
@@ -232,6 +234,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoSwappingGammaGammaInvMassPt;                  //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
     TH2F**                            fHistoMotherInvMassPt;                              //!<! array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherInvMassPtRejectedKinematic;             //!<! array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
+    //Asymmetry Plot
+    TH2F**                            fHistoAsymmetryPlotCombCPionVsNPion;                //!<!
     //All Dalitz
     TH2F**                            fHistoDalitzPlotPosFixedPzNDM;                     //!<!
     TH2F**                            fHistoDalitzPlotNegFixedPzNDM;                     //!<!
@@ -357,6 +361,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromK0l;         //!<! histos with reconstructed validated K0l mesons from  which are not analyzed, inv mass, pT
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromEtaPrime;    //!<! histos with reconstructed validated EtaPrime mesons from  which are not analyzed, inv mass, pT
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromOther;       //!<! histos with reconstructed validated EtaPrime mesons from  which are not analyzed, inv mass, pT
+    //Asymmetry Plot
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMAsymmetryPlotCombCPionVsNPion;   //!<!
     //Dalitz All Pt
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM;   //!<!
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM;   //!<!
@@ -484,7 +490,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 20);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 21);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
