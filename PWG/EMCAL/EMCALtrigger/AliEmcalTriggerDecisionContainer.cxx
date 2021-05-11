@@ -40,6 +40,7 @@ AliEmcalTriggerDecisionContainer::AliEmcalTriggerDecisionContainer():
   fContainer()
 {
   fContainer.SetOwner(kTRUE);
+  fActiveTriggerClasses.SetOwner(kTRUE);
 }
 
 AliEmcalTriggerDecisionContainer::AliEmcalTriggerDecisionContainer(const char* name):
@@ -47,14 +48,24 @@ AliEmcalTriggerDecisionContainer::AliEmcalTriggerDecisionContainer(const char* n
   fContainer()
 {
   fContainer.SetOwner(kTRUE);
+  fActiveTriggerClasses.SetOwner(kTRUE);
 }
 
 void AliEmcalTriggerDecisionContainer::Reset() {
   if(fContainer.GetEntries()) fContainer.Clear();
+  if(fActiveTriggerClasses.GetEntries()) fActiveTriggerClasses.Clear();
+}
+
+void AliEmcalTriggerDecisionContainer::CleanActiveTriggerClasses() {
+  if(fActiveTriggerClasses.GetEntries()) fActiveTriggerClasses.Clear();
 }
 
 void AliEmcalTriggerDecisionContainer::AddTriggerDecision(AliEmcalTriggerDecision* const decision) {
   fContainer.Add(decision);
+}
+
+void AliEmcalTriggerDecisionContainer::AddActiveTriggerClass(const char* alias) {
+  fActiveTriggerClasses.Add(new AliEmcalTriggerAlias(alias));
 }
 
 const AliEmcalTriggerDecision* AliEmcalTriggerDecisionContainer::FindTriggerDecision(const char* decname) const {
@@ -83,6 +94,25 @@ bool AliEmcalTriggerDecisionContainer::IsEventSelected(const char *name)  const 
   const AliEmcalTriggerDecision *trg = FindTriggerDecision(name);
   if(trg) return trg->IsSelected();
   return false;
+}
+
+bool AliEmcalTriggerDecisionContainer::IsTriggerClassActive(const char *name) const {
+  bool result = false;
+  TIter triggerIter(&fActiveTriggerClasses);
+  AliEmcalTriggerAlias *tmp(nullptr);
+  while((tmp = static_cast<AliEmcalTriggerAlias *>(triggerIter()))) {
+    if(tmp) {
+      if(tmp->HasTriggerClass(name)) {
+        result = true;
+        break;
+      }
+    }
+  }
+  return result;
+}
+
+bool AliEmcalTriggerDecisionContainer::HasActiveEMCALTrigger() const {
+  return fActiveTriggerClasses.GetEntries() > 0;
 }
 
 }

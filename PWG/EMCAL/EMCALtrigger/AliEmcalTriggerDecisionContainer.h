@@ -145,6 +145,11 @@ public:
   virtual void Clear(Option_t *option="") { Reset(); }
 
   /**
+   * @brief Clean list of active trigger classes
+   */
+  void CleanActiveTriggerClasses();
+
+  /**
    * @brief Add trigger decision to the container
    * 
    * The name of the trigger decision corresponds to the name of the
@@ -207,8 +212,34 @@ public:
    */
   bool IsEventSelected(const char *name)  const;
 
+  /**
+   * @brief Add trigger to the list of active trigger classes
+   * @param alias Trigger alias containing the trigger classes (string of trigger classes separated by ";")
+   */
+  void AddActiveTriggerClass(const char *alias);
+
+  /**
+   * @brief Check whether trigger class was active for the given run
+   * @param name Name of the trigger class
+   * @return True if the trigger was found in the list of triggers, false otherwise 
+   */
+  bool IsTriggerClassActive(const char *name) const;
+
+  /**
+   * @brief Get list of active trigger classes
+   * @return Active trigger classes
+   */
+  const TList *GetListOfActiveTriggers() const { return &fActiveTriggerClasses; }
+
+  /**
+   * @brief Check whether the container was filled for events with active EMCAL trigger selection
+   * @return True if at least 1 EMCAL trigger was active, false otherwise
+   */
+  bool HasActiveEMCALTrigger() const;
+
 protected:
-  TList     fContainer;         ///< List of trigger decisions
+  TList     fContainer;               ///< List of trigger decisions
+  TList     fActiveTriggerClasses;    ///< List of active trigger classes
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerDecisionContainer, 1);    // Container for trigger decisions

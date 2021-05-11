@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <TObjArray.h>
 #include <TObjString.h>
@@ -77,6 +78,10 @@ void AliEmcalTriggerAlias::SetTriggerClasses(const TList &triggernames) {
   }
 }
 
+void AliEmcalTriggerAlias::AddTriggerClass(const char *name) {
+  fTriggerClasses.Add(new TObjString(name));
+}
+
 void AliEmcalTriggerAlias::DecodeTriggerClasses(const char *triggernames) {
   TString tmpstring(triggernames);
   std::unique_ptr<TObjArray> separated(tmpstring.Tokenize(";"));
@@ -85,6 +90,19 @@ void AliEmcalTriggerAlias::DecodeTriggerClasses(const char *triggernames) {
   while((triggerstring = static_cast<TObjString *>(listiter()))){
     fTriggerClasses.Add(new TObjString(*triggerstring));
   }
+}
+
+std::string AliEmcalTriggerAlias::BuildAliasString() const {
+  std::stringstream result;
+  TIter listiter(&fTriggerClasses);
+  TObjString *tmpstring(nullptr);
+  bool first = true;
+  while((tmpstring = static_cast<TObjString *>(listiter()))) {
+    if(!first) result << ";";
+    result << tmpstring->String();
+    if(first) first = false;
+  }
+  return result.str();
 }
 
 bool AliEmcalTriggerAlias::HasTriggerClass(const char *triggername) const {

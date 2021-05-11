@@ -45,6 +45,7 @@ std::ostream & operator<< (std::ostream &in, const PWG::EMCAL::AliAnalysisTaskEm
 namespace PWG{
 namespace EMCAL {
 
+class AliEmcalTriggerAlias;
 class AliEmcalTriggerDecision;
 class AliEmcalTriggerDecisionContainer;
 class AliEmcalTriggerSelection;
@@ -258,6 +259,12 @@ public:
    * @return Name of the trigger decision container
    */
   const TString  &GetGlobalDecisionContainerName() const { return fGlobalDecisionContainerName; }
+
+  /**
+   * @brief Perform trigger selection only if the trigger was active in CTP
+   * @param doRequire If true the trigger is required to be active in CTP 
+   */
+  void SetRequireTriggerActiveInCTP(bool doRequire) { fRequireTriggerActiveInCTP = doRequire; }
 
   /**
    * @brief Configure task using YAML configuration file
@@ -830,6 +837,16 @@ protected:
   virtual Bool_t Run();
 
   /**
+   * @brief Actions to be performed when the run changed
+   * @param newrun Number of the new run
+   * 
+   * Load CTP configuration for the new run in case the 
+   * trigger selection is implemented to require that the
+   * triggers are active in the CTP. 
+   */
+  virtual void RunChanged(Int_t newrun);
+
+  /**
    * @brief Filling basic QA Histograms of the trigger selection task
    *
    * The QA histograms are connected to the main patch and monitor
@@ -876,6 +893,8 @@ protected:
   Bool_t Is2017PP5TeV(const char *dataset) const;
   Bool_t Is2017MCPP5TeV(const char *dataset) const;
   Bool_t IsSupportedMCSample(const char *period, std::vector<TString> &supportedProductions) const;
+  Bool_t IsTriggerActive(const char *triggerclass);
+  Bool_t IsAliasActive(const AliEmcalTriggerAlias *alias);
  
   AliEmcalTriggerSelectionCuts::AcceptanceType_t  DecodeAcceptanceString(const std::string &acceptancestring);
   AliEmcalTriggerSelectionCuts::PatchType_t       DecodePatchTypeString(const std::string &patchtypestring);
@@ -893,8 +912,10 @@ protected:
   AliEmcalTriggerDecisionContainer          *fTriggerDecisionContainer;        ///< Trigger decision container objects
   TString                                    fGlobalDecisionContainerName;     ///< Name of the global trigger selection
   TList                                      fTriggerSelections;               ///< List of trigger selections
+  TList                                      fActiveTriggerCTP;                ///< List of active trigger classes in CTP
   TList                                      fSelectionQA;                     ///< Trigger selection QA
   Bool_t                                     fUseRho;                          //!<! Check if any of teh trigger selections is requiring rho calculation
+  Bool_t                                     fRequireTriggerActiveInCTP;       ///< Require trigger class to be active in the CTP in data
 
 private:
 

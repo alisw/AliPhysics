@@ -28,6 +28,7 @@
 #define ALIEMCALTRIGGERALIAS_H
 
 #include <iosfwd>
+#include <string>
 #include <TObject.h>
 #include <TList.h>
 
@@ -101,6 +102,24 @@ public:
    * @param triggernames List of trigger classes handled
    */
   void SetTriggerClasses(const TList &triggernames);
+
+  /**
+   * @brief Add trigger class to trigger alias
+   * @param name Name of the trigger class
+   */
+  void AddTriggerClass(const char *name);
+
+  /**
+   * @brief Get list of trigger classes handled by this alias
+   * @return List of trigger classes handled by this alias 
+   */
+  const TList &GetTriggerClasses() const { return fTriggerClasses; }
+
+  /**
+   * @brief Build string representation of trigger alias
+   * @return Trigger alias string 
+   */
+  std::string BuildAliasString() const;
 
   /**
    * @brief Print trigger alias on a stream

@@ -29,12 +29,17 @@
 #include <sstream>
 #include <unordered_map>
 #include <TH1.h>
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliEmcalTriggerAlias.h"
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalTriggerSelection.h"
+#include "AliEmcalTriggerStringDecoder.h"
 #include "AliAnalysisTaskEmcalTriggerSelection.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliTriggerClass.h"
+#include "AliTriggerConfiguration.h"
 #include "AliYAMLConfiguration.h"
 
 ClassImp(PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection)
@@ -47,12 +52,15 @@ AliAnalysisTaskEmcalTriggerSelection::AliAnalysisTaskEmcalTriggerSelection():
   fTriggerDecisionContainer(nullptr),
   fGlobalDecisionContainerName("EmcalTriggerDecision"),
   fTriggerSelections(),
+  fActiveTriggerCTP(),
   fSelectionQA(),
-  fUseRho(false)
+  fUseRho(false),
+  fRequireTriggerActiveInCTP(true)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
   SetCaloTriggersName("usedefault");
   fTriggerSelections.SetOwner(kTRUE);
+  fActiveTriggerCTP.SetOwner(kTRUE);
 }
 
 AliAnalysisTaskEmcalTriggerSelection::AliAnalysisTaskEmcalTriggerSelection(const char* name):
@@ -60,12 +68,16 @@ AliAnalysisTaskEmcalTriggerSelection::AliAnalysisTaskEmcalTriggerSelection(const
   fTriggerDecisionContainer(nullptr),
   fGlobalDecisionContainerName("EmcalTriggerDecision"),
   fTriggerSelections(),
-  fSelectionQA()
+  fActiveTriggerCTP(),
+  fSelectionQA(),
+  fUseRho(false),
+  fRequireTriggerActiveInCTP(true)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
   SetCaloTriggersName("usedefault");
   SetMakeGeneralHistograms(true);
   fTriggerSelections.SetOwner(kTRUE);
+  fActiveTriggerCTP.SetOwner(kTRUE);
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::UserCreateOutputObjects() {
@@ -94,6 +106,76 @@ void AliAnalysisTaskEmcalTriggerSelection::AddTriggerSelection(AliEmcalTriggerSe
   fTriggerSelections.Add(selection);
 }
 
+void AliAnalysisTaskEmcalTriggerSelection::RunChanged(int newrun) {
+  std::map<std::string, std::string> triggerAliasConfig  = {
+    {"EG1", "EG1"},
+    {"EG2", "EG2"},
+    {"EGA", "EGA;EG1"},
+    {"EML0", "EMCL0;EMC7;EMC8"},
+    {"DG1", "DG1"},
+    {"DG2", "DG2"},
+    {"DGA", "DGA;DG1"},
+    {"DML0", "DMCL0;DMC7;DMC8"},
+    {"EJ1", "EJ1"},
+    {"EJ2", "EJ2"},
+    {"EJE", "EJE;EJ1"},
+    {"DJ1", "DJ1"},
+    {"DJ2", "DJ2"},
+    {"DJE", "DJE;DJ1"}
+  };
+  std::vector<std::string> emcalL1triggers = {"EG1", "EG2", "DG1", "DG2", "EJ1", "EJ2", "DJ1", "DJ2"};
+  std::vector<std::string> emcalL0triggers = {"EMC7", "EMC8", "DMC7", "DMC8"};
+  fActiveTriggerCTP.Clear();
+  if(fRequireTriggerActiveInCTP) {
+    AliInfoStream() << "Matching with CTP configuration required, fetching trigger classes and determining EMCAL aliases" << std::endl;
+    auto triggerconfiguration = dynamic_cast<AliTriggerConfiguration *>(AliCDBManager::Instance()->Get("GRP/CTP/Config")->GetObject());
+    if(triggerconfiguration) {
+      std::vector<std::string> foundAliases;
+      for(auto triggerclassObject : triggerconfiguration->GetClasses()) {
+        auto triggerclass = static_cast<AliTriggerClass *>(triggerclassObject);
+        auto triggers = Triggerinfo::DecodeTriggerString(triggerclass->GetName()).at(0);    // class name can only have 1 entry
+        if(!(triggers.BunchCrossing() == "B" || triggers.BunchCrossing() == "S" || triggers.BunchCrossing() == "Z")) continue;
+        // check if the trigger is an EMCAL trigger
+        std::string emcalTriggerType;
+        const auto &triggerclassname = triggers.Triggerclass();
+        for(auto emctrg : emcalL1triggers) {
+          if(triggerclassname.find(emctrg) != std::string::npos) {
+            emcalTriggerType = emctrg; 
+          } 
+        }
+        if(!emcalTriggerType.length()) {
+          // trigger is not a Level1-trigger, check if it is a Level0 trigger
+          // Level0 condition must be checked after the Level1 condition because 
+          // Level0 can be required for Level1, then the Level0 string is part of the Level1 string
+          for(auto emctrg : emcalL0triggers) {
+            if(triggerclassname.find(emctrg) != std::string::npos) {
+              if(emctrg.find("E") != std::string::npos){
+                emcalTriggerType = "EMCL0";
+              } else {
+                emcalTriggerType = "DMCL0";
+              } 
+            }
+          }
+          if(!emcalTriggerType.length()) continue;    // trigger is also not an EMCAL Level0 trigger
+        }
+        auto aliasForTrigger = triggerAliasConfig.find(emcalTriggerType);
+        if(aliasForTrigger != triggerAliasConfig.end()) {
+          auto aliasRegistered = (std::find(foundAliases.begin(), foundAliases.end(), aliasForTrigger->second) != foundAliases.end());
+          if(!aliasRegistered) foundAliases.push_back(aliasForTrigger->second);
+        }
+      }
+
+      // Having all aliases, registering
+      for(auto trgalias : foundAliases) {
+        AliInfoStream() << "Registering trigger alias: " << trgalias << std::endl;
+        fActiveTriggerCTP.Add(new AliEmcalTriggerAlias(trgalias.data()));
+      }
+    } else {
+      AliErrorStream() << "No CTP configuration available - disabling all triggers" << std::endl;
+    }
+  }
+}
+
 Bool_t AliAnalysisTaskEmcalTriggerSelection::Run(){
   AliDebugStream(1) << GetName() <<  ": Using trigger patch container " << fCaloTriggerPatchInfoName << std::endl;
   AliDebugStream(1) << GetName() <<  ": Writing trigger selection to " << fGlobalDecisionContainerName << std::endl;
@@ -112,7 +194,11 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::Run(){
     rhocontainer.fRhoForDCALRecalc = CalculateRho(fTriggerPatchInfo, false, true);
   }
   while((selection = dynamic_cast<AliEmcalTriggerSelection *>(selectionIter()))){
-    fTriggerDecisionContainer->AddTriggerDecision(selection->MakeDecison(fTriggerPatchInfo, rhocontainer));
+    auto alias = selection->GetTriggerAlias();
+    if(IsAliasActive(alias)){
+      fTriggerDecisionContainer->AddActiveTriggerClass(alias->BuildAliasString().data());
+      fTriggerDecisionContainer->AddTriggerDecision(selection->MakeDecison(fTriggerPatchInfo, rhocontainer));
+    }
   }
   return kTRUE;
 }
@@ -145,6 +231,32 @@ double AliAnalysisTaskEmcalTriggerSelection::CalculateRho(const TClonesArray *co
   }
   std::sort(patchenergies.begin(), patchenergies.end(), std::less<double>());
   return TMath::Median(patchenergies.size(), patchenergies.data());
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::IsAliasActive(const AliEmcalTriggerAlias *alias) {
+  bool active = false;
+  for(auto triggerclass : alias->GetTriggerClasses()){
+    auto classstring = static_cast<TObjString *>(triggerclass)->String();
+    if(IsTriggerActive(classstring.Data())) active = true;
+    break;
+  }
+  return active;
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::IsTriggerActive(const char *triggerclass) {
+  bool active = false;
+  if(fRequireTriggerActiveInCTP) {
+    for(auto trgaliasobj : fActiveTriggerCTP) {
+      auto trgalias = static_cast<AliEmcalTriggerAlias *>(trgaliasobj);
+      if(trgalias->HasTriggerClass(triggerclass)) {
+        active = true;
+        break;
+      }
+    }
+  } else {
+    active = true;
+  }
+  return active;
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::AutoConfigure(const char *period) {
