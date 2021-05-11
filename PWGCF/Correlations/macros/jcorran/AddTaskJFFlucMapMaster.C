@@ -1,7 +1,7 @@
 //_____________________________________________________________________
 AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t period = 0, double ptmin = 0.5){
 	// Load Custom Configuration and parameters
-	enum { lhc15o=0, lhc18q=1, lhc18r=2, lhc10h=3 };
+	enum { lhc15o=0, lhc18q=1, lhc18r=2, lhc10h=3};
 	cout << "AddTaskJFFlucMapMaster:: period=" << period <<"\t ptmin="<< ptmin << endl;
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	//-------- Correction Maps ----------
