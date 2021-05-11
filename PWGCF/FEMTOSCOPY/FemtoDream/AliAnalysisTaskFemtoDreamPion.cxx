@@ -68,9 +68,7 @@ void AliAnalysisTaskFemtoDreamPion::UserCreateOutputObjects() {
 
   //printf("fEventCuts->GetlowerPtBoundSpherCalc() is: %f\n",fEventCuts->GetlowerPtBoundSpherCalc());
   float DummyFloat = fEventCuts->GetlowerPtBoundSpherCalc();
-  //printf("DummyFloat is: %f\n",DummyFloat);
-  fEvent=new AliFemtoDreamEvent(false,true,fTrigger,DummyFloat); // Constructor fails to set the right value needs to be investigated
-  fEvent->SetfLowPtSpherCalc(DummyFloat); //quick fix to set the right value of the pT Cut
+  fEvent=new AliFemtoDreamEvent(false,true,fTrigger,true,DummyFloat);
   fOutput->Add(fEvent->GetEvtCutList());
 
   if (!fTrackCutsPosPion) {
