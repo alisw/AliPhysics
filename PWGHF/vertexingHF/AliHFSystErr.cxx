@@ -10600,7 +10600,7 @@ void AliHFSystErr::InitD0toKpi2018PbPb010LowPtAn(){
 
   // Cuts efficiency 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",32,0,16);
-  for(Int_t i=1;i<=32;i++) fCutsEff->SetBinContent(i,0.025); //2.5% on geometrical length cut
+  for(Int_t i=1;i<=32;i++) fCutsEff->SetBinContent(i,0.); // 2.5% on geometrical length cut (no longer needed in pass3)
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",32,0,16);
@@ -10658,7 +10658,8 @@ void AliHFSystErr::InitD0toKpi2018PbPb3050LowPtAn(){
 
   // Cuts efficiency 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",32,0,16);
-  for(Int_t i=1;i<=32;i++) fCutsEff->SetBinContent(i,0.025); //2.5% on geometrical length cut
+  for(Int_t i=1;i<=32;i++) fCutsEff->SetBinContent(i,0.); // 2.5% on geometrical length cut (no longer needed in pass3)
+
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",32,0,16);
