@@ -10563,7 +10563,7 @@ void AliHFSystErr::InitD0toKpi2018PbPb010LowPtAn(){
   //   2018 Pb-Pb sample at 5 TeV, centrality 0-10%
   //
 
-  AliInfo(" Settings for D0 --> K pi, 0-10% Pb-Pb collisions at 5 TeV, analysis without topological cuts - 0.5 GeV bins");
+  AliInfo(" Settings for D0 --> K pi, 0-10% Pb-Pb collisions at 5 TeV, analysis without topological cuts - 1 GeV bins");
   SetNameTitle("AliHFSystErr","SystErrD0toKpi2018PbPb010LowPtAn");
 
   // Normalization
@@ -10588,13 +10588,14 @@ void AliHFSystErr::InitD0toKpi2018PbPb010LowPtAn(){
   for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,0.075); //10-12
   for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,0.070); //12-16
 
-  // Raw yield extraction
+  // Raw yield extraction (pass3, final results)
   fRawYield = new TH1F("fRawYield","fRawYield",32,0,16);
-  for(Int_t i=1;i<=2;i++) fRawYield->SetBinContent(i,0.08); //0-1
-  fRawYield->SetBinContent(3,0.09); //1-1.5
-  fRawYield->SetBinContent(4,0.10); //1.5-2
-  for(Int_t i=5;i<=10;i++) fRawYield->SetBinContent(i,0.08); //2-5
-  for(Int_t i=10;i<=24;i++) fRawYield->SetBinContent(i,0.10); //5-12
+  for(Int_t i=1;i<=2;i++) fRawYield->SetBinContent(i,0.09); //0-1
+  for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,0.08); //1-2
+  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.06); //2-3
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.07); //3-6
+  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.08); //6-8
+  for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.11); //8-12
   for(Int_t i=25;i<=32;i++) fRawYield->SetBinContent(i,0.20); //12-16
 
   // Cuts efficiency 
@@ -10622,7 +10623,7 @@ void AliHFSystErr::InitD0toKpi2018PbPb3050LowPtAn(){
   //   2018 Pb-Pb sample at 5 TeV, centrality 30-50%
   //
 
-  AliInfo(" Settings for D0 --> K pi, 30510% Pb-Pb collisions at 5 TeV, analysis without topological cuts - 0.5 GeV bins");
+  AliInfo(" Settings for D0 --> K pi, 30-50% Pb-Pb collisions at 5 TeV, analysis without topological cuts - 1 GeV bins");
   SetNameTitle("AliHFSystErr","SystErrD0toKpi2018PbPb3050LowPtAn");
 
   // Normalization
@@ -10647,13 +10648,12 @@ void AliHFSystErr::InitD0toKpi2018PbPb3050LowPtAn(){
   for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,0.075); //10-12
   for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,0.070); //12-16
 
-  // Raw yield extraction
+  // Raw yield extraction (pass3, final results)
   fRawYield = new TH1F("fRawYield","fRawYield",32,0,16);
-  for(Int_t i=1;i<=2;i++) fRawYield->SetBinContent(i,0.10); //0-1
-  fRawYield->SetBinContent(3,0.09); //1-1.5
-  fRawYield->SetBinContent(4,0.10); //1.5-2
-  for(Int_t i=5;i<=10;i++) fRawYield->SetBinContent(i,0.08); //2-5
-  for(Int_t i=10;i<=24;i++) fRawYield->SetBinContent(i,0.10); //5-12
+  for(Int_t i=1;i<=2;i++) fRawYield->SetBinContent(i,0.11); //0-1
+  for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,0.08); //1-2
+  for(Int_t i=5;i<=14;i++) fRawYield->SetBinContent(i,0.07); //2-7
+  for(Int_t i=15;i<=24;i++) fRawYield->SetBinContent(i,0.08); //7-12
   for(Int_t i=25;i<=32;i++) fRawYield->SetBinContent(i,0.20); //12-16
 
   // Cuts efficiency 
