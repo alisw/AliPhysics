@@ -398,7 +398,7 @@ if(mytrig==5){
         if (!(fJetShapeSub == kConstSub))
           jet3 = jet1->ClosestJet();
         if (!jet3) {
-          Printf("jet3 does not exist, returning");
+	  //   Printf("jet3 does not exist, returning");
           continue;
         }
       }
