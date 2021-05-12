@@ -693,6 +693,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     for(Int_t ii=0; ii<lNEstimatorsThis; ii++){
       index[ii] = new Int_t[ntot];
       values[ii] = new Float_t[ntot];
+      lAcceptedEventArray[ii] = 0;
     }
     
     timer->Reset();
@@ -750,7 +751,6 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
       
       for( Long_t lB=1; lB<lNDesiredBoundaries; lB++) {
         Long64_t position = (Long64_t) ( 0.01 * ((Double_t)(ntot)* lDesiredBoundaries[lB] ) );
-        
         if( fSelection->GetEstimator(iEst)->GetUseAnchor() && ntot != 0 ){
           //Make sure index position lAnchorEst corresponds to lAnchorPercentile
           Double_t lAnchorPercentile = (Double_t) fSelection->GetEstimator(iEst)->GetAnchorPercentile();
@@ -760,7 +760,6 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
           position = (Long64_t) ( ( 0.01 * ((Double_t)(ntot)* lDesiredBoundaries[lB] ) ) * lScalingFactor );
           if(position > ntot-1 ) position = ntot-1; //protection !
         }
-        //cout<<"Position requested: "<<position<<flush;
         //sTree[iRun]->GetEntry( index[position] );
         //Calculate the estimator with this input, please
         //fSelection->Evaluate ( fInput );
