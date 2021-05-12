@@ -1222,9 +1222,9 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionM
 Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaOAC(AliAODConversionMother *omega, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2){
 
   /* Since we have an OAC for the Pi0 Mesons seperate theres only need to check
-  /* gamma2 with gamma0 and gamma1. gamma0 and gamma1 OAC should be applied
-  /* through Pi0 Cuts via MesonIsSelected!
-  /*/
+    gamma2 with gamma0 and gamma1. gamma0 and gamma1 OAC should be applied
+    through Pi0 Cuts via MesonIsSelected!
+  */
   TVector3 vecPi0Gamma0  = TVector3(gamma0->Px(), gamma0->Py(), gamma0->Pz());
   TVector3 vecPi0Gamma1  = TVector3(gamma1->Px(), gamma1->Py(), gamma1->Pz());
   TVector3 vecOmegaGamma = TVector3(gamma2->Px(), gamma2->Py(), gamma2->Pz());
