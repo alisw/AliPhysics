@@ -1449,6 +1449,11 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
   case 29: // t: UPC
     fIsHeavyIon=0;
     break;
+  case 30: // u: pp -> Multiplicity CL1 in 0.1% bins
+    fIsHeavyIon=0;
+    fDetectorCentrality=3;
+    fModCentralityClass=20;
+    break;
   default:
     AliError(Form("SetHeavyIon not defined %d",isHeavyIon));
     return kFALSE;
