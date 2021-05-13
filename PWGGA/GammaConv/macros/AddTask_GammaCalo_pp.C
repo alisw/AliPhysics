@@ -3258,8 +3258,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792109fe3q220000","0r631031000000d0"); // INT7 NL 12 + TB
     cuts.AddCutCalo("00010113","411792109fe3r220000","0r631031000000d0"); // INT7 NL 12 + TB
   } else if (trainConfig == 2503) { // only 1 cell clusters (switch off exotics + M02 cut)
-    cuts.AddCutCalo("00010113","411792109f03s000000","0r631031000000d0"); // INT7 NL 12 + TB
-    cuts.AddCutCalo("00010113","411793706f03s000000","0r631031000000d0"); // INT7 NL TB only
+    cuts.AddCutCalo("00010113","411792109f03s000000","0r631031000000d0"); // INT7 NL 12 + TB, fine tuning for 1 and 2+cells
+    cuts.AddCutCalo("00010113","411790206f03s000000","0r631031000000d0"); // INT7 NL TB only, fine tuning for only 2+cells
+    cuts.AddCutCalo("00010113","411793706f03s000000","0r631031000000d0"); // INT7 NL TB only, no fine tuning
   } else if (trainConfig == 2504) { // only 2 cell clusters (switch off exotics + M02 cut)
     cuts.AddCutCalo("00010113","411792109f03t000000","0r631031000000d0"); // INT7 NL 12 + TB
     cuts.AddCutCalo("00010113","411793706f03t000000","0r631031000000d0"); // INT7 NL TB only
