@@ -6940,10 +6940,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
           // fine tuning based on gaussian fits on PCMEMC in pPb5TeV
+          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
           if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
-            energy /= 1.0086142771;
-          } else {
-            energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+            energy /= 0.99;
           }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
@@ -7143,10 +7142,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1 || fClusterType==3 || fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
             // fine tuning based on gaussian fits on PCMEMC in pPb5TeV
+            energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
             if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
-              energy /= 1.0086142771;
-            } else {
-              energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+              energy /= 0.99;
             }
           }
 
@@ -7271,11 +7269,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1 || fClusterType==3 || fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
             // fine tuning based on gaussian fits on PCMEMC in pPb5TeV
+            energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+            energy /= 1.007;
             if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
-              energy /= 1.0086142771;
-            } else {
-              energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
-              energy /= 1.007;
+              energy /= 0.99;
             }
           }
 
@@ -7495,11 +7492,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1 || fClusterType==3 || fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
             // fine tuning based on gaussian fits on PCMEMC in pPb5TeV
+            energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+            energy /= 1.00349;
             if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
-              energy /= 1.0086142771;
-            } else {
-              energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
-              energy /= 1.00349;
+              energy /= 0.99;
             }
           }
 
@@ -7591,11 +7587,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1 || fClusterType==3 || fClusterType==4){
             energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
             // fine tuning based on gaussian fits on PCMEMC in pPb5TeV
+            energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+            energy /= 1.002;
             if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
-              energy /= 1.0086142771;
-            } else {
-              energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207);
-              energy /= 1.002;
+              energy /= 0.99;
             }
           }
 
