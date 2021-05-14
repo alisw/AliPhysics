@@ -2,7 +2,7 @@
 AliAnalysisTask *AddTaskJFFlucMapMCMaster(TString taskName="JFFlucMaster", double ptmin = 0.5){
 	// Load Custom Configuration and parameters
 	// period < 0 MC
-	cout << "AddTaskJFFlucMapMaster:: period=" << period <<"\t ptmin="<< ptmin << endl;
+	cout << "AddTaskJFFlucMapMaster:: ptmin="<< ptmin << endl;
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	//-------- Correction Maps ----------
     //-------- JFlucWagons -------
