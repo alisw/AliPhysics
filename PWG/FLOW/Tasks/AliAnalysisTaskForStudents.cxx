@@ -209,6 +209,8 @@ void AliAnalysisTaskForStudents::InitializeArrays()
 {
  // Initialize all data members which are arrays in this method.
 
+ // This is important, since these objects cannot be initialized directly in the constructor list. 
+
 } // void AliAnalysisTaskForStudents::InitializeArrays()
 
 //=======================================================================================================================
