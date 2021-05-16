@@ -85,6 +85,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void CalculateCorrelations();
   virtual void CalculateNestedLoops();
   virtual void ResetEventByEventQuantities();
+  virtual void OnlineMonitoring();
 
   // 3) Methods called in Terminate(Option_t *):
   //    a) Get pointers:
@@ -145,6 +146,12 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetCentralityEstimator(const char *ce) {this->fCentralityEstimator = ce;};
 
   // Vertex:
+  void SetVertexBins(Int_t const nbins, Double_t min, Double_t max)
+  {
+   this->fVertexBins[0] = nbins;
+   this->fVertexBins[1] = min;
+   this->fVertexBins[2] = max;
+  };
   void SetVertexCuts(const char* sxyz, const Double_t min, const Double_t max)
   {
    Int_t xyz = -44;
@@ -154,12 +161,11 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fVertexCuts[xyz][0] = min;
    this->fVertexCuts[xyz][1] = max;
   }
-  void SetVertexBins(Int_t const nbins, Double_t min, Double_t max)
+  void SetNContributorsCuts(const Int_t min, const Int_t max)
   {
-   this->fVertexBins[0] = nbins;
-   this->fVertexBins[1] = min;
-   this->fVertexBins[2] = max;
-  };
+   this->fNContributorsCuts[0] = min;
+   this->fNContributorsCuts[1] = max;
+  }
 
   void SetControlParticleHistogramsList(TList* const cphl) {this->fControlParticleHistogramsList = cphl;};
   TList* GetControlParticleHistogramsList() const {return this->fControlParticleHistogramsList;} 
@@ -205,6 +211,23 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetFinalResultsList(TList* const frl) {this->fFinalResultsList = frl;};
   TList* GetFinalResultsList() const {return this->fFinalResultsList;}
 
+  // *.) Online monitoring:
+  void SetUpdateOutputFile(const Int_t uf, const char *uqof)
+  {
+   // Example usage: task->SetUpdateOutputFile(44,"AnalysisResultsProgress.root");
+   this->fOnlineMonitoring = kTRUE;
+   this->fUpdateOutputFile = kTRUE;
+   this->fUpdateFrequency = uf;
+   this->fUpdateFile = new TString(uqof);
+  };
+  void SetMaxNumberOfEvents(const Int_t mnof, const char *uqof)
+  {
+   // Example usage: task->SetMaxNumberOfEvents(44,"AnalysisResultsBailOut.root");
+   this->fOnlineMonitoring = kTRUE;
+   this->fMaxNumberOfEvents = mnof;
+   this->fBailOutFile = new TString(uqof);
+  };
+
  private:
   AliAnalysisTaskMuPa(const AliAnalysisTaskMuPa& aatmpf);
   AliAnalysisTaskMuPa& operator=(const AliAnalysisTaskMuPa& aatmpf);
@@ -234,8 +257,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // Multiplicity:
   Double_t fMultiplicity;        // this is my ebe multiplicity, i.e. sum of track weights used to calculate Q-vectors (see below also fSelectedTracks) 
   TH1D *fMultiplicityHist;       // this is distribution of my multiplicity
-  Double_t fMultiplicityBins[3]; //! [nBins,minCentrality,maxCentrality]
-  Double_t fMultiplicityCuts[2]; //! [min,max]
+  Double_t fMultiplicityBins[3]; // [nBins,minCentrality,maxCentrality]
+  Double_t fMultiplicityCuts[2]; // [min,max]
   Int_t fSelectedTracks;         // this is counter of tracks used to calculate Q-vectors (see above also fMultiplicity) 
   TH1I *fSelectedTracksHist;     // this is distribution fSelectedTracks
   Int_t fSelectedTracksCuts[2];  // [min,max]
@@ -243,14 +266,15 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // Centrality:
   Double_t fCentrality;         // this is ebe centrality from default estimator
   TH1D *fCentralityHist[2];     //! centrality distribution from default estimator [before,after event cuts]
-  Double_t fCentralityBins[3];  //! [nBins,minCentrality,maxCentrality]
+  Double_t fCentralityBins[3];  // [nBins,minCentrality,maxCentrality]
   TString fCentralityEstimator; // the default centrality estimator in this analysis, use e.g. task->SetCentralityEstimator("V0M")
-  Double_t fCentralityCuts[2];  //! [min,max]
+  Double_t fCentralityCuts[2];  // [min,max]
 
   // Vertex:
-  TH1D *fVertexHist[2][2][3]; //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
-  Double_t fVertexBins[3];    //! [nBins,minVertex,maxVertex]
-  Double_t fVertexCuts[3][2]; //! [x,y,z][min,max] vertex components  
+  TH1D *fVertexHist[2][2][3];  //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
+  Double_t fVertexBins[3];     // [nBins,minVertex,maxVertex]
+  Double_t fVertexCuts[3][2];  // [x,y,z][min,max] vertex components
+  Int_t fNContributorsCuts[2]; // [min,max]
 
   // Other: these objects and histograms for the time being are not separately classified:
   TH1D *fOtherEventHistograms[2][gOtherEventHistograms]; //! [before,after event cuts][ type - see bookings ]
@@ -262,9 +286,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Int_t fFilterBit; // filter bit (its meaning can change from one production to another)
 
   TH1D *fKinematics[2][2][gKinematicVariables];     // kinematics [before,after track cuts][reco,sim][phi,pt,eta,energy,charge]
-  Double_t fKinematicsBins[gKinematicVariables][3]; //! [phi,pt,eta,energy,charge][nBins,min,max]
+  Double_t fKinematicsBins[gKinematicVariables][3]; // [phi,pt,eta,energy,charge][nBins,min,max]
 
-  Double_t fKinematicsCuts[gKinematicVariables][2]; //! [phi,pt,eta,energy,charge][min,max]
+  Double_t fKinematicsCuts[gKinematicVariables][2]; // [phi,pt,eta,energy,charge][min,max]
   Bool_t fUseKinematicsCuts[gKinematicVariables];   // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
 
   // 4) Q-vectors:
@@ -285,9 +309,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TList *fNestedLoopsList;               // list to hold all nested loops objects
   TProfile *fNestedLoopsFlagsPro;        // profile to hold all flags for nested loops
   Bool_t fCalculateNestedLoops;          // calculate and store correlations with nested loops, as a cross-check
-  TProfile *fNestedLoopsPro[4][6][3];    // multiparticle correlations from nested loops [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality]
+  TProfile *fNestedLoopsPro[4][6][3];    //! multiparticle correlations from nested loops [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality]
   //TProfile *fNestedLoopsPerDemandPro[3]; // which correlator needs to be cross-checked with nested loops (no setter => recompile). [0=integrated,1=vs. multiplicity,2=vs. centrality]
-  TArrayD *ftaNestedLoops[2];            // e-b-e container for nested loops [0=angles;1=product of all weights]   
+  TArrayD *ftaNestedLoops[2];            //! e-b-e container for nested loops [0=angles;1=product of all weights]   
 
   // * Final results:
   TList *fFinalResultsList; // list to hold all histograms with final results
@@ -295,6 +319,14 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // * Common style:
   Int_t fBeforeAfterColor[2]; //! [0 = kRed,1 = kGreen] TBI 20210511 shall I use better enum here?
 
+  // *.) Online monitoring:
+  Bool_t fOnlineMonitoring;        // enable online monitoring (not set excplicitly!), the flags below just refine it
+  Bool_t fUpdateOutputFile;        // update the output file after certain number of analysed events
+  Int_t fUpdateFrequency;          // after how many events the output file will be updated
+  TString *fUpdateFile;            // which file will be regularly updated with frequency fUpdateFrequency of events
+  Int_t fMaxNumberOfEvents;        // if this number of events is reached, write to external file fBailOutFile and bail out
+  TString *fBailOutFile;           // in which file results will be bailed out after fMaxNumberOfEvents
+ 
   // Increase this counter in each new version:
   ClassDef(AliAnalysisTaskMuPa,1);
 

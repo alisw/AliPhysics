@@ -78,8 +78,15 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fCalculateNestedLoops(kFALSE),
 
  // Final results:
- fFinalResultsList(NULL)
+ fFinalResultsList(NULL),
 
+ // *.) Online monitoring:
+ fOnlineMonitoring(kFALSE),
+ fUpdateOutputFile(kFALSE),
+ fUpdateFrequency(-44),
+ fUpdateFile(NULL),
+ fMaxNumberOfEvents(-44),
+ fBailOutFile(NULL)
  {
   // Constructor.
  
@@ -159,8 +166,15 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fCalculateNestedLoops(kFALSE),
 
  // Final results:
- fFinalResultsList(NULL)
+ fFinalResultsList(NULL),
 
+ // *.) Online monitoring:
+ fOnlineMonitoring(kFALSE),
+ fUpdateOutputFile(kFALSE),
+ fUpdateFrequency(-44),
+ fUpdateFile(NULL),
+ fMaxNumberOfEvents(-44),
+ fBailOutFile(NULL)
 {
   // Dummy constructor.
  
@@ -353,6 +367,10 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  // *) PostData:
  PostData(1,fBaseList);
 
+ // *) Online monitoring:
+ cout<<"\n\033[1;32m"<<Form("INFO: Done with event #%d",(Int_t)fSelectedTracksHist->GetEntries())<<"\033[0m\n"<<endl; 
+ if(fOnlineMonitoring){this->OnlineMonitoring();}
+
 } // void AliAnalysisTaskMuPa::UserExec(Option_t *)
 
 //================================================================================================================
@@ -410,6 +428,49 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
  }
 
 } // void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
+
+//================================================================================================================
+
+void AliAnalysisTaskMuPa::OnlineMonitoring()
+{
+ // Per request, do some online monitoring.
+
+ // a) Update regularly the output file. Only the events which survive cuts are counted. # of events are entries in fSelectedTracksHist;
+ // b) Bail out after specified number of events.
+
+ // a) Update regularly the output file:
+ if(fUpdateOutputFile)
+ {
+  if(!fSelectedTracksHist){cout<<__LINE__<<endl;exit(1);} // TBI 20210515 is this histogram available also if I am doing only QA?
+  Int_t currentEventNo = (Int_t)fSelectedTracksHist->GetEntries();
+  if(0 == currentEventNo % fUpdateFrequency)
+  {
+   //cout<<Form("nEvts: %d",currentEventNo)<<endl;
+   cout<<Form("\nPer request, updating after %d events the file %s .\n",currentEventNo,fUpdateFile->Data())<<endl;
+   sleep(2);
+   TFile *f = new TFile(fUpdateFile->Data(),"recreate");
+   fBaseList->Write(fBaseList->GetName(),TObject::kSingleKey);
+   f->Close();
+  }
+ } // if(fUpdateOutputFile)
+
+ // b) Bail out after specified number of events:
+ if(fMaxNumberOfEvents > 0)
+ {
+  if(!fSelectedTracksHist){cout<<__LINE__<<endl;exit(1);} // TBI 20210515 is this histogram available also if I am doing only QA?
+  Int_t currentEventNo = (Int_t)fSelectedTracksHist->GetEntries();
+  if(fMaxNumberOfEvents == currentEventNo)
+  {
+   cout<<Form("\nPer request, bailing out after %d events in the file %s .\n",fMaxNumberOfEvents,fBailOutFile->Data())<<endl;
+   sleep(2);
+   TFile *f = new TFile(fBailOutFile->Data(),"recreate");
+   fBaseList->Write(fBaseList->GetName(),TObject::kSingleKey);
+   f->Close();
+   exit(1);
+  }
+ } // if(fMaxNumberOfEvents > 0)
+
+} // void AliAnalysisTaskMuPa::OnlineMonitoring()
 
 //================================================================================================================
 
@@ -590,6 +651,9 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  fVertexCuts[Y][1] = 10.;
  fVertexCuts[Z][0] = -10.;
  fVertexCuts[Z][1] = 10.;
+
+ fNContributorsCuts[0] = 2; // min
+ fNContributorsCuts[1] = 1e6; // max, this one is typically left open
 
  // *) Other:
  for(Int_t ba=0;ba<2;ba++)
@@ -1388,7 +1452,8 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
   // Vertex:
   AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
   if(!avtx) return kFALSE; 
-  //if(avtx->GetNContributors()<2) return kFALSE; // TBI 20210513 add setter for this, then enable
+  if((Int_t)avtx->GetNContributors()<fNContributorsCuts[0]) return kFALSE;
+  if((Int_t)avtx->GetNContributors()>fNContributorsCuts[1]) return kFALSE;
   if(avtx->GetX() < fVertexCuts[X][0]) return kFALSE;
   if(avtx->GetX() > fVertexCuts[X][1]) return kFALSE; 
   if(avtx->GetY() < fVertexCuts[Y][0]) return kFALSE;
