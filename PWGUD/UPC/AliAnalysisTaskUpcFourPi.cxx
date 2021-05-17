@@ -12,7 +12,7 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
-//full code, 18r.pbpb_Legotrain_01
+//full code, local copy
 // c++ headers
 #include <iostream>
 #include <string.h>
@@ -74,7 +74,7 @@ AliAnalysisTaskUpcFourPi::AliAnalysisTaskUpcFourPi() //first constructor, contai
 	fZNAenergy(0), fZNCenergy(0), fZPAenergy(0), fZPCenergy(0), fZDCAtime(0), fZDCCtime(0), fV0Adecision(0), fV0Cdecision(0), fADAdecision(0), fADCdecision(0),
 	fDataFilnam(0), fRecoPass(0), fEvtNum(0),
 	fJPsiAODTracks(0), fJPsiESDTracks(0), fEtaCAODTracks(0), fEtaCESDTracks(0), fGenPart(0),
-	fEtaCCandidatesPerChannel(0), fEtaCLowPtCandidatesPerChannel(0), fAllPtVsMinvEtaC(0), fAllMinvEtaCLowPt(0), fChannelVsMinvEtaC(0),
+	fEtaCCandidatesPerChannel(0), fEtaCLowPtCandidatesPerChannel(0), fAllPtVsMinvEtaC(0), fAllMinvEtaCLowPt(0), fAllChargedFourPion(0), fChannelVsMinvEtaC(0),
 	//trigger hists and lists
 	fListTrig(0), fHistCcup29TriggersPerRun(0), fHistCcup30TriggersPerRun(0), fHistCcup31TriggersPerRun(0),
 	fHistZedTriggersPerRun(0), fHistMBTriggersPerRun(0), fHistCentralTriggersPerRun(0), fHistSemiCentralTriggersPerRun(0), fHistCtrueTriggersPerRun(0),
@@ -152,7 +152,7 @@ AliAnalysisTaskUpcFourPi::AliAnalysisTaskUpcFourPi(const char *name) //second co
 	fZNAenergy(0), fZNCenergy(0), fZPAenergy(0), fZPCenergy(0), fZDCAtime(0), fZDCCtime(0), fV0Adecision(0), fV0Cdecision(0), fADAdecision(0), fADCdecision(0),
 	fDataFilnam(0), fRecoPass(0), fEvtNum(0),
 	fJPsiAODTracks(0), fJPsiESDTracks(0), fEtaCAODTracks(0), fEtaCESDTracks(0), fGenPart(0),
-	fEtaCCandidatesPerChannel(0), fEtaCLowPtCandidatesPerChannel(0), fAllPtVsMinvEtaC(0), fAllMinvEtaCLowPt(0), fChannelVsMinvEtaC(0),
+	fEtaCCandidatesPerChannel(0), fEtaCLowPtCandidatesPerChannel(0), fAllPtVsMinvEtaC(0), fAllMinvEtaCLowPt(0), fAllChargedFourPion(0), fChannelVsMinvEtaC(0),
 
 	//trigger hists and lists
 	fListTrig(0), fHistCcup29TriggersPerRun(0), fHistCcup30TriggersPerRun(0), fHistCcup31TriggersPerRun(0),
@@ -717,7 +717,8 @@ void AliAnalysisTaskUpcFourPi::UserCreateOutputObjects() //use the names defined
 	fAllMinvEtaCLowPt = new TH1D("Minv EtaC Candidates, Low Pt", "Invariant Mass, Low Pt #eta_{C} candidates", 300, 0., 6.);
 	fListHist->Add(fAllMinvEtaCLowPt);
 
-	//fAllMinvEtaCLowPt->Fit("gaus");
+	fAllChargedFourPion = new TH1D("Minv charged four pions, Low Pt", "Invariant Mass, charged four pions", 300, 0., 6.);
+	fListHist->Add(fAllChargedFourPion);
 
 	fChannelVsMinvEtaC = new TH2D("Channel V Minv EtaC, Low Pt", "Decay Channel V. Invariant Mass, Low Pt #eta_{C} candidates", 300, 0., 6., 9, 0.5, 9.5);
 	for (Int_t i = 0; i < 9; i++) fChannelVsMinvEtaC->GetYaxis()->SetBinLabel(i + 1, ChannelNames[i].Data());
@@ -1118,7 +1119,7 @@ void AliAnalysisTaskUpcFourPi::RunAODhist()
 		trackIndex[nGoodTracks] = itr;
 		nGoodTracks++;
 
-		if (nGoodTracks > 10) break;
+		if (nGoodTracks > 6) break;
 	}
 	if (nSpdHits > 1) fHistNTracks->Fill(nGoodTracks);
 
@@ -1132,12 +1133,22 @@ void AliAnalysisTaskUpcFourPi::RunAODhist()
 	Double_t beta = 0;
 	Int_t nTracksWithoutTOFinfo = 0;
 	Double_t PCutLow = 0.6, PCutHigh = 3.;
+	Int_t qpos = 0, qneg = 0;
 
 	if (( nGoodTracks == 4) && nSpdHits > 1) {
 		for (Int_t i = 0; i < nGoodTracks; i++) {
+			beta = -999.;
 			AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(trackIndex[i]));
 			if (!trk) AliFatal("Not a standard AOD");
 			//Diagnostic figures regarding nSigma TOF vs TPC, etc.
+
+			//calculate net charge of good tracks -- count number of positive and number of negative as integers so we don't need to add shorts
+			if (trk->Charge() > 0) {
+				qpos++;
+			}
+			else if (trk->Charge() < 0) {
+				qneg++;
+			}
 
 			//Get nsigma info for PID
 			fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kMuon);
@@ -1271,6 +1282,7 @@ void AliAnalysisTaskUpcFourPi::RunAODhist()
 	Int_t nHighPtTracks = 0;
 	Double_t SumPz = 0, VectorSumPt = 0, ScalarSumP = 0;
 	TLorentzVector vCandidate;
+	TLorentzVector vCandidateCharged;
 	TVector3 sumPtVector;
 	UInt_t newPion = 0;  //Added by Alec
 
@@ -1319,6 +1331,12 @@ void AliAnalysisTaskUpcFourPi::RunAODhist()
 			if ((qPion[0] + qPion[1] + qPion[2] + qPion[3]) != 0) {
 				fHistNeventsEtaCRhoChannel->Fill(2); //non-zero net charge
 				fHistNeventsFourPicharge->Fill(2);
+
+				vCandidateCharged = vPion[0] + vPion[1] + vPion[2] + vPion[3];
+				
+				if (vCandidateCharged.Pt() <0.11)
+				fAllChargedFourPion->Fill(vCandidateCharged.M());
+
 			}
 			if ((qPion[0] + qPion[1] + qPion[2] + qPion[3]) == 0) {
 				fHistNeventsEtaCRhoChannel->Fill(3); //zero net charge

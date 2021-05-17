@@ -1,4 +1,4 @@
-AliAnalysisTaskUpcFourPions* AddTaskFourPions(Bool_t runTree = kFALSE, Bool_t runHist = kTRUE, Bool_t runSyst = kFALSE, Int_t tracking = 0) {
+AliAnalysisTaskUpcFourPi* AddTaskFourPionsGNP(Bool_t runTree = kFALSE, Bool_t runHist = kTRUE, Bool_t runSyst = kFALSE, Int_t tracking = 0) {
 
 	//--- get the current analysis manager ---//
 	AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -17,7 +17,7 @@ AliAnalysisTaskUpcFourPions* AddTaskFourPions(Bool_t runTree = kFALSE, Bool_t ru
 	TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
 	// Create tasks
-	AliAnalysisTaskUpcEtaCAWP* task = new AliAnalysisTaskUpcEtaCAWP(inputDataType.Data());
+	AliAnalysisTaskUpcFourPi* task = new AliAnalysisTaskUpcFourPi(inputDataType.Data());
 	task->SetRunTree(runTree);
 	task->SetRunHist(runHist);
 	task->SetRunSyst(runSyst);

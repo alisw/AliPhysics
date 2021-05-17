@@ -1,7 +1,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice */
 /* $Id$ */
-//Full code, 18r.pbpb_Legotrain_01
+//Full code, 18r.pbpb_legotrain_01
 #ifndef ALIANALYSISTASKUPCFOURPI_H 
 #define ALIANALYSISTASKUPCFOURPI_H
 
@@ -215,6 +215,7 @@ private:
 	TH1D *fEtaCLowPtCandidatesPerChannel;
 	TH2D *fAllPtVsMinvEtaC;
 	TH1D *fAllMinvEtaCLowPt;
+	TH1D* fAllChargedFourPion;
 	TH2D *fChannelVsMinvEtaC;
 	TH1D *fHistNTracks;
 	TH1D *fHistFourTracksNpion;
