@@ -602,7 +602,7 @@ void AliAnalysisTaskMuPa::InitializeArraysForQAHistograms()
 
 void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
 {
- // Initialize all arrays for control event histograms.
+ // Initialize all arrays for control event histograms. Cuts hardwired here are default event cuts.
 
  // a) Multiplicity.
  // b) Centrality;
@@ -670,21 +670,20 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
 
 void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
 {
- // Initialize all arrays for control particle histograms.
+ // Initialize all arrays for control particle histograms. Cuts hardwired here are default particle cuts. 
 
  // a) Kinematics.
 
  cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
 
  // a) Kinematics:
-
  for(Int_t ba=0;ba<2;ba++)
  {
   for(Int_t rs=0;rs<2;rs++)
   {
    for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4
    {
-    fKinematics[ba][rs][kv] = NULL; 
+    fKinematicsHist[ba][rs][kv] = NULL; 
    } // for(Int_t kv=0;kv<gKinematicVariables;kv++)
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t ba=0;ba<2;ba++)
@@ -714,28 +713,58 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
  fKinematicsBins[CHARGE][1] = -2.;
  fKinematicsBins[CHARGE][2] = 3.;
 
+ // DCA:
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   for(Int_t xyTz=0;xyTz<2;xyTz++)
+   {
+    fDCAHist[ba][rs][xyTz] = NULL; 
+   } // for(Int_t xyz=0;xyz<3;xyz++)
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t ba=0;ba<2;ba++)
+
+ // default DCA xy binning:
+ fDCABins[0][0] = 1000;
+ fDCABins[0][1] = -20.;
+ fDCABins[0][2] = 20.;
+
+ // default DCA z binning:
+ fDCABins[1][0] = 1000;
+ fDCABins[1][1] = -20.;
+ fDCABins[1][2] = 20.;
+
  // -----------
 
- // TBI 20210512 note however that these cuts are not used, unless the correspodig header is called, see .h
+ // These cuts are used by default, if you want other or open cuts, indicate that via dedicated setters.
  // default phi cuts:
- fKinematicsCuts[PHI][0] = 0.;
- fKinematicsCuts[PHI][1] = TMath::TwoPi();
+ fKinematicsCuts[PHI][0] = fKinematicsBins[PHI][1];
+ fKinematicsCuts[PHI][1] = fKinematicsBins[PHI][2];
 
  // default pt cuts:
- fKinematicsCuts[PT][0] = 0.2;
- fKinematicsCuts[PT][1] = 5.0;
+ fKinematicsCuts[PT][0] = fKinematicsBins[PT][1];
+ fKinematicsCuts[PT][1] = fKinematicsBins[PT][2];
 
  // default eta cuts:
- fKinematicsCuts[ETA][0] = -1.0;
- fKinematicsCuts[ETA][1] = 1.0;
+ fKinematicsCuts[ETA][0] = fKinematicsBins[ETA][1];
+ fKinematicsCuts[ETA][1] = fKinematicsBins[ETA][2];
 
  // default e cuts:
- fKinematicsCuts[E][0] = 0.0;
- fKinematicsCuts[E][1] = 100.0;
+ fKinematicsCuts[E][0] = fKinematicsBins[E][1];
+ fKinematicsCuts[E][1] = fKinematicsBins[E][2];
 
  // default charge cuts:
- fKinematicsCuts[CHARGE][0] = -10.0;
- fKinematicsCuts[CHARGE][1] = 10.0;
+ fKinematicsCuts[CHARGE][0] = fKinematicsBins[CHARGE][1];
+ fKinematicsCuts[CHARGE][1] = fKinematicsBins[CHARGE][2];
+
+ // default DCA xy cuts:
+ fDCACuts[0][0] = fDCABins[0][1];
+ fDCACuts[0][1] = fDCABins[0][2];
+
+ // default DCA z cuts:
+ fDCACuts[1][0] = fDCABins[1][1];
+ fDCACuts[1][1] = fDCABins[1][2];
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
 
@@ -755,6 +784,8 @@ void AliAnalysisTaskMuPa::InitializeArraysForCommonLabels()
 void AliAnalysisTaskMuPa::InsanityChecks()
 {
  // Check before bookings if all the values user has provided via setters make sense.
+
+ return; // 20210517 disabled temporarily 
 
  // a) Multiplicity;
  // b) Centrality.
@@ -1065,7 +1096,8 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
 
  // a) Book the profile holding flags;
  // b) Common local labels;
- // c) Kinematics.
+ // c) Kinematics;
+ // d) DCA.
 
  cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
 
@@ -1077,6 +1109,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
 
  // b) Common local labels:
  //    Remark: Keep them in sync with enums in .h
+ TString sxyTz[2] = {"xy","z"};
  TString sba[2] = {"before particle cuts","after particle cuts"};
  TString srs[2] = {"reconstructed","simulated"};
  TString skv[gKinematicVariables] = {"#varphi","p_{T}","#eta","energy","charge"};
@@ -1088,14 +1121,32 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
   {
    for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4 TBI 20210512 this is not enforced to be in sync with the definition of enums
    {
-    fKinematics[ba][rs][kv] = new TH1D(Form("fKinematics[%d][%d][%d]",ba,rs,kv),Form("%s, %s",sba[ba].Data(),srs[rs].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]); 
-    //fKinematics[ba][rs][kv]->SetStats(kFALSE);
-    fKinematics[ba][rs][kv]->GetXaxis()->SetTitle(skv[kv].Data());
-    fKinematics[ba][rs][kv]->SetMinimum(0.);
-    fKinematics[ba][rs][kv]->SetLineColor(fBeforeAfterColor[ba]);
-    fKinematics[ba][rs][kv]->SetFillColor(fBeforeAfterColor[ba]-10);
-    fControlParticleHistogramsList->Add(fKinematics[ba][rs][kv]); 
+    fKinematicsHist[ba][rs][kv] = new TH1D(Form("fKinematicsHist[%d][%d][%d]",ba,rs,kv),Form("%s, %s",sba[ba].Data(),srs[rs].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]); 
+    //fKinematicsHist[ba][rs][kv]->SetStats(kFALSE);
+    fKinematicsHist[ba][rs][kv]->GetXaxis()->SetTitle(skv[kv].Data());
+    fKinematicsHist[ba][rs][kv]->SetMinimum(0.);
+    fKinematicsHist[ba][rs][kv]->SetLineColor(fBeforeAfterColor[ba]);
+    fKinematicsHist[ba][rs][kv]->SetFillColor(fBeforeAfterColor[ba]-10);
+    fControlParticleHistogramsList->Add(fKinematicsHist[ba][rs][kv]); 
    } // for(Int_t kv=0;kv<gKinematicVariables;kv++)
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t ba=0;ba<2;ba++) 
+
+ // d) DCA:
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   for(Int_t xyTz=0;xyTz<2;xyTz++) 
+   {
+    fDCAHist[ba][rs][xyTz] = new TH1D(Form("fDCAHist[%d][%d][%d]",ba,rs,xyTz),Form("%s, %s",sba[ba].Data(),srs[rs].Data()),(Int_t)fDCABins[xyTz][0],fDCABins[xyTz][1],fDCABins[xyTz][2]); 
+    //fDCAHist[ba][rs][xyTz]->SetStats(kFALSE);
+    fDCAHist[ba][rs][xyTz]->GetXaxis()->SetTitle(sxyTz[xyTz].Data());
+    fDCAHist[ba][rs][xyTz]->SetMinimum(0.);
+    fDCAHist[ba][rs][xyTz]->SetLineColor(fBeforeAfterColor[ba]);
+    fDCAHist[ba][rs][xyTz]->SetFillColor(fBeforeAfterColor[ba]-10);
+    fControlParticleHistogramsList->Add(fDCAHist[ba][rs][xyTz]); 
+   } // for(Int_t xyTz=0;xyTz<gKinematicVariables;xyTz++)
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t ba=0;ba<2;ba++) 
 
@@ -1421,13 +1472,17 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliAODTrack *aTrack, con
  //cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
 
  // Kinematics:
- if(fKinematics[ba][rs][PHI]){fKinematics[ba][rs][PHI]->Fill(aTrack->Phi());}
- if(fKinematics[ba][rs][PT]){fKinematics[ba][rs][PT]->Fill(aTrack->Pt());}
- if(fKinematics[ba][rs][ETA]){fKinematics[ba][rs][ETA]->Fill(aTrack->Eta());}
- if(fKinematics[ba][rs][E]){fKinematics[ba][rs][E]->Fill(aTrack->E());}
- if(fKinematics[ba][rs][CHARGE]){fKinematics[ba][rs][CHARGE]->Fill(aTrack->Charge());}
+ if(fKinematicsHist[ba][rs][PHI]){fKinematicsHist[ba][rs][PHI]->Fill(aTrack->Phi());}
+ if(fKinematicsHist[ba][rs][PT]){fKinematicsHist[ba][rs][PT]->Fill(aTrack->Pt());}
+ if(fKinematicsHist[ba][rs][ETA]){fKinematicsHist[ba][rs][ETA]->Fill(aTrack->Eta());}
+ if(fKinematicsHist[ba][rs][E]){fKinematicsHist[ba][rs][E]->Fill(aTrack->E());}
+ if(fKinematicsHist[ba][rs][CHARGE]){fKinematicsHist[ba][rs][CHARGE]->Fill(aTrack->Charge());}
 
-} // AliAnalysisTaskMuPa::FillControlParticleHistograms(const Int_t ba, const Int_t rs)
+ // DCA:
+ if(fDCAHist[ba][rs][0]){fDCAHist[ba][rs][0]->Fill(aTrack->DCA());} // "xy"
+ if(fDCAHist[ba][rs][1]){fDCAHist[ba][rs][1]->Fill(aTrack->ZAtDCA());} // "z"
+
+} // AliAnalysisTaskMuPa::FillControlParticleHistograms(AliAODTrack *aTrack, const Int_t ba, const Int_t rs)
 
 //=======================================================================================================================
 
@@ -1477,35 +1532,45 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliAODTrack *aTrack)
 
  //cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
 
- if(fUseKinematicsCuts[PHI])
+ // TBI 20210517 most likely fUseKinematicsCuts is obsolete, since now I use the default cuts by default.
+
+ //if(fUseKinematicsCuts[PHI])
  {
   if(aTrack->Phi() < fKinematicsCuts[PHI][0]) return kFALSE;
-  if(aTrack->Phi() > fKinematicsCuts[PHI][1]) return kFALSE;
+  if(aTrack->Phi() >= fKinematicsCuts[PHI][1]) return kFALSE;
  }
 
- if(fUseKinematicsCuts[PT])
+ //if(fUseKinematicsCuts[PT])
  {
   if(aTrack->Pt() < fKinematicsCuts[PT][0]) return kFALSE;
-  if(aTrack->Pt() > fKinematicsCuts[PT][1]) return kFALSE;
+  if(aTrack->Pt() >= fKinematicsCuts[PT][1]) return kFALSE;
  }
 
- if(fUseKinematicsCuts[ETA])
+ //if(fUseKinematicsCuts[ETA])
  {
   if(aTrack->Eta() < fKinematicsCuts[ETA][0]) return kFALSE;
-  if(aTrack->Eta() > fKinematicsCuts[ETA][1]) return kFALSE;
+  if(aTrack->Eta() >= fKinematicsCuts[ETA][1]) return kFALSE;
  }
 
- if(fUseKinematicsCuts[E])
+ //if(fUseKinematicsCuts[E])
  {
   if(aTrack->E() < fKinematicsCuts[E][0]) return kFALSE;
-  if(aTrack->E() > fKinematicsCuts[E][1]) return kFALSE;
+  if(aTrack->E() >= fKinematicsCuts[E][1]) return kFALSE;
  }
 
- if(fUseKinematicsCuts[CHARGE])
+ //if(fUseKinematicsCuts[CHARGE])
  {
   if(aTrack->Charge() < fKinematicsCuts[CHARGE][0]) return kFALSE;
-  if(aTrack->Charge() > fKinematicsCuts[CHARGE][1]) return kFALSE;
+  if(aTrack->Charge() >= fKinematicsCuts[CHARGE][1]) return kFALSE;
  }
+
+ // DCA xy:
+ if(aTrack->DCA() < fDCACuts[0][0]) return kFALSE;
+ if(aTrack->DCA() >= fDCACuts[0][1]) return kFALSE;
+ 
+ // DCA z:
+ if(aTrack->ZAtDCA() < fDCACuts[1][0]) return kFALSE;
+ if(aTrack->ZAtDCA() >= fDCACuts[1][1]) return kFALSE;
 
  return kTRUE;
 
