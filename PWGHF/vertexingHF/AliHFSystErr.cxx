@@ -3099,52 +3099,59 @@ void AliHFSystErr::InitNonPromptDstoKKpi2018PbPb5TeV010ML(){
   AliInfo("Settings for Non-prompt Ds --> K K pi, MB PbPb collisions at 5.02 TeV - 2018 runs (LHC18qr) with BDT multi-class selections");
   SetNameTitle("AliHFSystErr","SystErrNonPromptDstoKKpi2018PbPb010ML");
 
-  xbins[7] = [4., 6., 8., 12., 16., 24., 36.]
+  Double_t xbins[8] = {2., 4., 6., 8., 12., 16., 24., 36.};
 
   // Normalization
-  fNorm = new TH1F("fNorm","fNorm", 6, xbins);
-  for(Int_t i = 1; i <= 6; i++) fNorm->SetBinContent(i, 0.021); // from V0
+  fNorm = new TH1F("fNorm","fNorm", 7, xbins);
+  fNorm->SetBinContent(1, 0.00); 
+  for(Int_t i = 2; i <= 7; i++) fNorm->SetBinContent(i, 0.021); // from V0
 
   // Branching ratio
-  fBR = new TH1F("fBR","fBR", 6, xbins);
-  for(Int_t i = 1; i <= 6; i++) fBR->SetBinContent(i, 0.036); // PDG 2020: BR = 2.24 +/- 0.08
+  fBR = new TH1F("fBR","fBR", 7, xbins);
+  fBR->SetBinContent(1, 0.00);
+  for(Int_t i = 2; i <= 7; i++) fBR->SetBinContent(i, 0.036); // PDG 2020: BR = 2.24 +/- 0.08
 
   // Tracking efficiency 
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff", 6, xbins);
-  fTrackingEff->SetBinContent(1, 0.13); // [4-6]
-  fTrackingEff->SetBinContent(2, 0.13); // [6-8]
-  fTrackingEff->SetBinContent(3, 0.13); // [8-12]
-  fTrackingEff->SetBinContent(4, 0.12); // [12-16]
-  fTrackingEff->SetBinContent(5, 0.10); // [16-24]
-  fTrackingEff->SetBinContent(6, 0.08); // [24-36]
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff", 7, xbins);
+  fTrackingEff->SetBinContent(1, 0.00); // [2-4]
+  fTrackingEff->SetBinContent(2, 0.13); // [4-6]
+  fTrackingEff->SetBinContent(3, 0.13); // [6-8]
+  fTrackingEff->SetBinContent(4, 0.13); // [8-12]
+  fTrackingEff->SetBinContent(5, 0.12); // [12-16]
+  fTrackingEff->SetBinContent(6, 0.10); // [16-24]
+  fTrackingEff->SetBinContent(7, 0.08); // [24-36]
 
   // Raw yield extraction
-  fRawYield = new TH1F("fRawYield","fRawYield", 6, xbins);
-  for(Int_t i = 1; i <= 5; i++) fRawYield->SetBinContent(i, 0.05); // [4-6] - [16-24]
-  fRawYield->SetBinContent(6, 0.10); // [24-36]
+  fRawYield = new TH1F("fRawYield","fRawYield", 7, xbins);
+  fRawYield->SetBinContent(1, 0.00); // [2-4]
+  for(Int_t i = 2; i <= 6; i++) fRawYield->SetBinContent(i, 0.05); // [4-6] - [16-24]
+  fRawYield->SetBinContent(7, 0.10); // [24-36]
 
   // Cuts efficiency
-  fCutsEff = new TH1F("fCutsEff","fCutsEff", 6, xbins);
-  fCutsEff->SetBinContent(1, 0.08); // [4-6]
-  for(Int_t i = 2; i <= 6; i++) fCutsEff->SetBinContent(i, 0.05); // [6-8] - [24-36]
+  fCutsEff = new TH1F("fCutsEff","fCutsEff", 7, xbins);
+  fCutsEff->SetBinContent(1, 0.00); // [2-4]
+  fCutsEff->SetBinContent(2, 0.08); // [4-6]
+  for(Int_t i = 3; i <= 7; i++) fCutsEff->SetBinContent(i, 0.05); // [6-8] - [24-36]
 
   // PID efficiency (from prompt analysis)
-  fPIDEff = new TH1F("fPIDEff","fPIDEff", 6, xbins);
-  for(Int_t i = 1; i <= 6; i++) fPIDEff->SetBinContent(i, 0.00); // [4-6] - [24-36]
+  fPIDEff = new TH1F("fPIDEff","fPIDEff", 7, xbins);
+  for(Int_t i = 1; i <= 7; i++) fPIDEff->SetBinContent(i, 0.00); // [2-4] - [24-36]
 
   // MC dN/dpt
-  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape", 6, xbins);
-  fMCPtShape->SetBinContent(1, 0.10); // [4-6]
-  fMCPtShape->SetBinContent(2, 0.08); // [6-8]
-  fMCPtShape->SetBinContent(3, 0.08); // [8-12]
-  fMCPtShape->SetBinContent(4, 0.02); // [12-16]
-  fMCPtShape->SetBinContent(5, 0.02); // [16-24]
-  fMCPtShape->SetBinContent(6, 0.02); // [24-36]
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape", 7, xbins);
+  fMCPtShape->SetBinContent(1, 0.00); // [2-4]
+  fMCPtShape->SetBinContent(2, 0.10); // [4-6]
+  fMCPtShape->SetBinContent(3, 0.08); // [6-8]
+  fMCPtShape->SetBinContent(4, 0.08); // [8-12]
+  fMCPtShape->SetBinContent(5, 0.02); // [12-16]
+  fMCPtShape->SetBinContent(6, 0.02); // [16-24]
+  fMCPtShape->SetBinContent(7, 0.02); // [24-36]
 
   // FD
-  fDataDrivenFD = new TH1F("fDataDrivenFD","fDataDrivenFD", 6, xbins);
-  for(Int_t i = 1; i <= 5; i++) fPIDEff->SetBinContent(i, 0.06); // [4-6] - [16-24]
-  fDataDrivenFD->SetBinContent(6, 0.12); // [24-36]
+  fDataDrivenFD = new TH1F("fDataDrivenFD","fDataDrivenFD", 7, xbins);
+  fDataDrivenFD->SetBinContent(1, 0.00); // [2-4]
+  for(Int_t i = 2; i <= 6; i++) fPIDEff->SetBinContent(i, 0.06); // [4-6] - [16-24]
+  fDataDrivenFD->SetBinContent(7, 0.12); // [24-36]
 
   return;
 }
