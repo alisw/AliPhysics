@@ -6067,6 +6067,10 @@ Bool_t AliCaloPhotonCuts::SetMinEnergyCut(Int_t minEnergy)
           if (!fUseMinEnergy) fUseMinEnergy=1;
           fMinEnergy=0.1;
           break;
+        case 10:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.05;
+          break;
         default:
           AliError(Form("Minimum Energy Cut not defined %d",minEnergy));
           return kFALSE;

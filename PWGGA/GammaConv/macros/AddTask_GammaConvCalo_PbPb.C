@@ -1114,6 +1114,12 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("13530a13","00200009f9730000dge0404000","24466810ha082200000","0h33103100000010"); //
   } else if (trainConfig == 952){ // PHOS clusters - centrality selection for PbPb
     cuts.AddCutPCMCalo("10910a13","00600009a27000006250800000","24466810ha082200000","0h33103100000010"); //
+  } else if (trainConfig == 953){ // PHOS clusters - centrality selection for PbPb - 100 MeV cluster thresholds
+    cuts.AddCutPCMCalo("10130a13","00200009f9730000dge0404000","24466000ha09cc00000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("13530a13","00200009f9730000dge0404000","24466000ha09cc00000","0h33103100000010"); //
+  } else if (trainConfig == 954){ // PHOS clusters - centrality selection for PbPb - 50 MeV cluster thresholds
+    cuts.AddCutPCMCalo("10130a13","00200009f9730000dge0404000","24466000ha0acc00000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("13530a13","00200009f9730000dge0404000","24466000ha0acc00000","0h33103100000010"); //
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
