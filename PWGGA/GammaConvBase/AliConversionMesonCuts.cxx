@@ -4488,8 +4488,14 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
       Float_t sigma = 999;
       switch(fMassParamFunction){
         case 0: // EMC-EMC
-          mass = 0.125306 + 0.001210 * pt;
-          sigma =   0.0136138 + ( (-0.00104914) * pt ) + (7.61163e-05 * pt * pt);
+          if ( pt>45. ){
+              Double_t pt_fix=45.;
+              mass = (0.125281) + ((0.0023329) * pt_fix) + ((-0.000272107) * pt_fix * pt_fix) + ((1.57169e-05) * pt_fix * pt_fix * pt_fix) + ((-1.93425e-07) * pt_fix * pt_fix * pt_fix * pt_fix);
+              sigma = (0.0208639) + ((-0.00227399) * pt_fix ) + ((0.000162993) * pt_fix * pt_fix) + ((-1.94142e-06) * pt_fix * pt_fix * pt_fix);
+          } else {
+              mass = (0.125281) + ((0.0023329) * pt) + ((-0.000272107) * pt * pt) + ((1.57169e-05) * pt * pt * pt) + ((-1.93425e-07) * pt * pt * pt * pt);
+              sigma = (0.0208639) + ((-0.00227399) * pt ) + ((0.000162993) * pt * pt) + ((-1.94142e-06) * pt * pt * pt);
+          }
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
