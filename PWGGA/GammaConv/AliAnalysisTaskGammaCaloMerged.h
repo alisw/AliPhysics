@@ -238,6 +238,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoMCPrimaryYvsSource;                           //! array of histos with weighted primary particles, Y vs source
     TH1F**                  fHistoMCDecayGammaPt;                               //! array of histos with weighted decay gamma
     TH1F**                  fHistoMCAllGammaPt;                                 //! array of histos with weighted all gamma
+    TH2F**                  fHistoMCElectronsPt;                                //! array of histos with weighted electrons from different sources
 
     // MC validated cluster histos
     TH2F**                  fHistoTrueClusEFracFirstLabel;                      //!
@@ -406,7 +407,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 43);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 44);
 };
 
 #endif
