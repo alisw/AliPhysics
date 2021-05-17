@@ -199,6 +199,26 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fUseKinematicsCuts[var] = kTRUE;
   }
 
+  // DCA:
+  void SetDCABins(const char* xyTz, const Double_t nbins, const Double_t min, const Double_t max)
+  {
+   Int_t var = -44;
+   if(TString(xyTz).EqualTo("xy")){var = 0;} 
+   else if (TString(xyTz).EqualTo("z")){var = 1;}
+   this->fDCABins[var][0] = nbins;
+   this->fDCABins[var][1] = min;
+   this->fDCABins[var][2] = max;
+  }
+  void SetDCACuts(const char* dc, const Double_t min, const Double_t max)
+  {
+   Int_t var = -44;
+   if(TString(dc).EqualTo("xy")){var = 0;} 
+   else if (TString(dc).EqualTo("z")){var = 1;} 
+   this->fDCACuts[var][0] = min;
+   this->fDCACuts[var][1] = max;
+   //this->fUseDCACuts[var] = kTRUE; TBI 20210517 most likely obsolete
+  }
+
   void SetCalculateQvector(Bool_t cqv) {this->fCalculateQvector = cqv;};
   Bool_t GetCalculateQvector() const {return this->fCalculateQvector;};
 
@@ -284,12 +304,16 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TProfile *fControlParticleHistogramsPro; // keeps flags relevant for the control particle histograms
   TExMap *fGlobalTracksAOD; //! global tracks in AOD
   Int_t fFilterBit; // filter bit (its meaning can change from one production to another)
-
-  TH1D *fKinematics[2][2][gKinematicVariables];     // kinematics [before,after track cuts][reco,sim][phi,pt,eta,energy,charge]
+  //    Kinematics:
+  TH1D *fKinematicsHist[2][2][gKinematicVariables]; // kinematics [before,after track cuts][reco,sim][phi,pt,eta,energy,charge]
   Double_t fKinematicsBins[gKinematicVariables][3]; // [phi,pt,eta,energy,charge][nBins,min,max]
-
   Double_t fKinematicsCuts[gKinematicVariables][2]; // [phi,pt,eta,energy,charge][min,max]
   Bool_t fUseKinematicsCuts[gKinematicVariables];   // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
+  //    DCA:
+  TH1D *fDCAHist[2][2][2]; // distance of closest approach (DCA) [before,after][reco,sim][xy,z] // "xy" is transverse direction
+  Double_t fDCABins[2][3]; // [xy,z][nBins,min,max]
+  Double_t fDCACuts[2][2]; // [xy,z][min,max]
+  //Bool_t fUseDCACuts[3];   // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
 
   // 4) Q-vectors:
   TList *fQvectorList;        // list to hold all Q-vector objects       
