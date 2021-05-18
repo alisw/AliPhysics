@@ -182,7 +182,7 @@ AddAliAnalysisTaskNTGJ(TString suffixName,
   filename += suffixName.Data();
     
   mgr->ConnectOutput(task, 1,
-                     mgr->CreateContainer(OutDirname, TTree::Class(),
+                     mgr->CreateContainer("tree", TTree::Class(),
                                           AliAnalysisManager::
                                           kOutputContainer,
                                           filename.Data()));
