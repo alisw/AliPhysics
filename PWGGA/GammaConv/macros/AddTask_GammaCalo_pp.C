@@ -3355,6 +3355,17 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792109fk3v220000","0r631031000000d0"); // exotics > 5 GeV
     cuts.AddCutCalo("00010113","411792109fl3v220000","0r631031000000d0"); // exotics > 6 GeV
 
+    // Non Lin variations
+  } else if (trainConfig == 2550) { // NCell effi: PCMEMC tagged pi0 clusters
+    cuts.AddCutCalo("00010113","411793709fe3v220000","0r631031000000d0"); // TBNL,
+    cuts.AddCutCalo("00010113","411790209fe3v220000","0r631031000000d0"); // TBNL + FT for 2+ clusters
+  } else if (trainConfig == 2551) { // No NCell cut
+    cuts.AddCutCalo("00010113","411793709fe30220000","0r631031000000d0"); // TBNL
+    cuts.AddCutCalo("00010113","411790209fe30220000","0r631031000000d0"); // TBNL + FT for 2+ clusters
+  } else if (trainConfig == 2552) { // Std NCell >= 2 cut
+    cuts.AddCutCalo("00010113","411793709fe32220000","0r631031000000d0"); // TBNL
+    cuts.AddCutCalo("00010113","411790209fe32220000","0r631031000000d0"); // TBNL + FT for 2+ clusters
+
     //*************************************************************************************************
     // 13 TeV PCM-PHOS - Systematics
     //*************************************************************************************************
