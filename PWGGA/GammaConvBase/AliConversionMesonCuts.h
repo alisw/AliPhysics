@@ -216,6 +216,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetSelectionHigh() const {return fSelectionHigh;}
     Double_t GetAcceptMassFlag() const {return fAcceptMesonMass;}
     Double_t GetMinPt() const {return fMinPt;}
+    Double_t GetMaxPt() const {return fMaxPt;}
     Bool_t   UseLikeSignMixing() {return fBackgroundUseLikeSign;}
     Bool_t   UseSidebandMixing() {return fBackgroundUseSideband;}
     Bool_t   UseSidebandMixingBothSides() {return fBackgroundUseSidebandBothSides;}
@@ -256,6 +257,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
     Double_t    fMaxR;                          ///< max r cut
     Double_t    fMinPt;                         ///< min pT cut
+    Double_t    fMaxPt;                         ///< max pT cut
     Double_t    fSelectionLow;                  ///< lower meson inv mass window for further selection
     Double_t    fSelectionHigh;                 ///< higher meson inv mass window for further selection
     Double_t    fSelectionNSigmaLow;            ///< N of sigma for ptdep selection window cut min
@@ -299,6 +301,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
     Int_t      fDoLightOutput;                 ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t      fDoMinPtCut;                    ///< do min pT cut
+    Bool_t      fDoMaxPtCut;                    ///< do max pT cut
     Bool_t      fEnableMassCut;                 ///< flag to enable mass cut
     Bool_t      fAcceptMesonMass;               ///< flag to distinguish rejecting and accepting meson mass window for further analysis
     Bool_t      fUseRotationMethodInBG;         ///< flag to apply rotation method for meson bg estimation
@@ -348,7 +351,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,47)
+    ClassDef(AliConversionMesonCuts,48)
     /// \endcond
 };
 
