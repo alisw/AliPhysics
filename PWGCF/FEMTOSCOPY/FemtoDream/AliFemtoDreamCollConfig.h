@@ -47,6 +47,10 @@ class AliFemtoDreamCollConfig : public TNamed {
     fkTandMultBinning = doIt;
   }
   ;
+  void SetkTandMultPtBinning(bool doIt) {
+    fkTandMultPtBinning = doIt;
+  }
+  ;
   void SetPtQA(bool doIt) {
     fPtQA = doIt;
   }
@@ -148,6 +152,10 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   bool GetDokTandMultBinning() {
     return fkTandMultBinning;
+  }
+  ;
+  bool GetDokTandMultPtBinning() {
+    return fkTandMultPtBinning;
   }
   ;
   bool GetDoPtQA() {
@@ -299,6 +307,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fkTBinning;              //
   bool fmTBinning;              //
   bool fkTandMultBinning;	//
+  bool fkTandMultPtBinning;	//
   bool fPtQA;                   //
   bool fMassQA;                 //
   bool fMomentumResolution;     //

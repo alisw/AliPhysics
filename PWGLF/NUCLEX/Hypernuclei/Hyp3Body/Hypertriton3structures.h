@@ -58,7 +58,8 @@ struct RHyperTriton3O2 : public RHyperTriton {
   Double32_t dca_pr_sv = -4.0; //[0.0,8.0,8]
   Double32_t dca_pi_sv = -4.0; //[0.0,8.0,8]
   Double32_t chi2 = -1.f;      //[0.0,32.,16]
-  ClassDef(RHyperTriton3O2,2)
+  char rotation = 0;
+  ClassDef(RHyperTriton3O2,3)
 };
 
 struct RHyperTriton3KF : public RHyperTriton {

@@ -1246,6 +1246,8 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     TrkEta = track->Eta();
     TrkP = track->P();
 
+    if(TMath::Abs(TrkEta) > 0.8 ) continue;
+
     if(fFillEHCorrel){
       if(TrkPt > 2){
         ElectronHadCorrel(iTracks, track, fSprsAllHadHCorrl);
@@ -1253,7 +1255,6 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       }
     }
 
-   // if(TMath::Abs(TrkEta) > 0.6 ) continue;
       if(track->Eta()< fEtaCutEleMin || track->Eta()> fEtaCutEleMax) continue;
 
     ///////////////////////////

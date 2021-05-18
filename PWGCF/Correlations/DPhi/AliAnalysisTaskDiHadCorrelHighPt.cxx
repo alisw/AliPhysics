@@ -1129,7 +1129,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             else if (mcTrack->Charge()<0) cha= -1.;
             else cha =0;
             Int_t originalPartonType = -30; // 0 - quark, 1 - gluon
-            Int_t pdg_parton = 0;
+            Int_t pdg_parton = 10;
 
 			if (TrIsPrim && TrPtMin && TrCharge && TrEtaMax) {
                 
@@ -1181,7 +1181,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             	if ((mcPartPdg != 310) && (mcPartPdg != 3122) && (mcPartPdg != (-3122)) && TMath::Abs(mcPartPdg) !=3312 ) continue; // keep only Lambdas and K0S and charged Xi (for the feedDownCorrection)
             	Bool_t IsFromCascade = kFALSE;
             	
-                if(fAnalysisAOD){
+                //if(fAnalysisAOD){
                 	Int_t mother  = mcTrack->GetMother();
                 	mcMotherParticle = static_cast<AliMCParticle*>(fmcEvent->GetTrack(mother));
                 	Int_t motherPDG = 0;
@@ -1211,7 +1211,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
                 	etaDau0 = daughter0->Eta();
                 	etaDau1 = daughter1->Eta();
-                }
+                //}
                 pdg_parton = GetOriginalPartonPDG(mcTrack);
 
                 if(TMath::Abs(pdg_parton)<7)originalPartonType=0;

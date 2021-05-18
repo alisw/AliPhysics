@@ -530,6 +530,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       // Charged
       TH1D*                   fhRefsMult; //!multiplicity distribution of selected RFPs
       TH1D*                   fhRefsPt; //! pt distribution of selected RFPs
+      TH1D*                   fhChargedPt; //! pt distribution of selected charged
       TH1D*                   fhRefsEta; //! pt distribution of selected RFPs
       TH1D*                   fhRefsPhi; //! pt distribution of selected RFPs
       TProfile*               fpRefsMult; //! <multiplicity>

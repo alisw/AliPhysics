@@ -347,7 +347,7 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
 //
 // Check an AOD track.
 // This is done doing directly all checks, since there is not
-// an equivalend checker for AOD tracks
+// an equivalent checker for AOD tracks
 //
 
    // if a test bit is used, check it and skip the following
@@ -379,7 +379,7 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
       AliDebug(AliLog::kDebug + 2, "Not enough SPD clusters in this track. Rejected");
       return kFALSE;
    }
-
+   
 
    //step #1: check number of clusters 
    if ((!fIsUseCrossedRowsCut) && (track->GetTPCNcls() < fTPCminNClusters)) {
@@ -393,9 +393,28 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
    }
 
    //check track chi square
+   // Track max chi2
    if (track->Chi2perNDF() > fTrackMaxChi2) {
       AliDebug(AliLog::kDebug + 2, "Bad chi2. Rejected");
       return kFALSE;
+   }
+   
+   // ITS max chi2
+   if (track->GetITSNcls() > 0) {
+     Double_t chi2PerClusterITS = track->GetITSchi2()/track->GetITSNcls() ;
+     if (chi2PerClusterITS > fITSmaxChi2) {
+        AliDebug(AliLog::kDebug + 2, "Bad ITS chi2. Rejected");
+        return kFALSE;
+     }
+   }
+   
+   // TPC max chi2
+   if (track->GetTPCNcls() > 0) {
+     Double_t chi2PerClusterTPC = track->GetTPCchi2()/track->GetTPCNcls() ;
+     if (chi2PerClusterTPC > fTPCmaxChi2) {
+        AliDebug(AliLog::kDebug + 2, "Bad TPC chi2. Rejected");
+        return kFALSE;
+     }
    }
 
    //step #2a: check number of crossed rows in TPC
@@ -408,15 +427,23 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
      if (track->GetTPCNclsF()>0) {
        Float_t ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / track->GetTPCNclsF();
        if (ratioCrossedRowsOverFindableClustersTPC < fTPCminCrossedRowsOverFindableCls){
-	 AliDebug(AliLog::kDebug + 2, "Too few TPC crossed rows/findable clusters. Rejected");
-	 return kFALSE;
+        AliDebug(AliLog::kDebug + 2, "Too few TPC crossed rows/findable clusters. Rejected");
+        return kFALSE;
        }
      } else {
        AliDebug(AliLog::kDebug + 2, "Negative value for TPC crossed rows/findable clusters. Rejected");
        return kFALSE;
      }
    }
-   //step #2b: check on track length in active volume of TPC implemented only for ESD tracks
+   
+   //step #2b: check max chi2 TPC constrained Vs global
+   if (track->GetChi2TPCConstrainedVsGlobal() > fCutMaxChi2TPCConstrainedVsGlobal ) {
+       printf("Bad chi2 TPC constrained Vs global. Rejected %f\n", track->GetChi2TPCConstrainedVsGlobal());
+       AliDebug(AliLog::kDebug + 2, "Bad chi2 TPC constrained Vs global. Rejected");
+       return kFALSE;
+   }
+   
+   //step #2c: check on track length in active volume of TPC implemented only for ESD tracks
    //if (fIsUseLengthActiveVolumeTPCCut) { // not yet implemented in AODs}
  
    //step #3: reject kink daughters
@@ -601,6 +628,7 @@ void AliRsnCutTrackQuality::SetDefaults2010(Bool_t useTPCCrossedRows, Bool_t use
     SetPtRange(0.15, 1E+20);
     SetEtaRange(-0.8, 0.8);
   } 
+  SetAODTrackCuts(useTPCCrossedRows);
   SetAODTestFilterBit(5);
   return;
 }
@@ -619,6 +647,7 @@ void AliRsnCutTrackQuality::SetDefaultsHighPt2011(Bool_t useTPCCrossedRows, Bool
     SetPtRange(0.15, 1E+20);
     SetEtaRange(-0.8, 0.8);
   } 
+  SetAODTrackCuts(useTPCCrossedRows);
   SetAODTestFilterBit(10);
   return;
 }
@@ -635,6 +664,7 @@ void AliRsnCutTrackQuality::SetDefaults2011(Bool_t useTPCCrossedRows, Bool_t use
     SetPtRange(0.15, 1E+20);
     SetEtaRange(-0.8, 0.8);
   } 
+  SetAODTrackCuts(useTPCCrossedRows);
   SetAODTestFilterBit(5);
   return;
 }
@@ -650,6 +680,7 @@ void AliRsnCutTrackQuality::SetDefaultsTPCOnly(Bool_t useDefaultKinematicCuts)
     SetPtRange(0.15, 1E+20);
     SetEtaRange(-0.8, 0.8);
   } 
+  SetAODTrackCuts(kFALSE);
   SetAODTestFilterBit(-1);
   return;
 }
@@ -668,4 +699,74 @@ const char *AliRsnCutTrackQuality::Binary(UInt_t number)
       strncat(b, ((number & z) == z) ? "1" : "0", 1);
 
    return b;
+}
+
+void AliRsnCutTrackQuality::SetAODTrackCuts(Bool_t useTPCCrossedRows)
+{
+//
+// Since there are no checker for AOD tracks :
+// Extract fESDtrackCuts cut values and store them in the corresponding data members
+//
+    
+  //Flags
+  if( fESDtrackCuts->GetRequireITSRefit()       ) AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
+  if( fESDtrackCuts->GetRequireTPCRefit()       ) AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);
+    
+  // transverse DCA cuts
+  char s[500];
+  // DCA R upper limit
+  sprintf(s,"%s",fESDtrackCuts->GetMaxDCAToVertexXYPtDep());
+  if (!strcmp(s,""))
+      SetDCARmax( fESDtrackCuts->GetMaxDCAToVertexXY() );
+  else
+      SetDCARPtFormula( fESDtrackCuts->GetMaxDCAToVertexXYPtDep() );
+  
+  //DCA R lower limit
+  sprintf(s,"%s",fESDtrackCuts->GetMinDCAToVertexXYPtDep());
+  if (!strcmp(s,""))
+      SetDCARmin( fESDtrackCuts->GetMinDCAToVertexXY() );
+  else
+      SetDCARPtFormulaMin( fESDtrackCuts->GetMinDCAToVertexXYPtDep() );
+
+  // longitudinal DCA cuts
+  sprintf(s,"%s",fESDtrackCuts->GetMaxDCAToVertexZPtDep());
+  if (!strcmp(s,"")) 
+      SetDCAZmax( fESDtrackCuts->GetMaxDCAToVertexZ() );
+  else
+      SetDCAZPtFormula( fESDtrackCuts->GetMaxDCAToVertexZPtDep() );
+
+  // 2D DCA
+  // This cut is not implemented for AODs yet
+  // Still, extract this information
+  SetDCA2D( fESDtrackCuts->GetDCAToVertex2D() );
+  
+  // ITS related cuts for TPC+ITS tracks
+  Int_t i = fESDtrackCuts->GetClusterRequirementITS( AliESDtrackCuts::kSPD );
+  Int_t nSPDminNClusters = -1;
+  if(i == AliESDtrackCuts::kOff) nSPDminNClusters = 0;
+  else if(i == AliESDtrackCuts::kBoth) nSPDminNClusters = 2;
+  else nSPDminNClusters = 1;
+  
+  SetSPDminNClusters( nSPDminNClusters );
+  SetITSminNClusters( fESDtrackCuts->GetMinNClustersITS() );
+  SetITSmaxChi2( fESDtrackCuts->GetMaxChi2PerClusterITS() );
+
+  // TPC related cuts for TPC+ITS tracks
+  if (useTPCCrossedRows) 
+  {
+    SetMinNCrossedRowsTPC( fESDtrackCuts->GetMinNCrossedRowsTPC(), useTPCCrossedRows );
+    SetMinNCrossedRowsOverFindableClsTPC( fESDtrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC(), useTPCCrossedRows );
+  } 
+  else 
+  {
+    SetTPCminNClusters( fESDtrackCuts->GetMinNClusterTPC() );
+  }
+  SetTPCmaxChi2( fESDtrackCuts->GetMaxChi2PerClusterTPC() );
+  SetMaxChi2TPCConstrainedGlobal( fESDtrackCuts->GetMaxChi2TPCConstrainedGlobal() );
+  SetRejectKinkDaughters( !fESDtrackCuts->GetAcceptKinkDaughters() );
+  
+  // This cut is not implemented for AODs, yet
+  // Still, extract this information
+  SetMinLengthActiveVolumeTPC( fESDtrackCuts->GetMinLengthActiveVolumeTPC() );
+  return;
 }

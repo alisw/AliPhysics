@@ -1206,14 +1206,14 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiZeroGamma(AliAODMCParticle 
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionMother *omega, AliAODConversionMother *pi0, AliAODConversionPhoton *gamma, Bool_t DoPiZeroAngleCut, TF1 *maxfit, Double_t lowerFactor, Double_t upperFactor){
+Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionMother *omega, AliAODConversionMother *pi0, AliAODConversionPhoton *gamma, Bool_t DoPiZeroAngleCut, TF1 *maxfit, TF1 *minfit){
 
   if(!DoPiZeroAngleCut) return kTRUE;
 
   Double_t PiZeroGammaAngle = pi0->Angle(gamma->Vect());
   Double_t omegaPt = omega->Pt();
 
-  if(PiZeroGammaAngle > lowerFactor * maxfit->Eval(omegaPt) && PiZeroGammaAngle < upperFactor * maxfit->Eval(omegaPt)) return kTRUE;
+  if(PiZeroGammaAngle > minfit->Eval(omegaPt) && PiZeroGammaAngle < maxfit->Eval(omegaPt)) return kTRUE;
   return kFALSE;
 
 }
@@ -1222,9 +1222,9 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionM
 Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaOAC(AliAODConversionMother *omega, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2){
 
   /* Since we have an OAC for the Pi0 Mesons seperate theres only need to check
-  /* gamma2 with gamma0 and gamma1. gamma0 and gamma1 OAC should be applied
-  /* through Pi0 Cuts via MesonIsSelected!
-  /*/
+    gamma2 with gamma0 and gamma1. gamma0 and gamma1 OAC should be applied
+    through Pi0 Cuts via MesonIsSelected!
+  */
   TVector3 vecPi0Gamma0  = TVector3(gamma0->Px(), gamma0->Py(), gamma0->Pz());
   TVector3 vecPi0Gamma1  = TVector3(gamma1->Px(), gamma1->Py(), gamma1->Pz());
   TVector3 vecOmegaGamma = TVector3(gamma2->Px(), gamma2->Py(), gamma2->Pz());
@@ -4488,8 +4488,14 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
       Float_t sigma = 999;
       switch(fMassParamFunction){
         case 0: // EMC-EMC
-          mass = 0.125306 + 0.001210 * pt;
-          sigma =   0.0136138 + ( (-0.00104914) * pt ) + (7.61163e-05 * pt * pt);
+          if ( pt>45. ){
+              Double_t pt_fix=45.;
+              mass = (0.125281) + ((0.0023329) * pt_fix) + ((-0.000272107) * pt_fix * pt_fix) + ((1.57169e-05) * pt_fix * pt_fix * pt_fix) + ((-1.93425e-07) * pt_fix * pt_fix * pt_fix * pt_fix);
+              sigma = (0.0208639) + ((-0.00227399) * pt_fix ) + ((0.000162993) * pt_fix * pt_fix) + ((-1.94142e-06) * pt_fix * pt_fix * pt_fix);
+          } else {
+              mass = (0.125281) + ((0.0023329) * pt) + ((-0.000272107) * pt * pt) + ((1.57169e-05) * pt * pt * pt) + ((-1.93425e-07) * pt * pt * pt * pt);
+              sigma = (0.0208639) + ((-0.00227399) * pt ) + ((0.000162993) * pt * pt) + ((-1.94142e-06) * pt * pt * pt);
+          }
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;

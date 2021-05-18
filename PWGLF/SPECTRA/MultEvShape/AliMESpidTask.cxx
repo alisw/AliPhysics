@@ -948,11 +948,11 @@ Double_t AliMESpidTask::ComputeDeltaPhi(Double_t phi, Double_t phi_LP)
     if(result == -9999){
         return 0.5;
     }
-    else if(-1.<=result && result<=1.){  // near peak
+    else if(-0.8<=result && result<=0.8){  // near peak
         // printf("returning 0.5\n");
         return 1.5;
     }
-    else if (1.8<=result && result<=4.4){ // away peak
+    else if (2.4<=result && result<=4.0){ // away peak
         // printf("returning 1.5\n");
         return 2.5;
     }

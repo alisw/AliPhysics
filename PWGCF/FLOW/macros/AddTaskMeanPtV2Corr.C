@@ -11,6 +11,7 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
                                                   TString efficiencyPath = "", TString meanPtPath="", TString NUAPath="", TString subfix="")
 {
   Int_t StageSwitch = 0;
+  printf("Stage switch name: %s\n",stage.Data());
   if(stage.Contains("weights")) StageSwitch=1;
   if(stage.Contains("meanpt")) StageSwitch=2;
   if(stage.Contains("full")) StageSwitch=3;
@@ -18,6 +19,7 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   if(stage.Contains("ALICECov")) StageSwitch=5;
   if(stage.Contains("FBSpectra")) StageSwitch=6;
   if(stage.Contains("Efficiency")) StageSwitch=7;
+  if(stage.Contains("MC_MptClosure")) StageSwitch=8;
   if(StageSwitch==0) return 0;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -148,6 +150,30 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
     mgr->ConnectOutput(task,1,spectraCont);
     return task;
   }
+  //MC Mpt Closure
+  if(StageSwitch==8) {
+    if(!IsMC) return 0;
+    TObjArray *AllContainers = mgr->GetContainers();
+    if(!AllContainers->FindObject("Efficiency")) {
+      if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };
+      if(efficiencyPath.Contains("alien:")) if(!ConnectToGrid()) return 0;//TGrid::Connect("alien:");
+      TFile *tfWeights = TFile::Open(efficiencyPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MergedWeights.root"
+      if(!tfWeights) { printf("Could not open efficiency file\n"); return 0; };
+      if(tfWeights->IsZombie()) { printf("Efficiency file is a zombie\n"); return 0; };
+      TList *fList = (TList*)tfWeights->Get("EffAndFD");
+      if(!fList) { printf("Could not fetch the efficiency list!\n"); return 0; };
+      AliAnalysisDataContainer *cEff = mgr->CreateContainer("Efficiency",TList::Class(), AliAnalysisManager::kInputContainer);
+      cEff->SetData(fList);
+      mgr->ConnectInput(task,1,cEff);
+    } else mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("Efficiency"));
+    TString l_ContName=subfix.IsNull()?"":("_" + subfix);
+    AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer(Form("MPTProfileList_Reco%s",l_ContName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,1,cOutputMPT);
+    AliAnalysisDataContainer *cOutputMPTMC = mgr->CreateContainer(Form("MPTProfileList_Gen%s",l_ContName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,2,cOutputMPTMC);
+    return task;
+  };
+
 
   return 0;
 }

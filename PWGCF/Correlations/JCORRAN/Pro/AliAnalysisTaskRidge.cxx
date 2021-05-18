@@ -375,8 +375,8 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 
 	if( fOption.Contains("GRID") ){
 		TGrid::Connect("alien://");
-		if( !fOption.Contains("pPb") ) fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root","read");
-		if( fOption.Contains("pPb") ) fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root","read");
+		fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root","read");
+		fefficiencyFilepPb = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root","read");
 		if( fOption.Contains("Add3DEff") )fefficiency3DFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/Eff3DOut.root","read");
 	}
 
@@ -468,7 +468,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		if( !fefficiencyFile ){
                 	for(int i=0;i<fEff_npT_step;i++){
                 	        for(int j=0;j<fEff_neta_step;j++){
-                	                Eff[i][j] = 0.5;
+                	                Eff[i][j] = 1.0;
                 	        }
                 	}
 		}
@@ -482,6 +482,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 				}
 			}
 		}
+
         	if( fefficiencyFile ){
 //			cout << (bool)fefficiencyFile->FindObject(Form("%s_Hyb8cm",Period.Data())) << endl;
 			hEfficiencyHist = (TH2D*)fefficiencyFile->Get(Form("%s_Hyb8cm",Period.Data()));
@@ -492,21 +493,30 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	                if( !hEfficiencyHist ){ hEfficiencyHist = (TH2D*)fefficiencyFile->Get("LHC16l_Hyb8cm"); }
 
 			if( fOption.Contains("MC") ){ hEfficiencyHist = (TH2D*)fefficiencyFile->Get("LHC16l_Hyb8cm"); }
+		}
 
-			if( hEfficiencyHist ){
-	                	for(int i=0;i<fEff_npT_step;i++){
-	                	        for(int j=0;j<fEff_neta_step;j++){
-	                	                if( i<hEfficiencyHist->GetNbinsY() ) Eff[i][j] = hEfficiencyHist->GetBinContent(j+1,i+1);
-	                	                else{ Eff[i][j] = hEfficiencyHist->GetBinContent(j+1, hEfficiencyHist->GetNbinsY() ); }	
-	                	                if( Eff[i][j] < 0.01 ){ Eff[i][j] = 1.0; }
-	                	        }
-	                	}
-			}
-			else if( !hEfficiencyHist ){
-				for(int i=0;i<fEff_npT_step;i++){
-					for(int j=0;j<fEff_neta_step;j++){
-						Eff[i][j] = 0.25;
-					}
+		if( fefficiencyFilepPb && fOption.Contains("pPb") ){
+			hEfficiencyHist = (TH2D*)fefficiencyFilepPb->Get(Form("%s_Hyb8cm",Period.Data()));
+			if( fOption.Contains("Glb") ){ hEfficiencyHist = (TH2D*)fefficiencyFilepPb->Get(Form("%s_Glb8cm",Period.Data())); }
+                        if( fOption.Contains("SDD") ){ hEfficiencyHist = (TH2D*)fefficiencyFilepPb->Get(Form("%s_GlbSDD8cm",Period.Data())); }
+                        if( fOption.Contains("TightVtx") ){ hEfficiencyHist = (TH2D*)fefficiencyFilepPb->Get(Form("%s_Hyb6cm",Period.Data())); }
+
+                        if( !hEfficiencyHist ){ hEfficiencyHist = (TH2D*)fefficiencyFilepPb->Get("LHC16q_Hyb8cm"); }
+                        if( fOption.Contains("MC") ){ hEfficiencyHist = (TH2D*)fefficiencyFilepPb->Get("LHC16q_Hyb8cm"); }
+		}
+
+		if( hEfficiencyHist ){
+	               	for(int i=0;i<fEff_npT_step;i++){
+	               	        for(int j=0;j<fEff_neta_step;j++){
+	               	                if( i<hEfficiencyHist->GetNbinsY() ) Eff[i][j] = hEfficiencyHist->GetBinContent(j+1,i+1);
+	               	                else{ Eff[i][j] = hEfficiencyHist->GetBinContent(j+1, hEfficiencyHist->GetNbinsY() ); }	
+	               	                if( Eff[i][j] < 0.01 ){ Eff[i][j] = 1.0; }
+	               	        }
+	               	}
+		} else if( !hEfficiencyHist ){
+			for(int i=0;i<fEff_npT_step;i++){
+				for(int j=0;j<fEff_neta_step;j++){
+					Eff[i][j] = 0.25;
 				}
 			}
 	        }
@@ -581,6 +591,15 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 			fCent = sel->GetMultiplicityPercentile("V0A");
 			v0amplitude = 0.0;
 			for(int i=32;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
+			if( fOption.Contains("UseV0M") ){
+				fCent = sel->GetMultiplicityPercentile("V0M");
+				v0amplitude = 0.0;
+				for(int i=32;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
+			} else if( fOption.Contains("UseZNA") ){
+				fCent = sel->GetMultiplicityPercentile("ZNA");
+				v0amplitude = 0.0;
+				for(int i=32;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
+			}
 		}
 	}
 
@@ -1598,7 +1617,7 @@ void AliAnalysisTaskRidge::FillTracks(){
 //				FillTHnSparse("hRidgeMixing",{fCent, deltaphi, deltaeta,
 //					max(track1-> Pt(),track2-> Pt()),
   //                              	min(track1-> Pt(),track2-> Pt()) }, 1.0/(epsize-1)/ntracks/eff1/eff2 );
-				if( NTracksPerPtBin[binTPt.FindBin( max(track1->Pt(),track2-> Pt()) )-1] > 0 ){
+//				if( NTracksPerPtBin[binTPt.FindBin( max(track1->Pt(),track2-> Pt()) )-1] > 0 ){
 //					FillTHnSparse("hRidgeMixingS",{fCent, deltaphi, deltaeta,
 //						max(track1-> Pt(),track2-> Pt()),
 //						min(track1-> Pt(),track2-> Pt()) },
@@ -1615,7 +1634,7 @@ void AliAnalysisTaskRidge::FillTracks(){
 //                                                min(track1-> Pt(),track2-> Pt()),fJetPt},
 						track1-> Pt(),track2-> Pt(),fJetPt},
                                                 1.0/(eff1*eff2) );
-				}
+//				}
 //				FillTHnSparse("hRidgeMixingSNTrig",{fCent, deltaphi, deltaeta,
 //					max(track1-> Pt(),track2-> Pt()),
 //					min(track1-> Pt(),track2-> Pt()) }, 1.0/(eff1*eff2) );

@@ -1,18 +1,27 @@
 #ifndef AliAnalysisTaskKaon2PC_H
 #define AliAnalysisTaskKaon2PC_H
 
-class TH1F;
+/*class TH1F;
 class TH2F;
 class TString;
 class AliAODEvent;
 class AliAODTrack;
 class AliAODMCParticle;
 class TList;
+class AliAODVertex;
+class AliPIDResponse;
+class AliAODv0;*/
+
 //class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
-#include "THnSparse.h"
-#include "TRandom3.h"
+#include "AliEventCuts.h"
+#include "AliPIDResponse.h"
+#include "AliAODv0.h"
+#include "AliAODVertex.h"
+
+//#include "THnSparse.h"
+//#include "TRandom3.h"
 
 class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE {
  public:
@@ -29,17 +38,16 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE {
     virtual void     Terminate(Option_t * option);
  
  private:
-	
+
+    AliAODEvent     *fAOD;                   //! AOD event
 	TList           *fOutput;        // Output list
-	AliPIDResponse	*fPIDResponse;	 // PID
-	
-	AliAODEvent     *fAOD;                   //! AOD event                        
-	AliAODVertex    *fPrimaryVtx;            //! AOD vertex
-	
+    AliAODVertex    *fPrimaryVtx;            //! AOD vertex
+    AliPIDResponse	*fPIDResponse;	 // PID
+    AliEventCuts    *fEventCuts;
     TH2F            *fHistChKaons;
+    TH2F            *fHistEtaCuts;
     TH2F            *fHistPosKaons;
     TH2F            *fHistNegKaons;
-    TH2F            *fHistEtaCuts;
     TH2F            *fHistV0s;
     
     Double_t        fLpTCut;        //not a pointer???
