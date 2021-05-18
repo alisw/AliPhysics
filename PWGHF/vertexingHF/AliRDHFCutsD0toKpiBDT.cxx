@@ -49,13 +49,13 @@ AliRDHFCutsD0toKpiBDT::AliRDHFCutsD0toKpiBDT(const char* name) :
   fBDTNames(0),
   fBDTCutGlobalIndex(1),
   fBDTCuts(0),
-  fIsUpperCutBDT(0)
+  fIsUpperCutBDT(0),
+  fRejFraction(0)
 {
   //
   // Default Constructor
   //
   fListOfBDT = new TList();
-  printf("Creating new AliRDHFCutsD0toKpiBDT, please remember to add the list of input BDT\n");
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpiBDT::AliRDHFCutsD0toKpiBDT(const AliRDHFCutsD0toKpi &source) :
@@ -67,13 +67,15 @@ AliRDHFCutsD0toKpiBDT::AliRDHFCutsD0toKpiBDT(const AliRDHFCutsD0toKpi &source) :
   fBDTNames(0),
   fBDTCutGlobalIndex(1),
   fBDTCuts(0),
-  fIsUpperCutBDT(0)
+  fIsUpperCutBDT(0),
+  fRejFraction(0)
 {
   //
   // Copy constructor
   //
   fListOfBDT = new TList();
   if(source.GetPtBinLimits()) SetPtBinsBDT(source.GetNPtBins()+1,source.GetPtBinLimits());
+  printf("Copying from a AliRDHFCutsD0toKpi, please remember to add the list of input BDT\n");
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpiBDT::AliRDHFCutsD0toKpiBDT(const AliRDHFCutsD0toKpiBDT &source) :
@@ -85,7 +87,8 @@ AliRDHFCutsD0toKpiBDT::AliRDHFCutsD0toKpiBDT(const AliRDHFCutsD0toKpiBDT &source
   fBDTNames(0),
   fBDTCutGlobalIndex(source.fBDTCutGlobalIndex),
   fBDTCuts(0),
-  fIsUpperCutBDT(0)
+  fIsUpperCutBDT(0),
+  fRejFraction(0)
 {
   //
   // Copy constructor
@@ -95,6 +98,7 @@ AliRDHFCutsD0toKpiBDT::AliRDHFCutsD0toKpiBDT(const AliRDHFCutsD0toKpiBDT &source
   if(source.fBDTCuts) SetBDTCuts(source.fBDTCutGlobalIndex,source.fBDTCuts);
   if(source.fBDTNames) SetBDTNames(source.fNBDTOpt,source.fBDTNames,source.fIsUpperCutBDT);
   if(source.fListOfBDT) SetListOfBDT(source.fListOfBDT);
+  if(source.fRejFraction) SetRejFraction(source.fRejFraction);
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpiBDT &AliRDHFCutsD0toKpiBDT::operator=(const AliRDHFCutsD0toKpiBDT &source)
@@ -113,6 +117,7 @@ AliRDHFCutsD0toKpiBDT &AliRDHFCutsD0toKpiBDT::operator=(const AliRDHFCutsD0toKpi
   if(source.fBDTNames) SetBDTNames(source.fNBDTOpt,source.fBDTNames,source.fIsUpperCutBDT);
   fNBDTOpt=source.fNBDTOpt;
   fListOfBDT = new TList(); if(source.fListOfBDT) SetListOfBDT(source.fListOfBDT);
+  fRejFraction = new Float_t[source.fnPtBinsBDT]; SetRejFraction(source.fRejFraction);
   return *this;
 }
 
@@ -174,6 +179,8 @@ void AliRDHFCutsD0toKpiBDT::SetPtBinsBDT(Int_t nPtBinLimits,Float_t *ptBinLimits
   //cout<<"Changing also Global Index -> "<<fGlobalIndex<<endl;
   fPtBinLimitsBDT = new Float_t[fnPtBinLimitsBDT];
   for(Int_t ib=0; ib<nPtBinLimits; ib++) fPtBinLimitsBDT[ib]=ptBinLimits[ib];
+  //~ printf("INFO: Reseting random-rejected factor to 0...");
+  //~ for(Int_t ib=0; ib<nPtBinLimits-1; ib++) fRejFraction[ib]=1.;
   return;
 }
 
@@ -203,6 +210,15 @@ void AliRDHFCutsD0toKpiBDT::SetBDTCuts(Int_t glIndex,Float_t* cutsRDGlob)
   if(!fBDTCuts)  fBDTCuts = new Float_t[fBDTCutGlobalIndex];
 
   for(Int_t iGl=0;iGl<fBDTCutGlobalIndex;iGl++) fBDTCuts[iGl] = cutsRDGlob[iGl];
+  return;
+}
+
+//---------------------------------------------------------------------------
+void AliRDHFCutsD0toKpiBDT::SetRejFraction(Float_t *rej)
+{
+  fRejFraction = new Float_t[fnPtBinsBDT];
+  for(Int_t i=0;i<fnPtBinsBDT;i++)
+	  fRejFraction[i] = rej[i];
   return;
 }
 
@@ -337,9 +353,17 @@ void AliRDHFCutsD0toKpiBDT::PrintAll() const {
   // print all cuts values
   // 
   AliRDHFCutsD0toKpi::PrintAll();
-  if(fListOfBDT){
-	printf("List of BDT:\n");
-	for(Int_t iOpt=0;iOpt<fNBDTOpt;iOpt++)
-	printf("%s   \n",fListOfBDT->At(iOpt)->GetName());
+  for(Int_t i=0;i<fnPtBinsBDT;i++)
+	printf("Sampling fraction: %f	",fRejFraction[i]);
+  if(fListOfBDT->GetEntries()>0){
+	printf("\nList of BDT:\n");
+	for(Int_t i=0;i<fnPtBinsBDT;i++){
+		for(Int_t j=0;j<fNBDTOpt;j++){
+			printf("%s		",fListOfBDT->At(GetBDTCutGlobalIndex(j,i))->GetName());
+			printf("cut: Resp %c %.4f\n",!fIsUpperCutBDT[j]?'>':'<',fBDTCuts[GetBDTCutGlobalIndex(j,i)]);
+		}
+	}
   }
+  else printf("No BDT added...\n");
+  return;
 }
