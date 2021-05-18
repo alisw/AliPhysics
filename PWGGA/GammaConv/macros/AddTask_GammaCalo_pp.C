@@ -3343,6 +3343,18 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >=2
     cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // no NCell
 
+    // exotics threshold variation
+  } else if (trainConfig == 2540) { //no NCell cut
+    cuts.AddCutCalo("00010113","411792109fi30220000","0r631031000000d0"); // exotics > 3 GeV
+    cuts.AddCutCalo("00010113","411792109fj30220000","0r631031000000d0"); // exotics > 4 GeV
+    cuts.AddCutCalo("00010113","411792109fk30220000","0r631031000000d0"); // exotics > 5 GeV
+    cuts.AddCutCalo("00010113","411792109fl30220000","0r631031000000d0"); // exotics > 6 GeV
+  } else if (trainConfig == 2541) { // NCell efficiency wit PCM-EMC tagged clusters
+    cuts.AddCutCalo("00010113","411792109fi3v220000","0r631031000000d0"); // exotics > 3 GeV
+    cuts.AddCutCalo("00010113","411792109fj3v220000","0r631031000000d0"); // exotics > 4 GeV
+    cuts.AddCutCalo("00010113","411792109fk3v220000","0r631031000000d0"); // exotics > 5 GeV
+    cuts.AddCutCalo("00010113","411792109fl3v220000","0r631031000000d0"); // exotics > 6 GeV
+
     //*************************************************************************************************
     // 13 TeV PCM-PHOS - Systematics
     //*************************************************************************************************
