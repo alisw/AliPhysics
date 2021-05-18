@@ -7,10 +7,9 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 
 
 AliAnalysisTaskNTGJ *
-AddAliAnalysisTaskNTGJ(TString name,
+AddAliAnalysisTaskNTGJ(TString suffixName,
                        TString emcal_correction_filename,
                        const UInt_t pSel,
-                       bool mult_selection,
                        bool physics_selection,
                        bool physics_selection_mc_analysis,
                        bool physics_selection_pileup_cut,
@@ -182,8 +181,11 @@ AddAliAnalysisTaskNTGJ(TString name,
 
   filename += ":AliAnalysisTaskNTGJ";
 
+  TString OutDirname         = "_Ntuples";
+  OutDirname              +=   suffixName.Data();
+    
   mgr->ConnectOutput(task, 1,
-                     mgr->CreateContainer("tree", TTree::Class(),
+                     mgr->CreateContainer(OutDirname, TTree::Class(),
                                           AliAnalysisManager::
                                           kOutputContainer,
                                           filename.Data()));
