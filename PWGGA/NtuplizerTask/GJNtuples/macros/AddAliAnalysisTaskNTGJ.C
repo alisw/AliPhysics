@@ -179,10 +179,7 @@ AddAliAnalysisTaskNTGJ(TString suffixName,
 
   TString filename = mgr->GetCommonFileName();
 
-  filename += ":AliAnalysisTaskNTGJ";
-
-  TString OutDirname         = "_Ntuples";
-  OutDirname              +=   suffixName.Data();
+  filename += suffixName.Data();
     
   mgr->ConnectOutput(task, 1,
                      mgr->CreateContainer(OutDirname, TTree::Class(),
