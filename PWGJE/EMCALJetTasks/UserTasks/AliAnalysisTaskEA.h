@@ -335,7 +335,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 //   TH2D* fhTTH_CentV0M[kTG][fkTTbins];                    //! counter of semi-inclusive hadron TT versus V0M    centrality
    TH2D* fhTTH_V0Mnorm1[kTG][fkTTbins];                   //! counter of semi-inclusive hadron TT versus V0M/mean
 
-   TH2D* fhTTH_V0Mnorm1_PartLevel[fkTTbins];         //! counter of semi-inclusive hadron TT   V0M/mean particle level
+   TH2D* fhTTH_V0Mnorm1_PartLevel[fkTTbins];           //! counter of semi-inclusive hadron TT   V0M/mean particle level with V0 coincidence
+   TH2D* fhTTH_V0Mnorm_AllMB_PartLevel[fkTTbins];         //! counter of semi-inclusive hadron TT   V0M/mean particle level without V0 coincidence //FF
 
 //   TH3D* fhTTH_3D_V0Mnorm1[kTG][fkTTbins];           //! counter of semi-inclusive hadron l TT in MB versus V0M/mean
 
@@ -355,10 +356,12 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D* fhRecoilJetPtTTH_V0Mnorm1[kTG][fkTTbins];           //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
    TH2D* fhRecoilJetPtTTH_V0Mnorm1_PartLevel[fkTTbins];      //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
    TH2D* fhRecoilJetPtZero_TTH_V0Mnorm1_PartLevel[fkTTbins]; //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean. Jet pT is NOT CORRECTED on RhokT (added by KA)
+   TH2D* fhRecoilJetPtTTH_V0Mnorm_AllMB_PartLevel[fkTTbins]; //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean without V0 coincidence //FF
 
    TH3D* fhRecoilJetPhiTTH_V0Mnorm1[kTG][fkTTbins];                   //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)
    TH3D* fhRecoilJetPhiTTH_V0Mnorm1_PartLevel[fkTTbins];              //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias particle level
    TH3D* fhRecoilJetPtZero_DeltaPhi_TTH_V0Mnorm1_PartLevel[fkTTbins]; //! recoil jet  (V0M/mean , recoil jet pT,  delta phi). Jet pT is NOT CORRECTED on RhokT (added by KA)
+   TH3D* fhRecoilJetPhiTTH_V0Mnorm_AllMB_PartLevel[fkTTbins];         //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias particle level //FF
 
 //   THnSparse *fhRecoilJetTTH_V0Mnorm1[kTG][fkTTbins];      //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
 //   THnSparse *fhRecoilJetTTH_V0Mnorm1_PartLevel[fkTTbins]; //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
@@ -394,10 +397,12 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    TH1D* fhJetPtPartLevelCorr;                          //! response matrix normalization spectrum, jet pT corrected on rho
    TH1D* fhJetPtPartLevelZero;                          //! response matrix normalization spectrum, jet pT is not corrected on rho
+   TH1D* fhRecoilJetPtPartLevelCorr[fkTTbins];                    //! response matrix normalization spectrum, jet pT corrected on rho,  built from recoil jets //FF
 
    TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr;           //! response matrix jet pT corrected on rho
    TH2D* fhJetPtPartLevelVsJetPtDetLevelZero;           //! response matrix jet pT not corrected on rho
    TH2D* fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr;     //! response matrix part level jet pT is not corrected on rho, detectot level jet pT is corrected on rho (added by KA)
+   TH2D* fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[fkTTbins];  //! response matrix jet pT corrected on rho built from recoil jets //FF
 
    //2D unfolding
    // Jet pT is CORRECTED on Rhokt (particle and detector levels)
@@ -556,7 +561,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 32); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 33); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }
