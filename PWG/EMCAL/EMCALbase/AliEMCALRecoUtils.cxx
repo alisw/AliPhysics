@@ -1729,7 +1729,7 @@ Bool_t AliEMCALRecoUtils::GetIsNCellCorrected(AliVCluster* cluster, AliVCaloCell
       // should behave like pure photon clusters
       // fNCellEfficiencyParams[0] = 0.213184;
       // fNCellEfficiencyParams[1] = -0.0580118;
-      Float_t val = fNCellEfficiencyParams[0] + fNCellEfficiencyParams[1]*energy;
+      Float_t val = fNCellEfficiencyParams[0]*energy + fNCellEfficiencyParams[1];
       if(randNr < val) return kTRUE;
       else return kFALSE;
       break;
