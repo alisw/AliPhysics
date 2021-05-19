@@ -607,7 +607,7 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  // a) Multiplicity.
  // b) Centrality;
  // c) Vertex;
- // *) Other.
+ // d) Remaining event histograms.
 
  cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
 
@@ -652,18 +652,42 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  fVertexCuts[Z][0] = -10.;
  fVertexCuts[Z][1] = 10.;
 
+ fNContributorsBins[0] = 3000.;
+ fNContributorsBins[1] = 0.;
+ fNContributorsBins[2] = 3000.;
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   fNContributorsHist[ba][rs] = NULL; 
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t xyz=0;xyz<3;xyz++)
  fNContributorsCuts[0] = 2; // min
  fNContributorsCuts[1] = 1e6; // max, this one is typically left open
 
- // *) Other:
+ // d) Remaining event histograms:
  for(Int_t ba=0;ba<2;ba++)
  {
-  for(Int_t oeh=0;oeh<gOtherEventHistograms;oeh++)
+  for(Int_t oeh=0;oeh<gEventHistograms;oeh++)
   {
-   fOtherEventHistograms[ba][oeh] = NULL;
+   fEventHistograms[ba][oeh] = NULL;
   }
  } // for(Int_t ba=0;ba<2;ba++)
- 
+
+ // defaults bins:
+ fEventBins[MagneticField][0] = 4;
+ fEventBins[MagneticField][1] = -2.;
+ fEventBins[MagneticField][2] = 2.;
+ fEventBins[PrimaryVertex][0] = 1;
+ fEventBins[PrimaryVertex][1] = 0.;
+ fEventBins[PrimaryVertex][2] = 1.;
+
+ // default cuts:
+ fEventCuts[MagneticField][0] = -1.;
+ fEventCuts[MagneticField][1] = 1.;
+ fEventCuts[PrimaryVertex][0] = 0.;
+ fEventCuts[PrimaryVertex][1] = 1.;
+
 } // void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
 
 //================================================================================================================
@@ -672,7 +696,10 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
 {
  // Initialize all arrays for control particle histograms. Cuts hardwired here are default particle cuts. 
 
- // a) Kinematics.
+ // a) Kinematics; 
+ // b) DCA;
+ // c) Remaining particle histograms; 
+ // d) The default particle cuts. 
 
  cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
 
@@ -713,7 +740,7 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
  fKinematicsBins[CHARGE][1] = -2.;
  fKinematicsBins[CHARGE][2] = 3.;
 
- // DCA:
+ // b) DCA:
  for(Int_t ba=0;ba<2;ba++)
  {
   for(Int_t rs=0;rs<2;rs++)
@@ -735,36 +762,93 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
  fDCABins[1][1] = -20.;
  fDCABins[1][2] = 20.;
 
- // -----------
+ // c) Remaining particle histograms:
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   for(Int_t t=0;t<gParticleHistograms;t++) // type, see enum 'eParticle'
+   {
+    fParticleHist[ba][rs][t] = NULL; 
+   } // for(Int_t t=0;t<gParticleHistograms;t++)
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t ba=0;ba<2;ba++)
 
- // These cuts are used by default, if you want other or open cuts, indicate that via dedicated setters.
- // default phi cuts:
+ // default binning, see enum 'eParticle':
+ fParticleBins[TPCNcls][0] = 200;
+ fParticleBins[TPCNcls][1] = 0.;
+ fParticleBins[TPCNcls][2] = 200.;
+
+ fParticleBins[TPCnclsS][0] = 200;
+ fParticleBins[TPCnclsS][1] = 0.;
+ fParticleBins[TPCnclsS][2] = 200.;
+
+ fParticleBins[TPCnclsFractionShared][0] = 200;
+ fParticleBins[TPCnclsFractionShared][1] = 0.;
+ fParticleBins[TPCnclsFractionShared][2] = 200.;
+
+ fParticleBins[TPCNCrossedRows][0] = 200;
+ fParticleBins[TPCNCrossedRows][1] = 0.;
+ fParticleBins[TPCNCrossedRows][2] = 200.;
+
+ fParticleBins[TPCChi2perNDF][0] = 100;
+ fParticleBins[TPCChi2perNDF][1] = 0.;
+ fParticleBins[TPCChi2perNDF][2] = 10.;
+
+ fParticleBins[TPCFoundFraction][0] = 100;
+ fParticleBins[TPCFoundFraction][1] = 0.;
+ fParticleBins[TPCFoundFraction][2] = 2.;
+
+ fParticleBins[Chi2TPCConstrainedVsGlobal][0] = 400;
+ fParticleBins[Chi2TPCConstrainedVsGlobal][1] = -2.;
+ fParticleBins[Chi2TPCConstrainedVsGlobal][2] = 2.;
+
+ fParticleBins[ITSNcls][0] = 100;
+ fParticleBins[ITSNcls][1] = 0.;
+ fParticleBins[ITSNcls][2] = 10.;
+
+ fParticleBins[ITSChi2perNDF][0] = 100;
+ fParticleBins[ITSChi2perNDF][1] = 0.;
+ fParticleBins[ITSChi2perNDF][2] = 1.;
+
+ // d) The default particle cuts: 
+ //  These cuts are used by default, if you want other cuts, indicate that via dedicated setters.
+ //  d1) Kinematics:
+ //    default phi cuts:
  fKinematicsCuts[PHI][0] = fKinematicsBins[PHI][1];
  fKinematicsCuts[PHI][1] = fKinematicsBins[PHI][2];
 
- // default pt cuts:
+ //    default pt cuts:
  fKinematicsCuts[PT][0] = fKinematicsBins[PT][1];
  fKinematicsCuts[PT][1] = fKinematicsBins[PT][2];
 
- // default eta cuts:
+ //    default eta cuts:
  fKinematicsCuts[ETA][0] = fKinematicsBins[ETA][1];
  fKinematicsCuts[ETA][1] = fKinematicsBins[ETA][2];
 
- // default e cuts:
+ //    default e cuts:
  fKinematicsCuts[E][0] = fKinematicsBins[E][1];
  fKinematicsCuts[E][1] = fKinematicsBins[E][2];
 
- // default charge cuts:
+ //    default charge cuts:
  fKinematicsCuts[CHARGE][0] = fKinematicsBins[CHARGE][1];
  fKinematicsCuts[CHARGE][1] = fKinematicsBins[CHARGE][2];
 
- // default DCA xy cuts:
+ //  d2) DCA:
+ //    default DCA xy cuts:
  fDCACuts[0][0] = fDCABins[0][1];
  fDCACuts[0][1] = fDCABins[0][2];
 
- // default DCA z cuts:
+ //    default DCA z cuts:
  fDCACuts[1][0] = fDCABins[1][1];
  fDCACuts[1][1] = fDCABins[1][2];
+
+ //  d3) Remaining:
+ for(Int_t t=0;t<gParticleHistograms;t++)
+ {
+  fParticleCuts[t][0] = fParticleBins[t][1];
+  fParticleCuts[t][1] = fParticleBins[t][2];
+ }
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
 
@@ -998,7 +1082,7 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  // c) Multiplicity;
  // d) Centrality;
  // e) Vertex;
- // *) Other.
+ // f) Remaining event histograms.
 
  cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
 
@@ -1013,6 +1097,7 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  TString sxyz[3] = {"x","y","z"};
  TString sba[2] = {"before event cuts","after event cuts"};
  TString srs[2] = {"reconstructed","simulated"};
+ TString stype[gEventHistograms] = {"MagneticField","PrimaryVertex"};
 
  // c) Multiplicity:
  fMultiplicityHist = new TH1D("fMultiplicityHist","multiplicity = sum of particle weights of tracks in Q-vector",(Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
@@ -1057,33 +1142,29 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t xyz=0;xyz<3;xyz++)
 
- // *) Other:
- // 0: aAOD->GetPrimaryVertex() => here we count events with [bin 1] and without [bin 1] primary vertex
- // 1: avtx->GetNContributors() 
- // 2: aAOD->GetMagneticField()
  for(Int_t ba=0;ba<2;ba++)
  {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   fNContributorsHist[ba][rs] = new TH1I(Form("fNContributorsHist[%d][%d]",ba,rs),Form("%s, %s",sba[ba].Data(),srs[rs].Data()),(Int_t)fNContributorsBins[0],fNContributorsBins[1],fNContributorsBins[2]); 
+   //fNContributorsHist[ba][rs]->SetStats(kFALSE);
+   fNContributorsHist[ba][rs]->GetXaxis()->SetTitle("avtx->GetNContributors()");
+   fNContributorsHist[ba][rs]->SetLineColor(fBeforeAfterColor[ba]);
+   fNContributorsHist[ba][rs]->SetFillColor(fBeforeAfterColor[ba]-10);
+   fControlEventHistogramsList->Add(fNContributorsHist[ba][rs]); 
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t xyz=0;xyz<3;xyz++)
 
-  // 0: aAOD->GetPrimaryVertex() => here we count events with [bin 1] and without [bin 1] primary vertex
-  fOtherEventHistograms[ba][0] = new TH1D(Form("fOtherEventHistograms[%d][0]",ba),Form("%s, %s",sba[ba].Data(),"aAOD->GetPrimaryVertex()"),2,0.,2.); 
-  fOtherEventHistograms[ba][0]->GetXaxis()->SetBinLabel(1,"with vertex");
-  fOtherEventHistograms[ba][0]->GetXaxis()->SetBinLabel(2,"without vertex");
-  fOtherEventHistograms[ba][0]->SetLineColor(fBeforeAfterColor[ba]);  
-  fOtherEventHistograms[ba][0]->SetFillColor(fBeforeAfterColor[ba]-10);
-  fControlEventHistogramsList->Add(fOtherEventHistograms[ba][0]); 
- 
-  // 1: avtx->GetNContributors() 
-  fOtherEventHistograms[ba][1] = new TH1D(Form("fOtherEventHistograms[%d][1]",ba),Form("%s, %s",sba[ba].Data(),"avtx->GetNContributors()"),3000,0.,3000.); 
-  fOtherEventHistograms[ba][1]->SetLineColor(fBeforeAfterColor[ba]);  
-  fOtherEventHistograms[ba][1]->SetFillColor(fBeforeAfterColor[ba]-10);
-  fControlEventHistogramsList->Add(fOtherEventHistograms[ba][1]); 
-
-  // 2: aAOD->GetMagneticField()
-  fOtherEventHistograms[ba][2] = new TH1D(Form("fOtherEventHistograms[%d][2]",ba),Form("%s, %s",sba[ba].Data(),"aAOD->GetMagneticField()"),2000,-10.,10.); 
-  fOtherEventHistograms[ba][2]->SetLineColor(fBeforeAfterColor[ba]);  
-  fOtherEventHistograms[ba][2]->SetFillColor(fBeforeAfterColor[ba]-10);
-  fControlEventHistogramsList->Add(fOtherEventHistograms[ba][2]); 
-
+ // f) Remaining event histograms:
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t t=0;t<gEventHistograms;t++) // type, see enum 'eEvent'
+  {
+   fEventHistograms[ba][t] = new TH1D(Form("fEventHistograms[%d][%d]",ba,t),Form("%s, %s",sba[ba].Data(),stype[t].Data()),(Int_t)fEventBins[t][0],fEventBins[t][1],fEventBins[t][2]); 
+   fEventHistograms[ba][t]->SetLineColor(fBeforeAfterColor[ba]);  
+   fEventHistograms[ba][t]->SetFillColor(fBeforeAfterColor[ba]-10);
+   fControlEventHistogramsList->Add(fEventHistograms[ba][t]); 
+  } // for(Int_t t=0;t<gEventHistograms;t++) // type, see enum 'eEvent'
  } // for(Int_t ba=0;ba<2;ba++)
 
 } // void AliAnalysisTaskMuPa::BookControlEventHistograms()
@@ -1097,7 +1178,8 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
  // a) Book the profile holding flags;
  // b) Common local labels;
  // c) Kinematics;
- // d) DCA.
+ // d) DCA;
+ // e) Remaining.
 
  cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
 
@@ -1113,6 +1195,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
  TString sba[2] = {"before particle cuts","after particle cuts"};
  TString srs[2] = {"reconstructed","simulated"};
  TString skv[gKinematicVariables] = {"#varphi","p_{T}","#eta","energy","charge"};
+ TString stype[gParticleHistograms] = {"TPCNcls","TPCnclsS","TPCnclsFractionShared","TPCNCrossedRows","TPCChi2perNDF","TPCFoundFraction","Chi2TPCConstrainedVsGlobal","ITSNcls","ITSChi2perNDF"};
 
  // c) Kinematics:
  for(Int_t ba=0;ba<2;ba++)
@@ -1149,6 +1232,23 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
    } // for(Int_t xyTz=0;xyTz<gKinematicVariables;xyTz++)
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t ba=0;ba<2;ba++) 
+
+ // e) Remaining:
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   for(Int_t t=0;t<gParticleHistograms;t++) // type, see enum 'eParticle'
+   {
+    fParticleHist[ba][rs][t] = new TH1D(Form("fParticleHist[%d][%d][%d]",ba,rs,t),Form("%s, %s, %s",stype[t].Data(),sba[ba].Data(),srs[rs].Data()),(Int_t)fParticleBins[t][0],fParticleBins[t][1],fParticleBins[t][2]);  
+    fParticleHist[ba][rs][t]->GetXaxis()->SetTitle(stype[t].Data());
+    fParticleHist[ba][rs][t]->SetMinimum(0.);  
+    fParticleHist[ba][rs][t]->SetLineColor(fBeforeAfterColor[ba]);
+    fParticleHist[ba][rs][t]->SetFillColor(fBeforeAfterColor[ba]-10);
+    fControlParticleHistogramsList->Add(fParticleHist[ba][rs][t]); 
+   } // for(Int_t t=0;t<gParticleHistograms;t++)
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t ba=0;ba<2;ba++)
 
 } // void AliAnalysisTaskMuPa::BookControlParticleHistograms()
 
@@ -1428,7 +1528,8 @@ void AliAnalysisTaskMuPa::FillControlEventHistograms(AliVEvent *ave, const Int_t
  // Fill control histograms before event cuts (ba = 0), or after (ba = 1). For reconstructed data (rs = 0), or simulated (rs = 1)
  // a) Determine Ali{MC,ESD,AOD}Event;
  // b) Centrality;
- // c) Vertex.
+ // c) Vertex;
+ // d) Remaining event distributions.
 
  cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
 
@@ -1439,26 +1540,20 @@ void AliAnalysisTaskMuPa::FillControlEventHistograms(AliVEvent *ave, const Int_t
 
  if(aAOD)
  {
-  // Centrality:
+  // b) Centrality:
   if(fCentralityHist[ba]){fCentralityHist[ba]->Fill(fCentrality);}
 
-  // Vertex: TH1D *fVertexHist[2][2][3]; //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
+  // c) Vertex: TH1D *fVertexHist[2][2][3]; //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
   AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
-  if(!avtx) 
-  {
-   fOtherEventHistograms[ba][0]->Fill(1.5); // see its booking
-   return; 
-  }
-  fOtherEventHistograms[ba][0]->Fill(0.5); // see its booking
+  if(!avtx) return; 
   if(fVertexHist[ba][rs][X]){fVertexHist[ba][rs][X]->Fill(avtx->GetX());}
   if(fVertexHist[ba][rs][Y]){fVertexHist[ba][rs][Y]->Fill(avtx->GetY());}
   if(fVertexHist[ba][rs][Z]){fVertexHist[ba][rs][Z]->Fill(avtx->GetZ());}
-   
-  // avtx->GetNContributors():
-  fOtherEventHistograms[ba][1]->Fill(avtx->GetNContributors());
+  if(fNContributorsHist[ba][rs]){fNContributorsHist[ba][rs]->Fill(avtx->GetNContributors());}
 
-  // Magnetic field: aAOD->GetMagneticField()
-  fOtherEventHistograms[ba][2]->Fill(aAOD->GetMagneticField());
+  // d) Remaining event distributions:
+  if(fEventHistograms[ba][MagneticField]){fEventHistograms[ba][MagneticField]->Fill(aAOD->GetMagneticField());}
+  if(fEventHistograms[ba][PrimaryVertex]){fEventHistograms[ba][PrimaryVertex]->Fill(0.44);} // here we only count # of events with valid pointer aAOD->GetPrimaryVertex()
  } // if(aAOD)
 
 } // AliAnalysisTaskMuPa::FillControlEventHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs)
@@ -1468,6 +1563,7 @@ void AliAnalysisTaskMuPa::FillControlEventHistograms(AliVEvent *ave, const Int_t
 void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliAODTrack *aTrack, const Int_t ba, const Int_t rs)
 {
  // Fill control histograms before particles cuts (ba = 0), or after (ba = 1). For reconstructed data (rs = 0), or simulated (rs = 1)
+ // More detailed treatment of AOD track cuts can be found in Tasks/AliFlowTrackCuts.cxx
  
  //cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
 
@@ -1481,6 +1577,17 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliAODTrack *aTrack, con
  // DCA:
  if(fDCAHist[ba][rs][0]){fDCAHist[ba][rs][0]->Fill(aTrack->DCA());} // "xy"
  if(fDCAHist[ba][rs][1]){fDCAHist[ba][rs][1]->Fill(aTrack->ZAtDCA());} // "z"
+
+ // Remaining:
+ if(fParticleHist[ba][rs][TPCNcls]){fParticleHist[ba][rs][TPCNcls]->Fill(aTrack->GetTPCNcls());}
+ if(fParticleHist[ba][rs][TPCnclsS]){fParticleHist[ba][rs][TPCnclsS]->Fill(aTrack->GetTPCnclsS());}
+ if(fParticleHist[ba][rs][TPCnclsFractionShared]){if(TMath::Abs(aTrack->GetTPCnclsS())>0.){fParticleHist[ba][rs][TPCnclsFractionShared]->Fill(aTrack->GetTPCNcls()/aTrack->GetTPCnclsS());}}
+ if(fParticleHist[ba][rs][TPCNCrossedRows]){fParticleHist[ba][rs][TPCNCrossedRows]->Fill(aTrack->GetTPCNCrossedRows());}
+ if(fParticleHist[ba][rs][TPCChi2perNDF]){fParticleHist[ba][rs][TPCChi2perNDF]->Fill(aTrack->Chi2perNDF());}
+ if(fParticleHist[ba][rs][TPCFoundFraction]){fParticleHist[ba][rs][TPCFoundFraction]->Fill( aTrack->GetTPCFoundFraction());}
+ if(fParticleHist[ba][rs][Chi2TPCConstrainedVsGlobal]){fParticleHist[ba][rs][Chi2TPCConstrainedVsGlobal]->Fill(aTrack->GetChi2TPCConstrainedVsGlobal());}
+ if(fParticleHist[ba][rs][ITSNcls]){fParticleHist[ba][rs][ITSNcls]->Fill(aTrack->GetITSNcls());}
+ if(fParticleHist[ba][rs][ITSChi2perNDF]){if(TMath::Abs(aTrack->GetITSNcls())>0.){fParticleHist[ba][rs][ITSChi2perNDF]->Fill(aTrack->GetITSchi2()/aTrack->GetITSNcls());}}
 
 } // AliAnalysisTaskMuPa::FillControlParticleHistograms(AliAODTrack *aTrack, const Int_t ba, const Int_t rs)
 
@@ -1516,8 +1623,9 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
   if(avtx->GetZ() < fVertexCuts[Z][0]) return kFALSE;
   if(avtx->GetZ() > fVertexCuts[Z][1]) return kFALSE;
 
-  // Magnetic field:
-  //if(TMath::Abs(aAOD->GetMagneticField())<0.001) return kFALSE; // TBI 20210513 add setter for this, then enable
+  // Remaining event cuts:
+  // TBI 20210518 magnetic field value
+
  } // if(aAOD)
 
  return kTRUE;
@@ -1571,6 +1679,32 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliAODTrack *aTrack)
  // DCA z:
  if(aTrack->ZAtDCA() < fDCACuts[1][0]) return kFALSE;
  if(aTrack->ZAtDCA() >= fDCACuts[1][1]) return kFALSE;
+
+ // Remaining:
+ if(aTrack->GetTPCNcls() < fParticleCuts[TPCNcls][0]) return kFALSE;
+ if(aTrack->GetTPCNcls() >= fParticleCuts[TPCNcls][1]) return kFALSE;
+ if(aTrack->GetTPCnclsS() < fParticleCuts[TPCnclsS][0]) return kFALSE;
+ if(aTrack->GetTPCnclsS() >= fParticleCuts[TPCnclsS][1]) return kFALSE;
+ if(TMath::Abs(aTrack->GetTPCnclsS())>0.)
+ {
+  if(aTrack->GetTPCNcls()/aTrack->GetTPCnclsS() < fParticleCuts[TPCnclsFractionShared][0]) return kFALSE;
+  if(aTrack->GetTPCNcls()/aTrack->GetTPCnclsS() >= fParticleCuts[TPCnclsFractionShared][1]) return kFALSE;
+ }
+ if(aTrack->GetTPCNCrossedRows() < fParticleCuts[TPCNCrossedRows][0]) return kFALSE;
+ if(aTrack->GetTPCNCrossedRows() >= fParticleCuts[TPCNCrossedRows][1]) return kFALSE;
+ if(aTrack->Chi2perNDF() < fParticleCuts[TPCChi2perNDF][0]) return kFALSE;
+ if(aTrack->Chi2perNDF() >= fParticleCuts[TPCChi2perNDF][1]) return kFALSE;
+ if(aTrack->GetTPCFoundFraction() < fParticleCuts[TPCFoundFraction][0]) return kFALSE;
+ if(aTrack->GetTPCFoundFraction() >= fParticleCuts[TPCFoundFraction][1]) return kFALSE;
+ if(aTrack->GetChi2TPCConstrainedVsGlobal() < fParticleCuts[Chi2TPCConstrainedVsGlobal][0]) return kFALSE;
+ if(aTrack->GetChi2TPCConstrainedVsGlobal() >= fParticleCuts[Chi2TPCConstrainedVsGlobal][1]) return kFALSE;
+ if(aTrack->GetITSNcls() < fParticleCuts[ITSNcls][0]) return kFALSE;
+ if(aTrack->GetITSNcls() >= fParticleCuts[ITSNcls][1]) return kFALSE;
+ if(TMath::Abs(aTrack->GetITSNcls())>0.)
+ {
+  if(aTrack->GetITSchi2()/aTrack->GetITSNcls() < fParticleCuts[ITSChi2perNDF][0]) return kFALSE;
+  if(aTrack->GetITSchi2()/aTrack->GetITSNcls() >= fParticleCuts[ITSChi2perNDF][1]) return kFALSE;
+ }
 
  return kTRUE;
 
