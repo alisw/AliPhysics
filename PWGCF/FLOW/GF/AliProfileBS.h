@@ -15,6 +15,7 @@ public:
   AliProfileBS(const char* name, const char* title, Int_t nbinsx, const Double_t* xbins);
   AliProfileBS(const char* name, const char* title, Int_t nbinsx, Double_t xlow, Double_t xup);
   TList *fListOfEntries;
+  void MergeBS(AliProfileBS *target);
   void InitializeSubsamples(Int_t nSub);
   void FillProfile(const Double_t &xv, const Double_t &yv, const Double_t &w, const Double_t &rn);
   void FillProfile(const Double_t &xv, const Double_t &yv, const Double_t &w);
@@ -22,6 +23,7 @@ public:
   void RebinMulti(Int_t nbins);
   void RebinMulti(Int_t nbins, Double_t *binedges);
   TH1 *getHist(Int_t ind=-1);
+  Int_t getNSubs() { return fListOfEntries->GetEntries(); };
   ClassDef(AliProfileBS,1);
 protected:
   TH1* getHistRebinned(TProfile *inpf); //Performs rebinning, if required, and returns a projection of profile
