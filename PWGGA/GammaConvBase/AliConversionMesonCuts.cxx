@@ -98,6 +98,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fFMaxOpanCut(NULL),
   fMaxR(180),
   fMinPt(0.),
+  fMaxPt(200.),
   fSelectionLow(0.0),
   fSelectionHigh(4),
   fSelectionNSigmaLow(999),
@@ -138,6 +139,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMassParamFunction(0),
   fDoLightOutput(0),
   fDoMinPtCut(kFALSE),
+  fDoMaxPtCut(kFALSE),
   fEnableMassCut(kFALSE),
   fAcceptMesonMass(kTRUE),
   fUseRotationMethodInBG(kFALSE),
@@ -218,6 +220,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fFMaxOpanCut(NULL),
   fMaxR(ref.fMaxR),
   fMinPt(ref.fMinPt),
+  fMaxPt(ref.fMaxPt),
   fSelectionLow(ref.fSelectionLow),
   fSelectionHigh(ref.fSelectionHigh),
   fSelectionNSigmaLow(ref.fSelectionNSigmaLow),
@@ -258,6 +261,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fMassParamFunction(ref.fMassParamFunction),
   fDoLightOutput(ref.fDoLightOutput),
   fDoMinPtCut(ref.fDoMinPtCut),
+  fDoMaxPtCut(ref.fDoMaxPtCut),
   fEnableMassCut(ref.fEnableMassCut),
   fAcceptMesonMass(ref.fAcceptMesonMass),
   fUseRotationMethodInBG(ref.fUseRotationMethodInBG),
@@ -495,6 +499,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent
 
     // min Pt Cut
     if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+    // Max Pt Cut
+    if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
     // Select only -> 2y decay channel
     if(fMCMother->GetNDaughters()!=2)return kFALSE;
@@ -537,6 +543,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
 
     // min Pt Cut
     if(fDoMinPtCut && (MCMother->Pt() < fMinPt)) return kFALSE;
+    // Max Pt Cut
+    if(fDoMaxPtCut && (MCMother->Pt() > fMaxPt)) return kFALSE;
 
     // Select only -> 2y decay channel
     if(MCMother->GetNDaughters()!=2)return kFALSE;
@@ -575,6 +583,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCAODESD(AliDalitzAODESDMC *fMCMot
 
         // min Pt Cut
         if(fDoMinPtCut && (fMCMother->PtG() < fMinPt)) return kFALSE;
+        // Max Pt Cut
+        if(fDoMaxPtCut && (fMCMother->PtG() > fMaxPt)) return kFALSE;
 
         // Select only -> 2y decay channel
         if(fMCMother->GetNDaughtersG()!=2)return kFALSE;
@@ -612,6 +622,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliM
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+  // Max Pt Cut
+  if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -671,6 +683,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+  // Max Pt Cut
+  if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -728,6 +742,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
 
     // min Pt Cut
     if(fDoMinPtCut && (fMCMother->PtG() < fMinPt)) return kFALSE;
+    // Max Pt Cut
+    if(fDoMaxPtCut && (fMCMother->PtG() > fMaxPt)) return kFALSE;
 
     // Select only -> Dalitz decay channel
     if( fMCMother->GetNDaughtersG() != 3 )return kFALSE;
@@ -782,6 +798,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+  // Max Pt Cut
+  if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -841,6 +859,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCEtaPiPlPiMiGamma(AliAODMCPart
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+  // Max Pt Cut
+  if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -899,6 +919,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiEta(TParticle *fMCMother
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+  // Max Pt Cut
+  if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
   // Select only -> pi+ pi- pi0
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -958,6 +980,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiPlPiMiEta(AliAODMCParticle 
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+  // Max Pt Cut
+  if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
   // Select only -> pi+ pi- pi0
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -1016,6 +1040,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+  // Max Pt Cut
+  if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
   // Select only -> pi+ pi- pi0
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -1076,6 +1102,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiPlPiMiPiZero(AliAODMCPartic
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+  // Max Pt Cut
+  if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
   // Select only -> pi+ pi- pi0
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -1131,6 +1159,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+  // Max Pt Cut
+  if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
   if(fMCMother->GetNDaughters()!=2) return kFALSE;
 
@@ -1179,6 +1209,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiZeroGamma(AliAODMCParticle 
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+  // Max Pt Cut
+  if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
   if(fMCMother->GetNDaughters()!=2) return kFALSE;
 
@@ -1281,6 +1313,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCE
 
     // min Pt Cut
     if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+    // Max Pt Cut
+    if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
     // Select only -> ChiC radiative (JPsi+gamma) decay channel
     if(fMCMother->GetNDaughters()!=2)return kFALSE;
@@ -1358,6 +1392,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCChiC(AliAODMCParticle *fMCMot
 
     // min Pt Cut
     if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+    // Max Pt Cut
+    if(fDoMaxPtCut && (fMCMother->Pt() > fMaxPt)) return kFALSE;
 
     // Select only -> ChiC radiative (JPsi+gamma) decay channel
     if(fMCMother->GetNDaughters()!=2)return kFALSE;
@@ -1433,6 +1469,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiCAODESD(AliDalitzAODESDMC* fM
 
         // min Pt Cut
         if(fDoMinPtCut && (fMCMother->PtG() < fMinPt)) return kFALSE;
+        // Max Pt Cut
+        if(fDoMaxPtCut && (fMCMother->PtG() > fMaxPt)) return kFALSE;
 
         // Select only -> ChiC radiative (JPsi+gamma) decay channel
         if(fMCMother->GetNDaughtersG()!=2)return kFALSE;
@@ -1629,6 +1667,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   //PtCut
   if(fDoMinPtCut){
       if(pi0->Pt()< fMinPt){
+          if(hist)hist->Fill(cutIndex, pi0->Pt());
+          return kFALSE;
+      }
+  }
+  if(fDoMaxPtCut){
+      if(pi0->Pt()> fMaxPt){
           if(hist)hist->Fill(cutIndex, pi0->Pt());
           return kFALSE;
       }
@@ -1874,6 +1918,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
         printf("\t Meson rejection window has been applied %3.3f > M_{gamma,gamma} > %3.3f\n\n", fSelectionLow, fSelectionHigh);
   }
   if(fDoMinPtCut) printf("\t pT_{min} > %3.4f\n", fMinPt);
+  if(fDoMaxPtCut) printf("\t pT_{Max} > %3.4f\n", fMaxPt);
   if (!fMinOpanPtDepCut) printf("\t theta_{open} > %3.4f\n", fMinOpanCutMeson);
   else printf("\t Min theta_{open} pT-dep cut active\n");
   if (!fMaxOpanPtDepCut) printf("\t %3.4f < theta_{open}\n", fMaxOpanCutMeson);
@@ -2057,16 +2102,25 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     fSingleDaughterMinE  = 9.0;
       break;
   case 23: //n
-    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
-    return kFALSE;
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 5.;
+    fMaxPt = 20.0;
+    fDoMaxPtCut = kTRUE;
     break;
   case 24: //o
-    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
-    return kFALSE;
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 10.;
+    fMaxPt = 20.0;
+    fDoMaxPtCut = kTRUE;
     break;
   case 25: //p
-    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
-    return kFALSE;
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 10.;
+    fMaxPt = 25.0;
+    fDoMaxPtCut = kTRUE;
     break;
     //continue normal pT cuts on meson
   case 26: //q
@@ -2076,6 +2130,42 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
   case 27: //r
       fMinPt = 14.0;
       fDoMinPtCut = kTRUE;
+      break;
+  case 28: //s
+      fMinPt = 0.;
+      fDoMinPtCut = kFALSE;
+      fMaxPt = 20.;
+      fDoMaxPtCut = kTRUE;
+      break;
+  case 29: //t
+      fMinPt = 12.0;
+      fDoMinPtCut = kTRUE;
+      fMaxPt = 20.;
+      fDoMaxPtCut = kTRUE;
+      break;
+  case 30: //u
+      fMinPt = 14.0;
+      fDoMinPtCut = kTRUE;
+      fMaxPt = 20.;
+      fDoMaxPtCut = kTRUE;
+      break;
+  case 31: //v
+      fMinPt = 0.;
+      fDoMinPtCut = kFALSE;
+      fMaxPt = 25.;
+      fDoMaxPtCut = kTRUE;
+      break;
+  case 32: //w
+      fMinPt = 12.0;
+      fDoMinPtCut = kTRUE;
+      fMaxPt = 25.;
+      fDoMaxPtCut = kTRUE;
+      break;
+  case 33: //x
+      fMinPt = 14.0;
+      fDoMinPtCut = kTRUE;
+      fMaxPt = 25.;
+      fDoMaxPtCut = kTRUE;
       break;
   default:
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;

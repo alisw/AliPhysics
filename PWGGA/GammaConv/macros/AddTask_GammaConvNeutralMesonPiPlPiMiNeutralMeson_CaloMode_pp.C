@@ -1140,6 +1140,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070a","0103103300000000","0453503000000000"); // INT7
   } else if(trainConfig == 1015)  { //EDC 13TeV MB, non pt dependent pi0 mass 4 (0.10-0.150)
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070a","0103103400000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1016)  { //EDC 13TeV MB, min/max pt cut n (min gamma 5gev, max pt 20gev)
+    cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070a","01031n3100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1017)  { //EDC 13TeV MB, min/max pt cut s (no min pt, max pt 20gev)
+    cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070a","01031s3100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1018)  { //EDC 13TeV MB, min/max pt cut v (no min pt, max pt 20gev)
+    cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070a","01031v3100000000","0453503000000000"); // INT7
 
     //-----
     //Trigger EG2: Primary Pion Variations
@@ -1188,6 +1194,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","0103103300000000","0453503000000000"); // INT7
   } else if(trainConfig == 1115)  { //EDC 13TeV MB, non pt dependent pi0 mass 4 (0.10-0.150)
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","0103103400000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1116)  { //EDC 13TeV MB, min/max pt cut o (min gamma 10gev, max pt 20gev)
+    cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","01031o3100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1117)  { //EDC 13TeV MB, min/max pt cut p (min gamma 10gev, max pt 25gev)
+    cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","01031p3100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1118)  { //EDC 13TeV MB, min/max pt cut s (no min pt, max pt 20gev)
+    cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","01031s3100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1119)  { //EDC 13TeV MB, min/max pt cut v (no min pt, max pt  25gev)
+    cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","01031v3100000000","0453503000000000"); // INT7
 
     //-----
     //Trigger EG1: Primary Pion Variations
