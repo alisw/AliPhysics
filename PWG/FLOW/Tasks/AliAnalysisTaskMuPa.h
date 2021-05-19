@@ -28,22 +28,25 @@
 // Global variables:
 const Int_t gCentralityEstimators = 7; // set here number of supported centrality estimators
 const Int_t gKinematicVariables = 5; // number of supported kinematic variables: [phi,pt,eta,e,charge]
-const Int_t gOtherEventHistograms = 3; // TBI
 const Int_t gFilterBits = 17; // number of filterbits to scan
+const Int_t gEventHistograms = 2; // total number of non-classified event histograms
+const Int_t gParticleHistograms = 9; // total number of non-classified particle histograms
 
 // enums:
+enum eBins {nBins,min,max};
 enum eCentralityEstimator { V0M = 0, CL0 = 1, CL1 = 2, TRK = 3, V0A = 4, V0B = 5, TKL = 6 };
 enum eXYZ { X = 0, Y = 1, Z = 2 };
 enum eBeforeAfter { BEFORE = 0, AFTER = 1 };
 enum eRecoSim { RECO = 0, SIM = 1 };
 enum eKinematics { PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4 };
 enum eDefaultColors { COLOR = kBlack, FILLCOLOR = kGray };
+enum eParticle { TPCNcls, TPCnclsS, TPCnclsFractionShared, TPCNCrossedRows, TPCChi2perNDF, TPCFoundFraction, Chi2TPCConstrainedVsGlobal, ITSNcls, ITSChi2perNDF };
+enum eEvent { MagneticField, PrimaryVertex };
 
 //================================================================================================================
 
 class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
- public:
-  
+ public: 
   AliAnalysisTaskMuPa();
   AliAnalysisTaskMuPa(const char *name);
   virtual ~AliAnalysisTaskMuPa(); 
@@ -161,12 +164,36 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fVertexCuts[xyz][0] = min;
    this->fVertexCuts[xyz][1] = max;
   }
+  void SetNContributorsBins(Int_t const nbins, Double_t min, Double_t max)
+  {
+   this->fNContributorsBins[0] = nbins;
+   this->fNContributorsBins[1] = min;
+   this->fNContributorsBins[2] = max;
+  };
   void SetNContributorsCuts(const Int_t min, const Int_t max)
   {
    this->fNContributorsCuts[0] = min;
    this->fNContributorsCuts[1] = max;
   }
 
+  // Remaining event distributions:
+  void SetEventBins(const char* type, const Double_t nbins, const Double_t min, const Double_t max)
+  {
+   Int_t var = -44;
+   if(TString(type).EqualTo("MagneticField")){var = MagneticField;} 
+   else if (TString(type).EqualTo("PrimaryVertex")){var = PrimaryVertex;}
+   this->fEventBins[var][0] = nbins;
+   this->fEventBins[var][1] = min;
+   this->fEventBins[var][2] = max;
+  }
+  void SetEventCuts(const char* type, const Double_t min, const Double_t max)
+  {
+   Int_t var = -44;
+   if(TString(type).EqualTo("MagneticField")){var = MagneticField;} 
+   else if (TString(type).EqualTo("PrimaryVertex")){var = PrimaryVertex;}
+   this->fEventCuts[var][0] = min;
+   this->fEventCuts[var][1] = max;
+  }
   void SetControlParticleHistogramsList(TList* const cphl) {this->fControlParticleHistogramsList = cphl;};
   TList* GetControlParticleHistogramsList() const {return this->fControlParticleHistogramsList;} 
   void SetFilterBit(Int_t fb) {this->fFilterBit = fb;};
@@ -219,6 +246,38 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    //this->fUseDCACuts[var] = kTRUE; TBI 20210517 most likely obsolete
   }
 
+  // Remaining particle distributions:
+  void SetParticleBins(const char* type, const Double_t nbins, const Double_t min, const Double_t max)
+  {
+   Int_t var = -44;
+   if(TString(type).EqualTo("TPCNcls")){var = TPCNcls;} 
+   else if (TString(type).EqualTo("TPCnclsS")){var = TPCnclsS;}
+   else if (TString(type).EqualTo("TPCnclsFractionShared")){var = TPCnclsFractionShared;}
+   else if (TString(type).EqualTo("TPCNCrossedRows")){var = TPCNCrossedRows;}
+   else if (TString(type).EqualTo("TPCChi2perNDF")){var = TPCChi2perNDF;}
+   else if (TString(type).EqualTo("TPCFoundFraction")){var = TPCFoundFraction;}
+   else if (TString(type).EqualTo("Chi2TPCConstrainedVsGlobal")){var = Chi2TPCConstrainedVsGlobal;}
+   else if (TString(type).EqualTo("ITSNcls")){var = ITSNcls;}
+   else if (TString(type).EqualTo("ITSChi2perNDF")){var = ITSChi2perNDF;}
+   this->fParticleBins[var][0] = nbins;
+   this->fParticleBins[var][1] = min;
+   this->fParticleBins[var][2] = max;
+  }
+  void SetParticleCuts(const char* type, const Double_t min, const Double_t max)
+  {
+   Int_t var = -44;
+   if(TString(type).EqualTo("TPCNcls")){var = TPCNcls;} 
+   else if (TString(type).EqualTo("TPCnclsS")){var = TPCnclsS;}
+   else if (TString(type).EqualTo("TPCnclsFractionShared")){var = TPCnclsFractionShared;}
+   else if (TString(type).EqualTo("TPCNCrossedRows")){var = TPCNCrossedRows;}
+   else if (TString(type).EqualTo("TPCChi2perNDF")){var = TPCChi2perNDF;}
+   else if (TString(type).EqualTo("TPCFoundFraction")){var = TPCFoundFraction;}
+   else if (TString(type).EqualTo("Chi2TPCConstrainedVsGlobal")){var = Chi2TPCConstrainedVsGlobal;}
+   else if (TString(type).EqualTo("ITSNcls")){var = ITSNcls;}
+   else if (TString(type).EqualTo("ITSChi2perNDF")){var = ITSChi2perNDF;}
+   this->fParticleCuts[var][0] = min;
+   this->fParticleCuts[var][1] = max;
+  }
   void SetCalculateQvector(Bool_t cqv) {this->fCalculateQvector = cqv;};
   Bool_t GetCalculateQvector() const {return this->fCalculateQvector;};
 
@@ -273,8 +332,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // 2) Control event histograms:  
   TList *fControlEventHistogramsList; // list to hold all control event histograms
   TProfile *fControlEventHistogramsPro; // keeps flags relevant for the control event histograms
-
-  // Multiplicity:
+  //    Multiplicity:
   Double_t fMultiplicity;        // this is my ebe multiplicity, i.e. sum of track weights used to calculate Q-vectors (see below also fSelectedTracks) 
   TH1D *fMultiplicityHist;       // this is distribution of my multiplicity
   Double_t fMultiplicityBins[3]; // [nBins,minCentrality,maxCentrality]
@@ -282,22 +340,24 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Int_t fSelectedTracks;         // this is counter of tracks used to calculate Q-vectors (see above also fMultiplicity) 
   TH1I *fSelectedTracksHist;     // this is distribution fSelectedTracks
   Int_t fSelectedTracksCuts[2];  // [min,max]
-
-  // Centrality:
+  //    Centrality:
   Double_t fCentrality;         // this is ebe centrality from default estimator
   TH1D *fCentralityHist[2];     //! centrality distribution from default estimator [before,after event cuts]
   Double_t fCentralityBins[3];  // [nBins,minCentrality,maxCentrality]
   TString fCentralityEstimator; // the default centrality estimator in this analysis, use e.g. task->SetCentralityEstimator("V0M")
   Double_t fCentralityCuts[2];  // [min,max]
-
-  // Vertex:
+  //    Vertex:
   TH1D *fVertexHist[2][2][3];  //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
   Double_t fVertexBins[3];     // [nBins,minVertex,maxVertex]
   Double_t fVertexCuts[3][2];  // [x,y,z][min,max] vertex components
-  Int_t fNContributorsCuts[2]; // [min,max]
+  TH1I *fNContributorsHist[2][2]; //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
+  Int_t fNContributorsBins[3];    // [nBins,min,max]
+  Int_t fNContributorsCuts[2];    // [min,max]
 
-  // Other: these objects and histograms for the time being are not separately classified:
-  TH1D *fOtherEventHistograms[2][gOtherEventHistograms]; //! [before,after event cuts][ type - see bookings ]
+  //    All remaining event histograms: 
+  TH1D *fEventHistograms[2][gEventHistograms]; //! [before,after event cuts][ type - see enum ]
+  Double_t fEventBins[gEventHistograms][3]; // [nBins,min,max]
+  Double_t fEventCuts[gEventHistograms][2]; // [type - see enum][min,max]
 
   // 3) Control particle histograms:  
   TList *fControlParticleHistogramsList; // list to hold all control histograms for particle distributions
@@ -314,6 +374,10 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Double_t fDCABins[2][3]; // [xy,z][nBins,min,max]
   Double_t fDCACuts[2][2]; // [xy,z][min,max]
   //Bool_t fUseDCACuts[3];   // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
+  //    All remaining particle histograms: 
+  TH1D *fParticleHist[2][2][gParticleHistograms]; //! distributions [before,after particle cuts][reco,sim][type - see enum]
+  Double_t fParticleBins[gParticleHistograms][3]; // [nBins,min,max]
+  Double_t fParticleCuts[gParticleHistograms][2]; // [type - see enum][min,max]
 
   // 4) Q-vectors:
   TList *fQvectorList;        // list to hold all Q-vector objects       
@@ -352,7 +416,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TString *fBailOutFile;           // in which file results will be bailed out after fMaxNumberOfEvents
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,1);
+  ClassDef(AliAnalysisTaskMuPa,2);
 
 };
 
