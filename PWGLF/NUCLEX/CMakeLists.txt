@@ -58,6 +58,7 @@ set(SRCS
   Exotica/LambdaN/AliAnalysisTaskLambdaNRun2.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNv0Bkg.cxx
+  Exotica/LambdaNN/AliAnalysisTaskLambdaNNRun2.cxx
   Exotica/Ps/AliAnalysisTaskPsEfficiency.cxx
   Exotica/dStar/AliAnalysisTaskdStar.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3Pi.cxx

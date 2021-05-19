@@ -20,10 +20,14 @@ public:
   void FillProfile(const Double_t &xv, const Double_t &yv, const Double_t &w);
   Long64_t Merge(TCollection *collist);
   void RebinMulti(Int_t nbins);
+  void RebinMulti(Int_t nbins, Double_t *binedges);
   TH1 *getHist(Int_t ind=-1);
   ClassDef(AliProfileBS,1);
 protected:
+  TH1* getHistRebinned(TProfile *inpf); //Performs rebinning, if required, and returns a projection of profile
   Bool_t fProfInitialized;
   Int_t fNSubs;
+  Int_t fMultiRebin; //! externaly set runtime, no need to store
+  Double_t *fMultiRebinEdges; //! externaly set runtime, no need to store
 };
 #endif

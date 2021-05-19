@@ -175,6 +175,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnStudyRCutInCone()             { fStudyRCutInCone = kTRUE ; }
   void         SwitchOffStudyRCutInCone()            { fStudyRCutInCone = kFALSE; }
   
+  void         SwitchOnEmbedPrimaryToUE()            { fEmbedUEInPrimMC = kTRUE ; }
+  void         SwitchOffEmbedPrimaryToUE()           { fEmbedUEInPrimMC = kFALSE; }
+
   void         SetNPtCutInCone(Int_t n)              { if(n < 19) fNPtCutsInCone = n ; }
   void         SetMinPtCutInConeAt(Int_t i,Float_t l){ if(i <= fNPtCutsInCone) fMinPtCutInCone[i] = l; }  
   void         SetMaxPtCutInConeAt(Int_t i,Float_t l){ if(i <= fNPtCutsInCone) fMaxPtCutInCone[i] = l; }
@@ -247,6 +250,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Int_t    fNumberMCParticleCases;                    ///< Number of histograms per MC particle type, maximum is fgkNmcPrimTypes
   
+  Int_t    fEmbedUEInPrimMC;                          ///< In case of embedding, activate the embedding of the generated MC particles into data
+
   Bool_t   fStudyPtCutInCone;                         ///<  Activate study of track/cluster min pT on sum of pT in cone
   Int_t    fNPtCutsInCone;                            ///<  Number of track/cluster min pT cut to test in cone for sum pT calculation.
   Float_t  fMinPtCutInCone[20];                       ///<  List of track/cluster min pT cut to test in cone for sum pT calculation.

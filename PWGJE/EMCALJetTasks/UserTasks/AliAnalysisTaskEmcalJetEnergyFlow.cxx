@@ -55,7 +55,7 @@ AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow(const char*
 AliAnalysisTaskEmcalJet(name, kTRUE),
 fHistManager(name) // ,fOutput{0}
 {
-	SetMakeGeneralHistograms(kFALSE);
+	SetMakeGeneralHistograms(kTRUE);
 //	DefineInput(0, TChain::Class());
 //	DefineOutput(1,TList::Class());
 
@@ -84,6 +84,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::UserCreateOutputObjects()
 
   TIter next(fHistManager.GetListOfHistograms());
   TObject* obj = 0;
+fOutput->SetUseScaling(kTRUE);
   while ((obj = next())) {
     fOutput->Add(obj);
   }

@@ -110,6 +110,12 @@ public:
   void SetMonitorEtaPhi(bool doMonitor) { fMonitorEtaPhi = doMonitor; }
 
   /**
+   * @brief Add monitoring histograms for transverse energy
+   * @param doMonitor If true histograms with transverse energy instead of energy are added
+   */
+  void SetMonitorET(bool doMonitor) { fMonitorET = doMonitor; }
+
+  /**
    * @brief Fill histograms weighted with the event cross section (MC only)
    * @param doUse If true the cross section is used as weight when filling the histograms
    */
@@ -249,7 +255,7 @@ protected:
    */
   void GetPatchBoundaries(AliEMCALTriggerPatchInfo &o, Double_t *boundaries) const;
 
-  void FillClusterHistograms(const TString &triggerclass, double energy, double eta, double phi, double clustertime, int ncell, int trgcluster, const TList *triggerpatches, int energycomp);
+  void FillClusterHistograms(const TString &triggerclass, double energy, double eT, double eta, double phi, double clustertime, int ncell, int trgcluster, const TList *triggerpatches, int energycomp);
 
   /**
    * @brief Check whether cluster is inside a trigger patch which has fired the trigger
@@ -274,6 +280,7 @@ protected:
   Bool_t                              fUseExclusiveTriggers;      ///< Include exclusive triggers (without lower threshold triggers)
   Bool_t                              fFillTriggerClusters;       ///< Fill trigger cluster histograms
   Bool_t                              fMonitorEtaPhi;             ///< Add dimensions for eta-phi in the THnSparses
+  Bool_t                              fMonitorET;                 ///< Fill histograms also for transverse energy
   Bool_t                              fFillXsecWeighted;          ///< Fill histograms cross-section weighted
   AliCutValueRange<double>            fClusterTimeRange;          ///< Selected range on cluster time
   std::vector<TriggerCluster_t>       fTriggerClusters;           //!<! Detected trigger clusters for event

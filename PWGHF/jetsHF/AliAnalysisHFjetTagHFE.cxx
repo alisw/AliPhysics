@@ -1297,7 +1297,10 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
   fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
 
-  if(idbHFEj)cout << "Run number = " << fAOD->GetRunNumber() << endl;
+   // MC array
+  fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+ 
+	if(idbHFEj)cout << "Run number = " << fAOD->GetRunNumber() << endl;
  
   Float_t lPercentile = 300; 
   if(fAOD)fMultSelection = (AliMultSelection * ) fAOD->FindListObject("MultSelection");
@@ -1379,8 +1382,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	      fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
 	      //============Tracklet correction=================
-       
-				CountNch();
+        if(fMCarray)CountNch();
 				Double_t correctednAcc   = nAcc;
 				Double_t WeightNtrkl = -1.;
 				Double_t WeightZvtx = -1.;
@@ -1427,8 +1429,6 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
   fCaloClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
   //cout << "check cluster ..." << endl;
 
-   // MC array
-   fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
    //cout << "check fMCarray ..." << endl;
    
 
@@ -2293,11 +2293,12 @@ Bool_t AliAnalysisHFjetTagHFE::tagHFjet(AliEmcalJet* jetC, double *epT, int MCpi
  return HFjetTag;
 }
 
-Int_t AliAnalysisHFjetTagHFE::CountNch()
+void AliAnalysisHFjetTagHFE::CountNch()
 {
 		Nch = 0;
 		for(int imc=0; imc<fMCarray->GetEntriesFast(); imc++)
-		{ 
+		{  
+			 fMCparticle = (AliAODMCParticle*)fMCarray->At(imc); 
 		   Int_t chargetrue = fMCparticle->Charge();
 			 Double_t pdgEta = fMCparticle->Eta();
 			 Bool_t isPhysPrim = fMCparticle->IsPhysicalPrimary();
@@ -2311,7 +2312,6 @@ Int_t AliAnalysisHFjetTagHFE::CountNch()
 						}
 				}
 		}
-		return Nch;
 }
 
 

@@ -74,7 +74,8 @@ public:
         //Systematic ============================
 	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
 			Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
-    virtual void  SetTrackCutsType(bool isTPCOnlyTrkCuts) { fSetTPConlyTrkCuts = isTPCOnlyTrkCuts; }
+    virtual void  SetTrackCutsTypeTPC(bool isTPCOnlyTrkCuts) { fSetTPConlyTrkCuts = isTPCOnlyTrkCuts; }
+    virtual void  SetTrackCutsType2015(bool is2015TrkCuts) { fSet2015TrkCuts = is2015TrkCuts; }
     virtual void  SetHybridTracks(bool isSelectHybrid) { fSelectHybridTracks = isSelectHybrid; }
     AliESDtrack*  SetHybridTrackCuts(AliESDtrack *track, const bool fill1, const bool fill2, const bool fill3);
 protected:
@@ -91,6 +92,7 @@ private:
 	Bool_t       fIsMCclosure;
 	Bool_t       fIspPb;
     Bool_t fSetTPConlyTrkCuts;
+    Bool_t fSet2015TrkCuts;
     Bool_t fSelectHybridTracks;
 	// Systematic------------------------------------
 	Bool_t       fTPCclustersVar1;
@@ -112,10 +114,12 @@ private:
 	Bool_t       fSPDreqVar1;
 	// Systematic------------------------------------
     AliPIDResponse* fPIDResponse;
-    AliESDtrackCuts* fGeometricalCut;
     AliAnalysisFilter* fTrackFilter;
+    AliESDtrackCuts* fGeometricalCut;
     AliESDtrackCuts*   fHybridTrackCuts1;
     AliESDtrackCuts*   fHybridTrackCuts2;
+    AliAnalysisFilter*  fTrackFilterwoDCA;
+    AliAnalysisFilter*  fLeadingTrackFilter;
 	TList*                  fOutputList;                                      //! output list in the root file
 	Double_t fEtaCut;
 	Double_t fPtMin;	

@@ -59,6 +59,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void ProduceALICEPublished_CovProd(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void ProduceFBSpectra(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void ProduceEfficiencies(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void FilldPtRecovsTrue(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
@@ -120,22 +121,27 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Double_t fEtaV2Sep; //Please don't add multiple wagons with dif. values; implement subevents in the code instead. This would save TONS of CPU time.
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
+  TList *fMPTMCTrueList;  //!
   TList *fMPTList; //!
   TProfile **fmPT; //!
+  TProfile **fmPTMCTrue; //!
   TProfile *fMptClosure; //!
   TH1D *fMultiDist;
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
   TH2D* fDCAzVsPt;  //!
   TH2D* fDCAxyVsPt; //!
+  TH1D* fDCAxy2011vs2010; //!
   TH1D* fDCAxy; //!
   TH1D* fdPt; //!
+  TH2D* fdPtRecoVsTrue; //!
   TProfile *fNchVsMulti;
   TProfile *fNchInBins;
   TList *fptVarList;
   AliProfileBS **fptvar; //!
   TList *fCovList;
   TList *fV2dPtList;
+  TList *fRecoVsTrueList;
   AliProfileBS **fCovariance; //!
   Bool_t fmptSet;
   UInt_t fTriggerType;

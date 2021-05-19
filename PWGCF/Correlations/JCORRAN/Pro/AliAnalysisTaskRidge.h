@@ -176,6 +176,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 	AliDirList*				fOutput=nullptr; //!
 
 	TFile*				fefficiencyFile= TFile::Open("EffOut.root","read"); //
+	TFile*                          fefficiencyFilepPb= TFile::Open("EffOutpPb.root","read"); //
 	TFile*				fefficiency3DFile=nullptr; //
 
         AliTriggerAnalysis*             fTrigger=nullptr; //!

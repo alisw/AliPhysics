@@ -226,7 +226,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fPhiCandidate->Branch       ("InvMass",         &fInvMass,          "fInvMass[fnPhi]/F");
     fPhiCandidate->Branch       ("iKaon",           &fiKaon,            "fiKaon[fnPhi]/b");
     fPhiCandidate->Branch       ("jKaon",           &fjKaon,            "fjKaon[fnPhi]/b");
-    if ( kMCbool )  fPhiCandidate->Branch   ("Nature",          &fNature,           "fNature[fnPhi]/b");
+    if ( kMCbool )  fPhiCandidate->Branch   ("TrueInvMass",          &fTrueInvMass,           "fTrueInvMass[fnPhi]/F");
     
     if ( kPhibool )                 PostData(3, fPhiCandidate);
     
@@ -339,12 +339,19 @@ void        AliAnalysisTaskPhiCount::UserExec( Option_t* )                      
             fInvMass[fnPhi]     =   (fPhi).Mag();
             fiKaon[fnPhi]       =   iKaon;
             fjKaon[fnPhi]       =   jKaon;
-            fNature[fnPhi]      =   0;
-            if ( kMCbool && fIsCandidateTruPhi(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(fKaonLabels[iKaon])),static_cast<AliAODMCParticle*>(AODMCTrackArray->At(fKaonLabels[jKaon]))) )
-            {
-                fNature[fnPhi]          =   1;
-                fPhiRecParticles[fnPhiRec] =   static_cast<AliAODMCParticle*>(AODMCTrackArray->At(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(fKaonLabels[iKaon]))->GetMother()));
-                fnPhiRec++;
+            fTrueInvMass[fnPhi] =   0;
+            if ( kMCbool )  {
+                auto    fTrue_iKaon =   static_cast<AliAODMCParticle*>(AODMCTrackArray->At(fKaonLabels[iKaon]));
+                auto    fTrue_jKaon =   static_cast<AliAODMCParticle*>(AODMCTrackArray->At(fKaonLabels[jKaon]));
+                if ( fIsCandidateTruPhi(fTrue_iKaon,fTrue_jKaon) ) {
+                    TLorentzVector  fTrue_iKaon_Vector, fTrue_jKaon_Vector;
+                    fTrue_iKaon->Momentum(fTrue_iKaon_Vector);
+                    fTrue_jKaon->Momentum(fTrue_jKaon_Vector);
+                    auto    fTrue_Phi_Vector    =   fTrue_iKaon_Vector + fTrue_jKaon_Vector;
+                    fTrueInvMass[fnPhi]         =   fTrue_Phi_Vector.Mag();
+                    fPhiRecParticles[fnPhiRec]  =   static_cast<AliAODMCParticle*>(AODMCTrackArray->At(fTrue_iKaon->GetMother()));
+                    fnPhiRec++;
+                }
             }
             fnPhi++;
         }
@@ -939,9 +946,9 @@ void        AliAnalysisTaskPhiCount::fStoreTruePhi ( Int_t iMaskBit )           
     {
         AliAODMCParticle* fPhiTru = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(iTrack));
         
-        fCheckINELgt0( fPhiTru );
-        
         if ( !fIsPhi( fPhiTru ) ) continue;
+        
+        fCheckINELgt0( fPhiTru );
         
         // Kinematics
         fPhiTruPx[fnPhiTru]        =   fPhiTru->Px();

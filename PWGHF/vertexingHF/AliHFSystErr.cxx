@@ -453,11 +453,19 @@ void AliHFSystErr::Init(Int_t decay){
       else if (fCollisionType==1) {
         if (fRunNumber == 18 || fRunNumber == 2018){
           if (fCentralityClass=="010"){
-            if(fIsBDTAnalysis)
-              InitDstoKKpi2018PbPb010BDT();
-            else
-              InitDstoKKpi2018PbPb010();
-          } 
+            if(!fIsDataDrivenFDAnalysis) {
+              if(fIsBDTAnalysis)
+                InitDstoKKpi2018PbPb010BDT();
+              else
+                InitDstoKKpi2018PbPb010();
+            }
+            else{
+              if(fIsBDTAnalysis)
+                InitNonPromptDstoKKpi2018PbPb5TeV010ML();
+              else
+                AliFatal("Not yet implemented"); 
+            }
+          }
           else if (fCentralityClass=="3050"){
             if(fIsBDTAnalysis)
               InitDstoKKpi2018PbPb3050BDT();
@@ -3078,6 +3086,72 @@ void AliHFSystErr::InitNonPromptDstoKKpi2017pp5TeVML() {
   // Correlation between raw yield and FD syst. unc.
   fRawYieldFDCorr = new TH1F("fRawYieldFDCorr","fRawYieldFDCorr",12,0,12);
   for(Int_t i=1;i<=12;i++) fRawYieldFDCorr->SetBinContent(i,0.688);
+
+  return;
+}
+
+void AliHFSystErr::InitNonPromptDstoKKpi2018PbPb5TeV010ML(){
+  //
+  // Non-prompt Ds systematics in MB PbPb 5.02 TeV (2018) with BDT multi-class selections
+  // Ds --> K K pi
+  // Responsible: S. Politanò
+
+  AliInfo("Settings for Non-prompt Ds --> K K pi, MB PbPb collisions at 5.02 TeV - 2018 runs (LHC18qr) with BDT multi-class selections");
+  SetNameTitle("AliHFSystErr","SystErrNonPromptDstoKKpi2018PbPb010ML");
+
+  Double_t xbins[8] = {2., 4., 6., 8., 12., 16., 24., 36.};
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm", 7, xbins);
+  fNorm->SetBinContent(1, 0.00); 
+  for(Int_t i = 2; i <= 7; i++) fNorm->SetBinContent(i, 0.021); // from V0
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR", 7, xbins);
+  fBR->SetBinContent(1, 0.00);
+  for(Int_t i = 2; i <= 7; i++) fBR->SetBinContent(i, 0.036); // PDG 2020: BR = 2.24 +/- 0.08
+
+  // Tracking efficiency 
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff", 7, xbins);
+  fTrackingEff->SetBinContent(1, 0.00); // [2-4]
+  fTrackingEff->SetBinContent(2, 0.13); // [4-6]
+  fTrackingEff->SetBinContent(3, 0.13); // [6-8]
+  fTrackingEff->SetBinContent(4, 0.13); // [8-12]
+  fTrackingEff->SetBinContent(5, 0.12); // [12-16]
+  fTrackingEff->SetBinContent(6, 0.10); // [16-24]
+  fTrackingEff->SetBinContent(7, 0.08); // [24-36]
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield", 7, xbins);
+  fRawYield->SetBinContent(1, 0.00); // [2-4]
+  for(Int_t i = 2; i <= 6; i++) fRawYield->SetBinContent(i, 0.05); // [4-6] - [16-24]
+  fRawYield->SetBinContent(7, 0.10); // [24-36]
+
+  // Cuts efficiency
+  fCutsEff = new TH1F("fCutsEff","fCutsEff", 7, xbins);
+  fCutsEff->SetBinContent(1, 0.00); // [2-4]
+  fCutsEff->SetBinContent(2, 0.08); // [4-6]
+  for(Int_t i = 3; i <= 7; i++) fCutsEff->SetBinContent(i, 0.05); // [6-8] - [24-36]
+
+  // PID efficiency (from prompt analysis)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff", 7, xbins);
+  for(Int_t i = 1; i <= 7; i++) fPIDEff->SetBinContent(i, 0.00); // [2-4] - [24-36]
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape", 7, xbins);
+  fMCPtShape->SetBinContent(1, 0.00); // [2-4]
+  fMCPtShape->SetBinContent(2, 0.10); // [4-6]
+  fMCPtShape->SetBinContent(3, 0.08); // [6-8]
+  fMCPtShape->SetBinContent(4, 0.08); // [8-12]
+  fMCPtShape->SetBinContent(5, 0.02); // [12-16]
+  fMCPtShape->SetBinContent(6, 0.02); // [16-24]
+  fMCPtShape->SetBinContent(7, 0.02); // [24-36]
+
+  // FD
+  fDataDrivenFD = new TH1F("fDataDrivenFD","fDataDrivenFD", 7, xbins);
+  fDataDrivenFD->SetBinContent(1, 0.00); // [2-4]
+  for(Int_t i = 2; i <= 6; i++) fPIDEff->SetBinContent(i, 0.06); // [4-6] - [16-24]
+  fDataDrivenFD->SetBinContent(7, 0.12); // [24-36]
 
   return;
 }
@@ -8385,10 +8459,10 @@ void AliHFSystErr::InitLctopKpi20161718pp13TeVFineBins() {
 
   // topological selection
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
-  fCutsEff->SetBinContent(1,0.15);//1-2
-  for(Int_t i=2;i<=2;i++) fCutsEff->SetBinContent(i,0.15); // 1-2
-  for(Int_t i=3;i<=5;i++) fCutsEff->SetBinContent(i,0.13); // 2-3
-  for(Int_t i=6;i<=24;i++) fCutsEff->SetBinContent(i,0.08); // from 3-4
+  fCutsEff->SetBinContent(1,0.10);//1-2
+  for(Int_t i=2;i<=2;i++) fCutsEff->SetBinContent(i,0.10); // 1-2
+  for(Int_t i=3;i<=4;i++) fCutsEff->SetBinContent(i,0.10); // 2-4
+  for(Int_t i=5;i<=24;i++) fCutsEff->SetBinContent(i,0.05); // from 3-4
 
   // PID efficiency (variation of Bayes PID criterion, 5% everywhere confirmed from fine-binning analysis)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
@@ -10563,7 +10637,7 @@ void AliHFSystErr::InitD0toKpi2018PbPb010LowPtAn(){
   //   2018 Pb-Pb sample at 5 TeV, centrality 0-10%
   //
 
-  AliInfo(" Settings for D0 --> K pi, 0-10% Pb-Pb collisions at 5 TeV, analysis without topological cuts - 0.5 GeV bins");
+  AliInfo(" Settings for D0 --> K pi, 0-10% Pb-Pb collisions at 5 TeV, analysis without topological cuts - 1 GeV bins");
   SetNameTitle("AliHFSystErr","SystErrD0toKpi2018PbPb010LowPtAn");
 
   // Normalization
@@ -10588,18 +10662,19 @@ void AliHFSystErr::InitD0toKpi2018PbPb010LowPtAn(){
   for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,0.075); //10-12
   for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,0.070); //12-16
 
-  // Raw yield extraction
+  // Raw yield extraction (pass3, final results)
   fRawYield = new TH1F("fRawYield","fRawYield",32,0,16);
-  for(Int_t i=1;i<=2;i++) fRawYield->SetBinContent(i,0.08); //0-1
-  fRawYield->SetBinContent(3,0.09); //1-1.5
-  fRawYield->SetBinContent(4,0.10); //1.5-2
-  for(Int_t i=5;i<=10;i++) fRawYield->SetBinContent(i,0.08); //2-5
-  for(Int_t i=10;i<=24;i++) fRawYield->SetBinContent(i,0.10); //5-12
+  for(Int_t i=1;i<=2;i++) fRawYield->SetBinContent(i,0.09); //0-1
+  for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,0.08); //1-2
+  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.06); //2-3
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.07); //3-6
+  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.08); //6-8
+  for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.11); //8-12
   for(Int_t i=25;i<=32;i++) fRawYield->SetBinContent(i,0.20); //12-16
 
   // Cuts efficiency 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",32,0,16);
-  for(Int_t i=1;i<=32;i++) fCutsEff->SetBinContent(i,0.025); //2.5% on geometrical length cut
+  for(Int_t i=1;i<=32;i++) fCutsEff->SetBinContent(i,0.); // 2.5% on geometrical length cut (no longer needed in pass3)
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",32,0,16);
@@ -10622,7 +10697,7 @@ void AliHFSystErr::InitD0toKpi2018PbPb3050LowPtAn(){
   //   2018 Pb-Pb sample at 5 TeV, centrality 30-50%
   //
 
-  AliInfo(" Settings for D0 --> K pi, 30510% Pb-Pb collisions at 5 TeV, analysis without topological cuts - 0.5 GeV bins");
+  AliInfo(" Settings for D0 --> K pi, 30-50% Pb-Pb collisions at 5 TeV, analysis without topological cuts - 1 GeV bins");
   SetNameTitle("AliHFSystErr","SystErrD0toKpi2018PbPb3050LowPtAn");
 
   // Normalization
@@ -10647,18 +10722,18 @@ void AliHFSystErr::InitD0toKpi2018PbPb3050LowPtAn(){
   for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,0.075); //10-12
   for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,0.070); //12-16
 
-  // Raw yield extraction
+  // Raw yield extraction (pass3, final results)
   fRawYield = new TH1F("fRawYield","fRawYield",32,0,16);
-  for(Int_t i=1;i<=2;i++) fRawYield->SetBinContent(i,0.10); //0-1
-  fRawYield->SetBinContent(3,0.09); //1-1.5
-  fRawYield->SetBinContent(4,0.10); //1.5-2
-  for(Int_t i=5;i<=10;i++) fRawYield->SetBinContent(i,0.08); //2-5
-  for(Int_t i=10;i<=24;i++) fRawYield->SetBinContent(i,0.10); //5-12
+  for(Int_t i=1;i<=2;i++) fRawYield->SetBinContent(i,0.11); //0-1
+  for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,0.08); //1-2
+  for(Int_t i=5;i<=14;i++) fRawYield->SetBinContent(i,0.07); //2-7
+  for(Int_t i=15;i<=24;i++) fRawYield->SetBinContent(i,0.08); //7-12
   for(Int_t i=25;i<=32;i++) fRawYield->SetBinContent(i,0.20); //12-16
 
   // Cuts efficiency 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",32,0,16);
-  for(Int_t i=1;i<=32;i++) fCutsEff->SetBinContent(i,0.025); //2.5% on geometrical length cut
+  for(Int_t i=1;i<=32;i++) fCutsEff->SetBinContent(i,0.); // 2.5% on geometrical length cut (no longer needed in pass3)
+
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",32,0,16);

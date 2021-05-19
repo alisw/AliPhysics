@@ -658,37 +658,7 @@ fTreeCascVarMagneticField(0),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
-fRecPointRadii(0),
 
-fRecPointDz(0),
-fRecPointDxy(0),
-fRecPointD(0),
-fRecPoint2D(0),
-fRecPointDzAssoc(0),
-fRecPointDxyAssoc(0),
-fRecPointDAssoc(0),
-fRecPoint2DAssoc(0),
-
-fRecPointOuterDz(0),
-fRecPointOuterDxy(0),
-fRecPointOuterD(0),
-fRecPointOuter2D(0),
-fRecPointOuterDzAssoc(0),
-fRecPointOuterDxyAssoc(0),
-fRecPointOuterDAssoc(0),
-fRecPointOuter2DAssoc(0),
-
-fRecPointPosition(0),
-fRecPointNz(0),
-fRecPointNy(0),
-fRecPointQ(0),
-fRecPointNpixels(0),
-fRecPointNzAssoc(0),
-fRecPointNyAssoc(0),
-fRecPointQAssoc(0),
-fRecPointNpixelsAssoc(0),
-fHitMapLayer1(0),
-fHitMapLayer2(0),
 //V0s
 fHistGeneratedPtVsYVsCentralityK0Short(0),
 fHistGeneratedPtVsYVsCentralityLambda(0),
@@ -1238,38 +1208,6 @@ fTreeCascVarMagneticField(0),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
-fRecPointRadii(0),
-fRecPointDz(0),
-fRecPointDxy(0),
-fRecPointD(0),
-fRecPoint2D(0),
-fRecPointDzAssoc(0),
-fRecPointDxyAssoc(0),
-fRecPointDAssoc(0),
-fRecPoint2DAssoc(0),
-
-fRecPointOuterDz(0),
-fRecPointOuterDxy(0),
-fRecPointOuterD(0),
-fRecPointOuter2D(0),
-fRecPointOuterDzAssoc(0),
-fRecPointOuterDxyAssoc(0),
-fRecPointOuterDAssoc(0),
-fRecPointOuter2DAssoc(0),
-
-fRecPointPosition(0),
-fRecPointNz(0),
-fRecPointNy(0),
-fRecPointQ(0),
-fRecPointNpixels(0),
-fRecPointNzAssoc(0),
-fRecPointNyAssoc(0),
-fRecPointQAssoc(0),
-fRecPointNpixelsAssoc(0),
-fRecPointNyNz(0),
-fRecPointNyNzAssoc(0),
-fHitMapLayer1(0),
-fHitMapLayer2(0),
 //V0s
 fHistGeneratedPtVsYVsCentralityK0Short(0),
 fHistGeneratedPtVsYVsCentralityLambda(0),
@@ -1970,182 +1908,51 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     fListHist->Add(fHistCentrality);
   }
   
-  if(! fHistGeneratedPtVsYVsCentralityK0Short ) {
+    if(! fHistGeneratedPtVsYVsCentralityK0Short ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityK0Short = new TH3D( "fHistGeneratedPtVsYVsCentralityK0Short", ";pT;y;centrality",250,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityK0Short = new TH3D( "fHistGeneratedPtVsYVsCentralityK0Short", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityK0Short);
   }
   if(! fHistGeneratedPtVsYVsCentralityLambda ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityLambda", ";pT;y;centrality",250,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityLambda", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityLambda);
   }
   if(! fHistGeneratedPtVsYVsCentralityAntiLambda ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityAntiLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityAntiLambda", ";pT;y;centrality",250,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityAntiLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityAntiLambda", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityAntiLambda);
   }
   if(! fHistGeneratedPtVsYVsCentralityXiMinus ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityXiMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiMinus", ";pT;y;centrality",250,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityXiMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiMinus", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityXiMinus);
   }
   if(! fHistGeneratedPtVsYVsCentralityXiPlus ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityXiPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiPlus", ";pT;y;centrality",250,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityXiPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiPlus", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityXiPlus);
   }
   if(! fHistGeneratedPtVsYVsCentralityOmegaMinus ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityOmegaMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaMinus", ";pT;y;centrality",250,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityOmegaMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaMinus", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaMinus);
   }
   if(! fHistGeneratedPtVsYVsCentralityOmegaPlus ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityOmegaPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaPlus", ";pT;y;centrality",250,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityOmegaPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaPlus", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaPlus);
   }
   
   if(! fHistGeneratedPtVsYVsCentralityHypertriton ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityHypertriton = new TH3D( "fHistGeneratedPtVsYVsCentralityHypertriton", ";pT;y;centrality",250,0,25,4,-1.0,1.0,10,0,100);
+    fHistGeneratedPtVsYVsCentralityHypertriton = new TH3D( "fHistGeneratedPtVsYVsCentralityHypertriton", ";pT;y;centrality",2500,0,25,4,-1.0,1.0,10,0,100);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityHypertriton);
   }
   if(! fHistGeneratedPtVsYVsCentralityAntihypertriton ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityAntihypertriton = new TH3D( "fHistGeneratedPtVsYVsCentralityAntihypertriton", ";pT;y;centrality",250,0,25,4,-1.0,1.0,10,0,100);
+    fHistGeneratedPtVsYVsCentralityAntihypertriton = new TH3D( "fHistGeneratedPtVsYVsCentralityAntihypertriton", ";pT;y;centrality",2500,0,25,4,-1.0,1.0,10,0,100);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityAntihypertriton);
-  }
-  
-  if(!fRecPointRadii){
-    fRecPointRadii = new TH1D( "fRecPointRadii", "",500,0,50);
-    fListHist->Add(fRecPointRadii);
-  }
-  
-  //Layer 1 Information
-  if(!fRecPointDz){
-    fRecPointDz = new TH1D( "fRecPointDz", "",2000,0,50);
-    fListHist->Add(fRecPointDz);
-  }
-  if(!fRecPointDxy){
-    fRecPointDxy = new TH1D( "fRecPointDxy", "",2000,0,50);
-    fListHist->Add(fRecPointDxy);
-  }
-  if(!fRecPointD){
-    fRecPointD = new TH1D( "fRecPointD", "",2000,0,50);
-    fListHist->Add(fRecPointD);
-  }
-  if(!fRecPoint2D){
-    fRecPoint2D = new TH2D("fRecPoint2D", "", 200,0,20, 200,0,20);
-    fListHist->Add(fRecPointOuter2D);
-  }
-  if(!fRecPointDzAssoc){
-    fRecPointDzAssoc = new TH1D( "fRecPointDzAssoc", "",2000,0,50);
-    fListHist->Add(fRecPointDzAssoc);
-  }
-  if(!fRecPointDxyAssoc){
-    fRecPointDxyAssoc = new TH1D( "fRecPointDxyAssoc", "",2000,0,50);
-    fListHist->Add(fRecPointDxyAssoc);
-  }
-  if(!fRecPointDAssoc){
-    fRecPointDAssoc = new TH1D( "fRecPointDAssoc", "",2000,0,50);
-    fListHist->Add(fRecPointDAssoc);
-  }
-  if(!fRecPoint2DAssoc){
-    fRecPoint2DAssoc = new TH2D("fRecPoint2DAssoc", "", 200,0,20, 200,0,20);
-    fListHist->Add(fRecPoint2DAssoc);
-  }
-  
-  
-  //Layer 2 Information
-  if(!fRecPointOuterDz){
-    fRecPointOuterDz = new TH1D( "fRecPointOuterDz", "",2000,0,50);
-    fListHist->Add(fRecPointOuterDz);
-  }
-  if(!fRecPointOuterDxy){
-    fRecPointOuterDxy = new TH1D( "fRecPointOuterDxy", "",2000,0,50);
-    fListHist->Add(fRecPointOuterDxy);
-  }
-  if(!fRecPointOuterD){
-    fRecPointOuterD = new TH1D( "fRecPointOuterD", "",2000,0,50);
-    fListHist->Add(fRecPointOuterD);
-  }
-  if(!fRecPointOuter2D){
-    fRecPointOuter2D = new TH2D("fRecPointOuter2D", "", 200,0,20, 200,0,20);
-    fListHist->Add(fRecPointOuter2D);
-  }
-  if(!fRecPointOuterDzAssoc){
-    fRecPointOuterDzAssoc = new TH1D( "fRecPointOuterDzAssoc", "",2000,0,50);
-    fListHist->Add(fRecPointOuterDzAssoc);
-  }
-  if(!fRecPointOuterDxyAssoc){
-    fRecPointOuterDxyAssoc = new TH1D( "fRecPointOuterDxyAssoc", "",2000,0,50);
-    fListHist->Add(fRecPointOuterDxyAssoc);
-  }
-  if(!fRecPointOuterDAssoc){
-    fRecPointOuterDAssoc = new TH1D( "fRecPointOuterDAssoc", "",2000,0,50);
-    fListHist->Add(fRecPointOuterDAssoc);
-  }
-  if(!fRecPointOuter2DAssoc){
-    fRecPointOuter2DAssoc = new TH2D("fRecPointOuter2DAssoc", "", 200,0,20, 200,0,20);
-    fListHist->Add(fRecPointOuter2DAssoc);
-  }
-  
-  if(!fRecPointPosition){
-    fRecPointPosition = new TH2D("fRecPointPosition", "", 800,-20,20, 800,-20,20);
-    fListHist->Add(fRecPointPosition);
-  }
-  
-  
-  if(!fRecPointNy){
-    fRecPointNy = new TH1D("fRecPointNy", "", 15,0,15);
-    fListHist->Add(fRecPointNy);
-  }
-  if(!fRecPointNz){
-    fRecPointNz = new TH1D("fRecPointNz", "", 15,0,15);
-    fListHist->Add(fRecPointNz);
-  }
-  if(!fRecPointNpixels){
-    fRecPointNpixels = new TH1D("fRecPointNpixels", "", 15,0,15);
-    fListHist->Add(fRecPointNpixels);
-  }
-  if(!fRecPointQ){
-    fRecPointQ = new TH1D("fRecPointQ", "", 30,-15,15);
-    fListHist->Add(fRecPointQ);
-  }
-  if(!fRecPointNyAssoc){
-    fRecPointNyAssoc = new TH1D("fRecPointNyAssoc", "", 15,0,15);
-    fListHist->Add(fRecPointNyAssoc);
-  }
-  if(!fRecPointNzAssoc){
-    fRecPointNzAssoc = new TH1D("fRecPointNzAssoc", "", 15,0,15);
-    fListHist->Add(fRecPointNzAssoc);
-  }
-  if(!fRecPointNpixelsAssoc){
-    fRecPointNpixelsAssoc = new TH1D("fRecPointNpixelsAssoc", "", 15,0,15);
-    fListHist->Add(fRecPointNpixelsAssoc);
-  }
-  if(!fRecPointQAssoc){
-    fRecPointQAssoc = new TH1D("fRecPointQAssoc", "", 30,-15,15);
-    fListHist->Add(fRecPointQAssoc);
-  }
-  
-  if(!fRecPointNyNz){
-    fRecPointNyNz = new TH2D("fRecPointNyNz", "", 10,0,10, 10,0,10);
-    fListHist->Add(fRecPointNyNz);
-  }
-  if(!fRecPointNyNzAssoc){
-    fRecPointNyNzAssoc = new TH2D("fRecPointNyNzAssoc", "", 10,0,10, 10,0,10);
-    fListHist->Add(fRecPointNyNzAssoc);
-  }
-  
-  if(!fHitMapLayer1){
-    fHitMapLayer1 = new TH2D("fHitMapLayer1", "", 200,-TMath::Pi(),+TMath::Pi(), 200, -100,100);
-    fListHist->Add(fHitMapLayer1);
-  }
-  if(!fHitMapLayer2){
-    fHitMapLayer2 = new TH2D("fHitMapLayer2", "", 200,-TMath::Pi(),+TMath::Pi(), 200, -100,100);
-    fListHist->Add(fHitMapLayer2);
   }
   
   //Superlight mode output
@@ -5102,237 +4909,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     fTreeCascVarIsValidAddedITSPointLayer2 = kFALSE;
     fTreeCascVarAddedHitLayer1 = kFALSE;
     fTreeCascVarAddedHitLayer2 = kFALSE;
-    if(fkDoStrangenessTracking){
-      if( fkAddPVToRecPointFinder ){
-        // add primary vertex information to hCascTrajRPFinder
-        //classical Proton-proton like selection
-        //declared at top of task
-        //const AliESDVertex *lPrimaryBestESDVtx     = lESDevent->GetPrimaryVertex();
-        //Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
-        Double_t pvcovmat[6];
-        lPrimaryBestESDVtx->GetCovMatrix(pvcovmat);
-        //Double32_t fCovXX,fCovXY,fCovYY,fCovXZ,fCovYZ,fCovZZ;  // vertex covariance matrix
-        double alpha = hCascTrajRPFinder->GetAlpha();
-        double xyz1[3]={ TMath::Cos(alpha)*lBestPrimaryVtxPos[0]+TMath::Sin(alpha)*lBestPrimaryVtxPos[1],
-          -TMath::Sin(alpha)*lBestPrimaryVtxPos[0]+TMath::Cos(alpha)*lBestPrimaryVtxPos[1],
-          lBestPrimaryVtxPos[2]};
-        Double_t covxyz1[3]={ std::hypot(pvcovmat[0],pvcovmat[2]), pvcovmat[4], pvcovmat[5]};
-        Double_t addpoint[2] = {xyz1[1], xyz1[2]};
-        //Propagate to PV, please
-        if(hCascTrajRPFinder->PropagateTo(xyz1[0],lMagneticField)){
-          hCascTrajRPFinder->Update(addpoint,pvcovmat);
-        }
-      }
-      
-      if (!gGeoManager) {
-        AliCDBManager::Instance()->SetRaw(1);
-        AliCDBManager::Instance()->SetRun(lESDevent->GetRunNumber());
-        AliGeomManager::LoadGeometry();
-        AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD");
-      }
-      if (!TGeoGlobalMagField::Instance()->GetField()) {
-        AliGRPManager gm;
-        if(!gm.ReadGRPEntry()) {
-          AliError("Cannot get GRP entry");
-        }
-        if( !gm.SetMagField() ) {
-          AliError("Problem with magnetic field setup");
-        }
-      }
-      
-      AliESDInputHandlerRP *handRP = 0;
-      handRP = (AliESDInputHandlerRP*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-      if (!handRP) { printf("Strangeness tracking enabled, but no recpoint handler found! Quitting.\n"); return; }
-      
-      TTree*       fRPTree = 0x0;
-      fRPTree = handRP->GetTreeR("ITS");
-      if (!fRPTree) { AliError(" Invalid ITS cluster tree !\n"); return; }
-      
-      TClonesArray statITSrec("AliITSRecPoint");
-      TClonesArray *ITSCluster = &statITSrec;
-      TBranch* branch=fRPTree->GetBranch("ITSRecPoints");
-      if(!branch) {
-        printf("NO treeRP branch available. Exiting...\n");
-        return;
-      }
-      
-      branch->SetAddress(&ITSCluster);
-      
-      fTreeCascVarLayer1_AddedHitD = 100;
-      fTreeCascVarLayer1_TrueHitD = 100;
-      fTreeCascVarLayer2_AddedHitD = 100;
-      fTreeCascVarLayer2_TrueHitD = 100;
-      
-      for (Int_t modId=0; modId<2198; modId++){
-        Int_t lay,lad,det;
-        AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
-        branch->GetEvent(modId);
-        Int_t nrecp = ITSCluster->GetEntries();
-        //First layer information
-        Int_t lClosestRecPoint = -1;
-        Double_t lClosestRecPointDistance = fkDistanceLayer1;
-        //Second layer information
-        Int_t lClosestRecPoint2 = -1;
-        Double_t lClosestRecPointDistance2 = fkDistanceLayer2;
-        
-        //loop over recpoints, please
-        for(Int_t irec=0;irec<nrecp;irec++) {
-          AliITSRecPoint *recp = (AliITSRecPoint*)ITSCluster->At(irec);
-          Float_t xyz[3] = {0., 0., 0.};
-          Float_t covxyz[6] = {0., 0., 0., 0., 0., 0.};
-          recp->GetGlobalXYZ(xyz);
-          recp->GetGlobalCov(covxyz);
-          
-          //Check if this is a valid hit for this cascade
-          Bool_t lValid = kFALSE;
-          for(Int_t jj=0; jj<3; jj++) if ( fTreeCascVarBachLabelMother == abs(recp->GetLabel(jj)) &&
-                                          lPDGCodeCascade == 3312 &&
-                                          fTreeCascVarIsPhysicalPrimary &&
-                                          fTreeCascVarPIDBachelor == -211 &&
-                                          fTreeCascVarPIDNegative == -211 &&
-                                          fTreeCascVarPIDPositive == 2212
-                                          ) lValid = kTRUE;
-          
-          //Look for hits to add in SPD layer 2
-          if(lXiRadius>8.0&&lay==2){
-            fHitMapLayer2->Fill(std::atan2(-xyz[1], -xyz[0]),xyz[2]);
-            //Determine associated hit in fist layer
-            if(lPosXi[0]*xyz[0]+lPosXi[1]*xyz[1]>0){
-              //Same hemisphere selection. Disregard others
-              hCascTrajRPFinder->GetDZ(xyz[0], xyz[1], xyz[2], lMagneticField, dzcascade);
-              fRecPointOuterDxy->Fill(dzcascade[0]);
-              fRecPointOuterDz->Fill(dzcascade[1]);
-              fRecPointOuterD->Fill(std::hypot(dzcascade[0],dzcascade[1]));
-              fRecPointOuter2D->Fill(dzcascade[0], dzcascade[1]);
-              
-              if( lValid ){
-                fRecPointOuterDxyAssoc->Fill(dzcascade[0]);
-                fRecPointOuterDzAssoc->Fill(dzcascade[1]);
-                fRecPointOuterDAssoc->Fill(std::hypot(dzcascade[0],dzcascade[1]));
-                fRecPointOuter2DAssoc->Fill(dzcascade[0], dzcascade[1]);
-              }
-              
-              fRecPointPosition->Fill(xyz[0],xyz[1]);
-              hCascTrajRPFinder->GetDZ(xyz[0], xyz[1], xyz[2], lMagneticField, dzcascade);
-              if(std::hypot(dzcascade[0],dzcascade[1])<lClosestRecPointDistance2 ){
-                lClosestRecPoint2 = irec;
-                lClosestRecPointDistance2 = std::hypot(dzcascade[0],dzcascade[1]);
-                fTreeCascVarIsValidAddedITSPointLayer2 = lValid;
-                if(lValid) fTreeCascVarLayer2_TrueHitD = std::hypot(dzcascade[0],dzcascade[1]);
-                fTreeCascVarLayer2_AddedHitD = std::hypot(dzcascade[0],dzcascade[1]);
-              } //end good hit association check
-            } //end same-hemisphere check
-          } //end SPD layer 2 finding
-        } //end recpoint loop
-        
-        //Add hit in layer 2, if found
-        if( lClosestRecPointDistance2 < fkDistanceLayer2 && fkUseLayer2 ){
-          AliITSRecPoint *recp = (AliITSRecPoint*)ITSCluster->At(lClosestRecPoint2);
-          Float_t xyz[3] = {0., 0., 0.};
-          Float_t covxyz[6] = {0., 0., 0., 0., 0., 0.};
-          recp->GetGlobalXYZ(xyz);
-          recp->GetGlobalCov(covxyz);
-          double alpha = hCascTraj->GetAlpha();
-          double xyz1[3]={ TMath::Cos(alpha)*xyz[0]+TMath::Sin(alpha)*xyz[1],
-            -TMath::Sin(alpha)*xyz[0]+TMath::Cos(alpha)*xyz[1],
-            xyz[2]};
-          Double_t covxyz1[3]={ std::hypot(covxyz[0],covxyz[2]), 0, covxyz[5]};
-          Double_t addpoint[2] = {xyz1[1], xyz1[2]};
-          
-          if(hCascTraj->PropagateTo(xyz1[0],lMagneticField)){
-            fTreeCascVarAddedHitLayer2 = kTRUE;
-            hCascTraj->Update(addpoint,covxyz1);
-            hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dzcascade );
-            
-            //assign TTree values
-            fTreeCascVarCascDCAtoPVxyTracked = dzcascade[0];
-            fTreeCascVarCascDCAtoPVzTracked  = dzcascade[1];
-          }
-        } //end add hit
-        
-        for(Int_t irec=0;irec<nrecp;irec++) {
-          AliITSRecPoint *recp = (AliITSRecPoint*)ITSCluster->At(irec);
-          Float_t xyz[3] = {0., 0., 0.};
-          Float_t covxyz[6] = {0., 0., 0., 0., 0., 0.};
-          recp->GetGlobalXYZ(xyz);
-          recp->GetGlobalCov(covxyz);
-          fRecPointRadii->Fill(std::hypot(xyz[0],xyz[1]));
-          
-          //Check if this is a valid hit for this cascade
-          Bool_t lValid = kFALSE;
-          for(Int_t jj=0; jj<3; jj++) if ( fTreeCascVarBachLabelMother == abs(recp->GetLabel(jj)) ) lValid = kTRUE;
-          
-          //Look for hits to add in SPD layer 1
-          if(lXiRadius>4.5&&lay==1){
-            fHitMapLayer1->Fill(std::atan2(-xyz[1], -xyz[0]),xyz[2]);
-            //Determine associated hit in fist layer
-            if(lPosXi[0]*xyz[0]+lPosXi[1]*xyz[1]>0){
-              //Same hemisphere selection. Disregard others
-              hCascTrajRPFinder->GetDZ(xyz[0], xyz[1], xyz[2], lMagneticField, dzcascade);
-              fRecPointDxy->Fill(dzcascade[0]);
-              fRecPointDz->Fill(dzcascade[1]);
-              fRecPointD->Fill(std::hypot(dzcascade[0],dzcascade[1]));
-              fRecPoint2D->Fill(dzcascade[0], dzcascade[1]);
-              
-              fRecPointPosition->Fill(xyz[0],xyz[1]);
-              fRecPointNz -> Fill( recp->GetNz() );
-              fRecPointNy -> Fill( recp->GetNy() );
-              fRecPointQ -> Fill( recp->IsUsed() );
-              fRecPointNpixels -> Fill( recp->GetNpixels() );
-              fRecPointNyNz -> Fill (recp->GetNy(), recp->GetNz());
-              //Check if correct particle
-              if( lValid ){
-                fRecPointDxyAssoc->Fill(dzcascade[0]);
-                fRecPointDzAssoc->Fill(dzcascade[1]);
-                fRecPointDAssoc->Fill(std::hypot(dzcascade[0],dzcascade[1]));
-                fRecPoint2DAssoc->Fill(dzcascade[0], dzcascade[1]);
-                
-                fRecPointNzAssoc -> Fill( recp->GetNz() );
-                fRecPointNyAssoc -> Fill( recp->GetNy() );
-                fRecPointQAssoc -> Fill( recp->IsUsed() );
-                fRecPointNpixelsAssoc -> Fill( recp->GetNpixels() );
-                fRecPointNyNzAssoc -> Fill (recp->GetNy(), recp->GetNz());
-              }
-              //Early test for strangeness tracking
-              
-              if(std::hypot(dzcascade[0],dzcascade[1])<lClosestRecPointDistance){
-                lClosestRecPoint = irec;
-                lClosestRecPointDistance = std::hypot(dzcascade[0],dzcascade[1]);
-                fTreeCascVarIsValidAddedITSPointLayer1 = lValid;
-                fTreeCascVarLayer1_AddedHitD = std::hypot(dzcascade[0],dzcascade[1]);
-                if(lValid) fTreeCascVarLayer1_TrueHitD = std::hypot(dzcascade[0],dzcascade[1]);
-              }
-            }
-          } //end layer 1 finding
-        } //end recpoint loop
-        
-        //Add hit in layer 1, if found
-        if( lClosestRecPointDistance < fkDistanceLayer1 && fkUseLayer1 ){
-          AliITSRecPoint *recp = (AliITSRecPoint*)ITSCluster->At(lClosestRecPoint);
-          Float_t xyz[3] = {0., 0., 0.};
-          Float_t covxyz[6] = {0., 0., 0., 0., 0., 0.};
-          recp->GetGlobalXYZ(xyz);
-          recp->GetGlobalCov(covxyz);
-          double alpha = hCascTraj->GetAlpha();
-          double xyz1[3]={ TMath::Cos(alpha)*xyz[0]+TMath::Sin(alpha)*xyz[1],
-            -TMath::Sin(alpha)*xyz[0]+TMath::Cos(alpha)*xyz[1],
-            xyz[2]};
-          Double_t covxyz1[3]={ std::hypot(covxyz[0],covxyz[2]), 0, covxyz[5]};
-          Double_t addpoint[2] = {xyz1[1], xyz1[2]};
-          
-          if(hCascTraj->PropagateTo(xyz1[0],lMagneticField)){
-            hCascTraj->Update(addpoint,covxyz1);
-            fTreeCascVarAddedHitLayer1 = kTRUE;
-            hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dzcascade );
-            
-            //assign TTree values
-            fTreeCascVarCascDCAtoPVxyTracked = dzcascade[0];
-            fTreeCascVarCascDCAtoPVzTracked  = dzcascade[1];
-          }
-        } //end add hit
-        
-      } //end modid loop
-    } //end strangeness tracking if
     
     //Save the improved track if available
     fTreeCascVarCascadeTrackImproved = hCascTraj;
@@ -7660,9 +7236,22 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
   // STEP 1: Decide on binning (needed to improve on memory consumption)
   
   // pT binning
-  Double_t lPtbinlimits[] = {0.4, 0.5, 0.6,
-    0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
-    2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
+  Double_t lPtbinlimits[] = {0.4, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49, 0.50, 
+                             0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.57, 0.58, 0.59, 0.60, 0.61, 
+                             0.62, 0.63, 0.64, 0.65, 0.66, 0.67, 0.68, 0.69, 0.70, 0.71, 0.72,
+                             0.73, 0.74, 0.75, 0.76, 0.77, 0.78, 0.79, 0.80, 0.81, 0.82, 0.83, 
+                             0.84, 0.85, 0.86, 0.87, 0.88, 0.89, 0.90, 0.91, 0.92, 0.93, 0.94, 
+                             0.95, 0.96, 0.97, 0.98, 0.99, 1.00, 1.01, 1.02, 1.03, 1.04, 1.05, 
+                             1.06, 1.07, 1.08, 1.09, 1.10, 1.11, 1.12, 1.13, 1.14, 1.15, 1.16, 
+                             1.17, 1.18, 1.19, 1.20, 1.21, 1.22, 1.23, 1.24, 1.25, 1.26, 1.27, 
+                             1.28, 1.29, 1.30, 1.31, 1.32, 1.33, 1.34, 1.35, 1.36, 1.37, 1.38, 
+                             1.39, 1.40, 1.41, 1.42, 1.43, 1.44, 1.45, 1.46, 1.47, 1.48, 1.49, 
+                             1.50, 1.51, 1.52, 1.53, 1.54, 1.55, 1.56, 1.57, 1.58, 1.59, 1.60, 
+                             1.61, 1.62, 1.63, 1.64, 1.65, 1.66, 1.67, 1.68, 1.69, 1.70, 1.71, 
+                             1.72, 1.73, 1.74, 1.75, 1.76, 1.77, 1.78, 1.79, 1.80, 1.81, 1.82, 
+                             1.83, 1.84, 1.85, 1.86, 1.87, 1.88, 1.89, 1.90, 1.91, 1.92, 1.93, 
+                             1.94, 1.95, 1.96, 1.97, 1.98, 1.99, 2.0,
+                             2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
     4.4,4.5,4.6,4.8,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.,11.,12.};
   Long_t lPtbinnumb = sizeof(lPtbinlimits)/sizeof(Double_t) - 1;
   

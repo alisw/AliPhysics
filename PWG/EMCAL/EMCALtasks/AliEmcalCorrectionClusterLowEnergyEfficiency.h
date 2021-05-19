@@ -43,6 +43,7 @@ protected:
   TH1F                  *fNCellDistAfter;           //!<!number of cells distribution after
 
   Bool_t                fRejectNextToClus;          //!<!Switch waether to reject 1 cell clusters with direct neighbours
+  Bool_t                fApplyToGammaOnly;          //!<!Switch waether to apply correction to only photon clusters
 
  private:
   AliEmcalCorrectionClusterLowEnergyEfficiency(const AliEmcalCorrectionClusterLowEnergyEfficiency &);               // Not implemented
@@ -52,7 +53,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterLowEnergyEfficiency> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterLowEnergyEfficiency, 1); // EMCal cluster non-linearity correction component
+  ClassDef(AliEmcalCorrectionClusterLowEnergyEfficiency, 2); // EMCal cluster low energy efficiency correction component
   /// \endcond
 };
 

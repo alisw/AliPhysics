@@ -1,7 +1,7 @@
 //_____________________________________________________________________
 AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t period = 0, double ptmin = 0.5){
 	// Load Custom Configuration and parameters
-	enum { lhc15o=0, lhc18q=1, lhc18r=2 };
+	enum { lhc15o=0, lhc18q=1, lhc18r=2, lhc10h=3};
 	cout << "AddTaskJFFlucMapMaster:: period=" << period <<"\t ptmin="<< ptmin << endl;
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	//-------- Correction Maps ----------
@@ -17,6 +17,10 @@ AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t 
     	AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask"); 
     	cmaptask->EnableCentFlattening("alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC18r_pass13.root");
     	cmaptask->EnableEffCorrection("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC18q-LHC18l8-0-Lists.root"); // needed but not used!
+    	mgr->AddTask((AliAnalysisTask*) cmaptask);
+    } else if(period == 10h) {
+    	AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask"); 
+    	cmaptask->EnableEffCorrection("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC10h-LHC11a10a_bis-0-Lists.root"); // needed but not used!
     	mgr->AddTask((AliAnalysisTask*) cmaptask);
     }
    
@@ -35,13 +39,18 @@ AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t 
    	Int_t hybridCut = 768;
     Int_t globalCut = 96;
     UInt_t selEvt;
-	if(period == lhc15o)  selEvt = AliVEvent::kINT7;
-	else if(period == lhc18q || period == lhc18r)  selEvt = AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral;
+	if(period == lhc15o)  {
+		selEvt = AliVEvent::kINT7;
+	} else if(period == lhc18q || period == lhc18r) {
+		selEvt = AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral;
+	} else if(period == lhc10h) {
+		selEvt = AliVEvent::kMB;
+	}
 	// --- track related common configurations -----
 	for(int i=0;i<Nsets;i++) {
 		myTask[i] = new AliJFFlucTask(Form("%s_s_%s",taskName.Data(), configNames[i].Data()));
 		if(i!=6) {
-			myTask[i]->AddFlags(AliJFFlucTask::FLUC_EBE_WEIGHTING|AliJFFlucTask::FLUC_CUT_OUTLIERS);
+			if(period != lhc10h) myTask[i]->AddFlags(AliJFFlucTask::FLUC_EBE_WEIGHTING|AliJFFlucTask::FLUC_CUT_OUTLIERS);
 			if(period == lhc18q || period == lhc18r) myTask[i]->AddFlags(AliJFFlucTask::FLUC_CENT_FLATTENING);
 		}
 		myTask[i]->SelectCollisionCandidates( selEvt );

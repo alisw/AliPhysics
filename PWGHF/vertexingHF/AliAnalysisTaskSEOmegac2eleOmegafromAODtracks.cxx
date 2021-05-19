@@ -1347,7 +1347,21 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillElectronROOTObjects(AliA
 		Int_t labEle = trk->GetLabel();
 		if(labEle>=0){
 			AliAODMCParticle *mcetrk = (AliAODMCParticle*)mcArray->At(labEle);
-			if(mcetrk){
+            if(!mcetrk) return;
+            
+            Bool_t hfe_flag = kFALSE;
+            Int_t labelemother = mcetrk -> GetMother();
+            Int_t pdgmotherele = -9999;
+            if(labelemother>=0){
+                AliAODMCParticle *motherele = (AliAODMCParticle*)mcArray->At(labelemother);
+                pdgmotherele = motherele -> GetPdgCode();
+                
+                if(abs(pdgmotherele)== 4332 && (abs(pdgmotherele) != 22) ){
+                    hfe_flag = kTRUE;
+                }
+            } //labelemother>=0
+            
+            if(!hfe_flag) return;
                 
                 Double_t contmc[3];
                 contmc[0] = mcetrk->Pt();
@@ -1359,9 +1373,8 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillElectronROOTObjects(AliA
 				if(abs(pdgEle)==11){
 					fHistoBachPtMCS->Fill(trk->Pt());
 				}
-			}
-		}
-	}
+            }
+        }
 
     Double_t minmass_ee = 9999.;
     Double_t minmasslike_ee = 9999.;
@@ -1498,7 +1511,8 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillCascROOTObjects(AliAODca
             AliAODMCParticle *mothercasc = (AliAODMCParticle*)mcArray->At(labcascmother);
             if(mothercasc){
                 omegamotherpdgcode = mothercasc->GetPdgCode();
-                if(abs(omegamotherpdgcode)>4000&&abs(omegamotherpdgcode)<4400){
+               // if(abs(omegamotherpdgcode)>4000&&abs(omegamotherpdgcode)<4400){
+                if(abs(omegamotherpdgcode)==4332){
                     hfomega_flag = kTRUE;
                 }
             }
@@ -1791,7 +1805,8 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillMCCascROOTObjects(AliAOD
         AliAODMCParticle *mothercasc = (AliAODMCParticle*)mcArray->At(labcascmother);
         if(mothercasc){
             pdgmothercasc = mothercasc->GetPdgCode();
-            if(abs(pdgmothercasc)>4000&&abs(pdgmothercasc)<4400){
+          //  if(abs(pdgmothercasc)>4000&&abs(pdgmothercasc)<4400){
+            if(abs(pdgmothercasc)==4332){
                 hfomega_flag = kTRUE;
             }
         }
@@ -2734,6 +2749,7 @@ Bool_t AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeMCAnalysis(TClonesArra
 
 			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype,mcArray);
 		}
+       /*
         if(TMath::Abs(mcpart->GetPdgCode())==11 && mcpart->GetStatus()==1){
             AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
             Float_t etamin, etamax;
@@ -2759,6 +2775,52 @@ Bool_t AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeMCAnalysis(TClonesArra
 				fHistoOmegaMassvsPtMCGen->Fill(1.67245, mcpart->Pt());
 		}
             FillMCCascROOTObjects(mcpart, mcArray);
+    */
+        //---- electron match
+        if(TMath::Abs(mcpart->GetPdgCode())==11 && mcpart->GetStatus()==1){
+            Bool_t gamma_flag = kFALSE;
+            Int_t labmother = mcpart->GetMother();
+            if(labmother>=0){
+                AliAODMCParticle *mcmother = (AliAODMCParticle*) mcArray->At(labmother);
+                Int_t pdgmother = mcmother->GetPdgCode();
+                if(TMath::Abs(pdgmother)==22) gamma_flag = kTRUE;
+            }
+            if(!gamma_flag) fHistoBachPtMCGen->Fill(mcpart->Pt());
+            
+            FillMCEleROOTObjects(mcpart, mcArray);
+        }
+        
+        //---- cascade Omega match
+        Int_t NDaughters = 2;
+        if( TMath::Abs(mcpart->GetPdgCode())==3334 && mcpart->GetNDaughters()==NDaughters ){
+            Bool_t kaonfromOmega_flag = kFALSE;
+            Bool_t v0_flag = kFALSE;
+            Bool_t pifromLam_flag = kFALSE;
+            Bool_t prfromLam_flag = kFALSE;
+            
+            AliAODMCParticle *mcv0part = NULL;
+            for(Int_t idau =mcpart->GetDaughterFirst(); idau <= mcpart->GetDaughterLast();idau++ ){
+                if(idau<0) break;
+                AliAODMCParticle *mcdau = (AliAODMCParticle*)mcArray->At(idau);
+                if(TMath::Abs(mcdau->GetPdgCode()==321)){
+                    kaonfromOmega_flag = kTRUE;
+                }// bachelor: kaon 321
+                if( TMath::Abs(mcdau->GetPdgCode()==3122 && mcdau->GetNDaughters()==NDaughters) ){
+                    v0_flag = kTRUE;
+                    mcv0part = mcdau;
+                    for( Int_t idau = mcv0part->GetDaughterFirst(); idau<=mcv0part->GetDaughterLast(); idau++){
+                        if(idau<0) break;
+                        AliAODMCParticle *mcdau_lam = (AliAODMCParticle*)mcArray->At(idau);
+                        if(TMath::Abs(mcdau_lam->GetPdgCode()==211)) pifromLam_flag = kTRUE;
+                        if(TMath::Abs(mcdau_lam->GetPdgCode()==2212)) prfromLam_flag = kTRUE;
+                    }
+                }// loop for V0: Lambda:3122
+                
+            }//loop for cascade
+            
+            FillMCCascROOTObjects(mcpart, mcArray);
+        }
+
     }
 	return kTRUE;
 }

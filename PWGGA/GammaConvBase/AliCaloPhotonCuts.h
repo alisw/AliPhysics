@@ -229,6 +229,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       // Pb-Pb 5 TeV 2015 Gamma-Jet
       kLHC18b11c,
 
+      // pPb 8 TeV pass2 productions
+      kLHC21d2a, // GJ EMC+DCAL
+      kLHC21d2b, // JJLow EMC+DCAL
+      kLHC21d2c, // JJHigh EMC+DCAL
       // Data starts here
       k10pp7TeV,
       k10pp900GeV,
@@ -730,7 +734,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,120)
+    ClassDef(AliCaloPhotonCuts,121)
 };
 
 #endif

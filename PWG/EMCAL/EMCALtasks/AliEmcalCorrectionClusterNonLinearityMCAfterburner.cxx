@@ -68,9 +68,9 @@ Bool_t AliEmcalCorrectionClusterNonLinearityMCAfterburner::Initialize()
  * Create run-independent objects for output. Called before running over events.
  */
 void AliEmcalCorrectionClusterNonLinearityMCAfterburner::UserCreateOutputObjects()
-{   
+{
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
-  
+
   // Create my user objects.
   if (fCreateHisto){
     fEnergyDistBefore = new TH1F("hEnergyDistBefore","hEnergyDistBefore;E_{clus} (GeV)",1500,0,150);
@@ -81,7 +81,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::UserCreateOutputObjects
     fOutput->Add(fEnergyDistAfter);
     fEnergyTimeHistAfter = new TH2F("hEnergyTimeDistAfter","hEnergyTimeDistAfter;E_{clus} (GeV);time (s)",1500,0,150,500,-1e-6,1e-6);
     fOutput->Add(fEnergyTimeHistAfter);
-    
+
     // Take ownership of output list
     fOutput->SetOwner(kTRUE);
   }
@@ -151,6 +151,10 @@ Bool_t AliEmcalCorrectionClusterNonLinearityMCAfterburner::Run()
 
           newEnergy/= fNLAfterburnerPara[0] + TMath::Exp( fNLAfterburnerPara[1] + (fNLAfterburnerPara[2] * newEnergy));
           newEnergy/= fNLAfterburnerPara[3];
+          if(clus->GetNCells() == 1){ // 1 cell clusters need to be treated differently
+            newEnergy/= fNLAfterburnerPara[4];
+          }
+
           AliDebugStream(2) << "Using non-lin afterburner function No.4" << std::endl;
           AliDebugStream(2) << "old Energy: "<< oldEnergy<<", new Energy: "<<newEnergy<< std::endl;
        }
@@ -384,7 +388,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
         fNLAfterburnerPara[2] = -0.273207;
         //Iteration-2 parameters
         fNLAfterburnerPara[3] = 1.0;
-        fNLAfterburnerPara[4] = 0;
+        fNLAfterburnerPara[4] = 0.99; // factor to be applied on 1 cell clusters only
         fNLAfterburnerPara[5] = 0;
       }
       else if( !namePeriod.CompareTo("kTestBeamFinalMCRun213TeV")) {
@@ -396,7 +400,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
         fNLAfterburnerPara[2] = -0.273207;
         //Iteration-2 parameters
         fNLAfterburnerPara[3] = 1.00349; // additional factor from average to improve agreement
-        fNLAfterburnerPara[4] = 0;
+        fNLAfterburnerPara[4] = 0.99; // factor to be applied on 1 cell clusters only
         fNLAfterburnerPara[5] = 0;
       }
       else if( !namePeriod.CompareTo("kTestBeamFinalMCRun1")) {
@@ -408,7 +412,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
         fNLAfterburnerPara[2] = -0.273207;
         //Iteration-2 parameters
         fNLAfterburnerPara[3] = 1.0125; // Run1 additional correction factor of 1.25%
-        fNLAfterburnerPara[4] = 0;
+        fNLAfterburnerPara[4] = 0.99; // factor to be applied on 1 cell clusters only
         fNLAfterburnerPara[5] = 0;
       }
       // pp 5.02 TeV (2015) - LHC15n

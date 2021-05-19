@@ -62,8 +62,6 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		virtual void  SetMCClosure(bool isMCclos) {fIsMCclosure = isMCclos;}
 		virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
-		virtual void  SetPeriod(const char* Period) { fPeriod = Period; }
-		virtual void  SetdEdxCalibration(bool isCalibrated) { fdEdxCalibrated = isCalibrated; }
 		virtual void  SetTrackCutsType(bool isTPCOnlyTrkCuts) { fSetTPConlyTrkCuts = isTPCOnlyTrkCuts; }
 		virtual void  SetHybridTracks(bool isSelectHybrid) { fSelectHybridTracks = isSelectHybrid; }
 		AliESDtrack*  SetHybridTrackCuts(AliESDtrack *track, const bool fill1, const bool fill2, const bool fill3);
@@ -80,7 +78,6 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		void GetMCCorrectionsPhi();
 		virtual Double_t DeltaPhi(Double_t phi, Double_t lphi,
 				Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
-///		void ProduceArrayTrksESD();
 		short   GetPidCode(Int_t pdgCode) const;
 
 		bool selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
@@ -91,7 +88,6 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		virtual void SetTrackCuts(AliAnalysisFilter* fTrackFilter);
 		double EtaCalibration(const int &centrality, const double &Eta);
 		double EtaCalibrationEl(const int &centrality, const double &Eta);
-		int GetIndex();
 		bool TOFPID(AliESDtrack* track);
 
 		static const Double_t fgkClight;   // Speed of light (cm/ps)
@@ -118,12 +114,10 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 
 		int        fNcl;
 		double     fEtaCut;             // Eta cut used to select particles
-		bool fdEdxCalibrated;
 		const Double_t fDeDxMIPMin;
 		const Double_t fDeDxMIPMax;
 		const Double_t fdEdxHigh;
 		const Double_t fdEdxLow;
-		TString  fPeriod;
 		bool fSetTPConlyTrkCuts;
 		bool fSelectHybridTracks;
 
@@ -209,5 +203,6 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 };
 
 #endif
+
 
 

@@ -37,6 +37,8 @@
 #include "AliVVertex.h"
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
+#include "AliAnalysisDataSlot.h"
+#include "AliAnalysisDataContainer.h"
 
 class AliAnalysisTaskCorrelationhhK0s;   
 using namespace std;          
@@ -766,7 +768,8 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fOutputList4 = new TList();         
   fOutputList4->SetOwner(kTRUE);     
   
-  fSignalTree= new TTree("fSignalTree","fSignalTree");
+  const char* nameoutputSignalTree = GetOutputSlot(2)->GetContainer()->GetName();
+  fSignalTree= new TTree(nameoutputSignalTree,"fSignalTree");
   fSignalTree->Branch("fTreeVariablePtTrigger",          &fTreeVariablePtTrigger   , "fTreeVariablePtTrigger/D");
   fSignalTree->Branch("fTreeVariableChargeTrigger",      &fTreeVariableChargeTrigger, "fTreeVariableChargeTrigger/I");
   fSignalTree->Branch("fTreeVariableEtaTrigger",         &fTreeVariableEtaTrigger  , "fTreeVariableEtaTrigger/D");
@@ -806,7 +809,8 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fSignalTree->Branch("fTreeVariablePDGCodeAssoc",       &fTreeVariablePDGCodeAssoc  , "fTreeVariablePDGCodeAssoc/I");
 
 
-  fBkgTree= new TTree("fBkgTree","fBkgTree");
+  const char* nameoutputBkgTree = GetOutputSlot(3)->GetContainer()->GetName();
+  fBkgTree= new TTree(nameoutputBkgTree,"fBkgTree");
   fBkgTree->Branch("fTreeVariablePtTrigger",          &fTreeVariablePtTrigger   , "fTreeVariablePtTrigger/D");
   fBkgTree->Branch("fTreeVariableChargeTrigger",      &fTreeVariableChargeTrigger, "fTreeVariableChargeTrigger/I");
   fBkgTree->Branch("fTreeVariableEtaTrigger",         &fTreeVariableEtaTrigger  , "fTreeVariableEtaTrigger/D");
@@ -3314,7 +3318,8 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 	  AliAODMCParticle* particleV0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
 	  if (!particleV0) continue;
 	  if((particleV0->GetPdgCode())!=310) continue;
-	  //	  if(TMath::Abs(particleV0->Eta())> fEtaV0Assoc)continue;
+	  //selection on eta K0s applied online to reduce tree size
+	  if(TMath::Abs(particleV0->Eta())> fEtaV0Assoc)continue;
 	  if (!(particleV0->IsPhysicalPrimary()))continue; 
 	  if(!(particleV0->Pt()> fminPtV0 && particleV0->Pt()<fmaxPtV0) )continue;
 

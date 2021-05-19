@@ -28,7 +28,6 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
 
 	 //Get weight for N_{tracklet}
 	 TH1D* weightNtrkl = (TH1D*)fEstimator->Get("weightNtrkl")->Clone("weightNtrkl_clone");
-   jettask->SetWeightNtrkl(weightNtrkl);
 	 
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -118,7 +117,9 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
 	jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
-  Double_t JetEta = 0.9-jetradius;
+  jetTask->SetWeightNtrkl(weightNtrkl);
+  
+	Double_t JetEta = 0.9-jetradius;
   if(iNarrowEta)JetEta = 0.6-jetradius;  // reference eta is EMC acc
 
   cout << "<----------- JetEta =  " << JetEta << endl;
@@ -198,7 +199,7 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
      }
    }
 
-	 if(!jettask) return 0x0;
+	 if(!jetTask) return 0x0;
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

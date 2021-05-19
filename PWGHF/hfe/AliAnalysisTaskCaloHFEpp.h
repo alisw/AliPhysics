@@ -36,7 +36,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 	        virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto);
 
 		virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
-		virtual void            GetMClevelWdecay(AliAODMCHeader* fMCheadera);
+		virtual void            GetMClevelWdecay(AliAODMCHeader* fMCheadera, Double_t CutEta);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
 		virtual void            FindWdecay(AliAODMCParticle* part, int &label, int &pid);
     virtual void            SetEtaRange(Int_t etarange){fetarange = etarange;};
@@ -212,7 +212,10 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fHistSelectPt;        
 		TH1F*                   fHist_ClustE;        //! dummy histogram
 		TH1F*                   fHist_SelectClustE;
+		TH1F*                   fHist_SelectClustE_time;
 		TH1F*                   fHistMatchE;
+		TH1F*                   fHistMatchE_time;
+		TH2F*                   fHistoTimeEMC;
 		TH2F*                   fdEdx;
 		TH2F*                   fTPCnsig;
 		TH2F*                   fHistNsigEop;

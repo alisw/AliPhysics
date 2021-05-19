@@ -71,7 +71,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetMultiProfileLHC16(TProfile *hprof) { fMultiEstimatorAvg = new TProfile(*hprof);}
   TProfile* GetEstimatorHistogram(const AliAODEvent *fAOD);
   void SetNref(Double_t nref){fNref = nref;};
-  Int_t CountNch();
+  void CountNch();
 
  protected:
   void                        ExecOnce();

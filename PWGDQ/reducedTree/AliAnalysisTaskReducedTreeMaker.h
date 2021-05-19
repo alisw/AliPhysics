@@ -102,7 +102,7 @@ public:
   
   // Toggle on/off information branches
   void SetFillTrackInfo(Bool_t flag=kTRUE)        {fFillTrackInfo = flag;}
-  void SetFillV0Info(Bool_t flag=kTRUE)           {fFillV0Info = flag;}
+  void SetFillV0Info(Bool_t flag=kTRUE, Bool_t writeEventsWithOnlyV0s=kFALSE)    {fFillV0Info = flag; fWriteEventsWithOnlyV0s=writeEventsWithOnlyV0s;}
   void SetFillGammaConversions(Bool_t flag=kTRUE) {fFillGammaConversions = flag;}
   void SetFillK0s(Bool_t flag=kTRUE)              {fFillK0s = flag;}
   void SetFillLambda(Bool_t flag=kTRUE)           {fFillLambda = flag;}
@@ -159,6 +159,7 @@ public:
   Bool_t fFillK0s;                  // fill the K0s V0s
   Bool_t fFillLambda;               // fill the lambda V0s
   Bool_t fFillALambda;              // fill the anti-lambda V0s
+  Bool_t fWriteEventsWithOnlyV0s;   // (default: false) if true, an event which contains just V0 legs will be written, even if no track selection criteria is met
   Bool_t fFillCaloClusterInfo;      // fill the calorimeter clusters
   Bool_t fFillFMDInfo;              // fill the FMD info
   Bool_t fFillEventPlaneInfo;       // Write event plane information
@@ -239,6 +240,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 18); //Analysis Task for creating a reduced event information tree
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 19); //Analysis Task for creating a reduced event information tree
 };
 #endif

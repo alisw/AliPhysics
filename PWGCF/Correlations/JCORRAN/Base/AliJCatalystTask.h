@@ -95,6 +95,8 @@ public:
 	Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
 	void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut;
 		cout << "setting z vertex cut = " << fzvtxCut << endl;}
+    void SetRemoveBadArea( Bool_t shallweremove ){ fremovebadarea = shallweremove;
+					cout << "setting RemoveBadArea = " << fremovebadarea << endl;}
 	double GetZVertexCut() const{return fzvtxCut;}
 	void SetParticleCharge( int charge ){ fPcharge = charge;
 		cout << "setting particle charge = " << charge << endl;}
@@ -110,7 +112,8 @@ public:
 		FLUC_KINEONLYEXT = 0x8,
 		FLUC_CENT_FLATTENING = 0x100,
 		FLUC_CUT_OUTLIERS = 0x200,
-		FLUC_ALICE_IPINFO = 0x400,
+		FLUC_ALICE_IPINFO = 0x400
+		//FLUC_PHI_CORRECTION  = 0x800,
 	};
 	void AddFlags(UInt_t nflags){flags |= nflags;}
 	Int_t GetJCatalystEntry(){ return fJCatalystEntry; } // in order to sync event id
@@ -121,7 +124,7 @@ public:
 private:
 	TClonesArray * fInputList;  // tracklist
 	TClonesArray * fInputListALICE;  // tracklist ALICE acceptance +-0.8 eta
-	TDirectory *fOutput;     // output
+	//TDirectory *fOutput;     // output
 	TString fTaskName; //
 	TString fCentDetName; //
 	AliAODEvent *paodEvent; //
@@ -145,6 +148,7 @@ private:
 	double fPt_min; //
 	double fPt_max; //
 	double fzvtxCut; //
+	Bool_t fremovebadarea; //
 
 	UInt_t flags; //
 	Int_t fJCatalystEntry; //
@@ -154,7 +158,7 @@ private:
 	TH1 *pPhiWeights;
 	TGraphErrors *grEffCor; // for one cent
 	TAxis *fCentBinEff; // for different cent bin for MC eff
-	UInt_t phiMapIndex;
+	UInt_t phiMapIndex; //
 
 	ClassDef(AliJCatalystTask, 1);
 

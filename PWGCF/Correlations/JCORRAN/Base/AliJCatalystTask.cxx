@@ -49,7 +49,7 @@ AliJCatalystTask::AliJCatalystTask():
 	AliAnalysisTaskSE(),
 	fInputList(0),
 	fInputListALICE(0),
-	fOutput(0),
+	//fOutput(0),
 	fCentDetName("V0M"),
 	paodEvent(0),
 	fcent(-999),
@@ -68,6 +68,7 @@ AliJCatalystTask::AliJCatalystTask():
 	fPt_min(0.2),
 	fPt_max(5.0),
 	fzvtxCut(10.0),
+	fremovebadarea(kFALSE),
 	flags(0),
 	fJCatalystEntry(0),
 	fIsGoodEvent(false),
@@ -86,7 +87,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	AliAnalysisTaskSE(name),
 	fInputList(0),
 	fInputListALICE(0),
-	fOutput(0),
+	//fOutput(0),
 	fTaskName(name),
 	fCentDetName("V0M"),
 	paodEvent(0),
@@ -106,6 +107,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	fPt_min(0.2),
 	fPt_max(5.0),
 	fzvtxCut(10.0),
+	fremovebadarea(kFALSE),
 	flags(0),
 	fJCatalystEntry(0),
 	fIsGoodEvent(false),
@@ -125,7 +127,7 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
 	AliAnalysisTaskSE(ap.GetName()),
 	fInputList(ap.fInputList),
 	fInputListALICE(ap.fInputListALICE),
-	fOutput(ap.fOutput),
+	//fOutput(ap.fOutput),
 	fcent(ap.fcent),
 	fZvert(ap.fZvert),
 	fnoCentBin(ap.fnoCentBin),
@@ -156,7 +158,7 @@ AliJCatalystTask::~AliJCatalystTask()
 {
 	delete fInputList;
 	delete fInputListALICE;
-	delete fOutput;
+	//delete fOutput;
 }
 
 //________________________________________________________________________
@@ -177,10 +179,10 @@ void AliJCatalystTask::UserCreateOutputObjects()
 
 	gRandom->SetSeed();
 
-	OpenFile(1);
-	fOutput = gDirectory;
-	fOutput->cd();
-	PostData(1, fOutput);
+	//OpenFile(1);
+	//fOutput = gDirectory;
+	//fOutput->cd();
+	//PostData(1, fOutput);
 }
 
 //______________________________________________________________________________
@@ -386,7 +388,13 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 						continue;
 				}else continue;
 
-                                if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
+                if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
+                // Removal of bad area, now only with eta symmetric
+				Bool_t isBadArea = TMath::Abs(track->Eta()) > 0.6;
+				if(fremovebadarea) {
+					if(isBadArea) continue;
+				} 
+				
 				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++]) AliJBaseTrack;
 				itrack->SetID( TrackList->GetEntriesFast() );
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );

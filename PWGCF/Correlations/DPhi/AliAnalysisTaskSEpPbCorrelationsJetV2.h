@@ -55,7 +55,6 @@ public:
   // configration
   virtual void SetAnalysisMode(TString mode) { fAnaMode = mode; }
   virtual void SetAssociatedTrack(TString mode) { fasso = mode; }
-  virtual void SetPID(Bool_t mode) { fPID = mode; }
   virtual void SetDatatype(Bool_t mode) { fDataType = mode; }
   virtual void SetRunType(Bool_t mode) { frun2 = mode; }
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
@@ -127,19 +126,17 @@ private:
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
- Int_t      ConvertRunNumber(Int_t run);
   Bool_t NotSPDClusterVsTrackletBG() {return !fUtils.IsSPDClusterVsTrackletBG(this->InputEvent());};
 
   void FillCorrelationTracks(Double_t MultipOrCent, TObjArray *triggerArray, 
-                             TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut, Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius,Float_t bSign, Int_t step, TObjArray *select_TPCPairs);
+                             TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Float_t bSign, Int_t step, TObjArray *select_TPCPairs);
 
   void FillCorrelationTracksMixing(Double_t MultipOrCentMix, Double_t pvxMix,
-                                   Double_t poolmax, Double_t poolmin,
                                    TObjArray *triggerArray,
                                    TObjArray *selectedTrackArray,
                                    TObjArray *selectedTrackArray_TPC,
                                    AliTHn *triggerHist, AliTHn *associateHist,
-                                   Bool_t, Float_t, Float_t, Float_t, Int_t, TObjArray *select_TPCPairs);
+                                   Float_t, Int_t, TObjArray *select_TPCPairs);
 
 
 
@@ -156,7 +153,6 @@ private:
   Double_t fReduceDphi;
   TString fAnaMode;
   TString fasso;
-  Bool_t fPID;
   Bool_t fSymmetricFMD;
   Bool_t fLikeSign;
 
@@ -204,8 +200,6 @@ private:
   // Event Pool for mixing
   AliEventPoolManager *fPoolMgr;  //  event pool manager for Event Mixing
   AliEventPoolManager *fPoolMgr1; //  event pool manager for Event Mixing
-  Double_t poolmin;
-  Double_t poolmax;
   Int_t fPoolMaxNEvents;   // set maximum number of events in the pool
   Int_t fPoolMinNTracks;   // set minimum number of tracks in the pool
   Int_t fMinEventsToMix;   // set the minimum number of events want to mix

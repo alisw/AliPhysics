@@ -51,7 +51,6 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
 				std::stringstream addtaskload;
 				addtaskload << ".L " << addTaskFullPath;
 				std::string addtaskloadstring = addtaskload.str();
-				std::cout << "Calling Load macro using command string " << addtaskloadstring << std::endl;
 				gROOT->ProcessLine(addtaskloadstring.c_str());
 #else
 				// ROOT5 version, allows loading a macro
@@ -96,7 +95,6 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
 				std::stringstream addtaskload;
 				addtaskload << ".L " << addTaskFullPath;
 				std::string addtaskloadstring = addtaskload.str();
-				std::cout << "Calling Load macro using command string " << addtaskloadstring << std::endl;
 				gROOT->ProcessLine(addtaskloadstring.c_str());
 #else
 				// ROOT5 version, allows loading a macro

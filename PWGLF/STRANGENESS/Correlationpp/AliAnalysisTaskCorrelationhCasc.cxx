@@ -3427,7 +3427,8 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 	Bool_t skipV0_MC=kFALSE;
 	AliAODMCParticle* particleV0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
 	if (!particleV0) continue;
-	//	if(TMath::Abs(particleV0->Eta())> fEtaV0Assoc)continue;
+	//selection on eta applied online to reduce tree size
+	if(TMath::Abs(particleV0->Eta())> fEtaV0Assoc)continue;
 	if (!(particleV0->IsPhysicalPrimary()))continue; 
 	if(!(particleV0->Pt()> fminPtV0 && particleV0->Pt()<fmaxPtV0) )continue;
 	if (TMath::Abs(particleV0->GetPdgCode())!=PDGCodeCasc[ParticleType]) continue;

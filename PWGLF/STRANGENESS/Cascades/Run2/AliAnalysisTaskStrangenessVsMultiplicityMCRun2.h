@@ -920,41 +920,7 @@ private:
   //===========================================================================================
   
   TH1D *fHistEventCounter; //!
-  TH1D *fHistCentrality; //!
-  TH1D *fRecPointRadii;
-  
-  TH1D *fRecPointDz;
-  TH1D *fRecPointDxy;
-  TH1D *fRecPointD;
-  TH2D *fRecPoint2D;
-  TH1D *fRecPointDzAssoc;
-  TH1D *fRecPointDxyAssoc;
-  TH1D *fRecPointDAssoc;
-  TH2D *fRecPoint2DAssoc;
-  
-  TH1D *fRecPointOuterDz;
-  TH1D *fRecPointOuterDxy;
-  TH1D *fRecPointOuterD;
-  TH2D *fRecPointOuter2D;
-  TH1D *fRecPointOuterDzAssoc;
-  TH1D *fRecPointOuterDxyAssoc;
-  TH1D *fRecPointOuterDAssoc;
-  TH2D *fRecPointOuter2DAssoc;
-  
-  TH2D *fRecPointPosition;
-  TH1D *fRecPointNz;
-  TH1D *fRecPointNy;
-  TH1D *fRecPointQ;
-  TH1D *fRecPointNpixels;
-  TH1D *fRecPointNzAssoc;
-  TH1D *fRecPointNyAssoc;
-  TH1D *fRecPointQAssoc;
-  TH1D *fRecPointNpixelsAssoc;
-  TH2D *fRecPointNyNz;
-  TH2D *fRecPointNyNzAssoc;
-  
-  TH2D *fHitMapLayer1;
-  TH2D *fHitMapLayer2;
+  TH1D *fHistCentrality;
   
   //Histograms for efficiency denominators (at final analysis level selections)
   //V0s
