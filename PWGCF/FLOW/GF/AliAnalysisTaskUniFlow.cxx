@@ -198,6 +198,8 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fCorrdPhiMin{-0.5*TMath::Pi()},
   fCorrdPhiMax{1.5*TMath::Pi()},
   fEtaSlicesArr{},
+  fMagFieldSign{0},
+  fMergingCut{0.02},
   fColSystem{kPPb},
   fTrigger{AliVEvent::kINT7},
   fCentEstimator{kV0A},
@@ -498,6 +500,8 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fCorrdPhiMin{-0.5*TMath::Pi()},
   fCorrdPhiMax{1.5*TMath::Pi()},
   fEtaSlicesArr{},
+  fMagFieldSign{0},
+  fMergingCut{0.02},
   fColSystem{colSys},
   fTrigger{AliVEvent::kINT7},
   fCentEstimator{kV0A},
@@ -3216,6 +3220,8 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
   if(!fCorrFill) { return kTRUE; }
   if(fMixedOnlyForGF) { return kTRUE; }
 
+  fMagFieldSign = (fEventAOD->GetMagneticField() > 0) ? 1 : -1;
+
   Double_t fillingCorr[5];
   fillingCorr[3] = fIndexCentrality;
   fillingCorr[4] = fPVz;
@@ -3228,26 +3234,9 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
     Double_t etaAs = track->Eta();
     Double_t phiAs = track->Phi();
     Double_t ptAs = track->Pt();
+    Double_t chargeAs = track->Charge();
 
     fSelectedTracks->Add(track);
-
-    for (auto part2 = part+1; part2 != fVector[kRefs]->end(); part2++)
-    {
-      AliAODTrack* track2 = dynamic_cast<AliAODTrack*>(*part2);
-      if(!track2) AliError("Track was not dynamically recasted.");
-
-      Double_t etaTrig = track2->Eta();
-      Double_t phiTrig = track2->Phi();
-      Double_t ptTrig = track2->Pt();
-
-      if(ptTrig < ptAs) continue; // filter out with sorting, will be important for different species
-
-      fillingCorr[0] = etaTrig - etaAs;
-      fillingCorr[1] = RangePhi(phiTrig - phiAs);
-      fillingCorr[2] = ptTrig;
-
-      fh4CorrelationsSE[kRefs]->Fill(fillingCorr);
-    } // end ref 2nd loop
 
     for(Int_t iSpec(1); iSpec < kCharUnidentified; iSpec++){
       if(!fProcessSpec[iSpec]) continue;
@@ -3264,10 +3253,33 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
 
         Double_t etaTrig = trackTr->Eta();
         Double_t phiTrig = trackTr->Phi();
+        Double_t chargeTrig = trackTr->Charge();
 
         fillingCorr[0] = etaTrig - etaAs;
         fillingCorr[1] = RangePhi(phiTrig - phiAs);
         fillingCorr[2] = ptTrig;
+
+        //removing biases from tracks with small angles / two tracks efficiency
+        if(TMath::Abs(fillingCorr[0]) < fMergingCut){
+          Double_t dPhiStarLow = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAs, ptAs, chargeAs, 0.8);
+          Double_t dPhiStarHigh = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAs, ptAs, chargeAs, 2.5);
+
+          if(TMath::Abs(dPhiStarLow) < fMergingCut || TMath::Abs(dPhiStarHigh) < fMergingCut) continue;
+
+          const Double_t kLimit = 3.0*fMergingCut;
+
+          if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
+            Bool_t bIsBelow = kFALSE;
+            for(Double_t rad(0.8); rad < 2.51; rad+=0.01){
+              Double_t dPhiStar = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAs, ptAs, chargeAs, rad);
+              if(TMath::Abs(dPhiStar) < fMergingCut) {
+                bIsBelow = kTRUE;
+                break;
+              }
+            } // end loop radius
+            if(bIsBelow) continue;
+          }
+        }
 
         fh4CorrelationsSE[iSpec]->Fill(fillingCorr);
       } // end loop particle vector
@@ -3287,32 +3299,6 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
       TObjArray *mixedEvent = fPool->GetEvent(iMix);
       if(!mixedEvent) {  AliFatal("Mixed event not found!"); return kFALSE; }
 
-      for(auto part = fVector[kRefs]->begin(); part != fVector[kRefs]->end(); part++)
-      {
-        AliAODTrack* track = dynamic_cast<AliAODTrack*>(*part);
-        if(!track) AliError("Track was not dynamically recasted.");
-        Double_t etaTrig = track->Eta();
-        Double_t phiTrig = track->Phi();
-        Double_t ptTrig = track->Pt();
-
-        for(Int_t mixTrack(0); mixTrack < mixedEvent->GetEntriesFast(); mixTrack++){
-          AliAODTrack* track2 = (AliAODTrack*) mixedEvent->At(mixTrack);
-          if(!track2) AliError("Mixed track not here!");
-
-          Double_t ptAs = track2->Pt();
-          if(ptTrig < ptAs) continue;
-
-          Double_t etaAs = track2->Eta();
-          Double_t phiAs = track2->Phi();
-
-          fillingCorr[0] = etaTrig - etaAs;
-          fillingCorr[1] = RangePhi(phiTrig - phiAs);
-          fillingCorr[2] = ptTrig;
-
-          fh4CorrelationsME[kRefs]->Fill(fillingCorr);
-        } //end mixed tracks
-      } // end refs (current event)
-
       for(Int_t iSpec(1); iSpec < kCharUnidentified; iSpec++){
         if(!fProcessSpec[iSpec]) continue;
         if(!fh4CorrelationsME[iSpec]) {AliError("Sparse (mixed event) doesn't exist."); return kFALSE; }
@@ -3324,6 +3310,7 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
           Double_t ptTrig = trackTr->Pt();
           Double_t etaTrig = trackTr->Eta();
           Double_t phiTrig = trackTr->Phi();
+          Double_t chargeTrig = trackTr->Charge();
 
           for(Int_t mixTrack(0); mixTrack < mixedEvent->GetEntriesFast(); mixTrack++){
             AliAODTrack* track2 = (AliAODTrack*) mixedEvent->At(mixTrack);
@@ -3334,10 +3321,33 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
 
             Double_t etaAs = track2->Eta();
             Double_t phiAs = track2->Phi();
+            Double_t chargeAs = track2->Charge();
 
             fillingCorr[0] = etaTrig - etaAs;
             fillingCorr[1] = RangePhi(phiTrig - phiAs);
             fillingCorr[2] = ptTrig;
+
+            //removing biases from tracks with small angles / two tracks efficiency
+            if(TMath::Abs(fillingCorr[0]) < fMergingCut){
+              Double_t dPhiStarLow = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAs, ptAs, chargeAs, 0.8);
+              Double_t dPhiStarHigh = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAs, ptAs, chargeAs, 2.5);
+
+              if(TMath::Abs(dPhiStarLow) < fMergingCut || TMath::Abs(dPhiStarHigh) < fMergingCut) continue;
+
+              const Double_t kLimit = 3.0*fMergingCut;
+
+              if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
+                Bool_t bIsBelow = kFALSE;
+                for(Double_t rad(0.8); rad < 2.51; rad+=0.01){
+                  Double_t dPhiStar = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAs, ptAs, chargeAs, rad);
+                  if(TMath::Abs(dPhiStar) < fMergingCut) {
+                    bIsBelow = kTRUE;
+                    break;
+                  }
+                } // end loop radius
+                if(bIsBelow) continue;
+              }
+            }
 
             fh4CorrelationsME[iSpec]->Fill(fillingCorr);
           } //end mixed tracks
@@ -3357,6 +3367,16 @@ Double_t AliAnalysisTaskUniFlow::RangePhi(Double_t dPhi){
     if (dPhi < -0.5*TMath::Pi()) dPhi += 2 * TMath::Pi();
     if (dPhi > 1.5*TMath::Pi()) dPhi -= 2*TMath::Pi();
     return dPhi;
+}
+// ============================================================================
+Double_t AliAnalysisTaskUniFlow::GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius){
+  // calculates delta phi *
+  Double_t dPhiStar = phi1 - phi2 - charge1 * fMagFieldSign * TMath::ASin(0.075 * radius / pt1) + charge2 * fMagFieldSign * TMath::ASin(0.075 * radius / pt2);
+
+  if (dPhiStar > TMath::Pi()) dPhiStar = 2.0*TMath::Pi() - dPhiStar;
+  if (dPhiStar < -TMath::Pi()) dPhiStar = -2.0*TMath::Pi() - dPhiStar;
+
+  return dPhiStar;
 }
 // ============================================================================
 
@@ -7375,10 +7395,10 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     for(Int_t counter(0); counter < fCorrDEtaBinNum+1; counter++){ etaVec.push_back(fCorrdEtaMin + counter*(fCorrdEtaMax - fCorrdEtaMin)/fCorrDEtaBinNum); }
     for(Int_t counter(0); counter < fCorrDPhiBinNum+1; counter++){ phiVec.push_back(fCorrdPhiMin + counter*(fCorrdPhiMax - fCorrdPhiMin)/fCorrDPhiBinNum); }
     ptVec = {-999., 999.};
-    if(fUsePtBinnedEventPool){
-      ptVec = fFlowPOIsPtBinEdges[kCharged];
-    }
-    else { ptVec = {-999., 999.}; }
+    // if(fUsePtBinnedEventPool){
+    //   ptVec = fFlowPOIsPtBinEdges[kCharged];
+    // }
+    // else { ptVec = {-999., 999.}; }
     Double_t* centAr = centVec.data();
     Double_t* vertAr = vertexVec.data();
     Double_t* ptAr = ptVec.data();
@@ -7394,12 +7414,12 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     // fEventPoolMgr->Validate();
 
     if(!fMixedOnlyForGF){
-      for(Int_t iSpec(0); iSpec < kCharUnidentified; iSpec++)
+      for(Int_t iSpec(1); iSpec < kCharUnidentified; iSpec++)
       {
         if(!fProcessSpec[iSpec]) continue;
         // if(iSpec == kCharUnidentified) continue;
 
-        if(iSpec > 0 && fUsePtBinnedEventPool){
+        if(fUsePtBinnedEventPool){
           ptVec = fFlowPOIsPtBinEdges[iSpec];
           ptAr = ptVec.data();
           sizePt = ptVec.size() - 1;
