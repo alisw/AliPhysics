@@ -104,6 +104,7 @@
 #pragma link C++ class AliCSTrackCuts+;
 #pragma link C++ class AliCSTrackMaps+;
 #pragma link C++ class AliCSTrackSelection+;
+#pragma link C++ class AliTwoParticleCorrelationsBase+;
 #pragma link C++ class AliDptDptCorrelations+;
 #pragma link C++ class Ali2PCorrelations+;
 #pragma link C++ class AliAnalysisTaskDiHadCorrelHighPt+;

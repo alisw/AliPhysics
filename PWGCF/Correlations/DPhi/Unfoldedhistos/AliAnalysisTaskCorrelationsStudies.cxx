@@ -48,6 +48,7 @@
 #include "AliCSTrackMaps.h"
 #include "AliCSEventCuts.h"
 #include "AliCSPIDCuts.h"
+#include "Ali2PCorrelations.h"
 #include "AliDptDptCorrelations.h"
 #include "AliCSPairAnalysis.h"
 #include "AliVEvent.h"
@@ -87,9 +88,9 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fDoProcessCorrelations(kFALSE),
     fDoProcessPairAnalysis(kFALSE),
     fMCRecOption(kNone),
-    fProcessCorrelations(),
-    fProcessMCRecCorrelationsWithOptions(),
-    fProcessTrueCorrelations(),
+    fProcessCorrelations(nullptr),
+    fProcessMCRecCorrelationsWithOptions(nullptr),
+    fProcessTrueCorrelations(nullptr),
     fProcessPairAnalysis(),
     fProcessTruePairAnalysis(),
     ffEfficiencyProfile(NULL),
@@ -181,9 +182,9 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fDoProcessCorrelations(kFALSE),
     fDoProcessPairAnalysis(kFALSE),
     fMCRecOption(kNone),
-    fProcessCorrelations("DptDptCorrelations"),
-    fProcessMCRecCorrelationsWithOptions("DptDptCorrelationsMCRecOptions"),
-    fProcessTrueCorrelations("DptDptTrueCorrelations"),
+    fProcessCorrelations(nullptr),
+    fProcessMCRecCorrelationsWithOptions(nullptr),
+    fProcessTrueCorrelations(nullptr),
     fProcessPairAnalysis("PairAnalysis"),
     fProcessTruePairAnalysis("TruePairAnalysis"),
     ffEfficiencyProfile(NULL),
@@ -282,6 +283,9 @@ AliAnalysisTaskCorrelationsStudies::~AliAnalysisTaskCorrelationsStudies()
     if (fhOnTrueEfficiencyProfile_1 != NULL) delete fhOnTrueEfficiencyProfile_1;
     if (fhOnTrueEfficiencyProfile_2 != NULL) delete fhOnTrueEfficiencyProfile_2;
     if (fRandomGenerator != NULL) delete fRandomGenerator;
+    delete fProcessCorrelations;
+    delete fProcessMCRecCorrelationsWithOptions;
+    delete fProcessTrueCorrelations;
     delete fEventCuts;
     delete fTrackSelectionCuts;
 }
@@ -433,20 +437,20 @@ Bool_t AliAnalysisTaskCorrelationsStudies::BuildEfficiencyProfiles() {
       }
       else {
         /* true will not apply any efficiency correction */
-        fProcessTrueCorrelations.SetEfficiencyCorrection(NULL,NULL);
+        fProcessTrueCorrelations->SetEfficiencyCorrection(NULL,NULL);
       }
     }
   }
   else {
     if (fDoProcessCorrelations) {
       /* true will not apply any efficiency correction */
-      fProcessTrueCorrelations.SetEfficiencyCorrection(NULL,NULL);
+      fProcessTrueCorrelations->SetEfficiencyCorrection(NULL,NULL);
     }
   }
 
   if (fDoProcessCorrelations) {
     /* for the time being, rec with true will never apply efficiency correction */
-    fProcessMCRecCorrelationsWithOptions.SetEfficiencyCorrection(NULL,NULL);
+    fProcessMCRecCorrelationsWithOptions->SetEfficiencyCorrection(NULL,NULL);
   }
 
   return done;
@@ -722,7 +726,7 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
 
     TObjArray *tokens = fTaskActivitiesString.Tokenize("+");
     if (tokens->GetEntries() == 2) {
-      if (((TObjString*)tokens->At(0))->String().EqualTo("corr")) {
+      if (((TObjString*)tokens->At(0))->String().Contains("corr")) {
         if (((TObjString*)tokens->At(1))->String().EqualTo("pairs")) {
           fDoProcessCorrelations = kTRUE;
           fDoProcessPairAnalysis = kTRUE;
@@ -732,7 +736,7 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
           return kFALSE;
         }
       }
-      else if (((TObjString*)tokens->At(1))->String().EqualTo("corr")) {
+      else if (((TObjString*)tokens->At(1))->String().Contains("corr")) {
         if (((TObjString*)tokens->At(0))->String().EqualTo("pairs")) {
           fDoProcessCorrelations = kTRUE;
           fDoProcessPairAnalysis = kTRUE;
@@ -749,7 +753,7 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
       delete tokens;
     }
     else if (tokens->GetEntries() == 1) {
-      if (((TObjString*)tokens->At(0))->String().EqualTo("corr")) {
+      if (((TObjString*)tokens->At(0))->String().Contains("corr")) {
         fDoProcessCorrelations = kTRUE;
       }
       else if (((TObjString*)tokens->At(0))->String().EqualTo("pairs")) {
@@ -764,6 +768,19 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
       AliFatal("Wrong task activities. ABORTING!!!");
       return kFALSE;
     }
+  }
+
+  /* lets's initialize the kind of correlations */
+  if (fTaskActivitiesString.Contains("diffcorr") || !fDoProcessCorrelations) {
+    /* the differential two-particle data collection */
+    fProcessCorrelations = new Ali2PCorrelations("DiffTwoParticleCorrelations");
+    fProcessMCRecCorrelationsWithOptions = new Ali2PCorrelations("DiffTwoParticleCorrelationsMCRecOptions");
+    fProcessTrueCorrelations = new Ali2PCorrelations("DiffTwoParticleTrueCorrelations");
+  }
+  else {
+    fProcessCorrelations = new AliDptDptCorrelations("DptDptCorrelations");
+    fProcessMCRecCorrelationsWithOptions = new AliDptDptCorrelations("DptDptCorrelationsMCRecOptions");
+    fProcessTrueCorrelations = new AliDptDptCorrelations("DptDptTrueCorrelations");
   }
 
   /* the event cuts */
@@ -898,74 +915,74 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
   if ((tokens->GetEntries() == 4) || (tokens->GetEntries() == 5)) {
     /* track polarities */
     if (((TObjString*) tokens->At(0))->String().EqualTo("--")) {
-      fProcessCorrelations.SetSameSign(kTRUE);
-      fProcessCorrelations.SetRequestedCharge_1(-1);
-      fProcessCorrelations.SetRequestedCharge_2(-1);
-      fProcessMCRecCorrelationsWithOptions.SetSameSign(kTRUE);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_1(-1);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_2(-1);
-      fProcessTrueCorrelations.SetSameSign(kTRUE);
-      fProcessTrueCorrelations.SetRequestedCharge_1(-1);
-      fProcessTrueCorrelations.SetRequestedCharge_2(-1);
+      fProcessCorrelations->SetSameSign(kTRUE);
+      fProcessCorrelations->SetRequestedCharge_1(-1);
+      fProcessCorrelations->SetRequestedCharge_2(-1);
+      fProcessMCRecCorrelationsWithOptions->SetSameSign(kTRUE);
+      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_1(-1);
+      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_2(-1);
+      fProcessTrueCorrelations->SetSameSign(kTRUE);
+      fProcessTrueCorrelations->SetRequestedCharge_1(-1);
+      fProcessTrueCorrelations->SetRequestedCharge_2(-1);
       szTrack1 = "m1";
       szTrack2 = "m2";
       szContainerPrefix = "MM";
     }
     else if (((TObjString*) tokens->At(0))->String().EqualTo("++")) {
-      fProcessCorrelations.SetSameSign(kTRUE);
-      fProcessCorrelations.SetRequestedCharge_1(1);
-      fProcessCorrelations.SetRequestedCharge_2(1);
-      fProcessMCRecCorrelationsWithOptions.SetSameSign(kTRUE);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_1(1);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_2(1);
-      fProcessTrueCorrelations.SetSameSign(kTRUE);
-      fProcessTrueCorrelations.SetRequestedCharge_1(1);
-      fProcessTrueCorrelations.SetRequestedCharge_2(1);
+      fProcessCorrelations->SetSameSign(kTRUE);
+      fProcessCorrelations->SetRequestedCharge_1(1);
+      fProcessCorrelations->SetRequestedCharge_2(1);
+      fProcessMCRecCorrelationsWithOptions->SetSameSign(kTRUE);
+      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_1(1);
+      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_2(1);
+      fProcessTrueCorrelations->SetSameSign(kTRUE);
+      fProcessTrueCorrelations->SetRequestedCharge_1(1);
+      fProcessTrueCorrelations->SetRequestedCharge_2(1);
       szTrack1 = "p1";
       szTrack2 = "p2";
       szContainerPrefix = "PP";
     }
     else if (((TObjString*) tokens->At(0))->String().EqualTo("+-")) {
-      fProcessCorrelations.SetSameSign(kFALSE);
-      fProcessCorrelations.SetRequestedCharge_1(1);
-      fProcessCorrelations.SetRequestedCharge_2(-1);
-      fProcessMCRecCorrelationsWithOptions.SetSameSign(kFALSE);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_1(1);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_2(-1);
-      fProcessTrueCorrelations.SetSameSign(kFALSE);
-      fProcessTrueCorrelations.SetRequestedCharge_1(1);
-      fProcessTrueCorrelations.SetRequestedCharge_2(-1);
+      fProcessCorrelations->SetSameSign(kFALSE);
+      fProcessCorrelations->SetRequestedCharge_1(1);
+      fProcessCorrelations->SetRequestedCharge_2(-1);
+      fProcessMCRecCorrelationsWithOptions->SetSameSign(kFALSE);
+      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_1(1);
+      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_2(-1);
+      fProcessTrueCorrelations->SetSameSign(kFALSE);
+      fProcessTrueCorrelations->SetRequestedCharge_1(1);
+      fProcessTrueCorrelations->SetRequestedCharge_2(-1);
       szTrack1 = "p1";
       szTrack2 = "m2";
       szContainerPrefix = "PM";
     }
     else if (((TObjString*) tokens->At(0))->String().EqualTo("-+")) {
-      fProcessCorrelations.SetSameSign(kFALSE);
-      fProcessCorrelations.SetRequestedCharge_1(-1);
-      fProcessCorrelations.SetRequestedCharge_2(1);
-      fProcessMCRecCorrelationsWithOptions.SetSameSign(kFALSE);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_1(-1);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_2(1);
-      fProcessTrueCorrelations.SetSameSign(kFALSE);
-      fProcessTrueCorrelations.SetRequestedCharge_1(-1);
-      fProcessTrueCorrelations.SetRequestedCharge_2(1);
+      fProcessCorrelations->SetSameSign(kFALSE);
+      fProcessCorrelations->SetRequestedCharge_1(-1);
+      fProcessCorrelations->SetRequestedCharge_2(1);
+      fProcessMCRecCorrelationsWithOptions->SetSameSign(kFALSE);
+      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_1(-1);
+      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_2(1);
+      fProcessTrueCorrelations->SetSameSign(kFALSE);
+      fProcessTrueCorrelations->SetRequestedCharge_1(-1);
+      fProcessTrueCorrelations->SetRequestedCharge_2(1);
       szTrack1 = "m1";
       szTrack2 = "p2";
       szContainerPrefix = "MP";
     }
     else if (((TObjString*) tokens->At(0))->String().EqualTo("**")) {
-      fProcessCorrelations.SetSameSign(kFALSE);
-      fProcessCorrelations.SetAllCombinations(kTRUE);
-      fProcessCorrelations.SetRequestedCharge_1(1);
-      fProcessCorrelations.SetRequestedCharge_2(-1);
-      fProcessMCRecCorrelationsWithOptions.SetSameSign(kFALSE);
-      fProcessMCRecCorrelationsWithOptions.SetAllCombinations(kTRUE);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_1(1);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_2(-1);
-      fProcessTrueCorrelations.SetSameSign(kFALSE);
-      fProcessTrueCorrelations.SetAllCombinations(kTRUE);
-      fProcessTrueCorrelations.SetRequestedCharge_1(1);
-      fProcessTrueCorrelations.SetRequestedCharge_2(-1);
+      fProcessCorrelations->SetSameSign(kFALSE);
+      fProcessCorrelations->SetAllCombinations(kTRUE);
+      fProcessCorrelations->SetRequestedCharge_1(1);
+      fProcessCorrelations->SetRequestedCharge_2(-1);
+      fProcessMCRecCorrelationsWithOptions->SetSameSign(kFALSE);
+      fProcessMCRecCorrelationsWithOptions->SetAllCombinations(kTRUE);
+      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_1(1);
+      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_2(-1);
+      fProcessTrueCorrelations->SetSameSign(kFALSE);
+      fProcessTrueCorrelations->SetAllCombinations(kTRUE);
+      fProcessTrueCorrelations->SetRequestedCharge_1(1);
+      fProcessTrueCorrelations->SetRequestedCharge_2(-1);
       szTrack1 = "p1";
       szTrack2 = "m2";
       szContainerPrefix = "AA";
@@ -977,15 +994,15 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
 
     /* singles or pairs */
     if (((TObjString*) tokens->At(1))->String().EqualTo("singles")) {
-      fProcessCorrelations.SetSinglesOnly(kTRUE);
-      fProcessMCRecCorrelationsWithOptions.SetSinglesOnly(kTRUE);
-      fProcessTrueCorrelations.SetSinglesOnly(kTRUE);
+      fProcessCorrelations->SetSinglesOnly(kTRUE);
+      fProcessMCRecCorrelationsWithOptions->SetSinglesOnly(kTRUE);
+      fProcessTrueCorrelations->SetSinglesOnly(kTRUE);
       szContainerPrefix += "_S";
     }
     else if (((TObjString*) tokens->At(1))->String().EqualTo("pairs")) {
-      fProcessCorrelations.SetSinglesOnly(kFALSE);
-      fProcessMCRecCorrelationsWithOptions.SetSinglesOnly(kFALSE);
-      fProcessTrueCorrelations.SetSinglesOnly(kFALSE);
+      fProcessCorrelations->SetSinglesOnly(kFALSE);
+      fProcessMCRecCorrelationsWithOptions->SetSinglesOnly(kFALSE);
+      fProcessTrueCorrelations->SetSinglesOnly(kFALSE);
       szContainerPrefix += "_P";
     }
     else {
@@ -995,7 +1012,7 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
 
     /* resonace rejection configuration */
     if (((TObjString*) tokens->At(2))->String().Contains("resonances:")) {
-      fProcessCorrelations.ConfigureResonances(((TObjString*) tokens->At(2))->String().Data());
+      fProcessCorrelations->ConfigureResonances(((TObjString*) tokens->At(2))->String().Data());
     }
     else {
       AliFatal("Resonance string not properly configured.ABORTING!!!");
@@ -1025,7 +1042,7 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
             sprintf(localbuffer,"%s%s", pattern,szTrack2.Data());
             fhWeightsTrack_2 = (TH3F*) weights->Get(localbuffer);
             if ((fhWeightsTrack_1 != NULL) && (fhWeightsTrack_2 != NULL)) {
-              fProcessCorrelations.SetUseWeights(kTRUE);
+              fProcessCorrelations->SetUseWeights(kTRUE);
               AliInfo("===========STORED CORRECTION WEIGHTS====================");
               AliInfo(Form("Track 1: %c charge, weights histogram: %s", ((TObjString*) tokens->At(0))->String()[0],fhWeightsTrack_1->GetName()));
               AliInfo(Form("Track 2: %c charge, weights histogram: %s", ((TObjString*) tokens->At(0))->String()[1],fhWeightsTrack_2->GetName()));
@@ -1100,8 +1117,8 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
       else
         sscanf(((TObjString*) tokens->At(3))->String().Data(), "simulate-%d", &nSimEventsPerEvent);
 
-      fProcessCorrelations.SetUseSimulation(kTRUE);
-      fProcessCorrelations.SetSimEventsPerEvent(nSimEventsPerEvent);
+      fProcessCorrelations->SetUseSimulation(kTRUE);
+      fProcessCorrelations->SetSimEventsPerEvent(nSimEventsPerEvent);
       /* we will use particle profiles so the particle profiles filename has to be there */
       if (tokens->GetEntries() == 5) {
         /* get the weights histos */
@@ -1159,11 +1176,11 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
     }
     else if (((TObjString*) tokens->At(3))->String().EqualTo("effcorrtrue")) {
       fCorrectOnTrueEfficiency = kTRUE;
-      fProcessCorrelations.SetUseWeights(kFALSE);
+      fProcessCorrelations->SetUseWeights(kFALSE);
       szContainerPrefix += "NW";
     }
     else if (((TObjString*) tokens->At(3))->String().EqualTo("noweights")) {
-      fProcessCorrelations.SetUseWeights(kFALSE);
+      fProcessCorrelations->SetUseWeights(kFALSE);
       szContainerPrefix += "NW";
     }
     else {
@@ -1179,10 +1196,10 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
   delete tokens;
 
   /* true will never use weights nor simulation */
-  fProcessMCRecCorrelationsWithOptions.SetUseWeights(kFALSE);
-  fProcessMCRecCorrelationsWithOptions.SetUseSimulation(kFALSE);
-  fProcessTrueCorrelations.SetUseWeights(kFALSE);
-  fProcessTrueCorrelations.SetUseSimulation(kFALSE);
+  fProcessMCRecCorrelationsWithOptions->SetUseWeights(kFALSE);
+  fProcessMCRecCorrelationsWithOptions->SetUseSimulation(kFALSE);
+  fProcessTrueCorrelations->SetUseWeights(kFALSE);
+  fProcessTrueCorrelations->SetUseSimulation(kFALSE);
 
 
   return kTRUE;
@@ -1206,9 +1223,9 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelationsBinning(const ch
     return kFALSE;
   }
 
-  return (fProcessCorrelations.ConfigureBinning(sztmp.Data()) &&
-          fProcessMCRecCorrelationsWithOptions.ConfigureBinning(sztmp.Data()) &&
-          fProcessTrueCorrelations.ConfigureBinning(sztmp.Data()) &&
+  return (fProcessCorrelations->ConfigureBinning(sztmp.Data()) &&
+          fProcessMCRecCorrelationsWithOptions->ConfigureBinning(sztmp.Data()) &&
+          fProcessTrueCorrelations->ConfigureBinning(sztmp.Data()) &&
           fProcessPairAnalysis.ConfigureBinning(sztmp.Data()) &&
           fProcessTruePairAnalysis.ConfigureBinning(sztmp.Data()));
 }
@@ -1242,13 +1259,13 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
 
   /* now initialize the processing correlations instance */
   if (fDoProcessCorrelations) {
-    fProcessCorrelations.Initialize();
-    fProcessMCRecCorrelationsWithOptions.Initialize();
-    fProcessTrueCorrelations.Initialize();
-    fProcessCorrelations.SetWeigths(fhWeightsTrack_1, fhWeightsTrack_2);
-    fProcessCorrelations.SetEfficiencyCorrection(fhEffCorrTrack_1, fhEffCorrTrack_2);
-    fProcessCorrelations.SetPairEfficiencyCorrection(fhPairEfficiency_PP, fhPairEfficiency_PM, fhPairEfficiency_MM, fhPairEfficiency_MP);
-    fProcessCorrelations.SetSimultationPdfs(fPositiveTrackPdf, fNegativeTrackPdf);
+    fProcessCorrelations->Initialize();
+    fProcessMCRecCorrelationsWithOptions->Initialize();
+    fProcessTrueCorrelations->Initialize();
+    fProcessCorrelations->SetWeigths(fhWeightsTrack_1, fhWeightsTrack_2);
+    fProcessCorrelations->SetEfficiencyCorrection(fhEffCorrTrack_1, fhEffCorrTrack_2);
+    fProcessCorrelations->SetPairEfficiencyCorrection(fhPairEfficiency_PP, fhPairEfficiency_PM, fhPairEfficiency_MM, fhPairEfficiency_MP);
+    fProcessCorrelations->SetSimultationPdfs(fPositiveTrackPdf, fNegativeTrackPdf);
   }
 
   /* now initialize the pair analysis instance */
@@ -1337,16 +1354,16 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
 
   /* incorporate configuration parameters if needed */
   if (fDoProcessCorrelations) {
-    fProcessMCRecCorrelationsWithOptions.GetHistogramsList()->AddFirst(new TParameter<Int_t>("AdditionalMCRecOption",fMCRecOption,'f'));
+    fProcessMCRecCorrelationsWithOptions->GetHistogramsList()->AddFirst(new TParameter<Int_t>("AdditionalMCRecOption",fMCRecOption,'f'));
   }
 
   TH1::AddDirectory(oldstatus);
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
   if (fDoProcessCorrelations) {
-    PostData(2, fProcessCorrelations.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
-    PostData(3, fProcessMCRecCorrelationsWithOptions.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
-    PostData(4, fProcessTrueCorrelations.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+    PostData(2, fProcessCorrelations->GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+    PostData(3, fProcessMCRecCorrelationsWithOptions->GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+    PostData(4, fProcessTrueCorrelations->GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
   }
   else {
     /* we post dummy list for avoiding fatal error */
@@ -1472,10 +1489,10 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
     /* if only truth analysis remove the content for the reconstructed output lists */
     if (AliCSAnalysisCutsBase::IsMConlyTruth()) {
       if (fDoProcessCorrelations) {
-        fProcessCorrelations.GetHistogramsList()->Clear();
+        fProcessCorrelations->GetHistogramsList()->Clear();
         /* if not additional MC rec results we remove the content from the output list */
         if (fMCRecOption == kNone) {
-          fProcessMCRecCorrelationsWithOptions.GetHistogramsList()->Clear();
+          fProcessMCRecCorrelationsWithOptions->GetHistogramsList()->Clear();
         }
       }
       if (fDoProcessPairAnalysis) {
@@ -1486,7 +1503,7 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
       /* if not additional MC rec results we remove the content from the output list */
       if (fDoProcessCorrelations) {
         if (fMCRecOption == kNone) {
-          fProcessMCRecCorrelationsWithOptions.GetHistogramsList()->Clear();
+          fProcessMCRecCorrelationsWithOptions->GetHistogramsList()->Clear();
         }
       }
     }
@@ -1499,8 +1516,8 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
       fProcessTruePairAnalysis.GetHistogramsList()->Clear();
     }
     if (fDoProcessCorrelations) {
-      fProcessMCRecCorrelationsWithOptions.GetHistogramsList()->Clear();
-      fProcessTrueCorrelations.GetHistogramsList()->Clear();
+      fProcessMCRecCorrelationsWithOptions->GetHistogramsList()->Clear();
+      fProcessTrueCorrelations->GetHistogramsList()->Clear();
     }
   }
 }
@@ -1543,9 +1560,9 @@ void AliAnalysisTaskCorrelationsStudies::UserExec(Option_t *)
 
     /* process reconstructed tracks if not a fast MC analysis */
     if (!fEventCuts->IsMConlyTruth()) {
-      if (fDoProcessCorrelations && fProcessCorrelations.GetUseSimulation()) {
+      if (fDoProcessCorrelations && fProcessCorrelations->GetUseSimulation()) {
         /* process rec tracks with potential simulation */
-        for (Int_t nsim = 0; nsim < fProcessCorrelations.GetSimEventsPerEvent(); nsim++) {
+        for (Int_t nsim = 0; nsim < fProcessCorrelations->GetSimEventsPerEvent(); nsim++) {
           /* skip sensible process if additional simulation event is ongoing */
           ProcessTracks(nsim != 0);
         }
@@ -1570,9 +1587,9 @@ void AliAnalysisTaskCorrelationsStudies::UserExec(Option_t *)
     AliInfo("Processed event!");
     PostData(1, fOutput);
     if (fDoProcessCorrelations) {
-      PostData(2, fProcessCorrelations.GetHistogramsList());
-      PostData(3, fProcessMCRecCorrelationsWithOptions.GetHistogramsList());
-      PostData(4, fProcessTrueCorrelations.GetHistogramsList());
+      PostData(2, fProcessCorrelations->GetHistogramsList());
+      PostData(3, fProcessMCRecCorrelationsWithOptions->GetHistogramsList());
+      PostData(4, fProcessTrueCorrelations->GetHistogramsList());
     }
 }
 
@@ -1599,10 +1616,10 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
   /* initialize correlation function activities */
   /* reject event if not correctly initialized */
   if (fDoProcessCorrelations) {
-    if (!fProcessCorrelations.StartEvent(centrality,vertexz)) return;
+    if (!fProcessCorrelations->StartEvent(centrality,vertexz)) return;
     if (fEventCuts->IsMC()) {
       if (fMCRecOption != kNone) {
-        if (!fProcessMCRecCorrelationsWithOptions.StartEvent(centrality,vertexz)) return;
+        if (!fProcessMCRecCorrelationsWithOptions->StartEvent(centrality,vertexz)) return;
       }
     }
   }
@@ -1689,23 +1706,23 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
 
       /* track accepted, process correlation function activities */
       if (fDoProcessCorrelations) {
-        fProcessCorrelations.ProcessTrack(i, vtrack);
+        fProcessCorrelations->ProcessTrack(i, vtrack);
         /* only process rec with true values if MC and this is not an additional simulated event */
         if (fEventCuts->IsMC() && !simulated) {
           switch (fMCRecOption) {
           case kRecWithTrue:
             /* additional results with reconstructed with true values */
             if (AliCSAnalysisCutsBase::GetMCEventHandler() != NULL) {
-              fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, fMCEvent->GetTrack(vtrack->GetLabel()));
+              fProcessMCRecCorrelationsWithOptions->ProcessTrack(i, fMCEvent->GetTrack(vtrack->GetLabel()));
             }
             else {
-              fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, (AliVParticle *) arrayMC->At(vtrack->GetLabel()));
+              fProcessMCRecCorrelationsWithOptions->ProcessTrack(i, (AliVParticle *) arrayMC->At(vtrack->GetLabel()));
             }
             break;
           case kRecTruePrimaries:
             /* additional results with true primary reconstructed tracks */
             if (fTrackSelectionCuts->IsTruePrimary(vtrack)) {
-              fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, vtrack);
+              fProcessMCRecCorrelationsWithOptions->ProcessTrack(i, vtrack);
             }
             break;
           case kRecTruePrimariesWithTrue:
@@ -1713,16 +1730,16 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
             if (fTrackSelectionCuts->IsTruePrimary(vtrack)) {
               /* but using the true values */
               if (AliCSAnalysisCutsBase::GetMCEventHandler() != NULL) {
-                fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, fMCEvent->GetTrack(vtrack->GetLabel()));
+                fProcessMCRecCorrelationsWithOptions->ProcessTrack(i, fMCEvent->GetTrack(vtrack->GetLabel()));
               }
               else {
-                fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, (AliVParticle *) arrayMC->At(vtrack->GetLabel()));
+                fProcessMCRecCorrelationsWithOptions->ProcessTrack(i, (AliVParticle *) arrayMC->At(vtrack->GetLabel()));
               }
             }
             break;
           case kRecWithNotAccepted:
             /* additional results with accepted and not accepted reconstructed tracks */
-            fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, vtrack);
+            fProcessMCRecCorrelationsWithOptions->ProcessTrack(i, vtrack);
             break;
           default:
             break;
@@ -1758,7 +1775,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
             /* additional results with accepted and not accepted reconstructed tracks */
             /* but only with its corresponding true accepted, for the time being */
             if (fTrackSelectionCuts->IsTrueTrackAccepted(vtrack)) {
-              fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, vtrack);
+              fProcessMCRecCorrelationsWithOptions->ProcessTrack(i, vtrack);
             }
             break;
           default:
@@ -1776,11 +1793,11 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
 
   /* and finalize correlation function activities */
   if (fDoProcessCorrelations) {
-    fProcessCorrelations.ProcessEventData();
+    fProcessCorrelations->ProcessEventData();
     /* only process rec with true if MC and this is not an additional simulated event */
     if (fEventCuts->IsMC() && !simulated) {
       if (fMCRecOption != kNone) {
-        fProcessMCRecCorrelationsWithOptions.ProcessEventData();
+        fProcessMCRecCorrelationsWithOptions->ProcessEventData();
       }
     }
   }
@@ -1816,7 +1833,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
  /* initialize correlation function activities */
   /* reject event if not correctly initialized */
   if (fDoProcessCorrelations) {
-    if (!fProcessTrueCorrelations.StartEvent(centrality,vertexz)) return;
+    if (!fProcessTrueCorrelations->StartEvent(centrality,vertexz)) return;
   }
 
   Int_t nNoOfTrueReconstructedAndAccepted = 0;
@@ -1940,7 +1957,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
         }
         /* track accepted, process correlation function activities */
         if (fDoProcessCorrelations) {
-           fProcessTrueCorrelations.ProcessTrack(iTrack, part);
+           fProcessTrueCorrelations->ProcessTrack(iTrack, part);
         }
       }
     }
@@ -1951,7 +1968,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
   }
   /* and finalize correlation function activities */
   if (fDoProcessCorrelations) {
-    fProcessTrueCorrelations.ProcessEventData();
+    fProcessTrueCorrelations->ProcessEventData();
   }
 
   if (!fEventCuts->IsMConlyTruth()) {
@@ -1986,25 +2003,25 @@ void AliAnalysisTaskCorrelationsStudies::FinishTaskOutput() {
 
   if (fDoProcessCorrelations) {
     if (!fEventCuts->IsMConlyTruth()) {
-      fProcessCorrelations.FinalizeProcess();
+      fProcessCorrelations->FinalizeProcess();
     }
     if (fEventCuts->IsMC()) {
       if (fMCRecOption != kNone) {
-        fProcessMCRecCorrelationsWithOptions.FinalizeProcess();
+        fProcessMCRecCorrelationsWithOptions->FinalizeProcess();
       }
-      fProcessTrueCorrelations.FinalizeProcess();
+      fProcessTrueCorrelations->FinalizeProcess();
     }
   }
 
   if (fDoProcessCorrelations) {
     if (!fEventCuts->IsMConlyTruth()) {
-      PostData(2, fProcessCorrelations.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+      PostData(2, fProcessCorrelations->GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
     }
     if (fEventCuts->IsMC()) {
       if (fMCRecOption != kNone) {
-        PostData(3, fProcessMCRecCorrelationsWithOptions.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+        PostData(3, fProcessMCRecCorrelationsWithOptions->GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
       }
-      PostData(4, fProcessTrueCorrelations.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+      PostData(4, fProcessTrueCorrelations->GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
     }
   }
 

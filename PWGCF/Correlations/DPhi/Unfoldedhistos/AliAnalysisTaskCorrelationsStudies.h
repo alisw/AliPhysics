@@ -28,7 +28,7 @@ class TRandom3;
 #include "AliCSEventCuts.h"
 #include "AliCSTrackSelection.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliDptDptCorrelations.h"
+#include "AliTwoParticleCorrelationsBase.h"
 #include "AliCSPairAnalysis.h"
 
 /// class AliAnalysisTaskCorrelationsStudies
@@ -119,9 +119,9 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     Bool_t                      fDoProcessCorrelations;       ///< perform the correlation analysis data collection
     Bool_t                      fDoProcessPairAnalysis;       ///< perform the pairs analysis data collection
     mcRecOptions                fMCRecOption;                 ///< options for the additional MC rec results
-    AliDptDptCorrelations       fProcessCorrelations;         ///< the processing correlations instance
-    AliDptDptCorrelations       fProcessMCRecCorrelationsWithOptions; ///< the processing correlations instance for MC rec with additional options
-    AliDptDptCorrelations       fProcessTrueCorrelations;     ///< the processing correlations instance for MC truth
+    AliTwoParticleCorrelationsBase       *fProcessCorrelations;                   ///< the processing correlations instance
+    AliTwoParticleCorrelationsBase       *fProcessMCRecCorrelationsWithOptions;   ///< the processing correlations instance for MC rec with additional options
+    AliTwoParticleCorrelationsBase       *fProcessTrueCorrelations;               ///< the processing correlations instance for MC truth
     AliCSPairAnalysis           fProcessPairAnalysis;         ///< the processing pairs analysis instance
     AliCSPairAnalysis           fProcessTruePairAnalysis;     ///< the processing pairs analysis instance for MC truth
     TF1                        *ffEfficiencyProfile;          ///< the formula for the efficiency profile to enforce
@@ -202,7 +202,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     AliAnalysisTaskCorrelationsStudies& operator=(const AliAnalysisTaskCorrelationsStudies&); // not implemented
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskCorrelationsStudies, 4);
+    ClassDef(AliAnalysisTaskCorrelationsStudies, 5);
     /// \endcond
 };
 
