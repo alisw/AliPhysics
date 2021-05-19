@@ -98,7 +98,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fFMaxOpanCut(NULL),
   fMaxR(180),
   fMinPt(0.),
-  fMaxPt(200.),
+  fMaxPt(99999.),
   fSelectionLow(0.0),
   fSelectionHigh(4),
   fSelectionNSigmaLow(999),
