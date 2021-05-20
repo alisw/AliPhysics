@@ -63,6 +63,7 @@ class AliAnalysisTaskUpc4Pi : public AliAnalysisTaskSE {
 	Bool_t LikeSign_T;
 	Float_t Mass_T;
 	Float_t Pt_T;
+	Int_t Trigger_T;
 	Float_t Rapidity_T;
 	Int_t V0Adecision_T;
 	Int_t V0Cdecision_T;
@@ -166,7 +167,7 @@ class AliAnalysisTaskUpc4Pi : public AliAnalysisTaskSE {
 	AliAnalysisTaskUpc4Pi(const AliAnalysisTaskUpc4Pi&); //not implemented
 	AliAnalysisTaskUpc4Pi& operator =(const AliAnalysisTaskUpc4Pi&); //not implemented
   
- 	ClassDef(AliAnalysisTaskUpc4Pi, 6); 
+ 	ClassDef(AliAnalysisTaskUpc4Pi, 7); 
 
 };
 
