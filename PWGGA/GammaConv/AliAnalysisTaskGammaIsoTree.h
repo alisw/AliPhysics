@@ -724,6 +724,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_ClusterM02; 
     std::vector<Float_t> fBuffer_ClusterM02Recalc; 
     std::vector<Float_t> fBuffer_ClusterM20; 
+    std::vector<UShort_t> fBuffer_ClusterNCells; 
     std::vector<Float_t> fBuffer_ClusterV1SplitMass; 
     std::vector<UShort_t> fBuffer_ClusterNLM; 
     std::vector<UShort_t> fBuffer_ClusterSM; // super module 
@@ -813,7 +814,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Float_t CalculateIsoCorrectionFactor(Double_t cEta, Double_t maxEta, Double_t r);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 40);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 41);
 
 };
 
