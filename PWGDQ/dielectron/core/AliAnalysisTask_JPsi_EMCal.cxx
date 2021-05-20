@@ -3267,85 +3267,110 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                 
                 
                 //only electrons after TPC eID
-                  if(fTPCnSigma >= fTPCnsigmaCutMin && fTPCnSigma <= fTPCnsigmaCutMax){
+                // if(fTPCnSigma >= fTPCnsigmaCutMin && fTPCnSigma <= fTPCnsigmaCutMax){
                       
-                      //checking correlation between energy and pT
-                      fHist_energy_pT[0]->Fill(fClus->E(), track->Pt());
-                      if(feg1)fHist_energy_pT[1]->Fill(fClus->E(), track->Pt());
-                      if(feg2)fHist_energy_pT[2]->Fill(fClus->E(), track->Pt());
-                      if(fdg1)fHist_energy_pT[3]->Fill(fClus->E(), track->Pt());
-                      if(fdg2)fHist_energy_pT[4]->Fill(fClus->E(), track->Pt());
-                      if(feg1 || fdg1)fHist_energy_pT[5]->Fill(fClus->E(), track->Pt());
-                      if(feg2 || fdg2)fHist_energy_pT[6]->Fill(fClus->E(), track->Pt());
+                //instead of TPCnsigma, let's use true e from MC, to avoid hadron contamination!!!
+                if(fIsMC)
+                {
+                    if(fIsAOD)
+                    {
+                        fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+                        
+                        if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
+                        {
+                            
+                            if(fMCparticle->GetMother()>0){
+                                
+                                fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                                if(fMCparticleMother->GetMother()>0){
+                                    fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                                }
+                                
+                                if(fMCparticle->IsPhysicalPrimary())
+                                {
+                                    if(TMath::Abs(fMCparticle->GetPdgCode())==11){
+                      
+                      
+                                        //checking correlation between energy and pT
+                                        fHist_energy_pT[0]->Fill(fClus->E(), track->Pt());
+                                        if(feg1)fHist_energy_pT[1]->Fill(fClus->E(), track->Pt());
+                                        if(feg2)fHist_energy_pT[2]->Fill(fClus->E(), track->Pt());
+                                        if(fdg1)fHist_energy_pT[3]->Fill(fClus->E(), track->Pt());
+                                        if(fdg2)fHist_energy_pT[4]->Fill(fClus->E(), track->Pt());
+                                        if(feg1 || fdg1)fHist_energy_pT[5]->Fill(fClus->E(), track->Pt());
+                                        if(feg2 || fdg2)fHist_energy_pT[6]->Fill(fClus->E(), track->Pt());
                 
-                      //to check trigger efficiency using Energy
-                      fECluster_mb->Fill(fClus->E());
-                      if(feg1)fECluster_eg1->Fill(fClus->E());
-                      if(feg2)fECluster_eg2->Fill(fClus->E());
+                                        //to check trigger efficiency using Energy
+                                        fECluster_mb->Fill(fClus->E());
+                                        if(feg1)fECluster_eg1->Fill(fClus->E());
+                                        if(feg2)fECluster_eg2->Fill(fClus->E());
                       
-                      if(fdg1)fECluster_dg1->Fill(fClus->E());
-                      if(fdg2)fECluster_dg2->Fill(fClus->E());
+                                        if(fdg1)fECluster_dg1->Fill(fClus->E());
+                                        if(fdg2)fECluster_dg2->Fill(fClus->E());
                 
-                      //to check trigger efficiency using Energy for each super module
-                      fECluster_mb_SM->Fill(supermoduleID,fClus->E());
-                      if(feg1)fECluster_eg1_SM->Fill(supermoduleID,fClus->E());
-                      if(feg2)fECluster_eg2_SM->Fill(supermoduleID,fClus->E());
+                                        //to check trigger efficiency using Energy for each super module
+                                        fECluster_mb_SM->Fill(supermoduleID,fClus->E());
+                                        if(feg1)fECluster_eg1_SM->Fill(supermoduleID,fClus->E());
+                                        if(feg2)fECluster_eg2_SM->Fill(supermoduleID,fClus->E());
                       
-                      if(fdg1)fECluster_dg1_SM->Fill(supermoduleID,fClus->E());
-                      if(fdg2)fECluster_dg2_SM->Fill(supermoduleID,fClus->E());
+                                        if(fdg1)fECluster_dg1_SM->Fill(supermoduleID,fClus->E());
+                                        if(fdg2)fECluster_dg2_SM->Fill(supermoduleID,fClus->E());
                       
-                      //emcal&dcal
-                      if(feg1 || fdg1)fECluster_deg1_SM->Fill(supermoduleID,fClus->E());
-                      if(feg2 || fdg2)fECluster_deg2_SM->Fill(supermoduleID,fClus->E());
+                                        //emcal&dcal
+                                        if(feg1 || fdg1)fECluster_deg1_SM->Fill(supermoduleID,fClus->E());
+                                        if(feg2 || fdg2)fECluster_deg2_SM->Fill(supermoduleID,fClus->E());
                 
-                      //not true e from true J/psi, track is on emcal necessarily
-                      fPt_mb_SM->Fill(supermoduleID,track->Pt());//MB
-                      if(feg1)fPt_eg1_SM->Fill(supermoduleID,track->Pt());
-                      if(feg2)fPt_eg2_SM->Fill(supermoduleID,track->Pt());
+                                        //not true e from true J/psi, track is on emcal necessarily
+                                        fPt_mb_SM->Fill(supermoduleID,track->Pt());//MB
+                                        if(feg1)fPt_eg1_SM->Fill(supermoduleID,track->Pt());
+                                        if(feg2)fPt_eg2_SM->Fill(supermoduleID,track->Pt());
                       
-                      if(fdg1)fPt_dg1_SM->Fill(supermoduleID,track->Pt());
-                      if(fdg2)fPt_dg2_SM->Fill(supermoduleID,track->Pt());
+                                        if(fdg1)fPt_dg1_SM->Fill(supermoduleID,track->Pt());
+                                        if(fdg2)fPt_dg2_SM->Fill(supermoduleID,track->Pt());
                       
-                      //emcal&dcal
-                      if(feg1 || fdg1)fPt_deg1_SM->Fill(supermoduleID,track->Pt());
-                      if(feg2 || fdg2)fPt_deg2_SM->Fill(supermoduleID,track->Pt());
+                                        //emcal&dcal
+                                        if(feg1 || fdg1)fPt_deg1_SM->Fill(supermoduleID,track->Pt());
+                                        if(feg2 || fdg2)fPt_deg2_SM->Fill(supermoduleID,track->Pt());
                 
-                      //checking ET
-                      Double_t fvertex_vector[3]={fXvtx, fYvtx, fZvtx};
+                                        //checking ET
+                                        Double_t fvertex_vector[3]={fXvtx, fYvtx, fZvtx};
                 
                 
-                      TLorentzVector cluster_vector;
-                      fClus->GetMomentum(cluster_vector,fvertex_vector);
+                                        TLorentzVector cluster_vector;
+                                        fClus->GetMomentum(cluster_vector,fvertex_vector);
                 
-                      //Getting Et
-                      Float_t ET = cluster_vector.Pt();
-                      //printf("Getting ET from TLorentzVector: Ex = %f, Ey = %f, Ez = %f,E_total = %f,  ET = %f\n", cluster_vector[0], cluster_vector[1], cluster_vector[2], cluster_vector[3],ET);
+                                        //Getting Et
+                                        Float_t ET = cluster_vector.Pt();
+                                        //printf("Getting ET from TLorentzVector: Ex = %f, Ey = %f, Ez = %f,E_total = %f,  ET = %f\n", cluster_vector[0], cluster_vector[1], cluster_vector[2], cluster_vector[3],ET);
                 
-                      //printf("Energy from fClus->E() = %f \n", fClus->E());
+                                        //printf("Energy from fClus->E() = %f \n", fClus->E());
                 
-                      //to check trigger efficiency using Energy
-                      fECluster_ET_mb->Fill(ET);
-                      if(feg1)fECluster_ET_eg1->Fill(ET);
-                      if(feg2)fECluster_ET_eg2->Fill(ET);
+                                        //to check trigger efficiency using Energy
+                                        fECluster_ET_mb->Fill(ET);
+                                        if(feg1)fECluster_ET_eg1->Fill(ET);
+                                        if(feg2)fECluster_ET_eg2->Fill(ET);
                       
-                      if(fdg1)fECluster_ET_dg1->Fill(ET);
-                      if(fdg2)fECluster_ET_dg2->Fill(ET);
+                                        if(fdg1)fECluster_ET_dg1->Fill(ET);
+                                        if(fdg2)fECluster_ET_dg2->Fill(ET);
                 
-                      //to check trigger efficiency using Energy for each super module
-                      fECluster_ET_mb_SM->Fill(supermoduleID,ET);
-                      if(feg1)fECluster_ET_eg1_SM->Fill(supermoduleID,ET);
-                      if(feg2)fECluster_ET_eg2_SM->Fill(supermoduleID,ET);
+                                        //to check trigger efficiency using Energy for each super module
+                                        fECluster_ET_mb_SM->Fill(supermoduleID,ET);
+                                        if(feg1)fECluster_ET_eg1_SM->Fill(supermoduleID,ET);
+                                        if(feg2)fECluster_ET_eg2_SM->Fill(supermoduleID,ET);
                       
-                      if(fdg1)fECluster_ET_dg1_SM->Fill(supermoduleID,ET);
-                      if(fdg2)fECluster_ET_dg2_SM->Fill(supermoduleID,ET);
+                                        if(fdg1)fECluster_ET_dg1_SM->Fill(supermoduleID,ET);
+                                        if(fdg2)fECluster_ET_dg2_SM->Fill(supermoduleID,ET);
                       
-                      //emcal&dcal
-                      if(feg1 || fdg1)fECluster_ET_deg1_SM->Fill(supermoduleID,ET);
-                      if(feg2 || fdg2)fECluster_ET_deg2_SM->Fill(supermoduleID,ET);
-                      
-			  
-                      
-                  }
+                                        //emcal&dcal
+                                        if(feg1 || fdg1)fECluster_ET_deg1_SM->Fill(supermoduleID,ET);
+                                        if(feg2 || fdg2)fECluster_ET_deg2_SM->Fill(supermoduleID,ET);
+
+                                    }//change true electrons from MC
+                                }
+                            }
+                        }
+                    }
+                }
 			    //}
                 //EID THnsparse
 				
