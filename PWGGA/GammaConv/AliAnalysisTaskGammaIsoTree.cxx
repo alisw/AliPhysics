@@ -424,6 +424,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_ClusterM02(0), 
   fBuffer_ClusterM02Recalc(0), 
   fBuffer_ClusterM20(0), 
+  fBuffer_ClusterNCells(0), 
   fBuffer_ClusterV1SplitMass(0), 
   fBuffer_ClusterNLM(0), 
   fBuffer_ClusterSM(0), 
@@ -866,6 +867,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_ClusterM02(0), 
   fBuffer_ClusterM02Recalc(0), 
   fBuffer_ClusterM20(0), 
+  fBuffer_ClusterNCells(0), 
   fBuffer_ClusterV1SplitMass(0), 
   fBuffer_ClusterNLM(0), 
   fBuffer_ClusterSM(0), 
@@ -2500,6 +2502,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     fAnalysisTree->Branch("Cluster_M02","std::vector<Float_t>",&fBuffer_ClusterM02);
     fAnalysisTree->Branch("Cluster_M02Recalc","std::vector<Float_t>",&fBuffer_ClusterM02Recalc);
     fAnalysisTree->Branch("Cluster_M20","std::vector<Float_t>",&fBuffer_ClusterM20);
+    fAnalysisTree->Branch("Cluster_NCells","std::vector<UShort_t>",&fBuffer_ClusterNCells);
     fAnalysisTree->Branch("Cluster_V1SplitMass","std::vector<Float_t>",&fBuffer_ClusterV1SplitMass);
     fAnalysisTree->Branch("Cluster_NLM","std::vector<UShort_t>",&fBuffer_ClusterNLM);
     fAnalysisTree->Branch("Cluster_SM","std::vector<UShort_t>",&fBuffer_ClusterSM);
@@ -2788,6 +2791,7 @@ void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
   fBuffer_ClusterM02.clear(); 
   fBuffer_ClusterM02Recalc.clear(); 
   fBuffer_ClusterM20.clear(); 
+  fBuffer_ClusterNCells.clear(); 
   fBuffer_ClusterV1SplitMass.clear(); 
   fBuffer_ClusterNLM.clear(); 
   fBuffer_ClusterSM.clear(); 
@@ -5658,6 +5662,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   // Caluclate M02
   Double_t m02 = clus->GetM02();
   Double_t m20 = clus->GetM20();
+  UShort_t ncells = clus->GetNCells();
 
   // Recalculate M02 (should only be used when using V2 clusterizer!)
   Int_t   nMaxima5x5 = 0; // output: number of local maxima on NxN region
@@ -5791,6 +5796,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   fBuffer_ClusterM02.push_back(clusM02);
   fBuffer_ClusterM02Recalc.push_back(m02_5x5);
   fBuffer_ClusterM20.push_back(clusM20);
+  fBuffer_ClusterNCells.push_back(ncells);
   fBuffer_ClusterV1SplitMass.push_back(clusV1SplitMass);
   fBuffer_ClusterNLM.push_back(nlm);
   fBuffer_ClusterSM.push_back(SMNumber);
