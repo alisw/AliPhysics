@@ -79,7 +79,7 @@ AliAnalysisTaskUpc4Pi::AliAnalysisTaskUpc4Pi()
 	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0),
 	fHistdEdxVsP1(0),fHistdEdxVsP2(0),fHistdEdxVsP3(0),fHistdEdxVsP4(0),fHistdEdxVsP5(0),
 	fHistdEdxVsP6(0),fHistdEdxVsP7(0),fHistdEdxVsP8(0),fHistdEdxVsP9(0) , fDeltaPhiRho(0), 
-	fDeltaPhiEe(0), FORChip(0)
+	fDeltaPhiEe(0), FORChip(0),Trigger_T(0)
 {
 //Dummy constructor
 }
@@ -102,7 +102,7 @@ AliAnalysisTaskUpc4Pi::AliAnalysisTaskUpc4Pi(const char *name, Bool_t _isMC)
 	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0),
 	fHistdEdxVsP1(0),fHistdEdxVsP2(0),fHistdEdxVsP3(0),fHistdEdxVsP4(0),fHistdEdxVsP5(0),
 	fHistdEdxVsP6(0),fHistdEdxVsP7(0),fHistdEdxVsP8(0),fHistdEdxVsP9(0), fDeltaPhiRho(0), 
-	fDeltaPhiEe(0), FORChip(0)
+	fDeltaPhiEe(0), FORChip(0),Trigger_T(0)
 {
   if(debugMode) std::cout<<"Initialization..."<<std::endl;
   Init();
@@ -138,6 +138,7 @@ AliAnalysisTaskUpc4Pi::~AliAnalysisTaskUpc4Pi()
 
 void AliAnalysisTaskUpc4Pi::Init()
 {
+	Trigger_T=0;
 	for (Int_t i=0;i<Maxtrk;i++){
 	//for (Int_t i=0;i<4;i++){
 		PIDTPCPion_T[i] = -20;
@@ -212,6 +213,7 @@ void AliAnalysisTaskUpc4Pi::UserCreateOutputObjects()
 	f4PiTree1->Branch("TrackC1_T",&TrackC_T,"TrackC_T[28]/I");
 	f4PiTree1->Branch("TrackEta1_T",&TrackEta_T,"TrackEta_T[28]/F");
 	f4PiTree1->Branch("TrackPhi1_T",&TrackPhi_T,"TrackPhi_T[28]/F");
+	f4PiTree1->Branch("Trigger1_T",&Trigger_T,"Trigger_T/I");
 //	f4PiTree1->Branch("TrackPx1_T",&TrackPx_T,"TrackPx_T[8]/F");
 //	f4PiTree1->Branch("TrackPy1_T",&TrackPy_T,"TrackPy_T[8]/F");
 //	f4PiTree1->Branch("TrackPz1_T",&TrackPz_T,"TrackPz_T[8]/F");
@@ -446,14 +448,25 @@ void AliAnalysisTaskUpc4Pi::UserExec(Option_t *)
   TString trigger = esd->GetFiredTriggerClasses();
 
   // triggered in data for lumi scalling
-  if(!isMC && trigger.Contains(fTriggerName.Data())) {
-  	fHistTriggersPerRun->Fill(esd->GetRunNumber());
-  	if(debugMode)std::cout<<trigger<<std::endl;
-  }
+  //if(!isMC && trigger.Contains(fTriggerName.Data())) {
+  //	if(debugMode)std::cout<<trigger<<std::endl;
+ // }
 
   // CCUP9-B - *0VBA *0VBC *0UBA *0UBC 0STP
+	Trigger_T=0;
   if (!isMC) { // data
-  	if (!trigger.Contains(fTriggerName.Data())) return;
+	if (esd->GetRunNumber() < 295828){
+  	if (trigger.Contains("CCUP9-B")) Trigger_T = 2;
+  	if (trigger.Contains("CCUP8")) Trigger_T = 1;
+	}
+      if(esd->GetRunNumber()>=295881 && esd->GetRunNumber()<296594)
+      if(trigger.Contains("CCUP29-B-SPD2-CENTNOTRD") || trigger.Contains("CCUP30-B-SPD2-CENTNOTRD") || trigger.Contains("CCUP31-B-SPD2-CENTNOTRD")) Trigger_T = 3;
+    if(esd->GetRunNumber()>=296594)
+      if(trigger.Contains("CCUP29-U-SPD2-CENTNOTRD") || trigger.Contains("CCUP30-B-SPD2-CENTNOTRD")  || trigger.Contains("CCUP31-B-SPD2-CENTNOTRD")) Trigger_T = 3;
+    if(esd->GetRunNumber()<295881 && esd->GetRunNumber() > 295828)
+      if(trigger.Contains("CCUP29-B-NOPF-CENTNOTRD") || trigger.Contains("CCUP30-B-NOPF-CENTNOTRD") || trigger.Contains("CCUP31-B-NOPF-CENTNOTRD")) Trigger_T = 3;
+	if (!Trigger_T) return;
+	else fHistTriggersPerRun->Fill(esd->GetRunNumber());
   }
   else { // MC
   	if (!IsTriggered(esd)) return;
@@ -676,7 +689,7 @@ for (Int_t it=0;it < Maxtrk; it++){
 	Int_t SPDOuter[40]; for (Int_t i=0; i<40; ++i) SPDOuter[i]=0;
 
 	ChipCut_T = 0;
-	SPDInner[ITSModuleInner_T[0]/4]++;
+/*	SPDInner[ITSModuleInner_T[0]/4]++;
 	SPDInner[ITSModuleInner_T[1]/4]++;
 	if (//(fTriggerName == "CCUP9-B") &&
 		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
@@ -694,7 +707,7 @@ for (Int_t it=0;it < Maxtrk; it++){
 		||(fFOmodules[ITSModuleInner_T[3]] == 0)||(fFOmodules[ITSModuleOuter_T[3]] == 0)
 		|| !Is0STPfired(SPDInner,SPDOuter))) ChipCut_T = 1;
   }
-    Int_t fFOcounter = 0;
+  */  Int_t fFOcounter = 0;
   	for(Int_t chipkey=0;chipkey<1200;chipkey++){
   		if (esd->GetMultiplicity()->TestFastOrFiredChips(chipkey)){
   			fFOchip->Fill(chipkey);
