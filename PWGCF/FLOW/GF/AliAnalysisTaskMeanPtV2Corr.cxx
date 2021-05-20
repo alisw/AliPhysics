@@ -350,6 +350,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     oba->Add(new TNamed("ChFull32","ChFull32")); //no-gap case
     oba->Add(new TNamed("ChFull34","ChFull34")); //no-gap case
 
+    oba->Add(new TNamed("ChGap42","ChGap42")); //gap case
+
     oba->Add(new TNamed("LM22","LM22")); //for gap (|eta|>0.4) case
     oba->Add(new TNamed("MR22","MR22")); //for gap (|eta|>0.4) case
     oba->Add(new TNamed("LR22","LR22")); //for gap (|eta|>0.4) case
@@ -359,6 +361,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     oba->Add(new TNamed("LMRR24","LMRR24")); //for gap (|eta|>0.4) case
 
     oba->Add(new TNamed("ChSC234","ChSC234")); //for SC{2,3}
+    oba->Add(new TNamed("ChSC244","ChSC244")); //for SC{2,4}
 
     //Following is for PID. Let's remove it for now to save some memory
 /*    oba->Add(new TNamed("ChPos22","ChPos22"));
@@ -578,6 +581,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     oba->Add(new TNamed("ChFull32","ChFull32")); //no-gap case
     oba->Add(new TNamed("ChFull34","ChFull34")); //no-gap case
 
+    oba->Add(new TNamed("ChGap42","ChGap42")); //gap case
+
     oba->Add(new TNamed("LM22","LM22")); //for gap (|eta|>0.4) case
     oba->Add(new TNamed("MR22","MR22")); //for gap (|eta|>0.4) case
     oba->Add(new TNamed("LR22","LR22")); //for gap (|eta|>0.4) case
@@ -587,6 +592,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     oba->Add(new TNamed("LMRR24","LMRR24")); //for gap (|eta|>0.4) case
 
     oba->Add(new TNamed("ChSC234","ChSC234")); //for SC{2,3}
+    oba->Add(new TNamed("ChSC244","ChSC244")); //for SC{2,3}
 
     fFC = new AliGFWFlowContainer();
     TString fcname("FlowContainer");
@@ -1398,6 +1404,8 @@ void AliAnalysisTaskMeanPtV2Corr::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("ChGap34","refP {3 3} refN {-3 -3}", kFALSE));
   corrconfigs.push_back(GetConf("ChFull32","mid {3 -3}", kFALSE));
   corrconfigs.push_back(GetConf("ChFull34","mid {3 3 -3 -3}", kFALSE));
+
+  corrconfigs.push_back(GetConf("ChGap42","refP {4} refN {-4}", kFALSE));
 //v24 3-sub
   if(fEtaV2Sep<0) return; //if eta < 0, then pos & neg are w/o SE and thus doesn't make sense to calculate v24
   corrconfigs.push_back(GetConf("LM22","refP {2} subMid {-2}", kFALSE));
@@ -1408,6 +1416,8 @@ void AliAnalysisTaskMeanPtV2Corr::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("LMRR24","refP {2} subMid {2} refN {-2 -2}", kFALSE));
 
   corrconfigs.push_back(GetConf("ChSC234","refP {2 3} refN {-2 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("ChSC244","refP {2 4} refN {-2 -4}", kFALSE));
+
 
   return;
 

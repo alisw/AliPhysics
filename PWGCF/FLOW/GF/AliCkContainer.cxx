@@ -25,18 +25,10 @@ void AliCkContainer::Initialize(Int_t nbinsx, const Double_t* xbins) {
   if(fObsList) delete fObsList;
   fObsList = new TList();
   fObsList->SetOwner(kTRUE);
-  AliProfileBS *lwpsq = new AliProfileBS(Form("%s_wpsq",this->GetName()),this->GetTitle(),nbinsx,xbins);
-  fObsList->Add(lwpsq);
-  AliProfileBS *lwpw = new AliProfileBS(Form("%s_wpw",this->GetName()),this->GetTitle(),nbinsx,xbins);
-  fObsList->Add(lwpw);
-  AliProfileBS *lwsq = new AliProfileBS(Form("%s_wsq",this->GetName()),this->GetTitle(),nbinsx,xbins);
-  fObsList->Add(lwsq);
-  AliProfileBS *lw2p2 = new AliProfileBS(Form("%s_w2p2",this->GetName()),this->GetTitle(),nbinsx,xbins);
-  fObsList->Add(lw2p2);
-  AliProfileBS *lw2p = new AliProfileBS(Form("%s_w2p",this->GetName()),this->GetTitle(),nbinsx,xbins);
-  fObsList->Add(lw2p);
-  AliProfileBS *lw2 = new AliProfileBS(Form("%s_w2",this->GetName()),this->GetTitle(),nbinsx,xbins);
-  fObsList->Add(lw2);
+  AliProfileBS *consterm = new AliProfileBS(Form("%s_consterm",this->GetName()),this->GetTitle(),nbinsx,xbins);
+  fObsList->Add(consterm);
+  AliProfileBS *linterm = new AliProfileBS(Form("%s_linterm",this->GetName()),this->GetTitle(),nbinsx,xbins);
+  fObsList->Add(linterm);
   AliProfileBS *lmpt = new AliProfileBS(Form("%s_mpt",this->GetName()),this->GetTitle(),nbinsx,xbins);
   fObsList->Add(lmpt);
 };
@@ -44,18 +36,10 @@ void AliCkContainer::Initialize(Int_t nbinsx, Double_t xmin, Double_t xmax) {
   if(fObsList) delete fObsList;
   fObsList = new TList();
   fObsList->SetOwner(kTRUE);
-  AliProfileBS *lwpsq = new AliProfileBS(Form("%s_wpsq",this->GetName()),this->GetTitle(),nbinsx,xmin,xmax);
-  fObsList->Add(lwpsq);
-  AliProfileBS *lwpw = new AliProfileBS(Form("%s_wpw",this->GetName()),this->GetTitle(),nbinsx,xmin,xmax);
-  fObsList->Add(lwpw);
-  AliProfileBS *lwsq = new AliProfileBS(Form("%s_wsq",this->GetName()),this->GetTitle(),nbinsx,xmin,xmax);
-  fObsList->Add(lwsq);
-  AliProfileBS *lw2p2 = new AliProfileBS(Form("%s_w2p2",this->GetName()),this->GetTitle(),nbinsx,xmin,xmax);
-  fObsList->Add(lw2p2);
-  AliProfileBS *lw2p = new AliProfileBS(Form("%s_w2p",this->GetName()),this->GetTitle(),nbinsx,xmin,xmax);
-  fObsList->Add(lw2p);
-  AliProfileBS *lw2 = new AliProfileBS(Form("%s_w2",this->GetName()),this->GetTitle(),nbinsx,xmin,xmax);
-  fObsList->Add(lw2);
+  AliProfileBS *consterm = new AliProfileBS(Form("%s_consterm",this->GetName()),this->GetTitle(),nbinsx,xmin,xmax);
+  fObsList->Add(consterm);
+  AliProfileBS *linterm = new AliProfileBS(Form("%s_linterm",this->GetName()),this->GetTitle(),nbinsx,xmin,xmax);
+  fObsList->Add(linterm);
   AliProfileBS *lmpt = new AliProfileBS(Form("%s_mpt",this->GetName()),this->GetTitle(),nbinsx,xmin,xmax);
   fObsList->Add(lmpt);
 }
@@ -78,31 +62,29 @@ void AliCkContainer::FillObs(const Double_t inArr[5], const Double_t &lMult, con
 3)         -<w2p2>           = [2]     (*-1)
 4)         +2 mpt <w2p>      = [3]     (*2mpt)
 5)         - mpt2 <w2>       = [4]     (*-mpt2)
+  //To reduce number of profiles, collect terms w/ the same power of [pt]:
+0) <ck>     = <wpsq - w2p2>            = [1]*[1] - [2]
+1) +2[pt]*    <w2p1 - w1p1 * w1p0>     = [3] - [1]*[0]
+2) +[pt]^2 *  < wsq - w2p0>            = [0]*[0] - [4] ===> This is not even required, since by construction this is one (after normalizing by the weight, which is exactly the same)
   */
   Double_t lwck = inArr[0]*inArr[0] - inArr[4];
   Double_t lwpt = inArr[0];
   if(lwck==0 || lwpt==0) return;
-  ((AliProfileBS*)fObsList->At(0))->FillProfile(lMult,(inArr[1]*inArr[1])/lwck,lwck,rn);
-  ((AliProfileBS*)fObsList->At(1))->FillProfile(lMult,(inArr[1]*inArr[0])/lwck,lwck,rn);
-  ((AliProfileBS*)fObsList->At(2))->FillProfile(lMult,(inArr[0]*inArr[0])/lwck,lwck,rn);
-  ((AliProfileBS*)fObsList->At(3))->FillProfile(lMult,(inArr[2])/lwck,lwck,rn);
-  ((AliProfileBS*)fObsList->At(4))->FillProfile(lMult,(inArr[3])/lwck,lwck,rn);
-  ((AliProfileBS*)fObsList->At(5))->FillProfile(lMult,(inArr[4])/lwck,lwck,rn);
-  ((AliProfileBS*)fObsList->At(6))->FillProfile(lMult,inArr[1]/inArr[0],lwpt,rn);
+  ((AliProfileBS*)fObsList->At(0))->FillProfile(lMult,(inArr[1]*inArr[1] - inArr[2])/lwck,lwck,rn);
+  ((AliProfileBS*)fObsList->At(1))->FillProfile(lMult,(inArr[3] - inArr[1]*inArr[0])/lwck,lwck,rn);
+  ((AliProfileBS*)fObsList->At(2))->FillProfile(lMult,inArr[1]/inArr[0],lwpt,rn);
 }
 TH1 *AliCkContainer::RecalculateCkHists(TH1 **inh) {
-  inh[1]->Multiply(inh[6]);
-  inh[1]->Scale(-2);
-  inh[2]->Multiply(inh[6]);
-  inh[2]->Multiply(inh[6]);
-  inh[3]->Scale(-1);
-  inh[4]->Multiply(inh[6]);
-  inh[4]->Scale(2);
-  inh[5]->Multiply(inh[6]);
-  inh[5]->Multiply(inh[6]);
-  inh[5]->Scale(-1);
-  for(Int_t i=1;i<6;i++) inh[0]->Add(inh[i]);
-  for(Int_t i=1;i<=inh[3]->GetNbinsX();i++) inh[0]->SetBinError(i,inh[3]->GetBinError(i));
+  inh[1]->Multiply(inh[2]);
+  inh[1]->Scale(2);
+  TH1 *mptsq = (TH1*)inh[2]->Clone("mptSquared");
+  mptsq->Multiply(inh[2]);
+  TH1 *hWeights = (TH1*)inh[0]->Clone("ForErrors");
+  inh[0]->Add(inh[1]);
+  inh[0]->Add(mptsq);
+  delete mptsq;
+  for(Int_t i=1;i<=hWeights->GetNbinsX();i++) inh[0]->SetBinError(i,hWeights->GetBinError(i));
+  delete hWeights;
   return (TH1*)inh[0]->Clone("hRec");
 }
 void AliCkContainer::CalculateCks() {
@@ -110,15 +92,15 @@ void AliCkContainer::CalculateCks() {
   fCkList = new TList();
   fCkList->SetOwner(kTRUE);
   for(Int_t i=-1;i<((AliProfileBS*)fObsList->At(0))->getNSubs();i++) {
-    TH1 *hTs[7];
-    for(Int_t j=0;j<7;j++) {
+    TH1 *hTs[3];
+    for(Int_t j=0;j<3;j++) {
       ((AliProfileBS*)fObsList->At(j))->SetErrorOption("g");
       hTs[j] = ((AliProfileBS*)fObsList->At(j))->getHist(i);
     }
     TH1 *hCkRec = RecalculateCkHists(hTs);
     hCkRec->SetName(Form("Ck_Recalculated%i",i+1));
     fCkList->Add(hCkRec);
-    for(Int_t j=0;j<7;j++) delete hTs[j];
+    for(Int_t j=0;j<3;j++) delete hTs[j];
   };
 }
 TH1 *AliCkContainer::getHist(Int_t ind) {
