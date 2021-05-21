@@ -1474,7 +1474,21 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
             fMassCut = 0.650;
             fMassCut_WithNDM = 0.85;
             break;
-
+        case 19: //j overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.460;
+            break;
+        case 20: //k overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.480;
+            break;
+        case 21: //l overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.520;
+            break;
 		default:
 			cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;
