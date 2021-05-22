@@ -35,7 +35,7 @@ class TH1F;
 #include "TObjArray.h"
 #include "TLorentzVector.h"
 
-#include<vector>
+#include <vector>
 
 // AliRoot includes
 #include "AliAnalysisTaskSE.h"
@@ -56,27 +56,29 @@ public:
   virtual ~AliAnalysisTaskEMCALPi0CalibSelectionV2();
 
   void    InitGeometryMatrices();
-  void    InitializeEMCAL( AliVEvent *event );
+  void    InitializeEMCAL();
     
   void    UserCreateOutputObjects();
     
   void    FillHistograms();
   void    ProcessCells();
   void    ProcessClusters();
+
+  UShort_t GetPrimaryTracks();
   
   void    UserExec(Option_t * opt);
     
   void    PrintInfo();
 
   Bool_t  AcceptCluster( AliVCluster* c1);
-  Bool_t  IsTriggerSelected(AliVEvent *event);
+  Bool_t  IsTriggerSelected();
   Bool_t  IsJetJetMCEventAccepted( AliMCEvent *mcEvent, Double_t& weight, Float_t& pthard, AliVEvent* event, TString fPeriodName );
   
   void    SetNMaskCellColumns(Int_t n) ;
   void    SetMaskCellColumn(Int_t ipos, Int_t icol) ;
   Bool_t  MaskFrameCluster(Int_t iSM, Int_t ieta) const;
 
-  void    ResetBuffer();
+  void    ResetBufferVectors();
   void    Terminate(Option_t* opt);
     
   // Analysis parameter setting
@@ -99,6 +101,8 @@ public:
   void    SetClusterMaxTime(Float_t tmax)                { fTimeMax     = tmax       ; }
 
   void    SetAsymmetryCut(Float_t asy)                   { fAsyCut      = asy        ; }
+
+  void    SetCellMinEnergy(Float_t emin)                 { fCellEmin    = emin       ; }
   
   void    SetClusterMinEnergy(Float_t emin)              { fEmin        = emin       ; }
   
@@ -145,6 +149,7 @@ public:
 
   void    SetHeavyIon()                                  { fIsHeavyIon = kTRUE; }
   
+  void    SetNContributorsCut()                          { fNContributorsCutEnabled = kTRUE; }
   // Cluster recalculation
 
   void    SwitchOnRecalculatePosition()                  { fRecalPosition   = kTRUE  ; }
@@ -170,6 +175,9 @@ public:
   
 private:
 
+  AliVEvent*    fInputEvent;
+  AliMCEvent*   fMCEvent;
+
   AliEMCALGeometry  * fEMCALGeo;         //!<! EMCAL geometry pointer.
     
   ///< Geometry matrices with alignments.
@@ -185,6 +193,7 @@ private:
   Bool_t              fSaveCells;
   Bool_t              fSaveClusters;     ///<
   Bool_t              fIsHeavyIon;        ///<
+  Bool_t              fNContributorsCutEnabled;
     
   TString             fOADBFilePath ;    ///<  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change.
   Bool_t              fRecalPosition;    ///<  Switch on/off cluster position calculation, in case alignment matrices are not available.
@@ -206,6 +215,8 @@ private:
   TString             fImportGeometryFilePath; ///<  Path fo geometry.root file.
   
   // Analysis cuts
+
+  Float_t             fCellEmin;         ///<  Minimum cell energy (GeV).
   
   Float_t             fEmin;             ///<  Minimum cluster energy (GeV).
   Float_t             fEmax;             ///<  Maximum cluster energy (GeV).
@@ -299,6 +310,7 @@ private:
   TH2F*     fhClusterTimeSM[AliEMCALGeoParams::fgkEMCALModules] ;                  //!<! Timing of clusters vs energy per SM.
 
 protected:
+
   TTree*        fCellTree;                                                         //!<! 
 
   Int_t         fVBuffer_NCells;
@@ -306,25 +318,21 @@ protected:
   Double_t      fBuffer_EventWeight;
   Float_t       fBuffer_ptHard;              
   Short_t       fBuffer_Event_VertexZ;                          // Float_t * 100
-  Float_t       fBuffer_Event_Multiplicity;
+  UShort_t      fBuffer_EventNPrimaryTracks;
   Float_t       fBuffer_Event_V0Centrality;
 
-  std::vector<UShort_t>       fVBuffer_Cell_ID;                 
-  std::vector<UShort_t>       fVBuffer_Cell_E;                  // Float_t * 1000
-  std::vector<Short_t>        fVBuffer_Cell_t;                  // Float_t * 1e9
-  std::vector<Bool_t>         fVBuffer_Cell_gain;               
-  std::vector<Short_t>        fVBuffer_Cell_MCParticleID;       
-  std::vector<UShort_t>       fVBuffer_Cell_MCParticleFracE;    // Float_t * 1000
- 
-  UShort_t                    fBuffer_NClusters;
-  std::vector<UShort_t>       fVBuffer_Cluster_E;               // Float_t * 1000
-  std::vector<Short_t>        fVBuffer_Cluster_Eta;             // Float_t * 1000
-  std::vector<UShort_t>       fVBuffer_Cluster_Phi;             // Float_t * 1000
-  std::vector<Short_t>        fVBuffer_Cluster_t;
-  std::vector<UShort_t>       fVBuffer_Cluster_NCells;
-  std::vector<UShort_t>       fVBuffer_Cluster_M02;             // Float_t * 100
-  std::vector<UShort_t>       fVBuffer_Cluster_LeadCellId;
-  std::vector<Short_t>        fVBuffer_TrueCluster_MCId;
+  std::vector<UShort_t>     fVBuffer_Cell_ID;
+  std::vector<UShort_t>     fVBuffer_Cell_E;                                // Float_t * 1000
+  std::vector<Short_t>      fVBuffer_Cell_t;                                // Float_t * 1e9
+  std::vector<Bool_t>       fVBuffer_Cell_gain;
+  std::vector<Short_t>      fVBuffer_Cell_MCParticleID;
+
+  UShort_t                  fBuffer_NClusters;
+  std::vector<UShort_t>     fVBuffer_Cluster_E;               // Float_t * 1000
+  std::vector<Short_t>      fVBuffer_Cluster_Eta;             // Float_t * 1000
+  std::vector<UShort_t>     fVBuffer_Cluster_Phi;             // Float_t * 1000
+  std::vector<Short_t>      fVBuffer_Cluster_t;
+  std::vector<Short_t>      fVBuffer_TrueCluster_MCId;
 
   /// Copy constructor not implemented.
   // AliAnalysisTaskEMCALPi0CalibSelectionV2(           const AliAnalysisTaskEMCALPi0CalibSelectionV2&) ;
