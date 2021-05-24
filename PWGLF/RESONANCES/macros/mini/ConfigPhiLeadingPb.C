@@ -14,7 +14,7 @@ Bool_t ConfigPhiLeadingPb(
     /* angel to leading */ Int_t alID = task->CreateValue(AliRsnMiniValue::kAngleLeading, kFALSE);
     /* pt of leading    */ Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
     /* multiplicity     */ Int_t multID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
-    /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
+    /* delta eta  */ Int_t detaID  = task->CreateValue(AliRsnMiniValue::kDeltaEta, kFALSE);
 
   // Cuts
     TString scheme;
@@ -72,7 +72,7 @@ Bool_t ConfigPhiLeadingPb(
 
         out->AddAxis(alID, 36, -0.25 * TMath::Pi(), 1.75 * TMath::Pi()); 
         out->AddAxis(ptlID, 40, 0., 20.); 
-         out->AddAxis(etaID, 20, -1.0, 1.0);
+         out->AddAxis(detaID, 32, -1.6, 1.6);
         
     }
     return kTRUE;
