@@ -26,15 +26,16 @@
 #include <TArrayI.h>
 
 // Global variables:
-const Int_t gCentralityEstimators = 7; // set here number of supported centrality estimators
+const Int_t gCentralityEstimators = 4; // set here number of supported centrality estimators
 const Int_t gKinematicVariables = 5; // number of supported kinematic variables: [phi,pt,eta,e,charge]
 const Int_t gFilterBits = 17; // number of filterbits to scan
 const Int_t gEventHistograms = 2; // total number of non-classified event histograms
 const Int_t gParticleHistograms = 9; // total number of non-classified particle histograms
+const Int_t gCentralMultiplicity = 1; // multiplicities defined centrally, e.g. ref. mult.
 
 // enums:
 enum eBins {nBins,min,max};
-enum eCentralityEstimator { V0M = 0, CL0 = 1, CL1 = 2, TRK = 3, V0A = 4, V0B = 5, TKL = 6 };
+enum eCentralityEstimator { V0M, SPDTracklets, CL0, CL1 }; 
 enum eXYZ { X = 0, Y = 1, Z = 2 };
 enum eBeforeAfter { BEFORE = 0, AFTER = 1 };
 enum eRecoSim { RECO = 0, SIM = 1 };
@@ -78,7 +79,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void BookFinalResultsHistograms();
 
   // 2) Methods called in UserExec(Option_t *):
-  virtual void QA(AliVEvent *ave);
+  virtual void FillQAHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs);
   virtual void FilterEvent(AliVEvent *ave);
   virtual void FillControlEventHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs); // before or after event cuts, reco or sim
   virtual void FillControlParticleHistograms(AliAODTrack *aTrack, const Int_t ba, const Int_t rs); // before or after particle cuts, reco or sim
@@ -320,12 +321,12 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fTerminateAfterQA; // in UserExec(), bail out immediately after QA histograms are filled 
 
   // 1) QA:
-  TList *fQAList;                                 // base list to hold all QA output object
-  TProfile *fQAPro;                               // keeps flags relevant for the QA analysis
-  TH1D *fQACentralityHist[gCentralityEstimators]; // centrality distribution from all supported estimators
-  TH2D *fQACentralityCorrHist[gCentralityEstimators][gCentralityEstimators]; // correlations of centrality distributions from all supported estimators
-  TH1I *fQAFilterBitScan;                         // for each track in AOD, dump its filterbits
-  TH2I *fQAIDvsFilterBit;                         // filterbit vs. atrack->ID()
+  TList *fQAList; // base list to hold all QA output object
+  TProfile *fQAPro; // keeps flags relevant for the QA analysis
+  TH1D *fQACentralityHist[gCentralityEstimators][2]; // centrality distribution [all supported estimators][before, after event cuts]
+  TH2D *fQACentralityCorrHist[gCentralityEstimators][gCentralityEstimators][2]; // correlations of centrality distributions from all supported estimators [before, after event cuts]
+  TH1I *fQAFilterBitScan; // for each track in AOD, dump its filterbits
+  TH2I *fQAIDvsFilterBit; // filterbit vs. atrack->ID()
   TH1D *fQAKinematicsFilterBits[gFilterBits][2][gKinematicVariables]; // kinematics [specified filter bit][reco,sim][phi,pt,eta,energy,charge] Use in combination with SetQAFilterBits(...)
   TArrayI *fQAFilterBits; // for these filterbits the kinematics in the previous line will be filled, use in combination with SetQAFilterBits(...)
 
@@ -333,8 +334,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TList *fControlEventHistogramsList; // list to hold all control event histograms
   TProfile *fControlEventHistogramsPro; // keeps flags relevant for the control event histograms
   //    Multiplicity:
-  Double_t fMultiplicity;        // this is my ebe multiplicity, i.e. sum of track weights used to calculate Q-vectors (see below also fSelectedTracks) 
-  TH1D *fMultiplicityHist;       // this is distribution of my multiplicity
+  Double_t fMultiplicity; // this is my ebe multiplicity, i.e. sum of track weights used to calculate Q-vectors (see below also fSelectedTracks) 
+  TH1D *fMultiplicityHist; // this is distribution of my multiplicity
+  TH1D *fCentralMultiplicityHist[gCentralMultiplicity]; // this is distribution of my multiplicity
   Double_t fMultiplicityBins[3]; // [nBins,minCentrality,maxCentrality]
   Double_t fMultiplicityCuts[2]; // [min,max]
   Int_t fSelectedTracks;         // this is counter of tracks used to calculate Q-vectors (see above also fMultiplicity) 
@@ -347,9 +349,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TString fCentralityEstimator; // the default centrality estimator in this analysis, use e.g. task->SetCentralityEstimator("V0M")
   Double_t fCentralityCuts[2];  // [min,max]
   //    Vertex:
-  TH1D *fVertexHist[2][2][3];  //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
-  Double_t fVertexBins[3];     // [nBins,minVertex,maxVertex]
-  Double_t fVertexCuts[3][2];  // [x,y,z][min,max] vertex components
+  TH1D *fVertexHist[2][2][3];     //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
+  Double_t fVertexBins[3];        // [nBins,minVertex,maxVertex]
+  Double_t fVertexCuts[3][2];     // [x,y,z][min,max] vertex components
   TH1I *fNContributorsHist[2][2]; //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
   Int_t fNContributorsBins[3];    // [nBins,min,max]
   Int_t fNContributorsCuts[2];    // [min,max]
@@ -373,7 +375,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fDCAHist[2][2][2]; // distance of closest approach (DCA) [before,after][reco,sim][xy,z] // "xy" is transverse direction
   Double_t fDCABins[2][3]; // [xy,z][nBins,min,max]
   Double_t fDCACuts[2][2]; // [xy,z][min,max]
-  //Bool_t fUseDCACuts[3];   // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
+  //Bool_t fUseDCACuts[3]; // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
   //    All remaining particle histograms: 
   TH1D *fParticleHist[2][2][gParticleHistograms]; //! distributions [before,after particle cuts][reco,sim][type - see enum]
   Double_t fParticleBins[gParticleHistograms][3]; // [nBins,min,max]
@@ -408,15 +410,15 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Int_t fBeforeAfterColor[2]; //! [0 = kRed,1 = kGreen] TBI 20210511 shall I use better enum here?
 
   // *.) Online monitoring:
-  Bool_t fOnlineMonitoring;        // enable online monitoring (not set excplicitly!), the flags below just refine it
-  Bool_t fUpdateOutputFile;        // update the output file after certain number of analysed events
-  Int_t fUpdateFrequency;          // after how many events the output file will be updated
-  TString *fUpdateFile;            // which file will be regularly updated with frequency fUpdateFrequency of events
-  Int_t fMaxNumberOfEvents;        // if this number of events is reached, write to external file fBailOutFile and bail out
-  TString *fBailOutFile;           // in which file results will be bailed out after fMaxNumberOfEvents
+  Bool_t fOnlineMonitoring; // enable online monitoring (not set excplicitly!), the flags below just refine it
+  Bool_t fUpdateOutputFile; // update the output file after certain number of analysed events
+  Int_t fUpdateFrequency;   // after how many events the output file will be updated
+  TString *fUpdateFile;     // which file will be regularly updated with frequency fUpdateFrequency of events
+  Int_t fMaxNumberOfEvents; // if this number of events is reached, write to external file fBailOutFile and bail out
+  TString *fBailOutFile;    // in which file results will be bailed out after fMaxNumberOfEvents
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,2);
+  ClassDef(AliAnalysisTaskMuPa,3);
 
 };
 
