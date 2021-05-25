@@ -80,7 +80,7 @@ class AliRDHFCutsD0toKpiBDT : public AliRDHFCutsD0toKpi
   Float_t *fRejFraction; //[fnPtBinsBDT] random-sampling fraction (100*f% kept)
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsD0toKpiBDT,1);  /// class for cuts on AOD reconstructed D0->Kpi
+  ClassDef(AliRDHFCutsD0toKpiBDT,2);  /// class for cuts on AOD reconstructed D0->Kpi
   /// \endcond
 };
 

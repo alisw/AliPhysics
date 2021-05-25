@@ -26,7 +26,8 @@ AliAnalysisTask *AddTaskRsnVsLeading(TString taskName = "phi",
     if(isPP){
         task->UseMultiplicity("QUALITY");
     } else {
-        task->UseCentrality("V0M");
+        //task->UseCentrality("V0M");
+        task->UseMultiplicity("AliMultSelection_V0M");
     }
 
     // Mixing setings
