@@ -24,6 +24,7 @@
 #include <TComplex.h>
 #include <TArrayD.h>
 #include <TArrayI.h>
+#include <TSystem.h>
 
 // Global variables:
 const Int_t gCentralityEstimators = 4; // set here number of supported centrality estimators
@@ -32,6 +33,7 @@ const Int_t gFilterBits = 17; // number of filterbits to scan
 const Int_t gEventHistograms = 2; // total number of non-classified event histograms
 const Int_t gParticleHistograms = 9; // total number of non-classified particle histograms
 const Int_t gCentralMultiplicity = 1; // multiplicities defined centrally, e.g. ref. mult.
+const Int_t gWeights = 3; // phi, pt, eta
 
 // enums:
 enum eBins {nBins,min,max};
@@ -62,6 +64,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    virtual void InitializeArraysForControlEventHistograms();
    virtual void InitializeArraysForControlParticleHistograms();
    virtual void InitializeArraysForQvectors();
+   virtual void InitializeArraysForWeights();
    virtual void InitializeArraysForCorrelationsHistograms();
    virtual void InitializeArraysForNestedLoopsHistograms();
    virtual void InitializeArraysForCommonLabels();
@@ -74,6 +77,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void BookControlEventHistograms();
   virtual void BookControlParticleHistograms();
   virtual void BookQvectorHistograms();
+  virtual void BookWeightsHistograms();
   virtual void BookCorrelationsHistograms();
   virtual void BookNestedLoopsHistograms();
   virtual void BookFinalResultsHistograms();
@@ -86,6 +90,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void GlobalTracksAOD(AliAODEvent *aAOD);
   Bool_t SurvivesEventCuts(AliVEvent *ave);
   Bool_t SurvivesParticleCuts(AliAODTrack *aTrack); // applied e.g. on TPC-only
+  virtual Double_t Weight(const Double_t &value, const char *variable);
   virtual void CalculateCorrelations();
   virtual void CalculateNestedLoops();
   virtual void ResetEventByEventQuantities();
@@ -291,6 +296,10 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetFinalResultsList(TList* const frl) {this->fFinalResultsList = frl;};
   TList* GetFinalResultsList() const {return this->fFinalResultsList;}
 
+  // Particle weights:
+  void SetWeightsHist(TH1D* const hist, const char *variable); // .cxx
+  TH1D* GetHistogramWithWeights(const char *filePath, const char *variable); // .cxx
+
   // *.) Online monitoring:
   void SetUpdateOutputFile(const Int_t uf, const char *uqof)
   {
@@ -389,7 +398,13 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Int_t fMaxCorrelator;       // 8 (not going beyond 8-p correlations, if you change this value, change also fQvector[49][9]) 
   TComplex fQvector[49][9];   //! Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1]  
 
-  // 5) Correlations:
+  // 5) Particle weights: 
+  TList *fWeightsList;                  // list to hold all Q-vector objects       
+  TProfile *fWeightsFlagsPro;           // profile to hold all flags for weights
+  Bool_t fUseWeights[gWeights]; // use weights [phi,pt,eta]
+  TH1D *fWeightsHist[gWeights]; // histograms holding weights [phi,pt,eta]
+
+  // 6) Correlations:
   TList *fCorrelationsList;            // list to hold all correlations objects
   TProfile *fCorrelationsFlagsPro;     // profile to hold all flags for correlations
   Bool_t fCalculateCorrelations;       // calculate and store correlations
