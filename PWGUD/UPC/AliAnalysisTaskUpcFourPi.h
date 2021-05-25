@@ -1,7 +1,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice */
 /* $Id$ */
-//Full code, 18r.pbpb_legotrain_01
+//Full code, 18r.296691_co4_8
 #ifndef ALIANALYSISTASKUPCFOURPI_H 
 #define ALIANALYSISTASKUPCFOURPI_H
 
@@ -214,8 +214,11 @@ private:
 	TH1D *fEtaCCandidatesPerChannel;
 	TH1D *fEtaCLowPtCandidatesPerChannel;
 	TH2D *fAllPtVsMinvEtaC;
+	TH1D* fAllPtFourPions;
+	TH1D *fAllPionPt;
+	TH1D *fAllPionEta;
 	TH1D *fAllMinvEtaCLowPt;
-	TH1D* fAllChargedFourPion;
+	TH1D *fAllChargedFourPion;
 	TH2D *fChannelVsMinvEtaC;
 	TH1D *fHistNTracks;
 	TH1D *fHistFourTracksNpion;
@@ -385,7 +388,6 @@ private:
 	//RhoRho Channel histos.
 
 	TH1D *fHistNeventsEtaCRhoChannel;
-  TH1D *fHistNeventsFourPicharge;
 	TH2D *f2Rho2PairPtVsMinvFirstPair;
 	TH2D *f2Rho1PairPtVsMinvRhoPair;
 	TH2D *f2Rho1PairPtVsMinvNonRhoPair;
