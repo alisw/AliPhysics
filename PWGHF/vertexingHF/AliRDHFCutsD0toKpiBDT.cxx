@@ -260,7 +260,7 @@ Double_t AliRDHFCutsD0toKpiBDT::GetRDHFVarsForSel(AliAODRecoDecayHF2Prong *d, Al
   if(VarName=="d0d0")	return d->Getd0Prong(0)*d->Getd0Prong(1);
   if(VarName=="cosp")	return d->CosPointingAngle();
   if(VarName=="dca")	return d->GetDCA();
-  if(VarName=="cospxy")	return d->GetDCA();
+  if(VarName=="cospxy")	return d->CosPointingAngleXY();
   if(VarName=="d0k")	return d->Getd0Prong(0);
   if(VarName=="d0pi")	return d->Getd0Prong(1);
   if(VarName=="cosstar"){
