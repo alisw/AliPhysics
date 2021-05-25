@@ -226,19 +226,34 @@ void AliOADBMultSelection::Browse(TBrowser *b)
     // FIXME: this should be implemented for all histograms
     // FIXME: who deletes the folders? Make sure there are no memory leaks here!
     if (b) {
-        TFolder  * histoFolder = new TFolder ("histograms", "Calibration Histograms");
+      TFolder  * histoFolder = new TFolder ("histograms", "Calibration Histograms");
+      TFolder  * vertexFolder = new TFolder ("vertexZprofiles", "Vertex-Z profiles");
         TFolder  * cutsFolder  = new TFolder ("cuts"      , "Event Selection Cuts");
         TFolder  * estFolder   = new TFolder ("estimators", "Estimators");
         histoFolder->SetOwner();
+      vertexFolder->SetOwner();
         cutsFolder->SetOwner();
         estFolder->SetOwner();
-        for(Int_t iEst=0; iEst<fCalibList->GetEntries(); iEst++){ 
-            histoFolder->Add(GetCalibHisto(iEst));
+      Printf(Form("Browsing operation started on %i objects",fCalibList->GetEntries()));
+      for(Int_t iEst=0; iEst<fCalibList->GetEntries(); iEst++){
+        if(GetCalibHisto(iEst)){
+          Printf(Form("Adding histo number %i",iEst));
+          histoFolder->Add(GetCalibHisto(iEst));
+        }else{
+          Printf(Form("Histogram numbered %i not found for estimators, skipping",iEst));
         }
+      }
+      if(fCalibListVtxZ){
+        Printf(Form("Browsing operation started on %i objects",fCalibListVtxZ->GetEntries()));
         for(Int_t iEst=0; iEst<fCalibListVtxZ->GetEntries(); iEst++){
-            histoFolder->Add(GetCalibHistoVtx(iEst));
+          if(GetCalibHistoVtx(iEst)){
+            vertexFolder->Add(GetCalibHistoVtx(iEst));
+          }else{
+            Printf(Form("Profile numbered %i not found, skipping",iEst));
+          }
         }
-        
+      }
+      Printf("Created histogram folder");
         //Info for Event Selection: Printouts 
         cutsFolder->Add(new TObjString(Form("Vertex Z cut: %f", GetEventCuts()->GetVzCut())));
         cutsFolder->Add(new TObjString(Form("Physics Selection: %i", GetEventCuts()->GetTriggerCut())));
@@ -265,7 +280,9 @@ void AliOADBMultSelection::Browse(TBrowser *b)
             lEst[iEst]->Add(new TObjString(Form("Anchor Percentile: %f", fSelection->GetEstimator(iEst)->GetAnchorPercentile() ) ) );
             estFolder->Add(lEst[iEst]);
         }
+      Printf("Created estimator folder");
         b->Add(histoFolder);
+      b->Add(vertexFolder);
         b->Add(cutsFolder);
         b->Add(estFolder);
         

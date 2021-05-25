@@ -26,6 +26,8 @@ using std::string;
 #include "AliAODEvent.h"
 #include "AliVEventHandler.h"
 #include "AliVTrack.h"
+#include "AliAODMCHeader.h"
+#include "AliAnalysisUtils.h"
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskStrangenessRatios);
@@ -165,12 +167,13 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       continue;
     }
 
-    if (std::abs(pTrackCasc->Eta()) > 0.9 || std::abs(nTrackCasc->Eta()) > 0.9 || std::abs(bTrackCasc->Eta()) > 0.9) {
+    if (std::abs(pTrackCasc->Eta()) > 0.8 || std::abs(nTrackCasc->Eta()) > 0.8 || std::abs(bTrackCasc->Eta()) > 0.8) {
       continue;
     }
 
     int labMothBac = -9999;
     int pdgCascade = -1;
+    bool physPrim = true;
     if (fMC) {
       fGenCascade.pdg = 0;
       auto posPart = (AliAODMCParticle*)fMCEvent->GetTrack(std::abs(pTrackCasc->GetLabel()));
@@ -193,6 +196,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           fGenCascade.ptMC = cascade->Pt();
           fGenCascade.etaMC = cascade->Eta();
           fGenCascade.yMC = cascade->Y();
+          physPrim = cascade->IsPhysicalPrimary();
           double pv[3], sv[3];
           cascade->XvYvZv(pv);
           bacPart->XvYvZv(sv);
@@ -235,6 +239,19 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
     //transverse momentum and eta
     fRecCascade->pt = std::sqrt(casc->Pt2Xi());
 
+    //////////////////////////////
+    //crossed raws
+    double lCrosRawsPos = pTrackCasc->GetTPCClusterInfo(2, 1);
+    double lCrosRawsNeg = nTrackCasc->GetTPCClusterInfo(2, 1);
+    double lCrosRawsBac = bTrackCasc->GetTPCClusterInfo(2, 1);
+    fCasc_LeastCRaws = (int) (lCrosRawsPos<lCrosRawsNeg ? std::min(lCrosRawsPos, lCrosRawsBac) : std::min(lCrosRawsNeg, lCrosRawsBac));
+    //crossed raws / Findable clusters
+    double lCrosRawsOvFPos = lCrosRawsPos / ((double)(pTrackCasc->GetTPCNclsF()));
+    double lCrosRawsOvFNeg = lCrosRawsNeg / ((double)(nTrackCasc->GetTPCNclsF()));
+    double lCrosRawsOvFBac = lCrosRawsBac / ((double)(bTrackCasc->GetTPCNclsF()));
+    fCasc_LeastCRawsOvF = lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
+    ///////////////////////////////
+
     //calculate DCA Bachelor-Baryon to remove "bump" structure in InvMass
     fRecCascade->bachBarCosPA = casc->BachBaryonCosPA();
     double p = std::sqrt(casc->Ptot2Xi());
@@ -249,7 +266,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fRecCascade->ct = lOverP * kOmegaMass;
       fRecCascade->tpcNsigmaBach = fPID->NumberOfSigmasTPC(bTrackCasc, AliPID::kKaon);
       fRecCascade->competingMass = std::abs(casc->MassXi() - kXiMass);
-      if (IsTopolSelected(true)) {
+      if (physPrim && IsTopolSelected(true)) {
         fRecCascade->isOmega = true;
         fTree->Fill();
       }
@@ -262,7 +279,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fRecCascade->ct = lOverP * kXiMass;
       fRecCascade->tpcNsigmaBach = fPID->NumberOfSigmasTPC(bTrackCasc, AliPID::kPion);
       fRecCascade->competingMass = std::abs(casc->MassOmega() - kOmegaMass);
-      if (IsTopolSelected(false)) {
+      if (physPrim && IsTopolSelected(false)) {
         fRecCascade->isOmega = false;
         fTree->Fill();
       }
@@ -274,6 +291,22 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
   if (fMC) {
     fGenCascade.isReconstructed = false;
+    //OOB pileup
+    AliAODMCHeader* header = static_cast<AliAODMCHeader*>(ev->FindListObject(AliAODMCHeader::StdBranchName()));
+    if (!header) {
+      AliWarning("No header found.");
+      PostData(1, fList);
+      PostData(2, fTree);
+      return;
+    }
+    TClonesArray* MCTrackArray = dynamic_cast<TClonesArray*>(ev->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (MCTrackArray == NULL){
+      AliWarning("No MC track array found.");
+      PostData(1, fList);
+      PostData(2, fTree);
+      return;
+    }
+    //loop on generated
     for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT) {
       auto track = (AliAODMCParticle*)fMCEvent->GetTrack(iT);
       int pdg = std::abs(track->GetPdgCode());
@@ -281,6 +314,9 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         continue;
       }
       if (std::find(checkedLabel.begin(), checkedLabel.end(), iT) != checkedLabel.end()) {
+        continue;
+      }
+      if(std::abs(track->Y())>fCutY || !track->IsPhysicalPrimary() || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iT, header, MCTrackArray)){//removal of OOB pileup, cut on Y and PhysPrim
         continue;
       }
       fGenCascade.ptMC = track->Pt();
@@ -365,7 +401,6 @@ bool AliAnalysisTaskStrangenessRatios::IsTopolSelected(bool isOmega)
       fRecCascade->dcaBachV0 < fCutDCABachToV0[isOmega] &&
       fRecCascade->cosPA > fCutCosPA &&
       fRecCascade->cosPAV0 > fCutCosPAV0 &&
-      fRecCascade->dcaV0prPV > fCutDCAV0prToPV &&
       std::abs(Eta2y(fRecCascade->pt, isOmega ? kOmegaMass : kXiMass, fRecCascade->eta)) < fCutY &&
       std::abs(fRecCascade->tpcNsigmaBach) < fCutNsigmaTPC &&
       std::abs(fRecCascade->tpcNsigmaV0Pr) < fCutNsigmaTPC &&
@@ -374,7 +409,9 @@ bool AliAnalysisTaskStrangenessRatios::IsTopolSelected(bool isOmega)
       fRecCascade->competingMass > fCutCompetingMass[isOmega] &&
       fRecCascade->tpcClBach > fCutTPCclu &&
       fRecCascade->tpcClV0Pi > fCutTPCclu &&
-      fRecCascade->tpcClV0Pr > fCutTPCclu;
+      fRecCascade->tpcClV0Pr > fCutTPCclu &&
+      fCasc_LeastCRaws > fCutTPCrows &&
+      fCasc_LeastCRawsOvF> fCutRowsOvF;
 }
 
 //

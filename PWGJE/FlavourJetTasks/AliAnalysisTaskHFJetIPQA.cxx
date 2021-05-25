@@ -2811,7 +2811,7 @@ void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
 
     printf("--------------------------------------------------------------------------------\n");
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-    printf("XXXXXXXXXX Code version 09.02.21 XXXXXXXXXX\n");
+    printf("XXXXXXXXXX Code version 21.05.21 XXXXXXXXXX\n");
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
     PrintSettings();
     PrintV0Settings();
@@ -4002,7 +4002,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
                         if(!fDoFlavourMatching) {
                           //if(!((part->GetStatus()==11) ||(part->GetStatus()==12))) continue;
                           if(!IsParton(pdg)) continue;
-                          if(d > radius) continue;
+                          if(d > fDaughtersRadius) continue;
                           kJetOrigin=pdg;
                         }
                         else{

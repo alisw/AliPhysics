@@ -1286,7 +1286,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 	Double_t efrac;
 
 	phosCells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
-	toWrite[TMath::Abs(mclabel)] = 1;
+        if(mclabel>=0) //label -1 means no primary
+          toWrite[mclabel] = 1;
       }
 
       // For each tracklet keep the corresponding MC particle
@@ -1857,25 +1858,80 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   }
   eventextra.fNentries[kCaloTrigger] = ncalotriggers_filled;
 
-  cells = fVEvent->GetPHOSCells();
-  nCells = cells->GetNumberOfCells();
+  //------PHOS trigger -----------
+  const double mPHOSCalib = 0.005; // Mean PHOS calibration 5 MeV/ADC
+  // add PHOS trigger digits to list of phos cells
+  AliVCaloTrigger *phostriggers = fVEvent->GetCaloTrigger("PHOS");
+  phostriggers->Reset();
+  Int_t nphostriggers_filled = 0; // total number of PHOS triggers filled per event
+  int relid[3]; 
+  Float_t amplitude;
   Int_t nphoscells_filled = 0;
-  for (Short_t icp = 0; icp < nCells; ++icp)
+  while (phostriggers->Next())
+  {
+    //Write trigger digits to same stream as readout cells  
+    calo.fIndexBCs = fBCCount;
+    int triggerbits;
+    phostriggers->GetTriggerBits(triggerbits);
+    int mod, absId;
+    phostriggers->GetPosition(mod, absId);
+    //here absId is normal readout absId
+    //transform to Run3 truID
+    absId--;
+    relid[0] = absId / 3584  ; 
+    absId = absId % 3584  ;  //module 
+    relid[1] = absId / 64  ; //x
+    relid[2] = absId % 64  ; //z
+     
+    relid[0] = relid[0]*4 -2 + relid[1]/16 ;
+    relid[1] = (relid[1]%16)/2 ;
+    relid[2] /=2 ;
+    
+    Int_t truId= relid[0] * 224 + // the offset of PHOS modules
+                 relid[1] +       // the offset along phi
+                 relid[2] * 8;    // the offset along z    
+    
+    // filter null entries: they usually have negative entries and no trigger bits
+    // in case of trigger bits the energy can be 0 or negative but the trigger position is marked
+    // store trigger
+    calo.fCellNumber = truId ;
+
+    phostriggers->GetAmplitude(amplitude);
+    calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude/mPHOSCalib, 0xFFF); //12 bit
+    if(triggerbits==0){ //L0 trigger
+      calo.fCellType =0 ; //0:L0, 1:L1
+    }
+    else{
+      int timesum;
+      phostriggers->GetL1TimeSum(timesum);
+      calo.fCellType =timesum ; // 1,2,3:L1
+    }
+    calo.fTime = 0.;  //13 bit, no time info
+    FillTree(kCalo);
+    if (fTreeStatus[kCalo])
+      nphoscells_filled++;
+  }
+  eventextra.fNentries[kCaloTrigger] = nphostriggers_filled; //DP: Should we fill separate branches for PHOS and EMCAL?
+  
+  AliVCaloCells * phoscells = fVEvent->GetPHOSCells();
+  Int_t nPHCells = phoscells->GetNumberOfCells();
+  for (Short_t icp = 0; icp < nPHCells; ++icp)
   {
     Short_t cellNumber;
-    Double_t amplitude;
-    Double_t time;
+    Double_t amplitude,time;
     Int_t mclabel;
     Double_t efrac;
 
     calo.fIndexBCs = fBCCount;
-
     cells->GetCell(icp, cellNumber, amplitude, time, mclabel, efrac);
-    calo.fCellNumber = cellNumber;
-    calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude, mCaloAmp);
-    calo.fTime = AliMathBase::TruncateFloatFraction(time, mCaloTime);
-    calo.fCellType = cells->GetHighGain(icp) ? 0. : 1.; /// @TODO cell type value to be confirmed by PHOS experts
-    calo.fCaloType = cells->GetType();                  // common for all cells
+    //Run2: absId=1..4*56*64 ; Run3: absId = 32*56...4*56*64, module numbering is opposite 
+    int mod = cellNumber/3584; 
+    calo.fCellNumber = (4-mod)*3584 + cellNumber%3584 ;
+    //Run3: uncalibrated amplitude in ADC counts
+    // here we assume fixed calibration 
+    calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude/mPHOSCalib, 0xFFF); //12 bit
+    calo.fTime = AliMathBase::TruncateFloatFraction(time, 0x1FFF);  //13 bit
+    calo.fCellType = cells->GetHighGain(icp) ? 0. : 1.; 
 
     FillTree(kCalo);
     if (fTreeStatus[kCalo])
@@ -1883,13 +1939,15 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     if (fTaskMode == kMC)
     {
       // Find the modified label
-      Int_t klabel = kineIndex[TMath::Abs(mclabel)];
-      mccalolabel.fIndexMcParticles = TMath::Abs(klabel) + fOffsetLabel;
-      mccalolabel.fMcMask = 0;
-      if (mclabel < 0 || klabel < 0)
-        mccalolabel.fMcMask |= (0x1 << 15);
-
-      FillTree(kMcCaloLabel);
+      if(mclabel>=0){  //label -1 == no primary
+        Int_t klabel = kineIndex[mclabel];
+        mccalolabel.fIndexMcParticles = TMath::Abs(klabel) + fOffsetLabel;
+        mccalolabel.fMcMask = 0;
+        if ( klabel < 0)
+          mccalolabel.fMcMask |= (0x1 << 15);
+        
+        FillTree(kMcCaloLabel);
+      }
     }
   } // end loop on PHOS cells
   eventextra.fNentries[kCalo] = nphoscells_filled;
@@ -1909,6 +1967,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     for (Int_t imu = 0; imu < nmu; ++imu)
     {
       AliESDMuonTrack *mutrk = fESD->GetMuonTrack(imu);
+      if (mutrk->GetInverseBendingMomentum()==FLT_MAX && mutrk->GetThetaX()==0 && mutrk->GetThetaY()==0 && mutrk->GetZ()==0) continue; //skip tracks whose parameter values are still at their default (not real muon tracks)
       fwdtracks = MUONtoFwdTrack(*mutrk);
       fwdtracks.fIndexCollisions = fCollisionCount;
       fwdtracks.fIndexBCs = fBCCount;
@@ -2394,7 +2453,7 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   if (alpha3 != 0 || alpha1 != 0)
     x3 = -1. / TMath::Sqrt(alpha3 * alpha3 + alpha1 * alpha1);
   else
-    x3 = FLT_MAX;
+    x3 = -FLT_MAX;
   x4 = alpha4 * -x3 * TMath::Sqrt(1 + alpha3 * alpha3);
 
   // Set output parameters

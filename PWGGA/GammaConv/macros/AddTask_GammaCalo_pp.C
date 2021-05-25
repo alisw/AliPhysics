@@ -1732,9 +1732,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","244665100a01cc00000","0163103100000010"); //
     cuts.AddCutCalo("000ap113","244665100001cc00000","0163103100000010"); // PHI7
   } else if( trainConfig == 706){ // DEFAULT 2019 july 18
-    cuts.AddCutCalo("00010113","244665107a012200000","0163103100000010"); //
-    cuts.AddCutCalo("00010113","2446651070012200000","0163103100000010"); //
-    cuts.AddCutCalo("000ap113","2446651070012200000","0163103100000010"); // PHI7
+    cuts.AddCutCalo("00010113","24466000ga09cc00000","0163103100000010"); //
+    cuts.AddCutCalo("00010113","24466000g009cc00000","0163103100000010"); //
+    cuts.AddCutCalo("000ap113","24466000g009cc00000","0163103100000010"); // PHI7
   } else if( trainConfig == 707){ // rerun 2021
     cuts.AddCutCalo("00010113","24466000ga01cc00000","0163103100000010"); //
     cuts.AddCutCalo("00010113","24466000g001cc00000","0163103100000010"); //
@@ -2412,52 +2412,26 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411790100fe32220000","01631031000000d0");
 
 
-  } else if (trainConfig == 2040){ //EMCal + DCal EG1 mult. diff.
-    cuts.AddCutCalo("m0110113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 1.0% - 2.0%
-    cuts.AddCutCalo("m1210113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 1.0% - 2.0%
-    cuts.AddCutCalo("m2310113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 2.0% - 3.0%
-    cuts.AddCutCalo("m3410113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 3.0% - 4.0%
-    cuts.AddCutCalo("m4510113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 4.0% - 5.0%
-    cuts.AddCutCalo("m5710113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 5.0% - 7.0%
-    cuts.AddCutCalo("m7a10113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 7.0% - 10.0%
-  } else if (trainConfig == 2041){
-    cuts.AddCutCalo("n1210113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 10.0% - 20.0%
-    cuts.AddCutCalo("n2510113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 20.0% - 50.0%
-    cuts.AddCutCalo("n5a10113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 50.0% - 100.0%
+  } else if (trainConfig == 2040){ // no TM
+    cuts.AddCutCalo("00010113","4117921090e32220000","0r631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("00010113","4117921090e30220000","0r631031000000d0"); // INT7 NL 21 + TB no NCell cut
+  } else if (trainConfig == 2041){ // no TM (cell TM in correction framework)
+    cuts.AddCutCalo("00010113","4117921090e32220000","0r631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("00010113","4117921090e30220000","0r631031000000d0"); // INT7 NL 21 + TB no NCell cut
+  } else if (trainConfig == 2042){ // no TM EG2
+    cuts.AddCutCalo("0008e113","4117921090e32220000","0r631031000000d0"); // INT7 NL 21 + TB
+  } else if (trainConfig == 2043){ // no TM EG1
+    cuts.AddCutCalo("0008d113","4117921090e32220000","0r631031000000d0"); // INT7 NL 21 + TB
+  } else if (trainConfig == 2044){ // no TM (cell TM in correction framework)
+    cuts.AddCutCalo("0008e113","4117921090e32220000","0r631031000000d0"); // INT7 NL 21 + TB
+  } else if (trainConfig == 2045){ // no TM (cell TM in correction framework)
+    cuts.AddCutCalo("0008d113","4117921090e32220000","0r631031000000d0"); // INT7 NL 21 + TB
 
-  } else if (trainConfig == 2042){  // high mult trigger different estimators
-    cuts.AddCutCalo("r0010113","411792109fe32220000","0r631031000000d0"); // NL21, INT7 in V0M mult slices
-    cuts.AddCutCalo("r0074113","411792109fe32220000","0r631031000000d0"); // NL21, high mult V0M
-    cuts.AddCutCalo("s0075113","411792109fe32220000","0r631031000000d0"); // NL21, high mult SPD
-    cuts.AddCutCalo("r0076113","411792109fe32220000","0r631031000000d0"); // NL21, NL12, high mult V0M with pileup cond.
-  } else if (trainConfig == 2043){ //EMCal + DCal EG1 mult. diff.
-    cuts.AddCutCalo("q0176113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0% - 0.1%
-    cuts.AddCutCalo("q1276113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.1% - 0.2%
-    cuts.AddCutCalo("q2376113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.2% - 0.3%
-    cuts.AddCutCalo("q3476113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.3% - 0.4%
-    cuts.AddCutCalo("q4576113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.4% - 0.5%
-    cuts.AddCutCalo("q5776113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.5% - 0.7%
-    cuts.AddCutCalo("q7a76113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.7% - 1.0%
-  } else if (trainConfig == 2044){
-    cuts.AddCutCalo("m0176113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.0% - 1.0%
-    cuts.AddCutCalo("m1276113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 1.0% - 2.0%
-    cuts.AddCutCalo("m2376113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 2.0% - 3.0%
-    cuts.AddCutCalo("m3476113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 3.0% - 4.0%
-    cuts.AddCutCalo("m4576113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 4.0% - 5.0%
-    cuts.AddCutCalo("m5776113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 5.0% - 7.0%
-    cuts.AddCutCalo("m7a76113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 7.0% - 10.0%
+  } else if (trainConfig == 2046){ // TB Non-Lin with and without scale (no MC FT)
+    cuts.AddCutCalo("00010113","411793709fe32220000","0r631031000000d0"); // INT7 NL: TB with scale
+    cuts.AddCutCalo("00010113","411790409fe32220000","0r631031000000d0"); // INT7 NL: TB without scale
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0"); // INT7 no NL
 
-
-
-  } else if (trainConfig == 2045){ //EMCal + DCal EG1 sphericity.
-    cuts.AddCutCalo("h0510113","411791106f032220000","01631031000000d0"); // INT7, NL12, sphericity
-    cuts.AddCutCalo("h5a10113","411791106f032220000","01631031000000d0"); // INT7, NL12, sphericity
-  } else if (trainConfig == 2046){ //EMCal + DCal EG1 sphericity.
-    cuts.AddCutCalo("h058e113","411791106f032220000","01631031000000d0"); // EG2, NL12, sphericity
-    cuts.AddCutCalo("h5a8e113","411791106f032220000","01631031000000d0"); // EG2, NL12, sphericity
-  } else if (trainConfig == 2047){ //EMCal + DCal EG1 sphericity.
-    cuts.AddCutCalo("h058d113","411791106f032220000","01631031000000d0"); // EG1, NL12, sphericity
-    cuts.AddCutCalo("h5a8d113","411791106f032220000","01631031000000d0"); // EG1, NL12, sphericity
 
   } else if (trainConfig == 2048){
     cuts.AddCutCalo("00010113","411793706f032220000","01631031000000d0"); // INT7 TBNL wihout fine tuning
@@ -3177,7 +3151,7 @@ void AddTask_GammaCalo_pp(
     // 13 TeV EMCal Multiplicity differential cuts
     //*************************************************************************************************
   } else if (trainConfig == 2400){ //EMCal + DCal mult. diff. with INT7 trigger
-    cuts.AddCutCalo("m0110113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 1.0% - 2.0%
+    cuts.AddCutCalo("m0110113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 0.0% - 1.0%
     cuts.AddCutCalo("m1210113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 1.0% - 2.0%
     cuts.AddCutCalo("m2310113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 2.0% - 3.0%
     cuts.AddCutCalo("m3410113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 3.0% - 4.0%
@@ -3185,9 +3159,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("m5710113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 5.0% - 7.0%
     cuts.AddCutCalo("m7a10113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 7.0% - 10.0%
   } else if (trainConfig == 2401){
+    cuts.AddCutCalo("n0110113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 0.0% - 10.0%
     cuts.AddCutCalo("n1210113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 10.0% - 20.0%
-    cuts.AddCutCalo("n2510113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 20.0% - 50.0%
-    cuts.AddCutCalo("n5a10113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 50.0% - 100.0%
+    cuts.AddCutCalo("n2310113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 20.0% - 30.0%
+    cuts.AddCutCalo("n3510113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 30.0% - 50.0%
+    cuts.AddCutCalo("n5710113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 50.0% - 70.0%
+    cuts.AddCutCalo("n7a10113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 70.0% - 100.0%
 
   } else if (trainConfig == 2402){ //EMCal + DCal mult. diff. INT7 high mult trigger
     cuts.AddCutCalo("q0101113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, INT7, mult. dep 0% - 0.1%
@@ -3206,13 +3183,13 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("q5776113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.5% - 0.7%
     cuts.AddCutCalo("q7a76113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.7% - 1.0%
   } else if (trainConfig == 2404){ //EMCal + DCal mult. diff. SPD high mult trigger
-    cuts.AddCutCalo("q0175113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0% - 0.1%
-    cuts.AddCutCalo("q1275113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.1% - 0.2%
-    cuts.AddCutCalo("q2375113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.2% - 0.3%
-    cuts.AddCutCalo("q3475113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.3% - 0.4%
-    cuts.AddCutCalo("q4575113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.4% - 0.5%
-    cuts.AddCutCalo("q5775113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.5% - 0.7%
-    cuts.AddCutCalo("q7a75113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.7% - 1.0%
+    cuts.AddCutCalo("u0175113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0% - 0.1%
+    cuts.AddCutCalo("u1275113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0.1% - 0.2%
+    cuts.AddCutCalo("u2375113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0.2% - 0.3%
+    cuts.AddCutCalo("u3475113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0.3% - 0.4%
+    cuts.AddCutCalo("u4575113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0.4% - 0.5%
+    cuts.AddCutCalo("u5775113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0.5% - 0.7%
+    cuts.AddCutCalo("u7a75113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0.7% - 1.0%
 
   } else if (trainConfig == 2405){ //EMCal + DCal mult. diff. V0M high mult trigger
     cuts.AddCutCalo("r0176113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0% - 0.01%
@@ -3223,13 +3200,45 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("r5776113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.05% - 0.07%
     cuts.AddCutCalo("r7a76113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.07% - 0.1%
   } else if (trainConfig == 2406){ //EMCal + DCal mult. diff. SPD high mult trigger
-    cuts.AddCutCalo("r0175113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0% - 0.01%
-    cuts.AddCutCalo("r1275113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.01% - 0.02%
-    cuts.AddCutCalo("r2375113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.02% - 0.03%
-    cuts.AddCutCalo("r3475113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.03% - 0.04%
-    cuts.AddCutCalo("r4575113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.04% - 0.05%
-    cuts.AddCutCalo("r5775113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.05% - 0.07%
-    cuts.AddCutCalo("r7a75113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.07% - 0.1%
+    cuts.AddCutCalo("s0175113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0% - 0.01%
+    cuts.AddCutCalo("s1275113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0.01% - 0.02%
+    cuts.AddCutCalo("s2375113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0.02% - 0.03%
+    cuts.AddCutCalo("s3475113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0.03% - 0.04%
+    cuts.AddCutCalo("s4575113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0.04% - 0.05%
+    cuts.AddCutCalo("s5775113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0.05% - 0.07%
+    cuts.AddCutCalo("s7a75113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult SPDTracklets, mult. dep 0.07% - 0.1%
+
+  } else if (trainConfig == 2407){  // high mult trigger different estimators
+    cuts.AddCutCalo("r0074113","411792109fe32220000","0r631031000000d0"); // NL21, high mult V0M
+    cuts.AddCutCalo("s0075113","411792109fe32220000","0r631031000000d0"); // NL21, high mult SPD
+    cuts.AddCutCalo("r0076113","411792109fe32220000","0r631031000000d0"); // NL21, NL12, high mult V0M with pileup cond.
+
+  } else if (trainConfig == 2408){  // EMCal trigger in mult slices
+    cuts.AddCutCalo("r008e113","411792109fe32220000","0r631031000000d0"); // NL21, EG2 in mult slices (V0M)
+    cuts.AddCutCalo("r008d113","411792109fe32220000","0r631031000000d0"); // NL21, EG1 in mult slices (V0M)
+
+  } else if (trainConfig == 2409){  // EMCal trigger in mult slices
+    cuts.AddCutCalo("s008e113","411792109fe32220000","0r631031000000d0"); // NL21, EG2 in mult slices (SPDTracklets)
+    cuts.AddCutCalo("s008d113","411792109fe32220000","0r631031000000d0"); // NL21, EG1 in mult slices (SPDTracklets)
+
+  } else if (trainConfig == 2410){  // min bias trigger in mult slices
+    cuts.AddCutCalo("r0010113","411792109fe32220000","0r631031000000d0"); // NL21, INT7 in V0M mult slices
+    cuts.AddCutCalo("s0010113","411792109fe32220000","0r631031000000d0"); // NL21, INT7 in SPDTracklets mult slices
+
+  //*************************************************************************************************
+  // 13 TeV EMCal Sphericity differential cuts
+  //*************************************************************************************************
+  } else if (trainConfig == 2480){ //EMCal + DCal EG1 sphericity.
+    cuts.AddCutCalo("h0510113","411792109fe32220000","0r631031000000d0"); // INT7, NL21, sphericity
+    cuts.AddCutCalo("h5a10113","411792109fe32220000","0r631031000000d0"); // INT7, NL21, sphericity
+  } else if (trainConfig == 2481){ //EMCal + DCal EG1 sphericity.
+    cuts.AddCutCalo("h058e113","411792109fe32220000","0r631031000000d0"); // EG2, NL21, sphericity
+    cuts.AddCutCalo("h5a8e113","411792109fe32220000","0r631031000000d0"); // EG2, NL21, sphericity
+  } else if (trainConfig == 2482){ //EMCal + DCal EG1 sphericity.
+    cuts.AddCutCalo("h058d113","411792109fe32220000","0r631031000000d0"); // EG1, NL21, sphericity
+    cuts.AddCutCalo("h5a8d113","411792109fe32220000","0r631031000000d0"); // EG1, NL21, sphericity
+
+
 
     //*************************************************************************************************
     // 13 TeV EMCal cut studies
@@ -3249,8 +3258,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792109fe3q220000","0r631031000000d0"); // INT7 NL 12 + TB
     cuts.AddCutCalo("00010113","411792109fe3r220000","0r631031000000d0"); // INT7 NL 12 + TB
   } else if (trainConfig == 2503) { // only 1 cell clusters (switch off exotics + M02 cut)
-    cuts.AddCutCalo("00010113","411792109f03s000000","0r631031000000d0"); // INT7 NL 12 + TB
-    cuts.AddCutCalo("00010113","411793706f03s000000","0r631031000000d0"); // INT7 NL TB only
+    cuts.AddCutCalo("00010113","411792109f03s000000","0r631031000000d0"); // INT7 NL 12 + TB, fine tuning for 1 and 2+cells
+    cuts.AddCutCalo("00010113","411790206f03s000000","0r631031000000d0"); // INT7 NL TB only, fine tuning for only 2+cells
+    cuts.AddCutCalo("00010113","411793706f03s000000","0r631031000000d0"); // INT7 NL TB only, no fine tuning
   } else if (trainConfig == 2504) { // only 2 cell clusters (switch off exotics + M02 cut)
     cuts.AddCutCalo("00010113","411792109f03t000000","0r631031000000d0"); // INT7 NL 12 + TB
     cuts.AddCutCalo("00010113","411793706f03t000000","0r631031000000d0"); // INT7 NL TB only
@@ -3284,15 +3294,18 @@ void AddTask_GammaCalo_pp(
 
     // multiple configs for different settings in the correction framework
   } else if (trainConfig == 2513) { // NCellEfficiency calculated in the correction framework
-    cuts.AddCutCalo("00010113","411792109fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411790009fe3y220000","0r631031000000d0"); // INT7 TB and NL applied in CF!
   } else if (trainConfig == 2514) { // NCellEfficiency calculated in the correction framework
-    cuts.AddCutCalo("00010113","411792109fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411790009fe3y220000","0r631031000000d0"); // INT7 TB and NL applied in CF!
   } else if (trainConfig == 2515) { // NCellEfficiency calculated in the correction framework
-    cuts.AddCutCalo("00010113","411792109fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411790009fe3y220000","0r631031000000d0"); // INT7 TB and NL applied in CF!
   } else if (trainConfig == 2516) { // NCellEfficiency calculated in the correction framework
-    cuts.AddCutCalo("00010113","411792109fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411790009fe3y220000","0r631031000000d0"); // INT7 TB and NL applied in CF!
   } else if (trainConfig == 2517) { // NCellEfficiency calculated in the correction framework
-    cuts.AddCutCalo("00010113","411792109fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411790009fe3y220000","0r631031000000d0"); // INT7 TB and NL applied in CF!
+  // with standard NCell 2 cut
+  } else if (trainConfig == 2518) { // NCellEfficiency calculated in the correction framework
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0"); // INT7 TB and NL applied in CF!
 
   // 3x3 clusterizer
   } else if (trainConfig == 2520) { // 3x3 clusterizer
@@ -3330,8 +3343,31 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >=2
     cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // no NCell
 
+    // exotics threshold variation
+  } else if (trainConfig == 2540) { //no NCell cut
+    cuts.AddCutCalo("00010113","411792109fi30220000","0r631031000000d0"); // exotics > 3 GeV
+    cuts.AddCutCalo("00010113","411792109fj30220000","0r631031000000d0"); // exotics > 4 GeV
+    cuts.AddCutCalo("00010113","411792109fk30220000","0r631031000000d0"); // exotics > 5 GeV
+    cuts.AddCutCalo("00010113","411792109fl30220000","0r631031000000d0"); // exotics > 6 GeV
+  } else if (trainConfig == 2541) { // NCell efficiency wit PCM-EMC tagged clusters
+    cuts.AddCutCalo("00010113","411792109fi3v220000","0r631031000000d0"); // exotics > 3 GeV
+    cuts.AddCutCalo("00010113","411792109fj3v220000","0r631031000000d0"); // exotics > 4 GeV
+    cuts.AddCutCalo("00010113","411792109fk3v220000","0r631031000000d0"); // exotics > 5 GeV
+    cuts.AddCutCalo("00010113","411792109fl3v220000","0r631031000000d0"); // exotics > 6 GeV
+
+    // Non Lin variations
+  } else if (trainConfig == 2550) { // NCell effi: PCMEMC tagged pi0 clusters
+    cuts.AddCutCalo("00010113","411793709fe3v220000","0r631031000000d0"); // TBNL,
+    cuts.AddCutCalo("00010113","411790209fe3v220000","0r631031000000d0"); // TBNL + FT for 2+ clusters
+  } else if (trainConfig == 2551) { // No NCell cut
+    cuts.AddCutCalo("00010113","411793709fe30220000","0r631031000000d0"); // TBNL
+    cuts.AddCutCalo("00010113","411790209fe30220000","0r631031000000d0"); // TBNL + FT for 2+ clusters
+  } else if (trainConfig == 2552) { // Std NCell >= 2 cut
+    cuts.AddCutCalo("00010113","411793709fe32220000","0r631031000000d0"); // TBNL
+    cuts.AddCutCalo("00010113","411790209fe32220000","0r631031000000d0"); // TBNL + FT for 2+ clusters
+
     //*************************************************************************************************
-    // 13 TeV PCM-PHOS - Systematics
+    // 13 TeV PHOS - Systematics
     //*************************************************************************************************
     // Variations for systematics
   } else if (trainConfig == 2600){ // PHOS clusters standard cuts, INT7, NL, std 19
@@ -3367,32 +3403,34 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466190s101cc00000","0163103100000010"); //1
     cuts.AddCutCalo("00010113","24466190s401cc00000","0163103100000010"); //4
     cuts.AddCutCalo("00010113","24466190s501cc00000","0163103100000010"); //5
-    cuts.AddCutCalo("00010113","24466190s601cc00000","0163103100000010"); //6
+    // cuts.AddCutCalo("00010113","24466190s601cc00000","0163103100000010"); //6
   } else if (trainConfig == 2623){ // min energy variation std 0.3 GeV/c
     //                                     |
     cuts.AddCutCalo("00010113","24466190sa00cc00000","0163103100000010"); //0:     off
     cuts.AddCutCalo("00010113","24466190sa09cc00000","0163103100000010"); //9:     0.1 GeV/c
     cuts.AddCutCalo("00010113","24466190sa02cc00000","0163103100000010"); //2:     0.5 GeV/c
     cuts.AddCutCalo("00010113","24466190sa03cc00000","0163103100000010"); //3:     0.6 GeV/c
-    cuts.AddCutCalo("00010113","24466190sa04cc00000","0163103100000010"); //4:     0.7 GeV/c
-    cuts.AddCutCalo("00010113","24466190sa05cc00000","0163103100000010"); //5:     0.8 GeV/c
+    // cuts.AddCutCalo("00010113","24466190sa04cc00000","0163103100000010"); //4:     0.7 GeV/c
+    // cuts.AddCutCalo("00010113","24466190sa05cc00000","0163103100000010"); //5:     0.8 GeV/c
   } else if (trainConfig == 2624){ // min nCells & M02 variation, std cc
     // std: min nCells = 2 >1GeV; M02 max=100, min=0.1
     //                                     |||
-    cuts.AddCutCalo("00010113","24466190sa011000000","0163103100000010"); //100:   min nCells = 1, minM02 off
     cuts.AddCutCalo("00010113","24466190sa012200000","0163103100000010"); //220:   min nCells = 2, all E
     cuts.AddCutCalo("00010113","24466190sa013200000","0163103100000010"); //320:   min nCells = 3, all E
     cuts.AddCutCalo("00010113","24466190sa01dc00000","0163103100000010"); //dc0:   min nCells = 3, E>1GeV; minM02==0.1 off for E<1GeV
     cuts.AddCutCalo("00010113","24466190sa01cd00000","0163103100000010"); //cd0:   min nCells = 2, E>1GeV; minM02==0.2 off for E<1GeV
-    cuts.AddCutCalo("00010113","24466190sa01cc70000","0163103100000010"); //cc7:   maxM02 == 1.3
-    cuts.AddCutCalo("00010113","24466190sa01cc80000","0163103100000010"); //cc8:   maxM02 == 2.5
   } else if (trainConfig == 2625){ // reconstructed conversion, std 0 == off
     //                                          |
     cuts.AddCutCalo("00010113","24466190sa01cc00100","0163103100000010"); //1:     0.02
     cuts.AddCutCalo("00010113","24466190sa01cc00200","0163103100000010"); //2:     0.025
     cuts.AddCutCalo("00010113","24466190sa01cc00300","0163103100000010"); //3:     0.03
     cuts.AddCutCalo("00010113","24466190sa01cc00400","0163103100000010"); //4:     0.035
-    cuts.AddCutCalo("00010113","24466190sa01cc00500","0163103100000010"); //5:     0.04
+    // cuts.AddCutCalo("00010113","24466190sa01cc00500","0163103100000010"); //5:     0.04
+  } else if (trainConfig == 2626){ // min nCells & M02 variation, std cc
+    //                                      |||
+    cuts.AddCutCalo("00010113","24466190sa011000000","0163103100000010"); //100:   min nCells = 1, minM02 off
+    cuts.AddCutCalo("00010113","24466190sa01cc70000","0163103100000010"); //cc7:   maxM02 == 1.3
+    cuts.AddCutCalo("00010113","24466190sa01cc80000","0163103100000010"); //cc8:   maxM02 == 2.5
   //----------------------------------------------------------------------------------------------------------------------------------------
   // Meson variations
   } else if ( trainConfig == 2640){//rapidity, std 1 == <0.8
@@ -3438,25 +3476,27 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00062113","24466190sa09cc00000","0163103100000010"); //9:     0.1 GeV/c
     cuts.AddCutCalo("00062113","24466190sa02cc00000","0163103100000010"); //2:     0.5 GeV/c
     cuts.AddCutCalo("00062113","24466190sa03cc00000","0163103100000010"); //3:     0.6 GeV/c
-    cuts.AddCutCalo("00062113","24466190sa04cc00000","0163103100000010"); //4:     0.7 GeV/c
-    cuts.AddCutCalo("00062113","24466190sa05cc00000","0163103100000010"); //5:     0.8 GeV/c
+    // cuts.AddCutCalo("00062113","24466190sa04cc00000","0163103100000010"); //4:     0.7 GeV/c
+    // cuts.AddCutCalo("00062113","24466190sa05cc00000","0163103100000010"); //5:     0.8 GeV/c
   } else if (trainConfig == 2724){ // min nCells & M02 variation, std cc
     // std: min nCells = 2 >1GeV; M02 max=100, min=0.1
     //                                     |||
-    cuts.AddCutCalo("00062113","24466190sa011000000","0163103100000010"); //100:   min nCells = 1, minM02 off
     cuts.AddCutCalo("00062113","24466190sa012200000","0163103100000010"); //220:   min nCells = 2, all E
     cuts.AddCutCalo("00062113","24466190sa013200000","0163103100000010"); //320:   min nCells = 3, all E
     cuts.AddCutCalo("00062113","24466190sa01dc00000","0163103100000010"); //dc0:   min nCells = 3, E>1GeV; minM02==0.1 off for E<1GeV
     cuts.AddCutCalo("00062113","24466190sa01cd00000","0163103100000010"); //cd0:   min nCells = 2, E>1GeV; minM02==0.2 off for E<1GeV
-    cuts.AddCutCalo("00062113","24466190sa01cc70000","0163103100000010"); //cc7:   maxM02 == 1.3
-    cuts.AddCutCalo("00062113","24466190sa01cc80000","0163103100000010"); //cc8:   maxM02 == 2.5
   } else if (trainConfig == 2725){ // reconstructed conversion, std 0 == off
     //                                          |
     cuts.AddCutCalo("00062113","24466190sa01cc00100","0163103100000010"); //1:     0.02
     cuts.AddCutCalo("00062113","24466190sa01cc00200","0163103100000010"); //2:     0.025
     cuts.AddCutCalo("00062113","24466190sa01cc00300","0163103100000010"); //3:     0.03
     cuts.AddCutCalo("00062113","24466190sa01cc00400","0163103100000010"); //4:     0.035
-    cuts.AddCutCalo("00062113","24466190sa01cc00500","0163103100000010"); //5:     0.04
+    // cuts.AddCutCalo("00062113","24466190sa01cc00500","0163103100000010"); //5:     0.04
+  } else if (trainConfig == 2726){ // min nCells & M02 variation, std cc
+    cuts.AddCutCalo("00062113","24466190sa011000000","0163103100000010"); //100:   min nCells = 1, minM02 off
+    cuts.AddCutCalo("00062113","24466190sa01cc70000","0163103100000010"); //cc7:   maxM02 == 1.3
+    cuts.AddCutCalo("00062113","24466190sa01cc80000","0163103100000010"); //cc8:   maxM02 == 2.5
+    //                                     |||
   //----------------------------------------------------------------------------------------------------------------------------------------
   // Meson variations
   } else if ( trainConfig == 2740){//rapidity, std 1 == <0.8

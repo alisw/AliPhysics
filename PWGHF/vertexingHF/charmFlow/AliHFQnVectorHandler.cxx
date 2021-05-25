@@ -26,6 +26,7 @@
 #include "AliAnalysisManager.h"
 #include "AliQnCorrectionsQnVector.h"
 #include "AliMultSelection.h"
+#include "AliDataFile.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFQnVectorHandler);
@@ -1027,10 +1028,12 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
         fOADBFile = nullptr;
     }
 
-    if (!gGrid) {
-        TGrid::Connect("alien://");
-    }
-    fOADBFile = TFile::Open(fOADBFileName.Data());
+    TString pathToFileCMVFNS = AliDataFile::GetFileName(fOADBFileName.Data());
+    // Check access to CVMFS (will only be displayed locally)
+    if (pathToFileCMVFNS.IsNull())
+        AliFatal("Cannot access data files from CVMFS: please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data and run again");
+
+    fOADBFile = TFile::Open(pathToFileCMVFNS.Data());
 
     if(!fOADBFile) {
         AliWarning("OADB V0-TPC calibration file cannot be opened\n");

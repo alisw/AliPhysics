@@ -77,6 +77,7 @@ AliAnalysisTask *AddTaskJHSCMaster (TString taskName = "JHSCMaster", UInt_t peri
       fJCatalyst[i]->SetEtaRange (-0.8, 0.8);
       fJCatalyst[i]->SetPtRange (ptmin, 5.0);
       fJCatalyst[i]->SetPhiCorrectionIndex (i);
+      fJCatalyst[i]->SetRemoveBadArea (removebadarea);
 
   }				// End for.
 // Configuration of the analysis task itself.

@@ -98,3 +98,13 @@ TH1 *AliProfileBS::getHistRebinned(TProfile *inpf) {
   delete temppf;
   return reth;
 }
+void AliProfileBS::MergeBS(AliProfileBS *target) {
+  this->Add(target);
+  TList *tarL = target->fListOfEntries;
+  if(!fListOfEntries) {
+    if(!target->fListOfEntries) return;
+    fListOfEntries = (TList*)tarL->Clone();
+    for(Int_t i=0; i<fListOfEntries->GetEntries(); i++) ((TProfile*)fListOfEntries->At(i))->Reset();
+  }
+  for(Int_t i=0; i<fListOfEntries->GetEntries(); i++) ((TProfile*)fListOfEntries->At(i))->Add((TProfile*)tarL->At(i));
+}

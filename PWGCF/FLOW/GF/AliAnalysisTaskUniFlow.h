@@ -179,8 +179,10 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void            SetDisablePtBinnedPool(Bool_t dis = kFALSE) {fUsePtBinnedEventPool = dis; }
       void            SetDisableFillMixedCorrelations(Bool_t fill = kFALSE) { fFillMixed = fill;}
       void            SetMaxPoolSize(Int_t size){fPoolSize = size; }
+      void            SetMergingCut(Double_t cut){ fMergingCut = cut; }
       Bool_t          FillCorrelations();
       Double_t        RangePhi(Double_t dPhi);
+      Double_t        GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
 
       AliEventCuts            fEventCuts; //
 
@@ -421,6 +423,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Double_t                fCorrdPhiMin; // [-pi/2] min of dEta bins for correlations
       Double_t                fCorrdPhiMax ; // [3/2 pi] max of dEta bins for correlations
       Double_t                fEtaSlicesArr[fFlowBinNumberEtaSlices+1]; // array with lower
+      Int_t                   fMagFieldSign; // [0] mag field sign
+      Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
       //cuts & selection: events
       ColSystem               fColSystem; // collisional system
@@ -530,6 +534,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       // Charged
       TH1D*                   fhRefsMult; //!multiplicity distribution of selected RFPs
       TH1D*                   fhRefsPt; //! pt distribution of selected RFPs
+      TH1D*                   fhChargedPt; //! pt distribution of selected charged
       TH1D*                   fhRefsEta; //! pt distribution of selected RFPs
       TH1D*                   fhRefsPhi; //! pt distribution of selected RFPs
       TProfile*               fpRefsMult; //! <multiplicity>
@@ -662,7 +667,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 27);
+      ClassDef(AliAnalysisTaskUniFlow, 28);
 };
 
 #endif
