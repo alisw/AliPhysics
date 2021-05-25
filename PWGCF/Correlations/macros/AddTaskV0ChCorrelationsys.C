@@ -30,9 +30,11 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
   AliAnalysisTaskV0ChCorrelationsys* task = new AliAnalysisTaskV0ChCorrelationsys(taskName.Data(),  cenMin,cenMax,effCorr);  
 
   task->SetAnalysisMC(isMC);
+  task->SetV0h(kTRUE);
+  task->Sethh(kTRUE);
   //------------------------------Mixing part------------------------------
-  task->SetMixingTracks(500);
-    task->SetPoolSize(100); 
+  task->SetMixingTracks(50000);
+   task->SetPoolSize(200); 
  //--------------------------------Variable--------------------------------
   task->SetVtxCut(9.);
   task->SetNumOfVzBins(9);//    
@@ -45,7 +47,7 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
   task->SetFilterBit(768);
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
-  task->SetV0PtMin(3.);
+  task->SetV0PtMin(8.);
   task->SetV0PtMax(16.);
   task->SetV0Eta(0.7);
   task->SetK0sLifeTimeMin(0);
