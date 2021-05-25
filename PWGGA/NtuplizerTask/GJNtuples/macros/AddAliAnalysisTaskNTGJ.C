@@ -84,7 +84,7 @@ AddAliAnalysisTaskNTGJ(TString suffixName,
     
 
   AliAnalysisTaskNTGJ *task =
-    new AliAnalysisTaskNTGJ(name.Data());
+    new AliAnalysisTaskNTGJ(suffixName.Data());
 
   // set to 2 to print number of clusters/tracks/MC particles
   // set to 3 to also print when entering various loops
