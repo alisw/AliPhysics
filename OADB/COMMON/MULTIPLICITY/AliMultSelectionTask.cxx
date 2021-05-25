@@ -273,7 +273,7 @@ fOADB(nullptr)
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
 : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0),
-fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkPropDCA(kFALSE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
+fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkPropDCA(kFALSE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE), fkLightTree(kTRUE),
 fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
