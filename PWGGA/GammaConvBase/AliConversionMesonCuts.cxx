@@ -137,6 +137,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fElectronLabelArray(NULL),
   fBackgroundHandler(0),
   fMassParamFunction(0),
+  fAlphaInTaskMode(0),
   fDoLightOutput(0),
   fDoMinPtCut(kFALSE),
   fDoMaxPtCut(kFALSE),
@@ -166,6 +167,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoMesonQualitySelection(kFALSE),
   fUseMCPSmearing(0),
   fAlphaPtDepCut(kFALSE),
+  fDoAlphaInTask(kFALSE),
   fDCAGammaGammaCutOn(kFALSE),
   fDCAZMesonPrimVtxCutOn(kFALSE),
   fDCARMesonPrimVtxCutOn(kFALSE),
@@ -259,6 +261,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fElectronLabelArray(NULL),
   fBackgroundHandler(ref.fBackgroundHandler),
   fMassParamFunction(ref.fMassParamFunction),
+  fAlphaInTaskMode(ref.fAlphaInTaskMode),
   fDoLightOutput(ref.fDoLightOutput),
   fDoMinPtCut(ref.fDoMinPtCut),
   fDoMaxPtCut(ref.fDoMaxPtCut),
@@ -288,6 +291,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoMesonQualitySelection(ref.fDoMesonQualitySelection),
   fUseMCPSmearing(ref.fUseMCPSmearing),
   fAlphaPtDepCut(ref.fAlphaPtDepCut),
+  fDoAlphaInTask(ref.fDoAlphaInTask),
   fDCAGammaGammaCutOn(ref.fDCAGammaGammaCutOn),
   fDCAZMesonPrimVtxCutOn(ref.fDCAZMesonPrimVtxCutOn),
   fDCARMesonPrimVtxCutOn(ref.fDCARMesonPrimVtxCutOn),
@@ -3160,8 +3164,12 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     fAlphaCutMeson    = -1.0;
     fAlphaPtDepCut    = kTRUE;
     break;
-
-
+  case 19:   // j (Alpha Cut is handled in Task)
+    fAlphaMinCutMeson   = 0.0;
+    fAlphaCutMeson      = 1.;
+    fDoAlphaInTask = kTRUE;
+    fAlphaInTaskMode = 0;
+    break;
   default:
     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
     return kFALSE;

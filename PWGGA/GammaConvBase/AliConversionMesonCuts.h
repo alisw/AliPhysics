@@ -231,7 +231,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    GetNDaughterEnergyCut() const {return fNDaughterEnergyCut;}
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
     Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
-
+    Bool_t   UseAlphaInTask() const{return fDoAlphaInTask;}
+    Int_t    GetAlphaInTaskMode() const {return fAlphaInTaskMode;}
   protected:
     TRandom3    fRandom;                        ///<
     AliCaloPhotonCuts* fCaloPhotonCuts;         ///< CaloPhotonCutObject belonging to same main task
@@ -298,6 +299,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t*      fElectronLabelArray;            //[fElectronLabelArraySize] Array with elec/pos v0 label
     Int_t       fBackgroundHandler;             ///<
     Int_t       fMassParamFunction;             ///< flag to set the functions that should be used to paramterize NDM mass and width
+    Int_t       fAlphaInTaskMode;               ///<
 
     Int_t      fDoLightOutput;                 ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t      fDoMinPtCut;                    ///< do min pT cut
@@ -328,6 +330,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoMesonQualitySelection;       ///< flag to enable the meson selection based on the quality.
     Int_t       fUseMCPSmearing;                ///< flag
     Bool_t      fAlphaPtDepCut;                 ///<
+    Bool_t      fDoAlphaInTask;                   ///<
     Bool_t      fDCAGammaGammaCutOn;            ///< cut flag for the maximum distance between the two photons
     Bool_t      fDCAZMesonPrimVtxCutOn;         ///< cut flag for the maximum distance in Z between the production point of the Meson & the primary vertex
     Bool_t      fDCARMesonPrimVtxCutOn;         ///< cut flag for the maximum distance in R between the production point of the Meson & the primary vertex
@@ -351,7 +354,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,48)
+    ClassDef(AliConversionMesonCuts,49)
     /// \endcond
 };
 
