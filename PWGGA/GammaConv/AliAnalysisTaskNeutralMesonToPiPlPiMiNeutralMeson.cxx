@@ -7818,6 +7818,16 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::MesonIsSelectedByAlpha
         FunctionValue_UpperLimit            =
                 ((6.30231e-01)-(-3.77337e+00))/(TMath::Exp(((5.60553e-05)-xx)/(1.35591e+00))+(9.99175e-01))+(-3.77337e+00);
         break;
+    case 1:
+        useFunction_UpperLimit              = kTRUE;
+        //([0]-[4])/(TMath::Exp(([1]-x)/[2])+[3])+[4]
+        FunctionValue_UpperLimit            =
+                ((6.30231e-01)-(-3.77337e+00))/(TMath::Exp(((5.60553e-05)-xx)/(1.35591e+00))+(9.99175e-01))+(-3.77337e+00);
+        useConst_LowerLimit                 = kTRUE;
+        const_LowerLimit                    = -0.8;
+        useConst_UpperLimit                 = kTRUE;
+        const_UpperLimit                    = 0.8;
+        break;
     default:
         break;
     }
