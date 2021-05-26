@@ -10,7 +10,6 @@ class AliESDEvent;
 class TList;
 class TH1D;
 class TH2D;
-class TH3D;
 class TH1I;
 class TProfile;
 class THnSparse;
@@ -42,7 +41,6 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		void       GetBinByBinCorrections(Int_t multGen, Int_t multRec, const std::vector<Float_t> &ptGen, const std::vector<Float_t> &ptRec, const std::vector<Int_t> &idGen, const std::vector<Int_t> &idRec, const std::vector<Int_t> &isprimRec);
 		void       GetMultiplicityDistributions(const std::vector<Float_t> &phiGen, const std::vector<Float_t> &ptGen, Int_t multGen, const std::vector<Float_t> &phiRec, const std::vector<Float_t> &ptRec, Int_t multRec, const std::vector<Float_t> &ptRecwodca, const            std::vector<Float_t> &dcaxyRecwodca, const std::vector<Int_t> &isprimwodca, Int_t multRecwodca );
 		void       GetMultiplicityDistributionsData(const std::vector<Float_t> &phiRec, const std::vector<Float_t> &ptRec, Int_t multRec, const std::vector<Float_t> &ptRecwodca, const std::vector<Float_t> &dcaxyRecwodca,  Int_t multRecwodca);
-		void       GetMB(const std::vector<Float_t> &ptRec, const std::vector<Float_t> &phiRec, Int_t multRec);
 		void       SetPtMin(Double_t val)              {fPtMin = val;}   // Set pT cut for associated particles
 		void       SetLeadingPtMin(Double_t PtLmin)    {fLeadPtCutMin = PtLmin;}   // use differnet ptcuts
 		void       SetLeadingPtMax(Double_t PtLmax)    {fLeadPtCutMax = PtLmax;}   // use differnet ptcuts
@@ -73,8 +71,8 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		//Systematic ============================
 		virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
 				Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
-		Int_t FillArrayMC( std::vector<Float_t> &pt, std::vector<Float_t> &eta, std::vector<Float_t> &phi, std::vector<Int_t> &id );
-		Int_t FillArray( std::vector<Float_t> &pt, std::vector<Float_t> &eta, std::vector<Float_t> &phi, std::vector<Float_t> &dcaxy, std::vector<Float_t> &dcaz, std::vector<Int_t> &isprim, std::vector<Int_t> &id, const bool fill1, const bool fill2, const bool fill3, const bool wDCA );
+		Int_t FillArrayMC( std::vector<Float_t> &pt, std::vector<Float_t> &phi, std::vector<Int_t> &id );
+		Int_t FillArray( std::vector<Float_t> &pt, std::vector<Float_t> &phi, std::vector<Float_t> &dcaxy, std::vector<Float_t> &dcaz, std::vector<Int_t> &isprim, std::vector<Int_t> &id, const bool fill1, const bool fill2, const bool fill3, const bool wDCA );
 
 	protected:
 
@@ -180,9 +178,6 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		TH1D * hRefMult08;
 		TH1D * hV0Mmult;
 		TH1D * hV0Mmultbefvtx;
-		TH2D * hRefMultvsV0Mmult;
-		TH2D * hV0MmultvsUE;
-		TH2D * hRefmultvsUE;
 		TH2D * hPtVsUEGenTest[3];//UE->NchTS
 		TH2D * hPtVsUERecTest[3];//UE->NchTS
 		TH2D * hPtVsUEData[3];//UE->NchTS
@@ -191,27 +186,11 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		TH2D * hPtVsNchData[3];
 		TH1D * hPhiGen[3];
 		TH1D * hPhiRec[3];
-		TH2D * hPtVsV0MData;//V0M
-		TH2D * hDphiVsUEGenTest; //UE->NchTS
-		TH2D * hDphiVsUERecTest;//UE->NchTS
-		TH2D * hDphiVsUEData;//UE->NchTS
-		TH2D * hDphiVsNchGenTest;
-		TH2D * hDphiVsNchRecTest;
-		TH2D * hDphiVsNchData;
-		//multiplicity percentile
-		TH3D * hPtVsUEvsNchData_V0M[3];//UE->NchTS
-		TH3D * hDphiVsUEvsNchData_V0M;//UE->NchTS
-		//TH3D * hV0MVsUEvsRef;//UE->NchTS
 		TH2D * hPTVsDCAData;
-		TH2D * hPTVsDCAcentData;
 		TH2F * hptvsdcaPrim;
 		TH2F * hptvsdcaDecs;
 		TH2F * hptvsdcaMatl;
-		TH2F * hptvsdcacentralPrim;
-		TH2F * hptvsdcacentralDecs;
-		TH2F * hptvsdcacentralMatl;
 		TH2F * hptvsdcaAll;
-		TH2F * hptvsdcacentralAll;
 
 		AliAnalysisTaskChargedVsRT(const AliAnalysisTaskChargedVsRT&);                  // not implemented
 		AliAnalysisTaskChargedVsRT& operator=(const AliAnalysisTaskChargedVsRT&);       // not implemented
