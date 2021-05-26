@@ -222,6 +222,9 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fHistoTrueClusMergedPtvsRJet(NULL),
   fHistoTrueClusPi0PtvsRJet(NULL),
   fHistoTrueClusEtaPtvsRJet(NULL),
+  fHistoTrueClusGammaPtvsRJet(NULL),
+  fHistoTrueClusElectronPtvsRJet(NULL),
+  fHistoTrueClusHadronPtvsRJet(NULL),
   fHistoTruePi0PtY(NULL),
   fHistoTrueEtaPtY(NULL),
   fHistoTruePi0PtAlpha(NULL),
@@ -471,6 +474,9 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fHistoTrueClusMergedPtvsRJet(NULL),
   fHistoTrueClusPi0PtvsRJet(NULL),
   fHistoTrueClusEtaPtvsRJet(NULL),
+  fHistoTrueClusGammaPtvsRJet(NULL),
+  fHistoTrueClusElectronPtvsRJet(NULL),
+  fHistoTrueClusHadronPtvsRJet(NULL),
   fHistoTruePi0PtY(NULL),
   fHistoTrueEtaPtY(NULL),
   fHistoTruePi0PtAlpha(NULL),
@@ -1259,9 +1265,11 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
         fHistoTrueClusMergedPtvsRJet                 = new TH2F*[fnCuts];
         fHistoTrueClusPi0PtvsRJet                    = new TH2F*[fnCuts];
         fHistoTrueClusEtaPtvsRJet                    = new TH2F*[fnCuts];
+        fHistoTrueClusGammaPtvsRJet                  = new TH2F*[fnCuts];
+        fHistoTrueClusElectronPtvsRJet               = new TH2F*[fnCuts];
+        fHistoTrueClusHadronPtvsRJet                 = new TH2F*[fnCuts];
       }
     }
-
 
 
     for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -1621,6 +1629,12 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
           fTrueList[iCut]->Add(fHistoTrueClusPi0PtvsRJet[iCut]);
           fHistoTrueClusEtaPtvsRJet[iCut]             = new TH2F("TrueClusEtaPtVsR","TrueClusEtaPtVsR",ptBins, arrPtBinning, 20, 0, 0.4);
           fTrueList[iCut]->Add(fHistoTrueClusEtaPtvsRJet[iCut]);
+          fHistoTrueClusGammaPtvsRJet[iCut]             = new TH2F("TrueClusGammaPtVsR","TrueClusGammaPtVsR",ptBins, arrPtBinning, 20, 0, 0.4);
+          fTrueList[iCut]->Add(fHistoTrueClusGammaPtvsRJet[iCut]);
+          fHistoTrueClusElectronPtvsRJet[iCut]             = new TH2F("TrueClusElectronPtVsR","TrueClusElectronPtVsR",ptBins, arrPtBinning, 20, 0, 0.4);
+          fTrueList[iCut]->Add(fHistoTrueClusElectronPtvsRJet[iCut]);
+          fHistoTrueClusHadronPtvsRJet[iCut]             = new TH2F("TrueClusHadronPtVsR","TrueClusHadronPtVsR",ptBins, arrPtBinning, 20, 0, 0.4);
+          fTrueList[iCut]->Add(fHistoTrueClusHadronPtvsRJet[iCut]);
         }
       }
 
@@ -1772,6 +1786,9 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
             fHistoTrueClusMergedPtvsRJet[iCut]->Sumw2();
             fHistoTrueClusPi0PtvsRJet[iCut]->Sumw2();
             fHistoTrueClusEtaPtvsRJet[iCut]->Sumw2();
+            fHistoTrueClusGammaPtvsRJet[iCut]->Sumw2();
+            fHistoTrueClusElectronPtvsRJet[iCut]->Sumw2();
+            fHistoTrueClusHadronPtvsRJet[iCut]->Sumw2();
           }
         }
         if(fUsePrimElectronMatching){
@@ -2243,7 +2260,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
           if(DeltaPhi > TMath::Pi()) {
             DeltaPhi = 2*TMath::Pi() - DeltaPhi;
           }
-          if(fDoOutOfJet == 2){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
+          if(fDoOutOfJet == 2 || fDoOutOfJet == 4){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
             DeltaEta = fVectorJetEta.at(ij) + etaCluster;
             DeltaPhi = abs(TMath::Pi() - DeltaPhi);
           }
@@ -2272,6 +2289,23 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
                 IsClusAcceptedByJet = kTRUE;
                 matchedJet = ij;
                 break;
+              }
+            } else if(fDoOutOfJet == 4){ // in jet on away side (like case 2 but additionally particle has to be inside Jet)
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                // loop over all Jets and see if particle is not only oppsoite to Jet, but also in Jet
+                for(Int_t k=0; k<fConvJetReader->GetNJets(); k++){
+                  Double_t dEta = fVectorJetEta.at(k)-etaCluster;
+                  Double_t dPhi = abs(fVectorJetPhi.at(k)-phiCluster);
+                  if(dEta > TMath::Pi()) {
+                    dEta = 2*TMath::Pi() - dEta;
+                  }
+                  Double_t RJetPi0CandInJet = TMath::Sqrt(dEta*dEta+dPhi*dPhi);
+                  if(RJetPi0CandInJet < fConvJetReader->Get_Jet_Radius()){
+                    IsClusAcceptedByJet = kTRUE;
+                    matchedJet = ij;
+                    break;
+                  }
+                }
               }
             }
           }
@@ -2383,7 +2417,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
             DeltaPhi = 2*M_PI - DeltaPhi;
         }
         Double_t RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
-        if(fDoOutOfJet == 2){
+        if(fDoOutOfJet == 2 || fDoOutOfJet == 4){
           RJetPi0Cand = abs(TMath::Pi() - RJetPi0Cand);
         }
         if(fConvJetReader->Get_Jet_Radius() > 0){
@@ -3026,6 +3060,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
       if (fEnableDetailedPrintOut) cout << "photon" << endl;
       fHistoTrueClusGammaPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
 
+      if(fDoJetAnalysis && !fDoLightOutput) fHistoTrueClusGammaPtvsRJet[fiCut]->Fill(TrueClusterCandidate->Pt(), RJetPi0Cand, tempClusterWeight);
+
       if (fDoMesonQA > 0){
         fHistoTrueClusGammaEM02[fiCut]->Fill(TrueClusterCandidate->E(), m02, tempClusterWeight);
         if (fDoMesonQA > 1){
@@ -3058,6 +3094,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
                !TrueClusterCandidate->IsElectronFromFragPhoton()){
       if (fEnableDetailedPrintOut) cout << "electron" << endl;
       fHistoTrueClusElectronPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
+      if(fDoJetAnalysis && !fDoLightOutput) fHistoTrueClusElectronPtvsRJet[fiCut]->Fill(TrueClusterCandidate->Pt(), RJetPi0Cand, tempClusterWeight);
       if (fDoMesonQA > 0){
         fHistoTrueClusElectronEM02[fiCut]->Fill(TrueClusterCandidate->E(), m02, tempClusterWeight);
         if (fDoMesonQA > 1){
@@ -3100,6 +3137,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
     } else {
       if (fEnableDetailedPrintOut) cout << "BG" << endl;
       fHistoTrueClusBGPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
+      if(fDoJetAnalysis && !fDoLightOutput) fHistoTrueClusHadronPtvsRJet[fiCut]->Fill(TrueClusterCandidate->Pt(), RJetPi0Cand, tempClusterWeight);
       if(fDoMesonQA > 1){
         fHistoTrueClusBGEvsM02[fiCut]->Fill(TrueClusterCandidate->E(), m02, tempClusterWeight);
         fHistoTrueClusBGEvsM20[fiCut]->Fill(TrueClusterCandidate->E(), cluster->GetM20(), tempClusterWeight);
@@ -3459,6 +3497,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
     } else if (TrueClusterCandidate->IsLargestComponentPhoton() || TrueClusterCandidate->IsConversionFullyContained()){
       if (fEnableDetailedPrintOut) cout << "photon" << endl;
       fHistoTrueClusGammaPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
+      if(fDoJetAnalysis && !fDoLightOutput) fHistoTrueClusGammaPtvsRJet[fiCut]->Fill(TrueClusterCandidate->Pt(), RJetPi0Cand, tempClusterWeight);
       if (fDoMesonQA > 0){
         fHistoTrueClusGammaEM02[fiCut]->Fill(TrueClusterCandidate->E(), m02, tempClusterWeight);
         if (fDoMesonQA > 1) {
@@ -3488,6 +3527,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
     } else if (TrueClusterCandidate->IsLargestComponentElectron()){
       if (fEnableDetailedPrintOut) cout << "electron" << endl;
       fHistoTrueClusElectronPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
+      if(fDoJetAnalysis && !fDoLightOutput) fHistoTrueClusElectronPtvsRJet[fiCut]->Fill(TrueClusterCandidate->Pt(), RJetPi0Cand, tempClusterWeight);
       if (fDoMesonQA > 0){
         fHistoTrueClusElectronEM02[fiCut]->Fill(TrueClusterCandidate->E(), m02, tempClusterWeight);
         if (fDoMesonQA > 1){
@@ -3523,6 +3563,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
     } else {
       if (fEnableDetailedPrintOut) cout << "BG" << endl;
       fHistoTrueClusBGPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
+      if(fDoJetAnalysis && !fDoLightOutput) fHistoTrueClusHadronPtvsRJet[fiCut]->Fill(TrueClusterCandidate->Pt(), RJetPi0Cand, tempClusterWeight);
       if(fDoMesonQA > 1){
         fHistoTrueClusBGEvsM02[fiCut]->Fill(TrueClusterCandidate->E(), m02, tempClusterWeight);
         fHistoTrueClusBGEvsM20[fiCut]->Fill(TrueClusterCandidate->E(), cluster->GetM20(), tempClusterWeight);
@@ -3587,7 +3628,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
         for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
           Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
           Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
-          if(fDoOutOfJet == 2){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
+          if(fDoOutOfJet == 2 || fDoOutOfJet == 4){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
             DeltaEta = fTrueVectorJetEta.at(j) + particle->Eta();
             DeltaPhi = abs(TMath::Pi() - DeltaPhi);
           }
@@ -3615,6 +3656,22 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
               if((RJetPi0Cand > fConvJetReader->Get_Jet_Radius()) && (RJetPi0Cand < fConvJetReader->Get_Jet_Radius() + 0.2)){
                 particleInJet = kTRUE;
                 break;
+              }
+            } else if(fDoOutOfJet == 4){ // in jet on away side (like case 2 but additionally particle has to be inside Jet)
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                // loop over all Jets and see if particle is not only oppsoite to Jet, but also in Jet
+                for(Int_t k=0; k<fConvJetReader->GetTrueNJets(); k++){
+                  Double_t dEta = fTrueVectorJetEta.at(k)-particle->Eta();
+                  Double_t dPhi = abs(fTrueVectorJetPhi.at(k)-particle->Phi());
+                  if(dEta > TMath::Pi()) {
+                    dEta = 2*TMath::Pi() - dEta;
+                  }
+                  Double_t RJetPi0CandInJet = TMath::Sqrt(dEta*dEta+dPhi*dPhi);
+                  if(RJetPi0CandInJet < fConvJetReader->Get_Jet_Radius()){
+                    particleInJet = kTRUE;
+                    break;
+                  }
+                }
               }
             }
           }
@@ -3923,7 +3980,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
         for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
           Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
           Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
-          if(fDoOutOfJet == 2){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
+          if(fDoOutOfJet == 2 || fDoOutOfJet == 4){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
             DeltaEta = fTrueVectorJetEta.at(j) + particle->Eta();
             DeltaPhi = abs(TMath::Pi() - DeltaPhi);
           }
@@ -3951,6 +4008,22 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
               if((RJetPi0Cand > fConvJetReader->Get_Jet_Radius()) && (RJetPi0Cand < fConvJetReader->Get_Jet_Radius() + 0.2)){
                 particleInJet = kTRUE;
                 break;
+              }
+            } else if(fDoOutOfJet == 4){ // in jet on away side (like case 2 but additionally particle has to be inside Jet)
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                // loop over all Jets and see if particle is not only oppsoite to Jet, but also in Jet
+                for(Int_t k=0; k<fConvJetReader->GetTrueNJets(); k++){
+                  Double_t dEta = fTrueVectorJetEta.at(k)-particle->Eta();
+                  Double_t dPhi = abs(fTrueVectorJetPhi.at(k)-particle->Phi());
+                  if(dEta > TMath::Pi()) {
+                    dEta = 2*TMath::Pi() - dEta;
+                  }
+                  Double_t RJetPi0CandInJet = TMath::Sqrt(dEta*dEta+dPhi*dPhi);
+                  if(RJetPi0CandInJet < fConvJetReader->Get_Jet_Radius()){
+                    particleInJet = kTRUE;
+                    break;
+                  }
+                }
               }
             }
           }

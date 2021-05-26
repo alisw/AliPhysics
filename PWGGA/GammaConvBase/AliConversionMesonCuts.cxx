@@ -1986,6 +1986,11 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     fDoJetAnalysis = kTRUE;
     fDoOutOfJet = 3;
     break;
+  case 9: // in jet, only on opposite side of Jet (like 7 but meson has to be in (di-)Jet)
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    fDoOutOfJet = 4;
+    break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;
     return kFALSE;
