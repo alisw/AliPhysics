@@ -1654,6 +1654,12 @@ void AliMultSelectionTask::UserExec(Option_t *)
       // Get ITSrefit counts
       if((track->GetStatus() & AliVTrack::kITSrefit)==1) ITSrefitTracks++;
       
+      fNTracksDCAxyABS=dcaxyABS;
+      fNTracksDCAzABS=dcazABS;
+      fNTracksDCAxySQ=dcaxySQ;
+      fNTracksDCAzSQ=dcazSQ;
+      fNTracksITSrefit=ITSrefitTracks;
+      
       //Only ITSsa tracks
       if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
         fNTracksITSsa2010 -> SetValueInteger( fNTracksITSsa2010->GetValueInteger() + 1);
