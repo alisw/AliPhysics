@@ -140,6 +140,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     AliExternalTrackParam* GetConstrainedParameterAOD(const AliAODTrack* aodTr, const AliAODVertex* vtx, double bz);
     Double32_t CalculateP2(Double_t xyz[3],Double_t pxpypz[3]);
     Double_t GetAlphaLFromLorentz(TLorentzVector Particle1, TLorentzVector Particle2);
+    Bool_t MesonIsSelectedByAlphaCut(Double_t alphaValue, Double_t MesonPt, Int_t ParametrizationMode);
 
 
     AliV0ReaderV1*                    fV0Reader;                                          //!<! V0Reader for basic conversion photon selection
@@ -200,7 +201,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Float_t                           fPDGMassChargedPion;                                ///< PDG mass of either pi0 or eta
     Int_t                             fPDGCodeNDM;                                        ///< PDG code of either pi0 or eta
     Int_t                             fPDGCodeAnalyzedMeson;                              ///< PDG code of the analyzed heavy netural meson
-    Bool_t                            fEnableAsymmetryPlotCombCPionVsNPion;                ///< Turn On or Off if Histograms are created and used
+    Bool_t                            fEnableAsymmetryPlotCombCPionVsNPion;               ///< Turn On or Off if Histograms are created and used
+    Bool_t                            fEnableAsymmetryPlot_NotAccepted;                   ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzAllPt;                                  ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzLowPt;                                  ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzMidPt;                                  ///< Turn On or Off if Histograms are created and used
@@ -238,6 +240,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoMotherInvMassPtRejectedKinematic;             //!<! array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     //Asymmetry Plot
     TH2F**                            fHistoAsymmetryPlotCombCPionVsNPion;                //!<!
+    TH2F**                            fHistoAsymmetryPlotCombCPionVsNPion_NotAccepted;    //!<!
     //All Dalitz
     TH2F**                            fHistoDalitzPlotPosFixedPzNDM;                     //!<!
     TH2F**                            fHistoDalitzPlotNegFixedPzNDM;                     //!<!
