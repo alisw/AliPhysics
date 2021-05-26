@@ -50,12 +50,12 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, true, false, false);
-  TrackCuts->SetFilterBit(96);
+  TrackCuts->SetFilterBit(128);
   TrackCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
-  AntiTrackCuts->SetFilterBit(96);
+  AntiTrackCuts->SetFilterBit(128);
   AntiTrackCuts->SetCutCharge(-1);
 
   TrackCuts->SetMinimalBooking(suffix != "0");
