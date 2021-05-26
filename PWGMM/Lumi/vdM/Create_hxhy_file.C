@@ -94,14 +94,17 @@ void Compute_RateIntegral(Int_t Fill, Int_t scan_type, Int_t scan,
 		sep_tree->GetEntry(k);
 
 		// do fit
-		chi2_dof = Fit_rate_separation(
-				n_sep, sep, rate, rate_error, fit_type, area, rate_zero,
-				par, par_err, scan, scan_type, k, rate_type, rate_name, sep_type
-				);
+		const char* cName1 = Form("Fill%i_%s_%s_%s_F%i", Fill, sep_type, rate_type, rate_name, fit_type);
+		const char* cName2 = Form("%s_scan%i_i%i_bc%i", cName1, scan, k, Bunches[k]);
+		const char* cName3 = "WRONG_SCAN_TYPE";
+		if (scan_type == 1) cName3 = Form("%s_x", cName2);
+		if (scan_type == 2) cName3 = Form("%s_y", cName2);
+		chi2_dof = Fit_rate_separation(n_sep,sep, rate,rate_error, fit_type,area,rate_zero, par,par_err, cName3);
 
 		/*
-		chi2_dof = Fit_rate_separation_minuit(n_sep,sep, rate, rate_error, fit_type, area,
-				rate_zero, par, par_err, scan, scan_type, bc);
+		chi2_dof = Fit_rate_separation_minuit(
+				n_sep, sep, rate, rate_error, fit_type, area, rate_zero, par, par_err, scan, scan_type, bc
+				);
 				*/
 
 		// save output

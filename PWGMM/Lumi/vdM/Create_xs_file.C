@@ -112,14 +112,21 @@ void Compute_xs(Int_t Fill, Int_t scan, const char *rate_name, const char *rate_
 		if (chi2_dof_x>0 && chi2_dof_y>0)
 		{
 			// compute cross section
-			xs = GetXS(area_x[0],area_y[0],rate_zero_x[0],rate_zero_y[0],bunch_intensity_1[k],bunch_intensity_2[k]);
-			xs_error = GetXSerr(area_x[0], area_x[1],area_y[0], area_y[1],
-					rate_zero_x[0], rate_zero_x[1],rate_zero_y[0], rate_zero_y[1], 
-					bunch_intensity_1[k], bunch_intensity_2[k]);
+			xs = GetXS(
+					area_x[0], area_y[0],
+					rate_zero_x[0], rate_zero_y[0],
+					bunch_intensity_1[k], bunch_intensity_2[k]
+					);
+			xs_error = GetXSerr(
+					area_x[0], area_x[1], area_y[0], area_y[1],
+					rate_zero_x[0], rate_zero_x[1], rate_zero_y[0], rate_zero_y[1], 
+					bunch_intensity_1[k], bunch_intensity_2[k]
+					);
+
 			// correct cross section
 			xs *= total_correction;
 			xs_error *= total_correction;    
-			// cout << " scan " << scan << " bc " << k << " xs " << xs << " +/- " << xs_error << endl;
+			//cout << " scan " << scan << " bc " << k << " xs " << xs << " +/- " << xs_error << endl;
 		}
 
 		// save output

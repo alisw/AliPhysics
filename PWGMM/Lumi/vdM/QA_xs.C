@@ -9,8 +9,12 @@
 // the cross section
 //-------------------------------------------------------
 
-void QA_xs(Int_t Fill, const char *rate_name, const char *rate_type,
-		const char *sep_type, const char *intensity_type, Int_t fit_type, Int_t scan, bool systChk = false)
+void QA_xs(Int_t Fill,
+		const char *rate_name, const char *rate_type,
+		const char *sep_type, const char *intensity_type,
+		Int_t fit_type, Int_t scan,
+		bool systChk = false
+		)
 {
 	// initialize
 	Set_input_file_names(Fill);
@@ -79,8 +83,9 @@ void QA_xs(Int_t Fill, const char *rate_name, const char *rate_type,
 	// plot histo
 	const char* TYPE = Form("Fill%i_%s_%s_%s_%s_fit%i_scan%i%s",
 			Fill, sep_type, intensity_type, rate_name, rate_type, fit_type, scan, sfx); //kimc
-	yMin = 54;
-	yMax = 58;
+
+	if      (!strcmp(rate_name, "VBAandVBC")) { yMin = 54; yMax = 58; }
+	else if (!strcmp(rate_name, "TVX"))       { yMin = 26; yMax = 30; }
 
 	gStyle->SetOptStat(0);
 	gStyle->SetOptFit(1);

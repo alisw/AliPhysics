@@ -46,8 +46,13 @@ void ProcessFill6012(Int_t Fill)
 	{
 		// get the points
 		gr_hor->GetPoint(i,time,drift_hor);
-		gr_ver->GetPoint(i,time,drift_ver);    
+		gr_ver->GetPoint(i,time,drift_ver);
 		Long_t timeL = (Long_t) time;
+
+		//cout <<Form("Fill %i, index %5i, drift_hor: %8.4f, drift_ver: %8.4f\n", Fill, i, drift_hor, drift_ver);
+		if (TMath::IsNaN(drift_hor)) continue;
+		if (TMath::IsNaN(drift_ver)) continue;
+
 		// update min/max
 		if (time<min_time) min_time = time;
 		if (time>max_time) max_time = time;    
@@ -74,7 +79,7 @@ void ProcessFill6012(Int_t Fill)
 	//TCanvas *cgr = new TCanvas("cgr","cgr",0,0,900,600);
 	c1->cd(1);
 	TH1F* fr = gPad->DrawFrame(min_time-100, min_drift,max_time+100,max_drift);
-	fr->SetTitle(";time (s);drift (#mum)");
+	fr->SetTitle(Form("Fill %i;time (s);drift (#mum)", Fill));
 	// original data
 	gr_hor->SetMarkerStyle(20);gr_hor->SetMarkerColor(2);
 	gr_hor->SetMarkerSize(0.2);
@@ -86,25 +91,6 @@ void ProcessFill6012(Int_t Fill)
 	gr_hor_new->SetMarkerStyle(20);gr_hor_new->SetMarkerColor(2);
 	gr_hor_new->Draw("p,same");
 	gr_ver_new->SetMarkerStyle(20);gr_ver_new->SetMarkerColor(4);  
-	gr_ver_new->Draw("p,same");
-
-	// fit vertical
-	TF1 *f_ver = new TF1("f_ver","[1]+[2]*(x-[0])",min_time,time_end_y1+200);
-	f_ver->SetLineColor(4);
-	f_ver->SetParameter(0, time_start_x1);
-	f_ver->SetParLimits(0,min_time,time_end_y1+200);
-	f_ver->SetParameter(1,0);
-	f_ver->SetParLimits(1,min_drift,max_drift);  
-	f_ver->SetParameter(2,1);
-	gr_ver_new->Fit("f_ver");
-
-	// plot vertical fit
-	gStyle->SetOptFit(1);
-	//TCanvas *cv = new TCanvas("cv","cv",0,0,900,600);
-	c1->cd(2);
-	TH1F* frv = gPad->DrawFrame(min_time-100,min_drift,time_end_y1+200,max_drift);
-	frv->SetTitle(";time (s);drift (#mum)");
-	gr_ver->Draw("p,same");
 	gr_ver_new->Draw("p,same");
 
 	// fit horizontal
@@ -120,16 +106,34 @@ void ProcessFill6012(Int_t Fill)
 
 	// plot horizontal fit
 	//TCanvas *ch = new TCanvas("ch","ch",0,0,900,600);
-	c1->cd(3);
+	c1->cd(2);
 	TH1F* frh = gPad->DrawFrame(min_time-100,min_drift, time_end_y1+200,max_drift);
-	frh->SetTitle(";time (s);drift (#mum)");
+	frh->SetTitle("Horizontal;time (s);drift (#mum)");
 	gr_hor->Draw("p,same");
 	gr_hor_new->Draw("p,same");
-	c1->Print(Form("c1d_ODC_Fill%i.png", Fill)); //kimc
+	cout << " hor p0 = " << ((Long_t) f_hor->GetParameter(0)) << endl;
 
-	// print exact value of p0
+	// fit vertical
+	TF1 *f_ver = new TF1("f_ver","[1]+[2]*(x-[0])",min_time,time_end_y1+200);
+	f_ver->SetLineColor(4);
+	f_ver->SetParameter(0, time_start_x1);
+	f_ver->SetParLimits(0,min_time,time_end_y1+200);
+	f_ver->SetParameter(1,0);
+	f_ver->SetParLimits(1,min_drift,max_drift);  
+	f_ver->SetParameter(2,1);
+	gr_ver_new->Fit("f_ver");
+
+	// plot vertical fit
+	gStyle->SetOptFit(1);
+	//TCanvas *cv = new TCanvas("cv","cv",0,0,900,600);
+	c1->cd(3);
+	TH1F* frv = gPad->DrawFrame(min_time-100,min_drift,time_end_y1+200,max_drift);
+	frv->SetTitle("Vertical;time (s);drift (#mum)");
+	gr_ver->Draw("p,same");
+	gr_ver_new->Draw("p,same");
 	cout << " ver p0 = " << ((Long_t) f_ver->GetParameter(0)) << endl;
-	cout << " hor p0 = " << ((Long_t) f_hor->GetParameter(0)) << endl;  
+
+	c1->Print(Form("c1d_ODC_Fill%i.png", Fill)); //kimc
 	return;
 }
 
@@ -208,7 +212,7 @@ void ProcessFill6864(Int_t Fill)
 	//TCanvas *cgr = new TCanvas("cgr","cgr",0,0,900,600); //kimc
 	c1->cd(1);
 	TH1F* fr = gPad->DrawFrame(min_time-100,min_drift, max_time+100,max_drift);
-	fr->SetTitle(";time (s);drift (#mum)");
+	fr->SetTitle(Form("Fill %i;time (s);drift (#mum)", Fill));
 	// original data
 	gr_hor->SetMarkerStyle(20);gr_hor->SetMarkerColor(2);
 	gr_hor->SetMarkerSize(0.2);
@@ -220,25 +224,6 @@ void ProcessFill6864(Int_t Fill)
 	gr_hor_new->SetMarkerStyle(20);gr_hor_new->SetMarkerColor(2);
 	gr_hor_new->Draw("p,same");
 	gr_ver_new->SetMarkerStyle(20);gr_ver_new->SetMarkerColor(4);  
-	gr_ver_new->Draw("p,same");
-
-	// fit vertical
-	TF1 *f_ver = new TF1("f_ver","[1]+[2]*(x-[0])+[3]*pow(x-[0],2)", min_time,time_end_y1+200);
-	f_ver->SetLineColor(4);
-	f_ver->SetParameter(0, time_start_x1);
-	f_ver->SetParLimits(0,min_time,time_end_y1+200);
-	f_ver->SetParameter(1,2);
-	// f_ver->SetParLimits(1,min_drift,max_drift);  
-	f_ver->SetParameter(2,1);
-	gr_ver_new->Fit("f_ver");
-
-	// plot vertical fit
-	gStyle->SetOptFit(1);
-	//TCanvas *cv = new TCanvas("cv","cv",0,0,900,600); //kimc
-	c1->cd(2);
-	TH1F* frv = gPad->DrawFrame(min_time-100,min_drift,	time_end_y1+200,max_drift);
-	frv->SetTitle(";time (s);drift (#mum)");
-	gr_ver->Draw("p,same");
 	gr_ver_new->Draw("p,same");
 
 	// fit horizontal
@@ -254,17 +239,34 @@ void ProcessFill6864(Int_t Fill)
 
 	// plot horizontal fit
 	//TCanvas *ch = new TCanvas("ch","ch",0,0,900,600);
-	c1->cd(3);
+	c1->cd(2);
 	TH1F* frh = gPad->DrawFrame(min_time-100,min_drift, time_end_y1+200,max_drift);
-	frh->SetTitle(";time (s);drift (#mum)");
+	frh->SetTitle("Horizontal;time (s);drift (#mum)");
 	gr_hor->Draw("p,same");
 	gr_hor_new->Draw("p,same");
-	c1->Print(Form("c1d_ODC_Fill%i.png", Fill)); //kimc
-
-	// print exact value of p0
-	cout << " ver p0 = " << ((Long_t) f_ver->GetParameter(0)) << endl;
 	cout << " hor p0 = " << ((Long_t) f_hor->GetParameter(0)) << endl;
 
+	// fit vertical
+	TF1 *f_ver = new TF1("f_ver","[1]+[2]*(x-[0])+[3]*pow(x-[0],2)", min_time,time_end_y1+200);
+	f_ver->SetLineColor(4);
+	f_ver->SetParameter(0, time_start_x1);
+	f_ver->SetParLimits(0,min_time,time_end_y1+200);
+	f_ver->SetParameter(1,2);
+	// f_ver->SetParLimits(1,min_drift,max_drift);  
+	f_ver->SetParameter(2,1);
+	gr_ver_new->Fit("f_ver");
+
+	// plot vertical fit
+	gStyle->SetOptFit(1);
+	//TCanvas *cv = new TCanvas("cv","cv",0,0,900,600); //kimc
+	c1->cd(3);
+	TH1F* frv = gPad->DrawFrame(min_time-100,min_drift,	time_end_y1+200,max_drift);
+	frv->SetTitle("Vertical;time (s);drift (#mum)");
+	gr_ver->Draw("p,same");
+	gr_ver_new->Draw("p,same");
+	cout << " ver p0 = " << ((Long_t) f_ver->GetParameter(0)) << endl;
+
+	c1->Print(Form("c1d_ODC_Fill%i.png", Fill)); //kimc
 	return;
 }
 
