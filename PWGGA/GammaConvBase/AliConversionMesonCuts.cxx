@@ -168,6 +168,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fUseMCPSmearing(0),
   fAlphaPtDepCut(kFALSE),
   fDoAlphaInTask(kFALSE),
+  fUseAlternativeAlphaCuts(kFALSE),
   fDCAGammaGammaCutOn(kFALSE),
   fDCAZMesonPrimVtxCutOn(kFALSE),
   fDCARMesonPrimVtxCutOn(kFALSE),
@@ -292,6 +293,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fUseMCPSmearing(ref.fUseMCPSmearing),
   fAlphaPtDepCut(ref.fAlphaPtDepCut),
   fDoAlphaInTask(ref.fDoAlphaInTask),
+  fUseAlternativeAlphaCuts(ref.fUseAlternativeAlphaCuts),
   fDCAGammaGammaCutOn(ref.fDCAGammaGammaCutOn),
   fDCAZMesonPrimVtxCutOn(ref.fDCAZMesonPrimVtxCutOn),
   fDCARMesonPrimVtxCutOn(ref.fDCARMesonPrimVtxCutOn),
@@ -3030,157 +3032,296 @@ Float_t AliConversionMesonCuts::FunctionMinMassCut(Float_t e){
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
 { // Set Cut
-  switch(alphaMesonCut){
-  case 0:  // 0- 0.7
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 0.7;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 1:  // Updated 15 May 2015
-    if (fIsMergedClusterCut == 0){
-      if( fFAlphaCut ) delete fFAlphaCut;
-      fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
-      fFAlphaCut->SetParameter(0,0.65);
-      fFAlphaCut->SetParameter(1,1.8);
-      fAlphaMinCutMeson =  0.0;
-      fAlphaCutMeson    = -1.0;
-      fAlphaPtDepCut    = kTRUE;
-    } else {
-      fAlphaPtDepCut    = kFALSE;
-      fAlphaMinCutMeson = 0.5;
-      fAlphaCutMeson    = 1;
-    }
-    break;
-  case 2:  // Updated 31 October 2013 before 0.5-1
-    if (fIsMergedClusterCut == 0){
+  if (!fUseAlternativeAlphaCuts){
+    switch(alphaMesonCut){
+    case 0:  // 0- 0.7
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.7;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 1:  // Updated 15 May 2015
+      if (fIsMergedClusterCut == 0){
+        if( fFAlphaCut ) delete fFAlphaCut;
+        fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+        fFAlphaCut->SetParameter(0,0.65);
+        fFAlphaCut->SetParameter(1,1.8);
+        fAlphaMinCutMeson =  0.0;
+        fAlphaCutMeson    = -1.0;
+        fAlphaPtDepCut    = kTRUE;
+      } else {
+        fAlphaPtDepCut    = kFALSE;
+        fAlphaMinCutMeson = 0.5;
+        fAlphaCutMeson    = 1;
+      }
+      break;
+    case 2:  // Updated 31 October 2013 before 0.5-1
+      if (fIsMergedClusterCut == 0){
+        if( fFAlphaCut ) delete fFAlphaCut;
+        fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+        fFAlphaCut->SetParameter(0,0.8);
+        fFAlphaCut->SetParameter(1,1.2);
+        fAlphaMinCutMeson =  0.0;
+        fAlphaCutMeson    = -1.0;
+        fAlphaPtDepCut    = kTRUE;
+      } else {
+        fAlphaPtDepCut    = kFALSE;
+        fAlphaMinCutMeson = 0.6;
+        fAlphaCutMeson    = 1;
+      }
+      break;
+    case 3:  // 0.0-1
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 1.;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 4:  // 0-0.65
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.65;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 5:  // 0-0.75
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.75;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 6:  // 0-0.8
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.8;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 7:  // 0.0-0.85
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.85;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 8:  // 0.0-0.6
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.6;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 9: // Updated 11 November 2013 before 0.0 - 0.3
+      if (fIsMergedClusterCut == 0){
+        if( fFAlphaCut ) delete fFAlphaCut;
+        fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+        fFAlphaCut->SetParameter(0,0.65);
+        fFAlphaCut->SetParameter(1,1.2);
+        fAlphaMinCutMeson =  0.0;
+        fAlphaCutMeson    = -1.0;
+        fAlphaPtDepCut    = kTRUE;
+      } else {
+        fAlphaPtDepCut    = kFALSE;
+        fAlphaMinCutMeson = 0.4;
+        fAlphaCutMeson    = 1;
+      }
+      break;
+    case 10:  //a 0-0.2
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.2;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 11:  //b 0.2-0.6
+      fAlphaMinCutMeson   = 0.2;
+      fAlphaCutMeson      = 0.6;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 12:  //c 0.6-1.0
+      fAlphaMinCutMeson   = 0.6;
+      fAlphaCutMeson      = 1.0;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 13:  //d 0-0.1
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.1;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 14:  //e 0-0.3
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.3;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 15:  //f 0-0.4
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.4;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 16:  //g 0-0.5
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.5;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 17:  // h (for lowB)
       if( fFAlphaCut ) delete fFAlphaCut;
       fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
       fFAlphaCut->SetParameter(0,0.8);
-      fFAlphaCut->SetParameter(1,1.2);
+      fFAlphaCut->SetParameter(1,2.9);
       fAlphaMinCutMeson =  0.0;
       fAlphaCutMeson    = -1.0;
       fAlphaPtDepCut    = kTRUE;
-    } else {
-      fAlphaPtDepCut    = kFALSE;
-      fAlphaMinCutMeson = 0.6;
-      fAlphaCutMeson    = 1;
-    }
-    break;
-  case 3:  // 0.0-1
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 1.;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 4:  // 0-0.65
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 0.65;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 5:  // 0-0.75
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 0.75;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 6:  // 0-0.8
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 0.8;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 7:  // 0.0-0.85
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 0.85;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 8:  // 0.0-0.6
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 0.6;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 9: // Updated 11 November 2013 before 0.0 - 0.3
-    if (fIsMergedClusterCut == 0){
+      break;
+    case 18:  // i (for lowB)
       if( fFAlphaCut ) delete fFAlphaCut;
       fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
-      fFAlphaCut->SetParameter(0,0.65);
-      fFAlphaCut->SetParameter(1,1.2);
+      fFAlphaCut->SetParameter(0,0.75);
+      fFAlphaCut->SetParameter(1,3.5);
       fAlphaMinCutMeson =  0.0;
       fAlphaCutMeson    = -1.0;
       fAlphaPtDepCut    = kTRUE;
-    } else {
-      fAlphaPtDepCut    = kFALSE;
-      fAlphaMinCutMeson = 0.4;
-      fAlphaCutMeson    = 1;
+      break;
+    default:
+      cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
+      return kFALSE;
     }
-    break;
-  case 10:  //a 0-0.2
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 0.2;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 11:  //b 0.2-0.6
-    fAlphaMinCutMeson   = 0.2;
-    fAlphaCutMeson      = 0.6;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 12:  //c 0.6-1.0
-    fAlphaMinCutMeson   = 0.6;
-    fAlphaCutMeson      = 1.0;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 13:  //d 0-0.1
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 0.1;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 14:  //e 0-0.3
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 0.3;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 15:  //f 0-0.4
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 0.4;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 16:  //g 0-0.5
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 0.5;
-    fAlphaPtDepCut      = kFALSE;
-    break;
-  case 17:  // h (for lowB)
-    if( fFAlphaCut ) delete fFAlphaCut;
-    fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
-    fFAlphaCut->SetParameter(0,0.8);
-    fFAlphaCut->SetParameter(1,2.9);
-    fAlphaMinCutMeson =  0.0;
-    fAlphaCutMeson    = -1.0;
-    fAlphaPtDepCut    = kTRUE;
-    break;
-  case 18:  // i (for lowB)
-    if( fFAlphaCut ) delete fFAlphaCut;
-    fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
-    fFAlphaCut->SetParameter(0,0.75);
-    fFAlphaCut->SetParameter(1,3.5);
-    fAlphaMinCutMeson =  0.0;
-    fAlphaCutMeson    = -1.0;
-    fAlphaPtDepCut    = kTRUE;
-    break;
-  case 19:   // j (Alpha Cut is handled in Task)
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 1.;
-    fDoAlphaInTask = kTRUE;
-    fAlphaInTaskMode = 0;
-    break;
-  case 20:   // l (Alpha Cut is handled in Task)
-    fAlphaMinCutMeson   = 0.0;
-    fAlphaCutMeson      = 1.;
-    fDoAlphaInTask = kTRUE;
-    fAlphaInTaskMode = 1;
-    break;
-  default:
-    cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
-    return kFALSE;
-  }
-  return kTRUE;
+  } else { //fUseAlternativeAlphaCuts
+    switch(alphaMesonCut){
+    case 0:  // 0- 0.7
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.7;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 1:  // Updated 15 May 2015
+      if (fIsMergedClusterCut == 0){
+        if( fFAlphaCut ) delete fFAlphaCut;
+        fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+        fFAlphaCut->SetParameter(0,0.65);
+        fFAlphaCut->SetParameter(1,1.8);
+        fAlphaMinCutMeson =  0.0;
+        fAlphaCutMeson    = -1.0;
+        fAlphaPtDepCut    = kTRUE;
+      } else {
+        fAlphaPtDepCut    = kFALSE;
+        fAlphaMinCutMeson = 0.5;
+        fAlphaCutMeson    = 1;
+      }
+      break;
+    case 2:  // Updated 31 October 2013 before 0.5-1
+      if (fIsMergedClusterCut == 0){
+        if( fFAlphaCut ) delete fFAlphaCut;
+        fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+        fFAlphaCut->SetParameter(0,0.8);
+        fFAlphaCut->SetParameter(1,1.2);
+        fAlphaMinCutMeson =  0.0;
+        fAlphaCutMeson    = -1.0;
+        fAlphaPtDepCut    = kTRUE;
+      } else {
+        fAlphaPtDepCut    = kFALSE;
+        fAlphaMinCutMeson = 0.6;
+        fAlphaCutMeson    = 1;
+      }
+      break;
+    case 3:  // 0.0-1
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 1.;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 4:  // 0-0.65
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.65;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 5:  // 0-0.75
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.75;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 6:  // 0-0.8
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.8;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 7:  // 0.0-0.85
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.85;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 8:  // 0.0-0.6
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.6;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 9: // Updated 11 November 2013 before 0.0 - 0.3
+      if (fIsMergedClusterCut == 0){
+        if( fFAlphaCut ) delete fFAlphaCut;
+        fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+        fFAlphaCut->SetParameter(0,0.65);
+        fFAlphaCut->SetParameter(1,1.2);
+        fAlphaMinCutMeson =  0.0;
+        fAlphaCutMeson    = -1.0;
+        fAlphaPtDepCut    = kTRUE;
+      } else {
+        fAlphaPtDepCut    = kFALSE;
+        fAlphaMinCutMeson = 0.4;
+        fAlphaCutMeson    = 1;
+      }
+      break;
+    case 10:  //a 0-0.2
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.2;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 11:  //b 0.2-0.6
+      fAlphaMinCutMeson   = 0.2;
+      fAlphaCutMeson      = 0.6;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 12:  //c 0.6-1.0
+      fAlphaMinCutMeson   = 0.6;
+      fAlphaCutMeson      = 1.0;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 13:  //d 0-0.1
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.1;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 14:  //e 0-0.3
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.3;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 15:  //f 0-0.4
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.4;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 16:  //g 0-0.5
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 0.5;
+      fAlphaPtDepCut      = kFALSE;
+      break;
+    case 17:  // h (for lowB)
+      if( fFAlphaCut ) delete fFAlphaCut;
+      fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+      fFAlphaCut->SetParameter(0,0.8);
+      fFAlphaCut->SetParameter(1,2.9);
+      fAlphaMinCutMeson =  0.0;
+      fAlphaCutMeson    = -1.0;
+      fAlphaPtDepCut    = kTRUE;
+      break;
+    case 18:  // i (for lowB)
+      if( fFAlphaCut ) delete fFAlphaCut;
+      fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+      fFAlphaCut->SetParameter(0,0.75);
+      fFAlphaCut->SetParameter(1,3.5);
+      fAlphaMinCutMeson =  0.0;
+      fAlphaCutMeson    = -1.0;
+      fAlphaPtDepCut    = kTRUE;
+      break;
+    case 19:   // j (Alpha Cut is handled in Task)
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 1.;
+      fAlphaInTaskMode = 0;
+      break;
+    case 20:   // l (Alpha Cut is handled in Task)
+      fAlphaMinCutMeson   = 0.0;
+      fAlphaCutMeson      = 1.;
+      fAlphaInTaskMode = 1;
+      break;
+    default:
+      cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
+      return kFALSE;
+    }
+  } //fUseAlternativeAlphaCuts
+  return kTRUE;  
 }
 
 

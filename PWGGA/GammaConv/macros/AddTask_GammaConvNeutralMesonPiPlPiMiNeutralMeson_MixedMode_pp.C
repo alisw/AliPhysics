@@ -998,7 +998,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
     if(runLightOutput>0) analysisNeutralPionCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNDMCut(i)).Data()) ) {
-      cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
+      cout<<"ERROR: analysisNeutralPionCuts [ " <<i<<" ] "<<endl;
       return 0;
     } else {
       NeutralPionCutList->Add(analysisNeutralPionCuts[i]);
@@ -1006,6 +1006,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     }
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
+    analysisMesonCuts[i] -> UseAlternativeAlphaCuts(kTRUE);
     if(runLightOutput>0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data()) ) {
       cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;

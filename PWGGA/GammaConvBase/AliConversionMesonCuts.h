@@ -231,8 +231,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    GetNDaughterEnergyCut() const {return fNDaughterEnergyCut;}
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
     Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
-    Bool_t   UseAlphaInTask() const{return fDoAlphaInTask;}
-    Int_t    GetAlphaInTaskMode() const {return fAlphaInTaskMode;}
+    Bool_t   UseAlphaInTask() {return fDoAlphaInTask;}
+    Int_t    GetAlphaInTaskMode()  {return fAlphaInTaskMode;}
+    void     UseAlternativeAlphaCuts(Bool_t AlphaInTask)  {fUseAlternativeAlphaCuts = AlphaInTask;}
   protected:
     TRandom3    fRandom;                        ///<
     AliCaloPhotonCuts* fCaloPhotonCuts;         ///< CaloPhotonCutObject belonging to same main task
@@ -330,7 +331,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoMesonQualitySelection;       ///< flag to enable the meson selection based on the quality.
     Int_t       fUseMCPSmearing;                ///< flag
     Bool_t      fAlphaPtDepCut;                 ///<
-    Bool_t      fDoAlphaInTask;                   ///<
+    Bool_t      fDoAlphaInTask;                 ///<
+    Bool_t      fUseAlternativeAlphaCuts;       ///<
     Bool_t      fDCAGammaGammaCutOn;            ///< cut flag for the maximum distance between the two photons
     Bool_t      fDCAZMesonPrimVtxCutOn;         ///< cut flag for the maximum distance in Z between the production point of the Meson & the primary vertex
     Bool_t      fDCARMesonPrimVtxCutOn;         ///< cut flag for the maximum distance in R between the production point of the Meson & the primary vertex

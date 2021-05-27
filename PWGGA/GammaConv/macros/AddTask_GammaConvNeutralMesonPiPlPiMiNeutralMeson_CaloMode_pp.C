@@ -1128,9 +1128,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //Omega Meson Cut Variations
     //-----
   } else if(trainConfig == 950)  { //EDC 13TeV MB, rapidity 5 (0.85)
-    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","045350j000000000"); // INT7
+      cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","045350j000000000"); // INT7
   } else if(trainConfig == 951)  { //EDC 13TeV MB, rapidity 5 (0.85)
-    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","045350k000000000"); // INT7
+      cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","045350k000000000"); // INT7
+
 
 
     //-----
@@ -1336,7 +1337,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
     if(runLightOutput>0) analysisNeutralPionCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNDMCut(i)).Data()) ) {
-      std::cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<std::endl;
+      std::cout<<"ERROR: analysisNeutralPionCuts [ " <<i<<" ] "<<std::endl;
       return 0;
     } else {
       NeutralPionCutList->Add(analysisNeutralPionCuts[i]);
@@ -1344,6 +1345,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     }
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
+    analysisMesonCuts[i] -> UseAlternativeAlphaCuts(kTRUE);
     if(runLightOutput>0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data()) ) {
       std::cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<std::endl;
