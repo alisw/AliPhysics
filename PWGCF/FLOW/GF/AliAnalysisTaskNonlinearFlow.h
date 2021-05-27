@@ -173,7 +173,7 @@ class PhysicsProfile : public TObject {
 		TProfile*        fChcn4_3subRRML[6];            //! <<4>> 3subevent method
 		TProfile*        fChcn4_3subGap2[6];            //! <<4>> 3subevent method |#Delta#eta| > 0.2
 		private:
-		ClassDef(PhysicsProfile, 4);    //Analysis task
+		ClassDef(PhysicsProfile, 5);    //Analysis task
 };
 
 class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
@@ -467,7 +467,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 4);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 5);    //Analysis task
 };
 
 #endif
