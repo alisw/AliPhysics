@@ -244,6 +244,7 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerCorrelationMC+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalEG1Correlation+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerBackground+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalRawSTU+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::Test;
 #pragma link C++ class PWGJE::EMCALJetTasks::Test::AliAnalysisTaskEmcalTriggerSelectionTest+;
 

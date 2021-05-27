@@ -169,7 +169,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor &operator=(const AliAnalysisTaskJetExtractor&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractor, 9) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractor, 10) // Jet extraction task
   /// \endcond
 };
 
@@ -205,7 +205,7 @@ class AliEmcalJetTree : public TNamed
     void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks);
 
     // ######################################
-    Bool_t          AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField);
+    Bool_t          AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField, Double_t eventPlaneV0);
     void            FillBuffer_SecVertices(std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z, std::vector<Float_t>& secVtx_Mass, std::vector<Float_t>& secVtx_Lxy, std::vector<Float_t>& secVtx_SigmaLxy, std::vector<Float_t>& secVtx_Chi2, std::vector<Float_t>& secVtx_Dispersion);
     void            FillBuffer_JetShapes(AliEmcalJet* jet, Double_t leSub_noCorr, Double_t angularity, Double_t momentumDispersion, Double_t trackPtMean, Double_t trackPtMedian);
     void            FillBuffer_Splittings(std::vector<Float_t>& splittings_radiatorE, std::vector<Float_t>& splittings_kT, std::vector<Float_t>& splittings_theta, Bool_t saveSecondaryVertices, std::vector<Int_t>& splittings_secVtx_rank, std::vector<Int_t>& splittings_secVtx_index);
@@ -224,6 +224,22 @@ class AliEmcalJetTree : public TNamed
     std::vector<Int_t> GetExtractionJetTypes_HM() {return fExtractionJetTypes_HM;}
     std::vector<Int_t> GetExtractionJetTypes_PM() {return fExtractionJetTypes_PM;}
     TTree*          GetTreePointer() {return fJetTree;}
+    Double_t RelativePhi(Double_t mphi, Double_t vphi) {
+    if (vphi < -1 * TMath::Pi())
+      vphi += (2 * TMath::Pi());
+    else if (vphi > TMath::Pi())
+      vphi -= (2 * TMath::Pi());
+    if (mphi < -1 * TMath::Pi())
+      mphi += (2 * TMath::Pi());
+    else if (mphi > TMath::Pi())
+      mphi -= (2 * TMath::Pi());
+    double dphi = mphi - vphi;
+    if (dphi < -1 * TMath::Pi())
+      dphi += (2 * TMath::Pi());
+    else if (dphi > TMath::Pi())
+      dphi -= (2 * TMath::Pi());
+    return dphi; // dphi in [-Pi, Pi]                                                                                                                                                     
+  }
 
   private:
     TTree*          fJetTree;                             //!<! tree structure
@@ -241,6 +257,7 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_JetEta;                       //!<! array buffer
     Float_t         fBuffer_JetPhi;                       //!<! array buffer
     Float_t         fBuffer_JetArea;                      //!<! array buffer
+    Float_t         fBuffer_JetEPangle;                   //!<! array buffer 
     Int_t           fBuffer_NumTracks;                    //!<! array buffer
     Int_t           fBuffer_NumClusters;                  //!<! array buffer
 
@@ -316,7 +333,7 @@ class AliEmcalJetTree : public TNamed
     Int_t           fBuffer_NumSplittings;
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetTree, 12) // Jet tree class
+    ClassDef(AliEmcalJetTree, 13) // Jet tree class
     /// \endcond
 };
 

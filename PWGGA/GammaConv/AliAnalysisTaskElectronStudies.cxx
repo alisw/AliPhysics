@@ -94,6 +94,7 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies() : AliAnalysisTa
   fBuffer_ClusterE(0), 
   fBuffer_ClusterM02(0), 
   fBuffer_ClusterM20(0), 
+  fBuffer_ClusterNCells(0), 
   fBuffer_Track_E(0), 
   fBuffer_Track_Px(0), 
   fBuffer_Track_Py(0), 
@@ -181,6 +182,7 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies(const char *name)
   fBuffer_ClusterE(0), 
   fBuffer_ClusterM02(0), 
   fBuffer_ClusterM20(0), 
+  fBuffer_ClusterNCells(0), 
   fBuffer_Track_E(0), 
   fBuffer_Track_Px(0), 
   fBuffer_Track_Py(0), 
@@ -341,6 +343,7 @@ void AliAnalysisTaskElectronStudies::UserCreateOutputObjects()
   fAnalysisTree->Branch("Cluster_E","std::vector<UShort_t>",&fBuffer_ClusterE);
   fAnalysisTree->Branch("Cluster_M02","std::vector<UShort_t>", &fBuffer_ClusterM02);
   fAnalysisTree->Branch("Cluster_M20","std::vector<UShort_t>", &fBuffer_ClusterM20);
+  fAnalysisTree->Branch("Cluster_NCells","std::vector<UShort_t>", &fBuffer_ClusterNCells);
   fAnalysisTree->Branch("Track_E","std::vector<UShort_t>", &fBuffer_Track_E);
   fAnalysisTree->Branch("Track_Px","std::vector<Short_t>", &fBuffer_Track_Px);
   fAnalysisTree->Branch("Track_Py","std::vector<Short_t>", &fBuffer_Track_Py);
@@ -517,6 +520,7 @@ void AliAnalysisTaskElectronStudies::ResetBuffer(){
     fBuffer_ClusterE.clear();  
     fBuffer_ClusterM02.clear();
     fBuffer_ClusterM20.clear();
+    fBuffer_ClusterNCells.clear();
     fBuffer_Track_E.clear();
     fBuffer_Track_Px.clear();
     fBuffer_Track_Py.clear();
@@ -859,6 +863,7 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
     
     output.ClusterE = ConvertToUShort(clus->E(),kShortScaleLow);
     output.ClusterM02 =  ConvertToUShort(clus->GetM02(),kShortScaleMiddle);
+    output.ClusterNCells = (UShort_t) clus->GetNCells();
    
     // fix for rounding issue causing it to sometimes be just below 0
     Double_t m20 = clus->GetM20();
@@ -1495,6 +1500,7 @@ void AliAnalysisTaskElectronStudies::PushToVectors(treeWriteContainer input){
     fBuffer_ClusterE.push_back(input.ClusterE);     
     fBuffer_ClusterM02.push_back(input.ClusterM02); 
     fBuffer_ClusterM20.push_back(input.ClusterM20); 
+    fBuffer_ClusterNCells.push_back(input.ClusterNCells); 
     fBuffer_Track_E.push_back(input.Track_E);
     fBuffer_Track_Px.push_back(input.Track_Px);
     fBuffer_Track_Py.push_back(input.Track_Py); 

@@ -3712,6 +3712,8 @@ Bool_t Config_Xik0(
     
     Double_t mass= 0.497611+1.32171;
     
+    bool PbpRapidityCut=kFALSE;
+    
     // selections for V0 daughters
     
     Int_t v0d_xrows=70;
@@ -3740,7 +3742,8 @@ Bool_t Config_Xik0(
     Bool_t  k0sSwitch=kTRUE;
     Float_t k0sCosPoinAn=0.97;
     
-    if(TrackCutsK/100000) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    if(TrackCutsK/1000000) PbpRapidityCut=kTRUE;//use Pb-p rapidity cut
+    if((TrackCutsK/100000)%10) k0s_massTolID=1;//use pT-dependent mass tolerance cut
     if((TrackCutsK/10000)%10==1) k0sSwitch=kFALSE;//no competing V0 rejection
     if((TrackCutsK/100)%100) k0s_pLife=(TrackCutsK/100)%100;
     if(TrackCutsK%100) k0s_piPIDCut=((float) (TrackCutsK%100))*0.1;
@@ -3865,7 +3868,8 @@ Bool_t Config_Xik0(
     // pair cuts
     AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
     if(system!=1) cutY->SetRangeD(-0.8,0.8);
-    else cutY->SetRangeD(-0.465,0.035);
+    else if(!PbpRapidityCut) cutY->SetRangeD(-0.865,0.835);
+    else cutY->SetRangeD(-0.835,0.865);
     
     AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
     AliRsnCutMiniPair* cutOOBP=new AliRsnCutMiniPair("cutOOBP",AliRsnCutMiniPair::kPassesOOBPileupCut);

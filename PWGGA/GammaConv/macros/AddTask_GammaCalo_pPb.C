@@ -1635,6 +1635,14 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80083103","111113205f03j230000","01631031000000d0"); // NCell cut effi data (param 1)
     cuts.AddCutCalo("80083103","111113205f03k230000","01631031000000d0"); // NCell cut effi data (param 2)
 
+
+  } else if (trainConfig == 2110){
+    cuts.AddCutCalo("80010103","411790105f032230000","01631031000000d0"); // default NCell cut
+    cuts.AddCutCalo("80010103","411790105f030230000","01631031000000d0"); // no NCell cut
+  } else if (trainConfig == 2111){
+    cuts.AddCutCalo("80010103","411790105f03v230000","01631031000000d0"); // NCell effi 1
+    cuts.AddCutCalo("80010103","411790105f03q230000","01631031000000d0"); // NCell effi 2
+
   // systematics for pPb8TeV PRL
   } else if (trainConfig == 2200) { // CALO variations
     cuts.AddCutCalo("80010103","411793205f032230000","01631031000000d0"); // std
