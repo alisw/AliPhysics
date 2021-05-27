@@ -350,6 +350,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fTolerance(-1),
   fWeightJetJetMC(1.),
   fTrackMatcherRunningMode(0),
+  fEnableSortForClusMC(0),
   fMCEventPos(),
   fMCEventNeg(),
   fESDArrayPos(),
@@ -654,6 +655,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fTolerance(-1),
   fWeightJetJetMC(1.),
   fTrackMatcherRunningMode(0),
+  fEnableSortForClusMC(0),
   fMCEventPos(),
   fMCEventNeg(),
   fESDArrayPos(),
@@ -3072,7 +3074,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueCaloPhotonCan
   }
 
         // Int_t pdgCodeParticle = Photon->GetPdgCode();
-  TruePhotonCandidate->SetCaloPhotonMCFlags(fMCEvent, kFALSE);
+  TruePhotonCandidate->SetCaloPhotonMCFlags(fMCEvent, fEnableSortForClusMC);
 
   // True Photon
   if(!fDoLightOutput){
@@ -3122,7 +3124,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueCaloPhotonCan
   }
 
     // Int_t pdgCodeParticle = Photon->GetPdgCode();
-  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(AODMCTrackArray, kFALSE);
+  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(AODMCTrackArray, fEnableSortForClusMC);
 
   // True Photon
   if(!fDoLightOutput){
