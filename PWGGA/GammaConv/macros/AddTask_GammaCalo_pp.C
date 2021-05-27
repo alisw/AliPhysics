@@ -3406,11 +3406,11 @@ void AddTask_GammaCalo_pp(
     // cuts.AddCutCalo("00010113","24466190s601cc00000","0163103100000010"); //6
   } else if (trainConfig == 2623){ // min energy variation std 0.3 GeV/c
     //                                     |
-    cuts.AddCutCalo("00010113","24466190sa00cc00000","0163103100000010"); //0:     off
+    // cuts.AddCutCalo("00010113","24466190sa00cc00000","0163103100000010"); //0:     off
     cuts.AddCutCalo("00010113","24466190sa09cc00000","0163103100000010"); //9:     0.1 GeV/c
     cuts.AddCutCalo("00010113","24466190sa02cc00000","0163103100000010"); //2:     0.5 GeV/c
     cuts.AddCutCalo("00010113","24466190sa03cc00000","0163103100000010"); //3:     0.6 GeV/c
-    // cuts.AddCutCalo("00010113","24466190sa04cc00000","0163103100000010"); //4:     0.7 GeV/c
+    cuts.AddCutCalo("00010113","24466190sa04cc00000","0163103100000010"); //4:     0.7 GeV/c
     // cuts.AddCutCalo("00010113","24466190sa05cc00000","0163103100000010"); //5:     0.8 GeV/c
   } else if (trainConfig == 2624){ // min nCells & M02 variation, std cc
     // std: min nCells = 2 >1GeV; M02 max=100, min=0.1
@@ -3472,11 +3472,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00062113","24466190s601cc00000","0163103100000010"); //6
   } else if (trainConfig == 2723){ // min energy variation std 0.3 GeV/c
     //                                     |
-    cuts.AddCutCalo("00062113","24466190sa00cc00000","0163103100000010"); //0:     off
+    // cuts.AddCutCalo("00062113","24466190sa00cc00000","0163103100000010"); //0:     off
     cuts.AddCutCalo("00062113","24466190sa09cc00000","0163103100000010"); //9:     0.1 GeV/c
     cuts.AddCutCalo("00062113","24466190sa02cc00000","0163103100000010"); //2:     0.5 GeV/c
     cuts.AddCutCalo("00062113","24466190sa03cc00000","0163103100000010"); //3:     0.6 GeV/c
-    // cuts.AddCutCalo("00062113","24466190sa04cc00000","0163103100000010"); //4:     0.7 GeV/c
+    cuts.AddCutCalo("00062113","24466190sa04cc00000","0163103100000010"); //4:     0.7 GeV/c
     // cuts.AddCutCalo("00062113","24466190sa05cc00000","0163103100000010"); //5:     0.8 GeV/c
   } else if (trainConfig == 2724){ // min nCells & M02 variation, std cc
     // std: min nCells = 2 >1GeV; M02 max=100, min=0.1

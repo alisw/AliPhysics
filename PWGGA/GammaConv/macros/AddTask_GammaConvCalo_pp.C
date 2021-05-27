@@ -3124,11 +3124,11 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190s601cc00000","0163103100b00010"); //6
   } else if (trainConfig == 2623){ // min energy variation std 0.3 GeV/c
     //                                                                     |
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa00cc00000","0163103100b00010"); //0:     off
+    // cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa00cc00000","0163103100b00010"); //0:     off
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa09cc00000","0163103100b00010"); //9:     0.1 GeV/c
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa02cc00000","0163103100b00010"); //2:     0.5 GeV/c
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa03cc00000","0163103100b00010"); //3:     0.6 GeV/c
-    // cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa04cc00000","0163103100b00010"); //4:     0.7 GeV/c
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa04cc00000","0163103100b00010"); //4:     0.7 GeV/c
     // cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa05cc00000","0163103100b00010"); //5:     0.8 GeV/c
   } else if (trainConfig == 2624){ // min nCells & M02 variation, std cc
     // std: min nCells = 2 >1GeV; M02 max=100, min=0.1
@@ -3275,11 +3275,11 @@ void AddTask_GammaConvCalo_pp(
     // cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190s601cc00000","0163103100b00010"); //6
   } else if (trainConfig == 2723){ // min energy variation std 0.3 GeV/c
     //                                                                     |
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa00cc00000","0163103100b00010"); //0:     off
+    // cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa00cc00000","0163103100b00010"); //0:     off
     cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa09cc00000","0163103100b00010"); //9:     0.1 GeV/c
     cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa02cc00000","0163103100b00010"); //2:     0.5 GeV/c
     cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa03cc00000","0163103100b00010"); //3:     0.6 GeV/c
-    // cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa04cc00000","0163103100b00010"); //4:     0.7 GeV/c
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa04cc00000","0163103100b00010"); //4:     0.7 GeV/c
     // cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa05cc00000","0163103100b00010"); //5:     0.8 GeV/c
   } else if (trainConfig == 2724){ // min nCells & M02 variation, std cc
     // std: min nCells = 2 >1GeV; M02 max=100, min=0.1
