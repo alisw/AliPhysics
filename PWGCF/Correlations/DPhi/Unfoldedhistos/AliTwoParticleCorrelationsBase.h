@@ -61,7 +61,7 @@ public:
 
 
   Bool_t                      SetWeigths(const TH3F *h3_1, const TH3F *h3_2);
-  virtual Bool_t              SetPtAvg(const TH2F *, const TH2F *) { return false; }
+  virtual Bool_t              SetPtAvg(const TH2 *, const TH2 *) { return false; }
   Bool_t                      SetEfficiencyCorrection(const TH1F *h1_1, const TH1F *h1_2);
   Bool_t                      SetPairEfficiencyCorrection(const THn *h11, const THn *h12, const THn *h22, const THn *h21);
   Bool_t                      SetSimultationPdfs(const TObjArray *pluspdf, const TObjArray *minuspdf);
@@ -178,10 +178,12 @@ protected:
   TH2F                       *fhN1_1_vsEtaPhi;              //!<! track 1 weighted single particle distribution vs \f$\eta,\;\phi\f$
   TH2F                       *fhSum1Pt_1_vsEtaPhi;          //!<! track 1 accumulated sum of weighted \f$p_T\f$ vs \f$\eta,\;\phi\f$
   TH3F                       *fhN1_1_vsZEtaPhiPt;           //!<! track 1 single particle distribution vs \f$\mbox{vtx}_z,\; \eta,\;\phi,\;p_T\f$
+  TH3F                       *fhSum1Pt_1_vsZEtaPhiPt;       //!<! track 1 accumulated sum of weighted \f$p_T\f$ vs \f$\mbox{vtx}_z,\; \eta,\;\phi,\;p_T\f$
   TH1F                       *fhN1_2_vsPt;                  //!<! track 2 weighted single particle distribution vs \f$p_T\f$
   TH2F                       *fhN1_2_vsEtaPhi;              //!<! track 2 weighted single particle distribution vs \f$\eta,\;\phi\f$
   TH2F                       *fhSum1Pt_2_vsEtaPhi;          //!<! track 2 accumulated sum of weighted \f$p_T\f$ vs \f$\eta,\;\phi\f$
   TH3F                       *fhN1_2_vsZEtaPhiPt;           //!<! track 2 single particle distribution vs \f$\mbox{vtx}_z,\;\eta,\;\phi,\;p_T\f$
+  TH3F                       *fhSum1Pt_2_vsZEtaPhiPt;       //!<! track 1 accumulated sum of weighted \f$p_T\f$ vs \f$\mbox{vtx}_z,\; \eta,\;\phi,\;p_T\f$
   /* versus centrality  profiles */
   TProfile                   *fhN1_1_vsC;                   //!<! track 1 weighted single particle distribution vs event centrality
   TProfile                   *fhSum1Pt_1_vsC;               //!<! track 1 accumulated sum of weighted \f$p_T\f$ vs event centrality

@@ -39,7 +39,7 @@ public:
   Bool_t                      ConfigureBinning(const char *configstring);
   TString                     GetBinningConfigurationString() const;
 
-  Bool_t                      SetPtAvg(const TH2F *h2_1, const TH2F *h2_2);
+  Bool_t                      SetPtAvg(const TH2 *h2_1, const TH2 *h2_2);
 
   void                        Initialize();
                               /// Get the histograms list
@@ -54,18 +54,24 @@ private:
   void                        ProcessUnlikeSignPairs();
 
 private:
+  /* the average pT histograms */
+  const TH2                  *fhPositivePtAverage;          //!<! corrected avg pT for positive tracks in eta phi
+  const TH2                  *fhNegativePtAverage;          //!<! corrected avg pT for negative tracks in eta phi
+
   /* the arrays with tracks 1 and 2 information */
   Int_t                      *fId_1;                        //!<! the array of track 1 Ids
   Int_t                      *fCharge_1;                    //!<! the array of track 1 charge
   Int_t                      *fIxEta_1;                     //!<! the array of track 1 eta bin index
   Int_t                      *fIxPhi_1;                     //!<! the array of track 1 phi bin index
   Int_t                      *fIxPt_1;                      //!<! the array of track 1 pT bin index
+  float                      *fAvgPt_1;                     //!<! the avg pT associated to the bin of track 1
   Float_t                    *fCorrection_1;                //!<! the array of the correction to apply to track 1
   Int_t                      *fId_2;                        //!<! the array of track 2 Ids
   Int_t                      *fCharge_2;                    //!<! the array of track 2 charge
   Int_t                      *fIxEta_2;                     //!<! the array of track 2 eta bin index
   Int_t                      *fIxPhi_2;                     //!<! the array of track 2 phi bin index
   Int_t                      *fIxPt_2;                      //!<! the array of track 2 pT bin index
+  float                      *fAvgPt_2;                     //!<! the avg pT associated to the bin of track 2
   Float_t                    *fCorrection_2;                //!<! the array of the correction to apply to track 2
 
   Int_t                       fNBins_deltaphi;              ///< the pair \f$\Delta\phi\f$ number of bins

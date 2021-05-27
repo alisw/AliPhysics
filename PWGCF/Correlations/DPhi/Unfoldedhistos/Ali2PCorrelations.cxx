@@ -36,17 +36,21 @@ const char *Ali2PCorrelations::TrackPairsNames[] = {"OO","OT","TO","TT"};
 /// Default constructor for object serialization
 Ali2PCorrelations::Ali2PCorrelations() :
     AliTwoParticleCorrelationsBase(),
+    fhPositivePtAverage(nullptr),
+    fhNegativePtAverage(nullptr),
     fId_1(nullptr),
     fCharge_1(nullptr),
     fIxEta_1(nullptr),
     fIxPhi_1(nullptr),
     fIxPt_1(nullptr),
+    fAvgPt_1(nullptr),
     fCorrection_1(nullptr),
     fId_2(nullptr),
     fCharge_2(nullptr),
     fIxEta_2(nullptr),
     fIxPhi_2(nullptr),
     fIxPt_2(nullptr),
+    fAvgPt_2(nullptr),
     fCorrection_2(nullptr),
     /* pair bins */
     fNBins_deltaphi(72),
@@ -76,17 +80,21 @@ Ali2PCorrelations::Ali2PCorrelations() :
 /// \param name the name for the object instance
 Ali2PCorrelations::Ali2PCorrelations(const char *name) :
     AliTwoParticleCorrelationsBase(name),
+    fhPositivePtAverage(nullptr),
+    fhNegativePtAverage(nullptr),
     fId_1(nullptr),
     fCharge_1(nullptr),
     fIxEta_1(nullptr),
     fIxPhi_1(nullptr),
     fIxPt_1(nullptr),
+    fAvgPt_1(nullptr),
     fCorrection_1(nullptr),
     fId_2(nullptr),
     fCharge_2(nullptr),
     fIxEta_2(nullptr),
     fIxPhi_2(nullptr),
     fIxPt_2(nullptr),
+    fAvgPt_2(nullptr),
     fCorrection_2(nullptr),
     /* pair bins */
     fNBins_deltaphi(72),
@@ -120,6 +128,7 @@ Ali2PCorrelations::~Ali2PCorrelations() {
   delete [] fIxEta_1;
   delete [] fIxPhi_1;
   delete [] fIxPt_1;
+  delete [] fAvgPt_1;
   delete [] fCorrection_1;
 
   /* track 2 storage */
@@ -128,6 +137,7 @@ Ali2PCorrelations::~Ali2PCorrelations() {
   delete [] fIxEta_2;
   delete [] fIxPhi_2;
   delete [] fIxPt_2;
+  delete [] fAvgPt_2;
   delete [] fCorrection_2;
 }
 
@@ -167,6 +177,21 @@ TString Ali2PCorrelations::GetBinningConfigurationString() const {
   return TString::Format("Binning:phishift:%.1f;%s",fNBinsPhiShift,parentcfg.Data());
 }
 
+/// \brief Stores the average pt distribution in eta phi
+/// \param h2_1 the avg pT for positive tracks
+/// \param h2_2 the avg pT for negative tracks
+bool Ali2PCorrelations::SetPtAvg(const TH2 *h2_1, const TH2 *h2_2) {
+  if (h2_1 != nullptr && h2_2 != nullptr) {
+    AliInfo("Stored transvers momentum average distributions");
+    fhPositivePtAverage = h2_1;
+    fhNegativePtAverage = h2_2;
+    return true;
+  }
+  else {
+    AliError("Transvers momentum average distributions empty!!! P2 will not work!!!");
+    return false;
+  }
+}
 
 /// \brief Initializes the member data structures
 /// Allocates the needed memory an create the output histograms.
@@ -195,6 +220,7 @@ void Ali2PCorrelations::Initialize()
   fIxEta_1 = new Int_t[fArraySize];
   fIxPhi_1 = new Int_t[fArraySize];
   fIxPt_1 = new Int_t[fArraySize];
+  fAvgPt_1 = new float[fArraySize];
   fCorrection_1 = new Float_t[fArraySize];
 
   /* track 2 storage */
@@ -203,6 +229,7 @@ void Ali2PCorrelations::Initialize()
   fIxEta_2 = new Int_t[fArraySize];
   fIxPhi_2 = new Int_t[fArraySize];
   fIxPt_2 = new Int_t[fArraySize];
+  fAvgPt_2 = new float[fArraySize];
   fCorrection_2 = new Float_t[fArraySize];
 
   if (!fSinglesOnly)  {
@@ -325,6 +352,9 @@ Bool_t Ali2PCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Fl
     if (fSinglesOnly) {
       fhN1_1_vsPt->Fill(pT,corr);
       fhN1_1_vsZEtaPhiPt->Fill(fVertexZ,ixEtaPhi+0.5,pT,corr);
+      fhSum1Pt_1_vsZEtaPhiPt->Fill(fVertexZ,ixEtaPhi+0.5,pT,corr*pT);
+      fhN1_1_vsEtaPhi->Fill(eta,phi,corr);
+      fhSum1Pt_1_vsEtaPhi->Fill(eta,phi,corr*pT);
     }
     else {
       Float_t corrPt                = corr*pT;
@@ -337,6 +367,7 @@ Bool_t Ali2PCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Fl
       fPt_1[fNoOfTracks1]           = pT;
       fEta_1[fNoOfTracks1]          = eta;
       fPhi_1[fNoOfTracks1]          = ophi;
+      fAvgPt_1[fNoOfTracks1]        = (fhPositivePtAverage != nullptr) ? fhPositivePtAverage->GetBinContent(ixEta+1,ixPhi+1) : 0.0;
       fCorrection_1[fNoOfTracks1]   = corr;
       fN1_1                         += corr;
       fhN1_1_vsEtaPhi->Fill(eta,phi,corr);
@@ -414,6 +445,9 @@ Bool_t Ali2PCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Fl
     if (fSinglesOnly) {
       fhN1_2_vsPt->Fill(pT,corr);
       fhN1_2_vsZEtaPhiPt->Fill(fVertexZ,ixEtaPhi+0.5,pT,corr);
+      fhSum1Pt_2_vsZEtaPhiPt->Fill(fVertexZ,ixEtaPhi+0.5,pT,corr*pT);
+      fhN1_2_vsEtaPhi->Fill(eta,phi,corr);
+      fhSum1Pt_2_vsEtaPhi->Fill(eta,phi,corr*pT);
     }
     else {
       Float_t corrPt                = corr*pT;
@@ -426,6 +460,7 @@ Bool_t Ali2PCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Fl
       fPt_2[fNoOfTracks2]           = pT;
       fEta_2[fNoOfTracks2]          = eta;
       fPhi_2[fNoOfTracks2]          = ophi;
+      fAvgPt_2[fNoOfTracks2]        = (fhNegativePtAverage != nullptr) ? fhNegativePtAverage->GetBinContent(ixEta+1,ixPhi+1) : 0.0;
       fCorrection_2[fNoOfTracks2]   = corr;
       fN1_2                         += corr;
       fSum1Pt_2                     += corrPt;
@@ -496,12 +531,11 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
       int ixPt_1     = fIxPt_1[ix1];
       float corr_1   = fCorrection_1[ix1];
       float pt_1     = fPt_1[ix1];
-      float avgpt_1 = 0; /* TODO: load avg pt for eta1, phi1 */
+      float avgpt_1  = fAvgPt_1[ix1];
 
       for (Int_t ix2 = ix1+1; ix2 < fNoOfTracks1; ix2++) {
         /* excluded self correlations */
         float corr       = corr_1 * fCorrection_1[ix2];
-        float avgpt_2 = 0; /* TODO: load avg pt for eta2, phi2 */
         int ixDeltaEta_d   = ixEta_1-fIxEta_1[ix2]+fNBins_eta_1-1;
         int ixDeltaPhi_d   = ixPhi_1-fIxPhi_1[ix2]; if (ixDeltaPhi_d < 0) ixDeltaPhi_d += fNBins_phi_1;
         int ixDeltaEta_c   = fIxEta_1[ix2]-ixEta_1+fNBins_eta_1-1;
@@ -528,7 +562,7 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
         fSum2PtPt_12           += 2*corr*ptpt;
         fhSum2PtPt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_d,corr*ptpt);
         fhSum2PtPt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_c,corr*ptpt);
-        float dptdpt            = (pt_1-avgpt_1)*(fPt_1[ix2]-avgpt_2);
+        float dptdpt            = (pt_1-avgpt_1)*(fPt_1[ix2]-fAvgPt_1[ix2]);
         fSum2DptDptnw_12       += 2*dptdpt;
         fSum2DptDpt_12         += 2*corr*dptdpt;
         fhSum2DptDpt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_d,corr*dptdpt);
@@ -563,12 +597,11 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
       int ixPt_1     = fIxPt_2[ix1];
       float corr_1   = fCorrection_2[ix1];
       float pt_1     = fPt_2[ix1];
-      float avgpt_1 = 0; /* TODO: load avg pt for eta1, phi1 */
+      float avgpt_1  = fAvgPt_2[ix1];
 
       for (Int_t ix2 = ix1+1; ix2 < fNoOfTracks2; ix2++) {
         /* excluded self correlations */
         float corr      = corr_1 * fCorrection_2[ix2];
-        float avgpt_2 = 0; /* TODO: load avg pt for eta2, phi2 */
         int ixDeltaEta_d   = ixEta_1-fIxEta_2[ix2]+fNBins_eta_1-1;
         int ixDeltaPhi_d   = ixPhi_1-fIxPhi_2[ix2]; if (ixDeltaPhi_d < 0) ixDeltaPhi_d += fNBins_phi_1;
         int ixDeltaEta_c   = fIxEta_2[ix2]-ixEta_1+fNBins_eta_1-1;
@@ -595,7 +628,7 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
         fSum2PtPt_12           += 2*corr*ptpt;
         fhSum2PtPt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_d,corr*ptpt);
         fhSum2PtPt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_c,corr*ptpt);
-        float dptdpt            = (pt_1-avgpt_1)*(fPt_2[ix2]-avgpt_2);
+        float dptdpt            = (pt_1-avgpt_1)*(fPt_2[ix2]-fAvgPt_2[ix2]);
         fSum2DptDptnw_12       += 2*dptdpt;
         fSum2DptDpt_12         += 2*corr*dptdpt;
         fhSum2DptDpt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_d,corr*dptdpt);
@@ -647,7 +680,7 @@ void Ali2PCorrelations::ProcessUnlikeSignPairs() {
     int ixPt_1     = fIxPt_1[ix1];
     float corr_1   = fCorrection_1[ix1];
     float pt_1     = fPt_1[ix1];
-    float avgpt_1 = 0; /* TODO: load avg pt for eta1, phi1 */
+    float avgpt_1  = fAvgPt_1[ix1];
 
     for (Int_t ix2 = 0; ix2 < fNoOfTracks2; ix2++) {
       /* process the resonance suppression for this pair if needed */
@@ -674,7 +707,6 @@ void Ali2PCorrelations::ProcessUnlikeSignPairs() {
 
       if (processpair) {
         Float_t corr      = corr_1 * fCorrection_2[ix2];
-        float avgpt_2 = 0; /* TODO: load avg pt for eta2, phi2 */
         int ixDeltaEta_d   = ixEta_1-fIxEta_2[ix2]+fNBins_eta_1-1;
         int ixDeltaPhi_d   = ixPhi_1-fIxPhi_2[ix2]; if (ixDeltaPhi_d < 0) ixDeltaPhi_d += fNBins_phi_1;
         int ixDeltaEta_c   = fIxEta_2[ix2]-ixEta_1+fNBins_eta_1-1;
@@ -701,7 +733,7 @@ void Ali2PCorrelations::ProcessUnlikeSignPairs() {
         fSum2PtPt_12           += corr*ptpt;
         fhSum2PtPt_12_vsDEtaDPhi[kOT]->AddBinContent(globalbin_d,corr*ptpt);
         fhSum2PtPt_12_vsDEtaDPhi[kTO]->AddBinContent(globalbin_c,corr*ptpt);
-        float dptdpt            = (pt_1-avgpt_1)*(fPt_2[ix2]-avgpt_2);
+        float dptdpt            = (pt_1-avgpt_1)*(fPt_2[ix2]-fAvgPt_2[ix2]);
         fSum2DptDptnw_12       += dptdpt;
         fSum2DptDpt_12         += corr*dptdpt;
         fhSum2DptDpt_12_vsDEtaDPhi[kOT]->AddBinContent(globalbin_d,corr*dptdpt);

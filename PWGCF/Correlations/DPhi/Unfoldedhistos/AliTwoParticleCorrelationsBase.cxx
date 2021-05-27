@@ -134,10 +134,12 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase() :
     fhN1_1_vsEtaPhi(NULL),
     fhSum1Pt_1_vsEtaPhi(NULL),
     fhN1_1_vsZEtaPhiPt(NULL),
+    fhSum1Pt_1_vsZEtaPhiPt(nullptr),
     fhN1_2_vsPt(NULL),
     fhN1_2_vsEtaPhi(NULL),
     fhSum1Pt_2_vsEtaPhi(NULL),
     fhN1_2_vsZEtaPhiPt(NULL),
+    fhSum1Pt_2_vsZEtaPhiPt(nullptr),
     /* vs centrality profiles */
     fhN1_1_vsC(NULL),
     fhSum1Pt_1_vsC(NULL),
@@ -252,10 +254,12 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char *name)
     fhN1_1_vsEtaPhi(NULL),
     fhSum1Pt_1_vsEtaPhi(NULL),
     fhN1_1_vsZEtaPhiPt(NULL),
+    fhSum1Pt_1_vsZEtaPhiPt(nullptr),
     fhN1_2_vsPt(NULL),
     fhN1_2_vsEtaPhi(NULL),
     fhSum1Pt_2_vsEtaPhi(NULL),
     fhN1_2_vsZEtaPhiPt(NULL),
+    fhSum1Pt_2_vsZEtaPhiPt(nullptr),
     /* vs centrality profiles */
     fhN1_1_vsC(NULL),
     fhSum1Pt_1_vsC(NULL),
@@ -452,15 +456,33 @@ void AliTwoParticleCorrelationsBase::Initialize()
     fhN1_1_vsPt = new TH1F("n1_1_vsPt","#LT n_{1} #GT;p_{t,1} (GeV/c);#LT n_{1} #GT", fNBins_pt_1,  fMin_pt_1,  fMax_pt_1);
     fhN1_1_vsZEtaPhiPt = new TH3F("n1_1_vsZ_vsEtaPhi_vsPt","#LT n_{1} #GT;vtx_{z};#eta_{1}#times#varphi_{1};p_{t,1} (GeV/c)",
         fNBins_vertexZ,fMin_vertexZ,fMax_vertexZ, fNBins_etaPhi_1,0.0,Double_t(fNBins_etaPhi_1),fNBins_pt_1,fMin_pt_1,fMax_pt_1);
+    fhSum1Pt_1_vsZEtaPhiPt = new TH3F("sumPt1_1_vsZ_vsEtaPhi_vsPt","#LT #Sigma p_{t,1} #GT;vtx_{z};#eta_{1}#times#varphi_{1};p_{t,1} (GeV/c)",
+        fNBins_vertexZ,fMin_vertexZ,fMax_vertexZ, fNBins_etaPhi_1,0.0,Double_t(fNBins_etaPhi_1),fNBins_pt_1,fMin_pt_1,fMax_pt_1);
+    fhN1_1_vsEtaPhi = new TH2F("n1_1_vsEtaPhi","#LT n_{1} #GT;#eta_{1};#varphi_{1} (radian);#LT n_{1} #GT",
+        fNBins_eta_1, fMin_eta_1, fMax_eta_1,  fNBins_phi_1, fMin_phi_1, fMax_phi_1);
+    fhSum1Pt_1_vsEtaPhi = new TH2F("sumPt_1_vsEtaPhi","#LT #Sigma p_{t,1} #GT;#eta_{1};#varphi_{1} (radian);#LT #Sigma p_{t,1} #GT (GeV/c)",
+        fNBins_eta_1,fMin_eta_1,fMax_eta_1,fNBins_phi_1,fMin_phi_1,fMax_phi_1);
 
     fhN1_2_vsPt = new TH1F("n1_2_vsPt","#LT n_{1} #GT;p_{t,2} (GeV/c);#LT n_{1} #GT", fNBins_pt_2,  fMin_pt_2,  fMax_pt_2);
     fhN1_2_vsZEtaPhiPt = new TH3F("n1_2_vsZ_vsEtaPhi_vsPt","#LT n_{2} #GT;vtx_{z};#eta_{2}#times#varphi_{2};p_{t,2} (GeV/c)",
         fNBins_vertexZ,fMin_vertexZ,fMax_vertexZ, fNBins_etaPhi_2,0.0,Double_t(fNBins_etaPhi_2),fNBins_pt_2,fMin_pt_2,fMax_pt_2);
+    fhSum1Pt_2_vsZEtaPhiPt = new TH3F("sumPt1_2_vsZ_vsEtaPhi_vsPt","#LT #Sigma p_{t,2} #GT;vtx_{z};#eta_{2}#times#varphi_{2};p_{t,2} (GeV/c)",
+        fNBins_vertexZ,fMin_vertexZ,fMax_vertexZ, fNBins_etaPhi_1,0.0,Double_t(fNBins_etaPhi_1),fNBins_pt_1,fMin_pt_1,fMax_pt_1);
+    fhN1_2_vsEtaPhi = new TH2F("n1_2_vsEtaPhi","#LT n_{1} #GT;#eta_{2};#varphi_{2} (radian);#LT n_{1} #GT",
+        fNBins_eta_2, fMin_eta_2, fMax_eta_2,  fNBins_phi_2, fMin_phi_2, fMax_phi_2);
+    fhSum1Pt_2_vsEtaPhi = new TH2F("sumPt_2_vsEtaPhi","#LT #Sigma p_{t,2} #GT;#eta_{2};#varphi_{2} (radian);#LT #Sigma p_{t,2} #GT (GeV/c)",
+        fNBins_eta_2,fMin_eta_2,fMax_eta_2,fNBins_phi_2,fMin_phi_2,fMax_phi_2);
 
     fOutput->Add(fhN1_1_vsPt);
     fOutput->Add(fhN1_1_vsZEtaPhiPt);
+    fOutput->Add(fhSum1Pt_1_vsZEtaPhiPt);
     fOutput->Add(fhN1_2_vsPt);
     fOutput->Add(fhN1_2_vsZEtaPhiPt);
+    fOutput->Add(fhSum1Pt_2_vsZEtaPhiPt);
+    fOutput->Add(fhN1_1_vsEtaPhi);
+    fOutput->Add(fhSum1Pt_1_vsEtaPhi);
+    fOutput->Add(fhN1_2_vsEtaPhi);
+    fOutput->Add(fhSum1Pt_2_vsEtaPhi);
   }
   else {
     fhResonanceRoughMasses = new TH2F("ResonanceRoughMasses","Approx invariant mass;res id;Inv mass", fgkNoOfResonances, -0.5, fgkNoOfResonances - 0.5, 1000, 0.0, 5.0);
