@@ -80,9 +80,63 @@
 
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2fwdtrack", "O2fwdtrackcov", "O2calo",  "O2calotrigger", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc", "O2run2bcinfo", "O2origin", "O2hmpid" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
+  "O2collision",
+  "DbgEventExtra",
+  "O2track",
+  "O2trackcov",
+  "O2trackextra",
+  "O2fwdtrack",
+  "O2fwdtrackcov",
+  "O2calo",
+  "O2calotrigger",
+  "O2muoncluster",
+  "O2zdc",
+  "O2fv0a",
+  "O2fv0c",
+  "O2ft0",
+  "O2fdd",
+  "O2v0",
+  "O2cascade",
+  "O2tof",
+  "O2mcparticle",
+  "O2mccollision",
+  "O2mctracklabel",
+  "O2mccalolabel",
+  "O2mccollisionlabel",
+  "O2bc",
+  "O2run2bcinfo",
+  "O2origin",
+  "O2hmpid"};
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Forward tracks Parameters", "Forward tracks Covariances", "Calorimeter cells", "Calorimeter triggers", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info", "Run 2 BC Info", "DF ids", "HMPID info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
+  "Collision tree",
+  "Collision extra",
+  "Barrel tracks Parameters",
+  "Barrel tracks Covariance",
+  "Barrel tracks Extra",
+  "Forward tracks Parameters",
+  "Forward tracks Covariances",
+  "Calorimeter cells",
+  "Calorimeter triggers",
+  "MUON clusters",
+  "ZDC",
+  "FV0A",
+  "FV0C",
+  "FT0",
+  "FDD",
+  "V0s",
+  "Cascades",
+  "TOF hits",
+  "Kinematics",
+  "MC collisions",
+  "MC track labels",
+  "MC calo labels",
+  "MC collision labels",
+  "BC info",
+  "Run 2 BC Info",
+  "DF ids",
+  "HMPID info"};
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
 
@@ -1546,14 +1600,17 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         if (track->GetTRDslice(i) > 0)
           tracks.fTRDPattern |= 0x1 << i; // flag tracklet on this layer
 
+      // Checking that the track has a TOF measurement matched
+      const bool hasTOF = (track->GetStatus() & AliESDtrack::kTOFout) && (track->GetStatus() & AliESDtrack::kTIME);
+
       tracks.fITSChi2NCl = AliMathBase::TruncateFloatFraction((track->GetITSNcls() ? track->GetITSchi2() / track->GetITSNcls() : 0), mTrackCovOffDiag);
       tracks.fTPCChi2NCl = AliMathBase::TruncateFloatFraction((track->GetTPCNcls() ? track->GetTPCchi2() / track->GetTPCNcls() : 0), mTrackCovOffDiag);
       tracks.fTRDChi2 = AliMathBase::TruncateFloatFraction(track->GetTRDchi2(), mTrackCovOffDiag);
-      tracks.fTOFChi2 = AliMathBase::TruncateFloatFraction(track->GetTOFchi2(), mTrackCovOffDiag);
+      tracks.fTOFChi2 = AliMathBase::TruncateFloatFraction(hasTOF ? sqrt(track->GetTOFsignalDx() * track->GetTOFsignalDx() + track->GetTOFsignalDz() * track->GetTOFsignalDz()) : 0.f, mTrackCovOffDiag);
 
       tracks.fTPCSignal = AliMathBase::TruncateFloatFraction(track->GetTPCsignal(), mTrackSignal);
       tracks.fTRDSignal = AliMathBase::TruncateFloatFraction(track->GetTRDsignal(), mTrackSignal);
-      tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(track->GetTOFsignal(), mTrackSignal);
+      tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(hasTOF ? track->GetTOFsignal() : 0.f, mTrackSignal);
       tracks.fLength = AliMathBase::TruncateFloatFraction(track->GetIntegratedLength(), mTrackSignal);
 
       // Speed of ligth in TOF units
