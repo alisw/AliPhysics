@@ -46,6 +46,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     virtual                    ~AliAnalysisTaskCorrelationsStudies();
 
     virtual void                UserCreateOutputObjects();
+    virtual bool                UserNotify() { NotifyRun(); return true; }
     virtual void                NotifyRun();
     virtual void                UserExec(Option_t *option);
     virtual void                FinishTaskOutput();
@@ -102,6 +103,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
 
     TList                      *fOutput;                      ///< Output histograms list
     TString                     fTaskConfigurationString;     ///< the task configuration string
+    TString                     fOnTheFlyProduction;          ///< the on the fly MC production
     TString                     fTaskActivitiesString;        ///< the activities to perform by the task
     TString                     fEventCutsString;             ///< the event cuts string of characters
     TString                     fEfficiencyProfileToEnforce;  ///< the efficiency profile to enforce
@@ -126,8 +128,14 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     AliCSPairAnalysis           fProcessTruePairAnalysis;     ///< the processing pairs analysis instance for MC truth
     TF1                        *ffEfficiencyProfile;          ///< the formula for the efficiency profile to enforce
     TRandom3                   *fRandomGenerator;             ///< the random generator object instance for enforcing the efficiency profile
+    const TH1                  *fhV0MCentMult;                ///< the V0M centrality / multiplicity estimation histogram
+    const TH1                  *fhCL1MCentMult;               ///< the CL1M centrality / multiplicity estimation histogram
     TH3F                       *fhWeightsTrack_1;             ///< the weights histogram for track one
     TH3F                       *fhWeightsTrack_2;             ///< the weights histogram for track two
+    const TH2                  *fhPtAverageTrack_1;           ///< the track one \f$ \langle p_{T>} \rangle \f$
+    const TH2                  *fhPtAverageTrack_2;           ///< the track two \f$ \langle p_{T>} \rangle \f$
+    const TH2                  *fhTruePtAverageTrack_1;       ///< the true track one \f$ \langle p_{T>} \rangle \f$
+    const TH2                  *fhTruePtAverageTrack_2;       ///< the true track two \f$ \langle p_{T>} \rangle \f$
     TH1F                       *fhEffCorrTrack_1;             ///< the efficiency correction for track one
     TH1F                       *fhEffCorrTrack_2;             ///< the efficiency correction for track two
     THn                        *fhPairEfficiency_PP;          ///< the plus plus pair efficiency
@@ -202,7 +210,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     AliAnalysisTaskCorrelationsStudies& operator=(const AliAnalysisTaskCorrelationsStudies&); // not implemented
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskCorrelationsStudies, 5);
+    ClassDef(AliAnalysisTaskCorrelationsStudies, 6);
     /// \endcond
 };
 

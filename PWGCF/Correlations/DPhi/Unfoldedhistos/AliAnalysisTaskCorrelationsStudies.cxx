@@ -73,6 +73,7 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
    :AliAnalysisTaskSE(),
     fOutput(NULL),
     fTaskConfigurationString(""),
+    fOnTheFlyProduction(""),
     fTaskActivitiesString(""),
     fEventCutsString(""),
     fEfficiencyProfileToEnforce(""),
@@ -95,8 +96,14 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fProcessTruePairAnalysis(),
     ffEfficiencyProfile(NULL),
     fRandomGenerator(NULL),
+    fhV0MCentMult(nullptr),
+    fhCL1MCentMult(nullptr),
     fhWeightsTrack_1(NULL),
     fhWeightsTrack_2(NULL),
+    fhPtAverageTrack_1(nullptr),
+    fhPtAverageTrack_2(nullptr),
+    fhTruePtAverageTrack_1(nullptr),
+    fhTruePtAverageTrack_2(nullptr),
     fhEffCorrTrack_1(NULL),
     fhEffCorrTrack_2(NULL),
     fhPairEfficiency_PP(NULL),
@@ -167,6 +174,7 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
    :AliAnalysisTaskSE(name),
     fOutput(NULL),
     fTaskConfigurationString(""),
+    fOnTheFlyProduction(""),
     fTaskActivitiesString(""),
     fEventCutsString(""),
     fEfficiencyProfileToEnforce(""),
@@ -189,8 +197,14 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fProcessTruePairAnalysis("TruePairAnalysis"),
     ffEfficiencyProfile(NULL),
     fRandomGenerator(NULL),
+    fhV0MCentMult(nullptr),
+    fhCL1MCentMult(nullptr),
     fhWeightsTrack_1(NULL),
     fhWeightsTrack_2(NULL),
+    fhPtAverageTrack_1(nullptr),
+    fhPtAverageTrack_2(nullptr),
+    fhTruePtAverageTrack_1(nullptr),
+    fhTruePtAverageTrack_2(nullptr),
     fhEffCorrTrack_1(NULL),
     fhEffCorrTrack_2(NULL),
     fhPairEfficiency_PP(NULL),
@@ -724,7 +738,19 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
     fTaskActivitiesString = sztmp(0,sztmp.Index(";"));
     sztmp.Remove(0,sztmp.Index(";")+1);
 
-    TObjArray *tokens = fTaskActivitiesString.Tokenize("+");
+    TString woOnTheFly  = fTaskActivitiesString;
+    if (woOnTheFly.Contains("OnTheFly")) {
+      if (woOnTheFly.Contains("+")) {
+        fOnTheFlyProduction = woOnTheFly(0,woOnTheFly.Index("+"));
+        woOnTheFly.Remove(0,woOnTheFly.Index("+")+1);
+      }
+      else {
+        fOnTheFlyProduction = woOnTheFly;
+        woOnTheFly = "";
+      }
+    }
+
+    TObjArray *tokens = woOnTheFly.Tokenize("+");
     if (tokens->GetEntries() == 2) {
       if (((TObjString*)tokens->At(0))->String().Contains("corr")) {
         if (((TObjString*)tokens->At(1))->String().EqualTo("pairs")) {
@@ -1019,28 +1045,59 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
       return kFALSE;
     }
 
-    /* use weights or efficiency corrections or both */
+    /* use weights or efficiency corrections or both                */
+    /* or the input file for diff correlations                      */
+    /* or the input file for centrality / multiplicity estimation   */
     if (((TObjString*) tokens->At(3))->String().EqualTo("weights") ||
         ((TObjString*) tokens->At(3))->String().EqualTo("effcorr") ||
         ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ||
-        ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff") ) {
-      /* we will use weights or efficiency corrections so the weights filename has to be there */
+        ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff") ||
+        fOnTheFlyProduction.Length() != 0 ||
+        fTaskActivitiesString.Contains("diffcorr")) {
+      /* we will use weights or efficiency corrections  so the weights filename has to be there */
       if (tokens->GetEntries() == 5) {
         /* get the weights histos */
-        TFile *weights;
+        TFile *inputandweights;
         Char_t localbuffer[2048];
 
         TGrid::Connect("alien:");
-        weights = TFile::Open(((TObjString*) tokens->At(4))->String(),"OLD");
-        if (weights != NULL && weights->IsOpen()) {
-          /* the weights correction */
+        inputandweights = TFile::Open(((TObjString*) tokens->At(4))->String(),"OLD");
+        if (inputandweights != NULL && inputandweights->IsOpen()) {
+          /* the pT average histograms  */
+          if (fTaskActivitiesString.Contains("diffcorr")) {
+            sprintf(localbuffer,"%sp",TString(pattern).ReplaceAll("correction","ptavgetaphi").Data());
+            fhPtAverageTrack_1 = (TH2*) inputandweights->Get(localbuffer);
+            sprintf(localbuffer,"%sm",TString(pattern).ReplaceAll("correction","ptavgetaphi").Data());
+            fhPtAverageTrack_2 = (TH2*) inputandweights->Get(localbuffer);
+            sprintf(localbuffer,"%sp",TString(pattern).ReplaceAll("correction","trueptavgetaphi").Data());
+            fhTruePtAverageTrack_1 = (TH2*) inputandweights->Get(localbuffer);
+            sprintf(localbuffer,"%sm",TString(pattern).ReplaceAll("correction","trueptavgetaphi").Data());
+            fhTruePtAverageTrack_2 = (TH2*) inputandweights->Get(localbuffer);
+
+            if ((fhPtAverageTrack_1 == nullptr) or (fhPtAverageTrack_2 == nullptr)) {
+              AliError("Differential correlations ordered but average pT histograms for reconstructed tracks not present");
+            }
+            if ((fhTruePtAverageTrack_1 == nullptr) or (fhTruePtAverageTrack_2 == nullptr)) {
+              AliError("Differential correlations ordered but average pT histograms for generated tracks not present");
+            }
+          }
+          /* the centrality / multiplicity estimation histograms */
+          if (fOnTheFlyProduction.Length() != 0) {
+            fhV0MCentMult = (TH1*) inputandweights->Get("V0MCentMult");
+            fhCL1MCentMult = (TH1*) inputandweights->Get("CL1MCentMult");
+
+            if ((fhV0MCentMult == nullptr) and (fhCL1MCentMult == nullptr)) {
+              AliError("On the fly MC production but centraliy / multiplicity estimation histograms not present");
+            }
+          }
+          /* the weights correction histograms */
           if (((TObjString*) tokens->At(3))->String().EqualTo("weights") ||
               ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ||
               ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff")) {
             sprintf(localbuffer,"%s%s", pattern,szTrack1.Data());
-            fhWeightsTrack_1 = (TH3F*) weights->Get(localbuffer);
+            fhWeightsTrack_1 = (TH3F*) inputandweights->Get(localbuffer);
             sprintf(localbuffer,"%s%s", pattern,szTrack2.Data());
-            fhWeightsTrack_2 = (TH3F*) weights->Get(localbuffer);
+            fhWeightsTrack_2 = (TH3F*) inputandweights->Get(localbuffer);
             if ((fhWeightsTrack_1 != NULL) && (fhWeightsTrack_2 != NULL)) {
               fProcessCorrelations->SetUseWeights(kTRUE);
               AliInfo("===========STORED CORRECTION WEIGHTS====================");
@@ -1054,13 +1111,14 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
               return kFALSE;
             }
           }
+          /* the singles efficiency correction histograms */
           if (((TObjString*) tokens->At(3))->String().EqualTo("effcorr") ||
               ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ) {
             /* the efficiency correction */
             sprintf(localbuffer,"%seff_%s", pattern,szTrack1.Data());
-            fhEffCorrTrack_1 = (TH1F*) weights->Get(localbuffer);
+            fhEffCorrTrack_1 = (TH1F*) inputandweights->Get(localbuffer);
             sprintf(localbuffer,"%seff_%s", pattern,szTrack2.Data());
-            fhEffCorrTrack_2 = (TH1F*) weights->Get(localbuffer);
+            fhEffCorrTrack_2 = (TH1F*) inputandweights->Get(localbuffer);
             if ((fhEffCorrTrack_1 != NULL) && (fhEffCorrTrack_2 != NULL)) {
               AliInfo("===========STORED EFFICIENCY CORRECTION====================");
               AliInfo(Form("Track 1: %c charge, efficiency correction histogram: %s", ((TObjString*) tokens->At(0))->String()[0],fhEffCorrTrack_1->GetName()));
@@ -1073,17 +1131,18 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
               return kFALSE;
             }
           }
+          /* the pairs efficiency histograms */
           if (((TObjString*) tokens->At(3))->String().EqualTo("pairseff") ||
               ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff") ) {
             /* the pairs efficiencies */
             sprintf(localbuffer,"%spairseff_PP", pattern);
-            fhPairEfficiency_PP = (THn*) weights->Get(localbuffer);
+            fhPairEfficiency_PP = (THn*) inputandweights->Get(localbuffer);
             sprintf(localbuffer,"%spairseff_PM", pattern);
-            fhPairEfficiency_PM = (THn*) weights->Get(localbuffer);
+            fhPairEfficiency_PM = (THn*) inputandweights->Get(localbuffer);
             sprintf(localbuffer,"%spairseff_MM", pattern);
-            fhPairEfficiency_MM = (THn*) weights->Get(localbuffer);
+            fhPairEfficiency_MM = (THn*) inputandweights->Get(localbuffer);
             sprintf(localbuffer,"%spairseff_MP", pattern);
-            fhPairEfficiency_MP = (THn*) weights->Get(localbuffer);
+            fhPairEfficiency_MP = (THn*) inputandweights->Get(localbuffer);
             if ((fhPairEfficiency_PP != NULL) && (fhPairEfficiency_PM != NULL) && (fhPairEfficiency_MM != NULL) && (fhPairEfficiency_MP != NULL)) {
               AliInfo("===========STORED PAIRS EFFICIENCY=========================");
               AliInfo(Form("Pair PP: pairs efficiency histogram: %s", fhPairEfficiency_PP->GetName()));
@@ -1100,12 +1159,12 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
           }
         }
         else {
-          AliFatal(Form("Weights file %s not available.ABORTING!!!",((TObjString*) tokens->At(3))->String().Data()));
+          AliFatal(Form("Weights/input file %s not available.ABORTING!!!",((TObjString*) tokens->At(3))->String().Data()));
           return kFALSE;
         }
       }
       else {
-        AliFatal("Use weights required but the weights filename is not present.ABORTING!!!");
+        AliFatal("Use weights/input histograms required but the weights filename is not present.ABORTING!!!");
         return kFALSE;
       }
     }
@@ -1234,6 +1293,7 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelationsBinning(const ch
 /// Creates the object to be preserved on the results files
 void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
 {
+  AliInfo("UserCreateOutputObjects()");
   Bool_t oldstatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
@@ -1242,6 +1302,11 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();  // IMPORTANT!
 
+  /* let's prepare in case of on the fly MC productions */
+  if (fOnTheFlyProduction.Length() != 0) {
+    AliCSAnalysisCutsBase::SetOnTheFlyMCProduction(fOnTheFlyProduction);
+  }
+
   fEventCuts = new AliCSEventCuts("CS_Event_Cuts", "CS Event Cuts");
   if (!fEventCuts->InitializeCutsFromCutString(fEventCutsString)) {
     AliFatal("Not able to initialize event cuts. ABORTING!!!");
@@ -1249,6 +1314,7 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
 
   fEventCuts->SetQALevelOutput(AliCSAnalysisCutsBase::kQALevelHeavy);
   fEventCuts->InitCuts();
+  fEventCuts->StoreCentMultEstimationHistos(fhV0MCentMult,fhCL1MCentMult);
   fOutput->Add(fEventCuts->GetHistogramsList());
 
   fTrackSelectionCuts = new AliCSTrackSelection("CS_Track_Selection", "CS Track Selection");
@@ -1263,9 +1329,12 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
     fProcessMCRecCorrelationsWithOptions->Initialize();
     fProcessTrueCorrelations->Initialize();
     fProcessCorrelations->SetWeigths(fhWeightsTrack_1, fhWeightsTrack_2);
+    fProcessCorrelations->SetPtAvg(fhPtAverageTrack_1,fhPtAverageTrack_2);
     fProcessCorrelations->SetEfficiencyCorrection(fhEffCorrTrack_1, fhEffCorrTrack_2);
     fProcessCorrelations->SetPairEfficiencyCorrection(fhPairEfficiency_PP, fhPairEfficiency_PM, fhPairEfficiency_MM, fhPairEfficiency_MP);
     fProcessCorrelations->SetSimultationPdfs(fPositiveTrackPdf, fNegativeTrackPdf);
+    /* not clear how we will do it with MC rec with options */
+    fProcessTrueCorrelations->SetPtAvg(fhTruePtAverageTrack_1,fhTruePtAverageTrack_2);
   }
 
   /* now initialize the pair analysis instance */
@@ -1380,7 +1449,7 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
 /// Check for a potential change in the period (will always happen for the first
 /// run in the analysis) and produce all the output depending on the concrete analysis
 void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
-  AliInfo("");
+  AliInfo("NotifyRun()");
 
   AliCSAnalysisCutsBase::NotifyRunGlobal();
   fEventCuts->NotifyRun();
@@ -1529,18 +1598,29 @@ void AliAnalysisTaskCorrelationsStudies::UserExec(Option_t *)
     // Called for each event
     AliInfo("Got a new event!");
 
-    // Create pointer to reconstructed event
-    AliVEvent *event = InputEvent();
-    if (!event) { AliError("ERROR: Could not retrieve event"); return; }
+    // Create pointer to event to handle
+    AliVEvent *event = nullptr;
+    if (!fEventCuts->IsOnTheFlyMC()) {
+      // Create pointer to reconstructed event
+      event = InputEvent();
+    }
+    else {
+      /* on the fly production */
+      /* create pointer to the new events */
+      event = fMCEvent;
+    }
+    if (event == nullptr) { AliError("ERROR: Could not retrieve event"); return; }
 
     /* notify the new coming event to our cuts */
     fEventCuts->NotifyEvent();
 
     /* check if the event is accepted */
-    if (!fEventCuts->IsEventAccepted(fInputEvent)) return;
+    if (!fEventCuts->IsEventAccepted(event)) return;
 
-    /* notify the new coming event to our track mapping function */
-    aodTrackMaps.NotifyEvent();
+    /* notify the new coming event to our track mapping function if not fast MC */
+    if (!fEventCuts->IsMConlyTruth()) {
+      aodTrackMaps.NotifyEvent();
+    }
 
     /* notify the new coming event to our cuts */
     fTrackSelectionCuts->NotifyEvent();
