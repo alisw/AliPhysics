@@ -70,6 +70,7 @@ class AliInputEventHandler;
 class PhysicsProfile : public TObject {
 	public:
                 PhysicsProfile();
+		PhysicsProfile(const PhysicsProfile&);
 		// Physics profiles
 		TProfile*	 fChsc4242;		             	//! SC(4,2)
 		TProfile*	 fChsc4242_Gap0;			//! SC(4,2) |#Delta#eta| > 0.0
@@ -264,9 +265,13 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		double 			GetPtWeight(double pt, double eta, float vz, double runNumber);
 
 		Bool_t                  LoadWeights();
+		Bool_t                  LoadWeightsKatarina();
 		Bool_t                  LoadPtWeights();
+		Bool_t                  LoadPtWeightsKatarina();
 		Bool_t                  LoadWeightsSystematics();
 
+                Double_t GetWeightKatarina(double phi, double eta, double vz);
+                Double_t GetPtWeightKatarina(double pt, double eta, double vz);
 		Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
 		Double_t GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species);
                 const char* ReturnPPperiod(const Int_t runNumber) const;
@@ -330,7 +335,9 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		//
 		TList*                  fFlowWeightsList;               //! flowWightsList
 		TList*                  fFlowPtWeightsList;             //! PtflowWightsList
+		TFile*                  fFlowPtWeightsFile;             //! PtflowWightsList
 		TList*			fPhiWeight;	                //! file with phi weights
+		TFile*			fPhiWeightFile;	                //! file with phi weights
 		TList*			fPhiWeightPlus;	                //! file with phi weights
 		TList*			fPhiWeightMinus;                //! file with phi weights
 		TH2D*                   fh2Weights[kUnknown];           //! container for GF weights (phi,eta,pt) (2D)
@@ -412,10 +419,10 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		PhysicsProfile multProfile; //!
 		PhysicsProfile multProfile_bin[30]; //!
 
+		CorrelationCalculator correlator; //!
 		TRandom3 rand;         //!
 		Int_t bootstrap_value = -1; //!
 
-		CorrelationCalculator correlator; //!
 
                 unsigned fgFlowHarmonics = 0;        //! calculate v2, v3, v4, v5
                 unsigned fgFlowHarmonicsHigher = 0;  //! calculate v6, v7, v8 ..
@@ -455,7 +462,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
                 bool fuQThreeSub = 0; //!
                 bool fuQGapScan  = 0; //!
 
-		double xbins[3000+10] = {}; //!
+		double xbins[300] = {}; //!
 		int nn = 0; //!
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
