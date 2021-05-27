@@ -7,7 +7,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 
 
 AliAnalysisTaskNTGJ *
-AddAliAnalysisTaskNTGJ(TString suffixName,
+AddAliAnalysisTaskNTGJ(TString name,
                        TString emcal_correction_filename,
                        const UInt_t pSel,
                        bool physics_selection,
@@ -84,7 +84,7 @@ AddAliAnalysisTaskNTGJ(TString suffixName,
     
 
   AliAnalysisTaskNTGJ *task =
-    new AliAnalysisTaskNTGJ(suffixName.Data());
+    new AliAnalysisTaskNTGJ(name.Data());
 
   // set to 2 to print number of clusters/tracks/MC particles
   // set to 3 to also print when entering various loops
@@ -178,8 +178,8 @@ AddAliAnalysisTaskNTGJ(TString suffixName,
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
   TString filename = mgr->GetCommonFileName();
-
-  filename += suffixName.Data();
+  filename += ":AliAnalysisTaskNTGJ_";
+  filename += name.Data();
     
   mgr->ConnectOutput(task, 1,
                      mgr->CreateContainer("tree", TTree::Class(),
