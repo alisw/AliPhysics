@@ -2758,7 +2758,7 @@ Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * 
   //Particle within 1 cm from the virtex
   Double_t x = particle->Pt() ;
   if(fMCType==kDPMJET){
-    return 2.73839e+01*TMath::Exp(-x*4.93582)+1. ;
+    return 1./(2.73839e+01*TMath::Exp(-x*4.93582)+1.) ;
   }
   if(x<0.4) x=0.4 ;
   return fWeightParamPi0[0]*(TMath::Power(x,fWeightParamPi0[1])*
