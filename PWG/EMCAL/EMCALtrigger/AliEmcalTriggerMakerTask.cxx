@@ -450,6 +450,7 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
     for(int itru = 0; itru < 32; itru++) {
       if(!sturegion.test(itru)) {
         // TRU disabled
+        std::cout << "Disable EMCAL TRU " << itru << "(" << itru << ")" << std::endl;
         for(int ichannel = 0; ichannel < 96; ichannel++) {
           fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(itru, ichannel, fastOrAbsID);
           fTriggerMaker->AddFastORBadChannel(fastOrAbsID); 
@@ -459,12 +460,14 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
   }
 
   if(dcalstu){
-    std::bitset<sizeof(int) * 8> sturegion(emcalstu->GetRegion());
+    std::bitset<sizeof(int) * 8> sturegion(dcalstu->GetRegion());
     for(int itru = 0; itru < 14; itru++) {
       if(!sturegion.test(itru)) {
         // TRU disabled
+        auto globTRUindex = fGeom->GetTriggerMapping()->GetTRUIndexFromSTUIndex(itru, 1);
+        std::cout << "Disable DCAL TRU " << itru << "(" << globTRUindex << ")" << std::endl;
         for(int ichannel = 0; ichannel < 96; ichannel++) {
-          fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(itru, ichannel, fastOrAbsID);
+          fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(globTRUindex, ichannel, fastOrAbsID);
           fTriggerMaker->AddFastORBadChannel(fastOrAbsID); 
         }
       }
