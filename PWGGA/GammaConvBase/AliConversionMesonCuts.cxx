@@ -3309,12 +3309,14 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     case 19:   // j (Alpha Cut is handled in Task)
       fAlphaMinCutMeson   = 0.0;
       fAlphaCutMeson      = 1.;
+      fDoAlphaInTask      = kTRUE;
       fAlphaInTaskMode = 0;
       break;
     case 20:   // l (Alpha Cut is handled in Task)
       fAlphaMinCutMeson   = 0.0;
       fAlphaCutMeson      = 1.;
-      fAlphaInTaskMode = 1;
+      fDoAlphaInTask      = kTRUE;
+      fAlphaInTaskMode    = 1;
       break;
     default:
       cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
