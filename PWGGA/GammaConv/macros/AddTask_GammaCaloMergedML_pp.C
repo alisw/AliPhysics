@@ -2037,5 +2037,29 @@ void AddTask_GammaCaloMergedML_pp(
     //mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCaloMergedML_Bck_Tree_%i",trainConfig) : Form("GammaCaloMergedML_Bck_Tree_%i_%s",trainConfig,corrTaskSetting.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaCaloMergedML_Bck_Tree_%i.root",trainConfig) );
   //  mgr->ConnectOutput(task, 3, coutbck);
 
+
+  Int_t nContainer = 2;
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    if(isMC==1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s_Pi0",(cuts.GetEventCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetClusterMergedCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaCaloMergedML_%i.root",trainConfig)) );
+      nContainer++;
+    }
+  }
+
+  for(Int_t i = 0; i<numberOfCuts; i++){
+      if(isMC==1){
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s_Eta",(cuts.GetEventCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetClusterMergedCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaCaloMergedML_%i.root",trainConfig)) );
+	nContainer++;
+      }
+  }
+
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    if(isMC==1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s_Bck",(cuts.GetEventCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetClusterMergedCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaCaloMergedML_%i.root",trainConfig)) );
+      nContainer++;
+    }
+  }
+  
+  
   return;
 }
