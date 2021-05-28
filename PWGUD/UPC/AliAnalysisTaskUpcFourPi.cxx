@@ -74,7 +74,7 @@ AliAnalysisTaskUpcFourPi::AliAnalysisTaskUpcFourPi() //first constructor, contai
 	fZNAenergy(0), fZNCenergy(0), fZPAenergy(0), fZPCenergy(0), fZDCAtime(0), fZDCCtime(0), fV0Adecision(0), fV0Cdecision(0), fADAdecision(0), fADCdecision(0),
 	fDataFilnam(0), fRecoPass(0), fEvtNum(0),
 	fJPsiAODTracks(0), fJPsiESDTracks(0), fEtaCAODTracks(0), fEtaCESDTracks(0), fGenPart(0),
-	fEtaCCandidatesPerChannel(0), fEtaCLowPtCandidatesPerChannel(0), fAllPtVsMinvEtaC(0), fAllPtFourPions(0), fAllPionPt(0), fAllPionEta(0), fAllMinvEtaCLowPt(0), fAllChargedFourPion(0), fChannelVsMinvEtaC(0),
+	fEtaCCandidatesPerChannel(0), fEtaCLowPtCandidatesPerChannel(0), fAllPtVsMinvEtaC(0), fAllPionPt(0), fAllPionEta(0), fAllMinvEtaCLowPt(0), fAllChargedFourPion(0), fChannelVsMinvEtaC(0),
 	//trigger hists and lists
 	fListTrig(0), fHistCcup29TriggersPerRun(0), fHistCcup30TriggersPerRun(0), fHistCcup31TriggersPerRun(0),
 	fHistZedTriggersPerRun(0), fHistMBTriggersPerRun(0), fHistCentralTriggersPerRun(0), fHistSemiCentralTriggersPerRun(0), fHistCtrueTriggersPerRun(0),
@@ -152,7 +152,7 @@ AliAnalysisTaskUpcFourPi::AliAnalysisTaskUpcFourPi(const char *name) //second co
 	fZNAenergy(0), fZNCenergy(0), fZPAenergy(0), fZPCenergy(0), fZDCAtime(0), fZDCCtime(0), fV0Adecision(0), fV0Cdecision(0), fADAdecision(0), fADCdecision(0),
 	fDataFilnam(0), fRecoPass(0), fEvtNum(0),
 	fJPsiAODTracks(0), fJPsiESDTracks(0), fEtaCAODTracks(0), fEtaCESDTracks(0), fGenPart(0),
-	fEtaCCandidatesPerChannel(0), fEtaCLowPtCandidatesPerChannel(0), fAllPtVsMinvEtaC(0), fAllPtFourPions(0), fAllPionPt(0), fAllPionEta(0), fAllMinvEtaCLowPt(0), fAllChargedFourPion(0), fChannelVsMinvEtaC(0),
+	fEtaCCandidatesPerChannel(0), fEtaCLowPtCandidatesPerChannel(0), fAllPtVsMinvEtaC(0), fAllPionPt(0), fAllPionEta(0), fAllMinvEtaCLowPt(0), fAllChargedFourPion(0), fChannelVsMinvEtaC(0),
 
 	//trigger hists and lists
 	fListTrig(0), fHistCcup29TriggersPerRun(0), fHistCcup30TriggersPerRun(0), fHistCcup31TriggersPerRun(0),
@@ -714,8 +714,8 @@ void AliAnalysisTaskUpcFourPi::UserCreateOutputObjects() //use the names defined
 	fAllPtVsMinvEtaC = new TH2D("Pt V Minv EtaC Candidates", "Transverse Momentum V. Invariant Mass, all #eta_{C} candidates", 1200, 0., 6., 500, 0., 5.);
 	fListHist->Add(fAllPtVsMinvEtaC);
 
-	fAllPtFourPions = new TH1D("Transverse Momentum of Parent Candidates", "Transverse Momentum, Parent Candidates", 200, 0., 2.);
-	fListHist->Add(fAllPtFourPions);
+	//fAllPtFourPions = new TH1D("Transverse Momentum of Parent Candidates", "Transverse Momentum, Parent Candidates", 500, 0., 5.);
+	//fListHist->Add(fAllPtFourPions);
 
 	fAllPionPt = new TH1D("Transverse Momentum of pions", "Transverse Momentum, pion candidates", 200, 0., 2.);
 	fListHist->Add(fAllPionPt);
@@ -1537,7 +1537,7 @@ void AliAnalysisTaskUpcFourPi::RunAODhist()
 					}
 					f2Rho2PairPtVsMinvEtaC->Fill(vCandidate.M(), vCandidate.Pt()); //4Pi final states with 2 intermediate rho's.
 					fAllPtVsMinvEtaC->Fill(vCandidate.M(), vCandidate.Pt());
-					fAllPtFourPions->Fill(vCandidate.Pt());
+					//fAllPtFourPions->Fill(vCandidate.Pt());
 					if (vCandidate.Pt() < 0.11) {
 						fChannelVsMinvEtaC->Fill(vCandidate.M(), 4);
 						fAllMinvEtaCLowPt->Fill(vCandidate.M());
@@ -1578,7 +1578,7 @@ void AliAnalysisTaskUpcFourPi::RunAODhist()
 					}
 					f2Rho1PairPtVsMinvEtaC->Fill(vCandidate.M(), vCandidate.Pt()); //4Pi final states with 2 intermediate rho's.
 					fAllPtVsMinvEtaC->Fill(vCandidate.M(), vCandidate.Pt());
-					fAllPtFourPions->Fill(vCandidate.Pt());
+					//fAllPtFourPions->Fill(vCandidate.Pt());
 					if (vCandidate.Pt() < 0.11) {
 						fChannelVsMinvEtaC->Fill(vCandidate.M(), 4);
 						fAllMinvEtaCLowPt->Fill(vCandidate.M());
@@ -1605,7 +1605,7 @@ void AliAnalysisTaskUpcFourPi::RunAODhist()
 
 					f4PionPtVsMinvEtaC->Fill(vCandidate.M(), vCandidate.Pt()); //All 4Pi final states.
 					fAllPtVsMinvEtaC->Fill(vCandidate.M(), vCandidate.Pt());
-					fAllPtFourPions->Fill(vCandidate.Pt());
+					//fAllPtFourPions->Fill(vCandidate.Pt());
 					if (vCandidate.Pt() < 0.11) {
 						fChannelVsMinvEtaC->Fill(vCandidate.M(), 5);
 						fAllMinvEtaCLowPt->Fill(vCandidate.M());
