@@ -1,7 +1,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice */
 /* $Id$ */
-//Full code, 18r.296691_co4_8
+//Full code, 18r.local copy
 #ifndef ALIANALYSISTASKUPCFOURPI_H 
 #define ALIANALYSISTASKUPCFOURPI_H
 
@@ -214,7 +214,7 @@ private:
 	TH1D *fEtaCCandidatesPerChannel;
 	TH1D *fEtaCLowPtCandidatesPerChannel;
 	TH2D *fAllPtVsMinvEtaC;
-	TH1D* fAllPtFourPions;
+	//TH1D* fAllPtFourPions;
 	TH1D *fAllPionPt;
 	TH1D *fAllPionEta;
 	TH1D *fAllMinvEtaCLowPt;
