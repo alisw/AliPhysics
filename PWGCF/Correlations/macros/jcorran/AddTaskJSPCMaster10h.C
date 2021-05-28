@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double ptMin = 0.5, Bool_t removebadarea = kFALSE)
+AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double ptMin = 0.5, Bool_t removebadarea = kFALSE, Bool_t saveCatalystQA = kFALSE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -38,7 +38,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double
     cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << endl;
     fJCatalyst[i]->SelectCollisionCandidates(selEvt);
    
-    fJCatalyst[i]->SetSaveAllQA(kTRUE); 
+    fJCatalyst[i]->SetSaveAllQA(saveCatalystQA); 
     fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
     fJCatalyst[i]->SetInitializeCentralityArray();
 

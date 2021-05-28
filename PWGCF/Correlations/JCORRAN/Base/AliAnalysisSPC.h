@@ -12,7 +12,6 @@
 #ifndef ALIANALYSISSPC_H
 #define ALIANALYSISSPC_H
 
-//#include "AliAnalysisTaskSE.h"  // LAVA
 #include "TProfile.h"
 #include "TH1F.h"
 #include "TH1I.h"
@@ -34,7 +33,7 @@ class TClonesArray;
 
 //================================================================================================================
 
-class AliAnalysisSPC{ //: public AliAnalysisTaskSE{  // LAVA: not there in my example task.
+class AliAnalysisSPC{
 public:
   AliAnalysisSPC();
   AliAnalysisSPC(const char *name, Bool_t useParticleWeights=kFALSE);
@@ -50,10 +49,8 @@ public:
   virtual void BookAndNestAllLists();
   virtual void BookControlHistograms();
   virtual void BookFinalResultsHistograms();
-  virtual void Cosmetics();	// LAVA: You sure you want to keep an empty method? =D
 
   // 2.) Methods called in UserExec(Option_t *) or subsquent Methods:
-  //virtual void PhysicsAnalysis(AliAODEvent *aAODEvent); // LAVA
   virtual void PhysicsAnalysis();
 
   //a) Methods used to assure global quality and track selection
@@ -73,7 +70,7 @@ public:
   // 3.) Methods called in Terminate():
   // ...
 
-  // 4.) Setters and getters: // LAVA: I won't touch your "this->", but this looks like a this-wall =D
+  // 4.) Setters and getters: 
   void SetInputList(TClonesArray *inputarray){fInputList = inputarray;}
   TClonesArray *GetInputList() const{return fInputList;}
 
@@ -119,7 +116,7 @@ public:
 
   void SetMixed(Bool_t top, Int_t nop, Bool_t DifferentCharge, Bool_t PositiveCharge)
   {this->bDoMixed = top; this->fMixedHarmonic = nop; this->bDifferentCharge = DifferentCharge; 
-	this->bSetSameChargePositiv = PositiveCharge;	}
+	this->bSetSameChargePositive = PositiveCharge;	}
 
   void SetCentrality(Float_t cen0, Float_t cen1, Float_t cen2, Float_t cen3, Float_t cen4, Float_t cen5, Float_t cen6, Float_t cen7, Float_t cen8, Float_t cen9, Float_t cen10, Float_t cen11, Float_t cen12, Float_t cen13, Float_t cen14, Float_t cen15, Float_t cen16 )
  {this->fcent_0 = cen0; this->fcent_1 = cen1; this->fcent_2 = cen2; this->fcent_3 = cen3; this->fcent_4 = cen4; this->fcent_5 = cen5; this->fcent_6 = cen6; this->fcent_7 = cen7; this->fcent_8 = cen8; this->fcent_9 = cen9; this->fcent_10 = cen10; this->fcent_11 = cen11; this->fcent_12 = cen12; this->fcent_13 = cen13; this->fcent_14 = cen14; this->fcent_15 = cen15; this->fcent_16 = cen16;} 
@@ -142,7 +139,7 @@ private:
   TList *fCentralityList[16];		//! Will be one list per certain centrality bin. Up to 16 centraliy bins possible
   TList *fControlHistogramsList[16]; 	//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible
  
-  TH1F *fPTHistogram[16][2]; 		//! 0: P_t After Track Selection, 1: P_t After Track Selection (second) // LAVA: I swaped the "2" into "1" in the comments.
+  TH1F *fPTHistogram[16][2]; 		//! 0: P_t After Track Selection, 1: P_t After Track Selection (second)
   TH1F *fPhiHistogram[16][2]; 		//! 0: Phi After Track Selection, 1: Phi After Track Selection (second)
   TH1F *fEtaHistogram[16][2]; 		//! 0: Eta After Track Selection, 1: Eta After Track Selection (second)
   TH1F *fMultHistogram[16][2]; 		//! 0: Mult. After Track Selection 1: Mult. After Track Selection (second)
@@ -200,7 +197,7 @@ private:
 				 	//		    if kFALSE mixed particle analysis between same charge 
 				 	//		    (only positiv or only negativ particles)
 				 	// Default kTRUE
-  Bool_t bSetSameChargePositiv;   	// used if bDifferentCharge: if kTRUE use positiv, if kFALSE use negative (default kTRUE)  // LAVA: Another example of poor positiv :)
+  Bool_t bSetSameChargePositive;   	// used if bDifferentCharge: if kTRUE use positiv, if kFALSE use negative (default kTRUE)
   Int_t fMixedHarmonic;			// Harmonic of special mixed particle analysis
   TH1F *fCounterHistogram;       	//! for some checks
   TProfile *fProfileTrackCuts;  	//! Profile to save the cut values for track selection

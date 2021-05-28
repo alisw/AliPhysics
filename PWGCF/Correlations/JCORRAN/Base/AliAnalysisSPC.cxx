@@ -18,13 +18,8 @@
 * Marcel Lesch (marcel.lesch@cern.ch)         *
 **********************************************/ 
   
-#include "Riostream.h"  // LAVA: Adapted the list of include from my example task.
+#include "Riostream.h"
 #include "AliAnalysisSPC.h"
-//#include "AliLog.h"
-//#include "AliAODEvent.h"
-//#include "AliAODInputHandler.h"
-//#include "AliAnalysisManager.h"
-//#include "AliMultSelection.h"
 #include "TRandom.h" 
 #include "TComplex.h"
 #include "TProfile.h"
@@ -36,12 +31,6 @@
 #include "TMath.h"
 #include "TF1.h"
 #include "TRandom3.h"
-//#include "AliMCEvent.h"
-//#include "AliAODMCParticle.h"
-//#include "AliMCVertex.h"
-//#include "AliAODVertex.h"
-//#include "AliCentrality.h"
-//#include "AliHeader.h"
 #include <TExMap.h>
 #include "TDirectoryFile.h"
 #include "TList.h"
@@ -58,7 +47,6 @@ ClassImp(AliAnalysisSPC)
 //================================================================================================================
 
 AliAnalysisSPC::AliAnalysisSPC(const char *name, Bool_t useParticleWeights): 
- //AliAnalysisTaskSE(name), // LAVA
  fHistList(NULL),
  fInputList(0),
  fCentrality(0.),
@@ -93,14 +81,12 @@ AliAnalysisSPC::AliAnalysisSPC(const char *name, Bool_t useParticleWeights):
  fi1(0), fi2(0), fi3(0), fi4(0), fi5(0), fi6(0), fi7(0),  //eighth set of harmonics 
  bDoMixed(kFALSE),
  bDifferentCharge(kTRUE),
- bSetSameChargePositiv(kTRUE),			
+ bSetSameChargePositive(kTRUE),
  fMixedHarmonic(0),
  fCounterHistogram(NULL),  	
  fProfileTrackCuts(NULL)
  {
   // Constructor.
- 
-  //AliDebug(2,"AliAnalysisSPC::AliAnalysisSPC(const char *name, Bool_t useParticleWeights)"); // LAVA
   printf("AliAnalysisSPC::AliAnalysisSPC(const char *name, Bool_t useParticleWeights)\n");
 
 
@@ -112,25 +98,13 @@ AliAnalysisSPC::AliAnalysisSPC(const char *name, Bool_t useParticleWeights):
   // Initialize all arrays:
   this->InitializeArrays();
 
-  // Define input and output slots hereby       // LAVA: Maybe some cleaning there? =D
-  // Input slot #0 works with an AliFlowEventSimple
-  //DefineInput(0, AliFlowEventSimple::Class());  
-  // Input slot #1 is needed for the weights input file:
-  //if(useParticleWeights)
-  //{
-  // DefineInput(1, TList::Class());   
-  //}  
-  // Output slot #0 is reserved              
-  // Output slot #1 writes into a TList container
-
   //DefineOutput(1, TList::Class());  
 
 } // AliAnalysisSPC::AliAnalysisSPC(const char *name, Bool_t useParticleWeights): 
 
 //==========================================================================================================================================================================
 
-AliAnalysisSPC::AliAnalysisSPC(): 
- //AliAnalysisTaskSE(), // LAVA
+AliAnalysisSPC::AliAnalysisSPC():
  fHistList(NULL),
  fInputList(0),
  fCentrality(0.),
@@ -166,14 +140,12 @@ AliAnalysisSPC::AliAnalysisSPC():
  // Final results:
  bDoMixed(kFALSE),
  bDifferentCharge(kTRUE),
- bSetSameChargePositiv(kTRUE),		
+ bSetSameChargePositive(kTRUE),
  fMixedHarmonic(0),
  fCounterHistogram(NULL),  	
  fProfileTrackCuts(NULL)
 {
   // Dummy constructor.
- 
-  //AliDebug(2,"AliAnalysisSPC::AliAnalysisSPC()"); // LAVA
   printf("AliAnalysisSPC::AliAnalysisSPC()\n");
 
   this->InitializeArrays();
@@ -192,16 +164,16 @@ AliAnalysisSPC::~AliAnalysisSPC()
 
 //==========================================================================================================================================================================
 
-void AliAnalysisSPC::UserCreateOutputObjects() // LAVA: maybe you want to clean the comments?
+void AliAnalysisSPC::UserCreateOutputObjects()
 {
  // Called at every worker node to initialize.
 
  // a) Trick to avoid name clashes, part 1;
  // b) Book and nest all lists;
  // c) Book all objects;
- // *) Trick to avoid name clashes, part 2.
- // d) 
-  
+ // d) Save cut values
+ // a*) Trick to avoid name clashes, part 2.
+    
  // a) Trick to avoid name clashes, part 1:
  //Bool_t oldHistAddStatus = TH1::AddDirectoryStatus(); 
  //TH1::AddDirectory(kFALSE);
@@ -230,27 +202,15 @@ void AliAnalysisSPC::UserExec(Option_t *)
 {
  // Main loop (called for each event).
 
- // a) Get pointer to AOD event;
- // b) Do Analysis or Weights
- // c) PostData.
-
  fCounterHistogram->Fill(0.5); // Checks if User Exec is entered proberly
-
- //a) Get pointer to AOD event;
-
- //AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(InputEvent());  // LAVA
-
- //b) Do Analysis or Weights
- PhysicsAnalysis(); // LAVA aod argument.
-
- // c) PostData:
- //PostData(1,fHistList);
+    
+ //Do Analysis
+ PhysicsAnalysis();
 
 } // void AliAnalysisSPC::UserExec(Option_t *)
 
 //================================================================================================================
 
-//void AliAnalysisSPC::PhysicsAnalysis(AliAODEvent *aAODEvent)  // LAVA
 void AliAnalysisSPC::PhysicsAnalysis()
 {
 
@@ -292,7 +252,7 @@ void AliAnalysisSPC::PhysicsAnalysis()
 
 		AliJBaseTrack *aTrack = (AliJBaseTrack*)fInputList->At(iTrack); // load track
 
-		Double_t charge = aTrack->GetCharge(); //GANESHA 
+		Double_t charge = aTrack->GetCharge();
 
 		if(bDifferentCharge)
 		{
@@ -303,8 +263,8 @@ void AliAnalysisSPC::PhysicsAnalysis()
 		if(!bDifferentCharge)
 		{
 			Double_t UsedCharge = 0.;
-			if(bSetSameChargePositiv) {UsedCharge = charge;} // LAVA: more sad positiv
-			if(!bSetSameChargePositiv) {UsedCharge = -1.*charge;}
+			if(bSetSameChargePositive) {UsedCharge = charge;}
+			if(!bSetSameChargePositive) {UsedCharge = -1.*charge;}
 
 			if(UsedCharge>0.)
 			{
@@ -315,7 +275,7 @@ void AliAnalysisSPC::PhysicsAnalysis()
 		}//if(!bDifferentCharge)
 
 
-	 } // First Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut) // LAVA: Which physics selection? =D
+	 } // First Loop over the tracks if tracks should be seperated into 2 groups
  }
  else { Mult_A = nTracks; } 
 
@@ -396,7 +356,7 @@ void AliAnalysisSPC::PhysicsAnalysis()
     phi = aTrack->Phi(); // azimuthal angle
     pt = aTrack->Pt(); // Pt (transverse momentum)
     eta = aTrack->Eta();
-    charge = aTrack->GetCharge(); // charge //GANESHA
+    charge = aTrack->GetCharge(); // charge
 
     if (bUseWeights)
     {
@@ -439,8 +399,8 @@ void AliAnalysisSPC::PhysicsAnalysis()
         else
 	{
 		Double_t UsedCharge = 0.;
-		if(bSetSameChargePositiv) {UsedCharge = charge;}
-		if(!bSetSameChargePositiv) {UsedCharge = -1.*charge;}
+		if(bSetSameChargePositive) {UsedCharge = charge;}
+		if(!bSetSameChargePositive) {UsedCharge = -1.*charge;}
 
 		if(UsedCharge>0.)
 		{
@@ -523,14 +483,6 @@ void AliAnalysisSPC::PhysicsAnalysis()
 void AliAnalysisSPC::Terminate(Option_t *)
 {
  // Accessing the merged output list. 
-
- //fHistList = (TList*)GetOutputData(1);  // LAVA: I don't have it in example task, so I dunno what you wanna do.
- //if(!fHistList){exit(1);} // LAVA
-
- // Do some calculation in offline mode here:
- // ...
-
-
 } // end of void AliAnalysisSPC::Terminate(Option_t *)
 
 //==========================================================================================================================================================================
@@ -650,25 +602,16 @@ void AliAnalysisSPC::BookAndNestAllLists()
 
 //==========================================================================================================================================================================
 
-void AliAnalysisSPC::BookControlHistograms()  // LAVA: Some comment cleaning ;)
+void AliAnalysisSPC::BookControlHistograms()
 {
  // Book all control histograms.
 
  // a) Book histogram to hold pt spectra
  // b) Book histogram to hold phi spectra
  // c) Book histogram to hold eta spectra
- // d) Book histogam to hold multiplicty distributions 
- // e) Book histogam for Vertex X 
- // f) Book histogam for Vertex Y 
- // g) Book histogam for Vertex Z 
- // h) Book histogram to debug
- // i) Book histogram for number of TPC clustes 
- // j) Book histogram for number of ITC clusters 
- // k) Book histogram for chi square TPC 
- // l) Book histogram for DCAz 
- // m) Book histogram for DCAxy 
- // n) Book histogram for Charge Cut 
- // o) Book histogram Centrality 
+ // d) Book histogam to hold multiplicty distributions
+ // e) Book histogram for Charge Cut
+ // f) Book histogram Centrality
 
  for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bins
  {
@@ -692,12 +635,12 @@ void AliAnalysisSPC::BookControlHistograms()  // LAVA: Some comment cleaning ;)
 
 	 
 	 // b) Book histogram to hold phi spectra
-	 fPhiHistogram[icent][0] = new TH1F("fPhiHistAfterTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
+	 fPhiHistogram[icent][0] = new TH1F("fPhiHistAfterTrackSelection","Phi Distribution",1000,-TMath::Pi(),TMath::Pi());
 	 fPhiHistogram[icent][0]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][0]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][0]);
 
-	 fPhiHistogram[icent][1] = new TH1F("fPhiHistAfterTrackSelectionSecond","Phi Distribution",1000,0.,TMath::TwoPi()); 
+	 fPhiHistogram[icent][1] = new TH1F("fPhiHistAfterTrackSelectionSecond","Phi Distribution",1000,-TMath::Pi(),TMath::Pi()); 
 	 fPhiHistogram[icent][1]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][1]->SetLineColor(4);
 	 if(bDoMixed) { fControlHistogramsList[icent]->Add(fPhiHistogram[icent][1]); } 
@@ -722,12 +665,12 @@ void AliAnalysisSPC::BookControlHistograms()  // LAVA: Some comment cleaning ;)
 	 fMultHistogram[icent][1]->GetXaxis()->SetTitle("Multiplicity M");
 	 if(bDoMixed) { fControlHistogramsList[icent]->Add(fMultHistogram[icent][1]); }
 
-	 // n) Book histogram for Charge //GANESHA ordering
+	 // e) Book histogram for Charge
 	 fChargeHistogram[icent] = new TH1I("ChargeAfterCut","ChargeAfterCut",11,-5.5,5.5); 
 	 fControlHistogramsList[icent]->Add(fChargeHistogram[icent]); 
 
-	 // n) Book histogram Centrality 
-	 fCentralityHistogram[icent]= new TH1F("fCentralityHistogramAfter","CentralityHistogramAfter",22,0.,110.); // LAVA: I think that from the catalyst or the mapping, we are limited to 80, I will check.
+	 // f) Book histogram Centrality
+	 fCentralityHistogram[icent]= new TH1F("fCentralityHistogramAfter","CentralityHistogramAfter",22,0.,110.);
 	 fCentralityHistogram[icent]->GetXaxis()->SetTitle("Centrality");
 	 fCentralityHistogram[icent]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fCentralityHistogram[icent]);
@@ -790,18 +733,9 @@ void AliAnalysisSPC::BookFinalResultsHistograms()
   fProfileTrackCuts->GetXaxis()->SetBinLabel(3, "Multiplicity min");
   fHistList->Add(fProfileTrackCuts);
 
- Cosmetics(); // LAVA: really? =D
+ 
  
 } // void AliAnalysisSPC::BookFinalResultsHistograms()
-
-//==========================================================================================================================================================================
-
-void AliAnalysisSPC::Cosmetics()
-{
- // Book everything here.
-  
-
-} // void Cosmetics()
 
 //==========================================================================================================================================================================
 
@@ -823,7 +757,7 @@ Int_t AliAnalysisSPC::SelectCentrality(Double_t CentralityValue)
 
 //==========================================================================================================================================================================
 
-void AliAnalysisSPC::FisherYatesRandomizing(Int_t Mult, Int_t *RandomIndex) // LAVA: The tabs look weird in my sublime o.o
+void AliAnalysisSPC::FisherYatesRandomizing(Int_t Mult, Int_t *RandomIndex)
 {
   if(gRandom) delete gRandom;
   gRandom = new TRandom3(0);

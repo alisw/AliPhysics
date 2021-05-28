@@ -76,7 +76,7 @@ class AliJSPCTask : public AliAnalysisTaskSE {
   void JSPCSetCorrSet8(Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g)
   {fJSPCNumberEighth=Number; fJSPCi1=a; fJSPCi2=b; fJSPCi3=c; fJSPCi4=d; fJSPCi5=e; fJSPCi6=f; fJSPCi7=g;}
   void JSPCSetMixed(Bool_t top, Int_t nop, Bool_t DifferentCharge, Bool_t PositiveCharge)
-  {bJSPCDoMixed = top; fJSPCMixedHarmonic = nop; bJSPCDifferentCharge = DifferentCharge; bJSPCSetSameChargePositiv = PositiveCharge;}
+  {bJSPCDoMixed = top; fJSPCMixedHarmonic = nop; bJSPCDifferentCharge = DifferentCharge; bJSPCSetSameChargePositive = PositiveCharge;}
 
   void JSPCSetCentrality(Float_t cen0, Float_t cen1, Float_t cen2, Float_t cen3, Float_t cen4, Float_t cen5, Float_t cen6, Float_t cen7, Float_t cen8, Float_t cen9, Float_t cen10, Float_t cen11, Float_t cen12, Float_t cen13, Float_t cen14, Float_t cen15, Float_t cen16 )
  {fJSPCcent_0 = cen0; fJSPCcent_1 = cen1; fJSPCcent_2 = cen2; fJSPCcent_3 = cen3; fJSPCcent_4 = cen4; fJSPCcent_5 = cen5; fJSPCcent_6 = cen6; fJSPCcent_7 = cen7; fJSPCcent_8 = cen8; fJSPCcent_9 = cen9; fJSPCcent_10 = cen10; fJSPCcent_11 = cen11; fJSPCcent_12 = cen12; fJSPCcent_13 = cen13; fJSPCcent_14 = cen14; fJSPCcent_15 = cen15; fJSPCcent_16 = cen16;} 
@@ -90,7 +90,6 @@ class AliJSPCTask : public AliAnalysisTaskSE {
 
   AliJCatalystTask *fJCatalystTask;  //
   TString           fJCatalystTaskName; // Name for JCatalyst task
-  //Bool_t fFirstEvent;   // LAVA
   Bool_t      fIsMC;       // MC data or real data
   AliAnalysisSPC *fSPC;
 
@@ -135,7 +134,7 @@ class AliJSPCTask : public AliAnalysisTaskSE {
           //        if kFALSE mixed particle analysis between same charge 
           //        (only positiv or only negativ particles)
           // Default kTRUE
-  Bool_t bJSPCSetSameChargePositiv;     // used if bDifferentCharge: if kTRUE use positiv, if kFALSE use negative (default kTRUE)
+  Bool_t bJSPCSetSameChargePositive;     // used if bDifferentCharge: if kTRUE use positiv, if kFALSE use negative (default kTRUE)
   Int_t fJSPCMixedHarmonic;     // Harmonic of special mixed particle analysis
 
   ClassDef(AliJSPCTask, 1); 

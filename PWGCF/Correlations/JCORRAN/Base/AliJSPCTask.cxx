@@ -33,7 +33,6 @@ AliJSPCTask::AliJSPCTask() :
   AliAnalysisTaskSE("JSPCTask"),
 	fJCatalystTask(NULL),
 	fJCatalystTaskName("JCatalystTask"),
-    //fFirstEvent(kTRUE),   // LAVA
 	fIsMC(kFALSE),
 	fSPC(NULL),
 	bJSPCSaveAllQA(kTRUE),
@@ -61,7 +60,7 @@ AliJSPCTask::AliJSPCTask() :
   fJSPCi1(0), fJSPCi2(0), fJSPCi3(0), fJSPCi4(0), fJSPCi5(0), fJSPCi6(0), fJSPCi7(0),  //eighth set of harmonics 
   bJSPCDoMixed(kFALSE),
   bJSPCDifferentCharge(kTRUE),
-  bJSPCSetSameChargePositiv(kTRUE),			
+  bJSPCSetSameChargePositive(kTRUE),
   fJSPCMixedHarmonic(0)
 {
 }
@@ -71,7 +70,6 @@ AliJSPCTask::AliJSPCTask(const char *name):
 	AliAnalysisTaskSE(name), 
 	fJCatalystTask(NULL),
 	fJCatalystTaskName("JCatalystTask"),
-    //fFirstEvent(kTRUE), // LAVA
 	fIsMC(kFALSE),
 	fSPC(NULL),
 	bJSPCSaveAllQA(kTRUE),
@@ -99,7 +97,7 @@ AliJSPCTask::AliJSPCTask(const char *name):
   fJSPCi1(0), fJSPCi2(0), fJSPCi3(0), fJSPCi4(0), fJSPCi5(0), fJSPCi6(0), fJSPCi7(0),  //eighth set of harmonics 
   bJSPCDoMixed(kFALSE),
   bJSPCDifferentCharge(kTRUE),
-  bJSPCSetSameChargePositiv(kTRUE),			
+  bJSPCSetSameChargePositive(kTRUE),
   fJSPCMixedHarmonic(0)
 {
 	// Constructor
@@ -108,11 +106,10 @@ AliJSPCTask::AliJSPCTask(const char *name):
 }
 
 //____________________________________________________________________________
-AliJSPCTask::AliJSPCTask(const AliJSPCTask& ap) : // LAVA for added members
+AliJSPCTask::AliJSPCTask(const AliJSPCTask& ap) :
 	AliAnalysisTaskSE(ap.GetName()), 
 	fJCatalystTask(ap.fJCatalystTask),
 	fJCatalystTaskName(ap.fJCatalystTaskName),
-    //fFirstEvent(ap.fFirstEvent), // LAVA
 	fIsMC(ap.fIsMC),
 	fSPC(ap.fSPC),
   bJSPCSaveAllQA(ap.bJSPCSaveAllQA),
@@ -140,7 +137,7 @@ AliJSPCTask::AliJSPCTask(const AliJSPCTask& ap) : // LAVA for added members
   fJSPCi1(ap.fJSPCi1), fJSPCi2(ap.fJSPCi2), fJSPCi3(ap.fJSPCi3), fJSPCi4(ap.fJSPCi4), fJSPCi5(ap.fJSPCi5), fJSPCi6(ap.fJSPCi6), fJSPCi7(ap.fJSPCi7),  //eighth set of harmonics 
   bJSPCDoMixed(ap.bJSPCDoMixed),
   bJSPCDifferentCharge(ap.bJSPCDifferentCharge),
-  bJSPCSetSameChargePositiv(ap.bJSPCSetSameChargePositiv),  // LAVA: Can we add a "e" at this poor positiv? =D   
+  bJSPCSetSameChargePositive(ap.bJSPCSetSameChargePositive),
   fJSPCMixedHarmonic(ap.fJSPCMixedHarmonic)
 { 
 
@@ -201,7 +198,6 @@ void AliJSPCTask::UserCreateOutputObjects()
 	OpenFile(1);
 
 	fSPC->UserCreateOutputObjects();
-	//fFirstEvent = kTRUE; // LAVA
 	PostData(1, fSPC->GetMainList());
 }
 
@@ -213,7 +209,6 @@ void AliJSPCTask::UserExec(Option_t* /*option*/)
 	if(!((Entry()-1)%100))  AliInfo(Form(" Processing event # %lld",  Entry()));
 
 	if( fJCatalystTask->GetJCatalystEntry() != fEntry ) return;
-	//if( fFirstEvent ) { fFirstEvent = kFALSE; }  // LAVA
 	if(fJCatalystTask->GetCentrality()>80. || fJCatalystTask->GetCentrality()<0.) return;
 	if(fDebug > 5) cout << Form("Event %d:%d",fEntry, fJCatalystTask->GetJCatalystEntry()) << endl;
 	if(fDebug > 5) cout << Form("%s, Nch = %d, cent=%.0f",GetJCatalystTaskName().Data(), fJCatalystTask->GetInputList()->GetEntriesFast(), fJCatalystTask->GetCentrality()) << endl;

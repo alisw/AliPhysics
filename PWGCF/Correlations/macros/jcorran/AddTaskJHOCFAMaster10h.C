@@ -1,4 +1,5 @@
-AliAnalysisTask *AddTaskJHOCFAMaster10h (TString taskName = "JHOCFAMaster10h", double ptMin = 0.5, Bool_t removebadarea = kFALSE)
+AliAnalysisTask *AddTaskJHOCFAMaster10h (TString taskName = "JHOCFAMaster10h", double ptMin = 0.5, Bool_t removebadarea = kFALSE,
+  Bool_t saveCatalystQA = kFALSE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -36,7 +37,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster10h (TString taskName = "JHOCFAMaster10h", d
   // TBI: Do we need the flag for outliers here?
 
     fJCatalyst[i]->SelectCollisionCandidates(configTrigger);
-    fJCatalyst[i]->SetSaveAllQA(kTRUE); 
+    fJCatalyst[i]->SetSaveAllQA(saveCatalystQA); 
     fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
     fJCatalyst[i]->SetInitializeCentralityArray();
 

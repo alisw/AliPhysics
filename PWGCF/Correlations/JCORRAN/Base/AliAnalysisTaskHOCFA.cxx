@@ -117,7 +117,6 @@ void AliAnalysisTaskHOCFA::UserExec(Option_t *option)
     fHistoPt[fCentralityBin]->Fill(aTrack->Pt());
     fHistoEta[fCentralityBin]->Fill(aTrack->Eta());
     iPhi[iTrack] = aTrack->Phi();
-    printf("Just accessed angle: %.2f\n", iPhi[iTrack]);  // LAVA
     fHistoPhi[fCentralityBin]->Fill(iPhi[iTrack]);
     fHistoCharge[fCentralityBin]->Fill(aTrack->GetCharge());
 
@@ -186,7 +185,7 @@ void AliAnalysisTaskHOCFA::InitialiseArrayMembers()
 void AliAnalysisTaskHOCFA::SetCentralityArray(TString values)
 {
 // Insert the elements of the string into the centrality array.
-  printf("Set the centrality binning.");
+  printf("Set the centrality binning.\n");
 
   Float_t value = 0;  // Current centrality value in the string.
   Int_t index = 0;  // Current index in the array.
@@ -195,8 +194,9 @@ void AliAnalysisTaskHOCFA::SetCentralityArray(TString values)
 
 // Get the values in the string one by one.
   while (sString >> value) {
+    if (index > fNCentralityBins+1) {return;}
     fCentralityArray[index] = value;
-    index++;  // TBD: Does it correspond to fCentralityBins?
+    index++;
   }
 }
 
@@ -221,7 +221,7 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
   for (Int_t i = 0; i < fNCentralityBins; i++) {
   // Book the needed centrality lists.
     fCentralityList[i] = new TList();
-    fCentralityList[i]->SetName(Form("Centrality=>%.1f-%.1f", fCentralityArray[i], fCentralityArray[i+1]));
+    fCentralityList[i]->SetName(Form("Centrality_%.1f-%.1f", fCentralityArray[i], fCentralityArray[i+1]));
     fCentralityList[i]->SetOwner(kTRUE);
     fMainList->Add(fCentralityList[i]);
 
@@ -250,7 +250,7 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
     fHistoEta[i]->SetStats(kTRUE);
     fCentralityList[i]->Add(fHistoEta[i]);
 
-    fHistoPhi[i] = new TH1D("", "", 630, 0., 6.3);
+    fHistoPhi[i] = new TH1D("", "", 630, -TMath::Pi(),TMath::Pi());
     fHistoPhi[i]->SetName(Form("fHistoPhi_Bin%d", i));
     fHistoPhi[i]->SetTitle(Form("Azimuthal angle distribution, bin%d", i));
     fHistoPhi[i]->SetStats(kTRUE);
@@ -264,7 +264,7 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
 
     for (Int_t j = 0; j < fNCombi; j++) {
       fCorrelTerms[j][i] = new TProfile("", "", 15, 0., 15.);
-      fCorrelTerms[j][i]->SetName(Form("fCorrelTerms_Combi%d_Bin%d", j, i));
+      fCorrelTerms[j][i]->SetName(Form("fCorrelTerms_Combi%d%d%d_Bin%d", fHarmoArray[j][0], fHarmoArray[j][1], fHarmoArray[j][2], i));
       fCorrelTerms[j][i]->Sumw2();
       fCentralityList[i]->Add(fCorrelTerms[j][i]);
     }
@@ -275,7 +275,7 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
 void AliAnalysisTaskHOCFA::SetHarmoArray(TString combiString)
 {
 // Divide the string of harmonics into the different combinations of 3 harmonics.
-  printf("Select the arrays of combinations of harmonics.");
+  printf("Select the arrays of combinations of harmonics.\n");
 
   Int_t value = 0;  // Current harmonic in the string.
   Int_t row = 0;  // Current row in the array.
