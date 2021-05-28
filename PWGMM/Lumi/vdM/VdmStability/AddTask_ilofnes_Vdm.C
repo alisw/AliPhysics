@@ -1,4 +1,4 @@
-AliAnalysisTaskVdmStability* AddTask_ilofnes_Vdm2(TString name = "name", char *year = "16", Bool_t fillTTree = false, Float_t diffMin = 5.5, Float_t diffMax = 11.5, Float_t sumMin = 11.5, Float_t sumMax = 17.5) {
+AliAnalysisTaskVdmStability* AddTask_ilofnes_Vdm(TString name = "name", char *year = "16", Bool_t fillTTree = false, Float_t diffMin = 5.5, Float_t diffMax = 11.5, Float_t sumMin = 11.5, Float_t sumMax = 17.5) {
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   
