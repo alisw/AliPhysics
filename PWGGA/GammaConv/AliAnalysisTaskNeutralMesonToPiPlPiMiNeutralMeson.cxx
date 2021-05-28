@@ -110,6 +110,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fPDGMassChargedPion(-1),
   fPDGCodeNDM(-1),
   fPDGCodeAnalyzedMeson(-1),
+  fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt(kFALSE),
   fEnableAsymmetryPlotCombCPionVsNPion(kFALSE),
   fEnableAsymmetryPlot_NotAccepted(kFALSE),
   enableDalitzAllPt(kFALSE),
@@ -246,6 +247,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTrueMotherPiPlPiMiNDMInvMassPt(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM(nullptr),
+  fHistoTrueMotherPiPlPiMiNDMAdditionalInvMassPtSubNDM(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromDifferent(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromEtaOmega(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromRho(nullptr),
@@ -417,6 +419,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fPDGMassChargedPion(-1),
   fPDGCodeNDM(-1),
   fPDGCodeAnalyzedMeson(-1),
+  fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt(kFALSE),
   fEnableAsymmetryPlotCombCPionVsNPion(kFALSE),
   fEnableAsymmetryPlot_NotAccepted(kFALSE),
   enableDalitzAllPt(kFALSE),
@@ -553,6 +556,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTrueMotherPiPlPiMiNDMInvMassPt(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM(nullptr),
+  fHistoTrueMotherPiPlPiMiNDMAdditionalInvMassPtSubNDM(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromDifferent(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromEtaOmega(nullptr),
   fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromRho(nullptr),
@@ -841,6 +845,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   }
 
   //Enable Histograms
+  fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt = kTRUE;
   if( fDoMesonQA>0 ) {
     //fNDMRecoMode: 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     //fClusterCutArray->At(iCut))->GetClusterType(): 1=EMCAL, 2=PHOS, 3=DCAL, 4=EMCAL+DCAL, 0=All
@@ -1710,6 +1715,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fHistoTrueMotherPiPlPiMiNDMInvMassPt              = new TH2F*[fnCuts];
     fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM        = new TH2F*[fnCuts];
     fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM    = new TH2F*[fnCuts];
+    if (fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt){
+      fHistoTrueMotherPiPlPiMiNDMAdditionalInvMassPtSubNDM = new TH2F*[fnCuts];
+    }
     fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromDifferent  = new TH2F*[fnCuts];
     fHistoTruePiPlPiMiNDMCombinatoricalInvMassPt        = new TH2F*[fnCuts];
     fHistoTruePiPlPiMiNDMContaminationInvMassPt         = new TH2F*[fnCuts];
@@ -2250,6 +2258,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
       fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
       fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM[iCut]);
+
+      if (fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt){
+        fHistoTrueMotherPiPlPiMiNDMAdditionalInvMassPtSubNDM[iCut]       = new TH2F("ESD_TrueMotherPiPlPiMiNDM_Additional_InvMass_SubNDM_Pt","ESD_TrueMotherPiPlPiMiNDM_Additional_InvMass_SubNDM_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+        fHistoTrueMotherPiPlPiMiNDMAdditionalInvMassPtSubNDM[iCut]->Sumw2();
+        fHistoTrueMotherPiPlPiMiNDMAdditionalInvMassPtSubNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
+        fHistoTrueMotherPiPlPiMiNDMAdditionalInvMassPtSubNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiNDMAdditionalInvMassPtSubNDM[iCut]);
+      }
 
       fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromDifferent[iCut]       = new TH2F("ESD_TrueMotherPiPlPiMiNDMInvMassPt_FromDifferent","ESD_TrueMotherPiPlPiMiNDMInvMassPt_FromDifferent",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
       fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromDifferent[iCut]->Sumw2();
@@ -3652,6 +3668,22 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     }
   }
 
+  Int_t tmpGammaMotherlabel = gamma0MotherLabel;
+  Bool_t previouslyNotFoundTrueMesons = kFALSE;
+  Int_t SaftyLoopCounter = 0;
+  while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
+    SaftyLoopCounter++;
+    if(((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 111 && ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 221) {
+      tmpGammaMotherlabel = ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->GetMother();
+    } else {
+      if (tmpGammaMotherlabel != gamma0MotherLabel) {
+        previouslyNotFoundTrueMesons = kTRUE;
+      }
+      gamma0MotherLabel = tmpGammaMotherlabel;
+      break;
+    }
+  }
+
   if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
 
   Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); 	// get most probable MC label
@@ -3661,6 +3693,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     // Daughters Gamma 1
     TParticle * gammaMC1 = (TParticle*)fMCEvent->Particle(gamma1MCLabel);
     if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){		// largest component is electro magnetic
+      tmpGammaMotherlabel = gammaMC1->GetMother(0);
       // get mother of interest (pi0 or eta)
       if (TrueGammaCandidate1->IsLargestComponentPhoton()){														// for photons its the direct mother
         gamma1MotherLabel=gammaMC1->GetMother(0);
@@ -3668,6 +3701,20 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
                 if (TrueGammaCandidate1->IsConversion() && gammaMC1->GetMother(0)>-1) gamma1MotherLabel=fMCEvent->Particle(gammaMC1->GetMother(0))->GetMother(0);
         else gamma1MotherLabel=gammaMC1->GetMother(0);
       }
+    }
+  }
+
+  SaftyLoopCounter = 0;
+  while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
+    SaftyLoopCounter++;
+    if(((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 111 && ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 221) {
+      tmpGammaMotherlabel = ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->GetMother();
+    } else {
+      if (tmpGammaMotherlabel != gamma1MotherLabel) {
+        previouslyNotFoundTrueMesons = kTRUE;
+      }
+      gamma1MotherLabel = tmpGammaMotherlabel;
+      break;
     }
   }
 
@@ -3679,7 +3726,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
   }
 
   if(isTrueNDM){// True Pion
-    Pi0Candidate->SetTrueMesonValue(1);
+    if (previouslyNotFoundTrueMesons){
+      Pi0Candidate->SetTrueMesonValue(11);
+    } else {
+      Pi0Candidate->SetTrueMesonValue(1);
+    }
     Pi0Candidate->SetMCLabel(gamma0MotherLabel);
     if(!fDoLightOutput){
       fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
@@ -3718,10 +3769,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
   Bool_t isTrueNDM = kFALSE;
   Int_t gamma0MCLabel = TrueGammaCandidate0->GetCaloPhotonMCLabel(0); 	// get most probable MC label
   Int_t gamma0MotherLabel = -1;
+  Int_t tmpGammaMotherlabel = -1;
 
   if(gamma0MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
     AliAODMCParticle * gammaMC0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MCLabel));
     if (TrueGammaCandidate0->IsLargestComponentPhoton() || TrueGammaCandidate0->IsLargestComponentElectron()){		// largest component is electro magnetic
+      tmpGammaMotherlabel = gammaMC0->GetMother();
       // get mother of interest (pi0 or eta)
       if (TrueGammaCandidate0->IsLargestComponentPhoton()){														// for photons its the direct mother
         gamma0MotherLabel=gammaMC0->GetMother();
@@ -3736,6 +3789,21 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     }
   }
 
+  Bool_t previouslyNotFoundTrueMesons = kFALSE;
+  Int_t SaftyLoopCounter = 0;
+  while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
+    SaftyLoopCounter++;
+    if(((AliAODMCParticle*)AODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((AliAODMCParticle*)AODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+      tmpGammaMotherlabel = ((AliAODMCParticle*)AODMCTrackArray->At(tmpGammaMotherlabel))->GetMother();
+    } else {
+      if (tmpGammaMotherlabel != gamma0MotherLabel) {
+        previouslyNotFoundTrueMesons = kTRUE;
+      }
+      gamma0MotherLabel = tmpGammaMotherlabel;
+      break;
+    }
+  }
+
   if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
 
   Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); 	// get most probable MC label
@@ -3745,6 +3813,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     // Daughters Gamma 1
     AliAODMCParticle *  gammaMC1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MCLabel));
     if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){		// largest component is electro magnetic
+      tmpGammaMotherlabel = gammaMC1->GetMother();
       // get mother of interest (pi0 or eta)
       if (TrueGammaCandidate1->IsLargestComponentPhoton()){														// for photons its the direct mother
         gamma1MotherLabel=gammaMC1->GetMother();
@@ -3756,6 +3825,19 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
       }
     }
   }
+  SaftyLoopCounter = 0;
+  while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
+    SaftyLoopCounter++;
+    if(((AliAODMCParticle*)AODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((AliAODMCParticle*)AODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+      tmpGammaMotherlabel = ((AliAODMCParticle*)AODMCTrackArray->At(tmpGammaMotherlabel))->GetMother();
+    } else {
+      if (tmpGammaMotherlabel != gamma1MotherLabel) {
+        previouslyNotFoundTrueMesons = kTRUE;
+      }
+      gamma1MotherLabel = tmpGammaMotherlabel;
+      break;
+    }
+  }
 
   if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
     if(((AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == fPDGCodeNDM){
@@ -3765,7 +3847,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
   }
 
   if(isTrueNDM){// True Pion
-    Pi0Candidate->SetTrueMesonValue(1);
+    if (previouslyNotFoundTrueMesons){
+      Pi0Candidate->SetTrueMesonValue(11);
+    } else {
+      Pi0Candidate->SetTrueMesonValue(1);
+    }
     Pi0Candidate->SetMCLabel(gamma0MotherLabel);
     if(!fDoLightOutput){
       fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
@@ -6602,7 +6688,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   //if(((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->GetPdgCode() == fPDGCodeNDM) isTrueNDM=kTRUE;
   //if(isTrueNDM){// True Pion
     //Pi0Candidate->SetTrueMesonValue(1);
+  Bool_t trueMesonAdditionalFlag  = kFALSE;
   Int_t trueMesonFlag  = TrueNeutralDecayMesonCandidate->GetTrueMesonValue();
+  if (trueMesonFlag>=10){
+    trueMesonFlag-=10;
+    trueMesonAdditionalFlag = kTRUE;
+  }
   Int_t NDMMCLabel     = TrueNeutralDecayMesonCandidate->GetMCLabel();
 
   Float_t weighted= fWeightJetJetMC;
@@ -6737,6 +6828,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
     AliAODConversionMother mesontmp(&NDMtmp,TrueVirtualParticleCandidate);
 
     fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM[fiCut]->Fill(mesontmp.M(),mesontmp.Pt(),weighted);
+
+    if (trueMesonAdditionalFlag){
+      if (fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt){
+        fHistoTrueMotherPiPlPiMiNDMAdditionalInvMassPtSubNDM[fiCut]->Fill(mesoncand->M()-(TrueNeutralDecayMesonCandidate->M()-fPDGMassNDM), mesoncand->Pt(), weighted);
+      }
+    }
 
 
     AliAODConversionMother PosPiontmp, NegPiontmp;
@@ -6900,7 +6997,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   //if(((AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == fPDGCodeNDM) isTrueNDM=kTRUE;
   //if(isTrueNDM){// True Pion
     //Pi0Candidate->SetTrueMesonValue(1);
+  Bool_t trueMesonAdditionalFlag  = kFALSE;
   Int_t trueMesonFlag  = TrueNeutralDecayMesonCandidate->GetTrueMesonValue();
+  if (trueMesonFlag>=10){
+    trueMesonFlag-=10;
+    trueMesonAdditionalFlag = kTRUE;
+  }
   Int_t NDMMCLabel     = TrueNeutralDecayMesonCandidate->GetMCLabel();
 
   Float_t weighted= fWeightJetJetMC;
@@ -7042,6 +7144,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
     AliAODConversionMother mesontmp(&NDMtmp,TrueVirtualParticleCandidate);
 
     fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM[fiCut]->Fill(mesontmp.M(),mesontmp.Pt(),weighted);
+
+    if (trueMesonAdditionalFlag){
+      if (fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt){
+        fHistoTrueMotherPiPlPiMiNDMAdditionalInvMassPtSubNDM[fiCut]->Fill(mesoncand->M()-(TrueNeutralDecayMesonCandidate->M()-fPDGMassNDM), mesoncand->Pt(), weighted);
+      }
+    }
 
     if(fDoMesonQA>0){
       //Dalitz plot
