@@ -854,7 +854,7 @@ const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};
 //Add h-h histo
 
 // defining bins for dPhi distributions
-   const Int_t nbPhiBins = 72;//mustafa change
+   const Int_t nbPhiBins = 32;//mustafa change
    const Double_t kPi = TMath::Pi();
    Double_t PhiMin = -kPi/2.;
    Double_t PhiMax = -kPi/2. + 2*kPi;
@@ -863,7 +863,7 @@ const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};
    for (Int_t i=0; i<nbPhiBins; i++) { Phibins[i+1] = Phibins[i] + (PhiMax - PhiMin)/nbPhiBins; }
 
    // defining bins for dEta distributions
-   const Int_t nbEtaBins = 72;//mustafa change
+   const Int_t nbEtaBins = 32;//mustafa change
    Double_t EtaMin = -1.5;
    Double_t EtaMax = 1.5;
    Double_t Etabins[nbEtaBins+1] = {0.};
