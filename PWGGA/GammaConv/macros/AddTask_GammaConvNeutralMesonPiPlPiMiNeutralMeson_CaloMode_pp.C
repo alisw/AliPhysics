@@ -1125,6 +1125,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 933)  { //EDC 13TeV MB, Ch.Pi 520MeV, TOF Cut 3
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51073l","0103103100000000","0453503000000000"); // INT7
 
+    //-----
+    //Omega Meson Cut Variations
+    //-----
+  } else if(trainConfig == 950)  { //EDC 13TeV MB, rapidity 5 (0.85)
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","045350j000000000"); // INT7
+  } else if(trainConfig == 951)  { //EDC 13TeV MB, rapidity 5 (0.85)
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","045350k000000000"); // INT7
 
 
     //-----

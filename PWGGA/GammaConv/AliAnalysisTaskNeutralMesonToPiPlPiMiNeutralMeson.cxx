@@ -111,6 +111,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fPDGCodeNDM(-1),
   fPDGCodeAnalyzedMeson(-1),
   fEnableAsymmetryPlotCombCPionVsNPion(kFALSE),
+  fEnableAsymmetryPlot_NotAccepted(kFALSE),
   enableDalitzAllPt(kFALSE),
   enableDalitzLowPt(kFALSE),
   enableDalitzMidPt(kFALSE),
@@ -146,6 +147,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoMotherInvMassPt(nullptr),
   fHistoMotherInvMassPtRejectedKinematic(nullptr),
   fHistoAsymmetryPlotCombCPionVsNPion(nullptr),
+  fHistoAsymmetryPlotCombCPionVsNPion_NotAccepted(nullptr),
   fHistoDalitzPlotPosFixedPzNDM(nullptr),
   fHistoDalitzPlotNegFixedPzNDM(nullptr),
   fHistoDalitzPlotPosSubNDM(nullptr),
@@ -416,6 +418,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fPDGCodeNDM(-1),
   fPDGCodeAnalyzedMeson(-1),
   fEnableAsymmetryPlotCombCPionVsNPion(kFALSE),
+  fEnableAsymmetryPlot_NotAccepted(kFALSE),
   enableDalitzAllPt(kFALSE),
   enableDalitzLowPt(kFALSE),
   enableDalitzMidPt(kFALSE),
@@ -451,6 +454,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoMotherInvMassPt(nullptr),
   fHistoMotherInvMassPtRejectedKinematic(nullptr),
   fHistoAsymmetryPlotCombCPionVsNPion(nullptr),
+  fHistoAsymmetryPlotCombCPionVsNPion_NotAccepted(nullptr),
   fHistoDalitzPlotPosFixedPzNDM(nullptr),
   fHistoDalitzPlotNegFixedPzNDM(nullptr),
   fHistoDalitzPlotPosSubNDM(nullptr),
@@ -852,6 +856,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         enableDalitzHighPt=kTRUE;
     } else { //Calo-Calo
         fEnableAsymmetryPlotCombCPionVsNPion=kTRUE;
+        fEnableAsymmetryPlot_NotAccepted=kTRUE;
         enableDalitzLowPt=kTRUE;
         enableDalitzMidPt=kTRUE;
         enableDalitzHighPt=kTRUE;
@@ -1020,6 +1025,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoPionTPCdEdx           = new TH2F*[fnCuts];
       if (fEnableAsymmetryPlotCombCPionVsNPion){
         fHistoAsymmetryPlotCombCPionVsNPion   = new TH2F*[fnCuts];
+      }
+      if (fEnableAsymmetryPlot_NotAccepted){
+        fHistoAsymmetryPlotCombCPionVsNPion_NotAccepted     = new TH2F*[fnCuts];
       }
       if (enableDalitzAllPt){
         fHistoDalitzPlotPosFixedPzNDM          = new TH2F*[fnCuts];
@@ -1346,6 +1354,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoAsymmetryPlotCombCPionVsNPion[iCut]->GetXaxis()->SetTitle(Form("alpha = (p_{L, #pi^{+}#pi^{-}}-p_{L, %s})/(p_{L, #pi^{+}#pi^{-}}+p_{L, %s})", NameNDMLatex.Data(), NameNDMLatex.Data()));
           fHistoAsymmetryPlotCombCPionVsNPion[iCut]->Sumw2();
           fESDList[iCut]->Add(fHistoAsymmetryPlotCombCPionVsNPion[iCut]);
+        }
+
+        if (fEnableAsymmetryPlot_NotAccepted){
+
+          fHistoAsymmetryPlotCombCPionVsNPion_NotAccepted[iCut] = new TH2F("ESD_Asymmetry_CombCPionVsNPion_NotAccepted","ESD_Asymmetry_CombCPionVsNPion_NotAccepted", 200, -1., 1., HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
+          fHistoAsymmetryPlotCombCPionVsNPion_NotAccepted[iCut]->GetYaxis()->SetTitle(Form("p_{T, %s} (GeV/c^{2})", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistoAsymmetryPlotCombCPionVsNPion_NotAccepted[iCut]->GetXaxis()->SetTitle(Form("alpha = (p_{L, #pi^{+}#pi^{-}}-p_{L, %s})/(p_{L, #pi^{+}#pi^{-}}+p_{L, %s})", NameNDMLatex.Data(), NameNDMLatex.Data()));
+          fHistoAsymmetryPlotCombCPionVsNPion_NotAccepted[iCut]->Sumw2();
+          fESDList[iCut]->Add(fHistoAsymmetryPlotCombCPionVsNPion_NotAccepted[iCut]);
         }
         //---------------------------------------
         //Dalitz All Pt
@@ -5767,77 +5784,84 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
                    &&(Mass_PiPl_NDM_Sub<MassCutValue_PiPlMi_NDM)
                    &&(Mass_PiMi_NDM_Sub<MassCutValue_PiPlMi_NDM)
                    )){
-            if(KinematicCut(&NegPiontmp, &PosPiontmp, neutralDecayMeson, mesoncand)){
-              if(!fDoLightOutput){
-                fHistoAngleHNMesonNDM[fiCut]->Fill(mesoncand->Pt(),neutralDecayMeson->Angle(mesoncand->Vect()), fWeightJetJetMC);
-                fHistoAngleHNMesonPiPl[fiCut]->Fill(mesoncand->Pt(),PosPiontmp.Angle(mesoncand->Vect()), fWeightJetJetMC);
-                fHistoAngleHNMesonPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp.Angle(mesoncand->Vect()), fWeightJetJetMC);
-                fHistoAngleNDMPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp.Angle(neutralDecayMeson->Vect()), fWeightJetJetMC);
-                fHistoAnglePiPlPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp.Angle(PosPiontmp.Vect()), fWeightJetJetMC);
-                fHistoAnglePiPlNDM[fiCut]->Fill(mesoncand->Pt(),PosPiontmp.Angle(neutralDecayMeson->Vect()), fWeightJetJetMC);
-                fHistoAngleHNMesonPiPlPiMi[fiCut]->Fill(mesoncand->Pt(),vParticle->Angle(mesoncand->Vect()), fWeightJetJetMC);
-                fHistoAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp.Angle(mesoncand->Vect()))+(NegPiontmp.Angle(PosPiontmp.Vect()))+(PosPiontmp.Angle(neutralDecayMeson->Vect()))), fWeightJetJetMC);
-              }
+            Double_t asymmetry_alpha = GetAlphaLFromLorentz(PosNegPionTLVtmp, NDMTLVtmp);
+            Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+            if (MesonIsSelectedByAlphaCut(asymmetry_alpha, mesoncand->Pt(), AlphaInTaskMode)){
+              if(KinematicCut(&NegPiontmp, &PosPiontmp, neutralDecayMeson, mesoncand)){
+                if(!fDoLightOutput){
+                  fHistoAngleHNMesonNDM[fiCut]->Fill(mesoncand->Pt(),neutralDecayMeson->Angle(mesoncand->Vect()), fWeightJetJetMC);
+                  fHistoAngleHNMesonPiPl[fiCut]->Fill(mesoncand->Pt(),PosPiontmp.Angle(mesoncand->Vect()), fWeightJetJetMC);
+                  fHistoAngleHNMesonPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp.Angle(mesoncand->Vect()), fWeightJetJetMC);
+                  fHistoAngleNDMPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp.Angle(neutralDecayMeson->Vect()), fWeightJetJetMC);
+                  fHistoAnglePiPlPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp.Angle(PosPiontmp.Vect()), fWeightJetJetMC);
+                  fHistoAnglePiPlNDM[fiCut]->Fill(mesoncand->Pt(),PosPiontmp.Angle(neutralDecayMeson->Vect()), fWeightJetJetMC);
+                  fHistoAngleHNMesonPiPlPiMi[fiCut]->Fill(mesoncand->Pt(),vParticle->Angle(mesoncand->Vect()), fWeightJetJetMC);
+                  fHistoAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp.Angle(mesoncand->Vect()))+(NegPiontmp.Angle(PosPiontmp.Vect()))+(PosPiontmp.Angle(neutralDecayMeson->Vect()))), fWeightJetJetMC);
+                }
 
-              // Subtract mass of used pi0 candidate and then add PDG mass to get to right range again
-              fHistoMotherInvMassSubNDM[fiCut]->Fill(mesoncand->M()-(neutralDecayMeson->M()-fPDGMassNDM),mesoncand->Pt(), fWeightJetJetMC);
+                // Subtract mass of used pi0 candidate and then add PDG mass to get to right range again
+                fHistoMotherInvMassSubNDM[fiCut]->Fill(mesoncand->M()-(neutralDecayMeson->M()-fPDGMassNDM),mesoncand->Pt(), fWeightJetJetMC);
 
-              AliAODConversionMother mesontmp(&NDMtmp,vParticle);
-              fHistoMotherInvMassFixedPzNDM[fiCut]->Fill(mesontmp.M(),mesontmp.Pt(), fWeightJetJetMC);
-              fHistoMotherInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
+                AliAODConversionMother mesontmp(&NDMtmp,vParticle);
+                fHistoMotherInvMassFixedPzNDM[fiCut]->Fill(mesontmp.M(),mesontmp.Pt(), fWeightJetJetMC);
+                fHistoMotherInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
 
-              if(fDoMesonQA>0){
-                //Asymmetry Plot
-                Double_t asymmetry_alpha = GetAlphaLFromLorentz(PosNegPionTLVtmp, NDMTLVtmp);
-                if (fEnableAsymmetryPlotCombCPionVsNPion){
-                    fHistoAsymmetryPlotCombCPionVsNPion[fiCut]->Fill(asymmetry_alpha, mesoncand->Pt(), fWeightJetJetMC);
-                }
-                //Dalitz All Pt
-                if (enableDalitzAllPt){
-                  fHistoDalitzPlotPosFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M(), fWeightJetJetMC );
-                  fHistoDalitzPlotNegFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M(), fWeightJetJetMC );
-                  fHistoDalitzPlotPosSubNDM[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
-                  fHistoDalitzPlotNegSubNDM[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
-                }
-                //Dalitz Low Pt
-                if (enableDalitzLowPt){
-                  if ((mesoncand->Pt()>HistoDalitzPtRangeMin_LowPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_LowPt)){
-                    fHistoDalitzPlotPosFixedPzNDM_LowPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M(), fWeightJetJetMC );
-                    fHistoDalitzPlotNegFixedPzNDM_LowPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M(), fWeightJetJetMC );
-                    fHistoDalitzPlotPosSubNDM_LowPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
-                    fHistoDalitzPlotNegSubNDM_LowPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
+                if(fDoMesonQA>0){
+                  //Asymmetry Plot
+                  if (fEnableAsymmetryPlotCombCPionVsNPion){
+                      fHistoAsymmetryPlotCombCPionVsNPion[fiCut]->Fill(asymmetry_alpha, mesoncand->Pt(), fWeightJetJetMC);
                   }
-                }
-                //Dalitz Mid Pt
-                if (enableDalitzMidPt){
-                  if ((mesoncand->Pt()>HistoDalitzPtRangeMin_MidPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_MidPt)){
-                    fHistoDalitzPlotPosFixedPzNDM_MidPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M(), fWeightJetJetMC );
-                    fHistoDalitzPlotNegFixedPzNDM_MidPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M(), fWeightJetJetMC );
-                    fHistoDalitzPlotPosSubNDM_MidPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
-                    fHistoDalitzPlotNegSubNDM_MidPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
+                  //Dalitz All Pt
+                  if (enableDalitzAllPt){
+                    fHistoDalitzPlotPosFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M(), fWeightJetJetMC );
+                    fHistoDalitzPlotNegFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M(), fWeightJetJetMC );
+                    fHistoDalitzPlotPosSubNDM[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
+                    fHistoDalitzPlotNegSubNDM[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
                   }
-                }
-                //Dalitz High Pt
-                if (enableDalitzHighPt){
-                  if ((mesoncand->Pt()>HistoDalitzPtRangeMin_HighPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_HighPt)){
-                    fHistoDalitzPlotPosFixedPzNDM_HighPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M(), fWeightJetJetMC );
-                    fHistoDalitzPlotNegFixedPzNDM_HighPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M(), fWeightJetJetMC );
-                    fHistoDalitzPlotPosSubNDM_HighPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
-                    fHistoDalitzPlotNegSubNDM_HighPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
+                  //Dalitz Low Pt
+                  if (enableDalitzLowPt){
+                    if ((mesoncand->Pt()>HistoDalitzPtRangeMin_LowPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_LowPt)){
+                      fHistoDalitzPlotPosFixedPzNDM_LowPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M(), fWeightJetJetMC );
+                      fHistoDalitzPlotNegFixedPzNDM_LowPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M(), fWeightJetJetMC );
+                      fHistoDalitzPlotPosSubNDM_LowPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
+                      fHistoDalitzPlotNegSubNDM_LowPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
+                    }
                   }
+                  //Dalitz Mid Pt
+                  if (enableDalitzMidPt){
+                    if ((mesoncand->Pt()>HistoDalitzPtRangeMin_MidPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_MidPt)){
+                      fHistoDalitzPlotPosFixedPzNDM_MidPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M(), fWeightJetJetMC );
+                      fHistoDalitzPlotNegFixedPzNDM_MidPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M(), fWeightJetJetMC );
+                      fHistoDalitzPlotPosSubNDM_MidPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
+                      fHistoDalitzPlotNegSubNDM_MidPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
+                  }
+                  }
+                  //Dalitz High Pt
+                  if (enableDalitzHighPt){
+                    if ((mesoncand->Pt()>HistoDalitzPtRangeMin_HighPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_HighPt)){
+                      fHistoDalitzPlotPosFixedPzNDM_HighPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M(), fWeightJetJetMC );
+                      fHistoDalitzPlotNegFixedPzNDM_HighPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M(), fWeightJetJetMC );
+                      fHistoDalitzPlotPosSubNDM_HighPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
+                      fHistoDalitzPlotNegSubNDM_HighPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM), fWeightJetJetMC);
+                    }
+                  }
+                } //end fDoMesonQA>0
+                if(fMCEvent){
+                  if(fInputEvent->IsA()==AliESDEvent::Class())
+                    ProcessTrueMesonCandidates(mesoncand,neutralDecayMeson,vParticle);
+                  if(fInputEvent->IsA()==AliAODEvent::Class())
+                    ProcessTrueMesonCandidatesAOD(mesoncand,neutralDecayMeson,vParticle);
                 }
-              } //end fDoMesonQA>0
-              if(fMCEvent){
-                if(fInputEvent->IsA()==AliESDEvent::Class())
-                  ProcessTrueMesonCandidates(mesoncand,neutralDecayMeson,vParticle);
-                if(fInputEvent->IsA()==AliAODEvent::Class())
-                  ProcessTrueMesonCandidatesAOD(mesoncand,neutralDecayMeson,vParticle);
-              }
-            }else{ //else KinematicCut
-              if(!fDoLightOutput){
-                fHistoMotherInvMassPtRejectedKinematic[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
-              }
-            } //end KinematicCut
+              }else{ //else KinematicCut
+                if(!fDoLightOutput){
+                  fHistoMotherInvMassPtRejectedKinematic[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
+                }
+              } //end KinematicCut
+            } else { //end alpha cut
+                if (fEnableAsymmetryPlot_NotAccepted){
+                    fHistoAsymmetryPlotCombCPionVsNPion_NotAccepted[fiCut]->Fill(asymmetry_alpha, mesoncand->Pt(), fWeightJetJetMC);
+                }
+            }
           }
         } //end MesonIsSelected
        delete mesoncand;
@@ -5967,9 +5991,19 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
                 }
               }
 
+
               // Create Pi+Pi- pair (only at this stage after cuts were applied to save time, before only vectors)
               AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
               AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&backPiPlPiMiCandidate, EventNDMGoodMeson);
+
+              Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+              if (AlphaInTaskMode>0) {
+                  TLorentzVector vec4PiPlusPiMinus      = vec4PiPlus + vec4PiMinus;
+                  Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiPlusPiMinus, vec4NDM);
+                  if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiPlPiMiNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
+                      continue;
+                  }
+              }
 
               // Check if candidate survives meson cut
               if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlPiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
@@ -6068,6 +6102,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
               AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
               AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&backPiPlPiMiCandidate, EventNDMGoodMeson);
 
+
+              Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+              if (AlphaInTaskMode>0) {
+                  TLorentzVector vec4PiPlusPiMinus      = vec4PiPlus + vec4PiMinus;
+                  Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiPlusPiMinus, vec4NDM);
+                  if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiPlPiMiNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
+                      continue;
+                  }
+              }
+
               // Check if candidate survives meson cut
               if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlPiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
 
@@ -6150,6 +6194,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
             AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&backPiPlPiMiCandidate, EventNDMGoodMeson);
 
+
+            Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+            if (AlphaInTaskMode>0) {
+                TLorentzVector vec4PiPlusPiMinus      = vec4PiPlus + vec4PiMinus;
+                Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiPlusPiMinus, vec4NDM);
+                if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiPlPiMiNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
+                    continue;
+                }
+            }
+
             // Check if candidate survives meson cut
             if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlPiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
 
@@ -6229,6 +6283,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
             AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&backPiPlPiMiCandidate, EventNDMGoodMeson);
 
+            Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+            if (AlphaInTaskMode>0) {
+                TLorentzVector vec4PiPlusPiMinus      = vec4PiPlus + vec4PiMinus;
+                Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiPlusPiMinus, vec4NDM);
+                if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiPlPiMiNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
+                    continue;
+                }
+            }
+
             // Check if candidate survives meson cut
             if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlPiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
 
@@ -6295,6 +6358,19 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             // Create (final) Candidate
             AliAODConversionMother PiPlPiPlNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate, &EventPiPlGoodMeson2);
 
+            Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+            if (AlphaInTaskMode>0) {
+                TLorentzVector vec4PiPlus, vec4PiPlus2, vec4NDM;
+                vec4PiPlus.SetPxPyPzE(EventPiPlGoodMeson.Px(),EventPiPlGoodMeson.Py(),EventPiPlGoodMeson.Pz(),EventPiPlGoodMeson.Energy());
+                vec4PiPlus2.SetPxPyPzE(EventPiPlGoodMeson2.Px(),EventPiPlGoodMeson2.Py(),EventPiPlGoodMeson2.Pz(),EventPiPlGoodMeson2.Energy());
+                vec4NDM.SetPxPyPzE(EventNDMGoodMeson->Px(),EventNDMGoodMeson->Py(),EventNDMGoodMeson->Pz(),EventNDMGoodMeson->Energy());
+                TLorentzVector vec4PiPlusPiPlus2      = vec4PiPlus + vec4PiPlus2;
+                Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiPlusPiPlus2, vec4NDM);
+                if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiPlPiPlNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
+                    continue;
+                }
+            }
+
             // Check if candidate survives meson cut
             if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
 
@@ -6354,6 +6430,19 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             // Create (final) Candidate
             AliAODConversionMother PiMiPiMiNDMBackgroundCandidate(&PiMiNDMBackgroundCandidate, &EventPiMiGoodMeson2);
 
+            Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+            if (AlphaInTaskMode>0) {
+                TLorentzVector vec4PiMinus, vec4PiMinus2, vec4NDM;
+                vec4PiMinus.SetPxPyPzE(EventPiMiGoodMeson.Px(),EventPiMiGoodMeson.Py(),EventPiMiGoodMeson.Pz(),EventPiMiGoodMeson.Energy());
+                vec4PiMinus2.SetPxPyPzE(EventPiMiGoodMeson2.Px(),EventPiMiGoodMeson2.Py(),EventPiMiGoodMeson2.Pz(),EventPiMiGoodMeson2.Energy());
+                vec4NDM.SetPxPyPzE(EventNDMGoodMeson->Px(),EventNDMGoodMeson->Py(),EventNDMGoodMeson->Pz(),EventNDMGoodMeson->Energy());
+                TLorentzVector vec4PiMinusPiMinus2      = vec4PiMinus + vec4PiMinus2;
+                Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiMinusPiMinus2, vec4NDM);
+                if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiMiNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
+                    continue;
+                }
+            }
+
             // Check if candidate survives meson cut
             if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiMiPiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
 
@@ -6411,6 +6500,19 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
 
               // Create (final) Candidate
               AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate, &EventPiMiGoodMeson);
+
+              Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+              if (AlphaInTaskMode>0) {
+                  TLorentzVector vec4PiPlus, vec4PiMinus, vec4NDM;
+                  vec4PiPlus.SetPxPyPzE(EventPiPlGoodMeson.Px(),EventPiPlGoodMeson.Py(),EventPiPlGoodMeson.Pz(),EventPiPlGoodMeson.Energy());
+                  vec4PiMinus.SetPxPyPzE(EventPiMiGoodMeson.Px(),EventPiMiGoodMeson.Py(),EventPiMiGoodMeson.Pz(),EventPiMiGoodMeson.Energy());
+                  vec4NDM.SetPxPyPzE(EventNDMGoodMeson->Px(),EventNDMGoodMeson->Py(),EventNDMGoodMeson->Pz(),EventNDMGoodMeson->Energy());
+                  TLorentzVector vec4PiPlusPiMinus      = vec4PiPlus + vec4PiMinus;
+                  Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiPlusPiMinus, vec4NDM);
+                  if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiPlPiMiNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
+                      continue;
+                  }
+              }
 
               // Check if candidate survives meson cut
               if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlPiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
@@ -7683,4 +7785,72 @@ Double_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::GetAlphaLFromLorentz
     alpha = (plParticle1-plParticle2)/(plParticle1+plParticle2);
 
     return alpha;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::MesonIsSelectedByAlphaCut(Double_t alphaValue, Double_t MesonPt, Int_t ParametrizationMode){
+    Bool_t      returnValue                 = kTRUE;
+    Bool_t      useFunction_LowerLimit      = kFALSE;
+    Bool_t      useFunction_UpperLimit      = kFALSE;
+    Bool_t      useConst_LowerLimit         = kFALSE;
+    Bool_t      useConst_UpperLimit         = kFALSE;
+
+    Double_t    const_LowerLimit            = 0;
+    Double_t    const_UpperLimit            = 0;
+    Double_t    FunctionValue_LowerLimit    = 0;
+    Double_t    FunctionValue_UpperLimit    = 0;
+
+    Double_t    xx                          = MesonPt;
+
+    switch(ParametrizationMode){
+    case 1:
+        useFunction_UpperLimit              = kTRUE;
+        //([0]-[4])/(TMath::Exp(([1]-x)/[2])+[3])+[4]
+        FunctionValue_UpperLimit            =
+                ((6.30231e-01)-(-3.77337e+00))/(TMath::Exp(((5.60553e-05)-xx)/(1.35591e+00))+(9.99175e-01))+(-3.77337e+00);
+        break;
+    case 2:
+        useFunction_UpperLimit              = kTRUE;
+        //([0]-[4])/(TMath::Exp(([1]-x)/[2])+[3])+[4]
+        FunctionValue_UpperLimit            =
+                ((6.30231e-01)-(-3.77337e+00))/(TMath::Exp(((5.60553e-05)-xx)/(1.35591e+00))+(9.99175e-01))+(-3.77337e+00);
+        useConst_LowerLimit                 = kTRUE;
+        const_LowerLimit                    = -0.8;
+        useConst_UpperLimit                 = kTRUE;
+        const_UpperLimit                    = 0.8;
+        break;
+    default:
+        return kTRUE;
+        break;
+    }
+    if (useConst_LowerLimit){
+        if (alphaValue < const_LowerLimit){
+            returnValue = kFALSE;
+            return returnValue;
+        }
+    }
+
+    if (useConst_UpperLimit){
+        if (alphaValue > const_UpperLimit){
+            returnValue = kFALSE;
+            return returnValue;
+        }
+    }
+
+    if (useFunction_LowerLimit){
+        if (alphaValue < FunctionValue_LowerLimit){
+            returnValue = kFALSE;
+            return returnValue;
+        }
+    }
+
+    if (useFunction_UpperLimit){
+        if (alphaValue > FunctionValue_UpperLimit){
+            returnValue = kFALSE;
+            return returnValue;
+        }
+    }
+
+
+    return returnValue;
 }

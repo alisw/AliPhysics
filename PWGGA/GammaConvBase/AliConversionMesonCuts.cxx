@@ -137,6 +137,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fElectronLabelArray(NULL),
   fBackgroundHandler(0),
   fMassParamFunction(0),
+  fAlphaInTaskMode(0),
   fDoLightOutput(0),
   fDoMinPtCut(kFALSE),
   fDoMaxPtCut(kFALSE),
@@ -259,6 +260,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fElectronLabelArray(NULL),
   fBackgroundHandler(ref.fBackgroundHandler),
   fMassParamFunction(ref.fMassParamFunction),
+  fAlphaInTaskMode(ref.fAlphaInTaskMode),
   fDoLightOutput(ref.fDoLightOutput),
   fDoMinPtCut(ref.fDoMinPtCut),
   fDoMaxPtCut(ref.fDoMaxPtCut),
@@ -3160,8 +3162,16 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     fAlphaCutMeson    = -1.0;
     fAlphaPtDepCut    = kTRUE;
     break;
-
-
+  case 19:   // j (Alpha Cut is handled in Task)
+    fAlphaMinCutMeson   = 0.0;
+    fAlphaCutMeson      = 1.;
+    fAlphaInTaskMode = 1;
+    break;
+  case 20:   // k (Alpha Cut is handled in Task)
+    fAlphaMinCutMeson   = 0.0;
+    fAlphaCutMeson      = 1.;
+    fAlphaInTaskMode = 2;
+    break;
   default:
     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
     return kFALSE;
