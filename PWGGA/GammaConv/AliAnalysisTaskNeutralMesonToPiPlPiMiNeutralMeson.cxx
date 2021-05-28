@@ -3674,8 +3674,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
   Int_t SaftyLoopCounter = 0;
   while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
     SaftyLoopCounter++;
-    if(((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 111 && ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 221) {
-      tmpGammaMotherlabel = ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->GetMother();
+    if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+      tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
     } else {
       if (tmpGammaMotherlabel != gamma0MotherLabel) {
         previouslyNotFoundTrueMesons = kTRUE;
@@ -3689,6 +3689,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
 
   Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); 	// get most probable MC label
   Int_t gamma1MotherLabel = -1;
+  tmpGammaMotherlabel = -1;
   // check if
   if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
     // Daughters Gamma 1
@@ -3708,8 +3709,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
   SaftyLoopCounter = 0;
   while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
     SaftyLoopCounter++;
-    if(((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 111 && ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 221) {
-      tmpGammaMotherlabel = ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->GetMother();
+    if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+      tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
     } else {
       if (tmpGammaMotherlabel != gamma1MotherLabel) {
         previouslyNotFoundTrueMesons = kTRUE;
@@ -3809,6 +3810,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
 
   Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); 	// get most probable MC label
   Int_t gamma1MotherLabel = -1;
+  tmpGammaMotherlabel = -1;
   // check if
   if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
     // Daughters Gamma 1
