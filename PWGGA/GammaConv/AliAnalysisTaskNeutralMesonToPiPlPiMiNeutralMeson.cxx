@@ -3651,11 +3651,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
   Bool_t isTrueNDM = kFALSE;
   Int_t gamma0MCLabel = TrueGammaCandidate0->GetCaloPhotonMCLabel(0); 	// get most probable MC label
   Int_t gamma0MotherLabel = -1;
+  Int_t tmpGammaMotherlabel = -1;
 
   if(gamma0MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
     TParticle * gammaMC0 = (TParticle*)fMCEvent->Particle(gamma0MCLabel);
     if (TrueGammaCandidate0->IsLargestComponentPhoton() || TrueGammaCandidate0->IsLargestComponentElectron()){		// largest component is electro magnetic
       // get mother of interest (pi0 or eta)
+       tmpGammaMotherlabel=gammaMC0->GetMother(0);
       if (TrueGammaCandidate0->IsLargestComponentPhoton()){														// for photons its the direct mother
         gamma0MotherLabel=gammaMC0->GetMother(0);
       } else if (TrueGammaCandidate0->IsLargestComponentElectron()){ 												// for electrons its either the direct mother or for conversions the grandmother
@@ -3668,7 +3670,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     }
   }
 
-  Int_t tmpGammaMotherlabel = gamma0MotherLabel;
   Bool_t previouslyNotFoundTrueMesons = kFALSE;
   Int_t SaftyLoopCounter = 0;
   while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
