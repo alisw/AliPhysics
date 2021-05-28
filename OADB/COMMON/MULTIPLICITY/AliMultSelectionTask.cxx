@@ -1603,15 +1603,15 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fNTracksITSsa2010           -> SetValueInteger( 0 );
     
     // Set DCA variables to default
-    double_t dcaxyABS = 0;
-    double_t dcazABS = 0;
-    double_t dcaxySQ = 0;
-    double_t dcazSQ = 0;
+    Double_t dcaxyABS = 0;
+    Double_t dcazABS = 0;
+    Double_t dcaxySQ = 0;
+    Double_t dcazSQ = 0;
 
-    double_t averageDCAxyABS = 0;
-    double_t averageDCAzABS = 0;
-    double_t averageDCAxySQ = 0;
-    double_t averageDCAzSQ = 0;
+    Double_t averageDCAxyABS = 0;
+    Double_t averageDCAzABS = 0;
+    Double_t averageDCAxySQ = 0;
+    Double_t averageDCAzSQ = 0;
 
     fNTracksDCAxyABS=0;
     fNTracksDCAzABS=0;
@@ -1653,13 +1653,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
       
       // Get ITSrefit counts
       if((track->GetStatus() & AliVTrack::kITSrefit)==1) ITSrefitTracks++;
-      
-      fNTracksDCAxyABS=dcaxyABS;
-      fNTracksDCAzABS=dcazABS;
-      fNTracksDCAxySQ=dcaxySQ;
-      fNTracksDCAzSQ=dcazSQ;
-      fNTracksITSrefit=ITSrefitTracks;
-      
+            
       //Only ITSsa tracks
       if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
         fNTracksITSsa2010 -> SetValueInteger( fNTracksITSsa2010->GetValueInteger() + 1);
@@ -1680,6 +1674,12 @@ void AliMultSelectionTask::UserExec(Option_t *)
       if ( TMath::Abs( track -> GetTOFExpTDiff() ) < 30 )
         fNTracksGlobal2015Trigger -> SetValueInteger( fNTracksGlobal2015Trigger->GetValueInteger() + 1);
     }
+    
+    fNTracksDCAxyABS=dcaxyABS;
+    fNTracksDCAzABS=dcazABS;
+    fNTracksDCAxySQ=dcaxySQ;
+    fNTracksDCAzSQ=dcazSQ;
+    fNTracksITSrefit=ITSrefitTracks;
     
     Long_t lNTPCout = 0;
     fNTracksTPCout->SetValueInteger(lNTPCout);
