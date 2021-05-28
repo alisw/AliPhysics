@@ -5785,12 +5785,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
                    &&(Mass_PiMi_NDM_Sub<MassCutValue_PiPlMi_NDM)
                    )){
             Double_t asymmetry_alpha = GetAlphaLFromLorentz(PosNegPionTLVtmp, NDMTLVtmp);
-            Double_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
-            Bool_t    useAlphaInTask                = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> UseAlphaInTask();
-            if ((!useAlphaInTask)||
-                    ((useAlphaInTask)
-                     &&MesonIsSelectedByAlphaCut(asymmetry_alpha, mesoncand->Pt(), AlphaInTaskMode)
-                     )){
+            Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+            if (MesonIsSelectedByAlphaCut(asymmetry_alpha, mesoncand->Pt(), AlphaInTaskMode)){
               if(KinematicCut(&NegPiontmp, &PosPiontmp, neutralDecayMeson, mesoncand)){
                 if(!fDoLightOutput){
                   fHistoAngleHNMesonNDM[fiCut]->Fill(mesoncand->Pt(),neutralDecayMeson->Angle(mesoncand->Vect()), fWeightJetJetMC);
@@ -6000,11 +5996,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
               AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
               AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&backPiPlPiMiCandidate, EventNDMGoodMeson);
 
-              Bool_t    useAlphaInTask                  = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> UseAlphaInTask();
-              if (useAlphaInTask) {
+              Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+              if (AlphaInTaskMode>0) {
                   TLorentzVector vec4PiPlusPiMinus      = vec4PiPlus + vec4PiMinus;
                   Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiPlusPiMinus, vec4NDM);
-                  Double_t  AlphaInTaskMode             = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
                   if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiPlPiMiNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
                       continue;
                   }
@@ -6108,11 +6103,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
               AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&backPiPlPiMiCandidate, EventNDMGoodMeson);
 
 
-              Bool_t    useAlphaInTask                  = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> UseAlphaInTask();
-              if (useAlphaInTask) {
+              Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+              if (AlphaInTaskMode>0) {
                   TLorentzVector vec4PiPlusPiMinus      = vec4PiPlus + vec4PiMinus;
                   Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiPlusPiMinus, vec4NDM);
-                  Double_t  AlphaInTaskMode             = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
                   if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiPlPiMiNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
                       continue;
                   }
@@ -6201,13 +6195,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&backPiPlPiMiCandidate, EventNDMGoodMeson);
 
 
-            Bool_t    useAlphaInTask                  = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> UseAlphaInTask();
-            if (useAlphaInTask) {
+            Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+            if (AlphaInTaskMode>0) {
                 TLorentzVector vec4PiPlusPiMinus      = vec4PiPlus + vec4PiMinus;
                 Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiPlusPiMinus, vec4NDM);
-                Double_t  AlphaInTaskMode             = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
                 if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiPlPiMiNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
-                    ;
+                    continue;
                 }
             }
 
@@ -6290,11 +6283,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
             AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&backPiPlPiMiCandidate, EventNDMGoodMeson);
 
-            Bool_t    useAlphaInTask                  = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> UseAlphaInTask();
-            if (useAlphaInTask) {
+            Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+            if (AlphaInTaskMode>0) {
                 TLorentzVector vec4PiPlusPiMinus      = vec4PiPlus + vec4PiMinus;
                 Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiPlusPiMinus, vec4NDM);
-                Double_t  AlphaInTaskMode             = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
                 if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiPlPiMiNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
                     continue;
                 }
@@ -6366,15 +6358,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             // Create (final) Candidate
             AliAODConversionMother PiPlPiPlNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate, &EventPiPlGoodMeson2);
 
-            Bool_t    useAlphaInTask                  = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> UseAlphaInTask();
-            if (useAlphaInTask) {
+            Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+            if (AlphaInTaskMode>0) {
                 TLorentzVector vec4PiPlus, vec4PiPlus2, vec4NDM;
                 vec4PiPlus.SetPxPyPzE(EventPiPlGoodMeson.Px(),EventPiPlGoodMeson.Py(),EventPiPlGoodMeson.Pz(),EventPiPlGoodMeson.Energy());
                 vec4PiPlus2.SetPxPyPzE(EventPiPlGoodMeson2.Px(),EventPiPlGoodMeson2.Py(),EventPiPlGoodMeson2.Pz(),EventPiPlGoodMeson2.Energy());
                 vec4NDM.SetPxPyPzE(EventNDMGoodMeson->Px(),EventNDMGoodMeson->Py(),EventNDMGoodMeson->Pz(),EventNDMGoodMeson->Energy());
                 TLorentzVector vec4PiPlusPiPlus2      = vec4PiPlus + vec4PiPlus2;
                 Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiPlusPiPlus2, vec4NDM);
-                Double_t  AlphaInTaskMode             = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
                 if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiPlPiPlNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
                     continue;
                 }
@@ -6439,15 +6430,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             // Create (final) Candidate
             AliAODConversionMother PiMiPiMiNDMBackgroundCandidate(&PiMiNDMBackgroundCandidate, &EventPiMiGoodMeson2);
 
-            Bool_t    useAlphaInTask                  = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> UseAlphaInTask();
-            if (useAlphaInTask) {
+            Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+            if (AlphaInTaskMode>0) {
                 TLorentzVector vec4PiMinus, vec4PiMinus2, vec4NDM;
                 vec4PiMinus.SetPxPyPzE(EventPiMiGoodMeson.Px(),EventPiMiGoodMeson.Py(),EventPiMiGoodMeson.Pz(),EventPiMiGoodMeson.Energy());
                 vec4PiMinus2.SetPxPyPzE(EventPiMiGoodMeson2.Px(),EventPiMiGoodMeson2.Py(),EventPiMiGoodMeson2.Pz(),EventPiMiGoodMeson2.Energy());
                 vec4NDM.SetPxPyPzE(EventNDMGoodMeson->Px(),EventNDMGoodMeson->Py(),EventNDMGoodMeson->Pz(),EventNDMGoodMeson->Energy());
                 TLorentzVector vec4PiMinusPiMinus2      = vec4PiMinus + vec4PiMinus2;
                 Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiMinusPiMinus2, vec4NDM);
-                Double_t  AlphaInTaskMode             = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
                 if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiMiNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
                     continue;
                 }
@@ -6511,15 +6501,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
               // Create (final) Candidate
               AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate, &EventPiMiGoodMeson);
 
-              Bool_t    useAlphaInTask                  = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> UseAlphaInTask();
-              if (useAlphaInTask) {
+              Int_t  AlphaInTaskMode               = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
+              if (AlphaInTaskMode>0) {
                   TLorentzVector vec4PiPlus, vec4PiMinus, vec4NDM;
                   vec4PiPlus.SetPxPyPzE(EventPiPlGoodMeson.Px(),EventPiPlGoodMeson.Py(),EventPiPlGoodMeson.Pz(),EventPiPlGoodMeson.Energy());
                   vec4PiMinus.SetPxPyPzE(EventPiMiGoodMeson.Px(),EventPiMiGoodMeson.Py(),EventPiMiGoodMeson.Pz(),EventPiMiGoodMeson.Energy());
                   vec4NDM.SetPxPyPzE(EventNDMGoodMeson->Px(),EventNDMGoodMeson->Py(),EventNDMGoodMeson->Pz(),EventNDMGoodMeson->Energy());
                   TLorentzVector vec4PiPlusPiMinus      = vec4PiPlus + vec4PiMinus;
                   Double_t  asymmetry_alpha             = GetAlphaLFromLorentz(vec4PiPlusPiMinus, vec4NDM);
-                  Double_t  AlphaInTaskMode             = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))-> GetAlphaInTaskMode();
                   if (!MesonIsSelectedByAlphaCut(asymmetry_alpha, PiPlPiMiNDMBackgroundCandidate.Pt(), AlphaInTaskMode)){
                       continue;
                   }
@@ -7814,13 +7803,13 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::MesonIsSelectedByAlpha
     Double_t    xx                          = MesonPt;
 
     switch(ParametrizationMode){
-    case 0:
+    case 1:
         useFunction_UpperLimit              = kTRUE;
         //([0]-[4])/(TMath::Exp(([1]-x)/[2])+[3])+[4]
         FunctionValue_UpperLimit            =
                 ((6.30231e-01)-(-3.77337e+00))/(TMath::Exp(((5.60553e-05)-xx)/(1.35591e+00))+(9.99175e-01))+(-3.77337e+00);
         break;
-    case 1:
+    case 2:
         useFunction_UpperLimit              = kTRUE;
         //([0]-[4])/(TMath::Exp(([1]-x)/[2])+[3])+[4]
         FunctionValue_UpperLimit            =
@@ -7831,6 +7820,7 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::MesonIsSelectedByAlpha
         const_UpperLimit                    = 0.8;
         break;
     default:
+        return kTRUE;
         break;
     }
     if (useConst_LowerLimit){

@@ -167,7 +167,6 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoMesonQualitySelection(kFALSE),
   fUseMCPSmearing(0),
   fAlphaPtDepCut(kFALSE),
-  fDoAlphaInTask(kFALSE),
   fDCAGammaGammaCutOn(kFALSE),
   fDCAZMesonPrimVtxCutOn(kFALSE),
   fDCARMesonPrimVtxCutOn(kFALSE),
@@ -291,7 +290,6 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoMesonQualitySelection(ref.fDoMesonQualitySelection),
   fUseMCPSmearing(ref.fUseMCPSmearing),
   fAlphaPtDepCut(ref.fAlphaPtDepCut),
-  fDoAlphaInTask(ref.fDoAlphaInTask),
   fDCAGammaGammaCutOn(ref.fDCAGammaGammaCutOn),
   fDCAZMesonPrimVtxCutOn(ref.fDCAZMesonPrimVtxCutOn),
   fDCARMesonPrimVtxCutOn(ref.fDCARMesonPrimVtxCutOn),
@@ -3167,14 +3165,12 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
   case 19:   // j (Alpha Cut is handled in Task)
     fAlphaMinCutMeson   = 0.0;
     fAlphaCutMeson      = 1.;
-    fDoAlphaInTask = kTRUE;
-    fAlphaInTaskMode = 0;
+    fAlphaInTaskMode = 1;
     break;
-  case 20:   // l (Alpha Cut is handled in Task)
+  case 20:   // k (Alpha Cut is handled in Task)
     fAlphaMinCutMeson   = 0.0;
     fAlphaCutMeson      = 1.;
-    fDoAlphaInTask = kTRUE;
-    fAlphaInTaskMode = 1;
+    fAlphaInTaskMode = 2;
     break;
   default:
     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
