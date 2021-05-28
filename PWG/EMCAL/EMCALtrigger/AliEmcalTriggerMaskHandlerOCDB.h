@@ -203,7 +203,7 @@ public:
    * Containing only the channels which are mased at L0. In case a TRU is masked
    * in the STU region this is not included.
    */
-  std::vector<AliEmcalTriggerMaskHandlerOCDB::FastORPosition> GetMaskedFastorPositionsL0(int runnumber = -1);
+  std::vector<PWG::EMCAL::AliEmcalTriggerMaskHandlerOCDB::FastORPosition> GetMaskedFastorPositionsL0(int runnumber = -1);
 
   /**
    * @brief Get list of masked FastORs with absolute ID masked at L1
@@ -227,7 +227,7 @@ public:
    * Containing channels which are mased at L1. Those are all channels masked at L0, however
    * if a full TRU is mased in the STU region the FastORs from this TRU are masked as well. 
    */
-  std::vector<AliEmcalTriggerMaskHandlerOCDB::FastORPosition> GetMaskedFastorPositionsL1(int runnumber = -1);
+  std::vector<PWG::EMCAL::AliEmcalTriggerMaskHandlerOCDB::FastORPosition> GetMaskedFastorPositionsL1(int runnumber = -1);
 
   /**
    * @brief Get global indices of TRUs masked in the STU region
