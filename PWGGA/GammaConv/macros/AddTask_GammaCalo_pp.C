@@ -3518,6 +3518,24 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 3011){ // settings Dmitri
     cuts.AddCutCalo("00062103","24466640ya09dc00000","0163103100000010"); // PHI7
 
+
+  //*************************************************************************************************
+  // pp 13 TeV Gammas in Jets
+  //*************************************************************************************************
+  } else if (trainConfig == 3100){  // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("00010113","411792109fe32220000","2r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  } else if (trainConfig == 3101){  // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("0008e113","411792109fe32220000","2r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  } else if (trainConfig == 3102){  // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("0008d113","411792109fe32220000","2r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+
+  } else if (trainConfig == 3103){  // EMCAL+DCAL clusters No NCell cut, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("00010113","411792109fe30220000","2r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  } else if (trainConfig == 3104){  // EMCAL+DCAL clusters  No NCell cut, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("0008e113","411792109fe30220000","2r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  } else if (trainConfig == 3105){  // EMCAL+DCAL clusters  No NCell cut, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("0008d113","411792109fe30220000","2r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
