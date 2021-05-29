@@ -25,6 +25,7 @@
 #include "TCanvas.h"
 #include "TList.h"
 #include "TTree.h"
+#include "TObjString.h"
 
 
 #include "AliAnalysisTask.h"

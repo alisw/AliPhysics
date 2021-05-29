@@ -164,7 +164,7 @@ void AliMCWeightsTask::UserExec(Option_t* option) {
 }
 
 AliMCWeightsTask*
-AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* collisionType) {
+AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* collisionType, bool fUsePPMB) {
 #ifdef __AliMCWeightsTask_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();
 #endif
@@ -224,6 +224,7 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* coll
         fMCSpectraWeights->SetMCSpectraFile(stTrainOutputPath);
         fMCSpectraWeights->SetDoSystematics(true);
     }
+    fMCSpectraWeights->SetUseMBFractions(fUsePPMB);
     fMCSpectraWeights->Init();
 
     // Configure task
@@ -248,6 +249,6 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* coll
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
     DebugChrono("AliMCWeightsTask took " << duration << " microseconds\n");
 #endif
-    
+
     return task;
 }

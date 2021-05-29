@@ -331,6 +331,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     
 	
 	TH2F				**fTPCnsigma_EoverP;
+    TH2F                **fHist_energy_pT;
 	TH1F				**fECluster;
     
     TH1F                *fECluster_mb;
@@ -351,17 +352,24 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH2F                *fECluster_eg2_SM;
     TH2F                *fECluster_dg1_SM;
     TH2F                *fECluster_dg2_SM;
+    TH2F                *fECluster_deg1_SM;
+    TH2F                *fECluster_deg2_SM;
+    
     TH2F                *fECluster_ET_mb_SM;
     TH2F                *fECluster_ET_eg1_SM;
     TH2F                *fECluster_ET_eg2_SM;
     TH2F                *fECluster_ET_dg1_SM;
     TH2F                *fECluster_ET_dg2_SM;
+    TH2F                *fECluster_ET_deg1_SM;
+    TH2F                *fECluster_ET_deg2_SM;
     
     TH2F                *fPt_mb_SM;
     TH2F                *fPt_eg1_SM;
     TH2F                *fPt_eg2_SM;
     TH2F                *fPt_dg1_SM;
     TH2F                *fPt_dg2_SM;
+    TH2F                *fPt_deg1_SM;
+    TH2F                *fPt_deg2_SM;
     
     
     

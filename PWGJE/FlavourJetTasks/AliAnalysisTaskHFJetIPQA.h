@@ -712,7 +712,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 80)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 81)
 };
 
 #endif

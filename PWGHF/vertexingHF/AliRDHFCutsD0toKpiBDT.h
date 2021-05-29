@@ -34,11 +34,12 @@ class AliRDHFCutsD0toKpiBDT : public AliRDHFCutsD0toKpi
   
   void SetBDTNames(Int_t nOpt,TString *Names,Bool_t *isUpperCut);
   void SetPtBinsBDT(Int_t nPtBinLimits,Float_t *ptBinLimits);
-  void SetNPtBinsBDT(Int_t nptBins){fnPtBinsBDT=nptBins;}
-  void SetBDTCutGlobalIndex(){fBDTCutGlobalIndex=fNBDTOpt*fnPtBinsBDT;}
-  void SetBDTCutGlobalIndex(Int_t n,Int_t nptBins){fNBDTOpt=n; fnPtBinsBDT=nptBins; SetBDTCutGlobalIndex();} // Set this first to initialize cut
+  void SetNPtBinsBDT(Int_t nptBins) {fnPtBinsBDT=nptBins;}
+  void SetBDTCutGlobalIndex() {fBDTCutGlobalIndex=fNBDTOpt*fnPtBinsBDT;}
+  void SetBDTCutGlobalIndex(Int_t n,Int_t nptBins) {fNBDTOpt=n; fnPtBinsBDT=nptBins; SetBDTCutGlobalIndex();} // Set this first to initialize cut
   void SetBDTCuts(Int_t nOpt,Int_t nPtBins,Float_t** cuts);
   void SetBDTCuts(Int_t glIndex, Float_t* cutsRDGlob);
+  void SetRejFraction(Float_t *rej);
   
   void SetListOfBDT(TList *l) const;
   
@@ -50,6 +51,8 @@ class AliRDHFCutsD0toKpiBDT : public AliRDHFCutsD0toKpi
   Int_t	GetBDTCutGlobalIndex(Int_t iOpt,Int_t iPtBin) const;
   TList *GetListOfBDT() const {return fListOfBDT;}
   
+  Float_t GetRejFraction(Int_t ptbin) const { return fRejFraction[ptbin]; }
+  Float_t GetRejFraction(Float_t pt) const { return PtBinBDT(pt)>=0 ? GetRejFraction(PtBinBDT(pt)) : 1.; }
   Int_t IsSelectedBDT(AliAODRecoDecayHF2Prong *d, AliAODEvent *aod) const; // using BDTResp cut to determine whether it is selected
   Double_t GetBDTResponse(AliAODRecoDecayHF2Prong *d, AliAODEvent *aod, Int_t iOpt, Int_t isD0bar) const; // Get BDT output
   Double_t GetRDHFVarsForSel(AliAODRecoDecayHF2Prong *d, AliAODEvent *aod, TString VarName, Int_t isD0bar) const; // Get RDHF2prong variable by name
@@ -74,9 +77,10 @@ class AliRDHFCutsD0toKpiBDT : public AliRDHFCutsD0toKpi
   Int_t fBDTCutGlobalIndex; /// fnVars*fnPtBins
   Float_t *fBDTCuts; //[fBDTCutGlobalIndex] the cuts values
   Bool_t  *fIsUpperCutBDT; //[fNBDTOpt] use > or < to select
+  Float_t *fRejFraction; //[fnPtBinsBDT] random-sampling fraction (100*f% kept)
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsD0toKpiBDT,1);  /// class for cuts on AOD reconstructed D0->Kpi
+  ClassDef(AliRDHFCutsD0toKpiBDT,2);  /// class for cuts on AOD reconstructed D0->Kpi
   /// \endcond
 };
 

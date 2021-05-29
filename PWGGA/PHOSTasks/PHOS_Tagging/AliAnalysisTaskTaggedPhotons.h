@@ -30,7 +30,7 @@ class AliAnalysisTaskTaggedPhotons : public AliAnalysisTaskSE {
 
 public:
   
-  enum mcType{kFullMC, kSingleGamma, kSinglePi0, kSingleEta, kJetJet } ; 
+  enum mcType{kFullMC, kSingleGamma, kSinglePi0, kSingleEta, kJetJet, kDPMJET } ; 
   enum cutType{kDefCut, kLowECut} ;
   enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
   enum trackSelections{kLHC13x,kFAST,kCENTwoSSD,kCENTwSSD} ;
@@ -76,7 +76,7 @@ protected:
   Int_t   GetFiducialArea(const Float_t * pos)const ;                           //what kind of fiducial area hit the photon
   Int_t   IsSameParent(const AliCaloPhoton *p1, const AliCaloPhoton *p2,Int_t &iGrandPa) const; //Check MC genealogy; return PDG of parent
   Bool_t  IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
-  Double_t  InPi0Band(Double_t m, Double_t pt)const; //Check if invariant mass is within pi0 peak
+  void    InPi0Band(Double_t m, Double_t pt, Double_t *nsimga)const; //Check if invariant mass is within pi0 peak
   Bool_t  TestDisp(Double_t l0, Double_t l1, Double_t e)const  ;
   Bool_t  TestTOF(Double_t /*t*/,Double_t /*en*/)const{return kTRUE;} 
   Bool_t  TestCharged(Double_t dr,Double_t en)const ;

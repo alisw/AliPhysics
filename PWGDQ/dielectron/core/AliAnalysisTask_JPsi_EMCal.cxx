@@ -246,6 +246,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fTOF_p(0)
 ,fTOFnsigma_p(0)
 ,fTPCnsigma_EoverP(0)
+,fHist_energy_pT(0)
 ,fECluster(0)
 
 ,fECluster_mb(0)
@@ -264,17 +265,23 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fECluster_eg2_SM(0)
 ,fECluster_dg1_SM(0)
 ,fECluster_dg2_SM(0)
+,fECluster_deg1_SM(0)
+,fECluster_deg2_SM(0)
 ,fECluster_ET_mb_SM(0)
 ,fECluster_ET_eg1_SM(0)
 ,fECluster_ET_eg2_SM(0)
 ,fECluster_ET_dg1_SM(0)
 ,fECluster_ET_dg2_SM(0)
+,fECluster_ET_deg1_SM(0)
+,fECluster_ET_deg2_SM(0)
 
 ,fPt_mb_SM(0)
 ,fPt_eg1_SM(0)
 ,fPt_eg2_SM(0)
 ,fPt_dg1_SM(0)
 ,fPt_dg2_SM(0)
+,fPt_deg1_SM(0)
+,fPt_deg2_SM(0)
 
 ,fECluster_emcal(0)
 ,fECluster_dcal(0)
@@ -691,6 +698,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fTOF_p(0)
 ,fTOFnsigma_p(0)
 ,fTPCnsigma_EoverP(0)
+,fHist_energy_pT(0)
 ,fECluster(0)
 
 
@@ -710,17 +718,23 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fECluster_eg2_SM(0)
 ,fECluster_dg1_SM(0)
 ,fECluster_dg2_SM(0)
+,fECluster_deg1_SM(0)
+,fECluster_deg2_SM(0)
 ,fECluster_ET_mb_SM(0)
 ,fECluster_ET_eg1_SM(0)
 ,fECluster_ET_eg2_SM(0)
 ,fECluster_ET_dg1_SM(0)
 ,fECluster_ET_dg2_SM(0)
+,fECluster_ET_deg1_SM(0)
+,fECluster_ET_deg2_SM(0)
 
 ,fPt_mb_SM(0)
 ,fPt_eg1_SM(0)
 ,fPt_eg2_SM(0)
 ,fPt_dg1_SM(0)
 ,fPt_dg2_SM(0)
+,fPt_deg1_SM(0)
+,fPt_deg2_SM(0)
 
 ,fECluster_emcal(0)
 ,fECluster_dcal(0)
@@ -1096,6 +1110,8 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	//Step 1: Before Track cuts
 	//Step 2: Before PID
 	//Step 3: After PID
+    
+    
     if(!fIs_sys){
         fEoverP_pt = new TH2F *[3];
         fTPC_p = new TH2F *[3];
@@ -1105,9 +1121,8 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fTOFnsigma_p = new TH2F *[3];
     
         fTPCnsigma_EoverP = new TH2F *[3];
-        
+       
    
-	
         fECluster_emcal= new TH1F *[3];
         fECluster_dcal= new TH1F *[3];
 	
@@ -1161,6 +1176,13 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         }
     }//close flag fIs_sys
     
+    fHist_energy_pT = new TH2F *[7];
+    for(Int_t i = 0; i < 7; i++)
+    {
+        fHist_energy_pT[i] = new TH2F(Form("fHist_energy_pT%d",i),";E (GeV);p_{T} (GeV/c)",50,0,100,50,0,100);
+        fOutputList->Add(fHist_energy_pT[i]);
+    }
+    
     if(!fIs_sys){
         fTPCnsigma_p_beforeCalibration = new TH2F("fTPCnsigma_p_beforeCalibration",";p (GeV/c);TPC Electron N#sigma (bef. calibration)",40,0,40,50,-15,10);
         fTPCnsigma_p_afterCalibration = new TH2F("fTPCnsigma_p_afterCalibration", ";p (GeV/c);TPC Electron N#sigma (aft. calibration)",40,0,40,50,-15,10);
@@ -1201,11 +1223,15 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     fECluster_eg2_SM = new TH2F("ECluster_eg2_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
     fECluster_dg1_SM = new TH2F("ECluster_dg1_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
     fECluster_dg2_SM = new TH2F("ECluster_dg2_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fECluster_deg1_SM = new TH2F("ECluster_deg1_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fECluster_deg2_SM = new TH2F("ECluster_deg2_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
     fOutputList->Add(fECluster_mb_SM);
     fOutputList->Add(fECluster_eg1_SM);
     fOutputList->Add(fECluster_eg2_SM);
     fOutputList->Add(fECluster_dg1_SM);
     fOutputList->Add(fECluster_dg2_SM);
+    fOutputList->Add(fECluster_deg1_SM);
+    fOutputList->Add(fECluster_deg2_SM);
     
     //ET
     fECluster_ET_mb_SM = new TH2F("ECluster_ET_mb_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
@@ -1213,11 +1239,15 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     fECluster_ET_eg2_SM = new TH2F("ECluster_ET_eg2_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
     fECluster_ET_dg1_SM = new TH2F("ECluster_ET_dg1_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
     fECluster_ET_dg2_SM = new TH2F("ECluster_ET_dg2_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fECluster_ET_deg1_SM = new TH2F("ECluster_ET_deg1_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fECluster_ET_deg2_SM = new TH2F("ECluster_ET_deg2_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
     fOutputList->Add(fECluster_ET_mb_SM);
     fOutputList->Add(fECluster_ET_eg1_SM);
     fOutputList->Add(fECluster_ET_eg2_SM);
     fOutputList->Add(fECluster_ET_dg1_SM);
     fOutputList->Add(fECluster_ET_dg2_SM);
+    fOutputList->Add(fECluster_ET_deg1_SM);
+    fOutputList->Add(fECluster_ET_deg2_SM);
     
     //Pt
     fPt_mb_SM = new TH2F("Pt_mb_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
@@ -1225,11 +1255,15 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     fPt_eg2_SM = new TH2F("Pt_eg2_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
     fPt_dg1_SM = new TH2F("Pt_dg1_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
     fPt_dg2_SM = new TH2F("Pt_dg2_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fPt_deg1_SM = new TH2F("Pt_deg1_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fPt_deg2_SM = new TH2F("Pt_deg2_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
     fOutputList->Add(fPt_mb_SM);
     fOutputList->Add(fPt_eg1_SM);
     fOutputList->Add(fPt_eg2_SM);
     fOutputList->Add(fPt_dg1_SM);
     fOutputList->Add(fPt_dg2_SM);
+    fOutputList->Add(fPt_deg1_SM);
+    fOutputList->Add(fPt_deg2_SM);
     
     
     for(Int_t i = 0; i < 4; i++)
@@ -3233,63 +3267,110 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                 
                 
                 //only electrons after TPC eID
-                  if(fTPCnSigma >= fTPCnsigmaCutMin && fTPCnSigma <= fTPCnsigmaCutMax){
-                
-                      //to check trigger efficiency using Energy
-                      fECluster_mb->Fill(fClus->E());
-                      if(feg1)fECluster_eg1->Fill(fClus->E());
-                      if(feg2)fECluster_eg2->Fill(fClus->E());
+                // if(fTPCnSigma >= fTPCnsigmaCutMin && fTPCnSigma <= fTPCnsigmaCutMax){
                       
-                      if(fdg1)fECluster_dg1->Fill(fClus->E());
-                      if(fdg2)fECluster_dg2->Fill(fClus->E());
-                
-                      //to check trigger efficiency using Energy for each super module
-                      fECluster_mb_SM->Fill(supermoduleID,fClus->E());
-                      if(feg1)fECluster_eg1_SM->Fill(supermoduleID,fClus->E());
-                      if(feg2)fECluster_eg2_SM->Fill(supermoduleID,fClus->E());
+                //instead of TPCnsigma, let's use true e from MC, to avoid hadron contamination!!!
+                if(fIsMC)
+                {
+                    if(fIsAOD)
+                    {
+                        fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+                        
+                        if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
+                        {
+                            
+                            if(fMCparticle->GetMother()>0){
+                                
+                                fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                                if(fMCparticleMother->GetMother()>0){
+                                    fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                                }
+                                
+                                if(fMCparticle->IsPhysicalPrimary())
+                                {
+                                    if(TMath::Abs(fMCparticle->GetPdgCode())==11){
                       
-                      if(fdg1)fECluster_dg1_SM->Fill(supermoduleID,fClus->E());
-                      if(fdg2)fECluster_dg2_SM->Fill(supermoduleID,fClus->E());
-                
-                      //not true e from true J/psi, track is on emcal necessarily
-                      fPt_mb_SM->Fill(supermoduleID,fPt);//MB
-                      if(feg1)fPt_eg1_SM->Fill(supermoduleID,fPt);
-                      if(feg2)fPt_eg2_SM->Fill(supermoduleID,fPt);
                       
-                      if(fdg1)fPt_dg1_SM->Fill(supermoduleID,fPt);
-                      if(fdg2)fPt_dg2_SM->Fill(supermoduleID,fPt);
+                                        //checking correlation between energy and pT
+                                        fHist_energy_pT[0]->Fill(fClus->E(), track->Pt());
+                                        if(feg1)fHist_energy_pT[1]->Fill(fClus->E(), track->Pt());
+                                        if(feg2)fHist_energy_pT[2]->Fill(fClus->E(), track->Pt());
+                                        if(fdg1)fHist_energy_pT[3]->Fill(fClus->E(), track->Pt());
+                                        if(fdg2)fHist_energy_pT[4]->Fill(fClus->E(), track->Pt());
+                                        if(feg1 || fdg1)fHist_energy_pT[5]->Fill(fClus->E(), track->Pt());
+                                        if(feg2 || fdg2)fHist_energy_pT[6]->Fill(fClus->E(), track->Pt());
                 
-                      //checking ET
-                      Double_t fvertex_vector[3]={fXvtx, fYvtx, fZvtx};
-                
-                
-                      TLorentzVector cluster_vector;
-                      fClus->GetMomentum(cluster_vector,fvertex_vector);
-                
-                      //Getting Et
-                      Float_t ET = cluster_vector.Pt();
-                      //printf("Getting ET from TLorentzVector: Ex = %f, Ey = %f, Ez = %f,E_total = %f,  ET = %f\n", cluster_vector[0], cluster_vector[1], cluster_vector[2], cluster_vector[3],ET);
-                
-                      //printf("Energy from fClus->E() = %f \n", fClus->E());
-                
-                      //to check trigger efficiency using Energy
-                      fECluster_ET_mb->Fill(ET);
-                      if(feg1)fECluster_ET_eg1->Fill(ET);
-                      if(feg2)fECluster_ET_eg2->Fill(ET);
+                                        //to check trigger efficiency using Energy
+                                        fECluster_mb->Fill(fClus->E());
+                                        if(feg1)fECluster_eg1->Fill(fClus->E());
+                                        if(feg2)fECluster_eg2->Fill(fClus->E());
                       
-                      if(fdg1)fECluster_ET_dg1->Fill(ET);
-                      if(fdg2)fECluster_ET_dg2->Fill(ET);
+                                        if(fdg1)fECluster_dg1->Fill(fClus->E());
+                                        if(fdg2)fECluster_dg2->Fill(fClus->E());
                 
-                      //to check trigger efficiency using Energy for each super module
-                      fECluster_ET_mb_SM->Fill(supermoduleID,ET);
-                      if(feg1)fECluster_ET_eg1_SM->Fill(supermoduleID,ET);
-                      if(feg2)fECluster_ET_eg2_SM->Fill(supermoduleID,ET);
+                                        //to check trigger efficiency using Energy for each super module
+                                        fECluster_mb_SM->Fill(supermoduleID,fClus->E());
+                                        if(feg1)fECluster_eg1_SM->Fill(supermoduleID,fClus->E());
+                                        if(feg2)fECluster_eg2_SM->Fill(supermoduleID,fClus->E());
                       
-                      if(fdg1)fECluster_ET_dg1_SM->Fill(supermoduleID,ET);
-                      if(fdg2)fECluster_ET_dg2_SM->Fill(supermoduleID,ET);
-			  
+                                        if(fdg1)fECluster_dg1_SM->Fill(supermoduleID,fClus->E());
+                                        if(fdg2)fECluster_dg2_SM->Fill(supermoduleID,fClus->E());
                       
-                  }
+                                        //emcal&dcal
+                                        if(feg1 || fdg1)fECluster_deg1_SM->Fill(supermoduleID,fClus->E());
+                                        if(feg2 || fdg2)fECluster_deg2_SM->Fill(supermoduleID,fClus->E());
+                
+                                        //not true e from true J/psi, track is on emcal necessarily
+                                        fPt_mb_SM->Fill(supermoduleID,track->Pt());//MB
+                                        if(feg1)fPt_eg1_SM->Fill(supermoduleID,track->Pt());
+                                        if(feg2)fPt_eg2_SM->Fill(supermoduleID,track->Pt());
+                      
+                                        if(fdg1)fPt_dg1_SM->Fill(supermoduleID,track->Pt());
+                                        if(fdg2)fPt_dg2_SM->Fill(supermoduleID,track->Pt());
+                      
+                                        //emcal&dcal
+                                        if(feg1 || fdg1)fPt_deg1_SM->Fill(supermoduleID,track->Pt());
+                                        if(feg2 || fdg2)fPt_deg2_SM->Fill(supermoduleID,track->Pt());
+                
+                                        //checking ET
+                                        Double_t fvertex_vector[3]={fXvtx, fYvtx, fZvtx};
+                
+                
+                                        TLorentzVector cluster_vector;
+                                        fClus->GetMomentum(cluster_vector,fvertex_vector);
+                
+                                        //Getting Et
+                                        Float_t ET = cluster_vector.Pt();
+                                        //printf("Getting ET from TLorentzVector: Ex = %f, Ey = %f, Ez = %f,E_total = %f,  ET = %f\n", cluster_vector[0], cluster_vector[1], cluster_vector[2], cluster_vector[3],ET);
+                
+                                        //printf("Energy from fClus->E() = %f \n", fClus->E());
+                
+                                        //to check trigger efficiency using Energy
+                                        fECluster_ET_mb->Fill(ET);
+                                        if(feg1)fECluster_ET_eg1->Fill(ET);
+                                        if(feg2)fECluster_ET_eg2->Fill(ET);
+                      
+                                        if(fdg1)fECluster_ET_dg1->Fill(ET);
+                                        if(fdg2)fECluster_ET_dg2->Fill(ET);
+                
+                                        //to check trigger efficiency using Energy for each super module
+                                        fECluster_ET_mb_SM->Fill(supermoduleID,ET);
+                                        if(feg1)fECluster_ET_eg1_SM->Fill(supermoduleID,ET);
+                                        if(feg2)fECluster_ET_eg2_SM->Fill(supermoduleID,ET);
+                      
+                                        if(fdg1)fECluster_ET_dg1_SM->Fill(supermoduleID,ET);
+                                        if(fdg2)fECluster_ET_dg2_SM->Fill(supermoduleID,ET);
+                      
+                                        //emcal&dcal
+                                        if(feg1 || fdg1)fECluster_ET_deg1_SM->Fill(supermoduleID,ET);
+                                        if(feg2 || fdg2)fECluster_ET_deg2_SM->Fill(supermoduleID,ET);
+
+                                    }//change true electrons from MC
+                                }
+                            }
+                        }
+                    }
+                }
 			    //}
                 //EID THnsparse
 				

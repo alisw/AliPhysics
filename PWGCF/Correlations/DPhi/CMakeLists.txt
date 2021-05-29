@@ -117,6 +117,8 @@ set(SRCS
     Unfoldedhistos/AliCSTrackMaps.cxx
     Unfoldedhistos/AliCSTrackSelection.cxx
     Unfoldedhistos/AliDptDptCorrelations.cxx
+    Unfoldedhistos/Ali2PCorrelations.cxx
+    Unfoldedhistos/AliTwoParticleCorrelationsBase.cxx
    )
 
 # Headers from sources

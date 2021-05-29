@@ -41,6 +41,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
     Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
     Bool_t    usePtDepSelectionWindowCut  = kFALSE,                   // use pt dependent meson selection window cut
+    Bool_t    enableSortingMCLabels       = kTRUE,                    // enable sorting for MC cluster labels
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -1109,6 +1110,29 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070h","0103103100000000","0453503000000000"); // INT7
   } else if(trainConfig == 925)  { //EDC 13TeV MB, Ch.Pi 650MeV, Ch.Neu.Pi 850MeV
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070i","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 926)  { //EDC 13TeV MB, Ch.Pi 460MeV
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070j","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 927)  { //EDC 13TeV MB, Ch.Pi 480MeV
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070k","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 928)  { //EDC 13TeV MB, Ch.Pi 520MeV
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070l","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 930)  { //EDC 13TeV MB, Ch.Pi 650MeV, TOF Cut 3
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51073f","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 931)  { //EDC 13TeV MB, Ch.Pi 460MeV, TOF Cut 3
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51073j","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 932)  { //EDC 13TeV MB, Ch.Pi 480MeV, TOF Cut 3
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51073k","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 933)  { //EDC 13TeV MB, Ch.Pi 520MeV, TOF Cut 3
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51073l","0103103100000000","0453503000000000"); // INT7
+
+    //-----
+    //Omega Meson Cut Variations
+    //-----
+  } else if(trainConfig == 950)  { //EDC 13TeV MB, rapidity 5 (0.85)
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","045350j000000000"); // INT7
+  } else if(trainConfig == 951)  { //EDC 13TeV MB, rapidity 5 (0.85)
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","045350k000000000"); // INT7
+
 
     //-----
     //Trigger EG2: Calo Variations
@@ -1140,6 +1164,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070a","0103103300000000","0453503000000000"); // INT7
   } else if(trainConfig == 1015)  { //EDC 13TeV MB, non pt dependent pi0 mass 4 (0.10-0.150)
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070a","0103103400000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1016)  { //EDC 13TeV MB, min/max pt cut n (min gamma 5gev, max pt 20gev)
+    cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070a","01031n3100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1017)  { //EDC 13TeV MB, min/max pt cut s (no min pt, max pt 20gev)
+    cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070a","01031s3100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1018)  { //EDC 13TeV MB, min/max pt cut v (no min pt, max pt 20gev)
+    cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070a","01031v3100000000","0453503000000000"); // INT7
 
     //-----
     //Trigger EG2: Primary Pion Variations
@@ -1188,6 +1218,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","0103103300000000","0453503000000000"); // INT7
   } else if(trainConfig == 1115)  { //EDC 13TeV MB, non pt dependent pi0 mass 4 (0.10-0.150)
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","0103103400000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1116)  { //EDC 13TeV MB, min/max pt cut o (min gamma 10gev, max pt 20gev)
+    cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","01031o3100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1117)  { //EDC 13TeV MB, min/max pt cut p (min gamma 10gev, max pt 25gev)
+    cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","01031p3100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1118)  { //EDC 13TeV MB, min/max pt cut s (no min pt, max pt 20gev)
+    cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","01031s3100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1119)  { //EDC 13TeV MB, min/max pt cut v (no min pt, max pt  25gev)
+    cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","01031v3100000000","0453503000000000"); // INT7
 
     //-----
     //Trigger EG1: Primary Pion Variations
@@ -1343,6 +1381,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask );
+
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

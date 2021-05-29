@@ -22,8 +22,9 @@
 #include <AliLog.h>
 #include <AliAODEvent.h>
 #include <AliAODInputHandler.h>
-#include "AliMultSelection.h"
+#include <AliMultSelection.h>
 #include <TFile.h>
+#include <unistd.h>
 
 using std::cout;
 using std::endl;
@@ -38,6 +39,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fBasePro(NULL),
  fFillQAHistograms(kFALSE),
  fTerminateAfterQA(kFALSE),
+ fVerbose(kFALSE),
 
  // QA:
  fQAList(NULL),
@@ -45,6 +47,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fQAFilterBitScan(NULL),
  fQAIDvsFilterBit(NULL),
  fQAFilterBits(NULL),
+ fQAAnomalousEvents(NULL),
 
  // Control event histograms:
  fControlEventHistogramsList(NULL),
@@ -54,6 +57,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fSelectedTracks(0),
  fSelectedTracksHist(NULL),
  fCentrality(0.),
+ fMinVertexDistance(1.e-6),
 
  // Control particle histograms:
  fControlParticleHistogramsList(NULL),
@@ -67,6 +71,11 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fCalculateQvector(kTRUE),
  fMaxHarmonic(6),
  fMaxCorrelator(8),
+ 
+ // Particle weights:
+ fWeightsList(NULL),
+ fWeightsFlagsPro(NULL),
+
  // Correlations:
  fCorrelationsList(NULL),        
  fCorrelationsFlagsPro(NULL), 
@@ -86,7 +95,15 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fUpdateFrequency(-44),
  fUpdateFile(NULL),
  fMaxNumberOfEvents(-44),
- fBailOutFile(NULL)
+ fBailOutFile(NULL),
+
+ // *.) Debugging:
+ fProcessOnlySpecifiedEvent(kFALSE),
+ fRun(0),
+ fBunchCross(0),
+ fOrbit(0),
+ fPeriod(0),
+ fPrintEventInfo(kFALSE)
  {
   // Constructor.
  
@@ -126,6 +143,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fBasePro(NULL),
  fFillQAHistograms(kFALSE),
  fTerminateAfterQA(kFALSE),
+ fVerbose(kFALSE),
 
  // QA:
  fQAList(NULL),
@@ -133,7 +151,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fQAFilterBitScan(NULL),
  fQAIDvsFilterBit(NULL),
  fQAFilterBits(NULL),
-
+ fQAAnomalousEvents(NULL),
+ 
  // Control event histograms:
  fControlEventHistogramsList(NULL),
  fControlEventHistogramsPro(NULL),
@@ -141,7 +160,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fMultiplicityHist(NULL),
  fSelectedTracks(0),
  fSelectedTracksHist(NULL),
- fCentrality(0.),
+ fCentrality(0.), 
+ fMinVertexDistance(0.),
 
  // Control particle histograms:
  fControlParticleHistogramsList(NULL),
@@ -155,6 +175,11 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fCalculateQvector(kTRUE),
  fMaxHarmonic(6),
  fMaxCorrelator(8),
+
+ // Particle weights:
+ fWeightsList(NULL),
+ fWeightsFlagsPro(NULL),
+
  // Correlations:
  fCorrelationsList(NULL),        
  fCorrelationsFlagsPro(NULL), 
@@ -174,7 +199,15 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fUpdateFrequency(-44),
  fUpdateFile(NULL),
  fMaxNumberOfEvents(-44),
- fBailOutFile(NULL)
+ fBailOutFile(NULL),
+
+ // *.) Debugging:
+ fProcessOnlySpecifiedEvent(kFALSE),
+ fRun(0),
+ fBunchCross(0),
+ fOrbit(0),
+ fPeriod(0),
+ fPrintEventInfo(kFALSE)
 {
   // Dummy constructor.
  
@@ -215,7 +248,7 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
  // e) Book all objects;
  // *) Trick to avoid name clashes, part 2.
  
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Check before bookings if all the values user has provided via setters make sense:
  this->InsanityChecks();
@@ -235,8 +268,9 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
  this->BookControlEventHistograms();
  this->BookControlParticleHistograms();
  this->BookQvectorHistograms();
+ this->BookWeightsHistograms();
  this->BookCorrelationsHistograms();
- this->BookNestedLoopsHistograms();
+ this->BookNestedLoopsHistograms(); 
  this->BookFinalResultsHistograms();
 
  // TBI 20210513 unclassified:
@@ -267,20 +301,27 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  // k) Reset event-by-event objects;
  // *) PostData.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Get pointer to AOD event:
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
  if(!aAOD){return;}
+ if(fPrintEventInfo){this->PrintEventInfo(aAOD);}
+ if(fProcessOnlySpecifiedEvent){if(!this->SpecifiedEvent(aAOD)){return;}} 
 
  // c) Filter out "normal global" tracks for default analysis and cut on their number:
  //    'TPC-only' tracks and 'global constrained to vertex' come with negative ID, and are therefore not stored in fGlobalTracksAOD
- this->GlobalTracksAOD(aAOD); // [0] stands for default analysis
+ this->GlobalTracksAOD(aAOD); // [0] stands for default analysis TBI 202105
  if(0 == fGlobalTracksAOD->GetSize()) return; // yes, go to next event TBI 20210513 re-think this line, perhaps add some further check
 
  // b) QA:
- if(fFillQAHistograms){QA(aAOD);}
- if(fTerminateAfterQA){return;} // TBI 20210513 this can be optimized further, i.e. to force jump immediately to Terminate(...)
+ if(fFillQAHistograms)
+ {
+  FillQAHistograms(aAOD,BEFORE,RECO);
+  if(!SurvivesEventCuts(aAOD)){return;}
+  FillQAHistograms(aAOD,AFTER,RECO);
+  if(fTerminateAfterQA){return;}
+ } // if(fFillQAHistograms)
 
  // c) Filter from this event only what is needed, and store that info in local data members:
  this->FilterEvent(aAOD);
@@ -298,7 +339,6 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  Double_t dPhi = 0., wPhi = 1.; // azimuthal angle and corresponding phi weight
  Double_t dPt = 0., wPt = 1.; // transverse momentum and corresponding pT weight
  Double_t dEta = 0., wEta = 1.; // pseudorapidity and corresponding eta weight
- //Double_t dRapidity = 0., wRapidty = 1.; // rapidity and corresponding rapidity weight TBI_20200612 enable eventually
  Double_t wToPowerP = 1.; // weight raised to power p
  Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
  fSelectedTracks = 0; // counter for tracks which survived all cuts, and which are added to Q-vectors
@@ -306,7 +346,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  {
   AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to "a track" (i.e. any track)
   if(!aTrack){continue;}
-  
+ 
   if(!aTrack->TestFilterBit(fFilterBit)) continue; // TBI 20210514 this one has to be here, to avoid double or triple counting. Is it better to filter out all tracks in TArrayD?
 
   // Particle histograms and track cuts:
@@ -320,12 +360,46 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   dPt = aTrack->Pt(); dPt += 0.; // TBI 20210515 shut down the compiler warnings temporarily
   dEta = aTrack->Eta(); dEta += 0.; // TBI 20210515 shut down the compiler warnings temporarily
 
+  // Particle weights:
+  if(fUseWeights[0])
+  {
+   wPhi = Weight(dPhi,"phi"); // corresponding phi weight
+   if(!(wPhi > 0.))
+   {
+    cout<<"wPhi is not positive, skipping this particle for the time being..."<<endl;
+    cout<<Form("iTrack= %d\ndPhi = %f\nwPhi = %f",iTrack,dPhi,wPhi)<<endl;
+    sleep(2);
+    continue;
+   } 
+  } // if(fUseWeights[0])
+  if(fUseWeights[1])
+  {
+   wPt = Weight(dPt,"pt"); // corresponding pt weight
+   if(!(wPt > 0.))
+   {
+    cout<<"wPt is not positive, skipping this particle for the time being..."<<endl;
+    cout<<Form("iTrack= %d\ndPt = %f\nwPt = %f",iTrack,dPt,wPt)<<endl;
+    sleep(2);
+    continue;
+   } 
+  } // if(fUseWeights[1])
+  if(fUseWeights[2])
+  {
+   wEta = Weight(dEta,"eta"); // corresponding eta weight
+   if(!(wEta > 0.))
+   {
+    cout<<"wEta is not positive, skipping this particle for the time being..."<<endl;
+    cout<<Form("iTrack= %d\ndEta = %f\nwEta = %f",iTrack,dEta,wEta)<<endl;
+    sleep(2);
+    continue;
+   } 
+  } // if(fUseWeights[2])
+
   for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
   {
    for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
    {
-    //if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]||fUseWeights[3]){wToPowerP = pow(wPhi*wPt*wEta,wp);} 
-    //if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]||fUseWeights[3]){wToPowerP = pow(wPhi*wPt*wEta*wRapidity,wp);} // TBI_20200612 same as above, just taking also wRapidity
+    if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]){wToPowerP = pow(wPhi*wPt*wEta,wp);} 
     fQvector[h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi));    
    } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
   } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
@@ -379,13 +453,26 @@ void AliAnalysisTaskMuPa::Terminate(Option_t *)
 {
  // Accessing the merged output list.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBaseList = (TList*)GetOutputData(1);
- if(!fBaseList){exit(1);}
+ // a) "online" mode:
+ if(!fBaseList)
+ {
+  fBaseList = (TList*)GetOutputData(1);
+  if(!fBaseList){cout<<__LINE__<<endl;exit(1);}
+  this->GetPointers(fBaseList);
+ }
 
- // Do some calculation in offline mode here:
-
+ // b) "offline" mode:
+ // 1/ get 'list' from external ROOT file 'mergedFile'
+ // 2/ load flow library and initialize the task: 
+ // 	AliAnalysisTaskMuPa *mupa = new AliAnalysisTaskMuPa("MuPa");
+ //     mupa->GetPointers(list);
+ //     mupa->Terminate(NULL);
+ // 3/ close the curtains:
+ //     mergedFile->Close();  
+ 
+ // c) Do some calculation in terminate here:
  if(fCalculateNestedLoops){this->ComparisonNestedLoopsVsCorrelations();}
 
 } // end of void AliAnalysisTaskMuPa::Terminate(Option_t *)
@@ -478,10 +565,10 @@ void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
 {
  // Initialize all data members which are not built-in types in this method.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
  
  fCentralityEstimator = TString("V0M"); // by default, we use V0M as centrality estimator. Can be customized with task->SetCentralityEstimator("V0M") 
- fPeriod = TString("not set"); // can be customized with e.g. task->SetPeriod("LHC10h");
+ fDataTakingPeriod = TString("not set"); // can be customized with e.g. task->SetDataTakingPeriod("LHC10h");
  fAODNumber = TString("not set"); // can be customized with e.g. task->SetAODNumber("AOD160");
 
 } // void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
@@ -492,12 +579,13 @@ void AliAnalysisTaskMuPa::InitializeArrays()
 {
  // Initialize all data members which are arrays in this method.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  this->InitializeArraysForQAHistograms();
  this->InitializeArraysForControlEventHistograms();
  this->InitializeArraysForControlParticleHistograms();
  this->InitializeArraysForQvectors();
+ this->InitializeArraysForWeights();
  this->InitializeArraysForCorrelationsHistograms();
  this->InitializeArraysForNestedLoopsHistograms();
  this->InitializeArraysForCommonLabels();
@@ -520,6 +608,20 @@ void AliAnalysisTaskMuPa::InitializeArraysForQvectors()
  }
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForQvectors()
+
+//================================================================================================================
+
+void AliAnalysisTaskMuPa::InitializeArraysForWeights()
+{
+ // Initialize all arrays for particle weights.
+
+ for(Int_t w=0;w<gWeights;w++) 
+ {
+  fUseWeights[w] = kFALSE;
+  fWeightsHist[w] = NULL;
+ }
+
+} // void AliAnalysisTaskMuPa::InitializeArraysForWeights()
 
 //================================================================================================================
 
@@ -572,18 +674,22 @@ void AliAnalysisTaskMuPa::InitializeArraysForQAHistograms()
  // Initialize all arrays for QA histograms.
 
  // a) Centrality;
- // b) Kinematics for specified filter bits.
+ // b) Kinematics for specified filter bits;
+ // c) Check for self-correlations.
 
  // a) Centrality:
- for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
+ for(Int_t ba=0;ba<2;ba++)
  {
-  fQACentralityHist[ce1] = NULL;
-  for(Int_t ce2=0;ce2<gCentralityEstimators;ce2++)
+  for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
   {
-   fQACentralityCorrHist[ce1][ce2] = NULL;
+   fQACentralityHist[ce1][ba] = NULL;
+   for(Int_t ce2=0;ce2<gCentralityEstimators;ce2++)
+   {
+    fQACentralityCorrHist[ce1][ce2][ba] = NULL;
+   }
   }
- }
- 
+ } 
+
  // b) Kinematics for specified filter bits (use in combination with SetQAFilterBits(...))
  for(Int_t fb=0;fb<gFilterBits;fb++)
  {
@@ -594,6 +700,12 @@ void AliAnalysisTaskMuPa::InitializeArraysForQAHistograms()
     fQAKinematicsFilterBits[fb][rs][kv] = NULL;
    }   
   } 
+ }
+
+ // c) Check for self-correlations:
+ for(Int_t sc=0;sc<gQASelfCorrelations;sc++)
+ {
+  fQASelfCorrelations[sc] = NULL;
  }
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForQAHistograms()
@@ -607,11 +719,15 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  // a) Multiplicity.
  // b) Centrality;
  // c) Vertex;
- // *) Other.
+ // d) Remaining event histograms.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Multiplicity:
+ for(Int_t m=0;m<gCentralMultiplicity;m++)
+ { 
+  fCentralMultiplicityHist[m] = NULL;
+ } // for(Int_t m=0;m<gCentralMultiplicity;m++)
  fMultiplicityBins[0] = 3000.;
  fMultiplicityBins[1] = 0.;
  fMultiplicityBins[2] = 3000.;
@@ -652,18 +768,42 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  fVertexCuts[Z][0] = -10.;
  fVertexCuts[Z][1] = 10.;
 
+ fNContributorsBins[0] = 3000.;
+ fNContributorsBins[1] = 0.;
+ fNContributorsBins[2] = 3000.;
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   fNContributorsHist[ba][rs] = NULL; 
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t xyz=0;xyz<3;xyz++)
  fNContributorsCuts[0] = 2; // min
  fNContributorsCuts[1] = 1e6; // max, this one is typically left open
 
- // *) Other:
+ // d) Remaining event histograms:
  for(Int_t ba=0;ba<2;ba++)
  {
-  for(Int_t oeh=0;oeh<gOtherEventHistograms;oeh++)
+  for(Int_t oeh=0;oeh<gEventHistograms;oeh++)
   {
-   fOtherEventHistograms[ba][oeh] = NULL;
+   fEventHistograms[ba][oeh] = NULL;
   }
  } // for(Int_t ba=0;ba<2;ba++)
- 
+
+ // defaults bins:
+ fEventBins[MagneticField][0] = 4;
+ fEventBins[MagneticField][1] = -2.;
+ fEventBins[MagneticField][2] = 2.;
+ fEventBins[PrimaryVertex][0] = 1;
+ fEventBins[PrimaryVertex][1] = 0.;
+ fEventBins[PrimaryVertex][2] = 1.;
+
+ // default cuts:
+ fEventCuts[MagneticField][0] = -1.;
+ fEventCuts[MagneticField][1] = 1.;
+ fEventCuts[PrimaryVertex][0] = 0.;
+ fEventCuts[PrimaryVertex][1] = 1.;
+
 } // void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
 
 //================================================================================================================
@@ -672,9 +812,12 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
 {
  // Initialize all arrays for control particle histograms. Cuts hardwired here are default particle cuts. 
 
- // a) Kinematics.
+ // a) Kinematics; 
+ // b) DCA;
+ // c) Remaining particle histograms; 
+ // d) The default particle cuts. 
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Kinematics:
  for(Int_t ba=0;ba<2;ba++)
@@ -713,7 +856,7 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
  fKinematicsBins[CHARGE][1] = -2.;
  fKinematicsBins[CHARGE][2] = 3.;
 
- // DCA:
+ // b) DCA:
  for(Int_t ba=0;ba<2;ba++)
  {
   for(Int_t rs=0;rs<2;rs++)
@@ -735,36 +878,93 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
  fDCABins[1][1] = -20.;
  fDCABins[1][2] = 20.;
 
- // -----------
+ // c) Remaining particle histograms:
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   for(Int_t t=0;t<gParticleHistograms;t++) // type, see enum 'eParticle'
+   {
+    fParticleHist[ba][rs][t] = NULL; 
+   } // for(Int_t t=0;t<gParticleHistograms;t++)
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t ba=0;ba<2;ba++)
 
- // These cuts are used by default, if you want other or open cuts, indicate that via dedicated setters.
- // default phi cuts:
+ // default binning, see enum 'eParticle':
+ fParticleBins[TPCNcls][0] = 200;
+ fParticleBins[TPCNcls][1] = 0.;
+ fParticleBins[TPCNcls][2] = 200.;
+
+ fParticleBins[TPCnclsS][0] = 200;
+ fParticleBins[TPCnclsS][1] = 0.;
+ fParticleBins[TPCnclsS][2] = 200.;
+
+ fParticleBins[TPCnclsFractionShared][0] = 200;
+ fParticleBins[TPCnclsFractionShared][1] = 0.;
+ fParticleBins[TPCnclsFractionShared][2] = 200.;
+
+ fParticleBins[TPCNCrossedRows][0] = 200;
+ fParticleBins[TPCNCrossedRows][1] = 0.;
+ fParticleBins[TPCNCrossedRows][2] = 200.;
+
+ fParticleBins[TPCChi2perNDF][0] = 100;
+ fParticleBins[TPCChi2perNDF][1] = 0.;
+ fParticleBins[TPCChi2perNDF][2] = 10.;
+
+ fParticleBins[TPCFoundFraction][0] = 100;
+ fParticleBins[TPCFoundFraction][1] = 0.;
+ fParticleBins[TPCFoundFraction][2] = 2.;
+
+ fParticleBins[Chi2TPCConstrainedVsGlobal][0] = 400;
+ fParticleBins[Chi2TPCConstrainedVsGlobal][1] = -2.;
+ fParticleBins[Chi2TPCConstrainedVsGlobal][2] = 2.;
+
+ fParticleBins[ITSNcls][0] = 100;
+ fParticleBins[ITSNcls][1] = 0.;
+ fParticleBins[ITSNcls][2] = 10.;
+
+ fParticleBins[ITSChi2perNDF][0] = 100;
+ fParticleBins[ITSChi2perNDF][1] = 0.;
+ fParticleBins[ITSChi2perNDF][2] = 1.;
+
+ // d) The default particle cuts: 
+ //  These cuts are used by default, if you want other cuts, indicate that via dedicated setters.
+ //  d1) Kinematics:
+ //    default phi cuts:
  fKinematicsCuts[PHI][0] = fKinematicsBins[PHI][1];
  fKinematicsCuts[PHI][1] = fKinematicsBins[PHI][2];
 
- // default pt cuts:
+ //    default pt cuts:
  fKinematicsCuts[PT][0] = fKinematicsBins[PT][1];
  fKinematicsCuts[PT][1] = fKinematicsBins[PT][2];
 
- // default eta cuts:
+ //    default eta cuts:
  fKinematicsCuts[ETA][0] = fKinematicsBins[ETA][1];
  fKinematicsCuts[ETA][1] = fKinematicsBins[ETA][2];
 
- // default e cuts:
+ //    default e cuts:
  fKinematicsCuts[E][0] = fKinematicsBins[E][1];
  fKinematicsCuts[E][1] = fKinematicsBins[E][2];
 
- // default charge cuts:
+ //    default charge cuts:
  fKinematicsCuts[CHARGE][0] = fKinematicsBins[CHARGE][1];
  fKinematicsCuts[CHARGE][1] = fKinematicsBins[CHARGE][2];
 
- // default DCA xy cuts:
+ //  d2) DCA:
+ //    default DCA xy cuts:
  fDCACuts[0][0] = fDCABins[0][1];
  fDCACuts[0][1] = fDCABins[0][2];
 
- // default DCA z cuts:
+ //    default DCA z cuts:
  fDCACuts[1][0] = fDCABins[1][1];
  fDCACuts[1][1] = fDCABins[1][2];
+
+ //  d3) Remaining:
+ for(Int_t t=0;t<gParticleHistograms;t++)
+ {
+  fParticleCuts[t][0] = fParticleBins[t][1];
+  fParticleCuts[t][1] = fParticleBins[t][2];
+ }
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
 
@@ -790,7 +990,7 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  // a) Multiplicity;
  // b) Centrality.
 
-  cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) TBI Multiplicity:
  // ...
@@ -813,11 +1013,11 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 {
  // Book base profile which keeps flags relevant for the whole analysis.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  fBasePro = new TProfile("fBasePro","flags for the whole analysis",4,0.,4.);
  fBasePro->SetStats(kFALSE);
- fBasePro->GetXaxis()->SetBinLabel(1,Form("fPeriod = %s",fPeriod.Data()));
+ fBasePro->GetXaxis()->SetBinLabel(1,Form("fDataTakingPeriod = %s",fDataTakingPeriod.Data()));
  fBasePro->GetXaxis()->SetBinLabel(2,Form("fAODNumber = %s",fAODNumber.Data())); // TBI 20210513 
  //fBasePro->GetXaxis()->SetBinLabel(3,"fFillQAhistograms"); fBasePro->Fill(2.5,fFillQAHistograms);
  //fBasePro->GetXaxis()->SetBinLabel(4,"fTerminateAfterQA"); fBasePro->Fill(3.5,fTerminateAfterQA);
@@ -834,13 +1034,14 @@ void AliAnalysisTaskMuPa::BookAndNestAllLists()
  // a) Book and nest lists for QA histograms;
  // b) Book and nest lists for control event histograms;
  // c) Book and nest lists for control particle histograms;
- // d) Book and nest lists for Q-vectorsl;
- // e) Book and nest all lists for correlations;
- // f) Book and nest all lists for nested loops;
+ // d) Book and nest lists for Q-vectors;
+ // e) Book and nest lists for weights;
+ // f) Book and nest all lists for correlations;
+ // g) Book and nest all lists for nested loops;
 
  // *) Book and nest lists for final results.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  if(!fBaseList){cout<<__LINE__<<endl;exit(1);}
 
@@ -868,13 +1069,19 @@ void AliAnalysisTaskMuPa::BookAndNestAllLists()
  fQvectorList->SetOwner(kTRUE);
  fBaseList->Add(fQvectorList);
 
- // e) Book and nest all lists for correlations:
+ // e) Book and nest lists for weights:
+ fWeightsList = new TList();
+ fWeightsList->SetName("Weights");
+ fWeightsList->SetOwner(kTRUE);
+ fBaseList->Add(fWeightsList);
+
+ // f) Book and nest all lists for correlations:
  fCorrelationsList = new TList();
  fCorrelationsList->SetName("Correlations");
  fCorrelationsList->SetOwner(kTRUE);
  fBaseList->Add(fCorrelationsList);
 
- // f) Book and nest all lists for nested loops:
+ // g) Book and nest all lists for nested loops:
  fNestedLoopsList = new TList();
  fNestedLoopsList->SetName("NestedLoops");
  fNestedLoopsList->SetOwner(kTRUE);
@@ -903,8 +1110,10 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
  // b) Common local style and labels;
  // c) Centrality;
  // d) Particles;
+ // e) Anomalous events;
+ // f) Check for self-correlations.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
  fQAPro = new TProfile("fQAPro","flags for QA histograms",1,0.,1.);
@@ -916,33 +1125,37 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
  // b) Common local style and labels:
  Int_t bLineColor = kGreen+2;
  Int_t bFillColor = kGreen-10;
- TString sce[gCentralityEstimators] = {"V0M", "CL0", "CL1", "TRK", "V0A", "V0B", "TKL"}; // keep this in sync with enum eCentralityEstimator in .h
- TString sba[2] = {"before particle cuts","after particle cuts"};
+ TString sce[gCentralityEstimators] = {"V0M", "SPDTracklets", "CL0", "CL1"}; // keep this in sync with enum eCentralityEstimator in .h
+ TString sba[2] = {"before event cuts","after event cuts"};
  TString srs[2] = {"reconstructed","simulated"};
  TString skv[gKinematicVariables] = {"#varphi","p_{T}","#eta","energy","charge"};
+ TString sae[gQAAnomalousEvents] = {"|vertex| = 0."};
 
- for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
+ for(Int_t ba=0;ba<2;ba++)
  {
-  fQACentralityHist[ce1] = new TH1D(Form("fQACentralityHist[%d]",ce1),Form("%s",sce[ce1].Data()),(Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2]);
-  //fQACentralityHist[ce1]->SetStats(kFALSE);
-  fQACentralityHist[ce1]->SetLineColor(bLineColor);
-  fQACentralityHist[ce1]->SetFillColor(bFillColor);
-  fQACentralityHist[ce1]->GetXaxis()->SetTitle("centrality");
-  fQAList->Add(fQACentralityHist[ce1]);
-
-  // 2D correlation plot, only upper diagonal is booked:
-  for(Int_t ce2=ce1+1;ce2<gCentralityEstimators;ce2++)
+  for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
   {
-   fQACentralityCorrHist[ce1][ce2] = new TH2D(Form("fQACentralityCorrHist[%d][%d]",ce1,ce2),Form("%s vs. %s",sce[ce1].Data(),sce[ce2].Data()),
-                                   (Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2],(Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2]);
-   //fQACentralityCorrHist[ce1][ce2]->SetLineColor(bLineColor);
-   //fQACentralityCorrHist[ce1][ce2]->SetFillColor(bFillColor);
-   fQACentralityCorrHist[ce1][ce2]->SetOption("col");
-   fQACentralityCorrHist[ce1][ce2]->GetXaxis()->SetTitle(Form("centrality %s",sce[ce1].Data()));
-   fQACentralityCorrHist[ce1][ce2]->GetYaxis()->SetTitle(Form("centrality %s",sce[ce2].Data()));
-   fQAList->Add(fQACentralityCorrHist[ce1][ce2]);
-  } // for(Int_t ce2=ce1+1;ce2<gCentralityEstimators;ce2++) 
- } // for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
+   fQACentralityHist[ce1][ba] = new TH1D(Form("fQACentralityHist[%d][%d]",ce1,ba),Form("%s,%s",sce[ce1].Data(),sba[ba].Data()),(Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2]);
+   //fQACentralityHist[ce1][ba]->SetStats(kFALSE);
+   fQACentralityHist[ce1][ba]->SetLineColor(bLineColor);
+   fQACentralityHist[ce1][ba]->SetFillColor(bFillColor);
+   fQACentralityHist[ce1][ba]->GetXaxis()->SetTitle("centrality");
+   fQAList->Add(fQACentralityHist[ce1][ba]);
+
+   // 2D correlation plot, only upper diagonal is booked:
+   for(Int_t ce2=ce1+1;ce2<gCentralityEstimators;ce2++)
+   {
+    fQACentralityCorrHist[ce1][ce2][ba] = new TH2D(Form("fQACentralityCorrHist[%d][%d][%d]",ce1,ce2,ba),Form("%s vs. %s, %s",sce[ce1].Data(),sce[ce2].Data(),sba[ba].Data()),
+                                          (Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2],(Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2]);
+    //fQACentralityCorrHist[ce1][ce2][ba]->SetLineColor(bLineColor);
+    //fQACentralityCorrHist[ce1][ce2][ba]->SetFillColor(bFillColor);
+    fQACentralityCorrHist[ce1][ce2][ba]->SetOption("col");
+    fQACentralityCorrHist[ce1][ce2][ba]->GetXaxis()->SetTitle(Form("centrality %s",sce[ce1].Data()));
+    fQACentralityCorrHist[ce1][ce2][ba]->GetYaxis()->SetTitle(Form("centrality %s",sce[ce2].Data()));
+    fQAList->Add(fQACentralityCorrHist[ce1][ce2][ba]);
+   } // for(Int_t ce2=ce1+1;ce2<gCentralityEstimators;ce2++) 
+  } // for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
+ } // for(Int_t ba=0;ba<2;ba++)
 
  // Particles:
  fQAFilterBitScan = new TH1I("fQAFilterBitScan","fQAFilterBitScan",gFilterBits,0,gFilterBits);
@@ -977,12 +1190,37 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
    {
     fQAKinematicsFilterBits[fb][rs][kv] = new TH1D(Form("fQAKinematicsFilterBits[%d][%d][%d]",fb,rs,kv),Form("Filter bit: %d, %s, %s",(Int_t)fQAFilterBits->GetAt(fb),srs[rs].Data(),skv[kv].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]);
     fQAKinematicsFilterBits[fb][rs][kv]->SetXTitle(skv[kv].Data());
-    fQAKinematicsFilterBits[fb][rs][kv]->SetLineColor(kBlack);
-    fQAKinematicsFilterBits[fb][rs][kv]->SetFillColor(kGray);
+    fQAKinematicsFilterBits[fb][rs][kv]->SetLineColor(COLOR);
+    fQAKinematicsFilterBits[fb][rs][kv]->SetFillColor(FILLCOLOR);
     fQAKinematicsFilterBits[fb][rs][kv]->SetMinimum(0.);
     fQAList->Add(fQAKinematicsFilterBits[fb][rs][kv]);
    }   
   } 
+ }
+
+ // e) Anomalous events:
+ // 0 : count events with |vertex| = 0
+ // 1 : ...
+ fQAAnomalousEvents = new TH1I("fQAAnomalousEvents","counter",gQAAnomalousEvents,0,gQAAnomalousEvents);
+ fQAAnomalousEvents->SetLineColor(COLOR);
+ fQAAnomalousEvents->SetFillColor(FILLCOLOR);
+ for(Int_t ae=1;ae<=gQAAnomalousEvents;ae++)
+ {
+  fQAAnomalousEvents->GetXaxis()->SetBinLabel(ae,sae[ae-1].Data());
+ }
+ fQAAnomalousEvents->SetMinimum(0.);
+ fQAList->Add(fQAAnomalousEvents);
+ 
+ // f) Check for self-correlations:
+ TString ssc[gQASelfCorrelations] = {"#varphi","p_{T}","#eta"};
+ for(Int_t sc=0;sc<gQASelfCorrelations;sc++)
+ {
+  fQASelfCorrelations[sc] = new TH1D(Form("fQASelfCorrelations[%d]",sc),Form("Check for self-correlations in: %s_{1} - %s_{2}",ssc[sc].Data(),ssc[sc].Data()),200,-0.1,0.1); // TBI 20210526 hw limits
+  fQASelfCorrelations[sc]->SetXTitle(ssc[sc].Data());
+  fQASelfCorrelations[sc]->SetLineColor(COLOR);
+  fQASelfCorrelations[sc]->SetFillColor(FILLCOLOR);
+  fQASelfCorrelations[sc]->SetMinimum(0.);
+  fQAList->Add(fQASelfCorrelations[sc]);
  }
 
 } // void AliAnalysisTaskMuPa::BookQAHistograms()
@@ -998,9 +1236,9 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  // c) Multiplicity;
  // d) Centrality;
  // e) Vertex;
- // *) Other.
+ // f) Remaining event histograms.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
  fControlEventHistogramsPro = new TProfile("fControlEventHistogramsPro","flags for control event histograms",1,0.,1.);
@@ -1013,6 +1251,8 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  TString sxyz[3] = {"x","y","z"};
  TString sba[2] = {"before event cuts","after event cuts"};
  TString srs[2] = {"reconstructed","simulated"};
+ TString stype[gEventHistograms] = {"MagneticField","PrimaryVertex"};
+ TString smult[gCentralMultiplicity] = {"TBI 20210523"};
 
  // c) Multiplicity:
  fMultiplicityHist = new TH1D("fMultiplicityHist","multiplicity = sum of particle weights of tracks in Q-vector",(Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
@@ -1021,6 +1261,15 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  fMultiplicityHist->SetFillColor(FILLCOLOR);
  fMultiplicityHist->GetXaxis()->SetTitle("Multiplicity");
  fControlEventHistogramsList->Add(fMultiplicityHist);
+ for(Int_t m=0;m<gCentralMultiplicity;m++)
+ {
+  fCentralMultiplicityHist[m] = new TH1D(Form("fCentralMultiplicityHist[%d]",m),smult[m].Data(),(Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
+  //fCentralMultiplicityHist[m]->SetStats(kFALSE);
+  fCentralMultiplicityHist[m]->SetLineColor(COLOR);
+  fCentralMultiplicityHist[m]->SetFillColor(FILLCOLOR);
+  fCentralMultiplicityHist[m]->GetXaxis()->SetTitle(smult[m].Data());
+  // fControlEventHistogramsList->Add(fCentralMultiplicityHist[m]); TBI 20210523 enable eventually
+ }
 
  fSelectedTracksHist = new TH1I("fSelectedTracksHist","integer counter of selected tracks added in Q-vector",(Int_t)fMultiplicityBins[0],(Int_t)fMultiplicityBins[1],(Int_t)fMultiplicityBins[2]);
  //fSelectedTracksHist->SetStats(kFALSE);
@@ -1057,33 +1306,29 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t xyz=0;xyz<3;xyz++)
 
- // *) Other:
- // 0: aAOD->GetPrimaryVertex() => here we count events with [bin 1] and without [bin 1] primary vertex
- // 1: avtx->GetNContributors() 
- // 2: aAOD->GetMagneticField()
  for(Int_t ba=0;ba<2;ba++)
  {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   fNContributorsHist[ba][rs] = new TH1I(Form("fNContributorsHist[%d][%d]",ba,rs),Form("%s, %s",sba[ba].Data(),srs[rs].Data()),(Int_t)fNContributorsBins[0],fNContributorsBins[1],fNContributorsBins[2]); 
+   //fNContributorsHist[ba][rs]->SetStats(kFALSE);
+   fNContributorsHist[ba][rs]->GetXaxis()->SetTitle("avtx->GetNContributors()");
+   fNContributorsHist[ba][rs]->SetLineColor(fBeforeAfterColor[ba]);
+   fNContributorsHist[ba][rs]->SetFillColor(fBeforeAfterColor[ba]-10);
+   fControlEventHistogramsList->Add(fNContributorsHist[ba][rs]); 
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t xyz=0;xyz<3;xyz++)
 
-  // 0: aAOD->GetPrimaryVertex() => here we count events with [bin 1] and without [bin 1] primary vertex
-  fOtherEventHistograms[ba][0] = new TH1D(Form("fOtherEventHistograms[%d][0]",ba),Form("%s, %s",sba[ba].Data(),"aAOD->GetPrimaryVertex()"),2,0.,2.); 
-  fOtherEventHistograms[ba][0]->GetXaxis()->SetBinLabel(1,"with vertex");
-  fOtherEventHistograms[ba][0]->GetXaxis()->SetBinLabel(2,"without vertex");
-  fOtherEventHistograms[ba][0]->SetLineColor(fBeforeAfterColor[ba]);  
-  fOtherEventHistograms[ba][0]->SetFillColor(fBeforeAfterColor[ba]-10);
-  fControlEventHistogramsList->Add(fOtherEventHistograms[ba][0]); 
- 
-  // 1: avtx->GetNContributors() 
-  fOtherEventHistograms[ba][1] = new TH1D(Form("fOtherEventHistograms[%d][1]",ba),Form("%s, %s",sba[ba].Data(),"avtx->GetNContributors()"),3000,0.,3000.); 
-  fOtherEventHistograms[ba][1]->SetLineColor(fBeforeAfterColor[ba]);  
-  fOtherEventHistograms[ba][1]->SetFillColor(fBeforeAfterColor[ba]-10);
-  fControlEventHistogramsList->Add(fOtherEventHistograms[ba][1]); 
-
-  // 2: aAOD->GetMagneticField()
-  fOtherEventHistograms[ba][2] = new TH1D(Form("fOtherEventHistograms[%d][2]",ba),Form("%s, %s",sba[ba].Data(),"aAOD->GetMagneticField()"),2000,-10.,10.); 
-  fOtherEventHistograms[ba][2]->SetLineColor(fBeforeAfterColor[ba]);  
-  fOtherEventHistograms[ba][2]->SetFillColor(fBeforeAfterColor[ba]-10);
-  fControlEventHistogramsList->Add(fOtherEventHistograms[ba][2]); 
-
+ // f) Remaining event histograms:
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t t=0;t<gEventHistograms;t++) // type, see enum 'eEvent'
+  {
+   fEventHistograms[ba][t] = new TH1D(Form("fEventHistograms[%d][%d]",ba,t),Form("%s, %s",sba[ba].Data(),stype[t].Data()),(Int_t)fEventBins[t][0],fEventBins[t][1],fEventBins[t][2]); 
+   fEventHistograms[ba][t]->SetLineColor(fBeforeAfterColor[ba]);  
+   fEventHistograms[ba][t]->SetFillColor(fBeforeAfterColor[ba]-10);
+   fControlEventHistogramsList->Add(fEventHistograms[ba][t]); 
+  } // for(Int_t t=0;t<gEventHistograms;t++) // type, see enum 'eEvent'
  } // for(Int_t ba=0;ba<2;ba++)
 
 } // void AliAnalysisTaskMuPa::BookControlEventHistograms()
@@ -1097,9 +1342,10 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
  // a) Book the profile holding flags;
  // b) Common local labels;
  // c) Kinematics;
- // d) DCA.
+ // d) DCA;
+ // e) Remaining.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
  fControlParticleHistogramsPro = new TProfile("fControlParticleHistogramsPro","flags for control particle histograms",1,0.,1.);
@@ -1113,6 +1359,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
  TString sba[2] = {"before particle cuts","after particle cuts"};
  TString srs[2] = {"reconstructed","simulated"};
  TString skv[gKinematicVariables] = {"#varphi","p_{T}","#eta","energy","charge"};
+ TString stype[gParticleHistograms] = {"TPCNcls","TPCnclsS","TPCnclsFractionShared","TPCNCrossedRows","TPCChi2perNDF","TPCFoundFraction","Chi2TPCConstrainedVsGlobal","ITSNcls","ITSChi2perNDF"};
 
  // c) Kinematics:
  for(Int_t ba=0;ba<2;ba++)
@@ -1150,6 +1397,23 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t ba=0;ba<2;ba++) 
 
+ // e) Remaining:
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   for(Int_t t=0;t<gParticleHistograms;t++) // type, see enum 'eParticle'
+   {
+    fParticleHist[ba][rs][t] = new TH1D(Form("fParticleHist[%d][%d][%d]",ba,rs,t),Form("%s, %s, %s",stype[t].Data(),sba[ba].Data(),srs[rs].Data()),(Int_t)fParticleBins[t][0],fParticleBins[t][1],fParticleBins[t][2]);  
+    fParticleHist[ba][rs][t]->GetXaxis()->SetTitle(stype[t].Data());
+    fParticleHist[ba][rs][t]->SetMinimum(0.);  
+    fParticleHist[ba][rs][t]->SetLineColor(fBeforeAfterColor[ba]);
+    fParticleHist[ba][rs][t]->SetFillColor(fBeforeAfterColor[ba]-10);
+    fControlParticleHistogramsList->Add(fParticleHist[ba][rs][t]); 
+   } // for(Int_t t=0;t<gParticleHistograms;t++)
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t ba=0;ba<2;ba++)
+
 } // void AliAnalysisTaskMuPa::BookControlParticleHistograms()
 
 //=======================================================================================================================
@@ -1162,7 +1426,7 @@ void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
  // b) Common local labels;
  // c) Histograms.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
  fCorrelationsFlagsPro = new TProfile("fCorrelationsFlagsPro","flags for correlations",1,0.,1.);
@@ -1175,7 +1439,7 @@ void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
  if(!fCalculateCorrelations){return;}
 
  // b) Common local labels:
- TString oVariable[4] = {"#varphi_{1}-#varphi_{2}","#varphBookQvectorHistogramsi_{1}+#varphi_{2}-#varphi_{3}-#varphi_{4}",
+ TString oVariable[4] = {"#varphi_{1}-#varphi_{2}","#varphi_{1}+#varphi_{2}-#varphi_{3}-#varphi_{4}",
                          "#varphi_{1}+#varphi_{2}+#varphi_{3}-#varphi_{4}-#varphi_{5}-#varphi_{6}",
                          "#varphi_{1}+#varphi_{2}+#varphi_{3}+#varphi_{4}-#varphi_{5}-#varphi_{6}-#varphi_{7}-#varphi_{8}"};
  Int_t vvvariableNBins[3] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0]};
@@ -1214,7 +1478,7 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
  // b) Common local labels;
  // c) Histograms.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
  fNestedLoopsFlagsPro = new TProfile("fNestedLoopsFlagsPro","flags for nested loops",1,0.,1.);
@@ -1231,7 +1495,7 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
  ftaNestedLoops[1] = new TArrayD(maxSize); // ebe container for particle weights (product of all)  
 
  // b) Common local labels (keep 'em in sync with BookCorrelationsHistograms())
- TString oVariable[4] = {"#varphi_{1}-#varphi_{2}","#varphBookQvectorHistogramsi_{1}+#varphi_{2}-#varphi_{3}-#varphi_{4}",
+ TString oVariable[4] = {"#varphi_{1}-#varphi_{2}","#varphi_{1}+#varphi_{2}-#varphi_{3}-#varphi_{4}",
                          "#varphi_{1}+#varphi_{2}+#varphi_{3}-#varphi_{4}-#varphi_{5}-#varphi_{6}",
                          "#varphi_{1}+#varphi_{2}+#varphi_{3}+#varphi_{4}-#varphi_{5}-#varphi_{6}-#varphi_{7}-#varphi_{8}"};
  Int_t vvvariableNBins[3] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0]};
@@ -1266,7 +1530,7 @@ void AliAnalysisTaskMuPa::BookFinalResultsHistograms()
 {
  // Book all histograms to hold the final results.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl; 
+ if(fVerbose){Green(__PRETTY_FUNCTION__);} 
 
 } // void AliAnalysisTaskMuPa::BookFinalResultsHistograms()
 
@@ -1294,16 +1558,74 @@ void AliAnalysisTaskMuPa::BookQvectorHistograms()
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMuPa::BookWeightsHistograms()
+{
+ // Book all objects for particle weights.
+
+ // a) Book the profile holding flags;
+ // b) Common local labels;
+ // c) Histograms.
+
+ // a) Book the profile holding flags:
+ fWeightsFlagsPro = new TProfile("fWeightsFlagsPro","flags for particle weights",3,0.,3.);
+ fWeightsFlagsPro->SetStats(kFALSE);
+ fWeightsFlagsPro->SetLineColor(COLOR);
+ fWeightsFlagsPro->SetFillColor(FILLCOLOR);
+ fWeightsFlagsPro->GetXaxis()->SetLabelSize(0.05);  
+ fWeightsFlagsPro->GetXaxis()->SetBinLabel(1,"w_{#varphi}");  
+ fWeightsFlagsPro->GetXaxis()->SetBinLabel(2,"w_{p_{t}}");  
+ fWeightsFlagsPro->GetXaxis()->SetBinLabel(3,"w_{#eta}"); 
+ for(Int_t w=0;w<gWeights;w++) // use weights [phi,pt,eta]
+ { 
+  if(fUseWeights[w])fWeightsFlagsPro->Fill(w+0.5,1.);
+ }
+ fWeightsList->Add(fWeightsFlagsPro);
+
+ // b) Common local labels:
+ TString sVariable[gWeights] = {"#varphi","p_{t}","#eta"}; // [phi,pt,eta,rapidity]
+ TString sWeights[gWeights] = {"w_{#varphi}","w_{p_{t}}","w_{#eta}"};
+
+ // c) Histograms:
+ for(Int_t w=0;w<gWeights;w++) // use weights [phi,pt,eta]
+ {
+  if(!fUseWeights[w]){continue;}
+  if(!fWeightsHist[w]) // yes, because these histos are cloned from the exteral ones, see SetWeightsHist(TH1D* const hist, const char *variable)
+  {
+   fWeightsHist[w] = new TH1D(Form("fWeightsHist[%d]",w),"",(Int_t)fKinematicsBins[w][0],fKinematicsBins[w][1],fKinematicsBins[w][2]);
+   fWeightsHist[w]->SetTitle(Form("Particle weights for %s",sWeights[w].Data()));
+   fWeightsHist[w]->SetStats(kFALSE);
+   fWeightsHist[w]->GetXaxis()->SetTitle(sVariable[w].Data());
+   fWeightsHist[w]->SetFillColor(FILLCOLOR);
+   fWeightsHist[w]->SetLineColor(COLOR);
+  }
+  fWeightsList->Add(fWeightsHist[w]);
+ } // for(Int_t w=0;w<gWeights;w++) // use weights [phi,pt,eta]
+
+ // TBI 20210525 quick temporary sanity check:
+ for(Int_t w=0;w<gWeights;w++) // use weights [phi,pt,eta]
+ {
+  if(!fUseWeights[w]){continue;}
+  if( (Int_t)(fWeightsHist[w]->GetNbinsX()) != (Int_t)(fKinematicsHist[0][0][w]->GetNbinsX()))
+  {
+   cout<<Form("w = %d",w)<<endl;
+   cout<<__LINE__<<endl;exit(1);
+  }
+ } // for(Int_t w=0;w<gWeights;w++) // use weights [phi,pt,eta]
+
+} // void AliAnalysisTaskMuPa::BookWeightsHistograms()
+
+//=======================================================================================================================
+
 void AliAnalysisTaskMuPa::GetPointers(TList *baseList)
 {
- // Get all pointers. This method is  essential only for merging and boostrap.
+ // Get all pointers. This method is essential only for merging and boostrap.
 
  // a) Check the pointer for base list fBaseList;
  // b) Get pointer for profile holding internal flags and set again all flags;
  // c) Get pointers for control event histograms;
  // d) Get pointers control particle histograms;
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Check the pointer for base list fBaseList:
  fBaseList = baseList; 
@@ -1333,7 +1655,7 @@ void AliAnalysisTaskMuPa::GetPointersForControlEventHistograms(void)
  // c) Re-initiate all relevant flags; 
  // d) Get all specific pointers.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Get pointer for fControlEventHistogramsList:
  fControlEventHistogramsList = dynamic_cast<TList*>(fBaseList->FindObject("ControlEventHistograms"));
@@ -1373,7 +1695,7 @@ void AliAnalysisTaskMuPa::GetPointersForControlParticleHistograms(void)
  // c) Re-initiate all relevant flags; 
  // d) Get all specific pointers.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Get pointer for fControlParticleHistogramsList:
  fControlParticleHistogramsList = dynamic_cast<TList*>(fBaseList->FindObject("ControlParticleHistograms"));
@@ -1400,7 +1722,7 @@ void AliAnalysisTaskMuPa::FilterEvent(AliVEvent *ave)
  // a) Determine Ali{MC,ESD,AOD}Event;
  // b) Centrality;
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Determine Ali{MC,ESD,AOD}Event:
  //AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
@@ -1427,10 +1749,12 @@ void AliAnalysisTaskMuPa::FillControlEventHistograms(AliVEvent *ave, const Int_t
 {
  // Fill control histograms before event cuts (ba = 0), or after (ba = 1). For reconstructed data (rs = 0), or simulated (rs = 1)
  // a) Determine Ali{MC,ESD,AOD}Event;
- // b) Centrality;
- // c) Vertex.
+ // b) Vertex;
+ // c) Centrality;
+ // d) Centrally determined multiplicity;
+ // e) Remaining event distributions.
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Determine Ali{MC,ESD,AOD}Event:
  //AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
@@ -1439,26 +1763,23 @@ void AliAnalysisTaskMuPa::FillControlEventHistograms(AliVEvent *ave, const Int_t
 
  if(aAOD)
  {
-  // Centrality:
-  if(fCentralityHist[ba]){fCentralityHist[ba]->Fill(fCentrality);}
-
-  // Vertex: TH1D *fVertexHist[2][2][3]; //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
+  // b) Vertex: TH1D *fVertexHist[2][2][3]; //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
   AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
-  if(!avtx) 
-  {
-   fOtherEventHistograms[ba][0]->Fill(1.5); // see its booking
-   return; 
-  }
-  fOtherEventHistograms[ba][0]->Fill(0.5); // see its booking
+  if(!avtx) return; 
   if(fVertexHist[ba][rs][X]){fVertexHist[ba][rs][X]->Fill(avtx->GetX());}
   if(fVertexHist[ba][rs][Y]){fVertexHist[ba][rs][Y]->Fill(avtx->GetY());}
   if(fVertexHist[ba][rs][Z]){fVertexHist[ba][rs][Z]->Fill(avtx->GetZ());}
-   
-  // avtx->GetNContributors():
-  fOtherEventHistograms[ba][1]->Fill(avtx->GetNContributors());
+  if(fNContributorsHist[ba][rs]){fNContributorsHist[ba][rs]->Fill(avtx->GetNContributors());}
 
-  // Magnetic field: aAOD->GetMagneticField()
-  fOtherEventHistograms[ba][2]->Fill(aAOD->GetMagneticField());
+  // b) Centrality:
+  if(fCentralityHist[ba]){fCentralityHist[ba]->Fill(fCentrality);}
+
+  // d) Centrally determined multiplicity:
+  // TBI 20210523 fill here fCentralMultiplicityHist[m]
+
+  // e) Remaining event distributions:
+  if(fEventHistograms[ba][MagneticField]){fEventHistograms[ba][MagneticField]->Fill(aAOD->GetMagneticField());}
+  if(fEventHistograms[ba][PrimaryVertex]){fEventHistograms[ba][PrimaryVertex]->Fill(0.44);} // here we only count # of events with valid pointer aAOD->GetPrimaryVertex()  
  } // if(aAOD)
 
 } // AliAnalysisTaskMuPa::FillControlEventHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs)
@@ -1468,8 +1789,9 @@ void AliAnalysisTaskMuPa::FillControlEventHistograms(AliVEvent *ave, const Int_t
 void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliAODTrack *aTrack, const Int_t ba, const Int_t rs)
 {
  // Fill control histograms before particles cuts (ba = 0), or after (ba = 1). For reconstructed data (rs = 0), or simulated (rs = 1)
+ // More detailed treatment of AOD track cuts can be found in Tasks/AliFlowTrackCuts.cxx
  
- //cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ //if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // Kinematics:
  if(fKinematicsHist[ba][rs][PHI]){fKinematicsHist[ba][rs][PHI]->Fill(aTrack->Phi());}
@@ -1479,8 +1801,25 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliAODTrack *aTrack, con
  if(fKinematicsHist[ba][rs][CHARGE]){fKinematicsHist[ba][rs][CHARGE]->Fill(aTrack->Charge());}
 
  // DCA:
- if(fDCAHist[ba][rs][0]){fDCAHist[ba][rs][0]->Fill(aTrack->DCA());} // "xy"
- if(fDCAHist[ba][rs][1]){fDCAHist[ba][rs][1]->Fill(aTrack->ZAtDCA());} // "z"
+ Float_t dcaXY = aTrack->DCA(); 
+ Float_t dcaZ = aTrack->ZAtDCA(); 
+ if(!aTrack->TestBit(AliAODTrack::kIsDCA))
+ {
+  aTrack->GetImpactParameters(dcaXY,dcaZ); 
+ } 
+ if(fDCAHist[ba][rs][0]){fDCAHist[ba][rs][0]->Fill(dcaXY);}
+ if(fDCAHist[ba][rs][1]){fDCAHist[ba][rs][1]->Fill(dcaZ);}
+
+ // Remaining:
+ if(fParticleHist[ba][rs][TPCNcls]){fParticleHist[ba][rs][TPCNcls]->Fill(aTrack->GetTPCNcls());}
+ if(fParticleHist[ba][rs][TPCnclsS]){fParticleHist[ba][rs][TPCnclsS]->Fill(aTrack->GetTPCnclsS());}
+ if(fParticleHist[ba][rs][TPCnclsFractionShared]){if(TMath::Abs(aTrack->GetTPCnclsS())>0.){fParticleHist[ba][rs][TPCnclsFractionShared]->Fill(aTrack->GetTPCNcls()/aTrack->GetTPCnclsS());}}
+ if(fParticleHist[ba][rs][TPCNCrossedRows]){fParticleHist[ba][rs][TPCNCrossedRows]->Fill(aTrack->GetTPCNCrossedRows());}
+ if(fParticleHist[ba][rs][TPCChi2perNDF]){fParticleHist[ba][rs][TPCChi2perNDF]->Fill(aTrack->Chi2perNDF());}
+ if(fParticleHist[ba][rs][TPCFoundFraction]){fParticleHist[ba][rs][TPCFoundFraction]->Fill( aTrack->GetTPCFoundFraction());}
+ if(fParticleHist[ba][rs][Chi2TPCConstrainedVsGlobal]){fParticleHist[ba][rs][Chi2TPCConstrainedVsGlobal]->Fill(aTrack->GetChi2TPCConstrainedVsGlobal());}
+ if(fParticleHist[ba][rs][ITSNcls]){fParticleHist[ba][rs][ITSNcls]->Fill(aTrack->GetITSNcls());}
+ if(fParticleHist[ba][rs][ITSChi2perNDF]){if(TMath::Abs(aTrack->GetITSNcls())>0.){fParticleHist[ba][rs][ITSChi2perNDF]->Fill(aTrack->GetITSchi2()/aTrack->GetITSNcls());}}
 
 } // AliAnalysisTaskMuPa::FillControlParticleHistograms(AliAODTrack *aTrack, const Int_t ba, const Int_t rs)
 
@@ -1500,6 +1839,10 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
 
  if(aAOD)
  {
+  // Multiplicity:
+  if(aAOD->GetNumberOfTracks() < fMultiplicityCuts[0]) return kFALSE;
+  if(aAOD->GetNumberOfTracks() > fMultiplicityCuts[1]) return kFALSE;
+
   // Centrality:
   if(fCentrality < fCentralityCuts[0]) return kFALSE;
   if(fCentrality > fCentralityCuts[1]) return kFALSE;
@@ -1509,6 +1852,14 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
   if(!avtx) return kFALSE; 
   if((Int_t)avtx->GetNContributors()<fNContributorsCuts[0]) return kFALSE;
   if((Int_t)avtx->GetNContributors()>fNContributorsCuts[1]) return kFALSE;
+
+  if(sqrt(pow(avtx->GetX(),2.) + pow(avtx->GetY(),2.) + pow(avtx->GetY(),2.)) < fMinVertexDistance)
+  { 
+   Red(Form("%f",sqrt(pow(avtx->GetX(),2.) + pow(avtx->GetY(),2.) + pow(avtx->GetY(),2.)))); sleep(1); // TBI 20210527 remove this line eventualyy
+   fQAAnomalousEvents->Fill(0.5); // |vertex| = 0.
+   return kFALSE;
+  }
+
   if(avtx->GetX() < fVertexCuts[X][0]) return kFALSE;
   if(avtx->GetX() > fVertexCuts[X][1]) return kFALSE; 
   if(avtx->GetY() < fVertexCuts[Y][0]) return kFALSE;
@@ -1516,8 +1867,9 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
   if(avtx->GetZ() < fVertexCuts[Z][0]) return kFALSE;
   if(avtx->GetZ() > fVertexCuts[Z][1]) return kFALSE;
 
-  // Magnetic field:
-  //if(TMath::Abs(aAOD->GetMagneticField())<0.001) return kFALSE; // TBI 20210513 add setter for this, then enable
+  // Remaining event cuts:
+  // TBI 20210518 magnetic field value
+
  } // if(aAOD)
 
  return kTRUE;
@@ -1530,7 +1882,7 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliAODTrack *aTrack)
 {
  // Check if the current partice survives the specific track cuts (e.g. applied only on TPC-only tracks).
 
- //cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ //if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // TBI 20210517 most likely fUseKinematicsCuts is obsolete, since now I use the default cuts by default.
 
@@ -1572,20 +1924,46 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliAODTrack *aTrack)
  if(aTrack->ZAtDCA() < fDCACuts[1][0]) return kFALSE;
  if(aTrack->ZAtDCA() >= fDCACuts[1][1]) return kFALSE;
 
+ // Remaining:
+ if(aTrack->GetTPCNcls() < fParticleCuts[TPCNcls][0]) return kFALSE;
+ if(aTrack->GetTPCNcls() >= fParticleCuts[TPCNcls][1]) return kFALSE;
+ if(aTrack->GetTPCnclsS() < fParticleCuts[TPCnclsS][0]) return kFALSE;
+ if(aTrack->GetTPCnclsS() >= fParticleCuts[TPCnclsS][1]) return kFALSE;
+ if(TMath::Abs(aTrack->GetTPCnclsS())>0.)
+ {
+  if(aTrack->GetTPCNcls()/aTrack->GetTPCnclsS() < fParticleCuts[TPCnclsFractionShared][0]) return kFALSE;
+  if(aTrack->GetTPCNcls()/aTrack->GetTPCnclsS() >= fParticleCuts[TPCnclsFractionShared][1]) return kFALSE;
+ }
+ if(aTrack->GetTPCNCrossedRows() < fParticleCuts[TPCNCrossedRows][0]) return kFALSE;
+ if(aTrack->GetTPCNCrossedRows() >= fParticleCuts[TPCNCrossedRows][1]) return kFALSE;
+ if(aTrack->Chi2perNDF() < fParticleCuts[TPCChi2perNDF][0]) return kFALSE;
+ if(aTrack->Chi2perNDF() >= fParticleCuts[TPCChi2perNDF][1]) return kFALSE;
+ if(aTrack->GetTPCFoundFraction() < fParticleCuts[TPCFoundFraction][0]) return kFALSE;
+ if(aTrack->GetTPCFoundFraction() >= fParticleCuts[TPCFoundFraction][1]) return kFALSE;
+ if(aTrack->GetChi2TPCConstrainedVsGlobal() < fParticleCuts[Chi2TPCConstrainedVsGlobal][0]) return kFALSE;
+ if(aTrack->GetChi2TPCConstrainedVsGlobal() >= fParticleCuts[Chi2TPCConstrainedVsGlobal][1]) return kFALSE;
+ if(aTrack->GetITSNcls() < fParticleCuts[ITSNcls][0]) return kFALSE;
+ if(aTrack->GetITSNcls() >= fParticleCuts[ITSNcls][1]) return kFALSE;
+ if(TMath::Abs(aTrack->GetITSNcls())>0.)
+ {
+  if(aTrack->GetITSchi2()/aTrack->GetITSNcls() < fParticleCuts[ITSChi2perNDF][0]) return kFALSE;
+  if(aTrack->GetITSchi2()/aTrack->GetITSNcls() >= fParticleCuts[ITSChi2perNDF][1]) return kFALSE;
+ }
+
  return kTRUE;
 
 } // Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliAODTrack *aTrack)
 
 //=======================================================================================================================
 
-void AliAnalysisTaskMuPa::QA(AliVEvent *ave)
+void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs)
 {
  // Fill all additional QA stuff here, that is already not filled in Control Event Histograms or Control Particle Histograms. 
 
  // a) Determine Ali{MC,ESD,AOD}Event;
  // b) Centrality;
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Determine Ali{MC,ESD,AOD}Event:
  //AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
@@ -1597,14 +1975,13 @@ void AliAnalysisTaskMuPa::QA(AliVEvent *ave)
   // a) Centrality: 
   AliMultSelection *ams = (AliMultSelection*)aAOD->FindListObject("MultSelection");
   if(!ams){cout<<__LINE__<<endl;exit(1);}
-  TString sce[gCentralityEstimators] = {"V0M", "CL0", "CL1", "TRK", "V0A", "V0B", "TKL"}; // keep this in sync with enum eCentralityEstimator in .h
-  
+  TString sce[gCentralityEstimators] = {"V0M", "SPDTracklets", "CL0", "CL1"}; // keep this in sync with enum eCentralityEstimator in .h
   for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
   {
-   if(fQACentralityHist[ce1]){fQACentralityHist[ce1]->Fill(ams->GetMultiplicityPercentile(sce[ce1].Data()));}
+   if(fQACentralityHist[ce1]){fQACentralityHist[ce1][ba]->Fill(ams->GetMultiplicityPercentile(sce[ce1].Data()));}
    for(Int_t ce2=ce1+1;ce2<gCentralityEstimators;ce2++)
    {
-    if(fQACentralityCorrHist[ce1][ce2]){fQACentralityCorrHist[ce1][ce2]->Fill(ams->GetMultiplicityPercentile(sce[ce1].Data()),ams->GetMultiplicityPercentile(sce[ce2].Data()));}
+    if(fQACentralityCorrHist[ce1][ce2][ba]){fQACentralityCorrHist[ce1][ce2][ba]->Fill(ams->GetMultiplicityPercentile(sce[ce1].Data()),ams->GetMultiplicityPercentile(sce[ce2].Data()));}
    } // for(Int_t ce2=ce1+1;ce2<gCentralityEstimators;ce2++) 
   } // for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
    
@@ -1640,9 +2017,27 @@ void AliAnalysisTaskMuPa::QA(AliVEvent *ave)
    
   } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
 
+  // * check for self-correlations with two nested loops: TBI 20210527 add a special setter for everythign that involves two nested loops
+  //if(aAOD->GetNumberOfTracks()> 2000){return;}
+  for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++) // starting a loop over the first track
+  {
+   AliAODTrack *aTrack1 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack1)); // getting a pointer to "a track" (i.e. any track)
+   if(!aTrack1){continue;}
+   if(!aTrack1->TestFilterBit(fFilterBit)){continue;} 
+   for(Int_t iTrack2=iTrack1+1;iTrack2<nTracks;iTrack2++) // starting a loop over the second track
+   {
+    AliAODTrack *aTrack2 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack2)); // getting a pointer to "a track" (i.e. any track)
+    if(!aTrack2){continue;}
+    if(!aTrack2->TestFilterBit(fFilterBit)){continue;}
+    fQASelfCorrelations[0]->Fill(aTrack1->Phi()-aTrack2->Phi());  
+    fQASelfCorrelations[1]->Fill(aTrack1->Pt()-aTrack2->Pt());  
+    fQASelfCorrelations[2]->Fill(aTrack1->Eta()-aTrack2->Eta());  
+   } // for(Int_t iTrack2=iTrack1+1;iTrack2<nTracks;iTrack2++) // starting a loop over the second track
+  } // for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++) // starting a loop over the first track
+
  } // if(aAOD)
 
-} // void AliAnalysisTaskMuPa::QA(AliVEvent *ave)
+} // void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs)
 
 //=======================================================================================================================
 
@@ -1744,7 +2139,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
   // integrated:
   if(fCorrelationsPro[0][h-1][0]){fCorrelationsPro[0][h-1][0]->Fill(0.5,twoC,wTwo);}
   // vs. multiplicity:
-  if(fCorrelationsPro[0][h-1][1]){fCorrelationsPro[0][h-1][1]->Fill(fMultiplicity+0.5,twoC,wTwo);}
+  if(fCorrelationsPro[0][h-1][1]){fCorrelationsPro[0][h-1][1]->Fill(fSelectedTracks+0.5,twoC,wTwo);}
   // vs. centrality:
   if(fCorrelationsPro[0][h-1][2]){fCorrelationsPro[0][h-1][2]->Fill(fCentrality,twoC,wTwo);}
  } 
@@ -1757,7 +2152,7 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
 {
  // Calculate correlations with nested loops. 
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  cout<<"fSelectedTracks = "<<fSelectedTracks<<endl;
 
@@ -1943,7 +2338,7 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
  // b) Comparison vs. multiplicity;
  // c) Comparison vs. centrality;
 
- cout<<"\n\033[1;32m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  Int_t nBinsQV = -44;
  Int_t nBinsNL = -44;
@@ -2044,6 +2439,181 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
 
 } // void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations(void)
 
+//=======================================================================================================================
 
+Double_t AliAnalysisTaskMuPa::Weight(const Double_t &value, const char *variable) // value, [phi,pt,eta]
+{
+ // Determine particle weight. 
+
+ // Basic protection:
+ if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta"))){cout<<__LINE__<<endl;exit(1);}
+
+ Int_t ppe = 0; // [phi,pt,eta]
+ if(TString(variable).EqualTo("pt")){ppe=1;} 
+ if(TString(variable).EqualTo("eta")){ppe=2;} 
+
+ if(!fWeightsHist[ppe]){cout<<__LINE__<<endl;exit(1);}
+
+ Int_t bin = fWeightsHist[ppe]->FindBin(value);
+ Double_t weight = 0.; 
+ if(bin > fWeightsHist[ppe]->GetNbinsX())
+ {
+  weight = 0.; // we are in the overflow, ignore this particle TBI_20210524 is this really the correct procedure?
+ } 
+ else
+ {
+  weight = fWeightsHist[ppe]->GetBinContent(bin);
+ }
+ 
+ return weight;
+
+} // AliAnalysisTaskMuPa::Weight(const Double_t &value, const char *variable) // value, [phi,pt,eta]
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMuPa::SetWeightsHist(TH1D* const hist, const char *variable)
+{
+ // Copy histogram holding weights from an external file to the corresponding data member. 
+  
+ // Basic protection:
+ if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta"))){cout<<__LINE__<<endl;exit(1);}
+
+ Int_t ppe=-1;
+ if(TString(variable).EqualTo("phi")){ppe=0;} 
+ if(TString(variable).EqualTo("pt")){ppe=1;} 
+ if(TString(variable).EqualTo("eta")){ppe=2;} 
+
+ // Finally:
+ hist->SetDirectory(0);
+ fWeightsHist[ppe] = (TH1D*)hist->Clone();
+ if(!fWeightsHist[ppe]){cout<<__LINE__<<endl; exit(1);}
+
+ // Flag:
+ fUseWeights[ppe] = kTRUE; 
+
+} // void AliAnalysisTaskMuPa::SetWeightsHist(TH1D* const hwh, const char *type, const char *variable)
+
+//=======================================================================================
+
+TH1D *AliAnalysisTaskMuPa::GetHistogramWithWeights(const char *filePath, const char *variable)
+{
+ // Access from external ROOT file the desired histogram with particle weights. 
+ // 'filePath' can be both abs and relative path (e.g. pwd)
+
+ // a) Return value; 
+ // b) Basic protection for arguments; 
+ // c) Check if the external ROOT file exists at specified path; 
+ // d) Access the external ROOT file and fetch the desired histogram with weights;
+ // e) Close the external ROOT file. 
+
+ // a) Return value:
+ TH1D *hist = NULL; 
+
+ // b) Basic protection for arguments:
+ if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta"))){cout<<__LINE__<<endl;exit(1);}
+
+ // c) Check if the external ROOT file exists at specified path:
+ if(gSystem->AccessPathName(filePath,kFileExists))
+ {
+  cout<<Form("if(gSystem->AccessPathName(filePath,kFileExists)), filePath = %s",filePath)<<endl;exit(1);
+ }
+
+ // d) Access the external ROOT file and fetch the desired histogram with weights:
+ TFile *weightsFile = TFile::Open(filePath,"READ");
+ if(!weightsFile){cout<<__LINE__<<endl;exit(1);}
+ hist = (TH1D*)(weightsFile->Get(Form("%s",variable)));
+ if(!hist){cout<<__LINE__<<endl;exit(1);}
+ hist->SetDirectory(0);
+ hist->SetTitle(filePath);
+
+ // e) Close the external ROOT file: 
+ weightsFile->Close(); delete weightsFile;
+
+ return hist;
+
+} // TH1D *AliAnalysisTaskMuPa::GetHistogramWithWeights(const char *filePath, const char *variable)
+
+//=======================================================================================
+
+Bool_t AliAnalysisTaskMuPa::SpecifiedEvent(AliVEvent *ave)
+{
+ // Check if this is the event specified in a steering macro via the setter void SetProcessOnlySpecifiedEvent(Int_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period).
+
+ // a) Determine Ali{MC,ESD,AOD}Event;
+ // b) Wait for specified event.
+
+ cout<<"\n\033[1;33m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+
+ // a) Determine Ali{MC,ESD,AOD}Event:
+ //AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
+ //AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
+ AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
+
+ if(aAOD)
+ { 
+  if(aAOD->GetRunNumber() != fRun) return kFALSE;
+  else if(aAOD->GetBunchCrossNumber() != fBunchCross) return kFALSE;
+  else if(aAOD->GetOrbitNumber() != fOrbit) return kFALSE;
+  else if(aAOD->GetPeriodNumber() != fPeriod) return kFALSE;
+ }
+
+ return kTRUE;
+
+} // void AliAnalysisTaskMuPa::SpecifiedEvent(Int_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period)
+
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::PrintEventInfo(AliVEvent *ave)
+{
+ // Print event metadata. Used for debugging. Enable via task->PrintEventInfo()
+ 
+ // a) Determine Ali{MC,ESD,AOD}Event;
+ // b) Wait for specified event.
+
+ cout<<"\n\033[1;33m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+
+ // a) Determine Ali{MC,ESD,AOD}Event:
+ //AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
+ //AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
+ AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
+
+ if(aAOD)
+ {
+  cout<<"\033[1;33m"<<Form("aAOD->GetRunNumber() = %d",aAOD->GetRunNumber())<<"\033[0m"<<endl;
+  cout<<"\033[1;33m"<<Form("aAOD->GetBunchCrossNumber() = %d",aAOD->GetBunchCrossNumber())<<"\033[0m"<<endl;
+  cout<<"\033[1;33m"<<Form("aAOD->GetOrbitNumber() = %d",aAOD->GetOrbitNumber())<<"\033[0m"<<endl;
+  cout<<"\033[1;33m"<<Form("aAOD->GetPeriodNumber() = %d",aAOD->GetPeriodNumber())<<"\033[0m\n"<<endl;
+ } // if(aAOD)
+
+} // void AliAnalysisTaskMuPa::PrintEventInfo(AliVEvent *ave)
+
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::Red(const char* text)
+{ 
+ cout<<"\n\033[1;31m"<<text<<"\033[0m\n"<<endl;
+} 
+
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::Green(const char* text)
+{ 
+ cout<<"\n\033[1;32m"<<text<<"\033[0m\n"<<endl;
+}
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::Yellow(const char* text)
+{ 
+ cout<<"\n\033[1;33m"<<text<<"\033[0m\n"<<endl;
+} 
+
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::Blue(const char* text)
+{ 
+ cout<<"\n\033[1;34m"<<text<<"\033[0m\n"<<endl;
+} 
+
+//=======================================================================================
 
 
