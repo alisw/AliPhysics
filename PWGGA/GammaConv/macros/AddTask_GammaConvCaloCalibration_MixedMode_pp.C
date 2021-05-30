@@ -236,6 +236,18 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
   } else if (trainConfig == 14){ // var4
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","0163103100000010"); // no NCell cut
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe32220000","0163103100000010"); // NCell >= 2 cut
+
+  // diff clusterizer without M02 and exotics cut
+  } else if (trainConfig == 15){ // std
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 16){ // var1
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 17){ // var2
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 18){ // var3
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 19){ // var4
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
