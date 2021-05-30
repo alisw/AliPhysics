@@ -1,5 +1,3 @@
-#include "AliAnalysisTaskDeuteronProtonEfficiency.h"
-#include "AliAnalysisTaskDeuteronProtonEfficiency.cxx"
 
 AliAnalysisTask *AddTaskDeuteronProtonEfficiency(){
 
