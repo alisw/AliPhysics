@@ -335,14 +335,14 @@ void AliAnalysisTaskBaseWeights::AnaTrackMC(Int_t flag) {
     fHistEffContNominal.FillWeight(
                             static_cast<Double_t>(1),
                             static_cast<Double_t>(fMCnPrim05), static_cast<Double_t>(fMCPt),
-                            static_cast<Double_t>(fMCParticleType));
+                            static_cast<Double_t>(fMCParticleType), static_cast<Double_t>(fMCProdcutionType));
     fHistEffContWeighted.FillWeight(
                             fMCweight, static_cast<Double_t>(fMCnPrim05),
                             static_cast<Double_t>(fMCPt), static_cast<Double_t>(fMCParticleType),
                             static_cast<Double_t>(fMCProdcutionType));
     fHistEffContWeightedRandom.FillWeight(
                             fMCweightRandom,
-                            static_cast<Double_t>(fMCnPrim05), fMCPt,
+                            static_cast<Double_t>(fMCnPrim05), static_cast<Double_t>(fMCPt),
                             static_cast<Double_t>(fMCParticleType),
                             static_cast<Double_t>(fMCProdcutionType));
     fHistEffContWeightedSys.FillWeight(
