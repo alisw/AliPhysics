@@ -128,7 +128,7 @@ public:
      * @brief Get default error message
      * @return Error message 
      */
-    virtual const char *what() throw() { return "Geometry is not initalized"; }
+    virtual const char *what() const throw() { return "Geometry is not initalized"; }
   };
 
   /**
@@ -157,7 +157,7 @@ public:
      * @brief Get default error message
      * @return Error message 
      */
-    virtual const char *what() throw() { return "OCDB Manager was not initialized"; }
+    virtual const char *what() const throw() { return "OCDB Manager was not initialized"; }
   };
 
   /**
