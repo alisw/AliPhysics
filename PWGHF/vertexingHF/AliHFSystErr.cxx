@@ -10650,16 +10650,16 @@ void AliHFSystErr::InitD0toKpi2018PbPb010LowPtAn(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",32,0,16); // from ToyMC
-  for(Int_t i=1;i<=2;i++) fTrackingEff->SetBinContent(i,0.090); // 0-1
-  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.095); //1-2
-  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.10); //2-3
+  for(Int_t i=1;i<=2;i++) fTrackingEff->SetBinContent(i,0.080); // 0-1
+  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.090); //1-2
+  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.100); //2-3
   for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.105); //3-4
-  for(Int_t i=9;i<=10;i++) fTrackingEff->SetBinContent(i,0.10); //4-5
-  for(Int_t i=11;i<=12;i++) fTrackingEff->SetBinContent(i,0.095); //5-6
+  for(Int_t i=9;i<=10;i++) fTrackingEff->SetBinContent(i,0.105); //4-5
+  for(Int_t i=11;i<=12;i++) fTrackingEff->SetBinContent(i,0.100); //5-6
   for(Int_t i=13;i<=14;i++) fTrackingEff->SetBinContent(i,0.090); //6-7
   for(Int_t i=15;i<=16;i++) fTrackingEff->SetBinContent(i,0.085); //7-8
-  for(Int_t i=17;i<=20;i++) fTrackingEff->SetBinContent(i,0.080); //8-10
-  for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,0.075); //10-12
+  for(Int_t i=17;i<=20;i++) fTrackingEff->SetBinContent(i,0.085); //8-10
+  for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,0.080); //10-12
   for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,0.070); //12-16
 
   // Raw yield extraction (pass3, final results)
@@ -10710,17 +10710,17 @@ void AliHFSystErr::InitD0toKpi2018PbPb3050LowPtAn(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",32,0,16); // from ToyMC
-  for(Int_t i=1;i<=2;i++) fTrackingEff->SetBinContent(i,0.090); // 0-1
-  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.095); //1-2
-  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.10); //2-3
-  for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.105); //3-4
-  for(Int_t i=9;i<=10;i++) fTrackingEff->SetBinContent(i,0.10); //4-5
-  for(Int_t i=11;i<=12;i++) fTrackingEff->SetBinContent(i,0.095); //5-6
-  for(Int_t i=13;i<=14;i++) fTrackingEff->SetBinContent(i,0.090); //6-7
-  for(Int_t i=15;i<=16;i++) fTrackingEff->SetBinContent(i,0.085); //7-8
-  for(Int_t i=17;i<=20;i++) fTrackingEff->SetBinContent(i,0.080); //8-10
-  for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,0.075); //10-12
-  for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,0.070); //12-16
+  for(Int_t i=1;i<=2;i++) fTrackingEff->SetBinContent(i,0.070); // 0-1
+  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.075); //1-2
+  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.075); //2-3
+  for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.080); //3-4
+  for(Int_t i=9;i<=10;i++) fTrackingEff->SetBinContent(i,0.080); //4-5
+  for(Int_t i=11;i<=12;i++) fTrackingEff->SetBinContent(i,0.075); //5-6
+  for(Int_t i=13;i<=14;i++) fTrackingEff->SetBinContent(i,0.070); //6-7
+  for(Int_t i=15;i<=16;i++) fTrackingEff->SetBinContent(i,0.065); //7-8
+  for(Int_t i=17;i<=20;i++) fTrackingEff->SetBinContent(i,0.060); //8-10
+  for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,0.050); //10-12
+  for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,0.050); //12-16
 
   // Raw yield extraction (pass3, final results)
   fRawYield = new TH1F("fRawYield","fRawYield",32,0,16);
