@@ -1617,15 +1617,18 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       const Float_t cspeed = 0.029979246f;
       // PID hypothesis for the momentum extraction
       const AliPID::EParticleType tof_pid = AliPID::kPion;
-      // Expected beta for such hypothesis
-      const Float_t exp_beta =
-          (track->GetIntegratedLength() /
-          TOFResponse.GetExpectedSignal(track, tof_pid) / cspeed);
+      const float exp_time = TOFResponse.GetExpectedSignal(track, tof_pid);
+      if (exp_time >= 0) { // Check that the expected time is positive
+        // Expected beta for such hypothesis
+        const Float_t exp_beta = (track->GetIntegratedLength() / exp_time / cspeed);
 
-      tracks.fTOFExpMom = AliMathBase::TruncateFloatFraction(
+        tracks.fTOFExpMom = AliMathBase::TruncateFloatFraction(
           AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
-              TMath::Sqrt(1. - (exp_beta * exp_beta)),
+            TMath::Sqrt(1. - (exp_beta * exp_beta)),
           mTrack1Pt);
+      } else {
+        tracks.fTOFExpMom = 0.f;
+      }
 
       tracks.fTrackEtaEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackEtaOnEMCal(), mTrackPosEMCAL);
       tracks.fTrackPhiEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackPhiOnEMCal(), mTrackPosEMCAL);
