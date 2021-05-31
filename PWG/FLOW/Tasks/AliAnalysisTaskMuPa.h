@@ -12,9 +12,13 @@
 #define ALIANALYSISTASKMUPA_H
 
 #include <AliAnalysisTaskSE.h>
-#include <AliAODTrack.h>
-#include <AliAODEvent.h>
 #include <AliVEvent.h>
+#include <AliAODEvent.h>
+#include <AliMCEvent.h>
+#include <AliVTrack.h>
+#include <AliVParticle.h>
+#include <AliAODTrack.h>
+#include <AliAODMCParticle.h>
 #include <TH1D.h>
 #include <TH1I.h>
 #include <TH2I.h>
@@ -89,10 +93,10 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void FillQAHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs);
   virtual void FilterEvent(AliVEvent *ave);
   virtual void FillControlEventHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs); // before or after event cuts, reco or sim
-  virtual void FillControlParticleHistograms(AliAODTrack *aTrack, const Int_t ba, const Int_t rs); // before or after particle cuts, reco or sim
+  virtual void FillControlParticleHistograms(AliVParticle *vParticle, const Int_t ba, const Int_t rs); // before or after particle cuts, reco or sim
   virtual void GlobalTracksAOD(AliAODEvent *aAOD);
   Bool_t SurvivesEventCuts(AliVEvent *ave);
-  Bool_t SurvivesParticleCuts(AliAODTrack *aTrack); // applied e.g. on TPC-only
+  Bool_t SurvivesParticleCuts(AliVParticle *vParticle); // applied e.g. on TPC-only
   virtual Double_t Weight(const Double_t &value, const char *variable);
   virtual void CalculateCorrelations();
   virtual void CalculateNestedLoops();
@@ -213,7 +217,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TList* GetControlParticleHistogramsList() const {return this->fControlParticleHistogramsList;} 
   void SetFilterBit(Int_t fb) {this->fFilterBit = fb;};
   Int_t GetFilterBit() const {return this->fFilterBit;};
- 
+  void SetUseOnlyPrimaries(Bool_t uop) {this->fUseOnlyPrimaries = uop;};
+  Int_t GetUseOnlyPrimaries() const {return this->fUseOnlyPrimaries;};
+
   // Kinematics:
   void SetKinematicsBins(const char* kv, const Double_t nbins, const Double_t min, const Double_t max)
   {
@@ -405,6 +411,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TProfile *fControlParticleHistogramsPro; // keeps flags relevant for the control particle histograms
   TExMap *fGlobalTracksAOD; //! global tracks in AOD
   Int_t fFilterBit; // filter bit (its meaning can change from one production to another)
+  Bool_t fUseOnlyPrimaries; // cut e.g. on AliAODTrack::kPrimary or aodmcParticle->IsPhysicalPrimary()
   //    Kinematics:
   TH1D *fKinematicsHist[2][2][gKinematicVariables]; // kinematics [before,after track cuts][reco,sim][phi,pt,eta,energy,charge]
   Double_t fKinematicsBins[gKinematicVariables][3]; // [phi,pt,eta,energy,charge][nBins,min,max]
