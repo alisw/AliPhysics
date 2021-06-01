@@ -12,7 +12,7 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
-//full code, 18r.296691_co4_23
+//full code, local copy
 // c++ headers
 #include <iostream>
 #include <string.h>
