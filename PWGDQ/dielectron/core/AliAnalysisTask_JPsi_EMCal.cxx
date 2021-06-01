@@ -66,7 +66,7 @@
 #include "AliCFManager.h"
 #include "AliSelectNonHFE.h"
 #include "AliHFEpidTPC.h"
-#include "AliAnalysisTask_JPsi_EMCal.h"
+#include ".h"
 #include "TMath.h"
 #include "THnSparse.h"
 #include "TLorentzVector.h"
@@ -109,10 +109,10 @@
 //______________________________________________________________________
 
 //______________________________________________________________________
-ClassImp(AliAnalysisTask_JPsi_EMCal)
+ClassImp()
 
 //______________________________________________________________________
-AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
+::(const char *name)
   : AliAnalysisTaskSE(name)
 
 ,fIsMC(0)
@@ -381,6 +381,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 	//KF
 ,fHist_InvMass_pt_ULS_KF(0)
+,fHist_InvMass_pt_ULS_KF_eg2(0)
+,fHist_InvMass_pt_ULS_KF_eg1(0)
 ,fHist_InvMass_pt_LS_KF(0)
 
 ,fHist_Correlation_leg1_emcal_leg2_not(0)
@@ -562,8 +564,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 }
 
 //________________________________________________________________________
-AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
-  : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTask_JPsi_EMCal")
+::()
+  : AliAnalysisTaskSE("DefaultAnalysis_")
 
 ,fIsMC(0)
 ,fIs_NewClustersCut(kFALSE)
@@ -826,6 +828,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 	//KF
 ,fHist_InvMass_pt_ULS_KF(0)
+,fHist_InvMass_pt_ULS_KF_eg2(0)
+,fHist_InvMass_pt_ULS_KF_eg1(0)
 ,fHist_InvMass_pt_LS_KF(0)
 
 ,fHist_Correlation_leg1_emcal_leg2_not(0)
@@ -1004,7 +1008,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 }
 
 //______________________________________________________________________
-AliAnalysisTask_JPsi_EMCal::~AliAnalysisTask_JPsi_EMCal()
+::~()
 {
 	//Destructor 
 	delete fOutputList;
@@ -1034,7 +1038,7 @@ AliAnalysisTask_JPsi_EMCal::~AliAnalysisTask_JPsi_EMCal()
     
 }
 //_____________________________________________________________________________
-void AliAnalysisTask_JPsi_EMCal::Init()
+void ::Init()
 {
     // Initialization of SPD corrections profiles!!!
     
@@ -1076,7 +1080,7 @@ void AliAnalysisTask_JPsi_EMCal::Init()
 //Create Output Objects
 //Here we can define the histograms and others output files
 //Called once
-void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
+void ::UserCreateOutputObjects()
 {
 ///______________________________________________________________________
 ///Output Tlist
@@ -1458,6 +1462,13 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     //KFParticle
 	fHist_InvMass_pt_ULS_KF = new TH2F("fHist_InvMass_pt_ULS_KF","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,250,0,5);
 	fOutputList->Add(fHist_InvMass_pt_ULS_KF);
+    fHist_InvMass_pt_ULS_KF_eg1 = new TH2F("fHist_InvMass_pt_ULS_KF_eg1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,250,0,5);
+    fOutputList->Add(fHist_InvMass_pt_ULS_KF_eg1);
+    fHist_InvMass_pt_ULS_KF_eg2 = new TH2F("fHist_InvMass_pt_ULS_KF_eg2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,250,0,5);
+    fOutputList->Add(fHist_InvMass_pt_ULS_KF_eg2);
+    
+    
+    
 	fHist_InvMass_pt_LS_KF = new TH2F("fHist_InvMass_pt_LS_KF","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,250,0,5);
 	fOutputList->Add(fHist_InvMass_pt_LS_KF);
     
@@ -1808,7 +1819,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 //______________________________________________________________________
 //Main loop
 //Called for each event
-void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
+void ::UserExec(Option_t *)
 {
 //Check Event
 	fESD = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -1822,7 +1833,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	
 	fVevent = dynamic_cast<AliVEvent*>(InputEvent());
     
-    if(fIsMC && fIsTriggerSimulation){
+    //if(fIsMC && fIsTriggerSimulation){
+    if(fIsTriggerSimulation){ // to use trigger decision also in data
         //printf("Inside trigger decision - beginning \n");
         //auto triggerdecision = fAOD->FindListObject("EmcalTriggerDecision");
         auto triggerdecision = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(InputEvent()->FindListObject("EmcalTriggerDecision"));
@@ -2027,7 +2039,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         if(estimatorAvg){
             //printf("Estimator SPD exists!\n");
             //correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex1,fRefMult));
-            fSPDMult_corr = AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(estimatorAvg,nAcc,fZvtx,fRefMult, fAOD->GetRunNumber());
+            fSPDMult_corr = ::GetTrackletsMeanCorrection(estimatorAvg,nAcc,fZvtx,fRefMult, fAOD->GetRunNumber());
         
             //countCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countMult,Zvertex1,fRefMult));
         }
@@ -2051,7 +2063,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     TProfile2D* estimatorV0 = GetEstimatorHistogram_V0(fAOD);
     if(estimatorV0){
        // printf("Estimator V0 exists!\n");
-        fV0Mult_corr2 = AliAnalysisTask_JPsi_EMCal::GetV0MeanCorrection(estimatorV0,fV0Mult_corr,fZvtx,fRefMult_V0, fAOD->GetRunNumber());
+        fV0Mult_corr2 = ::GetV0MeanCorrection(estimatorV0,fV0Mult_corr,fZvtx,fRefMult_V0, fAOD->GetRunNumber());
     }
     else{
         fV0Mult_corr2 =fV0Mult_corr;
@@ -3812,6 +3824,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                               if(charge1*charge2 <0){
                                 
                                   fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
+                                  
+                                  if(feg1 || fdg1)fHist_InvMass_pt_ULS_KF_eg1->Fill(pt_kf,imass);//invmass eg1
+                                  if(feg2 || fdg2)fHist_InvMass_pt_ULS_KF_eg2->Fill(pt_kf,imass);//invmass eg2
+                                  
+                                  
                                
                                  if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass, weight/weight2);//multi integrated with weight
                                   
@@ -3940,9 +3957,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                                 fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
                                                                 
                                                                 //to check trigger efficiency on J/psi pT
-                                                                if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
-                                                                if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
-                                                                
+                                                                if((fClus->E()) >= fEnergyCut){
+                                                                    if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
+                                                                    if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
+                                                                }
                                                                 //weights calculated based on J/Psi true MC pT, but applied on e+e- pair pt
                                                                 Double_t weight2 = CalculateWeight(fMCparticleMother->Pt());
                                                                 fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight->Fill(pt_kf, weight2);
@@ -3976,7 +3994,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 							
 							//===============================
 
-						}
+						}//emcal cuts
                       //}//close trigger for emcal
 						
 					}
@@ -4007,6 +4025,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                              if(charge1*charge2 <0){
                                  fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
+                                 
+                                 if(feg1 || fdg1)fHist_InvMass_pt_ULS_KF_eg1->Fill(pt_kf,imass);//invmass eg1
+                                 if(feg2 || fdg2)fHist_InvMass_pt_ULS_KF_eg2->Fill(pt_kf,imass);//invmass eg2
+                                 
+                                 
                                   if(fMultiAnalysis)fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
                                  
                                  //correlation between leg1 and leg2
@@ -4141,9 +4164,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
                                                                     
                                                                     //to check trigger efficiency on J/psi pT
-                                                                    if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
-                                                                    if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
-                                                                    
+                                                                    if((fClus2->E()) >= fEnergyCut){
+                                                                        if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
+                                                                        if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
+                                                                    }
                                                                     //weights calculated based on J/Psi true MC pT, but applied on e+e- pair pt
                                                                     Double_t weight2 = CalculateWeight(fMCparticleMother->Pt());
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight->Fill(pt_kf, weight2);
@@ -4175,7 +4199,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 						
                             //===============================
 
-						 }
+						 }//emcal cuts
                       //}//close emcal trigger condition
 						
 					}
@@ -4214,6 +4238,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                             if(charge1*charge2 <0){
                                 fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
+                                
+                                if(feg1 || fdg1)fHist_InvMass_pt_ULS_KF_eg1->Fill(pt_kf,imass);//invmass eg1
+                                if(feg2 || fdg2)fHist_InvMass_pt_ULS_KF_eg2->Fill(pt_kf,imass);//invmass eg2
+                                
                                 if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
                            
                                 //correlation between leg1 and leg2
@@ -4352,9 +4380,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
                                                                     
                                                                     //to check trigger efficiency on J/psi pT
-                                                                    if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
-                                                                    if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
-                                                                    
+                                                                    if((fClus->E()) >= fEnergyCut && (fClus2->E()) >= fEnergyCut){
+                                                                        if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
+                                                                        if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
+                                                                    }
                                                                     //weights calculated based on J/Psi true MC pT, but applied on e+e- pair pt
                                                                     Double_t weight2 = CalculateWeight(fMCparticleMother->Pt());
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight->Fill(pt_kf, weight2);
@@ -4453,7 +4482,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 }      
 
 //=======================================================================
-void AliAnalysisTask_JPsi_EMCal::Terminate(Option_t *)
+void ::Terminate(Option_t *)
 {
 //Draw result to the screen
 //Called once at the end of the query
@@ -4469,7 +4498,7 @@ void AliAnalysisTask_JPsi_EMCal::Terminate(Option_t *)
 
 //=======================================================================
 /*
- Bool_t AliAnalysisTask_JPsi_EMCal::ProcessCutStep(Int_t cutStep, AliVParticle *track)
+ Bool_t ::ProcessCutStep(Int_t cutStep, AliVParticle *track)
 {
 //Check single track cuts for a given cut step
 //Note this function is called inside the UserExec function
@@ -4479,7 +4508,7 @@ void AliAnalysisTask_JPsi_EMCal::Terminate(Option_t *)
 }*/
 
 //=======================================================================
-Bool_t AliAnalysisTask_JPsi_EMCal::FindMother(Int_t mcIndex)
+Bool_t ::FindMother(Int_t mcIndex)
 {
     
    
@@ -4575,7 +4604,7 @@ Bool_t AliAnalysisTask_JPsi_EMCal::FindMother(Int_t mcIndex)
     
 }
 //____________________________________________________________________________
-TProfile2D* AliAnalysisTask_JPsi_EMCal::GetEstimatorHistogram(const AliAODEvent* fAOD)
+TProfile2D* ::GetEstimatorHistogram(const AliAODEvent* fAOD)
 {
     
    // printf("Inside 'GetEstimatorHistogram \n'");
@@ -4638,7 +4667,7 @@ TProfile2D* AliAnalysisTask_JPsi_EMCal::GetEstimatorHistogram(const AliAODEvent*
     return fMultEstimatorAvg[period];
 }
 //____________________________________________________________________________
-TProfile2D* AliAnalysisTask_JPsi_EMCal::GetEstimatorHistogram_V0(const AliAODEvent* fAOD)
+TProfile2D* ::GetEstimatorHistogram_V0(const AliAODEvent* fAOD)
 {
     
     //printf("Inside 'GetEstimatorHistogram_V0 \n'");
@@ -4661,7 +4690,7 @@ TProfile2D* AliAnalysisTask_JPsi_EMCal::GetEstimatorHistogram_V0(const AliAODEve
     return fMultEstimatorV0[period];
 }
 //______________________________________________________________________________
-Double_t AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(TProfile2D* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult, Int_t runNo)
+Double_t ::GetTrackletsMeanCorrection(TProfile2D* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult, Int_t runNo)
 {
     
    //printf("Inside 'GetTrackletsMeanCorrection' for run number %d and vertex =%f \n ", runNo, vtxZ);
@@ -4740,7 +4769,7 @@ Double_t AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(TProfile2D* esti
 }
 
 //______________________________________________________________________________
-Double_t AliAnalysisTask_JPsi_EMCal::GetV0MeanCorrection(TProfile2D* estimatorV0, Double_t uncorrectedV0, Double_t vtxZ, Double_t refMult_V0, Int_t run_number)
+Double_t ::GetV0MeanCorrection(TProfile2D* estimatorV0, Double_t uncorrectedV0, Double_t vtxZ, Double_t refMult_V0, Int_t run_number)
 {
     
     //printf("Inside GetV0MeanCorrection \n");
@@ -4801,7 +4830,7 @@ Double_t AliAnalysisTask_JPsi_EMCal::GetV0MeanCorrection(TProfile2D* estimatorV0
     return correctedV0;
     
 }
-Double_t AliAnalysisTask_JPsi_EMCal::CalculateWeight(Double_t x)
+Double_t ::CalculateWeight(Double_t x)
 {
     Double_t weight=1;
     
@@ -5059,7 +5088,7 @@ Double_t AliAnalysisTask_JPsi_EMCal::CalculateWeight(Double_t x)
     return weight;
 }
 //______________________________________________________________________________
-Double_t AliAnalysisTask_JPsi_EMCal::GetTPCCalibration(Int_t runNo, Double_t TPCnsigma0)
+Double_t ::GetTPCCalibration(Int_t runNo, Double_t TPCnsigma0)
 {
    
     Double_t mean_shift=0.00;
@@ -5138,7 +5167,7 @@ Double_t AliAnalysisTask_JPsi_EMCal::GetTPCCalibration(Int_t runNo, Double_t TPC
 
 
 /*
-Bool_t AliAnalysisTask_JPsi_EMCal::TrackCuts(AliVTrack *track, AliAODTrack *atrack, AliESDtrack *etrack, Bool_t fIsAOD){
+Bool_t ::TrackCuts(AliVTrack *track, AliAODTrack *atrack, AliESDtrack *etrack, Bool_t fIsAOD){
 	
 		//AOD (Test Filter Bit)
 	if(fIsAOD)
