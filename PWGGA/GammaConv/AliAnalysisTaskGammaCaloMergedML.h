@@ -339,6 +339,8 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
     Int_t                   fMergedClusterTreeYPos;
     Int_t                   fMergedClusterTreeIsPrimary;
     Int_t                   fMergedClusterTreePID;
+    Float_t                 fMergedClusterTreeEta;
+    Float_t                 fMergedClusterTreePhi;  
 
 
 
