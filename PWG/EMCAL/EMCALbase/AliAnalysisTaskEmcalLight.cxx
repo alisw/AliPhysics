@@ -27,6 +27,7 @@
 #include <TFile.h>
 #include <TChain.h>
 #include <TKey.h>
+#include <TObjString.h>
 
 #include "AliGenCocktailEventHeader.h"
 #include "AliStack.h"
@@ -47,6 +48,8 @@
 #include "AliAODTrack.h"
 #include "AliVCaloTrigger.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHerwigEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliAODMCHeader.h"
 #include "AliMCEvent.h"
@@ -69,6 +72,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fUseBuiltinEventSelection(kFALSE),
   fCentBins(),
   fCentralityEstimation(kNewCentrality),
+  fAliEventCuts(),
   fIsPythia(kFALSE),
   fIsMonteCarlo(kFALSE),
   fMCEventHeaderName(),
@@ -148,6 +152,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fUseBuiltinEventSelection(kFALSE),
   fCentBins(6),
   fCentralityEstimation(kNewCentrality),
+  fAliEventCuts(),
   fIsPythia(kFALSE),
   fIsMonteCarlo(kFALSE),
   fMCEventHeaderName(),
@@ -1117,6 +1122,20 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
         fNTrials = fPythiaHeader->Trials();
         if(fUseXsecFromHeader) GetGeneralTProfile("fHistXsectionExternalFile", true)->Fill(fPtHardBin, fXsection);
       }
+      if (fIsHerwig) {
+        fHerwigHeader = static_cast<AliGenHerwigEventHeader*>(fMCHeader);
+        fPtHard = fHerwigHeader->GetPtHard();
+        fXsection = fHerwigHeader->Weight();
+        fNTrials = fHerwigHeader->Trials();
+        if(fUseXsecFromHeader) GetGeneralTProfile("fHistXsectionExternalFile", true)->Fill(fPtHardBin, fXsection);
+      } 
+      if (fIsHepMC) {
+        fHepMCHeader = static_cast<AliGenHepMCEventHeader*>(fMCHeader);
+        fPtHard = fHepMCHeader->pthard();
+        fXsection = fHepMCHeader->sigma_gen();
+        fNTrials = fHepMCHeader->ntrials();
+        if(fUseXsecFromHeader) GetGeneralTProfile("fHistXsectionExternalFile", true)->Fill(fPtHardBin, fXsection);
+      } 
     }
   }
 
@@ -1491,6 +1510,35 @@ void AliAnalysisTaskEmcalLight::SetIsPythia(Bool_t i)
     }
   }
 }
+
+void AliAnalysisTaskEmcalLight::SetIsHerwig(Bool_t i)
+{ 
+  fIsHerwig = i;
+  if (fIsHerwig) { 
+    fIsMonteCarlo = kTRUE; 
+    fMCEventHeaderName = "AliGenHerwigEventHeader"; 
+  }
+  else {
+    if (fMCEventHeaderName == "AliGenHerwigEventHeader") {
+      fMCEventHeaderName = "";
+    }
+  }
+}
+
+void AliAnalysisTaskEmcalLight::SetIsHepMC(Bool_t i)
+{ 
+  fIsPythia = i;
+  if (fIsPythia) { 
+    fIsMonteCarlo = kTRUE; 
+    fMCEventHeaderName = "AliGenHepMCEventHeader"; 
+  }
+  else {
+    if (fMCEventHeaderName == "AliGenHepMCEventHeader") {
+      fMCEventHeaderName = "";
+    }
+  }
+}
+
 
 void AliAnalysisTaskEmcalLight::SetMCEventHeaderName(const char* name)
 { 

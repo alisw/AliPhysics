@@ -110,7 +110,10 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fProdTrackTPCNCrossedRowsRatioMin(0.),
   fProdTrackTPCsignalNMin(0),
   fPriTrackChi2perNDFMax(99.),
-  fPriTrackITSNclsMin(0)
+  fPriTrackITSNclsMin(0),
+  fWeight(0),
+  fWeight_up(0),
+  fWeight_dw(0)
 {
   //
   // Default Constructor
@@ -226,7 +229,10 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fProdTrackTPCNCrossedRowsRatioMin(source.fProdTrackTPCNCrossedRowsRatioMin),
   fProdTrackTPCsignalNMin(source.fProdTrackTPCsignalNMin),
   fPriTrackChi2perNDFMax(source.fPriTrackChi2perNDFMax),
-  fPriTrackITSNclsMin(source.fPriTrackITSNclsMin)
+  fPriTrackITSNclsMin(source.fPriTrackITSNclsMin),
+  fWeight(source.fWeight),
+  fWeight_up(source.fWeight_up),
+  fWeight_dw(source.fWeight_dw)
 {
   //
   // Copy constructor
@@ -298,7 +304,9 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fProdTrackTPCsignalNMin = source.fProdTrackTPCsignalNMin;
   fPriTrackChi2perNDFMax = source.fPriTrackChi2perNDFMax;
   fPriTrackITSNclsMin = source.fPriTrackITSNclsMin;
-
+  fWeight = source.fWeight;
+  fWeight_up = source.fWeight_up;
+  fWeight_dw = source.fWeight_dw;
 
   return *this;
 }
@@ -788,12 +796,18 @@ Bool_t AliRDHFCutsKFP::SingleV0LambdaTotCuts(AliAODv0 *v0)
 //________________________________________________________________________
 Bool_t AliRDHFCutsKFP::PreSelForLc2pKs0(AliAODRecoCascadeHF *Lc2pKs0)
 {
-  // Pre-selection for Lc
+  // Pre-selection for Lc->pKs0
   //
   AliAODv0 *v0part = dynamic_cast<AliAODv0*>(Lc2pKs0->Getv0());
   AliAODTrack *bachPart = dynamic_cast<AliAODTrack*>(Lc2pKs0->GetBachelor());
   AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(Lc2pKs0->Getv0PositiveTrack());
   AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(Lc2pKs0->Getv0NegativeTrack());
+
+  if ( !v0part || !bachPart || !v0Pos || !v0Neg ) return kFALSE;
+
+  // check charge of v0
+  Int_t Charge_V0 = v0Pos->Charge() + v0Neg->Charge();
+  if ( Charge_V0!=0 ) return kFALSE;
 
 // === selection for Ks0 daughter tracks ===
   // Kinematic Cuts & Acceptance for Ks0 daughter tracks
@@ -841,6 +855,90 @@ Bool_t AliRDHFCutsKFP::PreSelForLc2pKs0(AliAODRecoCascadeHF *Lc2pKs0)
     Int_t isPiMinus = fPidObjDau->MakeRawPid(v0Neg, 2);
     Int_t isProton  = fPidObjDau->MakeRawPid(bachPart, 4); // proton
     if (isPiPlus<1 || isPiMinus<1 || isProton<1) return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliRDHFCutsKFP::PreSelForLc2Lpi(AliAODRecoCascadeHF *Lc2Lpi)
+{
+  // Pre-selection for Lc->Lpi
+  //
+  AliAODv0 *v0part = dynamic_cast<AliAODv0*>(Lc2Lpi->Getv0());
+  AliAODTrack *bachPart = dynamic_cast<AliAODTrack*>(Lc2Lpi->GetBachelor());
+  AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(Lc2Lpi->Getv0PositiveTrack());
+  AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(Lc2Lpi->Getv0NegativeTrack());
+
+  if ( !v0part || !bachPart || !v0Pos || !v0Neg ) return kFALSE;
+
+  // check charge of v0
+  Int_t Charge_V0 = v0Pos->Charge() + v0Neg->Charge();
+  if ( Charge_V0!=0 ) return kFALSE;
+
+  // check charge of the first daughter, if negative, exchange
+  if ( v0Pos->Charge()<0 ) {
+    v0Pos = dynamic_cast<AliAODTrack*>(Lc2Lpi->Getv0NegativeTrack());
+    v0Neg = dynamic_cast<AliAODTrack*>(Lc2Lpi->Getv0PositiveTrack());;
+  }
+
+// === selection for Lambda daughter tracks ===
+  // Kinematic Cuts & Acceptance for Lambda daughter tracks
+  if ( TMath::Abs(v0Pos->Eta()) >= 0.8 || TMath::Abs(v0Neg->Eta()) >= 0.8 ) return kFALSE;
+  // Track Selection Cuts (TPC)
+//  if ( v0Pos->GetTPCNcls() <= 70 ) return kFALSE;
+  if ( v0Pos->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
+  if ( v0Pos->GetTPCNclsF()==0 ) return kFALSE;
+  if ( static_cast<Double_t>(v0Pos->GetTPCNCrossedRows())/static_cast<Double_t>(v0Pos->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( v0Pos->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
+
+//  if ( v0Neg->GetTPCNcls() <= 70 ) return kFALSE;
+  if ( v0Neg->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
+  if ( v0Neg->GetTPCNclsF()==0 ) return kFALSE;
+  if ( static_cast<Double_t>(v0Neg->GetTPCNCrossedRows())/static_cast<Double_t>(v0Neg->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( v0Neg->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
+// ==============================
+
+// === selection for bachlor ===
+  // Kinematic Cuts & Acceptance for the bachelor
+  if ( bachPart->Pt()<=fPtMinPiFromLc || bachPart->Pt()>=100.0 ) return kFALSE;
+  if ( TMath::Abs(bachPart->Eta()) >= 0.8 ) return kFALSE;
+
+  // Track Selection Cuts (TPC)
+//  if ( bachPart->GetTPCNcls() <= 70 ) return kFALSE;
+  if ( bachPart->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
+  if ( bachPart->GetTPCNclsF()==0 ) return kFALSE;
+  if ( static_cast<Double_t>(bachPart->GetTPCNCrossedRows())/static_cast<Double_t>(bachPart->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( bachPart->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
+//  if ( bachPart->Chi2perNDF() >= 5) return kFALSE;
+// ==============================
+
+  // PID
+//  Double_t nsigmaTPC = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kPion);
+//  if (TMath::Abs(nsigmaTPC) > 3) return kFALSE;
+
+  if (fUseLcPID) {
+    if(fPidObjDau->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidObjDau->SetPidResponse(pidResp);
+    }
+    Int_t isPiFromLc = fPidObjDau->MakeRawPid(bachPart, 2); // pion
+    if ( isPiFromLc<1 ) return kFALSE;
+
+    Int_t isProton  = fPidObjDau->MakeRawPid(v0Pos, 4); // proton
+    Int_t isPiMinus = fPidObjDau->MakeRawPid(v0Neg, 2); // pion-
+
+    Int_t isPiPlus     = fPidObjDau->MakeRawPid(v0Pos, 2); // pion+
+    Int_t isAntiProton = fPidObjDau->MakeRawPid(v0Neg, 4); // anti-proton
+
+    if (bachPart->Charge()>0) { // Bachlor is pion+
+      if ( isProton<1 || isPiMinus<1 ) return kFALSE;
+    }
+    if (bachPart->Charge()<0) { // Bachlor is pion-
+      if ( isPiPlus<1 || isAntiProton<1 ) return kFALSE;
+    }
   }
 
   return kTRUE;

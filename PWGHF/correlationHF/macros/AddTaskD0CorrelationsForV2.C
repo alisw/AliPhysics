@@ -163,7 +163,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE
   massD0Task->SetUseTrackeff(useTrackeff); 
   massD0Task->SetMinDPt(minDPt);
   massD0Task->SetFillTrees(fillTrees,fractAccME);
-  massD0Task->SetAODMismatchProtection(kTRUE);
+  massD0Task->SetAODMismatchProtection(0);
   massD0Task->SetPurityStudies(puritystudies);
   if(multSelEstimator=="SPD") massD0Task->SetTrackletRange(multmin,multmax);
   if(multSelEstimator=="V0M") massD0Task->SetCentralityV0(multmin,multmax);

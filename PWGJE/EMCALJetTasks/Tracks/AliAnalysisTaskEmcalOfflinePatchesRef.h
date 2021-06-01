@@ -10,7 +10,9 @@ class AliEMCALGeometry;
 class AliEMCALTriggerPatchInfo;
 class THistManager;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalOfflinePatchesRef: public AliAnalysisTaskSE {
 public:
@@ -35,6 +37,8 @@ private:
   ClassDef(AliAnalysisTaskEmcalOfflinePatchesRef, 1);
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* AliAnalysisTaskEmcalOfflinePatchesRef_H */

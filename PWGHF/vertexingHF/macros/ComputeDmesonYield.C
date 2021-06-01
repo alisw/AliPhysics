@@ -45,7 +45,7 @@ TString collSyst="Pb-Pb";
 
 // Graphical styles
 Bool_t draw[maxPtBins]={1,1,0,1,0,0,0,0,0,1,0,0,0,0};
-Int_t colors[maxPtBins]={1,kRed+1,kGray,kMagenta+1,kMagenta,kBlue+1,kBlue,kBlue-9,kCyan,kGreen+2,kYellow+2,kOrange+1,kRed+1,kRed};
+Int_t colarray[maxPtBins]={1,kRed+1,kGray,kMagenta+1,kMagenta,kBlue+1,kBlue,kBlue-9,kCyan,kGreen+2,kYellow+2,kOrange+1,kRed+1,kRed};
 Int_t lstyle[maxPtBins]={7,2,3,5,9,1,10,6,8,4,1,2,3,8};
 
 
@@ -54,34 +54,35 @@ Bool_t PbPbDataSyst(AliHFSystErr *syst, TH1D* heff, Double_t pt, Double_t &dataS
 
 void ComputeDmesonYield(){
 
+  // BR from PDG 2020
   TString mesName="Dzero";
   Int_t mesCode=1;
-  Double_t brat=0.0389;
+  Double_t brat=0.0395;
   TString mesSymb="D^{0}";
   Float_t ptForExtrap=36.;
   if(mesonSpecie==kDplus){
     mesName="Dplus";
     mesCode=2;
-    brat=0.0898;
+    brat=0.0938;
     mesSymb="D^{+}";
-    ptForExtrap=24.;
+    ptForExtrap=36.;
  }else if(mesonSpecie==kDstar){
     mesName="Dstar";
     mesCode=3;
-    brat=0.0389*0.677;
+    brat=0.0395*0.677;
     mesSymb="D^{*+}";
-    ptForExtrap=24.;
+    ptForExtrap=36.;
   }else if(mesonSpecie==kDs){
     mesName="Ds";
     mesCode=4;
-    brat=0.0227;
+    brat=0.0224;
     mesSymb="D_{s}^{+}";
     if(collSyst=="Pb-Pb"){
      centHypoFdOverPr=1.;
      lowHypoFdOverPr=1./3.;
      highHypoFdOverPr=3.;
     }
-    ptForExtrap=12.;
+    ptForExtrap=24.;
   }
 
   TString centralityNoDash=centrality.Data();
@@ -680,7 +681,7 @@ void ComputeDmesonYield(){
 
   for(Int_t ib=0; ib<nPtBins; ib++){
     if(draw[ib] && gcb[ib]->GetN()>0){
-      gcb[ib]->SetLineColor(colors[ib]);
+      gcb[ib]->SetLineColor(colarray[ib]);
       gcb[ib]->SetLineWidth(3);
       gcb[ib]->SetLineStyle(lstyle[ib]);
       if(first){
@@ -712,12 +713,11 @@ void ComputeDmesonYield(){
   c2->SetRightMargin(0.045);
   for(Int_t ib=0; ib<nPtBins; ib++){
     if(draw[ib] && gcrbc[ib]->GetN()>0){
-      gcrbc[ib]->SetLineColor(colors[ib]);
+      gcrbc[ib]->SetLineColor(colarray[ib]);
       gcrbc[ib]->SetLineWidth(3);
       gcrbc[ib]->SetLineStyle(lstyle[ib]);
       if(first){
-	gcrbc[ib]->Draw("AL");
-	gcrbc[ib]->GetXaxis()->SetLimits(lowHypoFdOverPrArray[ib],highHypoFdOverPrArray[ib]);
+	gcrbc[ib]->GetXaxis()->SetLimits(lowHypoFdOverPr,highHypoFdOverPr);
 	gcrbc[ib]->GetXaxis()->SetTitle("Hypothesis on (#it{R}_{AA} feed-down)/(#it{R}_{AA} prompt)");
 	gcrbc[ib]->GetYaxis()->SetTitleOffset(1.2);
 	gcrbc[ib]->GetXaxis()->SetTitleOffset(1.2);
@@ -738,12 +738,13 @@ void ComputeDmesonYield(){
 	  gcrbc[ib]->SetMinimum(-20);
 	  gcrbc[ib]->SetMaximum(20);
 	}
+	gcrbc[ib]->Draw("AL");
 	first=kFALSE;	
       }else{
-	gcrbc[ib]->Draw("lsame");
+	gcrbc[ib]->Draw("Lsame");
       }
       if(!showRcbSystNorm){
-	mC[ib]->SetMarkerColor(colors[ib]);
+	mC[ib]->SetMarkerColor(colarray[ib]);
 	mC[ib]->Draw("same");
       }
     }
@@ -854,6 +855,12 @@ void ComputeDmesonYield(){
     ymax=110000.;
     ymin=1.1;
   }
+  else if(collSyst=="Pb-Pb" && centrality=="0-10"){
+    ymin=7E-4;
+  }
+  else if(collSyst=="Pb-Pb" && centrality=="30-50"){
+    ymin=7E-5;
+  }
 
   TH2F *hempty=new TH2F("hempty","",100,0.,binlim[nPtBins]*1.02,100,ymin,ymax);
   hempty->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
@@ -958,7 +965,7 @@ void ComputeDmesonYield(){
   //   c6->cd(ib+1);
   //   if(gcrbc[ib]->GetN()>0){
   //     hcheck[ib]->Draw("col");
-  //     gcrbc[ib]->SetLineColor(colors[ib]);
+  //     gcrbc[ib]->SetLineColor(colarray[ib]);
   //     gcrbc[ib]->Draw("lsame");
   //   }
   // }

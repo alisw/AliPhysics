@@ -7,8 +7,11 @@
 
 #pragma link C++ class AliAnalysisTaskSEDplus+;
 #pragma link C++ class AliAnalysisTaskSEDs+;
+#pragma link C++ class AliAnalysisTaskSECharmHadronMLSelector+;
 #pragma link C++ class AliAnalysisTaskSECharmHadronvn+;
+#pragma link C++ class AliAnalysisTaskSECheckCharmHadronBkg+;
 #pragma link C++ class AliAnalysisTaskSEHFTreeCreatorApply+;
+#pragma link C++ class AliAnalysisTaskSENonPromptLc+;
 #pragma link C++ class AliHFMLResponse+;
 #pragma link C++ class AliHFMLResponseDplustoKpipi+;
 #pragma link C++ class AliHFMLResponseDstoKKpi+;
@@ -16,6 +19,8 @@
 #pragma link C++ class AliHFMLVarHandler+;
 #pragma link C++ class AliHFMLVarHandlerDplustoKpipi+;
 #pragma link C++ class AliHFMLVarHandlerDstoKKpi+;
+#pragma link C++ class AliHFMLVarHandlerNonPromptLc2V0bachelor+;
+#pragma link C++ class AliHFMLVarHandlerLctopKpi+;
 #pragma link C++ class AliHFTreeHandlerApply+;
 #pragma link C++ class AliHFTreeHandlerApplyDstoKKpi+;
 #pragma link C++ class AliHFTreeHandlerApplyLc2V0bachelor+;

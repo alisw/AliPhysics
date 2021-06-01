@@ -21,7 +21,7 @@
 // Yvonne Pachmayer <pachmay@physi.uni-heidelberg.de>
 //
 
-
+#include <TObjString.h>
 #include "AliTPCcalibResidualPID.h"
 #include "TChain.h"
 #include "AliAnalysisManager.h"

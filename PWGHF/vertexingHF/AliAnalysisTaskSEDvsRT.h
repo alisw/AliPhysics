@@ -43,6 +43,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    void SetNMassBins(Int_t nbins) {fNMassBins = nbins;}
    Int_t GetNMassBins() const {return fNMassBins;}
    
+   void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
    void SetReadMC(Bool_t readMC=kTRUE) {fReadMC = readMC;}
    void SetMCOption(Int_t option=0)    {fMCOption = option;}
    void SetLctoV0(Bool_t option=kTRUE) {fLctoV0 = option;}

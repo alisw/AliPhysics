@@ -42,9 +42,11 @@ AliAnalysisTaskSEVertexingHF *AddTaskVertexingHF(Int_t collisionSystem,TString l
     else if(collisionSystem!=0){
       ::Error("AddTaskVertexingHF","Value of collision system not valid");
     }
+    Printf("HF config file that will be used (and copied to ConfigVertexingHF.C in the local directory) is: %s", configPWG3d2h.Data());
     TFile::Cp(gSystem->ExpandPathName(configPWG3d2h.Data()), Form("%s/ConfigVertexingHF.C", localdir.Data()));
   }
   else{
+    Printf("HF config file that will be used (and copied to ConfigVertexingHF.C in the local directory) is: %s", configfilename.Data());
     TFile::Cp(gSystem->ExpandPathName(configfilename.Data()), Form("%s/ConfigVertexingHF.C", localdir.Data()));
   }
 

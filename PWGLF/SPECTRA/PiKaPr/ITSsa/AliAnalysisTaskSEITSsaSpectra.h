@@ -81,6 +81,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
     kPassChi2Ncls,
     kIsInEta,
     kPassdEdx,
+    kPassPCut,
     kPassPtCut,
     kPassDCAzcut,
     kPassDCAxycut
@@ -156,6 +157,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   void SetMinSPDPoints(int np = 1) { fMinSPDPts = np; }
   void SetMinNdEdxSamples(int np = 3) { fMinNdEdxSamples = np; }
   void SetAbsEtaCut(double eta = .8) { fAbsEtaCut = eta; }
+  void SetPCut(double cut = 1.5) { fPcut = cut; }
   void SetMinRapCut(double y = -.5) { fMinRapCut = y; }
   void SetMaxRapCut(double y = .5) { fMaxRapCut = y; }
   void SetCMSRapFct(double dy = .0) { fCMSRapFct = dy; }
@@ -177,6 +179,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   void SetIsDCAUnfold(bool flag = kTRUE) { fIsDCAUnfoldHistoEnabled = flag; }
   void SetFillIntDistHist() { fFillIntDistHist = kTRUE; }
   void SetUseUnfolding(bool useUnfolding) {fUseUnfolding = useUnfolding; }
+  void SetUsePcut(bool usePcut) {fUsePcut = usePcut; }
 
   AliEventCuts *GetAliEventCuts() { return &fEventCuts; }
 
@@ -218,7 +221,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   int GetMostProbable(const double *pDens, const double *priors) const;
   void GetPriors(const AliVTrack *track, double *priors) const;
   float GetUnfoldedP(double dedx, float p) const;
-  float interpolateP(Float_t p0, Float_t p1, Float_t mass, Float_t X, Float_t z) const;
+  float interpolateP(Float_t p0, Float_t pTPC, Float_t p1, Float_t mass, Float_t X, Float_t z) const;
   void ComputeBayesProbabilities(double *probs, const double *pDens, const double *prior);
 
  private:
@@ -260,15 +263,15 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   TH2F *fHistDEDXGenposlabel;          //!<! histo with dedx versus momentum  with pos label (generated, before track selection)
   TH2F *fHistDEDXGenneglabel;          //!<! histo with dedx versus momentum  with neg label (generated, before track selection)
   TH2F *fHistDEDX;                     //!<! histo with dedx versus momentum
-  TH2F *fHistDEDXPInterp;              //!<! histo with dedx versus interpolated momentum (Marian Ivanov definition --> to be tested)
-  TH2F *fHistDEDXPNorm;                //!<! histo with dedx versus momentum (before track cuts)
   TH2F *fHistDEDXdouble;               //!<! histo with dedx versus signed momentum
   TH2F *fHistDEDXposlabel;             //!<! histo with dedx versus momentum with positive label
   TH2F *fHistDEDXneglabel;             //!<! histo with dedx versus momentum with negative label
   TH2F *fHistNSigmaSep[kNchg * kNspc]; //!<! histo nsigma separation vs momentum
   TH2F *fHistSepPowerReco[kNchg * kNspc];  //!<!
   TH2F *fHistSepPowerTrue[kNchg * kNspc];  //!<!
-  TH2F *fHistPratioP[4]; //!<!
+  TH2F *fHistDEDXnoITSsa; //!<!
+  TH2F *fHistNSigmaSepP[4];            //!<! histo nsigma separation vs momentum
+  TH2F *fHistNsigmaSepPinterp[4];      //!<! histo nsigma separation vs momentum interpolated
 
   // MC histograms with spectra of primaries from the MC truth
   TH3F *fHistMCPart[kNchg * kNspc];            //!<! histo from events w/o gen Zvtx cut
@@ -364,6 +367,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   bool fReqBothVtx;            // ask for both trk and SPD vertex
   bool fExtEventCuts;          // enable use of AliEventCuts for event selection
   bool fUseUnfolding;          // enable if you want to use unfolding for PID
+  bool fUsePcut;                // to enable/disable cut on momentum
   // mult sel.
   unsigned int fMultMethod; // method for cent/mult values: 0=skip mult sel, 1=new cent framework, 2=old cent framework,
                             // 3=tracks+tracklets, 4=tracklets, 5=cluster on SPD
@@ -388,6 +392,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   int fMinSPDPts;       // minimum number of SPD Points
   int fMinNdEdxSamples; // minimum number of SDD+SSD points
   double fAbsEtaCut;    // limits in pseudorap
+  double fPcut;         // limit for cut on momentum
   double fMinRapCut;
   double fMaxRapCut;
   double fCMSRapFct;
@@ -417,7 +422,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   //unfolding
   TH2F* fUnfProb[1170]; //-> histogram with unfolded matrices (probability)
 
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 12);
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 13);
 };
 
 #endif

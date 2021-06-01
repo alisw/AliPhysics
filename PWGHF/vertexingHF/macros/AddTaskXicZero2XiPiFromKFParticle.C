@@ -72,11 +72,36 @@ AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString 
     task->SetWriteXic0MCGenTree(writeXic0MCGenTree);
     task->SetWriteXic0Tree(writeXic0RecTree);
 
+    /*
     // weight
     TF1 *weight = new TF1("weight", "expo", 0., 50.);
-    weight->SetParameter(0, 0.853544);
-    weight->SetParameter(1, -0.325586);
+    TF1 *weight_up = new TF1("weight_up", "expo", 0., 50.);
+    TF1 *weight_dw = new TF1("weight_dw", "expo", 0., 50.);
+    // === PYTHIA 6 ===
+//    weight->SetParameter(0, 0.853544);
+//    weight->SetParameter(1, -0.325586);
+    // === PYTHIA 8 + WeakDecayFinder ===
+    if (!IsAnaOmegac0) {
+      weight->SetParameter(0, 1.05904);
+      weight->SetParameter(1, -0.380048);
+      weight_up->SetParameter(0, 1.47631);
+      weight_up->SetParameter(1, -0.474415);
+      weight_dw->SetParameter(0, 0.570731);
+      weight_dw->SetParameter(1, -0.279403);
+
+    }
+    if (IsAnaOmegac0) {
+      weight->SetParameter(0, 1.67885);
+      weight->SetParameter(1, -0.232748);
+      weight_up->SetParameter(0, 2.06839);
+      weight_up->SetParameter(1, -0.304407);
+      weight_dw->SetParameter(0, 1.27061);
+      weight_dw->SetParameter(1, -0.162865);
+    }
     task->SetWeightFunction(weight);
+    task->SetWeightFunctionUp(weight_up);
+    task->SetWeightFunctionDw(weight_dw);
+    */
 
     // select type of event
 //    task->SelectCollisionCandidates(AliVEvent::kAnyINT); // kAnyINT = kMB | kINT7 | kINT5 | kINT8 | kSPI7
@@ -90,7 +115,6 @@ AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString 
     mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("tree_event_char_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("tree_%s_%s", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("tree_%s_MCGen_%s", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("weight_%s", cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid

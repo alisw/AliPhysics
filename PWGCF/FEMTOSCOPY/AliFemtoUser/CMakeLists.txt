@@ -48,7 +48,16 @@ set(SRCS
   AliFemtoModelBPLCMSCorrFctnKK.cxx
   AliFemtoModelGausRinvFreezeOutGenerator.cxx
   AliFemtoModelCorrFctn3DSpherical.cxx
-  AliFemtoModelCorrFctn3DKKGR.cxx
+#  Gleb:
+   AliFemtoModelCorrFctn3DKKGR.cxx
+   AliFemtoModelCorrFctn3DKKGRQinv.cxx
+   AliFemtoModelGausLCMSFreezeOutGeneratorGR.cxx
+   AliFemtoModelCorrFctn3DKKGR1.cxx
+#  Ludmila
+   AliFemtoCutMonitorDphiDeta1.cxx
+   AliFemtoESDTrackCutPlusJets25.cxx
+   AliFemtoESDTrackCutMinusJets.cxx
+#
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
   AliFemtoModelCorrFctnDEtaDPhi.cxx
   AliFemtoModelCorrFctnDEtaDPhiStar.cxx
@@ -130,6 +139,7 @@ set(SRCS
   AliFemtoPairCutRadialDistanceAsymmetric.cxx
   AliFemtoPairCutGeneralizedRadialDistance.cxx
   AliFemtoPairCutMergedFraction.cxx
+  AliFemtoPairCutMergedFraction_pik.cxx
   AliFemtoCorrFctnDEtaDPhiSimple.cxx
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx

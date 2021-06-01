@@ -6,6 +6,7 @@
 // Authors: Svein Lindal, Daniel Lohner												*
 // Authors: Ana Marin for Identified charged
 
+#include <TObjString.h>
 #include "AliAODpidUtil.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"

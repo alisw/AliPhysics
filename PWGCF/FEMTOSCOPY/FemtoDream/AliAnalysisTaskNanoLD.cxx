@@ -14,7 +14,7 @@ ClassImp(AliAnalysisTaskNanoLD)
 AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD()
     : AliAnalysisTaskSE(),
       fisLightWeight(false),
-      fCleanProtonLambda(false),
+      fPairCleanerSettings(1),
       fEvent(nullptr),
       fEventCuts(nullptr),
       fEvtList(nullptr),
@@ -48,7 +48,7 @@ AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD()
 AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD(const char* name)
     : AliAnalysisTaskSE(name),
       fisLightWeight(false),
-      fCleanProtonLambda(false),
+      fPairCleanerSettings(1),
       fEvent(nullptr),
       fEventCuts(nullptr),
       fEvtList(nullptr),
@@ -133,8 +133,16 @@ void AliAnalysisTaskNanoLD::UserCreateOutputObjects() {
 
   // Set number of histograms for clean track and decay
   Int_t nHistCleanTrackDecay = 2;
-  if (fCleanProtonLambda) {
+  Int_t nHistCleanDecayDecay = 2;
+  if (fPairCleanerSettings == 0) {
+    nHistCleanTrackDecay = 0;
+    nHistCleanDecayDecay = 0;
+  } else if (fPairCleanerSettings == 1) {
+    nHistCleanTrackDecay = 2;
+    nHistCleanDecayDecay = 2;
+  } else if (fPairCleanerSettings == 2) {
     nHistCleanTrackDecay = 4;
+    nHistCleanDecayDecay = 2;
   }
 
   if (!fEventCuts) {
@@ -177,7 +185,8 @@ void AliAnalysisTaskNanoLD::UserCreateOutputObjects() {
   } else {
     fPartColl = new AliFemtoDreamPartCollection(fConfig,
                                                 fConfig->GetMinimalBookingME());
-    fPairCleaner = new AliFemtoDreamPairCleaner(nHistCleanTrackDecay, 2,
+    fPairCleaner = new AliFemtoDreamPairCleaner(nHistCleanTrackDecay,
+                                                nHistCleanDecayDecay,
                                                 fConfig->GetMinimalBookingME());
   }
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
@@ -293,11 +302,12 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
   // Deuteron and Anti-Deuteron selection
   std::vector<AliFemtoDreamBasePart> Deuterons;
   std::vector<AliFemtoDreamBasePart> AntiDeuterons;
-  const int multiplicity = fEvent->GetMultiplicity();
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
-    fTrack->SetTrack(track, fInputEvent, multiplicity);
+    fTrack->SetTrack(track, fInputEvent);
+    fTrack->SetInvMass(1.87561); // PDG value, cannot be otained from TDatabasePDG
+                                 // in case of deuterons, therefore hard coded here
     if (fDeuteron->isSelected(fTrack)) {
       Deuterons.push_back(*fTrack);
       fSimpleParticleCounter->Fill(0.);
@@ -319,7 +329,7 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
       iv0 < static_cast<TClonesArray *>(aodEvt->GetV0s())->GetEntriesFast();
       ++iv0) {
     AliAODv0* casc = aodEvt->GetV0(iv0);
-    fv0->Setv0(fInputEvent, casc, fEvent->GetMultiplicity());
+    fv0->Setv0(fInputEvent, casc);
     if (fLambda->isSelected(fv0)) {
       Lambdas.push_back(*fv0);
       fSimpleParticleCounter->Fill(2.);
@@ -335,7 +345,7 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
   std::vector<AliFemtoDreamBasePart> AntiProtons;
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
-    fTrack->SetTrack(track, fInputEvent, multiplicity);
+    fTrack->SetTrack(track, fInputEvent);
     if (fProton->isSelected(fTrack)) {
       Protons.push_back(*fTrack);
       fSimpleParticleCounter->Fill(4.);
@@ -348,17 +358,24 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
 
   // Pair cleaner
   fPairCleaner->ResetArray();
-  fPairCleaner->CleanTrackAndDecay(&Deuterons, &Lambdas, 0);
-  fPairCleaner->CleanTrackAndDecay(&AntiDeuterons, &AntiLambdas, 1);
 
-  // Clean protons and lambdas in case this is activated
-  if (fCleanProtonLambda) {
+  // Clean deuterons and lambda daughters (default = activated)
+  if (fPairCleanerSettings > 0) {
+    fPairCleaner->CleanTrackAndDecay(&Deuterons, &Lambdas, 0);
+    fPairCleaner->CleanTrackAndDecay(&AntiDeuterons, &AntiLambdas, 1);
+  }
+
+  // Clean protons and lambda daughters in case this is activated
+  if (fPairCleanerSettings == 2) {
     fPairCleaner->CleanTrackAndDecay(&Protons, &Lambdas, 2);
     fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiLambdas, 3);
   }
 
-  fPairCleaner->CleanDecay(&Lambdas, 0);
-  fPairCleaner->CleanDecay(&AntiLambdas, 1);
+  // Clean lambdas and lambdas (default = activated)
+  if (fPairCleanerSettings > 0) {
+    fPairCleaner->CleanDecay(&Lambdas, 0);
+    fPairCleaner->CleanDecay(&AntiLambdas, 1);
+  }
 
   fPairCleaner->StoreParticle(Deuterons);
   fPairCleaner->StoreParticle(AntiDeuterons);

@@ -15,7 +15,7 @@
 
 
 #include <AliAnalysisTaskSE.h>
-#include "AliJIaaAnalysis.h"
+#include <AliJIaaAnalysis.h>
 
 class AliJCORRANTask;
 //==============================================================

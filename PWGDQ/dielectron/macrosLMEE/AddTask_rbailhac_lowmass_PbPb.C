@@ -8,7 +8,9 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
 					       const Bool_t isMix = kTRUE,
 					       const Int_t Nmix   = 10,
 					       const TString outputFileName="LMEE.root",
-					       Bool_t rejpileup = kTRUE
+					       Int_t rejpileup = 1,
+					       Int_t vermix = 0,
+					       Int_t version = 0
 					       )
 {
 
@@ -21,7 +23,12 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
 
   //Base Directory for GRID / LEGO Train
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/r/rbailhac/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
+  if (!gSystem->AccessPathName(cFileName)) {
+    printf("Configfile already present\n");
+    configBasePath=Form("%s/",gSystem->pwd());
+  }
+  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/r/rbailhac/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
+    printf("Copy configfile from alien\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
 
@@ -45,13 +52,13 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
   
   //create task and add it to the manager (MB)
   TString appendix;
-  appendix += TString::Format("Cen%d_%d_%s_rejpileup%d",CenMin,CenMax,triggername.Data(),rejpileup);
+  appendix += TString::Format("Cen%d_%d_%s_rejpileup%d_%d",CenMin,CenMax,triggername.Data(),rejpileup,version);
   printf("appendix %s\n", appendix.Data());
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%s",appendix.Data()));
   task->UsePhysicsSelection();
   task->SetTriggerMask(trigger);
 
-  // PID postcalibration
+  // PID postcalibration 2018 and 2015
   THnF *hs_mean_TPC_El  = 0x0;
   THnF *hs_width_TPC_El = 0x0;
   THnF *hs_mean_ITS_El  = 0x0;
@@ -64,10 +71,8 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
   THnF *hs_width_TPC_Ka = 0x0;
   THnF *hs_mean_TPC_Pr  = 0x0;
   THnF *hs_width_TPC_Pr = 0x0;
-
-  // PID post-calibration
   TFile *rootfile = 0x0;
-  if(calibFileName.Contains("pass3")){
+  if((calibFileName.Contains("LHC18q")) || (calibFileName.Contains("LHC18r")) || (calibFileName.Contains("LHC15o"))){
     printf("reading : %s for PID calibration\n",calibFileName.Data());
     rootfile = TFile::Open(calibFileName,"READ");
     hs_mean_TPC_El  = (THnF*)rootfile->Get("hs_mean_TPC_El");
@@ -84,6 +89,26 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
     hs_width_TPC_Pr = (THnF*)rootfile->Get("hs_width_TPC_Pr");
   }
 
+  // Old: 
+  // PID postcalibration 2015 
+  //TH3D *h_mean_TPC_El  = 0x0;
+  //TH3D *h_width_TPC_El = 0x0;
+  //TH3D *h_mean_ITS_El  = 0x0;
+  //TH3D *h_width_ITS_El = 0x0;
+  //TH3D *h_mean_TOF_El  = 0x0;
+  //TH3D *h_width_TOF_El = 0x0;
+  //TFile *rootfile_old = 0x0;
+  //if(calibFileName.Contains("LHC15o_old")){  
+    //printf("reading : %s for PID calibration\n",calibFileName.Data());
+    //rootfile_old = TFile::Open(calibFileName,"READ");
+    //h_mean_TPC_El  = (TH3D*)rootfile_old->Get("sum_mean_correction_tpc");
+    //h_width_TPC_El = (TH3D*)rootfile_old->Get("sum_width_correction_tpc");
+    //h_mean_ITS_El  = (TH3D*)rootfile_old->Get("sum_mean_correction_its");
+    //h_width_ITS_El = (TH3D*)rootfile_old->Get("sum_width_correction_its");
+    //h_mean_TOF_El  = (TH3D*)rootfile_old->Get("sum_mean_correction_tof");
+    //h_width_TOF_El = (TH3D*)rootfile_old->Get("sum_width_correction_tof");
+  //}
+
   // Number of cuts
   const Int_t nDie = (Int_t)gROOT->ProcessLine("GetN()");
   //add dielectron analysis with different cuts to the task
@@ -91,33 +116,124 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
     AliDielectron *diel = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_rbailhac_lowmass_PbPb(%d,%d,%d)",i,isMC,isMix)));
     if(!diel) continue;
 
+
+    // Postcalibration 
     if(rootfile && rootfile->IsOpen()){
       diel->SetPIDCaibinPU(kTRUE);
-      //for electron
-      diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_mean_TPC_El ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
-      diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_width_TPC_El,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
-      diel->SetCentroidCorrFunctionPU(AliDielectronPID::kITS,AliPID::kElectron,hs_mean_ITS_El ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
-      diel->   SetWidthCorrFunctionPU(AliDielectronPID::kITS,AliPID::kElectron,hs_width_ITS_El,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
-      diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTOF,AliPID::kElectron,hs_mean_TOF_El ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
-      diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTOF,AliPID::kElectron,hs_width_TOF_El,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
-      //for pion
-      diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_mean_TPC_Pi     ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
-      diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_width_TPC_Pi    ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
-      //for kaon
-      diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kKaon,hs_mean_TPC_Ka     ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
-      diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kKaon,hs_width_TPC_Ka    ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
-      //for proton
-      diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kProton,hs_mean_TPC_Pr   ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
-      diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kProton,hs_width_TPC_Pr  ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
-      
-    }
 
+      if((calibFileName.Contains("LHC18q")) || (calibFileName.Contains("LHC18r"))) {
+	printf("Setting Postcalibration for 2018 data\n");
+	
+	//for electron
+	diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_mean_TPC_El ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+	diel->SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_width_TPC_El,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+	diel->SetCentroidCorrFunctionPU(AliDielectronPID::kITS,AliPID::kElectron,hs_mean_ITS_El ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+	diel->SetWidthCorrFunctionPU(AliDielectronPID::kITS,AliPID::kElectron,hs_width_ITS_El,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+	diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTOF,AliPID::kElectron,hs_mean_TOF_El ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+	diel->SetWidthCorrFunctionPU(AliDielectronPID::kTOF,AliPID::kElectron,hs_width_TOF_El,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+	//for pion
+	diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_mean_TPC_Pi     ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+	diel->SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_width_TPC_Pi    ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+	//for kaon
+	diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kKaon,hs_mean_TPC_Ka     ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+	diel->SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kKaon,hs_width_TPC_Ka    ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+	//for proton
+	diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kProton,hs_mean_TPC_Pr   ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+	diel->SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kProton,hs_width_TPC_Pr  ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+	
+      }
+
+      if(calibFileName.Contains("LHC15o")) {
+	printf("Setting Postcalibration for 2015 data\n");
+      
+	//for electron: ones from Carsten
+	diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_mean_TPC_El ,AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	diel->SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_width_TPC_El, AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	diel->SetCentroidCorrFunctionPU(AliDielectronPID::kITS,AliPID::kElectron,hs_mean_ITS_El ,AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	diel->SetWidthCorrFunctionPU(AliDielectronPID::kITS,AliPID::kElectron,hs_width_ITS_El,AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTOF,AliPID::kElectron,hs_mean_TOF_El,AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	diel->SetWidthCorrFunctionPU(AliDielectronPID::kTOF,AliPID::kElectron,hs_width_TOF_El,AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	//for pion: new from me
+	diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_mean_TPC_Pi,AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	diel->SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_width_TPC_Pi,AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	//for kaon: new from me
+	diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kKaon,hs_mean_TPC_Ka,AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	diel->SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kKaon,hs_width_TPC_Ka,AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	//for proton: new from me
+	diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kProton,hs_mean_TPC_Pr,AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	diel->SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kProton,hs_width_TPC_Pr,AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	
+      }
+    }
+    
+    
+    // Postcalibration 2015
+    //if(rootfile_old && rootfile_old->IsOpen()){
+      //for tpc
+      //diel->SetCentroidCorrFunction(h_mean_TPC_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      //diel->SetWidthCorrFunction(h_width_TPC_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      // for its
+      //diel->SetCentroidCorrFunctionITS(h_mean_ITS_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      //diel->SetWidthCorrFunctionITS(h_width_ITS_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      // for tof
+      //diel->SetCentroidCorrFunctionTOF(h_mean_TOF_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      //diel->SetWidthCorrFunctionTOF(h_width_TOF_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      //}
+    
     if(isMix) {
       printf("Add event mixing handler\n");
       AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
       mix->SetMixType(AliDielectronMixingHandler::kAll);
-      mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
-      mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+      if(vermix == 0) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+      }
+      if(vermix == 1) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -9., -8., -7., -6., -5., -4., -3., -2. , -1., 0., 1., 2., 3., 4., 5., 6., 7., 8. , 9., 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+      }
+      if(vermix == 2) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5. , 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+      }
+      if(vermix == 3) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,60,70,80,90,101");
+      }
+      if(vermix == 4) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,60,70,80,90,101");
+      }
+      if(vermix == 5) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+	mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 4, TMath::Pi()/-2., TMath::Pi()/2.);
+      }
+      if(vermix == 6) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+	mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 6, TMath::Pi()/-2., TMath::Pi()/2.);
+      }
+      if(vermix == 7) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+	mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 8, TMath::Pi()/-2., TMath::Pi()/2.);
+      }
+      if(vermix == 8) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+	mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 4, TMath::Pi()/-2., TMath::Pi()/2.);
+      }
+      if(vermix == 9) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+	mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 6, TMath::Pi()/-2., TMath::Pi()/2.);
+      }
+      if(vermix == 10) {
+	mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+	mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+	mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 8, TMath::Pi()/-2., TMath::Pi()/2.);
+      }
       mix->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
       mix->SetDepth(Nmix);
       if(!isMC) diel->SetMixingHandler(mix);
@@ -167,6 +283,6 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
 
 
 
-    return task;
+  return task;
     
 }

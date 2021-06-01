@@ -37,13 +37,12 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     // now we create an instance of your task
     AliAnalysisTaskESEFlow* task = new AliAnalysisTaskESEFlow(name.Data(), colSys, bUseV0Calibration);   
     if(!task) return 0x0;
-    task->SelectCollisionCandidates(AliVEvent::kAnyINT);
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s:EseTestFlow",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s:BayesianUnfolding",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("%s:Observables",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("%s:Flow",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("%s:DiffFlow",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
@@ -90,7 +89,8 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetQARejFiller(kFALSE);
     task->SetNUEWeights(kFALSE, 1);
     task->Set2018(kFALSE);
-    task->SetBayesUnfoldingInput(kFALSE);
+    task->SetBayesUnfolding(kFALSE);
+    task->Activateq2ESEProjections(kFALSE);
 
     const Int_t nEsePercentiles = 10;
     Double_t EseEdges[nEsePercentiles+1] = {0, 10., 20., 30., 40., 50., 60., 70., 80., 90.,100.};

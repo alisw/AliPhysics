@@ -25,7 +25,7 @@ class AliHFTreeHandlerInclusiveJet : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerInclusiveJet();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo);
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo, AliAODPidHF *pidhf=nullptr);
     virtual bool SetMCGenVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long);
 
 

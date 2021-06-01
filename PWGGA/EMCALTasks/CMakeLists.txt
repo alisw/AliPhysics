@@ -37,39 +37,39 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskEMCALDirGamma.cxx
-    AliAnalysisTaskEMCALClusterTurnOn.cxx
+#     AliAnalysisTaskEMCALDirGamma.cxx
+#     AliAnalysisTaskEMCALClusterTurnOn.cxx
     AliAnalysisTaskEMCALIsolation.cxx
     AliAnalysisTaskEMCALIsoPhoton.cxx
-    AliAnalysisTaskEMCALMesonGGSDM.cxx
-    AliAnalysisTaskEMCALMesonGGSDMpPb.cxx
+#     AliAnalysisTaskEMCALMesonGGSDM.cxx
+#     AliAnalysisTaskEMCALMesonGGSDMpPb.cxx
     AliAnalysisTaskEMCALPhoton.cxx
     AliAnalysisTaskEMCALPhotonIsolation.cxx
     AliAnalysisTaskEMCALTrackIsolation.cxx
     AliAnalysisTaskEMCALPhotonTagged.cxx
-    AliAnalysisTaskEMCALPi0Gamma.cxx
-    AliAnalysisTaskEMCALPi0PbPb.cxx
-    AliAnalysisTaskEMCALPi0V2ShSh.cxx
-    AliAnalysisTaskPi0V2.cxx
-    AliAnalysisTaskSATR.cxx
-    AliAnalysisTaskSDMGammaMC.cxx
-    AliAnalysisTaskShoShaTests.cxx
+#     AliAnalysisTaskEMCALPi0Gamma.cxx
+#     AliAnalysisTaskEMCALPi0PbPb.cxx
+#     AliAnalysisTaskEMCALPi0V2ShSh.cxx
+#     AliAnalysisTaskPi0V2.cxx
+#     AliAnalysisTaskSATR.cxx
+#     AliAnalysisTaskSDMGammaMC.cxx
+#     AliAnalysisTaskShoShaTests.cxx
     AliAnalysisTaskTrgContam.cxx
-    AliEMCalpi0ClusterEvaluationTask.cxx
-    AliEMCalpi0Task.cxx
-    Alipi0ClusterStatStruct.cxx
-    Alipi0EventStatStruct.cxx
-    Alipi0DiClusterStatStruct.cxx
-    Alipi0EventStatStruct.cxx
-    Alipi0mixedDiClusterStatStruct.cxx
-    AliStaObjects.cxx
-    AliAnalysisTaskNeutralMesons.cxx
+#     AliEMCalpi0ClusterEvaluationTask.cxx
+#     AliEMCalpi0Task.cxx
+#     Alipi0ClusterStatStruct.cxx
+#     Alipi0EventStatStruct.cxx
+#     Alipi0DiClusterStatStruct.cxx
+#     Alipi0EventStatStruct.cxx
+#     Alipi0mixedDiClusterStatStruct.cxx
+#     AliStaObjects.cxx
+#     AliAnalysisTaskNeutralMesons.cxx
     AliAnalysisTaskGammaHadron.cxx
-    AliAnalysisTaskEMCALPi0GammaCorr.cxx
-    AliEMCalpi0AddedSignalsTask.cxx
-    AliHijingClusterMCStatStruct.cxx
-    AlietaClusterMCStatStruct.cxx
-    Alipi0ClusterMCStatStruct.cxx
+#     AliAnalysisTaskEMCALPi0GammaCorr.cxx
+#     AliEMCalpi0AddedSignalsTask.cxx
+#     AliHijingClusterMCStatStruct.cxx
+#     AlietaClusterMCStatStruct.cxx
+#     Alipi0ClusterMCStatStruct.cxx
     AliCLTask.cxx
    )
 

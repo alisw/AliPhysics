@@ -18,7 +18,7 @@
 class AliFemtoDreamTrackHist {
  public:
   AliFemtoDreamTrackHist();
-  AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin = 0.5, float pTmax = 4.05,  int MultRangeLow = 27, int MultRangeHigh = 55);
+  AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin = 0.5, float pTmax = 4.05, bool TOFMSq = false);
   AliFemtoDreamTrackHist(TString MinimalBooking);
   virtual ~AliFemtoDreamTrackHist();
   void FillConfig(int iBin, float val) {
@@ -170,7 +170,7 @@ class AliFemtoDreamTrackHist {
   ;
 
 
-  void FillDCAXYPtBins(float pT, float dcaxy, int multiplicity);
+  void FillDCAXYPtBins(float pT, float dcaxy);
 
   void FillTOFMass(float mom, float beta) {
     if (fTOFMass) {
@@ -181,6 +181,13 @@ class AliFemtoDreamTrackHist {
       }
     }
   }
+
+  void FillTOFMassSq(float mom, float TOFmassSq) {
+    if (fTOFMassSquared) {
+        fTOFMassSquared->Fill(mom,TOFmassSq);
+    }
+  }
+
 
   void FillTPCClsCPileUp(int i, int iCrit, float TPCClsC) {
     if (!fMinimalBooking)
@@ -195,13 +202,6 @@ class AliFemtoDreamTrackHist {
       fTrackChi2[i]->Fill(pT, chi2);
   }
 
-  void SetMultRangeLow(int range) {
-    fMultRangeLow = range;
-  }
-  void SetMultRangeHigh(int range) {
-    fMultRangeHigh = range;
-  }
-
   void SetName(TString name) {
     fHistList->SetName(name.Data());
   }
@@ -214,8 +214,6 @@ class AliFemtoDreamTrackHist {
   AliFemtoDreamTrackHist &operator=(const AliFemtoDreamTrackHist &obj);
   AliFemtoDreamTrackHist(const AliFemtoDreamTrackHist&);
   bool fMinimalBooking;     //!
-  int fMultRangeLow;		//!
-  int fMultRangeHigh;		//!
   float fpTmin;              //!
   float fpTmax;              //!
   TList *fHistList;         //!
@@ -235,7 +233,7 @@ class AliFemtoDreamTrackHist {
   TH2F *fDCAzProp[2];       //!
   TH2F *fDCAXYPtBins;       //!
   TH2F *fTOFMass;           //!
-  TH2F *fDCAXYPtBinsMult[3];//!
+  TH2F *fTOFMassSquared;    //!
   TH1F *fTPCCrossedRows[2]; //!
   TH1F *fTPCRatio[2];       //!
   TH1F *fTPCClsS[2];        //!
@@ -256,7 +254,7 @@ class AliFemtoDreamTrackHist {
   TH2F  *fNSigComTPCTOF[2];   //!
   TH2F *fTPCClsCPiluUp[2];  //!
   TH2F *fITShrdClsPileUp[2];  //!
-ClassDef(AliFemtoDreamTrackHist,5)
+ClassDef(AliFemtoDreamTrackHist, 6)
   ;
 };
 

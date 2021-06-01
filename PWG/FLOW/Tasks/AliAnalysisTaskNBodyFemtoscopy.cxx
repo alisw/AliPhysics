@@ -755,12 +755,6 @@ void AliAnalysisTaskNBodyFemtoscopy::Terminate(Option_t *)
 
  // ... your code for offline calculations ...
 
- // Update the output file with new results:
- TFile *f = new TFile("AnalysisResults.root","RECREATE");
- fHistList->Write(fHistList->GetName(),TObject::kSingleKey);
-
- delete f;
-
 } // end of void AliAnalysisTaskNBodyFemtoscopy::Terminate(Option_t *)
 
 //================================================================================================================

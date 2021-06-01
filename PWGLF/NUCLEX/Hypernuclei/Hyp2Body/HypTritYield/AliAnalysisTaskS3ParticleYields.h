@@ -1,30 +1,13 @@
-//--- Task for investigation of the DoubleHyperHydrogen4 ---
 //---     Author: Janik Ditzel; janik.ditzel@cern.ch     ---
 
 #ifndef ALIANALYSISTASKS3PARTICLEYIELDS_H
 #define ALIANALYSISTASKS3PARTICLEYIELDS_H
 
-class TH1F;
-class TH2F;
-class AliESDEvent;
-class AliESDpid;
-class AliESDtrackCuts;
-class AliESDv0;
-class AliESDVertex;
-class AliESDInputHandler;
-class AliESDtrack;
-
 #include "AliAnalysisTaskSE.h"
-#include "AliStack.h"
 #include "AliEventCuts.h"
-#include "TObject.h"
-#include "TLorentzVector.h"
-#include "TVector3.h"
-#include <TClonesArray.h>
-#include "AliPID.h"
-#include "AliVertexerTracks.h"
-#include "THnSparse.h"
-
+#include "AliTRDonlineTrackMatching.h"
+#include "AliCDBManager.h"
+#include "AliGeomManager.h"
 
 class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
  public:
@@ -35,7 +18,6 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(const Option_t*);
   void SelectPIDcheckOnly(Bool_t pidch = kFALSE) {fPIDCheckOnly = pidch;};
-  void SetTriggerMask(UInt_t triggerMask = AliVEvent::kINT7) {fTriggerMask = triggerMask;};
   enum PdgCodeType_t {
     kPDGPionPlus,
     kPDGPionMinus,
@@ -86,70 +68,76 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   static const Int_t fgkPdgCode[];
   
  private:
-  AliESDInputHandler    *fInputHandler;        //!<! Input handler
-  AliESDpid             *fPID;                 //!<! ESD pid
-  AliESDEvent           *fESDevent;            //!<! ESD event
-  AliStack              *fStack;               //!<! MC stack
-  AliESDv0              *fV0;                  //!<! ESD v0 - He4 + pi
-  TH2F                  *fHistdEdx;            //<   Histogram of Tpc dEdx for pid qa
-  THnSparseF		*fHistData;
-  THnSparseF		*fHistMC;
-  TH2F                  *fHistdEdxV0;          //<   Histogram of Tpc dEdx for pid qa
-  TH1F                  *fHistNumEvents;       //<   Histogram of number of events
-  TH1F			            *fHistTrigger;	 	//<   Histogram of trigger for all events 
-  TH1F			            *fHistV0;	 	//<   Histogram of trigger for all V0s 
-  TH1F                  *fHistEvents;
-  TTree                 *fTree;                //<   Tree containing reduced events
-  TTree                 *gTree;                //<   Tree containing reduced events
-  TTree                 *hTree;                //<   Tree containing reduced events
-  TTree                 *fTreeGen;                //<   Tree containing reduced events
-  TList                 *fHistogramList;       //<   List of histograms
-  TVector3              fPrimaryVertex;       //!<! Vector of primary vertex of collision
-  Double_t              fMagneticField;       //!<! Magnetic field
-  Int_t                 fNV0Cand;             //!<! Number of V0 candidates in a event
-  Bool_t                fPIDCheckOnly;        //< Flag to reduce the task only to PID check for Hypertriton daughters
-  Bool_t                fMCtrue;              //< Flag for activating MC analysis (set automatically)
-  AliEventCuts          fEventCuts;           //< 2015 event cuts as advised by PDG (AliEventCuts)
-  UInt_t		            fTriggerMask;		//< Triggermask for event cuts
-  Int_t		              fPeriod;              //< Data period for centrality selector
-  Bool_t                fBetheSplines;        //< Switch between built in BetheSplines and personal Fit
-  Double_t              fBetheParamsHe[6];    //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
-  Double_t              fBetheParamsT[6];     //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
+  AliESDInputHandler    *fInputHandler;
+  AliESDpid             *fPID;
+  AliESDEvent           *fESDevent;
+  AliStack              *fStack;
+  AliESDv0              *fV0;
+  AliMCEvent            *mcEvent;
+  AliESDtrackCuts       *trackCutsV0;
+  TH2F                  *fHistdEdx; 
+  TH2F                  *fHistdEdxV0;  
+  TH1F                  *fHistNumEvents; 
+  TH1F			*fHistTrigger;	  
+  TTree                 *fTree;   
+  TTree                 *hTree; 
+  TTree                 *fTreeGen; 
+  TList                 *fHistogramList; 
+  TVector3              fPrimaryVertex;  
+  Bool_t                fPIDCheckOnly; 
+  Bool_t                fMCtrue;
+  AliEventCuts          fEventCuts; 	   
+  Double_t              fBetheParamsHe[6];   
+  Double_t              fBetheParamsT[6]; 
+  Int_t                 MB, HMV0, HMSPD, HNU, HQU;
+  Int_t                 fYear;  // Jahr für  OCDB
+  //saved in Tree
+  Int_t                 fNumberV0s; 
+  Int_t                 fNTracks; 
   Int_t                 fonTheFly;
   Int_t                 frunnumber;
-  Float_t fmLambda, fpLambda, fptLambda, fctLambda, fdcaLambda, fcosLambda, fyLambda;
-  Float_t fpy, fhe3y, fpLy, fpiP, fhe3P, fhe3Pt, fpP, fpPt, fpLP, fpiy, fpchi2, fhe3chi2;
-  Float_t fpDcaSec, fpiDcaSec, fpiDca, fpDca, fpLDca, fpLDcaSec, fpDcaz, fhe3Dcaz, fhe3Dca;
-  Float_t fpiNcls, fhe3Ncls, fpNcls, fpLNcls, fpiNclsITS, fhe3NclsITS, fpNclsITS, fpLNclsITS;
-  Float_t fpiDedxSigma, fhe3DedxSigma, fpDedxSigma, fpLDedxSigma, fpiDedx, fhe3Dedx, fpDedx, fpLDedx;
-  Float_t farmalpha, farmpt;
-  Int_t ftrig, fz, fmc;
-  Float_t fthetaP, fthetaN, fEtaHe3, fEtaP, fEtaPL, fEtaPi, fPhiHe3, fPhiP, fPhiPL, fPhiPi;
-  Float_t fGeoLengthHe3, fGeoLengthP, fGeoLengthPi, fGeoLengthPL, fTOFSignalHe3, fTOFSignalP, fTOFSignalPi, fTOFSignalPL;
-  Int_t fMCtrueHe3, fisPrimaryHe3, fisWeakHe3, fisMaterialHe3, fisfromHypertriton, fisPrimaryP, fisWeakP, fisMaterialP, fMCtrueP, fMCtrueL;
-  Float_t fpHe3Gen, fyHe3Gen, fpPGen, fyPGen, fpLambdaGen, fyLambdaGen, fmLambdaGen;
-  Int_t fisPrimaryGenHe3, fisSecondaryGenHe3, fisPrimaryGenP, fisMaterialGenP, fisSecondaryGenP, fisMaterialGenHe3;
-  Int_t fHe3Charge, fPCharge, fLambdaCharge;
-
-  TVector3              fVertexPosition; //< position of primary vertex
-  Int_t              fNumberV0s;      //< number of v0s in event
-  Int_t                 fCentrality;     //< centrality of event
-  Int_t              fTrigger;        //< array of Triggers
-  TString               fTriggerClasses; //< fired trigger classes
-
-  Int_t fMultV0M, fMultOfV0M, fMultSPDTracklet, fMultSPDCluster, fMultRef05, fMultRef08, tSPDCluster, tSPDTracklets, tSPDFiredChips0, tSPDFiredChips1, tV0Multiplicity;
-
+  Int_t                 fCharge;
+  Int_t			fTrigMB, fTrigHMV0, fTrigHMSPD, fTrigHNU, fTrigHQU;
+  Int_t                 fMultV0M, fMultOfV0M, fMultSPDTracklet, fMultSPDCluster, fMultRef05, fMultRef08, fSPDCluster, fSPDTracklets, fSPDFiredChips0, fSPDFiredChips1, fV0Multiplicity;
+  Int_t                 fisPrimaryP, fisWeakP, fisMaterialP, fMCtrueP, fMCtrueL, fisWeakL, fisMaterialL, fisPrimaryL;
+  Int_t                 fKinkP, fTPCrefitP, fITSrefitP, fKinkPi, fTPCrefitPi, fITSrefitPi, fpiNcls, fpiNclsITS, fpNcls, fpNclsITS;
+  Float_t               fITSchi2P, fITSchi2Pi;
+  Float_t               fLambdaM, fLambdaE, fLambdaP, fLambdaPx, fLambdaPy, fLambdaPz, fLambdaPt, fLambdaCt, fLambdaDca, fLambdaCos, fLambdaY;
+  Float_t               fpiP, fpiPt, fpiPx, fpiPy, fpiPz, fpiE, fpiy, fpichi2, fpiDcaSec, fpiDca, fpiDcaz, fpiDedxSigma, fpiDedx, fEtaPi, fPhiPi, fGeoLengthPi, fTOFSignalPi, fTOFnSigmaPi, fpiSigmaYX, fpiSigmaXYZ, fpiSigmaZ;
+  Float_t               fpy, fpP, fpPx, fpPy, fpPz, fpPt, fpE, fpDcaSec, fpDca, fpDcaz, fpchi2, fpDedxSigma, fpDedx, fEtaP, fGeoLengthP, fPhiP, fTOFSignalP, fTOFnSigmaP, fpSigmaYX, fpSigmaXYZ, fpSigmaZ;
+  Float_t               farmalpha, farmpt, fthetaP, fthetaN; 
+  Int_t                 fTRDvalidP; // has valid TRD track
+  Int_t                 fTRDtrigHNUP; // HNU fired by track
+  Int_t                 fTRDtrigHQUP; // HQU fired by track
+  Int_t                 fTRDPidP;
+  Int_t                 fTRDnTrackletsP;
+  Int_t                 fTRDPtP;
+  Int_t                 fTRDLayerMaskP;
+  Float_t               fTRDSagittaP;
+  Int_t                 fTRDvalidPi; // has valid TRD track
+  Int_t                 fTRDtrigHNUPi; // HNU fired by track
+  Int_t                 fTRDtrigHQUPi; // HQU fired by track
+  Int_t                 fTRDPidPi;
+  Int_t                 fTRDnTrackletsPi;
+  Int_t                 fTRDPtPi;
+  Int_t                 fTRDLayerMaskPi;
+  Float_t               fTRDSagittaPi;
+  //Functions
   Bool_t TriggerSelection();
   Double_t Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);
   Double_t GeoLength(const AliESDtrack& track);
   Double_t TOFSignal(const AliESDtrack& track);
   void dEdxCheck();
-  void V0Analysis(AliESDtrackCuts trackCutsV0, AliMCEvent* mcEvent);
-  void He3PYields(AliESDtrackCuts trackCutsV0, AliMCEvent* mcEvent);
-  void MCGenerated(AliMCEvent* mcEvent);
+  void LambdaV0s();
+  void ProtonTracks();
+  void MCGenerated();
   void SetMultiplicity();
   void SetBetheBlochParams(Int_t runnumber);
+  void ResetVals(TString mode);
+  Int_t GetLabel(Int_t labelFirstMother, Int_t particlePdgCode);
   Float_t GetInvPtDevFromBC(Int_t b, Int_t c);
+  Double_t TRDtrack(AliESDtrack* esdTrack, Int_t particleID);
+  //
   AliAnalysisTaskS3ParticleYields(const AliAnalysisTaskS3ParticleYields&);
   AliAnalysisTaskS3ParticleYields &operator=(const AliAnalysisTaskS3ParticleYields&);
 

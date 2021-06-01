@@ -4,6 +4,9 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
                                     TString photonCutNumberV0Reader       = "",  
                                     TString periodNameV0Reader            = "",
                                     Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvDalitzV1
+                                    Bool_t    enableElecdEdxPostCalibration = kFALSE,     //PostCalibration
+                                    Bool_t    ForceRPostCalibration = kFALSE,   //Works only with Postcalibration.
+                                    Bool_t    lightVersion = kFALSE,                      //lightVersion Systematic.
                                     TString   fileNameExternalInputs        = "",
                                     Int_t   enableMatBudWeightsPi0          =  0,              // 1 = three radial bins, 2 = 10 radial bins
                                     TString   additionalTrainConfig         = "0"
@@ -103,6 +106,13 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   task->SetIsHeavyIon(0);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+    if (enableQAMesonTask && lightVersion){
+    cout << "\n\n**************************************************************" << endl;
+    cout << "******* QA and Light version are incompatible, changing lightVersion to kFALSE........" << endl;
+    cout << "**************************************************************\n\n" << endl;
+    lightVersion=kFALSE;
+  }
+  task->SetDoLightVersion(lightVersion);
 
 
 
@@ -357,6 +367,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863202223710", "0152103500000000");//Standard with kBoth on electrons
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863002223710", "0152103500000000");//No PsiPair cut with kBoth on electrons
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");//Standard
+//     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263502223710", "0152103500000000");//Standard a 0.06
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263002223710", "0152103500000000");//No PsiPair on electrons
   } else if (trainConfig == 417) {//Systematic for TPC cluster and pion energy
     cuts.AddCutPCMDalitz("00010113", "0dm00008f9730000dge0404000", "204c6400263202223710", "0152103500000000"); // TPC cluster 35%
@@ -389,6 +400,16 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     //New Standard+0.5 single pt cut
     cuts.AddCutPCMDalitz("0008d113", "0dm00009f9730000dge0404000", "204c6420263202223010", "0152103500000000");
     //New Standard+Low Rejection for pions kaons and protons
+   } else if (trainConfig == 430) {//Psipair Optimization.
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863202223710", "0152103500000000");//Standard with kBoth on electrons
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");//Standard
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263702223710", "0152103500000000");//kAny 5% GG
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263802223710", "0152103500000000");//kAny 8% GG
+    } else if (trainConfig == 431) {//Psipair Optimization.
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863e02223710", "0152103500000000");//kBoth 5 % GG
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//kBoth 8 % GG
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863h02223710", "0152103500000000");//kBoth pt dependance
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263g02223710", "0152103500000000");//kAny pt dependance
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////  6XX for lowB,    65X  lowB and MBW ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -470,28 +491,19 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0dh00009266300008850404000", "20475400254202321710", "0263103100900000");
     cuts.AddCutPCMDalitz("00010113", "0di00009266300008850404000", "20475400254202321710", "0263103100900000");
   } else if (trainConfig == 770) {  //New standar?
-    cuts.AddCutPCMDalitz("00010113", "0d200009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
+    cuts.AddCutPCMDalitz("00010113", "0d200009f9730000dge0404000", "204c6400863b02223710", "0152103500000000");
   } else if (trainConfig == 771) {  //Study on range of TPC
-    cuts.AddCutPCMDalitz("00010113", "0da00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
-    //Range TPC 5-33.5
-    cuts.AddCutPCMDalitz("00010113", "0db00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
-    //Range TPC 33.5-72
-    cuts.AddCutPCMDalitz("00010113", "0dc00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
-    //Range TPC 72-180
+    cuts.AddCutPCMDalitz("00010113", "0da00009f9730000dge0404000", "204c6400863b02223710", "0152103500000000");//Range TPC 5-33.5i
+    cuts.AddCutPCMDalitz("00010113", "0db00009f9730000dge0404000", "204c6400863b02223710", "0152103500000000");//Range TPC 33.5-72
+    cuts.AddCutPCMDalitz("00010113", "0dc00009f9730000dge0404000", "204c6400863b02223710", "0152103500000000");//Range TPC 72-180
   } else if (trainConfig == 772) {  //still Study on range of TPC
-    cuts.AddCutPCMDalitz("00010113", "0dh00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
-    //Range TPC 5-13
-    cuts.AddCutPCMDalitz("00010113", "0di00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
-    //Range TPC 13-33.5
-    cuts.AddCutPCMDalitz("00010113", "0dj00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
-    //Range TPC 33.5-55
+    cuts.AddCutPCMDalitz("00010113", "0dh00009f9730000dge0404000", "204c6400863b02223710", "0152103500000000");//Range TPC 5-13
+    cuts.AddCutPCMDalitz("00010113", "0di00009f9730000dge0404000", "204c6400863b02223710", "0152103500000000");//Range TPC 13-33.5
+    cuts.AddCutPCMDalitz("00010113", "0dj00009f9730000dge0404000", "204c6400863b02223710", "0152103500000000");//Range TPC 33.5-55
   } else if (trainConfig == 773) {  //still still Study on range of TPC
-    cuts.AddCutPCMDalitz("00010113", "0dk00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
-    //Range TPC 55-72
-    cuts.AddCutPCMDalitz("00010113", "0dl00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
-    //Range TPC 72-95
-    cuts.AddCutPCMDalitz("00010113", "0dg00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");
-    //Range TPC 95-180
+    cuts.AddCutPCMDalitz("00010113", "0dk00009f9730000dge0404000", "204c6400863b02223710", "0152103500000000");//Range TPC 55-72
+    cuts.AddCutPCMDalitz("00010113", "0dl00009f9730000dge0404000", "204c6400863b02223710", "0152103500000000");//Range TPC 72-95
+    cuts.AddCutPCMDalitz("00010113", "0dg00009f9730000dge0404000", "204c6400863b02223710", "0152103500000000");//Range TPC 95-180
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////Study region of R on LowB Field/////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
@@ -501,53 +513,55 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863202263710", "0152103500000000"); //Standard + kBoth
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263602263710", "0152103500000000"); //Standard + New PsiPair=0.65 Phi=0.14
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); //Standard + New PsiPair=0.65 Phi=0.14 + kBoth
-    cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0404000", "204c6400863502263710", "0152103500000000"); //Standard + New PsiPair=0.65 Phi=0.06 + kBoth
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863502263710", "0152103500000000"); //Standard + New PsiPair=0.65 Phi=0.06 + kBoth
   } else if (trainConfig == 919) { // Study Low B Field
     cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0404000", "204c6400263202263710", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // remove  55-72 bin
     cuts.AddCutPCMDalitz("00010113", "0dd00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // use 5-55 bin only
   } else if (trainConfig == 920) { // R 5-180
-    cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 921) { // R 5-180
-    cuts.AddCutPCMDalitz("00010113", "0da00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0db00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0dc00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0da00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0db00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dc00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 922) { // R 5-180
-    cuts.AddCutPCMDalitz("00010113", "0dh00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0di00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0dj00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dh00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0di00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dj00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 923) { // R 5-180
-    cuts.AddCutPCMDalitz("00010113", "0dk00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0dl00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0dg00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dk00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dl00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dg00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 928) { // R 5-180  // Cat 1, cat 2+3   Meson Cat >=2
     cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0424000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0454000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0424000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0454000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263202263710", "0152103520000000"); // eta < 0.8  // Test improved cuts
-
+  } else if (trainConfig == 930) { // Study Low B Field kBoth for New PsiPair and kBoth, Optimization at 5 and 8 % of contamiantion.
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863a02263710", "0152103500000000"); //kBoth 5 % of contamination from photons
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863b02263710", "0152103500000000"); //kBoth 8 % of contamination from photons
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263c02263710", "0152103500000000"); //kAny 5 % of contamination from photons
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263d02263710", "0152103500000000"); //kAny 8 % of contamination from photons
     //-----------------same as 6XX to be used with MBW extracted from 5TeV Nch
-
-
   } else if (trainConfig == 969) { // R 5-180 and remove r bin 55-72
     cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0404000", "204c6400263202263710", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // remove  55-72 bin
     cuts.AddCutPCMDalitz("00010113", "0dd00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // use 5-55 bin only
   } else if (trainConfig == 970) { // R 5-180
-    cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0404000", "204c6400863b02263710", "0152103500000000"); // all range 0 to 180
   } else if (trainConfig == 971) { // R 5-180
-    cuts.AddCutPCMDalitz("00010113", "0da00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0db00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0dc00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0da00089f9730000iih0404000", "204c6400863b02263710", "0152103500000000"); // Range TPC 5-33.5
+    cuts.AddCutPCMDalitz("00010113", "0db00089f9730000iih0404000", "204c6400863b02263710", "0152103500000000"); // Range TPC 33.5-72
+    cuts.AddCutPCMDalitz("00010113", "0dc00089f9730000iih0404000", "204c6400863b02263710", "0152103500000000"); // Range TPC 72-180
   } else if (trainConfig == 972) { // R 5-180
-    cuts.AddCutPCMDalitz("00010113", "0dh00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0di00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0dj00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dh00089f9730000iih0404000", "204c6400863b02263710", "0152103500000000"); // Range TPC 5-13
+    cuts.AddCutPCMDalitz("00010113", "0di00089f9730000iih0404000", "204c6400863b02263710", "0152103500000000"); // Range TPC 13-33.5
+    cuts.AddCutPCMDalitz("00010113", "0dj00089f9730000iih0404000", "204c6400863b02263710", "0152103500000000"); // Range TPC 33.5-55
   } else if (trainConfig == 973) { // R 5-180
-    cuts.AddCutPCMDalitz("00010113", "0dk00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0dl00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0dg00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dk00089f9730000iih0404000", "204c6400863b02263710", "0152103500000000"); // Range TPC 55-72
+    cuts.AddCutPCMDalitz("00010113", "0dl00089f9730000iih0404000", "204c6400863b02263710", "0152103500000000"); // Range TPC 72-95
+    cuts.AddCutPCMDalitz("00010113", "0dg00089f9730000iih0404000", "204c6400863b02263710", "0152103500000000"); // Range TPC 95-180
   } else if (trainConfig == 978) { // R 5-180  // Cat 1, cat 2+3, Meson Cat >= 2
     cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0424000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0454000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
@@ -595,8 +609,12 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-
     analysisCuts[i] = new AliConversionPhotonCuts();
+
+    //////////////////////////////////////
+    //// Material Budget Weights flag ////
+    //////////////////////////////////////
+
     if (enableMatBudWeightsPi0 > 0){
         if (isMC > 0){
             if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
@@ -605,6 +623,8 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
         }
         else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
+
+
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     ConvCutList->Add(analysisCuts[i]);
@@ -616,12 +636,31 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     analysisMesonCuts[i]->SetFillCutHistograms("");
 
     analysisElecCuts[i] = new AliDalitzElectronCuts();
+
+    ////////////////////////////////////
+    //// Elec dE/dx PostCalibration ////
+    ////////////////////////////////////
+
+    if (enableElecdEdxPostCalibration){
+        if (isMC == 0){
+            analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
+            analysisElecCuts[i]->SetDoElecDeDxPostCalibrationPrimaryPair(kTRUE);
+            if(ForceRPostCalibration){
+              //Dependance in range 0-33 on R, and not TPC dependace
+            analysisCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
+            analysisElecCuts[i]->ForceTPCRecalibrationAsFunctionOfConvRPrimaryPair();
+            }
+        } else{
+        cout << "ERROR enableElecdEdxPostCalibration set to True even if it is MC file. Automatically reset to 0"<< endl;
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
+        analysisElecCuts[i]->SetDoElecDeDxPostCalibrationPrimaryPair(kFALSE);
+      }
+    }
+
     analysisElecCuts[i]->InitializeCutsFromCutString((cuts.GetElectronCut(i)).Data());
     ElecCutList->Add(analysisElecCuts[i]);
     analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,cutName);
-
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
-
   }
 
   task->SetEventCutList(numberOfCuts,EventCutList);
@@ -635,8 +674,10 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   if (trainConfig == 325 || trainConfig == 425) {
     task->SetDoChicAnalysis(kTRUE);
   }
-  //task->SetDoMesonAnalysis(kTRUE);
-  if (enableQAMesonTask) task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
+    ////////////////////////////////////
+    /////////// QA Meson task //////////
+    ////////////////////////////////////
+  if (enableQAMesonTask) task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   //if (enableQAMesonTask) task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
 
   //connect containers

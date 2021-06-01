@@ -62,6 +62,9 @@ AliHFInvMassFitter::AliHFInvMassFitter() :
   fSigmaSgnErr(0.),
   fSigmaSgn2Gaus(0.012),
   fFixedMean(kFALSE),
+  fBoundMean(kFALSE),
+  fMassLowerLim(0),
+  fMassUpperLim(0),
   fFixedSigma(kFALSE),
   fBoundSigma(kFALSE),
   fSigmaVar(0.012),
@@ -122,6 +125,9 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fSigmaSgnErr(0.),
   fSigmaSgn2Gaus(0.012),
   fFixedMean(kFALSE),
+  fBoundMean(kFALSE),
+  fMassLowerLim(0),
+  fMassUpperLim(0),
   fFixedSigma(kFALSE),
   fBoundSigma(kFALSE),
   fSigmaVar(0.012),
@@ -255,8 +261,8 @@ Int_t AliHFInvMassFitter::MassFitter(Bool_t draw){
   printf("\n--- First fit with only background on the side bands - Exclusion region = %.2f sigma ---\n",fNSigma4SideBands);
   if(fTypeOfFit4Bkg==6){
     if(PrepareHighPolFit(fBkgFuncSb)){
-      fHistoInvMass->GetListOfFunctions()->Add(fBkgFuncSb);
-      fHistoInvMass->GetFunction(fBkgFuncSb->GetName())->SetBit(1<<9,kTRUE);
+    //   fHistoInvMass->GetListOfFunctions()->Add(fBkgFuncSb);
+    //   fHistoInvMass->GetFunction(fBkgFuncSb->GetName())->SetBit(1<<9,kTRUE);
       status=0;
     }
   }
@@ -393,7 +399,9 @@ void AliHFInvMassFitter::DrawHere(TVirtualPad* c, Double_t nsigma,Int_t writeFit
     if(fTotFunc){
       pinfom->SetTextColor(kBlue);
       for(Int_t ipar=1; ipar<fNParsSig; ipar++){
-	pinfom->AddText(Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg)));
+        TString str=Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg));  
+        if (fTotFunc->GetParameter(fNParsBkg+fNParsSig-2)<0.2) str=Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg)*1000,fTotFunc->GetParError(ipar+fNParsBkg)*1000);    
+	pinfom->AddText(str);
       }
       if(writeFitInfo>=1) pinfom->Draw();
 
@@ -449,7 +457,9 @@ void AliHFInvMassFitter::DrawHistoMinusFit(TVirtualPad* c, Int_t writeFitInfo){
     pinfom->SetFillStyle(0);
     if(fTotFunc){
       for(Int_t ipar=1; ipar<fNParsSig; ipar++){
-	pinfom->AddText(Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg)));
+	TString str=Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg));  
+        if (fTotFunc->GetParameter(fNParsBkg+fNParsSig-2)<0.2) str=Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg)*1000,fTotFunc->GetParError(ipar+fNParsBkg)*1000);    
+	pinfom->AddText(str);
       }
       pinfom->AddText(Form("S = %.0f #pm %.0f ",fRawYield,fRawYieldErr));
       if(fRflFunc)  pinfom->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fRflFunc->GetParameter(0),fRflFunc->GetParError(0)));
@@ -589,6 +599,7 @@ TF1* AliHFInvMassFitter::CreateSignalFitFunction(TString fname, Double_t integsi
     if(fFixedRawYield>-0.1) funcsig->FixParameter(0,fFixedRawYield);
     funcsig->SetParameter(1,fMass);
     if(fFixedMean) funcsig->FixParameter(1,fMass);
+    if(fBoundMean) funcsig->SetParLimits(1,fMassLowerLim, fMassUpperLim);
     funcsig->SetParameter(2,fSigmaSgn);
     if(fFixedSigma) funcsig->FixParameter(2,fSigmaSgn);
     if(fBoundSigma) funcsig->SetParLimits(2,fSigmaVar*(1-fParSig), fSigmaVar*(1+fParSig));
@@ -974,9 +985,8 @@ Bool_t AliHFInvMassFitter::PrepareHighPolFit(TF1 *fback){
   /// Perform intermediate fit steps up to fPolDegreeBkg-1
   /// in case of fit with a polynomial with degree > 2 (fTypeOfFit4Bkg=6)
 
-  TH1F *hCp=(TH1F*)fHistoInvMass->Clone("htemp");
-  Double_t estimatecent=0.5*(hCp->GetBinContent(hCp->FindBin(fMass-3.5*fSigmaSgn))+hCp->GetBinContent(hCp->FindBin(fMass+3.5*fSigmaSgn)));// just a first rough estimate
-  Double_t estimateslope=(hCp->GetBinContent(hCp->FindBin(fMass+3.5*fSigmaSgn))-hCp->GetBinContent(hCp->FindBin(fMass-3.5*fSigmaSgn)))/(7*fSigmaSgn);// first rough estimate
+  Double_t estimatecent=0.5*(fHistoInvMass->GetBinContent(fHistoInvMass->FindBin(fMass-3.5*fSigmaSgn))+fHistoInvMass->GetBinContent(fHistoInvMass->FindBin(fMass+3.5*fSigmaSgn)));// just a first rough estimate
+  Double_t estimateslope=(fHistoInvMass->GetBinContent(fHistoInvMass->FindBin(fMass+3.5*fSigmaSgn))-fHistoInvMass->GetBinContent(fHistoInvMass->FindBin(fMass-3.5*fSigmaSgn)))/(7*fSigmaSgn);// first rough estimate
 
   fCurPolDegreeBkg=2;
   TF1 *funcbkg,*funcPrev=0x0;
@@ -993,7 +1003,7 @@ Bool_t AliHFInvMassFitter::PrepareHighPolFit(TF1 *fback){
       funcbkg->SetParameter(1,estimateslope);
     }
     printf("   ---> Pre-fit of background with pol degree %d ---\n",fCurPolDegreeBkg);
-    hCp->Fit(funcbkg,"REMN","");
+    fHistoInvMass->Fit(funcbkg,"REMN","");
     funcPrev=(TF1*)funcbkg->Clone("ftemp");
     delete funcbkg;
     fCurPolDegreeBkg++;
@@ -1004,19 +1014,17 @@ Bool_t AliHFInvMassFitter::PrepareHighPolFit(TF1 *fback){
     fback->SetParError(j,funcPrev->GetParError(j));
   }
   printf("   ---> Final background fit with pol degree %d ---\n",fPolDegreeBkg);
-  hCp->Fit(fback,"REMN","");// THIS IS JUST TO SET NOT ONLY THE PARAMETERS BUT ALSO chi2, etc...
-
+  fHistoInvMass->Fit(fback,Form("R,%s,+,0",fFitOption.Data()));// THIS IS JUST TO SET NOT ONLY THE PARAMETERS BUT ALSO chi2, etc...
 
   // The following lines might be useful for debugging
   //   TCanvas *cDebug=new TCanvas();
   //   cDebug->cd();
-  //   hCp->Draw();
+  //   fHistoInvMass->Draw();
   //   TString strout=Form("Test%d.root",(Int_t)fhistoInvMass->GetBinContent(fhistoInvMass->FindBin(fMass)));
   //   cDebug->Print(strout.Data());
   // delete cDebug;
 
   delete funcPrev;
-  delete hCp;
   return kTRUE;
 
 }

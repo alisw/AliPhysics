@@ -1,0 +1,14 @@
+meson: Lc # possibilities: Dzero, DzeroLowPt, DzeroLowPtInclusive, Dplus, Ds, Dstar
+infilename: /Users/fabrizio/Downloads/LcPtSpectrumAverage_pp5_RelativeStatPlusSyst_StatUncorrPidCorr.root
+ptbins: [1, 2, 4, 6, 8, 12] # rebin if necessary, otherwise set null
+extrap:
+    pt:
+        doextrap: 1 # 0 -> false, 1 -> true
+        FONLLfilename: ./FONLL-D0-dsdpt-sqrts5020-100GeV-50MeVbins_PromptLcMod.txt
+        ptlims: [12, 24]
+        excludescales: [frdot51] # add list to exclude specific scales from [central, min, max, min_sc, max_sc, min_mass, max_mass, min_pdf, max_pdf, frdot5dot5, fr22, fr21, fr12, fr1dot5, frdot51] 
+    y:
+        doextrap: 0 # 0 -> false, 1 -> true
+        FONLLfilename:
+            midy: ./FONLL-D0DplusAv-sqrts5020-100GeV-50MeVbins.txt
+            shifty: ./FONLL-D0DplusAv-sqrts5020-100GeV-50MeVbins-ypPb.txt

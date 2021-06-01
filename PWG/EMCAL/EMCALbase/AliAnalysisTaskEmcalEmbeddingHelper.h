@@ -292,6 +292,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   bool            GetFilenames()        ;
   void            DeterminePythiaXSecFilename();
   bool            IsRunInRunlist(const std::string & path) const;
+  void            FilterRunblockFilenames();
   bool            InitializeYamlConfig();
   bool            AutoConfigurePtHardBins();
   std::string     GenerateUniqueFileListFilename() const;
@@ -358,6 +359,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   std::vector <std::string>                     fFilenames        ; ///<  Paths to the files to embed
   std::string                                   fConfigurationPath; ///<  Path to %YAML configuration
   std::vector <std::string>                     fEmbeddedRunlist  ; ///<  Good runlist for files to embed
+  std::vector <int>                             fEmbeddedRunblock ; ///<  Good runblock for files to embed, each run corresponds to the first run of a block
+  Int_t                                         fDataRunNumber    ; ///< Current run number in data file  
   std::string                                  fPythiaXSecFilename; ///<  Name of the pythia x sec filename (either "pyxsec.root" or "pyxsec_hists.root")
   std::vector <std::string>                     fPythiaCrossSectionFilenames; ///< Paths to the pythia xsection files
   TFile                                        *fExternalFile     ; //!<! External file used for embedding
@@ -391,7 +394,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 13);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 14);
   /// \endcond
 };
 #endif

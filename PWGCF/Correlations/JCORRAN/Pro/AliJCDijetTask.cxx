@@ -319,40 +319,11 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
     if(fDebug > 5) cout << "------- AliJCDijetTask Exec-------"<<endl;
     if(!((Entry()-1)%1000))  AliInfo(Form(" Processing event # %lld",  Entry())); 
     if( fJCatalystTask->GetJCatalystEntry() != fEntry) return;
-    fhistos->fh_eventSel->Fill("catalyst entry ok",1.0);
-    if( !fJCatalystTask->GetIsGoodEvent() ) return;
-    fhistos->fh_eventSel->Fill("catalyst ok",1.0);
-
-    if(flags & DIJET_VERTEX13PA) {
-        if(!fUtils->IsVertexSelected2013pA(InputEvent())) return;
-        fhistos->fh_eventSel->Fill("vertex2013pA ok",1.0);
-    }
-
-    if(flags & DIJET_PILEUPSPD) {
-        if(InputEvent()->IsPileupFromSPD(3,0.6,3,2,5)) return;
-        fhistos->fh_eventSel->Fill("pileupSPD ok",1.0);
-    }
-
-    if(flags & DIJET_UTILSPILEUPSPD) {
-        if(fUtils->IsPileUpSPD(InputEvent())) return;
-        fhistos->fh_eventSel->Fill("utils pileupSPD ok",1.0);
-    }
 
     fCBin = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
     fhistos->fh_centrality->Fill(fJCatalystTask->GetCentrality());
     if(fCBin == -1) return;
 
-    fhistos->fh_eventSel->Fill("events",1.0);
-    fhistos->fh_events[fCBin]->Fill("events",1.0);
-    fhistos->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
-    
-    TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
-
-#if !defined(__CINT__) && !defined(__MAKECINT__)
-    //cout << "Next true level calculations:" << endl;
-    fana->CalculateJets(fInputList, fhistos, fCBin);
-    fana->FillJetsDijets(fhistos, fCBin);
-#endif
 
     if(fIsMC) {
         fhistosDetMC->fh_eventSel->Fill("events wo/ cuts",1.0);
@@ -380,6 +351,23 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
         fhistosDetMC->fh_centrality->Fill(fJCatalystTask->GetCentrality());
         if(fCBinDetMC == -1) return;
 
+        TList *genHeaders = 0x0;
+        AliGenEventHeader* gh = 0;
+        AliMCEvent *mcEvent = MCEvent();
+        if(mcEvent) genHeaders = mcEvent->GetCocktailList();
+        if(genHeaders){
+            for(Int_t i = 0; i<genHeaders->GetEntries(); i++){
+                gh = (AliGenEventHeader*)genHeaders->At(i);
+                AliGenPythiaEventHeader* pythiaGenHeader= dynamic_cast<AliGenPythiaEventHeader*>(gh); //identify pythia header
+                //AliGenPythiaEventHeader *pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
+                if(pythiaGenHeader) fptHardBin = pythiaGenHeader->GetPtHard();
+                else fptHardBin = 0.0;
+            }
+        }
+        //cout << "fptHardBin: " << fptHardBin << endl;
+        //fana->SetPtHardBin(fptHardBin);
+        fanaMC->SetPtHardBin(fptHardBin);
+
         fhistosDetMC->fh_eventSel->Fill("events",1.0);
         fhistosDetMC->fh_events[fCBin]->Fill("events",1.0);
         fhistosDetMC->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
@@ -388,10 +376,46 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         //cout << "Next det level calculations:" << endl;
-        fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC);
+        fDetMCFlag = fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC);
+        if(fDetMCFlag != 0) return;
         fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC);
+#endif
+    }
 
-        // Here response matrix calculation.
+    fhistos->fh_eventSel->Fill("catalyst entry ok",1.0);
+    if( !fJCatalystTask->GetIsGoodEvent() ) return;
+    fhistos->fh_eventSel->Fill("catalyst ok",1.0);
+
+    if(flags & DIJET_VERTEX13PA) {
+        if(!fUtils->IsVertexSelected2013pA(InputEvent())) return;
+        fhistos->fh_eventSel->Fill("vertex2013pA ok",1.0);
+    }
+
+    if(flags & DIJET_PILEUPSPD) {
+        if(InputEvent()->IsPileupFromSPD(3,0.6,3,2,5)) return;
+        fhistos->fh_eventSel->Fill("pileupSPD ok",1.0);
+    }
+
+    if(flags & DIJET_UTILSPILEUPSPD) {
+        if(fUtils->IsPileUpSPD(InputEvent())) return;
+        fhistos->fh_eventSel->Fill("utils pileupSPD ok",1.0);
+    }
+
+    fhistos->fh_eventSel->Fill("events",1.0);
+    fhistos->fh_events[fCBin]->Fill("events",1.0);
+    fhistos->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
+    
+    TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
+
+#if !defined(__CINT__) && !defined(__MAKECINT__)
+    //cout << "Next true level calculations:" << endl;
+    fana->CalculateJets(fInputList, fhistos, fCBin);
+    fana->FillJetsDijets(fhistos, fCBin);
+#endif
+
+    // Here response matrix calculation.
+    if(fIsMC) {
+#if !defined(__CINT__) && !defined(__MAKECINT__)
         fana->CalculateResponse(fanaMC,fhistosDetMC);
 #endif
     }

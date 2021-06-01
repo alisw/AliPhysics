@@ -26,6 +26,7 @@ class AliCutHandlerPCM{
     void AddCutPCMMaterial(TString eventCut, TString photonCut);
     void AddCutTrackQA(TString eventCut, TString pionCut, TString kaonCut, TString protonCut, TString deuteronCut);
     void AddCutTrackQAPion(TString eventCut, TString pionCut);
+    void AddCutHeavyMesonSigma(TString eventCut, TString clusterCut, TString mesonCut, TString sigmaCut);
 
     TString GetSpecialSettingFromAddConfig (TString additionalTrainConfig, TString configString, TString fileNameMatBudWeights, TString addTaskName);
     TString GetSpecialFileNameFromString (TString fileNameExternalInputs, TString configString);
@@ -44,6 +45,7 @@ class AliCutHandlerPCM{
     TString GetKaonCut(Int_t i);
     TString GetProtonCut(Int_t i);
     TString GetDeuteronCut(Int_t i);
+    TString GetSigmaCut(Int_t i);
 
 
   protected:
@@ -62,6 +64,7 @@ class AliCutHandlerPCM{
     Bool_t fValidCutsChargedKaon;
     Bool_t fValidCutsProton;
     Bool_t fValidCutsDeuteron;
+    Bool_t fValidCutsSigma;
     TString* fEventCutArray;
     TString* fPhotonCutArray;
     TString* fMesonCutArray;
@@ -74,12 +77,13 @@ class AliCutHandlerPCM{
     TString* fChargedKaonCutArray;
     TString* fProtonCutArray;
     TString* fDeuteronCutArray;
+    TString* fSigmaCutArray;
 
   private:
     AliCutHandlerPCM(const AliCutHandlerPCM&);                  // Prevent copy-construction
     AliCutHandlerPCM &operator=(const AliCutHandlerPCM&);       // Prevent assignment
 
-    ClassDef(AliCutHandlerPCM,5);
+    ClassDef(AliCutHandlerPCM,6);
 };
 
 #endif

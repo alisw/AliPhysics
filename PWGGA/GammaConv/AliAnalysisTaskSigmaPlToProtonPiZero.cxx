@@ -614,7 +614,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 						      // cout << gamma1->GetNLabels() << endl;
 						      if (gamma1->GetNLabels()>0){
 						        for (Int_t k =0; k<(Int_t)gamma1->GetNLabels(); k++){
-						          if (k<50)PhotonCandidate1.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+						          PhotonCandidate1.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
 						          // Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
 						          // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 						        }
@@ -643,7 +643,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 								      // cout << gamma2->GetNLabels() << endl;
 								      if (gamma2->GetNLabels()>0){
 								        for (Int_t k =0; k<(Int_t)gamma2->GetNLabels(); k++){
-								          if (k<50)PhotonCandidate2.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+								          PhotonCandidate2.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
 								          // Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
 						          // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 								        }

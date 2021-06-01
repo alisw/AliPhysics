@@ -17,6 +17,7 @@
 #include <cassert>
 
 // ROOT includes
+#include <TObjString.h>
 #include <TSystem.h>
 #include <TMath.h>
 #include <TH1.h>

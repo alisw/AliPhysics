@@ -1,6 +1,7 @@
 #include <vector>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
+#include "AliAnalysisTaskLD.h"
 #include "AliAnalysisTaskNanoLD.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamTrackCuts.h"
@@ -10,7 +11,7 @@
 AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
                                       bool isMC = false,
                                       bool Systematic = false,
-                                      bool cleanProtonLambda = false,
+                                      int  pairCleanerSetting = 1,
                                       const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -38,9 +39,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   DeuteronCuts->SetPlotCombSigma(false);
   DeuteronCuts->SetPlotContrib(false);
 
-  DeuteronCuts->SetFilterBit(128);
+  DeuteronCuts->SetFilterBit(256);
   DeuteronCuts->SetCutCharge(1);
-  DeuteronCuts->SetPtRange(0.4, 4.);
+  DeuteronCuts->SetPtRange(0.4, 1.4);
   DeuteronCuts->SetEtaRange(-0.8, 0.8);
   DeuteronCuts->SetNClsTPC(80);
   DeuteronCuts->SetDCAReCalculation(true);  // Get the dca from PropagateToVertex
@@ -48,17 +49,23 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   DeuteronCuts->SetDCAVtxXY(0.1);
   DeuteronCuts->SetCutSharedCls(true);
   DeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
-  DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4);
+  DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 3.);
+  DeuteronCuts->SetITSnSigmaCut(false);
   DeuteronCuts->SetRejLowPtPionsTOF(true);
   DeuteronCuts->SetCutSmallestSig(true);
 
   if (suffix == "1") {
-    DeuteronCuts->SetPtRange(0.8, 2.5);
+    //pairCleanerSetting = 0;
+    //DeuteronCuts->SetPtRange(0.8, 2.5);
     //DeuteronCuts->SetFilterBit(256);
+    //DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 60.);
+    DeuteronCuts->SetITSnSigmaCut(true);
+    DeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
+  /*
   else if (suffix == "2") {
-    DeuteronCuts->SetPtRange(0.4, 2.5);
-    //DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    //DeuteronCuts->SetPtRange(0.4, 2.5);
+    //DeuteronCuts->SetPID(AliPID::kDeuteron, 999., 3.);
   }
   else if (suffix == "3") {
     DeuteronCuts->SetPtRange(0.4, 2.0);
@@ -72,6 +79,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   else if (suffix == "5") {
     DeuteronCuts->SetPtRange(0.4, 1.4);
   }
+  */
 
   // Track Cuts for Anti-Deuterons
   AliFemtoDreamTrackCuts *AntiDeuteronCuts = new AliFemtoDreamTrackCuts();
@@ -81,9 +89,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   AntiDeuteronCuts->SetPlotCombSigma(false);
   AntiDeuteronCuts->SetPlotContrib(false);
   
-  AntiDeuteronCuts->SetFilterBit(128);
+  AntiDeuteronCuts->SetFilterBit(256);
   AntiDeuteronCuts->SetCutCharge(-1);
-  AntiDeuteronCuts->SetPtRange(0.4, 4.);
+  AntiDeuteronCuts->SetPtRange(0.4, 1.4);
   AntiDeuteronCuts->SetEtaRange(-0.8, 0.8);
   AntiDeuteronCuts->SetNClsTPC(80);
   AntiDeuteronCuts->SetDCAReCalculation(true);  // Get the dca from PropagateToVertex
@@ -91,17 +99,23 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   AntiDeuteronCuts->SetDCAVtxXY(0.1);
   AntiDeuteronCuts->SetCutSharedCls(true);
   AntiDeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
-  AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4);
+  AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 3.);
+  AntiDeuteronCuts->SetITSnSigmaCut(false);
   AntiDeuteronCuts->SetRejLowPtPionsTOF(true);
   AntiDeuteronCuts->SetCutSmallestSig(true);
 
   if (suffix == "1") {
-    AntiDeuteronCuts->SetPtRange(0.8, 2.5);
+    //pairCleanerSetting = 0;
+    //AntiDeuteronCuts->SetPtRange(0.8, 2.5);
     //AntiDeuteronCuts->SetFilterBit(256);
+    //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 60.);
+    AntiDeuteronCuts->SetITSnSigmaCut(true);
+    AntiDeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
+  /*
   else if (suffix == "2") {
-    AntiDeuteronCuts->SetPtRange(0.4, 2.5);
-    //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    //AntiDeuteronCuts->SetPtRange(0.4, 2.5);
+    //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999., 3.);
   }
   else if (suffix == "3") {
     AntiDeuteronCuts->SetPtRange(0.4, 2.0);
@@ -115,6 +129,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   else if (suffix == "5") {
     AntiDeuteronCuts->SetPtRange(0.4, 1.4);
   }
+  */
 
   // Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
@@ -249,20 +264,32 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
-    NBins.push_back(750);
+
+    //if (suffix == "1") {
+    //  NBins.push_back(500);
+    //} else {
+      NBins.push_back(750);
+    //}
+
     kMin.push_back(0.);
     kMax.push_back(3.);
   }
   pairQA[2] = 12;
   pairQA[6] = 12;
 
+//   // Activate close pair rejection for pairs of interest
+//   if (suffix == "2") {
+//     closeRejection[2] = true;
+//     closeRejection[6] = true;
+//   }
+
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  //config->SetDeltaEtaMax(0.012);
-  //config->SetDeltaPhiMax(0.012);
+  config->SetDeltaEtaMax(0.012);
+  config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
 
   config->SetMixingDepth(10);
@@ -323,12 +350,13 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   config->SetPhiEtaBinnign(false);
 
   if (fullBlastQA) {
-    config->SetdPhidEtaPlotsSmallK(true);
-    config->SetdPhidEtaPlots(true);
-    config->SetPhiEtaBinnign(true);
+    config->SetdPhidEtaPlotsSmallK(false);
+    config->SetdPhidEtaPlots(false);
+    config->SetPhiEtaBinnign(false);
     config->SetkTBinning(true);
     config->SetPtQA(true);
-    //config->SetMassQA(true);
+    config->SetMassQA(true);
+    config->SetMinimalBookingME(false);
   }
 
   if (!fullBlastQA) {
@@ -337,7 +365,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
 
 
   // Create the task
-  AliAnalysisTaskNanoLD* task = new AliAnalysisTaskNanoLD("femtoLD");
+  //AliAnalysisTaskNanoLD* task = new AliAnalysisTaskNanoLD("femtoLD");  // NanoAOD task
+  AliAnalysisTaskLD* task = new AliAnalysisTaskLD("femtoLD");  // AOD task
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);
   }
@@ -350,7 +379,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   task->SetProtonCuts(ProtonCuts);
   task->SetAntiProtonCuts(AntiProtonCuts);
   task->SetCorrelationConfig(config);
-  task->SetCleanProtonLambda(cleanProtonLambda);
+  task->SetPairCleanerUsage(pairCleanerSetting);
   mgr->AddTask(task);
 
   TString addon = "LD";

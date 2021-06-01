@@ -61,6 +61,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliVertexerTracks.h"
 #include "AliESDVertex.h"
+#include "AliAnalysisUtils.h"
 
 //#include "AliQnCorrectionsManager.h"
 
@@ -81,6 +82,8 @@ fpidResponse(0),
 fEMCALGeo(0),
 fFlagSparse(kFALSE),
 fUseTender(kTRUE),
+fCorrTaskClusCont("caloClusters"),
+fCorrTaskTrackCont("tracks"),
 fTracks_tender(0),
 fCaloClusters_tender(0),
 fEMCEG1(kFALSE),
@@ -92,6 +95,7 @@ fThresholdEG2(89),
 fThresholdEG1(140),
 fMCparticle(0),
 fMCArray(0),
+fIsMC(kFALSE),
 fMultSelection(0),
 fIsAnapp(kFALSE),
 fFlagClsTypeEMC(kTRUE),
@@ -100,6 +104,8 @@ fcentMim(0),
 fcentMax(0),
 fCentralityEstimator("V0M"),
 fRecalIP(kTRUE),
+fTPCNCrossR(70),
+fRatioTPCNCrossROvrFind(0.8),
 fITSNCls(3),
 fDeltaEta(0.05),
 fDeltaPhi(0.05),
@@ -116,6 +122,8 @@ fEovPMax(1.2),
 fNEle(0),
 fTPCnSigmaHadMin(-10),
 fTPCnSigmaHadMax(-3.5),
+fAssoTPCNCrossR(70),
+fAssoRatioTPCNCrossROvrFind(0.8),
 fInvmassCut(0.15),
 fCalculateWeight(kFALSE),
 fCalculateNonHFEEffi(kFALSE),
@@ -147,8 +155,12 @@ fDPlus(0),
 fDs(0),
 fLc(0),
 fB(0),
-fWeightB(0),
-fWeightD(0),
+fWeightB(1.0),
+fWeightBMin(1.0),
+fWeightBMax(1.0),
+fWeightD(1.0),
+fWeightDUp(1.0),
+fWeightDDown(1.0),
 fOutputList(0),
 fNevents(0),
 fCent(0),
@@ -266,6 +278,10 @@ fInclElePhysPriTrkCuts(0),
 fHFEPhysPriTrkCuts(0),
 fBEPhysPriTrkCuts(0),
 fDEPhysPriTrkCuts(0),
+fInclElePhysPriOnlyTPCnsig(0),
+fHFEPhysPriOnlyTPCnsig(0),
+fBEPhysPriOnlyTPCnsig(0),
+fDEPhysPriOnlyTPCnsig(0),
 fInclElePhysPriEMCMatch(0),
 fHFEPhysPriEMCMatch(0),
 fBEPhysPriEMCMatch(0),
@@ -315,7 +331,8 @@ fSprsTemplatesWeightVar2(0)
 {
     // Constructor
     
-    fvalueElectron = new Double_t[7];
+    if(!fIsMC)fvalueElectron = new Double_t[6];
+    if(fIsMC)fvalueElectron = new Double_t[9];
     // Define input and output slots here
     // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
@@ -334,6 +351,8 @@ fpidResponse(0),
 fEMCALGeo(0),
 fFlagSparse(kFALSE),
 fUseTender(kTRUE),
+fCorrTaskClusCont("caloClusters"),
+fCorrTaskTrackCont("tracks"),
 fTracks_tender(0),
 fCaloClusters_tender(0),
 fEMCEG1(kFALSE),
@@ -345,6 +364,7 @@ fThresholdEG2(89),
 fThresholdEG1(140),
 fMCparticle(0),
 fMCArray(0),
+fIsMC(kFALSE),
 fMultSelection(0),
 fIsAnapp(kFALSE),
 fFlagClsTypeEMC(kTRUE),
@@ -353,6 +373,8 @@ fcentMim(0),
 fcentMax(0),
 fCentralityEstimator("V0M"),
 fRecalIP(kTRUE),
+fTPCNCrossR(70),
+fRatioTPCNCrossROvrFind(0.8),
 fITSNCls(3),
 fDeltaEta(0.05),
 fDeltaPhi(0.05),
@@ -369,6 +391,8 @@ fEovPMax(1.2),
 fNEle(0),
 fTPCnSigmaHadMin(-10),
 fTPCnSigmaHadMax(-3.5),
+fAssoTPCNCrossR(70),
+fAssoRatioTPCNCrossROvrFind(0.8),
 fInvmassCut(0.15),
 fCalculateWeight(kFALSE),
 fCalculateNonHFEEffi(kFALSE),
@@ -400,8 +424,12 @@ fDPlus(0),
 fDs(0),
 fLc(0),
 fB(0),
-fWeightB(0),
-fWeightD(0),
+fWeightB(1.0),
+fWeightBMin(1.0),
+fWeightBMax(1.0),
+fWeightD(1.0),
+fWeightDUp(1.0),
+fWeightDDown(1.0),
 fOutputList(0),
 fNevents(0),
 fCent(0),
@@ -519,6 +547,10 @@ fInclElePhysPriTrkCuts(0),
 fHFEPhysPriTrkCuts(0),
 fBEPhysPriTrkCuts(0),
 fDEPhysPriTrkCuts(0),
+fInclElePhysPriOnlyTPCnsig(0),
+fHFEPhysPriOnlyTPCnsig(0),
+fBEPhysPriOnlyTPCnsig(0),
+fDEPhysPriOnlyTPCnsig(0),
 fInclElePhysPriEMCMatch(0),
 fHFEPhysPriEMCMatch(0),
 fBEPhysPriEMCMatch(0),
@@ -568,7 +600,8 @@ fSprsTemplatesWeightVar2(0)
 {
     //Default constructor
     
-    fvalueElectron = new Double_t[7];
+    if(!fIsMC)fvalueElectron = new Double_t[6];
+    if(fIsMC)fvalueElectron = new Double_t[9];
     // Define input and output slots here
     // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
@@ -884,10 +917,18 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     fOutputList->Add(fLSElecDCA);
     
     if(fFlagSparse){
-        Int_t bins[7]=      {232, 160, 40, 200, 200, 20, 40}; //pT;nSigma;eop;m20;m02;iSM;eopNL
-        Double_t xmin[7]={2,  -8,   0,   0,   0, 0, 0};
-        Double_t xmax[7]={60,   8,   2,   2,   2, 20, 2};
-        fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;m02;iSM;eop_NL;",7,bins,xmin,xmax);
+        if(!fIsMC){
+            Int_t bins[6] = {232, 160, 160, 200, 200, 20}; //pT;nSigma;eop;m20;m02;iSM;
+            Double_t xmin[6]={2,  -8,   0,   0,   0, 0};
+            Double_t xmax[6]={60,   8,   2,   2,   2, 20};
+            fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;m02;iSM;",6,bins,xmin,xmax);
+        }
+        if(fIsMC){
+            Int_t bins[9] = {232, 160, 160, 200, 200, 20, 2, 2, 2}; //pT;nSigma;eop;m20;m02;iSM;isEle;isPPEle;isHFE
+            Double_t xmin[9]={2,  -8,   0,   0,   0, 0, -0.5, -0.5, -0.5};
+            Double_t xmax[9]={60,   8,   2,   2,   2, 20, 1.5, 1.5, 1.5};
+            fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;m02;iSM;isEle;isPPEle;isHFE",9,bins,xmin,xmax);
+        }
         fOutputList->Add(fSparseElectron);
     }
     
@@ -1059,6 +1100,22 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
         fDEPhysPriTrkCuts = new TH1F("fDEPhysPriTrkCuts","Physical primary c->e for reco effi, Aft Trk cuts;p_{T} (GeV/c);counts",250,0,25);
         fDEPhysPriTrkCuts->Sumw2();
         fOutputList->Add(fDEPhysPriTrkCuts);
+        
+        fInclElePhysPriOnlyTPCnsig = new TH1F("fInclElePhysPriOnlyTPCnsig","Physical primary inclusive electrons for reco effi, Aft TPCnsig cut, bfr EMCmatch;p_{T} (GeV/c);counts",250,0,25);
+        fInclElePhysPriOnlyTPCnsig->Sumw2();
+        fOutputList->Add(fInclElePhysPriOnlyTPCnsig);
+        
+        fHFEPhysPriOnlyTPCnsig = new TH1F("fHFEPhysPriOnlyTPCnsig","Physical primary HFE for reco effi, Aft TPCnsig cut, bfr EMCmatch;p_{T} (GeV/c);counts",250,0,25);
+        fHFEPhysPriOnlyTPCnsig->Sumw2();
+        fOutputList->Add(fHFEPhysPriOnlyTPCnsig);
+        
+        fBEPhysPriOnlyTPCnsig = new TH1F("fBEPhysPriOnlyTPCnsig","Physical primary b->e for reco effi, Aft TPCnsig cut, bfr EMCmatch;p_{T} (GeV/c);counts",250,0,25);
+        fBEPhysPriOnlyTPCnsig->Sumw2();
+        fOutputList->Add(fBEPhysPriOnlyTPCnsig);
+        
+        fDEPhysPriOnlyTPCnsig = new TH1F("fDEPhysPriOnlyTPCnsig","Physical primary c->e for reco effi, Aft TPCnsig cut, bfr EMCmatch;p_{T} (GeV/c);counts",250,0,25);
+        fDEPhysPriOnlyTPCnsig->Sumw2();
+        fOutputList->Add(fDEPhysPriOnlyTPCnsig);
         
         fInclElePhysPriEMCMatch = new TH1F("fInclElePhysPriEMCMatch","Physical primary inclusive electron for reco effi, Aft EMC match;p_{T} (GeV/c);counts",250,0,25);
         fInclElePhysPriEMCMatch->Sumw2();
@@ -1261,8 +1318,9 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
     //////////////
     if(fUseTender){
         //new branches with calibrated tracks and clusters
-        if(IsAODanalysis()){ fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("tracks"));
-        fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
+        if(IsAODanalysis()){
+            fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCorrTaskTrackCont.Data()));
+            fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCorrTaskClusCont.Data()));
         }
     }
     
@@ -1331,6 +1389,8 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
     fNevents->Fill(0); //all events
     Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
     const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
+    
+    /*
     Double_t NcontV = pVtx->GetNContributors();
     if(NcontV<2)return;
     fNevents->Fill(1); //events with 2 tracks
@@ -1342,11 +1402,15 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
     fVtxX->Fill(Xvertex);
     fVtxY->Fill(Yvertex);
     
+    //if(TMath::Abs(Zvertex)>10.0)return;
+    //fNevents->Fill(2); //events after z vtx cut
+    */
+    
     ////////////////////
     //event selection///
     ////////////////////
-    if(TMath::Abs(Zvertex)>10.0)return;
-    fNevents->Fill(2); //events after z vtx cut
+    if(!PassEventSelect(fVevent, pVtx)) return;
+    
     fCent->Fill(centrality); //centrality dist.
     
     if(fMCHeader){
@@ -1430,10 +1494,10 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
         Int_t pdg = -999;
         Int_t pidM = -1;
         Double_t pid_ele = 0.0;
-        Bool_t IsMCEle = kFALSE, IsMCHFEle = kFALSE, IsMCDEle = kFALSE, IsMCBEle = kFALSE;
+        Bool_t IsMCEle = kFALSE, IsMCPPEle = kFALSE, IsMCHFEle = kFALSE, IsMCDEle = kFALSE, IsMCBEle = kFALSE;
 
-        if(fMCHeader && fCalculateElecRecoEffi){
-            GetTrackHFStatus(track, IsMCEle, IsMCHFEle, IsMCBEle, IsMCDEle);
+        if(fIsMC && fMCHeader){
+            GetTrackHFStatus(track, IsMCEle, IsMCPPEle, IsMCHFEle, IsMCBEle, IsMCDEle);
         }
         
         ////////////////////
@@ -1461,7 +1525,16 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
         Double_t d0z0[2]={-999,-999}, cov[3]={999,999,999};
         Double_t DCAxyCut = 0.25, DCAzCut = 1;
         
-        if(atrack->GetTPCNcls() < 80) continue;
+       // if(atrack->GetTPCNcls() < 80) continue;
+        
+        Double_t nclusF = atrack->GetTPCNclsF();
+        Double_t TPCNCrossedRows = atrack->GetTPCNCrossedRows();
+        Double_t RatioCrossedRowsOverFindableClusters = 0.0;
+        if(nclusF !=0.0 ){RatioCrossedRowsOverFindableClusters = TPCNCrossedRows/nclusF; }
+        
+        if(TPCNCrossedRows < fTPCNCrossR) continue;
+        if(RatioCrossedRowsOverFindableClusters < fRatioTPCNCrossROvrFind) continue;
+        
         if(atrack->GetITSNcls() < fITSNCls) continue;
         if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
@@ -1503,10 +1576,17 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
         //Reconstruction efficiency//
         /////////////////////////////
         if(fCalculateElecRecoEffi){
-            if(IsMCEle) fInclElePhysPriTrkCuts->Fill(TrkPt);
+            if(IsMCPPEle) fInclElePhysPriTrkCuts->Fill(TrkPt);
             if(IsMCHFEle) fHFEPhysPriTrkCuts->Fill(TrkPt);
             if(IsMCBEle) fBEPhysPriTrkCuts->Fill(TrkPt);
             if(IsMCDEle) fDEPhysPriTrkCuts->Fill(TrkPt);
+            
+            if(fTPCnSigma > fTPCnSigmaMin && fTPCnSigma < fTPCnSigmaMax){
+                if(IsMCPPEle) fInclElePhysPriOnlyTPCnsig->Fill(TrkPt);
+                if(IsMCHFEle) fHFEPhysPriOnlyTPCnsig->Fill(TrkPt);
+                if(IsMCBEle) fBEPhysPriOnlyTPCnsig->Fill(TrkPt);
+                if(IsMCDEle) fDEPhysPriOnlyTPCnsig->Fill(TrkPt);
+            }
         }
         
         Bool_t fFillTem = kFALSE;
@@ -1571,12 +1651,17 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
+            Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
+            if(!fIsMC){
+                if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
+                if(TMath::Abs(clustTime) > 50) continue; //50ns time cut to remove pileup
+            }
             
             /////////////////////////////
             //Reconstruction efficiency//
             /////////////////////////////
             if(fCalculateElecRecoEffi){
-                if(IsMCEle) fInclElePhysPriEMCMatch->Fill(TrkPt);
+                if(IsMCPPEle) fInclElePhysPriEMCMatch->Fill(TrkPt);
                 if(IsMCHFEle) fHFEPhysPriEMCMatch->Fill(TrkPt);
                 if(IsMCBEle) fBEPhysPriEMCMatch->Fill(TrkPt);
                 if(IsMCDEle) fDEPhysPriEMCMatch->Fill(TrkPt);
@@ -1633,8 +1718,11 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             fvalueElectron[3] = m20;
             fvalueElectron[4] = m02;
             fvalueElectron[5] = iSM;
-            fvalueElectron[6] = eop_NL;
-            
+            if(fIsMC){
+                fvalueElectron[6] = IsMCEle;
+                fvalueElectron[7] = IsMCPPEle;
+                fvalueElectron[8] = IsMCHFEle;
+            }
             if(fFlagSparse && track->Pt()>2.0){
                 fSparseElectron->Fill(fvalueElectron);
             }
@@ -1643,7 +1731,7 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             //Reconstruction efficiency//
             /////////////////////////////
             if(fCalculateElecRecoEffi){
-                GetEIDRecoEffi(track, clustMatch, IsMCEle, IsMCHFEle, IsMCBEle, IsMCDEle);
+                GetEIDRecoEffi(track, clustMatch, IsMCPPEle, IsMCHFEle, IsMCBEle, IsMCDEle);
             }
             
             //////////////////
@@ -1695,6 +1783,66 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
     fNElecInEvt->Fill(fNEle);
     
     PostData(1, fOutputList);
+}
+//___________________________________________
+Bool_t AliAnalysisTaskHFEBESpectraEMC::PassEventSelect(AliVEvent *fVevent, const AliVVertex *pVtx)
+{
+  //event selection cuts
+
+  Int_t ntracks = -999;
+  ntracks = fVevent->GetNumberOfTracks();
+  if(ntracks < 1) printf("There are %d tracks in this event\n",ntracks);
+
+  fNevents->Fill(0); //all events
+  Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
+
+  Double_t NcontV = pVtx->GetNContributors();
+
+  AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
+  Double_t NcontSPD = vtSPD->GetNContributors();
+  if(NcontV<2 || NcontSPD<1)return kFALSE;
+
+  if(!fIsAnapp){
+    Double_t covTrc[6],covSPD[6];
+    pVtx->GetCovarianceMatrix(covTrc);
+    vtSPD->GetCovarianceMatrix(covSPD);
+    Double_t dz = pVtx->GetZ() - vtSPD->GetZ();
+    Double_t errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    Double_t errTrc = TMath::Sqrt(covTrc[5]);
+    Double_t nsigTot = TMath::Abs(dz)/errTot;
+    Double_t nsigTrc = TMath::Abs(dz)/errTrc;
+    if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return kFALSE;// bad vertexing
+  }
+
+  Bool_t isPileupfromSPDmulbins=fAOD->IsPileupFromSPDInMultBins();
+  if(isPileupfromSPDmulbins) return kFALSE;
+    
+  Bool_t isPileupfromSPD =fAOD->IsPileupFromSPD();
+    if(isPileupfromSPD) return kFALSE;
+
+  ///minContributors=5; minChi2=5.; minWeiZDiff=15; checkPlpFromDifferentBC=kFALSE;
+    AliAnalysisUtils utils;
+    utils.SetMinPlpContribMV(5);
+    utils.SetMaxPlpChi2MV(5.);
+    utils.SetMinWDistMV(15);
+    utils.SetCheckPlpFromDifferentBCMV(kFALSE);
+
+    Bool_t isPileupFromMV = utils.IsPileUpMV(fAOD);
+    if(isPileupFromMV) return kFALSE;
+
+  fNevents->Fill(1); //events after vettex cuts
+
+  Zvertex = pVtx->GetZ();
+  Yvertex = pVtx->GetY();
+  Xvertex = pVtx->GetX();
+  fVtxZ->Fill(Zvertex);
+  fVtxX->Fill(Xvertex);
+  fVtxY->Fill(Yvertex);
+
+  if(TMath::Abs(Zvertex)>10.0) return kFALSE;
+  fNevents->Fill(2); //events after z vtx cut
+
+  return kTRUE;
 }
 //___________________________________________
 Bool_t AliAnalysisTaskHFEBESpectraEMC::PassEIDCuts(AliVTrack *track, AliVCluster *clust, Bool_t &Hadtrack)
@@ -1799,7 +1947,16 @@ void AliAnalysisTaskHFEBESpectraEMC::SelectPhotonicElectron(Int_t itrack, AliVTr
         //------track cuts applied
         if(fAOD) {
             if(!aAssotrack->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-            if(aAssotrack->GetTPCNcls() < 70) continue;
+            
+            Double_t AssonclusF = aAssotrack->GetTPCNclsF();
+            Double_t AssoTPCNCrossedRows = aAssotrack->GetTPCNCrossedRows();
+            Double_t AssoRatioCrossedRowsOverFindableClusters = 0.0;
+            if(AssonclusF !=0.0 ){AssoRatioCrossedRowsOverFindableClusters = AssoTPCNCrossedRows/AssonclusF; }
+            
+            if(AssoTPCNCrossedRows < fAssoTPCNCrossR) continue;
+            if(AssoRatioCrossedRowsOverFindableClusters < fAssoRatioTPCNCrossROvrFind) continue;
+            
+          //  if(aAssotrack->GetTPCNcls() < 70) continue;
             if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
             
             if(fRecalIP) RecalImpactParam(aAssotrack, d0z0, cov);
@@ -1910,6 +2067,12 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
         
         if(clust && clust->IsEMCAL())
         {
+            //Removing exotic clusters using IsExotic function in data and using M02 min cut
+            if(!fIsMC)
+                if(clust->GetIsExotic()) continue;
+            Double_t m02 = clust->GetM02();
+            if(m02 < 0.02) continue;
+            
             Double_t clustE_NL = clust->GetNonLinCorrEnergy();
             Double_t clustE = clust->E();
             if(clustE < 0.3) continue;
@@ -1934,6 +2097,11 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
+            Float_t tof = clust->GetTOF()*1e+9; // ns
+            fHistoTimeEMC->Fill(clustE,tof);
+            if(!fIsMC)
+                if(TMath::Abs(tof) > 50) continue;
+            
             fHistClustE->Fill(clust->E());
             fHistNonLinClustE->Fill(clustE_NL);
             
@@ -1943,9 +2111,6 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
             Double_t EperCell = -999.9;
             if(clust->GetNCells()>0)EperCell = clustE/clust->GetNCells();
             fHistoEperCell->Fill(clustE,EperCell);
-            
-            Float_t tof = clust->GetTOF()*1e+9; // ns
-            fHistoTimeEMC->Fill(clustE,tof);
             
             //-----Plots for EMC trigger
             Bool_t hasfiredEG1=0;
@@ -2364,13 +2529,16 @@ void AliAnalysisTaskHFEBESpectraEMC::GetElectronFromStack()
         Int_t iMCmom = -999, iMCgmom = -999, iMCggmom = -999, iMCgggmom = -999;
         Int_t MomPDG = -999, GMomPDG=-999, GGMomPDG=-999, GGGMomPDG=-999;
         
-        Bool_t IsMCEle = kFALSE, IsMCHFEle = kFALSE, IsMCDEle = kFALSE, IsMCBEle = kFALSE;
+        Bool_t IsMCEle = kFALSE, IsMCPPEle = kFALSE, IsMCHFEle = kFALSE, IsMCDEle = kFALSE, IsMCBEle = kFALSE;
 
         if(TMath::Abs(MCPart->Eta()) > 0.6) continue;
-        if(!MCPart->IsPhysicalPrimary()) continue;
+
         if(!(PDGcode == 11)) continue;
-        
         IsMCEle = kTRUE;
+
+        if(!MCPart->IsPhysicalPrimary()) continue;
+        IsMCPPEle = kTRUE;
+        
         fInclElePhysPriAll->Fill(MCPart->Pt());
         
         iMCmom = MCPart->GetMother();
@@ -2410,7 +2578,7 @@ void AliAnalysisTaskHFEBESpectraEMC::GetElectronFromStack()
     }
 }
 //______________________________________
-void AliAnalysisTaskHFEBESpectraEMC::GetTrackHFStatus(AliVTrack *track, Bool_t &IsMCEle, Bool_t &IsMCHFEle, Bool_t &IsMCBEle, Bool_t &IsMCDEle)
+void AliAnalysisTaskHFEBESpectraEMC::GetTrackHFStatus(AliVTrack *track, Bool_t &IsMCEle, Bool_t &IsMCPPEle, Bool_t &IsMCHFEle, Bool_t &IsMCBEle, Bool_t &IsMCDEle)
 {
 //Check the MC track status for electrons
     
@@ -2425,9 +2593,11 @@ void AliAnalysisTaskHFEBESpectraEMC::GetTrackHFStatus(AliVTrack *track, Bool_t &
 
     if(iTrklabel > 0){
         MCPart = (AliAODMCParticle*)fMCArray->At(iTrklabel);
-        if(MCPart->IsPhysicalPrimary()){
-            if(TMath::Abs(MCPart->GetPdgCode())==11){
-                IsMCEle = kTRUE;
+        if(TMath::Abs(MCPart->GetPdgCode())==11){
+            IsMCEle = kTRUE;
+            
+            if(MCPart->IsPhysicalPrimary()){
+                IsMCPPEle = kTRUE;
                 
                 iMCmom = MCPart->GetMother();
                 if(iMCmom > 0){
@@ -2466,7 +2636,7 @@ void AliAnalysisTaskHFEBESpectraEMC::GetTrackHFStatus(AliVTrack *track, Bool_t &
     }
 }
 //______________________________________
-void AliAnalysisTaskHFEBESpectraEMC::GetEIDRecoEffi(AliVTrack *track, AliVCluster *clust, Bool_t IsMCEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle)
+void AliAnalysisTaskHFEBESpectraEMC::GetEIDRecoEffi(AliVTrack *track, AliVCluster *clust, Bool_t IsMCPPEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle)
 {
     //Filling histograms for EID efficiency
     
@@ -2484,19 +2654,19 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEIDRecoEffi(AliVTrack *track, AliVCluste
     if(track->P()>0)eop = clustE/track->P();
     
     if(eop > fEovPMin && eop < fEovPMax){
-        if(IsMCEle) fInclElePhysPriEovP->Fill(TrkPt);
+        if(IsMCPPEle) fInclElePhysPriEovP->Fill(TrkPt);
         if(IsMCHFEle) fHFEPhysPriEovP->Fill(TrkPt);
         if(IsMCBEle) fBEPhysPriEovP->Fill(TrkPt);
         if(IsMCDEle) fDEPhysPriEovP->Fill(TrkPt);
         
         if(fTPCnSigma > fTPCnSigmaMin && fTPCnSigma < fTPCnSigmaMax){
-            if(IsMCEle) fInclElePhysPriTPCnsig->Fill(TrkPt);
+            if(IsMCPPEle) fInclElePhysPriTPCnsig->Fill(TrkPt);
             if(IsMCHFEle) fHFEPhysPriTPCnsig->Fill(TrkPt);
             if(IsMCBEle) fBEPhysPriTPCnsig->Fill(TrkPt);
             if(IsMCDEle) fDEPhysPriTPCnsig->Fill(TrkPt);
             
             if(eop > fEovPMin && eop < fEovPMax){
-                if(IsMCEle) fInclElePhysPriEovPBfrSS->Fill(TrkPt);
+                if(IsMCPPEle) fInclElePhysPriEovPBfrSS->Fill(TrkPt);
                 if(IsMCHFEle) fHFEPhysPriEovPBfrSS->Fill(TrkPt);
                 if(IsMCBEle) fBEPhysPriEovPBfrSS->Fill(TrkPt);
                 if(IsMCDEle) fDEPhysPriEovPBfrSS->Fill(TrkPt);
@@ -2511,7 +2681,7 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEIDRecoEffi(AliVTrack *track, AliVCluste
             if(m20 > fM20Min && m20 < fM20Max) PassSSCut = kTRUE;
             
             if(PassSSCut){
-                if(IsMCEle) fInclElePhysPriSS->Fill(TrkPt);
+                if(IsMCPPEle) fInclElePhysPriSS->Fill(TrkPt);
                 if(IsMCHFEle) fHFEPhysPriSS->Fill(TrkPt);
                 if(IsMCBEle) fBEPhysPriSS->Fill(TrkPt);
                 if(IsMCDEle) fDEPhysPriSS->Fill(TrkPt);

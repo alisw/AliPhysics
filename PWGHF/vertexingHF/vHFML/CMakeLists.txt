@@ -31,6 +31,11 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
 )
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
+    include_directories(${KFPARTICLE_INCLUDE_DIR})
+    add_definitions("-DWITH_KFPARTICLE")
+endif(KFParticle_FOUND)
 
 # Sources - alphabetical order
 set(SRCS 
@@ -41,9 +46,14 @@ set(SRCS
     AliHFMLVarHandler.cxx
     AliHFMLVarHandlerDplustoKpipi.cxx
     AliHFMLVarHandlerDstoKKpi.cxx
+    AliHFMLVarHandlerNonPromptLc2V0bachelor.cxx
+    AliHFMLVarHandlerLctopKpi.cxx
     AliAnalysisTaskSEDplus.cxx
     AliAnalysisTaskSEDs.cxx
+    AliAnalysisTaskSENonPromptLc.cxx
+    AliAnalysisTaskSECharmHadronMLSelector.cxx
     AliAnalysisTaskSECharmHadronvn.cxx
+    AliAnalysisTaskSECheckCharmHadronBkg.cxx
     AliAnalysisTaskSEHFTreeCreatorApply.cxx
     AliHFTreeHandlerApply.cxx
     AliHFTreeHandlerApplyDstoKKpi.cxx
@@ -64,14 +74,17 @@ add_library_tested(${MODULEHFML} SHARED  ${SRCS} G__${MODULEHFML}.cxx)
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ML PWGHFvertexingHF)
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
+endif(KFParticle_FOUND)
 generate_rootmap("${MODULEHFML}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULEHFML}LinkDef.h")
 
 # Generate a PARfile target for this library
-add_target_parfile(${MODULEHFML} "${SRCS}" "${HDRS}" "${MODULEHFML}LinkDef.h" "${LIBDEPS}")
+add_target_parfile(${MODULEHFML} "${SRCS}" "${HDRS}" "${MODULEHFML}LinkDef.h" "${LIBDEPS}" "$(ALICE_PHYSICS)/include $(ALICE_ROOT)/include $(KFPARTICLE_ROOT)/include")
 
 # Linking the library
 target_link_libraries(${MODULEHFML} ${LIBDEPS})
-
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULEHFML} PUBLIC ${incdirs})
 

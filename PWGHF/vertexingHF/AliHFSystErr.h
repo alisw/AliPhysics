@@ -22,7 +22,7 @@ class AliHFSystErr : public TNamed
 {
  public:
 
-  AliHFSystErr(const Char_t* name="HFSystErr", const Char_t* title="");
+  AliHFSystErr(const Char_t* name="AliHFSystErr", const Char_t* title="");
 
   virtual ~AliHFSystErr();
 
@@ -276,6 +276,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi20161718pp13TeVmb();
   void InitD0toKpi20161718pp13TeVlm();
   void InitD0toKpi20161718pp13TeVhm();
+  void InitD0toKpi20161718pp13TeVFineBins();
   void InitD0toKpi2011PbPb07half();
   void InitD0toKpi2010PbPb020();
   void InitD0toKpi2010PbPb4080();
@@ -342,13 +343,16 @@ class AliHFSystErr : public TNamed
   void InitLctopKpi2016pPb();
   void InitLctopKpi2017pp();
   void InitLctopKpi20161718pp13TeV();
+  void InitLctopKpi20161718pp13TeVFineBins();
 
   void InitLctopK0S2010pp();
   void InitLctopK0S2013pPb();
   void InitLctopK0S2013pPbBDT();
   void InitLctopK0S2016pPb();
   void InitLctopK0S2016pPbBDT();
+  void InitLctopK0S2016pPbBDTLowPtAn();
   void InitLctopK0S2017pp5TeV();
+  void InitLctopK0S20161718pp13TeVBDT();
 
   void InitLctopK0S2018PbPb010BDT();
   void InitLctopK0S2018PbPb3050BDT();
@@ -386,6 +390,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2018PbPb010();
   void InitD0toKpi2018PbPb3050();
   void InitD0toKpi2018PbPb010LowPtAn();
+  void InitD0toKpi2018PbPb3050LowPtAn();
 
   void InitLctopKpiFromScpp13TeV201620172018(); // Lc(<-Sc)
   void InitScpp13TeV201620172018(); // Sc
@@ -395,6 +400,7 @@ class AliHFSystErr : public TNamed
   // data-driven non-prompt analyses
   void InitNonPromptDplustoKpipi2017pp5TeVML();
   void InitNonPromptDstoKKpi2017pp5TeVML();
+  void InitNonPromptDstoKKpi2018PbPb5TeV010ML();
 
   TH1F* ReflectHisto(TH1F *hin) const;
 

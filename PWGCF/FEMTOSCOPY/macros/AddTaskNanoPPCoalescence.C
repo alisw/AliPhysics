@@ -5,11 +5,8 @@
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 #include "AliAnalysisTaskNanoPPCoalescence.h"
-AliAnalysisTaskSE* AddTaskNanoPPCoalescence( bool isMC = true, bool fIsMCTruth = true,
+AliAnalysisTaskSE* AddTaskNanoPPCoalescence( bool isMC = true, bool IsMCTruth = true,
                                   TString trigger = "kINT7", //2
-                                  bool DCAPlots = false, //3
-                                  bool CombSigma = false, //4
-                                  bool ContributionSplitting = false, //5,
                                   bool fullBlastQA = true, bool RefMult08 = true,
                                   bool Systematic = false,
                                   const char *cutVariation = "0") {
@@ -35,14 +32,17 @@ AliAnalysisTaskSE* AddTaskNanoPPCoalescence( bool isMC = true, bool fIsMCTruth =
 
   //Track Cuts for p/barp
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
-                                        isMC, true, CombSigma, ContributionSplitting);
-  TrackCuts->SetMinimalBooking(Systematic);
+                                        isMC, true, false, false);
   TrackCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
-      isMC, true, CombSigma, ContributionSplitting);
-  AntiTrackCuts->SetMinimalBooking(Systematic);
+      isMC, true, false, false);
   AntiTrackCuts->SetCutCharge(-1);
+  if (!fullBlastQA) {
+    evtCuts->SetMinimalBooking(true);
+    TrackCuts->SetMinimalBooking(true);
+    AntiTrackCuts->SetMinimalBooking(true);
+  }
 
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
@@ -142,16 +142,13 @@ AliAnalysisTaskSE* AddTaskNanoPPCoalescence( bool isMC = true, bool fIsMCTruth =
     config->SetkTBinning(true);
     config->SetPtQA(true);
   }
-
   if (!fullBlastQA) {
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
   }
-
   if (RefMult08) {
     config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   }
-
   if (Systematic) {
     if (suffix == "1") {
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
@@ -596,7 +593,6 @@ AliAnalysisTaskSE* AddTaskNanoPPCoalescence( bool isMC = true, bool fIsMCTruth =
     }
   }
 
-
   AliAnalysisTaskNanoPPCoalescence *task = new AliAnalysisTaskNanoPPCoalescence(
     "AliAnalysisTaskNanoPPCoalescence", isMC);
 
@@ -628,7 +624,7 @@ AliAnalysisTaskSE* AddTaskNanoPPCoalescence( bool isMC = true, bool fIsMCTruth =
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetCollectionConfig(config);
-  task->SetMCTruth(fIsMCTruth);
+  task->SetMCTruth(IsMCTruth);
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();

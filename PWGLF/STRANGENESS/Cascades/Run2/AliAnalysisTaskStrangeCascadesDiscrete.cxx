@@ -90,6 +90,10 @@ lBaryonTrack(0x0),
 Cascade_Track(0x0),
 Cascade_Event(0x0),
 fTreeCascadeAsEvent(0x0),
+fpTrackXi(0x0),
+fnTrackXi(0x0),
+fbTrackXi(0x0),
+
 fMagneticField(-100.),
 fPV_X(0), fPV_Y(0), fPV_Z(0), sigmamaxrunning(-100.),fkOmegaCleanMassWindow(0.1)
 {
@@ -158,6 +162,9 @@ lBaryonTrack(0x0),
 Cascade_Track(0x0),
 Cascade_Event(0x0),
 fTreeCascadeAsEvent(0x0),
+fpTrackXi(0x0),
+fnTrackXi(0x0),
+fbTrackXi(0x0),
 fMagneticField(-100.),
 fPV_X(0), fPV_Y(0), fPV_Z(0), sigmamaxrunning(-100.),fkOmegaCleanMassWindow(0.1)
 {
@@ -275,7 +282,7 @@ AliAnalysisTaskStrangeCascadesDiscrete::~AliAnalysisTaskStrangeCascadesDiscrete(
         xi = nullptr;
     }
     
-    if (pTrackXi) {
+  /*  if (pTrackXi) {
         delete pTrackXi;
         pTrackXi = nullptr;
     }
@@ -298,6 +305,7 @@ AliAnalysisTaskStrangeCascadesDiscrete::~AliAnalysisTaskStrangeCascadesDiscrete(
         delete lBaryonTrack;
         lBaryonTrack = nullptr;
     }
+    */
     
 }
 
@@ -551,7 +559,20 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         pTrackXi        = lESDevent->GetTrack( lIdxPosXi );
         nTrackXi        = lESDevent->GetTrack( lIdxNegXi );
         bachTrackXi    = lESDevent->GetTrack( lBachIdx );
-        
+
+        //store fp,n,b in the tree
+        AliESDtrack *pTrackXi1 = lESDevent -> GetTrack(lIdxPosXi);
+
+       // fpTrackXi = (AliExternalTrackParam*)lESDevent->GetTrack( lIdxPosXi );
+       // fnTrackXi = (AliExternalTrackParam*)lESDevent->GetTrack( lIdxNegXi );
+       // fbTrackXi = (AliExternalTrackParam*)lESDevent->GetTrack( lBachIdx );
+
+
+     //   fpTrackXi = lESDevent->GetTrack( lIdxPosXi );
+     //   fnTrackXi = lESDevent->GetTrack( lIdxNegXi );
+        //   fbTrackXi = lESDevent->GetTrack( lBachIdx );
+
+     
         //------------CLEANUP guards----------------------------------------------------------------------------------------
         
         
@@ -559,9 +580,10 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         goodPos = kFALSE; goodNeg = kFALSE; goodBach = kFALSE;
         rapidity_range = 0.5;
         eta_range = 0.8;
-        goodPos = GoodESDTrack(pTrackXi,rapidity_range, eta_range);
-        goodNeg = GoodESDTrack(nTrackXi,rapidity_range, eta_range);
-        goodBach = GoodESDTrack(bachTrackXi,rapidity_range, eta_range);
+        goodPos = GoodESDTrack(pTrackXi, eta_range);
+        goodNeg = GoodESDTrack(nTrackXi, eta_range);
+        goodBach = GoodESDTrack(bachTrackXi, eta_range);
+
         if((goodPos != kTRUE) && fguard_CheckTrackQuality) continue;
         if((goodNeg != kTRUE) && fguard_CheckTrackQuality) continue;
         if((goodBach != kTRUE) && fguard_CheckTrackQuality) continue;
@@ -587,10 +609,13 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         
         
         //----------cleanup guards over--------------------------------------------------------------------------------------
-        
+
+
+
+
         //Some of the Cascade properties. We need the hCascTraj object for DCA
-        Double_t xyzCascade[3], pxpypzCascade[3], cvCascade[21];
-        for(Int_t ii=0;ii<21;ii++) cvCascade[ii]=0.0; //something small
+        Double_t xyzCascade[3], pxpypzCascade[3];
+        Double_t cvCascade[21]={0.0};
         
         xi->GetXYZcascade( xyzCascade[0],  xyzCascade[1], xyzCascade[2] );
         xi->GetPxPyPz( pxpypzCascade[0], pxpypzCascade[1], pxpypzCascade[2] );
@@ -639,6 +664,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         fTreeCascVarBachTOFNSigmaPion(-10.);
         //positions of the cascade and V0;
         Float_t fTreeCascVarCascCosPointingAngle(-10.); //NOTE: here we also save the charge of the BACHELOR track!
+        Float_t fTreeCascVarWrongCosPointing(-10.); //to fix the correlated background.
         Float_t fTreeCascVarCascadeDecayX(1000.),
         fTreeCascVarCascadeDecayY(1000.),
         fTreeCascVarCascadeDecayZ(1000.),
@@ -668,7 +694,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         RunningDCAxy_z[0] = -1.; RunningDCAxy_z[1] = -1.;
         //dca bach
         bachTrackXi->GetDZ(fPV_X,fPV_Y,fPV_Z,fMagneticField, RunningDCAxy_z);
-        fTreeCascVarDCABachToPrimVtx = RunningDCAxy_z[0] * bachTrackXi->Charge(); //Also the CHARGE OF THE BACHELOR TRACK IS SAVED HERE!
+        fTreeCascVarDCABachToPrimVtx = RunningDCAxy_z[0]; 
         fTreeCascVarDCABachToPrimVtxZ = RunningDCAxy_z[1];
         RunningDCAxy_z[0] = -1.; RunningDCAxy_z[1] = -1.;
         //dca V0 prim
@@ -721,9 +747,12 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         
         //----------------------------ACCESS DATA: ITS------------------------------------------
         //access status on all ITS layers
-        Int_t pITS[6], nITS[6], bITS[6];
+        Int_t pITS[6], nITS[6], bITS[6]; //status of an ITS layer (fired, found, defect etc.)
+        Int_t p_pITS[6], p_nITS[6], p_bITS[6]; //point on a ITS layer
         Int_t iscpos[6], iscneg[6], iscbach[6]; //number of ITS shared clusters
         Bool_t hasp(kFALSE), hasn(kFALSE), hasbach(kFALSE); //booleans for: shared clusters in its.
+        Bool_t phasp(kFALSE), phasn(kFALSE), phasbach(kFALSE); //booleans for: clusters in its.
+
         for (int k=0; k<6; k++) {
             pITS[k] = GetITSstatus(pTrackXi, k);
             nITS[k] = GetITSstatus(nTrackXi, k);
@@ -735,10 +764,26 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
             
             if(hasp == kTRUE)iscpos[k] = 1;
             else iscpos[k] =0;
+
             if (hasn == kTRUE)iscneg[k] =1;
-            else iscpos[k] = 0;
+            else iscneg[k] = 0;
+
             if(hasbach == kTRUE)iscbach[k] = 1;
             else iscbach[k] = 0;
+
+            //rewrite with
+            phasp = pTrackXi -> HasPointOnITSLayer(k);
+            phasn = nTrackXi -> HasPointOnITSLayer(k);
+            phasbach = bachTrackXi -> HasPointOnITSLayer(k);
+
+            if(phasp == kTRUE)p_pITS[k] = 1;
+            if(phasp != kTRUE)p_pITS[k] =0;
+
+            if(phasn == kTRUE)p_nITS[k] =1;
+            if(phasn != kTRUE)p_nITS[k] =0;
+
+            if(phasbach == kTRUE)p_bITS[k] =1;
+            if(phasbach != kTRUE)p_bITS[k] =0;
             
         }
         //if the track was refitted in the ITS
@@ -830,6 +875,16 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         fTreeCascVarPosTOFNSigmaProton = fPIDResponse->NumberOfSigmasTOF( pTrackXi, AliPID::kProton );
         fTreeCascVarBachTOFNSigmaPion  = fPIDResponse->NumberOfSigmasTOF( bachTrackXi, AliPID::kPion );
         fTreeCascVarBachTOFNSigmaKaon  = fPIDResponse->NumberOfSigmasTOF( bachTrackXi, AliPID::kKaon );
+
+
+
+        //additional info:
+        //to fix corr.backgrounds (investigate for omega)
+        Float_t fTreeCascVarWrongCosPA(-2);
+        if( bachTrackXi->Charge() < 0 )
+            fTreeCascVarWrongCosPA = GetCosPA( bachTrackXi , pTrackXi, lESDevent );
+        if( bachTrackXi->Charge() > 0 )
+            fTreeCascVarWrongCosPA = GetCosPA( bachTrackXi , nTrackXi, lESDevent );
         
         
         
@@ -839,7 +894,36 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         if(iXi_passed > 10000) continue; //see the AliRunningCascadeEvent class and the boundaries of Track array!
         
         Cascade_Track = Cascade_Event -> AddCandidate(iXi_passed);
-        
+        //Set the AliExternalTrackParams:
+
+        AliExternalTrackParam* fpTrackXi1=new AliExternalTrackParam();
+        AliExternalTrackParam* fnTrackXi1=new AliExternalTrackParam();
+        AliExternalTrackParam* fbTrackXi1=new AliExternalTrackParam();
+      //  fpTrackXi1 = (AliExternalTrackParam*)pTrackXi;
+      //  fnTrackXi1 = (AliExternalTrackParam*)nTrackXi;
+      //  fbTrackXi1 = (AliExternalTrackParam*)bachTrackXi;
+        fpTrackXi1 = (AliExternalTrackParam*)lESDevent->GetTrack(lIdxPosXi);
+        fnTrackXi1 = (AliExternalTrackParam*)lESDevent->GetTrack(lIdxNegXi);
+        fbTrackXi1 = (AliExternalTrackParam*)lESDevent->GetTrack(lBachIdx);
+
+      /*  AliESDtrack* fpTrackXi1=0x0;
+        AliESDtrack* fnTrackXi1=0x0;
+        AliESDtrack* fbTrackXi1=0x0;
+        fpTrackXi1 = lESDevent->GetTrack(lIdxPosXi);
+        fnTrackXi1 = lESDevent->GetTrack(lIdxNegXi);
+        fbTrackXi1 = lESDevent->GetTrack(lBachIdx);
+        */
+
+        Cascade_Track->set_pos_daughter(fpTrackXi1);
+        Cascade_Track->set_neg_daughter(fnTrackXi1);
+        Cascade_Track->set_bach_daughter(fbTrackXi1);
+
+      //  delete fpTrackXi1; //<- do not delete, segfault due to streamers
+      //  delete fnTrackXi1;
+      //  delete fbTrackXi1;
+   
+
+        //momenta
         Cascade_Track -> set_PMom(lPMom[0],lPMom[1],lPMom[2]);
         Cascade_Track -> set_NMom(lNMom[0],lNMom[1],lNMom[2]);
         Cascade_Track -> set_BMom(lBMom[0],lBMom[1],lBMom[2]);
@@ -856,7 +940,11 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         
         
         //fill with the positions of the V0 and Xi.
+
+        fTreeCascVarCascCosPointingAngle *= bachTrackXi->Charge(); //also save the casc charge
         Cascade_Track -> set_CosPointingAngle(fTreeCascVarCascCosPointingAngle);
+        Cascade_Track -> set_WrongCosPointingAngle(fTreeCascVarWrongCosPA);
+
         Cascade_Track -> set_CascadeDecayPos(fTreeCascVarCascadeDecayX, fTreeCascVarCascadeDecayY, fTreeCascVarCascadeDecayZ);
         Cascade_Track -> set_V0fromCascadePos(fTreeCascVarV0DecayX, fTreeCascVarV0DecayY, fTreeCascVarV0DecayZ);
         Cascade_Track -> set_TrackLengthTPC(TrackLengthInActiveZone[0], TrackLengthInActiveZone[1], TrackLengthInActiveZone[2]);
@@ -866,6 +954,11 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         Cascade_Track -> set_ITSstatusPosTrack(pITS[0],pITS[1],pITS[2],pITS[3],pITS[4],pITS[5]);
         Cascade_Track -> set_ITSstatusNegTrack(nITS[0],nITS[1],nITS[2],nITS[3],nITS[4],nITS[5]);
         Cascade_Track -> set_ITSstatusBachTrack(bITS[0],bITS[1],bITS[2],bITS[3],bITS[4],bITS[5]);
+
+        Cascade_Track -> set_ITSpointPosTrack(p_pITS[0],p_pITS[1],p_pITS[2],p_pITS[3],p_pITS[4],p_pITS[5]);
+        Cascade_Track -> set_ITSpointNegTrack(p_nITS[0],p_nITS[1],p_nITS[2],p_nITS[3],p_nITS[4],p_nITS[5]);
+        Cascade_Track -> set_ITSpointBachTrack(p_bITS[0],p_bITS[1],p_bITS[2],p_bITS[3],p_bITS[4],p_bITS[5]);
+
         Cascade_Track -> set_ITSrefitFlag(ITSrefitflag[0], ITSrefitflag[1], ITSrefitflag[2]);
         Cascade_Track -> set_ITSchi2(itschi2[0], itschi2[1], itschi2[2]);
         Cascade_Track -> set_ITSsignal(itssignal[0], itssignal[1], itssignal[2]);
@@ -959,7 +1052,7 @@ Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodESDEvent(AliESDEvent* lESDeve
 }
 
 
-Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodESDTrack(AliESDtrack* trackESD, Double_t raprange, Double_t etarange)
+Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodESDTrack(AliESDtrack* trackESD, Double_t etarange)
 {
     //raprange = y_max, here set it to 0.5
     //etarange = eta_max, here set it to 0.8
@@ -1105,7 +1198,7 @@ Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodCandidatesTPCPID(AliESDtrack*
     Float_t PID_Pos_Proton = fPIDResponse->NumberOfSigmasTPC( pTrackXi, AliPID::kProton );
     Float_t PID_Neg_Pion   = fPIDResponse->NumberOfSigmasTPC( nTrackXi, AliPID::kPion );
     Float_t PID_Neg_Proton = fPIDResponse->NumberOfSigmasTPC( nTrackXi, AliPID::kProton );
-    // Float_t PID_Bach_Pion  = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kPion );
+    // Float_t PID_Bach_Pion  = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kPion ); //not interested in Xi
     Float_t PID_Bach_Kaon  = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kKaon );
     
     if (chargeCascade == -1)
@@ -1129,3 +1222,33 @@ Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodCandidatesTPCPID(AliESDtrack*
     return goodTPCtrio;
 }
 
+//member written by David Chinellato:
+Float_t AliAnalysisTaskStrangeCascadesDiscrete::GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent)
+{
+    Float_t lCosPA = -1;
+    
+    //Get Magnetic field and primary vertex
+    Double_t b=lEvent->GetMagneticField();
+    const AliESDVertex *vtxT3D=lEvent->GetPrimaryVertex();
+    Double_t xPrimaryVertex=vtxT3D->GetX();
+    Double_t yPrimaryVertex=vtxT3D->GetY();
+    Double_t zPrimaryVertex=vtxT3D->GetZ();
+    
+    //Copy AliExternalParam for handling
+    AliExternalTrackParam nt(*lNegTrack), pt(*lPosTrack), *lNegClone=&nt, *lPosClone=&pt;
+    
+    //Find DCA
+    Double_t xn, xp, dca=lNegClone->GetDCA(lPosClone,b,xn,xp);
+    
+    //Propagate to it
+    nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
+    
+    //Create V0 object to do propagation
+    AliESDv0 vertex(nt,1,pt,2); //Never mind indices, won't use
+    
+    //Get CosPA
+    lCosPA=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
+    
+    //Return value
+    return lCosPA;
+}

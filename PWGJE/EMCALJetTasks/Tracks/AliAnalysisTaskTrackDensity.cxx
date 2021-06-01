@@ -17,9 +17,9 @@
 
 #include "AliAnalysisTaskTrackDensity.h"
 
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskTrackDensity)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskTrackDensity::AliAnalysisTaskTrackDensity() :
     AliAnalysisTaskEmcalJet(),
@@ -225,5 +225,3 @@ void AliAnalysisTaskTrackDensity::GetAcceptLabels(const AliVEvent &event, std::v
   }
   std::sort(labels.begin(), labels.end());
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

@@ -55,6 +55,10 @@ public:
    Double_t        DeltaCos(Bool_t mc)       const;
    Double_t        CosThetaStar(Bool_t mc);
    Double_t        CosThetaStarAbs(Bool_t mc);
+   Double_t        CosThetaHe(Bool_t mc);
+   Double_t        CosThetaHeAbs(Bool_t mc);
+   Double_t        PhiHePbPb5(Bool_t mc);
+   Double_t        PhiHePP5(Bool_t mc);
    Double_t        CosThetaJackson(Bool_t mc);
    Double_t        CosThetaTransversity(Bool_t mc);
    Double_t        CosThetaToEventPlane(AliRsnMiniEvent *event, Bool_t mc);

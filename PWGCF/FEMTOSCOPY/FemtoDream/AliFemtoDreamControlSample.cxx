@@ -20,7 +20,9 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample()
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
       fMult(0),
-      fCent(0) {
+      fCent(0),
+      fSummedPtLimit1(0.0),
+      fSummedPtLimit2(999.0) {
   fRandom.SetSeed(0);
 }
 
@@ -39,7 +41,9 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
       fDeltaPhiMax(samp.fDeltaPhiMax),
       fDoDeltaEtaDeltaPhiCut(samp.fDoDeltaEtaDeltaPhiCut),
       fMult(samp.fMult),
-      fCent(samp.fCent) {
+      fCent(samp.fCent),
+      fSummedPtLimit1(samp.fSummedPtLimit1),
+      fSummedPtLimit2(samp.fSummedPtLimit2) {
   fRandom.SetSeed(0);
 }
 
@@ -58,7 +62,9 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
       fDeltaPhiMax(conf->GetDeltaPhiMax()),
       fDoDeltaEtaDeltaPhiCut(false),
       fMult(0),
-      fCent(0) {
+      fCent(0),
+      fSummedPtLimit1(conf->GetSummedPtLimit1()),
+      fSummedPtLimit2(conf->GetSummedPtLimit2()) {
   fRandom.SetSeed(0);
 }
 
@@ -79,6 +85,8 @@ AliFemtoDreamControlSample& AliFemtoDreamControlSample::operator=(
   this->fDoDeltaEtaDeltaPhiCut = samp.fDoDeltaEtaDeltaPhiCut;
   this->fMult = samp.fMult;
   this->fCent = samp.fCent;
+  this->fSummedPtLimit1 = samp.fSummedPtLimit1;
+  this->fSummedPtLimit2 = samp.fSummedPtLimit2;
   return *this;
 }
 
@@ -141,9 +149,7 @@ void AliFemtoDreamControlSample::CorrelatedSample(
     std::vector<AliFemtoDreamBasePart> &part1, int &PDGPart1,
     std::vector<AliFemtoDreamBasePart> &part2, int &PDGPart2, bool SameParticle,
     int HistCounter) {
-  float RelativeK = 0;
   auto itPart1 = part1.begin();
-  bool CPR = fRejPairs.at(HistCounter);
   while (itPart1 != part1.end()) {
     auto itPart2 = SameParticle ? itPart1 + 1 : part2.begin();
     while (itPart2 != part2.end()) {
@@ -164,8 +170,9 @@ void AliFemtoDreamControlSample::CorrelatedSample(
       }
       RelativeK = fHigherMath->FillSameEvent(HistCounter, fMult, fCent,
                                              *itPart1, PDGPart1,
-                                             *itPart2, PDGPart2);
-      fHigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPart2);
+                                             *itPart2, PDGPart2,fSummedPtLimit1,fSummedPtLimit2);
+      fHigherMath->MassQA(HistCounter, RelativeK, *itPart1, PDGPart1,
+                                                  *itPart2, PDGPart2);
       fHigherMath->SEDetaDPhiPlots(HistCounter, *itPart1, PDGPart1, *itPart2,
                                    PDGPart2, RelativeK, true);
 
@@ -198,9 +205,7 @@ void AliFemtoDreamControlSample::PhiSpinning(
     std::vector<AliFemtoDreamBasePart> &part1, int PDGPart1,
     std::vector<AliFemtoDreamBasePart> &part2, int PDGPart2, bool SameParticle,
     int HistCounter) {
-  float RelativeK = 0;
   auto itPart1 = part1.begin();
-  bool CPR = fRejPairs.at(HistCounter);
   while (itPart1 != part1.end()) {
     auto itPart2 = SameParticle ? itPart1 + 1 : part2.begin();
     while (itPart2 != part2.end()) {
@@ -266,8 +271,6 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
   }
   Randomizer(RandomizeMe);
   // calculate the relative momentum
-  float RelativeK = 0;
-  bool CPR = fRejPairs.at(HistCounter);
   auto itPart1 = CopyPart1.begin();
   while (itPart1 != CopyPart1.end()) {
     auto itPart2 = SameParticle ? itPart1 + 1 : CopyPart2.begin();

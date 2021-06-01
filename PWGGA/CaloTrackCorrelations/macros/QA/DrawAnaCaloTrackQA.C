@@ -757,11 +757,19 @@ void CaloQA(Int_t icalo)
   ccalo2->cd(3);
   gPad->SetLogz();
   
-  TH2F* hClusterActivity  = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hEBin0_Cluster_ColRow_PID",icalo));
+  TH3F* hClusterActivityEn  = (TH3F*) GetHisto(Form("AnaPhoton_Calo%d_hEnergyColRow_PID",icalo));
+  
+  if(histoTag.Contains("default")) hClusterActivityEn->SetAxisRange(0.5,3,"X");
+  else if(histoTag.Contains("L0")) hClusterActivityEn->SetAxisRange(2,5,"X");
+  else if(histoTag.Contains("L2")) hClusterActivityEn->SetAxisRange(5,12,"X");
+  else                             hClusterActivityEn->SetAxisRange(12,20,"X");
+  
+  TH2F* hClusterActivity  = (TH2F*) hClusterActivityEn->Project3D("zy");
     
   if(histoTag.Contains("default")) hClusterActivity->SetTitle("Clusters per col-row 0.5<#it{E}<3 GeV");
   else if(histoTag.Contains("L0")) hClusterActivity->SetTitle("Clusters per col-row 2<#it{E}<5 GeV");
-  else                             hClusterActivity->SetTitle("Clusters per col-row 5<#it{E}<12 GeV");
+  else if(histoTag.Contains("L2")) hClusterActivity->SetTitle("Clusters per col-row 5<#it{E}<12 GeV");
+  else                             hClusterActivity->SetTitle("Clusters per col-row 12<#it{E}<20 GeV");
   
   hClusterActivity->SetTitleOffset(1.5,"Y");
   hClusterActivity->SetZTitle("Entries");
@@ -820,11 +828,19 @@ void CaloQA(Int_t icalo)
   ccalo2->cd(4);
   gPad->SetLogz();
   
-  TH2F* hClusterActivity2  = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hEBin1_Cluster_ColRow_PID",icalo));
+  TH3F* hClusterActivityEn2  = (TH3F*) GetHisto(Form("AnaPhoton_Calo%d_hEnergyColRow_PID",icalo));
    
+   if(histoTag.Contains("default")) hClusterActivityEn2->SetAxisRange(3,100,"X");
+   else if(histoTag.Contains("L0")) hClusterActivityEn2->SetAxisRange(5,100,"X");
+   else if(histoTag.Contains("L2")) hClusterActivityEn2->SetAxisRange(12,100,"X");
+   else                             hClusterActivityEn2->SetAxisRange(20,100,"X");
+   
+   TH2F* hClusterActivity2  = (TH2F*) hClusterActivityEn2->Project3D("zy");
+     
   if(histoTag.Contains("default")) hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 3 GeV");
   else if(histoTag.Contains("L0")) hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 5 GeV");
-  else                             hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 12 GeV");
+  else if(histoTag.Contains("L2")) hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 12 GeV");
+  else                             hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 20 GeV");
   
   hClusterActivity2->SetTitleOffset(1.5,"Y");
   hClusterActivity2->SetZTitle("Entries");
@@ -1109,10 +1125,16 @@ void TrackQA()
   TH1F* hPt      = (TH1F*) GetHisto("AnaHadrons_hPt");
   TH1F* hPtSPD   = (TH1F*) GetHisto("AnaHadrons_hPtSPDRefit");
   TH1F* hPtNoSPD = (TH1F*) GetHisto("AnaHadrons_hPtNoSPDRefit");
+
+  if ( !hPt ) 
+  {
+    TH2F* hPtCent = (TH2F*) GetHisto("AnaHadrons_hPtCent");
+    hPt = (TH1F*) hPtCent->ProjectionX("hPtProj",0,100);
+  }
+  
   hPt     ->SetLineColor(1);
   hPtSPD  ->SetLineColor(2);
   hPtNoSPD->SetLineColor(4);
-  
   hPt     ->SetTitle("Hybrid track type #it{p}_{T}");
   hPt     ->SetYTitle("Entries");
   hPt     ->SetTitleOffset(1.5,"Y");
@@ -2351,31 +2373,36 @@ void CorrelQA(Int_t icalo)
   TH2F* hEZT   = (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hZTCharged"  ,icalo));
   TH2F* hEZTUE = (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hZTUeCharged",icalo));
   
-  TH1F* hZT  = (TH1F*) hEZT->ProjectionY(Form("%s_hZT_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
-  hZT->Sumw2();
-  hZT->Rebin(rebinXE);
-  hZT->Scale(1./nTrig);
-  hZT->SetAxisRange(0,1);
-  hZT->SetMarkerStyle(20);
-  hZT->SetMarkerColor(1);
-  hZT->SetLineColor(1);
-  hZT->SetTitleOffset(1.5,"Y");
-  //hZT->SetYTitle("#it{N}_{pairs} / #it{N}_{trig}");
-  //hZT->SetTitle("#gamma (#lambda_{0}^{2} < 0.4, neutral cluster) trigger");
-  l2.AddEntry(hZT,"raw #it{z}_{T}","P");
-  hZT->Draw("same");
+  if(hEZT)
+  {
+    TH1F* hZT  = (TH1F*) hEZT->ProjectionY(Form("%s_hZT_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
+    hZT->Sumw2();
+    hZT->Rebin(rebinXE);
+    hZT->Scale(1./nTrig);
+    hZT->SetAxisRange(0,1);
+    hZT->SetMarkerStyle(20);
+    hZT->SetMarkerColor(1);
+    hZT->SetLineColor(1);
+    hZT->SetTitleOffset(1.5,"Y");
+    //hZT->SetYTitle("#it{N}_{pairs} / #it{N}_{trig}");
+    //hZT->SetTitle("#gamma (#lambda_{0}^{2} < 0.4, neutral cluster) trigger");
+    l2.AddEntry(hZT,"raw #it{z}_{T}","P");
+    hZT->Draw("same");
+  }
   
-  TH1F* hZTUE  = (TH1F*) hEZTUE->ProjectionY(Form("%s_hZTUE_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
-  hZTUE->Sumw2();
-  hZTUE->Rebin(rebinXE);
-  hZTUE->Scale(1./nTrig);
-  hZTUE->SetAxisRange(0,1);
-  hZTUE->SetMarkerStyle(21);
-  hZTUE->SetMarkerColor(2);
-  hZTUE->SetLineColor(2);
-  l2.AddEntry(hZTUE,"raw Und. Event #it{z}_{T}","P");
-  hZTUE->Draw("same");
-  
+  if(hEZTUE)
+  {
+    TH1F* hZTUE  = (TH1F*) hEZTUE->ProjectionY(Form("%s_hZTUE_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
+    hZTUE->Sumw2();
+    hZTUE->Rebin(rebinXE);
+    hZTUE->Scale(1./nTrig);
+    hZTUE->SetAxisRange(0,1);
+    hZTUE->SetMarkerStyle(21);
+    hZTUE->SetMarkerColor(2);
+    hZTUE->SetLineColor(2);
+    l2.AddEntry(hZTUE,"raw Und. Event #it{z}_{T}","P");
+    hZTUE->Draw("same");
+  }
   l2.Draw("same");
 
   // ok message

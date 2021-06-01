@@ -14,7 +14,7 @@ AliAnalysisTaskSECharmHadronvn *AddTaskCharmHadronvn(TString tenderTaskName = "H
                                                     int normMethod=AliHFQnVectorHandler::kQoverM/*kQoverQlength,kQoverSqrtM,kNone*/,
                                                     AliAnalysisTaskSECharmHadronvn::FlowMethod meth=AliAnalysisTaskSECharmHadronvn::kEP/*kSP,kEvShapeEP,kEPVsMass,kEvShapeEPVsMass*/, 
                                                     AliAnalysisTaskSECharmHadronvn::q2Method q2meth=AliAnalysisTaskSECharmHadronvn::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC*/, 
-                                                    int useAODProtection=1)
+                                                    int useAODProtection=0)
 {
     //
     // Test macro for the AliAnalysisTaskSE for D-mesons vn analyses

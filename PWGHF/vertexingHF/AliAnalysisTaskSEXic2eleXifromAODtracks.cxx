@@ -381,6 +381,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoXicNonPromptMCS(0),
   fHistoXicPromptMCGen(0),
   fHistoXicPromptMCS(0),
+  fHistoXicPromptMCGenWeight(0),
+  fHistoXicPromptMCSWeight(0),
+  
   fHistoXicInclusiveMCGen(0),
   fHistoXicMCGenWeight(0),
   fHistoXicMCSWeight(0),
@@ -708,6 +711,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoXicNonPromptMCS(0),
   fHistoXicPromptMCGen(0),
   fHistoXicPromptMCS(0),
+  fHistoXicPromptMCGenWeight(0),
+  fHistoXicPromptMCSWeight(0),
   fHistoXicInclusiveMCGen(0),
   fHistoXicMCGenWeight(0),
   fHistoXicMCSWeight(0),
@@ -1897,16 +1902,17 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 					fHistoElePtvsCutVarsRS[ih]->Fill(cont_eleptvscutvars);
 				}
 			}
+            
 			if(fUseMCInfo){
 				if(mcxic){
 					Int_t pdgcode = mcxic->GetPdgCode();
 					cont2[1] = mcele->Pt();
 					if(abs(pdgcode)==4132 && abs(mcpdgele_array[1])==4132 && abs(mcpdgcasc_array[1])==4132){
-						Int_t labmotherxic = mcxic->GetMother();
-						Bool_t isbottomfd = kFALSE;
-						Bool_t isXicbottomfd = kFALSE;
-						Bool_t isXicprompt  = kFALSE;
 						
+                      Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcxic,kTRUE);
+                        
+                        Int_t labmotherxic = mcxic->GetMother();
+                        Bool_t isbottomfd = kFALSE;
 						if(labmotherxic>=0)
 						{
 							AliAODMCParticle *motherxic = (AliAODMCParticle*)mcArray->At(labmotherxic);
@@ -1914,13 +1920,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 							if(TMath::Abs(pdgmotherxic)==511||TMath::Abs(pdgmotherxic)==521||TMath::Abs(pdgmotherxic)==5122||TMath::Abs(pdgmotherxic)==5132||TMath::Abs(pdgmotherxic)==5232||TMath::Abs(pdgmotherxic)==5332){
 								isbottomfd = kTRUE;
 							}
-							if(TMath::Abs(pdgmotherxic)==5132|| TMath::Abs(pdgmotherxic)==5232 ){
-								isXicbottomfd = kTRUE;
-							}
-							if(!(TMath::Abs(pdgmotherxic)==511||TMath::Abs(pdgmotherxic)==521||TMath::Abs(pdgmotherxic)==5122||TMath::Abs(pdgmotherxic)==5132||TMath::Abs(pdgmotherxic)==5232||TMath::Abs(pdgmotherxic)==5332)){
-								isXicprompt = kTRUE;
-							}
-						}
+                         }
 
 						fHistoEleXiMassMCS->Fill(cont);
 						if(trk->Charge()>0) fHistoEleXiMassMCS1->Fill(cont);
@@ -1958,15 +1958,16 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 							if(trk->Charge()>0) fHistoXicMCS1->Fill(cont_xic);
 							else fHistoXicMCS2->Fill(cont_xic);
 							
-							if(isXicbottomfd){
+							if(CheckOrigin == 5){
 									if( (trk->Charge()>0 && casc -> ChargeXi() < 0 ) || (trk -> Charge() < 0 && casc -> ChargeXi() > 0)){
 											fHistoXicNonPromptMCS -> Fill(cont_xic); //  non prompt
 										}
 									}	
 						
-					        if(isXicprompt){
+					        if(CheckOrigin == 4){
 									if( (trk->Charge()>0 && casc -> ChargeXi() < 0 ) || (trk -> Charge() < 0 && casc -> ChargeXi() > 0)){
-											fHistoXicPromptMCS -> Fill(cont_xic); //  prompt
+											fHistoXicPromptMCSWeight -> Fill(cont_xic,fWeightFit->Eval(mcxic->Pt()) ); //  prompt -- weighted
+											fHistoXicPromptMCS -> Fill(cont_xic); // prompt
 										}
 									}		
 
@@ -3138,7 +3139,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCascTreeVariables()
   fCandidateVariableNames[25]="EvNumber";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fCascVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateCascVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
+    fCascVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateCascVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
 
   return;
@@ -3281,12 +3282,13 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
     }
 	}
 
-	if(!fWriteEachVariableTree) return;
+	if(fWriteEachVariableTree) return;
 
 	for(Int_t i=0;i<26;i++){
 		fCandidateCascVariables[i] = -9999.;
 	}
-	for(Int_t i=0;i<16;i++){
+/*
+    for(Int_t i=0;i<16;i++){
 		fCandidateSingleVariables[i] = -9999.;
 	}
   fCandidateSingleVariables[ 0] = momcasc_new[0];
@@ -3314,40 +3316,41 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
   fCandidateSingleVariables[15] = casc->DecayLengthV0();
 
   fSingleVariablesTree->Fill();
+*/
+    
+  fCandidateCascVariables[ 0] = fCentrality;
+  fCandidateCascVariables[ 1] = casc->MassXi();
+  fCandidateCascVariables[ 2] = momcasc_new[0];//casc->MomXiX();
+  fCandidateCascVariables[ 3] = momcasc_new[1];//casc->MomXiY();
+  fCandidateCascVariables[ 4] = momcasc_new[2];//casc->MomXiZ();
+	if(casc->ChargeXi()<0)
+		fCandidateCascVariables[ 5] = casc->MassLambda();
+	else
+		fCandidateCascVariables[ 5] = casc->MassAntiLambda();
 
-//  fCandidateCascVariables[ 0] = fCentrality;
-//  fCandidateCascVariables[ 1] = casc->MassXi();
-//  fCandidateCascVariables[ 2] = momcasc_new[0];//casc->MomXiX();
-//  fCandidateCascVariables[ 3] = momcasc_new[1];//casc->MomXiY();
-//  fCandidateCascVariables[ 4] = momcasc_new[2];//casc->MomXiZ();
-//	if(casc->ChargeXi()<0)
-//		fCandidateCascVariables[ 5] = casc->MassLambda();
-//	else
-//		fCandidateCascVariables[ 5] = casc->MassAntiLambda();
-//
-//  fCandidateCascVariables[ 6] = casc->DcaXiDaughters();
-//  fCandidateCascVariables[ 7] = casc->DcaV0Daughters();
-//  fCandidateCascVariables[ 8] = casc->DecayLengthXi(posVtx[0],posVtx[1],posVtx[2]);
-//  fCandidateCascVariables[ 9] = casc->CosPointingAngleXi(posVtx[0],posVtx[1],posVtx[2]);
-//  fCandidateCascVariables[10] = casc->DcaV0ToPrimVertex();
-//  fCandidateCascVariables[11] = casc->DcaPosToPrimVertex();
-//  fCandidateCascVariables[12] = casc->DcaNegToPrimVertex();
-//  fCandidateCascVariables[13] = casc->DcaBachToPrimVertex();
-//  fCandidateCascVariables[14] = casc->DecayLengthV0();
-//  fCandidateCascVariables[15] = casc->CosPointingAngle(casc->GetDecayVertexXi());
-//  fCandidateCascVariables[16] = casc->ChargeXi();
-//  fCandidateCascVariables[17] = xipdgcode;
-//  fCandidateCascVariables[18] = ximotherpdgcode;
-//  fCandidateCascVariables[19] = mcxipx;
-//  fCandidateCascVariables[20] = mcxipy;
-//  fCandidateCascVariables[21] = mcxipz;
-//  fCandidateCascVariables[22] = labcasc;
-//  fCandidateCascVariables[23] = fRunNumber;
-//  fCandidateCascVariables[24] = fVtxZ;
-//  fCandidateCascVariables[25] = fEvNumberCounter;
-//
-//
-//	fCascVariablesTree->Fill();
+  fCandidateCascVariables[ 6] = casc->DcaXiDaughters();
+  fCandidateCascVariables[ 7] = casc->DcaV0Daughters();
+  fCandidateCascVariables[ 8] = casc->DecayLengthXi(posVtx[0],posVtx[1],posVtx[2]);
+  fCandidateCascVariables[ 9] = casc->CosPointingAngleXi(posVtx[0],posVtx[1],posVtx[2]);
+  fCandidateCascVariables[10] = casc->DcaV0ToPrimVertex();
+  fCandidateCascVariables[11] = casc->DcaPosToPrimVertex();
+  fCandidateCascVariables[12] = casc->DcaNegToPrimVertex();
+  fCandidateCascVariables[13] = casc->DcaBachToPrimVertex();
+  fCandidateCascVariables[14] = casc->DecayLengthV0();
+  fCandidateCascVariables[15] = casc->CosPointingAngle(casc->GetDecayVertexXi());
+  fCandidateCascVariables[16] = casc->ChargeXi();
+  fCandidateCascVariables[17] = xipdgcode;
+  fCandidateCascVariables[18] = ximotherpdgcode;
+  fCandidateCascVariables[19] = mcxipx;
+  fCandidateCascVariables[20] = mcxipy;
+  fCandidateCascVariables[21] = mcxipz;
+  fCandidateCascVariables[22] = labcasc;
+  fCandidateCascVariables[23] = fRunNumber;
+  fCandidateCascVariables[24] = fVtxZ;
+  fCandidateCascVariables[25] = fEvNumberCounter;
+
+
+	fCascVariablesTree->Fill();
 }
 ////-------------------------------------------------------------------------------
 void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineMCTreeVariables() 
@@ -3493,9 +3496,10 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle
 	}else if(decaytype==10){
 		fHistoXibMCGen->Fill(contmc);
 	}else if (decaytype ==11){
-		fHistoXicNonPromptMCGen -> Fill(contmc); //  non prompt
+		fHistoXicNonPromptMCGen -> Fill(contmc); //  non prompt -- correct one now!
 	}else if (decaytype ==12){
-		fHistoXicPromptMCGen    -> Fill(contmc); //  prompt
+		fHistoXicPromptMCGenWeight    -> Fill(contmc,fWeightFit->Eval(mcpart->Pt()) ); //  prompt -- weighted
+		fHistoXicPromptMCGen    -> Fill(contmc);  // prompt -- correct now!
 	}else if(decaytype == 13){
 		fHistoXicInclusiveMCGen -> Fill(contmc); //  inclusive
 	}
@@ -4087,6 +4091,11 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
    fOutputAll -> Add(fHistoXicPromptMCGen);
    fHistoXicPromptMCS = new THnSparseF("fHistoXicPromptMCS","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
    fOutputAll -> Add(fHistoXicPromptMCS);
+
+   fHistoXicPromptMCGenWeight = new THnSparseF("fHistoXicPromptMCGenWeight","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
+   fOutputAll -> Add(fHistoXicPromptMCGenWeight);
+   fHistoXicPromptMCSWeight = new THnSparseF("fHistoXicPromptMCSWeight","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
+   fOutputAll -> Add(fHistoXicPromptMCSWeight);
 
    fHistoXicInclusiveMCGen = new THnSparseF("fHistoXicInclusiveMCGen","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
    fOutputAll -> Add(fHistoXicInclusiveMCGen);
@@ -5156,7 +5165,7 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 			Int_t decaytype = -9999;
 			if(e_flag && xic_flag && xi_flag) decaytype = 10;
 			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype,mcArray);
-		}
+		} // 5132,5232
 		if(TMath::Abs(mcpart->GetPdgCode())==11 && mcpart->GetStatus()==1){
 			AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
 			Float_t etamin, etamax;
@@ -5237,31 +5246,27 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
                  fHistoMCXic0Decays->Fill(3);
              if(!e_flag&&!xi_flag)
                  fHistoMCXic0Decays->Fill(4);
-			int findmother = mcpart -> GetMother();
-            if(findmother >= 0){
-					AliAODMCParticle *findmotherxic  = (AliAODMCParticle*)mcArray -> At(findmother);
-					if(((TMath::Abs(findmotherxic->GetPdgCode()))==5132) || ((TMath::Abs(findmotherxic->GetPdgCode()))==5232))
+			
+            Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray, mcpart, kTRUE);
+					if(CheckOrigin == 5)
 					{	
 							if(e_flag&&xi_flag){
 									if((mcepart ->Charge()>0 && mccascpart ->Charge()< 0) ||(mcepart ->Charge()< 0 && mccascpart ->Charge() > 0)){	
-									 decaytype = 11;
+									 decaytype = 11;  // non-prompt, from b
 									FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype,mcArray);
 									}
 								}
 					}
-					else{
+					if(CheckOrigin == 4){
 							if(e_flag&&xi_flag){
 					
 									if((mcepart ->Charge()>0 && mccascpart ->Charge()< 0) ||(mcepart ->Charge()< 0 && mccascpart ->Charge() > 0)){	
-										decaytype =12;
+										decaytype =12;  // prompt, from c
 										FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype,mcArray);
 										}
 									}
 			
-					            }  
-
-			                        }  
-  
+					            }
 			decaytype =13;
 			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype,mcArray);
    }
@@ -5470,7 +5475,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCorrelationTreeVariables()
 
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fCorrelationVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCorrelationVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
+    fCorrelationVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCorrelationVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
   return;
 }

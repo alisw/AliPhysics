@@ -14,6 +14,7 @@
 #include <TDatabasePDG.h>
 #include "AliHFTreeHandlerApplyLc2V0bachelor.h"
 #include "AliAODRecoCascadeHF.h"
+#include "AliESDtrack.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFTreeHandlerApplyLc2V0bachelor);
@@ -32,6 +33,7 @@ AliHFTreeHandlerApplyLc2V0bachelor(kNsigmaPID)
 AliHFTreeHandlerApplyLc2V0bachelor::AliHFTreeHandlerApplyLc2V0bachelor(int PIDopt):
 AliHFTreeHandlerApply(PIDopt),
 fImpParProng{},
+fITSRefitProng{},
 fImpParK0s(-9999.),
 fDecayLengthK0s(-9999.),
 fInvMassK0s(-9999.),
@@ -44,15 +46,19 @@ fV0PointingAngle(-9999.),
 fCosThetaStar(-9999.),
 fsignd0(-9999.),
 fArmqTOverAlpha(-9999.),
-fCalcSecoVtx(0)
+fV0radius(-9999.),
+fCalcSecoVtx(0),
+fReducePbPbBranches(false)
 {
   //
   // Standard constructor
   //
   
   fNProngs = 3; // --> cannot be changed (prong 0 is the bachelor, 1,2 are prongs of the K0s)
-  for(unsigned int iProng=0; iProng<fNProngs; iProng++)
+  for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fImpParProng[iProng] = -9999.;
+    fITSRefitProng[iProng] = -9999;
+  }
 }
 
 //________________________________________________________________
@@ -87,24 +93,37 @@ TTree* AliHFTreeHandlerApplyLc2V0bachelor::BuildTree(TString name, TString title
   fTreeVar->Branch("armenteros_K0s", &fArmqTOverAlpha);
   fTreeVar->Branch("ctau_K0s", &fcTauK0s);
   fTreeVar->Branch("cos_p_K0s", &fV0PointingAngle);
+  fTreeVar->Branch("radius_K0s", &fV0radius);
   fTreeVar->Branch("pt_K0s", &fPtK0s);
-  fTreeVar->Branch("eta_K0s", &fEtaK0s);
-  fTreeVar->Branch("phi_K0s", &fPhiK0s);
+  if(!fReducePbPbBranches){
+    fTreeVar->Branch("eta_K0s", &fEtaK0s);
+    fTreeVar->Branch("phi_K0s", &fPhiK0s);
+  }
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d", iProng), &fImpParProng[iProng]);
   }
+  fTreeVar->Branch("its_refit_prong1",&fITSRefitProng[1]);
+  fTreeVar->Branch("its_refit_prong2",&fITSRefitProng[2]);
   
   //set single-track variables
   AddSingleTrackBranches();
   
   //set PID variables
-  if(fPidOpt != kNoPID) AddPidBranches(true, true, true, true, true);
+  if(fPidOpt != kNoPID){
+    if(!fReducePbPbBranches){
+      bool prongusepid[3] = {true, true, true};
+      AddPidBranches(prongusepid, true, true, true, true, true);
+    } else {
+      bool prongusepid[3] = {true, false, false};
+      AddPidBranches(prongusepid, false, false, true, true, true);
+    }
+  }
   
   return fTreeVar;
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo)
+bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo, AliAODPidHF* pidhf)
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
@@ -145,6 +164,7 @@ bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID
   fDecayLengthK0s=((AliAODRecoCascadeHF*)cand)->DecayLengthV0();
   fInvMassK0s=v0part->MassK0Short();
   fDCAK0s=v0part->GetDCA();
+  fV0radius = v0part->RadiusV0();
   fPtK0s=v0part->Pt();
   fEtaK0s=v0part->Eta();
   fPhiK0s=v0part->Phi();
@@ -190,6 +210,7 @@ bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID
   for(unsigned int iProng = 0; iProng < fNProngs; iProng++){
     if(iProng==0) prongtracks[iProng] = (AliAODTrack*)cand->GetDaughter(iProng);
     else          prongtracks[iProng] = (AliAODTrack*)v0part->GetDaughter(iProng-1);
+    fITSRefitProng[iProng] = (prongtracks[iProng]->GetStatus()&AliESDtrack::kITSrefit);
   }
   bool setsingletrack = SetSingleTrackVars(prongtracks);
   if(!setsingletrack) return false;
@@ -197,7 +218,10 @@ bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID
   //pid variables
   if(fPidOpt == kNoPID) return true;
   
-  bool setpid = SetPidVars(prongtracks, pidrespo, true, true, true, true, true);
+  bool setpid;
+  if(!fReducePbPbBranches) setpid = SetPidVars(prongtracks, pidrespo, true, true, true, true, true, pidhf);
+  else                     setpid = SetPidVars(prongtracks, pidrespo, false, false, true, true, true, pidhf);
+
   if(!setpid) return false;
   
   return true;

@@ -231,7 +231,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, const UShort_t * edep
   if ( !mcevent )
   {
     AliDebug(1,"MCEvent is not available, check analysis settings in configuration file, do nothing with MC!!");
-    return -1;
+    return kMCBadLabel;
   }
     
   Int_t tag = 0;
@@ -1370,6 +1370,68 @@ TLorentzVector AliMCAnalysisUtils::GetFirstMotherWithPDG(Int_t label, Int_t pdg,
     }
     
     grandmomLabel =  grandmomP->GetMother();
+  }
+    
+  ok = kTRUE;
+  
+  return fGMotherMom;
+}
+
+//___________________________________________________________________________________
+/// \return the kinematics of the particle ancestor for the first time with a given pdg and status
+/// Prompt/fragmentation photons can have multiple times a photon as its parent
+//___________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetFirstMotherWithPDGAndPrimary
+(Int_t label, Int_t pdg, const AliMCEvent* mcevent,
+ Bool_t & ok, Int_t & momlabel, Int_t & gparentlabel)
+{  
+  fGMotherMom.SetPxPyPzE(0,0,0,0);
+  momlabel = label;
+  
+  if ( !mcevent )
+  {
+    AliWarning("MCEvent is not available, check analysis settings in configuration file!!");
+    
+    ok = kFALSE;
+    return fGMotherMom;
+  }
+  
+  Int_t nprimaries = mcevent->GetNumberOfTracks();
+  if ( label < 0 || label >= nprimaries )
+  {  
+    ok = kFALSE;
+    return fGMotherMom;
+  }
+  
+  AliVParticle * momP = mcevent->GetTrack(label);
+  
+  Int_t grandmomLabel = momP->GetMother();
+  gparentlabel = grandmomLabel;
+  Int_t grandmomPDG   = -1;
+  AliVParticle * grandmomP = 0x0;
+  
+  while ( grandmomLabel >=0 ) 
+  {
+    grandmomP   = mcevent->GetTrack(grandmomLabel);
+    grandmomPDG = grandmomP->PdgCode();
+    grandmomLabel =  grandmomP->GetMother();
+    if ( grandmomPDG == pdg && grandmomP->IsPhysicalPrimary() )
+    {
+      //printf("AliMCAnalysisUtils::GetMotherWithPDG(AOD) - mother with PDG %d FOUND! \n",pdg);
+      momlabel = grandmomLabel;
+      fGMotherMom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->E());
+      gparentlabel  = grandmomLabel ;
+      
+      if ( grandmomLabel >= 0)
+      {
+        grandmomP = mcevent->GetTrack(grandmomLabel);
+        if ( grandmomP )
+          grandmomLabel = grandmomP->GetMother();
+        else AliInfo(Form("Grandmother not found for label %d !",grandmomLabel));
+      }
+
+      break;
+    }
   }
     
   ok = kTRUE;

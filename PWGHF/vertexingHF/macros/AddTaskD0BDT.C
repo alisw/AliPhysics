@@ -1,9 +1,7 @@
 AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,1=PbPb*/,
 								     Float_t minC=0, Float_t maxC=0,
 								     TString finDirname="Loose", TString finname="",TString finObjname="D0toKpiCuts",
-								     TString BDTfilename="", TString BDTobjnamepre="BDT",
-								     Float_t BDTRespCut = -1., Bool_t DoSidebndSample=kFALSE, Bool_t GetRespTree = kTRUE, Float_t SBndSampleFrac = 0.1,
-								     Float_t LeftSBndCut = 1.792, Float_t RightSBndCut = 1.942)
+								     Bool_t DoSidebndSample=kFALSE, Bool_t multiana = false,Double_t refMult=9.26,Bool_t subtractDau=kFALSE,Int_t recoEstimator = AliAnalysisTaskSED0BDT::kNtrk10,Int_t year = 16,Int_t MCEstimator = AliAnalysisTaskSED0BDT::kEta10,TString estimatorFilename="")
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -68,10 +66,8 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
     out7name ="coutputVarTree";
 
     //detector signal hists
-    out8name="detectorSignals";
-    if(cutOnDistr) out8name+="C"; 
-    if(flagD0D0bar==1)out8name+="D0";
-    if(flagD0D0bar==2)out8name+="D0bar";
+    out8name="coutputProf";
+
 
     // mass, y distr
     out9name="coutputmassD0MassY";
@@ -179,7 +175,7 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
       }
   }
 
-  AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
+  AliRDHFCutsD0toKpiBDT* RDHFD0toKpi=new AliRDHFCutsD0toKpiBDT();
   if(stdcuts) {
     if(system==0) RDHFD0toKpi->SetStandardCutsPP2010();
     else {
@@ -192,9 +188,9 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
     }
   }
   else   {
-    RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get(finObjname.Data());
+    RDHFD0toKpi = (AliRDHFCutsD0toKpiBDT*)filecuts->Get(finObjname.Data());
     if(!RDHFD0toKpi){
-      ::Fatal("AddTaskD0Mass", "Specific AliRDHFCuts not found");
+      ::Fatal("AddTaskD0BDT", "Specific AliRDHFCuts not found");
       return NULL;
     }
     if(minC!=0 && maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
@@ -214,16 +210,9 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
   out5name+=centr;
   out6name+=centr;
   out7name+=centr;
-  out8name+=centr;
   out9name+=centr;
   inname+=centr;
   
-  Int_t Nptbins = RDHFD0toKpi->GetNPtBins();
-  Float_t *ptbin = RDHFD0toKpi->GetPtBinLimits();
-  
-  TFile *fileBDT = TFile::Open(BDTfilename);
-  if(!fileBDT ||(fileBDT&& !fileBDT->IsOpen())) ::Fatal("AddTaskD0BDT", "BDT file not found : check your BDT object");
-
   // Aanalysis task    
   TString taskname="BDTAnalysis";
   if (flag==0)taskname.Prepend("D0");
@@ -237,8 +226,15 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
   massD0Task->SetFillOnlyD0D0bar(flagD0D0bar);
   massD0Task->SetSystem(system); //0=pp, 1=PbPb
   massD0Task->SetFillVarHists(kFALSE); // default is FALSE if System=PbPb
+    
+    
+    massD0Task->SetSubtractTrackletsFromDaughters(subtractDau);
+    massD0Task->SetMCPrimariesEstimator(MCEstimator);
+    massD0Task->SetMultiplicityEstimator(recoEstimator);
+   // massD0Task->SetAODMismatchProtection(AODProtection);
+      massD0Task->SetMultiana(multiana);
 
-  massD0Task->SetAODMismatchProtection(1);
+  massD0Task->SetAODMismatchProtection(0);
   massD0Task->SetFillPtHistos(kFALSE);
   massD0Task->SetFillImpactParameterHistos(kFALSE);
   massD0Task->SetFillYHistos(kFALSE);
@@ -248,51 +244,129 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
   massD0Task->SetRejectSDDClusters(kFALSE);
   massD0Task->SetWriteVariableTree(kFALSE);
   
-  TList *bdtlist = new TList();
-  for(Int_t i=0;i<Nptbins;i++){
-	  TString BDTobjname = BDTobjnamepre;
-	  BDTobjname += Form("1_%.0f_%.0f",ptbin[i],ptbin[i+1]);
-	  AliRDHFBDT *thisbdt = (AliRDHFBDT*)(fileBDT->Get(BDTobjname)->Clone(Form("_%s",BDTobjname.Data())));
-	  if(!thisbdt) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDTobjname.Data()));
-	  //~ std::cout<<thisbdt->GetDesc()<<endl;
-	  bdtlist->Add(thisbdt);
-	  if(!DoSidebndSample){
-		  TString BDT2objname1 = BDTobjnamepre; TString BDT2objname2 = BDTobjnamepre; TString BDT2objname3 = BDTobjnamepre;
-		  TString BDT2objname4 = BDTobjnamepre; TString BDT2objname5 = BDTobjnamepre; TString BDT2objname6 = BDTobjnamepre;
-		  BDT2objname1 += Form("2_%.0f_%.0f_0",ptbin[i],ptbin[i+1]);
-		  BDT2objname2 += Form("2_%.0f_%.0f_1",ptbin[i],ptbin[i+1]);
-		  BDT2objname3 += Form("2_%.0f_%.0f_2",ptbin[i],ptbin[i+1]);
-		  BDT2objname4 += Form("2_%.0f_%.0f_3",ptbin[i],ptbin[i+1]);
-		  BDT2objname5 += Form("2_%.0f_%.0f_4",ptbin[i],ptbin[i+1]);
-		  BDT2objname6 += Form("2_%.0f_%.0f_5",ptbin[i],ptbin[i+1]);
-		  AliRDHFBDT *thisbdt2_0 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname1)->Clone(Form("_%s",BDT2objname1.Data())));
-		  AliRDHFBDT *thisbdt2_1 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname2)->Clone(Form("_%s",BDT2objname2.Data())));
-		  AliRDHFBDT *thisbdt2_2 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname3)->Clone(Form("_%s",BDT2objname3.Data())));
-		  AliRDHFBDT *thisbdt2_3 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname4)->Clone(Form("_%s",BDT2objname4.Data())));
-		  AliRDHFBDT *thisbdt2_4 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname5)->Clone(Form("_%s",BDT2objname5.Data())));
-		  AliRDHFBDT *thisbdt2_5 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname6)->Clone(Form("_%s",BDT2objname6.Data())));
-		  if(!thisbdt2_0) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDT2objname1.Data()));
-		  if(!thisbdt2_1) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDT2objname2.Data()));
-		  if(!thisbdt2_2) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDT2objname3.Data()));
-		  if(!thisbdt2_3) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDT2objname4.Data()));
-		  if(!thisbdt2_4) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDT2objname5.Data()));
-		  if(!thisbdt2_5) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDT2objname6.Data()));
-		  bdtlist->Add(thisbdt2_0);
-		  bdtlist->Add(thisbdt2_1);
-		  bdtlist->Add(thisbdt2_2);
-		  bdtlist->Add(thisbdt2_3);
-		  bdtlist->Add(thisbdt2_4);
-		  bdtlist->Add(thisbdt2_5);
-	  }
-  }
-  fileBDT->Close();
-  massD0Task->SetBDTGetRespTree(GetRespTree);
-  massD0Task->SetBDTRespCut(BDTRespCut);
-  massD0Task->SetBDTSidebandCut(LeftSBndCut,RightSBndCut);
+  //~ if(!readMC&&!DoSidebndSample){
+	  //~ TFile *fileBDT = TFile::Open(BDTfilename);
+	  //~ if(!fileBDT ||(fileBDT&& !fileBDT->IsOpen())) ::Fatal("AddTaskD0BDT", "BDT file not found : check your BDT object");
+	  //~ AliRDHFCutsD0toKpi* cut4bdt = (AliRDHFCutsD0toKpi*)fileBDT->Get("Cut4BDTptbin")->Clone();	// An simple cut file for trained BDT pT binning
+	  //~ // cut4bdt->SetDirectory(0);
+	  //~ Int_t Nptbins = cut4bdt->GetNPtBins();
+	  //~ TDirectory *initdir = (TDirectory*)fileBDT->Get("pT_0");
+	  //~ TList *BDTNamelist = (TList*)initdir->GetListOfKeys()->Clone("BDTNamelist");		// TKey list, only fname used
+	  //~ TList *bdtlist = new TList();														// to be saved BDT list
+
+	  //~ for(Int_t i=0;i<Nptbins;i++){
+		  //~ TDirectory *thisdir = (TDirectory*)fileBDT->Get(Form("pT_%d",i));
+		  //~ for(Int_t j=0;j<BDTNamelist->GetEntries();j++){
+			  //~ TString BDTobjname = BDTNamelist->At(j)->GetName();
+			  //~ AliRDHFBDT *thisbdt = (AliRDHFBDT*)(thisdir->Get(BDTobjname)->Clone(Form("pT_%d_%s",i,BDTobjname.Data())));
+			  //~ if(!thisbdt) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDTobjname.Data()));
+			  //~ bdtlist->Add(thisbdt);
+		  //~ }
+	  //~ }
+	  //~ massD0Task->SetBDTNamesList(BDTNamelist);
+	  //~ massD0Task->SetBDTPtbins(cut4bdt);
+	  //~ massD0Task->SetBDTList(bdtlist);
+	  //~ fileBDT->Close();
+  //~ }
   massD0Task->SetBDTSampleSideband(DoSidebndSample);
-  massD0Task->SetBDTSidebandSamplingFraction(SBndSampleFrac);
-  massD0Task->SetBDTList(bdtlist);
-  
+  //~ massD0Task->SetBDTSidebandSamplingFraction(SBndSampleFrac);
+    
+    if(estimatorFilename.EqualTo("") ) {
+      printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
+    } else{
+          
+      TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
+      if(!fileEstimator)  {
+        Printf("FATAL: File with multiplicity estimator not found\n");
+        return NULL;
+      }
+        
+        massD0Task->SetReferenceMultiplcity(refMult);
+        const Char_t* profilebasename="SPDmult10";
+        if(recoEstimator==AliAnalysisTaskSED0BDT::kVZEROA || recoEstimator==AliAnalysisTaskSED0BDT::kVZEROAEq) profilebasename="VZEROAmult";
+        else if(recoEstimator==AliAnalysisTaskSED0BDT::kVZERO || recoEstimator==AliAnalysisTaskSED0BDT::kVZEROEq) profilebasename="VZEROMmult";
+        cout<<endl<<endl<<" profilebasename="<<profilebasename<<endl<<endl;
+        if(year == 10){
+        const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+        TProfile* multEstimatorAvg[4];
+        for(Int_t ip=0; ip<4; ip++) {
+      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+      if (!multEstimatorAvg[ip]) {
+        Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+        return NULL;
+      }
+        }
+            massD0Task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+            massD0Task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+            massD0Task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+            massD0Task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+      }else if(year ==16){
+        const Char_t* periodNames[10]={"LHC16d","LHC16e","LHC16g","LHC16h_1", "LHC16h_2","LHC16j","LHC16k","LHC16l","LHC16o","LHC16p"};
+        TProfile *multEstimatorAvg[10];
+        for(Int_t ip=0;ip<10; ip++){
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+    if (!multEstimatorAvg[ip]) {
+      Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+      return NULL;
+    }
+        }
+          massD0Task->SetMultiplVsZProfileLHC16d(multEstimatorAvg[0]);
+          massD0Task->SetMultiplVsZProfileLHC16e(multEstimatorAvg[1]);
+          massD0Task->SetMultiplVsZProfileLHC16g(multEstimatorAvg[2]);
+          massD0Task->SetMultiplVsZProfileLHC16h1(multEstimatorAvg[3]);
+          massD0Task->SetMultiplVsZProfileLHC16h2(multEstimatorAvg[4]);
+          massD0Task->SetMultiplVsZProfileLHC16j(multEstimatorAvg[5]);
+          massD0Task->SetMultiplVsZProfileLHC16k(multEstimatorAvg[6]);
+          massD0Task->SetMultiplVsZProfileLHC16l(multEstimatorAvg[7]);
+          massD0Task->SetMultiplVsZProfileLHC16o(multEstimatorAvg[8]);
+          massD0Task->SetMultiplVsZProfileLHC16p(multEstimatorAvg[9]);
+
+      }else if(year == 17){
+       const Char_t* periodNames[10]={"LHC17e","LHC17f","LHC17h","LHC17i", "LHC17j","LHC17k","LHC17l","LHC17m","LHC17o","LHC17r"};
+        TProfile *multEstimatorAvg[10];
+        for(Int_t ip=0;ip<10; ip++){
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+          if (!multEstimatorAvg[ip]) {
+          Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+          return NULL;
+          }
+        }
+          massD0Task->SetMultiplVsZProfileLHC17e(multEstimatorAvg[0]);
+          massD0Task->SetMultiplVsZProfileLHC17f(multEstimatorAvg[1]);
+          massD0Task->SetMultiplVsZProfileLHC17h(multEstimatorAvg[2]);
+          massD0Task->SetMultiplVsZProfileLHC17i(multEstimatorAvg[3]);
+          massD0Task->SetMultiplVsZProfileLHC17j(multEstimatorAvg[4]);
+          massD0Task->SetMultiplVsZProfileLHC17k(multEstimatorAvg[5]);
+          massD0Task->SetMultiplVsZProfileLHC17l(multEstimatorAvg[6]);
+          massD0Task->SetMultiplVsZProfileLHC17m(multEstimatorAvg[7]);
+          massD0Task->SetMultiplVsZProfileLHC17o(multEstimatorAvg[8]);
+          massD0Task->SetMultiplVsZProfileLHC17r(multEstimatorAvg[9]);
+      }else if(year == 18){
+  const Char_t* periodNames[14]={"LHC18b","LHC18d","LHC18e","LHC18f", "LHC18g","LHC18h","LHC18i","LHC18j","LHC18k","LHC18l","LHC18m","LHC18n","LHC18o","LHC18p"};
+        TProfile *multEstimatorAvg[14];
+        for(Int_t ip=0;ip<14; ip++){
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+          if (!multEstimatorAvg[ip]) {
+          Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+          return NULL;
+          }
+        }
+          massD0Task->SetMultiplVsZProfileLHC18b(multEstimatorAvg[0]);
+          massD0Task->SetMultiplVsZProfileLHC18d(multEstimatorAvg[1]);
+          massD0Task->SetMultiplVsZProfileLHC18e(multEstimatorAvg[2]);
+          massD0Task->SetMultiplVsZProfileLHC18f(multEstimatorAvg[3]);
+          massD0Task->SetMultiplVsZProfileLHC18g(multEstimatorAvg[4]);
+          massD0Task->SetMultiplVsZProfileLHC18h(multEstimatorAvg[5]);
+          massD0Task->SetMultiplVsZProfileLHC18i(multEstimatorAvg[6]);
+          massD0Task->SetMultiplVsZProfileLHC18j(multEstimatorAvg[7]);
+          massD0Task->SetMultiplVsZProfileLHC18k(multEstimatorAvg[8]);
+          massD0Task->SetMultiplVsZProfileLHC18l(multEstimatorAvg[9]);
+          massD0Task->SetMultiplVsZProfileLHC18m(multEstimatorAvg[10]);
+          massD0Task->SetMultiplVsZProfileLHC18n(multEstimatorAvg[11]);
+          massD0Task->SetMultiplVsZProfileLHC18o(multEstimatorAvg[12]);
+          massD0Task->SetMultiplVsZProfileLHC18p(multEstimatorAvg[13]);
+      }//18
+    }
   mgr->AddTask(massD0Task);
   
   //
@@ -310,6 +384,7 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
   AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //counter
   AliAnalysisDataContainer *coutputmassD06 = mgr->CreateContainer(out6name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data());
   AliAnalysisDataContainer *coutputmassD07 = mgr->CreateContainer(out7name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data());
+    AliAnalysisDataContainer *coutputmassD008 = mgr->CreateContainer(out8name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //z correction profile
 
     
   mgr->ConnectInput(massD0Task,0,mgr->GetCommonInputContainer());
@@ -321,6 +396,6 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
   mgr->ConnectOutput(massD0Task,5,coutputmassD05);
   mgr->ConnectOutput(massD0Task,6,coutputmassD06);
   mgr->ConnectOutput(massD0Task,7,coutputmassD07);
-
+    mgr->ConnectOutput(massD0Task,8,coutputmassD008);
   return massD0Task;
 }

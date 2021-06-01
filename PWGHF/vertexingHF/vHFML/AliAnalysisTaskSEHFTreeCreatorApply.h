@@ -58,7 +58,7 @@ public:
   Bool_t GetUseSelectionBit() const {return fUseSelectionBit;}
   void SetSystem(Int_t opt){fSys=opt;}
   Int_t GetSystem() const {return fSys;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   Int_t GetAODMismatchProtection() const {return fAODProtection;}
 
   void SetFillDsTree(Int_t opt){fWriteVariableTreeDs=opt;}
@@ -103,6 +103,10 @@ public:
   Int_t GetLc2V0type() const {return fV0typeForLc2V0bachelor;}
   void SetTreeSingleTrackVarsOpt(Int_t opt) {fTreeSingleTrackVarsOpt=opt;}
   Int_t GetTreeSingleTrackVarsOpt() const {return fTreeSingleTrackVarsOpt;}
+  void SetReducePbPbBranches(Bool_t b) { fReducePbPbBranches = b; }
+  Bool_t GetReducePbPbBranches() const { return fReducePbPbBranches; }
+  void SetSaveSTDSelection(Bool_t b) { fSaveSTDSelection = b; }
+  Bool_t GetSaveSTDSelection() const { return fSaveSTDSelection; }
 
   void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
   Int_t GetGoodTrackFilterBit() const { return fGoodTrackFilterBit; }
@@ -117,6 +121,8 @@ public:
 
   void ApplyPhysicsSelectionOnline(bool apply=true) { fApplyPhysicsSelOnline = apply; }
   Bool_t GetApplyPhysicsSelOnline() const { return fApplyPhysicsSelOnline; }
+  void ApplyEventSelectionOnline(bool apply=true) { fApplyEventSelOnline = apply; }
+  Bool_t GetApplyEventSelOnline() const { return fApplyEventSelOnline; }
   void EnableEventDownsampling(float fractokeep, unsigned long seed) {
     fEnableEventDownsampling = true;
     fFracToKeepEventDownsampling = fractokeep;
@@ -125,6 +131,15 @@ public:
   Bool_t GetEnableEventDownsampling() const { return fEnableEventDownsampling; }
   Float_t GetFracToKeepEventDownsampling() const { return fFracToKeepEventDownsampling; }
   unsigned long GetSeedEventDownsampling() const { return fSeedEventDownsampling; }
+  void EnableCandDownsampling(float fractokeep, float maxptsampling) {
+    fEnableCandDownsampling = true;
+    fFracToKeepCandDownsampling = fractokeep;
+    fMaxPtCandDownsampling = maxptsampling;
+  }
+  Bool_t GetEnableCandDownsampling() const { return fEnableCandDownsampling; }
+  Float_t GetFracToKeepCandDownsampling() const { return fFracToKeepCandDownsampling; }
+  Float_t GetMaxPtCandDownsampling() const { return fMaxPtCandDownsampling; }
+
   void SetMLConfigFile(TString path = ""){fConfigPath = path;}
   TString GetMLConfigFile() const { return fConfigPath; }
 
@@ -136,13 +151,14 @@ public:
   Int_t GetSystemForNsigmaTPCDataCorr() const { return fSystemForNsigmaTPCDataCorr; }
   
   void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
-  void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
-  void ProcessMCGen(TClonesArray *mcarray);
+  void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
+  void ProcessMCGen(TClonesArray *mcarray, AliAODMCHeader *mcHeader);
 
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau, Bool_t ITSUpgradeStudy);
   Bool_t IsCandidateFromHijing(AliAODRecoDecayHF *cand, AliAODMCHeader *mcHeader, TClonesArray* arrMC, AliAODTrack *tr = 0x0);
   void SelectGoodTrackForReconstruction(AliAODEvent *aod, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
   AliAODVertex* ReconstructDisplVertex(const AliVVertex *primary, TObjArray *tracks, Double_t bField, Double_t dispersion);
+  unsigned int GetEvID();
 
 private:
 
@@ -190,7 +206,10 @@ private:
   Int_t                   fPIDoptDs;                             /// PID option for Ds tree
   Int_t                   fPIDoptLc2V0bachelor;                  /// PID option for Lc2V0bachelor tree
 
-  UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
+  UShort_t                fBC;                                   /// bunch crossing number
+  Int_t                   fOrbit;                                /// orbit
+  Int_t                   fPeriod;                               /// period
+  Int_t                   fEventID;                              /// event ID (unique when combined with run number)
   Int_t                   fEventIDExt;                           /// upper 32-bit of event ID
   Long64_t                fEventIDLong;                          /// single unique event id (long64)
   TString                 fFileName;                             /// Store filename for an unique event ID
@@ -211,6 +230,7 @@ private:
   Int_t                   fnTrackletsCorr;                       /// number of tracklets (corrected)
   Int_t                   fnTrackletsCorrSHM;                    /// number of tracklets (corrected)
   Int_t                   fnV0A;                                 /// V0A multiplicity
+  Int_t                   fnTPCCls;                              /// TPC multiplicity
   Int_t                   fMultGen;                              /// generated multiplicity around mid-rapidity [-1,1]
   Int_t                   fMultGenV0A;                           /// generated multiplicity in V0A range
   Int_t                   fMultGenV0C;                           /// generated multiplicity in V0C range
@@ -257,15 +277,21 @@ private:
   Int_t fSystemForNsigmaTPCDataCorr;                             /// system for data-driven NsigmaTPC correction
 
   Bool_t fApplyPhysicsSelOnline;                                 /// flag to apply physics selection in the task
+  Bool_t fApplyEventSelOnline;                                   /// flag to fill reco TTrees only with selected events
   Bool_t fEnableEventDownsampling;                               /// flag to apply event downsampling
   Float_t fFracToKeepEventDownsampling;                          /// fraction of events to be kept by event downsampling
   unsigned long fSeedEventDownsampling;                          /// seed for event downsampling
+  Bool_t fEnableCandDownsampling;                                /// flag to apply cand downsampling
+  Float_t fFracToKeepCandDownsampling;                           /// fraction of cands to be kept by cand downsampling
+  Float_t fMaxPtCandDownsampling;                                /// max pT used for cand downsampling
 
   TString fConfigPath;                                           /// path to ML config file
   AliHFMLResponse* fMLResponse;                                  //!<! object to handle ML response
+  Bool_t fReducePbPbBranches;                                    /// variable to disable unnecessary branches in PbPb
+  Bool_t fSaveSTDSelection;                                      /// variable to store candidates that pass std cuts as well, even when ML < MLcut
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,2);
+  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,7);
   /// \endcond
 };
 

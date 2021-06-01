@@ -42,7 +42,6 @@
 #include "AliNormalizationCounter.h"
 #include "AliAnalysisTaskSEXicZero2XiPifromKFP.h"
 #include "AliPIDResponse.h"
-#include "AliVertexingHFUtils.h"
 
 #include "AliAODMCParticle.h"
 
@@ -97,7 +96,6 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP() :
 //  fEvNumberCounter(0),
   fAodTrackInd(0),
   fOutputList(0),
-  fOutputWeight(0),
   fListCuts(0),
   fTree_Event(0),
   fVar_Event(0),
@@ -394,10 +392,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP() :
   fHistMCpdg_Dau_XicZero(0),
   fHistMCpdg_Dau_XicPM(0),
   fWriteXic0Tree(kFALSE),
-  fWriteXic0MCGenTree(kFALSE),
-  fWeight(0),
-  fHistMCGen_Xic0Pt_weight(0),
-  f2DHistMCRec_Xic0Pt_weight(0)
+  fWriteXic0MCGenTree(kFALSE)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -417,7 +412,6 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
 //  fEvNumberCounter(0),
   fAodTrackInd(0),
   fOutputList(0),
-  fOutputWeight(0),
   fListCuts(0),
   fTree_Event(0),
   fVar_Event(0),
@@ -714,10 +708,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   fHistMCpdg_Dau_XicZero(0),
   fHistMCpdg_Dau_XicPM(0),
   fWriteXic0Tree(kFALSE),
-  fWriteXic0MCGenTree(kFALSE),
-  fWeight(0),
-  fHistMCGen_Xic0Pt_weight(0),
-  f2DHistMCRec_Xic0Pt_weight(0)
+  fWriteXic0MCGenTree(kFALSE)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -731,7 +722,6 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   DefineOutput(3, TTree::Class()); // event
   DefineOutput(4, TTree::Class()); // Xic0
   DefineOutput(5, TTree::Class()); // Xic0 MCGen
-  DefineOutput(6, TList::Class()); // Xic0 weight of MC pt shape
 
 }
 //_____________________________________________________________________________
@@ -741,11 +731,6 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::~AliAnalysisTaskSEXicZero2XiPifromKFP()
     if (fOutputList) {
       delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
       fOutputList = 0;
-    }
-
-    if (fOutputWeight) {
-      delete fOutputWeight;     // at the end of your task, it is deleted from memory by calling this function
-      fOutputWeight = 0;
     }
 
     if (fListCuts) {
@@ -792,7 +777,6 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::~AliAnalysisTaskSEXicZero2XiPifromKFP()
       delete fCounter;
       fCounter = 0;
     }
-
 
 }
 //_____________________________________________________________________________
@@ -1581,14 +1565,6 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
   DefineTreeGenXic0();
   PostData(5, fTree_Xic0MCGen);
 
-  fOutputWeight = new TList();
-  fOutputWeight->SetOwner(kTRUE);
-  fHistMCGen_Xic0Pt_weight = new TH1D("fHistMCGen_Xic0Pt_weight", "", 11, 1., 12.);
-  f2DHistMCRec_Xic0Pt_weight = new TH2D("f2DHistMCRec_Xic0Pt_weight", "", 11, 1., 12., 495, 0.5, 50);
-  fOutputWeight->Add(fHistMCGen_Xic0Pt_weight);
-  fOutputWeight->Add(f2DHistMCRec_Xic0Pt_weight);
-  PostData(6, fOutputWeight);
-
   return;
                                         // fOutputList object. the manager will in the end take care of writing your output to file
                                         // so it needs to know what's in the output
@@ -1725,7 +1701,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   fpVtx->GetXYZ(pos);
   if ( fabs(pos[2])>10. ) return; // vertex cut on z-axis direction
   fpVtx->GetCovarianceMatrix(cov);
-//  if ( !CheckVertexCov(fpVtx) ) cout << "Vertex Cov. is wrong!!!" << endl;
+//  if ( !AliVertexingHFUtils::CheckAODvertexCov(fpVtx) ) cout << "Vertex Cov. is wrong!!!" << endl;
   pVertex.SetXYZ((Float_t)pos[0], (Float_t)pos[1], (Float_t)pos[2]);
   Float_t covF[6];
   for (Int_t i=0; i<6; i++) { covF[i] = (Float_t)cov[i]; }
@@ -1904,8 +1880,34 @@ Bool_t AliAnalysisTaskSEXicZero2XiPifromKFP::MakeMCAnalysis(TClonesArray *mcArra
 //    if ( mcpart->GetNDaughters() != NDaughters ) continue;
 
 
+    // ======================================= Omegac0 =================================================
+    if ( fIsAnaOmegac0 && TMath::Abs(mcpart->GetPdgCode())==4332 && mcpart->GetNDaughters()==NDaughters ) { // 4332: Omegac0
+      Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
+      Bool_t pifromOmegac0_flag = kFALSE;
+      Bool_t Omega_flag = kFALSE;
+      AliAODMCParticle *mcpipart = NULL;
+      AliAODMCParticle *mccascpart = NULL;
+      AliAODMCParticle *mcv0part = NULL;
+      for(Int_t idau=mcpart->GetDaughterFirst();idau<=mcpart->GetDaughterLast();idau++) {
+        if(idau<0) break;
+        AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
+        if(TMath::Abs(mcdau->GetPdgCode())==211) { // 211: pion
+          pifromOmegac0_flag = kTRUE;
+          mcpipart = mcdau;
+        }
+        if(TMath::Abs(mcdau->GetPdgCode())==3334) { // 3334: Omega
+          Omega_flag = kTRUE;
+          mccascpart = mcdau;
+        }
+      }
+      Int_t decaytype = -9999;
+      if ( pifromOmegac0_flag && Omega_flag ) {
+        FillTreeGenXic0(mcpart, CheckOrigin);
+      }
+    }
+
     // ======================================= Xic0 ====================================================
-    if ( TMath::Abs(mcpart->GetPdgCode())==4132 && mcpart->GetNDaughters()==NDaughters ) { // 4132: Xic0
+    if ( !fIsAnaOmegac0 && TMath::Abs(mcpart->GetPdgCode())==4132 && mcpart->GetNDaughters()==NDaughters ) { // 4132: Xic0
       Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
 //      if (CheckOrigin==0) continue;
       Bool_t pifromXic_flag = kFALSE;
@@ -1935,7 +1937,6 @@ Bool_t AliAnalysisTaskSEXicZero2XiPifromKFP::MakeMCAnalysis(TClonesArray *mcArra
 
       if (decaytype==0) {
         FillTreeGenXic0(mcpart, CheckOrigin);
-        if (fabs(mcpart->Y())<0.8) fHistMCGen_Xic0Pt_weight->Fill(mcpart->Pt(), fWeight->Eval(mcpart->Pt()));
       }
     } // for Xic0
     // ======================================= Xi ====================================================
@@ -2089,15 +2090,19 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeGenXic0(AliAODMCParticle *mcp
 {
   // Fill histograms or tree depending
 
-  for(Int_t i=0;i<3;i++){
+  for(Int_t i=0;i<7;i++){
     fVar_Xic0MCGen[i] = -9999.;
   }
 
   fVar_Xic0MCGen[0] = mcpart->Y();
   fVar_Xic0MCGen[1] = mcpart->Pt();
   fVar_Xic0MCGen[2] = CheckOrigin;
+  fVar_Xic0MCGen[3] = mcpart->GetPdgCode();
+  fVar_Xic0MCGen[4] = (fAnaCuts->GetWeightFunction())->Eval(mcpart->Pt());
+  fVar_Xic0MCGen[5] = (fAnaCuts->GetWeightFunctionUp())->Eval(mcpart->Pt());;
+  fVar_Xic0MCGen[6] = (fAnaCuts->GetWeightFunctionDw())->Eval(mcpart->Pt());;
 
-  if (fWriteXic0MCGenTree && fVar_Xic0MCGen[1]>0.9999) fTree_Xic0MCGen->Fill();
+  if (fWriteXic0MCGenTree) fTree_Xic0MCGen->Fill();
 
 //  fVar_Xic0MCGen[ 0] = fCentrality;
 //  fVar_Xic0MCGen[ 1] = decaytype;
@@ -2217,8 +2222,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
   for (UInt_t itrk=0; itrk<nTracks; itrk++) {
     AliAODTrack *trk = static_cast<AliAODTrack*>(AODEvent->GetTrack(itrk));
     Double_t covtest[21];
-//    if ( !trk || trk->GetID()<0 || !trk->GetCovarianceXYZPxPyPz(covtest) || !CheckTrackCov(trk) || !fAnaCuts->SinglePionPoolCuts(trk) ) continue;
-    if ( !trk || trk->GetID()<0 || !trk->GetCovarianceXYZPxPyPz(covtest) || !CheckTrackCov(trk) ) continue;
+//    if ( !trk || trk->GetID()<0 || !trk->GetCovarianceXYZPxPyPz(covtest) || !CheckAODtrackCov(trk) || !fAnaCuts->SinglePionPoolCuts(trk) ) continue;
+    if ( !trk || trk->GetID()<0 || !trk->GetCovarianceXYZPxPyPz(covtest) || !AliVertexingHFUtils::CheckAODtrackCov(trk) ) continue;
 
     if  (trk->Charge() > 0 ) {
       trackP[flag_trkP] = trk;
@@ -2345,7 +2350,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
       }
     }
 
-    if ( !CheckTrackCov(trkP) || !CheckTrackCov(trkN) ) continue;
+    if ( !AliVertexingHFUtils::CheckAODtrackCov(trkP) || !AliVertexingHFUtils::CheckAODtrackCov(trkN) ) continue;
 
     if ( fabs(v0->RapLambda())<0.8 ) {
       fCounterRec_Cuts_Lambda->Fill(5);
@@ -2441,10 +2446,10 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
     fHistYtrkN_XYZv->Fill(xvyvzvN[1]);
     fHistZtrkN_XYZv->Fill(xvyvzvN[2]);
 
-    KFParticle kfpProton     = CreateKFParticleFromAODtrack(trkP, 2212);
-    KFParticle kfpAntiProton = CreateKFParticleFromAODtrack(trkN, -2212);
-    KFParticle kfpPionMinus  = CreateKFParticleFromAODtrack(trkN, -211);
-    KFParticle kfpPionPlus   = CreateKFParticleFromAODtrack(trkP, 211);
+    KFParticle kfpProton     = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkP, 2212);
+    KFParticle kfpAntiProton = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkN, -2212);
+    KFParticle kfpPionMinus  = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkN, -211);
+    KFParticle kfpPionPlus   = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkP, 211);
     KFParticle kfpLambda;
     KFParticle kfpAntiLambda;
     KFParticle kfpK0Short;
@@ -2476,12 +2481,12 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
     if ( (kfpLambda.GetNDF()<=0 || kfpLambda.GetChi2()<=0) && (kfpAntiLambda.GetNDF()<=0 || kfpAntiLambda.GetChi2()<=0) ) continue;
 
     // check cov. of Lambda and Anti-Lambda candidates
-    if ( !CheckKFParticleCov(kfpLambda) && !CheckKFParticleCov(kfpAntiLambda) ) continue;
+    if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda) && !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda) ) continue;
 
     // err_mass>0 of Lambda and Anti-Lambda candidates
     if ( err_massLambda<=0 && err_massAntiLambda<=0 ) continue;
 
-    if (fAnaCuts->LambdaPIDCuts(v0) && TMath::Abs(kfpLambda.GetE())>TMath::Abs(kfpLambda.GetPz()) && kfpLambda.GetNDF()>0 && kfpLambda.GetChi2()>0 && CheckKFParticleCov(kfpLambda) && err_massLambda>0) {
+    if (fAnaCuts->LambdaPIDCuts(v0) && TMath::Abs(kfpLambda.GetE())>TMath::Abs(kfpLambda.GetPz()) && kfpLambda.GetNDF()>0 && kfpLambda.GetChi2()>0 && AliVertexingHFUtils::CheckKFParticleCov(kfpLambda) && err_massLambda>0) {
       if (fabs(kfpLambda.GetRapidity())<0.8) {
         fCounterRec_Cuts_Lambda->Fill(7);
         fHistChi2ndfLambda->Fill(kfpLambda.GetChi2()/kfpLambda.GetNDF());
@@ -2500,7 +2505,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
         }
       }
     }
-    if (fAnaCuts->AntiLambdaPIDCuts(v0) && TMath::Abs(kfpAntiLambda.GetE())>TMath::Abs(kfpAntiLambda.GetPz()) && kfpAntiLambda.GetNDF()>0 && kfpAntiLambda.GetChi2()>0 && CheckKFParticleCov(kfpAntiLambda) && err_massAntiLambda>0) {
+    if (fAnaCuts->AntiLambdaPIDCuts(v0) && TMath::Abs(kfpAntiLambda.GetE())>TMath::Abs(kfpAntiLambda.GetPz()) && kfpAntiLambda.GetNDF()>0 && kfpAntiLambda.GetChi2()>0 && AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda) && err_massAntiLambda>0) {
       if (fabs(kfpAntiLambda.GetRapidity())<0.8) {
         fCounterRec_Cuts_AntiLambda->Fill(7);
         fHistChi2ndfAntiLambda->Fill(kfpAntiLambda.GetChi2()/kfpAntiLambda.GetNDF());
@@ -2547,7 +2552,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
 
 
     //======================================== start to reconstruct XicZero ============================
-    if ( fAnaCuts->LambdaPIDCuts(v0) && TMath::Abs(kfpLambda.GetE())>TMath::Abs(kfpLambda.GetPz()) && kfpLambda.GetNDF()>0 && kfpLambda.GetChi2()>0 && CheckKFParticleCov(kfpLambda) && err_massLambda>0 && (kfpLambda.GetChi2()/kfpLambda.GetNDF())<fAnaCuts->GetKFPLam_Chi2geoMax() && nErr_l_Lambda>fAnaCuts->GetKFPLam_lDeltalMin() ) {
+    if ( fAnaCuts->LambdaPIDCuts(v0) && TMath::Abs(kfpLambda.GetE())>TMath::Abs(kfpLambda.GetPz()) && kfpLambda.GetNDF()>0 && kfpLambda.GetChi2()>0 && AliVertexingHFUtils::CheckKFParticleCov(kfpLambda) && err_massLambda>0 && (kfpLambda.GetChi2()/kfpLambda.GetNDF())<fAnaCuts->GetKFPLam_Chi2geoMax() && nErr_l_Lambda>fAnaCuts->GetKFPLam_lDeltalMin() ) {
 
       fHistProbLambda_chi2cut->Fill(TMath::Prob(kfpLambda.GetChi2(), kfpLambda.GetNDF()));
       fHistMassLambda_woArmenterosPodolanskiCut->Fill(kfpLambda.GetMass());
@@ -2636,7 +2641,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
 //          kfpLambda.GetMass(massLam, errormassLam);
 //          if (kfpLambda.GetMass()<0.1) {cout << "massLam==" << massLam << endl; cout << "errormassLam==" << errormassLam << endl;}
           fHistMassLambda_M->Fill(kfpLambda_m.GetMass());
-          if ( CheckKFParticleCov(kfpLambda_m) && TMath::Abs(kfpLambda.GetE())>TMath::Abs(kfpLambda.GetPz()) ) {
+          if ( AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) && TMath::Abs(kfpLambda.GetE())>TMath::Abs(kfpLambda.GetPz()) ) {
 
             for (Int_t itrkPion2=0; itrkPion2<flag_trkN; itrkPion2++) { // Loop for bachelor in cascade pion-
               if ( trackN[itrkPion2]->GetID()==trkN->GetID() ) continue;
@@ -2650,7 +2655,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
 
               if ( !fAnaCuts->PassedTrackQualityCuts_SecondaryPion(trackN[itrkPion2]) ) continue;
 
-              KFParticle kfpPion2 = CreateKFParticleFromAODtrack(trackN[itrkPion2], -211);
+              KFParticle kfpPion2 = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackN[itrkPion2], -211);
 
               // select secondary pion tracks
               /*
@@ -2697,7 +2702,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
               if ( kfpXiMinus.GetChi2()/kfpXiMinus.GetNDF() >= fAnaCuts->GetKFPXi_Chi2geoMax() ) continue;
 
               // check covariance matrix
-              if ( !CheckKFParticleCov(kfpXiMinus) ) continue;
+              if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus) ) continue;
 
               if ( fabs(kfpXiMinus.GetRapidity())<0.8 ) {
                 fCounterRec_Cuts_XiMinus->Fill(3);
@@ -2782,7 +2787,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
               kfpXiMinus_m.SetNonlinearMassConstraint(massXi);
 //              kfpXiMinus_m.SetMassConstraint(massXi);
               fHistMassXiMinus_M->Fill(kfpXiMinus_m.GetMass());
-              if ( CheckKFParticleCov(kfpXiMinus_m) && TMath::Abs(kfpXiMinus.GetE())>TMath::Abs(kfpXiMinus.GetPz()) ) {
+              if ( AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) && TMath::Abs(kfpXiMinus.GetE())>TMath::Abs(kfpXiMinus.GetPz()) ) {
 
               for (Int_t itrkBP=0; itrkBP<flag_trkP; itrkBP++) { // Loop for first bachelor pion+
                 if ( trackP[itrkBP]->GetID()==trkP->GetID() ) continue;
@@ -2795,7 +2800,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
 //            if (!trackN[itrkPion2]->PropagateToDCA(fpVtx,fBzkG,kVeryBig,d0z0bach,covd0z0bach)) continue;
 //            if ( d0z0bach[0] <= fAnaCuts->GetProdDcaBachToPrimVertexMin() ) continue;
 
-                KFParticle kfpBP    = CreateKFParticleFromAODtrack(trackP[itrkBP], 211);
+                KFParticle kfpBP    = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackP[itrkBP], 211);
 
                 // select primary pion tracks
                 /*
@@ -2831,7 +2836,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
                 if ( TMath::Abs(kfpXic0.GetE())<=TMath::Abs(kfpXic0.GetPz()) ) continue;
 
                 // check covariance matrix
-                if ( !CheckKFParticleCov(kfpXic0) ) continue;
+                if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXic0) ) continue;
 
                 // err_massXicZero > 0
                 Float_t massXicZero_Rec, err_massXicZero;
@@ -2895,7 +2900,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
 
 
     //======================================== start to reconstruct Anti-XicZero ============================
-    if ( fAnaCuts->AntiLambdaPIDCuts(v0) && TMath::Abs(kfpAntiLambda.GetE())>TMath::Abs(kfpAntiLambda.GetPz()) && kfpAntiLambda.GetNDF()>0 && kfpAntiLambda.GetChi2()>0 && CheckKFParticleCov(kfpAntiLambda) && err_massAntiLambda>0 && (kfpAntiLambda.GetChi2()/kfpAntiLambda.GetNDF())<fAnaCuts->GetKFPLam_Chi2geoMax() && nErr_l_AntiLambda>fAnaCuts->GetKFPLam_lDeltalMin() ) {
+    if ( fAnaCuts->AntiLambdaPIDCuts(v0) && TMath::Abs(kfpAntiLambda.GetE())>TMath::Abs(kfpAntiLambda.GetPz()) && kfpAntiLambda.GetNDF()>0 && kfpAntiLambda.GetChi2()>0 && AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda) && err_massAntiLambda>0 && (kfpAntiLambda.GetChi2()/kfpAntiLambda.GetNDF())<fAnaCuts->GetKFPLam_Chi2geoMax() && nErr_l_AntiLambda>fAnaCuts->GetKFPLam_lDeltalMin() ) {
       fHistProbAntiLambda_chi2cut->Fill(TMath::Prob(kfpAntiLambda.GetChi2(), kfpAntiLambda.GetNDF()));
       fHistMassAntiLambda_woMassCut->Fill(kfpAntiLambda.GetMass());
       fHistMassAntiLambda_BeforeSecSel->Fill(kfpAntiLambda.GetMass());
@@ -2964,7 +2969,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
           kfpAntiLambda_m.SetNonlinearMassConstraint(massLambda);
 //          kfpAntiLambda_m.SetMassConstraint(massLambda);
           fHistMassAntiLambda_M->Fill(kfpAntiLambda.GetMass());
-          if ( CheckKFParticleCov(kfpAntiLambda_m) && TMath::Abs(kfpAntiLambda.GetE())>TMath::Abs(kfpAntiLambda.GetPz()) ) {
+          if ( AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) && TMath::Abs(kfpAntiLambda.GetE())>TMath::Abs(kfpAntiLambda.GetPz()) ) {
 
             for (Int_t itrkPion2=0; itrkPion2<flag_trkP; itrkPion2++) { // Loop for bachelor in cascade pion+
               if ( trackP[itrkPion2]->GetID()==trkP->GetID() ) continue;
@@ -2978,7 +2983,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
 
               if ( !fAnaCuts->PassedTrackQualityCuts_SecondaryPion(trackP[itrkPion2]) ) continue;
 
-              KFParticle kfpPion2 = CreateKFParticleFromAODtrack(trackP[itrkPion2], 211);
+              KFParticle kfpPion2 = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackP[itrkPion2], 211);
 
               // select secondary pion tracks
               /*
@@ -3020,7 +3025,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
               if ( kfpXiPlus.GetChi2()/kfpXiPlus.GetNDF() >= fAnaCuts->GetKFPXi_Chi2geoMax() ) continue;
 
               // check covariance matrix
-              if ( !CheckKFParticleCov(kfpXiPlus) ) continue;
+              if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus) ) continue;
 
               // cut on mass window
               Float_t massXiPlus_Rec, err_massXiPlus;
@@ -3111,7 +3116,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
               kfpXiPlus_m.SetNonlinearMassConstraint(massXi);
 //              kfpXiPlus_m.SetMassConstraint(massXi);
               fHistMassXiPlus_M->Fill(kfpXiPlus_m.GetMass());
-              if ( CheckKFParticleCov(kfpXiPlus_m) && TMath::Abs(kfpXiPlus.GetE())>TMath::Abs(kfpXiPlus.GetPz()) ) {
+              if ( AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) && TMath::Abs(kfpXiPlus.GetE())>TMath::Abs(kfpXiPlus.GetPz()) ) {
               for (Int_t itrkBP=0; itrkBP<flag_trkN; itrkBP++) { // Loop for first bachelor pion-
                 if ( trackN[itrkBP]->GetID()==trkN->GetID() ) continue;
 
@@ -3123,7 +3128,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
 //            if (!trackP[itrkPion2]->PropagateToDCA(fpVtx,fBzkG,kVeryBig,d0z0bach,covd0z0bach)) continue;
 //            if ( d0z0bach[0] <= fAnaCuts->GetProdDcaBachToPrimVertexMin() ) continue;
 
-                KFParticle kfpBP    = CreateKFParticleFromAODtrack(trackN[itrkBP], -211);
+                KFParticle kfpBP    = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackN[itrkBP], -211);
 
                 // select primary pion tracks
                 /*
@@ -3155,7 +3160,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
                 if ( kfpAntiXicZero.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
 
                 // check covariance matrix
-                if ( !CheckKFParticleCov(kfpAntiXicZero) ) continue;
+                if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiXicZero) ) continue;
                 // err_massAntiXicZero > 0
                 Float_t massAntiXicZero_Rec, err_massAntiXicZero;
                 kfpAntiXicZero.GetMass(massAntiXicZero_Rec, err_massAntiXicZero);
@@ -3271,8 +3276,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
         Double_t par_Pion[3], cov_Pion[6]={0.};
         mcProton->XvYvZv(par_Proton);
         mcPion->XvYvZv(par_Pion);
-        KFParticle kfpMCproton = CreateKFVertex(par_Proton, cov_Proton);
-        KFParticle kfpMCpion = CreateKFVertex(par_Pion, cov_Pion);
+        KFParticle kfpMCproton = AliVertexingHFUtils::CreateKFVertex(par_Proton, cov_Proton);
+        KFParticle kfpMCpion = AliVertexingHFUtils::CreateKFVertex(par_Pion, cov_Pion);
         kfpProton.SetProductionVertex(kfpMCproton);
         kfpPionMinus.SetProductionVertex(kfpMCpion);
 //        if ( kfpProton.GetNDF()<=0 || kfpProton.GetChi2()<0 ) continue;
@@ -3632,7 +3637,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
   for (UInt_t itrk=0; itrk<nTracks; itrk++) {
     AliAODTrack *trk = static_cast<AliAODTrack*>(AODEvent->GetTrack(itrk));
     Double_t covtest[21];
-    if ( !trk || trk->GetID()<0 || !trk->GetCovarianceXYZPxPyPz(covtest) || !CheckTrackCov(trk) ) continue;
+    if ( !trk || trk->GetID()<0 || !trk->GetCovarianceXYZPxPyPz(covtest) || !AliVertexingHFUtils::CheckAODtrackCov(trk) ) continue;
 
     if  (trk->Charge() > 0 ) {
       trackP[flag_trkP] = trk;
@@ -3663,15 +3668,15 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
 
     if ( !ptrack->GetCovarianceXYZPxPyPz(covP) || !ntrack->GetCovarianceXYZPxPyPz(covN) || !btrack->GetCovarianceXYZPxPyPz(covB) ) continue;
 
-    if ( !CheckTrackCov(ptrack) || !CheckTrackCov(ntrack) || !CheckTrackCov(btrack) ) continue;
+    if ( !AliVertexingHFUtils::CheckAODtrackCov(ptrack) || !AliVertexingHFUtils::CheckAODtrackCov(ntrack) || !AliVertexingHFUtils::CheckAODtrackCov(btrack) ) continue;
 
-    KFParticle kfpProton     = CreateKFParticleFromAODtrack(ptrack, 2212);
-    KFParticle kfpPionMinus  = CreateKFParticleFromAODtrack(ntrack, -211);
-    KFParticle kfpAntiProton = CreateKFParticleFromAODtrack(ntrack, -2212);
-    KFParticle kfpPionPlus   = CreateKFParticleFromAODtrack(ptrack, 211);
+    KFParticle kfpProton     = AliVertexingHFUtils::CreateKFParticleFromAODtrack(ptrack, 2212);
+    KFParticle kfpPionMinus  = AliVertexingHFUtils::CreateKFParticleFromAODtrack(ntrack, -211);
+    KFParticle kfpAntiProton = AliVertexingHFUtils::CreateKFParticleFromAODtrack(ntrack, -2212);
+    KFParticle kfpPionPlus   = AliVertexingHFUtils::CreateKFParticleFromAODtrack(ptrack, 211);
 
-    KFParticle kfpElePlus    = CreateKFParticleFromAODtrack(ptrack, -11);
-    KFParticle kfpEleMinus   = CreateKFParticleFromAODtrack(ntrack, 11);
+    KFParticle kfpElePlus    = AliVertexingHFUtils::CreateKFParticleFromAODtrack(ptrack, -11);
+    KFParticle kfpEleMinus   = AliVertexingHFUtils::CreateKFParticleFromAODtrack(ntrack, 11);
 
     // === K0S ===
     KFParticle kfpK0Short;
@@ -3700,7 +3705,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       if ( (kfpLambda.GetNDF()<=0 || kfpLambda.GetChi2()<=0) ) continue;
 
       // check cov. of Lambda
-      if ( !CheckKFParticleCov(kfpLambda) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda) ) continue;
 
       // err_mass>0 of Lambda
       if ( err_massLambda<=0 ) continue;
@@ -3728,11 +3733,11 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       KFParticle kfpLambda_m = kfpLambda;
       kfpLambda_m.SetNonlinearMassConstraint(massLambda);
 
-      if ( !CheckKFParticleCov(kfpLambda_m) || TMath::Abs(kfpLambda.GetE()) <= TMath::Abs(kfpLambda.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) || TMath::Abs(kfpLambda.GetE()) <= TMath::Abs(kfpLambda.GetPz()) ) continue;
 
       KFParticle kfpPionOrKaon;
-      if (!fIsAnaOmegac0) kfpPionOrKaon = CreateKFParticleFromAODtrack(btrack, -211); // pion-
-      if (fIsAnaOmegac0)  kfpPionOrKaon = CreateKFParticleFromAODtrack(btrack, -321); // kaon-
+      if (!fIsAnaOmegac0) kfpPionOrKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, -211); // pion-
+      if (fIsAnaOmegac0)  kfpPionOrKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, -321); // kaon-
       KFParticle kfpXiMinus;
       const KFParticle *vXiDs[2] = {&kfpPionOrKaon, &kfpLambda_m};
       kfpXiMinus.Construct(vXiDs, NDaughters);
@@ -3752,7 +3757,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       if ( kfpXiMinus.GetChi2()/kfpXiMinus.GetNDF() >= fAnaCuts->GetKFPXi_Chi2geoMax() ) continue;
 
       // check covariance matrix
-      if ( !CheckKFParticleCov(kfpXiMinus) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus) ) continue;
 
       // mass window cut of Xi-
       if ( !fIsAnaOmegac0 && (TMath::Abs(massXiMinus_Rec-massXi) > (fAnaCuts->GetProdMassTolXi())) ) continue;
@@ -3762,7 +3767,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       if (!fIsAnaOmegac0) kfpXiMinus_m.SetNonlinearMassConstraint(massXi);
       if (fIsAnaOmegac0)  kfpXiMinus_m.SetNonlinearMassConstraint(massOmega);
 
-      if ( !CheckKFParticleCov(kfpXiMinus_m) || TMath::Abs(kfpXiMinus.GetE()) <= TMath::Abs(kfpXiMinus.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) || TMath::Abs(kfpXiMinus.GetE()) <= TMath::Abs(kfpXiMinus.GetPz()) ) continue;
 
       for (Int_t itrkBP=0; itrkBP<flag_trkP; itrkBP++) { // Loop for first bachelor pion+
 
@@ -3770,7 +3775,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
 
         if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackP[itrkBP]) ) continue;
 
-        KFParticle kfpBP = CreateKFParticleFromAODtrack(trackP[itrkBP], 211);
+        KFParticle kfpBP = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackP[itrkBP], 211);
 
         // reconstruct Xic0
         KFParticle kfpXic0;
@@ -3788,7 +3793,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
         if ( TMath::Abs(kfpXic0.GetE())<=TMath::Abs(kfpXic0.GetPz()) ) continue;
 
         // check covariance matrix
-        if ( !CheckKFParticleCov(kfpXic0) ) continue;
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXic0) ) continue;
 
         // err_massXic0 > 0
         Float_t massXic0_Rec, err_massXic0;
@@ -3832,7 +3837,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       if ( kfpAntiLambda.GetNDF()<=0 || kfpAntiLambda.GetChi2()<=0 ) continue;
 
       // check cov. of Anti-Lambda
-      if ( !CheckKFParticleCov(kfpAntiLambda) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda) ) continue;
 
       // err_mass>0 of Anti-Lambda
       if ( err_massAntiLambda<=0 ) continue;
@@ -3860,11 +3865,11 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       KFParticle kfpAntiLambda_m = kfpAntiLambda;
       kfpAntiLambda_m.SetNonlinearMassConstraint(massLambda);
 
-      if ( !CheckKFParticleCov(kfpAntiLambda_m) || TMath::Abs(kfpAntiLambda.GetE()) <= TMath::Abs(kfpAntiLambda.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) || TMath::Abs(kfpAntiLambda.GetE()) <= TMath::Abs(kfpAntiLambda.GetPz()) ) continue;
 
       KFParticle kfpPionOrKaon;
-      if (!fIsAnaOmegac0) kfpPionOrKaon = CreateKFParticleFromAODtrack(btrack, 211); // pion+
-      if (fIsAnaOmegac0)  kfpPionOrKaon = CreateKFParticleFromAODtrack(btrack, 321); // kaon+
+      if (!fIsAnaOmegac0) kfpPionOrKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, 211); // pion+
+      if (fIsAnaOmegac0)  kfpPionOrKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, 321); // kaon+
       KFParticle kfpXiPlus;
       const KFParticle *vXiDs[2] = {&kfpPionOrKaon, &kfpAntiLambda_m};
       kfpXiPlus.Construct(vXiDs, NDaughters);
@@ -3884,7 +3889,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       if ( kfpXiPlus.GetChi2()/kfpXiPlus.GetNDF() >= fAnaCuts->GetKFPXi_Chi2geoMax() ) continue;
 
       // check covariance matrix
-      if ( !CheckKFParticleCov(kfpXiPlus) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus) ) continue;
 
       // mass window cut of Xi+
       if ( !fIsAnaOmegac0 && (TMath::Abs(massXiPlus_Rec-massXi) > (fAnaCuts->GetProdMassTolXi())) ) continue;
@@ -3894,7 +3899,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       if (!fIsAnaOmegac0) kfpXiPlus_m.SetNonlinearMassConstraint(massXi);
       if (fIsAnaOmegac0)  kfpXiPlus_m.SetNonlinearMassConstraint(massOmega);
 
-      if ( !CheckKFParticleCov(kfpXiPlus_m) || TMath::Abs(kfpXiPlus.GetE()) <= TMath::Abs(kfpXiPlus.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) || TMath::Abs(kfpXiPlus.GetE()) <= TMath::Abs(kfpXiPlus.GetPz()) ) continue;
 
       for (Int_t itrkBP=0; itrkBP<flag_trkN; itrkBP++) { // Loop for first bachelor pion-
 
@@ -3902,7 +3907,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
 
         if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackN[itrkBP]) ) continue;
 
-        KFParticle kfpBP = CreateKFParticleFromAODtrack(trackN[itrkBP], -211);
+        KFParticle kfpBP = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackN[itrkBP], -211);
 
         // reconstruct Anti-Xic0
         KFParticle kfpAntiXic0;
@@ -3920,7 +3925,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
         if ( TMath::Abs(kfpAntiXic0.GetE())<=TMath::Abs(kfpAntiXic0.GetPz()) ) continue;
 
         // check covariance matrix
-        if ( !CheckKFParticleCov(kfpAntiXic0) ) continue;
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiXic0) ) continue;
 
         // err_massAntiXic0 > 0
         Float_t massAntiXic0_Rec, err_massAntiXic0;
@@ -4201,264 +4206,6 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::SelectTrack(AliVEvent *event, Int_t t
     }
 */
   } // end loop on tracks
-}
-//_____________________________________________________________________________
-KFParticle AliAnalysisTaskSEXicZero2XiPifromKFP::CreateKFTrack(Double_t *param, Double_t *cov, Float_t Chi2perNDF, Int_t charge, Int_t pdg)
-{
-  KFParticle::SetField(fBzkG);
-
-  // Interface to KFParticle
-  KFPTrack kfpTrk;
-  // Set the values
-  kfpTrk.SetParameters((Float_t) param[0],(Float_t) param[1],(Float_t) param[2],
-                       (Float_t) param[3],(Float_t) param[4],(Float_t) param[5]);
-  kfpTrk.SetCharge(charge);
-  Float_t covF[21];
-  for (Int_t i = 0; i<21;i++) { covF[i] = (Float_t) cov[i]; }
-  kfpTrk.SetCovarianceMatrix(covF);
-  kfpTrk.SetNDF(1);
-  kfpTrk.SetChi2(Chi2perNDF);
-
-  // Build KFParticle
-  KFParticle kfp(kfpTrk, pdg);
-  return kfp;
-}
-//_____________________________________________________________________________
-KFVertex AliAnalysisTaskSEXicZero2XiPifromKFP::CreateKFVertex(Double_t *param, Double_t *cov)
-{
-  KFParticle::SetField(fBzkG);
-
-  KFPVertex kfpVtx;
-  // Set the values
-  Float_t paramF[3] = {(Float_t) param[0],(Float_t) param[1],(Float_t) param[2]};
-  kfpVtx.SetXYZ(paramF);
-  Float_t covF[6] = {(Float_t) cov[0],(Float_t) cov[1],(Float_t) cov[2],
-                     (Float_t) cov[3],(Float_t) cov[4],(Float_t) cov[5]};
-  kfpVtx.SetCovarianceMatrix(covF);
-  KFVertex kfv(kfpVtx);
-  return kfv;
-}
-//_____________________________________________________________________________
-Bool_t AliAnalysisTaskSEXicZero2XiPifromKFP::CheckVertexCov(AliAODVertex *vtx)
-{
-  Double_t covMatrix[6];
-  vtx->GetCovarianceMatrix(covMatrix);
-  Double_t cov[3][3]={0.};
-  cov[0][0] = covMatrix[0];
-  cov[1][0] = covMatrix[1];
-  cov[1][1] = covMatrix[2];
-  cov[2][0] = covMatrix[3];
-  cov[2][1] = covMatrix[4];
-  cov[2][2] = covMatrix[5];
-  if ( cov[0][0]<0 || cov[1][1]<0 || cov[2][2]<0 ) return kFALSE;
-  for (Int_t i=0; i<3; i++) {
-    for (Int_t j=0; j<3; j++) {
-      if (i<=j) continue;
-      if ( fabs(cov[i][j]) > TMath::Sqrt(cov[i][i]*cov[j][j]) ) return kFALSE;
-    }
-  }
-
-  return kTRUE;
-}
-//_____________________________________________________________________________
-Bool_t AliAnalysisTaskSEXicZero2XiPifromKFP::CheckTrackCov(AliAODTrack *track)
-{
-  Double_t covMatrix[21];
-  track->GetCovarianceXYZPxPyPz(covMatrix);
-  Double_t cov[6][6]={0.};
-  cov[0][0] = covMatrix[0];
-  cov[1][0] = covMatrix[1];
-  cov[1][1] = covMatrix[2];
-  cov[2][0] = covMatrix[3];
-  cov[2][1] = covMatrix[4];
-  cov[2][2] = covMatrix[5];
-  cov[3][0] = covMatrix[6];
-  cov[3][1] = covMatrix[7];
-  cov[3][2] = covMatrix[8];
-  cov[3][3] = covMatrix[9];
-  cov[4][0] = covMatrix[10];
-  cov[4][1] = covMatrix[11];
-  cov[4][2] = covMatrix[12];
-  cov[4][3] = covMatrix[13];
-  cov[4][4] = covMatrix[14];
-  cov[5][0] = covMatrix[15];
-  cov[5][1] = covMatrix[16];
-  cov[5][2] = covMatrix[17];
-  cov[5][3] = covMatrix[18];
-  cov[5][4] = covMatrix[19];
-  cov[5][5] = covMatrix[20];
-  if ( cov[0][0]<0 || cov[1][1]<0 || cov[2][2]<0 || cov[3][3]<0 || cov[4][4]<0 || cov[5][5]<0 ) return kFALSE;
-  for (Int_t i=0; i<6; i++) {
-    for (Int_t j=0; j<6; j++) {
-      if (i<=j) continue;
-      if ( fabs(cov[i][j]) > TMath::Sqrt(cov[i][i]*cov[j][j]) ) return kFALSE;
-    }
-  }
-
-  return kTRUE;
-}
-//_____________________________________________________________________________
-Bool_t AliAnalysisTaskSEXicZero2XiPifromKFP::CheckKFParticleCov(KFParticle kfp)
-{
-  if ( kfp.GetCovariance(0,0)<0 || kfp.GetCovariance(1,1)<0 || kfp.GetCovariance(2,2)<0 || kfp.GetCovariance(3,3)<0 || kfp.GetCovariance(4,4)<0 || kfp.GetCovariance(5,5)<0 ) return kFALSE;
-  for (Int_t i=0; i<6; i++) {
-    for (Int_t j=0; j<6; j++) {
-      if (i<=j) continue;
-      if ( fabs(kfp.GetCovariance(i,j)) > TMath::Sqrt(kfp.GetCovariance(i,i)*kfp.GetCovariance(j,j)) ) return kFALSE;
-    }
-  }
-
-  return kTRUE;
-}
-
-//_____________________________________________________________________________
-KFParticle AliAnalysisTaskSEXicZero2XiPifromKFP::CreateKFParticleFromAODtrack(AliAODTrack *track, Int_t pdg)
-{
-  KFParticle::SetField(fBzkG);
-
-  Double_t trackParam[6];
-  Double_t covMatrix[21];
-
-  Bool_t IsDCA = track->GetXYZ(trackParam);
-//  if (IsDCA) cout << "track position is at DCA" << endl;
-//  if (!IsDCA) cout << "track position is at first point" << endl;
-//  track->XvYvZv(trackParam);
-  track->GetPxPyPz(&trackParam[3]);
-  track->GetCovarianceXYZPxPyPz(covMatrix);
-  
-  KFPTrack kfpt;
-  kfpt.SetParameters(trackParam);
-  kfpt.SetCovarianceMatrix(covMatrix);
-  kfpt.SetCharge(track->Charge());
-  kfpt.SetNDF(1);
-  kfpt.SetChi2(track->Chi2perNDF());
-
-  KFParticle kfp(kfpt, pdg);
-
-  return kfp;
-}
-//_____________________________________________________________________________
-KFParticle AliAnalysisTaskSEXicZero2XiPifromKFP::CreateKFMotherParticle(AliAODTrack *track1, AliAODTrack *track2, Int_t pdg1, Int_t pdg2)
-{
-  KFParticle::SetField(fBzkG);
-
-  Double_t trackParam[6];
-  Double_t covMatrix[21];
-
-  track1->GetXYZ(trackParam);
-  track1->GetPxPyPz(&trackParam[3]);
-  track1->GetCovarianceXYZPxPyPz(covMatrix);
-
-  KFPTrack kfpt1;
-  kfpt1.SetParameters(trackParam);
-  kfpt1.SetCovarianceMatrix(covMatrix);
-  kfpt1.SetCharge(track1->Charge());
-  kfpt1.SetNDF(1);
-  kfpt1.SetChi2(track1->Chi2perNDF());
-
-  track2->GetXYZ(trackParam);
-  track2->GetPxPyPz(&trackParam[3]);
-  track2->GetCovarianceXYZPxPyPz(covMatrix);
-
-  KFPTrack kfpt2;
-  kfpt2.SetParameters(trackParam);
-  kfpt2.SetCovarianceMatrix(covMatrix);
-  kfpt2.SetCharge(track2->Charge());
-  kfpt2.SetNDF(1);
-  kfpt2.SetChi2(track2->Chi2perNDF());
-
-  // now we have all info to create the KFParticle version of the daughters
-  KFParticle kfpDaughter1(kfpt1, pdg1);
-  KFParticle kfpDaughter2(kfpt2, pdg2);
-                       
-  KFParticle kfpMother(kfpDaughter1, kfpDaughter2);
-
-  return kfpMother;
-}
-//_____________________________________________________________________________
-KFParticle AliAnalysisTaskSEXicZero2XiPifromKFP::CreateSecKFParticle(KFParticle kfp1, AliAODTrack *track2, Int_t pdg1, Int_t pdg2)
-{
-  KFParticle::SetField(fBzkG);
-
-  Double_t trackParam[6];
-  Double_t covMatrix[21];
-
-  track2->GetXYZ(trackParam);
-//  track2->XvYvZv(trackParam);
-  track2->GetPxPyPz(&trackParam[3]);
-  track2->GetCovarianceXYZPxPyPz(covMatrix);
-
-  KFPTrack kfpt2;
-  kfpt2.SetParameters(trackParam);
-  kfpt2.SetCovarianceMatrix(covMatrix);
-  kfpt2.SetCharge(track2->Charge());
-  kfpt2.SetNDF(1);
-  kfpt2.SetChi2(track2->Chi2perNDF());
-
-  KFParticle kfpDaughter2(kfpt2, pdg2);
-
-  kfp1.SetPDG(pdg1);
-//  KFParticle kfpMother(kfp1, kfpDaughter2);
-  KFParticle kfpMother;
-//  const KFParticle *vDaughters[2] = {&kfp1, &kfpDaughter2};
-  const KFParticle *vDaughters[2] = {&kfpDaughter2, &kfp1}; // the order is important
-  kfpMother.Construct(vDaughters, 2);
-
-  return kfpMother;
-}
-
-//_____________________________________________________________________________
-Double_t AliAnalysisTaskSEXicZero2XiPifromKFP::CosPointingAngleKF(KFParticle kfp, KFParticle kfpmother)
-{
-  Double_t v[3];
-  v[0] = kfp.GetX() - kfpmother.GetX();
-  v[1] = kfp.GetY() - kfpmother.GetY();
-  v[2] = kfp.GetZ() - kfpmother.GetZ();
-
-  Double_t p[3];
-  p[0] = kfp.GetPx();
-  p[1] = kfp.GetPy();
-  p[2] = kfp.GetPz();
-
-  Double_t ptimesv2 = (p[0]*p[0]+p[1]*p[1]+p[2]*p[2])*(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
-
-  if ( ptimesv2<=0 ) return 0.0;
-  else {
-    Double_t cos = (v[0]*p[0]+v[1]*p[1]+v[2]*p[2]) / TMath::Sqrt(ptimesv2);
-    if(cos >  1.0) cos =  1.0;
-    if(cos < -1.0) cos = -1.0;
-    return cos;
-  }
-}
-
-//_____________________________________________________________________________
-Double_t AliAnalysisTaskSEXicZero2XiPifromKFP::CosThetaStarKF(Int_t ip, UInt_t pdgvtx, UInt_t pdgprong0, UInt_t pdgprong1, KFParticle kfpvtx, KFParticle kfpprong0, KFParticle kfpprong1)
-{
-  Double_t massvtx = TDatabasePDG::Instance()->GetParticle(pdgvtx)->Mass();
-  Double_t massp[2];
-
-  massp[0] = TDatabasePDG::Instance()->GetParticle(pdgprong0)->Mass();
-  massp[1] = TDatabasePDG::Instance()->GetParticle(pdgprong1)->Mass();
-
-  Double_t pStar = TMath::Sqrt((massvtx*massvtx-massp[0]*massp[0]-massp[1]*massp[1])*(massvtx*massvtx-massp[0]*massp[0]-massp[1]*massp[1])-4.*massp[0]*massp[0]*massp[1]*massp[1])/(2.*massvtx);
-
-  Double_t e = kfpvtx.GetE();
-  Double_t beta = kfpvtx.GetP()/e;
-  Double_t gamma = e/massvtx;
-
-  TVector3 mom;
-  TVector3 momTot(kfpvtx.GetPx(), kfpvtx.GetPy(), kfpvtx.GetPz());
-
-  if (ip==0) {
-    mom.SetXYZ(kfpprong0.GetPx(), kfpprong0.GetPy(), kfpprong0.GetPz());
-  }
-  if (ip==1) {
-    mom.SetXYZ(kfpprong1.GetPx(), kfpprong1.GetPy(), kfpprong1.GetPz());
-  }
-
-  Double_t cts = ( (mom.Dot(momTot)/momTot.Mag()) /gamma-beta*TMath::Sqrt(pStar*pStar+massp[ip]*massp[ip]) ) / pStar;
-
-  return cts;
 }
 
 //_____________________________________________________________________________
@@ -4803,7 +4550,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0 = new TTree(nameoutput, "Xic0 variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0 = new TTree(nameoutput, "Omegac0 variables tree");
-  Int_t nVar = 42;
+  Int_t nVar = 45;
   fVar_Xic0 = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -4825,35 +4572,39 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   fVarNames[12] = "chi2topo_XiToPV"; // chi2_topo of Xi to PV
 
   fVarNames[13] = "DecayLxy_Lam"; // decay length of Lambda in x-y plane
-  fVarNames[14] = "ct_Lam"; // life time of Lambda
-  fVarNames[15] = "DecayLxy_Xi"; // decay length of Xi in x-y plane
-  fVarNames[16] = "ct_Xi"; // life time of Xi
+//  fVarNames[14] = "ct_Lam"; // life time of Lambda //////////
+  fVarNames[14] = "DecayLxy_Xi"; // decay length of Xi in x-y plane
+//  fVarNames[16] = "ct_Xi"; // life time of Xi //////////
 
-  fVarNames[17] = "PA_Lam"; // pointing angle of Lmabda (pointing back to Xi)
-  fVarNames[18] = "PA_LamToPV"; // pointing angle of Lambda (pointing back to PV)
-  fVarNames[19] = "PA_Xi"; // pointing angle of Xi (pointing back to PV)
-  fVarNames[20] = "mass_Lam"; // mass of Lambda (without mass const.)
-  fVarNames[21] = "mass_Xi"; // mass of Xi (without mass const.)
-  fVarNames[22] = "pt_PiFromXic0"; // pt of pion coming from Xic0
-  fVarNames[23] = "pt_Xic0"; // pt of Xic0
-  fVarNames[24] = "rap_Xic0"; // rapidity of Xic0
-  fVarNames[25] = "mass_Xic0"; // mass of Xic0
-  fVarNames[26] = "CosThetaStar_PiFromXic0"; // CosThetaStar of pion coming from Xic0
-  fVarNames[27] = "CosThetaStar_Xi"; // CosThetaStar of Xi coming from Xic0
-  fVarNames[28] = "chi2prim_PiFromXic0"; // chi2_topo of pion to PV
-  fVarNames[29] = "DCAxy_PiFromXic0_KF"; // DCA of pion coming from Xic0 in x-y plane
-  fVarNames[30] = "Source_Xic0"; // flag for Xic0 MC truth (“4” prompt, "5" feed-down, “<0” background)
-  fVarNames[31] = "mass_K0S"; // mass of Ks0
-  fVarNames[32] = "mass_Gamma"; // mass of e+e-
-  fVarNames[33] = "chi2topo_LamToXi"; // chi2_topo of Lambda to Xi
-  fVarNames[34] = "chi2topo_XiToXic0"; // chi2_topo of Xi to Xic0
-  fVarNames[35] = "DecayLxy_Xic0"; // decay length of Xic0 in x-y plane
-  fVarNames[36] = "ct_Xic0"; // life time of Xic0
-  fVarNames[37] = "chi2geo_Xic0"; // chi2_geometry of Xic0
-  fVarNames[38] = "DCA_LamDau"; // DCA of Lambda's daughters (calculated from AOD cascade)
-  fVarNames[39] = "DCA_XiDau_KF"; // DCA of Xi's daughters (calculated from KF after Lambda mass constraint)
-  fVarNames[40] = "DCA_Xic0Dau_KF"; // DCA of Xic0's daughters (calculated from KF after Xi mass constraint)
-  fVarNames[41] = "DCAxy_XiToPV_KF"; // DCA of Xi to PV in x-y plane (calculated from KF after Xi mass constraint)
+  fVarNames[15] = "PA_LamToXi"; // pointing angle of Lmabda (pointing back to Xi)
+  fVarNames[16] = "PA_LamToPV"; // pointing angle of Lambda (pointing back to PV)
+  fVarNames[17] = "PA_XiToXic0"; // pointing angle of Xi (pointing back to Xic0)
+  fVarNames[18] = "PA_XiToPV"; // pointing angle of Xi (pointing back to PV)
+  fVarNames[19] = "mass_Lam"; // mass of Lambda (without mass const.)
+  fVarNames[20] = "mass_Xi"; // mass of Xi (without mass const.)
+  fVarNames[21] = "pt_PiFromXic0"; // pt of pion coming from Xic0
+  fVarNames[22] = "pt_Xic0"; // pt of Xic0
+  fVarNames[23] = "rap_Xic0"; // rapidity of Xic0
+  fVarNames[24] = "mass_Xic0"; // mass of Xic0
+  fVarNames[25] = "CosThetaStar_PiFromXic0"; // CosThetaStar of pion coming from Xic0
+//  fVarNames[27] = "CosThetaStar_Xi"; // CosThetaStar of Xi coming from Xic0 //////////
+  fVarNames[26] = "chi2prim_PiFromXic0"; // chi2_topo of pion to PV
+  fVarNames[27] = "DCAxy_PiFromXic0_KF"; // DCA of pion coming from Xic0 in x-y plane
+  fVarNames[28] = "Source_Xic0"; // flag for Xic0 MC truth (“4” prompt, "5" feed-down, “<0” background)
+  fVarNames[29] = "mass_K0S"; // mass of Ks0
+  fVarNames[30] = "mass_Gamma"; // mass of e+e-
+  fVarNames[31] = "chi2topo_LamToXi"; // chi2_topo of Lambda to Xi
+  fVarNames[32] = "chi2topo_XiToXic0"; // chi2_topo of Xi to Xic0
+  fVarNames[33] = "DecayLxy_Xic0"; // decay length of Xic0 in x-y plane
+//  fVarNames[36] = "ct_Xic0"; // life time of Xic0 ///////////////
+  fVarNames[34] = "chi2geo_Xic0"; // chi2_geometry of Xic0
+  fVarNames[35] = "DCA_LamDau"; // DCA of Lambda's daughters (calculated from AOD cascade)
+  fVarNames[36] = "DCA_XiDau_KF"; // DCA of Xi's daughters (calculated from KF after Lambda mass constraint)
+  fVarNames[37] = "DCA_Xic0Dau_KF"; // DCA of Xic0's daughters (calculated from KF after Xi mass constraint)
+  fVarNames[38] = "DCAxy_XiToPV_KF"; // DCA of Xi to PV in x-y plane (calculated from KF after Xi mass constraint)
+  fVarNames[39] = "mass_Omega"; // mass of Omega
+  fVarNames[40] = "chi2topo_Xic0ToPV"; // chi2_topo of Xic0 to PV
+  fVarNames[41] = "PA_Xic0ToPV"; // pointing angle of Xic0 (pointing back to PV)
   }
 
   if (fIsAnaOmegac0) {
@@ -4873,35 +4624,42 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
     fVarNames[11] = "ldl_Omega"; // l/dl of Omega (with Lambda mass const.)
     fVarNames[12] = "chi2topo_OmegaToPV"; // chi2_topo of Omega to PV
     fVarNames[13] = "DecayLxy_Lam"; // decay length of Lambda in x-y plane
-    fVarNames[14] = "ct_Lam"; // life time of Lambda
-    fVarNames[15] = "DecayLxy_Omega"; // decay length of Omega in x-y plane
-    fVarNames[16] = "ct_Omega"; // life time of Omega
-    fVarNames[17] = "PA_Lam"; // pointing angle of Lmabda (pointing back to Xi)
-    fVarNames[18] = "PA_LamToPV"; // pointing angle of Lambda (pointing back to PV)
-    fVarNames[19] = "PA_Omega"; // pointing angle of Omega (pointing back to PV)
-    fVarNames[20] = "mass_Lam"; // mass of Lambda (without mass const.)
-    fVarNames[21] = "mass_Omega"; // mass of Omega (without mass const.)
-    fVarNames[22] = "pt_PiFromOmegac0"; // pt of pion coming from Omegac0
-    fVarNames[23] = "pt_Omegac0"; // pt of Omegac0
-    fVarNames[24] = "rap_Omegac0"; // rapidity of Omegac0
-    fVarNames[25] = "mass_Omegac0"; // mass of Omegac0
-    fVarNames[26] = "CosThetaStar_PiFromOmegac0"; // CosThetaStar of pion coming from Omegac0
-    fVarNames[27] = "CosThetaStar_Omega"; // CosThetaStar of Omega coming from Omegac0
-    fVarNames[28] = "chi2prim_PiFromOmegac0"; // chi2_topo of pion to PV
-    fVarNames[29] = "DCAxy_PiFromOmegac0_KF"; // DCA of pion coming from Omegac0 in x-y plane
-    fVarNames[30] = "Source_Omegac0"; // flag for Omegac0 MC truth (“4” prompt, "5" feed-down, “<0” background)
-    fVarNames[31] = "mass_K0S"; // mass of Ks0
-    fVarNames[32] = "mass_Gamma"; // mass of e+e-
-    fVarNames[33] = "chi2topo_LamToOmega"; // chi2_topo of Lambda to Omega
-    fVarNames[34] = "chi2topo_OmegaToOmegac0"; // chi2_topo of Omega to Omegac0
-    fVarNames[35] = "DecayLxy_Omegac0"; // decay length of Omegac0 in x-y plane
-    fVarNames[36] = "ct_Omegac0"; // life time of Omegac0
-    fVarNames[37] = "chi2geo_Omegac0"; // chi2_geometry of Omegac0
-    fVarNames[38] = "DCA_LamDau"; // DCA of Lambda's daughters (calculated from AOD cascade)
-    fVarNames[39] = "DCA_OmegaDau_KF"; // DCA of Omega's daughters (calculated from KF after Lambda mass constraint)
-    fVarNames[40] = "DCA_Omegac0Dau_KF"; // DCA of Omegac0's daughters (calculated from KF after Omega mass constraint)
-    fVarNames[41] = "DCAxy_OmegaToPV_KF"; // DCA of Omega to PV in x-y plane (calculated from KF after Omega mass constraint)
+//    fVarNames[14] = "ct_Lam"; // life time of Lambda //////////////
+    fVarNames[14] = "DecayLxy_Omega"; // decay length of Omega in x-y plane
+//    fVarNames[16] = "ct_Omega"; // life time of Omega /////////////
+    fVarNames[15] = "PA_LamToOmega"; // pointing angle of Lmabda (pointing back to Omega)
+    fVarNames[16] = "PA_LamToPV"; // pointing angle of Lambda (pointing back to PV)
+    fVarNames[17] = "PA_OmegaToOmegac0"; // pointing angle of Omega (pointing back to Omegac0)
+    fVarNames[18] = "PA_OmegaToPV"; // pointing angle of Omega (pointing back to PV)
+    fVarNames[19] = "mass_Lam"; // mass of Lambda (without mass const.)
+    fVarNames[20] = "mass_Omega"; // mass of Omega (without mass const.)
+    fVarNames[21] = "pt_PiFromOmegac0"; // pt of pion coming from Omegac0
+    fVarNames[22] = "pt_Omegac0"; // pt of Omegac0
+    fVarNames[23] = "rap_Omegac0"; // rapidity of Omegac0
+    fVarNames[24] = "mass_Omegac0"; // mass of Omegac0
+    fVarNames[25] = "CosThetaStar_PiFromOmegac0"; // CosThetaStar of pion coming from Omegac0
+//    fVarNames[27] = "CosThetaStar_Omega"; // CosThetaStar of Omega coming from Omegac0 /////////
+    fVarNames[26] = "chi2prim_PiFromOmegac0"; // chi2_topo of pion to PV
+    fVarNames[27] = "DCAxy_PiFromOmegac0_KF"; // DCA of pion coming from Omegac0 in x-y plane
+    fVarNames[28] = "Source_Omegac0"; // flag for Omegac0 MC truth (“4” prompt, "5" feed-down, “<0” background)
+    fVarNames[29] = "mass_K0S"; // mass of Ks0
+    fVarNames[30] = "mass_Gamma"; // mass of e+e-
+    fVarNames[31] = "chi2topo_LamToOmega"; // chi2_topo of Lambda to Omega
+    fVarNames[32] = "chi2topo_OmegaToOmegac0"; // chi2_topo of Omega to Omegac0
+    fVarNames[33] = "DecayLxy_Omegac0"; // decay length of Omegac0 in x-y plane
+//    fVarNames[36] = "ct_Omegac0"; // life time of Omegac0 //////////
+    fVarNames[34] = "chi2geo_Omegac0"; // chi2_geometry of Omegac0
+    fVarNames[35] = "DCA_LamDau"; // DCA of Lambda's daughters (calculated from AOD cascade)
+    fVarNames[36] = "DCA_OmegaDau_KF"; // DCA of Omega's daughters (calculated from KF after Lambda mass constraint)
+    fVarNames[37] = "DCA_Omegac0Dau_KF"; // DCA of Omegac0's daughters (calculated from KF after Omega mass constraint)
+    fVarNames[38] = "DCAxy_OmegaToPV_KF"; // DCA of Omega to PV in x-y plane (calculated from KF after Omega mass constraint)
+    fVarNames[39] = "mass_Xi"; // mass of Xi
+    fVarNames[40] = "chi2topo_Omegac0ToPV"; // chi2_topo of Omegac0 to PV
+    fVarNames[41] = "PA_Omegac0ToPV"; // pointing angle of Omegac0 (pointing back to PV)
   }
+  fVarNames[42] = "weight";
+  fVarNames[43] = "weight_up";
+  fVarNames[44] = "weight_dw";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -4968,7 +4726,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeGenXic0()
   const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0MCGen = new TTree(nameoutput,"Xic0 MC variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0MCGen = new TTree(nameoutput,"Omegac0 MC variables tree");
-  Int_t nVar = 3;
+  Int_t nVar = 7;
   fVar_Xic0MCGen = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
   
@@ -4976,11 +4734,19 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeGenXic0()
     fVarNames[0] = "rap_Xic0";
     fVarNames[1] = "pt_Xic0";
     fVarNames[2] = "Source_Xic0";
+    fVarNames[3] = "PDG_Xic0";
+    fVarNames[4] = "weight";
+    fVarNames[5] = "weight_up";
+    fVarNames[6] = "weight_dw";
   }
   if (fIsAnaOmegac0) {
     fVarNames[0] = "rap_Omegac0";
     fVarNames[1] = "pt_Omegac0";
     fVarNames[2] = "Source_Omegac0";
+    fVarNames[3] = "PDG_Omegac0";
+    fVarNames[4] = "weight";
+    fVarNames[5] = "weight_up";
+    fVarNames[6] = "weight_dw";
   }
 
   /*
@@ -5222,12 +4988,12 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpX
   //***************************************************************************************
 
   // calculate CosPointingAngle
-  Double_t cosPA_v0      = CosPointingAngleKF(kfpLambda_m, kfpXiMinus);
+  Double_t cosPA_v0      = AliVertexingHFUtils::CosPointingAngleFromKF(kfpLambda_m, kfpXiMinus);
   KFParticle kfpLambda_Xi = kfpLambda_m;
   kfpLambda_Xi.SetProductionVertex(kfpXiMinus);
 
-  Double_t cosPA_XiToPV  = CosPointingAngleKF(kfpXiMinus_m, PV);
-  Double_t cosPA_XiToXic = CosPointingAngleKF(kfpXiMinus_m, kfpXic0);
+  Double_t cosPA_XiToPV  = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXiMinus_m, PV);
+  Double_t cosPA_XiToXic = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXiMinus_m, kfpXic0);
   KFParticle kfpXiMinus_Xic = kfpXiMinus_m;
   kfpXiMinus_Xic.SetProductionVertex(kfpXic0);
 
@@ -5305,10 +5071,10 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpX
     fVar_Xic0[31] = lab_Xic0;
   }
 
-  fVar_Xic0[32] = CosThetaStarKF(0, 4132, 211, 3312, kfpXic0, kfpBP_Xic0, kfpXiMinus_Xic0);
-  fVar_Xic0[33] = CosThetaStarKF(1, 4132, 211, 3312, kfpXic0, kfpBP_Xic0, kfpXiMinus_Xic0);
-//  fVar_Xic0[32] = CosThetaStarKF(0, 4132, 211, 3312, kfpXic0, kfpBP, kfpXiMinus_m);
-//  fVar_Xic0[33] = CosThetaStarKF(1, 4132, 211, 3312, kfpXic0, kfpBP, kfpXiMinus_m);
+  fVar_Xic0[32] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4132, 211, 3312, kfpXic0, kfpBP_Xic0, kfpXiMinus_Xic0);
+  fVar_Xic0[33] = AliVertexingHFUtils::CosThetaStarFromKF(1, 4132, 211, 3312, kfpXic0, kfpBP_Xic0, kfpXiMinus_Xic0);
+//  fVar_Xic0[32] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4132, 211, 3312, kfpXic0, kfpBP, kfpXiMinus_m);
+//  fVar_Xic0[33] = AliVertexingHFUtils::CosThetaStarFromKF(1, 4132, 211, 3312, kfpXic0, kfpBP, kfpXiMinus_m);
 
 //  fVar_Xic0[3]  = TMath::Prob(kfpLambda.GetChi2(), kfpLambda.GetNDF());
 //  fVar_Xic0[7]  = kfpLambda.GetPz();
@@ -5388,7 +5154,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpX
 void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
 {
 
-  for (Int_t i=0; i<42; i++) {
+  for (Int_t i=0; i<43; i++) {
     fVar_Xic0[i] = -9999.;
   }
 
@@ -5469,10 +5235,11 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
   if ( l_Xi/dl_Xi <= fAnaCuts->GetKFPXi_lDeltalMin() ) return;
 
   const Float_t PDGmassXic0 = TDatabasePDG::Instance()->GetParticle(4132)->Mass();
-  const Float_t PDGmassOmegac0 = TDatabasePDG::Instance()->GetParticle(4332)->Mass();
+//  const Float_t PDGmassOmegac0 = TDatabasePDG::Instance()->GetParticle(4332)->Mass();
+  const Float_t PDGmassOmegac0 = 2.6952;
   Float_t mass_Xic0_PV, err_mass_Xic0_PV;
   kfpXic0_PV.GetMass(mass_Xic0_PV, err_mass_Xic0_PV);
-  fVar_Xic0[25] = mass_Xic0_PV; // mass of Xic0
+  fVar_Xic0[24] = mass_Xic0_PV; // mass of Xic0
 
   if ( !fIsAnaOmegac0 && (fabs(mass_Xic0_PV-PDGmassXic0) > fAnaCuts->GetProdMassTolXic0()) ) return;
   if ( fIsAnaOmegac0 && (fabs(mass_Xic0_PV-PDGmassOmegac0) > fAnaCuts->GetProdMassTolXic0()) ) return;
@@ -5497,96 +5264,114 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
   Float_t DecayLxy_Lam, err_DecayLxy_Lam;
   kfpLambda_Xi.GetDecayLengthXY(DecayLxy_Lam, err_DecayLxy_Lam);
   fVar_Xic0[13] = DecayLxy_Lam;
-  Float_t ct_Lam=0., err_ct_Lam=0.;
-  kfpLambda_Xi.GetLifeTime(ct_Lam, err_ct_Lam);
-  fVar_Xic0[14] = ct_Lam;
+//  Float_t ct_Lam=0., err_ct_Lam=0.;
+//  kfpLambda_Xi.GetLifeTime(ct_Lam, err_ct_Lam);
+//  fVar_Xic0[14] = ct_Lam;
 
   Float_t DecayLxy_Xi, err_DecayLxy_Xi;
   kfpXiMinus_PV.GetDecayLengthXY(DecayLxy_Xi, err_DecayLxy_Xi);
-  fVar_Xic0[15] = DecayLxy_Xi;
-  Float_t ct_Xi=0., err_ct_Xi=0.;
-  kfpXiMinus_PV.GetLifeTime(ct_Xi, err_ct_Xi);
-  fVar_Xic0[16] = ct_Xi;
+  fVar_Xic0[14] = DecayLxy_Xi;
+//  Float_t ct_Xi=0., err_ct_Xi=0.;
+//  kfpXiMinus_PV.GetLifeTime(ct_Xi, err_ct_Xi);
+//  fVar_Xic0[16] = ct_Xi;
 
   // calculate CosPointingAngle
-  Double_t cosPA_v0toXi = CosPointingAngleKF(kfpLambda_m, kfpXiMinus);
-  Double_t cosPA_v0toPV = CosPointingAngleKF(kfpLambda_m, PV);
-  Double_t cosPA_XiToPV = CosPointingAngleKF(kfpXiMinus_m, PV);
-  fVar_Xic0[17] = TMath::ACos(cosPA_v0toXi); // PA_LamToXi
-  fVar_Xic0[18] = TMath::ACos(cosPA_v0toPV); // PA_LamToPV
-  fVar_Xic0[19] = TMath::ACos(cosPA_XiToPV); // PA_XiToPV
+  Double_t cosPA_v0toXi = AliVertexingHFUtils::CosPointingAngleFromKF(kfpLambda_m, kfpXiMinus);
+  Double_t cosPA_v0toPV = AliVertexingHFUtils::CosPointingAngleFromKF(kfpLambda_m, PV);
+  Double_t cosPA_XiToXic0 = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXiMinus_m, kfpXic0);
+  Double_t cosPA_XiToPV = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXiMinus_m, PV);
+  fVar_Xic0[15] = TMath::ACos(cosPA_v0toXi); // PA_LamToXi
+  fVar_Xic0[16] = TMath::ACos(cosPA_v0toPV); // PA_LamToPV
+  fVar_Xic0[17] = TMath::ACos(cosPA_XiToXic0); // PA_XiToXic0
+  fVar_Xic0[18] = TMath::ACos(cosPA_XiToPV); // PA_XiToPV
 
   Float_t mass_Lam, err_mass_Lam;
   kfpLambda.GetMass(mass_Lam, err_mass_Lam);
-  fVar_Xic0[20] = mass_Lam;
+  fVar_Xic0[19] = mass_Lam;
 
   Float_t mass_Xi, err_mass_Xi;
   kfpXiMinus.GetMass(mass_Xi, err_mass_Xi);
-  fVar_Xic0[21] = mass_Xi;
+  fVar_Xic0[20] = mass_Xi;
 
-  fVar_Xic0[22] = trackPiFromXic0->Pt();
+  fVar_Xic0[21] = trackPiFromXic0->Pt();
 
-  fVar_Xic0[23] = kfpXic0_PV.GetPt();
+  fVar_Xic0[22] = kfpXic0_PV.GetPt();
   if ( TMath::Abs(kfpXic0_PV.GetE())>TMath::Abs(kfpXic0_PV.GetPz()) ) {
-    fVar_Xic0[24] = kfpXic0_PV.GetRapidity();
+    fVar_Xic0[23] = kfpXic0_PV.GetRapidity();
   }
 
   if (!fIsAnaOmegac0) {
-    fVar_Xic0[26] = CosThetaStarKF(0, 4132, 211, 3312, kfpXic0, kfpBP_Xic0, kfpXiMinus_Xic0);
-    fVar_Xic0[27] = CosThetaStarKF(1, 4132, 211, 3312, kfpXic0, kfpBP_Xic0, kfpXiMinus_Xic0);
+    fVar_Xic0[25] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4132, 211, 3312, kfpXic0, kfpBP_Xic0, kfpXiMinus_Xic0);
+//    fVar_Xic0[27] = AliVertexingHFUtils::CosThetaStarFromKF(1, 4132, 211, 3312, kfpXic0, kfpBP_Xic0, kfpXiMinus_Xic0);
   }
   if (fIsAnaOmegac0) {
-    fVar_Xic0[26] = CosThetaStarKF(0, 4332, 211, 3334, kfpXic0, kfpBP_Xic0, kfpXiMinus_Xic0);
-    fVar_Xic0[27] = CosThetaStarKF(1, 4332, 211, 3334, kfpXic0, kfpBP_Xic0, kfpXiMinus_Xic0);
+    fVar_Xic0[25] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4332, 211, 3334, kfpXic0, kfpBP_Xic0, kfpXiMinus_Xic0);
+//    fVar_Xic0[27] = AliVertexingHFUtils::CosThetaStarFromKF(1, 4332, 211, 3334, kfpXic0, kfpBP_Xic0, kfpXiMinus_Xic0);
   }
 
   // --- chi2_prim of Pion to PV ---
   KFParticle kfpBP_PV = kfpBP;
   kfpBP_PV.SetProductionVertex(PV);
-  fVar_Xic0[28] = kfpBP_PV.GetChi2()/kfpBP_PV.GetNDF();
+  fVar_Xic0[26] = kfpBP_PV.GetChi2()/kfpBP_PV.GetNDF();
   // -------------------------------
   // --- DCA of Pion to PV ---
-  fVar_Xic0[29] = kfpBP.GetDistanceFromVertexXY(PV); // DCA of pion in x-y
+  fVar_Xic0[27] = kfpBP.GetDistanceFromVertexXY(PV); // DCA of pion in x-y
   // -------------------------
 
   Float_t massK0S_Rec, err_massK0S;
   kfpK0Short.GetMass(massK0S_Rec, err_massK0S);
-  fVar_Xic0[31] = massK0S_Rec;
+  fVar_Xic0[29] = massK0S_Rec;
   Float_t massGamma_Rec, err_massGamma;
   kfpGamma.GetMass(massGamma_Rec, err_massGamma);
-  fVar_Xic0[32] = massGamma_Rec;
-  fVar_Xic0[33] = kfpLambda_Xi.GetChi2()/kfpLambda_Xi.GetNDF();
-  fVar_Xic0[34] = kfpXiMinus_Xic0.GetChi2()/kfpXiMinus_Xic0.GetNDF();
+  fVar_Xic0[30] = massGamma_Rec;
+  fVar_Xic0[31] = kfpLambda_Xi.GetChi2()/kfpLambda_Xi.GetNDF();
+  fVar_Xic0[32] = kfpXiMinus_Xic0.GetChi2()/kfpXiMinus_Xic0.GetNDF();
 
   Float_t DecayLxy_Xic0, err_DecayLxy_Xic0;
   kfpXic0_PV.GetDecayLengthXY(DecayLxy_Xic0, err_DecayLxy_Xic0);
-  fVar_Xic0[35] = DecayLxy_Xic0;
-  Float_t ct_Xic0=0., err_ct_Xic0=0.;
-  kfpXic0_PV.GetLifeTime(ct_Xic0, err_ct_Xic0);
-  fVar_Xic0[36] = ct_Xic0;
-  fVar_Xic0[37] = kfpXic0.GetChi2()/kfpXic0.GetNDF();
-  fVar_Xic0[38] = casc->DcaV0Daughters(); // DCA_LamDau
-  fVar_Xic0[39] = kfpPionOrKaon.GetDistanceFromParticle(kfpLambda_m); // DCA_XiDau_KF
-  fVar_Xic0[40] = kfpBP.GetDistanceFromParticle(kfpXiMinus_m); // DCA_Xic0Dau_KF
-  fVar_Xic0[41] = kfpXiMinus_m.GetDistanceFromVertexXY(PV); // DCA of Xi in x-y
+  fVar_Xic0[33] = DecayLxy_Xic0;
+//  Float_t ct_Xic0=0., err_ct_Xic0=0.;
+//  kfpXic0_PV.GetLifeTime(ct_Xic0, err_ct_Xic0);
+//  fVar_Xic0[36] = ct_Xic0;
+  fVar_Xic0[34] = kfpXic0.GetChi2()/kfpXic0.GetNDF();
+  fVar_Xic0[35] = casc->DcaV0Daughters(); // DCA_LamDau
+  fVar_Xic0[36] = kfpPionOrKaon.GetDistanceFromParticle(kfpLambda_m); // DCA_XiDau_KF
+  fVar_Xic0[37] = kfpBP.GetDistanceFromParticle(kfpXiMinus_m); // DCA_Xic0Dau_KF
+  fVar_Xic0[38] = kfpXiMinus_m.GetDistanceFromVertexXY(PV); // DCA of Xi in x-y
 
   if (fIsMC) {
-    fVar_Xic0[30] = lab_Xic0;
-    if (lab_Xic0>0 && fabs(fVar_Xic0[24])<0.8 && (massK0S_Rec<=0.487614 || massK0S_Rec>=0.507614)) {
-      Int_t labelPion1 = fabs(trackPiFromXic0->GetLabel());
-      AliAODMCParticle* mcPion1 = static_cast<AliAODMCParticle*>(mcArray->At(labelPion1));
-      AliAODMCParticle* mcXic0  = static_cast<AliAODMCParticle*>(mcArray->At(mcPion1->GetMother()));
-      f2DHistMCRec_Xic0Pt_weight->Fill(fVar_Xic0[27], fVar_Xic0[25], fWeight->Eval(mcXic0->Pt()));
+    fVar_Xic0[28] = lab_Xic0;
+    if (lab_Xic0>=0) {
+      Int_t labelPiFromXic0 = fabs(trackPiFromXic0->GetLabel());
+      AliAODMCParticle *mcPiFromXic0 = static_cast<AliAODMCParticle*>(mcArray->At(labelPiFromXic0));
+      Int_t IndexXic0 = mcPiFromXic0->GetMother();
+      AliAODMCParticle *mcXic0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexXic0));
+      fVar_Xic0[42] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
+      fVar_Xic0[43] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
+      fVar_Xic0[44] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
     }
   }
 
-  // pt(Xic0)>=1
-  if (fVar_Xic0[23]>0.9999) fTree_Xic0->Fill();
+  KFParticle kfpPionOrKaon_Rej;
+  if (!fIsAnaOmegac0) kfpPionOrKaon_Rej = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackPiFromXiOrKaonFromOmega, -321); // -321 kaon- for Xi analysis
+  if (fIsAnaOmegac0)  kfpPionOrKaon_Rej = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackPiFromXiOrKaonFromOmega, -211); // -211 pion- for Omega analysis
+  KFParticle kfpCasc_Rej;
+  const KFParticle *vCasc_Rej_Ds[2] = {&kfpPionOrKaon_Rej, &kfpLambda_m};
+  kfpCasc_Rej.Construct(vCasc_Rej_Ds, 2);
+  Float_t massCasc_Rej, err_massCasc_Rej;
+  kfpCasc_Rej.GetMass(massCasc_Rej, err_massCasc_Rej);
+  fVar_Xic0[39] = massCasc_Rej;
+
+  fVar_Xic0[40] = kfpXic0_PV.GetChi2()/kfpXic0_PV.GetNDF(); // chi2topo_Xic0ToPV
+  Double_t cosPA_Xic0ToPV = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXic0, PV);
+  fVar_Xic0[41] = TMath::ACos(cosPA_Xic0ToPV); // PA_Xic0ToPV
+
+  fTree_Xic0->Fill();
 
 
 
-//  fVar_Xic0[32] = CosThetaStarKF(0, 4132, 211, 3312, kfpXic0, kfpBP, kfpXiMinus_m);
-//  fVar_Xic0[33] = CosThetaStarKF(1, 4132, 211, 3312, kfpXic0, kfpBP, kfpXiMinus_m);
+//  fVar_Xic0[32] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4132, 211, 3312, kfpXic0, kfpBP, kfpXiMinus_m);
+//  fVar_Xic0[33] = AliVertexingHFUtils::CosThetaStarFromKF(1, 4132, 211, 3312, kfpXic0, kfpBP, kfpXiMinus_m);
 
 //  fVar_Xic0[3]  = TMath::Prob(kfpLambda.GetChi2(), kfpLambda.GetNDF());
 //  fVar_Xic0[7]  = kfpLambda.GetPz();

@@ -190,14 +190,14 @@ class AliLightV0 : public TObject, public TArrayF
 {
  public:
  AliLightV0() : TObject(), TArrayF(), pt(-999), eta(-999), invmass(-999), invmassK0S(-999), invmassGamma(-999),
-    cospt(-999), decayr(-999), proplife(-999), dcadaughters(-999), mcstatus(0),
+    cospt(-999), decayr(-999), proplife(-999), dcav0pv(-999), dcadaughters(-999), mcstatus(0),
     ppt(-999), peta(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nnsigmapr(-999), ndca(-999) {};//genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
  AliLightV0(Float_t ptin, Float_t etain, UInt_t ndim = 0) : TObject(), TArrayF(ndim), pt(ptin), eta(etain), invmass(-999), invmassK0S(-999), invmassGamma(-999),
-    cospt(-999), decayr(-999), proplife(-999), dcadaughters(-999), mcstatus(0), 
+    cospt(-999), decayr(-999), proplife(-999), dcav0pv(-999), dcadaughters(-999), mcstatus(0), 
     ppt(-999), peta(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nnsigmapr(-999), ndca(-999) {};//genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
  AliLightV0(Float_t ptin, Float_t etain, Float_t invmassin, Float_t invmassK0Sin, Float_t invmassGammain,  
 	       Float_t cosptin, Float_t decayrin, Float_t proplifein, UInt_t ndim = 0) : TObject(), TArrayF(ndim), pt(ptin), eta(etain), invmass(invmassin), invmassK0S(invmassK0Sin), invmassGamma(invmassGammain),
-    cospt(cosptin), decayr(decayrin), proplife(proplifein), dcadaughters(-999), mcstatus(0),
+    cospt(cosptin), decayr(decayrin), proplife(proplifein), dcav0pv(-999), dcadaughters(-999), mcstatus(0),
     ppt(-999), peta(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nnsigmapr(-999), ndca(-999) {};//genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
   virtual ~AliLightV0(){};
   void SetPt(Float_t val){pt = val;};
@@ -208,6 +208,7 @@ class AliLightV0 : public TObject, public TArrayF
   void SetCosPointingAngle(Float_t val){cospt = val;};
   void SetDecayR(Float_t val){decayr = val;};
   void SetProperLifetime(Float_t val){proplife = val;};
+  void SetDCAV0(Float_t val){dcav0pv = val;};
   void SetDCADaughters(Float_t val){dcadaughters = val;};
   void SetMcStatus(Int_t val){mcstatus = val;};
   void SetPosDaughter(Float_t ptin, Float_t etain, Float_t nsigma, Float_t dca){ppt = ptin; peta = etain; pnsigmapr = nsigma; pdca = dca;};
@@ -223,6 +224,7 @@ class AliLightV0 : public TObject, public TArrayF
   Float_t GetCosPointingAngle(){return cospt;};
   Float_t GetDecayR(){return decayr;};
   Float_t GetProperLifetime(){return proplife;};
+  Float_t GetDCAV0(){return dcav0pv;};
   Float_t GetDCADaughters(){return dcadaughters;};
   Int_t   GetMcStatus(){return mcstatus;};
   void    GetPosDaughter(Float_t& ptout, Float_t& etaout, Float_t& nsigma, Float_t& dca){ptout = ppt; etaout = peta; nsigma = pnsigmapr; dca = pdca;};
@@ -241,6 +243,7 @@ class AliLightV0 : public TObject, public TArrayF
   Float_t   cospt;
   Float_t   decayr;
   Float_t   proplife;
+  Float_t   dcav0pv;
   Float_t   dcadaughters;
   Int_t    mcstatus;
   Float_t   ppt; // positive daughter properties
@@ -256,7 +259,7 @@ class AliLightV0 : public TObject, public TArrayF
   //Float_t   cascpt;
   //Float_t   casceta;
   
-  ClassDef(AliLightV0, 8);
+  ClassDef(AliLightV0, 9);
 };
 
 //_____________________________________________________________________________

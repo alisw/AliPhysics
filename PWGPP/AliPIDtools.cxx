@@ -6,6 +6,7 @@
 #include "AliESDtrack.h"
 #include "AliPIDtools.h"
 #include "TLeaf.h"
+#include "TSystem.h"
 
 std::map<Int_t, AliTPCPIDResponse *> AliPIDtools::pidTPC;     /// we should use better hash map
 std::map<Int_t, AliPIDResponse *> AliPIDtools::pidAll;        /// we should use better hash map
@@ -88,7 +89,9 @@ Int_t AliPIDtools::LoadPID(Int_t run, Int_t passNumber, TString recoPass, Bool_t
   pid->SetUseTPCMultiplicityCorrection(kTRUE);
   pid->SetUseTPCEtaCorrection(kTRUE);
   pid->SetUseTPCPileupCorrection(kTRUE);
-  pid->SetOADBPath("$ALICE_PHYSICS/OADB");
+  const char * aodbPath = gSystem->ExpandPathName("$ALICE_PHYSICS/OADB");
+  ::Info("AliPIDtools::LoadPID","form :%s",aodbPath);
+  pid->SetOADBPath(aodbPath);
   pid->InitialiseEvent(&ev,passNumber, recoPass, run);
   AliTPCPIDResponse &tpcpid=pid->GetTPCResponse();
   // pid.InitFromOADB(246751,1,"pass1");
@@ -303,6 +306,10 @@ AliESDtrack* AliPIDtools::GetCurrentTrack() {
       }
       lastEntry=entry;
     }
+    if (branch==NULL){
+      ::Error("AliPIDtools::GetCurrentTrack","Branch does not exist, entry %d",entry);
+      return 0;
+    }
     pptrack = (AliESDtrack **) (branch->GetAddress());
   }
   return *pptrack;
@@ -319,6 +326,10 @@ AliESDtrack* AliPIDtools::GetCurrentTrackV0(Int_t index) {
       branch0 = fFilteredTreeV0->GetTree()->GetBranch("track0.");
       branch1 = fFilteredTreeV0->GetTree()->GetBranch("track1.");
       treeNumber = fFilteredTreeV0->GetTreeNumber();
+    }
+    if (branch0==NULL || branch1==NULL){
+      ::Error("AliPIDtools::GetCurrentTrackV0","Branch does not exist, entry %d",entry);
+      return 0;
     }
     pptrack = (index == 0) ? (AliESDtrack **) (branch0->GetAddress()) : (AliESDtrack **) (branch1->GetAddress());
     return *pptrack;
@@ -534,6 +545,7 @@ Float_t AliPIDtools::NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleTyp
   if (pid->UseTPCEtaCorrection()) maskBackup+=kEtaCorr;
   if (pid->UseTPCMultiplicityCorrection()) maskBackup+=kMultCorr;
   if (pid->UseTPCPileupCorrection()) maskBackup+=kPileUpCorr;
+  /// TODO - backup also strategy
   //
   if (corrMask<0) {
     corrMask=maskBackup;
@@ -541,6 +553,7 @@ Float_t AliPIDtools::NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleTyp
     pid->SetUseTPCEtaCorrection(corrMask&kEtaCorr);
     pid->SetUseTPCMultiplicityCorrection(corrMask&kMultCorr);
     pid->SetUseTPCPileupCorrection(corrMask&kPileUpCorr);
+    if (corrMask&kPileUpCorr) pid->GetTPCResponse().SetPileupCorrectionStrategy(AliTPCPIDResponse::kPileupCorrectionInExpectedSignal);
   }
   AliESDtrack *track=NULL;
   Bool_t status=kTRUE;
@@ -632,6 +645,7 @@ Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t part
     pid->SetUseTPCEtaCorrection(corrMask&kEtaCorr);
     pid->SetUseTPCMultiplicityCorrection(corrMask&kMultCorr);
     pid->SetUseTPCPileupCorrection(corrMask&kPileUpCorr);
+    if (corrMask&kPileUpCorr) pid->GetTPCResponse().SetPileupCorrectionStrategy(AliTPCPIDResponse::kPileupCorrectionInExpectedSignal);
   }
   AliESDtrack *track=NULL;
   if (source<0){
@@ -648,11 +662,11 @@ Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t part
   if (detCode!=3) status = pidAll[hash]->ComputePIDProbability( (AliPIDResponse::EDetector) detCode, track, AliPID::kSPECIESC, prob);
   else{ //special treatment for TOF
     TVectorD *tofSigma=(source==-1) ? GetTOFInfo(1):GetTOFInfoV0(source,1);
-    TVectorD *tofInfo=(source==-1) ? GetTOFInfo(0):GetTOFInfoV0(source,0);
+    //TVectorD *tofInfo=(source==-1) ? GetTOFInfo(0):GetTOFInfoV0(source,0);
     status=kFALSE;                    // time assigned to TOF cluster
     if (tofSigma) for (Int_t i=0; i<tofSigma->GetNrows();i++){
       Float_t nsigma=(*tofSigma)[i];
-      if (TMath::Abs(nsigma)<kMaxSigma)   {
+      if (TMath::Abs((*tofSigma)[0])<kMaxSigma)   {
         prob[i]=TMath::Exp(-0.5*nsigma*nsigma);
         status=kTRUE;      // assing status if measurement
       }
@@ -693,7 +707,7 @@ Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, In
   for (Int_t iDet=0; iDet<AliPIDResponse::kNdetectors; ++iDet) {
     if ((detMask & (1 << iDet))) {
       Float_t pidVectorDet[AliPID::kSPECIESC + 1] = {1};
-      ComputePIDProbability(hash,iDet,particleType,source,corrMask,0,fakeProb, pidVectorDet);
+      ComputePIDProbability(hash,iDet,particleType%AliPID::kSPECIESC,source,corrMask,0,fakeProb, pidVectorDet);
       Float_t status =  pidVectorDet[AliPID::kSPECIESC];
       if (status>0){
         nDetectors++;
@@ -701,7 +715,7 @@ Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, In
       }
     }
   }
-  if (nDetectors==0) return 0;
+  if (nDetectors==0) return 1; // return default value 1 standard species
 
   if (norm&0x2){
     for (Int_t i=0; i<AliPID::kSPECIESC; i++) {
@@ -711,11 +725,60 @@ Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, In
   if (norm&0x1){
     Float_t sum=0;
     for (Int_t i=0; i<AliPID::kSPECIESC; i++) { sum+=pidVector[i];}
-    sum+=fakeProb;
+    sum+=fakeProb*AliPID::kSPECIESC;
     for (Int_t i=0; i<AliPID::kSPECIESC; i++) { pidVector[i]/=sum;}
   }
+  if (particleType==AliPID::kSPECIESC) return pidVector[1]+pidVector[2]; //return muon+pion
   return pidVector[particleType];
 }
+
+
+///
+/// \param hash               - index of PID
+/// \param detMask            - det mask as in AliPID
+/// \param particleMask       - particle bitmask used to calculate sum .eg to join electron,muon and electron probabitity for ITS
+/// \param source             -
+/// \param corrMask           - corr mask for TPC only
+/// \param norm               - flag - normalization
+/// \param fakeProb           - fake probability  ( used for  normalization)
+/// \return
+Float_t AliPIDtools::ComputePIDProbabilityCombinedMask(Int_t hash, Int_t detMask, Int_t particleMask, Int_t source, Int_t corrMask,Int_t norm, Float_t fakeProb){
+  Float_t pidVector[AliPID::kSPECIESC+1]={};
+  for (Int_t i=0; i<AliPID::kSPECIESC; i++) pidVector[i]=1;
+  Int_t nDetectors=0;
+  for (Int_t iDet=0; iDet<AliPIDResponse::kNdetectors; ++iDet) {
+    if ((detMask & (1 << iDet))) {
+      Float_t pidVectorDet[AliPID::kSPECIESC + 1] = {1};
+      ComputePIDProbability(hash,iDet,0,source,corrMask,0,fakeProb, pidVectorDet);
+      Float_t status =  pidVectorDet[AliPID::kSPECIESC];
+      if (status>0){
+        nDetectors++;
+        for (Int_t i=0; i<AliPID::kSPECIESC; i++) pidVector[i]*=pidVectorDet[i]+fakeProb/AliPID::kSPECIESC;
+      }
+    }
+  }
+  if (nDetectors==0) return 0.2; // return default value 1/5 standard species
+
+  if (norm&0x2){
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) {
+      pidVector[i]=TMath::Power(pidVector[i],1./nDetectors);
+    }
+  }
+  if (norm&0x1){
+    Float_t sum=0;
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) { sum+=pidVector[i];}
+    sum+=fakeProb*AliPID::kSPECIESC;
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) { pidVector[i]/=sum;}
+  }
+  Float_t probSum=0;
+  for (Int_t i=0; i<AliPID::kSPECIESC; i++) {
+     if ((particleMask & (1 << i))) {
+       probSum+=pidVector[i];
+     }
+  }
+  return probSum;
+}
+
 
 
 /// Unit test of invariants - check internal consistency of wrappers
@@ -764,7 +827,66 @@ Bool_t AliPIDtools::RegisterPIDAliases(Int_t pidHash, TString fakeRate, Int_t su
   }
   TString sSufix="";
   if (suffix>=0) sSufix=TString::Format("_%d",suffix);
-  for (Int_t iPID=0; iPID<8; iPID++){
+  //
+  for (Int_t jPID=0; jPID<AliPID::kSPECIESC+1; jPID++) {
+    Int_t iPID = (jPID < AliPID::kSPECIESC) ? jPID : AliPID::kPion;
+    fFilteredTree->SetAlias(Form("ldEdxITS%d%s", iPID, sSufix.Data()),
+                            Form("log(esdTrack.fITSsignal/AliPIDtools::GetExpectedITSSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
+    fFilteredTree->SetAlias(Form("ldEdxTRD%d%s", iPID, sSufix.Data()),
+                            Form("log(50*esdTrack.fTRDsignal/AliPIDtools::GetExpectedITSSignal(pidHash,esdTrack.fOp.P(),%d+0))", iPID));
+    fFilteredTree->SetAlias(Form("ldEdxTPC%d%s", iPID, sSufix.Data()),
+                            Form("log(esdTrack.fTPCsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
+    fFilteredTreeV0->SetAlias(Form("ldEdx0ITS%d%s", iPID, sSufix.Data()),
+                              Form("log(track0.fITSsignal/AliPIDtools::GetExpectedITSSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
+    fFilteredTreeV0->SetAlias(Form("ldEdx0TPC%d%s", iPID, sSufix.Data()),
+                              Form("log(track0.fTPCsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
+    fFilteredTreeV0->SetAlias(Form("ldEdx0TRD%d%s", iPID, sSufix.Data()),
+                              Form("log(50*track0.fTRDsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fOp.P(),%d+0))", iPID));
+    fFilteredTreeV0->SetAlias(Form("ldEdx1ITS%d%s", iPID, sSufix.Data()),
+                              Form("log(track1.fITSsignal/AliPIDtools::GetExpectedITSSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
+    fFilteredTreeV0->SetAlias(Form("ldEdx1TPC%d%s", iPID, sSufix.Data()),
+                              Form("log(track1.fTPCsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
+    fFilteredTreeV0->SetAlias(Form("ldEdx1TRD%d%s", iPID, sSufix.Data()),
+                              Form("log(track1.fTRDsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fOp.P(),%d+0))", iPID));
+
+    for (Int_t iR = 0; iR <= 3; iR++) {
+      fFilteredTree->SetAlias(Form("ldEdxMax%d_%d%s", iR, iPID, sSufix.Data()),
+                              Form("log(fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iR, iPID));
+      fFilteredTree->SetAlias(Form("ldEdxTot%d_%d%s", iR, iPID, sSufix.Data()),
+                              Form("log(fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iR, iPID));
+      fFilteredTree->SetAlias(Form("ldEdxMaxTot%d_%d%s", iR, iPID, sSufix.Data()),
+                              Form("log(fTPCdEdxInfo.GetSignalMax(%d)/fTPCdEdxInfo.GetSignalTot(%d+0))", iR, iR));
+      fFilteredTree->SetAlias(Form("ldEdxMax%d%d_%d%s", iR, (iR + 1) % 3, iPID, sSufix.Data()),
+                              Form("log(fTPCdEdxInfo.GetSignalMax(%d)/fTPCdEdxInfo.GetSignalMax(%d+0))", iR, (iR + 1) % 3));
+      fFilteredTree->SetAlias(Form("ldEdxTot%d%d_%d%s", iR, (iR + 1) % 3, iPID, sSufix.Data()),
+                              Form("log(fTPCdEdxInfo.GetSignalTot(%d)/fTPCdEdxInfo.GetSignalTot(%d+0))", iR, (iR + 1) % 3));
+      //
+      //
+      fFilteredTreeV0->SetAlias(Form("ldEdx0Max%d+%d%s", iR, iPID, sSufix.Data()),
+                                Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,track0.fIp.P(),%d+0))", iR, iPID));
+      fFilteredTreeV0->SetAlias(Form("ldEdx0Tot%d_%d%s", iR, iPID, sSufix.Data()),
+                                Form("log(track0.fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,track0.fIp.P(),%d+0))", iR, iPID));
+      fFilteredTreeV0->SetAlias(Form("ldEdx0MaxTot%d_%d%s", iR, iPID, sSufix.Data()),
+                                Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/track0.fTPCdEdxInfo.GetSignalTot(%d+0))", iR, iR));
+      fFilteredTreeV0->SetAlias(Form("ldEdx1Max%d_%d%s", iR, iPID, sSufix.Data()),
+                                Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,track1.fIp.P(),%d+0))", iR, iPID));
+      fFilteredTreeV0->SetAlias(Form("ldEdx1Tot%d_%d%s", iR, iPID, sSufix.Data()),
+                                Form("log(track1.fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,track1.fIp.P(),%d+0))", iR, iPID));
+      fFilteredTreeV0->SetAlias(Form("ldEdx1MaxTot%d_%d%s", iR,iPID, sSufix.Data()),
+                                Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/track1.fTPCdEdxInfo.GetSignalTot(%d+0))", iR, iR));
+      //
+      fFilteredTreeV0->SetAlias(Form("ldEdx0Max%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
+                                Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/track0.fTPCdEdxInfo.GetSignalMax(%d+0))", iR, (iR + 1) % 3));
+      fFilteredTreeV0->SetAlias(Form("ldEdx0Tot%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
+                                Form("log(track0.fTPCdEdxInfo.GetSignalTot(%d)/track0.fTPCdEdxInfo.GetSignalTot(%d+0))", iR, (iR + 1) % 3));
+      fFilteredTreeV0->SetAlias(Form("ldEdx1Max%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
+                                Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/track1.fTPCdEdxInfo.GetSignalMax(%d+0))", iR, (iR + 1) % 3));
+      fFilteredTreeV0->SetAlias(Form("ldEdx1Tot%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
+                                Form("log(track1.fTPCdEdxInfo.GetSignalTot(%d)/track1.fTPCdEdxInfo.GetSignalTot(%d+0))", iR, (iR + 1) % 3));
+    }
+  }
+
+  for (Int_t iPID=0; iPID<AliPID::kSPECIESC; iPID++){
     for (Int_t iDet=0; iDet<5; iDet++){
       Float_t mass=AliPID::ParticleMass(iPID);
       Float_t charge=AliPID::ParticleCharge(iPID);
@@ -807,6 +929,113 @@ Bool_t AliPIDtools::RegisterPIDAliases(Int_t pidHash, TString fakeRate, Int_t su
     fFilteredTreeV0->SetAlias(Form("probC03_1_%d%s", iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,9,%d,1,3+0,1,%s)",pidHash,iPID,fakeRate.Data()));
     fFilteredTreeV0->SetAlias(Form("probCN13_1_%d%s",iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,10,%d,1,3+0,0,%s)",pidHash,iPID,fakeRate.Data()));
     fFilteredTreeV0->SetAlias(Form("probC13_1_%d%s", iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,10,%d,1,3+0,1,%s)",pidHash,iPID,fakeRate.Data()));
+  }
+  return kTRUE;
+}
+
+/// RegisterPIDAliasesV0 - to selec clean PID samples using V0 likelihood and PID selection on the leg
+/// define "likelihood" for clean PID selection
+///        * V0 likelihood
+///        * defined in other place
+///        * likelihod - combined PID for complementary track
+/// * likelihood - combined PID for track except of detectro of interest
+/// \param pidHash     - PID hash identifier
+/// \param powerLike   - power for the V0 likelihood - defailt 0.6
+/// \param powerLegN   - power leg for second track
+/// \param powerLeg    - power leg for signal track
+/// \param fakeRate    - fake rate query
+/// \param suffix      - suffix to add
+/// \return
+ Bool_t    AliPIDtools::RegisterPIDAliasesV0(Int_t pidHash, Float_t powerLike, Float_t powerLegN, Float_t powerLeg,  const char * fakeR, const char * suffix){
+  TTree * treeV0=fFilteredTreeV0;
+  if (!treeV0) return kFALSE;
+  /// Likelihood for TPC clean sample selection
+  {
+    // electron like
+    treeV0->SetAlias(Form("likeTPCEl0%s",suffix), \
+            Form("(ELike**%f)* (AliPIDtools::ComputePIDProbabilityCombined(%d,11,0,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombined(%d,9,0,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTPCEl1%s",suffix), \
+            Form("(ELike**%f)* (AliPIDtools::ComputePIDProbabilityCombined(%d,11,0,0,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombined(%d,9,0,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    // pion like
+    treeV0->SetAlias(Form("likeTPCK0Pi0%s",suffix), \
+            Form("(K0Like**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,9,7,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTPCK0Pi1%s",suffix), \
+            Form("(K0Like**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,0,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,9,7,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTPCLPi0%s",suffix), \
+            Form("(ALLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,9,7,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTPCLPi1%s",suffix), \
+            Form("(LLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,0,3,0,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,9,7,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    // proton Like
+    treeV0->SetAlias(Form("likeTPCLPr0%s",suffix), \
+            Form("(LLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,9,16,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTPCLPr1%s",suffix), \
+            Form("(ALLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,0,3,0,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,9,16,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+  }
+  /// Likelihood for TOF clean sample selection
+  {
+    // electron like
+    treeV0->SetAlias(Form("likeTOFEl0%s",suffix), \
+            Form("(ELike**%f)* (AliPIDtools::ComputePIDProbabilityCombined(%d,11,0,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombined(%d,2,0,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTOFEl1%s",suffix), \
+            Form("(ELike**%f)* (AliPIDtools::ComputePIDProbabilityCombined(%d,11,0,0,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombined(%d,2,0,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    // pion like
+    treeV0->SetAlias(Form("likeTOFK0Pi0%s",suffix), \
+            Form("(K0Like**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,3,7,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTOFK0Pi1%s",suffix), \
+            Form("(K0Like**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,0,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,3,7,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTOFLPi0%s",suffix), \
+            Form("(ALLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,3,7,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTOFLPi1%s",suffix), \
+            Form("(LLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,0,3,0,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,3,7,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    // proton Like
+    treeV0->SetAlias(Form("likeTOFLPr0%s",suffix), \
+            Form("(LLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,3,16,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTOFLPr1%s",suffix), \
+            Form("(ALLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,0,3,0,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,3,16,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+  }
+   /// Likelihood for ITS clean sample selection
+  {
+    // electron like
+    treeV0->SetAlias(Form("likeITSEl0%s",suffix), \
+            Form("(ELike**%f)* (AliPIDtools::ComputePIDProbabilityCombined(%d,11,0,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombined(%d,2,0,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeITSEl1%s",suffix), \
+            Form("(ELike**%f)* (AliPIDtools::ComputePIDProbabilityCombined(%d,11,0,0,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombined(%d,2,0,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    // pion like
+    treeV0->SetAlias(Form("likeITSK0Pi0%s",suffix), \
+            Form("(K0Like**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,7,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeITSK0Pi1%s",suffix), \
+            Form("(K0Like**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,0,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,7,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeITSLPi0%s",suffix), \
+            Form("(ALLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,7,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeITSLPi1%s",suffix), \
+            Form("(LLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,0,3,0,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,7,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    // proton Like
+    treeV0->SetAlias(Form("likeITSLPr0%s",suffix), \
+            Form("(LLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeITSLPr1%s",suffix), \
+            Form("(ALLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,0,3,0,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+  }
+  /// TRD
+    {
+    // electron like
+    treeV0->SetAlias(Form("likeTRDEl0%s",suffix), \
+            Form("(ELike**%f)* (AliPIDtools::ComputePIDProbabilityCombined(%d,11,0,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombined(%d,2,0,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTRDEl1%s",suffix), \
+            Form("(ELike**%f)* (AliPIDtools::ComputePIDProbabilityCombined(%d,11,0,0,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombined(%d,2,0,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    // pion like
+    treeV0->SetAlias(Form("likeTRDK0Pi0%s",suffix), \
+            Form("(K0Like**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,11,7,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTRDK0Pi1%s",suffix), \
+            Form("(K0Like**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,0,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,11,7,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTRDLPi0%s",suffix), \
+            Form("(ALLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,11,7,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTRDLPi1%s",suffix), \
+            Form("(LLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,0,3,0,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,11,7,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    // proton Like
+    treeV0->SetAlias(Form("likeTRDLPr0%s",suffix), \
+            Form("(LLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,11,16,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTRDLPr1%s",suffix), \
+            Form("(ALLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,0,3,0,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,11,16,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
   }
   return kTRUE;
 }

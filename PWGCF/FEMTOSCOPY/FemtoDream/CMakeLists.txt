@@ -20,15 +20,20 @@ add_definitions(-D_MODULE_="${MODULE}")
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/FemtoDream
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/Hyperon
                     ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY/
-	)
-		  
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+)
+
+# Additional includes that work only with ROOT6 - alphabetical order except ROOT
+if(ROOT_VERSION_MAJOR EQUAL 6)
+include_directories(${AliPhysics_SOURCE_DIR}/ML
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML)
+endif()
 
 # Sources - alphabetical order
 set(SRCS
@@ -61,7 +66,6 @@ set(SRCS
   AliAnalysisTaskNanoPt.cxx
   AliAnalysisTaskNanoXioton.cxx
   AliAnalysisTaskAODXioton.cxx
-  AliAnalysisTaskNanoXioton1530.cxx
   AliAnalysisTaskNanoLoton.cxx
   AliAnalysisTaskLeuteronAOD.cxx
   AliAnalysisTaskLeuteronNanoAOD.cxx
@@ -72,10 +76,12 @@ set(SRCS
   AliAnalysisTaskFemtoDreamSigPi.cxx
   AliAnalysisTaskNanoAODFemtoDreamSigPi.cxx
   AliAnalysisTaskFemtoDreamPion.cxx
+  AliAnalysisTaskDeuteronProtonEfficiency.cxx
   AliAnalysisTaskNanoAODFemtoDreamPion.cxx
   AliAnalysisTaskNanoAODSigma0Femto.cxx
   AliAnalysisTaskNanoSigmaPlus.cxx
   AliAnalysisTaskNanoLD.cxx
+  AliAnalysisTaskLD.cxx
   AliAnalysisTaskGrandma.cxx
   AliAnalysisTaskOtonOmega.cxx
   AliOtonOmegaAnalysis.cxx
@@ -89,8 +95,17 @@ set(SRCS
   AliFemtoDreamBaseDump.cxx
   AliAnalysisTaskThreeBodyFemto.cxx
   AliAnalysisTaskNanoPPCoalescence.cxx
+  AliAnalysisTaskFemtoSMI.cxx
+  AliAnalysisTaskThreeBodyFemtoAOD.cxx
+  AliAnalysisTaskThreeBodyFemtoAODPionProton.cxx
+  AliAnalysisTaskThreeBodyFemtoPionProton.cxx
+  AliSigma0AODPhotonMotherCuts.cxx;
+  AliSigma0PhotonCuts.cxx;
   )
 
+if(ROOT_VERSION_MAJOR EQUAL 6)
+set(SRCS ${SRCS} AliAnalysisTaskCharmingFemto.cxx)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -106,6 +121,13 @@ set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD PWGGAGammaConvBase PWGGAHype
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+
+# set dependecies to HF
+set(LIBDEPS ${LIBDEPS} PWGHFvertexingHF)
+if(ROOT_VERSION_MAJOR EQUAL 6)
+set(LIBDEPS ${LIBDEPS} ML PWGHFvertexingHFML)
+endif()
+
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -118,7 +140,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
 
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

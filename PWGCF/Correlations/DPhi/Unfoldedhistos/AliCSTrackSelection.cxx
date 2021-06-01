@@ -10,6 +10,7 @@
 * provided "as is" without express or implied warranty.                   *
 **************************************************************************/
 
+#include <TObjString.h>
 #include <TBits.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -215,11 +216,13 @@ Bool_t AliCSTrackSelection::InitializeFromString(const char *confstring)
   if (fInclusivePidCutsStrings.GetEntries() != 0 || fExclusivePidCutsStrings.GetEntries() != 0) {
     AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
     if(manager != NULL) {
-      AliInputEventHandler* inputHandler = (AliInputEventHandler*) (manager->GetInputEventHandler());
-      fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
-      /* if we need PID response instance and it is not there we cannot continue */
-      if (fPIDResponse == NULL)
-        AliFatal("No PID response instance. ABORTING!!!");
+      if (!AliCSAnalysisCutsBase::IsOnTheFlyMC()) {
+        AliInputEventHandler* inputHandler = (AliInputEventHandler*) (manager->GetInputEventHandler());
+        fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
+        /* if we need PID response instance and it is not there we cannot continue */
+        if (fPIDResponse == NULL)
+          AliFatal("No PID response instance. ABORTING!!!");
+      }
     }
     else {
       AliFatal("No analysis manager instance. ABORTING!!!");

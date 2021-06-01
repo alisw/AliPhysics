@@ -104,7 +104,7 @@
 
 #include <TProfile.h>
 #include "AliKFParticle.h"
-#include "AliVertexingHFUtils.h"
+//#include "AliVertexingHFUtils.h"
 #include "AliAnalysisUtils.h"
 #include "AliESDUtils.h"
 #include "TRandom.h"
@@ -152,6 +152,10 @@ fAssoITSRefit(kTRUE),
 fAssopTMin(0.1),
 fAssoEtarange(0.9),
 fAssoTPCnsig(3.5),
+fAssoTPCNclsForPID(60),
+fAssoITSNclus(2),
+fAssoDCAxy(1),
+fAssoDCAz(2),
 
 
 
@@ -193,7 +197,7 @@ fCent(0),fCentSPD(0),
 fMultV0M_vs_alimult(0),fMultSPD_vs_alimult(0),
 fileEstimator(0),
 fSPDCorrMultDist_min(0),fSPDCorrMultDist_max(0),fSPDWeightedCorrMultDist_max(0),
-fHistNtrVsZvtx(0),fHistNtrCorrVsZvtx_min(0),fHistNtrCorrVsZvtx_max(0),Profile_Mean(0),Profile_MeanCorr(0),
+fHistNtrVsZvtx(0),fHistNtrCorrVsZvtx_min(0),fHistNtrCorrVsZvtx_max(0),Profile_Mean(0),Profile_MeanCorr(0), fPeriod(0),
 fRefMult(13.079),
 fV0MultVsZvtx(0),fV0MultCorrVsZvtx(0),
 fSPDCorrMultDist_min_vs_AliSPDMult(0),
@@ -302,11 +306,11 @@ fPtElec_LS_MC_from_eta2(0),
 fPt_elec_from_gamma2(0),
 fPtElec_ULS_MC_from_gamma2(0),
 fPtElec_LS_MC_from_gamma2(0),
-f0a(0),f0b(0),f1(0),f1a(0),f1b(0)
+fPi0a(0),fPi0b(0),fEtaa(0),fEtab(0),fEtac(0)
 
 {
   fPID = new AliHFEpid("hfePid");
-  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
+  fMultEstimatorAvg=0;
 }
 
 
@@ -347,6 +351,10 @@ fAssoITSRefit(kTRUE),
 fAssopTMin(0.1),
 fAssoEtarange(0.9),
 fAssoTPCnsig(3.5),
+fAssoTPCNclsForPID(60),
+fAssoITSNclus(2),
+fAssoDCAxy(1),
+fAssoDCAz(2), 
 
 //-------------Analysis
 fHistPt(0), fHistMult(0), fTPCSignal(0), fNentries(0), fNentries2(0),
@@ -385,7 +393,7 @@ fCent(0),fCentSPD(0),
 fMultV0M_vs_alimult(0),fMultSPD_vs_alimult(0),
 fileEstimator(0),
 fSPDCorrMultDist_min(0),fSPDCorrMultDist_max(0),fSPDWeightedCorrMultDist_max(0),
-fHistNtrVsZvtx(0),fHistNtrCorrVsZvtx_min(0),fHistNtrCorrVsZvtx_max(0),Profile_Mean(0),Profile_MeanCorr(0),
+fHistNtrVsZvtx(0),fHistNtrCorrVsZvtx_min(0),fHistNtrCorrVsZvtx_max(0),Profile_Mean(0),Profile_MeanCorr(0), fPeriod(0),
 fRefMult(13.079),
 fV0MultVsZvtx(0),fV0MultCorrVsZvtx(0),
 fSPDCorrMultDist_min_vs_AliSPDMult(0),
@@ -494,7 +502,7 @@ fPtElec_LS_MC_from_eta2(0),
 fPt_elec_from_gamma2(0),
 fPtElec_ULS_MC_from_gamma2(0),
 fPtElec_LS_MC_from_gamma2(0),
-f0a(0),f0b(0),f1(0),f1a(0),f1b(0)
+fPi0a(0),fPi0b(0),fEtaa(0),fEtab(0),fEtac(0)
 
 
 
@@ -507,7 +515,7 @@ f0a(0),f0b(0),f1(0),f1a(0),f1b(0)
   DefineInput(0, TChain::Class());  
   DefineOutput(1, TList::Class());
   DefineOutput(2, TH1F::Class());
-  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
+  fMultEstimatorAvg=0;
 }
 
 //_________________________Destructer_____________________________________
@@ -518,9 +526,9 @@ AliAnalysisTaskHFEmultTPCTOF::~AliAnalysisTaskHFEmultTPCTOF()
   if (fNentries){ delete fNentries; fNentries = 0;}
   if (fNentries2){ delete fNentries2; fNentries2 = 0;}
   
-     for(Int_t i=0; i<4; i++) {
-      if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
-  }
+  if (fMultEstimatorAvg) delete fMultEstimatorAvg;
+  
+   
 }
 
 //_______________________________________________________________________
@@ -555,44 +563,47 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
 
 	}
 
-  f0a = new TF1("f0a","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",0.5,2.5);
-  f0b = new TF1("f0b","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",2.5,10);
-  
-  f0a->FixParameter(0,5.80666e+01);
-  f0a->FixParameter(1,-1.64680e+01);
-  f0a->FixParameter(2,1.25223e+01);
-  f0a->FixParameter(3,1.25515e-03);
-  f0a->FixParameter(4,4.71063e-01 );
-  
-  f0b->FixParameter(0,1.54389e+00);
-  f0b->FixParameter(1,-1.43139e+03);
-  f0b->FixParameter(2,4.58994e+02);
-  f0b->FixParameter(3,2.04094e+03);
-  f0b->FixParameter(4,-9.34144e-05);
-  
-  
-  f1 = new TF1("f1","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",0.5,2.3);
-  f1a = new TF1("f1a","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",2.3,4.1);
-  f1b = new TF1("f1b","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",4.0,10.);
+         fPi0a = new TF1("fPi0a","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",0.1,0.91);
+         fPi0b = new TF1("fPi0b","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",0.9,10);
+           
+         fEtaa = new TF1("fEtaa","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",0.1,1);
+         fEtab = new TF1("fEtab","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",1,3);
+         fEtac = new TF1("fEtac","[0] / (TMath::Power(TMath::Exp( - [1] * x - [2] * x * x ) + x / [3], [4]))",3,10);
  
-  f1->FixParameter(0,2.14780e+00);
-  f1->FixParameter(1,-2.10239e+00);
-  f1->FixParameter(2,4.14568e+00);
-  f1->FixParameter(3,1.87072e+00);
-  f1->FixParameter(4,3.06386e-01);
-  
-  f1a->FixParameter(0,9.59262e+00 );
-  f1a->FixParameter(1,-1.43061e+01);
-  f1a->FixParameter(2,2.60984e+01 );
-  f1a->FixParameter(3,1.74946e-04);
-  f1a->FixParameter(4,1.63876e-01);
-  
-  f1b->FixParameter(0,1.58238e+00);
-  f1b->FixParameter(1,-6.25753e+01);
-  f1b->FixParameter(2,7.27244e+00);
-  f1b->FixParameter(3,1.83220e-14);
-  f1b->FixParameter(4,-1.11985e-03);
-	
+        fPi0a->FixParameter(0,4.46735);
+       fPi0a->FixParameter(1,39.5216);
+       fPi0a->FixParameter(2,-26.7161);
+       fPi0a->FixParameter(3,-9.99968e+07);
+       fPi0a->FixParameter(4,-0.0842078);
+
+       fPi0b->FixParameter(0,1.61183);
+       fPi0b->FixParameter(1,3.83576);
+       fPi0b->FixParameter(2,0.255505);
+       fPi0b->FixParameter(3,414685);
+       fPi0b->FixParameter(4,-0.0440927);
+
+//=========================
+
+
+       fEtaa->FixParameter(0,0.813843);
+       fEtaa->FixParameter(1,-6.72439);
+       fEtaa->FixParameter(2,10.3386);
+       fEtaa->FixParameter(3,5.27538);
+       fEtaa->FixParameter(4,0.0801481);
+
+       fEtab->FixParameter(0,0.847367);
+       fEtab->FixParameter(1,-1.5552);
+       fEtab->FixParameter(2,1.07903);
+       fEtab->FixParameter(3,4.83666);
+       fEtab->FixParameter(4,-0.166041);
+
+       fEtac->FixParameter(0,3.49117);
+       fEtac->FixParameter(1,2458.55);
+       fEtac->FixParameter(2,265.252);
+       fEtac->FixParameter(3,51289.7);
+       fEtac->FixParameter(4,-0.153759);
+
+//=========================	
   func_MCnchCorr= new TF1("func_MCnchCorr","expo(0)+expo(2)", 40.,120.);
   func_MCnchCorr->SetParameters(-1.88813e+00, 3.43870e-02,1.18702e+00,-5.74526e-02);
   
@@ -1032,32 +1043,19 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   
   //-------------------------------------------------------------------------------------------------------------
   
-  Int_t nbinsInvMULS[4] = {100, 6, 100, 300};
+  Int_t nbinsInvMULS[4] = {200, 6, 100, 300};
   Double_t binlowInvMULS[4] = {0., 0, 0., -0.5};
   Double_t binupInvMULS[4] = {10, 6., 1., 299.5};
 
-	fInvMULSnSp = new THnSparseF("fInvMULSnSp", "fInvMULSnSp;pt;source;mass;multdepSPD", 4, nbinsInvMULS, binlowInvMULS, binupInvMULS);
+	fInvMULSnSp = new THnSparseF("fInvMULSnSp", "fInvMULSnSp;pt;source;mass;multdepSPD;", 4, nbinsInvMULS, binlowInvMULS, binupInvMULS);
 	fInvMULSnSp->Sumw2();
 	if(fIsMC)fOutputList->Add(fInvMULSnSp);
 	
-	fInvMULSnSpwg = new THnSparseF("fInvMULSnSpwg", "fInvMULSnSpwg;pt;source;mass;multdepSPD", 4, nbinsInvMULS, binlowInvMULS, binupInvMULS);
+	fInvMULSnSpwg = new THnSparseF("fInvMULSnSpwg", "fInvMULSnSpwg;pt;source;mass;multdepSPD;", 4, nbinsInvMULS, binlowInvMULS, binupInvMULS);
 	fInvMULSnSpwg->Sumw2();
 	if(fIsMC)fOutputList->Add(fInvMULSnSpwg);
 	
-	/*
-  fInvMULSpi0 = new TH2F("fInvMULSpi0","Pt and InvMass from MC",300,0.,15.,100,0,1.0);
-  fInvMULSpi0->Sumw2();
-  fOutputList->Add(fInvMULSpi0);
-  
-  fInvMULSeta = new TH2F("fInvMULSeta","Pt and InvMass from MC",300,0.,15.,100,0,1.0);
-  fInvMULSeta->Sumw2();
-  fOutputList->Add(fInvMULSeta);
-  
-  fInvMULSgamma = new TH2F("fInvMULSgamma","Pt and InvMass from MC",300,0.,15.,100,0,1.0);
-  fInvMULSgamma->Sumw2();
-  fOutputList->Add(fInvMULSgamma);
-  
-  */
+	
 
   //--------------------------------------------------------------------------------------------------
   
@@ -1161,13 +1159,13 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
     
     const Int_t nDima=4;
     Int_t nBina[nDima] = {44,nBinspdg,nBinsg,nBinstype};
-    fPi0EtaSpectra = new THnSparseF("fPi0EtaSpectra","fPi0EtaSpectra",nDima,nBina);
+    fPi0EtaSpectra = new THnSparseF("fPi0EtaSpectra","fPi0EtaSpectra;pt;source;;type;",nDima,nBina);
     fPi0EtaSpectra->SetBinEdges(0,binLimpt);
     fPi0EtaSpectra->SetBinEdges(1,binLimpdg);
     fPi0EtaSpectra->SetBinEdges(2,binLimg);
     fPi0EtaSpectra->SetBinEdges(3,binLimtype);
     fPi0EtaSpectra->Sumw2();
-    //fOutputList->Add(fPi0EtaSpectra);
+    //if(fIsMC)fOutputList->Add(fPi0EtaSpectra);
   
   
   
@@ -1175,14 +1173,14 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   Int_t nbinspt[3] = {1000, 3, 7};
   Double_t binlow[3] = {0., 0, -1.};
   Double_t binup[3] = {10, 3, 6.};
-	fPi0EtaSpectraSp = new THnSparseF("fPi0EtaSpectraSp", "fPi0EtaSpectraSp;pt;source;type", 3, nbinspt, binlow,binup);
+	fPi0EtaSpectraSp = new THnSparseF("fPi0EtaSpectraSp", "fPi0EtaSpectraSp;pt;source;type;", 3, nbinspt, binlow,binup);
 	fPi0EtaSpectraSp->Sumw2();
-   //fOutputList->Add(fPi0EtaSpectraSp);
+   //if(fIsMC)fOutputList->Add(fPi0EtaSpectraSp);
    
  //===================================================================================================//
  
  
-  fNentries2=new TH1F("CutSet", "", 19,-0.5,18.5);
+  fNentries2=new TH1F("CutSet", "", 23,-0.5,22.5);
   fNentries2->GetXaxis()->SetBinLabel(1,"trigger");
   fNentries2->GetXaxis()->SetBinLabel(2,"TPCNclus");
   fNentries2->GetXaxis()->SetBinLabel(3,"ITSNclus");
@@ -1202,6 +1200,10 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   fNentries2->GetXaxis()->SetBinLabel(17,"AssopTMin");
   fNentries2->GetXaxis()->SetBinLabel(18,"AssoEtarange");
   fNentries2->GetXaxis()->SetBinLabel(19,"AssoTPCnsig");
+  fNentries2->GetXaxis()->SetBinLabel(20,"AssoTPCNclsForPID");
+  fNentries2->GetXaxis()->SetBinLabel(21,"AssoITSNclus");
+  fNentries2->GetXaxis()->SetBinLabel(22,"AssoDCAxy");
+  fNentries2->GetXaxis()->SetBinLabel(23,"AssoDCAz");
    fOutputList->Add(fNentries2);
   
   fNentries2->SetBinContent(1,ftrigger);
@@ -1223,7 +1225,11 @@ void AliAnalysisTaskHFEmultTPCTOF::UserCreateOutputObjects()
   fNentries2->SetBinContent(17,fAssopTMin);
   fNentries2->SetBinContent(18,fAssoEtarange);
   fNentries2->SetBinContent(19,fAssoTPCnsig);
-   
+  fNentries2->SetBinContent(20,fAssoTPCNclsForPID);
+  fNentries2->SetBinContent(21,fAssoITSNclus);
+  fNentries2->SetBinContent(22,fAssoDCAxy);
+  fNentries2->SetBinContent(23,fAssoDCAz);
+  
   //==================================================================================================//
   //==================================================================================================//
   					
@@ -1513,8 +1519,8 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 				pi0etaweights[2]=type;
 					
 				//- Fill
-				//if(qaweights[1]>0.) fPi0EtaSpectra->Fill(qaweights);
-				//if(pi0etaweights[1]>0.) fPi0EtaSpectraSp->Fill(pi0etaweights);
+				if(qaweights[1]>0.) fPi0EtaSpectra->Fill(qaweights);
+				if(pi0etaweights[1]>0.) fPi0EtaSpectraSp->Fill(pi0etaweights);
 				
 			
 				///-----------------------------------------------------
@@ -1685,6 +1691,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
  				fHadSPDErr->Fill(pt,SPDntr,weight_err);	
   				
 			
+  				// Mee, TPCnsigma, ptAsso, Asso TPC clust
   				
 				fNonHFE = new AliSelectNonHFE();
 				fNonHFE->SetAODanalysis(kTRUE);
@@ -1692,9 +1699,13 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 				fNonHFE->SetAlgorithm("DCA"); //KF,DCA
 				fNonHFE->SetPIDresponse(fpidResponse);
 				fNonHFE->SetTrackCuts(-1*fAssoTPCnsig,fAssoTPCnsig); //TPCnsigma cuts
-				//fNonHFE->SetChi2OverNDFCut(4.0);
-				//fNonHFE->SetDCACut(fDCAcut);
-				//fNonHFE-> SetDCAPartnerCuts(1,2);   //SetDCAPartnerCuts(Double_t xy, Double_t z)
+				
+				fNonHFE->SetEtaCutForPart(-1*fAssoEtarange,fAssoEtarange);  
+				fNonHFE->SetTPCNclsForPID(fAssoTPCNclsForPID);
+				fNonHFE->SetNClustITS(fAssoITSNclus);
+				fNonHFE->SetDCAPartnerCuts(fAssoDCAxy,fAssoDCAz);
+				fNonHFE->SetUseITSTPCRefit(fAssoITSRefit);
+				
 				fNonHFE->SetAdditionalCuts(fAssopTMin,fAssoTPCCluster);  //
 				/*fNonHFE->SetHistMassBack(fInvmassLS1);
 				fNonHFE->SetHistMass(fInvmassULS1);
@@ -1707,20 +1718,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 				fNonHFE->SetHistMassBack(fInvmassLS1);
 				fNonHFE->SetHistMass(fInvmassULS1);
 				}
-				/*
-				else if(pt>=1.5 && pt<2.5){
-			
-				fNonHFE->SetHistMassBack(fInvmassLS1_2);
-				fNonHFE->SetHistMass(fInvmassULS1_2);
-				}
-				else if(pt>=2.5 && pt<3.5){
-				fNonHFE->SetHistMassBack(fInvmassLS1_3);
-				fNonHFE->SetHistMass(fInvmassULS1_3);
-				}
-				else if(pt>=3.5 && pt<4.5){
-				fNonHFE->SetHistMassBack(fInvmassLS1_4);
-				fNonHFE->SetHistMass(fInvmassULS1_4);
-				}*/
+				
 				fNonHFE->FindNonHFE(iTracks,track,fAOD);
 			
 				Int_t fNULS = fNonHFE->GetNULS();
@@ -1774,7 +1772,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 							fPt_elec_phot1->Fill(pt);
 							fPt_elec_phot1_multSPD->Fill(pt,SPDntr);
 												
-							SelectPhotonicElectronR(iTracks, track, fMCmotherindex, pdg,elec_source, V0Mmult, SPDntr,ptmotherw);
+							SelectPhotonicElectronR(iTracks, track, fMCmotherindex, pdg,elec_source, V0Mmult, SPDntr,ptmotherw,pVtx);
 		
 						  fNonHFE->FindNonHFE(iTracks,track,fAOD);
 						  		
@@ -1801,8 +1799,8 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 								*/
 								
 								weight_pi0=0;
-								if(ptmotherw >= 0.5 && ptmotherw <= 2.5) weight_pi0 = f0a->Eval(ptmotherw);
-								if(ptmotherw >2.5 && ptmotherw < 15) weight_pi0 = f0b->Eval(ptmotherw);
+								if(ptmotherw >= 0.1 && ptmotherw <= 0.9) weight_pi0 = fPi0a->Eval(ptmotherw);
+								if(ptmotherw > 0.9 && ptmotherw < 15) weight_pi0 = fPi0b->Eval(ptmotherw);
 								
 								/*fPt_elec_from_pi02->Fill(pt,weight_pi0);
 								if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_pi02->Fill(pt,fNonHFE->GetNULS()*weight_pi0);
@@ -1826,9 +1824,9 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 								if(fNonHFE->IsLS()) fPt_elec_eta_MB_LS->Fill(pt,fNLS_MC);
 								*/
 								weight_eta=0;
-								if(ptmotherw >= 0.5 && ptmotherw < 2.3) weight_eta = f1->Eval(ptmotherw);
-								if(ptmotherw >= 2.3 && ptmotherw < 4.1) weight_eta = f1a->Eval(ptmotherw);
-								if(ptmotherw >= 4.1 && ptmotherw < 15) weight_eta = f1b->Eval(ptmotherw);
+								if(ptmotherw >= 0.1 && ptmotherw < 1) weight_eta = fEtaa->Eval(ptmotherw);
+								if(ptmotherw >= 1 && ptmotherw < 3) weight_eta = fEtab->Eval(ptmotherw);
+								if(ptmotherw >= 3 && ptmotherw < 15) weight_eta = fEtac->Eval(ptmotherw);
 								
 								/*fPt_elec_from_eta2->Fill(pt,weight_eta);
 								if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_eta2->Fill(pt,fNonHFE->GetNULS()*weight_eta);
@@ -1852,8 +1850,8 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 								if(fNonHFE->IsLS()) fPt_elec_gamma_MB_LS->Fill(pt,fNLS_MC);
 								*/
 								weight_pi0=0;
-								if(ptmotherw >= 0.5 && ptmotherw <= 2.5) weight_pi0 = f0a->Eval(ptmotherw);
-								if(ptmotherw >2.5 && ptmotherw < 15) weight_pi0 = f0b->Eval(ptmotherw);
+								if(ptmotherw >= 0.1 && ptmotherw <= 0.9) weight_pi0 = fPi0a->Eval(ptmotherw);
+								if(ptmotherw >0.9 && ptmotherw < 15) weight_pi0 = fPi0b->Eval(ptmotherw);
 								
 								/*fPt_elec_from_gamma2->Fill(pt,weight_pi0);
 								if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_gamma2->Fill(pt,fNonHFE->GetNULS()*weight_pi0);
@@ -1875,9 +1873,9 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 								if(fNonHFE->IsLS()) fPt_elec_gamma_MB_LS->Fill(pt,fNLS_MC);
 								*/
 								weight_eta=0;
-								if(ptmotherw >= 0.5 && ptmotherw < 2.3) weight_eta = f1->Eval(ptmotherw);
-								if(ptmotherw >= 2.3 && ptmotherw < 4.1) weight_eta = f1a->Eval(ptmotherw);
-								if(ptmotherw >= 4.1 && ptmotherw < 15) weight_eta = f1b->Eval(ptmotherw);
+								if(ptmotherw >= 0.1 && ptmotherw < 1) weight_eta = fEtaa->Eval(ptmotherw);
+								if(ptmotherw >= 1 && ptmotherw < 3) weight_eta = fEtab->Eval(ptmotherw);
+								if(ptmotherw >= 3 && ptmotherw < 15) weight_eta = fEtac->Eval(ptmotherw);
 								/*fPt_elec_from_gamma2->Fill(pt,weight_eta);
 								if(fNonHFE->IsULS()) fPtElec_ULS_MC_from_gamma2->Fill(pt,fNonHFE->GetNULS()*weight_eta);
 								if(fNonHFE->IsLS()) fPtElec_LS_MC_from_gamma2->Fill(pt,fNonHFE->GetNLS()*weight_eta);
@@ -1918,7 +1916,7 @@ void AliAnalysisTaskHFEmultTPCTOF::UserExec(Option_t *)
 
 //_________________________________________
 
-void AliAnalysisTaskHFEmultTPCTOF::SelectPhotonicElectronR(Int_t itrack, AliAODTrack *track, Int_t motherindex, Int_t pdg1, Int_t source,Double_t V0Mmult1 , Double_t SPDntr1,Double_t ptmotherwg)
+void AliAnalysisTaskHFEmultTPCTOF::SelectPhotonicElectronR(Int_t itrack, AliAODTrack *track, Int_t motherindex, Int_t pdg1, Int_t source,Double_t V0Mmult1 , Double_t SPDntr1,Double_t ptmotherwg,const AliVVertex* pVtx)
 {
  
     // load MC array
@@ -1939,19 +1937,19 @@ void AliAnalysisTaskHFEmultTPCTOF::SelectPhotonicElectronR(Int_t itrack, AliAODT
          return;
     }
    
-	for(Int_t jTracks = 0; jTracks<fAOD->GetNumberOfTracks(); jTracks++)
-  {
+       for(Int_t jTracks = 0; jTracks<fAOD->GetNumberOfTracks(); jTracks++)
+       {
 		AliVParticle* VtrackAsso = fAOD->GetTrack(jTracks);
 		if (!VtrackAsso)
 		{
             printf("ERROR: Could not receive track %d\n", jTracks);
             continue;
-    }
+              }
         
-    AliAODTrack *trackAsso = dynamic_cast<AliAODTrack*>(VtrackAsso);
+              AliAODTrack *trackAsso = dynamic_cast<AliAODTrack*>(VtrackAsso);
         
-   //track cuts applied
-    Int_t pdgass = 0;
+              //track cuts applied
+              Int_t pdgass = 0;
 
        
 		AliAODTrack *atrackAsso = dynamic_cast<AliAODTrack*>(VtrackAsso);
@@ -1960,8 +1958,17 @@ void AliAnalysisTaskHFEmultTPCTOF::SelectPhotonicElectronR(Int_t itrack, AliAODT
 		if(fAssoITSRefit)
 		{
 			if(!(atrackAsso->GetStatus()&AliESDtrack::kITSrefit)) continue;
+			if(!(atrackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
 		}
-		if(!(atrackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
+		
+	       if(atrackAsso->GetITSNcls() < fAssoITSNclus ) continue; // ITS N clusters
+	       if(atrackAsso->GetTPCsignalN()< fAssoTPCNclsForPID) continue ;
+	       //==DCA Cut ======
+	       Double_t d0z0[2]={-999,-999}, cov[3];
+	       if(atrackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0, cov))    
+	       if(TMath::Abs(d0z0[0]) > fAssoDCAxy || TMath::Abs(d0z0[1]) > fAssoDCAz) continue;   //d0z0[0]=dcaxy,  d0z0[1]=dcaz
+	
+	
 		AliAODMCParticle *MCass = (AliAODMCParticle*)mcArray->At(TMath::Abs(atrackAsso->GetLabel()));
 		if(!(TMath::Abs(MCass->GetPdgCode())==11)) continue;
 		pdgass=MCass->GetPdgCode();
@@ -1981,62 +1988,61 @@ void AliAnalysisTaskHFEmultTPCTOF::SelectPhotonicElectronR(Int_t itrack, AliAODT
 		Int_t charge = track->Charge();
         
         //---------------pt and track cuts-----------------
-        if(ptAsso < fAssopTMin) continue;
-		if(TMath::Abs(trackAsso->Eta())>fAssoEtarange) continue;
-		if(TMath::Abs(nsigma) > fAssoTPCnsig ) continue;
-
-        //-------------------AliKFParticle-------------------
-        Int_t PDGe1 = 11; Int_t PDGe2 = 11;
-        if(charge>0) PDGe1 = -11;
-        if(chargeAsso>0) PDGe2 = -11;
-        
-        if((pdgass*pdg1)<0.) fFlagULS = kTRUE;
-        
-        AliKFParticle ge1(*track, PDGe1);
-        AliKFParticle ge2(*trackAsso, PDGe2);
-        AliKFParticle recg(ge1, ge2);
-        
-        if(recg.GetNDF()<1) continue;
-        Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
-        if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
-        
-        recg.GetMass(mass,width);
-        // Mother associated track
-        
-        Double_t invms[5];
-    	  invms[0]=track->Pt();
-	     invms[1]=source;
-        invms[2]=mass;
-        invms[3]=SPDntr1;
-	    // invms[4]=V0Mmult1;
-        
-							
-        if(fFlagULS){
-        	fInvMULS->Fill(track->Pt(),mass);
-        	//fInvMULS_multV0M->Fill(track->Pt(),mass,V0Mmult1);
-        	//fInvMULS_multSPD->Fill(track->Pt(),mass,SPDntr1);
-        	
-        	fInvMULSnSp->Fill(invms);
-			/*if(source==kPi0NoFeedDown)fInvMULSpi0->Fill(track->Pt(),mass);
-			if(source==kEtaNoFeedDown)fInvMULSeta->Fill(track->Pt(),mass);
-			if((source==kGPi0NoFeedDown)||(source==kGEtaNoFeedDown))fInvMULSgamma->Fill(track->Pt(),mass);*/
-		}
+               if(ptAsso < fAssopTMin) continue;
+	        if(TMath::Abs(trackAsso->Eta())>fAssoEtarange) continue;
+	        if(TMath::Abs(nsigma) > fAssoTPCnsig ) continue;
 		
-		  Double_t weight_pe=0.;//,weight_eta=0.;
-		  if(  (source==kPi0NoFeedDown)  || (source==kGPi0NoFeedDown) )
-		  {
-		  		if(ptmotherwg >= 0.5 && ptmotherwg <= 2.5) weight_pe = f0a->Eval(ptmotherwg);
-				if(ptmotherwg >2.5 && ptmotherwg < 15) weight_pe = f0b->Eval(ptmotherwg);
-		  }					
-		  if((source==kEtaNoFeedDown)  || (source==kGEtaNoFeedDown)  )
-		  {      
-				  if(ptmotherwg >= 0.5 && ptmotherwg < 2.3) weight_pe = f1->Eval(ptmotherwg);
-				  if(ptmotherwg >= 2.3 && ptmotherwg < 4.1) weight_pe= f1a->Eval(ptmotherwg);
-				  if(ptmotherwg >= 4.1 && ptmotherwg < 15) weight_pe = f1b->Eval(ptmotherwg);
-		 }
-		   if(fFlagULS){
-        	fInvMULSnSpwg->Fill(invms,weight_pe);
-        	}
+            
+
+               //-------------------AliKFParticle-------------------
+               Int_t PDGe1 = 11; Int_t PDGe2 = 11;
+               if(charge>0) PDGe1 = -11;
+               if(chargeAsso>0) PDGe2 = -11;
+               
+               if((pdgass*pdg1)<0.) fFlagULS = kTRUE;
+               
+               AliKFParticle ge1(*track, PDGe1);
+               AliKFParticle ge2(*trackAsso, PDGe2);
+               AliKFParticle recg(ge1, ge2);
+               
+               if(recg.GetNDF()<1) continue;
+               Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
+               if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
+               
+               recg.GetMass(mass,width);
+               // Mother associated track
+               
+              Double_t invms[5];
+              invms[0]=track->Pt();
+              invms[1]=source;
+              invms[2]=mass;
+              invms[3]=SPDntr1;
+	           // invms[4]=V0Mmult1;
+               
+							
+               if(fFlagULS)
+               {
+               	fInvMULS->Fill(track->Pt(),mass);
+               	fInvMULSnSp->Fill(invms);
+              }
+		
+              Double_t weight_pe=0.;//,weight_eta=0.;
+              if(  (source==kPi0NoFeedDown)  || (source==kGPi0NoFeedDown) )
+              {
+                     if(ptmotherwg >= 0.1 && ptmotherwg <= 0.9) weight_pe = fPi0a->Eval(ptmotherwg);
+                     if(ptmotherwg >0.9 && ptmotherwg < 15) weight_pe = fPi0b->Eval(ptmotherwg);
+              }	
+              				
+              if((source==kEtaNoFeedDown)  || (source==kGEtaNoFeedDown)  )
+              {      
+                     if(ptmotherwg >= 0.1 && ptmotherwg < 1) weight_pe = fEtaa->Eval(ptmotherwg);
+                     if(ptmotherwg >= 1 && ptmotherwg < 3) weight_pe= fEtab->Eval(ptmotherwg);
+                     if(ptmotherwg >= 3 && ptmotherwg < 15) weight_pe = fEtac->Eval(ptmotherwg);
+              }
+              if(fFlagULS)
+              {
+               	fInvMULSnSpwg->Fill(invms,weight_pe);
+              }
 	}
 }
 
@@ -2101,19 +2107,29 @@ Int_t AliAnalysisTaskHFEmultTPCTOF::ClassifyTrack(AliAODTrack* track,const AliVV
 	Float_t dx,dy,dxy, dz;
 
 	if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return 0; //fitler bit 
-  if(pt< 0.3 ) return 0;  
+       if(pt< 0.3 ) return 0;  
 	if (TMath::Abs(eta)>=fEtarange) return 0; 
 	
 	Double_t nclus = track->GetTPCNcls();  // TPC cluster information
 	Double_t nclusF = track->GetTPCNclsF();
  	Double_t nclusN = track->GetTPCsignalN();  // TPC cluster information findable
- 	Double_t RatioTPCclusters=nclusN/nclusF;
+ 	//Double_t RatioTPCclusters=nclusN/nclusF;
  	Double_t nclusS = track->GetTPCnclsS();
  	
-	if(track->GetTPCNcls() < fTPCNclus) return 0; //TPC N clusters
-	if(track->GetITSNcls() < fITSNclus) return 0; // ITS N clusters
+ 	Double_t RatioTPCclusters= track->GetTPCCrossedRows() /nclusF;
+ 	
+ 	//=====TPC Cluster, TPC PID cut, ITS clsuter, RatioTPCcluster============= 
+	//if(track->GetTPCNcls() < fTPCNclus) return 0; //TPC N clusters
+	//if(RatioTPCclusters<0.6) return 0;
+	
+	if(track->GetTPCCrossedRows() < fTPCNclus) return 0; //TPC N crossedRows
+	if(RatioTPCclusters<0.8) return 0;
+	
 	if(nclusN< fTPCNclusPID) return 0 ;
-	if(RatioTPCclusters<0.6) return 0;
+	
+	
+	if(track->GetITSNcls() < fITSNclus) return 0; // ITS N clusters
+	
 	
 	if((!(track->GetStatus()&AliESDtrack::kITSrefit)|| (!(track->GetStatus()&AliESDtrack::kTPCrefit)))) return 0; // ITS and TPC refit
 	
@@ -2261,7 +2277,13 @@ Int_t AliAnalysisTaskHFEmultTPCTOF::GetNcharged(){
     return Nch;
 }
 //=======================================================================
+TProfile* AliAnalysisTaskHFEmultTPCTOF::GetEstimatorHistogram(const AliAODEvent* fAOD)
+{
 
+  if (fPeriod < 0 || fPeriod > 9) return 0;   
+  return fMultEstimatorAvg;
+}
+/*
 TProfile* AliAnalysisTaskHFEmultTPCTOF::GetEstimatorHistogram(const AliAODEvent* fAOD)
 {
     
@@ -2283,6 +2305,7 @@ TProfile* AliAnalysisTaskHFEmultTPCTOF::GetEstimatorHistogram(const AliAODEvent*
     
   return fMultEstimatorAvg[period];
 }
+*/
 Double_t AliAnalysisTaskHFEmultTPCTOF::GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult) {
   //
   // Correct the number of accepted tracklets based on a TProfile Hist

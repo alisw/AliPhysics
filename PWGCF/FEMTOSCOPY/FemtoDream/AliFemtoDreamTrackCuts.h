@@ -8,6 +8,7 @@
 #ifndef ALIFEMTODREAMTRACKCUTS_H_
 #define ALIFEMTODREAMTRACKCUTS_H_
 #include "Rtypes.h"
+#include "TDatabasePDG.h"
 #include "AliFemtoDreamTrack.h"
 #include "AliFemtoDreamTrackMCHist.h"
 #include "AliFemtoDreamTrackHist.h"
@@ -59,6 +60,10 @@ class AliFemtoDreamTrackCuts {
     fTOFM = mass;
   }
   ;
+  void SetPlotTOFMassSq(bool massSq) {
+    fTOFMassSq = massSq;
+   }
+   ;
   void SetOriginMultiplicityHists(bool plot) {
     fDoMultBinning = plot;
   }
@@ -210,9 +215,31 @@ class AliFemtoDreamTrackCuts {
     fPIDPITSThreshold = pITSThresh;
     fNSigValueITSmin = sigValITSmin;
     fNSigValueITSmax = sigValITSmax;
-    fdoITSnSigmaCut = kTRUE;
   }
   ;
+  void SetITSnSigmaCut(bool ITScut) {
+    fdoITSnSigmaCut = ITScut;
+  }
+  void SetCutTOFInvMass(bool cutit = false) {
+    fTOFInvMassCut = cutit;
+   }
+   ;
+  void SetCutPeakTOFInvMass(float sigmaUp,float sigmalLow) {
+    fTOFInvMassCutUp = sigmaUp;
+    fTOFInvMassCutLow = sigmalLow;
+    fCutArroundPeakTOFInvMass= true;
+  }
+  ;
+  void SetCutTOFMassForSB(float Ldown, float Lup, float Rdown, float Rup,bool cutLSB = false, bool cutRSB = false) {
+    fCutArroundPeakTOFInvMass = false;
+    fCutTOFInvMassSidebands = true;
+    fTOFInvMassCutLSBdown = Ldown;
+    fTOFInvMassCutLSBup = Lup;
+    fTOFInvMassCutRSBdown = Rdown;
+    fTOFInvMassCutRSBup = Rup;
+    fCutLSB = cutLSB;
+    fCutRSB = cutRSB;
+  }
   void SetRejLowPtPionsTOF(bool use) {
     fRejectPions = use;
   }
@@ -261,8 +288,8 @@ class AliFemtoDreamTrackCuts {
   }
   ;
   void SetMultDCAPlots(int min, int max) {
-    MultDCAmin = min;
-    MultDCAmax = max;
+    fMultDCAmin = min;
+    fMultDCAmax = max;
   }
   ;
  private:
@@ -273,12 +300,16 @@ class AliFemtoDreamTrackCuts {
   bool DCACuts(AliFemtoDreamTrack *Track);
   void BookTrackCuts();
   void FillMCContributions(AliFemtoDreamTrack *Track);
+  float CalculateTOFMassSquared(AliFemtoDreamTrack *Track);
+  float MeanTOFMassSqdDeuteron(AliFemtoDreamTrack *Track) const;
+  float SigmaTOFMassSqdDeuteron(AliFemtoDreamTrack *Track) const;
   AliFemtoDreamTrackMCHist *fMCHists;  //!
   AliFemtoDreamTrackHist *fHists;     //!
   bool fMinimalBooking;               //
   bool fMCData;                       //
   bool fDCAPlots;                     //
   bool fTOFM;                         //
+  bool fTOFMassSq;                    //
   bool fDoMultBinning;                //
   bool fCheckMother;                  //
   bool fCombSigma;                    //
@@ -330,10 +361,21 @@ class AliFemtoDreamTrackCuts {
   float fNSigValueITS;                // defaults to 3
   float fPIDPTPCThreshold;            // defaults to 0
   float fPIDPITSThreshold;            // defaults to 0, change it only if you want ITS in your analysis
-  float MultDCAmin;            //
-  float MultDCAmax;            // 
+  float fMultDCAmin;            //
+  float fMultDCAmax;            //
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
-ClassDef(AliFemtoDreamTrackCuts,10)
+  bool fTOFInvMassCut;                   //
+  float fTOFInvMassCutUp;            //
+  float fTOFInvMassCutLow;            //
+  bool fCutArroundPeakTOFInvMass;            //
+  bool fCutTOFInvMassSidebands;         //
+  float fTOFInvMassCutLSBdown;           //
+  float fTOFInvMassCutLSBup;             //
+  float fTOFInvMassCutRSBdown;           //
+  float fTOFInvMassCutRSBup;             //
+  bool fCutLSB;                         //
+  bool fCutRSB;                         //
+ClassDef(AliFemtoDreamTrackCuts,11)
   ;
 };
 

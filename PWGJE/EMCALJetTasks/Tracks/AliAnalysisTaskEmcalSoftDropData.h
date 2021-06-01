@@ -28,6 +28,7 @@
 #define ALIANALYSISTASKEMCALSOFTDROPDATA_H
 
 #include <AliAnalysisTaskEmcalJet.h>
+#include "AliAnalysisEmcalTriggerSelectionHelper.h"
 #include "AliAnalysisEmcalSoftdropHelper.h"
 #include <string>
 #include <vector>
@@ -39,7 +40,7 @@ namespace PWGJE{
 
 namespace EMCALJetTasks {
 
-class AliAnalysisTaskEmcalSoftDropData : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalSoftdropHelperImpl {
+class AliAnalysisTaskEmcalSoftDropData : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalSoftdropHelperImpl, public AliAnalysisEmcalTriggerSelectionHelperImpl {
 public:
   enum EReclusterizer_t {
     kCAAlgo = 0,
@@ -51,6 +52,8 @@ public:
   AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalSoftDropData();
 
+  AliJetContainer *GetDetLevelJetContainer() const { return GetJetContainer("datajets"); }
+
   void SetCustomPtBinning(TBinning *binning) { fPtBinning = binning; }
   void SetBeta(double beta) { fBeta = beta; }
   void SetZcut(double zcut) { fZcut = zcut; }
@@ -59,8 +62,11 @@ public:
   void SetUseNeutralConstituents(bool doUse) { fUseNeutralConstituents = doUse; }
   void SetSelectTrigger(UInt_t triggerbits, const char *triggerstring) { fTriggerBits = triggerbits; fTriggerString = triggerstring; }
   void SetUseDownscaleWeight(Bool_t doUse) { fUseDownscaleWeight = doUse; }
+  void SetDropMass0Jets(bool doDrop) { fDropMass0Jets = doDrop; }
 
-  static AliAnalysisTaskEmcalSoftDropData *AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, EMCAL_STRINGVIEW trigger);
+  void ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc);
+
+  static AliAnalysisTaskEmcalSoftDropData *AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, AliVCluster::VCluUserDefEnergy_t energydef, EMCAL_STRINGVIEW trigger);
 
 protected:
   virtual void UserCreateOutputObjects();
@@ -82,8 +88,12 @@ private:
   EReclusterizer_t              fReclusterizer;             ///< Reclusterizer
   Bool_t                        fUseChargedConstituents;    ///< Use also charged constituents
   Bool_t                        fUseNeutralConstituents;    ///< Use also neutral constituents
+  Bool_t                        fDropMass0Jets;             ///< Drop jets with mass 0
   THistManager                  *fHistos;                   //!<! Histogram handler
   TBinning                      *fPtBinning;                ///< Detector level pt binning
+
+  AliAnalysisTaskEmcalSoftDropData(const AliAnalysisTaskEmcalSoftDropData &);
+  AliAnalysisTaskEmcalSoftDropData &operator=(const AliAnalysisTaskEmcalSoftDropData &);
 
   ClassDef(AliAnalysisTaskEmcalSoftDropData, 1)
 };

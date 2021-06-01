@@ -9,6 +9,7 @@
 //Task for Heavy Flavour Electron-Hadron DeltaPhi Correlation in Run 2//
 //                                                                    //
 //  Author: Deepa Thomas (University of Texas at Austin)              //
+//          Ravindra Singh (IIT Indore)                               //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -27,6 +28,8 @@ class AliAODTrack;
 class AliCFManager;
 class AliEventPoolManager;
 class AliMultSelection;
+class AliAnalysisUtils;
+class AliGenEventHeader;
 
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
@@ -35,6 +38,9 @@ class AliMultSelection;
 
 class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
   public:
+
+    enum EnhanceSigOrNot {kMB,kEnhance};
+    enum pi0etaType {kNoMother, kNoFeedDown, kNotIsPrimary, kLightMesons, kBeauty, kCharm};
     AliAnalysisTaskEHCorrel();
     AliAnalysisTaskEHCorrel(const char *name);
     virtual ~AliAnalysisTaskEHCorrel();
@@ -63,7 +69,10 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    MixedEvent(AliVTrack *track, THnSparse *SparseMixEHCorrl);
 
     void    SetCentralitySelection(Double_t centMin, Double_t centMax) {fCentralityMin = centMin; fCentralityMax = centMax;};
-    void    SetMinTPCNClsElec(Int_t MinNClsE) {fTPCNClsElec = MinNClsE;};
+    void    SetEleEtaCuts(Double_t Min, Double_t Max) {fEtaCutEleMin = Min; fEtaCutEleMax = Max;};
+    void    SetMinTPCNCrossRElec(Int_t MinNCrossRE) {fTPCNCrossRElec = MinNCrossRE;};
+    void    SetMinRatioTPCNCrossRElec(Double_t MinRatioNCrossRE) {fRatioTPCNCrossRElec = MinRatioNCrossRE;};
+    void    SetMinITSNClsElec(Int_t MinNClsE) {fITSNClsElec = MinNClsE;};
     void    SetTPCnsigCut(Double_t nsigMin, Double_t nsigMax) {fTPCnSigmaMin = nsigMin; fTPCnSigmaMax= nsigMax;};
     void    SetM02Cut(Double_t m02Min, Double_t m02Max) {fM02Min = m02Min; fM02Max = m02Max;};
     void    SetM20Cut(Double_t m20Min, Double_t m20Max) {fM20Min = m20Min; fM20Max = m20Max;};
@@ -73,48 +82,69 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    GetVtxZCentralityBin();
     Bool_t  GetTenderSwitch() {return fUseTender;};
     Double_t GetElecEffi(AliVTrack *track);
-    
+
     void    SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
-    
+
     void    SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void    SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
-    
+
     void    SetPartnerEleMinTPCNCls(Int_t MinNClsPE) {fTPCNClsPartnerE = MinNClsPE;};
     void    SetPartnerEleMinPt(Double_t PtPE) {fPartElePt = PtPE;};
     void    SetInvmassCut(Double_t invmasscut) {fInvmassCut = invmasscut;};
-    
-    void    SetHadMinTPCNCls(Int_t MinNClsHad) {fTPCNClsHad = MinNClsHad;};
+
+    void    SetHadMinTPCNCrossR(Int_t MinRatioNCrossRHad) {fTPCNCrossRHad = MinRatioNCrossRHad;};
+    void    SetHadMinRatioTPCNCrossR(Double_t MinNCrossRHad) {fRatioTPCNCrossRHad = MinNCrossRHad;};
     void    SetHadSPDkAny(Bool_t HadSPDkAny) {fFlagHadSPDkAny = HadSPDkAny;};
     void    SetHadLargeITSNCls(Bool_t HadLargITSNCls) {fFlagHadITSNCls = HadLargITSNCls;};
-    
+
     void    SetHadFiducialCut(Bool_t HadFiducialCut) {fFlagHadFiducialCut = HadFiducialCut;};
     void    SetHadPosEtaOnly(Bool_t HadPosEtaOnly) {fFlagHadPosEtaOnly = HadPosEtaOnly;};
     void    SetHadNegEtaOnly(Bool_t HadNegEtaOnly) {fFlagHadNegEtaOnly = HadNegEtaOnly;};
-    
+    void    SetHadEtaCuts(Double_t Min, Double_t Max) {fEtaCutHadMin = Min; fEtaCutHadMax = Max;};
+
+    void    SwitchMECorrec(Bool_t FillMECorr){fFlagFillMECorr = FillMECorr;};
     void    SetMEBinChange(Bool_t MEBinChange) {fFlagMEBinChange = MEBinChange;};
     void    SetElecSPDkFirst(Bool_t EleSPDkFirst) {fFlagEleSPDkFirst = EleSPDkFirst;};
-    
+
     void    SetEMCClsTimeCut(Bool_t EMCtimeCut) {fEMCClsTimeCut = EMCtimeCut;};
-    
+
     void    SetAdditionalPileUpCuts(Bool_t addpilupcuts) {fApplyAddPileUpCuts = addpilupcuts;};
-    
+
     void    SetElecEffi(Bool_t applyElectronEffi){fApplyElectronEffi = applyElectronEffi;};
     void    SetElectronEffiMap(TH1 *HistElecEffi) {fHistElecEffi = (TH1D*)HistElecEffi->Clone();}
-    
+
     void    IsPbPb(Bool_t isPbPb) {fIsPbPb = isPbPb;};
+    void    Ispp(Bool_t ispp) {fIspp = ispp;};
+    void    IspPb(Bool_t ispPb) {fIspPb = ispPb;};
+    void    IsMC(Bool_t isMC) {fIsMC = isMC;};
+
+    void    SwitchFillEHCorrel(Bool_t fSwitch){fFillEHCorrel = fSwitch;};
+    void    SetNDeltaPhiBins(Int_t nbins){fNDelPhiBins = nbins;};
+
+    void    GetHadronTrackingEfficiency();
+    void    SwitchHadTrackEffi(Bool_t fSwitch) {fCalcHadronTrackEffi = fSwitch;};
+
+    void    SetNonHFEEffi(Bool_t fSwitch) {fCalculateNonHFEEffi = fSwitch;};
+    void    SetWeightCal(Bool_t fSwitch) {fCalPi0EtaWeight = fSwitch;};
+    void    GetPi0EtaWeight(THnSparse *SparseWeight);
+    Bool_t  GetNonHFEEffiDenom(AliVTrack *track);
+    Bool_t  GetNonHFEEffiRecoTag(AliVTrack *track);
+    Bool_t  IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromMB, Int_t &type, Int_t &iMom, Int_t &MomPDG, Double_t &MomPt);
+    Int_t   GetPi0EtaType(AliAODMCParticle *part);
 
   private:
+    Bool_t GetNMCPartProduced();
+
     AliVEvent 		    *fVevent;//!V event object
     AliAODEvent 		*fAOD;//!AOD object
     const AliVVertex    *fpVtx; //!
     AliPIDResponse      *fpidResponse; //!pid response
     AliMultSelection    *fMultSelection;//!
-    
+
     TH1D                *fHistElecEffi;//
-    
+
     TClonesArray        *fTracks_tender;//Tender tracks
     TClonesArray        *fCaloClusters_tender;//Tender cluster
-
     Bool_t              fApplyAddPileUpCuts;//
     Bool_t              fUseTender;// switch to add tender
     Double_t            fCentrality;//!
@@ -125,8 +155,11 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Bool_t              fEMCEG2;//
     Bool_t              fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;//switch to select DCAL clusters
-    Int_t               fTPCNClsElec;// track TPC NClusters
+    Int_t               fTPCNCrossRElec;// track TPC NClusters
+    Double_t            fRatioTPCNCrossRElec;//    
     Bool_t              fFlagEleSPDkFirst;//
+    Double_t            fEtaCutEleMin;// Electron track Eta cut min
+    Double_t            fEtaCutEleMax;// Electron track Eta cut max
     Double_t            fTPCnSigma;//!
     Double_t            fTPCnSigmaMin;//
     Double_t            fTPCnSigmaMax;//
@@ -136,7 +169,11 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Double_t            fM20Max;//
     Double_t            fEovPMin;//
     Double_t            fEovPMax;//
-    Int_t               fTPCNClsHad;// Had track TPC NClusters
+    Int_t               fTPCNCrossRHad;// Had track TPC NClusters
+    Double_t            fRatioTPCNCrossRHad;//
+    Double_t            fEtaCutHadMin;// Had track Eta cut min
+    Double_t            fEtaCutHadMax;// Had track Eta cut max
+    Int_t               fITSNClsElec;//
     Int_t               fTPCNClsPartnerE;//
     Double_t            fPartElePt;//
     Double_t            fInvmassCut;//
@@ -153,13 +190,35 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t               fNEle;//!
     Double_t            fVtxZBin;//!
     Double_t            fCentBin;//!
+    Bool_t              fFlagFillMECorr;// Switch for doing the ME correction
     Bool_t              fFlagMEBinChange;//
     Bool_t              fIsPbPb;//
+    Bool_t              fIspp;//
+    Bool_t              fIspPb;//
     Bool_t              fEMCClsTimeCut;//
+    TClonesArray        *fMCarray;//!
+    AliAODMCHeader      *fMCHeader;//!
+    Bool_t              fIsMC;// Is MC
     Bool_t              fApplyElectronEffi;//
     Double_t            fEffi;//!
     Double_t            fWeight;//!
+    Bool_t              fCalcHadronTrackEffi;//
+    Bool_t              fFillEHCorrel;//
 
+    //Non-HFE
+    Bool_t              fCalculateNonHFEEffi;//
+    Bool_t              fCalPi0EtaWeight;//
+    Bool_t              fIsFrmEmbPi0;//!
+    Bool_t              fIsFrmEmbEta;//!
+    Int_t               ftype;//!
+    Double_t            fWeightPi0;//!
+    Double_t            fWeightEta;//!
+    Int_t                fNTotMCpart; //! N of total MC particles produced by generator
+    Int_t               fNpureMC;//! N of particles from main generator (Hijing/Pythia)
+    Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
+    Int_t               fNembMCeta; //! N > fNembMCeta = particles from eta generator
+
+    Int_t               fNDelPhiBins; //number of bins to be used for deltaphi distribution
     TList       	   	*fOutputList;		//!output list
     TH1F                *fNevents;		//!no of events
     TH1F                *fVtxZ;//!
@@ -182,6 +241,9 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH1F                *fTrkphi;//!
     TH2F                *fdEdx;//!
     TH2F                *fTPCnsig;//!
+    TH1F                *fTrkNClsF;//!
+    TH1F                *fTrkTPCNCrossRows;//!
+    TH1F                *fTrkRatCrossRowNclus;//!
     TH1F                *fHistPtMatch;//!
     TH2F                *fEMCTrkMatch;//!
     TH1F                *fEMCTrkPt;//!
@@ -220,11 +282,31 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH2F                *fMixStatCent;//!
     TH2F                *fMixStatVtxZ;//!
     TH2F                *fMixStatCentVtxz;//!
-    
+
     //TH2F                *fHisHadDphi;//!
     //TH2F                *fHisIncEDphi;//!
     //TH2F                *fHisLSDphi;//!
     //TH2F                *fHisULSDphi;//!
+
+    TH1F                *fTrackPhyPrimAll;//!
+    TH1F                *fTrackEffiDenomPt;//!
+    TH1F                *fTrackPhyPrimAllPDG;//
+    TH1F                *fTrackEffiNumHadTrkPt;//!
+    TH1F                *fTrackPhyPrimPDGCut;//!
+
+    TH1F                *fRealInclsElecPt;//!
+    TH1F                *fNonHFeTrkPt;//!
+    TH1F                *fEtaeEmbWeightTrkPt;//!
+    TH1F                *fPi0eEmbWeightTrkPt;//!
+    TH1F                *fNonHFeEmbWeightTrkPt;//!
+    TH1F                *fNonHFeEmbTrkPt;//!
+    TF1                 *fPi0Weight;//!
+    TF1                 *fEtaWeight;//!
+    TH1F                *fRecoNonHFeTrkPt;//!
+    TH1F                *fRecoNonHFeEmbTrkPt;//!
+    TH1F                *fRecoNonHFeEmbWeightTrkPt;//!
+    TH1F                *fRecoPi0eEmbWeightTrkPt;//!
+    TH1F                *fRecoEtaeEmbWeightTrkPt;//!
 
     THnSparse           *fSprsAllHadHCorrl;//!
     THnSparse           *fSprsMixAllHadHCorrl;//!
@@ -242,6 +324,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     THnSparse           *fSprsMixULSEHCorrl;//!
     THnSparse           *fSprsMixTagULSEHCorrl;//!
     THnSparse           *fSprsMixTagLSEHCorrl;//!
+    THnSparse           *fSprsPi0EtaWeightCal;//! weight cal
 
     AliAnalysisTaskEHCorrel(const AliAnalysisTaskEHCorrel&); // not implemented
     AliAnalysisTaskEHCorrel& operator=(const AliAnalysisTaskEHCorrel&); // not implemented
@@ -252,6 +335,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
 class AliehDPhiBasicParticle : public AliVParticle
 {
   public:
+
     AliehDPhiBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
       : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
     {

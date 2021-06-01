@@ -4,7 +4,7 @@ Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
 */
 #include "AliGFWCuts.h"
 const Int_t AliGFWCuts::fNTrackFlags=9;
-const Int_t AliGFWCuts::fNEventFlags=8;
+const Int_t AliGFWCuts::fNEventFlags=10;
 AliGFWCuts::AliGFWCuts():
   fSystFlag(0),
   fFilterBit(96),
@@ -18,7 +18,7 @@ AliGFWCuts::AliGFWCuts():
 };
 AliGFWCuts::~AliGFWCuts() {
 };
-Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, Int_t BitShift) {
+Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, const Int_t &BitShift, const Bool_t &lDisableDCAxyCheck) {
   if(TMath::Abs(l_Tr->Eta())>fEta) return 0;
   if(!l_Tr->TestFilterBit(fFilterBit)) return 0;
   if(fFilterBit!=2) {//Check is not valid for ITSsa tracks
@@ -28,11 +28,14 @@ Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, Int_t BitShift
     if ((status&AliESDtrack::kITSrefit)==0) return 0;
     if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)) return 0;
   };
-  if(l_DCA[0]>fDCAzCut) return 0;
+  if(!l_DCA) return 1<<BitShift;
+  if(l_DCA[2]>fDCAzCut) return 0;
+  if(lDisableDCAxyCheck) return 1<<BitShift;
   Double_t DCAxycut;
   if(fFilterBit!=2) DCAxycut = 0.0105+0.0350/TMath::Power(l_Tr->Pt(),1.1);//*fDCAxyCut/7.; //TPC tracks and my ITS cuts
   else DCAxycut = 0.0231+0.0315/TMath::Power(l_Tr->Pt(),1.3);
-  if(l_DCA[1]>DCAxycut*(fDCAxyCut/7.))
+  Double_t DCAxyValue = TMath::Sqrt(l_DCA[0]*l_DCA[0] + l_DCA[1]*l_DCA[1]);
+  if(DCAxyValue>DCAxycut*(fDCAxyCut/7.))
     return 0;
   return 1<<BitShift;
 };
@@ -70,7 +73,11 @@ void AliGFWCuts::PrintSetup() {
   printf("Rest of the flags are global per event. Total flag = %i + vtx/ev flag\n",fNTrackFlags);
   printf("(Flag 1-3) Vertex selection: |z|<%2.1f\n",fVtxZ);
   printf("(Flag 4-5) CL1, CL2 multi. estimator (no weights)\n");
-  printf("(Flag 6) pile-up 1500 cut\n");
+  printf("(Flag 6) pile-up 15000 (-> 1500) cut\n");
+  // printf("Extra cuts (not following the prev. nomenclature for consistency):\n");
+  // printf("(NUA weight reload flag set to 0)\n");
+  printf("(Flag 7-8): MF++/--\n");
+  printf("(Flag 9-10): Extreme efficiency, +-4\%\n");
   //printf("(Flag 12, disabled) ITS tracks (filter bit %i, TPC Ncls = %i)\n",fFilterBit,fTPCNcls);
   printf("**********\n");
 };
@@ -150,6 +157,14 @@ void AliGFWCuts::SetupEventCuts(Int_t sysflag) {
     printf("Warning! Event flag %i (syst. flag %i), magnetic field configuration --: no cuts here, please make sure the proper runlist is used!\n",sysflag,sysflag+fNTrackFlags);
     fRequiresExtraWeight=kFALSE;
     break;
+  case 9:
+    printf("Warning! Make sure the correct efficiency is provided (+4\%)\n",sysflag,sysflag+fNTrackFlags);
+    fRequiresExtraWeight=kFALSE;
+    break;
+  case 10:
+    printf("Warning! Make sure the correct efficiency is provided (-4\%)\n",sysflag,sysflag+fNTrackFlags);
+    fRequiresExtraWeight=kFALSE;
+    break;
   default:
     break;
   };
@@ -168,10 +183,10 @@ TString *AliGFWCuts::GetTrackFlagDescriptor(Int_t sysflag) {
     retstr->Append("Filter bit 768");
     break;
   case 2:
-    retstr->Append("DCA_{xy} < 10 (old:8) sigma");
+    retstr->Append("DCA_{xy} < 10 sigma");
     break;
   case 3:
-    retstr->Append("DCA_{xy} < 4 (old:6) sigma");
+    retstr->Append("DCA_{xy} < 4 sigma");
     break;
   case 4:
     retstr->Append("DCA_{z} < 1 cm");
@@ -222,6 +237,12 @@ TString* AliGFWCuts::GetEventFlagDescriptor(Int_t sysflag) {
     break;
   case 8:
     retstr->Append("MF --");
+    break;
+  case 9:
+    retstr->Append("Efficiency +4\%");
+    break;
+  case 10:
+    retstr->Append("Efficiency -4\%");
     break;
   default:
     break;

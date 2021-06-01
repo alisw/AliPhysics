@@ -39,6 +39,11 @@ AliHFJet::AliHFJet():
   fDeltaR(-1.),
   fN(-1.),
   fZ(-1.),
+  fAngularityk1B1(-1.),
+  fpTDispersion(-1.),
+  fChargek03(-2.),
+  fChargek05(-2.),
+  fChargek07(-2.),
   fZg(-1.),
   fRg(-1.),
   fNsd(-1.),
@@ -73,6 +78,11 @@ AliHFJet::AliHFJet(const AliHFJet &source):
   fDeltaR(source.fDeltaR),
   fN(source.fN),
   fZ(source.fZ),
+  fAngularityk1B1(source.fAngularityk1B1),
+  fpTDispersion(source.fpTDispersion),
+  fChargek03(source.fChargek03),
+  fChargek05(source.fChargek05),
+  fChargek07(source.fChargek07),
   fZg(source.fZg),
   fRg(source.fRg),
   fNsd(source.fNsd),
@@ -115,6 +125,11 @@ void AliHFJet::Reset()
   fDeltaR = -1.;
   fN=-1.;
   fZ=-1.;
+  fAngularityk1B1=-1.;
+  fpTDispersion=-1.;
+  fChargek03=-2.;
+  fChargek05=-2.;
+  fChargek07=-2.;
   fZg=-1.;
   fRg=-1.;
   fNsd=-1.;

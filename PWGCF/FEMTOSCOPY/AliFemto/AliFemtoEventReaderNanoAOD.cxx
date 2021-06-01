@@ -102,9 +102,11 @@ AliFemtoEventReaderNanoAOD::AliFemtoEventReaderNanoAOD():
   f1DcorrectionsPions(0),
   f1DcorrectionsKaons(0),
   f1DcorrectionsProtons(0),
+  f1DcorrectionsDeuterons(0),
   f1DcorrectionsPionsMinus(0),
   f1DcorrectionsKaonsMinus(0),
   f1DcorrectionsProtonsMinus(0),
+  f1DcorrectionsDeuteronsMinus(0),
   f1DcorrectionsAll(0),
   f1DcorrectionsLambdas(0),
   f1DcorrectionsLambdasMinus(0),
@@ -113,9 +115,11 @@ AliFemtoEventReaderNanoAOD::AliFemtoEventReaderNanoAOD():
   f4DcorrectionsPions(0),
   f4DcorrectionsKaons(0),
   f4DcorrectionsProtons(0),
+  f4DcorrectionsDeuterons(0),
   f4DcorrectionsPionsMinus(0),
   f4DcorrectionsKaonsMinus(0),
   f4DcorrectionsProtonsMinus(0),
+  f4DcorrectionsDeuteronsMinus(0),
   f4DcorrectionsAll(0),
   f4DcorrectionsLambdas(0),
   f4DcorrectionsLambdasMinus(0)
@@ -172,9 +176,11 @@ AliFemtoEventReaderNanoAOD::AliFemtoEventReaderNanoAOD(const AliFemtoEventReader
   f1DcorrectionsPions(aReader.f1DcorrectionsPions),
   f1DcorrectionsKaons(aReader.f1DcorrectionsKaons),
   f1DcorrectionsProtons(aReader.f1DcorrectionsProtons),
-  f1DcorrectionsPionsMinus(aReader.f1DcorrectionsProtons),
+  f1DcorrectionsDeuterons(aReader.f1DcorrectionsDeuterons),
+  f1DcorrectionsPionsMinus(aReader.f1DcorrectionsPions),
   f1DcorrectionsKaonsMinus(aReader.f1DcorrectionsKaonsMinus),
   f1DcorrectionsProtonsMinus(aReader.f1DcorrectionsProtonsMinus),
+  f1DcorrectionsDeuteronsMinus(aReader.f1DcorrectionsDeuteronsMinus),
   f1DcorrectionsAll(aReader.f1DcorrectionsAll),
   f1DcorrectionsLambdas(aReader.f1DcorrectionsLambdas),
   f1DcorrectionsLambdasMinus(aReader.f1DcorrectionsLambdasMinus),
@@ -183,9 +189,11 @@ AliFemtoEventReaderNanoAOD::AliFemtoEventReaderNanoAOD(const AliFemtoEventReader
   f4DcorrectionsPions(aReader.f4DcorrectionsPions),
   f4DcorrectionsKaons(aReader.f4DcorrectionsKaons),
   f4DcorrectionsProtons(aReader.f4DcorrectionsProtons),
+  f4DcorrectionsDeuterons(aReader.f4DcorrectionsDeuterons),
   f4DcorrectionsPionsMinus(aReader.f4DcorrectionsPionsMinus),
   f4DcorrectionsKaonsMinus(aReader.f4DcorrectionsKaonsMinus),
   f4DcorrectionsProtonsMinus(aReader.f4DcorrectionsProtonsMinus),
+  f4DcorrectionsDeuteronsMinus(aReader.f4DcorrectionsDeuteronsMinus),
   f4DcorrectionsAll(aReader.f4DcorrectionsAll),
   f4DcorrectionsLambdas(aReader.f4DcorrectionsLambdas),
   f4DcorrectionsLambdasMinus(aReader.f4DcorrectionsLambdasMinus)
@@ -266,9 +274,11 @@ AliFemtoEventReaderNanoAOD &AliFemtoEventReaderNanoAOD::operator=(const AliFemto
   f1DcorrectionsPions = aReader.f1DcorrectionsPions;
   f1DcorrectionsKaons = aReader.f1DcorrectionsKaons;
   f1DcorrectionsProtons = aReader.f1DcorrectionsProtons;
-  f1DcorrectionsPionsMinus = aReader.f1DcorrectionsProtons;
+  f1DcorrectionsDeuterons = aReader.f1DcorrectionsDeuterons;
+  f1DcorrectionsPionsMinus = aReader.f1DcorrectionsPionsMinus;
   f1DcorrectionsKaonsMinus = aReader.f1DcorrectionsKaonsMinus;
   f1DcorrectionsProtonsMinus = aReader.f1DcorrectionsProtonsMinus;
+  f1DcorrectionsDeuteronsMinus = aReader.f1DcorrectionsDeuteronsMinus;
   f1DcorrectionsAll = aReader.f1DcorrectionsAll;
   f1DcorrectionsLambdas = aReader.f1DcorrectionsLambdas;
   f1DcorrectionsLambdasMinus = aReader.f1DcorrectionsLambdasMinus;
@@ -278,9 +288,11 @@ AliFemtoEventReaderNanoAOD &AliFemtoEventReaderNanoAOD::operator=(const AliFemto
   f4DcorrectionsPions = aReader.f4DcorrectionsPions;
   f4DcorrectionsKaons = aReader.f4DcorrectionsKaons;
   f4DcorrectionsProtons = aReader.f4DcorrectionsProtons;
-  f4DcorrectionsPionsMinus = aReader.f4DcorrectionsProtons;
+  f4DcorrectionsDeuterons = aReader.f4DcorrectionsDeuterons;
+  f4DcorrectionsPionsMinus = aReader.f4DcorrectionsPionsMinus;
   f4DcorrectionsKaonsMinus = aReader.f4DcorrectionsKaonsMinus;
   f4DcorrectionsProtonsMinus = aReader.f4DcorrectionsProtonsMinus;
+  f4DcorrectionsDeuteronsMinus = aReader.f4DcorrectionsDeuteronsMinus;
   f4DcorrectionsAll = aReader.f4DcorrectionsAll;
   f4DcorrectionsLambdas = aReader.f4DcorrectionsLambdas;
   f4DcorrectionsLambdasMinus = aReader.f4DcorrectionsLambdasMinus;
@@ -537,19 +549,21 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
 	static const Int_t kcstNSigmaTPCK  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kKaon);
 	static const Int_t kcstNSigmaTPCPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kProton);
 	static const Int_t kcstNSigmaTPCE  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kElectron);
-
+	static const Int_t kcstNSigmaTPCD  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kDeuteron);
 
 	const float nsigmaTPCK = aodtrack->GetVar(kcstNSigmaTPCK);
 	const float nsigmaTPCPi = aodtrack->GetVar(kcstNSigmaTPCPi);
 	const float nsigmaTPCP = aodtrack->GetVar(kcstNSigmaTPCPr);
 	const float nsigmaTPCE = aodtrack->GetVar(kcstNSigmaTPCE);
+	const float nsigmaTPCD = aodtrack->GetVar(kcstNSigmaTPCD);
 
 	trackCopy->SetNSigmaTPCPi(nsigmaTPCPi);
 	trackCopy->SetNSigmaTPCK(nsigmaTPCK);
 	trackCopy->SetNSigmaTPCP(nsigmaTPCP);
 	trackCopy->SetNSigmaTPCE(nsigmaTPCE);
+	trackCopy->SetNSigmaTPCD(nsigmaTPCD);
 
-//	trackCopy->SetTPCsignal(aodtrack->GetTPCsignal());
+ 	trackCopy->SetTPCsignal(aodtrack->GetTPCsignal());
 //	trackCopy->SetTPCsignalS(1);
 //	trackCopy->SetTPCsignalN(aodtrack->GetTPCsignalN());
 
@@ -565,18 +579,20 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
 	static const Int_t kcstNSigmaTOFPi  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kPion);
 	static const Int_t kcstNSigmaTOFK  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kKaon);
 	static const Int_t kcstNSigmaTOFPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kProton);
-	static const Int_t kcstNSigmaTOFE  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kElectron);
-
+        static const Int_t kcstNSigmaTOFE  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kElectron);
+	static const Int_t kcstNSigmaTOFD  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kDeuteron);
 
 	const float nsigmaTOFK = aodtrack->GetVar(kcstNSigmaTOFK);
 	const float nsigmaTOFPi = aodtrack->GetVar(kcstNSigmaTOFPi);
 	const float nsigmaTOFP = aodtrack->GetVar(kcstNSigmaTOFPr);
 	const float nsigmaTOFE = aodtrack->GetVar(kcstNSigmaTOFE);
+	const float nsigmaTOFD = aodtrack->GetVar(kcstNSigmaTOFD);
 
 	trackCopy->SetNSigmaTOFPi(nsigmaTOFPi);
 	trackCopy->SetNSigmaTOFK(nsigmaTOFK);
 	trackCopy->SetNSigmaTOFP(nsigmaTOFP);
 	trackCopy->SetNSigmaTOFE(nsigmaTOFE);
+	trackCopy->SetNSigmaTOFD(nsigmaTOFD);
 
 //	trackCopy->SetTOFsignal(aodtrack->GetTOFsignal());
 
@@ -747,7 +763,45 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
     tFemtoTrack->SetYatDCA(tAodTrack->YAtDCA());
     tFemtoTrack->SetZatDCA(tAodTrack->ZAtDCA());
   }
+  else if (fDCAglobalTrack == 1) {
 
+    auto *vertex = static_cast<const AliAODVertex *>(fEvent->GetPrimaryVertex());
+//    const Int_t pid_track_id = (fFilterBit == (1 << 7) || fFilterMask == 128)
+ //                          ? labels[-1 - fEvent->GetTrack(i)->GetID()]
+ //                          : i;
+//    const auto *aodtrackpid = static_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
+    //assert(aodtrackpid && "Not a standard AOD");
+
+    float vertexX = -999.;
+    float vertexY = -999.;
+    float vertexZ = -999.;
+
+    if (vertex) {
+      Double_t fCov[6] = {0.0};
+      vertex->GetCovarianceMatrix(fCov);
+      if (fCov[5] != 0.0) {
+        vertexX = vertex->GetX();
+        vertexY = vertex->GetY();
+        vertexZ = vertex->GetZ();
+      }
+    }
+
+    Double_t pos[3];
+    tAodTrack->GetXYZ(pos);
+
+    Double_t DCAX = pos[0] - vertexX;
+    Double_t DCAY = pos[1] - vertexY;
+    Double_t DCAZ = pos[2] - vertexZ;
+
+    Double_t DCAXY = TMath::Sqrt((DCAX * DCAX) + (DCAY * DCAY));
+
+    tFemtoTrack->SetImpactD(DCAXY);
+    tFemtoTrack->SetImpactZ(DCAZ);
+
+    tFemtoTrack->SetXatDCA(pos[0]);
+    tFemtoTrack->SetYatDCA(pos[1]);
+    tFemtoTrack->SetZatDCA(pos[2]);
+  }
   //  tFemtoTrack->SetCdd(covmat[0]);
   //  tFemtoTrack->SetCdz(covmat[1]);
   //  tFemtoTrack->SetCzz(covmat[2]);
@@ -756,7 +810,7 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
   tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNclsF());
 
-  //tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
+  tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
   //tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   //tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
 
@@ -848,6 +902,24 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
     tFemtoTrack->SetCorrectionProton(1.0);
   }
 
+  if (f1DcorrectionsDeuterons) {
+    tFemtoTrack->SetCorrectionDeuteron(f1DcorrectionsDeuterons->GetBinContent(f1DcorrectionsDeuterons->FindFixBin(tAodTrack->Pt())));
+  }
+  else if (f4DcorrectionsDeuterons) {
+    Int_t idx[4] = {f4DcorrectionsDeuterons->GetAxis(0)->FindFixBin(tAodTrack->Eta()),
+                    f4DcorrectionsDeuterons->GetAxis(1)->FindFixBin(tAodTrack->Pt()),
+                    f4DcorrectionsDeuterons->GetAxis(2)->FindFixBin(0.0),
+                    f4DcorrectionsDeuterons->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
+    if (f4DcorrectionsDeuterons->GetBinContent(idx) != 0) {
+      tFemtoTrack->SetCorrectionDeuteron(f4DcorrectionsDeuterons->GetBinContent(idx));
+    } else {
+      tFemtoTrack->SetCorrectionDeuteron(1.0);
+    }
+  }
+  else {
+    tFemtoTrack->SetCorrectionDeuteron(1.0);
+  }
+
   if (f1DcorrectionsPionsMinus) {
     tFemtoTrack->SetCorrectionPionMinus(f1DcorrectionsPionsMinus->GetBinContent(f1DcorrectionsPionsMinus->FindFixBin(tAodTrack->Pt())));
   }
@@ -900,6 +972,24 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   }
   else {
     tFemtoTrack->SetCorrectionProtonMinus(1.0);
+  }
+
+  if (f1DcorrectionsDeuteronsMinus) {
+    tFemtoTrack->SetCorrectionDeuteronMinus(f1DcorrectionsDeuteronsMinus->GetBinContent(f1DcorrectionsDeuteronsMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else if (f4DcorrectionsDeuteronsMinus) {
+    Int_t idx[4] = {f4DcorrectionsDeuteronsMinus->GetAxis(0)->FindFixBin(tAodTrack->Eta()),
+                    f4DcorrectionsDeuteronsMinus->GetAxis(1)->FindFixBin(tAodTrack->Pt()),
+                    f4DcorrectionsDeuteronsMinus->GetAxis(2)->FindFixBin(0.0),
+                    f4DcorrectionsDeuteronsMinus->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
+    if (f4DcorrectionsDeuteronsMinus->GetBinContent(idx) != 0) {
+      tFemtoTrack->SetCorrectionDeuteronMinus(f4DcorrectionsDeuteronsMinus->GetBinContent(idx));
+    } else {
+      tFemtoTrack->SetCorrectionDeuteronMinus(1.0);
+    }
+  }
+  else {
+    tFemtoTrack->SetCorrectionDeuteronMinus(1.0);
   }
 
   if (f1DcorrectionsAll) {
@@ -1628,6 +1718,11 @@ void AliFemtoEventReaderNanoAOD::Set1DCorrectionsProtons(TH1D *h1)
   f1DcorrectionsProtons = h1;
 }
 
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsDeuterons(TH1D *h1)
+{
+  f1DcorrectionsDeuterons = h1;
+}
+
 void AliFemtoEventReaderNanoAOD::Set1DCorrectionsPionsMinus(TH1D *h1)
 {
   f1DcorrectionsPionsMinus = h1;
@@ -1642,6 +1737,12 @@ void AliFemtoEventReaderNanoAOD::Set1DCorrectionsProtonsMinus(TH1D *h1)
 {
   f1DcorrectionsProtonsMinus = h1;
 }
+
+void AliFemtoEventReaderNanoAOD::Set1DCorrectionsDeuteronsMinus(TH1D *h1)
+{
+  f1DcorrectionsDeuteronsMinus = h1;
+}
+
 void AliFemtoEventReaderNanoAOD::Set1DCorrectionsAll(TH1D *h1)
 {
   f1DcorrectionsAll = h1;
@@ -1682,6 +1783,11 @@ void AliFemtoEventReaderNanoAOD::Set4DCorrectionsProtons(THnSparse *h1)
   f4DcorrectionsProtons = h1;
 }
 
+void AliFemtoEventReaderNanoAOD::Set4DCorrectionsDeuterons(THnSparse *h1)
+{
+  f4DcorrectionsDeuterons = h1;
+}
+
 void AliFemtoEventReaderNanoAOD::Set4DCorrectionsPionsMinus(THnSparse *h1)
 {
   f4DcorrectionsPionsMinus = h1;
@@ -1696,6 +1802,12 @@ void AliFemtoEventReaderNanoAOD::Set4DCorrectionsProtonsMinus(THnSparse *h1)
 {
   f4DcorrectionsProtonsMinus = h1;
 }
+
+void AliFemtoEventReaderNanoAOD::Set4DCorrectionsDeuteronsMinus(THnSparse *h1)
+{
+  f4DcorrectionsDeuteronsMinus = h1;
+}
+
 void AliFemtoEventReaderNanoAOD::Set4DCorrectionsAll(THnSparse *h1)
 {
   f4DcorrectionsAll = h1;

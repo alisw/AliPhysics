@@ -13,6 +13,7 @@
 #include "TDirectory.h"
 #include "TEventList.h"
 #include "TCut.h"
+#include <TObjString.h>
 
 using std::endl;
 using std::left;

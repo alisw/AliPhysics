@@ -55,6 +55,7 @@ AliAnalysisTaskLumiStabi::AliAnalysisTaskLumiStabi()
 //    fCentrality(0),
     fV0McentPercentile(300),
     fTrgClassCINTZAC(0),
+    fTrgClassV0L(0),
     fTrgInputV0M(0),
     hCentralityV0M(0),
     hCentralityV0MandPS(0),
@@ -79,6 +80,7 @@ AliAnalysisTaskLumiStabi::AliAnalysisTaskLumiStabi(const char *name)
 //    fCentrality(0),
     fV0McentPercentile(300),
     fTrgClassCINTZAC(0),
+    fTrgClassV0L(0),
     fTrgInputV0M(0),
     hCentralityV0M(0),
     hCentralityV0MandPS(0),
@@ -124,15 +126,13 @@ void AliAnalysisTaskLumiStabi::UserCreateOutputObjects()
   tOutput ->Branch("fIsSatellite", &fIsSatellite);
   tOutput ->Branch("fSelectPhysics", &fSelectPhysics);
   tOutput ->Branch("fTrgClassCINTZAC", &fTrgClassCINTZAC);
+  tOutput ->Branch("fTrgClassV0L", &fTrgClassV0L);
   tOutput ->Branch("fTrgInputV0M", &fTrgInputV0M);
   tOutput ->Branch("fV0McentPercentile", &fV0McentPercentile);
   tOutput ->Branch("fZNATDCm", &fZNATDCm,"fZNATDCm[4]/F");
   tOutput ->Branch("fZNCTDCm", &fZNCTDCm,"fZNCTDCm[4]/F");
 //  tOutput ->Branch("fCentrality", &fCentrality);
 //  fOutputList->Add(tOutput);
-
-  const Int_t STARTRUN = 240000;
-  const Int_t ENDRUN = 300000;
 
   hDummyCounter = new TH1I("hDummyCounter","Number of events per run",ENDRUN-STARTRUN,STARTRUN,ENDRUN);
   fOutputList->Add(hDummyCounter);
@@ -182,7 +182,21 @@ void AliAnalysisTaskLumiStabi::UserExec(Option_t *)
   }
 //  Printf("Event %s was loaded",event->GetName());\
 
+  fRunNumber = event->GetRunNumber();
+
+  //Pick only trigger
+  fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");
+  fTrgClassV0L = event->GetFiredTriggerClasses().Contains("CV0L7-B-NOPF-CENT");
+  if (fRunNumber < 247173) {if(!fTrgClassV0L)     return;}// V0L for Pb-Pb 2015
+  else                     {if(!fTrgClassCINTZAC) return;}
+
   hDummyCounter->Fill(fRunNumber);  // simple counter for basic information
+
+  fL0inputs = event->GetHeader()->GetL0TriggerInputs();
+  Int_t inputV0M = 7; //V0M in Pb-Pb 2018
+  if (fRunNumber >  244640 && fRunNumber  < 247173) inputV0M = 4; //V0M in Pb-Pb 2015
+  if (fRunNumber == 280234 || fRunNumber == 280235) inputV0M = 13; //V0M in Xe-Xe
+  fTrgInputV0M =  fL0inputs & (1 << (inputV0M-1));
 
   // ZDC timing decision
   AliAODZDC *ZDCdata = (AliAODZDC*) event->GetZDCData();
@@ -191,17 +205,6 @@ void AliAnalysisTaskLumiStabi::UserExec(Option_t *)
     fZNCTDCm[i] = ZDCdata->GetZNCTDCm(i);
   }
   fIsSatellite = IsSatellite(ZDCdata);
-
-  //Pick only trigger
-  fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");
-  if (!fTrgClassCINTZAC) return;
-
-  fRunNumber = event->GetRunNumber();
-  fL0inputs = event->GetHeader()->GetL0TriggerInputs();
-  Int_t inputV0M = 7; //V0M in Pb-Pb
-  if (fRunNumber == 280234 || fRunNumber == 280235) inputV0M = 13; //V0M in Xe-Xe
-//   fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");
-  fTrgInputV0M =  fL0inputs & (1 << (inputV0M-1));
 
   //Check physics selection
   fSelectPhysics = kTRUE;
@@ -230,6 +233,7 @@ void AliAnalysisTaskLumiStabi::UserExec(Option_t *)
   Printf("fIsSatellite %i",fIsSatellite);
   Printf("fSelectPhysics %i",fSelectPhysics);
   Printf("fTrgClassCINTZAC %i",fTrgClassCINTZAC);
+  Printf("fTrgClassV0L %i",fTrgClassV0L);
   Printf("fTrgInputV0M %i",fTrgInputV0M);
 
   tOutput->Fill();

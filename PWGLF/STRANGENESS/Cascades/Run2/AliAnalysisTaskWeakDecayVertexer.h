@@ -58,6 +58,9 @@ public:
     void SetPreselectDedxLambda (Bool_t lPreselectDedx= kTRUE ) {
         fkPreselectDedxLambda   = lPreselectDedx;
     }
+    void SetPreselectDedxLambdaValue (Double_t lNSigma = 5.0 ) {
+        fdEdxSigmaSelection   = lNSigma;
+    }
     void SetUseOnTheFlyV0Cascading( Bool_t lUseOnTheFlyV0Cascading = kTRUE ){
         //Highly experimental, use with care!
         fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
@@ -131,6 +134,18 @@ public:
 
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
+    }
+    void SetNClustersCut ( Int_t lNClusters, Bool_t lExtraCleanup = kTRUE) {
+        fkNClustersCut = lExtraCleanup;
+        fNClustersCutValue = lNClusters;
+    }
+    void SetNCrossedRowsCut ( Int_t lNCrossedRows, Bool_t lExtraCleanup = kTRUE) {
+        fkNCrossedRowsCut = lExtraCleanup;
+        fNCrossedRowsCutValue = lNCrossedRows;
+    }
+    void SetActiveLengthCut ( Double_t lActiveLength, Bool_t lExtraCleanup = kTRUE) {
+        fkActiveLengthCut = lExtraCleanup;
+        fActiveLengthCutValue = lActiveLength;
     }
 //---------------------------------------------------------------------------------------
     void SetRevertexAllEvents     ( Bool_t lOpt ) {
@@ -235,6 +250,9 @@ public:
     void SetSkipLargeXYDCA( Bool_t lOpt = kTRUE) {
         fkSkipLargeXYDCA=lOpt;
     }
+    void SetOnlyCountTracks ( Bool_t lOpt = kTRUE) {
+        fOnlyCount = lOpt;
+    }
     void SetUseMonteCarloAssociation( Bool_t lOpt = kTRUE) {
         fkMonteCarlo=lOpt;
     }
@@ -314,6 +332,8 @@ public:
         fkUseOptimalTrackParamsBachelor = lOpt;
     }
     //---------------------------------------------------------------------------------------
+    void Print(); 
+    //---------------------------------------------------------------------------------------
     
 
 private:
@@ -339,7 +359,14 @@ private:
     Bool_t fkRevertexAllEvents; //Don't be smart. Re-vertex every single event 
     Bool_t fkPreselectDedx;
     Bool_t fkPreselectDedxLambda;
-    Bool_t fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    Double_t fdEdxSigmaSelection;
+    Bool_t fkExtraCleanup;           //if true, perform pre-rejection of candidates based on eta
+    Bool_t fkNClustersCut;           //if true, perform pre-rejection of tracks based on Nclusters value
+    Int_t fNClustersCutValue;
+    Bool_t fkNCrossedRowsCut;        //if true, perform pre-rejection of tracks based on NcrossedRows value
+    Int_t fNCrossedRowsCutValue;
+    Bool_t fkActiveLengthCut;        //if true, perform pre-rejection of tracks based on active length value
+    Double_t fActiveLengthCutValue;
     
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t fkRunV0Vertexer;           // if true, re-run V0 vertexer
@@ -382,6 +409,7 @@ private:
     Double_t fMassWindowAroundCascade;
     
     Double_t fMinXforXYtest; //min X allowed for XY-plane preopt test
+    Bool_t   fOnlyCount; //if true, don't minimize anything (fast, count tracks only) 
     
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
@@ -403,8 +431,10 @@ private:
     TH1D *fHistV0OptimalTrackParamUseBachelor; //!
     
     //V0 statistics
-    TH1D *fHistV0Statistics; //! 
-
+    TH1D *fHistV0Statistics; //!
+    TH1D *fHistPosTrackCounter;
+    TH1D *fHistNegTrackCounter;
+  
     AliAnalysisTaskWeakDecayVertexer(const AliAnalysisTaskWeakDecayVertexer&);            // not implemented
     AliAnalysisTaskWeakDecayVertexer& operator=(const AliAnalysisTaskWeakDecayVertexer&); // not implemented
 

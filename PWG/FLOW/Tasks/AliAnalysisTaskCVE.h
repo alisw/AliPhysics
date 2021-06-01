@@ -80,6 +80,10 @@ class AliAnalysisTaskCVE : public AliAnalysisTaskSE {
   void SetEtaRangeMax(Double_t emx)              {this->fMaxEtaCut   = emx;}
   void SetPtRangeMin(Double_t ptL)               {this->fMinPtCut    = ptL;}
   void SetPtRangeMax(Double_t ptH)               {this->fMaxPtCut    = ptH;}
+  void SetDCAXYRangeMax(Double_t dcaxy)          {this->fDCAxyMax    = dcaxy;}
+  void SetDCAZRangeMax(Double_t dcaz)            {this->fDCAzMax    =  dcaz;}
+  void SetChi2Range(Double_t chi2)               {this->fChi2    =  chi2;}
+  
   //------ End of user defined function -------
 
 
@@ -121,6 +125,9 @@ class AliAnalysisTaskCVE : public AliAnalysisTaskSE {
   Float_t           fNSigmaTOFCut;  //
   Float_t               fMinPtCut;  //
   Float_t               fMaxPtCut;  //
+  Float_t               fDCAxyMax;  //                                                                                                        
+  Float_t               fDCAzMax;  // 
+  Float_t                 fChi2; 
   Float_t              fMinEtaCut;  //
   Float_t              fMaxEtaCut;  //
   Float_t             fTrkChi2Min;  //

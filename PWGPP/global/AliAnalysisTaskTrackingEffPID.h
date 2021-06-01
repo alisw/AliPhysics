@@ -49,6 +49,8 @@ public:
   void SetTrackletMultiplicityEstimator(){ fMultEstimator=0;}
   void SetVertexContribMultiplicityEstimator(){ fMultEstimator=1;}
   void SetTracksMultiplicityEstimator(){ fMultEstimator=2;}
+  void SetTPCTracksMultiplicityEstimator(){ fMultEstimator=3;}
+  void SetTPCClustersMultiplicityEstimator(){ fMultEstimator=4;}
 
   void SetCollisionSystem(TString collsy){
     collsy.ToLower();
@@ -67,7 +69,9 @@ public:
   }
 
   void SetUseGeneratedKine(bool flag) {fUseGeneratedKine=flag;}
-
+  void RejectGeneratedParticlesFromPileup(bool flag) {fRejectPileupParticles=flag;}
+  void RejectTracksOfPileupParticles(bool flag) {fRejectTracksOfPileupPart=flag;}
+  
   void SetTriggerMask(ULong64_t mask){
     fEventCut.OverrideAutomaticTriggerSelection(mask);
   }
@@ -78,6 +82,9 @@ public:
   void SetUseMVPileup(bool flag) {fEventCut.fPileUpCutMV=flag;}
 
   void SetUseImpactParameter(bool flag) {fUseImpPar=flag;}
+  void SetUseLocalTrackDensity(bool flag, double deltaRcut=0.2, double maxNtracks=-1.) {
+    fUseLocDen=flag; fDeltaRcut=deltaRcut; fMaxTracksInCone=maxNtracks;
+  }
   void SetPtHardRange(double pmin, double pmax){
     fSelectPtHardRange=kTRUE; fMinPtHard=pmin; fMaxPtHard=pmax;
   }
@@ -89,6 +96,7 @@ public:
   void KeepOnlyUnderlyingEventParticles(bool opt){fKeepOnlyUE=opt;}
   TString GetGenerator(int label, TList *lh);
   bool IsInjectedParticle(int lab, TList *lh);
+  double GetLocalTrackDens(TNtuple* trEtaPhiMap, double eta, double phi) const;
   AliEventCuts  fEventCut;
 
 
@@ -98,6 +106,8 @@ private:
 
   bool fUseTrackCutsForAOD;       /// flag to switch off/on fTrackCuts for AOD
   bool fUseGeneratedKine;         /// flag to use the generated pt, eta phi
+  bool fRejectPileupParticles;    /// flag to reject from generated particles those from pileup
+  bool fRejectTracksOfPileupPart; /// flag to reject from reco particles those from pileup
   int  fPrimarySelectionOpt;      /// 0=no selection, 1=IsPhysicalPrimary, 2= cut on the origin
   int  fMultEstimator;            /// multiplicity estimator: 0=trackelts, 1=ITS+TPCtracks, 2=primary vertex contributors
   bool fIsAA;                     /// flag to control collision system
@@ -109,14 +119,18 @@ private:
   bool fKeepOnlyInjected;        /// flag to keep only injected particles
   bool fKeepOnlyUE;              /// flag to keep only underlying event
   bool fUseImpPar;               /// flag to enable plots vs. impact parameter
+  bool fUseLocDen;               /// flag to enable plots vs. local track density
+  double fDeltaRcut;             /// radius cut to count local track density
+  double fMaxTracksInCone;       /// upper limit for track density axis
   bool fSelectPtHardRange;       /// flag to enable the cut on pthard
   double fMinPtHard;             /// min pthard
   double fMaxPtHard;             /// max pthard
   TList* fOutputList;                                     //!<! Output list
   TList* fListCuts;                                       //!<! Output with cuts
   TH1F*  fHistNEvents;                                    //!<!  histo with N of events  
-  TH1D*  fHistNParticles;                                    //!<!  histo with N of particles
+  TH1D*  fHistNParticles;                                 //!<!  histo with N of particles
   TH1D*  fHistNTracks;                                    //!<!  histo with N of tracks
+  TH2D*  fHistPileupTagAOD;                               //!<!  control plot for AOD pileup
   TH1D*  hHistXsecVsPtHard;                               //!<!  control plot
   THnSparseF* fGenerated[AliPID::kSPECIESC][2];           //!<! Generated particles (pt, eta, phi, mult, zvert)
   THnSparseF* fGeneratedEvSel[AliPID::kSPECIESC][2];      //!<! Generated particles after event selection
@@ -126,7 +140,7 @@ private:
 
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskTrackingEffPID, 8);
+  ClassDef(AliAnalysisTaskTrackingEffPID, 11);
   /// \endcond
 };
 

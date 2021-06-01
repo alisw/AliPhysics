@@ -326,7 +326,7 @@ class AliCalorimeterUtils : public TObject {
   void          SetEMCALRecoUtils(AliEMCALRecoUtils * ru)  { fEMCALRecoUtils = ru          ; }
   AliEMCALRecoUtils* GetEMCALRecoUtils()             const { return fEMCALRecoUtils        ; }
   
-  void          ConfigureEMCALRecoUtils(Bool_t  bMC    = kFALSE, Bool_t  bExotic= kTRUE, Bool_t  bNonLin= kFALSE,  
+  void          ConfigureEMCALRecoUtils(Bool_t  bMC    = kFALSE, Bool_t  bExotic= kTRUE, Int_t  bNonLin= kFALSE,  
                                         Bool_t  bRecalE= kTRUE , Bool_t  bBad   = kTRUE, Bool_t  bRecalT= kTRUE, Int_t   debug  = -1);
   
   Bool_t        IsCorrectionOfClusterEnergyOn()      const { return fCorrectELinearity     ; }

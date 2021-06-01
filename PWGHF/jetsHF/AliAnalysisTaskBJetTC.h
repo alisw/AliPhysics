@@ -774,6 +774,8 @@ private:
 
     AliESDtrackCuts *fEsdTrackCuts; //! cuts used on the track selected for the SV reconstruction
 
+    TH3D *fh3JetpTLxySVIPsSecond; //!
+
     TH3D *fHistSV2Prong;             //!
     TH3D *fHistSV2ProngUnidentified; //!
     TH3D *fHistSV2Prongb;            //!

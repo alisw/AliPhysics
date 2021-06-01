@@ -160,11 +160,23 @@ void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 15, Bool_t useFlowParFiles = k
   #endif
   */
   // Setup analysis and usage of centrality bins
+  //#if !defined (__CINT__) || defined (__CLING__)
+    //gInterpreter->LoadMacro("AddTaskCRC.C");
+  //#else
+    //gROOT->LoadMacro("AddTaskCRC.C");
+  //#endif
+  
   #if !defined (__CINT__) || defined (__CLING__)
-    gInterpreter->LoadMacro("AddTaskCRC.C");
+    gInterpreter->LoadMacro("AddTaskQvec.C");
   #else
-    gROOT->LoadMacro("AddTaskCRC.C");
+    gROOT->LoadMacro("AddTaskQvec.C");
   #endif
+  
+  //#if !defined (__CINT__) || defined (__CLING__)
+    //gInterpreter->LoadMacro("AddTaskCRCZDCRecenter.C");
+  //#else
+    //gROOT->LoadMacro("AddTaskCRCZDCRecenter.C");
+  //#endif
   
   //#if !defined (__CINT__) || defined (__CLING__)
     //gInterpreter->LoadMacro("AddTaskAccContForWeights.C");
@@ -192,11 +204,23 @@ void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 15, Bool_t useFlowParFiles = k
     //AddTaskFlowQC();
   //#endif
   
+  //#if !defined (__CINT__) || defined (__CLING__)
+    //static_cast<void>(gInterpreter->ProcessLine(Form("AddTaskCRC()")));
+  //#else
+    //AddTaskCRC();
+  //#endif
+  
   #if !defined (__CINT__) || defined (__CLING__)
-    static_cast<void>(gInterpreter->ProcessLine(Form("AddTaskCRC()")));
+    static_cast<void>(gInterpreter->ProcessLine(Form("AddTaskQvec()")));
   #else
-    AddTaskCRC();
+    AddTaskQvec();
   #endif
+  
+  //#if !defined (__CINT__) || defined (__CLING__)
+    //static_cast<void>(gInterpreter->ProcessLine(Form("AddTaskCRCZDCRecenter()")));
+  //#else
+    //AddTaskCRCZDCRecenter();
+  //#endif
   
   //#if !defined (__CINT__) || defined (__CLING__)
     //static_cast<void>(gInterpreter->ProcessLine(Form("AddTaskAccContForWeights()")));
@@ -512,4 +536,3 @@ TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
   return chain;
 
 } // end of TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
-

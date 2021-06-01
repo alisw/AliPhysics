@@ -111,7 +111,10 @@ public AliAnalysisTaskSE
   AliESDtrackCuts *fTrackCuts2010; //! ITSTPC track cuts 2010
   AliESDtrackCuts *fTrackCuts2011; //! ITSTPC track cuts 2011
   AliESDtrackCuts *fTrackCutsTPCRefit; //! TPC only track cuts + refit
-  AliESDtrackCuts *fTrackCuts2011Sys; //! TPC only track cuts + refit 
+  AliESDtrackCuts *fTrackCuts2011Sys; //! TPC only track cuts + refit
+  AliESDtrackCuts* fTrackCutsHybrid_kNone; //! w/o hits in the SPD;
+  AliESDtrackCuts* fTrackCutsHybrid_kOff; //! no SPD req. & w/o ITSrefit
+ 
   AliESDpid *fESDpid; // ESD PID
   Bool_t fIsCollisionCandidate; // is collision candidate
   UInt_t fIsEventSelected; // is event selected

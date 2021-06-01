@@ -91,10 +91,9 @@ AliAnalysisTaskSEDvsRT *AddTaskDvsRT(Int_t system=0,
   dRTTask->SetMCOption(MCOption);
   dRTTask->SetLctoV0(isLcV0);
   dRTTask->SetUseNsparse(useNsparse);
-  dRTTask->SetPtLeadMin(cutPtLead);
   //RT-specific settings
   dRTTask->SetEtaCut(0.8);
-  dRTTask->SetPtLeadMin(5.0);
+  dRTTask->SetPtLeadMin(cutPtLead);
   dRTTask->SetAveMultiInTrans(4.939);
   
   //channel-specific inv mass settings

@@ -16,6 +16,7 @@
 
 #include <fstream>
 
+#include <TObjString.h>
 #include "TSystem.h"
 #include "TMath.h"
 #include "TVectorD.h"

@@ -22,7 +22,7 @@
 //---------------------------------------------
 ////////////////////////////////////////////////
 
-
+#include <TObjString.h>
 #include "AliIdentifiedPrimaryCuts.h"
 #include "AliAODConversionPhoton.h"
 #include "AliKFVertex.h"

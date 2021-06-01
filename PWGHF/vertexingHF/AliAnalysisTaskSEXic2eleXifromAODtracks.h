@@ -30,6 +30,7 @@
 #include "AliPID.h"
 #include "AliRDHFCutsXictoeleXifromAODtracks.h"
 #include "TF1.h"
+#include "AliVertexingHFUtils.h"
 
 /// \class AliAnalysisTaskSEXic2eleXifromAODtracks
 
@@ -104,6 +105,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void StoreGlobalTrackReference(AliAODTrack *track, Int_t id);
   void ResetGlobalTrackReference();
 
+  
+    
 	// multiplicity dep analysis
 	void SetMultiplVsZProfileLHC10b(TProfile* hprof){
 		if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
@@ -481,6 +484,10 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse *fHistoXicNonPromptMCS; //!<!
   THnSparse *fHistoXicPromptMCGen;//!<!
   THnSparse *fHistoXicPromptMCS;//!<!
+  THnSparse *fHistoXicPromptMCGenWeight;//!<!
+  THnSparse *fHistoXicPromptMCSWeight;//!<!
+  
+  
   THnSparse *fHistoXicInclusiveMCGen;//!<!
 
   THnSparse *fHistoXicMCGenWeight;//!<!
@@ -511,7 +518,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,40); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,42); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

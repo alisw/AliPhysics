@@ -5,11 +5,18 @@
 
 class AliAnalysisManager;
 class AliMultSelection;
+class AliExternalTrackParam;
 
 //Class which saves the cascade daughter tracks
 class AliRunningCascadeCandidate : public TObject
 {
 private:
+
+    AliExternalTrackParam pos_ptr; //
+    AliExternalTrackParam neg_ptr; //
+    AliExternalTrackParam bach_ptr; //
+    // TClonesArray* ftrio_tr; //->
+
     Float_t PMom[3]; //
     Float_t NMom[3]; //
     Float_t BMom[3]; //
@@ -23,6 +30,8 @@ private:
     Short_t dca_bach_to_baryon; // 0..500.0 cm
     
     Short_t CosPointingAngle; //also stores the charge of the bachelor track! (cos(THeta)*e_bach)
+    Short_t WrongCosPointingAngle; //to get rid of correlated background.
+
     Float_t CascadeDecayPos[3]; //
     Float_t V0fromCascadePos[3];  //
     Short_t TrackLengthTPC[3]; // 0 - pos, 1 - neg, 2-bach
@@ -31,6 +40,7 @@ private:
     //extra PID info
     //ITS
     UShort_t ITSstatusPosTrack[6], ITSstatusNegTrack[6], ITSstatusBachTrack[6];// 2 byte, unsigned out:from 0 to 6.
+    UShort_t ITSpointPosTrack[6], ITSpointNegTrack[6], ITSpointBachTrack[6];// 2 byte; point on layer yes or no?
     UShort_t ITSrefitFlag[3]; //
     UShort_t ITSPosSharedPoints[6], ITSNegSharedPoints[6], ITSBachSharedPoints[6]; //
     Short_t ITSchi2[3], ITSsignal[3]; //
@@ -61,17 +71,21 @@ private:
     
 public:
     //default constructor: for my classed, inherited by TOBject, should be empty as possible
-    AliRunningCascadeCandidate():dca_V0_to_prim(-10),dca_Omega_to_prim(-10),dca_pos_to_neg(-10),dca_bach_to_Lambda(-10),dca_bach_to_baryon(-10),CosPointingAngle(-10.)
+    AliRunningCascadeCandidate():pos_ptr(),neg_ptr(),bach_ptr(), dca_V0_to_prim(-10),dca_Omega_to_prim(-10),
+        dca_pos_to_neg(-10),dca_bach_to_Lambda(-10),dca_bach_to_baryon(-10),CosPointingAngle(-10.),WrongCosPointingAngle(-10)
     {}
+
     //explicit contructor: should do at least something
-    AliRunningCascadeCandidate(Int_t i):dca_V0_to_prim(-10),dca_Omega_to_prim(-10),dca_pos_to_neg(-10),dca_bach_to_Lambda(-10),dca_bach_to_baryon(-10),CosPointingAngle(-10.)
+    AliRunningCascadeCandidate(Int_t i):pos_ptr(),neg_ptr(),bach_ptr(),dca_V0_to_prim(-10),
+        dca_Omega_to_prim(-10),dca_pos_to_neg(-10),dca_bach_to_Lambda(-10),dca_bach_to_baryon(-10),CosPointingAngle(-10.),WrongCosPointingAngle(-10)
     {
-        // Float_t sum = dca_V0_to_prim + dca_pos_to_neg; //does not have any physic.interp.
         dca_V0_to_prim = -5;
-        
     }
     //copy constructor
-    AliRunningCascadeCandidate(const AliRunningCascadeCandidate&):TObject(),dca_V0_to_prim(-10),dca_Omega_to_prim(-10),dca_pos_to_neg(-10),dca_bach_to_Lambda(-10),dca_bach_to_baryon(-10),CosPointingAngle(-10.){}
+    AliRunningCascadeCandidate(const AliRunningCascadeCandidate&):TObject(),pos_ptr(),neg_ptr(),bach_ptr(),
+        dca_V0_to_prim(-10),dca_Omega_to_prim(-10),dca_pos_to_neg(-10),dca_bach_to_Lambda(-10),dca_bach_to_baryon(-10),
+        CosPointingAngle(-10.),WrongCosPointingAngle(-10)
+    {}
     //copy assignment
     AliRunningCascadeCandidate& operator = (const AliRunningCascadeCandidate&){return *this;}
     //default destructor
@@ -84,6 +98,10 @@ public:
     //----------------------------------------------------------------
     
     //setters
+    void set_pos_daughter(AliExternalTrackParam *ptr){ pos_ptr = *ptr; }
+    void set_neg_daughter(const AliExternalTrackParam* ptr){ neg_ptr = *ptr;}
+    void set_bach_daughter(const AliExternalTrackParam* ptr){ bach_ptr = *ptr; }
+
     void set_PMom(Float_t px, Float_t py, Float_t pz)   {PMom[0] = (Float_t)px; PMom[1] = (Float_t)py; PMom[2] = (Float_t)pz;}
     void set_NMom(Float_t px, Float_t py, Float_t pz)   {NMom[0] = (Float_t)px; NMom[1] = (Float_t)py; NMom[2] = (Float_t)pz;}
     void set_BMom(Float_t px, Float_t py, Float_t pz)    {BMom[0] = (Float_t)px; BMom[1] = (Float_t)py; BMom[2] = (Float_t)pz;}
@@ -96,6 +114,9 @@ public:
     void set_dca_bach_to_Lambda(Float_t f)  { dca_bach_to_Lambda = (Short_t)(f*100.0); }
     void set_dca_bach_to_baryon(Float_t f)  { dca_bach_to_baryon = (Short_t)(f*10.0); }
     void set_CosPointingAngle(Float_t f)    {CosPointingAngle = (Short_t)(f*1000.);} //pay attention to this!
+
+    void set_WrongCosPointingAngle(Float_t f){WrongCosPointingAngle = (Short_t)(f*1000.);} //to get rid of corr.backgrounds.
+
     void set_CascadeDecayPos(Float_t f1, Float_t f2, Float_t f3)
     {
         CascadeDecayPos[0] = f1;
@@ -128,6 +149,22 @@ public:
         ITSstatusBachTrack[0] = (UShort_t)l0; ITSstatusBachTrack[1] = (UShort_t)l1; ITSstatusBachTrack[2] = (UShort_t)l2;
         ITSstatusBachTrack[3] = (UShort_t)l3; ITSstatusBachTrack[4] = (UShort_t)l4;ITSstatusBachTrack[5] = (UShort_t)l5;;
     }
+
+    //hits in layers, yes or no?
+    void set_ITSpointPosTrack(Int_t l0, Int_t l1,Int_t l2, Int_t l3,Int_t l4, Int_t l5){
+        ITSpointPosTrack[0] = (UShort_t)l0; ITSpointPosTrack[1] = (UShort_t)l1; ITSpointPosTrack[2] = (UShort_t)l2;
+        ITSpointPosTrack[3] = (UShort_t)l3; ITSpointPosTrack[4] = (UShort_t)l4; ITSpointPosTrack[5] = (UShort_t)l5;;
+    }
+    
+    void set_ITSpointNegTrack(Int_t l0, Int_t l1,Int_t l2, Int_t l3,Int_t l4, Int_t l5){
+        ITSpointNegTrack[0] = (UShort_t)l0; ITSpointNegTrack[1] = (UShort_t)l1; ITSpointNegTrack[2] = (UShort_t)l2;
+        ITSpointNegTrack[3] = (UShort_t)l3; ITSpointNegTrack[4] = (UShort_t)l4; ITSpointNegTrack[5] = (UShort_t)l5;;
+    }
+    void set_ITSpointBachTrack(Int_t l0, Int_t l1,Int_t l2, Int_t l3,Int_t l4, Int_t l5){
+        ITSpointBachTrack[0] = (UShort_t)l0; ITSpointBachTrack[1] = (UShort_t)l1; ITSpointBachTrack[2] = (UShort_t)l2;
+        ITSpointBachTrack[3] = (UShort_t)l3; ITSpointBachTrack[4] = (UShort_t)l4;ITSpointBachTrack[5] = (UShort_t)l5;;
+    }
+    
     
     void set_ITSPosSharedPoints(Int_t s0, Int_t s1,Int_t s2,Int_t s3,Int_t s4,Int_t s5){
         ITSPosSharedPoints[0] = (UShort_t)s0,   ITSPosSharedPoints[1] = (UShort_t)s1,   ITSPosSharedPoints[2] = (UShort_t)s2,
@@ -195,6 +232,14 @@ public:
     
     
     //getters
+    // void get_pos_daughter(AliExternalTrackParam* return_ptr) {return_ptr = pos_ptr;}
+    AliExternalTrackParam get_pos_daughter() const {return pos_ptr;}
+    AliExternalTrackParam get_neg_daughter() const {return neg_ptr;}
+    AliExternalTrackParam get_bach_daughter() const {return bach_ptr;}
+
+
+
+
     Float_t get_PMom(Int_t i) const     { return PMom[i]; }
     Float_t get_NMom(Int_t i) const     { return NMom[i]; }
     Float_t get_BMom(Int_t i) const     { return BMom[i]; }
@@ -210,6 +255,9 @@ public:
     
     
     Float_t get_CosPointingAngle()  const  {return ((Float_t)CosPointingAngle)/1000.;} //pay attention to cos! should not be negative
+    Float_t get_WrongCosPointingAngle()  const  {return ((Float_t)WrongCosPointingAngle)/1000.;} //test this as well!
+
+
     Float_t  get_CascadeDecayPos(Int_t i) const {return CascadeDecayPos[i];}
     Float_t  get_V0fromCascadePos(Int_t i) const {return V0fromCascadePos[i];}
     Float_t get_TrackLengthTPC(Int_t i) const{return (Float_t)TrackLengthTPC[i];}
@@ -218,6 +266,10 @@ public:
     UShort_t get_ITSstatusPosTrack(Int_t i) const {return ITSstatusPosTrack[i];}
     UShort_t get_ITSstatusNegTrack(Int_t i) const {return ITSstatusNegTrack[i];}
     UShort_t get_ITSstatusBachTrack(Int_t i) const {return ITSstatusBachTrack[i];}
+
+    UShort_t get_ITSpointPosTrack(Int_t i) const {return ITSpointPosTrack[i];}
+    UShort_t get_ITSpointNegTrack(Int_t i) const {return ITSpointNegTrack[i];}
+    UShort_t get_ITSpointBachTrack(Int_t i) const {return ITSpointBachTrack[i];}
     
     UShort_t get_ITSPosSharedPoints(Int_t i) const {return ITSPosSharedPoints[i];}
     UShort_t get_ITSNegSharedPoints(Int_t i) const {return ITSNegSharedPoints[i];}
@@ -249,7 +301,7 @@ public:
     
     
     
-    ClassDef(AliRunningCascadeCandidate,2);
+    ClassDef(AliRunningCascadeCandidate,3);
     
     //----------------------------------------------------------------
 };
@@ -389,7 +441,7 @@ public:
     }
     
     
-    ClassDef(AliRunningCascadeEvent, 2);
+    ClassDef(AliRunningCascadeEvent, 3);
 };
 
 
@@ -436,6 +488,13 @@ private:
     AliRunningCascadeCandidate* Cascade_Track;
     AliRunningCascadeEvent* Cascade_Event;
     TTree* fTreeCascadeAsEvent;
+
+    //new, save those into the tree, in order to do the energy correction later with AliTrackerBase
+    AliExternalTrackParam *fpTrackXi;
+    AliExternalTrackParam *fnTrackXi;
+    AliExternalTrackParam *fbTrackXi;
+
+
     
     //variables used in the userexec
     Float_t fMagneticField; //magnetic field in an event
@@ -449,6 +508,9 @@ private:
     //variables which are not necessarily defined in the impl.file
     Double_t fV0VertexerSels[7];
     Double_t fCascadeVertexerSels[8]; // Array to store the 8 values for the different selections Casc. related
+
+    AliAnalysisTaskStrangeCascadesDiscrete(const AliAnalysisTaskStrangeCascadesDiscrete&);  //not implemented
+    AliAnalysisTaskStrangeCascadesDiscrete& operator =(const AliAnalysisTaskStrangeCascadesDiscrete&); //not implemented
     
 public:
     //constructors, copies and destructor
@@ -478,8 +540,6 @@ public:
                                            Float_t sigmaRangeTPC,
                                            Float_t lOmegaCleanMassWindow,
                                            const char *name);
-    AliAnalysisTaskStrangeCascadesDiscrete(const AliAnalysisTaskStrangeCascadesDiscrete&);
-    AliAnalysisTaskStrangeCascadesDiscrete& operator =(const AliAnalysisTaskStrangeCascadesDiscrete&);
     virtual ~AliAnalysisTaskStrangeCascadesDiscrete();
     
     //regular main members
@@ -489,19 +549,19 @@ public:
     
     
     //Task configurations
-    
-    
+
     //My members
     Bool_t GoodESDEvent(AliESDEvent* lESDevent, const AliESDVertex *lPrimaryBestESDVtx,AliESDtrackCuts* esdtrackcuts1);
-    Bool_t GoodESDTrack(AliESDtrack* trackESD, Double_t raprange, Double_t etarange);
+    Bool_t GoodESDTrack(AliESDtrack* trackESD, Double_t etarange);
     Int_t GetITSstatus(AliESDtrack* esdtrack, Int_t layer) const;
     Bool_t ExtraCleanupCascade(AliESDcascade* Xi,AliESDtrack* gPtrack,AliESDtrack* gNtrack,AliESDtrack* gBtrack,Double_t Omegamasswindow);
     Bool_t GoodCandidatesTPCPID(AliESDtrack* pTrackXi, AliESDtrack* nTrackXi, AliESDtrack* bachTrackXi, Float_t sigmamax);
+    Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
+
     
     
     
-    
-    ClassDef(AliAnalysisTaskStrangeCascadesDiscrete, 2);
+    ClassDef(AliAnalysisTaskStrangeCascadesDiscrete, 3);
 };
 
 

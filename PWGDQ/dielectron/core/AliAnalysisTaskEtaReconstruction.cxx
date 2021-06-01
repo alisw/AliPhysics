@@ -110,7 +110,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
                                                                               , fHistGenPrimaryPosPart(), fHistGenPrimaryNegPart(), fHistGenSecondaryPosPart(), fHistGenSecondaryNegPart(), fHistGenSmearedPrimaryPosPart(), fHistGenSmearedPrimaryNegPart(), fHistGenSmearedSecondaryPosPart(), fHistGenSmearedSecondaryNegPart(), fHistRecPrimaryPosPart(), fHistRecPrimaryNegPart(), fHistRecSecondaryPosPart(), fHistRecSecondaryNegPart()
                                                                               , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair_PrimSec(), fHistGenFourPair_SecSec(), fHistGenSmearedFourPair_PrimSec(), fHistGenSmearedFourPair_SecSec(), fHistRecFourPair_PrimSec(), fHistRecFourPair_SecSec(), fVecHistPrefilters()
                                                                               , fWriteLegsFromPair(false), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99), fTHnSparseGenSmearedLegsFromPrimaryPair(), fTHnSparseGenSmearedLegsFromSecondaryPair(), fTHnSparseRecLegsFromPrimaryPair(), fTHnSparseRecLegsFromSecondaryPair()
-                                                                              , fDoPairing(false), fDoFourPairing(false), fUsePreFilter(false), fUseSecPreFilter(false), fDoMassCut(), fPhotonMass(), fAnalyseDalitz(), fAnalyseGammaGamma(), fDrawPIDSupportHists()
+                                                                              , fDoPairing(false), fDoFourPairing(false), fUsePreFilter(false), fUseSecPreFilter(false), fDoMassCut(), fPhotonMass(), fAnalyseDalitz(), fAnalyseGammaGamma(), fAnalyseGenAndGenSmeared(), fAnalyseRec(), fDrawPIDSupportHists()
                                                                               , fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary(), fRecV0Pair(), fPreFilter_BadTracksLabel_primary()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
                                                                               , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
@@ -149,7 +149,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * 
                                                                               , fHistGenPrimaryPosPart(), fHistGenPrimaryNegPart(), fHistGenSecondaryPosPart(), fHistGenSecondaryNegPart(), fHistGenSmearedPrimaryPosPart(), fHistGenSmearedPrimaryNegPart(), fHistGenSmearedSecondaryPosPart(), fHistGenSmearedSecondaryNegPart(), fHistRecPrimaryPosPart(), fHistRecPrimaryNegPart(), fHistRecSecondaryPosPart(), fHistRecSecondaryNegPart()
                                                                               , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair_PrimSec(), fHistGenFourPair_SecSec(), fHistGenSmearedFourPair_PrimSec(), fHistGenSmearedFourPair_SecSec(), fHistRecFourPair_PrimSec(), fHistRecFourPair_SecSec(), fVecHistPrefilters()
                                                                               , fWriteLegsFromPair(false), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99), fTHnSparseGenSmearedLegsFromPrimaryPair(), fTHnSparseGenSmearedLegsFromSecondaryPair(), fTHnSparseRecLegsFromPrimaryPair(), fTHnSparseRecLegsFromSecondaryPair()
-                                                                              , fDoPairing(false), fDoFourPairing(false), fUsePreFilter(false), fUseSecPreFilter(false), fDoMassCut(), fPhotonMass(), fAnalyseDalitz(), fAnalyseGammaGamma(), fDrawPIDSupportHists()
+                                                                              , fDoPairing(false), fDoFourPairing(false), fUsePreFilter(false), fUseSecPreFilter(false), fDoMassCut(), fPhotonMass(), fAnalyseDalitz(), fAnalyseGammaGamma(),fAnalyseGenAndGenSmeared(), fAnalyseRec(), fDrawPIDSupportHists()
                                                                               , fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary(), fRecV0Pair(), fPreFilter_BadTracksLabel_primary()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
                                                                               , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
@@ -420,10 +420,12 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fGeneratedSmearedSecondaryList->Add(th3_tmp_neg);
       }
 
-      fSingleElectronList->Add(fGeneratedPrimaryList);
-      fSingleElectronList->Add(fGeneratedSecondaryList);
-      fSingleElectronList->Add(fGeneratedSmearedPrimaryList);
-      fSingleElectronList->Add(fGeneratedSmearedSecondaryList);
+      if(fAnalyseGenAndGenSmeared){
+        fSingleElectronList->Add(fGeneratedPrimaryList);
+        fSingleElectronList->Add(fGeneratedSecondaryList);
+        fSingleElectronList->Add(fGeneratedSmearedPrimaryList);
+        fSingleElectronList->Add(fGeneratedSmearedSecondaryList);
+      }
 
       // Generated reconstructed lists for every cutsetting one list and every MCsignal 2 histograms with pos and neg charge
       for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
@@ -444,7 +446,9 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
           fRecPrimaryList->Add(th3_tmp_neg);
 
         }
-        fSingleElectronList->Add(fRecPrimaryList);
+        if(fAnalyseRec){
+          fSingleElectronList->Add(fRecPrimaryList);
+        }
       }
       for (unsigned int list_i = 0; list_i < fPairCuts_secondary_standard.size(); ++list_i){
         fRecSecondaryList = new TList();
@@ -464,7 +468,9 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
           fRecSecondaryList->Add(th3_tmp_neg);
 
         }
-        fSingleElectronList->Add(fRecSecondaryList);
+        if(fAnalyseRec){
+          fSingleElectronList->Add(fRecSecondaryList);
+        }
       }
 
 
@@ -547,10 +553,12 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
           }
         }
 
-        fPairList->Add(fGeneratedPrimaryPairsList);
-        fPairList->Add(fGeneratedSecondaryPairsList);
-        fPairList->Add(fGeneratedSmearedPrimaryPairsList);
-        fPairList->Add(fGeneratedSmearedSecondaryPairsList);
+        if(fAnalyseGenAndGenSmeared){
+          fPairList->Add(fGeneratedPrimaryPairsList);
+          fPairList->Add(fGeneratedSecondaryPairsList);
+          fPairList->Add(fGeneratedSmearedPrimaryPairsList);
+          fPairList->Add(fGeneratedSmearedSecondaryPairsList);
+        }
 
         // Generated reconstructed lists for every cutsetting one list and every MCsignal 1 histogram
         for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
@@ -579,8 +587,9 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
               list->Add(fTHnSparseRecLegsFromPrimaryPair_tmp);
             }
           }
-
-          fPairList->Add(list);
+          if(fAnalyseRec){
+            fPairList->Add(list);
+          }
         }
 
         // Generated reconstructed lists for every cutsetting one list and every MCsignal 1 histogram
@@ -610,8 +619,9 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
               list1->Add(fTHnSparseRecLegsFromSecondaryPair_tmp);
             }
           }
-
-          fPairList->Add(list1);
+          if(fAnalyseRec){
+            fPairList->Add(list1);
+          }
         }
 
       }
@@ -806,102 +816,108 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fFourPairList_PrimSec->SetName("4Pairs_PrimSec");
         fFourPairList_PrimSec->SetOwner();
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+        if(fAnalyseGenAndGenSmeared){
+          fGeneratedFourPairsList_PrimSec = new TList();
+          fGeneratedFourPairsList_PrimSec->SetName("Generated");
+          fGeneratedFourPairsList_PrimSec->SetOwner();
+          for (unsigned int i = 0; i < fFourPairMCSignal_PrimSec.size(); /*i++*/ i+=2){
+            TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+            th2_tmp->Sumw2();
+            fHistGenFourPair_PrimSec.push_back(th2_tmp);
+            fGeneratedFourPairsList_PrimSec->Add(th2_tmp);
+          }
+          fFourPairList_PrimSec->Add(fGeneratedFourPairsList_PrimSec);
 
-        fGeneratedFourPairsList_PrimSec = new TList();
-        fGeneratedFourPairsList_PrimSec->SetName("Generated");
-        fGeneratedFourPairsList_PrimSec->SetOwner();
-        for (unsigned int i = 0; i < fFourPairMCSignal_PrimSec.size(); /*i++*/ i+=2){
-          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-          th2_tmp->Sumw2();
-          fHistGenFourPair_PrimSec.push_back(th2_tmp);
-          fGeneratedFourPairsList_PrimSec->Add(th2_tmp);
+          fGeneratedSmearedFourPairsList_PrimSec = new TList();
+          fGeneratedSmearedFourPairsList_PrimSec->SetName("GeneratedSmeared");
+          fGeneratedSmearedFourPairsList_PrimSec->SetOwner();
+          for (unsigned int i = 0; i < fFourPairMCSignal_PrimSec.size(); i+=2){
+            TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+            th2_tmp->Sumw2();
+            fHistGenSmearedFourPair_PrimSec.push_back(th2_tmp);
+            fGeneratedSmearedFourPairsList_PrimSec->Add(th2_tmp);
+          }
+
+          fFourPairList_PrimSec->Add(fGeneratedSmearedFourPairsList_PrimSec);
         }
-        fFourPairList_PrimSec->Add(fGeneratedFourPairsList_PrimSec);
-
-        fGeneratedSmearedFourPairsList_PrimSec = new TList();
-        fGeneratedSmearedFourPairsList_PrimSec->SetName("GeneratedSmeared");
-        fGeneratedSmearedFourPairsList_PrimSec->SetOwner();
-        for (unsigned int i = 0; i < fFourPairMCSignal_PrimSec.size(); i+=2){
-         TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-         th2_tmp->Sumw2();
-         fHistGenSmearedFourPair_PrimSec.push_back(th2_tmp);
-         fGeneratedSmearedFourPairsList_PrimSec->Add(th2_tmp);
-        }
-
-        fFourPairList_PrimSec->Add(fGeneratedSmearedFourPairsList_PrimSec);
 
         // Generated reconstructed lists for every cutsetting one list and every MCsignal 1 histogram
-        for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
-          TList* list = new TList();
-          list->SetName(fTrackCuts_primary_standard.at(list_i)->GetName());
-          list->SetOwner();
+        if(fAnalyseRec){
+          for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
+            TList* list = new TList();
+            list->SetName(fTrackCuts_primary_standard.at(list_i)->GetName());
+            list->SetOwner();
 
-          for (unsigned int i = 0; i < fFourPairMCSignal_PrimSec.size(); i+=2){
-            TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-            th2_tmp->Sumw2();
-            fHistRecFourPair_PrimSec.push_back(th2_tmp);
-            list->Add(th2_tmp);
+            for (unsigned int i = 0; i < fFourPairMCSignal_PrimSec.size(); i+=2){
+              TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+              th2_tmp->Sumw2();
+              fHistRecFourPair_PrimSec.push_back(th2_tmp);
+              list->Add(th2_tmp);
+            }
+            fFourPairList_PrimSec->Add(list);
           }
-          fFourPairList_PrimSec->Add(list);
+
+          TH2D* fHistBeforePrimSecPrefilter = new TH2D ("HistBeforePrimSecPrefilter",";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+          TH2D* fHistBeforeSecSecPrefilter = new TH2D ("HistBeforeSecSecPrefilter",";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+          TH2D* fHistAfterPrimSecPrefilter = new TH2D ("HistAfterPrimSecPrefilter",";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+          TH2D* fHistAfterSecSecPrefilter = new TH2D ("HistAfterSecSecPrefilter",";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+          fHistBeforePrimSecPrefilter->Sumw2();
+          fHistBeforeSecSecPrefilter->Sumw2();
+          fHistAfterPrimSecPrefilter->Sumw2();
+          fHistAfterSecSecPrefilter->Sumw2();
+          fVecHistPrefilters.push_back(fHistBeforePrimSecPrefilter);
+          fVecHistPrefilters.push_back(fHistAfterPrimSecPrefilter);
+          fVecHistPrefilters.push_back(fHistBeforeSecSecPrefilter);
+          fVecHistPrefilters.push_back(fHistAfterSecSecPrefilter);
+          fFourPairList_PrimSec->Add(fHistBeforePrimSecPrefilter);
+          fFourPairList_PrimSec->Add(fHistAfterPrimSecPrefilter);
+          fFourPairList_PrimSec->Add(fHistBeforeSecSecPrefilter);
+          fFourPairList_PrimSec->Add(fHistAfterSecSecPrefilter);
         }
-
-        TH2D* fHistBeforePrimSecPrefilter = new TH2D ("HistBeforePrimSecPrefilter",";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-        TH2D* fHistBeforeSecSecPrefilter = new TH2D ("HistBeforeSecSecPrefilter",";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-        TH2D* fHistAfterPrimSecPrefilter = new TH2D ("HistAfterPrimSecPrefilter",";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-        TH2D* fHistAfterSecSecPrefilter = new TH2D ("HistAfterSecSecPrefilter",";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-        fHistBeforePrimSecPrefilter->Sumw2();
-        fHistBeforeSecSecPrefilter->Sumw2();
-        fHistAfterPrimSecPrefilter->Sumw2();
-        fHistAfterSecSecPrefilter->Sumw2();
-        fVecHistPrefilters.push_back(fHistBeforePrimSecPrefilter);
-        fVecHistPrefilters.push_back(fHistAfterPrimSecPrefilter);
-        fVecHistPrefilters.push_back(fHistBeforeSecSecPrefilter);
-        fVecHistPrefilters.push_back(fHistAfterSecSecPrefilter);
-        fFourPairList_PrimSec->Add(fHistBeforePrimSecPrefilter);
-        fFourPairList_PrimSec->Add(fHistAfterPrimSecPrefilter);
-        fFourPairList_PrimSec->Add(fHistBeforeSecSecPrefilter);
-        fFourPairList_PrimSec->Add(fHistAfterSecSecPrefilter);
-
 
 
         fFourPairList_SecSec = new TList();
         fFourPairList_SecSec->SetName("4Pairs_SecSec");
         fFourPairList_SecSec->SetOwner();
 
-        fGeneratedFourPairsList_SecSec = new TList();
-        fGeneratedFourPairsList_SecSec->SetName("Generated");
-        fGeneratedFourPairsList_SecSec->SetOwner();
-        for (unsigned int i = 0; i < fFourPairMCSignal_SecSec.size(); /*i++*/ i+=2){
-          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-          th2_tmp->Sumw2();
-          fHistGenFourPair_SecSec.push_back(th2_tmp);
-          fGeneratedFourPairsList_SecSec->Add(th2_tmp);
-        }
-        fFourPairList_SecSec->Add(fGeneratedFourPairsList_SecSec);
-
-        fGeneratedSmearedFourPairsList_SecSec = new TList();
-        fGeneratedSmearedFourPairsList_SecSec->SetName("GeneratedSmeared");
-        fGeneratedSmearedFourPairsList_SecSec->SetOwner();
-        for (unsigned int i = 0; i < fFourPairMCSignal_SecSec.size(); i+=2){
-         TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-         th2_tmp->Sumw2();
-         fHistGenSmearedFourPair_SecSec.push_back(th2_tmp);
-         fGeneratedSmearedFourPairsList_SecSec->Add(th2_tmp);
-        }
-        fFourPairList_SecSec->Add(fGeneratedSmearedFourPairsList_SecSec);
-
-        for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
-          TList* list = new TList();
-          list->SetName(fPairCuts_secondary_standard.at(list_i)->GetName());
-          list->SetOwner();
-
-          for (unsigned int i = 0; i < fFourPairMCSignal_SecSec.size(); i+=2){
-            TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+        if(fAnalyseGenAndGenSmeared){
+          fGeneratedFourPairsList_SecSec = new TList();
+          fGeneratedFourPairsList_SecSec->SetName("Generated");
+          fGeneratedFourPairsList_SecSec->SetOwner();
+          for (unsigned int i = 0; i < fFourPairMCSignal_SecSec.size(); /*i++*/ i+=2){
+            TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
             th2_tmp->Sumw2();
-            fHistRecFourPair_SecSec.push_back(th2_tmp);
-            list->Add(th2_tmp);
+            fHistGenFourPair_SecSec.push_back(th2_tmp);
+            fGeneratedFourPairsList_SecSec->Add(th2_tmp);
           }
-          fFourPairList_SecSec->Add(list);
+          fFourPairList_SecSec->Add(fGeneratedFourPairsList_SecSec);
+
+          fGeneratedSmearedFourPairsList_SecSec = new TList();
+          fGeneratedSmearedFourPairsList_SecSec->SetName("GeneratedSmeared");
+          fGeneratedSmearedFourPairsList_SecSec->SetOwner();
+          for (unsigned int i = 0; i < fFourPairMCSignal_SecSec.size(); i+=2){
+            TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+            th2_tmp->Sumw2();
+            fHistGenSmearedFourPair_SecSec.push_back(th2_tmp);
+            fGeneratedSmearedFourPairsList_SecSec->Add(th2_tmp);
+          }
+          fFourPairList_SecSec->Add(fGeneratedSmearedFourPairsList_SecSec);
+        }
+
+        if(fAnalyseRec){
+          for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
+            TList* list = new TList();
+            list->SetName(fPairCuts_secondary_standard.at(list_i)->GetName());
+            list->SetOwner();
+
+            for (unsigned int i = 0; i < fFourPairMCSignal_SecSec.size(); i+=2){
+              TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+              th2_tmp->Sumw2();
+              fHistRecFourPair_SecSec.push_back(th2_tmp);
+              list->Add(th2_tmp);
+            }
+            fFourPairList_SecSec->Add(list);
+          }
         }
 
 
@@ -1092,7 +1108,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   // ######################################################
   // Start particle loop
                                                                                 // if (fdebug) std::cout << "Generated and Generated Smeared Single Particle Loop ... " << std::endl;
-
+if(fAnalyseGenAndGenSmeared){
   for(int iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) {
     AliVParticle* mcPart1  = (AliVParticle*)fMC->GetTrack(iPart);
     AliVParticle* mcMPart1  = (AliVParticle*)fMC->GetTrack(TMath::Abs(mcPart1->GetMother()));
@@ -1228,7 +1244,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     }
 
   }// end of MC track loop
-
+} // end of if fAnalyseGenAndGenSmeared
                                                                                 // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fGenNegPart_primary = "    << fGenNegPart_primary.size()    << " fGenPosPart_primary = "    << fGenPosPart_primary.size()    << std::endl;
                                                                                 // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fGenNegPart_secondary = "  << fGenNegPart_secondary.size()  << " fGenPosPart_secondary = "  << fGenPosPart_secondary.size()  << std::endl << std::endl;
                                                                                 // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fGenSmearedNegPart_primary = "    << fGenSmearedNegPart_primary.size()    << " fGenSmearedPosPart_primary = "    << fGenSmearedPosPart_primary.size()    << std::endl;
@@ -1239,6 +1255,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   // Start reconstructed track Loop
                                                                                 // if (fdebug) std::cout << "Reconstructed Single Particle Loop ... " << std::endl;
   // if(fAnalyseDalitz){
+  if(fAnalyseRec){
     for (Int_t iTracks = 0; iTracks < fEvent->GetNumberOfTracks(); iTracks++){
 
       // ##########################################################
@@ -1502,7 +1519,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
         }
       }
     }
-  // }
+  }
 
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fTrackCuts_primary_PreFilter.size: " << fTrackCuts_primary_PreFilter.size() << std::endl;
                                                                                 // if(fdebug){
@@ -1589,6 +1606,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
                                                                                 // if(fdebug) std::cout << __LINE__ <<  " DEBUG_AnalysisTask: fGenNegPart_primary:   "  << fGenNegPart_primary.size()   << " fGenPosPart_primary:   " <<  fGenPosPart_primary.size()   << std::endl;
                                                                                 // if(fdebug) std::cout << __LINE__ <<  " DEBUG_AnalysisTask: fGenNegPart_secondary: "  << fGenNegPart_secondary.size() << " fGenPosPart_secondary: " <<  fGenPosPart_secondary.size() << std::endl;
                                                                                 // if (fdebug) std::cout << "Do primary two generated pairing" << std::endl;
+  if(fAnalyseGenAndGenSmeared){
     if(fAnalyseDalitz) DoGenAndGenSmearTwoPairing(&fGenNegPart_primary, &fGenPosPart_primary, PrimaryPair, !SmearedPair, centralityWeight);
                                                                                 // if (fdebug) std::cout << "Do secondary two generated pairing" << std::endl;
     DoGenAndGenSmearTwoPairing(&fGenNegPart_secondary, &fGenPosPart_secondary, !PrimaryPair, !SmearedPair, centralityWeight);
@@ -1600,12 +1618,13 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
                                                                                 // if (fdebug) std::cout << "Do secondary two generated smeared pairing" << std::endl;
       DoGenAndGenSmearTwoPairing(&fGenSmearedNegPart_secondary, &fGenSmearedPosPart_secondary, !PrimaryPair, SmearedPair, centralityWeight);
     }
-                                                                                // if (fdebug) std::cout << "Do primary two reconstructed pairing" << std::endl;
+  }
+  if(fAnalyseRec){                                                                            // if (fdebug) std::cout << "Do primary two reconstructed pairing" << std::endl;
     if(fAnalyseDalitz) DoRecTwoPairing(fRecNegPart_primary, fRecPosPart_primary, fPrimaryPairMCSignal,  PrimaryPair, centralityWeight); // ! Note: use for secondaries is commented out, since secondaries are selected with V0-Finder
                                                                                 // if (fdebug) std::cout << "Do secondary two reconstructed pairing" << std::endl;
     // DoRecTwoPairing(fRecNegPart_secondary, fRecPosPart_secondary, fSecondaryPairMCSignal, !PrimaryPair, centralityWeight);
     DoRecTwoPairingV0(fSecondaryPairMCSignal);
-
+  }
                                                                                 // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors after TwoPairing, " << std::endl <<
                                                                                 // " fRecNegPart_primary = " << fRecNegPart_primary.size() << std::endl <<
                                                                                 // " fRecPosPart_primary = " << fRecPosPart_primary.size() << std::endl <<
@@ -1645,7 +1664,8 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // #############################################
     // #     DoFourPairing of Gen & GenSmeared     #
     // #############################################
-                                                                                // if (fdebug) std::cout << "Do generated four pairing" << std::endl;
+
+  if(fAnalyseGenAndGenSmeared){                                                                            // if (fdebug) std::cout << "Do generated four pairing" << std::endl;
     if(fAnalyseDalitz)     DoFourPairing(fGenPairVec_primary  , fGenPairVec_secondary, !ReconstructedPair, !SmearedPair, PrimSecPairing, centralityWeight);
     if(fAnalyseGammaGamma) DoFourPairing(fGenPairVec_secondary, fGenPairVec_secondary, !ReconstructedPair, !SmearedPair, !PrimSecPairing, centralityWeight);
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
@@ -1654,6 +1674,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
       if(fAnalyseDalitz)     DoFourPairing(fGenSmearedPairVec_primary  , fGenSmearedPairVec_secondary, !ReconstructedPair, SmearedPair, PrimSecPairing, centralityWeight);
       if(fAnalyseGammaGamma) DoFourPairing(fGenSmearedPairVec_secondary, fGenSmearedPairVec_secondary, !ReconstructedPair, SmearedPair, !PrimSecPairing, centralityWeight);
     }
+  }
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
 
     // #############################################
@@ -1662,6 +1683,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // #      Apply PreFitlers        #
     // ################################
                                                                                 // if(fdebug) std::cout << __LINE__ << " Start Four PreFilter " << std::endl;
+    if(fAnalyseRec){
     // PreFilter using Prim and Sec Vector is rejecting tracks out of pos and neg particle vector, thats why the primary pair vector is cleared and primary paring is done again
     if(fAnalyseDalitz && fUsePreFilter)    DoFourPreFilter(&fRecPairVec_primary, &fRecV0Pair);
     if(fUseSecPreFilter)                   DoFourPreFilter(&fRecV0Pair, &fRecV0Pair);
@@ -1717,6 +1739,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 										                                                            // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
                                                                                 // if(fdebug) std::cout << __LINE__ <<  "DEBUG_AnalysisTask: fGenNegPart_primary:   "  << fGenNegPart_primary.size()   << " fGenPosPart_primary:   " <<  fGenPosPart_primary.size()   << std::endl;
                                                                                 // if(fdebug) std::cout << __LINE__ <<  "DEBUG_AnalysisTask: fGenNegPart_secondary: "  << fGenNegPart_secondary.size() << " fGenPosPart_secondary: " <<  fGenPosPart_secondary.size() << std::endl;
+    }
 
   } // end of fDoFourPairing
   /*  ------ /\ ------ Four Pairing ------ /\ ------  */
@@ -4083,112 +4106,162 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
       double weight = 1.;
 
 
-      // if(fdebug) {
-      //   // Use to investigate Generated FourPair History
-      //   if(mass<0.13){
-      //     if (CaseRec == kFALSE && CaseSmearing == kFALSE) {
-      //       AliVParticle* track1 = fMC->GetTrack(fPairVec_primary[prim_i].GetFirstDaughter());  // primary eletrons, neg, first Daughter
-      //       AliVParticle* track2 = fMC->GetTrack(fPairVec_primary[prim_i].GetSecondDaughter());  // primary eletrons, pos, second Daughter
-      //       AliVParticle* track3 = fMC->GetTrack(fPairVec_secondary[sec_i].GetFirstDaughter());  // secondary electron, neg, first Daughter
-      //       AliVParticle* track4 = fMC->GetTrack(fPairVec_secondary[sec_i].GetSecondDaughter());  // secondary electron, pos, second Daughter
-      //
-      //       Int_t labelD1 = -1;   labelD1 = TMath::Abs(track1->GetLabel());     Int_t pdgD1 = track1->PdgCode();
-      //       Int_t labelD2 = -1;   labelD2 = TMath::Abs(track2->GetLabel());     Int_t pdgD2 = track2->PdgCode();
-      //       Int_t labelD3 = -1;   labelD3 = TMath::Abs(track3->GetLabel());     Int_t pdgD3 = track3->PdgCode();
-      //       Int_t labelD4 = -1;   labelD4 = TMath::Abs(track4->GetLabel());     Int_t pdgD4 = track4->PdgCode();
-      //
-      //       Int_t labelM1 = -1;   labelM1 = TMath::Abs(track1->GetMother());    AliVParticle* mother1 = fMC->GetTrack(labelM1);       Int_t pdgM1 = mother1->PdgCode();
-      //       Int_t labelM2 = -1;   labelM2 = TMath::Abs(track2->GetMother());    AliVParticle* mother2 = fMC->GetTrack(labelM2);       Int_t pdgM2 = mother2->PdgCode();
-      //       Int_t labelM3 = -1;   labelM3 = TMath::Abs(track3->GetMother());    AliVParticle* mother3 = fMC->GetTrack(labelM3);       Int_t pdgM3 = mother3->PdgCode();
-      //       Int_t labelM4 = -1;   labelM4 = TMath::Abs(track4->GetMother());    AliVParticle* mother4 = fMC->GetTrack(labelM4);       Int_t pdgM4 = mother4->PdgCode();
-      //
-      //       Int_t labelG1 = -1;   labelG1 = TMath::Abs(mother1->GetMother());   AliVParticle* grandmother1 = fMC->GetTrack(labelG1);     Int_t pdgG1 = grandmother1->PdgCode();       Int_t nDaughtersG1 =fMC->GetTrack(labelG1)->GetNDaughters();
-      //       Int_t labelG2 = -1;   labelG2 = TMath::Abs(mother2->GetMother());   AliVParticle* grandmother2 = fMC->GetTrack(labelG2);     Int_t pdgG2 = grandmother2->PdgCode();       Int_t nDaughtersG2 =fMC->GetTrack(labelG2)->GetNDaughters();
-      //       Int_t labelG3 = -1;   labelG3 = TMath::Abs(mother3->GetMother());   AliVParticle* grandmother3 = fMC->GetTrack(labelG3);     Int_t pdgG3 = grandmother3->PdgCode();       Int_t nDaughtersG3 =fMC->GetTrack(labelG3)->GetNDaughters();
-      //       Int_t labelG4 = -1;   labelG4 = TMath::Abs(mother4->GetMother());   AliVParticle* grandmother4 = fMC->GetTrack(labelG4);     Int_t pdgG4 = grandmother4->PdgCode();       Int_t nDaughtersG4 =fMC->GetTrack(labelG4)->GetNDaughters();
-      //
-      //       std::cout << "DEBUG_AnalysisTask: Line cout " << std::endl;
-      //       std::cout << "DEBUG_AnalysisTask: Mass = " << mass << ", pair_pT = " << pairpt << std::endl;
-      //       std::cout << "   List Labels of the four paring particles and their mother as well as grand mother" << std::endl;
-      //       std::cout << "    Label D1 = " << labelD1 << " pdgD1 = " << pdgD1 << std::endl;
-      //       std::cout << "    Label D2 = " << labelD2 << " pdgD1 = " << pdgD2 << std::endl;
-      //       std::cout << "    Label D3 = " << labelD3 << " pdgD1 = " << pdgD3 << std::endl;
-      //       std::cout << "    Label D4 = " << labelD4 << " pdgD1 = " << pdgD4 << std::endl;
-      //       std::cout << "    -----------" << std::endl;
-      //       std::cout << "    Label M1 = " << labelM1 << " pdgM1 = " << pdgM1 << " Mass of particle " << mother1->M() << std::endl;
-      //       std::cout << "    Label M2 = " << labelM2 << " pdgM1 = " << pdgM2 << " Mass of particle " << mother2->M() << std::endl;
-      //       std::cout << "    Label M3 = " << labelM3 << " pdgM1 = " << pdgM3 << " Mass of particle " << mother3->M() << std::endl;
-      //       std::cout << "    Label M4 = " << labelM4 << " pdgM1 = " << pdgM4 << " Mass of particle " << mother4->M() << std::endl;
-      //       std::cout << "    -----------" << std::endl;
-      //       std::cout << "    Label G1 = " << labelG1 << " pdgG1 = " << pdgG1 << " nDaughtersG1 = " << nDaughtersG1 << " Mass of particle " << grandmother1->M() << std::endl;
-      //       std::cout << "    Label G2 = " << labelG2 << " pdgG1 = " << pdgG2 << " nDaughtersG2 = " << nDaughtersG2 << " Mass of particle " << grandmother2->M() << std::endl;
-      //       std::cout << "    Label G3 = " << labelG3 << " pdgG1 = " << pdgG3 << " nDaughtersG3 = " << nDaughtersG3 << " Mass of particle " << grandmother3->M() << std::endl;
-      //       std::cout << "    Label G4 = " << labelG4 << " pdgG1 = " << pdgG4 << " nDaughtersG4 = " << nDaughtersG4 << " Mass of particle " << grandmother4->M() << std::endl;
-      //       std::cout << "    -----------" << std::endl;
-      //       TLorentzVector fLVPart1; TLorentzVector fLVPart2; TLorentzVector fLVPart3; TLorentzVector fLVPart4; TLorentzVector fLVMother;
-      //       fLVPart1.SetPtEtaPhiM(track1->Pt(), track1->Eta(), track1->Phi(), track1->M());
-      //       fLVPart2.SetPtEtaPhiM(track2->Pt(), track2->Eta(), track2->Phi(), track2->M());
-      //       fLVPart3.SetPtEtaPhiM(track3->Pt(), track3->Eta(), track3->Phi(), track3->M());
-      //       fLVPart4.SetPtEtaPhiM(track4->Pt(), track4->Eta(), track4->Phi(), track4->M());
-      //       fLVMother = fLVPart1+fLVPart2+fLVPart3+fLVPart4;
-      //       std::cout << "   Recombine 4 particles to mother: mass = " << fLVMother.M() << std::endl;
-      //     }
-      //   }
-      //
-      //   // Use to investigate reconstructed FourPiar History
-      //   if (CaseRec == kTRUE && PrimSecPairing == kFALSE) {
-      //     if (0.1 < mass && mass < 0.2) {
-      //       Int_t        iFirstV0    = fPairVec_primary[prim_i].GetV0ID(); //  i-th V0 in the Event
-      //       Int_t        iSecondV0   = fPairVec_secondary[sec_i].GetV0ID(); //  i-th V0 in the Event
-      //       AliAODv0*    fFirstV0    = ((AliAODEvent*) fEvent)->GetV0(iFirstV0); // select i-th V0 in the Event
-      //       AliAODv0*    fSecondV0   = ((AliAODEvent*) fEvent)->GetV0(iSecondV0); // select i-th V0 in the Event
-      //       AliAODTrack* track1 = (AliAODTrack *) (fFirstV0->GetSecondaryVtx()->GetDaughter(0));  // secondary electron, neg, first Daughter from V0
-      //       AliAODTrack* track2 = (AliAODTrack *) (fFirstV0->GetSecondaryVtx()->GetDaughter(1));  // secondary electron, pos, second Daughter from V0
-      //       AliAODTrack* track3 = (AliAODTrack *) (fSecondV0->GetSecondaryVtx()->GetDaughter(0));  // secondary electron, neg, first Daughter from V0
-      //       AliAODTrack* track4 = (AliAODTrack *) (fSecondV0->GetSecondaryVtx()->GetDaughter(1));  // secondary electron, pos, second Daughter from V0
-      //
-      //       Int_t Track1Label = TMath::Abs(track1->GetLabel());     AliVParticle* daughter1 = fMC->GetTrack(Track1Label);     Int_t labelD1 = -1;   labelD1 = TMath::Abs(daughter1->GetLabel());     Int_t pdgD1 = daughter1->PdgCode();
-      //       Int_t Track2Label = TMath::Abs(track2->GetLabel());     AliVParticle* daughter2 = fMC->GetTrack(Track2Label);     Int_t labelD2 = -1;   labelD2 = TMath::Abs(daughter2->GetLabel());     Int_t pdgD2 = daughter2->PdgCode();
-      //       Int_t Track3Label = TMath::Abs(track3->GetLabel());     AliVParticle* daughter3 = fMC->GetTrack(Track3Label);     Int_t labelD3 = -1;   labelD3 = TMath::Abs(daughter3->GetLabel());     Int_t pdgD3 = daughter3->PdgCode();
-      //       Int_t Track4Label = TMath::Abs(track4->GetLabel());     AliVParticle* daughter4 = fMC->GetTrack(Track4Label);     Int_t labelD4 = -1;   labelD4 = TMath::Abs(daughter4->GetLabel());     Int_t pdgD4 = daughter4->PdgCode();
-      //       Int_t labelM1 = -1;   labelM1 = TMath::Abs(daughter1->GetMother());    AliVParticle* mother1 = fMC->GetTrack(labelM1);       Int_t pdgM1 = mother1->PdgCode();
-      //       Int_t labelM2 = -1;   labelM2 = TMath::Abs(daughter2->GetMother());    AliVParticle* mother2 = fMC->GetTrack(labelM2);       Int_t pdgM2 = mother2->PdgCode();
-      //       Int_t labelM3 = -1;   labelM3 = TMath::Abs(daughter3->GetMother());    AliVParticle* mother3 = fMC->GetTrack(labelM3);       Int_t pdgM3 = mother3->PdgCode();
-      //       Int_t labelM4 = -1;   labelM4 = TMath::Abs(daughter4->GetMother());    AliVParticle* mother4 = fMC->GetTrack(labelM4);       Int_t pdgM4 = mother4->PdgCode();
-      //
-      //       Int_t labelG1 = -1;   labelG1 = TMath::Abs(mother1->GetMother());   AliVParticle* grandmother1 = fMC->GetTrack(labelG1);     Int_t pdgG1 = grandmother1->PdgCode();       Int_t nDaughtersG1 =fMC->GetTrack(labelG1)->GetNDaughters();
-      //       Int_t labelG2 = -1;   labelG2 = TMath::Abs(mother2->GetMother());   AliVParticle* grandmother2 = fMC->GetTrack(labelG2);     Int_t pdgG2 = grandmother2->PdgCode();       Int_t nDaughtersG2 =fMC->GetTrack(labelG2)->GetNDaughters();
-      //       Int_t labelG3 = -1;   labelG3 = TMath::Abs(mother3->GetMother());   AliVParticle* grandmother3 = fMC->GetTrack(labelG3);     Int_t pdgG3 = grandmother3->PdgCode();       Int_t nDaughtersG3 =fMC->GetTrack(labelG3)->GetNDaughters();
-      //       Int_t labelG4 = -1;   labelG4 = TMath::Abs(mother4->GetMother());   AliVParticle* grandmother4 = fMC->GetTrack(labelG4);     Int_t pdgG4 = grandmother4->PdgCode();       Int_t nDaughtersG4 =fMC->GetTrack(labelG4)->GetNDaughters();
-      //
-      //       std::cout << "DEBUG_AnalysisTask: Line cout " << std::endl;
-      //       std::cout << "DEBUG_AnalysisTask: Mass = " << mass << ", pair_pT = " << pairpt << std::endl;
-      //       std::cout << "   List Labels of the four paring particles and their mother as well as grand mother" << std::endl;
-      //       std::cout << "    Label D1 = " << labelD1 << " pdgD1 = " << pdgD1 << std::endl;
-      //       std::cout << "    Label D2 = " << labelD2 << " pdgD1 = " << pdgD2 << std::endl;
-      //       std::cout << "    Label D3 = " << labelD3 << " pdgD1 = " << pdgD3 << std::endl;
-      //       std::cout << "    Label D4 = " << labelD4 << " pdgD1 = " << pdgD4 << std::endl;
-      //       std::cout << "    -----------" << std::endl;
-      //       std::cout << "    Label M1 = " << labelM1 << " pdgM1 = " << pdgM1 << " Mass of particle " << mother1->M() << std::endl;
-      //       std::cout << "    Label M2 = " << labelM2 << " pdgM1 = " << pdgM2 << " Mass of particle " << mother2->M() << std::endl;
-      //       std::cout << "    Label M3 = " << labelM3 << " pdgM1 = " << pdgM3 << " Mass of particle " << mother3->M() << std::endl;
-      //       std::cout << "    Label M4 = " << labelM4 << " pdgM1 = " << pdgM4 << " Mass of particle " << mother4->M() << std::endl;
-      //       std::cout << "    -----------" << std::endl;
-      //       std::cout << "    Label G1 = " << labelG1 << " pdgG1 = " << pdgG1 << " nDaughtersG1 = " << nDaughtersG1 << " Mass of particle " << grandmother1->M() << std::endl;
-      //       std::cout << "    Label G2 = " << labelG2 << " pdgG1 = " << pdgG2 << " nDaughtersG2 = " << nDaughtersG2 << " Mass of particle " << grandmother2->M() << std::endl;
-      //       std::cout << "    Label G3 = " << labelG3 << " pdgG1 = " << pdgG3 << " nDaughtersG3 = " << nDaughtersG3 << " Mass of particle " << grandmother3->M() << std::endl;
-      //       std::cout << "    Label G4 = " << labelG4 << " pdgG1 = " << pdgG4 << " nDaughtersG4 = " << nDaughtersG4 << " Mass of particle " << grandmother4->M() << std::endl;
-      //       std::cout << "    -----------" << std::endl;
-      //       TLorentzVector fLVPart1; TLorentzVector fLVPart2; TLorentzVector fLVPart3; TLorentzVector fLVPart4; TLorentzVector fLVMother;
-      //       fLVPart1.SetPtEtaPhiM(daughter1->Pt(), daughter1->Eta(), daughter1->Phi(), daughter1->M());
-      //       fLVPart2.SetPtEtaPhiM(daughter2->Pt(), daughter2->Eta(), daughter2->Phi(), daughter2->M());
-      //       fLVPart3.SetPtEtaPhiM(daughter3->Pt(), daughter3->Eta(), daughter3->Phi(), daughter3->M());
-      //       fLVPart4.SetPtEtaPhiM(daughter4->Pt(), daughter4->Eta(), daughter4->Phi(), daughter4->M());
-      //       fLVMother = fLVPart1+fLVPart2+fLVPart3+fLVPart4;
-      //       std::cout << "   Recombine 4 particles to mother: mass = " << fLVMother.M() << std::endl;
-      //     }
-      //   }
-      // }
+      if(fdebug) {
+        // // Use to investigate Generated FourPair History
+        // if(mass<0.13){
+        //   if (CaseRec == kFALSE && CaseSmearing == kFALSE) {
+        //     AliVParticle* track1 = fMC->GetTrack(fPairVec_primary[prim_i].GetFirstDaughter());  // primary eletrons, neg, first Daughter
+        //     AliVParticle* track2 = fMC->GetTrack(fPairVec_primary[prim_i].GetSecondDaughter());  // primary eletrons, pos, second Daughter
+        //     AliVParticle* track3 = fMC->GetTrack(fPairVec_secondary[sec_i].GetFirstDaughter());  // secondary electron, neg, first Daughter
+        //     AliVParticle* track4 = fMC->GetTrack(fPairVec_secondary[sec_i].GetSecondDaughter());  // secondary electron, pos, second Daughter
+        //
+        //     Int_t labelD1 = -1;   labelD1 = TMath::Abs(track1->GetLabel());     Int_t pdgD1 = track1->PdgCode();
+        //     Int_t labelD2 = -1;   labelD2 = TMath::Abs(track2->GetLabel());     Int_t pdgD2 = track2->PdgCode();
+        //     Int_t labelD3 = -1;   labelD3 = TMath::Abs(track3->GetLabel());     Int_t pdgD3 = track3->PdgCode();
+        //     Int_t labelD4 = -1;   labelD4 = TMath::Abs(track4->GetLabel());     Int_t pdgD4 = track4->PdgCode();
+        //
+        //     Int_t labelM1 = -1;   labelM1 = TMath::Abs(track1->GetMother());    AliVParticle* mother1 = fMC->GetTrack(labelM1);       Int_t pdgM1 = mother1->PdgCode();
+        //     Int_t labelM2 = -1;   labelM2 = TMath::Abs(track2->GetMother());    AliVParticle* mother2 = fMC->GetTrack(labelM2);       Int_t pdgM2 = mother2->PdgCode();
+        //     Int_t labelM3 = -1;   labelM3 = TMath::Abs(track3->GetMother());    AliVParticle* mother3 = fMC->GetTrack(labelM3);       Int_t pdgM3 = mother3->PdgCode();
+        //     Int_t labelM4 = -1;   labelM4 = TMath::Abs(track4->GetMother());    AliVParticle* mother4 = fMC->GetTrack(labelM4);       Int_t pdgM4 = mother4->PdgCode();
+        //
+        //     Int_t labelG1 = -1;   labelG1 = TMath::Abs(mother1->GetMother());   AliVParticle* grandmother1 = fMC->GetTrack(labelG1);     Int_t pdgG1 = grandmother1->PdgCode();       Int_t nDaughtersG1 =fMC->GetTrack(labelG1)->GetNDaughters();
+        //     Int_t labelG2 = -1;   labelG2 = TMath::Abs(mother2->GetMother());   AliVParticle* grandmother2 = fMC->GetTrack(labelG2);     Int_t pdgG2 = grandmother2->PdgCode();       Int_t nDaughtersG2 =fMC->GetTrack(labelG2)->GetNDaughters();
+        //     Int_t labelG3 = -1;   labelG3 = TMath::Abs(mother3->GetMother());   AliVParticle* grandmother3 = fMC->GetTrack(labelG3);     Int_t pdgG3 = grandmother3->PdgCode();       Int_t nDaughtersG3 =fMC->GetTrack(labelG3)->GetNDaughters();
+        //     Int_t labelG4 = -1;   labelG4 = TMath::Abs(mother4->GetMother());   AliVParticle* grandmother4 = fMC->GetTrack(labelG4);     Int_t pdgG4 = grandmother4->PdgCode();       Int_t nDaughtersG4 =fMC->GetTrack(labelG4)->GetNDaughters();
+        //
+        //     std::cout << "DEBUG_AnalysisTask: Line cout " << std::endl;
+        //     std::cout << "DEBUG_AnalysisTask: Mass = " << mass << ", pair_pT = " << pairpt << std::endl;
+        //     std::cout << "   List Labels of the four paring particles and their mother as well as grand mother" << std::endl;
+        //     std::cout << "    Label D1 = " << labelD1 << " pdgD1 = " << pdgD1 << std::endl;
+        //     std::cout << "    Label D2 = " << labelD2 << " pdgD1 = " << pdgD2 << std::endl;
+        //     std::cout << "    Label D3 = " << labelD3 << " pdgD1 = " << pdgD3 << std::endl;
+        //     std::cout << "    Label D4 = " << labelD4 << " pdgD1 = " << pdgD4 << std::endl;
+        //     std::cout << "    -----------" << std::endl;
+        //     std::cout << "    Label M1 = " << labelM1 << " pdgM1 = " << pdgM1 << " Mass of particle " << mother1->M() << std::endl;
+        //     std::cout << "    Label M2 = " << labelM2 << " pdgM1 = " << pdgM2 << " Mass of particle " << mother2->M() << std::endl;
+        //     std::cout << "    Label M3 = " << labelM3 << " pdgM1 = " << pdgM3 << " Mass of particle " << mother3->M() << std::endl;
+        //     std::cout << "    Label M4 = " << labelM4 << " pdgM1 = " << pdgM4 << " Mass of particle " << mother4->M() << std::endl;
+        //     std::cout << "    -----------" << std::endl;
+        //     std::cout << "    Label G1 = " << labelG1 << " pdgG1 = " << pdgG1 << " nDaughtersG1 = " << nDaughtersG1 << " Mass of particle " << grandmother1->M() << std::endl;
+        //     std::cout << "    Label G2 = " << labelG2 << " pdgG1 = " << pdgG2 << " nDaughtersG2 = " << nDaughtersG2 << " Mass of particle " << grandmother2->M() << std::endl;
+        //     std::cout << "    Label G3 = " << labelG3 << " pdgG1 = " << pdgG3 << " nDaughtersG3 = " << nDaughtersG3 << " Mass of particle " << grandmother3->M() << std::endl;
+        //     std::cout << "    Label G4 = " << labelG4 << " pdgG1 = " << pdgG4 << " nDaughtersG4 = " << nDaughtersG4 << " Mass of particle " << grandmother4->M() << std::endl;
+        //     std::cout << "    -----------" << std::endl;
+        //     TLorentzVector fLVPart1; TLorentzVector fLVPart2; TLorentzVector fLVPart3; TLorentzVector fLVPart4; TLorentzVector fLVMother;
+        //     fLVPart1.SetPtEtaPhiM(track1->Pt(), track1->Eta(), track1->Phi(), track1->M());
+        //     fLVPart2.SetPtEtaPhiM(track2->Pt(), track2->Eta(), track2->Phi(), track2->M());
+        //     fLVPart3.SetPtEtaPhiM(track3->Pt(), track3->Eta(), track3->Phi(), track3->M());
+        //     fLVPart4.SetPtEtaPhiM(track4->Pt(), track4->Eta(), track4->Phi(), track4->M());
+        //     fLVMother = fLVPart1+fLVPart2+fLVPart3+fLVPart4;
+        //     std::cout << "   Recombine 4 particles to mother: mass = " << fLVMother.M() << std::endl;
+        //   }
+        // }
+        //
+        // // Use to investigate reconstructed FourPiar History
+        // if (CaseRec == kTRUE && PrimSecPairing == kFALSE) {
+        //   if (0.1 < mass && mass < 0.2) {
+        //     Int_t        iFirstV0    = fPairVec_primary[prim_i].GetV0ID(); //  i-th V0 in the Event
+        //     Int_t        iSecondV0   = fPairVec_secondary[sec_i].GetV0ID(); //  i-th V0 in the Event
+        //     AliAODv0*    fFirstV0    = ((AliAODEvent*) fEvent)->GetV0(iFirstV0); // select i-th V0 in the Event
+        //     AliAODv0*    fSecondV0   = ((AliAODEvent*) fEvent)->GetV0(iSecondV0); // select i-th V0 in the Event
+        //     AliAODTrack* track1 = (AliAODTrack *) (fFirstV0->GetSecondaryVtx()->GetDaughter(0));  // secondary electron, neg, first Daughter from V0
+        //     AliAODTrack* track2 = (AliAODTrack *) (fFirstV0->GetSecondaryVtx()->GetDaughter(1));  // secondary electron, pos, second Daughter from V0
+        //     AliAODTrack* track3 = (AliAODTrack *) (fSecondV0->GetSecondaryVtx()->GetDaughter(0));  // secondary electron, neg, first Daughter from V0
+        //     AliAODTrack* track4 = (AliAODTrack *) (fSecondV0->GetSecondaryVtx()->GetDaughter(1));  // secondary electron, pos, second Daughter from V0
+        //
+        //     Int_t Track1Label = TMath::Abs(track1->GetLabel());     AliVParticle* daughter1 = fMC->GetTrack(Track1Label);     Int_t labelD1 = -1;   labelD1 = TMath::Abs(daughter1->GetLabel());     Int_t pdgD1 = daughter1->PdgCode();
+        //     Int_t Track2Label = TMath::Abs(track2->GetLabel());     AliVParticle* daughter2 = fMC->GetTrack(Track2Label);     Int_t labelD2 = -1;   labelD2 = TMath::Abs(daughter2->GetLabel());     Int_t pdgD2 = daughter2->PdgCode();
+        //     Int_t Track3Label = TMath::Abs(track3->GetLabel());     AliVParticle* daughter3 = fMC->GetTrack(Track3Label);     Int_t labelD3 = -1;   labelD3 = TMath::Abs(daughter3->GetLabel());     Int_t pdgD3 = daughter3->PdgCode();
+        //     Int_t Track4Label = TMath::Abs(track4->GetLabel());     AliVParticle* daughter4 = fMC->GetTrack(Track4Label);     Int_t labelD4 = -1;   labelD4 = TMath::Abs(daughter4->GetLabel());     Int_t pdgD4 = daughter4->PdgCode();
+        //     Int_t labelM1 = -1;   labelM1 = TMath::Abs(daughter1->GetMother());    AliVParticle* mother1 = fMC->GetTrack(labelM1);       Int_t pdgM1 = mother1->PdgCode();
+        //     Int_t labelM2 = -1;   labelM2 = TMath::Abs(daughter2->GetMother());    AliVParticle* mother2 = fMC->GetTrack(labelM2);       Int_t pdgM2 = mother2->PdgCode();
+        //     Int_t labelM3 = -1;   labelM3 = TMath::Abs(daughter3->GetMother());    AliVParticle* mother3 = fMC->GetTrack(labelM3);       Int_t pdgM3 = mother3->PdgCode();
+        //     Int_t labelM4 = -1;   labelM4 = TMath::Abs(daughter4->GetMother());    AliVParticle* mother4 = fMC->GetTrack(labelM4);       Int_t pdgM4 = mother4->PdgCode();
+        //
+        //     Int_t labelG1 = -1;   labelG1 = TMath::Abs(mother1->GetMother());   AliVParticle* grandmother1 = fMC->GetTrack(labelG1);     Int_t pdgG1 = grandmother1->PdgCode();       Int_t nDaughtersG1 =fMC->GetTrack(labelG1)->GetNDaughters();
+        //     Int_t labelG2 = -1;   labelG2 = TMath::Abs(mother2->GetMother());   AliVParticle* grandmother2 = fMC->GetTrack(labelG2);     Int_t pdgG2 = grandmother2->PdgCode();       Int_t nDaughtersG2 =fMC->GetTrack(labelG2)->GetNDaughters();
+        //     Int_t labelG3 = -1;   labelG3 = TMath::Abs(mother3->GetMother());   AliVParticle* grandmother3 = fMC->GetTrack(labelG3);     Int_t pdgG3 = grandmother3->PdgCode();       Int_t nDaughtersG3 =fMC->GetTrack(labelG3)->GetNDaughters();
+        //     Int_t labelG4 = -1;   labelG4 = TMath::Abs(mother4->GetMother());   AliVParticle* grandmother4 = fMC->GetTrack(labelG4);     Int_t pdgG4 = grandmother4->PdgCode();       Int_t nDaughtersG4 =fMC->GetTrack(labelG4)->GetNDaughters();
+        //
+        //     std::cout << "DEBUG_AnalysisTask: Line cout " << std::endl;
+        //     std::cout << "DEBUG_AnalysisTask: Mass = " << mass << ", pair_pT = " << pairpt << std::endl;
+        //     std::cout << "   List Labels of the four paring particles and their mother as well as grand mother" << std::endl;
+        //     std::cout << "    Label D1 = " << labelD1 << " pdgD1 = " << pdgD1 << std::endl;
+        //     std::cout << "    Label D2 = " << labelD2 << " pdgD1 = " << pdgD2 << std::endl;
+        //     std::cout << "    Label D3 = " << labelD3 << " pdgD1 = " << pdgD3 << std::endl;
+        //     std::cout << "    Label D4 = " << labelD4 << " pdgD1 = " << pdgD4 << std::endl;
+        //     std::cout << "    -----------" << std::endl;
+        //     std::cout << "    Label M1 = " << labelM1 << " pdgM1 = " << pdgM1 << " Mass of particle " << mother1->M() << std::endl;
+        //     std::cout << "    Label M2 = " << labelM2 << " pdgM1 = " << pdgM2 << " Mass of particle " << mother2->M() << std::endl;
+        //     std::cout << "    Label M3 = " << labelM3 << " pdgM1 = " << pdgM3 << " Mass of particle " << mother3->M() << std::endl;
+        //     std::cout << "    Label M4 = " << labelM4 << " pdgM1 = " << pdgM4 << " Mass of particle " << mother4->M() << std::endl;
+        //     std::cout << "    -----------" << std::endl;
+        //     std::cout << "    Label G1 = " << labelG1 << " pdgG1 = " << pdgG1 << " nDaughtersG1 = " << nDaughtersG1 << " Mass of particle " << grandmother1->M() << std::endl;
+        //     std::cout << "    Label G2 = " << labelG2 << " pdgG1 = " << pdgG2 << " nDaughtersG2 = " << nDaughtersG2 << " Mass of particle " << grandmother2->M() << std::endl;
+        //     std::cout << "    Label G3 = " << labelG3 << " pdgG1 = " << pdgG3 << " nDaughtersG3 = " << nDaughtersG3 << " Mass of particle " << grandmother3->M() << std::endl;
+        //     std::cout << "    Label G4 = " << labelG4 << " pdgG1 = " << pdgG4 << " nDaughtersG4 = " << nDaughtersG4 << " Mass of particle " << grandmother4->M() << std::endl;
+        //     std::cout << "    -----------" << std::endl;
+        //     TLorentzVector fLVPart1; TLorentzVector fLVPart2; TLorentzVector fLVPart3; TLorentzVector fLVPart4; TLorentzVector fLVMother;
+        //     fLVPart1.SetPtEtaPhiM(daughter1->Pt(), daughter1->Eta(), daughter1->Phi(), daughter1->M());
+        //     fLVPart2.SetPtEtaPhiM(daughter2->Pt(), daughter2->Eta(), daughter2->Phi(), daughter2->M());
+        //     fLVPart3.SetPtEtaPhiM(daughter3->Pt(), daughter3->Eta(), daughter3->Phi(), daughter3->M());
+        //     fLVPart4.SetPtEtaPhiM(daughter4->Pt(), daughter4->Eta(), daughter4->Phi(), daughter4->M());
+        //     fLVMother = fLVPart1+fLVPart2+fLVPart3+fLVPart4;
+        //     std::cout << "   Recombine 4 particles to mother: mass = " << fLVMother.M() << std::endl;
+        //   }
+        // }
+        if (CaseRec == kTRUE && PrimSecPairing == kTRUE) {
+          if (0.06 < mass && mass < 0.2) {
+            Int_t      iV0Candidate   = fPairVec_secondary[sec_i].GetV0ID(); //  i-th V0 in the Event
+            AliAODv0*  fV0Candidate   = ((AliAODEvent*) fEvent)->GetV0(iV0Candidate); // select i-th V0 in the Event
+            AliVParticle* track1 = fEvent->GetTrack(fPairVec_primary[prim_i].GetFirstDaughter());  // primary eletrons, neg, first Daughter
+            AliVParticle* track2 = fEvent->GetTrack(fPairVec_primary[prim_i].GetSecondDaughter());  // primary eletrons, pos, second Daughter
+            AliAODTrack*  track3 = (AliAODTrack *) (fV0Candidate->GetSecondaryVtx()->GetDaughter(0));  // secondary electron, neg, first Daughter from V0
+            AliAODTrack*  track4 = (AliAODTrack *) (fV0Candidate->GetSecondaryVtx()->GetDaughter(1));  // secondary electron, pos, second Daughter from V0
+
+            Int_t Track1Label = TMath::Abs(track1->GetLabel());     AliVParticle* daughter1 = fMC->GetTrack(Track1Label);     Int_t labelD1 = -1;   labelD1 = TMath::Abs(daughter1->GetLabel());     Int_t pdgD1 = daughter1->PdgCode();
+            Int_t Track2Label = TMath::Abs(track2->GetLabel());     AliVParticle* daughter2 = fMC->GetTrack(Track2Label);     Int_t labelD2 = -1;   labelD2 = TMath::Abs(daughter2->GetLabel());     Int_t pdgD2 = daughter2->PdgCode();
+            Int_t Track3Label = TMath::Abs(track3->GetLabel());     AliVParticle* daughter3 = fMC->GetTrack(Track3Label);     Int_t labelD3 = -1;   labelD3 = TMath::Abs(daughter3->GetLabel());     Int_t pdgD3 = daughter3->PdgCode();
+            Int_t Track4Label = TMath::Abs(track4->GetLabel());     AliVParticle* daughter4 = fMC->GetTrack(Track4Label);     Int_t labelD4 = -1;   labelD4 = TMath::Abs(daughter4->GetLabel());     Int_t pdgD4 = daughter4->PdgCode();
+            Int_t labelM1 = -1;   labelM1 = TMath::Abs(daughter1->GetMother());    AliVParticle* mother1 = fMC->GetTrack(labelM1);       Int_t pdgM1 = mother1->PdgCode();
+            Int_t labelM2 = -1;   labelM2 = TMath::Abs(daughter2->GetMother());    AliVParticle* mother2 = fMC->GetTrack(labelM2);       Int_t pdgM2 = mother2->PdgCode();
+            Int_t labelM3 = -1;   labelM3 = TMath::Abs(daughter3->GetMother());    AliVParticle* mother3 = fMC->GetTrack(labelM3);       Int_t pdgM3 = mother3->PdgCode();
+            Int_t labelM4 = -1;   labelM4 = TMath::Abs(daughter4->GetMother());    AliVParticle* mother4 = fMC->GetTrack(labelM4);       Int_t pdgM4 = mother4->PdgCode();
+
+            Int_t labelG1 = -1;   labelG1 = TMath::Abs(mother1->GetMother());   AliVParticle* grandmother1 = fMC->GetTrack(labelG1);     Int_t pdgG1 = grandmother1->PdgCode();       Int_t nDaughtersG1 =fMC->GetTrack(labelG1)->GetNDaughters();
+            Int_t labelG2 = -1;   labelG2 = TMath::Abs(mother2->GetMother());   AliVParticle* grandmother2 = fMC->GetTrack(labelG2);     Int_t pdgG2 = grandmother2->PdgCode();       Int_t nDaughtersG2 =fMC->GetTrack(labelG2)->GetNDaughters();
+            Int_t labelG3 = -1;   labelG3 = TMath::Abs(mother3->GetMother());   AliVParticle* grandmother3 = fMC->GetTrack(labelG3);     Int_t pdgG3 = grandmother3->PdgCode();       Int_t nDaughtersG3 =fMC->GetTrack(labelG3)->GetNDaughters();
+            Int_t labelG4 = -1;   labelG4 = TMath::Abs(mother4->GetMother());   AliVParticle* grandmother4 = fMC->GetTrack(labelG4);     Int_t pdgG4 = grandmother4->PdgCode();       Int_t nDaughtersG4 =fMC->GetTrack(labelG4)->GetNDaughters();
+
+            std::cout << "DEBUG_AnalysisTask: Line cout " << std::endl;
+            std::cout << "DEBUG_AnalysisTask: Mass = " << mass << ", pair_pT = " << pairpt << std::endl;
+            std::cout << "   List Labels of the four paring particles and their mother as well as grand mother" << std::endl;
+            std::cout << "    Label D1 = " << labelD1 << " pdgD1 = " << pdgD1 << std::endl;
+            std::cout << "    Label D2 = " << labelD2 << " pdgD1 = " << pdgD2 << std::endl;
+            std::cout << "    Label D3 = " << labelD3 << " pdgD1 = " << pdgD3 << std::endl;
+            std::cout << "    Label D4 = " << labelD4 << " pdgD1 = " << pdgD4 << std::endl;
+            std::cout << "    -----------" << std::endl;
+            std::cout << "    Label M1 = " << labelM1 << " pdgM1 = " << pdgM1 << " Mass of particle " << mother1->M() << std::endl;
+            std::cout << "    Label M2 = " << labelM2 << " pdgM1 = " << pdgM2 << " Mass of particle " << mother2->M() << std::endl;
+            std::cout << "    Label M3 = " << labelM3 << " pdgM1 = " << pdgM3 << " Mass of particle " << mother3->M() << std::endl;
+            std::cout << "    Label M4 = " << labelM4 << " pdgM1 = " << pdgM4 << " Mass of particle " << mother4->M() << std::endl;
+            std::cout << "    -----------" << std::endl;
+            std::cout << "    Label G1 = " << labelG1 << " pdgG1 = " << pdgG1 << " nDaughtersG1 = " << nDaughtersG1 << " Mass of particle " << grandmother1->M() << std::endl;
+            std::cout << "    Label G2 = " << labelG2 << " pdgG1 = " << pdgG2 << " nDaughtersG2 = " << nDaughtersG2 << " Mass of particle " << grandmother2->M() << std::endl;
+            std::cout << "    Label G3 = " << labelG3 << " pdgG1 = " << pdgG3 << " nDaughtersG3 = " << nDaughtersG3 << " Mass of particle " << grandmother3->M() << std::endl;
+            std::cout << "    Label G4 = " << labelG4 << " pdgG1 = " << pdgG4 << " nDaughtersG4 = " << nDaughtersG4 << " Mass of particle " << grandmother4->M() << std::endl;
+            std::cout << "    -----------" << std::endl;
+            TLorentzVector fLVPart1; TLorentzVector fLVPart2; TLorentzVector fLVPart3; TLorentzVector fLVPart4; TLorentzVector fLVMother;
+            fLVPart1.SetPtEtaPhiM(daughter1->Pt(), daughter1->Eta(), daughter1->Phi(), daughter1->M());
+            fLVPart2.SetPtEtaPhiM(daughter2->Pt(), daughter2->Eta(), daughter2->Phi(), daughter2->M());
+            fLVPart3.SetPtEtaPhiM(daughter3->Pt(), daughter3->Eta(), daughter3->Phi(), daughter3->M());
+            fLVPart4.SetPtEtaPhiM(daughter4->Pt(), daughter4->Eta(), daughter4->Phi(), daughter4->M());
+            fLVMother = fLVPart1+fLVPart2+fLVPart3+fLVPart4;
+            std::cout << "   Recombine 4 particles to mother: mass = " << fLVMother.M() << std::endl;
+          }
+        }
+      }
 
 
 

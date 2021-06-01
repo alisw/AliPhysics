@@ -1953,7 +1953,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessClusters()
 // 			cout << clus->GetNLabels() << endl;
 			if (clus->GetNLabels()>0){
 				for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
-					if (k< 50)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+					PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
 // 					Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
 // 					cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 				}
@@ -4189,7 +4189,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessElectronCandidates(){
 				Double_t psiPair = GetPsiPair(positronCandidate,electronCandidate);
 				Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->GetConstrainedParam()->Phi()-positronCandidate->GetConstrainedParam()->Phi());
 
-				if( ((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->IsFromGammaConversion(psiPair,deltaPhi ) ){
+				if( ((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->IsFromGammaConversion(psiPair,deltaPhi,TMath::Sqrt(positronCandidate->Pt()*positronCandidate->Pt()+electronCandidate->Pt()*electronCandidate->Pt()))){//ALERT New update
 					lElectronPsiIndex[i] = kFALSE;
 					lPositronPsiIndex[j] = kFALSE;
 				}
@@ -4399,4 +4399,3 @@ Bool_t AliAnalysisTaskGammaCaloDalitzV1::CheckVectorForDoubleCount(vector<Int_t>
 	}
 	return false;
 }
-

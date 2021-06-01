@@ -14,6 +14,7 @@
 #include "Rtypes.h"
 #include "TVector3.h"
 #include "AliAODConversionPhoton.h"
+#include "AliAODRecoDecayHF.h"
 
 class AliFemtoDreamBasePart {
  public:
@@ -23,6 +24,8 @@ class AliFemtoDreamBasePart {
   AliFemtoDreamBasePart(const AliAODConversionPhoton *gamma,
                         const AliVTrack *pos, const AliVTrack *neg,
                         const AliVEvent *inputEvent);
+  AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson, const AliAODEvent *aod,
+                        const int pdgParent, std::vector<unsigned int> &pdg);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
     kPhysPrimary = 0,
@@ -30,7 +33,8 @@ class AliFemtoDreamBasePart {
     kMaterial = 2,
     kFake = 3,
     kContamination = 4,
-    kUnknown = 5
+    kUnknown = 5,
+    kBeauty = 6
   };
   void SetMCParticle(AliAODMCParticle *mcPart, AliMCEvent *evt);
   void SetMCParticleRePart(AliAODMCParticle *mcPart);
@@ -288,12 +292,6 @@ class AliFemtoDreamBasePart {
     fGTI = nullptr;
     fVGTI = nullptr;
   }
-  int GetEventMultiplicity() const {
-    return fEvtMultiplicity;
-  }
-  void SetEventMultiplicity(int evtMulti) {
-    fEvtMultiplicity = evtMulti;
-  }
   void DumpParticleInformation();
   TString ClassName() {
     return "AliFemtoDreamBasePart";
@@ -333,12 +331,11 @@ class AliFemtoDreamBasePart {
   bool fIsMC;
   bool fUse;    //passes cuts
   bool fIsSet;  //has all the attributes set properly
-  int fEvtMultiplicity;
  private:
   void PhiAtRadii(const AliVTrack *track, const float bfield,
                   std::vector<float> &tmpVec);
 //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-ClassDef(AliFemtoDreamBasePart, 6)
+ClassDef(AliFemtoDreamBasePart, 7)
   ;
 };
 

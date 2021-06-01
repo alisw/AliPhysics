@@ -67,12 +67,13 @@ public:
   // General methods, to be declared in deriving classes if needed
   
   virtual TList *        GetCreateOutputObjects()               { return (new TList)          ; }
-  
+
   virtual void           Init()                                 { ; }
   virtual void           InitDebug()      ;
   virtual void           InitParameters() ;
   virtual void           InitCaloParameters() ;
-  
+  virtual void           InitHistoRangeArrays();
+
   virtual void           FillEventMixPool()                     { ; }
 
   virtual void           MakeAnalysisFillAOD()                  { ; }
@@ -213,6 +214,9 @@ public:
   virtual void           SwitchOnGeneratedParticleHistoFill()    { fFillGenPartHisto = kTRUE ; }
   virtual void           SwitchOffGeneratedParticleHistoFill()   { fFillGenPartHisto = kFALSE; }
   
+  void                   SwitchOnNonConstantPtBinHistoArray()    { fHistoPtBinNonConstantInArray = kTRUE ; }
+  void                   SwitchOffNonConstantPtBinHistoArray()   { fHistoPtBinNonConstantInArray = kFALSE; }  
+   
   // Cluster energy/momentum cut
   
   virtual Float_t        GetMaxPt()                        const { return fMaxPt ; }
@@ -246,11 +250,12 @@ public:
   virtual Int_t          GetNMaxEvMix()                    const { return fNmaxMixEv ; }    /// Maximal number of events for mixin
   virtual Float_t        GetZvertexCut()                   const { return GetReader()->GetZvertexCut();} /// Cut on vertex position
   virtual Int_t          GetTrackMultiplicityBin()         const ;
-  virtual Int_t          GetEventCentralityBin()           const ;
+  virtual Int_t          GetEventCentralityBin()                 ;
+  virtual void           SetEventCentralityBins()                ; // Define centrality bin ranges array for histogramming
   virtual Int_t          GetEventRPBin()                   const ;
   virtual Int_t          GetEventVzBin()                   const ;
-  virtual Int_t          GetEventMixBin()                  const ;
-  virtual Int_t          GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) const;
+  virtual Int_t          GetEventMixBin()                        ;
+  virtual Int_t          GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP);
   
   virtual Double_t       GetEventWeight()                  const { return GetReader()->GetEventWeight()      ; }
   virtual Double_t       GetParticlePtWeight(Float_t pt, Int_t pdg, TString genName, Int_t igen) 
@@ -396,12 +401,27 @@ protected:
   Int_t                      fNRCU        ;        ///<  Number of EMCAL/PHOS RCU
   Int_t                      fFirstModule ;        ///<  First EMCAL/PHOS module, set in CaloUtils or depending fidutial cuts
   Int_t                      fLastModule  ;        ///<  Last EMCAL/PHOS module, set in CaloUtils or depending fidutial cuts
+  Int_t                      fNSectors    ;        ///<  Number of EMCAL sectors  (pair of SM in same phi) to use in analysis, set in CaloUtils
+  Int_t                      fFirstSector ;        ///<  First EMCAL sector, set in CaloUtils or depending fidutial cuts
+  Int_t                      fLastSector  ;        ///<  Last EMCAL sector, set in CaloUtils or depending fidutial cuts
   Int_t                      fNMaxCols    ;        ///<  Number of EMCAL/PHOS columns per SM
   Int_t                      fNMaxRows    ;        ///<  Number of EMCAL/PHOS rows per SM
   Int_t                      fNMaxColsFull;        ///<  Number of EMCAL/PHOS columns full detector
   Int_t                      fNMaxRowsFull;        ///<  Number of EMCAL/PHOS rows full detector
   Int_t                      fNMaxRowsFullMin;     ///<  Last of EMCAL/PHOS rows full detector
   Int_t                      fNMaxRowsFullMax;     ///<  First of EMCAL/PHOS rows full detector
+
+  Int_t                      fTotalUsedSM    ;      ///< Number of SM used: fLastModule-fFirstModule+1;
+  TArrayD                    fHistoSMArr     ;      ///< Calorimeter SM number dependent histogram bin array
+  Int_t                      fHistoNColumns  ;      ///< Column histogram N bins: fNMaxColsFull+2
+  TArrayD                    fHistoColumnArr ;      ///< Calorimeter column histogram bin array
+  Float_t                    fHistoColumnMin ;      ///< Minimum column histogram range: -1.5; 
+  Float_t                    fHistoColumnMax ;      ///< Maximum column histogram range: fNMaxColsFull+0.5; 
+  Int_t                      fHistoNRows;           ///< Calorimeter row histogram N bins: fNMaxRowsFullMax-fNMaxRowsFullMin+2; 
+  TArrayD                    fHistoRowArr    ;      ///< Calorimeter row histogram bin array
+  Float_t                    fHistoRowMin    ;      ///< Minimum calorimeter row histogram range: fNMaxRowsFullMin-1.5;
+  Float_t                    fHistoRowMax    ;      ///< Maximum calorimeter row histogram range: fNMaxRowsFullMax+0.5; 
+  Bool_t                     fHistoPtBinNonConstantInArray; ///< Fill array pt bins with non constant binning
 
 private:    
   
@@ -463,7 +483,7 @@ private:
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrBaseClass,32) ;
+  ClassDef(AliAnaCaloTrackCorrBaseClass,33) ;
   /// \endcond
 
 } ;

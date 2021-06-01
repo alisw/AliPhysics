@@ -1036,6 +1036,16 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("16710a13","0dm00009f9730000dge0404000","411798305k032220000","0h43103100000010"); //
     cuts.AddCutPCMCalo("17810a13","0dm00009f9730000dge0404000","411798305k032220000","0h43103100000010"); //
     cuts.AddCutPCMCalo("18910a13","0dm00009f9730000dge0404000","411798305k032220000","0h43103100000010"); //
+  } else if (trainConfig == 762){ // EG1-CENT- EMCAL clusters - centrality selection for PbPb EMCal
+    cuts.AddCutPCMCalo("1018da13","00200009f9730000dge0400000","411790105fga2220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("1138da13","00200009f9730000dge0400000","411790105fgb2220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("1358da13","00200009f9730000dge0400000","411790105fg32220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("1598da13","00200009f9730000dge0400000","411790105fg32220000","0h43103100000010"); //
+  } else if (trainConfig == 763){ // EG2-CENT- EMCAL clusters - centrality selection for PbPb EMCal
+    cuts.AddCutPCMCalo("1018ea13","00200009f9730000dge0400000","411790105fga2220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("1138ea13","00200009f9730000dge0400000","411790105fgb2220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("1358ea13","00200009f9730000dge0400000","411790105fg32220000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("1598ea13","00200009f9730000dge0400000","411790105fg32220000","0h43103100000010"); //
   // **********************************************************************************************************
   // ***************************** PCM-PHOS       QA configurations PbPb run 2 2018 ***************************
   // **********************************************************************************************************
@@ -1086,6 +1096,11 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("16710a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
     cuts.AddCutPCMCalo("17810a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
     cuts.AddCutPCMCalo("18910a13","0dm00009f9730000dge0404000","24466810ha082200000","0h43103100000010"); //
+  } else if (trainConfig == 860){ // PHOS clusters - trigger 20181018
+    cuts.AddCutPCMCalo("30162a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("31262a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("11262a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
+    cuts.AddCutPCMCalo("12362a13","00200009f9730000dge0400000","24466810ha082200000","0h43103100000010"); //
   // **********************************************************************************************************
   // ***************************** PCM-PHOS  HBT configurations PbPb run 2 2018 *******************************
   // **********************************************************************************************************
@@ -1099,6 +1114,21 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("13530a13","00200009f9730000dge0404000","24466810ha082200000","0h33103100000010"); //
   } else if (trainConfig == 952){ // PHOS clusters - centrality selection for PbPb
     cuts.AddCutPCMCalo("10910a13","00600009a27000006250800000","24466810ha082200000","0h33103100000010"); //
+  } else if (trainConfig == 953){ // PHOS clusters - centrality selection for PbPb - 400 MeV cluster thresholds
+    cuts.AddCutPCMCalo("10130a03","00200009f9730000dge0404000","24466000ha082200000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("11310003","00200009f9730000dge0404000","24466000ha082200000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("13530a03","00200009f9730000dge0404000","24466000ha082200000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("15910003","00200009f9730000dge0404000","24466000ha082200000","0h33103100000010"); //
+  } else if (trainConfig == 954){ // PHOS clusters - centrality selection for PbPb - 100 MeV cluster thresholds
+    cuts.AddCutPCMCalo("10130a03","00200009f9730000dge0404000","24466000ha09cc00000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("11310003","00200009f9730000dge0404000","24466000ha09cc00000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("13530a03","00200009f9730000dge0404000","24466000ha09cc00000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("15910003","00200009f9730000dge0404000","24466000ha09cc00000","0h33103100000010"); //
+  } else if (trainConfig == 955){ // PHOS clusters - centrality selection for PbPb - 50 MeV cluster thresholds
+    cuts.AddCutPCMCalo("10130a03","00200009f9730000dge0404000","24466000ha0acc00000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("11310003","00200009f9730000dge0404000","24466000ha0acc00000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("13530a03","00200009f9730000dge0404000","24466000ha0acc00000","0h33103100000010"); //
+    cuts.AddCutPCMCalo("15910003","00200009f9730000dge0404000","24466000ha0acc00000","0h33103100000010"); //
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

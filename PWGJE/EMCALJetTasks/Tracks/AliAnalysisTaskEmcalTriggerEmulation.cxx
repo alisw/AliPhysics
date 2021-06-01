@@ -35,11 +35,9 @@
 #include "AliEMCalTriggerBinningFactory.h"
 #include "AliEMCalTriggerWeightHandler.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerEmulation)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerEmulation)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalTriggerEmulation::AliAnalysisTaskEmcalTriggerEmulation() :
     AliAnalysisTaskEmcal(),
@@ -165,5 +163,3 @@ bool AliAnalysisTaskEmcalTriggerEmulation::Run(){
 
   return true;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

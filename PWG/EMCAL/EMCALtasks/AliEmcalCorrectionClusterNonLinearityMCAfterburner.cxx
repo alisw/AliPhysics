@@ -68,9 +68,9 @@ Bool_t AliEmcalCorrectionClusterNonLinearityMCAfterburner::Initialize()
  * Create run-independent objects for output. Called before running over events.
  */
 void AliEmcalCorrectionClusterNonLinearityMCAfterburner::UserCreateOutputObjects()
-{   
+{
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
-  
+
   // Create my user objects.
   if (fCreateHisto){
     fEnergyDistBefore = new TH1F("hEnergyDistBefore","hEnergyDistBefore;E_{clus} (GeV)",1500,0,150);
@@ -81,7 +81,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::UserCreateOutputObjects
     fOutput->Add(fEnergyDistAfter);
     fEnergyTimeHistAfter = new TH2F("hEnergyTimeDistAfter","hEnergyTimeDistAfter;E_{clus} (GeV);time (s)",1500,0,150,500,-1e-6,1e-6);
     fOutput->Add(fEnergyTimeHistAfter);
-    
+
     // Take ownership of output list
     fOutput->SetOwner(kTRUE);
   }
@@ -96,7 +96,6 @@ Bool_t AliEmcalCorrectionClusterNonLinearityMCAfterburner::Run()
 
   // loop over clusters
   AliVCluster *clus = 0;
-  AliTLorentzVector clusVec;
   AliClusterContainer * clusCont = 0;
   TIter nextClusCont(&fClusterCollArray);
 
@@ -112,11 +111,7 @@ Bool_t AliEmcalCorrectionClusterNonLinearityMCAfterburner::Run()
 
       for (AliClusterIterableMomentumContainer::iterator clusIterator = clusItCont.begin(); clusIterator != clusItCont.end(); ++clusIterator) {
         clus    = static_cast<AliVCluster *>(clusIterator->second);
-        clusVec = static_cast<AliTLorentzVector>(clusIterator->first);
-
         if (!clus->IsEMCAL()) continue;
-        //currently only for EMCal clusters. Skip DCal clusters
-        if (clusVec.Phi_0_2pi() > 4.) {continue;}
 
         Double_t oldEnergy = clus->GetNonLinCorrEnergy();
         Double_t newEnergy = -1;
@@ -150,16 +145,29 @@ Bool_t AliEmcalCorrectionClusterNonLinearityMCAfterburner::Run()
           AliDebugStream(2) << "Using non-lin afterburner function No.3" << std::endl;
           AliDebugStream(2) << "old Energy: "<< oldEnergy<<", new Energy: "<<newEnergy<< std::endl;
        }
+       // like function 1 but divided by constant factor
+       if (fNonLinearityAfterburnerFunction == 4) {
+          newEnergy = oldEnergy;
+
+          newEnergy/= fNLAfterburnerPara[0] + TMath::Exp( fNLAfterburnerPara[1] + (fNLAfterburnerPara[2] * newEnergy));
+          newEnergy/= fNLAfterburnerPara[3];
+          if(clus->GetNCells() == 1){ // 1 cell clusters need to be treated differently
+            newEnergy/= fNLAfterburnerPara[4];
+          }
+
+          AliDebugStream(2) << "Using non-lin afterburner function No.4" << std::endl;
+          AliDebugStream(2) << "old Energy: "<< oldEnergy<<", new Energy: "<<newEnergy<< std::endl;
+       }
 
         //correction only works in a specific momentum range
         if (oldEnergy > 0.300) {
-          clus->SetNonLinCorrEnergy(newEnergy);
           if (fSetForceClusterE) clus->SetE(newEnergy);
+          clus->SetNonLinCorrEnergy(newEnergy);
         }
         else {
           AliWarning(Form("Cluster energy out of range for correction!, E = %f \n",oldEnergy));
-          clus->SetNonLinCorrEnergy(-100);
           if (fSetForceClusterE) clus->SetE(-100);
+          clus->SetNonLinCorrEnergy(-100);
         }
 
         // Fill histograms only if cluster is not exotic, as in ClusterMaker (the clusters are flagged, not removed)
@@ -188,6 +196,7 @@ TString AliEmcalCorrectionClusterNonLinearityMCAfterburner::SummarizeMCProductio
 {
   // Globally valid testbeam fine tuning (separate values for Run1 and Run2)
   if ( namePeriod.CompareTo("kTestBeamFinalMCRun2") == 0  )    return "kTestBeamFinalMCRun2";
+  else if ( namePeriod.CompareTo("kTestBeamFinalMCRun213TeV") == 0  )    return "kTestBeamFinalMCRun213TeV";
   else if ( namePeriod.CompareTo("kTestBeamFinalMCRun1") == 0  )    return "kTestBeamFinalMCRun1";
   //...MC anchored to 2015 Data...
   // pp 13 TeV
@@ -370,32 +379,44 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
     //These are the standard parameters extracted from the PCM method (one hit in EMCal + one converted gamma)
     case kPCM_EMCal:
       // globally valid Run2 fine tuning for the testbeam+shaper corrected clusters
-      if( namePeriod=="kTestBeamFinalMCRun2") {
-        fNonLinearityAfterburnerFunction = 1;
+      if(!namePeriod.CompareTo("kTestBeamFinalMCRun2")) {
+        fNonLinearityAfterburnerFunction = 4;
         //There are no extracted parameters yet
         //Iteration-1 paramters
         fNLAfterburnerPara[0] = 0.987912;
         fNLAfterburnerPara[1] = -2.94105;
         fNLAfterburnerPara[2] = -0.273207;
         //Iteration-2 parameters
-        fNLAfterburnerPara[3] = 0;
-        fNLAfterburnerPara[4] = 0;
+        fNLAfterburnerPara[3] = 1.0;
+        fNLAfterburnerPara[4] = 0.99; // factor to be applied on 1 cell clusters only
         fNLAfterburnerPara[5] = 0;
       }
-      if( namePeriod=="kTestBeamFinalMCRun1") {
-        fNonLinearityAfterburnerFunction = 1;
+      else if( !namePeriod.CompareTo("kTestBeamFinalMCRun213TeV")) {
+        fNonLinearityAfterburnerFunction = 4;
         //There are no extracted parameters yet
         //Iteration-1 paramters
         fNLAfterburnerPara[0] = 0.987912;
         fNLAfterburnerPara[1] = -2.94105;
         fNLAfterburnerPara[2] = -0.273207;
         //Iteration-2 parameters
-        fNLAfterburnerPara[3] = -0.0125; // Run1 additional correction factor of 1.25%
-        fNLAfterburnerPara[4] = 0;
+        fNLAfterburnerPara[3] = 1.00349; // additional factor from average to improve agreement
+        fNLAfterburnerPara[4] = 0.99; // factor to be applied on 1 cell clusters only
+        fNLAfterburnerPara[5] = 0;
+      }
+      else if( !namePeriod.CompareTo("kTestBeamFinalMCRun1")) {
+        fNonLinearityAfterburnerFunction = 4;
+        //There are no extracted parameters yet
+        //Iteration-1 paramters
+        fNLAfterburnerPara[0] = 0.987912;
+        fNLAfterburnerPara[1] = -2.94105;
+        fNLAfterburnerPara[2] = -0.273207;
+        //Iteration-2 parameters
+        fNLAfterburnerPara[3] = 1.0125; // Run1 additional correction factor of 1.25%
+        fNLAfterburnerPara[4] = 0.99; // factor to be applied on 1 cell clusters only
         fNLAfterburnerPara[5] = 0;
       }
       // pp 5.02 TeV (2015) - LHC15n
-      if( namePeriod=="k16h3" ||  namePeriod=="k17e2" || namePeriod == "k18j3") {
+      else if( !namePeriod.CompareTo("k16h3") ||  !namePeriod.CompareTo("k17e2") || !namePeriod.CompareTo("k18j3")) {
         fNonLinearityAfterburnerFunction = 1;
         //There are no extracted parameters yet
         //Iteration-1 paramters
@@ -408,7 +429,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
         fNLAfterburnerPara[5] = 0;
       }
       // pp 5.02 TeV (2017) - LHC17pq
-      else if(namePeriod=="k17l3b" || namePeriod=="k18j2" || namePeriod=="k17l4b" || namePeriod=="k18b8") {
+      else if(!namePeriod.CompareTo("k17l3b") || !namePeriod.CompareTo("k18j2") || !namePeriod.CompareTo("k17l4b") || !namePeriod.CompareTo("k18b8")) {
         fNonLinearityAfterburnerFunction = 2;
         //These are parameters extracted by Nicolas Schmidt in 25.Nov 2018 (to be used after kPi0MCv3 and kBeamTestCorrectedv4)
         fNLAfterburnerPara[0] = -0.8802886739;
@@ -422,7 +443,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
         fNLAfterburnerPara[8] = 0;
       }
       //pp 13 TeV LHC16 || LHC17 || LHC18 (4)
-      else if ( namePeriod=="kPP13T16P1Pyt8" || namePeriod=="kPP13T17P1Pyt8" || namePeriod=="kPP13T18P1Pyt8" || namePeriod=="kPP13T17P1JJ" || namePeriod=="kPP13T16P1JJ" || namePeriod=="kPP13T16P1Pyt8LowB" || namePeriod=="kPP13T17P1Pyt8LowB") {
+      else if ( !namePeriod.CompareTo("kPP13T16P1Pyt8") || !namePeriod.CompareTo("kPP13T17P1Pyt8") || !namePeriod.CompareTo("kPP13T18P1Pyt8") || !namePeriod.CompareTo("kPP13T17P1JJ") || !namePeriod.CompareTo("kPP13T16P1JJ") || !namePeriod.CompareTo("kPP13T16P1Pyt8LowB") || !namePeriod.CompareTo("kPP13T17P1Pyt8LowB")) {
         fNonLinearityAfterburnerFunction = 1;
         //There are no extracted parameters yet
         //Iteration-1 paramters
@@ -445,7 +466,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
       //These are variations of the standard parameters extracted from the EMCal method (both hits in the EMCal)
     case kEMCal_EMCal:
       // pp 5.02 TeV (2015) - LHC15n
-      if( namePeriod=="k16h3" ||  namePeriod=="k17e2" || namePeriod =="k18j3") {
+      if( !namePeriod.CompareTo("k16h3") ||  !namePeriod.CompareTo("k17e2") || !namePeriod.CompareTo("k18j3")) {
         fNonLinearityAfterburnerFunction = 1;
         //Iteration-1 paramters
         fNLAfterburnerPara[0] = 0;
@@ -457,7 +478,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
         fNLAfterburnerPara[5] = 0;
       }
       // pp 5.02 TeV (2017) - LHC17pq
-      else if(namePeriod=="k17l3b" || namePeriod=="k18j2" || namePeriod=="k17l4b" || namePeriod=="k18b8") {
+      else if(!namePeriod.CompareTo("k17l3b") || !namePeriod.CompareTo("k18j2") || !namePeriod.CompareTo("k17l4b") || !namePeriod.CompareTo("k18b8")) {
         fNonLinearityAfterburnerFunction = 1;
         //Iteration-1 paramters
         fNLAfterburnerPara[0] = 0;
@@ -470,7 +491,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
       }
       //(4)
       //pp 13 TeV LHC16 || LHC17 || LHC18
-      else if ( namePeriod=="kPP13T16P1Pyt8" || namePeriod=="kPP13T17P1Pyt8" || namePeriod=="kPP13T18P1Pyt8" || namePeriod=="kPP13T16P1Pyt8LowB" || namePeriod=="kPP13T17P1Pyt8LowB" || namePeriod=="kPP13T17P1JJ" || namePeriod=="kPP13T16P1JJ"){
+      else if ( !namePeriod.CompareTo("kPP13T16P1Pyt8") || !namePeriod.CompareTo("kPP13T17P1Pyt8") || !namePeriod.CompareTo("kPP13T18P1Pyt8") || !namePeriod.CompareTo("kPP13T16P1Pyt8LowB") || !namePeriod.CompareTo("kPP13T17P1Pyt8LowB") || !namePeriod.CompareTo("kPP13T17P1JJ") || !namePeriod.CompareTo("kPP13T16P1JJ")){
         fNonLinearityAfterburnerFunction = 1;
         //Iteration-1 paramters
         fNLAfterburnerPara[0] = 0;
@@ -494,7 +515,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
       //fit and then the fits are divided by each other to give the right function
     case kPCM_EMCalFunctionRatio:
       // pp 5.02 TeV (2015) - LHC15n AND (2017) - LHC17pq
-      if( namePeriod=="k16h3" ||  namePeriod=="k17e2" || namePeriod == "k18j3" || namePeriod=="k17l3b" || namePeriod=="k18j2" || namePeriod=="k17l4b" || namePeriod=="k18b8") {
+      if( !namePeriod.CompareTo("k16h3") ||  !namePeriod.CompareTo("k17e2") || !namePeriod.CompareTo("k18j3") || !namePeriod.CompareTo("k17l3b") || !namePeriod.CompareTo("k18j2") || !namePeriod.CompareTo("k17l4b") || !namePeriod.CompareTo("k18b8")) {
         fNonLinearityAfterburnerFunction = 2;
         fNLAfterburnerPara[0] = 1;
         fNLAfterburnerPara[1] = 0;
@@ -508,7 +529,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
       }
       //(4)
       //pp 13 TeV LHC16 || LHC17 || LHC18
-      else if ( namePeriod=="kPP13T16P1Pyt8" || namePeriod=="kPP13T17P1Pyt8" || namePeriod=="kPP13T18P1Pyt8" || namePeriod=="kPP13T17P1JJ" || namePeriod=="kPP13T16P1JJ" || namePeriod=="kPP13T16P1Pyt8LowB" || namePeriod=="kPP13T17P1Pyt8LowB"){
+      else if ( !namePeriod.CompareTo("kPP13T16P1Pyt8") || !namePeriod.CompareTo("kPP13T17P1Pyt8") || !namePeriod.CompareTo("kPP13T18P1Pyt8") || !namePeriod.CompareTo("kPP13T17P1JJ") || !namePeriod.CompareTo("kPP13T16P1JJ") || !namePeriod.CompareTo("kPP13T16P1Pyt8LowB") || !namePeriod.CompareTo("kPP13T17P1Pyt8LowB")){
         fNonLinearityAfterburnerFunction = 2;
         fNLAfterburnerPara[0] = 1;
         fNLAfterburnerPara[1] = 0;
@@ -547,7 +568,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
       //fit and then the fits are divided by each other to give the right function
     case kEMCal_EMCalFunctionRatio:
       // pp 5.02 TeV (2015) - LHC15n AND (2017) - LHC17pq
-      if( namePeriod=="k16h3" ||  namePeriod=="k17e2" || namePeriod == "k18j3" || namePeriod=="k17l3b" || namePeriod=="k18j2" || namePeriod=="k17l4b" || namePeriod=="k18b8") {
+      if( !namePeriod.CompareTo("k16h3") ||  !namePeriod.CompareTo("k17e2") || !namePeriod.CompareTo("k18j3") || !namePeriod.CompareTo("k17l3b") || !namePeriod.CompareTo("k18j2") || !namePeriod.CompareTo("k17l4b") || !namePeriod.CompareTo("k18b8")) {
         fNonLinearityAfterburnerFunction = 3;
         fNLAfterburnerPara[0] = 2;
         fNLAfterburnerPara[1] = 0;
@@ -560,7 +581,7 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
         fNLAfterburnerPara[8] = 0;
       }
       //pp 13 TeV LHC16 || LHC17 || LHC18
-      else if ( namePeriod=="kPP13T16P1Pyt8" || namePeriod=="kPP13T17P1Pyt8" || namePeriod=="kPP13T18P1Pyt8" || namePeriod=="kPP13T16P1Pyt8LowB" || namePeriod=="kPP13T17P1Pyt8LowB" || namePeriod=="kPP13T17P1JJ" || namePeriod=="kPP13T16P1JJ"){
+      else if ( !namePeriod.CompareTo("kPP13T16P1Pyt8") || !namePeriod.CompareTo("kPP13T17P1Pyt8") || !namePeriod.CompareTo("kPP13T18P1Pyt8") || !namePeriod.CompareTo("kPP13T16P1Pyt8LowB") || !namePeriod.CompareTo("kPP13T17P1Pyt8LowB") || !namePeriod.CompareTo("kPP13T17P1JJ") || !namePeriod.CompareTo("kPP13T16P1JJ")){
         fNonLinearityAfterburnerFunction = 2;
         fNLAfterburnerPara[0] = 1;
         fNLAfterburnerPara[1] = 0;

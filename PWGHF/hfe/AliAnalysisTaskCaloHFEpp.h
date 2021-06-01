@@ -29,12 +29,16 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            UserCreateOutputObjects();
 		virtual void            UserExec(Option_t* option);
 		virtual void            Terminate(Option_t* option);
-		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt,Double_t DCAxy,Int_t Bsign);
-		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy);
-		virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto);
+		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt,Double_t DCAxy,Int_t Bsign, Bool_t &iIsocut);
+		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy, Int_t &NcontCone);
+	
+                virtual void            IsolationTrackBase(Int_t itrack, AliVTrack *track, Double_t MatchclE, Double_t &IsoEnergyTrack, Int_t &NtrackCone);
+	        virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto);
 
 		virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
+		virtual void            GetMClevelWdecay(AliAODMCHeader* fMCheadera, Double_t CutEta);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
+		virtual void            FindWdecay(AliAODMCParticle* part, int &label, int &pid);
     virtual void            SetEtaRange(Int_t etarange){fetarange = etarange;};
 
     Bool_t                  GetEMCalTriggerEG1() { return fEMCEG1; };
@@ -64,6 +68,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetEop(Double_t min, Double_t max) {EopMin = min, EopMax = max;};
 		void                    SetConeR(Double_t coneR) {MaxConeR = coneR;};
 		void                    SetptAsso(Double_t ptassoMin) {ptAssoMin = ptassoMin;};
+		void                    SetMimClE(Double_t MimClE) {CutMimClE = MimClE;};
 		void                    SetptCut(TString pte) {pTe = pte;};
 		void                    SetMassMin(Double_t MassMin) {massMin = MassMin;};
 		void                    SetNref(Double_t nref) {Nref = nref;};
@@ -91,13 +96,48 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 						if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
 						fMultEstimatorAvg[3]=new TProfile(*hprof);
 		}
-		void 			SetMultiProfileMCLHC16k(TProfile * hprof){
+		void 			SetMultiProfileLHC17h(TProfile * hprof){
 						if(fMultEstimatorAvg[4]) delete fMultEstimatorAvg[4];
 						fMultEstimatorAvg[4]=new TProfile(*hprof);
 		}
-		void 			SetMultiProfileMCLHC16l(TProfile * hprof){
+		void 			SetMultiProfileLHC17i(TProfile * hprof){
 						if(fMultEstimatorAvg[5]) delete fMultEstimatorAvg[5];
 						fMultEstimatorAvg[5]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC17k(TProfile * hprof){
+						if(fMultEstimatorAvg[6]) delete fMultEstimatorAvg[6];
+						fMultEstimatorAvg[6]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC17l(TProfile * hprof){
+						if(fMultEstimatorAvg[7]) delete fMultEstimatorAvg[7];
+						fMultEstimatorAvg[7]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC17m(TProfile * hprof){
+						if(fMultEstimatorAvg[8]) delete fMultEstimatorAvg[8];
+						fMultEstimatorAvg[8]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC17o(TProfile * hprof){
+						if(fMultEstimatorAvg[9]) delete fMultEstimatorAvg[9];
+						fMultEstimatorAvg[9]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC17r(TProfile * hprof){
+						if(fMultEstimatorAvg[10]) delete fMultEstimatorAvg[10];
+						fMultEstimatorAvg[10]=new TProfile(*hprof);
+		}
+
+                // MC +++++++++++++++++
+
+		void 			SetMultiProfileMCLHC16k(TProfile * hprof){
+						if(fMultEstimatorAvg[11]) delete fMultEstimatorAvg[11];
+						fMultEstimatorAvg[11]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileMCLHC16l(TProfile * hprof){
+						if(fMultEstimatorAvg[12]) delete fMultEstimatorAvg[12];
+						fMultEstimatorAvg[12]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileMCLHC17(TProfile * hprof){
+						if(fMultEstimatorAvg[13]) delete fMultEstimatorAvg[13];
+						fMultEstimatorAvg[13]=new TProfile(*hprof);
 		}
 
 	private:
@@ -121,6 +161,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t EopMin, EopMax;
 		Double_t MaxConeR;
 		Double_t ptAssoMin;
+		Double_t CutMimClE;
 		TString pTe;
 		Double_t massMin;
 		Double_t Nref;
@@ -162,6 +203,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fEop_iso;
 		TH2F*                   fEop_iso_eID;
 		TH2F*                   fConeR;
+		TH2F*                   fConeE;
+		TH2F*                   fNpart;
 
 		//==== Real data output ====
 		TH1F*                   fHist_trackPt;        //! dummy histogram
@@ -169,7 +212,10 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fHistSelectPt;        
 		TH1F*                   fHist_ClustE;        //! dummy histogram
 		TH1F*                   fHist_SelectClustE;
+		TH1F*                   fHist_SelectClustE_time;
 		TH1F*                   fHistMatchE;
+		TH1F*                   fHistMatchE_time;
+		TH2F*                   fHistoTimeEMC;
 		TH2F*                   fdEdx;
 		TH2F*                   fTPCnsig;
 		TH2F*                   fHistNsigEop;
@@ -182,6 +228,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fPhidiff;
 		TH2F*                   fInv_pT_LS;
 		TH2F*                   fInv_pT_ULS;
+		TH2F*                   fInv_pT_LS_forW;
 		TH2F*                   fInv_pT_ULS_forW;
 		TH1F*                   fHistPt_Inc;
 		TH1F*                   fHistPt_Iso;
@@ -191,6 +238,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fRiso_phidiff_35;
 		TH2F*                   fRiso_phidiff_LS_35;
                 THnSparseD*             fIsoArray;      
+                THnSparseD*             fHFArray;      
 		TH2F*                   fzvtx_Ntrkl;
 		TH2F*                   fzvtx_Nch;
 		TH2F*                   fzvtx_Ntrkl_Corr;
@@ -207,6 +255,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fDCAxy_Pt_Ds;
 		TH2F*                   fDCAxy_Pt_lambda;
 		TH2F*                   fDCAxy_Pt_B;
+		TH2F*                   fDCAxy_Pt_We;
 		TH2F*                   fPt_Btoe;
 
 		//==== Trigger or Calorimeter flag ====
@@ -258,12 +307,14 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*               		fHist_eff_TPC;
 		TH1F*               		fHist_eff_M20;
 		TH2F*               		fHist_eff_Iso;
-
+                TH1F*                           fHistWeOrg;
+                TH1F*                           fHistWeOrgPos;
+                TH1F*                           fHistWeOrgNeg;
 
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		Int_t fetarange;
-		TProfile*		fMultEstimatorAvg[6];
+		TProfile*		fMultEstimatorAvg[14];
 		TH1D*       fweightNtrkl;
 
 

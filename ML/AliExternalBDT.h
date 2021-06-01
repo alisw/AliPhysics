@@ -29,7 +29,10 @@ public:
   bool LoadModelLibrary(std::string path);
   bool LoadXGBoostModel(std::string path);
 
-  double Predict(double *features, int size, bool useRaw = false);
+  bool Predict(double *features, int size, std::vector<double> &outputScores, bool useRaw = false);
+
+  std::size_t GetOutputSize() const {return fOutSize;}
+  std::size_t GetNumberOfFeatures() const {return fNumFeatures;}
 
 private:
   bool CompileAndLoadModelLibrary();
@@ -43,6 +46,8 @@ private:
   std::string fModelName;
   CompilerHandle fCompiler;
   PredictorHandle fPredictor;
+  std::size_t fOutSize;
+  std::size_t fNumFeatures;
 };
 
 #endif

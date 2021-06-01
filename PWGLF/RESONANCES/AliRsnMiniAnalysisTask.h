@@ -38,6 +38,7 @@ class AliRsnMiniEvent;
 class AliRsnCutSet;
 class AliQnCorrectionsManager;
 class AliQnCorrectionsQnVector;
+class AliTimeRangeCut;
 
 class AliRsnMiniAnalysisTask : public AliAnalysisTaskSE {
 
@@ -66,6 +67,7 @@ public:
    void                SetMaxDiffVz   (Double_t val)      {fMaxDiffVz    = val;}
    void                SetMaxDiffAngle(Double_t val)      {fMaxDiffAngle = val;}
    void                SetUseBuiltinEventCuts(Bool_t use = kTRUE)   {fUseBuiltinEventCuts    = use;}
+   void                SetUseTimeRangeCut(Bool_t use = kTRUE)   {fUseTimeRangeCut    = use;}
    void                SetEventCuts(AliRsnCutSet *cuts)   {fEventCuts    = cuts;}
    void                SetMixPrintRefresh(Int_t n)        {fMixPrintRefresh = n;}
    void                SetCheckDecay(Bool_t checkDecay = kTRUE) {fCheckDecay = checkDecay;}
@@ -151,6 +153,8 @@ private:
    TH2F                *fHAEventPlane;        //!<! histogram of event plane vs. multiplicity/centrality
 
    Bool_t              fUseBuiltinEventCuts; //< use Built-in AliEventCuts
+   Bool_t              fUseTimeRangeCut; //< use time range cut
+   AliTimeRangeCut     *fTimeRangeCut; //!<! time range cut
    AliRsnCutSet        *fEventCuts;       ///< cuts on events
    TObjArray            fTrackCuts;       ///< list of single track cuts
    AliRsnEvent          fRsnEvent;        ///< interface object to the event
@@ -179,7 +183,7 @@ private:
    TObjArray            fResonanceFinders;  ///< list of AliRsnMiniResonanceFinder objects
 
 /// \cond CLASSIMP
-   ClassDef(AliRsnMiniAnalysisTask, 21);     
+   ClassDef(AliRsnMiniAnalysisTask, 22);     
 /// \endcond
 };
 

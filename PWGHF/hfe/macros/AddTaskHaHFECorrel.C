@@ -182,10 +182,7 @@
    if (EventWeightFile) {    
      TH3F * TriggerWeight  = (TH3F*)EventWeightFile->Get("TrigEff");
     if (TriggerWeight) taskMB->SetTriggerWeight(*TriggerWeight);
-     
-
-
-     
+         
      TH2F * VtxWeight;
      VtxWeight = (TH2F*)EventWeightFile->Get("VtxEff");
   //   //    if (!IsMC || !VtxWeight) VtxWeight = (TH1F*)EventWeightFile->Get("VtxWeight");

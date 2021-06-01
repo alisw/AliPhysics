@@ -8,13 +8,14 @@
 #include <AliMESppColTask.h>
 #endif
 
-AliMESppColTask *AddMESppColTask(Bool_t mc)
+AliMESppColTask *AddMESppColTask(Bool_t mc, Bool_t hm = kFALSE)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliMESppColTask *ppCol = new AliMESppColTask("MESppCol");
   mgr->AddTask(ppCol);
   ppCol->SetPostProcess(kFALSE);
   ppCol->SetMCdata(mc);
+  ppCol->SetTriggerHM(hm);
   ppCol->SetDebugLevel(1);
 
   mgr->ConnectInput(ppCol, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container

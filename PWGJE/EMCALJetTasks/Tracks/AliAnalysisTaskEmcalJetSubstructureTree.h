@@ -284,6 +284,9 @@ private:
   Bool_t                       fFillNSub;                   ///< Fill N-subjettiness
   Bool_t                       fFillStructGlob;             ///< Fill other substructure variables
 
+  AliAnalysisTaskEmcalJetSubstructureTree(const AliAnalysisTaskEmcalJetSubstructureTree &);
+  AliAnalysisTaskEmcalJetSubstructureTree &operator=(const AliAnalysisTaskEmcalJetSubstructureTree &);
+
 	ClassDef(AliAnalysisTaskEmcalJetSubstructureTree, 1);
 };
 

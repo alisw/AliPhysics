@@ -18,25 +18,29 @@ class AliAODcascade;
 #include "AliAODMCParticle.h"
 #include "AliAnalysisTaskStrAODqa.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisUtils.h"
+#include "AliAODMCHeader.h"
 
 ClassImp(AliAnalysisTaskStrAODqa)
 
 AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa()
 : AliAnalysisTaskSE(),
+//AliEventCuts
+  fEventCuts(0),
 //outputs
   fHistos_eve(0),
   fHistos_V0(0),
   fHistos_Casc(0),
 //objects from the manager
   fPIDResponse(0),
-//AliEventCuts
-  fEventCuts(0),
   fOutputList(0),
 //variables for MC 
   fMCEvent(0),
   fReadMCTruth(0),
 //variable for OOB pile up
   fIsOOBPileUpRem(0),
+//variable to choose V0 OnFly or Offline
+  fIsV0Offline(0),
 //variables for V0 cuts
   fV0_DcaV0Daught(0),
   fV0_DcaPosToPV(0),
@@ -61,6 +65,9 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa()
   fV0_PosTOFBunchCrossing(0),
   fIsV0FromOOBPileUp(0),
   fV0_DistOverTotP(0),
+  fV0_DecayLength(0),
+  fV0_CtauK0s(0),
+  fV0_CtauLambda(0),
 //variables for Cascade analysis
   fCasc_isNotTPCRefit(0),
   fCasc_DcaCascDaught(0),
@@ -92,6 +99,7 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa()
   fCasc_BachTOFBunchCrossing(0),
   fIsCascFromOOBPileUp(0),
   fCasc_DistOverTotP(0),
+  fCasc_DecayLength(0),
   fCasc_V0DistOverTotP(0),
   fCasc_CascCtauXi(0),
   fCasc_CascCtauOmega(0),
@@ -109,20 +117,22 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa()
 
 AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa(const char *name, TString lExtraOptions)
   : AliAnalysisTaskSE(name),
+    //AliEventCuts
+    fEventCuts(0),
     //outputs
     fHistos_eve(0),
     fHistos_V0(0),
     fHistos_Casc(0),
     //objects from the manager
     fPIDResponse(0),
-    //AliEventCuts
-    fEventCuts(0),
     fOutputList(0),
     //variables for MC 
     fMCEvent(0),
     fReadMCTruth(0),
-//variable for OOB pile up
-  fIsOOBPileUpRem(0),
+    //variable for OOB pile up
+    fIsOOBPileUpRem(0),
+    //variable to choose V0 OnFly or Offline
+    fIsV0Offline(0),
     //variables for V0 cuts
     fV0_DcaV0Daught(0),
     fV0_DcaPosToPV(0),
@@ -145,8 +155,11 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa(const char *name, TString lExtr
     fV0_NSigNegPion(0),
     fV0_NegTOFBunchCrossing(0), 
     fV0_PosTOFBunchCrossing(0),
-  fIsV0FromOOBPileUp(0),
+    fIsV0FromOOBPileUp(0),
     fV0_DistOverTotP(0),
+    fV0_DecayLength(0),
+    fV0_CtauK0s(0),
+    fV0_CtauLambda(0),
     //variables for Cascade analysis
     fCasc_isNotTPCRefit(0),
     fCasc_DcaCascDaught(0),
@@ -178,6 +191,7 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa(const char *name, TString lExtr
     fCasc_BachTOFBunchCrossing(0),
     fIsCascFromOOBPileUp(0),
     fCasc_DistOverTotP(0),
+    fCasc_DecayLength(0),
     fCasc_V0DistOverTotP(0),
     fCasc_CascCtauXi(0),
     fCasc_CascCtauOmega(0),
@@ -220,15 +234,22 @@ void AliAnalysisTaskStrAODqa::UserCreateOutputObjects()
   fHistos_eve = new THistManager("histos_eve");
   //fHistos_eve->CreateTH1("hcent", "", 100, 0, 100, "s");  //storing #events in bins of centrality
   fHistos_eve->CreateTH1("henum", "", 1, 0, 1);  //storing total #events
-  fHistos_eve->CreateTH3("GeneratedParticles", "", 7, 0, 7, 100, 0, 10, 200, -10, 10);  //storing generated particles
+  fHistos_eve->CreateTH3("GeneratedParticles", "", 14, 0, 14, 100, 0, 10, 200, -10, 10);  //storing generated particles
   //    for (int iP=1; iP<=kNParticles; iP++) ((TH2*)fHistos_eve->FindObject("GeneratedParticles"))->GetXaxis()->SetBinLabel(iP, kParticleNames[iP-1]);    
 
   fHistos_V0 = new THistManager("histos_V0");
   fHistos_V0->CreateTH1("CosPA", "", 100, 0.9, 1.);
   fHistos_V0->CreateTH1("Radius", "", 100, 0., 10.);
+  fHistos_V0->CreateTH1("DecayLength", "", 100, 0., 10.);
   fHistos_V0->CreateTH1("V0DCANegToPV",  "", 100, 0., 1.);
   fHistos_V0->CreateTH1("V0DCAPosToPV", "", 100, 0., 1.);
   fHistos_V0->CreateTH1("V0DCAV0Daughters",  "", 55, 0., 2.2);
+  fHistos_V0->CreateTH1("CtauK0s",  "", 65, 0., 13.);
+  fHistos_V0->CreateTH1("CtauLambda",  "", 200, 0., 40.);
+  fHistos_V0->CreateTH1("CtauAntiLambda",  "", 200, 0., 40.);
+  fHistos_V0->CreateTH1("DecayLengthK0s", "", 100, 0., 40.);
+  fHistos_V0->CreateTH1("DecayLengthLambda", "", 100, 0., 80.);
+  fHistos_V0->CreateTH1("DecayLengthAntiLambda", "", 100, 0., 80.);
 
   fHistos_V0->CreateTH2("ResponsePionFromLambda", "", 500, 0., 5., 400, -20., 20.);
   fHistos_V0->CreateTH2("ResponseProtonFromLambda", "", 500, 0., 5., 400, -20., 20.);
@@ -236,6 +257,8 @@ void AliAnalysisTaskStrAODqa::UserCreateOutputObjects()
   fHistos_V0->CreateTH2("ImassK0S", "", 100, 0., 10., 200, 0.4, 0.6);
   fHistos_V0->CreateTH2("ImassLam", "", 100, 0., 10., 200, 1.07, 1.17);
   fHistos_V0->CreateTH2("ImassALam", "", 100, 0., 10., 200, 1.07, 1.17);
+  fHistos_V0->CreateTH2("ImassLam_Ctau", "", 200, 0., 40., 200, 1.07, 1.17);
+  fHistos_V0->CreateTH2("ImassALam_Ctau", "", 200, 0., 40., 200, 1.07, 1.17);
   fHistos_V0->CreateTH2("ImassK0STrue", "", 100, 0., 10., 200, 0.4, 0.6);
   fHistos_V0->CreateTH2("ImassLamTrue", "", 100, 0., 10., 200, 1.07, 1.17);
   fHistos_V0->CreateTH2("ImassALamTrue", "", 100, 0., 10., 200, 1.07, 1.17);
@@ -246,6 +269,9 @@ void AliAnalysisTaskStrAODqa::UserCreateOutputObjects()
   fHistos_Casc->CreateTH2("CascCosPA","", 200,0.90,1.0, 2, -2, 2);
   fHistos_Casc->CreateTH2("V0CosPA","", 100,0.9,1.0, 2, -2, 2);
   fHistos_Casc->CreateTH2("V0CosPAToXi","", 100,0.9,1.0, 2, -2, 2);
+  fHistos_Casc->CreateTH2("CascDecayLength","", 100,0.0,10.0, 2, -2, 2);
+  fHistos_Casc->CreateTH2("CascDecayLengthXi","", 200,0.0,20.0, 2, -2, 2);
+  fHistos_Casc->CreateTH2("CascDecayLengthOmega","", 200,0.0,20.0, 2, -2, 2);
   fHistos_Casc->CreateTH2("CascRadius","", 100,0.0,10.0, 2, -2, 2);
   fHistos_Casc->CreateTH2("V0Radius","", 100,0.0,10.0, 2, -2, 2);
   fHistos_Casc->CreateTH2("CascyXi","", 200,-2.0,2.0, 2, -2, 2);
@@ -332,12 +358,17 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
   double lBestPV[3]  = {-666., -666., -666.};
   lBestAODPrimVtx->GetXYZ( lBestPV );
 
-
   //MC generated part 
 
   TClonesArray* AODMCTrackArraybis =0x0;
+  AliAODMCHeader* header = 0x0;
   if(fReadMCTruth){
     fMCEvent= MCEvent();
+    header =     static_cast<AliAODMCHeader*>(lAODevent->FindListObject(AliAODMCHeader::StdBranchName()));
+    if (!header) {
+      AliWarning("No header found.");
+      return;
+    }
     if (fMCEvent){
       AODMCTrackArraybis = dynamic_cast<TClonesArray*>(lAODevent->FindListObject(AliAODMCParticle::StdBranchName()));
       if (AODMCTrackArraybis == NULL){
@@ -350,12 +381,23 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
 	if (!(particle->IsPhysicalPrimary()))continue; //we are mainly interested in the primaries because we want to see the effect of the injection of strange particles on the pT spectrum
 
 	if (particle->GetPdgCode()==  310)     fHistos_eve->FillTH3("GeneratedParticles", 0.5, particle->Pt(),particle->Y()); //K0s
-	if (particle->GetPdgCode()== 3122)     fHistos_eve->FillTH3("GeneratedParticles", 1.5, particle->Pt(),particle->Y()); //Lambda 
-	if (particle->GetPdgCode()==-3122)     fHistos_eve->FillTH3("GeneratedParticles", 2.5, particle->Pt(),particle->Y()); //AntiLambda
-	if (particle->GetPdgCode()== 3312)     fHistos_eve->FillTH3("GeneratedParticles", 3.5, particle->Pt(),particle->Y()); //Xi- 
-	if (particle->GetPdgCode()==-3312)     fHistos_eve->FillTH3("GeneratedParticles", 4.5, particle->Pt(),particle->Y()); //Xi+ 
-	if (particle->GetPdgCode()== 3334)     fHistos_eve->FillTH3("GeneratedParticles", 5.5, particle->Pt(),particle->Y()); //Omega- 
-	if (particle->GetPdgCode()==-3334)     fHistos_eve->FillTH3("GeneratedParticles", 6.5, particle->Pt(),particle->Y()); //Omega+ 
+	if (particle->GetPdgCode()== 3122)     fHistos_eve->FillTH3("GeneratedParticles", 2.5, particle->Pt(),particle->Y()); //Lambda 
+	if (particle->GetPdgCode()==-3122)     fHistos_eve->FillTH3("GeneratedParticles", 4.5, particle->Pt(),particle->Y()); //AntiLambda
+	if (particle->GetPdgCode()== 3312)     fHistos_eve->FillTH3("GeneratedParticles", 6.5, particle->Pt(),particle->Y()); //Xi- 
+	if (particle->GetPdgCode()==-3312)     fHistos_eve->FillTH3("GeneratedParticles", 8.5, particle->Pt(),particle->Y()); //Xi+ 
+	if (particle->GetPdgCode()== 3334)     fHistos_eve->FillTH3("GeneratedParticles", 10.5, particle->Pt(),particle->Y()); //Omega- 
+	if (particle->GetPdgCode()==-3334)     fHistos_eve->FillTH3("GeneratedParticles", 12.5, particle->Pt(),particle->Y()); //Omega+ 
+
+	if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, header, AODMCTrackArraybis)) continue;
+	    //	if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMCEvent))  //this is for ESD!
+
+	if (particle->GetPdgCode()==  310)     fHistos_eve->FillTH3("GeneratedParticles", 1.5, particle->Pt(),particle->Y()); //K0s
+	if (particle->GetPdgCode()== 3122)     fHistos_eve->FillTH3("GeneratedParticles", 3.5, particle->Pt(),particle->Y()); //Lambda 
+	if (particle->GetPdgCode()==-3122)     fHistos_eve->FillTH3("GeneratedParticles", 5.5, particle->Pt(),particle->Y()); //AntiLambda
+	if (particle->GetPdgCode()== 3312)     fHistos_eve->FillTH3("GeneratedParticles", 7.5, particle->Pt(),particle->Y()); //Xi- 
+	if (particle->GetPdgCode()==-3312)     fHistos_eve->FillTH3("GeneratedParticles", 9.5, particle->Pt(),particle->Y()); //Xi+ 
+	if (particle->GetPdgCode()== 3334)     fHistos_eve->FillTH3("GeneratedParticles", 11.5, particle->Pt(),particle->Y()); //Omega- 
+	if (particle->GetPdgCode()==-3334)     fHistos_eve->FillTH3("GeneratedParticles", 13.5, particle->Pt(),particle->Y()); //Omega+ 
       }
     }
   }
@@ -394,7 +436,13 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
   for (Int_t iV0 = 0; iV0 < nv0s; iV0++) {
 
     AliAODv0 *v0 = lAODevent->GetV0(iV0);
-    if (!v0 || v0->GetOnFlyStatus()) continue;
+    if (!v0) continue;
+    if (fIsV0Offline){
+      if( v0->GetOnFlyStatus()) continue;
+    }
+    else {
+      if( !v0->GetOnFlyStatus()) continue;
+    }
 
     fV0_Pt = v0->Pt();
     fV0_yK0S = v0->RapK0Short();
@@ -483,7 +531,10 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
     fV0_NSigNegPion   = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kPion );
 
     //distance over total momentum
+    fV0_DecayLength = v0->DecayLengthV0(lBestPV);
     fV0_DistOverTotP = v0->DecayLengthV0(lBestPV)/(v0->P()+1e-10);//avoid division by zero
+    fV0_CtauK0s=0.497611*fV0_DistOverTotP; //0.497611 GeV/c is K0s mass
+    fV0_CtauLambda=1.115683*fV0_DistOverTotP; //1.115683 GeV/c is Lambda mass
 
     //out of bunch pile up variable definition
     fV0_NegTOFBunchCrossing = nTrack->GetTOFBunchCrossing(lAODevent->GetMagneticField());
@@ -496,23 +547,32 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
     //filling histos
     fHistos_V0->FillTH1("CosPA",fV0_V0CosPA);
     fHistos_V0->FillTH1("Radius",fV0_V0Rad);
+    fHistos_V0->FillTH1("DecayLength",fV0_DecayLength);
     fHistos_V0->FillTH1("V0DCANegToPV",fV0_DcaNegToPV);
     fHistos_V0->FillTH1("V0DCAPosToPV",fV0_DcaPosToPV);
     fHistos_V0->FillTH1("V0DCAV0Daughters",fV0_DcaV0Daught);
     if(ApplyCuts(0,0,0)){
       fHistos_V0->FillTH2("ImassK0S", fV0_Pt, fV0_InvMassK0s);
+      fHistos_V0->FillTH1("CtauK0s", fV0_CtauK0s);
+      fHistos_V0->FillTH1("DecayLengthK0s",fV0_DecayLength);
       if (isK0s)      fHistos_V0->FillTH2("ImassK0STrue", fV0_Pt, fV0_InvMassK0s);
     }
     if(ApplyCuts(1,0,0)){
       fHistos_V0->FillTH2("ImassLam", fV0_Pt, fV0_InvMassLam);
+      fHistos_V0->FillTH2("ImassLam_Ctau", fV0_CtauLambda, fV0_InvMassLam);  
+      fHistos_V0->FillTH1("CtauLambda", fV0_CtauLambda);
+      fHistos_V0->FillTH1("DecayLengthLambda",fV0_DecayLength);
       if (isLambda)      fHistos_V0->FillTH2("ImassLamTrue", fV0_Pt, fV0_InvMassLam);
       if(fV0_DcaV0Daught < 1.0 && fV0_V0CosPA > 0.999 && TMath::Abs(fV0_InvMassK0s-0.497614) > 0.012 && TMath::Abs(fV0_InvMassALam-1.115683) > 0.08 && TMath::Abs(fV0_InvMassLam-1.115683) < 0.002){ 
-	fHistos_V0->FillTH2("ResponsePionFromLambda", fV0_Pt, fV0_NSigNegPion);
-	fHistos_V0->FillTH2("ResponseProtonFromLambda", fV0_Pt, fV0_NSigPosProton);
+      fHistos_V0->FillTH2("ResponsePionFromLambda", fV0_Pt, fV0_NSigNegPion);
+      fHistos_V0->FillTH2("ResponseProtonFromLambda", fV0_Pt, fV0_NSigPosProton);
       }
     }
-    if(ApplyCuts(2, 0,0)){
-      fHistos_V0->FillTH2("ImassALam", fV0_Pt, fV0_InvMassALam);      
+    if(ApplyCuts(2,0,0)){
+      fHistos_V0->FillTH2("ImassALam", fV0_Pt, fV0_InvMassALam);  
+      fHistos_V0->FillTH2("ImassALam_Ctau", fV0_CtauLambda, fV0_InvMassALam);       
+      fHistos_V0->FillTH1("CtauAntiLambda", fV0_CtauLambda);
+      fHistos_V0->FillTH1("DecayLengthAntiLambda",fV0_DecayLength);
       if (isAntiLambda)      fHistos_V0->FillTH2("ImassALamTrue", fV0_Pt, fV0_InvMassALam);
     }  
   } // end of V0 loop
@@ -672,6 +732,7 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
 					  TMath::Power( lPosXi[2] - lBestPV[2] , 2)
 					  );
 
+    fCasc_DecayLength = lXiDecayLength;
     fCasc_DistOverTotP = lXiDecayLength/(fCasc_Ptot+1e-10);
 
     //distance over total momentum of V0 from cascade
@@ -714,6 +775,7 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
     fHistos_Casc->FillTH2("V0CosPA", fCasc_V0CosPA,fCasc_charge);
     fHistos_Casc->FillTH2("V0CosPAToXi", fCasc_V0CosPAToXi,fCasc_charge);
     fHistos_Casc->FillTH2("CascRadius", fCasc_CascRad,fCasc_charge);
+    fHistos_Casc->FillTH2("CascDecayLength", fCasc_DecayLength,fCasc_charge);
     fHistos_Casc->FillTH2("V0Radius", fCasc_V0Rad,fCasc_charge);
     fHistos_Casc->FillTH2("V0Ctau", fCasc_V0Ctau,fCasc_charge);
     fHistos_Casc->FillTH2("CascPt", fCasc_Pt,fCasc_charge);
@@ -732,6 +794,7 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
     if(ApplyCuts(3, isXi,0)) {
       fHistos_Casc->FillTH2("CascyXi", fCasc_yXi, 1.);
       fHistos_Casc->FillTH2("CascCtauXi", fCasc_CascCtauXi, 1.);
+      fHistos_Casc->FillTH2("CascDecayLengthXi", fCasc_DecayLength,1);
       fHistos_Casc->FillTH2("ImassXiPlu", fCasc_Pt, fCasc_InvMassXi);
       if (isXiPos)  fHistos_Casc->FillTH2("ImassXiPluTrue", fCasc_Pt, fCasc_InvMassXi);
     }
@@ -739,6 +802,7 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
     if(ApplyCuts(4, isXi, 0)) {
       fHistos_Casc->FillTH2("CascyXi", fCasc_yXi, -1.);
       fHistos_Casc->FillTH2("CascCtauXi", fCasc_CascCtauXi, -1.);
+      fHistos_Casc->FillTH2("CascDecayLengthXi", fCasc_DecayLength,-1);
       fHistos_Casc->FillTH2("ImassXiMin", fCasc_Pt, fCasc_InvMassXi);
       if (isXiNeg)  fHistos_Casc->FillTH2("ImassXiMinTrue", fCasc_Pt, fCasc_InvMassXi);
     }
@@ -747,6 +811,7 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
       fHistos_Casc->FillTH2("CascyOmega", fCasc_yOm, 1.);
       fHistos_Casc->FillTH2("CascCtauOmega", fCasc_CascCtauOmega, 1.);
       fHistos_Casc->FillTH2("ImassOmPlu", fCasc_Pt, fCasc_InvMassOm);
+      fHistos_Casc->FillTH2("CascDecayLengthOmega", fCasc_DecayLength,1);
       if (isOmegaPos)  fHistos_Casc->FillTH2("ImassOmPluTrue", fCasc_Pt, fCasc_InvMassOm);
     }
 
@@ -754,6 +819,7 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
       fHistos_Casc->FillTH2("CascyOmega", fCasc_yOm, -1.);
       fHistos_Casc->FillTH2("CascCtauOmega", fCasc_CascCtauOmega, -1.);
       fHistos_Casc->FillTH2("ImassOmMin", fCasc_Pt, fCasc_InvMassOm);
+      fHistos_Casc->FillTH2("CascDecayLengthOmega", fCasc_DecayLength,-1);
       if (isOmegaNeg)  fHistos_Casc->FillTH2("ImassOmMinTrue", fCasc_Pt, fCasc_InvMassOm);
     }
 

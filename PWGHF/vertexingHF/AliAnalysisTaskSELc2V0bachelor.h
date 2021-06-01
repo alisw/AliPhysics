@@ -119,7 +119,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void SetDoSingleAnalysisForSystK0SP(Int_t a) {fDoSingleAnalysisForSystK0SP=a;}
   Int_t GetDoSingleAnalysisForSystK0SP() {return fDoSingleAnalysisForSystK0SP;}
 
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
 
  private:
   

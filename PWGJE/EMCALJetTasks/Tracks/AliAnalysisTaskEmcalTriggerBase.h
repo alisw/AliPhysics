@@ -17,7 +17,9 @@ class AliOADBContainer;
 
 namespace PWG { namespace EMCAL { class AliEmcalTriggerDecisionContainer; } }
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 /**
  * @class AliAnalysisTaskEmcalTriggerBase
@@ -90,6 +92,12 @@ public:
    * @param[in] doEnable If true DCAL triggers are enabled
    */
   void EnableDCALTriggers(Bool_t doEnable) { fEnableDCALTriggers = doEnable; }
+
+  /**
+   * @brief Enable EMCAL/DCAL combined triggers (OR of EMCAL and DCAL triggers at same threshold)
+   * @param doEnable If true EMCAL and DCAL combined triggers are enabled
+   */
+  void EnableEDCombinedTriggers(Bool_t doEnable) { fEnableEDCombinedTriggers = doEnable; }
 
   /**
    * @brief Enable T0-based (INT8, EMC8, DMC8) trigger suite (Default: Off)
@@ -400,6 +408,7 @@ protected:
   TString                         fNameTriggerSelectionContainer; ///< Name of the trigger selection container
 
   Bool_t                          fEnableDCALTriggers;        ///< Enable / Disable event selection for DCAL trigger classes
+  Bool_t                          fEnableEDCombinedTriggers;  ///< Enable OR combination of EMCAL and DCAL combined triggers
   Bool_t                          fEnableV0Triggers;          ///< Enable VZERO-based triggers (default)
   Bool_t                          fEnableT0Triggers;          ///< Enable triggers depending on T0 (INT8, EMC8, EMC8EGA, EMC8EJE) - default off
   Bool_t                          fEnableNoINTTriggers;       ///< Process EMCAL triggers without coincidence with INT triggers - exotic case - default off
@@ -413,6 +422,8 @@ private:
   AliAnalysisTaskEmcalTriggerBase &operator=(const AliAnalysisTaskEmcalTriggerBase &);
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALTRIGGERBASE_H */

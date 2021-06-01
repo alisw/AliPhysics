@@ -29,11 +29,8 @@
 #include "AliEMCalTriggerAnaTriggerDecision.h"
 #include "AliAnalysisTaskPtEMCalTriggerV1.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1)
-/// \endcond
-
-namespace EMCalTriggerPtAnalysis {
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskPtEMCalTriggerV1)
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy (I/O) constructor, not to be used.
@@ -219,5 +216,3 @@ void AliAnalysisTaskPtEMCalTriggerV1::FixTrackInputEvent(AliVTrack* trk) {
     }
   }
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

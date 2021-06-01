@@ -27,6 +27,7 @@
 #include "TFile.h"
 #include "TDatabasePDG.h"
 #include "TLorentzVector.h"
+#include <TObjString.h>
 
 // aliroot headers
 #include "AliAnalysisManager.h"

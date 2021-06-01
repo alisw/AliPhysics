@@ -189,6 +189,16 @@ class AliJetContainer : public AliParticleContainer {
   AliClusterContainer        *GetClusterContainer() const                    {return fClusterContainer;}
   Double_t                    GetFractionSharedPt(const AliEmcalJet *jet, AliParticleContainer *cont2 = 0x0) const;
 
+  /**
+   * @brief Regenerate jet collection name and update in AliEmcalContainer
+   * 
+   * This only updates the name of the array of the jet collection the container is
+   * subscribing to. The container name stays unmodified. Intended to be called at
+   * runtime in case relevant entries in the associated particle or cluster collection 
+   * change after the jet collection is created (i.e. in the wagon configuration).
+   */
+  void                        UpdateArrayName();
+
   const char*                 GetTitle() const;
 
   static TString              GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag);

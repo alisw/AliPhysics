@@ -69,7 +69,7 @@ AliAnalysisTaskSE("taskTrackingSysProp"),
   fhSystMatchEffD(0x0),
   fDecayChannel(AliAnalysisTaskTrackingSysPropagation::kDplustoKpipi),
   fPDGcode(411),
-  fAODProtection(1),
+  fAODProtection(0),
   fMaxPt(60.)
 {
   DefineInput(0, TChain::Class());
@@ -90,7 +90,7 @@ AliAnalysisTaskTrackingSysPropagation::AliAnalysisTaskTrackingSysPropagation(Ali
   fhSystMatchEffD(0x0),
   fDecayChannel(ch),
   fPDGcode(411),
-  fAODProtection(1),
+  fAODProtection(0),
   fMaxPt(60.)
 {
   fHistMESyst = new TH1F(*(static_cast<TH1F*>(HistMESys)));

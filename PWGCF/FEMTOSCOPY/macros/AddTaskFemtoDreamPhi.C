@@ -160,6 +160,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   MultBins.push_back(72);
   MultBins.push_back(76);
   MultBins.push_back(80);
+  MultBins.push_back(84);
+  MultBins.push_back(88);
+  MultBins.push_back(92);
+  MultBins.push_back(96);
+  MultBins.push_back(100);
+
 
   // Number of bins
   std::vector<int> NBins;
@@ -228,7 +234,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(30);
   config->SetExtendedQAPairs(pairQA);
   config->SetUseEventMixing(true);
 
@@ -253,12 +259,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   } else {
     std::cout << "You are trying to request the Momentum Resolution without MC "
                  "Info; fix it wont work! \n";
-  }
-
-
-  if (isMC){
-  config->SetAncestors(true);
-  config->GetDoAncestorsPlots();
   }
 
   /*

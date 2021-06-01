@@ -33,12 +33,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
     Int_t     enableTriggerMimicking      = 0,                        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej     = kFALSE,                   // enable trigger overlap rejection
     TString   fileNameInputForWeighting   = "MCSpectraInput.root",    // path to file for weigting input
-    Bool_t    doWeighting                 = kFALSE,                   //enable Weighting
+    Int_t     doWeightingPart             = 0,                        //enable Weighting
     TString   generatorName               = "HIJING",
     Double_t  tolerance                   = -1,
     TString   periodNameV0Reader          = "",                       // period Name for V0Reader
     Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
     Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
+    Bool_t    enableSortingMCLabels       = kTRUE,                    // enable sorting for MC cluster labels
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -225,6 +226,38 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
     cuts.AddCutHeavyMesonCalo("8008e113","411790105f032230000","32c51070a","0103603o00000000","0453503000000000"); // 0-100% without NL just EMC, EG2
     cuts.AddCutHeavyMesonCalo("8008e113","411793105f032230000","32c51070a","0103603o00000000","0453503000000000"); // 0-100% PCM NL just EMC, EG2
 
+  }else if (trainConfig == 1008){ // EMC  INT7 mixed background study pi+ pi- from same
+    cuts.AddCutHeavyMesonCalo("80010113","411790105f032230000","32c51070a","0103603o00000000","0o53503000000000"); // Mixed event pi+ pi- from same
+
+  }else if (trainConfig == 1009){ // EMC  INT7 mixed background study pi+ pi0 from same
+    cuts.AddCutHeavyMesonCalo("80010113","411790105f032230000","32c51070a","0103603o00000000","0p53503000000000"); // Mixed event pi+ pi0 from same
+
+  }else if (trainConfig == 1010){ // EMC  INT7 background study
+    cuts.AddCutHeavyMesonCalo("80010113","411790105f032230000","32c51070a","0103603o00000000","0r53503000000000"); // Rotation around pi0
+    cuts.AddCutHeavyMesonCalo("80010113","411790105f032230000","32c51070a","0103603o00000000","0a53503000000000"); // Likesign method
+
+  }else if (trainConfig == 1011){ // EMC  INT7 standard cut study (1)
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe32220000","32c51070a","0103603o00000000","0453503000000000"); // M02 max 0.7 (new standard)
+  }else if (trainConfig == 1012){ // EMC  INT7 cut study 2
+    cuts.AddCutHeavyMesonCalo("80010113","411790104fe32220000","32c51070a","0103603o00000000","0453503000000000"); // timing +-100
+    cuts.AddCutHeavyMesonCalo("80010113","411790106fe32220000","32c51070a","0103603o00000000","0453503000000000"); // timing +-35
+  }else if (trainConfig == 1013){ // EMC  INT7 cut study 3
+    cuts.AddCutHeavyMesonCalo("80010113","4117901051e32220000","32c51070a","0103603o00000000","0453503000000000"); // fixed detadphi cut (not pT dep.)
+    cuts.AddCutHeavyMesonCalo("80010113","4117901057e32220000","32c51070a","0103603o00000000","0453503000000000"); // pt dep. detadphi cut, no E/p cut
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe32220000","32c51070a","0103603700000000","0453503000000000"); // large pi0 selection window
+  }else if (trainConfig == 1014){ // EMC  INT7 cut study 4
+    cuts.AddCutHeavyMesonCalo("80010113","411793305fe32220000","32c51070a","0103603o00000000","0453503000000000"); // NonLinearity 33
+    cuts.AddCutHeavyMesonCalo("80010113","411793405fe32220000","32c51070a","0103603o00000000","0453503000000000"); // NonLinearity 34
+  }else if (trainConfig == 1015){ // EMC  INT7 cut study 5
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe32220000","32c51070a","0103603o00000000","0453603000000000"); // y < 0.75
+    cuts.AddCutHeavyMesonCalo("80010113","411790105f032220000","32c51070a","0103603o00000000","0453503000000000"); // no exotic cut
+  }else if (trainConfig == 1016){ // EMC  INT7 cut study 6
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe32240000","32c51070a","0103603o00000000","0453503000000000"); // M02 max 0.4
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe32240000","32c51070a","0103603o00000000","0453503000000000"); // M02 max 1
+  }else if (trainConfig == 1017){ // EMC  INT7 cut study 7
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe32220000","32c51050a","0103603o00000000","0453503000000000"); // dEdx +-4 sigma
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe32220000","32c51080a","0103603o00000000","0453503000000000"); // dEdx -2+3 sigma
+
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1501){ // PHOS  INT7 run1
     cuts.AddCutHeavyMesonCalo("80010113","244440004a013200000","32c51070a","0103603q00000000","0453503000000000");  // 0-100% without NL
@@ -325,7 +358,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
       HeaderList->Add(HeaderP8J);
     }
   }
-  
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
   ClusterCutList->SetOwner(kTRUE);
@@ -422,6 +455,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask );
+
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

@@ -18,7 +18,18 @@ AliReducedHypTritTrack::AliReducedHypTritTrack() :
   fEta(-999),
   fPhi(-999),
   fTpcNClusters(-1),
-  fGeoLength(-1) {
+  fTpcChi2(-1),
+  fTPCrefit(-1),
+  fKink(-1),
+  fGeoLength(-1),
+	fTRDvalid(0),
+	fTRDtrigHNU(0),	 
+	fTRDtrigHQU(0),
+	fTRDPid(0),
+	fTRDnTracklets(0),	
+	fTRDPt(0),
+	fTRDLayerMask(0),	
+	fTRDSagitta(-1) {
 }
 
 AliReducedHypTritTrack::~AliReducedHypTritTrack() {
@@ -56,6 +67,13 @@ AliReducedHypTritEvent::AliReducedHypTritEvent() :
   fCentrality(-1),
   fRunNumber(0),
   fTrigger(0),
+  fTrigMB(0),
+  fTrigHNU(0),      
+  fTrigHQU(0),    
+  fTrigHJT(0),    
+  fTrigHSE(0),    
+  fTrigV0(0),   
+  fTrigSPD(0),     
   fTriggerClasses(),
   fSPDFiredChips0(0),
 	fSPDFiredChips1(0),

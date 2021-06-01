@@ -89,6 +89,7 @@
 #include "TStatToolkit.h"
 #include "AliESDtools.h"
 #include "TVectorF.h"
+#include "AliTPCROC.h"
 using namespace std;
 
 ClassImp(AliAnalysisTaskFilteredTree)
@@ -730,7 +731,8 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       ///    downscaleF *= fLowPtTrackDownscaligF;
       ///    if( downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
       /// New code using flat pt and flat q/pt mixture
-      Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass);
+      Double_t weight=0;
+      Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass,&weight);
       fSelectedTracksMask->Fill(selectionPtMask);
       if( downscaleCounter>0 && selectionPtMask==0) continue;
 
@@ -1046,9 +1048,10 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       // downscaleF *= fLowPtTrackDownscaligF;
       // if (downscaleCounter > 0 && TMath::Exp(2 * scalempt) < downscaleF) continue;
       /// New code using flat pt and flat q/pt mixture
-      Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass);
+      Double_t weight=0, weightMC=0;
+      Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass,&weight);
       Int_t selectionPtMaskMC=0;
-      if (particle) selectionPtMaskMC=DownsampleTsalisCharged(particle->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass);
+      if (particle) selectionPtMaskMC=DownsampleTsalisCharged(particle->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass,&weightMC);
       Int_t selectionPIDMask=PIDSelection(track, particle);
       fSelectedTracksMask->Fill(selectionPtMask);
       fSelectedPIDMask->Fill(selectionPIDMask);
@@ -1517,6 +1520,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	  downscaleCounter++;
           (*fTreeSRedirector)<<"highPt"<<
 	    "downscaleCounter="<<downscaleCounter<<
+	    "weight="<<weight<<                              // downsampling used
 	    "fLowPtTrackDownscaligF="<<fLowPtTrackDownscaligF<<
 	    "sqrtS="<<fSqrtS<<                             // sqrt s as used for downsampling
 	    "tsallisMass="<<fChargedEffectiveMass<<        // mass used for Tsallis scaling
@@ -1585,7 +1589,8 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             if (!refPHOS) refPHOS = &refDummy;
             TVectorF vtxMCS(3,vtxMC.GetArray());
 	    downscaleCounter++;
-            (*fTreeSRedirector)<<"highPt"<<	
+            (*fTreeSRedirector)<<"highPt"<<
+              "weightMC="<<weightMC<<                              // downsampling used
               "multMCTrueTracks="<<multMCTrueTracks<<   // mC track multiplicities
               "multMCTracksAll="<<  multMCTracksAll<<   //  mcEvent->GetNumberOfTracks();
               "mcStackSize="<<mcStackSize<<      // MC stack sides - tack->GetNtrack();
@@ -1812,7 +1817,8 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
       if (!isPrim &&particle->R()<kTPCR) continue;
 
       // downscale low-pT particles
-      Int_t selectionPtMaskMC=DownsampleTsalisCharged(particle->Pt(), 2./fLowPtTrackDownscaligF, 2./fLowPtTrackDownscaligF, fSqrtS, particle->GetMass());
+      Double_t weight=0;
+      Int_t selectionPtMaskMC=DownsampleTsalisCharged(particle->Pt(), 2./fLowPtTrackDownscaligF, 2./fLowPtTrackDownscaligF, fSqrtS, particle->GetMass(),&weight);
       if (selectionPtMaskMC==0) continue;
       // is particle in acceptance
       if(!accCuts->AcceptTrack(particle)) continue;
@@ -1886,6 +1892,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
         (*fTreeSRedirector)<<"MCEffTree"<<
           "fileName.="<<&fCurrentFileName<<
           "gid="<<gid<<                             // global iD to correlate with event properties
+          "weight="<<weight<<                       // weight used in downsampling
           "isPhysicalPrim="<<isPrim<<               // is Phsycal primary
           "selectionPtMaskMC="<<   selectionPtMaskMC<< // pt trigger mask
           "triggerClass.="<<&triggerClass<<
@@ -1959,9 +1966,9 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
   }
 
   // get selection cuts
-  AliFilteredTreeEventCuts *evtCuts = GetEventCuts(); 
-  AliFilteredTreeAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
-  AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
+  AliFilteredTreeEventCuts *evtCuts = GetEventCuts();
+  AliFilteredTreeAcceptanceCuts *accCuts = GetAcceptanceCuts();
+  AliESDtrackCuts *esdTrackCuts = GetTrackCuts();
 
   if(!evtCuts || !accCuts  || !esdTrackCuts) {
     AliDebug(AliLog::kError, "cuts not available");
@@ -1978,7 +1985,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
   AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
 
   // trigger
-  if(evtCuts->IsTriggerRequired())  
+  if(evtCuts->IsTriggerRequired())
   {
     // always MB
     isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
@@ -2003,7 +2010,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
 
   // get reconstructed vertex  
   //const AliESDVertex* vtxESD = 0; 
-  AliESDVertex* vtxESD = 0; 
+  AliESDVertex* vtxESD = 0;
   if(GetAnalysisMode() == kTPCAnalysisMode) {
     vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTPC();
   }
@@ -2016,7 +2023,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
 
   if(!vtxESD) return;
 
-  Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
+  Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD);
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
   Int_t ntracks = esdEvent->GetNumberOfTracks();
@@ -2024,7 +2031,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
   ULong64_t orbitID      = (ULong64_t)esdEvent->GetOrbitNumber();
   ULong64_t bunchCrossID = (ULong64_t)esdEvent->GetBunchCrossNumber();
   ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
-  ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
+  ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID);
   TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
   Float_t bz = esdEvent->GetMagneticField();
   Int_t run = esdEvent->GetRunNumber();
@@ -2034,20 +2041,20 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
   Int_t nV0s = esdEvent->GetNumberOfV0s();
   Int_t mult = vtxESD->GetNContributors();
   (*fTreeSRedirector)<<"eventInfoV0"<<
-    "gid="<<gid<<
-    "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
-    "run="<<run<<                             // runNumber
-    "time="<<time<<                           // time stamp of event (in seconds)
-    "timeStamp="<<timeStamp<<                 // more precise time stamp based on LHC clock
-    "evtNumberInFile="<<evtNumberInFile<<     // event number
-    "triggerClass="<<&triggerClass<<          // trigger class as a string
-    "Bz="<<bz<<                               // solenoid magnetic field in the z direction (in kGaus)
-    "mult="<<mult<<                           // multiplicity of tracks pointing to the primary vertex
-    "ntracks="<<ntracks<<                     // number of the esd tracks (to take into account the pileup in the TPC)
-    "nV0s="<<nV0s<<                           // number of V0s
-    "isEventOK="<<isEventOK<<                 // flag - AliFilteredTreeEventCuts - track dumped only for selected events 
-    "isEventTriggered="<<isEventTriggered<<   // flag - if tigger required - track dumped only for selected events 
-    "\n";
+                     "gid="<<gid<<
+                     "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
+                     "run="<<run<<                             // runNumber
+                     "time="<<time<<                           // time stamp of event (in seconds)
+                     "timeStamp="<<timeStamp<<                 // more precise time stamp based on LHC clock
+                     "evtNumberInFile="<<evtNumberInFile<<     // event number
+                     "triggerClass="<<&triggerClass<<          // trigger class as a string
+                     "Bz="<<bz<<                               // solenoid magnetic field in the z direction (in kGaus)
+                     "mult="<<mult<<                           // multiplicity of tracks pointing to the primary vertex
+                     "ntracks="<<ntracks<<                     // number of the esd tracks (to take into account the pileup in the TPC)
+                     "nV0s="<<nV0s<<                           // number of V0s
+                     "isEventOK="<<isEventOK<<                 // flag - AliFilteredTreeEventCuts - track dumped only for selected events
+                     "isEventTriggered="<<isEventTriggered<<   // flag - if tigger required - track dumped only for selected events
+                     "\n";
 
 
 
@@ -2062,7 +2069,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
 
 
     for (Int_t iv0=0; iv0<nV0s; iv0++){
- 
+
       AliESDv0 * v0 = esdEvent->GetV0(iv0);
       if (!v0) continue;
       AliESDtrack * track0 = esdEvent->GetTrack(v0->GetIndex(0));
@@ -2073,13 +2080,13 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       AliESDfriendTrack* friendTrack1=NULL;
       if (esdFriend)       {
         if (!esdFriend->TestSkipBit()){
-	  Int_t ntracksFriend = esdFriend->GetNumberOfTracks();
-	  if (v0->GetIndex(0)<ntracksFriend){
-	    friendTrack0 = (AliESDfriendTrack*)track0->GetFriendTrack(); //this guy can be NULL
-	  }
-	  if (v0->GetIndex(1)<ntracksFriend){
-	    friendTrack1 =  (AliESDfriendTrack*)track1->GetFriendTrack(); //this guy can be NULL
-	  }
+          Int_t ntracksFriend = esdFriend->GetNumberOfTracks();
+          if (v0->GetIndex(0)<ntracksFriend){
+            friendTrack0 = (AliESDfriendTrack*)track0->GetFriendTrack(); //this guy can be NULL
+          }
+          if (v0->GetIndex(1)<ntracksFriend){
+            friendTrack1 =  (AliESDfriendTrack*)track1->GetFriendTrack(); //this guy can be NULL
+          }
         }
       }
       if (track0->GetSign()<0) {
@@ -2091,26 +2098,26 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       AliESDfriendTrack *friendTrackStore0=friendTrack0;    // store friend track0 for later processing
       AliESDfriendTrack *friendTrackStore1=friendTrack1;    // store friend track1 for later processing
       if (fFriendDownscaling>=1){  // downscaling number of friend tracks
-	if (gRandom->Rndm()>1./fFriendDownscaling){
-	  friendTrackStore0 = 0;
-	  friendTrackStore1 = 0;
-	}
+        if (gRandom->Rndm()>1./fFriendDownscaling){
+          friendTrackStore0 = 0;
+          friendTrackStore1 = 0;
+        }
       }
       if (fFriendDownscaling<=0){
-	if (((*fTreeSRedirector)<<"V0s").GetTree()){
-	  TTree * tree = ((*fTreeSRedirector)<<"V0s").GetTree();
-	  if (tree){
-	    Double_t sizeAll=tree->GetZipBytes();
-	    TBranch * br= tree->GetBranch("friendTrack0.fPoints");
-	    Double_t sizeFriend=(br!=NULL)?br->GetZipBytes():0;
-	    br= tree->GetBranch("friendTrack0.fCalibContainer");
-	    if (br) sizeFriend+=br->GetZipBytes();
-	    if (sizeFriend*TMath::Abs(fFriendDownscaling)>sizeAll) {
-	      friendTrackStore0=0;
-	      friendTrackStore1=0;
-	    }
-	  }
-	}
+        if (((*fTreeSRedirector)<<"V0s").GetTree()){
+          TTree * tree = ((*fTreeSRedirector)<<"V0s").GetTree();
+          if (tree){
+            Double_t sizeAll=tree->GetZipBytes();
+            TBranch * br= tree->GetBranch("friendTrack0.fPoints");
+            Double_t sizeFriend=(br!=NULL)?br->GetZipBytes():0;
+            br= tree->GetBranch("friendTrack0.fCalibContainer");
+            if (br) sizeFriend+=br->GetZipBytes();
+            if (sizeFriend*TMath::Abs(fFriendDownscaling)>sizeAll) {
+              friendTrackStore0=0;
+              friendTrackStore1=0;
+            }
+          }
+        }
       }
 
       //
@@ -2118,18 +2125,19 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       // if (downscaleCounter>0 && isDownscaled) continue;
       if (v0->Pt()<0.01) continue; ///TODO -THIS line should be used configured value
       //Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fV0EffectiveMass);
-      Int_t selectionPtMask=V0DownscaledMask(v0);
+      Double_t weight=0;
+      Int_t selectionPtMask=V0DownscaledMask(v0,&weight);
       fSelectedV0Mask->Fill(selectionPtMask);
       if( downscaleCounter>0 && selectionPtMask==0) continue;
 
       AliKFParticle kfparticle; //
       Int_t type=GetKFParticle(v0,esdEvent,kfparticle);
-      if (type==0) continue;   
+      if (type==0) continue;
       TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
 
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
-      
+
       TVectorD tofClInfo0(6);                        // starting at 2014 - TOF infdo not part of the AliESDtrack
       TVectorD tofClInfo1(6);                        // starting at 2014 - TOF infdo not part of the AliESDtrack
       tofClInfo0[0]=track0->GetTOFsignal();
@@ -2146,9 +2154,9 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       tofClInfo1[5]=track1->GetIntegratedLength();
       //get the nSigma information; NB particle number ID in the vectors follow the convention in AliPID
       const Int_t nSpecies=AliPID::kSPECIES;
-      TVectorD tpcNsigma0(nSpecies); 
+      TVectorD tpcNsigma0(nSpecies);
       TVectorD tofNsigma0(nSpecies);
-      TVectorD tpcNsigma1(nSpecies); 
+      TVectorD tpcNsigma1(nSpecies);
       TVectorD tofNsigma1(nSpecies);
       if(pidResponse){
         for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie) {
@@ -2170,36 +2178,37 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
         if (fESDtool->IsPileup(track1->GetLabel())) isPileUpMC+=2;
       }
       (*fTreeSRedirector)<<"V0s"<<
-        "gid="<<gid<<                         //  global id of event
-        "fLowPtV0DownscaligF="<<fLowPtV0DownscaligF<<
-        "sqrtS="<<fSqrtS<<                             // sqrt s as used for downsampling
-        "tsallisMass="<<fV0EffectiveMass<<        // mass used for Tsallis scaling
-        "selectionPtMask="<<selectionPtMask<< // selection pt mask
-        "downscaleCounter="<<downscaleCounter<< // downscaleCounter
-//        "isDownscaled="<<isDownscaled<<       //
-        "triggerClass="<<&triggerClass<<      //  trigger
-        "Bz="<<bz<<                           //
-        "fileName.="<<&fCurrentFileName<<     //  full path - file name with ESD
-        "runNumber="<<run<<                   //
-        "evtTimeStamp="<<time<<               //  time stamp of event in secons
-        "evtNumberInFile="<<evNr<<            //  
-        "type="<<type<<                       // type of V0-
-        "ntracks="<<ntracks<<
-        "v0.="<<v0<<
-        "kf.="<<&kfparticle<<
-        "track0.="<<track0<<                  // track
-        "track1.="<<track1<<
-	"tofClInfo0.="<<&tofClInfo0<<
-	"tofClInfo1.="<<&tofClInfo1<<
-      	"tofNsigma0.="<<&tofNsigma0<<
-	"tofNsigma1.="<<&tofNsigma1<<
-      	"tpcNsigma0.="<<&tpcNsigma0<<
-	"tpcNsigma1.="<<&tpcNsigma1<<
-        "friendTrack0.="<<friendTrackStore0<<
-        "friendTrack1.="<<friendTrackStore1<<
-        "centralityF="<<centralityF<<
-        "isPileUpMC="<<isPileUpMC<<
-        "\n";
+                         "gid="<<gid<<                         //  global id of event
+                         "fLowPtV0DownscaligF="<<fLowPtV0DownscaligF<<
+                         "weight="<<weight<<                         // downsaplin weight for given particle
+                         "sqrtS="<<fSqrtS<<                             // sqrt s as used for downsampling
+                         "tsallisMass="<<fV0EffectiveMass<<        // mass used for Tsallis scaling
+                         "selectionPtMask="<<selectionPtMask<< // selection pt mask
+                         "downscaleCounter="<<downscaleCounter<< // downscaleCounter
+                         //        "isDownscaled="<<isDownscaled<<       //
+                         "triggerClass="<<&triggerClass<<      //  trigger
+                         "Bz="<<bz<<                           //
+                         "fileName.="<<&fCurrentFileName<<     //  full path - file name with ESD
+                         "runNumber="<<run<<                   //
+                         "evtTimeStamp="<<time<<               //  time stamp of event in secons
+                         "evtNumberInFile="<<evNr<<            //
+                         "type="<<type<<                       // type of V0-
+                         "ntracks="<<ntracks<<
+                         "v0.="<<v0<<
+                         "kf.="<<&kfparticle<<
+                         "track0.="<<track0<<                  // track
+                         "track1.="<<track1<<
+                         "tofClInfo0.="<<&tofClInfo0<<
+                         "tofClInfo1.="<<&tofClInfo1<<
+                         "tofNsigma0.="<<&tofNsigma0<<
+                         "tofNsigma1.="<<&tofNsigma1<<
+                         "tpcNsigma0.="<<&tpcNsigma0<<
+                         "tpcNsigma1.="<<&tpcNsigma1<<
+                         "friendTrack0.="<<friendTrackStore0<<
+                         "friendTrack1.="<<friendTrackStore1<<
+                         "centralityF="<<centralityF<<
+                         "isPileUpMC="<<isPileUpMC<<
+                         "\n";
     }
   }
 }
@@ -2503,7 +2512,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsV0Downscaled(AliESDv0 *const v0)
 ///                   bit 3 - flat pt Gamma candidate
 ///                   bit 4 - flat q/pt Gamma candidate
 ///                   bit 5 - MB gamma
-Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
+Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0, Double_t *weight)
 {
   //
   // Downscale randomly low pt V0
@@ -2513,11 +2522,11 @@ Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
   const Double_t upsampleGammaPt=4;
   const Double_t upsampleGamma1Pt=2;
   if (TMath::Abs(v0->AlphaV0())>cutAlpha) return 0;
-  Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtV0DownscaligF, 1./fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass);
+  Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtV0DownscaligF, 1./fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass,weight);
   Double_t mass00=  v0->GetEffMass(0,0);
   Bool_t gammaCandidate= TMath::Abs(mass00-0)<cutGammaMass;
   if (gammaCandidate){
-    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), upsampleGammaPt/fLowPtV0DownscaligF, upsampleGamma1Pt/fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass)*8;
+    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), upsampleGammaPt/fLowPtV0DownscaligF, upsampleGamma1Pt/fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass,weight)*8;
     selectionPtMask+=selectionPtMaskGamma;
   }
   return selectionPtMask;
@@ -3174,6 +3183,14 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree) {
   //
   // SetAliases and Metadata for the V0 trees
   //
+  tree->Draw("Bz","1","goff",1);Double_t bz=tree->GetV1()[0];
+  Float_t irocMiddle = (AliTPCROC::Instance()->GetPadRowRadii(0,62)+ AliTPCROC::Instance()->GetPadRowRadii(0,0))*0.5;
+  tree->SetAlias("dSector0M",Form("track0.fIp.GetParameterAtRadius(%f,%f+0,13)",irocMiddle,bz));
+  tree->SetAlias("alpha0M",Form("track0.fIp.GetParameterAtRadius(%f,%f+0,7)",irocMiddle,bz));
+  tree->SetAlias("dSector1M",Form("track1.fIp.GetParameterAtRadius(%f,%f+0,13)",irocMiddle,bz));
+  tree->SetAlias("alpha1M",Form("track1.fIp.GetParameterAtRadius(%f,%f+0,7)",irocMiddle,bz));
+  tree->SetAlias("logQP0","sign(track0.fP[4])*log(1+track0.fIp.P())");
+  tree->SetAlias("logQP1","sign(track1.fP[4])*log(1+track1.fIp.P())");
   TDatabasePDG *pdg = TDatabasePDG::Instance();
   Double_t massLambda = pdg->GetParticle("Lambda0")->Mass();
   Double_t massK0 = pdg->GetParticle("K0")->Mass();
@@ -3209,10 +3226,10 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree) {
   tree->SetAlias("ALPullEff", "ALDelta/sqrt((1.5e-03)**2+(1.8e-04*v0.Pt())**2)");
   tree->SetAlias("EPullEff", "v0.GetEffMass(0,0)/sqrt((5e-03)**2+(1.e-04*v0.Pt())**2)");
   // 
-  tree->SetAlias("dEdx0DProton", "AliMathBase::BetheBlochAleph(track0.fIp.P()/massProton)");
-  tree->SetAlias("dEdx1DProton", "AliMathBase::BetheBlochAleph(track1.fIp.P()/massProton)");
-  tree->SetAlias("dEdx0DPion", "AliMathBase::BetheBlochAleph(track0.fIp.P()/massPion)");
-  tree->SetAlias("dEdx1DPion", "AliMathBase::BetheBlochAleph(track1.fIp.P()/massPion)");
+  tree->SetAlias("dEdx0DProton", "AliExternalTrackParam::BetheBlochAleph(track0.fIp.P()/massProton)");
+  tree->SetAlias("dEdx1DProton", "AliExternalTrackParam::BetheBlochAleph(track1.fIp.P()/massProton)");
+  tree->SetAlias("dEdx0DPion", "AliExternalTrackParam::BetheBlochAleph(track0.fIp.P()/massPion)");
+  tree->SetAlias("dEdx1DPion", "AliExternalTrackParam::BetheBlochAleph(track1.fIp.P()/massPion)");
   // V0 - cuts - for PID 
   tree->SetAlias("cutDist", "sqrt((track0.fIp.fP[0]-track1.fIp.fP[0])**2+(track0.fIp.fP[1]-track1.fIp.fP[1])**2)>3");
   tree->SetAlias("cutLong", "track0.GetTPCClusterInfo(3,1,0)-5*abs(track0.fP[4])>130&&track1.GetTPCClusterInfo(3,1,0)>130-5*abs(track0.fP[4])");
@@ -3249,7 +3266,10 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree) {
   tree->SetAlias("dalphaV0", "alphaV0-((int(36+9*(alphaV0/pi))-36)*pi/9.)");
   // Status
   tree->SetAlias("TOFOnMI0","(track0.fFlags&0x1000)>0&&abs(tofClInfo0.fElements[4])<10");   // TOF hit0 present
-  tree->SetAlias("TOFOnMI1","(track1.fFlags&0x1000)>0&&abs(tofClInfo1.fElements[4])<10");   // TOF hit0 present
+  tree->SetAlias("TOFOnMI1","(track1.fFlags&0x1000)>0&&abs(tofClInfo1.fElements[4])<10");   // TOF hit1 present
+  tree->SetAlias("TOFOn0","(track0.fFlags&0x2000)>0");   // TOF hit0 present
+  tree->SetAlias("TOFOn1","(track1.fFlags&0x2000)>0");   // TOF hit1 present
+
   tree->SetAlias("ITSRefit0","(track0.fFlags&0x4)>0");   // ITS refit0
   tree->SetAlias("ITSRefit1","(track1.fFlags&0x4)>0");   // ITS refit1
   tree->SetAlias("IRDRefit0","(track0.fFlags&0x400)>0");   // TRD refit0
@@ -3285,6 +3305,11 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   //
   // set shortcut aliases for some variables
   //
+  tree->Draw("Bz","1","goff",1);Double_t bz=tree->GetV1()[0];
+  Float_t irocMiddle = (AliTPCROC::Instance()->GetPadRowRadii(0,62)+ AliTPCROC::Instance()->GetPadRowRadii(0,0))*0.5;
+  tree->SetAlias("dSectorM",Form("esdTrack.fIp.GetParameterAtRadius(%f,%f+0,13)",irocMiddle,bz));
+  tree->SetAlias("alphaM",Form("esdTrack.fIp.GetParameterAtRadius(%f,%f+0,7)",irocMiddle,bz));
+  tree->SetAlias("logQP","sign(esdTrack.fP[4])*log(1+esdTrack.fIp.P())");
   tree->SetAlias("phiInner","atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)");
   tree->SetAlias("secInner","9*(atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)/pi)+18*(esdTrack.fIp.Py()<0)");
   tree->SetAlias("tgl","esdTrack.fP[3]");
@@ -3323,13 +3348,27 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   tree->SetAlias("TOFOn","((esdTrack.fFlags&0x2000)>0)");
   tree->SetAlias("TRDOn","((esdTrack.fFlags&0x400)>0)");
   tree->SetAlias("TOFOnMI","(esdTrack.fFlags&0x1000)>0&&abs(tofClInfo.fElements[4])<10");   // TOF hit present
+  //tree->SetAlias("TOFOnPID","(esdTrack.fFlags&0x1000)>0&&abs(tofNSigma.fElements[0])0");   // TOF hit present
   tree->SetAlias("ITSOn0","esdTrack.fITSncls>4&&esdTrack.HasPointOnITSLayer(0)&&esdTrack.HasPointOnITSLayer(1)");
   tree->SetAlias("ITSOn01","esdTrack.fITSncls>3&&(esdTrack.HasPointOnITSLayer(0)||esdTrack.HasPointOnITSLayer(1))");
   tree->SetAlias("nclCut","(esdTrack.GetTPCClusterInfo(3,1)+esdTrack.fTRDncls)>140-5*(abs(esdTrack.fP[4]))");
   tree->SetAlias("IsPrim4","sqrt((esdTrack.fD**2)/esdTrack.fCdd+(esdTrack.fZ**2)/esdTrack.fCzz)<4");
   tree->SetAlias("IsPrim4TPC","sqrt((esdTrack.fdTPC**2)/esdTrack.fCddTPC+(esdTrack.fzTPC**2)/esdTrack.fCzzTPC)<4");
-  
+  //DCA aliases
+  tree->SetAlias("dcaRTPC","esdTrack.fdTPC");
+  tree->SetAlias("dcaZTPC","esdTrack.fzTPC");
+  tree->SetAlias("dcaR","esdTrack.fD");
+  tree->SetAlias("dcaZ","esdTrack.fZ");
+  tree->SetAlias("dcaRTPCN","esdTrack.fdTPC/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("dcaZTPCN","esdTrack.fzTPC/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("dcaRN","esdTrack.fD/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("dcaZN","esdTrack.fZ/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("dcaRTPCPull","esdTrack.fdTPC/sqrt(esdTrack.fCddTPC)");
+  tree->SetAlias("dcaZTPCPull","esdTrack.fzTPC/sqrt(esdTrack.fCzzTPC)");
+  tree->SetAlias("dcaRPull","esdTrack.fD/sqrt(esdTrack.fCdd)");
+  tree->SetAlias("dcaZPull","esdTrack.fZ/sqrt(esdTrack.fCzz)");
 
+  //
   const char * chName[5]={"#it{r#phi}","#it{z}","sin(#phi)","tan(#it{#theta})", "q/#it{p}_{t}"};
   const char * chUnit[5]={"cm","cm","","", "(1/GeV)"};
   const char * refBranch=(tree->GetBranch("extInnerParamV."))? "extInnerParamV":"esdTrack.fTPCInner";
@@ -3741,10 +3780,11 @@ Double_t AliAnalysisTaskFilteredTree::TsalisCharged(Double_t pt, Double_t mass, 
 ///         bit 1 - flat pt   trigger
 ///         bit 2 - flat q/pt trigger
 ///         bit 3 - MB trigger
-Int_t  AliAnalysisTaskFilteredTree::DownsampleTsalisCharged(Double_t pt, Double_t factorPt, Double_t factor1Pt, Double_t sqrts, Double_t mass){
+Int_t  AliAnalysisTaskFilteredTree::DownsampleTsalisCharged(Double_t pt, Double_t factorPt, Double_t factor1Pt, Double_t sqrts, Double_t mass, Double_t *weight){
   Double_t prob=TsalisCharged(pt,mass,sqrts)*pt;
   Double_t probNorm=TsalisCharged(1.,mass,sqrts);
   Int_t triggerMask=0;
+  (*weight)=prob/probNorm;
   if (gRandom->Rndm()*prob/probNorm<factorPt) triggerMask|=1;
   if ((gRandom->Rndm()*((prob/probNorm)*pt*pt))<factor1Pt) triggerMask|=2;
   if (gRandom->Rndm()<factorPt) triggerMask|=4;

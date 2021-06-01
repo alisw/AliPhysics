@@ -101,6 +101,9 @@ AliAnalysisTaskCMW::AliAnalysisTaskCMW(const char *name): AliAnalysisTaskSE(name
   fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
+  fDCAxyMax(2.4),
+  fDCAzMax(3.2),
+  fChi2(4.0),
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -208,6 +211,9 @@ AliAnalysisTaskCMW::AliAnalysisTaskCMW():
   fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
+  fDCAxyMax(2.4),
+  fDCAzMax(3.2),
+  fChi2(4.0),
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -614,6 +620,7 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
     return;
   }
 
+
   //std::cout<<" Info:UserExec()  Vz<10cm check ..!!!\n";
   
   fHistEventCount->Fill(stepCount); //3
@@ -725,7 +732,10 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
   Int_t runNumber = fAOD->GetRunNumber();
   //------------------------------------------------
 
-  if(fListTRKCorr) GetMCCorrectionHist(runNumber);
+  //if(fListTRKCorr) GetMCCorrectionHist(runNumber);
+  if(fListTRKCorr) GetMCCorrectionHist(runNumber,centrality);  //use centrality dependent MC efficiency (Temporary!!)
+
+  
 
   if(fListNUACorr){
      GetNUACorrectionHist(runNumber,0);         //Charge
@@ -749,7 +759,7 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
   //Int_t   gMultEtaPos  = 0;
   //Int_t   gMultEtaAll  = 0;
 
-  Float_t trkPt=0,trkPhi=0,trkEta=0;
+  Float_t trkPt=0,trkPhi=0,trkEta=0,trkDCAxy=0.0, trkDCAz=0.0;
   Float_t trkChi2=0,trkdEdx=0,trkWgt=1.0;
   Int_t   trkChrg=0, trkTpcNC=0;
   ////PID variables:
@@ -797,18 +807,42 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
       trkChrg  = AODtrack->Charge();
       trkChi2  = AODtrack->Chi2perNDF();
       trkTpcNC = AODtrack->GetTPCNcls();
+      trkDCAxy=  AODtrack->DCA();
+      trkDCAz=   AODtrack->ZAtDCA();
 
+      
       fHistEtaPtBeforCut->Fill(trkEta, trkPt);
       fHistEtaPhiBeforCut->Fill(trkPhi,trkEta);
       
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
-      trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
+      trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();
+      /*
+      Double_t dTrackXYZ[3] = {0};
+      Double_t dVertexXYZ[3] = {0.};
+      Double_t dDCAXYZ[3] = {0.};
+        
+      AODtrack->GetXYZ(dTrackXYZ);
+      pVtx->GetXYZ(dVertexXYZ);
+        
+      for(Short_t i(0); i < 3; i++)
+	dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i];
+
+      trkDCAxy=TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]);
+      trkDCAz=dDCAXYZ[2];
+      */
+      
 
       //Apply track cuts here:
       //     if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
-	if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
+      if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
+
+	  
+      // if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
+	  
+
+	  
 	//dcaXY  = track->DCA();
 	//dcaZ   = track->ZAtDCA();
         
@@ -1066,16 +1100,39 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
       trkChrg  = AODtrack->Charge();
       trkChi2  = AODtrack->Chi2perNDF();
       trkTpcNC = AODtrack->GetTPCNcls();
-
+      trkDCAxy=  AODtrack->DCA();
+      trkDCAz=   AODtrack->ZAtDCA();
+      
       fHistEtaPtBeforCut->Fill(trkEta, trkPt);
       fHistEtaPhiBeforCut->Fill(trkPhi,trkEta);
       
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
+      /*
+      Double_t dTrackXYZ[3] = {0};
+      Double_t dVertexXYZ[3] = {0.};
+      Double_t dDCAXYZ[3] = {0.};
+        
+      AODtrack->GetXYZ(dTrackXYZ);
+      pVtx->GetXYZ(dVertexXYZ);
+        
+      for(Short_t i(0); i < 3; i++)
+	dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i];
+
+      trkDCAxy=TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]);
+      trkDCAz=dDCAXYZ[2];
+      */
+
+      
       //Apply track cuts here:
       if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
+
+
+      //if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
+
+	
 	//dcaXY  = track->DCA();
 	//dcaZ   = track->ZAtDCA();
         
@@ -1097,8 +1154,10 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 	  if(trkPt<=0.6 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut){
 	    isItPion = kTRUE;
 	  }
-	  else if(trkPt>0.6 && trkPt<=10.0 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut && TMath::Abs(nSigTOFpion)<=fNSigmaTOFCut){
-	    isItPion = kTRUE;
+	  //else if(trkPt>0.6 && trkPt<=10.0 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut && TMath::Abs(nSigTOFpion)<=fNSigmaTOFCut){
+	  // Using Circular cut for Pion: 	  
+          else if(trkPt>0.6 && trkPt<=10.0 && TMath::Sqrt(nSigTPCpion*nSigTPCpion + nSigTOFpion*nSigTOFpion)<=fNSigmaTOFCut){
+	  isItPion = kTRUE;
 	  }
 	}
 	//----- Kaon
@@ -1109,7 +1168,8 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 	  if(trkPt<=0.45 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut){
 	    isItKaon = kTRUE;
 	  }
-	  else if(trkPt>0.45 && trkPt<=10.0 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut && TMath::Abs(nSigTOFkaon)<=fNSigmaTOFCut){
+	  else if(trkPt>0.45 && trkPt<=10.0 && TMath::Sqrt(nSigTPCkaon*nSigTPCkaon + nSigTOFkaon*nSigTOFkaon)<=fNSigmaTOFCut){
+	    //else if(trkPt>0.45 && trkPt<=10.0 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut && TMath::Abs(nSigTOFkaon)<=fNSigmaTOFCut){
 	    isItKaon = kTRUE;
 	  }
 	}
@@ -1711,10 +1771,12 @@ void AliAnalysisTaskCMW::GetNUACorrectionHist(Int_t run, Int_t kParticleID)
 
 ////---------- SetUp Tracking Efficiency Correction Map ---------------
 
-void AliAnalysisTaskCMW::GetMCCorrectionHist(Int_t run){
+void AliAnalysisTaskCMW::GetMCCorrectionHist(Int_t run,Float_t centr){
 
   if(fListTRKCorr) {
     //cout<<"\n =========> Info: Found TList with MC Tracking Corr Histograms <=========== "<<endl;
+    /// Default: Centrality Independent MC efficiency:
+    
     fHCorrectMCposChrg =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyChrgPos");
     fHCorrectMCposPion =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyPionPos");
     fHCorrectMCposKaon =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyKaonPos");
@@ -1724,7 +1786,33 @@ void AliAnalysisTaskCMW::GetMCCorrectionHist(Int_t run){
     fHCorrectMCnegPion =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyPionNeg");
     fHCorrectMCnegKaon =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyKaonNeg");
     fHCorrectMCnegProt =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyProtNeg");
+    
+    
+    /// Centrality dependent MC efficiency: (Temporary)
+    /*if(centr>5.0){
+      fHCorrectMCposChrg =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyChrgPos");
+      fHCorrectMCposPion =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyPionPos");
+      fHCorrectMCposKaon =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyKaonPos");
+      fHCorrectMCposProt =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyProtPos");
 
+      fHCorrectMCnegChrg =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyChrgNeg");
+      fHCorrectMCnegPion =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyPionNeg");
+      fHCorrectMCnegKaon =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyKaonNeg");
+      fHCorrectMCnegProt =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyProtNeg");
+    }
+    else{
+      fHCorrectMCposChrg =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyChrgPosCent0");
+      fHCorrectMCposPion =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyPionPosCent0");
+      fHCorrectMCposKaon =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyKaonPosCent0");
+      fHCorrectMCposProt =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyProtPosCent0");
+
+      fHCorrectMCnegChrg =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyChrgNegCent0");
+      fHCorrectMCnegPion =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyPionNegCent0");
+      fHCorrectMCnegKaon =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyKaonNegCent0");
+      fHCorrectMCnegProt =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyProtNegCent0");
+    }
+    */
+    
     //for(int i=0;i<10;i++) {
     //fFB_Efficiency_Cent[i] = (TH1D *) fListFBHijing->FindObject(Form("eff_unbiased_%d",i));
     //}

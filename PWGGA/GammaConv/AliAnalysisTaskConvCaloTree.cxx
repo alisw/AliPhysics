@@ -79,8 +79,11 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE()
   fVBuffer_Cluster_E(),
   fVBuffer_Cluster_Eta(),
   fVBuffer_Cluster_Phi(),
+  fVBuffer_Cluster_NCells(),
+  fVBuffer_Cluster_M02(),
   fVTrueClusterPi0DaughterIndex(),
   fVTrueClusterEtaDaughterIndex(),
+  fVTrueClusterMCId(),
   fVBuffer_Conv_px(),
   fVBuffer_Conv_py(),
   fVBuffer_Conv_pz(),
@@ -138,8 +141,11 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char *name) : Ali
   fVBuffer_Cluster_E(),
   fVBuffer_Cluster_Eta(),
   fVBuffer_Cluster_Phi(),
+  fVBuffer_Cluster_NCells(),
+  fVBuffer_Cluster_M02(),
   fVTrueClusterPi0DaughterIndex(),
   fVTrueClusterEtaDaughterIndex(),
+  fVTrueClusterMCId(),
   fVBuffer_Conv_px(),
   fVBuffer_Conv_py(),
   fVBuffer_Conv_pz(),
@@ -218,8 +224,11 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
     fPhotonTree->Branch("Cluster_E",                        &fVBuffer_Cluster_E);
     fPhotonTree->Branch("Cluster_Eta",                      &fVBuffer_Cluster_Eta);
     fPhotonTree->Branch("Cluster_Phi",                      &fVBuffer_Cluster_Phi);
+    fPhotonTree->Branch("Cluster_NCells",                   &fVBuffer_Cluster_NCells);
+    fPhotonTree->Branch("Cluster_M02",                      &fVBuffer_Cluster_M02);
     if(fIsMC) fPhotonTree->Branch("Cluster_MotherPi0",      &fVTrueClusterPi0DaughterIndex);
     if(fIsMC) fPhotonTree->Branch("Cluster_MotherEta",      &fVTrueClusterEtaDaughterIndex);
+    if(fIsMC) fPhotonTree->Branch("Cluster_MCId",           &fVTrueClusterMCId);
   }
   if(fSaveConversions)
   {
@@ -398,6 +407,8 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
     fVBuffer_Cluster_E.push_back(clus->E());
     fVBuffer_Cluster_Eta.push_back(etaCluster);
     fVBuffer_Cluster_Phi.push_back(phiCluster);
+    fVBuffer_Cluster_NCells.push_back((Short_t)clus->GetNCells());
+    fVBuffer_Cluster_M02.push_back((Short_t)(clus->GetM02()*100));
 
 
     if(fIsMC > 0){// MC info
@@ -411,6 +422,7 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
       if(!PhotonCandidate){
         fVTrueClusterPi0DaughterIndex.push_back(0);
         fVTrueClusterEtaDaughterIndex.push_back(0);
+        fVTrueClusterMCId.push_back(0);
         delete clus;
         continue;
       }
@@ -422,7 +434,7 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
 
       if (clus->GetNLabels()>0){
         for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
-          if (k< 50)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+          PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
         }
       }
 
@@ -437,6 +449,7 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
       AliAODMCParticle * gammaMC = 0x0;
       if(gammaMCLabel != -1){
         gammaMC = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gammaMCLabel));
+        fVTrueClusterMCId.push_back((Short_t) gammaMC->GetPdgCode());
         if (PhotonCandidate->IsLargestComponentPhoton() || PhotonCandidate->IsLargestComponentElectron()){    // largest component is electron
           if (PhotonCandidate->IsLargestComponentPhoton()){                                        // for photons its the direct mother
               gammaMotherLabel=gammaMC->GetMother();
@@ -447,6 +460,8 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
             } else gammaMotherLabel=gammaMC->GetMother();
           }
         }
+      } else {
+        fVTrueClusterMCId.push_back(0);
       }
       if(gammaMotherLabel > -1){
         if(((AliAODMCParticle*)fAODMCTrackArray->At(gammaMotherLabel))->GetPdgCode() == 111){
@@ -741,14 +756,20 @@ void AliAnalysisTaskConvCaloTree::ResetBufferVectors(){
   fVBuffer_Cluster_E.clear();
   fVBuffer_Cluster_Eta.clear();
   fVBuffer_Cluster_Phi.clear();
+  fVBuffer_Cluster_NCells.clear();
+  fVBuffer_Cluster_M02.clear();
   fVTrueClusterPi0DaughterIndex.clear();
   fVTrueClusterEtaDaughterIndex.clear();
+  fVTrueClusterMCId.clear();
 
   fVBuffer_Cluster_E.resize(0);
   fVBuffer_Cluster_Eta.resize(0);
   fVBuffer_Cluster_Phi.resize(0);
+  fVBuffer_Cluster_NCells.resize(0);
+  fVBuffer_Cluster_M02.resize(0);
   fVTrueClusterPi0DaughterIndex.resize(0);
   fVTrueClusterEtaDaughterIndex.resize(0);
+  fVTrueClusterMCId.resize(0);
 
   fVBuffer_Conv_px.clear();
   fVBuffer_Conv_py.clear();

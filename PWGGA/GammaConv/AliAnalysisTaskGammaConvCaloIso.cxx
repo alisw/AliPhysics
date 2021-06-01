@@ -2952,7 +2952,7 @@ void AliAnalysisTaskGammaConvCaloIso::ProcessClusters(){
 //       cout << clus->GetNLabels() << endl;
       if (clus->GetNLabels()>0){
         for (Int_t k =0; k<(Int_t)clus->GetNLabels(); k++){
-          if (k<50)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+          PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
 //           Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
 //           cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
         }
@@ -4613,7 +4613,7 @@ void AliAnalysisTaskGammaConvCaloIso::ProcessMCParticlesIsolation(AliVCluster *c
            AliAODMCParticle* motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleLead->GetMother()));
            if(particleLead->IsSecondaryFromMaterial()){
              fHistoIsoMatSecConversionfromPhoton[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC); //shower particle that might come from gamma jets
-             //this if condition follows the particles paths to get the original energies of the prompt photons           
+             //this if condition follows the particles paths to get the original energies of the prompt photons
              if(pdgcode==22 || motherDummy->GetPdgCode()==22){//if neither the cluster nor its mother is a photon -> no need to track back
               // cout << "__________________Start while loop" << endl;
                while (motherpdg == 11 || motherpdg == -11 || motherDummy->GetPdgCode() == 11 || motherDummy->GetPdgCode() == -11){

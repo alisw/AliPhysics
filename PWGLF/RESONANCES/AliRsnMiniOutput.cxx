@@ -142,7 +142,10 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
 //    -- "ROTATE2" --> rotated background (rotate second track)
 //    -- "TRUE"    --> true pairs (like track pair, but checking that come from same mother)
 //    -- "MOTHER"  --> mother (loop on MC directly for mothers --> denominator of efficiency)
+//    -- "MOTHER_NO_PILEUP"  --> mother (loop on MC directly for mothers --> denominator of efficiency) that does not come from a pileup event
 //    -- "MOTHER_IN_ACC"  --> mother (loop on MC directly for mothers (in a defined acceptance interval)--> needed for efficiency calcutation using  an enriched sample)
+//    -- "SINGLE"  --> simulated single long-lived particle (denominator of efficiency)
+//    -- "SINGLEREC" --> reconstructed single long-lived particle (numerator of efficiency)
 //
 
    TString input;
@@ -174,10 +177,14 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
       fComputation = kTruePair;
    else if (!input.CompareTo("MOTHER"))
       fComputation = kMother;
+   else if (!input.CompareTo("MOTHER_NO_PILEUP"))
+      fComputation = kMotherNoPileup;
    else if (!input.CompareTo("MOTHER_IN_ACC"))
       fComputation = kMotherInAcc;
    else if (!input.CompareTo("SINGLE"))
       fComputation = kSingle;
+   else if (!input.CompareTo("SINGLEREC"))
+      fComputation = kSingleRec;
    else
       AliWarning(Form("String '%s' does not define a meaningful computation type", compType));
 
@@ -470,7 +477,7 @@ Bool_t AliRsnMiniOutput::FillMother(const AliRsnMiniPair *pair, AliRsnMiniEvent 
 //
 
    // check computation type
-   if (fComputation != kMother) {
+   if (fComputation != kMother && fComputation != kMotherNoPileup) {
       AliError("This method can be called only for mother-based computations");
       return kFALSE;
    }
@@ -587,6 +594,51 @@ Bool_t AliRsnMiniOutput::FillSingle(const AliAODMCParticle *particle, AliRsnMini
    // compute & fill
    ComputeValues(event, valueList);
    FillHistogram();
+   return kTRUE;
+}
+
+//________________________________________________________________________________________
+Bool_t AliRsnMiniOutput::FillSingleRec(AliRsnMiniEvent *event, TClonesArray *valueList)
+{
+//
+// Compute values for single reconstructed MC particles
+//
+
+   // check computation type
+   if (fComputation != kSingleRec) {
+      AliError("This method can be called only for single-particle computations");
+      return kFALSE;
+   }
+
+   AliRsnMiniParticle *p;
+   AliRsnMiniPair pair;
+   TLorentzVector p1[2];
+   TLorentzVector p2;
+   p2.SetXYZM(0,0,0,0);
+
+   Int_t   n1 = event->CountParticles(fSel1, fCharge[0], fCutID[0]);
+
+   // loop over selected particles
+   for (int i1 = 0; i1 < n1; i1++) {
+      p = event->GetParticle(fSel1[i1]);
+      if(p->PDG()!=fMotherPDG) continue;
+      p->Set4Vector(p1[0],fMotherMass,kFALSE);
+      p->Set4Vector(p1[1],fMotherMass,kTRUE );
+
+      for(int i=0; i<2; i++){
+         pair.Sum(i)=pair.Ref(i)=pair.P1(i)=p1[i];
+         pair.P2(i)=p2;
+      }
+      fPair = pair;
+
+      // check pair against cuts
+      if (fPairCuts) if (!fPairCuts->IsSelected(&fPair)) continue;
+
+      // compute & fill
+      ComputeValues(event, valueList);
+      FillHistogram();
+   }
+
    return kTRUE;
 }
 

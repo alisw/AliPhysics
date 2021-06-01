@@ -1,4 +1,4 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensityData *AddTaskTrackDensityData(
+PWGJE::EMCALJetTasks::AliAnalysisTaskTrackDensityData *AddTaskTrackDensityData(
     const char *jetcontainername,
     const char *trackcontainername,
     const char *period,
@@ -7,7 +7,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensityData *AddTaskTrackDensityData
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   Bool_t isAOD = mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensityData *densitytask = new EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensityData("densitytaskdata");
+  PWGJE::EMCALJetTasks::AliAnalysisTaskTrackDensityData *densitytask = new PWGJE::EMCALJetTasks::AliAnalysisTaskTrackDensityData("densitytaskdata");
   mgr->AddTask(densitytask);
   mgr->ConnectInput(densitytask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(densitytask, 1,
@@ -17,7 +17,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensityData *AddTaskTrackDensityData
 
   densitytask->SetOffTrigger(AliVEvent::kINT7);
   densitytask->SetUseAliAnaUtils(true, true);
-  densitytask->SetEmcalTrackSelection(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory("standard", isAOD));
+  densitytask->SetEmcalTrackSelection(PWGJE::EMCALJetTasks::AliEmcalAnalysisFactory::TrackCutsFactory("standard", isAOD));
 
   AliTrackContainer *trackcont = densitytask->AddTrackContainer(trackcontainername);
   trackcont->SetName("trackcontainer");

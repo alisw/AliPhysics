@@ -50,6 +50,7 @@ class AliExternalTrackParam;
 //#include "AliESDtrackCuts.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisTaskWeakDecayVertexer.h"
 
 class AliAnalysisTaskStrangenessVsMultiplicityRun2 : public AliAnalysisTaskSE {
 public:
@@ -96,6 +97,9 @@ public:
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
+  void SetDoStrangenessTracking ( Bool_t lOpt = kTRUE) {
+    fkDoStrangenessTracking = lOpt;
+  }
 //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
@@ -220,6 +224,11 @@ public:
     void AddStandardCascadeConfiguration(Bool_t lUseFull = kFALSE, Bool_t lDoSystematics = kTRUE);
     void AddCascadeConfiguration276TeV(); //Adds old 2.76 PbPb cut level analyses
     void AddCascadeConfigurationPreliminaryCrosscheck(); //
+  Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk, Double_t b);
+  void Evaluate(const Double_t *h, Double_t t,
+                Double_t r[3],  //radius vector
+                Double_t g[3],  //first defivatives
+                Double_t gg[3]); //second derivatives
 //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
@@ -284,7 +293,9 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
-    
+  Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
+  AliAnalysisTaskWeakDecayVertexer *fWDV; //helper 
+  
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
 
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
@@ -430,11 +441,13 @@ private:
     Float_t fTreeVariablePrimVertexX;
     Float_t fTreeVariablePrimVertexY;
     Float_t fTreeVariablePrimVertexZ;
+
     
     AliExternalTrackParam *fTreeVariablePosTrack; //!
     AliExternalTrackParam *fTreeVariableNegTrack; //!
     
     Float_t fTreeVariableMagneticField;
+    Int_t fTreeVariableRunNumber;
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 //===========================================================================================
@@ -649,6 +662,7 @@ private:
     AliExternalTrackParam *fTreeCascVarNegTrack; //!
     
     Float_t fTreeCascVarMagneticField;
+    Int_t fTreeCascVarRunNumber;
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 //===========================================================================================
@@ -659,6 +673,7 @@ private:
     TH1D *fHistEventCounterDifferential; //!
     TH1D *fHistCentrality; //!
     TH2D *fHistEventMatrix; //!
+  TH1D *fRecPointRadii; 
 
     AliAnalysisTaskStrangenessVsMultiplicityRun2(const AliAnalysisTaskStrangenessVsMultiplicityRun2&);            // not implemented
     AliAnalysisTaskStrangenessVsMultiplicityRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityRun2&); // not implemented

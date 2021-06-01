@@ -205,7 +205,7 @@ AliAnalysisTaskEmcalJetIterativeDeclustering *AliAnalysisTaskEmcalJetIterativeDe
   AliTrackContainer *tracks(nullptr);
   if ((jettype == AliJetContainer::kChargedJet) || (jettype == AliJetContainer::kFullJet))
   {
-    tracks = datamaker->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    tracks = datamaker->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
     std::cout << "Track container name: " << tracks->GetName() << std::endl;
     tracks->SetMinPt(0.15);
   }
@@ -213,7 +213,7 @@ AliAnalysisTaskEmcalJetIterativeDeclustering *AliAnalysisTaskEmcalJetIterativeDe
   if ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet))
   {
     std::cout << "Using full or neutral jets ..." << std::endl;
-    clusters = datamaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    clusters = datamaker->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
     std::cout << "Cluster container name: " << clusters->GetName() << std::endl;
     clusters->SetClusHadCorrEnergyCut(0.3); // 300 MeV E-cut
     clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);

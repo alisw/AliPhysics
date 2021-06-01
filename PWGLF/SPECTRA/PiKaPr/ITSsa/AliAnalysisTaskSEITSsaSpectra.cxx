@@ -86,8 +86,6 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fHistDEDXGenposlabel(NULL),
     fHistDEDXGenneglabel(NULL),
     fHistDEDX(NULL),
-    fHistDEDXPInterp(NULL),
-    fHistDEDXPNorm(NULL),
     fHistDEDXdouble(NULL),
     fHistDEDXposlabel(NULL),
     fHistDEDXneglabel(NULL),
@@ -121,6 +119,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fMinSPDPts(1),
     fMinNdEdxSamples(3),
     fAbsEtaCut(.8),
+    fPcut(1.5),
     fMinRapCut(-.5),
     fMaxRapCut(.5),
     fCMSRapFct(.0),
@@ -141,7 +140,8 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fSmearMC(kFALSE),
     fSmearP(0.),
     fSmeardEdx(0.),
-    fUseUnfolding(kFALSE)
+    fUseUnfolding(kFALSE),
+    fUsePcut(kFALSE)
 {
   // Constructor
   fRandGener = new TRandom3(0);
@@ -187,8 +187,10 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
   }
 
   for(int i=0; i<4; i++){
-    fHistPratioP[i] = NULL;
+    fHistNSigmaSepP[i] = NULL;
+    fHistNsigmaSepPinterp[i] = NULL;
   }
+  fHistDEDXnoITSsa = NULL;
 
   /*for(int i=0; i<900; i++){
     fUnfProb[i] = NULL;
@@ -401,7 +403,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 
   std::string hist_name;
 
-  const int nTrkBins = 20;
+  const int nTrkBins = 21;
   double trkBins[nTrkBins + 1];
   SetBins(nTrkBins, .5, nTrkBins + .5, trkBins);
 
@@ -431,6 +433,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
     fHistNTracks[i_chg]->GetZaxis()->SetBinLabel(kIsInEta, label.Data());
     label = "dE/dx < 0"; // 12
     fHistNTracks[i_chg]->GetZaxis()->SetBinLabel(kPassdEdx, label.Data());
+    label = fUsePcut ? "P cut":"P cut (not done)";
+    fHistNTracks[i_chg]->GetZaxis()->SetBinLabel(kPassPCut, label.Data());
     label = "Pt cut";
     fHistNTracks[i_chg]->GetZaxis()->SetBinLabel(kPassPtCut, label.Data());
     label = "DCAz"; // 13
@@ -468,19 +472,15 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistDEDX = new TH2F("fHistDEDX", "", hnbins, hxbins, 1170, 0, 1300);
   fOutput->Add(fHistDEDX);
 
-  fHistDEDXPInterp = new TH2F("fHistDEDXPInterp", "", hnbins, hxbins, 1170, 0, 1300);
-  if(fIsMC)
-    fOutput->Add(fHistDEDXPInterp);
-  fHistDEDXPNorm = new TH2F("fHistDEDXPNorm", "", hnbins, hxbins, 1170, 0, 1300);
-  if(fIsMC)
-    fOutput->Add(fHistDEDXPNorm);
-
   TString pname[4] = {"El","Pi","Ka","Pr"};
   for(int i=0; i<4; i++){
-    fHistPratioP[i] = new TH2F(Form("hHistPratioP%s",pname[i].Data()), "; p; p/pinterp", hnbins, hxbins, 400, 0, 4);
-    if(fIsMC)
-      fOutput->Add(fHistPratioP[i]);
+    fHistNSigmaSepP[i] = new TH2F(Form("fHistNsigmaSepP%s",pname[i].Data()), "; p GeV/c; n#sigma", hnbins, hxbins, 1000, -10., 10.);
+    fHistNsigmaSepPinterp[i] = new TH2F(Form("fHistNsigmaSepPinterp%s",pname[i].Data()), "; p GeV/c; n#sigma with p interpolated", hnbins, hxbins, 1000, -10., 10.);
+    fOutput->Add(fHistNSigmaSepP[i]);
+    fOutput->Add(fHistNsigmaSepPinterp[i]);
   }
+  fHistDEDXnoITSsa = new TH2F("fHistDEDXnoITSsa", "; p (GeV/c); dE/dx", hnbins, hxbins, 1170, 0, 1300);
+  fOutput->Add(fHistDEDXnoITSsa);
 
   fHistDEDXdouble = new TH2F("fHistDEDXdouble", "", 500, -5, 5, 1170, 0, 1300);
   fOutput->Add(fHistDEDXdouble);
@@ -990,22 +990,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
         lMCspc = AliPID::kKaon; // select K+/K- only
       if (TMath::Abs(lMCpdg) == 2212)
         lMCspc = AliPID::kProton; // select p+/p- only
-
-      double momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->GetP();
-      if(lMCspc<AliPID::kDeuteron){
-        if(!(status & AliESDtrack::kITSpureSA)){
-          float pinterp = interpolateP(track->GetP(), momInner, AliPID::ParticleMass(lMCspc), 0.75, AliPID::ParticleCharge(lMCspc));
-          fHistDEDXPInterp->Fill(pinterp, dEdx);
-          fHistDEDXPNorm->Fill(track->GetP(), dEdx);
-          int pididx = 1;
-          if(lMCspc==0) pididx=0;
-          else if(lMCspc==1) pididx=1;
-          else if(lMCspc==2) pididx=1;
-          else if(lMCspc==3) pididx=2;
-          else if(lMCspc==4) pididx=3;
-          fHistPratioP[pididx]->Fill(track->GetP(), track->GetP()/pinterp);
-        }
-      }//end if MC
     }//end if MC
 
     //"ITSsa"
@@ -1096,6 +1080,12 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       fHistRecoChargedMC->Fill(tmp_vect);
 
     }
+
+    //"pCut"
+    if (fUsePcut && track->GetP()>fPcut)
+      continue;
+    trkSel = kPassPCut;
+    fHistNTracks[i_chg]->Fill(fEvtMult, trkPt, trkSel);
 
     //"ptCut"
     if ((trkPt < fPtBins[0]) || (trkPt >= fPtBins[fPtBins.GetSize() - 1]))
@@ -2392,9 +2382,10 @@ float AliAnalysisTaskSEITSsaSpectra::GetUnfoldedP(double dedx, float p) const
   return punf; //return bin with maximum probability
 }
 
-float AliAnalysisTaskSEITSsaSpectra::interpolateP(Float_t p0, Float_t p1, Float_t mass, Float_t X, Float_t z) const
+float AliAnalysisTaskSEITSsaSpectra::interpolateP(Float_t p0, Float_t pTPC, Float_t p1, Float_t mass, Float_t X, Float_t z) const
 {
   if (X>1 || X<0) return 0;
+  if(p0<pTPC) return p0;//latest definition
   Float_t mass2=mass*mass;
   Float_t E0=TMath::Sqrt(p0*p0+mass2);
   Float_t E1=TMath::Sqrt(p1*p1+mass2);
@@ -2405,5 +2396,6 @@ float AliAnalysisTaskSEITSsaSpectra::interpolateP(Float_t p0, Float_t p1, Float_
   Float_t c1=k*(dEdx1-dEdx0)*0.5;
   Float_t EX=E0+c0*X+c1*X*X;                  // interpolated Energy at layer X
   Float_t pX=TMath::Sqrt((EX*EX-mass2));          // interpolated momentum at layer X
+
   return pX;
 }

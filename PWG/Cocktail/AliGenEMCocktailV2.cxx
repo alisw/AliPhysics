@@ -792,6 +792,7 @@ void AliGenEMCocktailV2::AddSource2Generator(Char_t* nameSource,
                                              AliGenParam* const genSource,
                                              Double_t maxPtStretchFactor)
 {
+  AliInfo(Form("Add %s to generator", nameSource));
   // add sources to the cocktail
   Double_t phiMin = fPhiMin*180./TMath::Pi();
   Double_t phiMax = fPhiMax*180./TMath::Pi();
@@ -817,6 +818,7 @@ void AliGenEMCocktailV2::Init()
       entry->Generator()->SetStack(fStack);
       ((AliGenParam*)entry->Generator())->SetDecayer(fDecayer);
       ((AliGenParam*)entry->Generator())->SetParamsExplicitly(new AliGenEMlibV2(), ((AliGenParam*)entry->Generator())->GetParam(), "DUMMY");
+      AliInfo(Form("Done with %d",((AliGenParam*)entry->Generator())->GetParam()));
     }
   }
 }

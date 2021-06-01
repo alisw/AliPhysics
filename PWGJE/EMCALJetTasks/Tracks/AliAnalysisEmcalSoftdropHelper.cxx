@@ -132,7 +132,7 @@ TBinning *AliAnalysisEmcalSoftdropHelperImpl::GetRgBinning(double R) const {
   return binning;
 }
 
-AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelperImpl::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex) {
+AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelperImpl::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets) {
   const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
   std::vector<fastjet::PseudoJet> constituents;
   fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
@@ -171,6 +171,10 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
   fastjet::ClusterSequence jetfinder(constituents, jetdef);
   std::vector<fastjet::PseudoJet> outputjets = jetfinder.inclusive_jets(0);
   auto sdjet = outputjets[0];
+  if(dropMass0Jets && (TMath::Abs(sdjet.m2()) < 1e-5)) {
+    AliErrorGeneralStream("MakeSoft") << "Detected jet with mass 0, not possible to evaluate SoftDrop" << std::endl;
+    throw  2;
+  }
   fastjet::contrib::SoftDrop softdropAlgorithm(sdparams.fBeta, sdparams.fZcut, jetradius);
   softdropAlgorithm.set_verbose_structure(kTRUE);
   fastjet::JetAlgorithm reclusterizingAlgorithm;
@@ -178,6 +182,9 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
     case kCAAlgo: reclusterizingAlgorithm = fastjet::cambridge_aachen_algorithm; break;
     case kKTAlgo: reclusterizingAlgorithm = fastjet::kt_algorithm; break;
     case kAKTAlgo: reclusterizingAlgorithm = fastjet::antikt_algorithm; break;
+    default:
+      AliErrorGeneralStream("MakeSoftdrop") << "Non-supported reclusterizer type" << std::endl;
+      throw 3;
   };
 #if FASTJET_VERSION_NUMBER >= 30302
   fastjet::Recluster reclusterizer(reclusterizingAlgorithm, 1, fastjet::Recluster::keep_only_hardest);
@@ -189,10 +196,227 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
   auto groomed = softdropAlgorithm(sdjet);
   auto softdropstruct = groomed.structure_of<fastjet::contrib::SoftDrop>();
 
-  return {softdropstruct.symmetry(),
+  // fjcontrib 1.024 uses 0. for untagged jets, fjcontrib 1.041 and newer -1. 
+  // implementation is supposed to be consistent with putting 0. for untagged 
+  // jets in SD, as histogram ranges for the untagged bin is usually adapted
+  // to this
+  return {softdropstruct.symmetry() < 0. ? 0. : softdropstruct.symmetry(),
           groomed.m(),
-          softdropstruct.delta_R(),
+          softdropstruct.delta_R() < 0. ? 0. : softdropstruct.delta_R(),
           groomed.perp(),
-          softdropstruct.mu(),
+          softdropstruct.mu() < 0. ? 0. : softdropstruct.mu(),
           softdropstruct.dropped_count()};
+}
+
+AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelperImpl::MakeSoftdropStandAlone(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets) {
+  const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
+  std::vector<fastjet::PseudoJet> constituents;
+  fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
+  AliDebugGeneralStream("MakeSoftdrop", 2) <<  "Make new jet substrucutre for " << (isPartLevel ? "part" : "det") << " jet: Number of tracks " << jet.GetNumberOfTracks() << ", clusters " << jet.GetNumberOfClusters() << std::endl;
+  if(sdparams.fUseChargedConstituents || isPartLevel){                    // Neutral particles part of particle container in case of MC
+    AliDebugGeneralStream("MakeSoftdrop",1) << "Jet substructure: Using charged constituents" << std::endl;
+    for(int itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++){
+      auto track = jet.Track(itrk);
+      if(!track->Charge() && !sdparams.fUseNeutralConstituents) continue;      // Reject neutral constituents in case of using only charged consituents
+      if(track->Charge() && !sdparams.fUseChargedConstituents) continue;       // Reject charged constituents in case of using only neutral consituents
+      fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
+      constituentTrack.set_user_index(jet.TrackAt(itrk));
+      constituents.push_back(constituentTrack);
+    }
+  }
+
+  if(sdparams.fUseNeutralConstituents){
+    AliDebugGeneralStream("MakeSoftDrop",1) << "Jet substructure: Using neutral constituents" << std::endl;
+    for(int icl = 0; icl < jet.GetNumberOfClusters(); icl++) {
+      auto cluster = jet.Cluster(icl);
+      TLorentzVector clustervec;
+      cluster->GetMomentum(clustervec, vertex, energydef);
+      fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
+      constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
+      constituents.push_back(constituentCluster);
+    }
+  }
+
+  AliDebugGeneralStream("MakeSoftDrop",3) << "Found " << constituents.size() << " constituents for jet with pt=" << jet.Pt() << " GeV/c" << std::endl;
+  if(!constituents.size()){
+    if(sdparams.fUseChargedConstituents && sdparams.fUseNeutralConstituents) AliErrorGeneralStream("MakeSoft") << "Jet has 0 constituents." << std::endl;
+    throw 1;
+  }
+  // Redo jet finding on constituents with a
+  fastjet::JetDefinition jetdef(fastjet::antikt_algorithm, jetradius*2, fastjet::E_scheme, fastjet::BestFJ30 );
+  fastjet::ClusterSequence jetfinder(constituents, jetdef);
+  std::vector<fastjet::PseudoJet> outputjets = jetfinder.inclusive_jets(0);
+  auto sdjet = outputjets[0];
+  if(dropMass0Jets && (TMath::Abs(sdjet.m2()) < 1e-5)) {
+    AliErrorGeneralStream("MakeSoft") << "Detected jet with mass 0, not possible to evaluate SoftDrop" << std::endl;
+    throw  2;
+  }
+
+  fastjet::JetAlgorithm jetalgo;
+  switch (sdparams.fReclusterizer)
+  {
+  case EReclusterizer_t::kCAAlgo : 
+    jetalgo = fastjet::cambridge_algorithm;
+    break;
+  case EReclusterizer_t::kAKTAlgo : 
+    jetalgo = fastjet::antikt_algorithm;
+    break;
+  case EReclusterizer_t::kKTAlgo : 
+    jetalgo = fastjet::kt_algorithm;
+    break;
+  default:
+    AliErrorGeneralStream("IterativeDecluster") << "Non-supported reclusterizer type" << std::endl;
+    throw 3;
+  };
+
+  try {
+    fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+    fastjet::ClusterSequence recluster(constituents, fJetDef);
+    auto outputJets = recluster.inclusive_jets(0);
+    fastjet::PseudoJet harder, softer, splitting = outputJets[0];
+    if(dropMass0Jets && (TMath::Abs(splitting.m2()) < 1e-5)) {
+      AliErrorGeneralStream("MakeSoft") << "Detected jet with mass 0, not possible to evaluate SoftDrop" << std::endl;
+      throw  2;
+    } 
+    int drop_count = 0;
+    while(splitting.has_parents(harder,softer)){
+      if(harder.perp() < softer.perp()) std::swap(harder,softer);
+      drop_count += 1;
+      if(splitting.m2() < 1e-5 || splitting.pt() < 1e-5) {
+        // treat as untagged jet
+        // use 0. for symmetry parameter corresponding to implemetation in fjcontrib 1.042
+        return SoftdropResults {
+          0.,
+          harder.m(),
+          0.,
+          harder.perp(),
+          0.,
+          drop_count
+        };
+      }
+      auto sym = softer.perp()/(harder.perp()+softer.perp()),
+           geoterm = sdparams.fBeta > 0 ? std::pow(harder.delta_R(softer) / jetradius, sdparams.fBeta) : 1.,
+           zcut = sdparams.fZcut * geoterm; 
+      if(sym > zcut) {
+        // accept splitting
+        double mu2 = std::max(harder.m2(), softer.m2())/splitting.m2();
+        SoftdropResults acceptedSplitting {
+          sym,
+          harder.m(),
+          harder.delta_R(softer),
+          harder.perp(),
+          mu2 >= 0 ? std::sqrt(mu2) : -std::sqrt(-mu2),
+          drop_count 
+        };
+        return acceptedSplitting;
+      }
+      splitting = harder;
+    }
+    // Untagged jet
+    return SoftdropResults {
+      0.,
+      splitting.m(),
+      0.,
+      splitting.perp(),
+      0.,
+      0
+    };
+  } catch(...) {
+    AliErrorGeneralStream("IterativeDecluster") << "Fastjet error " << std::endl;
+    throw 4;
+  }
+}
+
+std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmcalSoftdropHelperImpl::IterativeDecluster(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets) {
+  const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
+  std::vector<fastjet::PseudoJet> constituents;
+  fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
+  AliDebugGeneralStream("MakeSoftdrop", 2) <<  "Make new jet substrucutre for " << (isPartLevel ? "part" : "det") << " jet: Number of tracks " << jet.GetNumberOfTracks() << ", clusters " << jet.GetNumberOfClusters() << std::endl;
+  if(sdparams.fUseChargedConstituents || isPartLevel){                    // Neutral particles part of particle container in case of MC
+    AliDebugGeneralStream("MakeSoftdrop",1) << "Jet substructure: Using charged constituents" << std::endl;
+    for(int itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++){
+      auto track = jet.Track(itrk);
+      if(!track->Charge() && !sdparams.fUseNeutralConstituents) continue;      // Reject neutral constituents in case of using only charged consituents
+      if(track->Charge() && !sdparams.fUseChargedConstituents) continue;       // Reject charged constituents in case of using only neutral consituents
+      fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
+      constituentTrack.set_user_index(jet.TrackAt(itrk));
+      constituents.push_back(constituentTrack);
+    }
+  }
+
+  if(sdparams.fUseNeutralConstituents){
+    AliDebugGeneralStream("MakeSoftDrop",1) << "Jet substructure: Using neutral constituents" << std::endl;
+    for(int icl = 0; icl < jet.GetNumberOfClusters(); icl++) {
+      auto cluster = jet.Cluster(icl);
+      TLorentzVector clustervec;
+      cluster->GetMomentum(clustervec, vertex, energydef);
+      fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
+      constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
+      constituents.push_back(constituentCluster);
+    }
+  }
+
+  AliDebugGeneralStream("IterativeDecluster",3) << "Found " << constituents.size() << " constituents for jet with pt=" << jet.Pt() << " GeV/c" << std::endl;
+  if(!constituents.size()){
+    if(sdparams.fUseChargedConstituents && sdparams.fUseNeutralConstituents) AliErrorGeneralStream("MakeSoft") << "Jet has 0 constituents." << std::endl;
+    throw 1;
+  } 
+
+  std::vector<SoftdropResults> result;
+
+  fastjet::JetAlgorithm jetalgo;
+  switch (sdparams.fReclusterizer)
+  {
+  case EReclusterizer_t::kCAAlgo : 
+    jetalgo = fastjet::cambridge_algorithm;
+    break;
+  case EReclusterizer_t::kAKTAlgo : 
+    jetalgo = fastjet::antikt_algorithm;
+    break;
+  case EReclusterizer_t::kKTAlgo : 
+    jetalgo = fastjet::kt_algorithm;
+    break;
+  default:
+    AliErrorGeneralStream("IterativeDecluster") << "Non-supported reclusterizer type" << std::endl;
+    throw 3;
+  };
+  
+
+  try {
+    fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+    fastjet::ClusterSequence recluster(constituents, fJetDef);
+    auto outputJets = recluster.inclusive_jets(0);
+    fastjet::PseudoJet harder, softer, splitting = outputJets[0];
+    if(dropMass0Jets && (TMath::Abs(splitting.m2()) < 1e-5)) {
+      AliErrorGeneralStream("MakeSoft") << "Detected jet with mass 0, not possible to evaluate SoftDrop" << std::endl;
+      throw  2;
+    } 
+    int drop_count = 0;
+    while(splitting.has_parents(harder,softer)){
+      if(harder.perp() < softer.perp()) std::swap(harder,softer);
+      drop_count += 1;
+      auto sym = softer.perp()/(harder.perp()+softer.perp()),
+           geoterm = sdparams.fBeta > 0 ? std::pow(harder.delta_R(softer) / jetradius, sdparams.fBeta) : 1.,
+           zcut = sdparams.fZcut * geoterm; 
+      if(sym > zcut) {
+        // accept splitting
+        double mu2 = TMath::Abs(splitting.m2()) < 1e-5 ? 100000. : std::max(harder.m2(), softer.m2())/splitting.m2();
+        SoftdropResults acceptedSplitting{
+          sym,
+          harder.m(),
+          harder.delta_R(softer),
+          harder.perp(),
+          mu2 >= 0 ? std::sqrt(mu2) : -std::sqrt(-mu2),
+          drop_count 
+        };
+        result.push_back(acceptedSplitting);
+      }
+      splitting = harder;
+    }
+  } catch(...) {
+    AliErrorGeneralStream("IterativeDecluster") << "Fastjet error " << std::endl;
+    throw 4;
+  }
+
+  return result;
 }

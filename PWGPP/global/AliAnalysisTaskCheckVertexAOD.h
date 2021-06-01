@@ -36,6 +36,10 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   void SetReadMC(Bool_t optMC=kTRUE){
     fReadMC=optMC;
   }
+  void SelectedGeneratorName(TString name){
+    fGenerToKeep=name.Data(); fSelectOnGenerator=kTRUE;}
+  void ExcludedGeneratorName(TString name){
+    fGenerToExclude=name.Data(); fSelectOnGenerator=kTRUE;}
   void SetUsePhysicsSelection(Bool_t opt=kTRUE){
     fUsePhysSel=opt;
   }
@@ -90,7 +94,7 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   TH2F* fHistZspdVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistZspdOnlyZVsCent;         //!<!  histo of vtx coord.
   TH2F* fHistContrSpdVsCent;          //!<!  histo of vtx contrib
-  TH2F* fHistContrSpdOnlyZVsCent;          //!<!  histo of vtx contrib
+  TH2F* fHistContrSpdOnlyZVsCent;     //!<!  histo of vtx contrib
   TH2F* fHistXtrkVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistYtrkVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistZtrkVsCent;              //!<!  histo of vtx coord.
@@ -111,20 +115,23 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   TH1F* fHistoNOfPileupVertMV;        //!<! histo of SPD pileup
   TH1F* fHistoNOfSelPileupVertMV;     //!<! histo of SPD pileup
   TH2F* fHistoV0MultVsNclsTPC;        //!<! control histo for TPC pileup
-  Bool_t  fUsePhysSel;                // flag use/not use phys sel
-  Int_t   fTriggerMask;               // mask used in physics selection
-  Double_t fMaxMult;                  // upper limit of multiplicity plots
-  Double_t fSPDContributorsCut;       // cut on SPD vertex for pileup
-  Double_t fSPDZDiffCut;              // cut on SPD vertex for pileup
-  Int_t  fMVContributorsCut;          // cut on MV pileup vertex
-  Double_t fMVCChi2Cut;               //  cut on MV pileup vertex
-  Float_t  fMVWeiZDiffCut;            // cut on MV pileup vertex
-  Bool_t  fMVCheckPlpFromDifferentBC; // cut on MV pileup vertex
-  Bool_t  fApplyPbPbOutOfBunchPileupCut; // switch for cut on TPC clus vs. V0
-  Bool_t  fReadMC;                    // flag read/not-read MC truth info
+  Bool_t fUsePhysSel;                 /// flag use/not use phys sel
+  Int_t  fTriggerMask;                /// mask used in physics selection
+  Bool_t fSelectOnGenerator;          /// flag to select events with generator name
+  TString fGenerToKeep;               /// generator name to analyse
+  TString fGenerToExclude;            /// generator name to exclude
+  Double_t fMaxMult;                  /// upper limit of multiplicity plots
+  Double_t fSPDContributorsCut;       /// cut on SPD vertex for pileup
+  Double_t fSPDZDiffCut;              /// cut on SPD vertex for pileup
+  Int_t  fMVContributorsCut;          /// cut on MV pileup vertex
+  Double_t fMVCChi2Cut;               ///  cut on MV pileup vertex
+  Float_t  fMVWeiZDiffCut;            /// cut on MV pileup vertex
+  Bool_t  fMVCheckPlpFromDifferentBC; /// cut on MV pileup vertex
+  Bool_t  fApplyPbPbOutOfBunchPileupCut; /// switch for cut on TPC clus vs. V0
+  Bool_t  fReadMC;                    /// flag read/not-read MC truth info
 
 
-  ClassDef(AliAnalysisTaskCheckVertexAOD,10);
+  ClassDef(AliAnalysisTaskCheckVertexAOD,11);
 };
 
 

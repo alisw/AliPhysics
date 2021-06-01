@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTaskHFEBESpectraEMC(
                                  TString ContNameExt = "",
-                                 Bool_t UseTender=kTRUE,
+                                 Bool_t UseTender=kTRUE, TString CorrTaskClusCont = "caloClusters", TString CorrTaskTrkCont = "tracks",
                                  Bool_t FillElecSparse=kFALSE,
                                  Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
                                  Bool_t SwitchPi0EtaWeightCalc = kTRUE,
@@ -9,6 +9,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
                                  Bool_t SwitchMCTempWeightCalc = kTRUE,
                                  Bool_t SwitchFillMCTemp = kTRUE,
                                  Bool_t SwitchRecalIP = kTRUE,
+                                 Bool_t IsMC = kFALSE,
                                  Double_t deltaEta=0.05, Double_t deltaPhi=0.05,
                                  Double_t m02Min=0.05, Double_t m02Max1=0.9, Double_t m02Max2=0.9,
                                  Double_t m20Min=0.0, Double_t m20Max=20000,
@@ -41,31 +42,33 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     }else{
         MCthere=kTRUE;
     }
-    
+
+    //Add tender 
     char calib[100];
     if(UseTender)
     {
         if(MimCent==-1)
         {
-            sprintf(calib,"wTender");
+            sprintf(calib,"wTend_");
         }
         else
         {
-            sprintf(calib,"wTender_%d_%d",MimCent,MaxCent);
+            sprintf(calib,"wTend_%d_%d",MimCent,MaxCent);
         }
+        ContNameExt+=CorrTaskClusCont.Data();
     }
     else
     {
         if(MimCent==-1)
         {
-            sprintf(calib,"woTender_");
+            sprintf(calib,"woTend_");
         }
         else
         {
-            sprintf(calib,"woTender_%d_%d",MimCent,MaxCent);
+            sprintf(calib,"woTend_%d_%d",MimCent,MaxCent);
         }
     }
-    
+        
     if(ClsTypeEMC && !ClsTypeDCAL)ContNameExt+="_EMC";
     if(!ClsTypeEMC && ClsTypeDCAL)ContNameExt+="_DCAL";
     
@@ -74,8 +77,10 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     mgr->AddTask(hfecalqa7);
     hfecalqa7->SelectCollisionCandidates(AliVEvent::kINT7);
     hfecalqa7->IsAnalysispp(IsPPAnalysis);
+    hfecalqa7->IsMC(IsMC);
     hfecalqa7->SetElecIDsparse(FillElecSparse);
     hfecalqa7->SetTenderSwitch(UseTender);
+    if(UseTender) hfecalqa7->SetCorrectionTaskCont(CorrTaskClusCont, CorrTaskTrkCont);
     hfecalqa7->SetClusterTypeEMC(ClsTypeEMC);
     hfecalqa7->SetClusterTypeDCAL(ClsTypeDCAL);
     hfecalqa7->SetCentralityMim(MimCent);
@@ -166,8 +171,10 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
         if(MimCent == 0) hfecalqaCent->SelectCollisionCandidates(AliVEvent::kCentral);
         if(MimCent == 30) hfecalqaCent->SelectCollisionCandidates(AliVEvent::kSemiCentral);
         hfecalqaCent->IsAnalysispp(IsPPAnalysis);
+        hfecalqaCent->IsMC(IsMC);
         hfecalqaCent->SetElecIDsparse(FillElecSparse);
         hfecalqaCent->SetTenderSwitch(UseTender);
+        if(UseTender) hfecalqaCent->SetCorrectionTaskCont(CorrTaskClusCont, CorrTaskTrkCont);
         hfecalqaCent->SetClusterTypeEMC(ClsTypeEMC);
         hfecalqaCent->SetClusterTypeDCAL(ClsTypeDCAL);
         hfecalqaCent->SetCentralityMim(MimCent);
@@ -205,8 +212,10 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
             hfecalqaTrig01->SetEMCalTriggerEG1(kTRUE);
             hfecalqaTrig01->IsAnalysispp(IsPPAnalysis);
+            hfecalqaTrig01->IsMC(IsMC);
             hfecalqaTrig01->SetElecIDsparse(FillElecSparse);
             hfecalqaTrig01->SetTenderSwitch(UseTender);
+            if(UseTender) hfecalqaTrig01->SetCorrectionTaskCont(CorrTaskClusCont, CorrTaskTrkCont);
             hfecalqaTrig01->SetThresholdEG1(thEG1ADC);
             hfecalqaTrig01->SetThresholdEG2(thEG2ADC);
             hfecalqaTrig01->SetClusterTypeEMC(ClsTypeEMC);
@@ -244,8 +253,10 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
             hfecalqaTrig01->SetEMCalTriggerDG1(kTRUE);
             hfecalqaTrig01->IsAnalysispp(IsPPAnalysis);
+            hfecalqaTrig01->IsMC(IsMC);
             hfecalqaTrig01->SetElecIDsparse(FillElecSparse);
             hfecalqaTrig01->SetTenderSwitch(UseTender);
+            if(UseTender) hfecalqaTrig01->SetCorrectionTaskCont(CorrTaskClusCont, CorrTaskTrkCont);
             hfecalqaTrig01->SetThresholdEG1(thEG1ADC);
             hfecalqaTrig01->SetThresholdEG2(thEG2ADC);
             hfecalqaTrig01->SetClusterTypeEMC(ClsTypeEMC);
@@ -286,8 +297,10 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
             hfecalqaTrig02->SetEMCalTriggerEG2(kTRUE);
             hfecalqaTrig02->IsAnalysispp(IsPPAnalysis);
+            hfecalqaTrig02->IsMC(IsMC);
             hfecalqaTrig02->SetElecIDsparse(FillElecSparse);
             hfecalqaTrig02->SetTenderSwitch(UseTender);
+            if(UseTender) hfecalqaTrig02->SetCorrectionTaskCont(CorrTaskClusCont, CorrTaskTrkCont);
             hfecalqaTrig02->SetThresholdEG1(thEG1ADC);
             hfecalqaTrig02->SetThresholdEG2(thEG2ADC);
             hfecalqaTrig02->SetClusterTypeEMC(ClsTypeEMC);
@@ -325,8 +338,10 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
             hfecalqaTrig02->SetEMCalTriggerDG2(kTRUE);
             hfecalqaTrig02->IsAnalysispp(IsPPAnalysis);
+            hfecalqaTrig02->IsMC(IsMC);
             hfecalqaTrig02->SetElecIDsparse(FillElecSparse);
             hfecalqaTrig02->SetTenderSwitch(UseTender);
+            if(UseTender) hfecalqaTrig02->SetCorrectionTaskCont(CorrTaskClusCont, CorrTaskTrkCont);
             hfecalqaTrig02->SetThresholdEG1(thEG1ADC);
             hfecalqaTrig02->SetThresholdEG2(thEG2ADC);
             hfecalqaTrig02->SetClusterTypeEMC(ClsTypeEMC);

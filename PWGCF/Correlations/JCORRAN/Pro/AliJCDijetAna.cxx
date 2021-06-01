@@ -164,6 +164,7 @@ void AliJCDijetAna::SetSettings(int    lDebug,
     pionmass = 0.139570;//AliPID::ParticleMass(AliPID::kPion);
     matchingR = lmatchingR;
     fDeltaPt = -9999.0;
+    fptHardBin = 0; // Default value
 
     //Initialize jet lists
     fastjet::PseudoJet emptyJet;
@@ -236,26 +237,27 @@ void AliJCDijetAna::SetSettings(int    lDebug,
     bge = fastjet::JetMedianBackgroundEstimator(selectorEta, jet_def_bge, area_def_bge);
 
 
-
+    return;
 }
 
 //______________________________________________________________________________
-void AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin){
+int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin){
 
     ResetObjects();
 
     //--------------------------------------------------------
     //         B e g i n    e v e n t    l o o p.
     //--------------------------------------------------------
-    if (inList==0) { cout << "No list!" << endl; return;}
+    if (inList==0) { cout << "No list!" << endl; return 0;}
     noTracks = inList->GetEntriesFast();
     //cout << "Number of tracks: " << noTracks << endl;
     
+    //Initialize random cone variables for delta-pt study
     fDeltaPt = -9999.0;
-    double randConePhi = randomGenerator->Uniform(-TMath::Pi(),TMath::Pi());
-    double randConeEta = randomGenerator->Uniform(-etaMaxCutForJet,etaMaxCutForJet);
-    fhistos->fh_randConeEtaPhi[lCBin]->Fill(randConeEta,randConePhi);
-    double randConePt = 0.0;
+    randConePhi = randomGenerator->Uniform(-TMath::Pi(),TMath::Pi());
+    randConeEta = randomGenerator->Uniform(-etaMaxCutForJet,etaMaxCutForJet);
+    randConePt = 0.0;
+
 
     //cout << "Number of tracks in Ana code: " << noTracks << endl;
     for (utrack = 0; utrack < noTracks; ++utrack) {//loop over all the particles in the event
@@ -263,17 +265,9 @@ void AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhisto
         AliJBaseTrack *trk = (AliJBaseTrack*)inList->At(utrack);
         pt = trk->Pt();
         eta = trk->Eta();
-        fhistos->fh_events[lCBin]->Fill("particles",1.0);
         if (pt>fParticlePtCut && TMath::Abs(eta) < fParticleEtaCut){
             if(ftrackingIneff>0.0 && randomGenerator->Uniform(0.0,1.0) < ftrackingIneff) continue;
-            fhistos->fh_events[lCBin]->Fill("acc. particles",1.0);
             phi = trk->Phi();
-            fhistos->fh_eta[lCBin]->Fill(eta);
-            fhistos->fh_phi[lCBin]->Fill(phi);
-            fhistos->fh_etaPhi[lCBin]->Fill(eta,phi);
-            fhistos->fh_pt[lCBin]->Fill(pt);
-            if(eta>0.0) fhistos->fh_ptPosEta[lCBin]->Fill(pt);
-            else        fhistos->fh_ptNegEta[lCBin]->Fill(pt);
             if(DeltaR(randConeEta, eta, randConePhi, phi) < fJetCone) randConePt += pt;
             if(fusePionMass) {
                 chparticles.push_back(fastjet::PseudoJet(trk->Px(), trk->Py(), trk->Pz(), TMath::Sqrt(trk->Px()*trk->Px() + trk->Py()*trk->Py() + trk->Pz()*trk->Pz() + pionmass*pionmass)));
@@ -285,8 +279,6 @@ void AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhisto
             }
         }
     }
-    fhistos->fh_nch[lCBin]->Fill(chparticles.size());
-    if(chparticles.size()==0) return; // We are not intereted in empty events.
 
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Run the clustering, Reconstruct jets
@@ -295,7 +287,35 @@ void AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhisto
     cs_bge.reset(new fastjet::ClusterSequenceArea(ktchparticles, jet_def_bge, area_def_bge));
 
     rawJets   = fastjet::sorted_by_pt(cs->inclusive_jets(MinJetPt)); // APPLY Min pt cut for jet
+
+    // For MC runs: If we find jets with over 4 times pt_hard bin, reject the event.
+    if( fptHardBin!=0 && rawJets.size()>0 ) {
+        fhistos->fh_ptHard[lCBin]->Fill(fptHardBin);
+        fhistos->fh_maxJetptOverPtHard[lCBin]->Fill(rawJets.at(0).pt()/fptHardBin);
+        if( rawJets.at(0).pt() > fptHardBin*4 ) {
+            fhistos->fh_events[lCBin]->Fill("pt_hard bin cuts",1.0);
+            return -1;
+        }
+    }
+    fhistos->fh_randConeEtaPhi[lCBin]->Fill(randConeEta,randConePhi);
+
     rawKtJets = fastjet::sorted_by_pt(cs_bge->inclusive_jets(0.0)); // APPLY Min pt cut for jet
+
+    fhistos->fh_events[lCBin]->Fill("particles",noTracks);
+    for (utrack = 0; utrack < chparticles.size(); utrack++) {
+        fhistos->fh_events[lCBin]->Fill("acc. particles",1.0);
+        pt = chparticles.at(utrack).pt();
+        eta = chparticles.at(utrack).eta();
+        phi = chparticles.at(utrack).phi();
+        fhistos->fh_eta[lCBin]->Fill(eta);
+        fhistos->fh_phi[lCBin]->Fill(phi);
+        fhistos->fh_etaPhi[lCBin]->Fill(eta,phi);
+        fhistos->fh_pt[lCBin]->Fill(pt);
+        if(eta>0.0) fhistos->fh_ptPosEta[lCBin]->Fill(pt);
+        else        fhistos->fh_ptNegEta[lCBin]->Fill(pt);
+    }
+    fhistos->fh_nch[lCBin]->Fill(chparticles.size());
+    if(chparticles.size()==0) return 0; // We are not intereted in empty events.
 
     // Here one can choose to calculate background from kt jets which has left out the dijet with
     // delta phi cut used.
@@ -337,6 +357,7 @@ void AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhisto
     fhistos->fh_deltaPt[lCBin]->Fill(fDeltaPt);
 
     bEvtHasAreaInfo = true;
+    return 0;
 }
 
 // If user wants to add jets from outside this function can be used.
@@ -344,6 +365,7 @@ void AliJCDijetAna::SetJets(vector<fastjet::PseudoJet> jetsOutside) {
     ResetObjects();
     rawJets = fastjet::sorted_by_pt(jetsOutside);
     bEvtHasAreaInfo = false;
+    return;
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -536,6 +558,8 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                 mjj = dijet.m();
                 ptpair = dijet.pt();
                 fhistos->fh_dijetInvM[lCBin][udijet]->Fill(mjj);
+                fhistos->fh_dijetInvMTrunc[lCBin][udijet]->Fill(mjj);
+                fhistos->fh_dijetInvMTrunc2[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetPtPair[lCBin][udijet]->Fill(ptpair);
                 dPhi = GetDeltaPhi(dijets.at(udijet).at(0).at(0), dijets.at(udijet).at(0).at(1));
                 fhistos->fh_dijetDeltaPhi[lCBin][udijet]->Fill(dPhi);
@@ -549,12 +573,15 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                 mjj = dijet.m();
                 ptpair = dijet.pt();
                 fhistos->fh_dijetInvMDeltaPhiCut[lCBin][udijet]->Fill(mjj);
+                fhistos->fh_dijetInvMDeltaPhiCutTrunc[lCBin][udijet]->Fill(mjj);
+                fhistos->fh_dijetInvMDeltaPhiCutTrunc2[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetPtPairDeltaPhiCut[lCBin][udijet]->Fill(ptpair);
                 dPhi = GetDeltaPhi(dijets.at(udijet).at(1).at(0), dijets.at(udijet).at(1).at(1));
                 fhistos->fh_dijetDeltaPhiWithCut[lCBin][udijet]->Fill(dPhi);
             }
         }
     }
+    return;
 }
 
 // Response matrices are calculated in this function.
@@ -700,6 +727,8 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
             dijetDetMC = dijetsDetMC.at(iAcc).at(0).at(0) + dijetsDetMC.at(iAcc).at(0).at(1);
             if(bLeadingMatch && bSubleadingMatch) {
                 fhistos->fh_dijetResponse->Fill(dijetDetMC.m(), dijet.m());
+                fhistos->fh_dijetResponseTrunc->Fill(dijetDetMC.m(), dijet.m());
+                fhistos->fh_dijetResponseTrunc2->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_responseInfo->Fill("Dijet match",1.0);
             } else {
                 fhistos->fh_responseInfo->Fill("Dijet not match",1.0);
@@ -757,6 +786,8 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
 
             if(bLeadingMatch && bSubleadingMatchDeltaPhi) {
                 fhistos->fh_dijetResponseDeltaPhiCut->Fill(dijetDetMC.m(), dijet.m());
+                fhistos->fh_dijetResponseDeltaPhiCutTrunc->Fill(dijetDetMC.m(), dijet.m());
+                fhistos->fh_dijetResponseDeltaPhiCutTrunc2->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_responseInfo->Fill("Dijet DPhi match",1.0);
             } else {
                 fhistos->fh_responseInfo->Fill("Dijet DPhi not match",1.0);
@@ -788,6 +819,7 @@ void AliJCDijetAna::ResetObjects() {
     bHasDeltaPhiDijet = false;
     bHasDeltaPhiSubLeadJet = false;
     bEvtHasAreaInfo = false;
+    return;
 }
 
 double AliJCDijetAna::DeltaR(fastjet::PseudoJet jet1, fastjet::PseudoJet jet2) {
@@ -884,6 +916,7 @@ void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBi
         histos->fh_events[iBin]->Fill("kt dijets leading cut",0.0);
         histos->fh_events[iBin]->Fill("kt acc. dijets",0.0);
         histos->fh_events[iBin]->Fill("kt deltaphi cut dijets",0.0);
+        histos->fh_events[iBin]->Fill("pt_hard bin cuts",0.0);
         if(bIsMC) {
             histos->fh_responseInfo->Fill("True jet has pair",0.0);
             histos->fh_responseInfo->Fill("True jet has no pair",0.0);
@@ -898,5 +931,6 @@ void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBi
             histos->fh_responseInfo->Fill("Dijet DPhi true not found",0.0);
         }
     }
+    return;
 }
 #endif

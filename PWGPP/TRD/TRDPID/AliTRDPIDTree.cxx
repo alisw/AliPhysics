@@ -310,10 +310,17 @@ void AliTRDPIDTree::Process(AliESDEvent *const esdEvent, AliMCEvent *const mcEve
         }
         break;
 
-      case kLHC18q :
+     /* case kLHC18q :
         if (multVZERO < (-2800 + 3.165*ntrkTPCout + 2.5e-5*ntrkTPCout*ntrkTPCout))  {
           return;
+        }*/
+          
+        case kLHC18q :
+        if (multVZERO < (-3000 + 0.0099*ntrkTPCout + 9.426e-10*ntrkTPCout*ntrkTPCout))  {
+          return;
         }
+
+
         break;
     }
 

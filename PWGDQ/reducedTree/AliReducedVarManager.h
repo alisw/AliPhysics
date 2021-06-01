@@ -455,6 +455,10 @@ class AliReducedVarManager : public TObject {
     kMultEstimatorPercentileRefMult05,
     kMultEstimatorPercentileRefMult08,
     kINT7Triggered,
+    kCentralTriggered,
+    kSemiCentralTriggered,
+    kINT7orCentTriggered,
+    kINT7orSemiCentTriggered,
     kHighMultV0Triggered,
     kEMCEGATriggered,
     kEMCEGAHighTriggered,
@@ -505,6 +509,12 @@ class AliReducedVarManager : public TObject {
     kMass,
     kMassMC,
     kMassMCfromLegs,
+    kPairEff_weight,
+    kPairEffUp_weight,
+    kPairEffDown_weight,
+    kPtTimesPairEff_weight,
+    kPtTimesPairEffUp_weight,
+    kPtTimesPairEffDown_weight,
     kRap,
     kRapAbs,
     kRapMC,
@@ -774,7 +784,7 @@ class AliReducedVarManager : public TObject {
   static void SetEvent(AliReducedBaseEvent* const ev) {fgEvent = ev;};
   static void SetEventPlane(AliReducedEventPlaneInfo* const ev) {fgEventPlane = ev;};
   static void SetUseVariable(Int_t var) {fgUsedVars[var] = kTRUE; SetVariableDependencies();}
-  static void SetUseVars(Bool_t* usedVars) {
+  static void SetUseVars(const Bool_t* usedVars) {
     for(Int_t i=0;i<kNVars;++i) {
       if(usedVars[i]) fgUsedVars[i]=kTRUE;    // overwrite only the variables that are being used since there are more channels to modify the used variables array, independently
     }
@@ -845,6 +855,8 @@ class AliReducedVarManager : public TObject {
   static Int_t GetCorrectedMultiplicity( Int_t estimator = kMultiplicity, Int_t correction = 0, Int_t reference = 0, Int_t smearing = 0 );
   static void SetWeightSpectrum(TH1F *gReweightMCpt);
   static Double_t CalculateWeightFactor(Double_t Mcpt, Double_t Centrality);
+  static void SetLegEfficiency(TH3F *LegEfficiency, Bool_t usePin);
+  static Float_t GetPairEffWeightFactor(Float_t Cent, Float_t P1, Float_t P2, Float_t Eta1, Float_t Eta2, Int_t type = 1);
   
  private:
   static Int_t     fgCurrentRunNumber;               // current run number
@@ -914,6 +926,8 @@ class AliReducedVarManager : public TObject {
   static Bool_t fgOptionRecenterTPCqVec;           //option to do Q vector recentering for TPC
   static Bool_t fgOptionEventRes;                 //option to divide by resolution
   static TH1F* fgReweightMCpt;  // ratio between nature pt shape and gernareted pT shape
+  static TH3F* fgLegEfficiency; // Leg efficiency for its propagation to the pair level
+  static Bool_t fgUsePinForLegEffPropagation;   //option to propagate leg pid efficiency as a function of pin instead of p
   
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  

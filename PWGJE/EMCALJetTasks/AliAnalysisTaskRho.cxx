@@ -194,7 +194,7 @@ AliAnalysisTaskRho* AliAnalysisTaskRho::AddTaskRhoNew (
     mcpartCont->SelectPhysicalPrimaries(kTRUE);
   }
   else if (trackName == "tracks" || trackName == "Tracks") {
-    AliTrackContainer* trackCont = rhotask->AddTrackContainer(trackName);
+    rhotask->AddTrackContainer(trackName);
   }
   else if (!trackName.IsNull()) {
     rhotask->AddParticleContainer(trackName);

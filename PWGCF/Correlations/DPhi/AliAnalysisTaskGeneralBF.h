@@ -196,6 +196,7 @@ public:
   void SetElectronCut( Bool_t NoElectron )          { fExcludeElectronsInMC = NoElectron; }
   void SetExcludeInjectedSignals(Bool_t yes = true) { fExcludeInjectedSignals = yes; }
   void SetGenToBeKept(const char *genname)          { fGenToBeKept = genname; }
+  void SetUseMomentumOrder(bool yes = true)         { fUseMomentumOrder = yes; }
   
   void SetNSigmaCut( double nsigma )             { fNSigmaPID = nsigma; }
   void SetNSigmaCut_veto( double nsigma )        { fNSigmaPID_veto = nsigma; }

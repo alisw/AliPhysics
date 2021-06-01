@@ -56,7 +56,7 @@ Bool_t  kSimulation    = kFALSE;    ///< Declare the analysis simulation
 Bool_t  kOutputAOD     = kFALSE;    ///< Create output AOD with generated particle AOD objects
 Bool_t  kEventSelection= kFALSE;    ///< Remove bad events
 Bool_t  kExotic        = kTRUE;     ///< Remove exotic clusters
-Bool_t  kNonLinearity  = kFALSE;    ///< Correct cluster non linearity
+Int_t   kNonLinearity  = 0;         ///< Correct cluster non linearity
 Int_t   kYears         = 2011;      ///< Declare the year of the data
 TString kCollisions    = "pp";      ///< Declare the collision type of the data
 TString kTrig          = "EMC7" ;   ///< Set the trigger type to analyze in data
@@ -555,7 +555,7 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   ConfigureEMCALRecoUtils(recou,
                           kSimulation,                             
                           kExotic,
-                          kTRUE,//kNonLinearity,
+                          kNonLinearity,
                           kCalibE, 
                           kBadMap,
                           kCalibT);
@@ -1617,7 +1617,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
                                                           const Bool_t   simulation    = kFALSE,
                                                           const Bool_t   eventsel      = kFALSE,
                                                           const Bool_t   exotic        = kTRUE,
-                                                          const Bool_t   nonlin        = kFALSE,
+                                                          const Int_t    nonlin        = 0,
                                                           TString        outputfile    = "",
                                                           const Int_t    year          = 2010,
                                                           const TString  col           = "pp", 

@@ -273,11 +273,10 @@ void AliAnalysisTaskAODXioton::UserExec(Option_t *option) {
   }
   std::vector<AliFemtoDreamBasePart> Protons;
   std::vector<AliFemtoDreamBasePart> AntiProtons;
-  const int multiplicity = fEvent->GetMultiplicity();
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(evt->GetTrack(iTrack));
-    fTrack->SetTrack(track, multiplicity);
+    fTrack->SetTrack(track);
     if (fProton->isSelected(fTrack)) {
       Protons.push_back(*fTrack);
     }

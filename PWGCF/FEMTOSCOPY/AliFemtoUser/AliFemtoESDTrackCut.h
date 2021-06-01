@@ -210,7 +210,7 @@ protected:   // here are the quantities I want to cut on...
   bool IsProtonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP);
   //
-  bool IsDeuteronNSigma(float mom,float massTOFDPG, float sigmaMass, float nsigmaTPC, float nsigmaTOF);
+  bool IsDeuteronNSigma(float mom,float massTOFDPG, float nsigmaTPC, float nsigmaTOF);
   bool IsTritonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsHe3NSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsAlphaNSigma(float mom, float nsigmaTPC, float nsigmaTOF);

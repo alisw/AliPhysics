@@ -89,9 +89,11 @@ public:
     
     void             SetNcontVCut(Int_t NcontV){fCutNcontV=NcontV;}
     void             SetEtaRange(Double_t Etarange){fCutTrackEta=Etarange;}
-    void             SetMaxTPCCluster(Int_t MaxTPCclus){fCutTPCMaxCls=MaxTPCclus;}
+    void             SetRatioCrossedRowOverFindable(Double_t RatioCrossedRowOverFindable){fRatioCrossedRowOverFindable=RatioCrossedRowOverFindable;}
+    void             SetNTPCCrossRows(Int_t NTPCCrossRows){fCutTPCCrossRows=NTPCCrossRows;}
     void             SetNTPCCluster(Int_t TPCNclus){fCutTPCNCls=TPCNclus;}
     void             SetNITSCluster(Int_t ITSNclus){fCutITSNCls=ITSNclus;}
+    void             SetTrackpTMin(Double_t TrackPtMin){fCutpTMin = TrackPtMin;}
     void             SetTOFNSigmaCut(Double_t CutNsigmaTOF){fCutNsigmaTOF = CutNsigmaTOF;}
     
     void             SetDCACut(Double_t DCAxyCut,Double_t DCAzCut){
@@ -127,14 +129,16 @@ private:
     //--------------------Event Cut------------------
     Int_t         fCutNcontV;
     //--------------------Track Cut------------------
-    Int_t            fCutTPCMaxCls;
+    Double_t         fRatioCrossedRowOverFindable;
+    Int_t            fCutTPCCrossRows;
     Int_t            fCutTPCchi2perNDF;
-    Int_t         fCutTPCNCls;
-    Int_t         fCutITSNCls;
+    Int_t            fCutTPCNCls;
+    Int_t            fCutITSNCls;
     Double_t         fCutDCAxy;
     Double_t         fCutDCAz;
     Double_t         fCutTrackEta;
-    Double_t         fCutNsigmaTOF;//!
+    Double_t         fCutpTMin;
+    Double_t         fCutNsigmaTOF;
     
     Bool_t fSPDBoth;
     Bool_t fSPDAny;
@@ -145,12 +149,12 @@ private:
     Double_t         fCutNsigmaEMax;
     
     //--------------------Loose cuts for photonic electron pair------------------
-    Int_t         fAssoTPCCluster;//!
-    Int_t         fAssoITSCluster;//!
+    Int_t         fAssoTPCCluster;
+    Int_t         fAssoITSCluster;
     Double_t         fCutAssoEPt;
     Double_t         fCutAssoEEta;
     Double_t         fCutAssoENsigma;
-    Bool_t         fAssoITSRefit;//!
+    Bool_t         fAssoITSRefit;
     //--------------------Mass Cut for photonic electron pair------------------
     Double_t         fCutInvmass;
     
@@ -164,7 +168,7 @@ private:
     TClonesArray*            fMCArray;//! MC array
     TProfile*             GetEstimatorHistogram(const AliAODEvent *fAOD);
     
-    Double_t              fTPCnSigma;//!
+    Double_t              fTPCnSigma;
     Bool_t                 fRejectPUFromSPD;
     Bool_t                fCalculateElectronEffi;//
     

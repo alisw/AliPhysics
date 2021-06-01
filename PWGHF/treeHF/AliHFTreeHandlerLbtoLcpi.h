@@ -17,11 +17,21 @@
 
 #include "AliHFTreeHandler.h"
 #include "AliRDHFCutsLctopKpi.h"
+#include "AliAODRecoDecayHF2Prong.h"
 
 class AliHFTreeHandlerLbtoLcpi : public AliHFTreeHandler
 {
   public:
   
+    //Flag to store injected candidate + HIJING track for background shape studies
+    enum lcmesontype {
+      kLcPrompt  = BIT(11), //includes all charmed hadron decays to Lc
+      kLcFDBplus = BIT(12),
+      kLcFDB0    = BIT(13),
+      kLcFDLb0   = BIT(14),
+      kLcFDBs0   = BIT(15)
+    };
+
     //Need a bit for reflections/different decay? or an enum for resdecaytype? To check
     //enum resdecaytype {kNonResonant = 1, kL1520 = 2, kKstar = 3, kDelta = 4};
   
@@ -31,8 +41,18 @@ class AliHFTreeHandlerLbtoLcpi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerLbtoLcpi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0, AliAODPidHF *pidhf=0x0);
     Int_t IsLbPionSelected(TObject* obj, AliRDHFCutsLctopKpi* cutsLc, AliAODPidHF* fPidHFLc, AliAODEvent* aod, AliAODVertex *vtx);
+    Int_t IsLbSelected(AliAODRecoDecayHF2Prong* lb);
+
+    void SetLcBackgroundShapeType(bool isPr, bool isFDBplus, bool isFDB0, bool isFDLb0, bool isFDBs0);
+    void SetLbSelectionValues(float invmass, float pt, float impparprod, float cosp, float cospxy){
+      fInvMassLbCut = invmass;
+      fPtLbCut = pt;
+      fImpParProdLbCut = impparprod;
+      fCosPLbCut = cosp;
+      fCosPXYLbCut = cospxy;
+    }
 
   private:
 
@@ -64,8 +84,14 @@ class AliHFTreeHandlerLbtoLcpi : public AliHFTreeHandler
     float fNormd0MeasMinusExp_Lc; ///Lc topomatic variable
     float fSumImpParProngs_Lc; ///sum of Lc prong impact parameter squared
   
+    float fInvMassLbCut; ///Cut on invariant mass for Lb selection
+    float fPtLbCut; ///Cut on pT for Lb selection
+    float fImpParProdLbCut; ///Cut on d0xd0 for Lb selection
+    float fCosPLbCut; ///Cut on cos pointing angle for Lb selection
+    float fCosPXYLbCut; ///Cut on cos pointing angle xy for Lb selection
+
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerLbtoLcpi,4); ///
+    ClassDef(AliHFTreeHandlerLbtoLcpi,5); ///
     /// \endcond
 };
 #endif

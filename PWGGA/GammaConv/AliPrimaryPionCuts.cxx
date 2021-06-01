@@ -74,6 +74,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
   fChi2PerClsTPC(9999), // maximum Chi2 per cluster in the TPC
   fRequireTPCRefit(kFALSE), // require a refit in the TPC
 	fMinClsTPCToF(0), // minimum clusters to findable clusters
+    fMaxSharedClsTPCFrac(99), // maximum fraction of shared clusters to TPCnClus
 	fMinClsITS(0), // minimum clusters to findable clusters
 	fDodEdxSigmaITSCut(kFALSE),
 	fDodEdxSigmaTPCCut(kTRUE),
@@ -88,7 +89,9 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fUseTOFpid(kFALSE),
 	fRequireTOF(kFALSE),
 	fDoMassCut(kFALSE),
+    fDoMassCut_WithNDM(kFALSE),
 	fMassCut(10),
+    fMassCut_WithNDM(10),
 	fUse4VecForMass(kFALSE),
 	fRequireVertexConstrain(kFALSE),
 	fDoWeights(kFALSE),
@@ -146,6 +149,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnaly
     fChi2PerClsTPC(ref.fChi2PerClsTPC), // maximum Chi2 per cluster in the TPC
     fRequireTPCRefit(ref.fRequireTPCRefit), // require a refit in the TPC
 	fMinClsTPCToF(ref.fMinClsTPCToF), // minimum clusters to findable clusters
+    fMaxSharedClsTPCFrac(ref.fMaxSharedClsTPCFrac), // maximum fraction of shared clusters to TPCnClus
 	fMinClsITS(ref.fMinClsITS), // minimum clusters to findable clusters
 	fDodEdxSigmaITSCut(ref.fDodEdxSigmaITSCut),
 	fDodEdxSigmaTPCCut(ref.fDodEdxSigmaTPCCut),
@@ -160,7 +164,9 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnaly
 	fUseTOFpid(ref.fUseTOFpid),
 	fRequireTOF(ref.fRequireTOF),
 	fDoMassCut(ref.fDoMassCut),
+    fDoMassCut_WithNDM(ref.fDoMassCut_WithNDM),
 	fMassCut(ref.fMassCut),
+    fMassCut_WithNDM(ref.fMassCut_WithNDM),
 	fUse4VecForMass(ref.fUse4VecForMass),
 	fRequireVertexConstrain(ref.fRequireVertexConstrain),
 	fDoWeights(ref.fDoWeights),
@@ -263,20 +269,21 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
 	TAxis *axisBeforeTOF  = NULL;
 	TAxis *axisBeforedEdxSignal = NULL;
     if(!fDoLightOutput){
+      fHistTPCdEdxbefore=new TH2F(Form("Pion_dEdx_before %s",cutName.Data()),"dEdx pion before" ,170,0.05,50,400,-10,10);
+      fHistograms->Add(fHistTPCdEdxbefore);
+      axisBeforedEdx = fHistTPCdEdxbefore->GetXaxis();
+
+      fHistTPCdEdxSignalbefore=new TH2F(Form("Pion_dEdxSignal_before %s",cutName.Data()),"dEdx pion signal before" ,170,0.05,50.0,800,0.0,200);
+      fHistograms->Add(fHistTPCdEdxSignalbefore);
+      axisBeforedEdxSignal = fHistTPCdEdxSignalbefore->GetXaxis();
       if(preCut){
-        fHistITSdEdxbefore=new TH2F(Form("Pion_ITS_before %s",cutName.Data()),"ITS dEdx pion before" ,150,0.05,20,400,-10,10);
+        fHistITSdEdxbefore=new TH2F(Form("Pion_ITS_before %s",cutName.Data()),"ITS dEdx pion before" ,170,0.05,50,400,-10,10);
         fHistograms->Add(fHistITSdEdxbefore);
         axisBeforeITS = fHistITSdEdxbefore->GetXaxis();
 
-        fHistTPCdEdxbefore=new TH2F(Form("Pion_dEdx_before %s",cutName.Data()),"dEdx pion before" ,150,0.05,20,400,-10,10);
-        fHistograms->Add(fHistTPCdEdxbefore);
-        axisBeforedEdx = fHistTPCdEdxbefore->GetXaxis();
 
-        fHistTPCdEdxSignalbefore=new TH2F(Form("Pion_dEdxSignal_before %s",cutName.Data()),"dEdx pion signal before" ,150,0.05,20.0,800,0.0,200);
-        fHistograms->Add(fHistTPCdEdxSignalbefore);
-        axisBeforedEdxSignal = fHistTPCdEdxSignalbefore->GetXaxis();
 
-        fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,150,0.05,20,400,-6,10);
+        fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,170,0.05,50,400,-6,10);
         fHistograms->Add(fHistTOFbefore);
         axisBeforeTOF = fHistTOFbefore->GetXaxis();
 
@@ -290,16 +297,16 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
         fHistograms->Add(fHistTrackNFindClsPtTPCbefore);
       }
 
-      fHistITSdEdxafter=new TH2F(Form("Pion_ITS_after %s",cutName.Data()),"ITS dEdx pion after" ,150,0.05,20,400, -10,10);
+      fHistITSdEdxafter=new TH2F(Form("Pion_ITS_after %s",cutName.Data()),"ITS dEdx pion after" ,170,0.05,50,400, -10,10);
       fHistograms->Add(fHistITSdEdxafter);
 
-      fHistTPCdEdxafter=new TH2F(Form("Pion_dEdx_after %s",cutName.Data()),"dEdx pion after" ,150,0.05,20,400, -10,10);
+      fHistTPCdEdxafter=new TH2F(Form("Pion_dEdx_after %s",cutName.Data()),"dEdx pion after" ,170,0.05,50,400, -10,10);
       fHistograms->Add(fHistTPCdEdxafter);
 
-      fHistTPCdEdxSignalafter=new TH2F(Form("Pion_dEdxSignal_after %s",cutName.Data()),"dEdx pion signal after" ,150,0.05,20.0,800,0.0,200);
+      fHistTPCdEdxSignalafter=new TH2F(Form("Pion_dEdxSignal_after %s",cutName.Data()),"dEdx pion signal after" ,170,0.05,50.0,800,0.0,200);
       fHistograms->Add(fHistTPCdEdxSignalafter);
 
-      fHistTOFafter=new TH2F(Form("Pion_TOF_after %s",cutName.Data()),"TOF pion after" ,150,0.05,20,400,-6,10);
+      fHistTOFafter=new TH2F(Form("Pion_TOF_after %s",cutName.Data()),"TOF pion after" ,170,0.05,50,400,-6,10);
       fHistograms->Add(fHistTOFafter);
 
       fHistTrackDCAxyPtafter  = new TH2F(Form("hTrack_DCAxy_Pt_after %s",cutName.Data()),"DCAxy Vs Pt of tracks after",800,-4.0,4.0,400,0.,10.);
@@ -340,10 +347,10 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
       AxisAfter = fHistTPCdEdxSignalafter->GetXaxis();
       AxisAfter->Set(bins,newBins);
 
+      if (axisBeforedEdx) axisBeforedEdx->Set(bins, newBins);
+      if (axisBeforedEdxSignal) axisBeforedEdxSignal->Set(bins,newBins);
       if(preCut){
         axisBeforeITS->Set(bins, newBins);
-        axisBeforedEdx->Set(bins, newBins);
-        axisBeforedEdxSignal->Set(bins,newBins);
         axisBeforeTOF->Set(bins, newBins);
 
       }
@@ -523,6 +530,7 @@ Bool_t AliPrimaryPionCuts::PionIsSelectedAOD(AliAODTrack* lTrack){
 Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
   // Track Selection for Photon Reconstruction
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
+  Double_t frac_SharedClus = Double_t(lTrack->GetTPCnclsS()) / Double_t(lTrack->GetTPCncls());
   if( ! fEsdTrackCuts->AcceptTrack(lTrack) && ! fEsdTrackCutsGC->AcceptTrack(lTrack)){
     return kFALSE;
   }
@@ -531,6 +539,8 @@ Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
 	// (should be already applied in fEsdTrackCuts, however it might
 	// not be properly applied together with pTDependent cut )
 	if(lTrack->GetTPCNcls()<fMinClsTPC) return kFALSE;
+
+  if (frac_SharedClus > fMaxSharedClsTPCFrac){ return kFALSE; }
  
   if( fDoEtaCut ) {
     if(  lTrack->Eta() > (fEtaCut + fEtaShift) || lTrack->Eta() < (-fEtaCut + fEtaShift) ) {
@@ -560,7 +570,7 @@ Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
 Bool_t AliPrimaryPionCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
   // Track Selection for Photon Reconstruction
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
-
+  Double_t frac_SharedClus = Double_t(lTrack->GetTPCnclsS()) / Double_t(lTrack->GetTPCncls());
   // apply filter bits 
   if( ! lTrack->IsHybridGlobalConstrainedGlobal()){
     return kFALSE;
@@ -576,6 +586,7 @@ Bool_t AliPrimaryPionCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
 	// than the cuts already applied on AOD refiltering level
 
 	// Absolute TPC Cluster cut
+    if (frac_SharedClus > fMaxSharedClsTPCFrac){ return kFALSE; }
 	if(lTrack->GetTPCNcls()<fMinClsTPC) return kFALSE;
 	if(lTrack->GetTPCchi2perCluster()>fChi2PerClsTPC) return kFALSE;
   // DCA cut 
@@ -651,7 +662,9 @@ Bool_t AliPrimaryPionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 		cutIndex++;
 	} else { cutIndex+=1; }
 	
-	if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
+    //if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
+    // check for TOF signal: AliVTrack::kTOFout means that a tof signal is matched, AliVTrack::kTIME means that the track length (and then the expected times) was extrapolated properly
+    if((fCurrentTrack->GetStatus() & AliVTrack::kTOFout ) && (fCurrentTrack->GetStatus() & AliVTrack::kTIME)){
 		if(fHistTOFbefore) fHistTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
 		if(fUseTOFpid){
 			if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)>fPIDnSigmaAbovePionLineTOF ||
@@ -988,6 +1001,21 @@ Bool_t AliPrimaryPionCuts::SetTPCdEdxCutPionLine(Int_t ededxSigmaCut){
 			fPIDnSigmaBelowPionLineTPC=-2;
 			fPIDnSigmaAbovePionLineTPC=3.;
 			break;
+        case 9: // -2.5, 2.5
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-2;
+            fPIDnSigmaAbovePionLineTPC=3.;
+            break;
+        case 10: //a -3.5, 3.5
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-2;
+            fPIDnSigmaAbovePionLineTPC=3.;
+            break;
+        case 11: //b -2., 2.
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-2;
+            fPIDnSigmaAbovePionLineTPC=3.;
+            break;
 		default:
 			cout<<"Warning: TPCdEdxCutPionLine not defined"<<ededxSigmaCut<<endl;
 			return kFALSE;
@@ -1112,7 +1140,7 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
 			fMinClsTPCToF= 0.35;
 			fUseCorrectedTPCClsInfo=1;
 			break;
-        case 10:
+        case 10: //a
             fMinClsTPC     = 80.;
             fChi2PerClsTPC = 4;
             fRequireTPCRefit    = kTRUE;
@@ -1121,22 +1149,34 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
             fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
             fEsdTrackCuts->SetRequireTPCRefit(fRequireTPCRefit);
             break;
-        case 11: // settings as in PHOS public omega
+        case 11: //b settings as in PHOS public omega
             fMinClsTPC     = 70.;
             fChi2PerClsTPC = 4;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
             break;
-        case 12:  // 80 + refit
+        case 12:  //c 80 + refit
             fMinClsTPC= 80.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             break;
-        case 13:  // 80 + refit + vertex constrain (only for AOD)
+        case 13:  //d 80 + refit + vertex constrain (only for AOD)
 				    fRequireVertexConstrain = kTRUE;
             fMinClsTPC= 80.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            break;
+        case 14:  //e 80 + refit, Shared cluster Fraction =0
+            fMinClsTPC= 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            fMaxSharedClsTPCFrac=0.;
+            break;
+        case 15:  //f 80 + refit, Shared cluster Fraction <=0.4
+            fMinClsTPC= 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            fMaxSharedClsTPCFrac=0.4;
             break;
 				default:
 						cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
@@ -1361,28 +1401,94 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
 			fDoMassCut = kTRUE;
 			fMassCut = 0.5;
 			break;
-    case 6: // cut at 0.65 GeV/c^2
-        fDoMassCut = kTRUE;
-        fMassCut = 0.65;
-        break;
-    case 7: // cut at 0.7 GeV/c^2
-        fDoMassCut = kTRUE;
-        fMassCut = 0.7;
-        break;
-    case 8: // cut at 0.85 GeV/c^2
-         fDoMassCut = kTRUE;
-         fMassCut = 0.85;
-         break;
-    case 9: // cut at 1.5 GeV/c^2
-         fDoMassCut = kTRUE;
-         fMassCut = 1.5;
-         break;
-		case 10: // overload mass cut for chi2 of vParticle
-		     fUse4VecForMass = kTRUE;
-				 fDoMassCut = kTRUE;
-         fMassCut = 0.85;
-         break;
-
+        case 6: // cut at 0.65 GeV/c^2
+            fDoMassCut = kTRUE;
+            fMassCut = 0.65;
+            break;
+        case 7: // cut at 0.7 GeV/c^2
+            fDoMassCut = kTRUE;
+            fMassCut = 0.7;
+            break;
+        case 8: // cut at 0.85 GeV/c^2
+            fDoMassCut = kTRUE;
+            fMassCut = 0.85;
+            break;
+        case 9: // cut at 1.5 GeV/c^2
+            fDoMassCut = kTRUE;
+            fMassCut = 1.5;
+            break;
+        case 10: //a overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.85;
+            break;
+        case 11: //b overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_WithNDM= kTRUE;
+            fMassCut = 0.600;
+            fMassCut_WithNDM = 0.600;
+            break;
+        case 12: //c overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_WithNDM= kTRUE;
+            fMassCut = 0.85;
+            fMassCut_WithNDM = 1.0;
+            break;
+        case 13: //d overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_WithNDM= kTRUE;
+            fMassCut = 0.85;
+            fMassCut_WithNDM = 0.85;
+            break;
+        case 14: //e overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_WithNDM= kTRUE;
+            fMassCut = 0.600;
+            fMassCut_WithNDM = 0.600;
+            break;
+        case 15: //f overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.650;
+            break;
+        case 16: //g overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.700;
+            break;
+        case 17: //h overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_WithNDM= kTRUE;
+            fMassCut = 0.650;
+            fMassCut_WithNDM = 1.;
+            break;
+        case 18: //i overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_WithNDM= kTRUE;
+            fMassCut = 0.650;
+            fMassCut_WithNDM = 0.85;
+            break;
+        case 19: //j overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.460;
+            break;
+        case 20: //k overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.480;
+            break;
+        case 21: //l overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.520;
+            break;
 		default:
 			cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;

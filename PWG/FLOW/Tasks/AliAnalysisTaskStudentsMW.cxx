@@ -389,11 +389,6 @@ void AliAnalysisTaskStudentsMW::Terminate(Option_t *)
  // Do some calculation in offline mode here:
  // ...
 
- TFile *f = new TFile("AnalysisResults.root","RECREATE");
- fHistList->Write(fHistList->GetName(),TObject::kSingleKey);
-
- delete f;
-
 } // end of void AliAnalysisTaskStudentsMW::Terminate(Option_t *)
 
 //================================================================================================================

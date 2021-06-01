@@ -1,5 +1,5 @@
 #include "AliAnalysisPIDCascadeParticle.h"
-#include "TParticle.h"
+#include "AliMCParticle.h"
 #include "AliPID.h"
 #include "TDatabasePDG.h"
 #include "TParticlePDG.h"
@@ -73,7 +73,8 @@ AliAnalysisPIDCascadeParticle::AliAnalysisPIDCascadeParticle() :
   fEta(0.),
   fPhi(0.),
   fPdgCode(0),
-  fMotherPdgCode(0)
+  fMotherPdgCode(0),
+  fPrimary(kFALSE)
 {
   /*
    * default constructor
@@ -89,7 +90,8 @@ AliAnalysisPIDCascadeParticle::AliAnalysisPIDCascadeParticle(const AliAnalysisPI
   fEta(source.fEta),
   fPhi(source.fPhi),
   fPdgCode(source.fPdgCode),
-  fMotherPdgCode(source.fMotherPdgCode)
+  fMotherPdgCode(source.fMotherPdgCode),
+  fPrimary(source.fPrimary)
 {
   /*
    * copy constructor
@@ -114,6 +116,7 @@ AliAnalysisPIDCascadeParticle::operator=(const AliAnalysisPIDCascadeParticle &so
   fPhi = source.fPhi;
   fPdgCode = source.fPdgCode;
   fMotherPdgCode = source.fMotherPdgCode;
+  fPrimary = source.fPrimary;
   return *this;
 }
 
@@ -141,13 +144,13 @@ AliAnalysisPIDCascadeParticle::Reset()
   fPhi = 0.;
   fPdgCode = 0;
   fMotherPdgCode = 0;
-
+  fPrimary = kFALSE;
 }
 
 //___________________________________________________________
 
 void
-AliAnalysisPIDCascadeParticle::Update(TParticle *particle, Int_t label, Int_t MotherPdg)
+AliAnalysisPIDCascadeParticle::Update(AliMCParticle *particle, Int_t label, Int_t MotherPdg, Bool_t PrimCheck)
 {
   /*
    * update
@@ -158,6 +161,6 @@ AliAnalysisPIDCascadeParticle::Update(TParticle *particle, Int_t label, Int_t Mo
   fPt = particle->Pt();
   fEta = particle->Eta();
   fPhi = particle->Phi();
-  fPdgCode = particle->GetPdgCode();
-
+  fPdgCode = particle->PdgCode();
+  fPrimary = PrimCheck;
 }

@@ -34,8 +34,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUseTightPileUp=kFALSE,
                              Int_t MinMulZN=1,
                              TString ZDCESEFileName="",
-                             Bool_t bRequireTOFSignal=kFALSE,
-                             TString CenWeightsFileName="",
+                             TString CenWeightsFileName="", 
+                             TString ZDCRecenterFileName = "",
+                             Int_t bStepZDCRecenter = 0,
                              const char* suffix="") {
   // load libraries
   gSystem->Load("libGeom");
@@ -80,13 +81,13 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Int_t NumCenBins=100;
   Bool_t bCalculateCRC=kTRUE;
   if(analysisTypeUser == "TrackQA") bCalculateCRC=kFALSE;
-  Bool_t bCalculateCRCVZ=kFALSE;  
+  Bool_t bCalculateCRCVZ=kTRUE; // Control VZ QVector and Recenter. Will cause error if it is switched off when calculating e.g. CMESPPP()
   TString PhiEtaWeightsFileName="";
-  Bool_t bCutsQA=kTRUE;
-  Bool_t bCalculateEbEFlow=kTRUE;
+  Bool_t bCutsQA=kTRUE; 
+  Bool_t bCalculateEbEFlow=kTRUE; 
   Bool_t bDivSigma=kFALSE;
   Bool_t bCalculateCRCZDC=kFALSE;
-  Bool_t bCalculateCME=kTRUE;
+  Bool_t bCalculateCME=kTRUE;  
   Bool_t bUseVZERO=kFALSE;
   Int_t nHarmonic=2;
   Bool_t bMimicGlobalCuts=kFALSE;
@@ -109,7 +110,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Float_t ZDCGainAlpha=0.395;
   Int_t CRC2nEtaBins=5;
   Bool_t bCorrectPhiTracklets=kFALSE;
-
+  Bool_t bStoreCalibZDCRecenter = kTRUE;
+  Bool_t bStoreQAforDiffEventPlanes=kFALSE;
+  Bool_t bFillZNCenDisRbR=kFALSE;
+  Bool_t bRequireTOFSignal=kFALSE;             //kFALSE
+  
   // define CRC suffix
   TString CRCsuffix = ":CRC";
 
@@ -142,8 +147,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   TString taskFEname = "FlowEventTask";
   taskFEname += CRCsuffix;
   taskFEname += suffix;
+  
   // create instance of the class
-  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
+  UInt_t seed=666;
+  Bool_t bCandidates=kFALSE;
+  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA, seed, bCandidates, bStepZDCRecenter);
   taskFE->SetCentralityRange(centrMin,centrMax);
   if(sCentrEstimator=="V0")  taskFE->SetCentralityEstimator(AliAnalysisTaskCRCZDC::kV0M);
   if(sCentrEstimator=="TRK") taskFE->SetCentralityEstimator(AliAnalysisTaskCRCZDC::kTRK);
@@ -154,6 +162,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskFE->SetUseMCCen(bZDCMCCen);
   taskFE->SetZDCGainAlpha(ZDCGainAlpha);
   taskFE->SetResetNegativeZDC(bResetNegativeZDC);
+  taskFE->SetFillZNCenDisRbR(bFillZNCenDisRbR);  //@Shi add flag for run by run ZN centroid distribution. Do not turn on for large dataset when running on grid. It takes too much memory
   if (sDataSet == "2010") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2010);
   if (sDataSet == "2011") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2011);
   if (sDataSet == "2015") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015);
@@ -207,6 +216,20 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   }
   if(sDataSet=="2015pidfix") {
     TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHIpidfix_EZDCcalib.root";
+    TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
+    gROOT->cd();
+    TList* ZDCTowerEqList = (TList*)(ZDCTowerEqFile->FindObjectAny("EZNcalib"));
+    if(ZDCTowerEqList) {
+      taskFE->SetTowerEqList(ZDCTowerEqList);
+      cout << "ZDCTowerEq set (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
+    } else {
+      cout << "ERROR: ZDCTowerEqList not found!" << endl;
+      exit(1);
+    }
+    delete ZDCTowerEqFile;
+  }
+  if(sDataSet=="2018r") { //@Shi add Tower Eq file for 2018r
+	TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/s/sqiu/18r_ZDCgainEqualization.root";
     TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
     gROOT->cd();
     TList* ZDCTowerEqList = (TList*)(ZDCTowerEqFile->FindObjectAny("EZNcalib"));
@@ -295,6 +318,48 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   // set which rings of VZEROs to use
   if(bSpecialVZERORingSelection) taskFE->SetWhichVZERORings(1,2,7,8);
 
+  //@Shi set ZDC recentering (begin)
+  if (bStepZDCRecenter > 0 && bStepZDCRecenter <=2) {
+	TFile* ZDCRecenterFile = TFile::Open(ZDCRecenterFileName, "READ");
+	if(ZDCRecenterFile) {
+	  TList* ZDCRecenterList = (TList*)(ZDCRecenterFile->FindObjectAny("Q Vectors")); // hardcoded TList AQ Vectors
+	  if(ZDCRecenterList) {
+		taskFE->SetZDCCalibList(ZDCRecenterList);
+	  } else {
+		cout << "ERROR: ZDCRecenterList do not exist!" << endl;
+		exit(1);
+	  }
+	} else {
+	  cout << "ERROR: if bStepZDCRecenter larger than 0, ZDCRecenterFile should exist!" << endl;
+	  exit(1);
+	}
+	delete ZDCRecenterFile;
+  }
+  //delete ZDCRecenterFile;
+  
+  taskFE->SetStepZDCRecenter(bStepZDCRecenter);
+  taskFE->SetStoreCalibZDCRecenter(bStoreCalibZDCRecenter);
+  
+  if (bStepZDCRecenter >= 3) {
+    TFile* ZDCRecenterFileStep3CommonPart = TFile::Open("alien:///alice/cern.ch/user/s/sqiu/15o_ZDCcalibVar_Step3_commonPart.root", "READ");
+    if(ZDCRecenterFileStep3CommonPart) {
+		TList* ZDCRecenterListStep3CommonPart = (TList*)(ZDCRecenterFileStep3CommonPart->FindObjectAny("Q Vectors"));
+		if(ZDCRecenterListStep3CommonPart) {
+		  taskFE->SetZDCCalibListStep3CommonPart(ZDCRecenterListStep3CommonPart);
+		} else {
+		  cout << "ERROR: bStepZDCRecenter >= 2 ZDCRecenterListStep3CommonPart do not exist!" << endl;
+		  exit(1);
+		}
+	} else {
+	  cout << "ERROR: if bStepZDCRecenter larger than 2, ZDCRecenterFileStep3CommonPart should exist!" << endl;
+      exit(1);
+    }
+    delete ZDCRecenterFileStep3CommonPart;
+  }
+  
+
+  
+  //@Shi set ZDC recentering (end)
   // add the task to the manager
   mgr->AddTask(taskFE);
 
@@ -488,7 +553,43 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   // and connect the qa output container to the flow event.
   // this container will be written to the output file
   mgr->ConnectOutput(taskFE,2,coutputFEQA);
-
+  
+  AliAnalysisDataContainer* coutputFERecenter1;
+  AliAnalysisDataContainer* coutputFERecenter2;
+  AliAnalysisDataContainer* coutputFERecenter3;
+  if (bStepZDCRecenter >= 0) {
+	  // OUTPUT CONTAINER TO SAVE ZDC RECENTERING
+	  TString taskFERecenter1name = file;
+	  taskFERecenter1name += ":RecenterList1";
+	  taskFERecenter1name += CRCsuffix;
+	  taskFERecenter1name += suffix;
+	  coutputFERecenter1 = mgr->CreateContainer(taskFERecenter1name.Data(),
+																   TList::Class(),
+																   AliAnalysisManager::kOutputContainer,
+																   taskFERecenter1name);
+	  mgr->ConnectOutput(taskFE,3,coutputFERecenter1);
+	  
+	  TString taskFERecenter2name = file;
+	  taskFERecenter2name += ":RecenterList2";
+	  taskFERecenter2name += CRCsuffix;
+	  taskFERecenter2name += suffix;
+	  coutputFERecenter2 = mgr->CreateContainer(taskFERecenter2name.Data(),
+																   TList::Class(),
+																   AliAnalysisManager::kOutputContainer,
+																   taskFERecenter2name);
+	  mgr->ConnectOutput(taskFE,4,coutputFERecenter2);
+	  
+	  TString taskFERecenter3name = file;
+	  taskFERecenter3name += ":RecenterList3";
+	  taskFERecenter3name += CRCsuffix;
+	  taskFERecenter3name += suffix;
+	  coutputFERecenter3 = mgr->CreateContainer(taskFERecenter3name.Data(),
+																   TList::Class(),
+																   AliAnalysisManager::kOutputContainer,
+																   taskFERecenter3name);
+	  mgr->ConnectOutput(taskFE,5,coutputFERecenter3);
+  }
+  
   //TString ParticleWeightsFileName = "ParticleWeights2D_FullLHC10h_2030.root";
 
   // create the flow analysis tasks
@@ -558,7 +659,26 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskQC->SetRecenterZDCVtxRbR(bRecZDCVtxRbR);
   taskQC->SetRemoveSplitMergedTracks(bRemoveSplitMergedTracks);
   if (analysisTypeUser == "Tracklets") taskQC->SetUseTracklets(kTRUE);
-
+  
+  //  CME QA settings
+  //taskQC->SetStoreQAforDiffEventPlanes(bStoreQAforDiffEventPlanes);
+  
+  //@Shi set ZDC recentering (begin)
+  TFile* ZDCRecenterFileFinalCommonPart = TFile::Open("alien:///alice/cern.ch/user/s/sqiu/15o_ZDCcalibVar_Step3_commonPart.root", "READ");
+  if(ZDCRecenterFileFinalCommonPart) {
+    TList* ZDCRecenterListFinalCommonPart = (TList*)(ZDCRecenterFileFinalCommonPart->FindObjectAny("Q Vectors"));
+    if(ZDCRecenterListFinalCommonPart) {
+	  taskQC->SetZDCCalibListFinalCommonPart(ZDCRecenterListFinalCommonPart);
+    } else {
+      cout << "ERROR: ZDCRecenterListFinalCommonPart do not exist!" << endl;
+      exit(1);
+    }
+  } else {
+	cout << "ERROR: ZDCRecenterFileFinalCommonPart should exist!" << endl;
+    exit(1);
+  }
+  delete ZDCRecenterFileFinalCommonPart;
+  
   if(bSetQAZDC && bUseZDC && sDataSet == "2010") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");
     gROOT->cd();

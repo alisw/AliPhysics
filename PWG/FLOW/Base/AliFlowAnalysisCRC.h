@@ -222,6 +222,7 @@ public:
   // 2i.) Charge-Rapidity Correlations
   virtual void RecenterCRCQVec();
   virtual void RecenterCRCQVecZDC();
+  virtual void RecenterCRCQVecZDC2(); //@Shi load my recentering file
   virtual void RecenterCRCQVecVZERO();
   virtual void PassQAZDCCuts();
   virtual Bool_t PassCutZDCQVecDis(Double_t ZCRe, Double_t ZCIm, Double_t ZARe, Double_t ZAIm);
@@ -234,6 +235,7 @@ public:
   virtual void CalculateVZvsZDC();
   virtual void CalculateCMETPC();
   virtual void CalculateCMEZDC();
+  virtual void CalculateCMESPPP(); //@shi add CalculateCMESPPP() for spectator plane participant plane method
   virtual void CalculateCRC2Cor();
   virtual void CalculateFlowQC();
   virtual void CalculateFlowGF();
@@ -290,6 +292,7 @@ public:
   virtual void FinalizeCRCPtCorr();
   virtual void FinalizeCMETPC();
   virtual void FinalizeCMEZDC();
+  virtual void FinalizeCMESPPP(); //@shi add finalize function for spectator plane participant plane method
   virtual void FinalizeCRC2Cor();
   virtual void FinalizeFlowQC();
   virtual void FinalizeFlowGF();
@@ -781,6 +784,12 @@ public:
   TList* GetCRCQVecWeightsList() const {return this->fCRCQVecWeightsList;}
   void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = wlist;}
   TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
+  //@Shi my ZDC recenter calib hist
+  void SetZDCCalibListFinalCommonPart(TList* const kList) {this->fZDCCalibListFinalCommonPart = (TList*)kList->Clone();};
+  TList* GetZDCCalibListFinalCommonPart() const {return this->fZDCCalibListFinalCommonPart;};
+  void SetZDCCalibListFinalRunByRun(TList* const kList) {this->fZDCCalibListFinalRunByRun = (TList*)kList->Clone();};
+  TList* GetZDCCalibListFinalRunByRun() const {return this->fZDCCalibListFinalRunByRun;};
+  
   void SetCRCZDC2DCutList(TList* const wlist) {this->fCRCZDC2DCutList = wlist;}
   void SetCRCVZEROCalibList(TList* const wlist) {this->fCRCVZEROCalibList = wlist;}
   TList* GetCRCVZEROCalibList() const {return this->fCRCVZEROCalibList;}
@@ -1120,6 +1129,7 @@ public:
   void SetCMEList(TList* const TL) {this->fCMEList = TL;};
   void SetCMETPCList(TList* const TL) {this->fCMETPCList = TL;};
   void SetCMEZDCList(TList* const TL) {this->fCMEZDCList = TL;};
+  void SetCMESPPPList(TList* const TL) {this->fCMESPPPList = TL;}; //@shi add SetCMESPPPList
   // CME TPC only:
   void SetCMETPCCorPro(TProfile* const TP, Int_t const c, Int_t const h) {this->fCMETPCCorPro[c][h] = TP;};
   TProfile* GetCMETPCCorPro(Int_t const c, Int_t const h) const {return this->fCMETPCCorPro[c][h];};
@@ -1149,6 +1159,213 @@ public:
   void SetCMEZDCDistHist(TH1D* const TH, Int_t const eg, Int_t const h, Int_t const k) {this->fCMEZDCDistHist[eg][h][k] = TH;};
   TH1D* GetCMEZDCDistHist(Int_t const eg, Int_t const h, Int_t const k) const {return this->fCMEZDCDistHist[eg][h][k];};
 
+  //@shi CME SP-PP spectator plane participant plane method (begin)
+  void SetCMESPPPTPCCorPro(TProfile* const TP, Int_t const h) {this->fCMESPPPTPCCorPro[h] = TP;};
+  TProfile* GetCMESPPPTPCCorPro(Int_t const h) const {return this->fCMESPPPTPCCorPro[h];};
+  void SetCMESPPPV0CorPro(TProfile* const TP, Int_t const h) {this->fCMESPPPV0CorPro[h] = TP;};
+  TProfile* GetCMESPPPV0CorPro(Int_t const h) const {return this->fCMESPPPV0CorPro[h];};
+  void SetCMESPPPZDCCorPro(TProfile* const TP, Int_t const h) {this->fCMESPPPZDCCorPro[h] = TP;};
+  TProfile* GetCMESPPPZDCCorPro(Int_t const h) const {return this->fCMESPPPZDCCorPro[h];};
+  void SetCMESPPPV2(TProfile* const TP, Int_t const h) {this->fCMESPPPV2[h] = TP;};
+  TProfile* GetCMESPPPV2(Int_t const h) const {return this->fCMESPPPV2[h];};
+  
+  void SetCMESPPPTPCCorHist(TH1D* const TH, Int_t const h) {this->fCMESPPPTPCCorHist[h] = TH;};
+  TH1D* GetCMESPPPTPCCorHist(Int_t const h) const {return this->fCMESPPPTPCCorHist[h];};
+  void SetCMESPPPV0CorHist(TH1D* const TH, Int_t const h) {this->fCMESPPPV0CorHist[h] = TH;};
+  TH1D* GetCMESPPPV0CorHist(Int_t const h) const {return this->fCMESPPPV0CorHist[h];};
+  void SetCMESPPPZDCCorHist(TH1D* const TH, Int_t const h) {this->fCMESPPPZDCCorHist[h] = TH;};
+  TH1D* GetCMESPPPZDCCorHist(Int_t const h) const {return this->fCMESPPPZDCCorHist[h];};
+  void SetCMESPPPV2CorHist(TH1D* const TH, Int_t const h) {this->fCMESPPPV2CorHist[h] = TH;};
+  TH1D* GetCMESPPPV2CorHist(Int_t const h) const {return this->fCMESPPPV2CorHist[h];};
+  
+  void SetCMESPPPTPCFinalHist(TH1D* const TH, Int_t const h) {this->fCMESPPPTPCFinalHist[h] = TH;};
+  TH1D* GetCMESPPPTPCFinalHist(Int_t const h) const {return this->fCMESPPPTPCFinalHist[h];};
+  void SetCMESPPPV0FinalHist(TH1D* const TH, Int_t const h) {this->fCMESPPPV0FinalHist[h] = TH;};
+  TH1D* GetCMESPPPV0FinalHist(Int_t const h) const {return this->fCMESPPPV0FinalHist[h];};
+  void SetCMESPPPZDCFinalHist(TH1D* const TH, Int_t const h) {this->fCMESPPPZDCFinalHist[h] = TH;};
+  TH1D* GetCMESPPPZDCFinalHist(Int_t const h) const {return this->fCMESPPPZDCFinalHist[h];};
+  void SetCMESPPPDoubleRatioHist(TH1D* const TH, Int_t const h) {this->fCMESPPPDoubleRatioHist[h] = TH;};
+  TH1D* GetCMESPPPDoubleRatioHist(Int_t const h) const {return this->fCMESPPPDoubleRatioHist[h];};
+
+  void SetQACMESPPPTPCPro(TProfile* const TP, Int_t const h) {this->fQACMESPPPTPCPro[h] = TP;};
+  TProfile* GetQACMESPPPTPCPro(Int_t const h) const {return this->fQACMESPPPTPCPro[h];};
+  void SetQACMESPPPTPCaveragePro(TProfile* const TP) {this->fQACMESPPPTPCaveragePro = TP;};
+  TProfile* GetQACMESPPPTPCaveragePro() const {return this->fQACMESPPPTPCaveragePro;};
+  
+  void SetQACMESPPPV0Pro(TProfile* const TP, Int_t const h) {this->fQACMESPPPV0Pro[h] = TP;};
+  TProfile* GetQACMESPPPV0Pro(Int_t const h) const {return this->fQACMESPPPV0Pro[h];};
+  void SetQACMESPPPV0averagePro(TProfile* const TP) {this->fQACMESPPPV0averagePro = TP;};
+  TProfile* GetQACMESPPPV0averagePro() const {return this->fQACMESPPPV0averagePro;};
+  
+  void SetQACMESPPPZDCPro(TProfile* const TP, Int_t const h) {this->fQACMESPPPZDCPro[h] = TP;};
+  TProfile* GetQACMESPPPZDCPro(Int_t const h) const {return this->fQACMESPPPZDCPro[h];};
+  void SetQACMESPPPZDCaveragePro(TProfile* const TP) {this->fQACMESPPPZDCaveragePro = TP;};
+  TProfile* GetQACMESPPPZDCaveragePro() const {return this->fQACMESPPPZDCaveragePro;};
+  
+  void SetCMESPPPcosDiffEvPlTPC(TProfile* const TP) {this->fCMESPPPcosDiffEvPlTPC = TP;};
+  TProfile* GetCMESPPPcosDiffEvPlTPC() const {return this->fCMESPPPcosDiffEvPlTPC;};
+  void SetCMESPPPEvPlTPCdistribution(TH2D* const TP) {this->fCMESPPPEvPlTPCdistribution = TP;};
+  TH2D* GetCMESPPPEvPlTPCdistribution() const {return this->fCMESPPPEvPlTPCdistribution;};
+  void SetCMESPPPEvPlTPCPosEtadistribution(TH2D* const TP) {this->fCMESPPPEvPlTPCPosEtadistribution = TP;};
+  TH2D* GetCMESPPPEvPlTPCPosEtadistribution() const {return this->fCMESPPPEvPlTPCPosEtadistribution;};
+  void SetCMESPPPEvPlTPCNegEtadistribution(TH2D* const TP) {this->fCMESPPPEvPlTPCNegEtadistribution = TP;};
+  TH2D* GetCMESPPPEvPlTPCNegEtadistribution() const {return this->fCMESPPPEvPlTPCNegEtadistribution;};
+  void SetCMESPPPcosDiffEvPlVZ(TProfile* const TP) {this->fCMESPPPcosDiffEvPlVZ = TP;};
+  TProfile* GetCMESPPPcosDiffEvPlVZ() const {return this->fCMESPPPcosDiffEvPlVZ;};
+  void SetCMESPPPEvPlVZCdistribution(TH2D* const TP) {this->fCMESPPPEvPlVZCdistribution = TP;};
+  TH2D* GetCMESPPPEvPlVZCdistribution() const {return this->fCMESPPPEvPlVZCdistribution;};
+  void SetCMESPPPEvPlVZAdistribution(TH2D* const TP) {this->fCMESPPPEvPlVZAdistribution = TP;};
+  TH2D* GetCMESPPPEvPlVZAdistribution() const {return this->fCMESPPPEvPlVZAdistribution;};
+  void SetCMESPPPcosDiffEvPlZDC(TProfile* const TP) {this->fCMESPPPcosDiffEvPlZDC = TP;};
+  TProfile* GetCMESPPPcosDiffEvPlZDC() const {return this->fCMESPPPcosDiffEvPlZDC;};
+  void SetCMESPPPEvPlZDCAdistribution(TH2D* const TP) {this->fCMESPPPEvPlZDCAdistribution = TP;};
+  TH2D* GetCMESPPPEvPlZDCAdistribution() const {return this->fCMESPPPEvPlZDCAdistribution;};
+  void SetCMESPPPEvPlZDCCdistribution(TH2D* const TP) {this->fCMESPPPEvPlZDCCdistribution = TP;};
+  TH2D* GetCMESPPPEvPlZDCCdistribution() const {return this->fCMESPPPEvPlZDCCdistribution;};
+  
+  
+  void SetCMESPPPEvPlTPCVZCcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCVZCcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCVZCcorr() const {return this->fCMESPPPEvPlTPCVZCcorr;};
+  void SetCMESPPPEvPlTPCVZAcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCVZAcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCVZAcorr() const {return this->fCMESPPPEvPlTPCVZAcorr;};
+  void SetCMESPPPEvPlTPCPosEtaVZCcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaVZCcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaVZCcorr() const {return this->fCMESPPPEvPlTPCPosEtaVZCcorr;};
+  void SetCMESPPPEvPlTPCPosEtaVZAcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaVZAcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaVZAcorr() const {return this->fCMESPPPEvPlTPCPosEtaVZAcorr;};
+  void SetCMESPPPEvPlTPCNegEtaVZCcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaVZCcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaVZCcorr() const {return this->fCMESPPPEvPlTPCNegEtaVZCcorr;};
+  void SetCMESPPPEvPlTPCNegEtaVZAcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaVZAcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaVZAcorr() const {return this->fCMESPPPEvPlTPCNegEtaVZAcorr;};
+  
+  void SetCMESPPPEvPlTPCVZCdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCVZCdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCVZCdiff() const {return this->fCMESPPPEvPlTPCVZCdiff;};
+  void SetCMESPPPEvPlTPCVZAdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCVZAdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCVZAdiff() const {return this->fCMESPPPEvPlTPCVZAdiff;};
+  void SetCMESPPPEvPlTPCPosEtaVZCdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaVZCdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaVZCdiff() const {return this->fCMESPPPEvPlTPCPosEtaVZCdiff;};
+  void SetCMESPPPEvPlTPCPosEtaVZAdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaVZAdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaVZAdiff() const {return this->fCMESPPPEvPlTPCPosEtaVZAdiff;};
+  void SetCMESPPPEvPlTPCNegEtaVZCdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaVZCdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaVZCdiff() const {return this->fCMESPPPEvPlTPCNegEtaVZCdiff;};
+  void SetCMESPPPEvPlTPCNegEtaVZAdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaVZAdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaVZAdiff() const {return this->fCMESPPPEvPlTPCNegEtaVZAdiff;};
+  
+  void SetCMESPPPEvPlTPCZDCCcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCZDCCcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCZDCCcorr() const {return this->fCMESPPPEvPlTPCZDCCcorr;};
+  void SetCMESPPPEvPlTPCZDCAcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCZDCAcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCZDCAcorr() const {return this->fCMESPPPEvPlTPCZDCAcorr;};
+  void SetCMESPPPEvPlTPCPosEtaZDCCcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCCcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaZDCCcorr() const {return this->fCMESPPPEvPlTPCPosEtaZDCCcorr;};
+  void SetCMESPPPEvPlTPCPosEtaZDCAcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCAcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaZDCAcorr() const {return this->fCMESPPPEvPlTPCPosEtaZDCAcorr;};
+  void SetCMESPPPEvPlTPCNegEtaZDCCcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCCcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaZDCCcorr() const {return this->fCMESPPPEvPlTPCNegEtaZDCCcorr;};
+  void SetCMESPPPEvPlTPCNegEtaZDCAcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCAcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaZDCAcorr() const {return this->fCMESPPPEvPlTPCNegEtaZDCAcorr;};
+  
+  void SetCMESPPPEvPlTPCZDCCdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCZDCCdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCZDCCdiff() const {return this->fCMESPPPEvPlTPCZDCCdiff;};
+  void SetCMESPPPEvPlTPCZDCAdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCZDCAdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCZDCAdiff() const {return this->fCMESPPPEvPlTPCZDCAdiff;};
+  void SetCMESPPPEvPlTPCPosEtaZDCCdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCCdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaZDCCdiff() const {return this->fCMESPPPEvPlTPCPosEtaZDCCdiff;};
+  void SetCMESPPPEvPlTPCPosEtaZDCAdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCAdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaZDCAdiff() const {return this->fCMESPPPEvPlTPCPosEtaZDCAdiff;};
+  void SetCMESPPPEvPlTPCNegEtaZDCCdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCCdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaZDCCdiff() const {return this->fCMESPPPEvPlTPCNegEtaZDCCdiff;};
+  void SetCMESPPPEvPlTPCNegEtaZDCAdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCAdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaZDCAdiff() const {return this->fCMESPPPEvPlTPCNegEtaZDCAdiff;};
+  
+  void SetCMESPPPEvPlVZCZDCCcorr(TProfile* const TP) {this->fCMESPPPEvPlVZCZDCCcorr = TP;};
+  TProfile* GetCMESPPPEvPlVZCZDCCcorr() const {return this->fCMESPPPEvPlVZCZDCCcorr;};
+  void SetCMESPPPEvPlVZAZDCCcorr(TProfile* const TP) {this->fCMESPPPEvPlVZAZDCCcorr = TP;};
+  TProfile* GetCMESPPPEvPlVZAZDCCcorr() const {return this->fCMESPPPEvPlVZAZDCCcorr;};
+  void SetCMESPPPEvPlVZCZDCAcorr(TProfile* const TP) {this->fCMESPPPEvPlVZCZDCAcorr = TP;};
+  TProfile* GetCMESPPPEvPlVZCZDCAcorr() const {return this->fCMESPPPEvPlVZCZDCAcorr;};
+  void SetCMESPPPEvPlVZAZDCAcorr(TProfile* const TP) {this->fCMESPPPEvPlVZAZDCAcorr = TP;};
+  TProfile* GetCMESPPPEvPlVZAZDCAcorr() const {return this->fCMESPPPEvPlVZAZDCAcorr;};
+    
+  void SetCMESPPPEvPlVZCZDCCdiff(TProfile* const TP) {this->fCMESPPPEvPlVZCZDCCdiff = TP;};
+  TProfile* GetCMESPPPEvPlVZCZDCCdiff() const {return this->fCMESPPPEvPlVZCZDCCdiff;};
+  void SetCMESPPPEvPlVZAZDCCdiff(TProfile* const TP) {this->fCMESPPPEvPlVZAZDCCdiff = TP;};
+  TProfile* GetCMESPPPEvPlVZAZDCCdiff() const {return this->fCMESPPPEvPlVZAZDCCdiff;};
+  void SetCMESPPPEvPlVZCZDCAdiff(TProfile* const TP) {this->fCMESPPPEvPlVZCZDCAdiff = TP;};
+  TProfile* GetCMESPPPEvPlVZCZDCAdiff() const {return this->fCMESPPPEvPlVZCZDCAdiff;};
+  void SetCMESPPPEvPlVZAZDCAdiff(TProfile* const TP) {this->fCMESPPPEvPlVZAZDCAdiff = TP;};
+  TProfile* GetCMESPPPEvPlVZAZDCAdiff() const {return this->fCMESPPPEvPlVZAZDCAdiff;};
+  
+  //////////////////////////////////////////////////////////////////////////////////////
+  void SetCMESPPPEvPlTPCVZCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCVZCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCVZCdiffDistribution1D() const {return this->fCMESPPPEvPlTPCVZCdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCVZAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCVZAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCVZAdiffDistribution1D() const {return this->fCMESPPPEvPlTPCVZAdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCPosEtaVZCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCPosEtaVZCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCPosEtaVZCdiffDistribution1D() const {return this->fCMESPPPEvPlTPCPosEtaVZCdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCPosEtaVZAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCPosEtaVZAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCPosEtaVZAdiffDistribution1D() const {return this->fCMESPPPEvPlTPCPosEtaVZAdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCNegEtaVZCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCNegEtaVZCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCNegEtaVZCdiffDistribution1D() const {return this->fCMESPPPEvPlTPCNegEtaVZCdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCNegEtaVZAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCNegEtaVZAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCNegEtaVZAdiffDistribution1D() const {return this->fCMESPPPEvPlTPCNegEtaVZAdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCZDCCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCZDCCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCZDCCdiffDistribution1D() const {return this->fCMESPPPEvPlTPCZDCCdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCZDCAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCZDCAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCZDCAdiffDistribution1D() const {return this->fCMESPPPEvPlTPCZDCAdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCPosEtaZDCCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCPosEtaZDCCdiffDistribution1D() const {return this->fCMESPPPEvPlTPCPosEtaZDCCdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCPosEtaZDCAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCPosEtaZDCAdiffDistribution1D() const {return this->fCMESPPPEvPlTPCPosEtaZDCAdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCNegEtaZDCCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCNegEtaZDCCdiffDistribution1D() const {return this->fCMESPPPEvPlTPCNegEtaZDCCdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCNegEtaZDCAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCNegEtaZDCAdiffDistribution1D() const {return this->fCMESPPPEvPlTPCNegEtaZDCAdiffDistribution1D;};
+  void SetCMESPPPEvPlVZCZDCCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlVZCZDCCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlVZCZDCCdiffDistribution1D() const {return this->fCMESPPPEvPlVZCZDCCdiffDistribution1D;};
+  void SetCMESPPPEvPlVZAZDCCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlVZAZDCCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlVZAZDCCdiffDistribution1D() const {return this->fCMESPPPEvPlVZAZDCCdiffDistribution1D;};
+  void SetCMESPPPEvPlVZCZDCAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlVZCZDCAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlVZCZDCAdiffDistribution1D() const {return this->fCMESPPPEvPlVZCZDCAdiffDistribution1D;};
+  void SetCMESPPPEvPlVZAZDCAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlVZAZDCAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlVZAZDCAdiffDistribution1D() const {return this->fCMESPPPEvPlVZAZDCAdiffDistribution1D;};
+  
+  //////////////////////////////////////////////////////////////////////////////////////
+  void SetCMESPPPEvPlTPCVZCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCVZCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCVZCdiffDistribution2D() const {return this->fCMESPPPEvPlTPCVZCdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCVZAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCVZAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCVZAdiffDistribution2D() const {return this->fCMESPPPEvPlTPCVZAdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCPosEtaVZCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCPosEtaVZCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCPosEtaVZCdiffDistribution2D() const {return this->fCMESPPPEvPlTPCPosEtaVZCdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCPosEtaVZAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCPosEtaVZAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCPosEtaVZAdiffDistribution2D() const {return this->fCMESPPPEvPlTPCPosEtaVZAdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCNegEtaVZCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCNegEtaVZCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCNegEtaVZCdiffDistribution2D() const {return this->fCMESPPPEvPlTPCNegEtaVZCdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCNegEtaVZAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCNegEtaVZAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCNegEtaVZAdiffDistribution2D() const {return this->fCMESPPPEvPlTPCNegEtaVZAdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCZDCCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCZDCCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCZDCCdiffDistribution2D() const {return this->fCMESPPPEvPlTPCZDCCdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCZDCAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCZDCAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCZDCAdiffDistribution2D() const {return this->fCMESPPPEvPlTPCZDCAdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCPosEtaZDCCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCPosEtaZDCCdiffDistribution2D() const {return this->fCMESPPPEvPlTPCPosEtaZDCCdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCPosEtaZDCAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCPosEtaZDCAdiffDistribution2D() const {return this->fCMESPPPEvPlTPCPosEtaZDCAdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCNegEtaZDCCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCNegEtaZDCCdiffDistribution2D() const {return this->fCMESPPPEvPlTPCNegEtaZDCCdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCNegEtaZDCAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCNegEtaZDCAdiffDistribution2D() const {return this->fCMESPPPEvPlTPCNegEtaZDCAdiffDistribution2D;};
+  void SetCMESPPPEvPlVZCZDCCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlVZCZDCCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlVZCZDCCdiffDistribution2D() const {return this->fCMESPPPEvPlVZCZDCCdiffDistribution2D;};
+  void SetCMESPPPEvPlVZAZDCCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlVZAZDCCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlVZAZDCCdiffDistribution2D() const {return this->fCMESPPPEvPlVZAZDCCdiffDistribution2D;};
+  void SetCMESPPPEvPlVZCZDCAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlVZCZDCAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlVZCZDCAdiffDistribution2D() const {return this->fCMESPPPEvPlVZCZDCAdiffDistribution2D;};
+  void SetCMESPPPEvPlVZAZDCAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlVZAZDCAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlVZAZDCAdiffDistribution2D() const {return this->fCMESPPPEvPlVZAZDCAdiffDistribution2D;};
+  
+  void SetStoreQAforDiffEventPlanes(Bool_t const cCRC) {this->fStoreQAforDiffEventPlanes = cCRC;};
+  Bool_t GetStoreQAforDiffEventPlanes() const {return this->fStoreQAforDiffEventPlanes;};
+  //@shi CME SP-PP spectator plane participant plane method (end)
+  
   // EbE Flow
   void SetEbEFlowList(TList* const TL) {this->fEbEFlowList = TL;};
 
@@ -1593,6 +1810,10 @@ private:
   TArrayD fAvVtxPosX;    // Run list
   TArrayD fAvVtxPosY;    // Run list
   TArrayD fAvVtxPosZ;    // Run list
+  //@Shi add ave vtx IR split
+  TArrayD fAvVtxPosX15oIRSplit;    // Run list
+  TArrayD fAvVtxPosY15oIRSplit;    // Run list
+  TArrayD fAvVtxPosZ15oIRSplit;    // Run list
   TArrayI fnEvRbR; // number of events in each run
   TList *fCRCQVecList; //! Q Vectors list
   TList *fCRCQVecEtaPhiList; //!
@@ -1601,6 +1822,8 @@ private:
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
   TList *fCRCQVecWeightsList; //! Weights for Q Vectors
   TList *fCRCZDCCalibList; //! ZDC calibration
+  TList *fZDCCalibListFinalCommonPart; //! Shi my ZDC calbration split to run independent part and run-by-run calib due to limited size of content that can be held by TList
+  TList *fZDCCalibListFinalRunByRun; // Shi run dependent calib part, run-by-run was set in AliAnalysisTaskCRC
   TList *fCRCZDC2DCutList; //! ZDC 2D cut
   TList *fCRCVZEROCalibList; //! ZDC calibration
   TList *fCRCZDCResList; //! ZDC rescaling list
@@ -1644,6 +1867,10 @@ private:
   TProfile2D *fZDCEcomHist[4];//! Run-by-run vtxZDCQvec
   TProfile2D *fZDCEcomTotHist[4];//! Run-by-run vtxZDCQvec
   TProfile3D *fZDCEcomTotvsVtxHist[12];//! Run-by-run vtxZDCQvec
+  //@Shi temp ZDC calib histograms
+  TProfile *fAvr_Run_CentQ[4]; //!
+  TProfile3D *fAvr_Cent_VtxXYZQ[20][4]; //!
+  TProfile3D *fAvr_Run_VtxXYZQ[4]; //!
 
 //  TProfile2D *fCRCZDCQVecCenEComTot[fCRCMaxnRun][4]; //!
   TProfile2D *fCRCZDCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
@@ -1781,9 +2008,26 @@ private:
   TList *fCMEList;    //! CME List
   TList *fCMETPCList; //! CME list of histograms TPC only
   TList *fCMEZDCList; //! CME list of histograms TPC-ZDCs
+  //@shi add fCMESPPPList
+  TList *fCMESPPPList; //! CME list of histograms for spectator plane participant plane method
+  
   TH1D *fCMEQRe[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEQIm[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  
+  ////////////////////////////////////////////// begin test //////////////////////////////////////////////
+  TProfile* fCME2Csubtract2V0CPSInoWeight; //!
+  TProfile* fCME2Csubtract2V0APSInoWeight; //!
+  TProfile* fCME2Csubtract2V0CPSIwithWeight; //!
+  TProfile* fCME2Csubtract2V0APSIwithWeight; //!
+  ////////////////////////////////////////////// end test //////////////////////////////////////////////
+  
+  //@shi add Qvector for both charge (begin)
+  TH1D *fCMEQReBothCharge[2][fCRCnHar]; //! real part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
+  TH1D *fCMEQImBothCharge[2][fCRCnHar]; //! imaginary part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
+  TH1D *fCMEMultBothCharge[2][fCRCnHar]; //! imaginary part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
+  //@shi add Qvector for both charge (end)
+  
   TH1D *fCMEZDCCorHist[fCMEnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
   TH2D *fCMEZDCCovHist[fCMEnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
   TH1D *fCMEZDCDistHist[fCMEnEtaBin][fCRCMaxnCen][fCMEZDCnDist]; //! <<2'>>, [CRCBin][eg]
@@ -1801,6 +2045,130 @@ private:
   const static Int_t fCMETPCnHist2D = 3;
   TProfile2D* fCMETPCCorPro2D[fCMETPCnHist2D]; //!
 
+  //@shi add some tprofile for calculateCMESPPP
+  const static Int_t fCMESPPPTPCnHist = 18; // originally 9
+  const static Int_t fCMESPPPV0nHist = 11;
+  const static Int_t fCMESPPPZDCnHist = 9;
+  const static Int_t fCMESPPPV2nHist = 8; // originally 7
+  const static Int_t fQACMESPPPTPCnHist = 6;
+  const static Int_t fQACMESPPPTPCaverageNbins = 6;
+  const static Int_t fQACMESPPPV0nHist = 4;
+  const static Int_t fQACMESPPPV0averageNbins = 4;
+  const static Int_t fQACMESPPPZDCnHist = 4;
+  const static Int_t fQACMESPPPZDCaverageNbins = 4;
+  TProfile *fCMESPPPTPCCorPro[fCMESPPPTPCnHist]; //! TPC correlation profile for spectator plane participant plane method 
+  TProfile *fCMESPPPV0CorPro[fCMESPPPV0nHist]; //! V0 correlation profile for spectator plane participant plane method 
+  TProfile *fCMESPPPZDCCorPro[fCMESPPPZDCnHist]; //! ZDC correlation profile for spectator plane participant plane method 
+  TProfile *fCMESPPPV2[fCMESPPPV2nHist];        //! v2 calculated using TPC, V0 and ZDC plane 
+  
+  TProfile *fQACMESPPPTPCPro[fQACMESPPPTPCnHist]; //! QA for TPC SPPP method
+  TProfile *fQACMESPPPTPCaveragePro; //! QA for TPC SPPP method
+  TProfile *fQACMESPPPV0Pro[fQACMESPPPV0nHist]; //! QA for V0 SPPP method
+  TProfile *fQACMESPPPV0averagePro; //! QA for V0 SPPP method
+  TProfile *fQACMESPPPZDCPro[fQACMESPPPZDCnHist]; //! QA for ZDC SPPP method
+  TProfile *fQACMESPPPZDCaveragePro; //! QA for ZDC SPPP method
+  
+  //@Shi QA for checking event plane
+  Bool_t fStoreQAforDiffEventPlanes;
+  TProfile *fCMESPPPcosDiffEvPlTPC; //!
+  TH2D *fCMESPPPEvPlTPCdistribution; //!
+  TH2D *fCMESPPPEvPlTPCPosEtadistribution; //!
+  TH2D *fCMESPPPEvPlTPCNegEtadistribution; //!
+  TProfile *fCMESPPPcosDiffEvPlVZ; //!
+  TH2D *fCMESPPPEvPlVZCdistribution; //!
+  TH2D *fCMESPPPEvPlVZAdistribution; //!
+  TProfile *fCMESPPPcosDiffEvPlZDC; //!
+  TH2D *fCMESPPPEvPlZDCAdistribution; //!
+  TH2D *fCMESPPPEvPlZDCCdistribution; //!
+  
+  TProfile *fCMESPPPEvPlTPCVZCcorr; //!
+  TProfile *fCMESPPPEvPlTPCVZAcorr; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaVZCcorr; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaVZAcorr; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaVZCcorr; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaVZAcorr; //!
+  
+  TProfile *fCMESPPPEvPlTPCVZCdiff; //!
+  TProfile *fCMESPPPEvPlTPCVZAdiff; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaVZCdiff; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaVZAdiff; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaVZCdiff; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaVZAdiff; //!
+  
+  TProfile *fCMESPPPEvPlTPCZDCCcorr; //!
+  TProfile *fCMESPPPEvPlTPCZDCAcorr; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaZDCCcorr; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaZDCAcorr; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaZDCCcorr; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaZDCAcorr; //!
+  
+  TProfile *fCMESPPPEvPlTPCZDCCdiff; //!
+  TProfile *fCMESPPPEvPlTPCZDCAdiff; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaZDCCdiff; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaZDCAdiff; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaZDCCdiff; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaZDCAdiff; //!
+  
+  TProfile *fCMESPPPEvPlVZCZDCCcorr; //!
+  TProfile *fCMESPPPEvPlVZAZDCCcorr; //!
+  TProfile *fCMESPPPEvPlVZCZDCAcorr; //!
+  TProfile *fCMESPPPEvPlVZAZDCAcorr; //!
+  
+  TProfile *fCMESPPPEvPlVZCZDCCdiff; //!
+  TProfile *fCMESPPPEvPlVZAZDCCdiff; //!
+  TProfile *fCMESPPPEvPlVZCZDCAdiff; //!
+  TProfile *fCMESPPPEvPlVZAZDCAdiff; //!
+  
+  //////////////////////////////////////////////////////////////////
+  TH1D *fCMESPPPEvPlTPCVZCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCVZAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCPosEtaVZCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCPosEtaVZAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCNegEtaVZCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCNegEtaVZAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCZDCCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCZDCAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCPosEtaZDCCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCPosEtaZDCAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCNegEtaZDCCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCNegEtaZDCAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlVZCZDCCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlVZAZDCCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlVZCZDCAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlVZAZDCAdiffDistribution1D; //!
+  
+  //////////////////////////////////////////////////////////////////
+  TH2D *fCMESPPPEvPlTPCVZCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCVZAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCPosEtaVZCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCPosEtaVZAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCNegEtaVZCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCNegEtaVZAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCZDCCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCZDCAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCPosEtaZDCCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCPosEtaZDCAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCNegEtaZDCCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCNegEtaZDCAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlVZCZDCCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlVZAZDCCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlVZCZDCAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlVZAZDCAdiffDistribution2D; //!
+  //@shi add histograms for finalizeCMESPPP
+  TH1D *fCMESPPPV2CorHist[fCMESPPPV2nHist]; //! v2 final e.g. <cos(2phi-2phi)> for SPPP method
+  TH1D *fCMESPPPTPCCorHist[fCMESPPPTPCnHist]; //! TPC final e.g. <cos(2phi-2phi_{TPC})> for SPPP method
+  TH1D *fCMESPPPV0CorHist[fCMESPPPV0nHist]; //! V0 final e.g. <cos(2phi-2phi_{V0})> for SPPP method
+  TH1D *fCMESPPPZDCCorHist[fCMESPPPZDCnHist]; //! ZDC final e.g. <cos(2phi-2phi_{ZDC})> for SPPP method
+  
+  const static Int_t fCMESPPPTPCFinalnHist = 8;
+  const static Int_t fCMESPPPV0FinalnHist = 12;
+  const static Int_t fCMESPPPZDCFinalnHist = 12;
+  const static Int_t fCMESPPPDoubleRationHist = 15;
+  TH1D *fCMESPPPTPCFinalHist[fCMESPPPTPCFinalnHist]; //! TPC components for calculating double ratio
+  TH1D *fCMESPPPV0FinalHist[fCMESPPPV0FinalnHist]; //! V0 components for calculating double ratio
+  TH1D *fCMESPPPZDCFinalHist[fCMESPPPZDCFinalnHist]; //! ZDC components for calculating double ratio
+  TH1D *fCMESPPPDoubleRatioHist[fCMESPPPDoubleRationHist]; //! double ratio
+  
   // CRC2
   const static Int_t fkNCorCRC2 = 6;
   TList *fCRC2List; //! ZDCERO CRC List
@@ -1868,7 +2236,7 @@ private:
   const static Int_t fkNHistv1eta = 14;
   const static Int_t fkNHarv1eta = 3;
   TProfile *fFlowSPZDCv1etaPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
-  TProfile *fFlowSPZDCv1etaProImag[fCRCMaxnCen][fkNHistv1eta];
+  TProfile *fFlowSPZDCv1etaProImag[fCRCMaxnCen][fkNHistv1eta]; //!
   const static Int_t fkNHistv1etaCov = 13;
   TProfile *fFlowSPZDCv1etaCovPro[fCRCMaxnCen][fkNHistv1etaCov]; //!
   TH1D *fFlowSPZDCv1etaCovHist[fCRCMaxnCen][fkNHistv1etaCov]; //!
@@ -1899,6 +2267,7 @@ private:
   const static Int_t fFlowQCNNUA = 12;
   const static Int_t fFlowQCNCov = 8;
   Int_t fFlowQCCenBin; //
+  Int_t fCMESPPPCenBin; //@Shi add the number of cen bin for SPPP
   Double_t fFlowQCDeltaEta; //
   TProfile *fFlowQCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
   TH1D *fFlowQCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! <<2'>>, [CRCBin][eg]
@@ -2075,6 +2444,7 @@ private:
   TH1F* fEZNCutMax; //!
   Double_t fVtxPos[3]; // primary vertex position (x,y,z)
   Double_t fVtxPosCor[3]; // primary vertex position (x,y,z), re-centered at 0
+  Double_t fVtxPosCor15oIRSplit[3];  //@Shi primary vertex position (x,y,z), re-centered at 0
   TF1 *fPolMin[2]; //!
   TF1 *fPolMax[2]; //!
   TF1 *fPolAv[2]; //!
@@ -2108,7 +2478,7 @@ private:
   Bool_t fbFlagIsBadRunForC34;
   Bool_t fStoreExtraHistoForSubSampling;
 
-  ClassDef(AliFlowAnalysisCRC,74);
+  ClassDef(AliFlowAnalysisCRC,75);
 
 };
 

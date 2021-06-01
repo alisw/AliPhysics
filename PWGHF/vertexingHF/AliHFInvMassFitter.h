@@ -66,6 +66,14 @@ class AliHFInvMassFitter : public TNamed {
     SetInitialGaussianMean(mean); 
     fFixedMean=kTRUE;
   }
+  void SetBoundGaussianMean(Double_t mean, Double_t meanLowerLim, Double_t meanUpperLim){
+    if(!(meanLowerLim < mean && mean < meanUpperLim)) AliFatal("fMass limits are not set correctly\n");
+    SetInitialGaussianMean(mean); 
+    fMassLowerLim = meanLowerLim;
+    fMassUpperLim = meanUpperLim;
+    fBoundMean = kTRUE;
+  }
+
   void SetFixGaussianSigma(Double_t sigma){
     SetInitialGaussianSigma(sigma);
     fFixedSigma=kTRUE;
@@ -203,6 +211,9 @@ class AliHFInvMassFitter : public TNamed {
   Int_t     fTypeOfFit4Sgn;        /// signal fit func
   Double_t  fMass;                 /// signal gaussian mean value
   Double_t  fMassErr;              /// unc on signal gaussian mean value
+  Double_t  fMassLowerLim;         /// lower limit of the allowed mass range
+  Double_t  fMassUpperLim;         /// upper limit of the allowed mass range
+  Bool_t    fBoundMean;            /// switch for bound mean of gaussian
   Double_t  fSigmaSgn;             /// signal gaussian sigma
   Double_t  fSigmaSgnErr;          /// unc on signal gaussian sigma
   Double_t  fSigmaSgn2Gaus;        /// signal second gaussian sigma in case of k2Gaus
@@ -248,7 +259,7 @@ class AliHFInvMassFitter : public TNamed {
   TF1*      fTotFunc;              /// total fit function
 
   /// \cond CLASSIMP     
-  ClassDef(AliHFInvMassFitter,7); /// class for invariant mass fit
+  ClassDef(AliHFInvMassFitter,8); /// class for invariant mass fit
   /// \endcond
 };
 

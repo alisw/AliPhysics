@@ -39,6 +39,8 @@
   * 23 apr 2020: preparing for pp, renaming PileupCut, clean-up
   * 4 jun  2020: cleaning up track filter bit flags, storing n sigma dedx, plus some other small things 
   * 16 jun 2020: fixing INEL>0 flag in vtxstatus
+  * 17 jul 2020: changing oobpileup selection from using fNegTOFExpTDiff to fPosTOFBunchCross since fNegTOFExpTDiff does not work for AODs
+  * 22 okt 2020: reduce output size and better method for vtxstatus checks (and restructure + cleanig up) 
 
   */
 
@@ -122,13 +124,13 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   // fTrigType3(AliVEvent::kSemiCentral),
   fVtxCut(10.0),  
   fEtaCut(0.8),  
-  fEtaCutStack(1.2),  
-  fMinPt(0.1),
-  fMinPtV0(0.1),
-  fCosPACut(0.95),
-  fDecayRCut(0.2),
-  fContributorsVtxCut(2),
-  fContributorsVtxSPDCut(2),
+  fEtaCutStack(1.0),  
+  fMinPt(1.0),
+  fMinPtV0(1.0),
+  fCosPACut(0.96),
+  fDecayRCut(0.3),
+  fContributorsVtxCut(0),
+  fContributorsVtxSPDCut(0),
   fZvsSPDvtxCorrCut(0.5),          
   fVtxR2Cut(10.0),           
   fCrossedRowsCut(70.0),     
@@ -137,11 +139,13 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fPosTrackStatus(0),
   fNegTOFExpTDiff(99999), 
   fPosTOFExpTDiff(99999),
+  fNegTOFBunchCross(99999), 
+  fPosTOFBunchCross(99999),
   fRejectKinks(kTRUE),
   fLowPtFraction(0.01),
   fMassCut(0.1),
   fMinCent(0.0),
-  fMaxCent(100.0),
+  fMaxCent(20.0),
   fMcProcessType(-999),
   fTriggeredEventMB(-999),
   fVtxStatus(-999),
@@ -194,13 +198,13 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   // fTrigType3(AliVEvent::kSemiCentral),
   fVtxCut(10.0),  
   fEtaCut(0.8),
-  fEtaCutStack(1.2),    
-  fMinPt(0.1),
-  fMinPtV0(0.1),
-  fCosPACut(0.95),
-  fDecayRCut(0.2),
-  fContributorsVtxCut(2),
-  fContributorsVtxSPDCut(2),
+  fEtaCutStack(1.0),    
+  fMinPt(1.0),
+  fMinPtV0(1.0),
+  fCosPACut(0.96),
+  fDecayRCut(0.3),
+  fContributorsVtxCut(0),
+  fContributorsVtxSPDCut(0),
   fZvsSPDvtxCorrCut(0.5),          
   fVtxR2Cut(10.0),           
   fCrossedRowsCut(70.0),     
@@ -209,11 +213,13 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fPosTrackStatus(0),
   fNegTOFExpTDiff(99999), 
   fPosTOFExpTDiff(99999),
+  fNegTOFBunchCross(99999), 
+  fPosTOFBunchCross(99999),
   fRejectKinks(kTRUE),
   fLowPtFraction(0.01),
   fMassCut(0.1),
   fMinCent(0.0),
-  fMaxCent(100.0),
+  fMaxCent(20.0),
   fMcProcessType(-999),
   fTriggeredEventMB(-999),
   fVtxStatus(-999),
@@ -339,8 +345,6 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     return;
   }
   
-  if(fAnalysisRun2 && !fEventCuts.AcceptEvent(event)) return;
-  
   //changes 26jun2018
   // fAOD = dynamic_cast<AliAODEvent*>(event);
   // if(!fAOD){
@@ -362,7 +366,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 
   
   
-  if (fAnalysisMC) { 
+  if(fAnalysisMC) { 
 
     fMC = dynamic_cast<AliMCEvent*>(MCEvent());
     
@@ -375,7 +379,8 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     
   }//MC
 
-  
+
+    
   // Get trigger decision
   fTriggeredEventMB = 0; 
 
@@ -427,12 +432,10 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   }//MC
   
     //vtxstatus:
-    //-2=badSPD
     //-1=noVtx
-    //1=goodVtx
-    //2=goodBut Zvtx-zvSPD>fZvsSPDvtxCorrCut (if cut value set)
-    //3=goodBut radiusSq > fVtxR2Cut (if cut value set)
-    //4=goodBut AliMultSelectionTask::IsINELgtZERO(fAOD) == kFALSE (use kTRUE for pp vs mult analyses and kFALSE for min bis)
+    //0=outside z 10 cm cut, and INEL>0
+    //1=goodVtx (inside 10 cm cut, and INEL>0)
+    //2=goodBut AliMultSelectionTask::IsINELgtZERO(fAOD) == kFALSE (use kTRUE for pp vs mult analyses and kFALSE for min bis)
 
   // We have to be careful how we normalize because we probably want to normalize to:
   // Nevents=(No vertex + outside + inside)/(out + in)*in
@@ -445,37 +448,62 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   Double_t zVertex = vtx->GetZ();
   Double_t radiusSq = yVertex * yVertex + xVertex * xVertex;
   
+  fVtxStatus = -999;
+  fZvtx = zVertex;
+  
   // SPD primary vertex
   const AliAODVertex *vtxSPD = fAOD->GetPrimaryVertexSPD();
   Float_t zvSPD = vtxSPD->GetZ();
 
-
+   
   if(!vtx){
-    fVtxStatus = -999;
+    fZvtx = -999;
     fVtxStatus = -1;
+    if(fTriggeredEventMB) fVtx->Fill(0);
+    if(fAnalysisMC) fVtxMC->Fill(0);
   }
   
-  if(vtx->GetNContributors() <= fContributorsVtxCut){
-    fZvtx = -1599;
-    fVtxStatus = -2;
+  if(vtx->GetNContributors() > fContributorsVtxCut && vtxSPD->GetNContributors() > fContributorsVtxSPDCut){
+
+    if(AliMultSelectionTask::IsINELgtZERO(fAOD) == kFALSE){
+      fVtxStatus = 2;
+    }
+    else{// INEL>0
+
+      if(fTriggeredEventMB) fVtx->Fill(1);
+      if(fAnalysisMC) fVtxMC->Fill(1);
+      fVtxStatus = 0; // set as outside cut until proven inside
+      fVtxBeforeCuts->Fill(fZvtx);
+      
+      //inside cut
+      if(TMath::Abs(fZvtx) < fVtxCut){ 
+	fVtxStatus = 1;
+	fVtxAfterCuts->Fill(fZvtx);
+      }
+    }//inel
+
   }
-  else if(vtxSPD->GetNContributors() <= fContributorsVtxSPDCut){
-    fZvtx = -1599;
-    fVtxStatus = -2;
-  }
-  else if(TMath::Abs( fZvtx - zvSPD ) > fZvsSPDvtxCorrCut){
-    fZvtx = zVertex;
-    fVtxStatus = 2;
-  }
-  else if(radiusSq > fVtxR2Cut){
-    fZvtx = zVertex;
-    fVtxStatus = 3;
-  }
-  else{
-    fZvtx = zVertex;
-    fVtxStatus = 1;
-  }
+  else{ // vtx->GetNContributors() <= fContributorsVtxCut
+    fZvtx = -999;
+    fVtxStatus = -1;
+    if(fTriggeredEventMB) fVtx->Fill(0);
+    if(fAnalysisMC) fVtxMC->Fill(0);
+  } 
+
   
+  // cuts i dont use:
+  // if(TMath::Abs( fZvtx - zvSPD ) > fZvsSPDvtxCorrCut){
+  //   fVtxStatus = 2;
+  // }
+  // if(radiusSq > fVtxR2Cut){
+  //   fVtxStatus = 3;
+  // }
+
+  // store MC event data
+  if(fAnalysisMC) ProcessMCTruthAOD();
+
+  if(fAnalysisRun2 && !fEventCuts.AcceptEvent(event)) return;
+
   
   Float_t centrality = -10;
 
@@ -493,8 +521,6 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       
       AliMultSelection* centObject = 0x0; 
       centObject = (AliMultSelection*)fAOD->FindListObject("MultSelection");
-
-      if(AliMultSelectionTask::IsINELgtZERO(fAOD) == kFALSE) fVtxStatus = 4.;
       
       if(centObject){
 	centrality = centObject->GetMultiplicityPercentile(fCentDetector);	
@@ -510,8 +536,6 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   }//if triggered
 
   
-  // store MC event data
-  if(fAnalysisMC) ProcessMCTruthAOD();
   
   fEvent->process       = fMcProcessType;
   fEvent->trig          = fTriggeredEventMB;
@@ -552,7 +576,7 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeAOD(AliAODEvent* aodEvent)
     // accepted event
     fEvents->Fill(0);
     
-    //if(fVtxStatus!=1) return; // accepted vertex
+    if(fVtxStatus<1) return; // accepted vertex
     //    Int_t nAODTracks = aodEvent->GetNumberOfTracks();
 
     ProduceArrayTrksAOD( aodEvent, kGlobalTrk );
@@ -560,7 +584,7 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeAOD(AliAODEvent* aodEvent)
 
     fEvents->Fill(1);
 
-    if(fVZEROBranch){//change 10/07-18: esdV0->aodV0
+    if(fVZEROBranch){
       AliAODVZERO *aodV0 = aodEvent->GetVZEROData();
       for (Int_t iCh=0; iCh<64; ++iCh) { 
 	Float_t multv=aodV0->GetMultiplicity(iCh); 
@@ -704,10 +728,13 @@ Short_t AliAnalysisTaskHighPtDeDx::GetPythiaEventProcessType(Int_t pythiaType) {
 
   Short_t globalType = -1; //init
       
-  if(pythiaType==92||pythiaType==93){
+  if(pythiaType==103||pythiaType==104){//pythia8
     globalType = 2; //single diffractive
   }
-  else if(pythiaType==94){
+  else if(pythiaType==92||pythiaType==93){//pythia6
+    globalType = 2; //single diffractive
+  }
+  else if(pythiaType==94){//pythia6
     globalType = 3; //double diffractive
   }
   //else if(pythiaType != 91){ // also exclude elastic to be sure... CKB??
@@ -891,8 +918,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
     AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(AODevent->GetTrack(iT));
     if(!aodTrack) AliFatal("Not a standard AOD");
       
-    //FOR AOD068, filterCut_Set2=KTRUE WHEN THE TRACK SATISFIES THE CUTS FROM JET ANALYSIS
-      
     UShort_t filterFlag = 0;
     
     // "Global track RAA analysis QM2011 + Chi2ITS<36"; bit 1024
@@ -916,13 +941,19 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
     //PbPb LHC10h	160	768	 
     //PbPb LHC11h	145	768
     // if(aodTrack->TestFilterBit(768)) filterFlag +=8; //before, when used with the other filterbit options
+
+
+    // TRIGGER PARTICLE SELECTIONS:
     
     if(aodTrack->TestFilterBit(768)) filterFlag +=1; 
 
     if(!aodTrack->TestFilterBit(768)) continue;
     
-    //new method 23 Jan 2019:
-    
+    Double_t b[2], cov[3];
+    if (!(aodTrack->PropagateToDCA(vertex, AODevent->GetMagneticField(), kVeryBig, b, cov))) filterFlag = 32; // propagation failed!!!!!; only need to use if filterbit is 128
+    Float_t dcaxy = b[0];
+    Float_t dcaz = b[1];
+
     if(!aodTrack->IsOn(AliAODTrack::kTPCrefit)) continue;
 
     if(aodTrack->Chi2perNDF()>4) continue;
@@ -932,31 +963,19 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
     if(nCrossedRowsTPC < fCrossedRowsCut) continue;
     if(findable <= 0) continue;
     if(nCrossedRowsTPC/findable < fCrossedOverFindableCut) continue;        
-            
     
-    Double_t b[2], cov[3];
-    if (!(aodTrack->PropagateToDCA(vertex, AODevent->GetMagneticField(), kVeryBig, b, cov))) filterFlag = 32; // propagation failed!!!!!; only need to use if filterbit is 128
-    
-    Float_t dcaxy = b[0];
-    Float_t dcaz = b[1];
-      
     TBits sharedTPC = aodTrack->GetTPCSharedMap();
     Int_t sharedtpcclusters = sharedTPC.CountBits(0)-sharedTPC.CountBits(159);
  
-    if(TMath::Abs(aodTrack->Eta()) > fEtaCut) continue;
+    Float_t eta = aodTrack->Eta();
+    if(TMath::Abs(eta) > fEtaCut) continue;
 
     if (aodTrack->Pt() < fMinPt) {
       // Keep small fraction of low pT tracks
       if(fRandom->Rndm() > fLowPtFraction) continue;
     }
       
-    Short_t charge      = aodTrack->Charge();
-    Float_t pt          = aodTrack->Pt();
-    Float_t p           = aodTrack->P(); 
-    Float_t eta         = aodTrack->Eta();
-    Float_t phi         = aodTrack->Phi();
     AliAODPid* aodPid   = aodTrack->GetDetPid();
-    Short_t neff        = 0; // neff is not yet there! Short_t(aodTrack->GetTPCClusterInfo(2, 1)); // effective track length for pT res -> see https://github.com/alisw/AliPhysics/blob/master/PWGLF/STRANGENESS/Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx for implementation 
     Short_t ncl         = -10;
     Float_t dedx        = -10;
     if(aodPid){
@@ -968,7 +987,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
     Short_t pidCode     = 0; // 0 = real data / no mc track!
     Short_t primaryFlag = 0; // 0 = real data / not primary mc track  
     Int_t pdgMother     = 0;
-
     
     if(fAnalysisMC) {
 	
@@ -1000,16 +1018,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
     
     DeDxTrack* track = new((*fTrackArrayGlobalPar)[nadded]) DeDxTrack();
     nadded++;
-	
-    track->p          = p;
-    track->pt         = pt;
+
+    track->p          = aodTrack->P(); 
+    track->pt         = aodTrack->Pt();
     track->eta        = eta;
-    track->phi        = phi;
-    track->q          = charge;
+    track->phi        = aodTrack->Phi();
+    track->q          = aodTrack->Charge();
     track->filter     = filterFlag;
     track->ncl        = ncl;
-    track->neff       = neff;
-    track->dedx       = dedx;
+    track->neff       = 0; // neff is not yet there! Short_t(aodTrack->GetTPCClusterInfo(2, 1)); // effective track length for pT res -> see https://github.com/alisw/AliPhysics/blob/master/PWGLF/STRANGENESS/Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx for implementation
+    track->dedx       = 0; //dedx; // to minimize output size don't store dedx on trigger particle track!
     track->protNSigma = 0;
     track->pionNSigma = 0;
     track->dcaxy      = dcaxy;
@@ -1071,6 +1089,34 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       nTrack = helpTrack;
     } 
         
+    // if(fTrackFilterGolden){
+    //   if(pTrack->TestFilterBit(1024)) filterFlag_p +=1;
+    // }
+    // if(fTrackFilterTPC){
+    //   if(pTrack->TestFilterBit(128)) filterFlag_p +=2;	  
+    // }
+    // if (fTrackFilter){
+    //   if(pTrack->TestFilterBit(32)) filterFlag_p +=4;
+    // }
+    // if(pTrack->TestFilterBit(768)) filterFlag_p +=8; 
+    // if(fTrackFilterGolden){
+    //   if(nTrack->TestFilterBit(1024)) filterFlag_n +=1;
+    // }
+    // if(fTrackFilterTPC){
+    //   if(nTrack->TestFilterBit(128)) filterFlag_n +=2;	  
+    // }
+    // if (fTrackFilter){
+    //   if(nTrack->TestFilterBit(32)) filterFlag_n +=4;
+    // }
+    // if(nTrack->TestFilterBit(768)) filterFlag_n +=8;
+
+    UShort_t filterFlag_p = 0;
+    UShort_t filterFlag_n = 0;
+
+    /////////////////////////
+    // PRE SELECTION CUTS: //
+    /////////////////////////
+
     //reject kink daughters //06 Feb 2019:
     AliAODVertex* prodVtxDaughterNeg = (AliAODVertex*)(nTrack->GetProdVertex());
     Char_t cTypeVtxProdNeg = prodVtxDaughterNeg->GetType(); 
@@ -1082,138 +1128,150 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       if(cTypeVtxProdPos == AliAODVertex::kKink) continue;
     }
 
-
-    // neff is not yet there! Short_t(aodTrack->GetTPCClusterInfo(2, 1)); // effective track length for pT res -> see https://github.com/alisw/AliPhysics/blob/master/PWGLF/STRANGENESS/Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx for implementation 
- 
-    //#### check positive tracks ####
-    
-    UShort_t filterFlag_p = 0;
-    // if(fTrackFilterGolden){
-    //   if(pTrack->TestFilterBit(1024)) filterFlag_p +=1;
-    // }
-    // if(fTrackFilterTPC){
-    //   if(pTrack->TestFilterBit(128)) filterFlag_p +=2;	  
-    // }
-    // if (fTrackFilter){
-    //   if(pTrack->TestFilterBit(32)) filterFlag_p +=4;
-    // }
-    // if(pTrack->TestFilterBit(768)) filterFlag_p +=8; 
-
-
+    // tpcrefit
     if(!pTrack->IsOn(AliAODTrack::kTPCrefit)) continue;
-    
-    Float_t nCrossedRowsTPC_p = pTrack->GetTPCClusterInfo(2,1);
-    Int_t findable_p = pTrack->GetTPCNclsF();
-    if(nCrossedRowsTPC_p < fCrossedRowsCut) continue;
-    if(findable_p <= 0) continue;
-    if(nCrossedRowsTPC_p/findable_p < fCrossedOverFindableCut) continue;        
-    
-    if(pTrack->Chi2perNDF()>4) continue;
-       
-    //#### check negative tracks ####
-
-    UShort_t filterFlag_n = 0;
-    // if(fTrackFilterGolden){
-    //   if(nTrack->TestFilterBit(1024)) filterFlag_n +=1;
-    // }
-    // if(fTrackFilterTPC){
-    //   if(nTrack->TestFilterBit(128)) filterFlag_n +=2;	  
-    // }
-    // if (fTrackFilter){
-    //   if(nTrack->TestFilterBit(32)) filterFlag_n +=4;
-    // }
-    // if(nTrack->TestFilterBit(768)) filterFlag_n +=8; 
-
-
     if(!nTrack->IsOn(AliAODTrack::kTPCrefit)) continue;
-    
+
+    //crossed tpc rows
+    Float_t nCrossedRowsTPC_p = pTrack->GetTPCClusterInfo(2,1);
     Float_t nCrossedRowsTPC_n = nTrack->GetTPCClusterInfo(2,1);
+
+    Int_t findable_p = pTrack->GetTPCNclsF();
     Int_t findable_n = nTrack->GetTPCNclsF();
+
+    if(nCrossedRowsTPC_p < fCrossedRowsCut) continue;
     if(nCrossedRowsTPC_n < fCrossedRowsCut) continue;
-    if(findable_n <= 0) continue;
-    if(nCrossedRowsTPC_n/findable_n < fCrossedOverFindableCut) continue;        
     
+    if(findable_p <= 0) continue;
+    if(findable_n <= 0) continue;
+    
+    if(nCrossedRowsTPC_p/findable_p < fCrossedOverFindableCut) continue;        
+    if(nCrossedRowsTPC_n/findable_n < fCrossedOverFindableCut) continue;
+
+    //chi2
+    if(pTrack->Chi2perNDF()>4) continue;
     if(nTrack->Chi2perNDF()>4) continue;
 
-
-    //pileup rejection:
-    
-    Short_t oobPileupFlag = 0; // 1 = oob pileup rejection cut applied
+    //pileup rejection flag    
+    Double_t oobPileupFlag = 0.; // 1 = oob pileup rejection cut applied
+    Bool_t lTOFsatisfied = kFALSE;
+    Bool_t lITSsatisfied = kFALSE;
     
     fPosTrackStatus = pTrack->GetStatus();
     fNegTrackStatus = nTrack->GetStatus();
     fNegTOFExpTDiff = nTrack->GetTOFExpTDiff(AODevent->GetMagneticField());
     fPosTOFExpTDiff = pTrack->GetTOFExpTDiff(AODevent->GetMagneticField());
+    fNegTOFBunchCross = nTrack->GetTOFBunchCrossing(AODevent->GetMagneticField());
+    fPosTOFBunchCross = pTrack->GetTOFBunchCrossing(AODevent->GetMagneticField());
 
-    //ITS||TOF requirement
-    Bool_t lITSorTOFsatisfied = kFALSE; 
-    if( (fNegTrackStatus & nTrack->IsOn(AliAODTrack::kITSrefit) ||
-	 (fPosTrackStatus & pTrack->IsOn(AliAODTrack::kITSrefit)) ) )
-      lITSorTOFsatisfied = kTRUE; 
-    if( (TMath::Abs(fNegTOFExpTDiff+2500.) > 1e-6) || (TMath::Abs(fPosTOFExpTDiff+2500.) > 1e-6) )
-      lITSorTOFsatisfied = kTRUE;
+    //note that nTrack->IsOn(AliAODTrack::kITSrefit)
+    //is equivalent to (fNegTrackStatus & AliAODTrack::kITSrefit)
     
-    if(lITSorTOFsatisfied) oobPileupFlag = 1;
+    // ITS||TOF requirement --- version 1 (old: wrong!)
+    // if( (fNegTrackStatus & nTrack->IsOn(AliAODTrack::kITSrefit) ||
+    // 	 (fPosTrackStatus & pTrack->IsOn(AliAODTrack::kITSrefit)) ) )
+    //   lITSorTOFsatisfied = kTRUE; 
+    // if( (TMath::Abs(fNegTOFExpTDiff+2500.) > 1e-6) || (TMath::Abs(fPosTOFExpTDiff+2500.) > 1e-6) )
+    //   lITSorTOFsatisfied = kTRUE;
+    // if(lITSorTOFsatisfied) oobPileupFlag += 1.;
+
+    //ITS||TOF requirement --- version 2 (updated: ala alessandro)
+    //USE THIS since GetTOFExpTDiff is not re-implemented in AODs
+    if( (fNegTrackStatus & AliAODTrack::kITSrefit) ||
+    	(fPosTrackStatus & AliAODTrack::kITSrefit))
+      lITSsatisfied = kTRUE; 
+    if( (fNegTOFBunchCross > -95.) || (fPosTOFBunchCross > -95.) )
+      lTOFsatisfied = kTRUE;
+
+    if(lITSsatisfied) oobPileupFlag += 1.;
+    if(lTOFsatisfied) oobPileupFlag += 2.;
+
+    //-> neither ITS or TOF satisfied: oobPileupFlag = 0
+    //-> only ITS satisfied: oobPileupFlag = 1
+    //-> only TOF satisfied: oobPileupFlag = 2
+    //-> both ITS AND TOF satisfied: oobPileupFlag = 1+2 = 3
+
+    // to apply the pileup cut, i.e. one of the daughters has either ITS or TOF satisfied:
+    // oobPileupFlag = 1 || 2 || 3    
     
+    // to select cases where ITS is satisfied for one of the daughters:
+    // oobPileupFlag = 1 || 3
+
+    // to select cases where TOF is satisfied for one of the daughters:
+    // oobPileupFlag = 2 || 3
     
+    //ITS||TOF requirement --- version 3 (updated: almost ala silvia)
+    // if(nTrack->HasPointOnITSLayer(0) || nTrack->HasPointOnITSLayer(1) ||
+    //    pTrack->HasPointOnITSLayer(0) || pTrack->HasPointOnITSLayer(1) )
+    // 	lITSorTOFsatisfied = kTRUE; 
+    // if( (fNegTOFBunchCross > -95.) || (fPosTOFBunchCross > -95.) )
+    //   lITSorTOFsatisfied = kTRUE;
+    // if(lITSorTOFsatisfied) oobPileupFlag += 1.;
+
+    //Reject on-the-fly tracks
+    if(aodV0->GetOnFlyStatus() != 0 ) continue; 
+
+    // reject v0s < ptMin, and ptMax
+    if(aodV0->Pt() < fMinPtV0) continue;
+    if(aodV0->Pt() > 8.0) continue;
+
+    //cosPA rejection
+    if(aodV0->CosPointingAngle(myBestPrimaryVertex) < fCosPACut ) continue;
+
+    //v0 radius
     Double_t lV0Radius         = aodV0->RadiusV0();
-    Float_t alpha              = aodV0->AlphaV0();
-    Float_t ptarm              = aodV0->PtArmV0();
-    Double_t lV0DecayLength    = aodV0->DecayLength(myBestPrimaryVertex);
+    if(lV0Radius < fDecayRCut ) continue;
+
+    //inv mass
     Double_t deltaInvMassG     = aodV0->InvMass2Prongs(0,1,11,11);
     Double_t deltaInvMassK0s   = aodV0->MassK0Short()-0.498;
     Double_t deltaInvMassL     = aodV0->MassLambda()-1.116;
     Double_t deltaInvMassAntiL = aodV0->MassAntiLambda()-1.116;
-      
-    TBits psharedTPC = pTrack->GetTPCSharedMap();
-    Int_t psharedtpcclusters = psharedTPC.CountBits(0)-psharedTPC.CountBits(159);
-    Short_t pcharge  = pTrack->Charge();
-    Float_t ppt      = pTrack->Pt();
-    Float_t pp       = pTrack->P(); 
-    Float_t peta     = pTrack->Eta();
-    Float_t pphi     = pTrack->Phi();
-    AliAODPid* pPid  = pTrack->GetDetPid();
-    Short_t pncl     = -10;
-    Short_t pneff    = 0;
-    Float_t pProtNSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton ));
-    Float_t pPionNSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kPion ));
-    Float_t pdedx    = -10;
-    if(pPid){
-      pncl     = pPid->GetTPCsignalN();
-      pdedx    = pPid->GetTPCsignal(); 
-    }
-    
-    TBits nsharedTPC = nTrack->GetTPCSharedMap();
-    Int_t nsharedtpcclusters = nsharedTPC.CountBits(0)-nsharedTPC.CountBits(159);
-    Short_t ncharge  = nTrack->Charge();
-    Float_t npt      = nTrack->Pt();
-    Float_t np       = nTrack->P(); 
-    Float_t neta     = nTrack->Eta();
-    Float_t nphi     = nTrack->Phi();
-    AliAODPid* nPid  = nTrack->GetDetPid();
-    Short_t nncl     = -10;
-    Short_t nneff    = 0; 
-    Float_t nProtNSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton ));
-    Float_t nPionNSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kPion ));
-    Float_t ndedx    = -10;
-    if(nPid){
-      nncl     = nPid->GetTPCsignalN();
-      ndedx    = nPid->GetTPCsignal(); 
-    }
-
-    
-    // ### Pre-selection to reduce output size ###
-    if(TMath::Abs(peta) > fEtaCut || TMath::Abs(neta) > fEtaCut) continue;
-    // if(TMath::Abs(aodV0->Eta()) > fEtaCut) continue;
-    if(aodV0->GetOnFlyStatus() != 0 ) continue; //Reject on-the-fly tracks
-    if(lV0Radius < fDecayRCut ) continue;
-    if(aodV0->Pt() < fMinPtV0) continue;
-    if(aodV0->CosPointingAngle(myBestPrimaryVertex) < fCosPACut ) continue;
     if(TMath::Abs(deltaInvMassK0s) > fMassCut &&
        TMath::Abs(deltaInvMassL) > fMassCut &&
        TMath::Abs(deltaInvMassAntiL) > fMassCut &&
        TMath::Abs(deltaInvMassG) > fMassCut )
       continue;
+      
+    // pndca: ATTENTION: HARD CODED CUT
+    if(aodV0->DcaPosToPrimVertex() < 0.045) continue;
+    if(aodV0->DcaNegToPrimVertex() < 0.045) continue;
+
+    //dcadd: ATTENTION: HARD CODED CUT
+    if(aodV0->DcaV0Daughters() > 1.25) continue;
+
+    //eta v0:
+    if(TMath::Abs(aodV0->Eta()) > fEtaCut) continue;
+    
+    //eta daughters:
+    // if(TMath::Abs(pTrack->Eta()) > fEtaCut) continue;
+    // if(TMath::Abs(nTrack->Eta()) > fEtaCut) continue;
+    
+    TBits psharedTPC = pTrack->GetTPCSharedMap();
+    Int_t psharedtpcclusters = psharedTPC.CountBits(0)-psharedTPC.CountBits(159);
+    TBits nsharedTPC = nTrack->GetTPCSharedMap();
+    Int_t nsharedtpcclusters = nsharedTPC.CountBits(0)-nsharedTPC.CountBits(159);
+    
+    AliAODPid* pPid  = pTrack->GetDetPid();
+    AliAODPid* nPid  = nTrack->GetDetPid();
+    Short_t pncl     = -10;
+    Short_t nncl     = -10;
+    Float_t pdedx    = -10;
+    Float_t ndedx    = -10;
+    if(pPid){
+      pncl     = pPid->GetTPCsignalN();
+      pdedx    = pPid->GetTPCsignal(); 
+    }
+    if(nPid){
+      nncl     = nPid->GetTPCsignalN();
+      ndedx    = nPid->GetTPCsignal(); 
+    }
+
+    Float_t pProtNSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton ));
+    Float_t pPionNSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kPion ));
+    Float_t nProtNSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton ));
+    Float_t nPionNSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kPion ));
+
 
     Int_t   primaryV0     = 0; // 0 means that the tracks are not both daughters of a primary particle (1 means they are)
     Int_t   pdgV0         = 0; // 0 means that they don't have same origin for MC (1 means they have the same original mother)
@@ -1299,9 +1357,12 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     }//MC
     
       
+
+
     DeDxV0* v0data = new((*fV0ArrayGlobalPar)[nadded]) DeDxV0();
     nadded++;
-	
+
+    
     // v0 data
     v0data->p            = aodV0->P();
     v0data->pt           = aodV0->Pt();
@@ -1313,12 +1374,10 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     v0data->dmassK0      = deltaInvMassK0s;
     v0data->dmassL       = deltaInvMassL;
     v0data->dmassAL      = deltaInvMassAntiL;
-    v0data->alpha        = alpha;
-    v0data->ptarm        = ptarm;
+    v0data->alpha        = aodV0->AlphaV0();
+    v0data->ptarm        = aodV0->PtArmV0();
     v0data->decayr       = lV0Radius;
-    v0data->decayl       = lV0DecayLength;
-    // v0data->pdca      = TMath::Sqrt(pdcaxy*pdcaxy + pdcaz*pdcaz);
-    // v0data->ndca      = TMath::Sqrt(ndcaxy*ndcaxy + ndcaz*ndcaz);
+    v0data->decayl       = aodV0->DecayLength(myBestPrimaryVertex);
     v0data->status       = aodV0->GetOnFlyStatus();
     v0data->chi2         = aodV0->Chi2V0();
     v0data->cospt        = aodV0->CosPointingAngle(myBestPrimaryVertex);
@@ -1328,19 +1387,18 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     v0data->pdg          = pdgV0;
     v0data->pdgmother    = pdgmotherV0;
     v0data->oobPileupFlag = oobPileupFlag;
-	 
-	
+    
     // positive track
-    v0data->ptrack.p       = pp;
-    v0data->ptrack.pt      = ppt;
-    v0data->ptrack.eta     = peta;
-    v0data->ptrack.phi     = pphi;
-    v0data->ptrack.q       = pcharge;
+    v0data->ptrack.p       = pTrack->P(); 
+    v0data->ptrack.pt      = pTrack->Pt();
+    v0data->ptrack.eta     = pTrack->Eta();
+    v0data->ptrack.phi     = pTrack->Phi();
+    v0data->ptrack.q       = pTrack->Charge();
     v0data->ptrack.ncl     = pncl;
-    v0data->ptrack.neff    = pneff;
+    v0data->ptrack.neff    = 0; //pneff; // neff is not yet there! Short_t(aodTrack->GetTPCClusterInfo(2, 1)); // effective track length for pT res -> see https://github.com/alisw/AliPhysics/blob/master/PWGLF/STRANGENESS/Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx for implementation 
     v0data->ptrack.protNSigma = pProtNSigma;
     v0data->ptrack.pionNSigma = pPionNSigma;
-    v0data->ptrack.dedx    = pdedx;
+    v0data->ptrack.dedx    = 0; //pdedx; // to minimize output size don't store dedx!
     v0data->ptrack.pid     = p_pidCode;
     v0data->ptrack.primary = p_primaryFlag;
     v0data->ptrack.pttrue  = p_ptMC;
@@ -1349,16 +1407,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     v0data->ptrack.tpcnclS = psharedtpcclusters;
 	
     // negative track
-    v0data->ntrack.p       = np;
-    v0data->ntrack.pt      = npt;
-    v0data->ntrack.eta     = neta;
-    v0data->ntrack.phi     = nphi;
-    v0data->ntrack.q       = ncharge;
+    v0data->ntrack.p       = nTrack->P(); 
+    v0data->ntrack.pt      = nTrack->Pt();
+    v0data->ntrack.eta     = nTrack->Eta();
+    v0data->ntrack.phi     = pTrack->Phi();
+    v0data->ntrack.q       = nTrack->Charge();
     v0data->ntrack.ncl     = nncl;
-    v0data->ntrack.neff    = nneff;
+    v0data->ntrack.neff    = 0; //nneff; // neff is not yet there! Short_t(aodTrack->GetTPCClusterInfo(2, 1)); // effective track length for pT res -> see https://github.com/alisw/AliPhysics/blob/master/PWGLF/STRANGENESS/Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx for implementation 
     v0data->ntrack.protNSigma = nProtNSigma;
     v0data->ntrack.pionNSigma = nPionNSigma;
-    v0data->ntrack.dedx    = ndedx;
+    v0data->ntrack.dedx    = 0; // ndedx; // to minimize output size don't store dedx!
     v0data->ntrack.pid     = n_pidCode;
     v0data->ntrack.primary = n_primaryFlag;
     v0data->ntrack.pttrue  = n_ptMC;

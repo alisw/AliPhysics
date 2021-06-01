@@ -31,6 +31,6 @@
 #pragma link C++ class AliDalitzAODESDMC+;
 #pragma link C++ class AliDalitzEventMC+;
 #pragma link C++ class AliDalitzData+;
-
+#pragma link C++ class AliCaloSigmaCuts+;
 
 #endif

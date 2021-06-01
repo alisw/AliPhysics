@@ -57,6 +57,9 @@ fNbEvents(0),
 fProcessType(0),
 fEventWeight(0),
 fPtCutHigh(1e6),
+fPtCutLow(0.2),
+fEtamin(-0.8),
+fEtamax(0.8),
 fScaleByRAA(kFALSE),
 hNEvents(0),
 hNEventsW(0),
@@ -109,6 +112,8 @@ hMeePtee_ULS_eta08(0),
 hMeePtee_LS_eta08(0),
 hMeePtee_ULS_eta08_pt200(0),
 hMeePtee_LS_eta08_pt200(0),
+hMeePtee_ULS_eta_pt(0),
+hMeePtee_LS_eta_pt(0),
 hMeePtee_ULS_eta08_pt400(0),
 hMeePtee_LS_eta08_pt400(0),
 hMeePtee_ULS_eta08_pt200_opAngle50(0),
@@ -135,6 +140,8 @@ hMeePtee_ULS_eta08_be(0),
 hMeePtee_LS_eta08_be(0),
 hMeePtee_ULS_eta08_pt200_be(0),
 hMeePtee_LS_eta08_pt200_be(0),
+hMeePtee_ULS_eta_pt_be(0),
+hMeePtee_LS_eta_pt_be(0),
 hMeePtee_ULS_eta08_pt400_be(0),
 hMeePtee_LS_eta08_pt400_be(0),
 hMee_ULS_simulated_bce(0),
@@ -155,6 +162,8 @@ hMeePtee_ULS_eta08_bce(0),
 hMeePtee_LS_eta08_bce(0),
 hMeePtee_ULS_eta08_pt200_bce(0),
 hMeePtee_LS_eta08_pt200_bce(0),
+hMeePtee_ULS_eta_pt_bce(0),
+hMeePtee_LS_eta_pt_bce(0),
 hMeePtee_ULS_eta08_pt400_bce(0),
 hMeePtee_LS_eta08_pt400_bce(0),
 hMeeOpAngle_ULS_eta08_pt200(0),
@@ -174,6 +183,9 @@ fNbEvents(0),
 fProcessType(0),
 fEventWeight(0),
 fPtCutHigh(1e6),
+fPtCutLow(0.2),
+fEtamin(-0.8),
+fEtamax(0.8),
 fScaleByRAA(kFALSE),
 hNEvents(0),
 hNEventsW(0),
@@ -226,6 +238,8 @@ hMeePtee_ULS_eta08(0),
 hMeePtee_LS_eta08(0),
 hMeePtee_ULS_eta08_pt200(0),
 hMeePtee_LS_eta08_pt200(0),
+hMeePtee_ULS_eta_pt(0),
+hMeePtee_LS_eta_pt(0),
 hMeePtee_ULS_eta08_pt400(0),
 hMeePtee_LS_eta08_pt400(0),
 hMeePtee_ULS_eta08_pt200_opAngle50(0),
@@ -252,6 +266,8 @@ hMeePtee_ULS_eta08_be(0),
 hMeePtee_LS_eta08_be(0),
 hMeePtee_ULS_eta08_pt200_be(0),
 hMeePtee_LS_eta08_pt200_be(0),
+hMeePtee_ULS_eta_pt_be(0),
+hMeePtee_LS_eta_pt_be(0),
 hMeePtee_ULS_eta08_pt400_be(0),
 hMeePtee_LS_eta08_pt400_be(0),
 hMee_ULS_simulated_bce(0),
@@ -272,6 +288,8 @@ hMeePtee_ULS_eta08_bce(0),
 hMeePtee_LS_eta08_bce(0),
 hMeePtee_ULS_eta08_pt200_bce(0),
 hMeePtee_LS_eta08_pt200_bce(0),
+hMeePtee_ULS_eta_pt_bce(0),
+hMeePtee_LS_eta_pt_bce(0),
 hMeePtee_ULS_eta08_pt400_bce(0),
 hMeePtee_LS_eta08_pt400_bce(0),
 hMeeOpAngle_ULS_eta08_pt200(0),
@@ -302,6 +320,9 @@ void AliAnalysisTaskBeauty::UserCreateOutputObjects()
   printf("\n\n========================================\n  Configuration of task: \n========================================\n\n");
   printf("  process type:        %d\n", fProcessType);
   printf("  high-pt cut:         %f\n", fPtCutHigh);
+  printf("  low-pt cut:         %f\n", fPtCutLow);
+  printf("  high-eta cut:         %f\n", fEtamax);
+  printf("  low-eta cut:         %f\n", fEtamin);
   printf("  use R_AA scaling:    %s\n", fScaleByRAA?"YES":"NO");
   printf("  use Event weight:    %s\n", fEventWeight?"YES":"NO");
   std::cout << std::endl;
@@ -454,6 +475,7 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
       for(int d=k1; d <= k2; d++) {
         if(d>0){
           AliVParticle *decay = fMcEvent->GetTrack(d);
+	  if(!decay) continue;
           int pdgdecay = decay->PdgCode();
           //printf("Mesons %d and dpg %d, index %d\n",d,pdgdecay,d);
           if ( int(TMath::Abs(pdgdecay)/100.) == 5 || int(TMath::Abs(pdgdecay)/1000.) == 5 ) {
@@ -508,6 +530,7 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
     //_____________________________ b->e _______________________________
     int num = p->GetMother();
     AliVParticle *mom = fMcEvent->GetTrack ( num );
+    if(!mom) continue;
     int ppid = TMath::Abs( mom->PdgCode() );
 
 
@@ -560,6 +583,7 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
 
     int num_ce = p->GetMother(); // c is the first mother of e
     AliVParticle *mom_ce = fMcEvent->GetTrack ( num_ce );
+    if(!mom_ce) continue;
     int ppid_ce = TMath::Abs( mom_ce->PdgCode() ); // c
     //if ( ppid_ce == 411 || ppid_ce == 421 || ppid_ce == 431 || ppid_ce ==4122 ) is_charm2e = kTRUE;
     if (((ppid_ce>=400) && (ppid_ce<=439)) || ((ppid_ce>=4000) && (ppid_ce<=4399))) is_charm2e = kTRUE;
@@ -570,13 +594,15 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
       //printf("Found one electron from charm mother pdg %d and index %d\n",mom_ce->PdgCode(),num_ce);
       while (indexx > 0) { // recursive loop to check if it comes from beauty.
         gm = fMcEvent->GetTrack ( indexx );
-        int pid_gm = TMath::Abs( gm->PdgCode() );// pdg of the mother
-        //printf("Next mother is %d with index %d\n",gm->PdgCode(),indexx);
-        if (((pid_gm>=500) && (pid_gm<=549)) || ((pid_gm>=5000) && (pid_gm<=5499)) || (pid_gm == 5)) {
-          is_beauty2charm = kTRUE;
-          break;
-        }
-        indexx = gm->GetMother(); //
+        if(gm) {
+	  int pid_gm = TMath::Abs( gm->PdgCode() );// pdg of the mother
+	  //printf("Next mother is %d with index %d\n",gm->PdgCode(),indexx);
+	  if (((pid_gm>=500) && (pid_gm<=549)) || ((pid_gm>=5000) && (pid_gm<=5499)) || (pid_gm == 5)) {
+	    is_beauty2charm = kTRUE;
+	    break;
+	  }
+	  indexx = gm->GetMother(); //
+	} else indexx = -1;
       }
       if(is_beauty2charm == kFALSE) {
         is_charm2e = kFALSE; // it is not a charm that comes from beauty.
@@ -684,11 +710,13 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
 
       int num_i = p_i->GetMother();
       AliVParticle *mom_i = fMcEvent->GetTrack ( num_i );
+      if(!mom_i) continue;
       int ppid_i = TMath::Abs( mom_i->PdgCode() );
       //if ( !(ppid_i == 511) || !(ppid_i == 521) || !(ppid_i == 531) || !(ppid_i == 5122) ) continue;
       //
       int num_j = p_j->GetMother();
       AliVParticle *mom_j = fMcEvent->GetTrack ( num_j );
+      if(!mom_j) continue;
       int ppid_j = TMath::Abs( mom_j->PdgCode() );
       //if ( !(ppid_j == 511) || !(ppid_j == 521) || !(ppid_j == 531) || !(ppid_j == 5122) ) continue;
       //
@@ -708,10 +736,12 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
       // c->e
       int num_ce_i = p_i->GetMother(); // c is the first mother of e
       AliVParticle *mom_ce_i = fMcEvent->GetTrack ( num_ce_i );
+      if(!mom_ce_i) continue;
       int ppid_ce_i = TMath::Abs( mom_ce_i->PdgCode() ); // c
       //
       int num_ce_j = p_j->GetMother(); // c is the first mother of e
       AliVParticle *mom_ce_j = fMcEvent->GetTrack ( num_ce_j );
+      if(!mom_ce_j) continue;
       int ppid_ce_j = TMath::Abs( mom_ce_j->PdgCode() ); // c
       //
       i_is_charm2e = kFALSE;
@@ -732,12 +762,14 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
         Int_t indexx_i = mom_ce_i->GetMother(); // First mother of D
         while (indexx_i > 0) { // recursive loop to check if it comes from beauty.
           gm_i = fMcEvent->GetTrack ( indexx_i );
-          int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
-          if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
-            i_is_beauty2charm = kTRUE;
-            break;
-          }
-          indexx_i = gm_i->GetMother(); //
+          if(gm_i) {
+	    int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
+	    if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
+	      i_is_beauty2charm = kTRUE;
+	      break;
+	    }
+	    indexx_i = gm_i->GetMother(); //
+	  } else indexx_i = -1;
         }
         if(i_is_beauty2charm == kFALSE) i_is_charm2e = kFALSE; // it is not a charm that comes from beauty.
       }
@@ -746,12 +778,14 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
         Int_t indexx_j = mom_ce_j->GetMother(); // First mother of D
         while (indexx_j > 0) { // recursive loop to check if it comes from beauty.
           gm_j = fMcEvent->GetTrack ( indexx_j );
-          int pid_gm_j = TMath::Abs( gm_j->PdgCode() );// pdg of the mother
-          if (((pid_gm_j>=500) && (pid_gm_j<=549)) || ((pid_gm_j>=5000) && (pid_gm_j<=5499)) || (pid_gm_j == 5)) {
-            j_is_beauty2charm = kTRUE;
-            break;
-          }
-          indexx_j = gm_j->GetMother(); //
+          if(gm_j) {
+	    int pid_gm_j = TMath::Abs( gm_j->PdgCode() );// pdg of the mother
+	    if (((pid_gm_j>=500) && (pid_gm_j<=549)) || ((pid_gm_j>=5000) && (pid_gm_j<=5499)) || (pid_gm_j == 5)) {
+	      j_is_beauty2charm = kTRUE;
+	      break;
+	    }
+	    indexx_j = gm_j->GetMother(); //
+	  } else indexx_j = -1;
         }
         if(j_is_beauty2charm == kFALSE) j_is_charm2e = kFALSE; // it is not a charm that comes from beauty.
       }
@@ -761,17 +795,25 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
       double ptweight2 = pt_cut200(pt_i) * pt_cut200(pt_j) * pt_cutHigh(pt_i) * pt_cutHigh(pt_j); // pT>0.2
       double ptweight3 = pt_cut300(pt_i) * pt_cut300(pt_j) * pt_cutHigh(pt_i) * pt_cutHigh(pt_j); // pT>0.3
       double ptweight4 = pt_cut400(pt_i) * pt_cut400(pt_j) * pt_cutHigh(pt_i) * pt_cutHigh(pt_j); // pT>0.4
+      double ptweight5 = pt_cutLow(pt_i) * pt_cutLow(pt_j) * pt_cutHigh(pt_i) * pt_cutHigh(pt_j); // flexible
+
+
+      // efficiency if any
+      Double_t efficiency_i = GetEfficiency(pp_i);
+      Double_t efficiency_j = GetEfficiency(pp_j); 
 
       // HFE R_AA scaling
       if (fScaleByRAA) {
         ptweight2 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight3 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight4 *= scale_RAA(pt_i) * scale_RAA(pt_j);
+	ptweight5 *= scale_RAA(pt_i) * scale_RAA(pt_j);
       }
 
-      ptweight2 = ptweight2*eventw;
-      ptweight3 = ptweight3*eventw;
-      ptweight4 = ptweight4*eventw;
+      ptweight2 = ptweight2*eventw*efficiency_i*efficiency_j;
+      ptweight3 = ptweight3*eventw*efficiency_i*efficiency_j;
+      ptweight4 = ptweight4*eventw*efficiency_i*efficiency_j;
+      ptweight5 = ptweight5*eventw*efficiency_i*efficiency_j;
 
       //--------------------------------------- ULS pairs -------------------------------------------//
 
@@ -789,6 +831,10 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_ULS_eta035->Fill(mass,eventw);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) hMee_ULS_eta035_phenixacc->Fill(mass,eventw);
           }
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+	    hMeePtee_ULS_eta_pt->Fill(mass,pt_pair,ptweight5);  // flexible
+	  }
+	  
           // Cut on smeared variables for ALICE acceptance
           if(fabs(eta_i)<EtaCut  && fabs(eta_j)<EtaCut)  {
             hMee_ULS_eta08->Fill(mass,eventw);
@@ -820,6 +866,9 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_ULS_eta035_be->Fill(mass,eventw);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) hMee_ULS_eta035_phenixacc_be->Fill(mass,eventw);
           }
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+	    hMeePtee_ULS_eta_pt_be->Fill(mass,pt_pair,ptweight5);  // flexible
+	  }
           // Cut on smeared variables for ALICE acceptance
           if(fabs(eta_i)<EtaCut  && fabs(eta_j)<EtaCut)  {
             hMee_ULS_eta08_be->Fill(mass,eventw);
@@ -843,6 +892,9 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_ULS_eta035_bce->Fill(mass,eventw);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) hMee_ULS_eta035_phenixacc_bce->Fill(mass,eventw);
           }
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+	    hMeePtee_ULS_eta_pt_bce->Fill(mass,pt_pair,ptweight5);  // flexible 
+	  }
           // Cut on smeared variables for ALICE acceptance
           if(fabs(eta_i)<EtaCut  && fabs(eta_j)<EtaCut)  {
             hMee_ULS_eta08_bce->Fill(mass,eventw);
@@ -874,6 +926,9 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_LS_eta035->Fill(mass,eventw);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) hMee_LS_eta035_phenixacc->Fill(mass,eventw);
           }
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+	    hMeePtee_LS_eta_pt->Fill(mass,pt_pair,ptweight5); // flexible
+	  }
           // Cut on smeared variables for ALICE acceptance
           if(fabs(eta_i)<EtaCut  && fabs(eta_j)<EtaCut)  {
             hMee_LS_eta08->Fill(mass,eventw);
@@ -904,6 +959,9 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_LS_eta035_be->Fill(mass,eventw);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) hMee_LS_eta035_phenixacc_be->Fill(mass,eventw);
           }
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+	    hMeePtee_LS_eta_pt_be->Fill(mass,pt_pair,ptweight5);  // flexible
+	  }
           // Cut on smeared variables for ALICE acceptance
           if(fabs(eta_i)<EtaCut  && fabs(eta_j)<EtaCut)  {
             hMee_LS_eta08_be->Fill(mass,eventw);
@@ -927,6 +985,9 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_LS_eta035_bce->Fill(mass,eventw);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) hMee_LS_eta035_phenixacc_bce->Fill(mass,eventw);
           }
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+	    hMeePtee_LS_eta_pt_bce->Fill(mass,pt_pair,ptweight5);  // flexible
+	  }
           // Cut on smeared variables for ALICE acceptance
           if(fabs(eta_i)<EtaCut  && fabs(eta_j)<EtaCut)  {
             hMee_LS_eta08_bce->Fill(mass,eventw);
@@ -1077,6 +1138,8 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   hMeePtee_LS_eta08        = new TH2F("hMeePtee_LS_eta08"       ,"e+e+ & e-e-,|eta|<0.8;m_{ee};p_{T,ee}"               ,nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt200 = new TH2F("hMeePtee_ULS_eta08_pt200","e+e-,       |eta|<0.8 , pt>0.2 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_LS_eta08_pt200  = new TH2F("hMeePtee_LS_eta08_pt200" ,"e+e+ & e-e-,|eta|<0.8 , pt>0.2 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta_pt = new TH2F("hMeePtee_ULS_eta_pt","e+e-;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta_pt  = new TH2F("hMeePtee_LS_eta_pt" ,"e+e+ & e-e-;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt400 = new TH2F("hMeePtee_ULS_eta08_pt400","e+e-,       |eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_LS_eta08_pt400  = new TH2F("hMeePtee_LS_eta08_pt400" ,"e+e+ & e-e-,|eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt200_opAngle50 = new TH2F("hMeePtee_ULS_eta08_pt200_opAngle50","e+e-,        |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
@@ -1107,6 +1170,8 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   hMeePtee_LS_eta08_be      = new TH2F("hMeePtee_LS_eta08_be"     ,"e+e+ & e-e-,|eta|<0.8;m_{ee};p_{T,ee}"               ,nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt200_be = new TH2F("hMeePtee_ULS_eta08_pt200_be","e+e-,       |eta|<0.8 , pt>0.2 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_LS_eta08_pt200_be  = new TH2F("hMeePtee_LS_eta08_pt200_be" ,"e+e+ & e-e-,|eta|<0.8 , pt>0.2 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta_pt_be = new TH2F("hMeePtee_ULS_eta_pt_be","e+e-;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta_pt_be  = new TH2F("hMeePtee_LS_eta_pt_be" ,"e+e+ & e-e-;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt400_be = new TH2F("hMeePtee_ULS_eta08_pt400_be","e+e-,       |eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_LS_eta08_pt400_be  = new TH2F("hMeePtee_LS_eta08_pt400_be" ,"e+e+ & e-e-,|eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
 
@@ -1131,6 +1196,8 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   hMeePtee_LS_eta08_bce      = new TH2F("hMeePtee_LS_eta08_bce"     ,"e+e+ & e-e-,|eta|<0.8;m_{ee};p_{T,ee}"               ,nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt200_bce = new TH2F("hMeePtee_ULS_eta08_pt200_bce","e+e-,       |eta|<0.8 , pt>0.2 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_LS_eta08_pt200_bce  = new TH2F("hMeePtee_LS_eta08_pt200_bce" ,"e+e+ & e-e-,|eta|<0.8 , pt>0.2 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta_pt_bce = new TH2F("hMeePtee_ULS_eta_pt_bce","e+e-;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta_pt_bce  = new TH2F("hMeePtee_LS_eta_pt_bce" ,"e+e+ & e-e-;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt400_bce = new TH2F("hMeePtee_ULS_eta08_pt400_bce","e+e-,       |eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_LS_eta08_pt400_bce  = new TH2F("hMeePtee_LS_eta08_pt400_bce" ,"e+e+ & e-e-,|eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   // opening angle
@@ -1189,6 +1256,8 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   hMeePtee_LS_eta08->Sumw2();
   hMeePtee_ULS_eta08_pt200->Sumw2();
   hMeePtee_LS_eta08_pt200->Sumw2();
+  hMeePtee_ULS_eta_pt->Sumw2();
+  hMeePtee_LS_eta_pt->Sumw2();
   hMeePtee_ULS_eta08_pt400->Sumw2();
   hMeePtee_LS_eta08_pt400->Sumw2();
   hMeePtee_ULS_eta08_pt200_opAngle50->Sumw2();
@@ -1215,6 +1284,8 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   hMeePtee_LS_eta08_be->Sumw2();
   hMeePtee_ULS_eta08_pt200_be->Sumw2();
   hMeePtee_LS_eta08_pt200_be->Sumw2();
+  hMeePtee_ULS_eta_pt_be->Sumw2();
+  hMeePtee_LS_eta_pt_be->Sumw2();
   hMeePtee_ULS_eta08_pt400_be->Sumw2();
   hMeePtee_LS_eta08_pt400_be->Sumw2();
   hMee_ULS_simulated_bce->Sumw2();
@@ -1235,6 +1306,8 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   hMeePtee_LS_eta08_bce->Sumw2();
   hMeePtee_ULS_eta08_pt200_bce->Sumw2();
   hMeePtee_LS_eta08_pt200_bce->Sumw2();
+  hMeePtee_ULS_eta_pt_bce->Sumw2();
+  hMeePtee_LS_eta_pt_bce->Sumw2();
   hMeePtee_ULS_eta08_pt400_bce->Sumw2();
   hMeePtee_LS_eta08_pt400_bce->Sumw2();
   hMeeOpAngle_ULS_eta08_pt200->Sumw2();
@@ -1292,6 +1365,8 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   fOutputList->Add(hMeePtee_LS_eta08);
   fOutputList->Add(hMeePtee_ULS_eta08_pt200);
   fOutputList->Add(hMeePtee_LS_eta08_pt200);
+  fOutputList->Add(hMeePtee_ULS_eta_pt);
+  fOutputList->Add(hMeePtee_LS_eta_pt);
   fOutputList->Add(hMeePtee_ULS_eta08_pt400);
   fOutputList->Add(hMeePtee_LS_eta08_pt400);
   fOutputList->Add(hMeePtee_ULS_eta08_pt200_opAngle50);
@@ -1318,6 +1393,8 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   fOutputList->Add(hMeePtee_LS_eta08_be);
   fOutputList->Add(hMeePtee_ULS_eta08_pt200_be);
   fOutputList->Add(hMeePtee_LS_eta08_pt200_be);
+  fOutputList->Add(hMeePtee_ULS_eta_pt_be);
+  fOutputList->Add(hMeePtee_LS_eta_pt_be);
   fOutputList->Add(hMeePtee_ULS_eta08_pt400_be);
   fOutputList->Add(hMeePtee_LS_eta08_pt400_be);
   fOutputList->Add(hMee_ULS_simulated_bce);
@@ -1338,6 +1415,8 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   fOutputList->Add(hMeePtee_LS_eta08_bce);
   fOutputList->Add(hMeePtee_ULS_eta08_pt200_bce);
   fOutputList->Add(hMeePtee_LS_eta08_pt200_bce);
+  fOutputList->Add(hMeePtee_ULS_eta_pt_bce);
+  fOutputList->Add(hMeePtee_LS_eta_pt_bce);
   fOutputList->Add(hMeePtee_ULS_eta08_pt400_bce);
   fOutputList->Add(hMeePtee_LS_eta08_pt400_bce);
   fOutputList->Add(hMeeOpAngle_ULS_eta08_pt200);
@@ -1364,6 +1443,11 @@ Double_t AliAnalysisTaskBeauty::pt_cut400(Double_t pT) {
 
 Double_t AliAnalysisTaskBeauty::pt_cutHigh(Double_t pT) {
   if (pT>fPtCutHigh) return 0.0;
+  return 1.0;
+}
+
+Double_t AliAnalysisTaskBeauty::pt_cutLow(Double_t pT) {
+  if (pT<fPtCutLow) return 0.0;
   return 1.0;
 }
 

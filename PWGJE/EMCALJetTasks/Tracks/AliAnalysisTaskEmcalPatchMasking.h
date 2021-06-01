@@ -12,7 +12,9 @@ class AliEMCALTriggerPatchADCInfoAP;
 class AliOADBContainer;
 class THistManager;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 /**
  * @class AliAnalysisTaskEmcalPatchMasking
@@ -117,11 +119,11 @@ private:
   AliAnalysisTaskEmcalPatchMasking(const AliAnalysisTaskEmcalPatchMasking &);
   AliAnalysisTaskEmcalPatchMasking &operator=(const AliAnalysisTaskEmcalPatchMasking &);
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalPatchMasking, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALPATCHMASKING_H */

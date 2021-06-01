@@ -18,8 +18,11 @@
 #include <TProfile.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
+#include <TH1D.h>
+#include <TH2D.h>
 #include <TH2F.h>
 #include <TF1.h>
+#include <TFile.h>
 #include <TParticle.h>
 #include <TLorentzVector.h>
 #include "AliMCEvent.h"
@@ -30,6 +33,10 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliVertexingHFUtils.h"
 
+#ifndef HomogeneousField
+#define HomogeneousField 
+#endif
+
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
@@ -37,8 +44,10 @@
 // Class with functions useful for different D2H analyses        //
 // - event plane resolution                                      //
 // - <pt> calculation with side band subtraction                 //
-// - tracklet multiplicity calculation                            //
+// - tracklet multiplicity calculation                           //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
+// - KF particle                                                 //
+// Origin: Jianhui Zhu, <zjh@mail.ccnu.edu.cn>                   //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
@@ -860,6 +869,35 @@ Bool_t AliVertexingHFUtils::IsTrackFromHadronDecay(Int_t pdgMoth, AliAODTrack* t
     }
   }
   return kFALSE;
+}
+//____________________________________________________________________________
+Double_t AliVertexingHFUtils::GetBeautyMotherPt(AliMCEvent* mcEvent, AliMCParticle *mcPart){
+  /// get the pt of the beauty hadron (feed-down case), returns negative value for prompt (ESD case)
+
+  Int_t pdgGranma = 0;
+  Int_t mother = 0;
+  mother = mcPart->GetMother();
+  Int_t istep = 0;
+  Int_t abspdgGranma =0;
+  while (mother >=0 ){
+    istep++;
+    AliMCParticle* mcGranma = (AliMCParticle*)mcEvent->GetTrack(mother);
+    if (mcGranma){
+      TParticle* partGranma = mcGranma->Particle();
+      if(partGranma) pdgGranma = partGranma->GetPdgCode();
+      abspdgGranma = TMath::Abs(pdgGranma);
+      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+	return mcGranma->Pt();
+      }
+      if(abspdgGranma==4) return -999.;
+      if(abspdgGranma==5) return -1.;
+      mother = mcGranma->GetMother();
+    }else{
+      printf("AliVertexingHFUtils::GetBeautyMotherPt: Failed casting the mother particle!");
+      break;
+    }
+  }
+  return -999.;
 }
 //____________________________________________________________________________
 Double_t AliVertexingHFUtils::GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart){
@@ -3662,4 +3700,416 @@ Double_t AliVertexingHFUtils::CombineNsigmaTPCTOF(Double_t nsigmaTPC, Double_t n
       return TMath::Abs(nsigmaTOF);
   else
       return -999.;
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::CosPointingAngleFromKF(KFParticle kfp, KFParticle kfpmother)
+{
+  Double_t v[3];
+  v[0] = kfp.GetX() - kfpmother.GetX();
+  v[1] = kfp.GetY() - kfpmother.GetY();
+  v[2] = kfp.GetZ() - kfpmother.GetZ();
+
+  Double_t p[3];
+  p[0] = kfp.GetPx();
+  p[1] = kfp.GetPy();
+  p[2] = kfp.GetPz();
+
+  Double_t ptimesv2 = (p[0]*p[0]+p[1]*p[1]+p[2]*p[2])*(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+
+  if ( ptimesv2<=0 ) return 0.0;
+  else {
+    Double_t cos = (v[0]*p[0]+v[1]*p[1]+v[2]*p[2]) / TMath::Sqrt(ptimesv2);
+    if(cos >  1.0) cos =  1.0;
+    if(cos < -1.0) cos = -1.0;
+    return cos;
+  }
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::CosPointingAngleXYFromKF(KFParticle kfp, KFParticle kfpmother)
+{
+  Double_t v[2];
+  v[0] = kfp.GetX() - kfpmother.GetX();
+  v[1] = kfp.GetY() - kfpmother.GetY();
+
+  Double_t p[2];
+  p[0] = kfp.GetPx();
+  p[1] = kfp.GetPy();
+
+  Double_t ptimesv2 = (p[0]*p[0]+p[1]*p[1])*(v[0]*v[0]+v[1]*v[1]);
+
+  if ( ptimesv2<=0 ) return 0.0;
+  else {
+    Double_t cos = (v[0]*p[0]+v[1]*p[1]) / TMath::Sqrt(ptimesv2);
+    if(cos >  1.0) cos =  1.0;
+    if(cos < -1.0) cos = -1.0;
+    return cos;
+  }
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::CosThetaStarFromKF(Int_t ip, UInt_t pdgvtx, UInt_t pdgprong0, UInt_t pdgprong1, KFParticle kfpvtx, KFParticle kfpprong0, KFParticle kfpprong1)
+{
+  Double_t massvtx = TDatabasePDG::Instance()->GetParticle(pdgvtx)->Mass();
+  Double_t massp[2];
+
+  massp[0] = TDatabasePDG::Instance()->GetParticle(pdgprong0)->Mass();
+  massp[1] = TDatabasePDG::Instance()->GetParticle(pdgprong1)->Mass();
+
+  Double_t pStar = TMath::Sqrt((massvtx*massvtx-massp[0]*massp[0]-massp[1]*massp[1])*(massvtx*massvtx-massp[0]*massp[0]-massp[1]*massp[1])-4.*massp[0]*massp[0]*massp[1]*massp[1])/(2.*massvtx);
+
+  Double_t e = kfpvtx.GetE();
+  Double_t beta = kfpvtx.GetP()/e;
+  Double_t gamma = e/massvtx;
+
+  TVector3 mom;
+  TVector3 momTot(kfpvtx.GetPx(), kfpvtx.GetPy(), kfpvtx.GetPz());
+
+  if (ip==0) {
+    mom.SetXYZ(kfpprong0.GetPx(), kfpprong0.GetPy(), kfpprong0.GetPz());
+  }
+  if (ip==1) {
+    mom.SetXYZ(kfpprong1.GetPx(), kfpprong1.GetPy(), kfpprong1.GetPz());
+  }
+
+  Double_t cts = ( (mom.Dot(momTot)/momTot.Mag()) /gamma-beta*TMath::Sqrt(pStar*pStar+massp[ip]*massp[ip]) ) / pStar;
+
+  return cts;
+}
+
+//______________________________________________________________________
+Bool_t AliVertexingHFUtils::CheckAODvertexCov(AliAODVertex *vtx)                                  
+{
+  Double_t covMatrix[6];
+  vtx->GetCovarianceMatrix(covMatrix);
+  Double_t cov[3][3]={0.};
+  cov[0][0] = covMatrix[0];
+  cov[1][0] = covMatrix[1];
+  cov[1][1] = covMatrix[2];
+  cov[2][0] = covMatrix[3];
+  cov[2][1] = covMatrix[4];
+  cov[2][2] = covMatrix[5];
+  if ( cov[0][0]<0 || cov[1][1]<0 || cov[2][2]<0 ) return kFALSE;
+  for (Int_t i=0; i<3; i++) {
+    for (Int_t j=0; j<3; j++) {
+      if (i<=j) continue;
+      if ( fabs(cov[i][j]) > TMath::Sqrt(cov[i][i]*cov[j][j]) ) return kFALSE;
+    }
+  }
+
+  return kTRUE;
+}
+
+//______________________________________________________________________
+Bool_t AliVertexingHFUtils::CheckAODtrackCov(AliAODTrack *track)
+{
+  Double_t covMatrix[21];
+  track->GetCovarianceXYZPxPyPz(covMatrix);
+  Double_t cov[6][6]={0.};
+  cov[0][0] = covMatrix[0];
+  cov[1][0] = covMatrix[1];
+  cov[1][1] = covMatrix[2];
+  cov[2][0] = covMatrix[3];
+  cov[2][1] = covMatrix[4];
+  cov[2][2] = covMatrix[5];
+  cov[3][0] = covMatrix[6];
+  cov[3][1] = covMatrix[7];
+  cov[3][2] = covMatrix[8];
+  cov[3][3] = covMatrix[9];
+  cov[4][0] = covMatrix[10];
+  cov[4][1] = covMatrix[11];
+  cov[4][2] = covMatrix[12];
+  cov[4][3] = covMatrix[13];
+  cov[4][4] = covMatrix[14];
+  cov[5][0] = covMatrix[15];
+  cov[5][1] = covMatrix[16];
+  cov[5][2] = covMatrix[17];
+  cov[5][3] = covMatrix[18];
+  cov[5][4] = covMatrix[19];
+  cov[5][5] = covMatrix[20];
+  if ( cov[0][0]<0 || cov[1][1]<0 || cov[2][2]<0 || cov[3][3]<0 || cov[4][4]<0 || cov[5][5]<0 ) return kFALSE;
+  for (Int_t i=0; i<6; i++) {
+    for (Int_t j=0; j<6; j++) {
+      if (i<=j) continue;
+      if ( fabs(cov[i][j]) > TMath::Sqrt(cov[i][i]*cov[j][j]) ) return kFALSE;
+    }
+  }
+
+  return kTRUE;
+}
+
+//______________________________________________________________________
+Bool_t AliVertexingHFUtils::CheckKFParticleCov(KFParticle kfp)                                 
+{
+  if ( kfp.GetCovariance(0,0)<0 || kfp.GetCovariance(1,1)<0 || kfp.GetCovariance(2,2)<0 || kfp.GetCovariance(3,3)<0 || kfp.GetCovariance(4,4)<0 || kfp.GetCovariance(5,5)<0 ) return kFALSE;
+  for (Int_t i=0; i<6; i++) {
+    for (Int_t j=0; j<6; j++) {
+      if (i<=j) continue;
+      if ( fabs(kfp.GetCovariance(i,j)) > TMath::Sqrt(kfp.GetCovariance(i,i)*kfp.GetCovariance(j,j)) ) return kFALSE;
+    }
+  }
+
+  return kTRUE;
+}
+
+//______________________________________________________________________
+KFVertex AliVertexingHFUtils::CreateKFVertex(Double_t *param, Double_t *cov)                   
+{
+  KFPVertex kfpVtx;
+  // Set the values
+  Float_t paramF[3] = {(Float_t) param[0],(Float_t) param[1],(Float_t) param[2]};
+  kfpVtx.SetXYZ(paramF);
+  Float_t covF[6] = {(Float_t) cov[0],(Float_t) cov[1],(Float_t) cov[2],
+                     (Float_t) cov[3],(Float_t) cov[4],(Float_t) cov[5]};
+  kfpVtx.SetCovarianceMatrix(covF);
+
+  return kfpVtx;
+}
+
+//______________________________________________________________________
+KFVertex AliVertexingHFUtils::CreateKFVertexFromAODvertex(AliAODVertex *vtx)
+{
+  Double_t pos[3], cov[6];
+  vtx->GetXYZ(pos);
+  vtx->GetCovarianceMatrix(cov);
+  Float_t covF[6];
+  for (Int_t i=0; i<6; i++) { covF[i] = (Float_t)cov[i]; }
+
+  KFPVertex kfpVertex;
+  kfpVertex.SetXYZ((Float_t)pos[0], (Float_t)pos[1], (Float_t)pos[2]);
+  kfpVertex.SetCovarianceMatrix(covF);
+  kfpVertex.SetChi2(vtx->GetChi2());
+  kfpVertex.SetNDF(vtx->GetNDF());
+  kfpVertex.SetNContributors(vtx->GetNContributors());
+
+  return kfpVertex;
+}
+
+//______________________________________________________________________
+KFParticle AliVertexingHFUtils::CreateKFParticle(Double_t *param, Double_t *cov, Float_t Chi2perNDF, Int_t charge, Int_t pdg)
+{
+  // Interface to KFParticle
+  KFPTrack kfpTrk;
+  // Set the values
+  kfpTrk.SetParameters((Float_t) param[0],(Float_t) param[1],(Float_t) param[2],
+                       (Float_t) param[3],(Float_t) param[4],(Float_t) param[5]);
+  kfpTrk.SetCharge(charge);
+  Float_t covF[21];
+  for (Int_t i = 0; i<21;i++) { covF[i] = (Float_t) cov[i]; }
+  kfpTrk.SetCovarianceMatrix(covF);
+  kfpTrk.SetNDF(1);
+  kfpTrk.SetChi2(Chi2perNDF);
+
+  // Build KFParticle
+  KFParticle kfp(kfpTrk, pdg);
+  return kfp;
+}
+
+//______________________________________________________________________
+KFParticle AliVertexingHFUtils::CreateKFParticleFromAODtrack(AliAODTrack *track, Int_t pdg)
+{
+  Double_t trackParam[6];
+  Double_t covMatrix[21];
+
+  Bool_t IsDCA = track->GetXYZ(trackParam);
+//  if (IsDCA) cout << "track position is at DCA" << endl;
+//  if (!IsDCA) cout << "track position is at first point" << endl;
+//  track->XvYvZv(trackParam);
+  track->GetPxPyPz(&trackParam[3]);
+  track->GetCovarianceXYZPxPyPz(covMatrix);
+
+  KFPTrack kfpt;
+  kfpt.SetParameters(trackParam);
+  kfpt.SetCovarianceMatrix(covMatrix);
+  kfpt.SetCharge(track->Charge());
+  kfpt.SetNDF(1);
+  kfpt.SetChi2(track->Chi2perNDF());
+
+  KFParticle kfp(kfpt, pdg);
+
+  return kfp;
+}
+
+//______________________________________________________________________
+KFParticle AliVertexingHFUtils::CreateKFParticleV0(AliAODTrack *track1, AliAODTrack *track2, Int_t pdg1, Int_t pdg2)
+{
+  Double_t trackParam[6];
+  Double_t covMatrix[21];
+
+  track1->GetXYZ(trackParam);
+  track1->GetPxPyPz(&trackParam[3]);
+  track1->GetCovarianceXYZPxPyPz(covMatrix);
+
+  KFPTrack kfpt1;
+  kfpt1.SetParameters(trackParam);
+  kfpt1.SetCovarianceMatrix(covMatrix);
+  kfpt1.SetCharge(track1->Charge());
+  kfpt1.SetNDF(1);
+  kfpt1.SetChi2(track1->Chi2perNDF());
+
+  track2->GetXYZ(trackParam);
+  track2->GetPxPyPz(&trackParam[3]);
+  track2->GetCovarianceXYZPxPyPz(covMatrix);
+
+  KFPTrack kfpt2;
+  kfpt2.SetParameters(trackParam);
+  kfpt2.SetCovarianceMatrix(covMatrix);
+  kfpt2.SetCharge(track2->Charge());
+  kfpt2.SetNDF(1);
+  kfpt2.SetChi2(track2->Chi2perNDF());
+
+  // now we have all info to create the KFParticle version of the daughters
+  KFParticle kfpDaughter1(kfpt1, pdg1);
+  KFParticle kfpDaughter2(kfpt2, pdg2);
+                       
+  KFParticle kfpMother(kfpDaughter1, kfpDaughter2);
+
+  return kfpMother;
+}
+
+//______________________________________________________________________
+KFParticle AliVertexingHFUtils::CreateKFParticleCasc(KFParticle kfpV0, AliAODTrack *btrack, Int_t pdg_V0, Int_t pdg_btrack)
+{
+  Double_t trackParam[6];
+  Double_t covMatrix[21];
+
+  btrack->GetXYZ(trackParam);
+//  btrack->XvYvZv(trackParam);
+  btrack->GetPxPyPz(&trackParam[3]);
+  btrack->GetCovarianceXYZPxPyPz(covMatrix);
+
+  KFPTrack kfpbtrack;
+  kfpbtrack.SetParameters(trackParam);
+  kfpbtrack.SetCovarianceMatrix(covMatrix);
+  kfpbtrack.SetCharge(btrack->Charge());
+  kfpbtrack.SetNDF(1);
+  kfpbtrack.SetChi2(btrack->Chi2perNDF());
+
+  KFParticle kfpDaughter2(kfpbtrack, pdg_btrack);
+
+  kfpV0.SetPDG(pdg_V0);
+//  KFParticle kfpCasc(kfpV0, kfpDaughter2);
+  KFParticle kfpCasc;
+//  const KFParticle *vDaughters[2] = {&kfpV0, &kfpDaughter2};
+  const KFParticle *vDaughters[2] = {&kfpDaughter2, &kfpV0}; // the order is important
+  kfpCasc.Construct(vDaughters, 2);
+
+  return kfpCasc;
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::DecayLengthFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t dz_particle = PV.GetZ()-kfpParticle.GetZ();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle + dz_particle*dz_particle);
+  return l_particle;
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::DecayLengthXYFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle);
+  return l_particle;
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::ldlFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t dz_particle = PV.GetZ()-kfpParticle.GetZ();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle + dz_particle*dz_particle);
+  Double_t dl_particle = (PV.GetCovariance(0)+kfpParticle.GetCovariance(0))*dx_particle*dx_particle + (PV.GetCovariance(2)+kfpParticle.GetCovariance(2))*dy_particle*dy_particle + (PV.GetCovariance(5)+kfpParticle.GetCovariance(5))*dz_particle*dz_particle + 2*( (PV.GetCovariance(1)+kfpParticle.GetCovariance(1))*dx_particle*dy_particle + (PV.GetCovariance(3)+kfpParticle.GetCovariance(3))*dx_particle*dz_particle + (PV.GetCovariance(4)+kfpParticle.GetCovariance(4))*dy_particle*dz_particle );
+  if ( fabs(l_particle)<1.e-8f ) l_particle = 1.e-8f;
+  dl_particle = dl_particle<0. ? 1.e8f : sqrt(dl_particle)/l_particle;
+  if ( dl_particle==0. ) return 9999.;
+  return l_particle/dl_particle;
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::ldlXYFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle);
+  Double_t dl_particle = (PV.GetCovariance(0)+kfpParticle.GetCovariance(0))*dx_particle*dx_particle + (PV.GetCovariance(2)+kfpParticle.GetCovariance(2))*dy_particle*dy_particle + 2*( (PV.GetCovariance(1)+kfpParticle.GetCovariance(1))*dx_particle*dy_particle );
+  if ( fabs(l_particle)<1.e-8f ) l_particle = 1.e-8f;
+  dl_particle = dl_particle<0. ? 1.e8f : sqrt(dl_particle)/l_particle;
+  if ( dl_particle==0. ) return 9999.;
+  return l_particle/dl_particle;
+}
+//______________________________________________________________________
+TH1D* AliVertexingHFUtils::ComputeGenAccOverGenLimAcc(TFile* fileToyMCoutput,
+						      Int_t nPtBins, Double_t* binLims,
+						      Bool_t useSimpleFormula){
+  // method to propagate the uncertainty on the ratio GenAcc/GenLimAcc
+  // starting from ToyMC output file
+  
+  TH2D* hPtVsYGenAccToy=(TH2D*)fileToyMCoutput->Get("hPtVsYGenAcc");
+  TH2D* hPtVsYGenLimAccToy=(TH2D*)fileToyMCoutput->Get("hPtVsYGenLimAcc");
+  ComputeGenAccOverGenLimAcc(hPtVsYGenAccToy,hPtVsYGenLimAccToy,nPtBins,binLims,useSimpleFormula);
+}
+//______________________________________________________________________
+TH1D* AliVertexingHFUtils::ComputeGenAccOverGenLimAcc(TH2D* hPtVsYGenAccToy, TH2D* hPtVsYGenLimAccToy,
+						      Int_t nPtBins, Double_t* binLims,
+						      Bool_t useSimpleFormula){
+
+  // method to propagate the uncertainty on the ratio GenAcc/GenLimAcc
+  // starting from the 2D histos (pt,y) of the ToyMC
+  
+  Int_t iybin1=hPtVsYGenAccToy->GetYaxis()->FindBin(-0.499999);
+  Int_t iybin2=hPtVsYGenAccToy->GetYaxis()->FindBin(0.499999);
+  TH1D* hptga=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga");
+  TH1D* hptgay05=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga05",iybin1,iybin2);
+  TH1D* hptgla=(TH1D*)hPtVsYGenLimAccToy->ProjectionX("hptgla");
+  TH1D* hptgaR=0x0;
+  TH1D* hptglaR=0x0;
+  TH1D* hptgay05R=0x0;
+  Bool_t shouldDelete=kFALSE;
+  if(nPtBins>0 && binLims){
+    hptgaR=(TH1D*)hptga->Rebin(nPtBins,"hptgaR",binLims);
+    hptglaR=(TH1D*)hptgla->Rebin(nPtBins,"hptglaR",binLims);
+    hptgay05R=(TH1D*)hptgay05->Rebin(nPtBins,"hptgay05R",binLims);
+  }else{
+    hptgaR=(TH1D*)hptga->Clone("hptgaR");
+    hptglaR=(TH1D*)hptgla->Clone("hptglaR");
+    hptgay05R=(TH1D*)hptgay05->Clone("hptgay05R");
+    nPtBins=hptgay05R->GetNbinsX();
+    binLims=new Double_t[nPtBins+1];
+    for(Int_t ib=0; ib<nPtBins; ib++) binLims[ib]=hptgay05R->GetBinLowEdge(ib+1);
+    binLims[nPtBins]=hptgay05R->GetBinLowEdge(nPtBins+1);
+    shouldDelete=kTRUE;
+  }
+  TH1D* hGenAccOverGenLimAcc = new TH1D("hGenAccOverGenLimAcc",";p_{T} (GeV/c); GenAcc/GenLimAcc",nPtBins,binLims);
+  for(Int_t ib=1; ib<=nPtBins; ib++){
+    Double_t countGenAcc=hptgaR->GetBinContent(ib);
+    Double_t countGenAccY05=hptgay05R->GetBinContent(ib);
+    Double_t countGenLimAcc=hptglaR->GetBinContent(ib);
+    Double_t yfid=0.8;
+    Double_t ptcent=hptgaR->GetBinCenter(ib);
+    if(ptcent<5) yfid=-0.2/15*ptcent*ptcent+1.9/15*ptcent+0.5;
+    Double_t acc=0;
+    Double_t erracc=0;
+    if(countGenAcc>0 && countGenLimAcc>0){
+      acc=countGenAcc/countGenLimAcc;
+      Double_t rho=TMath::Sqrt(countGenAccY05*countGenAccY05/(countGenAcc*countGenLimAcc));
+      if(useSimpleFormula) rho=TMath::Sqrt(0.5/yfid*acc/1.6);
+      erracc=acc*TMath::Sqrt(1./countGenAcc+1./countGenLimAcc-2*rho*1/TMath::Sqrt(countGenAcc*countGenLimAcc));
+    }
+    hGenAccOverGenLimAcc->SetBinContent(ib,acc);
+    hGenAccOverGenLimAcc->SetBinError(ib,erracc);
+  }
+  delete hptga;
+  delete hptgay05;
+  delete hptgla;
+  delete hptgaR;
+  delete hptgay05R;
+  delete hptglaR;
+  if(shouldDelete) delete binLims;
+  return hGenAccOverGenLimAcc;
 }

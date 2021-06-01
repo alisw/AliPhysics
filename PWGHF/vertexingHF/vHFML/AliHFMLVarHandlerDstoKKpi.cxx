@@ -64,6 +64,8 @@ TTree* AliHFMLVarHandlerDstoKKpi::BuildTree(TString name, TString title)
 
     //set common variables
     AddCommonDmesonVarBranches();
+    //set global event variables
+    AddGlobalEventVarBranches();
     //set single-track variables
     if(fAddSingleTrackVar)
         AddSingleTrackBranches();

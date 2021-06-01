@@ -94,6 +94,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
     bool fixMeanSecP = static_cast<bool>(config["AnalysisOptions"]["FixMeanSecondPeak"].as<int>());
     bool fixSigmaSecP = static_cast<bool>(config["AnalysisOptions"]["FixSigmaSecondPeak"].as<int>());
     string sigmaFileName = config["AnalysisOptions"]["SigmaFileName"].as<string>();
+    vector<int> inclSecPeakV2 = config["AnalysisOptions"]["IncludeSecondPeakV2"].as<vector<int> >();
 
     vector<double> MassMin = config["FitSystematicsOptions"]["MassMin"].as<vector<double> >();
     vector<double> MassMax = config["FitSystematicsOptions"]["MassMax"].as<vector<double> >();
@@ -567,7 +568,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                     vnvsmassfitter->SetInitialGaussianMean(massD,1);
                                     vnvsmassfitter->SetInitialGaussianSigma(massfitterInt.GetSigma(),1);
                                     if(meson==AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
-                                        vnvsmassfitter->IncludeSecondGausPeak(massDplus,fixMeanSecP,DplusSigma[iPt],fixSigmaSecP,true);
+                                        vnvsmassfitter->IncludeSecondGausPeak(massDplus,fixMeanSecP,DplusSigma[iPt],fixSigmaSecP,static_cast<bool>(inclSecPeakV2[iPt]));
                                     if(useRefl) {
                                         vnvsmassfitter->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iMassMin],MassMax[iMassMax]);
                                         vnvsmassfitter->SetFixReflOverS(SoverR);

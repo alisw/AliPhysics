@@ -13,6 +13,7 @@
 //
 /////////////////////////////////////////////////////////
 
+#include <TObjString.h>
 #include <TClass.h>
 #include <TMethod.h>
 #include <TMethodCall.h>

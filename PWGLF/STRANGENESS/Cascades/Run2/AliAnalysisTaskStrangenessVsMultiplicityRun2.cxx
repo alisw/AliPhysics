@@ -117,6 +117,17 @@ class AliAODv0;
 #include "AliV0Result.h"
 #include "AliCascadeResult.h"
 #include "AliAnalysisTaskStrangenessVsMultiplicityRun2.h"
+#include "AliAnalysisTaskWeakDecayVertexer.h"
+
+#include "AliESDInputHandlerRP.h"
+#include "AliITSRecPoint.h"
+#include "AliTrackPointArray.h"
+#include "AliITSgeomTGeo.h"
+#include <TGeoManager.h>
+#include "AliCDBManager.h"
+#include "AliGeomManager.h"
+#include "AliGRPManager.h"
+#include <TGeoGlobalMagField.h>
 
 using std::cout;
 using std::endl;
@@ -161,6 +172,8 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit       ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+fkDoStrangenessTracking (kFALSE),
+fWDV (0x0),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -282,6 +295,7 @@ fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
 
 fTreeVariableMagneticField(0x0),
+fTreeVariableRunNumber(0),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCharge(0),
@@ -469,13 +483,14 @@ fTreeCascVarBachTrack(0x0),
 fTreeCascVarPosTrack(0x0),
 fTreeCascVarNegTrack(0x0),
 fTreeCascVarMagneticField(0),
-
+fTreeCascVarRunNumber(0),
 
 //Histos
 fHistEventCounter(0),
 fHistEventCounterDifferential(0),
 fHistCentrality(0),
-fHistEventMatrix(0)
+fHistEventMatrix(0),
+fRecPointRadii(0)
 //------------------------------------------------
 // Tree Variables
 {
@@ -520,6 +535,8 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit       ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+fkDoStrangenessTracking (kFALSE),
+fWDV (0x0),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -831,11 +848,13 @@ fTreeCascVarBachTrack(0x0),
 fTreeCascVarPosTrack(0x0),
 fTreeCascVarNegTrack(0x0),
 fTreeCascVarMagneticField(0),
+fTreeCascVarRunNumber(0),
 //Histos
 fHistEventCounter(0),
 fHistEventCounterDifferential(0),
 fHistCentrality(0),
-fHistEventMatrix(0)
+fHistEventMatrix(0),
+fRecPointRadii(0)
 {
     
     //Re-vertex: Will only apply for cascade candidates
@@ -883,7 +902,7 @@ fHistEventMatrix(0)
     DefineOutput(6, TList::Class()); // Cascade Histogram Output
     DefineOutput(7, TList::Class()); // Cascade Histogram Output
     DefineOutput(8, TList::Class()); // Cascade Histogram Output
-    
+  
     //Optional output
     if (fkSaveEventTree)
         DefineOutput(9, TTree::Class()); // Event Tree output
@@ -1092,6 +1111,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeV0->Branch("fTreeVariableNegTrack", &fTreeVariableNegTrack,16000,99);
             fTreeV0->Branch("fTreeVariablePosTrack", &fTreeVariablePosTrack,16000,99);
             fTreeV0->Branch("fTreeVariableMagneticField",&fTreeVariableMagneticField,"fTreeVariableMagneticField/F");
+            fTreeV0->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
         }
         //------------------------------------------------
     }
@@ -1225,6 +1245,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             
             //for sandbox mode
             fTreeCascade->Branch("fTreeCascVarMagneticField",&fTreeCascVarMagneticField,"fTreeCascVarMagneticField/F");
+            fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
             
             //Cascade decay position calculation metrics
             fTreeCascade->Branch("fTreeCascVarPrimVertexX",&fTreeCascVarPrimVertexX,"fTreeCascVarPrimVertexX/F");
@@ -1338,6 +1359,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     if( !fESDtrackCutsITSsa2010 && fkDebugOOBPileup ) {
         fESDtrackCutsITSsa2010 = AliESDtrackCuts::GetStandardITSSATrackCuts2010();
     }
+  
+  if( !fWDV ){
+    fWDV = new AliAnalysisTaskWeakDecayVertexer();
+    fWDV->SetUseImprovedFinding();
+  }
+  
     
     //------------------------------------------------
     // V0 Multiplicity Histograms
@@ -1413,7 +1440,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fHistEventMatrix->GetYaxis()->SetBinLabel(4, "High mult V0, tagged as MV-pileup");
         fListHist->Add(fHistEventMatrix);
     }
-    
+  
+  if(!fRecPointRadii){
+    fRecPointRadii = new TH1D( "fRecPointRadii", "",500,0,50);
+    fListHist->Add(fRecPointRadii);
+  }
+  
     //Superlight mode output
     if ( !fListK0Short    ){ fListK0Short    = new TList();    fListK0Short->SetOwner();    }
     if ( !fListLambda     ){ fListLambda     = new TList();    fListLambda->SetOwner();     }
@@ -1536,6 +1568,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     
     Double_t lMagneticField = -10;
     lMagneticField = lESDevent->GetMagneticField( );
+    fTreeVariableRunNumber = lESDevent->GetRunNumber();
+    fTreeCascVarRunNumber = lESDevent->GetRunNumber();
     
     //------------------------------------------------
     // Retrieving IR info for OOB Pileup rejection
@@ -3032,26 +3066,110 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         
         Int_t lChargeCascade = fTreeCascVarCharge;
         
-        //cascade properties to get started
+        //Acquire cascade covariance matrix, please
         Double_t xyzCascade[3], pxpypzCascade[3], cvCascade[21];
-        for(Int_t ii=0;ii<21;ii++) cvCascade[ii]=0.0; //something small
-        
+      for(Int_t ii=0; ii<21; ii++) cvCascade[ii]=0;
+      
         xi->GetXYZcascade( xyzCascade[0],  xyzCascade[1], xyzCascade[2] );
         xi->GetPxPyPz( pxpypzCascade[0], pxpypzCascade[1], pxpypzCascade[2] );
+      
+      Double_t posCovXi[6];
+      xi->GetPosCovXi(posCovXi);
+      for(Int_t ii=0; ii<6; ii++) cvCascade[ii]=posCovXi[ii]; //position information
+      
+      //Will need to extract momentum information -> propagate tracks to minima again and sum
+      AliExternalTrackParam nt(*nTrackXi), pt(*pTrackXi), bt(*bachTrackXi);
+      AliExternalTrackParam *ntp=&nt, *ptp=&pt, *btp=&bt;
+      Double_t xn, xp, xb;
+      
+      fWDV->GetDCAV0Dau(ptp, ntp, xp, xn, lMagneticField, 0.139, 0.139);
+      nt.PropagateTo(xn,lMagneticField);
+      pt.PropagateTo(xp,lMagneticField);
+      
+      Double_t pCovMat[21], nCovMat[21], bCovMat[21];
+      pt.GetCovarianceXYZPxPyPz(pCovMat);
+      nt.GetCovarianceXYZPxPyPz(nCovMat);
+      
+      //use these tracks to create a V0
+      AliESDv0 v0vertex(nt,0,pt,1), *v0vertexptr = &v0vertex;
+      v0vertex.Refit();
+      Double_t dcacasctest=PropagateToDCA(v0vertexptr,btp,lMagneticField);
+      
+      if(!btp){ printf("Problem with bachelor covariance! Abort.\n"); return; }
+      Bool_t getCov = btp->GetCovarianceXYZPxPyPz(bCovMat);
+      if(!getCov){ printf("Problem with bachelor covariance, not calculated! Abort.\n"); return; }
+      
+      const int momInd[6] = {9, 13, 14, 18, 19, 20}; // cov matrix elements for momentum component
+      for (int i = 0; i < 6; i++) {
+        int j = momInd[i];
+        cvCascade[j] = pCovMat[j]+pCovMat[j]+bCovMat[j];
+      }
+      
+      AliExternalTrackParam lCascTrajObject(xyzCascade,pxpypzCascade,cvCascade,lChargeCascade), *hCascTraj = &lCascTrajObject;
+      
+      Double_t lCascDCAtoPVxy = TMath::Abs(hCascTraj->GetD(lBestPrimaryVtxPos[0],
+                                                           lBestPrimaryVtxPos[1],
+                                                           lMagneticField) );
+      Float_t dzcascade[2];
+      hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dzcascade );
+      Double_t lCascDCAtoPVz = dzcascade[1];
+      
+      //assign TTree values
+      fTreeCascVarCascDCAtoPVxy = lCascDCAtoPVxy;
+      fTreeCascVarCascDCAtoPVz  = lCascDCAtoPVz;
+      
+      //Experimental: loop over ITS recpoints, attempt to find matching hit
+      if(fkDoStrangenessTracking){
+        if (!gGeoManager) {
+          AliCDBManager::Instance()->SetRaw(1);
+          AliCDBManager::Instance()->SetRun(lESDevent->GetRunNumber());
+          AliGeomManager::LoadGeometry();
+          AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD");
+        }
+        if (!TGeoGlobalMagField::Instance()->GetField()) {
+          AliGRPManager gm;
+          if(!gm.ReadGRPEntry()) {
+            AliError("Cannot get GRP entry");
+          }
+          if( !gm.SetMagField() ) {
+            AliError("Problem with magnetic field setup");
+          }
+        }
         
-        AliExternalTrackParam lCascTrajObject(xyzCascade,pxpypzCascade,cvCascade,lChargeCascade), *hCascTraj = &lCascTrajObject;
+        AliESDInputHandlerRP *handRP = 0;
+        handRP = (AliESDInputHandlerRP*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+        if (!handRP) { printf("Strangeness tracking enabled, but no recpoint handler found! Quitting.\n"); return; }
         
-        Double_t lCascDCAtoPVxy = TMath::Abs(hCascTraj->GetD(lBestPrimaryVtxPos[0],
-                                                             lBestPrimaryVtxPos[1],
-                                                             lMagneticField) );
-        Float_t dzcascade[2];
-        hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dzcascade );
-        Double_t lCascDCAtoPVz = dzcascade[1];
+        TTree*       fRPTree = 0x0;
+        fRPTree = handRP->GetTreeR("ITS");
+        if (!fRPTree) { AliError(" Invalid ITS cluster tree !\n"); return; }
         
-        //assign TTree values
-        fTreeCascVarCascDCAtoPVxy = lCascDCAtoPVxy;
-        fTreeCascVarCascDCAtoPVz  = lCascDCAtoPVz;
+        TClonesArray statITSrec("AliITSRecPoint");
+        TClonesArray *ITSCluster = &statITSrec;
+        TBranch* branch=fRPTree->GetBranch("ITSRecPoints");
+        if(!branch) {
+          printf("NO treeRP branch available. Exiting...\n");
+          return;
+        }
         
+        branch->SetAddress(&ITSCluster);
+        
+        for (Int_t modId=0; modId<500; modId++){
+          Int_t lay,lad,det;
+          AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
+          branch->GetEvent(modId);
+          Int_t nrecp = ITSCluster->GetEntries();
+          for(Int_t irec=0;irec<nrecp;irec++) {
+            AliITSRecPoint *recp = (AliITSRecPoint*)ITSCluster->At(irec);
+            Float_t xyz[3] = {0., 0., 0.};
+            recp->GetGlobalXYZ(xyz);
+            fRecPointRadii->Fill(std::hypot(xyz[0],xyz[1]));
+          }
+        }
+      }
+       
+         
+      
         //----------------------------------------
         // Bump studies: perform propagation
         //----------------------------------------
@@ -3070,7 +3188,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         fTreeCascVarDCABachToBaryon = -100;
         
         Double_t bMag = lESDevent->GetMagneticField();
-        Double_t xn, xp;
         
         //Care has to be taken here
         if ( lBaryonTrack && lBachelorTrack ){
@@ -5392,10 +5509,23 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     // STEP 1: Decide on binning (needed to improve on memory consumption)
     
     // pT binning
-    Double_t lPtbinlimits[] = {0.4, 0.5, 0.6,
-        0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
-        2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
-        4.4,4.5,4.6,4.8,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.,11.,12.};
+    Double_t lPtbinlimits[] = {0.4, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49, 0.50,
+      0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.57, 0.58, 0.59, 0.60, 0.61,
+      0.62, 0.63, 0.64, 0.65, 0.66, 0.67, 0.68, 0.69, 0.70, 0.71, 0.72,
+      0.73, 0.74, 0.75, 0.76, 0.77, 0.78, 0.79, 0.80, 0.81, 0.82, 0.83,
+      0.84, 0.85, 0.86, 0.87, 0.88, 0.89, 0.90, 0.91, 0.92, 0.93, 0.94,
+      0.95, 0.96, 0.97, 0.98, 0.99, 1.00, 1.01, 1.02, 1.03, 1.04, 1.05,
+      1.06, 1.07, 1.08, 1.09, 1.10, 1.11, 1.12, 1.13, 1.14, 1.15, 1.16,
+      1.17, 1.18, 1.19, 1.20, 1.21, 1.22, 1.23, 1.24, 1.25, 1.26, 1.27,
+      1.28, 1.29, 1.30, 1.31, 1.32, 1.33, 1.34, 1.35, 1.36, 1.37, 1.38,
+      1.39, 1.40, 1.41, 1.42, 1.43, 1.44, 1.45, 1.46, 1.47, 1.48, 1.49,
+      1.50, 1.51, 1.52, 1.53, 1.54, 1.55, 1.56, 1.57, 1.58, 1.59, 1.60,
+      1.61, 1.62, 1.63, 1.64, 1.65, 1.66, 1.67, 1.68, 1.69, 1.70, 1.71,
+      1.72, 1.73, 1.74, 1.75, 1.76, 1.77, 1.78, 1.79, 1.80, 1.81, 1.82,
+      1.83, 1.84, 1.85, 1.86, 1.87, 1.88, 1.89, 1.90, 1.91, 1.92, 1.93,
+      1.94, 1.95, 1.96, 1.97, 1.98, 1.99, 2.0,
+      2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
+4.4,4.5,4.6,4.8,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.,11.,12.};
     Long_t lPtbinnumb = sizeof(lPtbinlimits)/sizeof(Double_t) - 1;
     
     // centrality binning
@@ -6640,4 +6770,181 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::CheckChargeV0(AliESDv0 *v0)
     return;
 }
 
+//________________________________________________________________________
+Double_t AliAnalysisTaskStrangenessVsMultiplicityRun2::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, Double_t b) {
+  //--------------------------------------------------------------------
+  // This function returns the DCA between the V0 and the track
+  //--------------------------------------------------------------------
+  
+  
+  Double_t alpha=t->GetAlpha(), cs1=TMath::Cos(alpha), sn1=TMath::Sin(alpha);
+  Double_t r[3]; t->GetXYZ(r);
+  Double_t x1=r[0], y1=r[1], z1=r[2];
+  Double_t p[3]; t->GetPxPyPz(p);
+  Double_t px1=p[0], py1=p[1], pz1=p[2];
+  
+  Double_t x2,y2,z2;     // position and momentum of V0
+  Double_t px2,py2,pz2;
+  
+  v->GetXYZ(x2,y2,z2);
+  v->GetPxPyPz(px2,py2,pz2);
+  
+  Double_t dca = 1e+33;
 
+  //DCA Calculation improved -> non-linear propagation
+  //Preparatory step 1: get two tracks corresponding to V0
+  
+  Double_t dy2=1e-10;
+  Double_t dz2=1e-10;
+  Double_t dx2=1e-10;
+  
+  //Create dummy V0 track
+  //V0 properties to get started
+  Double_t xyz[3], pxpypz[3], cv[21];
+  for(Int_t ii=0;ii<21;ii++) cv[ii]=0.0; //something small
+  
+  v->GetXYZ(xyz[0],xyz[1],xyz[2]);
+  v->GetPxPyPz( pxpypz[0],pxpypz[1],pxpypz[2] );
+  
+  //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  //EXPERIMENTAL: Improve initial position guess based on (neutral!) cowboy/sailor
+  //Check bachelor trajectory properties
+  Double_t p1[8]; t->GetHelixParameters(p1,b);
+  p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
+  
+  //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  //Mockup track for V0 trajectory (no covariance)
+  //AliExternalTrackParam *hV0Traj = new AliExternalTrackParam(xyz,pxpypz,cv,+1);
+  AliExternalTrackParam lV0TrajObject(xyz,pxpypz,cv,+1), *hV0Traj = &lV0TrajObject;
+  hV0Traj->ResetCovariance(1); //won't use
+  
+  //Re-acquire helix parameters for bachelor (necessary!)
+  t->GetHelixParameters(p1,b);
+  p1[6]=TMath::Sin(p1[2]);
+  p1[7]=TMath::Cos(p1[2]);
+  
+  Double_t p2[8]; hV0Traj->GetHelixParameters(p2,0.0); //p2[4]=0 -> no curvature (fine, predicted in Evaluate)
+  p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
+  
+  Double_t r1[3],g1[3],gg1[3]; Double_t t1=0.;
+  Evaluate(p1,t1,r1,g1,gg1);
+  Double_t r2[3],g2[3],gg2[3]; Double_t t2=0.;
+  Evaluate(p2,t2,r2,g2,gg2);
+  
+  Double_t dx=r2[0]-r1[0], dy=r2[1]-r1[1], dz=r2[2]-r1[2];
+  Double_t dm=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+  
+  Int_t max=27;
+  while (max--) {
+    Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
+    Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
+    Double_t h11=(g1[0]*g1[0] - dx*gg1[0])/dx2 +
+    (g1[1]*g1[1] - dy*gg1[1])/dy2 +
+    (g1[2]*g1[2] - dz*gg1[2])/dz2;
+    Double_t h22=(g2[0]*g2[0] + dx*gg2[0])/dx2 +
+    (g2[1]*g2[1] + dy*gg2[1])/dy2 +
+    (g2[2]*g2[2] + dz*gg2[2])/dz2;
+    Double_t h12=-(g1[0]*g2[0]/dx2 + g1[1]*g2[1]/dy2 + g1[2]*g2[2]/dz2);
+    
+    Double_t det=h11*h22-h12*h12;
+    
+    Double_t dt1,dt2;
+    if (TMath::Abs(det)<1.e-33) {
+      //(quasi)singular Hessian
+      dt1=-gt1; dt2=-gt2;
+    } else {
+      dt1=-(gt1*h22 - gt2*h12)/det;
+      dt2=-(h11*gt2 - h12*gt1)/det;
+    }
+    
+    if ((dt1*gt1+dt2*gt2)>0) {dt1=-dt1; dt2=-dt2;}
+    
+    //check delta(phase1) ?
+    //check delta(phase2) ?
+    
+    if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
+      if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
+        if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2){
+          AliDebug(1," stopped at not a stationary point !");
+          //Count not stationary point
+        }
+        Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
+        if (lmb < 0.){
+          //Count stopped at not a minimum
+          AliDebug(1," stopped at not a minimum !");
+        }
+        break;
+      }
+    
+    Double_t dd=dm;
+    for (Int_t div=1 ; ; div*=2) {
+      Evaluate(p1,t1+dt1,r1,g1,gg1);
+      Evaluate(p2,t2+dt2,r2,g2,gg2);
+      dx=r2[0]-r1[0]; dy=r2[1]-r1[1]; dz=r2[2]-r1[2];
+      dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+      if (dd<dm) break;
+      dt1*=0.5; dt2*=0.5;
+      if (div>512) {
+        AliDebug(1," overshoot !"); break;
+        //Count overshoots
+      }
+    }
+    dm=dd;
+    
+    t1+=dt1;
+    t2+=dt2;
+    
+  }
+  
+  if (max<=0){
+    AliDebug(1," too many iterations !");
+  }
+  
+  Double_t cs=TMath::Cos(t->GetAlpha());
+  Double_t sn=TMath::Sin(t->GetAlpha());
+  Double_t xthis=r1[0]*cs + r1[1]*sn;
+  
+  //Propagate bachelor to the point of DCA
+  
+  if (!t->PropagateTo(xthis,b)) {
+    //AliWarning(" propagation failed !";
+    //Count curved propagation failures
+    
+    return 1e+33;
+  }
+  
+  //V0 distance to bachelor: the desired distance
+  Double_t rBachDCAPt[3]; t->GetXYZ(rBachDCAPt);
+  dca = v->GetD(rBachDCAPt[0],rBachDCAPt[1],rBachDCAPt[2]);
+  
+  
+  return dca;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskStrangenessVsMultiplicityRun2::Evaluate(const Double_t *h, Double_t t,
+                                                Double_t r[3],  //radius vector
+                                                Double_t g[3],  //first defivatives
+                                                Double_t gg[3]) //second derivatives
+{
+    //--------------------------------------------------------------------
+    // Calculate position of a point on a track and some derivatives
+    //--------------------------------------------------------------------
+    Double_t phase=h[4]*t+h[2];
+    Double_t sn=TMath::Sin(phase), cs=TMath::Cos(phase);
+    
+    r[0] = h[5];
+    r[1] = h[0];
+    if (TMath::Abs(h[4])>kAlmost0) {
+        r[0] += (sn - h[6])/h[4];
+        r[1] -= (cs - h[7])/h[4];
+    } else {
+        r[0] += t*cs;
+        r[1] -= -t*sn;
+    }
+    r[2] = h[1] + h[3]*t;
+    
+    g[0] = cs; g[1]=sn; g[2]=h[3];
+    
+    gg[0]=-h[4]*sn; gg[1]=h[4]*cs; gg[2]=0.;
+}

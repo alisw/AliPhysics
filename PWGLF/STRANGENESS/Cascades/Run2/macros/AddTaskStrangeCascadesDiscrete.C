@@ -1,6 +1,6 @@
 AliAnalysisTaskStrangeCascadesDiscrete *AddTaskStrangeCascadesDiscrete(
-                                                                       Bool_t lRunV0Vertexers = kTRUE,
-                                                                       Bool_t lRunVertexers = kTRUE, //to rerun the cascade vertexers
+                                                                       Bool_t lRunV0Vertexers = kFALSE, //to rerun V0 vertexer
+                                                                       Bool_t lRunVertexers = kFALSE, // def = false, since it s done AliWeakVertexer
                                                                        Bool_t lUseLightVertexer = kFALSE, //use light cascade vertexers
                                                                        Bool_t lUseOnTheFlyV0Cascading = kFALSE,
                                                                        Bool_t lguard_CheckTrackQuality = kTRUE,
@@ -22,11 +22,12 @@ AliAnalysisTaskStrangeCascadesDiscrete *AddTaskStrangeCascadesDiscrete(
                                                                        Double_t lCascaderMinCosAngle = 0.95, //0.95 per def
                                                                        Double_t lCascaderMinRadius = 0.4, //0.4 per def
                                                                        Double_t lCascaderMaxRadius =100., //100. per def
-                                                                       Float_t sigmaRangeTPC = 3.,
+                                                                       Float_t sigmaRangeTPC = 4., //4 is ok for syst. studies
                                                                        Float_t lOmegaCleanMassWindow = 0.1,
                                                                        TString lExtraOutputName = ""
                                                                        )
 {
+
     
     
     // Creates, configures and attaches to the train a cascades check task.

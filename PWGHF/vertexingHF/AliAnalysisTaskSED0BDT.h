@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSED0BDT_H
-#define ALIANALYSISTASKSED0BDT_H
+#ifndef AliAnalysisTaskSED0BDT_H
+#define AliAnalysisTaskSED0BDT_H
 
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -23,10 +23,12 @@
 #include <THnSparse.h>
 #include <TString.h>
 #include <TRandom3.h>
-
+#include <TProfile.h>
+#include "AliESDUtils.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsD0toKpi.h"
-#include "AliRDHFBDT.h"
+#include "AliRDHFCutsD0toKpiBDT.h"
+//~ #include "AliRDHFBDT.h"
 #include "AliNormalizationCounter.h"
 #include "AliEventCuts.h"
 
@@ -37,7 +39,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
  public:
 
   AliAnalysisTaskSED0BDT();
-  AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toKpi* cuts);
+  AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toKpiBDT* cuts);
   virtual ~AliAnalysisTaskSED0BDT();
 
 
@@ -52,7 +54,8 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   Bool_t CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
 
-  void ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC);
+  void ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC, Float_t multi);
+  void ProcessBDT2(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC, Float_t multi);
   void SetArray(Int_t type=AliAnalysisTaskSED0BDT::kD0){fArray=type;}
   enum{kD0,kLS};
 
@@ -77,26 +80,255 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   void SetDrawDetSignal(Bool_t flag) { fDrawDetSignal=flag; }
   void SetPIDCheck(Bool_t flag) { fPIDCheck=flag; }
   void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetPileupRejectionVZEROTPCout(Bool_t flag) {fEnablePileupRejVZEROTPCout=flag;}
   void SetPileupRejectionVZEROTPCcls(Bool_t flag, Bool_t rejpileup) {fEnablePileupRejVZEROTPCcls=flag; fRejectOutOfBunchPileUp=rejpileup;}
   void SetFillSubSampleHist(Bool_t flag) {fFillSubSampleHist=flag;}
+    
+    void SetSubtractTrackletsFromDaughters(Bool_t opt){fSubtractTrackletsFromDau=opt;}
+    void SetMultiana(Bool_t flag) { fmultiana=flag; }
+    void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
+    void SetMultiplicityEstimator(Int_t value){ fMultiplicityEstimator=value; }
+    enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2, kNtrk03=3, kNtrk05=4, kVZEROA=5, kVZEROEq=6, kVZEROAEq=7 };
+    Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
+    enum { kEta10=0, kEta10to16=1, kEtaVZERO=2, kEta03=3, kEta05=5, kEtaVZEROA=5 };
+    void SetMCPrimariesEstimator(Int_t value){ fMCPrimariesEstimator=value; }
+    Int_t GetMCPrimariesEstimator(){ return fMCPrimariesEstimator; }
+    void SetMultiplVsZProfileLHC10b(TProfile* hprof){
+      if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+      fMultEstimatorAvg[0]=new TProfile(*hprof);
+    }
+    void SetMultiplVsZProfileLHC10c(TProfile* hprof){
+      if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+      fMultEstimatorAvg[1]=new TProfile(*hprof);
+    }
+    void SetMultiplVsZProfileLHC10d(TProfile* hprof){
+      if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+      fMultEstimatorAvg[2]=new TProfile(*hprof);
+    }
+    void SetMultiplVsZProfileLHC10e(TProfile* hprof){
+      if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+      fMultEstimatorAvg[3]=new TProfile(*hprof);
+    }
+    
+    void SetMultiplVsZProfileLHC13b(TProfile* hprof){
+      if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+      fMultEstimatorAvg[0]=new TProfile(*hprof);
+      fYearNumber = 13;
+    }
+    void SetMultiplVsZProfileLHC13c(TProfile* hprof){
+      if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+      fMultEstimatorAvg[1]=new TProfile(*hprof);
+      fYearNumber = 13;
+    }
+      
+    void SetMultiplVsZProfileLHC16qt1stBunch(TProfile* hprof){
+      if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+      fMultEstimatorAvg[0]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC16qt2ndBunch(TProfile* hprof){
+      if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+      fMultEstimatorAvg[1]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC16qt3rdBunch(TProfile* hprof){
+      if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+      fMultEstimatorAvg[2]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC16qt4thBunch(TProfile* hprof){
+      if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+      fMultEstimatorAvg[3]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+
+    void SetMultiplVsZProfileLHC16d(TProfile* hprof){
+      if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+      fMultEstimatorAvg[0]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC16e(TProfile* hprof){
+      if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+      fMultEstimatorAvg[1]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC16g(TProfile* hprof){
+      if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+      fMultEstimatorAvg[2]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC16h1(TProfile* hprof){
+      if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+      fMultEstimatorAvg[3]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC16h2(TProfile* hprof){
+      if(fMultEstimatorAvg[4]) delete fMultEstimatorAvg[4];
+      fMultEstimatorAvg[4]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC16j(TProfile* hprof){
+      if(fMultEstimatorAvg[5]) delete fMultEstimatorAvg[5];
+      fMultEstimatorAvg[5]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC16k(TProfile* hprof){
+      if(fMultEstimatorAvg[6]) delete fMultEstimatorAvg[6];
+      fMultEstimatorAvg[6]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC16l(TProfile* hprof){
+      if(fMultEstimatorAvg[7]) delete fMultEstimatorAvg[7];
+      fMultEstimatorAvg[7]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC16o(TProfile* hprof){
+      if(fMultEstimatorAvg[8]) delete fMultEstimatorAvg[8];
+      fMultEstimatorAvg[8]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC16p(TProfile* hprof){
+      if(fMultEstimatorAvg[9]) delete fMultEstimatorAvg[9];
+      fMultEstimatorAvg[9]=new TProfile(*hprof);
+      fYearNumber = 16;
+    }
+    void SetMultiplVsZProfileLHC17e(TProfile* hprof){
+      if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+      fMultEstimatorAvg[0]=new TProfile(*hprof);
+      fYearNumber = 17;
+    }
+    void SetMultiplVsZProfileLHC17f(TProfile* hprof){
+      if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+      fMultEstimatorAvg[1]=new TProfile(*hprof);
+      fYearNumber = 17;
+    }
+    void SetMultiplVsZProfileLHC17h(TProfile* hprof){
+      if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+      fMultEstimatorAvg[2]=new TProfile(*hprof);
+      fYearNumber = 17;
+    }
+    void SetMultiplVsZProfileLHC17i(TProfile* hprof){
+      if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+      fMultEstimatorAvg[3]=new TProfile(*hprof);
+      fYearNumber = 17;
+    }
+    void SetMultiplVsZProfileLHC17j(TProfile* hprof){
+      if(fMultEstimatorAvg[4]) delete fMultEstimatorAvg[4];
+      fMultEstimatorAvg[4]=new TProfile(*hprof);
+      fYearNumber = 17;
+    }
+    void SetMultiplVsZProfileLHC17k(TProfile* hprof){
+      if(fMultEstimatorAvg[5]) delete fMultEstimatorAvg[5];
+      fMultEstimatorAvg[5]=new TProfile(*hprof);
+      fYearNumber = 17;
+    }
+    void SetMultiplVsZProfileLHC17l(TProfile* hprof){
+      if(fMultEstimatorAvg[6]) delete fMultEstimatorAvg[6];
+      fMultEstimatorAvg[6]=new TProfile(*hprof);
+      fYearNumber = 17;
+    }
+    void SetMultiplVsZProfileLHC17m(TProfile* hprof){
+      if(fMultEstimatorAvg[7]) delete fMultEstimatorAvg[7];
+      fMultEstimatorAvg[7]=new TProfile(*hprof);
+      fYearNumber = 17;
+    }
+    void SetMultiplVsZProfileLHC17o(TProfile* hprof){
+      if(fMultEstimatorAvg[8]) delete fMultEstimatorAvg[8];
+      fMultEstimatorAvg[8]=new TProfile(*hprof);
+      fYearNumber = 17;
+    }
+    void SetMultiplVsZProfileLHC17r(TProfile* hprof){
+      if(fMultEstimatorAvg[9]) delete fMultEstimatorAvg[9];
+      fMultEstimatorAvg[9]=new TProfile(*hprof);
+      fYearNumber = 17;
+    }
+    void SetMultiplVsZProfileLHC18b(TProfile* hprof){
+      if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+      fMultEstimatorAvg[0]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18d(TProfile* hprof){
+      if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+      fMultEstimatorAvg[1]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18e(TProfile* hprof){
+      if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+      fMultEstimatorAvg[2]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18f(TProfile* hprof){
+      if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+      fMultEstimatorAvg[3]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18g(TProfile* hprof){
+      if(fMultEstimatorAvg[4]) delete fMultEstimatorAvg[4];
+      fMultEstimatorAvg[4]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18h(TProfile* hprof){
+      if(fMultEstimatorAvg[5]) delete fMultEstimatorAvg[5];
+      fMultEstimatorAvg[5]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18i(TProfile* hprof){
+      if(fMultEstimatorAvg[6]) delete fMultEstimatorAvg[6];
+      fMultEstimatorAvg[6]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18j(TProfile* hprof){
+      if(fMultEstimatorAvg[7]) delete fMultEstimatorAvg[7];
+      fMultEstimatorAvg[7]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18k(TProfile* hprof){
+      if(fMultEstimatorAvg[8]) delete fMultEstimatorAvg[8];
+      fMultEstimatorAvg[8]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18l(TProfile* hprof){
+      if(fMultEstimatorAvg[9]) delete fMultEstimatorAvg[9];
+      fMultEstimatorAvg[9]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18m(TProfile* hprof){
+      if(fMultEstimatorAvg[10]) delete fMultEstimatorAvg[10];
+      fMultEstimatorAvg[10]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18n(TProfile* hprof){
+      if(fMultEstimatorAvg[11]) delete fMultEstimatorAvg[11];
+      fMultEstimatorAvg[11]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18o(TProfile* hprof){
+      if(fMultEstimatorAvg[12]) delete fMultEstimatorAvg[12];
+      fMultEstimatorAvg[12]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    void SetMultiplVsZProfileLHC18p(TProfile* hprof){
+      if(fMultEstimatorAvg[13]) delete fMultEstimatorAvg[13];
+      fMultEstimatorAvg[13]=new TProfile(*hprof);
+      fYearNumber = 18;
+    }
+    
   
   void SetBDTPtCut(Double_t min, Double_t max) {fBDTPtCut[0]=min; fBDTPtCut[1]=max;}
-  void SetBDTRespCut(Double_t cut) {fBDTRespCut=cut;}
-  void SetBDTSidebandCut(Double_t lcut, Double_t rcut) {fBDTSidebandCut[0]=lcut; fBDTSidebandCut[1]=rcut;} 
+  void SetBDTPtbins(AliRDHFCutsD0toKpiBDT* cut) {fCut4BDTptbin=cut;}
   void SetBDTSidebandSamplingFraction(Double_t f) {fBDTSidebandSamplingFraction=f;}
   void SetBDTSampleSideband(Bool_t sb) {fSampleSideband = sb;}
-  void SetBDTGetRespTree(Bool_t rt) {fGetRespTree = rt;}
   void SetBDTFullVarString(TString str) {fBDTFullVarString = str;}
   void SetBDTClassifierVarString(TString str) {fBDTClassifierVarString = str;}
   
   void SetBDTList(TList *bdtlist) {fListRDHFBDT=bdtlist;}
+  void SetBDTNamesList(TList *namelist) {fListBDTNames=namelist;}
 
 
   void SetEnableCentralityCorrCutsPbPb(Bool_t flag=kFALSE, Int_t year=2018) {
     fEnableCentralityCorrCuts=flag;
-    if(year==2018){
+    if(year==2018){	
       fEventCuts.SetupPbPb2018();
       fEventCuts.SetManualMode();
     }else{
@@ -126,14 +358,27 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   AliAnalysisTaskSED0BDT& operator=(const AliAnalysisTaskSED0BDT& source);
   void	   DrawDetSignal(AliAODRecoDecayHF2Prong *part, TList *ListDetSignal);
 
-  void     FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts, TList *listout);
-  void     FillVarHists(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
-  void     FillCandVariables(AliAODEvent *aodev, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts);
+  void     FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpiBDT *cuts, TList *listout);
+  void     FillVarHists(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpiBDT *cuts, TList *listout);
+  void     FillCandVariables(AliAODEvent *aodev, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpiBDT *cuts);
   AliAODVertex* GetPrimaryVtxSkipped(AliAODEvent *aodev);
   void CreateImpactParameterHistos();
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
   Float_t GetTrueImpactParameter(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD0) const ;
   Float_t ComputeTopomatic(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part);
+    
+    Bool_t fSubtractTrackletsFromDau; /// flag for subtracting D meson daughter contribution to N of tracklets
+    Bool_t fmultiana;   ///
+    Double_t fRefMult;   /// refrence multiplcity (period b)
+    Int_t fMultiplicityEstimator; /// Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
+    Int_t fMCPrimariesEstimator;  /// Definition of the primaries estimator eta range: |eta|<1.0=0, -1.6<|eta|<1.0=1, VZEROrange=2
+    TProfile* fMultEstimatorAvg[14]; /// TProfile with mult vs. Z per period.q
+    Int_t fYearNumber; ///year number of the data taking
+    TList  *fListProfiles; ///list of profile histos for z-vtx correction
+    Int_t fDoVZER0ParamVertexCorr; /// Flag to use the zvtx correction from (0=none, 1=usual d2h, 2=AliESDUtils for VZERO multiplicity)
+    TProfile* GetEstimatorHistogram(const AliVEvent *event);
+    AliNormalizationCounter *fCounterC;           //!<!Counter for normalization, corrected multiplicity
+    TH1F* fHistNtrCorrEvSel; //!<! hist. of ntracklets for selected events
 
   TList    *fOutputMass;          //!<! list send on output slot 1
   TList    *fOutputMassPt;        //!<! list send on output slot 6
@@ -143,7 +388,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   THnSparseF *fMCAccPrompt;       //!<!histo for StepMCAcc for D0 prompt (pt,y,ptB)
   THnSparseF *fMCAccBFeed;        //!<!histo for StepMCAcc for D0 FD (pt,y,ptB)
   Bool_t fStepMCAcc;              // flag to activate histos for StepMCAcc
-  AliRDHFCutsD0toKpi *fCuts;      //  Cuts - sent to output slot 4
+  AliRDHFCutsD0toKpiBDT *fCuts;      //  Cuts - sent to output slot 4
   Bool_t    fEnableCentralityCorrCuts; /// flag to enable centrality correlation event cuts
   AliEventCuts  fEventCuts;       // Event cut object for centrality correlation event cuts
   THnSparseF *fHistMassPtImpParTC[5];   //!<! histograms for impact paramter studies
@@ -193,24 +438,32 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   Bool_t    fEnablePileupRejVZEROTPCcls;
   Bool_t    fRejectOutOfBunchPileUp;
   
-  // =																	=
+  TH3F *h3Invmass[8];     //!<!
+    TH3F *h3Invmass_19[8];     //!<!
+    TH3F *h3Invmass_1029[8];     //!<!
+    TH3F *h3Invmass_3059[8];     //!<!
+    TH3F *h3Invmass_19999[8];     //!<!
+    TH3F *h3Invmass_6099[8];     //!<!
+  // = 																   =
+  AliRDHFCutsD0toKpiBDT *fCut4BDTptbin;
+  																	
   TList			*fListRDHFBDT;
+  TList			*fListBDTNames;
   TList 		*fListBDTNtuple;
   TList 		*fListBDTResp;
   
   Double_t 		fBDTPtCut[2];
-  Double_t		fBDTRespCut;
   Double_t		fBDTSidebandSamplingFraction;
-  Double_t		fBDTSidebandCut[2];
   
   Bool_t 		fSampleSideband;
-  Bool_t		fGetRespTree;
   
   TString		fBDTFullVarString;
   TString		fBDTClassifierVarString;
+  
+  Int_t     fIsSelectedCandidateBDT; /// selection outcome
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0BDT,24); /// AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0BDT,26); /// AliAnalysisTaskSE for D0->Kpi
   /// \endcond
 };
 

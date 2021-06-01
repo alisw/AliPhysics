@@ -14,6 +14,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fkTBinning(false),
       fmTBinning(false),
       fkTandMultBinning(false),
+      fkTandMultPtBinning(false),
       fPtQA(false),
       fMassQA(false),
       fMomentumResolution(false),
@@ -47,7 +48,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
-      fCoutVariables(false) {
+      fCoutVariables(false),
+      fSummedPtLimit1(0.0),
+      fSummedPtLimit2(999.0) {
   //should not be used, since we need a name to deal with root objects
 }
 
@@ -59,6 +62,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fkTBinning(config.fkTBinning),
       fmTBinning(config.fmTBinning),
       fkTandMultBinning(config.fkTandMultBinning),
+      fkTandMultPtBinning(config.fkTandMultPtBinning),
       fPtQA(config.fPtQA),
       fMassQA(config.fMassQA),
       fMomentumResolution(config.fMomentumResolution),
@@ -92,7 +96,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fDeltaEtaMax(config.fDeltaEtaMax),
       fDeltaPhiMax(config.fDeltaPhiMax),
       fDoDeltaEtaDeltaPhiCut(config.fDoDeltaEtaDeltaPhiCut),
-      fCoutVariables(config.fCoutVariables) {
+      fCoutVariables(config.fCoutVariables),
+      fSummedPtLimit1(config.fSummedPtLimit1),
+      fSummedPtLimit2(config.fSummedPtLimit2) {
 }
 
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
@@ -104,6 +110,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fkTBinning(false),
       fmTBinning(false),
       fkTandMultBinning(false),
+      fkTandMultPtBinning(false),
       fPtQA(false),
       fMassQA(false),
       fMomentumResolution(false),
@@ -137,7 +144,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
-      fCoutVariables(QACouts) {
+      fCoutVariables(QACouts),
+      fSummedPtLimit1(0.0),
+      fSummedPtLimit2(999.0) {
 }
 AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     const AliFemtoDreamCollConfig& config) {
@@ -148,6 +157,7 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fkTBinning = config.fkTBinning;
     this->fmTBinning = config.fmTBinning;
     this->fkTandMultBinning = config.fkTandMultBinning;
+    this->fkTandMultPtBinning = config.fkTandMultPtBinning;
     this->fPtQA = config.fPtQA;
     this->fMassQA = config.fMassQA;
     this->fMomentumResolution = config.fMomentumResolution;
@@ -182,6 +192,8 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fDeltaPhiMax = config.fDeltaPhiMax;
     this->fDoDeltaEtaDeltaPhiCut = config.fDoDeltaEtaDeltaPhiCut;
     this->fCoutVariables = config.fCoutVariables;
+    this->fSummedPtLimit1 = config.fSummedPtLimit1;
+    this->fSummedPtLimit2 = config.fSummedPtLimit2;
   }
   return *this;
 }
@@ -475,4 +487,68 @@ std::vector<bool> AliFemtoDreamCollConfig::GetAllPairRejection() {
   pairs.push_back(true);         // Xi barXi
   pairs.push_back(true);         // barXi barXi
   return pairs;
+}
+
+std::vector<float> AliFemtoDreamCollConfig::GetDefaultZbins() {
+  std::vector<float> defVec;
+  defVec.push_back(-10);
+  defVec.push_back(-8);
+  defVec.push_back(-6);
+  defVec.push_back(-4);
+  defVec.push_back(-2);
+  defVec.push_back(0);
+  defVec.push_back(2);
+  defVec.push_back(4);
+  defVec.push_back(6);
+  defVec.push_back(8);
+  defVec.push_back(10);
+  return defVec;
+}
+std::vector<int> AliFemtoDreamCollConfig::GetHMMultBins() {
+  std::vector<int> defVec;
+  defVec.push_back(0);
+  defVec.push_back(4);
+  defVec.push_back(8);
+  defVec.push_back(12);
+  defVec.push_back(16);
+  defVec.push_back(20);
+  defVec.push_back(24);
+  defVec.push_back(28);
+  defVec.push_back(32);
+  defVec.push_back(36);
+  defVec.push_back(40);
+  defVec.push_back(44);
+  defVec.push_back(48);
+  defVec.push_back(52);
+  defVec.push_back(56);
+  defVec.push_back(60);
+  defVec.push_back(64);
+  defVec.push_back(68);
+  defVec.push_back(72);
+  defVec.push_back(76);
+  defVec.push_back(80);
+  defVec.push_back(84);
+  defVec.push_back(88);
+  defVec.push_back(92);
+  defVec.push_back(96);
+  defVec.push_back(100);
+  return defVec;
+}
+
+std::vector<int> AliFemtoDreamCollConfig::GetMBMultBins() {
+  std::vector<int> defVec;
+  defVec.push_back(0);
+  defVec.push_back(4);
+  defVec.push_back(8);
+  defVec.push_back(12);
+  defVec.push_back(16);
+  defVec.push_back(20);
+  defVec.push_back(24);
+  defVec.push_back(28);
+  defVec.push_back(32);
+  defVec.push_back(36);
+  defVec.push_back(40);
+  defVec.push_back(60);
+  defVec.push_back(80);
+  return defVec;
 }

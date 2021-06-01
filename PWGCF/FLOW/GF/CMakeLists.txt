@@ -35,11 +35,13 @@ include_directories(
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskChargedFlow.cxx
+  AliAnalysisTaskDeform.cxx
   AliAnalysisTaskFlowExample.cxx
   AliAnalysisTaskGFWFlow.cxx
   AliAnalysisTaskGFWPIDFlow.cxx
   AliAnalysisTaskMeanPtV2Corr.cxx
   AliAnalysisTaskUniFlow.cxx
+  AliAnalysisTaskUniFlowWithSphericity.cxx
   AliAnalysisTaskUniFlowMultiStrange.cxx
   AliDecorrFlowCorrTask.cxx
   AliGFW.cxx
@@ -48,10 +50,14 @@ set(SRCS
   AliGFWFlowContainer.cxx
   AliGFWWeights.cxx
   AliProfileSubset.cxx
+  AliProfileBS.cxx
+  AliCkContainer.cxx
   AliUniFlowCorrTask.cxx
   AliAnalysisDecorrTask.cxx
   AliAnalysisTaskESEFlow.cxx
   AliAnalysisTaskFlowSquareBracket.cxx
+  AliAnalysisTaskNonlinearFlow.cxx
+  CorrelationCalculator.cxx
   )
 
 # Headers from sources

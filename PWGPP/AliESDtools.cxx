@@ -853,6 +853,7 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t doReset, Int_t ver
   }
   return 1;
 }
+
 Int_t  AliESDtools::FillTrackCounters(){
   const Float_t vertexNorm=0.14;
   const Int_t kNCRCut=130;
@@ -892,6 +893,7 @@ Int_t  AliESDtools::FillTrackCounters(){
     mPt+=kSigmaBias*TMath::Sqrt(pTrack->GetSigma1Pt2());
     fHist2DTrackSumPt->Fill(phi, pTrack->GetTgl(),1./mPt);
   }
+  return 1;
 }
 
 /// check if the particle belongs to pile-up
@@ -1446,3 +1448,69 @@ Int_t AliESDtools::CacheITSVertexInformation(Bool_t doReset, Double_t dcaCut, Do
   //
   return selected;
 }
+
+/// code to match TPC tracks with SPD - WORK in Progress
+/// Code developped as a macro : https://gitlab.cern.ch/alice-tpc-offline/alice-tpc-notes/-/blob/master/JIRA/PWGPP-606/tpcSPDtracking.C
+/// \param dcaCut
+/// \param dcaCutZ
+/// \param dcaChi2Cut
+void AliESDtools::FindTPCSPDtracks(Float_t dcaCut, Float_t dcaCutZ, Float_t dcaChi2Cut){
+  AliESDtools &tools=*this;
+  // dcaCut=3 ; dcaCutZ=3; dcaChi2Cut=25
+  const Float_t kTglCut=0.1;
+  const Float_t kPhiCut=0.2;
+  const Int_t kNCRCut=80;
+  const Double_t kDCACut=0.3;
+  AliMultiplicity * multiplicity  = tools.fEvent->GetMultiplicity();
+
+  Int_t nTracks=tools.fEvent->GetNumberOfTracks();
+  Int_t nTracklets = multiplicity->GetNumberOfTracklets();
+  Int_t selected=0;
+  for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
+    AliESDtrack *pTrack = tools.fEvent->GetTrack(iTrack);
+    Float_t dcaXY, dcaz;
+    if (pTrack == NULL) continue;
+    if (pTrack->IsOn(AliVTrack::kTPCin) == 0) continue;
+    Int_t rejectFlag=0;
+    if (pTrack->GetTPCClusterInfo(3, 1) < kNCRCut) rejectFlag|=0x1;
+    if (pTrack->GetConstrainedChi2()>dcaChi2Cut) rejectFlag|=0x2;
+    pTrack->GetImpactParameters(dcaXY, dcaz);
+    if (TMath::Abs(dcaXY) > kDCACut) rejectFlag|=0x4;
+    if (TMath::Abs(dcaXY) > dcaCut) rejectFlag|=0x8;
+    if (rejectFlag>0 && (pTrack->HasPointOnITSLayer(0)+pTrack->HasPointOnITSLayer(0))==0) continue;
+    pTrack->SetESDEvent(tools.fEvent);
+    AliExternalTrackParam *cParam = (AliExternalTrackParam *) pTrack->GetConstrainedParam();
+    if (!cParam) continue;
+    Double_t alpha =cParam->GetAlpha();
+    Double_t theta =cParam->GetTgl();
+    for (Int_t iTracklet=0; iTracklet<nTracklets; iTracklet++){
+      Float_t phiTr=multiplicity->GetPhi(iTracklet);
+      if (phiTr>TMath::Pi()) phiTr-=TMath::TwoPi();
+      Float_t thetaTr=multiplicity->GetTheta(iTracklet);
+      Float_t tglTr=tan(TMath::Pi()/2.-thetaTr);
+      if (TMath::Abs(tglTr-cParam->GetTgl())>kTglCut) continue;
+      if (TMath::Abs(phiTr-alpha)>kPhiCut) continue;
+      Float_t deltaPhi=multiplicity->GetDeltaPhi(iTracklet);
+      Float_t deltaTheta=multiplicity->GetDeltaTheta(iTracklet);
+      Int_t itsNcls=pTrack->GetNumberOfITSClusters();
+      Int_t tpcNcls=pTrack->GetNumberOfTPCClusters();
+      (*(tools.fStreamer))<<"tracklets"<<
+                          "rejectFlag="<<rejectFlag<<
+                          "nTracklets="<<nTracklets<<
+                          "nTracks="<<nTracks<<
+                          "itsNcls="<<itsNcls<<
+                          "tpcNcls="<<tpcNcls<<
+                          "alpha"<<alpha<<
+                          "cParam="<<cParam<<
+                          "phiTr="<<phiTr<<
+                          "deltaPhiTr="<<deltaPhi<<
+                          "thetaTr="<<thetaTr<<
+                          "deltaThetaTr="<<deltaTheta<<
+                          "tglTr="<<tglTr<<
+                          "\n";
+    }
+    selected++;
+  }
+  printf("NSelected %d\n",selected);
+}
+

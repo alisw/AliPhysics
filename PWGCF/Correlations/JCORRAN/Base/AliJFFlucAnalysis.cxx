@@ -7,7 +7,6 @@
 #include <TClonesArray.h>
 #include "AliJBaseTrack.h"
 #include "AliJFFlucAnalysis.h"
-#include "AliJEfficiency.h"
 #pragma GCC diagnostic warning "-Wall"
 
 //ClassImp(AliJFFlucAnalysis)
@@ -16,14 +15,9 @@
 AliJFFlucAnalysis::AliJFFlucAnalysis() :
 	//: AliAnalysisTaskSE(),
 	fInputList(0),
-	fEfficiency(0), // pointer to tracking efficiency
 	fVertex(0),
-	pPhiWeights(0),
-	pPhiWeightsAna(0),
 	fCent(0),
 	fCBin(0),
-	fEffMode(0),
-	fEffFilterBit(0),
 	fHMG(0),
 	fBin_Subset(),
 	fBin_h(),
@@ -64,14 +58,9 @@ AliJFFlucAnalysis::AliJFFlucAnalysis() :
 AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name) :
 	//: AliAnalysisTaskSE(name),
 	fInputList(0),
-	fEfficiency(0),
 	fVertex(0),
-	pPhiWeights(0),
-	pPhiWeightsAna(0),
 	fCent(0),
 	fCBin(0),
-	fEffMode(0),
-	fEffFilterBit(0),
 	fHMG(0),
 	fBin_Subset(),
 	fBin_h(),
@@ -132,14 +121,9 @@ UInt_t AliJFFlucAnalysis::NpttJacek = sizeof(AliJFFlucAnalysis::pttJacek)/sizeof
 AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	//AliAnalysisTaskSE(a.GetName()),
 	fInputList(a.fInputList),
-	fEfficiency(a.fEfficiency),
 	fVertex(a.fVertex),
-	pPhiWeights(a.pPhiWeights),
-	pPhiWeightsAna(a.pPhiWeightsAna),
 	fCent(a.fCent),
 	fCBin(a.fCBin),
-	fEffMode(a.fEffMode),
-	fEffFilterBit(a.fEffFilterBit),
 	fHMG(a.fHMG),
 	fBin_Subset(a.fBin_Subset),
 	fBin_h(a.fBin_h),
@@ -181,13 +165,6 @@ void AliJFFlucAnalysis::Init(){
 }
 //________________________________________________________________________
 void AliJFFlucAnalysis::UserCreateOutputObjects(){
-	fEfficiency = new AliJEfficiency();
-	cout << "********" << endl;
-	cout << fEffMode << endl ;
-	cout << "********" << endl;
-	fEfficiency->SetMode( fEffMode ) ; // 0:NoEff 1:Period 2:RunNum 3:Auto
-	fEfficiency->SetDataPath( "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data" );
-	
 	fHMG = new AliJHistManager("AliJFFlucHistManager","jfluc");
 	// set AliJBin here //
 	fBin_Subset .Set("Sub","Sub","Sub:%d", AliJBin::kSingle).SetBin(2);
@@ -245,14 +222,16 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< TH1D("h_phi", "h_phi", 50,-TMath::Pi(),TMath::Pi())
 		<< fHistCentBin << fBin_Subset
 		<< "END" ;
-	fh_phieta
-		<< TH2D("h_phieta","h_phieta",50,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0)
-		<< fHistCentBin
-		<< "END";
-	fh_phietaz
-		<< TH3D("h_phietaz","h_phietaz",50,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0,20,-10.0,10.0)
-		<< fHistCentBin
-		<< "END";
+	if(!(flags & FLUC_PHI_CORRECTION)) {
+		fh_phieta
+			<< TH2D("h_phieta","h_phieta",50,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0)
+			<< fHistCentBin
+			<< "END";
+		fh_phietaz
+			<< TH3D("h_phietaz","h_phietaz",50,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0,20,-10.0,10.0)
+			<< fHistCentBin
+			<< "END";
+	}
 	/*fh_Qvector
 		<< TH1D("h_QVector", "h_QVector", 100, -10, 10)
 		<< fHistCentBin << fBin_Subset
@@ -295,17 +274,17 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< "END" ;
 
 	fh_vn
-		<< TH1D("hvn","hvn", 1024, -0.1, 0.1)
+		<< TH1D("hvn","hvn", 1024, -1.0, 1.0)
 		<< fBin_h << fBin_k
 		<< fHistCentBin
 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent]
 	fh_vna
-		<< TH1D("hvna","hvna", 1024, -0.1, 0.1)
+		<< TH1D("hvna","hvna", 1024, -1.0, 1.0)
 		<< fBin_h << fBin_k
 		<< fHistCentBin
 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent]
 	fh_vn_vn
-		<< TH1D("hvn_vn", "hvn_vn", 1024, -0.1, 0.1)
+		<< TH1D("hvn_vn", "hvn_vn", 1024, -1.0, 1.0)
 		<< fBin_h << fBin_k
 		<< fBin_hh << fBin_kk
 		<< fHistCentBin
@@ -391,7 +370,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 //________________________________________________________________________
 AliJFFlucAnalysis::~AliJFFlucAnalysis() {
 	delete fHMG;
-	delete fEfficiency;
 }
 
 #define A i
@@ -777,30 +755,18 @@ void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 		AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
 		Double_t eta = itrack->Eta();
 		Double_t phi = itrack->Phi();
-
-		fh_phieta[fCBin]->Fill(phi,eta);
-		fh_phietaz[fCBin]->Fill(phi,eta,fVertex[2]);
+		if(!(flags & FLUC_PHI_CORRECTION)) {
+			fh_phieta[fCBin]->Fill(phi,eta);
+			fh_phietaz[fCBin]->Fill(phi,eta,fVertex[2]);
+		}
 
 		if(TMath::Abs(eta) < eta1 || TMath::Abs(eta) > eta2)
 			continue;
 
-		Double_t phi_module_corr = 1.0;
-		if(flags & FLUC_PHI_CORRECTION){
-			Double_t w;
-			if(pPhiWeights)
-				w = pPhiWeights->GetBinContent(
-						pPhiWeights->FindBin(phi,eta,fVertex[2]));
-			else
-			if(pPhiWeightsAna)
-				w = pPhiWeightsAna->Eval(phi,eta,fVertex[2]);
-			else w = 1.0;
-
-			if(w > 1e-6)
-				phi_module_corr = w;
-		}
+		Double_t phi_module_corr = itrack->GetWeight();// doing it in AliJFlucTask while filling track information.
 
 		Double_t pt = itrack->Pt();
-		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+		Double_t effCorr = itrack->GetTrackEff();//fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
 		Double_t effInv = 1.0/effCorr;
 		fh_eta[fCBin]->Fill(eta,effInv);
 		fh_pt[fCBin]->Fill(pt,effInv);
@@ -843,22 +809,8 @@ TComplex AliJFFlucAnalysis::Get_Qn_pt(Double_t eta1, Double_t eta2, int harmonic
 		if(pt < pt_min || pt > pt_max)
 			continue;
 		Double_t phi = itrack->Phi();
-		Double_t phi_module_corr = 1.0;
-		if(flags & FLUC_PHI_CORRECTION){
-			Double_t w;
-			if(pPhiWeights)
-				w = pPhiWeights->GetBinContent(
-						pPhiWeights->FindBin(phi,eta,fVertex[2]));
-			else
-			if(pPhiWeightsAna)
-				w = pPhiWeightsAna->Eval(phi,eta,fVertex[2]);
-			else w = 1.0;
-
-			if(w > 1e-6)
-				phi_module_corr = w;
-		}
-		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
-
+		Double_t effCorr = itrack->GetTrackEff();//fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+		Double_t phi_module_corr = itrack->GetWeight();// doing it in AliJFlucTask while filling track information.
 		Double_t tf = 1.0/(phi_module_corr*effCorr);
 		Qn += TComplex(tf*TMath::Cos(nh*phi),tf*TMath::Sin(nh*phi));
 		Sub_Ntrk += tf;
@@ -907,21 +859,8 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(double etamin, double etamax){
 		Double_t phi = itrack->Phi();
 		Double_t pt = itrack->Pt();
 
-		Double_t phi_module_corr = 1.0;
-		if(flags & FLUC_PHI_CORRECTION){
-			Double_t w;
-			if(pPhiWeights)
-				w = pPhiWeights->GetBinContent(
-						pPhiWeights->FindBin(phi,eta,fVertex[2]));
-			else
-			if(pPhiWeightsAna)
-				w = pPhiWeightsAna->Eval(phi,eta,fVertex[2]);
-			else w = 1.0;
-
-			if(w > 1e-6)
-				phi_module_corr = w;
-		}
-		Double_t effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+		Double_t effCorr = itrack->GetTrackEff();//fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);	
+		Double_t phi_module_corr = itrack->GetWeight();
 
 		for(int ih=0; ih<kNH; ih++){
 			Double_t tf = 1.0;

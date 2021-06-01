@@ -12,6 +12,7 @@
 #include <TLorentzVector.h>
 
 #include "AliESDtrack.h"
+#include "AliAODTrack.h"
 
 class AliRsnDaughter;
 
@@ -67,6 +68,7 @@ public:
 private:
     
    Bool_t    TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b);
+   Bool_t    TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b);
 
    Int_t     fIndex;        // ID of track in its event
    Int_t     fIndexDaughters[3]; // daugher indices (0:pos, 1:neg, 2: bachelor) (if not V0/resonance then 0:ESD/AOD label, 1:(-1))

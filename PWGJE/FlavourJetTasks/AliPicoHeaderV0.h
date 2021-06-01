@@ -1,6 +1,7 @@
 #ifndef ALIPICOHEADERV0_H
 #define ALIPICOHEADERV0_H
 
+#include <TObjString.h>
 #include <TNamed.h>
 
 #include <TMap.h>

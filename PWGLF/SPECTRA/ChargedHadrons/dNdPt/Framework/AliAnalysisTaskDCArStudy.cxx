@@ -25,7 +25,7 @@ ClassImp(AliAnalysisTaskDCArStudy)
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskDCArStudy::AliAnalysisTaskDCArStudy() 
+AliAnalysisTaskDCArStudy::AliAnalysisTaskDCArStudy()
     : AliAnalysisTaskMKBase()
     , fHistDCA(0)
     , fHistDCATPC(0)
@@ -36,13 +36,13 @@ AliAnalysisTaskDCArStudy::AliAnalysisTaskDCArStudy()
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskDCArStudy::AliAnalysisTaskDCArStudy(const char* name) 
+AliAnalysisTaskDCArStudy::AliAnalysisTaskDCArStudy(const char* name)
     : AliAnalysisTaskMKBase(name)
-    , fHistDCA(0)    
+    , fHistDCA(0)
     , fHistDCATPC(0)
 {
     // constructor
-    
+
 }
 
 //_____________________________________________________________________________
@@ -55,25 +55,27 @@ AliAnalysisTaskDCArStudy::~AliAnalysisTaskDCArStudy()
 //_____________________________________________________________________________
 
 void AliAnalysisTaskDCArStudy::AddOutput()
-{    
+{
     //dcar:pt:mult:mcinfo
-    AddAxis("DCAxy",5000,-1,1);
-    AddAxis("pt");    
-    AddAxis("nTracks","mult6kcoarse");
+    AddAxis("DCAxy",500,-1,1);
+    AddAxis("pt");
+    AddAxis("nTracks", "mult6kcoarse");
+    AddAxis("cent");
     AddAxis("MCinfo",4,-1.5,2.5); // 0=prim, 1=decay 2=material -1=data
     fHistDCA = CreateHist("fHistDCA");
     fOutputList->Add(fHistDCA);
-    
+
     //dcar:pt:mult:mcinfo
-    AddAxis("DCAxy",5000,-20,20); 
-    AddAxis("TPCpt","pt");    
-    AddAxis("nTracks","mult6kcoarse");
+    AddAxis("DCAxy",500,-1,1);
+    AddAxis("TPCpt","pt");
+    AddAxis("nTracks", "mult6kcoarse");
+    AddAxis("cent");
     AddAxis("MCinfo",4,-1.5,2.5); // 0=prim, 1=decay 2=material -1=data
     fHistDCATPC = CreateHist("fHistDCATPC");
     fOutputList->Add(fHistDCATPC);
-    
+
      //dcar:pt:mult:mcinfo
-  
+
 }
 
 //_____________________________________________________________________________
@@ -95,22 +97,22 @@ void AliAnalysisTaskDCArStudy::AnaEvent()
 
 void AliAnalysisTaskDCArStudy::AnaTrackMC(Int_t flag)
 {
-    if (fAcceptTrack[0]) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, fMCPrimSec); }
-    if (fAcceptTrack[1]) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, fMCPrimSec); }
+    if (fAcceptTrack[0]) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, fMultPercentileV0M, fMCPrimSec); }
+    if (fAcceptTrack[1]) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec); }
 }
 
 //_____________________________________________________________________________
 
 void AliAnalysisTaskDCArStudy::AnaTrackDATA(Int_t flag)
 {
-    if (fAcceptTrack[0]) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, -1); }
-    if (fAcceptTrack[1]) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, -1); }
+    if (fAcceptTrack[0]) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, fMultPercentileV0M, -1); }
+    if (fAcceptTrack[1]) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, -1); }
 }
 
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskDCArStudy* AliAnalysisTaskDCArStudy::AddTaskDCArStudy(const char* name, const char* outfile) 
+AliAnalysisTaskDCArStudy* AliAnalysisTaskDCArStudy::AddTaskDCArStudy(const char* name, const char* outfile)
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -124,27 +126,27 @@ AliAnalysisTaskDCArStudy* AliAnalysisTaskDCArStudy::AddTaskDCArStudy(const char*
         ::Error("AddTaskDCArStudy", "This task requires an input event handler");
         return NULL;
     }
-    
+
     // Setup output file
     //===========================================================================
-    TString fileName = AliAnalysisManager::GetCommonFileName();        
+    TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":";
     fileName += name;  // create a subfolder in the file
     if (outfile) { // if a finename is given, use that one
-        fileName = TString(outfile);        
+        fileName = TString(outfile);
     }
 
     // create the task
     //===========================================================================
-    AliAnalysisTaskDCArStudy *task = new AliAnalysisTaskDCArStudy(name);  
+    AliAnalysisTaskDCArStudy *task = new AliAnalysisTaskDCArStudy(name);
     if (!task) { return 0; }
-    
+
     // configure the task
     //===========================================================================
-    task->SelectCollisionCandidates(AliVEvent::kAnyINT);    
+    task->SelectCollisionCandidates(AliVEvent::kAnyINT);
     task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
-    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("TPCgeoNoDCArEta08"));    
-    task->SetESDtrackCuts(1,AlidNdPtTools::CreateESDtrackCuts("TPCITSforDCArStudyEta08"));    
+    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("TPCgeoNoDCArEta08"));
+    task->SetESDtrackCuts(1,AlidNdPtTools::CreateESDtrackCuts("TPCITSforDCArStudyEta08"));
     task->SetNeedEventMult(kTRUE);
     task->SetNeedEventVertex(kTRUE);
     task->SetNeedTrackTPC(kTRUE);
@@ -154,6 +156,6 @@ AliAnalysisTaskDCArStudy* AliAnalysisTaskDCArStudy::AddTaskDCArStudy(const char*
     mgr->AddTask(task);
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task,1,mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    
+
   return task;
 }

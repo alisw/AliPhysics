@@ -407,10 +407,10 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   if(!fFillAllCellHistograms) return;
   
   Int_t ncells = cells->GetNumberOfCells();
-  if( ncells > 0 ) fhNCells->Fill(ncells, GetEventWeight()) ; // Not ok for PHOS with CPV
 
   Int_t   ncellsCut = 0;
   Float_t ecellsCut = 0;
+  Int_t   ncellsSel = 0;
   
   AliDebug(1,Form("%s cell entries %d", GetCalorimeterString().Data(), ncells));
   
@@ -429,17 +429,49 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   Int_t    iRCU   = -1;
   Float_t  amp    = 0.;
   Double_t time   = 0.;
+  Int_t    mcLabel= -1;
   Double_t timeL1UnCorr= 0.;
   Int_t    id     = -1;
   Bool_t   highG  = kFALSE;
-  Float_t  recalF = 1.;  
   Int_t    bc     = GetReader()->GetInputEvent()->GetBunchCrossNumber();
   Int_t    status = 0;
-  for (Int_t iCell = 0; iCell < cells->GetNumberOfCells(); iCell++)
+  for (Int_t iCell = 0; iCell < ncells ; iCell++)
   {
     if ( cells->GetCellNumber(iCell) < 0 ) continue; // CPV 
     
-    AliDebug(2,Form("Cell : amp %f, absId %d", cells->GetAmplitude(iCell), cells->GetCellNumber(iCell)));
+    time    = cells->GetTime(iCell);
+    mcLabel = cells->GetMCLabel(iCell);
+    amp     = cells->GetAmplitude(iCell);
+    id      = cells->GetCellNumber(iCell);
+    highG   = cells->GetCellHighGain(id);
+    if ( IsDataMC() ) highG = kTRUE; // MC does not distinguish High and Low, put them all in high
+
+    if ( IsDataMC() && GetReader()->IsMCParticlePileUpRejected() )
+    {
+      // This condition should not be necessary, next condition should have taken care but didn't, why?
+      if  ( mcLabel <= 0 )
+      {
+        //printf("Rejected: Cell neg-0 label : amp %f, time %f, mc %d, absId %d\n", amp, time*1e9, mcLabel, id);
+        continue;
+      }
+
+      if ( !GetReader()->AcceptParticleMCLabel( mcLabel ) )
+      {
+        //printf("Rejected: Cell label pile-up : amp %f, time %f, mc %d, absId %d\n", amp, time*1e9, mcLabel, id);
+        continue ;
+      }
+
+      // This condition should not be necessary, previous condition should have taken care but didn't, why?
+      if ( time*1e9 < -100 )
+      {
+        //printf("Rejected: Cell time : amp %f, time %f, mc %d, absId %d\n", amp, time*1e9, mcLabel, id);
+        continue;
+      }
+    }
+
+    ncellsSel++;
+
+    AliDebug(2,Form("Cell : amp %f, time %f, mc label %d, absId %d", amp, time*1e9, mcLabel, id));
     
     Int_t nModule = GetModuleNumberCellIndexesAbsCaloMap(cells->GetCellNumber(iCell),GetCalorimeter(), 
                                                          icol   , irow, iRCU,
@@ -465,12 +497,6 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow) ) continue;
       }
     } // use bad channel map
-    
-    amp     = cells->GetAmplitude(iCell)*recalF;
-    time    = cells->GetTime(iCell);
-    id      = cells->GetCellNumber(iCell);
-    highG   = cells->GetCellHighGain(id);
-    if(IsDataMC()) highG = kTRUE; // MC does not distinguish High and Low, put them all in high
     
     // Amplitude recalibration if set
     GetCaloUtils()->RecalibrateCellAmplitude(amp,  GetCalorimeter(), id);
@@ -637,9 +663,11 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     
   } // Cell loop
   
+  if ( ncellsSel > 0 ) fhNCells->Fill(ncellsSel, GetEventWeight()) ; // Not ok for PHOS with CPV
+
   // Fill the cells after the cut on min amplitude and bad/exotic channels
-  if( ncellsCut > 0 ) fhNCellsCutAmpMin->Fill(ncellsCut, GetEventWeight()) ;
-  
+  if ( ncellsCut > 0 ) fhNCellsCutAmpMin->Fill(ncellsCut, GetEventWeight()) ;
+
   // In case of correlation per SM with tracks, centrality or V0
   Float_t cen = -1;
   Int_t   v0S = -1;

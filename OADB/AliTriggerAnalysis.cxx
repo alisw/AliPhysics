@@ -22,6 +22,7 @@
 // Current support and development: Evgeny Kryshen, PNPI
 //-------------------------------------------------------------------------
 
+#include <TObjString.h>
 #include "TF1.h"
 #include "TH1F.h"
 #include "TH2F.h"

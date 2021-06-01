@@ -63,14 +63,30 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
         } else {
             if (GetPhotonPhi() > 1.39 && GetPhotonPhi() < 3.285 )
                 fCaloPhoton = 1;
-            else 
+            else
                 fCaloPhoton = 3;
         }
     }
     Char_t GetIsCaloPhoton(){return fCaloPhoton;}
-    void SetCaloPhotonMCLabel(Int_t i, Int_t labelCaloPhoton){fCaloPhotonMCLabels[i] = labelCaloPhoton;}
-    Int_t GetCaloPhotonMCLabel(Int_t i){return fCaloPhotonMCLabels[i];}
-    void SetNCaloPhotonMCLabels(Int_t nLabels){fNCaloPhotonMCLabels = nLabels;}
+    void SetCaloPhotonMCLabel(Int_t i, Int_t labelCaloPhoton){
+        if(i < 100){
+            fCaloPhotonMCLabels[i] = labelCaloPhoton;
+        }
+    }
+    Int_t GetCaloPhotonMCLabel(Int_t i){
+        if(i < 100){
+            return fCaloPhotonMCLabels[i];
+        } else {
+            return -1;
+        }
+    }
+    void SetNCaloPhotonMCLabels(Int_t nLabels){
+        if(nLabels < 100){
+            fNCaloPhotonMCLabels = nLabels;
+        } else {
+            fNCaloPhotonMCLabels = 100;
+        }
+    }
     Int_t GetNCaloPhotonMCLabels(){return fNCaloPhotonMCLabels;}
     Int_t GetNCaloPhotonMotherMCLabels(){return fNCaloPhotonMotherMCLabels;}
     Int_t GetCaloPhotonMotherMCLabel(Int_t i){return fCaloPhotonMotherMCLabels[i];}
@@ -109,7 +125,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     }
     Bool_t GetUseForMesonPair() {return fUseForMesonPair;}
 
-    Long_t fCaloPhotonMCLabels[50];         //!
+    Long_t fCaloPhotonMCLabels[100];         //!
     Long_t fCaloPhotonMotherMCLabels[20];   //!
     Long_t fNeutralPionLabels[20];          //!
     Int_t fLeadingNeutralPionIndex;         //!
@@ -127,11 +143,8 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     Char_t fCaloPhoton;                     //!
     Bool_t fUseForMesonPair;                //!
 
-    ClassDef(AliAODConversionPhoton,11)
+    ClassDef(AliAODConversionPhoton,12)
 };
 
 
 #endif
-
-
-

@@ -524,7 +524,7 @@ void AliOtonOmegaAnalysis::Make(AliAODEvent *evt, bool OmegaTreeFlag) {
        AliFatal("No Standard AOD");
        return;
      }
-     fFemtoTrack->SetTrack(track, fEvent->GetMultiplicity());
+     fFemtoTrack->SetTrack(track);
      if (fTrackCuts->isSelected(fFemtoTrack)) {
        Particles.push_back(*fFemtoTrack);
      }
@@ -680,7 +680,7 @@ void AliOtonOmegaAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool Casc
   std::vector<AliFemtoDreamBasePart> AntiParticles;
   for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
     AliESDtrack *track = static_cast<AliESDtrack *>(evt->GetTrack(iTrack));
-    fFemtoTrack->SetTrack(track, mcEvent, fEvent->GetMultiplicity());
+    fFemtoTrack->SetTrack(track, mcEvent);
     if (fTrackCuts->isSelected(fFemtoTrack)) {
       Particles.push_back(*fFemtoTrack); 
       Bool_t protonfilled = FillProtonTrack(evt, iTrack);

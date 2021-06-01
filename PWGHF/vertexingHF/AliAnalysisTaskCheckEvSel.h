@@ -35,7 +35,7 @@ public:
   virtual void Terminate(Option_t *option);
   virtual void FinishTaskOutput(){};
 
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetCutOnzVertexSPD(Int_t opt) {
     if(opt>=0 && opt<=3) fCutOnzVertexSPD=opt;
     else AliError("Wrong option for cut on zVertexSPD");

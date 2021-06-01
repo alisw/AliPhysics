@@ -1,6 +1,6 @@
 #ifndef ALICONVERSIONPHOTONCUTS_H
 #define ALICONVERSIONPHOTONCUTS_H
-
+#include <TObjString.h>
 #include "AliAODpidUtil.h"
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
@@ -123,6 +123,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
         kPhotonOut
     };
 
+    // todo: use unordered_map when found out how to make it work with ROOT5
+    typedef std::map<AliAODConversionPhoton*, Bool_t> TMapPhotonBool;
 
     Bool_t SetCutIds(TString cutString);
     Int_t fCuts[kNCuts];
@@ -210,6 +212,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
     Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
 
+    void RemovePhotonsWithSharedTracks(TMapPhotonBool &thePhotons) const;
+    void RemoveTooClosePhotons(TMapPhotonBool &thePhotons) const;
+
     UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
     UChar_t DeterminePhotonQualityTRD(AliAODConversionPhoton*, AliVEvent*);
     UChar_t DeterminePhotonQualityTOF(AliAODConversionPhoton*, AliVEvent*);
@@ -235,6 +240,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t SetTOFElectronPIDCut(Int_t TOFelectronPID);
     Bool_t SetTRDElectronCut(Int_t TRDElectronCut);
     Bool_t SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut);
+    Bool_t SetPhotonRDepPtCut(Int_t doPhotonRDepPtCut);
     Bool_t SetCosPAngleCut(Int_t cosCut);
     Bool_t SetPsiPairCut(Int_t psiCut);
     Bool_t SetSharedElectronCut(Int_t sharedElec);
@@ -270,12 +276,14 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t LoadElecDeDxPostCalibration(Int_t runNumber);
     Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl, Double_t R);
     void ForceTPCRecalibrationAsFunctionOfConvR(){fIsRecalibDepTPCCl = kFALSE;}
+    void SetPtCutArraySize(Int_t ptCutArraySize){fPtCutArraySize = ptCutArraySize;return;};
+    void SetRArraySize(Int_t rArraySize){fRArraySize = rArraySize;return;};
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
     AliPIDResponse*   fPIDResponse;                         ///< PID response
 
-    Int_t            fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t             fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t            fDoPlotTrackPID;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     TString           fV0ReaderName;                        ///< Name of the V0 reader
 
@@ -290,6 +298,11 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t           fMaxPhiCut;                           ///< phi sector cut
     Int_t             fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
     Double_t          fPtCut;                               ///< pt cut
+    Int_t             fPtCutArraySize;                      ///< Array size for the R Dep pT cut
+    Double_t*         fRDepPtCutArray;                      //[fPtCutArraySize]
+    Int_t             fRArraySize;                          ///< Array size for the array bins of the r-dep pt cut
+    Double_t*         fRArray;                              //[fRArraySize]
+    Bool_t            fDoRDepPtCut;                         ///< Flag for setting a R_dependent pT cut
     Double_t          fSinglePtCut;                         ///< pt cut for electron/positron
     Double_t          fSinglePtCut2;                        ///< second pt cut for electron/positron if asymmetric cut is chosen
     Bool_t            fDoAsymPtCut;                         ///< Flag for setting asymmetric pT cut on electron/positron
@@ -347,15 +360,16 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fTOFtimeMin;                          ///< minimum TOF time cut on conversion leg
     Double_t          fTOFtimeMax;                          ///< maximum TOF time cut on conversion leg
     Bool_t            fTOFtimingBothLegs;                   ///< flag to use tof timing on both or either one photon leg
-    Bool_t            fUseTOFpidMinMom;                     ///< flag to use TOF nSigma cut only above a certain track momentum
+    Bool_t            fUseTOFpidMomRange;                   ///< flag to use TOF nSigma cut only above a certain track momentum
     Double_t          fTofPIDMinMom;                        ///< track momentum threshold for TOF nSigma cut
+    Double_t          fTofPIDMaxMom;                        ///< track momentum threshold for TOF nSigma cut
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
     Int_t             fDo2DPsiPairChi2;                     ///<
     Bool_t            fIncludeRejectedPsiPair;              ///<
     Float_t           fCosPAngleCut;                        ///<
     Bool_t            fDoToCloseV0sCut;                     ///<
-    Double_t          fminV0Dist;                           ///<
+    Double_t          fMinV0DistSquared;                    ///<
     Bool_t            fDoSharedElecCut;                     ///<
     Bool_t            fDoPhotonQualitySelectionCut;         ///<
     Bool_t            fDoPhotonQualityRejectionCut;         ///<
@@ -381,7 +395,6 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fTRDPIDAboveCut;                      ///< TRD cut range
     Double_t          fTRDPIDBelowCut;                      ///< TRD cut range
     Bool_t            fDoDoubleCountingCut;                 ///< Flag to reject double counting
-    Double_t          fMinRDC;                              ///< Min R for Double Counting Cut
     Double_t          fDeltaR;                              ///< Delta R for Double Counting Cut
     Double_t          fOpenAngle;                           ///< Opening Angle for Double Counting Cut
     Bool_t            fSwitchToKappa;                       ///< switches from standard dEdx nSigma TPC cuts to Kappa TPC
@@ -442,8 +455,21 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fExcludeMaxR;                         ///< r cut exclude region
 
   private:
+    /*helper class for on-the-fly removal of elements from a std::map like container while iterating over it */
+    struct TItRemove {
+        TItRemove(TMapPhotonBool &theMap, TMapPhotonBool::iterator theIt);
+        void Remove();
+        void IncIfNotRemoved();
+
+        TMapPhotonBool           &fMap;
+        TMapPhotonBool::iterator  fIt;
+        Bool_t                    fRemoved;
+    };
+
+    void RemovePhotonWithHigherChi2(TItRemove &theI1, TItRemove &theI2) const;
+
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,35)
+    ClassDef(AliConversionPhotonCuts,40)
     /// \endcond
 };
 

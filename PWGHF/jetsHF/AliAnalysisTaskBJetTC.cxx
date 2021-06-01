@@ -480,6 +480,7 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC() : AliAnalysisTaskEmcalJet("AliAna
                                                  fLogJetProb(-1.),
                                                  fCalcDCATruth(kFALSE),
                                                  fDecayVertex(0x0),
+                                                 fh3JetpTLxySVIPsSecond(0x0),
                                                  fHistSV2Prong(0x0),
                                                  fHistSV2ProngUnidentified(0x0),
                                                  fHistSV2Prongb(0x0),
@@ -950,6 +951,7 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name) : AliAnalysisTask
                                                                  fLogJetProb(-1.),
                                                                  fCalcDCATruth(kFALSE),
                                                                  fDecayVertex(0x0),
+                                                                 fh3JetpTLxySVIPsSecond(0x0),
                                                                  fHistSV2Prong(0x0),
                                                                  fHistSV2ProngUnidentified(0x0),
                                                                  fHistSV2Prongb(0x0),
@@ -1468,6 +1470,9 @@ Bool_t AliAnalysisTaskBJetTC::Run()
     std::vector<double> sImpParXY, sImpParXYZ, sImpParXYSig, sImpParXYZSig;
 
     Bool_t TaggedFirst(0), TaggedSecond(0), TaggedThird(0);
+
+    double fIPsSecond = 0.;
+    double fSLxySV = 0.;
 
     while ((jetrec = fJetContainerData->GetNextJet()))
     {
@@ -2588,6 +2593,8 @@ Bool_t AliAnalysisTaskBJetTC::Run()
                 fh2dJetSignedImpParXYSignificanceSecond->Fill(fJetPt, sImpParXYSig.at(1), fPythiaEventWeight);
                 fh2dJetSignedImpParXYZSignificanceSecond->Fill(fJetPt, sImpParXYZSig.at(1), fPythiaEventWeight);
 
+                fIPsSecond = DefaultDiscriminator.at(1);
+
                 if (DefaultDiscriminator.at(1) > fThresholdIP)
                     TaggedSecond = kTRUE;
 
@@ -3090,9 +3097,13 @@ Bool_t AliAnalysisTaskBJetTC::Run()
                     if (fJetFlavor == 3)
                         fHistDispersion3Prongb->Fill(fJetPt, fDispersion);
                 }
-                if (fDispersion < 0.04)
+                if (fDispersion < 0.03)
                 {
+
+                    fh3JetpTLxySVIPsSecond->Fill(fJetPt, fLxySign, fIPsSecond);
+
                     fHistSV3Prong->Fill(fJetPt, fLxySign, fInvariantMass);
+
                     if (fIsPythia)
                     {
                         if (fJetFlavor == 0)
@@ -3221,7 +3232,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
                     if (fJetFlavor == 3)
                         fHistDispersion2Prongb->Fill(fJetPt, fDispersion);
                 }
-                if (fDispersion < 0.04)
+                if (fDispersion < 0.03)
                 {
                     fHistSV2Prong->Fill(fJetPt, fLxySign, fInvariantMass);
 
@@ -3861,20 +3872,29 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects()
     if (fDoSVAnalysis || fDoSVEnergyFraction)
     {
         fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
+
         fEsdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-        fEsdTrackCuts->SetMinNClustersTPC(80);
+        fEsdTrackCuts->SetMinNClustersTPC(70);
         fEsdTrackCuts->SetMaxChi2PerClusterTPC(4);
         fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
         fEsdTrackCuts->SetRequireITSRefit(kTRUE);
         fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-        fEsdTrackCuts->SetMinDCAToVertexXY(0.008);
+        fEsdTrackCuts->SetMinDCAToVertexXY(fDoSVAnalysis ? 0. : 0.008);
         fEsdTrackCuts->SetEtaRange(-0.9, 0.9);
         fEsdTrackCuts->SetPtRange(1., 1.e10);
+
+        if (fDoSVAnalysis)
+        {
+            fEsdTrackCuts->SetEtaRange(-0.8, 0.8);
+            fEsdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        }
 
         fjetCuts3Prong = new AliRDHFJetsCutsVertex("jetCuts3Prong");
         fjetCuts3Prong->AddTrackCuts(fEsdTrackCuts);
         fjetCuts3Prong->SetNprongs(3);
         fjetCuts3Prong->SetMinPtHardestTrack(1.);
+        fjetCuts3Prong->SetIsElec(kFALSE);       // kTRUE to select e in jet vertex
+        fjetCuts3Prong->SetSecVtxWithKF(kFALSE); //default with StrLinMinDist
 
         fjetCuts2Prong = new AliRDHFJetsCutsVertex("jetCuts2Prong");
         fjetCuts2Prong->AddTrackCuts(fEsdTrackCuts);
@@ -4638,6 +4658,8 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects()
 
     if (fDoSVAnalysis)
     {
+        fh3JetpTLxySVIPsSecond = new TH3D("fh3JetpTLxySVIPsSecond", "Secondary vertex 2Prong;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;IPs_{Second}(GeV/c^2)", 500, 0., 250., 160, 0, 80, nBins2dSignificance, -100, 100);
+
         fHistSV2Prong = new TH3D("fHistSV2Prong", "Secondary vertex 2Prong;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 160, 0, 80, 100, 0, 10);
         fHistSV3Prong = new TH3D("fHistSV3Prong", "Secondary vertex 3Prong;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 160, 0, 80, 100, 0, 10);
 
@@ -5168,6 +5190,9 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects()
 
     if (fDoSVAnalysis)
     {
+
+        fOutput->Add(fh3JetpTLxySVIPsSecond);
+
         fOutput->Add(fHistDispersion2Prong);
         fOutput->Add(fHistSV2Prong);
 

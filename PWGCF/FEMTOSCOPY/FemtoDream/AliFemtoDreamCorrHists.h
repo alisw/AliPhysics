@@ -38,6 +38,10 @@ class AliFemtoDreamCorrHists {
     return fDokTandMultBinning;
   }
   ;
+  bool GetDokTandMultPtBinning() {
+    return fDokTandMultPtBinning;
+  }
+  ;
   bool GetDomTBinning() {
     return fDomTBinning;
   }
@@ -96,6 +100,9 @@ class AliFemtoDreamCorrHists {
 
   void FillSameEventkTandMultDist(int i, float kT, float RelK, int multBin) {
     fSameEventkTandMultDist[i][multBin]->Fill(RelK, kT);
+  }
+  void FillSameEventkTandMultPtDist(int i, float kT, float pT, int multBin) {
+    fSameEventkTandMultPtDist[i][multBin]->Fill(pT, kT);
   }
   void FillMixedEventkTandMultDist(int i, float kT, float RelK, int multBin) {
     fMixedEventkTandMultDist[i][multBin]->Fill(RelK, kT);
@@ -173,7 +180,7 @@ class AliFemtoDreamCorrHists {
       }
     }
   }
-  
+
   void FillPairInvMassQAD(int i, AliFemtoDreamBasePart &part1,
                           AliFemtoDreamBasePart &part2) {
     if (!fMinimalBooking) {
@@ -205,6 +212,43 @@ class AliFemtoDreamCorrHists {
         TLorentzVector trackSum = trackPos + trackNeg;
 
         fPairInvMEMassQAD[i]->Fill(trackSum.M());
+      }
+    }
+  }
+
+  void FillPDGPairInvMassQAD(int i, float kstar,
+                          AliFemtoDreamBasePart &part1, float massPart1,
+                          AliFemtoDreamBasePart &part2, float massPart2) {
+    if (!fMinimalBooking) {
+      if (fPairInvMassQAD[i]) {
+        TVector3 momPart1 = part1.GetMomentum();
+        TVector3 momPart2 = part2.GetMomentum();
+        TLorentzVector trackPos, trackNeg;
+        trackPos.SetXYZM(momPart1.Px(), momPart1.Py(), momPart1.Pz(),
+                         massPart1);
+        trackNeg.SetXYZM(momPart2.Px(), momPart2.Py(), momPart2.Pz(),
+                         massPart2);
+        TLorentzVector trackSum = trackPos + trackNeg;
+
+        fPairInvMassKstarQAD[i]->Fill(trackSum.M(), kstar);
+      }
+    }
+  }
+  void FillPDGPairInvMEMassQAD(int i, float kstar,
+                          AliFemtoDreamBasePart &part1, float massPart1,
+                          AliFemtoDreamBasePart &part2, float massPart2) {
+    if (!fMinimalBooking) {
+      if (fPairInvMEMassQAD[i]) {
+        TVector3 momPart1 = part1.GetMomentum();
+        TVector3 momPart2 = part2.GetMomentum();
+        TLorentzVector trackPos, trackNeg;
+        trackPos.SetXYZM(momPart1.Px(), momPart1.Py(), momPart1.Pz(),
+                         massPart1);
+        trackNeg.SetXYZM(momPart2.Px(), momPart2.Py(), momPart2.Pz(),
+                         massPart2);
+        TLorentzVector trackSum = trackPos + trackNeg;
+
+        fPairInvMEMassKstarQAD[i]->Fill(trackSum.M(), kstar);
       }
     }
   }
@@ -366,6 +410,7 @@ class AliFemtoDreamCorrHists {
   TH2F **fSameEventmTvsMultDist;
   TH2F **fSameEventkTDist;
   TH2F ***fSameEventkTandMultDist;
+  TH2F ***fSameEventkTandMultPtDist;
   TH2F ***fSameEventkTCentDist;
   TH2F ***fSameEventmTMultDist;
   TH2F **fPtQADist;
@@ -380,9 +425,11 @@ class AliFemtoDreamCorrHists {
   TH2F **fMassQADistPart1;
   TH2F **fMassQADistPart2;
   TH1F **fPairInvMassQAD;
+  TH2F **fPairInvMassKstarQAD;
   TH2F **fMEMassQADistPart1;
   TH2F **fMEMassQADistPart2;
   TH1F **fPairInvMEMassQAD;
+  TH2F **fPairInvMEMassKstarQAD;
   TH2F **fPairCounterSE;
   TH1F **fMixedEventDist;
   TH2F **fMixedEventMultDist;
@@ -427,6 +474,7 @@ class AliFemtoDreamCorrHists {
   bool fDoMultBinning;
   bool fDoCentBinning;
   bool fDokTandMultBinning;
+  bool fDokTandMultPtBinning;
   bool fDokTBinning;
   bool fDomTBinning;
   bool fmTMultPlots;

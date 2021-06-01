@@ -2,14 +2,14 @@
 #define ALIANALYSISUTILS_H
 
 ////////////////////////////////////////////////////////////////////
-//                                                                           //
-// Class with functions useful for different analyses                      //
-// - vertex selection                                                       //
-//    * 2013 pA default cuts                                             //
-// - identification of the fist event of the chunk                         //
-// - identification pileup events                                           //
-//                                                                          //
-///////////////////////////////////////////////////////////////////
+//                                                                //
+// Class with functions useful for different analyses             //
+// - vertex selection                                             //
+//    * 2013 pA default cuts                                      //
+// - identification of the fist event of the chunk                //
+// - identification pileup events                                 //
+//                                                                //
+////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 #include <TString.h>
@@ -20,6 +20,9 @@ class AliVVertex;
 class AliPPVsMultUtils;
 class AliMCEvent;
 class AliAODMCHeader;
+class AliESDtrackCuts;
+class AliAODEvent;
+class AliAODTrack;
 
 class AliAnalysisUtils : public TObject {
 
@@ -71,10 +74,21 @@ class AliAnalysisUtils : public TObject {
   static Bool_t IsParticleFromOutOfBunchPileupCollision(Int_t index, AliMCEvent* mcEv);
   static Bool_t IsParticleFromOutOfBunchPileupCollision(Int_t index, AliAODMCHeader* aodMCHeader, TClonesArray *arrayMC);
   static Bool_t IsParticleFromOutOfBunchPileupCollision(Int_t index, TList *lgen);
-  static Bool_t IsSameBunchPileupInGeneratedEvent(AliMCEvent* mcEv);
-  static Bool_t IsSameBunchPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader);
-  static Bool_t IsSameBunchPileupInGeneratedEvent(TList *lgen);
-    
+  static Bool_t IsSameBunchPileupInGeneratedEvent(AliMCEvent* mcEv, TString genname="");
+  static Bool_t IsSameBunchPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader, TString genname="");
+  static Bool_t IsSameBunchPileupInGeneratedEvent(TList *lgen, TString genname="");
+  static Bool_t IsPileupInGeneratedEvent(AliMCEvent* mcEv, TString genname);
+  static Bool_t IsPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader, TString genname);
+  static Bool_t IsPileupInGeneratedEvent(TList *lgen, TString genname, Bool_t requireSameBunch=kFALSE);
+
+  // helper methods for kink tagging in AODs
+  static Bool_t IsKinkMother(AliAODTrack* track, AliAODEvent* aod);
+  static Bool_t IsKinkDaughter(AliAODTrack* track);
+  
+  // methods to get default track cuts for reconstructions with improved error parametrisation
+  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2011TighterChi2(Bool_t selPrimaries=kTRUE, Int_t clusterCut=1);
+  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2015PbPbTighterChi2(Bool_t selPrimaries=kTRUE, Int_t clusterCut = 1, Bool_t cutAcceptanceEdges = kTRUE, Bool_t removeDistortedRegions = kFALSE);
+
  private:
   
   Bool_t fisAOD; // flag for AOD:1 or ESD:0

@@ -49,8 +49,8 @@ public:
   enum EPairType { kEv1PP=0, kEv1PM, kEv1MM,
       kEv1PEv2P, kEv1MEv2P, kEv2PP,
       kEv1PEv2M, kEv1MEv2M, kEv2PM,
-      kEv2MM, kEv1PMRot };
-  enum ELegType  { kEv1P, kEv1M, kEv2P, kEv2M };
+      kEv2MM, kEv1PMRot, kEv1PPRot, kEv1MMRot};
+  enum ELegType  { kEv1P, kEv1M, kEv2P, kEv2M, kEv1PTR, kEv1MTR };
 
   AliDielectron();
   AliDielectron(const char* name, const char* title);
@@ -75,6 +75,9 @@ public:
   AliAnalysisFilter& GetEventPlanePreFilter(){ return fEventPlanePreFilter; }
   AliAnalysisFilter& GetEventPlanePOIPreFilter(){ return fEventPlanePOIPreFilter; }
   AliDielectronQnEPcorrection* GetQnTPCACcuts(){ return fQnTPCACcuts; }
+  Double_t GetWeightFromRotation(AliKFParticle* part);
+  Double_t GetWeightFromOpeningAngle(AliKFParticle* KFpos, AliKFParticle* KFneg); 
+
 
   Bool_t GetEvtVsTrkHistExists() {return fEvtVsTrkHistExists;}
   void SetEvtVsTrkHistExists(Bool_t doesExist = kTRUE) {fEvtVsTrkHistExists = doesExist;}
@@ -89,8 +92,8 @@ public:
   void SetNoPairing(Bool_t noPairing=kTRUE) { fNoPairing=noPairing; }
   void SetProcessLS(Bool_t doLS=kTRUE) { fProcessLS=doLS; }
   void SetUseKF(Bool_t useKF=kTRUE) { fUseKF=useKF; }
-  const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<4)?&fTracks[i]:0;}
-  const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<11)?
+  const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<6)?&fTracks[i]:0;}
+  const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<13)?
       static_cast<TObjArray*>(fPairCandidates->UncheckedAt(i)):0;}
 
   TObjArray** GetPairArraysPointer() { return &fPairCandidates; }
@@ -136,7 +139,7 @@ public:
 
   Bool_t GetRotatePP() const { return fRotatePP; }
   Bool_t GetRotateMM() const { return fRotateMM; }
-
+  Int_t GetIterations() const           { return fIterations;    }
 
   void SetMixingHandler(AliDielectronMixingHandler *mix) { fMixing=mix; }
   AliDielectronMixingHandler* GetMixingHandler() const { return fMixing; }
@@ -153,17 +156,31 @@ public:
   void SetDebugTree(AliDielectronDebugTree * const tree) { fDebugTree=tree; }
 
   const TObjArray* GetMCSignals() const { return fSignalsMC; }
-  static const char* TrackClassName(Int_t i) { return (i>=0&&i<4)?fgkTrackClassNames[i]:""; }
-  static const char* PairClassName(Int_t i)  { return (i>=0&&i<11)?fgkPairClassNames[i]:""; }
+  static const char* TrackClassName(Int_t i) { return (i>=0&&i<6)?fgkTrackClassNames[i]:""; }
+  static const char* PairClassName(Int_t i)  { return (i>=0&&i<13)?fgkPairClassNames[i]:""; }
 
   void SetEstimatorFilename(const Char_t* filename) {fEstimatorFilename = filename;} // Does not work on the Grid
   void SetEstimatorObjArray(TObjArray* array) {fEstimatorObjArray = array;} // Should work on the Grid
   void SetTRDcorrectionFilename(const Char_t* filename) {fTRDpidCorrectionFilename = filename;}
+
+  void SetQnCalibrationFilepath(const Char_t* filename, const Bool_t doV0GainEq = kFALSE, const Bool_t doV0recenter = kFALSE, const Bool_t doTPCrecenter = kFALSE) {
+    fQnCalibrationFilepath = filename;
+    fDoQnV0GainEqualization = doV0GainEq;
+    fDoQnV0Recentering      = doV0recenter;
+    fDoQnTPCRecentering     = doTPCrecenter;
+  }
   void SetVZEROCalibrationFilename(const Char_t* filename) {fVZEROCalibrationFilename = filename;}
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
   void SetZDCRecenteringFilename(const Char_t* filename) {fZDCRecenteringFilename = filename;}
   void InitLegEffMap(TString filename, TString generatedname="hGenerated", TString foundname="hFound")  { fLegEffMap=InitEffMap(filename,generatedname,foundname)  ;}
   void InitPairEffMap(TString filename, TString generatedname="hGenerated", TString foundname="hFound") { fPairEffMap=InitEffMap(filename,generatedname,foundname) ;}
+  void SetRotatedTrackWeightMap(TString filename, TString histoname);
+  void SetRotatedPairWeightMap(TString filename, TString histoname); 
+  void SetIterations(UInt_t niter)         { fIterations=niter;  }
+  void SetUseAcceptanceMap(Bool_t use)     {fUseAccMap = use;}
+  void SetRotWeightMinPtBin (Int_t pTbin)  {fRotWeight_minPtBin = pTbin;}
+  void SetRotWeightMaxPtBin (Int_t pTbin)  {fRotWeight_maxPtBin = pTbin;}
+
 
   void SetCentroidCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -217,6 +234,11 @@ private:
 
   TObject *fLegEffMap;      // single electron efficiency map
   TObject *fPairEffMap;      // pair efficiency map
+  TH3F fRotateTrackCorrectionMap;
+  TH2F fRotatePairCorrectionMap;
+  Int_t fRotWeight_minPtBin;
+  Int_t fRotWeight_maxPtBin;
+
   AliAnalysisFilter fEventFilter;    // Event cuts
   AliAnalysisFilter fTrackFilter;    // leg cuts
   AliAnalysisFilter fPairPreFilter1;  // pair prefilter cuts
@@ -245,11 +267,14 @@ private:
                                   //  by the analysis framework
   TBits *fUsedVars;               // used variables
 
-  TObjArray fTracks[4];           //! Selected track candidates
+  TObjArray fTracks[6];           //! Selected track candidates
                                   //  0: Event1, positive particles
                                   //  1: Event1, negative particles
                                   //  2: Event2, positive particles
                                   //  3: Event2, negative particles
+				  //  4: Event1, rotated positive particles
+				  //  5: Event1, rotated negative particles
+
 
   TObjArray *fPairCandidates;     //! Pair candidate arrays
                                   //TODO: better way to store it? TClonesArray?
@@ -260,6 +285,9 @@ private:
   Bool_t fRotateMM; // combine rotated negative tracks
   AliDielectronDebugTree *fDebugTree;  // Debug tree output
   AliDielectronMixingHandler *fMixing; // handler for event mixing
+
+  UInt_t   fIterations;             // number of iterations
+  Bool_t fUseAccMap;
 
   AliDielectronEvtVsTrkHist *fEvtVsTrkHist;
   Bool_t fEvtVsTrkHistExists; // Tells the Multi Analysis Task if it has to process the AliDielectronEvtVsTrkHist class
@@ -297,12 +325,16 @@ private:
   TObjArray* PairArray(Int_t i);
   TObject* InitEffMap(TString filename, TString generatedname, TString foundname);
 
-  static const char* fgkTrackClassNames[4];   //Names for track arrays
-  static const char* fgkPairClassNames[11];   //Names for pair arrays
+  static const char* fgkTrackClassNames[6];   //Names for track arrays
+  static const char* fgkPairClassNames[13];   //Names for pair arrays
 
   TString fEstimatorFilename;                // name for the pp multiplicity estimators filename
   TObjArray* fEstimatorObjArray;		     // Grid compatible version of the above
   TString fTRDpidCorrectionFilename;         // name for the file containing the single particle TRD pid corrections
+  TString fQnCalibrationFilepath;         // file path containing VZERO/TPC Qn calibration
+  Bool_t fDoQnV0GainEqualization;         // flag for gain equalization of V0 for Qn vector
+  Bool_t fDoQnV0Recentering;              // flag for recentering of V0 for Qn vector
+  Bool_t fDoQnTPCRecentering;             // flag for recentering of TPC for Qn vector
   TString fVZEROCalibrationFilename;         // file containing VZERO channel-by-channel calibration
   TString fVZERORecenteringFilename;         // file containing VZERO Q-vector recentering averages
   TString fZDCRecenteringFilename;         // file containing ZDCQ-vector recentering averages
@@ -321,7 +353,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
 
-  ClassDef(AliDielectron,18);
+  ClassDef(AliDielectron,19);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()
@@ -330,7 +362,7 @@ inline void AliDielectron::InitPairCandidateArrays()
   // initialise all pair candidate arrays
   //
   fPairCandidates->SetOwner();
-  for (Int_t i=0;i<11;++i){
+  for (Int_t i=0;i<13;++i){
     TObjArray *arr=new TObjArray;
     fPairCandidates->AddAt(arr,i);
     arr->SetOwner();
@@ -350,10 +382,10 @@ inline void AliDielectron::ClearArrays()
   //
   // Reset the Arrays
   //
-  for (Int_t i=0;i<4;++i){
+  for (Int_t i=0;i<6;++i){
     fTracks[i].Clear();
   }
-  for (Int_t i=0;i<11;++i){
+  for (Int_t i=0;i<13;++i){
     if (PairArray(i)) PairArray(i)->Delete();
   }
 }

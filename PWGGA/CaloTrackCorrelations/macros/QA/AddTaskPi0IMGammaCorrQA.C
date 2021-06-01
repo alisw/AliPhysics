@@ -317,7 +317,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, TString trigger,
   cu->SwitchOffCorrectClusterLinearity();
 
   Bool_t bExotic  = kTRUE;
-  Bool_t bNonLin  = kFALSE;
+  Int_t  bNonLin  = 0;
   Bool_t bBadMap  = kTRUE;
   
   Bool_t bEnCalib = kFALSE;
@@ -871,7 +871,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter, TString collision,
 /// \param collision: A string with the colliding system.
 /// \param period : A string with the data period: LHC11h, LHC15n ... from it we extract the year.
 /// \param qaan: execute the detector QA analysis.
-/// \param hadronan: execute the track QA and cluster-track correlation analysis.
+/// \param hadronan: execute the track QA (>0) and cluster-track correlation analysis (>1).
 /// \param calibrate: if OADB was updated with calibration parameters not used in reconstruction, apply them here.
 /// \param minTime: minimum time cut, leave it open by default even if calibration available, ns
 /// \param maxTime: maximum time cut, leave it open by default even if calibration available, ns
@@ -885,7 +885,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
                                                              TString  collision     = "pp",
                                                              TString  period        = "",
                                                              const Bool_t   qaan          = kTRUE,
-                                                             const Bool_t   hadronan      = kTRUE,
+                                                             const Int_t    hadronan      = 2,
                                                              const Bool_t   calibrate     = kFALSE,
                                                              const Int_t    minTime       = -1000,
                                                              const Int_t    maxTime       =  1000,
@@ -1015,9 +1015,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   Int_t n = 0;//Analysis number, order is important
   
   // Cell QA
-  if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,collision,
-                                                  simulation,
-                                                  year,debugLevel),n++);
+  if ( qaan )  maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,collision,
+                                                      simulation,
+                                                      year,debugLevel),n++);
   
   // Analysis with EMCal trigger or MB
   if ( !trigger.Contains("DCAL") )
@@ -1026,7 +1026,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
     maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,0,collision,containerName,simulation,year,debugLevel)       ,n++); 
     // Previous cluster invariant mass
     maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,0,collision,containerName,simulation,year,debugLevel,minCen),n++);     
-    if(hadronan)
+    if ( hadronan > 1 )
     {
       // Isolation of selected clusters by AliAnaPhoton
       maker->AddAnalysis(ConfigureIsolationAnalysis("Photon",calorimeter,0,collision,containerName,simulation,year,debugLevel), n++);
@@ -1036,13 +1036,13 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   }
   
   // Analysis with DCal trigger or MB
-  if(year > 2014 && calorimeter=="EMCAL" && !trigger.Contains("EMCAL"))
+  if ( year > 2014 && calorimeter=="EMCAL" && !trigger.Contains("EMCAL") )
   {
     // Cluster selection
     maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,1,collision,containerName,simulation,year,debugLevel)       , n++); 
     // Previous cluster invariant mass
     maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,1,collision,containerName,simulation,year,debugLevel,minCen),n++); 
-    if(hadronan)
+    if ( hadronan > 1 )
     {
       // Isolation of selected clusters by AliAnaPhoton
       maker->AddAnalysis(ConfigureIsolationAnalysis("Photon",calorimeter,1,collision,containerName,simulation,year,debugLevel), n++);
@@ -1052,10 +1052,10 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   }
   
   // Charged tracks plots, any trigger
-  if(hadronan)
+  if ( hadronan )
     maker->AddAnalysis(ConfigureChargedAnalysis(collision,containerName,simulation,year,debugLevel), n++); 
   
-  if(simulation)
+  if ( simulation )
   {
     // Calculate the cross section weights, apply them to all histograms 
     // and fill xsec and trial histo. Sumw2 must be activated.
@@ -1075,7 +1075,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   //
   // Select events trigger depending on trigger
   //
-  if(!simulation)
+  if ( !simulation )
   {    
     TString caloTriggerString = "";
     UInt_t mask = ConfigureAndGetEventTriggerMaskAndCaloTriggerString(trigger, year, caloTriggerString);

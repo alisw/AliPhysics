@@ -489,11 +489,10 @@ void AliAnalysisTaskNanoBBar::UserExec(Option_t *option) {
   }
   std::vector<AliFemtoDreamBasePart> Protons;
   std::vector<AliFemtoDreamBasePart> AntiProtons;
-  const int multiplicity = fEvent->GetMultiplicity();
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
-    fTrack->SetTrack(track, fInputEvent, multiplicity);
+    fTrack->SetTrack(track, fInputEvent);
     if (fProton->isSelected(fTrack)) {
       Protons.push_back(*fTrack);
     }
@@ -510,7 +509,7 @@ void AliAnalysisTaskNanoBBar::UserExec(Option_t *option) {
       iv0 < static_cast<TClonesArray *>(aodEvt->GetV0s())->GetEntriesFast();
       ++iv0) {
     AliAODv0* casc = aodEvt->GetV0(iv0);
-    fv0->Setv0(fInputEvent, casc, fEvent->GetMultiplicity());
+    fv0->Setv0(fInputEvent, casc);
     if (fLambda->isSelected(fv0)) {
       Lambdas.push_back(*fv0);
     }

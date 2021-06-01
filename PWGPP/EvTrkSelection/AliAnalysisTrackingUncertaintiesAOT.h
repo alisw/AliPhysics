@@ -18,6 +18,9 @@ class AliESDpid;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
+#include "AliEventCuts.h"
+#include "AliAnalysisUtils.h"
+
 #include "THn.h"
 #include <THnSparse.h>
 #include <Rtypes.h>
@@ -45,7 +48,8 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
     kStdITSTPCTrkCuts2009,
     kStdITSTPCTrkCuts2010,
     kStdITSTPCTrkCuts2011,
-    kStdITSTPCTrkCuts2015PbPb
+    kStdITSTPCTrkCuts2015PbPb,
+    kStdITSTPCTrkCuts2011TightChi2TPC
     // to be implemented, if needed
     //kStdITSSATrkCuts2009,
     //kStdITSSATrkCuts2010,
@@ -102,6 +106,16 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
 
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}
+
+  // set event selections for Pb-Pb2018
+  void SetUsePbPb2018EvSel(Bool_t flag, Int_t which_PileUpcut, Bool_t keep_only_pileup){
+    fUsePbPb2018EvSel  = flag;
+    fPileUpPbPb2018cut = which_PileUpcut;
+    fKeepOnlyPileUp    = keep_only_pileup;
+  }
+  
+  // number of bins for histTpcItsMatch
+  void SetnBinsDCAxy_histTpcItsMatch(Int_t n)  {fnBinsDCAxy_histTpcItsMatch = n;}
 
  private:
     
@@ -169,10 +183,20 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   UInt_t fWhichCuts;  ///
   UInt_t fTPCclstCut; /// 0: cut on TPC clusters; 1: cuts on the number of crossed rows and on the ration crossed rows/findable clusters
 
+  /// event-cut object for centrality correlation event cuts
+  //  used for Pb-Pb2018
+  Bool_t       fUsePbPb2018EvSel;   ///
+  Bool_t       fKeepOnlyPileUp;     ///
+  Int_t        fPileUpPbPb2018cut;  /// option for additional out-of-bunch pileup cut based on ITS-TPC correlation (0=no cut, 1=tight cut, 2=intermediate cut, 3=loose cut)
+  AliEventCuts fAliEventCuts;       ///
+
+  // number of bins for histTpcItsMatch
+  Int_t fnBinsDCAxy_histTpcItsMatch; ///
+
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 11);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 13);
 };
 
 #endif

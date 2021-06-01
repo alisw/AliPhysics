@@ -37,7 +37,6 @@ class TH2F;
 class TH2D;
 class TList;
 class THnSparse;
-class TObjString;
 
 class AliCDMesonTracks;
 

@@ -81,7 +81,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   void SetMaxZvtxForSkipEventSelection(Double_t zmax){fZvtxUpgr=zmax;}
   void SetPtWeightsFromDataPbPb276overLHC12a17a();
   void SetFillImpParTree(Bool_t fillimppar){fFillTree=fillimppar;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetLightOutput(Bool_t lightOutput){fLightOutput=lightOutput;}
 
   /* ######### THE FOLLOWING IS FOR FURTHER IMPLEMENATION ############

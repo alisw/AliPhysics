@@ -100,6 +100,9 @@ AliAnalysisTaskCVE::AliAnalysisTaskCVE(const char *name): AliAnalysisTaskSE(name
   fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
+  fDCAxyMax(2.4),
+  fDCAzMax(3.2),
+  fChi2(4.0),
   fMinEtaCut(-0.8),
   fMaxEtaCut(0.8),
   fTrkChi2Min(0.1),    
@@ -195,6 +198,9 @@ AliAnalysisTaskCVE::AliAnalysisTaskCVE():
   fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
+  fDCAxyMax(2.4),
+  fDCAzMax(3.2),
+  fChi2(4.0),
   fMinEtaCut(-0.8),
   fMaxEtaCut(0.8),
   fTrkChi2Min(0.1),    
@@ -730,7 +736,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
   //Int_t   gMultEtaPos  = 0;
   //Int_t   gMultEtaAll  = 0;
 
-  Float_t trkPt=0,trkPhi=0,trkEta=0;
+  Float_t trkPt=0,trkPhi=0,trkEta=0,trkDCAxy=0.0, trkDCAz=0.0;
   Float_t trkChi2=0,trkdEdx=0,trkWgt=1.0;
   Int_t   trkChrg=0, trkTpcNC=0;
   ////PID variables:
@@ -774,18 +780,43 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
       trkChrg  = AODtrack->Charge();
       trkChi2  = AODtrack->Chi2perNDF();
       trkTpcNC = AODtrack->GetTPCNcls();
-
+      trkDCAxy=  AODtrack->DCA();
+      trkDCAz=   AODtrack->ZAtDCA();
+      
       fHistEtaPtBeforCut->Fill(trkEta, trkPt);
       fHistEtaPhiBeforCut->Fill(trkPhi,trkEta);
       
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
+      /*
+      Double_t dTrackXYZ[3] = {0};
+      Double_t dVertexXYZ[3] = {0.};
+      Double_t dDCAXYZ[3] = {0.};
+        
+      AODtrack->GetXYZ(dTrackXYZ);
+      pVtx->GetXYZ(dVertexXYZ);
+        
+      for(Short_t i(0); i < 3; i++)
+	dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i];
+
+      trkDCAxy=TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]);
+      trkDCAz=dDCAXYZ[2];
+      */
+
+
+      
       //Apply track cuts here:
       //if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
       if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
+
+	  
+      //if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
+
+
+      
 	//dcaXY  = track->DCA();
 	//dcaZ   = track->ZAtDCA();
         
@@ -850,7 +881,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 
 
 	
-	if(trkPt <= 2.0) { //////**** For Event Plane: 0.2 < pT < 2.0; 
+	if(trkPt < 2.0) { //////**** For Event Plane: 0.2 < pT < 2.0; 
 	  if(trkEta < fEtaGapNeg){
 	    fSumTPCQn2xNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
 	    fSumTPCQn2yNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
@@ -1000,15 +1031,39 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
       trkChrg  = AODtrack->Charge();
       trkChi2  = AODtrack->Chi2perNDF();
       trkTpcNC = AODtrack->GetTPCNcls();
-
+      trkDCAxy=  AODtrack->DCA();
+      trkDCAz=   AODtrack->ZAtDCA();
+      
       fHistEtaPtBeforCut->Fill(trkEta, trkPt);
       fHistEtaPhiBeforCut->Fill(trkPhi,trkEta);
       
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
+      /*
+      Double_t dTrackXYZ[3] = {0};
+      Double_t dVertexXYZ[3] = {0.};
+      Double_t dDCAXYZ[3] = {0.};
+        
+      AODtrack->GetXYZ(dTrackXYZ);
+      pVtx->GetXYZ(dVertexXYZ);
+        
+      for(Short_t i(0); i < 3; i++)
+	dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i];
+
+      trkDCAxy=TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]);
+      trkDCAz=dDCAXYZ[2];
+      */
+
+      
       //Apply track cuts here:
       if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
+
+      
+	//if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
+
+
+      
 
 	//dcaXY  = track->DCA();
 	//dcaZ   = track->ZAtDCA();
@@ -1031,7 +1086,8 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	  if(trkPt<=0.6 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut){
 	    isItPion = kTRUE;
 	  }
-	  else if(trkPt>0.6 && trkPt<=10.0 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut && TMath::Abs(nSigTOFpion)<=fNSigmaTOFCut){
+	  // else if(trkPt>0.6 && trkPt<=10.0 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut && TMath::Abs(nSigTOFpion)<=fNSigmaTOFCut){
+          else if(trkPt>0.6 && trkPt<=10.0 && TMath::Sqrt(nSigTPCpion*nSigTPCpion + nSigTOFpion*nSigTOFpion)<=fNSigmaTOFCut){
 	    isItPion = kTRUE;
 	  }
 	}
@@ -1043,7 +1099,8 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	  if(trkPt<=0.45 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut){
 	    isItKaon = kTRUE;
 	  }
-	  else if(trkPt>0.45 && trkPt<=10.0 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut && TMath::Abs(nSigTOFkaon)<=fNSigmaTOFCut){
+	  else if(trkPt>0.45 && trkPt<=10.0 && TMath::Sqrt(nSigTPCkaon*nSigTPCkaon + nSigTOFkaon*nSigTOFkaon)<=fNSigmaTOFCut){
+	    //else if(trkPt>0.45 && trkPt<=10.0 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut && TMath::Abs(nSigTOFkaon)<=fNSigmaTOFCut){
 	    isItKaon = kTRUE;
 	  }
 	}
@@ -1171,7 +1228,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 
 	// if(iTrack%10==0){
 	//  std::cout<<" pT = "<<trkPt<<"\t MCPi = "<<ptWgtMCPion<<"\t MCK = "<<ptWgtMCKaon<<"\t MCProt = "<<ptWgtMCProt<<std::endl;
-	//  std::cout<<" Eta = "<<trkEta<<"\t NUAPi = "<<WgtNUAPion<<"\t NUAK = "<<WgtNUAKaon<<"\t NUAProt = "<<WgtNUAProt<<std::endl;
+	//  std::cout<<" Eta = "<<trkEt<<"t NUAPi = "<<WgtNUAPion<<"\t NUAK = "<<WgtNUAKaon<<"\t NUAProt = "<<WgtNUAProt<<std::endl;
 	//  std::cout<<" totPi = "<<trkWgtPion<<"\t totK = "<<trkWgtKaon<<"\t totP = "<<trkWgtProt<<"\t totChrg = "<<trkWgt<<std::endl;	 
 	// }
 	///----------------------------------------------------------------	

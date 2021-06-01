@@ -166,12 +166,14 @@ public:
    void   SetV0FinderStatus(Bool_t status) {fV0OnFlyStatus = status;}
    void   SetAnalyseDalitz(Bool_t analyseDalitz) {fAnalyseDalitz = analyseDalitz;}
    void   SetAnalyseGammaGamma(Bool_t analyseGammaGamma) {fAnalyseGammaGamma = analyseGammaGamma;}
+   void   SetAnalyseGenAndGenSmeared(Bool_t analyseGenAndGenSmeared) {fAnalyseGenAndGenSmeared = analyseGenAndGenSmeared;}
+   void   SetAnalyseReconstructed(Bool_t analyseRec) {fAnalyseRec = analyseRec;}
    void   SetDrawPIDSupportHists(Bool_t drawPIDsupportHits) {fDrawPIDSupportHists = drawPIDsupportHits;}
 
 
    // Track cuts setter
    void   AddTrackCuts_primary_PreFilter   (AliAnalysisFilter* filter) {fTrackCuts_primary_PreFilter.push_back(filter);}
-   void   AddTrackCuts_secondary_PreFilter (AliAnalysisFilter* filter) {fTrackCuts_secondary_PreFilter.push_back(filter);}
+   // void   AddTrackCuts_secondary_PreFilter (AliAnalysisFilter* filter) {fTrackCuts_secondary_PreFilter.push_back(filter);}
    void   AddTrackCuts_primary_standard    (AliAnalysisFilter* filter) {fTrackCuts_primary_standard.push_back(filter);}
    void   AddTrackCuts_secondary_standard  (AliAnalysisFilter* filter) {fTrackCuts_secondary_standard.push_back(filter);}
 
@@ -513,6 +515,8 @@ private:
   Bool_t fPhotonMass;
   Bool_t fAnalyseDalitz;
   Bool_t fAnalyseGammaGamma;
+  Bool_t fAnalyseGenAndGenSmeared;
+  Bool_t fAnalyseRec;
   Bool_t fDrawPIDSupportHists;
   // Bool_t fDoULSandLS;
 

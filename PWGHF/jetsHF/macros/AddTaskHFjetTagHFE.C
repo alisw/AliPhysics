@@ -12,9 +12,23 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   Int_t       leadhadtype        = 0,
   const char *suffix             = "",
   Bool_t     iMC                 = kFALSE,
-  Bool_t     iNarrowEta          = kFALSE
+  Bool_t     iNarrowEta          = kFALSE,
+	TString estimatorFilename = "alien:///alice/cern.ch/user/m/meshita/Multiplicity_pp13/estimator.root",
+	Double_t nref = 12
+	
 )
-{  
+{ 
+	 TFile *fEstimator = TFile::Open(estimatorFilename.Data());
+	 if(!fEstimator){
+			 return 0x0;
+	 }
+
+	 TProfile *multEstimatorAvgMB;
+	  multEstimatorAvgMB = (TProfile*)(fEstimator->Get("Trkl_mean"))->Clone("multEstimatorAvgMB");
+
+	 //Get weight for N_{tracklet}
+	 TH1D* weightNtrkl = (TH1D*)fEstimator->Get("weightNtrkl")->Clone("weightNtrkl_clone");
+	 
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -97,10 +111,15 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   }
 
   AliAnalysisHFjetTagHFE* jetTask = new AliAnalysisHFjetTagHFE(name);
-  jetTask->SetVzRange(-10,10);
+  jetTask->SetMultiProfileLHC16(multEstimatorAvgMB);
+	jetTask->SetNref(nref);
+
+	jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
-  Double_t JetEta = 0.9-jetradius;
+  jetTask->SetWeightNtrkl(weightNtrkl);
+  
+	Double_t JetEta = 0.9-jetradius;
   if(iNarrowEta)JetEta = 0.6-jetradius;  // reference eta is EMC acc
 
   cout << "<----------- JetEta =  " << JetEta << endl;
@@ -169,7 +188,7 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
      
       if (jetContMC) {
       //jetCont->SetRhoName(nrho);
-      //if(jetradius==0.3)jetareacut=0.2;
+       //if(jetradius==0.3)jetareacut=0.2;
       jetContMC->SetJetAreaCut(jetareacut);
       jetContMC->SetJetPtCut(jetptcut);
       jetContMC->ConnectParticleContainer(trackContMC);
@@ -179,6 +198,8 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
       jetContMC->SetZLeadingCut(0.98,0.98);
      }
    }
+
+	 if(!jetTask) return 0x0;
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

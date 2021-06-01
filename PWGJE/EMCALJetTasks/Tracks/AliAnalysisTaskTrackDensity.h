@@ -19,7 +19,9 @@ class AliParticleContainer;
 class AliVEvent;
 class AliEmcalTrackSelection;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskTrackDensity : public AliAnalysisTaskEmcalJet {
 public:
@@ -60,6 +62,8 @@ private:
   ClassDef(AliAnalysisTaskTrackDensity, 1);
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKTRACKDENSITY_H */

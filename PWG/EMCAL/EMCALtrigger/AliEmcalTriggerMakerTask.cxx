@@ -1,17 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-2013, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/**************************************************************************************
+ * Copyright (C) 2014, Copyright Holders of the ALICE Collaboration                   *
+ * All rights reserved.                                                               *
+ *                                                                                    *
+ * Redistribution and use in source and binary forms, with or without                 *
+ * modification, are permitted provided that the following conditions are met:        *
+ *     * Redistributions of source code must retain the above copyright               *
+ *       notice, this list of conditions and the following disclaimer.                *
+ *     * Redistributions in binary form must reproduce the above copyright            *
+ *       notice, this list of conditions and the following disclaimer in the          *
+ *       documentation and/or other materials provided with the distribution.         *
+ *     * Neither the name of the <organization> nor the                               *
+ *       names of its contributors may be used to endorse or promote products         *
+ *       derived from this software without specific prior written permission.        *
+ *                                                                                    *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND    *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED      *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE             *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY                *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES         *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;       *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND        *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT         *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
+ **************************************************************************************/
 #include <TClonesArray.h>
 #include <TGrid.h>
 #include <THashList.h>
@@ -24,9 +36,11 @@
 
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliDataFile.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerBitConfig.h"
 #include "AliEMCALTriggerDCSConfig.h"
+#include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEMCALTriggerTRUDCSConfig.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerMakerKernel.h"
@@ -43,9 +57,7 @@
 #include <sstream>
 #include <string>
 
-/// \cond CLASSIMP
 ClassImp(AliEmcalTriggerMakerTask)
-/// \endcond
 
 AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   AliAnalysisTaskEmcal(),
@@ -56,9 +68,10 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fBadFEEChannelOADB(""),
   fMaskedFastorOADB(""),
   fUseL0Amplitudes(kFALSE),
-  fLoadFastORMaskingFromOCDB(kFALSE),
+  fLoadFastORMaskingFromOCDB(kTRUE),
   fCaloTriggersOut(0),
   fRunSmearing(kTRUE),
+  fSimulateNoise(kTRUE),
   fDoQA(kFALSE),
   fQAHistos(NULL)
 {
@@ -74,9 +87,10 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fBadFEEChannelOADB(""),
   fMaskedFastorOADB(""),
   fUseL0Amplitudes(kFALSE),
-  fLoadFastORMaskingFromOCDB(kFALSE),
+  fLoadFastORMaskingFromOCDB(kTRUE),
   fCaloTriggersOut(NULL),
   fRunSmearing(kTRUE),
+  fSimulateNoise(kTRUE),
   fDoQA(doQA),
   fQAHistos(NULL)
 {
@@ -205,7 +219,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
 
   // Configure trigger maker
   if(!fTriggerMaker->IsConfigured()){
-    AliInfoStream() << "Trigger maker not yet configure - automatically configuring ..." << std::endl;
+    std::cout << "EMCAL trigger maker: Not yet configure - automatically configuring ..." << std::endl;
     int runnumber = InputEvent()->GetRunNumber();
     std::string dataset = "";
     if(runnumber >= 145144 && runnumber <= 165746){
@@ -224,22 +238,39 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
     } else if((runnumber >= 224891 && runnumber <= 244628) || (runnumber >= 252235 && runnumber <= 294960)){
       // Configuration starting with LHC15f
       fTriggerMaker->ConfigureForPP2015();
-      dataset = "pp 2015-2016";
+      dataset = "pp 2015-2018";
+      if(!MCEvent()) {
+        // In case of data load masked fastORs from OADB
+        fMaskedFastorOADB = "oadb";
+      }
     } else if((runnumber >= 244824 && runnumber <= 246994) || (runnumber >= 295581)){
       fTriggerMaker->ConfigureForPbPb2015();
       dataset = "Pb-Pb 2015";
     }
 
     if(fTriggerMaker->IsConfigured()){
-      AliInfoStream() << "Applying configuration for " << dataset << std::endl;
+      std::cout << "EMCAL trigger maker: Applying configuration for " << dataset << std::endl;
     } else {
-      AliErrorStream() << "No valid configuration found for the given dataset - trigger maker run loop disabled" << std::endl;
+      std::cout << "EMCAL trigger maker: No valid configuration found for the given dataset - trigger maker run loop disabled" << std::endl;
     }
 
-    if(fRunSmearing && !fTriggerMaker->HasSmearModel()){
-      InitializeSmearModel(); // Initialize smear model if not yet set from outside
+    if(fRunSmearing || fTriggerMaker->HasSmearModel()) {
+      if(!fTriggerMaker->HasSmearModel()){
+        std::cout << "EMCAL trigger maker: Smear mode - Initialize standard smear model" << std::endl;
+        InitializeSmearModel(); // Initialize smear model if not yet set from outside
+      }
+      fRunSmearing = true;
+      std::cout << "EMCAL trigger maker: Smear mode - require online bad channel map for smeared signal" << std::endl;
       fTriggerMaker->SetApplyOnlineBadChannelMaskingToSmeared();
     } 
+
+    if(MCEvent() && fSimulateNoise) {
+      // In MC mode add noise 
+      // Using noise sigma of 50 MeV/channel as found during the optimization of the trigger efficiency to run2 data
+      std::cout << "EMCAL trigger maker: Initialize standard noise model" << std::endl;
+      if(!fTriggerMaker->HasNoiseModel()) fTriggerMaker->SetGaussianNoiseFEESmear(0., 0.05);
+    }
+    std::cout << "EMCAL trigger maker: Configured ..." << std::endl;
   }
 
   fTriggerMaker->SetGeometry(fGeom);
@@ -332,7 +363,7 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
 }
 
 void AliEmcalTriggerMakerTask::RunChanged(Int_t newrun){
-  AliDebugStream(1) << "Run changed, new run " << newrun << std::endl;
+  std::cout << "EMCAL trigger maker: Run changed, new run " << newrun << ", loading new maskings ..." <<  std::endl;
   fTriggerMaker->ClearOfflineBadChannels();
   if(fBadFEEChannelOADB.Length()) InitializeBadFEEChannels();
   fTriggerMaker->ClearFastORBadChannels();
@@ -349,7 +380,7 @@ void AliEmcalTriggerMakerTask::RunChanged(Int_t newrun){
 }
 
 void AliEmcalTriggerMakerTask::InitializeBadFEEChannels(){
-  AliInfoStream() << "Loading additional bad FEE channels from OADB container " << fBadFEEChannelOADB << std::endl;
+  std::cout << "EMCAL trigger maker: Loading additional bad FEE channels from OADB container " << fBadFEEChannelOADB << std::endl;
   fTriggerMaker->ClearOfflineBadChannels();
   if(fBadFEEChannelOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien");
   AliOADBContainer badchannelDB("EmcalBadChannelsAdditional");
@@ -363,7 +394,7 @@ void AliEmcalTriggerMakerTask::InitializeBadFEEChannels(){
 }
 
 void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
-  AliInfoStream() << "Loading masked fastors from OCDB" << std::endl;
+  std::cout << "EMCAL trigger maker: Loading masked fastors from OCDB" << std::endl;
   AliCDBManager *cdb = AliCDBManager::Instance();
 
   AliCDBEntry *en = cdb->Get("EMCAL/Calib/Trigger");
@@ -394,8 +425,9 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
     // is used - it is assumed that parameter 1 (iADC) corresponds to the
     // channel ID.
     for(unsigned int ifield = 0; ifield < 6; ifield++){
+      std::bitset<sizeof(unsigned int) * 4> regmask(truconf->GetMaskReg(ifield));
       for(unsigned int ibit = 0; ibit < 16; ibit ++){
-        if((truconf->GetMaskReg(ifield) >> ibit) & 0x1){
+        if(regmask.test(ibit)){
           try{
             fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(RemapTRUIndex(itru), (ic =  GetMaskHandler(itru)(ifield, ibit)), fastOrAbsID);
             AliDebugStream(1) << GetName() << "Channel " << ic  << " in TRU " << itru << " ( abs fastor " << fastOrAbsID << ") masked." << std::endl;
@@ -407,10 +439,43 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
       }
     }
   }
+
+  // Load STU regions
+  // In case of STU region whole TRUs are disabled in case their corresponding
+  // bit is set to 0 in the STU region bitset
+  auto emcalstu = trgconf->GetSTUDCSConfig(false),
+       dcalstu = trgconf->GetSTUDCSConfig(true);
+  if(emcalstu) {
+    std::bitset<sizeof(int) * 8> sturegion(emcalstu->GetRegion());
+    for(int itru = 0; itru < 32; itru++) {
+      if(!sturegion.test(itru)) {
+        // TRU disabled
+        std::cout << "Disable EMCAL TRU " << itru << "(" << itru << ")" << std::endl;
+        for(int ichannel = 0; ichannel < 96; ichannel++) {
+          fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(itru, ichannel, fastOrAbsID);
+          fTriggerMaker->AddFastORBadChannel(fastOrAbsID); 
+        }
+      }
+    }
+  }
+
+  if(dcalstu){
+    std::bitset<sizeof(int) * 8> sturegion(dcalstu->GetRegion());
+    for(int itru = 0; itru < 14; itru++) {
+      if(!sturegion.test(itru)) {
+        // TRU disabled
+        auto globTRUindex = fGeom->GetTriggerMapping()->GetTRUIndexFromSTUIndex(itru, 1);
+        std::cout << "Disable DCAL TRU " << itru << "(" << globTRUindex << ")" << std::endl;
+        for(int ichannel = 0; ichannel < 96; ichannel++) {
+          fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(globTRUindex, ichannel, fastOrAbsID);
+          fTriggerMaker->AddFastORBadChannel(fastOrAbsID); 
+        }
+      }
+    }
+  }
 }
 
 void AliEmcalTriggerMakerTask::InitializeSmearModel(){
-  std::cout << "Initializing trigger maker with default smearing parameterization" << std::endl;
   TF1 *meanmodel = new TF1("meanmodel", "pol1", 0., 1000.);
   meanmodel->SetParameter(0, -0.0206247);
   meanmodel->SetParameter(1, 0.966160);
@@ -423,10 +488,16 @@ void AliEmcalTriggerMakerTask::InitializeSmearModel(){
 }
 
 void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOADB(){
-  AliInfoStream() << "Initializing masked fastors from OADB container " << fMaskedFastorOADB.Data() << std::endl;
-  if(fMaskedFastorOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien");
+  TString containername;
+  if(fMaskedFastorOADB == "oadb") {
+    containername = AliDataFile::GetFileNameOADB("EMCAL/MaskedFastors.root").data();
+  } else {
+    containername = fMaskedFastorOADB;
+  }
+  AliInfoStream() << "Initializing masked fastors from OADB container " << containername << std::endl;
+  if(containername.Contains("alien://") && !gGrid) TGrid::Connect("alien");
   AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
-  badchannelDB.InitFromFile(fMaskedFastorOADB, "AliEmcalMaskedFastors");
+  badchannelDB.InitFromFile(containername, "AliEmcalMaskedFastors");
   TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
   if(!badchannelmap || !badchannelmap->GetEntries()) return;
   for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){

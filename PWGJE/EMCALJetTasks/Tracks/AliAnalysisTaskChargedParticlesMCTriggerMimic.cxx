@@ -48,11 +48,9 @@
 
 #include "AliAnalysisTaskChargedParticlesMCTriggerMimic.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesMCTriggerMimic)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskChargedParticlesMCTriggerMimic)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy constructor
@@ -343,7 +341,6 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
         if(!truepart->Charge()) continue;
 
         if(!IsPhysicalPrimary(truepart, fMCEvent)) continue;
-        AliAODMCParticle *aodmc = static_cast<AliAODMCParticle *>(truepart);
         isEMCAL = (truepart->Phi() > 1.5 && truepart->Phi() < 3.1) ? kTRUE : kFALSE;
 
         // Calculate eta in cms frame according
@@ -379,7 +376,7 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
     // - Eta distribution for tracks above 1, 2, 5, 10 GeV/c with eta cut
     AliVTrack *checktrack(NULL);
     AliVParticle *assocMC(NULL);
-    double ptparticle(-1.), etaparticle(-100.), etaEMCAL(0.), phiEMCAL(0.);
+    double etaEMCAL(0.), phiEMCAL(0.);
     for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
       checktrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
       if(!checktrack) continue;
@@ -423,8 +420,7 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
       if(!fTrackCuts->IsTrackAccepted(checktrack)) continue;
 
       // prefer true pt and eta, however in case of running on data take measured values
-      ptparticle = assocMC ? TMath::Abs(assocMC->Pt()) : TMath::Abs(checktrack->Pt());
-      etaparticle = assocMC ? assocMC->Eta() : checktrack->Eta();
+      double ptparticle = assocMC ? TMath::Abs(assocMC->Pt()) : TMath::Abs(checktrack->Pt());
 
       // Calculate eta in cms frame according
       // EPJC74 (2014) 3054:
@@ -445,7 +441,7 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
     Double_t energy, et, eta, phi;
     AliClusterContainer *clustercont = this->GetClusterContainer(fNameClusters.Data());
     if(clustercont){
-      for(const auto &clust : clustercont->all()){
+      for(auto clust : clustercont->all()){
         if(!clust->IsEMCAL()) continue;
         if(clust->GetIsExotic()) continue;
 
@@ -692,6 +688,3 @@ AliAnalysisTaskChargedParticlesMCTriggerMimic::PtBinning::PtBinning() :
   this->AddStep(100, 10);
   this->AddStep(200, 20);
 }
-
-
-} /* namespace EMCalTriggerPtAnalysis */

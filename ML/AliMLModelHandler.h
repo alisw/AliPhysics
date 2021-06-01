@@ -26,6 +26,7 @@ class AliExternalBDT;
 class AliMLModelHandler : public TNamed {
 public:
   enum {kXGBoost, kLightGBM, kModelLibrary};
+  enum {kLowerCut, kUpperCut};
 
   AliMLModelHandler();
   AliMLModelHandler(const YAML::Node &node);
@@ -37,21 +38,23 @@ public:
   AliExternalBDT *GetModel() { return fModel; }
   std::string const &GetPath() const { return fPath; }
   std::string const &GetLibrary() const { return fLibrary; }
-  double const &GetScoreCut() const { return fScoreCut; }
+  std::vector<double> const &GetScoreCut() const { return fScoreCut; }
+  std::vector<int> const &GetScoreCutOpt() const { return fScoreCutOpt; }
 
   bool CompileModel();
   static std::string ImportFile(std::string path);
 
 private:
-  AliExternalBDT *fModel;  //!<!
+  AliExternalBDT *fModel;            //!<!
 
-  std::string fPath;       ///
-  std::string fLibrary;    ///
+  std::string fPath;                 ///
+  std::string fLibrary;              ///
 
-  double fScoreCut;        ///
+  std::vector<double> fScoreCut;     /// vector of cuts to be applied on output scores
+  std::vector<int> fScoreCutOpt;     /// vector of options on output scores ("upper" or "lower")
 
 /// \cond CLASSIMP
-ClassDef(AliMLModelHandler, 1);    ///
+ClassDef(AliMLModelHandler, 2);    ///
 /// \endcond
 };
 

@@ -104,6 +104,8 @@ class AliReconstructedSecondC {
  Int_t  sLabelPos;
  Int_t  sLabelNeg;
  Bool_t     sAssocOrNot;
+ Bool_t     sIsCommonParton;
+ Int_t      sPdgCommonParton;
   
  Int_t      cLabelMotherBach;
  Int_t      cisPrimCasc;

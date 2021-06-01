@@ -40,6 +40,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
                              )
 
+
+
 # Sources in alphabetical order
 set(SRCS
     AliAnalysisTaskDeltaPt.cxx
@@ -147,6 +149,7 @@ set(SRCS
     Tracks/AliAnalysisEmcalTriggerSelectionHelper.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
+    Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
     Tracks/AliAnalysisTaskEmcalResponseOutliers.cxx
     Tracks/AliAnalysisTaskEmcalOutliersGen.cxx
     Tracks/AliAnalysisTaskEmcalPatchMultCorr.cxx
@@ -159,6 +162,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalJetIterativeDeclustering.cxx
     Tracks/AliAnalysisTaskEmcalFastorMultiplicity.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
+    Tracks/AliAnalysisTaskEmcalRawSTU.cxx
     Tracks/AliEmcalTRDTrackingTask.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
@@ -177,6 +181,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
     UserTasks/AliAnalysisTaskEmcalDijetImbalance.cxx
     UserTasks/AliAnalysisTaskEmcalVsPhos.cxx
+    UserTasks/AliAnalysisTaskEmcalJetEnergyFlow.cxx
     UserTasks/AliAnalysisTaskEmcalJetPerformance.cxx
     UserTasks/AliAnalysisTaskGenerateThermalBackgroundMC.cxx
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
@@ -185,6 +190,8 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetCorrection.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHdEdxPerformance.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHdEdxCorrelations.cxx
     UserTasks/AliAnalysisTaskEmcalJetHUtils.cxx
     UserTasks/AliAnalysisTaskEmcalJetHPerformance.cxx
     UserTasks/AliAnalysisTaskEmcalJetHCorrelations.cxx
@@ -246,6 +253,13 @@ if(RooUnfold_FOUND)
     add_definitions("-DWITH_ROOUNFOLD")
 endif(RooUnfold_FOUND)
 
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
+    include_directories(${KFPARTICLE_INCLUDE_DIR})
+    add_definitions("-DWITH_KFPARTICLE")
+endif(KFParticle_FOUND)
+
+
 # Tasks that need direct access to Fastjet
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
@@ -261,9 +275,13 @@ if(FASTJET_FOUND)
 	    AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
         AliLundPlaneHelper.cxx
+      AliAnalysisTaskJetCharge.cxx
+      AliAnalysisTaskJetChargeFlavourTemplates.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
+            UserTasks/AliAnalysisTaskJetPull.cxx
 	    UserTasks/AliAnalysisTaskCheckDeadCone.cxx
+	    UserTasks/AliAnalysisTaskJetPull.cxx
 	    UserTasks/AliAnalysisTaskLundPlane.cxx
 	    UserTasks/AliAnalysisTaskJetDynamicalGrooming.cxx
 	    UserTasks/AliAnalysisTaskJetHardestKt.cxx
@@ -350,6 +368,10 @@ if(RooUnfold_FOUND)
     set(LIBDEPS ${LIBDEPS} ${ROOUNFOLD_LIBRARY})
     set(ROOUNFOLD_DEPENDENCIES ${ROOUNFOLD_LIBRARY})
 endif(RooUnfold_FOUND)
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
+endif(KFParticle_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")

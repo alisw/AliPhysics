@@ -675,6 +675,9 @@ case 4:
         fFit->SetParameter(4,0.1);
         fFit->SetParameter(6,0.5);
       }
+      //SAFETY
+      printf("***PAY ATTENTION TO THIS BOUND (FOR FUTURE ANALYSES)***\n");
+      if((fMinDpt==16 && fMinAsspt==1) || (fMinDpt==8 && fMinAsspt==2)) fFit->SetParLimits(3,0.1,2); //safguard for 0 MSw in some syst fits for pp13TeV vs cent
     }
 
     if(!fIspPb) { //for pp analyses
@@ -728,7 +731,7 @@ case 4:
           fFit->SetParameter(6,0.4);
         }
         if(fMinDpt>=16) {
-          fFit->SetParLimits(7,0.5,3.);
+          fFit->SetParLimits(7,0.25,3.);
           fFit->SetParameter(1,0.5);
           fFit->SetParameter(4,0.15);
           fFit->SetParameter(7,1);
@@ -758,13 +761,14 @@ case 4:
         fFit->SetParameter(6,0.5);
       }
     }    
-
     if(fUseExternalPars) { //overwrites previous configuration :)
       for(int i=0; i<fNpars; i++) {
         fFit->SetParameter(i,fExtParsVals[i]);
         fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
       }
     }
+
+    printf("->Using external params? %d\n",fUseExternalPars);
 
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");
@@ -801,7 +805,7 @@ case 4:
     fFit->SetParameter(5,TMath::Pi());
     fFit->SetParameter(6,0.3);
     fFit->SetParameter(7,2);
-    
+
     if(fIspPb) { //for pPb analyses (TESTED AND WORKING)
       if(fMinAsspt==0.3 && fMaxAsspt==99) {  //dedicated starting parameters
         printf("Dedicated starting fit parameters...");
@@ -888,6 +892,9 @@ case 4:
         fFit->SetParameter(4,0.1);
         fFit->SetParameter(6,0.5);
       }
+      //SAFETY
+      printf("***PAY ATTENTION TO THIS BOUND (FOR FUTURE ANALYSES)***\n");
+      if((fMinDpt==16 && fMinAsspt==1) || (fMinDpt==8 && fMinAsspt==2)) fFit->SetParLimits(3,0.1,2); //safguard for 0 MSw in some syst fits for pp13TeV vs cent
     }
 
     if(!fIspPb) { //for pp analyses
@@ -941,7 +948,7 @@ case 4:
           fFit->SetParameter(6,0.4);
         }
         if(fMinDpt>=16) {
-          fFit->SetParLimits(7,0.5,3.);
+          fFit->SetParLimits(7,0.25,3.);
           fFit->SetParameter(1,0.5);
           fFit->SetParameter(4,0.15);
           fFit->SetParameter(7,1);
@@ -980,6 +987,8 @@ case 4:
         fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
       }
     }
+
+    printf("->Using external params? %d\n",fUseExternalPars);
 
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");
@@ -1103,6 +1112,9 @@ case 4:
         fFit->SetParameter(4,0.1);
         fFit->SetParameter(6,0.5);
       }
+      //SAFETY
+      printf("***PAY ATTENTION TO THIS BOUND (FOR FUTURE ANALYSES)***\n");
+      if((fMinDpt==16 && fMinAsspt==1) || (fMinDpt==8 && fMinAsspt==2)) fFit->SetParLimits(3,0.1,2); //safguard for 0 MSw in some syst fits for pp13TeV vs cent
     }
 
     if(!fIspPb) { //for pp analyses
@@ -1156,7 +1168,7 @@ case 4:
           fFit->SetParameter(6,0.64);
         }
         if(fMinDpt>=16) {
-          fFit->SetParLimits(7,0.5,3.);
+          fFit->SetParLimits(7,0.25,3.);
           fFit->SetParameter(1,0.5);
           fFit->SetParameter(4,0.15);
           fFit->SetParameter(7,1);
@@ -1196,6 +1208,8 @@ case 4:
         fFit->SetParLimits(i,fExtParsLowBounds[i],fExtParsUppBounds[i]);
       }
     }
+
+    printf("->Using external params? %d\n",fUseExternalPars);
 
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");

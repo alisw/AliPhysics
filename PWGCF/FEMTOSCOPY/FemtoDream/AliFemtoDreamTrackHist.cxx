@@ -9,16 +9,15 @@
 #include "TMath.h"
 ClassImp(AliFemtoDreamTrackHist)
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
-    : fpTmin(0),
+    : fMinimalBooking(false),
+      fpTmin(0),
       fpTmax(0),
-      fMinimalBooking(false),
-      fMultRangeLow(27),
-      fMultRangeHigh(55),
       fHistList(0),
       fConfig(0),
       fCutCounter(0),
       fDCAXYPtBins(0),
       fTOFMass(0),
+      fTOFMassSquared(0),
       fNSigCom(0) {
   for (int i = 0; i < 2; ++i) {
     fTrackCutQA[i] = nullptr;
@@ -54,12 +53,10 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
     fITShrdClsPileUp[i] = nullptr;
   }
 }
-AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin, float pTmax, int MultRangeLow, int MultRangeHigh)
-    : fpTmin(pTmin),
-      fpTmax(pTmax),
-      fMinimalBooking(false),
-      fMultRangeLow(MultRangeLow),
-      fMultRangeHigh(MultRangeHigh) {
+AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin, float pTmax,bool TOFMSq)
+    : fMinimalBooking(false),
+      fpTmin(pTmin),
+      fpTmax(pTmax) {
   TString sName[2] = { "before", "after" };
   float ptmin = 0;
   float ptmax = 6.0;
@@ -440,53 +437,42 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     fDCAXYPtBins->GetXaxis()->SetTitle("P#_{T}");
     fDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fHistList->Add(fDCAXYPtBins);
-
-    dcaPtBinName = Form("DCAXYPtMult_0_%i", fMultRangeLow);
-    fDCAXYPtBinsMult[0] = new TH2F(
-        dcaPtBinName.Data(),
-        Form("0 < mult < %i;P#_{T};dca_{XY}", fMultRangeLow), 20, 0.5, 4.05,
-        500, -5, 5);
-
-    dcaPtBinName = Form("DCAXYPtMult_%i_%i", fMultRangeLow, fMultRangeHigh);
-    fDCAXYPtBinsMult[1] = new TH2F(
-        dcaPtBinName.Data(),
-        Form("%i < mult < %i;P#_{T};dca_{XY}", fMultRangeLow, fMultRangeHigh),
-        20, 0.5, 4.05, 500, -5, 5);
-
-    dcaPtBinName = Form("DCAXYPtMult_%i_inf", fMultRangeHigh);
-    fDCAXYPtBinsMult[2] = new TH2F(
-        dcaPtBinName.Data(), Form("mult > %i;P#_{T};dca_{XY}", fMultRangeHigh),
-        20, 0.5, 4.05, 500, -5, 5);
-
-    fHistList->Add(fDCAXYPtBinsMult[0]);
-    fHistList->Add(fDCAXYPtBinsMult[1]);
-    fHistList->Add(fDCAXYPtBinsMult[2]);
   } else {
     fDCAXYPtBins = 0;
   }
 
-  if (TOFM)
-  {
-  TString TOFMassName = Form("TOFMass");
-  fTOFMass = new TH2F(TOFMassName.Data(), TOFMassName.Data(), ptBins,
+  if (TOFM){
+      TString TOFMassName = Form("TOFMass");
+      fTOFMass = new TH2F(TOFMassName.Data(), TOFMassName.Data(), ptBins,
                          ptmin, ptmax, 1400, 0., 1.1);
-  fTOFMass->GetXaxis()->SetTitle("p_{primary}");
-  fTOFMass->GetYaxis()->SetTitle("m_{TOF}");
-  fHistList->Add(fTOFMass);
+      fTOFMass->GetXaxis()->SetTitle("p_{primary}");
+      fTOFMass->GetYaxis()->SetTitle("m_{TOF}");
+      fHistList->Add(fTOFMass);
   } else {
       fTOFMass = nullptr;
+  }
+
+  if (TOFMSq)
+  {
+  TString TOFMassSqName = Form("TOFMassSquared");
+  fTOFMassSquared = new TH2F(TOFMassSqName.Data(), TOFMassSqName.Data(), ptBins,
+                           ptmin, ptmax, 1400, 0., 10.0);
+  fTOFMassSquared->GetXaxis()->SetTitle("p_{T}");
+  fTOFMassSquared->GetYaxis()->SetTitle("m^{2}_{TOF}");
+  fHistList->Add(fTOFMassSquared);
+  } else {
+    fTOFMassSquared = nullptr;
   }
 
 }
 
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
     : fMinimalBooking(true),
-      fMultRangeLow(27),
-      fMultRangeHigh(55),
       fConfig(0),
       fCutCounter(0),
       fDCAXYPtBins(0),
       fTOFMass(0),
+      fTOFMassSquared(0),
       fNSigCom(0) {
   for (int i = 0; i < 2; ++i) {
     fTrackCutQA[i] = nullptr;
@@ -541,16 +527,8 @@ void AliFemtoDreamTrackHist::FillNSigComb(float pT, float nSigTPC,
     fNSigCom->Fill(pT, nSigTPC, nSigTOF);
 }
 
-void AliFemtoDreamTrackHist::FillDCAXYPtBins(float pT, float dcaxy,
-                                             int multiplicity) {
+void AliFemtoDreamTrackHist::FillDCAXYPtBins(float pT, float dcaxy) {
   if (!fMinimalBooking) {
     fDCAXYPtBins->Fill(pT, dcaxy);
-    if (multiplicity < fMultRangeLow) {
-      fDCAXYPtBinsMult[0]->Fill(pT, dcaxy);
-    } else if (multiplicity >= fMultRangeLow && multiplicity < fMultRangeHigh) {
-      fDCAXYPtBinsMult[1]->Fill(pT, dcaxy);
-    } else {
-      fDCAXYPtBinsMult[2]->Fill(pT, dcaxy);
-    }
   }
 }

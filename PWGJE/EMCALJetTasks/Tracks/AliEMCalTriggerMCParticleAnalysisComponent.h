@@ -9,7 +9,9 @@
 
 class TAxis;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerBinningDimension;
 class AliEMCalTriggerEventData;
@@ -30,6 +32,8 @@ protected:
   ClassDef(AliEMCalTriggerMCParticleAnalysisComponent, 1);
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERMCPARTICLEANALYSISCOMPONENT_H */

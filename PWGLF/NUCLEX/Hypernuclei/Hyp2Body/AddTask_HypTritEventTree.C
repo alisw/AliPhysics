@@ -1,10 +1,10 @@
 AliAnalysisTask *AddTask_HypTritEventTree(UInt_t triggerMask = AliVEvent::kINT7 | AliVEvent::kTRD | AliVEvent::kHighMultV0 | AliVEvent::kHighMultSPD, Bool_t pidQa = kFALSE, Bool_t betheSplines = kFALSE, Int_t period = 2017) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_lkreis_HypTritEventTree", "No analysis manager found.");
+    Error("AddTask_HypTritEventTree", "No analysis manager found.");
     return 0;
   }
-  AliAnalysisTaskHypTritEventTree *task = new AliAnalysisTaskHypTritEventTree("lkreisTaskHypTritEventTree");
+  AliAnalysisTaskHypTritEventTree *task = new AliAnalysisTaskHypTritEventTree("mhartungTaskHypTritEventTree");
   task->SelectCollisionCandidates(triggerMask);
   task->SetTriggerMask(triggerMask);
   task->SetPidQa(pidQa);
@@ -16,9 +16,9 @@ AliAnalysisTask *AddTask_HypTritEventTree(UInt_t triggerMask = AliVEvent::kINT7 
   AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("histograms", TList::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
   AliAnalysisDataContainer *coutput2 =
-    mgr->CreateContainer("tree", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+    mgr->CreateContainer("tree3LH", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
   AliAnalysisDataContainer *coutput3 =
-    mgr->CreateContainer("tree_mc", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+    mgr->CreateContainer("tree3LHGen", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput1);
   mgr->ConnectOutput(task, 2, coutput2);
