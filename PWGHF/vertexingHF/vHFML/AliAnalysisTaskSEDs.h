@@ -63,9 +63,19 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetKeepOnlyBkgFromHIJING(Bool_t keeponlyhijing=kTRUE) {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
   void SetFillBkgSparse(Bool_t dofill=kTRUE) {fFillBkgSparse = dofill;}
   /// methods for ML application
-  void SetDoMLApplication(Bool_t flag = kTRUE) {fApplyML = flag;}
+  void SetDoMLApplication(Bool_t flag = kTRUE, Bool_t isMultiClass = kFALSE) { fApplyML = flag; fMultiClass = isMultiClass;}
   void SetMLConfigFile(TString path = ""){fConfigPath = path;}
-  void SetMLBinsForSparse(Int_t nbins = 300, Double_t min = 0.85, Double_t max = 1.) { fNMLBins = nbins; fMLOutputMin = min; fMLOutputMax = max;}
+  void SetMLBinsForSparse(Int_t nbins = 300, Double_t min = 0.85, Double_t max = 1.) { fNMLBins[0] = nbins; fMLOutputMin[0] = min; fMLOutputMax[0] = max;}
+  void SetMultiClassMLBinsForSparse(Int_t nbinsBkg = 100,
+                                    Int_t nbinsPrompt = 100,
+                                    Int_t nbinsFD = 100,
+                                    Double_t minBkg = 0., Double_t maxBkg = 1.,
+                                    Double_t minPrompt = 0., Double_t maxPrompt = 1.,
+                                    Double_t minFD = 0., Double_t maxFD = 1.) {
+    fNMLBins[0] = nbinsBkg; fNMLBins[1] = nbinsPrompt; fNMLBins[2] = nbinsFD;
+    fMLOutputMin[0] = minBkg; fMLOutputMin[1] = minPrompt; fMLOutputMin[2] = minFD;
+    fMLOutputMax[0] = maxBkg; fMLOutputMax[1] = maxPrompt; fMLOutputMax[2] = maxFD;
+  }
   void EnablePIDMLSparses(Bool_t enable = kTRUE) {fEnablePIDMLSparses = enable;}
   void SetMinimalVarForMLSparse(Bool_t flag = kTRUE) {fUseMinimalVarForSparse = flag;}
   /// methods for ML tree creation
@@ -98,8 +108,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
  private:
-  enum {kMaxPtBins = 36, knVarForSparse = 14, knVarForSparseAcc = 2, knVarForSparseAccFD = 3, kVarForImpPar = 3,
-        knVarPID = 14, knVarPIDcomb = 8, knVarForSparseMLMinimal = 3};
+  enum {kMaxPtBins = 36, knVarForSparse = 16, knVarForSparseAcc = 2, knVarForSparseAccFD = 4, kVarForImpPar = 3,
+        knVarPID = 16, knVarPIDcomb = 10, knVarForSparseMLMinimal = 5};
 
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
@@ -212,12 +222,13 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t fKeepOnlyBkgFromHIJING = kFALSE;       /// flag to keep the background from HIJING only
   /// variables for ML application
   Bool_t fApplyML = kFALSE;                     /// flag to enable ML application
+  Bool_t fMultiClass = kFALSE;                /// flag to enable multi-class models (Bkg, Prompt, FD)
   Bool_t fUseMinimalVarForSparse = kFALSE;      /// flag to keep only inv. mass, pt and prob. in the sparse
   TString fConfigPath = "";                     /// path to ML config file
   AliHFMLResponseDstoKKpi* fMLResponse = nullptr;  //!<! object to handle ML response
-  Int_t fNMLBins = 300;                         /// number of bins for ML output axis in THnSparse
-  Double_t fMLOutputMin = 0.85;                 /// min for ML output axis in THnSparse
-  Double_t fMLOutputMax = 1.0;                  /// max for ML output axis in THnSparse
+  Int_t fNMLBins[3] = {100,100, 100};           /// number of bins for ML output axis in THnSparse
+  Double_t fMLOutputMin[3] = {0., 0., 0.};      /// min for ML output axis in THnSparse
+  Double_t fMLOutputMax[3] = {1., 1., 1.};      /// max for ML output axis in THnSparse
   Bool_t fEnablePIDMLSparses = kFALSE;          /// flag to enable control histograms for PID with ML
   THnSparseF* fnSparseNsigmaPIDVsML[2] = {};    //!<! histograms with PID Nsigma variables vs ML output
   /// variables for ML tree creation
@@ -235,10 +246,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Float_t fMaxCandPtSampling = 0.;                                /// maximun candidate pt to apply sampling
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs, 41);            /// AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs, 42);            /// AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 
 #endif
-
-

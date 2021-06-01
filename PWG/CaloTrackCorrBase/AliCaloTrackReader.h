@@ -515,10 +515,13 @@ public:
   void             SwitchOffRemoveCentralityTriggerOutliers()    { fRemoveCentralityTriggerOutliers = kFALSE ; }
   
   // Other event rejections criteria
-  
-  void             SwitchOnPileUpEventRejection()          { fDoPileUpEventRejection= kTRUE  ; }
-  void             SwitchOffPileUpEventRejection()         { fDoPileUpEventRejection= kFALSE ; }
-  Bool_t           IsPileUpEventRejectionDone()      const { return fDoPileUpEventRejection  ; }
+  /// \param opt = 0, no rejection, 1 SPD rejection pp/pPb, 2 TPC-ITS correl PbPb
+  /// \param correl = level of TPC-ITS correlation correction, 1 rejects ~38% to 4 that rejects ~6%
+  void             SwitchOnPileUpEventRejection(Int_t opt = 1, Int_t correl = 1) {
+    fDoPileUpEventRejection = opt ;
+    if ( opt == 2 ) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,correl); }
+  void             SwitchOffPileUpEventRejection()         { fDoPileUpEventRejection= 0 ; }
+  Int_t            IsPileUpEventRejectionDone()      const { return fDoPileUpEventRejection  ; }
   
   void             SwitchOnV0ANDSelection()                { fDoV0ANDEventSelection = kTRUE  ; }
   void             SwitchOffV0ANDSelection()               { fDoV0ANDEventSelection = kFALSE ; }
@@ -538,7 +541,9 @@ public:
 
   void             UseEventCutsClass(Bool_t use)           { fUseEventCutsClass = use  ; }
   AliEventCuts    &GetEventCutsClass()                     { return fEventCuts         ; }
-  
+  void             SwithOnEvenCutsClassQA()                { fUseEventCutsClassQA = kTRUE  ; }
+  void             SwithOffEvenCutsClassQA()               { fUseEventCutsClassQA = kTRUE  ; }
+
   // Time Stamp
   
   Double_t         GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
@@ -605,6 +610,28 @@ public:
   void             SwitchOnRecalculateVertexBC()           { fRecalculateVertexBC = kTRUE  ; fAccessTrackTOF  = kTRUE ; }
   void             SwitchOffRecalculateVertexBC()          { fRecalculateVertexBC = kFALSE ; }
   
+  // Spherocity
+  Float_t          CalculateEventSpherocity( Float_t minPt );
+  Float_t          GetEventSpherocity()              const { return fSpherocity            ; }
+  Float_t          GetEventSpherocityPerMinPtCut(Int_t icut)   const
+  { if ( icut >= 0 && icut < 4 ) return fSpherocityPtCut[icut] ; else return -10. ; }
+
+  Float_t          GetSpherocityMinPt()              const { return fSpherocityMinPt       ; }
+  void             SetSpherocityMinPt(Float_t min)         { fSpherocityMinPt = min        ; }
+
+  Float_t          GetSpherocityMinPtCuts(Int_t icut)
+  { if ( icut >= 0 && icut < 4 ) return fSpherocityMinPtCuts[icut] ; else return 0. ; }
+  void             SetSpherocityMinPtCuts(Int_t icut, Float_t min)
+  { if ( icut >= 0 && icut < 4 ) fSpherocityMinPtCuts[icut] = min ; }
+
+  void             SwitchOnEventSpherocityCalculation()    { fCalculateSpherocity = kTRUE  ; }
+  void             SwitchOffEventSpherocityCalculation()   { fCalculateSpherocity = kFALSE ; }
+  Bool_t           IsEventSpherocityCalculated()     const { return fCalculateSpherocity   ; }
+
+  void             SwitchOnEventSpherocityMinPtStudy()    { fStudySpherocityMinPt = kTRUE  ; }
+  void             SwitchOffEventSpherocityMinPtStudy()   { fStudySpherocityMinPt = kFALSE ; }
+  Bool_t           IsEventSpherocityMinPtStudied()  const { return fStudySpherocityMinPt   ; }
+
   // Track selection
   
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
@@ -790,8 +817,16 @@ public:
   virtual void SwitchOffPythiaEventHeaderUse()            { fCheckPythiaEventHeader = kFALSE ; }
   virtual Bool_t IsPythiaEventHeaderUsed()          const { return fCheckPythiaEventHeader ; }
   
-  // See implementation in AOD and ESD readers
-  
+  // Methods to reject generated MC event or particles
+  // Implemented in ESD/AOD reader
+  virtual Bool_t IsMCParticleFromOutOfBunchPileupCollision(Int_t /*index*/)  const { return kFALSE; }
+  virtual Bool_t IsPileupInGeneratedMCEvent(TString /*genname=""*/)          const { return kFALSE; }
+  virtual Bool_t IsSameBunchPileupInGeneratedMCEvent(TString /*genname=""*/) const { return kFALSE; }
+
+  virtual void   SwitchOnMCParticlePileUpRejection()       { fRejectPileUpMCParticle = kTRUE  ; }
+  virtual void   SwitchOffMCParticlePileUpRejection()      { fRejectPileUpMCParticle = kFALSE ; }
+  virtual Bool_t IsMCParticlePileUpRejected()        const { return fRejectPileUpMCParticle   ; }
+
   // Filtered kinematics in AOD
   
   virtual TClonesArray*     GetAODMCParticles()      const ;
@@ -852,6 +887,13 @@ public:
   virtual void     SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   virtual TString  GetNameOfMCEventHederGeneratorToAccept()       const { return fMCGenerEventHeaderToAccept ; }
   
+  void   SwitchOnMCPromptPhotonsSelection()         { fAcceptMCPromptPhotonOnly    = kTRUE ; }
+  void   SwitchOffMCPromptPhotonsSelection()        { fAcceptMCPromptPhotonOnly    = kFALSE; }
+  Bool_t AreMCPromptPhotonsSelected()         const { return fAcceptMCPromptPhotonOnly     ; }
+  void   SwitchOnMCFragmentationPhotonsRejection()  { fRejectMCFragmentationPhoton = kTRUE ; }
+  void   SwitchOffMCFragmentationPhotonsRejection() { fRejectMCFragmentationPhoton = kFALSE; }
+  Bool_t AreMCFragmentationPhotonsRejected()  const { return fRejectMCFragmentationPhoton  ; }
+
   // MC reader methods, declared there to allow compilation, they are only used in the MC reader
   
   virtual void AddNeutralParticlesArray(TArrayI & /*array*/) { ; }  
@@ -1063,6 +1105,7 @@ public:
   
   AliEventCuts     fEventCuts;                     ///< Event selection utility
   Bool_t           fUseEventCutsClass;             ///< Use AliEventCuts class 
+  Bool_t           fUseEventCutsClassQA;           ///< Recover AliEventCuts class QA histograms
   
   TList **         fListMixedTracksEvents;         //!<! Container for tracks stored for different events, used in case of own mixing, set in analysis class.
   TList **         fListMixedCaloEvents  ;         //!<! Container for photon stored for different events, used in case of own mixing, set in analysis class.
@@ -1123,7 +1166,7 @@ public:
   Bool_t           fRemoveUnMatchedTriggers;       ///<  Analyze events where trigger patch and cluster where found or not.
   
   
-  Bool_t           fDoPileUpEventRejection;        ///<  Select pile-up events by SPD.
+  Int_t            fDoPileUpEventRejection;        ///<  Select pile-up events by SPD if 1, by TPC-ITS correl if 2.
   Bool_t           fDoV0ANDEventSelection;         ///<  Select events depending on V0AND.
   Bool_t           fDoVertexBCEventSelection;      ///<  Select events with vertex on BC=0 or -100.
   Bool_t           fDoRejectNoTrackEvents;         ///<  Reject events with no selected tracks in event.
@@ -1164,6 +1207,18 @@ public:
   Int_t            fCentralityBin[2];              ///<  Minimum and maximum value of the centrality for the analysis.
   TString          fEventPlaneMethod;              ///<  Name of event plane method, by default "Q".
 
+  // Event spherocity
+  Float_t          fSpherocity ;                   ///<  Event spherocity, it uses fSpherocityMinPt, to be accesses by the analysis tasks
+  Float_t          fSpherocityPtCut[4] ;           ///<  Event spherocity, it uses fSpherocityMinPtCuts[4], to be accesses by the analysis tasks if fStudySpherocityMinPt = 1
+  Float_t          fSpherocityMinPt ;              ///<  Event spherocity min track pT
+  Float_t          fSpherocityMinPtCuts[4] ;       ///<  Event spherocity list of min track pT in case  fStudySpherocityMinPt = 1
+  Bool_t           fCalculateSpherocity ;          ///<  Activate or not event spherocity calculation
+  Bool_t           fStudySpherocityMinPt ;         ///<  Calculate spherocity for different min pT
+  TH1F *           fhSpherocity;                   ///< Spherocity vs track pT  control histogram
+  TH2F *           fhSpherocityCen;                ///< Spherocity vs centrality vs track pT control histogram
+  TH1F *           fhSpherocityMinPtCut[4];        ///< Spherocity control histogram for different MinPtCut, fStudySpherocityMinPt = 1
+  TH2F *           fhSpherocityCenMinPtCut[4];     ///< Spherocity vs centrality control histogram for different MinPtCut, fStudySpherocityMinPt = 1
+
   // Jets
   Bool_t           fFillInputNonStandardJetBranch; ///<  Flag to use data from non standard jets.
   TClonesArray *   fNonStandardJets;               //!<! Temporal array with jets.
@@ -1198,7 +1253,9 @@ public:
   TH2F  *          fhEMCALClusterCutsECenSignal[9];//!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality. Embedded signal clusters.
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
+  TH1F  *          fhCTSTrackCutsPtSignal[6];      //!<! Control histogram on the different CTS tracks selection cuts, pT. Embedded signal
   TH2F  *          fhCTSTrackCutsPtCen[6];         //!<! Control histogram on the different CTS tracks selection cuts, pT vs centrality
+  TH2F  *          fhCTSTrackCutsPtCenSignal[6];   //!<! Control histogram on the different CTS tracks selection cuts, pT vs centrality. Embedded signal
   TH1F  *          fhEMCALClusterBadTrigger;       //!<! Control histogram on clusters E on bad triggered events
   TH1F  *          fhCentralityBadTrigger;         //!<! Control histogram on event centrality for bad triggered events
   TH2F  *          fhEMCALClusterCentralityBadTrigger; //!<! Control histogram on clusters E vs centrality on bad triggered events
@@ -1227,12 +1284,16 @@ public:
   Int_t            fMCGenerIndexToAccept[5];       ///<  List with index of generators that should not be included
 
   TString          fMCGenerEventHeaderToAccept;    ///<  Accept events that contain at least this event header name
-  
-  
+
   AliGenEventHeader       * fGenEventHeader;       //!<! Event header
   AliGenPythiaEventHeader * fGenPythiaEventHeader; //!<! Event header casted to pythia
   Bool_t                    fCheckPythiaEventHeader; ///< Switch on/off recovery of the Pythia event header
   
+  Bool_t           fAcceptMCPromptPhotonOnly ;     ///< Accept in the analysis task (AliiAnaPhoton) only cluster from prompt photons, to be used in gamma-jet simulations
+  Bool_t           fRejectMCFragmentationPhoton ;  ///< Reject in the analysis task (AliAnaPhoton) clusters from fragmentation photons, to be used in jet-jet simulations
+
+  Bool_t           fRejectPileUpMCParticle ;       ///< Reject injected Pile-up MC particles
+
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
   
@@ -1240,7 +1301,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,94) ;
+  ClassDef(AliCaloTrackReader,97) ;
   /// \endcond
 
 } ;

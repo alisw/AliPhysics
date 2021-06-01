@@ -43,6 +43,11 @@
 #pragma link C++ class  AliFemtoModelCorrFctn3DKKGR;
 #pragma link C++ class  AliFemtoModelCorrFctn3DKKGRQinv;
 #pragma link C++ class  AliFemtoModelGausLCMSFreezeOutGeneratorGR;
+#pragma link C++ class  AliFemtoModelCorrFctn3DKKGR1;
+//Ludmila
+#pragma link C++ class  AliFemtoCutMonitorDphiDeta1;
+#pragma link C++ class  AliFemtoESDTrackCutPlusJets25;
+#pragma link C++ class  AliFemtoESDTrackCutMinusJets;
 //
 #pragma link C++ class AliFemtoModelCorrFctn3DLCMSSpherical;
 #pragma link C++ class AliFemtoCutMonitorParticleMomRes;
@@ -102,6 +107,7 @@
 #pragma link C++ class AliFemtoPairCutRadialDistanceAsymmetric+;
 #pragma link C++ class AliFemtoPairCutGeneralizedRadialDistance+;
 #pragma link C++ class AliFemtoPairCutMergedFraction+;
+#pragma link C++ class AliFemtoPairCutMergedFraction_pik+;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiSimple+;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections+;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiWithWeights;

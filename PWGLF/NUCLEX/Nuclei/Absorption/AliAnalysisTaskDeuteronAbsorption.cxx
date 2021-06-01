@@ -57,6 +57,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fUseTrackCuts{false},
                                                                                          fMindEdx{100.},
                                                                                          fMinTPCsignalN{50},
+											 fUseTOFallClustersInfo{false},
 											 ParticleType(AliPID::kHe3),
                                                                                          fPIDResponse{nullptr},
                                                                                          fESDtrackCuts{*AliESDtrackCuts::GetStandardITSTPCTrackCuts2011()},
@@ -112,14 +113,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fHist3TOFpidAll{nullptr},
                                                                                          fHist3TOFmass{nullptr},
                                                                                          fHist3TOFnsigma{nullptr},
-                                                                                         fHist3TOFmassAll{nullptr},
-                                                                                         fHist1AcceptanceAll{nullptr},
-                                                                                         fHist2Matching{nullptr},
-                                                                                         fHist2Phi{nullptr},
-                                                                                         fHist2TPCnSigma{nullptr},
-                                                                                         fHist2MatchingMC{nullptr},
-                                                                                         fTRDboundariesPos{nullptr},
-                                                                                         fTRDboundariesNeg{nullptr}
+                                                                                         fHist3TOFmassAll{nullptr}                                                                                        
 {
   fESDtrackCuts.SetEtaRange(-0.8, 0.8);
 
@@ -137,14 +131,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
 AliAnalysisTaskDeuteronAbsorption::~AliAnalysisTaskDeuteronAbsorption()
 {
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
-  for (int iFunction = 0; iFunction < 4; ++iFunction)
-  {
-    if (fTRDboundariesPos[iFunction])
-      delete fTRDboundariesPos[iFunction];
-    if (fTRDboundariesNeg[iFunction])
-      delete fTRDboundariesNeg[iFunction];
-  }
-
+  
   if (fOutputList)
     delete fOutputList; // at the end of your task, it is deleted from memory by calling this function
 
@@ -176,7 +163,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
   std::string wTOF[2] = {"woTOF", "wTOF"};
   std::string pos_neg[2] = {"neg", "pos"};
 
-  for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
+  for (Int_t iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
   {
     fHist3TPCpid[iSpecies] = new TH3F(Form("fHist3TPCpid%s", fgkParticleNames[iSpecies].data()), Form("%s; #it{p}/#it{z} (Gev/#it{c}); d#it{E}/d#it{x} (arb. units); #Phi (rad)", fgkParticleNames[iSpecies].data()), 400, -10, 10, 400, 0, 1000, 18, 0, TMath::TwoPi());
     fHist3TOFpid[iSpecies] = new TH3F(Form("fHist3TOFpid%s", fgkParticleNames[iSpecies].data()), Form("%s; #it{p}/#it{z} (Gev/#it{c}); #beta; #Phi (rad)", fgkParticleNames[iSpecies].data()), 400, -10, 10, 300, 0, 1.2, 18, 0, 2 * TMath::Pi());
@@ -193,28 +180,6 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
   fOutputList->Add(fHist3TPCpidAll);
   fOutputList->Add(fHist3TOFpidAll);
   fOutputList->Add(fHist3TOFmassAll);
-
-  for (int iCharge = 0; iCharge < 2; ++iCharge)
-  {
-    for (int iTRD = 0; iTRD < 2; ++iTRD)
-    {
-      fHist2Phi[iCharge][iTRD] = new TH2F(Form("fHist2Phi_%s_%s", pos_neg[iCharge].data(), wTRD[iTRD].data()), Form("%s %s; #Phi (rad) ;#it{p}_{T} (Gev/#it{c});", pos_neg[iCharge].data(), wTRD[iTRD].data()), 100, 0, 2 * TMath::Pi(), 100, 0, 7);
-      fOutputList->Add(fHist2Phi[iCharge][iTRD]);
-      for (int iTOF = 0; iTOF < 2; ++iTOF) {
-        fHist1AcceptanceAll[iCharge][iTRD][iTOF] = new TH1F(Form("fHist1AcceptanceAll%s_%s_%s", pos_neg[iCharge].data(), wTRD[iTRD].data(), wTOF[iTOF].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c});", pos_neg[iCharge].data(), wTRD[iTRD].data(), wTOF[iTOF].data()), 200, 0, 10);
-        fOutputList->Add(fHist1AcceptanceAll[iCharge][iTRD][iTOF]);
-      }
-      for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
-      {
-        fHist2Matching[iSpecies][iCharge][iTRD] = new TH2F(Form("fHist2Matching%s_%s_%s", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c}); TOF m^{2} (GeV/#it{c}^{2})^{2}", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), 200, 0, 10, 160, 0, 6.5);
-        fOutputList->Add(fHist2Matching[iSpecies][iCharge][iTRD]);
-        fHist2MatchingMC[iSpecies][iCharge][iTRD] = new TH2F(Form("fHist2MatchingMC%s_%s_%s", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c}); TOF m^{2} (GeV/#it{c}^{2})^{2}", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), 200, 0, 10, 160, 0, 6.5);
-        fOutputList->Add(fHist2MatchingMC[iSpecies][iCharge][iTRD]);
-        fHist2TPCnSigma[iSpecies][iCharge][iTRD] = new TH2F(Form("fHist2TPCnSigma%s_%s_%s", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c}); TPC n_{#sigma}", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), 200, 0, 10, 40, -5, 5);
-        fOutputList->Add(fHist2TPCnSigma[iSpecies][iCharge][iTRD]);
-      }
-    }
-  }
 
   // Tree
   if (fTreemode)
@@ -265,6 +230,21 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tIsReconstructed", &tIsReconstructed, "tIsReconstructed/O");
     fTreeTrack->Branch("tRunNumber", &tRunNumber, "tRunNumber/I");
     fTreeTrack->Branch("tPIDforTracking", &tPIDforTracking, "tPIDforTracking/b");
+
+    fTreeTrack->Branch("tTOFclsN", &tTOFclsN, "tTOFclsN/b");
+    if(fUseTOFallClustersInfo) {
+      fTreeTrack->Branch("tNsigmaTOFarray", tNsigmaTOFarray, "[tTOFclsN]/F");
+      fTreeTrack->Branch("tmass2array", tmass2array, "tmass2array[tTOFclsN]/F");
+      fTreeTrack->Branch("tdxTOFarray", tdxTOFarray, "tdxTOFarray[tTOFclsN]/F");
+      fTreeTrack->Branch("tdzTOFarray", tdzTOFarray, "tdzTOFarray[tTOFclsN]/F");
+      fTreeTrack->Branch("tTOFarray", tTOFarray, "tTOFarray[tTOFclsN]/F");
+      fTreeTrack->Branch("tLengtharray", tLengtharray, "tLengtharray[tTOFclsN]/F");
+      fTreeTrack->Branch("texpTOFarray", texpTOFarray, "texpTOFarray[tTOFclsN]/F");
+      fTreeTrack->Branch("tsigmaTOFarray", tsigmaTOFarray, "tsigmaTOFarray[tTOFclsN]/F");
+      fTreeTrack->Branch("tTOFchannelarray", tTOFchannelarray, "tTOFchannelarray[tTOFclsN]/I");
+      fTreeTrack->Branch("tMCtofMismatcharray", tMCtofMismatcharray, "tMCtofMismatcharray[tTOFclsN]/O");
+      fTreeTrack->Branch("tNmatchableTracks", tNmatchableTracks, "tNmatchableTracks[tTOFclsN]/b");
+    }
   }
   fEventCuts.AddQAplotsToList(fOutputList);
 
@@ -272,17 +252,6 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
 
   if (fTreemode)
     PostData(2, fTreeTrack);
-
-  for (int iFunction = 0; iFunction < 4; ++iFunction)
-  {
-    fTRDboundariesNeg[iFunction] = new TF1(Form("fNeg%i", iFunction), "[0]-exp([1]*pow(x,[2])+[3])", 0.2, 10);
-    fTRDboundariesPos[iFunction] = new TF1(Form("fPos%i", iFunction), "[0]-exp([1]*pow(x,[2])+[3])", 0.2, 10);
-    for (int iParam = 0; iParam < 4; ++iParam)
-    {
-      fTRDboundariesNeg[iFunction]->SetParameter(iParam, fgkPhiParamNeg[iFunction][iParam]);
-      fTRDboundariesPos[iFunction]->SetParameter(iParam, fgkPhiParamPos[iFunction][iParam]);
-    }
-  }
 }
 
 void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
@@ -369,7 +338,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
   }
   
   for (Int_t i = 0; i < nTracks; i++)
-  {                                                                     // loop ove rall these tracks
+  {                                                                     
     AliESDtrack *track = static_cast<AliESDtrack *>(esdEvent->GetTrack(i)); // get a track (type AliESDDTrack) from the event
     if (!track)
       continue;
@@ -386,19 +355,18 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
 
     // Process TOF information
     ULong_t status = (ULong_t)track->GetStatus();
-    bool hasTOFout  = status & AliVTrack::kTOFout;
-    bool hasTOFtime = status & AliVTrack::kTIME;
-    const float length = track->GetIntegratedLength();
-    bool hasTOF = hasTOFout && hasTOFtime && (length > 350.);
+    Bool_t hasTOFout  = status & AliVTrack::kTOFout;
+    Bool_t hasTOFtime = status & AliVTrack::kTIME;
+    const Float_t length = track->GetIntegratedLength();
+    Bool_t hasTOF = hasTOFout && hasTOFtime;
     //
-    double ptot = track->GetTPCmomentum(); // momentum for dEdx determination
-    double tof = track->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(track->P());
+    Float_t ptot = track->GetTPCmomentum(); // momentum for dEdx determination
+    Float_t tof = track->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(track->P());
     //
-    double beta = -1.;
-    double mass2 = -1;
+    Float_t beta = -1.;
+    Float_t mass2 = -1;
     //
-    if (hasTOF)
-    {
+    if (hasTOF) {
       beta = length / (TMath::C() * 1.e-10 * tof);
       if ((1 - beta * beta) > 0)
         mass2 = ptot * ptot * (1. / (beta * beta) - 1.);
@@ -411,24 +379,24 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       pdgCodeTrackMc = mcParticle->PdgCode();
       tMCpt = mcParticle->Pt();
       usedMC.push_back(TMath::Abs(track->GetLabel()));
-      int tofL[3];
+      Int_t tofL[3];
       track->GetTOFLabel(tofL);
       tMCtofMismatch = tofL[0] != TMath::Abs(track->GetLabel());
       if (std::abs(pdgCodeTrackMc) > 1000000)
       {
 
-        int counter = 0;
-        double totalMom[3]{0.};
-        double absVtx[3]{0., 0., 0.};
-        double absT{0.};
+        Int_t counter = 0;
+        Double_t totalMom[3]{0.};
+        Double_t absVtx[3]{0., 0., 0.};
+        Double_t absT{0.};
 	tNdaughters = 0;
-        for (int c = mcParticle->GetDaughterFirst(); c <= mcParticle->GetDaughterLast(); c++)
+        for (Int_t c = mcParticle->GetDaughterFirst(); c <= mcParticle->GetDaughterLast(); c++)
         {
           AliVParticle *dPart = mcEvent->GetTrack(c);
 	  if(!dPart) {
 	    continue;
 	  }
-	  double currentT{dPart->Tv()};
+	  Double_t currentT{dPart->Tv()};
           if (counter == 0)
           {
             absT = currentT;
@@ -448,9 +416,10 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
         tMCabsRadius = std::hypot(absVtx[0], absVtx[1]);
       }
     }
-
+    
     if (fTreemode && track->GetTPCsignal() > fMindEdx && fPIDResponse->NumberOfSigmasTPC(track, ParticleType) < fMaxNSigma && fPIDResponse->NumberOfSigmasTPC(track, ParticleType) > fMinNSigma)
     {
+
       //tP = track->GetInnerParam()->GetP();
       tPt = track->GetInnerParam()->GetSignedPt();
       tEta = track->GetInnerParam()->Eta();
@@ -464,7 +433,6 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tTOFsigDx = track->GetTOFsignalDx();
       tTOFsigDz = track->GetTOFsignalDz();
       tTOFchi2 = track->GetTOFchi2();
-      tTOFclsN = track->GetTOFclusterN();
       tTOFchannel = track->GetTOFCalChannel();
       tTRDclsN = track->GetTRDncls();
       tTRDntracklets = track->GetTRDntracklets();
@@ -485,14 +453,17 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       thasTOF = hasTOF;
       tRunNumber = esdEvent->GetRunNumber();
       tPIDforTracking = track->GetPIDForTracking();
+
+      tTOFclsN = track->GetTOFclusterN();
+      if(fUseTOFallClustersInfo)
+	FillTOFallMatchableHitsInfo(track);
       fTreeTrack->Fill();  
     }
-
-    //
-    double sign = track->GetSign();
+    
+    Float_t sign = track->GetSign();
     // fill QA histograms
-    double tpcNsigmas[kNabsSpecies];
-    for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies) tpcNsigmas[iSpecies] = 999.;
+    Float_t tpcNsigmas[kNabsSpecies];
+    for (Int_t iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies) tpcNsigmas[iSpecies] = 999.;
     //
     fHist3TPCpidAll->Fill(ptot * sign, track->GetTPCsignal(), track->Phi());
     if (hasTOF && track->GetTPCsignal() > fMindEdx)
@@ -500,7 +471,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       fHist3TOFpidAll->Fill(ptot * sign, beta, track->Phi());
       fHist3TOFmassAll->Fill(ptot * sign, mass2, track->Phi());
     }
-    for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
+    for (Int_t iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
     {
       tpcNsigmas[iSpecies] = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[iSpecies]);
       if (std::abs(tpcNsigmas[iSpecies]) < fNtpcSigmas)
@@ -514,67 +485,10 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
         }
       }
     }
-
-    // study using TRDin
-    bool hasTRDin = bool(status & AliESDtrack::kTRDin); // 2D phi pt for TRD
-
-    double pt = track->Pt();
-    double phi = track->Phi();
-    while (phi < 0)
-      phi += TMath::TwoPi();
-    while (phi > TMath::TwoPi())
-      phi -= TMath::TwoPi();
-    bool withTRD[2]{
-        fUseTRDboundariesCut ? true :
-        phi < fTRDboundariesNeg[0]->Eval(pt) ||
-            (phi > fTRDboundariesNeg[1]->Eval(pt) && phi < fTRDboundariesNeg[2]->Eval(pt)) ||
-            phi > fTRDboundariesNeg[3]->Eval(pt),
-        fUseTRDboundariesCut ? true :
-        phi < fTRDboundariesPos[0]->Eval(pt) ||
-            (phi > fTRDboundariesPos[1]->Eval(pt) && phi < fTRDboundariesPos[2]->Eval(pt)) ||
-            phi > fTRDboundariesPos[3]->Eval(pt)};
-    bool positive = sign > 0;
-    fHist1AcceptanceAll[positive][withTRD[positive]][hasTOF]->Fill(ptot);
-    for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
-    {
-      if (track->GetTPCsignal() > fMindEdx) {
-        fHist2TPCnSigma[iSpecies][positive][withTRD[positive]]->Fill(ptot, tpcNsigmas[iSpecies]);
-      }
-      if (std::abs(tpcNsigmas[iSpecies]) < 3.)
-      {
-        if (track->GetTPCsignal() > fMindEdx) {
-          fHist2Matching[iSpecies][positive][withTRD[positive]]->Fill(ptot, mass2);
-        }
-        if (isMC)
-        {
-          int tofLabel[3]{-1,-1,-1};
-          track->GetTOFLabel(tofLabel);
-          int label = TMath::Abs(track->GetLabel());
-          bool trueMatch = false;
-          for (int iLabel = 0; iLabel < 3; ++iLabel)
-          {
-            if (tofLabel[iLabel] == label)
-              trueMatch = true;
-          }
-          double mcMass = trueMatch ? AliPID::ParticleMassZ(fgkSpecies[iSpecies]) : 0;
-          AliVParticle *mcpart = mcEvent->GetTrack(TMath::Abs(track->GetLabel()));
-          if (mcpart)
-          {
-            int pdg = mcpart->PdgCode();
-            if (TMath::Abs(pdg) == AliPID::ParticleCode(fgkSpecies[iSpecies]))
-            {
-              fHist2MatchingMC[iSpecies][positive][withTRD[positive]]->Fill(ptot, mcMass * mcMass);
-            }
-          }
-        }
-      }
-    }
-    fHist2Phi[positive][hasTRDin]->Fill(phi, pt);
-
   } // end the track loop
 
   if(mcEvent && fTreemode) {
-    for (int iMC=0; iMC<fMCEvent->GetNumberOfTracks(); iMC++) {
+    for (Int_t iMC=0; iMC<fMCEvent->GetNumberOfTracks(); iMC++) {
       AliVParticle *mcParticle = mcEvent->GetTrack(iMC);
       tPdgCodeMc = mcParticle->PdgCode();
       if (std::abs(tPdgCodeMc) < 1000000000 || std::abs(tPdgCodeMc) > 1000020040) continue;
@@ -591,3 +505,88 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
   PostData(1, fOutputList);
   PostData(2, fTreeTrack);
 } // end the UserExec
+//___________________________________________________________________________________________________________-
+void AliAnalysisTaskDeuteronAbsorption::FillTOFallMatchableHitsInfo(AliESDtrack *track) {
+
+  const Int_t fNtofClusters = track->GetTOFclusterN();
+  Int_t *fTOFcluster = track->GetTOFclusterArray();// [fNtofClusters]
+  
+  Float_t NsigmaTOFarray[fNtofClusters], mass2array[fNtofClusters], dxTOFarray[fNtofClusters], dzTOFarray[fNtofClusters], TOFarray[fNtofClusters], Lengtharray[fNtofClusters], expTOFarray[fNtofClusters], sigmaTOFarray[fNtofClusters];
+  Int_t NmatchableTracks[fNtofClusters], TOFchannelarray[fNtofClusters];
+  Bool_t MCtofMismatcharray[fNtofClusters];
+
+  for(Int_t i=0;i<fNtofClusters;i++) {
+    NsigmaTOFarray[i] = -9e3;
+    mass2array[i] = -9e3;
+    dxTOFarray[i] = -9e3;
+    dzTOFarray[i] = -9e3;
+    TOFarray[i] = -9e3;
+    Lengtharray[i] = -9e3;
+    expTOFarray[i] = -9e12;
+    sigmaTOFarray[i] = -9e1;
+    TOFchannelarray[i] = -9;
+    //MCtofMismatcharray[i] = true;
+    NmatchableTracks[i] = -9;
+  }  
+  
+  TClonesArray *tofclArray = track->GetESDEvent()->GetESDTOFClusters();
+  
+  for(Int_t i=0;i < fNtofClusters;i++) {//loop over tof clusters
+    
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[i]);
+    for(Int_t j=0;j < tofcl->GetNMatchableTracks();j++) {//loop over all matchable tracks
+      
+      if(tofcl->GetTrackIndex(j) == track->GetID()) {//I filter for the track I am interested in (i.e. that I started from)
+	
+	Float_t exptime = tofcl->GetIntegratedTime(ParticleType, j);
+
+	Float_t time = tofcl->GetTime();
+	Float_t startime = fPIDResponse->GetTOFResponse().GetStartTime(track->P());
+	Float_t tof = time - startime;
+	Float_t sigmaTOF = fPIDResponse->GetTOFResponse().GetExpectedSigma(track->P(), tof, ParticleType);
+	
+	NsigmaTOFarray[i] = (tof-exptime)/sigmaTOF;
+	dxTOFarray[i] = tofcl->GetDx(j);
+	dzTOFarray[i] = tofcl->GetDz(j);
+	NmatchableTracks[i] = tofcl->GetNMatchableTracks();
+	  
+	Float_t beta = -1.;
+	Float_t mass2 = -1;
+	Float_t length = tofcl->GetLength(j);
+	Float_t ptot = track->GetTPCmomentum();
+	
+	beta = length / (TMath::C() * 1.e-10 * tof);
+	if ((1 - beta * beta) > 0)
+	  mass2 = ptot * ptot * (1. / (beta * beta) - 1.);
+	
+	mass2array[i] = mass2;
+
+	TOFchannelarray[i] = tofcl->GetTOFchannel();
+	TOFarray[i] = tof;
+	Lengtharray[i] = length;
+	expTOFarray[i] = exptime;
+	sigmaTOFarray[i] = sigmaTOF;
+
+	MCtofMismatcharray[i] = ( TMath::Abs(track->GetLabel()) != tofcl->GetLabel() );
+
+      }
+    }
+  }
+
+  //To fill the tree global variables:
+  for(Int_t i=0;i<fNtofClusters;i++) {
+    tNsigmaTOFarray[i] = NsigmaTOFarray[i];
+    tmass2array[i] = mass2array[i];
+    tdxTOFarray[i] = dxTOFarray[i];
+    tdzTOFarray[i] = dzTOFarray[i];
+    tTOFarray[i] = TOFarray[i];
+    tLengtharray[i] = Lengtharray[i];
+    texpTOFarray[i] = expTOFarray[i];
+    tsigmaTOFarray[i] = sigmaTOFarray[i];
+    tTOFchannelarray[i] = TOFchannelarray[i];
+    tMCtofMismatcharray[i] = MCtofMismatcharray[i];
+    tNmatchableTracks[i] = NmatchableTracks[i];
+  }  
+  
+  return;
+}

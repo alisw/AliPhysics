@@ -1,29 +1,11 @@
 // AddTask for AliAnalysisTaskCascadeChCorrelations task
 
-AliAnalysisTaskV0ChCorrelationppsys* AddTaskV0ChCorrelationppsys(
-                              float cenMin, float cenMax,
-                              bool effCorr = 0, bool isMC=0,TString fileName_extension = "",TString EffFileNameWithPath = ""){
-   AddTaskV0ChCorrelationppsys( 
-                            cenMin,  cenMax,
-                            Form("Cent%d_%d", Int_t(cenMin), Int_t(cenMax)),
-                            Form("Cent%d_%d", Int_t(cenMin), Int_t(cenMax)),
-                            effCorr, isMC);
-}
+AliAnalysisTaskV0ChCorrelationppsys* AddTaskV0ChCorrelationppsys(TString taskName = "", float cenMin, float cenMax, bool effCorr = 0, bool isMC=0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
 
- void AddTaskV0ChCorrelationppsys( float cenMin, float cenMax, TString folderName="",  TString suffixName="",
-                              bool effCorr = 0, bool isMC=0 )
-{
-  // Creates a V0-Ch correlations analysis task and adds it to the analysis manager.
-
-  // Get the pointer to the existing analysis manager via the static access method.
-  //==============================================================================
-  TString fileName = AliAnalysisManager::GetCommonFileName();
-  //fileName.ReplaceAll(".root","");
-
-  fileName += ":AliAnalysisTaskV0ChCorrelationppsys";      // create a subfolder in the file
-  fileName += fileName_extension.Data();
-
-
+// Creates a V0-Ch correlations analysis task and adds it to the analysis manager.
+  
+ //==============================================================================
+ 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskV0ChCorrelations", "No analysis manager to connect to.");
@@ -33,10 +15,15 @@ AliAnalysisTaskV0ChCorrelationppsys* AddTaskV0ChCorrelationppsys(
 if (!mgr->GetInputEventHandler()) {
         return 0x0;
     }
-     
-  // create task
-  AliAnalysisTaskV0ChCorrelationppsys* task  = new AliAnalysisTaskV0ChCorrelationppsys(folderName, cenMin,cenMax,effCorr); 
 
+ TString fileName = AliAnalysisManager::GetCommonFileName();
+
+  fileName += ":AliAnalysisTaskV0ChCorrelationppsys";      // create a subfolder in the file
+  fileName += fileName_extension.Data();
+    
+  // create task
+  AliAnalysisTaskV0ChCorrelationppsys* task  = new AliAnalysisTaskV0ChCorrelationppsys(taskName.Data(), cenMin,cenMax,effCorr); 
+  
   task->SetAnalysisMC(isMC);
   //------------------------------Mixing part------------------------------
   task->SetMixingTracks(5000);
@@ -82,100 +69,56 @@ if (!mgr->GetInputEventHandler()) {
   task->SetTrackPileUpCut(kTRUE);
   task->SetV0PileUpCut(kTRUE);
   task->SetEventPileUpCut(kTRUE);
-
-  //-------------------------------------PID--------------------------------
   task->SetV0PIDSigma(3);
-  //-------------------------------------------------------------------------
+
   mgr->AddTask(task);
     
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  //TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  //  outputFileName = "XiCh.root";
-
+  
   // create containers for input/output
-  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput0 
-    = mgr->CreateContainer(Form("Output%s",suffixName.Data()),AliDirList::Class(),AliAnalysisManager::kOutputContainer, 
-			                     Form("%s", fileName.Data()));
-//
 
-  AliAnalysisDataContainer *coutput2
-    = mgr->CreateContainer(Form("Output2%s", suffixName.Data()),AliDirList::Class(), AliAnalysisManager::kOutputContainer,
-                                            Form("%s", fileName.Data()));//
-
-
-AliAnalysisDataContainer *coutput3
-    = mgr->CreateContainer(Form("Output3%s", suffixName.Data()),AliDirList::Class(), AliAnalysisManager::kOutputContainer,
-                                            Form("%s", fileName.Data()));//
-
-AliAnalysisDataContainer *coutput4
-    = mgr->CreateContainer(Form("Output4%s", suffixName.Data()),AliDirList::Class(), AliAnalysisManager::kOutputContainer,
-                                            Form("%s", fileName.Data()));//
-
-
-
-AliAnalysisDataContainer *coutput5
-    = mgr->CreateContainer(Form("Output5%s", suffixName.Data()),AliDirList::Class(), AliAnalysisManager::kOutputContainer,
-                                            Form("%s", fileName.Data()));//
-
-
-AliAnalysisDataContainer *coutput6
-    = mgr->CreateContainer(Form("Output6%s", suffixName.Data()),AliDirList::Class(), AliAnalysisManager::kOutputContainer,
-                                            Form("%s", fileName.Data()));//
-
-
-AliAnalysisDataContainer *coutput7
-    = mgr->CreateContainer(Form("Output7%s", suffixName.Data()),AliDirList::Class(), AliAnalysisManager::kOutputContainer,
-                                            Form("%s", fileName.Data()));//
-
-
-
-  AliAnalysisDataContainer *cinput1 = NULL;
+   AliAnalysisDataContainer *cinput1 = 0x0;
 
   TList * effList = 0x0;
 
   if(effCorr){
-    cinput1 = mgr->CreateContainer(Form("Eff%s", suffixName.Data()),
+
+        TString eff_container_name = "Efficiencypp";
+        eff_container_name+=container_name_extension.Data();
+
+    cinput1 = mgr->CreateContainer(Form("%s", eff_container_name.Data()),
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
 
     TFile * file = TFile::Open(Form("alien:///alice/cern.ch/user/m/manaam/Efficiencypp/%s.root",EffFileNameWithPath.Data())); 
-
-  
 if(!file) {
-      printf("ERROR: efficiency file is not available!\n",EffFileNameWithPath.Data());
-      //return NULL;
+    
+  printf("ERROR: efficiency file is not available!\n",EffFileNameWithPath.Data());
+
     }
     
     effList = (TList*)file->Get("fListCent0_100");
 
     if(!effList){
       printf("ERROR: no efficiency list fList%s available\n", EffFileNameWithPath.Data());
-      //return NULL;
+
     }
   }
 
+// your task needs input: here we connect the manager to your task
+    mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
+    if(effCorr){
+        cinput1->SetData(effList);
+        mgr->ConnectInput(task, 1, cinput1);  
+    }
 
+ TString container_name = "MyOutputContainer";
+   container_name += container_name_extension.Data();
 
-      
-  // connect input/output
-  mgr->ConnectInput(task, 0, cinput);
-  if(effCorr)
-   mgr->ConnectInput(task, 1, cinput1);
-   mgr->ConnectOutput(task, 1, coutput0);
+   mgr->ConnectOutput(task,8,mgr->CreateContainer(container_name.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
-   mgr->ConnectOutput(task, 2, coutput2);
-   mgr->ConnectOutput(task, 3, coutput3);
-   mgr->ConnectOutput(task, 4, coutput4);
-   mgr->ConnectOutput(task, 5, coutput5);
-   mgr->ConnectOutput(task, 6, coutput6);
-   mgr->ConnectOutput(task, 7, coutput7);
-
-        
-   if(effCorr)
-   cinput1->SetData(effList);
-  
+      return task;
 }
 

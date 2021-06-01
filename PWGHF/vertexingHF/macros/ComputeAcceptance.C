@@ -16,22 +16,26 @@
 #include <TStyle.h>
 #include <TPythia6Decayer.h>
 #include <TPaveStats.h>
+#include "AliVertexingHFUtils.h"
 #endif
 
 enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp,kLcpiL,kDplusKKpi};
 enum EFidY{kFixedY,kPtDepY};
-enum EPtShape{kFlat,kFONLL8TeV,kFONLL8TeVfeeddown,kFONLL7TeV,kPythia7TeV,kFONLL5TeV,kFONLL13TeVprompt,kFONLL13TeVfeeddown,kPythia13TeVprompt,kPythia13TeVfeeddown};
+enum EPtShape{kFlatPt,kPtFONLL8TeV,kPtFONLL8TeVfeeddown,kPtFONLL7TeV,kPtPythia7TeV,kPtFONLL5TeV,kPtFONLL13TeVprompt,kPtFONLL13TeVfeeddown,kPtPythia13TeVprompt,kPtPythia13TeVfeeddown};
+enum EYShape{kFlatY,kYFONLL5TeV,kYFONLLMax5TeV,kYFONLLMin5TeV,kYFONLL13TeV,kYFONLLMax13TeV,kYFONLLMin13TeV};
 
 // Configuration
-Int_t fDDecay=kLcpiL;
+Int_t fDDecay=kD0Kpi;
 Double_t fPtMinDau=0.1;
+Double_t fPtMinDauSoftPi=0.06; // only for D*
 Double_t fEtaMaxDau=0.9;
 Int_t fOptionYFiducial=kPtDepY;
 Double_t fYMaxFidAccCut=0.8;
-Int_t fPtShape=kFONLL5TeV;
+Int_t fPtShape=kPtFONLL5TeV;
+Int_t fYShape=kYFONLL5TeV;
 TString fDecayTableFileName="$ALICE_PHYSICS/PWGHF/vertexingHF/macros/decaytable_acc.dat"; 
 Int_t fDebugLevel=0;
-Int_t totTrials=100000000;
+Int_t totTrials=10000000;
 
 
 Bool_t CountKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaons, Int_t &nPionsInAcc, Int_t &nKaonsInAcc);
@@ -49,10 +53,12 @@ TH1D* LoadPYTHIA13TeV_promptD0();
 TH1D* LoadPYTHIA13TeV_promptDplus();
 TH1D* LoadPYTHIA13TeV_promptDstar();
 TH1D* LoadPYTHIA13TeV_promptDs();
+TH1D* LoadPYTHIA13TeV_promptLc();
 TH1D* LoadPYTHIA13TeV_feeddownD0();
 TH1D* LoadPYTHIA13TeV_feeddownDplus();
 TH1D* LoadPYTHIA13TeV_feeddownDstar();
 TH1D* LoadPYTHIA13TeV_feeddownDs();
+TH1D* LoadPYTHIA13TeV_feeddownLc();
 
 
 
@@ -140,13 +146,13 @@ void ComputeAcceptance(){
   Float_t massD=db->GetParticle(pdgCode)->Mass();
   TClonesArray *array = new TClonesArray("TParticle",100);
 
-  TH2D* hPtVsYGen=new TH2D("hPtVsYGen","",400,0.,40.,20.,-1.,1.);
+  TH2D* hPtVsYGen=new TH2D("hPtVsYGen","",500,0.,50.,20.,-1.,1.);
   hPtVsYGen->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   hPtVsYGen->GetYaxis()->SetTitle("y");
-  TH2D* hPtVsYGenLimAcc=new TH2D("hPtVsYGenLimAcc","",400,0.,40.,20.,-1.,1.);
+  TH2D* hPtVsYGenLimAcc=new TH2D("hPtVsYGenLimAcc","",500,0.,50.,20.,-1.,1.);
   hPtVsYGenLimAcc->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   hPtVsYGenLimAcc->GetYaxis()->SetTitle("y");
-  TH2D* hPtVsYGenAcc=new TH2D("hPtVsYGenAcc","",400,0.,40.,20.,-1.,1.);
+  TH2D* hPtVsYGenAcc=new TH2D("hPtVsYGenAcc","",500,0.,50.,20.,-1.,1.);
   hPtVsYGenAcc->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   hPtVsYGenAcc->GetYaxis()->SetTitle("y");
 
@@ -155,10 +161,10 @@ void ComputeAcceptance(){
   TH2D* hPtVsYGenAccLcpKpi[4];
   TString lcChan[4]={"NonRes","L1520","Kstar","Delta"};
   for(Int_t ich=0; ich<4; ich++){
-    hPtVsYGenLimAccLcpKpi[ich]=new TH2D(Form("hPtVsYGenLimAcc%s",lcChan[ich].Data()),"",400,0.,40.,20.,-1.,1.);
+    hPtVsYGenLimAccLcpKpi[ich]=new TH2D(Form("hPtVsYGenLimAcc%s",lcChan[ich].Data()),"",500,0.,50.,20.,-1.,1.);
     hPtVsYGenLimAccLcpKpi[ich]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hPtVsYGenLimAccLcpKpi[ich]->GetYaxis()->SetTitle("y");
-    hPtVsYGenAccLcpKpi[ich]=new TH2D(Form("hPtVsYGenAcc%s",lcChan[ich].Data()),"",400,0.,40.,20.,-1.,1.);
+    hPtVsYGenAccLcpKpi[ich]=new TH2D(Form("hPtVsYGenAcc%s",lcChan[ich].Data()),"",500,0.,50.,20.,-1.,1.);
     hPtVsYGenAccLcpKpi[ich]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hPtVsYGenAccLcpKpi[ich]->GetYaxis()->SetTitle("y");
   }
@@ -166,27 +172,27 @@ void ComputeAcceptance(){
 
   TF1*  funcPt=0x0;
   TH1D* histPt=0x0;
-  if(fPtShape==kFONLL8TeV){
-    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
+  if(fPtShape==kPtFONLL8TeV){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,50.);
     funcPt->SetParameters(0.518046,3.01138,3.38914,1.75899); // Prompt
-    outFileName.Append("FONLL8ptshape.root");
-  }else if(fPtShape==kFONLL8TeVfeeddown){
-    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
+    outFileName.Append("FONLL8ptshape_");
+  }else if(fPtShape==kPtFONLL8TeVfeeddown){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,50.);
     funcPt->SetParameters(0.398252, 3.9603, 3.915, 1.51853); // FeedDown
-    outFileName.Append("FONLL8ptshapeFeedDown.root");
-  }else if(fPtShape==kFONLL7TeV){
-    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
+    outFileName.Append("FONLL8ptshapeFeedDown_");
+  }else if(fPtShape==kPtFONLL7TeV){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,50.);
     funcPt->SetParameters(0.322643,2.96275,2.30301,2.5);
-    outFileName.Append("FONLL7ptshape.root");
-  }else if(fPtShape==kFONLL5TeV){
-    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
+    outFileName.Append("FONLL7ptshape_");
+  }else if(fPtShape==kPtFONLL5TeV){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,50.);
     funcPt->SetParameters(0.302879,2.9750,3.68139,1.68855);
-    outFileName.Append("FONLL5ptshape.root");
-  }else if(fPtShape==kPythia7TeV){
-    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
+    outFileName.Append("FONLL5ptshape_");
+  }else if(fPtShape==kPtPythia7TeV){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,50.);
     funcPt->SetParameters(0.322643,1.94635,1.40463,2.5);
-    outFileName.Append("PYTHIA7ptshape.root");  
-  }else if(fPtShape==kFONLL13TeVprompt){
+    outFileName.Append("PYTHIA7ptshape_");  
+  }else if(fPtShape==kPtFONLL13TeVprompt){
     if(fDDecay==kDplusKpipi){
       histPt = LoadFONLL13TeV_promptDplus();
       outFileName.Append("promptDplus");
@@ -197,9 +203,8 @@ void ComputeAcceptance(){
       histPt = LoadFONLL13TeV_promptD0();
       outFileName.Append("promptD0");
     }
-    outFileName.Append("FONLL13ptshape.root");
-
-  }else if (fPtShape==kFONLL13TeVfeeddown){
+    outFileName.Append("FONLL13ptshape_");
+  }else if (fPtShape==kPtFONLL13TeVfeeddown){
     if (fDDecay==kDstarD0pi){
       histPt = LoadFONLL13TeV_feeddownDstar();
       outFileName.Append("feeddownDstar");
@@ -207,8 +212,8 @@ void ComputeAcceptance(){
       histPt = LoadFONLL13TeV_feeddownD();
       outFileName.Append("feeddownD");
     }
-    outFileName.Append("FONLL13ptshape.root");
-  }else if(fPtShape==kPythia13TeVprompt){
+    outFileName.Append("FONLL13ptshape_");
+  }else if(fPtShape==kPtPythia13TeVprompt){
     if(fDDecay==kDplusKpipi){
       histPt = LoadPYTHIA13TeV_promptDplus();
       outFileName.Append("promptDplus");
@@ -218,12 +223,15 @@ void ComputeAcceptance(){
     }else if (fDDecay==kDsKKpi){
       histPt = LoadPYTHIA13TeV_promptDs();
       outFileName.Append("promptDs");
+    }else if (fDDecay==kLcpKpi){
+      histPt = LoadPYTHIA13TeV_promptLc();
+      outFileName.Append("promptLc");
     }else{
       histPt = LoadPYTHIA13TeV_promptD0();
       outFileName.Append("promptD0");
     }
-    outFileName.Append("PYTHIA13ptshape.root");
-  }else if (fPtShape==kPythia13TeVfeeddown){
+    outFileName.Append("PYTHIA13ptshape_");
+  }else if (fPtShape==kPtPythia13TeVfeeddown){
     if(fDDecay==kDplusKpipi){
       histPt = LoadPYTHIA13TeV_feeddownDplus();
       outFileName.Append("feeddownDplus");
@@ -233,28 +241,67 @@ void ComputeAcceptance(){
     }else if (fDDecay==kDsKKpi){
       histPt = LoadPYTHIA13TeV_feeddownDs();
       outFileName.Append("feeddownDs");
+    }else if (fDDecay==kLcpKpi){
+      histPt = LoadPYTHIA13TeV_feeddownLc();
+      outFileName.Append("feeddownLc");
     }else{
       histPt = LoadPYTHIA13TeV_feeddownD0();
       outFileName.Append("feeddownD0");
     }
-    outFileName.Append("PYTHIA13ptshape.root");
+    outFileName.Append("PYTHIA13ptshape_");
   }else{
-    funcPt=new TF1("fFlat","pol0",0.,40.);
+    funcPt=new TF1("fFlat","pol0",0.,50.);
     funcPt->SetParameter(0,1.);
-    outFileName.Append("flatpt.root");
+    outFileName.Append("flatpt_");
   }
-
   if (funcPt) funcPt->SetNpx(10000);
 
+  TF1*  funcY=0x0;
+  if(fYShape==kYFONLL5TeV){
+    funcY=new TF1("fsigyfonll5","[0]+((x>0.5)*[1]/sqrt(x))+((x<0.5)*([1]*sqrt(2)))",0.,50);
+    funcY->SetParameters(7.22252e-01,5.06914);
+    outFileName.Append("FONLLy.root");
+  }else if(fYShape==kYFONLLMax5TeV){
+    funcY=new TF1("fsigyfonll5","TMath::Min(8.,[0]+[1]/sqrt(x))",0.,50);
+    funcY->SetParameters(7.05870e-01,5.11006);
+    outFileName.Append("FONLLyMax.root");
+  }else if(fYShape==kYFONLLMin5TeV){
+    funcY=new TF1("fsigyfonll5","TMath::Min(8.,[0]+[1]/sqrt(x)+[2]/(x*x*x))",0.,50);
+    funcY->SetParameters(6.99901e-01,5.27825,1.54156e+01);
+    outFileName.Append("FONLLyMin.root");
+  }else if(fYShape==kYFONLL13TeV){
+    funcY=new TF1("fsigyfonll13","TMath::Min(8.,[0]+[1]/sqrt(x))",0.,50);
+    funcY->SetParameters(1.076661,5.845579);
+    outFileName.Append("FONLLy.root");
+  }else if(fYShape==kYFONLLMax13TeV){
+    funcY=new TF1("fsigyfonll13","TMath::Min(8.,[0]+[1]/sqrt(x))",0.,50);
+    funcY->SetParameters(1.031292,5.961879);
+    outFileName.Append("FONLLyMax.root");
+  }else if(fYShape==kYFONLLMin13TeV){
+    funcY=new TF1("fsigyfonll13","TMath::Min(8.,[0]+[1]/sqrt(x)+[2]/(x*x*x))",0.,50);
+    funcY->SetParameters(1.100997,5.952721,49.171957);
+    outFileName.Append("FONLLyMin.root");
+  }else{
+    outFileName.Append("flaty.root");
+  }
+  if (funcY) funcY->SetNpx(10000);
+  
   TRandom3* gener=new TRandom3(0);
   TLorentzVector* vec=new TLorentzVector();
-
 
   for(Int_t itry=0; itry<totTrials; itry++){
     if(itry%100000==0) printf("Event %d\n",itry);
     Float_t ptD = funcPt ? funcPt->GetRandom() : histPt->GetRandom();
     Float_t phiD=gener->Rndm()*2*TMath::Pi();
-    Float_t yD=gener->Rndm()*2.-1.; // flat in -1<y<1
+    Float_t yD=-9999;
+    if(fYShape==kFlatY || !funcY) yD=gener->Rndm()*2.-1.; // flat in -1<y<1
+    else{
+      Float_t sgaus=funcY->Eval(ptD);
+      while(1){
+	yD=gener->Gaus(0,sgaus);
+	if(TMath::Abs(yD)<1) break;
+      }
+    }
     Float_t px=ptD*TMath::Cos(phiD);
     Float_t py=ptD*TMath::Sin(phiD);
     Float_t mt=TMath::Sqrt(massD*massD+ptD*ptD);
@@ -304,8 +351,7 @@ void ComputeAcceptance(){
   hPtGenLimAcc->GetYaxis()->SetTitle("Entries");
   hPtGenAcc->Sumw2();
   hPtGenLimAcc->Sumw2();
-  TH1D* hAccVsPt=(TH1D*)hPtGenAcc->Clone("hAccVsPt");
-  hAccVsPt->Divide(hPtGenAcc,hPtGenLimAcc,1,1,"B");
+  TH1D* hAccVsPt=AliVertexingHFUtils::ComputeGenAccOverGenLimAcc(hPtVsYGenAcc,hPtVsYGenLimAcc);
   hAccVsPt->GetYaxis()->SetTitle("Acceptance");
   hAccVsPt->SetStats(0);
 
@@ -403,50 +449,6 @@ Bool_t IsInFiducialAcceptance(Double_t pt, Double_t y){
 
   return kTRUE;
 }
-//___________________________________________________
-Bool_t CountKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaons, Int_t &nPionsInAcc, Int_t &nKaonsInAcc){
-  // count K and pi in Acc
-
-  TParticle* dmes=(TParticle*)array->At(0);
-  Double_t sumPx=0;
-  Double_t sumPy=0;
-  Double_t sumPz=0;
-  for(int j=0; j<nentries; j++){
-    TParticle * o = (TParticle*)array->At(j);
-    Int_t pdgdau=TMath::Abs(o->GetPdgCode());
-    if(fDebugLevel>0) printf("%d ",pdgdau);
-    if(pdgdau==130) {
-      if(fDebugLevel>0) printf("K0 dacaying into K0L\n");
-      return kFALSE;
-    }
-    Float_t ptdau=TMath::Sqrt(o->Px()*o->Px()+o->Py()*o->Py());      
-    Float_t etadau=o->Eta();
-    if(pdgdau==211){ 
-      nPions++;
-      sumPx+=o->Px();
-      sumPy+=o->Py();
-      sumPz+=o->Pz();
-    }
-    if(pdgdau==321){ 
-      nKaons++;
-      sumPx+=o->Px();
-      sumPy+=o->Py();
-      sumPz+=o->Pz();
-    }
-    if(TMath::Abs(etadau)<fEtaMaxDau && ptdau>fPtMinDau){
-      if(pdgdau==211) nPionsInAcc++;
-      if(pdgdau==321) nKaonsInAcc++;
-    }
-  }
-  if(fDebugLevel>0) printf("\n");
-  if(TMath::Abs(sumPx-dmes->Px())>0.001 ||
-     TMath::Abs(sumPy-dmes->Py())>0.001 ||
-     TMath::Abs(sumPz-dmes->Pz())>0.001){
-    printf("Momentum conservation violation\n");
-    return kFALSE;
-  }
-  return kTRUE;
-}
 
 
 //___________________________________________________
@@ -461,6 +463,13 @@ Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKao
   for(int j=0; j<nentries; j++){
     TParticle * o = (TParticle*)array->At(j);
     Int_t pdgdau=TMath::Abs(o->GetPdgCode());
+    Int_t pdgMother = -1;
+    if(fDDecay==kDstarD0pi && j>0)
+    {
+        Int_t idxMother = o->GetFirstMother()-1;
+        TParticle *moth = (TParticle*)array->At(idxMother);
+        pdgMother = TMath::Abs(moth->GetPdgCode());
+    }
     pdgDauAll.push_back(pdgdau);
     if(fDebugLevel>0) printf("%d ",pdgdau);
     if(pdgdau==130) {
@@ -490,7 +499,7 @@ Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKao
     if(pdgdau==313) idLcResChan=2; //K*0 
     else if(pdgdau==2224) idLcResChan=3; //Delta++
     else if(pdgdau==3124) idLcResChan=1;  //Lambda1520
-    if(TMath::Abs(etadau)<fEtaMaxDau && ptdau>fPtMinDau){
+    if(TMath::Abs(etadau)<fEtaMaxDau && (ptdau>fPtMinDau || (pdgMother==413 && pdgdau==211 && ptdau>fPtMinDauSoftPi))){
       if(pdgdau==211) nPionsInAcc++;
       if(pdgdau==321) nKaonsInAcc++;
       if(pdgdau==2212) nProtonsInAcc++;
@@ -680,6 +689,26 @@ TH1D* LoadPYTHIA13TeV_promptDs()
 }
 
 
+//___________________________________________________
+TH1D* LoadPYTHIA13TeV_promptLc()
+{
+  // coarse binning (1 GeV/c)
+  /*TH1D *hPYTHIA13 = new TH1D("hPYTHIA13TeV_Lc", "", 40, 0., 40.);
+  Float_t val[40] = {
+    307191, 504151, 400086, 264143, 161012, 96421, 57765, 35876, 22207, 14852, 9760, 6853, 4814, 3453, 2594, 1838, 1457, 1091, 850, 702, 593, 402, 366, 284, 250, 213, 171, 127, 128, 109, 89, 72, 54, 48, 42, 34, 30, 34, 39, 20
+  };
+  for (Int_t ibin=0; ibin<40; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);*/
+
+  // fine binning (0.2 GeV/c)
+  TH1D *hPYTHIA13 = new TH1D("hPYTHIA13TeV_Lc", "", 200, 0., 40.);
+  Float_t val[200] = {
+    14916, 43781, 67845, 84755, 95894, 101546, 103271, 103306, 99662, 96366, 91138, 86070, 80051, 74407, 68420, 63088, 57682, 52478, 47917, 42978, 39055, 35664, 31415, 28898, 25980, 23237, 21098, 19134, 17419, 15533, 13903, 12743, 11387, 10418, 9314, 8665, 7697, 7079, 6486, 5949, 5237, 4785, 4378, 4130, 3677, 3532, 3150, 2950, 2764, 2456, 2245, 2022, 2007, 1781, 1705, 1554, 1476, 1395, 1316, 1112, 1096, 1023, 937, 888, 870, 787, 723, 698, 627, 618, 569, 556, 510, 478, 481, 401, 390, 370, 355, 322, 358, 308, 275, 258, 258, 246, 220, 227, 194, 204, 188, 185, 171, 157, 149, 144, 151, 143, 138, 126, 132, 120, 113, 105, 123, 89, 85, 85, 67, 76, 79, 73, 65, 74, 75, 62, 63, 57, 53, 49, 45, 37, 62, 53, 53, 45, 37, 41, 43, 47, 47, 33, 38, 30, 23, 32, 24, 25, 16, 30, 26, 22, 28, 24, 28, 25, 21, 24, 21, 18, 16, 18, 28, 15, 12, 15, 16, 16, 13, 12, 10, 9, 12, 14, 9, 10, 8, 9, 8, 13, 11, 6, 16, 3, 6, 7, 9, 5, 4, 9, 3, 8, 5, 6, 8, 5, 9, 8, 9, 3, 10, 10, 6, 11, 2, 6, 3, 5, 3, 3
+  };
+  for (Int_t ibin=0; ibin<200; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);
+
+  return hPYTHIA13;
+}
+
 
 //___________________________________________________
 TH1D* LoadPYTHIA13TeV_feeddownD0()
@@ -743,6 +772,27 @@ TH1D* LoadPYTHIA13TeV_feeddownDs()
     112, 91, 69, 66, 54, 57, 39, 33, 31, 25
   };
   for (Int_t ibin=0; ibin<40; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);
+
+  return hPYTHIA13;
+}
+
+
+//___________________________________________________
+TH1D* LoadPYTHIA13TeV_feeddownLc()
+{
+  // coarse binning (1 GeV/c)
+  /*TH1D *hPYTHIA13 = new TH1D("hPYTHIA13_feeddownLc", "", 40, 0., 40.);
+  Float_t val[40] = {
+    274999, 525408, 449454, 306100, 193183, 119904, 75652, 47853, 31371, 20955, 14419, 9906, 7140, 5232, 3752, 2808, 2125, 1672, 1305, 994, 800, 659, 540, 446, 354, 301, 246, 209, 173, 125, 129, 93, 107, 83, 78, 54, 48, 46, 42, 38
+  };
+  for (Int_t ibin=0; ibin<40; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);*/
+
+  // fine binning (0.2 GeV/c)
+  TH1D *hPYTHIA13 = new TH1D("hPYTHIA13_feeddownLc", "", 200, 0., 40.);
+  Float_t val[200] = {
+    12725, 37018, 58333, 76501, 90422, 99701, 105650, 107472, 107723, 104862, 101013, 95436, 90881, 84179, 77945, 72814, 66631, 60966, 55052, 50637, 46183, 42126, 38369, 34844, 31661, 28670, 26343, 23685, 21596, 19610, 18195, 16580, 14852, 13551, 12474, 11219, 10293, 9498, 8785, 8058, 7335, 6842, 6183, 5762, 5249, 4956, 4482, 4147, 3808, 3562, 3328, 3070, 2831, 2694, 2496, 2269, 2131, 2015, 1770, 1721, 1581, 1530, 1390, 1380, 1259, 1184, 1111, 1079, 980, 878, 864, 798, 741, 646, 703, 661, 564, 575, 524, 484, 442, 457, 446, 401, 379, 375, 342, 348, 328, 279, 271, 267, 280, 241, 246, 226, 207, 207, 181, 173, 168, 155, 169, 160, 148, 136, 128, 151, 132, 112, 116, 114, 110, 96, 104, 98, 92, 98, 78, 80, 69, 72, 75, 62, 76, 72, 61, 65, 59, 44, 48, 52, 51, 61, 34, 48, 51, 33, 34, 43, 43, 23, 39, 30, 38, 22, 28, 29, 25, 21, 23, 37, 19, 24, 26, 24, 18, 15, 18, 18, 23, 20, 20, 25, 19, 20, 22, 17, 10, 14, 19, 13, 14, 13, 19, 7, 16, 8, 9, 14, 12, 8, 11, 11, 6, 7, 9, 15, 10, 5, 8, 5, 17, 6, 6, 10, 9, 7, 6, 6
+  };
+  for (Int_t ibin=0; ibin<200; ++ibin) hPYTHIA13->SetBinContent(ibin+1, val[ibin]);
 
   return hPYTHIA13;
 }

@@ -116,15 +116,15 @@ private:
   TH1I* histoEventCentrality;     //! Count events within centrality percentile
   
   TTree* CandidateTree;          //! Tree with hypertriton candidates from 2-body decay
+  
   /// Branches
   Float_t CentralityPercentile;   /// Event centrality
   /// Hypertrition candidate variables
   Float_t mass;                   /// mass of the reconstructed candidate
-  Float_t ErrorMass;              /// mass of the reconstructed candidate
-  Float_t px;                      /// momentum of the reconstructed candidate in x direction
-  Float_t py;                      /// momentum of the reconstructed candidate in y direction
-  Float_t pz;                      /// momentum of the reconstructed candidate in z direction
-  ///
+  Float_t ErrorMass;              /// error on the mass of the reconstructed candidate
+  Float_t px;                     /// momentum of the reconstructed candidate in x direction
+  Float_t py;                     /// momentum of the reconstructed candidate in y direction
+  Float_t pz;                     /// momentum of the reconstructed candidate in z direction
   Float_t Rapidity;               /// Rapidity of the candidate
   Int_t Charge;                   /// Charge of the candidate
   
@@ -137,7 +137,7 @@ private:
   
   /// properties after topological constraint to PV
   Float_t massTopo;               /// mass of the reconstructed candidate (with PV constraint)
-  Float_t ErrorMassTopo;          /// mass of the reconstructed candidate (with PV constraint)
+  Float_t ErrorMassTopo;          /// error of the mass of the reconstructed candidate (with PV constraint)
   Float_t pxTopo;                 /// momentum of the reconstructed candidate in x direction (with PV constraint)
   Float_t pyTopo;                 /// momentum of the reconstructed candidate in y direction (with PV constraint)
   Float_t pzTopo;                 /// momentum of the reconstructed candidate in z direction (with PV constraint)
@@ -148,7 +148,6 @@ private:
   Float_t DeviationFromPVTopo;    /// Deviation from the primary vertex of the hypertriton candidate (KF information)  (with PV constraint)
   Float_t DistanceToPVXYTopo;      /// Distance of closest approach to the primary vertex of the hypertriton candidate (KF information) in xy  (with PV constraint)
   Float_t DeviationFromPVXYTopo;  /// Deviation from the primary vertex of the hypertriton candidate (KF information) in xy  (with PV constraint)
-  
   Float_t DecayLength;            /// Decay Length for candidates (constrained to the primary vertex)
   Float_t ErrorDecayLength;       /// Error on the decay Length for candidates (constrained to the primary vertex)
   Float_t DecayLengthXY;          /// Decay Length for candidates (constrained to the primary vertex) in xy
@@ -165,71 +164,58 @@ private:
   Float_t pyPion;                 /// momentum of the pion dauther in y direction
   Float_t pzPion;                 /// momentum of the pion dauther in z direction
   Int_t ChargePion;               /// Charge of pion
-  
-  
   Float_t DCAPion;                /// Distance of closest approach to the primary vertex of the pion daughter (ESD information)
   //  Float_t DistanceToPVPion;       /// Distance of closest approach to the primary vertex of the pion daughter (KF information)
   Float_t DeviationFromPVPion;    /// Deviation from the primary vertex of the pion daughter (KF information)
   Float_t DCAPionXY;              /// Radial distance of closest approach to the primary vertex of the pion daughter (ESD information)
   //  Float_t DistanceToPVPionXY;     /// Radial distance of closest approach to the primary vertex of the pion daughter (KF information)
   Float_t DeviationFromPVPionXY;  /// Radial deviation from the primary vertex of the pion daughter (KF information)
-  
   Int_t NCrossedRowsTPCPion;          /// For Pion candidates
   Int_t NPIDClusterTPCPion;       /// For Pion candidates
-  
   Float_t TPCMomPion;             /// For Pion candidates
   Float_t TPCnSigmaPion;          /// For pion candidates
-  
   Bool_t HasPointOnITSLayer0Pion;
   Bool_t HasPointOnITSLayer1Pion;
   Bool_t HasPointOnITSLayer2Pion;
   Bool_t HasPointOnITSLayer3Pion;
   Bool_t HasPointOnITSLayer4Pion;
   Bool_t HasPointOnITSLayer5Pion;
-  
   Int_t PIDForTrackingPion;       /// Pion would be 2 (see AliPID.h)
-  
-  Float_t DistanceToSecVertPion;
-  Float_t DeviationToSecVertPion;
+  Float_t DistanceToSecVertPion;  /// distance of the pion track to the secondary vertex (KF information)
+  Float_t DeviationToSecVertPion; /// deviation of the pion track from the secondary vertex (KF information)
   
   ///  He3
   Float_t pxHe;                   /// momentum of the He dauther in x direction
   Float_t pyHe;                   /// momentum of the He dauther in y direction
   Float_t pzHe;                   /// momentum of the He dauther in z direction
   Int_t ChargeHe;                 /// Charge of helium-3
-  
   Float_t DCA3He;                 /// Distance of closest approach to the primary vertex of the pion daughter (ESD information)
   //  Float_t DistanceToPV3He;        /// Distance of closest approach to the primary vertex of the pion daughter (KF information)
   Float_t DeviationFromPV3He;     /// Deviation from the primary vertex of the pion daughter (KF information)
   Float_t DCA3HeXY;               /// Radial distance of closest approach to the primary vertex of the pion daughter (ESD information)
   //  Float_t DistanceToPV3HeXY;      /// Radial distance of closest approach to the primary vertex of the pion daughter (KF information)
   Float_t DeviationFromPV3HeXY;   /// Radial deviation from the primary vertex of the pion daughter (KF information)
-  
   Int_t NCrossedRowsTPC3He;           /// For 3He candidates
   Int_t NPIDClusterTPC3He;        /// For 3He candidates
-  
   Float_t TPCMom3He;              /// For 3He candidates
   Float_t TPCnSigma3He;           /// For 3He candidates
   Float_t TPCnSigma3H;            /// For 3He candidates
-  
   Bool_t HasPointOnITSLayer0He3;
   Bool_t HasPointOnITSLayer1He3;
   Bool_t HasPointOnITSLayer2He3;
   Bool_t HasPointOnITSLayer3He3;
   Bool_t HasPointOnITSLayer4He3;
   Bool_t HasPointOnITSLayer5He3;
-  
   Int_t PIDForTrackingHe3;       /// Helium-3 would be 7 (see AliPID.h)
-  
-  Float_t DistanceToSecVertHe;
-  Float_t DeviationToSecVertHe;
-  
+  Float_t DistanceToSecVertHe;   /// distance of the 3He track to the secondary vertex (KF information)
+  Float_t DeviationToSecVertHe;  /// deviation of the 3He track from the secondary vertex (KF information)
   
   /// three body decay
   TTree* CandidateTree_3Body;          //! Tree with hypertriton candidates from 3-body decay
   
-  Float_t mass_Deuteron_Proton;               /// mass of the reconstructed candidate (only deuteron and proton daughter)
-  Float_t mass_Proton_Pion;               /// mass of the reconstructed candidate build up from proton and pion daughter only to reject Lambdas
+  /// additional branches for the 3-body reconstruction
+  Float_t mass_Deuteron_Proton;    /// mass of the reconstructed candidate (only deuteron and proton daughter)
+  Float_t mass_Proton_Pion;        /// mass of the reconstructed candidate build up from proton and pion daughter (rejection of Lambdas possible)
   Float_t CosPointingAngle_Deuteron_Proton;       /// Cosine of the pointing angle (only deuteron and proton daughter)
   
   /// Daughter variables
@@ -257,30 +243,24 @@ private:
   Float_t pyDeuteron;                      /// momentum of the deuteron dauther in y direction
   Float_t pzDeuteron;                      /// momentum of the deuteron dauther in z direction
   Int_t ChargeDeuteron;                    /// Charge of deuteron
-  
   Float_t DCADeuteron;                /// Distance of closest approach to the primary vertex of the Deuteron daughter (ESD information)
   //  Float_t DistanceToPVDeuteron;       /// Distance of closest approach to the primary vertex of the Deuteron daughter (KF information)
   Float_t DeviationFromPVDeuteron;    /// Deviation from the primary vertex of the Deuteron daughter (KF information)
   Float_t DCADeuteronXY;              /// Radial distance of closest approach to the primary vertex of the Deuteron daughter (ESD information)
   //  Float_t DistanceToPVDeuteronXY;     /// Radial distance of closest approach to the primary vertex of the Deuteron daughter (KF information)
   Float_t DeviationFromPVDeuteronXY;  /// Radial deviation from the primary vertex of the Deuteron daughter (KF information)
-  
   Int_t NCrossedRowsTPCDeuteron;          /// For Deuteron candidates
   Int_t NPIDClusterTPCDeuteron;       /// For Deuteron candidates
-  
   Float_t TPCMomDeuteron;             /// For Deuteron candidates
   Float_t TPCnSigmaDeuteron;          /// For Deuteron candidates
   Float_t TOFnSigmaDeuteron;          /// For Deuteron candidates
-  
   Bool_t HasPointOnITSLayer0Deuteron;
   Bool_t HasPointOnITSLayer1Deuteron;
   Bool_t HasPointOnITSLayer2Deuteron;
   Bool_t HasPointOnITSLayer3Deuteron;
   Bool_t HasPointOnITSLayer4Deuteron;
   Bool_t HasPointOnITSLayer5Deuteron;
-  
   Int_t PIDForTrackingDeuteron;       /// Deuteron would be 5 (see AliPID.h)
-  
   Float_t DistanceToSecVertDeuteron;
   Float_t DeviationToSecVertDeuteron;
   
@@ -289,91 +269,85 @@ private:
   Float_t pyProton;                      /// momentum of the  proton dauther in y direction
   Float_t pzProton;                      /// momentum of the proton dauther in z direction
   Int_t ChargeProton;                    /// Charge of proton
-  
   Float_t DCAProton;                /// Distance of closest approach to the primary vertex of the Proton daughter (ESD information)
   //  Float_t DistanceToPVProton;       /// Distance of closest approach to the primary vertex of the Proton daughter (KF information)
   Float_t DeviationFromPVProton;    /// Deviation from the primary vertex of the Proton daughter (KF information)
   Float_t DCAProtonXY;              /// Radial distance of closest approach to the primary vertex of the Proton daughter (ESD information)
   //  Float_t DistanceToPVProtonXY;     /// Radial distance of closest approach to the primary vertex of the Proton daughter (KF information)
   Float_t DeviationFromPVProtonXY;  /// Radial deviation from the primary vertex of the Proton daughter (KF information)
-  
   Int_t NCrossedRowsTPCProton;          /// For Proton candidates
   Int_t NPIDClusterTPCProton;       /// For Proton candidates
-  
   Float_t TPCMomProton;             /// For Proton candidates
   Float_t TPCnSigmaProton;          /// For Proton candidates
   Float_t TOFnSigmaProton;          /// For Proton candidates
-  
   Bool_t HasPointOnITSLayer0Proton;
   Bool_t HasPointOnITSLayer1Proton;
   Bool_t HasPointOnITSLayer2Proton;
   Bool_t HasPointOnITSLayer3Proton;
   Bool_t HasPointOnITSLayer4Proton;
   Bool_t HasPointOnITSLayer5Proton;
-  
   Int_t PIDForTrackingProton;       /// Deuteron would be 4 (see AliPID.h)
-  
   Float_t DistanceToSecVertProton;
   Float_t DeviationToSecVertProton;
   
   /// MC output
-  Float_t pxMC;                      /// momentum of the reconstructed candidate in x direction from MC
-  Float_t pyMC;                      /// momentum of the reconstructed candidate in y direction from MC
-  Float_t pzMC;                      /// momentum of the reconstructed candidate in z direction from MC
+  Float_t pxMC;             /// momentum of the reconstructed candidate in x direction from MC
+  Float_t pyMC;             /// momentum of the reconstructed candidate in y direction from MC
+  Float_t pzMC;             /// momentum of the reconstructed candidate in z direction from MC
   
-  Float_t pxHeMC;                      /// momentum of the He dauther in x direction from MC
-  Float_t pyHeMC;                      /// momentum of the He dauther in y direction from MC
-  Float_t pzHeMC;                      /// momentum of the He dauther in z direction from MC
+  Float_t pxHeMC;           /// momentum of the He dauther in x direction from MC
+  Float_t pyHeMC;           /// momentum of the He dauther in y direction from MC
+  Float_t pzHeMC;           /// momentum of the He dauther in z direction from MC
   
-  Float_t pxPionMC;                      /// momentum of the pion dauther in x direction from MC
-  Float_t pyPionMC;                      /// momentum of the pion dauther in y direction from MC
-  Float_t pzPionMC;                      /// momentum of the pion dauther in z direction from MC
+  Float_t pxPionMC;         /// momentum of the pion dauther in x direction from MC
+  Float_t pyPionMC;         /// momentum of the pion dauther in y direction from MC
+  Float_t pzPionMC;         /// momentum of the pion dauther in z direction from MC
   
-  Float_t pxProtonMC;                      /// momentum of the proton dauther in x direction from MC
-  Float_t pyProtonMC;                      /// momentum of the  proton dauther in y direction from MC
-  Float_t pzProtonMC;                      /// momentum of the proton dauther in z direction from MC
+  Float_t pxProtonMC;       /// momentum of the proton dauther in x direction from MC
+  Float_t pyProtonMC;       /// momentum of the  proton dauther in y direction from MC
+  Float_t pzProtonMC;       /// momentum of the proton dauther in z direction from MC
   
-  Float_t pxDeuteronMC;                      /// momentum of the deuteron dauther in x direction from MC
-  Float_t pyDeuteronMC;                      /// momentum of the deuteron dauther in y direction from MC
-  Float_t pzDeuteronMC;                      /// momentum of the deuteron dauther in z direction from MC
+  Float_t pxDeuteronMC;     /// momentum of the deuteron dauther in x direction from MC
+  Float_t pyDeuteronMC;     /// momentum of the deuteron dauther in y direction from MC
+  Float_t pzDeuteronMC;     /// momentum of the deuteron dauther in z direction from MC
   
   /// Variance of the momenta (only for MC to calculate the pull)
-  Float_t pxVariance;                      /// momentum of the reconstructed candidate in x direction from MC
-  Float_t pyVariance;                      /// momentum of the reconstructed candidate in y direction from MC
-  Float_t pzVariance;                      /// momentum of the reconstructed candidate in z direction from MC
+  Float_t pxVariance;           /// momentum of the reconstructed candidate in x direction from MC
+  Float_t pyVariance;           /// momentum of the reconstructed candidate in y direction from MC
+  Float_t pzVariance;           /// momentum of the reconstructed candidate in z direction from MC
   
-  Float_t pxHeVariance;                      /// momentum of the He dauther in x direction from MC
-  Float_t pyHeVariance;                      /// momentum of the He dauther in y direction from MC
-  Float_t pzHeVariance;                      /// momentum of the He dauther in z direction from MC
+  Float_t pxHeVariance;         /// momentum of the He dauther in x direction from MC
+  Float_t pyHeVariance;         /// momentum of the He dauther in y direction from MC
+  Float_t pzHeVariance;         /// momentum of the He dauther in z direction from MC
   
-  Float_t pxPionVariance;                      /// momentum of the pion dauther in x direction from MC
-  Float_t pyPionVariance;                      /// momentum of the pion dauther in y direction from MC
-  Float_t pzPionVariance;                      /// momentum of the pion dauther in z direction from MC
+  Float_t pxPionVariance;       /// momentum of the pion dauther in x direction from MC
+  Float_t pyPionVariance;       /// momentum of the pion dauther in y direction from MC
+  Float_t pzPionVariance;       /// momentum of the pion dauther in z direction from MC
   
-  Float_t pxProtonVariance;                      /// momentum of the proton dauther in x direction from MC
-  Float_t pyProtonVariance;                      /// momentum of the  proton dauther in y direction from MC
-  Float_t pzProtonVariance;                      /// momentum of the proton dauther in z direction from MC
+  Float_t pxProtonVariance;     /// momentum of the proton dauther in x direction from MC
+  Float_t pyProtonVariance;     /// momentum of the  proton dauther in y direction from MC
+  Float_t pzProtonVariance;     /// momentum of the proton dauther in z direction from MC
   
-  Float_t pxDeuteronVariance;                      /// momentum of the deuteron dauther in x direction from MC
-  Float_t pyDeuteronVariance;                      /// momentum of the deuteron dauther in y direction from MC
-  Float_t pzDeuteronVariance;                      /// momentum of the deuteron dauther in z direction from MC
+  Float_t pxDeuteronVariance;   /// momentum of the deuteron dauther in x direction from MC
+  Float_t pyDeuteronVariance;   /// momentum of the deuteron dauther in y direction from MC
+  Float_t pzDeuteronVariance;   /// momentum of the deuteron dauther in z direction from MC
   
-  Float_t pMC;                      /// momentum of the candidate  (generated tree to calculate efficiency)
-  Float_t pTMC;                     /// transverse momentum of the  candidate (generated tree to calculate efficiency)
-  Float_t RapidityMC;               /// Rapidity of the candidate
-  Float_t DecayLengthMC;            /// Decay Length for candidates (constrained to the primary vertex)
-  Float_t DecayLengthXYMC;          /// Decay Length for candidates in XY (constrained to the primary vertex)
+  Float_t pMC;                  /// momentum of the candidate  (generated tree to calculate efficiency)
+  Float_t pTMC;                 /// transverse momentum of the  candidate (generated tree to calculate efficiency)
+  Float_t RapidityMC;           /// Rapidity of the candidate
+  Float_t DecayLengthMC;        /// Decay Length for candidates (constrained to the primary vertex)
+  Float_t DecayLengthXYMC;      /// Decay Length for candidates in XY (constrained to the primary vertex)
   
-  Float_t xSecVertexMC;               /// Position of the decay vertex of the hypertriton candidate (MC truth)
-  Float_t ySecVertexMC;               /// Position of the decay vertex of the hypertriton candidate (MC truth)
-  Float_t zSecVertexMC;               /// Position of the decay vertex of the hypertriton candidate (MC truth)
+  Float_t xSecVertexMC;         /// Position of the decay vertex of the hypertriton candidate (MC truth)
+  Float_t ySecVertexMC;         /// Position of the decay vertex of the hypertriton candidate (MC truth)
+  Float_t zSecVertexMC;         /// Position of the decay vertex of the hypertriton candidate (MC truth)
   
-  Float_t xSecVertex;                 /// Position of the decay vertex of the hypertriton candidate
-  Float_t ySecVertex;                 /// Position of the decay vertex of the hypertriton candidate
-  Float_t zSecVertex;                 /// Position of the decay vertex of the hypertriton candidate
-  Float_t xSecVertexVariance;            /// Variance of the position of the decay vertex of the hypertriton candidate (defined as sqrt of abs of varianz due to resolution effects)
-  Float_t ySecVertexVariance;            /// Variance of the position of the decay vertex of the hypertriton candidate (defined as sqrt of abs of varianz due to resolution effects)
-  Float_t zSecVertexVariance;            /// Variance of the position of the decay vertex of the hypertriton candidate (defined as sqrt of abs of varianz due to resolution effects)
+  Float_t xSecVertex;           /// Position of the decay vertex of the hypertriton candidate
+  Float_t ySecVertex;           /// Position of the decay vertex of the hypertriton candidate
+  Float_t zSecVertex;           /// Position of the decay vertex of the hypertriton candidate
+  Float_t xSecVertexVariance;   /// Variance of the position of the decay vertex of the hypertriton candidate
+  Float_t ySecVertexVariance;   /// Variance of the position of the decay vertex of the hypertriton candidate
+  Float_t zSecVertexVariance;   /// Variance of the position of the decay vertex of the hypertriton candidate
   
   Int_t NumberOfDeuteronProtonCandidates; /// Number of valid deuteron proton candidates
   

@@ -22,7 +22,9 @@
 #include <TString.h>
 #include "AliEMCalTriggerAnaHelper.h"
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerAnaTriggerDecision;
 class AliEMCalTriggerEventData;
@@ -67,9 +69,7 @@ private:
   TString                 fPattern;             /// Trigger pattern to check for in the trigger string
   Bool_t                  fInString;            /// Definition whether it has to be there or not
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerAnaPatternObject, 1);
-  /// \endcond
 };
 
 /**
@@ -103,9 +103,7 @@ public:
 private:
   TObjArray               fPatterns;      /// Container for patterns
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerAnaPatternContainer, 1);
-  /// \endcond
 };
 
 /**
@@ -140,9 +138,7 @@ public:
 private:
   ETATriggerType                fTriggerType;       ///< Underlying trigger type
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerAnaTriggerPatchTypeObject, 1);
-  /// \endcond
 };
 
 /*
@@ -318,11 +314,11 @@ protected:
   TObjArray                               fTriggerPatchTypes;                   ///< Trigger patch types used for the selection
   AliEMCalTriggerAnaTriggerDecision       *fEmcalTriggerHandler;                ///< Handling of trigger patch selection
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerAnaTriggerClass, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERANATRIGGERCLASS_H */

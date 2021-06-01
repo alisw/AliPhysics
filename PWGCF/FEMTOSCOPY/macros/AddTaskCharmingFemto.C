@@ -14,8 +14,11 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
     bool isMC = false, bool fullBlastQA = true, TString trigger = "kINT7",
     int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
     TString fileCutObjHF = "HFCuts.root", TString cutObjHFName = "AnalysisCuts",
-    bool applyML = false, TString configML = "config_ML.yml",
-    int useAODProtection = 0, const char *cutVariation = "0") {
+    TString cutHFsuffix = "", bool applyML = false, TString configML =
+        "config_ML.yml",
+    int useAODProtection = 0, int massSelection =
+        AliAnalysisTaskCharmingFemto::kSignal,
+    const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -32,20 +35,15 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   // Event Cuts
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
-  evtCuts->SetSphericityCuts(0.7, 1.0);
-
-  if (suffix == "1") {
-    evtCuts->SetSphericityCuts(0., 1.);
-  }
 
   // =====================================================================
   // Proton cut variations
-  const float ProtonPtlow = 0.4;
-  const float ProtonPtup = 0.6;
+  const float ProtonPtlow = 0.45;
+  const float ProtonPtup = 0.55;
   const float ProtonEtaLow = 0.75;
   const float ProtonEtaUp = 0.85;
-  const float ProtonNsigmaLow = 2.5;
-  const float ProtonNsigmaUp = 3.5;
+  const float ProtonNsigmaLow = 2.7;
+  const float ProtonNsigmaUp = 3.3;
   const float ProtonNClsLow = 70;
   const float ProtonNClsUp = 90;
 
@@ -62,6 +60,108 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
 
   TrackCuts->SetMinimalBooking(suffix != "0");
   AntiTrackCuts->SetMinimalBooking(suffix != "0");
+
+  if (suffix == "1") {
+    TrackCuts->SetPtRange(ProtonPtlow, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtlow, 4.05);
+    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+  } else if (suffix == "2") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+  } else if (suffix == "3") {
+    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    TrackCuts->SetNClsTPC(ProtonNClsUp);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
+  } else if (suffix == "4") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+  } else if (suffix == "5") {
+    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    TrackCuts->SetNClsTPC(ProtonNClsLow);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
+  } else if (suffix == "6") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+  } else if (suffix == "7") {
+    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    TrackCuts->SetNClsTPC(ProtonNClsUp);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
+  } else if (suffix == "8") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+  } else if (suffix == "9") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetNClsTPC(ProtonNClsUp);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
+  } else if (suffix == "10") {
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    TrackCuts->SetNClsTPC(ProtonNClsLow);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
+  } else if (suffix == "11") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+  } else if (suffix == "12") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetNClsTPC(ProtonNClsUp);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
+  } else if (suffix == "13") {
+    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    TrackCuts->SetPtRange(ProtonPtlow, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtlow, 4.05);
+  } else if (suffix == "14") {
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+  } else if (suffix == "15") {
+    TrackCuts->SetNClsTPC(ProtonNClsUp);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+  } else if (suffix == "16") {
+    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+  } else if (suffix == "17") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetNClsTPC(ProtonNClsLow);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
+  } else if (suffix == "18") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+  } else if (suffix == "19") {
+    TrackCuts->SetPtRange(ProtonPtlow, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtlow, 4.05);
+    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+  } else if (suffix == "20") {
+    TrackCuts->SetNClsTPC(ProtonNClsLow);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+  }
 
   // =====================================================================
   // D mesons
@@ -83,7 +183,6 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
       return nullptr;
     break;
   }
-
 
   // =====================================================================
   // Femto Collection
@@ -141,11 +240,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   config->SetDeltaPhiMax(0.012);
   config->SetClosePairRejection(closeRejection);
 
-  config->SetPhiEtaBinnign((suffix == "0" && fullBlastQA));
   config->SetmTBinning((suffix == "0" && fullBlastQA));
-  config->SetdPhidEtaPlots((suffix == "0" && fullBlastQA));
-
-  config->SetPtQA((suffix == "0" && fullBlastQA));
+  config->SetPtQA(true);
   config->SetMassQA((suffix == "0" && fullBlastQA));
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -155,15 +251,6 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   config->SetMinimalBookingME(false);
-
-  if (suffix == "2") {
-    config->SetPtQA(true);
-    config->SetMassQA(true);
-  }
-
-  if (isMC && (suffix == "11" || suffix == "12" || suffix == "13") ) {
-    config->SetdPhidEtaPlots(true);
-  }
 
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
       "AliAnalysisTaskCharmingFemto", isMC);
@@ -175,6 +262,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   task->SetDecayChannel(channelHF);
   task->SetHFCuts(analysisCutsHF);
   task->SetAODMismatchProtection(useAODProtection);
+  task->SetMassSelection(massSelection);
   if(applyML) {
     task->SetDoMLApplication(applyML);
     task->SetMLConfigFile(configML);
@@ -188,35 +276,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
     task->SetTrigger(AliVEvent::kHighMultV0);
   }
 
-  if (suffix == "2") {
-    task->SetNSigmaSelection(3);
-  } else if (suffix == "3") {
-    task->SetMassWindow(1.9, 1.95);  // upper sideband, 5 sigma away from the peak - far off the D*
-  } else if (suffix == "4") {
-    task->SetMassWindow(1.95, 1.98);  // upper sideband
-  } else if (suffix == "5") {
-    task->SetMassWindow(1.98, 2.05);  // around D*
-  } else if (suffix == "6") {
-    task->SetMassWindow(2.05, 2.1);  // upper sideband
-  } else if (suffix == "7") {
-    task->SetMassWindow(1.79, 1.84);  // lower sideband, 5 sigma away from the peak
-  } else if (suffix == "8") {
-    task->SetMassWindow(1.74, 1.79);  // lower sideband
-  } else if (suffix == "9") {
-    task->SetMassWindow(1.69, 1.74);  // lower sideband
-  } else if (suffix == "10") {
-    task->SetMassWindow(1.64, 1.69);  // lower sideband
-  }
-
   if (isMC) {
     task->ScaleMCBeautyFraction(0.5, 0.05);
-    if (suffix == "11") {
-      task->ScaleMCBeautyFraction(0.5, 0.);
-    } else if (suffix == "12") {
-      task->ScaleMCBeautyFraction(0.5, 0.5);
-    } else if (suffix == "13") {
-      task->UseTrueDOnly();
-    }
   }
 
   mgr->AddTask(task);
@@ -226,6 +287,14 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
     addon += "MB_CharmFemto_";
   } else if (trigger == "kHighMultV0") {
     addon += "HM_CharmFemto_";
+  }
+  if (massSelection == AliAnalysisTaskCharmingFemto::kSidebandRight) {
+    addon += "SBRight_";
+  } else if (massSelection == AliAnalysisTaskCharmingFemto::kSidebandLeft) {
+    addon += "SBLeft_";
+  }
+  if(!cutHFsuffix.EqualTo("")) {
+    addon += Form("%s_", cutHFsuffix.Data());
   }
 
   TString file = AliAnalysisManager::GetCommonFileName();

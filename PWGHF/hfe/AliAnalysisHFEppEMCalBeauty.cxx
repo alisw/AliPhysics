@@ -51,12 +51,11 @@ using namespace std;
 #include "AliAODTrack.h"
 #include "AliAnalysisHFEppEMCalBeauty.h"
 #include "AliVVertex.h"
-
+#include "AliVertexerTracks.h"
 
 
 #include "AliAODCaloCluster.h"
 #include "AliEMCALGeometry.h"
-
 
 
 #include "AliTPCdEdxInfo.h"
@@ -101,23 +100,11 @@ ClassImp(AliAnalysisHFEppEMCalBeauty)
 
 AliAnalysisHFEppEMCalBeauty::AliAnalysisHFEppEMCalBeauty(const char *name)   : AliAnalysisTaskSE(name), 
 
-fIsAOD(kTRUE),
 fIsMC(kFALSE),
- 
+fIsAOD(kTRUE),
 ftrigger(AliVEvent::kINT7),
-
-
- // events
-fAOD(0),
-fOutputList(0), 
-fHistEvent(0),
-
  // emcal correction
 fUseTender(kTRUE),
-fTenderClusterName("caloClusters"),
-fTenderTrackName("tracks"),
-fTracks_tender(0),
-fCaloClusters_tender(0),
 // flag for emcal dcal
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
@@ -126,6 +113,46 @@ fEMCEG1(kFALSE),
 fEMCEG2(kFALSE),
 fDCalDG1(kFALSE),
 fDCalDG2(kFALSE),
+
+fRecalIP(kTRUE),
+
+fEtarange(0.7),
+fTPCNCrRows(70),
+fRatioCrossedRowOverFindable(0.8),
+fITSNclus(3),
+fTPCNclusPID(60),
+fSPDBoth(kTRUE),
+fSPDAny(kFALSE),
+fSPDFirst(kFALSE),
+fDCAxyCut(1),
+fDCAzCut(2),
+fTPCnsigmin(-1),
+fTPCnsigmax(3),
+fCutEopEMin(0.9),
+fCutEopEMax(1.2),
+fM02Min(0.05),
+fM02Max1(0.9),
+fM02Max2(0.7),
+fM02Max3(0.5),
+
+fInvmassCut(0.14),
+fAssoTPCCluster(60),
+fAssoITSRefit(kTRUE),
+fAssopTMin(0.1),
+fAssoEtarange(0.9),
+fAssoTPCnsig(3.0),
+
+
+fTenderClusterName("caloClusters"),
+fTenderTrackName("tracks"),
+fTracks_tender(0),
+fCaloClusters_tender(0),
+
+ // events
+fAOD(0),
+fOutputList(0), 
+fHistEvent(0),
+fNentries(0),
 
 fHistVx(0),
 fHistVxwc(0),
@@ -142,7 +169,6 @@ EtaPhiAfTCATM(0),
 
 fHistEta(0),
 fHistPhi(0),
-fHistPt_TPC(0),
 fHistEtaPhi_TPC(0),
 EMCalEta_TPCpT(0),
 
@@ -151,7 +177,7 @@ fHistdcaxy(0),
 fHistdcaxywc(0),
 fHistdcaz(0),
 fHistdcazwc(0),
-fHisttpccls(0),
+
  //PID Cut
 fPID(0),   
 fPidResponse(0),
@@ -222,16 +248,6 @@ fNElecInEvt(0),
 fNEle(0),
 
 fTPCnSigma(-999.0),
-fTPCnSigmaMin(-1),
-fTPCnSigmaMax(3),
-
-fM02Min(0.05),
-fM02Max1(0.9),
-fM02Max2(0.7),
-fM20Min(0.0),
-fM20Max(2000),
-fEovPMin(0.9),
-fEovPMax(1.2),
 
 fTPCnSigmaHadMin(-10),
 fTPCnSigmaHadMax(-3.5),
@@ -239,7 +255,6 @@ fTPCnSigmaHadMax(-3.5),
 fInvmassULSPt(0),
 fInvmassLSPt(0),
 fCalculateNonHFEEffi(1),
-fInvmassCut(0.14),
 
 fULSElecPt(0),
 fLSElecPt(0),
@@ -265,11 +280,9 @@ pi0MC(0),
 etaMC(0),
 gammaMC(0),
 
-
-
 fRealInclsElecPt(0),
 fNonHFeTrkPt(0),
-fNonHFeEmbTrkPt(0), 
+fNonHFeEmbTrkPt(0),
 fNonHFeEmbWeightTrkPt(0),
 fPi0eEmbWeightTrkPt(0),
 fEtaeEmbWeightTrkPt(0),
@@ -345,6 +358,7 @@ AliAnalysisHFEppEMCalBeauty::~AliAnalysisHFEppEMCalBeauty()
     delete fSprsPi0EtaWeightCal;
 
     if(fOutputList) { delete fOutputList; fOutputList = 0;}
+    if (fNentries){ delete fNentries; fNentries = 0;}
    
 }
 //________________________________________________________________________
@@ -381,12 +395,80 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
     fHistEvent->GetXaxis()->SetBinLabel(2,"All");
     fHistEvent->GetXaxis()->SetBinLabel(4," Trigger ");
     fHistEvent->GetXaxis()->SetBinLabel(6," EMCal acpt  ");
-    
     fHistEvent->GetXaxis()->SetBinLabel(8," N_{cont} > 2 ");
     fHistEvent->GetXaxis()->SetBinLabel(10," SPD pile up ");
     fHistEvent->GetXaxis()->SetBinLabel(12," Multi-Vtx pile up ");
     fHistEvent->GetXaxis()->SetBinLabel(14,"Vtx_{z}<10cm");
     fHistEvent->GetXaxis()->SetBinLabel(16," Analysed ");
+    fHistEvent->GetXaxis()->SetNdivisions(1,kFALSE);
+    fHistEvent->SetMinimum(0);
+
+  fNentries=new TH1F("CutSet", "", 33,-1.5,32.5);
+  fNentries->GetXaxis()->SetBinLabel(0,"trigger");
+  fNentries->GetXaxis()->SetBinLabel(1,"ITSNclus");
+  fNentries->GetXaxis()->SetBinLabel(2,"TPCNCrRows");
+  fNentries->GetXaxis()->SetBinLabel(3,"TPCNclusPID");
+  fNentries->GetXaxis()->SetBinLabel(4,"RatioCrossedRowOverFindable");
+  fNentries->GetXaxis()->SetBinLabel(5,"SPDBoth");
+  fNentries->GetXaxis()->SetBinLabel(6,"SPDAny");
+  fNentries->GetXaxis()->SetBinLabel(7,"SPDFirst");
+  fNentries->GetXaxis()->SetBinLabel(8,"DCAxyCut");
+  fNentries->GetXaxis()->SetBinLabel(9,"DCAzCut");
+  fNentries->GetXaxis()->SetBinLabel(10,"Etarange");  
+  fNentries->GetXaxis()->SetBinLabel(11,"TPCnsigmin");
+  fNentries->GetXaxis()->SetBinLabel(12,"TPCnsigmax");
+  fNentries->GetXaxis()->SetBinLabel(13,"InvmassCut");
+  fNentries->GetXaxis()->SetBinLabel(14,"AssoTPCCluster");  
+  fNentries->GetXaxis()->SetBinLabel(15,"AssoITSRefit");
+  fNentries->GetXaxis()->SetBinLabel(16,"AssopTMin");
+  fNentries->GetXaxis()->SetBinLabel(17,"AssoEtarange");
+  fNentries->GetXaxis()->SetBinLabel(18,"AssoTPCnsig");
+  fNentries->GetXaxis()->SetBinLabel(19,"fEMCEG1");
+  fNentries->GetXaxis()->SetBinLabel(20,"fDCalDG1");
+  fNentries->GetXaxis()->SetBinLabel(21,"fEMCEG2");
+  fNentries->GetXaxis()->SetBinLabel(22,"fDCalDG2");
+  fNentries->GetXaxis()->SetBinLabel(23,"fUseTender");
+  fNentries->GetXaxis()->SetBinLabel(24,"CutEopEMin");
+  fNentries->GetXaxis()->SetBinLabel(25,"CutEopEMax");
+  fNentries->GetXaxis()->SetBinLabel(26,"fM02Min");
+  fNentries->GetXaxis()->SetBinLabel(27,"fM02Max1");
+  fNentries->GetXaxis()->SetBinLabel(28,"fM02Max2");
+  fNentries->GetXaxis()->SetBinLabel(29,"fM02Max3");
+  fOutputList->Add(fNentries);
+  
+  fNentries->SetBinContent(0,ftrigger);
+  fNentries->SetBinContent(1,fITSNclus);
+  fNentries->SetBinContent(2,fTPCNCrRows);
+  fNentries->SetBinContent(3,fTPCNclusPID);
+  fNentries->SetBinContent(4,fRatioCrossedRowOverFindable);
+  fNentries->SetBinContent(5,fSPDBoth);
+  fNentries->SetBinContent(6,fSPDAny);
+  fNentries->SetBinContent(7,fSPDFirst);
+  fNentries->SetBinContent(8,fDCAxyCut);
+  fNentries->SetBinContent(9,fDCAzCut);
+  fNentries->SetBinContent(10,fEtarange);  
+  fNentries->SetBinContent(11,fTPCnsigmin);
+  fNentries->SetBinContent(12,fTPCnsigmax);
+  fNentries->SetBinContent(13,fInvmassCut);
+  fNentries->SetBinContent(14,fAssoTPCCluster);  
+  fNentries->SetBinContent(15,fAssoITSRefit);
+  fNentries->SetBinContent(16,fAssopTMin);
+  fNentries->SetBinContent(17,fAssoEtarange);
+  fNentries->SetBinContent(18,fAssoTPCnsig);
+  fNentries->SetBinContent(19,fEMCEG1);
+  fNentries->SetBinContent(20,fDCalDG1);
+  fNentries->SetBinContent(21,fEMCEG2);
+  fNentries->SetBinContent(22,fDCalDG2);
+  fNentries->SetBinContent(23,fUseTender);
+  fNentries->SetBinContent(24,fCutEopEMin);
+  fNentries->SetBinContent(25,fCutEopEMax);
+  fNentries->SetBinContent(26,fM02Min);
+  fNentries->SetBinContent(27,fM02Max1);
+  fNentries->SetBinContent(28,fM02Max2);
+  fNentries->SetBinContent(29,fM02Max3); 
+  fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
+  fNentries->Sumw2();
+  fNentries->SetMinimum(0);
 
 
     fHistVx=new TH1F("fHistVx","",400,-20,20);
@@ -429,12 +511,10 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
     EtaPhiWC = new TH2F("EtaPhiWC","#eta-#phi distribution of global tracks W Trk Cuts;#eta;#phi",300,-1.5,1.5,200,-1.0,7.0);
     EtaPhiWC->Sumw2();
     fOutputList->Add(EtaPhiWC);
-//---------------------------------------------------------------------------------------------------------
 
     EtaPhiAfTCATM = new TH2F("EtaPhiAfTCATM","#eta-#phi for global tracks AfterTrk Cuts B4 TrKMatching;#eta;#phi",300,-1.5,1.5,200,-1.0,7.0);
     EtaPhiAfTCATM->Sumw2();
     fOutputList->Add(EtaPhiAfTCATM);
-
 
     fHistEta = new TH1F("fHistEta", "Eta distribution of global tracks;#eta;Counts", 300, -1.5, 1.5);
     fHistEta->Sumw2();
@@ -442,12 +522,7 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
  
     fHistPhi = new TH1F("fHistPhi", "Phi distribution of global tracks;#phi;Counts", 100,0, 2*TMath::Pi() ); 
     fHistPhi->Sumw2();
-    fOutputList->Add(fHistPhi);   	
-
-
-    fHistPt_TPC = new TH1F("fHistPt_TPC", "P_{T} distribution of TPC tracks;#it{p}_{T}(GeV/#it{c};Counts)", 500, 0., 100.);
-    fHistPt_TPC->Sumw2();
-    fOutputList->Add(fHistPt_TPC);   
+    fOutputList->Add(fHistPhi);   	  
 
     fHistEtaPhi_TPC = new TH2F("fHistEtaPhi_TPC","#eta-#phi distribution of TPC tracks;#eta;#phi",300,-1.5,1.5,200,-1.0,7.0);
     fHistEtaPhi_TPC->Sumw2();
@@ -461,16 +536,13 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
     fHistdca->Sumw2();
     fOutputList->Add(fHistdca);
 
-
     fHistdcaxy=new TH2F("fHistdcaxy","DCA_{xy} before DCA cut;DCA_{xy};#it{p}_{T}(GeV/#it{c})" ,100,-5,5,1000,0,100);
     fHistdcaxy->Sumw2();
     fOutputList->Add(fHistdcaxy);
 
-
     fHistdcaxywc=new TH2F("fHistdcaxywc","DCA_{xy} after DCA cut;DCA_{xy};#it{p}_{T}(GeV/#it{c})",100,-5,5,1000,0,100);
     fHistdcaxywc->Sumw2();
     fOutputList->Add(fHistdcaxywc);
-
 
     fHistdcaz=new TH2F("fHistdcaz","DCA_{z} before DCA cut;DCA_{z};#it{p}_{T}(GeV/#it{c})",100,-5,5,1000,0,100);
     fHistdcaz->Sumw2();
@@ -480,12 +552,6 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
     fHistdcazwc=new TH2F("fHistdcazwc","DCA_{z} after DCA cut;DCA_{z};#it{p}_{T}(GeV/#it{c})",100,-5,5,1000,0,100);
     fHistdcazwc->Sumw2();
     fOutputList->Add(fHistdcazwc);
-
-
-    fHisttpccls=new TH1F("fHisttpccls","",500,0,500);
-    fHisttpccls->Sumw2();
-    fOutputList->Add(fHisttpccls);
-
 
     fHistBethe=new TH2F("fHistBethe","Particle identification by Energy loss;#it{p}(GeV/#it{c});TPC dE/dx(arb. Units)",300,0.,15.,750,10,160);
     fHistBethe->Sumw2();
@@ -875,8 +941,7 @@ void AliAnalysisHFEppEMCalBeauty::UserExec(Option_t *)
   Int_t pdg_mother = -99999;
   Int_t pidM = -1;
   
-  Double_t fTPCnSigma = -999;  Double_t fTOFnSigma=-999.0;
-  
+  Double_t fTPCnSigma = -999;  Double_t fTOFnSigma=-999.0;  
   
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fAOD) { return; }
@@ -893,7 +958,7 @@ void AliAnalysisHFEppEMCalBeauty::UserExec(Option_t *)
   fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTenderTrackName));
   fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTenderClusterName)); //emcal correction
   }
- 
+
   //////////////////
   // Tigger Check //
   /////////////////
@@ -905,8 +970,14 @@ void AliAnalysisHFEppEMCalBeauty::UserExec(Option_t *)
   TString TriggerDG2("DG2");
     
   if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
+  
   if(fEMCEG2 && fDCalDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
   if(fEMCEG1 && fDCalDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
+
+  if(fDCalDG2 && !fEMCEG2) { if(!firedTrigger.Contains(TriggerDG2))return; }
+  if(fEMCEG1  && !fDCalDG1){ if(!firedTrigger.Contains(TriggerEG1))return; }
+  if(fEMCEG2  && !fDCalDG2){ if(!firedTrigger.Contains(TriggerEG2))return; }
+  if(fDCalDG1 && !fEMCEG1) { if(!firedTrigger.Contains(TriggerDG1))return; }
 
   fHistEvent->Fill(5); // Number of events after passing EMCal Trigger
  
@@ -957,7 +1028,6 @@ void AliAnalysisHFEppEMCalBeauty::UserExec(Option_t *)
 
     fPID->SetPIDResponse(fPidResponse);
 
-
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
 
     ////////////////
@@ -972,6 +1042,7 @@ void AliAnalysisHFEppEMCalBeauty::UserExec(Option_t *)
   ///////////////////////////////////
 if(fIsMC)
 {
+ 
 
     Double_t qaweights[5];
     Double_t pi0etaweights[3];
@@ -1009,7 +1080,7 @@ if(fIsMC)
       Int_t pdg = TMath::Abs(fMCparticle->GetPdgCode());
 
      //For the reconstruction efficiency of HFE:-----------                          
-     if(TMath::Abs(fMCparticle->Eta()) <= 0.7  )
+     if(TMath::Abs(fMCparticle->Eta()) <= fEtarange  )
       {        ///Pseudo-rapidity cut                 
        if(TMath::Abs(pdg) == 11)
        {
@@ -1073,7 +1144,7 @@ Int_t Nclust = -999; Double_t clustE = -999;
  Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;
 
 for(Int_t icl=0; icl<Nclust; icl++)
-{
+{ 
       AliAODCaloCluster *clust = 0x0;
      if(!fUseTender) clust = (AliAODCaloCluster*)fAOD->GetCaloCluster(icl) ;
      if(fUseTender) clust = dynamic_cast<AliAODCaloCluster*>(fCaloClusters_tender->At(icl));
@@ -1082,7 +1153,7 @@ for(Int_t icl=0; icl<Nclust; icl++)
       fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
      
      if(clust->IsEMCAL())
-     {
+     {    
          AliAODCaloCells &cells = *(fAOD->GetEMCALCells());
          Double_t clustE = clust->E(); //clust->E();
          if(clustE < 0.3) continue;
@@ -1127,9 +1198,8 @@ for(Int_t icl=0; icl<Nclust; icl++)
   Int_t ntracks =-999;
   if(!fUseTender)ntracks = fAOD->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries(); 
-
- //cout<<"-----TRACK-LOOP-------------STARTED------------- "<<endl;    
-    fNEle = 0;
+  //cout<<"-----TRACK-LOOP-------------STARTED------------- "<<endl;    
+  fNEle = 0;
 
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) 
     {
@@ -1153,17 +1223,16 @@ for(Int_t icl=0; icl<Nclust; icl++)
     fHistdcaxy->Fill(d0z0[0],pt);
     fHistdcaz->Fill( d0z0[1],pt);
     EtaPhiWoC->Fill(track->Eta(),track->Phi());   	
-    
+   
     if(tracktypeTrig!=1) continue;    //==========TRACK cuts Applied =====
     Nch++;
     // hf reconstruction efficiency block-----------
-    
+
     if(fIsMC)
     {
       Bool_t IsHFEMC = IsHFelectronsMC(track);
       if(IsHFEMC){ fPthfe_rec->Fill(track->Pt()); }
     }
-
 
           fHistPt->Fill(track->Pt());
           EtaPhiWC->Fill(track->Eta(),track->Phi());
@@ -1173,8 +1242,6 @@ for(Int_t icl=0; icl<Nclust; icl++)
           fHistdca->Fill( d0z0[0],d0z0[1]); 
           fHistdcaxywc->Fill(d0z0[0],pt );
           fHistdcazwc->Fill(d0z0[1],pt);
-
-          fHisttpccls->Fill(track->GetTPCNcls());
                   
           fTPCnSigma = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
           fTOFnSigma = fPidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
@@ -1184,7 +1251,6 @@ for(Int_t icl=0; icl<Nclust; icl++)
           fnSigmaVsP_TOF->Fill(track->GetTPCmomentum(),fTOFnSigma);
 
           fHistEtaPhi_TPC->Fill(track->Eta(),track->Phi());
-          fHistPt_TPC->Fill(track->Pt());
 
     //hf reconstruction efficiency block After Trk Selection-----------
     if(fIsMC && fIsAOD)
@@ -1261,8 +1327,7 @@ for(Int_t icl=0; icl<Nclust; icl++)
            { Eoptrk = Etrkmatch/track->P(); }
            M02trkmatch = clustMatch->GetM02();
            M20trkmatch = clustMatch->GetM20();
-
-            
+           
            fvalueElectron[0] = track->Pt(); //matched tracks pt
            fvalueElectron[1] = fTPCnSigma; // tpc n sigma
            fvalueElectron[2] = Eoptrk; //E/P
@@ -1273,7 +1338,7 @@ for(Int_t icl=0; icl<Nclust; icl++)
      
            EtaPhiAfTCATM->Fill(track->Eta(),track->Phi());
            EMCalEta_TPCpT->Fill(track->Pt());
-
+ 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
             //////////////////
@@ -1287,8 +1352,11 @@ for(Int_t icl=0; icl<Nclust; icl++)
                 fHadPt_AftEID->Fill(track->Pt());
                 fHadDCA->Fill(track->Pt(),fTrkDCA);               
               
-                Double_t Rconv = -999;  TrackConvRadius(track, Rconv);
-                fHadConvRadius->Fill(track->Pt(),Rconv);
+                if(fIsMC){
+                  Double_t Rconv = -999;  
+                  TrackConvRadius(track, Rconv);
+                  fHadConvRadius->Fill(track->Pt(),Rconv); 
+                }
          }
             
             if(!fElectTrack) continue;
@@ -1321,7 +1389,7 @@ for(Int_t icl=0; icl<Nclust; icl++)
                     EffiNumTag = GetNonHFEEffiRecoTag(track);
                 }
             } 
-                 //fSparseRadius->Fill(fvalueRadius);
+              
                     
 
         }// EMCal Trk Match
@@ -1342,7 +1410,8 @@ Int_t AliAnalysisHFEppEMCalBeauty::ClassifyTrack(AliAODTrack* track,const AliVVe
   Double_t pt = track->Pt();
   Double_t eta = track->Eta();
   Double_t phi = track->Phi();
-  
+  Double_t d0z0[2]={-999,-999}, cov[3];
+
     //====kink daughters
   Int_t numberofvertices = 100;
   numberofvertices = fAOD->GetNumberOfVertices();
@@ -1377,32 +1446,124 @@ Int_t AliAnalysisHFEppEMCalBeauty::ClassifyTrack(AliAODTrack* track,const AliVVe
 
 
   if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return 0; //fitler bit 
-  if(track->Pt()  < 0.5 ) return 0;                                  //Pt cut
-  if (TMath::Abs(track->Eta()) > 0.7 ) return 0;                     //Eta cut
 
-  if(track->GetITSNcls() < 3) return 0; // ITS N clusters 
+  if(track->Pt()  < 0.5 ) return 0;                                  //Pt cut
+
+  if (TMath::Abs(track->Eta()) > fEtarange ) return 0;                     //Eta cut
+
+  if(track->GetITSNcls() < fITSNclus) return 0; // ITS N clusters 
 
   Double_t TPCNClsF =  track->GetTPCNclsF();
   Double_t TPCNCrossedRows = track->GetTPCNCrossedRows();
   Double_t RatioCrossedRowsOverFindableClusters = -999;
+  Double_t nclusN = track->GetTPCsignalN();   
 
-  if( TPCNCrossedRows < 70) return kFALSE; //TPC N clusters
+  if( TPCNCrossedRows < fTPCNCrRows) return kFALSE; //TPC N Crossed rows
   if(TPCNClsF > 0){ RatioCrossedRowsOverFindableClusters = TPCNCrossedRows/TPCNClsF; }
-  if(RatioCrossedRowsOverFindableClusters < 0.8) return kFALSE;
+
+  if(RatioCrossedRowsOverFindableClusters < fRatioCrossedRowOverFindable) return kFALSE;
+
+  if(nclusN < fTPCNclusPID) return 0 ;
 
   if((!(track->GetStatus()&AliAODTrack::kITSrefit)|| (!(track->GetStatus()&AliAODTrack::kTPCrefit)))) return 0;// ITS and TPC refit 
 
-  if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) return 0; //Hit on first and second SPD layer : kAny
+  if(fSPDAny){ if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) return 0;} //Hit on first and second SPD layer : kAny
+  else if(fSPDBoth){ if(!(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))) return 0;} //Hit on first and second SPD layer
+  else if(fSPDFirst){ if(!(track->HasPointOnITSLayer(0))) return 0;} //Hit on first and second SPD layer
 
-  //==DCA Cut ======
-  Double_t d0z0[2]={-999,-999}, cov[3];
+  if(fRecalIP) RecalImpactParam(track, d0z0, cov);
+  
   if(track->PropagateToDCA(vertex, fAOD->GetMagneticField(), 20., d0z0, cov)) 
-  if(TMath::Abs(d0z0[0]) > 1 || TMath::Abs(d0z0[1]) > 2) return 0; 
-      
+  if(TMath::Abs(d0z0[0]) > fDCAxyCut || TMath::Abs(d0z0[1]) > fDCAzCut) return 0; 
+     
   Double_t chi2ndf = track->Chi2perNDF();
   if(chi2ndf>4.0) return 0;
       
   return 1;
+}
+
+//=================================================================================================================================
+void AliAnalysisHFEppEMCalBeauty::RecalImpactParam(const AliAODTrack * const track, Double_t dcaD[2], Double_t covD[3])
+{
+    //Recalculate impact parameter by recalculating primary vertex
+    
+    const Double_t kBeampiperadius=3.0;
+    Bool_t isRecalcVertex = kFALSE;
+
+    AliAODVertex *vtxAODSkip  = fAOD->GetPrimaryVertex();
+    if(!vtxAODSkip) return;
+    
+    Double_t fMagField = fAOD->GetMagneticField();
+
+    const AliAODTrack *tmptrack = dynamic_cast<const AliAODTrack *>(track);
+    if(tmptrack){
+        if(vtxAODSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
+            
+            vtxAODSkip = RemoveDaughtersFromPrimaryVtx(track);
+            isRecalcVertex = kTRUE;
+        }
+        
+        if(vtxAODSkip){
+            AliAODTrack aodtrack(*tmptrack);
+            AliExternalTrackParam etp;
+            etp.CopyFromVTrack(&aodtrack);
+            
+            etp.PropagateToDCA(vtxAODSkip, fMagField, kBeampiperadius, dcaD, covD);
+            
+            if(isRecalcVertex) delete vtxAODSkip;
+        }
+    }
+}
+
+//=================================================================================================================================
+
+AliAODVertex* AliAnalysisHFEppEMCalBeauty::RemoveDaughtersFromPrimaryVtx(const AliAODTrack * const track)
+{
+    // This method returns a primary vertex without the daughter tracks of the
+    // candidate and it recalculates the impact parameters and errors for AOD tracks.
+    
+    AliAODVertex *vtxAOD = fAOD->GetPrimaryVertex();
+    if(!vtxAOD) return 0;
+    TString title=vtxAOD->GetTitle();
+    if(!title.Contains("VertexerTracks")) return 0;
+
+    AliVertexerTracks vertexer(fAOD->GetMagneticField());
+    
+    vertexer.SetITSMode();
+    vertexer.SetMinClusters(3);
+    vertexer.SetConstraintOff();
+    
+    if(title.Contains("WithConstraint")) {
+        Float_t diamondcovxy[3];
+        fAOD->GetDiamondCovXY(diamondcovxy);
+        Double_t pos[3]={fAOD->GetDiamondX(),fAOD->GetDiamondY(),0.};
+        Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+        AliESDVertex diamond(pos,cov,1.,1);
+        vertexer.SetVtxStart(&diamond);
+    }
+    Int_t skipped[2]; for(Int_t i=0;i<2;i++) skipped[i]=-1;
+    Int_t id = (Int_t)track->GetID();
+    if(!(id<0)) skipped[0] = id;
+    
+    vertexer.SetSkipTracks(1,skipped);
+    AliESDVertex *vtxESDNew = vertexer.FindPrimaryVertex(fAOD);
+    
+    if(!vtxESDNew) return 0;
+    if(vtxESDNew->GetNContributors()<=0) {
+        delete vtxESDNew; vtxESDNew=NULL;
+        return 0;
+    }
+    
+    // convert to AliAODVertex
+    Double_t pos[3],cov[6],chi2perNDF;
+    vtxESDNew->GetXYZ(pos); // position
+    vtxESDNew->GetCovMatrix(cov); //covariance matrix
+    chi2perNDF = vtxESDNew->GetChi2toNDF();
+    delete vtxESDNew; vtxESDNew=NULL;
+    
+    AliAODVertex *vtxAODNew = new AliAODVertex(pos,cov,chi2perNDF);
+    
+    return vtxAODNew;
 }
 
 //=================================================================================================================================
@@ -1432,7 +1593,7 @@ void AliAnalysisHFEppEMCalBeauty::GetTrkClsEtaPhiDiff(AliAODTrack *t, AliAODCalo
 void AliAnalysisHFEppEMCalBeauty::TrackConvRadius(AliAODTrack* track,  Double_t &R)
 {
   Int_t labelr = track->GetLabel(); 
-  if(labelr>=0) 
+  if(fIsMC && labelr>=0) 
   {
     AliAODMCParticle *mctrackk = dynamic_cast<AliAODMCParticle *>(fMCArray->At(labelr));
     R = TMath::Sqrt(mctrackk->Xv()*mctrackk->Xv()+mctrackk->Yv()*mctrackk->Yv());
@@ -1978,40 +2139,42 @@ Bool_t AliAnalysisHFEppEMCalBeauty::PassEIDCuts(AliAODTrack *track, AliAODCaloCl
     if(fTPCnSigma > fTPCnSigmaHadMin && fTPCnSigma < fTPCnSigmaHadMax)
     { 
         if(TrkPt < 12.0){  
-            if((m02 > fM02Min && m02 < fM02Max1) && (m20 > fM20Min && m20 < fM20Max))
+            if(m02 > fM02Min && m02 < fM02Max1) 
                 {  
                     fHadEovp_AftEID->Fill(TrkPt,eop);
                     fHadEovpNL_AftEID->Fill(TrkPt,eop_NL);
-                    if(eop_NL > fEovPMin && eop_NL < fEovPMax) hadTrk=kTRUE;
+                    if(eop_NL > fCutEopEMin && eop_NL < fCutEopEMax) hadTrk=kTRUE;
                 }
         }
-        if(TrkPt >= 12.0){
-            if((m02 > fM02Min && m02 < fM02Max2) && (m20 > fM20Min && m20 < fM20Max))
-            {
+        if(TrkPt >= 12.0 && TrkPt < 20.0){
+            if(m02 > fM02Min && m02 < fM02Max2)
+            {   
                 fHadEovp_AftEID->Fill(TrkPt,eop);
                 fHadEovpNL_AftEID->Fill(TrkPt,eop_NL);
-
-
-                if(eop_NL > fEovPMin && eop_NL < fEovPMax) hadTrk=kTRUE;
+                if(eop_NL > fCutEopEMin && eop_NL < fCutEopEMax) hadTrk=kTRUE;
             }
         }
+    
+        if(TrkPt >= 20.0){
+            if(m02 > fM02Min && m02 < fM02Max3)
+            {   
+                fHadEovp_AftEID->Fill(TrkPt,eop);
+                fHadEovpNL_AftEID->Fill(TrkPt,eop_NL);
+                if(eop_NL > fCutEopEMin && eop_NL < fCutEopEMax) hadTrk=kTRUE;
+            }
+        }
+
     }
     Hadtrack = hadTrk;
-
     
-    if(fTPCnSigma < fTPCnSigmaMin || fTPCnSigma > fTPCnSigmaMax) return kFALSE;
-    if(TrkPt < 8.0){
-        if(m02 < fM02Min || m02 > fM02Max1) return kFALSE;
-    }
-    if(TrkPt >= 8.0){
-        if(m02 < fM02Min || m02 > fM02Max2) return kFALSE;
-    }
-    if(m20 < fM20Min || m20 > fM20Max) return kFALSE;
+    if(fTPCnSigma < fTPCnsigmin || fTPCnSigma > fTPCnsigmax) return kFALSE;
+    if(TrkPt < 12.0)                   { if(m02 < fM02Min || m02 > fM02Max1) return kFALSE; }
+    if(TrkPt >= 12.0 && TrkPt < 20.0)  { if(m02 < fM02Min || m02 > fM02Max2) return kFALSE; }
+    if(TrkPt >= 20.0)                  { if(m02 < fM02Min || m02 > fM02Max3) return kFALSE; }
     
     fEop_AftEID->Fill(TrkPt,eop);
-    fEopNL_AftEID->Fill(TrkPt,eop_NL);
-    
-    if(eop_NL < fEovPMin || eop_NL > fEovPMax) return kFALSE;
+    fEopNL_AftEID->Fill(TrkPt,eop_NL);  
+    if(eop_NL < fCutEopEMin || eop_NL > fCutEopEMax) return kFALSE;
     
     return kTRUE;
 }
@@ -2125,15 +2288,14 @@ Bool_t AliAnalysisHFEppEMCalBeauty::GetNonHFEEffiDenom(AliAODTrack *track)
 
     if(fIsFrmEmbPi0 || fIsFrmEmbEta){
         fNonHFeEmbTrkPt->Fill(TrkPt);  
-        //Double_t R; TrackConvRadius(track,R);
+        
         fNonHFeEmbTrkRConv->Fill(track->Pt(),prodR); 
         
         if(fIsFrmEmbPi0) {
             fWeight = fWeightPi0; 
             fPi0eEmbWeightTrkPt->Fill(TrkPt,fWeightPi0);   
             fNonHFeEmbWeightTrkPt->Fill(TrkPt,fWeightPi0); 
-                    
-            //Double_t R1=-999; TrackConvRadius(track,R1);
+                              
             fPi0eEmbWeightTrkRConv->Fill(track->Pt(), prodR, fWeightPi0);   
             fNonHFeEmbWeightTrkRConv->Fill(track->Pt(), prodR, fWeightPi0); 
 
@@ -2142,9 +2304,7 @@ Bool_t AliAnalysisHFEppEMCalBeauty::GetNonHFEEffiDenom(AliAODTrack *track)
             fWeight = fWeightEta;                              
             fEtaeEmbWeightTrkPt->Fill(TrkPt,fWeightEta);
             fNonHFeEmbWeightTrkPt->Fill(TrkPt,fWeightEta);  
-
-
-            //Double_t R2=-999; TrackConvRadius(track,R2);
+            
             fEtaeEmbWeightTrkRConv->Fill(track->Pt(), prodR, fWeightEta);
             fNonHFeEmbWeightTrkRConv->Fill(track->Pt(), prodR, fWeightEta); 
 
@@ -2202,7 +2362,7 @@ void AliAnalysisHFEppEMCalBeauty::SelectPhotonicElectron(Int_t itrack, AliAODTra
         //------track cuts applied
         if(fAOD) {
             if(!aAssotrack->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-            if(aAssotrack->GetTPCNcls() < 60) continue;
+            if(aAssotrack->GetTPCNcls() < fAssoTPCCluster) continue;
             if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
             
             //if(fRecalIP) RecalImpactParam(aAssotrack, d0z0, cov);
@@ -2212,9 +2372,9 @@ void AliAnalysisHFEppEMCalBeauty::SelectPhotonicElectron(Int_t itrack, AliAODTra
         }
         
         //-------loose cut on partner electron     
-        if(ptAsso <0.10) continue;        
-        if(TMath::Abs(aAssotrack->Eta())> 0.9) continue; 
-        if(TMath::Abs(nsigma) > 3.0 ) continue; 
+        if(ptAsso < fAssopTMin) continue;        
+        if(TMath::Abs(aAssotrack->Eta())> fAssoEtarange) continue; 
+        if(TMath::Abs(nsigma) > fAssoTPCnsig ) continue; 
         
         Int_t chargeAsso = Assotrack->Charge();
         Int_t charge = track->Charge();
@@ -2254,15 +2414,19 @@ void AliAnalysisHFEppEMCalBeauty::SelectPhotonicElectron(Int_t itrack, AliAODTra
             if(fFlagLS){
                 fLSElecPt->Fill(TrkPt);
                 fLSElecDCA->Fill(TrkPt,fTrkDCA); 
-                TrackConvRadius(track, RLS);  
-                fRVsLSElecPt->Fill(TrkPt, RLS);
+                if(fIsMC){ 
+                  TrackConvRadius(track, RLS);  
+                  fRVsLSElecPt->Fill(TrkPt, RLS); 
+                }
             }
 
             if(fFlagULS){
                 fULSElecPt->Fill(TrkPt);
                 fULSElecDCA->Fill(TrkPt,fTrkDCA); 
-                TrackConvRadius(track, RULS);
-                fRVsULSElecPt->Fill(TrkPt,RULS);
+                if(fIsMC){ 
+                  TrackConvRadius(track, RULS);
+                  fRVsULSElecPt->Fill(TrkPt,RULS); 
+                }
             }
         }
         
@@ -2296,21 +2460,18 @@ Bool_t  AliAnalysisHFEppEMCalBeauty::IsNonHFE(AliAODMCParticle *MCPart, Bool_t &
 Bool_t AliAnalysisHFEppEMCalBeauty::GetNonHFEEffiRecoTag(AliAODTrack *track)
 {
     Double_t TrkPt = track->Pt();
-
     Double_t prodR = TMath::Sqrt(fMCparticle->Xv()*fMCparticle->Xv()+fMCparticle->Yv()*fMCparticle->Yv()); 
     
     fRecoNonHFeTrkPt->Fill(TrkPt);
     if(fIsFrmEmbPi0 || fIsFrmEmbEta){
         fRecoNonHFeEmbTrkPt->Fill(TrkPt);
 
-        //Double_t Rad = -999; TrackConvRadius(track,Rad);
         fRecoNonHFeEmbRConv->Fill(TrkPt, prodR);
 
         if(fIsFrmEmbPi0) {
             fRecoPi0eEmbWeightTrkPt->Fill(TrkPt,fWeightPi0);
             fRecoNonHFeEmbWeightTrkPt->Fill(TrkPt,fWeightPi0);  
 
-            //Double_t R3 = -999; TrackConvRadius(track,R3);
             fRecoPi0eEmbWeightTrkRConv->Fill(TrkPt, prodR,fWeightPi0);
             fRecoNonHFeEmbWeightTrkRConv->Fill(TrkPt, prodR,fWeightPi0);
 
@@ -2319,7 +2480,6 @@ Bool_t AliAnalysisHFEppEMCalBeauty::GetNonHFEEffiRecoTag(AliAODTrack *track)
             fRecoEtaeEmbWeightTrkPt->Fill(TrkPt,fWeightEta);
             fRecoNonHFeEmbWeightTrkPt->Fill(TrkPt,fWeightEta); 
 
-            //Double_t R4 = -999; TrackConvRadius(track,R4);
             fRecoEtaeEmbWeightTrkRConv->Fill(TrkPt, prodR,fWeightEta);
             fRecoNonHFeEmbWeightTrkRConv->Fill(TrkPt, prodR,fWeightEta);
 

@@ -437,7 +437,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
     if (fForceBeamType == kAA) {
       title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{p}_{T,particle}^{leading} (GeV/#it{c})";
-      fHistManager.CreateTH3(histname.Data(), title.Data(), 10, 0, 100, nPtBins2, fMinPt, fMaxPt, fMaxPt, 0, fMaxPt);
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 10, 0, 100, nPtBins1, fMinPt, fMaxPt, fMaxPt, 0, fMaxPt);
     }
     else {
       title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{p}_{T,particle}^{leading} (GeV/#it{c})";

@@ -62,6 +62,9 @@ AliHFInvMassFitter::AliHFInvMassFitter() :
   fSigmaSgnErr(0.),
   fSigmaSgn2Gaus(0.012),
   fFixedMean(kFALSE),
+  fBoundMean(kFALSE),
+  fMassLowerLim(0),
+  fMassUpperLim(0),
   fFixedSigma(kFALSE),
   fBoundSigma(kFALSE),
   fSigmaVar(0.012),
@@ -122,6 +125,9 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fSigmaSgnErr(0.),
   fSigmaSgn2Gaus(0.012),
   fFixedMean(kFALSE),
+  fBoundMean(kFALSE),
+  fMassLowerLim(0),
+  fMassUpperLim(0),
   fFixedSigma(kFALSE),
   fBoundSigma(kFALSE),
   fSigmaVar(0.012),
@@ -393,7 +399,9 @@ void AliHFInvMassFitter::DrawHere(TVirtualPad* c, Double_t nsigma,Int_t writeFit
     if(fTotFunc){
       pinfom->SetTextColor(kBlue);
       for(Int_t ipar=1; ipar<fNParsSig; ipar++){
-	pinfom->AddText(Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg)));
+        TString str=Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg));  
+        if (fTotFunc->GetParameter(fNParsBkg+fNParsSig-2)<0.2) str=Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg)*1000,fTotFunc->GetParError(ipar+fNParsBkg)*1000);    
+	pinfom->AddText(str);
       }
       if(writeFitInfo>=1) pinfom->Draw();
 
@@ -449,7 +457,9 @@ void AliHFInvMassFitter::DrawHistoMinusFit(TVirtualPad* c, Int_t writeFitInfo){
     pinfom->SetFillStyle(0);
     if(fTotFunc){
       for(Int_t ipar=1; ipar<fNParsSig; ipar++){
-	pinfom->AddText(Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg)));
+	TString str=Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg));  
+        if (fTotFunc->GetParameter(fNParsBkg+fNParsSig-2)<0.2) str=Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg)*1000,fTotFunc->GetParError(ipar+fNParsBkg)*1000);    
+	pinfom->AddText(str);
       }
       pinfom->AddText(Form("S = %.0f #pm %.0f ",fRawYield,fRawYieldErr));
       if(fRflFunc)  pinfom->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fRflFunc->GetParameter(0),fRflFunc->GetParError(0)));
@@ -589,6 +599,7 @@ TF1* AliHFInvMassFitter::CreateSignalFitFunction(TString fname, Double_t integsi
     if(fFixedRawYield>-0.1) funcsig->FixParameter(0,fFixedRawYield);
     funcsig->SetParameter(1,fMass);
     if(fFixedMean) funcsig->FixParameter(1,fMass);
+    if(fBoundMean) funcsig->SetParLimits(1,fMassLowerLim, fMassUpperLim);
     funcsig->SetParameter(2,fSigmaSgn);
     if(fFixedSigma) funcsig->FixParameter(2,fSigmaSgn);
     if(fBoundSigma) funcsig->SetParLimits(2,fSigmaVar*(1-fParSig), fSigmaVar*(1+fParSig));

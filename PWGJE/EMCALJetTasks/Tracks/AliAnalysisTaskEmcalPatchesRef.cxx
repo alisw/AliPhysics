@@ -50,11 +50,9 @@
 
 #include "AliAnalysisTaskEmcalPatchesRef.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchesRef)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
     AliAnalysisTaskEmcalTriggerBase(),
@@ -298,6 +296,3 @@ AliAnalysisTaskEmcalPatchesRef::EnergyBinning::EnergyBinning():
   this->AddStep(100, 10);
   this->AddStep(200, 20);
 }
-
-
-} /* namespace EMCalTriggerPtAnalysis */

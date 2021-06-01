@@ -30,11 +30,9 @@
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerEventCounterAnalysisComponent.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerEventCounterAnalysisComponent)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Default (I/O) constructor, not to be used
@@ -83,7 +81,7 @@ void AliEMCalTriggerEventCounterAnalysisComponent::CreateHistos() {
   const char *binlabels[2] = {"OFF", "ON"};
   TAxis *mytrgaxis = new TAxis[triggerCombinations.size()];
   std::map<std::string, std::string>::iterator trgiter = triggerCombinations.begin();
-  for(int itrg = 0; itrg < triggerCombinations.size(); ++itrg){
+  for(std::size_t itrg = 0; itrg < triggerCombinations.size(); ++itrg){
     DefineAxis(mytrgaxis[itrg], trgiter->first.c_str(), trgiter->first.c_str(), 2, -0.5, 1.5, binlabels);
     triggeraxis[itrg] = mytrgaxis+itrg;
     trgiter++;
@@ -153,5 +151,3 @@ Int_t AliEMCalTriggerEventCounterAnalysisComponent::FindAxis(THnSparse* hist, co
   }
   return result;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

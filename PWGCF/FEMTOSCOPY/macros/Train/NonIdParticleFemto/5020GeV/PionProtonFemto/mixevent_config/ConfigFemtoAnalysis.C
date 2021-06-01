@@ -61,7 +61,7 @@
 #endif
 
 //_
-AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0=1, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, double Vz, int Vz_bin, double eta, int dca_nopTdep, int dca_pTdep, int dca_pTdep_dcaz, double dcaxy, double dcaz, int ncls, int pid_default, int pid_strict,  int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid, int lmax, int no_mix_event) {
+AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0=1, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, double Vz, int Vz_bin, double eta, int dca_nopTdep, int dca_pTdep, int dca_pTdep_dcaz, int dca_protonpTdep_dcaz, double dcaxy, double dcaz, int ncls, int pid_default, int pid_strict,  int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid, int lmax, int no_mix_event) {
 
 
   double PionMass = 0.13957018;//0.13956995;
@@ -273,7 +273,15 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0=1, int runcentrality1, i
 	  dtc1etaphitpc[aniter]->SetMaxImpactZ(dcaz);	//DCA Z
 	  dtc2etaphitpc[aniter]->SetMaxImpactZ(dcaz);	//DCA Z		  
 	  }
-		
+
+	  if(dca_protonpTdep_dcaz == 1){
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(dcaxy); 	//DCA xy 	
+	  dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);  
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(dcaz);	//DCA Z
+	  dtc2etaphitpc[aniter]->SetMaxImpactZ(dcaz);	//DCA Z		  
+	  }
+
+	  
 	  dtc1etaphitpc[aniter]->SetminTPCncls(ncls);
 	  dtc2etaphitpc[aniter]->SetminTPCncls(ncls);
 	  

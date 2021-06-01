@@ -1,9 +1,9 @@
 AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 
-			Bool_t 	isMC 			= kFALSE, 
+			Bool_t 	isMC 			= kTRUE,
 			Bool_t 	isAOD 			= kTRUE,
 			char * period			= "16l",
-			Int_t trigger_index=3,
+			Int_t trigger_index=0,
             Int_t config=0,
             Bool_t     isTender             = kFALSE,
             TString estimator="profile_SPD_from_c1",
@@ -13,12 +13,14 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
             Bool_t V0correction = kFALSE,
             Bool_t SPDcorrection = kFALSE,
             TString cfg = "Config_JPsi_EMCal",
-            Bool_t is_ESparse = kTRUE,
-            Bool_t is_ESparseTPC = kTRUE,
+            Bool_t is_ESparse = kFALSE,
+            Bool_t is_ESparseTPC = kFALSE,
             Bool_t is_EventsEG1 = kFALSE,
             Bool_t is_EventsEG2 = kTRUE,
             Bool_t isMultiAnalysis = kFALSE,
-            Bool_t is_MSparse = kFALSE
+            Bool_t is_MSparse = kFALSE,
+            Bool_t is_TPCcalibration = kFALSE,
+            Bool_t is_Trigger_sim = kTRUE
 			
 )
 {
@@ -79,7 +81,7 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 
   
 	//gROOT->LoadMacro("Config_JPsi_EMCal.C");
-	AliAnalysisTask_JPsi_EMCal *task = Config_JPsi_EMCal(isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_ESparseTPC, is_EventsEG1, is_EventsEG2, isMultiAnalysis, is_MSparse);
+	AliAnalysisTask_JPsi_EMCal *task = Config_JPsi_EMCal(isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_ESparseTPC, is_EventsEG1, is_EventsEG2, isMultiAnalysis, is_MSparse, is_TPCcalibration, is_Trigger_sim);
 	
 	//_______________________
 	//Trigger
@@ -122,6 +124,19 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
         }
 	
 		
+    }
+    
+    if(isMC && is_Trigger_sim){
+        task->SelectCollisionCandidates(AliVEvent::kINT7);
+        
+        //Trigger simulation in MC needs that
+        if(trigger_index==10){
+            task->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+        }
+        if(trigger_index==11){
+            task->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+        }
+        
     }
 	
 	

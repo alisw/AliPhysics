@@ -5,7 +5,7 @@
 #include <TList.h>
 #endif
 
-AliAnalysisTaskSELc2pKs0fromKFP* AddTaskLc2pKs0FromKFParticle(TString finname="", Bool_t IsMC=kTRUE, TString cuttype="", Bool_t writeQATree=kTRUE, Bool_t IsAnaLc2Lpi=kFALSE)
+AliAnalysisTaskSELc2pKs0fromKFP* AddTaskLc2pKs0FromKFParticle(TString finname="", Bool_t IsMC=kTRUE, TString cuttype="", Bool_t writeQATree=kTRUE, Bool_t IsAnaLc2Lpi=kFALSE, Bool_t useWeights = kFALSE, Bool_t keepOnlyMCSignal = kTRUE, Bool_t useMultiplicity = kFALSE, TString multProfiles = "", Int_t analysisType = AliAnalysisTaskSELc2pKs0fromKFP::kpPb2016, Double_t refMult = 29.2)
 {
     Bool_t writeLcRecTree = kTRUE;
     Bool_t writeLcMCGenTree = kFALSE;
@@ -69,6 +69,7 @@ AliAnalysisTaskSELc2pKs0fromKFP* AddTaskLc2pKs0FromKFParticle(TString finname=""
     if(!task) return NULL;
     task->SetMC(IsMC);
     task->SetAnaLc2Lpi(IsAnaLc2Lpi);
+    task->SetUseWeights(useWeights);
     task->SetDebugLevel(1);
     task->SetWriteLcMCGenTree(writeLcMCGenTree);
     task->SetWriteLcTree(writeLcRecTree);
@@ -78,6 +79,37 @@ AliAnalysisTaskSELc2pKs0fromKFP* AddTaskLc2pKs0FromKFParticle(TString finname=""
     weight->SetParameter(0, 0.853544);
     weight->SetParameter(1, -0.325586);
     task->SetWeightFunction(weight);
+
+
+    if (useMultiplicity) {
+      task->SetUseMult(useMultiplicity);
+      TFile *fileEstimator=TFile::Open(multProfiles.Data());
+      if (!fileEstimator) {
+             Printf("FATAL: File with mult estimator not found");
+             return NULL;
+            }
+      task->SetReferenceMultiplicity(refMult);
+      const Char_t* profilebasename="SPDmult10";
+
+      if (analysisType == AliAnalysisTaskSELc2pKs0fromKFP::kpPb2016) {
+	    const Char_t* periodNames[4] = {"LHC16q_265499to265525_265309to265387", "LHC16q_265435","LHC16q_265388to265427","LHC16t_267163to267166"};
+	    TProfile* multEstimatorAvg[4];
+	    for(Int_t ip=0; ip<4; ip++) {
+	    cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
+	    multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+	    if (!multEstimatorAvg[ip]) {
+	      Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+	      return NULL;
+	    }
+	  }
+	  task->SetMultVsZProfileLHC16qt1stBunch(multEstimatorAvg[0]);
+	  task->SetMultVsZProfileLHC16qt2ndBunch(multEstimatorAvg[1]);
+	  task->SetMultVsZProfileLHC16qt3rdBunch(multEstimatorAvg[2]);
+	  task->SetMultVsZProfileLHC16qt4thBunch(multEstimatorAvg[3]);
+     task->SetAnalysisType(analysisType);
+
+     }
+    }
 
     // select type of event
 //    task->SelectCollisionCandidates(AliVEvent::kAnyINT); // kAnyINT = kMB | kINT7 | kINT5 | kINT8 | kSPI7

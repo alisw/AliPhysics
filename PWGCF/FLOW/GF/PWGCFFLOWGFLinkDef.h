@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskChargedFlow+;
+#pragma link C++ class AliAnalysisTaskDeform+;
 #pragma link C++ class AliAnalysisTaskGFWFlow+;
 #pragma link C++ class AliAnalysisTaskGFWPIDFlow+;
 #pragma link C++ class AliAnalysisTaskMeanPtV2Corr+;
@@ -15,6 +16,8 @@
 #pragma link C++ class AliGFW+;
 #pragma link C++ class AliGFWWeights+;
 #pragma link C++ class AliProfileSubset+;
+#pragma link C++ class AliProfileBS+;
+#pragma link C++ class AliCkContainer+;
 #pragma link C++ class AliGFWFlowContainer+;
 #pragma link C++ class AliUniFlowCorrTask+;
 #pragma link C++ class AliAnalysisTaskUniFlow+;

@@ -52,9 +52,12 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void		 SetPtHardBin(Int_t bin){fPtHardBin=bin;}
 	virtual void		 SetRejectionFactorInclusiveJets(Int_t f){fRejectionFactorInclusiveJets=f;}
 	virtual void     SetMoreTreeVars(Bool_t more){fMoreTreeVars=more;} 
+	virtual void     SetDoDeltaPtInclusive(Bool_t b){fDoDeltaPtInclusive=b;} 
+	virtual void     SetDoDeltaPtRecoil(Bool_t b){fDoDeltaPtRecoil=b;} 
 
 	virtual void     SetRhoShiftSignal(Double_t shift){fRhoShiftSignal=shift;} 
 	virtual void     SetRhoShiftReference(Double_t shift){fRhoShiftReference=shift;} 
+
 
 //  static AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal( //      const char *ntracks            = "usedefault", //      const char *nclusters          = "usedefault", //      const char* ncells             = "usedefault",
 //      const char *suffix             = "");
@@ -95,6 +98,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Int_t												SelectTrigger(TList *list,Double_t minT,Double_t maxT,Int_t &number);
 	Double_t										RelativePhi(Double_t mphi,Double_t vphi);
 	Int_t												GetPhiBin(Double_t phi);
+  void                        GetRandomCone(Int_t &nconst, Float_t &pt, Float_t &eta, Float_t &phi, Float_t R, AliEmcalJet *jet, AliVParticle *tt);
 
   THistManager                fHistManager;///< Histogram manager
 
@@ -121,6 +125,8 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Bool_t fFillInclusiveTree; ///< switch to fill embedding tree with inclusive jet info
 	Bool_t fFillRecoilTree; ///< switch to fill embedding tree with recoil jet info
 	Bool_t fMoreTreeVars; ///< add more variables to the output tree
+	Bool_t fDoDeltaPtInclusive; ///< calculate delta pT for inclusive jets
+	Bool_t fDoDeltaPtRecoil; ///< calculate delta pT for recoil jets 
   Double_t fRhoShiftSignal; ///< shift rho in signal events by this much
   Double_t fRhoShiftReference; ///< shift rho in reference events by this much
 	Int_t fPtHardBin; ///< pt hard bin if running embedding
@@ -148,6 +154,15 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH2F *fhDphiPtRefPi; //!<!
 	TH2F *fhDphiPtRef; //!<!
 	TH3F *fhDphiPtShiftRefPi; //!<!
+  TH1F *fhDeltaPtRCinclusive; //!<!
+  TH2F *fhDeltaPtJetPtRCinclusive; //!<!
+  TH2F *fhDeltaPtaRhoRCinclusive; //!<!
+  TH2F *fhDeltaPtCentralityRCinclusive; //!<!
+  TH2F *fhRCPtCentralityinclusive; //!<!
+  TH1F *fhDeltaPtRCrecoil; //!<!
+  TH2F *fhDeltaPtJetPtRCrecoil; //!<!
+  TH2F *fhDeltaPtaRhoRCrecoil; //!<!
+  TH2F *fhDeltaPtCentralityRCrecoil; //!<!
 	// embedding histograms
 	// inclusive jets
 	TH2F *fhPtDetPart; //!<!

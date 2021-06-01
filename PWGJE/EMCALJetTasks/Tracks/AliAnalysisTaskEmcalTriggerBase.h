@@ -17,7 +17,9 @@ class AliOADBContainer;
 
 namespace PWG { namespace EMCAL { class AliEmcalTriggerDecisionContainer; } }
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 /**
  * @class AliAnalysisTaskEmcalTriggerBase
@@ -420,6 +422,8 @@ private:
   AliAnalysisTaskEmcalTriggerBase &operator=(const AliAnalysisTaskEmcalTriggerBase &);
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALTRIGGERBASE_H */

@@ -20,6 +20,7 @@ AliAnalysisTaskLongFluctuations* AddTaskLongFluctuations(TString name = "name")
     if(!task) return 0x0;
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     task->SetMCRead(kFALSE);
+    task->SetPileUpRead(kFALSE);
     task->SetChi2DoF(4);
     task->SetPtLimits(0.2, 2.0);
     task->SetEtaLimit(0.8);

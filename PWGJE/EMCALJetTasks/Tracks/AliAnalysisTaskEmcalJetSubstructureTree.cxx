@@ -253,8 +253,8 @@ void AliAnalysisTaskEmcalJetSubstructureTree::RunChanged(Int_t newrun) {
 }
 
 bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
-  AliClusterContainer *clusters = GetClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
-  AliTrackContainer *tracks = GetTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
+  AliClusterContainer *clusters = GetClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
+  AliTrackContainer *tracks = GetTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   AliParticleContainer *particles = GetParticleContainer("mcparticles");
 
   AliJetContainer *mcjets = GetJetContainer("mcjets");
@@ -846,14 +846,14 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   if(isData) {
     AliTrackContainer *tracks(nullptr);
     if((jettype == AliJetContainer::kChargedJet) || (jettype == AliJetContainer::kFullJet)){
-      tracks = treemaker->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+      tracks = treemaker->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
       std::cout << "Track container name: " << tracks->GetName() << std::endl;
       tracks->SetMinPt(0.15);
     }
     AliClusterContainer *clusters(nullptr);
     if((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)){
       std::cout << "Using full or neutral jets ..." << std::endl;
-      clusters = treemaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+      clusters = treemaker->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
       std::cout << "Cluster container name: " << clusters->GetName() << std::endl;
       clusters->SetClusHadCorrEnergyCut(0.3); // 300 MeV E-cut
       clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);

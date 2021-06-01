@@ -58,7 +58,7 @@ void AliParticleMap::AddParticle(AliVTrack *track){
  * \return List of reconstructed particles (NULL if not found)
  */
 AliParticleList* AliParticleMap::GetParticles(int label) const {
-	AliParticleList *result = NULL, *content = NULL;
+	AliParticleList *result = NULL;
 	std::map<int, AliParticleList *>::const_iterator found = fParticles.find(label);
 	if(found != fParticles.end()){
 		result = found->second;

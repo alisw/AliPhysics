@@ -1,4 +1,4 @@
-AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", Bool_t use3DWeights = kTRUE, Bool_t useOwnWeights = kFALSE, TString s2DWeightsFile = "", TString s3DWeightsFile = "", const char* suffix = "")
+AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", Bool_t IsMC = kFALSE, Bool_t use3DWeights = kTRUE, Bool_t useOwnWeights = kFALSE, TString s2DWeightsFile = "", TString s3DWeightsFile = "", const char* suffix = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -16,7 +16,7 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", Bool_t use3DWeights 
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += Form(":%s",suffix);      // create a subfolder in the file
     // now we create an instance of your task
-    AliAnalysisDecorrTask* task = new AliAnalysisDecorrTask(name.Data());   
+    AliAnalysisDecorrTask* task = new AliAnalysisDecorrTask(name.Data(),IsMC);   
     if(!task) return 0x0;
 
     task->SetUseWeights3D(use3DWeights);

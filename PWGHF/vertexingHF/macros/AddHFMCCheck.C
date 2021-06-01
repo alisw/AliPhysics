@@ -15,13 +15,7 @@ AliAnalysisTaskCheckHFMCProd *AddHFMCCheck(Int_t system=0, Bool_t readMC=kTRUE){
     ::Error("AliAnalysisTaskCheckHFMCProd", "This task requires an input event handler");
     return NULL;
   }   
-  
-  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  if(type.Contains("AOD")){
-    ::Error("AliAnalysisTaskCheckHFMCProd", "This task requires to run on ESD");
-    return NULL;
-  }
-  
+    
   //Bool_t isMC=kFALSE;
   //if (mgr->GetMCtruthEventHandler()) isMC=kTRUE;
   

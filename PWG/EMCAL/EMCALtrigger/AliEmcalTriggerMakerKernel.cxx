@@ -352,13 +352,19 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     // trigger bits can also occur on online masked fastors. Therefore trigger
     // bits are handled before ADC values, and independently whether fastor is
     // masked or not
+    bitmap = 0;
     trigger->GetTriggerBits(bitmap);
-    try {
-      (*fTriggerBitMap)(globCol, globRow) = bitmap;
-    }
-    catch (AliEMCALTriggerDataGrid<int>::OutOfBoundsException &e) {
-      std::string dirstring = e.GetDirection() == AliEMCALTriggerDataGrid<int>::OutOfBoundsException::kColDir ? "Col" : "Row";
-      AliErrorStream() << "Trigger maker task - filling trigger bit grid - index out-of-bounds in " << dirstring << ": " << e.GetIndex() << std::endl;
+    if(bitmap){
+      // protection against duplicate entries in the AliVCaloTriggers object:
+      // the grid is anyhow initialized with 0, so in case of a 0 entry don't overwrite
+      // existing entries
+      try {
+        (*fTriggerBitMap)(globCol, globRow) = bitmap;
+      }
+      catch (AliEMCALTriggerDataGrid<int>::OutOfBoundsException &e) {
+        std::string dirstring = e.GetDirection() == AliEMCALTriggerDataGrid<int>::OutOfBoundsException::kColDir ? "Col" : "Row";
+        AliErrorStream() << "Trigger maker task - filling trigger bit grid - index out-of-bounds in " << dirstring << ": " << e.GetIndex() << std::endl;
+      }
     }
 
     // also Level0 times need to be handled without masking of the fastor ...
@@ -390,7 +396,10 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     trigger->GetL1TimeSum(adcAmp);
     if (adcAmp < 0) adcAmp = 0;
 
-    if (adcAmp >= fMinL1FastORAmp) {
+    if (adcAmp >= std::max(fMinL1FastORAmp, 1)) {
+      // protection against duplicate entries: the grid is anyhow
+      // initialized with 0, so in case of an entry with negative or
+      // 0 ADC time sum don't overwrite the existing one
       try {
         (*fPatchADC)(globCol,globRow) = adcAmp;
       }
@@ -411,7 +420,10 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     amplitude *= 4; // values are shifted by 2 bits to fit in a 10 bit word (on the hardware side)
     amplitude -= fFastORPedestal[absId];
     if(amplitude < 0) amplitude = 0;
-    if (amplitude >= fMinL0FastORAmp) {
+    if (amplitude > std::max(0., double(fMinL0FastORAmp))) {
+      // protection against duplicate entries: the grid is anyhow
+      // initialized with 0, so in case of an entry with negative or
+      // 0 ADC time sum don't overwrite the existing one
       try{
         (*fPatchAmplitudes)(globCol,globRow) = amplitude;
       }

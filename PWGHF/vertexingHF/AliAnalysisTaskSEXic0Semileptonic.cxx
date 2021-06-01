@@ -19,6 +19,8 @@
 // by Jinjoo Seo
 //==================================================================
 
+#include "AliAnalysisTaskSEXic0Semileptonic.h"
+
 #include <TSystem.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
@@ -47,7 +49,6 @@
 #include "AliAODcascade.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliAnalysisTaskSEXic0Semileptonic.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
 #include "AliTOFPIDResponse.h"
@@ -89,15 +90,21 @@ AliAnalysisTaskSEXic0Semileptonic::AliAnalysisTaskSEXic0Semileptonic() :
 	DefineOutput(6, TTree::Class());
 	DefineOutput(7, AliNormalizationCounter::Class());
 
-	fMCCutTreeVariable = 0;
+	fMCXicTreeVariable = 0;
 	fPaireXiTreeVariable = 0;
 	fMCTreeVariable = 0;
 	fEventTreeVariable = 0;
-	fMCCutTree = 0;
+	fMCXicTree = 0;
 	fPaireXiTree = 0;
 	fMCTree = 0;
 	fEventTree = 0;
 	fCounter = 0;
+
+	//kimc, Mar. 18
+	DefineOutput( 8, AliNormalizationCounter::Class()); fCounter_MB_0to100 = 0;
+	DefineOutput( 9, AliNormalizationCounter::Class()); fCounter_MB_0p1to30 = 0;
+	DefineOutput(10, AliNormalizationCounter::Class()); fCounter_MB_30to100 = 0;
+	DefineOutput(11, AliNormalizationCounter::Class()); fCounter_HMV0_0to0p1 = 0;
 }
 
 //----------------------------------------------------------------------------------------------------------
@@ -105,23 +112,29 @@ AliAnalysisTaskSEXic0Semileptonic::AliAnalysisTaskSEXic0Semileptonic(const char 
 	AliAnalysisTaskSE(name),
 	fOption(option)
 {
-    DefineOutput(1, TDirectory::Class());
-    DefineOutput(2, TList::Class());
-    DefineOutput(3, TTree::Class());
-    DefineOutput(4, TTree::Class());
-    DefineOutput(5, TTree::Class());
-    DefineOutput(6, TTree::Class());
-    DefineOutput(7, AliNormalizationCounter::Class());
+	DefineOutput(1, TDirectory::Class());
+	DefineOutput(2, TList::Class());
+	DefineOutput(3, TTree::Class());
+	DefineOutput(4, TTree::Class());
+	DefineOutput(5, TTree::Class());
+	DefineOutput(6, TTree::Class());
+	DefineOutput(7, AliNormalizationCounter::Class());
 
-    fMCCutTreeVariable = 0;
-    fPaireXiTreeVariable = 0;
-    fMCTreeVariable = 0;
-    fEventTreeVariable = 0;
-    fMCCutTree = 0;
-    fPaireXiTree = 0;
-    fMCTree = 0;
-    fEventTree = 0;
-    fCounter = 0;
+	fMCXicTreeVariable = 0;
+	fPaireXiTreeVariable = 0;
+	fMCTreeVariable = 0;
+	fEventTreeVariable = 0;
+	fMCXicTree = 0;
+	fPaireXiTree = 0;
+	fMCTree = 0;
+	fEventTree = 0;
+	fCounter = 0;
+
+	//kimc, Mar. 18
+	DefineOutput( 8, AliNormalizationCounter::Class()); fCounter_MB_0to100 = 0;
+	DefineOutput( 9, AliNormalizationCounter::Class()); fCounter_MB_0p1to30 = 0;
+	DefineOutput(10, AliNormalizationCounter::Class()); fCounter_MB_30to100 = 0;
+	DefineOutput(11, AliNormalizationCounter::Class()); fCounter_HMV0_0to0p1 = 0;
 }
 
 //-------------------------------------------------------------------
@@ -144,11 +157,11 @@ AliAnalysisTaskSEXic0Semileptonic& AliAnalysisTaskSEXic0Semileptonic::operator =
 AliAnalysisTaskSEXic0Semileptonic::~AliAnalysisTaskSEXic0Semileptonic()
 {
 	delete fOutput;
-	delete fMCCutTree;
+	delete fMCXicTree;
 	delete fPaireXiTree;
 	delete fHistos;
 	delete fMCTree;
-	delete fMCCutTree;
+	delete fMCXicTree;
 	delete fPaireXiTree;
 	delete fEventTree;
 	delete fTrackCuts;
@@ -156,11 +169,16 @@ AliAnalysisTaskSEXic0Semileptonic::~AliAnalysisTaskSEXic0Semileptonic()
 	delete fRunTable;
 	delete fCounter;
 	delete fEvtCuts;
-	delete fMCCutTreeVariable;
+	delete fMCXicTreeVariable;
 	delete fPaireXiTreeVariable;
 	delete fMCTreeVariable;
 	delete fEventTreeVariable;
-	delete fWeightFit;
+
+    delete fEvtCuts_HMV0;
+    delete fCounter_MB_0to100;
+    delete fCounter_MB_0p1to30;
+    delete fCounter_MB_30to100;
+    delete fCounter_HMV0_0to0p1;
 }
 
 //=================================================================================================
@@ -187,22 +205,28 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	fEvtCuts->SetUseInt7TriggerPP2012();
 	//fEvtCuts->ResetMaskAndEnableMBTrigger();
 
+	//kimc, Mar. 18
+	fEvtCuts_HMV0 = new AliRDHFCutsXictoeleXifromAODtracks();
+	fEvtCuts_HMV0->SetUsePhysicsSelection(kTRUE);
+	fEvtCuts_HMV0->SetTriggerClass(""); //kimc: keep this - otherwise floating point exception occur
+	fEvtCuts_HMV0->SetTriggerMask(AliVEvent::kHighMultV0);
+
 	//*******************************************
 
-    //kimc
-    cout <<endl;
-    fTargetTriggers.clear();
-    if (fUsekINT7)
+	//kimc
+	cout <<endl;
+	fTargetTriggers.clear();
+	if (fUsekINT7)
 	{
 		fTargetTriggers.push_back(AliVEvent::kINT7);
 		cout <<Form("Adding trigger: kINT7 (BIT %i)", AliVEvent::kINT7) <<endl;
 	}
-    if (fUsekHMV0)
+	if (fUsekHMV0)
 	{
 		fTargetTriggers.push_back(AliVEvent::kHighMultV0);
 		cout <<Form("Adding trigger: kHighMultV0 (BIT %i)", AliVEvent::kHighMultV0) <<endl;
 	}
-    if (fUsekHMSPD)
+	if (fUsekHMSPD)
 	{
 		fTargetTriggers.push_back(AliVEvent::kHighMultSPD);
 		cout <<Form("Adding trigger: kHighMultSPD (BIT %i)", AliVEvent::kHighMultSPD) <<endl;
@@ -221,16 +245,16 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	Double_t bin[8]      = {1, 2, 3, 4, 5, 6, 8, 12};
 	Double_t bin_old[8]  = {0, 1, 2, 3.2, 4.4, 6, 8, 12};
 	Double_t rapbin[21]  = {-1, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1,
-							0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,	1};
-	Double_t widebin[10] = {1, 2, 3, 4, 5, 6, 8, 12, 16, 20};
+		                   	0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,	1};
+	Double_t widebin[11] = {0, 1, 2, 3, 4, 5, 6, 8, 12, 16, 20};
 
 	fHistos->CreateTH1("Centrality","",100,0,100,"s");
-	//fHistos->CreateTH1("NumOfEvtperRun","",5000,0,5000,"s");
-	//fHistos->CreateTH1("NumOfe","",5000,0,5000,"s");
-	//fHistos->CreateTH1("NumOfXi","",5000,0,5000,"s");
 	fHistos->CreateTH1("NumOfEvtperRun","", (295000-252000),252000,295000,"s"); //kimc
 	fHistos->CreateTH1("NumOfe","",         (295000-252000),252000,295000,"s"); //kimc
 	fHistos->CreateTH1("NumOfXi","",        (295000-252000),252000,295000,"s"); //kimc
+
+	//Check yield by trigger: all (0), kINT7 (1), kHMV0 (2), and kHMSPD (3)
+	if (IsMC == false) fHistos->CreateTH2("hNorm_multV0", ";Mult;Trig", 1000,0,100, 4,0,4, "s");
 
 	fHistos->CreateTH1("hNonPromptXicRap","",500,-5,5,"s");
 	fHistos->CreateTH1("hPromptXicRap","",500,-5,5,"s");
@@ -247,57 +271,47 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 
 	fHistos->CreateTH1("hEleXiMassRS","",10,1.3,3.3,"s");
 	fHistos->CreateTH1("hEleXiMassWS","",10,1.3,3.3,"s");
-	fHistos->CreateTH1("hEleXiPtRS","",7,bin,"s");
-	fHistos->CreateTH1("hEleXiPtWS","",7,bin,"s");
-	fHistos->CreateTH1("hEleXiPtRS_SameSign","",7,bin,"s");
-	fHistos->CreateTH1("hEleXiPtWS_SameSign","",7,bin,"s");
-	fHistos->CreateTH1("hLooseEleXiPtRS","",7,bin,"s");
-	fHistos->CreateTH1("hLooseEleXiPtWS","",7,bin,"s");
+	fHistos->CreateTH1("hEleXiPtRS","",10,widebin,"s");
+	fHistos->CreateTH1("hEleXiPtWS","",10,widebin,"s");
+	fHistos->CreateTH1("hEleXiPtRS_SameSign","",10,widebin,"s");
+	fHistos->CreateTH1("hEleXiPtWS_SameSign","",10,widebin,"s");
+	fHistos->CreateTH1("hLooseEleXiPtRS","",10,widebin,"s");
+	fHistos->CreateTH1("hLooseEleXiPtWS","",10,widebin,"s");
 
-	fHistos->CreateTH1("eXiFromXib","",9,widebin,"s");
-	fHistos->CreateTH1("Xib","",9,widebin,"s");
-	fHistos->CreateTH2("XibvseXiRPM","",9,widebin,9,widebin,"s");
-	fHistos->CreateTH1("eXiFromXibGen","",9,widebin,"s");
-	fHistos->CreateTH1("XibGen","",9,widebin,"s");
-	fHistos->CreateTH1("XibGen05","",9,widebin,"s");
-	fHistos->CreateTH2("XibvseXiRPMGen","",9,widebin,9,widebin,"s");
+	fHistos->CreateTH1("eXiFromXib","",10,widebin,"s");
+	fHistos->CreateTH1("Xib","",10,widebin,"s");
+	fHistos->CreateTH2("XibvseXiRPM","",10,widebin,10,widebin,"s");
+	fHistos->CreateTH1("eXiFromXibGen","",10,widebin,"s");
+	fHistos->CreateTH1("XibGen","",10,widebin,"s");
+	fHistos->CreateTH1("XibGen05","",10,widebin,"s");
+	fHistos->CreateTH2("XibvseXiRPMGen","",10,widebin,10,widebin,"s");
 
-	fHistos->CreateTH2("hXicPtRap","",9,widebin,21,rapbin,"s");
-	fHistos->CreateTH1("hTrueXic0","",7,bin,"s");
-	fHistos->CreateTH1("hTrueXic0W","",7,bin,"s");
+	fHistos->CreateTH2("hXicPtRap","",10,widebin,20,rapbin,"s");
+	fHistos->CreateTH1("hTrueXic0","",10,widebin,"s");
 	fHistos->CreateTH1("hTrueXic0_oldbin","",7,bin_old,"s");
-	fHistos->CreateTH1("hTrueXic0W_oldbin","",7,bin_old,"s");
-	fHistos->CreateTH1("hTrueXic0_rap8","",7,bin,"s");
-	fHistos->CreateTH1("hTrueXic0W_rap8","",7,bin,"s");
+	fHistos->CreateTH1("hTrueXic0_rap8","",10,widebin,"s");
 	fHistos->CreateTH1("hTrueXic0_oldbin_rap8","",7,bin_old,"s");
-	fHistos->CreateTH1("hTrueXic0W_oldbin_rap8","",7,bin_old,"s");
-	fHistos->CreateTH1("hTruePaireXi","",7,bin,"s");
-	fHistos->CreateTH1("hGenXic0PtFromXib","",7,bin,"s");
-	fHistos->CreateTH1("hGenXic0PtFromXic","",7,bin,"s");
-	fHistos->CreateTH1("hXic0PtFromBottom1","",7,bin,"s");
-	fHistos->CreateTH1("hXic0PtFromBottom2","",7,bin,"s");
-	fHistos->CreateTH1("hXic0PtFromCharm1","",7,bin,"s");
-	fHistos->CreateTH1("hXic0PtFromCharm2","",7,bin,"s");
-	fHistos->CreateTH1("hElectronFromXic0","",7,bin,"s");
-	fHistos->CreateTH1("hCascadeFromXic0","",7,bin,"s");
+	fHistos->CreateTH1("hTruePaireXi","",10,widebin,"s");
+	fHistos->CreateTH1("hGenXic0PtFromXib","",10,widebin,"s");
+	fHistos->CreateTH1("hGenXic0PtFromXic","",10,widebin,"s");
+	fHistos->CreateTH1("hXic0PtFromBottom1","",10,widebin,"s");
+	fHistos->CreateTH1("hXic0PtFromBottom2","",10,widebin,"s");
+	fHistos->CreateTH1("hXic0PtFromCharm1","",10,widebin,"s");
+	fHistos->CreateTH1("hXic0PtFromCharm2","",10,widebin,"s");
+	fHistos->CreateTH1("hElectronFromXic0","",10,widebin,"s");
+	fHistos->CreateTH1("hCascadeFromXic0","",10,widebin,"s");
 	fHistos->CreateTH1("hMCXic0AllRap","",12,0,12,"s");
-	fHistos->CreateTH2("hMCXic0vsPair","",7,bin,7,bin,"s");
+	fHistos->CreateTH2("hMCXic0vsPair","",10,widebin,10,widebin,"s");
 
-	fHistos->CreateTH2("hXic0vseXiRPM","",9,widebin,9,widebin,"s");
-	fHistos->CreateTH1("hGenXic0Pt","",9,widebin,"s");
-	fHistos->CreateTH1("hGenXic0Pt1","",9,widebin,"s");
-	fHistos->CreateTH1("hGenXic0Pt2","",9,widebin,"s");
-	fHistos->CreateTH1("hRecoPairPt","",9,widebin,"s");
+	fHistos->CreateTH2("hXic0vseXiRPM","",10,widebin,10,widebin,"s");
+	fHistos->CreateTH1("hGenXic0Pt","",10,widebin,"s");
+	fHistos->CreateTH1("hGenXic0Pt1","",10,widebin,"s");
+	fHistos->CreateTH1("hGenXic0Pt2","",10,widebin,"s");
+	fHistos->CreateTH1("hRecoPairPt","",10,widebin,"s");
 
 	vector<TString> DecayChannel ={"e&Xi","!e&Xi","e&!Xi","!e&!Xi"};
 	auto hMCXic0Decays = fHistos->CreateTH1("hMCXic0Decays","",DecayChannel.size(), 0, DecayChannel.size());
 	for(auto i=0u; i<DecayChannel.size(); i++) hMCXic0Decays->GetXaxis()->SetBinLabel(i+1,DecayChannel.at(i).Data());
-
-	fWeightFit = new TF1("fWeightFit","expo", 0, 12);
-	fWeightFit -> SetParameter(0, GetFitParameter1());//+1.06549e-00);
-	fWeightFit -> SetParameter(1, GetFitParameter2());//-2.98456e-01);
-	cout <<Form("\nFit parameters being set: %4.3f, %4.3f \n\n",
-				fWeightFit->GetParameter(0), fWeightFit->GetParameter(1)); //kimc
 
 	//---------------------------CUT STUDY (MC Xi from Xic0)---------------------------//
 
@@ -355,8 +369,8 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	PostData(1, fHistos);
 	PostData(2, fTrackCuts);
 
-	DefineMCCutTree();
-	PostData(3, fMCCutTree);
+	DefineMCXicTree();
+	PostData(3, fMCXicTree);
 
 	DefinePaireXiTree();
 	PostData(4, fPaireXiTree);
@@ -371,6 +385,26 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	fCounter->SetStudyMultiplicity(kTRUE,1.); //check
 	fCounter->Init();
 	PostData(7, fCounter);
+
+    //kimc, Mar. 18, 2021
+    fCounter_MB_0to100   = new AliNormalizationCounter("ANC_MB_0to100");
+    fCounter_MB_0p1to30  = new AliNormalizationCounter("ANC_MB_0p1to30");
+    fCounter_MB_30to100  = new AliNormalizationCounter("ANC_MB_30to100");
+    fCounter_HMV0_0to0p1 = new AliNormalizationCounter("ANC_HMV0_0to0p1");
+    fCounter_MB_0to100  ->SetStudyMultiplicity(kTRUE, 1.);
+    fCounter_MB_0p1to30 ->SetStudyMultiplicity(kTRUE, 1.);
+    fCounter_MB_30to100 ->SetStudyMultiplicity(kTRUE, 1.);
+    fCounter_HMV0_0to0p1->SetStudyMultiplicity(kTRUE, 1.);
+    fCounter_MB_0to100  ->Init();
+    fCounter_MB_0p1to30 ->Init();
+    fCounter_MB_30to100 ->Init();
+    fCounter_HMV0_0to0p1->Init();
+    PostData( 8, fCounter_MB_0to100);
+    PostData( 9, fCounter_MB_0p1to30);
+    PostData(10, fCounter_MB_30to100);
+    PostData(11, fCounter_HMV0_0to0p1);
+
+	return;
 }//UserCreateOutputObjects
 
 //---------------------------------------------------------
@@ -399,6 +433,7 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 
 	//Check collision type?
 	fRunNumber = fEvt->GetRunNumber();
+    if (fRunNumber<252000 || fRunNumber>295000) return; //Mar. 18: discard events w/ invalid run numbers (RUN2)
 	fRunTable = new AliAnalysisTaskSEXic0RunTable(fRunNumber);
 
 	//Retrieve centrality info
@@ -415,16 +450,14 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 	}
 	else
 	{
-		if(IsPA){fCentrality = MultSelection->GetMultiplicityPercentile("V0A");}
-		else{fCentrality = MultSelection->GetMultiplicityPercentile("V0M");}
-		//kimc: should it be changed for HM triggers?
-		fCentralSPD = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-		fNSPDTracklets = MultSelection->GetEstimator("SPDTracklets")->GetValue();
+		if (IsPA) { fCentrality = MultSelection->GetMultiplicityPercentile("V0A"); }
+		else      { fCentrality = MultSelection->GetMultiplicityPercentile("V0M"); }
 
+		fCentralSPD    = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+		fNSPDTracklets = MultSelection->GetEstimator("SPDTracklets")->GetValue();
 		//SPD efficiency problem? Sometime both values are 0 - NOT makes sense at all
 		if ( fCentralSPD == 0. && fNSPDTracklets == 0. ) fCentralSPD = fNSPDTracklets = -999;
 	}
-	fCounter->StoreEvent(fEvt, fEvtCuts, IsMC);
 
 	//-----------------------------------------------------
 
@@ -446,43 +479,27 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 
 	//*****************************************************
 
-	#if 0
-	//Original selection by minBias (J. Seo)
-	Bool_t IsMinimumBias = kFALSE;
+	//kimc
+	Bool_t IsTrigFired = kFALSE;
+	if (fTargetTriggers.size() == 0) AliFatal("WARNING: target trigger container is empty! Stop.");
 
-	// Physics Selection & kINT7----------------------------------------------
-	IsMinimumBias = inputHandler->IsEventSelected() & AliVEvent::kINT7; //mulplisity flat
+	for (unsigned int a=0; a<fTargetTriggers.size(); a++)
+	{
+		if (inputHandler->IsEventSelected() & fTargetTriggers[a]) IsTrigFired = kTRUE;
 
-	//LHC16k and l are CD dedicated runs! CD-online-trigger is used.
-	TString firedTriggerClasses = fEvt->GetFiredTriggerClasses();
-	if (fOption.Contains("LHC16k") || fOption.Contains("LHC16l")){
-		firedTriggerClasses.Contains("CINT7-B-NOPF-CENT") ?  IsMinimumBias = kTRUE : IsMinimumBias = kFALSE; }
+		//LHC16k and l are CD dedicated runs! CD-online-trigger is used
+		if (fOption.Contains("LHC16k") || fOption.Contains("LHC16l"))
+		{
+			TString firedTriggerClasses = fEvt->GetFiredTriggerClasses();
+			if ( (fTargetTriggers[a] == AliVEvent::kINT7) &&
+				 (firedTriggerClasses.Contains("CINT7-B-NOPF-CENT")) ) IsTrigFired = kTRUE;
+		}
+	}
 
-	if (!IsMinimumBias) return;
-	fHistos->FillTH1("hEventNumbers","MB",1);
-	#endif
-
-    //kimc
-    Bool_t IsTrigFired = kFALSE;
-    if (fTargetTriggers.size() == 0) AliFatal("WARNING: target trigger container is empty! Stop.");
-
-    for (unsigned int a=0; a<fTargetTriggers.size(); a++)
-    {
-        if (inputHandler->IsEventSelected() & fTargetTriggers[a]) IsTrigFired = kTRUE;
-
-        //LHC16k and l are CD dedicated runs! CD-online-trigger is used
-        if (fOption.Contains("LHC16k") || fOption.Contains("LHC16l"))
-        {
-            TString firedTriggerClasses = fEvt->GetFiredTriggerClasses();
-            if ( (fTargetTriggers[a] == AliVEvent::kINT7) &&
-                 (firedTriggerClasses.Contains("CINT7-B-NOPF-CENT")) ) IsTrigFired = kTRUE;
-        }
-    }
-
-    if (IsTrigFired == kFALSE) return;
-	if (inputHandler->IsEventSelected() &AliVEvent::kINT7)        fHistos->FillTH1("hEventNumbers", "MB", 1);
-	if (inputHandler->IsEventSelected() &AliVEvent::kHighMultV0)  fHistos->FillTH1("hEventNumbers", "HMV0", 1);
-	if (inputHandler->IsEventSelected() &AliVEvent::kHighMultSPD) fHistos->FillTH1("hEventNumbers", "HMSPD", 1);
+	if (IsTrigFired == kFALSE) return;
+	if (inputHandler->IsEventSelected() & AliVEvent::kINT7)        fHistos->FillTH1("hEventNumbers", "MB", 1);
+	if (inputHandler->IsEventSelected() & AliVEvent::kHighMultV0)  fHistos->FillTH1("hEventNumbers", "HMV0", 1);
+	if (inputHandler->IsEventSelected() & AliVEvent::kHighMultSPD) fHistos->FillTH1("hEventNumbers", "HMSPD", 1);
 
 	//*****************************************************
 
@@ -495,9 +512,37 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 	const AliVVertex* Vtx = fEvt->GetPrimaryVertex();
 	if (!Vtx || Vtx->GetNContributors() < 1) return;
 	fHistos->FillTH1("hEventNumbers", "Goodz", 1);
+
+	//! Mar. 22
+	//AliNormalizationCounter: store events for later normalization (* original invoke position)
+	fCounter->StoreEvent(fEvt, fEvtCuts, IsMC);
+
+    //kimc, Mar. 18
+    if (fCentrality >=  0.0 && fCentrality <= 100.0) fCounter_MB_0to100  ->StoreEvent(fEvt, fEvtCuts, IsMC);
+    if (fCentrality >=  0.1 && fCentrality <=  30.0) fCounter_MB_0p1to30 ->StoreEvent(fEvt, fEvtCuts, IsMC);
+    if (fCentrality >= 30.0 && fCentrality <= 100.0) fCounter_MB_30to100 ->StoreEvent(fEvt, fEvtCuts, IsMC);
+    if (fCentrality >=  0.0 && fCentrality <=   0.1) fCounter_HMV0_0to0p1->StoreEvent(fEvt, fEvtCuts_HMV0, IsMC);
+	//!
+
 	if (!(fabs(Vtx->GetZ())<10.)) return;
 	fHistos->FillTH1("hEventNumbers", "Goodzcut", 1);
 	fVtxZ = Vtx->GetZ(); //kimc
+
+    //Manual # of entries container: updated again at Mar. 18, 2021 (kimc)
+    if (IsMC == false)
+    {
+        fHistos->FillTH2("hNorm_multV0", fCentrality, 0);
+        if (inputHandler->IsEventSelected())
+        {
+            if (AliVEvent::kINT7)        fHistos->FillTH2("hNorm_multV0", fCentrality, 1);
+            if (AliVEvent::kHighMultV0)  fHistos->FillTH2("hNorm_multV0", fCentrality, 2);
+            if (AliVEvent::kHighMultSPD) fHistos->FillTH2("hNorm_multV0", fCentrality, 3);
+        }
+    }
+
+    //Judge if this event is INEL > 0, for data - kimc, update at Mar. 18, 2021
+    fIsINELLgtZERO = false;
+    if (IsMC==false && AliPPVsMultUtils::IsINELgtZERO(fEvt)==true) fIsINELLgtZERO = true;
 
 	if (IsHighMul)
 	{
@@ -513,14 +558,14 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 	//------------------------------------------------------------------------
 
 	fHistos->FillTH1("Centrality", fCentrality);
-	//fHistos->FillTH1("NumOfEvtperRun",fRunNumber-fRunOffset);
-	fHistos->FillTH1("NumOfEvtperRun", fRunNumber); //kimc: removed runOffset feature
+	fHistos->FillTH1("NumOfEvtperRun", fRunNumber);
 
-	//MC, 
+	//MC
 	if (IsMC && fEvt->IsA()==AliAODEvent::Class())
 	{
 		fMC = inputHandler->MCEvent();
 		AliAODMCHeader *mcHeader = (AliAODMCHeader*)fEvt->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+
 		Double_t zMCVertex = mcHeader->GetVtxZ();
 		if (!(fabs(zMCVertex)<10.)) return;
 		fVtxZ = zMCVertex; //kimc
@@ -531,7 +576,12 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 			if (!MCparticle) continue;
 
 			FillMCXic0(MCparticle);
-			if (FillMCXib(MCparticle)) continue; //kimc: what's the purpose of this line?
+			if (FillMCXib(MCparticle)) continue;
+
+            //INEL > 0 judgment for MC - kimc, update at Mar. 18, 2021
+            if ( MCparticle->IsPhysicalPrimary() &&
+                 MCparticle->Charge() != 0 &&
+                 fabs(MCparticle->Eta() < 1.0) ) fIsINELLgtZERO = true;
 		}
 	}
 
@@ -554,17 +604,13 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 		if (!casc) continue;
 		if (!(casc->GetSecondaryVtx())) continue;
 		if (!(casc->GetDecayVertexXi())) continue;
-		//   Int_t tmp = MatchToMCXi(casc);
 		if (!FilterCascade(casc)) continue; //cascade cut
-		//t_t tmp = MatchToMCXic0(casc);
-		//cout << "MCXic0 : " <<tmp << "---------------------------------------------------------------" << endl;
 
 		for (Int_t itrk=0; itrk<nTracks; itrk++)
 		{
 			AliAODTrack *trk = (AliAODTrack*) fEvt->GetTrack(itrk);
 
 			if (!trk) continue;
-			//if(IsMC) CheckXic0Info(trk,casc);
 			if (!(FilterTrack(trk,1))) continue;  //track cut
 			FillPairEleXi(casc, trk);
 
@@ -580,123 +626,27 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 			fEventTreeVariable[5] = (Float_t)fVtxZ;
 
 			fEventTreeVarTrig = 0; //Reset
-			fEventTreeVarTrig = inputHandler->IsEventSelected();
+			if (!IsMC) fEventTreeVarTrig = inputHandler->IsEventSelected();
 			//fEventTree->Fill(); //Move this inside FillPairEleXi, to sync entries
-
-			//*****************************************************
 		}
 	}
 
 	PostData(1, fHistos->GetListOfHistograms());
 	PostData(2, fTrackCuts);
-	PostData(3, fMCCutTree);
+	PostData(3, fMCXicTree);
 	PostData(4, fPaireXiTree);
 	PostData(5, fMCTree);
 	PostData(6, fEventTree);
 	PostData(7, fCounter);
 
+	//kimc, Mar. 18
+    PostData( 8, fCounter_MB_0to100);
+    PostData( 9, fCounter_MB_0p1to30);
+    PostData(10, fCounter_MB_30to100);
+    PostData(11, fCounter_HMV0_0to0p1);
+
 	return;
 }//UserExec
-
-//------------------------------------------------------------------------------------------
-void AliAnalysisTaskSEXic0Semileptonic::CheckXic0Info(AliAODTrack *trk, AliAODcascade *casc)
-{
-	Int_t MCXic0lab = MatchToMCXic0(casc, trk);
-	if (MCXic0lab == -1) return;
-	AliAODTrack *pion   = (AliAODTrack*)(casc->GetDaughter(0)); //positive
-	AliAODTrack *proton = (AliAODTrack*)(casc->GetDaughter(1)); //negative
-	AliAODTrack *b_pion = (AliAODTrack*)(casc->GetDecayVertexXi()->GetDaughter(0));
-	if (!pion || !proton || !b_pion) return;
-
-	if (pion->Charge()<0 && proton->Charge()>0)
-	{
-		pion   = (AliAODTrack*)casc->GetDaughter(1);
-		proton = (AliAODTrack*)casc->GetDaughter(0);
-	}
-
-	Bool_t isparticle = kTRUE;
-	if (casc->ChargeXi()>0) isparticle = kFALSE;
-
-	const AliVVertex* Vtx = fEvt->GetPrimaryVertex();
-	Double_t primvert_2[3];
-	Vtx->GetXYZ(primvert_2);
-	Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
-	Double_t ptotxi = TMath::Sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)+pow(casc->MomXiZ(),2));
-	Double_t CascDecayLength = casc->DecayLengthXi(primvert_2[0],primvert_2[1],primvert_2[2])*mxiPDG/ptotxi;
-
-	Double_t lPosXi[3];
-	lPosXi[0] = casc->DecayVertexXiX();
-	lPosXi[1] = casc->DecayVertexXiY();
-	lPosXi[2] = casc->DecayVertexXiZ();
-	Double_t decayvertXi = TMath::Sqrt(lPosXi[0]*lPosXi[0]+lPosXi[1]*lPosXi[1]);
-
-	Double_t lPosV0[3];
-	lPosV0[0] = casc->DecayVertexV0X();
-	lPosV0[1] = casc->DecayVertexV0Y();
-	lPosV0[2] = casc->DecayVertexV0Z();
-	Double_t decayvertV0 = TMath::Sqrt(lPosV0[0]*lPosV0[0]+lPosV0[1]*lPosV0[1]);
-
-	Double_t lV0CosineOfPointingAngleXi = casc->CosPointingAngle(lPosXi);
-
-	for(Int_t i=0; i<32; i++) fMCCutTreeVariable[i] = -9999.;
-	fMCCutTreeVariable[ 0] = trk->GetTPCNcls();
-	fMCCutTreeVariable[ 1] = trk->GetTPCsignalN();
-	fMCCutTreeVariable[ 2] = trk->GetITSNcls();
-	fMCCutTreeVariable[ 3] = trk->GetTPCClusterInfo(2,1);
-	fMCCutTreeVariable[ 4] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
-	fMCCutTreeVariable[ 5] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
-	fMCCutTreeVariable[ 6] = pion->GetTPCNcls();
-	fMCCutTreeVariable[ 7] = proton->GetTPCNcls();
-	fMCCutTreeVariable[ 8] = b_pion->GetTPCNcls();
-	fMCCutTreeVariable[ 9] = pion->GetTPCsignalN();
-	fMCCutTreeVariable[10] = proton->GetTPCsignalN();
-	fMCCutTreeVariable[11] = b_pion->GetTPCsignalN();
-	fMCCutTreeVariable[12] = pion->GetTPCClusterInfo(2,1);
-	fMCCutTreeVariable[13] = proton->GetTPCClusterInfo(2,1);
-	fMCCutTreeVariable[14] = b_pion->GetTPCClusterInfo(2,1);
-	fMCCutTreeVariable[15] = fPIDResponse->NumberOfSigmasTPC(proton,AliPID::kProton);
-	fMCCutTreeVariable[16] = fPIDResponse->NumberOfSigmasTPC(pion,AliPID::kPion);
-	fMCCutTreeVariable[17] = fPIDResponse->NumberOfSigmasTPC(pion,AliPID::kProton);
-	fMCCutTreeVariable[18] = fPIDResponse->NumberOfSigmasTPC(proton,AliPID::kPion);
-	fMCCutTreeVariable[19] = fPIDResponse->NumberOfSigmasTPC(b_pion,AliPID::kPion);
-	fMCCutTreeVariable[20] = casc->MassXi();
-	fMCCutTreeVariable[21] = decayvertV0;
-	fMCCutTreeVariable[22] = casc->DcaBachToPrimVertex();
-	fMCCutTreeVariable[23] = casc->DcaV0ToPrimVertex();
-	fMCCutTreeVariable[24] = lV0CosineOfPointingAngleXi;
-	fMCCutTreeVariable[25] = decayvertXi;
-	fMCCutTreeVariable[26] = casc->DcaPosToPrimVertex();
-	fMCCutTreeVariable[27] = casc->DcaNegToPrimVertex();
-	fMCCutTreeVariable[28] = isparticle;
-
-	AliAODMCParticle* MCXic0 = (AliAODMCParticle*)fMC->GetTrack(MCXic0lab);
-	AliAODMCParticle* MCe    = 0;
-	AliAODMCParticle* MCcasc = 0;
-	Bool_t e_flag  = kFALSE;
-	Bool_t xi_flag = kFALSE;
-	for (Int_t idau=MCXic0->GetDaughterFirst(); idau<MCXic0->GetDaughterLast()+1; idau++)
-	{
-		if (idau<0) break;
-
-		AliAODMCParticle* mcdau = (AliAODMCParticle*) fMC->GetTrack(idau);
-		if (!mcdau) continue;
-		if (TMath::Abs(mcdau->GetPdgCode())==11) { e_flag = kTRUE; MCe = mcdau; }
-		if (TMath::Abs(mcdau->GetPdgCode())==3312) { xi_flag = kTRUE; MCcasc = mcdau; }
-	}
-	fMCCutTreeVariable[29] = MCXic0->Pt();
-
-	Int_t motherxic = MCXic0->GetMother();
-	if (motherxic>0 && e_flag && xi_flag)
-	{
-		AliAODMCParticle* MCMother = (AliAODMCParticle*)fMC->GetTrack(motherxic);
-		if ( ((TMath::Abs(MCMother->GetPdgCode()))==5132) ||
-			 ((TMath::Abs(MCMother->GetPdgCode()))==5232) ) fMCCutTreeVariable[30] = 1;
-		else fMCCutTreeVariable[31] = 1;
-	}
-
-	fMCCutTree->Fill();
-	return;
-}//CheckXic0Info
 
 //=================================================================================================
 
@@ -718,20 +668,10 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::FilterTrack(AliAODTrack * track, Int_t
 			if (mother_e_label>0)
 			{
 				AliAODMCParticle* mcXic0 = (AliAODMCParticle*) fMC->GetTrack(mother_e_label);
-				if (TMath::Abs(mcXic0->GetPdgCode())==4132)
-				{
-					Int_t lab_mother_of_Xic0 = mcXic0->GetMother();
-					if (lab_mother_of_Xic0>0)
-					{
-						AliAODMCParticle* mother_of_Xic0 = (AliAODMCParticle*)fMC->GetTrack(lab_mother_of_Xic0);
-						if ( (TMath::Abs(mother_of_Xic0->GetPdgCode())==5132) ||
-							 (TMath::Abs(mother_of_Xic0->GetPdgCode())==5232)) b_flag = kTRUE;
-						else c_flag = kTRUE;
-					}
-				}
+				if (TMath::Abs(mcXic0->GetPdgCode())==4132) CheckOrigin(fMC,mcXic0,kTRUE,c_flag,b_flag);
 			}
 		}
-	}
+	}//IsMC
 
 	if (IsMC && FillHistosFlag==100 && c_flag) fHistos->FillTH1("e_c_flag","all",1);
 	if (IsMC && FillHistosFlag==100 && b_flag) fHistos->FillTH1("e_b_flag","all",1);
@@ -799,23 +739,13 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::FilterElectron(
 			if (mother_e_label>0)
 			{
 				AliAODMCParticle* mcXic0 = (AliAODMCParticle*) fMC->GetTrack(mother_e_label);
-				if (TMath::Abs(mcXic0->GetPdgCode())==4132)
-				{
-					Int_t lab_mother_of_Xic0 =  mcXic0->GetMother();
-					if (lab_mother_of_Xic0>0)
-					{
-						AliAODMCParticle* mother_of_Xic0 = (AliAODMCParticle*)fMC->GetTrack(lab_mother_of_Xic0);
-						if( (TMath::Abs(mother_of_Xic0->GetPdgCode())==5132) ||
-							(TMath::Abs(mother_of_Xic0->GetPdgCode())==5232) ) b_flag = kTRUE;
-						else c_flag = kTRUE;
-					}
-				}
+				if (TMath::Abs(mcXic0->GetPdgCode())==4132) CheckOrigin(fMC,mcXic0,kTRUE,c_flag,b_flag);
 			}
 		}
 	}
 	nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(etrk,AliPID::kElectron);
 
-	if ((FillHistosFlag==100) && StandardCutFlag(etrk,casc,1,0,0,0)) 
+	if ((FillHistosFlag==100) && StandardCutFlag(etrk,casc,1,0,0,0))
 	{
 		fHistos->FillTH2("nSigmaTOFvsPt",etrk->Pt(),nSigmaTOF);
 	}
@@ -843,7 +773,6 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::FilterElectron(
 		fHistos->FillTH1("e_b_flag","TPC_b",1);
 	}
 
-	//if((FillHistosFlag==100) && StandardCutFlag(etrk,casc,1,1,0,0))fHistos->FillTH1("NumOfe",fRunNumber-fRunOffset);
 	if ((FillHistosFlag==100) && StandardCutFlag(etrk,casc,1,1,0,0)) fHistos->FillTH1("NumOfe", fRunNumber); //kimc
 
 	Int_t trkid = etrk->GetID();
@@ -886,7 +815,7 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::FilterElectron(
 		if (trk->Charge()*etrk->Charge()<0 && mass<minmass) { minmass = mass; Pt = tmp_pt; }
 	}
 
-	if (IsMC && (FillHistosFlag==100) && c_flag && minmass>0.05 && StandardCutFlag(etrk,casc,1,1,0,0)) 
+	if (IsMC && (FillHistosFlag==100) && c_flag && minmass>0.05 && StandardCutFlag(etrk,casc,1,1,0,0))
 	{
 		fHistos->FillTH1("e_c_flag","prefilter_c",1);
 	}
@@ -1008,7 +937,6 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::FilterCascade(AliAODcascade *casc)
 
 	if ((fabs(massXi-mxiPDG)<0.025) && StandardCutFlag(pion,casc,0,0,1,1))
 	{
-		//fHistos->FillTH1("NumOfXi",fRunNumber-fRunOffset); //dummy track
 		fHistos->FillTH1("NumOfXi",fRunNumber); //kimc
 	}
 
@@ -1033,6 +961,10 @@ void AliAnalysisTaskSEXic0Semileptonic::FillMCXic0(AliAODMCParticle *mcpart)
 
 	Bool_t e_flag = kFALSE; //electron
 	Bool_t xi_flag = kFALSE; //Xi-
+	Bool_t c_flag = kFALSE; //Xi-
+	Bool_t b_flag = kFALSE; //Xi-
+
+	for (int i=0; i<8; i++) fMCXicTreeVariable[i] = -9999.; //Reset
 
 	AliAODMCParticle *MCe = 0;
 	AliAODMCParticle *MCcasc = 0;
@@ -1050,11 +982,11 @@ void AliAnalysisTaskSEXic0Semileptonic::FillMCXic0(AliAODMCParticle *mcpart)
 	if ( e_flag&&!xi_flag) fHistos->FillTH1("hMCXic0Decays","e&!Xi",1);
 	if (!e_flag&&!xi_flag) fHistos->FillTH1("hMCXic0Decays","!e&!Xi",1);
 
-	Int_t motherxic = mcpart->GetMother();
-	if (motherxic>0 && e_flag && xi_flag)
+	if(e_flag && xi_flag)
 	{
-		AliAODMCParticle* MCMother = (AliAODMCParticle*) fMC->GetTrack(motherxic);
-		if (((TMath::Abs(MCMother->GetPdgCode()))==5132) || ((TMath::Abs(MCMother->GetPdgCode()))==5232)) //Xib
+		CheckOrigin(fMC,mcpart,kTRUE,c_flag,b_flag);
+
+		if (b_flag)
 		{
 			if (MCe->Charge()>0 && MCcasc->Charge()<0 && fabs(mcpart->Y())<0.5)
 			{
@@ -1065,8 +997,9 @@ void AliAnalysisTaskSEXic0Semileptonic::FillMCXic0(AliAODMCParticle *mcpart)
 				fHistos->FillTH1("hXic0PtFromBottom2",mcpart->Pt());
 			}
 			fHistos->FillTH1("hNonPromptXicRap",mcpart->Y());
+			b_flag = kTRUE;
 		}
-		else
+		if(c_flag)
 		{
 			if (MCe->Charge()>0 && MCcasc->Charge()<0 && fabs(mcpart->Y())<0.5)
 			{
@@ -1087,7 +1020,17 @@ void AliAnalysisTaskSEXic0Semileptonic::FillMCXic0(AliAODMCParticle *mcpart)
 		Double_t pxv = MCcasc->Px(); Double_t pyv = MCcasc->Py();
 		Double_t eXi = sqrt(pow(pxe+pxv,2)+pow(pye+pyv,2));
 		fHistos->FillTH1("hXicRap",mcpart->Y());
-		fHistos->FillTH1("hXicPtRap",mcpart->Pt(),mcpart->Y());
+		fHistos->FillTH2("hXicPtRap",mcpart->Pt(),mcpart->Y());
+
+		fMCXicTreeVariable[0] = mcpart->Pt();
+		fMCXicTreeVariable[1] = MCe->Pt();
+		fMCXicTreeVariable[2] = MCcasc->Pt();
+		fMCXicTreeVariable[3] = mcpart->Y();
+		fMCXicTreeVariable[4] = MCe->Y();
+		fMCXicTreeVariable[5] = MCcasc->Y();
+		fMCXicTreeVariable[6] = c_flag;
+		fMCXicTreeVariable[7] = b_flag;
+		fMCXicTree->Fill();
 
 		if (fabs(mcpart->Y())<0.5)
 		{
@@ -1095,8 +1038,6 @@ void AliAnalysisTaskSEXic0Semileptonic::FillMCXic0(AliAODMCParticle *mcpart)
 			fHistos->FillTH1("hTruePaireXi",eXi);
 			fHistos->FillTH1("hTrueXic0",mcpart->Pt());
 			fHistos->FillTH1("hTrueXic0_oldbin",mcpart->Pt());
-			fHistos->FillTH1("hTrueXic0W",mcpart->Pt(),fWeightFit->Eval(mcpart->Pt()));
-			fHistos->FillTH1("hTrueXic0W_oldbin",mcpart->Pt(),fWeightFit->Eval(mcpart->Pt()));
 			fHistos->FillTH1("hElectronFromXic0",MCe->Pt());
 			fHistos->FillTH1("hCascadeFromXic0",MCcasc->Pt());
 		}
@@ -1104,8 +1045,6 @@ void AliAnalysisTaskSEXic0Semileptonic::FillMCXic0(AliAODMCParticle *mcpart)
 		{
 			fHistos->FillTH1("hTrueXic0_rap8",mcpart->Pt());
 			fHistos->FillTH1("hTrueXic0_oldbin_rap8",mcpart->Pt());
-			fHistos->FillTH1("hTrueXic0W_rap8",mcpart->Pt(),fWeightFit->Eval(mcpart->Pt()));
-			fHistos->FillTH1("hTrueXic0W_oldbin_rap8",mcpart->Pt(),fWeightFit->Eval(mcpart->Pt()));
 		}
 	}
 	return;
@@ -1184,7 +1123,7 @@ void AliAnalysisTaskSEXic0Semileptonic::FillPairEleXi(AliAODcascade *casc, AliAO
 	for (Int_t i=0; i<12; i++) fMCTreeVariable[i] = -9999.;
 	Double_t mcpxe = -9999.; Double_t mcpye = -9999.; Double_t mcpxv = -9999.;
 	Double_t mcpyv = -9999.; Double_t mcPt = -9999.;
-	Int_t c_flag = 0; Int_t b_flag = 0;
+	Bool_t c_flag = kFALSE; Bool_t b_flag = kFALSE;
 	Double_t mass; Double_t mass_ss;
 
 	Double_t pxe = trk->Px();
@@ -1312,15 +1251,13 @@ void AliAnalysisTaskSEXic0Semileptonic::FillPairEleXi(AliAODcascade *casc, AliAO
 				AliAODMCParticle* mcXic0 = (AliAODMCParticle*) fMC->GetTrack(MCXic0lab);
 				Double_t mcXic0_Pt = mcXic0->Pt();
 
-				Int_t lab_mother_of_Xic0 =  mcXic0->GetMother();
-				AliAODMCParticle* mother_of_Xic0 = mcXic0;
-				if(lab_mother_of_Xic0>=0) mother_of_Xic0 = (AliAODMCParticle*) fMC->GetTrack(lab_mother_of_Xic0);
-
 				Int_t elab = MatchToMCele(trk);
 				Int_t Xilab = MatchToMCXi(casc);
 
 				if(elab>0 && Xilab>0)
 				{
+					CheckOrigin(fMC,mcXic0,kTRUE,c_flag,b_flag);
+
 					AliAODMCParticle* mcXi = (AliAODMCParticle*) fMC->GetTrack(Xilab);
 					AliAODMCParticle* mce = (AliAODMCParticle*) fMC->GetTrack(elab);
 					Double_t eCharge = mce->Charge();
@@ -1339,33 +1276,17 @@ void AliAnalysisTaskSEXic0Semileptonic::FillPairEleXi(AliAODcascade *casc, AliAO
 					fMCTreeVariable[ 3] = XiCharge;
 					fMCTreeVariable[ 4] = mcXic0->Pt();
 					fMCTreeVariable[ 5] = mcPt;
+					fMCTreeVariable[ 6] = mcXic0->M();
+					fMCTreeVariable[ 7] = c_flag;
+					fMCTreeVariable[ 8] = b_flag;
 
-					if(In_Mass<=2.5 && cosoa>0 && StandardCutFlag(trk,casc,1,1,1,1))
-					{
-						fHistos->FillTH2("hXic0vseXiRPM",mcXic0_Pt,eXi);
-						//fHistos->FillTH2("hXic0vseXiRPM_2",mcXic0_Pt,eXi);
-						fHistos->FillTH1("hGenXic0Pt",mcXic0_Pt); //MC Pt of Xic0
-						fHistos->FillTH1("hRecoPairPt",eXi); //Reco Pt of eXi
-						//fHistos->FillTH1("hGenXic0Pt_2",mcXic0_Pt); //MC Pt of Xic0
-						//fHistos->FillTH1("hRecoPairPt_2",eXi); //Reco Pt of eXi
-						if(eCharge>0 && XiCharge<0) fHistos->FillTH1("hGenXic0Pt1",mcXic0_Pt);
-						if(eCharge<0 && XiCharge>0) fHistos->FillTH1("hGenXic0Pt2",mcXic0_Pt);
-
-						if((TMath::Abs(mother_of_Xic0->GetPdgCode())==5132) ||
-						   (TMath::Abs(mother_of_Xic0->GetPdgCode())==5232))
-						{
-							fHistos->FillTH1("hGenXic0PtFromXib",mcXic0_Pt);
-							b_flag = 1;
-						}
-						else
-						{
-							fHistos->FillTH1("hGenXic0PtFromXic",mcXic0_Pt);
-							c_flag = 1;
-						}
-						
-						fMCTreeVariable[ 6] = c_flag;
-						fMCTreeVariable[ 7] = b_flag;
-					}//fill histo
+					fHistos->FillTH2("hXic0vseXiRPM",mcXic0_Pt,eXi);
+					fHistos->FillTH1("hGenXic0Pt",mcXic0_Pt); //MC Pt of Xic0
+					fHistos->FillTH1("hRecoPairPt",eXi); //Reco Pt of eXi
+					if(eCharge>0 && XiCharge<0) fHistos->FillTH1("hGenXic0Pt1",mcXic0_Pt);
+					if(eCharge<0 && XiCharge>0) fHistos->FillTH1("hGenXic0Pt2",mcXic0_Pt);
+					if(b_flag) fHistos->FillTH1("hGenXic0PtFromXib",mcXic0_Pt);
+					if(c_flag) fHistos->FillTH1("hGenXic0PtFromXic",mcXic0_Pt);
 				}//e_flag && Xi_flag
 			}//Xic0
 			fPaireXiTree->Fill();
@@ -1461,17 +1382,7 @@ void AliAnalysisTaskSEXic0Semileptonic::FillXiHistFromPromptNonPrompt(Bool_t IsM
 		if (TMath::Abs(mcdau->GetPdgCode())==3312) xi_flag = kTRUE;
 	}
 
-	if (e_flag && xi_flag)
-	{
-		Int_t Xic0_moter_label = mcXic0->GetMother();
-		if (Xic0_moter_label>0)
-		{
-			AliAODMCParticle* mother_of_Xic0 = (AliAODMCParticle*)fMC->GetTrack(Xic0_moter_label);
-			if (((TMath::Abs(mother_of_Xic0->GetPdgCode()))==5132) ||
-				((TMath::Abs(mother_of_Xic0->GetPdgCode()))==5232)) Xib_flag = kTRUE;
-			else Xic_flag = kTRUE;
-		}//Xic0_mother_label
-	}//e_flag && Xi_flag
+	if (e_flag && xi_flag) CheckOrigin(fMC,mcXic0,kTRUE,Xic_flag,Xib_flag);
 
 	Double_t lDcaPosToPrimVertex = casc->DcaPosToPrimVertex();
 	if (Total_Xic0_flag) fHistos->FillTH1("hDCAV0PrToPrimVertex",lDcaPosToPrimVertex);
@@ -1679,12 +1590,6 @@ Int_t AliAnalysisTaskSEXic0Semileptonic::MatchToMCXi(AliAODcascade* casc)
 	AliAODMCParticle* mc_pion   = (AliAODMCParticle*) fMC->GetTrack(pion_label);
 	AliAODMCParticle* mc_proton = (AliAODMCParticle*) fMC->GetTrack(proton_label);
 
-	/*
-	cout <<"bachelor (211): " <<TMath::Abs(mc_b_pion->GetPdgCode())
-		 <<" 211 or 2212 : " <<TMath::Abs(mc_proton->GetPdgCode())
-		 <<" 211 or 2212 : " <<TMath::Abs(mc_pion->GetPdgCode()) <<endl;
-	*/
-
 	if (TMath::Abs(mc_b_pion->GetPdgCode())!=211) return 0;
 	if ((TMath::Abs(mc_proton->GetPdgCode())==211) == (TMath::Abs(mc_proton->GetPdgCode())==2212)) return 0;
 	if ((TMath::Abs(mc_pion->GetPdgCode())==211) == (TMath::Abs(mc_pion->GetPdgCode())==2212)) return 0;
@@ -1836,26 +1741,20 @@ void AliAnalysisTaskSEXic0Semileptonic::Terminate(Option_t*) {}
 //-------------------------------------------------------------------
 
 //-------------------------------------------------------
-void AliAnalysisTaskSEXic0Semileptonic::DefineMCCutTree()
+void AliAnalysisTaskSEXic0Semileptonic::DefineMCXicTree()
 {
-	fMCCutTree = new TTree("MCCutTree","MCCutTree");
+	fMCXicTree = new TTree("MCXicTree","MCXicTree");
 	vector<TString> fTreeVariableName =
 	{
-		"e_TPC", "e_TPCPID", "e_ITS", "e_TPCInfo", "e_nTOF",
-		"e_nTPC", "pion_TPC", "proton_TPC", "bpion_TPC", "pion_TPCPID",
-		"proton_TPCPID", "bpion_TPCPID", "pion_TPCInfo", "proton_TPCInfo", "bpion_TPCInfo",
-		"proton_nTPC_proton", "pion_nTPC_pion", "proton_nTPC_pion", "pion_nTPC_proton", "bpion_nTPC_pion",
-		"Ximass", "DLV0", "DCAbach", "DCAV0", "COS",
-		"DLXi", "DCAPos", "DCANeg", "IsParticle", "Xic0Pt",
-		"b_flag","c_flag"
+		"Xic0_pT","e_pT","Xi_pT","Xic0_rap","e_rap","Xi_rap","c_flag","b_flag"
 	};
-	fMCCutTreeVariable = new Float_t [fTreeVariableName.size()];
+	fMCXicTreeVariable = new Float_t [fTreeVariableName.size()];
 
 	for (Int_t ivar=0; ivar<(Float_t)fTreeVariableName.size(); ivar++)
 	{
-		fMCCutTree->Branch(fTreeVariableName[ivar].Data(),
-				           &fMCCutTreeVariable[ivar],
-						   Form("%s/f",fTreeVariableName[ivar].Data())
+		fMCXicTree->Branch(fTreeVariableName[ivar].Data(),
+				           &fMCXicTreeVariable[ivar],
+						   Form("%s/F",fTreeVariableName[ivar].Data())
 						   );
 	}
 
@@ -1883,7 +1782,7 @@ void AliAnalysisTaskSEXic0Semileptonic::DefinePaireXiTree()
 	{
 		fPaireXiTree->Branch(fTreeVariableName[ivar].Data(),
 				             &fPaireXiTreeVariable[ivar],
-							 Form("%s/f",fTreeVariableName[ivar].Data())
+							 Form("%s/F",fTreeVariableName[ivar].Data())
 							 );
 	}
 
@@ -1906,7 +1805,7 @@ void AliAnalysisTaskSEXic0Semileptonic::DefineMCPaireXiTree()
 	{
 		fMCTree->Branch(fTreeVariableName[ivar].Data(),
 				        &fMCTreeVariable[ivar],
-						Form("%s/f",fTreeVariableName[ivar].Data())
+						Form("%s/F",fTreeVariableName[ivar].Data())
 						);
 	}
 
@@ -1916,28 +1815,6 @@ void AliAnalysisTaskSEXic0Semileptonic::DefineMCPaireXiTree()
 //-------------------------------------------------------
 void AliAnalysisTaskSEXic0Semileptonic::DefineEventTree()
 {
-	#if 0
-	fEventTree = new TTree("EventTree","EventTree");
-	Int_t nVar = 2;//3;
-	fEventTreeVariable = new Float_t [nVar];
-	TString* fTreeVariableNames = new TString[nVar];
-
-	fTreeVariableNames[ 0] = "fCentrality";
-	fTreeVariableNames[ 1] = "fRunNumber";
-	//fTreeVariableNames[ 2] = "fEventID";
-
-	for (Int_t ivar=0; ivar<nVar; ivar++)
-	{
-		fEventTree->Branch(fTreeVariableNames[ivar].Data(),
-				           &fEventTreeVariable[ivar],
-						   Form("%s/f",fTreeVariableNames[ivar].Data())
-						   );
-	}
-	#endif
-
-	//kimc
-	//*****************************************************
-
 	fEventTree = new TTree("EventTree", "EventTree");
 
 	const Int_t nVar = 6;
@@ -1954,41 +1831,59 @@ void AliAnalysisTaskSEXic0Semileptonic::DefineEventTree()
 	for (Int_t iVar=0; iVar<nVar; iVar++)
 	{
 		fEventTree->Branch(fTreeVariableNames[iVar].Data(),
-						   &fEventTreeVariable[iVar],
-						   Form("%s/f", fTreeVariableNames[iVar].Data())
+				           &fEventTreeVariable[iVar],
+						   Form("%s/F", fTreeVariableNames[iVar].Data())
 						   );
 	}
 
 	const Int_t nTargetTrig = fTargetTriggers.size();
 	if (nTargetTrig > 1) fEventTree->Branch("fTrigBit", &fEventTreeVarTrig, "fTrigBit/i");
-
-	//*****************************************************
+    fEventTree->Branch("fINEL", &fIsINELLgtZERO, "fINEL/O"); //The letter O. NOT a zero: boolean
 
 	return;
 }//DefineEventTree
 
-//-------------------------------------------------------
-unsigned int AliAnalysisTaskSEXic0Semileptonic::GetEvID()
+void AliAnalysisTaskSEXic0Semileptonic::CheckOrigin(
+		AliMCEvent* mcEvent, AliAODMCParticle *mcPart, Bool_t searchUpToQuark, Bool_t &c_flag, Bool_t &b_flag)
 {
-	/*
-	TString* currentfilename = (TObject*)(
-			(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile())
-			)->GetName();
+	//from AliVertexingHFUtils
+	//checking whether the mother of the particles come from a charm or a bottom quark
+	Int_t mother = 0;
+	mother = mcPart->GetMother();
 
-	if (!fFileName.EqualTo(currentfilename))
+	Int_t pdgGranma = 0;
+	Int_t istep = 0;
+	Int_t abspdgGranma =0;
+	Bool_t isFromB=kFALSE;
+	Bool_t isQuarkFound=kFALSE;
+
+	c_flag = kFALSE;
+	b_flag = kFALSE;
+
+	while (mother >=0 )
 	{
-		TString* fFileName = (TString*) currentfilename;
-		TObjArray *path = fFileName->Tokenize("/");
-		TString s = ((TObjString*)path->At( ((path->GetLast())-1) ))->GetString();
-		unsigned int fDirNumber = (unsigned int)s.Atoi();
-		delete path;
-	}
-	*/
+		istep++;
+		AliAODMCParticle* mcGranma = (AliAODMCParticle*)mcEvent->GetTrack(mother);
+		if (mcGranma)
+		{
+			pdgGranma = mcGranma->GetPdgCode();
+			abspdgGranma = TMath::Abs(pdgGranma);
+			if ((abspdgGranma > 500 && abspdgGranma < 600) ||
+				(abspdgGranma > 5000 && abspdgGranma < 6000)) isFromB=kTRUE;
 
-	unsigned int fEventNumber = 0;
-	Long64_t ev_number = Entry();
-	if (IsMC) ev_number = fEventNumber;
-	unsigned int evID = (unsigned int)ev_number; //+ (unsigned int)(fDirNumber<<17);
-	fEventNumber++;
-	return evID;
+			if (abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
+			mother = mcGranma->GetMother();
+		}
+		else
+		{
+			printf("CheckOrigin: Failed casting the mother particle!");
+			break;
+		}
+	}
+
+	if (searchUpToQuark && !isQuarkFound) return;
+	if (isFromB) b_flag = kTRUE;
+	else c_flag = kTRUE;
+
+	return;
 }

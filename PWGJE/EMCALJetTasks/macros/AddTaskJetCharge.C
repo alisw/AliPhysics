@@ -8,8 +8,9 @@ AliAnalysisTaskJetCharge* AddTaskJetCharge(
 	Int_t       pSel,
 	TString     trigClass      = "",
 	TString     kEmcalTriggers = "",
-	TString     tag            = ""
-) {
+	TString     tag            = "",
+	const char* suffix = ""
+	) {
 
 
 
@@ -30,8 +31,9 @@ AliAnalysisTaskJetCharge* AddTaskJetCharge(
 		return NULL;
 	}
 
-	TString wagonName1 = Form("AliAnalysisTaskJetCharge_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
-	TString wagonName2 = Form("AliAnalysisTaskJetCharge_%s_TC%s%sTree",njetsData,trigClass.Data(),tag.Data());
+	TString wagonName1 = Form("AliAnalysisTaskJetCharge_%s_TC%s%s_%s",njetsData,trigClass.Data(),tag.Data(), suffix);
+	TString wagonName2 = Form("AliAnalysisTaskJetCharge_%s_TC%s%sTree_%s",njetsData,trigClass.Data(),tag.Data(), suffix);
+
 
 	//Configure jet tagger task
 	AliAnalysisTaskJetCharge *task = new AliAnalysisTaskJetCharge(wagonName1.Data());

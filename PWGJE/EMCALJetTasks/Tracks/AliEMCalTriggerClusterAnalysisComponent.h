@@ -19,7 +19,9 @@ class TString;
 class AliVCluster;
 class AliVEvent;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerEventData;
 
@@ -56,6 +58,8 @@ protected:
   /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERCLUSTERANALYSISCOMPONENT_H */

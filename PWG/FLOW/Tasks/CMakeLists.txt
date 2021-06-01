@@ -46,6 +46,7 @@ set(SRCS
   AliAnalysisTaskLYZEventPlane.cxx
   AliAnalysisTaskCRC.cxx
   AliAnalysisTaskCRCZDC.cxx 
+  AliAnalysisTaskQvec.cxx
   AliAnalysisTaskCumulants.cxx
   AliAnalysisTaskQCumulants.cxx 
   AliAnalysisTaskLeeYangZeros.cxx 
@@ -89,9 +90,11 @@ set(SRCS
   AliAnalysisTaskCVEUNI.cxx
   AliAnalysisTaskCMWPU.cxx
   AliAnalysisTaskCMWPU2018.cxx
+  AliAnalysisTaskCMWPU2018eqAch.cxx
   AliAnalysisTaskCVEUNIpt.cxx
   AliAnalysisTaskCMWPUeqAch.cxx
-  AliAnalysisTaskCMWPUuncAch.cxx	
+  AliAnalysisTaskCMWPUuncAch.cxx
+  AliAnalysisTaskMuPa.cxx
 )
 
 # Headers from sources

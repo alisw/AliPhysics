@@ -20,6 +20,7 @@
 #include "TRandom3.h"
 #include "AliVCaloTrigger.h"
 #include "AliTimeRangeCut.h"
+#include "AliEventCuts.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -300,6 +301,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16rP1JJ,          //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
         kLHC16sP1JJ,          //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
         kLHC16rsGJ,           //!< anchored LHC16rs pass 1 - Gamma-jet MC in EMCal acc
+        kLHC16rsP2GJ,         //!< anchored LHC16rs pass 2 - Gamma-jet MC in EMCal+DCAL acc
+        kLHC16rsP2JJLow,      //!< anchored LHC16rs pass 2 - Jet-Jet MC in EMCal+DCAL acc gamma 3.5GeV
+        kLHC16rsP2JJHigh,     //!< anchored LHC16rs pass 2 - Jet-jet MC in EMCal+DCAL acc gamma 7.0GeV
 
         //heavy flavour MC pPb k17d2a_fast,
         kLHC17d2a,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
@@ -412,6 +416,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetPHOSTrigger(phosTriggerType t=kPHOSL0)                             { fPHOSTrigger=t                                            ; }
 
       void    SetV0ReaderName (TString name)                                        { fV0ReaderName = name                                      ; }
+      void    SetCaloTriggerHelperName (TString name)                               { CaloTriggerHelperName = name                                      ; }
 
       void    SetAddedSignalPDGCode (Int_t addedSignalPDGcode)                      { fAddedSignalPDGCode = addedSignalPDGcode                  ; }
       void    SetPreSelectionCutFlag (Bool_t preSelFlag)                            { fPreSelCut = preSelFlag                                   ; }
@@ -590,7 +595,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                   Bool_t preCut = kTRUE);
       void    SetLightOutput( Int_t flag ){fDoLightOutput = flag; return;}
       void    SetUseSphericityTrue( Bool_t flag ){fUseSphericityTrue = flag;}
-      void    FillTPCPileUpHistograms(AliVEvent *event);
+      void    FillTPCPileUpHistogram(AliVEvent *event);
 
       ///Cut functions
       Int_t   IsParticleFromBGEvent(  Int_t index,
@@ -681,6 +686,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fSpecialSubTrigger;                     ///< flag
       Bool_t                      fRemovePileUp;                          ///< flag specifies if any pileup cut is applied
       Bool_t                      fRemovePileUpSPD;                       ///< flag specifies if SPD pileup cuts are applied
+      Bool_t                      fRemovePileUpPbPb;                      ///< flag specifies if any pileup cut is applied
       Int_t                       fUseSphericity;                         ///< flag that specifies the sphericityCut
       Bool_t                      fUseSphericityTrue;                     ///< switch for true sphericity cuts
       Int_t                       fPastFutureRejectionLow;                ///< sets bunch crossing event rejection in past
@@ -705,6 +711,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TObjString*                 fCutString;                             ///< cut number used for analysis
       TString                     fCutStringRead;                         ///<
       AliAnalysisUtils*           fUtils;                                 ///<
+      AliEventCuts                fEventCuts;                             ///< Event selection utility
       Double_t                    fEtaShift;                              ///<
       Bool_t                      fDoEtaShift;                            ///< Flag for Etashift
       Bool_t                      fUseJetFinderForOutlier;                ///< Flag for Etashift
@@ -762,9 +769,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH2F*                       hSPDClusterTrackletBackgroundBefore;    ///< SPD tracklets vs SPD clusters for background-correction before cut
       TH2F*                       hSPDClusterTrackletBackground;          ///< SPD tracklets vs SPD clusters for background-correction
       TH2F*                       hV0MultVsNumberTPCoutTracks;            ///< correlation V=Mult vs number TPC out Tracks
-      TH2F*                       hTPCSDDSSDClusters;                     ///< x: TPC clusters, y: SDD+SSD clusters
+      TH2F*                       hTPCSDDSSDClusters_before;              ///< x: TPC clusters, y: SDD+SSD clusters before corresponding cut
       // trigger information
       TString                     fV0ReaderName;                          ///< Name of V0Reader
+      TString                     CaloTriggerHelperName;                  ///< Name of CaloTriggerHelper
       TString                     fCorrTaskSetting;                       ///< Name of Corr Task Setting
       AliVCaloTrigger*            fCaloTriggers;                          //!<! calo triggers
       TClonesArray*               fTriggerPatchInfo;                      //!<! trigger patch info array
@@ -797,7 +805,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,83)
+      ClassDef(AliConvEventCuts,86)
       /// \endcond
 };
 

@@ -35,6 +35,7 @@ include_directories(
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskChargedFlow.cxx
+  AliAnalysisTaskDeform.cxx
   AliAnalysisTaskFlowExample.cxx
   AliAnalysisTaskGFWFlow.cxx
   AliAnalysisTaskGFWPIDFlow.cxx
@@ -49,6 +50,8 @@ set(SRCS
   AliGFWFlowContainer.cxx
   AliGFWWeights.cxx
   AliProfileSubset.cxx
+  AliProfileBS.cxx
+  AliCkContainer.cxx
   AliUniFlowCorrTask.cxx
   AliAnalysisDecorrTask.cxx
   AliAnalysisTaskESEFlow.cxx

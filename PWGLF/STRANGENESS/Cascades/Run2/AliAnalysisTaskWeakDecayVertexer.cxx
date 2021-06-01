@@ -529,8 +529,8 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
         }
         
         //reset on-the-fly, job is done
-        if(fkUseOptimalTrackParams && !fkUseOptimalTrackParamsBachelor)
-            SelectiveResetV0s(lESDevent, 1);
+        //if(fkUseOptimalTrackParams && !fkUseOptimalTrackParamsBachelor)
+        //    SelectiveResetV0s(lESDevent, 1);
     }
     
     nv0s = lESDevent->GetNumberOfV0s();
@@ -559,8 +559,8 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
         }
     }
     //reset on-the-fly, job is done
-    if(fkUseOptimalTrackParamsBachelor)
-        SelectiveResetV0s(lESDevent, 1);
+    //if(fkUseOptimalTrackParamsBachelor)
+    //    SelectiveResetV0s(lESDevent, 1);
     
     ncascades = lESDevent->GetNumberOfCascades();
     fHistNumberOfCandidates->Fill(3.5, ncascades);
@@ -2952,7 +2952,7 @@ void AliAnalysisTaskWeakDecayVertexer::SelectiveResetV0s(AliESDEvent *event, Int
     while(iV0 < event->GetNumberOfV0s() ) //extra-crazy test
     {   // This is the begining of the V0 loop
         AliESDv0 *v0 = ((AliESDEvent*)event)->GetV0(iV0);
-        if (!v0) continue;
+        if (!v0) {iV0++ ; continue;}
         if ( v0->GetOnFlyStatus() == lType ){
             event->RemoveV0(iV0);
         } else {

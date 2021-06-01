@@ -98,21 +98,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   if (suffix != "0") {
     TrackCutsPhi->SetMinimalBooking(true);
   }
-  if (suffix == "1") {
-    TrackCutsPhi->SetCutWindow(0.995, 1.011);
-  }
-  if (suffix == "2") {
-      TrackCutsPhi->SetCutWindow(1.028, 1.044);
-  }
-  if (suffix == "3") {
-    TrackCutsPhi->SetCutWindow(1.028+0.005, 1.044+0.005);
-  }
-  if (suffix == "4") {
-      TrackCutsPhi->SetCutWindow(1.028+0.01, 1.044+0.01);
-  }
-  if (suffix == "5") {
-      TrackCutsPhi->SetCutWindow(1.028+0.02, 1.044+0.02);
-  }
 
 
   // Now we define stuff we want for our Particle collection
@@ -128,6 +113,11 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   PDGParticles.push_back(2212);  // 4 antiprot truth MC TRUTH
   PDGParticles.push_back(333);   // 5 True Phi inv mass MC TRUTH
   PDGParticles.push_back(333);   // 6 Fake Phi inv mass (combi. BG) MC TRUTHn
+  PDGParticles.push_back(321);   // 7 Kaon
+  PDGParticles.push_back(321);   // 8 AntiKaon
+  PDGParticles.push_back(321);   // 9 Kaon inv mass phi
+  PDGParticles.push_back(321);   // 10 AngiKaon inv mass phi
+
 
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -204,7 +194,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   //  pairQA.push_back(12); //apphi
   //  pairQA.push_back(22); //phiphi
 
-  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7); i++) {
+  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11); i++) {
     NBins.push_back(750);
     kMin.push_back(0.);
     kMax.push_back(3.);
@@ -218,19 +208,27 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   pairQA[4] = 0;
   pairQA[5] = 0;
   pairQA[6] = 0;
-
-  pairQA[7] = 11;   // apap
-  pairQA[8] = 12;   // apphi
-  pairQA[9] = 0;
-  pairQA[10] = 0;
-  pairQA[11] = 0;
-  pairQA[12] = 0;
+  pairQA[7] = 11;   // KK
+  pairQA[8] = 11;   // KaK
+  pairQA[9] = 11;
+  pairQA[10] = 11;
 
 
-  pairQA[13] = 0;  // phiphi
+  pairQA[11] = 11;   // apap
+  pairQA[12] = 12;   // apphi
+  pairQA[13] = 0;
+  pairQA[14] = 0;
+  pairQA[15] = 0;
+  pairQA[16] = 0;
+  pairQA[17] = 11;   // KK
+  pairQA[18] = 11;   // KaK
+  pairQA[19] = 11;
+  pairQA[20] = 11;
+
+  pairQA[21] = 0;  // phiphi
 
   if (isMC) {
-   for (int i=14;i<28;i++)  {
+   for (int i=22;i<66;i++)  {
        pairQA[i] = 0;
       }
   }
@@ -241,7 +239,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 //  config->SetMassQA(true);
 //  config->SetmTBinning(true);
 //  config->SetdPhidEtaPlots(true);
-//  config->SetExtendedQAPairs(pairQA);
+  config->SetExtendedQAPairs(pairQA);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
   config->SetMultBinning(true);
@@ -250,19 +248,19 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetUseEventMixing(true);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(30);
 //  config->SetPhiEtaBinnign(true);
   //config->SetMomentumResolution(true);
 
-  if (suffix == "0") {
-      config->SetMassQA(true);
-  }
-  if (suffix == "1") {
-      config->SetMassQA(true);
-  }
-  if (suffix == "2") {
-      config->SetMassQA(true);
-  }
+//  if (suffix == "0") {
+//      config->SetMassQA(true);
+//  }
+//  if (suffix == "1") {
+//      config->SetMassQA(true);
+//  }
+//  if (suffix == "2") {
+//      config->SetMassQA(true);
+//  }
 
 
   //-------MIXED EVENTS---------------------------
@@ -281,6 +279,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 //    config->SetAncestors(true);
 //    config->GetDoAncestorsPlots();
 //  }
+
+  if (isMC) {
+    config->SetMomentumResolution(true);
+  } else {
+    std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
+  }
 
   /*
   //This is just to show off what would be possible in case you are interested,

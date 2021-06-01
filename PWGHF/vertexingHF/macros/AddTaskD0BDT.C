@@ -1,7 +1,7 @@
 AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,1=PbPb*/,
 								     Float_t minC=0, Float_t maxC=0,
-								     TString finDirname="Loose", TString finname="",TString finObjname="D0toKpiCuts_pp",
-								     TString BDTfilename="", Bool_t DoSidebndSample=kFALSE, Float_t SBndSampleFrac = 0.1,Bool_t multiana = false,Double_t refMult=9.26,Bool_t subtractDau=kFALSE,Int_t recoEstimator = AliAnalysisTaskSED0BDT::kNtrk10,Int_t year = 16,Int_t MCEstimator = AliAnalysisTaskSED0BDT::kEta10,TString estimatorFilename="")
+								     TString finDirname="Loose", TString finname="",TString finObjname="D0toKpiCuts",
+								     Bool_t DoSidebndSample=kFALSE, Bool_t multiana = false,Double_t refMult=9.26,Bool_t subtractDau=kFALSE,Int_t recoEstimator = AliAnalysisTaskSED0BDT::kNtrk10,Int_t year = 16,Int_t MCEstimator = AliAnalysisTaskSED0BDT::kEta10,TString estimatorFilename="")
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -175,7 +175,7 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
       }
   }
 
-  AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
+  AliRDHFCutsD0toKpiBDT* RDHFD0toKpi=new AliRDHFCutsD0toKpiBDT();
   if(stdcuts) {
     if(system==0) RDHFD0toKpi->SetStandardCutsPP2010();
     else {
@@ -188,9 +188,9 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
     }
   }
   else   {
-    RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get(finObjname.Data());
+    RDHFD0toKpi = (AliRDHFCutsD0toKpiBDT*)filecuts->Get(finObjname.Data());
     if(!RDHFD0toKpi){
-      ::Fatal("AddTaskD0Mass", "Specific AliRDHFCuts not found");
+      ::Fatal("AddTaskD0BDT", "Specific AliRDHFCuts not found");
       return NULL;
     }
     if(minC!=0 && maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
@@ -244,35 +244,32 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
   massD0Task->SetRejectSDDClusters(kFALSE);
   massD0Task->SetWriteVariableTree(kFALSE);
   
-  if(!readMC&&!DoSidebndSample){
-	  TFile *fileBDT = TFile::Open(BDTfilename);
-	  if(!fileBDT ||(fileBDT&& !fileBDT->IsOpen())) ::Fatal("AddTaskD0BDT", "BDT file not found : check your BDT object");
-	  AliRDHFCutsD0toKpi* cut4bdt = (AliRDHFCutsD0toKpi*)fileBDT->Get("Cut4BDTptbin")->Clone();	// An simple cut file for trained BDT pT binning
-	  //~ cut4bdt->SetDirectory(0);
-	  Int_t Nptbins = cut4bdt->GetNPtBins();
-	  TDirectory *initdir = (TDirectory*)fileBDT->Get("pT_0");
-	  TList *BDTNamelist = (TList*)initdir->GetListOfKeys()->Clone("BDTNamelist");		// TKey list, only fname used
-	  TList *bdtlist = new TList();														// to be saved BDT list
+  //~ if(!readMC&&!DoSidebndSample){
+	  //~ TFile *fileBDT = TFile::Open(BDTfilename);
+	  //~ if(!fileBDT ||(fileBDT&& !fileBDT->IsOpen())) ::Fatal("AddTaskD0BDT", "BDT file not found : check your BDT object");
+	  //~ AliRDHFCutsD0toKpi* cut4bdt = (AliRDHFCutsD0toKpi*)fileBDT->Get("Cut4BDTptbin")->Clone();	// An simple cut file for trained BDT pT binning
+	  //~ // cut4bdt->SetDirectory(0);
+	  //~ Int_t Nptbins = cut4bdt->GetNPtBins();
+	  //~ TDirectory *initdir = (TDirectory*)fileBDT->Get("pT_0");
+	  //~ TList *BDTNamelist = (TList*)initdir->GetListOfKeys()->Clone("BDTNamelist");		// TKey list, only fname used
+	  //~ TList *bdtlist = new TList();														// to be saved BDT list
 
-	  for(Int_t i=0;i<Nptbins;i++){
-		  TDirectory *thisdir = (TDirectory*)fileBDT->Get(Form("pT_%d",i));
-		  for(Int_t j=0;j<BDTNamelist->GetEntries();j++){
-			  TString BDTobjname = BDTNamelist->At(j)->GetName();
-			  AliRDHFBDT *thisbdt = (AliRDHFBDT*)(thisdir->Get(BDTobjname)->Clone(Form("pT_%d_%s",i,BDTobjname.Data())));
-			  if(!thisbdt) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDTobjname.Data()));
-			  bdtlist->Add(thisbdt);
-		  }
-	  }
-	  massD0Task->SetBDTNamesList(BDTNamelist);
-	  massD0Task->SetBDTPtbins(cut4bdt);
-	  massD0Task->SetBDTList(bdtlist);
-	  fileBDT->Close();
-  }
-  if(DoSidebndSample){
-	  massD0Task->SetBDTSampleSideband(DoSidebndSample);
-	  massD0Task->SetBDTSidebandSamplingFraction(SBndSampleFrac);
-  }
-  
+	  //~ for(Int_t i=0;i<Nptbins;i++){
+		  //~ TDirectory *thisdir = (TDirectory*)fileBDT->Get(Form("pT_%d",i));
+		  //~ for(Int_t j=0;j<BDTNamelist->GetEntries();j++){
+			  //~ TString BDTobjname = BDTNamelist->At(j)->GetName();
+			  //~ AliRDHFBDT *thisbdt = (AliRDHFBDT*)(thisdir->Get(BDTobjname)->Clone(Form("pT_%d_%s",i,BDTobjname.Data())));
+			  //~ if(!thisbdt) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDTobjname.Data()));
+			  //~ bdtlist->Add(thisbdt);
+		  //~ }
+	  //~ }
+	  //~ massD0Task->SetBDTNamesList(BDTNamelist);
+	  //~ massD0Task->SetBDTPtbins(cut4bdt);
+	  //~ massD0Task->SetBDTList(bdtlist);
+	  //~ fileBDT->Close();
+  //~ }
+  massD0Task->SetBDTSampleSideband(DoSidebndSample);
+  //~ massD0Task->SetBDTSidebandSamplingFraction(SBndSampleFrac);
     
     if(estimatorFilename.EqualTo("") ) {
       printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");

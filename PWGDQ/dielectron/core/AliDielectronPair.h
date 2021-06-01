@@ -48,6 +48,9 @@ public:
                     AliVTrack * const refParticle1,
                     AliVTrack * const refParticle2,
                     Char_t type);
+ 
+  AliDielectronPair(const AliDielectronPair &pair);
+
 
 //TODO:  copy constructor + assignment operator
 

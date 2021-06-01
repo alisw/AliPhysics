@@ -18,6 +18,7 @@
 #pragma link C++ class AliAnalysisTaskLeeYangZeros+;
 #pragma link C++ class AliAnalysisTaskCRC+;
 #pragma link C++ class AliAnalysisTaskCRCZDC+;
+#pragma link C++ class AliAnalysisTaskQvec+;
 #pragma link C++ class AliAnalysisTaskCumulants+;
 #pragma link C++ class AliAnalysisTaskQCumulants+;
 #pragma link C++ class AliAnalysisTaskFittingQDistribution+;
@@ -61,8 +62,10 @@
 #pragma link C++ class AliAnalysisTaskCVEUNI+;
 #pragma link C++ class AliAnalysisTaskCMWPU+;
 #pragma link C++ class AliAnalysisTaskCMWPU2018+;
+#pragma link C++ class AliAnalysisTaskCMWPU2018eqAch+;
 #pragma link C++ class AliAnalysisTaskCVEUNIpt+;
 #pragma link C++ class AliAnalysisTaskCMWPUeqAch+;
 #pragma link C++ class AliAnalysisTaskCMWPUuncAch+;
+#pragma link C++ class AliAnalysisTaskMuPa+;
 #endif
 

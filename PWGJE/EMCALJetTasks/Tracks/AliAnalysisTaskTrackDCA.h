@@ -10,7 +10,9 @@ class THistManager;
 class AliAnalysisUtils;
 class AliESDtrackCuts;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 /**
  * \class AliAnalysisTaskTrackDCA
@@ -50,11 +52,11 @@ private:
   AliESDtrackCuts                     *fStandardCuts;             ///< Standard track cuts
   THistManager                        *fHistos;                   ///< Histogram container
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskTrackDCA, 1)
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALTriggerJets */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKTRACKDCA_H_ */

@@ -8,7 +8,6 @@
 #include "Math/Vector4D.h"
 #include "DCAFitterN.h"
 #include "Hypertriton3structures.h"
-#include "AliVertexerHyperTriton2Body.h"
 
 #include <TString.h>
 #include <AliMCEvent.h>
@@ -58,7 +57,7 @@ public:
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
-  virtual void Terminate(Option_t *);
+  virtual void Terminate(Option_t *) {}
 
   static AliAnalysisTaskHypertriton3 *AddTask(bool isMC = false, TString suffix = "");
 
@@ -87,21 +86,18 @@ public:
   float fMinTrackDCA[3] = {0., 0., 0.};
   float fMaxTrack2TrackDCA[3] = {8.,8.,8.};
   float fMaxTrack2SVDCA[3] = {8.,8.,8.};
-  float fTPCsigmas[3] = {3.5f, 3.5f, 3.5f};
+  float fTPCsigmas[3] = {3.f, 3.f, 3.f};
   float fTOFsigmas[3] = {4.f, 4.f, 4.f};
   float fCandidateCtRange[2] = {0.f, 35.f};
   float fCandidatePtRange[2] = {1.f, 9.f};
   float fTrackPtRange[3][2] = {{0.f, 7.f},{0.f, 4.f},{0.f, 1.f}};
-  float fMinCosPA = 0.9;
+  float fMinCosPA = 0.99;
   bool  fUseAbsCosPAcut = true;
   bool  fOnlyTrueCandidates = false;
   bool  fLambdaCheck = true;
-  bool  fKF = false;
-  bool  fUseDoubleV0s = false;
   bool  fUseCovarianceCut = false;
-  float fMaxKFchi2[3] = {40000.,40000.,40000.};
   std::string fCosPAsplineName = "PWGLF/NUCLEX/HypertritonAnalysis/Cuts/spline3.root";
-  AliVertexerHyperTriton2Body fV0Vertexer;
+  int fTrackRotations = 0;
 
 
 private:
@@ -139,9 +135,8 @@ private:
   unsigned int fEventMixingPoolDepth = 10;                     /// max depth of the event mixing pool
   int fEventMixingPoolMaxReuse = 2;
 
-  SHyperTriton3KF*   fGenHypKF = nullptr;
   SHyperTriton3O2*   fGenHypO2 = nullptr;
-  RHyperTriton*   fRecHyp = nullptr;
+  RHyperTriton3O2*   fRecHyp = nullptr;
 
   AliAnalysisTaskHypertriton3(const AliAnalysisTaskHypertriton3 &);               // not implemented
   AliAnalysisTaskHypertriton3 &operator=(const AliAnalysisTaskHypertriton3 &);    // not implemented

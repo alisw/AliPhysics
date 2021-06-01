@@ -27,6 +27,10 @@
 #pragma link C++ class AliJFFlucAnalysis+;
 #pragma link C++ class AliAnalysisAnaTwoMultiCorrelations+;
 #pragma link C++ class AliJHSCTask+;
+#pragma link C++ class AliAnalysisTaskHOCFA+;
+#pragma link C++ class AliJHOCFATask+;
+#pragma link C++ class AliAnalysisSPC+;
+#pragma link C++ class AliJSPCTask+;
 #pragma link C++ class AliJXtTask+;
 #pragma link C++ class AliJXtAnalysis+;
 #pragma link C++ class AliJHistogramInterface+;
@@ -49,6 +53,7 @@
 #pragma link C++ class AliJPartLifetime+;
 
 #pragma link C++ class AliJCatalystTask+;
+#pragma link C++ class AliJCorrectionMapTask+;
 #pragma link C++ class AliJJtTask+;
 #pragma link C++ class AliJJtAna+;
 #pragma link C++ class AliJCIaaTask+;

@@ -69,6 +69,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    MixedEvent(AliVTrack *track, THnSparse *SparseMixEHCorrl);
 
     void    SetCentralitySelection(Double_t centMin, Double_t centMax) {fCentralityMin = centMin; fCentralityMax = centMax;};
+    void    SetEleEtaCuts(Double_t Min, Double_t Max) {fEtaCutEleMin = Min; fEtaCutEleMax = Max;};
     void    SetMinTPCNCrossRElec(Int_t MinNCrossRE) {fTPCNCrossRElec = MinNCrossRE;};
     void    SetMinRatioTPCNCrossRElec(Double_t MinRatioNCrossRE) {fRatioTPCNCrossRElec = MinRatioNCrossRE;};
     void    SetMinITSNClsElec(Int_t MinNClsE) {fITSNClsElec = MinNClsE;};
@@ -101,6 +102,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetHadNegEtaOnly(Bool_t HadNegEtaOnly) {fFlagHadNegEtaOnly = HadNegEtaOnly;};
     void    SetHadEtaCuts(Double_t Min, Double_t Max) {fEtaCutHadMin = Min; fEtaCutHadMax = Max;};
 
+    void    SwitchMECorrec(Bool_t FillMECorr){fFlagFillMECorr = FillMECorr;};
     void    SetMEBinChange(Bool_t MEBinChange) {fFlagMEBinChange = MEBinChange;};
     void    SetElecSPDkFirst(Bool_t EleSPDkFirst) {fFlagEleSPDkFirst = EleSPDkFirst;};
 
@@ -114,8 +116,10 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    IsPbPb(Bool_t isPbPb) {fIsPbPb = isPbPb;};
     void    Ispp(Bool_t ispp) {fIspp = ispp;};
     void    IspPb(Bool_t ispPb) {fIspPb = ispPb;};
+    void    IsMC(Bool_t isMC) {fIsMC = isMC;};
 
     void    SwitchFillEHCorrel(Bool_t fSwitch){fFillEHCorrel = fSwitch;};
+    void    SetNDeltaPhiBins(Int_t nbins){fNDelPhiBins = nbins;};
 
     void    GetHadronTrackingEfficiency();
     void    SwitchHadTrackEffi(Bool_t fSwitch) {fCalcHadronTrackEffi = fSwitch;};
@@ -154,6 +158,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t               fTPCNCrossRElec;// track TPC NClusters
     Double_t            fRatioTPCNCrossRElec;//    
     Bool_t              fFlagEleSPDkFirst;//
+    Double_t            fEtaCutEleMin;// Electron track Eta cut min
+    Double_t            fEtaCutEleMax;// Electron track Eta cut max
     Double_t            fTPCnSigma;//!
     Double_t            fTPCnSigmaMin;//
     Double_t            fTPCnSigmaMax;//
@@ -184,6 +190,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t               fNEle;//!
     Double_t            fVtxZBin;//!
     Double_t            fCentBin;//!
+    Bool_t              fFlagFillMECorr;// Switch for doing the ME correction
     Bool_t              fFlagMEBinChange;//
     Bool_t              fIsPbPb;//
     Bool_t              fIspp;//
@@ -191,6 +198,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Bool_t              fEMCClsTimeCut;//
     TClonesArray        *fMCarray;//!
     AliAODMCHeader      *fMCHeader;//!
+    Bool_t              fIsMC;// Is MC
     Bool_t              fApplyElectronEffi;//
     Double_t            fEffi;//!
     Double_t            fWeight;//!
@@ -210,6 +218,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
     Int_t               fNembMCeta; //! N > fNembMCeta = particles from eta generator
 
+    Int_t               fNDelPhiBins; //number of bins to be used for deltaphi distribution
     TList       	   	*fOutputList;		//!output list
     TH1F                *fNevents;		//!no of events
     TH1F                *fVtxZ;//!

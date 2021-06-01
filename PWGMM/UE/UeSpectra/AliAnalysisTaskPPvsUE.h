@@ -28,7 +28,7 @@
 #include <AliGenEventHeader.h>
 #include <AliVHeader.h>
 #include <AliVEvent.h>
-#include <AliAODMCParticle.h> 
+#include <AliAODMCParticle.h>
 #include <AliESDtrackCuts.h>
 
 #include <AliMCEvent.h>
@@ -51,7 +51,7 @@
 
 // class AliPPVsMultUtils;
 class AliTransverseEventShape;
-class AliMCSpectraWeights;
+//class AliMCSpectraWeights;
 
 class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 	public:
@@ -64,11 +64,11 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		virtual void   UserCreateOutputObjects();
 		virtual void   UserExec(Option_t *option);
 
-		Double_t GetVtxCut() { return fVtxCut; }   
-		Double_t GetEtaCut() { return fEtaCut; }     
+		Double_t GetVtxCut() { return fVtxCut; }
+		Double_t GetEtaCut() { return fEtaCut; }
                 Double_t GetLeadMin() { return fLeadMin; }
 
-		virtual void  SetTrigger(UInt_t ktriggerInt = AliVEvent::kINT7) {ftrigBit = ktriggerInt;}  
+		virtual void  SetTrigger(UInt_t ktriggerInt = AliVEvent::kINT7) {ftrigBit = ktriggerInt;}
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
 		virtual void  SetAnalysisCorr(Bool_t isCorr) {fAnalysisCorr = isCorr;}
@@ -78,24 +78,24 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		virtual void  SetPileUpRej(Bool_t isrej) {fPileUpRej = isrej;}
 		virtual void  SetAveMultiInTrans(Double_t value) {fAveMultiInTrans = value;}
                 virtual void  SetAveRecMultiInTrans(Double_t value) {fAveRecMultiInTrans = value;}
-		virtual void  SetAveGenMultiInTrans(Double_t value) {fAveGenMultiInTrans = value;}	
-		virtual void  SetMCSpectraWeightObject(AliMCSpectraWeights *obj) {fMCSpectraWeights = obj;}
-	
+		virtual void  SetAveGenMultiInTrans(Double_t value) {fAveGenMultiInTrans = value;}
+//		virtual void  SetMCSpectraWeightObject(AliMCSpectraWeights *obj) {fMCSpectraWeights = obj;}
+
 		TObjArray*    FindLeadingObjects(TObjArray *array );
 		void          QSortTracks(TObjArray &a, Int_t first, Int_t last);
                 TObjArray*    SortRegions(const AliVParticle* leading, TObjArray *array);
 		TObjArray*    GetMinMaxRegion(TList *transv1, TList *transv2);
 		TObjArray*    GetRegionAwTow(TList *region);
-  		void          FillRTResponseMatrix(const AliVParticle* leadingMC, const AliVParticle* leading, TList* listMaxMC, TList* listMax, TList* listMinMC, TList* listMin);	
+  		void          FillRTResponseMatrix(const AliVParticle* leadingMC, const AliVParticle* leading, TList* listMaxMC, TList* listMax, TList* listMinMC, TList* listMin);
 	private:
-			
+
 		virtual void AnalyseDataRT(AliESDEvent* esd);
 		virtual void CorrectionsDataRT(AliESDEvent* esd, Bool_t isVtxGood);
 		virtual void CorrectionsMCRT(AliMCEvent* mc, AliESDEvent* esd);
-		virtual void AnalyzeESD(AliESDEvent* esd); 
+		virtual void AnalyzeESD(AliESDEvent* esd);
 		virtual void AnalyzeMC(AliMCEvent* mc);
 		virtual void AnalyzeESDforDCA(AliESDEvent* esdEvent);
-		virtual Bool_t selectVertex2015pp(AliESDEvent *esd,Bool_t checkSPDres, Bool_t requireSPDandTrk,Bool_t checkProximity); 
+		virtual Bool_t selectVertex2015pp(AliESDEvent *esd,Bool_t checkSPDres, Bool_t requireSPDandTrk,Bool_t checkProximity);
 		virtual Bool_t IsGoodSPDvertexRes(const AliESDVertex * spdVertex);
 		virtual Bool_t isMCEventTrueINEL0(AliMCEvent* fMCEvent);
 		virtual ULong64_t GetEventIdAsLong(AliVHeader* header);
@@ -113,7 +113,7 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		TRandom*      fRandom;              //! random number generator
 		Bool_t        fPileUpRej;           // kTRUE is pile-up is rejected
 //		AliPPVsMultUtils *fPPVsMultUtils;   //!
-		AliMCSpectraWeights *fMCSpectraWeights;//!
+		//AliMCSpectraWeights *fMCSpectraWeights;//!
 
 		//
 		// Cuts and options
@@ -148,8 +148,8 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		TH1F*         fVtxAfterCuts;      //! Vertex z dist after cuts
 		TH1F* 		fn1;		  //!
 
-		Double_t fNchargedTrue;      	
-		Bool_t isINEL0Rec;		
+		Double_t fNchargedTrue;
+		Bool_t isINEL0Rec;
 		Bool_t isINEL0True;
 		//
 
@@ -163,7 +163,7 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		TH2F *ptvsdcaPrim;		//!
 		TH2F *ptvsdcaDecs;		//!
 		TH2F *ptvsdcaMatl;		//!
-		
+
 
 		TH2F *ptvsdcacentralData;	//!
 		TH2F *ptvsdcacentralPrim;	//!
@@ -201,7 +201,7 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		TH1F *effcomputationGenXi;	//!
 		TH1F *effcomputationGenL;	//!
 		TH1F *effcomputationGenRest;	//!
-	
+
 		TH1F *effcomputationRecPi;	//!
 		TH1F *effcomputationRecK;	//!
 		TH1F *effcomputationRecP;	//!
@@ -211,7 +211,7 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		TH1F *effcomputationRecXi;	//!
 		TH1F *effcomputationRecL;	//!
 		TH1F *effcomputationRecRest;	//!
-	
+
                 TH1F *effcomputationRec;    //!
                 TH1F *effcomputationRec1;    //!
                 TH1F *effcomputationRec2;    //!
@@ -227,12 +227,12 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
                 TH1F *Zvtx;			//!
   		TH2F *Phi;                      //!
   		TH2F *Eta;                      //!
-  		TH2F *EtaPhi;                   //!	        
-		
-		TH1F *fhRTData;                  //!		
-                TH1F *fhRTReco;                  //! 
-                TH1F *fhRTTrue;                  //! 
-		
+  		TH2F *EtaPhi;                   //!
+
+		TH1F *fhRTData;                  //!
+                TH1F *fhRTReco;                  //!
+                TH1F *fhRTTrue;                  //!
+
 		TH2F *fhRTResponse;              //!
 
 		TH1F *secondaries[18];		//!
@@ -290,7 +290,7 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		AliAnalysisTaskPPvsUE(const AliAnalysisTaskPPvsUE&);            // not implemented
 		AliAnalysisTaskPPvsUE& operator=(const AliAnalysisTaskPPvsUE&); // not implemented
 
-		ClassDef(AliAnalysisTaskPPvsUE, 1);    //Analysis task for high pt analysis 
+		ClassDef(AliAnalysisTaskPPvsUE, 1);    //Analysis task for high pt analysis
 };
 
 #endif

@@ -638,6 +638,10 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
                //AliDebugClass(1, Form("Event %d, def '%s': rotated (2) background histogram filling", ievt, def->GetName()));
                ifill = def->FillPair(fMiniEvent, fMiniEvent, &fValues);
                break;
+            case AliRsnMiniOutput::kSingleRec:
+               //AliDebugClass(1, Form("Event %d, def '%s': single reconstructed track histogram filling", ievt, def->GetName()));
+               ifill = def->FillSingleRec(fMiniEvent, &fValues);
+               break;
             default:
                // other kinds are processed elsewhere
                ifill = 0;

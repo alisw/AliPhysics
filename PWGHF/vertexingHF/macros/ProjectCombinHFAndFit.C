@@ -19,7 +19,7 @@
 #include "AliNormalizationCounter.h"
 #endif
 
-enum Method{kME,kRot,kLS,kSB};
+enum Method{kME,kRot,kLikeS,kSB};
 
 TString configFileName="configfile4lowptanalysis.txt";
 
@@ -41,6 +41,7 @@ Double_t maxMass4Fit[maxPtBins]={2.04,2.04,2.04,2.04,2.04,2.04,2.04,2.04};
 Int_t fixSigmaConf=1; // 0= all free, 1=all fixed, 2=use values per pt bin
 Bool_t fixSigma[maxPtBins]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
 Double_t tuneSigmaOnData=-1.; // scaling factor for the Gaussian sigma, if -1. use MC out of the box
+Bool_t useSigmaManual=kFALSE;
 Double_t sigmas[maxPtBins]={0.006,0.008,0.009,0.010,0.011,0.012,0.013,0.013};
 Int_t fixMeanConf=0; // 0= all free, 1=all fixed, 2=use values per pt bin
 Bool_t fixMean[maxPtBins]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
@@ -209,7 +210,7 @@ void SetStyleHisto(TH1 *h,Int_t method,Int_t isXpt=-1){
     return;
   }
 
-  if(method==kLS){
+  if(method==kLikeS){
     h->SetMarkerStyle(22);    
     h->GetYaxis()->SetTitleOffset(1.8);
     h->SetMarkerColor(kGreen+2);
@@ -599,16 +600,20 @@ void ProjectCombinHFAndFit(TString configInput=""){
       printf("Fit to MC inv. mass spectra failed\n");
       return;
     }
+    if(hSigmaMC && !useSigmaManual){
+      for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++) sigmas[iPtBin]=hSigmaMC->GetBinContent(iPtBin+1);
+    }
     if(correctForRefl){
       h3drefl=(TH3F*)lMC->FindObject(Form("hMassVsPtVs%sRefl",var.Data()));
       h3dmcsig=(TH3F*)lMC->FindObject(Form("hMassVsPtVs%sSig",var.Data()));
     }
   }
-
+  
   TString sigConf="FixedSigma";
   if(nBinsWithFixSig==0) sigConf="FreeSigma";
   else if(nBinsWithFixSig==nPtBins) sigConf="FixedSigmaAll";
   else sigConf=Form("FixedSigma%d",patSig);
+  if(useSigmaManual) sigConf.ReplaceAll("Sigma","SigmaManual");
   if(nBinsWithFixSig>0 && tuneSigmaOnData>0.) sigConf+=Form("%d",TMath::Nint(tuneSigmaOnData*100.));
   if(nBinsWithFixMean==nPtBins) sigConf+="FixedMeanAll";
   else if(nBinsWithFixMean>0) sigConf+=Form("FixedMean%d",patMean);
@@ -737,6 +742,11 @@ void ProjectCombinHFAndFit(TString configInput=""){
   TH1F* hGausSigmaME=new TH1F("hGausSigmaME","",nPtBins,binLims);
   TH1F* hGausSigmaSB=new TH1F("hGausSigmaSB","",nPtBins,binLims);
 
+  TH1F* hReflOverSigRot=new TH1F("hReflOverSigRot","",nPtBins,binLims);
+  TH1F* hReflOverSigLS=new TH1F("hReflOverSigLS","",nPtBins,binLims);
+  TH1F* hReflOverSigME=new TH1F("hReflOverSigME","",nPtBins,binLims);
+  TH1F* hReflOverSigSB=new TH1F("hReflOverSigSB","",nPtBins,binLims);
+
   TH1F* hChiSqRot=new TH1F("hChiSqRot","",nPtBins,binLims);
   TH1F* hChiSqLS=new TH1F("hChiSqLS","",nPtBins,binLims);
   TH1F* hChiSqME=new TH1F("hChiSqME","",nPtBins,binLims);
@@ -756,6 +766,9 @@ void ProjectCombinHFAndFit(TString configInput=""){
   TH1F* hInvMassHistoBinWidthLS=new TH1F("hInvMassHistoBinWidthLS","",nPtBins,binLims);
   TH1F* hInvMassHistoBinWidthME=new TH1F("hInvMassHistoBinWidthME","",nPtBins,binLims);
   TH1F* hInvMassHistoBinWidthSB=new TH1F("hInvMassHistoBinWidthSB","",nPtBins,binLims);
+
+  TH1F* hIsSigmaFixed=new TH1F("hIsSigmaFixed","",nPtBins,binLims);
+  TH1F* hSigmaFixedVal=new TH1F("hSigmaFixedVal","",nPtBins,binLims);
 
   TLatex* tME=new TLatex(0.65,0.82,"MixEv +- pairs");
   tME->SetNDC();
@@ -960,7 +973,9 @@ void ProjectCombinHFAndFit(TString configInput=""){
     hMassSubRot=AliVertexingHFUtils::RebinHisto(hMassSubRot,rebin[iPtBin]);
     hMassSubME=AliVertexingHFUtils::RebinHisto(hMassSubME,rebin[iPtBin]);
     if(hMassPtBinls) hMassSubLS=AliVertexingHFUtils::RebinHisto(hMassSubLS,rebin[iPtBin]);
- 
+    if(fixSigmaConf==1 || (fixSigmaConf==2 && fixSigma[iPtBin])) hIsSigmaFixed->SetBinContent(iPtBin+1,1);
+    else hIsSigmaFixed->SetBinContent(iPtBin+1,0);
+    hSigmaFixedVal->SetBinContent(iPtBin+1,sigmas[iPtBin]);
     hRebin->SetBinContent(iPtBin+1,rebin[iPtBin]);
     Int_t bkgToFill=typeb;
     if(typeb==6) bkgToFill=typeb+nDegreeBackPol[iPtBin];
@@ -1007,6 +1022,8 @@ void ProjectCombinHFAndFit(TString configInput=""){
 	  hGausSigmaSB->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetSigmaUncertainty());
 	  hChiSqSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetReducedChiSquare());
 	  hChiSqSB->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	  hReflOverSigSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetReflOverSig());
+	  hReflOverSigSB->SetBinError(iPtBin+1,0.);
 	  hNdfSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetMassFunc()->GetNDF());
 	  hNdfSB->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
 	}
@@ -1112,6 +1129,8 @@ void ProjectCombinHFAndFit(TString configInput=""){
 	hGausSigmaRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetSigmaUncertainty());
 	hChiSqRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetReducedChiSquare());
 	hChiSqRot->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	hReflOverSigRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetReflOverSig());
+	hReflOverSigRot->SetBinError(iPtBin+1,0.);
 	hNdfRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetMassFunc()->GetNDF());
 	hNdfRot->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       }
@@ -1178,6 +1197,8 @@ void ProjectCombinHFAndFit(TString configInput=""){
 	hGausSigmaLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetSigmaUncertainty());
 	hChiSqLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetReducedChiSquare());
 	hChiSqLS->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	hReflOverSigLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetReflOverSig());
+	hReflOverSigLS->SetBinError(iPtBin+1,0.);
 	hNdfLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetMassFunc()->GetNDF());
 	hNdfLS->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       }
@@ -1210,7 +1231,7 @@ void ProjectCombinHFAndFit(TString configInput=""){
       c3residuals->cd(iPtBin+1);
       hResiduals->Draw();
 
-      SetStyleHisto(hResidualTrend,kLS);
+      SetStyleHisto(hResidualTrend,kLikeS);
       c3residualTrend->cd(iPtBin+1);
       hResidualTrend->Draw();
       
@@ -1244,6 +1265,8 @@ void ProjectCombinHFAndFit(TString configInput=""){
 	hGausSigmaME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetSigmaUncertainty());
 	hChiSqME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetReducedChiSquare());
 	hChiSqME->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	hReflOverSigME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetReflOverSig());
+	hReflOverSigME->SetBinError(iPtBin+1,0.);
 	hNdfME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetMassFunc()->GetNDF());
 	hNdfME->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       }
@@ -1641,6 +1664,10 @@ void ProjectCombinHFAndFit(TString configInput=""){
   hChiSqLS->Write();
   hChiSqME->Write();
   hChiSqSB->Write();
+  hReflOverSigRot->Write();
+  hReflOverSigLS->Write();
+  hReflOverSigME->Write();
+  hReflOverSigSB->Write();
   hNdfRot->Write();
   hNdfLS->Write();
   hNdfME->Write();
@@ -1650,6 +1677,8 @@ void ProjectCombinHFAndFit(TString configInput=""){
   hInvMassHistoBinWidthME->Write();
   hInvMassHistoBinWidthSB->Write();
   hRebin->Write();
+  hIsSigmaFixed->Write();
+  hSigmaFixedVal->Write();
   hBkgFitFunc->Write();
   hBkgFitFuncSB->Write();
   hnEv->Write();
@@ -1789,13 +1818,13 @@ TH1F* FitMCInvMassSpectra(TList* lMC, TString var){
       hReflPtBin->Draw("same");
       t1->Draw();
     }
-    sigmas[iPtBin]=fg->GetParameter(2);
+    Double_t mcSigma=fg->GetParameter(2);
     Double_t errMCsigma=fg->GetParError(2);
     if(tuneSigmaOnData>0.){
-      sigmas[iPtBin]*=tuneSigmaOnData;
+      mcSigma*=tuneSigmaOnData;
       errMCsigma*=tuneSigmaOnData;
     }
-    hSigmaMC->SetBinContent(iPtBin+1,sigmas[iPtBin]);
+    hSigmaMC->SetBinContent(iPtBin+1,mcSigma);
     hSigmaMC->SetBinError(iPtBin+1,errMCsigma);
   }
   return hSigmaMC;
@@ -1816,7 +1845,7 @@ void PrintConfig(){
   printf("\n");
   for(Int_t j=0; j<nPtBins; j++) printf(" %.2f",maxMass4Fit[j]);
   printf("\n");
-  printf("Gaussian sigma option: %d (tune on data = %f)\n",fixSigmaConf,tuneSigmaOnData);
+  printf("Gaussian sigma option: %d (tune on data = %f) (use manual sigma = %d)\n",fixSigmaConf,tuneSigmaOnData,useSigmaManual);
   for(Int_t j=0; j<nPtBins; j++) printf(" %d",fixSigma[j]);
   printf("\n");
   for(Int_t j=0; j<nPtBins; j++) printf(" %.3f",sigmas[j]);
@@ -1943,6 +1972,10 @@ Bool_t ReadConfig(TString configName){
     else if(strstr(line,"TuneSigmaOnData")){
       readok=fscanf(confFil,"%f",&x);
       tuneSigmaOnData=x;
+    }
+    else if(strstr(line,"UseSigmaManual")){
+      readok=fscanf(confFil,"%d",&n);
+      useSigmaManual=n;
     }
     else if(strstr(line,"SigmaManual")){
       readok=fscanf(confFil," [ ");

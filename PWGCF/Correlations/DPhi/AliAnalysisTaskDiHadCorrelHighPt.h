@@ -136,6 +136,21 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetPercentileRange(Double_t min, Double_t max) { fPercentileMin = min; fPercetileMax = max; }
         void                    SetEventQAPlots(Bool_t pl) { fEventCutsQAPlots = pl; }
         void                    SetppAnalysis(Bool_t pp) { fpp = pp; }
+        void                    SetNMultiplicityBins(Int_t nBins) { fNMultiplicityBins = nBins; }
+        void                    SetCascadePointingAgle(Double_t pa) { fCascadePA = pa; }
+        void                    SetCascadeTransverseDecayRadius(Double_t dr) { fCascadeTransverseDecayRadius = dr; }
+        void                    SetDaughterV0DecayRadius(Double_t dr) { fDaughterV0DecayRadius = dr; }
+        void                    SetDaughterV0cosPA(Double_t pa) { fDaughterV0cosPA = pa; }
+        void                    SetDCADaughterV0PV(Double_t dca) { fDCADaughterV0PV = dca; }
+        void                    SetDCADaughterV0tracks(Double_t dca) { fDCADaughterV0tracks = dca;}
+        void                    SetDCACascadeDaughters(Double_t dca) { fDCACascadeDaughters = dca; }
+        void                    SetDaugterV0InvariantMassRange(Double_t m) { fDaugterV0InvariantMassRange = m; }
+        void                    SetCascadeProperLifetime(Double_t pl) { fCascadeProperLifetime = pl; }
+        void                    SetNSigmasTPCCascadedaughterTracks(Double_t nsig) { fNSigmasTPCCascadedaughterTracks = nsig; }
+        void                    SetDCAbachelorPV(Double_t dca) { fDCAbachelorPV = dca; }
+        void                    SetDCAbaryonDaughterPV(Double_t dca) { fDCAbaryonDaughterPV = dca; }
+        void                    SetDCAmesonDaughterPV(Double_t dca) { fDCAmesonDaughterPV = dca; }
+        Int_t                   GetOriginalPartonPDG(const AliMCParticle* mcTrack);
         AliEventCuts *           fAliEventCuts; //!
     
     private:
@@ -290,47 +305,69 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Double_t                fPercetileMax; // maximum muliplicity percentile to be analysed
         Bool_t                  fEventCutsQAPlots; // enable to save event QA plots
         Bool_t                  fpp; // flag pp / PbPb
-
+        Int_t                   fNMultiplicityBins; // number of multiplicity bins
+        Double_t                fCascadePA; //casscade cos(PA) cut 
+        Double_t                fCascadeTransverseDecayRadius; // cascade transverse radius cut
+        Double_t                fDaughterV0DecayRadius; // cascade daughter V0 transverse decay radius cut
+        Double_t                fDaughterV0cosPA; // cascade daughter V0 cos(PA) cut
+        Double_t                fDCADaughterV0PV; // cascade DCA daughter V0 to PV cut
+        Double_t                fDCADaughterV0tracks; // cascade DCA of daughter V0 tracks cut
+        Double_t                fDCACascadeDaughters; // DCA of Cascade Daughters cut 
+        Double_t                fDaugterV0InvariantMassRange; // cascade daugter V0 invariant mass range cut
+        Double_t                fCascadeProperLifetime; // cascade proper lifetime cut
+        Double_t                fNSigmasTPCCascadedaughterTracks; // N Sigmas TPC of Cascade daughter Tracks cut
+        Double_t                fDCAbachelorPV; // DCA of cacscade bachelor track to PV cut
+        Double_t                fDCAbaryonDaughterPV; // DCA of cascade baryon daughter track to PV cut 
+        Double_t                fDCAmesonDaughterPV; // DCA of cascade meson daughter track to PV cut 
+        TH1D *                  fHistV0AmplitudeVsPVposition; //!
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 33);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 37);
 };
 
 class AliV0ChParticle : public AliVParticle
 {
     public:
       AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate,Double_t mass)
-        : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(-1),fIDh(-1),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+        : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(-1),fIDh(-1),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0),fOriginalParton(-30)
       {
       }
       AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label)
-        : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label),fIDh(-1),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+        : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label),fIDh(-1),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0),fOriginalParton(-30)
       {
       }
-    AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t iDh)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+    AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t iDh,Short_t charge)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(charge),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0),fOriginalParton(-30)
+    {
+    }
+    AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t iDh,Int_t partontype)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0),fOriginalParton(partontype)
     {
     }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Short_t charge, Double_t pz, Double_t energ)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(charge), fPz(pz), fEnergie(energ),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(charge), fPz(pz), fEnergie(energ),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0),fOriginalParton(-30)
     {
     }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t iDh,Short_t charge, Double_t pz, Double_t energ)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(charge), fPz(pz), fEnergie(energ),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(charge), fPz(pz), fEnergie(energ),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0),fOriginalParton(-30)
     {
     }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t idpos, Int_t idneg,Double_t mass,Double_t phi1, Double_t pt1,Double_t eta1, Double_t char1, Double_t phi2,Double_t pt2,Double_t eta2, Double_t char2)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(idpos), fIDneg(idneg), fIDbach(0),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(phi1),fPt1(pt1),fEta1(eta1),fChar1(char1),fPhi2(phi2),fPt2(pt2),fEta2(eta2),fChar2(char2)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(idpos), fIDneg(idneg), fIDbach(0),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(phi1),fPt1(pt1),fEta1(eta1),fChar1(char1),fPhi2(phi2),fPt2(pt2),fEta2(eta2),fChar2(char2),fOriginalParton(-30)
     {
     }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t idpos, Int_t idneg,Double_t mass)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(idpos), fIDneg(idneg), fIDbach(0),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(idpos), fIDneg(idneg), fIDbach(0),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0),fOriginalParton(-30)
+    {
+    }
+    AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t idpos, Int_t idneg,Double_t mass, Int_t partontype)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(idpos), fIDneg(idneg), fIDbach(0),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0),fOriginalParton(partontype)
     {
     }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt,Short_t candidate,Double_t mass,Int_t idpos, Int_t idneg,Int_t idbach)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(0), fIDh(-1),fIDpos(idpos), fIDneg(idneg), fIDbach(idbach),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(0), fIDh(-1),fIDpos(idpos), fIDneg(idneg), fIDbach(idbach),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0),fOriginalParton(-30)
     {
 
     }
@@ -379,6 +416,7 @@ class AliV0ChParticle : public AliVParticle
     Double_t GetPt2()             const { return fPt2; }
     Double_t GetEta1()            const { return fEta1; }
     Double_t GetEta2()            const { return fEta2; }
+    Int_t GetOrigalPartonType()   const { return fOriginalParton; }
   
       private:
       Double_t fEta;      // eta
@@ -402,8 +440,9 @@ class AliV0ChParticle : public AliVParticle
       Double_t fPt2; //pt of second daughter 
       Double_t fEta2; // eta of second daughter 
       Double_t fChar2; // charge of second daughter 
+      Int_t fOriginalParton; //0- quark; 1-gluon, for MC truth information
    
-      ClassDef( AliV0ChParticle, 7) // class required for correlatios calculation and event mixing
+      ClassDef( AliV0ChParticle, 8) // class required for correlatios calculation and event mixing
  };
 
 #endif

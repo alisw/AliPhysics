@@ -640,12 +640,13 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if( IsMC ) IsSelectedFromAliMultSelection = kTRUE;
  if( IsMC && fabs(genzvtx)<15 ) IsSelectedFromAliMultSelectionForSysZ = kTRUE;
  if( fOption.Contains("kMB") ) IsSelectedFromAliMultSelection = kTRUE;
+ if( fOption.Contains("INEL")) IsSelectedFromAliMultSelection = kTRUE;
 //***************************************************
 
 
 //IsMultiplicityInsideBin Flag Configuration********
  centbin = binCent.FindBin(fCent) -1;
- if( centbin >= 0 ) IsMultiplicityInsideBin = kTRUE; 
+ if( centbin >= 0 || fOption.Contains("INEL")) IsMultiplicityInsideBin = kTRUE; 
 //************************************
 
 

@@ -47,9 +47,9 @@
 #include "AliMultEstimator.h"
 #include "AliAnalysisTaskEmcalRecalcPatchesRef.h"
 
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalRecalcPatchesRef);
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalRecalcPatchesRef);
 
-using namespace EMCalTriggerPtAnalysis;
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef():
   AliAnalysisTaskEmcalTriggerBase(),
@@ -190,7 +190,7 @@ void AliAnalysisTaskEmcalRecalcPatchesRef::UserFillHistosAfterEventSelection(){
 
   auto findTriggerType = [](const std::vector<TString> &triggers, TString type) -> bool {
     bool found = false;
-    for(const auto t : triggers) {
+    for(const auto &t : triggers) {
       if(t.Contains(type)) {
         found = true;
         break;
@@ -238,7 +238,7 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
 
   auto findTriggerType = [](const std::vector<TString> &triggers, TString type) -> bool {
     bool found = false;
-    for(const auto t : triggers) {
+    for(const auto &t : triggers) {
       if(t.Contains(type)) {
         found = true;
         break;

@@ -10,7 +10,9 @@
 
 class AliEmcalTrackSelection;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE { 
+
+namespace EMCALJetTasks {
 
 /**
  * @class AliAnalysisTaskEmcalClusterMatched
@@ -121,11 +123,11 @@ private:
   AliCutValueRange<double>                  fTimeCut;                               ///< Cut on cluster time
   Bool_t                                    fEnableSumw2;                           ///< Enable Sumw2
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalClusterMatched, 1)
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALCLUSTERMATCHED_H */

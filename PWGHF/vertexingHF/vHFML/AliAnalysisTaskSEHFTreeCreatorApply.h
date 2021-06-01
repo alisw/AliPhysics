@@ -230,6 +230,7 @@ private:
   Int_t                   fnTrackletsCorr;                       /// number of tracklets (corrected)
   Int_t                   fnTrackletsCorrSHM;                    /// number of tracklets (corrected)
   Int_t                   fnV0A;                                 /// V0A multiplicity
+  Int_t                   fnTPCCls;                              /// TPC multiplicity
   Int_t                   fMultGen;                              /// generated multiplicity around mid-rapidity [-1,1]
   Int_t                   fMultGenV0A;                           /// generated multiplicity in V0A range
   Int_t                   fMultGenV0C;                           /// generated multiplicity in V0C range
@@ -290,7 +291,7 @@ private:
   Bool_t fSaveSTDSelection;                                      /// variable to store candidates that pass std cuts as well, even when ML < MLcut
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,6);
+  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,7);
   /// \endcond
 };
 

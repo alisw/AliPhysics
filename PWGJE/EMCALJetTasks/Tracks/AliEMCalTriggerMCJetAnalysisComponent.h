@@ -19,7 +19,9 @@ class TString;
 class AliVParticle;
 class AliEmcalJet;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerEventData;
 
@@ -51,11 +53,11 @@ protected:
 
   Double_t                fMinimumJetPt;                      ///< Min. \f$ p_{t} \f$ request for the jet
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerMCJetAnalysisComponent, 1);         // Analysis component for MC Jets
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERMCJETANALYSISCOMPONENT_H */

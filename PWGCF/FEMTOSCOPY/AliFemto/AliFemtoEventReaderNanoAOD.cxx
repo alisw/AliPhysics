@@ -770,7 +770,7 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
  //                          ? labels[-1 - fEvent->GetTrack(i)->GetID()]
  //                          : i;
 //    const auto *aodtrackpid = static_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
-    assert(aodtrackpid && "Not a standard AOD");
+    //assert(aodtrackpid && "Not a standard AOD");
 
     float vertexX = -999.;
     float vertexY = -999.;

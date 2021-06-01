@@ -27,6 +27,7 @@
 #ifndef ALIANALYSISTASKEMCALCLUSTERSREF_H
 #define ALIANALYSISTASKEMCALCLUSTERSREF_H
 
+#include "AliAnalysisEmcalTriggerSelectionHelper.h"
 #include "AliAnalysisTaskEmcalTriggerBase.h"
 #include "AliCutValueRange.h"
 #include <TCustomBinning.h>
@@ -35,7 +36,9 @@
 
 class TClonesArray;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 /**
  * @class AliAnalysisTaskEmcalClustersRef
@@ -54,7 +57,7 @@ namespace EMCalTriggerPtAnalysis {
  * be used). The energy can be the uncorrected, corrected energy for non-linearity or the
  * energy corrected for hadronic contribution.
  */
-class AliAnalysisTaskEmcalClustersRef : public AliAnalysisTaskEmcalTriggerBase {
+class AliAnalysisTaskEmcalClustersRef : public AliAnalysisTaskEmcalTriggerBase, public AliAnalysisEmcalTriggerSelectionHelperImpl {
 public:
 
   /**
@@ -65,21 +68,6 @@ public:
     kDefaultEnergy,       ///< Uncorrected energy measurement
     kNonLinCorrEnergy,    ///< Energy corrected for non-linearity
     kHadCorrEnergy        ///< Energy corrected for the hadronic contribution
-  };
-
-  enum TriggerCluster_t {
-    kTrgClusterANY,
-    kTrgClusterCENT,
-    kTrgClusterCENTNOTRD,
-    kTrgClusterCENTBOTH,
-    kTrgClusterOnlyCENT,
-    kTrgClusterOnlyCENTNOTRD,
-    kTrgClusterCALO,
-    kTrgClusterCALOFAST,
-    kTrgClusterCALOBOTH,
-    kTrgClusterOnlyCALO,
-    kTrgClusterOnlyCALOFAST,
-    kTrgClusterN
   };
 
   /**
@@ -120,6 +108,18 @@ public:
    * @param[in] doMonitor If true dimensions for eta-phi are added
    */
   void SetMonitorEtaPhi(bool doMonitor) { fMonitorEtaPhi = doMonitor; }
+
+  /**
+   * @brief Add monitoring histograms for transverse energy
+   * @param doMonitor If true histograms with transverse energy instead of energy are added
+   */
+  void SetMonitorET(bool doMonitor) { fMonitorET = doMonitor; }
+
+  /**
+   * @brief Fill histograms weighted with the event cross section (MC only)
+   * @param doUse If true the cross section is used as weight when filling the histograms
+   */
+  void SetFillHistosXsecWeighted(bool doUse) { fFillXsecWeighted = doUse; }
 
   /**
    * @brief Define cut on the time of the leading cell in the cluster
@@ -255,7 +255,7 @@ protected:
    */
   void GetPatchBoundaries(AliEMCALTriggerPatchInfo &o, Double_t *boundaries) const;
 
-  void FillClusterHistograms(const TString &triggerclass, double energy, double eta, double phi, double clustertime, int ncell, int trgcluster, const TList *triggerpatches, int energycomp);
+  void FillClusterHistograms(const TString &triggerclass, double energy, double eT, double eta, double phi, double clustertime, int ncell, int trgcluster, const TList *triggerpatches, int energycomp);
 
   /**
    * @brief Check whether cluster is inside a trigger patch which has fired the trigger
@@ -280,6 +280,8 @@ protected:
   Bool_t                              fUseExclusiveTriggers;      ///< Include exclusive triggers (without lower threshold triggers)
   Bool_t                              fFillTriggerClusters;       ///< Fill trigger cluster histograms
   Bool_t                              fMonitorEtaPhi;             ///< Add dimensions for eta-phi in the THnSparses
+  Bool_t                              fMonitorET;                 ///< Fill histograms also for transverse energy
+  Bool_t                              fFillXsecWeighted;          ///< Fill histograms cross-section weighted
   AliCutValueRange<double>            fClusterTimeRange;          ///< Selected range on cluster time
   std::vector<TriggerCluster_t>       fTriggerClusters;           //!<! Detected trigger clusters for event
   TObjArray                           fRequiredOverlaps;          ///< Add option to require overlap with certain triggers
@@ -305,6 +307,8 @@ private:
   /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALCLUSTERSREF_H */

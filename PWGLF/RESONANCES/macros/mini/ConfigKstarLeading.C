@@ -2,9 +2,10 @@ Bool_t ConfigKstarLeading(
     AliRsnMiniAnalysisTask *task, 
     Bool_t isMC = kFALSE, 
     Bool_t isPP = kFALSE, 
-    Double_t nSigmaPart1 = -1, 
-    Double_t nSigmaPart2 = -1,
-    Float_t  nsigmaTOF = 3.0
+    Double_t nSigmaPart1TPC = -1, 
+    Double_t nSigmaPart2TPC = -1,
+    Double_t nSigmaPart1TOF = -1, 
+    Double_t nSigmaPart2TOF = -1
     )
 {
 
@@ -14,6 +15,8 @@ Bool_t ConfigKstarLeading(
     /* angel to leading */ Int_t alID = task->CreateValue(AliRsnMiniValue::kAngleLeading, kFALSE);
     /* pt of leading    */ Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
     /* multiplicity     */ Int_t multID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
+      /* delta eta  */ Int_t detaID  = task->CreateValue(AliRsnMiniValue::kDeltaEta, kFALSE);
+
 
    
    // set daughter cuts
@@ -26,8 +29,8 @@ Bool_t ConfigKstarLeading(
      AliRsnCutTrackQuality *fQualityTrackCutK = new AliRsnCutTrackQuality("AliRsnCutTrackQuality");
     fQualityTrackCutK->SetDefaults2011(kTRUE, kTRUE);
 
-  cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,nSigmaPart2),fQualityTrackCutPi,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kPion,nSigmaPart2);
-  cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, nSigmaPart1),fQualityTrackCutK,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kKaon,nSigmaPart1);
+  cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,nSigmaPart2TPC),fQualityTrackCutPi,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kPion,nSigmaPart2TPC);
+  cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, nSigmaPart1TPC),fQualityTrackCutK,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kKaon,nSigmaPart1TPC);
   
 //cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutKaCandidate,nsigmaPi),trkQualityCut,cutKaCandidate,AliPID::kPion,nsigmaPi, nsigmaTOF);
 //cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaK),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaK, nsigmaTOF);
@@ -63,12 +66,13 @@ Bool_t ConfigKstarLeading(
 
         out->AddAxis(imID, 200, 0.7, 1.3);
         out->AddAxis(ptID, 40, 0., 20.);
-        if(!isPP ) out->AddAxis(multID,100,0.,100.);
+        if(!isPP ) out->AddAxis(multID,10,0.,100.);
         else out->AddAxis(multID, 20, 0., 200.); 
 
-        out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
+
+        out->AddAxis(alID, 36, -0.25 * TMath::Pi(), 1.75 * TMath::Pi()); 
         out->AddAxis(ptlID, 40, 0., 20.); 
-        
+         out->AddAxis(detaID, 32, -1.6, 1.6);   
     }
     return kTRUE;
 }

@@ -17,7 +17,8 @@
  *                                                                        *
  **************************************************************************/
 /* This macro produces:  pT spectra in different multiplicity and Delta phi bins
-   last update: 05/08/2020
+New histograms for Dphi correlations added
+   last update: 12/02/2021
 */
 
 
@@ -102,6 +103,8 @@ AliAnalysisTaskSE(),
   fdcaz(-999),
   hSelEv(0x0),
   hINEL0(0x0),
+  hEvMultSel(0x0),
+  hEvDphiSel(0x0),
   hPS(0x0),
   hVtxPS(0x0),
   hpT(0x0),
@@ -144,8 +147,30 @@ AliAnalysisTaskSE(),
   secondaries(0x0),
   fMultSelection(0x0),
   ftrackmult08(-999),
-  fv0mpercentile(-999)
+  fv0mpercentile(-999),
+  hNchTSLeftvsNchTSRightvsDphi(0x0),
+  hDPhiNchTSGT12(0x0),
+  hDPhiNchTSLT8(0x0),
+  hDPhiNchTSGT12LT12(0x0),
+  hDPhiNchTSGT12LT8(0x0),
+  hDPhiNchTSGT12GT0(0x0),
+  hMultTSNchTSGT12(0x0),
+  hMultTSNchTSLT8(0x0),
+  hMultTSNchTSGT12GT0(0x0),
+  hMultTSNchTSGT12LT12(0x0),
+  hMultTSDNchTSGT12LT8(0x0)
 {
+  for(Int_t i=0; i<10; i++){
+    hNchTSLeft[i]=0;
+    hNchTSRight[i]=0;
+    hSumptTSLeft[i]=0;
+    hSumptTSRight[i]=0;
+    hNchTSLeftvsNchTSRight[i]=0;
+    hSumptTSLeftvsSumptTSRight[i]=0;
+    hNchTSLeftvsNchTSRight[i]=0;
+    hSumptTSLeftvsSumptTSRight[i]=0;
+  }
+
   // Default constructor (should not be used)
 }
 
@@ -185,6 +210,8 @@ AliAnalysisTaskUeSpectraDphi::AliAnalysisTaskUeSpectraDphi(const char *name):
   fdcaz(-999),
   hSelEv(0x0),
   hINEL0(0x0),
+  hEvMultSel(0x0),
+  hEvDphiSel(0x0),
   hpT(0x0),
   hEta(0x0),
   hPhi(0x0),
@@ -225,8 +252,27 @@ AliAnalysisTaskUeSpectraDphi::AliAnalysisTaskUeSpectraDphi(const char *name):
   secondaries(0x0),
   fMultSelection(0x0),
   ftrackmult08(-999),
-  fv0mpercentile(-999)
+  fv0mpercentile(-999),
+  hNchTSLeftvsNchTSRightvsDphi(0x0),
+  hDPhiNchTSGT12(0x0),
+  hDPhiNchTSLT8(0x0),
+  hDPhiNchTSGT12LT12(0x0),
+  hDPhiNchTSGT12LT8(0x0),
+  hDPhiNchTSGT12GT0(0x0),
+  hMultTSNchTSGT12(0x0),
+  hMultTSNchTSLT8(0x0),
+  hMultTSNchTSGT12GT0(0x0),
+  hMultTSNchTSGT12LT12(0x0),
+  hMultTSDNchTSGT12LT8(0x0)
 {
+  for(Int_t i=0; i<10; i++){
+     hNchTSLeft[i]=0;
+     hNchTSRight[i]=0;
+     hSumptTSLeft[i]=0;
+     hSumptTSRight[i]=0;
+     hNchTSLeftvsNchTSRight[i]=0;
+     hSumptTSLeftvsSumptTSRight[i]=0;
+  }
 
   DefineOutput(1, TList::Class());
 }
@@ -262,24 +308,18 @@ void AliAnalysisTaskUeSpectraDphi::UserCreateOutputObjects()
 
   fRandom = new TRandom(0); // 0 means random seed
 
-  const Int_t nPtBins      = 70;
+  const Int_t nPtBins      = 79;
   Double_t PtBins[nPtBins+1] = {
     0.15,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,
     0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,
     1.6,1.7,1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,
     4.5,5,5.5,6,6.5,7,8,9,10,11,12,13,14,15,16,18,20,22.0,
     24.0,26.0,28.0,32.0,36.0,42.0,50.0,60.0,80.0,100.0,130.0,
-    160.0,200.0};
+    160.0,200.0,250.0,300.0,350.0,400.0,500.0,600.0,700.0,800.0,1000.0};
 
-  const Int_t nMultBins = 200;
+  const Int_t nMultBins = 300;
   const Double_t MultBins[nMultBins+1] = {
-    0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,
-    40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,
-    77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,
-    111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,
-    140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,
-    169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,
-    198,199,200};
+    0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300};
 
   const Int_t nDphiBins = 180;
   const Double_t DphiBins[nDphiBins+1] = {
@@ -366,6 +406,12 @@ void AliAnalysisTaskUeSpectraDphi::UserCreateOutputObjects()
   hSelEv = 0;
   hSelEv = new TH1D("hSelEv","Number of events; Events; Counts", 10, 0, 10);
   fListOfObjects->Add(hSelEv);
+
+  hEvMultSel = new TH1D("hEvMultSel","Events in Mult Bins; Events; Counts", 10, 0, 10);
+  fListOfObjects->Add(hEvMultSel);
+
+  hEvDphiSel = new TH1D("hEvDphiSel","Events in Dphi Sel; Events; Counts", 10, 0, 10);
+  fListOfObjects->Add(hEvDphiSel);
 
   fVtxBeforeCuts = 0;
   fVtxBeforeCuts = new TH1D("fVtxBeforeCuts", "Vtx distribution (before cuts); Vtx z [cm]; Counts", 60, -30, 30);
@@ -526,14 +572,38 @@ void AliAnalysisTaskUeSpectraDphi::UserCreateOutputObjects()
   hDphi = new TH1D("hDphi","",64,-2*TMath::Pi(),2*TMath::Pi());
   fListOfObjects->Add(hDphi);
 
+  hDPhiNchTSGT12        = new TH1D("hDPhiNchTSGT12",";#Delta#phi (rad.);N_{ch} (|#eta| < 0.8)",64,-2.0*TMath::Pi(),2.0*TMath::Pi());
+  hDPhiNchTSLT8         = new TH1D("hDPhiNchTSLT8",";#Delta#phi (rad.);N_{ch} (|#eta| < 0.8)",64,-2.0*TMath::Pi(),2.0*TMath::Pi());
+  hDPhiNchTSGT12GT0     = new TH1D("hDPhiNchTSGT12GT0",";#Delta#phi (rad.);N_{ch} (|#eta| < 0.8)",64,-2.0*TMath::Pi(),2.0*TMath::Pi());
+  hDPhiNchTSGT12LT12    = new TH1D("hDPhiNchTSGT12LT12",";#Delta#phi (rad.);N_{ch} (|#eta| < 0.8)",64,-2.0*TMath::Pi(),2.0*TMath::Pi());
+  hDPhiNchTSGT12LT8     = new TH1D("hDPhiNchTSGT12LT8",";#Delta#phi (rad.);N_{ch} (|#eta| < 0.8)",64,-2.0*TMath::Pi(),2.0*TMath::Pi());
+
+  fListOfObjects->Add(hDPhiNchTSGT12);
+  fListOfObjects->Add(hDPhiNchTSLT8);
+  fListOfObjects->Add(hDPhiNchTSGT12GT0);
+  fListOfObjects->Add(hDPhiNchTSGT12LT12);
+  fListOfObjects->Add(hDPhiNchTSGT12LT8);
+  
+  hMultTSNchTSGT12      = new TH2D("hMultTSNchTSGT12",";N_{ch}^{TS-left} (|#eta| < 0.8);N_{ch}^{TS-right} (|#eta| < 0.8)",nMultBins,MultBins,nMultBins,MultBins);
+  hMultTSNchTSLT8       = new TH2D("hMultTSNchTSLT8",";N_{ch}^{TS-left} (|#eta| < 0.8);N_{ch}^{TS-right} (|#eta| < 0.8)",nMultBins,MultBins,nMultBins,MultBins);
+  hMultTSNchTSGT12GT0   = new TH2D("hMultTSNchTSGT12GT0",";N_{ch}^{TS-left} (|#eta| < 0.8);N_{ch}^{TS-right} (|#eta| < 0.8)",nMultBins,MultBins,nMultBins,MultBins); 
+  hMultTSNchTSGT12LT12  = new TH2D("hMultTSNchTSGT12LT12",";N_{ch}^{TS-left} (|#eta| < 0.8);N_{ch}^{TS-right} (|#eta| < 0.8)",nMultBins,MultBins,nMultBins,MultBins);
+  hMultTSDNchTSGT12LT8  = new TH2D("hMultTSDNchTSGT12LT8",";N_{ch}^{TS-left} (|#eta| < 0.8);N_{ch}^{TS-right} (|#eta| < 0.8)",nMultBins,MultBins,nMultBins,MultBins);
+  
+  fListOfObjects->Add(hMultTSNchTSGT12);
+  fListOfObjects->Add(hMultTSNchTSLT8);
+  fListOfObjects->Add(hMultTSNchTSGT12GT0);
+  fListOfObjects->Add(hMultTSNchTSGT12LT12);
+  fListOfObjects->Add(hMultTSDNchTSGT12LT8);
+    
   hpTvsDphiOA = 0;
   hpTvsDphiOA = new TH2D("hpTvsDphiOA","p_{T} vs #Delta#phi (-#pi to #pi);#Delta#phi (rad.);p_{T} (GeV/c)",360,-3.15,3.15,nPtBins,PtBins);
   fListOfObjects->Add(hpTvsDphiOA);
-
+  
   hpTvsDphiSA = 0;
   hpTvsDphiSA = new TH2D("hpTvsDphiSA","p_{T} vs #Delta#phi  (0 to #pi);#Delta#phi (rad.);p_{T} (GeV/c)",nDphiBins,DphiBins,nPtBins,PtBins);
   fListOfObjects->Add(hpTvsDphiSA);
-
+  
   hMultvsDphiOA = 0;
   hMultvsDphiOA= new TH2D("hMultvsDphiOA","Multiplicity vs #Delta#phi (-#pi to #pi);#Delta#phi (rad.);Multiplicity",360,-3.15,3.15,nMultBins,MultBins);
   fListOfObjects->Add(hMultvsDphiOA);
@@ -549,6 +619,25 @@ void AliAnalysisTaskUeSpectraDphi::UserCreateOutputObjects()
   hMultvspTvsDphiWLP = 0;
   hMultvspTvsDphiWLP = new TH3D("hMultvspTvsDphiWLP","Multiplicity vs p_{T} vs #Delta#phi  (0 to #pi);#Delta#phi (rad.);Multiplicity;p_{T} (GeV/c)",nDphiBins,DphiBins,nMultBins,MultBins,nPtBins,PtBins);
   fListOfObjects->Add(hMultvspTvsDphiWLP);
+
+  hNchTSLeftvsNchTSRightvsDphi= new TH3D("hNchTSLeftvsNchTSRightvsDphi",";N_{ch}^{TS-left} (|#eta| < 0.8);N_{ch}^{TS-right} (|#eta| < 0.8);#Delta#phi",200,0,200,200,0,200,64,-2.0*TMath::Pi(),-2.0*TMath::Pi());
+  fListOfObjects->Add(hNchTSLeftvsNchTSRightvsDphi);
+  
+  for(Int_t i=0; i<10; i++){
+    hNchTSLeft[i]               = new TH1D(Form("hNchTSLeft%d",i),";N_{ch}^{TS-left} (|#eta| < 0.8);",nMultBins,MultBins);
+    hNchTSRight[i]              = new TH1D(Form("hNchTSRight%d",i),";N_{ch}^{TS-right} (|#eta| < 0.8);",nMultBins,MultBins);
+    hSumptTSLeft[i]             = new TH1D(Form("hSumptTSLeft%d",i),";#sump_{T}^{TS-left} (GeV/c);",nPtBins,PtBins);
+    hSumptTSRight[i]            = new TH1D(Form("hSumptTSRight%d",i),";#sump_{T}^{TS-right} (GeV/c);",nPtBins,PtBins);  
+    hNchTSLeftvsNchTSRight[i]   = new TH2D(Form("hNchTSLeftvsNchTSRight%d",i),";N_{ch}^{TS-left};N_{ch}^{TS-right}",nMultBins,MultBins,nMultBins,MultBins);
+    hSumptTSLeftvsSumptTSRight[i]= new TH2D(Form("hSumptTSLeftvsSumptTSRight%d",i),";#sump_{T}{TS-left};#sump_{T}^{TS-right}",nPtBins,PtBins,nPtBins,PtBins);
+
+    fListOfObjects->Add(hNchTSLeft[i]);
+    fListOfObjects->Add(hNchTSRight[i]);
+    fListOfObjects->Add(hSumptTSLeft[i]);
+    fListOfObjects->Add(hSumptTSRight[i]);
+    fListOfObjects->Add(hNchTSLeftvsNchTSRight[i]);
+    fListOfObjects->Add(hSumptTSLeftvsSumptTSRight[i]);
+  }
 
   // fEventCuts.AddQAplotsToList(fListOfObjects);
   PostData(1, fListOfObjects);
@@ -703,6 +792,7 @@ void AliAnalysisTaskUeSpectraDphi::UserExec(Option_t *)
       if ( fisPS && isVtxGood ) hVtxPS->Fill(0);
     }
 
+  hEvDphiSel ->Fill(0);
   if (isINEL0Rec) {
     AnalyzeESD(fESD);
     AnalyzeESDforDCA(fESD);
@@ -781,7 +871,7 @@ void AliAnalysisTaskUeSpectraDphi::AnalyzeMC(AliMCEvent* fMCEvent){
     if ( TMath::Abs(eta) > fEtaCut ) continue;
     if ( pt < 0.15 ) continue;
 
-    Double_t DPhiOA = DeltaPhi( phi, phi_leading );
+    Double_t DPhiOA = DeltaPhiOA( phi, phi_leading );
     Double_t DPhiSA = TMath::Abs(DPhiOA);
     //if (isINEL0Rec) {
       if ( isINEL0True && fisMCvtxInZcut ){
@@ -802,6 +892,9 @@ void AliAnalysisTaskUeSpectraDphi::AnalyzeMC(AliMCEvent* fMCEvent){
 //________________________________________________________________________
 void AliAnalysisTaskUeSpectraDphi::AnalyzeESD(AliESDEvent* fESD){
 
+  Int_t MultBinsMin[9] = {0, 0,11,21,31,41,51,61,91};
+  Int_t MultBinsMax[9] = {500,10,20,30,40,50,60,500,500};
+
   hINEL0->Fill(1);
 
   fRun  = fESD->GetRunNumber();
@@ -813,7 +906,8 @@ void AliAnalysisTaskUeSpectraDphi::AnalyzeESD(AliESDEvent* fESD){
   Double_t eta_leading    = 0;
   Double_t phi_leading    = 0;
   Int_t    i_leading = 0;
-  Int_t mult = 0;
+  Int_t mult=0, nchTSRight=0, nchTSLeft=0, nchTS = 0;
+  Double_t sumpt=0., sumptTSRight=0., sumptTSLeft=0., sumptTS=0.;
 
   if (fAnalysisMC){ // for reconstructed MC
     for(Int_t i = 0; i < fESD->GetNumberOfTracks(); i++) {
@@ -892,7 +986,7 @@ void AliAnalysisTaskUeSpectraDphi::AnalyzeESD(AliESDEvent* fESD){
       Int_t partPDG = TMath::Abs(mcParticle->GetPdgCode());
       if ((TMath::Abs(mcParticle->GetPDG()->Charge()) == 3)){ // only for charged particles
 
-	Double_t DPhiOA = DeltaPhi( phi, phi_leading );
+	Double_t DPhiOA = DeltaPhiOA( phi, phi_leading );
 	Double_t DPhiSA = TMath::Abs(DPhiOA);
 
 	primaries->Fill(DPhiSA,mult,pt);
@@ -910,7 +1004,7 @@ void AliAnalysisTaskUeSpectraDphi::AnalyzeESD(AliESDEvent* fESD){
     }// end loop over tracks
   }
 
-  else{
+  else{//data
     for(Int_t i = 0; i < fESD->GetNumberOfTracks(); i++) {
 
       AliESDtrack* esdTrack = fESD->GetTrack(i);
@@ -924,6 +1018,11 @@ void AliAnalysisTaskUeSpectraDphi::AnalyzeESD(AliESDEvent* fESD){
       if(!fTrackFilter->IsSelected(esdTrack)) continue;
       if(pt<0.15) continue;
       mult++;
+      sumpt+=pt;
+
+      Double_t DPhi   = DeltaPhi( phi, phi_leading );
+      if( DPhi <= -TMath::Pi()/3.0 || DPhi >= 4*TMath::Pi()/3.0){sumptTSLeft+=pt; nchTSLeft++;}
+      if( DPhi >=  TMath::Pi()/3.0 && DPhi <= 2*TMath::Pi()/3.0){sumptTSRight+=pt; nchTSRight++;}
 
       if(pt>pt_leading){
 	pt_leading      = pt;
@@ -932,6 +1031,7 @@ void AliAnalysisTaskUeSpectraDphi::AnalyzeESD(AliESDEvent* fESD){
 	i_leading = i;
       }
 
+      hDphi->Fill(DPhi);
       hpT->Fill(pt);
       hEta->Fill(eta);
       hPhi->Fill(phi);
@@ -941,6 +1041,7 @@ void AliAnalysisTaskUeSpectraDphi::AnalyzeESD(AliESDEvent* fESD){
     hPtL->Fill(pt_leading);
     hEtaL->Fill(eta_leading);
     hPhiL->Fill(phi_leading);
+  
 
     for(Int_t i = 0; i < fESD->GetNumberOfTracks(); i++) {
 
@@ -949,22 +1050,74 @@ void AliAnalysisTaskUeSpectraDphi::AnalyzeESD(AliESDEvent* fESD){
       Double_t phi      = esdTrack->Phi();
       Double_t pt       = esdTrack->Pt();
 
+   
       if(TMath::Abs(eta) > fEtaCut) continue;
       //quality cuts, standard 2015 track cuts
       if(!fTrackFilter->IsSelected(esdTrack)) continue;
       if(pt<0.15) continue;
 
-      Double_t DPhiOA = DeltaPhi( phi, phi_leading );
+      Double_t DPhi   = DeltaPhi( phi, phi_leading );
+      Double_t DPhiOA = DeltaPhiOA( phi, phi_leading );
       Double_t DPhiSA = TMath::Abs(DPhiOA);
 
-      hDphi->Fill(DPhiOA);
+      hNchTSLeftvsNchTSRightvsDphi->Fill(nchTSLeft,nchTSRight,DPhi);
       hpTvsDphiOA->Fill(DPhiOA,pt);
       hpTvsDphiSA->Fill(DPhiSA,pt);
       hMultvsDphiOA->Fill(DPhiOA,mult);
       hMultvsDphiSA->Fill(DPhiSA,mult);
       hMultvspTvsDphi->Fill(DPhiSA,mult,pt);
       if(DPhiSA > 0) hMultvspTvsDphiWLP->Fill(DPhiSA,mult,pt);
+
+      hEvDphiSel ->Fill(1);
+      
+      if(mult<60) continue;
+      hEvDphiSel ->Fill(2);
+      if(nchTSLeft >= 12  && nchTSRight >= 12) {
+	hEvDphiSel ->Fill(3);
+	Double_t DeltaphiNchTSGT12 = DeltaPhi( phi, phi_leading );
+	hDPhiNchTSGT12->Fill(DeltaphiNchTSGT12);
+	hMultTSNchTSGT12->Fill(nchTSLeft,nchTSRight);
+      }
+      if(nchTSLeft <=  8  && nchTSRight <=  8) {
+	hEvDphiSel ->Fill(4);
+	Double_t DeltaphiNchTSLT8 = DeltaPhi( phi, phi_leading );
+	hDPhiNchTSLT8->Fill(DeltaphiNchTSLT8);
+	hMultTSNchTSLT8->Fill(nchTSLeft,nchTSRight);
+      }
+      
+      if((nchTSLeft >= 12  && nchTSRight <= 12) || (nchTSRight >= 12  && nchTSLeft <= 12))  {
+	hEvDphiSel ->Fill(5);
+	Double_t DPhiNchTSGT12LT12 = DeltaPhi( phi, phi_leading );
+	hDPhiNchTSGT12LT12->Fill(DPhiNchTSGT12LT12);
+	hMultTSNchTSGT12LT12->Fill(nchTSLeft,nchTSRight);
+      }
+      
+      if((nchTSLeft >= 12  && nchTSRight >= 0) || (nchTSRight >= 12  && nchTSLeft >=0))  {
+	hEvDphiSel ->Fill(6);
+	Double_t DPhiNchTSGT12GT0 = DeltaPhi( phi, phi_leading );
+	hDPhiNchTSGT12GT0->Fill(DPhiNchTSGT12GT0);
+	hMultTSNchTSGT12GT0->Fill(nchTSLeft,nchTSRight);
+      }
+      
+      if((nchTSLeft >= 12  && nchTSRight <= 8) || (nchTSRight >= 12  && nchTSLeft <= 8))  {
+	hEvDphiSel ->Fill(7);
+	Double_t DPhiNchTSGT12LT8 = DeltaPhi( phi, phi_leading );
+	hDPhiNchTSGT12LT8->Fill(DPhiNchTSGT12LT8);
+	hMultTSDNchTSGT12LT8->Fill(nchTSLeft,nchTSRight);
+      }
     }// end loop over tracks
+    
+    for(Int_t imult=0;imult<9;imult++) {
+      if(mult >=MultBinsMin[imult] && mult <=MultBinsMax[imult]) {
+	hEvMultSel->Fill(imult);
+	hNchTSLeft[imult]->Fill(nchTSLeft);
+	hNchTSRight[imult]->Fill(nchTSRight);
+	hSumptTSLeft[imult]->Fill(sumptTSLeft);    
+	hSumptTSRight[imult]->Fill(sumptTSRight);
+	hNchTSLeftvsNchTSRight[imult]->Fill(nchTSLeft,nchTSRight);
+	hSumptTSLeftvsSumptTSRight[imult]->Fill(sumptTSLeft,sumptTSRight);
+      }
+    }
   }
 }
 //______________________________________________________________________
@@ -1225,8 +1378,7 @@ Bool_t AliAnalysisTaskUeSpectraDphi::isMCEventTrueINEL0(AliMCEvent* fMCEvent)
 
 }
 
-Double_t AliAnalysisTaskUeSpectraDphi::DeltaPhi(Double_t phia, Double_t phib,
-						    Double_t rangeMin, Double_t rangeMax)
+Double_t AliAnalysisTaskUeSpectraDphi::DeltaPhiOA(Double_t phia, Double_t phib, Double_t range)
 {
   Double_t dphi = -999;
   Double_t pi = TMath::Pi();
@@ -1236,8 +1388,26 @@ Double_t AliAnalysisTaskUeSpectraDphi::DeltaPhi(Double_t phia, Double_t phib,
   if (phib < 0)         phib += 2*pi;
   else if (phib > 2*pi) phib -= 2*pi;
   dphi = phib - phia;
-  if (dphi > pi)        dphi -= 2*pi;
-  else if (dphi < -pi)  dphi += 2*pi;
+  if (dphi > range)        dphi -= 2*pi;
+  else if (dphi < -range)  dphi += 2*pi;
 
   return dphi;
 }
+
+Double_t AliAnalysisTaskUeSpectraDphi::DeltaPhi(Double_t phia, Double_t phib,Double_t rangeMin, Double_t rangeMax)
+{
+  Double_t dphi = -999;
+  Double_t pi = TMath::Pi();
+
+  if (phia < 0)         phia += 2*pi;
+  else if (phia > 2*pi) phia -= 2*pi;
+  if (phib < 0)         phib += 2*pi;
+  else if (phib > 2*pi) phib -= 2*pi;
+  dphi = phib - phia;
+  if (dphi < rangeMin)      dphi += 2*pi;
+  else if (dphi > rangeMax) dphi -= 2*pi;
+
+  return dphi;
+}
+
+

@@ -18,6 +18,7 @@
 #include <TFile.h>
 #include <TGrid.h>
 #include <TSystem.h>
+#include <AliDataFile.h>
 #include "AliLog.h"
 #include "AliExternalBDT.h"
 
@@ -152,6 +153,35 @@ std::string AliMLModelHandler::ImportFile(std::string path) {
       AliFatalClass(Form("Error file %s not found! Exit", path.data()));
     }
     return path;
+  }
+
+  // check if file is on cvmfs
+  if (path.find("/cvmfs") != std::string::npos) {
+    bool checkFile = gSystem->AccessPathName(path.c_str());
+    if (checkFile) {
+      AliFatalClass(Form("Error file %s not found on CVMFS! Exit", path.data()));
+    }
+    // only skip copying for certain file types
+    std::string fileform = path.substr(path.find_last_of(".")+1,path.size());
+    if(fileform == "so" || fileform == "yml" || fileform ==  "yaml"){
+      return path;
+    }
+  }
+
+  // check if file is on cvmfs, but still requires to set the full path (so starts with PWG or AODB)
+  if (path.rfind("PWG", 0) != std::string::npos || path.rfind("AODB", 0) != std::string::npos) {
+    std::string path_cvmfs = AliDataFile::GetFileName(path);
+    if (path_cvmfs == "") {
+      AliFatalClass(Form("Error file %s not found on CVMFS! \n  When running locally, "
+                         "please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data"
+                         "\n  or use a different folder structure in case a path on CVMFS was not intended. Exit", path.data()));
+    }
+    // only skip copying for certain file types
+    std::string fileform = path.substr(path.find_last_of(".")+1,path.size());
+    if(path.find("root:") == std::string::npos && (fileform == "so" || fileform == "yml" || fileform ==  "yaml")){
+      return path_cvmfs;
+    }
+    path = path_cvmfs;
   }
     
   // check if file is on alien

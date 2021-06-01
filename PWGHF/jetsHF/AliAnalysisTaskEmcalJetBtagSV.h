@@ -61,6 +61,8 @@ public:
 
   void SetDoRandomCone(Bool_t dorndm) {fDoRndmCone = dorndm;};
 
+  void SetDoStrangeAna(Bool_t dostrange) {fDoStrangeAna = dostrange;}; //StrangeAna
+
   void SetDoFillSecVtxQA(Bool_t doqa ) {fDoQAVtx  = doqa;};
 
   void SetDoFillV0Trks(Bool_t doV0) {fDoFillV0Trks = doV0;};
@@ -190,6 +192,7 @@ private:
   Bool_t      fDoFillV0Trks;         // enable V0 checks
   Bool_t      fDoDetRespMtx;        // enable detector repsonse matrix output
   Bool_t      fDoOnlyMtxAna;        // enable only det. matrix analysis
+  Bool_t      fDoStrangeAna;        // enable only det. matrix analysis//StrangeAna 
   Bool_t      fUseTriggerData;       // use emacal trigger
   Bool_t      fEmbeddPerpendicular;  // EMB_clus use perpendicular track embedding
 
@@ -229,6 +232,9 @@ private:
 
   // AliHFJetsContainerVertex
   AliHFJetsContainerVertex*   fhJetVtxSim;       //!<! properties of vertices within the jet MC
+  AliHFJetsContainerVertex*   fhJetVtxSimFromK0Lambda;       //!<! properties of vertices within the jet MC, jet originating from K0 and Lamda //StrangeAna
+  AliHFJetsContainerVertex*   fhJetVtxSimFromSigmaXi;       //!<! properties of vertices within the jet MC, jet originating from sigma, xi etc //StrangeAna
+  AliHFJetsContainerVertex*   fhJetVtxSimFromOther;       //!<! properties of vertices within the jet MC, jet originating from other particles //StrangeAna
   AliHFJetsContainerVertex*   fhJetVtxData;      //!<! properties of vertices within the jet Data
   AliHFJetsContainerVertex*   fhQaVtx;           //!<! vertices properties
 
@@ -313,7 +319,7 @@ private:
   TRandom*		      fTrackGenerator; 		///< EMB_clus generator for track perpendicular to signal jet
 
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 13);  // analysis task for MC study //AID//
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 14);  // analysis task for MC study //AID// //StrangeAna
 };
 
 //-------------------------------------------------------------------------------------

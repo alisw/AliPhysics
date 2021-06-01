@@ -38,7 +38,7 @@ public:
   void SetESDtrackCuts(const AliESDtrackCuts& cuts) { fESDtrackCuts = cuts; }
   void SetMaxNsig(double opt = 6.) { fMaxNSigma = opt; }
   void SetMinNsig(double opt = -6.) { fMinNSigma = opt; }
-
+    
   double GetMindEdx() const { return fMindEdx; }
   double GetMinTPCsignalN() const { return fMinTPCsignalN; }
   
@@ -51,7 +51,8 @@ public:
   float fNtpcSigmas;
   AliEventCuts fEventCuts;
   bool fUseTrackCuts;
-
+  bool fUseTOFallClustersInfo;
+  
 private:
   double fMindEdx = 100.0; /// Cut on the minimum dE/dx in TPC
   int    fMinTPCsignalN = 50; /// Minimum number of PID clusters in the TPC
@@ -59,7 +60,7 @@ private:
   AliPID::EParticleType ParticleType = AliPID::kHe3;    // to select He3 or triton
   double fMaxNSigma = 6.;
   double fMinNSigma = -6.;
-  
+    
   AliPIDResponse *fPIDResponse;   //! pid response
   AliESDtrackCuts fESDtrackCuts;  // input track cuts
                                   //
@@ -97,7 +98,6 @@ private:
   UChar_t  tTRDNchamberdEdx; // number of chambers used to calculate the TRD truncated mean
   Int_t    tID;              // identification number of the track
   Int_t    tPdgCodeMc;       // pdg code of the track if MC information is available
-  UChar_t  tTOFclsN;         // number of cluster candidates in TOF
   Int_t    tTOFchannel;
   UChar_t  tnPIDclsTPC;      // number of clusters used for PID in the TPC
   UChar_t  tITSclsMap;       // ITS cluster map
@@ -112,7 +112,12 @@ private:
   Bool_t   thasTOF;          // 
   Int_t    tRunNumber;       //
   UChar_t  tPIDforTracking;  //
-      
+
+  UChar_t  tTOFclsN;         // number of cluster candidates in TOF
+  Float_t  tNsigmaTOFarray[64], tmass2array[64], tdxTOFarray[64], tdzTOFarray[64], tTOFarray[64], tLengtharray[64], texpTOFarray[64], tsigmaTOFarray[64];
+  Int_t    tTOFchannelarray[64];
+  Bool_t   tMCtofMismatcharray[64];
+  UChar_t  tNmatchableTracks[64];
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
   TH3F *fHist3TPCpid[kNabsSpecies];  //! QA TPC dE/dx per species
@@ -123,20 +128,12 @@ private:
   TH3F *fHist3TOFnsigma[kNabsSpecies]; //! QA TOF nsigma per species
   TH3F *fHist3TOFmassAll; //! QA TOF mass no species selection
 
-  TH1F *fHist1AcceptanceAll[2][2][2]; //! Number of tracks vs p, negative (0) and positive (1), without(0) and with (1) TRD, without (0) and with (1) TOF matching
-  TH2F *fHist2Matching[kNabsSpecies][2][2]; //! TOF mass per species vs p, negative (0) and positive (1), without(0) and with (1) TRD 
-  TH2F *fHist2Phi[2][2]; //! phi vs pt, negative (0) and positive (1), without(0) and with (1) TRD
-  TH2F *fHist2TPCnSigma[kNabsSpecies][2][2]; //! Number of tracks per species vs p, negative (0) and positive (1), without(0) and with (1) TRD
-
-  TH2F *fHist2MatchingMC[kNabsSpecies][2][2]; //! TOF mass per species vs p, negative (0) and positive (1), without(0) and with (1) TRD 
-
-  TF1 *fTRDboundariesPos[4]; //! Function with the phi limits of TRD boundaries as a function of pt
-  TF1 *fTRDboundariesNeg[4]; //! Function with the phi limits of TRD boundaries as a function of pt
+  void FillTOFallMatchableHitsInfo(AliESDtrack *track);
 
   //
   AliAnalysisTaskDeuteronAbsorption(const AliAnalysisTaskDeuteronAbsorption &);            // not implemented
   AliAnalysisTaskDeuteronAbsorption &operator=(const AliAnalysisTaskDeuteronAbsorption &); // not implemented
-
+  
   ClassDef(AliAnalysisTaskDeuteronAbsorption, 4);
 };
 

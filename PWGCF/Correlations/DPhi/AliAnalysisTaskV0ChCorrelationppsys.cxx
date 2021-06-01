@@ -20,7 +20,7 @@
  */
 #include <iostream>
 #include <TCanvas.h>
-#include <AliDirList.h>
+#include <TList.h>
 #include <TList.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -89,6 +89,7 @@ AliAnalysisTaskV0ChCorrelationppsys::AliAnalysisTaskV0ChCorrelationppsys()
      fOutput5(0),
      fOutput6(0),
      fOutput7(0),
+     fOutput8(0),
 
      fPIDResponse(0),
      fPrimaryVertexCut(0),
@@ -223,6 +224,7 @@ AliAnalysisTaskV0ChCorrelationppsys::AliAnalysisTaskV0ChCorrelationppsys(const c
      fOutput5(0),
      fOutput6(0),
      fOutput7(0),
+     fOutput8(0),
      fPIDResponse(0),
      fPrimaryVertexCut(0),
      fNumOfVzBins(9),
@@ -346,13 +348,14 @@ AliAnalysisTaskV0ChCorrelationppsys::AliAnalysisTaskV0ChCorrelationppsys(const c
 
    if(fEffCorr)
     DefineInput(1, TList::Class());
-    DefineOutput(1, AliDirList::Class()); 
-    DefineOutput(2, AliDirList::Class());  
-    DefineOutput(3, AliDirList::Class());  
-    DefineOutput(4, AliDirList::Class());
-    DefineOutput(5, AliDirList::Class()); 
-    DefineOutput(6, AliDirList::Class()); 
-    DefineOutput(7, AliDirList::Class());                                             
+    DefineOutput(1, TList::Class()); 
+    DefineOutput(2, TList::Class());  
+    DefineOutput(3, TList::Class());  
+    DefineOutput(4, TList::Class());
+    DefineOutput(5, TList::Class()); 
+    DefineOutput(6, TList::Class()); 
+    DefineOutput(7, TList::Class()); 
+    DefineOutput(8, TList::Class());                                                                                         
 
 }
 
@@ -405,50 +408,63 @@ void AliAnalysisTaskV0ChCorrelationppsys::UserCreateOutputObjects()
   }
 
    // Create histograms
-  fOutput = new AliDirList();
-  fOutput->SetOwner();  // IMPORTANT!
-  fOutput->SetName("output1");
+ // fOutput = new TList();
+ // fOutput->SetOwner();  // IMPORTANT!
+ // fOutput->SetName("output1");
 
-  fOutput2 = new AliDirList();
+  fOutput2 = new TList();
   fOutput2->SetOwner();  // IMPORTANT!
   fOutput2->SetName("output2");
 
 
-  fOutput3 = new AliDirList();
+  fOutput3 = new TList();
   fOutput3->SetOwner();  // IMPORTANT!
   fOutput3->SetName("output3");
 
-  fOutput4 = new AliDirList();
+  fOutput4 = new TList();
   fOutput4->SetOwner();  // IMPORTANT!
   fOutput4->SetName("output4");
 
 
-  fOutput5 = new AliDirList();
+  fOutput5 = new TList();
   fOutput5->SetOwner();  // IMPORTANT!
   fOutput5->SetName("output5");
 
 
-  fOutput6 = new AliDirList();
+  fOutput6 = new TList();
   fOutput6->SetOwner();  // IMPORTANT!
   fOutput6->SetName("output6");
 
 
-  fOutput7 = new AliDirList();
+  fOutput7 = new TList();
   fOutput7->SetOwner();  // IMPORTANT!
   fOutput7->SetName("output7");
 
+  
+  fOutput8 = new TList();
+  fOutput8->SetOwner();  // IMPORTANT!
+  fOutput8->SetName("output8");
+
+
+  fOutput8->Add(fOutput);
+  fOutput8->Add(fOutput2);
+  fOutput8->Add(fOutput3);
+  fOutput8->Add(fOutput4);
+  fOutput8->Add(fOutput5);
+  fOutput8->Add(fOutput6);
+  fOutput8->Add(fOutput7);
 
 //-----------------------------
 
 //---------------------------------------
    fEventCuts = new AliEventCuts();
-   AliDirList *tQAEventCuts = new AliDirList();
+   TList *tQAEventCuts = new TList();
    tQAEventCuts->SetOwner();
    tQAEventCuts->SetName("EventCuts");
    fEventCuts->fUseVariablesCorrelationCuts = true;
    TList qaplots;
-   fEventCuts->AddQAplotsToList(&qaplots, true); // fList is your output AliDirList
-//   fEventCuts->AddQAplotsToList(tQAEventCuts, true); // fList is your output AliDirList
+   fEventCuts->AddQAplotsToList(&qaplots, true); // fList is your output TList
+//   fEventCuts->AddQAplotsToList(tQAEventCuts, true); // fList is your output TList
    // iterate the content of qaplots and add to your list:
    TObject *plot;
    TIter nextplot(&qaplots);
@@ -466,17 +482,17 @@ void AliAnalysisTaskV0ChCorrelationppsys::UserCreateOutputObjects()
  //------------------------ 
    //---------------------------------------
   // fEventCuts = new AliEventCuts();
-  // AliDirList *tQAEventCuts = new AliDirList();
+  // TList *tQAEventCuts = new TList();
    //tQAEventCuts->SetOwner();
    //tQAEventCuts->SetName("EventCuts");
    //fEventCuts->fUseVariablesCorrelationCuts = true;
-   //fEventCuts->AddQAplotsToList(tQAEventCuts, true); // fList is your output AliDirList
+   //fEventCuts->AddQAplotsToList(tQAEventCuts, true); // fList is your output TList
   // fOutput->Add(tQAEventCuts);
    //------------------------------------
 
 
 
-  // tQAEvent = new AliDirList ();
+  // tQAEvent = new TList ();
   // tQAEvent->SetOwner();
     AddQAEvent();
    AddQATrackCandidates();
@@ -623,6 +639,7 @@ void AliAnalysisTaskV0ChCorrelationppsys::UserCreateOutputObjects()
    PostData(5, fOutput5);
    PostData(6, fOutput6);
    PostData(7, fOutput7);
+   PostData(8, fOutput8);
    //-------------------------------------------
 
    fMassLowK0s[0] = fMassMean[0]-8.*fMassRes[0];
@@ -685,8 +702,8 @@ const Int_t nZvtxBins  =  fNumOfVzBins;//fNumOfVzBins;
  //=====================================================================================================================
   void AliAnalysisTaskV0ChCorrelationppsys::AddQAEvent()
 {
- AliDirList *tQAEvent;
-  tQAEvent = new AliDirList();
+ TList *tQAEvent;
+  tQAEvent = new TList();
   tQAEvent->SetOwner();
   tQAEvent->SetName("EventInput");
  
@@ -746,8 +763,8 @@ tQAEvent->Add(fhEventCentAfterPilp);
 //======================================================================================================================
 void AliAnalysisTaskV0ChCorrelationppsys::AddQATrackCandidates()
 {
-   AliDirList *tQATrack;
-   tQATrack = new AliDirList();
+   TList *tQATrack;
+   tQATrack = new TList();
    tQATrack->SetOwner();
    tQATrack->SetName("Track");
 
@@ -836,8 +853,8 @@ const Int_t nZvtxBins  =  fNumOfVzBins;//fNumOfVzBins;
 //===========================================================================================================================
 void AliAnalysisTaskV0ChCorrelationppsys::AddQAV0Candidates()
 {
-  AliDirList *tQAV0;
-  tQAV0 = new AliDirList();
+  TList *tQAV0;
+  tQAV0 = new TList();
   tQAV0->SetOwner();
   tQAV0->SetName("V0");
 
@@ -983,8 +1000,8 @@ void AliAnalysisTaskV0ChCorrelationppsys::AddQAV0Candidates()
 //====================================================================================================================
 void AliAnalysisTaskV0ChCorrelationppsys::AddQAAnalysisK0s()
 {
-   AliDirList *tQAK0s;
-   tQAK0s = new AliDirList();
+   TList *tQAK0s;
+   tQAK0s = new TList();
    tQAK0s->SetOwner();
    tQAK0s->SetName("K0s");
    
@@ -1211,8 +1228,8 @@ THnSparseF *fHistGenTrigSibAllK0s = new THnSparseF("fHistGenTrigSibAllK0s","pt t
 //====================================================================================================================
 void AliAnalysisTaskV0ChCorrelationppsys::AddQAAnalysisLambda()
 {
-   AliDirList *tQALambda;
-   tQALambda = new AliDirList();
+   TList *tQALambda;
+   tQALambda = new TList();
    tQALambda->SetOwner();
    tQALambda->SetName("Lambda");
    
@@ -1456,8 +1473,8 @@ if(fAnalysisMC){
 //====================================================================================================================
 void AliAnalysisTaskV0ChCorrelationppsys::AddQAAnalysisAntiLambda()
 {
-   AliDirList *tQAAntiLambda;
-   tQAAntiLambda = new AliDirList();
+   TList *tQAAntiLambda;
+   tQAAntiLambda = new TList();
    tQAAntiLambda->SetOwner();
    tQAAntiLambda->SetName("AntiLambda");
    
@@ -1701,10 +1718,10 @@ void AliAnalysisTaskV0ChCorrelationppsys::Terminate(Option_t *)
    // Draw result to screen, or perform fitting, normalizations
    // Called once at the end of the query
 
-   fOutput = dynamic_cast<AliDirList*>(GetOutputData(1));
-   if (!fOutput) { AliError("Could not retrieve AliDirList fOutput"); return; }
+   fOutput = dynamic_cast<TList*>(GetOutputData(1));
+   if (!fOutput) { AliError("Could not retrieve TList fOutput"); return; }
 
-   // NEW HISTO should be retrieved from the AliDirList container in the above way,
+   // NEW HISTO should be retrieved from the TList container in the above way,
    // so it is available to draw on a canvas such as below
 }
 
@@ -1716,8 +1733,8 @@ void AliAnalysisTaskV0ChCorrelationppsys::UserExec(Option_t *)
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *inEvMain = dynamic_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
 
-  ((TH1F*)((AliDirList*)fOutput2->FindObject("EventInput"))->FindObject("fhEventBf"))->Fill(0);  
- ((TH1F*)((AliDirList*)fOutput2->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(0.5);
+  ((TH1F*)((TList*)fOutput2->FindObject("EventInput"))->FindObject("fhEventBf"))->Fill(0);  
+ ((TH1F*)((TList*)fOutput2->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(0.5);
 
     //  physics selection
 UInt_t fSelectMask = fInputHandler->IsEventSelected();
@@ -1727,18 +1744,18 @@ Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;
 
 
 
-    ((TH1F*)((AliDirList*)fOutput2->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(1.5);
+    ((TH1F*)((TList*)fOutput2->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(1.5);
     AliAODEvent* fAOD = dynamic_cast<AliAODEvent*>(inEvMain->GetEvent());
     fPIDResponse = inEvMain->GetPIDResponse();   
   
-    ((TH1F*)((AliDirList*)fOutput2->FindObject("EventInput"))->FindObject("fHistMultiMain"))->Fill(fAOD->GetNumberOfTracks());
+    ((TH1F*)((TList*)fOutput2->FindObject("EventInput"))->FindObject("fHistMultiMain"))->Fill(fAOD->GetNumberOfTracks());
 
     //====================================Pile Up================================================= 
    if(fRejectEventPileUp){
    if (!fEventCuts->AcceptEvent(fAOD)) {
      PostData(1, fOutput); return; }}
 
-    ((TH1F*)((AliDirList*)fOutput2->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(2.5);
+    ((TH1F*)((TList*)fOutput2->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(2.5);
 
     const AliVVertex* primVertex = fAOD->GetPrimaryVertex(); 
     if ( ( TMath::Abs(primVertex->GetZ()) ) >= fPrimaryVertexCut) return ;
@@ -1759,7 +1776,7 @@ const AliAODVertex* primVertexSPD = fAOD->GetPrimaryVertexSPD();
 
 
   //V0 in the event
- //((TH1D*)((AliDirList*)fOutput2->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
+ //((TH1D*)((TList*)fOutput2->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
 
  //===========  Multiplicity definition===========
 Float_t lPercentile = 300; 
@@ -1776,9 +1793,9 @@ if( !MultSelection) {
 
 //======================
 
-    ((TH1F*)((AliDirList*)fOutput2->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(3.5);
-    ((TH2F*)((AliDirList*)fOutput2->FindObject("EventInput"))->FindObject("fHistCentVtx"))->Fill(lPercentile,lPVz);
-    ((TH1F*)((AliDirList*)fOutput2->FindObject("EventInput"))->FindObject("fhEventCentAfterPilp"))->Fill(lPercentile);
+    ((TH1F*)((TList*)fOutput2->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(3.5);
+    ((TH2F*)((TList*)fOutput2->FindObject("EventInput"))->FindObject("fHistCentVtx"))->Fill(lPercentile,lPVz);
+    ((TH1F*)((TList*)fOutput2->FindObject("EventInput"))->FindObject("fhEventCentAfterPilp"))->Fill(lPercentile);
 
 
 //here is the =TObjArray for Mc Closure test 
@@ -1805,7 +1822,7 @@ if( !MultSelection) {
     if (TMath::Abs(vzMC) >= fPrimaryVertexCut) return;
 
     //retreive MC particles from event
-   // fMCArray = (TClonesArray*)fAOD->GeAliDirList()->FindObject(AliAODMCParticle::StdBranchName());
+   // fMCArray = (TClonesArray*)fAOD->GeTList()->FindObject(AliAODMCParticle::StdBranchName());
    fMCArray = (TClonesArray*)fAOD->FindListObject(AliAODMCParticle::StdBranchName());
     if(!fMCArray){
       Printf("No MC particle branch found");
@@ -1947,7 +1964,7 @@ for(Int_t i = 0; i < MCk0s->GetEntries(); i++){
       
 
        Double_t MCk0sAll[4] = {triggerk0sMCPt, lPercentile, lPVz,1.};
-        ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistGenTrigSibAllK0s"))->Fill(MCk0sAll);
+        ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistGenTrigSibAllK0s"))->Fill(MCk0sAll);
 
 
     for(Int_t iTrk1 = 0; iTrk1 < mcAssocTracks->GetEntries(); iTrk1++){           
@@ -1981,7 +1998,7 @@ for(Int_t i = 0; i < MCk0s->GetEntries(); i++){
 
 
  Double_t spMCSigK0s[7] = {dPhiMC, dEtaMC, triggerk0sMCPt, assocpt, lPercentile, lPVz, 1.};
-((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistGendPhidEtaSibK0s"))->Fill(spMCSigK0s);
+((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistGendPhidEtaSibK0s"))->Fill(spMCSigK0s);
 }//end of track loop 
 }//end loop for k0s correlation
 
@@ -2000,7 +2017,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       Double_t triggerLambdaMCEta = Lambdatrig->Eta();
 
           Double_t MCLambda[4] = {triggerLambdaMCPt, lPercentile, lPVz,1.};
-         ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistGenTrigSibAllLambda"))->Fill(MCLambda);
+         ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistGenTrigSibAllLambda"))->Fill(MCLambda);
 
 
     for(Int_t iTrk1 = 0; iTrk1 < mcAssocTracks->GetEntries(); iTrk1++){           
@@ -2030,7 +2047,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
  Double_t spMCSigLambda[7] = {dPhiMC, dEtaMC, triggerLambdaMCPt, assocpt, lPercentile, lPVz, 1.};
 
-((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistGendPhidEtaSibLambda"))->Fill(spMCSigLambda);
+((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistGendPhidEtaSibLambda"))->Fill(spMCSigLambda);
 
   }//End Track loop 
    }  //end of Lambda   loop
@@ -2048,7 +2065,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
 
           Double_t MCAntiLambda[4] = {triggerAntiLambdaMCPt, lPercentile, lPVz,1.};
-         ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistGenTrigSibAllAntiLambda"))->Fill(MCAntiLambda);
+         ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistGenTrigSibAllAntiLambda"))->Fill(MCAntiLambda);
 
      for(Int_t iTrk1 = 0; iTrk1 < mcAssocTracks->GetEntries(); iTrk1++){           
       AliV0hParticles* assocMC = (AliV0hParticles*) mcAssocTracks->At(iTrk1);
@@ -2080,7 +2097,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
  Double_t spMCSigAntiLambda[7] = {dPhiMC, dEtaMC, triggerAntiLambdaMCPt, assocpt, lPercentile, lPVz, 1.};
 
-((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistGendPhidEtaSibAntiLambda"))->Fill(spMCSigAntiLambda);
+((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistGendPhidEtaSibAntiLambda"))->Fill(spMCSigAntiLambda);
 
 
   }  //end of track loop condition           
@@ -2156,15 +2173,15 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           if(weight == 0){
             continue;
           }
-          ((THnSparseF*)((AliDirList*)fOutput3->FindObject("Track"))->FindObject("fHistMassTrack"))->Fill(spTrack, 1/weight);
+          ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistMassTrack"))->Fill(spTrack, 1/weight);
       }
       else{
-        ((THnSparseF*)((AliDirList*)fOutput3->FindObject("Track"))->FindObject("fHistMassTrack"))->Fill(spTrack);
+        ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistMassTrack"))->Fill(spTrack);
       }
-      ((TH1F*)((AliDirList*)fOutput3->FindObject("Track"))->FindObject("tPhi"))->Fill(tPhi);
-      ((TH1F*)((AliDirList*)fOutput3->FindObject("Track"))->FindObject("tPt"))->Fill(tPt);
-      ((TH1F*)((AliDirList*)fOutput3->FindObject("Track"))->FindObject("tEta"))->Fill(tEta);
-      ((TH3F*)((AliDirList*)fOutput3->FindObject("Track"))->FindObject("fHistTrk"))->Fill(tPt,tEta,tPhi);
+      ((TH1F*)((TList*)fOutput3->FindObject("Track"))->FindObject("tPhi"))->Fill(tPhi);
+      ((TH1F*)((TList*)fOutput3->FindObject("Track"))->FindObject("tPt"))->Fill(tPt);
+      ((TH1F*)((TList*)fOutput3->FindObject("Track"))->FindObject("tEta"))->Fill(tEta);
+      ((TH3F*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistTrk"))->Fill(tPt,tEta,tPhi);
       if(fAnalysisMC) {
         if(tr->GetLabel() == -1) continue;
         if(! (static_cast<AliAODMCParticle*>(fMCArray->At(TMath::Abs(tr->GetLabel()))))->IsPhysicalPrimary())continue;
@@ -2175,8 +2192,8 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
     Int_t nSelectedTracks = selectedTracks->GetEntries();
     
-    ((TH1F*)((AliDirList*)fOutput3->FindObject("Track"))->FindObject("nTracksBf"))->Fill(nTracks);
-    ((TH1F*)((AliDirList*)fOutput3->FindObject("Track"))->FindObject("nTracksAf"))->Fill(nSelectedTracks);
+    ((TH1F*)((TList*)fOutput3->FindObject("Track"))->FindObject("nTracksBf"))->Fill(nTracks);
+    ((TH1F*)((TList*)fOutput3->FindObject("Track"))->FindObject("nTracksAf"))->Fill(nSelectedTracks);
     //==============================================================================================
      std::map<int, int> labels;
      for (int i = 0; i < nTracks; i++) {
@@ -2278,16 +2295,16 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
  
   
       if(isPosPionForTPC && Ptrack->IsOn(AliESDtrack::kTPCin)){
-         ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfPion"))->Fill(Ptrack->P()*Ptrack->Charge(),Ptrack->GetTPCsignal());
+         ((TH2F*)((TList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfPion"))->Fill(Ptrack->P()*Ptrack->Charge(),Ptrack->GetTPCsignal());
       }
       if(isPosProtonForTPC && Ptrack->IsOn(AliESDtrack::kTPCin)){
-         ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfProton"))->Fill(Ptrack->P()*Ptrack->Charge(),Ptrack->GetTPCsignal());
+         ((TH2F*)((TList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfProton"))->Fill(Ptrack->P()*Ptrack->Charge(),Ptrack->GetTPCsignal());
       } 
       if(isNegPionForTPC && Ntrack->IsOn(AliESDtrack::kTPCin)){
-         ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfPion"))->Fill(Ntrack->P()*Ntrack->Charge(),Ntrack->GetTPCsignal());
+         ((TH2F*)((TList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfPion"))->Fill(Ntrack->P()*Ntrack->Charge(),Ntrack->GetTPCsignal());
       }
       if(isNegProtonForTPC && Ntrack->IsOn(AliESDtrack::kTPCin)){
-         ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfProton"))->Fill(Ntrack->P()*Ntrack->Charge(),Ntrack->GetTPCsignal());
+         ((TH2F*)((TList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfProton"))->Fill(Ntrack->P()*Ntrack->Charge(),Ntrack->GetTPCsignal());
       }
       //------------------------------------Candidate selection cut-------------------------------------------
       //if(fAnalysisMC){
@@ -2302,16 +2319,16 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       if(dlL > fLambdaLifeTimeMax || dlL < fLambdaLifeTimeMin) ctL=kFALSE;
      
       //---------------------------------------Check vabribles--------------------------------------------------
-      ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("DLK"))->Fill(dlK);
-      ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("DLL"))->Fill(dlL);
-      ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("AfV0Pt"))->Fill(lPt);
-      ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("AfV0Eta"))->Fill(lEta);
-      ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("Afxyp"))->Fill(xyp);
-      ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("Afxyn"))->Fill(xyn);   
-      ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("AfDCA"))->Fill(lDCA);
-      ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("AfCPA"))->Fill(lCPA);
-      ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("Afr2"))->Fill(r2);
-      ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("AfAP"))->Fill(lPtArmV0, lAlphaV0);
+      ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("DLK"))->Fill(dlK);
+      ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("DLL"))->Fill(dlL);
+      ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("AfV0Pt"))->Fill(lPt);
+      ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("AfV0Eta"))->Fill(lEta);
+      ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("Afxyp"))->Fill(xyp);
+      ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("Afxyn"))->Fill(xyn);   
+      ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("AfDCA"))->Fill(lDCA);
+      ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("AfCPA"))->Fill(lCPA);
+      ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("Afr2"))->Fill(r2);
+      ((TH2F*)((TList*)fOutput4->FindObject("V0"))->FindObject("AfAP"))->Fill(lPtArmV0, lAlphaV0);
       
       //--------------------check whether it is K0s/ Lambda/ AntiLambda candidates------------------------------
       if(ctK && lCPA > fk0sCPA /*&& lPtArmV0 > TMath::Abs(fPtArmV0AlphaV0 *lAlphaV0)*/ && xyn > fDCANegtoPrimVertex && xyp > fDCAPostoPrimVertex && isPosPionForTPC  && isNegPionForTPC)
@@ -2323,20 +2340,20 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           if(weight == 0){
             continue;
           }
-          ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistMassK0s"))->Fill(spK0s, 1/weight);
+          ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistMassK0s"))->Fill(spK0s, 1/weight);
 
-       // ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtCorr"))->Fill(lPt,massK0s,1/weight);  
+       // ((TH2F*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtCorr"))->Fill(lPt,massK0s,1/weight);  
 
-       // ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtNoCorr"))->Fill(lPt,massK0s);  
+       // ((TH2F*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtNoCorr"))->Fill(lPt,massK0s);  
 	
 
         }
         else{
-          ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistMassK0s"))->Fill(spK0s);
+          ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistMassK0s"))->Fill(spK0s);
         }
-        ((TH3F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0s"))->Fill(lPt, lEta, lPhi);
-        ((TH1F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sPhi"))->Fill(lPhi);
-        ((TH1F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sEta"))->Fill(lEta);
+        ((TH3F*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0s"))->Fill(lPt, lEta, lPhi);
+        ((TH1F*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sPhi"))->Fill(lPhi);
+        ((TH1F*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sEta"))->Fill(lEta);
         if(fAnalysisMC && IsMCV0Primary(v0, 0)){
           fHistRCK0sPt->Fill(lPt,lEta);
           fHistRCK0s[binVertex]->Fill(lPt,lEta,lPhi);     
@@ -2354,18 +2371,18 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           if(weight == 0){
             continue;
           }
-          ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistMassLambda"))->Fill(spLambda, 1/weight);
+          ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistMassLambda"))->Fill(spLambda, 1/weight);
       
-        // ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtCorr"))->Fill(lPt,massLambda,1/weight);  
-        //((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtNoCorr"))->Fill(lPt,massLambda);  
+        // ((TH2F*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtCorr"))->Fill(lPt,massLambda,1/weight);  
+        //((TH2F*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtNoCorr"))->Fill(lPt,massLambda);  
 
         }
         else{
-          ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistMassLambda"))->Fill(spLambda);
+          ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistMassLambda"))->Fill(spLambda);
         }
-        ((TH3F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLambda"))->Fill(lPt, lEta, lPhi);
-        ((TH1F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLambdaPhi"))->Fill(lPhi);
-        ((TH1F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLambdaEta"))->Fill(lEta);
+        ((TH3F*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLambda"))->Fill(lPt, lEta, lPhi);
+        ((TH1F*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLambdaPhi"))->Fill(lPhi);
+        ((TH1F*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLambdaEta"))->Fill(lEta);
         if(fAnalysisMC){
           if(IsMCV0Primary(v0, 1)){
             fHistRCLambdaPt->Fill(lPt,lEta);
@@ -2389,19 +2406,19 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           if(weight == 0){
             continue;
           }
-          ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistMassAntiLambda"))->Fill(spAntiLambda, 1/weight);
+          ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistMassAntiLambda"))->Fill(spAntiLambda, 1/weight);
 
-        //((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtCorr"))->Fill(lPt, massAntiLambda,1/weight);  
-       // ((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtNoCorr"))->Fill(lPt,massAntiLambda);  
+        //((TH2F*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtCorr"))->Fill(lPt, massAntiLambda,1/weight);  
+       // ((TH2F*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtNoCorr"))->Fill(lPt,massAntiLambda);  
 	  
      
         }
         else{
-          ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistMassAntiLambda"))->Fill(spAntiLambda);
+          ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistMassAntiLambda"))->Fill(spAntiLambda);
         }
-        ((TH3F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLambda"))->Fill(lPt, lEta, lPhi);
-        ((TH1F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLambdaPhi"))->Fill(lPhi);
-        ((TH1F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLambdaEta"))->Fill(lEta);
+        ((TH3F*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLambda"))->Fill(lPt, lEta, lPhi);
+        ((TH1F*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLambdaPhi"))->Fill(lPhi);
+        ((TH1F*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLambdaEta"))->Fill(lEta);
         if(fAnalysisMC){
           if(IsMCV0Primary(v0, 2)){
             fHistRCAntiLambdaPt->Fill(lPt,lEta);
@@ -2445,15 +2462,15 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 	
         if (massK0s > fMassLowK0s[1] && massK0s < fMassHighK0s[1]){
           Double_t spTrigSigK0s[4] = {lPt, lPercentile, lPVz, 1.};
-          ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistTrigSibAllK0s"))->Fill(spTrigSigK0s, 1/weight);
+          ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistTrigSibAllK0s"))->Fill(spTrigSigK0s, 1/weight);
         }
         else if(massK0s > fMassLowK0s[0] && massK0s < fMassHighK0s[0]){
           Double_t spTrigSigLeftK0s[4] = {lPt, lPercentile, lPVz, 2.};
-          ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistTrigSibAllK0s"))->Fill(spTrigSigLeftK0s, 1/weight);
+          ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistTrigSibAllK0s"))->Fill(spTrigSigLeftK0s, 1/weight);
         }
         else if(massK0s > fMassLowK0s[2] && massK0s < fMassHighK0s[2]){
           Double_t spTrigSigRightK0s[4] = {lPt, lPercentile, lPVz, 3.};
-          ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistTrigSibAllK0s"))->Fill(spTrigSigRightK0s, 1/weight);
+          ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistTrigSibAllK0s"))->Fill(spTrigSigRightK0s, 1/weight);
         }
       }
     
@@ -2488,29 +2505,29 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           }
           if (massK0s > fMassLowK0s[1] && massK0s < fMassHighK0s[1]){
               Double_t spSigK0s[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 1.};
-              ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaSibK0s"))->Fill(spSigK0s, 1/weight);
+              ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaSibK0s"))->Fill(spSigK0s, 1/weight);
           }
           if (massK0s > fMassLowK0s[0] && massK0s < fMassHighK0s[0]){
               Double_t spBkgLeftK0s[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 2.};
-              ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaSibK0s"))->Fill(spBkgLeftK0s, 1/weight);
+              ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaSibK0s"))->Fill(spBkgLeftK0s, 1/weight);
           }
           if (massK0s > fMassLowK0s[2] && massK0s < fMassHighK0s[2]){
               Double_t spBkgRightK0s[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 3.};
-              ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaSibK0s"))->Fill(spBkgRightK0s, 1/weight);
+              ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaSibK0s"))->Fill(spBkgRightK0s, 1/weight);
           }
         }  
         else{
           if (massK0s > fMassLowK0s[1] && massK0s < fMassHighK0s[1]){
               Double_t spSigK0s[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 1.};
-              ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaSibK0s"))->Fill(spSigK0s);
+              ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaSibK0s"))->Fill(spSigK0s);
           }
           if (massK0s > fMassLowK0s[0] && massK0s < fMassHighK0s[0]){
               Double_t spBkgLeftK0s[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 2.};
-              ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaSibK0s"))->Fill(spBkgLeftK0s);
+              ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaSibK0s"))->Fill(spBkgLeftK0s);
           }
           if (massK0s > fMassLowK0s[2] && massK0s < fMassHighK0s[2]){
               Double_t spBkgRightK0s[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 3.};
-              ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaSibK0s"))->Fill(spBkgRightK0s);
+              ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaSibK0s"))->Fill(spBkgRightK0s);
           }
         }
       }
@@ -2536,15 +2553,15 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
         if (massLambda > fMassLowLambda[1] && massLambda < fMassHighLambda[1]){
           Double_t spTrigSigLambda[4] = {lPt, lPercentile, lPVz, 1.};
-          ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistTrigSibAllLambda"))->Fill(spTrigSigLambda);
+          ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistTrigSibAllLambda"))->Fill(spTrigSigLambda);
         }
         else if(massLambda > fMassLowLambda[0] && massLambda < fMassHighLambda[0]){
           Double_t spTrigSigLeftLambda[4] = {lPt, lPercentile, lPVz, 2.};
-          ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistTrigSibAllLambda"))->Fill(spTrigSigLeftLambda);
+          ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistTrigSibAllLambda"))->Fill(spTrigSigLeftLambda);
         }
         else if(massLambda > fMassLowLambda[2] && massLambda < fMassHighLambda[2]){
           Double_t spTrigSigRightLambda[4] = {lPt, lPercentile, lPVz, 3.};
-          ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistTrigSibAllLambda"))->Fill(spTrigSigRightLambda);
+          ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistTrigSibAllLambda"))->Fill(spTrigSigRightLambda);
         }
       }
   
@@ -2567,13 +2584,13 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
         // cout<<"Hello! Removing atuocorrelations!"<<endl;
 
         if (massLambda > fMassLowLambda[1] && massLambda < fMassHighLambda[1]){
-          ((TH3F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLambdaDphiDCAPtSig"))->Fill(dPhi, lPt, v0->DcaV0ToPrimVertex());
+          ((TH3F*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLambdaDphiDCAPtSig"))->Fill(dPhi, lPt, v0->DcaV0ToPrimVertex());
         }
         else if(massLambda > fMassLowLambda[0] && massLambda < fMassHighLambda[0]){
-          ((TH3F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLambdaDphiDCAPtBkgL"))->Fill(dPhi, lPt, v0->DcaV0ToPrimVertex());
+          ((TH3F*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLambdaDphiDCAPtBkgL"))->Fill(dPhi, lPt, v0->DcaV0ToPrimVertex());
         }
         else if(massLambda > fMassLowLambda[2] && massLambda < fMassHighLambda[2]){
-          ((TH3F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLambdaDphiDCAPtBkgR"))->Fill(dPhi, lPt, v0->DcaV0ToPrimVertex());
+          ((TH3F*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLambdaDphiDCAPtBkgR"))->Fill(dPhi, lPt, v0->DcaV0ToPrimVertex());
         }
         //Filling correlation histograms and histograms for triggers counting
         if(fEffCorr){
@@ -2585,29 +2602,29 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           }
           if(massLambda > fMassLowLambda[1] && massLambda < fMassHighLambda[1]){
             Double_t spSigLambda[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 1.};
-            ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaSibLambda"))->Fill(spSigLambda, 1/weight);
+            ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaSibLambda"))->Fill(spSigLambda, 1/weight);
           }
           if(massLambda > fMassLowLambda[0] && massLambda < fMassHighLambda[0]){
             Double_t spBkgLeftLambda[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 2.};
-            ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaSibLambda"))->Fill(spBkgLeftLambda, 1/weight);
+            ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaSibLambda"))->Fill(spBkgLeftLambda, 1/weight);
           }
           if(massLambda > fMassLowLambda[2] && massLambda < fMassHighLambda[2]){
             Double_t spBkgRightLambda[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 3.};
-            ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaSibLambda"))->Fill(spBkgRightLambda, 1/weight);
+            ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaSibLambda"))->Fill(spBkgRightLambda, 1/weight);
           }
         }
         else{
           if(massLambda > fMassLowLambda[1] && massLambda < fMassHighLambda[1]){
             Double_t spSigLambda[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 1.};
-            ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaSibLambda"))->Fill(spSigLambda);
+            ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaSibLambda"))->Fill(spSigLambda);
           }
           if(massLambda > fMassLowLambda[0] && massLambda < fMassHighLambda[0]){
             Double_t spBkgLeftLambda[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 2.};
-            ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaSibLambda"))->Fill(spBkgLeftLambda);
+            ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaSibLambda"))->Fill(spBkgLeftLambda);
           }
           if(massLambda > fMassLowLambda[2] && massLambda < fMassHighLambda[2]){
             Double_t spBkgRightLambda[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 3.};
-            ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaSibLambda"))->Fill(spBkgRightLambda);
+            ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaSibLambda"))->Fill(spBkgRightLambda);
           }
         }
       }
@@ -2631,15 +2648,15 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           }
         if(massAntiLambda > fMassLowAntiLambda[1] && massAntiLambda < fMassHighAntiLambda[1]){
           Double_t spTrigSigAntiLambda[4] = {lPt, lPercentile, lPVz, 1.};
-          ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistTrigSibAllAntiLambda"))->Fill(spTrigSigAntiLambda);
+          ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistTrigSibAllAntiLambda"))->Fill(spTrigSigAntiLambda);
        }
         else if(massAntiLambda > fMassLowAntiLambda[0] && massAntiLambda < fMassHighAntiLambda[0]){
           Double_t spTrigSigLeftAntiLambda[4] = {lPt, lPercentile, lPVz, 2.};
-          ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistTrigSibAllAntiLambda"))->Fill(spTrigSigLeftAntiLambda);
+          ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistTrigSibAllAntiLambda"))->Fill(spTrigSigLeftAntiLambda);
         }
         else if(massAntiLambda > fMassLowAntiLambda[2] && massAntiLambda < fMassHighAntiLambda[2]){
           Double_t spTrigSigRightAntiLambda[4] = {lPt, lPercentile, lPVz, 3.};
-          ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistTrigSibAllAntiLambda"))->Fill(spTrigSigRightAntiLambda);
+          ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistTrigSibAllAntiLambda"))->Fill(spTrigSigRightAntiLambda);
         }
         }
  
@@ -2663,13 +2680,13 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
          
         //Filling correlation histograms and histograms for triggers counting
          if(massAntiLambda > fMassLowAntiLambda[1] && massAntiLambda < fMassHighAntiLambda[1]){
-           ((TH3F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLambdaDphiDCAPtSig"))->Fill(dPhi, lPt, v0->DcaV0ToPrimVertex());
+           ((TH3F*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLambdaDphiDCAPtSig"))->Fill(dPhi, lPt, v0->DcaV0ToPrimVertex());
          }
          else if(massAntiLambda > fMassLowAntiLambda[0] && massAntiLambda < fMassHighAntiLambda[0]){
-           ((TH3F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLambdaDphiDCAPtBkgL"))->Fill(dPhi, lPt, v0->DcaV0ToPrimVertex());
+           ((TH3F*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLambdaDphiDCAPtBkgL"))->Fill(dPhi, lPt, v0->DcaV0ToPrimVertex());
          }
          else if(massAntiLambda > fMassLowAntiLambda[2] && massAntiLambda < fMassHighAntiLambda[2]){
-          ((TH3F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLambdaDphiDCAPtBkgR"))->Fill(dPhi, lPt, v0->DcaV0ToPrimVertex()); 
+          ((TH3F*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLambdaDphiDCAPtBkgR"))->Fill(dPhi, lPt, v0->DcaV0ToPrimVertex()); 
          }
 
          if(fEffCorr){
@@ -2681,29 +2698,29 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           }
           if(massAntiLambda > fMassLowAntiLambda[1] && massAntiLambda < fMassHighAntiLambda[1]){
             Double_t spSigAntiLambda[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 1.};
-            ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaSibAntiLambda"))->Fill(spSigAntiLambda, 1/weight);
+            ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaSibAntiLambda"))->Fill(spSigAntiLambda, 1/weight);
           }
           if(massAntiLambda > fMassLowAntiLambda[0] && massAntiLambda < fMassHighAntiLambda[0]){
             Double_t spBkgLeftAntiLambda[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 2.};
-            ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaSibAntiLambda"))->Fill(spBkgLeftAntiLambda, 1/weight);
+            ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaSibAntiLambda"))->Fill(spBkgLeftAntiLambda, 1/weight);
           }
           if(massAntiLambda > fMassLowAntiLambda[2] && massAntiLambda < fMassHighAntiLambda[2]){
             Double_t spBkgRightAntiLambda[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 3.};
-            ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaSibAntiLambda"))->Fill(spBkgRightAntiLambda, 1/weight);   
+            ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaSibAntiLambda"))->Fill(spBkgRightAntiLambda, 1/weight);   
           }
         }
         else{
           if(massAntiLambda > fMassLowAntiLambda[1] && massAntiLambda < fMassHighAntiLambda[1]){
             Double_t spSigAntiLambda[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 1.};
-            ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaSibAntiLambda"))->Fill(spSigAntiLambda);
+            ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaSibAntiLambda"))->Fill(spSigAntiLambda);
           }
           if(massAntiLambda > fMassLowAntiLambda[0] && massAntiLambda < fMassHighAntiLambda[0]){
             Double_t spBkgLeftAntiLambda[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 2.};
-            ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaSibAntiLambda"))->Fill(spBkgLeftAntiLambda);
+            ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaSibAntiLambda"))->Fill(spBkgLeftAntiLambda);
           }
           if(massAntiLambda > fMassLowAntiLambda[2] && massAntiLambda < fMassHighAntiLambda[2]){
             Double_t spBkgRightAntiLambda[7] = {dPhi, dEta, lPt, atr->Pt(), lPercentile, lPVz, 3.};
-            ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaSibAntiLambda"))->Fill(spBkgRightAntiLambda);
+            ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaSibAntiLambda"))->Fill(spBkgRightAntiLambda);
           }
         }
       }//end of Lambda for the current events
@@ -2741,7 +2758,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 if(fAnalysisMC){
 
                   Double_t spSigMixK0s[7] = {dPhiMix, dEtaMix, lk0sPt, atr->Pt(),lPercentile, lPVz, 1.};
-((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistGendPhidEtaMixK0s"))->Fill(spSigMixK0s);
+((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistGendPhidEtaMixK0s"))->Fill(spSigMixK0s);
               
 }
 //=============
@@ -2755,29 +2772,29 @@ if(fAnalysisMC){
                 }
                 if(massk0s > fMassLowK0s[1] && massk0s < fMassHighK0s[1]){
                   Double_t spSigMixK0s[7] = {dPhiMix, dEtaMix, lk0sPt, atr->Pt(),lPercentile, lPVz, 1.};
-                  ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaMixK0s"))->Fill(spSigMixK0s, 1/weight);
+                  ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaMixK0s"))->Fill(spSigMixK0s, 1/weight);
                 }
                 if(massk0s > fMassLowK0s[0] && massk0s < fMassHighK0s[0]){
                   Double_t spBkgLeftMixK0s[7] = {dPhiMix, dEtaMix, lk0sPt, atr->Pt(), lPercentile, lPVz, 2.};
-                  ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaMixK0s"))->Fill(spBkgLeftMixK0s, 1/weight);
+                  ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaMixK0s"))->Fill(spBkgLeftMixK0s, 1/weight);
                 }
                 if(massk0s > fMassLowK0s[2] && massk0s < fMassHighK0s[2]){
                   Double_t spBkgRightMixK0s[7] = {dPhiMix, dEtaMix, lk0sPt, atr->Pt(), lPercentile, lPVz, 3.};
-                  ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaMixK0s"))->Fill(spBkgRightMixK0s, 1/weight);
+                  ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaMixK0s"))->Fill(spBkgRightMixK0s, 1/weight);
                 }
               }
               else{
                 if(massk0s > fMassLowK0s[1] && massk0s < fMassHighK0s[1]){
                   Double_t spSigMixK0s[7] = {dPhiMix, dEtaMix, lk0sPt, atr->Pt(),lPercentile, lPVz, 1.};
-                  ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaMixK0s"))->Fill(spSigMixK0s);
+                  ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaMixK0s"))->Fill(spSigMixK0s);
                 }
                 if(massk0s > fMassLowK0s[0] && massk0s < fMassHighK0s[0]){
                   Double_t spBkgLeftMixK0s[7] = {dPhiMix, dEtaMix, lk0sPt, atr->Pt(), lPercentile, lPVz, 2.};
-                  ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaMixK0s"))->Fill(spBkgLeftMixK0s);
+                  ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaMixK0s"))->Fill(spBkgLeftMixK0s);
                 }
                 if(massk0s > fMassLowK0s[2] && massk0s < fMassHighK0s[2]){
                   Double_t spBkgRightMixK0s[7] = {dPhiMix, dEtaMix, lk0sPt, atr->Pt(), lPercentile, lPVz, 3.};
-                  ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaMixK0s"))->Fill(spBkgRightMixK0s);
+                  ((THnSparseF*)((TList*)fOutput5->FindObject("K0s"))->FindObject("fHistdPhidEtaMixK0s"))->Fill(spBkgRightMixK0s);
                 }
               }
             } 
@@ -2788,7 +2805,7 @@ if(fAnalysisMC){
 if(fAnalysisMC){
 //if(IsMCV0Primary(v0, 1)){
                   Double_t spSigMixLambda[7] = {dPhiMix, dEtaMix, llambdaPt, atr->Pt(), lPercentile, lPVz, 1.};
-((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistGendPhidEtaMixLambda"))->Fill(spSigMixLambda);                               
+((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistGendPhidEtaMixLambda"))->Fill(spSigMixLambda);                               
               // }
 }
 //=============
@@ -2802,29 +2819,29 @@ if(fAnalysisMC){
                 }
                 if(masslambda > fMassLowLambda[1] && masslambda < fMassHighLambda[1]){
                   Double_t spSigMixLambda[7] = {dPhiMix, dEtaMix, llambdaPt, atr->Pt(), lPercentile, lPVz, 1.};
-                  ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaMixLambda"))->Fill(spSigMixLambda, 1/weight);                               
+                  ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaMixLambda"))->Fill(spSigMixLambda, 1/weight);                               
                 }
                 if(masslambda > fMassLowLambda[0] && masslambda < fMassHighLambda[0]){
                   Double_t spBkgLeftMixLambda[7] = {dPhiMix, dEtaMix, llambdaPt, atr->Pt(), lPercentile, lPVz, 2.};
-                  ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaMixLambda"))->Fill(spBkgLeftMixLambda, 1/weight);   
+                  ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaMixLambda"))->Fill(spBkgLeftMixLambda, 1/weight);   
                 }
                 if(masslambda > fMassLowLambda[2] && masslambda < fMassHighLambda[2]){
                   Double_t spBkgRightMixLambda[7] = {dPhiMix, dEtaMix, llambdaPt, atr->Pt(), lPercentile, lPVz, 3.};
-                  ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaMixLambda"))->Fill(spBkgRightMixLambda, 1/weight);            
+                  ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaMixLambda"))->Fill(spBkgRightMixLambda, 1/weight);            
                 }
               }
               else{
                 if(masslambda > fMassLowLambda[1] && masslambda < fMassHighLambda[1]){
                   Double_t spSigMixLambda[7] = {dPhiMix, dEtaMix, llambdaPt, atr->Pt(), lPercentile, lPVz, 1.};
-                ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaMixLambda"))->Fill(spSigMixLambda);                             
+                ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaMixLambda"))->Fill(spSigMixLambda);                             
                 }
                 if(masslambda > fMassLowLambda[0] && masslambda < fMassHighLambda[0]){
                   Double_t spBkgLeftMixLambda[7] = {dPhiMix, dEtaMix, llambdaPt, atr->Pt(), lPercentile, lPVz, 2.};
-     ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaMixLambda"))->Fill(spBkgLeftMixLambda);   
+     ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaMixLambda"))->Fill(spBkgLeftMixLambda);   
                 }
                 if(masslambda > fMassLowLambda[2] && masslambda < fMassHighLambda[2]){
                   Double_t spBkgRightMixLambda[7] = {dPhiMix, dEtaMix, llambdaPt, atr->Pt(), lPercentile, lPVz, 3.};
-                  ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaMixLambda"))->Fill(spBkgRightMixLambda);            
+                  ((THnSparseF*)((TList*)fOutput6->FindObject("Lambda"))->FindObject("fHistdPhidEtaMixLambda"))->Fill(spBkgRightMixLambda);            
                 }
               }
             } 
@@ -2836,7 +2853,7 @@ if(fAnalysisMC){
 //============
 if(fAnalysisMC){
                  Double_t spSigMixAntiLambda[7] = {dPhiMix, dEtaMix, lantilambdaPt, atr->Pt(), lPercentile, lPVz, 1.};
- ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistGendPhidEtaMixAntiLambda"))->Fill(spSigMixAntiLambda);
+ ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistGendPhidEtaMixAntiLambda"))->Fill(spSigMixAntiLambda);
              
 }
 //============
@@ -2850,29 +2867,29 @@ if(fAnalysisMC){
                 }
                 if(massantilambda > fMassLowAntiLambda[1] && massantilambda < fMassHighAntiLambda[1]){
                   Double_t spSigMixAntiLambda[7] = {dPhiMix, dEtaMix, lantilambdaPt, atr->Pt(), lPercentile, lPVz, 1.};
-                  ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaMixAntiLambda"))->Fill(spSigMixAntiLambda, 1/weight);
+                  ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaMixAntiLambda"))->Fill(spSigMixAntiLambda, 1/weight);
                 }
                 if(massantilambda > fMassLowAntiLambda[0] && massantilambda < fMassHighAntiLambda[0]){
                   Double_t spBkgLeftMixAntiLambda[7] = {dPhiMix, dEtaMix, lantilambdaPt, atr->Pt(), lPercentile, lPVz, 2.};
-                  ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaMixAntiLambda"))->Fill(spBkgLeftMixAntiLambda, 1/weight);
+                  ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaMixAntiLambda"))->Fill(spBkgLeftMixAntiLambda, 1/weight);
                 }
                 if(massantilambda > fMassLowAntiLambda[2] && massantilambda < fMassHighAntiLambda[2]){
                   Double_t spBkgRightMixAntiLambda[7] = {dPhiMix, dEtaMix, lantilambdaPt, atr->Pt(), lPercentile, lPVz, 3.};
-                  ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaMixAntiLambda"))->Fill(spBkgRightMixAntiLambda, 1/weight);
+                  ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaMixAntiLambda"))->Fill(spBkgRightMixAntiLambda, 1/weight);
                 } 
               }    
               else{
                 if(massantilambda > fMassLowAntiLambda[1] && massantilambda < fMassHighAntiLambda[1]){
                   Double_t spSigMixAntiLambda[7] = {dPhiMix, dEtaMix, lantilambdaPt, atr->Pt(), lPercentile, lPVz, 1.};
-                  ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaMixAntiLambda"))->Fill(spSigMixAntiLambda);
+                  ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaMixAntiLambda"))->Fill(spSigMixAntiLambda);
                 }
                 if(massantilambda > fMassLowAntiLambda[0] && massantilambda < fMassHighAntiLambda[0]){
                   Double_t spBkgLeftMixAntiLambda[7] = {dPhiMix, dEtaMix, lantilambdaPt, atr->Pt(), lPercentile, lPVz, 2.};
-                  ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaMixAntiLambda"))->Fill(spBkgLeftMixAntiLambda);
+                  ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaMixAntiLambda"))->Fill(spBkgLeftMixAntiLambda);
                 }
                 if(massantilambda > fMassLowAntiLambda[2] && massantilambda < fMassHighAntiLambda[2]){
                   Double_t spBkgRightMixAntiLambda[7] = {dPhiMix, dEtaMix, lantilambdaPt, atr->Pt(), lPercentile, lPVz, 3.};
-                  ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaMixAntiLambda"))->Fill(spBkgRightMixAntiLambda);
+                  ((THnSparseF*)((TList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistdPhidEtaMixAntiLambda"))->Fill(spBkgRightMixAntiLambda);
                 } 
               }
             }
@@ -3032,27 +3049,27 @@ if (lPtPos<cutMinPtDaughter || lPtNeg<cutMinPtDaughter) return kFALSE;
 
 
 
- // ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BflRapK0s"))->Fill(lRapK0s);
- // ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BflRapLambda"))->Fill(lRapLambda);
- // ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BflRapAntiLambda"))->Fill(lRapAntiLambda);
-  ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfV0Pt"))->Fill(dPT);
-  ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfV0Phi"))->Fill(dPhi);
-  ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfV0Eta"))->Fill(dEta);
-  ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("Bfxyn"))->Fill(xyn);
-  ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfD0vsPt"))->Fill(xyn,dPT);
-  ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("Bfxyp"))->Fill(xyp);
-  ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfD0vsPt"))->Fill(xyp,dPT);
-  ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfDCA"))->Fill(dDCA);
-  ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfDCAvsPt"))->Fill(dDCA,dPT);
-  ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfCPA"))->Fill(lCPA);
-  ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfCPAvsPt"))->Fill(lCPA,dPT);
-  ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("Bfr2"))->Fill(r2);
-  ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfDL"))->Fill(dDL);
-  ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfDLvsPt"))->Fill(dDL,dPT);
-  ((TH1F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfDCA2PV"))->Fill(dDCA2PV);
-  ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfDCA2PVvsPt"))->Fill(dDCA2PV, dPT);
-  ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfAP"))->Fill(dALPHA,dQT);
-  ((TH3F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("BfAPvsPt"))->Fill(dALPHA,dQT,dPT);
+ // ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BflRapK0s"))->Fill(lRapK0s);
+ // ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BflRapLambda"))->Fill(lRapLambda);
+ // ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BflRapAntiLambda"))->Fill(lRapAntiLambda);
+  ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfV0Pt"))->Fill(dPT);
+  ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfV0Phi"))->Fill(dPhi);
+  ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfV0Eta"))->Fill(dEta);
+  ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("Bfxyn"))->Fill(xyn);
+  ((TH2F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfD0vsPt"))->Fill(xyn,dPT);
+  ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("Bfxyp"))->Fill(xyp);
+  ((TH2F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfD0vsPt"))->Fill(xyp,dPT);
+  ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfDCA"))->Fill(dDCA);
+  ((TH2F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfDCAvsPt"))->Fill(dDCA,dPT);
+  ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfCPA"))->Fill(lCPA);
+  ((TH2F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfCPAvsPt"))->Fill(lCPA,dPT);
+  ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("Bfr2"))->Fill(r2);
+  ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfDL"))->Fill(dDL);
+  ((TH2F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfDLvsPt"))->Fill(dDL,dPT);
+  ((TH1F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfDCA2PV"))->Fill(dDCA2PV);
+  ((TH2F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfDCA2PVvsPt"))->Fill(dDCA2PV, dPT);
+  ((TH2F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfAP"))->Fill(dALPHA,dQT);
+  ((TH3F*)((TList*)fOutput4->FindObject("V0"))->FindObject("BfAPvsPt"))->Fill(dALPHA,dQT,dPT);
 
   if (dDCA>fDCAV0DaughtersMax ) return kFALSE;
   //if (dCPA<fCosPointingAngleMin) return kFALSE;

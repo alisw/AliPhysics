@@ -1072,6 +1072,10 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 456){ // PCM HighPtHadron analysis
     cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "5152103500000000");
 
+  } else if (trainConfig == 457){ // study for difference in V0 finders
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0152103500000000"); // on the fly V0 finder
+    cuts.AddCutPCM("00010113", "10200009f9730000dge0400000", "0152103500000000"); // offline V0 finder
+
   //---------configs for V0AND 8TeV --------------------------//
   } else if (trainConfig == 460) {
     cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0152103500000000"); //New standard cut for 8TeV analysis V0AND with double counting cut, TOF removed
@@ -2353,6 +2357,17 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("m0110113", "0dm00009f9730000dge0474000", "0152103500000000"); // 0 - 1%
     cuts.AddCutPCM("m1510113", "0dm00009f9730000dge0474000", "0152103500000000"); // 1 - 5%
     cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // 5 - 10%
+
+  } else if ( trainConfig == 3000){ // PCM Gamma smearing calib
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500000000"); // 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","015210d500000000"); // 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge3404000","0152103500000000"); // 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge3404000","015210d500000000"); // 
+  } else if ( trainConfig == 3001){ // PCM Gamma smearing calib
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500000000"); // 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500b00000"); // 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500o00000"); // 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500p00000"); // 
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

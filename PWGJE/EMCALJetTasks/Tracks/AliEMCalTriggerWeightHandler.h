@@ -11,15 +11,9 @@ class TObjArray;
 class AliGenPythiaEventHeader;
 class AliMCEvent;
 
-/**
- * @namespace EMCalTriggerPtAnalysis
- * @brief Analysis of high-\f$ p_{t} \f$ tracks in triggered events
- * @ingroup PWGJETASKS
- *
- * This namespace contains classes for the analysis of high-\f$ p_{t} \f$ tracks in
- * triggered events.
- */
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE{ 
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerPtHardWeight : public TObject {
 public:
@@ -41,9 +35,7 @@ private:
   double                  fPtMax;             ///< Max of the pthard bin
   double                  fWeight;            ///< Weight being applied to the pt-hard bin
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerPtHardWeight, 1)
-  /// \endcond
 };
 
 /**
@@ -129,11 +121,11 @@ private:
   TObjArray         *fBinWeights;           ///< Container for weights in a given pt-hard bin
   bool               fUseCrossSection;      ///< Calculate weight using pt-hard
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerWeightHandler, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERWEIGHTHANDLER_H */

@@ -89,11 +89,11 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
     // MB get estimator file
     if(SetFlagClsTypeEMC && !flagEG1 && !flagEG2){
 	    const Char_t* profilebasename="SPDTrklMB";
-	    const Char_t* periodNames[4] = {"LHC16i", "LHC16j","LHC16k","LHC16o"};
+	    const Char_t* periodNames[11] = {"LHC16i", "LHC16j","LHC16k","LHC16o","LHC17h","LHC17i","LHC17k","LHC17l","LHC17m","LHC17o","LHC17r"};
 
-	    TProfile* multEstimatorAvgMB[4];
+	    TProfile* multEstimatorAvgMB[11];
 
-	    for(Int_t ip=0; ip<4; ip++) {
+	    for(Int_t ip=0; ip<11; ip++) {
 		    cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
 		    multEstimatorAvgMB[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
 		    if(!multEstimatorAvgMB[ip]){
@@ -105,16 +105,23 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 	    task->SetMultiProfileLHC16j(multEstimatorAvgMB[1]);
 	    task->SetMultiProfileLHC16k(multEstimatorAvgMB[2]);
 	    task->SetMultiProfileLHC16o(multEstimatorAvgMB[3]);
+	    task->SetMultiProfileLHC17h(multEstimatorAvgMB[4]);
+	    task->SetMultiProfileLHC17i(multEstimatorAvgMB[5]);
+	    task->SetMultiProfileLHC17k(multEstimatorAvgMB[6]);
+	    task->SetMultiProfileLHC17l(multEstimatorAvgMB[7]);
+	    task->SetMultiProfileLHC17m(multEstimatorAvgMB[8]);
+	    task->SetMultiProfileLHC17o(multEstimatorAvgMB[9]);
+	    task->SetMultiProfileLHC17r(multEstimatorAvgMB[10]);
     }
 
     // EG1 get estimator file
     if(SetFlagClsTypeEMC && flagEG1 && !flagEG2){
 	    const Char_t* profilebasename="SPDTrklEG1";
-	    const Char_t* periodNames[4] = {"LHC16i", "LHC16j","LHC16k","LHC16o"};
+	    const Char_t* periodNames[11] = {"LHC16i", "LHC16j","LHC16k","LHC16o","LHC17h","LHC17i","LHC17k","LHC17l","LHC17m","LHC17o","LHC17r"};
 
-	    TProfile* multEstimatorAvgEG1[4];
+	    TProfile* multEstimatorAvgEG1[11];
 
-	    for(Int_t ip=0; ip<4; ip++) {
+	    for(Int_t ip=0; ip<11; ip++) {
 		    cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
 		    multEstimatorAvgEG1[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
 		    if(!multEstimatorAvgEG1[ip]){
@@ -126,16 +133,23 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 	    task->SetMultiProfileLHC16j(multEstimatorAvgEG1[1]);
 	    task->SetMultiProfileLHC16k(multEstimatorAvgEG1[2]);
 	    task->SetMultiProfileLHC16o(multEstimatorAvgEG1[3]);
+	    task->SetMultiProfileLHC17h(multEstimatorAvgEG1[4]);
+	    task->SetMultiProfileLHC17i(multEstimatorAvgEG1[5]);
+	    task->SetMultiProfileLHC17k(multEstimatorAvgEG1[6]);
+	    task->SetMultiProfileLHC17l(multEstimatorAvgEG1[7]);
+	    task->SetMultiProfileLHC17m(multEstimatorAvgEG1[8]);
+	    task->SetMultiProfileLHC17o(multEstimatorAvgEG1[9]);
+	    task->SetMultiProfileLHC17r(multEstimatorAvgEG1[10]);
     }
 
     // EG2 get estimator file
     if(SetFlagClsTypeEMC && !flagEG1 && flagEG2){
 	    const Char_t* profilebasename="SPDTrklEG2";
-	    const Char_t* periodNames[4] = {"LHC16i", "LHC16j","LHC16k","LHC16o"};
+	    const Char_t* periodNames[11] = {"LHC16i", "LHC16j","LHC16k","LHC16o"};
 
-	    TProfile* multEstimatorAvgEG2[4];
+	    TProfile* multEstimatorAvgEG2[11];
 
-	    for(Int_t ip=0; ip<4; ip++) {
+	    for(Int_t ip=0; ip<11; ip++) {
 		    cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
 		    multEstimatorAvgEG2[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
 		    if(!multEstimatorAvgEG2[ip]){
@@ -152,10 +166,10 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 
     // MC get estimator file
     const Char_t* profilebasenameMC="SPDTrklMC";
-    const Char_t* periodNamesMC[2] = {"LHC16k","LHC16l"};
-    TProfile* multEstimatorAvgMC[2];
+    const Char_t* periodNamesMC[3] = {"LHC16k","LHC16l","LHC17"};
+    TProfile* multEstimatorAvgMC[3];
 
-    for(Int_t ip=0; ip<2; ip++) {
+    for(Int_t ip=0; ip<3; ip++) {
 	    cout<< " Trying to get "<<Form("%s_%s",profilebasenameMC,periodNamesMC[ip])<<endl;
 	    multEstimatorAvgMC[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasenameMC,periodNamesMC[ip]))->Clone(Form("%s_%s_clone",profilebasenameMC,periodNamesMC[ip])));
 	    if(!multEstimatorAvgMC[ip]){
@@ -165,6 +179,7 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
     }
     task->SetMultiProfileMCLHC16k(multEstimatorAvgMC[0]);
     task->SetMultiProfileMCLHC16l(multEstimatorAvgMC[1]);
+    task->SetMultiProfileMCLHC17(multEstimatorAvgMC[2]);
 
 
     // Get weight for N_{tracklet}

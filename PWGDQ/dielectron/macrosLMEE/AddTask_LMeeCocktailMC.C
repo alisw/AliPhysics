@@ -1,4 +1,4 @@
-void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, Float_t MinPt = 0.2, Float_t MaxPt = 8.0, Bool_t WriteTTree = kFALSE, Int_t ResolType = 2 , Bool_t local = kFALSE, Int_t ALTweightType = 1, TString resFileName = "", Int_t version = 0) {
+void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, Float_t MinPt = 0.2, Float_t MaxPt = 8.0, Bool_t WriteTTree = kFALSE, Int_t ResolType = 2 , Bool_t local = kFALSE, Int_t ALTweightType = 1, TString resFileName = "",TString effFileName = "", Int_t version = 0) {
 
   // ================= Load Librariers =================================
   gSystem->Load("libCore");
@@ -47,10 +47,15 @@ void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, F
   task->SetResolType(ResolType);
   task->SetResFileLocal(local);
   task->SetALTweight(ALTweightType);
-  if(resFileName != ""){
-    Printf("Set resolution file name to %s",resFileName.Data());
-    task->SetResFileName(resFileName);
-  }
+
+  // resolution file to be set always
+  Printf("Set resolution file name to %s",resFileName.Data());
+  task->SetResFileName(resFileName);
+
+  // efficiency file to be set always
+  Printf("Set eff file name to %s",effFileName.Data());
+  task->SetEffFileName(effFileName);
+
   
   //connect containers
   AliAnalysisDataContainer *coutput =

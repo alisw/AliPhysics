@@ -40,7 +40,6 @@
 #include <TRandom3.h>
 #include "TProfile.h"
 #include "TProfile2D.h"
-
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -98,6 +97,15 @@
 #include "AliESDUtils.h"
 #include "AliAnalysisUtils.h"
 
+//trigger simulation
+//for trigger simulation
+#include "AliEmcalTriggerDecisionContainer.h"
+#include "AliAnalysisTaskEmcalTriggerSelection.h"
+#include "AliEmcalTriggerMakerTask.h"
+
+//SM
+#include "AliEMCALGeometry.h"
+
 //______________________________________________________________________
 
 //______________________________________________________________________
@@ -108,11 +116,16 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
   : AliAnalysisTaskSE(name)
 
 ,fIsMC(0)
+,fIs_NewClustersCut(kFALSE)
+,fIsTriggerSimulation(kFALSE)
 ,fUseTender(kFALSE)
 ,fMultiAnalysis(kFALSE)
+,fIs_sys(kTRUE)
+,fnew_event_selection(kFALSE)
 ,fFill_ESparse(kFALSE)
 ,fFill_ESparseTPC(kFALSE)
 ,fFill_MSparse(kFALSE)
+,fIs_TPC_calibration(kFALSE)
 
 //to select events with high energy cluster (to mimic the trigger)
 ,fSelect_trigger_events1(kFALSE)
@@ -194,6 +207,12 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fMassCutMax(3.16)
 
 ,fZvtx(0)
+,fXvtx(0)
+,fYvtx(0)
+,feg1(0)
+,fdg1(0)
+,feg2(0)
+,fdg2(0)
 //global variable for multiplicity analysis
 ,fV0Mult(0)
 ,fSPDMult(0)
@@ -216,20 +235,76 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fNevent(0)
 ,fNevent2(0)
 ,fTPC_vs_ITScls(0)
-,fPDG_values(0)
+
 ,fNevent_SPD_multi(0)
 ,fNevent_V0_multi(0)
 ,fEoverP_pt(0)
 ,fTPC_p(0)
 ,fTPCnsigma_p(0)
+,fTPCnsigma_p_beforeCalibration(0)
+,fTPCnsigma_p_afterCalibration(0)
 ,fTOF_p(0)
 ,fTOFnsigma_p(0)
 ,fTPCnsigma_EoverP(0)
+,fHist_energy_pT(0)
 ,fECluster(0)
+
+,fECluster_mb(0)
+,fECluster_eg1(0)
+,fECluster_eg2(0)
+,fECluster_dg1(0)
+,fECluster_dg2(0)
+,fECluster_ET_mb(0)
+,fECluster_ET_eg1(0)
+,fECluster_ET_eg2(0)
+,fECluster_ET_dg1(0)
+,fECluster_ET_dg2(0)
+//SM
+,fECluster_mb_SM(0)
+,fECluster_eg1_SM(0)
+,fECluster_eg2_SM(0)
+,fECluster_dg1_SM(0)
+,fECluster_dg2_SM(0)
+,fECluster_deg1_SM(0)
+,fECluster_deg2_SM(0)
+,fECluster_ET_mb_SM(0)
+,fECluster_ET_eg1_SM(0)
+,fECluster_ET_eg2_SM(0)
+,fECluster_ET_dg1_SM(0)
+,fECluster_ET_dg2_SM(0)
+,fECluster_ET_deg1_SM(0)
+,fECluster_ET_deg2_SM(0)
+
+,fPt_mb_SM(0)
+,fPt_eg1_SM(0)
+,fPt_eg2_SM(0)
+,fPt_dg1_SM(0)
+,fPt_dg2_SM(0)
+,fPt_deg1_SM(0)
+,fPt_deg2_SM(0)
+
 ,fECluster_emcal(0)
 ,fECluster_dcal(0)
 ,fTracksPt(0)
 ,fTracksQAPt(0)
+
+//new QA histos
+,fhTPCCrossedRows_before(0)
+,fhTPCCrossedRows_after(0)
+,fhITSNcls_before(0)
+,fhITSNcls_after(0)
+,fhDCAxy_before(0)
+,fhDCAxy_after(0)
+,fhDCAz_before(0)
+,fhDCAz_after(0)
+,fhTPCchi2overNcls_before(0)
+,fhTPCchi2overNcls_after(0)
+,fhITSchi2overNcls_before(0)
+,fhITSchi2overNcls_after(0)
+,fh_pt_before(0)
+,fh_pt_after(0)
+
+
 ,fTracksMCPt(0)
 ,fVtxZ(0)
 //histos for SPD and V0 multiplicity
@@ -306,7 +381,14 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 	//KF
 ,fHist_InvMass_pt_ULS_KF(0)
+,fHist_InvMass_pt_ULS_KF_eg2(0)
+,fHist_InvMass_pt_ULS_KF_eg1(0)
 ,fHist_InvMass_pt_LS_KF(0)
+
+,fHist_Correlation_leg1_emcal_leg2_not(0)
+,fHist_Correlation_leg1_not_leg2_emcal(0)
+,fHist_Correlation_leg1_emcal_leg2_emcal(0)
+
 
 //multiplicity histos
 ,fHist_InvMass_pt_ULS_KF_SPDmulti_1(0)
@@ -343,6 +425,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 
 //generators
+/*
 //BB
 ,fHist_InvMass_pt_ULS_KF_BB(0)
 ,fHist_InvMass_pt_LS_KF_BB(0)
@@ -352,13 +435,17 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 //B
 ,fHist_InvMass_pt_ULS_KF_B(0)
 ,fHist_InvMass_pt_LS_KF_B(0)
+ */
+
 //JPsi
 ,fHist_InvMass_pt_ULS_KF_Jpsi(0)
 ,fHist_InvMass_pt_LS_KF_Jpsi(0)
+
+/*
 //BJpsi
 ,fHist_InvMass_pt_ULS_KF_BJpsi(0)
 ,fHist_InvMass_pt_LS_KF_BJpsi(0)
-
+*/
 
 
 	//leg 1 on EMCal
@@ -390,8 +477,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 
 	//MC efficiencies
-,fPtMCparticleAllHfe1(0)
-,fPtMCparticleRecoHfe1(0)
+//,fPtMCparticleAllHfe1(0)
+//,fPtMCparticleRecoHfe1(0)
 ,fPtMCparticleAll_e_from_JPsi(0)
 ,fPtMCparticleAll_JPsi_pT(0)
 
@@ -408,6 +495,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fPtMCparticleAll_trueJPsi_pT_weight(0)
 ,fPtMCparticleAll_trueJPsi_pT_weight_prompt(0)
 ,fPtMCparticleReco_e_from_JPsi(0)
+,fPtMCparticleReco_e_from_JPsi_eg1(0)
+,fPtMCparticleReco_e_from_JPsi_eg2(0)
 
 //tracking efficiency
 ,fPtMCparticleReco_electrons(0)
@@ -424,6 +513,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 
 ,fPtMCparticle_EMCal_TM_e_from_JPsi(0)
+,fPtMCparticle_EMCal_TM_e_from_JPsi_eg1(0)
+,fPtMCparticle_EMCal_TM_e_from_JPsi_eg2(0)
 ,fPtMCparticle_EMCal_TM_electrons(0)
 ,fPtMCparticle_EMCalpid_leg1_e_from_JPsi(0)
 ,fPtMCparticle_EMCalpid_leg2_e_from_JPsi(0)
@@ -447,6 +538,9 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 ,fPtMCparticle_TotalplusMass_JPsi_pT(0)
 ,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother(0)
+,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1(0)
+,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2(0)
+
 ,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight(0)
 ,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt(0)
 
@@ -474,11 +568,16 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTask_JPsi_EMCal")
 
 ,fIsMC(0)
+,fIs_NewClustersCut(kFALSE)
+,fIsTriggerSimulation(kFALSE)
 ,fUseTender(kFALSE)
 ,fMultiAnalysis(kFALSE)
+,fIs_sys(kTRUE)
+,fnew_event_selection(kFALSE)
 ,fFill_ESparse(kFALSE)
 ,fFill_ESparseTPC(kFALSE)
 ,fFill_MSparse(kFALSE)
+,fIs_TPC_calibration(kFALSE)
 
 //to select events with high energy cluster (to mimic the trigger)
 ,fSelect_trigger_events1(kFALSE)
@@ -562,6 +661,12 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fMassCutMax(3.16)
 
 ,fZvtx(0)
+,fXvtx(0)
+,fYvtx(0)
+,feg1(0)
+,fdg1(0)
+,feg2(0)
+,fdg2(0)
 //global variable for multiplicity analysis
 ,fV0Mult(0)
 ,fSPDMult(0)
@@ -584,16 +689,55 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fNevent(0)
 ,fNevent2(0)
 ,fTPC_vs_ITScls(0)
-,fPDG_values(0)
+
 ,fNevent_SPD_multi(0)
 ,fNevent_V0_multi(0)
 ,fEoverP_pt(0)
 ,fTPC_p(0)
 ,fTPCnsigma_p(0)
+,fTPCnsigma_p_beforeCalibration(0)
+,fTPCnsigma_p_afterCalibration(0)
 ,fTOF_p(0)
 ,fTOFnsigma_p(0)
 ,fTPCnsigma_EoverP(0)
+,fHist_energy_pT(0)
 ,fECluster(0)
+
+
+,fECluster_mb(0)
+,fECluster_eg1(0)
+,fECluster_eg2(0)
+,fECluster_dg1(0)
+,fECluster_dg2(0)
+,fECluster_ET_mb(0)
+,fECluster_ET_eg1(0)
+,fECluster_ET_eg2(0)
+,fECluster_ET_dg1(0)
+,fECluster_ET_dg2(0)
+//SM
+,fECluster_mb_SM(0)
+,fECluster_eg1_SM(0)
+,fECluster_eg2_SM(0)
+,fECluster_dg1_SM(0)
+,fECluster_dg2_SM(0)
+,fECluster_deg1_SM(0)
+,fECluster_deg2_SM(0)
+,fECluster_ET_mb_SM(0)
+,fECluster_ET_eg1_SM(0)
+,fECluster_ET_eg2_SM(0)
+,fECluster_ET_dg1_SM(0)
+,fECluster_ET_dg2_SM(0)
+,fECluster_ET_deg1_SM(0)
+,fECluster_ET_deg2_SM(0)
+
+,fPt_mb_SM(0)
+,fPt_eg1_SM(0)
+,fPt_eg2_SM(0)
+,fPt_dg1_SM(0)
+,fPt_dg2_SM(0)
+,fPt_deg1_SM(0)
+,fPt_deg2_SM(0)
+
 ,fECluster_emcal(0)
 ,fECluster_dcal(0)
 ,fECluster_pure(0)
@@ -621,6 +765,24 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 ,fTracksPt(0)
 ,fTracksQAPt(0)
+
+//new QA histos
+,fhTPCCrossedRows_before(0)
+,fhTPCCrossedRows_after(0)
+,fhITSNcls_before(0)
+,fhITSNcls_after(0)
+,fhDCAxy_before(0)
+,fhDCAxy_after(0)
+,fhDCAz_before(0)
+,fhDCAz_after(0)
+,fhTPCchi2overNcls_before(0)
+,fhTPCchi2overNcls_after(0)
+,fhITSchi2overNcls_before(0)
+,fhITSchi2overNcls_after(0)
+,fh_pt_before(0)
+,fh_pt_after(0)
+
+
 ,fTracksMCPt(0)
 ,fVtxZ(0)
 //histos for SPD and V0 multiplicity
@@ -666,7 +828,13 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 	//KF
 ,fHist_InvMass_pt_ULS_KF(0)
+,fHist_InvMass_pt_ULS_KF_eg2(0)
+,fHist_InvMass_pt_ULS_KF_eg1(0)
 ,fHist_InvMass_pt_LS_KF(0)
+
+,fHist_Correlation_leg1_emcal_leg2_not(0)
+,fHist_Correlation_leg1_not_leg2_emcal(0)
+,fHist_Correlation_leg1_emcal_leg2_emcal(0)
 
 //multiplicity histos
 ,fHist_InvMass_pt_ULS_KF_SPDmulti_1(0)
@@ -703,6 +871,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 //generators
 //BB
+/*
 ,fHist_InvMass_pt_ULS_KF_BB(0)
 ,fHist_InvMass_pt_LS_KF_BB(0)
 //CC
@@ -711,12 +880,17 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 //B
 ,fHist_InvMass_pt_ULS_KF_B(0)
 ,fHist_InvMass_pt_LS_KF_B(0)
+ */
+
 //JPsi
 ,fHist_InvMass_pt_ULS_KF_Jpsi(0)
 ,fHist_InvMass_pt_LS_KF_Jpsi(0)
+
+/*
 //BJpsi
 ,fHist_InvMass_pt_ULS_KF_BJpsi(0)
 ,fHist_InvMass_pt_LS_KF_BJpsi(0)
+*/
 
 
 	//leg 1 on EMCal
@@ -748,8 +922,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 
 	//MC efficiencies
-,fPtMCparticleAllHfe1(0)
-,fPtMCparticleRecoHfe1(0)
+//,fPtMCparticleAllHfe1(0)
+//,fPtMCparticleRecoHfe1(0)
 ,fPtMCparticleAll_e_from_JPsi(0)
 ,fPtMCparticleAll_JPsi_pT(0)
 
@@ -765,6 +939,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fPtMCparticleAll_trueJPsi_pT_weight(0)
 ,fPtMCparticleAll_trueJPsi_pT_weight_prompt(0)
 ,fPtMCparticleReco_e_from_JPsi(0)
+,fPtMCparticleReco_e_from_JPsi_eg1(0)
+,fPtMCparticleReco_e_from_JPsi_eg2(0)
 
 ,fPtMCparticleReco_electrons(0)
 ,fPtMCparticleReco_electrons_no_gamma(0)
@@ -780,6 +956,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fPtMCparticle_EMCalpid_leg2(0)
 
 ,fPtMCparticle_EMCal_TM_e_from_JPsi(0)
+,fPtMCparticle_EMCal_TM_e_from_JPsi_eg1(0)
+,fPtMCparticle_EMCal_TM_e_from_JPsi_eg2(0)
 ,fPtMCparticle_EMCal_TM_electrons(0)
 ,fPtMCparticle_EMCalpid_leg1_e_from_JPsi(0)
 ,fPtMCparticle_EMCalpid_leg2_e_from_JPsi(0)
@@ -805,6 +983,9 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 ,fPtMCparticle_TotalplusMass_JPsi_pT(0)
 ,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother(0)
+,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1(0)
+,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2(0)
+
 ,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight(0)
 ,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt(0)
 
@@ -913,152 +1094,242 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 
 //Store the number of events
 	//Define the histo
-	fNevent = new TH1F("fNevent","Number of Events",30,-0.5,29.5);
-    fNevent2 = new TH1F("fNevent2","Number of Events",20,-0.5,19.5);
-    fPDG_values = new TH1F("fPDG_values","PDG of generated particles",6000,-3000,3000);
+	fNevent = new TH1F("fNevent","Number of Events",42,-0.5,41.5);
+    //fNevent2 = new TH1F("fNevent2","Number of Events",20,-0.5,19.5);
+    
    
 	//And then, add to the output list
 	fOutputList->Add(fNevent);
-    fOutputList->Add(fNevent2);
-    fOutputList->Add(fPDG_values);
+   // fOutputList->Add(fNevent2);
     
-    fNevent_SPD_multi = new TH1F("fNevent_SPD_multi","Number of Events in SPD bins",10,-0.5,9.5);
-    fOutputList->Add(fNevent_SPD_multi);
+    if(fMultiAnalysis){
+        fNevent_SPD_multi = new TH1F("fNevent_SPD_multi","Number of Events in SPD bins",10,-0.5,9.5);
+        fOutputList->Add(fNevent_SPD_multi);
     
-    fNevent_V0_multi = new TH1F("fNevent_V0_multi","Number of Events in V0 bins",10,-0.5,9.5);
-    fOutputList->Add(fNevent_V0_multi);
+        fNevent_V0_multi = new TH1F("fNevent_V0_multi","Number of Events in V0 bins",10,-0.5,9.5);
+        fOutputList->Add(fNevent_V0_multi);
+    }
     
-    //pileup check
-    fTPC_vs_ITScls= new TH2F *[4];
-	
-	//General Histograms
-	
 	//Steps
 	//Step 1: Before Track cuts
 	//Step 2: Before PID
 	//Step 3: After PID
-	
-	fEoverP_pt = new TH2F *[3];
-	fTPC_p = new TH2F *[3];
-	fTPCnsigma_p = new TH2F *[3];
-    //TOF
-    fTOF_p = new TH2F *[3];
-    fTOFnsigma_p = new TH2F *[3];
     
-	fTPCnsigma_EoverP = new TH2F *[3];
-	fECluster= new TH1F *[4];
+    
+    if(!fIs_sys){
+        fEoverP_pt = new TH2F *[3];
+        fTPC_p = new TH2F *[3];
+        fTPCnsigma_p = new TH2F *[3];
+        //TOF
+        fTOF_p = new TH2F *[3];
+        fTOFnsigma_p = new TH2F *[3];
+    
+        fTPCnsigma_EoverP = new TH2F *[3];
+       
    
+        fECluster_emcal= new TH1F *[3];
+        fECluster_dcal= new TH1F *[3];
 	
-	fECluster_emcal= new TH1F *[3];
-	fECluster_dcal= new TH1F *[3];
-	
-	fVtxZ= new  TH1F *[3];
-	fNClusters= new TH1F *[3];
+        fVtxZ= new  TH1F *[3];
+        fNClusters= new TH1F *[3];
 
-	fdEta_dPhi = new TH2F *[3];
+        fdEta_dPhi = new TH2F *[3];
 	
-	for(Int_t i = 0; i < 3; i++)
-	{
-	  fEoverP_pt[i] = new TH2F(Form("fEoverP_pt%d",i),";p_{t} (GeV/c);E / p ",400,0,40,500,0,2);
-	  fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";p (GeV/c);TPC dE/dx (a. u.)",400,0,40,1000,-20,200);
-	  fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",400,0,40,1000,-15,10);
+        for(Int_t i = 0; i < 3; i++)
+        {
+            fEoverP_pt[i] = new TH2F(Form("fEoverP_pt%d",i),";p_{t} (GeV/c);E / p ",40,0,40,20,0,2);
+            fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";p (GeV/c);TPC dE/dx (a. u.)",40,0,40,110,-20,200);
+            fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",40,0,40,50,-15,10);
         
-        fTOF_p[i] = new TH2F(Form("fTOF_p%d",i),";p (GeV/c);TOF (a. u.)",400,0,40,300,-1,2);
-        fTOFnsigma_p[i] = new TH2F(Form("fTOFnsigma_p%d",i),";p (GeV/c);TOF Electron N#sigma",400,0,40,1000,-15,10);
+            fTOF_p[i] = new TH2F(Form("fTOF_p%d",i),";p (GeV/c);TOF (a. u.)",40,0,40,201,-1,200);
+            fTOFnsigma_p[i] = new TH2F(Form("fTOFnsigma_p%d",i),";p (GeV/c);TOF Electron N#sigma",40,0,40,50,-15,10);
 	  
 		
-		fECluster_emcal[i]= new TH1F(Form("fECluster_emcal%d",i), ";ECluster EMCal",1000, 0,100);
-		fECluster_dcal[i]= new TH1F(Form("fECluster_dcal%d",i), ";ECluster DCal",1000, 0,100);
+            fECluster_emcal[i]= new TH1F(Form("fECluster_emcal%d",i), ";ECluster EMCal",50, 0,50);
+            fECluster_dcal[i]= new TH1F(Form("fECluster_dcal%d",i), ";ECluster DCal",50, 0,50);
 		
-	  fVtxZ[i]= new  TH1F(Form("fVtxZ%d",i),"VtxZ",1000, -50,50);
-	  fNClusters[i]= new TH1F(Form("fNClusters%d",i),"fNClusters0",100, 0,100);
+            fVtxZ[i]= new  TH1F(Form("fVtxZ%d",i),"VtxZ",100, -50,50);
+            fNClusters[i]= new TH1F(Form("fNClusters%d",i),"fNClusters0",50, 0,50);
 		
-	  fTPCnsigma_EoverP[i] = new TH2F(Form("fTPCnsigma_EoverP%d",i),";TPC Electron N#sigma; E/p",1600,-20,20,200,0,2);
+            fTPCnsigma_EoverP[i] = new TH2F(Form("fTPCnsigma_EoverP%d",i),";TPC Electron N#sigma; E/p",40,-20,20,20,0,2);
 		
 			//new histos
-	  fdEta_dPhi[i] = new TH2F(Form("fdEta_dPhi%d",i),"Distance of EMCAL cluster to its closest track ;#phi;z",100,-0.3,0.3,100,-0.3,0.3);
+            fdEta_dPhi[i] = new TH2F(Form("fdEta_dPhi%d",i),"Distance of EMCAL cluster to its closest track ;#phi;z",6,-0.3,0.3,6,-0.3,0.3);
 
 	  		
-	  fOutputList->Add(fEoverP_pt[i]);
-	  fOutputList->Add(fTPC_p[i]);
-	  fOutputList->Add(fTPCnsigma_p[i]);
+            fOutputList->Add(fEoverP_pt[i]);
+            fOutputList->Add(fTPC_p[i]);
+            fOutputList->Add(fTPCnsigma_p[i]);
         
-      fOutputList->Add(fTOF_p[i]);
-      fOutputList->Add(fTOFnsigma_p[i]);
+            fOutputList->Add(fTOF_p[i]);
+            fOutputList->Add(fTOFnsigma_p[i]);
         
-      fOutputList->Add(fTPCnsigma_EoverP[i]);
+            fOutputList->Add(fTPCnsigma_EoverP[i]);
 	  
 		
-	  fOutputList->Add(fECluster_emcal[i]);
-	  fOutputList->Add(fECluster_dcal[i]);
+            fOutputList->Add(fECluster_emcal[i]);
+            fOutputList->Add(fECluster_dcal[i]);
 		
 		
-	  fOutputList->Add(fVtxZ[i]);
-	  fOutputList->Add(fNClusters[i]);
+            fOutputList->Add(fVtxZ[i]);
+            fOutputList->Add(fNClusters[i]);
 		
-      //new histos
-	  fOutputList->Add(fdEta_dPhi[i]);
+            //new histos
+            fOutputList->Add(fdEta_dPhi[i]);
 
-	}
+        }
+    }//close flag fIs_sys
+    
+    fHist_energy_pT = new TH2F *[7];
+    for(Int_t i = 0; i < 7; i++)
+    {
+        fHist_energy_pT[i] = new TH2F(Form("fHist_energy_pT%d",i),";E (GeV);p_{T} (GeV/c)",50,0,100,50,0,100);
+        fOutputList->Add(fHist_energy_pT[i]);
+    }
+    
+    if(!fIs_sys){
+        fTPCnsigma_p_beforeCalibration = new TH2F("fTPCnsigma_p_beforeCalibration",";p (GeV/c);TPC Electron N#sigma (bef. calibration)",40,0,40,50,-15,10);
+        fTPCnsigma_p_afterCalibration = new TH2F("fTPCnsigma_p_afterCalibration", ";p (GeV/c);TPC Electron N#sigma (aft. calibration)",40,0,40,50,-15,10);
+    
+        fOutputList->Add(fTPCnsigma_p_beforeCalibration);
+        fOutputList->Add(fTPCnsigma_p_afterCalibration);
+    }
+    //pileup check
+    if(!fIs_sys) fTPC_vs_ITScls= new TH2F *[4];
+    fECluster= new TH1F *[4];
+    
+    fECluster_mb = new TH1F("ECluster_mb", ";ECluster;Counts",20, 0, 40);
+    fECluster_eg1 = new TH1F("ECluster_eg1", ";ECluster;Counts",20, 0, 40);
+    fECluster_eg2 = new TH1F("ECluster_eg2", ";ECluster;Counts",20, 0, 40);
+    fECluster_dg1 = new TH1F("ECluster_dg1", ";ECluster;Counts",20, 0, 40);
+    fECluster_dg2 = new TH1F("ECluster_dg2", ";ECluster;Counts",20, 0, 40);
+    fOutputList->Add(fECluster_mb);
+    fOutputList->Add(fECluster_eg1);
+    fOutputList->Add(fECluster_eg2);
+    fOutputList->Add(fECluster_dg1);
+    fOutputList->Add(fECluster_dg2);
+    
+    //ET
+    fECluster_ET_mb = new TH1F("ECluster_ET_mb", ";ECluster ET;Counts",20, 0, 40);
+    fECluster_ET_eg1 = new TH1F("ECluster_ET_eg1", ";ECluster ET;Counts",20, 0, 40);
+    fECluster_ET_eg2 = new TH1F("ECluster_ET_eg2", ";ECluster ET;Counts",20, 0, 40);
+    fECluster_ET_dg1 = new TH1F("ECluster_ET_dg1", ";ECluster ET;Counts",20, 0, 40);
+    fECluster_ET_dg2 = new TH1F("ECluster_ET_dg2", ";ECluster ET;Counts",20, 0, 40);
+    fOutputList->Add(fECluster_ET_mb);
+    fOutputList->Add(fECluster_ET_eg1);
+    fOutputList->Add(fECluster_ET_eg2);
+    fOutputList->Add(fECluster_ET_dg1);
+    fOutputList->Add(fECluster_ET_dg2);
+    
+    //SM --> 2D
+    fECluster_mb_SM = new TH2F("ECluster_mb_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fECluster_eg1_SM = new TH2F("ECluster_eg1_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fECluster_eg2_SM = new TH2F("ECluster_eg2_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fECluster_dg1_SM = new TH2F("ECluster_dg1_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fECluster_dg2_SM = new TH2F("ECluster_dg2_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fECluster_deg1_SM = new TH2F("ECluster_deg1_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fECluster_deg2_SM = new TH2F("ECluster_deg2_SM", ";SM;ECluster",20, 0, 20, 20, 0, 40);
+    fOutputList->Add(fECluster_mb_SM);
+    fOutputList->Add(fECluster_eg1_SM);
+    fOutputList->Add(fECluster_eg2_SM);
+    fOutputList->Add(fECluster_dg1_SM);
+    fOutputList->Add(fECluster_dg2_SM);
+    fOutputList->Add(fECluster_deg1_SM);
+    fOutputList->Add(fECluster_deg2_SM);
+    
+    //ET
+    fECluster_ET_mb_SM = new TH2F("ECluster_ET_mb_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fECluster_ET_eg1_SM = new TH2F("ECluster_ET_eg1_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fECluster_ET_eg2_SM = new TH2F("ECluster_ET_eg2_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fECluster_ET_dg1_SM = new TH2F("ECluster_ET_dg1_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fECluster_ET_dg2_SM = new TH2F("ECluster_ET_dg2_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fECluster_ET_deg1_SM = new TH2F("ECluster_ET_deg1_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fECluster_ET_deg2_SM = new TH2F("ECluster_ET_deg2_SM", ";SM;ECluster ET",20, 0, 20, 20, 0, 40);
+    fOutputList->Add(fECluster_ET_mb_SM);
+    fOutputList->Add(fECluster_ET_eg1_SM);
+    fOutputList->Add(fECluster_ET_eg2_SM);
+    fOutputList->Add(fECluster_ET_dg1_SM);
+    fOutputList->Add(fECluster_ET_dg2_SM);
+    fOutputList->Add(fECluster_ET_deg1_SM);
+    fOutputList->Add(fECluster_ET_deg2_SM);
+    
+    //Pt
+    fPt_mb_SM = new TH2F("Pt_mb_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fPt_eg1_SM = new TH2F("Pt_eg1_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fPt_eg2_SM = new TH2F("Pt_eg2_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fPt_dg1_SM = new TH2F("Pt_dg1_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fPt_dg2_SM = new TH2F("Pt_dg2_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fPt_deg1_SM = new TH2F("Pt_deg1_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fPt_deg2_SM = new TH2F("Pt_deg2_SM", ";SM;pT",20, 0, 20, 20, 0, 40);
+    fOutputList->Add(fPt_mb_SM);
+    fOutputList->Add(fPt_eg1_SM);
+    fOutputList->Add(fPt_eg2_SM);
+    fOutputList->Add(fPt_dg1_SM);
+    fOutputList->Add(fPt_dg2_SM);
+    fOutputList->Add(fPt_deg1_SM);
+    fOutputList->Add(fPt_deg2_SM);
+    
     
     for(Int_t i = 0; i < 4; i++)
     {
-        fECluster[i]= new TH1F(Form("fECluster%d",i), ";ECluster",2000, 0,100);
+        fECluster[i]= new TH1F(Form("fECluster%d",i), ";ECluster",50, 0, 50);
         fOutputList->Add(fECluster[i]);
         
         //pileup histos
-        fTPC_vs_ITScls[i]= new TH2F(Form("fTPC_vs_ITScls%d",i), ";# TPC clusters; #SSD and SDD clusters",10000, 0,10000, 2000, 0, 2000);
-        fOutputList->Add(fTPC_vs_ITScls[i]);
+        if(!fIs_sys)fTPC_vs_ITScls[i]= new TH2F(Form("fTPC_vs_ITScls%d",i), ";# TPC clusters; #SSD and SDD clusters",200, 0,20000, 100, 0, 500);
+        if(!fIs_sys)fOutputList->Add(fTPC_vs_ITScls[i]);
     }
     
     //=================================================================================================================================================================
     // Multiplicity histos
     
-    fNClusters_pure= new TH1F("fNClusters_pure","fNClusters_pure",100, 0,100);
+    fNClusters_pure= new TH1F("fNClusters_pure","fNClusters_pure",50, 0,50);
     fOutputList->Add(fNClusters_pure);
     
-    fEoverP_ntracks_matched = new TH2F("fEoverP_ntracks_matched","fEoverP_ntracks_matched;E/p; N tracks matched to a cluster",200,0,2,20,0,20);
-    fOutputList->Add(fEoverP_ntracks_matched);
+    if(!fIs_sys){
+        fEoverP_ntracks_matched = new TH2F("fEoverP_ntracks_matched","fEoverP_ntracks_matched;E/p; N tracks matched to a cluster",20,0,2,10,0,10);
+        fOutputList->Add(fEoverP_ntracks_matched);
   
-    fEoverP_ncells = new TH2F("fEoverP_ncells","fEoverP_ncells;E/p; N cells",200,0,2,100,0,100);
-    fOutputList->Add(fEoverP_ncells);
+        fEoverP_ncells = new TH2F("fEoverP_ncells","fEoverP_ncells;E/p; N cells",20,0,2,100,0,100);
+        fOutputList->Add(fEoverP_ncells);
+    }
     
  
     
     
+    if(fMultiAnalysis){
+        fVtxZ_V0 = new TH2F("fVtxZ_V0","V0 multi vs. VtxZ ;VtxZ; V0 multiplicity",40,-20,20,500,0,1000);
+        fOutputList->Add(fVtxZ_V0);
     
-    fVtxZ_V0 = new TH2F("fVtxZ_V0","V0 multi vs. VtxZ ;VtxZ; V0 multiplicity",400,-20,20,500,0,1000);
-    fOutputList->Add(fVtxZ_V0);
+        fVtxZ_SPD = new TH2F("fVtxZ_SPD","SPD multi vs. VtxZ ;VtxZ; SPD multiplicity",40,-20,20,500,0,500);
+        fOutputList->Add(fVtxZ_SPD);
     
-    fVtxZ_SPD = new TH2F("fVtxZ_SPD","SPD multi vs. VtxZ ;VtxZ; SPD multiplicity",400,-20,20,500,0,500);
-    fOutputList->Add(fVtxZ_SPD);
+        fV0_SPD = new TH2F("fV0_SPD","SPD multi vs. V0 ;V0; SPD multiplicity",250,0,500,50,0,100);
+        fOutputList->Add(fV0_SPD);
     
-    fV0_SPD = new TH2F("fV0_SPD","SPD multi vs. V0 ;V0; SPD multiplicity",250,0,500,50,0,100);
-    fOutputList->Add(fV0_SPD);
+        fV0_nch = new TH2F("fV0_nch","V0 ;nch;V0 multiplicity",100, 0,1000,100,0,1000);
+        fOutputList->Add(fV0_nch);
     
-    fV0_nch = new TH2F("fV0_nch","V0 ;nch;V0 multiplicity",500, 0,1000,500,0,1000);
-    fOutputList->Add(fV0_nch);
-    
-    fSPD_nch = new TH2F("fSPD_nch","SPD ;nch;SPD multiplicity",500, 0,1000,500,0,1000);
-    fOutputList->Add(fSPD_nch);
-    
-    
-    //multi histos with pT cut
-    fV0 = new TH1F("fV0","V0 multi;V0 multiplicity",100,0,1000);
-    fOutputList->Add(fV0);
-    fV01 = new TH1F("fV01","V0 multi;V0 multiplicity EG1",100,0,1000);
-    fOutputList->Add(fV01);
-    fV02 = new TH1F("fV02","V0 multi;V0 multiplicity EG2",100,0,1000);
-    fOutputList->Add(fV02);
-    
-    fSPD = new TH1F("fSPD","SPD multi;SPD multiplicity",100,0,100);
-    fOutputList->Add(fSPD);
-    fSPD1 = new TH1F("fSPD1","SPD multi;SPD multiplicity EG1",100,0,100);
-    fOutputList->Add(fSPD1);
-    fSPD2 = new TH1F("fSPD2","SPD multi;SPD multiplicity EG2",100,0,100);
-    fOutputList->Add(fSPD2);
+        fSPD_nch = new TH2F("fSPD_nch","SPD ;nch;SPD multiplicity",100, 0,1000,100,0,1000);
+        fOutputList->Add(fSPD_nch);
     
     
+        //multi histos with pT cut
+        fV0 = new TH1F("fV0","V0 multi;V0 multiplicity",100,0,1000);
+        fOutputList->Add(fV0);
+        fV01 = new TH1F("fV01","V0 multi;V0 multiplicity EG1",100,0,1000);
+        fOutputList->Add(fV01);
+        fV02 = new TH1F("fV02","V0 multi;V0 multiplicity EG2",100,0,1000);
+        fOutputList->Add(fV02);
+    
+        fSPD = new TH1F("fSPD","SPD multi;SPD multiplicity",100,0,100);
+        fOutputList->Add(fSPD);
+        fSPD1 = new TH1F("fSPD1","SPD multi;SPD multiplicity EG1",100,0,100);
+        fOutputList->Add(fSPD1);
+        fSPD2 = new TH1F("fSPD2","SPD multi;SPD multiplicity EG2",100,0,100);
+        fOutputList->Add(fSPD2);
+    
+    }
     
     
     
@@ -1067,8 +1338,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	fECluster_pure= new TH1F("fECluster_pure", ";ECluster pure",2000,0,100);
 	fOutputList->Add(fECluster_pure);
 	
-    //emcal and dcal separated
-	fECluster_pure_emcal= new TH1F("fECluster_pure_emcal", ";ECluster pure EMCal",2000,0,100);
+    
     
     if(fMultiAnalysis){
         fECluster_pure_emcal_SPD1= new TH1F("fECluster_pure_emcal_SPD1", ";ECluster pure EMCal",2000,0,100);
@@ -1084,7 +1354,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fECluster_pure_emcal_V05= new TH1F("fECluster_pure_emcal_V05", ";ECluster pure EMCal",2000,0,100);
     }
     
-	fOutputList->Add(fECluster_pure_emcal);
+   
     
     if(fMultiAnalysis){
         fOutputList->Add(fECluster_pure_emcal_SPD1);
@@ -1100,38 +1370,86 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fOutputList->Add(fECluster_pure_emcal_V05);
     }
     
-	fECluster_pure_dcal= new TH1F("fECluster_pure_dcal", ";ECluster pure DCal",2000,0,100);
-	fOutputList->Add(fECluster_pure_dcal);
-	
-	
-	fEtaPhi_both= new TH2F("fEtaPhi_both","#eta x #phi Clusters;#phi;#eta",300,0.,6,200,-1.,1.);
-	fEtaPhi_emcal= new TH2F("fEtaPhi_emcal","#eta x #phi Clusters EMCal;#phi;#eta",300,0.,6,200,-1.,1.);
-	fEtaPhi_dcal= new TH2F("fEtaPhi_dcal","#eta x #phi Clusters DCal;#phi;#eta",300,0.,6,200,-1.,1.);
-	
-	fOutputList->Add(fEtaPhi_both);
-	fOutputList->Add(fEtaPhi_emcal);
-	fOutputList->Add(fEtaPhi_dcal);
-	
-	
-	fTracksPt=new TH1F *[12];
-	for(Int_t i=0; i<12; i++){
-		fTracksPt[i]= new TH1F(Form("fTracksPt%d", i), ";p_{T} (GeV/c); Counts ", 300, 0, 30);
-		fOutputList->Add(fTracksPt[i]);
-	}
-	
-	fTracksQAPt=new TH1F *[12];
-	for(Int_t i=0; i<12; i++){
-		fTracksQAPt[i]= new TH1F(Form("fTracksQAPt%d", i), ";p_{T} (GeV/c); Counts ", 300, 0, 30);
-		fOutputList->Add(fTracksQAPt[i]);
-	}
     
-    fTracksMCPt=new TH1F *[12];
-    for(Int_t i=0; i<12; i++){
-        fTracksMCPt[i]= new TH1F(Form("fTracksMCPt%d", i), ";p_{T} (GeV/c); Counts ", 400, 0, 40);
-        fOutputList->Add(fTracksMCPt[i]);
+	
+	
+    if(!fIs_sys){
+        
+        //emcal and dcal separated
+        fECluster_pure_emcal= new TH1F("fECluster_pure_emcal", ";ECluster pure EMCal",2000,0,100);
+        fOutputList->Add(fECluster_pure_emcal);
+        
+        fECluster_pure_dcal= new TH1F("fECluster_pure_dcal", ";ECluster pure DCal",50,0,50);
+        fOutputList->Add(fECluster_pure_dcal);
+        
+        
+        fEtaPhi_both= new TH2F("fEtaPhi_both","#eta x #phi Clusters;#phi;#eta",60,0.,6,20,-1.,1.);
+        fEtaPhi_emcal= new TH2F("fEtaPhi_emcal","#eta x #phi Clusters EMCal;#phi;#eta",60,0.,6,20,-1.,1.);
+        fEtaPhi_dcal= new TH2F("fEtaPhi_dcal","#eta x #phi Clusters DCal;#phi;#eta",60,0.,6,20,-1.,1.);
+        
+        fOutputList->Add(fEtaPhi_both);
+        fOutputList->Add(fEtaPhi_emcal);
+        fOutputList->Add(fEtaPhi_dcal);
+        
+        
+        fTracksPt=new TH1F *[12];
+        for(Int_t i=0; i<12; i++){
+            fTracksPt[i]= new TH1F(Form("fTracksPt%d", i), ";p_{T} (GeV/c); Counts ", 30, 0, 30);
+            fOutputList->Add(fTracksPt[i]);
+        }
+	
+        fTracksQAPt=new TH1F *[12];
+        for(Int_t i=0; i<12; i++){
+            fTracksQAPt[i]= new TH1F(Form("fTracksQAPt%d", i), ";p_{T} (GeV/c); Counts ", 30, 0, 30);
+            fOutputList->Add(fTracksQAPt[i]);
+        }
+    
+        fTracksMCPt=new TH1F *[12];
+        for(Int_t i=0; i<12; i++){
+            fTracksMCPt[i]= new TH1F(Form("fTracksMCPt%d", i), ";p_{T} (GeV/c); Counts ", 40, 0, 40);
+            fOutputList->Add(fTracksMCPt[i]);
+        }
     }
-	
-	
+    
+    //new QA histos
+    //new QA histos
+    fhTPCCrossedRows_before= new TH1F("fhTPCCrossedRows_before",";TPC crossed rows; Counts",160,0.,160);
+    fhTPCCrossedRows_after= new TH1F("fhTPCCrossedRows_after",";TPC crossed rows; Counts",160,0.,160);
+    
+    fhITSNcls_before= new TH1F("fhITSNcls_before",";ITS Ncls; Counts",6,0.,6);
+    fhITSNcls_after= new TH1F("fhITSNcls_after",";ITS Ncls; Counts",6,0.,6);
+    
+    fhDCAxy_before= new TH1F("fhDCAxy_before",";DCAxy; Counts",50,0.,5);
+    fhDCAxy_after= new TH1F("fhDCAxy_after",";DCAxy; Counts",50,0.,5);
+    
+    fhDCAz_before= new TH1F("fhDCAz_before",";DCAz; Counts",60,0.,6);
+    fhDCAz_after= new TH1F("fhDCAz_after",";DCAz; Counts",60,0.,6);
+    
+    fhTPCchi2overNcls_before= new TH1F("fhTPCchi2overNcls_before",";TPCchi2/Ncls; Counts",20,0.,10);
+    fhTPCchi2overNcls_after= new TH1F("fhTPCchi2overNcls_after",";TPCchi2/Ncls; Counts",20,0.,10);
+    
+    fhITSchi2overNcls_before= new TH1F("fhITSchi2overNcls_before",";ITSchi2/Ncls; Counts",60,0.,60);
+    fhITSchi2overNcls_after= new TH1F("fhITSchi2overNcls_after",";ITSchi2/Ncls; Counts",60,0.,60);
+    
+    fh_pt_before= new TH1F("fh_pt_before",";p_{T}; Counts",40,0.,40);
+    fh_pt_after= new TH1F("fh_pt_after",";p_{T}; Counts",40,0.,40);
+
+    
+    fOutputList->Add(fhTPCCrossedRows_before);
+    fOutputList->Add(fhTPCCrossedRows_after);
+    fOutputList->Add(fhITSNcls_before);
+    fOutputList->Add(fhITSNcls_after);
+    fOutputList->Add(fhDCAxy_before);
+    fOutputList->Add(fhDCAxy_after);
+    fOutputList->Add(fhDCAz_before);
+    fOutputList->Add(fhDCAz_after);
+    fOutputList->Add(fhTPCchi2overNcls_before);
+    fOutputList->Add(fhTPCchi2overNcls_after);
+    fOutputList->Add(fhITSchi2overNcls_before);
+    fOutputList->Add(fhITSchi2overNcls_after);
+    fOutputList->Add(fh_pt_before);
+    fOutputList->Add(fh_pt_after);
+
 	
 	//JPsi analysis histograms
     /*
@@ -1142,10 +1460,29 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     */
 	
     //KFParticle
-	fHist_InvMass_pt_ULS_KF = new TH2F("fHist_InvMass_pt_ULS_KF","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,1000,0,10);
+	fHist_InvMass_pt_ULS_KF = new TH2F("fHist_InvMass_pt_ULS_KF","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,250,0,5);
 	fOutputList->Add(fHist_InvMass_pt_ULS_KF);
-	fHist_InvMass_pt_LS_KF = new TH2F("fHist_InvMass_pt_LS_KF","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,1000,0,10);
+    fHist_InvMass_pt_ULS_KF_eg1 = new TH2F("fHist_InvMass_pt_ULS_KF_eg1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,250,0,5);
+    fOutputList->Add(fHist_InvMass_pt_ULS_KF_eg1);
+    fHist_InvMass_pt_ULS_KF_eg2 = new TH2F("fHist_InvMass_pt_ULS_KF_eg2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,250,0,5);
+    fOutputList->Add(fHist_InvMass_pt_ULS_KF_eg2);
+    
+    
+    
+	fHist_InvMass_pt_LS_KF = new TH2F("fHist_InvMass_pt_LS_KF","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,250,0,5);
 	fOutputList->Add(fHist_InvMass_pt_LS_KF);
+    
+    //Correlation btween leg1 and leg2
+    if(!fIs_sys){
+        fHist_Correlation_leg1_emcal_leg2_not = new TH2F("fHist_Correlation_leg1_emcal_leg2_not","leg1 vs leg2;p_{T} leg1 (GeV/c);p_{T} leg2 (GeV/c)",40,0,40,40,0,40);
+        fHist_Correlation_leg1_not_leg2_emcal = new TH2F("fHist_Correlation_leg1_not_leg2_emcal","leg1 vs leg2;p_{T} leg1 (GeV/c);p_{T} leg2 (GeV/c)",40,0,40,40,0,40);
+        fHist_Correlation_leg1_emcal_leg2_emcal = new TH2F("fHist_Correlation_leg1_emcal_leg2_emcal","leg1 vs leg2;p_{T} leg1 (GeV/c);p_{T} leg2 (GeV/c)",40,0,40,40,0,40);
+    
+        fOutputList->Add(fHist_Correlation_leg1_emcal_leg2_not);
+        fOutputList->Add(fHist_Correlation_leg1_not_leg2_emcal);
+        fOutputList->Add(fHist_Correlation_leg1_emcal_leg2_emcal);
+    }
+    
     
     //multiplicity histos
     
@@ -1216,6 +1553,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     
     if(fIsMC){
         //BB
+        /*
         fHist_InvMass_pt_ULS_KF_BB = new TH2F("fHist_InvMass_pt_ULS_KF_BB","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
         fOutputList->Add(fHist_InvMass_pt_ULS_KF_BB);
         fHist_InvMass_pt_LS_KF_BB = new TH2F("fHist_InvMass_pt_LS_KF_BB","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",500,0,50,500,0,5);
@@ -1232,131 +1570,143 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fOutputList->Add(fHist_InvMass_pt_ULS_KF_B);
         fHist_InvMass_pt_LS_KF_B = new TH2F("fHist_InvMass_pt_LS_KF_B","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",500,0,50,500,0,5);
         fOutputList->Add(fHist_InvMass_pt_LS_KF_B);
-	
+	    */
+        
         //Jpsi
         fHist_InvMass_pt_ULS_KF_Jpsi = new TH2F("fHist_InvMass_pt_ULS_KF_Jpsi","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
         fOutputList->Add(fHist_InvMass_pt_ULS_KF_Jpsi);
         fHist_InvMass_pt_LS_KF_Jpsi = new TH2F("fHist_InvMass_pt_LS_KF_Jpsi","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",500,0,50,500,0,5);
         fOutputList->Add(fHist_InvMass_pt_LS_KF_Jpsi);
 	
+        /*
         //BJpsi
         fHist_InvMass_pt_ULS_KF_BJpsi = new TH2F("fHist_InvMass_pt_ULS_KF_BJpsi","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
         fOutputList->Add(fHist_InvMass_pt_ULS_KF_BJpsi);
         fHist_InvMass_pt_LS_KF_BJpsi = new TH2F("fHist_InvMass_pt_LS_KF_BJpsi","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",500,0,50,500,0,5);
         fOutputList->Add(fHist_InvMass_pt_LS_KF_BJpsi);
+        */
         
     }
 	
 	//=================================================================================================================================================================
+    if(!fIs_sys){
+	
+        fHist_InvMass_pt_ULS1 = new TH2F("fHist_InvMass_pt_ULS1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,125,0,5);
+        fOutputList->Add(fHist_InvMass_pt_ULS1);
+        fHist_InvMass_pt_LS1 = new TH2F("fHist_InvMass_pt_LS1","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,125,0,5);
+        fOutputList->Add(fHist_InvMass_pt_LS1);
+	
+        fHist_InvMass_pt_ULS2 = new TH2F("fHist_InvMass_pt_ULS2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,125,0,5);
+        fOutputList->Add(fHist_InvMass_pt_ULS2);
+        fHist_InvMass_pt_LS2 = new TH2F("fHist_InvMass_pt_LS2","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,125,0,5);
+        fOutputList->Add(fHist_InvMass_pt_LS2);
+	
+        fHist_InvMass_pt_ULSboth = new TH2F("fHist_InvMass_pt_ULSboth","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,125,0,5);
+        fOutputList->Add(fHist_InvMass_pt_ULSboth);
+        fHist_InvMass_pt_LSboth = new TH2F("fHist_InvMass_pt_LSboth","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,125,0,5);
+        fOutputList->Add(fHist_InvMass_pt_LSboth);
 
-	
-	fHist_InvMass_pt_ULS1 = new TH2F("fHist_InvMass_pt_ULS1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_ULS1);
-	fHist_InvMass_pt_LS1 = new TH2F("fHist_InvMass_pt_LS1","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_LS1);
-	
-	fHist_InvMass_pt_ULS2 = new TH2F("fHist_InvMass_pt_ULS2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_ULS2);
-	fHist_InvMass_pt_LS2 = new TH2F("fHist_InvMass_pt_LS2","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_LS2);
-	
-	fHist_InvMass_pt_ULSboth = new TH2F("fHist_InvMass_pt_ULSboth","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_ULSboth);
-	fHist_InvMass_pt_LSboth = new TH2F("fHist_InvMass_pt_LSboth","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_LSboth);
-	
-	
-	
-	fHist_InvMass_pt_ULStpc = new TH2F("fHist_InvMass_pt_ULStpc","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,100,0,10);
-	fOutputList->Add(fHist_InvMass_pt_ULStpc);
-	
-	fHist_InvMass_pt_LStpc = new TH2F("fHist_InvMass_pt_LStpc","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
-	fOutputList->Add(fHist_InvMass_pt_LStpc);
+        fHist_InvMass_pt_ULStpc_wMatching = new TH2F("fHist_InvMass_pt_ULStpc_wMatching","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,125,0,5);
+        fOutputList->Add(fHist_InvMass_pt_ULStpc_wMatching);
     
+        fHist_InvMass_pt_LStpc_wMatching = new TH2F("fHist_InvMass_pt_LStpc_wMatching","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,125,0,5);
+        fOutputList->Add(fHist_InvMass_pt_LStpc_wMatching);
     
-    fHist_InvMass_pt_ULStpc_wMatching = new TH2F("fHist_InvMass_pt_ULStpc_wMatching","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,1000,0,10);
-    fOutputList->Add(fHist_InvMass_pt_ULStpc_wMatching);
-    
-    fHist_InvMass_pt_LStpc_wMatching = new TH2F("fHist_InvMass_pt_LStpc_wMatching","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,1000,0,10);
-    fOutputList->Add(fHist_InvMass_pt_LStpc_wMatching);
+    }//close flag fIs_sys
 	
+    fHist_InvMass_pt_ULStpc = new TH2F("fHist_InvMass_pt_ULStpc","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,125,0,5);
+    fOutputList->Add(fHist_InvMass_pt_ULStpc);
+    
+    fHist_InvMass_pt_LStpc = new TH2F("fHist_InvMass_pt_LStpc","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,125,0,5);
+    fOutputList->Add(fHist_InvMass_pt_LStpc);
     
     
     //MC efficiencies
     if(fIsMC){
         
-        fPtMCparticleRecoHfe1 = new TH1F("fPtMCparticleRecoHfe1",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticleAllHfe1 = new TH1F("fPtMCparticleAllHfe1",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticleAll_e_from_JPsi = new TH1F("fPtMCparticleAll_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticleAll_JPsi_pT = new TH1F("fPtMCparticleAll_JPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
+        //fPtMCparticleRecoHfe1 = new TH1F("fPtMCparticleRecoHfe1",";p_{T} (GeV/c);Count",40,0,40);
+       // fPtMCparticleAllHfe1 = new TH1F("fPtMCparticleAllHfe1",";p_{T} (GeV/c);Count",40,0,40);
+        
+        fPtMCparticleAll_e_from_JPsi = new TH1F("fPtMCparticleAll_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticleAll_JPsi_pT = new TH1F("fPtMCparticleAll_JPsi_pT",";p_{T} (GeV/c);Count",40,0,40);
         
         //new
-        fPtMCparticleAll_e_from_JPsi_electron = new TH1F("fPtMCparticleAll_e_from_JPsi_electron",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticleAll_JPsi_pT_electron = new TH1F("fPtMCparticleAll_JPsi_pT_electron",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticleAll_e_from_JPsi_positron = new TH1F("fPtMCparticleAll_e_from_JPsi_positron",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticleAll_JPsi_pT_positron = new TH1F("fPtMCparticleAll_JPsi_pT_positron",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_e_from_JPsi_electron = new TH1F("fPtMCparticleAll_e_from_JPsi_electron",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticleAll_JPsi_pT_electron = new TH1F("fPtMCparticleAll_JPsi_pT_electron",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticleAll_e_from_JPsi_positron = new TH1F("fPtMCparticleAll_e_from_JPsi_positron",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticleAll_JPsi_pT_positron = new TH1F("fPtMCparticleAll_JPsi_pT_positron",";p_{T} (GeV/c);Count",40,0,40);
         
         //denominator tracking efficiency
-        fPtMCparticleAll_electrons = new TH1F("fPtMCparticleAll_electrons",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticleAll_particles = new TH1F("fPtMCparticleAll_particles",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_electrons = new TH1F("fPtMCparticleAll_electrons",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticleAll_particles = new TH1F("fPtMCparticleAll_particles",";p_{T} (GeV/c);Count",40,0,40);
         
         
-        fPtMCparticleAll_trueJPsi_pT = new TH1F("fPtMCparticleAll_trueJPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticleAll_trueJPsi_pT_weight = new TH1F("fPtMCparticleAll_trueJPsi_pT_weight",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticleAll_trueJPsi_pT_weight_prompt = new TH1F("fPtMCparticleAll_trueJPsi_pT_weight_prompt",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_trueJPsi_pT = new TH1F("fPtMCparticleAll_trueJPsi_pT",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticleAll_trueJPsi_pT_weight = new TH1F("fPtMCparticleAll_trueJPsi_pT_weight",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticleAll_trueJPsi_pT_weight_prompt = new TH1F("fPtMCparticleAll_trueJPsi_pT_weight_prompt",";p_{T} (GeV/c);Count",40,0,40);
         
         
-        fPtMCparticleReco_e_from_JPsi = new TH1F("fPtMCparticleReco_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleReco_e_from_JPsi = new TH1F("fPtMCparticleReco_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
         
-        fPtMCparticleReco_electrons = new TH1F("fPtMCparticleReco_electrons",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticleReco_electrons_no_gamma = new TH1F("fPtMCparticleReco_electrons_no_gamma",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticleReco_particles = new TH1F("fPtMCparticleReco_particles",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleReco_e_from_JPsi_eg1 = new TH1F("fPtMCparticleReco_e_from_JPsi_eg1",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticleReco_e_from_JPsi_eg2 = new TH1F("fPtMCparticleReco_e_from_JPsi_eg2",";p_{T} (GeV/c);Count",40,0,40);
+        
+        fPtMCparticleReco_electrons = new TH1F("fPtMCparticleReco_electrons",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticleReco_electrons_no_gamma = new TH1F("fPtMCparticleReco_electrons_no_gamma",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticleReco_particles = new TH1F("fPtMCparticleReco_particles",";p_{T} (GeV/c);Count",40,0,40);
         
         
         //TPC PID efficiency
-        fPtMCparticle_TPCpid_e_from_JPsi = new TH1F("fPtMCparticle_TPCpid_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_TPCpid_electrons = new TH1F("fPtMCparticle_TPCpid_electrons",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_TPCpid_e_from_JPsi_num = new TH1F("fPtMCparticle_TPCpid_e_from_JPsi_num",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_TPCpid_electrons_num = new TH1F("fPtMCparticle_TPCpid_electrons_num",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_TPCpid_e_from_JPsi = new TH1F("fPtMCparticle_TPCpid_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_TPCpid_electrons = new TH1F("fPtMCparticle_TPCpid_electrons",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_TPCpid_e_from_JPsi_num = new TH1F("fPtMCparticle_TPCpid_e_from_JPsi_num",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_TPCpid_electrons_num = new TH1F("fPtMCparticle_TPCpid_electrons_num",";p_{T} (GeV/c);Count",40,0,40);
         //EMCal PID efficiency
-        fPtMCparticle_EMCalpid_leg1 = new TH1F("fPtMCparticle_EMCalpid_leg1",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_EMCalpid_leg2 = new TH1F("fPtMCparticle_EMCalpid_leg2",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_EMCalpid_leg1 = new TH1F("fPtMCparticle_EMCalpid_leg1",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_EMCalpid_leg2 = new TH1F("fPtMCparticle_EMCalpid_leg2",";p_{T} (GeV/c);Count",40,0,40);
         
         
-        fPtMCparticle_EMCal_TM_e_from_JPsi = new TH1F("fPtMCparticle_EMCal_TM_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_EMCal_TM_electrons = new TH1F("fPtMCparticle_EMCal_TM_electrons",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_EMCalpid_leg1_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_leg1_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_EMCalpid_leg2_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_leg2_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_Total_JPsi_pT = new TH1F("fPtMCparticle_Total_JPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_EMCal_TM_e_from_JPsi = new TH1F("fPtMCparticle_EMCal_TM_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_EMCal_TM_e_from_JPsi_eg1 = new TH1F("fPtMCparticle_EMCal_TM_e_from_JPsi_eg1",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_EMCal_TM_e_from_JPsi_eg2 = new TH1F("fPtMCparticle_EMCal_TM_e_from_JPsi_eg2",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_EMCal_TM_electrons = new TH1F("fPtMCparticle_EMCal_TM_electrons",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_EMCalpid_leg1_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_leg1_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_EMCalpid_leg2_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_leg2_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_Total_JPsi_pT = new TH1F("fPtMCparticle_Total_JPsi_pT",";p_{T} (GeV/c);Count",40,0,40);
         
         
         
         
         //J/Psi reco
-        fPtMCparticle_JPsi = new TH1F("fPtMCparticle_JPsi",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_JPsi_num = new TH1F("fPtMCparticle_JPsi_num",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_JPsi = new TH1F("fPtMCparticle_JPsi",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_JPsi_num = new TH1F("fPtMCparticle_JPsi_num",";p_{T} (GeV/c);Count",40,0,40);
         //J/Psi mass cut
-        fPtMCparticle_JPsi_mass = new TH1F("fPtMCparticle_JPsi_mass",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_JPsi_mass_num = new TH1F("fPtMCparticle_JPsi_mass_num",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_JPsi_mass = new TH1F("fPtMCparticle_JPsi_mass",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_JPsi_mass_num = new TH1F("fPtMCparticle_JPsi_mass_num",";p_{T} (GeV/c);Count",40,0,40);
         
         
 	
-        fPtMCparticle_Total_e_from_JPsi = new TH1F("fPtMCparticle_Total_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_Total_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_Total_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_TotalplusMass_e_from_JPsi = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_Total_e_from_JPsi = new TH1F("fPtMCparticle_Total_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_Total_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_Total_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_TotalplusMass_e_from_JPsi = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",40,0,40);
    
-        fPtMCparticle_TotalplusMass_JPsi_pT = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_TotalplusMass_JPsi_pT = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT",";p_{T} (GeV/c);Count",40,0,40);
        
-         fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt",";p_{T} (GeV/c);Count",500,0,50);
+         fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1 = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2 = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2",";p_{T} (GeV/c);Count",40,0,40);
+        
+        
+        
+        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt",";p_{T} (GeV/c);Count",40,0,40);
     
 	
-        fOutputList->Add(fPtMCparticleRecoHfe1);
-        fOutputList->Add(fPtMCparticleAllHfe1);
+        //fOutputList->Add(fPtMCparticleRecoHfe1);
+       // fOutputList->Add(fPtMCparticleAllHfe1);
         fOutputList->Add(fPtMCparticleAll_e_from_JPsi);
         fOutputList->Add(fPtMCparticleAll_JPsi_pT);
         
@@ -1375,6 +1725,8 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fOutputList->Add(fPtMCparticleAll_trueJPsi_pT_weight_prompt);
         
         fOutputList->Add(fPtMCparticleReco_e_from_JPsi);
+        fOutputList->Add(fPtMCparticleReco_e_from_JPsi_eg1);
+        fOutputList->Add(fPtMCparticleReco_e_from_JPsi_eg2);
         
         fOutputList->Add(fPtMCparticleReco_electrons);
         fOutputList->Add(fPtMCparticleReco_electrons_no_gamma);
@@ -1390,6 +1742,8 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fOutputList->Add(fPtMCparticle_EMCalpid_leg2);
         
         fOutputList->Add(fPtMCparticle_EMCal_TM_e_from_JPsi);
+        fOutputList->Add(fPtMCparticle_EMCal_TM_e_from_JPsi_eg1);
+        fOutputList->Add(fPtMCparticle_EMCal_TM_e_from_JPsi_eg2);
         fOutputList->Add(fPtMCparticle_EMCal_TM_electrons);
         fOutputList->Add(fPtMCparticle_EMCalpid_leg1_e_from_JPsi);
         fOutputList->Add(fPtMCparticle_EMCalpid_leg2_e_from_JPsi);
@@ -1413,6 +1767,10 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     
         fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT);
         fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother);
+        
+        fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1);
+        fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2);
+        
         fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight);
         fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt);
         
@@ -1423,23 +1781,23 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	
    
 	
-	fvalueElectron = new Double_t[9];
-    fvalueElectronTPC = new Double_t[5];
+	fvalueElectron = new Double_t[8];
+    fvalueElectronTPC = new Double_t[6];
     fvalueMulti = new Double_t[6];
 	
     //electron Sparse
-	Int_t bins[9]={58,40,40,20,20, 40, 6, 6,6}; // pt, TPCnsig, E/p, M20, M02, E,phi, V0, SPD
-	Double_t xmin[9]={2,-15,0,0,0,0,0,0,0};
-	Double_t xmax[9]={60,5,2,2,2,40,6, 450, 90};
-	fSparseElectron = new THnSparseD ("Electron","Electron",9,bins,xmin,xmax);
+	Int_t bins[8]={58,40,40,20,20, 40, 6, 40}; // pt, TPCnsig, E/p, M20, M02, E,phi, TPCnsig_old
+	Double_t xmin[8]={2,-15,0,0,0,0,0,-15};
+	Double_t xmax[8]={60,5,2,2,2,40,6, 5};
+	fSparseElectron = new THnSparseD ("Electron","Electron",8,bins,xmin,xmax);
 	fOutputList->Add(fSparseElectron);
     
     //electron Sparse TPC
     //electron Sparse
-    Int_t binse[5]={40, 40, 40, 18, 6}; // p, pt, TPCnsigma, eta, phi
-    Double_t xmine[5]={1, 1,-15,-0.9,0};
-    Double_t xmaxe[5]={41,41,5,0.9,6};
-    fSparseElectronTPC = new THnSparseD ("Electrons TPC","Electrons TPC",5,binse,xmine,xmaxe);
+    Int_t binse[6]={40, 40, 40, 18, 6, 40}; // p, pt, TPCnsigma, eta, phi
+    Double_t xmine[6]={1, 1,-15,-0.9,0, -15};
+    Double_t xmaxe[6]={41,41,5,0.9,6, 5};
+    fSparseElectronTPC = new THnSparseD ("Electrons TPC","Electrons TPC",6,binse,xmine,xmaxe);
     fOutputList->Add(fSparseElectronTPC);
     
     
@@ -1474,25 +1832,39 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	}
 	
 	fVevent = dynamic_cast<AliVEvent*>(InputEvent());
-	
+    
+    //if(fIsMC && fIsTriggerSimulation){
+    if(fIsTriggerSimulation){ // to use trigger decision also in data
+        //printf("Inside trigger decision - beginning \n");
+        //auto triggerdecision = fAOD->FindListObject("EmcalTriggerDecision");
+        auto triggerdecision = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(InputEvent()->FindListObject("EmcalTriggerDecision"));
+        feg1 = triggerdecision->IsEventSelected("EG1");
+        fdg1 = triggerdecision->IsEventSelected("DG1");
+        feg2 = triggerdecision->IsEventSelected("EG2");
+        fdg2 = triggerdecision->IsEventSelected("DG2");
+        
+        //printf("Inside trigger decision - end \n");
+        if(feg1 || fdg1 )fNevent->Fill(38);
+        if(feg2 || fdg2 )fNevent->Fill(37);
+        
+        fNevent->Fill(39);
+    }
+    
 	if(!fVevent) 
 	{
 		printf("ERROR: fVEvent not available\n");
 		return;
 	}
   
-	
 //PID response
 	fPidResponse = fInputHandler->GetPIDResponse();
 		
-
 //Check PID response
 	if(!fPidResponse)
 	{
 		AliDebug(1, "Using default PID Response");
 		fPidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
 	}
-  
 
 	Double_t *fListOfmotherkink = 0;
 	Int_t fNumberOfVertices = 0; 
@@ -1501,33 +1873,73 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 
 //Vertex Selection
 	
-	fNevent->Fill(30);
+	fNevent->Fill(36);
     if(fIsAOD)
     {
         
            const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
         
-            Float_t zvtx = trkVtx->GetZ();
+            //Float_t zvtx = trkVtx->GetZ();
+            //fZvtx = zvtx;
+        
+            Float_t zvtx = -100;
+            zvtx=trkVtx->GetZ();
             fZvtx = zvtx;
+            //x
+            Float_t xvtx = -100;
+            xvtx=trkVtx->GetX();
+            fXvtx=xvtx;
+        
+            //y
+            Float_t yvtx = -100;
+            yvtx=trkVtx->GetY();
+            fYvtx=yvtx;
+        
+        
+            //events without vertex
+            if(zvtx==0 && xvtx==0 && yvtx==0) fNevent->Fill(35);
+        
             //printf("vertex =%f, vertex global =%f \n", zvtx, fZvtx);
             //all events with reconstructed vertex:
-            fVtxZ[0]->Fill(fZvtx);
-        
-        
+            if(!fIs_sys)fVtxZ[0]->Fill(fZvtx);
+
         
             //to cross check also SPD vertex//
             const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
             if(!spdVtx || spdVtx->GetNContributors()<=0)
             {
-                fNevent->Fill(29);
+                fNevent->Fill(34);
             }
             if(spdVtx)
             {
-                fNevent->Fill(28);
+                fNevent->Fill(33);
                 if((!trkVtx || trkVtx->GetNContributors()<=0) && (spdVtx->GetNContributors()<=0))
                 {
-                    fNevent->Fill(27);
+                    fNevent->Fill(32);
                 }
+                //checking SPD vertex stuff
+                TString vtxTyp = spdVtx->GetTitle();
+                Double_t cov[6]={0};
+                spdVtx->GetCovarianceMatrix(cov);
+                Double_t zRes = TMath::Sqrt(cov[5]);
+                
+                if(spdVtx->IsFromVertexerZ() && (zRes>0.25)){
+                    fNevent->Fill(31);
+                    if(fnew_event_selection)return;
+                }
+                
+                //check discrepancy when both exists
+                if(trkVtx && trkVtx->GetNContributors()>=1 && spdVtx->GetNContributors()>=1){
+                    if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())<=0.5){
+                        fNevent->Fill(29);//requirement of both vertex
+  
+                    }
+                    if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5){
+                        fNevent->Fill(30);
+                        if(fnew_event_selection)return;
+                    }
+                }
+                
             }
             //end of SPD cross check
         
@@ -1536,18 +1948,18 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         
            if(!trkVtx || trkVtx->GetNContributors()<=0)
            {//no vertex from tracks
-              fNevent->Fill(26);
+              fNevent->Fill(28);
               return;
            }
            
-           
-           fNevent->Fill(25);
+           //all events with vertex
+           fNevent->Fill(27);
            //any vertex
-           fVtxZ[1]->Fill(fZvtx);
+           if(!fIs_sys)fVtxZ[1]->Fill(fZvtx);
            
            if(TMath::Abs(fZvtx) > fVertexCut) return;
         
-           fVtxZ[2]->Fill(fZvtx);
+           if(!fIs_sys)fVtxZ[2]->Fill(fZvtx);
            
            
     }
@@ -1560,6 +1972,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	}
 
 	fNevent->Fill(24);
+    
+    //printf("Printing vertex = %f, %f, %f \n", fXvtx, fYvtx, fZvtx);
     
 //Look for kink mother for AOD
 	if(fIsAOD)
@@ -1670,7 +2084,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     
     //printf("Number of cluster on ITS layers: %d, %d, %d, %d, %d, %d \n",ITScls_layer1, ITScls_layer2, ITScls_layer3, ITScls_layer4, ITScls_layer5, ITScls_layer6);
     
-    fTPC_vs_ITScls[0]->Fill(TPCcls_event, SSD_plus_SDD);
+    if(!fIs_sys) fTPC_vs_ITScls[0]->Fill(TPCcls_event, SSD_plus_SDD);
     //printf("V0 =%d, V0_corrected =%f,  V0_corrected2 =%f\n", V0Mult, fV0Mult_corr, fV0Mult_corr2);
     
     if(fAOD->IsPileupFromSPDInMultBins()){
@@ -1679,7 +2093,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         return;
     }
     
-    fTPC_vs_ITScls[1]->Fill(TPCcls_event, SSD_plus_SDD);
+    if(!fIs_sys)fTPC_vs_ITScls[1]->Fill(TPCcls_event, SSD_plus_SDD);
     
     if(fAOD->IsPileupFromSPD(3.,0.8,3.,2.,5.)){
         //printf("This event is pileUp from AOD\n");
@@ -1687,7 +2101,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         return;
     }
     
-    fTPC_vs_ITScls[2]->Fill(TPCcls_event, SSD_plus_SDD);
+    if(!fIs_sys)fTPC_vs_ITScls[2]->Fill(TPCcls_event, SSD_plus_SDD);
     
     //new pileUp rejection
     Int_t minContributors=5;    //minimum contributors to the pilup vertices, multi-vertex
@@ -1707,7 +2121,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         return;
     }
     
-    fTPC_vs_ITScls[3]->Fill(TPCcls_event, SSD_plus_SDD);
+    if(!fIs_sys)fTPC_vs_ITScls[3]->Fill(TPCcls_event, SSD_plus_SDD);
  
 //______________________________________________________________________	
 	
@@ -1715,7 +2129,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	Int_t fNOtrks =  fVevent->GetNumberOfTracks();
     if(fNOtrks<2){
         fNevent->Fill(19);
-        return;
+      //if(!fnew_event_selection)return;
     }
 	fNevent->Fill(18);
 	
@@ -1827,12 +2241,13 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	
 	//==============================================
 		//For event generator
-	    Bool_t IsMB_gen = kFALSE;
+	    /*Bool_t IsMB_gen = kFALSE;
 		Bool_t IsPythiaCC_gen = kFALSE;
 		Bool_t IsPythiaBB_gen = kFALSE;
-		Bool_t IsPythiaB_gen = kFALSE;
+		Bool_t IsPythiaB_gen = kFALSE;*/
+    
 		Bool_t IsJpsi2ee_gen = kFALSE;
-		Bool_t IsB2JPsi2ee_gen = kFALSE;
+		/*Bool_t IsB2JPsi2ee_gen = kFALSE;*/
 	//==============================================
 
 	
@@ -1867,6 +2282,9 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			*/
 			
 			//printf("\n Checking generator in MC: \n ");
+            
+            
+             
 			TString genname;
 			TList *l = (TList*)fMCEvent->GetCocktailList();
 			for (Int_t i = l->GetEntries()-1; i >= 0; i--){
@@ -1875,6 +2293,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			//	printf("Generator Index %d - %s\n", i, genname.Data());
 				
 				//set flags for each kind of generator:
+                /*
 				if(genname.Contains("MB")){
 					IsMB_gen =kTRUE;
 					//printf("Contains MB\n");
@@ -1896,19 +2315,24 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 					//printf("Contains B_1\n");
 						//fNevent->Fill(16);
 				}
+                 */
+                
 				if(genname.Contains("Jpsi2ee")){
 					IsJpsi2ee_gen  =kTRUE;
 					//printf("Contains Jpsi2ee\n");
 						//fNevent->Fill(17);
 				}
+                /*
 				if(genname.Contains("B2JPsi2ee")){
 					IsB2JPsi2ee_gen=kTRUE;
 					//printf("Contains B2JPsi2ee\n");
 						//fNevent->Fill(18);
 				}
+                 */
 				
 			}
 			
+            
 						
 			/*
 				Bool_t IsPythiaCC_gen = kFALSE;
@@ -1920,14 +2344,14 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 						
 		
 			
-			
+			/*
 			if(IsMB_gen)fNevent2->Fill(0);
 			if(IsPythiaCC_gen)fNevent2->Fill(1);
 			if(IsPythiaBB_gen)fNevent2->Fill(2);
 			if(IsPythiaB_gen)fNevent2->Fill(3);
 			if(IsJpsi2ee_gen)fNevent2->Fill(4);
 			if(IsB2JPsi2ee_gen)fNevent2->Fill(5);
-			 
+            */
 			
 			
 			
@@ -1952,15 +2376,16 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax)
 				{
 					//check pT distribution of each MC generator
+                    /*
                     if(IsMB_gen)fTracksMCPt[0]->Fill(fMCparticle->Pt());
                     if(IsPythiaCC_gen)fTracksMCPt[1]->Fill(fMCparticle->Pt());
                     if(IsPythiaBB_gen)fTracksMCPt[2]->Fill(fMCparticle->Pt());
                     if(IsPythiaB_gen)fTracksMCPt[3]->Fill(fMCparticle->Pt());
                     if(IsJpsi2ee_gen)fTracksMCPt[4]->Fill(fMCparticle->Pt());
                     if(IsB2JPsi2ee_gen)fTracksMCPt[5]->Fill(fMCparticle->Pt());
+                    */
                     
-                    
-                    fPDG_values->Fill(fMCparticle->GetPdgCode());
+                   
                     
                     //if(fMCparticle->Charge()==0) printf("pdg code is %d\n",fMCparticle->GetPdgCode());
                     //Take all J/psi generated
@@ -1982,12 +2407,15 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                             if(fMCparticle->GetMother()<=0)fPtMCparticleAll_trueJPsi_pT_weight_prompt->Fill(fMCparticle->Pt(), weight);//no mother (prompt)
                             
                             //check J/psi pT distribution of each generator
+                            /*
                             if(IsMB_gen)fTracksMCPt[6]->Fill(fMCparticle->Pt());
                             if(IsPythiaCC_gen)fTracksMCPt[7]->Fill(fMCparticle->Pt());
                             if(IsPythiaBB_gen)fTracksMCPt[8]->Fill(fMCparticle->Pt());
                             if(IsPythiaB_gen)fTracksMCPt[9]->Fill(fMCparticle->Pt());
                             if(IsJpsi2ee_gen)fTracksMCPt[10]->Fill(fMCparticle->Pt());
                             if(IsB2JPsi2ee_gen)fTracksMCPt[11]->Fill(fMCparticle->Pt());
+                             */
+                            
                         }
                    // }
      
@@ -2032,7 +2460,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                             fPtMCparticleAll_particles->Fill(fMCparticle->Pt());
                             
 								//
-							
+							/*
 							if(MotherFound)
 							{
 								if(fIsHFE1){
@@ -2044,6 +2472,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 
 								} //denominator for total efficiency and tracking
 							}
+                            */
+                            
 						}
 					}
 				}//eta cut
@@ -2098,15 +2528,14 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     if(fFill_MSparse)fSparseMulti->Fill(fvalueMulti);    // multiplicity from tracklets
     
     // Multiplicity histos WITH correctionS
-    fVtxZ_V0->Fill(fZvtx, fV0Mult_corr2);
-    fVtxZ_SPD->Fill(fZvtx, fSPDMult_corr);
-    fV0_SPD->Fill(fV0Mult_corr2,fSPDMult_corr);
     
-    
-    
-    fV0_nch->Fill(Nch, fV0Mult_corr2);
-    fSPD_nch->Fill(Nch,fSPDMult_corr);
-    
+    if(fMultiAnalysis){
+        fVtxZ_V0->Fill(fZvtx, fV0Mult_corr2);
+        fVtxZ_SPD->Fill(fZvtx, fSPDMult_corr);
+        fV0_SPD->Fill(fV0Mult_corr2,fSPDMult_corr);
+        fV0_nch->Fill(Nch, fV0Mult_corr2);
+        fSPD_nch->Fill(Nch,fSPDMult_corr);
+    }
 	
 //______________________________________________________________________
 	
@@ -2141,6 +2570,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     Bool_t hasCls_aboveEG2=kFALSE;
 	
 	AliVCluster *clust = 0x0;
+    
+    //SM
+    AliEMCALGeometry *fGeom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+    
+    Int_t supermoduleID = -1;
+    Bool_t isEMCAL(kFALSE);
 	
 	if(!fUseTender){
 		if(fIsAOD){
@@ -2154,8 +2589,27 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				{
                     
                    
+                    Double_t Cls_time = clust->GetTOF();
+                    Double_t Cls_time_ns = Cls_time*1e9;
                     
-					fECluster_pure->Fill(clust->E());
+                    //remove exotic and cut on cluster time (only for data!)
+                    if(!fIsMC && fIs_NewClustersCut){
+                        if(Cls_time_ns <-20 || Cls_time_ns > 15){
+                            continue;
+                        }
+                        if((clust->GetIsExotic())){
+                            continue;
+                        }
+                    }
+                    
+                    
+                    fECluster_pure->Fill(clust->E());
+                    
+                    if(Cls_time_ns >=-20 && Cls_time_ns <= 15){
+                        if(!(clust->GetIsExotic())){
+                            
+                        }
+                    }
                     
                     if((clust->E())>=5.0) hasCls_aboveEG2=kTRUE;
                        
@@ -2167,21 +2621,36 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 					TVector3 vpos(pos[0],pos[1],pos[2]);
 					Double_t cphi = vpos.Phi();
 					Double_t ceta = vpos.Eta();
-					
-					
-
+                    
+                    
+                    
+                    isEMCAL = fGeom->SuperModuleNumberFromEtaPhi(ceta, cphi, supermoduleID);
+                    
+                   // printf("eta = %f, phi = %f, supermoduleID = %d \n", ceta, cphi, supermoduleID);
 					
 					///from emcal QA task
 					if(cphi < 0) cphi = cphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
 															  // if(cphi > 1.39 && cphi < 3.265) ; //EMCAL : 80 < phi < 187
 															  // if(cphi > 4.53 && cphi < 5.708) ; //DCAL  : 260 < phi < 327
                     
-                    fEtaPhi_both->Fill(cphi,ceta);
+                    
+                    
+                    Int_t supermoduleID = -1;
+                    Bool_t isEMCAL(kFALSE);
+                    isEMCAL = fGeom->SuperModuleNumberFromEtaPhi(ceta, cphi, supermoduleID);
+                    
+                    //printf("eta = %f, phi = %f, supermoduleID = %d \n", ceta, cphi, supermoduleID);
+                    
+                    
+                    
+                    if(!fIs_sys)fEtaPhi_both->Fill(cphi,ceta);
 
 					//emcal
 					if(cphi > 1.39 && cphi < 3.265){
-						fEtaPhi_emcal->Fill(cphi,ceta);
-						fECluster_pure_emcal->Fill(clust->E());
+                        if(!fIs_sys){
+                            fEtaPhi_emcal->Fill(cphi,ceta);
+                            fECluster_pure_emcal->Fill(clust->E());
+                        }
                         
                          if(fMultiAnalysis){
                              if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fECluster_pure_emcal_SPD1->Fill(clust->E());
@@ -2200,10 +2669,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 					}
 					
 					//dcal
-					if(cphi > 4.53 && cphi < 5.708){
-						fEtaPhi_dcal->Fill(cphi,ceta);
-						fECluster_pure_dcal->Fill(clust->E());
-					}
+                    if(!fIs_sys){
+                        if(cphi > 4.53 && cphi < 5.708){
+                            fEtaPhi_dcal->Fill(cphi,ceta);
+                            fECluster_pure_dcal->Fill(clust->E());
+                        }
+                    }
 	
 				}
 		
@@ -2242,7 +2713,22 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			}
 			if(clust && clust->IsEMCAL())
 			{
-				fECluster_pure->Fill(clust->E());
+                
+                Double_t Cls_time = clust->GetTOF();
+                Double_t Cls_time_ns = Cls_time*1e9;
+                
+                //remove exotic and cut on cluster time (only for data!)
+                if(!fIsMC && fIs_NewClustersCut){
+                    if(Cls_time_ns <-20 || Cls_time_ns > 15){
+                        continue;
+                    }
+                    if((clust->GetIsExotic())){
+                        continue;
+                    }
+                }
+                fECluster_pure->Fill(clust->E());
+                
+                
                 
                 ClsNo_emcal++;
                 
@@ -2258,25 +2744,33 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				Double_t cphi = vpos.Phi();
 				Double_t ceta = vpos.Eta();
                 
+                
+                isEMCAL = fGeom->SuperModuleNumberFromEtaPhi(ceta, cphi, supermoduleID);
+                
+               // printf("eta = %f, phi = %f, supermoduleID = %d \n", ceta, cphi, supermoduleID);
+                
                 ///from emcal QA task
                 if(cphi < 0) cphi = cphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
                 // if(cphi > 1.39 && cphi < 3.265) ; //EMCAL : 80 < phi < 187
                 // if(cphi > 4.53 && cphi < 5.708) ; //DCAL  : 260 < phi < 327
 				
-				fEtaPhi_both->Fill(cphi,ceta);
+                
+                
+                
+                if(!fIs_sys){
+                    fEtaPhi_both->Fill(cphi,ceta);
 				
-				//emcal
-				if(cphi<3.9){
-					fEtaPhi_emcal->Fill(cphi,ceta);
-                    fECluster_pure_emcal->Fill(clust->E());
-                    
-				}
-				
-				//dcal
-				if(cphi>=3.9){
-					fEtaPhi_dcal->Fill(cphi,ceta);
-					fECluster_pure_dcal->Fill(clust->E());
-				}
+                    //emcal
+                    if(cphi<3.9){
+                        fEtaPhi_emcal->Fill(cphi,ceta);
+                        fECluster_pure_emcal->Fill(clust->E());
+                    }
+                    //dcal
+                    if(cphi>=3.9){
+                        fEtaPhi_dcal->Fill(cphi,ceta);
+                        fECluster_pure_dcal->Fill(clust->E());
+                    }
+                }
                 
                 //emcal+dcal
                  if(fMultiAnalysis){
@@ -2300,21 +2794,21 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         fNClusters_pure->Fill(ClsNo_emcal);
 	}
    //all cases
-    fV0->Fill(fV0Mult_corr2);
-    fSPD->Fill(fSPDMult_corr);
-    
-    //cases with particle above trigger threshold (EG1)
-    if(hasCls_aboveEG1){
-        fV01->Fill(fV0Mult_corr2);
-        fSPD1->Fill(fSPDMult_corr);
+    if(fMultiAnalysis){
+        
+        fV0->Fill(fV0Mult_corr2);
+        fSPD->Fill(fSPDMult_corr);
+        //cases with particle above trigger threshold (EG1)
+        if(hasCls_aboveEG1){
+            fV01->Fill(fV0Mult_corr2);
+            fSPD1->Fill(fSPDMult_corr);
+        }
+        //cases with particle above trigger threshold (EG2)
+        if(hasCls_aboveEG2){
+            fV02->Fill(fV0Mult_corr2);
+            fSPD2->Fill(fSPDMult_corr);
+        }
     }
-    
-    //cases with particle above trigger threshold (EG2)
-    if(hasCls_aboveEG2){
-        fV02->Fill(fV0Mult_corr2);
-        fSPD2->Fill(fSPDMult_corr);
-    }
-    
     
     
     if(fSelect_trigger_events1 && hasCls_aboveEG1==kFALSE){
@@ -2357,7 +2851,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		if(eta > fEtaCutMax || eta < fEtaCutMin) continue;
 		
 		
-		
+		Double_t fTPCnSigma_old = -999;
 		Double_t fTPCnSigma = -999;
 		Double_t fTPCnSigma_pion = -999;
 		Double_t fTPCnSigma_proton = -999;
@@ -2384,21 +2878,30 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		fP = TMath::Sqrt((track->Pt())*(track->Pt()) + (track->Pz())*(track->Pz()));
 		
 		fTPCsignal = track->GetTPCsignal();
-		fTPCnSigma = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+		fTPCnSigma_old = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 		fTPCnSigma_pion = fPidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
 		fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 		fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+        
+        //Apply TPC calibration here!
+        if(!fIs_sys)fTPCnsigma_p_beforeCalibration->Fill(fP,fTPCnSigma_old);
+        
+        if(fIs_TPC_calibration) fTPCnSigma = GetTPCCalibration(fAOD->GetRunNumber(), fTPCnSigma_old);
+        if(!fIs_TPC_calibration) fTPCnSigma = fTPCnSigma_old;
+        
+        if(!fIs_sys)fTPCnsigma_p_afterCalibration->Fill(fP,fTPCnSigma);
         
         //TOF
         fTOFsignal = track->GetTOFsignal();
         fTOFnSigma = fPidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
 		
-
-        fTPC_p[0]->Fill(fP,fTPCsignal);
-        fTPCnsigma_p[0]->Fill(fP,fTPCnSigma);
+        if(!fIs_sys){
+            fTPC_p[0]->Fill(fP,fTPCsignal);
+            fTPCnsigma_p[0]->Fill(fP,fTPCnSigma);
         
-        fTOF_p[0]->Fill(fP,fTOFsignal);
-        fTOFnsigma_p[0]->Fill(fP,fTOFnSigma);
+            fTOF_p[0]->Fill(fP,fTOFsignal);
+            fTOFnsigma_p[0]->Fill(fP,fTOFnSigma);
+        }
         
         if(track->GetEMCALcluster()>0)
         {
@@ -2422,14 +2925,14 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
             if(fClus->IsEMCAL())
             {
 				
-				fdEta_dPhi[0]->Fill(fClus->GetTrackDx(), fClus->GetTrackDz());                
+				if(!fIs_sys)fdEta_dPhi[0]->Fill(fClus->GetTrackDx(), fClus->GetTrackDz());
 				if(TMath::Abs(fClus->GetTrackDx())<=0.05 && TMath::Abs(fClus->GetTrackDz())<=0.05)
                 {
-                    fEoverP_pt[0]->Fill(fPt,(fClus->E() / fP));
+                    if(!fIs_sys)fEoverP_pt[0]->Fill(fPt,(fClus->E() / fP));
                     
                     Float_t Energy	= fClus->E();
                     fECluster[0]->Fill(Energy);
-					fTPCnsigma_EoverP[0]->Fill(fTPCnSigma, (fClus->E() / fP));
+					if(!fIs_sys)fTPCnsigma_EoverP[0]->Fill(fTPCnSigma, (fClus->E() / fP));
 					
 					
 					//======================================// for Eta Phi distribution
@@ -2443,16 +2946,17 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 						// if(cphi > 1.39 && cphi < 3.265) ; //EMCAL : 80 < phi < 187
 						// if(cphi > 4.53 && cphi < 5.708) ; //DCAL  : 260 < phi < 327
 					
-					
-					//emcal
-					if(cphi > 1.39 && cphi < 3.265){
-						fECluster_emcal[0]->Fill(fClus->E());
-					}
+                    if(!fIs_sys){
+                        //emcal
+                        if(cphi > 1.39 && cphi < 3.265){
+                            fECluster_emcal[0]->Fill(fClus->E());
+                        }
 					
                     //dcal
-					if(cphi > 4.53 && cphi < 5.708){
-						fECluster_dcal[0]->Fill(fClus->E());
-					}
+                        if(cphi > 4.53 && cphi < 5.708){
+                            fECluster_dcal[0]->Fill(fClus->E());
+                        }
+                    }
 					//======================================
  
                 }
@@ -2460,7 +2964,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         }
         
        // fVtxZ[0]->Fill(fZvtx);
-		fTracksPt[0]->Fill(fPt);
+		if(!fIs_sys)fTracksPt[0]->Fill(fPt);
 		
 		
 //=======================================================================
@@ -2475,16 +2979,20 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			//if(atrack->GetTPCNcls() < fTPCncls) continue;
             
             //TPC N crossedRows
+            fhTPCCrossedRows_before->Fill(atrack->GetTPCCrossedRows());
             if(atrack->GetTPCCrossedRows() < fTPCnCrossedRows) continue;
             //if(RatioTPCclusters < fRatioCrossedRowOverFindable) return 0;
             //if(nclusN< fTPCNclusPID) return 0 ;
+            fhTPCCrossedRows_after->Fill(atrack->GetTPCCrossedRows());
             
             
-			fTracksQAPt[1]->Fill(fPt);
+			if(!fIs_sys)fTracksQAPt[1]->Fill(fPt);
+            
             if(fTPCandITSrefit){
                 if((!(atrack->GetStatus()&AliESDtrack::kITSrefit))|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit))) continue;
             }
-			fTracksQAPt[2]->Fill(fPt);
+			if(!fIs_sys)fTracksQAPt[2]->Fill(fPt);
+            
             //kAny
             if(fITSpixel==1){
                 if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
@@ -2497,25 +3005,31 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
             if(fITSpixel==3){
                 if(!(atrack->HasPointOnITSLayer(0))) continue;
             }
-			fTracksQAPt[3]->Fill(fPt);
+			if(!fIs_sys)fTracksQAPt[3]->Fill(fPt);
             
             //ITS Ncls
+            fhITSNcls_before->Fill(atrack->GetITSNcls());
             if((atrack->GetITSNcls()) < fITSncls) continue;
+            fhITSNcls_after->Fill(atrack->GetITSNcls());
             
-            fTracksQAPt[4]->Fill(fPt);
+            if(!fIs_sys)fTracksQAPt[4]->Fill(fPt);
 			
 			//DCA cut
 			Double_t d0z0[2], cov[3];
 			AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
             if(atrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0, cov)){
+                fhDCAxy_before->Fill(TMath::Abs(d0z0[0]));
+                fhDCAz_before->Fill(TMath::Abs(d0z0[1]));
                 if(TMath::Abs(d0z0[0]) > fDCAxyCut || TMath::Abs(d0z0[1]) > fDCAzCut) continue;
+                fhDCAxy_after->Fill(TMath::Abs(d0z0[0]));
+                fhDCAz_after->Fill(TMath::Abs(d0z0[1]));
                 
             }
-			fTracksQAPt[5]->Fill(fPt);
+			if(!fIs_sys)fTracksQAPt[5]->Fill(fPt);
 			
             //Pt cut
 			if(fPt<fPtCutMainEle) continue;
-			fTracksQAPt[6]->Fill(fPt);
+			if(!fIs_sys)fTracksQAPt[6]->Fill(fPt);
 			
 			//reject kink mother
             if(fRejectKinkMother){
@@ -2531,27 +3045,31 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                 if(!kinkmotherpass) continue;
             }
             
-			fTracksQAPt[7]->Fill(fPt);
+			if(!fIs_sys)fTracksQAPt[7]->Fill(fPt);
 			
             //chi2 per cluster
-        
-           if(((track->GetTPCchi2())/(atrack->GetTPCNcls())) > fTPCchi2){
+            fhTPCchi2overNcls_before->Fill((track->GetTPCchi2())/(atrack->GetTPCNcls()));
+            if(((track->GetTPCchi2())/(atrack->GetTPCNcls())) > fTPCchi2){
                 continue;
             }
-            fTracksQAPt[8]->Fill(fPt);
+            fhTPCchi2overNcls_after->Fill((track->GetTPCchi2())/(atrack->GetTPCNcls()));
+            if(!fIs_sys)fTracksQAPt[8]->Fill(fPt);
             
             //ITS Chi2
+            fhITSchi2overNcls_before->Fill((atrack->GetITSchi2())/(atrack->GetITSNcls()));
             if(((atrack->GetITSchi2())/(atrack->GetITSNcls())) > fITSchi2){
                 continue;
             }
+            fhITSchi2overNcls_after->Fill((atrack->GetITSchi2())/(atrack->GetITSNcls()));
 				
-            fTracksQAPt[9]->Fill(fPt);
+            if(!fIs_sys)fTracksQAPt[9]->Fill(fPt);
             
+            fh_pt_before->Fill(fPt);
             if(fAODGlobalTracks){
                 if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
             }
-            fTracksQAPt[10]->Fill(fPt);
-            
+            if(!fIs_sys)fTracksQAPt[10]->Fill(fPt);
+            fh_pt_after->Fill(fPt);
             
             
 
@@ -2564,16 +3082,16 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 //=======================================================================
 // QA plots after track selection
 //=======================================================================
-
-		fTracksPt[1]->Fill(fPt);
+        if(!fIs_sys){
+            fTracksPt[1]->Fill(fPt);
         
-		fTPC_p[1]->Fill(fP,fTPCsignal);
-		fTPCnsigma_p[1]->Fill(fP,fTPCnSigma);
+            fTPC_p[1]->Fill(fP,fTPCsignal);
+            fTPCnsigma_p[1]->Fill(fP,fTPCnSigma);
         
-        fTOF_p[1]->Fill(fP,fTOFsignal);
-        fTOFnsigma_p[1]->Fill(fP,fTOFnSigma);
+            fTOF_p[1]->Fill(fP,fTOFsignal);
+            fTOFnsigma_p[1]->Fill(fP,fTOFnSigma);
         
-        
+        }
         
        // printf("Track: %d, p: %f, pt: %f, TPCnsigma: %f, eta: %f, phi: %f \n", iTracks, fP,track->Pt(),fTPCnSigma, track->Eta(), track->Phi());
         
@@ -2584,6 +3102,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
             fvalueElectronTPC[2] = fTPCnSigma;
             fvalueElectronTPC[3] = track->Eta();
             fvalueElectronTPC[4] = track->Phi();
+            fvalueElectronTPC[5] = fTPCnSigma_old;
             
             if(fFill_ESparseTPC)fSparseElectronTPC->Fill(fvalueElectronTPC);
         }
@@ -2616,6 +3135,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		 
                    if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443)){
 			    	 fPtMCparticleReco_e_from_JPsi->Fill(track->Pt()); //reconstructed pT
+                       
+                     //to check trigger efficiency
+                      if(feg1 || fdg1)fPtMCparticleReco_e_from_JPsi_eg1->Fill(track->Pt()); //reconstructed pT
+                      if(feg2 || fdg2)fPtMCparticleReco_e_from_JPsi_eg2->Fill(track->Pt()); //reconstructed pT
                    }
                    
                    //numerator tracking efficiency using all electrons
@@ -2643,10 +3166,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 
 		if(track->GetEMCALcluster()>0)
 		{
-				
-            
-            
-			
+
 			if(!fUseTender) fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2669,21 +3189,35 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			
 			if(fClus->IsEMCAL())
 			{
-				fdEta_dPhi[1]->Fill(fClus->GetTrackDx(), fClus->GetTrackDz()); 
+                
+                Double_t Cls_time = fClus->GetTOF();
+                Double_t Cls_time_ns = Cls_time*1e9;
+                
+                //remove exotic and cut on cluster time (only for data!)
+                if(!fIsMC && fIs_NewClustersCut){
+                    if(Cls_time_ns <-20 || Cls_time_ns > 15){
+                        continue;
+                    }
+                    if((fClus->GetIsExotic())){
+                        continue;
+                    }
+                }
+                
+ 
+				if(!fIs_sys)fdEta_dPhi[1]->Fill(fClus->GetTrackDx(), fClus->GetTrackDz());
 				//if(TMath::Abs(fClus->GetTrackDx())<=0.05 && TMath::Abs(fClus->GetTrackDz())<=0.05)
 			  //{
-			      fEoverP_pt[1]->Fill(fPt,(fClus->E() / fP));
+			      if(!fIs_sys)fEoverP_pt[1]->Fill(fPt,(fClus->E() / fP));
                 
-                
-				   
+         
 				  Float_t Energy	= fClus->E();
 				  fECluster[1]->Fill(Energy);
-                  fTracksQAPt[0]->Fill(fPt);
+                  if(!fIs_sys)fTracksQAPt[0]->Fill(fPt);
                 
                 
                 //to check how many tracks matches the cluster
-                fEoverP_ntracks_matched->Fill(fClus->E()/fP, fClus->GetNTracksMatched());
-                fEoverP_ncells->Fill(fClus->E()/fP, fClus->GetNCells());
+                if(!fIs_sys)fEoverP_ntracks_matched->Fill(fClus->E()/fP, fClus->GetNTracksMatched());
+                if(!fIs_sys)fEoverP_ncells->Fill(fClus->E()/fP, fClus->GetNCells());
                 
                 
                 
@@ -2696,19 +3230,31 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                     }
                 }
                 
-                //TOF signal for tracks matched to emcal
-                fTOF_p[2]->Fill(fP,fTOFsignal);
-                fTOFnsigma_p[2]->Fill(fP,fTOFnSigma);
                 
-				  fTPCnsigma_EoverP[1]->Fill(fTPCnSigma, (fClus->E() / fP));
+                if(!fIs_sys){
+                    //TOF signal for tracks matched to emcal
+                    fTOF_p[2]->Fill(fP,fTOFsignal);
+                    fTOFnsigma_p[2]->Fill(fP,fTOFnSigma);
+                
+				    fTPCnsigma_EoverP[1]->Fill(fTPCnSigma, (fClus->E() / fP));
 				  
-				  fNClusters[1]->Fill(ClsNo);
+				    fNClusters[1]->Fill(ClsNo);
+                }
 				  
                 //======================================// for Eta Phi distribution
 				  fClus->GetPosition(pos1);
 				  TVector3 vpos1(pos1[0],pos1[1],pos1[2]);
 				  Double_t cphi = vpos1.Phi();
 				  Double_t ceta = vpos1.Eta();
+                
+                
+                  Int_t supermoduleID = -1;
+                  Bool_t isEMCAL(kFALSE);
+                  isEMCAL = fGeom->SuperModuleNumberFromEtaPhi(ceta, cphi, supermoduleID);
+                
+                 // printf("eta = %f, phi = %f, supermoduleID = %d \n", ceta, cphi, supermoduleID);
+                
+                
 		
 				//======================================
 				///from emcal QA task
@@ -2716,7 +3262,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 															// if(cphi > 1.39 && cphi < 3.265) ; //EMCAL : 80 < phi < 187
 															// if(cphi > 4.53 && cphi < 5.708) ; //DCAL  : 260 < phi < 327
 				  
-               
+               if(!fIs_sys){
                 //emcal
 				  if(cphi > 1.39 && cphi < 3.265){
 					  fECluster_emcal[1]->Fill(fClus->E());
@@ -2728,9 +3274,115 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 					  fECluster_dcal[1]->Fill(fClus->E());
                      // fIsTrack1Dcal=kTRUE;
 				  }
-                
+               }
                 fIsTrack1Emcal=kTRUE;
-			  
+                
+                
+                //only electrons after TPC eID
+                // if(fTPCnSigma >= fTPCnsigmaCutMin && fTPCnSigma <= fTPCnsigmaCutMax){
+                      
+                //instead of TPCnsigma, let's use true e from MC, to avoid hadron contamination!!!
+                if(fIsMC)
+                {
+                    if(fIsAOD)
+                    {
+                        fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+                        
+                        if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
+                        {
+                            
+                            if(fMCparticle->GetMother()>0){
+                                
+                                fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                                if(fMCparticleMother->GetMother()>0){
+                                    fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                                }
+                                
+                                if(fMCparticle->IsPhysicalPrimary())
+                                {
+                                    if(TMath::Abs(fMCparticle->GetPdgCode())==11){
+                      
+                      
+                                        //checking correlation between energy and pT
+                                        fHist_energy_pT[0]->Fill(fClus->E(), track->Pt());
+                                        if(feg1)fHist_energy_pT[1]->Fill(fClus->E(), track->Pt());
+                                        if(feg2)fHist_energy_pT[2]->Fill(fClus->E(), track->Pt());
+                                        if(fdg1)fHist_energy_pT[3]->Fill(fClus->E(), track->Pt());
+                                        if(fdg2)fHist_energy_pT[4]->Fill(fClus->E(), track->Pt());
+                                        if(feg1 || fdg1)fHist_energy_pT[5]->Fill(fClus->E(), track->Pt());
+                                        if(feg2 || fdg2)fHist_energy_pT[6]->Fill(fClus->E(), track->Pt());
+                
+                                        //to check trigger efficiency using Energy
+                                        fECluster_mb->Fill(fClus->E());
+                                        if(feg1)fECluster_eg1->Fill(fClus->E());
+                                        if(feg2)fECluster_eg2->Fill(fClus->E());
+                      
+                                        if(fdg1)fECluster_dg1->Fill(fClus->E());
+                                        if(fdg2)fECluster_dg2->Fill(fClus->E());
+                
+                                        //to check trigger efficiency using Energy for each super module
+                                        fECluster_mb_SM->Fill(supermoduleID,fClus->E());
+                                        if(feg1)fECluster_eg1_SM->Fill(supermoduleID,fClus->E());
+                                        if(feg2)fECluster_eg2_SM->Fill(supermoduleID,fClus->E());
+                      
+                                        if(fdg1)fECluster_dg1_SM->Fill(supermoduleID,fClus->E());
+                                        if(fdg2)fECluster_dg2_SM->Fill(supermoduleID,fClus->E());
+                      
+                                        //emcal&dcal
+                                        if(feg1 || fdg1)fECluster_deg1_SM->Fill(supermoduleID,fClus->E());
+                                        if(feg2 || fdg2)fECluster_deg2_SM->Fill(supermoduleID,fClus->E());
+                
+                                        //not true e from true J/psi, track is on emcal necessarily
+                                        fPt_mb_SM->Fill(supermoduleID,track->Pt());//MB
+                                        if(feg1)fPt_eg1_SM->Fill(supermoduleID,track->Pt());
+                                        if(feg2)fPt_eg2_SM->Fill(supermoduleID,track->Pt());
+                      
+                                        if(fdg1)fPt_dg1_SM->Fill(supermoduleID,track->Pt());
+                                        if(fdg2)fPt_dg2_SM->Fill(supermoduleID,track->Pt());
+                      
+                                        //emcal&dcal
+                                        if(feg1 || fdg1)fPt_deg1_SM->Fill(supermoduleID,track->Pt());
+                                        if(feg2 || fdg2)fPt_deg2_SM->Fill(supermoduleID,track->Pt());
+                
+                                        //checking ET
+                                        Double_t fvertex_vector[3]={fXvtx, fYvtx, fZvtx};
+                
+                
+                                        TLorentzVector cluster_vector;
+                                        fClus->GetMomentum(cluster_vector,fvertex_vector);
+                
+                                        //Getting Et
+                                        Float_t ET = cluster_vector.Pt();
+                                        //printf("Getting ET from TLorentzVector: Ex = %f, Ey = %f, Ez = %f,E_total = %f,  ET = %f\n", cluster_vector[0], cluster_vector[1], cluster_vector[2], cluster_vector[3],ET);
+                
+                                        //printf("Energy from fClus->E() = %f \n", fClus->E());
+                
+                                        //to check trigger efficiency using Energy
+                                        fECluster_ET_mb->Fill(ET);
+                                        if(feg1)fECluster_ET_eg1->Fill(ET);
+                                        if(feg2)fECluster_ET_eg2->Fill(ET);
+                      
+                                        if(fdg1)fECluster_ET_dg1->Fill(ET);
+                                        if(fdg2)fECluster_ET_dg2->Fill(ET);
+                
+                                        //to check trigger efficiency using Energy for each super module
+                                        fECluster_ET_mb_SM->Fill(supermoduleID,ET);
+                                        if(feg1)fECluster_ET_eg1_SM->Fill(supermoduleID,ET);
+                                        if(feg2)fECluster_ET_eg2_SM->Fill(supermoduleID,ET);
+                      
+                                        if(fdg1)fECluster_ET_dg1_SM->Fill(supermoduleID,ET);
+                                        if(fdg2)fECluster_ET_dg2_SM->Fill(supermoduleID,ET);
+                      
+                                        //emcal&dcal
+                                        if(feg1 || fdg1)fECluster_ET_deg1_SM->Fill(supermoduleID,ET);
+                                        if(feg2 || fdg2)fECluster_ET_deg2_SM->Fill(supermoduleID,ET);
+
+                                    }//change true electrons from MC
+                                }
+                            }
+                        }
+                    }
+                }
 			    //}
                 //EID THnsparse
 				
@@ -2741,6 +3393,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				fvalueElectron[4] = fClus->GetM02();
 				fvalueElectron[5] = fClus->E(); // to check rejection factor for electrons
                 fvalueElectron[6] = cphi; //to separate emcal and dcal
+                fvalueElectron[7] = fTPCnSigma_old; //to separate emcal and dcal
                 //fvalueElectron[7] = fV0Mult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
                // fvalueElectron[8] = fSPDMult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
 				
@@ -2804,7 +3457,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         
         //printf("Main leg: Track1 on Electron band with fPt=%f\n", fPt);
 
-	    fTracksQAPt[11]->Fill(fPt);
+	    if(!fIs_sys)fTracksQAPt[11]->Fill(fPt);
         
 //=======================================================================
 //numerator for TPC pid efficiency
@@ -2870,9 +3523,15 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                             {
                                 if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443)){
                                     fPtMCparticle_EMCal_TM_e_from_JPsi->Fill(track->Pt()); //reconstructed pT
+                                    
+                                    //to check trigger efficiency in emcl acceptance
+                                    if(feg1 || fdg1)fPtMCparticle_EMCal_TM_e_from_JPsi_eg1->Fill(track->Pt()); //reconstructed pT
+                                    if(feg2 || fdg2)fPtMCparticle_EMCal_TM_e_from_JPsi_eg2->Fill(track->Pt()); //reconstructed pT
+                                    
+                                    
                                 }
                                 
-                                //denominator TPCpid efficiency using all electrons
+                                
                                 if(TMath::Abs(fMCparticle->GetPdgCode())==11  && (TMath::Abs(fMCparticleMother->GetPdgCode())!=22) ){
                                     fPtMCparticle_EMCal_TM_electrons->Fill(track->Pt()); //reconstructed pT
                                 }
@@ -2890,10 +3549,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 //=======================================================================
 // QA plots after PID selection of first track
 //=======================================================================
-	  
-		fTracksPt[2]->Fill(fPt);
-		fTPC_p[2]->Fill(fP,fTPCsignal);
-		fTPCnsigma_p[2]->Fill(fP,fTPCnSigma);
+        if(!fIs_sys){
+            fTracksPt[2]->Fill(fPt);
+            fTPC_p[2]->Fill(fP,fTPCsignal);
+            fTPCnsigma_p[2]->Fill(fP,fTPCnSigma);
+        }
 		
         ///selecting second track on TPC for the invariant mass
         Float_t charge1		= track->Charge();
@@ -2922,7 +3582,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			    eta2 = track2->Eta();
 			    if(eta2 > fEtaCutMax || eta2 < fEtaCutMin) continue;
 
-			   fTracksPt[3]->Fill(fPt2);
+			   if(!fIs_sys) fTracksPt[3]->Fill(fPt2);
 			
 							
 				//=======================================================================
@@ -2997,7 +3657,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                 
             }
 			
-			fTracksPt[4]->Fill(fPt2);
+			if(!fIs_sys)fTracksPt[4]->Fill(fPt2);
 
 			 
 			 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3009,7 +3669,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                     
                     //printf("Second leg: Track2 on Electron band with fPt2=%f\n", fPt2);
 					
-					fTracksPt[5]->Fill(fPt2);
+					if(!fIs_sys)fTracksPt[5]->Fill(fPt2);
 					
 					Float_t charge2	= track2->Charge();
 					
@@ -3109,7 +3769,21 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                        
 						if(fClus2->IsEMCAL())
 						{
-							fTracksPt[7]->Fill(fPt2);
+                            
+                            Double_t Cls_time = fClus2->GetTOF();
+                            Double_t Cls_time_ns = Cls_time*1e9;
+                            //remove exotic and cut on cluster time (only for data!)
+                            if(!fIsMC && fIs_NewClustersCut){
+                                if(Cls_time_ns <-20 || Cls_time_ns > 15){
+                                    continue;
+                                }
+                                if((fClus2->GetIsExotic())){
+                                    continue;
+                                }
+                            }
+                            
+                            
+							if(!fIs_sys)fTracksPt[7]->Fill(fPt2);
 							fClus2->GetPosition(pos2);
 							TVector3 vpos2(pos2[0],pos2[1],pos2[2]);
 							Double_t cphi = vpos2.Phi();
@@ -3118,27 +3792,31 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 							if(cphi < 0) cphi = cphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
 																	  // if(cphi > 1.39 && cphi < 3.265) ; //EMCAL : 80 < phi < 187
 																	  // if(cphi > 4.53 && cphi < 5.708) ; //DCAL  : 260 < phi < 327
-							
-                            //emcal
-							if(cphi > 1.39 && cphi < 3.265){
-								fECluster_emcal[2]->Fill(fClus2->E());
-  							}
-                            //dcal
-							if(cphi > 4.53 && cphi < 5.708){
-								fECluster_dcal[2]->Fill(fClus2->E());
+							if(!fIs_sys){
+                                //emcal
+                                if(cphi > 1.39 && cphi < 3.265){
+                                    fECluster_emcal[2]->Fill(fClus2->E());
+                                }
+                                //dcal
+                                if(cphi > 4.53 && cphi < 5.708){
+                                    fECluster_dcal[2]->Fill(fClus2->E());
+                                }
                             }
+                            
                             fIsTrack2Emcal=kTRUE;
-						
-						}
+                        }
 					}
 					
 					//Filling the invariant mass spectrum
 					
 					if(fIsTrack1Emcal && (!fIsTrack2Emcal)){
+                        
 						
                         //tpc electrons but at least one leg with track-matching
-                        if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
-                        if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
+                        if(!fIs_sys){
+                            if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
+                            if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
+                        }
                         
 						  if((fClus->E() / fP) >=fEoverPCutMin && (fClus->E() / fP) <=fEoverPCutMax && (fClus->E()) >= fEnergyCut){
 							
@@ -3146,8 +3824,17 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                               if(charge1*charge2 <0){
                                 
                                   fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
+                                  
+                                  if(feg1 || fdg1)fHist_InvMass_pt_ULS_KF_eg1->Fill(pt_kf,imass);//invmass eg1
+                                  if(feg2 || fdg2)fHist_InvMass_pt_ULS_KF_eg2->Fill(pt_kf,imass);//invmass eg2
+                                  
+                                  
                                
                                  if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass, weight/weight2);//multi integrated with weight
+                                  
+                                 //correlation between leg1 and leg2
+                                  if(!fIs_sys)fHist_Correlation_leg1_emcal_leg2_not->Fill(fPt, fPt2);
+                                  
                               }
 							  if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                               
@@ -3185,10 +3872,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                 }
 							
 							//leg 1 on emcal
-							if(charge1*charge2 <0) fHist_InvMass_pt_ULS1->Fill(pt_kf,imass);
-							if(charge1*charge2 >0) fHist_InvMass_pt_LS1->Fill(pt_kf,imass);
+                              if(!fIs_sys){
+                                  if(charge1*charge2 <0) fHist_InvMass_pt_ULS1->Fill(pt_kf,imass);
+                                  if(charge1*charge2 >0) fHist_InvMass_pt_LS1->Fill(pt_kf,imass);
+                              }
 							
-							fTracksPt[8]->Fill(fPt2);
+							if(!fIs_sys)fTracksPt[8]->Fill(fPt2);
 							
 							
 							//===============================
@@ -3197,6 +3886,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 							{
 
 								//MC generators
+                                /*
 								if(IsPythiaCC_gen){
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_CC->Fill(pt_kf,imass);
 									if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF_CC->Fill(pt_kf,imass);
@@ -3209,15 +3899,17 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_B->Fill(pt_kf,imass);
 									if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF_B->Fill(pt_kf,imass);
 								}
+                                 */
 								if(IsJpsi2ee_gen){
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_Jpsi->Fill(pt_kf,imass);
 									if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF_Jpsi->Fill(pt_kf,imass);
 								}
+                                /*
 								if(IsB2JPsi2ee_gen){
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_BJpsi->Fill(pt_kf,imass);
 									if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF_BJpsi->Fill(pt_kf,imass);
 								}
-								
+								*/
 								
 								if(fIsAOD)
 								{
@@ -3264,6 +3956,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                                 fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother->Fill(track->Pt()); //reconstructed pT
                                                                 fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
                                                                 
+                                                                //to check trigger efficiency on J/psi pT
+                                                                if((fClus->E()) >= fEnergyCut){
+                                                                    if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
+                                                                    if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
+                                                                }
                                                                 //weights calculated based on J/Psi true MC pT, but applied on e+e- pair pt
                                                                 Double_t weight2 = CalculateWeight(fMCparticleMother->Pt());
                                                                 fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight->Fill(pt_kf, weight2);
@@ -3297,7 +3994,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 							
 							//===============================
 
-						}
+						}//emcal cuts
                       //}//close trigger for emcal
 						
 					}
@@ -3310,8 +4007,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                          // printf("The cuts are: %f , E/p < %f and E > %f\n",fEoverPCutMin, fEoverPCutMax, fEnergyCut);
                         
                         //tpc electrons but at least one leg with track-matching
-                        if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
-                        if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
+                        if(!fIs_sys){
+                            if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
+                            if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
+                        }
                         
                         
 						
@@ -3326,7 +4025,17 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                              if(charge1*charge2 <0){
                                  fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
+                                 
+                                 if(feg1 || fdg1)fHist_InvMass_pt_ULS_KF_eg1->Fill(pt_kf,imass);//invmass eg1
+                                 if(feg2 || fdg2)fHist_InvMass_pt_ULS_KF_eg2->Fill(pt_kf,imass);//invmass eg2
+                                 
+                                 
                                   if(fMultiAnalysis)fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
+                                 
+                                 //correlation between leg1 and leg2
+                                 if(!fIs_sys)fHist_Correlation_leg1_not_leg2_emcal->Fill(fPt, fPt2);
+                                 
+                                 
                              }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                              
@@ -3367,10 +4076,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                              
 							
 								//leg 2 on emcal
-							if(charge1*charge2 <0) fHist_InvMass_pt_ULS2->Fill(pt_kf,imass);
-							if(charge1*charge2 >0) fHist_InvMass_pt_LS2->Fill(pt_kf,imass);
+                             if(!fIs_sys){
+                                 if(charge1*charge2 <0) fHist_InvMass_pt_ULS2->Fill(pt_kf,imass);
+                                 if(charge1*charge2 >0) fHist_InvMass_pt_LS2->Fill(pt_kf,imass);
+                             }
 							
-							fTracksPt[9]->Fill(fPt2);
+							if(!fIs_sys)fTracksPt[9]->Fill(fPt2);
 							
 							
 							//===============================
@@ -3379,6 +4090,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 							{
 								
 								//MC generators
+                                /*
 								if(IsPythiaCC_gen){
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_CC->Fill(pt_kf,imass);
 									if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF_CC->Fill(pt_kf,imass);
@@ -3391,15 +4103,18 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_B->Fill(pt_kf,imass);
 									if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF_B->Fill(pt_kf,imass);
 								}
+                                 */
+                                
 								if(IsJpsi2ee_gen){
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_Jpsi->Fill(pt_kf,imass);
 									if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF_Jpsi->Fill(pt_kf,imass);
 								}
+                                /*
 								if(IsB2JPsi2ee_gen){
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_BJpsi->Fill(pt_kf,imass);
 									if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF_BJpsi->Fill(pt_kf,imass);
 								}
-
+                                */
 								
 								
 								
@@ -3448,6 +4163,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                                     fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother->Fill(track->Pt()); //reconstructed pT
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
                                                                     
+                                                                    //to check trigger efficiency on J/psi pT
+                                                                    if((fClus2->E()) >= fEnergyCut){
+                                                                        if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
+                                                                        if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
+                                                                    }
                                                                     //weights calculated based on J/Psi true MC pT, but applied on e+e- pair pt
                                                                     Double_t weight2 = CalculateWeight(fMCparticleMother->Pt());
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight->Fill(pt_kf, weight2);
@@ -3479,7 +4199,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 						
                             //===============================
 
-						 }
+						 }//emcal cuts
                       //}//close emcal trigger condition
 						
 					}
@@ -3495,9 +4215,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                        // printf("fClus2->E() =%f,   fP2= %f  \n",fClus2->E(), fP2);
                         
                         //tpc electrons but at least one leg with track-matching
-                        if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
-                        if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
-                        
+                        if(!fIs_sys){
+                            if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
+                            if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
+                        }
 						
 						if(((fClus->E() / fP) >=fEoverPCutMin && (fClus->E() / fP) <=fEoverPCutMax && (fClus->E()) >= fEnergyCut)||((fClus2->E()/fP2) >=fEoverPCutMin && (fClus2->E()/fP2) <=fEoverPCutMax && (fClus2->E()) >= fEnergyCut)){
 							
@@ -3517,7 +4238,15 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                             if(charge1*charge2 <0){
                                 fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
+                                
+                                if(feg1 || fdg1)fHist_InvMass_pt_ULS_KF_eg1->Fill(pt_kf,imass);//invmass eg1
+                                if(feg2 || fdg2)fHist_InvMass_pt_ULS_KF_eg2->Fill(pt_kf,imass);//invmass eg2
+                                
                                 if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
+                           
+                                //correlation between leg1 and leg2
+                                if(!fIs_sys) fHist_Correlation_leg1_emcal_leg2_emcal->Fill(fPt, fPt2);//not both above the threshold, at least one above the threshold
+                            
                             }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                             
@@ -3558,16 +4287,19 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                             
 							
 								//both legs on emcal
-							if(charge1*charge2 <0) fHist_InvMass_pt_ULSboth->Fill(pt_kf,imass);
-							if(charge1*charge2 >0) fHist_InvMass_pt_LSboth->Fill(pt_kf,imass);
+                            if(!fIs_sys){
+                                if(charge1*charge2 <0) fHist_InvMass_pt_ULSboth->Fill(pt_kf,imass);
+                                if(charge1*charge2 >0) fHist_InvMass_pt_LSboth->Fill(pt_kf,imass);
+                            }
 							
-							fTracksPt[10]->Fill(fPt2);
+							
+							if(!fIs_sys)fTracksPt[10]->Fill(fPt2);
 							
 								//===============================
 							
 							if(fIsMC)
 							{
-								
+								/*
 									//MC generators
 								if(IsPythiaCC_gen){
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_CC->Fill(pt_kf,imass);
@@ -3581,14 +4313,17 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_B->Fill(pt_kf,imass);
 									if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF_B->Fill(pt_kf,imass);
 								}
+                                */
 								if(IsJpsi2ee_gen){
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_Jpsi->Fill(pt_kf,imass);
 									if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF_Jpsi->Fill(pt_kf,imass);
 								}
+                                /*
 								if(IsB2JPsi2ee_gen){
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_BJpsi->Fill(pt_kf,imass);
 									if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF_BJpsi->Fill(pt_kf,imass);
-								}
+								}*/
+                                
 
 								
 								
@@ -3644,6 +4379,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                                     fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother->Fill(track->Pt()); //reconstructed pT
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
                                                                     
+                                                                    //to check trigger efficiency on J/psi pT
+                                                                    if((fClus->E()) >= fEnergyCut && (fClus2->E()) >= fEnergyCut){
+                                                                        if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
+                                                                        if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
+                                                                    }
                                                                     //weights calculated based on J/Psi true MC pT, but applied on e+e- pair pt
                                                                     Double_t weight2 = CalculateWeight(fMCparticleMother->Pt());
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight->Fill(pt_kf, weight2);
@@ -3685,7 +4425,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 						
 						//printf("In this case the inv mass is not filled \n");
 						
-						fTracksPt[11]->Fill(fPt2);
+						if(!fIs_sys)fTracksPt[11]->Fill(fPt2);
 
 					}
                     //at least one leg on EMCal, but not necessarily above the threshold
@@ -4346,6 +5086,83 @@ Double_t AliAnalysisTask_JPsi_EMCal::CalculateWeight(Double_t x)
     if(x>= 49.800 &&  x < 50.000 ) weight=0.000000;
     
     return weight;
+}
+//______________________________________________________________________________
+Double_t AliAnalysisTask_JPsi_EMCal::GetTPCCalibration(Int_t runNo, Double_t TPCnsigma0)
+{
+   
+    Double_t mean_shift=0.00;
+    Double_t sigma_norm=1.00;
+    
+    
+    if(runNo == 258454){//16k test
+        mean_shift = 0.2;
+        sigma_norm = 1;
+     
+    }
+    
+    if (runNo>271839 && runNo<273103){//17h
+        mean_shift = 0.08;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=273486 && runNo< 274442){//17i
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=274690 && runNo< 276508){//17k
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=276551 && runNo< 278729){//17l
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=278818 && runNo< 280140){//17m
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=280282 && runNo< 281961){//17o
+        mean_shift = 0.25;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=282504 && runNo< 282704){//17r
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    
+    //2018 periods
+    if (runNo>=286982 && runNo< 287977){//18f
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=288804 && runNo< 288806){//18h
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=289165 && runNo< 289201){//18k
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=289240 && runNo< 289971){//18l
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=293368 && runNo< 293898){//18o
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=294009 && runNo< 295232){//18p
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    
+    
+    //corrected TPCnsigma
+    Double_t TPCnsigma_corr = (TPCnsigma0 - mean_shift)/sigma_norm;
+    
+   
+    return TPCnsigma_corr;
+    
 }
 
 

@@ -45,11 +45,9 @@
 #include "AliOADBContainer.h"
 #include "AliVVertex.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerBase)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerBase)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   AliAnalysisTaskEmcal(),
@@ -252,6 +250,9 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     triggersel = dynamic_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->GetList()->FindObject(fNameTriggerSelectionContainer.Data()));
     if(!triggersel) {
       AliErrorStream() << "Trigger selection container requested but not found - not possible to select EMCAL triggers" << std::endl;
+      for(auto obj : *(fInputEvent->GetList())) {
+        std::cout << "Found " << obj->GetName() << std::endl;
+      }
       return;
     }
   }
@@ -723,7 +724,10 @@ bool AliAnalysisTaskEmcalTriggerBase::MatchTriggerFromPattern(EMCAL_STRINGVIEW p
 }
 
 bool AliAnalysisTaskEmcalTriggerBase::MatchTriggerFromContainer(EMCAL_STRINGVIEW pattern, const PWG::EMCAL::AliEmcalTriggerDecisionContainer *trgsel) const {
-  if(!trgsel) return false;
+  if(!trgsel){
+    AliErrorStream() << "Not found trigger selection container ..." << std::endl;
+    return false;
+  }
   std::string patternstring = pattern.data();
   if(pattern[0] == '=') patternstring = pattern.substr(1).data();
   std::vector<std::string> classes;
@@ -828,5 +832,3 @@ void AliAnalysisTaskEmcalTriggerBase::PrepareDownscaleFactorsFormOCDB(){
     }
   }
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

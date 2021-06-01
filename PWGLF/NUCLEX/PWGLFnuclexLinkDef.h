@@ -17,6 +17,9 @@
 /// * LambdaNN
 #pragma link C++ class AliAnalysisTaskLNNntuple+;
 #pragma link C++ class AliAnalysisTaskLNNv0Bkg+;
+#pragma link C++ class AliAnalysisTaskLambdaNNRun2+;
+#pragma link C++ class AliAnalysisTaskLambdaNNRun2::AnalysisV0+;
+#pragma link C++ class AliAnalysisTaskLambdaNNRun2::AnalysisEvent+;
 /// * Ps
 #pragma link C++ class AliAnalysisTaskPsEfficiency+;
 /// * dStar
@@ -95,6 +98,7 @@
 #pragma link C++ class AliAnalysisTaskS3ParticleYields+;
 #pragma link C++ class AliAnalysisTaskHe3EffTree+;
 #pragma link C++ class AliAnalysisCODEXS3task+;
+#pragma link C++ class AliAnalysisTaskTRDtriggerTracks+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
 #pragma link C++ class AliAnalysisTaskHypV0s+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;

@@ -1,7 +1,7 @@
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //            
-// AliAnalysisHFEppEMCalBeauty.cxx                               //
+// AliAnalysisHFEppEMCalBeauty.h                                 //
 // Author: Vivek Singh                                           //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
@@ -71,28 +71,17 @@ class AliAnalysisHFEppEMCalBeauty : public AliAnalysisTaskSE {
  public:
 
   enum EnhanceSigOrNot {kMB,kEnhance};
-  enum pi0etaType {kNoMother, kNoFeedDown, kNotIsPrimary, kLightMesons, kBeauty, kCharm};
+  enum pi0etaType {kNoMother, kNoFeedDown, kNotIsPrimary, kLightMesons, kBeauty, kCharm};//0,1,2,3,4,5
   enum ESourceType {kNoMotherE, kPi0NoFeedDown, kEtaNoFeedDown, kGPi0NoFeedDown, kGEtaNoFeedDown, kDirectGamma, kOthersE};//0,1,2,3,4,5,6
 
 
-  AliAnalysisHFEppEMCalBeauty() : AliAnalysisTaskSE(),
+AliAnalysisHFEppEMCalBeauty() : AliAnalysisTaskSE(),
 
-fIsAOD(kTRUE),
 fIsMC(kFALSE),
-
+fIsAOD(kTRUE),
 ftrigger(AliVEvent::kINT7),
-
- // events
-fAOD(0),
-fOutputList(0), 
-fHistEvent(0),
-
  // emcal correction
 fUseTender(kTRUE),
-fTenderClusterName("caloClusters"),
-fTenderTrackName("tracks"),
-fTracks_tender(0),
-fCaloClusters_tender(0),
 // flag for emcal dcal
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
@@ -101,6 +90,46 @@ fEMCEG1(kFALSE),
 fEMCEG2(kFALSE),
 fDCalDG1(kFALSE),
 fDCalDG2(kFALSE),
+
+fRecalIP(kTRUE),
+
+fEtarange(0.7),
+fTPCNCrRows(70),
+fRatioCrossedRowOverFindable(0.8),
+fITSNclus(3),
+fTPCNclusPID(60),
+fSPDBoth(kTRUE),
+fSPDAny(kFALSE),
+fSPDFirst(kFALSE),
+fDCAxyCut(1),
+fDCAzCut(2),
+fTPCnsigmin(-1),
+fTPCnsigmax(3),
+fCutEopEMin(0.9),
+fCutEopEMax(1.2),
+fM02Min(0.05),
+fM02Max1(0.9),
+fM02Max2(0.7),
+fM02Max3(0.5),
+
+fInvmassCut(0.14),
+fAssoTPCCluster(60),
+fAssoITSRefit(kTRUE),
+fAssopTMin(0.1),
+fAssoEtarange(0.9),
+fAssoTPCnsig(3.0),
+
+
+fTenderClusterName("caloClusters"),
+fTenderTrackName("tracks"),
+fTracks_tender(0),
+fCaloClusters_tender(0),
+
+ // events
+fAOD(0),
+fOutputList(0), 
+fHistEvent(0),
+fNentries(0),
 
 fHistVx(0),
 fHistVxwc(0),
@@ -117,7 +146,6 @@ EtaPhiAfTCATM(0),
 
 fHistEta(0),
 fHistPhi(0),
-fHistPt_TPC(0),
 fHistEtaPhi_TPC(0),
 EMCalEta_TPCpT(0),
 
@@ -126,7 +154,6 @@ fHistdcaxy(0),
 fHistdcaxywc(0),
 fHistdcaz(0),
 fHistdcazwc(0),
-fHisttpccls(0),
  //PID Cut
 fPID(0),   
 fPidResponse(0),
@@ -197,16 +224,6 @@ fNElecInEvt(0),
 fNEle(0),
 
 fTPCnSigma(-999.0),
-fTPCnSigmaMin(-1),
-fTPCnSigmaMax(3),
-
-fM02Min(0.05),
-fM02Max1(0.9),
-fM02Max2(0.7),
-fM20Min(0.0),
-fM20Max(2000),
-fEovPMin(0.9),
-fEovPMax(1.2),
 
 fTPCnSigmaHadMin(-10),
 fTPCnSigmaHadMax(-3.5),
@@ -214,7 +231,6 @@ fTPCnSigmaHadMax(-3.5),
 fInvmassULSPt(0),
 fInvmassLSPt(0),
 fCalculateNonHFEEffi(1),
-fInvmassCut(0.14),
 
 fULSElecPt(0),
 fLSElecPt(0),
@@ -315,22 +331,53 @@ fvalueElectron = new Double_t[6];
   void SetMCAnalysis(Bool_t isMC){fIsMC=isMC;}
   void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
 
-  Int_t ClassifyTrack(AliAODTrack* track,const AliVVertex* pVtx); 																									// track selection cuts
-
-  Bool_t  PassEIDCuts(AliAODTrack *track, AliAODCaloCluster *clust, Bool_t &Hadtrack);
-//-----------------getters----------------------------------------------------------------
-
   void SetTrigger(AliVEvent::EOfflineTriggerTypes trigger){ftrigger =trigger;}
 
+  void SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
+  void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
+  void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
 
-  Bool_t  				GetTenderSwitch() {return fUseTender;};
-  Bool_t                GetEMCalTriggerEG1() { return fEMCEG1; };
-  Bool_t                GetEMCalTriggerEG2() { return fEMCEG2; };
-  Bool_t                GetEMCalTriggerDG1() { return fDCalDG1; };
-  Bool_t                GetEMCalTriggerDG2() { return fDCalDG2; };
+  void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
+  void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
+  void SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
+  void SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
+
+  void SwitchRecalImpPar(Bool_t fSwitchRIP) {fRecalIP = fSwitchRIP;};
+
+  //----------Setter for Track and PID cuts
+ 
+  void SetEtaRange(Double_t Etarange){fEtarange=Etarange;}
+  void SetMinTPCCluster(Int_t TPCNCrRows){fTPCNCrRows=TPCNCrRows;}
+  void SetMinRatioCrossedRowOverFindable(Double_t RatioCrossedRowOverFindable){fRatioCrossedRowOverFindable=RatioCrossedRowOverFindable;}
+  void SetMinITSCluster(Int_t ITSNclus){fITSNclus=ITSNclus;}
+  void SetMinTPCClusterPID(Int_t TPCNclusPID){fTPCNclusPID=TPCNclusPID;}
+  void SetHitsOnSPDLayers(Bool_t SPDBoth,Bool_t SPDAny, Bool_t SPDFirst){fSPDBoth=SPDBoth; if(!SPDBoth)fSPDAny=SPDAny; if(!SPDBoth && !SPDAny)fSPDFirst=SPDFirst;}
+  void SetDCACut(Double_t DCAxyCut,Double_t DCAzCut){ fDCAxyCut=DCAxyCut; fDCAzCut=DCAzCut;}
+  void SetTPCnsigma(Double_t TPCnsigmin,Double_t TPCnsigmax){fTPCnsigmin=TPCnsigmin;  fTPCnsigmax=TPCnsigmax;}
+  void SetEopE(Double_t EopEMin,Double_t EopEMax){ fCutEopEMin=EopEMin; fCutEopEMax=EopEMax;}
+  void SetShowerShapeEM02(Double_t M02Min, Double_t M02Max1, Double_t M02Max2, Double_t M02Max3) {fM02Min = M02Min; fM02Max1 = M02Max1; fM02Max2 = M02Max2; fM02Max3 = M02Max3;};
+   
+  //------------Setters for Photonic Electron Selection Cuts
+  void SetInvMassCut(Double_t InvmassCut){fInvmassCut=InvmassCut;}
+  void SetAssoTPCclus(Int_t AssoTPCCluster){fAssoTPCCluster=AssoTPCCluster;}
+  void SetAssoITSrefit(Bool_t AssoITSRefit){fAssoITSRefit= AssoITSRefit;}
+  void SetAssopTMin(Double_t AssopTMin){fAssopTMin = AssopTMin;}
+  void SetAssoEtarange(Double_t AssoEtarange){fAssoEtarange=AssoEtarange;}
+  void SetAssoTPCnsig(Double_t AssoTPCnsig){fAssoTPCnsig=AssoTPCnsig;}
+
+//-----------------getters----------------------------------------------------------------
+
+  Bool_t     GetTenderSwitch()    {return fUseTender;};
+  Bool_t     GetEMCalTriggerEG1() { return fEMCEG1; };
+  Bool_t     GetEMCalTriggerEG2() { return fEMCEG2; };
+  Bool_t     GetEMCalTriggerDG1() { return fDCalDG1; };
+  Bool_t     GetEMCalTriggerDG2() { return fDCalDG2; };
+
+  Int_t ClassifyTrack(AliAODTrack* track,const AliVVertex* pVtx);                                                   // track selection cuts
+
+  Bool_t  PassEIDCuts(AliAODTrack *track, AliAODCaloCluster *clust, Bool_t &Hadtrack);
 
   void GetTrkClsEtaPhiDiff(AliAODTrack *t, AliAODCaloCluster *v, Double_t &phidiff, Double_t &etadiff);   //trk clus matching     
-
 
   Bool_t  GetNonHFEEffiDenom(AliAODTrack *track);
   Bool_t  IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromMB, Int_t &type, Int_t &iMom, Int_t &MomPDG, Double_t &MomPt);
@@ -345,84 +392,88 @@ fvalueElectron = new Double_t[6];
   void    GetPi0EtaWeight(THnSparse *SparseWeight);
   void    SelectPhotonicElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC);		
 
-
-  void    SetM02Cut(Double_t m02Min, Double_t m02Max1, Double_t m02Max2) {fM02Min = m02Min; fM02Max1 = m02Max1; fM02Max2 = m02Max2;};
-  void    SetM20Cut(Double_t m20Min, Double_t m20Max) {fM20Min = m20Min; fM20Max = m20Max;};
-  void    SetEovPCut(Double_t eovpMin, Double_t eovpMax) {fEovPMin = eovpMin; fEovPMax = eovpMax;};
-
-
-//-----------------setters----------------------------------------------------------------    
-
- 
-  
-  void SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
-  void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
-  void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
-
-  void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
-  void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
-  void SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
-  void SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
-
   void TrackConvRadius(AliAODTrack* track, Double_t &R);
+ 
+  void    RecalImpactParam(const AliAODTrack * const track, Double_t dz[2], Double_t covar[3]);
+  AliAODVertex*   RemoveDaughtersFromPrimaryVtx(const AliAODTrack * const track);
 
-//Getters
-    AliHFEpid *GetPID() const {return fPID;};
+  AliHFEpid *GetPID() const {return fPID;};
 //______________________________________________________________________
     
 
  private:
   
-
-  Bool_t        fIsAOD;         //!flag for AOD analysis
   Bool_t        fIsMC;
+  Bool_t        fIsAOD;         //!flag for AOD analysis
 
   AliVEvent::EOfflineTriggerTypes ftrigger;
 
-  AliAODEvent *fAOD;//! AOD object
-
-  AliHFEpid   *fPID;//! 
-  AliPIDResponse   *fPidResponse;//!pid response 
-    
-  TString fTenderClusterName;//
-  TString fTenderTrackName;//
-  TClonesArray* fTracks_tender;//Tender tracks
-  TClonesArray* fCaloClusters_tender;//Tender cluster      
-  
   Bool_t fUseTender;// switch to add tender
   Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
   Bool_t fFlagClsTypeDCAL;//switch to select DCAL c
 
-  Bool_t                fEMCEG1;//EMcal Threshold EG1
-  Bool_t                fEMCEG2;//EMcal Threshold SetReferenceMultiplicityEG2
-  Bool_t                fDCalDG1;//DCal Threshold DG1
-  Bool_t                fDCalDG2;//DCal Threshold DG2
+  Bool_t fEMCEG1;//EMcal Threshold EG1
+  Bool_t fEMCEG2;//EMcal Threshold SetReferenceMultiplicityEG2
+  Bool_t fDCalDG1;//DCal Threshold DG1
+  Bool_t fDCalDG2;//DCal Threshold DG2
+
+  Bool_t fRecalIP;// 
+
+  //------------Track and PID cut variables--------------
+  Double_t fEtarange; 
+  Int_t fTPCNCrRows; 
+  Double_t fRatioCrossedRowOverFindable; 
+  Int_t fITSNclus;  
+  Int_t fTPCNclusPID;  
+  Bool_t fSPDBoth;  
+  Bool_t fSPDAny;  
+  Bool_t fSPDFirst;  
+  Double_t fDCAxyCut;  
+  Double_t fDCAzCut;    
+
+  Double_t fTPCnSigma;//!
+  
+  Double_t fTPCnsigmin;  
+  Double_t fTPCnsigmax;  
+  Double_t fCutEopEMin;
+  Double_t fCutEopEMax;
+  Double_t fM02Min;//!
+  Double_t fM02Max1;//!
+  Double_t fM02Max2;//!
+  Double_t fM02Max3;//!
+  
+  Double_t fInvmassCut; //    invariant mass cut value
+  Int_t fAssoTPCCluster;  
+  Bool_t fAssoITSRefit;  
+  Double_t fAssopTMin;  
+  Double_t fAssoEtarange;  
+  Double_t fAssoTPCnsig;  
+  
+
+  TString fTenderClusterName;//
+  TString fTenderTrackName;//
+  TClonesArray* fTracks_tender;//Tender tracks
+  TClonesArray* fCaloClusters_tender;//Tender cluster    
+
+
 
   Bool_t GetNMCPartProduced();
   Bool_t FindMother(Int_t mcIndex);
   Bool_t IsHFelectronsMC(AliAODTrack *track);
-  
+
+ 
 
   TList       *fOutputList;//! Output list
+  AliAODEvent *fAOD;//! AOD object
 
-  Double_t            fTPCnSigma;//!
-  Double_t            fTPCnSigmaMin;//!
-  Double_t            fTPCnSigmaMax;//!
-
-  Double_t            fInvmassCut;//
-  
-  Double_t            fM02Min;//!
-  Double_t            fM02Max1;//!
-  Double_t            fM02Max2;//!
-  Double_t            fM20Min;//!
-  Double_t            fM20Max;//!
-  Double_t            fEovPMin;//!
-  Double_t            fEovPMax;//!
+  AliHFEpid   *fPID;//! 
+  AliPIDResponse   *fPidResponse;//!pid response 
 
   Double_t            fTPCnSigmaHadMin;//!
   Double_t            fTPCnSigmaHadMax;//!
 
   TH1F        *fHistEvent;//! 
+  TH1F        *fNentries;//! 
 
   TH1F        *fHistVx;//! 
   TH1F        *fHistVy;//! 
@@ -442,7 +493,6 @@ fvalueElectron = new Double_t[6];
 
   TH1F        *fHistEta;//! 
   TH1F        *fHistPhi;//!  
-  TH1F        *fHistPt_TPC;//! Pt spectrum of TPC tracks
   TH2F        *fHistEtaPhi_TPC;//! 
   TH1F        *EMCalEta_TPCpT;//!  
 
@@ -451,7 +501,7 @@ fvalueElectron = new Double_t[6];
   TH2F        *fHistdcaxywc;//! 
   TH2F        *fHistdcaz;//! 
   TH2F        *fHistdcazwc;//! 
-  TH1F        *fHisttpccls;//!
+
   
   TH2F  *fHistBethe;//! 
   TH2F  *fnSigmaVsP_TPC;//!

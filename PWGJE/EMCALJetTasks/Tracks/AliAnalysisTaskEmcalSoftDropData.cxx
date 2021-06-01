@@ -193,6 +193,13 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
   if(fUseNeutralConstituents && !clusters) {
     AliErrorStream() << "Cluster container not found, but neutral constituents requested" << std::endl; 
   }
+  // Get the energy definition: In case of charged jets no cluster container is available,
+  // therefore no EMCAL clusters, and the energy definition gets irrelevant. If c++17 would
+  // be allowed I would change it to std::optional as argument in all functions making use of
+  // of cluster container - this would be safe and explicit, but since we are sadly forced to be 
+  // compatible with stupid ancient ROOT5 this useless workaround setting a meaningless default 
+  // value has to be chosen.
+  auto energydef = clusters ? (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy() : AliVCluster::kHadCorr;
   auto tracks  = GetTrackContainer(0);
   if(fUseChargedConstituents &&  !tracks) {
     AliErrorStream() << "Track container not found, but charged constituent requested." << std::endl;
@@ -219,9 +226,9 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
       if(fUseDownscaleWeight) fHistos->FillTH2("hJetPtRawWeighted", icl, jet->Pt(), weight);
     }
     try {
-      FillJetQA(*jet, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
-      auto sdparams = MakeSoftdrop(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
-      auto splittings = IterativeDecluster(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
+      FillJetQA(*jet, energydef);
+      auto sdparams = MakeSoftdrop(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, energydef, fVertex, fDropMass0Jets);
+      auto splittings = IterativeDecluster(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, energydef, fVertex, fDropMass0Jets);
       bool untagged = sdparams.fZg < fZcut;
       AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << sdparams.fZg << std::endl;
       Double_t pointZg[3] = {sdparams.fZg, jet->Pt(), -1},
@@ -259,7 +266,7 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
       auto leadcluster = jet->GetLeadingCluster(clusters->GetArray());
       if(leadcluster){
         TLorentzVector ptvec;
-        leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+        leadcluster->GetMomentum(ptvec, fVertex, energydef);
         fHistos->FillTH2("hQAZnePt", jet->Pt(), jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
       }
     }
@@ -388,14 +395,14 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
 
   AliTrackContainer *tracks(nullptr);
   if((jettype == AliJetContainer::kChargedJet) || (jettype == AliJetContainer::kFullJet)){
-      tracks = datamaker->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+      tracks = datamaker->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
       std::cout << "Track container name: " << tracks->GetName() << std::endl;
       tracks->SetMinPt(0.15);
   }
   AliClusterContainer *clusters(nullptr);
   if((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)){
     std::cout << "Using full or neutral jets ..." << std::endl;
-    clusters = datamaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    clusters = datamaker->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
     std::cout << "Cluster container name: " << clusters->GetName() << std::endl;
     switch (energydef)
     {

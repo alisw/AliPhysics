@@ -26,11 +26,13 @@ fHypothesis(0),
 fMass(0.0),
 fMassTolerance(0.01),
 fMassToleranceVeto(0.01),
+fV0MassTolerance(0.01),
 fSwitch(0),
 fV0LowRadius(0),
 fV0HighRadius(0),
 fCascadeLowRadius(0),
 fCascadeHighRadius(0),
+fV0Life(1e20),
 fV0MinDCAVertex(0.3),
 fCascadeMinDCAVertex(0.3),
 fV0MaxDCAVertex(0.3),
@@ -67,11 +69,13 @@ fHypothesis(copy.fHypothesis),
 fMass(copy.fMass),
 fMassTolerance(copy.fMassTolerance),
 fMassToleranceVeto(copy.fMassToleranceVeto),
+fV0MassTolerance(copy.fV0MassTolerance),
 fSwitch(copy.fSwitch),
 fV0LowRadius(copy.fV0LowRadius),
 fV0HighRadius(copy.fV0HighRadius),
 fCascadeLowRadius(copy.fCascadeLowRadius),
 fCascadeHighRadius(copy.fCascadeHighRadius),
+fV0Life(copy.fV0Life),
 fV0MinDCAVertex(copy.fV0MinDCAVertex),
 fCascadeMinDCAVertex(copy.fCascadeMinDCAVertex),
 fV0MaxDCAVertex(copy.fV0MaxDCAVertex),
@@ -124,11 +128,13 @@ AliRsnCutCascade &AliRsnCutCascade::operator=(const AliRsnCutCascade &copy)
     fMass = copy.fMass;
     fMassTolerance = copy.fMassTolerance;
     fMassToleranceVeto = copy.fMassToleranceVeto;
+    fV0MassTolerance = copy.fV0MassTolerance;
     fSwitch = copy.fSwitch;
     fV0LowRadius = copy.fV0LowRadius;
     fV0HighRadius  = copy.fV0HighRadius;
     fCascadeLowRadius = copy.fCascadeLowRadius;
     fCascadeHighRadius  = copy.fCascadeHighRadius;
+    fV0Life = copy.fV0Life;
     fV0MinDCAVertex = copy.fV0MinDCAVertex;
     fCascadeMinDCAVertex = copy.fCascadeMinDCAVertex;
     fV0MaxDCAVertex = copy.fV0MaxDCAVertex;
@@ -444,10 +450,43 @@ Bool_t AliRsnCutCascade::CheckAOD(AliAODcascade *Xi)
     filtermapN = nTrack->GetFilterMap();
     filtermapB = bTrack->GetFilterMap();
     
+    if (!AODTrackAccepted(pTrack) || !AODTrackAccepted(nTrack) || !AODTrackAccepted(bTrack)) return kFALSE;
+
+    Double_t dca = Xi->DcaPosToPrimVertex() ;
+    // AliDebugClass(2, Form("DCA of V0 positive daughter %f",dca));
+    if (fESDtrackCuts && dca < fESDtrackCuts->GetMinDCAToVertexXY()) {
+       AliDebugClass(2, Form("DCA of Cascade V0 positive daughter (%f) less than %f", dca, fESDtrackCuts->GetMinDCAToVertexXY()));
+       return kFALSE;
+    }
+    dca = Xi->DcaNegToPrimVertex();
+    if (fESDtrackCuts && dca < fESDtrackCuts->GetMinDCAToVertexXY()) {
+       AliDebugClass(2, Form("DCA of Cascade V0 negative daughter (%f) less than %f", dca, fESDtrackCuts->GetMinDCAToVertexXY()));
+       return kFALSE;
+    }
+    dca = Xi->DcaBachToPrimVertex();
+    if (fESDtrackCuts && dca < fESDtrackCuts->GetMinDCAToVertexXY()) {
+       AliDebugClass(2, Form("DCA of Cascade bachelor (%f) less than %f", dca, fESDtrackCuts->GetMinDCAToVertexXY()));
+       return kFALSE;
+    }
+
     // filter like-sign V0
     if ( TMath::Abs( ((pTrack->Charge()) - (nTrack->Charge())) ) < 0.1) {
         AliDebugClass(2, "Failed like-sign V0 check");
         return kFALSE;
+    }
+
+    // filter wrong-sign cascades
+    if((fHypothesis==kXiMinus) || (fHypothesis==kOmegaMinus)) {
+        if (bTrack->Charge() >= 0) {
+            AliDebugClass(2, "Failed wrong-sign cascade check");
+            return kFALSE;
+        }
+    }
+    else if ((fHypothesis==kXiPlusBar) || (fHypothesis==kOmegaPlusBar)) {
+        if (bTrack->Charge() <= 0) {
+            AliDebugClass(2, "Failed wrong-sign cascade check");
+            return kFALSE;
+        }
     }
     
     // check compatibility with expected species hypothesis
@@ -465,6 +504,38 @@ Bool_t AliRsnCutCascade::CheckAOD(AliAODcascade *Xi)
     }
     AliDebugClass(2, Form("Mass: %d %f %f", fHypothesis, fMass, mass));
     
+    // competing Cascade rejection
+    Double_t altmass = 0.0;
+    if (fSwitch) {
+       if(fHypothesis==kXiMinus || fHypothesis==kXiPlusBar) {
+          altmass = Xi->MassOmega();
+          if ((TMath::Abs(altmass - 1.6725)) < fMassToleranceVeto) {
+             AliDebugClass(2, Form("Failed competing Cascade rejection check  Mass: %d %f %f", fHypothesis, mass, altmass));
+             return kFALSE;
+          }
+       }
+       else if (fHypothesis==kOmegaMinus || fHypothesis==kOmegaPlusBar) {
+          altmass = Xi->MassXi();
+          if ((TMath::Abs(altmass - 1.3217)) < fMassToleranceVeto) {
+             AliDebugClass(2, Form("Failed competing Cascade rejection check  Mass: %d %f %f", fHypothesis, mass, altmass));
+             return kFALSE;
+          }
+       }
+    }
+    
+    // check v0 mass window
+    altmass = 0.0;
+    if((fHypothesis==kXiMinus) || (fHypothesis==kOmegaMinus)) {
+        altmass = Xi->MassLambda();
+    }
+    else if ((fHypothesis==kXiPlusBar) || (fHypothesis==kOmegaPlusBar)) {
+        altmass = Xi->MassAntiLambda();
+    }
+    if ((TMath::Abs(altmass - 1.115683)) > fV0MassTolerance) {
+        AliDebugClass(2, Form("Cascade V0 is not in the expected inv mass range  Mass: %d %f", fHypothesis, mass));
+        return kFALSE;
+    }
+
     // topological checks
     if (TMath::Abs(Xi->DcaV0ToPrimVertex()) > fV0MaxDCAVertex || TMath::Abs(Xi->DcaV0ToPrimVertex()) < fV0MinDCAVertex) {
         AliDebugClass(2, Form("Failed check on V0 DCA to primary vertex dca=%f maxdca=%f mindca=%f",TMath::Abs(Xi->DcaV0ToPrimVertex()),fV0MaxDCAVertex,fV0MinDCAVertex));
@@ -503,6 +574,7 @@ Bool_t AliRsnCutCascade::CheckAOD(AliAODcascade *Xi)
         return kFALSE;
     }
     
+    // rapidity
     if(fHypothesis==kXiMinus || fHypothesis==kXiPlusBar) {
         if (TMath::Abs(Xi->RapXi()) > fMaxRapidity) {
             AliDebugClass(2, "Failed check on Cascade rapidity");
@@ -516,6 +588,7 @@ Bool_t AliRsnCutCascade::CheckAOD(AliAODcascade *Xi)
         }
     }
     
+    // pseudorapidity
     Double_t pXi = sqrt(Xi->Ptot2Xi());
     Double_t pzXi = Xi->MomXiZ();
     Double_t etaXi = 0.5*TMath::Log((pXi+pzXi)/(pXi-pzXi+1.e-13));
@@ -524,6 +597,7 @@ Bool_t AliRsnCutCascade::CheckAOD(AliAODcascade *Xi)
         return kFALSE;
     }
     
+    // radius
     Double_t V0radius = Xi->RadiusV0();
     Double_t Xiradius = TMath::Sqrt(TMath::Power(lPosXi[0],2) + TMath::Power(lPosXi[1],2));
     
@@ -533,6 +607,16 @@ Bool_t AliRsnCutCascade::CheckAOD(AliAODcascade *Xi)
     }
     if ( ( Xiradius < fCascadeLowRadius ) || ( Xiradius > fCascadeHighRadius ) ){
         AliDebugClass(2, "Failed Cascade fiducial volume");
+        return kFALSE;
+    }
+    
+    // v0 lifetime
+    Double_t mom = TMath::Sqrt(Xi->Ptot2V0());
+    Double_t length = TMath::Sqrt(TMath::Power(Xi->DecayVertexV0X() - lPosXi[0],2) +
+                                  TMath::Power(Xi->DecayVertexV0Y() - lPosXi[1],2) +
+                                  TMath::Power(Xi->DecayVertexV0Z() - lPosXi[2],2));
+    if( TMath::Abs(1.115683*length/mom) > fV0Life) {
+        AliDebugClass(2, Form("Failed V0 Lifetime Cut  %f", TMath::Abs(1.115683*length/mom)));
         return kFALSE;
     }
     
@@ -585,6 +669,29 @@ Bool_t AliRsnCutCascade::CheckAOD(AliAODcascade *Xi)
     AliDebugClass(1, "Good AOD Cascade");
     AliDebugClass(1, Form("Mass: %d %f %f %d %d %d", fHypothesis, fMass, mass, filtermapP, filtermapN, filtermapB));
     return kTRUE;
+}
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCutCascade::AODTrackAccepted(AliAODTrack* t){
+   if (!t || !fESDtrackCuts) return true;
+   // Implements basic quality cuts for V0 daughters.
+   // Uses ESDtrackCuts object as a container for the cut values.
+
+   Float_t etamin = -1e5, etamax = 1e5;
+   fESDtrackCuts->GetEtaRange(etamin, etamax);
+   if(t->Eta() < etamin || t->Eta() > etamax) return false;
+
+   if(t->GetTPCClusterInfo(2, 1) < fESDtrackCuts->GetMinNCrossedRowsTPC()) return false;
+   if(t->GetTPCNclsF() < fESDtrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()) return false;
+
+   ULong64_t s = t->GetStatus();
+   if(fESDtrackCuts->GetRequireTPCRefit() && !(s & AliESDtrack::kTPCrefit)) return false;
+
+   // Disable this: being fixed by Strangeness PAG (January 2021).
+   // AliAODVertex* v = t->GetProdVertex();
+   // if(pv && !fESDtrackCuts->GetAcceptKinkDaughters() && (pv->GetType() & AliAODVertex::kKink)) return false;
+
+   return true;
 }
 
 //_________________________________________________________________________________________________

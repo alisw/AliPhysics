@@ -238,7 +238,10 @@ Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString per
       period.BeginsWith("lhc14a1") || period.BeginsWith("lhc13b2_efix") ||
       period.BeginsWith("lhc15g6") || period.BeginsWith("lhc16c2") || period.BeginsWith("lhc16e1") || period.BeginsWith("lhc17f8") || 
       period.BeginsWith("lhc18b8") || period.BeginsWith("lhc18f5") || period.BeginsWith("lhc18g2") || period.BeginsWith("lhc17g8a") || 
-      period.BeginsWith("lhc19a1") || period.BeginsWith("lhc19f4")) {
+      period.BeginsWith("lhc19a1") || period.BeginsWith("lhc19f4") || period.BeginsWith("lhc19d3") ||
+      period.BeginsWith("lhc17h6e2") ||  period.BeginsWith("lhc17h6f2") || period.BeginsWith("lhc21b8") ||
+      period.BeginsWith("lhc15h1") || period.BeginsWith("lhc15h2")
+      ) {
     bits[0] = 8;
     bits[1] = 9;
   }
@@ -336,7 +339,7 @@ bool TestAliEmcalTrackSelectionAOD::TestHybridDef2010wRefit() const {
       AliErrorStream() << "No hybrid selection result found for CAT2 hybrid track" << std::endl;
       nfailure++;
     } else {
-      if(hybridcat->IsHybridTrackConstrained()) {
+      if(!hybridcat->IsHybridTrackConstrained()) {
         AliErrorStream() << "Incorrect hybrid track type for CAT2 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
         nfailure++;
       }
@@ -409,7 +412,7 @@ bool TestAliEmcalTrackSelectionAOD::TestHybridDef2010woRefit() const {
       AliErrorStream() << "No hybrid selection result found for CAT2 hybrid track" << std::endl;
       nfailure++;
     } else {
-      if(hybridcat->IsHybridTrackConstrained()) {
+      if(!hybridcat->IsHybridTrackConstrained()) {
         AliErrorStream() << "Incorrect hybrid track type for CAT2 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
         nfailure++;
       }
@@ -470,7 +473,7 @@ bool TestAliEmcalTrackSelectionAOD::TestHybridDef2011() const {
       AliErrorStream() << "No hybrid selection result found for CAT2 hybrid track" << std::endl;
       nfailure++;
     } else {
-      if(hybridcat->IsHybridTrackConstrained()) {
+      if(!hybridcat->IsHybridTrackConstrained()) {
         AliErrorStream() << "Incorrect hybrid track type for CAT2 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
         nfailure++;
       }

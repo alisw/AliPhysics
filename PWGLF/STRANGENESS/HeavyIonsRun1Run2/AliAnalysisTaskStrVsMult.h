@@ -28,6 +28,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //cut values setter
     void SetDefOnly(bool);
     void SetCutVal(bool, bool, int, double);
+    void SetParametricBacBarCosPA(int, float*, float*, int);
 
     //binning setters
     void SetCentbinning(int, int, double*);
@@ -134,7 +135,11 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     ULong64_t fCasc_NegTrackStatus;                           //!
     ULong64_t fCasc_PosTrackStatus;                           //!
     ULong64_t fCasc_BacTrackStatus;                           //!
-    double fCasc_BacBarCosPA;                                   //!
+    double fCasc_BacBarCosPA;                                 //!
+
+    bool fisParametricBacBarCosPA;                            //
+    TH1F *fHist_PtBacBarCosPA;                                //
+    int fCentLimit_BacBarCosPA;                               //
 
     //cut values to be set
     double cutval_V0[kV0cutsnum];                             //
@@ -166,8 +171,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 4); 
-    //version 4: introduced MC handeling
+    ClassDef(AliAnalysisTaskStrVsMult, 5); 
+    //version 5: introduced parametric cut for BacBarCosPA
 };
 
 #endif

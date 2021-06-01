@@ -26,11 +26,9 @@
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerPatchAnalysisComponent.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerPatchAnalysisComponent)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy constructor, only for ROOT I/O, not to be used by the users. Sets as default swapping of
@@ -292,8 +290,7 @@ Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory
  * \return True if the trigger class is
  */
 Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::IsPatchOfType(
-    const AliEMCALTriggerPatchInfo* const patch, TString patchtype) const {
-  Bool_t result = false;
+  const AliEMCALTriggerPatchInfo* const patch, TString patchtype) const {
   std::unique_ptr<AliEmcalTriggerPatchHandler> myhandler;
   if (patchtype == "JetHigh") myhandler = std::unique_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerGammaHigh(fSwapThresholdsOnline, fSwapThresholdsOffline));
   else if (patchtype == "JetLow") myhandler = std::unique_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerGammaLow(fSwapThresholdsOnline, fSwapThresholdsOffline));
@@ -303,5 +300,3 @@ Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory
   if(!myhandler.get()) return false;
   return myhandler->IsOfType(patch);
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

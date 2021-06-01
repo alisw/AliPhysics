@@ -236,6 +236,9 @@ else()
   # ZEROMQ
   find_package(ZeroMQ)
 
+  # KFParticke
+  find_package(KFParticle)
+
   # General flags -> Should be moved into a configuration file
   set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
   # Avoid problems with -fPIE (set automatically by the previous line).
@@ -293,6 +296,7 @@ install(DIRECTORY test DESTINATION ${CMAKE_INSTALL_PREFIX})
 foreach(TEST_LIB ${ALILIBSTESTED})
   add_test(load_library_${TEST_LIB}
     env
+    PATH=$ENV{PATH}
     LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
     DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
     ROOT_HIST=0

@@ -1,4 +1,4 @@
-AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
+AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAODpphi(bool isMC = false,
                                                TString CentEst = "kInt7",
                                                const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);

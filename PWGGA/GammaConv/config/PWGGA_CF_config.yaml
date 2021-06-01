@@ -34,6 +34,8 @@ inputObjects:                                       # Define all of the input ob
             branchName: "S500A300ClustersBranch"
         ClusterContainerS1000A300:
             branchName: "S1000A300ClustersBranch"
+        ClusterContainerS100A50:
+            branchName: "S100A50ClustersBranch"
     trackContainers:                                # Configure tracks
         defaultTrackContainer:                      # Name of a track input
             branchName: "usedefault"                # Set the branch name. "usedefault" is supported.
@@ -120,6 +122,13 @@ CellBadChannel_S1000A300:                                     # Bad channel remo
     enabled: false                                   # Whether to enable the task
 CellTimeCalib_S1000A300:
     enabled: false
+CellEnergy_S100A50:                                         # Cell Energy correction component
+    enabled: false
+CellBadChannel_S100A50:                                     # Bad channel removal at the cell level component
+    enabled: false                                   # Whether to enable the task
+CellTimeCalib_S100A50:
+    enabled: false
+
 #
 # ─── DEFAULT ──────────────────────────────────────────────────────────
 #
@@ -141,6 +150,8 @@ Clusterizer:                                        # Clusterizer component
     recalDistToBadChannels: true
     recalShowerShape: true                          # True will recalculate the shower shape
     load1DBadChMap: true                            # ADDED !!!!
+    remapMcAod: false
+    diffEAggregation: 0.0
 ClusterExotics:                                     # Cluster exotics identification component (actual removal is handled by the cluster container)
     enabled: true                                   # Whether to enable the task
     createHistos: true                              # Whether the task should create outputhistograms
@@ -500,3 +511,37 @@ ClusterExotics_S1000A300:                                  # Cluster exotics ide
     enabled: true
     clusterContainersNames:
         - ClusterContainerS1000A300
+
+#
+# ─── V3 Seed 100 Aggregation 50──────────────────────────────────────────────────────────
+#
+# - Description: Like default GA config but with different seed energy
+# - Clusterizer: V3 (Seed 100MeV Aggregation 50MeV)
+# - NonLinCorr : no (done on task level)
+# - TrackMatch : no (done on task level)
+
+Clusterizer_S100A50:                                     # same settings as "Clusterizer"
+    enabled: true
+    cellTimeMin: -500e-9
+    cellTimeMax: +500e-9
+    cellE: 0.05                                    # Minimum cell energy CHANGED!!
+    seedE: 0.1                                      # Seed energy threshold
+    recalDistToBadChannels: true
+    clusterContainersNames:
+        - ClusterContainerS100A50
+ClusterNonLinearity_S100A50:                             # Cluster non-linearity correction
+    enabled: false                                  # Whether to enable the task
+    clusterContainersNames:
+        - ClusterContainerS100A50
+ClusterTrackMatcher_S100A50:                             # Cluster-track matcher component
+    enabled: false                                  # Whether to enable the task
+    clusterContainersNames:
+        - ClusterContainerS100A50
+ClusterHadronicCorrection_S100A50:                       # Cluster hadronic correction component
+    enabled: false
+    clusterContainersNames:
+        - ClusterContainerS100A50
+ClusterExotics_S100A50:                                  # Cluster exotics identification component (actual removal is handled by the cluster container)
+    enabled: true
+    clusterContainersNames:
+        - ClusterContainerS100A50

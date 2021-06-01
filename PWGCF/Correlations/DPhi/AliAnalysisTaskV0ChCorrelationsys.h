@@ -19,7 +19,7 @@ class TH1F;
 class TH1D;
 class TH2F;
 class THnSparse;
-class AliDirList;
+class TList;
 class AliPIDResponse;
 class AliEventPoolManager;
 class TH1I;
@@ -45,6 +45,8 @@ public:
    void SetAnalysisMC(Bool_t AnalysisMC = kFALSE) {fAnalysisMC = AnalysisMC;}
    void SetTrackPileUpCut(Bool_t RejectTrackPileUp = kTRUE) {fRejectTrackPileUp = RejectTrackPileUp;}
    void SetV0PileUpCut(Bool_t RejectV0PileUp = kTRUE) {fRejectV0PileUp = RejectV0PileUp;}
+   void SetV0h(Bool_t V0h = kTRUE) {fV0h = V0h;}
+   void Sethh(Bool_t hh = kTRUE) {fhh = hh;}
    void SetOStatus(Int_t OStatus = 1) {fOStatus = OStatus;}
 
  //----------------------Mixing part----------------------------------
@@ -138,16 +140,17 @@ private:
    Double_t        fMixingTracks;  // size of track buffer for event mixing
    Double_t        fPoolSize;
    AliEventPoolManager     *fPoolMgr;  //! event pool manager
-   AliDirList           *fOutput;  //! Output list
-   AliDirList           *fOutput2;
-   AliDirList           *fOutput3;
-   AliDirList           *fOutput4;
-   AliDirList           *fOutput5;
-   AliDirList           *fOutput6;
-   AliDirList           *fOutput7;
+   TList           *fOutput; //! Output list
+   TList           *fOutput2;//! Output list
+   TList           *fOutput3;//! Output list
+   TList           *fOutput4;//! Output list
+   TList           *fOutput5;//! Output list
+   TList           *fOutput6;//! Output list
+   TList           *fOutput7;//! Output list
+   TList           *fOutput8;//! Output list
 
 
-  // AliDirList           tQAEvent;
+  // TList           tQAEvent;
    //TF1             *fMultiplicityV0McorrCut;
    AliPIDResponse  *fPIDResponse;  // PID response
    Double_t        fPrimaryVertexCut;//fNumOfVzBins
@@ -208,6 +211,8 @@ private:
    TObjArray       *selectedAntiLambda;//!
    TObjArray       *selectedTracks;//!
    TObjArray       *trigParticles;//!
+   TObjArray       *selectedTrigTracks;//!
+
 
    //-----------------------------PID-------------------------------------------
    Double_t        fV0PIDSigma;
@@ -234,6 +239,8 @@ private:
    Bool_t            fAnalysisMC;
    Bool_t            fRejectTrackPileUp;// 
    Bool_t            fRejectV0PileUp;// 
+   Bool_t            fV0h;// 
+   Bool_t            fhh;// 
    TClonesArray     *fMCArray;//! MC array for AOD
    //----------------------------Correction-------------------------------
    Bool_t            fEffCorr;

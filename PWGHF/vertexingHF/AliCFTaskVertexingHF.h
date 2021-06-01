@@ -250,7 +250,11 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetPtWeightsFromFONLL5overLHC16i6a();
   void SetPtWeightsFromFONLL5andDplusdataoverLHC16i2a();
   void SetPtWeightsFromFONLL5overLHC18a4a2();
-  
+  void SetPtWeightsFromFONLL5anddataoverLHC20g2a();
+  void SetPtWeightsFromFONLL5anddataoverLHC20g2b();
+  void SetPtWeightsFromFONLL5andMCatSHQoverLHC20g2a();
+  void SetPtWeightsFromFONLL5andMCatSHQoverLHC20g2b();
+
   void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
   UInt_t GetResonantDecay() const {return fResonantDecay;}
 
@@ -289,10 +293,10 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void QSortTracks(TObjArray& a, Int_t first, Int_t last);
   TObjArray* SortRegionsRT(const AliVParticle* leading, TObjArray *array);
   TObjArray* GetMinMaxRegionRT(TList *transv1, TList *transv2);
-    
+
   Double_t GetMinLeadPtRT() const {return fMinLeadPtRT;}
   void SetMinLeadPtRT(Double_t opt) {fMinLeadPtRT = opt;}
-  
+
   void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetRejectOOBPileupEvents() {fRejectOOBPileUpEvents=kTRUE; fKeepOnlyOOBPileupEvents=kFALSE;}
   void SetKeepOnlyOOBPileupEvents() {fRejectOOBPileUpEvents=kFALSE; fKeepOnlyOOBPileupEvents=kTRUE;}
@@ -366,8 +370,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Bool_t fRejectOOBPileUpEvents; /// flag to enable rejection of events with simulated pileup
   Bool_t fKeepOnlyOOBPileupEvents; /// flag to keep only events with simulated pileup
 
-  /// \cond CLASSIMP     
-  ClassDef(AliCFTaskVertexingHF,30); /// class for HF corrections as a function of many variables
+  /// \cond CLASSIMP
+  ClassDef(AliCFTaskVertexingHF,31); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 

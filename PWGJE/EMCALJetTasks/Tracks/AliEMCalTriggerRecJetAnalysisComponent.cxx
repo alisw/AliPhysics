@@ -40,11 +40,9 @@
 #include "AliEMCalTriggerRecJetAnalysisComponent.h"
 #include "AliEMCalTriggerWeightHandler.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerRecJetAnalysisComponent)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy (I/O) constructor, not to be used
@@ -261,5 +259,3 @@ void AliEMCalTriggerRecJetAnalysisComponent::FillTrackHistogramCentrality(
 	double data[5] = { TMath::Abs(trk->Pt()), TMath::Abs(jet->Pt()), (fSwapEta ? -1. : 1.) * trk->Eta(), centpercent, jet->DeltaR(trk)};
 	fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

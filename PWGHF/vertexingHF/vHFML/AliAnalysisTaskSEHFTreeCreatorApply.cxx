@@ -149,6 +149,7 @@ fnTracklets(0),
 fnTrackletsCorr(0),
 fnTrackletsCorrSHM(0),
 fnV0A(0),
+fnTPCCls(0),
 fMultGen(0),
 fMultGenV0A(0),
 fMultGenV0C(0),
@@ -270,12 +271,6 @@ void AliAnalysisTaskSEHFTreeCreatorApply::Init()
 
   if(fDebug > 1) printf("AliAnalysisTaskSEHFTreeCreatorApply::Init() \n");
 
-  AliInfo(Form(" Resetting NsigmaDataDrivenCorrection of cutobjects to %d for system %d \n", fEnableNsigmaTPCDataCorr,fSystemForNsigmaTPCDataCorr));
-  if(fFiltCutsDstoKKpi) fFiltCutsDstoKKpi->EnableNsigmaDataDrivenCorrection(fEnableNsigmaTPCDataCorr,fSystemForNsigmaTPCDataCorr);
-  if(fFiltCutsLc2V0bachelor) fFiltCutsLc2V0bachelor->EnableNsigmaDataDrivenCorrection(fEnableNsigmaTPCDataCorr,fSystemForNsigmaTPCDataCorr);
-  if(fCutsDstoKKpi) fCutsDstoKKpi->EnableNsigmaDataDrivenCorrection(fEnableNsigmaTPCDataCorr,fSystemForNsigmaTPCDataCorr);
-  if(fCutsLc2V0bachelor) fCutsLc2V0bachelor->EnableNsigmaDataDrivenCorrection(fEnableNsigmaTPCDataCorr,fSystemForNsigmaTPCDataCorr);
-  
   PostData(3,fListCuts);
 
   return;
@@ -379,9 +374,10 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserCreateOutputObjects()
   fTreeEvChar->Branch("ev_id", &fEventID);
   fTreeEvChar->Branch("ev_id_ext", &fEventIDExt);
   fTreeEvChar->Branch("ev_id_long", &fEventIDLong);
+  fTreeEvChar->Branch("n_tracklets", &fnTracklets);
+  fTreeEvChar->Branch("V0Amult", &fnV0A);
+  fTreeEvChar->Branch("n_tpc_cls", &fnTPCCls);
   if(!fReducePbPbBranches){
-    fTreeEvChar->Branch("n_tracklets", &fnTracklets);
-    fTreeEvChar->Branch("V0Amult", &fnV0A);
     fTreeEvChar->Branch("trigger_bitmap", &fTriggerMask);
     fTreeEvChar->Branch("trigger_online_INT7", &fTriggerOnlineINT7);
     fTreeEvChar->Branch("trigger_online_HighMultSPD", &fTriggerOnlineHighMultSPD);
@@ -699,6 +695,9 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserExec(Option_t */*option*/){
   
   fEvSelectionCuts->SetTriggerMask(trig_mask_cuts);
     
+  //TPC multiplicities
+  fnTPCCls = aod->GetNumberOfTPCClusters();
+
   //V0 multiplicities
   AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
   Double_t vzeroA = vzeroAOD ? vzeroAOD->GetMTotV0A() : 0.;
@@ -1108,6 +1107,12 @@ void AliAnalysisTaskSEHFTreeCreatorApply::ProcessCasc(TClonesArray *arrayCasc, A
       AliAODv0 * v0part;
       if(d->GetIsFilled() == 0) v0part = (AliAODv0*)(aod->GetV0(d->GetProngID(1)));
       else                      v0part = d->Getv0();
+
+      //Safety check. In recent MC, crashes occur due to v0part null pointer.
+      if(!v0part){
+        AliDebug(2,"No V0 for current cascade");
+        continue;
+      }
       Bool_t isOnFlyV0 = v0part->GetOnFlyStatus();
       
       if(fV0typeForLc2V0bachelor==1 && isOnFlyV0 == kTRUE) continue;

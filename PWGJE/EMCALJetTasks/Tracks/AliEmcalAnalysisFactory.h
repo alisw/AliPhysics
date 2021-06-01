@@ -34,7 +34,9 @@ class AliESDtrackCuts;
 class AliEmcalTrackSelection;
 
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 /**
  * @class AliEmcalAnalysisFactory
@@ -133,6 +135,8 @@ public:
 
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALANALYSISFACTORY_H */

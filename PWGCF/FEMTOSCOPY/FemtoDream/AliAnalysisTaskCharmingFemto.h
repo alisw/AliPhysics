@@ -33,6 +33,14 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     kpp13TeV
   };
 
+  enum MassSelection
+  {
+    kSignal,
+    kSidebandRight,
+    kSidebandLeft,
+    kStrictCut,
+  };
+
   AliAnalysisTaskCharmingFemto();
   AliAnalysisTaskCharmingFemto(const char *name, const bool isMC);
   virtual ~AliAnalysisTaskCharmingFemto();
@@ -65,6 +73,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetSystem(int system) {
     fSystem = system;
   }
+  void CheckProtonSPDHit() {
+    fCheckProtonSPDHit = true;
+  }
 
   // HF related setters
   void SetDecayChannel(int decayChannel=kDplustoKpipi) {
@@ -89,12 +100,24 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetMLConfigFile(TString path = "") {
     fConfigPath = path;
   }
-  void SetNSigmaSelection(double nSigma = 3) {
-    fDoNSigmaMassSelection = true;
+  void SetMassSelection(int type) {
+    fMassSelectionType = type;
+  }
+  void SetNSigmaSelection(double nSigma = 2) {
+    fMassSelectionType = kSignal;
     fNSigmaMass = nSigma;
   }
+  void SetSidebandChoice(MassSelection type, double offset, double width) {
+    fMassSelectionType = type;
+    fNSigmaOffsetSideband = offset;
+    fSidebandWidth = width;
+  }
+  void SetDstarWindow(double lower, double upper) {
+    fLowerDstarRemoval = lower;
+    fUpperDstarRemoval = upper;
+  }
   void SetMassWindow(double lower, double upper) {
-    fDoNSigmaMassSelection = false;
+    fMassSelectionType = kStrictCut;
     fLowerMassSelection = lower;
     fUpperMassSelection = upper;
   }
@@ -126,6 +149,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
   int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores);
+  bool MassSelection(const double mass, const double pt, const int pdg);
 
   // Track / event selection objects
   AliAODEvent* fInputEvent;                          //
@@ -145,6 +169,8 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   UInt_t fTrigger;         //
   int fSystem;             //
 
+  bool fCheckProtonSPDHit; //
+
   int fTrackBufferSize;
   std::vector<unsigned int> fDmesonPDGs;
   AliAODTrack **fGTI;  //!
@@ -155,11 +181,12 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TList *fTrackCutHistMCList;      //!
   TList *fAntiTrackCutHistList;    //!
   TList *fAntiTrackCutHistMCList;  //!
-  TList *fDChargedHistList;		   //!
+  TList *fDChargedHistList;		     //!
   TList *fResultList;              //!
   TList *fResultQAList;            //!
 
   TH2F *fHistDplusInvMassPt;   //!
+  TH2F *fHistDplusInvMassPtSel;   //!
   TH1F *fHistDplusEta;         //!
   TH1F *fHistDplusPhi;         //!
   TH1F *fHistDplusChildPt[5];  //!
@@ -172,6 +199,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH2F *fHistDplusMCOrigin;    //!
 
   TH2F *fHistDminusInvMassPt;   //!
+  TH2F *fHistDminusInvMassPtSel;   //!
   TH1F *fHistDminusEta;         //!
   TH1F *fHistDminusPhi;         //!
   TH1F *fHistDminusChildPt[5];  //!
@@ -188,10 +216,14 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   AliRDHFCuts* fRDHFCuts;                                  // HF cut object
   int fAODProtection;                                      // flag to activate protection against AOD-dAOD mismatch.
                                                            // -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
-  bool fDoNSigmaMassSelection;			                       // Select D mesons as nSigma around the nominal mass
+  int fMassSelectionType;			           // Switch for the D meson inv. mass selection type
   double fNSigmaMass;					                             // Width of the mass window
+  double fNSigmaOffsetSideband;                            // Offset of the mass window from the D inv. mass peak
   double fLowerMassSelection;			                         // Lower boundary of the mass selection
   double fUpperMassSelection;			                         // Upper boundary of the mass selection
+  double fSidebandWidth;                                   // Width of the sideband
+  double fLowerDstarRemoval;                               // Lower boundary to remove the D*
+  double fUpperDstarRemoval;                               // Upper boundary to remove the D*
 
   bool fMCBeautyRejection;                                 // Switch for scaling the beauty feed-down fraction in MC
   double fMCBeautyScalingFactor;                           // Factor for scaling the beauty feed-down
@@ -207,7 +239,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 9)
+ClassDef(AliAnalysisTaskCharmingFemto, 11)
 };
 
 #endif

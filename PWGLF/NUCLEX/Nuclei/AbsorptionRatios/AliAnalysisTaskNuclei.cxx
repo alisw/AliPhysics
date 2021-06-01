@@ -16,6 +16,7 @@
 #include "AliPIDResponse.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
+#include "AliEventCuts.h"
 #include "AliAnalysisUtils.h"
 //#include "AliMultSelection.h"
 #include "AliTrackReference.h"
@@ -80,6 +81,9 @@ AliAnalysisTaskNuclei::AliAnalysisTaskNuclei()
 ,fMomTOFDeut(10.)
 ,kAnalyseAllParticles(kFALSE)
 ,fTrackCuts(0)
+,fEventCut(false)
+,fEstimator(0)
+,fYlimit(-999)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -137,6 +141,9 @@ AliAnalysisTaskNuclei::AliAnalysisTaskNuclei(const char* name)
 ,fMomTOFDeut(10.)
 ,kAnalyseAllParticles(kFALSE)
 ,fTrackCuts(0)
+,fEventCut(false)
+,fEstimator(0)
+,fYlimit(-999)
 {
     // constructor
     
@@ -284,12 +291,12 @@ void AliAnalysisTaskNuclei::UserCreateOutputObjects()
 	fOutputEvent->Add(fNchHeader);
 
 
-	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC");
-	fNtupleAHe3 = new TNtuple("fNtupleAHe3", "fNtupleAHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton");
-	fNtupleHe4 = new TNtuple("fNtupleHe4", "fNtupleHe4", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton");
-	fNtupleAHe4 = new TNtuple("fNtupleAHe4", "fNtupleAHe4", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton");
-	fNtupleTriton = new TNtuple("fNtupleTriton", "fNtupleTriton", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton");
-	fNtupleATriton = new TNtuple("fNtupleATriton", "fNtupleATriton", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton");
+	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCSharedClusters:Chi2TPCConstrainedVsGlobal");
+	fNtupleAHe3 = new TNtuple("fNtupleAHe3", "fNtupleAHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal");
+	fNtupleHe4 = new TNtuple("fNtupleHe4", "fNtupleHe4", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal");
+	fNtupleAHe4 = new TNtuple("fNtupleAHe4", "fNtupleAHe4", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal");
+	fNtupleTriton = new TNtuple("fNtupleTriton", "fNtupleTriton", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal");
+	fNtupleATriton = new TNtuple("fNtupleATriton", "fNtupleATriton", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal");
 
 
     // track cuts config
@@ -409,10 +416,16 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
     // only for cross-check: is kINT7 selected
     UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isINT7selected = fSelectMask and AliVEvent::kINT7;
+    //Make sure that the HighMultTrigger is selected, which is added in the addTask macro
+	if (!fSelectMask) {
+		PostData(1, fOutputList);
+		return;
+	}
+    /*
     if (!isINT7selected){
         PostData(1, fOutputList);
         return;
-    }
+    }*/
     fEventStat->Fill(kINT7selected);
     
     // only for cross-check: Incomplete events from DAQ
@@ -509,8 +522,14 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
     }else{
         lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
     }*/
+    float Multiplicity_percentile = fEventCut.GetCentrality(fEstimator);
+    if (Multiplicity_percentile>0.1) {
+		PostData(1, fOutputList);
+		return;
+	}
+    lPercentile = Multiplicity_percentile;
 
-	int Nch = 0;
+    int Nch = 0;
     
     // track loop
     for (Int_t iTrack = 0; iTrack < fAODEvent->GetNumberOfTracks(); iTrack++){
@@ -529,6 +548,7 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
         if (trackP < fLowPCut || trackP > fHighPCut)      continue;
         if (TMath::Abs(trackEta) > fEtaCut)               continue;
         if (track->GetITSNcls() < fMinClIts)              continue;
+	if (TMath::Abs(track->Y())>fYlimit)		  continue; //If the fYlimit flag is set, it rejects tracks with rapidity greater than 0.5
 
 
         
@@ -599,12 +619,12 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
         Bool_t isHe4Selected   = (TMath::Abs(nSigmaTPCHe4) < 5);
         
         // deuterons
-        Bool_t isTritonSelected = ((nSigmaTPCTriton>-3 and nSigmaTPCTriton<3 and trackP<2.0) or (TMath::Abs(nSigmaTPCTriton)<3 and TMath::Abs(TOFm2-7.78)<2 and trackP>2.0));
+        Bool_t isTritonSelected = ((nSigmaTPCTriton>-4 and nSigmaTPCTriton<4 and trackP<2.0) or (TMath::Abs(nSigmaTPCTriton)<4 and TMath::Abs(TOFm2-7.78)<2 and trackP>2.0));
         
 		Bool_t isHelium3Selected = ((nSigmaTPCHe3 > -6.0) and (nSigmaTPCHe3 < 5));
 		if (not (isHelium3Selected or isTritonSelected or isHe4Selected)) {continue;}
 		//Edit 3: Condition relaxed to 10 in order to fit larger background in low statistics bins. 
-				Float_t vars[20];
+				Float_t vars[22];
 			   	vars[0] = track->P();
 			   	vars[1] = track->Pt();
 			   	vars[2] = track->GetTPCsignal();
@@ -625,6 +645,8 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
 				vars[17] = track->GetTPCmomentum();
 				vars[18] = nSigmaTPCHe4;
 				vars[19] = nSigmaTPCTriton;
+	    			vars[20] = track->GetTPCnclsS();
+	    			vars[21] = track->GetChi2TPCConstrainedVsGlobal();
 
 
 		//Bool_t isTritonSelected = kFALSE;;//(TMath::Abs(nSigmaTPCTriton)<4);

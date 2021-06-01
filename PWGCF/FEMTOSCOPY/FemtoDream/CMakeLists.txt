@@ -76,10 +76,12 @@ set(SRCS
   AliAnalysisTaskFemtoDreamSigPi.cxx
   AliAnalysisTaskNanoAODFemtoDreamSigPi.cxx
   AliAnalysisTaskFemtoDreamPion.cxx
+  AliAnalysisTaskDeuteronProtonEfficiency.cxx
   AliAnalysisTaskNanoAODFemtoDreamPion.cxx
   AliAnalysisTaskNanoAODSigma0Femto.cxx
   AliAnalysisTaskNanoSigmaPlus.cxx
   AliAnalysisTaskNanoLD.cxx
+  AliAnalysisTaskLD.cxx
   AliAnalysisTaskGrandma.cxx
   AliAnalysisTaskOtonOmega.cxx
   AliOtonOmegaAnalysis.cxx

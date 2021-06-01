@@ -22,7 +22,7 @@
 #include "AliAnalysisTaskSpectraINEL0.h"
 class AliAnalysisTaskSpectraINEL0;
 
-using namespace std;
+// namespace
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskSpectraINEL0)
@@ -31,26 +31,22 @@ ClassImp(AliAnalysisTaskSpectraINEL0)
 
 AliAnalysisTaskSpectraINEL0::AliAnalysisTaskSpectraINEL0()
     : AliAnalysisTaskMKBase()
-    , fHistEffCont(0)
-    , fHistTrack(0)
-    , fHistEvent(0)
-    , fHistVtxInfo(0)
-    , fHistTrackINEL0(0)
 {
     // default contructor
+    AliAnalysisTaskMKBase::fUseBaseOutput = kTRUE;
+    AliAnalysisTaskMKBase::fNeedEventVertex = kTRUE;
+    AliAnalysisTaskMKBase::fNeedEventMult = kTRUE;
 }
 
 //_____________________________________________________________________________
 
 AliAnalysisTaskSpectraINEL0::AliAnalysisTaskSpectraINEL0(const char* name)
     : AliAnalysisTaskMKBase(name)
-    , fHistEffCont(0)
-    , fHistTrack(0)
-    , fHistEvent(0)
-    , fHistVtxInfo(0)
-    , fHistTrackINEL0(0)
 {
     // constructor
+    AliAnalysisTaskMKBase::fUseBaseOutput = kTRUE;
+    AliAnalysisTaskMKBase::fNeedEventVertex = kTRUE;
+    AliAnalysisTaskMKBase::fNeedEventMult = kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -64,40 +60,89 @@ AliAnalysisTaskSpectraINEL0::~AliAnalysisTaskSpectraINEL0()
 
 void AliAnalysisTaskSpectraINEL0::AddOutput()
 {
-    AddAxis("cent");
-    AddAxis("nAcc","mult6kcoarse");
-    AddAxis("MCpT","pt");
-    AddAxis("MCQ",3,-1.5,1.5);
-    AddAxis("MCpid",10,-0.5,9.5);  // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
-    AddAxis("MCinfo",4,-0.5,3.5);  // 0=prim, 1=decay 2=material, 3=genprim
-    fHistEffCont = CreateHist("fHistEffCont");
-    fOutputList->Add(fHistEffCont);
+    std::vector<double> ptbins = {0.15,  0.2,   0.25,  0.3,   0.35,  0.4,   0.45, 0.5,  0.55,
+                                0.6,  0.65,  0.7,   0.75,  0.8,   0.85,  0.9,   0.95,  1.0,   1.1,  1.2,  1.3,
+                                1.4,  1.5,   1.6,   1.7,   1.8,   1.9,   2.0,   2.2,   2.4,   2.6,  2.8,  3.0,
+                                3.2,  3.4,   3.6,   3.8,   4.0,   4.5,   5.0,   5.5,   6.0,   6.5,  7.0,  8.0,
+                                9.0,  10.0,  11.0,  12.0,  13.0,  14.0,  15.0,  16.0,  18.0,  20.0, 22.0, 24.0,
+                                26.0, 28.0,  30.0,  32.0,  34.0,  36.0,  40.0,  45.0,  50.0,  60.0, 70.0, 80.0,
+                                90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 180.0, 200.0 };
+    std::vector<double> inverseptbins;
+    for(int i = ptbins.size() - 1; i > 0 ; i--){
+      inverseptbins.push_back(1./ptbins[i]);
+    }
 
-    AddAxis("cent");
-    AddAxis("nAcc","mult6kcoarse");
-    AddAxis("pt");
-    AddAxis("Q",3,-1.5,1.5);
-    fHistTrack = CreateHist("fHistTrack");
-    fOutputList->Add(fHistTrack);
+    std::vector<double> centBins = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100. };
 
-    AddAxis("cent");
-    AddAxis("nAcc","mult6kfine");
-    AddAxis("zV",8,-20,20);
-    fHistEvent = CreateHist("fHistEvent");
-    fOutputList->Add(fHistEvent);
+    const Int_t nmultbins = 241;
+    std::vector<double> multBins;
+    multBins.reserve(nmultbins + 1);
+    multBins.push_back(-0.5);
+    {
+        int i = 0;
+        for (; i <= 100; i++) {
+            multBins.push_back(multBins.back() + 1.);
+        }
+        for (; i <= 100 + 90; i++) {
+            multBins.push_back(multBins.back() + 10.);
+        }
+        for (; i <= 10 + 90 + 50; i++) {
+            multBins.push_back(multBins.back() + 100.);
+        }
+    }
 
-    AddAxis("VtxInfo", 2, -0.5, 1.5); // 0 == with Vertex; 1== without Vertex
-    AddAxis("nAcc","mult6kfine");
-    AddAxis("zV",8,-30,30);
-    fHistVtxInfo = CreateHist("fHistVtxInfo");
-    fOutputList->Add(fHistVtxInfo);
+    Hist::Axis centAxis = {"cent", "centrality", centBins};
+    Hist::Axis multAxis = {"mult", "#it{N}_{ch}", multBins};
+    Hist::Axis zVrtAxis = {"zV", "vertex_{Z}", {-20, 20}, 8};
+    Hist::Axis ptAxis = {"pt", "#it{p}_{T} (GeV/c)", ptbins};
+    Hist::Axis QAxis = {"Q", "Q", {-1.5,1.5}, 3};
+    Hist::Axis relResoAxis = {"rel. Reso", "#sigma(#it{p}_{T}) / #it{p}_{T}", {0.0,0.3}, 300};
+    Hist::Axis Sigma1ptAxis = {"Sigma1ptAxis", "#sigma(1/#it{p}_{T})", {0.0,0.3}, 300};
+    Hist::Axis inverseptAxis = {"1/pt", "1/#it{p}_{T} (GeV/c)", {0.005, 6.677}, 60};
+    //Hist::Axis MCpidAxis = {"MCpid", "MCpid", {-0.5, 9.5}, 10}; // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
+    Hist::Axis MCinfoAxis = {"MCinfo", "MCinfo", {-0.5,3.5}, 4}; // 0=prim, 1=decay 2=material, 3=genprim
+    //Hist::Axis MCQAxis = {"MCQ", "MCQ", {-1.5,1.5}, 3};
+    Hist::Axis MCptAxis = {"MCpt", "#it{p}_{T} (GeV/c)", ptbins};
+    Hist::Axis EvtSelectionAxis = {"EvtSele", "EvtSele", {-0.5,1.5}, 2}; // 0 == No Selection; 1 == with selection
+    Hist::Axis VtxInfoAxis = {"VtxInfo", "VtxInfo", {-0.5,1.5}, 2}; // 0 == with Vertex; 1== without Vertex
 
-    AddAxis("cent");
-    AddAxis("nAcc","mult6kcoarse");
-    AddAxis("MCpT","pt");
-    AddAxis("EventSelection", 2, -0.5, 1.5); // 0 == No Selection; 1 == with selection
-    fHistTrackINEL0 = CreateHist("fHistTrackINEL0");
-    fOutputList->Add(fHistTrackINEL0);
+
+    fHistEffCont.AddAxis(centAxis);
+    fHistEffCont.AddAxis(multAxis);
+    fHistEffCont.AddAxis(MCptAxis);
+    fHistEffCont.AddAxis(MCinfoAxis); // 0=prim, 1=decay 2=material, 3=genprim
+    fOutputList->Add(fHistEffCont.GenerateHist("fHistEffCont"));
+
+    fHistTrack.AddAxis(centAxis);
+    fHistTrack.AddAxis(multAxis);
+    fHistTrack.AddAxis(ptAxis);
+    fHistTrack.AddAxis(QAxis);
+    fOutputList->Add(fHistTrack.GenerateHist("fHistTrack"));
+
+    fHistTrackINEL0.AddAxis(centAxis);
+    fHistTrackINEL0.AddAxis(multAxis);
+    fHistTrackINEL0.AddAxis(MCptAxis);
+    fHistTrackINEL0.AddAxis(EvtSelectionAxis);
+    fOutputList->Add(fHistTrackINEL0.GenerateHist("fHistTrackINEL0"));
+
+    fHistRelResoFromCov.AddAxis(ptAxis);
+    fHistRelResoFromCov.AddAxis(relResoAxis);
+    fOutputList->Add(fHistRelResoFromCov.GenerateHist("fHistRelResoFromCov"));
+
+    fHistSigma1pt.AddAxis(inverseptAxis);
+    fHistSigma1pt.AddAxis(Sigma1ptAxis);
+    fOutputList->Add(fHistSigma1pt.GenerateHist("fHistSigma1pt"));
+
+    fHistEvent.AddAxis(centAxis);
+    fHistEvent.AddAxis(multAxis);
+    fHistEvent.AddAxis(zVrtAxis);
+    fOutputList->Add(fHistEvent.GenerateHist("fHistEvent"));
+
+    fHistVtxInfo.AddAxis(VtxInfoAxis);// 0 == with Vertex; 1== without Vertex
+    fHistVtxInfo.AddAxis(multAxis);
+    fHistVtxInfo.AddAxis(zVrtAxis);
+    fOutputList->Add(fHistVtxInfo.GenerateHist("fHistVtxInfo"));
+
 
 }
 
@@ -106,12 +151,6 @@ void AliAnalysisTaskSpectraINEL0::AddOutput()
 Bool_t AliAnalysisTaskSpectraINEL0::IsEventSelected()
 {
   return fIsAcceptedAliEventCuts;
-  //return oldEventCuts();
-}
-
-Bool_t AliAnalysisTaskSpectraINEL0::oldEventCuts()
-{
-  return kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -121,12 +160,12 @@ void AliAnalysisTaskSpectraINEL0::FillDefaultHistograms(Int_t step) {
     AliAnalysisTaskMKBase::FillDefaultHistograms(step);
 
     if(step==0){
-        if(fVtxStatus) FillHist(fHistVtxInfo, 0, fNTracksAcc, fZv);
-        else FillHist(fHistVtxInfo, 1, fNTracksAcc, fZv);
+        if(fVtxStatus) fHistVtxInfo.Fill(0, fNTracksAcc, fZv);
+        else fHistVtxInfo.Fill(1, fNTracksAcc, fZv);
     }
     if(step==1){
         LoopOverAllTracks(step);
-        FillHist(fHistEvent, fMultPercentileV0M, fNTracksAcc, fZv);
+        fHistEvent.Fill(fMultPercentileV0M, fNTracksAcc, fZv);
     }
 
 
@@ -140,13 +179,16 @@ void AliAnalysisTaskSpectraINEL0::AnaTrack(Int_t flag)
     if(0==flag) return; // data only after event selection
     if (!fAcceptTrackM) return;
 
-    FillHist(fHistTrack, fMultPercentileV0M, fNTracksAcc, fPt, fChargeSign);
+    fHistTrack.Fill(fMultPercentileV0M, fNTracksAcc, fPt, fChargeSign);
+    fHistRelResoFromCov.Fill(fPt, fSigma1Pt*fPt);
+    fHistSigma1pt.Fill(f1Pt, fSigma1Pt);
 }
 
 //_____________________________________________________________________________
 
 void AliAnalysisTaskSpectraINEL0::AnaTrackMC(Int_t flag)
 {
+    if(fMCPileUpTrack) return; // reject pileup tracks
     if (!fAcceptTrackM) return;
 
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("RecTrack.PDG.",fMCPDGCode); }
@@ -156,7 +198,7 @@ void AliAnalysisTaskSpectraINEL0::AnaTrackMC(Int_t flag)
 
     } else if (flag == 1) {
 
-        FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, fMCProdcutionType);
+        fHistEffCont.Fill(fMultPercentileV0M, fNTracksAcc, fMCPt, fMCProdcutionType);
     } else {
         Err("AliAnalysisTaskMKBase::FillDefaultHistograms:InvalidStep");
     }
@@ -166,6 +208,8 @@ void AliAnalysisTaskSpectraINEL0::AnaTrackMC(Int_t flag)
 
 void AliAnalysisTaskSpectraINEL0::AnaParticleMC(Int_t flag)
 {
+    if(fMCPileUpTrack) return; // reject pileup tracks
+
     if (!fMCisPrim) return;
     if (!fMCIsCharged) return;
     if (TMath::Abs(fMCEta) > 0.8) return;
@@ -174,11 +218,11 @@ void AliAnalysisTaskSpectraINEL0::AnaParticleMC(Int_t flag)
     if (TMath::Abs(fMCQ > 1)) { Log("GenPrim.Q>1.PDG.",fMCPDGCode); }
 
     if (flag == 0) {
-        if(fZv < 10. && fZv > -10.) FillHist(fHistTrackINEL0, fMultPercentileV0M, fNTracksAcc, fMCPt, 0);
+        if(fZv < 10. && fZv > -10.) fHistTrackINEL0.Fill(fMultPercentileV0M, fNTracksAcc, fMCPt, 0);
     } else if (flag == 1) {
-        FillHist(fHistTrackINEL0, fMultPercentileV0M, fNTracksAcc, fMCPt, 1);
+        fHistTrackINEL0.Fill(fMultPercentileV0M, fNTracksAcc, fMCPt, 1);
 
-        FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, 3);
+        fHistEffCont.Fill(fMultPercentileV0M, fNTracksAcc, fMCPt, 3);
     } else {
         Err("AliAnalysisTaskMKBase::FillDefaultHistograms:InvalidStep");
     }

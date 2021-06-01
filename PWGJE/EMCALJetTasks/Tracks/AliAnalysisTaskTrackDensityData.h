@@ -17,7 +17,9 @@ class THistManager;
 
 class AliEmcalTrackSelection;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerBinningComponent;
 
@@ -48,11 +50,11 @@ private:
   TString                               fNameJetContainer;        /// name of the jet container
   TString                               fNameTrackContainer;      /// name of the track container
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskTrackDensityData, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKTRACKDENSITYDATA_H */

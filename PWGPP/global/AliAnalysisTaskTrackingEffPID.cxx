@@ -5,6 +5,7 @@
 #include <TF1.h>
 #include <TList.h>
 #include <TMath.h>
+#include <TNtuple.h>
 #include <TClonesArray.h>
 #include <TTree.h>
 #include <TRandom3.h>
@@ -84,6 +85,9 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fKeepOnlyInjected{false},
   fKeepOnlyUE{false},
   fUseImpPar{false},
+  fUseLocDen{false},
+  fDeltaRcut{0.2},
+  fMaxTracksInCone{-1.},
   fSelectPtHardRange{false},
   fMinPtHard{0.},
   fMaxPtHard{99999.},
@@ -158,17 +162,22 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   hHistXsecVsPtHard = new TH1D("hXsecVsPtHard", " ; pthard (GeV/c) ; Xsec", 200,0.,100.);
   fOutputList->Add(hHistXsecVsPtHard);
   
-  TString axTit[5]={"#eta","#varphi","#it{p}_{T} (GeV/#it{c})","Multiplicity","z_{vertex} (cm)"};
+  TString axTit[6]={"#eta","#varphi","#it{p}_{T} (GeV/#it{c})","Multiplicity","z_{vertex} (cm)","Prod. Rad. (cm)"};
+  if(fMultEstimator==0)  axTit[3]="N_{tracklets}";
+  else if(fMultEstimator==1) axTit[3]="N_{contributors}";
+  else if(fMultEstimator==2) axTit[3]="N_{TPCITStracks}";
+  else if(fMultEstimator==3) axTit[3]="N_{TPCtracks}";
+  else if(fMultEstimator==4) axTit[3]="N_{TPCclusters}/1000";
   const int nPtBins=32;
   const int nMultBins=10;
-  int nbins[5]={10,18,nPtBins,nMultBins,4};
-  double xmin[5]={-1.,0.,0.,0,-10.};
-  double xmax[5]={1.,2*TMath::Pi(),30.,200.,10.};
+  int nbins[6]={10,18,nPtBins,nMultBins,4,60};
+  double xmin[6]={-1.,0.,0.,0,-10.,0.};
+  double xmax[6]={1.,2*TMath::Pi(),30.,200.,10.,3.};
   TString charge[2] = {"pos","neg"};
   double ptBins[nPtBins+1] = {0.00,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.50,
-			      0.60,0.70,0.80,0.90,1.00,1.25,1.50,1.75,2.00,2.50,
-			      3.00,3.50,4.00,4.50,5.00,6.00,7.00,8.00,10.0,12.0,
-			      16.0,20.0,30.0};
+                              0.60,0.70,0.80,0.90,1.00,1.25,1.50,1.75,2.00,2.50,
+                              3.00,3.50,4.00,4.50,5.00,6.00,7.00,8.00,10.0,12.0,
+                              16.0,20.0,30.0};
   double multBins[nMultBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,80.,100.,200.};
   if(fIsAA){
     multBins[0]=0.;
@@ -182,34 +191,50 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
     multBins[8]=4000.;
     multBins[9]=5000.;
     multBins[10]=7500.;
+    if(fMultEstimator==3) for(Int_t jm=0; jm<=nMultBins; jm++) multBins[jm]*=2.;
   }
   xmax[3]=multBins[nMultBins];
-  if(fUseImpPar){
+  if(fUseImpPar && !fUseLocDen){
     // use impact parameter instead of multiplicity
     axTit[3]="b (fm)";
     nbins[3]=15;
     xmin[3]=0.;
     xmax[3]=15.;
   }
+  if(fUseLocDen){
+    // use local track density instead of multiplicity
+    axTit[3]="tracks in cone";
+    if(fIsAA){
+      nbins[3]=25;
+      xmin[3]=0.;
+      if(fMaxTracksInCone>0) xmax[3]=fMaxTracksInCone;
+      else xmax[3]=125.;
+    }else{
+      nbins[3]=15;
+      xmin[3]=0.;
+      if(fMaxTracksInCone>0) xmax[3]=fMaxTracksInCone;
+      else xmax[3]=45.;
+    }
+  }
   
   for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; iSpecies++) {
     for (int iCharge = 0; iCharge < 2; ++iCharge) {
       fGenerated[iSpecies][iCharge] = new THnSparseF(Form("hGen_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-						     "Generated particles",5,nbins,xmin,xmax);
+                                                     "Generated particles",6,nbins,xmin,xmax);
       fGeneratedEvSel[iSpecies][iCharge] = new THnSparseF(Form("hGenEvSel_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-							  "Generated particles in selected events",5,nbins,xmin,xmax);
+                                                          "Generated particles in selected events",6,nbins,xmin,xmax);
       fReconstructed[iSpecies][iCharge] = new THnSparseF(Form("hReconstructed_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-							  "Reconstructed tracks",5,nbins,xmin,xmax);
+                                                          "Reconstructed tracks",6,nbins,xmin,xmax);
       fReconstructedTOF[iSpecies][iCharge] = new THnSparseF(Form("hReconstructedTOF_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-							    "Reconstructed tracks with TOF",5,nbins,xmin,xmax);
+                                                            "Reconstructed tracks with TOF",6,nbins,xmin,xmax);
       fReconstructedPID[iSpecies][iCharge] = new THnSparseF(Form("hReconstructedPID_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-							    "Reconstructed tracks with PID",5,nbins,xmin,xmax);
-      for(int iax=0; iax<5; iax++){
-	fGenerated[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-	fGeneratedEvSel[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-	fReconstructed[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-	fReconstructedTOF[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-	fReconstructedPID[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+                                                            "Reconstructed tracks with PID",6,nbins,xmin,xmax);
+      for(int iax=0; iax<6; iax++){
+        fGenerated[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+        fGeneratedEvSel[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+        fReconstructed[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+        fReconstructedTOF[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+        fReconstructedPID[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
       }
       fGenerated[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
       fGeneratedEvSel[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
@@ -217,12 +242,12 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
       fReconstructedTOF[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
       fReconstructedPID[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
 
-      if(!fUseImpPar){
-	fGenerated[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-	fGeneratedEvSel[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-	fReconstructed[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-	fReconstructedTOF[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-	fReconstructedPID[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+      if(!fUseImpPar && !fUseLocDen){
+        fGenerated[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+        fGeneratedEvSel[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+        fReconstructed[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+        fReconstructedTOF[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+        fReconstructedPID[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
       }
       
       fOutputList->Add(fGenerated[iSpecies][iCharge]);
@@ -284,33 +309,33 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     }else{
       TString genname=fMCEvent->GenEventHeader()->ClassName();
       if(genname.Contains("CocktailEventHeader")){
-	AliGenCocktailEventHeader *cockhead=(AliGenCocktailEventHeader*)fMCEvent->GenEventHeader();
-	lh=cockhead->GetHeaders();
+        AliGenCocktailEventHeader *cockhead=(AliGenCocktailEventHeader*)fMCEvent->GenEventHeader();
+        lh=cockhead->GetHeaders();
       }
     }
     if(fSelectPtHardRange && lh){
       Int_t nh=lh->GetEntries();
       for(Int_t i=0;i<nh;i++){
-	AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
-	TString genname=gh->GetName();
-	if(genname.Contains("ythia") || genname.Contains("YTHIA")){
-	  AliGenPythiaEventHeader* pyth=(AliGenPythiaEventHeader*)lh->At(i);
-	  double ptha=pyth->GetPtHard();
-	  double xsec=pyth->GetXsection();
-	  if(ptha<fMinPtHard || ptha>fMaxPtHard) return;
-	  hHistXsecVsPtHard->SetBinContent(hHistXsecVsPtHard->GetXaxis()->FindBin(ptha),xsec);
-	}
+        AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+        TString genname=gh->GetName();
+        if(genname.Contains("ythia") || genname.Contains("YTHIA")){
+          AliGenPythiaEventHeader* pyth=(AliGenPythiaEventHeader*)lh->At(i);
+          double ptha=pyth->GetPtHard();
+          double xsec=pyth->GetXsection();
+          if(ptha<fMinPtHard || ptha>fMaxPtHard) return;
+          hHistXsecVsPtHard->SetBinContent(hHistXsecVsPtHard->GetXaxis()->FindBin(ptha),xsec);
+        }
       }
     }
     if(fUseImpPar && lh){
       Int_t nh=lh->GetEntries();
       for(Int_t i=0;i<nh;i++){
-	AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
-	TString genname=gh->GetName();
-	if(genname.Contains("hijing") || genname.Contains("Hijing")){
-	  AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)lh->At(i);
-	  imppar=hijh->ImpactParameter();
-	}
+        AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+        TString genname=gh->GetName();
+        if(genname.Contains("hijing") || genname.Contains("Hijing")){
+          AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)lh->At(i);
+          imppar=hijh->ImpactParameter();
+        }
       }
     }
     if(fSelectOnGenerator && lh){
@@ -318,10 +343,10 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       if(fGenerToExclude.Length()==0) keep=kFALSE;
       Int_t nh=lh->GetEntries();
       for(Int_t i=0;i<nh;i++){
-	AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
-	TString genname=gh->GetName();
-	if(fGenerToKeep.Length()>0 && genname.Contains(fGenerToKeep.Data())) keep=kTRUE;
-	if(fGenerToExclude.Length()>0 && genname.Contains(fGenerToExclude.Data())) keep=kFALSE;
+        AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+        TString genname=gh->GetName();
+        if(fGenerToKeep.Length()>0 && genname.Contains(fGenerToKeep.Data())) keep=kTRUE;
+        if(fGenerToExclude.Length()>0 && genname.Contains(fGenerToExclude.Data())) keep=kFALSE;
       }
       if(!keep) return;
     }
@@ -329,9 +354,12 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
 
   fHistNEvents->Fill(1);
 
+  double xMCVertex =99999;
+  double yMCVertex =99999;
   double zMCVertex =99999;
   int nTracklets = 0;
   TClonesArray *aodMcArray = 0x0;
+  int nTPCclusters=0;
   if(isAOD){
     aodMcArray = dynamic_cast<TClonesArray*>(fInputEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
     aodMcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
@@ -339,18 +367,24 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       AliError("Could not find MC Header in AOD");
       return;
     }
+    xMCVertex = aodMcHeader->GetVtxX();
+    yMCVertex = aodMcHeader->GetVtxY();
     zMCVertex = aodMcHeader->GetVtxZ();
     AliAODTracklets *mult=((AliAODEvent*)fInputEvent)->GetTracklets();
     if(mult) nTracklets=mult->GetNumberOfTracklets();
+    nTPCclusters=((AliAODEvent*)fInputEvent)->GetNumberOfTPCClusters();
   }else{
     const AliVVertex* mcVert=fMCEvent->GetPrimaryVertex();
     if(!mcVert){
       AliError("Generated vertex not available");
       return;
     }
+    xMCVertex=mcVert->GetX();
+    yMCVertex=mcVert->GetY();
     zMCVertex=mcVert->GetZ();
     const AliMultiplicity *mult = ((AliESDEvent*)fInputEvent)->GetMultiplicity();
     if(mult) nTracklets=mult->GetNumberOfTracklets();
+    nTPCclusters=((AliESDEvent*)fInputEvent)->GetNumberOfTPCClusters();
   }
 
   if(zMCVertex<fEventCut.fMinVtz || zMCVertex>fEventCut.fMaxVtz){
@@ -368,17 +402,23 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   int nContrib = vtTrc->GetNContributors();;
 
   int nTracksTPCITS = 0;
+  int nTracksTPC = 0;
+  TNtuple* trEtaPhiMap = new TNtuple("trEtaPhiMap", "tracks", "eta:phi");
   for (int iT = 0; iT < (int)fInputEvent->GetNumberOfTracks(); ++iT) {
     /// count tracks passing ITS TPC selections
     AliVTrack *track = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(iT));
     int cluITS=track->GetNcls(0);
     int cluTPC=track->GetNcls(1);
+    if(track->GetStatus()&AliESDtrack::kTPCin && cluTPC>70) nTracksTPC++;
     if(track->GetStatus()&AliESDtrack::kITSrefit && cluITS>3 && cluTPC>70) nTracksTPCITS++;
+    if(fUseLocDen && track->GetStatus()&AliESDtrack::kTPCin && track->GetID()>=0) trEtaPhiMap->Fill(track->Eta(),track->Phi());
   }
 
   double multEstim=nTracklets;
   if(fMultEstimator==1) multEstim=nContrib;
   else if(fMultEstimator==2) multEstim=nTracksTPCITS;
+  else if(fMultEstimator==3) multEstim=nTracksTPC;
+  else if(fMultEstimator==4) multEstim=nTPCclusters/1000.;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -415,20 +455,30 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       if(fKeepOnlyUE && isInjected) continue;
     }
     fHistNParticles->Fill(4);
-    double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),multEstim,zMCVertex};
+    
+    double distx = part->Xv() - xMCVertex;
+    double disty = part->Yv() - yMCVertex;
+    double distXY = TMath::Sqrt(distx*distx+disty*disty);
+    double arrayForSparse[6]={part->Eta(),part->Phi(),part->Pt(),multEstim,zMCVertex,distXY};
     if(fUseImpPar) arrayForSparse[3]=imppar;
     const int pdg = std::abs(part->PdgCode());
-    const int iCharge = part->Charge() > 0 ? 1 : 0;
+    Int_t jPDG=-1;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
       if (pdg == AliPID::ParticleCode(iSpecies)) {
-        fGenerated[iSpecies][iCharge]->Fill(arrayForSparse);
-	if(eventAccepted) fGeneratedEvSel[iSpecies][iCharge]->Fill(arrayForSparse);
+        jPDG=iSpecies;
         break;
       }
+    }
+    if(jPDG>0){
+      if(fUseLocDen) arrayForSparse[3]=GetLocalTrackDens(trEtaPhiMap,part->Eta(),part->Phi());
+      const int iCharge = part->Charge() > 0 ? 1 : 0;
+      fGenerated[jPDG][iCharge]->Fill(arrayForSparse);
+      if(eventAccepted) fGeneratedEvSel[jPDG][iCharge]->Fill(arrayForSparse);
     }
   }
 
   if (!eventAccepted) {
+    delete trEtaPhiMap;
     PostData(1, fOutputList);
     return;
   }
@@ -448,8 +498,8 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       if(fFilterBit<0 && aodtrack->GetID() < 0) continue;
       if(fFilterBit>=0 && !aodtrack->TestFilterBit(BIT(fFilterBit))) continue;
       if(fTrackCuts && fUseTrackCutsForAOD){
-	bool accept=ConvertAndSelectAODTrack(aodtrack,vESD,magField);
-	if(!accept) continue;
+        bool accept=ConvertAndSelectAODTrack(aodtrack,vESD,magField);
+        if(!accept) continue;
       }
     }
     fHistNTracks->Fill(1);
@@ -493,8 +543,13 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     const double pt = fUseGeneratedKine ? mcPart->Pt() : track->Pt() * AliPID::ParticleCharge(iSpecies);
     const double eta = fUseGeneratedKine ? mcPart->Eta() : track->Eta();
     const double phi = fUseGeneratedKine ? mcPart->Phi() : track->Phi();
-    double arrayForSparseData[5]={eta,phi,pt,multEstim,zMCVertex};
+    double distx = mcPart->Xv() - xMCVertex;
+    double disty = mcPart->Yv() - yMCVertex;
+    double distXY = TMath::Sqrt(distx*distx+disty*disty);
+    
+    double arrayForSparseData[6]={eta,phi,pt,multEstim,zMCVertex,distXY};
     if(fUseImpPar) arrayForSparseData[3]=imppar;
+    if(fUseLocDen) arrayForSparseData[3]=GetLocalTrackDens(trEtaPhiMap,eta,phi);
     bool TPCpid = std::abs(pid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
     bool hasTOF = HasTOF(track);
     bool TOFpid = std::abs(pid->NumberOfSigmasTOF(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
@@ -504,6 +559,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     if(TPCpid && TOFpid) fReconstructedPID[iSpecies][iCharge]->Fill(arrayForSparseData);
 
   } // End track loop
+  delete trEtaPhiMap;
 
   //  Post output data.
   PostData(1,fOutputList);
@@ -590,4 +646,39 @@ bool AliAnalysisTaskTrackingEffPID::IsInjectedParticle(int lab, TList *lh){
   }
   if(nameGen.IsWhitespace() || nameGen.Contains("ijing")) return kFALSE;
   else return kTRUE;
+}
+//______________________________________________________________________________
+double AliAnalysisTaskTrackingEffPID::GetLocalTrackDens(TNtuple* trEtaPhiMap, double eta, double phi) const {
+  /// count tracks in a cone around selected particle
+
+  if(TMath::Abs(eta)>1) return -1;
+  double nTracksInCone=0.;
+  float etatr,phitr;
+  trEtaPhiMap->SetBranchAddress("eta",&etatr);
+  trEtaPhiMap->SetBranchAddress("phi",&phitr);
+  double etamin=eta-fDeltaRcut;
+  double etamax=eta+fDeltaRcut;
+  double scalFac=1;
+  if(fDeltaRcut<0.8){
+    if(etamax>0.8){
+      etamax=eta;
+      scalFac=2.;
+    }
+    if(etamin<-0.8){
+      etamin=eta;
+      scalFac=2.;
+    }
+  }
+  for (int iT = 0; iT < trEtaPhiMap->GetEntriesFast(); ++iT) {
+    trEtaPhiMap->GetEvent(iT);
+    if(etatr>etamin && etatr<etamax){
+      double deltaEta=etatr-eta;
+      double deltaPhi=phitr-phi;
+      if(deltaPhi<-TMath::Pi()) deltaPhi+=2*TMath::Pi();
+      else if(deltaPhi>TMath::Pi()) deltaPhi-=2*TMath::Pi();
+      double deltaR2=deltaEta*deltaEta+deltaPhi*deltaPhi;
+      if(deltaR2<fDeltaRcut*fDeltaRcut) nTracksInCone+=1.;
+    }
+  }
+  return nTracksInCone*scalFac;
 }

@@ -55,7 +55,6 @@ public:
   // configration
   virtual void SetAnalysisMode(TString mode) { fAnaMode = mode; }
   virtual void SetAssociatedTrack(TString mode) { fasso = mode; }
-  virtual void SetPID(Bool_t mode) { fPID = mode; }
   virtual void SetDatatype(Bool_t mode) { fDataType = mode; }
   virtual void SetRunType(Bool_t mode) { frun2 = mode; }
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
@@ -64,13 +63,13 @@ public:
   virtual void SetReduceDphi(Double_t mode){fReduceDphi=mode;}
   virtual void SetSymmetricFMD(Bool_t mode){fSymmetricFMD=mode;}
   virtual void SetLikeSign(Bool_t mode){fLikeSign=mode;}
-  virtual void Set2Dfit(Bool_t mode){fIs2Dfit=mode;}
-  virtual void SetPtMax(Float_t mode){fPtMax=mode;}
-  virtual void SetPtMin(Float_t mode){fPtMin=mode;}
-  virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
+  virtual void SetPtMax(Float_t mode)   {fPtMax=mode;}
+  virtual void SetPtMin(Float_t mode)   {fPtMin=mode;}
+  virtual void SetAssoCut(Float_t mode) {fAsscoptCut=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
-  virtual void Setmcprim(Bool_t mode){fprim=mode;}
+  virtual void SetmcprimFMD(Bool_t mode){fprimFMD=mode;}
+  virtual void SetmcprimTPC(Bool_t mode){fprimTPC=mode;}
   virtual void SetCentCalib(Bool_t mode) { fcentcalib= mode; }
 
 
@@ -127,19 +126,17 @@ private:
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
- Int_t      ConvertRunNumber(Int_t run);
   Bool_t NotSPDClusterVsTrackletBG() {return !fUtils.IsSPDClusterVsTrackletBG(this->InputEvent());};
 
   void FillCorrelationTracks(Double_t MultipOrCent, TObjArray *triggerArray, 
-                             TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut, Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius,Float_t bSign, Int_t step, TObjArray *select_TPCPairs);
+                             TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Float_t bSign, Int_t step, TObjArray *select_TPCPairs);
 
   void FillCorrelationTracksMixing(Double_t MultipOrCentMix, Double_t pvxMix,
-                                   Double_t poolmax, Double_t poolmin,
                                    TObjArray *triggerArray,
                                    TObjArray *selectedTrackArray,
                                    TObjArray *selectedTrackArray_TPC,
                                    AliTHn *triggerHist, AliTHn *associateHist,
-                                   Bool_t, Float_t, Float_t, Float_t, Int_t, TObjArray *select_TPCPairs);
+                                   Float_t, Int_t, TObjArray *select_TPCPairs);
 
 
 
@@ -154,16 +151,14 @@ private:
   Bool_t fFMDcut;
   Int_t fFMDcutmode;
   Double_t fReduceDphi;
-  Bool_t fmakehole;
   TString fAnaMode;
   TString fasso;
-  Bool_t fPID;
   Bool_t fSymmetricFMD;
   Bool_t fLikeSign;
-  Bool_t fIs2Dfit;
 
   TString fCentType;
-  Bool_t fprim;
+  Bool_t fprimTPC;
+  Bool_t fprimFMD;
   Bool_t fcentcalib;
   Int_t fNEntries;
   
@@ -186,6 +181,7 @@ private:
   Float_t fCutChargedDCAxyMax;  
   Double_t fPtMin;
   Double_t fPtMax;
+  Double_t fAsscoptCut;
   Double_t fEtaMax;
   Double_t fEtaMaxExtra;
   Double_t fEtaMinExtra;
@@ -197,7 +193,6 @@ private:
   AliAODEvent *fEvent; //  AOD Event
   AliMCEvent* mcEvent;
   AliAODVertex *lPrimaryBestVtx;
-  Double_t tPrimaryVtxPosition[3];
   Double_t fPrimaryZVtx;
 
   AliAODVZERO *fvzero;
@@ -205,8 +200,6 @@ private:
   // Event Pool for mixing
   AliEventPoolManager *fPoolMgr;  //  event pool manager for Event Mixing
   AliEventPoolManager *fPoolMgr1; //  event pool manager for Event Mixing
-  Double_t poolmin;
-  Double_t poolmax;
   Int_t fPoolMaxNEvents;   // set maximum number of events in the pool
   Int_t fPoolMinNTracks;   // set minimum number of tracks in the pool
   Int_t fMinEventsToMix;   // set the minimum number of events want to mix
@@ -223,7 +216,7 @@ private:
   TH1F *fHistCentrality_beforeFMDMulcut;
   TH2F* fHistCentzvertex;
   TH2F* fHistCentV0vsTracklets;
-  TH2F* fHistCentV0vsTrackletsbefore;
+  TH2F* fHistCentvsTrackletsbefore;
   TH2F* mixedDist;
   TH2F* mixedDist2;
   
@@ -283,7 +276,6 @@ private:
 
 
   TH1F *fHist_Stat;
-  TH1F *fHist_V0Stat;
 
   AliTHn *fHistTriggerTrack;
   AliTHn *fHistReconstTrack;
@@ -291,7 +283,7 @@ private:
   AliTHn *fHistReconstTrackMix;
 
   // only for test of dphi
-  TH2D *fTPCTPCdphi_deta_4_2;
+//  TH2D *fTPCTPCdphi_deta_4_2;
 /*
   TH1D *fTPCTPCdphi_deta_4_1;
   TH1D *fTPCTPCdphi_deta_4_0;

@@ -430,7 +430,6 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   //
   // Process the events
   //
-
   //at least first event is needed!
   if (!ev1){
     AliError("At least first event must be set!");
@@ -615,6 +614,7 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
 
   if (fTrackRotator) {
     fTrackRotator->ClearRotatedTrackPool();
+    fTrackRotator->ClearRotatedPairPool();
   }
 
   return 1;
@@ -1575,15 +1575,26 @@ void AliDielectron::FillPairArrayTR()
     candidate.SetTracks(&fTrackRotator->GetKFTrack1(), &fTrackRotator->GetKFTrack2(),
                         fTrackRotator->GetVTrack1(),fTrackRotator->GetVTrack2());
 
+    Int_t label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother);
+    candidate.SetLabel(label);
+    if (label>-1) candidate.SetPdgCode(fPdgMother);
+      else candidate.SetPdgCode(0);
+
     if ((fTrackRotator->GetChargeTrack1() == +1 && fTrackRotator->GetChargeTrack2() == -1) ||
-        (fTrackRotator->GetChargeTrack1() == -1 && fTrackRotator->GetChargeTrack2() == +1))
-        candidate.SetType(kEv1PMRot);
-    else if (fTrackRotator->GetChargeTrack1() == +1 && fTrackRotator->GetChargeTrack2() == +1)
-        candidate.SetType(kEv1PPRot);
-    else if (fTrackRotator->GetChargeTrack1() == -1 && fTrackRotator->GetChargeTrack2() == -1)
+        (fTrackRotator->GetChargeTrack1() == -1 && fTrackRotator->GetChargeTrack2() == +1)){
+      candidate.SetType(kEv1PMRot);
+      if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
+    }
+    else if (fTrackRotator->GetChargeTrack1() == +1 && fTrackRotator->GetChargeTrack2() == +1){
+      candidate.SetType(kEv1PPRot);
+      if(fStoreRotatedPairs) PairArray(kEv1PPRot)->Add(new AliDielectronPair(candidate));
+    }
+    else if (fTrackRotator->GetChargeTrack1() == -1 && fTrackRotator->GetChargeTrack2() == -1){
       candidate.SetType(kEv1MMRot);
+      if(fStoreRotatedPairs) PairArray(kEv1MMRot)->Add(new AliDielectronPair(candidate));
+    }
     else 
-        continue;
+      continue;
 
     //pair cuts
     UInt_t cutMask=fPairFilter.IsSelected(&candidate);
@@ -1597,8 +1608,8 @@ void AliDielectron::FillPairArrayTR()
       //histogram array for the pair
       if (fHistoArray) fHistoArray->Fill(candidate.GetType() ,&candidate);
 
-      if(fHistos) FillHistogramsPair(&candidate);
-      if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
+      //if(fHistos) FillHistogramsPair(&candidate);
+      //if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
     }
   }
 }
@@ -1710,6 +1721,8 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
   //
   if (!fSignalsMC) return;
   TString className,className2,className3;
+  TString className4,className5,className6;
+  TString className4_2,className5_2,className6_2;
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
   AliDielectronVarManager::SetFillMap(fUsedVars);
   // AliDielectronVarManager::Fill(ev, values);
@@ -1722,10 +1735,26 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
     className.Form("Pair_%s",fSignalsMC->At(isig)->GetName());
     className2.Form("Track_Legs_%s",fSignalsMC->At(isig)->GetName());
     className3.Form("Track_%s_%s",fgkPairClassNames[1],fSignalsMC->At(isig)->GetName());  // unlike sign, SE only
+
     Bool_t pairClass=fHistos->GetHistogramList()->FindObject(className.Data())!=0x0;
     Bool_t legClass=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
     Bool_t mergedtrkClass=fHistos->GetHistogramList()->FindObject(className3.Data())!=0x0;
     if(!pairClass && !legClass && !mergedtrkClass) continue;
+
+    className4.Form("Pair_%s_ev1+_ev1-_TR",fSignalsMC->At(isig)->GetName());
+    className5.Form("Pair_%s_ev1+_ev1+_TR",fSignalsMC->At(isig)->GetName());
+    className6.Form("Pair_%s_ev1-_ev1-_TR",fSignalsMC->At(isig)->GetName());
+
+    className4_2.Form("Track_Legs_%s_ev1+_ev1-_TR",fSignalsMC->At(isig)->GetName());
+    className5_2.Form("Track_Legs_%s_ev1+_ev1+_TR",fSignalsMC->At(isig)->GetName());
+    className6_2.Form("Track_Legs_%s_ev1-_ev1-_TR",fSignalsMC->At(isig)->GetName());
+
+    Bool_t pairClass_ULS_TR=fHistos->GetHistogramList()->FindObject(className4.Data())!=0x0;
+    Bool_t pairClass_LSpp_TR=fHistos->GetHistogramList()->FindObject(className5.Data())!=0x0;
+    Bool_t pairClass_LSmm_TR=fHistos->GetHistogramList()->FindObject(className6.Data())!=0x0;
+    Bool_t legClass_ULS_TR=fHistos->GetHistogramList()->FindObject(className4_2.Data())!=0x0;
+    Bool_t legClass_LSpp_TR=fHistos->GetHistogramList()->FindObject(className5_2.Data())!=0x0;
+    Bool_t legClass_LSmm_TR=fHistos->GetHistogramList()->FindObject(className6_2.Data())!=0x0;
 
     // fill pair and/or their leg variables
     if(pairClass || legClass) {
@@ -1792,6 +1821,80 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
           } //is signal
         } //loop: pairs
       } // fill -- pairs
+
+
+      if (fTrackRotator) {
+        if(((AliDielectronSignalMC*)fSignalsMC->At(isig))->GetCheckUnlikeSign()){
+          Int_t npairs=PairArray(AliDielectron::kEv1PMRot)->GetEntriesFast(); // SE +-
+          for (Int_t ipair=0; ipair<npairs; ++ipair){
+            AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1PMRot)->UncheckedAt(ipair));
+            Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
+            AliDielectronVarManager::SetValue(AliDielectronVarManager::kRotationAngle, fTrackRotator->GetRotatedPairPM(ipair)->rotAng); 
+            AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks, fTrackRotator->GetRotatedPairPM(ipair)->weight); 
+            if(isMCtruth) {
+              //fill pair information
+              if (pairClass_ULS_TR){
+                AliDielectronVarManager::Fill(pair, values);
+                fHistos->FillClass(className4, AliDielectronVarManager::kNMaxValues, values);
+              }
+              //fill leg information, both + and - in the same histo
+              if (legClass_ULS_TR){
+                AliDielectronVarManager::Fill(&(pair->GetKFFirstDaughter()),values);
+                fHistos->FillClass(className4_2, AliDielectronVarManager::kNMaxValues, values);
+                AliDielectronVarManager::Fill(&(pair->GetKFSecondDaughter()),values);
+                fHistos->FillClass(className4_2, AliDielectronVarManager::kNMaxValues, values);
+              }
+            } //is signal
+          } //loop: pairs
+        } // fill +- pairs
+        if(((AliDielectronSignalMC*)fSignalsMC->At(isig))->GetCheckLikeSignPP()){
+          Int_t npairsLS1=PairArray(AliDielectron::kEv1PPRot)->GetEntriesFast(); // SE ++
+          for (Int_t ipair=0; ipair<npairsLS1; ++ipair){
+            AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1PPRot)->UncheckedAt(ipair));
+            Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
+            AliDielectronVarManager::SetValue(AliDielectronVarManager::kRotationAngle, fTrackRotator->GetRotatedPairPP(ipair)->rotAng);
+            AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks, fTrackRotator->GetRotatedPairPP(ipair)->weight); 
+            if(isMCtruth){
+              //fill pair information
+              if (pairClass_LSpp_TR){
+                AliDielectronVarManager::Fill(pair, values);
+                fHistos->FillClass(className5, AliDielectronVarManager::kNMaxValues, values);
+              }
+              //fill leg information, both + and - in the same histo
+              if (legClass_LSpp_TR){
+                AliDielectronVarManager::Fill(&(pair->GetKFFirstDaughter()),values);
+                fHistos->FillClass(className5_2, AliDielectronVarManager::kNMaxValues, values);
+                AliDielectronVarManager::Fill(&(pair->GetKFSecondDaughter()),values);
+                fHistos->FillClass(className5_2, AliDielectronVarManager::kNMaxValues, values);
+              }
+            } //is signal
+          } //loop: pairs
+        } // fill ++ pairs
+        if(((AliDielectronSignalMC*)fSignalsMC->At(isig))->GetCheckLikeSignMM()){
+          Int_t npairsLS2=PairArray(AliDielectron::kEv1MMRot)->GetEntriesFast(); // SE --
+          for (Int_t ipair=0; ipair<npairsLS2; ++ipair){
+            AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1MMRot)->UncheckedAt(ipair));
+            Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
+            AliDielectronVarManager::SetValue(AliDielectronVarManager::kRotationAngle, fTrackRotator->GetRotatedPairMM(ipair)->rotAng);
+            AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks, fTrackRotator->GetRotatedPairMM(ipair)->weight); 
+            if(isMCtruth){
+              //fill pair information
+              if (pairClass_LSmm_TR){
+                AliDielectronVarManager::Fill(pair, values);
+                fHistos->FillClass(className6, AliDielectronVarManager::kNMaxValues, values);
+              }
+              //fill leg information, both + and - in the same histo
+              if (legClass_LSmm_TR){
+                AliDielectronVarManager::Fill(&(pair->GetKFFirstDaughter()),values);
+                fHistos->FillClass(className6_2, AliDielectronVarManager::kNMaxValues, values);
+                AliDielectronVarManager::Fill(&(pair->GetKFSecondDaughter()),values);
+                fHistos->FillClass(className6_2, AliDielectronVarManager::kNMaxValues, values);
+              }
+            } //is signal
+          } //loop: pairs
+        } // fill -- pairs
+      }
+
     }
 
     // fill single tracks of signals
@@ -1813,6 +1916,8 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
   } //loop: MCsignals
 
 }
+
+
 
 //______________________________________________
 void AliDielectron::SetCentroidCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t varx, UInt_t vary, UInt_t varz)

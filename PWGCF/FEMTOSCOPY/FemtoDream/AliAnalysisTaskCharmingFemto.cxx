@@ -35,6 +35,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
+      fCheckProtonSPDHit(false),
       fTrackBufferSize(2500),
       fDmesonPDGs{},
       fGTI(nullptr),
@@ -48,6 +49,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fResultList(nullptr),
       fResultQAList(nullptr),
       fHistDplusInvMassPt(nullptr),
+      fHistDplusInvMassPtSel(nullptr),
       fHistDplusEta(nullptr),
       fHistDplusPhi(nullptr),
       fHistDplusChildPt(),
@@ -59,6 +61,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDplusMCThetaRes(nullptr),
       fHistDplusMCOrigin(nullptr),
       fHistDminusInvMassPt(nullptr),
+      fHistDminusInvMassPtSel(nullptr),
       fHistDminusEta(nullptr),
       fHistDminusPhi(nullptr),
       fHistDminusChildPt(),
@@ -72,10 +75,14 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
-      fDoNSigmaMassSelection(true),
+      fMassSelectionType(kSignal),
       fNSigmaMass(2.),
+      fNSigmaOffsetSideband(5.),
       fLowerMassSelection(0.),
       fUpperMassSelection(999.),
+      fSidebandWidth(0.2),
+      fLowerDstarRemoval(1.992),
+      fUpperDstarRemoval(2.028),
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
       fUseTrueDOnly(false),
@@ -104,6 +111,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
+      fCheckProtonSPDHit(false),
       fTrackBufferSize(2500),
       fDmesonPDGs{},
       fGTI(nullptr),
@@ -117,6 +125,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fResultList(nullptr),
       fResultQAList(nullptr),
       fHistDplusInvMassPt(nullptr),
+      fHistDplusInvMassPtSel(nullptr),
       fHistDplusEta(nullptr),
       fHistDplusPhi(nullptr),
       fHistDplusChildPt(),
@@ -124,6 +133,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fHistDplusChildPhi(),
       fHistDplusMCPDGPt(nullptr),
       fHistDminusInvMassPt(nullptr),
+      fHistDminusInvMassPtSel(nullptr),
       fHistDplusMCPtRes(nullptr),
       fHistDplusMCPhiRes(nullptr),
       fHistDplusMCThetaRes(nullptr),
@@ -141,10 +151,14 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
-      fDoNSigmaMassSelection(true),
+      fMassSelectionType(kSignal),
       fNSigmaMass(2.),
+      fNSigmaOffsetSideband(5.),
       fLowerMassSelection(0.),
       fUpperMassSelection(999.),
+      fSidebandWidth(0.2),
+      fLowerDstarRemoval(1.992),
+      fUpperDstarRemoval(2.028),
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
       fUseTrueDOnly(false),
@@ -313,6 +327,13 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(fInputEvent->GetTrack(
         iTrack));
+
+    if (fCheckProtonSPDHit) {
+      if (!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1)) {
+        continue;
+      }
+    }
+
     fProtonTrack->SetTrack(track);
     fProtonTrack->SetInvMass(0.938);
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
@@ -382,28 +403,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       fHistDminusInvMassPt->Fill(dMeson->Pt(), mass);
     }
 
-    // select D mesons mass window
-    if (fDoNSigmaMassSelection) {
-      // simple parametrisation from D+ in 5.02 TeV
-      double massMean =
-          TDatabasePDG::Instance()->GetParticle(absPdgMom)->Mass() +
-          0.0025;  // mass shift observed in all Run2 data samples for all
-                   // D-meson species
-      double massWidth = 0.;
-      switch (fDecChannel) {
-        case kDplustoKpipi:
-          if(fSystem == kpp5TeV) {
-            massWidth = 0.0057 + dMeson->Pt() * 0.00066;
-          }
-          else if(fSystem == kpp13TeV) {
-            massWidth = 0.006758 + dMeson->Pt() * 0.0005124;
-          }
-          break;
-      }
-      fLowerMassSelection = massMean - fNSigmaMass * massWidth;
-      fUpperMassSelection = massMean + fNSigmaMass * massWidth;
-    }
-    if( mass > fLowerMassSelection && mass < fUpperMassSelection) {
+
+    if( MassSelection(mass, dMeson->Pt(), absPdgMom) ) {
       if (dMeson->Charge() > 0) {
         AliFemtoDreamBasePart dplusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
         if (fIsMC && fMCBeautyRejection
@@ -418,6 +419,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         }
         dplus.push_back(dplusCand);
         if (!fIsLightweight) {
+          fHistDplusInvMassPtSel->Fill(dMeson->Pt(), mass);
           fHistDplusEta->Fill(dMeson->Eta());
           fHistDplusPhi->Fill(dMeson->Phi());
           if (fIsMC) {
@@ -458,6 +460,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         }
         dminus.push_back(dminusCand);
         if (!fIsLightweight) {
+          fHistDminusInvMassPtSel->Fill(dMeson->Pt(), mass);
           fHistDminusEta->Fill(dMeson->Eta());
           fHistDminusPhi->Fill(dMeson->Phi());
           if (fIsMC) {
@@ -633,6 +636,11 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       10, 100, 1.77, 1.97);
   fDChargedHistList->Add(fHistDplusInvMassPt);
   if (!fIsLightweight) {
+    fHistDplusInvMassPtSel = new TH2F(
+        "fHistDplusInvMassPtSel",
+        "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
+        10, 100, 1.77, 1.97);
+    fDChargedHistList->Add(fHistDplusInvMassPtSel);
     fHistDplusEta = new TH1F("fHistDplusEta", ";#eta; Entries", 100, -1, 1);
     fDChargedHistList->Add(fHistDplusEta);
     fHistDplusPhi = new TH1F("fHistDplusPhi", ";#phi; Entries", 100, 0.,
@@ -680,6 +688,11 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       10, 100, 1.77, 1.97);
   fDChargedHistList->Add(fHistDminusInvMassPt);
   if (!fIsLightweight) {
+    fHistDminusInvMassPtSel = new TH2F(
+        "fHistDminusInvMassPtSel",
+        "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
+        10, 100, 1.77, 1.97);
+    fDChargedHistList->Add(fHistDminusInvMassPtSel);
     fHistDminusEta = new TH1F("fHistDminusEta", ";#eta; Entries", 100, -1, 1);
     fDChargedHistList->Add(fHistDminusEta);
     fHistDminusPhi = new TH1F("fHistDminusPhi", ";#phi; Entries", 100, 0.,
@@ -754,7 +767,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fDChargedHistList->Add(fHistDminusChildPhi[iChild]);
     }
   }
-  
+
 
   if (fPartColl && fPartColl->GetHistList()) {
     fResultList = fPartColl->GetHistList();
@@ -905,6 +918,49 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
       fRDHFCuts->CleanOwnPrimaryVtx(dMeson, fInputEvent, origOwnVtx);
     }
   }
-  
+
   return isSelected;
+}
+
+//____________________________________________________________________________________________________
+bool AliAnalysisTaskCharmingFemto::MassSelection(const double mass,
+                                                 const double pt,
+                                                 const int pdg) {
+  // simple parametrisation from D+ in 5.02 TeV
+  double massMean = TDatabasePDG::Instance()->GetParticle(pdg)->Mass() + 0.0025;  // mass shift observed in all Run2 data samples for all
+                                                                                  // D-meson species
+  double massWidth = 0.;
+  switch (fDecChannel) {
+    case kDplustoKpipi:
+      if (fSystem == kpp5TeV) {
+        massWidth = 0.0057 + pt * 0.00066;
+      } else if (fSystem == kpp13TeV) {
+        massWidth = 0.006758 + pt * 0.0005124;
+      }
+      break;
+  }
+
+  // select D mesons mass window
+  if (fMassSelectionType == kSignal) {
+    fLowerMassSelection = massMean - fNSigmaMass * massWidth;
+    fUpperMassSelection = massMean + fNSigmaMass * massWidth;
+  } else if ( fMassSelectionType == kSidebandLeft) {
+    fLowerMassSelection = massMean - fNSigmaOffsetSideband * massWidth - fSidebandWidth;
+    fUpperMassSelection = massMean - fNSigmaOffsetSideband * massWidth;
+  } else if ( fMassSelectionType == kSidebandRight) {
+    fLowerMassSelection = massMean + fNSigmaOffsetSideband * massWidth;
+    fUpperMassSelection = massMean + fNSigmaOffsetSideband * massWidth + fSidebandWidth;
+
+    // additional removal of D*
+    if ( mass > fLowerDstarRemoval && mass < fUpperDstarRemoval) {
+      return false;
+    }
+  }
+
+
+  if (mass > fLowerMassSelection && mass < fUpperMassSelection) {
+    return true;
+  }
+
+  return false;
 }

@@ -4,13 +4,12 @@
 /* Copyright(c) 1998-2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
+/* $Id$ */
 
 //***********************************************************
 // Class AliMuonInfoStoreRD
 // class used to extract and store info of MC particle
-// Author: X-M. Zhang, zhang@clermont.in2p3.fr
-//                     zhangxm@iopp.ccnu.edu.cn
+// Author: X-M. Zhang, xzhang@cern.ch
 //***********************************************************
 
 #include <TString.h>
@@ -75,8 +74,8 @@ class AliMuonInfoStoreMC : public AliMuonInfoStoreRD {
   TLorentzVector fLorentzP; // lorentz momentum of particle
   Int_t fTrackIndex;        // index of the MC particle
   Int_t fTrackPDGCode;      // PDG code of the MC particle
-  Int_t fSource; // = 0, mu<-b 
-                 // = 1, mu<-c 
+  Int_t fSource; // = 0, mu<-b
+                 // = 1, mu<-c
                  // = 2, primary mu
                  // = 3, secondary mu
                  // = 4, not mu

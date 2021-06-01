@@ -1,6 +1,4 @@
 configurationName: "EMCal correction framework configuration for Run2 data using multiple clusterizers"
-pass: "pass1"
-
 inputObjects:
     cells:
         defaultCells:
@@ -42,7 +40,8 @@ CellEnergy_0cells:
 CellTimeCalib:
     createHistos: true
     doCalibrateLowGain: true 
-    doCalibTimeEdep: false
+    doCalibTimeEdep: true
+    doMergedBCs: true
 CellTimeCalib_0cells:
     enabled: true    
     

@@ -1,9 +1,13 @@
 ﻿#ifndef AliAnalysisTaskHe3EffTree_H
 #define AliAnalysisTaskHe3EffTree_H
-
+#include "AliTRDonlineTrackMatching.h"
+#include "AliCDBManager.h"
+#include "AliGeomManager.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+
 class AliPIDResponse;
+
 class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE  
 {
     public:
@@ -29,12 +33,23 @@ class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE
 		Double_t                		fBetheParamsHe[6];	//< Bethe Aleph He3 Parameter + TPC sigma
 		Double_t                		fBetheParamsT[6];	
   		TTree                  			*fTree;              //< tree containing He3 information
+  		
+  	Int_t 				fYear;	
 		Int_t					tRunNumber;
 		Int_t					tTrigMB;			// trigger info
 		Int_t					tTrigHMV0;
 		Int_t					tTrigHMSPD;
 		Int_t					tTrigHNU;
 		Int_t					tTrigHQU;
+		
+		Int_t					tTRDvalid;		// has valid TRD track
+  	Int_t					tTRDtrigHNU;	// HNU fired by track
+  	Int_t					tTRDtrigHQU;	// HQU fired by track
+		Int_t					tTRDPid;
+		Int_t					tTRDnTracklets;
+		Int_t					tTRDPt;
+		Int_t					tTRDLayerMask;
+		Float_t				tTRDSagitta;
 		
 		Float_t					tnTPCcluster;
 		Float_t					tTPCchi2;
@@ -96,6 +111,8 @@ class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE
 		Double_t 				Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);
 		Float_t 				GetTOFSignalHe3(AliESDtrack& trackHe, Float_t tP);
 		void SetBetheBlochParams(Int_t runNumber);
+		Double_t TRDtrack(AliESDtrack* esdTrack);
+		
         AliAnalysisTaskHe3EffTree(const AliAnalysisTaskHe3EffTree&); // not implemented
         AliAnalysisTaskHe3EffTree& operator=(const AliAnalysisTaskHe3EffTree&); // not implemented
 

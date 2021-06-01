@@ -51,6 +51,7 @@ public:
 private:
   
   float fImpParProng[knMaxProngs];         /// prong impact parameter
+  int   fITSRefitProng[knMaxProngs];       /// prong ITS refit flag
   float fImpParK0s;                        /// impact parameter K0s
   float fDecayLengthK0s;                   /// decay length K0s
   float fInvMassK0s;                       /// invariant mass of K0s
@@ -63,11 +64,12 @@ private:
   float fCosThetaStar;                     /// cos theta star (proton - Lc)
   float fsignd0;                           /// signed d0 proton (different from standard d0)
   float fArmqTOverAlpha;                   /// Armenteros qT/|alpha| of the K0s
+  float fV0radius;                         /// K0s radius
   int fCalcSecoVtx;                        /// flag to calculate secondary vertex for Lc (if false, CommonDmesonVarBranches are not filled)
   bool fReducePbPbBranches;                /// variable to disable unnecessary branches in PbPb
 
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandlerApplyLc2V0bachelor, 2); ///
+  ClassDef(AliHFTreeHandlerApplyLc2V0bachelor, 4); ///
   /// \endcond
 };
 #endif

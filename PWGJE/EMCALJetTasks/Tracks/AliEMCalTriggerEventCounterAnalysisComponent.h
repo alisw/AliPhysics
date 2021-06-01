@@ -13,7 +13,9 @@
 
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerEventData;
 
@@ -39,11 +41,11 @@ protected:
       const char** labels) const;
   Int_t FindAxis(THnSparse *hist, const char *title) const;
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerEventCounterAnalysisComponent, 1);    // Analysis component for event counting
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGEREVENTCOUNTERANALYSISCOMPONENT_H */

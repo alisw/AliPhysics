@@ -1,3 +1,3 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClusterMatched *AddTaskEmcalClusterMatched(const char *dummy, const char *suffix){
-  return EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClusterMatched::AddTaskEmcalClusterMatched(suffix);
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalClusterMatched *AddTaskEmcalClusterMatched(const char *dummy, const char *suffix){
+  return PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalClusterMatched::AddTaskEmcalClusterMatched(suffix);
 }

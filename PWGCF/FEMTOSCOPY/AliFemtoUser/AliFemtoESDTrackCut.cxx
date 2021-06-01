@@ -330,27 +330,6 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
           imost = 4;
         }
       }
-      else if (fMostProbable == 13) {
-        if (IsDeuteronNSigma(track->P().Mag(),track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()))
-          imost = 13;
-        if ((track->P().Mag() < 3) &&!(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal())))
-          imost = 0;
-      }
-      else if (fMostProbable == 14) {
-          if (IsTritonNSigma(track->P().Mag(), track->NSigmaTPCT(), track->NSigmaTOFT())){
-          imost = 14;
-        }
-      }
-      else if (fMostProbable == 15) {
-        if ( IsHe3NSigma(track->P().Mag(), track->NSigmaTPCH(), track->NSigmaTOFH())
-      )
-          imost = 15;
-      }
-      else if (fMostProbable == 16) {
-        if ( IsAlphaNSigma(track->P().Mag(), track->NSigmaTPCA(), track->NSigmaTOFA())
-      )
-          imost = 16;
-      }
       else if (fMostProbable == 5) { // no-protons
         if ( !IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
           imost = 5;
@@ -401,6 +380,27 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       else if (fMostProbable == 12) { //cut on Nsigma in pT not p
         if ( IsProtonNSigma(track->Pt(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
           imost = 12;
+      }
+      else if (fMostProbable == 13) {
+        if (IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), track->NSigmaTPCD(), track->NSigmaTOFD()))
+          imost = 13;
+        if ((track->P().Mag() < 3) && !(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal())))
+          imost = 0;
+      }
+      else if (fMostProbable == 14) {
+          if (IsTritonNSigma(track->P().Mag(), track->NSigmaTPCT(), track->NSigmaTOFT())){
+          imost = 14;
+        }
+      }
+      else if (fMostProbable == 15) {
+        if ( IsHe3NSigma(track->P().Mag(), track->NSigmaTPCH(), track->NSigmaTOFH())
+      )
+          imost = 15;
+      }
+      else if (fMostProbable == 16) {
+        if ( IsAlphaNSigma(track->P().Mag(), track->NSigmaTPCA(), track->NSigmaTOFA())
+      )
+          imost = 16;
       }
     }
 
@@ -517,13 +517,10 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
           }
         }
       }
-
-
-      /**********************************/
-    else if (fMostProbable == 13) {
+      else if (fMostProbable == 13) {
         //       if (imost == 3) {
         // Using the TPC to reject non-deuterons
-        if (track->P().Mag() < 2) {
+        if (track->P().Mag() < 3) {
           if (!(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()))) {
             imost = 0;
           } else {
@@ -531,7 +528,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
           }
         }
       }
-      /*************************************/
+
 
     }
 
@@ -815,13 +812,12 @@ bool AliFemtoESDTrackCut::IsKaonTPCdEdx(float mom, float dEdx)
 bool AliFemtoESDTrackCut::IsDeuteronTPCdEdx(float mom, float dEdx)
 {
 
-
   double a1 = -250.0,  b1 = 400.0;
   double a2 = -135.0,  b2 = 270.0;
   double a3 = -80,   b3 = 190.0;
   double a4 = 0.0,   b4 = 20.0;
 
-  double a5 = 125.0,   b5 = -100.0;
+  double a5 = 125.0,   b5 = -100.0; 
 
   if (mom < 1.1) {
     if (dEdx < a1*mom+b1) return false;
@@ -832,18 +828,17 @@ bool AliFemtoESDTrackCut::IsDeuteronTPCdEdx(float mom, float dEdx)
   else if (mom < 2) {
     if (dEdx < a3*mom+b3) return false;
   }
-  else if (mom >= 2) {
+  else if (mom <3 ) {
     if (dEdx < a4*mom+b4) return false;
   }
+  
+  if (fNsigmaTPConly && fNsigmaMass == -1) {
+    // for selection with only the TPC detector
+    // cutting the tip of the signal (~1.5 GeV/c) 
+    // that is dominated by wrongly identified particles
 
-
-  if (!fNsigmaTPCTOF && (fNsigmaMass == -1)) {
-    //for selection with only the TPC detector, to remove visible contamination
+    // to avoid this constraint, set fNsigmaMass i.e. on 0, SetNsigmaMass(0)  
     if (dEdx < a5*mom+b5) return false;
-  }
-  else if(fNsigmaTPCTOF && (fNsigmaMass == -1)) {
-    //for selection with tpc/tof to finish sample before the region with contamination
-    if (mom > 2.2) return false;
   }
 
   return true;
@@ -1106,53 +1101,37 @@ bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsig
 }
 
 
-/***********************************************************************/
-
-bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sigmaMass, float nsigmaTPCD, float nsigmaTOFD)
+bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG, float nsigmaTPCD, float nsigmaTOFD)
 {
   double massPDGD=1.8756;
   if (fNsigmaTPCTOF) {
-    if (mom > 1.4) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF
-      if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < 2))
+    if (mom > 1.4){
+      if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < fNsigma))
         return true;
     }
-    else {
+    else{ 
       if (TMath::Abs(nsigmaTPCD) < fNsigma)
         return true;
     }
   }
-  else{
-    if(sigmaMass < 0){
+  else if (fNsigmaTPConly){
       if (TMath::Abs(nsigmaTPCD) < fNsigma)
 	return true;
-    }
-    else if(sigmaMass > 0){
+  }
+  else {
+    // p dependent mass cut, TPC & TOF
+    // The method should provide similar resluts to the case
+    // with fNsigmaTPCTOF=true and fNsigma=2
 
-      //p dependent mass cut 
-      double l1, l2;
-      if(sigmaMass > 2){
-         //left band (4 sigmas)
-         l1 = 2.897 - 0.558*mom + 0.177*mom*mom - 0.026*mom*mom*mom;  
-         l2 = 3.77 - 0.487*mom + 0.126*mom*mom - 0.014*mom*mom*mom;
-      }
-      else if(sigmaMass > 1){
-         //right band (4 sigmas)
-         l1 = 4.5 - 0.42*mom + 0.1*mom*mom;
-         l2 = 6.602 -0.981*mom + 0.303*mom*mom;
-      }
-      else{
-         //signal (dist under the mass peak -- 2 sigmas)
-         l1 = 4.002 - 0.627*mom + 0.184*mom*mom - 0.02*mom*mom*mom;
-         l2 = 4.35 - 0.399*mom + 0.09*mom*mom;
-      }
+    double l1 = 4.002 - 0.627*mom + 0.184*mom*mom - 0.02*mom*mom*mom;
+    double l2 = 4.35 - 0.399*mom + 0.09*mom*mom;
 
-      if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (massTOFPDG > l1) && (massTOFPDG < l2))
-	 return true;
-
-    }
+    if ( mom < 1.3 && (TMath::Abs(nsigmaTPCD) < fNsigma) ) 
+       return true;
+    else if ( mom >= 1.3 && (TMath::Abs(nsigmaTPCD) < fNsigma) && (massTOFPDG > l1) && (massTOFPDG < l2))
+       return true;
 
   }
-
   return false;
 }
 
@@ -1191,11 +1170,6 @@ bool AliFemtoESDTrackCut::IsAlphaNSigma(float mom, float nsigmaTPCA, float nsigm
 }
 
 
-
-
-
-//
-/*********************************************************************/
 
 
 void AliFemtoESDTrackCut::SetPIDMethod(ReadPIDMethodType newMethod)
@@ -1254,5 +1228,6 @@ bool AliFemtoESDTrackCut::IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float n
   else
      return true;
 }
+
 
 

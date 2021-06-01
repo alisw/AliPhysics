@@ -290,6 +290,54 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("00010113","411790106f03n120000","01631031000000d0"); // NCell Effi P2 std.
     cuts.AddCutCalo("00010113","411790106f03w120000","01631031000000d0"); // NCell Effi TB var. 1
     cuts.AddCutCalo("00010113","411790106f03x120000","01631031000000d0"); // NCell Effi TB var. 2
+  // 3x3 clusterizer (same cuts as before)
+  } else if (trainConfig == 42){ // pp 13 TeV EMCal + DCal
+    cuts.AddCutCalo("00010113","411790106f030120003","01631031000000d0"); // No NCell cut, 1-2 NLM
+  } else if (trainConfig == 43){ // pp 13 TeV EMCal + DCal
+    cuts.AddCutCalo("00010113","411790106f03m120003","01631031000000d0"); // NCell Effi TB std.
+    cuts.AddCutCalo("00010113","411790106f03n120003","01631031000000d0"); // NCell Effi P2 std.
+    cuts.AddCutCalo("00010113","411790106f03w120003","01631031000000d0"); // NCell Effi TB var. 1
+    cuts.AddCutCalo("00010113","411790106f03x120003","01631031000000d0"); // NCell Effi TB var. 2
+  } else if (trainConfig == 44){ // pp 13 TeV EMCal + DCal NLM variation
+    cuts.AddCutCalo("00010113","411790106f030120001","01631031000000d0"); // No NCell cut, 1NLM
+    cuts.AddCutCalo("00010113","411790106f030120002","01631031000000d0"); // No NCell cut, 2NLM
+  } else if (trainConfig == 45){ // pp 13 TeV EMCal + DCal
+    cuts.AddCutCalo("00010113","411790106f030220003","01631031000000d0"); // No NCell cut, 1-2 NLM, M02var
+  } else if (trainConfig == 46){ // pp 13 TeV EMCal + DCal
+    cuts.AddCutCalo("00010113","411790106f030000000","01631031000000d0"); // No NCell cut, TBNL + FT
+    cuts.AddCutCalo("00010113","411793706f030000000","01631031000000d0"); // No NCell cut, TBNL
+    cuts.AddCutCalo("00010113","411790406f030000000","01631031000000d0"); // No NCell cut, TBNL no scale
+
+  // Settings for different clusterizer
+  } else if (trainConfig == 50){ // std
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+  } else if (trainConfig == 51){ // var1
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+  } else if (trainConfig == 52){ // var2
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+  } else if (trainConfig == 53){ // var3
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+  } else if (trainConfig == 54){ // var4
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+
+  // Settings for different clusterizer without M02 and exotic cuts
+  } else if (trainConfig == 55){ // std
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 56){ // var1
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 57){ // var2
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 58){ // var3
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 59){ // var4
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+
+
 
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

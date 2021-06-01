@@ -47,6 +47,8 @@ public:
    // called at end of analysis
    virtual void Terminate(Option_t* option);
 
+  void PrintSummary();
+
    enum Detector {kITS, kTPC, kTOF};
    Bool_t               GetEnablePhysicsSelection() const   {return fSelectPhysics; }
    Int_t                GetTriggerMask() const              {return fTriggerMask; }
@@ -86,12 +88,16 @@ public:
 
    void   SetCentralityFile(std::string filename) {fCentralityFilename = filename; }
 
+  void   SetCentralityFileFromAlien(std::string filename) {fCentralityFilenameFromAlien = filename; }
+  void   SetCentralityFile(std::string filenamelocal,std::string filenamealien);
+
    // Support Histos
    void   SetSupportHistoMCSignalAndCutsetting(int nMCSignal, int nCutsetting) {fSupportMCSignal = nMCSignal; fSupportCutsetting = nCutsetting;}
 
    // Resolution setter
    void   SetResolutionFile(std::string filename) {fResoFilename = filename; }
    void   SetResolutionFileFromAlien(std::string filename) {fResoFilenameFromAlien = filename; }
+   void   SetResolutionFile(std::string filenamelocal,std::string filenamealien);
    void   SetSmearGenerated(bool setSmearingGen) { fDoGenSmearing = setSmearingGen; }
    void   SetResolutionDeltaPtBinsLinear (const double min, const double max, const unsigned int steps){SetBinsLinear("ptDelta_reso", min, max, steps);}
    void   SetResolutionRelPtBinsLinear   (const double min, const double max, const unsigned int steps){SetBinsLinear("ptRel_reso", min, max, steps);}
@@ -121,7 +127,9 @@ public:
    void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
    void   SetDeactivateLS(Bool_t deactivateLS) {fDeactivateLS = deactivateLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
+   void   SetOpeningAngleAccCut(Bool_t op, Double_t opmin, Double_t opmax) {fOpeningAngleAccCut = op; fOpMin = opmin; fOpMax = opmax;}
    void   SetFillPhiV(Bool_t doPhiV) {fDoFillPhiV = doPhiV;}
+   void   SetPhiVCut(Bool_t apply, Double_t maxMee, Double_t minphiv){fApplyPhivCut = apply; fMaxMee = maxMee; fMinPhiV = minphiv;}
 
    // Single leg from Pair related setter
    void   SetWriteLegsFromPair(bool enable){fWriteLegsFromPair = enable;}
@@ -142,6 +150,7 @@ public:
    void SetDoCocktailWeighting(bool doCocktailWeight) { fDoCocktailWeighting = doCocktailWeight; }
    void SetCocktailWeighting(std::string CocktailFilename) { fCocktailFilename = CocktailFilename; }
    void SetCocktailWeightingFromAlien(std::string CocktailFilenameFromAlien) { fCocktailFilenameFromAlien = CocktailFilenameFromAlien; }
+   void  SetCocktailWeighting(std::string CocktailFilenamelocal,std::string CocktailFilenamealien);
 
    // Generator related setter
    void   SetMinPtGen(double ptMin)   {fPtMinGen = ptMin;}; // Look only at particles which are above a threshold. (reduces computing time/less tracks when looking at secondaries)
@@ -210,6 +219,7 @@ private:
 
   double GetWeight(Particle part1, Particle part2, double motherpt);
   double PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
+  Double_t CalculateNbins();
 
   AliAnalysisCuts*  fEventFilter; // event filter
 
@@ -264,6 +274,12 @@ private:
   double  fEtaMin; // Kinematic cut for pairing
   double  fEtaMax; // Kinematic cut for pairing
 
+  Bool_t fOpeningAngleAccCut; // opening angle cut in acceptance
+  Double_t fOpMin; // min
+  Double_t fOpMax; // max
+
+
+
   double  fPtMinGen;
   double  fPtMaxGen;
   double  fEtaMinGen;
@@ -301,6 +317,7 @@ private:
 
   TH1F* fHistEvents;
   TH1F* fHistEventStat;
+  TH1F* fHistCentralityRaw;
   TH1F* fHistCentrality;
   TH1F* fHistVertex;
   TH1F* fHistVertexContibutors;
@@ -311,7 +328,10 @@ private:
 
   TFile* fCentralityFile;
   std::string fCentralityFilename;
+  std::string fCentralityFilenameFromAlien;
   TH1F* fHistCentralityCorrection;
+  Double_t fNBinsCentralityCorr;
+  Double_t fEntriesCentralityCorr;
   TList* fOutputListSupportHistos;
 
   std::vector<TH3D*> fHistGenPosPart;
@@ -345,6 +365,9 @@ private:
   std::vector<THnSparseF*> fTHnSparseRecLegsFromPair;
 
   Bool_t fDoFillPhiV;
+  Bool_t fApplyPhivCut;
+  Double_t fMaxMee;
+  Double_t fMinPhiV;
 
   Bool_t fDoPairing;
   Bool_t fDoULSandLS;
@@ -378,7 +401,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 4);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 8);
 };
 
 

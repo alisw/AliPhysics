@@ -46,11 +46,9 @@
 #include <array>
 #include <iostream>
 
-/// \cond CLASSIMP
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalTriggerJets)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerJets)
 
-namespace EmcalTriggerJets {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalTriggerJets::AliAnalysisTaskEmcalTriggerJets():
     AliAnalysisTaskEmcalJet(),
@@ -76,12 +74,9 @@ void AliAnalysisTaskEmcalTriggerJets::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   const std::array<TString, 5> kEmcalTriggers = {"INT7", "EJ1", "EJ2", "DJ1", "DJ2"};
-  const int kNJetPtBins = 9;
-  const int kNJetRadiusBins = 7;
 
   TLinearBinning jetptbinning(9, 20, 200), pbinning(300, 0., 30.), dEdxbinning(600, 0., 600.), massbinning(400., 0., 4.), eopbinning(150, 0., 1.5), radiusBinning(10, 0., 1.);
-  const TBinning *binningPID[5] {&jetptbinning, &pbinning, &dEdxbinning, &massbinning, &eopbinning},
-                 *binningAssociate[6] = {&jetptbinning, &pbinning, &radiusBinning, &dEdxbinning, &massbinning, &eopbinning};
+  const TBinning *binningPID[5] {&jetptbinning, &pbinning, &dEdxbinning, &massbinning, &eopbinning};
   const std::array<int, 2> kJetRadii = {2, 4};
   const std::array<TString, 3> kJetTypes = {"Charged", "Full", "Neutral"};
   const std::array<TString, 2> kDetectors = {"EMCAL", "DCAL"};
@@ -154,7 +149,6 @@ bool AliAnalysisTaskEmcalTriggerJets::Run(){
                 tagForLeading = "FullJet" + r + det;
         AliJetContainer *c = this->GetJetContainer(namejcont);
         if(!c) AliErrorStream() << "Not found jet container " << namejcont << std::endl;
-        bool doPID = fPIDResponse && (jt == "Full") && (r == "R04");
         for(auto j : c->accepted()){
           TLorentzVector jetvec(j->Px(), j->Py(), j->Pt(), j->E());
           // get the leading particle
@@ -404,5 +398,3 @@ AliAnalysisTaskEmcalTriggerJets *AliAnalysisTaskEmcalTriggerJets::AddTaskEmcalTr
 
   return task;
 }
-
-} /* namespace EmcalTriggerJets */

@@ -46,7 +46,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 AliCaloTrackReader  * ConfigureReader        
 (TString col,           Bool_t simulation,
  TString clustersArray, Bool_t tender,
- TString calorimeter,   Bool_t nonLinOn,
+ TString calorimeter,   Int_t nonLinOn,
  TString trigger,       Bool_t rejectEMCTrig,
  Int_t   minCen,        Int_t  maxCen,
  Bool_t  printSettings, Int_t  debug       );
@@ -54,7 +54,7 @@ AliCaloTrackReader  * ConfigureReader
 AliCalorimeterUtils * ConfigureCaloUtils     
 (TString col,           Bool_t simulation,
  Bool_t tender,
- Bool_t  nonLinOn,      Int_t  year,
+ Int_t  nonLinOn,      Int_t  year,
  Bool_t  printSettings, Int_t  debug );
 
 AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
@@ -88,7 +88,7 @@ TString kAnaClusterShape = "";
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param tender : A bool indicating if the tender was running before this analysis
-/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param nonLinOn : An integer to set the use of the non linearity correction
 /// \param tmDep: Track matching option
 /// \param qaAn : A bool to switch the calorimeter QA analysis
 /// \param outputfile : A string to change the name of the histograms output file, default is AnalysisResults.root
@@ -105,7 +105,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
  Int_t    rejectEMCTrig = 0,
  TString  clustersArray = "",
  Bool_t   tender        = kFALSE,
- Bool_t   nonLinOn      = kFALSE,
+ Int_t    nonLinOn      = 0,
  Bool_t   tmDep         = kTRUE,
  Bool_t   qaAn          = kFALSE,
  TString  outputfile    = "",
@@ -297,7 +297,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
 ///
 AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
                                      TString clustersArray, Bool_t tender,
-                                     TString calorimeter,   Bool_t nonLinOn,
+                                     TString calorimeter,   Int_t nonLinOn,
                                      TString trigger,       Bool_t rejectEMCTrig,
                                      Int_t   minCen,        Int_t  maxCen,
                                      Bool_t printSettings,  Int_t   debug        )
@@ -487,7 +487,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 ///
 AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation,
                                         Bool_t tender,
-                                        Bool_t  nonLinOn,      Int_t year,
+                                        Int_t  nonLinOn,      Int_t year,
                                         Bool_t  printSettings, Int_t   debug)
 {
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;

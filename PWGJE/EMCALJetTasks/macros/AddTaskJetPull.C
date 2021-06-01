@@ -1,4 +1,4 @@
-AliAnalysisTaskJetPull* AddTaskJetPull(const char * njetsBase,
+AliAnalysisTaskJetPull* AddTaskJtPull(const char * njetsBase,
                                                      const char * njetsUS,
 						     const char * njetsTrue,
                                                      const char * njetsPartLevel,
@@ -25,7 +25,7 @@ AliAnalysisTaskJetPull* AddTaskJetPull(const char * njetsBase,
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
     {
-      Error("AddTaskJetPull","No analysis manager found.");
+      Error("AddTaskNewJetSubstructure","No analysis manager found.");
       return 0;
     }
   Bool_t ismc=kFALSE;
@@ -35,7 +35,7 @@ AliAnalysisTaskJetPull* AddTaskJetPull(const char * njetsBase,
   //==============================================================================
   if (!mgr->GetInputEventHandler())
     {
-      ::Error("AddTaskJetPull", "This task requires an input event handler");
+      ::Error("AddTaskNewJetSubstructure", "This task requires an input event handler");
       return NULL;
     }
 

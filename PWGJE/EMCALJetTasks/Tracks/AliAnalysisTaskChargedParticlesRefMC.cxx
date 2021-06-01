@@ -53,11 +53,9 @@
 #include "AliAnalysisTaskChargedParticlesRefMC.h"
 #include "AliEMCalTriggerWeightHandler.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskChargedParticlesRefMC)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         AliAnalysisTaskEmcal(),
@@ -349,7 +347,7 @@ bool AliAnalysisTaskChargedParticlesRefMC::Run() {
   // - Eta distribution for tracks above 1, 2, 5, 10 GeV/c with eta cut
   AliVTrack *checktrack(NULL);
   AliVParticle *assocMC(NULL);
-  double ptparticle(-1.), etaparticle(-100.), etaEMCAL(0.), phiEMCAL(0.);
+  double etaEMCAL(0.), phiEMCAL(0.);
   for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
     checktrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
     if(!checktrack) continue;
@@ -390,8 +388,7 @@ bool AliAnalysisTaskChargedParticlesRefMC::Run() {
 
     if(!fTrackCuts->IsTrackAccepted(checktrack)) continue;
 
-    ptparticle = TMath::Abs(assocMC->Pt());
-    etaparticle = assocMC->Eta();
+    double ptparticle = TMath::Abs(assocMC->Pt());
 
     // Calculate eta in cms frame according
     // EPJC74 (2014) 3054:
@@ -539,10 +536,10 @@ AliAnalysisTaskChargedParticlesRefMC *AliAnalysisTaskChargedParticlesRefMC::AddT
   // EJ2:  12 GeV
   mgr->AddTask(task);
   task->SetOfflineTriggerSelection(
-      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
+      AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
   );
   task->SetEMCALTrackSelection(
-      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory(
+      AliEmcalAnalysisFactory::TrackCutsFactory(
           cutname,
           mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()
       )
@@ -575,5 +572,3 @@ AliAnalysisTaskChargedParticlesRefMC::PtBinning::PtBinning() :
   this->AddStep(100, 10);
   this->AddStep(200, 20);
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

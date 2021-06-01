@@ -386,6 +386,26 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
     ana->SwitchOnFillEmbededSignalHistograms() ;
   }
   
+  // Track matching parameters
+  AliCaloPID* caloPID = ana->GetCaloPID();
+
+  // EMCAL
+  // E/p
+  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+  if ( kAnaCutsString.Contains("TMEoP1.7") ) caloPID->SetEOverP(0,1.7);
+  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+
+  // if tm = 1, fixed cuts
+  caloPID->SetEMCALDEtaCut(0.020);
+  caloPID->SetEMCALDPhiCut(0.030);
+
+  // PHOS
+  caloPID->SetPHOSDispersionCut(2.5);
+  caloPID->SetPHOSRCut(2.);
+
   //
   // Histograms ranges
   //
@@ -508,13 +528,13 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
     histoRanges->SetHistoPtSumRangeAndNBins   (   0, 200, 200);
     histoRanges->SetHistoPtSumSubRangeAndNBins(-150, 150, 300);
   }
+
   //
   // MC histograms?
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
   
- 
   //
   // Specialized histograms on multiplicity
   //
@@ -616,37 +636,34 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     ana->SetNLMCut(1, 2) ;
   }
   
-  //PID cuts (shower shape)
+  if ( kAnaCutsString.Contains("ShSh") )
+  {
+    printf("ConfigurePhotonAnalysis() >>> Recalculate shower shape within NxN \n");
+    // Open it although it should not matter for V3-V2 clusterizers
+    ana->SetNLMCut(0,100);
+
+    // Make sure isolated cells are not clusterized, only neighbours
+    ana->SwitchOnNxNShowerShapeOnlyNeighbours();
+
+    // Set the size of the recalculation window
+    if      ( kAnaCutsString.Contains("ShSh5x5") )
+      ana->SwitchOnUse5x5ShowerShapeHisto();
+    else if ( kAnaCutsString.Contains("ShSh7x7") )
+      ana->SwitchOnUse7x7ShowerShapeHisto();
+  }
+
+  // PID cuts (shower shape and track matching)
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();
-  //Not used in bayesian
   
   // EMCAL
-  
   //caloPID->SetEMCALLambda0CutMax(0.27);
   caloPID->SetEMCALLambda0CutMax(10); // open, full shower shape needed for isolation studies
   caloPID->SetEMCALLambda0CutMin(0.10);
   
-  // Track matching
-  
-  // E/p
-  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-  
-  // tm = 1, fixed cuts
-  caloPID->SetEMCALDEtaCut(0.020);
-  caloPID->SetEMCALDPhiCut(0.030);
-  
-  // pT track dependent cuts
+  // Track matching, pT track dependent cuts
+  // E/p cuts and residual cuts for tm=1 set on SetAnalysisCommonParameters()
   if ( tm > 1 ) caloPID->SwitchOnEMCTrackPtDepResMatching();
-  
-  // PHOS
-  caloPID->SetPHOSDispersionCut(2.5);
-  caloPID->SetPHOSRCut(2.);
-  //if(kInputData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
   
   // Branch AOD settings
   ana->SetOutputAODName(Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data()));
@@ -893,20 +910,6 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     ana->SetTimeCut(-1e10,1e10); // Open time cut
     
     AliCaloPID* caloPID = ana->GetCaloPID();
-    
-    // Track matching
-    
-    // E/p
-    if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-    if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-    if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-    if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-    if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-    
-    // tm = 1, fixed cuts
-    caloPID->SetEMCALDEtaCut(0.020);
-    caloPID->SetEMCALDPhiCut(0.030);
-    
     // pT track dependent cuts
     if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
     
@@ -1092,35 +1095,37 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis
   ana->SetDebug(debug); //10 for lots of messages
   
   ana->SetTriggerDetector(detector);
-  
+
   // selection cuts
   
   // A Flat pT distribution within these numbers
   ana->SetMinPt(10.); 
-  ana->SetMaxPt(60.);   
+  ana->SetMaxPt(20.);   
   
   // A flat eta and phi distribution limited to known detectors
+  
+  ana->SwitchOnFiducialCut();
+  CalorimeterFiducialCut(ana->GetFiducialCut(), detector, year);
+  
+  // First broad cut, then also rely on predefined fiducial cut set above
   if      ( detector=="EMCAL" )
   {
-    ana->SetEtaCut(-0.67,0.67);
-    if      ( year == 2010 ) ana->SetPhiCut(81.2*TMath::DegToRad(), 118.8*TMath::DegToRad());
-    else if ( year <  2014 ) ana->SetPhiCut(81.2*TMath::DegToRad(), 178.8*TMath::DegToRad());
-    else                     ana->SetPhiCut(81.2*TMath::DegToRad(), 185.8*TMath::DegToRad());
+    ana->SetEtaCut(-0.7,0.7);
+    ana->SetPhiCut( 80*TMath::DegToRad(), 187*TMath::DegToRad());
   }
   else if ( detector=="DCAL" )
    {
-     ana->SetEtaCut(0.25,0.67);
-     ana->SetPhiCut(261.2*TMath::DegToRad(), 325.8*TMath::DegToRad());
+     ana->SetEtaCut(-0.7,0.7);
+     ana->SetPhiCut(260*TMath::DegToRad(), 327*TMath::DegToRad());
    }
   else if ( detector=="PHOS" )
   {
-    ana->SetEtaCut(-0.12,0.12);
-    if ( year <  2014 ) ana->SetPhiCut(260.5*TMath::DegToRad(), 319.5*TMath::DegToRad());
-    else                ana->SetPhiCut(250.5*TMath::DegToRad(), 319.5*TMath::DegToRad());
+    ana->SetEtaCut(-0.13,0.13);
+    ana->SetPhiCut(250*TMath::DegToRad(), 320*TMath::DegToRad());
   }
   else if ( detector=="CTS" )
   {
-    ana->SetEtaCut(-0.8,0.8);
+    ana->SetEtaCut(-0.9,0.9);
     ana->SetPhiCut(0, TMath::TwoPi());
   }
   
@@ -1134,10 +1139,9 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis
   SetAnalysisCommonParameters(ana,histoString,detector,year,"pp",kFALSE,printSettings,debug) ; // see method below
 
   // Reset histogram bins, no need for fine bins
-  ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 50) ;
-  ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1., 1., 50) ;
-  ana->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 100, 50) ;
-  
+  ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 360) ;
+  ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1, 1, 200) ;
+  ana->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 100, 1) ;
   
   if ( printSettings ) ana->Print("");
   
@@ -1154,13 +1158,15 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis
 /// \param cone : A float setting the isolation cone size higher limit
 /// \param coneMin : A float setting the isolation cone size lower limit
 /// \param pth : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
+/// \param bTrackCutUE : Apply a max pT cut on the tracks entering the UE calculation
 /// \param col : A string with the colliding system
 /// \param debug : An int to define the debug level of all the tasks
 ///
 void ConfigureIsolationCut(AliIsolationCut * ic,
-                           Int_t partInCone, Int_t thresType, 
-                           Float_t cone, Float_t coneMin,
-                           Float_t pth, TString col, Int_t debug)
+                           Int_t partInCone, Int_t   thresType,
+                           Float_t cone    , Float_t coneMin,
+                           Float_t pth     , Bool_t  bTrackCutUE,
+                           TString col     , Int_t   debug )
 {
   ic->SetDebug(debug);
   ic->SetParticleTypeInCone(partInCone);
@@ -1219,15 +1225,17 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
   else                                         
     ic->SwitchOffConeExcessCorrection();
   
-  if ( kAnaCutsString.Contains("IsoBandUERecGap") ) 
+  ic->SetConeSizeBandGap(0.0);
+  if ( kAnaCutsString.Contains("IsoBandUEGap") && thresType > AliIsolationCut::kSumBkgSubIC)
   {
-    ic->SetBandExclusionRectangular(kTRUE);
-    ic->SetConeSizeBandGap(0.05); // do not count UE particles near the cone limit > R+0.05
-  }
-  else    
-  {
-    ic->SetBandExclusionRectangular(kFALSE);
-    //ic->SetConeSizeBandGap(0.0);
+    // do not count UE particles near the cone limit > R+0.05
+
+    if ( kAnaCutsString.Contains("IsoBandUEGapFix05") )
+      ic->SetConeSizeBandGap(0.5-cone); // the UE band excludes a cone size of R=0.5
+    else
+      ic->SetConeSizeBandGap(0.1);      // the UE band excludes a cone size with R=cone+0.1
+
+    printf("\t Add isolation UE gap %1.2f\n",ic->GetConeSizeBandGap());
   }
   
   // Set ratio of neutral energy over charged energy
@@ -1247,6 +1255,20 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
   //ic->SetNeutralOverChargedRatio(1.94e-1,-3.40e-3,0.0,9.37e-7); // LHC11h, random cone, phi-band
   //ic->SetNeutralOverChargedRatio(1.82e-1,-3.04e-3,0.0,8.40e-7); // LHC11h, random cone
   }
+
+  // Use this cuts to calculate energy density in dedicated
+  // control histograms and apply them if the switch is activated with bTrackCutUE.
+  // Both cuts cannot be applied at the same time.
+  ic->SetLeadingPtUEFactor(1.5);
+  ic->SetMaxPtUE(3.);
+  if ( bTrackCutUE )
+  {
+    printf("\t Cut track UE with pt > leading track pt * 1.5\n");
+    ic->SwitchOnUseLeadingPtUEFactorCut() ;
+
+    //printf("\t Cut track UE with pt > 3 GeV/c\n");
+    //ic->SwitchOnMaxPtUECut () ;
+  }
 }
 
 ///
@@ -1259,6 +1281,7 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
 /// \param cone : A float setting the isolation cone size higher limit
 /// \param coneMin : A float setting the isolation cone size lower limit
 /// \param pth : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
+/// \param bTrackCutUE : Apply a max pT cut on the tracks entering the UE calculation
 /// \param col : A string with the colliding system
 /// \param simulation : A bool identifying the data as simulation
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
@@ -1271,7 +1294,7 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
 AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t   leading,
                                                     Int_t   partInCone,    Int_t   thresType,
                                                     Float_t cone,          Float_t coneMin,
-                                                    Float_t pth,           
+                                                    Float_t pth,           Bool_t  bTrackCutUE,
                                                     TString col,           Bool_t  simulation,
                                                     TString calorimeter,   Int_t   year,       Int_t tm,
                                                     Bool_t  printSettings, Int_t   debug, 
@@ -1352,8 +1375,8 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   // Do settings for main isolation cut class
   //
   AliIsolationCut * ic =  ana->GetIsolationCut();
-  ConfigureIsolationCut(ic,partInCone,thresType,cone,coneMin,pth,col,debug);
-
+  ConfigureIsolationCut(ic,partInCone,thresType,cone,coneMin,pth,bTrackCutUE,col,debug);
+ 
   // Track matching 
   //
   // By default apply always a TM cut in cone if charged and neutrals
@@ -1361,51 +1384,38 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   if ( partInCone == AliIsolationCut::kNeutralAndCharged )
   {
     AliCaloPID* caloPID = ana->GetCaloPID();
-    
-    // E/p
-    if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-    if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-    if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-    if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-    if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-    
-    if ( tm == 1 )
-    {
-      // tm = 1, fixed cuts
-      
-      caloPID->SetEMCALDEtaCut(0.020);
-      caloPID->SetEMCALDPhiCut(0.030);
-    }
-    else
-    {
-      // pT track dependent cuts
+
+    if ( tm > 1 )
       caloPID->SwitchOnEMCTrackPtDepResMatching();
-    }
   }
   
   // Set Histograms name tag, bins and ranges
-  if ( kAnaCutsString.Contains("MultiIsoUESubMethods"))
+  TString histoStringTag = Form("AnaIsol%s_",particle.Data());
+  if ( kAnaCutsString.Contains("MultiIso") )
   {
-    if      ( partInCone == AliIsolationCut::kNeutralAndCharged )
+    if ( kAnaCutsString.Contains("UESubMethods") )
     {
-      if      ( thresType == AliIsolationCut::kSumBkgSubIC)        ana->AddToHistogramsName(Form("AnaIsolPerpCone%s_",particle.Data()));
-      else if ( thresType == AliIsolationCut::kSumBkgSubEtaBandIC) ana->AddToHistogramsName(Form("AnaIsolEtaBand%s_" ,particle.Data()));
-      else if ( thresType == AliIsolationCut::kSumBkgSubPhiBandIC) ana->AddToHistogramsName(Form("AnaIsolPhiBand%s_" ,particle.Data()));
+      if      ( thresType == AliIsolationCut::kSumBkgSubIC)        histoStringTag += Form("PerpCone_");
+      else if ( thresType == AliIsolationCut::kSumBkgSubEtaBandIC) histoStringTag += Form("EtaBand_" );
+      else if ( thresType == AliIsolationCut::kSumBkgSubPhiBandIC) histoStringTag += Form("PhiBand_" );
+      else if ( thresType == AliIsolationCut::kSumBkgSubJetRhoIC)  histoStringTag += Form("JetRho_"  );
+      else if ( thresType == AliIsolationCut::kSumBkgSubPerpBandIC) histoStringTag += Form("PerpBand_" );
       else printf("--- Isolation method for method %d not added\n",thresType); 
+
+//      if ( partInCone == AliIsolationCut::kOnlyCharged )
+//      {
+//        histoStringTag += Form("OnlyCharged_");
+//      }
     }
-    else if ( partInCone == AliIsolationCut::kOnlyCharged )
-    {
-      if      ( thresType == AliIsolationCut::kSumBkgSubIC)        ana->AddToHistogramsName(Form("AnaIsolOnlyChargedPerpCone%s_",particle.Data()));
-      else if ( thresType == AliIsolationCut::kSumBkgSubEtaBandIC) ana->AddToHistogramsName(Form("AnaIsolOnlyChargedEtaBand%s_" ,particle.Data()));
-      else if ( thresType == AliIsolationCut::kSumBkgSubPhiBandIC) ana->AddToHistogramsName(Form("AnaIsolOnlyChargedPhiBand%s_" ,particle.Data()));
-      else printf("--- Isolation method for method %d not added\n",thresType); 
-    }
-    else printf("--- Isolation method for particles in cone %d not added\n",partInCone); 
+
+    if ( bTrackCutUE &&  thresType >=AliIsolationCut::kSumBkgSubIC )
+      histoStringTag += Form("UEPtCut_" );
+
+    if ( kAnaCutsString.Contains("IsoR"))
+      histoStringTag += Form("R%0.2f_",cone);
   }
-  else if ( kAnaCutsString.Contains("MultiIsoR"))
-    ana->AddToHistogramsName(Form("AnaIsol%s_R%0.2f_",particle.Data(),cone));
-  else 
-    ana->AddToHistogramsName(Form("AnaIsol%s_"       ,particle.Data()));
+
+  ana->AddToHistogramsName(histoStringTag);
   
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
   
@@ -1415,6 +1425,24 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
   }
   
+  if ( particle == "Random" )
+  {
+    ana->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 100, 1) ;
+    ana->GetHistogramRanges()->SetHistoShowerShapeRangeAndNBins(-0.1, 2.9, 1);
+
+    ic->SwitchOnFillEtaPhiHistograms();
+    ana->SwitchOffSSHistoFill();
+    ana->SwitchOffTMHistoFill();
+    ana->SwitchOffNonConstantPtBinHistoArray();
+    ana->SwitchOffStudyPtCutInCone();
+  }
+
+  ana->SwitchOnIsolationControlHistoFill();
+
+  // Do not duplicate control histograms if multiple analysis active
+  if ( bTrackCutUE && kAnaCutsString.Contains("MultiIso") && thresType >=AliIsolationCut::kSumBkgSubIC)
+    ana->SwitchOffIsolationControlHistoFill();
+
   if ( printSettings ) ic ->Print("");
   
   return ana;
@@ -1556,7 +1584,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     {
       //Do settings for main isolation cut class
       AliIsolationCut * ic =  ana->GetIsolationCut();
-      ConfigureIsolationCut(ic,partInCone,thresType,cone,coneMin,pth,col,debug);
+      ConfigureIsolationCut(ic,partInCone,thresType,cone,coneMin,pth,0,col,debug);
     }
   }
   else
@@ -1577,17 +1605,6 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   // Track matching, in case of mixing and specially in isolation case
   //
   AliCaloPID* caloPID = ana->GetCaloPID();
-  
-  // E/p
-  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-  
-  // tm = 1, fixed cuts
-  caloPID->SetEMCALDEtaCut(0.020);
-  caloPID->SetEMCALDPhiCut(0.030);
   
   // pT track dependent cuts
   if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
@@ -1610,6 +1627,9 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
     ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
   }
+  
+  if ( particle == "Random")
+    ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, 100, 1) ;
   
   return ana;
 }
@@ -1711,13 +1731,6 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();
   
-  // E/p
-  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-  
   if(tm > 1)
   {
     // track pT dependent cut
@@ -1730,8 +1743,6 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   {
     // Fix
     caloPID->SwitchOffEMCTrackPtDepResMatching();
-    caloPID->SetEMCALDEtaCut(0.020);
-    caloPID->SetEMCALDPhiCut(0.030);
     
     // Begining of histograms name
     ana->AddToHistogramsName("Shape_TMFix_"); 
@@ -1918,7 +1929,7 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis
   // Isolation paramters
   //
   AliIsolationCut * ic = ana->GetIsolationCut();
-  ConfigureIsolationCut(ic,partInCone,thresType,cone,coneMin,pth,col,debug);
+  ConfigureIsolationCut(ic,partInCone,thresType,cone,coneMin,pth,0,col,debug);
 
   ana->SwitchOnPartonAnalysis();
   if ( kAnaCutsString.Contains("Generator_NoParton") ) 
@@ -2035,13 +2046,15 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 /// \param mixOn : A bool to switch the correlation mixing analysis
 /// \param printSettings : A bool to enable the print of the settings per task
 /// \param debug : An int to define the debug level of all the tasks
+/// \param trigger: Trigger string
 ///   
 ///   Options for analysisString:
 ///    * Analysis: "Photon","InvMass","Electron", "DecayPi0", "MergedPi0", "Charged", "QA", "Isolation", "Correlation", "Generator", "Random","ClusterShape","Exo", "GammaJet"
-///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "TightAcc", "FixIsoConeExcess","IsoBandUERecGap"
+///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "MultiIsoRUESubMethods","TightAcc", "FixIsoConeExcess","IsoBandUEGap","IsoBandUEGapFix05"
 ///    * Common: "SelectEmbed","HighMult","MCRealCaloAcc","PerSM","PerTCard","PerNCells","Bkg"
-///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.5"
+///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.7","TMEoP1.5"
 ///    * QA: QACellsOnly, QAClustersOnly
+///    * Photon: Recalculation of shower shape in NxN window: "ShSh5x5", "ShSh7x7"
 ///
 void ConfigureCaloTrackCorrAnalysis
 (
@@ -2062,7 +2075,8 @@ void ConfigureCaloTrackCorrAnalysis
  Int_t    tm            = 2,
  Bool_t   mixOn         = kTRUE,
  Bool_t   printSettings = kFALSE,
- Int_t    debug         = 0
+ Int_t    debug         = 0,
+ const char *triggerStr = "EMC7"
 )
 {
   if ( !anaList ) 
@@ -2097,9 +2111,10 @@ void ConfigureCaloTrackCorrAnalysis
  
   printf("ConfigureCaloTrackCorrAnalysis() <<<< TMP branch internal NAME: %s >>>>>\n",kAnaCaloTrackCorr.Data());
   
+  TString trigger = triggerStr;
+
   // #### Configure analysis ####
   
-
   Int_t n = anaList->GetEntries();//Analysis number, order is important
   
   //
@@ -2144,30 +2159,129 @@ void ConfigureCaloTrackCorrAnalysis
     {
       if (analysisString.Contains("MultiIsoUESubMethods"))
       {
-        anaList->AddAt(ConfigureIsolationAnalysis
-                       ("Photon", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubIC,
-                        isoCone,isoConeMin,isoPtTh,
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
-        anaList->AddAt(ConfigureIsolationAnalysis
-                       ("Photon", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubEtaBandIC,
-                        isoCone,isoConeMin,isoPtTh, 
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
-        anaList->AddAt(ConfigureIsolationAnalysis
-                       ("Photon", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
-                        isoCone,isoConeMin,isoPtTh, 
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+        if ( isoContent == AliIsolationCut::kNeutralAndCharged && calorimeter == "EMCAL" )
+        {
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubEtaBandIC,
+                          isoCone,isoConeMin,isoPtTh,1,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubEtaBandIC,
+                          isoCone,isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
+                          isoCone,isoConeMin,isoPtTh,1,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
+                          isoCone,isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        }
+        else
+        {
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubEtaBandIC,
+                          isoCone,isoConeMin,isoPtTh,1,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubEtaBandIC,
+                          isoCone,isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
+                          isoCone,isoConeMin,isoPtTh,1,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
+                          isoCone,isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        }
+
         anaList->AddAt(ConfigureIsolationAnalysis
                        ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,
-                        isoCone,isoConeMin,isoPtTh, 
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+                        isoCone,isoConeMin,isoPtTh,1,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
         anaList->AddAt(ConfigureIsolationAnalysis
-                       ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubEtaBandIC,
-                        isoCone,isoConeMin,isoPtTh,
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+                       ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,
+                        isoCone,isoConeMin,isoPtTh,0,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
         anaList->AddAt(ConfigureIsolationAnalysis
-                       ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
-                        isoCone,isoConeMin,isoPtTh, 
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+                       ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPerpBandIC,
+                        isoCone,isoConeMin,isoPtTh,1,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        anaList->AddAt(ConfigureIsolationAnalysis
+                       ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPerpBandIC,
+                        isoCone,isoConeMin,isoPtTh,0,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+        if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+        {
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
+                          isoCone,isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        }
+      }
+      else if (analysisString.Contains("MultiIsoRUESubMethods"))
+      {
+        //printf("**** MultiIsoRUESub ****\n");
+        Int_t nsizes = 4;
+        Float_t conesize[] = {0.15,0.2,0.3,0.4};
+        for(Int_t isize = 0; isize < nsizes; isize++)
+        {
+          if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+          {
+            anaList->AddAt(ConfigureIsolationAnalysis
+                           ("Photon",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
+                            conesize[isize],isoConeMin,isoPtTh,0,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          }
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,//isoContent,isoMethod,
+                          conesize[isize],isoConeMin,isoPtTh,1,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,//isoContent,isoMethod,
+                          conesize[isize],isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPerpBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,1,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPerpBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          Int_t isoCont = AliIsolationCut::kNeutralAndCharged;
+          if ( calorimeter == "DCAL" ||
+              isoContent != AliIsolationCut::kNeutralAndCharged )
+            isoCont = AliIsolationCut::kOnlyCharged;
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,isoCont, AliIsolationCut::kSumBkgSubPhiBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,1,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,isoCont, AliIsolationCut::kSumBkgSubPhiBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,isoCont, AliIsolationCut::kSumBkgSubEtaBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,1,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,isoCont, AliIsolationCut::kSumBkgSubEtaBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        }
       }
       else if (analysisString.Contains("MultiIsoR"))
       {
@@ -2177,14 +2291,14 @@ void ConfigureCaloTrackCorrAnalysis
         {
           anaList->AddAt(ConfigureIsolationAnalysis
                          ("Photon",leading,isoContent,isoMethod,
-                          conesize[isize],isoConeMin,isoPtTh, 
+                          conesize[isize],isoConeMin,isoPtTh,0,
                           col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
         }
       }
       else // normal case
       {
         anaList->AddAt(ConfigureIsolationAnalysis
-                       ("Photon", leading, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, 
+                       ("Photon", leading, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       }
       
@@ -2236,7 +2350,7 @@ void ConfigureCaloTrackCorrAnalysis
     if ( analysisString.Contains("Isolation") )
     {
       anaList->AddAt(ConfigureIsolationAnalysis
-                     ("Pi0SS", leading, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh,
+                     ("Pi0SS", leading, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh,0,
                       col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);   
       
     }
@@ -2262,9 +2376,11 @@ void ConfigureCaloTrackCorrAnalysis
   }
   
   //
-  // Random ghost trigger analysis
+  // Random ghost trigger analysis, only for MB data
   //
-  if ( analysisString.Contains("Random") )
+  if ( analysisString.Contains("Random") && 
+      ( trigger.Contains("MB")      ||  trigger.Contains("INT") || 
+        trigger.Contains("default") ||  trigger.Contains("Cent")  ) )
   {
     // Random trigger generation over selected acceptance
     //
@@ -2277,30 +2393,82 @@ void ConfigureCaloTrackCorrAnalysis
     {
       if (analysisString.Contains("MultiIsoUESubMethods"))
       {
-        anaList->AddAt(ConfigureIsolationAnalysis
-                       ("Random", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubIC,
-                        isoCone,isoConeMin,isoPtTh, 
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
-        anaList->AddAt(ConfigureIsolationAnalysis
-                       ("Random", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubEtaBandIC,
-                        isoCone,isoConeMin,isoPtTh, 
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
-        anaList->AddAt(ConfigureIsolationAnalysis
-                       ("Random", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
-                        isoCone,isoConeMin,isoPtTh, 
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+        if ( isoContent == AliIsolationCut::kNeutralAndCharged )
+        {
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Random", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubEtaBandIC,
+                          isoCone,isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Random", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
+                          isoCone,isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        }
+
         anaList->AddAt(ConfigureIsolationAnalysis
                        ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,
-                        isoCone,isoConeMin,isoPtTh, 
+                        isoCone,isoConeMin,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+        {
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
+                          isoCone,isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        }
         anaList->AddAt(ConfigureIsolationAnalysis
                        ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubEtaBandIC,
-                        isoCone,isoConeMin,isoPtTh, 
+                        isoCone,isoConeMin,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
         anaList->AddAt(ConfigureIsolationAnalysis
                        ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
-                        isoCone,isoConeMin,isoPtTh, 
+                        isoCone,isoConeMin,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        anaList->AddAt(ConfigureIsolationAnalysis
+                       ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPerpBandIC,
+                        isoCone,isoConeMin,isoPtTh,0,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+      }
+      else if (analysisString.Contains("MultiIsoRUESubMethods"))
+      {
+        //printf("**** MultiIsoRUESub ****\n");
+        Int_t nsizes = 4;
+        Float_t conesize[] = {0.15,0.2,0.3,0.4};
+        for(Int_t isize = 0; isize < nsizes; isize++)
+        {
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Random",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,//isoContent,isoMethod,
+                          conesize[isize],isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Random",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPerpBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+          {
+            anaList->AddAt(ConfigureIsolationAnalysis
+                           ("Random",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
+                            conesize[isize],isoConeMin,isoPtTh,0,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          }
+
+          Int_t isoCont = AliIsolationCut::kNeutralAndCharged;
+          if ( calorimeter == "DCAL" ||
+               isoContent != AliIsolationCut::kNeutralAndCharged )
+            isoCont = AliIsolationCut::kOnlyCharged;
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Random",leading,isoCont, AliIsolationCut::kSumBkgSubPhiBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Random",leading,isoCont, AliIsolationCut::kSumBkgSubEtaBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,0,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        }
       }
       else if (analysisString.Contains("MultiIsoR"))
       {
@@ -2310,14 +2478,14 @@ void ConfigureCaloTrackCorrAnalysis
         {
           anaList->AddAt(ConfigureIsolationAnalysis
                          ("Random", leading,isoContent,isoMethod,
-                          conesize[isize],isoConeMin,isoPtTh, 
+                          conesize[isize],isoConeMin,isoPtTh,0,
                           col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
         }
       }
       else
       {
         anaList->AddAt(ConfigureIsolationAnalysis
-                       ("Random", leading, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh,
+                       ("Random", leading, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       }
       

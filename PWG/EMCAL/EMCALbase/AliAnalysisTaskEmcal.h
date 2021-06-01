@@ -308,6 +308,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   };
 
   enum PtHardBinning_t {
+    kBinning06,
     kBinning10,
     kBinning13,
     kBinning20,
@@ -575,7 +576,16 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; }
   void                        SetMinBiasTriggerClassName(const char *n)             { fMinBiasRefTrigger = n                              ; }
   void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
-  void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }
+
+  /**
+   * @brief Use AliAnalysisUtils for event selection
+   * @param doUse If true AliAnalysisUtis are used for event selection (builtin event selection only)
+   * @param doRejectPilup If true pileup rejection is enabled
+   * @deprecated Event cuts work only for p-Pb 2013. Method should not be used. By default
+   * the AliAnalysisTaskEmcal uses AliEventCuts for event selection, which is adapted to all
+   * known datasets
+   */
+  void                        SetUseAliAnaUtils(Bool_t doUse, Bool_t doRejectPilup = kTRUE) { fUseAliAnaUtils    = doUse ; fRejectPileup = doRejectPilup  ; }
 
   /**
    * @brief Use internal (old) event selection
@@ -590,6 +600,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @param[in] doUse It true use the old internal event selection instead of AliEventCuts
    */
   void                        SetUseBuiltinEventSelection(Bool_t doUse)            { fUseBuiltinEventSelection = doUse                  ; }
+
+  /**
+   * @brief Use fast method for PYTHIA cross section reading
+   * @param doRead If true the fast method is used for cross section reading
+   */
+  void                        SetReadPythiaCrossSectionFast(Bool_t doUse)          { fReadPyxsecFast = doUse                            ; } 
   
   /**
    * @brief Set pre-configured event cut object
@@ -608,12 +624,53 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
   void                        SetEMCalTriggerMode(EMCalTriggerMode_t m)             { fEMCalTriggerMode  = m                              ; }
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
-  void                        SetGeneratePythiaInfoObject(Bool_t b)                 { fGeneratePythiaInfoObject = b                       ; }
-  void                        SetPythiaInfoName(const char *n)                      { fPythiaInfoName    = n                              ; }
-  void                        SetNameMCPartonInfo(const char *n)                    { fNameMCPartonInfo = n                               ; }
+
+  /**
+   * @brief Switch on building of the PYTHIA info object
+   * @param doUse If true the PYTHIA info object is built (accessible for this task only)
+   */
+  void                        SetGeneratePythiaInfoObject(Bool_t doBuild)           { fGeneratePythiaInfoObject = doBuild                 ; }
+
+  /**
+   * @brief Set name of the PYTHIA info object
+   * @param name Name of the pythis info object
+   */
+  void                        SetPythiaInfoName(const char *name)                   { fPythiaInfoName   = name                            ; }
+
+  /**
+   * @brief Set the name of the container with direct MC partons
+   * @param name Name of the MC parton info container
+   */
+  void                        SetNameMCPartonInfo(const char *name)                 { fNameMCPartonInfo = name                            ; }
+
+  /**
+   * @brief Get the name of the PYTHIA info object
+   * @return Name of the PYTHIA info object
+   */
   const TString&              GetPythiaInfoName()                             const { return fPythiaInfoName                              ; }
+
+  /**
+   * @brief Get the PYTHIA info object
+   * @return Object with hard partons from pt-hard productions 
+   * 
+   * The PYTHIA info object contains the partons from the initial hard scattering (stack postion 6 and 7).
+   * The object is only available for PYTHIA pt-hard productions
+   */
   const AliEmcalPythiaInfo   *GetPythiaInfo()                                 const { return fPythiaInfo                                  ; }
+
+  /**
+   * @brief Get container with direct partons produced from the colliding nucleons / nuclei (MC)
+   * @return Container with direct partons 
+   * 
+   * Method is currently implemented only for HepMC output
+   */
   const PWG::EMCAL::AliEmcalMCPartonInfo *GetMCPartonInfo()                   const { return fMCPartonInfo                                ; }
+
+  /**
+   * @brief Get the event cross section from the generator event header
+   * @return Cross section (-1 in not a PYTHIA- or HepMC based production)
+   */
+  double                      GetCrossSectionFromHeader()                     const;
 
   /**
    * @brief Switch on pt-hard bin scaling
@@ -715,6 +772,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @return pointer to the new ESD handler
    */
   static AliESDInputHandler*  AddESDHandler();
+
+  /**
+   * @brief Add a ESD handler to the analysis manager
+   * @return pointer to the new ESD handler
+   */
+  static AliMCEventHandler* AddMCEventHandler();
 
  protected:
   /**
@@ -1310,6 +1373,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
   Bool_t                      fCountDownscaleCorrectedEvents; ///< Count event number corrected for downscaling
   Bool_t                      fUseBuiltinEventSelection;   ///< Use builtin event selection of the AliAnalysisTaskEmcal instead of AliEventCuts
+  Bool_t                      fReadPyxsecFast;             ///< Use fast method for pythia cross section reading
   Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
   Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
@@ -1375,7 +1439,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcal, 21) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 22) // EMCAL base analysis task
   /// \endcond
 };
 

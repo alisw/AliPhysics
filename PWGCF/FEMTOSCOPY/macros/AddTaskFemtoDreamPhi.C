@@ -234,7 +234,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(30);
   config->SetExtendedQAPairs(pairQA);
   config->SetUseEventMixing(true);
 
@@ -259,12 +259,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   } else {
     std::cout << "You are trying to request the Momentum Resolution without MC "
                  "Info; fix it wont work! \n";
-  }
-
-
-  if (isMC){
-  config->SetAncestors(true);
-  config->GetDoAncestorsPlots();
   }
 
   /*

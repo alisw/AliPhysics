@@ -1,0 +1,31 @@
+pass: pass4
+inputObjects:
+    cells:
+        defaultCells:
+            branchName: "usedefault"
+    clusterContainers:
+        defaultClusterContainer:
+            branchName: "usedefault"
+CellEnergy:
+    enabled: true
+    createHistos: false
+CellBadChannel:
+    enabled: true
+    createHistos: false
+CellTimeCalib:
+    enabled: true
+    createHistos: false
+Clusterizer:
+    enabled: true
+    createHistos: false
+    clusterizer: kClusterizerv2
+    recalDistToBadChannels: true
+    cellE: 0.1
+    seedE: 0.5
+    cellTimeMin: -1
+    cellTimeMax: +1
+    clusterTimeLength: 1
+    w0: 4.5
+
+ClusterTrackMatcher:
+    enabled: false

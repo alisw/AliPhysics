@@ -84,6 +84,23 @@ void SetupTRD2013(TF1* neg[4], TF1* pos[4]) {
   }
 }
 
+double kHe3Mass = 2.809230089;
+
+constexpr double Sq(double x) { return x * x; }
+
+double Dist(const double a[3], const double b[3]) { return std::sqrt(Sq(a[0] - b[0]) + Sq(a[1] - b[1]) + Sq(a[2] - b[2])); }
+
+double ComputeHe3Ct(AliVParticle *he3Part, AliVParticle *dauPart)
+{
+    double primVertex[3];
+    double secVertex[3];
+    he3Part->XvYvZv(primVertex);
+    dauPart->XvYvZv(secVertex);
+    double decLength = Dist(secVertex, primVertex);
+    // std::cout<<kHe3Mass * decLength / he3Part->P()<<std::endl;
+    return kHe3Mass * decLength / he3Part->P();
+}
+
 }
 
 bool AliAnalysisTaskNucleiYield::IsInTRD(float pt, float phi, float sign) {
@@ -123,6 +140,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fCharge{1.f}
    ,fIsMC{false}
    ,fFillOnlyEventHistos{false}
+   ,fAbsorptionCt{-1.f}
    ,fPID{nullptr}
    ,fTriggerMask{0}
    ,fMagField{0.f}
@@ -558,22 +576,35 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       if (fIsMC) fProduction->Fill(mult * part->P());
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (fSaveTrees) {
+        fAbsorptionCt = -1;
+        if(part->GetNDaughters()>0){
+          for (int c = part->GetDaughterFirst(); c <= part->GetDaughterLast(); ++c)
+          {
+            AliVParticle *dPart = (AliAODMCParticle*)stack->UncheckedAt(c);
+            int dPartPDG = std::abs(dPart->PdgCode());
+            if (dPartPDG != 22 && dPartPDG != 11)
+            {
+              fAbsorptionCt = ComputeHe3Ct(part, dPart);
+              break;
+            }
+          }
+        }
         SetSLightNucleus(part,fSimNucleus);
         fSTree->Fill();
       }
       if (part->IsPhysicalPrimary() && fIsMC) fTotal[iC]->Fill(fCentrality,part->Pt());
     }
   }
-
+  
   /// Checking how many deuterons in acceptance are reconstructed well
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
     AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(ev->GetTrack(iT));
     AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
     if (nanoHeader)
       TrackLoop(nanoTrack, true);
-    else
+    else {
       TrackLoop(aodTrack, false);
-    
+    }
   } // End AOD track loop
 
   //  Post output data.
@@ -866,6 +897,7 @@ int AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(AliVTrack *track,
 void AliAnalysisTaskNucleiYield::SetSLightNucleus(AliAODMCParticle* part, SLightNucleus& snucl) {
   snucl.pt = part->Pt();
   snucl.eta = part->Eta();
+  snucl.absCt = fAbsorptionCt;
   snucl.centrality = fCentrality;
   snucl.pdg = part->GetPdgCode();
   if (part->IsPhysicalPrimary())

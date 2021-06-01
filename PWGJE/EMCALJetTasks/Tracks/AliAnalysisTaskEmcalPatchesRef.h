@@ -40,7 +40,9 @@ class AliEMCALTriggerPatchInfo;
 class THistManager;
 class TObjArray;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEmcalTriggerOfflineSelection;
 
@@ -251,11 +253,11 @@ private:
   AliAnalysisTaskEmcalPatchesRef(const AliAnalysisTaskEmcalPatchesRef &);
   AliAnalysisTaskEmcalPatchesRef &operator=(const AliAnalysisTaskEmcalPatchesRef &);
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalPatchesRef, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALPATCHESREF_H */

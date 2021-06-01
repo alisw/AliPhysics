@@ -54,9 +54,11 @@ class AliAnalysisTaskSpherocity : public AliAnalysisTaskSE
 		virtual void  SetTrackCutsSpherocity(AliAnalysisFilter* fTrackFilter);
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
-		virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
-		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
-		virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
+		virtual void  SetNcl(const int ncl){fNcl = ncl;}
+		virtual void  SetEtaCut(double etaCut){ fEtaCut = etaCut; }
+		virtual void  SetMinMult(int multCut){ fMinMult = multCut; }
+		virtual void  SetAnalysisTask(bool PostCalib) { fdEdxCalibrated = PostCalib; }
+		virtual void  SetTrackCutsSystVars(const int TrackCutVar) { fTrackCuts = TrackCutVar; }
 		virtual void  SetPeriod(const char* period) { fPeriod = period; }
 		virtual void  SetEstimator(const Bool_t isV0M) { fisV0Mestimator = isV0M; }
 		virtual void  SetJettyCutOff(float JettyCutOff) { fJettyCutOff = JettyCutOff; }
@@ -72,27 +74,38 @@ class AliAnalysisTaskSpherocity : public AliAnalysisTaskSE
 
 		virtual void ProduceArrayTrksESD(const float& so);
 		///		virtual void ProduceArrayV0ESD(AliESDEvent* event, const Int_t cent, const Int_t sperocity );
-		void    PtRecVsPtTruth(AliESDEvent* event, const Bool_t isjetty);
+		void AnalyseSimDataV0M(const float& ,const float& );
+		void AnalyseSimDataCL1(const float& ,const float& );
 		Int_t   GetMultiplicityParticles(Double_t etaCut);
+		virtual double DeltaPhi(double ,double , double rangeMin = -TMath::Pi()/2, double rangeMax = 3*TMath::Pi()/2 );
 		Short_t GetPidCode(Int_t pdgCode) const;
-		void    ProcessMCTruthESD( const Int_t cent, const Int_t so );
+		void ProcessMCTruthV0M(const float& , const float& , const float& );
+		void ProcessMCTruthCL1(const float& , const float& , const float& );
 
-		TParticle* FindPrimaryMother(AliStack* stack, Int_t label);
-		Int_t      FindPrimaryMotherLabel(AliStack* stack, Int_t label);
+//		TParticle* FindPrimaryMother(AliStack* stack, Int_t label);
+//		Int_t      FindPrimaryMotherLabel(AliStack* stack, Int_t label);
 
 
-		TParticle* FindPrimaryMotherV0(AliStack* stack, Int_t label);
-		int      FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps);
+//		TParticle* FindPrimaryMotherV0(AliStack* stack, Int_t label);
+//		int      FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps);
 		bool selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
 		bool IsGoodSPDvertexRes(const AliESDVertex* spdVertex = NULL);
 		bool IsGoodZvertexPos(AliESDEvent *esd);
 		bool PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh);
 		float GetMaxDCApTDep(TF1* fcut, Double_t pt );
+		float GetEventShapeTrue( AliStack* , TH1D*, TH1D* );
+		float GetSpherocityMC( TH1D* , TH1D* );
+		int ReadMC( vector<Float_t>& ,  vector<Float_t>& , vector<Float_t>& , TH1D* , TH1D* );
 		float GetSpherocity( TH1D * hphi, TH1D *heta );
 		int ReadESDEvent( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, vector<Float_t> &phiArray, TH1D * hphi, TH1D *heta );
+		int ReadESDEvent();
 		float AnalyseGetSpherocity( const vector<Float_t> &pt, const vector<Float_t> &eta, const vector<Float_t> &phi );
 		bool TOFPID(AliESDtrack* track);
 		double EtaCalibration(const double& eta);
+
+		void GetNT();
+		void GetLeadingObject();
+		AliESDtrack* SetHybridTrackCuts(AliESDtrack * , const bool , const bool );
 
 		static const Double_t fgkClight;   // Speed of light (cm/ps)
 
@@ -115,8 +128,10 @@ class AliAnalysisTaskSpherocity : public AliAnalysisTaskSE
 		// Cuts and options
 		//
 
-		Int_t        fNcl;                
-		Double_t     fEtaCut;             // Eta cut used to select particles
+		int fNcl;                
+		double fEtaCut;
+		double fPtMinCut;
+		double fPtMaxCut;
 		const Double_t fDeDxMIPMin;
 		const Double_t fDeDxMIPMax;
 		int fdEdxHigh;
@@ -147,25 +162,45 @@ class AliAnalysisTaskSpherocity : public AliAnalysisTaskSE
 		//
 		TList*        fListOfObjects;     //! Output list of objects
 		TH2F*         fEvents;            //! No of accepted events
-		Bool_t       fdEdxCalibrated;
+		bool       fdEdxCalibrated;
+		int fTrackCuts;
 		TString fPeriod;
 
 		// Histograms for Spherocity
 
 		TH1D *hphiso;
 		TH1D *hetaso;
-		TH2D *hPtTruthVsPtRec;
-		TH2D *hPtTruthVsPtRecJetty;
-		TH2D *hPtTruthVsPtRecIsotr;
 		TH1D *hTruthPhiSo;
 		TH1D *hTruthEtaSo;
-		TH2D *hSOtvsTrks;
-		TH2D *hSOtvsTrkst;
-		TH2D *hSOtvsV0M;
 		TH2F *hSOrvsV0M;
 		TH2F *hSOrvsTrks;
-		TH2F *hRefMultVsRefMultPer;
+		TH3F* hMultPercvsNch;
+		TH3F *hSOtvsSOrV0M;
+		TH3F *hSOtvsSOrCL1;
+		TH3F *hPionSimvsSOV0M;
+		TH3F *hPionSimvsSOV0M2;
+		TH3F *hPionGenvsSOV0M;
+		TH3F *hKaonSimvsSOV0M;
+		TH3F *hKaonSimvsSOV0M2;
+		TH3F *hKaonGenvsSOV0M;
+		TH3F *hProtonSimvsSOV0M;
+		TH3F *hProtonSimvsSOV0M2;
+		TH3F *hProtonGenvsSOV0M;
 
+		TH3F *hPionSimvsSOCL1;
+		TH3F *hPionSimvsSOCL12;
+		TH3F *hPionGenvsSOCL1;
+		TH3F *hKaonSimvsSOCL1;
+		TH3F *hKaonSimvsSOCL12;
+		TH3F *hKaonGenvsSOCL1;
+		TH3F *hProtonSimvsSOCL1;
+		TH3F *hProtonSimvsSOCL12;
+		TH3F *hProtonGenvsSOCL1;
+
+		TH3F* hPhiSimV0M;
+		TH3F* hPhiGenV0M;
+		TH3F* hPhiSimCL1;
+		TH3F* hPhiGenCL1;
 
 		// Histograms for PreCalibration
 
@@ -241,18 +276,32 @@ class AliAnalysisTaskSpherocity : public AliAnalysisTaskSE
 		TH2F* hPpos_TOF_EtaSoInt[4];
 		TH2F* hPneg_TOF_EtaSoInt[4];
 
-		TH1D* hMcIn[11][7][3];
-		TH1D* hMcOut[11][7][3];
-		TH1D* hMcInNeg[11][7][3];
-		TH1D* hMcInPos[11][7][3];
-		TH1D* hMcOutNeg[11][7][3];
-		TH1D* hMcOutPos[11][7][3];
-
 		TF1* fEtaCalibrationNeg;
 		TF1* fEtaCalibrationPos;
 		TF1* fcutDCAxy;
 		TF1* fcutLow;
 		TF1* fcutHigh;
+
+                double fRecLeadPhi;
+                double fRecLeadPt;
+                int fRecLeadIn;
+                int fNT;
+                TH2F* hPhiStandard;
+                TH2F* hPhiHybrid1;
+                TH2F* hPhiTotal;
+                AliESDtrackCuts* fGeometricalCut;
+                AliESDtrackCuts* fHybridTrackCuts1;
+                TH3F* hV0MvsSOvsNT;
+                TH3F* hCL1vsSOvsNT;
+                TH3F* hV0MvsSOvsNoNT;
+                TH3F* hCL1vsSOvsNoNT;
+                TH3F* hV0MvsNoSOvsNT;
+                TH3F* hCL1vsNoSOvsNT;
+                TH3F* hV0MvsNoSOvsNoNT;
+                TH3F* hCL1vsNoSOvsNoNT;
+		TH1F* hPhiToward;
+		TH1F* hPhiAway;
+		TH1F* hPhiTransverse;
 
 		AliAnalysisTaskSpherocity(const AliAnalysisTaskSpherocity&);            // not implemented
 		AliAnalysisTaskSpherocity& operator=(const AliAnalysisTaskSpherocity&); // not implemented

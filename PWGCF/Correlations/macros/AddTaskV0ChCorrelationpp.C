@@ -10,7 +10,7 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
                             effCorr, isMC);
 }
 
- void AddTaskV0ChCorrelationpp(
+ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
                               float cenMin, float cenMax,
                               TString folderName="myFolder",
                               TString suffixName="mySuffix",
@@ -167,5 +167,7 @@ AliAnalysisDataContainer *coutput7
    if(effCorr)
    cinput1->SetData(effList);
   
+return task;
+
 }
 

@@ -27,7 +27,6 @@
 #include "AliFlowCommonHist.h"
 #include "AliFlowCommonHistResults.h"
 #include "TChain.h"
-
 #include "TFile.h"
 #include "TList.h"
 #include "TGraph.h"
@@ -676,7 +675,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   } // end of if(fUseVZERO)
 
   // ZDC *********************************************************************************************************
-
+  
   if(fUseZDC) {
     // Get Q vectors for the subevents
     AliFlowVector vQarray[2];
@@ -7398,7 +7397,8 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC2()
   } else {
     fQAZDCCutsFlag = kFALSE;
   }
-}
+} // end of RecenterCRCQVecZDC2()
+
 //=======================================================================================================================
 
 void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
@@ -9354,6 +9354,8 @@ void AliFlowAnalysisCRC::CalculateCMEZDC()
 
 void AliFlowAnalysisCRC::CalculateCMESPPP() //@Shi spectator plane participant plane method arXiv:1805.05300
 {
+  // ZDC QA cuts
+  if(fQAZDCCuts && !fQAZDCCutsFlag) {return;}
   //************************************************ Weights **************************************
   Double_t MulWeig = 1.;
   //@shi no file supplied
@@ -9364,7 +9366,7 @@ void AliFlowAnalysisCRC::CalculateCMESPPP() //@Shi spectator plane participant p
   
   //************************************************ Get all variables ****************************
   //*********************************************** TPC part *************************************
-  Int_t h = 0; //@Shi used for TPC and v0 part. For ZDCpart, it is set to 1
+  Int_t h = 0; //@Shi used for TPC and v0 part. For ZDCpart, it is set to 1. 
   Double_t e = 1E-5;
   
   Double_t uPNReTPC=0., uPNImTPC=0., uPN2ReTPC=0., uPN2ImTPC=0., uPN2Re2TPC=0., uPN2Im2TPC=0., uPNMTPC=0., uPN2MTPC=0.;
@@ -9574,7 +9576,7 @@ void AliFlowAnalysisCRC::CalculateCMESPPP() //@Shi spectator plane participant p
   //************************************************* ZDC part *************************************
   //Int_t h = fHarmonic-1; // fHarmonic = 2 --> h = 1
   
-  h = fHarmonic-1; // fHarmonic = 2 --> h = 1. In V0 part, h is 0 
+  //h = fHarmonic-1; // fHarmonic = 2 --> h = 1. In V0 part, h is 0 
   
   
   // ZDC-C (eta < -8.8)
@@ -12567,6 +12569,7 @@ void AliFlowAnalysisCRC::FinalizeCMEZDC()
 } // end of void AliFlowAnalysisCRC::FinalizeCMEZDC()
 
 //=======================================================================================================================
+
 void AliFlowAnalysisCRC::FinalizeCMESPPP()
 {
 	cout << "*************************************" << endl;

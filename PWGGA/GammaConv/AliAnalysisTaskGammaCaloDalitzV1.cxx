@@ -4189,7 +4189,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessElectronCandidates(){
 				Double_t psiPair = GetPsiPair(positronCandidate,electronCandidate);
 				Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->GetConstrainedParam()->Phi()-positronCandidate->GetConstrainedParam()->Phi());
 
-				if( ((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->IsFromGammaConversion(psiPair,deltaPhi ) ){
+				if( ((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->IsFromGammaConversion(psiPair,deltaPhi,TMath::Sqrt(positronCandidate->Pt()*positronCandidate->Pt()+electronCandidate->Pt()*electronCandidate->Pt()))){//ALERT New update
 					lElectronPsiIndex[i] = kFALSE;
 					lPositronPsiIndex[j] = kFALSE;
 				}

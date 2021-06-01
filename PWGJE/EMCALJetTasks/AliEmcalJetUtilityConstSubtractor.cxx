@@ -34,12 +34,12 @@ AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor(const char*
   fRhomName(""),
   fRho(1e-6),
   fRhom(1e-6),
+  fAlpha(0),
+  fMaxDelR(-1),
   fJetsSub(0x0),
   fParticlesSub(0x0),
   fRhoParam(0),
-  fRhomParam(0),
-  fAlpha(0),
-  fMaxDelR(-1)
+  fRhomParam(0)
 {
   // Default constructor.
 }
@@ -54,12 +54,12 @@ AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor(const AliEm
   fRhomName(other.fRhomName),
   fRho(other.fRho),
   fRhom(other.fRhom),
+  fAlpha(0),
+  fMaxDelR(-1),
   fJetsSub(other.fJetsSub),
   fParticlesSub(other.fParticlesSub),
   fRhoParam(other.fRhoParam),
-  fRhomParam(other.fRhomParam),
-  fAlpha(0),
-  fMaxDelR(-1)
+  fRhomParam(other.fRhomParam)
 {
   // Copy constructor.
 }

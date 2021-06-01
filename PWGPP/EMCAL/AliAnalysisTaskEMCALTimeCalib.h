@@ -291,7 +291,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     if(fBadChannelMapArray) return (Int_t) ((TH2I*)fBadChannelMapArray->At(0))->GetBinContent(absId+1);
     else return 0;}//Channel is ok by default
 
-  static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE, Bool_t oneHistoAllBCs=kFALSE, Bool_t isPAR=kFALSE);
+  static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE, Bool_t oneHistoAllBCs=kFALSE, Bool_t isPAR=kFALSE, Bool_t doFit=kFALSE);
   static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root",Bool_t offset100=kTRUE, Bool_t justL1phase=kTRUE,TString PARfilename="");
 
   void SwithOnFillOneHistAllBCs()  { fOneHistAllBCs = kTRUE ; }

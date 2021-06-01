@@ -4453,17 +4453,18 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       {
         if ( !fPairWithOtherDetector )
         {
-          if ( module1==module2 )
+          if ( module1==module2 && fhReMod[module1] )
           {
             fhReMod[module1]->Fill(pt, m, GetEventWeight()*weightPt) ;
-            if(fFillAngleHisto) fhRealOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight()*weightPt);
+            if ( fFillAngleHisto && fhRealOpeningAnglePerSM[module1] )
+              fhRealOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight()*weightPt);
           }
-          else if ( GetCalorimeter() == kEMCAL )
+          else if ( (GetCalorimeter() == kEMCAL || GetCalorimeter() == kDCAL) )
           {
             // Same sector
             Int_t isector1 = module1/2;
             Int_t isector2 = module2/2;
-            if ( isector1==isector2 ) 
+            if ( isector1==isector2 && fhReSameSectorEMCALMod[isector1]  )
             {
               fhReSameSectorEMCALMod[isector1]->Fill(pt, m, GetEventWeight()) ;
             }
@@ -4476,24 +4477,34 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               if(module1 > 11) iside1-=2; 
               if(module2 > 11) iside2-=2;
               
-              if     ( module1 < module2 && module2-module1==2 ) 
+              if     ( module1 < module2 && module2-module1==2 && fhReSameSideEMCALMod[iside1] )
                 fhReSameSideEMCALMod[iside1]->Fill(pt, m, GetEventWeight());
-              else if( module2 < module1 && module1-module2==2 ) 
+              else if( module2 < module1 && module1-module2==2 && fhReSameSideEMCALMod[iside2] )
                 fhReSameSideEMCALMod[iside2]->Fill(pt, m, GetEventWeight());
             } // side
           } // EMCAL
-          else
+          else if ( GetCalorimeter() == kPHOS && fhReDiffPHOSMod )
           { // PHOS
-            if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()*weightPt) ;
-            if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()*weightPt) ;
-            if((module1==1 && module2==2) || (module1==2 && module2==1)) fhReDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()*weightPt) ;
-            if((module1==0 && module2==3) || (module1==3 && module2==0)) fhReDiffPHOSMod[3]->Fill(pt, m, GetEventWeight()*weightPt) ;
-            if((module1==1 && module2==3) || (module1==3 && module2==1)) fhReDiffPHOSMod[4]->Fill(pt, m, GetEventWeight()*weightPt) ;
-            if((module1==2 && module2==3) || (module1==3 && module2==2)) fhReDiffPHOSMod[5]->Fill(pt, m, GetEventWeight()*weightPt) ;
-            if((module1==0 && module2==4) || (module1==4 && module2==0)) fhReDiffPHOSMod[6]->Fill(pt, m, GetEventWeight()*weightPt) ;
-            if((module1==1 && module2==4) || (module1==4 && module2==1)) fhReDiffPHOSMod[7]->Fill(pt, m, GetEventWeight()*weightPt) ;
-            if((module1==2 && module2==4) || (module1==4 && module2==2)) fhReDiffPHOSMod[8]->Fill(pt, m, GetEventWeight()*weightPt) ;
-            if((module1==3 && module2==4) || (module1==4 && module2==3)) fhReDiffPHOSMod[9]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if ( fhReDiffPHOSMod[0] && ((module1==0 && module2==1) || (module1==1 && module2==0)) )
+                 fhReDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if ( fhReDiffPHOSMod[1] && ((module1==0 && module2==2) || (module1==2 && module2==0)) )
+                 fhReDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if ( fhReDiffPHOSMod[2] && ((module1==1 && module2==2) || (module1==2 && module2==1)) )
+                 fhReDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if ( fhReDiffPHOSMod[3] && ((module1==0 && module2==3) || (module1==3 && module2==0)) )
+                 fhReDiffPHOSMod[3]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if ( fhReDiffPHOSMod[4] && ((module1==1 && module2==3) || (module1==3 && module2==1)) )
+                 fhReDiffPHOSMod[4]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if ( fhReDiffPHOSMod[5] && ((module1==2 && module2==3) || (module1==3 && module2==2)) )
+                 fhReDiffPHOSMod[5]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if ( fhReDiffPHOSMod[6] && ((module1==0 && module2==4) || (module1==4 && module2==0)) )
+                 fhReDiffPHOSMod[6]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if ( fhReDiffPHOSMod[7] && ((module1==1 && module2==4) || (module1==4 && module2==1)) )
+                 fhReDiffPHOSMod[7]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if ( fhReDiffPHOSMod[8] && ((module1==2 && module2==4) || (module1==4 && module2==2)) )
+                 fhReDiffPHOSMod[8]->Fill(pt, m, GetEventWeight()*weightPt) ;
+            if ( fhReDiffPHOSMod[9] && ((module1==3 && module2==4) || (module1==4 && module2==3)) )
+                 fhReDiffPHOSMod[9]->Fill(pt, m, GetEventWeight()*weightPt) ;
           } // PHOS
         }
         else
@@ -4893,17 +4904,18 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           {
             if ( !fPairWithOtherDetector )
             {
-              if ( module1==module2 )
+              if ( module1==module2 && fhMiMod[module1] )
               {
                 fhMiMod[module1]->Fill(pt, m, GetEventWeight()) ;
-                if(fFillAngleHisto) fhMixedOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight());
+                if ( fFillAngleHisto && fhMixedOpeningAnglePerSM[module1] )
+                  fhMixedOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight());
               }
-              else if ( GetCalorimeter()==kEMCAL )
+              else if ( GetCalorimeter() == kEMCAL || GetCalorimeter() == kDCAL )
               {
                 // Same sector
                 Int_t isector1 = module1/2;
                 Int_t isector2 = module2/2;
-                if ( isector1==isector2 ) 
+                if ( isector1==isector2 && fhMiSameSectorEMCALMod )
                 {
                   fhMiSameSectorEMCALMod[isector1]->Fill(pt, m, GetEventWeight()) ;
                 }
@@ -4916,24 +4928,34 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                   if(module1 > 11) iside1-=2; 
                   if(module2 > 11) iside2-=2;
                   
-                  if     ( module1 < module2 && module2-module1==2 ) 
+                  if     ( module1 < module2 && module2-module1==2 && fhMiSameSideEMCALMod[iside1] )
                     fhMiSameSideEMCALMod[iside1]->Fill(pt, m, GetEventWeight());
-                  else if( module2 < module1 && module1-module2==2 ) 
+                  else if( module2 < module1 && module1-module2==2 && fhMiSameSideEMCALMod[iside2] )
                     fhMiSameSideEMCALMod[iside2]->Fill(pt, m, GetEventWeight());
                 }
               } // EMCAL
-              else
+              else if ( GetCalorimeter() == kPHOS && fhMiDiffPHOSMod )
               { // PHOS
-                if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
-                if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
-                if((module1==1 && module2==2) || (module1==2 && module2==1)) fhMiDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()) ;
-                if((module1==0 && module2==3) || (module1==3 && module2==0)) fhMiDiffPHOSMod[3]->Fill(pt, m, GetEventWeight()) ;
-                if((module1==1 && module2==3) || (module1==3 && module2==1)) fhMiDiffPHOSMod[4]->Fill(pt, m, GetEventWeight()) ;
-                if((module1==2 && module2==3) || (module1==3 && module2==2)) fhMiDiffPHOSMod[5]->Fill(pt, m, GetEventWeight()) ;
-                if((module1==0 && module2==4) || (module1==4 && module2==0)) fhMiDiffPHOSMod[6]->Fill(pt, m, GetEventWeight()) ;
-                if((module1==1 && module2==4) || (module1==4 && module2==1)) fhMiDiffPHOSMod[7]->Fill(pt, m, GetEventWeight()) ;
-                if((module1==2 && module2==4) || (module1==4 && module2==2)) fhMiDiffPHOSMod[8]->Fill(pt, m, GetEventWeight()) ;
-                if((module1==3 && module2==4) || (module1==4 && module2==3)) fhMiDiffPHOSMod[9]->Fill(pt, m, GetEventWeight()) ;
+                if ( fhMiDiffPHOSMod[0] && ((module1==0 && module2==1) || (module1==1 && module2==0)) )
+                     fhMiDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
+                if ( fhMiDiffPHOSMod[1] && ((module1==0 && module2==2) || (module1==2 && module2==0)) )
+                     fhMiDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
+                if ( fhMiDiffPHOSMod[2] && ((module1==1 && module2==2) || (module1==2 && module2==1)) )
+                     fhMiDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()) ;
+                if ( fhMiDiffPHOSMod[3] && ((module1==0 && module2==3) || (module1==3 && module2==0)) )
+                     fhMiDiffPHOSMod[3]->Fill(pt, m, GetEventWeight()) ;
+                if ( fhMiDiffPHOSMod[4] && ((module1==1 && module2==3) || (module1==3 && module2==1)) )
+                     fhMiDiffPHOSMod[4]->Fill(pt, m, GetEventWeight()) ;
+                if ( fhMiDiffPHOSMod[5] && ((module1==2 && module2==3) || (module1==3 && module2==2)) )
+                     fhMiDiffPHOSMod[5]->Fill(pt, m, GetEventWeight()) ;
+                if ( fhMiDiffPHOSMod[6] && ((module1==0 && module2==4) || (module1==4 && module2==0)) )
+                     fhMiDiffPHOSMod[6]->Fill(pt, m, GetEventWeight()) ;
+                if ( fhMiDiffPHOSMod[7] && ((module1==1 && module2==4) || (module1==4 && module2==1)) )
+                     fhMiDiffPHOSMod[7]->Fill(pt, m, GetEventWeight()) ;
+                if ( fhMiDiffPHOSMod[8] && ((module1==2 && module2==4) || (module1==4 && module2==2)) )
+                     fhMiDiffPHOSMod[8]->Fill(pt, m, GetEventWeight()) ;
+                if ( fhMiDiffPHOSMod[9] && ((module1==3 && module2==4) || (module1==4 && module2==3)) )
+                     fhMiDiffPHOSMod[9]->Fill(pt, m, GetEventWeight()) ;
               } // PHOS
             }
             else
@@ -4953,7 +4975,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                        || (phi1 > DegToRad(300) && phi2 > DegToRad(280) && phi1 < DegToRad(320) && phi2 < DegToRad(300))) fhMiDiffSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight()); 
               else if (   (phi1 > DegToRad(260) && phi2 > DegToRad(300) && phi1 < DegToRad(280) && phi2 < DegToRad(320)) 
                        || (phi1 > DegToRad(300) && phi2 > DegToRad(260) && phi1 < DegToRad(320) && phi2 < DegToRad(280))) fhMiDiffSectorDCALPHOSMod[4+etaside]->Fill(pt, m, GetEventWeight()); 
-              else                                                                                                            fhMiDiffSectorDCALPHOSMod[6+etaside]->Fill(pt, m, GetEventWeight());
+              else                                                                                                        fhMiDiffSectorDCALPHOSMod[6+etaside]->Fill(pt, m, GetEventWeight());
             }            
           } //  different SM combinations
           

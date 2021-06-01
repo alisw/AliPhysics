@@ -902,10 +902,9 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(Int_t calorimeter, UShort_
 /// Configure fEMCALRecoUtils with some standard arguments for common analysis configurations
 ///
 /// The input parameters:
-/// \param reco: pointer to object to initialize in this macro.
 /// \param bMC: Bool, indicates if data is MC.
 /// \param bExotic: Bool, indicates if exotic clusters are removed.
-/// \param bNonLin: Bool, indicates if non linearity correction is applied on clusters.
+/// \param bNonLin: Int, indicates if non linearity correction is applied and which version on clusters.
 /// \param bRecalE: Bool, indicates if energy recalibration is applied.
 /// \param bBad: Bool, indicates if bad channels/clusters are removed.
 /// \param bRecalT: Bool, indicates if time is calibrated.
@@ -913,7 +912,7 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(Int_t calorimeter, UShort_
 ///
 //_______________________________________________________________
 void AliCalorimeterUtils::ConfigureEMCALRecoUtils
-(Bool_t  bMC    , Bool_t  bExotic, Bool_t  bNonLin,  
+(Bool_t  bMC    , Bool_t  bExotic, Int_t  bNonLin,  
  Bool_t  bRecalE, Bool_t  bBad   , Bool_t  bRecalT, Int_t   debug)
 {
   if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - **** Start ***\n");
@@ -963,35 +962,42 @@ void AliCalorimeterUtils::ConfigureEMCALRecoUtils
   fEMCALRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);   
   
   // Non linearity
-  
-  if( bNonLin )
-  {
-    fCorrectELinearity = kTRUE;
-    
-    if(!bMC)
-    {
-      if ( debug > 0 )
-        printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
-      
-      fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrectedv3);
-    }
-    else
-    {
-      if ( debug > 0 )
-        printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
-      
-      fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
-    }
-  } // Non linearity correction ON
-  else
-  {
-    fCorrectELinearity = kFALSE;
 
-    if ( debug > 0 )
-      printf("ConfigureEMCALRecoUtils() xxx DON'T SET Non linearity correction xxx\n");
-    
-    fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
-  } // Non linearity correction OFF
+  switch( bNonLin ){
+    case 0:
+      if ( debug > 0 ) 
+        printf("ConfigureEMCALRecoUtils() xxx DON'T SET Non linearity correction xxx\n");
+      fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
+      break;
+    case 1:
+      if( !bMC ) {
+        if ( debug > 0 ) 
+          printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+        fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
+      } else {
+        if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
+        fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
+      }
+      break;
+    case 2:
+      if( !bMC ) {
+        if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+        fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrectedv3);
+      } else {
+        if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
+        fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
+      }
+      break;
+    case 3:
+      if( !bMC ) {
+        if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+        fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kTestBeamShaper);
+      } else {
+        if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
+        fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kTestBeamFinalMC);
+      }
+      break;
+  }
   
 }
 
@@ -1010,7 +1016,7 @@ void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus)
 /// \param absID: cell absolute ID naumber
 /// \param cells: total list of cells in calo
 /// \param bc: bunch crossing number
-/// \param cellMinEn: minimum cell energy in sum of cells
+/// \param cellMinEn: minimum cell energy in sum of cells (only PHOS, AliEMCALRecoUtils has its own setting)
 ///
 //______________________________________________________________________________________
 Float_t AliCalorimeterUtils::GetECross(Int_t absID, AliVCaloCells* cells, Int_t bc, 
@@ -1019,8 +1025,7 @@ Float_t AliCalorimeterUtils::GetECross(Int_t absID, AliVCaloCells* cells, Int_t 
   if ( cells->IsEMCAL() ) 
   {
     Double_t tcell = cells->GetCellTime(absID);
- 
-    return fEMCALRecoUtils->GetECross(absID,tcell,cells,bc,cellMinEn,useWeight,energy);
+    return fEMCALRecoUtils->GetECross(absID,tcell,cells,bc,useWeight,energy);
   }
   else // PHOS
   { 

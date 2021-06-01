@@ -1098,8 +1098,6 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     return;
   Double_t pi0mean =  0.1375; 
   Double_t pi0sig = 0.0275;
-  Double_t etamean = 0.55;
-  Double_t etasig = 0.015;
   Double_t lowpi0mass = pi0mean - pi0sig*fNSigNeutMesonCut;
   Double_t highpi0mass = pi0mean + pi0sig*fNSigNeutMesonCut;
   
@@ -1330,39 +1328,38 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
     for(Int_t iTrack=0;iTrack<nTracks;iTrack++){
       TParticle *mcp = static_cast<TParticle*>(fStack->Particle(iTrack));  
       if(!mcp)
-	continue;  
+        continue;  
       Int_t pdg = mcp->GetPdgCode();
       if(pdg!=22)
-	continue;
+        continue;
       if(TMath::Abs(mcp->Eta())>0.7 ||mcp->Phi()<1.4 || mcp->Phi()>3.2)
-	continue;
+        continue;
       Int_t imom = mcp->GetMother(0);
       if(imom<0 || imom>nTracks)
-	continue;
+        continue;
       TParticle *mcmom = static_cast<TParticle*>(fStack->Particle(imom));  
       if(!mcmom)
-	continue;
+        continue;
       Int_t pdgMom = mcmom->GetPdgCode();
       Double_t mcphi = mcp->Phi();
       Double_t mceta = mcp->Eta();
       if((imom==6 || imom==7) && pdgMom==22) {
-	fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
-	Float_t ptsum = GetMcPtSumInCone(mcp->Eta(), mcp->Phi(), fIsoConeR);
-	fMcPtInConeMcPhoPt->Fill(mcp->Pt(),ptsum);
-	if(ptsum<2)
-	  fMCIsoDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
-	if(mcphi<(3.14-fIsoConeR) && mcphi>(1.4+fIsoConeR) && TMath::Abs(mceta)<(0.7-fIsoConeR))
-	  fMCDirPhotonPtEtIso->Fill(mcp->Pt(),ptsum);
-	if(fNClusForDirPho==0)
-	  fMCDirPhotonPtEtaPhiNoClus->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
-	if(fDebug){
-	  printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatusCode());
-	  printf("with a final photon at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d\n",iTrack,mcp->Pt(), mcp->Eta(), mcp->Phi(),mcp->GetStatusCode());
-	}
-      }
-      else{
-	if(TMath::Abs(pdgMom)>100 && TMath::Abs(pdgMom)<1000)
-	  fDecayPhotonPtMC->Fill(mcp->Pt());
+        fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
+        Float_t ptsum = GetMcPtSumInCone(mcp->Eta(), mcp->Phi(), fIsoConeR);
+        fMcPtInConeMcPhoPt->Fill(mcp->Pt(),ptsum);
+        if(ptsum<2)
+          fMCIsoDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
+        if(mcphi<(3.14-fIsoConeR) && mcphi>(1.4+fIsoConeR) && TMath::Abs(mceta)<(0.7-fIsoConeR))
+          fMCDirPhotonPtEtIso->Fill(mcp->Pt(),ptsum);
+        if(fNClusForDirPho==0)
+          fMCDirPhotonPtEtaPhiNoClus->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
+        if(fDebug){
+          printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatusCode());
+          printf("with a final photon at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d\n",iTrack,mcp->Pt(), mcp->Eta(), mcp->Phi(),mcp->GetStatusCode());
+        }
+      } else {
+        if(TMath::Abs(pdgMom)>100 && TMath::Abs(pdgMom)<1000)
+          fDecayPhotonPtMC->Fill(mcp->Pt());
       }
     }
   }
@@ -1374,39 +1371,38 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
     for(Int_t iTrack=0;iTrack<nTracks;iTrack++){
       AliAODMCParticle *mcp = dynamic_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
       if(!mcp)
-	continue;
+        continue;
       Int_t pdg = mcp->GetPdgCode();
       if(pdg!=22)
-	continue;
+        continue;
       if(TMath::Abs(mcp->Eta())>0.7 ||mcp->Phi()<1.4 || mcp->Phi()>3.2)
-	continue;
+        continue;
       Int_t imom = mcp->GetMother();
       if(imom<0 || imom>nTracks)
-	continue;
+        continue;
       AliAODMCParticle *mcmom = static_cast<AliAODMCParticle*>(fAODMCParticles->At(imom));
       if(!mcmom)
-	continue;
+        continue;
       Int_t pdgMom = mcmom->GetPdgCode();
       Double_t mcphi = mcp->Phi();
       Double_t mceta = mcp->Eta();
       if((imom==6 || imom==7) && pdgMom==22) {
-	fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
-	Float_t ptsum = GetMcPtSumInCone(mcp->Eta(), mcp->Phi(), fIsoConeR);
-	fMcPtInConeMcPhoPt->Fill(mcp->Pt(),ptsum);
-	if(ptsum<2)
-	  fMCIsoDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
-	if(mcphi<(3.14-fIsoConeR) && mcphi>(1.4+fIsoConeR) && TMath::Abs(mceta)<(0.7-fIsoConeR))
-	  fMCDirPhotonPtEtIso->Fill(mcp->Pt(),ptsum);
-	if(fNClusForDirPho==0)
-	  fMCDirPhotonPtEtaPhiNoClus->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
-	if(fDebug){
-	  printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatus());
-	  printf("with a final photon at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d\n",iTrack,mcp->Pt(), mcp->Eta(), mcp->Phi(),mcp->GetStatus());
-	}
-      }
-      else{
-	if(TMath::Abs(pdgMom)>100 && TMath::Abs(pdgMom)<1000)
-	  fDecayPhotonPtMC->Fill(mcp->Pt());
+        fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
+        Float_t ptsum = GetMcPtSumInCone(mcp->Eta(), mcp->Phi(), fIsoConeR);
+        fMcPtInConeMcPhoPt->Fill(mcp->Pt(),ptsum);
+        if(ptsum<2)
+          fMCIsoDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
+        if(mcphi<(3.14-fIsoConeR) && mcphi>(1.4+fIsoConeR) && TMath::Abs(mceta)<(0.7-fIsoConeR))
+          fMCDirPhotonPtEtIso->Fill(mcp->Pt(),ptsum);
+        if(fNClusForDirPho==0)
+          fMCDirPhotonPtEtaPhiNoClus->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
+        if(fDebug){
+          printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%llu,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatus());
+          printf("with a final photon at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%llu\n",iTrack,mcp->Pt(), mcp->Eta(), mcp->Phi(),mcp->GetStatus());
+        }
+      } else{
+        if(TMath::Abs(pdgMom)>100 && TMath::Abs(pdgMom)<1000)
+          fDecayPhotonPtMC->Fill(mcp->Pt());
       }
     }
   }
@@ -1458,7 +1454,7 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
     }
     else{
       if(fDebug)
-	printf("Warning: daughter of photon parton is not a photon\n");
+        printf("Warning: daughter of photon parton is not a photon\n");
       return -0.1;
     }
   }

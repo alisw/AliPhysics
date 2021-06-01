@@ -19,7 +19,7 @@
 #include <TMath.h>
 #include <TArrayD.h>
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliEMCalTriggerBinningFactory::AliEMCalTriggerBinningFactory() {
   /*
@@ -73,5 +73,3 @@ AliEMCalTriggerBinningFactory::DefaultPtBinning::DefaultPtBinning() :
   AddStep(100, 10);
   AddStep(200, 20);
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

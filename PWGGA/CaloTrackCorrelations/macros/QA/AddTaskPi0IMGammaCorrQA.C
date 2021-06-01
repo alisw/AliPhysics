@@ -317,7 +317,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, TString trigger,
   cu->SwitchOffCorrectClusterLinearity();
 
   Bool_t bExotic  = kTRUE;
-  Bool_t bNonLin  = kFALSE;
+  Int_t  bNonLin  = 0;
   Bool_t bBadMap  = kTRUE;
   
   Bool_t bEnCalib = kFALSE;

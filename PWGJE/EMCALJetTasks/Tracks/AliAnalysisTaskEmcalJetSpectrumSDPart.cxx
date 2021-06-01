@@ -58,6 +58,7 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart():
     fUseNeutralConstituents(true),
     fUseStandardOutlierRejection(false),
     fCutHardPartonPt(false),
+    fFillHistosWeighted(false),
     fOutlierMode(kOutlierPtHard),
     fPtHardParton(0.),
     fPdgHardParton(INT_MIN),
@@ -79,6 +80,7 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart(con
     fUseNeutralConstituents(true),
     fUseStandardOutlierRejection(false),
     fCutHardPartonPt(false),
+    fFillHistosWeighted(false),
     fOutlierMode(kOutlierPtHard),
     fPtHardParton(0.),
     fPdgHardParton(INT_MIN),
@@ -299,20 +301,29 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
     auto jets = GetJetContainer("partjets");
     auto particles = jets->GetParticleContainer();
 
+    double weight = 1.;
+    if(fFillHistosWeighted) {
+        // Get cross section weight from supported generator event header
+        auto crossSectionWeight = GetCrossSectionFromHeader();
+        if(crossSectionWeight > 0) {
+          weight *= crossSectionWeight;
+        }
+    }
+
     double statusHardest = 0.;
     if(fPtHardParton > 1e-5) {
         statusHardest = 1.;
-        fHistos->FillTH1("fHardPartonPt", fPtHardParton);
-        if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardPartonPt", fPtHardParton/fPtHard);
+        fHistos->FillTH1("fHardPartonPt", fPtHardParton, weight);
+        if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardPartonPt", fPtHardParton/fPtHard, weight);
         if(fPdgHardParton < 7) {
-                fHistos->FillTH1("fHardQuarkPt", fPtHardParton); 
-                if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardGluonPt", fPtHardParton/fPtHard);
+                fHistos->FillTH1("fHardQuarkPt", fPtHardParton, weight); 
+                if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardGluonPt", fPtHardParton/fPtHard, weight);
         } else {
                 fHistos->FillTH1("fHardGluonPt", fPtHardParton);
-                if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardQuarkPt", fPtHardParton/fPtHard);
+                if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardQuarkPt", fPtHardParton/fPtHard, weight);
         }
     }
-    fHistos->FillTH1("fHistEventsHardPartonSelected", statusHardest);
+    fHistos->FillTH1("fHistEventsHardPartonSelected", statusHardest, weight);
 
     // check MC event directly
     int nphysprim(0), nsecondary(0);
@@ -334,13 +345,13 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
                     }
                 }
             }
-            if(isPhotonMother) fHistos->FillTH1("hPtPhotonMothers", particle->Pt());
+            if(isPhotonMother) fHistos->FillTH1("hPtPhotonMothers", particle->Pt(), weight);
         }
     }
-    fHistos->FillTH1("hNParticlesStack", fMCEvent->GetNumberOfTracks());
-    fHistos->FillTH1("hNParticlesPrimaryStack", stack->GetNprimary());
-    fHistos->FillTH1("hNParticlesPhysPrimStack", nphysprim);
-    fHistos->FillTH1("hNParticlesSecondaryStack", nsecondary);
+    fHistos->FillTH1("hNParticlesStack", fMCEvent->GetNumberOfTracks(), weight);
+    fHistos->FillTH1("hNParticlesPrimaryStack", stack->GetNprimary(), weight);
+    fHistos->FillTH1("hNParticlesPhysPrimStack", nphysprim, weight);
+    fHistos->FillTH1("hNParticlesSecondaryStack", nsecondary, weight);
 
     int nall(0), ncharged(0), nneutral(0), nphotons(0);
     AliVParticle *maxpart(nullptr), *maxcharged(nullptr), *maxneutral(nullptr), *maxphoton(nullptr);
@@ -349,8 +360,8 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
                parteta = part->Eta(),
                partphi = TVector2::Phi_0_2pi(part->Phi());
         nall++;
-        fHistos->FillTH1("hPtParticleAll", partpt);
-        fHistos->FillTH2("hEtaPhiParticle", parteta, partphi);
+        fHistos->FillTH1("hPtParticleAll", partpt, weight);
+        fHistos->FillTH2("hEtaPhiParticle", parteta, partphi, weight);
         if(!maxpart) maxpart = part;
         else {
             if(part->Pt() > maxpart->Pt()) maxpart = part;
@@ -358,16 +369,16 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
         if(!part->Charge()) {
             // Neutral particle
             nneutral++;
-            fHistos->FillTH1("hPtParticleNeutral", partpt);
-            fHistos->FillTH2("hEtaPhiNeutral", parteta, partphi);
+            fHistos->FillTH1("hPtParticleNeutral", partpt, weight);
+            fHistos->FillTH2("hEtaPhiNeutral", parteta, partphi, weight);
             if(!maxneutral) maxneutral = part;
             else {
                 if(part->Pt() > maxneutral->Pt()) maxneutral = part;   
             }
             if(TMath::Abs(part->PdgCode()) == kGamma) {
                 nphotons++;
-                fHistos->FillTH1("hPtPhotons", partpt);
-                fHistos->FillTH2("hEtaPhiPhoton", parteta, partphi);
+                fHistos->FillTH1("hPtPhotons", partpt, weight);
+                fHistos->FillTH2("hEtaPhiPhoton", parteta, partphi, weight);
                 if(!maxphoton) maxphoton = part;
                 else {
                     if(part->Pt() > maxphoton->Pt()) maxphoton = part;
@@ -375,8 +386,8 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
             }
         } else {
             ncharged++;
-            fHistos->FillTH1("hPtParticleCharged", partpt);
-            fHistos->FillTH2("hEtaPhiCharged", parteta, partphi);
+            fHistos->FillTH1("hPtParticleCharged", partpt, weight);
+            fHistos->FillTH2("hEtaPhiCharged", parteta, partphi, weight);
             if(!maxcharged) maxcharged = part;
             else {
                 if(part->Pt() > maxcharged->Pt()) maxcharged = part;
@@ -384,32 +395,32 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
         }
     }
     if(maxpart) {
-        fHistos->FillTH1("hPtParticleMax", TMath::Abs(maxpart->Pt()));
-        fHistos->FillTH2("hEtaPhiMaxParticle", maxpart->Eta(), TVector2::Phi_0_2pi(maxpart->Phi()));
-        if(fPtHardParton > 1e-5) fHistos->FillTH1("hPartLeadingPtHardParton", maxpart->Pt() / fPtHardParton);
+        fHistos->FillTH1("hPtParticleMax", TMath::Abs(maxpart->Pt()), weight);
+        fHistos->FillTH2("hEtaPhiMaxParticle", maxpart->Eta(), TVector2::Phi_0_2pi(maxpart->Phi()), weight);
+        if(fPtHardParton > 1e-5) fHistos->FillTH1("hPartLeadingPtHardParton", maxpart->Pt() / fPtHardParton, weight);
     }
     if(maxcharged) {
-        fHistos->FillTH1("hPtParticleMaxCharged", TMath::Abs(maxcharged->Pt()));
-        fHistos->FillTH2("hEtaPhiMaxCharged", maxcharged->Eta(), TVector2::Phi_0_2pi(maxcharged->Phi()));
-        if(fPtHard > 1e-5) fHistos->FillTH1("hChargedLeadingPtHard", maxcharged->Pt() / fPtHard);
-        if(fPtHardParton > 1e-5) fHistos->FillTH1("hChargedLeadingPtHardParton", maxcharged->Pt() / fPtHardParton);
+        fHistos->FillTH1("hPtParticleMaxCharged", TMath::Abs(maxcharged->Pt()), weight);
+        fHistos->FillTH2("hEtaPhiMaxCharged", maxcharged->Eta(), TVector2::Phi_0_2pi(maxcharged->Phi()), weight);
+        if(fPtHard > 1e-5) fHistos->FillTH1("hChargedLeadingPtHard", maxcharged->Pt() / fPtHard, weight);
+        if(fPtHardParton > 1e-5) fHistos->FillTH1("hChargedLeadingPtHardParton", maxcharged->Pt() / fPtHardParton, weight);
     }
     if(maxneutral) {
-        fHistos->FillTH1("hPtParticleMaxNeutal", TMath::Abs(maxneutral->Pt()));
-        fHistos->FillTH2("hEtaPhiMaxNeutral", maxneutral->Eta(), TVector2::Phi_0_2pi(maxneutral->Phi()));
-        if(fPtHard > 1e-5) fHistos->FillTH1("hNeutralLeadingPtHard", maxneutral->Pt() / fPtHard);
-        if(fPtHardParton > 1e-5) fHistos->FillTH1("hNeutralLeadingPtHardParton", maxneutral->Pt() / fPtHardParton);
+        fHistos->FillTH1("hPtParticleMaxNeutal", TMath::Abs(maxneutral->Pt()), weight);
+        fHistos->FillTH2("hEtaPhiMaxNeutral", maxneutral->Eta(), TVector2::Phi_0_2pi(maxneutral->Phi()), weight);
+        if(fPtHard > 1e-5) fHistos->FillTH1("hNeutralLeadingPtHard", maxneutral->Pt() / fPtHard, weight);
+        if(fPtHardParton > 1e-5) fHistos->FillTH1("hNeutralLeadingPtHardParton", maxneutral->Pt() / fPtHardParton, weight);
     }
     if(maxphoton) {
-        fHistos->FillTH1("hPtParticleMaxPhoton", TMath::Abs(maxphoton->Pt()));
-        fHistos->FillTH2("hEtaPhiMaxPhoton", maxphoton->Eta(), TVector2::Phi_0_2pi(maxphoton->Phi()));
-        if(fPtHard > 1e-5) fHistos->FillTH1("hPhotonLeadingPtHard", maxphoton->Pt() / fPtHard);
-        if(fPtHardParton > 1e-5) fHistos->FillTH1("hPhotonLeadingPtHardParton", maxphoton->Pt() / fPtHardParton);
+        fHistos->FillTH1("hPtParticleMaxPhoton", TMath::Abs(maxphoton->Pt()), weight);
+        fHistos->FillTH2("hEtaPhiMaxPhoton", maxphoton->Eta(), TVector2::Phi_0_2pi(maxphoton->Phi()), weight);
+        if(fPtHard > 1e-5) fHistos->FillTH1("hPhotonLeadingPtHard", maxphoton->Pt() / fPtHard, weight);
+        if(fPtHardParton > 1e-5) fHistos->FillTH1("hPhotonLeadingPtHardParton", maxphoton->Pt() / fPtHardParton, weight);
     }
-    fHistos->FillTH1("hNParticlesEvent", nall);
-    fHistos->FillTH1("hNChargedEvent", ncharged);
-    fHistos->FillTH1("hNNeutralEvent", nneutral);
-    fHistos->FillTH1("hNPhotonsEvent", nphotons);
+    fHistos->FillTH1("hNParticlesEvent", nall, weight);
+    fHistos->FillTH1("hNChargedEvent", ncharged, weight);
+    fHistos->FillTH1("hNNeutralEvent", nneutral, weight);
+    fHistos->FillTH1("hNPhotonsEvent", nphotons, weight);
 
     if(!jets) {
         AliErrorStream() << GetName() << ": Part. level jet container not found" << std::endl;
@@ -427,15 +438,15 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
     AliEmcalJet *maxjet(nullptr);
     for(auto j : jets->accepted()) {
         if(!maxjet || (j->Pt() > maxjet->Pt())) maxjet = j;
-        fHistos->FillTH1("hJetPt", j->Pt());
-        fHistos->FillTH2("hJetEtaPhi", j->Eta(), TVector2::Phi_0_2pi(j->Phi()));
-        fHistos->FillTH2("hJetNEFPt", j->Pt(), j->NEF());
-        fHistos->FillTH2("hJetNconstPt", j->Pt(), j->N());
-        fHistos->FillTH1("hJetMassPt", j->Pt(), j->M());
-        fHistos->FillTH1("hJetMassNconst", j->N(), j->M());
+        fHistos->FillTH1("hJetPt", j->Pt(), weight );
+        fHistos->FillTH2("hJetEtaPhi", j->Eta(), TVector2::Phi_0_2pi(j->Phi()), weight);
+        fHistos->FillTH2("hJetNEFPt", j->Pt(), j->NEF(), weight);
+        fHistos->FillTH2("hJetNconstPt", j->Pt(), j->N(), weight);
+        fHistos->FillTH2("hJetMassPt", j->Pt(), j->M(), weight);
+        fHistos->FillTH2("hJetMassNconst", j->N(), j->M(), weight);
         if(TMath::Abs(j->M()) < 1e-5) {
-            fHistos->FillTH1("hJetNoMassPt", j->Pt());
-            fHistos->FillTH2("hJetNoMassEtaPhi", j->Eta(), j->Phi());
+            fHistos->FillTH1("hJetNoMassPt", j->Pt(), weight);
+            fHistos->FillTH2("hJetNoMassEtaPhi", j->Eta(), j->Phi(), weight);
             int mall(0), mcharged(0), mneutral(0), mphotons(0);
             for(int ijpart = 0; ijpart < j->GetNumberOfTracks(); ijpart++) {
                 auto jconst = j->Track(ijpart);
@@ -445,10 +456,10 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
                     if(TMath::Abs(jconst->PdgCode()) == kGamma) mphotons++;
                 } else mcharged++;
             }
-            fHistos->FillTH1("hJetNoMassNall", mall);
-            fHistos->FillTH1("hJetNoMassNcharged", mcharged);
-            fHistos->FillTH1("hJetNoMassNneutral", mneutral);
-            fHistos->FillTH1("hJetNoMassNphotons", mphotons);
+            fHistos->FillTH1("hJetNoMassNall", mall, weight);
+            fHistos->FillTH1("hJetNoMassNcharged", mcharged, weight);
+            fHistos->FillTH1("hJetNoMassNneutral", mneutral, weight);
+            fHistos->FillTH1("hJetNoMassNphotons", mphotons, weight);
         }
 
         // loop jet constituents
@@ -459,27 +470,27 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
                    etaconst = jconst->Eta(),
                    phiconst = TVector2::Phi_0_2pi(jconst->Phi());
             call++;
-            fHistos->FillTH1("hPtJetConstituent", ptconst);
-            fHistos->FillTH2("hEtaPhiJetConstituents", etaconst, phiconst);
+            fHistos->FillTH1("hPtJetConstituent", ptconst, weight);
+            fHistos->FillTH2("hEtaPhiJetConstituents", etaconst, phiconst, weight);
             if(!jconst->Charge()) {
                 cneutral++;
-                fHistos->FillTH1("hPtJetConstituentNeutral", ptconst);
-                fHistos->FillTH2("hEtaPhiJetConstituentsNeutral", etaconst, phiconst);
+                fHistos->FillTH1("hPtJetConstituentNeutral", ptconst, weight);
+                fHistos->FillTH2("hEtaPhiJetConstituentsNeutral", etaconst, phiconst, weight);
                 if(TMath::Abs(jconst->PdgCode()) == kGamma) {
                     cphoton++;
-                    fHistos->FillTH1("hPtJetConstituentPhoton", ptconst);
-                    fHistos->FillTH2("hEtaPhiJetConstituentsPhoton", etaconst, phiconst);
+                    fHistos->FillTH1("hPtJetConstituentPhoton", ptconst, weight);
+                    fHistos->FillTH2("hEtaPhiJetConstituentsPhoton", etaconst, phiconst, weight);
                 }
             } else {
                 ccharged++;
-                fHistos->FillTH1("hPtJetConstituentCharged", ptconst);
-                fHistos->FillTH2("hEtaPhiJetConstituentsCharged", etaconst, phiconst);
+                fHistos->FillTH1("hPtJetConstituentCharged", ptconst, weight);
+                fHistos->FillTH2("hEtaPhiJetConstituentsCharged", etaconst, phiconst, weight);
             }
         }
-        fHistos->FillTH2("hJetNallPt", j->Pt(), call);
-        fHistos->FillTH2("hJetNchargedPt", j->Pt(), ccharged);
-        fHistos->FillTH2("hJetNneutralPt", j->Pt(), cneutral);
-        fHistos->FillTH2("hJetNphotonsPt", j->Pt(), cphoton);
+        fHistos->FillTH2("hJetNallPt", j->Pt(), call, weight);
+        fHistos->FillTH2("hJetNchargedPt", j->Pt(), ccharged, weight);
+        fHistos->FillTH2("hJetNneutralPt", j->Pt(), cneutral, weight);
+        fHistos->FillTH2("hJetNphotonsPt", j->Pt(), cphoton, weight);
 
         auto leading = j->GetLeadingTrack();
         if(leading) {
@@ -489,25 +500,25 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
             TVector3 jetvec(j->Px(), j->Py(), j->Px()),
                      leadingvec(leading->Px(), leading->Py(), leading->Pz());
             double dR = jetvec.DeltaR(leadingvec);
-            fHistos->FillTH2("hPtLeading", j->Pt(), leadingpt);
-            fHistos->FillTH2("hEtaPhiLeading", leadingeta, leadingphi);
-            fHistos->FillTH2("hDrLeading", j->Pt(), dR);
+            fHistos->FillTH2("hPtLeading", j->Pt(), leadingpt, weight);
+            fHistos->FillTH2("hEtaPhiLeading", leadingeta, leadingphi, weight);
+            fHistos->FillTH2("hDrLeading", j->Pt(), dR, weight);
             if(!leading->Charge()) {
-                fHistos->FillTH2("hPtLeadingNeutral", j->Pt(), leadingpt);
-                fHistos->FillTH2("hEtaPhiLeadingNeutral", leadingeta, leadingphi);
-                fHistos->FillTH2("hDrLeadingNeutral", j->Pt(), dR);
+                fHistos->FillTH2("hPtLeadingNeutral", j->Pt(), leadingpt, weight);
+                fHistos->FillTH2("hEtaPhiLeadingNeutral", leadingeta, leadingphi, weight);
+                fHistos->FillTH2("hDrLeadingNeutral", j->Pt(), dR, weight);
                 if(TMath::Abs(leading->PdgCode()) == kGamma) {
-                    fHistos->FillTH2("hPtLeadingPhoton", j->Pt(), leadingpt);
-                    fHistos->FillTH2("hEtaPhiLeadingPhoton", leadingeta, leadingphi);
-                    fHistos->FillTH2("hDrLeadingPhoton", j->Pt(), dR);
+                    fHistos->FillTH2("hPtLeadingPhoton", j->Pt(), leadingpt, weight);
+                    fHistos->FillTH2("hEtaPhiLeadingPhoton", leadingeta, leadingphi, weight);
+                    fHistos->FillTH2("hDrLeadingPhoton", j->Pt(), dR, weight);
                 }
             } else {
-                fHistos->FillTH2("hPtLeadingCharged", j->Pt(), leadingpt);
-                fHistos->FillTH2("hEtaPhiLeadingCharged", leadingeta, leadingphi);
-                fHistos->FillTH2("hDrLeadingCharged", j->Pt(), dR);
+                fHistos->FillTH2("hPtLeadingCharged", j->Pt(), leadingpt, weight);
+                fHistos->FillTH2("hEtaPhiLeadingCharged", leadingeta, leadingphi, weight);
+                fHistos->FillTH2("hDrLeadingCharged", j->Pt(), dR, weight);
             }
         } else {
-            fHistos->FillTH1("hPtNoLeading", j->Pt());
+            fHistos->FillTH1("hPtNoLeading", j->Pt(), weight);
         }
 
         // SoftDrop
@@ -522,22 +533,22 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
                         splittings = this->IterativeDecluster(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex, fDropMass0Jets);
                     }
 
-                    fHistos->FillTH2("hSDZg", sdparams.fZg, j->Pt());
-                    fHistos->FillTH2("hSDRg", untagged ? -0.02 : sdparams.fRg, j->Pt());
-                    fHistos->FillTH2("fSDNsd", untagged ? -1. : splittings.size(), j->Pt());
-                    fHistos->FillTH2("fSDThetag", sdparams.fZg < sdsettings.fZcut ? -0.05 : sdparams.fRg/jets->GetJetRadius(), j->Pt());
+                    fHistos->FillTH2("hSDZg", sdparams.fZg, j->Pt(), weight);
+                    fHistos->FillTH2("hSDRg", untagged ? -0.02 : sdparams.fRg, j->Pt(), weight);
+                    fHistos->FillTH2("fSDNsd", untagged ? -1. : splittings.size(), j->Pt(), weight);
+                    fHistos->FillTH2("fSDThetag", sdparams.fZg < sdsettings.fZcut ? -0.05 : sdparams.fRg/jets->GetJetRadius(), j->Pt(), weight);
                 } catch(int errorcode) {
                     switch (errorcode)
                     {
                     case 1:
-                        fHistos->FillTH2("hFailedSDConstituents", j->Pt(), j->N());
+                        fHistos->FillTH2("hFailedSDConstituents", j->Pt(), j->N(), weight);
                         break;
                     case 2:
-                        fHistos->FillTH2("hFailedSDMass", j->Pt(), j->M());
+                        fHistos->FillTH2("hFailedSDMass", j->Pt(), j->M(), weight);
                         break;
                     case 3:
                     case 4:
-                        fHistos->FillTH1("hFailedSDFastjet", j->Pt());
+                        fHistos->FillTH1("hFailedSDFastjet", j->Pt(), weight);
                     default:
                         break;
                     }
@@ -547,13 +558,13 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
     }
 
     if(maxjet){
-        if(fPtHard) fHistos->FillTH1("hJetLeadingPtHard", maxjet->Pt()/fPtHard);
+        if(fPtHard) fHistos->FillTH1("hJetLeadingPtHard", maxjet->Pt()/fPtHard, weight);
         if(fPtHardParton > 1e-5) {
-            if(fPtHard) fHistos->FillTH1("hJetLeadingPtHardParton", maxjet->Pt()/fPtHard);
+            if(fPtHard) fHistos->FillTH1("hJetLeadingPtHardParton", maxjet->Pt()/fPtHard, weight);
         }
-        fHistos->FillTH1("hMaxJetPt", maxjet->Pt());
-        fHistos->FillTH2("hMaxJetEtaPhi", maxjet->Eta(), maxjet->Phi());
-        fHistos->FillTH2("hMaxJetNEFPt", maxjet->Pt(), maxjet->NEF());
+        fHistos->FillTH1("hMaxJetPt", maxjet->Pt(), weight);
+        fHistos->FillTH2("hMaxJetEtaPhi", maxjet->Eta(), maxjet->Phi(), weight);
+        fHistos->FillTH2("hMaxJetNEFPt", maxjet->Pt(), maxjet->NEF(), weight);
 
         int nconstall = 0, nconstcharged = 0, nconstneutral = 0, nconstphoton = 0;
         for(auto ipart = 0; ipart < maxjet->GetNumberOfTracks(); ipart++) {
@@ -566,11 +577,11 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
                 nconstcharged++;
             }
         }
-        fHistos->FillTH2("hMaxJetNconstPt", maxjet->Pt(), maxjet->N());
-        fHistos->FillTH2("hMaxMaxJetNallPt", maxjet->Pt(), nconstall);
-        fHistos->FillTH2("hMaxJetNchargedPt", maxjet->Pt(), nconstcharged);
-        fHistos->FillTH2("hMaxJetNneutralPt", maxjet->Pt(), nconstneutral);
-        fHistos->FillTH2("hMaxJetNphotonsPt", maxjet->Pt(), nconstphoton);
+        fHistos->FillTH2("hMaxJetNconstPt", maxjet->Pt(), maxjet->N(), weight);
+        fHistos->FillTH2("hMaxMaxJetNallPt", maxjet->Pt(), nconstall, weight);
+        fHistos->FillTH2("hMaxJetNchargedPt", maxjet->Pt(), nconstcharged, weight);
+        fHistos->FillTH2("hMaxJetNneutralPt", maxjet->Pt(), nconstneutral, weight);
+        fHistos->FillTH2("hMaxJetNphotonsPt", maxjet->Pt(), nconstphoton, weight);
     }
 
     return true;

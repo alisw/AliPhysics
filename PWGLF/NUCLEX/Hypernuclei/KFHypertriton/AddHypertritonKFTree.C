@@ -1,3 +1,21 @@
+/**
+ This macro is used to create the task and add it to the task manager.
+ 
+ The setting options are:
+ - triggerMask: For selecting the triggers to be used for the task
+ - Run2Body: Turn on/off the part of the task reconstructing hypertriton via its 2-body decay
+ - Run3Body: Turn on/off the part of the task reconstructing hypertriton via its 3-body decay
+ - IsMC: Switch between using MC true information or data(-like) reconstruction
+ - DoQA: Turn storage of QA histograms on/off
+ - Backgroud: Change to wrong charge sign combination background instead 3-body reconstruction (only "CodeDevelopment" branch at the moment)
+ 
+ The containers for the result and QA list as well as filenames are appended by the respective decay channel if only one of the two channels is activated. The output channel for the trees is only activated if the respective decay channel is turned on and the Names are:
+ - CandidateTree: for 2-body reconstruction
+ - GeneratedTreeMC: MC true information about the real hypertriton candidates
+ - CandidateTree-3Body: for 3-body reconstruction
+ - GeneratedTreeMC_3Body: MC true information about the real hypertriton candidates
+ */
+
 #if !defined (__CINT__) || defined (__CLING__)
 #include <AliAnalysisManager.h>
 #include <TString.h>

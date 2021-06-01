@@ -116,6 +116,25 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetExplorePIDstd(Bool_t flag){ fExplore_PIDstdCuts=flag; }
   // dirty solution: flag to reduce the axes in the reco sparses ---> make the merging easier (mfaggin)
   void SetOnlyBayesPIDbin_recoSparse(Bool_t flag) {fOnlyBayesPIDbin=flag;}
+  /// include the PID selection with Bayes approach only for proton
+  void SetExplPID_BayesOnlyProt(Bool_t flag, Bool_t rejectStdPIDcases=kFALSE){
+    if(!fExplore_PIDstdCuts)  SetExplorePIDstd(flag);
+    fExplPID_BayesOnlyProt = flag;
+    fNoStdPIDcases = rejectStdPIDcases;
+  }
+
+  // set wheter to keep pT reco for MC reconstructed candidates or the generated one (default)
+  void SetKeepGenPtMC(Bool_t flag){
+    if(!fReadMC)  fKeepGenPtMC = kFALSE;
+    else{ // MC
+      fKeepGenPtMC = flag;
+    }
+  }
+
+  // integer to keep only SigmaC candidate with 0 or ++ charge
+  void SetAbsValueScCharge(Int_t value){
+    fAbsValueScCharge = value;
+  }
 
   void SetLcMassWindowForSigmaC(Double_t massrange){fLcMassWindowForSigmaC=massrange;}
   void SetSigmaCDeltaMassWindow(Double_t maxDeltaM){fSigmaCDeltaMassWindow=maxDeltaM;}
@@ -347,8 +366,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
    Float_t fmaxpT_treeFill;   /// max. pT
   Bool_t fCompute_dist12_dist23;  /// flag to require the calculation of dist12 and dist23
 
-  Bool_t fExplore_PIDstdCuts; /// flag to switch on the exporation of PID cuts with standard strategy
-  Bool_t fOnlyBayesPIDbin;  /// dirty solution: flag to reduce the axes in the reco sparses ---> make the merging easier (mfaggin)
+  Bool_t fExplore_PIDstdCuts;     /// flag to switch on the exporation of PID cuts with standard strategy
+  Bool_t fOnlyBayesPIDbin;        /// dirty solution: flag to reduce the axes in the reco sparses ---> make the merging easier (mfaggin)
+  Bool_t fExplPID_BayesOnlyProt;  /// flag to include the PID selection with Bayes approach only for proton
 
   Double_t fLcMassWindowForSigmaC; /// lc mass window for used in sigma_C loop
   Double_t fSigmaCDeltaMassWindow; /// mass window for accetping sigma_C candidate
@@ -385,13 +405,27 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   TH1F* fCandCounter; //!<!
   TH1F* fCandCounter_onTheFly; //!<!
 
+  // pT distribution of candidate soft pion tracks
+  TH1F* fPtSoftPionCand; //!<!
+  // pT distribution of candidate soft pion tracks inside SigmaC loop
+  TH1F* fPtSoftPionCand_insideScLoop; //!<!
+
   Double_t fNSigmaPreFilterPID; // number of sigma for TPC and TOF pre-filtering PID on tracks
   
   // bool to remove ev. selection (useful to run on ITS2-ITS3 upgrade MC)
   Bool_t fApplyEvSel;
 
+  // bool to keep only the Bayes PID- based PID selections
+  Bool_t fNoStdPIDcases;
+
+  // bool to keep pT reco for MC reconstructed candidates
+  Bool_t fKeepGenPtMC;
+
+  // integer to keep only SigmaC candidate with 0 or ++ charge
+  Int_t fAbsValueScCharge;  // -1: keep both Sc0, Sc++;   0: keep only Sc0;   2: keep only Sc++
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,17); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,20); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

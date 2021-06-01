@@ -17,21 +17,25 @@
 #include "AliAnalysisManager.h"
 #include "AliVEvent.h"
 #include "AliCSAnalysisCutsBase.h"
+#include "AliDummyHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliInputEventHandler.h"
 #include "AliMultiInputEventHandler.h"
+#include "AliMCGenHandler.h"
 
 /// \file AliCSAnalysisCutsBase.cxx
 /// \brief Implementation of base analysis cuts class within the correlation studies analysis
 
 TString                             AliCSAnalysisCutsBase::fgPeriodName = "";
+TString                             AliCSAnalysisCutsBase::fgOnTheFlyProduction = "";
 AliCSAnalysisCutsBase::ProdPeriods  AliCSAnalysisCutsBase::fgDataPeriod = AliCSAnalysisCutsBase::kNoPeriod;
 AliCSAnalysisCutsBase::ProdPeriods  AliCSAnalysisCutsBase::fgAnchorPeriod = AliCSAnalysisCutsBase::kNoPeriod;
 AliCSAnalysisCutsBase::EnergyValue  AliCSAnalysisCutsBase::fgEnergy = AliCSAnalysisCutsBase::kUnset;
 Bool_t                              AliCSAnalysisCutsBase::fgIsMC = kFALSE;
 Bool_t                              AliCSAnalysisCutsBase::fgIsMConlyTruth = kFALSE;
+bool                                AliCSAnalysisCutsBase::fgIsOnTheFlyMC = false;
 AliInputEventHandler               *AliCSAnalysisCutsBase::fgInputHandler = NULL;
-AliMCEventHandler                  *AliCSAnalysisCutsBase::fgMCHandler = NULL;
+AliInputEventHandler               *AliCSAnalysisCutsBase::fgMCHandler = NULL;
 Bool_t                              AliCSAnalysisCutsBase::fgIsESD = kTRUE;
 TClonesArray                       *AliCSAnalysisCutsBase::fgMCArray = NULL;
 
@@ -79,6 +83,21 @@ AliCSAnalysisCutsBase::~AliCSAnalysisCutsBase()
 {
   if (fParameters != NULL) delete [] fParameters;
   if (fCutsString != NULL) delete [] fCutsString;
+}
+
+/// (Un)Set the name of the MC on the fly production
+/// \param ofp the name of the MC on the fly production
+/// If lengt of the ofp is zero the on the fly flag is unset
+void AliCSAnalysisCutsBase::SetOnTheFlyMCProduction(TString &ofp) {
+  AliInfoClass(TString::Format("Setting it to %s", ofp.Data()));
+  if (ofp.Length() != 0) {
+    fgIsOnTheFlyMC = true;
+    fgOnTheFlyProduction = ofp;
+  }
+  else {
+    fgIsOnTheFlyMC = false;
+    fgOnTheFlyProduction = "";
+  }
 }
 
 /// The run to analyze has potentially changed
@@ -645,7 +664,13 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
     fgIsMC = kTRUE;
     fgIsMConlyTruth = kTRUE;
     fgEnergy = kPbPb2760GeV;
-
+  // On the fly MC productions
+  } else if (szLHCPeriod.EqualTo("OnTheFlyPP")) {
+    fgDataPeriod = kOTFpp;
+    fgAnchorPeriod = kLHC10bg;
+    fgIsMC = kTRUE;
+    fgIsMConlyTruth = kTRUE;
+    fgEnergy = k7TeV;
   } else {
     AliFatalClass(Form("Analysis period %s not supported. Please update the class!!!", szLHCPeriod.Data()));
     fgDataPeriod = kNoPeriod;
@@ -654,14 +679,18 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
 
   /* let's check the consistency of the MC flag and store the input and the MC handlers */
   fgInputHandler = (AliInputEventHandler *)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-  if (fgInputHandler != NULL && fgInputHandler->InheritsFrom("AliESDInputHandler")) {
+  if (fgInputHandler != NULL && (fgInputHandler->InheritsFrom("AliESDInputHandler") || TString(fgInputHandler->ClassName()).EqualTo("AliDummyHandler"))) {
     fgIsESD = kTRUE;
     AliMultiInputEventHandler *multiInputHandler = dynamic_cast<AliMultiInputEventHandler *>(fgInputHandler);
     if (multiInputHandler) {
+      printf("is multi input handler");
       fgInputHandler = dynamic_cast<AliInputEventHandler *>(multiInputHandler->GetFirstInputEventHandler());
-      fgMCHandler = dynamic_cast<AliMCEventHandler *>(multiInputHandler->GetFirstMCEventHandler());
+      fgMCHandler = dynamic_cast<AliInputEventHandler *>(multiInputHandler->GetFirstMCEventHandler());
     } else {
-      fgMCHandler = dynamic_cast<AliMCEventHandler *>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+      /* events already generated? */
+      if ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler() != nullptr)
+        printf("class of the mc truth event handler %s",(AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()->ClassName());
+      fgMCHandler = dynamic_cast<AliInputEventHandler *>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
     }
 
     if (fgIsMC && !(fgMCHandler != NULL))
@@ -678,35 +707,41 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
 TString AliCSAnalysisCutsBase::GetPeriodNameFromDataFilePath()
 {
   TString szPeriodName = "";
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
 
-  if(man) {
-    AliVEventHandler* inputHandler = (AliVEventHandler*) (man->GetInputEventHandler());
+  if (fgIsOnTheFlyMC) {
+    szPeriodName = fgOnTheFlyProduction;
+  }
+  else {
+    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
 
-    if (inputHandler){
-      TString szFullFileName = inputHandler->GetTree()->GetCurrentFile()->GetName();
+    if(man) {
+      AliVEventHandler* inputHandler = (AliVEventHandler*) (man->GetInputEventHandler());
 
-      AliInfoClass(Form("Detecting period name from filename: %s", szFullFileName.Data()));
+      if (inputHandler){
+        TString szFullFileName = inputHandler->GetTree()->GetCurrentFile()->GetName();
 
-      TObjArray *tokens = szFullFileName.Tokenize("/._");
-      for (Int_t i = 0; i < tokens->GetEntriesFast();i++ ){
-        TObjString* testObjString = (TObjString*)tokens->At(i);
-        if (testObjString->GetString().BeginsWith("LHC")){
-          szPeriodName = testObjString->GetString();
-          break;
-        }
-      }
-      delete tokens;
-      if (szPeriodName.Length() == 0){
-        tokens = szFullFileName.Tokenize("__");
+        AliInfoClass(Form("Detecting period name from filename: %s", szFullFileName.Data()));
+
+        TObjArray *tokens = szFullFileName.Tokenize("/._");
         for (Int_t i = 0; i < tokens->GetEntriesFast();i++ ){
-          TObjString* testObjString = (TObjString*) tokens->At(i);
+          TObjString* testObjString = (TObjString*)tokens->At(i);
           if (testObjString->GetString().BeginsWith("LHC")){
             szPeriodName = testObjString->GetString();
             break;
           }
         }
         delete tokens;
+        if (szPeriodName.Length() == 0){
+          tokens = szFullFileName.Tokenize("__");
+          for (Int_t i = 0; i < tokens->GetEntriesFast();i++ ){
+            TObjString* testObjString = (TObjString*) tokens->At(i);
+            if (testObjString->GetString().BeginsWith("LHC")){
+              szPeriodName = testObjString->GetString();
+              break;
+            }
+          }
+          delete tokens;
+        }
       }
     }
   }

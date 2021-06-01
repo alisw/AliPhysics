@@ -134,10 +134,16 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillOnlyPtHisto()                  { fFillOnlyPtHisto = kTRUE  ; }
   void         SwitchOffFillOnlyPtHisto()                 { fFillOnlyPtHisto = kFALSE ; }
    
-  void         SwitchOnUse5x5ShowerShapeHisto()           { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = 2 ; }
-  void         SwitchOnUse7x7ShowerShapeHisto()           { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = 3 ; }
-  void         SwitchOnUseNxNShowerShapeHisto(Int_t n=2)  { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = n ; }
-  void         SwitchOffUseNxNShowerShapeHisto()          { fUseNxNShowerShape = kFALSE ; }
+  void         SwitchOnUse5x5ShowerShape()                { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = 2 ; }
+  void         SwitchOnUse7x7ShowerShape()                { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = 3 ; }
+  void         SwitchOnUseNxNShowerShape(Int_t n=2)       { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = n ; }
+  void         SwitchOffUseNxNShowerShape()               { fUseNxNShowerShape = kFALSE ; }
+  void         SwitchOnUse5x5ShowerShapeHisto()           { SwitchOnUse5x5ShowerShape() ; } // Keep for old analysis
+  void         SwitchOnUse7x7ShowerShapeHisto()           { SwitchOnUse7x7ShowerShape() ; } // Keep for old analysis
+  void         SwitchOnUseNxNShowerShapeHisto(Int_t n=2)  { SwitchOnUseNxNShowerShape(n); } // Keep for old analysis
+  void         SwitchOffUseNxNShowerShapeHisto()          { SwitchOffUseNxNShowerShape(); } // Keep for old analysis
+  void         SwitchOnFillNxNShowerShapeAllHisto()       { fFillNxNShowerShapeAllHisto   = kTRUE  ; }
+  void         SwitchOffFillNxNShowerShapeAllHisto()      { fFillNxNShowerShapeAllHisto   = kFALSE ; }
   void         SwitchOnNxNShowerShapeOnlyNeighbours()     { fNxNShowerShapeOnlyNeigbours  = kTRUE  ; }
   void         SwitchOffNxNShowerShapeOnlyNeighbours()    { fNxNShowerShapeOnlyNeigbours  = kFALSE ; }
   void         SetNxNShowerShapeColRowDiffNumber(Int_t n) { fNxNShowerShapeColRowDiffNumber = n    ; }
@@ -266,6 +272,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fSeparateConvertedDistributions;         ///< For shower shape histograms, fill different histogram for converted and non converted
   
   Bool_t   fUseNxNShowerShape;                      ///< Calculate shower shape restricting to NxN and fill histograms
+  Bool_t   fFillNxNShowerShapeAllHisto;             ///< Fill NxN histograms depending on NLM or correlations
   Int_t    fNxNShowerShapeColRowDiffNumber;         ///< Number of columns and rows from leading cell in shower shape calculation
   Bool_t   fNxNShowerShapeOnlyNeigbours;            ///< Make sure when adding the NxN cells, that all cells are contiguous to max energy cell
   Float_t  fNxNShowerShapeMinEnCell;                ///< Minimum energy of cells in NxN cluster shower shape
@@ -426,6 +433,15 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhLambda0DispEta[7] ;                      //!<! shower shape correlation l0 vs disp eta
   TH2F * fhLambda0DispPhi[7] ;                      //!<! shower shape correlation l0 vs disp phi
   
+  TH3F * fhPtM02Spherocity;                         //!<! Cluster pT vs M02 vs spherocity
+  TH3F * fhPtM02SpherocityMinPt[4];                 //!<! Cluster pT vs M02 vs spherocity, different track min pT cut in spherocity
+
+  /// Cluster pT vs M02 vs spherocity per centrality
+  TH3F **fhPtM02SpherocityCent;                     //![GetNCentrBin()]
+
+  /// Cluster pT vs M02 vs spherocity per centrality per min track pT cut
+  TH3F **fhPtM02SpherocityMinPtCent;                //![GetNCentrBin()*4]
+
   // Fill MC dependent histograms, Origin of this cluster is ...
 
   TH2F * fhMCParticle[4];                           //!<! Trace origin of matched particle: raw, selected before TM, after TM, final
@@ -794,7 +810,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,58) ;
+  ClassDef(AliAnaPhoton,59) ;
   /// \endcond
 
 } ;

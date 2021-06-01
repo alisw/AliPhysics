@@ -137,7 +137,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelationSelectAnalysi
   ConfigureCaloTrackCorrAnalysis
   ( anaList, calorimeter, simulation, year, col, analysisString, "", 
    shshMax, isoCone, isoConeMin, isoPtTh, isoMethod, isoContent,
-   leading, tm, mixOn, printSettings, debug);
+   leading, tm, mixOn, printSettings, debug, trigSuffix);
   
   printf("AddTaskGammaHadronCorrelationSelectAnalysis::End configuration\n");
   

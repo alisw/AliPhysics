@@ -21,7 +21,15 @@ AliReducedHypTritTrack::AliReducedHypTritTrack() :
   fTpcChi2(-1),
   fTPCrefit(-1),
   fKink(-1),
-  fGeoLength(-1) {
+  fGeoLength(-1),
+	fTRDvalid(0),
+	fTRDtrigHNU(0),	 
+	fTRDtrigHQU(0),
+	fTRDPid(0),
+	fTRDnTracklets(0),	
+	fTRDPt(0),
+	fTRDLayerMask(0),	
+	fTRDSagitta(-1) {
 }
 
 AliReducedHypTritTrack::~AliReducedHypTritTrack() {

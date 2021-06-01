@@ -7,7 +7,7 @@
 //#include "AliFemtoDreamCascadeCuts.h"
 //#include "AliFemtoDreamCollConfig.h"
 
-#define MONTECARLO
+//#define MONTECARLO
 
 AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
 		                         bool isMC=false,
@@ -41,6 +41,7 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   v0Cuts->SetPDGCodeNegDaug(-211);  //Pion
   v0Cuts->SetPDGCodev0(3122);  //Lambda
   v0Cuts->SetCutInvMass(0.03); //include Background
+  v0Cuts->SetCutCPA(0.9); //include this for the CPA template fits
 //Anti v0 Cuts
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, false);
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
@@ -53,6 +54,7 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   Antiv0Cuts->SetPDGCodeNegDaug(-2212);  //Proton
   Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
   Antiv0Cuts->SetCutInvMass(0.03); //include Background
+  Antiv0Cuts->SetCutCPA(0.9); //include this for the CPA template fits
 
   //Systematic variations for v0
   //v0Cuts->SetCutDCADaugTov0Vtx(1.9);

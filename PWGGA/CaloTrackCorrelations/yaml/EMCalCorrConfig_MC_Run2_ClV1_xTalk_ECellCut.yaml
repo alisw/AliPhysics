@@ -14,14 +14,15 @@ Clusterizer:
     clusterizer: kClusterizerv1
     cellE: 0.1
     seedE: 0.5
-    cellTimeMin: -50e-6
-    cellTimeMax:  50e-6
+    cellTimeMin: -500e-6
+    cellTimeMax:  500e-6
     clusterTimeLength: 1e6
     createHistos: true
     recalDistToBadChannels: true
     recalShowerShape: false
     remapMcAod: true
-    setCellMCLabelFromCluster: 0                    # use 2 if V1 and E cell 50 MeV
+    setCellMCLabelFromCluster: 0   # use 2 if V1 and E cell 50 MeV
+    enableFracEMCRecalc: true
 ClusterExotics:
     enabled: true
     createHistos: true
