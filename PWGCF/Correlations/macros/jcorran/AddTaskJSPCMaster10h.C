@@ -34,7 +34,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double
 
   AliJCatalystTask *fJCatalyst[Nsets];  // One catalyst needed per configuration.
   for (Int_t i = 0; i < Nsets; i++) {
-    fJCatalyst[i] = new AliJCatalystTask(Form("fJCatalystTask_%s", configNames[i].Data()));
+    fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", taskName.Data(), configNames[i].Data()));
     cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << endl;
     fJCatalyst[i]->SelectCollisionCandidates(selEvt);
    
@@ -128,7 +128,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double
       jHist[i][j] = new AliAnalysisDataContainer();     
       jHist[i][j] = mgr->CreateContainer(Form ("%s", myTask[i][j]->GetName()),
         TList::Class(), AliAnalysisManager::kOutputContainer,
-        Form("%s", AliAnalysisManager::GetCommonFileName()));
+        Form("%s:outputAnalysis", AliAnalysisManager::GetCommonFileName()));
       mgr->ConnectOutput(myTask[i][j], 1, jHist[i][j]);
     }
 
