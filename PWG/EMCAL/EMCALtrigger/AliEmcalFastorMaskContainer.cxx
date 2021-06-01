@@ -69,8 +69,8 @@ void AliEmcalFastorMaskContainer::Browse(TBrowser *b) {
   }
   std::unique_ptr<AliEMCALTriggerMapping> triggermapping;
   switch(fRunType) {
-    case RunType_t::kRun1: triggermapping = std::make_unique<AliEMCALTriggerMappingV1>(); break;
-    case RunType_t::kRun2: triggermapping = std::make_unique<AliEMCALTriggerMappingV2>(); break;
+    case RunType_t::kRun1: triggermapping = std::unique_ptr<AliEMCALTriggerMapping>(new AliEMCALTriggerMappingV1); break;
+    case RunType_t::kRun2: triggermapping = std::unique_ptr<AliEMCALTriggerMapping>(new AliEMCALTriggerMappingV2); break;
     case RunType_t::kRuntypeUndefined:
     default:
       Error("AliEmcalFastorMaskContainer::Browse", "Trigger mapping unknown");
