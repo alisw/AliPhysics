@@ -66,7 +66,7 @@
 #include "AliCFManager.h"
 #include "AliSelectNonHFE.h"
 #include "AliHFEpidTPC.h"
-#include ".h"
+#include "AliAnalysisTask_JPsi_EMCal.h"
 #include "TMath.h"
 #include "THnSparse.h"
 #include "TLorentzVector.h"
@@ -109,10 +109,10 @@
 //______________________________________________________________________
 
 //______________________________________________________________________
-ClassImp()
+ClassImp(AliAnalysisTask_JPsi_EMCal)
 
 //______________________________________________________________________
-::(const char *name)
+AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
   : AliAnalysisTaskSE(name)
 
 ,fIsMC(0)
@@ -564,8 +564,8 @@ ClassImp()
 }
 
 //________________________________________________________________________
-::()
-  : AliAnalysisTaskSE("DefaultAnalysis_")
+AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
+  : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTask_JPsi_EMCal")
 
 ,fIsMC(0)
 ,fIs_NewClustersCut(kFALSE)
@@ -1008,7 +1008,7 @@ ClassImp()
 }
 
 //______________________________________________________________________
-::~()
+AliAnalysisTask_JPsi_EMCal::~AliAnalysisTask_JPsi_EMCal()
 {
 	//Destructor 
 	delete fOutputList;
@@ -1038,7 +1038,7 @@ ClassImp()
     
 }
 //_____________________________________________________________________________
-void ::Init()
+void AliAnalysisTask_JPsi_EMCal::Init()
 {
     // Initialization of SPD corrections profiles!!!
     
@@ -1080,7 +1080,7 @@ void ::Init()
 //Create Output Objects
 //Here we can define the histograms and others output files
 //Called once
-void ::UserCreateOutputObjects()
+void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 {
 ///______________________________________________________________________
 ///Output Tlist
@@ -1819,7 +1819,7 @@ void ::UserCreateOutputObjects()
 //______________________________________________________________________
 //Main loop
 //Called for each event
-void ::UserExec(Option_t *)
+void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 {
 //Check Event
 	fESD = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -2039,7 +2039,7 @@ void ::UserExec(Option_t *)
         if(estimatorAvg){
             //printf("Estimator SPD exists!\n");
             //correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex1,fRefMult));
-            fSPDMult_corr = ::GetTrackletsMeanCorrection(estimatorAvg,nAcc,fZvtx,fRefMult, fAOD->GetRunNumber());
+            fSPDMult_corr = AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(estimatorAvg,nAcc,fZvtx,fRefMult, fAOD->GetRunNumber());
         
             //countCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countMult,Zvertex1,fRefMult));
         }
@@ -2063,7 +2063,7 @@ void ::UserExec(Option_t *)
     TProfile2D* estimatorV0 = GetEstimatorHistogram_V0(fAOD);
     if(estimatorV0){
        // printf("Estimator V0 exists!\n");
-        fV0Mult_corr2 = ::GetV0MeanCorrection(estimatorV0,fV0Mult_corr,fZvtx,fRefMult_V0, fAOD->GetRunNumber());
+        fV0Mult_corr2 = AliAnalysisTask_JPsi_EMCal::GetV0MeanCorrection(estimatorV0,fV0Mult_corr,fZvtx,fRefMult_V0, fAOD->GetRunNumber());
     }
     else{
         fV0Mult_corr2 =fV0Mult_corr;
@@ -4482,7 +4482,7 @@ void ::UserExec(Option_t *)
 }      
 
 //=======================================================================
-void ::Terminate(Option_t *)
+void AliAnalysisTask_JPsi_EMCal::Terminate(Option_t *)
 {
 //Draw result to the screen
 //Called once at the end of the query
@@ -4498,7 +4498,7 @@ void ::Terminate(Option_t *)
 
 //=======================================================================
 /*
- Bool_t ::ProcessCutStep(Int_t cutStep, AliVParticle *track)
+ Bool_t AliAnalysisTask_JPsi_EMCal::ProcessCutStep(Int_t cutStep, AliVParticle *track)
 {
 //Check single track cuts for a given cut step
 //Note this function is called inside the UserExec function
@@ -4508,7 +4508,7 @@ void ::Terminate(Option_t *)
 }*/
 
 //=======================================================================
-Bool_t ::FindMother(Int_t mcIndex)
+Bool_t AliAnalysisTask_JPsi_EMCal::FindMother(Int_t mcIndex)
 {
     
    
@@ -4604,7 +4604,7 @@ Bool_t ::FindMother(Int_t mcIndex)
     
 }
 //____________________________________________________________________________
-TProfile2D* ::GetEstimatorHistogram(const AliAODEvent* fAOD)
+TProfile2D* AliAnalysisTask_JPsi_EMCal::GetEstimatorHistogram(const AliAODEvent* fAOD)
 {
     
    // printf("Inside 'GetEstimatorHistogram \n'");
@@ -4667,7 +4667,7 @@ TProfile2D* ::GetEstimatorHistogram(const AliAODEvent* fAOD)
     return fMultEstimatorAvg[period];
 }
 //____________________________________________________________________________
-TProfile2D* ::GetEstimatorHistogram_V0(const AliAODEvent* fAOD)
+TProfile2D* AliAnalysisTask_JPsi_EMCal::GetEstimatorHistogram_V0(const AliAODEvent* fAOD)
 {
     
     //printf("Inside 'GetEstimatorHistogram_V0 \n'");
@@ -4690,7 +4690,7 @@ TProfile2D* ::GetEstimatorHistogram_V0(const AliAODEvent* fAOD)
     return fMultEstimatorV0[period];
 }
 //______________________________________________________________________________
-Double_t ::GetTrackletsMeanCorrection(TProfile2D* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult, Int_t runNo)
+Double_t AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(TProfile2D* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult, Int_t runNo)
 {
     
    //printf("Inside 'GetTrackletsMeanCorrection' for run number %d and vertex =%f \n ", runNo, vtxZ);
@@ -4769,7 +4769,7 @@ Double_t ::GetTrackletsMeanCorrection(TProfile2D* estimatorAvg, Double_t uncorre
 }
 
 //______________________________________________________________________________
-Double_t ::GetV0MeanCorrection(TProfile2D* estimatorV0, Double_t uncorrectedV0, Double_t vtxZ, Double_t refMult_V0, Int_t run_number)
+Double_t AliAnalysisTask_JPsi_EMCal::GetV0MeanCorrection(TProfile2D* estimatorV0, Double_t uncorrectedV0, Double_t vtxZ, Double_t refMult_V0, Int_t run_number)
 {
     
     //printf("Inside GetV0MeanCorrection \n");
@@ -4830,7 +4830,7 @@ Double_t ::GetV0MeanCorrection(TProfile2D* estimatorV0, Double_t uncorrectedV0, 
     return correctedV0;
     
 }
-Double_t ::CalculateWeight(Double_t x)
+Double_t AliAnalysisTask_JPsi_EMCal::CalculateWeight(Double_t x)
 {
     Double_t weight=1;
     
@@ -5088,7 +5088,7 @@ Double_t ::CalculateWeight(Double_t x)
     return weight;
 }
 //______________________________________________________________________________
-Double_t ::GetTPCCalibration(Int_t runNo, Double_t TPCnsigma0)
+Double_t AliAnalysisTask_JPsi_EMCal::GetTPCCalibration(Int_t runNo, Double_t TPCnsigma0)
 {
    
     Double_t mean_shift=0.00;
@@ -5167,7 +5167,7 @@ Double_t ::GetTPCCalibration(Int_t runNo, Double_t TPCnsigma0)
 
 
 /*
-Bool_t ::TrackCuts(AliVTrack *track, AliAODTrack *atrack, AliESDtrack *etrack, Bool_t fIsAOD){
+Bool_t AliAnalysisTask_JPsi_EMCal::TrackCuts(AliVTrack *track, AliAODTrack *atrack, AliESDtrack *etrack, Bool_t fIsAOD){
 	
 		//AOD (Test Filter Bit)
 	if(fIsAOD)
