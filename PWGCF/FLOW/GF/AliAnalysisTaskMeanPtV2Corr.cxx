@@ -671,6 +671,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   if(!AcceptAOD(fAOD, vtxXYZ)) return;
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   if(!fGFWSelection->AcceptVertex(fAOD)) return;
+  printf("lalala land\n");
   if(fStageSwitch==1)
     fIsMC?FillWeightsMC(fAOD, vz,l_Cent,vtxXYZ):FillWeights(fAOD, vz,l_Cent,vtxXYZ);
   if(fStageSwitch==2)
