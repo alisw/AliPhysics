@@ -2514,9 +2514,9 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
   if (fHadCont) {
 
-    Int_t    binHC2[4] =  {NBinsElectron  ,10   , 10 ,100}; //p, ITS, TOF, TPC
+    Int_t    binHC2[4] =  {NBinsElectron +16 ,10   , 10 ,100}; //p, ITS, TOF, TPC
     Double_t xminHC2[4] = {XminElectron   ,-5  ,-5 ,-10};
-    Double_t xmaxHC2[4] = {XmaxElectron   ,5   , 5 ,10};  
+    Double_t xmaxHC2[4] = {XmaxElectron +2.  ,5   , 5 ,10};  
     fHadContamination = new THnSparseF("fHadContamination", "HadCont; P; ITS; TOF; TPC;", 4, binHC2, xminHC2, xmaxHC2);
     fOutputListMain->Add(fHadContamination);
 
@@ -2525,24 +2525,24 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
       fHadContPvsPt = new TH2F("fHadContPvsPt", "PvsPt; P;Pt", 100, 0, 10, 100, 0, 10);
       fOutputListMain->Add(fHadContPvsPt);  
     
-      Int_t    binHC[4] =  {NBinsElectron  ,NBinsPhi/8      ,NBinsEta/2    ,200}; //p, Phi, Eta, TPC
+      Int_t    binHC[4] =  {NBinsElectron +16 ,NBinsPhi/8      ,NBinsEta/2    ,200}; //p, Phi, Eta, TPC
       Double_t xminHC[4] = {XminElectron   ,0             ,-0.9  ,-10};
-      Double_t xmaxHC[4] = {XmaxElectron   ,TMath::TwoPi(), 0.9  ,10};
+      Double_t xmaxHC[4] = {XmaxElectron  +2. ,TMath::TwoPi(), 0.9  ,10};
       fHadContPPhiEtaTPC = new THnSparseF("fHadContPPhiEtaTPC", "HadCont; P; Phi; Eta; TPC;", 4, binHC, xminHC, xmaxHC);
       fOutputListMain->Add(fHadContPPhiEtaTPC); // select electrons with had cont
 
-      fHadContTPCEtaPhiPt = new TH3F("fHadContTPCEtaPhiPt", "MCHadContTPC; Eta; Phi; Pt", 36, -0.9, 0.9, 32, 0, TMath::TwoPi(), NBinsElectron, XminElectron, XmaxElectron);
+      fHadContTPCEtaPhiPt = new TH3F("fHadContTPCEtaPhiPt", "MCHadContTPC; Eta; Phi; Pt", 36, -0.9, 0.9, 32, 0, TMath::TwoPi(), NBinsElectron+16, XminElectron, XmaxElectron+2.);
       fOutputListMain->Add(fHadContTPCEtaPhiPt); // select hadrons by intend
     }
  
    
     if (fIsMC) {
-      if(fOneTimeCheck) fHadContEtaPhiPt = new TH3F("fHadContEtaPhiPt", "MCHadCont; Eta; Phi; Pt", 36, -0.9, 0.9, 32, 0, TMath::TwoPi(), NBinsElectron, XminElectron, XmaxElectron);
+      if(fOneTimeCheck) fHadContEtaPhiPt = new TH3F("fHadContEtaPhiPt", "MCHadCont; Eta; Phi; Pt", 36, -0.9, 0.9, 32, 0, TMath::TwoPi(), NBinsElectron+16, XminElectron, XmaxElectron+2.);
       fOutputListMain->Add(fHadContEtaPhiPt);   
       
-      Int_t    binHMC[4] = {NBinsElectron  , 7,  10, 100}; // p PDG ITS, TPC
+      Int_t    binHMC[4] = {NBinsElectron+16  , 7,  10, 100}; // p PDG ITS, TPC
       Double_t xminHMC[4] = {XminElectron   , 0, -5, -10};
-      Double_t xmaxHMC[4] = {XmaxElectron   , 7,  5,  10};
+      Double_t xmaxHMC[4] = {XmaxElectron +2.  , 7,  5,  10};
       fHadContMC = new THnSparseF("fHadContMC", "HadContMC; P; PDG; ITS; TPC;", 4, binHMC, xminHMC, xmaxHMC);
       fOutputListMain->Add(fHadContMC); // had cont after tof cut
     }
@@ -3681,13 +3681,13 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
       fillSparse[3]=pVtx->GetZ();
       if (recEffH>0) fRecHadPtEtaPhiVtxWRecEff->Fill(fillSparse, EventWeight/recEffH);
 
-      if (fRecEff && fIsMC && fIsAOD) {
-	fRecHadPtEtaPhiVtx->Fill(fillSparse, EventWeight);
+      if (fIsMC && fIsAOD) {
+	if (fRecEff) fRecHadPtEtaPhiVtx->Fill(fillSparse, EventWeight);
 	Int_t MClabel=AODtrack->GetLabel();
        	AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMC->GetTrack(abs(MClabel));
 	fRecHadMCSecondaryCont->Fill(pt, MCParticle->IsPhysicalPrimary(), EventWeight);
 	                                           
-	if (fOneTimeCheck) {  
+	if (fRecEff && fOneTimeCheck) {  
 	  Double_t mcVtx[3];
 	  fMCheader->GetVertex(mcVtx);
 	  fillSparse[0]=MCParticle->Pt();
@@ -5903,9 +5903,12 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
     // Double_t ExcludePion[9] = {130,211, 310, 321, 2212, 3122,3222,3322,5122}; // K0L, PI+, K0S, K+, p, Lambd0, Sigma+, Xci0, lambda b0
     // Double_t ExcludeEta[0] = {};
 
-    Int_t MotherIsHeavy =  Int_t (PDGCodeMother / TMath::Power(10, Int_t(TMath::Log10(PDGCodeMother))));
-    Int_t GrandMotherIsHeavy =  Int_t (PDGCodeGrandMother / TMath::Power(10, Int_t(TMath::Log10(PDGCodeGrandMother))));
-    Int_t GGMotherIsHeavy =  Int_t (PDGCodeGGMother / TMath::Power(10, Int_t(TMath::Log10(PDGCodeGGMother))));
+    Int_t MotherIsHeavy =  0;
+    if (PDGCodeMother>=0) MotherIsHeavy = Int_t (PDGCodeMother / TMath::Power(10, Int_t(TMath::Log10(PDGCodeMother))));
+    Int_t GrandMotherIsHeavy=0;
+    if (PDGCodeGrandMother>=0) GrandMotherIsHeavy =  Int_t (PDGCodeGrandMother / TMath::Power(10, Int_t(TMath::Log10(PDGCodeGrandMother))));
+    Int_t GGMotherIsHeavy =0;
+    if (PDGCodeGGMother>=0) GGMotherIsHeavy =  Int_t (PDGCodeGGMother / TMath::Power(10, Int_t(TMath::Log10(PDGCodeGGMother))));
     
     if (PDGCode==11) { // only correct contributions which have been used for correction (primaries
       if (PDGCodeMother==22 && GrandMotherIsPrimary) {
