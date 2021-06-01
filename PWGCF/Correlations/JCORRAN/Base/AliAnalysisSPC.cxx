@@ -224,8 +224,7 @@ void AliAnalysisSPC::PhysicsAnalysis()
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  //a)Select Centrality Bin (has to be valid, as it passed the GlobalQualityAssurance)
  Int_t CentralityBin = SelectCentrality(fCentrality); 
-  fCentralityHistogram[CentralityBin]->Fill(fCentrality);
-
+  
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  //Access Data
 
@@ -320,7 +319,7 @@ void AliAnalysisSPC::PhysicsAnalysis()
 
  }//if(bDoMixed)
 
-
+fCentralityHistogram[CentralityBin]->Fill(fCentrality);
 
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  //Declare arrays for Phi, pt, eta and weights

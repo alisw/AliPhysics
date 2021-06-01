@@ -96,12 +96,12 @@ void AliAnalysisTaskHOCFA::UserExec(Option_t *option)
 // Execute the analysis for each event in the input sample.
 
 // Get the centrality and multiplicity of the trimmed event.
-  fCentralityBin = GetCentralityBin(fCentrality);
-  fHistoCent[fCentralityBin]->Fill(fCentrality);
   fMultiplicity = fInputList->GetEntriesFast();
+  fCentralityBin = GetCentralityBin(fCentrality);
 
 // Reject all events with not enough tracks to calculate the correlators.
   if (fMultiplicity < fMultiplicityMin) {return;}
+  fHistoCent[fCentralityBin]->Fill(fCentrality);
   fHistoMulti[fCentralityBin]->Fill(fMultiplicity);
 
 // Get the information on the selected tracks.
@@ -460,7 +460,7 @@ void AliAnalysisTaskHOCFA::CalculateCorrelator(Int_t combi, Int_t bin, Int_t nPa
 
 // Fill the corresponding bin in the right TProfile.
   fCorrelTerms[combi][fCentralityBin]->Fill( (Float_t)bin + 0.5, rCorrel, eventWeight );
-  fCorrelTerms[combi][fCentralityBin]->GetXaxis()->SetBinLabel(bin, Form("{%d,%d,%d}", fPowers[bin][0], fPowers[bin][1], fPowers[bin][2]));
+  fCorrelTerms[combi][fCentralityBin]->GetXaxis()->SetBinLabel(bin+1, Form("{%d,%d,%d}", fPowers[bin][0], fPowers[bin][1], fPowers[bin][2]));
 
 // Reset the local variables for the next call.
   cCorrel = TComplex(0., 0.);

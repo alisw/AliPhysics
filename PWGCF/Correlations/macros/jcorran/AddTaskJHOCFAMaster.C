@@ -9,12 +9,16 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster",
     "\t ptmin=" << ptmin << endl;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  const int Nsets = 4;  // Number of configurations.
+  const int Nsets = 8;  // Number of configurations.
   TString configNames[Nsets] = {
     "hybrid",     // 0 = default.
     "global",     // 1 for filtering.
     "SPD",        // 2 for centrality.
     "pileup"      // 3 for outliers.
+    "zvtx6",    // 4: PVz < 6cm.
+    "zvtx8",   // 5: PVz < 8cm.
+    "ntpc80",   // 6: N_TPC > 80.
+    "ntpc100"   // 7: N_TPC > 100.
   };
 
 // Load the correction map.
@@ -49,10 +53,11 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster",
   }
 
 // Set the JCatalystTasks for the event and track selection.
+// taskName added in the name of the catalyst to prevent merging issues between wagons.
   AliJCatalystTask *fJCatalyst[Nsets];  // One tracking per config.
 
   for (int i = 0; i < Nsets; i++) {
-    fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s", configNames[i].Data()));
+    fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", taskName.Data(), configNames[i].Data()));
     cout << fJCatalyst[i]->GetJCatalystTaskName() << endl;
 
   // Set the correct flags to use.
@@ -77,7 +82,21 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster",
     } else {  // Hybrid tracks for the default analysis.
       fJCatalyst[i]->SetTestFilterBit(hybridCut);
     }
-    
+  
+    if (strcmp(configNames[i].Data(), "zvtx6") == 0) {    
+      fJCatalyst[i]->SetZVertexCut(6.0);
+    }
+    else if (strcmp(configNames[i].Data(), "zvtx8") == 0) {    
+      fJCatalyst[i]->SetZVertexCut(8.0);
+    } // Else: do nothing, default is 10.
+
+    if (strcmp(configNames[i].Data(), "ntpc80") == 0) {    
+      fJCatalyst[i]->SetNumTPCClusters(80);
+    }
+    else if (strcmp(configNames[i].Data(), "ntpc100") == 0) {    
+      fJCatalyst[i]->SetNumTPCClusters(100);
+    } // Else: do nothing, default is 10.
+
     fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
     fJCatalyst[i]->SetPtRange(ptmin, 5.0);
     fJCatalyst[i]->SetPhiCorrectionIndex(i);

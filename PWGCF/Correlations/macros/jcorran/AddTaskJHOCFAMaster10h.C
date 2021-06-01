@@ -5,10 +5,15 @@ AliAnalysisTask *AddTaskJHOCFAMaster10h (TString taskName = "JHOCFAMaster10h", d
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
 // Configuration of the wagons.
-  const int Nsets = 2;  // Number of configurations.
+  const int Nsets = 7;  // Number of configurations.
   TString configNames[Nsets] = {
     "tpconly",  // 0 = Default.
-    "hybrid"
+    "hybrid",   // 1: filtering.
+    "V0M",      // 2: centrality.
+    "zvtx6",    // 3: PVz < 6cm.
+    "zvtx12",   // 4: PVz < 12cm.
+    "ntpc50",   // 5: N_TPC > 50.
+    "ntpc100"   // 6: N_TPC > 100.
   };
 
 // Loading of the correction map.
@@ -31,11 +36,10 @@ AliAnalysisTask *AddTaskJHOCFAMaster10h (TString taskName = "JHOCFAMaster10h", d
 // Configuration of the catalyst tasks for the data selection.
   AliJCatalystTask *fJCatalyst[Nsets];  // One catalyst needed per configuration.
   for (Int_t i = 0; i < Nsets; i++) {
-    fJCatalyst[i] = new AliJCatalystTask(Form("fJCatalystTask_%s", configNames[i].Data()));
+    fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", taskName.Data(), configNames[i].Data()));
     cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << endl;
 
   // TBI: Do we need the flag for outliers here?
-
     fJCatalyst[i]->SelectCollisionCandidates(configTrigger);
     fJCatalyst[i]->SetSaveAllQA(saveCatalystQA); 
     fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
@@ -54,6 +58,21 @@ AliAnalysisTask *AddTaskJHOCFAMaster10h (TString taskName = "JHOCFAMaster10h", d
     else {
       fJCatalyst[i]->SetTestFilterBit(TPConlyFilter); // default
     }
+
+    if (strcmp(configNames[i].Data(), "zvtx6") == 0) {    
+      fJCatalyst[i]->SetZVertexCut(6.0);
+    }
+    else if (strcmp(configNames[i].Data(), "zvtx12") == 0) {    
+      fJCatalyst[i]->SetZVertexCut(12.0);
+    } // Else: do nothing, default is 10.
+
+    if (strcmp(configNames[i].Data(), "ntpc50") == 0) {    
+      fJCatalyst[i]->SetNumTPCClusters(50);
+    }
+    else if (strcmp(configNames[i].Data(), "ntpc100") == 0) {    
+      fJCatalyst[i]->SetNumTPCClusters(100);
+    } // Else: do nothing, default is 10.
+
     fJCatalyst[i]->SetPtRange(ptMin, 5.0);
     fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
     fJCatalyst[i]->SetPhiCorrectionIndex (i);
