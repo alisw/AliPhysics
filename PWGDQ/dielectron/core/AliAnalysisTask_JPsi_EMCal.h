@@ -471,6 +471,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	//KF
 	TH2F				*fHist_InvMass_pt_ULS_KF;
+    
+    TH2F                *fHist_InvMass_pt_ULS_KF_eg1;
+    TH2F                *fHist_InvMass_pt_ULS_KF_eg2;
+    
 	TH2F				*fHist_InvMass_pt_LS_KF;
     
     TH2F                *fHist_Correlation_leg1_emcal_leg2_not;
