@@ -106,6 +106,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Double_t fptAssocut; 
     Double_t fNref;
 		Int_t Nch;
+		Double_t correctednAcc;
     Bool_t fmcData;
     Bool_t iMCcorr;
     Bool_t iDCApTweight;
@@ -274,7 +275,15 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
 	TH1F                        *fNtrkl_Corr;
 	TH2F                        *fzvtx_Nch;
 	TH2F                        *fNchNtr_Corr;
-  TH1D                        *fweightNtrkl; 
+  TH1D                        *fweightNtrkl;
+	TH2F                        *fNtrklcorr_HFjet;
+	TH2F                        *fNtrklcorr_ULSjet;
+	TH2F                        *fNtrklcorr_LSjet;
+	TH2F                        *fNtrklcorr_Hadjet;
+	THnSparse                   *fNtrklEopHFE;
+	THnSparse                   *fNtrklEopHad;
+	TH1D                        *fHistphoPi0MC;
+	TH1D                        *fHistphoEtaMC;
 
   TRandom                     *generator;
 
