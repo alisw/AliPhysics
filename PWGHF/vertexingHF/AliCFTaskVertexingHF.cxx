@@ -2417,7 +2417,7 @@ void AliCFTaskVertexingHF::SetPtWeightsLcFromPythiaMode2overLHC20f4abc(){
   // weight function from the ratio of the LHC20f4abc MC 
   // and Pythia Mode2 calculations for pp data at 13TeV
 
-  if(fHistoPtWeight) delete fHistoPtWeight;
+  if(fFuncWeight) delete fFuncWeight;
 
   Double_t tot2[6]={9.55734,-0.287289,1.06573,0.222381,-0.0101741,0.000169186};
   TF1 *fFuncWeight=new TF1("fFuncWeight","landaun(0)+pol2(3)",0.,40.);
