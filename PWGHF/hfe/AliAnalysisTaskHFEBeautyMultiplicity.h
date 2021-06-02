@@ -29,7 +29,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         virtual void            UserExec(Option_t* option);
         virtual void            GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
         //virtual void            FindPatches(Bool_t &hasfiredEG1, Bool_t &hasfiredEG2, Double_t emceta, Double_t emcphi);
-        virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt, Double_t DCAxy, Int_t Bsign, Double_t &Mass);
+        virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt, Double_t DCAxy, Int_t Bsign);
     
         //---- called for end of analysis ----//
         virtual void            Terminate(Option_t* option);
