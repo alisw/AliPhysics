@@ -118,7 +118,7 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
 	fMC(0),
 	fUseMC(kFALSE),
 	fIsMCclosure(kFALSE),
-	fIspPb(kFALSE),
+	fIsHybAna(kFALSE),
 	fnRecHy(-1),
 	fnRecHyWoDCA(-1),
 	fnGen(-1),
@@ -154,8 +154,6 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
 	fPtMin(0.5),
 	fLeadPtCutMin(5.0),
 	fLeadPtCutMax(40.0),
-	fV0Mmin(0.0),
-	fV0Mmax(100.0),
 	fGenLeadPhi(0),
 	fGenLeadPt(0),
 	fGenLeadIn(0),
@@ -164,7 +162,6 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
 	fRecLeadIn(0),
 	ftrackmult08(0),
 	fv0mpercentile(0),
-	fv0mpercentilebefvtx(0),
 	fdcaxy(-999),
 	fdcaz(-999),
 	fMultSelection(0x0),
@@ -207,9 +204,6 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
 	hPtOutPrim_rest(0),
 	hPtOutSec(0),
 	hCounter(0),
-	hRefMult08(0),
-	hV0Mmult(0),
-	hV0Mmultbefvtx(0),
 	hPTVsDCAData(0),
 	hptvsdcaPrim(0),
 	hptvsdcaDecs(0),
@@ -239,7 +233,7 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
 	fMC(0),
 	fUseMC(kFALSE),
 	fIsMCclosure(kFALSE),
-	fIspPb(kFALSE),
+	fIsHybAna(kFALSE),
 	fnRecHy(-1),
 	fnRecHyWoDCA(-1),
 	fnGen(-1),
@@ -275,8 +269,6 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
 	fPtMin(0.5),
 	fLeadPtCutMin(5.0),
 	fLeadPtCutMax(40.0),
-	fV0Mmin(0.0),
-	fV0Mmax(100.0),
 	fGenLeadPhi(0),
 	fGenLeadPt(0),
 	fGenLeadIn(0),
@@ -285,7 +277,6 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
 	fRecLeadIn(0),
 	ftrackmult08(0),
 	fv0mpercentile(0),
-	fv0mpercentilebefvtx(0),
 	fdcaxy(-999),
 	fdcaz(-999),
 	fMultSelection(0x0),
@@ -328,9 +319,6 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
 	hPtOutPrim_rest(0),
 	hPtOutSec(0),
 	hCounter(0),
-	hRefMult08(0),
-	hV0Mmult(0),
-	hV0Mmultbefvtx(0),
 	hPTVsDCAData(0),
 	hptvsdcaPrim(0),
 	hptvsdcaDecs(0),
@@ -350,8 +338,6 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
 		hPhiRec[i]=0;
 	}
 
-	//Importante ya que nos dice que toma una cadena de eventos para formar la lista de histogramas
-	// constructor
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case you take a 'chain' of events
 	// this chain is created by the analysis manager, so no need to worry about it, does its work automatically
 	DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms
@@ -631,18 +617,6 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 	hNchData = new TH1D("hNchData","",3000,-0.5,2999.5); 
 	fOutputList->Add(hNchData);
 
-	hRefMult08 = 0;
-	hRefMult08 = new TH1D("hRefMult08","Multiplicity (-0.8 < #eta < 0.8);N_{ch};count",3000,-0.5,2999.5);   
-	fOutputList->Add(hRefMult08);
-
-	hV0Mmult = 0;
-	hV0Mmult = new TH1D("hV0Mmult","V0M ;V0M percentile;count",100,0,100);   
-	fOutputList->Add(hV0Mmult);
-
-	hV0Mmultbefvtx = 0;
-	hV0Mmultbefvtx = new TH1D("hV0Mmultbefvtx","V0M ;V0M percentile bef. vtx;count",100,0,100);   
-	fOutputList->Add(hV0Mmultbefvtx);
-
 	for(Int_t i=0;i<3;++i){
 		hPhiRec[i]= new TH1D(Form("hPhiRec_%s",NameReg_3[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
 		fOutputList->Add(hPhiRec[i]);
@@ -711,7 +685,7 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 		this->Dump();
 		return;
 	}
-
+	
 	if (fUseMC) {
 
 		//      E S D
@@ -723,9 +697,6 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 		}
 		fMCStack = fMC->Stack();
 	}
-
-
-	//hCounter->Fill(0);
 
 	AliHeader* headerMC = fMC->Header();
 	Bool_t isGoodVtxPosMC = kFALSE;
@@ -747,7 +718,14 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 
 		// Before trigger selection
 		GetLeadingObjectFromArray(ptMc,phiMc,fnGen, kTRUE);
+		// Filling histos for observables at generator level
+		if( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax )
+			GetMultiplicityDistributionsTrue(phiMc,ptMc,fnGen);
+
+
 	}
+
+
 
 	// Define the arrays for hybrid, standard (w DCA cut)
 	vector<Float_t> ptHy;
@@ -756,7 +734,7 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 	vector<Float_t> dcazHy;
 	vector<Int_t>   isprimHy;
 	vector<Int_t>   idHy;
-	fnRecHy = FillArray( ptHy, phiHy, dcaxyHy, dcazHy, isprimHy, idHy, kTRUE, kTRUE, kTRUE, kTRUE );
+	fnRecHy = FillArray( ptHy, phiHy, dcaxyHy, dcazHy, isprimHy, idHy, kTRUE, fIsHybAna );
 
 	// Before trigger selection
 	GetLeadingObjectFromArray(ptHy,phiHy,fnRecHy,kFALSE);
@@ -769,14 +747,13 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 	vector<Float_t> dcazHyWoDCA;
 	vector<Int_t>   isprimHyWoDCA;
 	vector<Int_t>   idHyWoDCA;
-	fnRecHyWoDCA = FillArray( ptHyWoDCA, phiHyWoDCA, dcaxyHyWoDCA, dcazHyWoDCA, isprimHyWoDCA, idHyWoDCA, kFALSE, kFALSE, kFALSE, kFALSE );
+	fnRecHyWoDCA = FillArray( ptHyWoDCA, phiHyWoDCA, dcaxyHyWoDCA, dcazHyWoDCA, isprimHyWoDCA, idHyWoDCA, kFALSE, fIsHybAna );
 
 	// Trigger selection
 	UInt_t fSelectMask= fInputHandler->IsEventSelected();
 	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7;
 	if(!isINT7selected)
 		return;
-	//hCounter->Fill(1);
 
 	// Good events
 	if (!fEventCuts.AcceptEvent(event)) {
@@ -785,10 +762,6 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 	}
 
 	fMultSelectionbefvtx = (AliMultSelection*) fESD->FindListObject("MultSelection");
-	if (fIspPb) {fv0mpercentilebefvtx = fMultSelectionbefvtx->GetMultiplicityPercentile("V0A");}
-	else {fv0mpercentilebefvtx = fMultSelectionbefvtx->GetMultiplicityPercentile("V0M");}
-
-	hV0Mmultbefvtx->Fill(fv0mpercentilebefvtx);
 
 	// Good vertex
 	Bool_t hasRecVertex = kFALSE;
@@ -796,63 +769,53 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 	if(!hasRecVertex)return;
 
 	// Multiplicity Estimation
-	ftrackmult08 = -999;
 	fv0mpercentile = -999;
 
-	ftrackmult08=AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);     //tracklets
-	hRefMult08->Fill(ftrackmult08);
-
 	fMultSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
-	//if (!fMultSelection)
-	//cout<<"------- No AliMultSelection Object Found --------"<<fMultSelection<<endl;
-	if (fIspPb) {fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0A");}
-	else {fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");}
-
-	hV0Mmult->Fill(fv0mpercentile);
+	if (!fMultSelection)
+		cout<<"------- No AliMultSelection Object Found --------"<<fMultSelection<<endl;
+	fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
 	
-	//analysis
-	if (fv0mpercentile>fV0Mmin && fv0mpercentile<=fV0Mmax)
-	{
-		if(fIsMCclosure){
-			Double_t randomUE = -1;
-			gRandom->SetSeed(0);
-			randomUE = gRandom->Uniform(0.0,1.0);
-			if(randomUE<0.5){                   // corrections (50% stat.)
-				if(isGoodVtxPosMC){
-					// KNO scaling
-					if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
-						GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy);
-				}
-			}
-			else{// for testing the method
+	if(fIsMCclosure){
+		Double_t randomUE = -1;
+		gRandom->SetSeed(0);
+		randomUE = gRandom->Uniform(0.0,1.0);
+		if(randomUE<0.5){                   // corrections (50% stat.)
+			if(isGoodVtxPosMC){
 				// KNO scaling
-				if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
-				{
-					GetMultiplicityDistributions(phiMc,ptMc,fnGen,phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,isprimHyWoDCA, fnRecHyWoDCA);
+				if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )){
+					GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy);
 					GetBinByBinCorrections(fnGen,fnRecHy,ptMc,ptHy,idMc,idHy,isprimHy);
 				}
 			}
 		}
-		else{
-			if(fUseMC){
-				if(isGoodVtxPosMC){
-					// KNO scaling
-					if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
-					{
-						GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy);
-						GetBinByBinCorrections(fnGen,fnRecHy,ptMc,ptHy,idMc,idHy,isprimHy);
-						GetMultiplicityDistributions(phiMc,ptMc,fnGen,phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,isprimHyWoDCA, fnRecHyWoDCA);
-					}
-				}
-			}
-			else{
-				//GetMB(ptHy, phiHy,fnRecHy);
-				// KNO scaling
-				if(( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
-					GetMultiplicityDistributionsData(phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,fnRecHyWoDCA);
+		else{// for testing the method
+			// KNO scaling
+			if(( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
+			{
+				GetMultiplicityDistributions(phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,isprimHyWoDCA, fnRecHyWoDCA);
 			}
 		}
 	}
+	else{
+		if(fUseMC){
+			if(isGoodVtxPosMC){
+				// KNO scaling
+				if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
+				{
+					GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy);
+					GetBinByBinCorrections(fnGen,fnRecHy,ptMc,ptHy,idMc,idHy,isprimHy);
+					GetMultiplicityDistributions(phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,isprimHyWoDCA, fnRecHyWoDCA);
+				}
+			}
+		}
+		else{
+			// KNO scaling
+			if(( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
+				GetMultiplicityDistributionsData(phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,fnRecHyWoDCA);
+		}
+	}
+	//}
 
 	PostData(1, fOutputList); // stream the result of this event to the output manager which will write it to a file
 
@@ -1034,13 +997,12 @@ void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsData(const vector<F
 
 
 }
-
-//____________________________________________________________
-void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributions(const vector<Float_t> &phiGen, const vector<Float_t> &ptGen, Int_t multGen, const vector<Float_t> &phiRec, const vector<Float_t> &ptRec, Int_t multRec,  const vector<Float_t> &ptRecWoDCA, const vector<Float_t> &dcaxyRecWoDCA, const vector<Int_t> &isprimRecWoDCA, Int_t multRecWoDCA){
+//_____________________________________________________________
+void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsTrue(const vector<Float_t> &phiGen, const vector<Float_t> &ptGen, Int_t multGen){
 
 
 	Int_t multTSgen=0;
-	Int_t multTSrec=0;
+	//Int_t multTSrec=0;
 
 	for (Int_t i = 0; i < multGen; ++i) {
 
@@ -1085,6 +1047,11 @@ void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributions(const vector<Float
 
 	}
 
+}
+
+//____________________________________________________________
+void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributions(const vector<Float_t> &phiRec, const vector<Float_t> &ptRec, Int_t multRec,  const vector<Float_t> &ptRecWoDCA, const vector<Float_t> &dcaxyRecWoDCA, const vector<Int_t> &isprimRecWoDCA, Int_t multRecWoDCA){
+	Int_t multTSrec=0;
 	// see how many tracks there are in the event
 	for(Int_t i=0; i < multRec; ++i) {                 // loop over all these tracks
 
@@ -1131,11 +1098,12 @@ void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributions(const vector<Float
 	}
 
 	// Auxiliar distributions to calculate the contamination from secondary particles, it runs over tracks wo DCA cut
-	if(!fIsMCclosure){
-		for(Int_t i=0; i < multRecWoDCA; ++i) {                 // loop over all these tracks
+	for(Int_t i=0; i < multRecWoDCA; ++i) {                 // loop over all these tracks
 
-			hptvsdcaAll->Fill(ptRecWoDCA[i],dcaxyRecWoDCA[i]);
+		hptvsdcaAll->Fill(ptRecWoDCA[i],dcaxyRecWoDCA[i]);
 
+
+		if( fUseMC && ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax )){
 			if(isprimRecWoDCA[i]==0){
 				hptvsdcaPrim->Fill(ptRecWoDCA[i],dcaxyRecWoDCA[i]);
 			}
@@ -1263,7 +1231,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArrayMC( vector<Float_t> &ptArray, vector<
 
 }
 //_____________________________
-Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Float_t> &phiArray, vector<Float_t> &dcaxyArray, vector<Float_t> &dcazArray, vector<Int_t> &isprimArray, vector<Int_t> &idArray, const bool fillPhiStand, const bool fillPhHyb1, const bool fillPhHyb2, const bool wDcaCut ){
+Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Float_t> &phiArray, vector<Float_t> &dcaxyArray, vector<Float_t> &dcazArray, vector<Int_t> &isprimArray, vector<Int_t> &idArray, const bool wDcaCut, const bool useHy ){
 	/*
 	   id 0: pion, 1: kaon, 2: proton, 3: sigma plus, 4: sigma minus, 5: Omega, 6: Xi, 7: other charged
 	 */
@@ -1285,7 +1253,6 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 			fdcaz = -999;
 			if(TMath::Abs(esdtrack->Eta()) > fEtaCut) continue;
 			if( esdtrack->Pt() < fPtMin)continue;
-			hPhiTotal->Fill(esdtrack->Phi());
 			AliESDtrack *newTrack = 0x0;
 			Int_t isPrim = -1;
 			Int_t idTrack = -1;
@@ -1307,11 +1274,26 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				else if (partPDG_rec==3312) idTrack = 6; //Xi
 				else idTrack = 7; //rest of the charged particles
 			}
-			if(fTrackFilterHybrid0->IsSelected(esdtrack)){
+			Bool_t isHy0=kFALSE;
+			Bool_t isHy1=kFALSE;
+			Bool_t isHy2=kFALSE;
+			if(useHy){
+				if(fTrackFilterHybrid0->IsSelected(esdtrack))
+					isHy0 = kTRUE;
+				else if(fTrackFilterHybrid1->IsSelected(esdtrack))
+					isHy1 = kTRUE;
+				else if(fTrackFilterHybrid2->IsSelected(esdtrack))
+					isHy2 = kTRUE;
+			}
+			else{
+				if(fTrackFilter2015->IsSelected(esdtrack))
+					isHy0 = kTRUE;
+			}
+
+			if(isHy0){
 				newTrack = new AliESDtrack(*esdtrack);
-				if(fillPhiStand){
-					hPhiStandard->Fill(newTrack->Phi());
-				}
+				hPhiTotal->Fill(esdtrack->Phi());
+				hPhiStandard->Fill(newTrack->Phi());
 				newTrack->GetImpactParameters(fdcaxy,fdcaz);
 				ptArray.push_back(newTrack->Pt());
 				phiArray.push_back(newTrack->Phi());
@@ -1331,14 +1313,13 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				idArray.push_back(idTrack);
 				nNchRec++;
 			}
-			else if(fTrackFilterHybrid1->IsSelected(esdtrack)){
+			else if(isHy1){
 				newTrack = new AliESDtrack(*esdtrack);
 				if(esdtrack->GetConstrainedParam()){
 					const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
 					newTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
-					if(fillPhHyb1){
-						hPhiHybrid1->Fill(newTrack->Phi());
-					}
+					hPhiTotal->Fill(esdtrack->Phi());
+					hPhiHybrid1->Fill(newTrack->Phi());
 					newTrack->GetImpactParameters(fdcaxy,fdcaz);
 					ptArray.push_back(newTrack->Pt());
 					phiArray.push_back(newTrack->Phi());
@@ -1359,14 +1340,13 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 					nNchRec++;
 				}
 			}
-			else if(fTrackFilterHybrid2->IsSelected(esdtrack)){
+			else if(isHy2){
 				newTrack = new AliESDtrack(*esdtrack);
 				if(esdtrack->GetConstrainedParam()){
 					const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
 					newTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
-					if(fillPhHyb2){
-						hPhiHybrid2->Fill(newTrack->Phi());
-					}
+					hPhiTotal->Fill(esdtrack->Phi());
+					hPhiHybrid2->Fill(newTrack->Phi());
 					newTrack->GetImpactParameters(fdcaxy,fdcaz);
 					ptArray.push_back(newTrack->Pt());
 					phiArray.push_back(newTrack->Phi());
@@ -1423,8 +1403,22 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				else if (partPDG_rec==3312) idTrack = 6; //Xi
 				else idTrack = 7; //rest of the charged particles
 			}
-
-			if(fTrackFilterHybrid0woDCA->IsSelected(esdtrack)){
+			Bool_t isHy0=kFALSE;
+			Bool_t isHy1=kFALSE;
+			Bool_t isHy2=kFALSE;
+			if(useHy){
+				if(fTrackFilterHybrid0woDCA->IsSelected(esdtrack))
+					isHy0 = kTRUE;
+				else if(fTrackFilterHybrid1woDCA->IsSelected(esdtrack))
+					isHy1 = kTRUE;
+				else if(fTrackFilterHybrid2woDCA->IsSelected(esdtrack))
+					isHy2 = kTRUE;
+			}
+			else{
+				if(fTrackFilter2015woDCA->IsSelected(esdtrack))
+					isHy0 = kTRUE;
+			}
+			if(isHy0){
 				newTrack = new AliESDtrack(*esdtrack);
 				newTrack->GetImpactParameters(fdcaxy,fdcaz);
 				ptArray.push_back(newTrack->Pt());
@@ -1445,7 +1439,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				idArray.push_back(idTrack);
 				nNchRec++;
 			}
-			else if(fTrackFilterHybrid1woDCA->IsSelected(esdtrack)){
+			else if(isHy1){
 				newTrack = new AliESDtrack(*esdtrack);
 				if(esdtrack->GetConstrainedParam()){
 					const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
@@ -1471,7 +1465,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 
 				}
 			}
-			else if(fTrackFilterHybrid2woDCA->IsSelected(esdtrack)){
+			else if(isHy2){
 				newTrack = new AliESDtrack(*esdtrack);
 				if(esdtrack->GetConstrainedParam()){
 					const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
