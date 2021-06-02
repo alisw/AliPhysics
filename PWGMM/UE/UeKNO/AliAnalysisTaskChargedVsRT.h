@@ -39,16 +39,17 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		void       GetLeadingObjectFromArray(const std::vector<Float_t> &pt, const std::vector<Float_t> &phi, Int_t multPart, Bool_t isMC);
 		void       GetDetectorResponse(const std::vector<Float_t> &phiGen, Int_t multGen, const std::vector<Float_t> &phiRec, Int_t multRec);
 		void       GetBinByBinCorrections(Int_t multGen, Int_t multRec, const std::vector<Float_t> &ptGen, const std::vector<Float_t> &ptRec, const std::vector<Int_t> &idGen, const std::vector<Int_t> &idRec, const std::vector<Int_t> &isprimRec);
-		void       GetMultiplicityDistributions(const std::vector<Float_t> &phiGen, const std::vector<Float_t> &ptGen, Int_t multGen, const std::vector<Float_t> &phiRec, const std::vector<Float_t> &ptRec, Int_t multRec, const std::vector<Float_t> &ptRecwodca, const            std::vector<Float_t> &dcaxyRecwodca, const std::vector<Int_t> &isprimwodca, Int_t multRecwodca );
+		void       GetMultiplicityDistributionsTrue(const std::vector<Float_t> &phiGen, const std::vector<Float_t> &ptGen, Int_t multGen );
+
+		void       GetMultiplicityDistributions(const std::vector<Float_t> &phiRec, const std::vector<Float_t> &ptRec, Int_t multRec, const std::vector<Float_t> &ptRecwodca, const            std::vector<Float_t> &dcaxyRecwodca, const std::vector<Int_t> &isprimwodca, Int_t multRecwodca );
+
 		void       GetMultiplicityDistributionsData(const std::vector<Float_t> &phiRec, const std::vector<Float_t> &ptRec, Int_t multRec, const std::vector<Float_t> &ptRecwodca, const std::vector<Float_t> &dcaxyRecwodca,  Int_t multRecwodca);
 		void       SetPtMin(Double_t val)              {fPtMin = val;}   // Set pT cut for associated particles
 		void       SetLeadingPtMin(Double_t PtLmin)    {fLeadPtCutMin = PtLmin;}   // use differnet ptcuts
 		void       SetLeadingPtMax(Double_t PtLmax)    {fLeadPtCutMax = PtLmax;}   // use differnet ptcuts
-		void       SetV0Mmin(Double_t V0Mmin)          {fV0Mmin = V0Mmin;}   // Set V0M min value
-		void       SetV0Mmax(Double_t V0Mmax)          {fV0Mmax = V0Mmax;}   // Set V0M max value
 		void       SetUseMC(Bool_t mc = kFALSE)        {fUseMC = mc;}   // use to analyse MC data
 		void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
-		void       SetIspPb(Bool_t pPb = kFALSE)    {fIspPb = pPb;}
+		void       SetIsHybridAnalysis(Bool_t isHy = kFALSE)    {fIsHybAna = isHy;}
 		bool       HasRecVertex();
 		//Systematic ============================
 		void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
@@ -72,7 +73,7 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
 				Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
 		Int_t FillArrayMC( std::vector<Float_t> &pt, std::vector<Float_t> &phi, std::vector<Int_t> &id );
-		Int_t FillArray( std::vector<Float_t> &pt, std::vector<Float_t> &phi, std::vector<Float_t> &dcaxy, std::vector<Float_t> &dcaz, std::vector<Int_t> &isprim, std::vector<Int_t> &id, const bool fill1, const bool fill2, const bool fill3, const bool wDCA );
+		Int_t FillArray( std::vector<Float_t> &pt, std::vector<Float_t> &phi, std::vector<Float_t> &dcaxy, std::vector<Float_t> &dcaz, std::vector<Int_t> &isprim, std::vector<Int_t> &id, const bool wDCA, const bool useHy );
 
 	protected:
 
@@ -85,7 +86,7 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		AliMCEvent*  fMC;                                               //! MC Event
 		Bool_t       fUseMC;                // analyze MC events
 		Bool_t       fIsMCclosure;
-		Bool_t       fIspPb;
+		Bool_t       fIsHybAna;
 		Int_t        fnRecHy;
 		Int_t        fnRecHyWoDCA;
 		Int_t        fnGen;
@@ -123,8 +124,6 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		Double_t fPtMin;	
 		Double_t fLeadPtCutMin;
 		Double_t fLeadPtCutMax;
-		Double_t fV0Mmin;
-		Double_t fV0Mmax;
 		Double_t fGenLeadPhi; 
 		Double_t fGenLeadPt;
 		Int_t    fGenLeadIn;
@@ -133,7 +132,6 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		Int_t    fRecLeadIn;
 		Double_t ftrackmult08;
 		Double_t fv0mpercentile;
-		Double_t fv0mpercentilebefvtx;
 		Float_t fdcaxy;
 		Float_t fdcaz;	
 		AliMultSelection *fMultSelection;
@@ -175,9 +173,6 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		TH1D * hPtOutPrim_rest;
 		TH1D * hPtOutSec; 
 		TH1D * hCounter;
-		TH1D * hRefMult08;
-		TH1D * hV0Mmult;
-		TH1D * hV0Mmultbefvtx;
 		TH2D * hPtVsUEGenTest[3];//UE->NchTS
 		TH2D * hPtVsUERecTest[3];//UE->NchTS
 		TH2D * hPtVsUEData[3];//UE->NchTS

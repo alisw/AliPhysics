@@ -9,12 +9,10 @@ class AliAnalysisDataContainer;
 AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVsRT",
                                    Bool_t  useMC  = kTRUE,
                                    Bool_t performMCclosuretest = kFALSE,
-                                   Bool_t IspPb = kFALSE,
+                                   Bool_t IsHyAna = kFALSE,
                                    Double_t minpT=0.5,
                                    Double_t PtLmin = 1.0,
                                    Double_t PtLmax = 15.0,
-                                   Double_t V0Mmin = 0.0,
-                                   Double_t V0Mmax = 100.0,
                                    Bool_t TPCclustersVar1 = kFALSE,
                                    Bool_t TPCclustersVar2 = kFALSE,
                                    Bool_t NcrVar1 = kFALSE,
@@ -52,11 +50,9 @@ AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVs
     taskKno->SetMCclosureTest(performMCclosuretest);
     // add your task to the manager
     taskKno->SetPtMin(minpT);
-    taskKno->SetIspPb(IspPb);
+    taskKno->SetIsHybridAnalysis(IsHyAna);
     taskKno->SetLeadingPtMin(PtLmin);
     taskKno->SetLeadingPtMax(PtLmax);
-    taskKno->SetV0Mmin(V0Mmin);
-    taskKno->SetV0Mmax(V0Mmax);
     // Systematic -------------------------------
     taskKno->SetTPCclustersVar1(TPCclustersVar1);
     taskKno->SetTPCclustersVar2(TPCclustersVar2);
@@ -79,7 +75,7 @@ AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVs
     mgr->AddTask(taskKno);
 
     mgr->ConnectInput(taskKno,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskKno,1,mgr->CreateContainer(Form("cList%s_%1.2f_%1.1f_%1.1f_%1.1f_%1.1f",taskname,minpT,PtLmin,PtLmax,V0Mmin,V0Mmax), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", AliAnalysisManager::GetCommonFileName(),taskname)));
+    mgr->ConnectOutput(taskKno,1,mgr->CreateContainer(Form("cList%s_%1.2f_%1.1f_%1.1f",taskname,minpT,PtLmin,PtLmax), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", AliAnalysisManager::GetCommonFileName(),taskname)));
 
     return taskKno;
 }
