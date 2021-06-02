@@ -266,7 +266,7 @@ bool TestAliEmcalFastorMaskContainer::TestIO() const {
     readallchannels = testcontainer->GetMaskAll();
   }
   // cleanup after test
-  if(!gSystem->AccessPathName(filename.data()), kFileExists) gSystem->Exec(Form("rm %s", filename.data()));
+  if(!gSystem->AccessPathName(filename.data(), kFileExists)) gSystem->Exec(Form("rm %s", filename.data()));
   bool status=true;
   if(!CheckEqual(badchannels, readbadchannels)) {
     std::cout << "Test I/O: Fail equalness bad" << std::endl;
