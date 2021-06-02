@@ -91,6 +91,8 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fMaskedFastorOADB(""),
   fUseL0Amplitudes(kFALSE),
   fLoadFastORMaskingFromOCDB(kTRUE),
+  fUseDeadFastORsOADB(kFALSE),
+  fUseBadFastORsOADB(kFALSE),
   fCaloTriggersOut(NULL),
   fRunSmearing(kTRUE),
   fSimulateNoise(kTRUE),
