@@ -381,6 +381,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 	//KF
 ,fHist_InvMass_pt_ULS_KF(0)
+,fHist_InvMass_pt_ULS_KF_eg2(0)
+,fHist_InvMass_pt_ULS_KF_eg1(0)
 ,fHist_InvMass_pt_LS_KF(0)
 
 ,fHist_Correlation_leg1_emcal_leg2_not(0)
@@ -826,6 +828,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 	//KF
 ,fHist_InvMass_pt_ULS_KF(0)
+,fHist_InvMass_pt_ULS_KF_eg2(0)
+,fHist_InvMass_pt_ULS_KF_eg1(0)
 ,fHist_InvMass_pt_LS_KF(0)
 
 ,fHist_Correlation_leg1_emcal_leg2_not(0)
@@ -1458,6 +1462,13 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     //KFParticle
 	fHist_InvMass_pt_ULS_KF = new TH2F("fHist_InvMass_pt_ULS_KF","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,250,0,5);
 	fOutputList->Add(fHist_InvMass_pt_ULS_KF);
+    fHist_InvMass_pt_ULS_KF_eg1 = new TH2F("fHist_InvMass_pt_ULS_KF_eg1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,250,0,5);
+    fOutputList->Add(fHist_InvMass_pt_ULS_KF_eg1);
+    fHist_InvMass_pt_ULS_KF_eg2 = new TH2F("fHist_InvMass_pt_ULS_KF_eg2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",40,0,40,250,0,5);
+    fOutputList->Add(fHist_InvMass_pt_ULS_KF_eg2);
+    
+    
+    
 	fHist_InvMass_pt_LS_KF = new TH2F("fHist_InvMass_pt_LS_KF","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",40,0,40,250,0,5);
 	fOutputList->Add(fHist_InvMass_pt_LS_KF);
     
@@ -1822,7 +1833,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	
 	fVevent = dynamic_cast<AliVEvent*>(InputEvent());
     
-    if(fIsMC && fIsTriggerSimulation){
+    //if(fIsMC && fIsTriggerSimulation){
+    if(fIsTriggerSimulation){ // to use trigger decision also in data
         //printf("Inside trigger decision - beginning \n");
         //auto triggerdecision = fAOD->FindListObject("EmcalTriggerDecision");
         auto triggerdecision = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(InputEvent()->FindListObject("EmcalTriggerDecision"));
@@ -3812,6 +3824,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                               if(charge1*charge2 <0){
                                 
                                   fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
+                                  
+                                  if(feg1 || fdg1)fHist_InvMass_pt_ULS_KF_eg1->Fill(pt_kf,imass);//invmass eg1
+                                  if(feg2 || fdg2)fHist_InvMass_pt_ULS_KF_eg2->Fill(pt_kf,imass);//invmass eg2
+                                  
+                                  
                                
                                  if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass, weight/weight2);//multi integrated with weight
                                   
@@ -3940,9 +3957,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                                 fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
                                                                 
                                                                 //to check trigger efficiency on J/psi pT
-                                                                if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
-                                                                if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
-                                                                
+                                                                if((fClus->E()) >= fEnergyCut){
+                                                                    if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
+                                                                    if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
+                                                                }
                                                                 //weights calculated based on J/Psi true MC pT, but applied on e+e- pair pt
                                                                 Double_t weight2 = CalculateWeight(fMCparticleMother->Pt());
                                                                 fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight->Fill(pt_kf, weight2);
@@ -3976,7 +3994,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 							
 							//===============================
 
-						}
+						}//emcal cuts
                       //}//close trigger for emcal
 						
 					}
@@ -4007,6 +4025,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                              if(charge1*charge2 <0){
                                  fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
+                                 
+                                 if(feg1 || fdg1)fHist_InvMass_pt_ULS_KF_eg1->Fill(pt_kf,imass);//invmass eg1
+                                 if(feg2 || fdg2)fHist_InvMass_pt_ULS_KF_eg2->Fill(pt_kf,imass);//invmass eg2
+                                 
+                                 
                                   if(fMultiAnalysis)fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
                                  
                                  //correlation between leg1 and leg2
@@ -4141,9 +4164,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
                                                                     
                                                                     //to check trigger efficiency on J/psi pT
-                                                                    if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
-                                                                    if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
-                                                                    
+                                                                    if((fClus2->E()) >= fEnergyCut){
+                                                                        if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
+                                                                        if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
+                                                                    }
                                                                     //weights calculated based on J/Psi true MC pT, but applied on e+e- pair pt
                                                                     Double_t weight2 = CalculateWeight(fMCparticleMother->Pt());
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight->Fill(pt_kf, weight2);
@@ -4175,7 +4199,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 						
                             //===============================
 
-						 }
+						 }//emcal cuts
                       //}//close emcal trigger condition
 						
 					}
@@ -4214,6 +4238,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                             if(charge1*charge2 <0){
                                 fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
+                                
+                                if(feg1 || fdg1)fHist_InvMass_pt_ULS_KF_eg1->Fill(pt_kf,imass);//invmass eg1
+                                if(feg2 || fdg2)fHist_InvMass_pt_ULS_KF_eg2->Fill(pt_kf,imass);//invmass eg2
+                                
                                 if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
                            
                                 //correlation between leg1 and leg2
@@ -4352,9 +4380,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
                                                                     
                                                                     //to check trigger efficiency on J/psi pT
-                                                                    if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
-                                                                    if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
-                                                                    
+                                                                    if((fClus->E()) >= fEnergyCut && (fClus2->E()) >= fEnergyCut){
+                                                                        if(feg1 || fdg1)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1->Fill(pt_kf);
+                                                                        if(feg2 || fdg2)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2->Fill(pt_kf);
+                                                                    }
                                                                     //weights calculated based on J/Psi true MC pT, but applied on e+e- pair pt
                                                                     Double_t weight2 = CalculateWeight(fMCparticleMother->Pt());
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight->Fill(pt_kf, weight2);

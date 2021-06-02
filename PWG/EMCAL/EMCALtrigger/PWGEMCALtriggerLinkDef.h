@@ -23,4 +23,7 @@
 #pragma link C++ class PWG::EMCAL::AliEmcalTriggerSelection+;
 #pragma link C++ class PWG::EMCAL::Triggerinfo+;
 #pragma link C++ class PWG::EMCAL::AliEmcalTriggerMaskHandlerOCDB+;
+#pragma link C++ class PWG::EMCAL::AliEmcalFastorMaskContainer+;
+#pragma link C++ class PWG::EMCAL::AliEmcalFastorMaskContainer::MaskedFastor+;
+#pragma link C++ class PWG::EMCAL::TestAliEmcalFastorMaskContainer+;
 #endif

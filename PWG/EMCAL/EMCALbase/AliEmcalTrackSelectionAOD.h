@@ -137,7 +137,7 @@ namespace EMCAL{
 /**
  * @class TestAliEmcalTrackSelectionAOD
  * @brief Unit test for the class AliEmcalTrackSelectionAOD
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALTESTS
  * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
  * @since Dec 19, 2018 
  */
