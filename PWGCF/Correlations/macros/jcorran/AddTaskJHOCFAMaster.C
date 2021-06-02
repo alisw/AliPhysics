@@ -14,7 +14,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster",
     "hybrid",     // 0 = default.
     "global",     // 1 for filtering.
     "SPD",        // 2 for centrality.
-    "pileup"      // 3 for outliers.
+    "pileup",      // 3 for outliers.
     "zvtx6",    // 4: PVz < 6cm.
     "zvtx8",   // 5: PVz < 8cm.
     "ntpc80",   // 6: N_TPC > 80.
