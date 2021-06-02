@@ -1,4 +1,4 @@
-#ifndef ALIA:ALYSISTASKEMCALJETENERGYFLOW_H
+#ifndef ALIANALYSISTASKEMCALJETENERGYFLOW_H
 #define ALIANALYSISTASKEMCALJETENERGYFLOW_H
 /**
  * \file AliAnalysisTaskEmcalJetEnergyFlow.h
@@ -9,7 +9,7 @@
  * The goal of this task is to define an observable for the effect of the recoil of medium particles from the jet equivalent to the feature modeled to Jewel generator.
  *
  * \author Christos Pliatskas <c.pliatskas.stylianidis@nikhef.nl>, Nikhef
- * \date Mar 04, 2021
+ * \date Jan 04, 2021
  */
 
 /* Copyright(c) 1998-2020, ALICE Experiment at CERN, All rights reserved.*
@@ -19,7 +19,7 @@
 #include "THistManager.h"
 
 /**
- * \class AliAnalysisTaskEmcalJetEFRecoilpp
+ * \class AliAnalysisTaskEmcalJetEnergyFlow
  * \brief Implementation of analysis task which calculates the energy flow between jets of increasing
  *  jet radii. It derives from AliAnalysisTaskEmcalJet.
  *  After performing a geometrical matching for the jets of the different radii, it calculates the pt
@@ -41,7 +41,8 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 		const char *ntracks		= "usedefault",
 		const char *nclusters		= "usedefault",
 		const char *ncells		= "usedefault",
-		const char *suffix		= "");
+		const char *suffix		= "",
+                Bool_t isMCprod                 = kTRUE               );
 	
 	protected:
 
@@ -66,6 +67,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void                    DoClusterLoop()                         ; ///<May remove later	
 	void                    DoCellLoop()                            ; ///<May remove later
 
+        Bool_t                  isMCprod                                ;/// Flag for MC productions
 	THistManager            fHistManager                            ;///< Histogram manager
 //	TList*			fOutput					;///!<! Output list
  	private:
