@@ -244,6 +244,26 @@ public:
    */
   void SetSimulateNoise(Bool_t doSimulate) { fSimulateNoise = doSimulate; }
 
+  /**
+   * @brief Use bad FastORs from OADB (default: false)
+   * @param doUse If true bad fastors from the OADB are used 
+   * 
+   * Only has an impact in case the OADB container is specified and
+   * the OADB container is of the new format AliEmcalFastorMaskContainer
+   * which separates dead and bad FastORs
+   */
+  void SetUseBadFastorsOADB(Bool_t doUse) { fUseBadFastORsOADB = doUse; }
+
+  /**
+   * @brief Use dead FastORs from OADB (default: false)
+   * @param doUse If true bad fastors from the OADB are used 
+   * 
+   * Only has an impact in case the OADB container is specified and
+   * the OADB container is of the new format AliEmcalFastorMaskContainer
+   * which separates dead and bad FastORs
+   */
+  void SetUseDeadFastorsOADB(Bool_t doUse) { fUseDeadFastORsOADB = doUse; }
+
 protected:
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
@@ -342,6 +362,8 @@ protected:
   TString                                 fMaskedFastorOADB;          ///< name of the OADB container containing fastors to be masked inside the trigger maker
   Bool_t                                  fUseL0Amplitudes;           ///< Use L0 amplitudes instead of L1 time sum (useful for runs where STU was not read)
   Bool_t                                  fLoadFastORMaskingFromOCDB; ///< Load FastOR masking from the OCDB
+  Bool_t                                  fUseDeadFastORsOADB;        ///< Use dead FastORs from OADB (in case an OADB container of new format AliEmcalFastorMaskContainer is specified)
+  Bool_t                                  fUseBadFastORsOADB;         ///< Use bad FastORs from OADB (in case an OADB container of new format AliEmcalFastorMaskContainer is specified)
   TClonesArray                            *fCaloTriggersOut;          //!<! trigger array out
 
   Bool_t                                  fRunSmearing;               ///< Also calculate smeared patch energy based on FastOR energy resolution
