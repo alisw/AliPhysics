@@ -1632,7 +1632,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 	    fTrkEtaPhi_AfterCut->Fill(TrkEta, TrkPhi);
             
             Bool_t fFlagNonHFE = kFALSE;    // photonic electron identification
-	    Double_t Mass = -100.0;	    // photonic electron mass 
             
 
             //========== Electron E/p ==========//
@@ -1653,7 +1652,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                     
                     
                     //---- Photonic electron ----
-                    SelectPhotonicElectron(i, track, fFlagNonHFE, pidM, TrkPt, DCA[0], Bsign, Mass);
+                    SelectPhotonicElectron(i, track, fFlagNonHFE, pidM, TrkPt, DCA[0], Bsign);
 
                     if(!fFlagNonHFE){
                         fEopElectron3 -> Fill(TrkPt);
@@ -1671,7 +1670,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                         	fHistPho_Reco0->Fill(TrkPt);     // all information of photonic electron
 				fDCAxy_MC_Phot -> Fill(TrkPt, DCA[0]*charge*Bsign);	//DCA (total photonic electron)
 
-				fPhot_InvMass_vs_DCA->Fill(Mass, DCA[0]*charge*Bsign);
+				//fPhot_InvMass_vs_DCA->Fill(Mass, DCA[0]*charge*Bsign);
                        
                        		if(fFlagNonHFE)
                        		{
@@ -1771,7 +1770,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::GetTrkClsEtaPhiDiff(AliVTrack *t, Ali
 }
 
 //_________________________________________________________________________________________________
-void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt, Double_t DCAxy, Int_t Bsign, Double_t &mass)
+void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt, Double_t DCAxy, Int_t Bsign)
 {
     //*******************************//
     // Non-HFE Invariant mass method //
@@ -1818,9 +1817,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
         
         
         Bool_t fFlagLS = kFALSE, fFlagULS = kFALSE;
-        //Double_t ptAsso = -999., AssoTrackNsigma = -999.0, mass = -999., width = -999, R = -999, R_error = -999;
-        Double_t ptAsso = -999., AssoTrackNsigma = -999.0, width = -999, R = -999, R_error = -999;
-	mass = -999;
+        Double_t ptAsso = -999., AssoTrackNsigma = -999.0, mass = -999., width = -999, R = -999, R_error = -999;
         Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
         
         AssoTrackNsigma = fpidResponse -> NumberOfSigmasTPC(Assotrack, AliPID::kElectron);
@@ -1890,6 +1887,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
                 }
             }
         }
+
+	if(iMC==22 || iMC==111 || iMC==221) fPhot_InvMass_vs_DCA->Fill(mass, DCAxy*charge*Bsign);
        
         if(mass <= 0.15 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; // Tag Non-HFE (photonic electron by Invariant-mass method)
 
