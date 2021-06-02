@@ -358,6 +358,8 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
     RanHist[s]->Reset("ICE");
     for (int rn=0; rn<ntracks; rn++) {RanHist[s]->Fill(ran->Uniform(-fEta,fEta));}
     RanHist[s]->Scale(16.0/(double)ntracks);
+    //printf("ranhist normal is %f\n",RanHist[s]->Integral());
+
   }
 
   //generating random sample distributions
@@ -365,12 +367,16 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
     RanDistHist[s]->Reset("ICE");
     for (int rn=0; rn<ntracks; rn++) {RanDistHist[s]->Fill(background->GetRandom());}
     RanDistHist[s]->Divide(background);
-    RanDistHist[s]->Scale(1.0/RanDistHist[s]->Integral());   
+    RanDistHist[s]->Scale(16.0/RanDistHist[s]->Integral());   
+    //printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
+
   }
 
   //normalizing signal hist
-  signal->Scale(1.0/signal->Integral());
   signal->Divide(background);
+  signal->Scale(16.0/signal->Integral());
+
+  //printf("signal normal is %f\n",signal->Integral());
 
   //calculating the an coefficients  
   n = sprintf (histname, "a1%s", type);

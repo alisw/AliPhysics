@@ -2189,23 +2189,29 @@ Double_t AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt)const
   Double_t mpi0mean = 0; 
   Double_t mpi0sigma=1.;
   if(fRunNumber>=265015 && fRunNumber<=267166){ //LHC16qrst, tune 19.06.2020
-     mpi0mean = -8.63864e-01+(5.32935e-02+1.18250e-01*pt+2.01664e-01*pt*pt+2.87553e-01*pt*pt*pt+pt*pt*pt*pt)/(5.47622e-02+1.11935e-01*pt+2.11192e-01*pt*pt+2.82832e-01*pt*pt*pt+pt*pt*pt*pt) ;
-     mpi0sigma = 3.94524e-04/pt/pt-3.06055e-04/pt+8.07149e-03-2.51764e-03*sqrt(pt)+5.32026e-04*pt ;
+//      mpi0mean = -8.63864e-01+(5.32935e-02+1.18250e-01*pt+2.01664e-01*pt*pt+2.87553e-01*pt*pt*pt+pt*pt*pt*pt)/(5.47622e-02+1.11935e-01*pt+2.11192e-01*pt*pt+2.82832e-01*pt*pt*pt+pt*pt*pt*pt) ;
+//      mpi0sigma = 3.94524e-04/pt/pt-3.06055e-04/pt+8.07149e-03-2.51764e-03*sqrt(pt)+5.32026e-04*pt ;
+     
+     //Param may 2021 
+     //data
+     if(!fIsMC){
+       mpi0mean = -8.61834e-01+(5.42301e-02+1.14011e-01*pt+2.07840e-01*pt*pt+2.83919e-01*pt*pt*pt+pt*pt*pt*pt)/(5.38459e-02+1.16218e-01*pt+2.05055e-01*pt*pt+2.86574e-01*pt*pt*pt+pt*pt*pt*pt) ;  
+       mpi0sigma =-4.49549e-05/pt/pt+5.63138e-04/pt+6.27955e-03-1.91036e-03*sqrt(pt)+4.52151e-04*pt ;
+     }
+     else{ //MC
+       mpi0mean =-8.56038e-01+(1.26003e+00+1.92979e+00*pt+1.87460e+00*pt*pt+5.23259e-01*pt*pt*pt+pt*pt*pt*pt)/(1.25109e+00+2.02276e+00*pt+1.78747e+00*pt*pt+5.71015e-01*pt*pt*pt+pt*pt*pt*pt) ;     
+       if(pt<0.4)pt=0.4;
+       if(pt>4.) pt=4.;
+       mpi0sigma =-1.57309e-02/pt+6.46462e-02/sqrt(pt)-8.47977e-02+5.16450e-02*sqrt(pt)-1.06222e-02*pt;
+     }
   }
-  else{
-     //Parameterization 21.08.2018 with updated NonLin Run2TuneMC
-     mpi0mean = 1.36269e-01-1.81643456e-05/((pt-4.81920e-01)*(pt-4.81920e-01)+3.662247e-02)-2.15520e-04*exp(-pt/1.72016e+00) ;  
-     //Parameterization 13.10.2018 with updated NonLin Run2TuneMC
-     mpi0sigma=TMath::Sqrt(2.59195e-05+1.101556186e-05/pt+2.e-8*pt*pt) ;
-  }   
-  
-  //Double_t mpi0sigma=TMath::Sqrt(5.22245e-03*5.22245e-03 +2.86851e-03*2.86851e-03/pt) + 9.09932e-05*pt ;
-  //Parameterization of data 30.08.2014
-//   Double_t mpi0sigma=TMath::Sqrt(4.67491e-03*4.67491e-03 +3.42884e-03*3.42884e-03/pt) + 1.24324e-04*pt ;
+//   else{
+//      //Parameterization 21.08.2018 with updated NonLin Run2TuneMC
+//      mpi0mean = 1.36269e-01-1.81643456e-05/((pt-4.81920e-01)*(pt-4.81920e-01)+3.662247e-02)-2.15520e-04*exp(-pt/1.72016e+00) ;  
+//      //Parameterization 13.10.2018 with updated NonLin Run2TuneMC
+//      mpi0sigma=TMath::Sqrt(2.59195e-05+1.101556186e-05/pt+2.e-8*pt*pt) ;
+//   }   
 
-//   //Parameterization 13.10.2018
-//   Double_t mpi0sigma=TMath::Sqrt(3.79261e-03*3.79261e-03/pt+4.76506e-03*4.76506e-03+4.87152e-05*4.87152e-05*pt*pt*pt) ;
-  
   return TMath::Abs(m-mpi0mean)/mpi0sigma ;
 }
 //______________________________________________________________________________
@@ -2718,17 +2724,26 @@ Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * 
   if(fMCType==kSingleEta){
     parentPDG=221; 
   }
+  if(fMCType==kDPMJET){
+    parentPDG=111; 
+  }
   while(mother>-1 && pdg!=parentPDG){
     particle = (AliAODMCParticle*) fStack->At(mother);
     mother = particle->GetMother() ;
     pdg = particle->GetPdgCode() ;
   }
   if(pdg!=parentPDG){
-    return 0. ;
+    if(fMCType==kDPMJET)
+      return 1.;
+    else
+      return 0. ;
   }
   
   //Particle within 1 cm from the virtex
   Double_t x = particle->Pt() ;
+  if(fMCType==kDPMJET){
+    return 1./(2.73839e+01*TMath::Exp(-x*4.93582)+1.) ;
+  }
   if(x<0.4) x=0.4 ;
   return fWeightParamPi0[0]*(TMath::Power(x,fWeightParamPi0[1])*
        (fWeightParamPi0[2]+x*fWeightParamPi0[3]+x*x)/

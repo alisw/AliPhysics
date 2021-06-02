@@ -124,7 +124,10 @@ fCasc_DcaNegToPV(0),
 fCasc_NegTrackStatus(0),
 fCasc_PosTrackStatus(0),
 fCasc_BacTrackStatus(0),
-fCasc_BacBarCosPA(0)
+fCasc_BacBarCosPA(0),
+fisParametricBacBarCosPA(kFALSE),                            
+fHist_PtBacBarCosPA(0),
+fCentLimit_BacBarCosPA(0)
 {
   //default constructor
 }
@@ -148,7 +151,7 @@ fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
 fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 0.5, 0.8, 70., 0.8, 5., 20., 30., -95.},
-fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 0.005, 1., 0.99, 0.1, 0.1, -95., 0.5, 0.8, 3., 3., 3., 0.2, 0.2, 0.9995},
+fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 0.005, 1., 0.99, 0.1, 0.1, -95., 0.5, 0.8, 3., 3., 3., 0.2, 0.2, 1.},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
 //variables for V0 cuts
@@ -216,7 +219,10 @@ fCasc_DcaNegToPV(0),
 fCasc_NegTrackStatus(0),
 fCasc_PosTrackStatus(0),
 fCasc_BacTrackStatus(0),
-fCasc_BacBarCosPA(0)
+fCasc_BacBarCosPA(0),
+fisParametricBacBarCosPA(kFALSE),                            
+fHist_PtBacBarCosPA(0),
+fCentLimit_BacBarCosPA(0)
 {
   //setting default cuts
   SetDefCutVals(); 
@@ -999,6 +1005,16 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         }
 
       }
+
+      // Apply parametric BacBarCosPA cut, if requested
+      if (fisParametricBacBarCosPA) {
+        if (fCasc_Pt>=fHist_PtBacBarCosPA->GetXaxis()->GetXmin() && fCasc_Pt<=fHist_PtBacBarCosPA->GetXaxis()->GetXmax() && lPercentile<fCentLimit_BacBarCosPA) {
+          SetCutVal(kFALSE, kTRUE, kCasc_BacBarCosPA, fHist_PtBacBarCosPA->GetBinContent(fHist_PtBacBarCosPA->GetXaxis()->FindBin(fCasc_Pt)));
+        } else {
+          SetCutVal(kFALSE, kTRUE, kCasc_BacBarCosPA, fCasc_Cuts[kCasc_BacBarCosPA]);
+        }
+      }
+
       //fills TH3 with default cuts
       if (fParticleAnalysisStatus[kxip]) {
         if( physprim && assFlag[kxim] && ApplyCuts(kxim)) fHistos_XiMin->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
@@ -1033,6 +1049,14 @@ void AliAnalysisTaskStrVsMult::SetCutVal(bool defchange, bool iscasc, int cutnum
     cutval_Casc[cutnum] = cval;
     if (defchange) fCasc_Cuts[cutnum] = cval;
   }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskStrVsMult::SetParametricBacBarCosPA(int nbins, float *ptbins, float *values, int cent_limit) {
+  fisParametricBacBarCosPA = kTRUE;
+  fCentLimit_BacBarCosPA = cent_limit;
+  fHist_PtBacBarCosPA = new TH1F("", "", nbins, ptbins);
+  for (int iBin=1; iBin<=nbins; iBin++) fHist_PtBacBarCosPA->SetBinContent(iBin, values[iBin-1]);
 }
 
 //________________________________________________________________________
@@ -1301,6 +1325,13 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc, b
     for(int i_cut=0; i_cut<kCasccutsnum; i_cut++) {
       if(i_cut==kCasc_y || i_cut==kCasc_etaDaugh || i_cut==kCasc_TOFBunchCrossing) continue;
       for (int i_var=0; i_var<nvarcut_Casc[i_cut]; i_var++) {
+        if (fisParametricBacBarCosPA && i_cut!=kCasc_BacBarCosPA  && perc<fCentLimit_BacBarCosPA) {
+          if (fCasc_Pt>=fHist_PtBacBarCosPA->GetXaxis()->GetXmin() && fCasc_Pt<=fHist_PtBacBarCosPA->GetXaxis()->GetXmax()) {
+            SetCutVal(kFALSE, kTRUE, kCasc_BacBarCosPA, fHist_PtBacBarCosPA->GetBinContent(fHist_PtBacBarCosPA->GetXaxis()->FindBin(fCasc_Pt)));
+          } else {
+            SetCutVal(kFALSE, kTRUE, kCasc_BacBarCosPA, fCasc_Cuts[kCasc_BacBarCosPA]);
+          }
+        }
         //Xi filling
         if (i_cut!=kCasc_PropLifetOm) {
           if (fParticleAnalysisStatus[kxip]) {

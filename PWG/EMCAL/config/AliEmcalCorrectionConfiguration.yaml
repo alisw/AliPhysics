@@ -245,6 +245,7 @@ ClusterLowEnergyEfficiency:                         # Cluster number of cell eff
     createHistos: false                             # Whether the task should create output histograms
     nCellFunct: kGammaAndElec                       # Sets the probabiliyt function for the ncell efficiency
     setRejectNextToClus: true                       # Set if 1 cell clusters which are directly next to another cluster should be considered for the ncell efficiency (Should be enabled)
+    setApplyToGammaOnly: true                       # Set if correction should be applied on all clusters (false) or only on photon clusters (true)
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction

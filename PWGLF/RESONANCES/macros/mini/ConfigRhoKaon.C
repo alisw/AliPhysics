@@ -1,5 +1,6 @@
 /***************************************************************************
               adash@cern.ch - last modified on 03/04/2013
+            prottay.das@cern.ch - last modified on 29/05/2021
 
 // *** Configuration script for Phi-Meson analysis with 2013 PPb runs ***
 // 
@@ -20,8 +21,13 @@ Bool_t ConfigRhoKaon(
 			Float_t                nsigmakaonTPC  =2.0,
 			Float_t                nsigmapionTOF = 3.0,
 			Float_t                nsigmakaonTOF = 3.0,
-			int                     ptpk         =0,
-                        int                     pid          =1,
+			int                    ptpk         =0,
+                        int                    pid          =1,
+			Float_t                lmassrho     =0.5,
+			Float_t                hmassrho     =0.9,
+			Float_t                linvmass     =0.5,
+			Float_t                hinvmass     =0.9,
+			int                    invmassbins  =1,
 			Bool_t                 enableMonitor = kTRUE,
 			TString                optSyt="DefaultITSTPC2011"
 			  )
@@ -155,7 +161,8 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
   cutMassKstar->SetRangeD(0.7,1.1);
 
   AliRsnCutMiniPair* cutMassRho=new AliRsnCutMiniPair("cutMassRho",AliRsnCutMiniPair::kMassRange);
-  cutMassRho->SetRangeD(0.320,1.220);
+  //cutMassRho->SetRangeD(0.320,1.220);
+  cutMassRho->SetRangeD(lmassrho,hmassrho);
 
   
   AliRsnCutSet* cutsKstar=new AliRsnCutSet("pairCutsKstar",AliRsnTarget::kMother);
@@ -302,7 +309,7 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
     //out->SetMotherMass(1.272);
     if(i<=0) out->SetPairCuts(cutsPairSame);
     else out->SetPairCuts(cutsPairMix);
-    out->AddAxis(imID, 190, 0.5, 2.4);
+    out->AddAxis(imID, invmassbins, linvmass, hinvmass);
     out->AddAxis(ptID, 100, 0.0, 10.0);
     out->AddAxis(centID, 100, 0.0, 100.0);
   }
@@ -336,9 +343,25 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
   
   out->SetMotherMass(Rhofinder->GetResonanceMass());
   out->SetPairCuts(cutsRho);
-  out->AddAxis(imID,180,0.3,2.1);
+  out->AddAxis(imID,80,0.3,2.1);
 
   
+
+  out=task->CreateOutput("rholikebkg","HIST","PAIR");
+  out->SetMotherPDG( Rhofalsefinder->GetResonancePDG());
+
+  out->SetDaughter(0, Rhofalsefinder->GetDaughter(0));
+  out->SetCutID(0, Rhofalsefinder->GetCutID(0));
+  out->SetCharge(0, Rhofalsefinder->GetCharge(0));
+
+  out->SetDaughter(1, Rhofalsefinder->GetDaughter(1));
+  out->SetCutID(1, Rhofalsefinder->GetCutID(1));
+  out->SetCharge(1, Rhofalsefinder->GetCharge(1));
+
+  out->SetMotherMass( Rhofalsefinder->GetResonanceMass());
+  out->SetPairCuts(cutsRhofalse);
+  out->AddAxis(imID,80,0.3,1.1);
+
 
   
 

@@ -103,7 +103,8 @@ CellTimeCalib:
 CellTimeCalib_data:
     enabled: true
     doCalibrateLowGain: true 
-    doCalibTimeEdep: false
+    doCalibTimeEdep: true
+    doMergedBCs: true
     cellsNames:
         - cells
 # No cell time calibration should be applied to the embedded MC

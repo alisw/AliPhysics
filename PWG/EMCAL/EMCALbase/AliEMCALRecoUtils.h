@@ -100,10 +100,11 @@ public:
   /// Recomended setting:
   enum     NCellEfficiencyFunctions
   {
-    kNCeNoCorrection   = 0,
-    kNCeAllClusters    = 1,
-    kNCeTestBeam       = 2,
-    kNCeGammaAndElec   = 3
+    kNCeNoCorrection    = 0,
+    kNCeAllClusters     = 1,
+    kNCeTestBeam        = 2,
+    kNCeGammaAndElec    = 3,
+    kNCePi0TaggedPCMEMC = 4
   };
 
   /// Cluster position enum list of possible algoritms

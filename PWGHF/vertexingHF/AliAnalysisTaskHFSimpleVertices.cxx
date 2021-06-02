@@ -1,6 +1,7 @@
 #include <chrono>
 #include <ctime>
 #include <ratio>
+#include <regex>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -26,6 +27,7 @@
 #include <TSystem.h>
 #include <TChain.h>
 #include <TDatabasePDG.h>
+#include <TObjString.h>
 
 
 /**************************************************************************
@@ -550,6 +552,14 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
   /// read configuration from json file
   if (filename != "" && gSystem->Exec(Form("ls %s > /dev/null", filename.Data())) == 0) {
     printf("------Read configuration from JSON file------\n");
+
+    std::string triggerMaskFromJSON = GetJsonString(filename.Data(), "triggerClassName");
+
+    if (triggerMask.find(triggerMaskFromJSON) != triggerMask.end()) {
+      fUsePhysSel = kTRUE;
+      fTriggerMask = triggerMask[triggerMaskFromJSON];
+    }
+
     Double_t ptmintrack2 = GetJsonFloat(filename.Data(), "ptmintrack_2prong");
     printf("Min pt track (2 prong)= %f\n", ptmintrack2);
     if(ptmintrack2>0) fTrackCuts2pr->SetPtRange(ptmintrack2, 1.e10);
@@ -2427,7 +2437,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::MatchToMC(AliAODRecoDecay* rd, Int_t pdga
 }
 
 //______________________________________________________________________________
-char* AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, const char* key){
+std::string AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, const char* key){
   FILE* fj=fopen(jsonFileName,"r");
   char line[500];
   char* value=0x0;
@@ -2440,7 +2450,12 @@ char* AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, c
     }
   }
   fclose(fj);
-  return value;
+  TString sValue = value;
+  sValue.ReplaceAll("\"", "");
+  sValue.ReplaceAll("\n", "");
+  sValue.ReplaceAll("\t", "");
+  sValue.ReplaceAll(" ", "");
+  return std::string(sValue.Data());
 }
 //______________________________________________________________________________
 int AliAnalysisTaskHFSimpleVertices::GetJsonBool(const char* jsonFileName, const char* key){

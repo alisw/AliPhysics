@@ -9,7 +9,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 AliAnalysisTaskNTGJ *
 AddAliAnalysisTaskNTGJ(TString name,
                        TString emcal_correction_filename,
-                       bool mult_selection,
+                       const UInt_t pSel,
                        bool physics_selection,
                        bool physics_selection_mc_analysis,
                        bool physics_selection_pileup_cut,
@@ -171,16 +171,16 @@ AddAliAnalysisTaskNTGJ(TString name,
                               physics_selection_pileup_cut);
 
     // trying to reduce the memory
-    task->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+    task->SelectCollisionCandidates(pSel);
   }
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
   TString filename = mgr->GetCommonFileName();
-
-  filename += ":AliAnalysisTaskNTGJ";
-
+  filename += ":AliAnalysisTaskNTGJ_";
+  filename += name.Data();
+    
   mgr->ConnectOutput(task, 1,
                      mgr->CreateContainer("tree", TTree::Class(),
                                           AliAnalysisManager::

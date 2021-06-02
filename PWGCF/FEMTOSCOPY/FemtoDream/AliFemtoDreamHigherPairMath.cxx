@@ -176,6 +176,12 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
   if (fillHists && fHists->GetDokTandMultBinning()) {
     fHists->FillSameEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo),
                                        RelativeK, Mult + 1);
+    if (fHists->GetDokTandMultPtBinning() && RelativeK < 0.2) {
+    fHists->FillSameEventkTandMultPtDist(iHC, RelativePairkT(PartOne, PartTwo),
+                                       Part1Momentum.Pt(), Mult + 1);
+    fHists->FillSameEventkTandMultPtDist(iHC, RelativePairkT(PartOne, PartTwo),
+                                       Part2Momentum.Pt(), Mult + 1);
+    }
   }
   if (fillHists && fHists->GetDomTMultPlots()) {
     fHists->FillSameEventmTMultDist(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, 

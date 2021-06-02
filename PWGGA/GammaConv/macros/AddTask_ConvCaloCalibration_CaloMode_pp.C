@@ -308,6 +308,37 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("00010113","411793706f030000000","01631031000000d0"); // No NCell cut, TBNL
     cuts.AddCutCalo("00010113","411790406f030000000","01631031000000d0"); // No NCell cut, TBNL no scale
 
+  // Settings for different clusterizer
+  } else if (trainConfig == 50){ // std
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+  } else if (trainConfig == 51){ // var1
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+  } else if (trainConfig == 52){ // var2
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+  } else if (trainConfig == 53){ // var3
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+  } else if (trainConfig == 54){ // var4
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+
+  // Settings for different clusterizer without M02 and exotic cuts
+  } else if (trainConfig == 55){ // std
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 56){ // var1
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 57){ // var2
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 58){ // var3
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 59){ // var4
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+
+
+
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

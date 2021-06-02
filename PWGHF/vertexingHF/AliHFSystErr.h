@@ -400,6 +400,7 @@ class AliHFSystErr : public TNamed
   // data-driven non-prompt analyses
   void InitNonPromptDplustoKpipi2017pp5TeVML();
   void InitNonPromptDstoKKpi2017pp5TeVML();
+  void InitNonPromptDstoKKpi2018PbPb5TeV010ML();
 
   TH1F* ReflectHisto(TH1F *hin) const;
 

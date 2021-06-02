@@ -44,6 +44,7 @@
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
 #include "AliAnalysisVertexingHF.h"
+#include "AliDataFile.h"
 
 #include "AliMultSelection.h"
 #include "AliVertexingHFUtils.h"
@@ -1391,10 +1392,12 @@ bool AliAnalysisTaskSECharmHadronvnTMVA::LoadSplinesForqnPercentile()
 
     TString listname[6] = {"SplineListq2TPC", "SplineListq2TPCPosEta", "SplineListq2TPCNegEta", "SplineListq2V0", "SplineListq2V0A", "SplineListq2V0C"};
 
-    if (!gGrid) {
-        TGrid::Connect("alien://");
-    }
-    TFile* splinesfile = TFile::Open(fqnSplineFileName.Data());
+    TString pathToFileCMVFNS = AliDataFile::GetFileName(fqnSplineFileName.Data());
+    // Check access to CVMFS (will only be displayed locally)
+    if (pathToFileCMVFNS.IsNull())
+        AliFatal("Cannot access data files from CVMFS: please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data and run again");
+
+    TFile* splinesfile = TFile::Open(pathToFileCMVFNS.Data());
     if(!splinesfile) {
         AliFatal("File with splines for qn percentiles not found!");
         return false;

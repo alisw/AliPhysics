@@ -37,6 +37,7 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliDataFile.h"
+#include "AliEmcalFastorMaskContainer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerBitConfig.h"
 #include "AliEMCALTriggerDCSConfig.h"
@@ -69,6 +70,8 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fMaskedFastorOADB(""),
   fUseL0Amplitudes(kFALSE),
   fLoadFastORMaskingFromOCDB(kTRUE),
+  fUseDeadFastORsOADB(kFALSE),
+  fUseBadFastORsOADB(kFALSE),
   fCaloTriggersOut(0),
   fRunSmearing(kTRUE),
   fSimulateNoise(kTRUE),
@@ -450,6 +453,7 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
     for(int itru = 0; itru < 32; itru++) {
       if(!sturegion.test(itru)) {
         // TRU disabled
+        std::cout << "Disable EMCAL TRU " << itru << "(" << itru << ")" << std::endl;
         for(int ichannel = 0; ichannel < 96; ichannel++) {
           fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(itru, ichannel, fastOrAbsID);
           fTriggerMaker->AddFastORBadChannel(fastOrAbsID); 
@@ -459,12 +463,14 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
   }
 
   if(dcalstu){
-    std::bitset<sizeof(int) * 8> sturegion(emcalstu->GetRegion());
+    std::bitset<sizeof(int) * 8> sturegion(dcalstu->GetRegion());
     for(int itru = 0; itru < 14; itru++) {
       if(!sturegion.test(itru)) {
         // TRU disabled
+        auto globTRUindex = fGeom->GetTriggerMapping()->GetTRUIndexFromSTUIndex(itru, 1);
+        std::cout << "Disable DCAL TRU " << itru << "(" << globTRUindex << ")" << std::endl;
         for(int ichannel = 0; ichannel < 96; ichannel++) {
-          fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(itru, ichannel, fastOrAbsID);
+          fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(globTRUindex, ichannel, fastOrAbsID);
           fTriggerMaker->AddFastORBadChannel(fastOrAbsID); 
         }
       }
@@ -485,22 +491,50 @@ void AliEmcalTriggerMakerTask::InitializeSmearModel(){
 }
 
 void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOADB(){
+  std::cout << "EMCAL trigger maker: Loading masked fastors from OADB" << std::endl;
   TString containername;
   if(fMaskedFastorOADB == "oadb") {
     containername = AliDataFile::GetFileNameOADB("EMCAL/MaskedFastors.root").data();
   } else {
     containername = fMaskedFastorOADB;
   }
-  AliInfoStream() << "Initializing masked fastors from OADB container " << containername << std::endl;
+  std::cout << "EMCAL trigger maker: Initializing masked fastors from OADB container " << containername << std::endl;
   if(containername.Contains("alien://") && !gGrid) TGrid::Connect("alien");
   AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
   badchannelDB.InitFromFile(containername, "AliEmcalMaskedFastors");
-  TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
-  if(!badchannelmap || !badchannelmap->GetEntries()) return;
-  for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
-    TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
-    AliDebugStream(1) << GetName() << ": Found masked fastor channel " << channelID->GetVal() << std::endl;
-    fTriggerMaker->AddFastORBadChannel(channelID->GetVal());
+  PWG::EMCAL::AliEmcalFastorMaskContainer *maskContainer = dynamic_cast<PWG::EMCAL::AliEmcalFastorMaskContainer *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
+  if(maskContainer) {
+    std::string selectiontype;
+    std::vector<int> maskedfastors;
+    if(fUseDeadFastORsOADB) {
+      if(fUseBadFastORsOADB) {
+        maskedfastors = maskContainer->GetMaskAll();
+        selectiontype = "all";
+      } else{
+        maskedfastors = maskContainer->GetMaskDead();
+        selectiontype = "dead";
+      }
+    } else if(fUseBadFastORsOADB){
+      maskedfastors = maskContainer->GetMaskBad();
+      selectiontype = "bad";
+    } else selectiontype = "no";
+    std::cout << "EMCAL trigger maker: OADB Container is of new type AliEmcalTriggerMaskContainer - masking " << selectiontype << " FastORs" << std::endl;
+    for(auto fastor : maskedfastors) {
+      AliDebugStream(1) << GetName() << ": Found masked fastor channel " << fastor << std::endl;
+      fTriggerMaker->AddFastORBadChannel(fastor);
+    }
+  } else {
+    TObjArray *badchannelmap = dynamic_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
+    if(badchannelmap && badchannelmap->GetEntries()) {
+      std::cout << "EMCAL trigger maker: OADB Container is of old type (simple list) - no distinction between bad and dead channels possible" << std::endl;
+      for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
+        TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
+        AliDebugStream(1) << GetName() << ": Found masked fastor channel " << channelID->GetVal() << std::endl;
+        fTriggerMaker->AddFastORBadChannel(channelID->GetVal());
+      }
+    } else {
+      std::cerr << "EMCAL trigger maker: Unsupported OADB container type - no FastORs will be loaded" << std::endl;
+    }
   }
 }
 

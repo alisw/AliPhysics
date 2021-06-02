@@ -63,7 +63,8 @@ AliAnalysisAnaTwoMultiCorrelations::AliAnalysisAnaTwoMultiCorrelations() :
   fMPCList(NULL),
 // 8. Parameters related to the 2-particle correlations with eta gaps.
   fComputeEtaGaps(kFALSE),
-  fTPCEtaList(NULL)
+  fTPCEtaList(NULL),
+  fDebugLevel(0)
 {
 /* Dummy constructor of the class............................................................ /
 / 1. Initialise the arrays of data members.                                                  */
@@ -95,7 +96,8 @@ AliAnalysisAnaTwoMultiCorrelations::AliAnalysisAnaTwoMultiCorrelations(const cha
   fMPCList(NULL),
 // 8. Parameters related to the 2-particle correlations with eta gaps.
   fComputeEtaGaps(kFALSE),
-  fTPCEtaList(NULL)
+  fTPCEtaList(NULL),
+  fDebugLevel(0)
 {
 /* Constructor of the class.................................................................. /
 / 1. Create the mother list. (The rights on everything it holds are given to the list.)       /
@@ -188,7 +190,7 @@ void AliAnalysisAnaTwoMultiCorrelations::InitialiseArraysOfDataMembers()
 void AliAnalysisAnaTwoMultiCorrelations::AnalyseRecoEvent()
 {
 /* Do the analysis at reco level to get the multiparticle correlations....................... /
-/ 1. Check the presence of the pointer to an AOD event.                                       /
+/ 1. ChecMarcel Leschk the presence of the pointer to an AOD event.                                       /
 / 2. Check if the event belongs to the current centrality bin.                                /
 / 3. Apply the event selection with the HMOs criteria.                                        /
 / 4. If chosen: get the run number and load the correct NUE correction.                       /
@@ -214,7 +216,6 @@ void AliAnalysisAnaTwoMultiCorrelations::AnalyseRecoEvent()
 // 5.1 Get the current number of events.
   finalMultiplicity = fInputList->GetEntriesFast();
   fCentralityBin = GetCentralityBin(fCentrality); // from the task fTwoMultiAna->SetEventCentrality( fCent );
-
 // 5.3 Save the number of events after the track selection.
   //fHistoNumberEvents[fCentralityBin]->Fill(2.5);
 
@@ -336,7 +337,11 @@ void AliAnalysisAnaTwoMultiCorrelations::ComputeReducedQvectors(long long number
   {
     iHarmo = i + 1;
     reducedQ = Q(iHarmo, fReducedQPower).Rho()/(TMath::Sqrt(1.*numberOfParticles));
-    fHistoReducedQvectors[fCentralityBin][i]->Fill(reducedQ);
+    if (fHistoReducedQvectors[fCentralityBin][i]) {
+      fHistoReducedQvectors[fCentralityBin][i]->Fill(reducedQ);
+    } else {
+      if (fDebugLevel>4) cout << Form("icent = %d, iH=%d, reducedQ=%.3f",fCentralityBin, iHarmo, reducedQ) << endl; 
+    }
   }
 
 // Reset the variables.

@@ -259,7 +259,7 @@ public:
    * @brief Add a FastOR bad channel to the list
    * @param[in] absId Absolute ID of the bad channel
    */
-  void AddFastORBadChannel(Short_t absId) { fBadChannels.insert(absId); }
+  void AddFastORBadChannel(Short_t absId) { if(fBadChannels.find(absId) == fBadChannels.end()) fBadChannels.insert(absId); }
 
   /**
    * @brief Read the FastOR bad channel map from a standard stream
@@ -282,7 +282,7 @@ public:
    * @brief Add an offline bad channel to the set
    * @param[in] absId Absolute ID of the bad channel
    */
-  void AddOfflineBadChannel(Short_t absId) { fOfflineBadChannels.insert(absId); }
+  void AddOfflineBadChannel(Short_t absId) { if(fOfflineBadChannels.find(absId) == fOfflineBadChannels.end()) fOfflineBadChannels.insert(absId); }
 
   /**
    * @brief Read the offline bad channel map from a standard stream

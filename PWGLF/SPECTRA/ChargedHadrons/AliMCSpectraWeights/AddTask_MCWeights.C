@@ -10,6 +10,6 @@ enum MCGeneratorType {
 };
 #endif
 
-AliMCWeightsTask* AddTask_MCWeights(MCGeneratorType gen = MCGeneratorType::NONE, const char* collType = "pp") {
-    return AliMCWeightsTask::AddTaskAliMCWeightsTask(gen, collType);
+AliMCWeightsTask* AddTask_MCWeights(MCGeneratorType gen = MCGeneratorType::NONE, const char* collType = "pp", bool bUseMBPP = false) {
+    return AliMCWeightsTask::AddTaskAliMCWeightsTask(gen, collType, bUseMBPP);
 }

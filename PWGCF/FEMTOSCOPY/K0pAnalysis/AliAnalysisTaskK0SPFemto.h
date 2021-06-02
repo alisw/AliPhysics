@@ -2,7 +2,7 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 //NUOVO
-// Author: Marta Urioni based on Ramona Lea based on M. Nicassio m.nicassio@gsi.de maria.nicassio@cern.ch
+// Author:Ramona Lea based on M. Nicassio m.nicassio@gsi.de maria.nicassio@cern.ch
 
 #ifndef ALIANALYSISTASKK0SPFEMTO_H
 #define ALIANALYSISTASKK0SPFEMTO_H
@@ -28,8 +28,10 @@ class AliAnalysisTaskK0SPFemto : public AliAnalysisTaskSE
   virtual void            Terminate(Option_t* option);
 
   // void                    ProcessMCParticles();
+  void                    SetCentrality   (Float_t lowlimcent = 0., Float_t uplimcent = 90.) { fCentrLowLim = lowlimcent;  fCentrUpLim = uplimcent; }
   void                    SetMC(Bool_t useMC){fIsMC=useMC;};
   Bool_t                  GetMC(){return fIsMC;};
+  void                    SetCollidingSystem (const char* collSystem = "pp") { fCollidingSystem = collSystem ;};
 
   void DoPairsh1h2    (const Float_t lcentrality, Int_t fieldsign, const Double_t fSphericityvalue, const Double_t fSpherocityvalue);
   double CalculateKstar(double momentum1[3], double momentum2[3], double mass1, double mass2); 
@@ -39,7 +41,8 @@ class AliAnalysisTaskK0SPFemto : public AliAnalysisTaskSE
   AliEventCuts fEventCuts;
 
  private:
-
+  
+  TString     fCollidingSystem;
   Int_t Neventi;
   AliAODEvent*  fAOD;             //! input event
   Bool_t        fIsMC;
@@ -47,6 +50,10 @@ class AliAnalysisTaskK0SPFemto : public AliAnalysisTaskSE
   Double_t fNominalMassK0s=0.4976;
   //  AliAODtrackCuts    *fAODtrackCuts;              //! basic cut variables for tracks added ! not sure
   AliPIDResponse* fPIDResponse;	     //!
+
+  Float_t fCentrLowLim;                           // centrality settings: lower limit
+  Float_t fCentrUpLim;                            // upper limit
+
 
   TList*        fOutputContainer;    //! output list
   TTree*        fHistSparseSignal;   //! output tree

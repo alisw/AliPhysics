@@ -254,6 +254,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetPtWeightsFromFONLL5anddataoverLHC20g2b();
   void SetPtWeightsFromFONLL5andMCatSHQoverLHC20g2a();
   void SetPtWeightsFromFONLL5andMCatSHQoverLHC20g2b();
+  void SetPtWeightsLcFromPythiaMode2overLHC20f4abc();
 
   void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
   UInt_t GetResonantDecay() const {return fResonantDecay;}

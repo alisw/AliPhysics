@@ -46,6 +46,7 @@ public:
       kPhiHePP5,       //angle[phi] in HE frame
       kCosThetaToEventPlane, // polarization angle with respect to Event Plane
       kAngleLeading,  // angle to leading particle
+      kDeltaEta,      // delta eta between particle and leading
       kFirstDaughterPt,  //pt of the first daughter of the pair
       kSecondDaughterPt, //pt of the second daughter of the pair
       kFirstDaughterP,   //p of the first daughter of the pair

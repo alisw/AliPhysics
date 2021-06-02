@@ -198,8 +198,7 @@ void AliAnalysisTaskPbPbTree_SingleMuons::UserExec(Option_t *)
    Bool_t TriggerSelected_CMSH7=kFALSE;
    Bool_t TriggerSelected_CINT7_CENT=kFALSE;
 
-  if(firedtrigger.Contains("CMUL7-B-NOPF-MUFAST")) TriggerSelected = kTRUE;
-  else TriggerSelected = kFALSE;
+
   if(firedtrigger.Contains("CINT7-B-NOPF-MUFAST")) TriggerSelected_CINT7 = kTRUE;
   else TriggerSelected_CINT7 = kFALSE;
   if(firedtrigger.Contains("CMUL7-B-NOPF-MUFAST")) TriggerSelected_CMUL7 = kTRUE;
@@ -251,9 +250,9 @@ void AliAnalysisTaskPbPbTree_SingleMuons::UserExec(Option_t *)
           if(!fMuonTrackCuts->IsSelected(mu0)) continue;
 
 
-          Int_t pdg;
-          if(mu0->Charge()==1) pdg=13;
-          else if(mu0->Charge()==-1) pdg = -13;
+          Int_t pdg=999;
+          if(mu0->Charge()==-1) pdg=13;
+          else if(mu0->Charge()==1) pdg = -13;
           Int_t status=0;
           Int_t mother1=0;
           Int_t mother2=0;

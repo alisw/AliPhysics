@@ -145,6 +145,7 @@ AliAnalysisTaskMcKno::AliAnalysisTaskMcKno() : AliAnalysisTaskSE(),
     fIsMCclosure(kFALSE),
     fIspPb(kFALSE),
     fSetTPConlyTrkCuts(kFALSE),
+    fSet2015TrkCuts(kFALSE),
     fSelectHybridTracks(kTRUE),
     fTPCclustersVar1(kFALSE),
     fTPCclustersVar2(kFALSE),
@@ -164,10 +165,12 @@ AliAnalysisTaskMcKno::AliAnalysisTaskMcKno() : AliAnalysisTaskSE(),
     fDcazVar2(kFALSE),
     fSPDreqVar1(kFALSE),
     fPIDResponse(0x0),
-    fGeometricalCut(0x0),
     fTrackFilter(0x0),
+    fGeometricalCut(0x0),
     fHybridTrackCuts1(0x0),
     fHybridTrackCuts2(0x0),
+    fTrackFilterwoDCA(0x0),
+    fLeadingTrackFilter(0x0),
     fOutputList(0),
     fEtaCut(0.8),
     fPtMin(0.5),
@@ -196,10 +199,12 @@ AliAnalysisTaskMcKno::AliAnalysisTaskMcKno() : AliAnalysisTaskSE(),
     hNchTSRecTest(0),
     hNchData(0),
     hNchTSData(0),
+    //Only with Hybrid Track Cuts
     hPhiTotal(0), //Sum of all the contributions
     hPhiStandard(0), //Distribution of phi without corrections -w/ SPD & ITS-
     hPhiHybrid1(0), // Correction of phi distribution -w/o SPD & w/ ITS-
     hPhiHybrid2(0), // Correction of phi distribution -no SPD req. & w/o ITS-
+    //
     hNchResponse(0),
     hNchRec(0),
     hNchRecTest(0),
@@ -278,6 +283,7 @@ AliAnalysisTaskMcKno::AliAnalysisTaskMcKno(const char* name) : AliAnalysisTaskSE
     fIsMCclosure(kFALSE),
     fIspPb(kFALSE),
     fSetTPConlyTrkCuts(kFALSE),
+    fSet2015TrkCuts(kFALSE),
     fSelectHybridTracks(kTRUE),
     fTPCclustersVar1(kFALSE),
     fTPCclustersVar2(kFALSE),
@@ -297,10 +303,12 @@ AliAnalysisTaskMcKno::AliAnalysisTaskMcKno(const char* name) : AliAnalysisTaskSE
     fDcazVar2(kFALSE),
     fSPDreqVar1(kFALSE),
     fPIDResponse(0x0),
-    fGeometricalCut(0x0),
     fTrackFilter(0x0),
+    fGeometricalCut(0x0),
     fHybridTrackCuts1(0x0),
     fHybridTrackCuts2(0x0),
+    fTrackFilterwoDCA(0x0),
+    fLeadingTrackFilter(0x0),
     fOutputList(0),
     fEtaCut(0.8),
     fPtMin(0.5),
@@ -431,90 +439,163 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
     if(inputHandler)fPIDResponse = inputHandler->GetPIDResponse();
   }
 
-  // Cuts to select the leading particle
-  // Hybrid tracks + Geometrical cut
-  if(!fGeometricalCut){
-    fGeometricalCut = new AliESDtrackCuts("fGeometricalCut");
-    fGeometricalCut->SetCutGeoNcrNcl(3, 130, 1.5, 0.85, 0.7);
-  }
-  
   // Track cuts for Nch in TS and pT spectra
-  // Hybrid tracks
   if(!fTrackFilter){
     fTrackFilter = new AliAnalysisFilter("fTrackFilter");
     SetTrackCuts(fTrackFilter);
   }
 
-  if(!fHybridTrackCuts1){
-    fHybridTrackCuts1 = new AliESDtrackCuts("fHybridTrackCuts1");
-    fHybridTrackCuts1->SetMinNCrossedRowsTPC(70); //Default
-    fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); //
-    fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4); //
-    fHybridTrackCuts1->SetAcceptKinkDaughters(kFALSE); //
-    fHybridTrackCuts1->SetRequireTPCRefit(kTRUE); //
-    fHybridTrackCuts1->SetRequireITSRefit(kTRUE); //
-    fHybridTrackCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); //kNone, kOff, kAny
-    fHybridTrackCuts1->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1"); //
-    fHybridTrackCuts1->SetMaxDCAToVertexZ(2); //
-    fHybridTrackCuts1->SetDCAToVertex2D(kFALSE); //
-    fHybridTrackCuts1->SetRequireSigmaToVertex(kFALSE);
-    fHybridTrackCuts1->SetMaxChi2PerClusterITS(36); //
-    fHybridTrackCuts1->SetMaxDCAToVertexXY(2.4);//
-    fHybridTrackCuts1->SetMaxDCAToVertexZ(3.2); //
-   }
-    
-  if(!fHybridTrackCuts2){
-    fHybridTrackCuts2 = new AliESDtrackCuts("fHybridTrackCuts2");
-    fHybridTrackCuts2->SetMinNCrossedRowsTPC(70); //Default
-    fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); //
-    fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4); //
-    fHybridTrackCuts2->SetAcceptKinkDaughters(kFALSE); //
-    fHybridTrackCuts2->SetRequireTPCRefit(kTRUE); //
-    fHybridTrackCuts2->SetRequireITSRefit(kFALSE); //
-    fHybridTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);//kNone, kOff, kAny
-    fHybridTrackCuts2->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1"); //
-    fHybridTrackCuts2->SetMaxDCAToVertexZ(2); //
-    fHybridTrackCuts2->SetDCAToVertex2D(kFALSE); //
-    fHybridTrackCuts2->SetRequireSigmaToVertex(kFALSE); //
-    fHybridTrackCuts2->SetMaxChi2PerClusterITS(36); //
-    fHybridTrackCuts1->SetMaxDCAToVertexXY(2.4); //
-    fHybridTrackCuts1->SetMaxDCAToVertexZ(3.2); //
+  // Hybrid tracks + Geometrical cut
+  if(fSelectHybridTracks){
+    if(!fGeometricalCut){
+        fGeometricalCut = new AliESDtrackCuts("fGeometricalCut");
+        fGeometricalCut->SetCutGeoNcrNcl(3, 130, 1.5, 0.85, 0.7);
+    }
       
-    // Variations made to correct systematic errors
-
-    if (fTPCclustersVar1) {fHybridTrackCuts2->SetMaxFractionSharedTPCClusters(0.2);}
-    else if (fTPCclustersVar2) {fHybridTrackCuts2->SetMaxFractionSharedTPCClusters(1.);}
-    else {fHybridTrackCuts2->SetMaxFractionSharedTPCClusters(0.4);}// Default
-
-    if (fNcrVar1) {fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}//
-    else if (fNcrVar2) {fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}//
-    else {fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);}// Default
-
-    if (fGeoTPCVar1) {fHybridTrackCuts2->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);}//
-    else if (fGeoTPCVar2) {fHybridTrackCuts2->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);}//
-    else if (fGeoTPCVar3) {fHybridTrackCuts2->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);}//
-    else if (fGeoTPCVar4) {fHybridTrackCuts2->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);}//
-    else {fHybridTrackCuts2->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);}// Default
-
-    if (fChisqTPCVar1) {fHybridTrackCuts2->SetMaxChi2PerClusterTPC(3);}
-    else if (fChisqTPCVar2) {fHybridTrackCuts2->SetMaxChi2PerClusterTPC(5);}
-    else {fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);}// Default
-
-    if (!fSPDreqVar1) {fHybridTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);}// Default
-
-    if (fChisqITSmTPCVar1) {fHybridTrackCuts2->SetMaxChi2TPCConstrainedGlobal(25);}//
-    else if (fChisqITSmTPCVar2) {fHybridTrackCuts2->SetMaxChi2TPCConstrainedGlobal(49);}//
-    else {fHybridTrackCuts2->SetMaxChi2TPCConstrainedGlobal(36);}// Default
-
-    if (fDcazVar1) {fHybridTrackCuts2->SetMaxDCAToVertexZ(1);} // DCAz = 1 cm
-    else if (fDcazVar2) {fHybridTrackCuts2->SetMaxDCAToVertexZ(5);} // DCAz = 5 cm
-    else {fHybridTrackCuts2->SetMaxDCAToVertexZ(2);}// Default
-
-    if (fChisqITSVar1) {fHybridTrackCuts2->SetMaxChi2PerClusterITS(25);}//
-    else if (fChisqITSVar2) {fHybridTrackCuts2->SetMaxChi2PerClusterITS(49);}//
-    else {fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);}// Default
-  }
+    if(!fHybridTrackCuts1){
+        fHybridTrackCuts1 = new AliESDtrackCuts("fHybridTrackCuts1");
+        fHybridTrackCuts1->SetMinNCrossedRowsTPC(70); //Default
+        fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); //
+        fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4); //
+        fHybridTrackCuts1->SetAcceptKinkDaughters(kFALSE); //
+        fHybridTrackCuts1->SetRequireTPCRefit(kTRUE); //
+        fHybridTrackCuts1->SetRequireITSRefit(kTRUE); //
+        fHybridTrackCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); //kNone, kOff, kAny
+        fHybridTrackCuts1->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1"); //
+        fHybridTrackCuts1->SetMaxDCAToVertexZ(2); //
+        fHybridTrackCuts1->SetDCAToVertex2D(kFALSE); //
+        fHybridTrackCuts1->SetRequireSigmaToVertex(kFALSE);
+        fHybridTrackCuts1->SetMaxChi2PerClusterITS(36); //
+        fHybridTrackCuts1->SetMaxDCAToVertexXY(2.4);//
+        fHybridTrackCuts1->SetMaxDCAToVertexZ(3.2); //
+     }
     
+    if(!fHybridTrackCuts2){
+        fHybridTrackCuts2 = new AliESDtrackCuts("fHybridTrackCuts2");
+        fHybridTrackCuts2->SetMinNCrossedRowsTPC(70); //Default
+        fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); //
+        fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4); //
+        fHybridTrackCuts2->SetAcceptKinkDaughters(kFALSE); //
+        fHybridTrackCuts2->SetRequireTPCRefit(kTRUE); //
+        fHybridTrackCuts2->SetRequireITSRefit(kFALSE); //
+        fHybridTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);//kNone, kOff, kAny
+        fHybridTrackCuts2->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1"); //
+        fHybridTrackCuts2->SetMaxDCAToVertexZ(2); //
+        fHybridTrackCuts2->SetDCAToVertex2D(kFALSE); //
+        fHybridTrackCuts2->SetRequireSigmaToVertex(kFALSE); //
+        fHybridTrackCuts2->SetMaxChi2PerClusterITS(36); //
+        fHybridTrackCuts2->SetMaxDCAToVertexXY(2.4); //
+        fHybridTrackCuts2->SetMaxDCAToVertexZ(3.2); //
+        
+      // Variations made to correct systematic errors
+
+        if (fTPCclustersVar1) {fHybridTrackCuts2->SetMaxFractionSharedTPCClusters(0.2);}
+        else if (fTPCclustersVar2) {fHybridTrackCuts2->SetMaxFractionSharedTPCClusters(1.);}
+        else {fHybridTrackCuts2->SetMaxFractionSharedTPCClusters(0.4);}// Default
+
+        if (fNcrVar1) {fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}//
+        else if (fNcrVar2) {fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}//
+        else {fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);}// Default
+
+        if (fGeoTPCVar1) {fHybridTrackCuts2->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);}//
+        else if (fGeoTPCVar2) {fHybridTrackCuts2->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);}//
+        else if (fGeoTPCVar3) {fHybridTrackCuts2->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);}//
+        else if (fGeoTPCVar4) {fHybridTrackCuts2->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);}//
+        else {fHybridTrackCuts2->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);}// Default
+
+        if (fChisqTPCVar1) {fHybridTrackCuts2->SetMaxChi2PerClusterTPC(3);}
+        else if (fChisqTPCVar2) {fHybridTrackCuts2->SetMaxChi2PerClusterTPC(5);}
+        else {fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);}// Default
+
+        if (!fSPDreqVar1) {fHybridTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);}// Default
+
+        if (fChisqITSmTPCVar1) {fHybridTrackCuts2->SetMaxChi2TPCConstrainedGlobal(25);}//
+        else if (fChisqITSmTPCVar2) {fHybridTrackCuts2->SetMaxChi2TPCConstrainedGlobal(49);}//
+        else {fHybridTrackCuts2->SetMaxChi2TPCConstrainedGlobal(36);}// Default
+
+        if (fDcazVar1) {fHybridTrackCuts2->SetMaxDCAToVertexZ(1);} // DCAz = 1 cm
+        else if (fDcazVar2) {fHybridTrackCuts2->SetMaxDCAToVertexZ(5);} // DCAz = 5 cm
+        else {fHybridTrackCuts2->SetMaxDCAToVertexZ(2);}// Default
+
+        if (fChisqITSVar1) {fHybridTrackCuts2->SetMaxChi2PerClusterITS(25);}//
+        else if (fChisqITSVar2) {fHybridTrackCuts2->SetMaxChi2PerClusterITS(49);}//
+        else {fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);}// Default
+    }
+  }
+  
+  // 2015 Track cuts
+  if(fSet2015TrkCuts){
+      //track cuts to find contamination via DCA distribution
+      if (!fTrackFilterwoDCA){
+        fTrackFilterwoDCA = new AliAnalysisFilter("trackFilter2015");
+        AliESDtrackCuts * fCuts1 = new AliESDtrackCuts();
+        fCuts1->SetMaxFractionSharedTPCClusters(0.4);//
+        fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);//
+        fCuts1->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);//
+        fCuts1->SetMaxChi2PerClusterTPC(4);//
+        fCuts1->SetAcceptKinkDaughters(kFALSE);//
+        fCuts1->SetRequireTPCRefit(kTRUE);//
+        fCuts1->SetRequireITSRefit(kTRUE);//
+        fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                            AliESDtrackCuts::kAny);//
+        //fCuts1->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//
+        //fCuts1->SetMaxChi2TPCConstrainedGlobal(36);//
+        fCuts1->SetMaxDCAToVertexZ(2);//
+        fCuts1->SetDCAToVertex2D(kFALSE);//
+        fCuts1->SetRequireSigmaToVertex(kFALSE);//
+        fCuts1->SetMaxChi2PerClusterITS(36);//
+        fTrackFilterwoDCA->AddCuts(fCuts1);
+      }
+      
+      // fCuts *** leading particle ***
+      if(!fLeadingTrackFilter){
+        fLeadingTrackFilter = new AliAnalysisFilter("trackFilter2015");
+        AliESDtrackCuts * fCuts2 = new AliESDtrackCuts();
+        fCuts2->SetAcceptKinkDaughters(kFALSE);// Default
+        fCuts2->SetRequireTPCRefit(kTRUE);// Default
+        fCuts2->SetRequireITSRefit(kTRUE);// Default
+        fCuts2->SetDCAToVertex2D(kFALSE);// Default
+        fCuts2->SetRequireSigmaToVertex(kFALSE);// Default
+        fCuts2->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");// Default
+          
+        // Variations made to correct systematic errors
+
+        if (fTPCclustersVar1) {fCuts2->SetMaxFractionSharedTPCClusters(0.2);}
+        else if (fTPCclustersVar2) {fCuts2->SetMaxFractionSharedTPCClusters(1.);}
+        else {fCuts2->SetMaxFractionSharedTPCClusters(0.4);}// Default
+
+        if (fNcrVar1) {fCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}//
+        else if (fNcrVar2) {fCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}//
+        else {fCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);}// Default
+
+        if (fGeoTPCVar1) {fCuts2->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);}//
+        else if (fGeoTPCVar2) {fCuts2->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);}//
+        else if (fGeoTPCVar3) {fCuts2->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);}//
+        else if (fGeoTPCVar4) {fCuts2->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);}//
+        else {fCuts2->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);}// Default
+
+        if (fChisqTPCVar1) {fCuts2->SetMaxChi2PerClusterTPC(3);}
+        else if (fChisqTPCVar2) {fCuts2->SetMaxChi2PerClusterTPC(5);}
+        else {fCuts2->SetMaxChi2PerClusterTPC(4);}// Default
+          
+        if (!fSPDreqVar1) {fCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);}// Default
+
+        if (fChisqITSmTPCVar1) {fCuts2->SetMaxChi2TPCConstrainedGlobal(25);}//
+        else if (fChisqITSmTPCVar2) {fCuts2->SetMaxChi2TPCConstrainedGlobal(49);}//
+        else {fCuts2->SetMaxChi2TPCConstrainedGlobal(36);}// Default
+
+        if (fDcazVar1) {fCuts2->SetMaxDCAToVertexZ(1);} // DCAz = 1 cm
+        else if (fDcazVar2) {fCuts2->SetMaxDCAToVertexZ(5);} // DCAz = 5 cm
+        else {fCuts2->SetMaxDCAToVertexZ(2);}// Default
+
+        if (fChisqITSVar1) {fCuts2->SetMaxChi2PerClusterITS(25);}//
+        else if (fChisqITSVar2) {fCuts2->SetMaxChi2PerClusterITS(49);}//
+        else {fCuts2->SetMaxChi2PerClusterITS(36);}// Default
+
+        fLeadingTrackFilter->AddCuts(fCuts2);
+      }
+  }
+  
   // create output objects
 
   OpenFile(1);
@@ -802,7 +883,7 @@ void AliAnalysisTaskMcKno::UserExec(Option_t *)
 
 
   //hCounter->Fill(0);
-    cout<<"ptleadingmin"<<fLeadPtCutMin<<endl;
+  cout<<"pTleadingmin"<<fLeadPtCutMin<<endl;
 
   AliHeader* headerMC = fMC->Header();
   Bool_t isGoodVtxPosMC = kFALSE;
@@ -823,8 +904,6 @@ void AliAnalysisTaskMcKno::UserExec(Option_t *)
   GetLeadingObject(kFALSE);// leading particle at rec level
   // Now we get the leading particle pT
 	
-
-
   // Trigger selection
   UInt_t fSelectMask= fInputHandler->IsEventSelected();
   Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7;
@@ -867,12 +946,13 @@ void AliAnalysisTaskMcKno::UserExec(Option_t *)
   //cout<<"------- V0M mult ==  "<<fv0mpercentile<<"--------"<<endl;
 	
   hRefMultvsV0Mmult->Fill(ftrackmult08,fv0mpercentile);
-	
+
   //analysis
   if (fv0mpercentile>fV0Mmin && fv0mpercentile<=fV0Mmax)
     {
       if(fIsMCclosure){
-	Double_t randomUE = gRandom->Uniform(0.0,1.0);
+          Double_t randomUE = gRandom->Uniform(0.0,1.0);
+          gRandom->SetSeed(0);
 	if(randomUE<0.5){                   // corrections (50% stat.)
 	  if(isGoodVtxPosMC){
 	    // KNO scaling
@@ -961,31 +1041,43 @@ void AliAnalysisTaskMcKno::GetLeadingObject(Bool_t isMC) {
       if(!track) continue;
       if(TMath::Abs(track->Eta()) > fEtaCut) continue;
       if( track->Pt() < fPtMin)continue;
-        
-      AliESDtrack* track_hybrid = 0x0;
-      if(!fSelectHybridTracks){
-        if(!fTrackFilter->IsSelected(track)) { continue; }
-        else{ track_hybrid = track; }
-      }else{
-        track_hybrid = SetHybridTrackCuts(track,kTRUE,kTRUE,kTRUE);
-        if(!track_hybrid) { continue; }
-        hPhiTotal->Fill(track->Phi());
-      }
-        
-      if(!fGeometricalCut->AcceptTrack(track_hybrid)) continue;
-        
-      if (flPt<track_hybrid->Pt()){
-          flPt  = track_hybrid->Pt();
-          flPhi = track_hybrid->Phi();
-          flIndex = i;
+      if(fSet2015TrkCuts){ if(!fLeadingTrackFilter->IsSelected(track))continue;
+          if (flPt<track->Pt()){
+                  flPt  = track->Pt();
+                  flPhi = track->Phi();
+                  flIndex = i;
+          }
       }
       
-      delete track_hybrid;
+      if(fSelectHybridTracks){
+          AliESDtrack* track_hybrid = 0x0;
+          if(!fSelectHybridTracks){
+          if(!fTrackFilter->IsSelected(track)) { continue; }
+          else{ track_hybrid = track; }
+          }else{
+              track_hybrid = SetHybridTrackCuts(track,kTRUE,kTRUE,kTRUE);
+              if(!track_hybrid) { continue; }
+              hPhiTotal->Fill(track->Phi());
+          }
         
-    } 
+          if(!fGeometricalCut->AcceptTrack(track_hybrid)) continue;
+        
+          if (flPt<track_hybrid->Pt()){
+              flPt  = track_hybrid->Pt();
+              flPhi = track_hybrid->Phi();
+              flIndex = i;
+          }
+      
+          delete track_hybrid;
+          
+      }
+        
+    }
+      
     fRecLeadPhi = flPhi;
     fRecLeadPt  = flPt;
     fRecLeadIn  = flIndex;
+      
   }
 }
 
@@ -1022,39 +1114,63 @@ void AliAnalysisTaskMcKno::GetBinByBinCorrections(){
     if(esdtrack->Charge() == 0 ) continue;
     if(TMath::Abs(esdtrack->Eta()) > fEtaCut)continue;
     if( esdtrack->Pt() < fPtMin)continue;
+    if(fSet2015TrkCuts){
+        if(!fLeadingTrackFilter->IsSelected(esdtrack))continue;
+            
+        const Int_t label = TMath::Abs(esdtrack->GetLabel());
+        hPtOut->Fill(esdtrack->Pt());
+          
+        if( fMCStack->IsPhysicalPrimary(label) ){
+          TParticle *mcParticle = fMC->GetTrack(label)->Particle();
+          Int_t partPDG_rec = TMath::Abs(mcParticle->GetPdgCode());
+          hPtOutPrim->Fill(esdtrack->Pt());
+          if (partPDG_rec==211) hPtOutPrim_pion->Fill(esdtrack->Pt()); //pions
+          else if (partPDG_rec==321) hPtOutPrim_kaon->Fill(esdtrack->Pt()); //kaons
+          else if (partPDG_rec==2212) hPtOutPrim_proton->Fill(esdtrack->Pt()); //protons
+          else if (partPDG_rec==3222) hPtOutPrim_sigmap->Fill(esdtrack->Pt()); //sigma plus
+          else if (partPDG_rec==3112) hPtOutPrim_sigmam->Fill(esdtrack->Pt()); //sigma minus
+          else if (partPDG_rec==3334) hPtOutPrim_omega->Fill(esdtrack->Pt()); //Omega
+          else if (partPDG_rec==3312) hPtOutPrim_xi->Fill(esdtrack->Pt()); //Xi
+          else hPtOutPrim_rest->Fill(esdtrack->Pt()); //rest of the charged particles
+        }
+        if( fMCStack->IsSecondaryFromWeakDecay(label) || fMCStack->IsSecondaryFromMaterial(label)){
+            hPtOutSec->Fill(esdtrack->Pt());
+        }
+    }
       
-    AliESDtrack* track = 0x0;
-    if(!fSelectHybridTracks){
+    if(fSelectHybridTracks){
+        AliESDtrack* track = 0x0;
+        if(!fSelectHybridTracks){
         if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
         else{ track = esdtrack; }
-    }else{
-        track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
-        if(!track) { continue; }
-        hPhiTotal->Fill(track->Phi());
-    }
+        }else{
+            track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+            if(!track) { continue; }
+            hPhiTotal->Fill(track->Phi());
+        }
       
-    const Int_t label = TMath::Abs(track->GetLabel());
-    hPtOut->Fill(track->Pt());
+        const Int_t label = TMath::Abs(track->GetLabel());
+        hPtOut->Fill(track->Pt());
       
-    if( fMCStack->IsPhysicalPrimary(label) ){
-      TParticle *mcParticle = fMC->GetTrack(label)->Particle();
-      Int_t partPDG_rec = TMath::Abs(mcParticle->GetPdgCode());
-      hPtOutPrim->Fill(track->Pt());
-      if (partPDG_rec==211) hPtOutPrim_pion->Fill(track->Pt()); //pions
-      else if (partPDG_rec==321) hPtOutPrim_kaon->Fill(track->Pt()); //kaons
-      else if (partPDG_rec==2212) hPtOutPrim_proton->Fill(track->Pt()); //protons
-      else if (partPDG_rec==3222) hPtOutPrim_sigmap->Fill(track->Pt()); //sigma plus
-      else if (partPDG_rec==3112) hPtOutPrim_sigmam->Fill(track->Pt()); //sigma minus
-      else if (partPDG_rec==3334) hPtOutPrim_omega->Fill(track->Pt()); //Omega
-      else if (partPDG_rec==3312) hPtOutPrim_xi->Fill(track->Pt()); //Xi
-      else hPtOutPrim_rest->Fill(track->Pt()); //rest of the charged particles
-    }
-    if( fMCStack->IsSecondaryFromWeakDecay(label) || fMCStack->IsSecondaryFromMaterial(label)){
-        hPtOutSec->Fill(track->Pt());
-    }
+        if( fMCStack->IsPhysicalPrimary(label) ){
+            TParticle *mcParticle = fMC->GetTrack(label)->Particle();
+            Int_t partPDG_rec = TMath::Abs(mcParticle->GetPdgCode());
+            hPtOutPrim->Fill(track->Pt());
+            if (partPDG_rec==211) hPtOutPrim_pion->Fill(track->Pt()); //pions
+            else if (partPDG_rec==321) hPtOutPrim_kaon->Fill(track->Pt()); //kaons
+            else if (partPDG_rec==2212) hPtOutPrim_proton->Fill(track->Pt()); //protons
+            else if (partPDG_rec==3222) hPtOutPrim_sigmap->Fill(track->Pt()); //sigma plus
+            else if (partPDG_rec==3112) hPtOutPrim_sigmam->Fill(track->Pt()); //sigma minus
+            else if (partPDG_rec==3334) hPtOutPrim_omega->Fill(track->Pt()); //Omega
+            else if (partPDG_rec==3312) hPtOutPrim_xi->Fill(track->Pt()); //Xi
+            else hPtOutPrim_rest->Fill(track->Pt()); //rest of the charged particles
+        }
+        if( fMCStack->IsSecondaryFromWeakDecay(label) || fMCStack->IsSecondaryFromMaterial(label)){
+            hPtOutSec->Fill(track->Pt());
+        }
     
-    delete track;
-
+        delete track;
+    }
   }
 }
 
@@ -1103,33 +1219,51 @@ void AliAnalysisTaskMcKno::GetDetectorResponse() {
     if(esdtrack->Charge() == 0 ) continue;
     if(TMath::Abs(esdtrack->Eta()) > fEtaCut)continue;
     if( esdtrack->Pt() < fPtMin)continue;
-      
-    AliESDtrack* track = 0x0;
-    if(!fSelectHybridTracks){
-        if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
-        else{ track = esdtrack; }
-    }else{
-        track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
-        if(!track) { continue; }
-        hPhiTotal->Fill(track->Phi());
-    }
-
-    Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
-
-    // definition of the topological regions
-    if(TMath::Abs(DPhi)<pi/3.0){// near side
-      hPhiRec[0]->Fill(DPhi);
-    }
-    else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-      hPhiRec[1]->Fill(DPhi);
-    }
-    else{// transverse side
-      multTSrec++;
-      hPhiRec[2]->Fill(DPhi);
+    if(fSet2015TrkCuts){
+        if(!fTrackFilter->IsSelected(esdtrack))continue;
+          
+        Double_t DPhi = DeltaPhi(esdtrack->Phi(), fRecLeadPhi);
+        
+        // definition of the topological regions
+        if(TMath::Abs(DPhi)<pi/3.0){// near side
+          hPhiRec[0]->Fill(DPhi);
+        }
+        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+          hPhiRec[1]->Fill(DPhi);
+        }
+        else{// transverse side
+          multTSrec++;
+          hPhiRec[2]->Fill(DPhi);
+        }
     }
     
-    delete track;
-      
+    if(fSelectHybridTracks){
+        AliESDtrack* track = 0x0;
+        if(!fSelectHybridTracks){
+        if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
+        else{ track = esdtrack; }
+        }else{
+            track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+            if(!track) { continue; }
+            hPhiTotal->Fill(track->Phi());
+        }
+
+        Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+
+        // definition of the topological regions
+        if(TMath::Abs(DPhi)<pi/3.0){// near side
+            hPhiRec[0]->Fill(DPhi);
+        }
+        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+            hPhiRec[1]->Fill(DPhi);
+        }
+        else{// transverse side
+            multTSrec++;
+            hPhiRec[2]->Fill(DPhi);
+        }
+        delete track;
+    }
+    
   }
   
   hNchTSRec->Fill(multTSrec);
@@ -1148,19 +1282,25 @@ void AliAnalysisTaskMcKno::GetMB(){
     if(esdtrack->Charge() == 0 ) continue;
     if(TMath::Abs(esdtrack->Eta()) > fEtaCut)continue;
     if( esdtrack->Pt() < 0.15)continue;
-    
-    AliESDtrack* track = 0x0;
-    if(!fSelectHybridTracks){
-        if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
-        else{ track = esdtrack; }
-    }else{
-        track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
-        if(!track) { continue; }
-        hPhiTotal->Fill(track->Phi());
+    if(fSet2015TrkCuts){
+        if(!fTrackFilter->IsSelected(esdtrack))continue;
+        hPtVsV0MData->Fill(fv0mpercentile,esdtrack->Pt());
     }
     
-    hPtVsV0MData->Fill(fv0mpercentile,track->Pt());
-    delete track;
+    if(fSelectHybridTracks){
+        AliESDtrack* track = 0x0;
+        if(!fSelectHybridTracks){
+        if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
+        else{ track = esdtrack; }
+        }else{
+            track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+            if(!track) { continue; }
+            hPhiTotal->Fill(track->Phi());
+        }
+    
+        hPtVsV0MData->Fill(fv0mpercentile,track->Pt());
+        delete track;
+    }
   }
   Int_t multTSrec=0;
   Int_t multrec=0;
@@ -1172,32 +1312,50 @@ void AliAnalysisTaskMcKno::GetMB(){
     if(esdtrack->Charge() == 0 ) continue;
     if(TMath::Abs(esdtrack->Eta()) > fEtaCut)continue;
     if( esdtrack->Pt() < 0.15)continue;
+    if(fSet2015TrkCuts){
+        if(!fTrackFilter->IsSelected(esdtrack))continue;
+           
+        Double_t DPhi = DeltaPhi(esdtrack->Phi(), fRecLeadPhi);
+        multrec++;
+        
+        if(TMath::Abs(DPhi)<pi/3.0){// near side
+          continue;
+        }
+        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+          continue;
+        }
+        else{// transverse side
+          multTSrec++;
+        }
+    }
        
-    AliESDtrack* track = 0x0;
-    if(!fSelectHybridTracks){
+    if(fSelectHybridTracks){
+        AliESDtrack* track = 0x0;
+        if(!fSelectHybridTracks){
         if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
         else{ track = esdtrack; }
-    }else{
-        track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
-        if(!track) { continue; }
-        hPhiTotal->Fill(track->Phi());
-    }
+        }else{
+            track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+            if(!track) { continue; }
+            hPhiTotal->Fill(track->Phi());
+        }
 
-    Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
-    multrec++;
-    // definition of the topological regions
-    if(TMath::Abs(DPhi)<pi/3.0){// near side
-      continue;
+        Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+        multrec++;
+
+        // definition of the topological regions
+        if(TMath::Abs(DPhi)<pi/3.0){// near side
+            continue;
+        }
+        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+            continue;
+        }
+        else{// transverse side
+            multTSrec++;
+        }
+        delete track;
     }
-    else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-      continue;
-    }
-    else{// transverse side
-      multTSrec++;
-    }
-    
-    delete track;
-  
+        
   }
 
    for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
@@ -1207,20 +1365,26 @@ void AliAnalysisTaskMcKno::GetMB(){
     if(esdtrack->Charge() == 0 ) continue;
     if(TMath::Abs(esdtrack->Eta()) > fEtaCut)continue;
     if( esdtrack->Pt() < 0.15)continue;
-       
-    AliESDtrack* track = 0x0;
-    if(!fSelectHybridTracks){
+    if(fSet2015TrkCuts){ if(!fLeadingTrackFilter->IsSelected(esdtrack))continue;
+        hITSclustersvsUE->Fill(esdtrack->GetITSNcls(),multTSrec);
+        hITSclustersvsNch->Fill(esdtrack->GetITSNcls(),multrec);
+    }
+    
+    if(fSelectHybridTracks){
+        AliESDtrack* track = 0x0;
+        if(!fSelectHybridTracks){
         if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
         else{ track = esdtrack; }
-    }else{
-        track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
-        if(!track) { continue; }
-        hPhiTotal->Fill(track->Phi());
-    }
+        }else{
+            track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+            if(!track) { continue; }
+            hPhiTotal->Fill(track->Phi());
+        }
 
-    hITSclustersvsUE->Fill(track->GetITSNcls(),multTSrec);
-    hITSclustersvsNch->Fill(track->GetITSNcls(),multrec);
-    delete track;
+        hITSclustersvsUE->Fill(track->GetITSNcls(),multTSrec);
+        hITSclustersvsNch->Fill(track->GetITSNcls(),multrec);
+        delete track;
+    }
    }
 }
 //______________________________________________________________
@@ -1240,41 +1404,59 @@ void AliAnalysisTaskMcKno::GetMultiplicityDistributionsData(){
     if(esdtrack->Charge() == 0 ) continue;
     if(TMath::Abs(esdtrack->Eta()) > fEtaCut) continue;
     if( esdtrack->Pt() < fPtMin)continue;
+    if(fSet2015TrkCuts){ if(!fTrackFilter->IsSelected(esdtrack))continue;
+        Double_t DPhi = DeltaPhi(esdtrack->Phi(), fRecLeadPhi);
+        
+        // definition of the topological regions
+        if(TMath::Abs(DPhi)<pi/3.0){// near side
+          continue;
+        }
+        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+          continue;
+        }
+        else{// transverse side
+          multTSrec++;
+        }
+
+        multrec++;
+    }
       
-    AliESDtrack* track = 0x0;
-    if(!fSelectHybridTracks){
+    if(fSelectHybridTracks){
+        AliESDtrack* track = 0x0;
+        if(!fSelectHybridTracks){
         if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
         else{ track = esdtrack; }
-    }else{
-        track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
-        if(!track) { continue; }
-        hPhiTotal->Fill(track->Phi());
-        
-    }
+        }else{
+            track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+            if(!track) { continue; }
+            hPhiTotal->Fill(track->Phi());
+        }
 
-    Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+        Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
 
-    // definition of the topological regions
-    if(TMath::Abs(DPhi)<pi/3.0){// near side
-      continue;
-    }
-    else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-      continue;
-    }
-    else{// transverse side
-      multTSrec++;
-    }
+        // definition of the topological regions
+        if(TMath::Abs(DPhi)<pi/3.0){// near side
+            continue;
+        }
+        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+            continue;
+        }
+        else{// transverse side
+            multTSrec++;
+        }
 
-    multrec++;
-    delete track;
+        multrec++;
+        delete track;
+    }
   }
+    
   hNchTSData->Fill(multTSrec);
   hNchData->Fill(multrec);
 	
   hV0MmultvsUE->Fill(fv0mpercentile,multTSrec);
   hRefmultvsUE->Fill(ftrackmult08,multTSrec);
 
-  // Filling rec pT vs UE (for pT I consider the hybrid track cuts)    ////////////////////////////////////////////////////////////////
+  // Filling rec pT vs UE (for pT *** considering the hybrid track cuts or the 2015 track cuts ***)    ////////////////////////////////////////////////////////////////
   for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
 
     if(i==fRecLeadIn)continue;
@@ -1283,41 +1465,67 @@ void AliAnalysisTaskMcKno::GetMultiplicityDistributionsData(){
     if(esdtrack->Charge() == 0 ) continue;
     if(TMath::Abs(esdtrack->Eta()) > fEtaCut) continue;
     if( esdtrack->Pt() < fPtMin)continue;
-      
-    AliESDtrack* track = 0x0;
-    if(!fSelectHybridTracks){
+    if(fSet2015TrkCuts){ if(!fLeadingTrackFilter->IsSelected(esdtrack))continue;
+        Double_t DPhi = DeltaPhi(esdtrack->Phi(), fRecLeadPhi);
+          
+          // definition of the topological regions
+        if(TMath::Abs(DPhi)<pi/3.0){// near side
+          hPtVsUEData[0]->Fill(multTSrec,esdtrack->Pt());
+          hPtVsNchData[0]->Fill(multrec,esdtrack->Pt());
+          hPtVsUEvsNchData_V0M[0]->Fill(multTSrec,esdtrack->Pt(),fv0mpercentile);
+        }
+        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+          hPtVsUEData[1]->Fill(multTSrec,esdtrack->Pt());
+          hPtVsNchData[1]->Fill(multrec,esdtrack->Pt());
+          hPtVsUEvsNchData_V0M[1]->Fill(multTSrec,esdtrack->Pt(),fv0mpercentile);
+        }
+        else{// transverse side
+          hPtVsUEData[2]->Fill(multTSrec,esdtrack->Pt());
+          hPtVsNchData[2]->Fill(multrec,esdtrack->Pt());
+          hPtVsUEvsNchData_V0M[2]->Fill(multTSrec,esdtrack->Pt(),fv0mpercentile);
+        }
+        
+        hDphiVsUEData->Fill(multTSrec,DPhi);
+        hDphiVsNchData->Fill(multrec,DPhi);
+        hDphiVsUEvsNchData_V0M->Fill(multTSrec,DPhi,fv0mpercentile);
+    }
+    
+    if(fSelectHybridTracks){
+        AliESDtrack* track = 0x0;
+        if(!fSelectHybridTracks){
         if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
         else{ track = esdtrack; }
-    }else{
-        track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
-        if(!track) { continue; }
-        hPhiTotal->Fill(track->Phi());
-    }
+        }else{
+            track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+            if(!track) { continue; }
+            hPhiTotal->Fill(track->Phi());
+        }
     
-    Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+        Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
     
-    // definition of the topological regions
-    if(TMath::Abs(DPhi)<pi/3.0){// near side
-      hPtVsUEData[0]->Fill(multTSrec,track->Pt());
-      hPtVsNchData[0]->Fill(multrec,track->Pt());
-      hPtVsUEvsNchData_V0M[0]->Fill(multTSrec,track->Pt(),fv0mpercentile);
-    }
-    else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-      hPtVsUEData[1]->Fill(multTSrec,track->Pt());
-      hPtVsNchData[1]->Fill(multrec,track->Pt());
-      hPtVsUEvsNchData_V0M[1]->Fill(multTSrec,track->Pt(),fv0mpercentile);
-    }
-    else{// transverse side
-      hPtVsUEData[2]->Fill(multTSrec,track->Pt());
-      hPtVsNchData[2]->Fill(multrec,track->Pt());
-      hPtVsUEvsNchData_V0M[2]->Fill(multTSrec,track->Pt(),fv0mpercentile);
-    }
-
-    hDphiVsUEData->Fill(multTSrec,DPhi);
-    hDphiVsNchData->Fill(multrec,DPhi);
-    hDphiVsUEvsNchData_V0M->Fill(multTSrec,DPhi,fv0mpercentile);
+        // definition of the topological regions
+        if(TMath::Abs(DPhi)<pi/3.0){// near side
+            hPtVsUEData[0]->Fill(multTSrec,track->Pt());
+            hPtVsNchData[0]->Fill(multrec,track->Pt());
+            hPtVsUEvsNchData_V0M[0]->Fill(multTSrec,track->Pt(),fv0mpercentile);
+        }
+        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+            hPtVsUEData[1]->Fill(multTSrec,track->Pt());
+            hPtVsNchData[1]->Fill(multrec,track->Pt());
+            hPtVsUEvsNchData_V0M[1]->Fill(multTSrec,track->Pt(),fv0mpercentile);
+        }
+        else{// transverse side
+            hPtVsUEData[2]->Fill(multTSrec,track->Pt());
+            hPtVsNchData[2]->Fill(multrec,track->Pt());
+            hPtVsUEvsNchData_V0M[2]->Fill(multTSrec,track->Pt(),fv0mpercentile);
+        }
     
-    delete track;
+        hDphiVsUEData->Fill(multTSrec,DPhi);
+        hDphiVsNchData->Fill(multrec,DPhi);
+        hDphiVsUEvsNchData_V0M->Fill(multTSrec,DPhi,fv0mpercentile);
+        
+        delete track;
+    }
       
   }
   
@@ -1329,23 +1537,32 @@ void AliAnalysisTaskMcKno::GetMultiplicityDistributionsData(){
     if(esdtrack->Charge() == 0 ) continue;
     if(TMath::Abs(esdtrack->Eta()) > fEtaCut)continue;
     if( esdtrack->Pt() < fPtMin)continue;
+    if(fSet2015TrkCuts){ if(!fTrackFilterwoDCA->IsSelected(esdtrack))continue;
+          
+        esdtrack->GetImpactParameters(fdcaxy,fdcaz);
+
+        hPTVsDCAData->Fill(esdtrack->Pt(),fdcaxy);
+        hPTVsDCAcentData->Fill(esdtrack->Pt(),fdcaxy);
+    }
     
-    AliESDtrack* track = 0x0;
-    if(!fSelectHybridTracks){
+    if(fSelectHybridTracks){
+        AliESDtrack* track = 0x0;
+        if(!fSelectHybridTracks){
         if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
         else{ track = esdtrack; }
-    }else{
-        track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
-        if(!track) { continue; }
-        hPhiTotal->Fill(track->Phi());
-    }
+        }else{
+            track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+            if(!track) { continue; }
+            hPhiTotal->Fill(track->Phi());
+        }
 
-    track->GetImpactParameters(fdcaxy,fdcaz);
+        track->GetImpactParameters(fdcaxy,fdcaz);
 
-    hPTVsDCAData->Fill(track->Pt(),fdcaxy);
-    hPTVsDCAcentData->Fill(track->Pt(),fdcaxy);
+        hPTVsDCAData->Fill(track->Pt(),fdcaxy);
+        hPTVsDCAcentData->Fill(track->Pt(),fdcaxy);
     
-    delete track;
+        delete track;
+    }
   }
   
 
@@ -1433,37 +1650,57 @@ void AliAnalysisTaskMcKno::GetMultiplicityDistributions(){
     if(esdtrack->Charge() == 0 ) continue;
     if(TMath::Abs(esdtrack->Eta()) > fEtaCut)continue;
     if( esdtrack->Pt() < fPtMin)continue;
+    if(fSet2015TrkCuts){
+        if(!fTrackFilter->IsSelected(esdtrack))continue;
+          
+        Double_t DPhi = DeltaPhi(esdtrack->Phi(), fRecLeadPhi);
+        
+        // definition of the topological regions
+        if(TMath::Abs(DPhi)<pi/3.0){// near side
+          continue;
+        }
+        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+          continue;
+        }
+        else{// transverse side
+          multTSrec++;
+        }
+            
+        multrec++;
+    }
 
-    AliESDtrack* track = 0x0;
-    if(!fSelectHybridTracks){
+    if(fSelectHybridTracks){
+        AliESDtrack* track = 0x0;
+        if(!fSelectHybridTracks){
         if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
         else{ track = esdtrack; }
-    }else{
-        track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
-        if(!track) { continue; }
-        hPhiTotal->Fill(track->Phi());
+        }else{
+            track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+            if(!track) { continue; }
+            hPhiTotal->Fill(track->Phi());
         }
     
-    Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+        Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
 
-    // definition of the topological regions
-    if(TMath::Abs(DPhi)<pi/3.0){// near side
-      continue;
-    }
-    else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-      continue;
-    }
-    else{// transverse side
-      multTSrec++;
-    }
+        // definition of the topological regions
+        if(TMath::Abs(DPhi)<pi/3.0){// near side
+            continue;
+        }
+        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+            continue;
+        }
+        else{// transverse side
+            multTSrec++;
+        }
 		
-    multrec++;
-    delete track;
+        multrec++;
+        delete track;
+    }
   }
   hNchTSRecTest->Fill(multTSrec);
   hNchRecTest->Fill(multrec); 
 
-  // Filling rec pT vs UE (for pT I consider the hybrid track cuts)
+  // Filling rec pT vs UE (for pT *** considering the hybrid track cuts or the 2015 track cuts ***)
     
   for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
 
@@ -1473,36 +1710,60 @@ void AliAnalysisTaskMcKno::GetMultiplicityDistributions(){
     if(esdtrack->Charge() == 0 ) continue;
     if(TMath::Abs(esdtrack->Eta()) > fEtaCut)continue;
     if( esdtrack->Pt() < fPtMin)continue;
-      
-    AliESDtrack* track = 0x0;
-    if(!fSelectHybridTracks){
+    if(fSet2015TrkCuts){ if(!fLeadingTrackFilter->IsSelected(esdtrack))continue;
+          
+        Double_t DPhi = DeltaPhi(esdtrack->Phi(), fRecLeadPhi);
+
+          // definition of the topological regions
+        if(TMath::Abs(DPhi)<pi/3.0){// near side
+          hPtVsUERecTest[0]->Fill(multTSrec,esdtrack->Pt());
+          hPtVsNchRecTest[0]->Fill(multrec,esdtrack->Pt());
+        }
+        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+          hPtVsUERecTest[1]->Fill(multTSrec,esdtrack->Pt());
+          hPtVsNchRecTest[1]->Fill(multrec,esdtrack->Pt());
+        }
+        else{// transverse side
+          hPtVsUERecTest[2]->Fill(multTSrec,esdtrack->Pt());
+          hPtVsNchRecTest[2]->Fill(multrec,esdtrack->Pt());
+        }
+        
+        hDphiVsUERecTest->Fill(multTSrec,DPhi);
+        hDphiVsNchRecTest->Fill(multrec,DPhi);
+    }
+    
+    if(fSelectHybridTracks){
+        AliESDtrack* track = 0x0;
+        if(!fSelectHybridTracks){
         if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
         else{ track = esdtrack; }
-    }else{
-        track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
-        if(!track) { continue; }
-        hPhiTotal->Fill(track->Phi());
-    }
+        }else{
+            track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+            if(!track) { continue; }
+            hPhiTotal->Fill(track->Phi());
+        }
 
-    Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+        Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
 
     // definition of the topological regions
-    if(TMath::Abs(DPhi)<pi/3.0){// near side
-      hPtVsUERecTest[0]->Fill(multTSrec,track->Pt());
-      hPtVsNchRecTest[0]->Fill(multrec,track->Pt());
+        if(TMath::Abs(DPhi)<pi/3.0){// near side
+            hPtVsUERecTest[0]->Fill(multTSrec,track->Pt());
+            hPtVsNchRecTest[0]->Fill(multrec,track->Pt());
+        }
+        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+            hPtVsUERecTest[1]->Fill(multTSrec,track->Pt());
+            hPtVsNchRecTest[1]->Fill(multrec,track->Pt());
+        }
+        else{// transverse side
+            hPtVsUERecTest[2]->Fill(multTSrec,track->Pt());
+            hPtVsNchRecTest[2]->Fill(multrec,track->Pt());
+        }
+    
+        hDphiVsUERecTest->Fill(multTSrec,DPhi);
+        hDphiVsNchRecTest->Fill(multrec,DPhi);
+        delete track;
     }
-    else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-      hPtVsUERecTest[1]->Fill(multTSrec,track->Pt());
-      hPtVsNchRecTest[1]->Fill(multrec,track->Pt());
-    }
-    else{// transverse side
-      hPtVsUERecTest[2]->Fill(multTSrec,track->Pt());
-      hPtVsNchRecTest[2]->Fill(multrec,track->Pt());
-    }
-
-    hDphiVsUERecTest->Fill(multTSrec,DPhi);
-    hDphiVsNchRecTest->Fill(multrec,DPhi);
-    delete track;
+    
   }
 
   for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
@@ -1514,51 +1775,81 @@ void AliAnalysisTaskMcKno::GetMultiplicityDistributions(){
     if(esdtrack->Charge() == 0 ) continue;
     if(TMath::Abs(esdtrack->Eta()) > fEtaCut)continue;
     if( esdtrack->Pt() < fPtMin) continue;
-      
-    AliESDtrack* track = 0x0;
-    if(!fSelectHybridTracks){
+    if(fSet2015TrkCuts){ if(!fTrackFilterwoDCA->IsSelected(esdtrack))continue;
+          
+        Int_t mcLabel = TMath::Abs(esdtrack->GetLabel());
+        TParticle *mcParticle = fMC->GetTrack(mcLabel)->Particle();
+
+        if(!mcParticle){
+            printf("----ERROR: mcParticle not available------------------\n");
+            continue;
+        }
+
+        esdtrack->GetImpactParameters(fdcaxy,fdcaz);
+
+        hptvsdcaAll->Fill(esdtrack->Pt(),fdcaxy);
+        hptvsdcacentralAll->Fill(esdtrack->Pt(),fdcaxy);
+
+        if (!(fMC->IsPhysicalPrimary(mcLabel))){
+            if (fMC->IsSecondaryFromWeakDecay(mcLabel)){
+                hptvsdcaDecs->Fill(esdtrack->Pt(),fdcaxy);
+                hptvsdcacentralDecs->Fill(esdtrack->Pt(),fdcaxy);
+            }
+
+            if (fMC->IsSecondaryFromMaterial(mcLabel)){
+                hptvsdcaMatl->Fill(esdtrack->Pt(),fdcaxy);
+                hptvsdcacentralMatl->Fill(esdtrack->Pt(),fdcaxy);
+            }
+
+            continue;
+        }
+                  
+        hptvsdcaPrim->Fill(esdtrack->Pt(),fdcaxy);
+        hptvsdcacentralPrim->Fill(esdtrack->Pt(),fdcaxy);
+    }
+    
+    if(fSelectHybridTracks){
+        AliESDtrack* track = 0x0;
+        if(!fSelectHybridTracks){
         if(!fTrackFilter->IsSelected(esdtrack)) { continue; }
         else{ track = esdtrack; }
-    }else{
-        track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
-        if(!track) { continue; }
-        hPhiTotal->Fill(track->Phi());
-    }
+        }else{
+            track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+            if(!track) { continue; }
+            hPhiTotal->Fill(track->Phi());
+        }
 
-    Int_t mcLabel = TMath::Abs(track->GetLabel());
-    TParticle *mcParticle = fMC->GetTrack(mcLabel)->Particle();
+        Int_t mcLabel = TMath::Abs(track->GetLabel());
+        TParticle *mcParticle = fMC->GetTrack(mcLabel)->Particle();
 
-    if(!mcParticle) 
-          {
-            printf("----ERROR: mcParticle not available------------------\n"); 
-	    continue;
-          }
+        if(!mcParticle){
+                printf("----ERROR: mcParticle not available------------------\n");
+                continue;
+        }
 
-    track->GetImpactParameters(fdcaxy,fdcaz);
+        track->GetImpactParameters(fdcaxy,fdcaz);
 
-    hptvsdcaAll->Fill(track->Pt(),fdcaxy);
-    hptvsdcacentralAll->Fill(track->Pt(),fdcaxy);
+        hptvsdcaAll->Fill(track->Pt(),fdcaxy);
+        hptvsdcacentralAll->Fill(track->Pt(),fdcaxy);
 
-    if (!(fMC->IsPhysicalPrimary(mcLabel))) 
-	  {          
-            if (fMC->IsSecondaryFromWeakDecay(mcLabel))
-            {
-	      hptvsdcaDecs->Fill(track->Pt(),fdcaxy);
-	      hptvsdcacentralDecs->Fill(track->Pt(),fdcaxy);
-	    }
+        if (!(fMC->IsPhysicalPrimary(mcLabel))){
+            if (fMC->IsSecondaryFromWeakDecay(mcLabel)){
+                hptvsdcaDecs->Fill(track->Pt(),fdcaxy);
+                hptvsdcacentralDecs->Fill(track->Pt(),fdcaxy);
+            }
 
-	    if (fMC->IsSecondaryFromMaterial(mcLabel))
-	    {
+	    if (fMC->IsSecondaryFromMaterial(mcLabel)){
 	      hptvsdcaMatl->Fill(track->Pt(),fdcaxy);		
 	      hptvsdcacentralMatl->Fill(track->Pt(),fdcaxy);
 	    }
 
 	    continue;			  
-	  }
+	    }
 			
-      hptvsdcaPrim->Fill(track->Pt(),fdcaxy);
-	  hptvsdcacentralPrim->Fill(track->Pt(),fdcaxy);
-      delete track;
+        hptvsdcaPrim->Fill(track->Pt(),fdcaxy);
+        hptvsdcacentralPrim->Fill(track->Pt(),fdcaxy);
+        delete track;
+    }
   }
 
 }
@@ -1640,15 +1931,34 @@ void AliAnalysisTaskMcKno::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
         esdTrackCuts->SetRequireTPCRefit(kTRUE);
         esdTrackCuts->SetRequireITSRefit(kTRUE);
         esdTrackCuts->SetEtaRange(-0.8,0.8);
-        esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-                         AliESDtrackCuts::kAny);
+        esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
     }
     else{
-        esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-        esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+        if(fSet2015TrkCuts){
+        fTrackFilter = new AliAnalysisFilter("trackFilter2015");
+        AliESDtrackCuts * esdTrackCuts = new AliESDtrackCuts();
+        esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);//
+        esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);//
+        esdTrackCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);//
+        esdTrackCuts->SetMaxChi2PerClusterTPC(4);//
+        esdTrackCuts->SetAcceptKinkDaughters(kFALSE);//
+        esdTrackCuts->SetRequireTPCRefit(kTRUE);//
+        esdTrackCuts->SetRequireITSRefit(kTRUE);//
+        esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);//
+        esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//
+        esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);//
+        esdTrackCuts->SetMaxDCAToVertexZ(2);//
+        esdTrackCuts->SetDCAToVertex2D(kFALSE);//
+        esdTrackCuts->SetRequireSigmaToVertex(kFALSE);//
+        esdTrackCuts->SetMaxChi2PerClusterITS(36);//
         esdTrackCuts->SetEtaRange(-0.8,0.8);
+        }
+        else{
+            esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+            esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+            esdTrackCuts->SetEtaRange(-0.8,0.8);
+        }
     }
-
     fTrackFilter->AddCuts(esdTrackCuts);
 }
 //________________________________________________________________________
