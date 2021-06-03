@@ -149,8 +149,8 @@
            const char *ntracks,
            const char *nclusters,
            const char *ncells,
-           const char *suffix,             
-           Bool_t      isMCprod )
+           Bool_t      isMCprod,             
+           const char *suffix )
 {
     // Get the pointer to the existing analysis manager via the static access method.
     //==============================================================================
