@@ -58,7 +58,7 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart():
     fUseNeutralConstituents(true),
     fUseStandardOutlierRejection(false),
     fCutHardPartonPt(false),
-    fFillHistosWeighted(false),
+    fFillHistosWeighted(EWeightType_t::kNoWeightType),
     fOutlierMode(kOutlierPtHard),
     fPtHardParton(0.),
     fPdgHardParton(INT_MIN),
@@ -80,7 +80,7 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart(con
     fUseNeutralConstituents(true),
     fUseStandardOutlierRejection(false),
     fCutHardPartonPt(false),
-    fFillHistosWeighted(false),
+    fFillHistosWeighted(EWeightType_t::kNoWeightType),
     fOutlierMode(kOutlierPtHard),
     fPtHardParton(0.),
     fPdgHardParton(INT_MIN),
@@ -302,11 +302,16 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
     auto particles = jets->GetParticleContainer();
 
     double weight = 1.;
-    if(fFillHistosWeighted) {
+    if(fFillHistosWeighted != EWeightType_t::kNoWeightType) {
         // Get cross section weight from supported generator event header
-        auto crossSectionWeight = GetCrossSectionFromHeader();
-        if(crossSectionWeight > 0) {
-          weight *= crossSectionWeight;
+        double mcweight = 1.; 
+        switch(fFillHistosWeighted) {
+        case EWeightType_t::kCrossSectionWeightType: mcweight = GetCrossSectionFromHeader(); break;
+        case EWeightType_t::kEventWeightType: mcweight = GetEventWeightFromHeader(); break;
+        case EWeightType_t::kNoWeightType: break;
+        };
+        if(mcweight > 0) {
+          weight *= mcweight;
         }
     }
 
