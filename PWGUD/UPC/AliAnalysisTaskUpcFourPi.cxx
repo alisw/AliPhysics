@@ -714,7 +714,7 @@ void AliAnalysisTaskUpcFourPi::UserCreateOutputObjects() //use the names defined
 	fAllPtVsMinvEtaC = new TH2D("Pt V Minv EtaC Candidates", "Transverse Momentum V. Invariant Mass, all #eta_{C} candidates", 1200, 0., 6., 500, 0., 5.);
 	fListHist->Add(fAllPtVsMinvEtaC);
 
-	fAllPtFourPions = new TH1D("Transverse Momentum of Parent Candidates", "Transverse Momentum, Parent Candidates", 300, 0., 6.);
+	fAllPtFourPions = new TH1D("Transverse Momentum of Parent Candidates", "Transverse Momentum, Parent Candidates", 500, 0., 5.);
 	fListHist->Add(fAllPtFourPions);
 
 	fAllPionPt = new TH1D("Transverse Momentum of pions", "Transverse Momentum, pion candidates", 200, 0., 2.);
