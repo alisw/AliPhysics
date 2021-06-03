@@ -903,7 +903,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
           for (UInt_t iTruthConst = 0; iTruthConst < nTruthConstituents; iTruthConst++ )
           {
             AliMCParticle* TruthParticle = (AliMCParticle*) TruthJet->Track(iTruthConst);
-            jetChargeParticle += TruthParticle->Charge()*pow(TruthParticle->Pt(),JetChargeK);
+            jetChargeParticle += TruthParticle->Charge()/3*pow(TruthParticle->Pt(),JetChargeK);
           }
 
 
