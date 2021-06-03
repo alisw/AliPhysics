@@ -315,6 +315,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   void SetMaxCentrality(Float_t t) { fCentMax = t; }
   void SetDerivativeSubtractionOrder(Int_t c) { fDerivSubtrOrder = c; }
   void SetDetLevelJetsOn(Bool_t t) { fStoreDetLevelJets = t; }
+  void SetStoreEventPlane(Bool_t t) { fStoreEventPlane = t; }
   void SetStoreRecursiveJetSplittings(bool t = true) { fStoreRecursiveSplittings = t; }
 
   // Initialize the task
@@ -406,6 +407,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   Int_t fDerivSubtrOrder;    ///<  Order of the derivative subtraction.
   Bool_t fStoreDetLevelJets; ///<  If True, store the detector level jet quantities
   bool fStoreRecursiveSplittings; ///<  If true, recursive splittings will be stored.
+  bool fStoreEventPlane;     ///<  If true, store the event plane angle
 
   // Tree variables
   SubstructureTree::JetSubstructureSplittings fDataJetSplittings;       ///<  Data jet splittings.
@@ -421,7 +423,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
 
  private:
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetDynamicalGrooming, 3)  // Jet dynamical grooming
+  ClassDef(AliAnalysisTaskJetDynamicalGrooming, 4)  // Jet dynamical grooming
   /// \endcond
 };
 
