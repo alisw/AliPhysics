@@ -136,7 +136,6 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
     TList**                 fESDList;                                           // Array of lists with histograms with reconstructed properties
     TList**                 fTrueList;                                          // Array of lists with histograms with MC validated reconstructed properties
     TList**                 fMCList;                                            // Array of lists with histograms with pure MC information
-    TList**                 fTrueTreeList;                                      // Array of lists with tress with MC information for machine learning
 
     TList**                 fHeaderNameList;                                    // Array of lists with header names for MC header selection
     TList*                  fOutputContainer;                                   // Output container
@@ -211,10 +210,10 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
     // MC validated cluster histos
     TH2F**                  fHistoTrueClusEFracFirstLabel;                      //!
     TH2F**                  fHistoTrueClusEFracLeadingPi0;                      //!
-    TH2F**                  fHistoTrueClusNeutralContamination;                      //!
-    TH2F**                  fHistoTrueClusPhotonContamination;                      //!
-    TH2F**                  fHistoTrueClusElectronContamination;                      //!
-    TH2F**                  fHistoTrueClusOtherContamination;                      //!
+    TH2F**                  fHistoTrueClusNeutralContamination;                 //!
+    TH2F**                  fHistoTrueClusPhotonContamination;                  //!
+    TH2F**                  fHistoTrueClusElectronContamination;                //!
+    TH2F**                  fHistoTrueClusOtherContamination;                   //!
     TH2F**                  fHistoTrueClusMergedPtvsM02;                        //!
     TH2F**                  fHistoTrueClusPi0PtvsM02;                           //!
     TH2F**                  fHistoTrueClusMultiplePi0PtvsM02;                   //!
@@ -324,23 +323,21 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
 
 
    // Trees for Machine learning
+    TTree**                 tTrueMergedCaloClusterPi0;                          //! array of trees with MC information of merged clusters from pi0
+    TTree**                 tTrueMergedCaloClusterEta;			   //! array of trees with MC information of merged clusters from eta
+    TTree**                 tTrueMergedCaloClusterBck;                          //! array of tress with MC information of merged clusters from background
 
-    TTree**                 tTrueMergedCaloClusterPi0;                          //! Trees with MC information of merged clusters from pi0
-    TTree**                 tTrueMergedCaloClusterEta;
-    TTree**                 tTrueMergedCaloClusterBck;                          //! Tress with MC information of merged cluster from background
-
-  //Float_t**               fMergedClusterTreeCluster;
-    Float_t                 fMergedClusterTreeCluster[50][50];
-    Int_t                   fMergedClusterTreeClusterType;
-    Float_t                 fMergedClusterTreeEnergy;
-    Float_t                 fMergedClusterTreePt;
-    Int_t                   fMergedClusterTreeModNum;
-    Int_t                   fMergedClusterTreeXPos;
-    Int_t                   fMergedClusterTreeYPos;
-    Int_t                   fMergedClusterTreeIsPrimary;
-    Int_t                   fMergedClusterTreePID;
-    Float_t                 fMergedClusterTreeEta;
-    Float_t                 fMergedClusterTreePhi;  
+    Float_t                 fMergedClusterTreeCluster[50][50];		   //! energy of cluster
+    Int_t                   fMergedClusterTreeClusterType;			   //! cluster classification
+    Float_t                 fMergedClusterTreeEnergy;			   //! cluster energy
+    Float_t                 fMergedClusterTreePt; 				   //! cluster pt
+    Int_t                   fMergedClusterTreeModNum;			   //! cluster supermodule number
+    Int_t                   fMergedClusterTreeXPos;				   //! coloumn of leading cell
+    Int_t                   fMergedClusterTreeYPos;				   //! row of leading cell
+    Int_t                   fMergedClusterTreeIsPrimary;			   //! is mother particle primary
+    Int_t                   fMergedClusterTreePID;	 			   //! mother particle PID
+    Float_t                 fMergedClusterTreeEta;				   //! mother particle eta
+    Float_t                 fMergedClusterTreePhi;  				   //! mother particle phi
 
 
 

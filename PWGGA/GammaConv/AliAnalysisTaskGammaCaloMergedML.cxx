@@ -76,7 +76,6 @@ AliAnalysisTaskGammaCaloMergedML::AliAnalysisTaskGammaCaloMergedML(): AliAnalysi
   fESDList(NULL),
   fTrueList(NULL),
   fMCList(NULL),
-  fTrueTreeList(NULL),
   tTrueMergedCaloClusterPi0(NULL),
   tTrueMergedCaloClusterEta(NULL),
   tTrueMergedCaloClusterBck(NULL),
@@ -298,7 +297,6 @@ AliAnalysisTaskGammaCaloMergedML::AliAnalysisTaskGammaCaloMergedML(const char *n
   fESDList(NULL),
   fTrueList(NULL),
   fMCList(NULL),
-  fTrueTreeList(NULL),
   tTrueMergedCaloClusterPi0(NULL),
   tTrueMergedCaloClusterEta(NULL),
   tTrueMergedCaloClusterBck(NULL),
@@ -922,7 +920,6 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
   if (fIsMC > 0){
     fMCList = new TList*[fnCuts];
     fTrueList = new TList*[fnCuts];
-    fTrueTreeList = new TList*[fnCuts];
     tTrueMergedCaloClusterPi0                 = new TTree*[fnCuts];
     tTrueMergedCaloClusterEta                 = new TTree*[fnCuts];
     tTrueMergedCaloClusterBck                 = new TTree*[fnCuts];
@@ -1527,12 +1524,6 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
       }
 
       //Adds Trees that hold information for machine learning
-      //fTrueTreeList[iCut] = new TList();
-      //fTrueTreeList[iCut] = new TList();
-      //fTrueTreeList[iCut]->SetName(Form("%s_%s_%s_%s TrueMergedCluster Tree", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
-      //fTrueTreeList[iCut]->SetOwner(kTRUE);
-      //fCutFolder[iCut]->Add(fTrueTreeList[iCut]);
-
       tTrueMergedCaloClusterPi0[iCut] = new TTree(Form("%s_%s_%s_%s_Pio", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()), Form("%s_%s_%s_%s_Pi0", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
       tTrueMergedCaloClusterPi0[iCut]->Branch("Cluster",       fMergedClusterTreeCluster, "Cluster[50][50]/F");
       tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterType",  &fMergedClusterTreeClusterType,"ClusterType/I");
@@ -1545,8 +1536,6 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
       tTrueMergedCaloClusterPi0[iCut]->Branch("PID",          &fMergedClusterTreePID, "PID/I");
       tTrueMergedCaloClusterPi0[iCut]->Branch("Eta",          &fMergedClusterTreeEta, "Eta/F");
       tTrueMergedCaloClusterPi0[iCut]->Branch("Phi",          &fMergedClusterTreePhi, "Phi/F");
-      //fOutputContainer->Add(tTrueMergedCaloClusterPi0[iCut]);
-      //fTrueTreeList[iCut]->Add(tTrueMergedCaloClusterPi0[iCut]);
 
 
       tTrueMergedCaloClusterEta[iCut] = new TTree(Form("%s_%s_%s_%s_Eta", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()), Form("%s_%s_%s_%s_Eta", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
@@ -1561,7 +1550,7 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
       tTrueMergedCaloClusterEta[iCut]->Branch("PID",          &fMergedClusterTreePID, "PID/I");
       tTrueMergedCaloClusterEta[iCut]->Branch("Eta",          &fMergedClusterTreeEta, "Eta/F");
       tTrueMergedCaloClusterEta[iCut]->Branch("Phi",          &fMergedClusterTreePhi, "Phi/F");
-      //fOutputContainer->Add(tTrueMergedCaloClusterEta[iCut]);
+
       
 
 
@@ -1574,11 +1563,8 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
       tTrueMergedCaloClusterBck[iCut]->Branch("X",            &fMergedClusterTreeXPos, "X/I");
       tTrueMergedCaloClusterBck[iCut]->Branch("Y",            &fMergedClusterTreeYPos, "Y/I");
       tTrueMergedCaloClusterBck[iCut]->Branch("PID",          &fMergedClusterTreePID, "PID/I");
-      //fOutputContainer->Add(tTrueMergedCaloClusterBck[iCut]);
-      //fTrueTreeList[iCut]->Add(tTrueMergedCaloClusterBck[iCut]);
-      
-
-      
+ 
+            
     }
 }
 
@@ -1634,15 +1620,6 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
   OpenFile(1);
   PostData(1, fOutputContainer);
 
-  
-
-  //for(Int_t iCut = 0; iCut<fnCuts;iCut++){
-
-    // PostData(2, tTrueMergedCaloClusterPi0[iCut]);
-    //PostData(3, tTrueMergedCaloClusterBck[iCut]);
-  
-
-    //}
 
   Int_t nContainerOutput = 2;
   for(Int_t iCut=0; iCut<fnCuts; iCut++){
@@ -4018,12 +3995,6 @@ void AliAnalysisTaskGammaCaloMergedML::GetClusterReadout(AliVCluster* cluster, A
     nSupMod = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetModuleNumberAndCellPosition(cluster->GetCellsAbsId()[iCell], icol, irow);
 
     cellarray[ irow - irowmin + hbuffer ][ icol - icolmin + vbuffer ] = cells->GetCellAmplitude(cluster->GetCellsAbsId()[iCell]);
-    
-    //std::cout << "CellID    " << cluster->GetCellsAbsId()[iCell] << endl;
-    //std::cout << "CellAmp   " << cells->GetCellAmplitude(cluster->GetCellsAbsId()[iCell]) << endl;
-    //std::cout << "row   " << irow - irowmin + hbuffer << endl;
-    //std::cout << "col   " << icol - icolmin + vbuffer << endl;
-
 
   }
   //for(Int_t i=0; i<50; i++){

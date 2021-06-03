@@ -2029,14 +2029,6 @@ void AddTask_GammaCaloMergedML_pp(
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput);
 
-  //AliAnalysisDataContainer *coutpi0 =
-    //mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCaloMergedML_Pi0_Tree_%i",trainConfig) : Form("GammaCaloMergedML_Pi0_Tree_%i_%s",trainConfig,corrTaskSetting.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaCaloMergedML_Pi0_Tree_%i.root",trainConfig) );
-  //mgr->ConnectOutput(task, 2, coutpi0);
-
-  //AliAnalysisDataContainer *coutbck =
-    //mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCaloMergedML_Bck_Tree_%i",trainConfig) : Form("GammaCaloMergedML_Bck_Tree_%i_%s",trainConfig,corrTaskSetting.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaCaloMergedML_Bck_Tree_%i.root",trainConfig) );
-  //  mgr->ConnectOutput(task, 3, coutbck);
-
 
   Int_t nContainer = 2;
   for(Int_t i = 0; i<numberOfCuts; i++){
