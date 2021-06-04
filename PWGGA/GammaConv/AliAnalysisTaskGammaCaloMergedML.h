@@ -338,6 +338,8 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
     Int_t                   fMergedClusterTreePID;	 			   //! mother particle PID
     Float_t                 fMergedClusterTreeEta;				   //! mother particle eta
     Float_t                 fMergedClusterTreePhi;  				   //! mother particle phi
+    Float_t                 fMergedClusterTreeM02;                                 //! cluster m02
+    Float_t                 fMergedClusterTreeM20;                                 //! cluster m20
 
 
 
