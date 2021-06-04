@@ -290,6 +290,21 @@ public:
    */
   static int GetChannelForMaskRun2(int mask, int bitnumber);
 
+  /**
+   * @brief Draw L0 trigger mask from DCS config in cvmfs OCDB
+   * @param runnumber Run number for which to draw trigger mapping
+   * 
+   * Creating plot with the mask channels at L0 in eta-phi space.
+   * For easier reading, a frame is highlighting supermodules,
+   * TRUs and FastORs. In case a canvas exists, this canvas is used
+   * for plotting, otherwise a new canvas is created. 
+   * 
+   * Attention: Access to the OCDB on cvmfs is requested. The run
+   * number must be a valid physics run. Stand-alone runs or 
+   * technical runs are not guaranteed.
+   */
+  void drawL0MaskFromCVMFS(int runnumber);
+
 private:
   /**
    * @brief Dummy constructor
@@ -344,12 +359,13 @@ private:
    * @brief Creating histogram template for FastOR masks monitoring histograms
    * @param name   Name of the histogram
    * @param title  Title of the histogram
+   * @param run2   Flag whether the run number is from run1 or run2
    * @return       Histogram template
    * 
    * Helper function initializing histogram template for the monitoring histograms
    * used in the fuctions MonitorMaskedFastORsL0 and MonitorMaskedFastORsL1
    */
-  TH2 *PrepareHistogram(const char *name, const char *title);
+  TH2 *PrepareHistogram(const char *name, const char *title, bool run2);
 
   /**
    * @brief Fill monitoring histogram with masked FastOR channels
@@ -362,6 +378,27 @@ private:
    */
   void FillMaskedFastors(TH2 *outputhist, const std::vector<AliEmcalTriggerMaskHandlerOCDB::FastORPosition> &fastors) const;
 
+  /**
+   * @brief Draw frame for run1 geometry
+   * 
+   * Drawing frames for supermodules, TRUs and FastORs using the run1 geometry.
+   * Setup consisting of full EMCAL, TRUs are aligned in phi direction. Small 
+   * lines indicate FastORs within TRU, intermediate size lines mark TRUs within 
+   * supermodules and big lines supermodules.
+   */
+  void drawRun1Frame();
+
+  /**
+   * @brief Draw frame for run2 geometry
+   * 
+   * Drawing frames for supermodules, TRUs and FastORs using the run1 geometry.
+   * Setup consisting of full EMCAL and DCAL, TRUs are aligned in eta direction 
+   * except for the samll supermodules. Small lines indicate FastORs within TRU, 
+   * intermediate size lines mark TRUs within supermodules and big lines supermodules.
+   */
+  void drawRun2Frame();
+
+
   Int_t fCurrentRunnumber;                  //!<! Current run number of cache
   AliEMCALTriggerDCSConfig *fCurrentConfig; //!<! Cache object
 
@@ -369,6 +406,8 @@ private:
 
   ClassDef(AliEmcalTriggerMaskHandlerOCDB, 1);
 };
+
+;
 
 }
 
