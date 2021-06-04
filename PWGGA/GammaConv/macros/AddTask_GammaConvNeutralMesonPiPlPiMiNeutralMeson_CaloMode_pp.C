@@ -1079,6 +1079,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32230000","32c51070a","0103103100000000","0453503000000000"); // INT7
   } else if(trainConfig == 906)  { //EDC 13TeV MB, M02: 1 (1.0) -> 411792109fe32210000
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32210000","32c51070a","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 907)  { //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through ) -> 411792109fe3v220000
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe3v220000","32c51070a","0103103100000000","0453503000000000"); // INT7
     //-----
     //Meson Cut Variations
     //-----
