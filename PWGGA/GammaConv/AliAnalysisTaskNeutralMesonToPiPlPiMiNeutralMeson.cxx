@@ -110,6 +110,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fPDGMassChargedPion(-1),
   fPDGCodeNDM(-1),
   fPDGCodeAnalyzedMeson(-1),
+  fEnablePi0Efficiency(kFALSE),
+  fEnablePi0InputSpectrum(kFALSE),
   fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt(kFALSE),
   fEnableAsymmetryPlotCombCPionVsNPion(kFALSE),
   fEnableAsymmetryPlot_NotAccepted(kFALSE),
@@ -419,6 +421,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fPDGMassChargedPion(-1),
   fPDGCodeNDM(-1),
   fPDGCodeAnalyzedMeson(-1),
+  fEnablePi0Efficiency(kFALSE),
+  fEnablePi0InputSpectrum(kFALSE),
   fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt(kFALSE),
   fEnableAsymmetryPlotCombCPionVsNPion(kFALSE),
   fEnableAsymmetryPlot_NotAccepted(kFALSE),
@@ -1620,6 +1624,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   }
 
   if( fIsMC ){
+    if(!fDoLightOutput){
+      fEnablePi0Efficiency      = kTRUE;
+    }
+    if(fEnablePi0Efficiency){
+      fEnablePi0InputSpectrum   = kTRUE;
+    }
     // MC Histogramms
     fMCList                                 = new TList*[fnCuts];
     // True Histogramms
@@ -1702,6 +1712,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     }
     fHistoMCHNMPiPlPiMiNDMPt                     = new TH1F*[fnCuts];
     fHistoMCHNMPiPlPiMiNDMInAccPt                = new TH1F*[fnCuts];
+    if (fEnablePi0InputSpectrum){
+      fHistoMCPi0FromHNMInputPt                  = new TH1F*[fnCuts];
+      fHistoMCPi0FromHNMInputInAccPt             = new TH1F*[fnCuts];
+    }
     if(!fDoLightOutput){
       fHistoMCHNMInAccVsNDMPt                      = new TH2F*[fnCuts];
       fHistoMCHNMPiPlPiMiNDMEta                    = new TH1F*[fnCuts];
@@ -2144,6 +2158,20 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoMCHNMPiPlPiMiNDMInAccPt[iCut]->GetYaxis()->SetTitle("A #times N_{HNM}");
       fHistoMCHNMPiPlPiMiNDMInAccPt[iCut]->Sumw2();
       fMCList[iCut]->Add(fHistoMCHNMPiPlPiMiNDMInAccPt[iCut]);
+
+      if (fEnablePi0InputSpectrum) {
+        fHistoMCPi0FromHNMInputPt[iCut]         = new TH1F("MC_Pi0FromHNM_Pt","MC_Pi0FromHNM_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+        fHistoMCPi0FromHNMInputPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoMCPi0FromHNMInputPt[iCut]->GetYaxis()->SetTitle("N_{Pi0 From HNM}");
+        fHistoMCPi0FromHNMInputPt[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCPi0FromHNMInputPt[iCut]);
+
+        fHistoMCPi0FromHNMInputInAccPt[iCut]    = new TH1F("MC_Pi0FromHNMInAcc_Pt","MC_Pi0FromHNMInAcc_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+        fHistoMCPi0FromHNMInputInAccPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoMCPi0FromHNMInputInAccPt[iCut]->GetYaxis()->SetTitle("A #times N_{Pi0 From HNM}");
+        fHistoMCPi0FromHNMInputInAccPt[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCPi0FromHNMInputInAccPt[iCut]);
+      }
 
       if(!fDoLightOutput){
 
@@ -5458,6 +5486,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
         }
         if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
           fHistoMCHNMPiPlPiMiNDMPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight); 	// All MC eta, omega OR eta prime in respective decay channel
+          if(fEnablePi0InputSpectrum){
+            for(int idaug = particle->GetFirstDaughter(); idaug <= particle->GetLastDaughter(); idaug++) {
+              AliVParticle *daughter = fMCEvent->GetTrack(idaug);
+              if(TMath::Abs(daughter->PdgCode()) == fPDGCodeNDM){
+                fHistoMCPi0FromHNMInputPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight);
+              }
+            }
+          }
           if(!fDoLightOutput){
             fHistoMCHNMPiPlPiMiNDMEta[fiCut]->Fill(particle->Eta(),weighted* tempParticleWeight);
             fHistoMCHNMPiPlPiMiNDMPhi[fiCut]->Fill(particle->Phi(),weighted* tempParticleWeight);
@@ -5485,6 +5521,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
               ) {
                 if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
                   fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight ); 		// MC Eta, omega or eta prime with pi+ pi- pi0 with gamma's and e+e- in acc
+                  if(fEnablePi0InputSpectrum){
+                    for(int idaug = particle->GetFirstDaughter(); idaug <= particle->GetLastDaughter(); idaug++) {
+                      AliVParticle *daughter = fMCEvent->GetTrack(idaug);
+                      if(TMath::Abs(daughter->PdgCode()) == fPDGCodeNDM){
+                        fHistoMCPi0FromHNMInputInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight );
+                      }
+                    }
+                  }
 
                   // check relation between HNM pt and NDM, while respecting pT cutoff for NDM
                   if(!fDoLightOutput){
@@ -5507,6 +5551,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                    ){
                       if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
                         fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight  ); 		// MC Eta, omega or eta prime with pi+ pi- pi0 with gamma's and e+e- in acc
+                        if(fEnablePi0InputSpectrum){
+                          for(int idaug = particle->GetFirstDaughter(); idaug <= particle->GetLastDaughter(); idaug++) {
+                            AliVParticle *daughter = fMCEvent->GetTrack(idaug);
+                            if(TMath::Abs(daughter->PdgCode()) == fPDGCodeNDM){
+                              fHistoMCPi0FromHNMInputInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight );
+                            }
+                          }
+                        }
 
                         // check relation between HNM pt and NDM, while respecting pT cutoff for NDM
                         if(!fDoLightOutput){
@@ -5524,6 +5576,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
               ) {
                 if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
                   fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight  ); 		// MC Eta pi+ pi- pi0 with gamma's and e+e- in acc
+                  if(fEnablePi0InputSpectrum){
+                    for(int idaug = particle->GetFirstDaughter(); idaug <= particle->GetLastDaughter(); idaug++) {
+                      AliVParticle *daughter = fMCEvent->GetTrack(idaug);
+                      if(TMath::Abs(daughter->PdgCode()) == fPDGCodeNDM){
+                        fHistoMCPi0FromHNMInputInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight );
+                      }
+                    }
+                  }
 
                   // check relation between HNM pt and NDM, while respecting pT cutoff for NDM
                   if(!fDoLightOutput){
@@ -5774,7 +5834,17 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
               }
             }
           }
-          if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson)fHistoMCHNMPiPlPiMiNDMPt[fiCut]->Fill(particle->Pt(), tempParticleWeight); 	// All MC eta, omega OR eta prime in respective decay channel
+          if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
+            fHistoMCHNMPiPlPiMiNDMPt[fiCut]->Fill(particle->Pt(), tempParticleWeight); 	// All MC eta, omega OR eta prime in respective decay channel
+            if(fEnablePi0InputSpectrum){
+              for(int idaug = particle->GetDaughterFirst(); idaug <= particle->GetDaughterLast(); idaug++) {
+                AliAODMCParticle *daughter = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(idaug));
+                if(TMath::Abs(daughter->PdgCode()) == fPDGCodeNDM){
+                  fHistoMCPi0FromHNMInputPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+                }
+              }
+            }
+          }
           if(!fDoLightOutput){
             fHistoMCHNMPiPlPiMiNDMEta[fiCut]->Fill(particle->Eta(),tempParticleWeight);
             fHistoMCHNMPiPlPiMiNDMPhi[fiCut]->Fill(particle->Phi(),tempParticleWeight);
@@ -5803,6 +5873,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                     ) {
                   if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson) {
                     fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), tempParticleWeight ); 		// MC Eta, omega or eta prime with pi+ pi- pi0 with gamma's and e+e- in acc
+                    if(fEnablePi0InputSpectrum){
+                      for(int idaug = particle->GetDaughterFirst(); idaug <= particle->GetDaughterLast(); idaug++) {
+                        AliAODMCParticle *daughter = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(idaug));
+                        if(TMath::Abs(daughter->PdgCode()) == fPDGCodeNDM){
+                          fHistoMCPi0FromHNMInputInAccPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+                        }
+                      }
+                    }
 
                     // check relation between HNM pt and NDM, while respecting pT cutoff for NDM
                     if(!fDoLightOutput){
@@ -5823,6 +5901,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                       ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(gamma2,AODMCTrackArray) ){
                     if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
                       fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight ); 		// MC Eta, omega or eta prime with pi+ pi- pi0 with gamma's and e+e- in acc
+                      if(fEnablePi0InputSpectrum){
+                        for(int idaug = particle->GetDaughterFirst(); idaug <= particle->GetDaughterLast(); idaug++) {
+                          AliAODMCParticle *daughter = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(idaug));
+                          if(TMath::Abs(daughter->PdgCode()) == fPDGCodeNDM){
+                            fHistoMCPi0FromHNMInputInAccPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+                          }
+                        }
+                      }
 
                       // check relation between HNM pt and NDM, while respecting pT cutoff for NDM
                       if(!fDoLightOutput){
@@ -5840,6 +5926,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                     ) {
                   if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
                     fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight ); 		// MC Eta pi+ pi- pi0 with gamma's and e+e- in acc
+                    if(fEnablePi0InputSpectrum){
+                      for(int idaug = particle->GetDaughterFirst(); idaug <= particle->GetDaughterLast(); idaug++) {
+                        AliAODMCParticle *daughter = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(idaug));
+                        if(TMath::Abs(daughter->PdgCode()) == fPDGCodeNDM){
+                          fHistoMCPi0FromHNMInputInAccPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
+                        }
+                      }
+                    }
 
                     // check relation between HNM pt and NDM, while respecting pT cutoff for NDM
                     if(!fDoLightOutput){

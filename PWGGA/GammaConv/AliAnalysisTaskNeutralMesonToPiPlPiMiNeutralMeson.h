@@ -201,6 +201,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Float_t                           fPDGMassChargedPion;                                ///< PDG mass of either pi0 or eta
     Int_t                             fPDGCodeNDM;                                        ///< PDG code of either pi0 or eta
     Int_t                             fPDGCodeAnalyzedMeson;                              ///< PDG code of the analyzed heavy netural meson
+    Bool_t                            fEnablePi0Efficiency;                               ///< Turn On or Off if Histograms are created and used
+    Bool_t                            fEnablePi0InputSpectrum;                            ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt;    ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableAsymmetryPlotCombCPionVsNPion;               ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableAsymmetryPlot_NotAccepted;                   ///< Turn On or Off if Histograms are created and used
@@ -317,6 +319,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoMCHNMPiPlPiMiNDMEtavsPt;                      //!<! array of histos of produced HNM eta vs Pt
     /** array of histos of produced etas via pi+pi-pi0 in the specified y range, with decay products in respective y, eta ranges */
     TH1F**                            fHistoMCHNMPiPlPiMiNDMInAccPt;                      //!<!
+    TH1F**                            fHistoMCPi0FromHNMInputPt;                          //!<! array of histos of produced Pi0 coming from
+    TH1F**                            fHistoMCPi0FromHNMInputInAccPt;                     //!<!
     TH2F**                            fHistoMCHNMInAccVsNDMPt;                            //!<!
     // MC truth properties for heavy meson (and decay products)
     TH1F**                            fHistoMCHeavyAllPt;                                 //!<! array of histos with pt of all heavy mesons
@@ -498,7 +502,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 24);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 25);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
