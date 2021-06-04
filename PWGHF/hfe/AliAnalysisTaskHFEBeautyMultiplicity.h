@@ -256,6 +256,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*		    fNtrklet_Corr;
 
 	TH2F*		    fPhot_InvMass_vs_DCA;
+	TH2F*		    fPhot_InvMass_vs_DCA_data;
     
     
     
