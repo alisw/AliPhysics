@@ -270,25 +270,27 @@ public:
    * @brief Conversion function between position in reg masks and channel ID for run1 setup
    * @param mask      Number of the mask
    * @param bitnumber Number of the bit in the mask
+   * @param onethirdsm Mark whether the supermodule is of type 1/3
    * @return          Channel ID beloging to bit number in reg mask
    * 
    * The reg mask consists of 6 separate masks each containing 16 bits,
    * resulting in 96 bits in total. In order to determin the channel ID
    * both mask number and bit number are needed
    */
-  static int GetChannelForMaskRun1(int mask, int bitnumber);
+  static int GetChannelForMaskRun1(int mask, int bitnumber, bool /*onethirdsm*/);
 
   /**
    * @brief Conversion function between position in reg masks and channel ID for run2 setup
    * @param mask      Number of the mask
    * @param bitnumber Number of the bit in the mask
+   * @param onethirdsm Mark whether the supermodule is of type 1/3
    * @return          Channel ID beloging to bit number in reg mask
    * 
    * The reg mask consists of 6 separate masks each containing 16 bits,
    * resulting in 96 bits in total. In order to determin the channel ID
    * both mask number and bit number are needed
    */
-  static int GetChannelForMaskRun2(int mask, int bitnumber);
+  static int GetChannelForMaskRun2(int mask, int bitnumber, bool onethirdsm);
 
   /**
    * @brief Draw L0 trigger mask from DCS config in cvmfs OCDB
