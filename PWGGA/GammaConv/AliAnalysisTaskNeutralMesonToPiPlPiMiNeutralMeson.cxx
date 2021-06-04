@@ -4220,16 +4220,23 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
       }
     }
 
+    Bool_t previouslyNotFoundTrueMesons = kFALSE;
+    Int_t tmpGammaMotherlabel = gamma0MotherLabel;
+    Int_t SaftyLoopCounter = 0;
+    //for now only check deeper for calo photons, as pcm already aligns well, if needed add loop over mothers here
+
     if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
 
     Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); 	// get most probable MC label
     Int_t gamma1MotherLabel = -1;
+    tmpGammaMotherlabel = -1;
     // check if
 
     if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
       // Daughters Gamma 1
       TParticle * gammaMC1 = (TParticle*)fMCEvent->Particle(gamma1MCLabel);
       if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){		// largest component is electro magnetic
+        tmpGammaMotherlabel = gammaMC1->GetMother(0);
         // get mother of interest (pi0 or eta)
         if (TrueGammaCandidate1->IsLargestComponentPhoton()){														// for photons its the direct mother
           gamma1MotherLabel=gammaMC1->GetMother(0);
@@ -4238,6 +4245,20 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
           else gamma1MotherLabel=gammaMC1->GetMother(0);
         }
       }
+    }
+
+    SaftyLoopCounter = 0;
+    while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
+        SaftyLoopCounter++;
+        if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+            tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
+        } else {
+            if (tmpGammaMotherlabel != gamma1MotherLabel) {
+                previouslyNotFoundTrueMesons = kTRUE;
+            }
+            gamma1MotherLabel = tmpGammaMotherlabel;
+            break;
+        }
     }
 
     if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
@@ -4254,7 +4275,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     }
 
     if(isTruePi0 || isTruePi0Dalitz ){
-      Pi0Candidate->SetTrueMesonValue(1);
+      if (previouslyNotFoundTrueMesons){
+        Pi0Candidate->SetTrueMesonValue(11);
+      } else {
+        Pi0Candidate->SetTrueMesonValue(1);
+      }
       Pi0Candidate->SetMCLabel(motherRealLabel);
       if(!fDoLightOutput){
         fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
@@ -4319,17 +4344,23 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
 
       }
     }
+    Bool_t previouslyNotFoundTrueMesons = kFALSE;
+    Int_t tmpGammaMotherlabel = gamma0MotherLabel;
+    Int_t SaftyLoopCounter = 0;
+    //for now only check deeper for calo photons, as pcm already aligns well, if needed add loop over mothers here
 
     if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
 
     Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); 	// get most probable MC label
     Int_t gamma1MotherLabel = -1;
+    tmpGammaMotherlabel = -1;
     // check if
 
     if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
       // Daughters Gamma 1
       AliAODMCParticle *gammaMC1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MCLabel));
       if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){		// largest component is electro magnetic
+        tmpGammaMotherlabel = gammaMC1->GetMother();
         // get mother of interest (pi0 or eta)
         if (TrueGammaCandidate1->IsLargestComponentPhoton()){														// for photons its the direct mother
           gamma1MotherLabel=gammaMC1->GetMother();
@@ -4338,6 +4369,19 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
           else gamma1MotherLabel=gammaMC1->GetMother();
         }
       }
+    }
+    SaftyLoopCounter = 0;
+    while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
+        SaftyLoopCounter++;
+        if(((AliAODMCParticle*)AODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((AliAODMCParticle*)AODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+            tmpGammaMotherlabel = ((AliAODMCParticle*)AODMCTrackArray->At(tmpGammaMotherlabel))->GetMother();
+        } else {
+            if (tmpGammaMotherlabel != gamma1MotherLabel) {
+                previouslyNotFoundTrueMesons = kTRUE;
+            }
+            gamma1MotherLabel = tmpGammaMotherlabel;
+            break;
+        }
     }
 
     if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
@@ -4354,7 +4398,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     }
 
     if(isTruePi0 || isTruePi0Dalitz ){
-      Pi0Candidate->SetTrueMesonValue(1);
+      if (previouslyNotFoundTrueMesons){
+        Pi0Candidate->SetTrueMesonValue(11);
+      } else {
+        Pi0Candidate->SetTrueMesonValue(1);
+      }
       Pi0Candidate->SetMCLabel(motherRealLabel);
       if(!fDoLightOutput){
         fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
