@@ -2111,7 +2111,7 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAO
   Int_t runNo  = fAOD->GetRunNumber();
   Int_t period = -1; 
  
-  Char_t *periodNames = NULL;
+  Char_t periodNames[100];
   
   if(fEMCEG1)
     {
@@ -2178,11 +2178,11 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(const AliAODEvent* f
   Int_t runNo  = fAOD->GetRunNumber();
   Int_t period = -1; 
    
-  Char_t *periodNames;
+  Char_t periodNames[100];
 
-  if (runNo>=256504 && runNo<=258537) periodNames = "SPDTrklMC_LHC16k";  //LHC16k
-  if (runNo>=258919 && runNo<=259888) periodNames = "SPDTrklMC_LHC16l"; //LHC16l
-  if (runNo>=259888) periodNames = "SPDTrklMC_LHC17"; //LHC17
+  if (runNo>=256504 && runNo<=258537)sprintf(periodNames, "SPDTrklMC_LHC16k");  //LHC16k
+  if (runNo>=258919 && runNo<=259888)sprintf(periodNames, "SPDTrklMC_LHC16l"); //LHC16l
+  if (runNo>=259888) sprintf(periodNames, "SPDTrklMC_LHC17"); //LHC17
     
   TFile* fEstimator = TFile::Open("alien:///alice/cern.ch/user/s/ssakai/Multiplicity_pp13/estimator.root");
   fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames))->Clone(periodNames);
