@@ -2210,7 +2210,7 @@ void AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt, Double_t *
     }
      else{ //MC
        if(pt>10.)pt=10.; //Parameterization range  
-       mpi0mean[0] = 8.61014e-01+(5.50263e-02+1.10471e-01*pt+2.12022e-01*pt*pt+2.81838e-01*pt*pt*pt+pt*pt*pt*pt)/
+       mpi0mean[0] =-8.61014e-01+(5.50263e-02+1.10471e-01*pt+2.12022e-01*pt*pt+2.81838e-01*pt*pt*pt+pt*pt*pt*pt)/
                                  (5.30372e-02+1.19715e-01*pt+2.00787e-01*pt*pt+2.88677e-01*pt*pt*pt+pt*pt*pt*pt) ;  
        mpi0mean[1]= mpi0mean[0];  
        mpi0mean[2]= -8.61467e-01+(5.46153e-02+1.12343e-01*pt+2.09392e-01*pt*pt+2.83297e-01*pt*pt*pt+pt*pt*pt*pt)/
