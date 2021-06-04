@@ -1897,7 +1897,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
 
 	if(TrkPt > 3.0){
 		if(iMC==22 || iMC==111 || iMC==221) fPhot_InvMass_vs_DCA->Fill(mass, DCAxy*charge*Bsign);
-		if(fFlagULS) fPhot_InvMass_vs_DCA_data=>Fill(mass, DCAxy*charge*Bsign);
+		if(fFlagULS) fPhot_InvMass_vs_DCA_data->Fill(mass, DCAxy*charge*Bsign);
        }
 
         if(mass <= 0.15 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; // Tag Non-HFE (photonic electron by Invariant-mass method)
