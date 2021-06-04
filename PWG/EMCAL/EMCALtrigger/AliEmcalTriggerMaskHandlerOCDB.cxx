@@ -60,18 +60,19 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetMaskedFastorIndicesL0(int ru
   UpdateCache(runnumber);
   auto geo = GetGeometry(runnumber);
 
-  std::function<int (int, int)> ChannelMaskHandler = geo->GetTriggerMappingVersion() == 2 ? GetChannelForMaskRun2 : GetChannelForMaskRun1;
+  std::function<int (int, int, bool)> ChannelMaskHandler = geo->GetTriggerMappingVersion() == 2 ? GetChannelForMaskRun2 : GetChannelForMaskRun1;
   int itru = 0;
   for(auto truconfigobj : *fCurrentConfig->GetTRUArr()) {
     auto truconfig = dynamic_cast<AliEMCALTriggerTRUDCSConfig *>(truconfigobj);
     int localtru = itru % 32, detector = itru >= 32 ? 1 : 0,
         globaltru = geo->GetTriggerMapping()->GetTRUIndexFromSTUIndex(localtru, detector);
+    bool onethirdsm = ((globaltru >= 30 && globaltru < 32) || (globaltru >= 50 && globaltru < 52)); 
     for(int ipos = 0; ipos < 6; ipos++) {
       auto regmask = truconfig->GetMaskReg(ipos);
       std::bitset<16> bitsregmask(regmask);
       for(int ibit = 0; ibit < 16; ibit++) {
         if(bitsregmask.test(ibit)) {
-          auto channel = ChannelMaskHandler(ipos, ibit);
+          auto channel = ChannelMaskHandler(ipos, ibit, onethirdsm);
           int absfastor;
           geo->GetTriggerMapping()->GetAbsFastORIndexFromTRU(globaltru, channel, absfastor);
           maskedfastors.push_back(absfastor);
@@ -184,11 +185,12 @@ TH2 *AliEmcalTriggerMaskHandlerOCDB::MonitorMaskedFastORsL1(int runnumber) {
   return outputhist;
 }
 
-int AliEmcalTriggerMaskHandlerOCDB::GetChannelForMaskRun1(int mask, int bitnumber) {
+int AliEmcalTriggerMaskHandlerOCDB::GetChannelForMaskRun1(int mask, int bitnumber, bool /*onethirdsm*/) {
   return mask * 16 + bitnumber;
 }
 
-int AliEmcalTriggerMaskHandlerOCDB::GetChannelForMaskRun2(int mask, int bitnumber) {
+int AliEmcalTriggerMaskHandlerOCDB::GetChannelForMaskRun2(int mask, int bitnumber, bool onethirdsm) {
+  if(onethirdsm) return mask * 16 + bitnumber;
   const int kChannelMap[6][16] = {{ 8, 9,10,11,20,21,22,23,32,33,34,35,44,45,46,47},   // Channels in mask0
                                   {56,57,58,59,68,69,70,71,80,81,82,83,92,93,94,95},   // Channels in mask1
                                   { 4, 5, 6, 7,16,17,18,19,28,29,30,31,40,41,42,43},   // Channels in mask2
