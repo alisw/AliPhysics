@@ -215,6 +215,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoMCHNMPiPlPiMiNDMPhi(nullptr),
   fHistoMCHNMPiPlPiMiNDMEtavsPt(nullptr),
   fHistoMCHNMPiPlPiMiNDMInAccPt(nullptr),
+  fHistoMCNDMFromHNMInputPt(nullptr),
+  fHistoMCNDMFromHNMInputInAccPt(nullptr),
   fHistoMCHNMInAccVsNDMPt(nullptr),
   fHistoMCHeavyAllPt(nullptr),
   fHistoMCHeavyAllEta(nullptr),
@@ -530,6 +532,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoMCHNMPiPlPiMiNDMPhi(nullptr),
   fHistoMCHNMPiPlPiMiNDMEtavsPt(nullptr),
   fHistoMCHNMPiPlPiMiNDMInAccPt(nullptr),
+  fHistoMCNDMFromHNMInputPt(nullptr),
+  fHistoMCNDMFromHNMInputInAccPt(nullptr),
   fHistoMCHNMInAccVsNDMPt(nullptr),
   fHistoMCHeavyAllPt(nullptr),
   fHistoMCHeavyAllEta(nullptr),
@@ -1753,6 +1757,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoTrueAngleSum                              = new TH2F*[fnCuts];
       fHistoTrueHNMesonPtvsNDMPt                      = new TH2F*[fnCuts];
     }
+    if (((!fDoLightOutput)&&(fDoMesonQA>1))||(fEnableTreeTrueNDMFromHNM)){
+      fTrueTreeList                                           = new TList*[fnCuts];
+    }
     if(!fDoLightOutput){
       if (fDoMesonQA>0){
         fHistoTruePionPionInvMassPt                               = new TH2F*[fnCuts];
@@ -1832,9 +1839,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoTruevParticleFromSameMotherdS = new TH1F*[fnCuts];
         fHistoTruevParticleFromHNMdS = new TH1F*[fnCuts];
 
-
         if (fDoMesonQA>1){
-          fTrueTreeList                                           = new TList*[fnCuts];
           fTreePiPiSameMother                                     = new TTree*[fnCuts];
           fTreePiPiPiSameMother                                   = new TTree*[fnCuts];
           fTreeEventInfoHNM                                       = new TTree*[fnCuts];
@@ -2325,6 +2330,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       if (fIsMC>1) fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]->Sumw2();
       fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]);
 
+      if(((!fDoLightOutput)&&(fDoMesonQA>1))||(fEnableTreeTrueNDMFromHNM)){
+        fTrueTreeList[iCut]                               = new TList();
+        fTrueTreeList[iCut]->SetName(nameTrueRecTTreeList.Data());
+        fTrueTreeList[iCut]->SetOwner(kTRUE);
+        fCutFolder[iCut]->Add(fTrueTreeList[iCut]);
+      }
       if(!fDoLightOutput){
         fHistoTrueMotherGammaGammaInvMassPt[iCut]           = new TH2F("ESD_TrueMotherGG_InvMass_Pt","ESD_TrueMotherGG_InvMass_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoTrueMotherGammaGammaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
@@ -2697,11 +2708,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           }
 
           if(fDoMesonQA>1){
-            fTrueTreeList[iCut]                               = new TList();
-            fTrueTreeList[iCut]->SetName(nameTrueRecTTreeList.Data());
-            fTrueTreeList[iCut]->SetOwner(kTRUE);
-            fCutFolder[iCut]->Add(fTrueTreeList[iCut]);
-
             fTreePiPiSameMother[iCut]                         = new TTree("TreePiPiSameMother","TreePiPiSameMother");
             fTreePiPiSameMother[iCut]->Branch("fCasePiPi", &fCasePiPi, "fCasePiPi/S");
             fTreePiPiSameMother[iCut]->Branch("fSamePiPiMotherID", &fSamePiPiMotherID, "fSamePiPiMotherID/F");
@@ -2728,7 +2734,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fTreeTrueNDMFromHNM[iCut]                         = new TTree("TrueNDMFromHNM","TrueNDMFromHNM");
         fTreeTrueNDMFromHNM[iCut]->Branch("fInvMassNDM", &fInvMassNDM, "fInvMassNDM/F");
         fTreeTrueNDMFromHNM[iCut]->Branch("fPtHNM", &fPtHNM, "fPtHNM/F");
-        fTreeTrueNDMFromHNM[iCut]->Branch("fPtHNM", &fPtNDM, "fPtNDM/F");
+        fTreeTrueNDMFromHNM[iCut]->Branch("fPtNDM", &fPtNDM, "fPtNDM/F");
         fTrueTreeList[iCut]->Add(fTreeTrueNDMFromHNM[iCut]);
       }
     }
