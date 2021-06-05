@@ -669,6 +669,13 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
       }
       else {
 
+        if(Jet1->GetLeadingTrack()->Pt() < 5)
+        {
+
+            continue;
+            //std::cout << "LEADING TRACK TO SMALL!!!" << std::endl;
+        }
+
         // Initialising the Tagged PYTHIA Jet.
         Bool_t kHasTruthJet = kFALSE;
         AliEmcalJet* TruthJet;
