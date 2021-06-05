@@ -2159,9 +2159,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("p2610113","00200009f9730000dge0400000","24466510ga012200000","0h63103100000010"); // 20-60%
     cuts.AddCutPCMCalo("p6a10113","00200009f9730000dge0400000","24466510ga012200000","0h63103100000010"); // 60-100%
   } else if ( trainConfig == 818){ // rerun 2021
-    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466000ga01cc00000","0h63103100000010"); // No NL
-    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466000ga09cc00000","0h63103100000010"); // lower threshold
-    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466000ga0acc00000","0h63103100000010"); // lower threshold
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466010ga012200000","0h63103100000010"); // 300 MeV
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466010ga01ee00000","0h63103100000010"); // 300 MeV
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466010ga09ee00000","0h63103100000010"); // 100 MeV
+    
 
     //Normal B Option
   } else if ( trainConfig == 820){ // Default cut, with TM   with eta<0.8
@@ -2209,9 +2210,9 @@ void AddTask_GammaConvCalo_pp(
 
   //PCM-PHOS pp HBT studies <- reserved 850 to 860
   } else if ( trainConfig == 850){ // Default cut, with TM
-    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466510ga01cc00000","0h63103100000010"); // INT7
-    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466510ga09cc00000","0h63103100000010"); // INT7
-    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466510ga0acc00000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466010ga012200000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466010ga01ee00000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0404000","24466010ga09ee00000","0h63103100000010"); // INT7
 
   //*************************************************************************************************
   // 13 TeV PHOS - setup
