@@ -59,7 +59,9 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fCombinedPIDThreshold(0.),
   fUseLcPID(kFALSE),
   fUseXic0PID(kFALSE),
+  fUseXicPlusPID(kFALSE),
   fPidObjDau(0),
+  fPidObjPiFromXicPlus(0),
   fPidObjPiFromXic0(0),
   fPidObjPiFromXi(0),
   fPidObjPrFromV0(0),
@@ -178,7 +180,9 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fCombinedPIDThreshold(source.fCombinedPIDThreshold),
   fUseLcPID(source.fUseLcPID),
   fUseXic0PID(source.fUseXic0PID),
+  fUseXicPlusPID(source.fUseXicPlusPID),
   fPidObjDau(source.fPidObjDau),
+  fPidObjPiFromXicPlus(source.fPidObjPiFromXicPlus),
   fPidObjPiFromXic0(source.fPidObjPiFromXic0),
   fPidObjPiFromXi(source.fPidObjPiFromXi),
   fPidObjPrFromV0(source.fPidObjPrFromV0),
@@ -254,7 +258,9 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fCombinedPIDThreshold = source.fCombinedPIDThreshold;
   fUseLcPID = source.fUseLcPID;
   fUseXic0PID = source.fUseXic0PID;
+  fUseXicPlusPID = source.fUseXicPlusPID;
   fPidObjDau = source.fPidObjDau;
+  fPidObjPiFromXicPlus = source.fPidObjPiFromXicPlus;
   fPidObjPiFromXic0 = source.fPidObjPiFromXic0;
   fPidObjPiFromXi = source.fPidObjPiFromXi;
   fPidObjPrFromV0 = source.fPidObjPrFromV0;
@@ -649,6 +655,15 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_PrimaryPion(AliAODTrack *trk)
     Int_t isPion = fPidObjPiFromXic0->MakeRawPid(trk, 2);
     if (isPion<1) return kFALSE;
   }
+  if(fUseXicPlusPID) {
+    if(fPidObjPiFromXicPlus->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidObjPiFromXicPlus->SetPidResponse(pidResp);
+    }
+    Int_t isPion = fPidObjPiFromXicPlus->MakeRawPid(trk, 2);
+  }
   
   return kTRUE;
 }
@@ -676,7 +691,7 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_SecondaryPion(AliAODTrack *trk)
   // PID
 //  Double_t nsigmaTPC = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kPion);
 //  if (TMath::Abs(nsigmaTPC) > 3) return kFALSE;
-  if(fUseXic0PID) {
+  if(fUseXic0PID || fUseXicPlusPID) {
     if(fPidObjPiFromXi->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -696,7 +711,7 @@ Bool_t AliRDHFCutsKFP::SinglePionPoolCuts(AliAODTrack *trk)
 {
   if ( !trk ) return kFALSE;
   if ( trk->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin ) return kFALSE;
-  if(fUseXic0PID) {
+  if(fUseXic0PID || fUseXicPlusPID) {
     if(fPidObjPiFromXi->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -769,7 +784,7 @@ Bool_t AliRDHFCutsKFP::SingleV0LambdaTotCuts(AliAODv0 *v0)
 
 //  if ( v0->DcaV0Daughters() > fProdDcaV0DaughtersMax ) return kFALSE;
 
-  if (fUseXic0PID) {
+  if (fUseXic0PID || fUseXicPlusPID) {
     if (fPidObjPrFromV0->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1022,7 +1037,7 @@ Bool_t AliRDHFCutsKFP::SingleCascCuts(AliAODcascade *casc, Bool_t IsAnaOmegac0)
 //  Double_t nsigmaTPC = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kPion);
 //  if (TMath::Abs(nsigmaTPC) > 3) return kFALSE;
 
-  if (fUseXic0PID) {
+  if (fUseXic0PID || fUseXicPlusPID) {
     if(fPidObjPiFromXi->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1082,7 +1097,7 @@ Bool_t AliRDHFCutsKFP::LambdaPIDCuts(AliAODv0 *v0)
     trackN = (AliAODTrack*)v0->GetDaughter(0);
   }
 
-  if (fUseXic0PID) {
+  if (fUseXic0PID || fUseXicPlusPID) {
     if (fPidObjPrFromV0->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1120,7 +1135,7 @@ Bool_t AliRDHFCutsKFP::AntiLambdaPIDCuts(AliAODv0 *v0)
     trackN = (AliAODTrack*)v0->GetDaughter(0);
   }
 
-  if (fUseXic0PID) {
+  if (fUseXic0PID || fUseXicPlusPID) {
     if (fPidObjPrFromV0->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1223,8 +1238,7 @@ Bool_t AliRDHFCutsKFP::SingleCascadeCuts(AliAODcascade *casc,Double_t *primvert,
 	if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
 	if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
 
-  if(fUseXic0PID)
-  {
+  if(fUseXic0PID || fUseXicPlusPID){
     if(fPidObjPiFromXi->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1347,8 +1361,7 @@ Bool_t AliRDHFCutsKFP::SingleCascadeCutsRef(AliAODcascade *casc, Double_t *primv
 	if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
 	if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
 
-  if(fUseXic0PID)
-  {
+  if(fUseXic0PID || fUseXicPlusPID){
     if(fPidObjPiFromXi->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
