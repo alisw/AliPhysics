@@ -309,7 +309,55 @@ fRecoNonHFeEmbWeightTrkRConv(0),
 fRecoEtaeEmbWeightTrkRConv(0),
 
 fRVsULSElecPt(0),
-fRVsLSElecPt(0)
+fRVsLSElecPt(0),
+
+fnBinsDCAHisto(400),
+fCalculateMCTemplWeightCalc(kFALSE), // Set Mannualy
+fFillMCTemplates(kFALSE), // Set Mannualy
+
+fBHadpT(0),
+fBMesonpT(0),
+fBDHadpT(0),
+fDHadpT(0),
+fDMesonpT(0),
+fD0pT(0),
+fDPluspT(0),
+fDspT(0),
+fLambdaCpT(0),
+
+fDcent(0),
+fDUp(0),
+fDDown(0),
+fBcent(0),
+fBMin(0),
+fBMax(0),
+fD0(0),
+fDPlus(0),
+fDs(0),
+fLc(0),
+fB(0),
+fWeightB(1.0),
+fWeightBMin(1.0),
+fWeightBMax(1.0),
+fWeightD(1.0),
+fWeightDUp(1.0),
+fWeightDDown(1.0),
+
+fDElecDCA(0),
+fBElecDCA(0),
+fBHadElecDCA(0),
+fBMesonElecDCA(0),
+fBBaryonElecDCA(0),
+fDHadElecDCA(0),
+fDMesonElecDCA(0),
+fDBaryonElecDCA(0),
+fLambdaCElecDCA(0),
+fD0ElecDCA(0),
+fSprsTemplatesNoWeight(0),
+fSprsTemplatesWeight(0),
+fSprsTemplatesWeightVar1(0),
+fSprsTemplatesWeightVar2(0)
+
 
 {
 fPID = new AliHFEpid("hfePid");
@@ -329,20 +377,20 @@ fvalueElectron = new Double_t[6];
 //-----------------selections cuts----------------------------------------------------------------  
 
   void SetMCAnalysis(Bool_t isMC){fIsMC=isMC;}
-  void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
+  void SetAODanalysis(Bool_t IsAOD) {fIsAOD=IsAOD;};
 
-  void SetTrigger(AliVEvent::EOfflineTriggerTypes trigger){ftrigger =trigger;}
+  void SetTrigger(AliVEvent::EOfflineTriggerTypes trigger){ftrigger=trigger;}
 
-  void SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
-  void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
-  void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
+  void SetTenderSwitch(Bool_t usetender){fUseTender=usetender;};
+  void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC=flagClsEMC;};
+  void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL=flagClsDCAL;};
 
   void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
   void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
   void SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
   void SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
 
-  void SwitchRecalImpPar(Bool_t fSwitchRIP) {fRecalIP = fSwitchRIP;};
+  void SwitchRecalImpPar(Bool_t fSwitchRIP) {fRecalIP=fSwitchRIP;};
 
   //----------Setter for Track and PID cuts
  
@@ -355,13 +403,13 @@ fvalueElectron = new Double_t[6];
   void SetDCACut(Double_t DCAxyCut,Double_t DCAzCut){ fDCAxyCut=DCAxyCut; fDCAzCut=DCAzCut;}
   void SetTPCnsigma(Double_t TPCnsigmin,Double_t TPCnsigmax){fTPCnsigmin=TPCnsigmin;  fTPCnsigmax=TPCnsigmax;}
   void SetEopE(Double_t EopEMin,Double_t EopEMax){ fCutEopEMin=EopEMin; fCutEopEMax=EopEMax;}
-  void SetShowerShapeEM02(Double_t M02Min, Double_t M02Max1, Double_t M02Max2, Double_t M02Max3) {fM02Min = M02Min; fM02Max1 = M02Max1; fM02Max2 = M02Max2; fM02Max3 = M02Max3;};
+  void SetShowerShapeEM02(Double_t M02Min, Double_t M02Max1, Double_t M02Max2, Double_t M02Max3) {fM02Min=M02Min; fM02Max1=M02Max1; fM02Max2=M02Max2; fM02Max3=M02Max3;};
    
   //------------Setters for Photonic Electron Selection Cuts
   void SetInvMassCut(Double_t InvmassCut){fInvmassCut=InvmassCut;}
   void SetAssoTPCclus(Int_t AssoTPCCluster){fAssoTPCCluster=AssoTPCCluster;}
   void SetAssoITSrefit(Bool_t AssoITSRefit){fAssoITSRefit= AssoITSRefit;}
-  void SetAssopTMin(Double_t AssopTMin){fAssopTMin = AssopTMin;}
+  void SetAssopTMin(Double_t AssopTMin){fAssopTMin=AssopTMin;}
   void SetAssoEtarange(Double_t AssoEtarange){fAssoEtarange=AssoEtarange;}
   void SetAssoTPCnsig(Double_t AssoTPCnsig){fAssoTPCnsig=AssoTPCnsig;}
 
@@ -388,7 +436,7 @@ fvalueElectron = new Double_t[6];
   Int_t GetHFE(AliAODMCParticle *, TClonesArray *);
   Int_t GetElecSourceType(AliAODMCParticle *,Double_t &ptm);
 
-  void    SetNonHFEEffi(Bool_t fSwitch) {fCalculateNonHFEEffi = fSwitch;};
+  void    SetNonHFEEffi(Bool_t fSwitch) {fCalculateNonHFEEffi=fSwitch;};
   void    GetPi0EtaWeight(THnSparse *SparseWeight);
   void    SelectPhotonicElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC);		
 
@@ -398,6 +446,23 @@ fvalueElectron = new Double_t[6];
   AliAODVertex*   RemoveDaughtersFromPrimaryVtx(const AliAODTrack * const track);
 
   AliHFEpid *GetPID() const {return fPID;};
+//______________________________________________________________________
+
+//  void    SwitchMCTemplateWeightCalc(Bool_t SwitchMCTempWeight) {fCalculateMCTemplWeightCalc=SwitchMCTempWeight;};
+//  void    SwitchFillMCTemplate(Bool_t fSwitch) {fFillMCTemplates=fSwitch;};
+
+  void    GetMCTemplateWeight();
+  Bool_t  GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA);
+  void    SetDmesonWeightHist(TH1 *D1, TH1 *D2, TH1 *D3);
+  void    SetBmesonWeightHist(TH1 *B1, TH1 *B2, TH1 *B3);
+  void    GetBWeight(AliAODMCParticle *Part, Double_t &BCentWeight, Double_t &BMinWeight, Double_t &BMaxWeight);
+  void    GetDWeight(AliAODMCParticle *Part, Double_t &DCentWeight, Double_t &DMinWeight, Double_t &DMaxWeight);
+
+  void    SetDmesonWeightHistPbPb(TH1 *D0, TH1 *DPlus, TH1 *Ds, TH1 *Lc);
+  void    GetDWeightPbPb(AliAODMCParticle *Part, Int_t PDG, Double_t &DCentWeight);
+
+
+  
 //______________________________________________________________________
     
 
@@ -658,7 +723,56 @@ fvalueElectron = new Double_t[6];
  TH1F       *fRecoPi0ULSeEmbWeightTrkPt;//!
  TH1F       *fRecoEtaULSeEmbWeightTrkPt;//!
 
-  Bool_t    fCalculateNonHFEEffi;//!
+ Bool_t    fCalculateNonHFEEffi;//!
+
+ Int_t     fnBinsDCAHisto;//!
+ Bool_t    fCalculateMCTemplWeightCalc;//!
+
+
+ TH1F       *fBHadpT;//!
+ TH1F       *fBMesonpT;//!
+ TH1F       *fBDHadpT;//!
+ TH1F       *fDHadpT;//!
+ TH1F       *fDMesonpT;//!
+ TH1F       *fD0pT;//!
+ TH1F       *fDPluspT;//!
+ TH1F       *fDspT;//!
+ TH1F       *fLambdaCpT;//!
+
+  Bool_t    fFillMCTemplates;//!
+  TH1F      *fDcent;//
+  TH1F      *fDUp;//
+  TH1F      *fDDown;//
+  TH1F      *fBcent;//
+  TH1F      *fBMin;//
+  TH1F      *fBMax;//
+  TH1F      *fD0;//
+  TH1F      *fDPlus;//
+  TH1F      *fDs;//
+  TH1F      *fLc;//
+  TH1D      *fB;//
+  Double_t  fWeightB;//!
+  Double_t  fWeightBMin;//!
+  Double_t  fWeightBMax;//!
+  Double_t  fWeightD;//!
+  Double_t  fWeightDUp;//!
+  Double_t  fWeightDDown;//!
+
+ TH2F       *fDElecDCA;//!
+ TH2F       *fBElecDCA;//!
+ TH2F       *fBHadElecDCA;//!
+ TH2F       *fBMesonElecDCA;//!
+ TH2F       *fBBaryonElecDCA;//!
+ TH2F       *fDHadElecDCA;//!
+ TH2F       *fDMesonElecDCA;//!
+ TH2F       *fDBaryonElecDCA;//!
+ TH2F       *fLambdaCElecDCA;//!
+ TH2F       *fD0ElecDCA;//!
+
+ THnSparse  *fSprsTemplatesNoWeight;//!
+ THnSparse  *fSprsTemplatesWeight;//!
+ THnSparse  *fSprsTemplatesWeightVar1;//!
+ THnSparse  *fSprsTemplatesWeightVar2;//!
 
 
   AliAnalysisHFEppEMCalBeauty(const AliAnalysisHFEppEMCalBeauty&); // not implemented
