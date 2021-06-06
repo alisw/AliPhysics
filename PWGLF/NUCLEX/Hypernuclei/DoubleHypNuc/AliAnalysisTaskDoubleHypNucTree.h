@@ -100,6 +100,8 @@ enum PdgCodeType_t {
   Double_t              ptot1, sign1, ptot2, sign2, ptot3, sign3, ptot4, sign4;
   Bool_t                He3Pos1, He3Neg1, pPos2, pNeg2, piPos3, piNeg3, piPos4, piNeg4;
   //--Vertex Reco--
+  AliESDVertex          *primVertex;
+  const AliESDVertex    *vertex;
   AliESDVertex          *secVertex;
   AliESDVertex          *tertVertex;
   AliVertexerTracks     *secvertexer;
@@ -110,6 +112,7 @@ enum PdgCodeType_t {
   Double_t              PrimVertex[3];
   Double_t              SecVertex[3];
   Double_t              TertVertex[3];
+  Double_t              TertVertex2[3];
   Double_t              cov[21];
   Double_t              cov0[21];
   Double_t              cov1[21];
@@ -151,11 +154,13 @@ enum PdgCodeType_t {
   AliMCParticle         *ParticleGrandMother4;
   //--Particle--
   TLorentzVector        *sublorentzsum;
+  TLorentzVector        *sublorentzsum2;
   TLorentzVector        *particle1;
   TLorentzVector        *particle2;
   TLorentzVector        *particle3;
   TLorentzVector        *particle4;
   TLorentzVector        *lorentzsum;
+  TLorentzVector        *lorentzsum2;
   TVector3              *h;
   Double_t              xthiss; 
   Double_t              xpp; 
@@ -169,16 +174,19 @@ enum PdgCodeType_t {
   Int_t                 fTrigMB, fTrigHMV0, fTrigHMSPD, fTrigHNU, fTrigHQU;
   Int_t                 fPDGMother, fChargeMother;
   Int_t                 fNclsDaughter, fNclsITSDaughter, fNclsDaughter1, fNclsITSDaughter1, fNclsDaughter2, fNclsITSDaughter2, fNclsDaughter3, fNclsITSDaughter3;
-  Float_t               fEDaughter, fpDaughter, fptDaughter,  fpxDaughter,  fpyDaughter,  fpzDaughter, fyDaughter, fdEdxDaughter, fdEdxSigmaDaughter, fDcaDaughter, fDcazDaughter, fDcaSecDaughter,  fChi2Daughter,  fEtaDaughter, fPhiDaughter, fGeoLengthDaughter, fTOFSignalDaughter;
-  Float_t               fEDaughter1, fpDaughter1, fptDaughter1, fpxDaughter1, fpyDaughter1, fpzDaughter1, fyDaughter1, fdEdxDaughter1, fdEdxSigmaDaughter1, fDcaDaughter1, fDcaSecDaughter1, fDcazDaughter1, fChi2Daughter1, fEtaDaughter1, fPhiDaughter1, fGeoLengthDaughter1, fTOFSignalDaughter1;
-  Float_t               fEDaughter2, fpDaughter2, fptDaughter2, fpxDaughter2, fpyDaughter2, fpzDaughter2, fyDaughter2, fdEdxDaughter2, fdEdxSigmaDaughter2, fDcaDaughter2, fDcaSecDaughter2, fDcazDaughter2, fChi2Daughter2, fEtaDaughter2, fPhiDaughter2, fGeoLengthDaughter2, fTOFSignalDaughter2;
-  Float_t               fEDaughter3, fpDaughter3, fptDaughter3, fpxDaughter3, fpyDaughter3, fpzDaughter3, fyDaughter3, fdEdxDaughter3, fdEdxSigmaDaughter3, fDcaDaughter3, fDcaSecDaughter3, fDcazDaughter3, fChi2Daughter3, fEtaDaughter3, fPhiDaughter3, fGeoLengthDaughter3, fTOFSignalDaughter3;
+  Int_t                 fPropDCADaughter, fPropDCADaughter1, fPropDCADaughter2, fPropDCADaughter3, fPropDCADaughter4;
+  Float_t               fEDaughter, fpDaughter, fptDaughter,  fpxDaughter,  fpyDaughter,  fpzDaughter, fyDaughter, fdEdxDaughter, fdEdxSigmaDaughter, fDcaDaughter, fDcaDaughtero, fDcazDaughter, fDcaSecDaughter,  fChi2Daughter,  fEtaDaughter, fPhiDaughter, fGeoLengthDaughter, fTOFSignalDaughter;
+  Float_t               fEDaughter1, fpDaughter1, fptDaughter1, fpxDaughter1, fpyDaughter1, fpzDaughter1, fyDaughter1, fdEdxDaughter1, fdEdxSigmaDaughter1, fDcaDaughter1, fDcaDaughter1o, fDcaSecDaughter1, fDcazDaughter1, fChi2Daughter1, fEtaDaughter1, fPhiDaughter1, fGeoLengthDaughter1, fTOFSignalDaughter1;
+  Float_t               fEDaughter2, fpDaughter2, fptDaughter2, fpxDaughter2, fpyDaughter2, fpzDaughter2, fyDaughter2, fdEdxDaughter2, fdEdxSigmaDaughter2, fDcaDaughter2, fDcaDaughter2o, fDcaSecDaughter2, fDcazDaughter2, fChi2Daughter2, fEtaDaughter2, fPhiDaughter2, fGeoLengthDaughter2, fTOFSignalDaughter2;
+  Float_t               fEDaughter3, fpDaughter3, fptDaughter3, fpxDaughter3, fpyDaughter3, fpzDaughter3, fyDaughter3, fdEdxDaughter3, fdEdxSigmaDaughter3, fDcaDaughter3, fDcaDaughter3o, fDcaSecDaughter3, fDcazDaughter3, fChi2Daughter3, fEtaDaughter3, fPhiDaughter3, fGeoLengthDaughter3, fTOFSignalDaughter3;
   Float_t               fEDaughter4, fpDaughter4, fptDaughter4, fpxDaughter4, fpyDaughter4, fpzDaughter4, fyDaughter4, fDcaDaughter4, fDcazDaughter4, fDcaSecDaughter4;
   Float_t               fSigmaYXDaughter, fSigmaXYZDaughter, fSigmaZDaughter, fSigmaYXDaughter1, fSigmaXYZDaughter1, fSigmaZDaughter1, fSigmaYXDaughter2, fSigmaXYZDaughter2, fSigmaZDaughter2, fSigmaYXDaughter3, fSigmaXYZDaughter3, fSigmaZDaughter3, fSigmaYXDaughter4, fSigmaXYZDaughter4, fSigmaZDaughter4, fPtUncertDaughter, fPtUncertDaughter1, fPtUncertDaughter2, fPtUncertDaughter3, fPtUncertDaughter4;
-Int_t fTPCRefitDaughter, fITSRefitDaughter, fTPCRefitDaughter1, fITSRefitDaughter1, fTPCRefitDaughter2, fITSRefitDaughter2, fTPCRefitDaughter3, fITSRefitDaughter3;
-  Float_t               fDCA2B, fDCA3B1, fDCA3B2, fDCA3B3, fPA, fSubPA, fSubPA2, fDecAngle, farmalpha, farmpt;
-  Float_t               fPrimVertexX, fPrimVertexY, fPrimVertexZ,fSecVertexX, fSecVertexY, fSecVertexZ, fTertVertexX, fTertVertexY, fTertVertexZ;
-  Float_t               fmMother, fEMother, fpxMother, fpyMother, fpzMother, fptMother, fpMother, fyMother, fctMother;
+  Int_t               fTPCRefitDaughter, fITSRefitDaughter, fTPCRefitDaughter1, fITSRefitDaughter1, fTPCRefitDaughter2, fITSRefitDaughter2, fTPCRefitDaughter3, fITSRefitDaughter3;
+  Float_t               fImParDaughter, fImPar2Daughter, fImParDaughter1, fImPar2Daughter1, fImParDaughter2, fImPar2Daughter2, fImParDaughter3, fImPar2Daughter3, fImParDaughter4, fImPar2Daughter4, fImParzDaughter, fImParz2Daughter, fImParzDaughter1, fImParz2Daughter1, fImParzDaughter2, fImParz2Daughter2, fImParzDaughter3, fImParz2Daughter3, fImParzDaughter4, fImParz2Daughter4;
+  Float_t               fdEdxSigmaPion, fdEdxSigmaDeuteron, fdEdxSigmaTriton, fdEdxSigmaAlpha;
+  Float_t               fDCA2B, fDCA2Bo, fDCA3B1, fDCA3B2, fDCA3B3, fPA, fSubPA, fSubPA2, fSubPA3, fSubPA4, fDecAngle, farmalpha, farmpt;
+  Float_t               fPrimVertexX, fPrimVertexY, fPrimVertexZ,fSecVertexX, fSecVertexY, fSecVertexZ, fTertVertexX, fTertVertexY, fTertVertexZ, fTertVertex2X, fTertVertex2Y, fTertVertex2Z;
+  Float_t               fmMother, fmMother2, fEMother, fpxMother, fpyMother, fpzMother, fptMother, fpMother, fyMother, fctMother;
   Float_t               fmSubMother, fESubMother, fpxSubMother, fpySubMother, fpzSubMother, fptSubMother, fpSubMother, fySubMother, fctSubMother;
   Float_t               fthetaP, fthetaN;
   
