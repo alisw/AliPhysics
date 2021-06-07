@@ -328,18 +328,20 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
     TTree**                 tTrueMergedCaloClusterBck;                          //! array of tress with MC information of merged clusters from background
 
     Float_t                 fMergedClusterTreeCluster[50][50];		   //! energy of cluster
-    Int_t                   fMergedClusterTreeClusterType;			   //! cluster classification
-    Float_t                 fMergedClusterTreeEnergy;			   //! cluster energy
-    Float_t                 fMergedClusterTreePt; 				   //! cluster pt
-    Int_t                   fMergedClusterTreeModNum;			   //! cluster supermodule number
-    Int_t                   fMergedClusterTreeXPos;				   //! coloumn of leading cell
-    Int_t                   fMergedClusterTreeYPos;				   //! row of leading cell
-    Int_t                   fMergedClusterTreeIsPrimary;			   //! is mother particle primary
-    Int_t                   fMergedClusterTreePID;	 			   //! mother particle PID
-    Float_t                 fMergedClusterTreeEta;				   //! mother particle eta
-    Float_t                 fMergedClusterTreePhi;  				   //! mother particle phi
-    Float_t                 fMergedClusterTreeM02;                                 //! cluster m02
-    Float_t                 fMergedClusterTreeM20;                                 //! cluster m20
+    UChar_t                  fMergedClusterTreeClusterType;			   //! cluster classification
+    Float_t                 fMergedClusterTreeClusterEnergy;			   //! cluster energy
+    Float_t                 fMergedClusterTreeClusterPt; 				   //! cluster pt
+    UChar_t                  fMergedClusterTreeClusterModNum;			   //! cluster supermodule number
+    UChar_t                  fMergedClusterTreeClusterXPos;				   //! coloumn of leading cell
+    UChar_t                  fMergedClusterTreeClusterYPos;				   //! row of leading cell
+    Bool_t                  fMergedClusterTreePartIsPrimary;			   //! is mother particle primary
+    Short_t                 fMergedClusterTreePartPID;	 			   //! mother particle PID
+    Float_t                 fMergedClusterTreePartPt;                                //! mother particle pT
+    Float_t                 fMergedClusterTreePartE;                               //! mother particle E 
+    Float_t                 fMergedClusterTreePartEta;				   //! mother particle eta
+    Float_t                 fMergedClusterTreePartPhi;  				   //! mother particle phi
+    Float_t                 fMergedClusterTreeClusterM02;                                 //! cluster m02
+    Float_t                 fMergedClusterTreeClusterM20;                                 //! cluster m20
 
 
 
