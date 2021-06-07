@@ -2166,8 +2166,15 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAO
 	    if (runNo>=294009 && runNo<=294925) sprintf(periodNames, "SPDTrklMB_LHC18p"); 
     }    
 
-  TFile* fEstimator = TFile::Open("alien:///alice/cern.ch/user/s/ssakai/Multiplicity_pp13/estimator.root");
-  fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames))->Clone(periodNames);
+  TString estimaterFile = "alien:///alice/cern.ch/user/s/ssakai/Multiplicity_pp13/estimator.root"; 
+
+  TFile* fEstimator = TFile::Open(estimaterFile.Data());
+
+  if(!fEstimator)AliFatal("File with multiplicity not found");
+
+  fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames));
+
+  if(!fMultEstimatorAvg)AliFatal("fMultEstimatorAvg not found");
 
   return fMultEstimatorAvg;
 }
