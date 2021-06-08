@@ -328,12 +328,12 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
     TTree**                 tTrueMergedCaloClusterBck;                          //! array of tress with MC information of merged clusters from background
 
     Float_t                 fMergedClusterTreeCluster[50][50];		   //! energy of cluster
-    UChar_t                  fMergedClusterTreeClusterType;			   //! cluster classification
+    UChar_t                 fMergedClusterTreeClusterType;			   //! cluster classification
     Float_t                 fMergedClusterTreeClusterEnergy;			   //! cluster energy
     Float_t                 fMergedClusterTreeClusterPt; 				   //! cluster pt
-    UChar_t                  fMergedClusterTreeClusterModNum;			   //! cluster supermodule number
-    UChar_t                  fMergedClusterTreeClusterXPos;				   //! coloumn of leading cell
-    UChar_t                  fMergedClusterTreeClusterYPos;				   //! row of leading cell
+    UChar_t                 fMergedClusterTreeClusterModNum;			   //! cluster supermodule number
+    UChar_t                 fMergedClusterTreeClusterXPos;				   //! coloumn of leading cell
+    UChar_t                 fMergedClusterTreeClusterYPos;				   //! row of leading cell
     Bool_t                  fMergedClusterTreePartIsPrimary;			   //! is mother particle primary
     Short_t                 fMergedClusterTreePartPID;	 			   //! mother particle PID
     Float_t                 fMergedClusterTreePartPt;                                //! mother particle pT
