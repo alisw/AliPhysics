@@ -1,10 +1,3 @@
-/**
- * File              : PWGflowTasksLinkDef.h
- * Author            : Anton Riedel <anton.riedel@tum.de>
- * Date              : 08.06.2021
- * Last Modified Date: 08.06.2021
- * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
- */
 #ifdef __CINT__
 
 #pragma link off all globals;
