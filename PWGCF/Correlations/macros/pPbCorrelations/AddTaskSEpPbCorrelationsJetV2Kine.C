@@ -1,4 +1,4 @@
-AliAnalysisTaskSEpPbCorrelationsJetV2Kine_dev *AddTaskSEpPbCorrelationsJetV2Kine(TString sMode = "TPCTPCFMDA")
+AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TString sMode = "TPCTPCFMDA")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -7,7 +7,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine_dev *AddTaskSEpPbCorrelationsJetV2Kine
   }
 //=============================================================================
 
-  AliAnalysisTaskSEpPbCorrelationsJetV2Kine_dev *task = new AliAnalysisTaskSEpPbCorrelationsJetV2Kine_dev("AliAnalysisTaskSEpPbCorrelationsJetV2Kine_dev");
+  AliAnalysisTaskSEpPbCorrelationsJetV2Kine *task = new AliAnalysisTaskSEpPbCorrelationsJetV2Kine("AliAnalysisTaskSEpPbCorrelationsJetV2Kine");
 
   Double_t trigPtLimits[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 8.0};
   const Int_t nBinTrigPt = sizeof(trigPtLimits) / sizeof(Double_t) - 1;
