@@ -142,7 +142,7 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetGlobalMaskedTRUIndices(int r
   auto geo = GetGeometry(runnumber);
 
   auto emcalstu = fCurrentConfig->GetSTUDCSConfig(false),
-       dcalstu = fCurrentConfig->GetSTUDCSConfig(false);
+       dcalstu = fCurrentConfig->GetSTUDCSConfig(true);
 
   if(emcalstu) {
     std::bitset<32> mask(emcalstu->GetRegion());
