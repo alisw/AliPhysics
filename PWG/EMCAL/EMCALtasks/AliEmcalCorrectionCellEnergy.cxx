@@ -64,7 +64,7 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   // check the YAML configuration if the shaper nonlinearity correction is requested (default is false)
   GetProperty("enableShaperCorrection",fUseShaperCorrection);
 
-  // check the YAML configuration if the shaper nonlinearity correction is requested (default is false)
+  // check the YAML configuration if an additional cell correction scale is requested (default is 1 -> no scale shift)
   GetProperty("enableAdditionalScale",fUseAdditionalScale);
 
   // check the YAML configuration if a custom energy calibration is requested (default is empty string "")
@@ -516,6 +516,6 @@ Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
   {
     fRecoUtils->SetUseTowerAdditionalScaleCorrection(kTRUE, fUseAdditionalScale);
   }
-  
+
   return runChanged;
 }
