@@ -43,6 +43,7 @@
 #include "AliEMCALTriggerTRUDCSConfig.h"
 #include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEmcalTriggerMaskHandlerOCDB.h"
+#include "AliLog.h"
 
 ClassImp(PWG::EMCAL::AliEmcalTriggerMaskHandlerOCDB)
 
@@ -75,6 +76,7 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetMaskedFastorIndicesL0(int ru
           auto channel = ChannelMaskHandler(ipos, ibit, onethirdsm);
           int absfastor;
           geo->GetTriggerMapping()->GetAbsFastORIndexFromTRU(globaltru, channel, absfastor);
+          AliDebugStream(1) << GetName() << "Channel " << channel  << " in TRU " << globaltru << " ( abs fastor " << absfastor << ") masked." << std::endl;
           maskedfastors.push_back(absfastor);
         }
       }
@@ -146,6 +148,7 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetGlobalMaskedTRUIndices(int r
     for(int itru = 0; itru < 32; itru++) {
       if(!mask.test(itru)) {
         // TRU excluded from region, add to masked TRUs
+        AliDebugStream(1) << "EMCAL TRU " << itru << " masked in STU region" << std::endl;
         truindices.push_back(geo->GetTRUIndexFromSTUIndex(itru, 0));
       } 
     }
@@ -156,6 +159,7 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetGlobalMaskedTRUIndices(int r
     for(int itru = 0; itru < 14; itru++) {
       if(!mask.test(itru)) {
         // TRU excluded from region, add to masked TRUs
+        AliDebugStream(1) << "DCAL TRU " << itru << " masked in STU region" << std::endl;
         truindices.push_back(geo->GetTRUIndexFromSTUIndex(itru, 1));
       } 
     }
@@ -215,6 +219,7 @@ void AliEmcalTriggerMaskHandlerOCDB::ClearCache() {
 
 void AliEmcalTriggerMaskHandlerOCDB::UpdateCache(int runnumber) {
   if((runnumber == fCurrentRunnumber) && fCurrentConfig) return;
+  AliInfoStream() << "Update trigger DCS config for run " << runnumber << std::endl;
   ClearCache();
   auto cdb = InitCDB(runnumber);
   auto trgobject = cdb->Get("EMCAL/Calib/Trigger")->GetObject();
@@ -234,6 +239,7 @@ AliCDBManager *AliEmcalTriggerMaskHandlerOCDB::InitCDB(int runnumber) {
     auto currentrun = cdb->GetRun();
     if(currentrun != runnumber) {
       // Changing run numbre
+      AliInfoStream() << "Run number in CDB (" << currentrun << ") different from requested (" << runnumber << "), updating ..." << std::endl;
       cdb->SetRun(runnumber);
     }
   } else {
