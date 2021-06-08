@@ -28,6 +28,7 @@
 #include <bitset>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <map>
 
 #include <TCanvas.h>
@@ -43,6 +44,7 @@
 #include "AliEMCALTriggerTRUDCSConfig.h"
 #include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEmcalTriggerMaskHandlerOCDB.h"
+#include "AliLog.h"
 
 ClassImp(PWG::EMCAL::AliEmcalTriggerMaskHandlerOCDB)
 
@@ -75,6 +77,7 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetMaskedFastorIndicesL0(int ru
           auto channel = ChannelMaskHandler(ipos, ibit, onethirdsm);
           int absfastor;
           geo->GetTriggerMapping()->GetAbsFastORIndexFromTRU(globaltru, channel, absfastor);
+          AliDebugStream(1) << GetName() << "Channel " << channel  << " in TRU " << globaltru << " ( abs fastor " << absfastor << ") masked." << std::endl;
           maskedfastors.push_back(absfastor);
         }
       }
@@ -101,13 +104,13 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetMaskedFastorIndicesL1(int ru
   std::vector<int> maskedfastors;
   // Find masked FastORs at L0
   auto maskedL0 = GetMaskedFastorIndicesL0(runnumber);
-  std::copy(maskedL0.begin(), maskedL0.end(), maskedfastors.begin());
+  std::copy(maskedL0.begin(), maskedL0.end(), std::back_inserter(maskedfastors));
 
   // Look for TRUs which are masked in the L1 region
   // For each STU which is masked at L1 mask also the FastORs 
   // if not yet masked at L0
   AliEMCALGeometry *geo = nullptr;
-  for(auto truID : GetGlobalMaskedTRUIndices()) {
+  for(auto truID : GetGlobalMaskedTRUIndices(runnumber)) {
     if(!geo) geo = GetGeometry(runnumber);
     for(int ichannel = 0; ichannel < 96; ichannel++) {
       int absfastor;
@@ -139,13 +142,14 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetGlobalMaskedTRUIndices(int r
   auto geo = GetGeometry(runnumber);
 
   auto emcalstu = fCurrentConfig->GetSTUDCSConfig(false),
-       dcalstu = fCurrentConfig->GetSTUDCSConfig(false);
+       dcalstu = fCurrentConfig->GetSTUDCSConfig(true);
 
   if(emcalstu) {
     std::bitset<32> mask(emcalstu->GetRegion());
     for(int itru = 0; itru < 32; itru++) {
       if(!mask.test(itru)) {
         // TRU excluded from region, add to masked TRUs
+        AliDebugStream(1) << "EMCAL TRU " << itru << " masked in STU region" << std::endl;
         truindices.push_back(geo->GetTRUIndexFromSTUIndex(itru, 0));
       } 
     }
@@ -156,6 +160,7 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetGlobalMaskedTRUIndices(int r
     for(int itru = 0; itru < 14; itru++) {
       if(!mask.test(itru)) {
         // TRU excluded from region, add to masked TRUs
+        AliDebugStream(1) << "DCAL TRU " << itru << " masked in STU region" << std::endl;
         truindices.push_back(geo->GetTRUIndexFromSTUIndex(itru, 1));
       } 
     }
@@ -215,6 +220,7 @@ void AliEmcalTriggerMaskHandlerOCDB::ClearCache() {
 
 void AliEmcalTriggerMaskHandlerOCDB::UpdateCache(int runnumber) {
   if((runnumber == fCurrentRunnumber) && fCurrentConfig) return;
+  AliInfoStream() << "Update trigger DCS config for run " << runnumber << std::endl;
   ClearCache();
   auto cdb = InitCDB(runnumber);
   auto trgobject = cdb->Get("EMCAL/Calib/Trigger")->GetObject();
@@ -234,6 +240,7 @@ AliCDBManager *AliEmcalTriggerMaskHandlerOCDB::InitCDB(int runnumber) {
     auto currentrun = cdb->GetRun();
     if(currentrun != runnumber) {
       // Changing run numbre
+      AliInfoStream() << "Run number in CDB (" << currentrun << ") different from requested (" << runnumber << "), updating ..." << std::endl;
       cdb->SetRun(runnumber);
     }
   } else {
