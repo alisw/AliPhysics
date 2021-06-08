@@ -5,6 +5,8 @@
 #pragma link off all functions;
 
 // Base classes
+#pragma link C++ class AliGAKFParticle+;
+#pragma link C++ class AliGAKFVertex+;
 #pragma link C++ class AliConversionPhotonBase+;
 #pragma link C++ class AliAODConversionParticle+;
 #pragma link C++ class AliAODConversionMother+;

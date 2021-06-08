@@ -42,9 +42,9 @@
 #include "AliESDv0.h"
 #include "AliESDEvent.h"
 #include "AliESDpid.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "AliMCEventHandler.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliTriggerAnalysis.h"
 #include "AliCentrality.h"
 #include "AliMultiplicity.h"
@@ -4654,12 +4654,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
   for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
     AliVTrack* negPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
 
-    //AliKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
-    AliKFParticle negPionCandidateKF( *negPionCandidate, 211 );
+    //AliGAKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
+    AliGAKFParticle negPionCandidateKF( *negPionCandidate, 211 );
     for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
       AliVTrack *posPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j]));
-      //AliKFParticle posPionCandidateKF( *posPionCandidate->GetConstrainedParam(), 211 );
-      AliKFParticle posPionCandidateKF( *posPionCandidate, 211 );
+      //AliGAKFParticle posPionCandidateKF( *posPionCandidate->GetConstrainedParam(), 211 );
+      AliGAKFParticle posPionCandidateKF( *posPionCandidate, 211 );
       // AliInfo(Form("virtualPhoton distance before pi+ pi- = %f", negPionCandidateKF.GetDistanceFromParticle(posPionCandidateKF)));
 
       AliKFConversionPhoton virtualPhoton(negPionCandidateKF,posPionCandidateKF);
@@ -5044,16 +5044,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
   for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
     AliVTrack* negPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
     AliAODTrack* negPionCandidateAOD = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
-    AliKFParticle negPionCandidateKF( *negPionCandidate, 211 );
+    AliGAKFParticle negPionCandidateKF( *negPionCandidate, 211 );
 
     for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
       AliVTrack *posPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j]));
       AliAODTrack* posPionCandidateAOD = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j]));
-      AliKFParticle posPionCandidateKF( *posPionCandidate, 211 );
+      AliGAKFParticle posPionCandidateKF( *posPionCandidate, 211 );
       AliKFConversionPhoton* virtualPhoton = NULL;
       virtualPhoton = new AliKFConversionPhoton(negPionCandidateKF,posPionCandidateKF);
 
-      //AliKFVertex primaryVertex(*fInputEvent->GetPrimaryVertex());
+      //AliGAKFVertex primaryVertex(*fInputEvent->GetPrimaryVertex());
       // primaryVertexImproved+=*virtualPhoton;
      // virtualPhoton->SetProductionVertex(primaryVertex);
 
@@ -6039,8 +6039,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
           FixPzToMatchPDGInvMassNDM(&NDMtmp);
 
           //Variables for Dalitz plot and Pi0 Pi+- Mass Cut
-          AliKFParticle PosPionKFtmp( *posPionCandidatetmp, 211 );
-          AliKFParticle NegPionKFtmp( *negPionCandidatetmp, 211 );
+          AliGAKFParticle PosPionKFtmp( *posPionCandidatetmp, 211 );
+          AliGAKFParticle NegPionKFtmp( *negPionCandidatetmp, 211 );
 
           TLorentzVector PosPionTLVtmp;
           TLorentzVector NegPionTLVtmp;

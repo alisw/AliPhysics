@@ -47,9 +47,9 @@
 #include "AliESDv0.h"
 #include "AliESDEvent.h"
 #include "AliESDpid.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "AliMCEventHandler.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliTriggerAnalysis.h"
 #include "AliCentrality.h"
 #include "AliMultiplicity.h"
@@ -2496,7 +2496,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
   for(UInt_t i = 0; i < lGoodElectronIndex.size(); i++){
     std::unique_ptr<AliDalitzAODESD> electronCandidate = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(lGoodElectronIndex[i]));
     //AliESDtrack *electronCandidate = fESDEvent->GetTrack(lGoodElectronIndex[i]);
-    AliKFParticle electronCandidateKF( *electronCandidate->GetDalitzVTrack(),::kElectron );
+    AliGAKFParticle electronCandidateKF( *electronCandidate->GetDalitzVTrack(),::kElectron );
     //NOTE Change GetParamG, GetDalitzVTrack, Only here we Use Constrained Param
     TLorentzVector electronCandidateTLV;
     Double_t DummyMomentumElectron[3];
@@ -2506,7 +2506,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
     for(UInt_t j = 0; j < lGoodPositronIndex.size(); j++){
 
       std::unique_ptr<AliDalitzAODESD> positronCandidate = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(lGoodPositronIndex[j]));
-      AliKFParticle positronCandidateKF( *positronCandidate->GetDalitzVTrack(),::kPositron );
+      AliGAKFParticle positronCandidateKF( *positronCandidate->GetDalitzVTrack(),::kPositron );
       //NOTE Change GetParamG, GetDalitzVTrack
       TLorentzVector positronCandidateTLV;
       Double_t DummyMomentumPositron[3];
@@ -2527,7 +2527,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
       } else {
         virtualPhoton = new AliKFConversionPhoton(electronCandidateKF,positronCandidateKF);
         if( fSetProductionVertextoVGamma == kTRUE ){
-          AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
+          AliGAKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
           primaryVertexImproved+=*virtualPhoton;
           virtualPhoton->SetProductionVertex(primaryVertexImproved);
         }
@@ -2568,17 +2568,17 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
   if(  fDoMesonQA > 0 ) {
     for(UInt_t i = 0; i < lGoodElectronIndex.size(); i++){
       std::unique_ptr<AliDalitzAODESD> electronCandidate1 = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(lGoodElectronIndex[i]));
-      AliKFParticle electronCandidate1KF( *electronCandidate1->GetDalitzVTrack(), ::kElectron );
+      AliGAKFParticle electronCandidate1KF( *electronCandidate1->GetDalitzVTrack(), ::kElectron );
       //NOTE Change GetParamG, GetDalitzVTrack
 
       for(UInt_t j = i+1; j < lGoodElectronIndex.size(); j++){
 
         std::unique_ptr<AliDalitzAODESD> electronCandidate2 = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(lGoodElectronIndex[j]));
-        AliKFParticle electronCandidate2KF( *electronCandidate2->GetDalitzVTrack(), ::kElectron );
+        AliGAKFParticle electronCandidate2KF( *electronCandidate2->GetDalitzVTrack(), ::kElectron );
         //NOTE Change GetParamG, GetDalitzVTrack
         AliKFConversionPhoton* virtualPhoton = new AliKFConversionPhoton(electronCandidate1KF,electronCandidate2KF);
 
-        //AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
+        //AliGAKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
         //primaryVertexImproved+=*virtualPhoton;
         //virtualPhoton->SetProductionVertex(primaryVertexImproved);
 
@@ -2593,15 +2593,15 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
 
     for(UInt_t i = 0; i < lGoodPositronIndex.size(); i++){
       std::unique_ptr<AliDalitzAODESD> positronCandidate1 = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(lGoodPositronIndex[i]));
-      AliKFParticle positronCandidate1KF( *positronCandidate1->GetDalitzVTrack(), ::kPositron );
+      AliGAKFParticle positronCandidate1KF( *positronCandidate1->GetDalitzVTrack(), ::kPositron );
       //NOTE Change GetParamG, GetDalitzVTrack
       for(UInt_t j = i+1; j < lGoodPositronIndex.size(); j++){
 
         std::unique_ptr<AliDalitzAODESD> positronCandidate2 = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(lGoodPositronIndex[j]));
-        AliKFParticle positronCandidate2KF( *positronCandidate2->GetDalitzVTrack(), ::kPositron );
+        AliGAKFParticle positronCandidate2KF( *positronCandidate2->GetDalitzVTrack(), ::kPositron );
         //NOTE Change GetParamG, GetDalitzVTrack
         AliKFConversionPhoton* virtualPhoton = new AliKFConversionPhoton(positronCandidate1KF,positronCandidate2KF);
-        //AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
+        //AliGAKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
         //primaryVertexImproved+=*virtualPhoton;
         //virtualPhoton->SetProductionVertex(primaryVertexImproved);
 
