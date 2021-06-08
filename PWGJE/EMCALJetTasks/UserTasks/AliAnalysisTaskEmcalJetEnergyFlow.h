@@ -41,7 +41,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 		const char *ntracks		= "usedefault",
 		const char *nclusters		= "usedefault",
 		const char *ncells		= "usedefault",
-		Bool_t isMCprod                 = kTRUE,
+		Bool_t SetMCprod                 = kTRUE,
                 const char *suffix              = "" );
 	
 	protected:
@@ -67,7 +67,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void                    DoClusterLoop()                         ; ///<May remove later	
 	void                    DoCellLoop()                            ; ///<May remove later
 
-        Bool_t                  isMCprod                                ;///<Flag for MC productions
+        Bool_t                  IsMCprod                                ;///<Flag for MC productions
 	THistManager            fHistManager                            ;///< Histogram manager
 //	TList*			fOutput					;///!<! Output list
  	private:
