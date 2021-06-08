@@ -238,7 +238,10 @@ public:
         fkSaveSpecificConfig = kTRUE; 
     }
 //---------------------------------------------------------------------------------------
-    
+
+    Double_t MLCascadeNeuralNetworkForward(Double_t v[11], Float_t lpT);
+
+//---------------------------------------------------------------------------------------
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
     // your data member object is created on the worker nodes and streaming is not needed.
@@ -486,6 +489,11 @@ private:
     Float_t fTreeCascVarDistOverTotMom;               //!
     Float_t fTreeCascVarMaxChi2PerCluster; //!
     Float_t fTreeCascVarMinTrackLength; //!
+
+    //-------------------------------------------
+    //ML Prediction
+    Double_t fTreeCascVarMLCascadeNNPrediction; //!
+    //-------------------------------------------
 
     //TPC dEdx
     Float_t fTreeCascVarNegNSigmaPion;   //!
