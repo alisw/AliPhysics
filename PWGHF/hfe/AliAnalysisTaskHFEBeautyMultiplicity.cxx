@@ -253,7 +253,6 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fPhot_InvMass_vs_DCA_data3(0)
 
 
-
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty

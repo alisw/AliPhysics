@@ -260,9 +260,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH2F*		    fPhot_InvMass_vs_DCA3;
 	TH2F*		    fPhot_InvMass_vs_DCA_data;
 	TH2F*		    fPhot_InvMass_vs_DCA_data2;
-	TH2F*		    fPhot_InvMass_vs_DCA_data3;
-    
-    
+	TH2F*		    fPhot_InvMass_vs_DCA_data3; 
     
 
         AliAnalysisTaskHFEBeautyMultiplicity(const AliAnalysisTaskHFEBeautyMultiplicity&);                // not implemented
