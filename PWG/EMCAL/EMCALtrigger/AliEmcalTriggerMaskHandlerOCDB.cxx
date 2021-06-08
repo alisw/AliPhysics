@@ -28,6 +28,7 @@
 #include <bitset>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <map>
 
 #include <TCanvas.h>
@@ -103,13 +104,13 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetMaskedFastorIndicesL1(int ru
   std::vector<int> maskedfastors;
   // Find masked FastORs at L0
   auto maskedL0 = GetMaskedFastorIndicesL0(runnumber);
-  std::copy(maskedL0.begin(), maskedL0.end(), maskedfastors.begin());
+  std::copy(maskedL0.begin(), maskedL0.end(), std::back_inserter(maskedfastors));
 
   // Look for TRUs which are masked in the L1 region
   // For each STU which is masked at L1 mask also the FastORs 
   // if not yet masked at L0
   AliEMCALGeometry *geo = nullptr;
-  for(auto truID : GetGlobalMaskedTRUIndices()) {
+  for(auto truID : GetGlobalMaskedTRUIndices(runnumber)) {
     if(!geo) geo = GetGeometry(runnumber);
     for(int ichannel = 0; ichannel < 96; ichannel++) {
       int absfastor;
