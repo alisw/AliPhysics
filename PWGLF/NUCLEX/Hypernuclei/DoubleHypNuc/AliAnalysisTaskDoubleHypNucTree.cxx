@@ -2125,8 +2125,8 @@ void AliAnalysisTaskDoubleHypNucTree::SetDaughterInformation() {
   fPtUncertDaughter   = TMath::Sqrt(track1->GetSigma1Pt2())*fptDaughter;
   fTPCRefitDaughter   = (track1->GetStatus() & AliESDtrack::kTPCrefit) != 0;
   fITSRefitDaughter   = (track1->GetStatus() & AliESDtrack::kITSrefit) != 0;  
-  fdEdxSigmaTriton   = AliAnalysisTaskDoubleHypNucTree::Bethe(*track1, AliPID::ParticleMass(AliPID::kTriton), 2, fBetheParamsHe);
-  fdEdxSigmaAlpha    = AliAnalysisTaskDoubleHypNucTree::Bethe(*track1, AliPID::ParticleMass(AliPID::kAlpha),  2, fBetheParamsHe);
+  fdEdxSigmaTriton    = AliAnalysisTaskDoubleHypNucTree::Bethe(*track1, AliPID::ParticleMass(AliPID::kTriton), 1, fBetheParamsT);
+  fdEdxSigmaAlpha     = AliAnalysisTaskDoubleHypNucTree::Bethe(*track1, AliPID::ParticleMass(AliPID::kAlpha),  2, fBetheParamsHe);
   // _________________________________ //
   // __ p track __ //
   fpDaughter1         = track2->GetInnerParam()->GetP();
