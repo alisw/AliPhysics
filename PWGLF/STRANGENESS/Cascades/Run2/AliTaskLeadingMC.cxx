@@ -15,6 +15,7 @@
 #include "AliTaskLeadingMC.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliMultSelection.h"
+#include "AliMultiplicity.h"
 
 #include "TH1D.h"
 
@@ -96,8 +97,18 @@ void AliTaskLeadingMC::CreateOutputObjects()
   // global observables MC generator
   fTree->Branch("v0mPerc", &fV0Perc, "v0mPerc/F");
   fTree->Branch("zdcPerc", &fZdcPerc, "zdcPerc/F");
+  fTree->Branch("zdcPercFired", &fZdcPercFired, "zdcPercFired/F");
+  fTree->Branch("multRef5", &fMultRef5, "multRef5/F");
+  fTree->Branch("multRef8", &fMultRef8, "multRef8/F");
+  fTree->Branch("multSPDcl", &fMultSPDcl, "multSPDcl/F");
+  fTree->Branch("multSPDtr", &fMultSPDtr, "multSPDtr/F");
+  fTree->Branch("SPDtracklets", &fSPDtracklets, "SPDtracklets/I");
+  fTree->Branch("SPDtrackletsA", &fSPDtrackletsA, "SPDtrackletsA/I");
+  fTree->Branch("SPDtrackletsC", &fSPDtrackletsC, "SPDtrackletsC/I");
   fTree->Branch("nch", &fNch, "nch/I");
   fTree->Branch("nchEta", &fNchEta, "nchEta/I");
+  fTree->Branch("nchEtaA", &fNchEtaA, "nchEtaA/I");
+  fTree->Branch("nchEtaC", &fNchEtaC, "nchEtaC/I");
   fTree->Branch("energyhEta", &fEnergyEta, "energyEta/F");  
   fTree->Branch("nmpi", &fNMPI, "nmpi/I");
   fTree->Branch("nLambdaEta", &fNLambdaEta, "nLambdaEta/I");
@@ -249,8 +260,28 @@ void AliTaskLeadingMC::Exec(Option_t *)
   } else {
      //V0M Multiplicity 
      fV0Perc = MultSelection->GetMultiplicityPercentile("V0M");
+     fZdcPercFired = MultSelection->GetMultiplicityPercentile("ZPNACpp");
      fZdcPerc = MultSelection->GetMultiplicityPercentile("ZPNACTowerpp");
+     fMultRef5 = MultSelection->GetMultiplicityPercentile("RefMult05");
+     fMultRef8 = MultSelection->GetMultiplicityPercentile("RefMult08");
+     fMultSPDcl = MultSelection->GetMultiplicityPercentile("SPDClusters");
+     fMultSPDtr = MultSelection->GetMultiplicityPercentile("SPDTracklets");
   }
+
+  //SPDTracklets to get a midrapidity Nch estimator
+  AliMultiplicity* multiplicity =  fESD->GetMultiplicity();
+  fSPDtracklets = 0;
+  fSPDtrackletsA = 0;
+  fSPDtrackletsC = 0;
+  for (auto it = 0; it<multiplicity->GetNumberOfTracklets(); it++) {
+     Double_t eta = multiplicity->GetEta(it);
+     if ( abs(eta) < 0.5 ){
+       fSPDtracklets++;
+       if(eta < 0) fSPDtrackletsA++;
+       else fSPDtrackletsC++;
+     }
+  }
+
 
   // fill signal reconstructed in ZDCs
   fillZDCreco();
@@ -292,7 +323,7 @@ void AliTaskLeadingMC::loopMC(AliMCEvent *mcEvent){
   fP_cand_leadC=0;
   fN_cand_leadC=0;
 
-  fNch=0,fNchEta=0,fNLambdaEta=0,fNXiEta=0,fNOmegaEta=0,fNPiEta=0;
+  fNch=0,fNchEta=0,fNchEtaA=0,fNchEtaC=0,fNLambdaEta=0,fNXiEta=0,fNOmegaEta=0,fNPiEta=0;
   fSumPtLambdaEta=fSumPtXiEta=fSumPtOmegaEta=fSumPtPiEta=0;
   fEnergyEta=0;
 
@@ -321,6 +352,8 @@ void AliTaskLeadingMC::loopMC(AliMCEvent *mcEvent){
       if(TMath::Abs(part->Eta())<fEtaBarrel){
 	fEnergyEta+=part->Energy();
 	fNchEta++;
+        if(part->Eta() < 0) fNchEtaA++;
+        else fNchEtaC++;
 
 	if(pt > fMaxChargePt) fMaxChargePt = pt;
 	
