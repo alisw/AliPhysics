@@ -19,6 +19,7 @@
  * as an example, one histogram is filled
  */
 
+#include <TGrid.h>
 #include "TChain.h"
 #include "TMath.h"
 #include "TVector3.h"
@@ -2167,6 +2168,11 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAO
     }    
 
   TString estimaterFile = "alien:///alice/cern.ch/user/s/ssakai/Multiplicity_pp13/estimator.root"; 
+
+  if(!gGrid)
+    {
+     TGrid::Connect("alien//");
+    }
 
   TFile* fEstimator = TFile::Open(estimaterFile.Data());
 
