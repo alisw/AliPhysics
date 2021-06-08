@@ -374,7 +374,7 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMergedML(const AliAnalysisTaskGammaCaloMergedML&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMergedML &operator=(const AliAnalysisTaskGammaCaloMergedML&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMergedML, 39);
+    ClassDef(AliAnalysisTaskGammaCaloMergedML, 40);
 };
 
 #endif
