@@ -305,7 +305,22 @@ public:
    * number must be a valid physics run. Stand-alone runs or 
    * technical runs are not guaranteed.
    */
-  void drawL0MaskFromCVMFS(int runnumber);
+  void drawL0MaskFromCVMFS(int runnumber) { drawMaskFromCVMFS(runnumber, false); }
+
+  /**
+   * @brief Draw L1 trigger mask from DCS config in cvmfs OCDB
+   * @param runnumber Run number for which to draw trigger mapping
+   * 
+   * Creating plot with the mask channels at L1 in eta-phi space.
+   * For easier reading, a frame is highlighting supermodules,
+   * TRUs and FastORs. In case a canvas exists, this canvas is used
+   * for plotting, otherwise a new canvas is created. 
+   * 
+   * Attention: Access to the OCDB on cvmfs is requested. The run
+   * number must be a valid physics run. Stand-alone runs or 
+   * technical runs are not guaranteed.
+   */
+  void drawL1MaskFromCVMFS(int runnumber) { drawMaskFromCVMFS(runnumber, true); }
 
 private:
   /**
@@ -399,6 +414,16 @@ private:
    * intermediate size lines mark TRUs within supermodules and big lines supermodules.
    */
   void drawRun2Frame();
+
+  /**
+   * @brief Draw trigger mask at L0 or L1 for a given run number using the OCDB on cvmfs
+   * @param runnumber Run number 
+   * @param isLevel1 If true the mask is shown at L0, otherwise at L1
+   * 
+   * Helper function creating the monitoring plots of the trigger mask at L0 or at L1, 
+   * used in drawL0MaskFromCVMFS and drawL1MaskFromCVMFS
+   */
+  void drawMaskFromCVMFS(int runnumber, bool isLevel1);
 
 
   Int_t fCurrentRunnumber;                  //!<! Current run number of cache
