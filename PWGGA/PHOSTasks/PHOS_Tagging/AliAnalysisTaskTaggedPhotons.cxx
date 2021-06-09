@@ -2217,7 +2217,12 @@ void AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt, Double_t *
                                  (5.34450e-02+1.17836e-01*pt+2.03415e-01*pt*pt+2.87174e-01*pt*pt*pt+pt*pt*pt*pt) ;  
        mpi0sigma[0]= 1.80963e-03/pt-2.26438e-03/sqrt(pt)+6.06384e-03 -2.96752e-04*sqrt(pt)-1.88350e-05*pt ;
        mpi0sigma[1]= mpi0sigma[0] ;
-       mpi0sigma[2]= 2.25872e-03/pt-4.32329e-03/sqrt(pt)+8.74958e-03 -1.68033e-03*sqrt(pt)+ 2.03470e-04*pt ;     
+       mpi0sigma[2]= 2.25872e-03/pt-4.32329e-03/sqrt(pt)+8.74958e-03 -1.68033e-03*sqrt(pt)+ 2.03470e-04*pt ; 
+       if(fMCType==kSinglePi0){ //width in single pi0 is smaller (fit simulations)
+          mpi0sigma[0]=0.90; 
+          mpi0sigma[1]=0.90; 
+          mpi0sigma[2]=0.90; 
+       }
      }
      
   }
