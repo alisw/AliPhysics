@@ -115,7 +115,7 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetMaskedFastorIndicesL1(int ru
     for(int ichannel = 0; ichannel < 96; ichannel++) {
       int absfastor;
       geo->GetTriggerMapping()->GetAbsFastORIndexFromTRU(truID, ichannel, absfastor);
-      if(std::find(maskedfastors.begin(), maskedfastors.end(), absfastor)  != maskedfastors.end()) maskedfastors.push_back(absfastor);
+      if(std::find(maskedfastors.begin(), maskedfastors.end(), absfastor) == maskedfastors.end()) maskedfastors.push_back(absfastor);
     }
   }
 
