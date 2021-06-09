@@ -248,6 +248,15 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
   } else if (trainConfig == 19){ // var4
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
+
+  // different NL scales
+  } else if (trainConfig == 20){ // no scale in NL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799309f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 21){ // 1.5% scale in NL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799409f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 22){ // 3.5% scale in NL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799509f020000000","0163103100000010"); // no NCell cut
+
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
