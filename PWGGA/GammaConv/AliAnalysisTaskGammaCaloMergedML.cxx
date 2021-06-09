@@ -489,7 +489,7 @@ AliAnalysisTaskGammaCaloMergedML::AliAnalysisTaskGammaCaloMergedML(const char *n
   fTrackMatcherRunningMode(0),
   fMinAllowedPi0OverlapsMC(-1),
   fMaxAllowedPi0OverlapsMC(-1),
-  fHistoPi0EvsGammaOverlapE(NULL), 
+  fHistoPi0EvsGammaOverlapE(NULL),
   fMergedClusterTreeClusterType(0),
   fMergedClusterTreeClusterEnergy(0),
   fMergedClusterTreeClusterPt(0),
@@ -505,13 +505,13 @@ AliAnalysisTaskGammaCaloMergedML::AliAnalysisTaskGammaCaloMergedML(const char *n
   fMergedClusterTreeClusterM02(0),
   fMergedClusterTreeClusterM20(0)
 {
-  
+
   for(Int_t i=0; i<50; i++){
     for(Int_t j=0; j<50; j++){
       fMergedClusterTreeCluster[i][j] = 0.;
     }
   }
-  
+
   // Define output slots here
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -1886,7 +1886,7 @@ void AliAnalysisTaskGammaCaloMergedML::UserExec(Option_t *)
     fVectorDoubleCountTruePi0s.clear();
     fVectorDoubleCountTrueMultilePi0s.clear();
     fVectorDoubleCountTrueEtas.clear();
-    
+
 
   }
 
@@ -2279,7 +2279,7 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidates(AliAODConver
     } else if (TrueClusterCandidate->GetNCaloPhotonMotherMCLabels()> 0){
       // cout << TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) << endl;
       if (TrueClusterCandidate->IsLargestComponentElectron() || TrueClusterCandidate->IsLargestComponentPhoton()){
-        if (TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) > -1 && (fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->GetPdgCode() == 111 || fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->GetPdgCode() == 221) ){
+        if (TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) > -1 && (fMCEvent->GetTrack(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->PdgCode() == 111 || fMCEvent->GetTrack(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->PdgCode() == 221) ){
           if ( TrueClusterCandidate->IsConversion() && !TrueClusterCandidate->IsConversionFullyContained() ){
             clusterClass  = 3;
             motherLab       = TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0);
@@ -2292,7 +2292,7 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidates(AliAODConver
         if (TrueClusterCandidate->GetNCaloPhotonMotherMCLabels()> 1){
           if (fEnableDetailedPrintOut) cout << "Is Subleading EM: "<<  TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1) << endl;
           if ( TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1) > -1){
-            if (fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1))->GetPdgCode() == 111 || fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1))->GetPdgCode() == 221 ){
+            if (fMCEvent->GetTrack(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1))->PdgCode() == 111 || fMCEvent->GetTrack(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1))->PdgCode() == 221 ){
               clusterClass  = 2;
               motherLab       = TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1);
             }
@@ -2333,7 +2333,7 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidates(AliAODConver
           if (GetSelectedMesonID() < 2 && !isPrimary && m02 >= 0 && m02 <= 4.8 ){
             fHistoTrueSecPi0PtvsDiffReco[fiCut]->Fill(TrueClusterCandidate->Pt(), 0., tempClusterWeight);
           }
-	  
+
         }
         if (motherPDG == 221)
           fHistoTrueClusMergedPureFromEtaPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
@@ -2457,11 +2457,11 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidates(AliAODConver
             }
             Int_t grandMaLab = mother->GetMother();
             if (grandMaLab > -1){
-              if (TMath::Abs(fMCEvent->Particle(grandMaLab)->GetPdgCode()) == 310){
+              if (TMath::Abs(fMCEvent->GetTrack(grandMaLab)->PdgCode()) == 310){
                 fHistoTrueClusSecPi0FromK0sPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
-              } else if (TMath::Abs(fMCEvent->Particle(grandMaLab)->GetPdgCode()) == 130){
+              } else if (TMath::Abs(fMCEvent->GetTrack(grandMaLab)->PdgCode()) == 130){
                 fHistoTrueClusSecPi0FromK0lPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
-              } else if (TMath::Abs(fMCEvent->Particle(grandMaLab)->GetPdgCode()) == 3122){
+              } else if (TMath::Abs(fMCEvent->GetTrack(grandMaLab)->PdgCode()) == 3122){
                 fHistoTrueClusSecPi0FromLambdaPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
               }
             }
@@ -3015,7 +3015,7 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
       fMergedClusterTreePartPID = motherPDG;
       tTrueMergedCaloClusterBck[fiCut]->Fill();
       ResetBuffer();
-      
+
       if (fDoMesonQA > 0){
         fHistoTrueClusGammaEM02[fiCut]->Fill(TrueClusterCandidate->E(), m02, tempClusterWeight);
         if (fDoMesonQA > 1) {
@@ -3053,7 +3053,7 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
       fMergedClusterTreePartPID = motherPDG;
       tTrueMergedCaloClusterBck[fiCut]->Fill();
       ResetBuffer();
-      
+
       if (fDoMesonQA > 0){
         fHistoTrueClusElectronEM02[fiCut]->Fill(TrueClusterCandidate->E(), m02, tempClusterWeight);
         if (fDoMesonQA > 1){
@@ -3095,7 +3095,7 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
       fMergedClusterTreePartPID = TMath::Abs(pdgCodeParticle);
       tTrueMergedCaloClusterBck[fiCut]->Fill();
       ResetBuffer();
-      
+
       if(fDoMesonQA > 1){
         fHistoTrueClusBGEvsM02[fiCut]->Fill(TrueClusterCandidate->E(), m02, tempClusterWeight);
         fHistoTrueClusBGEvsM20[fiCut]->Fill(TrueClusterCandidate->E(), cluster->GetM20(), tempClusterWeight);
@@ -3946,7 +3946,7 @@ void AliAnalysisTaskGammaCaloMergedML::GetClusterReadout(AliVCluster* cluster, A
   cells = event->GetEMCALCells();
   //number of cells in the cluster
   const Int_t nCells    = cluster->GetNCells();
-  
+
   // Find The min and max cell index
   if (nCells <1) return;
   for (Int_t iCell=0; iCell < nCells; iCell++){
@@ -3964,7 +3964,7 @@ void AliAnalysisTaskGammaCaloMergedML::GetClusterReadout(AliVCluster* cluster, A
     }
   }
 
-  //Calc cluster height and width 
+  //Calc cluster height and width
   Int_t cluswidth = TMath::Abs( icolmax - icolmin );
   Int_t clusheight = TMath::Abs( irowmax - irowmin );
 
@@ -3978,10 +3978,10 @@ void AliAnalysisTaskGammaCaloMergedML::GetClusterReadout(AliVCluster* cluster, A
   } else {
     return;
   }
-  
+
   //Fill array with cell amplitudes
   for (Int_t iCell=0; iCell<nCells; iCell++){
-   
+
     nSupMod = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetModuleNumberAndCellPosition(cluster->GetCellsAbsId()[iCell], icol, irow);
 
     cellarray[ irow - irowmin + hbuffer ][ icol - icolmin + vbuffer ] = cells->GetCellAmplitude(cluster->GetCellsAbsId()[iCell]);

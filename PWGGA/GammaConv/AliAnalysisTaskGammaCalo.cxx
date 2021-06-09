@@ -3984,13 +3984,8 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
      // cout << clus->GetNLabels() << endl;
       if (clus->GetNLabels()>0){
         for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
-<<<<<<< HEAD
           PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
-          // Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
-=======
-          if (k< 50)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
           // Int_t pdgCode = fMCEvent->GetTrack(mclabelsCluster[k])->PdgCode();
->>>>>>> PWGGA/GammaConv - transition from TParticle to AliVParticle, fix for embedding MCs
           // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
         } // end of label loop
       }
@@ -6135,8 +6130,8 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
   SaftyLoopCounter = 0;
   while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
       SaftyLoopCounter++;
-      if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
-          tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
+      if(((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 111 && ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 221) {
+          tmpGammaMotherlabel = ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->GetMother();
       } else {
           if (tmpGammaMotherlabel != gamma1MotherLabel) {
               previouslyNotFoundTrueMesons = kTRUE;
@@ -8531,11 +8526,7 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
 }
 void AliAnalysisTaskGammaCalo::DoClusterMergingStudiesAOD(AliVCluster* clus,vector<clusterLabel> &labelvect)
 {
-<<<<<<< HEAD
   Int_t* mclabelsClus = clus->GetLabels();
-=======
-  Int_t* mclabelsClus = clus->GetLabels();  
->>>>>>> PWGGA/GammaConv - transition from TParticle to AliVParticle, fix for embedding MCs
   if (clus->GetNLabels()>0){
     for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
       // cluster merging studies
