@@ -1,6 +1,10 @@
 #ifndef ALIGAKFVERTEX_H
 #define ALIGAKFVERTEX_H
 
+#ifndef PWGGAUSEKFPARTICLE
+#include "AliKFVertex.h"
+#define AliGAKFVertex AliKFVertex
+#else
 #include "AliVVertex.h"
 
 //#include "AliKFVertex.h"
@@ -13,5 +17,5 @@ public :
 
     ClassDef(AliGAKFVertex, 1)
 };
-
+#endif // PWGGAUSEKFPARTICLE
 #endif // ALIGAKFVERTEX_H

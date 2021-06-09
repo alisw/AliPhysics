@@ -962,7 +962,11 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
   fCurrentMotherKF->SetMass(fCurrentMotherKF->M());
 
   // Calculating invariant mass
+#ifndef PWGGAUSEKFPARTICLE
+  Double_t mass=-99.0, mass_width=-99.0, Pt=-99.0, Pt_width=-99.0;
+#else
   float mass=-99.0, mass_width=-99.0, Pt=-99.0, Pt_width=-99.0;
+#endif // PWGGAUSEKFPARTICLE
   AliGAKFParticle fCurrentMotherKFForMass(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
   fCurrentMotherKFForMass.GetMass(mass,mass_width);
   fCurrentMotherKFForMass.GetPt(Pt,Pt_width);

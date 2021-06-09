@@ -37,9 +37,13 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
                    )
 
-# the KF particle library support
-get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
-include_directories(${KFPARTICLE_INCLUDE_DIR})
+# the KF particle library support if required
+set(USEKFLIBRARY true)
+if(USEKFLIBRARY) 
+    get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
+    include_directories(${KFPARTICLE_INCLUDE_DIR})
+    add_definitions("-DWITH_KFPARTICLE")
+endif(USEKFLIBRARY)
 
 # Sources in alphabetical order
 set(SRCS
@@ -77,7 +81,11 @@ set(HDRS ${HDRS})
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+if(USEKFLIBRARY)
+    generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "-DPWGGAUSEKFPARTICLE")
+else(USEKFLIBRARY)
+    generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+endif(USEKFLIBRARY)
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger)
@@ -86,8 +94,10 @@ set(ALIPHYSICS_DEPENDENCIES EMCALbase PWGCaloTrackCorrBase PWGCaloTrackCorrBase 
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ALIPHYSICS_DEPENDENCIES} ${ROOT_DEPENDENCIES})
-get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
-set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
+if(USEKFLIBRARY)
+    get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
+endif(USEKFLIBRARY)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -96,16 +106,17 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 # Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIPHYSICS_DEPENDENCIES} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
 
 # Public include folders that will be propagated to the dependecies
-target_include_directories(${MODULE} PUBLIC ${incdirs})
+target_include_directories(${MODULE} PUBLIC ${incdirs} INTERFACE ${KFPARTICLE_INCLUDE_DIR})
 
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
@@ -124,6 +135,9 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Setting compilation flags for the object
+if(USEKFLIBRARY)
+    target_compile_definitions(${MODULE} PUBLIC "PWGGAUSEKFPARTICLE")
+endif(USEKFLIBRARY)
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
 # Setting the linking flags for the library
 set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")

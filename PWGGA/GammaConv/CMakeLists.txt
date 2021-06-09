@@ -41,10 +41,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
                    )
 
-# the KF particle library support
-get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
-include_directories(${KFPARTICLE_INCLUDE_DIR})
-
 # Sources in alphabetical order
 set(SRCS
     #helper classes
@@ -125,8 +121,6 @@ set(ALIPHYSICS_DEPENDENCIES PWGCocktail PWGGAGammaConvBase PWGEMCALtasks PWGEMCA
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ALIPHYSICS_DEPENDENCIES} ${ROOT_DEPENDENCIES})
-get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
-set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
