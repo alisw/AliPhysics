@@ -83,7 +83,7 @@ public:
     void MCTruthCorrelation(TObjArray* MCRedTracks, Bool_t AfterEventCuts, Int_t RecLPLabel, Float_t pVtxZ, Float_t mult, Int_t &LPinAcceptance, Int_t &LP, Double_t EventWeight);
 
     //********************MC
-    void  MCEfficiencyCorrections(const AliVVertex * RecVertex, Double_t EventWeight);
+    void  MCEfficiencyCorrections(const AliVVertex * RecVertex, Double_t mult, Double_t EventWeight);
     Int_t HFEisCharmOrBeauty(Int_t ElectronIndex);
 
     //*********************ANALYSIS Helper
@@ -708,7 +708,7 @@ public:
     THnSparse             *fRecHadPtEtaPhiVtxWRecEff; //!
 
     TH2F                  *fCheckMCPtvsRecPtEle;     //!
-    TH1F                  *fRecHFE; //!
+    TH2F                  *fRecElecMultWRecEff; //!
     THnSparse             *fMCElecPtEtaPhiVtx;       //!
     TH2F                  *fRecElecMCSecondaryCont;   //!
     THnSparse             *fRecElecPtEtaPhiVtx;      //!
@@ -716,6 +716,7 @@ public:
     THnSparse             *fRecElecMCPtEtaPhiVtx;    //!
     TH1F                  *fMCElecPDG;               //!
     THnSparse             *fMCElecPtEtaPhiStrictVtx; //!
+    TH2F                  *fMCElecMult;              //!
 
     THnSparse             *fMCPi0Prod;               //!
     THnSparse             *fMCEtaProd;               //!
