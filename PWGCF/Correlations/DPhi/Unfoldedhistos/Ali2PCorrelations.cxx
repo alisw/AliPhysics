@@ -207,9 +207,9 @@ void Ali2PCorrelations::Initialize()
   fMax_deltaeta      = fMax_eta_1 - fMin_eta_1;
   fWidth_deltaeta    = (fMax_deltaeta - fMin_deltaeta) / fNBins_deltaeta;
   fNBins_deltaphi    = fNBins_phi_1;
-  fMin_deltaphi      = 0.0;
-  fMax_deltaphi      = TMath::TwoPi();
-  fWidth_deltaphi    = (fMax_deltaphi - fMin_deltaphi) / fNBins_deltaphi;
+  fWidth_deltaphi    = TMath::TwoPi() / fNBins_deltaphi;
+  fMin_deltaphi      = 0.0 - fWidth_deltaphi / 2.0;
+  fMax_deltaphi      = TMath::TwoPi() - fWidth_deltaphi / 2.0;
 
   /* incorporate configuration parameters */
   fOutput->Add(new TParameter<Bool_t>("DifferentialOutput",true,'f'));
