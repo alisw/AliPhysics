@@ -3710,7 +3710,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     AliMCParticle * gammaMC0 = (AliMCParticle*)fMCEvent->GetTrack(gamma0MCLabel);
     if (TrueGammaCandidate0->IsLargestComponentPhoton() || TrueGammaCandidate0->IsLargestComponentElectron()){		// largest component is electro magnetic
       // get mother of interest (pi0 or eta)
-       tmpGammaMotherlabel=gammaMC0->GetMother(0);
+       tmpGammaMotherlabel=gammaMC0->GetMother();
       if (TrueGammaCandidate0->IsLargestComponentPhoton()){														// for photons its the direct mother
         gamma0MotherLabel=gammaMC0->GetMother();
       } else if (TrueGammaCandidate0->IsLargestComponentElectron()){ 												// for electrons its either the direct mother or for conversions the grandmother
@@ -3748,7 +3748,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     // Daughters Gamma 1
     AliMCParticle * gammaMC1 = (AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel);
     if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){		// largest component is electro magnetic
-      tmpGammaMotherlabel = gammaMC1->GetMother(0);
+      tmpGammaMotherlabel = gammaMC1->GetMother();
       // get mother of interest (pi0 or eta)
       if (TrueGammaCandidate1->IsLargestComponentPhoton()){														// for photons its the direct mother
         gamma1MotherLabel=gammaMC1->GetMother();
@@ -4307,7 +4307,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
       // Daughters Gamma 1
       AliMCParticle * gammaMC1 = (AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel);
       if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){		// largest component is electro magnetic
-        tmpGammaMotherlabel = gammaMC1->GetMother(0);
+        tmpGammaMotherlabel = gammaMC1->GetMother();
         // get mother of interest (pi0 or eta)
         if (TrueGammaCandidate1->IsLargestComponentPhoton()){														// for photons its the direct mother
           gamma1MotherLabel=gammaMC1->GetMother();
@@ -5549,7 +5549,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
         if(particle->PdgCode() == fPDGCodeAnalyzedMeson){
           fHistoMCHNMPiPlPiMiNDMPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight); 	// All MC eta, omega OR eta prime in respective decay channel
           if(fEnableNDMInputSpectrum){
-            for(int idaug = particle->GetFirstDaughter(); idaug <= particle->GetLastDaughter(); idaug++) {
+            for(int idaug = particle->GetDaughterFirst(); idaug <= particle->GetDaughterLast(); idaug++) {
               AliVParticle *daughter = fMCEvent->GetTrack(idaug);
               if(TMath::Abs(daughter->PdgCode()) == fPDGCodeNDM){
                 fHistoMCNDMFromHNMInputPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight);
@@ -5584,7 +5584,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                 if(particle->PdgCode() == fPDGCodeAnalyzedMeson){
                   fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight ); 		// MC Eta, omega or eta prime with pi+ pi- pi0 with gamma's and e+e- in acc
                   if(fEnableNDMInputSpectrum){
-                    for(int idaug = particle->GetFirstDaughter(); idaug <= particle->GetLastDaughter(); idaug++) {
+                    for(int idaug = particle->GetDaughterFirst(); idaug <= particle->GetDaughterLast(); idaug++) {
                       AliVParticle *daughter = fMCEvent->GetTrack(idaug);
                       if(TMath::Abs(daughter->PdgCode()) == fPDGCodeNDM){
                         fHistoMCNDMFromHNMInputInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight );
@@ -5614,7 +5614,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                       if(particle->PdgCode() == fPDGCodeAnalyzedMeson){
                         fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight  ); 		// MC Eta, omega or eta prime with pi+ pi- pi0 with gamma's and e+e- in acc
                         if(fEnableNDMInputSpectrum){
-                          for(int idaug = particle->GetFirstDaughter(); idaug <= particle->GetLastDaughter(); idaug++) {
+                          for(int idaug = particle->GetDaughterFirst(); idaug <= particle->GetDaughterLast(); idaug++) {
                             AliVParticle *daughter = fMCEvent->GetTrack(idaug);
                             if(TMath::Abs(daughter->PdgCode()) == fPDGCodeNDM){
                               fHistoMCNDMFromHNMInputInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight );
@@ -5639,7 +5639,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                 if(particle->PdgCode() == fPDGCodeAnalyzedMeson){
                   fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight  ); 		// MC Eta pi+ pi- pi0 with gamma's and e+e- in acc
                   if(fEnableNDMInputSpectrum){
-                    for(int idaug = particle->GetFirstDaughter(); idaug <= particle->GetLastDaughter(); idaug++) {
+                    for(int idaug = particle->GetDaughterFirst(); idaug <= particle->GetDaughterLast(); idaug++) {
                       AliVParticle *daughter = fMCEvent->GetTrack(idaug);
                       if(TMath::Abs(daughter->PdgCode()) == fPDGCodeNDM){
                         fHistoMCNDMFromHNMInputInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight );

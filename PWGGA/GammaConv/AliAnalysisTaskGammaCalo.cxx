@@ -6071,7 +6071,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
     gammaMC0 = (AliMCParticle*)fMCEvent->GetTrack(gamma0MCLabel);
     if (TrueGammaCandidate0->IsLargestComponentPhoton() || TrueGammaCandidate0->IsLargestComponentElectron()){    // largest component is electro magnetic
       // get mother of interest (pi0 or eta)
-      tmpGammaMotherlabel=gammaMC0->GetMother(0);
+      tmpGammaMotherlabel=gammaMC0->GetMother();
       if (TrueGammaCandidate0->IsLargestComponentPhoton()){                            // for photons its the direct mother
         gamma0MotherLabel=gammaMC0->GetMother();
       } else if (TrueGammaCandidate0->IsLargestComponentElectron()){                         // for electrons its either the direct mother or for conversions the grandmother
@@ -6111,7 +6111,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
     gammaMC1 = (AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel);
     if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){    // largest component is electro magnetic
       // get mother of interest (pi0 or eta)
-      tmpGammaMotherlabel = gammaMC1->GetMother(0);
+      tmpGammaMotherlabel = gammaMC1->GetMother();
       if (TrueGammaCandidate1->IsLargestComponentPhoton()){                            // for photons its the direct mother
         gamma1MotherLabel = gammaMC1->GetMother();
         fRconv = gammaMC1->Particle()->R();

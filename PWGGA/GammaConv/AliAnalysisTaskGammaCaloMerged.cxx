@@ -3757,8 +3757,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
               fHistoMCDecayGammaPt[fiCut]->Fill(particle->Pt(), tempParticleWeight); // decay photons
             }
           }
-        } else if ( fabs(particle->GetPdgCode()) == 11 ){  // electrons/positrons
-          TParticle* mother = (TParticle*)fMCEvent->Particle(particle->GetMother(0));
+        } else if ( fabs(particle->PdgCode()) == 11 ){  // electrons/positrons
+          TParticle* mother = (TParticle*)fMCEvent->Particle(particle->GetMother());
           if( mother->GetPdgCode() == 111 || mother->GetPdgCode() == 221 ){
             fHistoMCElectronsPt[fiCut]->Fill(particle->Pt(), 0., tempParticleWeight); // electrons from Dalitz
           } else if ( mother->GetPdgCode() == 22 ){

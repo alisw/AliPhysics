@@ -765,7 +765,7 @@ Int_t AliAnalysisTaskClusterQA::MakePhotonCandidates(AliVCluster* clus, AliVCalo
   // Float_t   maxEList[nc];
 
   // GetNLM
-  fClusterCutsEMC->GetNumberOfLocalMaxima(clus,fInputEvent,absCellIdList,maxEList);
+  // fClusterCutsEMC->GetNumberOfLocalMaxima(clus,fInputEvent,absCellIdList,maxEList);
 
   // split clusters according to their shares in the cluster (NLM == 1) needs to be treated differently
   if (fMinNLMCut == 1 && fMaxNLMCut == 1 ){

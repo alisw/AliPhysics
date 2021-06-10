@@ -2700,27 +2700,27 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessMCParticles()
             fHistoMCOmegaDecayChannels[fiCut]->Fill(1,fWeightJetJetMC);
             fHistoMCAllOmegaInvMassPt[fiCut]->Fill(TMath::Sqrt((particle->E())*(particle->E())-(particle->P())*(particle->P())),particle->Pt(),fWeightJetJetMC);
             fHistoMCGammaFromAllOmegaPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
-            fHistoMCPi0FromAllOmegaInvMassPt[fiCut]->Fill(TMath::Sqrt((pi0->Energy())*(pi0->Energy())-(pi0->P())*(pi0->P())),pi0->Pt(),fWeightJetJetMC);
+            fHistoMCPi0FromAllOmegaInvMassPt[fiCut]->Fill(TMath::Sqrt((pi0->E())*(pi0->E())-(pi0->P())*(pi0->P())),pi0->Pt(),fWeightJetJetMC);
             if(!fDoLightOutput){
               if(fDoMesonQA & 0b00000001) {
                 Double_t Pi0Y = 10.;
-                if(pi0->Energy() - pi0->Pz() == 0 || pi0->Energy() + pi0->Pz() == 0){
+                if(pi0->E() - pi0->Pz() == 0 || pi0->E() + pi0->Pz() == 0){
                   Pi0Y=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
                 }else{
-                  Pi0Y = 0.5*(TMath::Log((pi0->Energy()+pi0->Pz()) / (pi0->Energy()-pi0->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+                  Pi0Y = 0.5*(TMath::Log((pi0->E()+pi0->Pz()) / (pi0->E()-pi0->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
                 }
                 fHistoMCPi0FromAllOmegaYPt[fiCut]->Fill(pi0->Pt(),Pi0Y,fWeightJetJetMC);
 
                 Double_t OmegaY = 10.;
-                if(particle->Energy() - particle->Pz() == 0 || particle->Energy() + particle->Pz() == 0){
+                if(particle->E() - particle->Pz() == 0 || particle->E() + particle->Pz() == 0){
                   OmegaY=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
                 }else{
-                  OmegaY = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+                  OmegaY = 0.5*(TMath::Log((particle->E()+particle->Pz()) / (particle->E()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
                 }
                 fHistoMCAllOmegaYPt[fiCut]->Fill(particle->Pt(),OmegaY,fWeightJetJetMC);
               }
               if(fDoMesonQA & 0b00000010) {
-                Double_t alpha = (pi0->Energy() - gamma2->Energy())/(pi0->Energy() + gamma2->Energy());
+                Double_t alpha = (pi0->E() - gamma2->E())/(pi0->E() + gamma2->E());
                 fHistoMCAllOmegaAlphaPt[fiCut]->Fill(particle->Pt(),alpha,fWeightJetJetMC);
 
                 //check whether pi0 decayed into two gammas
@@ -2730,7 +2730,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessMCParticles()
                   if (gamma0->PdgCode()==22 && gamma1->PdgCode()==22){
 
                     //plot pi0 alpha
-                    Double_t pi0alpha = (gamma0->Energy() - gamma1->Energy())/(gamma0->Energy() + gamma1->Energy());
+                    Double_t pi0alpha = (gamma0->E() - gamma1->E())/(gamma0->E() + gamma1->E());
                     fHistoMCPi0FromAllOmegaAlphaPt[fiCut]->Fill(pi0->Pt(),pi0alpha,fWeightJetJetMC);
                   }
                 }
@@ -2837,23 +2837,23 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessMCParticles()
             if(!fDoLightOutput){
               if(fDoMesonQA & 0b00000001) {
                 Double_t OmegaY = 10.;
-                if(particle->Energy() - particle->Pz() == 0 || particle->Energy() + particle->Pz() == 0){
+                if(particle->E() - particle->Pz() == 0 || particle->E() + particle->Pz() == 0){
                   OmegaY=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
                 }else{
-                  OmegaY = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+                  OmegaY = 0.5*(TMath::Log((particle->E()+particle->Pz()) / (particle->E()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
                 }
                 Double_t Pi0Y = 10.;
-                if(neutPion->Energy() - neutPion->Pz() == 0 || neutPion->Energy() + neutPion->Pz() == 0){
+                if(neutPion->E() - neutPion->Pz() == 0 || neutPion->E() + neutPion->Pz() == 0){
                   Pi0Y=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
                 }else{
-                  Pi0Y = 0.5*(TMath::Log((neutPion->Energy()+neutPion->Pz()) / (neutPion->Energy()-neutPion->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+                  Pi0Y = 0.5*(TMath::Log((neutPion->E()+neutPion->Pz()) / (neutPion->E()-neutPion->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
                 }
                 fHistoMCOmegaInAccYPt[fiCut]->Fill(particle->Pt(),OmegaY,fWeightJetJetMC);
                 fHistoMCPi0FromOmegaInAccYPt[fiCut]->Fill(neutPion->Pt(),Pi0Y,fWeightJetJetMC);
               }
               if(fDoMesonQA & 0b00000010) {
-                Double_t OmegaAlpha = (neutPion->Energy() - gamma2->Energy())/(neutPion->Energy() + gamma2->Energy());
-                Double_t Pi0Alpha = (gamma0->Energy() - gamma1->Energy())/(gamma0->Energy() + gamma1->Energy());
+                Double_t OmegaAlpha = (neutPion->E() - gamma2->E())/(neutPion->E() + gamma2->E());
+                Double_t Pi0Alpha = (gamma0->E() - gamma1->E())/(gamma0->E() + gamma1->E());
                 fHistoMCOmegaInAccAlphaPt[fiCut]->Fill(particle->Pt(),OmegaAlpha,fWeightJetJetMC);
                 fHistoMCPi0FromOmegaInAccAlphaPt[fiCut]->Fill(neutPion->Pt(),Pi0Alpha,fWeightJetJetMC);
               }
