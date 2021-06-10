@@ -422,7 +422,7 @@ void AliRDHFCutsKFP::GetCutVarsForOpt(AliAODRecoDecayHF *d, Float_t *vars, Int_t
   return;
 }
 //---------------------------------------------------------------------------
-Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel) 
+Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEvent *aod) 
 {
   //
   // Apply selection
@@ -463,7 +463,7 @@ Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel)
     Bool_t cleanvtx = kFALSE;
     AliAODVertex *origownvtx = 0x0;
     if(fRemoveDaughtersFromPrimary && aod) {
-       if(d->GetOwnPrimaryVtx()) origownvtx = new ALiAODVertex(*d->GetOwnPrimaryVtx());
+       if(d->GetOwnPrimaryVtx()) origownvtx = new AliAODVertex(*d->GetOwnPrimaryVtx());
        cleanvtx = kTRUE;
        if(!RecalcOwnPrimaryVtx(d,aod)) {
           CleanOwnPrimaryVtx(d,aod,origownvtx);
@@ -535,6 +535,7 @@ Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel)
       return 0;
     }
     returnvalueCuts = 1;
+    if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
   }
 
   Int_t returnvaluePID=1;
@@ -555,7 +556,6 @@ Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel)
   Int_t returnvalue = 0;
   if(returnvalueCuts==1 && returnvaluePID==1) returnvalue=1;
 
-  if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
   return returnvalue;
 }
 
