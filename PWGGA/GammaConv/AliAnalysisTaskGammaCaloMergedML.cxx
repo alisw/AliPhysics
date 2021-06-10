@@ -3133,7 +3133,6 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessMCParticles()
   for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
     Double_t tempParticleWeight       = fWeightJetJetMC;
     if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
-//ALERT
       AliMCParticle* particle = (AliMCParticle *)fMCEvent->GetTrack(i);
       if (!particle) continue;
 

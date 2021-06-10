@@ -109,7 +109,7 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     AliAnalysisTaskHadronicCocktailMC(const AliAnalysisTaskHadronicCocktailMC&);              // Prevent copy-construction
     AliAnalysisTaskHadronicCocktailMC &operator=(const AliAnalysisTaskHadronicCocktailMC&);   // Prevent assignment
   
-    ClassDef(AliAnalysisTaskHadronicCocktailMC, 12)
+    ClassDef(AliAnalysisTaskHadronicCocktailMC, 12);
 };
 
 #endif
