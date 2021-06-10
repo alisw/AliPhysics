@@ -38,7 +38,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                    )
 
 # the KF particle library support if required
-set(USEKFLIBRARY true)
+set(USEKFLIBRARY FALSE)
 if(USEKFLIBRARY) 
     get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
     include_directories(${KFPARTICLE_INCLUDE_DIR})
