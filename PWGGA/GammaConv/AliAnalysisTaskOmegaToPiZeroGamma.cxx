@@ -2304,9 +2304,6 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessAODMCParticles()
 
       Bool_t DecaysToPiPlPiMiPiZero = kFALSE;
 
-      // TParticle *posPion = 0x0;
-      // TParticle *negPion = 0x0;
-      // TParticle *neutPion = 0x0;
       AliAODMCParticle *posPion = 0x0;
       AliAODMCParticle *negPion = 0x0;
       AliAODMCParticle *neutPion = 0x0;
@@ -2332,8 +2329,6 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessAODMCParticles()
       if(DecaysToPiPlPiMiPiZero){
         fHistoMCOmegaDecayChannels[fiCut]->Fill(0.,fWeightJetJetMC);
       } else if (particle->GetNDaughters()==2){
-        // TParticle *gamma2 = 0x0;
-        // TParticle *pi0 = 0x0;
         AliAODMCParticle *gamma2 = 0x0;
         AliAODMCParticle *pi0 = 0x0;
 
@@ -2382,8 +2377,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessAODMCParticles()
               if (pi0->GetNDaughters()==2 && pi0->GetDaughterFirst()>-1 && pi0->GetDaughterLast()>-1){
                 AliAODMCParticle* gamma0 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(pi0->GetDaughterFirst()));
                 AliAODMCParticle* gamma1 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(pi0->GetDaughterLast()));
-                // TParticle *gamma0 = (TParticle*)fMCEvent->Particle(pi0->GetFirstDaughter());
-                // TParticle *gamma1 = (TParticle*)fMCEvent->Particle(pi0->GetLastDaughter());
+                // AliMCParticle *gamma0 = (AliMCParticle*)fMCEvent->GetTrack(pi0->GetDaughterFirst());
+                // AliMCParticle *gamma1 = (AliMCParticle*)fMCEvent->GetTrack(pi0->GetDaughterLast());
                 if (gamma0->GetPdgCode()==22 && gamma1->GetPdgCode()==22){
 
                   //plot pi0 alpha

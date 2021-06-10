@@ -3727,8 +3727,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
   Int_t SaftyLoopCounter = 0;
   while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
     SaftyLoopCounter++;
-    if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
-      tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
+    if(((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 111 && ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 221) {
+      tmpGammaMotherlabel = ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->GetMother();
     } else {
       if (tmpGammaMotherlabel != gamma0MotherLabel) {
         previouslyNotFoundTrueMesons = kTRUE;
@@ -3762,8 +3762,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
   SaftyLoopCounter = 0;
   while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
     SaftyLoopCounter++;
-    if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
-      tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
+    if(((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 111 && ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 221) {
+      tmpGammaMotherlabel = ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->GetMother();
     } else {
       if (tmpGammaMotherlabel != gamma1MotherLabel) {
         previouslyNotFoundTrueMesons = kTRUE;
@@ -3788,9 +3788,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     }
     Pi0Candidate->SetMCLabel(gamma0MotherLabel);
     if (fEnableTreeTrueNDMFromHNM){
-        Int_t grandmotherLabel = ((TParticle*)fMCEvent->Particle(gamma0MotherLabel))->GetMother(0);
-        if (((TParticle*)fMCEvent->Particle(grandmotherLabel))->GetPdgCode() == fPDGCodeAnalyzedMeson){
-            fPtHNM = ((TParticle*)fMCEvent->Particle(grandmotherLabel))->Pt();
+        Int_t grandmotherLabel = ((AliMCParticle*)fMCEvent->GetTrack(gamma0MotherLabel))->GetMother();
+        if (((AliMCParticle*)fMCEvent->GetTrack(grandmotherLabel))->PdgCode() == fPDGCodeAnalyzedMeson){
+            fPtHNM = ((AliMCParticle*)fMCEvent->GetTrack(grandmotherLabel))->Pt();
             fPtNDM = Pi0Candidate->Pt();
             fInvMassNDM = Pi0Candidate->M();
             fTreeTrueNDMFromHNM[fiCut]->Fill();
@@ -4321,8 +4321,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     SaftyLoopCounter = 0;
     while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
         SaftyLoopCounter++;
-        if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
-            tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
+        if(((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 111 && ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->PdgCode() != 221) {
+            tmpGammaMotherlabel = ((AliMCParticle*)fMCEvent->GetTrack(tmpGammaMotherlabel))->GetMother();
         } else {
             if (tmpGammaMotherlabel != gamma1MotherLabel) {
                 previouslyNotFoundTrueMesons = kTRUE;
@@ -4353,9 +4353,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
       }
       Pi0Candidate->SetMCLabel(motherRealLabel);
       if (fEnableTreeTrueNDMFromHNM){
-          Int_t grandmotherLabel = ((TParticle*)fMCEvent->Particle(motherRealLabel))->GetMother(0);
-          if (((TParticle*)fMCEvent->Particle(grandmotherLabel))->GetPdgCode() == fPDGCodeAnalyzedMeson){
-              fPtHNM = ((TParticle*)fMCEvent->Particle(grandmotherLabel))->Pt();
+          Int_t grandmotherLabel = ((AliMCParticle*)fMCEvent->GetTrack(motherRealLabel))->GetMother();
+          if (((AliMCParticle*)fMCEvent->GetTrack(grandmotherLabel))->PdgCode() == fPDGCodeAnalyzedMeson){
+              fPtHNM = ((AliMCParticle*)fMCEvent->GetTrack(grandmotherLabel))->Pt();
               fPtNDM = Pi0Candidate->Pt();
               fInvMassNDM = Pi0Candidate->M();
               fTreeTrueNDMFromHNM[fiCut]->Fill();

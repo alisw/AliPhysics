@@ -1986,9 +1986,9 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessClusters(){
 
       if (clus->GetNLabels()>0){
         for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
-          // TParticle *dummy    = NULL;
+          // AliMCParticle *dummy    = NULL;
           if (mclabelsCluster[k]>0){
-            // dummy             = fMCEvent->Particle(mclabelsCluster[k]);
+            // dummy             = fMCEvent->GetTrack(mclabelsCluster[k]);
             // if (dummy->R() < 407.0){
               if (nValidClusters< 50)PhotonCandidate->SetCaloPhotonMCLabel(nValidClusters,mclabelsCluster[k]);
               nValidClusters++;

@@ -2194,7 +2194,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 
       if (clus->GetNLabels()>0){
         for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
-          // TParticle *dummy    = NULL;
+          // AliMCParticle *dummy    = NULL;
           if (mclabelsCluster[k]>0){
             // dummy             = fMCEvent->GetTrack(mclabelsCluster[k]);
             // if (dummy->R() < 407.0){
@@ -3758,10 +3758,10 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
             }
           }
         } else if ( fabs(particle->PdgCode()) == 11 ){  // electrons/positrons
-          TParticle* mother = (TParticle*)fMCEvent->Particle(particle->GetMother());
-          if( mother->GetPdgCode() == 111 || mother->GetPdgCode() == 221 ){
+          AliMCParticle* mother = (AliMCParticle*)fMCEvent->GetTrack(particle->GetMother());
+          if( mother->PdgCode() == 111 || mother->PdgCode() == 221 ){
             fHistoMCElectronsPt[fiCut]->Fill(particle->Pt(), 0., tempParticleWeight); // electrons from Dalitz
-          } else if ( mother->GetPdgCode() == 22 ){
+          } else if ( mother->PdgCode() == 22 ){
             fHistoMCElectronsPt[fiCut]->Fill(particle->Pt(), 1., tempParticleWeight); // conversion electrons
           } else {
             fHistoMCElectronsPt[fiCut]->Fill(particle->Pt(), 2., tempParticleWeight); // primary electrons

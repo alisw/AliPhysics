@@ -3126,7 +3126,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
           if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoWeights() ) {
             //Int_t secMotherLabel = ((AliMCParticle*)fMCEvent->GetTrack(gammaMotherLabel))->GetMother();
               Int_t secMotherLabel = TempgammaMotherLabel->GetMotherG();
-            //if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCEvent, fInputEvent) && fMCEvent->Particle(gammaMotherLabel)->GetPdgCode()==310){
+            //if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCEvent, fInputEvent) && fMCEvent->GetTrack(gammaMotherLabel)->PdgCode()==310){
             if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCEvent, fInputEvent) && TempgammaMotherLabel
                 ->GetPdgCodeG()==310){
                 weightedSec= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(secMotherLabel, fMCEvent, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
@@ -3159,7 +3159,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
             Int_t secMotherLabel = TempgammaMotherLabel->GetMotherG();
             //Int_t secMotherLabel = ((AliMCParticle*)fMCEvent->GetTrack(gammaMotherLabel))->GetMother();
             if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCEvent, fInputEvent) && TempgammaMotherLabel->GetPdgCodeG()==310){
-            //if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCEvent, fInputEvent) && fMCEvent->Particle(gammaMotherLabel)->GetPdgCode()==310){
+            //if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCEvent, fInputEvent) && fMCEvent->GetTrack(gammaMotherLabel)->PdgCode()==310){
                 weightedSec= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(secMotherLabel, fMCEvent, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
             }
           }
