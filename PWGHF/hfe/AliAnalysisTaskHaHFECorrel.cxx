@@ -515,7 +515,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fRecHadPtEtaPhiVtx(0)
 ,fRecHadPtEtaPhiVtxWRecEff(0)
 ,fCheckMCPtvsRecPtEle(0)
-,fRecHFE(0)
+,fRecElecMultWRecEff(0)
 ,fMCElecPtEtaPhiVtx(0)
 ,fRecElecMCSecondaryCont(0)
 ,fRecElecPtEtaPhiVtx(0)
@@ -523,6 +523,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fRecElecMCPtEtaPhiVtx(0)
 ,fMCElecPDG(0)
 ,fMCElecPtEtaPhiStrictVtx(0)
+,fMCElecMult(0)
 ,fMCPi0Prod(0)
 ,fMCEtaProd(0)
 ,fMCPiPlusProd(0)
@@ -985,7 +986,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fRecHadPtEtaPhiVtx(0)
 ,fRecHadPtEtaPhiVtxWRecEff(0)
 ,fCheckMCPtvsRecPtEle(0)
-,fRecHFE(0)
+,fRecElecMultWRecEff(0)
 ,fMCElecPtEtaPhiVtx(0)
 ,fRecElecMCSecondaryCont(0)
 ,fRecElecPtEtaPhiVtx(0)
@@ -993,6 +994,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fRecElecMCPtEtaPhiVtx(0)
 ,fMCElecPDG(0)
 ,fMCElecPtEtaPhiStrictVtx(0)
+,fMCElecMult(0)
 ,fMCPi0Prod(0)
 ,fMCEtaProd(0)
 ,fMCPiPlusProd(0)
@@ -1222,15 +1224,25 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     RefMeanSPD=11.07;
 
     if (fUseEPOS) {
-      RefMaxSPD=11.69;
+      RefMaxSPD=11.69;  // only for 16kl
       RefMinSPD=8.11;
       RefMeanSPD=10.76;
+    }
+    if (!fUseEventWeights) {
+      RefMaxSPD=11.96; // only for 16kl
     }
   }
   else {
     RefMinSPD=8.28;
     RefMaxSPD=11.53;
     RefMeanSPD=11.11;
+    if (fUseEPOS) {
+      RefMaxSPD=11.62; // only for 16kl;
+
+    }
+    if (!fUseEventWeights) {
+      RefMaxSPD=12.08; // only for 16kl
+    }
   }
   //fSPDnTrackAvg - only temporary, adjust per run, period  mc
 
@@ -1335,7 +1347,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     if (fRunNumber==263331 || fRunNumber==263332) return; // 16o outer layer (see above)
     if (fRunNumber>=270581 && fRunNumber<=270667) return; // complete period 17c
     if (fRunNumber==271774) return; // 17g outer layer
-    if (fRunNumber==272690 || (fRunNumber>=272747 && fRunNumber<=273100)); // cuts away most of 17h or separate efficiency?
+    if (fRunNumber==272690 || (fRunNumber>=272747 && fRunNumber<=273100)) return; // cuts away most of 17h or separate efficiency?
     if (fRunNumber==275149) return; // 17k (see above)
     if (fRunNumber==277194) return; // 17l (see above)
     if (fRunNumber==281920) return; // 17o (see above)
@@ -1617,7 +1629,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   // Efficiency Corrections
   if(fIsMC) {
     if (fIsAOD) {
-      MCEfficiencyCorrections(pVtx, EventWeight); //  Electron reconstruction, Hadron reconstruction
+      MCEfficiencyCorrections(pVtx, mult, EventWeight); //  Electron reconstruction, Hadron reconstruction
       // TList *lh=fMCheader->GetCocktailHeaders();
       // Int_t nh=lh->GetEntries();  
       /* for(Int_t i=0;i<nh;i++)	{
@@ -3256,11 +3268,19 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fRecElecPtEtaPhiVtxWRecEff->GetAxis(3)->Set(NVertexBins, XVertexBins);
     fRecElecPtEtaPhiVtxWRecEff->GetAxis(0)->Set(NBinsElectronRecEff, XBinsElectronRecEff);
     fOutputListMain->Add(fRecElecPtEtaPhiVtxWRecEff);
+
+    fRecElecMultWRecEff=new TH2F("fRecEleMultWRecEff", "Rec electrons w. rec.Eff;  rec #it{p}_{T}; rec mult", NBinsElectronRecEff, XBinsElectronRecEff,  NMultBins, XMultBins);
+    fOutputListMain->Add(fRecElecMultWRecEff);
     
+				
     fMCElecPtEtaPhiVtx=new THnSparseF("fMCElePtEtaPhiVtx", "MC truth gen. electrons;  MC #it{p}_{T}; MC #eta; MC #varphi; MC zVtx;", 4, EffEBins, EffEXmin, EffEXmax);
     fMCElecPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
     fMCElecPtEtaPhiVtx->GetAxis(0)->Set(NBinsElectronRecEff, XBinsElectronRecEff);
     fOutputListMain->Add(fMCElecPtEtaPhiVtx);
+
+    fMCElecMult = new TH2F("fMCEleMult", "MC truth gen. electrons; MC #it{p}_{T}; mult", NBinsElectronRecEff, XBinsElectronRecEff,  NMultBins, XMultBins);
+    fOutputListMain->Add(fMCElecMult);
+     
    
     if (fRecEff) { // for rec eff count rec. hadrons and electrons wo. receff correction
       fRecHadPtEtaPhiVtx=new THnSparseF("fRecHadPtEtaPhiVtx", "Rec hadrons; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx;", 4, EffHBins, EffHXmin, EffHXmax);
@@ -3805,6 +3825,7 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
 	    fillSparse[2]=phi;
 	    fillSparse[3]=pVtx->GetZ();
 	    fRecElecPtEtaPhiVtxWRecEff->Fill(fillSparse, EventWeight/recEffE); // for checks if right efficiency has been used
+	    fRecElecMultWRecEff->Fill(pt, mult, EventWeight/recEffE);
 	    
 	    //fRecHFE->Fill(pt, EventWeight);
 	    // fRecHFEEtaWRecEff->Fill(pt, eta, EventWeight/recEffE);
@@ -4139,7 +4160,7 @@ void AliAnalysisTaskHaHFECorrel::CheckPhotonicPartner(AliVTrack* Vtrack, Bool_t 
     if (abs(mcPart->GetPdgCode())!=11) continue;
     if (mcPart->GetMother()!=Mother) continue;
     // cout << "partner " << i << endl;
-    if (foundPartner) cout << "p0->eeee? " << endl; // but in p0->eeee
+    // if (foundPartner) cout << "p0->eeee? " << endl; // but in p0->eeee
     Double_t p1[3], p2[3];
     MCParticle->PxPyPz(p1);
     mcPart->PxPyPz(p2);
@@ -5697,7 +5718,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::AssoHadronPIDCuts(AliVTrack *Vtrack, Double_t
   return kTRUE;
 }
 
-void AliAnalysisTaskHaHFECorrel::MCEfficiencyCorrections(const AliVVertex * RecVertex, Double_t EventWeight) {
+void AliAnalysisTaskHaHFECorrel::MCEfficiencyCorrections(const AliVVertex * RecVertex, Double_t mult, Double_t EventWeight) {
   for (Int_t i=0; i<fMC->GetNumberOfTracks(); i++) {
     AliAODMCParticle *mcPart  = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(i));
     Double_t mcPt, mcPhi, mcEta, mcVtx[3];
@@ -5810,10 +5831,11 @@ void AliAnalysisTaskHaHFECorrel::MCEfficiencyCorrections(const AliVVertex * RecV
 	if (mcMotherID>0) {
 	  AliAODMCParticle* mcPartMother=(AliAODMCParticle*)fMC->GetTrack(mcMotherID);
 	  Int_t mcMotherPDG = abs(mcPartMother->GetPdgCode()); 
-
 	  if (mcMotherPDG==11 || mcMotherPDG==15) { // to includ HF->e->e HF->tau->e
-	    AliAODMCParticle* mcPartGMother=(AliAODMCParticle*)fMC->GetTrack(mcPartMother->GetMother());
-	    mcMotherPDG = abs(mcPartGMother->GetPdgCode());
+	    if (mcPartMother->GetMother()>0) {
+	      AliAODMCParticle* mcPartGMother=(AliAODMCParticle*)fMC->GetTrack(mcPartMother->GetMother());
+	      mcMotherPDG = abs(mcPartGMother->GetPdgCode());
+	    }
 	  }
 
 
@@ -5823,6 +5845,7 @@ void AliAnalysisTaskHaHFECorrel::MCEfficiencyCorrections(const AliVVertex * RecV
 	  if (MIsHeavy>3 && MIsHeavy<6 && mcEta> fMinElectronEta && mcEta < fMaxElectronEta) {
 	    fillSparse[2]=mcPhi;
 	    fMCElecPtEtaPhiVtx->Fill(fillSparse, EventWeight);
+	    fMCElecMult->Fill(mcPt, mult, EventWeight);
 	    if (fOneTimeCheck && fRecEff) {
 	      fMCElecPDG->Fill(mcMotherPDG, EventWeight);
 	      if (mcMotherPDG==411 || mcMotherPDG==421 || mcMotherPDG==431 || mcMotherPDG==511 || mcMotherPDG ==521 || mcMotherPDG ==531 || mcMotherPDG==541) {
@@ -6876,7 +6899,7 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(TObjArray* MCTrueRedTracks, 
 	  if (MotherIsHeavy>3 && MotherIsHeavy<6) {
 	    MotherIsHeavy = HFEisCharmOrBeauty(iMCElectron); // looking in history for B-D return 4,5 or 0
 	  }  
-
+		      
 	  ElectronInAcceptanceCut = kFALSE;
 	  if ((MCElectron->Eta() < fMaxElectronEta) && (MCElectron->Eta() > fMinElectronEta)) ElectronInAcceptanceCut = kTRUE;
 
@@ -7177,7 +7200,7 @@ Int_t AliAnalysisTaskHaHFECorrel::HFEisCharmOrBeauty(Int_t ElectronIndex) {
   Int_t HFMother = HFParticle->GetMother();
   Int_t PDGCode = abs(HFParticle->GetPdgCode());
   //  cout<< "Initial PDG " << PDGCode << endl;
-  while ( PDGCode>100 || PDGCode ==11) {
+  while ( PDGCode>100 || PDGCode ==11 || PDGCode ==15) {
     HFDaughter = HFMother;
     HFMother = HFParticle->GetMother();
     if (HFMother>=0) {
