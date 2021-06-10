@@ -325,7 +325,7 @@ AliRDHFCutsKFP::~AliRDHFCutsKFP() {
 }
 
 //---------------------------------------------------------------------------
-void AliRDHFCutsKFP::GetCutVarsForOpt(AliAODRecoDecayHF *d, Float_t *vars, Int_t nvars, Int_t *pdgdaughters) {
+void AliRDHFCutsKFP::GetCutVarsForOpt(AliAODRecoDecayHF *d, Float_t *vars, Int_t nvars, Int_t *pdgdaughters, AliAODEvent *aod) {
   //
   // Fills in vars the values of the variables
   //
@@ -342,6 +342,20 @@ void AliRDHFCutsKFP::GetCutVarsForOpt(AliAODRecoDecayHF *d, Float_t *vars, Int_t
     AliError("AliRDHFCutsKFP wrong number of variables\n");
     return;
   }
+
+  Bool_t cleanvtx = kFALSE;
+  AliAODVertex *origownvtx = 0x0;
+  if(fRemoveDaughtersFromPrimary && aod) {
+     if (dd->GetOwnPrimaryVtx()) origownvtx = new AliAODVertex(*dd->GetOwnPrimaryVtx());
+     cleanvtx = kTRUE;
+     if(!RecalcOwnPrimaryVtx(dd,aod)) {
+         CleanOwnPrimaryVtx(dd,aod,origownvtx);
+         cleanvtx = kFALSE;
+     }
+  }
+
+  
+
 
   //Double_t ptD=d->Pt();
   //Int_t ptbin=PtBin(ptD);
@@ -404,11 +418,11 @@ void AliRDHFCutsKFP::GetCutVarsForOpt(AliAODRecoDecayHF *d, Float_t *vars, Int_t
     iter++;
     vars[iter]= dd->PtProng(0);
   }
-
+  if(cleanvtx) CleanOwnPrimaryVtx(dd,aod,origownvtx);
   return;
 }
 //---------------------------------------------------------------------------
-Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel) 
+Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEvent *aod) 
 {
   //
   // Apply selection
@@ -445,6 +459,18 @@ Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel)
       return 0;
     }
     Bool_t okcand=kTRUE;
+
+    Bool_t cleanvtx = kFALSE;
+    AliAODVertex *origownvtx = 0x0;
+    if(fRemoveDaughtersFromPrimary && aod) {
+       if(d->GetOwnPrimaryVtx()) origownvtx = new AliAODVertex(*d->GetOwnPrimaryVtx());
+       cleanvtx = kTRUE;
+       if(!RecalcOwnPrimaryVtx(d,aod)) {
+          CleanOwnPrimaryVtx(d,aod,origownvtx);
+          cleanvtx = kFALSE;
+          return 0;
+       }
+    }
 
     Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
     Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
@@ -504,8 +530,12 @@ Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel)
 	okcand = kFALSE;
       }
 
-    if(!okcand)  return 0;
+    if(!okcand) { 
+      if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
+      return 0;
+    }
     returnvalueCuts = 1;
+    if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
   }
 
   Int_t returnvaluePID=1;
