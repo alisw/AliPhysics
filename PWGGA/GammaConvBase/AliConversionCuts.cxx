@@ -1682,37 +1682,37 @@ Bool_t AliConversionCuts::PIDProbabilityCut(AliConversionPhotonBase *photon, Ali
 
 
 ///________________________________________________________________________
-Bool_t AliConversionCuts::AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg){
+Bool_t AliConversionCuts::AcceptanceCut(AliMCParticle *particle, AliMCParticle * ePos,AliMCParticle* eNeg){
    // MC Acceptance Cuts
    //(Certain areas were excluded for photon reconstruction)
 
-   if(particle->R()>fMaxR){
+   if(TMath::Sqrt(particle->Xv()*particle->Xv()+particle->Yv()*particle->Yv())>fMaxR){
       return kFALSE;}
 
-   if(ePos->R()>fMaxR){
+   if(TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv())>fMaxR){
       return kFALSE;
    }
 
-   if(ePos->R()<fMinR){
+   if(TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv())<fMinR){
       return kFALSE;
    }
 
-   if( ePos->R() <= ((TMath::Abs(ePos->Vz())*fLineCutZRSlope)-fLineCutZValue)){
+   if( TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv()) <= ((TMath::Abs(ePos->Zv())*fLineCutZRSlope)-fLineCutZValue)){
       return kFALSE;
    }
-   else if (fUseEtaMinCut &&  ePos->R() >= ((TMath::Abs(ePos->Vz())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
-      return kFALSE;
-   }
-
-   if(TMath::Abs(eNeg->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+   else if (fUseEtaMinCut &&  TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv()) >= ((TMath::Abs(ePos->Zv())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
       return kFALSE;
    }
 
-   if(eNeg->Vz()!=ePos->Vz()||eNeg->R()!=ePos->R()){
+   if(TMath::Abs(eNeg->Zv()) > fMaxZ ){ // cuts out regions where we do not reconstruct
       return kFALSE;
    }
 
-   if(TMath::Abs(ePos->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+   if(eNeg->Zv()!=ePos->Zv()||TMath::Sqrt(eNeg->Xv()*eNeg->Xv()+eNeg->Yv()*eNeg->Yv())!=TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv())){
+      return kFALSE;
+   }
+
+   if(TMath::Abs(ePos->Zv()) > fMaxZ ){ // cuts out regions where we do not reconstruct
       return kFALSE;
    }
 

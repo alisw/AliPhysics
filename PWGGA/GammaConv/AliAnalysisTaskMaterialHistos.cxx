@@ -1661,10 +1661,10 @@ void AliAnalysisTaskMaterialHistos::ProcessPrimaryCandidatesNoDCA(){
 	  Int_t labelCurTrack = TMath::Abs( curTrack->GetLabel() );
 	  Bool_t curTrackIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, labelCurTrack, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 	  // if( labelCurTrack>-1 && labelCurTrack < fMCEvent->GetNumberOfTracks() ){
-	  //   TParticle* curTrackMC = fMCEvent->Particle(labelCurTrack);
-	  //   if( curTrackMC->GetPdgCode() ==   -211 || curTrackMC->GetPdgCode() ==  211 ||    
-	  // 	curTrackMC->GetPdgCode() ==  -2212 || curTrackMC->GetPdgCode() == 2212 ||
-	  // 	curTrackMC->GetPdgCode() ==   -321 || curTrackMC->GetPdgCode() ==  321  ){
+	  //   AliMCParticle* curTrackMC = fMCEvent->GetTrack(labelCurTrack);
+	  //   if( curTrackMC->PdgCode() ==   -211 || curTrackMC->PdgCode() ==  211 ||    
+	  // 	curTrackMC->PdgCode() ==  -2212 || curTrackMC->PdgCode() == 2212 ||
+	  // 	curTrackMC->PdgCode() ==   -321 || curTrackMC->PdgCode() ==  321  ){
 	  //     if(curTrackIsPrimary){
 	  // 	fHistoMCTruePhysicalPrimaryPt[fiCut]->Fill(curTrack->Pt());
 	  // 	fHistoMCTruePhysicalPrimaryMCPt[fiCut]->Fill(curTrackMC->Pt());

@@ -2,13 +2,12 @@
 #define ALICONVERSIONPHOTONBASE_H
 
 #include "TMath.h"
-#include "TParticle.h"
+// #include "TParticle.h"
 #include "AliLog.h"
 #include "TObject.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
 #include "AliGAKFParticle.h"
-#include "TParticle.h"
 #include <vector>
 #include "AliESDpid.h"
 #include "TF1.h"
