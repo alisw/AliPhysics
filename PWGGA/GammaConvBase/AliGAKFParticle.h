@@ -19,7 +19,7 @@ class AliGAKFParticle : public KFParticle {
 public :
     AliGAKFParticle() : KFParticle() {}
     virtual ~AliGAKFParticle() {}
-    AliGAKFParticle( const AliGAKFParticle &d1, const AliGAKFParticle &d2, Bool_t gamma = kFALSE ) : KFParticle(d1,d2) {}
+    AliGAKFParticle( const AliGAKFParticle &d1, const AliGAKFParticle &d2 ) : KFParticle(d1,d2) {}
     AliGAKFParticle( const AliGAKFParticle &d1, const AliGAKFParticle &d2, 
 		             const AliGAKFParticle &d3 ) : KFParticle(d1,d2,d3) {}
     AliGAKFParticle( const AliGAKFParticle &d1, const AliGAKFParticle &d2, 
