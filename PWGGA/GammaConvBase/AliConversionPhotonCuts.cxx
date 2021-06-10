@@ -978,7 +978,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(AliMCParticle *particle, AliM
     }
 
     // removed, decision on primary and secondary taken in main task
-// 		if(particle->GetMother(0) >= mcEvent->GetNumberOfPrimaries()){
+// 		if(particle->GetMother() >= mcEvent->GetNumberOfPrimaries()){
 // 			return kFALSE; // the gamma has a mother, and it is not a primary particle
 // 		}
 
@@ -2272,37 +2272,37 @@ Bool_t AliConversionPhotonCuts::PIDProbabilityCut(AliConversionPhotonBase *photo
 
 
 ///________________________________________________________________________
-Bool_t AliConversionPhotonCuts::AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg){
+Bool_t AliConversionPhotonCuts::AcceptanceCut(AliMCParticle *particle, AliMCParticle * ePos,AliMCParticle* eNeg){
   // MC Acceptance Cuts
   //(Certain areas were excluded for photon reconstruction)
 
-  if(particle->R()>fMaxR){
+  if(TMath::Sqrt(particle->Xv()*particle->Xv()+particle->Yv()*particle->Yv())>fMaxR){
     return kFALSE;}
 
-  if(ePos->R()>fMaxR){
+  if(TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv())>fMaxR){
     return kFALSE;
   }
 
-  if(ePos->R()<fMinR){
+  if(TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv())<fMinR){
     return kFALSE;
   }
 
-  if( ePos->R() <= ((TMath::Abs(ePos->Vz())*fLineCutZRSlope)-fLineCutZValue)){
+  if( TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv()) <= ((TMath::Abs(ePos->Zv())*fLineCutZRSlope)-fLineCutZValue)){
     return kFALSE;
   }
-  else if (fUseEtaMinCut &&  ePos->R() >= ((TMath::Abs(ePos->Vz())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
-    return kFALSE;
-  }
-
-  if(TMath::Abs(eNeg->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+  else if (fUseEtaMinCut &&  TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv()) >= ((TMath::Abs(ePos->Zv())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
     return kFALSE;
   }
 
-  if(eNeg->Vz()!=ePos->Vz()||eNeg->R()!=ePos->R()){
+  if(TMath::Abs(eNeg->Zv()) > fMaxZ ){ // cuts out regions where we do not reconstruct
     return kFALSE;
   }
 
-  if(TMath::Abs(ePos->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+  if(eNeg->Zv()!=ePos->Zv()||TMath::Sqrt(eNeg->Xv()*eNeg->Xv()+eNeg->Yv()*eNeg->Yv())!=TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv())){
+    return kFALSE;
+  }
+
+  if(TMath::Abs(ePos->Zv()) > fMaxZ ){ // cuts out regions where we do not reconstruct
     return kFALSE;
   }
 

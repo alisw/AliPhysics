@@ -17,7 +17,7 @@
 
 #include <memory>
 #include <vector>
-#include "TParticle.h"
+// #include "TParticle.h"
 #include "TPDGCode.h"
 #include "TMCProcess.h"
 #include "TDatabasePDG.h"
@@ -6892,7 +6892,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   virtualParticleMCLabel = TrueVirtualParticleCandidate->GetMCParticleLabel(fMCEvent);
   Int_t virtualParticleMotherLabel = -1;
   //Is set when:
-  //if(((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->GetPdgCode() == fPDGCodeNDM) isTrueNDM=kTRUE;
+  //if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == fPDGCodeNDM) isTrueNDM=kTRUE;
   //if(isTrueNDM){// True Pion
     //Pi0Candidate->SetTrueMesonValue(1);
   Bool_t trueMesonAdditionalFlag  = kFALSE;
@@ -7066,20 +7066,20 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
     //True Meson, but the analyzed one
     fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromDifferent[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
     if((fDoMesonQA>0 ) && (!fDoLightOutput)){
-      if((fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()                     == 223)||
-         (fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()                     == 221)){
+      if((fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()                     == 223)||
+         (fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()                     == 221)){
         // pi+pi- come from eta
         fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromEtaOmega[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 113){
+      } else if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()              == 113){
         // pi+pi- come from rho0
         fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromRho[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 331){
+      } else if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()              == 331){
         // pi+pi- come from eta prime
         fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromEtaPrime[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 310){
+      } else if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()              == 310){
         // pi+pi- come from K0 short
         fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromK0s[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 130){
+      } else if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()              == 130){
         // pi+pi- come from K0 long
         fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromK0l[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
       } else{
@@ -7090,22 +7090,22 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   } else if (isCombinatoricsMeson) {
     fHistoTruePiPlPiMiNDMCombinatoricalInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
     if(isSameMotherPiPlPiMi &&  (fDoMesonQA>0 ) && (!fDoLightOutput)){
-      if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()                     == 221){
+      if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()                     == 221){
         // pi+pi- come from eta
         fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 223){
+      } else if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()              == 223){
         // pi+pi- come from omega
         fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 113){
+      } else if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()              == 113){
        // pi+pi- come from rho0
         fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 331){
+      } else if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()              == 331){
         // pi+pi- come from eta prime
         fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 310){
+      } else if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()              == 310){
         // pi+pi- come from K0 short
         fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 130){
+      } else if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()              == 130){
         // pi+pi- come from K0 short
         fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
       } else {
@@ -7113,16 +7113,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
         fHistoTruePiPlPiMiSameMotherFromOtherlInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
       }
     } else if(isSameMotherPiMiNDM  &&  (fDoMesonQA>0 ) && (!fDoLightOutput)){
-      if(fMCEvent->Particle(NDMMotherLabel)->GetPdgCode()                       == 221){
+      if(fMCEvent->GetTrack(NDMMotherLabel)->PdgCode()                       == 221){
         // pi0pi- come from eta
         fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(NDMMotherLabel)->GetPdgCode()                == 223){
+      } else if(fMCEvent->GetTrack(NDMMotherLabel)->PdgCode()                == 223){
         // pi0pi- come from omega
         fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(NDMMotherLabel)->GetPdgCode()                ==-213){
+      } else if(fMCEvent->GetTrack(NDMMotherLabel)->PdgCode()                ==-213){
         // pi0pi- come from rho-
         fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(NDMMotherLabel)->GetPdgCode()                == 130){
+      } else if(fMCEvent->GetTrack(NDMMotherLabel)->PdgCode()                == 130){
         // pi0pi- come from rho-
         fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
       } else {
@@ -7130,16 +7130,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
         fHistoTruePiMiPiZeroSameMotherFromOtherlInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
       }
     } else if(isSameMotherPiPlNDM  &&  (fDoMesonQA>0 ) && (!fDoLightOutput)){
-      if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()                     == 221){
+      if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()                     == 221){
         // pi+pi0 come from eta
         fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 223){
+      } else if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()              == 223){
         // pi+pi0 come from omega
         fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 213) {
+      } else if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()              == 213) {
         // pi+pi0 come from rho+
         fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      } else if(fMCEvent->Particle(posMotherLabelMC)->GetPdgCode()              == 130) {
+      } else if(fMCEvent->GetTrack(posMotherLabelMC)->PdgCode()              == 130) {
         // pi+pi0 come from rho+
         fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
       } else {

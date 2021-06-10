@@ -4578,7 +4578,7 @@ void AliAnalysisTaskGammaConvCaloIso::ProcessMCParticlesIsolation(AliVCluster *c
            if (particleLead->GetMother() > -1){ //Does a mother particle exist?
              AliVParticle* motherDummy = fMCEvent->GetTrack(particleLead->GetMother());//create mother particle
              while(motherDummy->PdgCode() == 22 || motherDummy->PdgCode() == 11 || motherDummy->PdgCode() == -11){// loop to track down photon chains
-       //        cout << motherDummy->GetMother(0) << endl;
+       //        cout << motherDummy->GetMother() << endl;
                motherDummy = fMCEvent->GetTrack(motherDummy->GetMother());
              }
              //wrong code, how do implement GetLabel() for TParticle?

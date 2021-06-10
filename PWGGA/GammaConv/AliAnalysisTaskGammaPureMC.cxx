@@ -628,7 +628,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
     particle                    = (AliVParticle *)fMCEvent->GetTrack(i);
     if (!particle) continue;
     Bool_t hasMother            = kFALSE;
-    //     cout << i << "\t"<< particle->GetMother(0) << endl;
+    //     cout << i << "\t"<< particle->GetMother() << endl;
     if (particle->GetMother()>-1)
       hasMother                 = kTRUE;
     AliVParticle* motherParticle   = nullptr;

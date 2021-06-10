@@ -193,7 +193,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t SpecificTrackCuts(AliAODTrack * negTrack, AliAODTrack * posTrack,Int_t &cutIndex);
     Bool_t SpecificTrackCuts(AliESDtrack * negTrack, AliESDtrack * posTrack,Int_t &cutIndex);
     Bool_t AcceptanceCuts(AliConversionPhotonBase *photon);
-    Bool_t AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg);
+    Bool_t AcceptanceCut(AliMCParticle *particle, AliMCParticle * ePos,AliMCParticle* eNeg);
     Bool_t PhiSectorCut(AliConversionPhotonBase * photon);
     //   Bool_t dEdxCuts(AliVTrack * track);
     Bool_t dEdxCuts(AliVTrack * track, AliConversionPhotonBase * photon);
