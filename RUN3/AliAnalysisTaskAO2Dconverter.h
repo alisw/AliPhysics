@@ -11,6 +11,7 @@
 #include "AliEventCuts.h"
 #include "AliTriggerAnalysis.h"
 #include <TString.h>
+#include <TMap.h>
 
 #include "TClass.h"
 
@@ -590,6 +591,9 @@ private:
   ULong_t fBytes = 0; ///! Number of bytes stored in all trees
   ULong_t fMaxBytes = 100000000; ///| Approximative size limit on the total TF output trees
 
+  /// Meta data
+  TMap fMetaData; ///! meta data object for output file
+
   /// Pointer to the output file
   TFile * fOutputFile = 0x0; ///! Pointer to the output file
   TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
@@ -597,7 +601,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 16);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 17);
 };
 
 #endif
