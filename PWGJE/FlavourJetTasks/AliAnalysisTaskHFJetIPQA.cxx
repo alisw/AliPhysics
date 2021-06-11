@@ -1248,7 +1248,7 @@ Int_t AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const Al
       if(!(iPartIsInJet<0)){
         fIPSigPart=fTrackRecIPs[iPartIsInJet];
         //GetMCIP(pAOD,event, jetgen, fIPSigPart);
-       // printf("%s:: Got fIPSigPart=%f for track with label %i\n",__FUNCTION__,fIPSigPart, iTrackLabels[iPartIsInJet]);
+        //printf("%s:: Got fIPSigPart=%f for track with label %i\n",__FUNCTION__,fIPSigPart, iTrackLabels[iPartIsInJet]);
       }
 
       if(fIPSigPart>fMaxIP){
@@ -2373,7 +2373,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           Double_t cursImParXYZ    =TMath::Abs(GetValImpactParameter(   kXYZ,dca,cov))*sign;
           Double_t cursImParXYZSig =TMath::Abs(GetValImpactParameter(kXYZSig,dca,cov))*sign;
           //printf("cursImParXY=%f, cursImParXYSig=%f, cursImParXYZ=%f, cursImParXYZSig=%f\n", cursImParXY,cursImParXYSig, cursImParXYZ, cursImParXYZSig);
-          fTrackRecIPs.push_back(cursImParXY);
+          fTrackRecIPs.push_back(cursImParXYSig);
           fTrackRecPt.push_back(fTrackPt[NJetParticles]);
           //printf("%s: Track with label %i, IP=%f, pt=%f\n",__FUNCTION__, trackV->GetLabel(), cursImParXY, fTrackPt[NJetParticles]);
 
@@ -2442,9 +2442,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
        if((fIsPythia)&&(fJetProb>0))bIsTrueGenV0Jet=GetGenV0Jets(jetrec, ev, iTrackLabels,fTrackRecIPs,fTrackRecPt,fJetFlavour, kTagDec, fLNJP);
        //if(bIsTrueGenV0Jet) printf("%s: Found true V0 jet!\n",__FUNCTION__);
 
-       if(sImpParXY.size()>0){
-         if((bIsTrueGenV0Jet!=sImpParXY[0].iv0MCID)&&((sImpParXY[0].is_V0==V0MC)||(sImpParXY[0].is_V0==V0TrueRec))&&(fLNJP>0)&&(fJetFlavour!=B)){
-           AliError(Form("Found Inconsistency! bIsTrueGenV0Jet=%i, sImpParIsV0=%i\n", bIsTrueGenV0Jet, sImpParXY[0].is_V0));
+       if(sImpParXYSig.size()>0){
+         if((bIsTrueGenV0Jet!=sImpParXYSig[0].iv0MCID)&&((sImpParXYSig[0].is_V0==V0MC)||(sImpParXYSig[0].is_V0==V0TrueRec))&&(fLNJP>0)&&(fJetFlavour!=B)){
+           AliError(Form("Found Inconsistency! bIsTrueGenV0Jet=%i, sImpParIsV0=%i\n", bIsTrueGenV0Jet, sImpParXYSig[0].is_V0));
            PrintAllTreeVars();
          }
        }
@@ -2819,7 +2819,7 @@ void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
 
     printf("--------------------------------------------------------------------------------\n");
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-    printf("XXXXXXXXXX Code version 21.05.21 XXXXXXXXXX\n");
+    printf("XXXXXXXXXX Code version 11.06.21 XXXXXXXXXX\n");
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
     PrintSettings();
     PrintV0Settings();
