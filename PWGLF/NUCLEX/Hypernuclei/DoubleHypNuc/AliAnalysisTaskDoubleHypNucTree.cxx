@@ -1112,7 +1112,7 @@ void AliAnalysisTaskDoubleHypNucTree::UserExec(Option_t *) {
   
   fHistNumEvents->Fill(0);
 
-   // __ runnumber & period __ //
+  // __ runnumber & period __ //
   fPeriod    = fESDevent->GetPeriodNumber();
   frunnumber = fESDevent->GetRunNumber();
 
@@ -1193,15 +1193,99 @@ void AliAnalysisTaskDoubleHypNucTree::dEdxCheck(){
 // _________________________________________________ //
 void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 
+  const Int_t NTracksEvent = fESDevent->GetNumberOfTracks();
+  Int_t He3PosArray[NTracksEvent];
+  Int_t PPosArray[NTracksEvent];
+  Int_t PiPosArray[NTracksEvent];
+  Int_t PiPosSecArray[NTracksEvent];
+
+  Int_t He3NegArray[NTracksEvent];
+  Int_t PNegArray[NTracksEvent];
+  Int_t PiNegArray[NTracksEvent];
+  Int_t PiNegSecArray[NTracksEvent];
+
+  Int_t He3PosCounter = 0;
+  Int_t He3NegCounter = 0;
+  Int_t PPosCounter = 0;
+  Int_t PNegCounter = 0;
+  Int_t PiPosCounter = 0;
+  Int_t PiNegCounter = 0;
+  Int_t PiPosSecCounter = 0;
+  Int_t PiNegSecCounter = 0;
+  
+
+  for(int i = 0; i<NTracksEvent;i++){
+    He3PosArray[i] = 0;
+    He3NegArray[i] = 0;
+    PPosArray[i] = 0;
+    PNegArray[i] = 0;
+    PiPosArray[i] = 0;
+    PiNegArray[i] = 0;
+    PiPosSecArray[i] = 0;
+    PiNegSecArray[i] = 0;
+  }
+
+  for (Int_t qTracks = 0; qTracks < fESDevent->GetNumberOfTracks(); qTracks++) {
+
+    AliESDtrack *trackq = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(qTracks));
+
+    if (!trackq->GetInnerParam()) continue;
+
+    if(trackq->GetSign() > 0){      
+      if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*trackq, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) <= 4) {
+	if (!trackCutsNuclei->AcceptTrack(trackq)) continue; 
+	He3PosArray[He3PosCounter] = qTracks;
+	He3PosCounter++;	
+      }
+      if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*trackq, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) <= 4) {
+	if (!trackCutsSoft->AcceptTrack(trackq)) continue; 
+	PPosArray[PPosCounter] = qTracks;
+	PPosCounter++;	
+      }
+      if(TMath::Abs(fPID->NumberOfSigmasTPC(trackq, AliPID::kPion)) <= 3) {
+	if (!trackCutsStrong->AcceptTrack(trackq)) continue; 
+	PiPosArray[PiPosCounter] = qTracks;
+	PiPosCounter++;
+	PiPosSecArray[PiPosSecCounter] = qTracks;
+	PiPosSecCounter++;	
+      }
+    }
+    if(trackq->GetSign() < 0){      
+      if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*trackq, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) <= 4) {
+	if (!trackCutsNuclei->AcceptTrack(trackq)) continue; 
+	He3NegArray[He3NegCounter] = qTracks;
+	He3NegCounter++;
+      }
+      if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*trackq, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) <= 4) {
+	if (!trackCutsSoft->AcceptTrack(trackq)) continue; 
+	PNegArray[PNegCounter] = qTracks;
+	PNegCounter++;	
+      }
+      if(TMath::Abs(fPID->NumberOfSigmasTPC(trackq, AliPID::kPion)) <= 3) {
+	if (!trackCutsStrong->AcceptTrack(trackq)) continue; 
+	PiNegArray[PiNegCounter] = qTracks;
+	PiNegCounter++;
+	PiNegSecArray[PiNegSecCounter] = qTracks;
+	PiNegSecCounter++;	
+      }
+    }
+  }
+    
+    
+
   // ____________________________ first track _______________________________ //
-  for (Int_t iTracks = 0; iTracks < fESDevent->GetNumberOfTracks(); iTracks++) {	
+  //for (Int_t iTracks = 0; iTracks < fESDevent->GetNumberOfTracks(); iTracks++) {
+  for (const Int_t &He3PosTracks : He3PosArray) {
 
-    track1 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(iTracks));
+    if(He3PosTracks == 0) continue;
 
-    if (!track1->GetInnerParam()) continue;
+    //track1 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(iTracks));
+    track1 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(He3PosTracks));
+
+    //if (!track1->GetInnerParam()) continue;
 
     // __ track cuts __ //
-    if (!trackCutsNuclei->AcceptTrack(track1)) continue;    
+    //if (!trackCutsNuclei->AcceptTrack(track1)) continue;    
 
     ptot1 = track1->GetInnerParam()->GetP();
     sign1 = track1->GetSign();
@@ -1229,36 +1313,40 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
     }
 
     // __ 3he track selection __ //
-    He3Pos1 = kFALSE;
-    He3Neg1 = kFALSE;	
-    if(sign1 > 0){      
+    /*He3Pos1 = kFALSE;
+      He3Neg1 = kFALSE;	
+      if(sign1 > 0){      
       if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) <= 4) He3Pos1 = kTRUE;
       //if(TMath::Abs(fPID->NumberOfSigmasTPC(track1, AliPID::kHe3)) <= 3) He3Pos1 = kTRUE;
-    }
-    if(sign1 < 0){      
+      }
+      if(sign1 < 0){      
       if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) <= 4) He3Neg1 = kTRUE;
       //if(TMath::Abs(fPID->NumberOfSigmasTPC(track1, AliPID::kHe3)) <= 3) He3Neg1 = kTRUE;
-    }
-    else continue;
+      }
+      else continue;*/
 
     // ____________________________ second track _______________________________ //
-    for (Int_t jTracks = 0; jTracks < fESDevent->GetNumberOfTracks(); jTracks++) {
+    //for (Int_t jTracks = 0; jTracks < fESDevent->GetNumberOfTracks(); jTracks++) {
+    for (const Int_t &PPosTracks : PPosArray) {
 
+      if(PPosTracks == 0) continue;
       // __ reject using same track twice __ //
-      if(iTracks == jTracks) continue;
+      //if(iTracks == jTracks) continue;
+      if(He3PosTracks == PPosTracks) continue;
 
-      track2 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(jTracks));              
+      //track2 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(jTracks));
+      track2 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(PPosTracks));
 
-      if (!track2->GetInnerParam()) continue;
+      //if (!track2->GetInnerParam()) continue;
 
       ptot2 = track2->GetInnerParam()->GetP();
       sign2 = track2->GetSign();
 
       // __ track sign rejection __ //
-      if(sign1 != sign2) continue;
+      //if(sign1 != sign2) continue;
 
       // __ track cuts __ //
-      if (!trackCutsSoft->AcceptTrack(track2)) continue;            
+      //if (!trackCutsSoft->AcceptTrack(track2)) continue;            
 
       // __ MC part __ //
       if(fMCtrue && noCombinatoricsMC){
@@ -1286,38 +1374,42 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
       if(TMath::Abs(track2->GetDCA(track1, fMagneticField, xthiss, xpp))        > 1.0)  continue;
 
       // __ p track selection __ //
-      pPos2 = kFALSE;
-      pNeg2 = kFALSE;      
-      if(sign2 > 0){	
+      /*pPos2 = kFALSE;
+	pNeg2 = kFALSE;      
+	if(sign2 > 0){	
 	if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) <= 4) pPos2 = kTRUE;
 	//if(TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kProton)) <= 3) pPos2 = kTRUE;
-      }
-      if(sign2 < 0){	
+	}
+	if(sign2 < 0){	
 	if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) <= 4) pNeg2 = kTRUE;
 	//if(TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kProton)) <= 3) pNeg2 = kTRUE;
-      }
+	}*/
 
       // __ check for combination __ //
-      if(!(He3Pos1 && pPos2) && !(He3Neg1 && pNeg2)) continue;      
+      //if(!(He3Pos1 && pPos2) && !(He3Neg1 && pNeg2)) continue;      
 
       // ____________________________ third track _______________________________ //
-      for (Int_t kTracks = 0; kTracks < fESDevent->GetNumberOfTracks(); kTracks++) {
+      //for (Int_t kTracks = 0; kTracks < fESDevent->GetNumberOfTracks(); kTracks++) {
+      for (const Int_t &PiNegTracks : PiNegArray) {
+
+	if(PiNegTracks == 0) continue;
 
 	// __ reject using same track twice __ //
-	if (jTracks == kTracks || iTracks == kTracks) continue;
+	//if (jTracks == kTracks || iTracks == kTracks) continue;
+	if (PPosTracks == PiNegTracks || He3PosTracks == PiNegTracks) continue;
 
-	track3 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(kTracks));        
+	track3 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(PiNegTracks));        
 
-	if (!track3->GetInnerParam()) continue;	
+	//if (!track3->GetInnerParam()) continue;	
 	
 	ptot3 = track3->GetInnerParam()->GetP();
 	sign3 = track3->GetSign();
 
 	// __ track sign rejection __ //
-	if(sign2 == sign3) continue;
+	//if(sign2 == sign3) continue;
 
 	// __ track cuts __ //
-	if (!trackCutsStrong->AcceptTrack(track3)) continue;
+	//if (!trackCutsStrong->AcceptTrack(track3)) continue;
 
 	// __ MC part __ //
 	if(fMCtrue && (lessCombinatoricsMC || noCombinatoricsMC)){
@@ -1343,18 +1435,18 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 	
 	// __ dca rejection betw tracks __ //
 	if(TMath::Abs(track2->GetDCA(track1, fMagneticField, xthiss, xpp)) > 1.0
-	 || TMath::Abs(track3->GetDCA(track1, fMagneticField, xthiss, xpp)) > 1.2
-	 || TMath::Abs(track3->GetDCA(track2, fMagneticField, xthiss, xpp)) > 1.2) continue;
+	   || TMath::Abs(track3->GetDCA(track1, fMagneticField, xthiss, xpp)) > 1.2
+	   || TMath::Abs(track3->GetDCA(track2, fMagneticField, xthiss, xpp)) > 1.2) continue;
 
 	// __ pion track selection __ //
-	piPos3 = kFALSE;
-	piNeg3 = kFALSE;	
-	if(sign3 >0      && TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) <= 3) piPos3 = kTRUE;
-	else if(sign3 <0 && TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) <= 3) piNeg3 = kTRUE;
-	else continue;		
+	/*piPos3 = kFALSE;
+	  piNeg3 = kFALSE;	
+	  if(sign3 >0      && TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) <= 3) piPos3 = kTRUE;
+	  else if(sign3 <0 && TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) <= 3) piNeg3 = kTRUE;
+	  else continue;*/		
 
 	// __ check for combination __ //
-	if(!(He3Pos1 && pPos2 && piNeg3) && !(He3Neg1 && pNeg2 && piPos3)) continue;	
+	//if(!(He3Pos1 && pPos2 && piNeg3) && !(He3Neg1 && pNeg2 && piPos3)) continue;	
 	
 	//______ daughter hypernucleus mass _______ //
 	sublorentzsum = new TLorentzVector(0.,0.,0.,0.);
@@ -1385,23 +1477,26 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 	  if(h)             delete h;
 	}	
 	// ____________________________ fourth track _______________________________ //
-	for (Int_t lTracks = 0; lTracks < fESDevent->GetNumberOfTracks(); lTracks++) {
+	//for (Int_t lTracks = 0; lTracks < fESDevent->GetNumberOfTracks(); lTracks++) {
+	for (const Int_t &PiNegSecTracks : PiNegSecArray) {
+
+	  if(PiNegSecTracks == 0) continue;
 
 	  // __ reject using same track twice __ //
-	  if (jTracks == lTracks || iTracks == lTracks || kTracks == lTracks) continue;
+	  if (PPosTracks == PiNegSecTracks || He3PosTracks == PiNegSecTracks || PiNegTracks == PiNegSecTracks) continue;
 
-	  track4 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(lTracks));
+	  track4 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(PiNegSecTracks));
 
-	  if (!track4->GetInnerParam()) continue;	  	  
+	  //if (!track4->GetInnerParam()) continue;	  	  
 
 	  ptot4 = track4->GetInnerParam()->GetP();
 	  sign4 = track4->GetSign();
 
 	  // __ track sign rejection __ //
-	  if(sign3 != sign4) continue;
+	  //if(sign3 != sign4) continue;
 
 	  // __ track cuts __ //
-	  if (!trackCutsStrong->AcceptTrack(track4)) continue;
+	  //if (!trackCutsStrong->AcceptTrack(track4)) continue;
 
 	  // __ MC part __ //
 	  if(fMCtrue && (lessCombinatoricsMC || noCombinatoricsMC)){
@@ -1426,14 +1521,14 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 	  //if(TMath::Abs(track4->GetD(PrimVertex[0], PrimVertex[1], fMagneticField)) <0.1) continue;
 	  
 	  // __ pion track selection __ //
-	  piPos4 = kFALSE;
-	  piNeg4 = kFALSE;
-	  if(sign4 >0      && TMath::Abs(fPID->NumberOfSigmasTPC(track4, AliPID::kPion)) <= 3) piPos4 = kTRUE;
-	  else if(sign4 <0 && TMath::Abs(fPID->NumberOfSigmasTPC(track4, AliPID::kPion)) <= 3) piNeg4 = kTRUE;
-	  else continue;	 		
+	  /*piPos4 = kFALSE;
+	    piNeg4 = kFALSE;
+	    if(sign4 >0      && TMath::Abs(fPID->NumberOfSigmasTPC(track4, AliPID::kPion)) <= 3) piPos4 = kTRUE;
+	    else if(sign4 <0 && TMath::Abs(fPID->NumberOfSigmasTPC(track4, AliPID::kPion)) <= 3) piNeg4 = kTRUE;
+	    else continue;	 */		
 
 	  // __ check for combination __ //
-	  if(!(He3Pos1 && pPos2 && piNeg3 && piNeg4) && !(He3Neg1 && pNeg2 && piPos3 && piPos4)) continue;
+	  //if(!(He3Pos1 && pPos2 && piNeg3 && piNeg4) && !(He3Neg1 && pNeg2 && piPos3 && piPos4)) continue;
 
 	  // _________________________________________________ //
 	  lorentzsum     = new TLorentzVector(0.,0.,0.,0.);
@@ -1500,412 +1595,735 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 	  }
 	  // _________________________________________________ //
 	  //********** 4LLH **********
-	  if(He3Pos1 && pPos2 && piNeg3 && piNeg4){
-	    // _________________________________________________ //
-	    // __ trigger __ //
-	    fTrigMB    = MB;		
-	    fTrigHMV0  = HMV0;
-	    fTrigHMSPD = HMSPD;
-	    fTrigHNU   = HNU;
-	    fTrigHQU   = HQU;
-	    // _________________________________________________ //
-	    sublorentzsum  = new TLorentzVector(0.,0.,0.,0.);
-	    sublorentzsum2 = new TLorentzVector(0.,0.,0.,0.);
-	    lorentzsum     = new TLorentzVector(0.,0.,0.,0.);
-	    lorentzsum2    = new TLorentzVector(0.,0.,0.,0.);
-	    particle1      = new TLorentzVector(0.,0.,0.,0.);
-	    particle2      = new TLorentzVector(0.,0.,0.,0.);
-	    particle3      = new TLorentzVector(0.,0.,0.,0.);
-	    particle4      = new TLorentzVector(0.,0.,0.,0.);		
-	    h              = new TVector3(0., 0., 0.);
-	    // _________________________________________________ //
-	    particle1->SetXYZM(2.*track1->Px(), 2.*track1->Py(), 2.*track1->Pz(), AliPID::ParticleMass(AliPID::kHe3));
-	    particle2->SetXYZM(   track2->Px(),    track2->Py(),    track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
-	    particle3->SetXYZM(   track3->Px(),    track3->Py(),    track3->Pz(), AliPID::ParticleMass(AliPID::kPion));
-	    particle4->SetXYZM(   track4->Px(),    track4->Py(),    track4->Pz(), AliPID::ParticleMass(AliPID::kPion));
-	    sublorentzsum->SetXYZM(0.,0.,0.,0.);
-	    sublorentzsum2->SetXYZM(0.,0.,0.,0.);
-	    lorentzsum->SetXYZM(0.,0.,0.,0.);
-	    lorentzsum2->SetXYZM(0.,0.,0.,0.);
-	    *lorentzsum     = *particle1 + *particle2 + *particle3 + *particle4;
-	    *sublorentzsum  = *particle1 + *particle2 + *particle3;
-	    sublorentzsum2->SetXYZM(sublorentzsum->X(), sublorentzsum->Y(), sublorentzsum->Z(), 3.929);	    
-	    *lorentzsum2    = *sublorentzsum2 + *particle4;
-	    // _________________________________________________ //	   
-	    // __ coord of prim vtx __ //
-	    fPrimVertexX = PrimVertex[0];
-	    fPrimVertexY = PrimVertex[1];
-	    fPrimVertexZ = PrimVertex[2];
-	    // _________________________________________________ //
-	    // __ create sec / tert vtx __ //
-	    AliAnalysisTaskDoubleHypNucTree::CreateSecVertex();
-	    // _________________________________________________ //
-	    // __ coord of sec vtx __ //
-	    fSecVertexX = SecVertex[0];
-	    fSecVertexY = SecVertex[1];
-	    fSecVertexZ = SecVertex[2];
-	    // _________________________________________________ //
-	    // __ coord of tert vtx __ //
-	    // __ reco starts at prim vtx __ //
-	    fTertVertexX = TertVertex[0];
-	    fTertVertexY = TertVertex[1];
-	    fTertVertexZ = TertVertex[2];
-	    // __ reco starts at sec vtx __ //
-	    fTertVertex2X = TertVertex2[0];
-	    fTertVertex2Y = TertVertex2[1];
-	    fTertVertex2Z = TertVertex2[2];
-	    // _________________________________________________ //
-	    // __ dca between tracks __ //
-	    fDCA2B  = TMath::Abs(track4->GetDCA(exTrack, fMagneticField, xthiss, xpp));
-	    fDCA3B1 = TMath::Abs(track2->GetDCA(track1,  fMagneticField, xthiss, xpp));
-	    fDCA3B2 = TMath::Abs(track3->GetDCA(track1,  fMagneticField, xthiss, xpp));
-	    fDCA3B3 = TMath::Abs(track3->GetDCA(track2,  fMagneticField, xthiss, xpp));	      
-	    // __ cuts from 04/2020 __ //
-	    fDCA2Bo        = TMath::Abs(track4->GetD(sublorentzsum->X(), sublorentzsum->Y(), fMagneticField));
-	    fDcaDaughtero  = track1->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
-	    fDcaDaughter1o = track2->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
-	    fDcaDaughter2o = track3->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
-	    fDcaDaughter3o = track4->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
-	    // _________________________________________________ //
-	    // __ track information __ //
-	    AliAnalysisTaskDoubleHypNucTree::SetDaughterInformation();		
-	    // _________________________________________________ //
-	    // __ information of hypernuclei track __ //
-	    Float_t xv[2],  yv[3];
-	    exTrack->GetImpactParameters(xv,yv);
-	    fpDaughter4        = exTrack->GetP();
-	    fptDaughter4       = sublorentzsum->Pt();
-	    fpxDaughter4       = sublorentzsum->Px();
-	    fpyDaughter4       = sublorentzsum->Py();
-	    fpzDaughter4       = sublorentzsum->Pz();
-	    fEDaughter4        = sublorentzsum->E();
-	    fyDaughter4        = sublorentzsum->Rapidity();	    
-	    fDcaDaughter4      = xv[0];
-	    fDcazDaughter4     = xv[1];
-	    fSigmaYXDaughter4  = yv[0];
-	    fSigmaXYZDaughter4 = yv[1];
-	    fSigmaZDaughter4   = yv[2];
-	    fPtUncertDaughter4 = TMath::Sqrt(exTrack->GetSigma1Pt2())*fptDaughter4;
-	    fDcaSecDaughter4   = TMath::Abs(exTrack->GetD(SecVertex[0], SecVertex[1], fMagneticField));
-	    // _________________________________________________ //
-	    // __ mother hypernucleus information __ //
-	    fPDGMother       = fgkPdgCode[kPDGDoubleHyperHydrogen4];
-	    fChargeMother    = sign1;
-	    fmMother         = lorentzsum->M();
-	    fmMother2        = lorentzsum2->M();
-	    fEMother         = lorentzsum->E();
-	    fpxMother        = lorentzsum->Px();
-	    fpyMother        = lorentzsum->Py();
-	    fpzMother        = lorentzsum->Pz();
-	    fptMother        = lorentzsum->Pt();
-	    fpMother         = lorentzsum->P();
-	    fyMother         = lorentzsum->Rapidity();
-	    hInvMass4LLH->Fill(fmMother);
-	    // _________________________________________________ //
-	    // __ daughter hypernucleus information __ //
-	    fmSubMother      = sublorentzsum->M();
-	    fESubMother      = sublorentzsum->E();
-	    fpxSubMother     = sublorentzsum->Px();
-	    fpySubMother     = sublorentzsum->Py();
-	    fpzSubMother     = sublorentzsum->Pz();
-	    fptSubMother     = sublorentzsum->Pt();
-	    fpSubMother      = sublorentzsum->P();
-	    fySubMother      = sublorentzsum->Rapidity();
-	    hInvMass4LHe->Fill(fmSubMother);
-	    // _________________________________________________ //
-	    // __ mother hypernucleus ctau and cos(PA) __ //
-	    dd[0] = PrimVertex[0] - SecVertex[0];
-	    dd[1] = PrimVertex[1] - SecVertex[1];
-	    dd[2] = PrimVertex[2] - SecVertex[2];
-	    h->SetXYZ(-dd[0],-dd[1],-dd[2]);	 
+	  // _________________________________________________ //
+	  // __ trigger __ //
+	  fTrigMB    = MB;		
+	  fTrigHMV0  = HMV0;
+	  fTrigHMSPD = HMSPD;
+	  fTrigHNU   = HNU;
+	  fTrigHQU   = HQU;
+	  // _________________________________________________ //
+	  sublorentzsum  = new TLorentzVector(0.,0.,0.,0.);
+	  sublorentzsum2 = new TLorentzVector(0.,0.,0.,0.);
+	  lorentzsum     = new TLorentzVector(0.,0.,0.,0.);
+	  lorentzsum2    = new TLorentzVector(0.,0.,0.,0.);
+	  particle1      = new TLorentzVector(0.,0.,0.,0.);
+	  particle2      = new TLorentzVector(0.,0.,0.,0.);
+	  particle3      = new TLorentzVector(0.,0.,0.,0.);
+	  particle4      = new TLorentzVector(0.,0.,0.,0.);		
+	  h              = new TVector3(0., 0., 0.);
+	  // _________________________________________________ //
+	  particle1->SetXYZM(2.*track1->Px(), 2.*track1->Py(), 2.*track1->Pz(), AliPID::ParticleMass(AliPID::kHe3));
+	  particle2->SetXYZM(   track2->Px(),    track2->Py(),    track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
+	  particle3->SetXYZM(   track3->Px(),    track3->Py(),    track3->Pz(), AliPID::ParticleMass(AliPID::kPion));
+	  particle4->SetXYZM(   track4->Px(),    track4->Py(),    track4->Pz(), AliPID::ParticleMass(AliPID::kPion));
+	  sublorentzsum->SetXYZM(0.,0.,0.,0.);
+	  sublorentzsum2->SetXYZM(0.,0.,0.,0.);
+	  lorentzsum->SetXYZM(0.,0.,0.,0.);
+	  lorentzsum2->SetXYZM(0.,0.,0.,0.);
+	  *lorentzsum     = *particle1 + *particle2 + *particle3 + *particle4;
+	  *sublorentzsum  = *particle1 + *particle2 + *particle3;
+	  sublorentzsum2->SetXYZM(sublorentzsum->X(), sublorentzsum->Y(), sublorentzsum->Z(), 3.929);	    
+	  *lorentzsum2    = *sublorentzsum2 + *particle4;
+	  // _________________________________________________ //	   
+	  // __ coord of prim vtx __ //
+	  fPrimVertexX = PrimVertex[0];
+	  fPrimVertexY = PrimVertex[1];
+	  fPrimVertexZ = PrimVertex[2];
+	  // _________________________________________________ //
+	  // __ create sec / tert vtx __ //
+	  AliAnalysisTaskDoubleHypNucTree::CreateSecVertex();
+	  // _________________________________________________ //
+	  // __ coord of sec vtx __ //
+	  fSecVertexX = SecVertex[0];
+	  fSecVertexY = SecVertex[1];
+	  fSecVertexZ = SecVertex[2];
+	  // _________________________________________________ //
+	  // __ coord of tert vtx __ //
+	  // __ reco starts at prim vtx __ //
+	  fTertVertexX = TertVertex[0];
+	  fTertVertexY = TertVertex[1];
+	  fTertVertexZ = TertVertex[2];
+	  // __ reco starts at sec vtx __ //
+	  fTertVertex2X = TertVertex2[0];
+	  fTertVertex2Y = TertVertex2[1];
+	  fTertVertex2Z = TertVertex2[2];
+	  // _________________________________________________ //
+	  // __ dca between tracks __ //
+	  fDCA2B  = TMath::Abs(track4->GetDCA(exTrack, fMagneticField, xthiss, xpp));
+	  fDCA3B1 = TMath::Abs(track2->GetDCA(track1,  fMagneticField, xthiss, xpp));
+	  fDCA3B2 = TMath::Abs(track3->GetDCA(track1,  fMagneticField, xthiss, xpp));
+	  fDCA3B3 = TMath::Abs(track3->GetDCA(track2,  fMagneticField, xthiss, xpp));	      
+	  // __ cuts from 04/2020 __ //
+	  fDCA2Bo        = TMath::Abs(track4->GetD(sublorentzsum->X(), sublorentzsum->Y(), fMagneticField));
+	  fDcaDaughtero  = track1->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
+	  fDcaDaughter1o = track2->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
+	  fDcaDaughter2o = track3->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
+	  fDcaDaughter3o = track4->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
+	  // _________________________________________________ //
+	  // __ track information __ //
+	  AliAnalysisTaskDoubleHypNucTree::SetDaughterInformation();		
+	  // _________________________________________________ //
+	  // __ information of hypernuclei track __ //
+	  Float_t xv[2],  yv[3];
+	  exTrack->GetImpactParameters(xv,yv);
+	  fpDaughter4        = exTrack->GetP();
+	  fptDaughter4       = sublorentzsum->Pt();
+	  fpxDaughter4       = sublorentzsum->Px();
+	  fpyDaughter4       = sublorentzsum->Py();
+	  fpzDaughter4       = sublorentzsum->Pz();
+	  fEDaughter4        = sublorentzsum->E();
+	  fyDaughter4        = sublorentzsum->Rapidity();	    
+	  fDcaDaughter4      = xv[0];
+	  fDcazDaughter4     = xv[1];
+	  fSigmaYXDaughter4  = yv[0];
+	  fSigmaXYZDaughter4 = yv[1];
+	  fSigmaZDaughter4   = yv[2];
+	  fPtUncertDaughter4 = TMath::Sqrt(exTrack->GetSigma1Pt2())*fptDaughter4;
+	  fDcaSecDaughter4   = TMath::Abs(exTrack->GetD(SecVertex[0], SecVertex[1], fMagneticField));
+	  // _________________________________________________ //
+	  // __ mother hypernucleus information __ //
+	  fPDGMother       = fgkPdgCode[kPDGDoubleHyperHydrogen4];
+	  fChargeMother    = sign1;
+	  fmMother         = lorentzsum->M();
+	  fmMother2        = lorentzsum2->M();
+	  fEMother         = lorentzsum->E();
+	  fpxMother        = lorentzsum->Px();
+	  fpyMother        = lorentzsum->Py();
+	  fpzMother        = lorentzsum->Pz();
+	  fptMother        = lorentzsum->Pt();
+	  fpMother         = lorentzsum->P();
+	  fyMother         = lorentzsum->Rapidity();
+	  hInvMass4LLH->Fill(fmMother);
+	  // _________________________________________________ //
+	  // __ daughter hypernucleus information __ //
+	  fmSubMother      = sublorentzsum->M();
+	  fESubMother      = sublorentzsum->E();
+	  fpxSubMother     = sublorentzsum->Px();
+	  fpySubMother     = sublorentzsum->Py();
+	  fpzSubMother     = sublorentzsum->Pz();
+	  fptSubMother     = sublorentzsum->Pt();
+	  fpSubMother      = sublorentzsum->P();
+	  fySubMother      = sublorentzsum->Rapidity();
+	  hInvMass4LHe->Fill(fmSubMother);
+	  // _________________________________________________ //
+	  // __ mother hypernucleus ctau and cos(PA) __ //
+	  dd[0] = PrimVertex[0] - SecVertex[0];
+	  dd[1] = PrimVertex[1] - SecVertex[1];
+	  dd[2] = PrimVertex[2] - SecVertex[2];
+	  h->SetXYZ(-dd[0],-dd[1],-dd[2]);	 
 	      
-	    fctMother        = (fmMother*TMath::Sqrt(TMath::Power(dd[0], 2) + TMath::Power(dd[1], 2) + TMath::Power(dd[2], 2)))/lorentzsum->P();
-	    fPA              = TMath::Cos(lorentzsum->Angle(*h));	      	     
-	    // _________________________________________________ //
-	    // __ daughter hypernucleus ctau and cos(PA) to sec vtx __ //
-	    dd[0] = SecVertex[0] - TertVertex[0];
-	    dd[1] = SecVertex[1] - TertVertex[1];
-	    dd[2] = SecVertex[2] - TertVertex[2];
-	    h->SetXYZ(-dd[0],-dd[1],-dd[2]);
+	  fctMother        = (fmMother*TMath::Sqrt(TMath::Power(dd[0], 2) + TMath::Power(dd[1], 2) + TMath::Power(dd[2], 2)))/lorentzsum->P();
+	  fPA              = TMath::Cos(lorentzsum->Angle(*h));	      	     
+	  // _________________________________________________ //
+	  // __ daughter hypernucleus ctau and cos(PA) to sec vtx __ //
+	  dd[0] = SecVertex[0] - TertVertex[0];
+	  dd[1] = SecVertex[1] - TertVertex[1];
+	  dd[2] = SecVertex[2] - TertVertex[2];
+	  h->SetXYZ(-dd[0],-dd[1],-dd[2]);
 	      
-	    fctSubMother     = (fmSubMother*TMath::Sqrt(TMath::Power(dd[0], 2) + TMath::Power(dd[1], 2) + TMath::Power(dd[2], 2)))/sublorentzsum->P();
-	    fSubPA           = TMath::Cos(sublorentzsum->Angle(*h));
-	    // _________________________________________________ //
-	    // __ daughter hypernucleus cos(PA) to prim vtx __ //
-	    dd[0] = PrimVertex[0] - TertVertex[0];
-	    dd[1] = PrimVertex[1] - TertVertex[1];
-	    dd[2] = PrimVertex[2] - TertVertex[2];
-	    h->SetXYZ(-dd[0],-dd[1],-dd[2]);
+	  fctSubMother     = (fmSubMother*TMath::Sqrt(TMath::Power(dd[0], 2) + TMath::Power(dd[1], 2) + TMath::Power(dd[2], 2)))/sublorentzsum->P();
+	  fSubPA           = TMath::Cos(sublorentzsum->Angle(*h));
+	  // _________________________________________________ //
+	  // __ daughter hypernucleus cos(PA) to prim vtx __ //
+	  dd[0] = PrimVertex[0] - TertVertex[0];
+	  dd[1] = PrimVertex[1] - TertVertex[1];
+	  dd[2] = PrimVertex[2] - TertVertex[2];
+	  h->SetXYZ(-dd[0],-dd[1],-dd[2]);
 
-	    fSubPA2          = TMath::Cos(sublorentzsum->Angle(*h));
-	    fDecAngle        = sublorentzsum->Angle(particle4->Vect());	
-	    // _________________________________________________ //
-	    // __ daughter hypernucleus cos(PA) to sec vtx (2) __ //
-	    dd[0] = SecVertex[0] - TertVertex2[0];
-	    dd[1] = SecVertex[1] - TertVertex2[1];
-	    dd[2] = SecVertex[2] - TertVertex2[2];
-	    h->SetXYZ(-dd[0], -dd[1], -dd[2]);
+	  fSubPA2          = TMath::Cos(sublorentzsum->Angle(*h));
+	  fDecAngle        = sublorentzsum->Angle(particle4->Vect());	
+	  // _________________________________________________ //
+	  // __ daughter hypernucleus cos(PA) to sec vtx (2) __ //
+	  dd[0] = SecVertex[0] - TertVertex2[0];
+	  dd[1] = SecVertex[1] - TertVertex2[1];
+	  dd[2] = SecVertex[2] - TertVertex2[2];
+	  h->SetXYZ(-dd[0], -dd[1], -dd[2]);
 
-	    fSubPA3 = TMath::Cos(sublorentzsum->Angle(*h));
-	    // _________________________________________________ //
-	    // __ daughter hypernucleus cos(PA) to prim vtx (2) __ //
-	    dd[0] = PrimVertex[0] - TertVertex2[0];
-	    dd[1] = PrimVertex[1] - TertVertex2[1];
-	    dd[2] = PrimVertex[2] - TertVertex2[2];
-	    h->SetXYZ(-dd[0], -dd[1], -dd[2]);
+	  fSubPA3 = TMath::Cos(sublorentzsum->Angle(*h));
+	  // _________________________________________________ //
+	  // __ daughter hypernucleus cos(PA) to prim vtx (2) __ //
+	  dd[0] = PrimVertex[0] - TertVertex2[0];
+	  dd[1] = PrimVertex[1] - TertVertex2[1];
+	  dd[2] = PrimVertex[2] - TertVertex2[2];
+	  h->SetXYZ(-dd[0], -dd[1], -dd[2]);
 
-	    fSubPA4 = TMath::Cos(sublorentzsum->Angle(*h));
-	    // _________________________________________________ //
-	    // __ armenteros podolanski __ //
-	    TVector3 vecN(0.,0.,0.);
-	    TVector3 vecP(0.,0.,0.);
-	    TVector3 vecM(0.,0.,0.); 
+	  fSubPA4 = TMath::Cos(sublorentzsum->Angle(*h));
+	  // _________________________________________________ //
+	  // __ armenteros podolanski __ //
+	  TVector3 vecN(0.,0.,0.);
+	  TVector3 vecP(0.,0.,0.);
+	  TVector3 vecM(0.,0.,0.); 
 
-	    vecP      = sublorentzsum->Vect();
-	    vecN      = particle4->Vect();
-	    vecM      = lorentzsum->Vect();
+	  vecP      = sublorentzsum->Vect();
+	  vecN      = particle4->Vect();
+	  vecM      = lorentzsum->Vect();
 
-	    fthetaP   = TMath::ACos((vecP * vecM)/(vecP.Mag() * vecM.Mag()));
-	    fthetaN   = TMath::ACos((vecN * vecM)/(vecN.Mag() * vecM.Mag()));
-	    farmalpha = ((vecP.Mag())*TMath::Cos(fthetaP)-(vecN.Mag())*TMath::Cos(fthetaN))/((vecP.Mag())*TMath::Cos(fthetaP)+(vecN.Mag())*TMath::Cos(fthetaN));
-	    farmpt    = vecP.Mag()*sin(fthetaP);
-	    // _________________________________________________ //
-	    // __ MC part __ //
-	    if(fMCtrue){
-	      if(ParticleGrandMother1->PdgCode() == fgkPdgCode[kPDGDoubleHyperHydrogen4]
-		 && ParticleGrandMother2->PdgCode() == fgkPdgCode[kPDGDoubleHyperHydrogen4]
-		 && ParticleGrandMother3->PdgCode() == fgkPdgCode[kPDGDoubleHyperHydrogen4]
-		 && ParticleMother4->PdgCode() == fgkPdgCode[kPDGDoubleHyperHydrogen4]
-		 && labelGrandMother1 == labelGrandMother2
-		 && labelGrandMother2 == labelGrandMother3
-		 && labelGrandMother3 == labelMother4){
-		if(TMath::Abs(label1) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGHelium3], fgkPdgCode[kPDGHyperHelium4]))
-		   && TMath::Abs(label2) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGProton], fgkPdgCode[kPDGHyperHelium4]))
-		   && TMath::Abs(label3) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGPionMinus], fgkPdgCode[kPDGHyperHelium4]))
-		   && TMath::Abs(label4) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGPionMinus]))){
-		  mctruth = 1;		      	     
-		}	  
-	      }
+	  fthetaP   = TMath::ACos((vecP * vecM)/(vecP.Mag() * vecM.Mag()));
+	  fthetaN   = TMath::ACos((vecN * vecM)/(vecN.Mag() * vecM.Mag()));
+	  farmalpha = ((vecP.Mag())*TMath::Cos(fthetaP)-(vecN.Mag())*TMath::Cos(fthetaN))/((vecP.Mag())*TMath::Cos(fthetaP)+(vecN.Mag())*TMath::Cos(fthetaN));
+	  farmpt    = vecP.Mag()*sin(fthetaP);
+	  // _________________________________________________ //
+	  // __ MC part __ //
+	  if(fMCtrue){
+	    if(ParticleGrandMother1->PdgCode() == fgkPdgCode[kPDGDoubleHyperHydrogen4]
+	       && ParticleGrandMother2->PdgCode() == fgkPdgCode[kPDGDoubleHyperHydrogen4]
+	       && ParticleGrandMother3->PdgCode() == fgkPdgCode[kPDGDoubleHyperHydrogen4]
+	       && ParticleMother4->PdgCode() == fgkPdgCode[kPDGDoubleHyperHydrogen4]
+	       && labelGrandMother1 == labelGrandMother2
+	       && labelGrandMother2 == labelGrandMother3
+	       && labelGrandMother3 == labelMother4){
+	      if(TMath::Abs(label1) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGHelium3], fgkPdgCode[kPDGHyperHelium4]))
+		 && TMath::Abs(label2) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGProton], fgkPdgCode[kPDGHyperHelium4]))
+		 && TMath::Abs(label3) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGPionMinus], fgkPdgCode[kPDGHyperHelium4]))
+		 && TMath::Abs(label4) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGPionMinus]))){
+		mctruth = 1;		      	     
+	      }	  
 	    }
-	    // __ fill tree __ //
-	    fTree->Fill();
-	    // __ reset __ //
+	  }
+	  // __ fill tree __ //
+	  fTree->Fill();
+	  // __ reset __ //
+	  AliAnalysisTaskDoubleHypNucTree::ResetVals("");
+	  if(sublorentzsum)  delete sublorentzsum;
+	  if(sublorentzsum2) delete sublorentzsum2;
+	  if(lorentzsum)     delete lorentzsum;
+	  if(lorentzsum2)    delete lorentzsum2;
+	  if(particle1)      delete particle1;
+	  if(particle2)      delete particle2;
+	  if(particle3)      delete particle3;
+	  if(particle4)      delete particle4;
+	  if(exTrack)        delete exTrack;
+	  if(h)              delete h;
+
+
+	  // _________________________________________________ //
+	}//track4
+      }//track3
+    }//track2
+  }//track1
+
+  // ____________________________ first track _______________________________ //
+  //for (Int_t iTracks = 0; iTracks < fESDevent->GetNumberOfTracks(); iTracks++) {
+  for (const Int_t &He3NegTracks : He3NegArray) {
+
+    if(He3NegTracks == 0) continue;
+
+    //track1 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(iTracks));
+    track1 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(He3NegTracks));
+
+    //if (!track1->GetInnerParam()) continue;
+
+    // __ track cuts __ //
+    //if (!trackCutsNuclei->AcceptTrack(track1)) continue;    
+
+    ptot1 = track1->GetInnerParam()->GetP();
+    sign1 = track1->GetSign();
+
+    // __ fill energy loss plot __ //
+    fHistdEdx->Fill(ptot1*sign1, track1->GetTPCsignal());
+
+    // __ MC part __ //
+    if(fMCtrue && noCombinatoricsMC){
+	
+      label1 = track1->GetLabel();
+		  
+      labelMother1 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label1));
+      labelGrandMother1 = mcEvent->GetLabelOfParticleMother(TMath::Abs(labelMother1));
+
+      AliMCParticle *part = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label1))->Particle());
+      if(part->PdgCode() != fgkPdgCode[kPDGHelium3] && part->PdgCode() != fgkPdgCode[kPDGAntiHelium3])continue;
+      if(part)delete part;
+	      
+      ParticleGrandMother1 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelGrandMother1))->Particle());
+
+      if(ParticleGrandMother1->PdgCode() != fgkPdgCode[kPDGDoubleHyperHydrogen4]
+	 && ParticleGrandMother1->PdgCode() != fgkPdgCode[kPDGAntiDoubleHyperHydrogen4]) continue;
+      if(ParticleGrandMother1) delete ParticleGrandMother1;
+    }
+
+    // __ 3he track selection __ //
+    /*He3Pos1 = kFALSE;
+      He3Neg1 = kFALSE;	
+      if(sign1 > 0){      
+      if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) <= 4) He3Pos1 = kTRUE;
+      //if(TMath::Abs(fPID->NumberOfSigmasTPC(track1, AliPID::kHe3)) <= 3) He3Pos1 = kTRUE;
+      }
+      if(sign1 < 0){      
+      if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) <= 4) He3Neg1 = kTRUE;
+      //if(TMath::Abs(fPID->NumberOfSigmasTPC(track1, AliPID::kHe3)) <= 3) He3Neg1 = kTRUE;
+      }
+      else continue;*/
+
+    // ____________________________ second track _______________________________ //
+    //for (Int_t jTracks = 0; jTracks < fESDevent->GetNumberOfTracks(); jTracks++) {
+    for (const Int_t &PNegTracks : PNegArray) {
+      if(PNegTracks == 0) continue;
+      // __ reject using same track twice __ //
+      //if(iTracks == jTracks) continue;
+      if(He3NegTracks == PNegTracks) continue;
+
+      //track2 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(jTracks));
+      track2 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(PNegTracks));
+
+      //if (!track2->GetInnerParam()) continue;
+
+      ptot2 = track2->GetInnerParam()->GetP();
+      sign2 = track2->GetSign();
+
+      // __ track sign rejection __ //
+      //if(sign1 != sign2) continue;
+
+      // __ track cuts __ //
+      //if (!trackCutsSoft->AcceptTrack(track2)) continue;            
+
+      // __ MC part __ //
+      if(fMCtrue && noCombinatoricsMC){
+	
+	label2 = track2->GetLabel();
+		  
+	labelMother2 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label2));
+	labelGrandMother2 = mcEvent->GetLabelOfParticleMother(TMath::Abs(labelMother2));
+
+	AliMCParticle *part = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label2))->Particle());
+	if(part->PdgCode() != fgkPdgCode[kPDGProton] && part->PdgCode() != fgkPdgCode[kPDGAntiProton]) continue;
+	if(part) delete part;
+	      
+	ParticleGrandMother2 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelGrandMother2))->Particle());
+
+	if(ParticleGrandMother2->PdgCode() != fgkPdgCode[kPDGDoubleHyperHydrogen4]
+	   && ParticleGrandMother2->PdgCode() != fgkPdgCode[kPDGAntiDoubleHyperHydrogen4]) continue;
+	if(ParticleGrandMother2) delete ParticleGrandMother2;
+      }
+
+      // __ dca rejection prim vtx __ //
+      //if(TMath::Abs(track2->GetD(PrimVertex[0], PrimVertex[1], fMagneticField)) < 0.02) continue;
+
+      // __ dca rejection bet tracks __ //
+      if(TMath::Abs(track2->GetDCA(track1, fMagneticField, xthiss, xpp))        > 1.0)  continue;
+
+      // __ p track selection __ //
+      /*pPos2 = kFALSE;
+	pNeg2 = kFALSE;      
+	if(sign2 > 0){	
+	if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) <= 4) pPos2 = kTRUE;
+	//if(TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kProton)) <= 3) pPos2 = kTRUE;
+	}
+	if(sign2 < 0){	
+	if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) <= 4) pNeg2 = kTRUE;
+	//if(TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kProton)) <= 3) pNeg2 = kTRUE;
+	}*/
+
+      // __ check for combination __ //
+      //if(!(He3Pos1 && pPos2) && !(He3Neg1 && pNeg2)) continue;      
+
+      // ____________________________ third track _______________________________ //
+      //for (Int_t kTracks = 0; kTracks < fESDevent->GetNumberOfTracks(); kTracks++) {
+      for (const Int_t &PiPosTracks : PiPosArray) {
+
+	if(PiPosTracks == 0) continue;
+
+	// __ reject using same track twice __ //
+	//if (jTracks == kTracks || iTracks == kTracks) continue;
+	if (PNegTracks == PiPosTracks || He3NegTracks == PiPosTracks) continue;
+
+	track3 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(PiPosTracks));        
+
+	//if (!track3->GetInnerParam()) continue;	
+	
+	ptot3 = track3->GetInnerParam()->GetP();
+	sign3 = track3->GetSign();
+
+	// __ track sign rejection __ //
+	//if(sign2 == sign3) continue;
+
+	// __ track cuts __ //
+	//if (!trackCutsStrong->AcceptTrack(track3)) continue;
+
+	// __ MC part __ //
+	if(fMCtrue && (lessCombinatoricsMC || noCombinatoricsMC)){
+	
+	  label3 = track3->GetLabel();
+		  
+	  labelMother3 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label3));
+	  labelGrandMother3 = mcEvent->GetLabelOfParticleMother(TMath::Abs(labelMother3));
+
+	  AliMCParticle *part = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label3))->Particle());
+	  if(part->PdgCode() != fgkPdgCode[kPDGPionMinus] && part->PdgCode() != fgkPdgCode[kPDGPionPlus]) continue;
+	  if(part) delete part;
+	      
+	  ParticleGrandMother3 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelGrandMother3))->Particle());
+
+	  if(ParticleGrandMother3->PdgCode() != fgkPdgCode[kPDGDoubleHyperHydrogen4]
+	     && ParticleGrandMother3->PdgCode() != fgkPdgCode[kPDGAntiDoubleHyperHydrogen4]) continue;
+	  if(ParticleGrandMother3) delete ParticleGrandMother3;
+	}
+
+	// __ dca rejection prim vtx __ //
+	//if(TMath::Abs(track3->GetD(PrimVertex[0], PrimVertex[1], fMagneticField)) < 0.1) continue;
+	
+	// __ dca rejection betw tracks __ //
+	if(TMath::Abs(track2->GetDCA(track1, fMagneticField, xthiss, xpp)) > 1.0
+	   || TMath::Abs(track3->GetDCA(track1, fMagneticField, xthiss, xpp)) > 1.2
+	   || TMath::Abs(track3->GetDCA(track2, fMagneticField, xthiss, xpp)) > 1.2) continue;
+
+	// __ pion track selection __ //
+	/*piPos3 = kFALSE;
+	  piNeg3 = kFALSE;	
+	  if(sign3 >0      && TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) <= 3) piPos3 = kTRUE;
+	  else if(sign3 <0 && TMath::Abs(fPID->NumberOfSigmasTPC(track3, AliPID::kPion)) <= 3) piNeg3 = kTRUE;
+	  else continue;*/		
+
+	// __ check for combination __ //
+	//if(!(He3Pos1 && pPos2 && piNeg3) && !(He3Neg1 && pNeg2 && piPos3)) continue;	
+	
+	//______ daughter hypernucleus mass _______ //
+	sublorentzsum = new TLorentzVector(0.,0.,0.,0.);
+	particle1     = new TLorentzVector(0.,0.,0.,0.);
+	particle2     = new TLorentzVector(0.,0.,0.,0.);
+	particle3     = new TLorentzVector(0.,0.,0.,0.);
+	h             = new TVector3(0., 0., 0.);
+	particle1->SetXYZM(2.*track1->Px(), 2.*track1->Py(), 2.*track1->Pz(), AliPID::ParticleMass(AliPID::kHe3));
+	particle2->SetXYZM(   track2->Px(),    track2->Py(),    track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
+	particle3->SetXYZM(   track3->Px(),    track3->Py(),    track3->Pz(), AliPID::ParticleMass(AliPID::kPion));
+	sublorentzsum->SetXYZM(0.,0.,0.,0.);
+	*sublorentzsum = *particle1 + *particle2 + *particle3;
+
+	if(sublorentzsum->M() > 3.96 || sublorentzsum->M() < 3.90) {
+	  if(sublorentzsum) delete sublorentzsum;
+	  if(particle1)     delete particle1;
+	  if(particle2)     delete particle2;
+	  if(particle3)     delete particle3;
+	  if(h)             delete h;
+	  AliAnalysisTaskDoubleHypNucTree::ResetVals("");
+	  continue;
+	}
+	else {
+	  if(sublorentzsum) delete sublorentzsum;
+	  if(particle1)     delete particle1;
+	  if(particle2)     delete particle2;
+	  if(particle3)     delete particle3;
+	  if(h)             delete h;
+	}	
+	// ____________________________ fourth track _______________________________ //
+	//for (Int_t lTracks = 0; lTracks < fESDevent->GetNumberOfTracks(); lTracks++) {
+	for (const Int_t &PiPosSecTracks : PiPosSecArray) {
+
+	  if(PiPosSecTracks == 0) continue;
+
+	  // __ reject using same track twice __ //
+	  if (PNegTracks == PiPosSecTracks || He3NegTracks == PiPosSecTracks || PiPosTracks == PiPosSecTracks) continue;
+
+	  track4 = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(PiPosSecTracks));
+
+	  //if (!track4->GetInnerParam()) continue;	  	  
+
+	  ptot4 = track4->GetInnerParam()->GetP();
+	  sign4 = track4->GetSign();
+
+	  // __ track sign rejection __ //
+	  //if(sign3 != sign4) continue;
+
+	  // __ track cuts __ //
+	  //if (!trackCutsStrong->AcceptTrack(track4)) continue;
+
+	  // __ MC part __ //
+	  if(fMCtrue && (lessCombinatoricsMC || noCombinatoricsMC)){
+	
+	    label4 = track4->GetLabel();
+		  
+	    labelMother4 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label4));
+	      
+	    ParticleMother4 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelMother4))->Particle());
+
+	    AliMCParticle *part = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label4))->Particle());
+	    if(part->PdgCode() != fgkPdgCode[kPDGPionMinus] && part->PdgCode() != fgkPdgCode[kPDGPionPlus]) continue;
+	    if(part)delete part;
+
+	    if(ParticleMother4->PdgCode() != fgkPdgCode[kPDGDoubleHyperHydrogen4]
+	       && ParticleMother4->PdgCode() != fgkPdgCode[kPDGAntiDoubleHyperHydrogen4]) continue;
+
+	    if(ParticleMother4) delete ParticleMother4;	    
+	  }
+
+	  // __ dca rejection prim vtx __ //
+	  //if(TMath::Abs(track4->GetD(PrimVertex[0], PrimVertex[1], fMagneticField)) <0.1) continue;
+	  
+	  // __ pion track selection __ //
+	  /*piPos4 = kFALSE;
+	    piNeg4 = kFALSE;
+	    if(sign4 >0      && TMath::Abs(fPID->NumberOfSigmasTPC(track4, AliPID::kPion)) <= 3) piPos4 = kTRUE;
+	    else if(sign4 <0 && TMath::Abs(fPID->NumberOfSigmasTPC(track4, AliPID::kPion)) <= 3) piNeg4 = kTRUE;
+	    else continue;	 */		
+
+	  // __ check for combination __ //
+	  //if(!(He3Pos1 && pPos2 && piNeg3 && piNeg4) && !(He3Neg1 && pNeg2 && piPos3 && piPos4)) continue;
+
+	  // _________________________________________________ //
+	  lorentzsum     = new TLorentzVector(0.,0.,0.,0.);
+	  particle1      = new TLorentzVector(0.,0.,0.,0.);
+	  particle2      = new TLorentzVector(0.,0.,0.,0.);
+	  particle3      = new TLorentzVector(0.,0.,0.,0.);
+	  particle4      = new TLorentzVector(0.,0.,0.,0.);		
+	  // _________________________________________________ //
+	  particle1->SetXYZM(2.*track1->Px(), 2.*track1->Py(), 2.*track1->Pz(), AliPID::ParticleMass(AliPID::kHe3));
+	  particle2->SetXYZM(   track2->Px(),    track2->Py(),    track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
+	  particle3->SetXYZM(   track3->Px(),    track3->Py(),    track3->Pz(), AliPID::ParticleMass(AliPID::kPion));
+	  particle4->SetXYZM(   track4->Px(),    track4->Py(),    track4->Pz(), AliPID::ParticleMass(AliPID::kPion));
+	  lorentzsum->SetXYZM(0.,0.,0.,0.);
+	  *lorentzsum     = *particle1 + *particle2 + *particle3 + *particle4;
+	  // _________________________________________________ //
+	  // __ select mother hypernucleus by inv mass __ //
+	  if(lorentzsum->M() > 4.136 || lorentzsum->M() < 4.076) {
+	    if(lorentzsum)    delete lorentzsum;
+	    if(particle1)     delete particle1;
+	    if(particle2)     delete particle2;
+	    if(particle3)     delete particle3;
+	    if(particle4)     delete particle4;
 	    AliAnalysisTaskDoubleHypNucTree::ResetVals("");
-	    if(sublorentzsum)  delete sublorentzsum;
-	    if(sublorentzsum2) delete sublorentzsum2;
-	    if(lorentzsum)     delete lorentzsum;
-	    if(lorentzsum2)    delete lorentzsum2;
-	    if(particle1)      delete particle1;
-	    if(particle2)      delete particle2;
-	    if(particle3)      delete particle3;
-	    if(particle4)      delete particle4;
-	    if(exTrack)        delete exTrack;
-	    if(h)              delete h;
+	    continue;
+	  }
+	  else{
+	    if(lorentzsum)    delete lorentzsum;
+	    if(particle1)     delete particle1;
+	    if(particle2)     delete particle2;
+	    if(particle3)     delete particle3;
+	    if(particle4)     delete particle4;
+	  }
+
+	  // __ MC part __ //
+	  if(fMCtrue){
+	    label1 = 0;
+	    label2 = 0;
+	    label3 = 0;
+	    label4 = 0;
+		  
+	    label1 = track1->GetLabel();
+	    label2 = track2->GetLabel();
+	    label3 = track3->GetLabel();	
+	    label4 = track4->GetLabel();
+		  
+	    labelMother1 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label1));
+	    labelGrandMother1 = mcEvent->GetLabelOfParticleMother(TMath::Abs(labelMother1));
+	      
+	    labelMother2 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label2));
+	    labelGrandMother2 = mcEvent->GetLabelOfParticleMother(TMath::Abs(labelMother2));
+	      
+	    labelMother3 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label3));
+	    labelGrandMother3 = mcEvent->GetLabelOfParticleMother(TMath::Abs(labelMother3));
+	      
+	    labelMother4 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label4));
+	    labelGrandMother4 = mcEvent->GetLabelOfParticleMother(TMath::Abs(labelMother4));
+	      
+	    ParticleMother4 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelMother4))->Particle());
+
+	    ParticleGrandMother4 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelGrandMother4))->Particle());
+	    ParticleGrandMother3 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelGrandMother3))->Particle());
+	    ParticleGrandMother2 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelGrandMother2))->Particle());
+	    ParticleGrandMother1 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelGrandMother1))->Particle());
 	  }
 	  // _________________________________________________ //
 	  //********** #bar{4LLH} **********
-	  if(He3Neg1 && pNeg2 && piPos3 && piPos4){
-	    // _________________________________________________ //
-	    // __ trigger __ //
-	    fTrigMB    = MB;		
-	    fTrigHMV0  = HMV0;
-	    fTrigHMSPD = HMSPD;
-	    fTrigHNU   = HNU;
-	    fTrigHQU   = HQU;
-	    // _________________________________________________ //
-	    sublorentzsum  = new TLorentzVector(0.,0.,0.,0.);
-	    sublorentzsum2 = new TLorentzVector(0.,0.,0.,0.);
-	    lorentzsum     = new TLorentzVector(0.,0.,0.,0.);
-	    lorentzsum2    = new TLorentzVector(0.,0.,0.,0.);
-	    particle1      = new TLorentzVector(0.,0.,0.,0.);
-	    particle2      = new TLorentzVector(0.,0.,0.,0.);
-	    particle3      = new TLorentzVector(0.,0.,0.,0.);
-	    particle4      = new TLorentzVector(0.,0.,0.,0.);		
-	    h              = new TVector3(0., 0., 0.);
-	    // _________________________________________________ //
-	    particle1->SetXYZM(2.*track1->Px(), 2.*track1->Py(), 2.*track1->Pz(), AliPID::ParticleMass(AliPID::kHe3));
-	    particle2->SetXYZM(   track2->Px(),    track2->Py(),    track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
-	    particle3->SetXYZM(   track3->Px(),    track3->Py(),    track3->Pz(), AliPID::ParticleMass(AliPID::kPion));
-	    particle4->SetXYZM(   track4->Px(),    track4->Py(),    track4->Pz(), AliPID::ParticleMass(AliPID::kPion));
-	    sublorentzsum->SetXYZM(0.,0.,0.,0.);
-	    sublorentzsum2->SetXYZM(0.,0.,0.,0.);
-	    lorentzsum->SetXYZM(0.,0.,0.,0.);
-	    lorentzsum2->SetXYZM(0.,0.,0.,0.);
-	    *lorentzsum     = *particle1 + *particle2 + *particle3 + *particle4;
-	    *sublorentzsum  = *particle1 + *particle2 + *particle3;
-	    sublorentzsum2->SetXYZM(sublorentzsum->X(), sublorentzsum->Y(), sublorentzsum->Z(), 3.929);	    
-	    *lorentzsum2    = *sublorentzsum2 + *particle4;	    
-	    // _________________________________________________ //
-	    // __ coord of prim vtx __ //
-	    fPrimVertexX = PrimVertex[0];
-	    fPrimVertexY = PrimVertex[1];
-	    fPrimVertexZ = PrimVertex[2];
-	    // _________________________________________________ //
-	    // __ create sec / tert vtx __ //
-	    AliAnalysisTaskDoubleHypNucTree::CreateSecVertex();
-	    // _________________________________________________ //
-	    // __ coord of sec vtx __ //
-	    fSecVertexX = SecVertex[0];
-	    fSecVertexY = SecVertex[1];
-	    fSecVertexZ = SecVertex[2];
-	    // _________________________________________________ //
-	    // __ coord of tert vtx __ //
-	    // __ reco starts at prim vtx __ //
-	    fTertVertexX = TertVertex[0];
-	    fTertVertexY = TertVertex[1];
-	    fTertVertexZ = TertVertex[2];
-	    // __ reco starts at sec vtx __ //
-	    fTertVertex2X = TertVertex2[0];
-	    fTertVertex2Y = TertVertex2[1];
-	    fTertVertex2Z = TertVertex2[2];
-	    // _________________________________________________ //
-	    // __ dca between tracks __ //
-	    fDCA2B  = TMath::Abs(track4->GetDCA(exTrack, fMagneticField, xthiss, xpp));
-	    fDCA3B1 = TMath::Abs(track2->GetDCA(track1,  fMagneticField, xthiss, xpp));
-	    fDCA3B2 = TMath::Abs(track3->GetDCA(track1,  fMagneticField, xthiss, xpp));
-	    fDCA3B3 = TMath::Abs(track3->GetDCA(track2,  fMagneticField, xthiss, xpp));	      
-	    // __ cuts from 04/2020 __ //
-	    fDCA2Bo        = TMath::Abs(track4->GetD(sublorentzsum->X(), sublorentzsum->Y(), fMagneticField));
-	    fDcaDaughtero  = track1->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
-	    fDcaDaughter1o = track2->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
-	    fDcaDaughter2o = track3->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
-	    fDcaDaughter3o = track4->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
-	    // _________________________________________________ //
-	    // __ track information __ //
-	    AliAnalysisTaskDoubleHypNucTree::SetDaughterInformation();		
-	    // _________________________________________________ //
-	    // __ information of hypernuclei track __ //
-	    Float_t xv[2],  yv[3];
-	    exTrack->GetImpactParameters(xv,yv);
-	    fpDaughter4        = exTrack->GetP();
-	    fptDaughter4       = sublorentzsum->Pt();
-	    fpxDaughter4       = sublorentzsum->Px();
-	    fpyDaughter4       = sublorentzsum->Py();
-	    fpzDaughter4       = sublorentzsum->Pz();
-	    fEDaughter4        = sublorentzsum->E();
-	    fyDaughter4        = sublorentzsum->Rapidity();	    
-	    fDcaDaughter4      = xv[0];
-	    fDcazDaughter4     = xv[1];
-	    fSigmaYXDaughter4  = yv[0];
-	    fSigmaXYZDaughter4 = yv[1];
-	    fSigmaZDaughter4   = yv[2];
-	    fPtUncertDaughter4 = TMath::Sqrt(exTrack->GetSigma1Pt2())*fptDaughter4;
-	    fDcaSecDaughter4   = TMath::Abs(exTrack->GetD(SecVertex[0], SecVertex[1], fMagneticField));
-	    // _________________________________________________ //
-	    // __ mother hypernucleus information __ //
-	    fPDGMother       = fgkPdgCode[kPDGAntiDoubleHyperHydrogen4];
-	    fChargeMother    = sign1;
-	    fmMother         = lorentzsum->M();
-	    fmMother2        = lorentzsum2->M();
-	    fEMother         = lorentzsum->E();
-	    fpxMother        = lorentzsum->Px();
-	    fpyMother        = lorentzsum->Py();
-	    fpzMother        = lorentzsum->Pz();
-	    fptMother        = lorentzsum->Pt();
-	    fpMother         = lorentzsum->P();
-	    fyMother         = lorentzsum->Rapidity();
-	    hInvMass4LLH->Fill(fmMother);
-	    // _________________________________________________ //
-	    // __ daughter hypernucleus information __ //
-	    fmSubMother      = sublorentzsum->M();
-	    fESubMother      = sublorentzsum->E();
-	    fpxSubMother     = sublorentzsum->Px();
-	    fpySubMother     = sublorentzsum->Py();
-	    fpzSubMother     = sublorentzsum->Pz();
-	    fptSubMother     = sublorentzsum->Pt();
-	    fpSubMother      = sublorentzsum->P();
-	    fySubMother      = sublorentzsum->Rapidity();
-	    hInvMass4LHe->Fill(fmSubMother);
-	    // _________________________________________________ //
-	    // __ mother hypernucleus ctau and cos(PA) __ //
-	    dd[0] = PrimVertex[0] - SecVertex[0];
-	    dd[1] = PrimVertex[1] - SecVertex[1];
-	    dd[2] = PrimVertex[2] - SecVertex[2];
-	    h->SetXYZ(-dd[0],-dd[1],-dd[2]);	 
+	  // _________________________________________________ //
+	  // __ trigger __ //
+	  fTrigMB    = MB;		
+	  fTrigHMV0  = HMV0;
+	  fTrigHMSPD = HMSPD;
+	  fTrigHNU   = HNU;
+	  fTrigHQU   = HQU;
+	  // _________________________________________________ //
+	  sublorentzsum  = new TLorentzVector(0.,0.,0.,0.);
+	  sublorentzsum2 = new TLorentzVector(0.,0.,0.,0.);
+	  lorentzsum     = new TLorentzVector(0.,0.,0.,0.);
+	  lorentzsum2    = new TLorentzVector(0.,0.,0.,0.);
+	  particle1      = new TLorentzVector(0.,0.,0.,0.);
+	  particle2      = new TLorentzVector(0.,0.,0.,0.);
+	  particle3      = new TLorentzVector(0.,0.,0.,0.);
+	  particle4      = new TLorentzVector(0.,0.,0.,0.);		
+	  h              = new TVector3(0., 0., 0.);
+	  // _________________________________________________ //
+	  particle1->SetXYZM(2.*track1->Px(), 2.*track1->Py(), 2.*track1->Pz(), AliPID::ParticleMass(AliPID::kHe3));
+	  particle2->SetXYZM(   track2->Px(),    track2->Py(),    track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
+	  particle3->SetXYZM(   track3->Px(),    track3->Py(),    track3->Pz(), AliPID::ParticleMass(AliPID::kPion));
+	  particle4->SetXYZM(   track4->Px(),    track4->Py(),    track4->Pz(), AliPID::ParticleMass(AliPID::kPion));
+	  sublorentzsum->SetXYZM(0.,0.,0.,0.);
+	  sublorentzsum2->SetXYZM(0.,0.,0.,0.);
+	  lorentzsum->SetXYZM(0.,0.,0.,0.);
+	  lorentzsum2->SetXYZM(0.,0.,0.,0.);
+	  *lorentzsum     = *particle1 + *particle2 + *particle3 + *particle4;
+	  *sublorentzsum  = *particle1 + *particle2 + *particle3;
+	  sublorentzsum2->SetXYZM(sublorentzsum->X(), sublorentzsum->Y(), sublorentzsum->Z(), 3.929);	    
+	  *lorentzsum2    = *sublorentzsum2 + *particle4;	    
+	  // _________________________________________________ //
+	  // __ coord of prim vtx __ //
+	  fPrimVertexX = PrimVertex[0];
+	  fPrimVertexY = PrimVertex[1];
+	  fPrimVertexZ = PrimVertex[2];
+	  // _________________________________________________ //
+	  // __ create sec / tert vtx __ //
+	  AliAnalysisTaskDoubleHypNucTree::CreateSecVertex();
+	  // _________________________________________________ //
+	  // __ coord of sec vtx __ //
+	  fSecVertexX = SecVertex[0];
+	  fSecVertexY = SecVertex[1];
+	  fSecVertexZ = SecVertex[2];
+	  // _________________________________________________ //
+	  // __ coord of tert vtx __ //
+	  // __ reco starts at prim vtx __ //
+	  fTertVertexX = TertVertex[0];
+	  fTertVertexY = TertVertex[1];
+	  fTertVertexZ = TertVertex[2];
+	  // __ reco starts at sec vtx __ //
+	  fTertVertex2X = TertVertex2[0];
+	  fTertVertex2Y = TertVertex2[1];
+	  fTertVertex2Z = TertVertex2[2];
+	  // _________________________________________________ //
+	  // __ dca between tracks __ //
+	  fDCA2B  = TMath::Abs(track4->GetDCA(exTrack, fMagneticField, xthiss, xpp));
+	  fDCA3B1 = TMath::Abs(track2->GetDCA(track1,  fMagneticField, xthiss, xpp));
+	  fDCA3B2 = TMath::Abs(track3->GetDCA(track1,  fMagneticField, xthiss, xpp));
+	  fDCA3B3 = TMath::Abs(track3->GetDCA(track2,  fMagneticField, xthiss, xpp));	      
+	  // __ cuts from 04/2020 __ //
+	  fDCA2Bo        = TMath::Abs(track4->GetD(sublorentzsum->X(), sublorentzsum->Y(), fMagneticField));
+	  fDcaDaughtero  = track1->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
+	  fDcaDaughter1o = track2->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
+	  fDcaDaughter2o = track3->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
+	  fDcaDaughter3o = track4->GetD(fPrimVertexX, fPrimVertexY, fMagneticField);
+	  // _________________________________________________ //
+	  // __ track information __ //
+	  AliAnalysisTaskDoubleHypNucTree::SetDaughterInformation();		
+	  // _________________________________________________ //
+	  // __ information of hypernuclei track __ //
+	  Float_t xv[2],  yv[3];
+	  exTrack->GetImpactParameters(xv,yv);
+	  fpDaughter4        = exTrack->GetP();
+	  fptDaughter4       = sublorentzsum->Pt();
+	  fpxDaughter4       = sublorentzsum->Px();
+	  fpyDaughter4       = sublorentzsum->Py();
+	  fpzDaughter4       = sublorentzsum->Pz();
+	  fEDaughter4        = sublorentzsum->E();
+	  fyDaughter4        = sublorentzsum->Rapidity();	    
+	  fDcaDaughter4      = xv[0];
+	  fDcazDaughter4     = xv[1];
+	  fSigmaYXDaughter4  = yv[0];
+	  fSigmaXYZDaughter4 = yv[1];
+	  fSigmaZDaughter4   = yv[2];
+	  fPtUncertDaughter4 = TMath::Sqrt(exTrack->GetSigma1Pt2())*fptDaughter4;
+	  fDcaSecDaughter4   = TMath::Abs(exTrack->GetD(SecVertex[0], SecVertex[1], fMagneticField));
+	  // _________________________________________________ //
+	  // __ mother hypernucleus information __ //
+	  fPDGMother       = fgkPdgCode[kPDGAntiDoubleHyperHydrogen4];
+	  fChargeMother    = sign1;
+	  fmMother         = lorentzsum->M();
+	  fmMother2        = lorentzsum2->M();
+	  fEMother         = lorentzsum->E();
+	  fpxMother        = lorentzsum->Px();
+	  fpyMother        = lorentzsum->Py();
+	  fpzMother        = lorentzsum->Pz();
+	  fptMother        = lorentzsum->Pt();
+	  fpMother         = lorentzsum->P();
+	  fyMother         = lorentzsum->Rapidity();
+	  hInvMass4LLH->Fill(fmMother);
+	  // _________________________________________________ //
+	  // __ daughter hypernucleus information __ //
+	  fmSubMother      = sublorentzsum->M();
+	  fESubMother      = sublorentzsum->E();
+	  fpxSubMother     = sublorentzsum->Px();
+	  fpySubMother     = sublorentzsum->Py();
+	  fpzSubMother     = sublorentzsum->Pz();
+	  fptSubMother     = sublorentzsum->Pt();
+	  fpSubMother      = sublorentzsum->P();
+	  fySubMother      = sublorentzsum->Rapidity();
+	  hInvMass4LHe->Fill(fmSubMother);
+	  // _________________________________________________ //
+	  // __ mother hypernucleus ctau and cos(PA) __ //
+	  dd[0] = PrimVertex[0] - SecVertex[0];
+	  dd[1] = PrimVertex[1] - SecVertex[1];
+	  dd[2] = PrimVertex[2] - SecVertex[2];
+	  h->SetXYZ(-dd[0],-dd[1],-dd[2]);	 
 	      
-	    fctMother        = (fmMother*TMath::Sqrt(TMath::Power(dd[0], 2) + TMath::Power(dd[1], 2) + TMath::Power(dd[2], 2)))/lorentzsum->P();
-	    fPA              = TMath::Cos(lorentzsum->Angle(*h));	      	     
-	    // _________________________________________________ //
-	    // __ daughter hypernucleus ctau and cos(PA) to sec vtx __ //
-	    dd[0] = SecVertex[0] - TertVertex[0];
-	    dd[1] = SecVertex[1] - TertVertex[1];
-	    dd[2] = SecVertex[2] - TertVertex[2];
-	    h->SetXYZ(-dd[0],-dd[1],-dd[2]);
+	  fctMother        = (fmMother*TMath::Sqrt(TMath::Power(dd[0], 2) + TMath::Power(dd[1], 2) + TMath::Power(dd[2], 2)))/lorentzsum->P();
+	  fPA              = TMath::Cos(lorentzsum->Angle(*h));	      	     
+	  // _________________________________________________ //
+	  // __ daughter hypernucleus ctau and cos(PA) to sec vtx __ //
+	  dd[0] = SecVertex[0] - TertVertex[0];
+	  dd[1] = SecVertex[1] - TertVertex[1];
+	  dd[2] = SecVertex[2] - TertVertex[2];
+	  h->SetXYZ(-dd[0],-dd[1],-dd[2]);
 	      
-	    fctSubMother     = (fmSubMother*TMath::Sqrt(TMath::Power(dd[0], 2) + TMath::Power(dd[1], 2) + TMath::Power(dd[2], 2)))/sublorentzsum->P();
-	    fSubPA           = TMath::Cos(sublorentzsum->Angle(*h));
-	    // _________________________________________________ //
-	    // __ daughter hypernucleus cos(PA) to prim vtx __ //
-	    dd[0] = PrimVertex[0] - TertVertex[0];
-	    dd[1] = PrimVertex[1] - TertVertex[1];
-	    dd[2] = PrimVertex[2] - TertVertex[2];
-	    h->SetXYZ(-dd[0],-dd[1],-dd[2]);
+	  fctSubMother     = (fmSubMother*TMath::Sqrt(TMath::Power(dd[0], 2) + TMath::Power(dd[1], 2) + TMath::Power(dd[2], 2)))/sublorentzsum->P();
+	  fSubPA           = TMath::Cos(sublorentzsum->Angle(*h));
+	  // _________________________________________________ //
+	  // __ daughter hypernucleus cos(PA) to prim vtx __ //
+	  dd[0] = PrimVertex[0] - TertVertex[0];
+	  dd[1] = PrimVertex[1] - TertVertex[1];
+	  dd[2] = PrimVertex[2] - TertVertex[2];
+	  h->SetXYZ(-dd[0],-dd[1],-dd[2]);
 
-	    fSubPA2          = TMath::Cos(sublorentzsum->Angle(*h));
-	    fDecAngle        = sublorentzsum->Angle(particle4->Vect());	      
-	    // _________________________________________________ //
-	    // __ daughter hypernucleus cos(PA) to sec vtx (2) __ //
-	    dd[0] = SecVertex[0] - TertVertex2[0];
-	    dd[1] = SecVertex[1] - TertVertex2[1];
-	    dd[2] = SecVertex[2] - TertVertex2[2];
-	    h->SetXYZ(-dd[0], -dd[1], -dd[2]);
+	  fSubPA2          = TMath::Cos(sublorentzsum->Angle(*h));
+	  fDecAngle        = sublorentzsum->Angle(particle4->Vect());	      
+	  // _________________________________________________ //
+	  // __ daughter hypernucleus cos(PA) to sec vtx (2) __ //
+	  dd[0] = SecVertex[0] - TertVertex2[0];
+	  dd[1] = SecVertex[1] - TertVertex2[1];
+	  dd[2] = SecVertex[2] - TertVertex2[2];
+	  h->SetXYZ(-dd[0], -dd[1], -dd[2]);
 
-	    fSubPA3 = TMath::Cos(sublorentzsum->Angle(*h));
-	    // _________________________________________________ //
-	    // __ daughter hypernucleus cos(PA) to prim vtx (2) __ //
-	    dd[0] = PrimVertex[0] - TertVertex2[0];
-	    dd[1] = PrimVertex[1] - TertVertex2[1];
-	    dd[2] = PrimVertex[2] - TertVertex2[2];
-	    h->SetXYZ(-dd[0], -dd[1], -dd[2]);
+	  fSubPA3 = TMath::Cos(sublorentzsum->Angle(*h));
+	  // _________________________________________________ //
+	  // __ daughter hypernucleus cos(PA) to prim vtx (2) __ //
+	  dd[0] = PrimVertex[0] - TertVertex2[0];
+	  dd[1] = PrimVertex[1] - TertVertex2[1];
+	  dd[2] = PrimVertex[2] - TertVertex2[2];
+	  h->SetXYZ(-dd[0], -dd[1], -dd[2]);
 
-	    fSubPA4 = TMath::Cos(sublorentzsum->Angle(*h));
-	    // _________________________________________________ //
-	    // __ armenteros podolanski __ //
-	    TVector3 vecN(0.,0.,0.);
-	    TVector3 vecP(0.,0.,0.);
-	    TVector3 vecM(0.,0.,0.); 
+	  fSubPA4 = TMath::Cos(sublorentzsum->Angle(*h));
+	  // _________________________________________________ //
+	  // __ armenteros podolanski __ //
+	  TVector3 vecN(0.,0.,0.);//
+	  TVector3 vecP(0.,0.,0.);
+	  TVector3 vecM(0.,0.,0.); 
 
-	    vecN      = sublorentzsum->Vect();
-	    vecP      = particle4->Vect();
-	    vecM      = lorentzsum->Vect();
+	  vecN      = sublorentzsum->Vect();
+	  vecP      = particle4->Vect();
+	  vecM      = lorentzsum->Vect();
 
-	    fthetaP   = TMath::ACos((vecP * vecM)/(vecP.Mag() * vecM.Mag()));
-	    fthetaN   = TMath::ACos((vecN * vecM)/(vecN.Mag() * vecM.Mag()));
-	    farmalpha = ((vecP.Mag())*TMath::Cos(fthetaP)-(vecN.Mag())*TMath::Cos(fthetaN))/((vecP.Mag())*TMath::Cos(fthetaP)+(vecN.Mag())*TMath::Cos(fthetaN));
-	    farmpt    = vecP.Mag()*sin(fthetaP);
-	    // _________________________________________________ //
-	    // __ MC part __ //
-	    if(fMCtrue){
-	      if(ParticleGrandMother1->PdgCode() == fgkPdgCode[kPDGAntiDoubleHyperHydrogen4]
-		 && ParticleGrandMother2->PdgCode() == fgkPdgCode[kPDGAntiDoubleHyperHydrogen4]
-		 && ParticleGrandMother3->PdgCode() == fgkPdgCode[kPDGAntiDoubleHyperHydrogen4]
-		 && ParticleMother4->PdgCode() == fgkPdgCode[kPDGAntiDoubleHyperHydrogen4]
-		 && labelGrandMother1 == labelGrandMother2
-		 && labelGrandMother2 == labelGrandMother3
-		 && labelGrandMother3 == labelMother4){
-		if(TMath::Abs(label1) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGAntiHelium3], fgkPdgCode[kPDGAntiHyperHelium4]))
-		   && TMath::Abs(label2) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGAntiProton], fgkPdgCode[kPDGAntiHyperHelium4]))
-		   && TMath::Abs(label3) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGPionPlus], fgkPdgCode[kPDGAntiHyperHelium4]))
-		   && TMath::Abs(label4) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGPionPlus]))){
-		  mctruth = 1;		      
-		}
+	  fthetaP   = TMath::ACos((vecP * vecM)/(vecP.Mag() * vecM.Mag()));
+	  fthetaN   = TMath::ACos((vecN * vecM)/(vecN.Mag() * vecM.Mag()));
+	  farmalpha = ((vecP.Mag())*TMath::Cos(fthetaP)-(vecN.Mag())*TMath::Cos(fthetaN))/((vecP.Mag())*TMath::Cos(fthetaP)+(vecN.Mag())*TMath::Cos(fthetaN));
+	  farmpt    = vecP.Mag()*sin(fthetaP);
+	  // _________________________________________________ //
+	  // __ MC part __ //
+	  if(fMCtrue){
+	    if(ParticleGrandMother1->PdgCode() == fgkPdgCode[kPDGAntiDoubleHyperHydrogen4]
+	       && ParticleGrandMother2->PdgCode() == fgkPdgCode[kPDGAntiDoubleHyperHydrogen4]
+	       && ParticleGrandMother3->PdgCode() == fgkPdgCode[kPDGAntiDoubleHyperHydrogen4]
+	       && ParticleMother4->PdgCode() == fgkPdgCode[kPDGAntiDoubleHyperHydrogen4]
+	       && labelGrandMother1 == labelGrandMother2
+	       && labelGrandMother2 == labelGrandMother3
+	       && labelGrandMother3 == labelMother4){
+	      if(TMath::Abs(label1) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGAntiHelium3], fgkPdgCode[kPDGAntiHyperHelium4]))
+		 && TMath::Abs(label2) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGAntiProton], fgkPdgCode[kPDGAntiHyperHelium4]))
+		 && TMath::Abs(label3) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGPionPlus], fgkPdgCode[kPDGAntiHyperHelium4]))
+		 && TMath::Abs(label4) == TMath::Abs(GetLabel(labelGrandMother1, fgkPdgCode[kPDGPionPlus]))){
+		mctruth = 1;		      
 	      }
 	    }
-	    // __ fill tree __ //
-	    fTree->Fill();
-	    // __ reset __ //
-	    AliAnalysisTaskDoubleHypNucTree::ResetVals("");
-	    if(sublorentzsum)  delete sublorentzsum;
-	    if(sublorentzsum2) delete sublorentzsum2;
-	    if(lorentzsum)     delete lorentzsum;
-	    if(lorentzsum2)    delete lorentzsum2;
-	    if(particle1)      delete particle1;
-	    if(particle2)      delete particle2;
-	    if(particle3)      delete particle3;
-	    if(particle4)      delete particle4;
-	    if(exTrack)        delete exTrack;
-	    if(h)              delete h;
-	  }//end #bar{4LLH}	  
+	  }
+	  // __ fill tree __ //
+	  fTree->Fill();
+	  // __ reset __ //
+	  AliAnalysisTaskDoubleHypNucTree::ResetVals("");
+	  if(sublorentzsum)  delete sublorentzsum;
+	  if(sublorentzsum2) delete sublorentzsum2;
+	  if(lorentzsum)     delete lorentzsum;
+	  if(lorentzsum2)    delete lorentzsum2;
+	  if(particle1)      delete particle1;
+	  if(particle2)      delete particle2;
+	  if(particle3)      delete particle3;
+	  if(particle4)      delete particle4;
+	  if(exTrack)        delete exTrack;
+	  if(h)              delete h;	  
 	  // _________________________________________________ //
 	}//track4
       }//track3
@@ -2744,20 +3162,20 @@ void AliAnalysisTaskDoubleHypNucTree::SetBetheBlochParams(Int_t runNumber) {
   }
   // __ 2018 PbPb pass 1__ //
   /* else if(runNumber >= 295581 && runNumber <= 297624){
-    fBetheParamsT[0] = 0.669634;
-    fBetheParamsT[1] = 53.1497;
-    fBetheParamsT[2] =-1.32853e-08;
-    fBetheParamsT[3] = 2.5775;
-    fBetheParamsT[4] = 17.7607;
-    fBetheParamsT[5] = 0.06;
+     fBetheParamsT[0] = 0.669634;
+     fBetheParamsT[1] = 53.1497;
+     fBetheParamsT[2] =-1.32853e-08;
+     fBetheParamsT[3] = 2.5775;
+     fBetheParamsT[4] = 17.7607;
+     fBetheParamsT[5] = 0.06;
       
-    fBetheParamsHe[0] = 1.50582;
-    fBetheParamsHe[1] = 33.7232;
-    fBetheParamsHe[2] = -0.0923749;
-    fBetheParamsHe[3] = 2.00901;
-    fBetheParamsHe[4] = 2.28772;
-    fBetheParamsHe[5] = 0.06;
-  }*/
+     fBetheParamsHe[0] = 1.50582;
+     fBetheParamsHe[1] = 33.7232;
+     fBetheParamsHe[2] = -0.0923749;
+     fBetheParamsHe[3] = 2.00901;
+     fBetheParamsHe[4] = 2.28772;
+     fBetheParamsHe[5] = 0.06;
+     }*/
   // __ 2018 PbPb pass 3__ //
   else if(runNumber >= 295581 && runNumber <= 297624){
     fBetheParamsT[0] = 0.648689;
