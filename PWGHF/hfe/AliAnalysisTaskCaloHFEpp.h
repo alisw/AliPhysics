@@ -74,6 +74,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetNref(Double_t nref) {Nref = nref;};
 		void                    SetMaxNtr(Double_t maxNtr) {MaxNtr = maxNtr;};
 		void                    SetMinNtr(Double_t minNtr) {MinNtr = minNtr;};
+		void                    SetEstimatorFile(TString filename) {festimatorFile = filename;}
+               
 
 		void      SetWeightNtrkl(TH1D* hWeight){
 			if(fweightNtrkl) delete fweightNtrkl;
@@ -109,6 +111,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Int_t Nch;
 		Int_t MinNtr;
 		Int_t MaxNtr;
+                TString festimatorFile;
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
