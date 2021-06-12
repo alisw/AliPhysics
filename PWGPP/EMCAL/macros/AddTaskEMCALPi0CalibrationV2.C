@@ -48,6 +48,7 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   TString trigger                = "",
   Bool_t  recalE                 = kFALSE, 
   Int_t  simu                    = 0,
+  Bool_t  fSaveHistos            = kTRUE,
   Bool_t  fSaveCells             = kFALSE,
   Bool_t  fSaveClusters          = kFALSE,
   Bool_t  isHeavyIon             = kFALSE,
@@ -60,6 +61,7 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   Float_t maxClusterTime         = 800,  // 610 ns in Run1
   Float_t maxDiffTimeClusterPair = 100,  //  20 ns in Run1  
   Bool_t bSameSM                 = kTRUE,
+  TString corrTaskSetting        = "",
   TString outputFile             = "", // AnalysisResults.root
   TString periodName             = "",
   const char *trigSuffix         = ""
@@ -82,8 +84,10 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   
   TString wagon = trigSuffix;
   if ( wagon.Length() > 0 ) trigger = wagon;
+  wagon+="_";
+  wagon+=corrTaskSetting.Data();
   
-  AliAnalysisTaskEMCALPi0CalibSelectionV2 * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelectionV2(Form("EMCALPi0Calibration_%s",trigger.Data()));
+  AliAnalysisTaskEMCALPi0CalibSelectionV2 * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelectionV2(Form("EMCALPi0Calibration_%s_%s",trigger.Data(),corrTaskSetting.Data()));
   pi0calib->SetCellMinEnergy(minCellEnergy);
   pi0calib->SetClusterMinEnergy(minClusterEnergy);
   pi0calib->SetClusterMaxEnergy(maxClusterEnergy);
@@ -110,7 +114,8 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   
   pi0calib->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   pi0calib->SwitchOnLoadOwnGeometryMatrices();
-  // pi0calib->SetOADBFilePath("/home/ewa/alice/AliPhysics/OADB/OADB/EMCAL");
+  pi0calib->SetOADBFilePath("/home/ewa/alice/AliPhysics/OADB/OADB/EMCAL");
+  pi0calib->SetCorrectionTaskSetting(corrTaskSetting);
 
   if( simu == 1 ) {
     pi0calib->SetIsMC();
@@ -120,6 +125,10 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
 
   if( isHeavyIon ) {
     pi0calib->SetHeavyIon();
+  }
+
+  if( fSaveHistos ){
+    pi0calib->SetSaveHistos();
   }
 
   if( fSaveCells ){
@@ -153,20 +162,20 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
                                         TList::Class(),
                                         AliAnalysisManager::kOutputContainer,
                                         outputFile.Data() );
-    if( fSaveCells || fSaveClusters )   couttree    = mgr->CreateContainer( Form("Pi0Calibration_Trig%s",trigger.Data()),
+    if( fSaveCells || fSaveClusters)    couttree    = mgr->CreateContainer( Form("Pi0Calibration_Trig%s_%s",trigger.Data(),corrTaskSetting.Data()) ,
                                                                             TTree::Class(),
                                                                             AliAnalysisManager::kOutputContainer,
-                                                                            "Pi0CalibrationTree.root"); 
+                                                                            Form("Pi0CalibrationTree_%s.root",corrTaskSetting.Data())); 
   } else {
-    TString containerName = "Pi0Calibration";
+    TString containerName = Form("Pi0Calibration_%s",corrTaskSetting.Data()) ;
     couthistos  = mgr->CreateContainer( wagon,
                                         TList::Class(),
                                         AliAnalysisManager::kOutputContainer,
                                         Form("%s:%s",outputFile.Data(),containerName.Data()) );
-    if( fSaveCells || fSaveClusters )   couttree    = mgr->CreateContainer( Form("Pi0Calibration_Trig%s",trigger.Data()),
+    if( (fSaveCells || fSaveClusters) )   couttree    = mgr->CreateContainer( Form("Pi0Calibration_Trig%s_%s",trigger.Data(), corrTaskSetting.Data()),
                                                                             TTree::Class(),
                                                                             AliAnalysisManager::kOutputContainer,
-                                                                            "Pi0CalibrationTree.root"); 
+                                                                            Form("Pi0CalibrationTree_%s.root",corrTaskSetting.Data())); 
   }  
   
   mgr->AddTask(pi0calib);
