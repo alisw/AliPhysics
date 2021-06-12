@@ -114,7 +114,7 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   
   pi0calib->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   pi0calib->SwitchOnLoadOwnGeometryMatrices();
-  pi0calib->SetOADBFilePath("/home/ewa/alice/AliPhysics/OADB/OADB/EMCAL");
+  // pi0calib->SetOADBFilePath("/home/ewa/alice/AliPhysics/OADB/OADB/EMCAL");
   pi0calib->SetCorrectionTaskSetting(corrTaskSetting);
 
   if( simu == 1 ) {
