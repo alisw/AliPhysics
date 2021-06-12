@@ -77,9 +77,10 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetEstimatorFile(TString filename) {festimatorFile = filename;}
                
 
-		void      SetWeightNtrkl(TH1D* hWeight){
-			if(fweightNtrkl) delete fweightNtrkl;
-			fweightNtrkl=new TH1D(*hWeight);
+		//void      SetWeightNtrkl(TH1D* hWeight){
+		//	if(fweightNtrkl) delete fweightNtrkl;
+		//	fweightNtrkl=new TH1D(*hWeight);
+
 		}
 
 
@@ -259,7 +260,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		Int_t fetarange;
 		TProfile*		fMultEstimatorAvg;
-		TH1D*       fweightNtrkl;
+		//TH1D*       fweightNtrkl;
 
 
 		ClassDef(AliAnalysisTaskCaloHFEpp, 1);
