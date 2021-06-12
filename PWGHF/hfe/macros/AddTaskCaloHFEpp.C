@@ -81,6 +81,7 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
     task -> SetMaxNtr(maxNtr);
     task -> SetEstimatorFile(estimatorFilename);
 
+    /*
     TFile* fEstimator=TFile::Open(estimatorFilename.Data());
     if(!fEstimator){
 	    AliFatal("File with multiplicity estimator not found\n");
@@ -94,7 +95,7 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 	    return;
     }
     task->SetWeightNtrkl(weightNtrkl);
-
+   */
 
     if(!task) return 0x0;
 

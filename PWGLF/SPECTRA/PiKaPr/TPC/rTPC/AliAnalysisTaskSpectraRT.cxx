@@ -126,6 +126,7 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		fGenLeadPhi(0.0),
 		fGenLeadPt(0.0),
 		fGenLeadIn(0.0),
+		fRecLeadEta(0.0),
 		fRecLeadPhi(0.0),
 		fRecLeadPt(0.0),
 		fRecLeadIn(0.0),
@@ -138,6 +139,7 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		hPhiHybrid1(0x0),
 		hPhiHybrid2(0x0),
 		hPhiLeading(0x0),
+		hDeltaPhiDeltaEta(0x0),
 		fEtaCalibrationPos(0x0),
 		fEtaCalibrationNeg(0x0),
 		fEtaCalibrationPosEl(0x0),
@@ -248,6 +250,7 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 	fGenLeadPhi(0.0),
 	fGenLeadPt(0.0),
 	fGenLeadIn(0.0),
+	fRecLeadEta(0.0),
 	fRecLeadPhi(0.0),
 	fRecLeadPt(0.0),
 	fRecLeadIn(0.0),
@@ -260,6 +263,7 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 	hPhiHybrid1(0x0),
 	hPhiHybrid2(0x0),
 	hPhiLeading(0x0),
+	hDeltaPhiDeltaEta(0x0),
 	fEtaCalibrationPos(0x0),
 	fEtaCalibrationNeg(0x0),
 	fEtaCalibrationPosEl(0x0),
@@ -386,6 +390,7 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 		fHybridTrackCuts1->SetDCAToVertex2D(kFALSE);
 		fHybridTrackCuts1->SetRequireSigmaToVertex(kFALSE);
 		fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
+		fHybridTrackCuts1->SetEtaRange(-0.8,0.8);
 
 	} 
 
@@ -404,6 +409,7 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 		fHybridTrackCuts2->SetDCAToVertex2D(kFALSE);
 		fHybridTrackCuts2->SetRequireSigmaToVertex(kFALSE);
 		fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
+		fHybridTrackCuts2->SetEtaRange(-0.8,0.8);
 	} 
 
 	// Quality cuts for selecting daughters of V0s
@@ -525,6 +531,9 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 
 	hPhiLeading = new TH1F("hPhiLeading","; #varphi",100,-TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
 	fListOfObjects->Add(hPhiLeading);
+
+	hDeltaPhiDeltaEta = new TH2F("hDeltaPhiDeltaEta","; #Delta #varphi; #Delta #eta",100,-TMath::Pi(),5.0*TMath::Pi()/2.0,100,-2.0,2.0); 
+	fListOfObjects->Add(hDeltaPhiDeltaEta);
 
 	// Histos rTPC
 
@@ -824,8 +833,9 @@ void AliAnalysisTaskSpectraRT::UserExec(Option_t *)
 //_____________________________________________________________________________
 void AliAnalysisTaskSpectraRT::GetLeadingObject(bool isMC) {
 
-	Double_t flPt = 0;// leading pT
-	Double_t flPhi = 0;
+	Double_t flPt = 0.0;// leading pT
+	Double_t flEta = 0.0;
+	Double_t flPhi = 0.0;
 	Int_t flIndex = 0;
 
 	if(isMC){
@@ -873,6 +883,7 @@ void AliAnalysisTaskSpectraRT::GetLeadingObject(bool isMC) {
 
 			if (flPt<track_hybrid->Pt()){
 				flPt  = track_hybrid->Pt();
+				flEta = track_hybrid->Eta();
 				flPhi = track_hybrid->Phi();
 				flIndex = i;
 			}
@@ -881,6 +892,7 @@ void AliAnalysisTaskSpectraRT::GetLeadingObject(bool isMC) {
 
 		}
 
+		fRecLeadEta = flEta;
 		fRecLeadPhi = flPhi;
 		fRecLeadPt  = flPt;
 		fRecLeadIn  = flIndex;
@@ -1108,6 +1120,14 @@ double AliAnalysisTaskSpectraRT::DeltaPhi(Double_t phi, Double_t Lphi,
 	return dphi;
 }
 //_____________________________________________________________________________
+double AliAnalysisTaskSpectraRT::DeltaEta(Double_t eta, Double_t Leta)
+{
+
+	double deta = -999.0;
+	deta = Leta - eta;
+	return deta;
+}
+//_____________________________________________________________________________
 short AliAnalysisTaskSpectraRT::GetPidCode(Int_t pdgCode) const
 {
 	// return our internal code for pions, kaons, and protons
@@ -1202,6 +1222,8 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 		if(esdTrack->Pt() < fPtMin) continue;
 
 		double DPhi = DeltaPhi(esdTrack->Phi(), fRecLeadPhi);
+		double DEta = DeltaEta(esdTrack->Eta(), fRecLeadEta);
+		hDeltaPhiDeltaEta->Fill(DPhi,DEta);
 
 		int nh = -1;
 		double eta = esdTrack->Eta();
@@ -1807,7 +1829,7 @@ AliESDtrack* AliAnalysisTaskSpectraRT::SetHybridTrackCuts(AliESDtrack *esdtrack,
 		}
 		else{ return 0x0; }
 	}
-	else if(fHybridTrackCuts2->AcceptTrack(esdtrack)){
+	/*else if(fHybridTrackCuts2->AcceptTrack(esdtrack)){
 		if(esdtrack->GetConstrainedParam()){
 			newTrack = new AliESDtrack(*esdtrack);
 			const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
@@ -1816,7 +1838,7 @@ AliESDtrack* AliAnalysisTaskSpectraRT::SetHybridTrackCuts(AliESDtrack *esdtrack,
 			if(fillPhHyb2) hPhiHybrid2->Fill(newTrack->Eta(),newTrack->Phi());
 		}
 		else{ return 0x0; }
-	}
+	}*/
 	else{
 		return 0x0;
 	}
