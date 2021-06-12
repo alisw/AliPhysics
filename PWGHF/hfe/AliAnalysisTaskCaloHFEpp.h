@@ -80,8 +80,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		//void      SetWeightNtrkl(TH1D* hWeight){
 		//	if(fweightNtrkl) delete fweightNtrkl;
 		//	fweightNtrkl=new TH1D(*hWeight);
-
-		}
+		//}
 
 
 	private:
