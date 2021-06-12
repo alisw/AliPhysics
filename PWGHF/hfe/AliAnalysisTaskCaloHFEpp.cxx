@@ -232,8 +232,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistWeOrg(0),
         fHistWeOrgPos(0),
         fHistWeOrgNeg(0),
-        fMultEstimatorAvg(0),
-	fweightNtrkl(0)
+        fMultEstimatorAvg(0)
 
 {
 	// default constructor, don't allocate memory here!
@@ -411,8 +410,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistWeOrg(0),
         fHistWeOrgPos(0),
         fHistWeOrgNeg(0),
-        fMultEstimatorAvg(0),
-	fweightNtrkl(0)
+        fMultEstimatorAvg(0)
 {
 	// constructor
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -430,7 +428,6 @@ AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
 	if(fOutputList) {
 		delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
 	}
-	if(fweightNtrkl) delete fweightNtrkl;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
@@ -729,6 +726,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 {
 
+	if(!gGrid){
+                cout << "no Grid connection, connecting to the Grid ..." << endl; 
+		TGrid::Connect("alien//");
+	}   
 
 	//##################### Systematic Parameters ##################### //
 	//---Track Cut
@@ -976,7 +977,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	fNchNtr->Fill(correctednAcc,Nch);
 	if(fMCarray){
 		WeightZvtx = fCorrZvtx->Eval(Zvertex);
-		WeightNtrkl = fweightNtrkl->GetBinContent(fweightNtrkl->FindBin(correctednAcc));
+		//WeightNtrkl = fweightNtrkl->GetBinContent(fweightNtrkl->FindBin(correctednAcc));
 		fzvtx_Corr->Fill(Zvertex,WeightZvtx);
 		fNtrkl_Corr->Fill(correctednAcc,WeightNtrkl);
 		fNchNtr_Corr->Fill(correctednAcc,Nch,WeightNtrkl);
