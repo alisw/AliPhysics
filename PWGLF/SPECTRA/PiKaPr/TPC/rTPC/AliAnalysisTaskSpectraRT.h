@@ -79,6 +79,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		void GetMCCorrections();
 		virtual Double_t DeltaPhi(Double_t phi, Double_t lphi,
 				Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
+		virtual Double_t DeltaEta(Double_t eta, Double_t leta);
 		void ProduceArrayTrksESD();
 		void ProduceArrayV0ESD();
 		short   GetPidCode(Int_t pdgCode) const;
@@ -133,6 +134,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		double fGenLeadPhi;
 		double fGenLeadPt;
 		int    fGenLeadIn;
+		double fRecLeadEta;
 		double fRecLeadPhi;
 		double fRecLeadPt;
 		int    fRecLeadIn;
@@ -151,6 +153,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TH2F* hPhiHybrid1;
 		TH2F* hPhiHybrid2;
 		TH1F* hPhiLeading;
+		TH2F* hDeltaPhiDeltaEta;
 
 		TH2F* hPtVsP[4];
 		TH2F* hnSigmaElectrons[4];
