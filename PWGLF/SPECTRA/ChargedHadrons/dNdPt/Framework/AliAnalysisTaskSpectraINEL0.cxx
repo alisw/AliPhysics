@@ -16,8 +16,6 @@
 #include "AliGenEventHeader.h"
 #include "AliESDtrackCuts.h"
 #include "AlidNdPtTools.h"
-#include "AlidNdPtEventCuts.h"
-#include "AlidNdPt.h"
 #include "AliAnalysisTaskMKBase.h"
 #include "AliAnalysisTaskSpectraINEL0.h"
 class AliAnalysisTaskSpectraINEL0;
