@@ -461,21 +461,22 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
   }
   
   // FIXME: what is this??
-//  fNTracksAcc = 0;
-//  if (fESDtrackCutsM) {
-//    for (Int_t i = 0; i < fNTracksESD; i++) {
-//      AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
-//      if (!track)
-//        continue;
-//      if (fESDtrackCutsM->AcceptTrack(track)) {
-//        ++fNTracksAcc;
-//      }
-//    }
-//  } else {
-//    fNTracksAcc = fNTracksESD;
-//    Log("noAliESDTrackCutsM");
-//  }
-  
+  /*
+  fNTracksAcc = 0;
+  if (fESDtrackCutsM) {
+    for (Int_t i = 0; i < fNTracksESD; i++) {
+      AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
+      if (!track)
+        continue;
+      if (fESDtrackCutsM->AcceptTrack(track)) {
+        ++fNTracksAcc;
+      }
+    }
+  } else {
+    fNTracksAcc = fNTracksESD;
+    Log("noAliESDTrackCutsM");
+  }
+  */
   return kTRUE;
 }
 
@@ -995,11 +996,6 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
   }
   
   fMCisPrim = fMC->IsPhysicalPrimary(fMCLabel);
-  
-  Bool_t isPhysPrimStack = fMCStack->IsPhysicalPrimary(fMCLabel);
-  if (fMCisPrim != isPhysPrimStack) {
-    Log("PhysPrimMismatch");
-  }
   
   fMCisSecDecay = fMC->IsSecondaryFromWeakDecay(fMCLabel);
   fMCisSecMat = fMC->IsSecondaryFromMaterial(fMCLabel);
