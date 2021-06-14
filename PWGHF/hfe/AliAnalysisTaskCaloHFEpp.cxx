@@ -2177,7 +2177,7 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAO
     }    
 
   //TFile* fEstimator = TFile::Open("alien:///alice/cern.ch/user/s/ssakai/Multiplicity_pp13/estimator.root");
-  cout << "runNo = " << runNo << " ; " << periodNames << " ; " << festimatorFile.Data() << endl;
+  //cout << "runNo = " << runNo << " ; " << periodNames << " ; " << festimatorFile.Data() << endl;
 
   TFile* fEstimator = TFile::Open(festimatorFile.Data());
 
@@ -2187,9 +2187,12 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAO
 
   fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames));
 
+
   if(!fMultEstimatorAvg){
 	AliFatal("fMultEstimatorAvg not found!");
 	}
+
+ fEstimator->Close();
 
   return fMultEstimatorAvg;
 }
@@ -2208,6 +2211,8 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(const AliAODEvent* f
   TFile* fEstimator = TFile::Open(festimatorFile.Data());
   fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames))->Clone(periodNames);
     
+  fEstimator->Close();
+
   return fMultEstimatorAvg;
 }
  //____________________________________________________________________________
