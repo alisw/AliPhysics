@@ -745,6 +745,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     //Automatic Loop for linking directly to AliMultInput
     for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
       if(lStoreIfLight[iVar] || !fkLightTree){
+        Printf(Form("Connecting variable: %s",AliMultInput::VarName[iVar].Data()));
         if( !fInput->GetVariable(AliMultInput::VarName[iVar])){
           Printf(Form("Problem finding variable: %s ! Please check!",AliMultInput::VarName[iVar].Data()));
         }
