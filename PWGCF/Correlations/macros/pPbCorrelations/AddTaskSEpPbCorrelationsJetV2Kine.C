@@ -1,4 +1,4 @@
-AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TString sMode = "TPCTPCFMDA")
+AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TString sMode = "TPCFMDA")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -18,10 +18,10 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   task->SetAssocPtBinning(nBinAssocPt, assocPtLimits);
 
   task->SetAnaMode(sMode);
-  task->SetAssoCut(1.0);
+  task->SetAssoCut(1.5);
  
   task->SetPtMin(0.5);
-  task->SetPtMax(50.);
+  task->SetPtMax(10.);
 
   task->SetCen1(0);
   task->SetCen2(10);
@@ -32,6 +32,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   TFile *file = TFile::Open("alien:///alice/cern.ch/user/s/sitang/AMPT_Centrality_Calibration/Centrality.root");
 
   //TFile *file = TFile::Open("./Centrality/Centrality.root");
+
   TH1D *h_Charge  = (TH1D*)file->Get("hChargeV0A"); h_Charge->SetDirectory(0);
   file->Close();
 
