@@ -2065,7 +2065,7 @@ void AliAnalysisTaskHFJetIPQA::DefaultInitTreeVars(){
  * - Sort after storing track parameters as otherwise assignment wrt. IP and IPSig to different tracks!
  * */
 
-void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati>& sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXYSig, vector<Float_t> &ipvalsig, vector<Float_t> &ipval, vector<Float_t>& chi2val, Int_t &nGoodIPTracks)
+void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati>& sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati>& sImpParXYSig, vector<Float_t> &ipvalsig, vector<Float_t> &ipval, vector<Float_t>& chi2val, Int_t &nGoodIPTracks)
 {
     nGoodIPTracks=sImpParXY.size();
     if(nGoodIPTracks==0) return;
