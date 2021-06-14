@@ -42,6 +42,7 @@ set(SRCS
   UeKNO/AliAnalysisTaskGenMcKnoUe.cxx
   UeKNO/AliAnalysisTaskGenUeVsMult.cxx
   UeKNO/AliAnalysisTaskMcKnoUeSyst.cxx
+  UeKNO/AliAnalysisTaskMcKnoUeVsMult.cxx
   UeKNO/AliAnalysisTaskMcKno.cxx
   UeKNO/AliAnalysisTaskDataKno.cxx
   UeKNO/AliAnalysisTaskGenMcKno.cxx
