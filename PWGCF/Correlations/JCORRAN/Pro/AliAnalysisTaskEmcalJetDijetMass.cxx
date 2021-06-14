@@ -219,7 +219,7 @@ void AliAnalysisTaskEmcalJetDijetMass::UserCreateOutputObjects()
     //}
 
     //PostData(1, fOutput); // Post data for ALL output slots > 0 here.
-    PostData(2, fJOutput); // Post data for ALL output slots > 0 here.
+    PostData(1, fJOutput); // Post data for ALL output slots > 0 here.
 }
 
 /**
@@ -590,18 +590,18 @@ AliAnalysisTaskEmcalJetDijetMass *AliAnalysisTaskEmcalJetDijetMass::AddTaskEmcal
     mgr->AddTask(dijetMassTask);
 
     // Create containers for input/output
-    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer()  ;
     TString contname(name);
     contname += "_histos";
-    mgr->ConnectInput  (dijetMassTask, 0, cinput1 );
+    mgr->ConnectInput  (dijetMassTask, 0, cinput );
+    AliAnalysisDataContainer *emcalHist = mgr->CreateContainer(Form("%scontainerList",name.Data()),
+            TList::Class(), AliAnalysisManager::kOutputContainer,
+            Form("%s:%s",AliAnalysisManager::GetCommonFileName(), name.Data()));
     AliAnalysisDataContainer *jHist = mgr->CreateContainer(Form("%scontainer",name.Data()),
             TDirectory::Class(), AliAnalysisManager::kOutputContainer,
             Form("%s:%s",AliAnalysisManager::GetCommonFileName(), name.Data()));
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
-            TList::Class(),AliAnalysisManager::kOutputContainer,
-            Form("%s:%s", AliAnalysisManager::GetCommonFileName(),name.Data()));
-    mgr->ConnectOutput (dijetMassTask, 1, coutput1 );
-    mgr->ConnectOutput (dijetMassTask, 2, jHist );
+    mgr->ConnectOutput (dijetMassTask, 1, emcalHist );
+    mgr->ConnectOutput (dijetMassTask, 1, jHist );
     //cout << "AliAnalysisDataContainer *jHist = mgr->CreateContainer(" << Form("%scontainer",dijetMassTask->GetName()) << "," << endl;
     //cout << "       TDirectory::Class(), AliAnalysisManager::kOutputContainer," << endl;
     //cout << "       " << Form("%s:%s",AliAnalysisManager::GetCommonFileName(), dijetMassTask->GetName()) << ");" << endl;

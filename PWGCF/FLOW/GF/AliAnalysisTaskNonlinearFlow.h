@@ -70,6 +70,7 @@ class AliInputEventHandler;
 class PhysicsProfile : public TObject {
 	public:
                 PhysicsProfile();
+		PhysicsProfile(const PhysicsProfile&);
 		// Physics profiles
 		TProfile*	 fChsc4242;		             	//! SC(4,2)
 		TProfile*	 fChsc4242_Gap0;			//! SC(4,2) |#Delta#eta| > 0.0
@@ -172,13 +173,17 @@ class PhysicsProfile : public TObject {
 		TProfile*        fChcn4_3subRRML[6];            //! <<4>> 3subevent method
 		TProfile*        fChcn4_3subGap2[6];            //! <<4>> 3subevent method |#Delta#eta| > 0.2
 		private:
-		ClassDef(PhysicsProfile, 4);    //Analysis task
+		ClassDef(PhysicsProfile, 5);    //Analysis task
 };
 
 class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 	public:
 
-      enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kCharUnidentified, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
+        enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kCharUnidentified, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
+        
+        enum  NonflowSupress {knStandard = 1 << 0, kn0Gap = 1 << 1, knLargeGap = 1 << 2, knThreeSub = 1 << 3, knGapScan = 1 << 4}; // list of nonflow supression method
+
+      
 
                 // const unsigned int usev2345flag = 1 << 0;
 	        // const unsigned int usev678flag = 1 << 1;
@@ -225,6 +230,19 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
                 virtual void   SetSystFlag(int flag) { fCurrSystFlag = flag; }
                 virtual int    GetSystFlag() { return fCurrSystFlag; }
 
+                // unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
+                // unsigned fgFlowHarmonicsHigher = 0;  calculate v6, v7, v8 ..
+                // unsigned fgFlowHarmonicsMult = 0;    calculate v2{4} // yet v2{6}, v2{8}
+                // unsigned fgNonlinearFlow = 0;        calculate v_4,22, v_5,32
+                // unsigned fgSymmetricCumulants = 0;   calculate SC(3,2), SC(4,2)
+                virtual void SetCalculateFlowHarmonics(unsigned flag)       { fgFlowHarmonics = flag; }
+                virtual void SetCalculateFlowHarmonicsHigher(unsigned flag) { fgFlowHarmonicsHigher = flag; }
+                virtual void SetCalculateFlowHarmonicsMult(unsigned flag)   { fgFlowHarmonicsMult = flag; }
+                virtual void SetCalculateNonlinearFlow(unsigned flag)       { fgNonlinearFlow = flag; }
+                virtual void SetCalculateSymmetricCumulants(unsigned flag)  { fgSymmetricCumulants = flag; }
+
+
+
 	private:
 		AliAnalysisTaskNonlinearFlow(const AliAnalysisTaskNonlinearFlow&);
 		AliAnalysisTaskNonlinearFlow& operator=(const AliAnalysisTaskNonlinearFlow&);
@@ -247,9 +265,13 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		double 			GetPtWeight(double pt, double eta, float vz, double runNumber);
 
 		Bool_t                  LoadWeights();
+		Bool_t                  LoadWeightsKatarina();
 		Bool_t                  LoadPtWeights();
+		Bool_t                  LoadPtWeightsKatarina();
 		Bool_t                  LoadWeightsSystematics();
 
+                Double_t GetWeightKatarina(double phi, double eta, double vz);
+                Double_t GetPtWeightKatarina(double pt, double eta, double vz);
 		Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
 		Double_t GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species);
                 const char* ReturnPPperiod(const Int_t runNumber) const;
@@ -313,7 +335,9 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		//
 		TList*                  fFlowWeightsList;               //! flowWightsList
 		TList*                  fFlowPtWeightsList;             //! PtflowWightsList
+		TFile*                  fFlowPtWeightsFile;             //! PtflowWightsList
 		TList*			fPhiWeight;	                //! file with phi weights
+		TFile*			fPhiWeightFile;	                //! file with phi weights
 		TList*			fPhiWeightPlus;	                //! file with phi weights
 		TList*			fPhiWeightMinus;                //! file with phi weights
 		TH2D*                   fh2Weights[kUnknown];           //! container for GF weights (phi,eta,pt) (2D)
@@ -327,29 +351,6 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH3F*			hPhiWeight;			//! 3D weight for all periods except LHC15ijl
 		TH3F*			hPhiWeightRun;			//! 3D weight run-by-run for pPb 5TeV LHC16q
 		TH1F*			hPhiWeight1D;			//! 1D weight in one MC case (maybe need to redo to 3D weight)
-		TH3D*			hPhiWeight_LHC15i_part1;	//! LHC15i, part1 runs
-		TH3D*			hPhiWeight_LHC15i_part2;	//! LHC15i, part2 runs
-		TH3D*			hPhiWeight_LHC15j_part1;	//! LHC15j, part1 runs
-		TH3D*			hPhiWeight_LHC15j_part2;	//! LHC15j, part2 runs
-		TH3D*			hPhiWeight_LHC15l_part1;	//! LHC15l, part1 runs
-		TH3D*			hPhiWeight_LHC15l_part2;	//! LHC15l, part2 runs
-		TH3D*			hPhiWeight_LHC15l_part3;	//! LHC15l, part3 runs
-
-		TH3D*			hPhiWeightPlus_LHC15i_part1;	//! LHC15i, part1 runs
-		TH3D*			hPhiWeightPlus_LHC15i_part2;	//! LHC15i, part2 runs
-		TH3D*			hPhiWeightPlus_LHC15j_part1;	//! LHC15j, part1 runs
-		TH3D*			hPhiWeightPlus_LHC15j_part2;	//! LHC15j, part2 runs
-		TH3D*			hPhiWeightPlus_LHC15l_part1;	//! LHC15l, part1 runs
-		TH3D*			hPhiWeightPlus_LHC15l_part2;	//! LHC15l, part2 runs
-		TH3D*			hPhiWeightPlus_LHC15l_part3;	//! LHC15l, part3 runs
-
-		TH3D*			hPhiWeightMinus_LHC15i_part1;	//! LHC15i, part1 runs
-		TH3D*			hPhiWeightMinus_LHC15i_part2;	//! LHC15i, part2 runs
-		TH3D*			hPhiWeightMinus_LHC15j_part1;	//! LHC15j, part1 runs
-		TH3D*			hPhiWeightMinus_LHC15j_part2;	//! LHC15j, part2 runs
-		TH3D*			hPhiWeightMinus_LHC15l_part1;	//! LHC15l, part1 runs
-		TH3D*			hPhiWeightMinus_LHC15l_part2;	//! LHC15l, part2 runs
-		TH3D*			hPhiWeightMinus_LHC15l_part3;	//! LHC15l, part3 runs
 
 		// Event histograms
 		TH1D*			hEventCount;			//! counting events passing given event cuts
@@ -413,22 +414,60 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		int NtrksAfter3subM = 0;     //!
 		int NtrksAfter3subR = 0;     //!
 
-                int lastRunNumber = 0;
+                int lastRunNumber = 0;       //!
 
 		PhysicsProfile multProfile; //!
 		PhysicsProfile multProfile_bin[30]; //!
 
-		TRandom3 rand;
-		Int_t bootstrap_value; //!
-
 		CorrelationCalculator correlator; //!
+		TRandom3 rand;         //!
+		Int_t bootstrap_value = -1; //!
 
-		double xbins[3000+10]; //!
-		int nn; //!
+
+                unsigned fgFlowHarmonics = 0;        //! calculate v2, v3, v4, v5
+                unsigned fgFlowHarmonicsHigher = 0;  //! calculate v6, v7, v8 ..
+                unsigned fgFlowHarmonicsMult = 0;    //! calculate v2{4} // yet v2{6}, v2{8}
+                unsigned fgNonlinearFlow = 0;        //! calculate v_4,22, v_5,32
+                unsigned fgSymmetricCumulants = 0;   //! calculate SC(3,2), SC(4,2)
+
+                unsigned fgTwoParticleCorrelation = 0;       //!
+                unsigned fgTwoParticleCorrelationHigher = 0; //!
+                unsigned fgThreeParticleCorrelation = 0;     //!
+                unsigned fgFourParticleCorrelation = 0;      //! 
+
+                bool fuTwoParticleCorrelationStandard = 0;        //!
+                bool fuTwoParticleCorrelation0Gap = 0;            //!
+                bool fuTwoParticleCorrelationLargeGap = 0;        //!
+                bool fuTwoParticleCorrelationThreeSub = 0;        //!
+                bool fuTwoParticleCorrelationGapScan = 0;         //!
+                bool fuTwoParticleCorrelationHigherStandard = 0;  //!
+                bool fuTwoParticleCorrelationHigher0Gap = 0;      //!
+                bool fuTwoParticleCorrelationHigherLargeGap = 0;  //!
+                bool fuTwoParticleCorrelationHigherThreeSub = 0;  //!
+                bool fuTwoParticleCorrelationHigherGapScan = 0;   //!
+                bool fuThreeParticleCorrelationStandard = 0;      //!
+                bool fuThreeParticleCorrelation0Gap = 0;          //!
+                bool fuThreeParticleCorrelationLargeGap = 0;      //!
+                bool fuThreeParticleCorrelationThreeSub = 0;      //!
+                bool fuThreeParticleCorrelationGapScan = 0;       //!
+                bool fuFourParticleCorrelationStandard = 0;       //!
+                bool fuFourParticleCorrelation0Gap = 0;           //!
+                bool fuFourParticleCorrelationLargeGap = 0;       //!
+                bool fuFourParticleCorrelationThreeSub = 0;       //!
+                bool fuFourParticleCorrelationGapScan = 0;        //!
+
+                bool fuQStandard = 0; //!
+                bool fuQ0Gap     = 0; //!
+                bool fuQLargeGap = 0; //!
+                bool fuQThreeSub = 0; //!
+                bool fuQGapScan  = 0; //!
+
+		double xbins[300] = {}; //!
+		int nn = 0; //!
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 4);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 5);    //Analysis task
 };
 
 #endif
