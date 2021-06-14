@@ -1645,21 +1645,21 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
 
   Int_t nContainerOutput = 2;
   for(Int_t iCut=0; iCut<fnCuts; iCut++){
-    if(fIsMC==1){
+    if(fIsMC>0){
       OpenFile(nContainerOutput);
       PostData(nContainerOutput, tTrueMergedCaloClusterPi0[iCut]);
     }
     nContainerOutput++;
   }
   for(Int_t iCut=0; iCut<fnCuts; iCut++){
-    if(fIsMC==1){
+    if(fIsMC>0){
       OpenFile(nContainerOutput);
       PostData(nContainerOutput, tTrueMergedCaloClusterEta[iCut]);
     }
     nContainerOutput++;
   }
   for(Int_t iCut=0; iCut<fnCuts; iCut++){
-    if(fIsMC==1){
+    if(fIsMC>0){
       OpenFile(nContainerOutput);
       PostData(nContainerOutput, tTrueMergedCaloClusterBck[iCut]);
     }
