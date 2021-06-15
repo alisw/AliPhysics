@@ -97,5 +97,6 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20200316: Re-addition of 2016-2018 PAR calibrations in EMCALTimeL1PhaseCalib.root + missing PAR calib for three runs of LHC18q
 - 20200414: Update of EMCALTimeL1PhaseCalib.root with additional 2016 and 2018 PAR calibrations
 - 20210608: Update of EMCALTimeL1PhaseCalib.root with missing runs from LHC16j, LHC16h and LHC18k
+- 20210615: Update of EMCALTimeL1PhaseCalib.root with PAR for run 256227 in LHC16j
 
 */
