@@ -48,8 +48,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Bool_t                  IsPdecay(int mpid);
 		Bool_t                  IsDdecay(int mpid);
 		Bool_t                  IsBdecay(int mpid);
-		TProfile* 		GetEstimatorHistogram(const AliAODEvent *fAOD);
-		TProfile* 		GetEstimatorHistogramMC(const AliAODEvent *fAOD);
+		TProfile* 		GetEstimatorHistogram(TFile* fEstimator, const AliAODEvent *fAOD);
+		TProfile* 		GetEstimatorHistogramMC(TFile* fEstimator, const AliAODEvent *fAOD);
 		Double_t      GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
 		void                    SetEG1(Bool_t flagEG1) { fEMCEG1= flagEG1;};
