@@ -228,6 +228,7 @@ public:
     kPOut,                   // momentum at outer wall of TPC, used for TRD studies
     kYsignedIn,              // signed local y at inner wall of TPC
     kTPCsignal,              // TPC dE/dx signal
+    kTPCsignalTunedOnData,              // TPC dE/dx signal
 
     kTOFsignal,              // TOF signal
     kTOFbeta,                // TOF beta
@@ -1257,6 +1258,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
 
 
   values[AliDielectronVarManager::kTPCsignal]=particle->GetTPCsignal();
+  values[AliDielectronVarManager::kTPCsignalTunedOnData]=particle->GetTPCsignalTunedOnData();
 
   values[AliDielectronVarManager::kTOFsignal]=particle->GetTOFsignal();
 

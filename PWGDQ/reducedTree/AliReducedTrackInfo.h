@@ -62,6 +62,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Int_t   TPCClusterMapBitsFired()         const;
   Bool_t  TPCClusterMapBitFired(Int_t bit) const {return (bit>=0 && bit<8 ? (fTPCClusterMap&(1<<bit)) : kFALSE);};
   Float_t TPCsignal()                      const {return fTPCsignal;}
+  Float_t TPCsignalTunedOnData()           const {return fTPCsignalTunedOnData;}
   UChar_t TPCsignalN()                     const {return fTPCsignalN;}
   Float_t TPCnSig(Int_t specie)            const {return (specie>=0 && specie<=3 ? fTPCnSig[specie] : -999.);}
   Float_t TPCdEdxInfoQmax(Int_t i)         const {return (i>=0 && i<4 ? fTPCdEdxInfoQmax[i] : -999.);}
@@ -148,6 +149,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t fTPCNclsShared;      // TPC number of shared clusters
   UChar_t fTPCClusterMap;      // TPC cluster distribution map
   Float_t fTPCsignal;          // TPC de/dx
+  Float_t fTPCsignalTunedOnData;          // TPC de/dx
   UChar_t fTPCsignalN;         // TPC no clusters de/dx
   Float_t fTPCnSig[4];         // 0-electron; 1-pion; 2-kaon; 3-proton
   Float_t fTPCdEdxInfoQmax[4]; // dE/dx info using Qmax, 0 - IROC, 1- medium OROC, 2- long OROC, 3- all OROC
