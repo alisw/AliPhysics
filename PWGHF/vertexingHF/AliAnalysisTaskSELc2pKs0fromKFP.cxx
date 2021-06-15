@@ -865,20 +865,16 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
          Float_t covF[6];
          for (Int_t i=0; i<6; i++) { covF[i] = (Float_t)cov[i]; }
          pVertex.SetCovarianceMatrix(covF);
-         pVertex.SetChi2(fpVtx->GetChi2());
-         pVertex.SetNDF(fpVtx->GetNDF());
-         pVertex.SetNContributors(fpVtx->GetNContributors());
+         pVertex.SetChi2(ownPVtx->GetChi2());
+         pVertex.SetNDF(ownPVtx->GetNDF());
+         pVertex.SetNContributors(ownPVtx->GetNContributors());
          PV = KFParticle(pVertex);
       }  else {
          Lc2pKs0orLpi->UnsetOwnPrimaryVtx();
          fAnaCuts->CleanOwnPrimaryVtx(Lc2pKs0orLpi,aodEvent,origOwnVtx);
          continue;
       }
-     
-
-
     }
-
 
     KFParticle kfpBach;
     Bool_t isRej = kFALSE;
