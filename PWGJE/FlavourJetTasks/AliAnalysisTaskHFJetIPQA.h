@@ -363,8 +363,8 @@ public:
     //_______________________________
     //Filling Histograms
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
-    void FillRecHistograms(Int_t jetflavour, Double_t recjetpt, Double_t fJetGenPt,Double_t fJetRecEta, Double_t fJetGenEta, Double_t fJetRecPhi, Int_t fUnfoldFracCalc);
-    void FillGenHistograms(Int_t jetflavour,Double_t jetgenpt, Int_t fUnfoldFracCalc);
+    void FillRecHistograms(Int_t jetflavour, Double_t recjetpt, Double_t fJetGenPt,Double_t fJetRecEta, Double_t fJetGenEta, Double_t fJetRecPhi);
+    void FillGenHistograms(Int_t jetflavour,Double_t jetgenpt);
     Bool_t PerformGenLevAcceptanceCuts(Double_t fJetGenEta);
     void FillTaggedJetPtDistribution(bool** kTagDec, double jetpt);
 
@@ -712,7 +712,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 83)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 84)
 };
 
 #endif
