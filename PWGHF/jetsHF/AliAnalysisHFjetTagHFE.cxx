@@ -191,6 +191,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   HFjetCorr1(0),
   HFjetCorr2(0),
   HFjetCorr3(0),
+  HFjetCorrUE(0),
   HFjetParticle(0),
   HFjetDCA_c(0),
   HFjetDCA_b(0),
@@ -428,6 +429,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	HFjetCorr1(0),
 	HFjetCorr2(0),
 	HFjetCorr3(0),
+        HFjetCorrUE(0),
 	HFjetParticle(0),
 	HFjetDCA_c(0),
 	HFjetDCA_b(0),
@@ -939,6 +941,10 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   HFjetCorr3 = new THnSparseD("HFjetCorr3","HF MC Corr (trk eff reduced);p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC};  jet_{particle}; R match; pThard;", 7, nBine, mimHFj, maxHFj);
   HFjetCorr3->Sumw2();
   fOutput->Add(HFjetCorr3);
+
+  HFjetCorrUE = new THnSparseD("HFjetCorrUE","HF MC Corr (UE sub);p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC};  jet_{particle}; R match; pThard;", 7, nBine, mimHFj, maxHFj);
+  HFjetCorrUE->Sumw2();
+  fOutput->Add(HFjetCorrUE);
 
   HFjetParticle = new THnSparseD("HFjetParticle","HF particle;p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC};  jet_{particle}; R match; pThard;", 7, nBine, mimHFj, maxHFj);
   HFjetParticle->Sumw2();
@@ -2246,7 +2252,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                        double HFjetVals3[7];
                        HFjetVals3[0]=track->Pt(); HFjetVals3[1]=0.0; HFjetVals3[2] = reducedJetPt1; HFjetVals3[3] = pTeJet; HFjetVals3[4] = pTeJetTrue; HFjetVals3[5] = 0.0; HFjetVals3[6] = 0.0;
                        HFjetCorr3->Fill(HFjetVals3); 
-                       
+ 
+                       double HFjetVals4[7]; // sub UE in reco jet
+                       double corrPt_UE = pTeJet - pTeJet_UE;
+                       HFjetVals4[0]=track->Pt(); HFjetVals4[1]=0.0; HFjetVals4[2] = corrPt_UE; HFjetVals4[3] = pTeJet; HFjetVals4[4] = pTeJetTrue; HFjetVals4[5] = 0.0; HFjetVals4[6] = 0.0;
+                       HFjetCorrUE->Fill(HFjetVals4); 
+                      
                        double HFjetRap1[6];
                        double dphi_jet_e = atan2(sin(jetPhi - phi),cos(jetPhi - phi));
                        HFjetRap1[0] = pTeJetTrue; HFjetRap1[1] = jetEta; HFjetRap1[2] = eta; HFjetRap1[3] = jetEta - eta; HFjetRap1[4] = dphi_jet_e; HFjetRap1[5] = sqrt(pow(jetEta - eta,2) + pow(dphi_jet_e,2)); 
