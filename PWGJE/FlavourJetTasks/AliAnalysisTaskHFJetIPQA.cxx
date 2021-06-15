@@ -609,7 +609,7 @@ void AliAnalysisTaskHFJetIPQA::localtoglobal(Double_t alpha ,Double_t* local,Dou
 }
 */
 
-void AliAnalysisTaskHFJetIPQA::FillRecHistograms(Int_t jetflavour, Double_t recjetpt, Double_t fJetGenPt,Double_t fJetRecEta, Double_t fJetGenEta, Double_t fJetRecPhi, Int_t fUnfoldFracCalc){
+void AliAnalysisTaskHFJetIPQA::FillRecHistograms(Int_t jetflavour, Double_t recjetpt, Double_t fJetGenPt,Double_t fJetRecEta, Double_t fJetGenEta, Double_t fJetRecPhi){
   FillHist("fh1dJetRecPt",recjetpt, 1);  //this->fXsectionWeightingFactor );
   FillHist("fh1dJetRecEtaPhiAccepted",fJetRecEta,fJetRecPhi, 1);   //this->fXsectionWeightingFactor );
   //FillHist("fh1dJetRecPtAccepted",recjetpt, 1);  //this->fXsectionWeightingFactor );
@@ -628,24 +628,24 @@ void AliAnalysisTaskHFJetIPQA::FillRecHistograms(Int_t jetflavour, Double_t recj
         //
         //Filling matched b jet pt histograms:
         //particle level jets without acceptance cuts, detector level jets with acceptance cuts. This is taken care of by using DefineCutsTaskpp cuts only for detlevel jets!
-        if(fUnfoldFracCalc<fUnfoldPseudeDataFrac) {
+        if((fNEvent%2)==0) {
           if((recjetpt>5)&&(recjetpt<120)){
-              //printf("Filling fh1dJetTrueMatchedPtb_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+              //printf("Filling fh1dJetTrueMatchedPtb_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent);
               FillHist("fh1dJetTrueMatchedPtb_PseudoData",fJetGenPt, 1);
           }
           if(PerformGenLevAcceptanceCuts(fJetGenEta)){
-              //printf("Filling fh2dJetGenPtVsJetRecPt_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+              //printf("Filling fh2dJetGenPtVsJetRecPt_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent);
               FillHist("fh2dJetGenPtVsJetRecPt_PseudoData",recjetpt, fJetGenPt,1);
               FillHist("fh2dJetGenPtVsJetWideRecPt_PseudoData",recjetpt, fJetGenPt,1);
           }
         }
         else{
            if((recjetpt>5)&&(recjetpt<120)){
-              //printf("Filling fh1dJetTrueMatchedPtb_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+              //printf("Filling fh1dJetTrueMatchedPtb_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent);
               FillHist("fh1dJetTrueMatchedPtb_Response", fJetGenPt, 1);
            }
           if(PerformGenLevAcceptanceCuts(fJetGenEta)){
-              //printf("Filling fh2dJetGenPtVsJetRecPt_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+              //printf("Filling fh2dJetGenPtVsJetRecPt_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent);
               FillHist("fh2dJetGenPtVsJetRecPt_Response",recjetpt, fJetGenPt,1);
               FillHist("fh2dJetGenPtVsJetWideRecPt_Response",recjetpt, fJetGenPt,1);
           }
@@ -662,19 +662,20 @@ Bool_t AliAnalysisTaskHFJetIPQA::PerformGenLevAcceptanceCuts(Double_t fJetGenEta
   return kTRUE;
 }
 
-void AliAnalysisTaskHFJetIPQA::FillGenHistograms(Int_t jetflavour,Double_t jetgenpt, Int_t fUnfoldFracCalc){
+void AliAnalysisTaskHFJetIPQA::FillGenHistograms(Int_t jetflavour,Double_t jetgenpt){
     //printf("%s: Filling fh1dJetGenPt with gen=%f\n",__FUNCTION__, jetgenpt);
     FillHist("fh1dJetGenPt",jetgenpt, 1);
     if(jetflavour ==0)      FillHist("fh1dJetGenPtUnidentified",jetgenpt, 1);
     else if(jetflavour ==1) FillHist("fh1dJetGenPtudsg",jetgenpt, 1);
     else if(jetflavour ==2) FillHist("fh1dJetGenPtc",jetgenpt, 1);
+
     else if(jetflavour ==3){
-        if(fUnfoldFracCalc<fUnfoldPseudeDataFrac) {
-            //printf("Filling fh1dJetGenPtb_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+        if((fNEvent%2)==0) {
+            //printf("Filling fh1dJetGenPtb_PseudoData b hist fNEvent=%i\n", fNEvent);
             FillHist("fh1dJetGenPtb_PseudoData",jetgenpt, 1);
         }
         else{
-            //printf("Filling fh1dJetGenPtb_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+            //printf("Filling fh1dJetGenPtb_Response b hist fNEvent=%i\n", fNEvent);
             FillHist("fh1dJetGenPtb_Response",jetgenpt, 1);
         }
     }
@@ -2092,7 +2093,7 @@ void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetI
 void AliAnalysisTaskHFJetIPQA::PrintAllTreeVars(){
   fflush(stdout);
   printf("-------------------------------------\n");
-  printf("Printing all tree vars\n");
+  printf("Printing all tree vars, Event %i\n",fNEvent);
   printf("fJetRecPt %f\n",fJetRecPt);
   printf("fJetMass=%f\n",fJetMass);
   printf("fJetFlavour %i\n",fJetFlavour);
@@ -2122,9 +2123,6 @@ void AliAnalysisTaskHFJetIPQA::PrintAllTreeVars(){
 }
 
 Bool_t AliAnalysisTaskHFJetIPQA::Run(){
-    fNEvent++;
-    Int_t fUnfoldFracCalc=fNEvent%100;
-
     /*if(fUnfoldFracCalc<fUnfoldPseudeDataFrac){ printf("Generating Pseudo Data, fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);}
     else{printf("Generating Response matrix, fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);}*/
 
@@ -2138,7 +2136,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     AliAODEvent *ev = dynamic_cast<AliAODEvent*>(InputEvent());
     fEventVertex = dynamic_cast<AliAODVertex*>(ev->GetPrimaryVertex());
 
-    if(!fResponseMode)IsEventAccepted(ev);
+    IsEventAccepted(ev);
+    fNEvent++;
 
     fIsEsd =  (InputEvent()->IsA()==AliESDEvent::Class())? kTRUE : kFALSE;
    // EventwiseCleanup();
@@ -2230,7 +2229,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         if (!jetgen) continue;
           jetflavour=0; is_udgjet=kFALSE;
           jetflavour =IsMCJetPartonFast(jetgen,fJetRadius,is_udgjet);
-          if(PerformGenLevAcceptanceCuts(jetgen->Eta())) FillGenHistograms(jetflavour, jetgen->Pt(),fUnfoldFracCalc);
+          if(PerformGenLevAcceptanceCuts(jetgen->Eta())) FillGenHistograms(jetflavour, jetgen->Pt());
       }
         jetcongen->ResetCurrentID();
         jetconrec->ResetCurrentID();
@@ -2307,7 +2306,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           }
         }
 
-        FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi(), fUnfoldFracCalc);
+        FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi());
         if(fDoLundPlane)RecursiveParents(jetrec, jetconrec,fJetConstTrackID);
 
 
@@ -2819,7 +2818,7 @@ void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
 
     printf("--------------------------------------------------------------------------------\n");
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-    printf("XXXXXXXXXX Code version 11.06.21 XXXXXXXXXX\n");
+    printf("XXXXXXXXXX Code version 14.06.21 XXXXXXXXXX\n");
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
     PrintSettings();
     PrintV0Settings();
