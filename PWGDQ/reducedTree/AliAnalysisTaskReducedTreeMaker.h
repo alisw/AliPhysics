@@ -92,6 +92,7 @@ public:
 
   // TStrings with active or inactive branches
   void SetTreeActiveBranch(TString b)   {fActiveBranches+=b+";";}
+
   void SetTreeInactiveBranch(TString b) {fInactiveBranches+=b+";";}
   
   // Select the type of information to be written
