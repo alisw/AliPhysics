@@ -220,6 +220,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   THnSparse                   *HFjetCorr1;
   THnSparse                   *HFjetCorr2;
   THnSparse                   *HFjetCorr3;
+  THnSparse                   *HFjetCorrUE;
   THnSparse                   *HFjetParticle;
   TH2D                        *HFjetDCA_c;
   TH2D                        *HFjetDCA_b;
