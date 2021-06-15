@@ -955,20 +955,26 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 
 	//-----------Tracklet correction-------------------------
+
+        TFile* fEstimator = TFile::Open(festimatorFile.Data());
+	
 	Double_t correctednAcc   = nAcc;
 	Double_t fRefMult = Nref;
 	Double_t WeightNtrkl = -1.;
 	Double_t WeightZvtx = -1.;
 	TProfile* estimatorAvg;
-	if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fAOD);
-	if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fAOD);
+	if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
+	if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
+
+        //cout << "estimatorAvg = " << estimatorAvg << endl;
+
 	if(estimatorAvg){
 		correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
 		//correctednAcc= AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(estimatorAvg,nAcc,Zvertex,fRefMult);
 	} 
 	fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
-
+        fEstimator->Close();
 
 	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
 	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
@@ -2109,7 +2115,7 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 
 }
 //____________________________________________________________________________
-TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAOD)
+TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(TFile* fEstimator, const AliAODEvent* fAOD)
 {
     
 	//TString estimaterFile = "alien:///alice/cern.ch/user/s/ssakai/Multiplicity_pp13/estimator.root";  
@@ -2119,7 +2125,7 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAO
 
   Int_t runNo  = fAOD->GetRunNumber();
  
-  cout << "========== runNo ====" << runNo << endl;
+  //cout << "========== runNo ====" << runNo << endl;
 
   Char_t periodNames[100];
   
@@ -2179,7 +2185,7 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAO
   //TFile* fEstimator = TFile::Open("alien:///alice/cern.ch/user/s/ssakai/Multiplicity_pp13/estimator.root");
   //cout << "runNo = " << runNo << " ; " << periodNames << " ; " << festimatorFile.Data() << endl;
 
-  TFile* fEstimator = TFile::Open(festimatorFile.Data());
+  //TFile* fEstimator = TFile::Open(festimatorFile.Data());
 
   if(!fEstimator){
 	AliFatal("File with estimator not found!");
@@ -2187,17 +2193,14 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAO
 
   fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames));
 
-
   if(!fMultEstimatorAvg){
 	AliFatal("fMultEstimatorAvg not found!");
 	}
 
- fEstimator->Close();
-
   return fMultEstimatorAvg;
 }
 //____________________________________________________________________________
-TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(const AliAODEvent* fAOD)
+TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(TFile* fEstimator, const AliAODEvent* fAOD)
 {
     
   Int_t runNo  = fAOD->GetRunNumber();
@@ -2208,11 +2211,9 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(const AliAODEvent* f
   if (runNo>=258919 && runNo<=259888) periodNames = "SPDTrklMC_LHC16l"; //LHC16l
   if (runNo>=259888) periodNames = "SPDTrklMC_LHC17"; //LHC17
     
-  TFile* fEstimator = TFile::Open(festimatorFile.Data());
+  //TFile* fEstimator = TFile::Open(festimatorFile.Data());
   fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames))->Clone(periodNames);
     
-  fEstimator->Close();
-
   return fMultEstimatorAvg;
 }
  //____________________________________________________________________________
