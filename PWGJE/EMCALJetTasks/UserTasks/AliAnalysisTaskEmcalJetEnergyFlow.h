@@ -75,7 +75,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
   	/// \cond CLASSIMP
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow, 8);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow, 9);
 	/// \endcond
 };
 #endif
