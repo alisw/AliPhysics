@@ -82,7 +82,7 @@
   
     TIter next(fHistManager.GetListOfHistograms());
     TObject* obj = 0;
-   if(isMCprod) fOutput->SetUseScaling(kTRUE);
+   if(IsMCprod) fOutput->SetUseScaling(kTRUE);
     while ((obj = next())) {
       fOutput->Add(obj);
     }
@@ -149,7 +149,7 @@
            const char *ntracks,
            const char *nclusters,
            const char *ncells,
-           Bool_t      isMCprod,             
+           Bool_t      SetMCprod,             
            const char *suffix )
 {
     // Get the pointer to the existing analysis manager via the static access method.
@@ -241,17 +241,19 @@
       name += "_";
       name += cellName;
     }
-    if (isMCprod) name+= "_MCprod";
+    
+    if (SetMCprod) name+= "_MCprod";
     if (strcmp(suffix,"") != 0) {
       name += "_";
       name += suffix;
     }
   
     AliAnalysisTaskEmcalJetEnergyFlow* EFTask = new AliAnalysisTaskEmcalJetEnergyFlow(name);
+   (*EFTask).IsMCprod=SetMCprod;
     EFTask->SetCaloCellsName(cellName);
     EFTask->SetVzRange(-10,10);
   
-   if (isMCprod)EFTask->AddMCParticleContainer(trackName2); //In the case of MC analysis, we add the additional particle container for the generator level analysis
+   if (SetMCprod)EFTask->AddMCParticleContainer(trackName2); //In the case of MC analysis, we add the additional particle container for the generator level analysis
     
    // The first case would be used to run only on generator level of MC productions
     if (trackName == "mcparticles") {           
@@ -398,8 +400,8 @@ void AliAnalysisTaskEmcalJetEnergyFlow::AllocateEnergyflowHistograms(){
 
 
   Int_t Pair_number = 3;
- if (isMCprod)Int_t Pair_number = fJetCollArray.GetEntries()/2-1;
- else Int_t Pair_number = fJetCollArray.GetEntries()-1; 
+ if (IsMCprod)Pair_number = (fJetCollArray.GetEntries()/2)-1;
+ else Pair_number = fJetCollArray.GetEntries()-1; 
 
   for(Int_t i=0;i<Pair_number;i++){
        
@@ -462,7 +464,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::AllocateEnergyflowHistograms(){
                           }
          }
  
-        if(isMCprod){
+        if(IsMCprod){
 for(Int_t i=0;i<Pair_number;i++){
           histname = TString::Format("hJetPtDeltaPt_R%d_gen",int(Rjet*(i+1)*100));
           histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii (Generator level);P_{t,jet(R=%.2f)}(GeV/c);#Delta P_{t}(GeV/c)",Rjet*(i+1),Rjet*(i+2),Rjet*(i+1));
@@ -581,7 +583,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
 
    Int_t Pair_number = 3;
   AliEmcalJet* Jet_genlowR =0; //Convenient pointer for the EF calculations @ Gen-level
- //if (isMCprod)Int_t Pair_number = fJetCollArray.GetEntries()/2-1;
+ //if (IsMCprod)Int_t Pair_number = fJetCollArray.GetEntries()/2-1;
  // else Int_t Pair_number = fJetCollArray.GetEntries()-1; 
 
 //Loop over the number of comparison pairs
@@ -594,7 +596,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
           pt_Hdet = 0.0;
           DeltaEta = 0.0;
      
-        if(isMCprod){
+        if(IsMCprod){
                 MatchGenDetList.Clear();
                 GenHighRJetsList.Clear();
                 Int_t NumJet= fJetCollArray.GetEntries()/2; //Number of jet containers with different Rjet
@@ -744,7 +746,8 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
                         pt_Ldet = Jet_genlowR->ClosestJet()->Pt();
                          for (Int_t w =0;w<DetLowRJetsList.GetEntries();w++){
                                 Int_t MI = iHighRIndex_det[w];
-                        if(((DetLowRJetsList.At(w) == Jet_genlowR->ClosestJet()))&&(iLowRIndex_det[MI]==w)&&(MI>=0)) {
+                        if(MI>=0){
+                        if(((DetLowRJetsList.At(w) == Jet_genlowR->ClosestJet()))&&(iLowRIndex_det[MI]==w)) {
                                  pt_Hdet = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI)))->Pt();
                                  DeltaPt_det = pt_Hdet -pt_Ldet;
 
@@ -757,7 +760,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
 
                                  histname = TString::Format("DeltaResponseMatrix_R%d",int(Rjet*(i+1)*100));
                                 fHistManager.FillTH3(histname,pt_low,pt_Ldet-pt_low,DeltaPt_det-DeltaPt_gen);
-                                break;}
+                                break;}}
                                           }                              
                                                                     
                       histname = TString::Format("hJetPtDeltaPt_R%d_gen",int(Rjet*(i+1)*100));
@@ -813,18 +816,18 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
                                                     } // if there is a match
                     } // loop over the low R jets (Generator level that match to detector level)
 
-
                  } //End of MC production case
         else{
           // Casting the lower R half of the pair to a container and getting the accepted jets to a list
           DetjetCont1 = dynamic_cast<AliJetContainer*>(fJetCollArray[i]);
           DetjetCont1->SetJetEtaLimits(-max_eta,max_eta);
           for(auto jet:DetjetCont1->accepted()) DetLowRJetsList.Add(jet);
-  
+          std::cout<<"If you see this when you run over MC then you're in trouble- point A"<<std::endl;
           // Casting the higher R half of the pair to a container and getting the accepted jets to a list
           DetjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1]);
           DetjetCont2->SetJetEtaLimits(-max_eta,max_eta);
           for(auto jet:DetjetCont2->accepted()) DetHighRJetsList.Add(jet);
+          std::cout<<"If you see this when you run over MC then you're in trouble- point B"<<std::endl;
         // For the case of data, match and calculate the energy flow only on the detector level jets for this R pair iteration
           if(DetLowRJetsList.GetEntries()==0||DetHighRJetsList.GetEntries()==0) continue;
           iLowRIndex_det.Set(DetHighRJetsList.GetEntries()); iHighRIndex_det.Set(DetLowRJetsList.GetEntries());
