@@ -399,9 +399,9 @@ void AliAnalysisTaskEmcalJetEnergyFlow::AllocateEnergyflowHistograms(){
     Double_t MinBin[4] = {fMinPtBin,fMinPtBin,fMinDPtBin,fMinDPtBin};
 
 
-  Int_t Pair_number;
- if (IsMCprod)Int_t Pair_number = (fJetCollArray.GetEntries()/2)-1;
- else Int_t Pair_number = fJetCollArray.GetEntries()-1; 
+  Int_t Pair_number = 3;
+ if (IsMCprod)Pair_number = (fJetCollArray.GetEntries()/2)-1;
+ else Pair_number = fJetCollArray.GetEntries()-1; 
 
   for(Int_t i=0;i<Pair_number;i++){
        
