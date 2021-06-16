@@ -36,6 +36,7 @@
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
+#include "AliAODMCHeader.h"
 
 ClassImp(AliAnalysisTaskMeanPtV2Corr);
 
@@ -1204,8 +1205,11 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
   Int_t lNchGen=0;
   Int_t lNchRec=0;
   Int_t nSpecies=7;
+  AliAODMCHeader *mcHeader = (AliAODMCHeader *)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if(!mcHeader) { printf("Could not fetch MC header!\n"); return; };
   for (Int_t ipart = 0; ipart < nPrim; ipart++) {
     lPart = (AliAODMCParticle*)tca->At(ipart);
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart, mcHeader, tca)) continue;
     if (!lPart) { partNotFetched++; continue; };
     /* get particlePDG */
     Int_t pdgcode = TMath::Abs(lPart->GetPdgCode());
