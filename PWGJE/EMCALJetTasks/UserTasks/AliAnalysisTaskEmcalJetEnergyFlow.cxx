@@ -400,7 +400,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::AllocateEnergyflowHistograms(){
 
 
   Int_t Pair_number = 3;
- if (IsMCprod)Int_t Pair_number = fJetCollArray.GetEntries()/2-1;
+ if (IsMCprod)Int_t Pair_number = (fJetCollArray.GetEntries()/2)-1;
  else Int_t Pair_number = fJetCollArray.GetEntries()-1; 
 
   for(Int_t i=0;i<Pair_number;i++){
@@ -746,7 +746,8 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
                         pt_Ldet = Jet_genlowR->ClosestJet()->Pt();
                          for (Int_t w =0;w<DetLowRJetsList.GetEntries();w++){
                                 Int_t MI = iHighRIndex_det[w];
-                        if(((DetLowRJetsList.At(w) == Jet_genlowR->ClosestJet()))&&(iLowRIndex_det[MI]==w)&&(MI>=0)) {
+                        if(MI>=0){
+                        if(((DetLowRJetsList.At(w) == Jet_genlowR->ClosestJet()))&&(iLowRIndex_det[MI]==w)) {
                                  pt_Hdet = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI)))->Pt();
                                  DeltaPt_det = pt_Hdet -pt_Ldet;
 
@@ -759,7 +760,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
 
                                  histname = TString::Format("DeltaResponseMatrix_R%d",int(Rjet*(i+1)*100));
                                 fHistManager.FillTH3(histname,pt_low,pt_Ldet-pt_low,DeltaPt_det-DeltaPt_gen);
-                                break;}
+                                break;}}
                                           }                              
                                                                     
                       histname = TString::Format("hJetPtDeltaPt_R%d_gen",int(Rjet*(i+1)*100));
@@ -814,7 +815,6 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
                                                                 } //And if the match is bijective
                                                     } // if there is a match
                     } // loop over the low R jets (Generator level that match to detector level)
-
 
                  } //End of MC production case
         else{
