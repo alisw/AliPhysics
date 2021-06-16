@@ -149,7 +149,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t fTPCNclsShared;      // TPC number of shared clusters
   UChar_t fTPCClusterMap;      // TPC cluster distribution map
   Float_t fTPCsignal;          // TPC de/dx
-  Float_t fTPCsignalTunedOnData;          // TPC de/dx
+  Float_t fTPCsignalTunedOnData;// TPC de/dx (tuned on data)
   UChar_t fTPCsignalN;         // TPC no clusters de/dx
   Float_t fTPCnSig[4];         // 0-electron; 1-pion; 2-kaon; 3-proton
   Float_t fTPCdEdxInfoQmax[4]; // dE/dx info using Qmax, 0 - IROC, 1- medium OROC, 2- long OROC, 3- all OROC
