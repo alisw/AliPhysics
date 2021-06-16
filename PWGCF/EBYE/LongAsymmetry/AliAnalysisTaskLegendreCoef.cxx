@@ -74,6 +74,7 @@ void AliAnalysisTaskLegendreCoef::UserCreateOutputObjects()
   double centbins[9] = {0.01,5,10,20,30,40,50,60,70};
 
   if(fIsBuildBG){
+    fOutputList->Add(new TH1D("NeventsCentHist", "nevents;centrality", 8,centbins));//output histogram when building background -  all tracks
     fOutputList->Add(new TH2D("PosBGHistOut", "postrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  positive tracks
     fOutputList->Add(new TH2D("NegBGHistOut", "negtrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  negative tracks
     fOutputList->Add(new TH2D("ChargedBGHistOut", "track;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  charged tracks
@@ -136,7 +137,7 @@ void AliAnalysisTaskLegendreCoef::UserCreateOutputObjects()
 //_____________________________________________________________________________
 void AliAnalysisTaskLegendreCoef::BuildBackground()
 {
-  printf("Building background!\n");
+  //printf("Building background!\n");
 
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
@@ -159,7 +160,9 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
   //mCentCL0 = MultSelection->GetMultiplicityPercentile("CL0");
   //mCentCL1 = MultSelection->GetMultiplicityPercentile("CL1");
   if(Cent>70.0 || Cent<0.01) return;
+  ((TH1D*) fOutputList->FindObject("NeventsCentHist"))->Fill(Cent);//Nevents vs centrality
 
+//fill hist nevent vs cent
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {                 // loop over all these tracks
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
     if(!track) continue;
@@ -367,7 +370,7 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
     RanDistHist[s]->Reset("ICE");
     for (int rn=0; rn<ntracks; rn++) {RanDistHist[s]->Fill(background->GetRandom());}
     RanDistHist[s]->Divide(background);
-    RanDistHist[s]->Scale(16.0/RanDistHist[s]->Integral());   
+    //RanDistHist[s]->Scale(16.0/(double)ntracks);   
     //printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
 
   }

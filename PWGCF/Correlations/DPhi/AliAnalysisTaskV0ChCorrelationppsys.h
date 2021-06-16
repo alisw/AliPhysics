@@ -47,8 +47,11 @@ public:
    
    void SetAnalysisMC(Bool_t AnalysisMC = kFALSE) {fAnalysisMC = AnalysisMC;}
    void SetTrackPileUpCut(Bool_t RejectTrackPileUp = kTRUE) {fRejectTrackPileUp = RejectTrackPileUp;}
-  void SetV0PileUpCut(Bool_t RejectV0PileUp = kTRUE) {fRejectV0PileUp = RejectV0PileUp;}
+   void SetV0PileUpCut(Bool_t RejectV0PileUp = kTRUE) {fRejectV0PileUp = RejectV0PileUp;}
    void SetEventPileUpCut(Bool_t cut) { fRejectEventPileUp = cut; }
+   void SetV0h(Bool_t V0h = kTRUE) {fV0h = V0h;}
+   void Sethh(Bool_t hh = kTRUE) {fhh = hh;}
+
 
    void SetOStatus(Int_t OStatus = 1) {fOStatus = OStatus;}
    //void SetEfficiencyCorrection(Bool_t effCorr = kTRUE){fEffCorr = effCorr;}
@@ -211,6 +214,7 @@ private:
    TObjArray       *selectedAntiLambda;//!
    TObjArray       *selectedTracks;//!
    TObjArray       *trigParticles;//!
+   TObjArray       *selectedTrigTracks;//!
 
    //-----------------------------PID-------------------------------------------
    Double_t        fV0PIDSigma;
@@ -236,6 +240,9 @@ private:
    Bool_t            fRejectTrackPileUp;// 
    Bool_t            fRejectV0PileUp;// 
    Bool_t            fRejectEventPileUp;
+   Bool_t            fV0h;//
+   Bool_t            fhh;//  
+
    TClonesArray     *fMCArray;//! MC array for AOD
    //----------------------------Correction-------------------------------
    Bool_t            fEffCorr;

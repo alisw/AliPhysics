@@ -29,6 +29,7 @@ class AliAnalysisTaskK0SPFemto : public AliAnalysisTaskSE
 
   // void                    ProcessMCParticles();
   void                    SetCentrality   (Float_t lowlimcent = 0., Float_t uplimcent = 90.) { fCentrLowLim = lowlimcent;  fCentrUpLim = uplimcent; }
+  void                    SetFilterBit(Int_t filterbit = 4){fFilterBit=filterbit;};
   void                    SetMC(Bool_t useMC){fIsMC=useMC;};
   Bool_t                  GetMC(){return fIsMC;};
   void                    SetCollidingSystem (const char* collSystem = "pp") { fCollidingSystem = collSystem ;};

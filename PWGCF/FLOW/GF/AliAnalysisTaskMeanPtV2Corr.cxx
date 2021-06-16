@@ -46,6 +46,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
   fIsMC(kFALSE),
+  fBypassTriggerAndEvetCuts(kFALSE),
   fMCEvent(0),
   fUseRecoNchForMC(kTRUE),
   fRndm(0),
@@ -107,6 +108,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
   fIsMC(IsMC),
+  fBypassTriggerAndEvetCuts(kFALSE),
   fMCEvent(0),
   fUseRecoNchForMC(kTRUE),
   fNBootstrapProfiles(10),
@@ -199,8 +201,10 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
     DefineOutput(2,AliGFWFlowContainer::Class());
     DefineOutput(3,TList::Class());
   };
+  SetNchCorrelationCut(1,0,kFALSE);
 };
 AliAnalysisTaskMeanPtV2Corr::~AliAnalysisTaskMeanPtV2Corr() {
+  SetNchCorrelationCut(1,0,kFALSE);
 };
 void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   printf("Stage switch is %i\n\n\n",fStageSwitch);
@@ -661,7 +665,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   }
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
   Double_t l_Cent = lMultSel->GetMultiplicityPercentile(fCentEst->Data());
-  // if(!CheckTrigger(l_Cent)) return;
+  if(!fBypassTriggerAndEvetCuts)
+    if(!CheckTrigger(l_Cent)) return;
   Double_t vtxXYZ[] = {0.,0.,0.};
   if(!AcceptAOD(fAOD, vtxXYZ)) return;
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
@@ -697,7 +702,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::CheckTrigger(Double_t lCent) {
   return kTRUE;
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxXYZ) {
-  // if(!fEventCuts.AcceptEvent(inEv)) return 0;
+  if(!fBypassTriggerAndEvetCuts) if(!fEventCuts.AcceptEvent(inEv)) return 0;
   const AliAODVertex* vtx = dynamic_cast<const AliAODVertex*>(inEv->GetPrimaryVertex());
   if(!vtx || vtx->GetNContributors() < 1)
     return kFALSE;
@@ -1240,6 +1245,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
           fEfficiency[pidind+(2*nSpecies)]->Fill(lPart->Pt(),l_Cent);
     };
   };
+  if(fUseCorrCuts) if(!CheckNchCorrelation(lNchGen,lNchRec)) return;
   fNchTrueVsReco->Fill(lNchGen,lNchRec);
   PostData(1,fEfficiencyList);
 }

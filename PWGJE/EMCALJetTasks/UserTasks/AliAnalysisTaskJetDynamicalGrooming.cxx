@@ -567,6 +567,7 @@ AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming()
   fDerivSubtrOrder(0),
   fStoreDetLevelJets(kFALSE),
   fStoreRecursiveSplittings(false),
+  fStoreEventPlane(false),
   fDataJetSplittings(),
   fMatchedJetSplittings(),
   fDetLevelJetSplittings(),
@@ -607,6 +608,7 @@ AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming(const c
   fDerivSubtrOrder(0),
   fStoreDetLevelJets(kFALSE),
   fStoreRecursiveSplittings(false),
+  fStoreEventPlane(false),
   fDataJetSplittings(),
   fMatchedJetSplittings(),
   fDetLevelJetSplittings(),
@@ -651,6 +653,7 @@ AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming(
   fDerivSubtrOrder(other.fDerivSubtrOrder),
   fStoreDetLevelJets(other.fStoreDetLevelJets),
   fStoreRecursiveSplittings(other.fStoreRecursiveSplittings),
+  fStoreEventPlane(other.fStoreEventPlane),
   fDataJetSplittings(),
   fMatchedJetSplittings(),
   fDetLevelJetSplittings(),
@@ -731,6 +734,7 @@ void AliAnalysisTaskJetDynamicalGrooming::RetrieveAndSetTaskPropertiesFromYAMLCo
   }
   fYAMLConfig.GetProperty({baseName, "storeDetLevelJets"}, fStoreDetLevelJets, false);
   fYAMLConfig.GetProperty({baseName, "storeRecursiveSplittings"}, fStoreRecursiveSplittings, false);
+  fYAMLConfig.GetProperty({baseName, "storeEventPlane"}, fStoreEventPlane, false);
 }
 
 /**
@@ -801,8 +805,12 @@ void AliAnalysisTaskJetDynamicalGrooming::SetupTree()
 
   if (fIsPythia) {
     // Will be automatically filled by AliAnalysisTaskEmcal.
-    fTreeSubstructure->Branch("ptHardBin", fPtHardInitialized ? &fPtHardBinGlobal : &fPtHardBin);
-    fTreeSubstructure->Branch("ptHard", &fPtHard);
+    fTreeSubstructure->Branch("pt_hard_bin", fPtHardInitialized ? &fPtHardBinGlobal : &fPtHardBin);
+    fTreeSubstructure->Branch("pt_hard", &fPtHard);
+  }
+
+  if (fStoreEventPlane) {
+    fTreeSubstructure->Branch("event_plane_angle", &fEPV0);
   }
 }
 
@@ -1668,6 +1676,7 @@ std::string AliAnalysisTaskJetDynamicalGrooming::toString() const
   tempSS << "\tDerivative subtracter order: " << fDerivSubtrOrder << "\n";
   tempSS << "\tStore detector level jets: " << fStoreDetLevelJets << "\n";
   tempSS << "\tStore recursive jet splittings (instead of just iterative): " << fStoreRecursiveSplittings << "\n";
+  tempSS << "\tStore event plane angle: " << fStoreEventPlane << "\n";
   // Jet containers
   tempSS << "Attached jet containers:\n";
   for (int i = 0; i < fJetCollArray.GetEntries(); i++)
@@ -1878,6 +1887,7 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming& first,
   swap(first.fDerivSubtrOrder, second.fDerivSubtrOrder);
   swap(first.fStoreDetLevelJets, second.fStoreDetLevelJets);
   swap(first.fStoreRecursiveSplittings, second.fStoreRecursiveSplittings);
+  swap(first.fStoreEventPlane, second.fStoreEventPlane);
   swap(first.fDataJetSplittings, second.fDataJetSplittings);
   swap(first.fMatchedJetSplittings, second.fMatchedJetSplittings);
   swap(first.fDetLevelJetSplittings, second.fDetLevelJetSplittings);

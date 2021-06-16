@@ -42,6 +42,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
     Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
     Bool_t    usePtDepSelectionWindowCut  = kFALSE,                   // use pt dependent meson selection window cut
+    Bool_t    enableSortingMCLabels       = kTRUE,                    // enable sorting for MC cluster labels
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -877,6 +878,19 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
       cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411792106fe32220000","32f51070a","01031g3200000000","0a53503000000000"); // EG2, new Gamma Energy cut 6 GeV
   } else if(trainConfig == 745)  { //Standard EMCal 13TeV Trigger EG1, GammaCut > 10GeV, Shared cluster Fraction <=0.4
       cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411792106fe32220000","32f51070a","01031h3200000000","0a53503000000000"); // EG1, new Gamma Energy cut 10 GeV
+
+      // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      // EMC pp 13 TeV Fitting, Cut Variations very low EMCAL Pt
+      // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  } else if(trainConfig == 900)  { //Standard EMCal 13TeV
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe32220000","32c51070a","0103103200000000","0453503000000000"); // INT7
+  //-----
+  //Calo Variations
+  //-----
+  } else if(trainConfig == 904)  { //EDC 13TeV MB, NCell: 0 (no cut up to 4 GeV ) -> 411792109fe30220000
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","32c51070a","0103103200000000","0453503000000000"); // INT7
+  } else if(trainConfig == 907)  { //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through ) -> 411792109fe3v220000
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe3v220000","32c51070a","0103103200000000","0453503000000000"); // INT7
   } else {
     Error(Form("GammaConvNeutralMeson_MixedMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -1043,6 +1057,8 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask );
+
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

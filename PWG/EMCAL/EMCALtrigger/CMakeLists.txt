@@ -45,6 +45,8 @@ set(SRCS
   AliEMCALTriggerOfflineQAPP.cxx
   AliEMCALTriggerOfflineLightQAPP.cxx
   AliEMCALTriggerPatchADCInfoAP.cxx
+  AliEmcalTriggerMaskHandlerOCDB.cxx
+  AliEmcalFastorMaskContainer.cxx
   AliEmcalTriggerStringDecoder.cxx
   )
 

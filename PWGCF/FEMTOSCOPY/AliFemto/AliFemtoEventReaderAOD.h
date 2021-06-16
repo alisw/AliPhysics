@@ -135,6 +135,9 @@ public:
   void SetCalcJets(Int_t jets); //0-no, 1-same, 2-diff
   bool GetCalcJets() const;
   void SetPtmaxJets(Double_t ptmax);
+  //  void GetPtmaxJets() const {
+  //    return fPtmax;
+  //  } 
 
   //---
   void Set1DCorrectionsPions(TH1D *h1);
@@ -288,7 +291,7 @@ private:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoEventReaderAOD, 31);
+  ClassDef(AliFemtoEventReaderAOD, 33);
   /// \endcond
 #endif
 

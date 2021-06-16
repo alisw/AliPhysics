@@ -157,6 +157,7 @@ protected:
   bool fUseZDCCut{};               ///< Flag for zdc cut usage
   bool fIncludePeripheralEvents{}; ///< include peripheral A-A events (cent>90)
   bool fMCUseDDC{};                ///< Flag for data driven corrections usage
+  bool fIsNominalPCC{true};        ///< whether to run particle composition correction in nominal or in systematic mode
   // Cuts
   unsigned int fTriggerMask{AliVEvent::kAnyINT}; ///< Trigger mask
   double fMinEta{-0.8};                          ///< Minimum eta cut
@@ -191,6 +192,7 @@ protected:
   // event related properties
   AliVEvent* fEvent{};    //!<! Event object
   AliMCEvent* fMCEvent{}; //!<! MC event
+  AliMCSpectraWeights* fMCSpectraWeights{};           //!<! fMCSpectraWeights for data-driven corrections (particle composition and secondary scaling)
   double fVtxZ{};         //!<! z position of z vertex
   double fMCVtxZ{};       //!<! z position of z vertex in MC truth
   double fMultMeas{};     //!<! measured central barrel track multiplicity

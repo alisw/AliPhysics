@@ -243,8 +243,14 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fNtrkletNch(0),
     fweightNtrkl(0),
     fNtrklet_Corr(0),
-    fNtrkletNch_Corr(0)
+    fNtrkletNch_Corr(0),
 
+    fPhot_InvMass_vs_DCA(0),
+    fPhot_InvMass_vs_DCA2(0),
+    fPhot_InvMass_vs_DCA3(0),
+    fPhot_InvMass_vs_DCA_data(0),
+    fPhot_InvMass_vs_DCA_data2(0),
+    fPhot_InvMass_vs_DCA_data3(0)
 
 
 {
@@ -437,8 +443,14 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fNtrkletNch(0),
     fweightNtrkl(0),
     fNtrklet_Corr(0),
-    fNtrkletNch_Corr(0)
+    fNtrkletNch_Corr(0),
 
+    fPhot_InvMass_vs_DCA(0),
+    fPhot_InvMass_vs_DCA2(0),
+    fPhot_InvMass_vs_DCA3(0),
+    fPhot_InvMass_vs_DCA_data(0),
+    fPhot_InvMass_vs_DCA_data2(0),
+    fPhot_InvMass_vs_DCA_data3(0)
 
 {
     //==== constructor ====//
@@ -1009,6 +1021,34 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   //Tracklet vs. N charged (correcte)
     fNtrkletNch_Corr = new TH2F("fNtrkletNch_Corr","N tracklet (after weight correction) vs. N charged particle;N_{tracklets}^{corr};N_{ch}",4001,-0.5,4000.5,4001,-0.5,4000.5);
     fOutputList->Add(fNtrkletNch_Corr);
+
+
+
+  //Photonic electron mass vs DCA1
+    fPhot_InvMass_vs_DCA = new TH2F("fPhot_InvMass_vs_DCA","PhotonicElectron Invariant mass vs DCA;mass [GeV/c^{2}];DCA_{xy} #times charge #times Bsign [cm]",400,0,1.0,800,-0.2,0.2);
+    fOutputList->Add(fPhot_InvMass_vs_DCA);
+
+  //Photonic electron mass vs DCA2
+    fPhot_InvMass_vs_DCA2 = new TH2F("fPhot_InvMass_vs_DCA2","PhotonicElectron Invariant mass vs DCA;mass [GeV/c^{2}];DCA_{xy} #times charge [cm]",400,0,1.0,800,-0.2,0.2);
+    fOutputList->Add(fPhot_InvMass_vs_DCA2);
+
+  //Photonic electron mass vs DCA3
+    fPhot_InvMass_vs_DCA3 = new TH2F("fPhot_InvMass_vs_DCA3","PhotonicElectron Invariant mass vs DCA;mass [GeV/c^{2}];DCA_{xy} [cm]",400,0,1.0,800,-0.2,0.2);
+    fOutputList->Add(fPhot_InvMass_vs_DCA3);
+
+  //Photonic electron mass vs DCA_data
+    fPhot_InvMass_vs_DCA_data = new TH2F("fPhot_InvMass_vs_DCA_data","PhotonicElectron(data) Invariant mass vs DCA;mass [GeV/c^{2}];DCA_{xy} #times charge #times Bsign [cm]",400,0,1.0,800,-0.2,0.2);
+    fOutputList->Add(fPhot_InvMass_vs_DCA_data);
+
+  //Photonic electron mass vs DCA_data2
+    fPhot_InvMass_vs_DCA_data2 = new TH2F("fPhot_InvMass_vs_DCA_data2","PhotonicElectron(data) Invariant mass vs DCA;mass [GeV/c^{2}];DCA_{xy} #times charge [cm]",400,0,1.0,800,-0.2,0.2);
+    fOutputList->Add(fPhot_InvMass_vs_DCA_data2);
+
+  //Photonic electron mass vs DCA_data3
+    fPhot_InvMass_vs_DCA_data3 = new TH2F("fPhot_InvMass_vs_DCA_data3","PhotonicElectron(data) Invariant mass vs DCA;mass [GeV/c^{2}];DCA_{xy} [cm]",400,0,1.0,800,-0.2,0.2);
+    fOutputList->Add(fPhot_InvMass_vs_DCA_data3);
+
+
 
 
     
@@ -1659,6 +1699,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                     	{
                         	fHistPho_Reco0->Fill(TrkPt);     // all information of photonic electron
 				fDCAxy_MC_Phot -> Fill(TrkPt, DCA[0]*charge*Bsign);	//DCA (total photonic electron)
+
+				//fPhot_InvMass_vs_DCA->Fill(Mass, DCA[0]*charge*Bsign);
                        
                        		if(fFlagNonHFE)
                        		{
@@ -1875,7 +1917,24 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
                 }
             }
         }
-       
+
+	if(TrkPt > 3.0)
+	{
+		if(iMC==22 || iMC==111 || iMC==221)
+		{
+			fPhot_InvMass_vs_DCA ->Fill(mass, DCAxy*charge*Bsign);
+			fPhot_InvMass_vs_DCA2->Fill(mass, DCAxy*charge);
+			fPhot_InvMass_vs_DCA3->Fill(mass, DCAxy);
+		}
+
+		if(fFlagULS)
+		{
+			fPhot_InvMass_vs_DCA_data ->Fill(mass, DCAxy*charge*Bsign);
+			fPhot_InvMass_vs_DCA_data2->Fill(mass, DCAxy*charge);
+			fPhot_InvMass_vs_DCA_data3->Fill(mass, DCAxy);
+		}
+       }
+
         if(mass <= 0.15 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; // Tag Non-HFE (photonic electron by Invariant-mass method)
 
     }

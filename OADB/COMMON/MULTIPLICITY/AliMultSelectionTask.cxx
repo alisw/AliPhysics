@@ -744,7 +744,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     
     //Automatic Loop for linking directly to AliMultInput
     for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
-      if(lStoreIfLight[iVar]){
+      if(lStoreIfLight[iVar] || !fkLightTree){
+        Printf(Form("Connecting variable: %s",AliMultInput::VarName[iVar].Data()));
         if( !fInput->GetVariable(AliMultInput::VarName[iVar])){
           Printf(Form("Problem finding variable: %s ! Please check!",AliMultInput::VarName[iVar].Data()));
         }
@@ -1603,15 +1604,15 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fNTracksITSsa2010           -> SetValueInteger( 0 );
     
     // Set DCA variables to default
-    double_t dcaxyABS = 0;
-    double_t dcazABS = 0;
-    double_t dcaxySQ = 0;
-    double_t dcazSQ = 0;
+    Double_t dcaxyABS = 0;
+    Double_t dcazABS = 0;
+    Double_t dcaxySQ = 0;
+    Double_t dcazSQ = 0;
 
-    double_t averageDCAxyABS = 0;
-    double_t averageDCAzABS = 0;
-    double_t averageDCAxySQ = 0;
-    double_t averageDCAzSQ = 0;
+    Double_t averageDCAxyABS = 0;
+    Double_t averageDCAzABS = 0;
+    Double_t averageDCAxySQ = 0;
+    Double_t averageDCAzSQ = 0;
 
     fNTracksDCAxyABS=0;
     fNTracksDCAzABS=0;
@@ -1653,13 +1654,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
       
       // Get ITSrefit counts
       if((track->GetStatus() & AliVTrack::kITSrefit)==1) ITSrefitTracks++;
-      
-      fNTracksDCAxyABS=dcaxyABS;
-      fNTracksDCAzABS=dcazABS;
-      fNTracksDCAxySQ=dcaxySQ;
-      fNTracksDCAzSQ=dcazSQ;
-      fNTracksITSrefit=ITSrefitTracks;
-      
+            
       //Only ITSsa tracks
       if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
         fNTracksITSsa2010 -> SetValueInteger( fNTracksITSsa2010->GetValueInteger() + 1);
@@ -1680,6 +1675,26 @@ void AliMultSelectionTask::UserExec(Option_t *)
       if ( TMath::Abs( track -> GetTOFExpTDiff() ) < 30 )
         fNTracksGlobal2015Trigger -> SetValueInteger( fNTracksGlobal2015Trigger->GetValueInteger() + 1);
     }
+    
+    if (lVevent->GetNumberOfTracks()>0){
+      double_t averageDCAxyABS = dcaxyABS/(lVevent->GetNumberOfTracks());
+      double_t averageDCAzABS = dcazABS/(lVevent->GetNumberOfTracks());
+      double_t averageDCAxySQ = dcaxySQ/(lVevent->GetNumberOfTracks());
+      double_t averageDCAzSQ = dcazSQ/(lVevent->GetNumberOfTracks());
+     }
+    else {
+      
+      double_t averageDCAxyABS = dcaxyABS/(-1);
+      double_t averageDCAzABS = dcazABS/(-1);
+      double_t averageDCAxySQ = dcaxySQ/(-1);
+      double_t averageDCAzSQ = dcazSQ/(-1);
+     }
+
+    fNTracksDCAxyABS=averageDCAxyABS;
+    fNTracksDCAzABS=averageDCAzABS;
+    fNTracksDCAxySQ=averageDCAxySQ;
+    fNTracksDCAzSQ=averageDCAzSQ;
+    fNTracksITSrefit=ITSrefitTracks;
     
     Long_t lNTPCout = 0;
     fNTracksTPCout->SetValueInteger(lNTPCout);
