@@ -822,11 +822,12 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
           DetjetCont1 = dynamic_cast<AliJetContainer*>(fJetCollArray[i]);
           DetjetCont1->SetJetEtaLimits(-max_eta,max_eta);
           for(auto jet:DetjetCont1->accepted()) DetLowRJetsList.Add(jet);
-  
+          std::cout<<"If you see this when you run over MC then you're in trouble- point A"<<std::endl;
           // Casting the higher R half of the pair to a container and getting the accepted jets to a list
           DetjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1]);
           DetjetCont2->SetJetEtaLimits(-max_eta,max_eta);
           for(auto jet:DetjetCont2->accepted()) DetHighRJetsList.Add(jet);
+          std::cout<<"If you see this when you run over MC then you're in trouble- point B"<<std::endl;
         // For the case of data, match and calculate the energy flow only on the detector level jets for this R pair iteration
           if(DetLowRJetsList.GetEntries()==0||DetHighRJetsList.GetEntries()==0) continue;
           iLowRIndex_det.Set(DetHighRJetsList.GetEntries()); iHighRIndex_det.Set(DetLowRJetsList.GetEntries());
