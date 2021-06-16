@@ -464,6 +464,7 @@ private:
     Float_t fMatchScoreMCHMFT = -999.f;
     Int_t fMatchMFTTrackID = -1;
     Int_t fMatchMCHTrackID = -1;
+    UShort_t fMCHBitMap = 0u;
 
     // "Covariance matrix"
     // The diagonal elements represent the errors = Sqrt(C[i,i])
