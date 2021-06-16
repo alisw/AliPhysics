@@ -2464,10 +2464,12 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   FillTree(kMcCollision);
 
   // MC collision label
-  mccollisionlabel.fIndexMcCollisions = fBCCount;
-  mccollisionlabel.fMcMask = 0;
-  FillTree(kMcCollisionLabel);
-
+  // will be joined with Collisions, therefore fill it only when we fill Collisions
+  if (fillCollision) {
+    mccollisionlabel.fIndexMcCollisions = fBCCount;
+    mccollisionlabel.fMcMask = 0;
+    FillTree(kMcCollisionLabel);
+  }
 
   //---------------------------------------------------------------------------
   // Update the offsets at the end of each collision
