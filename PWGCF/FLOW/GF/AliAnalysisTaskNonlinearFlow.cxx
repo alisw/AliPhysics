@@ -571,7 +571,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 	Int_t inSlotCounter=1;
 	if(fNUA) {
                 if (fPeriod.EqualTo("LHC15oKatarina") ) {
-                    fPhiWeightFile = (TFile*) GetInputData(inSlotCounter);
+		    fFlowWeightsList = (TList*) GetInputData(inSlotCounter);
                 } else {
 		    fFlowWeightsList = (TList*) GetInputData(inSlotCounter);
                 }
@@ -579,8 +579,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 	};
 	if(fNUE) {
                 if (fPeriod.EqualTo("LHC15oKatarina") ) {
-		    fTrackEfficiency = (TFile*) GetInputData(inSlotCounter);
-                    // fFlowPtWeightsFile = (TFile*) GetInputData(inSlotCounter);
+		    fFlowPtWeightsList = (TList*) GetInputData(inSlotCounter);
                 } else {
 		    fFlowPtWeightsList = (TList*) GetInputData(inSlotCounter);
                 }
@@ -1403,7 +1402,7 @@ double AliAnalysisTaskNonlinearFlow::GetWeightKatarina(double phi, double eta, d
 
 // Load Katarina's weights
 Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsKatarina() {
-        hPhiWeightRun = (TH3F*)fPhiWeightFile->Get(Form("fPhiWeight_%0.lf", (double)(fAOD->GetRunNumber())));
+	hPhiWeightRun = (TH3F*)fFlowWeightsList->FindObject(Form("fPhiWeight_%0.lf", (double)(fAOD->GetRunNumber())));
         if (!hPhiWeightRun) {
             printf("Weights could not be found in list!\n");
 	    return kFALSE;
@@ -1434,7 +1433,7 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeightKatarina(double pt, double eta, 
 	
 // Load Katarina's pt weights
 Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeightsKatarina() {
-        hTrackEfficiencyRun = (TH3F*)fTrackEfficiency->Get(Form("eff_LHC15o_HIJING_%.0lf", (double)(fAOD->GetRunNumber())));	
+        hTrackEfficiencyRun = (TH3F*)fFlowPtWeightsList->FindObject(Form("eff_LHC15o_HIJING_%.0lf", (double)(fAOD->GetRunNumber())));
         if (!hTrackEfficiencyRun) {
             printf("Pt Weights could not be found in list!\n");
 	    return kFALSE;

@@ -129,7 +129,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/WeightsPbPb15o.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
                 } else if (fPeriod.EqualTo("LHC15oKatarina")) {
-			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/PhiWeight_LHC15o_HIR.root");
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/PhiWeight_Katarina.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
                 } else if (fPeriod.EqualTo("LHC17")) {
 	            taskFlowEp->SetUsePeriodWeigths(true);
@@ -173,7 +173,8 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 					
                 TList* weight_list = NULL;
 		if (fPeriod.EqualTo("LHC15oKatarina")) {
-                    cin_NUA->SetData(inNUA); 
+		    weight_list = dynamic_cast<TList*>(inNUA->Get("weightList"));
+                    cin_NUA->SetData(weight_list); 
                 } else {
 		    weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
 		    cin_NUA->SetData(weight_list);
@@ -191,7 +192,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC18e1_MBEff_FD_wSyst_v2.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
                 } else if (fPeriod.EqualTo("LHC15oKatarina")) {
-			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root");
+			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/TrackingEfficiency_Katarina.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
                 } else {
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC17d20a1_WithModEff_Syst.root");
@@ -204,7 +205,8 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		}
                 TList* weight_list = NULL;
                 if (fPeriod.EqualTo("LHC15oKatarina")) {
-                    cin_NUE->SetData(inNUE); 
+		    weight_list = dynamic_cast<TList*>(inNUE->Get("weightList"));
+		    cin_NUE->SetData(weight_list);
                 } else {
 		    weight_list = dynamic_cast<TList*>(inNUE->Get("EffAndFD"));
 		    cin_NUE->SetData(weight_list);
