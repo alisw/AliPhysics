@@ -424,11 +424,11 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Int_t bootstrap_value = -1; //!
 
 
-                unsigned fgFlowHarmonics = 0;        //! calculate v2, v3, v4, v5
-                unsigned fgFlowHarmonicsHigher = 0;  //! calculate v6, v7, v8 ..
-                unsigned fgFlowHarmonicsMult = 0;    //! calculate v2{4} // yet v2{6}, v2{8}
-                unsigned fgNonlinearFlow = 0;        //! calculate v_4,22, v_5,32
-                unsigned fgSymmetricCumulants = 0;   //! calculate SC(3,2), SC(4,2)
+                unsigned fgFlowHarmonics = 0;        // calculate v2, v3, v4, v5
+                unsigned fgFlowHarmonicsHigher = 0;  // calculate v6, v7, v8 ..
+                unsigned fgFlowHarmonicsMult = 0;    // calculate v2{4} // yet v2{6}, v2{8}
+                unsigned fgNonlinearFlow = 0;        // calculate v_4,22, v_5,32
+                unsigned fgSymmetricCumulants = 0;   // calculate SC(3,2), SC(4,2)
 
                 unsigned fgTwoParticleCorrelation = 0;       //!
                 unsigned fgTwoParticleCorrelationHigher = 0; //!
