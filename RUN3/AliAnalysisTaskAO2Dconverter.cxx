@@ -404,6 +404,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     fMetaData.Add(new TObjString("RecoPassName"), new TObjString(prodInfo.GetRecoPassName()));
     fMetaData.Add(new TObjString("AnchorProduction"), new TObjString(prodInfo.GetAnchorProduction()));
     fMetaData.Add(new TObjString("AnchorPassName"), new TObjString(prodInfo.GetAnchorPassName()));
+    fMetaData.Add(new TObjString("LPMProductionTag"), new TObjString(prodInfo.GetTag(AliProdInfo::kProdTag)));
   }
 
   // In case of ESD we skip events like in the AOD filtering, for AOD this is not needed
@@ -2463,10 +2464,12 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   FillTree(kMcCollision);
 
   // MC collision label
-  mccollisionlabel.fIndexMcCollisions = fBCCount;
-  mccollisionlabel.fMcMask = 0;
-  FillTree(kMcCollisionLabel);
-
+  // will be joined with Collisions, therefore fill it only when we fill Collisions
+  if (fillCollision) {
+    mccollisionlabel.fIndexMcCollisions = fBCCount;
+    mccollisionlabel.fMcMask = 0;
+    FillTree(kMcCollisionLabel);
+  }
 
   //---------------------------------------------------------------------------
   // Update the offsets at the end of each collision
