@@ -29,7 +29,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef() : AliAnalysisTaskSE()
   fIsMC(0), fChi2DoF(4), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), 
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0),
-  fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0),
+  fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
   fEventCuts(0)
 {
 
@@ -39,8 +39,8 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef(const char* name) : Ali
   fAOD(0), fOutputList(0),
   fIsMC(0), fChi2DoF(4), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), 
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
-  fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0),
-  fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0),
+  fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0), 
+  fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
   fEventCuts(0)
 {
   // Default constructor
@@ -74,6 +74,7 @@ void AliAnalysisTaskLegendreCoef::UserCreateOutputObjects()
   double centbins[9] = {0.01,5,10,20,30,40,50,60,70};
 
   if(fIsBuildBG){
+    fOutputList->Add(new TH1D("NeventsCentHist", "nevents;centrality", 8,centbins));//output histogram when building background -  all tracks
     fOutputList->Add(new TH2D("PosBGHistOut", "postrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  positive tracks
     fOutputList->Add(new TH2D("NegBGHistOut", "negtrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  negative tracks
     fOutputList->Add(new TH2D("ChargedBGHistOut", "track;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  charged tracks
@@ -136,7 +137,7 @@ void AliAnalysisTaskLegendreCoef::UserCreateOutputObjects()
 //_____________________________________________________________________________
 void AliAnalysisTaskLegendreCoef::BuildBackground()
 {
-  printf("Building background!\n");
+  //printf("Building background!\n");
 
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
@@ -159,7 +160,9 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
   //mCentCL0 = MultSelection->GetMultiplicityPercentile("CL0");
   //mCentCL1 = MultSelection->GetMultiplicityPercentile("CL1");
   if(Cent>70.0 || Cent<0.01) return;
+  ((TH1D*) fOutputList->FindObject("NeventsCentHist"))->Fill(Cent);//Nevents vs centrality
 
+//fill hist nevent vs cent
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {                 // loop over all these tracks
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
     if(!track) continue;
@@ -265,16 +268,20 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
   
   //calculate coefficients if histogram is full
   int ncentbin = centaxis->FindBin(Cent);
+  int neventcent = fNeventCentHist->GetBinContent(ncentbin);
   if(chargedSignal->Integral()>0) {
     TH1D *chargedBG = fChargedBackgroundHist->ProjectionX("chargedbackground", ncentbin,ncentbin);
+    chargedBG->Scale(1.0/neventcent);
     BuildCoefficients(chargedSignal, chargedBG, Cent, "");
   }
   if(posSignal->Integral()>0) {
     TH1D *posBG = fPosBackgroundHist->ProjectionX("posbackground", ncentbin,ncentbin);
+    posBG->Scale(1.0/neventcent);
     BuildCoefficients(posSignal, posBG, Cent, "pos");   
   }
   if(negSignal->Integral()>0) {
     TH1D *negBG = fNegBackgroundHist->ProjectionX("negbackground", ncentbin,ncentbin);
+    negBG->Scale(1.0/neventcent);
     BuildCoefficients(negSignal, negBG, Cent, "neg");
   }
 
@@ -316,14 +323,17 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
     //calculate coefficients if histogram is full
     if(MCchargedSignal->Integral()>0) {
       TH1D *MCchargedBG = fMCChargedBackgroundHist->ProjectionX("MCchargedbackground", ncentbin,ncentbin);
+      MCchargedBG->Scale(1.0/neventcent);
       BuildCoefficients(MCchargedSignal, MCchargedBG, Cent, "MC");
     }
     if(MCposSignal->Integral()>0) {
       TH1D *MCposBG = fMCPosBackgroundHist->ProjectionX("MCposbackground", ncentbin,ncentbin);
+      MCposBG->Scale(1.0/neventcent);
       BuildCoefficients(MCposSignal, MCposBG, Cent, "posMC");   
     }
     if(MCnegSignal->Integral()>0) {
       TH1D *MCnegBG = fMCNegBackgroundHist->ProjectionX("negbackground", ncentbin,ncentbin);
+      MCnegBG->Scale(1.0/neventcent);
       BuildCoefficients(MCnegSignal, MCnegBG, Cent, "negMC");
     }
   }
@@ -358,7 +368,7 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
     RanHist[s]->Reset("ICE");
     for (int rn=0; rn<ntracks; rn++) {RanHist[s]->Fill(ran->Uniform(-fEta,fEta));}
     RanHist[s]->Scale(16.0/(double)ntracks);
-    //printf("ranhist normal is %f\n",RanHist[s]->Integral());
+    printf("ranhist normal is %f\n",RanHist[s]->Integral());
 
   }
 
@@ -366,8 +376,9 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
   for (int s=0; s<5; s++){
     RanDistHist[s]->Reset("ICE");
     for (int rn=0; rn<ntracks; rn++) {RanDistHist[s]->Fill(background->GetRandom());}
-    RanDistHist[s]->Scale(16.0/(double)ntracks);   
-    //printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
+   // RanDistHist[s]->Divide(background);
+    //RanDistHist[s]->Scale(16.0/(double)ntracks);   
+    printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
 
   }
 
