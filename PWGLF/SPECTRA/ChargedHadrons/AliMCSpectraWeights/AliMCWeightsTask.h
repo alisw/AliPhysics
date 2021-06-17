@@ -41,8 +41,8 @@ public:
     virtual void Terminate(Option_t* option) {}
 
     void SetMCSpectraWeightObject (AliMCSpectraWeights* weights) {fMCSpectraWeights=weights;}
-
-    static AliMCWeightsTask* AddTaskAliMCWeightsTask (MCGeneratorType gen=MCGeneratorType::NONE, const char* collisionType = 0);
+    
+    static AliMCWeightsTask* AddTaskAliMCWeightsTask (MCGeneratorType gen=MCGeneratorType::NONE, const char* collisionType = 0,  bool fUsePPMB = false);
 
 private:
     TList* fOutputList;      //!<! Output list

@@ -106,6 +106,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Double_t fptAssocut; 
     Double_t fNref;
 		Int_t Nch;
+		Double_t correctednAcc;
     Bool_t fmcData;
     Bool_t iMCcorr;
     Bool_t iDCApTweight;
@@ -114,6 +115,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Double_t fPtHardMax;
     Int_t NembMCpi0;
     Int_t NembMCeta;
+    Int_t NembEPOS;
     Int_t NpureMCproc;
     Double_t GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
@@ -218,6 +220,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   THnSparse                   *HFjetCorr1;
   THnSparse                   *HFjetCorr2;
   THnSparse                   *HFjetCorr3;
+  THnSparse                   *HFjetCorrUE;
   THnSparse                   *HFjetParticle;
   TH2D                        *HFjetDCA_c;
   TH2D                        *HFjetDCA_b;
@@ -244,6 +247,9 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistBGfrac;
   TH1F                        *fHistBGfracHFEev;
   TH1F                        *fHistBGrandHFEev;
+  TH1F                        *fHistUE_org;
+  TH1F                        *fHistUE_true;
+  TH1F                        *fHistUE_reco;
   TH2D                        *fHistJetEnergyReso;
   TH2D                        *fHistNmatchJet;
   THnSparse                   *fHistJetEtaCorr0;
@@ -274,7 +280,15 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
 	TH1F                        *fNtrkl_Corr;
 	TH2F                        *fzvtx_Nch;
 	TH2F                        *fNchNtr_Corr;
-  TH1D                        *fweightNtrkl; 
+  TH1D                        *fweightNtrkl;
+	TH2F                        *fNtrklcorr_HFjet;
+	TH2F                        *fNtrklcorr_ULSjet;
+	TH2F                        *fNtrklcorr_LSjet;
+	TH2F                        *fNtrklcorr_Hadjet;
+	THnSparse                   *fNtrklEopHFE;
+	THnSparse                   *fNtrklEopHad;
+	TH1D                        *fHistphoPi0MC;
+	TH1D                        *fHistphoEtaMC;
 
   TRandom                     *generator;
 
@@ -282,7 +296,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliJetContainer            *fJetsContPart;                   //!Jets particle
   AliParticleContainer       *fTracksCont;                 //!Tracks
   AliClusterContainer        *fCaloClustersCont;           //!Clusters  
-  Bool_t tagHFjet(AliEmcalJet* jet, double *epT, int MCpid, double &maxpT_e);
+  Bool_t tagHFjet(AliEmcalJet* jet, double *epT, int MCpid, double &maxpT_e, double &ptUS);
   void MakePriorPbPb(AliEmcalJet* jet, double *epT);
   Double_t ReduceJetEnergyScale(AliEmcalJet* jetC, double *epT, double effval);
   //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);

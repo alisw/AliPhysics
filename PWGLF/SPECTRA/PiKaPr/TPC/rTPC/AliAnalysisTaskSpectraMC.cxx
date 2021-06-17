@@ -77,13 +77,9 @@
 ////class AliAnalysisTaskSpectraMC;    // your analysis class
 using namespace std;
 
-
 //
 // Responsible:
-// Antonio Ortiz (Lund)
-// Peter Christiansen (Lund)
 // Omar Vazquez (Lund)
-
 
 static float Magf = 1;
 static const int nPid = 4;
@@ -112,12 +108,10 @@ ClassImp(AliAnalysisTaskSpectraMC)
 		fRandom(0x0),
 		fNcl(70),
 		fEtaCut(0.9),
-		fdEdxCalibrated(kTRUE),
 		fDeDxMIPMin(40),
 		fDeDxMIPMax(60),
 		fdEdxHigh(200),
 		fdEdxLow(40),
-		fPeriod("l"),
 		fSetTPConlyTrkCuts(kFALSE),
 		fSelectHybridTracks(kTRUE),
 		fLeadPtCutMin(5.0),
@@ -217,12 +211,10 @@ AliAnalysisTaskSpectraMC::AliAnalysisTaskSpectraMC(const char *name):
 	fRandom(0x0),
 	fNcl(70),
 	fEtaCut(0.9),
-	fdEdxCalibrated(kTRUE),
 	fDeDxMIPMin(40),
 	fDeDxMIPMax(60),
 	fdEdxHigh(200),
 	fdEdxLow(40),
-	fPeriod("l"),
 	fSetTPConlyTrkCuts(kFALSE),
 	fSelectHybridTracks(kTRUE),
 	fLeadPtCutMin(5.0),
@@ -344,15 +336,14 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 		fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
 		fHybridTrackCuts1->SetAcceptKinkDaughters(kFALSE);
 		fHybridTrackCuts1->SetRequireTPCRefit(kTRUE);
-		fHybridTrackCuts1->SetRequireITSRefit(kFALSE);
-		fHybridTrackCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+		fHybridTrackCuts1->SetRequireITSRefit(kTRUE);
+		fHybridTrackCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
 		fHybridTrackCuts1->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
 		//fHybridTrackCuts1->SetMaxChi2TPCConstrainedGlobal(36);
 		fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
 		fHybridTrackCuts1->SetDCAToVertex2D(kFALSE);
 		fHybridTrackCuts1->SetRequireSigmaToVertex(kFALSE);
 		fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
-
 	} 
 
 	if(!fHybridTrackCuts2){
@@ -391,22 +382,22 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 	fEvents->GetXaxis()->SetBinLabel(8, "|Vtz|<10cm");//NotinVertexcut");
 	fListOfObjects->Add(fEvents);
 
-	
-	   const int nPtBins = 45;
-	   double ptBins[nPtBins+1] = {
-	   0.0, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,
-	   0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85,
-	   0.90, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7,
-	   1.80, 1.90, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4,
-	   3.60, 3.80, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10.0};
-	   
+
+	const int nPtBins = 45;
+	double ptBins[nPtBins+1] = {
+		0.0, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,
+		0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85,
+		0.90, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7,
+		1.80, 1.90, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4,
+		3.60, 3.80, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10.0};
+
 
 	// Phi binning
 
-/*	const int nPtBins = 17;
-	double ptBins[nPtBins+1] = { 0.0 , 0.15, 0.3, 0.5, 0.7, 0.9, 1.2, 1.4, 1.6,
+	/*	const int nPtBins = 17;
+		double ptBins[nPtBins+1] = { 0.0 , 0.15, 0.3, 0.5, 0.7, 0.9, 1.2, 1.4, 1.6,
 		1.8, 2.0, 2.2, 2.6, 3.0, 3.5, 4.0, 5.0, 8.0};
-*/
+		*/
 
 	const int nBinsNsigma = 50;
 	double binsNsigma[nBinsNsigma+1] = {0};
@@ -1837,24 +1828,24 @@ AliESDtrack* AliAnalysisTaskSpectraMC::SetHybridTrackCuts(AliESDtrack *esdtrack,
 			return 0x0;
 	}
 	/*else if(fHybridTrackCuts2->AcceptTrack(esdtrack))
-	{
-		if(esdtrack->GetConstrainedParam())
-		{
-			newTrack = new AliESDtrack(*esdtrack);
-			const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
-			newTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
-			/////				newTrack->SetTRDQuality(2);
-			if(fillPhHyb2) hPhiHybrid2->Fill(newTrack->Eta(),newTrack->Phi());
-		}
-		else
-			return 0x0;
-	}*/
-	else
-	{
-		return 0x0;
+	  {
+	  if(esdtrack->GetConstrainedParam())
+	  {
+	  newTrack = new AliESDtrack(*esdtrack);
+	  const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
+	  newTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
+	/////				newTrack->SetTRDQuality(2);
+	if(fillPhHyb2) hPhiHybrid2->Fill(newTrack->Eta(),newTrack->Phi());
 	}
+	else
+	return 0x0;
+	}*/
+	  else
+	  {
+		  return 0x0;
+	  }
 
-	return newTrack;
+	  return newTrack;
 
 }
 //________________________________________________________________________
@@ -1944,30 +1935,6 @@ double AliAnalysisTaskSpectraMC::EtaCalibrationEl(const int &indx, const double 
 
 }
 //________________________________________________________________________
-int AliAnalysisTaskSpectraMC::GetIndex()
-{
-
-	Int_t indx = -1;
-
-	if(fPeriod=="h")
-		indx = 0;
-	else if(fPeriod=="i")
-		indx = 1;
-	else if(fPeriod=="j")
-		indx = 2;
-	else if(fPeriod=="l")
-		indx = 3;
-	else if(fPeriod=="k")
-		indx = 4;
-	else if(fPeriod=="o")
-		indx = 5;
-	else
-		indx = 6;
-
-	return indx;
-
-}
-//________________________________________________________________________
 bool AliAnalysisTaskSpectraMC::TOFPID(AliESDtrack * track)
 {
 	UInt_t status;
@@ -1984,4 +1951,5 @@ bool AliAnalysisTaskSpectraMC::TOFPID(AliESDtrack * track)
 
 	return kTRUE;
 }
+
 

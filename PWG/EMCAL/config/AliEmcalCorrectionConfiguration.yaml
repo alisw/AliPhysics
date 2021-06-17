@@ -71,6 +71,7 @@ CellEnergy:                                         # Cell Energy correction com
     enableShaperCorrection: false                   # Correct all cells >50 GeV for the shaper detector effect (to be used with special testbeam nonlinearity)
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
+    enableAdditionalScale: 1.0                      # Set an additional energy scale shift on cell level. HIGHLY EXPERIMENTAL and should not be used for standard analyses!
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellSingleChannelCalibration:                       # Cell Single Channel Energy correction component
@@ -245,6 +246,7 @@ ClusterLowEnergyEfficiency:                         # Cluster number of cell eff
     createHistos: false                             # Whether the task should create output histograms
     nCellFunct: kGammaAndElec                       # Sets the probabiliyt function for the ncell efficiency
     setRejectNextToClus: true                       # Set if 1 cell clusters which are directly next to another cluster should be considered for the ncell efficiency (Should be enabled)
+    setApplyToGammaOnly: true                       # Set if correction should be applied on all clusters (false) or only on photon clusters (true)
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction

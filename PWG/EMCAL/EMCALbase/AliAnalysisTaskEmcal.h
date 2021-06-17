@@ -668,9 +668,15 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   /**
    * @brief Get the event cross section from the generator event header
-   * @return Cross section (-1 in not a PYTHIA- or HepMC based production)
+   * @return Cross section (-1 if not a PYTHIA- or HepMC-based production)
    */
   double                      GetCrossSectionFromHeader()                     const;
+
+  /**
+   * @brief Get the event weight from the generator event header 
+   * @return Event weight (-1 if not a PPYTHIA- or HepMC-based production) 
+   */
+  double                      GetEventWeightFromHeader()                      const;
 
   /**
    * @brief Switch on pt-hard bin scaling

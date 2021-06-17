@@ -21,8 +21,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   fileName = outputFileName; // create a subfolder in the file
 
   // Loading individual config file either local or from Alien
-  TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  //TString configBasePath= Form("%s/",gSystem->pwd());
+  //TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
+  TString configBasePath= Form("%s/",gSystem->pwd());
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
       && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data()))))
@@ -121,7 +121,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   cout << resoFilename << endl;
   //  task->SetResolutionFile(resoFilename);
   //  task->SetResolutionFileFromAlien(resoFilenameFromAlien);
-  task->SetResolutionFile(resoFilename,resoFilenameFromAlien);
+  task->SetResolutionFile(resoFilename,"/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/" + resoFilename);
+  //  task->SetResolutionFile(resoFilename,resoFilenameFromAlien);
   task->SetResolutionDeltaPtBinsLinear   (DeltaMomMin, DeltaMomMax, NbinsDeltaMom);
   task->SetResolutionRelPtBinsLinear   (RelMomMin, RelMomMax, NbinsRelMom);
   task->SetResolutionEtaBinsLinear  (DeltaEtaMin, DeltaEtaMax, NbinsDeltaEta);

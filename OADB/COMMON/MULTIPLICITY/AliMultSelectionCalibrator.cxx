@@ -317,6 +317,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
   Int_t lNTrees = 0;
   if( !lAutoDiscover ){
     lNTrees = fNRunRanges;
+    lNRuns = fNRunRanges;
   }else{
     lNTrees = lMax;
   }
@@ -355,7 +356,13 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
   
   //Vertex Z profiles
   TProfile *hCalibVtx[1000][AliMultInput::kNVariables];
+  for(Int_t ii=0; ii<1000; ii++){
+    for(Int_t jj=0; jj<AliMultInput::kNVariables; jj++){
+      hCalibVtx[ii][jj]=0x0; //init to null to be sure
+    }
+  }
   
+  cout<<"Creating histograms"<<endl;
   if( !lAutoDiscover ){
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
       for(Int_t iVar=0; iVar<AliMultInput::kNVariables; iVar++) {
@@ -381,6 +388,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
   Double_t lEventsPerSecond = 0;
   
   AliMultVariable *lVtxZLocalPointer = fInput -> GetVariable("fEvSel_VtxZ");
+  if( ! lVtxZLocalPointer ) cout<<"PROBLEM singling out vtx-Z variable"<<endl; 
   
   for(Long64_t iEv = 0; iEv<fTree->GetEntries(); iEv++) {
     if ( iEv % 100000 == 0 ) {
@@ -429,6 +437,14 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
       //Consult map for run range equivalency
       if ( fRunRangesMap.find( fRunNumber ) != fRunRangesMap.end() ) {
         lIndex = fRunRangesMap[ fRunNumber ];
+        //Create vertex-Z calibration object if it does not exist
+//        for(Int_t iVar=0; iVar<AliMultInput::kNVariables; iVar++) {
+//          cout<<"Creating hCalibVtx["<<lIndex<<"]["<<iVar<<"]"<<endl;
+//          if( !hCalibVtx[lIndex][iVar] ){
+//            hCalibVtx[lIndex][iVar] = new TProfile(Form("hCalibVtx_%i_%s",fRunNumber,AliMultInput::VarName[iVar].Data()),"",100, -20, 20);
+//            hCalibVtx[lIndex][iVar] ->SetDirectory(0);
+//          }
+//        }
       }else{
         lSaveThisEvent = kFALSE;
       }
@@ -444,6 +460,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         cout<<endl<<"(Autodiscover) New Run Found: "<<fRunNumber<<", added as #"<<lNRuns<<" (so far: "<<lNRuns<<" runs)"<<endl;
         //Adding vertex-Z profiles for this run
         for(Int_t iVar=0; iVar<AliMultInput::kNVariables; iVar++) {
+          cout<<"Creating hCalibVtx["<<lNRuns<<"]["<<iVar<<"]"<<endl;
           hCalibVtx[lNRuns][iVar] = new TProfile(Form("hCalibVtx_%i_%s",fRunNumber,AliMultInput::VarName[iVar].Data()),"",100, -20, 20);
           hCalibVtx[lNRuns][iVar] ->SetDirectory(0);
         }
@@ -463,6 +480,8 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         for(Int_t iVar=0; iVar<AliMultInput::kNVariables; iVar++) {
           if(VarDoAutocalib[iVar]){
             AliMultVariable *v1 = fInput->GetVariable(iVar);
+            if(!v1) cout<<"PROBLEM finding this variable"<<endl;
+            if(!hCalibVtx[lIndex][iVar]) cout<<"Undefined vertex-Z calib histo at indices "<<lIndex<<", "<<iVar<<", please debug"<<endl;
             hCalibVtx[lIndex][iVar]->Fill( lVtxZLocalPointer->GetValue(), v1->IsInteger() ? v1->GetValueInteger() : v1->GetValue() );
           }
         }
@@ -645,8 +664,12 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fInput->ClearVtxZ();
     cout<<"--- Cleared. Number of elements: "<<fInput->GetNVtxZ()<<endl;
     for(Int_t iVar=0; iVar<AliMultInput::kNVariables; iVar++){
-      //cout<<"--- Adding var: "<<AliMultInput::VarName[iVar].Data()<<", pointer "<<hCalibVtx[iRun][iVar]<<endl;
-      fInput->AddVtxZ( hCalibVtx[iRun][iVar] );
+      cout<<"--- Adding var: "<<AliMultInput::VarName[iVar].Data()<<", pointer "<<hCalibVtx[iRun][iVar]<<" for hCalibVtx["<<iRun<<"]["<<iVar<<"]"<<endl;
+      if(hCalibVtx[iRun][iVar]) {
+        fInput->AddVtxZ( hCalibVtx[iRun][iVar] );
+      }else{
+        cout<<"--- Access to hCalibVtx["<<iRun<<"]["<<iVar<<"] failed, presuming that it does not exist!"<<endl;
+      }
     }
     cout<<"--- Setting up input maps for vertex-Z correction..."<<endl;
     fInput->SetupAutoVtxZCorrection();
@@ -678,6 +701,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     for(Int_t ii=0; ii<lNEstimatorsThis; ii++){
       index[ii] = new Int_t[ntot];
       values[ii] = new Float_t[ntot];
+      lAcceptedEventArray[ii] = 0;
     }
     
     timer->Reset();
@@ -735,7 +759,6 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
       
       for( Long_t lB=1; lB<lNDesiredBoundaries; lB++) {
         Long64_t position = (Long64_t) ( 0.01 * ((Double_t)(ntot)* lDesiredBoundaries[lB] ) );
-        
         if( fSelection->GetEstimator(iEst)->GetUseAnchor() && ntot != 0 ){
           //Make sure index position lAnchorEst corresponds to lAnchorPercentile
           Double_t lAnchorPercentile = (Double_t) fSelection->GetEstimator(iEst)->GetAnchorPercentile();
@@ -745,7 +768,6 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
           position = (Long64_t) ( ( 0.01 * ((Double_t)(ntot)* lDesiredBoundaries[lB] ) ) * lScalingFactor );
           if(position > ntot-1 ) position = ntot-1; //protection !
         }
-        //cout<<"Position requested: "<<position<<flush;
         //sTree[iRun]->GetEntry( index[position] );
         //Calculate the estimator with this input, please
         //fSelection->Evaluate ( fInput );

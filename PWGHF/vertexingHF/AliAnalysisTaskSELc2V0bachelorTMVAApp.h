@@ -163,13 +163,15 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   std::vector<int> GetNVars() const {return fNVars;}
 
   void SetNamesTMVAVariables(std::vector<TString> names);
-  std::vector<TString> GetNamesTMVAVariables() {return fNamesTMVAVar;}
-  
+  std::vector<TString> GetNamesTMVAVariables() const {return fNamesTMVAVar;}
+
+  std::vector<std::vector<std::string>> GetNamesTMVAVarVec() const {return fNamesTMVAVarVec;}
+
   void SetNVarsSpectators(std::vector<int> n);
   std::vector<int> GetNVarsSpectators() const {return fNVarsSpectators;}
 
   void SetNamesTMVAVariablesSpectators(std::vector<TString> names);
-  std::vector<TString> GetNamesTMVAVariablesSpectators() {return fNamesTMVAVarSpectators;}
+  std::vector<TString> GetNamesTMVAVariablesSpectators() const {return fNamesTMVAVarSpectators;}
 
   void SetXmlWeightsFile(std::vector<TString> fileName);
   std::vector<TString> GetXmlWeightsFile() const {return fXmlWeightsFile;}

@@ -14,11 +14,9 @@
 AliAnalysisTaskSpectraMC* AddTaskSpectraMC(
 		bool AnalysisMC = kFALSE,
 		bool MCClosure  = kFALSE,
-		const char* Period  = "l",
 		bool IsTPCOnlyTrkCuts = kTRUE,
 		const char* Container = "TPCOnly",
-		bool SelectHybridTrks = kTRUE,
-		bool isdEdxCalibrated = kFALSE	
+		bool SelectHybridTrks = kTRUE
 		)   
 {
 
@@ -46,10 +44,8 @@ AliAnalysisTaskSpectraMC* AddTaskSpectraMC(
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetMCClosure(MCClosure);
-	task->SetPeriod(Period);
  	task->SetTrackCutsType(IsTPCOnlyTrkCuts);
 	task->SetHybridTracks(SelectHybridTrks);
-	task->SetdEdxCalibration(isdEdxCalibrated);
 	task->SetNcl(70);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);

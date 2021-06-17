@@ -28,6 +28,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fSameEventmTvsMultDist(nullptr),
       fSameEventkTDist(nullptr),
       fSameEventkTandMultDist(nullptr),
+      fSameEventkTandMultPtDist(nullptr),
       fSameEventkTCentDist(nullptr),
       fSameEventmTMultDist(nullptr), 
       fPtQADist(nullptr),
@@ -87,6 +88,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fDoMultBinning(false),
       fDoCentBinning(false),
       fDokTandMultBinning(false),
+      fDokTandMultPtBinning(false),
       fDokTBinning(false),
       fDomTBinning(false),
       fmTMultPlots(false),
@@ -120,6 +122,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fSameEventmTvsMultDist(hists.fSameEventmTvsMultDist),
       fSameEventkTDist(hists.fSameEventkTDist),
       fSameEventkTandMultDist(hists.fSameEventkTandMultDist),
+      fSameEventkTandMultPtDist(hists.fSameEventkTandMultPtDist),
       fSameEventkTCentDist(hists.fSameEventkTCentDist),
       fSameEventmTMultDist(hists.fSameEventmTMultDist),
       fPtQADist(hists.fPtQADist),
@@ -179,6 +182,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fDoMultBinning(hists.fDoMultBinning),
       fDoCentBinning(hists.fDoCentBinning),
       fDokTandMultBinning(hists.fDokTandMultBinning),
+      fDokTandMultPtBinning(hists.fDokTandMultPtBinning),
       fDokTBinning(hists.fDokTBinning),
       fDomTBinning(hists.fDomTBinning),
       fmTMultPlots(hists.fmTMultPlots),
@@ -212,6 +216,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fSameEventmTvsMultDist(nullptr),
       fSameEventkTDist(nullptr),
       fSameEventkTandMultDist(nullptr),
+      fSameEventkTandMultPtDist(nullptr),
       fSameEventkTCentDist(nullptr),
       fSameEventmTMultDist(nullptr),
       fPtQADist(nullptr),
@@ -271,6 +276,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fDoMultBinning(false),
       fDoCentBinning(false),
       fDokTandMultBinning(false),
+      fDokTandMultPtBinning(false),
       fDokTBinning(false),
       fDomTBinning(false),
       fmTMultPlots(false),
@@ -292,6 +298,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   fDokTBinning = conf->GetDokTBinning();
   fDokTCentralityBins = conf->GetDokTCentralityBinning();
   fDokTandMultBinning = conf->GetDokTandMultBinning();
+  fDokTandMultPtBinning = conf->GetDokTandMultPtBinning();
   fDomTBinning = conf->GetDomTBinning();
   fmTMultPlots = conf->GetmTMultBinning(); 
   fPtQA = conf->GetDoPtQA();
@@ -432,8 +439,12 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   if (fDokTandMultBinning) {
     fSameEventkTandMultDist = new TH2F**[nHists];
     fMixedEventkTandMultDist = new TH2F**[nHists];
+    if (fDokTandMultBinning) {
+	    fSameEventkTandMultPtDist = new TH2F**[nHists];
+    }
   } else {
     fSameEventkTandMultDist = nullptr;
+    fSameEventkTandMultPtDist = nullptr;
     fMixedEventkTandMultDist = nullptr;
   }
   if (fDoCentBinning) {
@@ -648,6 +659,9 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       if (fillHists && fDokTandMultBinning) {
         fSameEventkTandMultDist[Counter] = new TH2F*[multbins];
         fMixedEventkTandMultDist[Counter] = new TH2F*[multbins];
+	if (fDokTandMultPtBinning) {
+        	fSameEventkTandMultPtDist[Counter] = new TH2F*[multbins];
+	}
         for (int iMult = 1; iMult < multbins + 1; ++iMult) {
           TString SamekTandMultEventName = TString::Format(
               "SEkTandMultDist_Mult%i_Particle%d_Particle%d", iMult, iPar1,
@@ -666,6 +680,17 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
               *itNBins, *itKMin, *itKMax, *itNBins / 10, *itKMin,
               *itKMax * 1.5);
           fPairs[Counter]->Add(fMixedEventkTandMultDist[Counter][iMult]);
+	  
+          if (fDokTandMultPtBinning) {
+	  	TString SamekTandMultPtEventName = TString::Format(
+            	  "SEkTandMultPtDist_Mult%i_Particle%d_Particle%d", iMult, iPar1,
+           	   iPar2);
+          	fSameEventkTandMultPtDist[Counter][iMult] = new TH2F(
+            	  SamekTandMultPtEventName.Data(), SamekTandMultPtEventName.Data(),
+            	  *itNBins, *itKMin, *itKMax, *itNBins / 10, *itKMin,
+             	 *itKMax * 1.5);
+          	fPairs[Counter]->Add(fSameEventkTandMultPtDist[Counter][iMult]);
+	  }
         }
       }
       if (fillHists && fDokTBinning) {
@@ -1147,8 +1172,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           TString MomResoSEName = TString::Format(
               "MomentumResolutionSE_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionSE[Counter] = new TH2F(MomResoSEName.Data(),
-                                               MomResoSEName.Data(), 1000, 0, 1,
-                                               1000, 0, 1);
+                                               MomResoSEName.Data(), 2500, 0, 2.5,
+                                               2500, 0, 2.5);
           fMomResolutionSE[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolutionSE[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolutionSE[Counter]);
@@ -1156,8 +1181,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           TString MomResoSEAllName = TString::Format(
               "MomentumResolutionSEAll_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionSEAll[Counter] = new TH2F(MomResoSEAllName.Data(),
-                                                  MomResoSEAllName.Data(), 1000,
-                                                  0, 1, 1000, 0, 1);
+                                                  MomResoSEAllName.Data(), 2500,
+                                                  0, 2.5, 2500, 0, 2.5);
           fMomResolutionSEAll[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolutionSEAll[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolutionSEAll[Counter]);
@@ -1165,8 +1190,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           TString MomResoMEName = TString::Format(
               "MomentumResolutionME_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionME[Counter] = new TH2F(MomResoMEName.Data(),
-                                               MomResoMEName.Data(), 1000, 0, 1,
-                                               1000, 0, 1);
+                                               MomResoMEName.Data(), 2500, 0, 2.5,
+                                               2500, 0, 2.5);
           fMomResolutionME[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolutionME[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolutionME[Counter]);
@@ -1174,8 +1199,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           TString MomResoMEAllName = TString::Format(
               "MomentumResolutionMEAll_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionMEAll[Counter] = new TH2F(MomResoMEAllName.Data(),
-                                               MomResoMEAllName.Data(), 1000, 0, 1,
-                                               1000, 0, 1);
+                                               MomResoMEAllName.Data(), 2500, 0, 2.5,
+                                               2500, 0, 2.5);
           fMomResolutionMEAll[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolutionMEAll[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolutionMEAll[Counter]);
@@ -1184,7 +1209,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
               "MomentumResolutionDist_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionDist[Counter] = new TH2F(MomResoDistName.Data(),
                                                  MomResoDistName.Data(), 500,
-                                                 -0.3, 0.3, 1000, 0, 1);
+                                                 -0.3, 0.3, 2500, 0, 2.5);
           fMomResolutionDist[Counter]->GetXaxis()->SetTitle(
               "k_{Reco}-k_{Generated}");
           fMomResolutionDist[Counter]->GetYaxis()->SetTitle("k_{Generated}");
@@ -1354,6 +1379,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fSameEventkTDist = hists.fSameEventkTDist;
     this->fSameEventmTvsMultDist = hists.fSameEventmTvsMultDist;
     this->fSameEventkTandMultDist = hists.fSameEventkTandMultDist;
+    this->fSameEventkTandMultPtDist = hists.fSameEventkTandMultPtDist;
     this->fSameEventkTCentDist = hists.fSameEventkTCentDist;
     this->fSameEventmTMultDist = hists.fSameEventmTMultDist; 
     this->fPtQADist = hists.fPtQADist;
@@ -1459,6 +1485,10 @@ AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists() {
   if (fSameEventkTandMultDist) {
     delete[] fSameEventkTandMultDist;
     delete fSameEventkTandMultDist;
+  }
+  if (fSameEventkTandMultPtDist) {
+    delete[] fSameEventkTandMultPtDist;
+    delete fSameEventkTandMultPtDist;
   }
   if (fSameEventkTDist) {
     delete[] fSameEventkTDist;

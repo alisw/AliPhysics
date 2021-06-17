@@ -34,7 +34,7 @@ class AliJHSCTask : public AliAnalysisTaskSE {
 
  public:
   AliJHSCTask();
-  AliJHSCTask(const char *name,  TString inputformat);
+  AliJHSCTask(const char *name);
   AliJHSCTask(const AliJHSCTask& ap);   
   AliJHSCTask& operator = (const AliJHSCTask& ap);
   virtual ~AliJHSCTask();
@@ -52,6 +52,7 @@ class AliJHSCTask : public AliAnalysisTaskSE {
 
   // Methods specific for this class
   void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
+  TString GetJCatalystTaskName(){ return fJCatalystTaskName; } // Setter for filter task name
 
  private:
 
@@ -61,7 +62,6 @@ class AliJHSCTask : public AliAnalysisTaskSE {
   Bool_t      fIsMC;       // MC data or real data
   AliAnalysisAnaTwoMultiCorrelations *fTwoMultiAna;
   
-  TDirectory     *fOutput; // Output directory
 
   ClassDef(AliJHSCTask, 1); 
 };

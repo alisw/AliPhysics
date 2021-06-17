@@ -39,7 +39,7 @@
 #include "AliESDVertex.h"
 #include "AliAODVertex.h"
 #include "AliAODPid.h"
-
+#include "AliAODEvent.h"
 #include "AliRhoParameter.h"
 
 #include "AliVTrack.h"
@@ -119,7 +119,7 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
 }
 
 //________________________________________________________________________
-Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField)
+Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField, Double_t eventPlaneV0)
 {
   if(!fInitialized)
     AliFatal("Tree is not initialized.");
@@ -151,7 +151,8 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, 
   fBuffer_JetEta                                  = jet->Eta();
   fBuffer_JetPhi                                  = jet->Phi();
   fBuffer_JetArea                                 = jet->Area();
-
+  fBuffer_JetEPangle                              = RelativePhi(jet->Phi(),eventPlaneV0);
+  
   // Set event properties
   fBuffer_Event_BackgroundDensity               = rho;
   fBuffer_Event_BackgroundDensityMass           = rhoMass;
@@ -343,6 +344,7 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
   fJetTree->Branch("Jet_Phi",&fBuffer_JetPhi,"Jet_Phi/F");
   fJetTree->Branch("Jet_Eta",&fBuffer_JetEta,"Jet_Eta/F");
   fJetTree->Branch("Jet_Area",&fBuffer_JetArea,"Jet_Area/F");
+  fJetTree->Branch("Jet_EPangle", &fBuffer_JetEPangle, "Jet_EPangle/F");
   fJetTree->Branch("Jet_NumTracks",&fBuffer_NumTracks,"Jet_NumTracks/I");
   if(saveCaloClusters)
     fJetTree->Branch("Jet_NumClusters",&fBuffer_NumClusters,"Jet_NumClusters/I");
@@ -905,7 +907,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     }
 
     // Fill jet to tree (here adding the minimum properties)
-    Bool_t accepted = fJetTree->AddJetToTree(jet, fSaveConstituents, fSaveConstituentsIP, fSaveCaloClusters, vtx, GetJetContainer(0)->GetRhoVal(), GetJetContainer(0)->GetRhoMassVal(), fCent, fMultiplicity, eventID, InputEvent()->GetMagneticField());
+    Bool_t accepted = fJetTree->AddJetToTree(jet, fSaveConstituents, fSaveConstituentsIP, fSaveCaloClusters, vtx, GetJetContainer(0)->GetRhoVal(), GetJetContainer(0)->GetRhoMassVal(), fCent, fMultiplicity, eventID, InputEvent()->GetMagneticField(), fEPV0);
     if(accepted)
       FillHistogram("hJetPtExtracted", jet->Pt() - GetJetContainer(0)->GetRhoVal()*jet->Area(), fCent);
     jetCount++;

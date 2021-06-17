@@ -1,6 +1,7 @@
 #include <chrono>
 #include <ctime>
 #include <ratio>
+#include <regex>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -26,6 +27,7 @@
 #include <TSystem.h>
 #include <TChain.h>
 #include <TDatabasePDG.h>
+#include <TObjString.h>
 
 
 /**************************************************************************
@@ -188,7 +190,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fTrackCuts3pr{nullptr},
   fMaxTracksToProcess(9999999),
   fNPtBinsSingleTrack(6),
-  fNPtBins(25),
+  fNPtBinsDzero(25),
   fMinPtDzero(0.),
   fMaxPtDzero(9999.),
   fMinPtDplus(0.),
@@ -440,9 +442,9 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
   fLcSkimCuts[3]=-1.1;       // cos pointing angle
   fLcSkimCuts[4]=0.;         // dec len
 
-  fNPtBins=25;
+  fNPtBinsDzero=25;
   Double_t defaultPtBins[26] = {0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 12.0, 16.0, 20.0, 24.0, 36.0, 50.0, 100.0};
-  for(Int_t ib=0; ib<fNPtBins+1; ib++) fPtBinLims[ib]=defaultPtBins[ib];
+  for(Int_t ib=0; ib<fNPtBinsDzero+1; ib++) fPtBinLimsDzero[ib]=defaultPtBins[ib];
 
   Double_t defaultD0Cuts[25][kNCutVarsDzero] =
     {{0.400, 350. * 1E-4, 0.8, 0.5, 0.5, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.80, 0., 0.},   /* pt<0.5*/
@@ -470,7 +472,7 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
      {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.85, 0., 0.},  /* 24<pt<36 */
      {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.85, 0., 0.},  /* 36<pt<50 */
      {0.400, 300. * 1E-4, 1.0, 0.6, 0.6, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.80, 0., 0.}}; /* pt>50 */
-  for(Int_t ib=0; ib<fNPtBins; ib++){
+  for(Int_t ib=0; ib<fNPtBinsDzero; ib++){
    for(Int_t jc=0; jc<kNCutVarsDzero; jc++){
      fDzeroCuts[ib][jc]=defaultD0Cuts[ib][jc];
    }
@@ -550,6 +552,14 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
   /// read configuration from json file
   if (filename != "" && gSystem->Exec(Form("ls %s > /dev/null", filename.Data())) == 0) {
     printf("------Read configuration from JSON file------\n");
+
+    std::string triggerMaskFromJSON = GetJsonString(filename.Data(), "triggerClassName");
+
+    if (triggerMask.find(triggerMaskFromJSON) != triggerMask.end()) {
+      fUsePhysSel = kTRUE;
+      fTriggerMask = triggerMask[triggerMaskFromJSON];
+    }
+
     Double_t ptmintrack2 = GetJsonFloat(filename.Data(), "ptmintrack_2prong");
     printf("Min pt track (2 prong)= %f\n", ptmintrack2);
     if(ptmintrack2>0) fTrackCuts2pr->SetPtRange(ptmintrack2, 1.e10);
@@ -1949,7 +1959,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::JpsiSelectionCuts(AliAODRecoDecayHF2Prong
   Double_t covtrack[2]; Double_t covtrack1[2];
   Double_t ptCand = cand->Pt();
   if (ptCand < fMinPtJpsi || ptCand > fMaxPtJpsi) return 0;
-  Int_t jPtBin = GetPtBin(ptCand);
+  Int_t jPtBin = GetPtBin(ptCand, fPtBinLimsJpsi, fNPtBinsJpsi);
   if (jPtBin==-1) return 0;
   if (TMath::Abs(cand->InvMassJPSIee()-fMassJpsi) > fJpsiCuts[jPtBin][0] ) return 0;
   trk_p->PropagateToDCA(primvtx, bzkG, 100., dca, covtrack);
@@ -1967,7 +1977,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::DzeroSelectionCuts(AliAODRecoDecayHF2Pron
   bool isD0bar = true;
   Double_t ptCand = cand->Pt();
   if (ptCand < fMinPtDzero || ptCand > fMaxPtDzero) return 0;
-  Int_t jPtBin = GetPtBin(ptCand);
+  Int_t jPtBin = GetPtBin(ptCand, fPtBinLimsDzero, fNPtBinsDzero);
   if (jPtBin==-1) return 0;
   if (cand->Prodd0d0() > fDzeroCuts[jPtBin][7]) return 0;
   if (cand->CosPointingAngle() < fDzeroCuts[jPtBin][8]) return 0;
@@ -2019,7 +2029,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::DplusSelectionCuts(AliAODRecoDecayHF3Pron
 {
   Double_t ptCand = cand->Pt();
   if (ptCand < fMinPtDplus || ptCand > fMaxPtDplus) return 0;
-  Int_t jPtBin = GetPtBin(ptCand);
+  Int_t jPtBin = GetPtBin(ptCand, fPtBinLimsDplus, fNPtBinsDplus);
   if (jPtBin==-1) return 0;
   if (cand->Pt2Prong(0) < fDplusCuts[jPtBin][1] * fDplusCuts[jPtBin][1] ||
       cand->Pt2Prong(1) < fDplusCuts[jPtBin][2] * fDplusCuts[jPtBin][2] ||
@@ -2077,10 +2087,10 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSkimCuts(AliAODRecoDecayHF3Prong* cand)
 }
 
 //______________________________________________________________________________
-Int_t AliAnalysisTaskHFSimpleVertices::GetPtBin(Double_t ptCand)
+Int_t AliAnalysisTaskHFSimpleVertices::GetPtBin(Double_t ptCand, Double_t* ptBinLims, Double_t nPtBins)
 {
-  for (Int_t i = 0; i < fNPtBins; i++) {
-    if (ptCand>=fPtBinLims[i] && ptCand<fPtBinLims[i+1]){
+  for (Int_t i = 0; i < nPtBins; i++) {
+    if (ptCand>=ptBinLims[i] && ptCand<ptBinLims[i+1]){
       return i;
     }
   }
@@ -2287,7 +2297,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSelectionCuts(
   Double_t ptCand = cand->Pt();
   if (ptCand < 0. || ptCand >= 36.)
     return 0;
-  Int_t jPtBin = GetPtBin(ptCand);
+  Int_t jPtBin = GetPtBin(ptCand, fPtBinLimsLc, fNPtBinsLc);
   if (jPtBin == -1)
     return 0;
 
@@ -2427,7 +2437,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::MatchToMC(AliAODRecoDecay* rd, Int_t pdga
 }
 
 //______________________________________________________________________________
-char* AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, const char* key){
+std::string AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, const char* key){
   FILE* fj=fopen(jsonFileName,"r");
   char line[500];
   char* value=0x0;
@@ -2440,7 +2450,12 @@ char* AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, c
     }
   }
   fclose(fj);
-  return value;
+  TString sValue = value;
+  sValue.ReplaceAll("\"", "");
+  sValue.ReplaceAll("\n", "");
+  sValue.ReplaceAll("\t", "");
+  sValue.ReplaceAll(" ", "");
+  return std::string(sValue.Data());
 }
 //______________________________________________________________________________
 int AliAnalysisTaskHFSimpleVertices::GetJsonBool(const char* jsonFileName, const char* key){

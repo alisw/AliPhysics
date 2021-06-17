@@ -8,7 +8,6 @@
 #include "Math/Vector4D.h"
 #include "DCAFitterN.h"
 #include "Hypertriton3structures.h"
-#include "AliVertexerHyperTriton2Body.h"
 
 #include <TString.h>
 #include <AliMCEvent.h>
@@ -58,7 +57,7 @@ public:
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
-  virtual void Terminate(Option_t *);
+  virtual void Terminate(Option_t *) {}
 
   static AliAnalysisTaskHypertriton3 *AddTask(bool isMC = false, TString suffix = "");
 
@@ -96,12 +95,8 @@ public:
   bool  fUseAbsCosPAcut = true;
   bool  fOnlyTrueCandidates = false;
   bool  fLambdaCheck = true;
-  bool  fKF = false;
-  bool  fUseDoubleV0s = false;
   bool  fUseCovarianceCut = false;
-  float fMaxKFchi2[3] = {40000.,40000.,40000.};
   std::string fCosPAsplineName = "PWGLF/NUCLEX/HypertritonAnalysis/Cuts/spline3.root";
-  AliVertexerHyperTriton2Body fV0Vertexer;
   int fTrackRotations = 0;
 
 
@@ -140,9 +135,8 @@ private:
   unsigned int fEventMixingPoolDepth = 10;                     /// max depth of the event mixing pool
   int fEventMixingPoolMaxReuse = 2;
 
-  SHyperTriton3KF*   fGenHypKF = nullptr;
   SHyperTriton3O2*   fGenHypO2 = nullptr;
-  RHyperTriton*   fRecHyp = nullptr;
+  RHyperTriton3O2*   fRecHyp = nullptr;
 
   AliAnalysisTaskHypertriton3(const AliAnalysisTaskHypertriton3 &);               // not implemented
   AliAnalysisTaskHypertriton3 &operator=(const AliAnalysisTaskHypertriton3 &);    // not implemented

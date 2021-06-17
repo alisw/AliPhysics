@@ -23,8 +23,10 @@
 #include "AliAnalysisTaskEMCALPi0CalibSelectionV2.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliMCEventHandler.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliMCEvent.h"
 #include "AliMultSelection.h"
 #include "AliEMCALGeometry.h"
 #include "AliVCluster.h"
@@ -35,6 +37,14 @@
 #include "AliEmcalCorrectionTask.h"
 #include "AliEmcalCorrectionComponent.h"
 #include "AliEmcalCorrectionClusterNonLinearity.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
+#include "AliAODTrack.h"
+#include "AliVTrack.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEMCALPi0CalibSelectionV2) ;
@@ -44,22 +54,27 @@ ClassImp(AliAnalysisTaskEMCALPi0CalibSelectionV2) ;
 /// Default constructor. Arrays initialization is done here.
 //______________________________________________________________________________________________
 AliAnalysisTaskEMCALPi0CalibSelectionV2::AliAnalysisTaskEMCALPi0CalibSelectionV2() :
-AliAnalysisTaskSE(),  
+AliAnalysisTaskSE(),
+fInputEvent(NULL), fMCEvent(NULL),  
 fEMCALGeo(0x0),           fLoadMatrices(0),
 fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fTriggerName("EMC"),      
 fRecoUtils(NULL),
+fPeriodName(""),
+fCorrTaskSetting(""),
 fEMCALInitialized(kFALSE),
-fIsMC(0),                 fSaveCells(kFALSE),     
+fIsMC(0),                 fSaveHistos(kTRUE),       fSaveCells(kFALSE),     
 fSaveClusters(kFALSE),    fIsHeavyIon(kFALSE),
+fNContributorsCutEnabled(kFALSE),
 fOADBFilePath(""),        
 fRecalPosition(kTRUE),
-fCaloClustersArr(0x0),    fEMCALCells(0x0),   
+fEMCALCells(0x0),   
 fOutputContainer(0x0),
 fCheckCentrality(kFALSE), fCentralityClass("V0M"),  fCentWithEventSel(kFALSE),
 fCentMin(-1),             fCentMax(10000000), 
 fVertex(),                
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
+fCellEmin(0.05),
 fEmin(0.5),               fEmax(15.),        
 fL0min(0.01),             fL0max(0.5),
 fOpAnglemin(0.),          fOpAnglemax(3.0),
@@ -85,15 +100,17 @@ fhCentrality(0x0),        fhCentralitySelected(0x0),
 fhClusterTime(0x0),
 //Trees
 fCellTree(NULL),
-fVBuffer_NCells(0),         fBuffer_EventWeight(0),
-fBuffer_Event_VertexZ(0),   fBuffer_Event_Multiplicity(0),  fBuffer_Event_V0Centrality(0),
-fVBuffer_Cell_ID(0),        fVBuffer_Cell_E(0),         fVBuffer_Cell_t(0),
-fVBuffer_Cell_gain(0),      fVBuffer_Cell_MCParticleID(0), 
-fVBuffer_Cell_MCParticleFracE(0),
+fVBuffer_NCells(0),         fBuffer_EventWeight(0),         fBuffer_ptHard(0),
+fBuffer_Event_VertexZ(0),   fBuffer_EventNPrimaryTracks(0),
+fBuffer_Event_V0Centrality(0),
+fVBuffer_Cell_ID(0),        fVBuffer_Cell_E(0),             fVBuffer_Cell_t(0),
+fVBuffer_Cell_gain(0),      fVBuffer_Cell_MCParticleID(0),
+fBuffer_NClusters(0),
 fVBuffer_Cluster_E(0),      fVBuffer_Cluster_Eta(0),    fVBuffer_Cluster_Phi(0),
-fVBuffer_Cluster_t(0),
-fVBuffer_Cluster_NCells(0), fVBuffer_Cluster_M02(0),    fVBuffer_Cluster_LeadCellId(0),
-fVBuffer_TrueCluster_MCId(0) {
+fVBuffer_Cluster_t(0),      fVBuffer_Cluster_M02(0),
+fVBuffer_TrueCluster_MCId(0), 
+fVBuffer_Cluster_X(0),      fVBuffer_Cluster_Y(0),      fVBuffer_Cluster_Z(0) 
+{
   
 
   for(Int_t iCell=0; iCell < kMaxActiveCells_calib; iCell++){
@@ -130,22 +147,6 @@ fVBuffer_TrueCluster_MCId(0) {
     fhClusterTimeSM[iSM]                  = 0;
   }
 
-  fVBuffer_Cell_ID                = new Int_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_E                 = new Float_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_t                 = new Float_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_gain              = new Bool_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_MCParticleID      = new Int_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_MCParticleFracE   = new Float_t[kMaxActiveCells_calib]; 
-
-  fVBuffer_Cluster_E              = new Float_t[kMaxActiveCluster];
-  fVBuffer_Cluster_Eta            = new Float_t[kMaxActiveCluster];
-  fVBuffer_Cluster_Phi            = new Float_t[kMaxActiveCluster];
-  fVBuffer_Cluster_t              = new Float_t[kMaxActiveCluster];
-  fVBuffer_Cluster_NCells         = new Int_t[kMaxActiveCluster];
-  fVBuffer_Cluster_M02            = new Int_t[kMaxActiveCluster];
-  fVBuffer_Cluster_LeadCellId     = new Int_t[kMaxActiveCluster];
-  fVBuffer_TrueCluster_MCId       = new Int_t[kMaxActiveCluster];
-
 }
 
 
@@ -156,22 +157,27 @@ fVBuffer_TrueCluster_MCId(0) {
 //______________________________________________________________________________________________
 AliAnalysisTaskEMCALPi0CalibSelectionV2::AliAnalysisTaskEMCALPi0CalibSelectionV2(const char* name) :
 AliAnalysisTaskSE(name),  
+fInputEvent(NULL), fMCEvent(NULL),  
 fEMCALGeo(0x0),           fLoadMatrices(0),
 fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fTriggerName("EMC"),      
 fRecoUtils(NULL),
+fPeriodName(""),
+fCorrTaskSetting(""),
 fEMCALInitialized(kFALSE),
-fIsMC(0),                 fSaveCells(kFALSE),     
+fIsMC(0),                 fSaveHistos(kTRUE),        fSaveCells(kFALSE),     
 fSaveClusters(kFALSE),    fIsHeavyIon(kFALSE),
+fNContributorsCutEnabled(kFALSE),
 fOADBFilePath(""),        
 fRecalPosition(kTRUE),
-fCaloClustersArr(0x0),    fEMCALCells(0x0),
+fEMCALCells(0x0),
 //fCuts(0x0),               
 fOutputContainer(0x0),
 fCheckCentrality(kFALSE), fCentralityClass("V0M"),  fCentWithEventSel(kFALSE),
 fCentMin(-1),             fCentMax(10000000), 
 fVertex(),
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
+fCellEmin(0.05),
 fEmin(0.5),               fEmax(15.),     
 fL0min(0.01),             fL0max(0.5),
 fOpAnglemin(0.),          fOpAnglemax(3.0),
@@ -197,15 +203,16 @@ fhCentrality(0x0),        fhCentralitySelected(0x0),
 fhClusterTime(0x0),
 //Trees
 fCellTree(NULL),
-fVBuffer_NCells(0),         fBuffer_EventWeight(0),
-fBuffer_Event_VertexZ(0),   fBuffer_Event_Multiplicity(0),  fBuffer_Event_V0Centrality(0),
+fVBuffer_NCells(0),         fBuffer_EventWeight(0), fBuffer_ptHard(0),
+fBuffer_Event_VertexZ(0),   fBuffer_EventNPrimaryTracks(0),
+fBuffer_Event_V0Centrality(0),
 fVBuffer_Cell_ID(0),        fVBuffer_Cell_E(0),         fVBuffer_Cell_t(0),
 fVBuffer_Cell_gain(0),      fVBuffer_Cell_MCParticleID(0), 
-fVBuffer_Cell_MCParticleFracE(0),
+fBuffer_NClusters(0),
 fVBuffer_Cluster_E(0),      fVBuffer_Cluster_Eta(0),    fVBuffer_Cluster_Phi(0),
-fVBuffer_Cluster_t(0),
-fVBuffer_Cluster_NCells(0), fVBuffer_Cluster_M02(0),    fVBuffer_Cluster_LeadCellId(0),
-fVBuffer_TrueCluster_MCId(0)
+fVBuffer_Cluster_t(0),      fVBuffer_Cluster_M02(0),
+fVBuffer_TrueCluster_MCId(0), 
+fVBuffer_Cluster_X(0),      fVBuffer_Cluster_Y(0),      fVBuffer_Cluster_Z(0)  
 {
   
   for(Int_t iCell=0; iCell < kMaxActiveCells_calib; iCell++){
@@ -241,22 +248,6 @@ fVBuffer_TrueCluster_MCId(0)
     fMatrix[iSM]                     = 0x0;
     fhClusterTimeSM[iSM]             = 0;
   }
-
-  fVBuffer_Cell_ID                = new Int_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_E                 = new Float_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_t                 = new Float_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_gain              = new Bool_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_MCParticleID      = new Int_t[kMaxActiveCells_calib];
-  fVBuffer_Cell_MCParticleFracE   = new Float_t[kMaxActiveCells_calib]; 
-
-  fVBuffer_Cluster_E              = new Float_t[kMaxActiveCluster];
-  fVBuffer_Cluster_Eta            = new Float_t[kMaxActiveCluster];
-  fVBuffer_Cluster_Phi            = new Float_t[kMaxActiveCluster];
-  fVBuffer_Cluster_t              = new Float_t[kMaxActiveCluster];
-  fVBuffer_Cluster_NCells         = new Int_t[kMaxActiveCluster];
-  fVBuffer_Cluster_M02            = new Int_t[kMaxActiveCluster];
-  fVBuffer_Cluster_LeadCellId     = new Int_t[kMaxActiveCluster];
-  fVBuffer_TrueCluster_MCId       = new Int_t[kMaxActiveCluster];
     
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -357,18 +348,31 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::InitGeometryMatrices() {
 ///
 /// Initialize EMCAL
 //__________________________________________________________
-void AliAnalysisTaskEMCALPi0CalibSelectionV2::InitializeEMCAL( AliVEvent *event ){
+void AliAnalysisTaskEMCALPi0CalibSelectionV2::InitializeEMCAL(){
     AliEmcalCorrectionTask* emcalCorrTask=0x0;
+    //     
 
-    emcalCorrTask  = (AliEmcalCorrectionTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliEmcalCorrectionTask");
+    if( !fCorrTaskSetting.CompareTo("") ){
+      emcalCorrTask  = (AliEmcalCorrectionTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliEmcalCorrectionTask");
+    } else {
+      emcalCorrTask  = (AliEmcalCorrectionTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject( Form("AliEmcalCorrectionTask_%s",fCorrTaskSetting.Data()) );
+    }
 
     if( emcalCorrTask ){
       AliEmcalCorrectionComponent * emcalCorrComponent = 0x0;
-      emcalCorrComponent = emcalCorrTask->GetCorrectionComponent("AliEmcalCorrectionClusterNonLinearity");
+      if( !fCorrTaskSetting.CompareTo("") ){
+        emcalCorrComponent = emcalCorrTask->GetCorrectionComponent("AliEmcalCorrectionClusterNonLinearity");
+      } else {
+        emcalCorrComponent = emcalCorrTask->GetCorrectionComponent( Form("AliEmcalCorrectionClusterNonLinearity_%s", fCorrTaskSetting.Data()) );
+      }
       if( emcalCorrComponent ){
         fRecoUtils        = emcalCorrComponent->GetRecoUtils();
       } else {
-        emcalCorrComponent = emcalCorrTask->GetCorrectionComponent("AliEmcalCorrectionCellBadChannel");
+        if( !fCorrTaskSetting.CompareTo("") ){
+          emcalCorrComponent = emcalCorrTask->GetCorrectionComponent("AliEmcalCorrectionCellBadChannel");
+        } else {
+          emcalCorrComponent = emcalCorrTask->GetCorrectionComponent( Form("AliEmcalCorrectionCellBadChannel_%s", fCorrTaskSetting.Data()) );
+        }
         if( emcalCorrComponent ){
           fRecoUtils        = emcalCorrComponent->GetRecoUtils();
         }
@@ -378,8 +382,10 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::InitializeEMCAL( AliVEvent *event 
     if (fRecoUtils) {
       fEMCALInitialized = kTRUE;
       fRecoUtils->SetNumberOfCellsFromEMCALBorder(0);
-      return;
     }
+
+
+    return;
 }
 
 ///
@@ -411,194 +417,201 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserCreateOutputObjects() {
     fOutputContainer->Add(fhCentralitySelected) ;  
   }
 
-  fHmgg = new TH2F("hmgg","2-cluster invariant mass",fNbins,fMinBin,fMaxBin,100,0,10);
-  fHmgg->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
-  fHmgg->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-  fOutputContainer->Add(fHmgg);
-  
-  fHmggDifferentSM = new TH2F("hmggDifferentSM","2-cluster invariant mass, different SM",fNbins,fMinBin,fMaxBin,100,0,10);
-  fHmggDifferentSM->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
-  fHmggDifferentSM->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-  fOutputContainer->Add(fHmggDifferentSM);
-  
-  fHOpeningAngle = new TH2F("hopang","2-cluster opening angle",100,0.,50.,100,0,10);
-  fHOpeningAngle->SetXTitle("#alpha_{#gamma #gamma}");
-  fHOpeningAngle->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-  fOutputContainer->Add(fHOpeningAngle);
-  
-  fHOpeningAngleDifferentSM = new TH2F("hopangDifferentSM","2-cluster opening angle, different SM",100,0,50.,100,0,10);
-  fHOpeningAngleDifferentSM->SetXTitle("#alpha_{#gamma #gamma}");
-  fHOpeningAngleDifferentSM->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-  fOutputContainer->Add(fHOpeningAngleDifferentSM);
-   
-  fHAsymmetry = new TH2F("hasym","2-cluster opening angle",100,0.,1.,100,0,10);
-  fHAsymmetry->SetXTitle("a");
-  fHAsymmetry->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-  fOutputContainer->Add(fHAsymmetry);
-  
-  fHAsymmetryDifferentSM = new TH2F("hasymDifferentSM","2-cluster opening angle, different SM",100,0,1.,100,0,10);
-  fHAsymmetryDifferentSM->SetXTitle("a");
-  fHAsymmetryDifferentSM->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-  fOutputContainer->Add(fHAsymmetryDifferentSM);
-  
-  fHmggMaskFrame = new TH2F("hmggMaskFrame","2-cluster invariant mass, frame masked",fNbins,fMinBin,fMaxBin,100,0,10);
-  fHmggMaskFrame->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
-  fHmggMaskFrame->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-  fOutputContainer->Add(fHmggMaskFrame);
-  
-  fHmggDifferentSMMaskFrame = new TH2F("hmggDifferentSMMaskFrame","2-cluster invariant mass, different SM, frame masked",
-                                       fNbins,fMinBin,fMaxBin,100,0,10);
-  fHmggDifferentSMMaskFrame->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
-  fHmggDifferentSMMaskFrame->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-  fOutputContainer->Add(fHmggDifferentSMMaskFrame);
-  
-  for(Int_t iSM = 0; iSM < nSM; iSM++) {
-    snprintf(hname, buffersize, "hmgg_SM%d",iSM);
-    snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d",iSM);
-    fHmggSM[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
-    fHmggSM[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
-    fHmggSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-    fOutputContainer->Add(fHmggSM[iSM]);
-    
-    snprintf(hname, buffersize, "hmgg_SM%d_MaskFrame",iSM);
-    snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d",iSM);
-    fHmggSMMaskFrame[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
-    fHmggSMMaskFrame[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
-    fHmggSMMaskFrame[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-    fOutputContainer->Add(fHmggSMMaskFrame[iSM]);
-    
-    snprintf(hname, buffersize, "hopang_SM%d",iSM);
-    snprintf(htitl, buffersize, "Opening angle for super mod %d",iSM);
-    fHOpeningAngleSM[iSM] = new TH2F(hname,htitl,100,0.,50.,100,0,10);
-    fHOpeningAngleSM[iSM]->SetXTitle("#alpha_{#gamma #gamma} (deg)");
-    fHOpeningAngleSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-    fOutputContainer->Add(fHOpeningAngleSM[iSM]);
-    
-    snprintf(hname,buffersize, "hopang_PairSM%d",iSM);
-    snprintf(htitl,buffersize, "Opening angle for SM pair: %d",iSM);
-    fHOpeningAnglePairSM[iSM] = new TH2F(hname,htitl,100,0.,50.,100,0,10);
-    fHOpeningAnglePairSM[iSM]->SetXTitle("#alpha_{#gamma #gamma} (deg)");
-    fHOpeningAnglePairSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-    fOutputContainer->Add(fHOpeningAnglePairSM[iSM]);    
-    
-    snprintf(hname, buffersize, "hasym_SM%d",iSM);
-    snprintf(htitl, buffersize, "Asymmetry for super mod %d",iSM);
-    fHAsymmetrySM[iSM] = new TH2F(hname,htitl,100,0.,1.,100,0,10);
-    fHAsymmetrySM[iSM]->SetXTitle("a");
-    fHAsymmetrySM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-    fOutputContainer->Add(fHAsymmetrySM[iSM]);
-    
-    snprintf(hname,buffersize, "hasym_PairSM%d",iSM);
-    snprintf(htitl,buffersize, "Asymmetry for SM pair: %d",iSM);
-    fHAsymmetryPairSM[iSM] = new TH2F(hname,htitl,100,0.,1.,100,0,10);
-    fHAsymmetryPairSM[iSM]->SetXTitle("a");
-    fHAsymmetryPairSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-    fOutputContainer->Add(fHAsymmetryPairSM[iSM]);    
-    
-    Int_t colmax = 48;
-    Int_t rowmax = 24;
-    
-    fhTowerDecayPhotonHit[iSM]  = new TH2F (Form("hTowerDecPhotonHit_Mod%d",iSM),
-                                            Form("Entries in grid of cells in Module %d",iSM), 
-                                            colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
-    fhTowerDecayPhotonHit[iSM]->SetYTitle("row (phi direction)");
-    fhTowerDecayPhotonHit[iSM]->SetXTitle("column (eta direction)");
-    fOutputContainer->Add(fhTowerDecayPhotonHit[iSM]);
-    
-    fhTowerDecayPhotonEnergy[iSM]  = new TH2F (Form("hTowerDecPhotonEnergy_Mod%d",iSM),
-                                               Form("Accumulated energy in grid of cells in Module %d",iSM), 
-                                               colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
-    fhTowerDecayPhotonEnergy[iSM]->SetYTitle("row (phi direction)");
-    fhTowerDecayPhotonEnergy[iSM]->SetXTitle("column (eta direction)");
-    fOutputContainer->Add(fhTowerDecayPhotonEnergy[iSM]);
-    
-    fhTowerDecayPhotonAsymmetry[iSM]  = new TH2F (Form("hTowerDecPhotonAsymmetry_Mod%d",iSM),
-                                                  Form("Accumulated asymmetry in grid of cells in Module %d",iSM), 
-                                                  colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
-    fhTowerDecayPhotonAsymmetry[iSM]->SetYTitle("row (phi direction)");
-    fhTowerDecayPhotonAsymmetry[iSM]->SetXTitle("column (eta direction)");
-    fOutputContainer->Add(fhTowerDecayPhotonAsymmetry[iSM]);
-    
-    fhTowerDecayPhotonHitMaskFrame[iSM]  = new TH2F (Form("hTowerDecPhotonHit_Mod%d_MaskFrame",iSM),Form("Entries in grid of cells in Module %d",iSM), 
-                                                     colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
-    fhTowerDecayPhotonHitMaskFrame[iSM]->SetYTitle("row (phi direction)");
-    fhTowerDecayPhotonHitMaskFrame[iSM]->SetXTitle("column (eta direction)");
-    fOutputContainer->Add(fhTowerDecayPhotonHitMaskFrame[iSM]);
-    
-    fhClusterTimeSM[iSM] = new TH2F(Form("hClusterTime_SM%d",iSM),"cluster time vs E",100,0,10, 200,-1000,1000);
-    fhClusterTimeSM[iSM]->SetXTitle("E (GeV)");
-    fhClusterTimeSM[iSM]->SetYTitle("t (ns)");
-    fOutputContainer->Add(fhClusterTimeSM[iSM]);
-  }  
-  
-  Int_t nchannels = nSM*AliEMCALGeoParams::fgkEMCALRows*AliEMCALGeoParams::fgkEMCALCols;
-  for(Int_t ibc = 0; ibc < 4; ibc++) {
-    fHTpi0[ibc] = new TH2F(Form("hTime_BC%d",ibc),Form("Time of cell clusters under pi0 peak, bunch crossing %d",ibc),
-                           nchannels,0,nchannels, fNTimeBins,fMinTimeBin,fMaxTimeBin);
-    fOutputContainer->Add(fHTpi0[ibc]);       
-    fHTpi0[ibc]->SetYTitle("time (ns)");
-    fHTpi0[ibc]->SetXTitle("abs. Id. ");
-  }
-  
-  fhClusterTime = new TH2F("hClusterTime","cluster time vs E",100,0,10, 100,0,1000);
-  fhClusterTime->SetXTitle("E (GeV)");
-  fhClusterTime->SetYTitle("t (ns)");
-  fOutputContainer->Add(fhClusterTime);
+  if( fSaveHistos ){
+    fHmgg = new TH2F("hmgg","2-cluster invariant mass",fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmgg->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmgg->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHmgg);
 
-  for(Int_t iCell=0; iCell < kMaxActiveCells_calib; iCell++){
-    fHmpi0[iCell]    = new TH1F( Form("%d",iCell), Form("Two-gamma inv. mass for cell %d",iCell), fNbins,fMinBin,fMaxBin);
-    fHmpi0[iCell]->SetXTitle("mass (MeV/c^{2}");
-    fOutputContainer->Add(fHmpi0[iCell]);
+    fHmggDifferentSM = new TH2F("hmggDifferentSM","2-cluster invariant mass, different SM",fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmggDifferentSM->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmggDifferentSM->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHmggDifferentSM);
+
+    fHOpeningAngle = new TH2F("hopang","2-cluster opening angle",100,0.,50.,100,0,10);
+    fHOpeningAngle->SetXTitle("#alpha_{#gamma #gamma}");
+    fHOpeningAngle->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHOpeningAngle);
+
+    fHOpeningAngleDifferentSM = new TH2F("hopangDifferentSM","2-cluster opening angle, different SM",100,0,50.,100,0,10);
+    fHOpeningAngleDifferentSM->SetXTitle("#alpha_{#gamma #gamma}");
+    fHOpeningAngleDifferentSM->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHOpeningAngleDifferentSM);
+
+    fHAsymmetry = new TH2F("hasym","2-cluster opening angle",100,0.,1.,100,0,10);
+    fHAsymmetry->SetXTitle("a");
+    fHAsymmetry->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHAsymmetry);
+
+    fHAsymmetryDifferentSM = new TH2F("hasymDifferentSM","2-cluster opening angle, different SM",100,0,1.,100,0,10);
+    fHAsymmetryDifferentSM->SetXTitle("a");
+    fHAsymmetryDifferentSM->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHAsymmetryDifferentSM);
+
+    fHmggMaskFrame = new TH2F("hmggMaskFrame","2-cluster invariant mass, frame masked",fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmggMaskFrame->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmggMaskFrame->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHmggMaskFrame);
+
+    fHmggDifferentSMMaskFrame = new TH2F("hmggDifferentSMMaskFrame","2-cluster invariant mass, different SM, frame masked",
+                                         fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmggDifferentSMMaskFrame->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmggDifferentSMMaskFrame->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHmggDifferentSMMaskFrame);
+
+    for(Int_t iSM = 0; iSM < nSM; iSM++) {
+      snprintf(hname, buffersize, "hmgg_SM%d",iSM);
+      snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d",iSM);
+      fHmggSM[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+      fHmggSM[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+      fHmggSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+      fOutputContainer->Add(fHmggSM[iSM]);
+
+      snprintf(hname, buffersize, "hmgg_SM%d_MaskFrame",iSM);
+      snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d",iSM);
+      fHmggSMMaskFrame[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+      fHmggSMMaskFrame[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+      fHmggSMMaskFrame[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+      fOutputContainer->Add(fHmggSMMaskFrame[iSM]);
+
+      snprintf(hname, buffersize, "hopang_SM%d",iSM);
+      snprintf(htitl, buffersize, "Opening angle for super mod %d",iSM);
+      fHOpeningAngleSM[iSM] = new TH2F(hname,htitl,100,0.,50.,100,0,10);
+      fHOpeningAngleSM[iSM]->SetXTitle("#alpha_{#gamma #gamma} (deg)");
+      fHOpeningAngleSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+      fOutputContainer->Add(fHOpeningAngleSM[iSM]);
+
+      snprintf(hname,buffersize, "hopang_PairSM%d",iSM);
+      snprintf(htitl,buffersize, "Opening angle for SM pair: %d",iSM);
+      fHOpeningAnglePairSM[iSM] = new TH2F(hname,htitl,100,0.,50.,100,0,10);
+      fHOpeningAnglePairSM[iSM]->SetXTitle("#alpha_{#gamma #gamma} (deg)");
+      fHOpeningAnglePairSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+      fOutputContainer->Add(fHOpeningAnglePairSM[iSM]);    
+
+      snprintf(hname, buffersize, "hasym_SM%d",iSM);
+      snprintf(htitl, buffersize, "Asymmetry for super mod %d",iSM);
+      fHAsymmetrySM[iSM] = new TH2F(hname,htitl,100,0.,1.,100,0,10);
+      fHAsymmetrySM[iSM]->SetXTitle("a");
+      fHAsymmetrySM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+      fOutputContainer->Add(fHAsymmetrySM[iSM]);
+
+      snprintf(hname,buffersize, "hasym_PairSM%d",iSM);
+      snprintf(htitl,buffersize, "Asymmetry for SM pair: %d",iSM);
+      fHAsymmetryPairSM[iSM] = new TH2F(hname,htitl,100,0.,1.,100,0,10);
+      fHAsymmetryPairSM[iSM]->SetXTitle("a");
+      fHAsymmetryPairSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+      fOutputContainer->Add(fHAsymmetryPairSM[iSM]);    
+
+      Int_t colmax = 48;
+      Int_t rowmax = 24;
+
+      fhTowerDecayPhotonHit[iSM]  = new TH2F (Form("hTowerDecPhotonHit_Mod%d",iSM),
+                                              Form("Entries in grid of cells in Module %d",iSM), 
+                                              colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
+      fhTowerDecayPhotonHit[iSM]->SetYTitle("row (phi direction)");
+      fhTowerDecayPhotonHit[iSM]->SetXTitle("column (eta direction)");
+      fOutputContainer->Add(fhTowerDecayPhotonHit[iSM]);
+
+      fhTowerDecayPhotonEnergy[iSM]  = new TH2F (Form("hTowerDecPhotonEnergy_Mod%d",iSM),
+                                                 Form("Accumulated energy in grid of cells in Module %d",iSM), 
+                                                 colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
+      fhTowerDecayPhotonEnergy[iSM]->SetYTitle("row (phi direction)");
+      fhTowerDecayPhotonEnergy[iSM]->SetXTitle("column (eta direction)");
+      fOutputContainer->Add(fhTowerDecayPhotonEnergy[iSM]);
+
+      fhTowerDecayPhotonAsymmetry[iSM]  = new TH2F (Form("hTowerDecPhotonAsymmetry_Mod%d",iSM),
+                                                    Form("Accumulated asymmetry in grid of cells in Module %d",iSM), 
+                                                    colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
+      fhTowerDecayPhotonAsymmetry[iSM]->SetYTitle("row (phi direction)");
+      fhTowerDecayPhotonAsymmetry[iSM]->SetXTitle("column (eta direction)");
+      fOutputContainer->Add(fhTowerDecayPhotonAsymmetry[iSM]);
+
+      fhTowerDecayPhotonHitMaskFrame[iSM]  = new TH2F (Form("hTowerDecPhotonHit_Mod%d_MaskFrame",iSM),Form("Entries in grid of cells in Module %d",iSM), 
+                                                       colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
+      fhTowerDecayPhotonHitMaskFrame[iSM]->SetYTitle("row (phi direction)");
+      fhTowerDecayPhotonHitMaskFrame[iSM]->SetXTitle("column (eta direction)");
+      fOutputContainer->Add(fhTowerDecayPhotonHitMaskFrame[iSM]);
+
+      fhClusterTimeSM[iSM] = new TH2F(Form("hClusterTime_SM%d",iSM),"cluster time vs E",100,0,10, 200,-1000,1000);
+      fhClusterTimeSM[iSM]->SetXTitle("E (GeV)");
+      fhClusterTimeSM[iSM]->SetYTitle("t (ns)");
+      fOutputContainer->Add(fhClusterTimeSM[iSM]);
+    }  
+
+    Int_t nchannels = nSM*AliEMCALGeoParams::fgkEMCALRows*AliEMCALGeoParams::fgkEMCALCols;
+    for(Int_t ibc = 0; ibc < 4; ibc++) {
+      fHTpi0[ibc] = new TH2F(Form("hTime_BC%d",ibc),Form("Time of cell clusters under pi0 peak, bunch crossing %d",ibc),
+                             nchannels,0,nchannels, fNTimeBins,fMinTimeBin,fMaxTimeBin);
+      fOutputContainer->Add(fHTpi0[ibc]);       
+      fHTpi0[ibc]->SetYTitle("time (ns)");
+      fHTpi0[ibc]->SetXTitle("abs. Id. ");
+    }
+
+    fhClusterTime = new TH2F("hClusterTime","cluster time vs E",100,0,10, 100,0,1000);
+    fhClusterTime->SetXTitle("E (GeV)");
+    fhClusterTime->SetYTitle("t (ns)");
+    fOutputContainer->Add(fhClusterTime);
+
+    // for(Int_t iCell=0; iCell < kMaxActiveCells_calib; iCell++){
+    //   fHmpi0[iCell]    = new TH1F( Form("%d",iCell), Form("Two-gamma inv. mass for cell %d",iCell), fNbins,fMinBin,fMaxBin);
+    //   fHmpi0[iCell]->SetXTitle("mass (MeV/c^{2}");
+    //   fOutputContainer->Add(fHmpi0[iCell]);
+    // }
   }
-  
+
   fOutputContainer->SetOwner(kTRUE);
-    
+  PostData(1,fOutputContainer);
 
-  fCellTree = new TTree("EMCAL_Cells","EMCAL_Cells");
 
-  if( fIsMC > 1) {
-    fCellTree->Branch("EventWeight",         &fBuffer_EventWeight, "EventWeight/F");
-  }
+  if( fSaveCells || fSaveClusters ){
+    fCellTree = new TTree(Form("EMCALCells_%s",fTriggerName.Data()),Form("EMCALCells_%s",fTriggerName.Data()));
 
-  fCellTree->Branch("VertexZ",                &fBuffer_Event_VertexZ,       "VertexZ/F");
-  fCellTree->Branch("Multiplicity",           &fBuffer_Event_Multiplicity,  "Multiplicity/F");
+    if( fIsMC > 1 ) {
+      fCellTree->Branch("EventWeight",          &fBuffer_EventWeight, "EventWeight/D");
+      fCellTree->Branch("ptHard",               &fBuffer_ptHard,      "ptHard/F");
+    }
 
-  if( fIsHeavyIon ){
-    fCellTree->Branch("V0Centrality",         &fBuffer_Event_V0Centrality,  "V0Centrality/F");
+    fCellTree->Branch("VertexZ",                &fBuffer_Event_VertexZ,       "VertexZ/S");
+    fCellTree->Branch("PrimaryTracks",          &fBuffer_EventNPrimaryTracks, "PrimaryTracks/s");
+
+    if( fIsHeavyIon ){
+      fCellTree->Branch("V0Centrality",         &fBuffer_Event_V0Centrality,  "V0Centrality/F");
+    }
   }
 
   if( fSaveCells ){
-    fCellTree->Branch("NCells",                 &fVBuffer_NCells,             "NCells/I");
-    fCellTree->Branch("Cell_ID",                fVBuffer_Cell_ID,    "Cell_ID[NCells]/I");
-    fCellTree->Branch("Cell_E",                 fVBuffer_Cell_E,     "Cell_E[NCells]/F");
-    fCellTree->Branch("Cell_time",              fVBuffer_Cell_t,     "Cell_t[NCells]/F");
-    fCellTree->Branch("Cell_highGain",          fVBuffer_Cell_gain,  "Cell_gain[NCells]/O");
+      fCellTree->Branch("NCells",                 &fVBuffer_NCells,             "NCells/I");
+      fCellTree->Branch("Cell_ID",                "std::vector<UShort_t>",      &fVBuffer_Cell_ID);
+      fCellTree->Branch("Cell_E",                 "std::vector<UShort_t>",      &fVBuffer_Cell_E);
+      fCellTree->Branch("Cell_time",              "std::vector<Short_t>",       &fVBuffer_Cell_t);
+      fCellTree->Branch("Cell_highGain",          "std::vector<Bool_t>",        &fVBuffer_Cell_gain);
 
-    if( fIsMC ){
-      fCellTree->Branch("Cell_MCParticleID",    fVBuffer_Cell_MCParticleID,      "Cell_MCParticleID[NCells]/I");
-      fCellTree->Branch("Cell_MCFracEnergy",    fVBuffer_Cell_MCParticleFracE,   "Cell_MCFracE[NCells]/F");
-    }
+      if( fIsMC ){
+        fCellTree->Branch("Cell_MCParticleID",    "std::vector<Short_t>",       &fVBuffer_Cell_MCParticleID);
+      }
 
   }
 
   if( fSaveClusters ){
-    fCellTree->Branch("NClusters",            &fBuffer_NClusters,               "NClusters/I");
-    fCellTree->Branch("Cluster_E",            fVBuffer_Cluster_E,               "Cluster_E[NClusters]/F");
-    fCellTree->Branch("Cluster_Eta",          fVBuffer_Cluster_Eta,             "Cluster_Eta[NClusters]/F");
-    fCellTree->Branch("Cluster_Phi",          fVBuffer_Cluster_Phi,             "Cluster_Phi[NClusters]/F");
-    fCellTree->Branch("Cluster_t",            fVBuffer_Cluster_t,               "Cluster_t[NClusters]/F");
-    fCellTree->Branch("Cluster_NCells",       fVBuffer_Cluster_NCells,          "Cluster_NCells[NClusters]/I");
-    fCellTree->Branch("Cluster_M02",          fVBuffer_Cluster_M02,             "Cluster_M02[NClusters]/I");
-    fCellTree->Branch("Cluster_LeadCellId",   fVBuffer_Cluster_LeadCellId,      "Cluster_LeadCellId[NClusters]/I");
+    fCellTree->Branch("NClusters",            &fBuffer_NClusters,               "NClusters/s");
+    fCellTree->Branch("Cluster_E",            "std::vector<UShort_t>",          &fVBuffer_Cluster_E);
+    fCellTree->Branch("Cluster_Eta",          "std::vector<Short_t>",           &fVBuffer_Cluster_Eta);
+    fCellTree->Branch("Cluster_Phi",          "std::vector<UShort_t>",          &fVBuffer_Cluster_Phi);
+    fCellTree->Branch("Cluster_t",            "std::vector<Short_t>",           &fVBuffer_Cluster_t);
+    fCellTree->Branch("Cluster_M02",          "std::vector<Double_t>",          &fVBuffer_Cluster_M02);
+    fCellTree->Branch("Cluster_X",            "std::vector<Float_t>",           &fVBuffer_Cluster_X);
+    fCellTree->Branch("Cluster_Y",            "std::vector<Float_t>",           &fVBuffer_Cluster_Y);
+    fCellTree->Branch("Cluster_Z",            "std::vector<Float_t>",           &fVBuffer_Cluster_Z);
     
     if( fIsMC ){
-      fCellTree->Branch("TrueCluster_MCId",   fVBuffer_TrueCluster_MCId,        "TrueCluster_MCId[NClusters]/I");
+      fCellTree->Branch("TrueCluster_MCId",    "std::vector<Short_t>",          &fVBuffer_TrueCluster_MCId);
     }
   }
 
-  PostData(1,fOutputContainer);
-  OpenFile(2);
-  PostData(2, fCellTree);
+  if( fSaveCells || fSaveClusters ){
+    OpenFile(2);
+    PostData(2, fCellTree);
+  }
 }
 
 ///
@@ -618,10 +631,17 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::FillHistograms() {
   Bool_t shared  = kFALSE;
   
   Int_t bc  = InputEvent()->GetBunchCrossNumber();
+  TClonesArray* clusters;
+
+  if( !fCorrTaskSetting.CompareTo("") ){
+    clusters = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject("caloClusters"));
+  } else {
+    clusters = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject( Form("%sClustersBranch", fCorrTaskSetting.Data() ) ));
+  }
   
-  for(Int_t iClu=0; iClu<fCaloClustersArr->GetEntriesFast()-1; iClu++) {
+  for(Int_t iClu=0; iClu<clusters->GetEntries(); iClu++) {
     
-    AliVCluster *c1 = (AliVCluster *) fCaloClustersArr->At(iClu);
+    AliVCluster *c1 = (AliVCluster *) clusters->At(iClu);
     
     if (!AcceptCluster(c1)) continue;
     
@@ -646,8 +666,8 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::FillHistograms() {
     fhClusterTimeSM[iSupMod1]->Fill(c1->E(),time1);
     
     // Combine cluster with other clusters and get the invariant mass
-    for (Int_t jClu=iClu+1; jClu < fCaloClustersArr->GetEntriesFast(); jClu++) {
-      AliAODCaloCluster *c2 = (AliAODCaloCluster *) fCaloClustersArr->At(jClu);
+    for (Int_t jClu=iClu+1; jClu < clusters->GetEntries(); jClu++) {
+      AliAODCaloCluster *c2 = (AliAODCaloCluster *) clusters->At(jClu);
     
       if (!AcceptCluster(c2)) continue;
       
@@ -731,52 +751,52 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::FillHistograms() {
         }
         
         //In case of filling only channels with second cluster in same SM
-        if(fSameSM && iSupMod1!=iSupMod2) continue;
+        // if(fSameSM && iSupMod1!=iSupMod2) continue;
         
-        if (fGroupNCells == 0) {
-          fHmpi0[absId1]->Fill(invmass);
-          fHmpi0[absId2]->Fill(invmass);
+        // if (fGroupNCells == 0) {
+        //   fHmpi0[absId1]->Fill(invmass);
+        //   fHmpi0[absId2]->Fill(invmass);
           
-          if(invmass > fInvMassCutMin && invmass < fInvMassCutMax) { //restrict to clusters really close to pi0 peak
-            fhTowerDecayPhotonHit      [iSupMod1]->Fill(ieta1,iphi1);
-            fhTowerDecayPhotonEnergy   [iSupMod1]->Fill(ieta1,iphi1,fMomentum1.E());
-            fhTowerDecayPhotonAsymmetry[iSupMod1]->Fill(ieta1,iphi1,asym);
+          // if(invmass > fInvMassCutMin && invmass < fInvMassCutMax) { //restrict to clusters really close to pi0 peak
+          //   fhTowerDecayPhotonHit      [iSupMod1]->Fill(ieta1,iphi1);
+          //   fhTowerDecayPhotonEnergy   [iSupMod1]->Fill(ieta1,iphi1,fMomentum1.E());
+          //   fhTowerDecayPhotonAsymmetry[iSupMod1]->Fill(ieta1,iphi1,asym);
             
-            fhTowerDecayPhotonHit      [iSupMod2]->Fill(ieta2,iphi2);
-            fhTowerDecayPhotonEnergy   [iSupMod2]->Fill(ieta2,iphi2,fMomentum2.E());
-            fhTowerDecayPhotonAsymmetry[iSupMod2]->Fill(ieta2,iphi2,asym);
+          //   fhTowerDecayPhotonHit      [iSupMod2]->Fill(ieta2,iphi2);
+          //   fhTowerDecayPhotonEnergy   [iSupMod2]->Fill(ieta2,iphi2,fMomentum2.E());
+          //   fhTowerDecayPhotonAsymmetry[iSupMod2]->Fill(ieta2,iphi2,asym);
             
-            if(!mask1)fhTowerDecayPhotonHitMaskFrame[iSupMod1]->Fill(ieta1,iphi1);
-            if(!mask2)fhTowerDecayPhotonHitMaskFrame[iSupMod2]->Fill(ieta2,iphi2);
-          }
-        }	else { //group cells
-          //printf("Regroup N %d, eta1 %d, phi1 %d, eta2 %d, phi2 %d \n",fGroupNCells, ieta1, iphi1, ieta2, iphi2);
-          for (Int_t i = -fGroupNCells; i < fGroupNCells+1; i++) {
-            for (Int_t j = -fGroupNCells; j < fGroupNCells+1; j++) {              
-              Int_t absId11 = fEMCALGeo->GetAbsCellIdFromCellIndexes(iSupMod1, iphi1+j, ieta1+i); 
-              Int_t absId22 = fEMCALGeo->GetAbsCellIdFromCellIndexes(iSupMod2, iphi2+j, ieta2+i); 
+          //   if(!mask1)fhTowerDecayPhotonHitMaskFrame[iSupMod1]->Fill(ieta1,iphi1);
+          //   if(!mask2)fhTowerDecayPhotonHitMaskFrame[iSupMod2]->Fill(ieta2,iphi2);
+          // }
+        // }	else { //group cells
+        //   //printf("Regroup N %d, eta1 %d, phi1 %d, eta2 %d, phi2 %d \n",fGroupNCells, ieta1, iphi1, ieta2, iphi2);
+        //   for (Int_t i = -fGroupNCells; i < fGroupNCells+1; i++) {
+        //     for (Int_t j = -fGroupNCells; j < fGroupNCells+1; j++) {              
+        //       Int_t absId11 = fEMCALGeo->GetAbsCellIdFromCellIndexes(iSupMod1, iphi1+j, ieta1+i); 
+        //       Int_t absId22 = fEMCALGeo->GetAbsCellIdFromCellIndexes(iSupMod2, iphi2+j, ieta2+i); 
               
-              Bool_t ok1 = kFALSE;
-              Bool_t ok2 = kFALSE;
+        //       Bool_t ok1 = kFALSE;
+        //       Bool_t ok2 = kFALSE;
               
-              for(Int_t icell = 0; icell < c1->GetNCells(); icell++) {
-                if(c1->GetCellsAbsId()[icell] == absId11) ok1=kTRUE;
-              }
+        //       for(Int_t icell = 0; icell < c1->GetNCells(); icell++) {
+        //         if(c1->GetCellsAbsId()[icell] == absId11) ok1=kTRUE;
+        //       }
               
-              for(Int_t icell = 0; icell < c2->GetNCells(); icell++) {
-                if(c2->GetCellsAbsId()[icell] == absId22) ok2=kTRUE;
-              }
+        //       for(Int_t icell = 0; icell < c2->GetNCells(); icell++) {
+        //         if(c2->GetCellsAbsId()[icell] == absId22) ok2=kTRUE;
+        //       }
               
-              if(ok1) {
-                fHmpi0[absId1]->Fill(invmass);
-              }
+        //       if(ok1) {
+        //         fHmpi0[absId11]->Fill(invmass);
+        //       }
                 
-              if(ok2 ) {
-                fHmpi0[absId2]->Fill(invmass);
-              }
-            }
-          }
-        }
+        //       if(ok2 ) {
+        //         fHmpi0[absId22]->Fill(invmass);
+        //       }
+        //     }
+        //   }
+        // }
         
       }
     }
@@ -790,62 +810,109 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessCells() {
   Int_t   nCells          = 0;
   nCells    =   fEMCALCells->GetNumberOfCells();
   if( nCells == 0 ) return;
+  UShort_t nCellsAboveTh = 0;
 
-  fVBuffer_NCells = fEMCALCells->GetNumberOfCells();
+  for(Long_t i=0; i<kMaxActiveCells_calib; i++){
+    if(fEMCALCells->GetCellAmplitude(i) < fCellEmin ) continue;          // 50 MeV cut on cell energy
 
-  for(Long_t i=0; i<nCells; i++){
-    fVBuffer_Cell_ID[i]     =  fEMCALCells->GetCellNumber(i);
-    fVBuffer_Cell_E[i]      =  fEMCALCells->GetCellAmplitude(i);
-    fVBuffer_Cell_t[i]      =  fEMCALCells->GetCellTime(i);
-    fVBuffer_Cell_gain[i]   =  fEMCALCells->GetCellHighGain(i);
+    fVBuffer_Cell_ID.push_back( static_cast<UShort_t>(i) );
+    fVBuffer_Cell_E.push_back( static_cast<UShort_t>(fEMCALCells->GetCellAmplitude(i)*1000) );
+    fVBuffer_Cell_t.push_back( static_cast<Short_t>(fEMCALCells->GetCellTime(i)*1e9) );
+    fVBuffer_Cell_gain.push_back( fEMCALCells->GetCellHighGain(i) );
+    nCellsAboveTh++;
 
     if( fIsMC ){
-      fVBuffer_Cell_MCParticleID[i]       =    fEMCALCells->GetCellMCLabel(i);
-      fVBuffer_Cell_MCParticleFracE[i]    =    fEMCALCells->GetCellEFraction(i);
+      fVBuffer_Cell_MCParticleID.push_back( static_cast<Short_t>(fEMCALCells->GetCellMCLabel(i)) );
     }
   }
 
+  fVBuffer_NCells = nCellsAboveTh;
   return;
-
 }
 
 
 ///_____________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessClusters() {
-  Int_t absId     = -1;
-  Int_t iSupMod   = -1;
-  Int_t iPhi      = -1;
-  Int_t iEta      = -1;
-  Bool_t shared   = kFALSE;
+  Int_t nclus   = 0;
+  UShort_t nClusAboveTh = 0;
 
-  fBuffer_NClusters = fCaloClustersArr->GetEntriesFast();
+  TClonesArray* clusters;
 
-  for(Int_t iClu=0; iClu<fCaloClustersArr->GetEntriesFast()-1; iClu++){
-    AliVCluster *c1 = (AliVCluster* ) fCaloClustersArr->At(iClu);
-
-    if( !AcceptCluster(c1) ) continue;
-
-    fRecoUtils->GetMaxEnergyCell(fEMCALGeo, fEMCALCells,c1,absId,iSupMod,iEta,iPhi,shared); //RECOUTILS
-
-    if( isEMC && !(isDMC) &&  iSupMod > 11 ) continue;
-    if( isDMC && !(isEMC) &&  iSupMod < 12 ) continue;
-
-    fVBuffer_Cluster_E[iClu]          = c1->E();
-    fVBuffer_Cluster_Eta[iClu]        = iEta;
-    fVBuffer_Cluster_Phi[iClu]        = iPhi;
-    fVBuffer_Cluster_t[iClu]          = c1->GetTOF()*1.e9;
-    fVBuffer_Cluster_NCells[iClu]     = c1->GetNCells();
-    fVBuffer_Cluster_M02[iClu]        = c1->GetM02()*100;
-    fVBuffer_Cluster_LeadCellId[iClu] = absId;
-
-    if ( fIsMC ){
-      fVBuffer_TrueCluster_MCId[iClu]             = c1->GetLabel();
-    }
-
-    return;
+  if( !fCorrTaskSetting.CompareTo("") ){
+    clusters = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject("caloClusters"));
+  } else {
+    clusters = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject( Form("%sClustersBranch", fCorrTaskSetting.Data() ) ));
   }
+
+  nclus   = clusters->GetEntries();
+  if(nclus == 0) return;   
+  
+  for(Long_t i=0; i<nclus; i++){
+    if(fInputEvent->IsA()==AliAODEvent::Class()){
+      AliVCluster* clus = NULL;
+      clus  = dynamic_cast<AliAODCaloCluster*>(clusters->At(i));
+      if( !clus ) continue;
+      if( clus->IsPHOS()) continue;
+
+      Float_t     clusPos[3];
+      clus->GetPosition(clusPos);
+      TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
+      Float_t     etaCluster            = (Float_t) (clusterVector.Eta());
+      Float_t     phiCluster            = (Float_t) (clusterVector.Phi());
+      if( phiCluster < 0 ) phiCluster  += 2*TMath::Pi();
+
+
+      fVBuffer_Cluster_E.push_back( static_cast<UShort_t>(clus->E()*1000) );
+      fVBuffer_Cluster_Eta.push_back( static_cast<Short_t>(etaCluster*1000) );
+      fVBuffer_Cluster_Phi.push_back( static_cast<UShort_t>(phiCluster*1000) );
+      fVBuffer_Cluster_t.push_back( static_cast<Short_t>(clus->GetTOF()*1.e9) );
+      fVBuffer_Cluster_M02.push_back( clus->GetM02() );
+      fVBuffer_Cluster_X.push_back( clusPos[0] );
+      fVBuffer_Cluster_Y.push_back( clusPos[1] );
+      fVBuffer_Cluster_Z.push_back( clusPos[2] );
+      
+      nClusAboveTh++;
+
+      if ( fIsMC ){
+        fVBuffer_TrueCluster_MCId.push_back( static_cast<Short_t>(clus->GetLabel()) );
+      }
+
+    } else {
+      std::cout << "Cluster tree for ESD not implemented" << std::endl;
+      return;
+    }
+  }
+
+  fBuffer_NClusters = nClusAboveTh;
+  return;
 }
 
+
+///_____________________________________________________
+UShort_t AliAnalysisTaskEMCALPi0CalibSelectionV2::GetPrimaryTracks(){
+  Int_t                       fMinClsTPC = 70;  
+  Double_t                    fChi2PerClsTPC = 5;   
+  Int_t                       fMinClsITS = 0;  
+  Double_t                    fEtaCut = 0.9;  
+  Double_t                    fPtCut= 0.1;  
+
+  UShort_t prim = 0;
+  AliAODTrack *fCurrentTrack = NULL;
+
+  for(Int_t t=0; t<fInputEvent->GetNumberOfTracks(); t++){
+    fCurrentTrack = static_cast<AliAODTrack*>(fInputEvent->GetTrack(t));
+    if( !fCurrentTrack ) continue;
+    if( !fCurrentTrack->IsHybridGlobalConstrainedGlobal()) continue;
+    if( fCurrentTrack->GetTPCNcls()<fMinClsTPC ) continue;
+    if( fCurrentTrack->GetTPCchi2perCluster()>fChi2PerClsTPC ) continue;
+    if( fCurrentTrack->GetITSNcls()<fMinClsITS ) continue;
+    if( TMath::Abs(fCurrentTrack->Eta()) > fEtaCut ) continue;
+    if( fCurrentTrack->Pt() < fPtCut ) continue;
+    prim++;
+  }
+
+  return prim;
+}
 
 ///
 /// Main method, do the analysis per event:
@@ -856,93 +923,87 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessClusters() {
 void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
 
   // Get the input event
-
-  AliVEvent* event = 0;
-  event = InputEvent();
-  AliMCEvent* fMCEvent = 0;
+  fInputEvent = InputEvent();
   if( fIsMC>0 ){
     fMCEvent = MCEvent();
   }
-  
-  if(!event) {
+
+  if(!fInputEvent) {
     AliWarning("Input event not available!");
     return;
   }
 
-  // Acccess once the geometry matrix and temperature corrections and calibration coefficients
-  if(fhNEvents->GetEntries() == 1) {
+  if( fNContributorsCutEnabled ){
+    AliAODEvent* fAODevent = dynamic_cast<AliAODEvent*>(fInputEvent);
+    if( fAODevent->GetPrimaryVertex() != NULL ){
+      if( fAODevent->GetPrimaryVertex()->GetNContributors() <= 0) return;
+    }
+  }
+
+  if( !fEMCALInitialized ) {
+    InitializeEMCAL();
     InitGeometryMatrices();
+    if( !fEMCALInitialized ) return;
   }
 
   // Event selection
-
   isEMC=kFALSE;
   isDMC=kFALSE;
 
-  if( !IsTriggerSelected(event) ) return;
+  if( !IsTriggerSelected() ) return;
   if( !(isEMC) && !(isDMC) ) return;
 
-  if( !fEMCALInitialized ) {
-    InitializeEMCAL( event );
-    // if( !fEMCALInitialized ) return;
-  }
 
   // Centrality selection
-  
   if ( fCheckCentrality ) {
-    AliMultSelection* multSelection = (AliMultSelection * ) event->FindListObject("MultSelection") ;
+    AliMultSelection* multSelection = (AliMultSelection * ) fInputEvent->FindListObject("MultSelection") ;
     if ( multSelection ) {
       Float_t cent = multSelection->GetMultiplicityPercentile(fCentralityClass, fCentWithEventSel);
       fhCentrality->Fill(cent);
       
       AliDebug(1,Form("Centrality %2.1f for class <%s>, event sel %d\n",cent,fCentralityClass.Data(),fCentWithEventSel));
-      //printf("Centrality %2.1f for class <%s>, select in [%1.1f,%1.1f]\n",cent,fCentralityClass.Data(),fCentMin,fCentMax);
       
-      if ( cent < fCentMin || cent >= fCentMax ) return ;
-      
+      if ( cent < fCentMin || cent >= fCentMax ) return;
       fhCentralitySelected->Fill(cent);
     }
   }
   
-  AliDebug(1,Form("<<< %s: Event %d >>>",event->GetName(), (Int_t)Entry()));
+  AliDebug(1,Form("<<< %s: Event %d >>>",fInputEvent->GetName(), (Int_t)Entry()));
   
   // Get the primary vertex
-    
-  event->GetPrimaryVertex()->GetXYZ(fVertex) ;
-  fBuffer_Event_VertexZ = event->GetPrimaryVertex()->GetZ();
-  
+  fInputEvent->GetPrimaryVertex()->GetXYZ(fVertex) ;
   AliDebug(1,Form("Vertex: (%.3f,%.3f,%.3f)",fVertex[0],fVertex[1],fVertex[2]));
+
+  if(fSaveCells || fSaveClusters ){
+    fBuffer_Event_VertexZ = fInputEvent->GetPrimaryVertex()->GetZ() * 100;
+  }
+  fBuffer_EventNPrimaryTracks = GetPrimaryTracks();
   
   fhNEvents->Fill(0); //Count the events to be analyzed
 
   //Get the list of clusters and cells
-  fEMCALCells       = event->GetEMCALCells();
+  fEMCALCells       = fInputEvent->GetEMCALCells();
 
-  fCaloClustersArr  = new TRefArray();
-  event->GetEMCALClusters(fCaloClustersArr);
-  
-  AliDebug(1,Form("N CaloClusters: %d - N CaloCells %d",fCaloClustersArr->GetEntriesFast(), fEMCALCells->GetNumberOfCells()));
-
-  FillHistograms();  
-
-  // Float_t fWeighJetJetMC = 1;
-  // if( fIsMC > 1 ){
-  //   Float_t pthard = -1;
-  //   Bool_t isMCJet = ((AliConvEventCuts*)fEventCuts)->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC,pthard, event );
-  //   if (!isMCJet ) return;
-  //   fBuffer_EventWeight = fWeightJetJetMC;
-  // }
+  if( fSaveHistos ) FillHistograms();  
+  PostData(1,fOutputContainer);  
 
   if( fSaveCells )   ProcessCells();
   if( fSaveClusters ) ProcessClusters();
-  fCellTree->Fill();
 
-  ResetBuffer();
+  if( fSaveCells || fSaveClusters) {
+    Double_t fWeightJetJetMC = 1;
+    if( fIsMC > 1 ){
+      Float_t pthard = -1;
+      Bool_t isMCJet = IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC, pthard, fInputEvent, fPeriodName );
+      if (!isMCJet ) return;
+      fBuffer_EventWeight = fWeightJetJetMC;
+      fBuffer_ptHard      = pthard;
+    }
 
-  delete fCaloClustersArr;
-  
-  PostData(1,fOutputContainer);
-  PostData(2,fCellTree);
+    fCellTree->Fill();
+    ResetBufferVectors();
+    PostData(2,fCellTree);
+  }
 }
 
 ///
@@ -1001,7 +1062,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::AcceptCluster( AliVCluster* c1){
 /// Check if trigger selected
 ///
 //____________________________________________________________________
-Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(AliVEvent *event){
+Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
 
   if(fTriggerName!="" && fIsMC==0 ) {
       AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()); 
@@ -1017,8 +1078,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(AliVEvent *eve
           fOfflineTriggerMask = AliVEvent::kEMC7;
           if( !(fOfflineTriggerMask ) ) return kFALSE;
 
-          TString firedTrigClass = event->GetFiredTriggerClasses();
-          // std::cout << "Trigger: " << firedTrigClass << std::endl;
+          TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
 
           if( firedTrigClass.Contains("CEMC7") ) {
             isEMC = kTRUE;
@@ -1027,7 +1087,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(AliVEvent *eve
             }
           } else if( firedTrigClass.Contains("CDMC7") ){
             isDMC = kTRUE;
-          }
+          } else return kFALSE;
         }
         return kTRUE;
       }
@@ -1049,6 +1109,164 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(AliVEvent *eve
 
 }
 
+///
+/// Return JJ MC weights
+///
+//____________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsJetJetMCEventAccepted( AliMCEvent *mcEvent, Double_t& weight, Float_t& pthard, AliVEvent* event, TString fPeriodName ){
+  if(fPeriodName.CompareTo("LHC16P1JJ") != 0 && fPeriodName.CompareTo("LHC17P1JJ") != 0 && fPeriodName.CompareTo("LHC18P1JJ") != 0 && !fPeriodName.Contains("LHC19d3") ){
+    std::cout << "Weights not implemented for given period" << std::endl;
+    weight = 1;
+    return kFALSE;
+  }
+
+  AliGenCocktailEventHeader *cHeader   = 0x0;
+  Bool_t headerFound                   = kFALSE;
+  weight                               = -1;
+  Double_t fMaxPtJetMC                 = 0;
+  Bool_t eventAccepted = kTRUE;
+
+  if(mcEvent){
+    cHeader           = dynamic_cast<AliGenCocktailEventHeader*>(mcEvent->GenEventHeader());
+    if(cHeader) headerFound   = kTRUE;
+  } else {
+    //no mcEvent available -> not running on MC
+    weight = 1;
+    return kTRUE;
+  }
+
+  if(headerFound) {
+    TList *genHeaders         = 0x0;
+    if(cHeader) genHeaders    = cHeader->GetHeaders();
+    AliGenEventHeader* gh     = 0;
+
+    for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+      gh = (AliGenEventHeader*)genHeaders->At(i);
+      TString GeneratorName = gh->GetName();
+      Int_t nTriggerJets = dynamic_cast<AliGenPythiaEventHeader*>(gh)->NTriggerJets();
+      Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(gh)->GetPtHard();
+      Float_t tmpjet[]={0,0,0,0};
+
+      for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
+        dynamic_cast<AliGenPythiaEventHeader*>(gh)->TriggerJet(ijet, tmpjet);
+        TParticle jet(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+        //Compare jet pT and pt Hard
+        if(jet.Pt() > 2.5 * ptHard){
+          eventAccepted= kFALSE;
+        }
+        //set highest jet pT
+        if (jet.Pt() > fMaxPtJetMC) fMaxPtJetMC = jet.Pt();
+      }
+
+      if (mcEvent){
+        for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
+          AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(i);
+          if (!particle) continue;
+          // if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
+              if (particle->Pt() > 1.5*ptHard && TMath::Abs(particle->PdgCode()) > 21){
+                eventAccepted= kFALSE;
+              }
+          // }
+        }
+      }
+
+      Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
+                                              21, 28, 36, 45, 57,
+                                              70, 85, 99, 115, 132,
+                                              150, 169, 190, 212, 235,
+                                              1000000};
+      Double_t weightsBins[20]      = { 43.8654,  13.6215, 6.79856, 2.67526, 0.978794,
+                                        0.390797,  0.127769, 0.0465714, 0.0206173, 0.00750282,
+                                        0.00318773,  0.00122533, 0.000644385, 0.000321225,  0.00016846,
+                                        9.18305e-05, 5.33507e-05, 3.00677e-05, 1.74608e-05, 2.80823e-05};
+      Int_t bin = 0;
+      if(ptHard >= ptHardBinRanges[0]){
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 20) weight = weightsBins[bin];
+      }
+    }
+  } else {
+    AliGenEventHeader * eventHeader = mcEvent->GenEventHeader();
+    TString eventHeaderName     = eventHeader->ClassName();
+    Bool_t eventAccepted = kFALSE;
+    if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0 || eventHeaderName.Contains("Pythia8Jets")){
+      eventAccepted = kTRUE;
+    }else { //special case for pythia8jets embedded in EPOSLHC for AODs
+      if(event->IsA()==AliAODEvent::Class()){
+        AliAODMCHeader *mch = NULL;
+        AliAODEvent * aod = dynamic_cast<AliAODEvent*> (event);
+        if(aod){
+          mch = dynamic_cast<AliAODMCHeader*>(aod->FindListObject("mcHeader"));
+          if ( mch ){
+            Int_t nGenerators = mch->GetNCocktailHeaders();
+            if ( nGenerators > 0  ){
+              for(Int_t igen = 0; igen < nGenerators; igen++)
+              {
+                AliGenEventHeader * eventHeaderGen = mch->GetCocktailHeader(igen) ;
+                TString name = eventHeaderGen->GetName();
+                if (name.CompareTo("AliGenPythiaEventHeader") == 0 || name.Contains("Pythia8Jets") || name.Contains("Pythia8GammaJet")){
+                  eventAccepted = kTRUE;
+                  eventHeader = eventHeaderGen;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if(eventAccepted){
+      Int_t nTriggerJets =  dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->NTriggerJets();
+      Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
+      pthard = ptHard;
+      Float_t tmpjet[]={0,0,0,0};
+
+        for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
+          dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->TriggerJet(ijet, tmpjet);
+          TParticle jet(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+          //Compare jet pT and pt Hard
+          if(jet.Pt() > 2.5 * ptHard){
+            eventAccepted= kFALSE;
+          }
+          //set highest jet pT
+          if (jet.Pt() > fMaxPtJetMC){
+            fMaxPtJetMC = jet.Pt();
+          }
+        }
+
+      if (mcEvent){
+        for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
+          // TParticle* particle = (TParticle *)mcEvent->Particle(i);
+          AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(i);
+          if (!particle) continue;
+          // if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
+              if (particle->Pt() > 1.5*ptHard && TMath::Abs(particle->PdgCode()) > 21){
+                eventAccepted= kFALSE;
+              }
+          // }
+        }
+      }
+
+        Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
+                                          21, 28, 36, 45, 57,
+                                          70, 85, 99, 115, 132,
+                                          150, 169, 190, 212, 235,
+                                          1000000};
+        Double_t weightsBins[20]      = { 43.8654,  13.6215, 6.79856, 2.67526, 0.978794,
+                                          0.390797,  0.127769, 0.0465714, 0.0206173, 0.00750282,
+                                          0.00318773,  0.00122533, 0.000644385, 0.000321225,  0.00016846,
+                                          9.18305e-05, 5.33507e-05, 3.00677e-05, 1.74608e-05, 2.80823e-05};
+
+        Int_t bin = 0;
+        if(ptHard >= ptHardBinRanges[0]){
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 20) weight = weightsBins[bin];
+        }
+      }
+
+  }
+  if(weight == -1) return kFALSE;
+  else return eventAccepted;
+}
 
 ///
 /// Set the total number of columns to be masked in the analysis
@@ -1095,34 +1313,53 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::MaskFrameCluster(Int_t iSM, Int_
   return kFALSE;
 }
 
+Int_t AliAnalysisTaskEMCALPi0CalibSelectionV2::RecalculateRow( Int_t row, Int_t nSupMod ){
+    row += nSupMod/2 * (24+1);
+    return row;
+}
+
+Int_t AliAnalysisTaskEMCALPi0CalibSelectionV2::RecalculateColumn( Int_t col, Int_t nSupMod) {
+    if( nSupMod < 12 ){
+        col += nSupMod%2 * 48;
+    } else {
+        col += nSupMod%2 * (48+1);
+    }
+    return col;
+}
+
 ///_____________________________________________________
-void AliAnalysisTaskEMCALPi0CalibSelectionV2::ResetBuffer() {
+void AliAnalysisTaskEMCALPi0CalibSelectionV2::ResetBufferVectors() {
 
-  fVBuffer_NCells               = 0;
-  fBuffer_Event_VertexZ         = 0;
-  fBuffer_Event_Multiplicity    = 0;
-  fBuffer_Event_V0Centrality    = 0;
-  fBuffer_NClusters             = 0;
+  fBuffer_NClusters = 0;
 
-  for(Int_t ncell = 0; ncell < kMaxActiveCells_calib; ncell++){
-    fVBuffer_Cell_ID[ncell]               = 0;
-    fVBuffer_Cell_E[ncell]                = 0;
-    fVBuffer_Cell_t[ncell]                = 0;
-    fVBuffer_Cell_gain[ncell]             = 0;
-    fVBuffer_Cell_MCParticleID[ncell]     = 0;
-    fVBuffer_Cell_MCParticleFracE[ncell]  = 0;
-  }
+  fVBuffer_Cell_ID.clear();
+  fVBuffer_Cell_E.clear();
+  fVBuffer_Cell_t.clear();
+  fVBuffer_Cell_gain.clear();
+  fVBuffer_Cell_MCParticleID.clear();
 
-  for(Int_t ncluster=0; ncluster < kMaxActiveCluster; ncluster++){
-    fVBuffer_Cluster_E[ncluster]                      = 0;
-    fVBuffer_Cluster_Eta[ncluster]                    = 0;
-    fVBuffer_Cluster_Phi[ncluster]                    = 0;
-    fVBuffer_Cluster_t[ncluster]                      = 0;
-    fVBuffer_Cluster_NCells[ncluster]                 = 0;
-    fVBuffer_Cluster_M02[ncluster]                    = 0;
-    fVBuffer_Cluster_LeadCellId[ncluster]             = 0;
-    fVBuffer_TrueCluster_MCId[ncluster]               = 0;
-  }
+  fVBuffer_Cell_ID.resize(0);
+  fVBuffer_Cell_E.resize(0);
+  fVBuffer_Cell_t.resize(0);
+  fVBuffer_Cell_gain.resize(0);
+  fVBuffer_Cell_MCParticleID.resize(0);
+
+  fVBuffer_Cluster_E.clear();
+  fVBuffer_Cluster_Eta.clear();
+  fVBuffer_Cluster_Phi.clear();
+  fVBuffer_Cluster_t.clear();
+  fVBuffer_TrueCluster_MCId.clear();
+
+  fVBuffer_Cluster_E.resize(0);
+  fVBuffer_Cluster_Eta.resize(0);
+  fVBuffer_Cluster_Phi.resize(0);
+  fVBuffer_Cluster_t.resize(0);
+  fVBuffer_TrueCluster_MCId.resize(0);
+
+  fVBuffer_Cluster_M02.clear(); fVBuffer_Cluster_M02.resize(0);
+  fVBuffer_Cluster_X.clear();   fVBuffer_Cluster_X.resize(0);
+  fVBuffer_Cluster_Y.clear();   fVBuffer_Cluster_Y.resize(0);
+  fVBuffer_Cluster_Z.clear();   fVBuffer_Cluster_Z.resize(0);
 }
 
 ///

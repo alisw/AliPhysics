@@ -96,6 +96,7 @@ AliCSEventCuts::AliCSEventCuts() :
     fCL1Centrality(0),
     fReferenceMultiplicity(0),
     fV0Multiplicity(0),
+    fCL1Multiplicity(0),
     fNoOfAODTracks(0),
     fNoOfESDTracks(0),
     fNoOfFB32Tracks(0),
@@ -111,6 +112,10 @@ AliCSEventCuts::AliCSEventCuts() :
     fhCutsStatistics(NULL),
     fhUniqueCutsStatistics(NULL),
     fhCutsCorrelation(NULL),
+    fhV0Multiplicity(nullptr),
+    fhCL1Multiplicity(nullptr),
+    fhV0MCentMult(nullptr),
+    fhCL1CentMult(nullptr),
     fhCentrality{NULL},
     fhVertexZ{NULL},
     fhSPDClustersVsTracklets{NULL},
@@ -161,6 +166,7 @@ AliCSEventCuts::AliCSEventCuts(const char *name, const char *title) :
     fCL1Centrality(0),
     fReferenceMultiplicity(0),
     fV0Multiplicity(0),
+    fCL1Multiplicity(0),
     fNoOfAODTracks(0),
     fNoOfESDTracks(0),
     fNoOfFB32Tracks(0),
@@ -176,6 +182,10 @@ AliCSEventCuts::AliCSEventCuts(const char *name, const char *title) :
     fhCutsStatistics(NULL),
     fhUniqueCutsStatistics(NULL),
     fhCutsCorrelation(NULL),
+    fhV0Multiplicity(nullptr),
+    fhCL1Multiplicity(nullptr),
+    fhV0MCentMult(nullptr),
+    fhCL1CentMult(nullptr),
     fhCentrality{NULL},
     fhVertexZ{NULL},
     fhSPDClustersVsTracklets{NULL},
@@ -253,7 +263,7 @@ void AliCSEventCuts::NotifyEvent() {
   /* let's produce some feedback about MC dataset configuration */
   if (fgIsMC) {
     AliInfo(Form("Handling a MC event with %s format", (fgIsESD ? "ESD" : "AOD")));
-    AliInfo(Form("========= MC handler is %s", ((fgMCHandler != NULL) ? "NOT null" : "NULL")));
+    AliInfo(Form("========= MC handler is %s", ((GetMCEventHandler() != NULL) ? "NOT null" : "NULL")));
   }
 
   if (fgIsMC && !fgIsESD) {
@@ -274,18 +284,18 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
   if (fgIsMC) {
     if (fgIsESD) {
       AliInfo(TString::Format("InitOk: %s, TreeK: %s, TreeTR: %s",
-          fgMCHandler->InitOk() ? "true" : "false",
-              fgMCHandler->TreeK() ? "true" : "false",
-                  fgMCHandler->TreeTR() ? "true" : "false"));
+          GetMCEventHandler()->InitOk() ? "true" : "false",
+              GetMCEventHandler()->TreeK() ? "true" : "false",
+                  GetMCEventHandler()->TreeTR() ? "true" : "false"));
       if (fgIsMConlyTruth) {
         /* track references are not there if fast MC, i.e. only truth productions */
-        if (!fgMCHandler->InitOk() || !fgMCHandler->TreeK()){
+        if (!GetMCEventHandler()->InitOk() || !GetMCEventHandler()->TreeK()){
           fCutsActivatedMask.SetBitNumber(kMCdataQuality);
           accepted = kFALSE;
         }
       }
       else {
-        if (!fgMCHandler->InitOk() || !fgMCHandler->TreeK()){
+        if (!GetMCEventHandler()->InitOk() || !GetMCEventHandler()->TreeK()){
           fCutsActivatedMask.SetBitNumber(kMCdataQuality);
           accepted = kFALSE;
         }
@@ -431,9 +441,14 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
     }
 
     /* prepare additional data in case they were needed */
-    Int_t nClustersLayer0 = fInputEvent->GetNumberOfITSClusters(0);
-    Int_t nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
-    Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
+    int nClustersLayer0 = 0;
+    int nClustersLayer1 = 0;
+    int nTracklets      = 0;
+    if (!fgIsOnTheFlyMC) {
+      nClustersLayer0 = fInputEvent->GetNumberOfITSClusters(0);
+      nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
+      nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
+    }
 
     for (Int_t i = 0; i < 2; i++) {
 
@@ -1021,10 +1036,16 @@ Float_t AliCSEventCuts::GetEventCentrality(AliVEvent *event) const
   AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
 
+  if (fgIsOnTheFlyMC) {
+    /* on the fly MC production */
+    /* multiplicity / centrality percentile already stored */
+    return fV0MCentrality;
+  }
+
   if (esdEvent != NULL) {
     /* for the time being, only ESD input supported with fast MC productions */
     if (fgIsMConlyTruth) {
-      AliMCEvent* mcEvent = fgMCHandler->MCEvent();
+      AliMCEvent* mcEvent = GetMCEventHandler()->MCEvent();
 
       /* TODO: this is quick fix to start with AMPT production. Incorporate the kind of generator to automate this */
       AliGenEventHeader* eventHeader = NULL;
@@ -1206,6 +1227,12 @@ Float_t AliCSEventCuts::GetEventAltCentrality(AliVEvent *event) const
 {
   AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
+
+  if (fgIsOnTheFlyMC) {
+    /* on the fly MC production */
+    /* multiplicity / centrality percentile already stored */
+    return fCL1Centrality;
+  }
 
   if (esdEvent != NULL) {
     AliCentrality *Centrality = event->GetCentrality();
@@ -1989,76 +2016,98 @@ Bool_t AliCSEventCuts::StoreEventCentralities(AliVEvent *event) {
   AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
 
-  if (esdEvent != NULL) {
-    if (fUseNewMultFramework) {
-      AliMultSelection *MultSelection = (AliMultSelection*) event->FindListObject("MultSelection");
-      if (MultSelection != NULL) {
+  if (fgIsOnTheFlyMC) {
+    /* on the fly MC production */
+    /* secure INEL > 0 */
+    if (GetOnTheFlyMultiplicity(event, -1.0, 1.0) > 0) {
+      float V0AM = GetOnTheFlyMultiplicity(event, 2.8, 5.1);
+      float V0CM = GetOnTheFlyMultiplicity(event, -3.7, -1.7);
+      float V0M = V0AM+V0CM;
+      float CL1M = GetOnTheFlyMultiplicity(event, -1.4, 1.4);
+      float dNchdeta = GetOnTheFlyMultiplicity(event, -0.5, 0.5);
+      if (fhV0Multiplicity != nullptr) 
+        fhV0Multiplicity->Fill(V0M,dNchdeta);
+      if (fhCL1Multiplicity != nullptr) 
+        fhCL1Multiplicity->Fill(CL1M,dNchdeta);
+      /* extract the centrality / mutiliplicity percentile */
+      if (fhV0MCentMult) 
+        fV0MCentrality = fhV0MCentMult->GetBinContent(V0M);
+      if (fhCL1CentMult) 
+        fCL1Centrality = fhCL1CentMult->GetBinContent(CL1M);
+    }
+  }
+  else {
+    if (esdEvent != NULL) {
+      if (fUseNewMultFramework) {
+        AliMultSelection *MultSelection = (AliMultSelection*) event->FindListObject("MultSelection");
+        if (MultSelection != NULL) {
+          fV0ACentrality = MultSelection->GetMultiplicityPercentile("V0A");
+          fV0CCentrality = MultSelection->GetMultiplicityPercentile("V0C");
+          fV0MCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+          fCL0Centrality = MultSelection->GetMultiplicityPercentile("CL0");
+          fCL1Centrality = MultSelection->GetMultiplicityPercentile("CL1");
+        }
+        else {
+          AliError("No MultSelection object instance for ESD event");
+          return kFALSE;
+        }
+      }
+      else {
+        AliCentrality *Centrality = event->GetCentrality();
+        if (Centrality != NULL) {
+          fV0ACentrality = Centrality->GetCentralityPercentile("V0A");
+          fV0CCentrality = Centrality->GetCentralityPercentile("V0C");
+          fV0MCentrality = Centrality->GetCentralityPercentile("V0M");
+          fCL0Centrality = Centrality->GetCentralityPercentile("CL0");
+          fCL1Centrality = Centrality->GetCentralityPercentile("CL1");
+        }
+        else {
+          AliError("No Centrality object instance for ESD event");
+          return kFALSE;
+        }
+      }
+    }
+
+    if(aodEvent){
+      if(fUseNewMultFramework){
+        AliMultSelection *MultSelection = (AliMultSelection *)event->FindListObject("MultSelection");
+        if (MultSelection == NULL) {
+          AliError("No MultSelection object instance for AOD event");
+          return kFALSE;
+        }
         fV0ACentrality = MultSelection->GetMultiplicityPercentile("V0A");
         fV0CCentrality = MultSelection->GetMultiplicityPercentile("V0C");
         fV0MCentrality = MultSelection->GetMultiplicityPercentile("V0M");
         fCL0Centrality = MultSelection->GetMultiplicityPercentile("CL0");
         fCL1Centrality = MultSelection->GetMultiplicityPercentile("CL1");
       }
-      else {
-        AliError("No MultSelection object instance");
-        return kFALSE;
-      }
-    }
-    else {
-      AliCentrality *Centrality = event->GetCentrality();
-      if (Centrality != NULL) {
-        fV0ACentrality = Centrality->GetCentralityPercentile("V0A");
-        fV0CCentrality = Centrality->GetCentralityPercentile("V0C");
-        fV0MCentrality = Centrality->GetCentralityPercentile("V0M");
-        fCL0Centrality = Centrality->GetCentralityPercentile("CL0");
-        fCL1Centrality = Centrality->GetCentralityPercentile("CL1");
-      }
-      else {
-        AliError("No Centrality object instance");
-        return kFALSE;
-      }
-    }
-  }
-
-  if(aodEvent){
-    if(fUseNewMultFramework){
-      AliMultSelection *MultSelection = (AliMultSelection *)event->FindListObject("MultSelection");
-      if (MultSelection == NULL) {
-        AliError("No MultSelection object instance");
-        return kFALSE;
-      }
-      fV0ACentrality = MultSelection->GetMultiplicityPercentile("V0A");
-      fV0CCentrality = MultSelection->GetMultiplicityPercentile("V0C");
-      fV0MCentrality = MultSelection->GetMultiplicityPercentile("V0M");
-      fCL0Centrality = MultSelection->GetMultiplicityPercentile("CL0");
-      fCL1Centrality = MultSelection->GetMultiplicityPercentile("CL1");
-    }
-    else{
-      if(aodEvent->GetHeader()) {
-        AliCentrality *aodCentrality = ((AliVAODHeader*)aodEvent->GetHeader())->GetCentralityP();
-        if (aodCentrality != NULL) {
-          fV0ACentrality = aodCentrality->GetCentralityPercentile("V0A");
-          fV0CCentrality = aodCentrality->GetCentralityPercentile("V0C");
-          fV0MCentrality = aodCentrality->GetCentralityPercentile("V0M");
-          fCL0Centrality = aodCentrality->GetCentralityPercentile("CL0");
-          fCL1Centrality = aodCentrality->GetCentralityPercentile("CL1");
+      else{
+        if(aodEvent->GetHeader()) {
+          AliCentrality *aodCentrality = ((AliVAODHeader*)aodEvent->GetHeader())->GetCentralityP();
+          if (aodCentrality != NULL) {
+            fV0ACentrality = aodCentrality->GetCentralityPercentile("V0A");
+            fV0CCentrality = aodCentrality->GetCentralityPercentile("V0C");
+            fV0MCentrality = aodCentrality->GetCentralityPercentile("V0M");
+            fCL0Centrality = aodCentrality->GetCentralityPercentile("CL0");
+            fCL1Centrality = aodCentrality->GetCentralityPercentile("CL1");
+          }
+          else {
+            AliError("No AliCentrality attached to AOD header");
+            return kFALSE;
+          }
         }
         else {
-          AliError("No AliCentrality attached to AOD header");
+          AliError("Not a standard AOD");
           return kFALSE;
         }
-      }
-      else {
-        AliError("Not a standard AOD");
-        return kFALSE;
       }
     }
   }
 
   AliInfo(Form("Event centralities: V0A: %.2f, V0C: %.2f, V0M: %.2f, CL0: %.2f, CL1: %.2f",
-      Float_t(fV0MCentrality),
       Float_t(fV0ACentrality),
       Float_t(fV0CCentrality),
+      Float_t(fV0MCentrality),
       Float_t(fCL0Centrality),
       Float_t(fCL1Centrality)));
 
@@ -2208,7 +2257,7 @@ Bool_t AliCSEventCuts::StoreEventMultiplicities(AliVEvent *event) {
     /* for fast MC we need to infer few of this counting */
     Int_t nTracks = 0;
 
-    AliMCEvent *mcevent = fgMCHandler->MCEvent();
+    AliMCEvent *mcevent = GetMCEventHandler()->MCEvent();
     if (mcevent != NULL) {
       for (Int_t itrk = 0; itrk < mcevent->GetNumberOfTracks(); itrk++) {
         if (AliCSTrackCuts::IsPhysicalPrimary(itrk))
@@ -2217,6 +2266,14 @@ Bool_t AliCSEventCuts::StoreEventMultiplicities(AliVEvent *event) {
 
       fReferenceMultiplicity = nTracks;
       fNoOfAODTracks = fNoOfESDTracks = mcevent->GetNumberOfTracks();
+    }
+    /* secure INEL > 0 */
+    fV0Multiplicity = 0;
+    if (GetOnTheFlyMultiplicity(event, -1.0, 1.0) > 0) {
+      float V0AM = GetOnTheFlyMultiplicity(event, 2.8, 5.1);
+      float V0CM = GetOnTheFlyMultiplicity(event, -3.7, -1.7);
+      fV0Multiplicity = V0AM+V0CM;
+      fCL1Multiplicity = GetOnTheFlyMultiplicity(event, -1.4, 1.4);
     }
   }
   else {
@@ -2354,6 +2411,15 @@ void AliCSEventCuts::InitCuts(const char *name){
   }
 }
 
+/// Stores the centrality / multiplicity estimation histograms
+/// \param v0mh V0M centrality / multiplicity estimation histogram
+/// \param cl1mh CL1M centrality / multiplicity estimation histogram
+void AliCSEventCuts::StoreCentMultEstimationHistos(const TH1 *v0mh, const TH1 *cl1mh) { 
+  fhV0MCentMult = (v0mh != nullptr) ? v0mh : nullptr; 
+  fhCL1CentMult = (cl1mh != nullptr) ? cl1mh : nullptr; 
+}
+
+
 /// Allocates the different histograms if needed
 ///
 /// It is supposed that the current cuts string is the running one
@@ -2397,6 +2463,20 @@ void AliCSEventCuts::DefineHistograms(){
         fhCutsCorrelation->GetYaxis()->SetBinLabel(i+2,fgkCutsNames[i]);
       }
       fHistogramsList->Add(fhCutsCorrelation);
+    }
+
+    if (fgIsOnTheFlyMC) {
+      if (!fCutsEnabledMask.TestBitNumber(kCentralityCut)) {
+        /* the multiplicity histogram for on the fly productions */
+        double nBinsMult[knSystems] = {0,510,510,3010,3010,510};
+        double nBinsDNdeta[knSystems] = {0,510,510,1010,1010,510};
+        fhV0Multiplicity = new TH2F(TString::Format("V0Multiplicity_%s",GetCutsString()),"V0M;V0M;dN/d#eta;counts",
+                                    nBinsMult[fSystem],-9.5, -9.5+nBinsMult[fSystem], nBinsDNdeta[fSystem],-9.5,-9.5+nBinsDNdeta[fSystem]);
+        fhCL1Multiplicity = new TH2F(TString::Format("CL1Multiplicity_%s",GetCutsString()),"CL1M;CL1M;dN/d#eta;counts",
+                                     nBinsMult[fSystem],-9.5, -9.5+nBinsMult[fSystem], nBinsDNdeta[fSystem],-9.5,-9.5+nBinsDNdeta[fSystem]);
+        fHistogramsList->Add(fhV0Multiplicity);
+        fHistogramsList->Add(fhCL1Multiplicity);
+      }
     }
 
     if(fSystem  > kpp){
@@ -2568,7 +2648,48 @@ void AliCSEventCuts::DefineHistograms(){
   }
 }
 
+float AliCSEventCuts::GetOnTheFlyMultiplicity(AliVEvent *event, float etamin, float etamax) const {
+  /* on the fly MC production */
+  /* get event multiplicity according to passed the eta range  */
+  /* event multiplicity as number of primary charged particles */
+  /* based on AliAnalysisTaskPhiCorrelations implementation */
+  float multiplicity = 0.0;
+  for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
+    AliMCParticle *particle = (AliMCParticle *) event->GetTrack(itrk);
+    if (particle != nullptr) {
+      int pdgabs = TMath::Abs(particle->PdgCode());
 
+      /* pdg checks */
+      bool keepcounting = true;
+      switch (pdgabs)
+      {
+      case 9902210: /* proton diffractive */
+        /* the event is rejected */
+        multiplicity = -1.0;
+        keepcounting = false;
+        break;
+      case 211:   /* pions */
+      case 321:   /* kaons */
+      case 2212:  /* protons */
+        if (AliCSTrackCuts::IsPhysicalPrimary(itrk)) {
+          if (0.001 < particle->Pt() && particle->Pt() < 50.0) {
+            float eta = particle->Eta();
+            if (etamin < eta and eta < etamax) {
+              multiplicity += 1;
+            }
+          }
+        }
+        break;
+      default:
+        break;
+      }
+      if (!keepcounting) {
+        break;
+      }
+    }
+  }
+  return multiplicity;
+}
 
 /// \cond CLASSIMP
 ClassImp(AliCSEventCuts);

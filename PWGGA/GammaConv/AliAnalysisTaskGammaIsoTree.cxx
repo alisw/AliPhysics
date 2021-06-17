@@ -216,6 +216,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fTrackPt(NULL),
   fTrackEta(NULL),
   fTrackPhiPt(NULL),
+  fTrackPhiMaxClusE(NULL),
   fTrackPtHybridOnlyPosID(NULL),
   fTrackEtaHybridOnlyPosID(NULL),
   fTrackPhiHybridOnlyPosID(NULL),
@@ -404,6 +405,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fChargedRhoTimesArea(),
   fExclusionRadius(0.4),
   fDebug(0),
+  fMaxClusterE(0.),
   fOutlierJetReader(0),
   fIsFromDesiredHeader(kTRUE),
   fIsOverlappingWithOtherHeader(kFALSE),
@@ -422,6 +424,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_ClusterM02(0), 
   fBuffer_ClusterM02Recalc(0), 
   fBuffer_ClusterM20(0), 
+  fBuffer_ClusterNCells(0), 
   fBuffer_ClusterV1SplitMass(0), 
   fBuffer_ClusterNLM(0), 
   fBuffer_ClusterSM(0), 
@@ -654,6 +657,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fTrackPt(NULL),
   fTrackEta(NULL),
   fTrackPhiPt(NULL),
+  fTrackPhiMaxClusE(NULL),
   fTrackPtHybridOnlyPosID(NULL),
   fTrackEtaHybridOnlyPosID(NULL),
   fTrackPhiHybridOnlyPosID(NULL),
@@ -844,6 +848,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fChargedRhoTimesArea(),
   fExclusionRadius(0.4),
   fDebug(0),
+  fMaxClusterE(0.),
   fOutlierJetReader(0),
   fIsFromDesiredHeader(kTRUE),
   fIsOverlappingWithOtherHeader(kFALSE),
@@ -862,6 +867,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_ClusterM02(0), 
   fBuffer_ClusterM02Recalc(0), 
   fBuffer_ClusterM20(0), 
+  fBuffer_ClusterNCells(0), 
   fBuffer_ClusterV1SplitMass(0), 
   fBuffer_ClusterNLM(0), 
   fBuffer_ClusterSM(0), 
@@ -1608,6 +1614,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fTrackPt = new TH1F("fTrackPt","pt distribution of hybrid tracks;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
   fTrackEta = new TH1F("fTrackEta","#eta distribution of hybrid tracks;#eta; counts",200,-0.9,0.9);
   fTrackPhiPt = new TH2F("fTrackPhiPt","#phi distribution of hybrid tracks;#phi; counts",200,0,2*TMath::Pi(),nPtBins,minPt,maxPt);
+  fTrackPhiMaxClusE = new TH2F("fTrackPhiMaxClusE","#phi distribution of hybrid tracks;#phi; counts",200,0,2*TMath::Pi(),nPtBins,minPt,maxPt);
   
   fTrackPtHybridOnlyPosID = new TH1F("fTrackPtHybridOnlyPosID","pt distribution of hybrid tracks;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
   fTrackEtaHybridOnlyPosID = new TH1F("fTrackEtaHybridOnlyPosID","#eta distribution of hybrid tracks;#eta; counts",200,-0.9,0.9);
@@ -1617,6 +1624,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fTrackPt->Sumw2();
   fTrackEta->Sumw2();
   fTrackPhiPt->Sumw2();
+  fTrackPhiMaxClusE->Sumw2();
   fTrackPtHybridOnlyPosID->Sumw2();
   fTrackEtaHybridOnlyPosID->Sumw2();
   fTrackPhiHybridOnlyPosID->Sumw2();
@@ -1624,6 +1632,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fCaloFolderRec->Add(fTrackPt);
   fCaloFolderRec->Add(fTrackEta);
   fCaloFolderRec->Add(fTrackPhiPt);
+  fCaloFolderRec->Add(fTrackPhiMaxClusE);
 
   fCaloFolderRec->Add(fTrackPtHybridOnlyPosID);
   fCaloFolderRec->Add(fTrackEtaHybridOnlyPosID);
@@ -2493,6 +2502,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     fAnalysisTree->Branch("Cluster_M02","std::vector<Float_t>",&fBuffer_ClusterM02);
     fAnalysisTree->Branch("Cluster_M02Recalc","std::vector<Float_t>",&fBuffer_ClusterM02Recalc);
     fAnalysisTree->Branch("Cluster_M20","std::vector<Float_t>",&fBuffer_ClusterM20);
+    fAnalysisTree->Branch("Cluster_NCells","std::vector<UShort_t>",&fBuffer_ClusterNCells);
     fAnalysisTree->Branch("Cluster_V1SplitMass","std::vector<Float_t>",&fBuffer_ClusterV1SplitMass);
     fAnalysisTree->Branch("Cluster_NLM","std::vector<UShort_t>",&fBuffer_ClusterNLM);
     fAnalysisTree->Branch("Cluster_SM","std::vector<UShort_t>",&fBuffer_ClusterSM);
@@ -2682,7 +2692,7 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   }
   // auto startMCPart = std::chrono::high_resolution_clock::now();
   if(fIsMC>0) ProcessMCParticles();
-  ProcessTracks(); // always run ProcessTracks before calo photons! (even if save tracks is false)
+  //ProcessTracks(); //
   // auto endMCPart = std::chrono::high_resolution_clock::now();
   if(!fUseHistograms){
     fBuffer_EventWeight = fWeightJetJetMC;
@@ -2710,6 +2720,9 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   if(fSaveConversions) ProcessConversionPhotons();
   // auto startCalo = std::chrono::high_resolution_clock::now();
   ProcessCaloPhotons(); // track matching is done here as well
+
+
+  ProcessTracks();
   // auto endCalo = std::chrono::high_resolution_clock::now();
   // ReduceTrackInfo(); // track matching is done, we can remove cov matrix etc now
 
@@ -2778,6 +2791,7 @@ void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
   fBuffer_ClusterM02.clear(); 
   fBuffer_ClusterM02Recalc.clear(); 
   fBuffer_ClusterM20.clear(); 
+  fBuffer_ClusterNCells.clear(); 
   fBuffer_ClusterV1SplitMass.clear(); 
   fBuffer_ClusterNLM.clear(); 
   fBuffer_ClusterSM.clear(); 
@@ -3633,6 +3647,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
   }
 
   // Loop again over selected cluster candidates to do isolation and tagging
+  fMaxClusterE = 0.;
   for (Int_t c = 0; c < fClusterEMCalCandidates->GetEntries(); c++)
   {
      clus = (AliAODCaloCluster*) fClusterEMCalCandidates->At(c);
@@ -3687,6 +3702,8 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
      // TLorentzvector with cluster
      TLorentzVector clusterVector;
      clus->GetMomentum(clusterVector,vertex);
+
+     if(clus->E() > fMaxClusterE) fMaxClusterE = clus->E();
 
     //  AliInfo(Form("clustervector %i \t E=%f \n",c,clusterVector.E()));
 
@@ -3807,6 +3824,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessTracks(){
       fTrackPt->Fill(fCurrentTrack->Pt(),fWeightJetJetMC);
       fTrackEta->Fill(eta,fWeightJetJetMC);
       fTrackPhiPt->Fill(phi,fCurrentTrack->Pt(),fWeightJetJetMC);
+      if(fMaxClusterE>0) fTrackPhiMaxClusE->Fill(phi,fMaxClusterE,fWeightJetJetMC);
       prim++;
   }
   fBuffer_EventNPrimaryTracks = prim;
@@ -5644,6 +5662,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   // Caluclate M02
   Double_t m02 = clus->GetM02();
   Double_t m20 = clus->GetM20();
+  UShort_t ncells = clus->GetNCells();
 
   // Recalculate M02 (should only be used when using V2 clusterizer!)
   Int_t   nMaxima5x5 = 0; // output: number of local maxima on NxN region
@@ -5777,6 +5796,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   fBuffer_ClusterM02.push_back(clusM02);
   fBuffer_ClusterM02Recalc.push_back(m02_5x5);
   fBuffer_ClusterM20.push_back(clusM20);
+  fBuffer_ClusterNCells.push_back(ncells);
   fBuffer_ClusterV1SplitMass.push_back(clusV1SplitMass);
   fBuffer_ClusterNLM.push_back(nlm);
   fBuffer_ClusterSM.push_back(SMNumber);

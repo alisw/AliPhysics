@@ -35,6 +35,8 @@ class TH1F;
 #include "TObjArray.h"
 #include "TLorentzVector.h"
 
+#include <vector>
+
 // AliRoot includes
 #include "AliAnalysisTaskSE.h"
 class AliEMCALGeometry;
@@ -50,42 +52,43 @@ class AliAnalysisTaskEMCALPi0CalibSelectionV2 : public AliAnalysisTaskSE
 public:
 
   AliAnalysisTaskEMCALPi0CalibSelectionV2();
-  
   AliAnalysisTaskEMCALPi0CalibSelectionV2(const char* name);
-    
   virtual ~AliAnalysisTaskEMCALPi0CalibSelectionV2();
 
   void    InitGeometryMatrices();
-
-  void    InitializeEMCAL( AliVEvent *event );
+  void    InitializeEMCAL();
     
   void    UserCreateOutputObjects();
     
   void    FillHistograms();
-
   void    ProcessCells();
-
   void    ProcessClusters();
+
+  UShort_t GetPrimaryTracks();
   
   void    UserExec(Option_t * opt);
     
   void    PrintInfo();
 
   Bool_t  AcceptCluster( AliVCluster* c1);
-
-  Bool_t  IsTriggerSelected(AliVEvent *event);
+  Bool_t  IsTriggerSelected();
+  Bool_t  IsJetJetMCEventAccepted( AliMCEvent *mcEvent, Double_t& weight, Float_t& pthard, AliVEvent* event, TString fPeriodName );
   
   void    SetNMaskCellColumns(Int_t n) ;
-  
   void    SetMaskCellColumn(Int_t ipos, Int_t icol) ;
-  
   Bool_t  MaskFrameCluster(Int_t iSM, Int_t ieta) const;
 
-  void    ResetBuffer();
+  Int_t   RecalculateRow( Int_t row, Int_t nSupMod );
+  Int_t   RecalculateColumn( Int_t col, Int_t nSupMod);
 
+  void    ResetBufferVectors();
   void    Terminate(Option_t* opt);
     
   // Analysis parameter setting
+
+  void    SetPeriodName(TString name)                    { fPeriodName = name; }
+
+  void    SetCorrectionTaskSetting(TString setting)      { fCorrTaskSetting = setting; }
   
   void    SwitchOnCentrality()                           { fCheckCentrality  = kTRUE ; }
   void    SwitchOffCentrality()                          { fCheckCentrality  = kFALSE; }
@@ -103,6 +106,8 @@ public:
   void    SetClusterMaxTime(Float_t tmax)                { fTimeMax     = tmax       ; }
 
   void    SetAsymmetryCut(Float_t asy)                   { fAsyCut      = asy        ; }
+
+  void    SetCellMinEnergy(Float_t emin)                 { fCellEmin    = emin       ; }
   
   void    SetClusterMinEnergy(Float_t emin)              { fEmin        = emin       ; }
   
@@ -143,12 +148,15 @@ public:
 
   void    SetJJMC()                                      { fIsMC = 2; }
 
+  void    SetSaveHistos()                                { fSaveHistos = kTRUE; }
+
   void    SetSaveCells()                                 { fSaveCells = kTRUE; }
 
   void    SetSaveClusters()                              { fSaveClusters = kTRUE; }
 
   void    SetHeavyIon()                                  { fIsHeavyIon = kTRUE; }
   
+  void    SetNContributorsCut()                          { fNContributorsCutEnabled = kTRUE; }
   // Cluster recalculation
 
   void    SwitchOnRecalculatePosition()                  { fRecalPosition   = kTRUE  ; }
@@ -174,44 +182,36 @@ public:
   
 private:
 
+  AliVEvent*    fInputEvent;
+  AliMCEvent*   fMCEvent;
+
   AliEMCALGeometry  * fEMCALGeo;         //!<! EMCAL geometry pointer.
     
   ///< Geometry matrices with alignments.
   TGeoHMatrix       * fMatrix[AliEMCALGeoParams::fgkEMCALModules];
-    
   Bool_t              fLoadMatrices;     ///<  Matrices set from configuration, not get from geometry.root or from ESDs/AODs.
-
-  
   TString             fEMCALGeoName;     ///<  Name of geometry to use.
-    
   TString             fTriggerName;      ///<  Trigger name must contain this name.
-    
   AliEMCALRecoUtils * fRecoUtils;        ///<  Access to reconstruction utilities.
+  TString             fPeriodName;       ///<  Period name
+  TString             fCorrTaskSetting;  ///<  Name of Correction Task Setting
 
   Bool_t              fEMCALInitialized; ///< Check if fRecoUtils were initialized.
-  
   Int_t               fIsMC;              ///< 
-
+  Bool_t              fSaveHistos;
   Bool_t              fSaveCells;
-
   Bool_t              fSaveClusters;     ///<
-
   Bool_t              fIsHeavyIon;        ///<
+  Bool_t              fNContributorsCutEnabled;
     
   TString             fOADBFilePath ;    ///<  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change.
-
   Bool_t              fRecalPosition;    ///<  Switch on/off cluster position calculation, in case alignment matrices are not available.
   
-  TRefArray         * fCaloClustersArr;  //!<! List of clusters.
-    
   AliVCaloCells     * fEMCALCells;       //!<! List of cells.
-    
   TList             * fOutputContainer;  //!<! Histogram container.
     
   Bool_t              fCheckCentrality;  ///< Activate centrality selection
-  
   TString             fCentralityClass;  ///< Set which centrality class
-  
   Bool_t              fCentWithEventSel; ///< Embedded event selection
   
   Float_t             fCentMin;          ///< Minimum centrality selected         
@@ -220,10 +220,11 @@ private:
   Double_t            fVertex[3];        ///< Primary vertex.
 
   Bool_t              fImportGeometryFromFile; ///<  Import geometry settings in geometry.root file.
-  
   TString             fImportGeometryFilePath; ///<  Path fo geometry.root file.
   
   // Analysis cuts
+
+  Float_t             fCellEmin;         ///<  Minimum cell energy (GeV).
   
   Float_t             fEmin;             ///<  Minimum cluster energy (GeV).
   Float_t             fEmax;             ///<  Maximum cluster energy (GeV).
@@ -317,32 +318,33 @@ private:
   TH2F*     fhClusterTimeSM[AliEMCALGeoParams::fgkEMCALModules] ;                  //!<! Timing of clusters vs energy per SM.
 
 protected:
-  // tree
-  TTree*    fCellTree;                                                             //!<! 
+
+  TTree*        fCellTree;                                                         //!<! 
 
   Int_t         fVBuffer_NCells;
 
-  Float_t       fBuffer_EventWeight;
-  Float_t       fBuffer_Event_VertexZ;
-  Float_t       fBuffer_Event_Multiplicity;
+  Double_t      fBuffer_EventWeight;
+  Float_t       fBuffer_ptHard;              
+  Short_t       fBuffer_Event_VertexZ;                          // Float_t * 100
+  UShort_t      fBuffer_EventNPrimaryTracks;
   Float_t       fBuffer_Event_V0Centrality;
 
-  Int_t*        fVBuffer_Cell_ID;
-  Float_t*      fVBuffer_Cell_E;
-  Float_t*      fVBuffer_Cell_t;
-  Bool_t*       fVBuffer_Cell_gain;
-  Int_t*        fVBuffer_Cell_MCParticleID;
-  Float_t*      fVBuffer_Cell_MCParticleFracE;
+  std::vector<UShort_t>     fVBuffer_Cell_ID;
+  std::vector<UShort_t>     fVBuffer_Cell_E;                                // Float_t * 1000
+  std::vector<Short_t>      fVBuffer_Cell_t;                                // Float_t * 1e9
+  std::vector<Bool_t>       fVBuffer_Cell_gain;
+  std::vector<Short_t>      fVBuffer_Cell_MCParticleID;
 
-  Int_t         fBuffer_NClusters;
-  Float_t*      fVBuffer_Cluster_E;
-  Float_t*      fVBuffer_Cluster_Eta;
-  Float_t*      fVBuffer_Cluster_Phi;
-  Float_t*      fVBuffer_Cluster_t;
-  Int_t*        fVBuffer_Cluster_NCells;
-  Int_t*        fVBuffer_Cluster_M02;
-  Int_t*        fVBuffer_Cluster_LeadCellId;
-  Int_t*        fVBuffer_TrueCluster_MCId;
+  UShort_t                  fBuffer_NClusters;
+  std::vector<UShort_t>     fVBuffer_Cluster_E;               // Float_t * 1000
+  std::vector<Short_t>      fVBuffer_Cluster_Eta;             // Float_t * 1000
+  std::vector<UShort_t>     fVBuffer_Cluster_Phi;             // Float_t * 1000
+  std::vector<Short_t>      fVBuffer_Cluster_t;
+  std::vector<Double_t>     fVBuffer_Cluster_M02;
+  std::vector<Short_t>      fVBuffer_TrueCluster_MCId;
+  std::vector<Float_t>      fVBuffer_Cluster_X;
+  std::vector<Float_t>      fVBuffer_Cluster_Y;
+  std::vector<Float_t>      fVBuffer_Cluster_Z;
 
   /// Copy constructor not implemented.
   // AliAnalysisTaskEMCALPi0CalibSelectionV2(           const AliAnalysisTaskEMCALPi0CalibSelectionV2&) ;

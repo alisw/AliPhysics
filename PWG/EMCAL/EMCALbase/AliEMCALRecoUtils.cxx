@@ -53,6 +53,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fParticleType(0),                       fPosAlgo(0),
   fW0(0),                                 fShowerShapeCellLocationType(0),
   fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
+  fUseAdditionalScale(kFALSE),            fAdditionalScale(1),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fNCellEfficiencyFunction(0),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
@@ -109,6 +110,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fW0(reco.fW0),                                             fShowerShapeCellLocationType(reco.fShowerShapeCellLocationType),
   fNonLinearityFunction(reco.fNonLinearityFunction),         fNonLinearThreshold(reco.fNonLinearThreshold),
   fUseShaperNonlin(reco.fUseShaperNonlin),
+  fUseAdditionalScale(reco.fUseAdditionalScale),             fAdditionalScale(reco.fAdditionalScale),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fNCellEfficiencyFunction(reco.fNCellEfficiencyFunction),
   fCellsRecalibrated(reco.fCellsRecalibrated),
@@ -217,6 +219,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fNonLinearityFunction      = reco.fNonLinearityFunction;
   fNonLinearThreshold        = reco.fNonLinearThreshold;
   fUseShaperNonlin           = reco.fUseShaperNonlin;
+  fUseAdditionalScale        = reco.fUseAdditionalScale;
+  fAdditionalScale           = reco.fAdditionalScale;
   fSmearClusterEnergy        = reco.fSmearClusterEnergy;
   fNCellEfficiencyFunction   = reco.fNCellEfficiencyFunction;
 
@@ -445,6 +449,11 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
     // take out non lin from shaper for low gain cells
     if(fUseShaperNonlin && isLowGain){
       amp = CorrectShaperNonLin(amp,1.);
+    }
+
+    // apply an additional scale on cell level. Not to be used for standard analyses!
+    if(fUseAdditionalScale){
+      amp *= fAdditionalScale;
     }
 
     // correct cell energy based on pi0 calibration
@@ -1662,6 +1671,11 @@ void AliEMCALRecoUtils::InitNCellEfficiencyParam()
     fNCellEfficiencyParams[1] = 1.28118;
     fNCellEfficiencyParams[2] = 0.583403;
   }
+  else if (fNCellEfficiencyFunction == kNCePi0TaggedPCMEMC) {
+    fNCellEfficiencyParams[0] = -0.0377925;
+    fNCellEfficiencyParams[1] = 0.160758;
+    fNCellEfficiencyParams[2] = -0.00357992;
+  }
 
 }
 
@@ -1724,7 +1738,7 @@ Bool_t AliEMCALRecoUtils::GetIsNCellCorrected(AliVCluster* cluster, AliVCaloCell
       // should behave like pure photon clusters
       // fNCellEfficiencyParams[0] = 0.213184;
       // fNCellEfficiencyParams[1] = -0.0580118;
-      Float_t val = fNCellEfficiencyParams[0] + fNCellEfficiencyParams[1]*energy;
+      Float_t val = fNCellEfficiencyParams[0]*energy + fNCellEfficiencyParams[1];
       if(randNr < val) return kTRUE;
       else return kFALSE;
       break;
@@ -1732,7 +1746,7 @@ Bool_t AliEMCALRecoUtils::GetIsNCellCorrected(AliVCluster* cluster, AliVCaloCell
 
     case kNCeGammaAndElec:
     {
-      // based on clusters which are part of a cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // based on clusters which are part of a (EMC-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
       // mostly photon clusters and electron(conversion) clusters (purity about 95%)
       // exotics should be nearly cancled by that
       // fNCellEfficiencyParams[0] = 0.0901375;
@@ -1741,6 +1755,22 @@ Bool_t AliEMCALRecoUtils::GetIsNCellCorrected(AliVCluster* cluster, AliVCaloCell
       Float_t val = fNCellEfficiencyParams[0]*exp(
                     -0.5*((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2])*
                     ((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2]));
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCePi0TaggedPCMEMC:
+    {
+      // based on clusters which are part of a (PCM-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // mostly photon clusters and electron(conversion) clusters (purity about 95%)
+      // exotics should be nearly cancled by that
+      // fNCellEfficiencyParams[0] = -0.0377925;
+      // fNCellEfficiencyParams[1] = 0.160758;
+      // fNCellEfficiencyParams[2] = -0.00357992;
+      Float_t val = fNCellEfficiencyParams[0]*energy*energy +
+                    fNCellEfficiencyParams[1]*energy +
+                    fNCellEfficiencyParams[2];
       if(randNr < val) return kTRUE;
       else return kFALSE;
       break;

@@ -291,6 +291,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 
 //Vertex selection
 	Float_t					   fZvtx;
+    Float_t                    fXvtx;
+    Float_t                    fYvtx;
     
     
 //global multiplicity values
@@ -329,10 +331,48 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     
 	
 	TH2F				**fTPCnsigma_EoverP;
+    TH2F                **fHist_energy_pT;
 	TH1F				**fECluster;
     
+    TH1F                *fECluster_mb;
     TH1F                *fECluster_eg1;
     TH1F                *fECluster_eg2;
+    TH1F                *fECluster_dg1;
+    TH1F                *fECluster_dg2;
+    
+    TH1F                *fECluster_ET_mb;
+    TH1F                *fECluster_ET_eg1;
+    TH1F                *fECluster_ET_eg2;
+    TH1F                *fECluster_ET_dg1;
+    TH1F                *fECluster_ET_dg2;
+    
+    //SM
+    TH2F                *fECluster_mb_SM;
+    TH2F                *fECluster_eg1_SM;
+    TH2F                *fECluster_eg2_SM;
+    TH2F                *fECluster_dg1_SM;
+    TH2F                *fECluster_dg2_SM;
+    TH2F                *fECluster_deg1_SM;
+    TH2F                *fECluster_deg2_SM;
+    
+    TH2F                *fECluster_ET_mb_SM;
+    TH2F                *fECluster_ET_eg1_SM;
+    TH2F                *fECluster_ET_eg2_SM;
+    TH2F                *fECluster_ET_dg1_SM;
+    TH2F                *fECluster_ET_dg2_SM;
+    TH2F                *fECluster_ET_deg1_SM;
+    TH2F                *fECluster_ET_deg2_SM;
+    
+    TH2F                *fPt_mb_SM;
+    TH2F                *fPt_eg1_SM;
+    TH2F                *fPt_eg2_SM;
+    TH2F                *fPt_dg1_SM;
+    TH2F                *fPt_dg2_SM;
+    TH2F                *fPt_deg1_SM;
+    TH2F                *fPt_deg2_SM;
+    
+    
+    
     
 	TH1F				**fECluster_emcal;
 	TH1F				**fECluster_dcal;
@@ -431,6 +471,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	//KF
 	TH2F				*fHist_InvMass_pt_ULS_KF;
+    
+    TH2F                *fHist_InvMass_pt_ULS_KF_eg1;
+    TH2F                *fHist_InvMass_pt_ULS_KF_eg2;
+    
 	TH2F				*fHist_InvMass_pt_LS_KF;
     
     TH2F                *fHist_Correlation_leg1_emcal_leg2_not;

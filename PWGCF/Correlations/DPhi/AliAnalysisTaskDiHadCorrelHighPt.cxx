@@ -214,7 +214,8 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fDCAbachelorPV(0.04),
     fDCAbaryonDaughterPV(0.03),
     fDCAmesonDaughterPV(0.04),
-    fHistV0AmplitudeVsPVposition(0)
+    fHistV0AmplitudeVsPVposition(0),
+    fonTheFlyMC(kFALSE)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -376,7 +377,8 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fDCAbachelorPV(0.04),
     fDCAbaryonDaughterPV(0.03),
     fDCAmesonDaughterPV(0.04),
-    fHistV0AmplitudeVsPVposition(0)
+    fHistV0AmplitudeVsPVposition(0),
+    fonTheFlyMC(kFALSE)
 {
     // constructor
 
@@ -1129,7 +1131,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             else if (mcTrack->Charge()<0) cha= -1.;
             else cha =0;
             Int_t originalPartonType = -30; // 0 - quark, 1 - gluon
-            Int_t pdg_parton = 0;
+            Int_t pdg_parton = 10;
 
 			if (TrIsPrim && TrPtMin && TrCharge && TrEtaMax) {
                 
@@ -1181,7 +1183,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             	if ((mcPartPdg != 310) && (mcPartPdg != 3122) && (mcPartPdg != (-3122)) && TMath::Abs(mcPartPdg) !=3312 ) continue; // keep only Lambdas and K0S and charged Xi (for the feedDownCorrection)
             	Bool_t IsFromCascade = kFALSE;
             	
-                if(fAnalysisAOD){
+                if(!fonTheFlyMC){
                 	Int_t mother  = mcTrack->GetMother();
                 	mcMotherParticle = static_cast<AliMCParticle*>(fmcEvent->GetTrack(mother));
                 	Int_t motherPDG = 0;

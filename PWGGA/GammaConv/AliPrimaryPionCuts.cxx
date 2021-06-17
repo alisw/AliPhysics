@@ -662,7 +662,9 @@ Bool_t AliPrimaryPionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 		cutIndex++;
 	} else { cutIndex+=1; }
 	
-	if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
+    //if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
+    // check for TOF signal: AliVTrack::kTOFout means that a tof signal is matched, AliVTrack::kTIME means that the track length (and then the expected times) was extrapolated properly
+    if((fCurrentTrack->GetStatus() & AliVTrack::kTOFout ) && (fCurrentTrack->GetStatus() & AliVTrack::kTIME)){
 		if(fHistTOFbefore) fHistTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
 		if(fUseTOFpid){
 			if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)>fPIDnSigmaAbovePionLineTOF ||
@@ -1448,7 +1450,45 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
             fMassCut = 0.600;
             fMassCut_WithNDM = 0.600;
             break;
-
+        case 15: //f overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.650;
+            break;
+        case 16: //g overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.700;
+            break;
+        case 17: //h overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_WithNDM= kTRUE;
+            fMassCut = 0.650;
+            fMassCut_WithNDM = 1.;
+            break;
+        case 18: //i overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_WithNDM= kTRUE;
+            fMassCut = 0.650;
+            fMassCut_WithNDM = 0.85;
+            break;
+        case 19: //j overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.460;
+            break;
+        case 20: //k overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.480;
+            break;
+        case 21: //l overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.520;
+            break;
 		default:
 			cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;

@@ -13,6 +13,7 @@
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisTaskConvJet.h"
 #include "AliAnalysisTaskJetOutlierRemoval.h"
+#include "AliDalitzElectronSelector.h"
 #include "AliAnalysisManager.h"
 #include "TProfile2D.h"
 #include "TH3.h"
@@ -52,6 +53,9 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 
     // Jet functions
     void ProcessJets();
+
+    // for electron contamination
+    void ProcessElectronCont();
 
     // determine source according to pdg code of mother
     Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
@@ -123,6 +127,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     void ProcessNeutralOverlapsMC(AliMCEvent *mcEvent);
     void PrintCaloMCLabelsAndInfoAOD(AliVEvent* event, AliAODConversionPhoton *TrueClusterCandidate, AliVCluster* cluster);
 
+    void SetCalcElectronContribution(Bool_t tmp)  {fUsePrimElectronMatching = tmp;};
+
   protected:
     AliV0ReaderV1*          fV0Reader;                                          // basic photon Selection Task
     TString                 fV0ReaderName;
@@ -189,6 +195,16 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoClusMergedPtvsRJetAccepted;                   //! array of histos with clusters in Jets vs distance between cluster and Jet axis
     TH2F**                  fHistoJetFragmFunc;                                 //! array of histos with clusters in Jets vs z (z = pJet*pPi0 / |pJet|)
 
+
+    TH2F**                  fHistoPrimIdentified;                               //! pT of all matched clusters for prim electron candidates
+    TH2F**                  fHistoPrimIdentifiedEoverP;                         //! E/p vs Pt for all matched clusters for prim electron candidates
+    TH2F**                  fHistoPrimIdentifiedMC;                             //! pT of all matched clusters for prim electron candidates disentangled for different particle species
+    TH2F**                  fHistoTrueElectronsEoverP;                          //! True primary electron E/p
+    TH2F**                  fHistoTrueDalitzElectronsEoverP;                    //! True dalitz electron E/p
+    TH2F**                  fHistoTrueConvElectronsEoverP;                      //! True conv. electron E/p
+    TH2F**                  fHistoTruePionsEoverP;                              //! True pion E/p
+    TH2F**                  fHistoElectronsRecVsTrueP;                          //! Rec. vs true P of electron track candidates
+
     //histograms for pure MC quantities
     TH1I**                  fHistoMCHeaders;                                    //! array of histos for header names
     TH1F**                  fHistoMCPi0Pt;                                      //! array of histos with weighted pi0, pT
@@ -222,6 +238,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoMCPrimaryYvsSource;                           //! array of histos with weighted primary particles, Y vs source
     TH1F**                  fHistoMCDecayGammaPt;                               //! array of histos with weighted decay gamma
     TH1F**                  fHistoMCAllGammaPt;                                 //! array of histos with weighted all gamma
+    TH2F**                  fHistoMCElectronsPt;                                //! array of histos with weighted electrons from different sources
 
     // MC validated cluster histos
     TH2F**                  fHistoTrueClusEFracFirstLabel;                      //!
@@ -284,6 +301,9 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusMergedPtvsRJet;                       //! array of histos with clusters from vs distance to Jet axis
     TH2F**                  fHistoTrueClusPi0PtvsRJet;                          //! array of histos with clusters from true pi0s vs distance to Jet axis
     TH2F**                  fHistoTrueClusEtaPtvsRJet;                          //! array of histos with clusters from true etas vs distance to Jet axis
+    TH2F**                  fHistoTrueClusGammaPtvsRJet;                        //! array of histos with clusters from true gammas vs distance to Jet axis
+    TH2F**                  fHistoTrueClusElectronPtvsRJet;                     //! array of histos with clusters from true electrons vs distance to Jet axis
+    TH2F**                  fHistoTrueClusHadronPtvsRJet;                       //! array of histos with clusters from true hadrons vs distance to Jet axis
 
     // MC validated reconstructed quantities mesons
     TH2F**                  fHistoTruePi0PtY;                                   //! array of histos with validated pi0, pt, Y
@@ -379,11 +399,18 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     Int_t                   fMaxAllowedPi0OverlapsMC;                           // Event rejection based on pi0 overlaps in MC
     TH2F**                  fHistoPi0EvsGammaOverlapE;                          //! array of histos with SPD tracklets vs SPD clusters for background rejection
 
+    // electron contamination estimation
+    Bool_t                      fUsePrimElectronMatching;                       // switch for electron contamination estimation
+    AliDalitzElectronSelector*  fElecSelector;                                  // pointer to dalitz eletron selection task
+    std::vector<Int_t>          fSelectorElectronIndex;                         //! vector containing the track ids of the identified primary electron tracks
+    std::vector<Int_t>          fSelectorPositronIndex;                         //! vector containing the track ids of the identified primary positron tracks
+
+
   private:
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 42);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 45);
 };
 
 #endif

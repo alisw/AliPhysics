@@ -15,7 +15,7 @@
 
 
 
-#include "Riostream.h"
+//#include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TFile.h"
@@ -28,7 +28,7 @@
 #include "TMarker.h"
 #include "TLegend.h"
 #include "TNtuple.h"
-#include <iostream>
+//#include <iostream>
 #include "TString.h"
 //#include "TPDGCode.h"
 //#include "THnSparse.h"
@@ -59,11 +59,11 @@
 #include "AliInputEventHandler.h"
 #include "AliAODpidUtil.h"
 #include "AliAnalysisTaskKaon2PC.h"
+#include "AliEventCuts.h"
 
 
 //class AliAnalysisTaskMyTask;    // your analysis class
-
-using namespace std;              // std namespace: so you can do things like 'cout'
+//using namespace std;              // std namespace: so you can do things like 'cout'
 
 ClassImp(AliAnalysisTaskKaon2PC)  // classimp: necessary for root
 
@@ -72,6 +72,7 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(),
     fOutput(0),
     fPrimaryVtx(0),
     fPIDResponse(0),
+    fEventCuts(0),
     fHistChKaons(0),
     fHistEtaCuts(0),
     fHistPosKaons(0),
@@ -92,7 +93,7 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(),
     fCosPACut(0.99),
     fSigPosv0Cut(3.0),
     fSigNegv0Cut(3.0)
-{   
+{
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
@@ -104,6 +105,7 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC(const char* name) : AliAnalysisTa
     fOutput(0),
     fPrimaryVtx(0),
     fPIDResponse(0),
+    fEventCuts(0),
     fHistChKaons(0),
     fHistEtaCuts(0),
     fHistPosKaons(0),
@@ -152,6 +154,9 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fOutput = new TList();          // this is a list that contain all of your histograms
                                     // at the end of the analysis, the contents of this list are written to output file
     fOutput->SetOwner(kTRUE);
+
+    fEventCuts = new AliEventCuts();
+    fEventCuts->fUseITSTPCCluCorrelationCut = true;
 
     // create histograms
     
@@ -265,6 +270,7 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
     printf("ERROR: fAOD not available\n");
     return;
     }
+    if (!fEventCuts->AcceptEvent(fAOD)) return;
     
     AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();     //to get pid response object
     if (man) {
@@ -273,7 +279,6 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
             }
     if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)) return;
     
-    AliAODv0* v0 = 0x0;
     Int_t nv0s(fAOD->GetNumberOfV0s());
     Int_t iTracks(fAOD->GetNumberOfTracks());
     

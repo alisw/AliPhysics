@@ -122,6 +122,7 @@ public:
   void SetSkipMCHeaders( Bool_t lVar ) { fkSkipMCHeaders = lVar; }
   void SetCalculateSpherocityMC ( Bool_t lVar ) { fkDebugMCSpherocity = lVar; }
   void SetPreferSuperCalib( Bool_t lVar ) { fkPreferSuperCalib = lVar; }
+  void SetPropDCA      ( Bool_t lVar ) { fkPropDCA     = lVar; } ;
   
   //override for getting estimator definitions from different OADB file
   //FIXME: should preferably be protected, extra functionality required
@@ -181,6 +182,7 @@ private:
   Bool_t fkSkipMCHeaders; //if true, don't try to read headers
   Bool_t fkPreferSuperCalib; //if true, prefer supercalib if available
   Bool_t fkLightTree; //if true, disable typically unused branches of TTree for size
+  Bool_t fkPropDCA;     //if true, propagate tracks to DCA 
   
   //Debug Options
   Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
@@ -306,6 +308,13 @@ private:
   
   AliMultVariable *fNTracks;             //!  no. tracks
   AliMultVariable *fNTracksTPCout;             //!  no. tracks
+  
+  Int_t fNTracksITSrefit;
+  Int_t fNTracksDCAxyABS;
+  Int_t fNTracksDCAzABS;
+  Int_t fNTracksDCAxySQ;
+  Int_t fNTracksDCAzSQ;
+  
   AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
   AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
   AliMultVariable *fNTracksITSsa2010;                     //!  no. tracks ITSsa (2010 ITSsa track cuts)

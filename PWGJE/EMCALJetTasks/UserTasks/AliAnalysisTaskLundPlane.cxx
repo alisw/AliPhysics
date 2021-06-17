@@ -398,7 +398,7 @@ if(mytrig==5){
         if (!(fJetShapeSub == kConstSub))
           jet3 = jet1->ClosestJet();
         if (!jet3) {
-          Printf("jet3 does not exist, returning");
+	  //   Printf("jet3 does not exist, returning");
           continue;
         }
       }
@@ -444,7 +444,7 @@ if(mytrig==5){
           kMatched = 3;
 
         ptMatch = jet3->Pt();
-
+        cout<<"the matched jet "<<jet3->Pt()<<" "<<kMatched<<endl;
         IterativeDeclusteringMC(jet3, kMatched, const1Part, constPart);
        
       }

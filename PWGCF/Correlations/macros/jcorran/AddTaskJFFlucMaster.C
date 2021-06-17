@@ -1,5 +1,5 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t period = 0, double ptmin = 0.5, Bool_t removebadarea = kFALSE){
+AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t period = 0, double ptmin = 0.5, Bool_t removebadarea = kFALSE, Bool_t mapsmooth = kFALSE){
 	// Load Custom Configuration and parameters
 	enum { lhc15o=0, lhc18q=1, lhc18r=2 };
 	TString speriod[3]= {"15o","18q","18r"}; //needed string to load correct map config based on string
@@ -20,6 +20,8 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 		"pileup"  // 6
 	};
 	//loading correction map
+	TString s_smooth = "";
+	if(mapsmooth) s_smooth = "Smooth_";
 	TString MAPfilenames[Nsets]; 
 	TString MAPdirname="alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
 	AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
@@ -31,7 +33,7 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 		cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root",speriod[period].Data()));//efficiency cirrection
 	}
 	for(int i=0;i<Nsets;i++) {
-		MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",MAPdirname.Data(), speriod[period].Data(), Int_t(ptmin*10), configNames[i].Data()); //azimuthal correction
+		MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_%spt%02d_s_%s.root",MAPdirname.Data(), speriod[period].Data(),s_smooth.Data(), Int_t(ptmin*10), configNames[i].Data()); //azimuthal correction
 		cmaptask->EnablePhiCorrection(i,MAPfilenames[i]); // i is index for set file correction ->SetPhiCorrectionIndex(i);
 	}
 	mgr->AddTask((AliAnalysisTask*) cmaptask);

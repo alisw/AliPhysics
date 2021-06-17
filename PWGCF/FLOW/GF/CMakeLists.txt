@@ -51,13 +51,17 @@ set(SRCS
   AliGFWWeights.cxx
   AliProfileSubset.cxx
   AliProfileBS.cxx
+  AliCkContainer.cxx
   AliUniFlowCorrTask.cxx
   AliAnalysisDecorrTask.cxx
   AliAnalysisTaskESEFlow.cxx
   AliAnalysisTaskFlowSquareBracket.cxx
-  AliAnalysisTaskNonlinearFlow.cxx
-  CorrelationCalculator.cxx
   )
+
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS AliAnalysisTaskNonlinearFlow.cxx)
+  list(APPEND SRCS CorrelationCalculator.cxx)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

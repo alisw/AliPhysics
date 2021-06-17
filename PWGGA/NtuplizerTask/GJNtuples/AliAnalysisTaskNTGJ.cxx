@@ -1249,6 +1249,18 @@ void AliAnalysisTaskNTGJ::doMCParticleLoop(AliMCParticleContainer *mc_container,
                 USHRT_MAX;
         }
 
+        // _branch_mc_truth_is_prompt_photon[_branch_nmc_truth] = false;
+                 switch(p->PdgCode()) {
+                     case 11:
+                     case -11:
+                     case 22:
+                         _branch_mc_truth_is_prompt_photon[_branch_nmc_truth] =
+                             getIsPromptPhoton(p, mc_container);
+                         break;
+                     default:
+                         _branch_mc_truth_is_prompt_photon[_branch_nmc_truth] = false;
+                 }
+        
         _branch_nmc_truth++;
         if (_branch_nmc_truth >= NMC_TRUTH_MAX) {
             break;
@@ -1256,6 +1268,64 @@ void AliAnalysisTaskNTGJ::doMCParticleLoop(AliMCParticleContainer *mc_container,
     }
 
 }
+
+bool AliAnalysisTaskNTGJ::getIsPromptPhoton(const AliAODMCParticle *finalParticle,
+                                             AliMCParticleContainer *mc_container)
+ {
+     // this function is meant to help determine whether a cluster contains a prompt photon
+     // including those that have converted into e+/e-
+     // what it does is check the parentage of particular MC particles of interest
+     // and determine whether it was a prompt photon and save that off
+     // this assumes that the check for +/- 11 and 22 has already been done
+     // in principle, this could be done here, but then there would be
+     // another wrapper function and that seems too complicated
+
+     // keep track of what the last PDG code was
+     // the parent is allowed to be either this or 22
+     // if it changes to anything else at any point, then it is not prompt
+     int currentPdgCode = finalParticle->PdgCode();
+     // also keep track of the current particle
+     const AliAODMCParticle* currentParticle = finalParticle;
+     // assume true by default
+     bool isPrompt = true;
+
+     // go until we get to the end (GetMother returns -1) or until we manually break
+     while (currentParticle->GetMother() != -1) {
+         // protect against out-of-bounds
+         if (currentParticle->GetMother() >= mc_container->GetNParticles()) {
+             break;
+         }
+
+         // retrieve the parent
+         const AliAODMCParticle* parentParticle = mc_container->GetMCParticle(currentParticle->GetMother());
+         int parentPdgCode = parentParticle->PdgCode();
+         // check the parent PDG code
+         if (parentPdgCode == currentPdgCode || parentPdgCode == 22) {
+             // if valid, update the current to the parent
+             // this should basically allow it to stay what it was before or switch to a photon
+             // once it switches to a photon, it has to stay a photon the whole time
+             currentPdgCode = parentPdgCode;
+             currentParticle = parentParticle;
+         } else {
+             // it's allowed to come from the initial collision (quark or gluon)
+             // the parent of this should be -1 to exclude fragmentation photons
+             if (pdg_is_parton(parentPdgCode)) {
+                 if (parentParticle->GetMother() == -1) {
+                     isPrompt = true;
+                     break;
+                 }
+             }
+
+             // this did not come from a prompt photon; set to false and break
+             isPrompt = false;
+             break;
+         }
+     }
+
+     return isPrompt;
+
+ }
+
 // =================================================================================================================
 void AliAnalysisTaskNTGJ::doClusterLoop(AliVEvent *event,
                                         AliVCaloCells *emcal_cell,

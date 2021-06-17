@@ -213,6 +213,50 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411790106f030000000","0163103100000010"); // INT7 No Clus cuts TBNL + FT
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411793706f030000000","0163103100000010"); // INT7 No Clus cuts TBNL
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411790406f030000000","0163103100000010"); // INT7 No Clus cuts TBNL no Scale
+  } else if (trainConfig == 8){ // EMCAL + DCal clusters 13 TeV - NCell study
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100000010"); // no NCell cut  NL01
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NCell >= 2 cut NL01
+  } else if (trainConfig == 9){ // EMCAL + DCal clusters 13 TeV - NCell study
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","0163103100000010"); // no NCell cut  NL21
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe32220000","0163103100000010"); // NCell >= 2 cut NL21
+
+  // diff clusterizer
+  } else if (trainConfig == 10){ // std
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","0163103100000010"); // no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe32220000","0163103100000010"); // NCell >= 2 cut
+  } else if (trainConfig == 11){ // var1
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","0163103100000010"); // no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe32220000","0163103100000010"); // NCell >= 2 cut
+  } else if (trainConfig == 12){ // var2
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","0163103100000010"); // no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe32220000","0163103100000010"); // NCell >= 2 cut
+  } else if (trainConfig == 13){ // var3
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","0163103100000010"); // no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe32220000","0163103100000010"); // NCell >= 2 cut
+  } else if (trainConfig == 14){ // var4
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","0163103100000010"); // no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe32220000","0163103100000010"); // NCell >= 2 cut
+
+  // diff clusterizer without M02 and exotics cut
+  } else if (trainConfig == 15){ // std
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 16){ // var1
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 17){ // var2
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 18){ // var3
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 19){ // var4
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
+
+  // different NL scales
+  } else if (trainConfig == 20){ // no scale in NL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799309f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 21){ // 1.5% scale in NL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799409f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 22){ // 3.5% scale in NL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799509f020000000","0163103100000010"); // no NCell cut
+
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

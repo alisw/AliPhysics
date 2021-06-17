@@ -61,7 +61,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		virtual void  SetAnalysisMC(bool isMC) {fAnalysisMC = isMC;}
 		virtual void  SetMCClosure(bool isMCclos) {fIsMCclosure = isMCclos;}
 		virtual void  SetNcl(const int ncl){fNcl = ncl;}
-	//	virtual void  SetPolarity(const float polarity){fPolarity = polarity;}
+		//	virtual void  SetPolarity(const float polarity){fPolarity = polarity;}
 		virtual void  SetEtaCut(double etaCut){fEtaCut = etaCut;}
 		virtual void  SetPeriod(const char* Period) { fPeriod = Period; }
 		virtual void  SetdEdxCalibration(bool isCalibrated) { fdEdxCalibrated = isCalibrated; }
@@ -79,6 +79,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		void GetMCCorrections();
 		virtual Double_t DeltaPhi(Double_t phi, Double_t lphi,
 				Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
+		virtual Double_t DeltaEta(Double_t eta, Double_t leta);
 		void ProduceArrayTrksESD();
 		void ProduceArrayV0ESD();
 		short   GetPidCode(Int_t pdgCode) const;
@@ -118,7 +119,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 
 		int fNcl;
 		double fEtaCut;
-///		const float fPolarity;
+		///		const float fPolarity;
 		bool fdEdxCalibrated;
 		const double fDeDxMIPMin;
 		const double fDeDxMIPMax;
@@ -133,6 +134,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		double fGenLeadPhi;
 		double fGenLeadPt;
 		int    fGenLeadIn;
+		double fRecLeadEta;
 		double fRecLeadPhi;
 		double fRecLeadPt;
 		int    fRecLeadIn;
@@ -151,6 +153,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TH2F* hPhiHybrid1;
 		TH2F* hPhiHybrid2;
 		TH1F* hPhiLeading;
+		TH2F* hDeltaPhiDeltaEta;
 
 		TH2F* hPtVsP[4];
 		TH2F* hnSigmaElectrons[4];
@@ -159,6 +162,8 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TH2F* hNchVsPtNegTPC[3][4];
 		TH2F* hNchVsPtPosTOF[3][4];
 		TH2F* hNchVsPtNegTOF[3][4];
+		TH2F* hNchVsPPosTOF[3][4];
+		TH2F* hNchVsPNegTOF[3][4];
 
 		TH3F* hNchVsPtDataPosPionTPC[3][4];
 		TH3F* hNchVsPtDataNegPionTPC[3][4];
@@ -169,9 +174,6 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 
 		TH3F* hNchVsPtDataPosTOF[3][4];
 		TH3F* hNchVsPtDataNegTOF[3][4];
-//		TH2F* hPionTOFTail[4];
-//		TH2F* hKaonTOFTail[4];
-//		TH2F* hProtonTOFTail[4];
 
 		TF1* fEtaCalibrationPos;
 		TF1* fEtaCalibrationNeg;
@@ -194,12 +196,13 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TProfile* pMIPVsEtaV0s;
 		TH2F* hPhirTPC;
 		TH2F* histPiTof[4];
-		//		TH2D* hMIPVsPhi[4];
-		//		TProfile* pMIPVsPhi[4];
-		//		TH2D* hPlateauVsPhi[4];
-		//		TProfile* pPlateauVsPhi[4];
+		TH2F* hMIPVsPhi[4];
+		TProfile* pMIPVsPhi[4];
+		TH2F* hPlateauVsPhi[4];
+		TProfile* pPlateauVsPhi[4];
 		TH3F* hDeDxVsP[3][4];
 		TH2F* hNchVsPrTPC[3][4];
+		TH2F* hNchVsPtrTPC[3][4];
 
 
 		AliAnalysisTaskSpectraRT(const AliAnalysisTaskSpectraRT&);            // not implemented

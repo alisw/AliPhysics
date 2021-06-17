@@ -260,7 +260,7 @@ void AliAnalysisTaskEmcalJetHdEdxCorrelations::UserCreateOutputObjects()
   if(fDoLessSparseAxes) {
     cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7 | 1<<11;
   } else {
-    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7 | 1<<8 | 1<<9 | 1<<11;
+    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<7 | 1<<11;
   }
   fhnJH = NewTHnSparseF("fhnJH", cifras);
   fhnJH->Sumw2();
