@@ -376,8 +376,8 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
   for (int s=0; s<5; s++){
     RanDistHist[s]->Reset("ICE");
     for (int rn=0; rn<ntracks; rn++) {RanDistHist[s]->Fill(background->GetRandom());}
-    RanDistHist[s]->Divide(background);
-    //RanDistHist[s]->Scale(16.0/(double)ntracks);   
+    //RanDistHist[s]->Divide(background);
+    RanDistHist[s]->Scale(16.0/(double)ntracks);   
     //printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
   }
 
