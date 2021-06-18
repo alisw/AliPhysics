@@ -48,9 +48,7 @@ class AliAnalysisManager;
  * |                  3                        | DegreesForRotationMethod |
  * |                  4                        | RapidityMesonCut         |
  * |                  5                        | PtCut                    |
- * |                  6                        | AlphaMesonCut            |
- * |                  7                        | SelectionWindow          |
- * |                  8                        | SharedElectronCuts       |
+
  * |                  9                        | RejectToCloseV0s         |
  * |                  10                       | UseMCPSmearing           |
  * |                  11                       | DcaGammaGamma            |

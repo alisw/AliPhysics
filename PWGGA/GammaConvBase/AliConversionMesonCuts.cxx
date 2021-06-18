@@ -110,7 +110,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMinV0Dist(200.),
   fAPlikeSigma(0),
   fMesonQualityMin(0),
-  fPBremSmearing(0),
+  fPBremSmearing(1.),
   fPSigSmearing(0),
   fPSigSmearingCte(0),
   fDCAGammaGammaCut(1000),
@@ -190,8 +190,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fCutString=new TObjString((GetCutNumber()).Data());
   fElectronLabelArray = new Int_t[fElectronLabelArraySize];
   if (fBrem == NULL){
-    fBrem = new TF1("fBrem","pow(-log(x),[0]/log(2.0)-1.0)/TMath::Gamma([0]/log(2.0))",0.00001,0.999999999);
-    // tests done with 1.0e-14
+    // BetheHeitler function for Bremsstrahlung (Smearing)
+    fBrem = new TF1("fBrem","TMath::GammaDist(-log(x), [0]/log(2.), 0., 1.)",0.00001,0.999999999);
+    // fBrem = new TF1("fBrem","pow(-log(x),[0]/log(2.0)-1.0)/TMath::Gamma([0]/log(2.0))",0.00001,0.999999999);
     fBrem->SetParameter(0,fPBremSmearing);
     fBrem->SetNpx(100000);
   }
@@ -3739,130 +3740,113 @@ Bool_t AliConversionMesonCuts::SetToCloseV0sCut(Int_t toClose) {
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
 {// Set Cut
+  fPBremSmearing = 1.;
   if(fMode == 2){ //PCM-EMCal running
     switch(useMCPSmearing){
     case 0:
       fUseMCPSmearing   = 0;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.;
       fPSigSmearingCte  = 0.;
       break;
     case 1:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1;
       fPSigSmearing     = 0.010;
       fPSigSmearingCte  = 0.010;
       break;
     case 2:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1;
       fPSigSmearing     = 0.015;
       fPSigSmearingCte  = 0.010;
       break;
     case 3:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.020;
       fPSigSmearingCte  = 0.010;
       break;
     case 4:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.020;
       fPSigSmearingCte  = 0.020;
       break;
     case 5:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.030;
       fPSigSmearingCte  = 0.020;
       break;
     case 6:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.030;
       fPSigSmearingCte  = 0.030;
       break;
     case 7:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1;
       fPSigSmearing     = 0.030;
       fPSigSmearingCte  = 0.050;
       break;
     case 8:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.030;
       fPSigSmearingCte  = 0.060;
       break;
     case 9:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.075;
       fPSigSmearingCte  = 0.050;
       break;
-    case 10:     //a
+    case 10:     //a     new implementation pol2
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.0275;
-      fPSigSmearingCte  = 0.025;
+      fPSigSmearing     = 0.025*0.025;
+      fPSigSmearingCte  = 0.03*0.03;
       break;
-    case 11:     //b
+    case 11:     //b       old implementation pol2
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.025;
-      fPSigSmearingCte  = 0.030;
+      fPSigSmearingCte  = 0.03;
       break;
-    case 12:     //c
-      fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.0275;
-      fPSigSmearingCte  = 0.020;
+    case 12:     //c        new implementation pol2 new values
+      fUseMCPSmearing   = 3;
+      fPSigSmearing     = -3.54113e-06;
+      fPSigSmearingCte  = 8.007e-05;
       break;
-    case 13:     //d
-      fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.0275;
-      fPSigSmearingCte  = 0.035;
-      break;
-    case 14:     //e
-      fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.0275;
-      fPSigSmearingCte  = 0.04;
-      break;
-    case 15:     //f
-      fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.0275;
-      fPSigSmearingCte  = 0.015;
-      break;
-    case 16:     //g
-      fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.025;
-      fPSigSmearingCte  = 0.020;
-      break;
-    case 17:     //h
-      fUseMCPSmearing   = 2;
-      fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.025;
-      fPSigSmearingCte  = 0.020;
-      break;
-    case 24:     //o
-      fUseMCPSmearing   = 2;
-      fPSigSmearing     = 0.000111798;
-      fPSigSmearingCte  = -3.29556e-05;
-      break;
-    case 25:     //p
+    case 13:     //d          const
       fUseMCPSmearing   = 2;
       fPSigSmearing     = 0.;
-      fPSigSmearingCte  = 1.15737e-05;
+      fPSigSmearingCte  = 8.84204e-06;
+      break;
+    case 14:     //e            pol1
+      fUseMCPSmearing   = 2;
+      fPSigSmearing     = -2.3334e-05;
+      fPSigSmearingCte  = 8.34844e-05;
+      break;
+    case 15:     //f            pol1 with 10% additional Bremsstrahlung 
+      fUseMCPSmearing   = 2;
+      fPBremSmearing    = 0.114*0.01;
+      fPSigSmearing     = -2.3334e-05;
+      fPSigSmearingCte  = 8.34844e-05;
+      break;
+    case 16:     //g            pol1 with 20% additional Bremsstrahlung
+      fUseMCPSmearing   = 2;
+      fPBremSmearing    = 0.114*0.02;
+      fPSigSmearing     = -2.3334e-05;
+      fPSigSmearingCte  = 8.34844e-05;
+      break;
+    case 17:     //h            pol1 with 5% additional Bremsstrahlung
+      fUseMCPSmearing   = 2;
+      fPBremSmearing    = 0.114*0.005;
+      fPSigSmearing     = -2.3334e-05;
+      fPSigSmearingCte  = 8.34844e-05;
+      break;
+    case 24:     //o
+      fUseMCPSmearing   = 0;
+      fPBremSmearing    = 0.114*0.01;
+      break;
+    case 25:     //p
+      fUseMCPSmearing   = 0;
+      fPBremSmearing    = 0.114*0.02;
       break;
     case 26:     //q
-      fUseMCPSmearing   = 2;
-      fPSigSmearing     = 0.000107252;
-      fPSigSmearingCte  = -6.42401e-06;
+      fUseMCPSmearing   = 0;
+      fPBremSmearing    = 0.114*0.005;
       break;
     default:
       AliError("Warning: UseMCPSmearing not defined");
@@ -3872,145 +3856,121 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
     switch(useMCPSmearing){
     case 0:
       fUseMCPSmearing   = 0;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.;
       fPSigSmearingCte  = 0.;
       break;
     case 1:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.0e-14;
       fPSigSmearing     = 0.;
       fPSigSmearingCte  = 0.;
       break;
     case 2:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.0e-15;
       fPSigSmearing     = 0.0;
       fPSigSmearingCte  = 0.;
       break;
     case 3:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.003;
       fPSigSmearingCte  = 0.002;
       break;
     case 4:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.003;
       fPSigSmearingCte  = 0.007;
       break;
     case 5:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.003;
       fPSigSmearingCte  = 0.016;
       break;
     case 6:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.007;
       fPSigSmearingCte  = 0.016;
       break;
     case 7:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.0e-16;
       fPSigSmearing     = 0.0;
       fPSigSmearingCte  = 0.;
       break;
     case 8:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.007;
       fPSigSmearingCte  = 0.014;
       break;
     case 9:
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.007;
       fPSigSmearingCte  = 0.011;
       break;
    case 10:     //a
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.00;
       fPSigSmearingCte  = 0.02;
       break;
     case 11:     //b
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.00;
       fPSigSmearingCte  = 0.025;
       break;
     case 12:     //c
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.00;
       fPSigSmearingCte  = 0.030;
       break;
     case 13:     //d
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.00;
       fPSigSmearingCte  = 0.01;
       break;
     case 14:     //e
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.00;
       fPSigSmearingCte  = 0.008;
       break;
     case 15:     //f
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.002;
       fPSigSmearingCte  = 0.008;
       break;
     case 16:     //g
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.001;
       fPSigSmearingCte  = 0.008;
       break;
     case 17:     //h
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.00;
       fPSigSmearingCte  = 0.011;
       break;
     case 18:     //i
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.00;
       fPSigSmearingCte  = 0.012;
       break;
     case 19:     //j
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.002;
       fPSigSmearingCte  = 0.01;
       break;
     case 20:     //k
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.002;
       fPSigSmearingCte  = 0.011;
       break;
     case 21:     //l
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.002;
       fPSigSmearingCte  = 0.012;
       break;
     case 22:     //m
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.004;
       fPSigSmearingCte  = 0.011;
       break;
     case 23:     //n
       fUseMCPSmearing   = 1;
-      fPBremSmearing    = 1.;
       fPSigSmearing     = 0.009;
       fPSigSmearingCte  = 0.011;
       break;
@@ -4034,6 +3994,7 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       return kFALSE;
     }
   }
+  fBrem->SetParameter(0,fPBremSmearing);
   return kTRUE;
 }
 
@@ -4437,7 +4398,7 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
 
   if (photon==NULL) return;
   Double_t facPBrem = 1.;
-  Double_t facPSig = 0.;
+  Double_t facPSig = 1.;
 
   Double_t phi=0.;
   Double_t theta=0.;
@@ -4450,31 +4411,28 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
     theta=acos( photon->Pz()/ photon->P());
   }
 
-  if (fUseMCPSmearing == 1){
-    if( fPSigSmearing != 0. || fPSigSmearingCte!=0. ){
-      facPSig = TMath::Sqrt(fPSigSmearingCte*fPSigSmearingCte+fPSigSmearing*fPSigSmearing*P*P)*fRandom.Gaus(0.,1.);
+  if( fPBremSmearing != 1.){
+    if(fBrem!=NULL){
+      facPBrem = fBrem->GetRandom();
     }
-
-    if( fPBremSmearing != 1.){
-      if(fBrem!=NULL){
-        facPBrem = fBrem->GetRandom();
-      }
-    }
-
-    photon->SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
-    photon->SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
-    photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
-    photon->SetE(photon->P());
-  } else if (fUseMCPSmearing == 2) {
-    facPSig = fRandom.Gaus(P,TMath::Sqrt(fPSigSmearingCte+fPSigSmearing*P));
-
-    photon->SetPx(facPSig*sin(theta)*cos(phi)) ;
-    photon->SetPy(facPSig*sin(theta)*sin(phi)) ;
-    photon->SetPz(facPSig*cos(theta));
-
-    photon->SetE(photon->P());
   }
 
+  if( fUseMCPSmearing != 0 && (fPSigSmearing != 0. || fPSigSmearingCte!=0.) ){
+    if (fUseMCPSmearing == 1){
+      facPSig = (1+TMath::Sqrt(fPSigSmearingCte*fPSigSmearingCte+fPSigSmearing*fPSigSmearing*P*P)*fRandom.Gaus(0.,1.))*P;
+    } else if (fUseMCPSmearing == 2) {
+      facPSig = fRandom.Gaus(P,TMath::Sqrt(fPSigSmearingCte+fPSigSmearing*P));
+    } else if (fUseMCPSmearing == 3) {
+      facPSig = fRandom.Gaus(P,TMath::Sqrt(fPSigSmearingCte+fPSigSmearing*P*P));
+    }
+  }
+
+  if( fPBremSmearing != 1. || fUseMCPSmearing != 0 ) {
+    photon->SetPx(facPBrem * facPSig * sin(theta)*cos(phi)) ;
+    photon->SetPy(facPBrem * facPSig * sin(theta)*sin(phi)) ;
+    photon->SetPz(facPBrem * facPSig * cos(theta)) ;
+    photon->SetE(photon->P());
+  }
 
 }
 //________________________________________________________________________
@@ -4757,3 +4715,4 @@ Bool_t AliConversionMesonCuts::ArmenterosLikeQtCut(Double_t alpha, Double_t qT){
     return kTRUE;
   }
 }
+
