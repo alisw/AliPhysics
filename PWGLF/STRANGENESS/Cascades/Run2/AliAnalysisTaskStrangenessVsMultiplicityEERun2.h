@@ -300,13 +300,22 @@ private:
     Float_t fZNCpp;//!
     Float_t fZPApp;//!
     Float_t fZPCpp;//!
-    Float_t fCentrality; //!
+    Float_t fCentrality_V0M; //!
+    Float_t fCentrality_ZDC; //!
+    Float_t fCentrality_ZDCFired; //!
+    Float_t fCentrality_RefMult05; //!
+    Float_t fCentrality_RefMult08; //!
+    Float_t fCentrality_SPDClusters; //!
+    Float_t fCentrality_SPDTracklets; //!
     Bool_t fMVPileupFlag; //!
     Bool_t fOOBPileupFlag; //!
     Float_t fTestVariable; //!
     Int_t fRun;//!
 
     //TOF info for OOB pileuo study
+    Int_t  fSPDtracklets; //!
+    Int_t  fSPDtrackletsA; //!
+    Int_t  fSPDtrackletsC; //!
     Int_t  fNTOFClusters;  //!
     Int_t  fNTOFMatches;   //!
     Int_t  fNTracksITSsa2010; //!
@@ -419,7 +428,13 @@ private:
     Int_t   fTreeVariableClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
-    Float_t fTreeVariableCentrality; //!
+    Float_t fTreeVariableCentrality_V0M; //!
+    Float_t fTreeVariableCentrality_ZDC; //!
+    Float_t fTreeVariableCentrality_ZDCFired; //!
+    Float_t fTreeVariableCentrality_RefMult05; //!
+    Float_t fTreeVariableCentrality_RefMult08; //!
+    Float_t fTreeVariableCentrality_SPDClusters; //!
+    Float_t fTreeVariableCentrality_SPDTracklets; //!
     Float_t fTreeVariableZNApp;//!
     Float_t fTreeVariableZNCpp;//!
     Float_t fTreeVariableZPApp;//!
@@ -620,7 +635,13 @@ private:
     Int_t   fTreeCascVarClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
-    Float_t fTreeCascVarCentrality; //!
+    Float_t fTreeCascVarCentrality_V0M; //!
+    Float_t fTreeCascVarCentrality_ZDC; //!
+    Float_t fTreeCascVarCentrality_ZDCFired; //!
+    Float_t fTreeCascVarCentrality_RefMult05; //!
+    Float_t fTreeCascVarCentrality_RefMult08; //!
+    Float_t fTreeCascVarCentrality_SPDClusters; //!
+    Float_t fTreeCascVarCentrality_SPDTracklets; //!
     Float_t fTreeCascVarZNApp;//!
     Float_t fTreeCascVarZNCpp;//!
     Float_t fTreeCascVarZPApp;//!

@@ -740,7 +740,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH1F*                       fHistoPastFutureBits;                   ///< bookkeeping for event selection cuts
       TH1F*                       hCentrality;                            ///< centrality distribution for selected events
       TH1D*                       hCentralityNotFlat;                     ///< centrality distribution loaded for cent. flattening
-      //TH2F*                      hCentralityVsNumberOfPrimaryTracks;    ///< centrality distribution for selected events
+      TH2F*                       hCentralityVsNumberOfPrimaryTracks;     ///< centrality distribution vs. number of tracks for selected events
       TH1F*                       hVertexZ;                               ///< vertex z distribution for selected events
       TH1F*                       hNPileupVertices;                       ///< number of SPD pileup vertices
       TH1F*                       hPileupVertexToPrimZ;                   ///< distance of SPD pileup vertex to prim vertex in z
@@ -805,7 +805,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,86)
+      ClassDef(AliConvEventCuts,87)
       /// \endcond
 };
 

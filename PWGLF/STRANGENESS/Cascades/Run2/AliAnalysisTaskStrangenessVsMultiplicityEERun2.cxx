@@ -179,12 +179,21 @@ fkSandboxMode ( kFALSE ),
 
 //---> Variables for fTreeEvent
 fRun(0),
-fCentrality(0),
+fCentrality_V0M(0),
+fCentrality_ZDC(0),
+fCentrality_ZDCFired(0),
+fCentrality_RefMult05(0),
+fCentrality_RefMult08(0),
+fCentrality_SPDClusters(0),
+fCentrality_SPDTracklets(0),
 fZNApp(0),
 fZNCpp(0),
 fZPApp(0),
 fZPCpp(0),
 fTestVariable(0),
+fSPDtracklets(-1),
+fSPDtrackletsA(-1),
+fSPDtrackletsC(-1),
 fMVPileupFlag(kFALSE),
 fOOBPileupFlag(kFALSE),
 fNTOFClusters(-1),
@@ -285,7 +294,13 @@ fTreeVariableAmplitudeV0A(-1.),
 fTreeVariableAmplitudeV0C(-1.),
 fTreeVariableClosestNonEmptyBC(-1),
 
-fTreeVariableCentrality(0),
+fTreeVariableCentrality_V0M(0),
+fTreeVariableCentrality_ZDC(0),
+fTreeVariableCentrality_ZDCFired(0),
+fTreeVariableCentrality_RefMult05(0),
+fTreeVariableCentrality_RefMult08(0),
+fTreeVariableCentrality_SPDClusters(0),
+fTreeVariableCentrality_SPDTracklets(0),
 fTreeVariableZNApp(0),
 fTreeVariableZNCpp(0),
 fTreeVariableZPApp(0),
@@ -468,7 +483,13 @@ fTreeCascVarAmplitudeV0A(-1.),
 fTreeCascVarAmplitudeV0C(-1.),
 fTreeCascVarClosestNonEmptyBC(-1),
 
-fTreeCascVarCentrality(0),
+fTreeCascVarCentrality_V0M(0),
+fTreeCascVarCentrality_ZDC(0),
+fTreeCascVarCentrality_ZDCFired(0),
+fTreeCascVarCentrality_RefMult05(0),
+fTreeCascVarCentrality_RefMult08(0),
+fTreeCascVarCentrality_SPDClusters(0),
+fTreeCascVarCentrality_SPDTracklets(0),
 fTreeCascVarZNApp(0),
 fTreeCascVarZNCpp(0),
 fTreeCascVarZPApp(0),
@@ -553,7 +574,20 @@ fkSandboxMode ( kFALSE ),
 //---> Variables for fTreeEvent
 fRun(0),
 fTestVariable(0),
-fCentrality(0),
+fCentrality_V0M(0),
+fCentrality_ZDC(0),
+fCentrality_ZDCFired(0),
+fCentrality_RefMult05(0),
+fCentrality_RefMult08(0),
+fCentrality_SPDClusters(0),
+fCentrality_SPDTracklets(0),
+fZNApp(0),
+fZNCpp(0),
+fZPApp(0),
+fZPCpp(0),
+fSPDtracklets(-1),
+fSPDtrackletsA(-1),
+fSPDtrackletsC(-1),
 fMVPileupFlag(kFALSE),
 fOOBPileupFlag(kFALSE),
 fNTOFClusters(-1),
@@ -654,7 +688,13 @@ fTreeVariableAmplitudeV0A(-1.),
 fTreeVariableAmplitudeV0C(-1.),
 fTreeVariableClosestNonEmptyBC(-1),
 
-fTreeVariableCentrality(0),
+fTreeVariableCentrality_V0M(0),
+fTreeVariableCentrality_ZDC(0),
+fTreeVariableCentrality_ZDCFired(0),
+fTreeVariableCentrality_RefMult05(0),
+fTreeVariableCentrality_RefMult08(0),
+fTreeVariableCentrality_SPDClusters(0),
+fTreeVariableCentrality_SPDTracklets(0),
 fTreeVariableMVPileupFlag(kFALSE),
 fTreeVariableOOBPileupFlag(kFALSE),
 
@@ -833,7 +873,13 @@ fTreeCascVarAmplitudeV0A(-1.),
 fTreeCascVarAmplitudeV0C(-1.),
 fTreeCascVarClosestNonEmptyBC(-1),
 
-fTreeCascVarCentrality(0),
+fTreeCascVarCentrality_V0M(0),
+fTreeCascVarCentrality_ZDC(0),
+fTreeCascVarCentrality_ZDCFired(0),
+fTreeCascVarCentrality_RefMult05(0),
+fTreeCascVarCentrality_RefMult08(0),
+fTreeCascVarCentrality_SPDClusters(0),
+fTreeCascVarCentrality_SPDTracklets(0),
 fTreeCascVarMVPileupFlag(kFALSE),
 fTreeCascVarOOBPileupFlag(kFALSE),
 //Kink tagging
@@ -994,7 +1040,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserCreateOutputObjects()
     if(fkSaveEventTree){
         fTreeEvent = new TTree("fTreeEvent","Event");
         //Branch Definitions
-        fTreeEvent->Branch("fCentrality",&fCentrality,"fCentrality/F");
+        fTreeEvent->Branch("fCentrality_V0M",&fCentrality_V0M,"fCentrality_V0M/F");
+        fTreeEvent->Branch("fCentrality_ZDC",&fCentrality_ZDC,"fCentrality_ZDC/F");
+        fTreeEvent->Branch("fCentrality_ZDCFired",&fCentrality_ZDCFired,"fCentrality_ZDCFired/F");
+        fTreeEvent->Branch("fCentrality_RefMult05",&fCentrality_RefMult05,"fCentrality_RefMult05/F");
+        fTreeEvent->Branch("fCentrality_RefMult08",&fCentrality_RefMult08,"fCentrality_RefMult08/F");
+        fTreeEvent->Branch("fCentrality_SPDClusters",&fCentrality_SPDClusters,"fCentrality_SPDClusters/F");
+        fTreeEvent->Branch("fCentrality_SPDTracklets",&fCentrality_SPDTracklets,"fCentrality_SPDTracklets/F");
         if (fkDebugZDCInfo){
 	    fTreeEvent->Branch("fZNApp", &fZNApp,"fZNApp/F");
 	    fTreeEvent->Branch("fZNCpp", &fZNCpp,"fZNCpp/F");
@@ -1004,7 +1056,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserCreateOutputObjects()
 	fTreeEvent->Branch("fTestVariable",&fTestVariable,"fTestVariable/F");
 	fTreeEvent->Branch("fMVPileupFlag",&fMVPileupFlag,"fMVPileupFlag/O");
 	fTreeEvent->Branch("fRun",&fRun,"fRun/I");
-	    //
+    fTreeEvent->Branch("fSPDtracklets",&fSPDtracklets,"fSPDtracklets/I");
+    fTreeEvent->Branch("fSPDtrackletsA", &fSPDtrackletsA, "fSPDtrackletsA/I");
+    fTreeEvent->Branch("fSPDtrackletsC", &fSPDtrackletsC, "fSPDtrackletsC/I");
+     	    //
         if ( fkDebugOOBPileup ){
             fTreeEvent->Branch("fOOBPileupFlag",&fOOBPileupFlag,"fOOBPileupFlag/O");
             fTreeEvent->Branch("fNTOFClusters",&fNTOFClusters,"fNTOFClusters/I");
@@ -1015,7 +1070,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserCreateOutputObjects()
             fTreeEvent->Branch("fAmplitudeV0A",&fAmplitudeV0A,"fAmplitudeV0A/F");
             fTreeEvent->Branch("fAmplitudeV0C",&fAmplitudeV0C,"fAmplitudeV0C/F");
             fTreeEvent->Branch("fClosestNonEmptyBC",&fClosestNonEmptyBC,"fClosestNonEmptyBC/I");
-	  
+     	  
         }
     }
     
@@ -1055,14 +1110,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
        
         //-----------MULTIPLICITY-INFO--------------------
-	fTreeV0->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
-	if (fkDebugZDCInfo){
-	    fTreeV0->Branch("fTreeVariableZNApp", &fTreeVariableZNApp,"fTreeVariableZNApp/F");
-	    fTreeV0->Branch("fTreeVariableZNCpp", &fTreeVariableZNCpp,"fTreeVariableZNCpp/F");
-	    fTreeV0->Branch("fTreeVariableZPApp", &fTreeVariableZPApp,"fTreeVariableZPApp/F");
-	    fTreeV0->Branch("fTreeVariableZPCpp", &fTreeVariableZPCpp,"fTreeVariableZPCpp/F");
-	}
-	fTreeV0->Branch("fTreeVariableMVPileupFlag",&fTreeVariableMVPileupFlag,"fTreeVariableMVPileupFlag/O");
+        fTreeV0->Branch("fTreeVariableCentrality_V0M",&fTreeVariableCentrality_V0M,"fTreeVariableCentrality_V0M/F");
+        fTreeV0->Branch("fTreeVariableCentrality_ZDC",&fTreeVariableCentrality_ZDC,"fTreeVariableCentrality_ZDC/F");
+        fTreeV0->Branch("fTreeVariableCentrality_ZDCFired",&fTreeVariableCentrality_ZDCFired,"fTreeVariableCentrality_ZDCFired/F");
+        fTreeV0->Branch("fTreeVariableCentrality_RefMult05",&fTreeVariableCentrality_RefMult05,"fTreeVariableCentrality_RefMult05/F");
+        fTreeV0->Branch("fTreeVariableCentrality_RefMult08",&fTreeVariableCentrality_RefMult08,"fTreeVariableCentrality_RefMult08/F");
+        fTreeV0->Branch("fTreeVariableCentrality_SPDClusters",&fTreeVariableCentrality_SPDClusters,"fTreeVariableCentrality_SPDClusters/F");
+        fTreeV0->Branch("fTreeVariableCentrality_SPDTracklets",&fTreeVariableCentrality_SPDTracklets,"fTreeVariableCentrality_SPDTracklets/F");
+        if (fkDebugZDCInfo){
+            fTreeV0->Branch("fTreeVariableZNApp", &fTreeVariableZNApp,"fTreeVariableZNApp/F");
+            fTreeV0->Branch("fTreeVariableZNCpp", &fTreeVariableZNCpp,"fTreeVariableZNCpp/F");
+            fTreeV0->Branch("fTreeVariableZPApp", &fTreeVariableZPApp,"fTreeVariableZPApp/F");
+            fTreeV0->Branch("fTreeVariableZPCpp", &fTreeVariableZPCpp,"fTreeVariableZPCpp/F");
+        }
+        fTreeV0->Branch("fTreeVariableMVPileupFlag",&fTreeVariableMVPileupFlag,"fTreeVariableMVPileupFlag/O");
         //------------------------------------------------
         fTreeV0->Branch("fTreeVariableIsCowboy",&fTreeVariableIsCowboy,"fTreeVariableIsCowboy/O");
         if ( fkDebugWrongPIDForTracking ){
@@ -1179,12 +1240,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarMaxChi2PerCluster",&fTreeCascVarMaxChi2PerCluster,"fTreeCascVarMaxChi2PerCluster/F");
         fTreeCascade->Branch("fTreeCascVarMinTrackLength",&fTreeCascVarMinTrackLength,"fTreeCascVarMinTrackLength/F");
         //-----------MULTIPLICITY-INFO--------------------
-	fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
-	fTreeCascade->Branch("fTreeCascVarZNApp", &fTreeCascVarZNApp,"fTreeCascVarZNApp/F");
-	fTreeCascade->Branch("fTreeCascVarZNCpp", &fTreeCascVarZNCpp,"fTreeCascVarZNCpp/F");
-	fTreeCascade->Branch("fTreeCascVarZPApp", &fTreeCascVarZPApp,"fTreeCascVarZPApp/F");
-	fTreeCascade->Branch("fTreeCascVarZPCpp", &fTreeCascVarZPCpp,"fTreeCascVarZPCpp/F");
-	fTreeCascade->Branch("fTreeCascVarMVPileupFlag",&fTreeCascVarMVPileupFlag,"fTreeCascVarMVPileupFlag/O");
+        fTreeCascade->Branch("fTreeCascVarCentrality_V0M",&fTreeCascVarCentrality_V0M,"fTreeCascVarCentrality_V0M/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_ZDC",&fTreeCascVarCentrality_ZDC,"fTreeCascVarCentrality_ZDC/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_ZDCFired",&fTreeCascVarCentrality_ZDCFired,"fTreeCascVarCentrality_ZDCFired/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_RefMult05",&fTreeCascVarCentrality_RefMult05,"fTreeCascVarCentrality_RefMult05/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_RefMult08",&fTreeCascVarCentrality_RefMult08,"fTreeCascVarCentrality_RefMult08/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_SPDClusters",&fTreeCascVarCentrality_SPDClusters,"fTreeCascVarCentrality_SPDClusters/F");
+        fTreeCascade->Branch("fTreeCascVarCentrality_SPDTracklets",&fTreeCascVarCentrality_SPDTracklets,"fTreeCascVarCentrality_SPDTracklets/F");
+      
+        fTreeCascade->Branch("fTreeCascVarZNApp", &fTreeCascVarZNApp,"fTreeCascVarZNApp/F");
+        fTreeCascade->Branch("fTreeCascVarZNCpp", &fTreeCascVarZNCpp,"fTreeCascVarZNCpp/F");
+        fTreeCascade->Branch("fTreeCascVarZPApp", &fTreeCascVarZPApp,"fTreeCascVarZPApp/F");
+        fTreeCascade->Branch("fTreeCascVarZPCpp", &fTreeCascVarZPCpp,"fTreeCascVarZPCpp/F");
+        fTreeCascade->Branch("fTreeCascVarMVPileupFlag",&fTreeCascVarMVPileupFlag,"fTreeCascVarMVPileupFlag/O");
         //-----------DECAY-LENGTH-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarDistOverTotMom",&fTreeCascVarDistOverTotMom,"fTreeCascVarDistOverTotMom/F");
         //------------------------------------------------
@@ -1631,6 +1699,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
     //------------------------------------------------
     
     Float_t lPercentile = 500;
+    Float_t lZDCpercentile = 500;
+    Float_t lZDCpercentileFired = 500;
+    Float_t lRefMult05 = 500;
+    Float_t lRefMult08 = 500;
+    Float_t lSPDClusters = 500;
+    Float_t lSPDTracklets = 500;
     Int_t lEvSelCode = 100;
     AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
     if( !MultSelection) {
@@ -1639,7 +1713,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
     } else {
         //V0M Multiplicity Percentile
         lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
-	    //Event Selection Code
+        lZDCpercentile = MultSelection->GetMultiplicityPercentile("ZPNACTowerpp");
+        lZDCpercentileFired = MultSelection->GetMultiplicityPercentile("ZPNACpp");
+        lRefMult05 = MultSelection->GetMultiplicityPercentile("RefMult05");
+        lRefMult08 = MultSelection->GetMultiplicityPercentile("RefMult08");
+	    lSPDClusters = MultSelection->GetMultiplicityPercentile("SPDClusters");
+        lSPDTracklets = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+        //Event Selection Code
         lEvSelCode = MultSelection->GetEvSelCode();
     }
     
@@ -1647,7 +1727,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
     fMVPileupFlag = kFALSE;
     fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
     
-    fCentrality = lPercentile;   
+    fCentrality_V0M = lPercentile;
+    fCentrality_ZDC = lZDCpercentile;  
+    fCentrality_ZDCFired = lZDCpercentileFired; 
+    fCentrality_RefMult05 = lRefMult05; 
+    fCentrality_RefMult08 = lRefMult08; 
+    fCentrality_SPDClusters = lSPDClusters; 
+    fCentrality_SPDTracklets = lSPDTracklets;  
     fTestVariable = lPercentile;
       
     //===================================================================
@@ -1656,7 +1742,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
         AliCentrality* centrality;
         centrality = lESDevent->GetCentrality();
         if ( centrality ) {
-            fCentrality = centrality->GetCentralityPercentile( "V0M" );
+            fCentrality_V0M = centrality->GetCentralityPercentile( "V0M" );
 	    fTestVariable = centrality->GetCentralityPercentile( "V0M" );
         }
     }
@@ -1807,6 +1893,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
     ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
      ( ((ULong64_t)lESDevent->GetOrbitNumber () ) << 12 ) |
      ((ULong64_t)lESDevent->GetBunchCrossNumber() )  );
+
+    //SPDTracklets to get a midrapidity Nch estimator
+    AliMultiplicity* fMultiplicity =  lESDevent->GetMultiplicity();
+    fSPDtracklets = 0;
+    fSPDtrackletsA = 0;
+    fSPDtrackletsC = 0;
+	for (auto it = 0; it<fMultiplicity->GetNumberOfTracklets(); it++) {
+        Double_t eta = fMultiplicity->GetEta(it);
+        if ( abs(eta) < 0.5 ){
+            fSPDtracklets++;
+            if(eta < 0) {fSPDtrackletsA++;}
+            else fSPDtrackletsC++;
+        }
+	}
     
     //Save info for pileup study (high multiplicity triggers pp 13 TeV - 2016 data)
     if( fkDebugOOBPileup ) {
@@ -1851,7 +1951,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
     fZPApp = aZDCP2[0];
 
     //Fill centrality histogram
-    fHistCentrality->Fill(fCentrality);
+    fHistCentrality->Fill(fCentrality_V0M);
     
     //Event-level fill
     if ( fkSaveEventTree ) fTreeEvent->Fill() ;
@@ -2175,11 +2275,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
         fTreeVariableDistOverTotMom /= (lV0TotalMomentum+1e-10); //avoid division by zero, to be sure
         
         //Copy Multiplicity information
-        fTreeVariableCentrality = fCentrality;
-	fTreeVariableZNApp = fZNApp;
-	fTreeVariableZNCpp = fZNCpp;
-	fTreeVariableZPApp = fZPApp;
-	fTreeVariableZPCpp = fZPCpp;
+        fTreeVariableCentrality_V0M = fCentrality_V0M;
+        fTreeVariableCentrality_ZDC = fCentrality_ZDC;
+        fTreeVariableCentrality_ZDCFired = fCentrality_ZDCFired;
+        fTreeVariableCentrality_RefMult05 = fCentrality_RefMult05;
+        fTreeVariableCentrality_RefMult08 = fCentrality_RefMult08;
+        fTreeVariableCentrality_SPDClusters = fCentrality_SPDClusters;
+        fTreeVariableCentrality_SPDTracklets = fCentrality_SPDTracklets;
+        fTreeVariableZNApp = fZNApp;
+        fTreeVariableZNCpp = fZNCpp;
+        fTreeVariableZPApp = fZPApp;
+        fTreeVariableZPCpp = fZPCpp;
 		        
         //Info for pileup studies
         fTreeVariableNegTOFExpTDiff = nTrack->GetTOFExpTDiff( lESDevent->GetMagneticField() );
@@ -2408,7 +2514,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
                 )//end major if
             {
                 //This satisfies all my conditionals! Fill histogram
-                histoout -> Fill ( fCentrality, fTreeVariablePt, lMass );
+                histoout -> Fill ( fCentrality_V0M, fTreeVariablePt, lMass );
             }
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3124,11 +3230,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
         fTreeCascVarMaxChi2PerCluster = lBiggestChi2PerCluster;
         
         //Copy Multiplicity information
-        fTreeCascVarCentrality = fCentrality;
-	fTreeCascVarZNApp = fZNApp;
-	fTreeCascVarZNCpp = fZNCpp;
-	fTreeCascVarZPApp = fZPApp;
-	fTreeCascVarZPCpp = fZPCpp;
+        fTreeCascVarCentrality_V0M = fCentrality_V0M;
+        fTreeCascVarCentrality_ZDC = fCentrality_ZDC;
+        fTreeCascVarCentrality_ZDCFired = fCentrality_ZDCFired;
+        fTreeCascVarCentrality_RefMult05 = fCentrality_RefMult05;
+        fTreeCascVarCentrality_RefMult08 = fCentrality_RefMult08;
+        fTreeCascVarCentrality_SPDClusters = fCentrality_SPDClusters;
+        fTreeCascVarCentrality_SPDTracklets = fCentrality_SPDTracklets;
+        fTreeCascVarZNApp = fZNApp;
+        fTreeCascVarZNCpp = fZNCpp;
+        fTreeCascVarZPApp = fZPApp;
+        fTreeCascVarZPCpp = fZPCpp;
 		 
         fTreeCascVarDistOverTotMom = TMath::Sqrt(
                                                  TMath::Power( lPosXi[0] - lBestPrimaryVtxPos[0] , 2) +
@@ -3612,7 +3724,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
                 )//end major if
             {
                 //This satisfies all my conditionals! Fill histogram
-                histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
+                histoout -> Fill ( fCentrality_V0M, fTreeCascVarPt, lMass );
             }
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

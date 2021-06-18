@@ -30,10 +30,14 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   AliRDHFCutsKFP& operator=(const AliRDHFCutsKFP& source);
 
   using AliRDHFCuts::GetCutVarsForOpt;
-  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) {
+                           return GetCutVarsForOpt(d,vars,nvars,pdgdaughters,0x0); }
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters, AliAODEvent *aod);
 
   using AliRDHFCuts::IsSelected;
-  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel);
+  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel)
+                        {return IsSelected(obj,selectionLevel,0);}
+  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod);
   using AliRDHFCuts::IsSelectedPID;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
   Int_t IsSelectedCombinedPID(AliAODRecoDecayHF* obj);
@@ -228,39 +232,39 @@ class AliRDHFCutsKFP : public AliRDHFCuts
 
   EPIDStrategy fPIDStrategy;        /// PID Strategy
   Double_t fCombinedPIDThreshold;   /// PID threshold used in IsSelectedCombinedPID
+  Bool_t fUseLcPID;                   /// Use PID or not for Lc
   Bool_t fUseXic0PID;                 /// Use PID or not for Xic0
   Bool_t fUseXicPlusPID;              /// Use PID or not for XicPlus
-  Bool_t fUseLcPID;                   /// Use PID or not for Lc
   AliAODPidHF *fPidObjDau;              /// PID object for all daughter tracks
-  AliAODPidHF *fPidObjPiFromXic0;       /// PID object for Xic0-pion
   AliAODPidHF *fPidObjPiFromXicPlus;    /// PID object for XicPlus-pion
+  AliAODPidHF *fPidObjPiFromXic0;       /// PID object for Xic0-pion
   AliAODPidHF *fPidObjPiFromXi;         /// PID object for cascade-pion
   AliAODPidHF *fPidObjPrFromV0;         /// PID object for V0-proton
   AliAODPidHF *fPidObjPiFromV0;         /// PID object for V0-pion
 
   Double_t fPtMinLc;                 /// Minimum pT of Lc
   Double_t fPtMinPrFromLc;           /// Minimum pT of proton from Lc decay
-  Double_t fPtMinPiFromLc;           /// Minimum pT of pion from Lc decay
   Double_t fPtMinXic0;               /// Minimum pT of Xic0
-  Double_t fPtMinXicPlus;            /// Minimum pT of XicPlus
   Double_t fPtMinPiFromXic0;         /// Minimum Bachelor pT of pion from Xic0 decay
-  Double_t fPtMinPiFromXicPlus;      /// Minimum Bachelor pT of pion from XicPlus decay
   Double_t fPtMinPiFromXi;         /// Minimum Bachelor pT of pion from Xi decay
+  Double_t fPtMinPiFromLc;           /// Minimum pT of pion from Lc decay
+  Double_t fPtMinXicPlus;            /// Minimum pT of XicPlus
+  Double_t fPtMinPiFromXicPlus;      /// Minimum Bachelor pT of pion from XicPlus decay
   Double_t fProdTrackEtaRange;      /// Bachelor Eta range
   Bool_t   fProdUseAODFilterBit;    /// Use AODfilterBit or not
   Double_t fProdMassTolLc;          /// Tolerance of Lc mass from PDG value
-  Double_t fProdMassTolLambda;      /// Tolerance of Lambda mass from PDG value
-  Double_t fProdMassRejLambda;      /// Rejection of Lambda mass from PDG value
   Double_t fProdMassTolKs0;         /// Tolerance of Ks0 mass from PDG value
-  Double_t fProdMassRejKs0;         /// Rejection of Ks0 mass from PDG value
+  Double_t fProdMassTolLambda;      /// Tolerance of Lambda mass from PDG value
   Double_t fProdMassTolXi;          /// Tolerance of Xi mass from PDG value
   Double_t fProdMassTolXic0;        /// Tolerance of Xic0 mass from PDG value
-  Double_t fProdMassTolXicPlus;     /// Tolerance of XicPlus mass from PDG value
   Double_t fProdRfidMinV0;          /// Minimum Decay vertex of V0
   Double_t fProdRfidMaxV0;          /// Max Decay vertex of V0
   Double_t fProdRfidMinXi;          /// Minimum Decay vertex of Xi
   Double_t fProdRfidMaxXi;          /// Max Decay vertex of Xi
   Double_t fProdCascProperDecayLengthMax;        /// mL/p of cascade
+  Double_t fProdMassRejLambda;      /// Rejection of Lambda mass from PDG value
+  Double_t fProdMassRejKs0;         /// Rejection of Ks0 mass from PDG value
+  Double_t fProdMassTolXicPlus;     /// Tolerance of XicPlus mass from PDG value
   Double_t fProdDcaXiDaughtersMax;  /// Max Dca between Xi daughters
   Double_t fProdDcaV0DaughtersMax;  /// Max Dca between V0 daughters
   Double_t fProdDcaBachToPrimVertexMin;  /// Min Dca between Bachelor and PV

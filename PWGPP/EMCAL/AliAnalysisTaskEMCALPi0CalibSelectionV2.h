@@ -78,12 +78,17 @@ public:
   void    SetMaskCellColumn(Int_t ipos, Int_t icol) ;
   Bool_t  MaskFrameCluster(Int_t iSM, Int_t ieta) const;
 
+  Int_t   RecalculateRow( Int_t row, Int_t nSupMod );
+  Int_t   RecalculateColumn( Int_t col, Int_t nSupMod);
+
   void    ResetBufferVectors();
   void    Terminate(Option_t* opt);
     
   // Analysis parameter setting
 
   void    SetPeriodName(TString name)                    { fPeriodName = name; }
+
+  void    SetCorrectionTaskSetting(TString setting)      { fCorrTaskSetting = setting; }
   
   void    SwitchOnCentrality()                           { fCheckCentrality  = kTRUE ; }
   void    SwitchOffCentrality()                          { fCheckCentrality  = kFALSE; }
@@ -143,6 +148,8 @@ public:
 
   void    SetJJMC()                                      { fIsMC = 2; }
 
+  void    SetSaveHistos()                                { fSaveHistos = kTRUE; }
+
   void    SetSaveCells()                                 { fSaveCells = kTRUE; }
 
   void    SetSaveClusters()                              { fSaveClusters = kTRUE; }
@@ -187,9 +194,11 @@ private:
   TString             fTriggerName;      ///<  Trigger name must contain this name.
   AliEMCALRecoUtils * fRecoUtils;        ///<  Access to reconstruction utilities.
   TString             fPeriodName;       ///<  Period name
+  TString             fCorrTaskSetting;  ///<  Name of Correction Task Setting
 
   Bool_t              fEMCALInitialized; ///< Check if fRecoUtils were initialized.
   Int_t               fIsMC;              ///< 
+  Bool_t              fSaveHistos;
   Bool_t              fSaveCells;
   Bool_t              fSaveClusters;     ///<
   Bool_t              fIsHeavyIon;        ///<
@@ -198,7 +207,6 @@ private:
   TString             fOADBFilePath ;    ///<  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change.
   Bool_t              fRecalPosition;    ///<  Switch on/off cluster position calculation, in case alignment matrices are not available.
   
-  TRefArray         * fCaloClustersArr;  //!<! List of clusters.
   AliVCaloCells     * fEMCALCells;       //!<! List of cells.
   TList             * fOutputContainer;  //!<! Histogram container.
     
@@ -332,7 +340,11 @@ protected:
   std::vector<Short_t>      fVBuffer_Cluster_Eta;             // Float_t * 1000
   std::vector<UShort_t>     fVBuffer_Cluster_Phi;             // Float_t * 1000
   std::vector<Short_t>      fVBuffer_Cluster_t;
+  std::vector<Double_t>     fVBuffer_Cluster_M02;
   std::vector<Short_t>      fVBuffer_TrueCluster_MCId;
+  std::vector<Float_t>      fVBuffer_Cluster_X;
+  std::vector<Float_t>      fVBuffer_Cluster_Y;
+  std::vector<Float_t>      fVBuffer_Cluster_Z;
 
   /// Copy constructor not implemented.
   // AliAnalysisTaskEMCALPi0CalibSelectionV2(           const AliAnalysisTaskEMCALPi0CalibSelectionV2&) ;

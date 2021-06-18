@@ -115,7 +115,7 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetMaskedFastorIndicesL1(int ru
     for(int ichannel = 0; ichannel < 96; ichannel++) {
       int absfastor;
       geo->GetTriggerMapping()->GetAbsFastORIndexFromTRU(truID, ichannel, absfastor);
-      if(std::find(maskedfastors.begin(), maskedfastors.end(), absfastor)  != maskedfastors.end()) maskedfastors.push_back(absfastor);
+      if(std::find(maskedfastors.begin(), maskedfastors.end(), absfastor) == maskedfastors.end()) maskedfastors.push_back(absfastor);
     }
   }
 
@@ -213,7 +213,9 @@ AliEMCALGeometry *AliEmcalTriggerMaskHandlerOCDB::GetGeometry(int runnumber) {
 }
 
 void AliEmcalTriggerMaskHandlerOCDB::ClearCache() {
-  if(fCurrentConfig) delete fCurrentConfig;
+  // In general the handler is non-owning, therefore
+  // we do not delete the object but rahther just set
+  // the pointer to nullptr.
   fCurrentConfig = nullptr;
   fCurrentRunnumber = -1;
 }
@@ -381,7 +383,7 @@ void AliEmcalTriggerMaskHandlerOCDB::drawRun2Frame(){
   }
 }
 
-void AliEmcalTriggerMaskHandlerOCDB::drawL0MaskFromCVMFS(int runnumber) {
+void AliEmcalTriggerMaskHandlerOCDB::drawMaskFromCVMFS(int runnumber, bool isLevel1) {
   if(gSystem->AccessPathName("/cvmfs/alice-ocdb.cern.ch/calibration/data", kReadPermission )) {
     Error("PWG::EMCAL::drawMappingFromCVMFS", "cvmfs repository alice-ocdb.cern.ch needs to be mounted on the system");
     return;
@@ -413,7 +415,7 @@ void AliEmcalTriggerMaskHandlerOCDB::drawL0MaskFromCVMFS(int runnumber) {
 
   AliCDBManager *cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(Form("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/%d/OCDB", year));
-  auto maskhist = MonitorMaskedFastORsL0(runnumber);
+  auto maskhist = isLevel1 ? MonitorMaskedFastORsL1(runnumber) : MonitorMaskedFastORsL0(runnumber);
   maskhist->SetDirectory(nullptr);
   maskhist->SetStats(false);
   maskhist->SetXTitle("col (#eta)");
