@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 08.06.2021
+ * Last Modified Date: 09.06.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -26,11 +26,13 @@
 #include "AliAnalysisTaskAR.h"
 #include "AliLog.h"
 #include "AliMultSelection.h"
-#include "TColor.h"
-#include "TFile.h"
+#include <TColor.h>
+#include <TFile.h>
 #include <TMath.h>
 #include <cstdlib>
 #include <iostream>
+#include <TH1.h>
+#include <TRandom3.h>
 
 ClassImp(AliAnalysisTaskAR)
 
@@ -229,7 +231,7 @@ void AliAnalysisTaskAR::Terminate(Option_t *) {
   /* Accessing the merged output list for final compution or for off-line
    * computations (i.e. after merging)*/
 
-  /* fHistList = (TList *)GetOutputData(1); */
+  // fHistList = (TList *)GetOutputData(1);
   if (!fHistList) {
     std::cout << __LINE__ << ": Did not get " << fHistListName << std::endl;
     Fatal("Terminate", "Invalid Pointer to fHistList");
