@@ -1064,6 +1064,8 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::AcceptCluster( AliVCluster* c1){
 //____________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
 
+  UInt_t isSelected = 0;
+
   if(fTriggerName!="" && fIsMC==0 ) {
       AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()); 
       if (fInputHandler==NULL) return kFALSE;
@@ -1072,9 +1074,25 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
         if( fTriggerName == "INT7" ){
           fOfflineTriggerMask = AliVEvent::kINT7;
           if( !(fOfflineTriggerMask) ) return kFALSE;
+          isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
+          if( !isSelected ) return kFALSE;
           isEMC = kTRUE; 
           isDMC = kTRUE;
         } else if ( fTriggerName == "EMC7" ) {
+          fOfflineTriggerMask = AliVEvent::kEMC7;
+          if( !(fOfflineTriggerMask ) ) return kFALSE;
+
+          TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
+
+          if( firedTrigClass.Contains("CEMC7-B-") && !firedTrigClass.Contains("EG1") && !firedTrigClass.Contains("EG2") ) {
+            isEMC = kTRUE;
+            if( firedTrigClass.Contains("CDMC7-B-") ){
+              isDMC = kTRUE;
+            }
+          } else if( firedTrigClass.Contains("CDMC7-B-") && !firedTrigClass.Contains("EG1") && !firedTrigClass.Contains("EG2") ){
+            isDMC = kTRUE;
+          } else return kFALSE;
+        } else if( fTriggerName = "EMCAL" ){            // EMC7+EG1+EG2
           fOfflineTriggerMask = AliVEvent::kEMC7;
           if( !(fOfflineTriggerMask ) ) return kFALSE;
 
@@ -1090,7 +1108,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
           } else return kFALSE;
         }
         return kTRUE;
-      }
+      } 
 
   } else if (fIsMC){
     AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()); 
