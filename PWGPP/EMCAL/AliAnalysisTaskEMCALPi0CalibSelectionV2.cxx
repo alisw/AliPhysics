@@ -1073,38 +1073,53 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(){
       if( fInputHandler->GetEventSelection() ) {
         if( fTriggerName == "INT7" ){
           fOfflineTriggerMask = AliVEvent::kINT7;
-          if( !(fOfflineTriggerMask) ) return kFALSE;
           isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
           if( !isSelected ) return kFALSE;
           isEMC = kTRUE; 
           isDMC = kTRUE;
         } else if ( fTriggerName == "EMC7" ) {
           fOfflineTriggerMask = AliVEvent::kEMC7;
-          if( !(fOfflineTriggerMask ) ) return kFALSE;
 
           TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
-
-          if( firedTrigClass.Contains("CEMC7-B-") && !firedTrigClass.Contains("EG1") && !firedTrigClass.Contains("EG2") ) {
-            isEMC = kTRUE;
-            if( firedTrigClass.Contains("CDMC7-B-") ){
+          if( (firedTrigClass.Contains("CEMC7-B-") || firedTrigClass.Contains("CDMC7-B-")) && (!firedTrigClass.Contains("EG1") && !firedTrigClass.Contains("EG2") && !firedTrigClass.Contains("DG1") && !firedTrigClass.Contains("DG2")) ) {
+            if( firedTrigClass.Contains("CEMC7-B-") )
+              isEMC = kTRUE;
+            if( firedTrigClass.Contains("CDMC7-B-") )
               isDMC = kTRUE;
-            }
-          } else if( firedTrigClass.Contains("CDMC7-B-") && !firedTrigClass.Contains("EG1") && !firedTrigClass.Contains("EG2") ){
-            isDMC = kTRUE;
+          } else return kFALSE;
+        } else if ( fTriggerName == "EG2" ) {
+          fOfflineTriggerMask = AliVEvent::kEMCEGA;
+          isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
+          if( !isSelected ) return kFALSE;
+          
+          TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
+          if( firedTrigClass.Contains("CEMC7EG2-B") || firedTrigClass.Contains("CDMC7DG2-B") ) {
+            if( firedTrigClass.Contains("EMC7") )
+              isEMC = kTRUE;
+            if( firedTrigClass.Contains("DMC7") )
+              isDMC = kTRUE;
+          } else return kFALSE;
+        } else if ( fTriggerName == "EG1" ) {
+          fOfflineTriggerMask = AliVEvent::kEMCEGA;
+          isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
+          if( !isSelected ) return kFALSE;
+          
+          TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
+          if( firedTrigClass.Contains("CEMC7EG1-B") || firedTrigClass.Contains("CDMC7DG1-B")) {
+            if( firedTrigClass.Contains("EMC7") )
+              isEMC = kTRUE;
+            if( firedTrigClass.Contains("DMC7") )
+              isDMC = kTRUE;
           } else return kFALSE;
         } else if( fTriggerName = "EMCAL" ){            // EMC7+EG1+EG2
-          fOfflineTriggerMask = AliVEvent::kEMC7;
-          if( !(fOfflineTriggerMask ) ) return kFALSE;
-
+          fOfflineTriggerMask = AliVEvent::kEMC7 & AliVEvent::kEMCEGA;
           TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
 
-          if( firedTrigClass.Contains("CEMC7") ) {
-            isEMC = kTRUE;
-            if( firedTrigClass.Contains("CDMC7") ){
+          if( firedTrigClass.Contains("CEMC7") || firedTrigClass.Contains("CDMC7") ) {
+            if( firedTrigClass.Contains("CEMC7-B-") )
+              isEMC = kTRUE;
+            if( firedTrigClass.Contains("CDMC7-B-") )
               isDMC = kTRUE;
-            }
-          } else if( firedTrigClass.Contains("CDMC7") ){
-            isDMC = kTRUE;
           } else return kFALSE;
         }
         return kTRUE;
