@@ -86,6 +86,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   enum {kMaxNPtBinsLc = 10, kNCutVarsLc = 8 };
   enum {kMaxNPtBinsDplus = 50, kNCutVarsDplus = 8};
   enum {kMaxNPtBinsSingleTrack = 10, kNCutVarsSingleTrack = 5};
+  enum {kMaxNPtBins2ProngsSkims = 100, kNCutVars2Prong=4};
+  enum {kMaxNPtBins3ProngsSkims = 100, kNCutVars3Prong=4};
 
   /// list of triggers avaliable in O2 that are also avaliable in AliPhysics
   std::map<std::string, Int_t> triggerMask = {{"kINT7", AliVEvent::kINT7},
@@ -259,6 +261,16 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fSingleTrackCuts2Prong[kMaxNPtBinsSingleTrack][kNCutVarsSingleTrack]; // 2-prong single track cuts
   Double_t fSingleTrackCuts3Prong[kMaxNPtBinsSingleTrack][kNCutVarsSingleTrack]; // 3-prong single track cuts
 
+  Double_t fPtBinLimsDzeroSkims[kMaxNPtBins2ProngsSkims];  // pt bins for D0 skim selections
+  Double_t fPtBinLimsJpsiSkims[kMaxNPtBins2ProngsSkims];   // pt bins for Jpsi skim selections
+  Double_t fPtBinLimsDplusSkims[kMaxNPtBins3ProngsSkims];  // pt bins for D+ skim selections
+  Double_t fPtBinLimsDsSkims[kMaxNPtBins3ProngsSkims];     // pt bins for Ds+ skim selections
+  Double_t fPtBinLimsLcSkims[kMaxNPtBins3ProngsSkims];     // pt bins for Lc+ skim selections
+  Double_t fPtBinLimsXicSkims[kMaxNPtBins3ProngsSkims];    // pt bins for Xic+ skim selections
+  Int_t fPtWithoutVtxToll;                                 // pt tolerance for selections before vertex reconstruction 
+
+  Int_t fNPtBins;                     // Number of pt bins
+  Double_t fPtBinLims[kMaxNPtBinsDzero];   // [fNPtBins+1] limits of pt bins
   Double_t fMinPtDzero;               // D0 min pt
   Double_t fMaxPtDzero;               // D0 max pt
   Double_t fMinPtDplus;               // D+ min pt
@@ -266,11 +278,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fMinPtJpsi;                // Jpsi min pt
   Double_t fMaxPtJpsi;                // Jpsi max pt
   Int_t    fCandidateCutLevel;        // Cuts: 0 = no, 1 = skim, 2 = analysis
-  Double_t fDzeroSkimCuts[5];         // D0 skimming cuts
-  Double_t fJpsiSkimCuts[5];          // Jpsi skimming cuts
-  Double_t fDplusSkimCuts[5];         // D0 skimming cuts
-  Double_t fDsSkimCuts[5];            // D0 skimming cuts
-  Double_t fLcSkimCuts[5];            // D0 skimming cuts
+  Double_t fDzeroSkimCuts[kMaxNPtBins2ProngsSkims][kNCutVars2Prong];         // D0 skimming cuts
+  Double_t fJpsiSkimCuts[kMaxNPtBins2ProngsSkims][kNCutVars2Prong];          // Jpsi skimming cuts
+  Double_t fDplusSkimCuts[kMaxNPtBins3ProngsSkims][kNCutVars3Prong];         // D+ skimming cuts
+  Double_t fDsSkimCuts[kMaxNPtBins3ProngsSkims][kNCutVars3Prong];            // Ds skimming cuts
+  Double_t fLcSkimCuts[kMaxNPtBins3ProngsSkims][kNCutVars3Prong];            // Lc skimming cuts
+  Double_t fXicSkimCuts[kMaxNPtBins3ProngsSkims][kNCutVars3Prong];           // Xic skimming cuts
   Double_t fDzeroCuts[kMaxNPtBinsDzero][kNCutVarsDzero]; // D0 cuts
   Double_t fDplusCuts[kMaxNPtBinsDplus][kNCutVarsDplus]; // D+ cuts
   Double_t fJpsiCuts[kMaxNPtBinsJpsi][kNCutVarsJpsi]; // Jpsi cuts
