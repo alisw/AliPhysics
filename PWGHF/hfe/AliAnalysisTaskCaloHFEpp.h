@@ -112,6 +112,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Int_t MinNtr;
 		Int_t MaxNtr;
                 TString festimatorFile;
+                TProfile* estimatorAvg;
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
