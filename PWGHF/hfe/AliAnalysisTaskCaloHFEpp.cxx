@@ -95,6 +95,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	MinNtr(0),
 	MaxNtr(0),
         festimatorFile(""),
+        estimatorAvg(0),
 	//==== basic parameters ====
 	fNevents(0),
 	fNDB(0),
@@ -273,6 +274,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	MinNtr(0),
 	MaxNtr(0),
         festimatorFile(""),
+        estimatorAvg(0),
 	//==== basic parameters ====
 	fNevents(0),
 	fNDB(0),
@@ -956,25 +958,30 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 	//-----------Tracklet correction-------------------------
 
-        TFile* fEstimator = TFile::Open(festimatorFile.Data());
-	
+        if(!estimatorAvg)
+          {
+            cout << "No estimatorAvg and get one " << endl;
+            TFile* fEstimator = TFile::Open(festimatorFile.Data());
+	    if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
+	    if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
+	   }
+
 	Double_t correctednAcc   = nAcc;
 	Double_t fRefMult = Nref;
 	Double_t WeightNtrkl = -1.;
 	Double_t WeightZvtx = -1.;
-	TProfile* estimatorAvg;
-	if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
-	if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
-
-        //cout << "estimatorAvg = " << estimatorAvg << endl;
+	//TProfile* estimatorAvg;
+	//if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
+	//if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
 
 	if(estimatorAvg){
 		correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
 		//correctednAcc= AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(estimatorAvg,nAcc,Zvertex,fRefMult);
+
 	} 
 	fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
-        fEstimator->Close();
+        //fEstimator->Close();
 
 	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
 	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
