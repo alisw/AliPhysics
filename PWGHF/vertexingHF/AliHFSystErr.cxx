@@ -11004,15 +11004,17 @@ void AliHFSystErr::InitD0toKpi2018PbPb010() {
   // D0->Kpi syst errors. Responsible: S. Trogolo
   //   2018 PbPb sample, 010 CC
   // On 17/04/2019: the syst. unc. values are still those from 2015 analysis [TO BE UPDATED].
+  // June 2021: syst. unc. values finalized from 2018 Pb-Pb (pass3) data sample
+
   SetNameTitle("AliHFSystErr","SystErrD0toKpi2018PbPb010");
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",100,0,50);
-  for(Int_t i=1;i<=100;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
+  for(Int_t i=1;i<=100;i++) fNorm->SetBinContent(i,0.022); // TAA and pp norm
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",100,0,50);
-  for(Int_t i=1;i<=100;i++) fBR->SetBinContent(i,0.0004); // 0.04% PDG2016
+  for(Int_t i=1;i<=100;i++) fBR->SetBinContent(i,0.008); // 0.8% PDG2020
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",100,0,50);
@@ -11131,15 +11133,16 @@ void AliHFSystErr::InitD0toKpi2018PbPb3050() {
   // D0->Kpi syst errors. Responsible: S. Trogolo
   //   2018 PbPb sample, 30-50 CC
   // On 17/04/2019: the syst. unc. values are still those from 2015 analysis [TO BE UPDATED].
+  // June 2021: syst. unc. values finalized from 2018 Pb-Pb (pass3) data sample
 
   SetNameTitle("AliHFSystErr","SystErrD0toKpi2018PbPb3050");
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",100,0,50);
-  for(Int_t i=1;i<=100;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
+  for(Int_t i=1;i<=100;i++) fNorm->SetBinContent(i,0.033); // TAA and pp norm
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",100,0,50);
-  for(Int_t i=1;i<=100;i++) fBR->SetBinContent(i,0.0004); // 0.04% PDG2016
+  for(Int_t i=1;i<=100;i++) fBR->SetBinContent(i,0.008); // 0.8% PDG2020
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",100,0,50);
