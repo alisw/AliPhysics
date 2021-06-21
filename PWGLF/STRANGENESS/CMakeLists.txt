@@ -95,6 +95,7 @@ set(SRCS
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_BumpStudies.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2MC.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
