@@ -2789,7 +2789,7 @@ void AliHFSystErr::InitNonPromptDzerotoKpi2018PbPb5TeV010ML() {
   fTrackingEff->SetBinContent(6,0.10);
   fTrackingEff->SetBinContent(7,0.09);
   fTrackingEff->SetBinContent(8,0.09);
-  fTrackingEff->SetBinContent(9,0.0.08);
+  fTrackingEff->SetBinContent(9,0.08);
   fTrackingEff->SetBinContent(10,0.08);
   fTrackingEff->SetBinContent(11,0.08);
   fTrackingEff->SetBinContent(12,0.08);
@@ -2873,7 +2873,7 @@ void AliHFSystErr::InitNonPromptDzerotoKpi2018PbPb5TeV3050ML() {
   fTrackingEff->SetBinContent(6,0.09);
   fTrackingEff->SetBinContent(7,0.09);
   fTrackingEff->SetBinContent(8,0.09);
-  fTrackingEff->SetBinContent(9,0.0.08);
+  fTrackingEff->SetBinContent(9,0.08);
   fTrackingEff->SetBinContent(10,0.08);
   fTrackingEff->SetBinContent(11,0.08);
   fTrackingEff->SetBinContent(12,0.08);
