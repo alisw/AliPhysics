@@ -436,7 +436,7 @@ class AliHFSystErr : public TNamed
   Bool_t fIsDataDrivenFDAnalysis;   /// flag for the non-prompt data-driven analyses 
 
   /// \cond CLASSIMP
-  ClassDef(AliHFSystErr,14);  /// class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,15);  /// class for systematic errors of charm hadrons
   /// \endcond
 };
 
