@@ -10046,11 +10046,11 @@ void AliHFSystErr::InitDplustoKpipi2018PbPb010(){
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",19,xbins);
   // fNorm->SetBinContent(1,0.0); // bin 0.-1.
-  for(Int_t i=1;i<=19;i++) fNorm->SetBinContent(i,0.04);
+  for(Int_t i=1;i<=19;i++) fNorm->SetBinContent(i,0.022);
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",19,xbins);
-  for(Int_t i=1;i<=19;i++) fBR->SetBinContent(i,0.025); //
+  for(Int_t i=1;i<=19;i++) fBR->SetBinContent(i,0.017); //
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",19,xbins);
@@ -10129,11 +10129,11 @@ void AliHFSystErr::InitDplustoKpipi2018PbPb3050(){
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",19,xbins);
   // fNorm->SetBinContent(1,0.0); // bin 0.-1.
-  for(Int_t i=1;i<=19;i++) fNorm->SetBinContent(i,0.04);
+  for(Int_t i=1;i<=19;i++) fNorm->SetBinContent(i,0.033);
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",19,xbins);
-  for(Int_t i=1;i<=19;i++) fBR->SetBinContent(i,0.025); //
+  for(Int_t i=1;i<=19;i++) fBR->SetBinContent(i,0.017); //
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",19,xbins);
