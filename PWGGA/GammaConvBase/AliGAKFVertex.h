@@ -9,6 +9,7 @@
 
 //#include "AliKFVertex.h"
 #include "KFVertex.h"
+#include "KFPVertex.h"
 
 class AliGAKFVertex : public KFVertex {
 public :

@@ -873,7 +873,15 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
     fCurrentMotherKF->ConstructGamma(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
   }else{
     fCurrentMotherKF = new AliKFConversionPhoton(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+
+
+#ifndef PWGGAUSEKFPARTICLE
     fCurrentMotherKF->SetMassConstraint(0,0.0001);
+#else
+    //fCurrentMotherKF->SetMassConstraint(0,0.0001);
+    fCurrentMotherKF->SetNonlinearMassConstraint(0.);
+#endif // PWGGAUSEKFPARTICLE
+
   }
 
   // PID Cuts- positive track
@@ -909,7 +917,6 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
     if(labeln>-1) fNegativeMCParticle = fMCEvent->Particle(labeln);
     TParticle *fPositiveMCParticle = 0x0;
     if(labelp>-1) fPositiveMCParticle = fMCEvent->Particle(labelp);
-
     if(fPositiveMCParticle&&fNegativeMCParticle){
       fCurrentMotherKF->SetMCLabelPositive(labelp);
       fCurrentMotherKF->SetMCLabelNegative(labeln);
@@ -917,12 +924,14 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
   }
 
   // Update Vertex (moved for same eta compared to old)
-  //      cout << currentV0Index <<" \t before: \t" << fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
+  // cout << currentV0Index <<" \t before: \t" << fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
   if(fUseImprovedVertex == kTRUE){
     AliGAKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
-    //        cout << "Prim Vtx: " << primaryVertexImproved.GetX() << "\t" << primaryVertexImproved.GetY() << "\t" << primaryVertexImproved.GetZ() << endl;
+    //    cout << "Prim Vtx: " << primaryVertexImproved.GetX() << "\t" << primaryVertexImproved.GetY() << "\t" << primaryVertexImproved.GetZ() << endl;
     primaryVertexImproved+=*fCurrentMotherKF;
+    //    cout << "Prim Vtx after: " << primaryVertexImproved.GetX() << "\t" << primaryVertexImproved.GetY() << "\t" << primaryVertexImproved.GetZ() << endl;
     fCurrentMotherKF->SetProductionVertex(primaryVertexImproved);
+    // cout << currentV0Index <<" \t after: \t" << fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
   }
   // SetPsiPair
   Double_t convpos[3]={0,0,0};
@@ -941,7 +950,6 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
       fCurrentMotherKF=NULL;
       return 0x0;
     }
-
     fCurrentMotherKF->SetConversionPoint(convpos);
   }
 
@@ -1967,6 +1975,7 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   //conversion point
   Double_t convX, convY, convZ;
   fCurrentV0->GetXYZ(convX,convY,convZ);
+
   Double_t convR = TMath::Sqrt(convX*convX+convY*convY);
   //recalculated conversion point
   Double_t convXrecalc=fCurrentMotherKF->GetConversionX();

@@ -27,10 +27,10 @@ public :
     AliGAKFParticle( const AliVTrack &track, int PID );
     AliGAKFParticle( const AliExternalTrackParam &track, double Mass, int Charge );
 
-    void GetDStoParticle(AliGAKFParticle&, double &, double &) const;
+    void GetDStoParticle(KFParticle&, double & , double & ) const;
     void TransportToPoint(double [3]);
     void ConstructGamma(const KFParticle&, const KFParticle&);
-    static void GetArmenterosPodolanski(KFParticle&, KFParticle&, double *&);
+    static void GetArmenterosPodolanski(KFParticle&, KFParticle&, double armenteros[2]);
 
     ClassDef(AliGAKFParticle, 1)
 };
