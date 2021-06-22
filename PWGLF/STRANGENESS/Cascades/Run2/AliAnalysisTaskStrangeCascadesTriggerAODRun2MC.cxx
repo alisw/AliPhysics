@@ -28,6 +28,7 @@
 #include "TFile.h"
 #include "TString.h"
 #include "TRegexp.h"
+#include "TObjString.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
