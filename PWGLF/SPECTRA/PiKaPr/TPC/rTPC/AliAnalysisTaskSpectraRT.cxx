@@ -112,6 +112,7 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		fIsMCclosure(kTRUE),
 		fRandom(0x0),
 		fNcl(70),
+		fTrackID(0),
 		fEtaCut(0.9),
 		fdEdxCalibrated(kTRUE),
 		fDeDxMIPMin(40),
@@ -119,7 +120,7 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		fdEdxHigh(200),
 		fdEdxLow(40),
 		fPeriod("l"),
-		fSetTPConlyTrkCuts(kFALSE),
+///		fSetTPConlyTrkCuts(kFALSE),
 		fSelectHybridTracks(kTRUE),
 		fLeadPtCutMin(5.0),
 		fLeadPtCutMax(40.0),
@@ -236,6 +237,7 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 	fIsMCclosure(kTRUE),
 	fRandom(0x0),
 	fNcl(70),
+	fTrackID(0),
 	fEtaCut(0.9),
 	fdEdxCalibrated(kTRUE),
 	fDeDxMIPMin(40),
@@ -243,7 +245,7 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 	fdEdxHigh(200),
 	fdEdxLow(40),
 	fPeriod("l"),
-	fSetTPConlyTrkCuts(kFALSE),
+///	fSetTPConlyTrkCuts(kFALSE),
 	fSelectHybridTracks(kTRUE),
 	fLeadPtCutMin(5.0),
 	fLeadPtCutMax(40.0),
@@ -365,51 +367,160 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 	// Hybrid tracks + Geometrical cut
 	if(!fGeometricalCut){
 		fGeometricalCut = new AliESDtrackCuts("fGeometricalCut");	
-		fGeometricalCut->SetCutGeoNcrNcl(3, 130, 1.5, 0.85, 0.7);
+		if(fTrackID==0) fGeometricalCut->SetCutGeoNcrNcl(3, 130, 1.5, 0.85, 0.7);
+		if(fTrackID==6) fGeometricalCut->SetCutGeoNcrNcl(2, 130, 1.5, 0.85, 0.7);
+		if(fTrackID==7) fGeometricalCut->SetCutGeoNcrNcl(4, 130, 1.5, 0.85, 0.7);
+		if(fTrackID==8) fGeometricalCut->SetCutGeoNcrNcl(3, 120, 1.5, 0.85, 0.7);
+		if(fTrackID==9) fGeometricalCut->SetCutGeoNcrNcl(3, 140, 1.5, 0.85, 0.7);
+
 	}
 
 	// Track Cuts for Nch in the Transverse region and pT spectra
 	// Hybrid tracks
 	if(!fTrackFilter){
-		fTrackFilter = new AliAnalysisFilter("fTrackFilter");
-		SetTrackCuts(fTrackFilter);
+
+		fTrackFilter = new AliESDtrackCuts("fTrackFilter");	
+		//fTrackFilter->SetMinNCrossedRowsTPC(70); //! Variated in track cuts systematics
+		fTrackFilter->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		//fTrackFilter->SetMaxChi2PerClusterTPC(4); //! Variated in track cuts systematics
+		fTrackFilter->SetAcceptKinkDaughters(kFALSE);
+		fTrackFilter->SetRequireTPCRefit(kTRUE);
+		fTrackFilter->SetRequireITSRefit(kTRUE);
+		fTrackFilter->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+		fTrackFilter->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+		//fHybridTrackCuts1->SetMaxChi2TPCConstrainedGlobal(36); //! This cut is excluded 
+		//fTrackFilter->SetMaxDCAToVertexZ(2); //! Variated in track cuts systematics
+		fTrackFilter->SetDCAToVertex2D(kFALSE);
+		fTrackFilter->SetRequireSigmaToVertex(kFALSE);
+		fTrackFilter->SetMaxChi2PerClusterITS(36);
+		fTrackFilter->SetEtaRange(-0.8,0.8);
+
+		if(fTrackID==0){
+			fTrackFilter->SetMinNCrossedRowsTPC(70);
+			fTrackFilter->SetMaxChi2PerClusterTPC(4);
+			fTrackFilter->SetMaxDCAToVertexZ(2);
+		}else if(fTrackID==1){
+			fTrackFilter->SetMinNCrossedRowsTPC(80);
+			fTrackFilter->SetMaxChi2PerClusterTPC(4);
+			fTrackFilter->SetMaxDCAToVertexZ(2);
+		}else if(fTrackID==2){
+			fTrackFilter->SetMinNCrossedRowsTPC(70);
+			fTrackFilter->SetMaxChi2PerClusterTPC(5);
+			fTrackFilter->SetMaxDCAToVertexZ(2);
+		}else if(fTrackID==3){
+			fTrackFilter->SetMinNCrossedRowsTPC(70);
+			fTrackFilter->SetMaxChi2PerClusterTPC(4);
+			fTrackFilter->SetMaxDCAToVertexZ(3);
+		}else if(fTrackID==4){
+			fTrackFilter->SetMinNCrossedRowsTPC(60);
+			fTrackFilter->SetMaxChi2PerClusterTPC(4);
+			fTrackFilter->SetMaxDCAToVertexZ(2);
+		}else if(fTrackID==5){
+			fTrackFilter->SetMinNCrossedRowsTPC(70);
+			fTrackFilter->SetMaxChi2PerClusterTPC(4);
+			fTrackFilter->SetMaxDCAToVertexZ(1);
+		}else{
+			fTrackFilter->SetMinNCrossedRowsTPC(70);
+			fTrackFilter->SetMaxChi2PerClusterTPC(4);
+			fTrackFilter->SetMaxDCAToVertexZ(2);
+		}
+
 	}
 
 	if(!fHybridTrackCuts1){
 		fHybridTrackCuts1 = new AliESDtrackCuts("fHybridTrackCuts1");	
-		fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
+		//fHybridTrackCuts1->SetMinNCrossedRowsTPC(70); //! Variated in track cuts systematics
 		fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-		fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
+		//fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4); //! Variated in track cuts systematics
 		fHybridTrackCuts1->SetAcceptKinkDaughters(kFALSE);
 		fHybridTrackCuts1->SetRequireTPCRefit(kTRUE);
 		fHybridTrackCuts1->SetRequireITSRefit(kTRUE);
 		fHybridTrackCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
 		fHybridTrackCuts1->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-		//fHybridTrackCuts1->SetMaxChi2TPCConstrainedGlobal(36);
-		fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
+		//fHybridTrackCuts1->SetMaxChi2TPCConstrainedGlobal(36); //! This cut is excluded 
+		//fHybridTrackCuts1->SetMaxDCAToVertexZ(2); //! Variated in track cuts systematics
 		fHybridTrackCuts1->SetDCAToVertex2D(kFALSE);
 		fHybridTrackCuts1->SetRequireSigmaToVertex(kFALSE);
 		fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
 		fHybridTrackCuts1->SetEtaRange(-0.8,0.8);
 
+		if(fTrackID==0){
+			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
+			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
+		}else if(fTrackID==1){
+			fHybridTrackCuts1->SetMinNCrossedRowsTPC(80);
+			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
+		}else if(fTrackID==2){
+			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
+			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(5);
+			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
+		}else if(fTrackID==3){
+			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
+			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts1->SetMaxDCAToVertexZ(3);
+		}else if(fTrackID==4){
+			fHybridTrackCuts1->SetMinNCrossedRowsTPC(60);
+			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
+		}else if(fTrackID==5){
+			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
+			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts1->SetMaxDCAToVertexZ(1);
+		}else{
+			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
+			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
+		}
 	} 
 
 	if(!fHybridTrackCuts2){
 		fHybridTrackCuts2 = new AliESDtrackCuts("fHybridTrackCuts2");	
-		fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
+		//fHybridTrackCuts2->SetMinNCrossedRowsTPC(70); //! Variated in track cuts systematics
 		fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-		fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
+		//fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4); //! Variated in track cuts systematics
 		fHybridTrackCuts2->SetAcceptKinkDaughters(kFALSE);
 		fHybridTrackCuts2->SetRequireTPCRefit(kTRUE);
 		fHybridTrackCuts2->SetRequireITSRefit(kFALSE);
 		fHybridTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
 		fHybridTrackCuts2->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-		//fHybridTrackCuts2->SetMaxChi2TPCConstrainedGlobal(36);
-		fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
+		//fHybridTrackCuts2->SetMaxChi2TPCConstrainedGlobal(36); //! This cut is excluded 
+		//fHybridTrackCuts2->SetMaxDCAToVertexZ(2); //! Variated in track cuts systematics
 		fHybridTrackCuts2->SetDCAToVertex2D(kFALSE);
 		fHybridTrackCuts2->SetRequireSigmaToVertex(kFALSE);
 		fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
 		fHybridTrackCuts2->SetEtaRange(-0.8,0.8);
+
+		if(fTrackID==0){
+			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
+			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
+		}else if(fTrackID==1){
+			fHybridTrackCuts2->SetMinNCrossedRowsTPC(80);
+			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
+		}else if(fTrackID==2){
+			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
+			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(5);
+			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
+		}else if(fTrackID==3){
+			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
+			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts2->SetMaxDCAToVertexZ(3);
+		}else if(fTrackID==4){
+			fHybridTrackCuts2->SetMinNCrossedRowsTPC(60);
+			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
+		}else if(fTrackID==5){
+			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
+			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts2->SetMaxDCAToVertexZ(1);
+		}else{
+			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
+			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
+		}
 	} 
 
 	// Quality cuts for selecting daughters of V0s
@@ -426,7 +537,7 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 		// ITS
 		fTrackFilterDaughters->SetRequireITSRefit(kTRUE);
 		fTrackFilterDaughters->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-		//fTrackFilterDaughters->SetMaxChi2TPCConstrainedGlobal(36);
+		//fTrackFilterDaughters->SetMaxChi2TPCConstrainedGlobal(36); //! This cut is excluded 
 		fTrackFilterDaughters->SetMaxDCAToVertexZ(2);
 		fTrackFilterDaughters->SetDCAToVertex2D(kFALSE);
 		fTrackFilterDaughters->SetRequireSigmaToVertex(kFALSE);
@@ -872,7 +983,7 @@ void AliAnalysisTaskSpectraRT::GetLeadingObject(bool isMC) {
 
 			AliESDtrack* track_hybrid = 0x0;
 			if(!fSelectHybridTracks){
-				if(!fTrackFilter->IsSelected(track)) { continue; } 
+				if(!fTrackFilter->AcceptTrack(track)) { continue; } 
 				else{ track_hybrid = new AliESDtrack(*track); }
 			}else{
 				track_hybrid = SetHybridTrackCuts(track,kFALSE,kFALSE,kFALSE);
@@ -944,7 +1055,7 @@ void AliAnalysisTaskSpectraRT::GetMultiplicityDistributions(){
 
 		AliESDtrack* track = 0x0;
 		if(!fSelectHybridTracks){
-			if(!fTrackFilter->IsSelected(esdtrack)) { continue; } 
+			if(!fTrackFilter->AcceptTrack(esdtrack)) { continue; } 
 			else{ track = esdtrack; }
 		}else{
 			track = SetHybridTrackCuts(esdtrack,kFALSE,kFALSE,kFALSE);
@@ -1012,7 +1123,7 @@ void AliAnalysisTaskSpectraRT::GetDetectorResponse() {
 
 		AliESDtrack* track = 0x0;
 		if(!fSelectHybridTracks){
-			if(!fTrackFilter->IsSelected(esdtrack)) { continue; } 
+			if(!fTrackFilter->AcceptTrack(esdtrack)) { continue; } 
 			else{ track = esdtrack; }
 		}else{
 			track = SetHybridTrackCuts(esdtrack,kFALSE,kFALSE,kFALSE);
@@ -1077,7 +1188,7 @@ void AliAnalysisTaskSpectraRT::GetMCCorrections(){
 
 		AliESDtrack* track = 0x0;
 		if(!fSelectHybridTracks){
-			if(!fTrackFilter->IsSelected(esdtrack)) { continue; } 
+			if(!fTrackFilter->AcceptTrack(esdtrack)) { continue; } 
 			else{ track = esdtrack; }
 		}else{
 			track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
@@ -1171,7 +1282,7 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 
 		AliESDtrack* track = 0x0;
 		if(!fSelectHybridTracks){
-			if(!fTrackFilter->IsSelected(esdtrack)) { continue; } 
+			if(!fTrackFilter->AcceptTrack(esdtrack)) { continue; } 
 			else{ track = new AliESDtrack(*esdtrack); }
 		}else{
 			track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
@@ -1210,7 +1321,7 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 
 		AliESDtrack* esdTrack = 0x0;
 		if(!fSelectHybridTracks){
-			if(!fTrackFilter->IsSelected(track)) { continue; } 
+			if(!fTrackFilter->AcceptTrack(track)) { continue; } 
 			else{ esdTrack = new AliESDtrack(*track); }
 		}else{
 			esdTrack = SetHybridTrackCuts(track,kFALSE,kFALSE,kFALSE);
@@ -1788,7 +1899,7 @@ float AliAnalysisTaskSpectraRT::GetMaxDCApTDep( TF1 *fMaxDCAxy, Double_t ptI){
 
 }
 //________________________________________________________________________
-void AliAnalysisTaskSpectraRT::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
+/*void AliAnalysisTaskSpectraRT::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
 
 	AliESDtrackCuts* esdTrackCuts = 0x0;
 	if(fSetTPConlyTrkCuts){
@@ -1804,7 +1915,7 @@ void AliAnalysisTaskSpectraRT::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
 	}
 
 	fTrackFilter->AddCuts(esdTrackCuts);
-}
+}*/
 //________________________________________________________________________
 AliESDtrack* AliAnalysisTaskSpectraRT::SetHybridTrackCuts(AliESDtrack *esdtrack, const bool fillPhiStand, const bool fillPhHyb1, const bool fillPhHyb2){
 
@@ -1814,7 +1925,7 @@ AliESDtrack* AliAnalysisTaskSpectraRT::SetHybridTrackCuts(AliESDtrack *esdtrack,
 
 	AliESDtrack *newTrack = 0x0;
 
-	if(fTrackFilter->IsSelected(esdtrack)){
+	if(fTrackFilter->AcceptTrack(esdtrack)){
 		newTrack = new AliESDtrack(*esdtrack);
 		if(fillPhiStand) hPhiStandard->Fill(newTrack->Eta(),newTrack->Phi());
 		////			newTrack->SetTRDQuality(0);

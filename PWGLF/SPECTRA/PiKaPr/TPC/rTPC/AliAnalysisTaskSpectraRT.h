@@ -60,12 +60,13 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(bool isMC) {fAnalysisMC = isMC;}
 		virtual void  SetMCClosure(bool isMCclos) {fIsMCclosure = isMCclos;}
+		virtual void  SetTrackID(const int trkID){fTrackID = trkID;}
 		virtual void  SetNcl(const int ncl){fNcl = ncl;}
 		//	virtual void  SetPolarity(const float polarity){fPolarity = polarity;}
 		virtual void  SetEtaCut(double etaCut){fEtaCut = etaCut;}
 		virtual void  SetPeriod(const char* Period) { fPeriod = Period; }
 		virtual void  SetdEdxCalibration(bool isCalibrated) { fdEdxCalibrated = isCalibrated; }
-		virtual void  SetTrackCutsType(bool isTPCOnlyTrkCuts) { fSetTPConlyTrkCuts = isTPCOnlyTrkCuts; }
+		//virtual void  SetTrackCutsType(bool isTPCOnlyTrkCuts) { fSetTPConlyTrkCuts = isTPCOnlyTrkCuts; }
 		virtual void  SetHybridTracks(bool isSelectHybrid) { fSelectHybridTracks = isSelectHybrid; }
 		AliESDtrack*  SetHybridTrackCuts(AliESDtrack *track, const bool fill1, const bool fill2, const bool fill3);
 
@@ -89,7 +90,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		bool IsGoodZvertexPos(AliESDEvent *esd);
 		bool PhiCut(const double& pt, double phi, const double& q, const float& mag, TF1* phiCutLow, TF1* phiCutHigh);
 		float GetMaxDCApTDep( TF1 *fcut, Double_t pt );
-		virtual void SetTrackCuts(AliAnalysisFilter* fTrackFilter);
+		//virtual void SetTrackCuts(AliAnalysisFilter* fTrackFilter);
 		double EtaCalibration(const double &Eta);
 		double EtaCalibrationEl(const double &Eta);
 		bool TOFPID(AliESDtrack* track);
@@ -104,9 +105,9 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		AliPIDResponse* fPIDResponse;       //! Pointer to PIDResponse
 		AliESDtrackCuts* fGeometricalCut; 
 		AliESDtrackCuts* fTrackFilterDaughters;
-		AliAnalysisFilter* fTrackFilter;
-		AliESDtrackCuts*   fHybridTrackCuts1;                 //  Track cuts for tracks without SPD hit
-		AliESDtrackCuts*   fHybridTrackCuts2;                 //  Track cuts for tracks witout SPD hit or ITS refit
+		AliESDtrackCuts* fTrackFilter;
+		AliESDtrackCuts* fHybridTrackCuts1;                 //  Track cuts for tracks without SPD hit
+		AliESDtrackCuts* fHybridTrackCuts2;                 //  Track cuts for tracks witout SPD hit or ITS refit
 		AliAnalysisUtils* utils;
 		TString     fAnalysisType;        //  "ESD" or "AOD"
 		bool        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
@@ -118,6 +119,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		//
 
 		int fNcl;
+		int fTrackID;
 		double fEtaCut;
 		///		const float fPolarity;
 		bool fdEdxCalibrated;
@@ -126,7 +128,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		const double fdEdxHigh;
 		const double fdEdxLow;
 		TString  fPeriod;
-		bool fSetTPConlyTrkCuts;
+		//bool fSetTPConlyTrkCuts;
 		bool fSelectHybridTracks;
 
 		const double fLeadPtCutMin;
