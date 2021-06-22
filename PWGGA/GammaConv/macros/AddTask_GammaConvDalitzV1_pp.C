@@ -403,13 +403,18 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
    } else if (trainConfig == 430) {//Psipair Optimization.
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863202223710", "0152103500000000");//Standard with kBoth on electrons
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");//Standard
-    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263702223710", "0152103500000000");//kAny 5% GG
-    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263802223710", "0152103500000000");//kAny 8% GG
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263702223710", "0152103500000000");//kAny 5% GG lineal
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263802223710", "0152103500000000");//kAny 8% GG lineal
     } else if (trainConfig == 431) {//Psipair Optimization.
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863e02223710", "0152103500000000");//kBoth 5 % GG
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//kBoth 8 % GG
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863h02223710", "0152103500000000");//kBoth pt dependance
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263g02223710", "0152103500000000");//kAny pt dependance
+    } else if (trainConfig == 432) {//Psipair Optimization.
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863j02223710", "0152103500000000");// Nominal B kBoth 10%
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263l02223710", "0152103500000000");// Nominal B kAny 10%
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263m02223710", "0152103500000000");// Nominal B kAny 8%
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263n02223710", "0152103500000000");// Nominal B kAny 5%
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////  6XX for lowB,    65X  lowB and MBW ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -539,10 +544,15 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0454000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263202263710", "0152103520000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 930) { // Study Low B Field kBoth for New PsiPair and kBoth, Optimization at 5 and 8 % of contamiantion.
-    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863a02263710", "0152103500000000"); //kBoth 5 % of contamination from photons
-    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863b02263710", "0152103500000000"); //kBoth 8 % of contamination from photons
-    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263c02263710", "0152103500000000"); //kAny 5 % of contamination from photons
-    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263d02263710", "0152103500000000"); //kAny 8 % of contamination from photons
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263a02263710", "0152103500000000"); //kAny 5 % of contamination from photons
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263b02263710", "0152103500000000"); //kAny 8 % of contamination from photons
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863c02263710", "0152103500000000"); //kBoth 5 % of contamination from photons
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863d02263710", "0152103500000000"); //kBoth 8 % of contamination from photons
+  } else if (trainConfig == 931) { // Study Low Contamination.
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263i02263710", "0152103500000000"); //kAny 10 % of contamination from photons
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863k02263710", "0152103500000000"); //kBoth 10 % of contamination from photons
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); //kAny Standard, contamination from photons
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863202263710", "0152103500000000"); //kBoth Standard, contamination from photons
     //-----------------same as 6XX to be used with MBW extracted from 5TeV Nch
   } else if (trainConfig == 969) { // R 5-180 and remove r bin 55-72
     cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0404000", "204c6400263202263710", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
