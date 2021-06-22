@@ -339,7 +339,7 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 		fTrackFilter->SetAcceptKinkDaughters(kFALSE);
 		fTrackFilter->SetRequireTPCRefit(kTRUE);
 		fTrackFilter->SetRequireITSRefit(kTRUE);
-		fTrackFilter->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+		fTrackFilter->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 		fTrackFilter->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
 		//fHybridTrackCuts1->SetMaxChi2TPCConstrainedGlobal(36); //! This cut is excluded 
 		//fTrackFilter->SetMaxDCAToVertexZ(2); //! Variated in track cuts systematics
