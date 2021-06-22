@@ -873,7 +873,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
       KFParticle kfpLambda_m = kfpLambda;
       kfpLambda_m.SetNonlinearMassConstraint(massLambda);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) || TMath::Abs(kfpLambda.GetE()) <= TMath::Abs(kfpLambda.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) || TMath::Abs(kfpLambda_m.GetE()) <= TMath::Abs(kfpLambda_m.GetPz()) ) continue;
 
       KFParticle kfpPionOrKaon;
       kfpPionOrKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, -211); // pion-
@@ -904,7 +904,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
       KFParticle kfpXiMinus_m = kfpXiMinus;
       kfpXiMinus_m.SetNonlinearMassConstraint(massXi);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) || TMath::Abs(kfpXiMinus.GetE()) <= TMath::Abs(kfpXiMinus.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) || TMath::Abs(kfpXiMinus_m.GetE()) <= TMath::Abs(kfpXiMinus_m.GetPz()) ) continue;
 
       for (Int_t itrkBP_trk1=0; itrkBP_trk1<flag_trkP-1; itrkBP_trk1++) { // Loop for first bachelor pion+
         for (Int_t itrkBP_trk2=itrkBP_trk1+1; itrkBP_trk2<flag_trkP; itrkBP_trk2++) { // Loop for second bachelor pion+
@@ -1006,7 +1006,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
       KFParticle kfpAntiLambda_m = kfpAntiLambda;
       kfpAntiLambda_m.SetNonlinearMassConstraint(massLambda);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) || TMath::Abs(kfpAntiLambda.GetE()) <= TMath::Abs(kfpAntiLambda.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) || TMath::Abs(kfpAntiLambda_m.GetE()) <= TMath::Abs(kfpAntiLambda_m.GetPz()) ) continue;
 
       KFParticle kfpPionOrKaon;
       kfpPionOrKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, 211); // pion+
@@ -1037,7 +1037,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
       KFParticle kfpXiPlus_m = kfpXiPlus;
       kfpXiPlus_m.SetNonlinearMassConstraint(massXi);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) || TMath::Abs(kfpXiPlus.GetE()) <= TMath::Abs(kfpXiPlus.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) || TMath::Abs(kfpXiPlus_m.GetE()) <= TMath::Abs(kfpXiPlus_m.GetPz()) ) continue;
 
       for (Int_t itrkBP_trk1=0; itrkBP_trk1<flag_trkN-1; itrkBP_trk1++) { // Loop for first bachelor pion-
         for (Int_t itrkBP_trk2=itrkBP_trk1+1; itrkBP_trk2<flag_trkN; itrkBP_trk2++) { // Loop for second bachelor pion-
