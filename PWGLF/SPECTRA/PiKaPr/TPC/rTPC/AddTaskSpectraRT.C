@@ -18,10 +18,11 @@ AliAnalysisTaskSpectraRT* AddTaskSpectraRT(
 		bool AnalysisMC = kFALSE,
 		bool MCClosure  = kFALSE,
 		const char* Period  = "16g",
-		bool IsTPCOnlyTrkCuts = kTRUE,
+////		bool IsTPCOnlyTrkCuts = kTRUE,
 		const char* Container = "TPCOnly",
 		bool SelectHybridTrks = kTRUE,
-		bool isdEdxCalibrated = kFALSE	
+		bool isdEdxCalibrated = kFALSE,
+		int trkid = 3	
 		)   
 {
 
@@ -50,10 +51,11 @@ AliAnalysisTaskSpectraRT* AddTaskSpectraRT(
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetMCClosure(MCClosure);
 	task->SetPeriod(Period);
- 	task->SetTrackCutsType(IsTPCOnlyTrkCuts);
+//// 	task->SetTrackCutsType(IsTPCOnlyTrkCuts);
 	task->SetHybridTracks(SelectHybridTrks);
 	task->SetdEdxCalibration(isdEdxCalibrated);
 	task->SetNcl(70);
+	task->SetTrackID(trkid);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
 
@@ -62,7 +64,7 @@ AliAnalysisTaskSpectraRT* AddTaskSpectraRT(
 	// your task needs input: here we connect the manager to your task
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	// same for the output
-	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_PID_5GeV_%s",Container), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_PID_5GeV_%s_TrkiD_%d",Container,trkid), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 	// in the end, this macro returns a pointer to your task. this will be convenient later on
 	// when you will run your analysis in an analysis train on grid
 	return task;

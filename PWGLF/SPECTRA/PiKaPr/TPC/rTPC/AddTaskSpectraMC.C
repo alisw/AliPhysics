@@ -14,9 +14,9 @@
 AliAnalysisTaskSpectraMC* AddTaskSpectraMC(
 		bool AnalysisMC = kFALSE,
 		bool MCClosure  = kFALSE,
-		bool IsTPCOnlyTrkCuts = kTRUE,
 		const char* Container = "TPCOnly",
-		bool SelectHybridTrks = kTRUE
+		bool SelectHybridTrks = kTRUE,
+		int trkid = 3
 		)   
 {
 
@@ -44,8 +44,9 @@ AliAnalysisTaskSpectraMC* AddTaskSpectraMC(
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetMCClosure(MCClosure);
- 	task->SetTrackCutsType(IsTPCOnlyTrkCuts);
+ 	//task->SetTrackCutsType(IsTPCOnlyTrkCuts);
 	task->SetHybridTracks(SelectHybridTrks);
+	task->SetTrackID(trkid);
 	task->SetNcl(70);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
@@ -55,7 +56,7 @@ AliAnalysisTaskSpectraMC* AddTaskSpectraMC(
 	// your task needs input: here we connect the manager to your task
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	// same for the output
-	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_PID_5GeV_%s",Container), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_PID_5GeV_%s_TrkID_%d",Container,trkid), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 	// in the end, this macro returns a pointer to your task. this will be convenient later on
 	// when you will run your analysis in an analysis train on grid
 	return task;

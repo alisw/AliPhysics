@@ -60,9 +60,10 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(bool isMC) {fAnalysisMC = isMC;}
 		virtual void  SetMCClosure(bool isMCclos) {fIsMCclosure = isMCclos;}
+		virtual void  SetTrackID(const int trkID){fTrackID = trkID;}
 		virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
-		virtual void  SetTrackCutsType(bool isTPCOnlyTrkCuts) { fSetTPConlyTrkCuts = isTPCOnlyTrkCuts; }
+		//virtual void  SetTrackCutsType(bool isTPCOnlyTrkCuts) { fSetTPConlyTrkCuts = isTPCOnlyTrkCuts; }
 		virtual void  SetHybridTracks(bool isSelectHybrid) { fSelectHybridTracks = isSelectHybrid; }
 		AliESDtrack*  SetHybridTrackCuts(AliESDtrack *track, const bool fill1, const bool fill2, const bool fill3);
 
@@ -85,7 +86,7 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		bool IsGoodZvertexPos(AliESDEvent *esd);
 		bool PhiCut(const double& pt, double phi, const double& q, const float& mag, TF1* phiCutLow, TF1* phiCutHigh);
 		float GetMaxDCApTDep( TF1 *fcut, double pt);
-		virtual void SetTrackCuts(AliAnalysisFilter* fTrackFilter);
+	///	virtual void SetTrackCuts(AliAnalysisFilter* fTrackFilter);
 		double EtaCalibration(const int &centrality, const double &Eta);
 		double EtaCalibrationEl(const int &centrality, const double &Eta);
 		bool TOFPID(AliESDtrack* track);
@@ -99,7 +100,7 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		TClonesArray* fMCArray;             //! MC array for AOD
 		AliPIDResponse* fPIDResponse;       //! Pointer to PIDResponse
 		AliESDtrackCuts* fGeometricalCut;    //  Track Filter, set 2010 with golden cuts
-		AliAnalysisFilter* fTrackFilter;
+		AliESDtrackCuts* fTrackFilter;
 		AliESDtrackCuts*   fHybridTrackCuts1;                 //  Track cuts for tracks without SPD hit
 	        AliESDtrackCuts*   fHybridTrackCuts2;                 //  Track cuts for tracks witout SPD hit or ITS refit
 		AliAnalysisUtils* utils;
@@ -112,13 +113,14 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		// Cuts and options
 		//
 
+		int fTrackID;
 		int        fNcl;
 		double     fEtaCut;             // Eta cut used to select particles
 		const Double_t fDeDxMIPMin;
 		const Double_t fDeDxMIPMax;
 		const Double_t fdEdxHigh;
 		const Double_t fdEdxLow;
-		bool fSetTPConlyTrkCuts;
+		//bool fSetTPConlyTrkCuts;
 		bool fSelectHybridTracks;
 
 		const double fLeadPtCutMin;
