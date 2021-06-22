@@ -37,9 +37,9 @@ struct Charm2Prong
     float fInvMassD0;              /// inv mass of D0 hypothesis
     float fInvMassD0bar;           /// inv mass of D0bar hypothesis
     Double32_t fPt;                //[0.0,65.535,16]
-    Double32_t fPx;                //[0.0,65.535,16]
-    Double32_t fPy;                //[0.0,65.535,16]
-    Double32_t fPz;                //[0.0,65.535,16]
+    float fPx;                     // px
+    float fPy;                     // py
+    float fPz;                     // pz
     Double32_t fY;                 //[-1.023,1.023,11]
     Double32_t fCosP;              //[0.67233000,1.,15]
     Double32_t fCosPXY;            //[0.67233000,1.,15]
@@ -66,9 +66,9 @@ struct Charm3Prong
     float fInvMassPhiKKpi;
     float fInvMassPhipiKK;
     Double32_t fPt;                //[0.0,65.535,16]
-    Double32_t fPx;                //[0.0,65.535,16]
-    Double32_t fPy;                //[0.0,65.535,16]
-    Double32_t fPz;                //[0.0,65.535,16]
+    float fPx;                     // px
+    float fPy;                     // py
+    float fPz;                     // pz
     Double32_t fYDplus;            //[-1.023,1.023,11]
     Double32_t fYDs;               //[-1.023,1.023,11]
     Double32_t fYLc;               //[-1.023,1.023,11]
@@ -93,9 +93,9 @@ struct Dstar
     float fInvMass;
     float fInvMassD0;
     Double32_t fPt;                  //[0.0,65.535,16]
-    Double32_t fPx;                //[0.0,65.535,16]
-    Double32_t fPy;                //[0.0,65.535,16]
-    Double32_t fPz;                //[0.0,65.535,16]
+    float fPx;                       // px
+    float fPy;                       // py
+    float fPz;                       // pz
     Double32_t fY;                   //[-1.023,1.023,11]
     Double32_t fCosPD0;              //[0.67233000,1.,15]
     Double32_t fCosPXYD0;            //[0.67233000,1.,15]
@@ -205,9 +205,9 @@ struct GenHadron
 struct Track
 {
     Double32_t fPt;                //[0.0,65.535,16]
-    Double32_t fPx;                //[0.0,65.535,16]
-    Double32_t fPy;                //[0.0,65.535,16]
-    Double32_t fPz;                //[0.0,65.535,16]
+    float fPx;                     // px
+    float fPy;                     // py
+    float fPz;                     // pz
     Double32_t fNsigmaTPCPr;       //[-5.12,5.12,10]
     Double32_t fNsigmaTOFPr;       //[-5.12,5.12,10]
     int fIdx;                      /// track index
