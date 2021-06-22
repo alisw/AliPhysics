@@ -1428,7 +1428,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::FillJetQA(const AliEmcalJet &jet, boo
       auto cluster = jet.Cluster(icl);
       TLorentzVector clustervec;
       cluster->GetMomentum(clustervec, fVertex, energydef);
-      TVector3 clustervec3(clustervec.Pt(), clustervec.Eta(), clustervec.Phi());
+      TVector3 clustervec3(clustervec.Px(), clustervec.Py(), clustervec.Pz());
       fHistManager.FillTH2("hSDUsedNeutralPtjvPtcDet", jet.Pt(), clustervec.Pt());
       fHistManager.FillTH2("hSDUsedNeutralEtaPhiDet", clustervec.Eta(), TVector2::Phi_0_2pi(clustervec.Phi()));
       fHistManager.FillTH2("hSDUsedNeutralDRDet", jet.Pt(), jetvec.DeltaR(clustervec3));
@@ -1460,9 +1460,9 @@ void AliAnalysisTaskEmcalSoftDropResponse::FillJetQA(const AliEmcalJet &jet, boo
   }
 
   if(hasMaxNeutral) {
-    fHistManager.FillTH2("hSDUsedNeutralPtjvPcMaxPart", jet.Pt(), maxneutral.Pt());
-    fHistManager.FillTH2("hSDUsedNeutralEtaPhiMaxPart", maxneutral.Eta(), TVector2::Phi_0_2pi(maxneutral.Phi()));
-    fHistManager.FillTH2("hSDUsedNeutralDRMaxPart", jet.Pt(), jetvec.DeltaR(maxneutral));
+    fHistManager.FillTH2(Form("hSDUsedNeutralPtjvPcMax%s", tag.data()), jet.Pt(), maxneutral.Pt());
+    fHistManager.FillTH2(Form("hSDUsedNeutralEtaPhiMax%s", tag.data()), maxneutral.Eta(), TVector2::Phi_0_2pi(maxneutral.Phi()));
+    fHistManager.FillTH2(Form("hSDUsedNeutralDRMax%s", tag.data()), jet.Pt(), jetvec.DeltaR(maxneutral));
   }
 }
 
