@@ -3517,6 +3517,37 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411799509fe32220000","0r631031000000d0"); // NCell >=2
     cuts.AddCutCalo("00010113","411799509fe30220000","0r631031000000d0"); // NoNCell
 
+  // several configs to study peak position for different NonLinearity settings in adta and MC
+  } else if (trainConfig == 2560) { // NonLin applied in CF, min energy = 700MeV
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0"); // INT7
+    cuts.AddCutCalo("00010113","411790009fe30220000","0r631031000000d0"); // INT7, no NCell
+  } else if (trainConfig == 2561) { // NonLin applied in CF, min energy = 700MeV
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0"); // INT7
+  } else if (trainConfig == 2562) { // NonLin applied in CF. min energy = 700MeV
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0"); // INT7
+  } else if (trainConfig == 2563) { // NonLin applied in CF.  S100A50,  min energy = 700MeV
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0"); // INT7
+  } else if (trainConfig == 2564) { // NonLin applied in CF.  S100A50,  min energy = 200MeV
+    cuts.AddCutCalo("00010113","411790009fei2220000","0r631031000000d0"); // INT7
+  } else if (trainConfig == 2565) { // NonLin applied in CF.  S100A50,  min energy = 300MeV
+    cuts.AddCutCalo("00010113","411790009feg2220000","0r631031000000d0"); // INT7
+
+  } else if (trainConfig == 2570) { // NonLin applied in CF, min energy = 700MeV
+    cuts.AddCutCalo("00052113","411790009fe32220000","0r631031000000d0"); // EMC7
+    cuts.AddCutCalo("00052113","411790009fe30220000","0r631031000000d0"); // EMC7, no NCell
+  } else if (trainConfig == 2571) { // NonLin applied in CF, min energy = 700MeV
+    cuts.AddCutCalo("00052113","411790009fe32220000","0r631031000000d0"); // EMC7
+  } else if (trainConfig == 2572) { // NonLin applied in CF. min energy = 700MeV
+    cuts.AddCutCalo("00052113","411790009fe32220000","0r631031000000d0"); // EMC7
+  } else if (trainConfig == 2573) { // NonLin applied in CF.  S100A50,  min energy = 700MeV
+    cuts.AddCutCalo("00052113","411790009fe32220000","0r631031000000d0"); // EMC7
+  } else if (trainConfig == 2574) { // NonLin applied in CF.  S100A50,  min energy = 200MeV
+    cuts.AddCutCalo("00052113","411790009fei2220000","0r631031000000d0"); // EMC7
+  } else if (trainConfig == 2575) { // NonLin applied in CF.  S100A50,  min energy = 300MeV
+    cuts.AddCutCalo("00052113","411790009feg2220000","0r631031000000d0"); // EMC7
+
+
+
     //*************************************************************************************************
     // 13 TeV PHOS - Systematics
     //*************************************************************************************************
