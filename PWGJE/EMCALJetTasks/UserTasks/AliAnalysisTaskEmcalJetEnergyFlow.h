@@ -68,14 +68,14 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void                    DoCellLoop()                            ; // /<May remove later
 
         Bool_t                  IsMCprod                                ;// /<Flag for MC productions
-	THistManager            fHistManager                            ;// /< Histogram manager
+	THistManager            fHistManager                            ;// /!<! Histogram manager
 //	TList*			fOutput					;// /!<! Output list
  	private:
  	 AliAnalysisTaskEmcalJetEnergyFlow(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
   	/// \cond CLASSIMP
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,10);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,11);
 	/// \endcond
 };
 #endif
