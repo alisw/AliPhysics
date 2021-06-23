@@ -95,7 +95,6 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	MinNtr(0),
 	MaxNtr(0),
         festimatorFile(""),
-        fEstimator(NULL),
         estimatorAvg(0),
 	//==== basic parameters ====
 	fNevents(0),
@@ -276,7 +275,6 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	MinNtr(0),
 	MaxNtr(0),
         festimatorFile(""),
-        fEstimator(NULL),
         estimatorAvg(0),
 	//==== basic parameters ====
 	fNevents(0),
@@ -968,8 +966,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
         if(!estimatorAvg)
           {
             cout << "No estimatorAvg and get one " << endl;
-            //TFile* fEstimator = TFile::Open(festimatorFile.Data());
-            fEstimator = TFile::Open(festimatorFile.Data());
+            TFile* fEstimator = TFile::Open(festimatorFile.Data());
+            //fEstimator = TFile::Open(festimatorFile.Data());
 	    if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
 	    if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
 	   }
@@ -990,7 +988,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	} 
 	fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
-        fEstimator->Close();
+        //fEstimator->Close();
 
 	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
 	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
