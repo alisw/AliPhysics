@@ -2306,7 +2306,6 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           }
         }
 
-        FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi());
         if(fDoLundPlane)RecursiveParents(jetrec, jetconrec,fJetConstTrackID);
 
         //Rejection jets with pt>100 GeV/c and pt<5 GeV/c for the TC tagging as lnjp lookup has exactly these boundaries
@@ -2408,6 +2407,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           FillHist("fh2dnTracksvsJetPt",nTracks,fJetRecPt,1);
           continue;
         }
+        if(nTracks>0) FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi());
 
         //FillHist("fh1dParticlesPerJet",NJetParticles,1);
 
@@ -2454,6 +2454,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
 
        //PrintAllTreeVars();
+       //if(fJetFlavour==B)PrintAllTreeVars();
        tJetTree->Fill();
        for(int iThresh=0;iThresh<fNThresholds;iThresh++){
          delete kTagDec[iThresh];
@@ -2622,30 +2623,30 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
   //MC properties
   if(fIsPythia){
     fHistManager.CreateTH1("fh1dJetGenPt","generator level jets;pt (GeV/c); count",300,0,300,"s");
-    fHistManager.CreateTH1("fh1dJetGenPtUnidentified","generator level jets (no flavour assigned);pt (GeV/c); count",250,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetGenPtudsg","generator level udsg jets;pt (GeV/c); count",250,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetGenPtc","generator level c jets;pt (GeV/c); count",250,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetGenPts","generator level s jets;pt (GeV/c); count",250,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetGenPtUnidentified","generator level jets (no flavour assigned);pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenPtudsg","generator level udsg jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenPtc","generator level c jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenPts","generator level s jets;pt (GeV/c); count",300,0,300,"s");
 
     fHistManager.CreateTH2("fh2dJetGenPtVsJetRecPt_PseudoData","detector momentum response;red pt;gen pt",115,5,120,200,0,200,"s");
     fHistManager.CreateTH2("fh2dJetGenPtVsJetRecPt_Response","detector momentum response;rec pt;gen pt",115,5,120,200,0,200,"s");
-    fHistManager.CreateTH2("fh2dJetGenPtVsJetWideRecPt_PseudoData","detector momentum response;rec pt;gen pt",300,0,300,200,0,200,"s");;
-    fHistManager.CreateTH2("fh2dJetGenPtVsJetWideRecPt_Response","detector momentum response;rec pt;gen pt",300,0,300,200,0,200,"s");
+    fHistManager.CreateTH2("fh2dJetGenPtVsJetWideRecPt_PseudoData","detector momentum response;rec pt;gen pt",300,0,300,300,0,300,"s");;
+    fHistManager.CreateTH2("fh2dJetGenPtVsJetWideRecPt_Response","detector momentum response;rec pt;gen pt",300,0,300,300,0,300,"s");
 
     fHistManager.CreateTH2("fh2dGenJetPtVsRecJetPt","detector momentum response;rec pt;gen pt",300,0,300,300,0,300,"s");;
 
-    fHistManager.CreateTH1("fh1dJetGenPtb_PseudoData","generator level b jets;pt (GeV/c); count",200,0,200,"s");
-    fHistManager.CreateTH1("fh1dJetGenPtb_Response","generator level b jets;pt (GeV/c); count",200,0,200,"s");
-    fHistManager.CreateTH1("fh1dJetGenMatchedPtb_PseudoData","generator level b jets;pt (GeV/c); count",200,0,200,"s");
-    fHistManager.CreateTH1("fh1dJetGenMatchedPtb_Response","generator level b jets;pt (GeV/c); count",200,0,200,"s");
+    fHistManager.CreateTH1("fh1dJetGenPtb_PseudoData","generator level b jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenPtb_Response","generator level b jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenMatchedPtb_PseudoData","generator level b jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenMatchedPtb_Response","generator level b jets;pt (GeV/c); count",300,0,300,"s");
 
     fHistManager.CreateTH1("fh1dJetRecPtudsg","detector level jets;pt (GeV/c); count",500,0,250,"s");
     fHistManager.CreateTH1("fh1dJetRecPtUnidentified","detector level jets;pt (GeV/c); count",500,0,250,"s");
     fHistManager.CreateTH1("fh1dJetRecPtc","detector level jets;pt (GeV/c); count",500,0,250,"s");
     fHistManager.CreateTH1("fh1dJetRecPts","detector level jets;pt (GeV/c); count",500,0,250,"s");
 
-    fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_PseudoData","detector level jets;pt (GeV/c); count",200,0,200,"s");
-    fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_Response","detector level jets;pt (GeV/c); count",200,0,200,"s");
+    fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_PseudoData","detector level jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_Response","detector level jets;pt (GeV/c); count",300,0,300,"s");
   }
 
   fh1DCutInclusive=(TH1D*)AddHistogramm("fh1DCutInclusive","fh1DCutInclusive",30,0,30);
@@ -2822,7 +2823,7 @@ void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
 
     printf("--------------------------------------------------------------------------------\n");
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-    printf("XXXXXXXXXX Code version 14.06.21 XXXXXXXXXX\n");
+    printf("XXXXXXXXXX Code version 23.06.21 XXXXXXXXXX\n");
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
     PrintSettings();
     PrintV0Settings();
