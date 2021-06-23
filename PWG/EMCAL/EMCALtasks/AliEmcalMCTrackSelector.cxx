@@ -29,6 +29,7 @@
 #include <iostream>
 
 #include <TClonesArray.h>
+#include <TPDGCode.h>
 
 #include "AliAnalysisManager.h"
 #include "AliVEvent.h"
@@ -50,6 +51,7 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() :
   fChargedMC(kFALSE),
   fOnlyHIJING(kFALSE),
   fRejectPhotonMothers(false),
+  fSelectStablePi0(false),
   fEtaMax(1),
   fParticlesMapName(""),
   fInit(kFALSE),
@@ -71,6 +73,7 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) :
   fChargedMC(kFALSE),
   fOnlyHIJING(kFALSE),
   fRejectPhotonMothers(false),
+  fSelectStablePi0(false),
   fEtaMax(1),
   fParticlesMapName(""),
   fInit(kFALSE),
@@ -185,7 +188,16 @@ void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArr
 
     Int_t flag = 0;
     if (iPart < nprim) flag |= AliAODMCParticle::kPrimary;
-    if (isPhysPrim) flag |= AliAODMCParticle::kPhysicalPrim;
+    if (isPhysPrim) {
+      if(fSelectStablePi0){
+        if((TMath::Abs(part->PdgCode()) == kPi0) || !IsFromPi0Mother(*part)) {
+          flag |= AliAODMCParticle::kPhysicalPrim;
+        } 
+      } else {
+        flag |= AliAODMCParticle::kPhysicalPrim;
+      }
+    } 
+    if (fSelectStablePi0 && (TMath::Abs(part->PdgCode()) == kPi0)) flag |= AliAODMCParticle::kPhysicalPrim;
     if (mcEvent->IsSecondaryFromWeakDecay(iPart)) flag |= AliAODMCParticle::kSecondaryFromWeakDecay;
     if (mcEvent->IsSecondaryFromMaterial(iPart)) flag |= AliAODMCParticle::kSecondaryFromMaterial;
 
@@ -261,6 +273,13 @@ void AliEmcalMCTrackSelector::CopyMCParticles(TClonesArray* partIn, TClonesArray
 
     AliAODMCParticle* part = static_cast<AliAODMCParticle*>(partIn->At(iPart));
 
+    if(fSelectStablePi0) {
+      auto flag = part->GetFlag();
+      if(TMath::Abs(part->PdgCode()) == kPi0) flag |= AliAODMCParticle::kPhysicalPrim;                       // Set phys prim if it is a daughter from a pi0
+      if(part->IsPhysicalPrimary() && IsFromPi0Mother(*part)) flag  &= ~(AliAODMCParticle::kPhysicalPrim);   // Remove phys. prim if it is a daughter from a pi0
+      part->SetFlag(flag);
+    }
+
     if (!AcceptParticle(part)) continue;
 
     // Reject particle if is a photon and mother of another photon
@@ -311,6 +330,15 @@ Bool_t AliEmcalMCTrackSelector::AcceptParticle(AliAODMCParticle* part) const
   if (fOnlyPhysPrim && !part->IsPhysicalPrimary()) return kFALSE;
 
   return kTRUE;
+}
+
+bool AliEmcalMCTrackSelector::IsFromPi0Mother(const AliVParticle &part) const {
+  auto motherID = part.GetMother();
+  if(motherID < 0) return false;
+  auto motherparticle = fMCEvent->GetTrack(motherID);
+  if(!motherparticle) return false;
+  if(TMath::Abs(motherparticle->PdgCode()) == kPi0) return true;
+  return IsFromPi0Mother(*motherparticle);
 }
 
 AliEmcalMCTrackSelector* AliEmcalMCTrackSelector::AddTaskMCTrackSelector(TString outname, Bool_t nk, Bool_t ch, Double_t etamax, Bool_t physPrim)

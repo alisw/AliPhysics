@@ -2641,7 +2641,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
 //          kfpLambda.GetMass(massLam, errormassLam);
 //          if (kfpLambda.GetMass()<0.1) {cout << "massLam==" << massLam << endl; cout << "errormassLam==" << errormassLam << endl;}
           fHistMassLambda_M->Fill(kfpLambda_m.GetMass());
-          if ( AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) && TMath::Abs(kfpLambda.GetE())>TMath::Abs(kfpLambda.GetPz()) ) {
+          if ( AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) && TMath::Abs(kfpLambda_m.GetE())>TMath::Abs(kfpLambda_m.GetPz()) ) {
 
             for (Int_t itrkPion2=0; itrkPion2<flag_trkN; itrkPion2++) { // Loop for bachelor in cascade pion-
               if ( trackN[itrkPion2]->GetID()==trkN->GetID() ) continue;
@@ -2787,7 +2787,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
               kfpXiMinus_m.SetNonlinearMassConstraint(massXi);
 //              kfpXiMinus_m.SetMassConstraint(massXi);
               fHistMassXiMinus_M->Fill(kfpXiMinus_m.GetMass());
-              if ( AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) && TMath::Abs(kfpXiMinus.GetE())>TMath::Abs(kfpXiMinus.GetPz()) ) {
+              if ( AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) && TMath::Abs(kfpXiMinus_m.GetE())>TMath::Abs(kfpXiMinus_m.GetPz()) ) {
 
               for (Int_t itrkBP=0; itrkBP<flag_trkP; itrkBP++) { // Loop for first bachelor pion+
                 if ( trackP[itrkBP]->GetID()==trkP->GetID() ) continue;
@@ -2969,7 +2969,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
           kfpAntiLambda_m.SetNonlinearMassConstraint(massLambda);
 //          kfpAntiLambda_m.SetMassConstraint(massLambda);
           fHistMassAntiLambda_M->Fill(kfpAntiLambda.GetMass());
-          if ( AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) && TMath::Abs(kfpAntiLambda.GetE())>TMath::Abs(kfpAntiLambda.GetPz()) ) {
+          if ( AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) && TMath::Abs(kfpAntiLambda_m.GetE())>TMath::Abs(kfpAntiLambda_m.GetPz()) ) {
 
             for (Int_t itrkPion2=0; itrkPion2<flag_trkP; itrkPion2++) { // Loop for bachelor in cascade pion+
               if ( trackP[itrkPion2]->GetID()==trkP->GetID() ) continue;
@@ -3116,7 +3116,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
               kfpXiPlus_m.SetNonlinearMassConstraint(massXi);
 //              kfpXiPlus_m.SetMassConstraint(massXi);
               fHistMassXiPlus_M->Fill(kfpXiPlus_m.GetMass());
-              if ( AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) && TMath::Abs(kfpXiPlus.GetE())>TMath::Abs(kfpXiPlus.GetPz()) ) {
+              if ( AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) && TMath::Abs(kfpXiPlus_m.GetE())>TMath::Abs(kfpXiPlus_m.GetPz()) ) {
               for (Int_t itrkBP=0; itrkBP<flag_trkN; itrkBP++) { // Loop for first bachelor pion-
                 if ( trackN[itrkBP]->GetID()==trkN->GetID() ) continue;
 
@@ -3733,7 +3733,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       KFParticle kfpLambda_m = kfpLambda;
       kfpLambda_m.SetNonlinearMassConstraint(massLambda);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) || TMath::Abs(kfpLambda.GetE()) <= TMath::Abs(kfpLambda.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) || TMath::Abs(kfpLambda_m.GetE()) <= TMath::Abs(kfpLambda_m.GetPz()) ) continue;
 
       KFParticle kfpPionOrKaon;
       if (!fIsAnaOmegac0) kfpPionOrKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, -211); // pion-
@@ -3767,7 +3767,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       if (!fIsAnaOmegac0) kfpXiMinus_m.SetNonlinearMassConstraint(massXi);
       if (fIsAnaOmegac0)  kfpXiMinus_m.SetNonlinearMassConstraint(massOmega);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) || TMath::Abs(kfpXiMinus.GetE()) <= TMath::Abs(kfpXiMinus.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) || TMath::Abs(kfpXiMinus_m.GetE()) <= TMath::Abs(kfpXiMinus_m.GetPz()) ) continue;
 
       for (Int_t itrkBP=0; itrkBP<flag_trkP; itrkBP++) { // Loop for first bachelor pion+
 
@@ -3865,7 +3865,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       KFParticle kfpAntiLambda_m = kfpAntiLambda;
       kfpAntiLambda_m.SetNonlinearMassConstraint(massLambda);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) || TMath::Abs(kfpAntiLambda.GetE()) <= TMath::Abs(kfpAntiLambda.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) || TMath::Abs(kfpAntiLambda_m.GetE()) <= TMath::Abs(kfpAntiLambda_m.GetPz()) ) continue;
 
       KFParticle kfpPionOrKaon;
       if (!fIsAnaOmegac0) kfpPionOrKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, 211); // pion+
@@ -3899,7 +3899,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       if (!fIsAnaOmegac0) kfpXiPlus_m.SetNonlinearMassConstraint(massXi);
       if (fIsAnaOmegac0)  kfpXiPlus_m.SetNonlinearMassConstraint(massOmega);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) || TMath::Abs(kfpXiPlus.GetE()) <= TMath::Abs(kfpXiPlus.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) || TMath::Abs(kfpXiPlus_m.GetE()) <= TMath::Abs(kfpXiPlus_m.GetPz()) ) continue;
 
       for (Int_t itrkBP=0; itrkBP<flag_trkN; itrkBP++) { // Loop for first bachelor pion-
 
