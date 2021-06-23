@@ -145,6 +145,7 @@ AliAnalysisTaskV0ChCorrelationppsys::AliAnalysisTaskV0ChCorrelationppsys()
      selectedAntiLambda(NULL),
      selectedTracks(NULL),
      trigParticles(NULL),
+     selectedTrigTracks(NULL),
 
      //-----------------------------------PID----------------------------------
      fV0PIDSigma(0),
@@ -168,6 +169,9 @@ AliAnalysisTaskV0ChCorrelationppsys::AliAnalysisTaskV0ChCorrelationppsys()
      fRejectTrackPileUp(kTRUE),
      fRejectV0PileUp(kTRUE),
      fRejectEventPileUp(kTRUE),
+     fV0h(kTRUE),
+     fhh(kTRUE),
+
      fMCArray(NULL),
      //--------------------------Correction---------------------------------
      fEffCorr(kFALSE),
@@ -279,6 +283,7 @@ AliAnalysisTaskV0ChCorrelationppsys::AliAnalysisTaskV0ChCorrelationppsys(const c
      selectedAntiLambda(NULL),
      selectedTracks(NULL),
      trigParticles(NULL),
+     selectedTrigTracks(NULL),
 
      //-----------------------------------PID----------------------------------
      fV0PIDSigma(0),
@@ -303,6 +308,8 @@ AliAnalysisTaskV0ChCorrelationppsys::AliAnalysisTaskV0ChCorrelationppsys(const c
      fRejectTrackPileUp(kTRUE),
      fRejectV0PileUp(kTRUE),
      fRejectEventPileUp(kTRUE),
+     fV0h(kTRUE),
+     fhh(kTRUE),
      fMCArray(NULL),
      //------------------------------Correction----------------------------------
      fEffCorr(effCorr),
@@ -374,6 +381,10 @@ AliAnalysisTaskV0ChCorrelationppsys::~AliAnalysisTaskV0ChCorrelationppsys()
 
   if(selectedTracks){
     delete selectedTracks;
+  }
+
+ if(selectedTrigTracks){
+    delete selectedTrigTracks;
   }
 
   if(selectedK0s){
@@ -796,10 +807,15 @@ const Int_t nZvtxBins  =  fNumOfVzBins;//fNumOfVzBins;
             vertexBins[i]=vertexBins[i-1]+binstep;
         }
     }
-   // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 29;
-   const Double_t PtBins[30] = {1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10}; 
 
+
+   const Int_t nPtBinsV0Xi = 1;
+   const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+   
+      
+   // pt bins of associate particles for the analysis
+   const Int_t nPtBins = 6;
+   const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0}; 
 
    //defining bins of Eta distribution
    const Int_t nEtaBins = 16;
@@ -847,6 +863,110 @@ const Int_t nZvtxBins  =  fNumOfVzBins;//fNumOfVzBins;
                fHistMassTrack->GetAxis(3)->Set(nZvtxBins,vertexBins);
    tQATrack->Add(fHistMassTrack);
    fHistMassTrack->Sumw2(); 
+
+//-------------------------------------------------
+
+//Add h-h histo
+
+// defining bins for dPhi distributions
+   const Int_t nbPhiBins = 32;//mustafa change
+   const Double_t kPi = TMath::Pi();
+   Double_t PhiMin = -kPi/2.;
+   Double_t PhiMax = -kPi/2. + 2*kPi;
+   Double_t Phibins[nbPhiBins+1] = {0.};
+   Phibins[0] = PhiMin;
+   for (Int_t i=0; i<nbPhiBins; i++) { Phibins[i+1] = Phibins[i] + (PhiMax - PhiMin)/nbPhiBins; }
+
+   // defining bins for dEta distributions
+   const Int_t nbEtaBins = 32;//mustafa change
+   Double_t EtaMin = -1.5;
+   Double_t EtaMax = 1.5;
+   Double_t Etabins[nbEtaBins+1] = {0.};
+   Etabins[0] = EtaMin;
+   for (Int_t i=0; i<nbEtaBins; i++) { Etabins[i+1] = Etabins[i] + (EtaMax - EtaMin)/nbEtaBins; }
+
+
+const Int_t nTrigC = 3;
+   const Double_t TrigC[4] = {0.5, 1.5, 2.5, 3.5};
+  
+   // rec
+
+
+const Int_t corBinsTrk[7] = {nbPhiBins, nbEtaBins, nPtBinsV0Xi, nPtBins,nCentralityBins, nZvtxBins, nTrigC};
+   const Double_t corMinTrk[7] = {Phibins[0], Etabins[0], PtBinsV0Xi[0], PtBins[0], centralityBins[0], -10, TrigC[0]};
+   const Double_t corMaxTrk[7] = {Phibins[nbPhiBins], Etabins[nbEtaBins], PtBinsV0Xi[nPtBinsV0Xi], PtBins[nPtBins],
+                                  centralityBins[nCentralityBins], 10, TrigC[nTrigC]};
+
+
+
+
+const Int_t corBinsMixTrk[7] = {nbPhiBins, nbEtaBins, nPtBinsV0Xi, nPtBins,nCentralityBins, nZvtxBins, nTrigC};
+   const Double_t corMinMixTrk[7] = {Phibins[0], Etabins[0], PtBinsV0Xi[0], PtBins[0], centralityBins[0], -10, TrigC[0]};
+   const Double_t corMaxMixTrk[7] = {Phibins[nbPhiBins], Etabins[nbEtaBins], PtBinsV0Xi[nPtBinsV0Xi], PtBins[nPtBins],
+                                  centralityBins[nCentralityBins], 10, TrigC[nTrigC]};
+
+
+
+// Gen  
+if(fAnalysisMC){
+ 
+ THnSparseF *fHistGendPhidEtaSibTrk = new THnSparseF("fHistGendPhidEtaSibTrk","dPhi vs. dEta siblings", 7, corBinsTrk, corMinTrk, corMaxTrk);
+             fHistGendPhidEtaSibTrk->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+             fHistGendPhidEtaSibTrk->GetAxis(3)->Set(nPtBins, PtBins); 
+             fHistGendPhidEtaSibTrk->GetAxis(5)->Set(nZvtxBins, vertexBins); 
+   tQATrack->Add(fHistGendPhidEtaSibTrk);
+   fHistGendPhidEtaSibTrk->Sumw2();
+
+   
+   THnSparseF *fHistGendPhidEtaMixTrk = new THnSparseF("fHistGendPhidEtaMixTrk","dPhi vs. dEta mixed", 7, corBinsMixTrk, corMinMixTrk, corMaxMixTrk);
+               fHistGendPhidEtaMixTrk->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+               fHistGendPhidEtaMixTrk->GetAxis(3)->Set(nPtBins, PtBins); 
+               fHistGendPhidEtaMixTrk->GetAxis(5)->Set(nZvtxBins, vertexBins); 
+
+   tQATrack->Add(fHistGendPhidEtaMixTrk);
+   fHistGendPhidEtaMixTrk->Sumw2(); 
+}
+
+
+   THnSparseF *fHistdPhidEtaSibTrk = new THnSparseF("fHistdPhidEtaSibTrk","dPhi vs. dEta siblings", 7, corBinsTrk, corMinTrk, corMaxTrk);
+               fHistdPhidEtaSibTrk->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+               fHistdPhidEtaSibTrk->GetAxis(3)->Set(nPtBins, PtBins); 
+               fHistdPhidEtaSibTrk->GetAxis(5)->Set(nZvtxBins, vertexBins); 
+
+           tQATrack->Add(fHistdPhidEtaSibTrk);
+             fHistdPhidEtaSibTrk->Sumw2(); 
+
+
+   THnSparseF *fHistdPhidEtaMixTrk = new THnSparseF("fHistdPhidEtaMixTrk","dPhi vs. dEta siblings", 7, corBinsTrk, corMinTrk, corMaxTrk);
+               fHistdPhidEtaMixTrk->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+               fHistdPhidEtaMixTrk->GetAxis(3)->Set(nPtBins, PtBins); 
+               fHistdPhidEtaMixTrk->GetAxis(5)->Set(nZvtxBins, vertexBins); 
+
+   tQATrack->Add(fHistdPhidEtaMixTrk);
+    fHistdPhidEtaMixTrk->Sumw2(); 
+
+
+//pt trigger Trk including non-correlated   
+   const Int_t trigAllBinsTrk[4] = {nPtBinsV0Xi, nCentralityBins,nZvtxBins, nTrigC};
+   const Double_t trigAllMinTrk[4] = {PtBinsV0Xi[0], centBins[0],-10, TrigC[0]};
+   const Double_t trigAllMaxTrk[4] = {PtBinsV0Xi[nPtBinsV0Xi], centBins[nCentralityBins],10, TrigC[nTrigC]};
+
+// Gen 
+if(fAnalysisMC){
+  
+THnSparseF *fHistGenTrigSibAllTrk = new THnSparseF("fHistGenTrigSibAllTrk","pt trigger Trk including non-correlated",4, trigAllBinsTrk, trigAllMinTrk, trigAllMaxTrk);
+            fHistGenTrigSibAllTrk->GetAxis(0)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+            fHistGenTrigSibAllTrk->GetAxis(2)->Set(nZvtxBins, vertexBins); 
+   tQATrack->Add(fHistGenTrigSibAllTrk);
+   fHistGenTrigSibAllTrk->Sumw2();
+}
+//Rec 
+   THnSparseF *fHistTrigSibAllTrk = new THnSparseF("fHistTrigSibAllTrk","pt trigger Trk including non-correlated", 4, trigAllBinsTrk, trigAllMinTrk, trigAllMaxTrk);
+               fHistTrigSibAllTrk->GetAxis(0)->Set(nPtBinsV0Xi, PtBinsV0Xi);
+               fHistTrigSibAllTrk->GetAxis(2)->Set(nZvtxBins, vertexBins);  
+   tQATrack->Add(fHistTrigSibAllTrk);
+   fHistTrigSibAllTrk->Sumw2();
+
 
    fOutput3->Add(tQATrack);
 }
@@ -1036,16 +1156,13 @@ const Int_t nZvtxBins  =  fNumOfVzBins;//fNumOfVzBins;
     }
 
 
-
-     const Int_t nPtBinsV0Xi = 3;
-   const Double_t PtBinsV0Xi[4] = {3.0,4.0,8.0,16.0}; 
-  
+   const Int_t nPtBinsV0Xi = 1;
+   const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
+    
    // pt bins of associate particles for the analysis
    const Int_t nPtBins = 6;
    const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0}; 
-
-
 
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
@@ -1263,15 +1380,13 @@ void AliAnalysisTaskV0ChCorrelationppsys::AddQAAnalysisLambda()
         }
     }
   
+   const Int_t nPtBinsV0Xi = 1;
+   const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
-  const Int_t nPtBinsV0Xi = 3;
-   const Double_t PtBinsV0Xi[4] = {3.0,4.0,8.0,16.0}; 
-  
-   
+    
    // pt bins of associate particles for the analysis
-  const Int_t nPtBins = 6;
+   const Int_t nPtBins = 6;
    const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0}; 
-
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
@@ -1508,14 +1623,13 @@ void AliAnalysisTaskV0ChCorrelationppsys::AddQAAnalysisAntiLambda()
     }
    
    
-  const Int_t nPtBinsV0Xi = 3;
-   const Double_t PtBinsV0Xi[4] = {3.0,4.0,8.0,16.0}; 
-  
+   const Int_t nPtBinsV0Xi = 1;
+   const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
+    
    // pt bins of associate particles for the analysis
    const Int_t nPtBins = 6;
    const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0}; 
-
 
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
@@ -1802,6 +1916,10 @@ if( !MultSelection) {
    TObjArray *mcAssocTracks = new TObjArray;
     mcAssocTracks->SetOwner(kTRUE);
 
+   TObjArray *mcTriggerTracks = new TObjArray;
+    mcTriggerTracks->SetOwner(kTRUE);
+
+
     TObjArray *MCk0s = new TObjArray;
     MCk0s->SetOwner(kTRUE);
 
@@ -1869,11 +1987,20 @@ if( !MultSelection) {
 
 
          fHistMCtruthTrkPtEta->Fill(mcTrackPt,mcTrackEta);
-
          fHistMCtruthTrk[binVertex]->Fill(mcTrackPt,mcTrackEta,mcTrackPhi);
          mcAssocTracks->Add(new AliV0hParticles(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),3,mcTrack->GetLabel(),mcTrack->GetLabel()));
 
               } 
+
+
+
+if (TrIsPrim && TrEtaMax && TrCharge && mcTrackPt>fV0PtMin){
+   mcTriggerTracks->Add(new AliV0hParticles(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),3,mcTrack->GetLabel(),mcTrack->GetLabel()));
+
+//cout<<mcTrackPt<<endl;
+        
+            }
+
  
             }// End mctruth  track with remove injection 
   
@@ -1941,6 +2068,70 @@ else if(mcTrack->GetPdgCode() == -3122){
 
 
 //======================================Analysis MC truth//=========================
+if(fhh){
+//-------------------------------h-h correlation Gen -----------------------------
+
+// correlation  truth for  Trk
+
+for(Int_t i = 0; i < mcTriggerTracks->GetEntries(); i++){
+        AliV0hParticles* Trktrig = (AliV0hParticles*)mcTriggerTracks->At(i);
+        if(!Trktrig) continue;
+        if (TMath::Abs(Trktrig->Eta())>=0.8) continue;
+
+     Double_t triggerTrkMCPt  = Trktrig->Pt();
+     Double_t triggerTrkMCPhi = Trktrig->Phi();
+     Double_t triggerTrkMCEta = Trktrig->Eta(); 
+
+
+ if((triggerTrkMCPt<fV0PtMin) ||(triggerTrkMCPt>fV0PtMax)) continue;
+      // cout<<triggerTrkMCPt<<endl;  
+   
+
+       Double_t MCTrkAll[4] = {triggerTrkMCPt, lPercentile, lPVz,0};
+        ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistGenTrigSibAllTrk"))->Fill(MCTrkAll);
+
+
+    for(Int_t iTrk1 = 0; iTrk1 < mcAssocTracks->GetEntries(); iTrk1++){           
+      AliV0hParticles* assocMC = (AliV0hParticles*) mcAssocTracks->At(iTrk1);
+      if(!assocMC) continue;  
+
+
+     Double_t assocpt = assocMC->Pt(); 
+        //  cout<<assocpt<<endl;     
+
+     
+        if(assocpt>=triggerTrkMCPt) continue;
+
+              
+        Double_t  dPhiMC = triggerTrkMCPhi-assocMC->Phi();
+	Double_t dEtaMC = triggerTrkMCEta - assocMC->Eta();
+        if( dPhiMC > 1.5*TMath::Pi() ) dPhiMC -= 2.0*TMath::Pi();
+        if( dPhiMC < -0.5*TMath::Pi() ) dPhiMC += 2.0*TMath::Pi();
+
+
+    //here remove auto correlation 
+
+                Int_t negID = Trktrig->GetIDNeg();
+                Int_t posID = Trktrig->GetIDPos();
+               Int_t atrID = assocMC->GetIDCh();
+
+               if ((TMath::Abs(negID))==(TMath::Abs(atrID))) continue;
+                if ((TMath::Abs(posID))==(TMath::Abs(atrID))) continue; 
+      
+              // cout<<negID<<endl;
+
+
+ Double_t spMCSigTrk[7] = {dPhiMC, dEtaMC, triggerTrkMCPt, assocpt, lPercentile, lPVz, 1.};
+((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistGendPhidEtaSibTrk"))->Fill(spMCSigTrk);
+
+}//end of track loop 
+}//end loop for Trk correlation
+
+
+//-------------------------------------------------End h-h Corr Gen------------------- 
+}// if(fhh)
+
+  if(fV0h){
 
 //correlation  truth for  k0s 
 
@@ -2102,6 +2293,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
   }  //end of track loop condition           
  }  //end of AntiLambda   loop
+}//end if(V0h)
            
 //========================================Tne End of  Corelations  MC Gen leve//=============================
 
@@ -2149,13 +2341,27 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
     TObjArray *selectedTracks = new TObjArray;
     selectedTracks->SetOwner(kTRUE);
 
+    TObjArray *selectedTrigTracks = new TObjArray;
+    selectedTrigTracks->SetOwner(kTRUE);
+
     Int_t nTracks = fAOD->GetNumberOfTracks();
     for(Int_t i=0; i<nTracks; i++){
-      AliAODTrack *tr = (AliAODTrack*)fAOD->GetTrack(i);         
+      AliAODTrack *tr = (AliAODTrack*)fAOD->GetTrack(i); 
+     if(tr->Charge() == 0.) continue;
+      if(!(IsGoodPrimaryTrack(tr))) continue;
+      Double_t tPhi = tr->Phi();
+      Double_t tPt = tr->Pt();
+      Double_t tEta = tr->Eta();
+      Double_t  Trkmass=tr->M();
+
+   if ((tPt >fV0PtMin)&&(tPt < fV0PtMax)) {
+      selectedTrigTracks->Add(tr);
+        // cout<<"this is trigger of ch track"<<tPt<<endl;
+                  
+         }
+
       if((tr->Pt())<fTrackPtMin) continue;
       if((tr->Pt())>fTrackPtMax) continue;
-      if(tr->Charge() == 0.) continue;
-      if(!(IsGoodPrimaryTrack(tr))) continue;
 
 
 //Bunch rejection trk by trk
@@ -2164,9 +2370,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
    if(fRejectTrackPileUp&&(!(tr->HasPointOnITSLayer(0) || tr->HasPointOnITSLayer(1)|| tr->GetTOFBunchCrossing()==0 ))) continue;
 
 
-      Double_t tPhi = tr->Phi();
-      Double_t tPt = tr->Pt();
-      Double_t tEta = tr->Eta();
+      
       Double_t spTrack[4] = {tPt, tEta, lPercentile, lPVz};
       if(fEffCorr){
           Double_t weight = fHistEffEtaPtTrack->Interpolate(tr->Eta(), tr->Pt());
@@ -2433,7 +2637,74 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
     }
 
-    //=====================================Analysis============================================
+//------------------------Start Analysis h-h correlation -----------------------------------------------------------------
+
+  if(fhh){
+ for(Int_t nSelectedChargedTriggers = 0;nSelectedChargedTriggers < selectedTrigTracks->GetEntries(); nSelectedChargedTriggers++){           
+      AliAODTrack* atrTrig = (AliAODTrack*) selectedTrigTracks->At(nSelectedChargedTriggers);                
+      if(!atrTrig) continue;   
+
+       Int_t trID = atrTrig->GetID() >= 0 ? atrTrig->GetID() : -1-atrTrig->GetID();
+	   if(atrTrig->Pt()<= fV0PtMin) continue;
+      
+       // cout<<"this is trigger of ch track"<<atrTrig<<endl;
+
+         Double_t spTrigSigTrk[4] = {atrTrig->Pt(), lPercentile, lPVz,1};
+
+         ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistTrigSibAllTrk"))->Fill(spTrigSigTrk);
+
+       
+
+
+    for(Int_t iTrk = 0; iTrk < selectedTracks->GetEntries(); iTrk++){           
+      AliAODTrack* atr = (AliAODTrack*) selectedTracks->At(iTrk);                
+      if(!atr) continue;                
+      Int_t trID = atr->GetID() >= 0 ? atr->GetID() : -1-atr->GetID();
+	   if(atr->Pt() >= atrTrig->Pt()) continue;
+      
+
+        //Correlation part
+        Double_t dEta = atr->Eta() - atrTrig->Eta();
+        Double_t dPhi = atr->Phi() - atrTrig->Phi();
+        if( dPhi > 1.5*TMath::Pi() ) dPhi -= 2.0*TMath::Pi();
+        if( dPhi < -0.5*TMath::Pi() ) dPhi += 2.0*TMath::Pi();
+
+                     
+        //Filling correlation histograms and histograms for triggers counting
+        if(fEffCorr){
+
+          Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt());
+          Double_t weight = weightTrack;
+          if(weight == 0){
+          continue;
+          }
+         
+
+              Double_t spSigTrk[7] = {dPhi, dEta, atrTrig->Pt(), atr->Pt(), lPercentile, lPVz, 1.};
+           	      
+           ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistdPhidEtaSibTrk"))->Fill(spSigTrk, 1/weight);
+          }
+	      
+         
+        else{
+
+              Double_t spSigTrk[7] = {dPhi, dEta, atrTrig->Pt(), atr->Pt(), lPercentile, lPVz, 1.};
+
+              ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistdPhidEtaSibTrk"))->Fill(spSigTrk);
+         
+          
+          }
+
+        }
+	 }//end loop for hhtrigeer 
+   
+       }// if(fhh)
+
+//-----------------------End Analysis hh correlation 
+
+  if(fV0h){
+
+    //=====================================Analysis V0h ============================================
     //Get all selected triggers in same event 
     /*  AliEventPool* pool = fPoolMgr->GetEventPool(lPercentile, lPVz);
     if (!pool)
@@ -2725,6 +2996,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
         }
       }//end of Lambda for the current events
     }//end of track for the current events
+    }//end if(fV0h){
 
    
       // -----------------------------------------------------Mixing part--------------------------------------------------------------------
@@ -2738,6 +3010,53 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
         for (Int_t jMix=0; jMix< nMix; jMix++){
           //loop through mixing events
           TObjArray* bgTracks = pool->GetEvent(jMix);
+
+
+//---------------------------------h-h mix
+ // mixing trig tracks loop
+ //  AliVParticle* atrTrig = (AliVParticle*) bgTracks->At(j);
+
+//assoc trak
+
+ for(Int_t i=0; i<selectedTrigTracks->GetEntriesFast(); i++){
+  AliV0hParticles* atrTrig = (AliV0hParticles*) selectedTrigTracks->At(i);
+
+  Double_t trigPt = atrTrig->Pt();
+
+ //cout<<trigPt<<trigPt<<endl;
+
+ for (Int_t j = 0; j < bgTracks->GetEntriesFast(); j++){
+
+ AliVParticle* atr = (AliVParticle*) bgTracks->At(j); 
+
+           if (((atr->Pt()>=atrTrig->Pt()))) continue;
+
+            Double_t dEtaMix = atr->Eta() - atrTrig->Eta();
+            Double_t dPhiMix = atr->Phi() - atrTrig->Phi();
+            if ( dPhiMix > 1.5*TMath::Pi() ) dPhiMix -= 2.0*TMath::Pi();
+            if ( dPhiMix < -0.5*TMath::Pi() ) dPhiMix += 2.0*TMath::Pi();
+            
+           
+if(fEffCorr){
+
+                Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt());
+                Double_t weight = weightTrack;
+                if(weight == 0){
+                  continue;
+                }
+
+              
+		
+
+                  Double_t spSigMixTrk[7] = {dPhiMix, dEtaMix, atrTrig->Pt(), atr->Pt(),lPercentile, lPVz, 1.};
+                  ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistdPhidEtaMixTrk"))->Fill(spSigMixTrk, 1/weight);
+                }
+
+
+              }   }
+
+//---------//loop through V0 particles -
+
           for(Int_t i=0; i<trigParticles->GetEntriesFast(); i++){
             AliV0hParticles* trig = (AliV0hParticles*) trigParticles->At(i);
             //loop through V0 particles 

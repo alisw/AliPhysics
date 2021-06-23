@@ -47,6 +47,14 @@ private:
 
   float fV0Perc = 0.;
   float	fZdcPerc = 0.;
+  float fZdcPercFired = 0.;
+  float fMultRef5 = 0.;
+  float fMultRef8 = 0.;
+  float fMultSPDcl = 0.;
+  float fMultSPDtr = 0.;
+  int   fSPDtracklets = 0;
+  int   fSPDtrackletsA = 0;
+  int   fSPDtrackletsC = 0;
 
   int fIsTrackRef = 0;
 
@@ -68,7 +76,7 @@ private:
   // particles with eta > threshold (loop of MC stack)
   float fEtaThreshold = 8.;
   float fEnergyThreshold = 0.;
-  float fEtaBarrel = 0.9;
+  float fEtaBarrel = 0.5;
   
   Int_t fP_cand_leadA = 0;         //! N charged candidate leading in A side
   Int_t fP_cand_leadC = 0;         //! N charged candidate leading in C side
@@ -163,6 +171,8 @@ private:
   // other observables
   Int_t fNch = 0;            //! total charged multiplicity
   Int_t fNchEta = 0;         //! multiplicity in central region
+  Int_t fNchEtaA = 0;        //! multiplicity in central region
+  Int_t fNchEtaC = 0;        //! multiplicity in central region
   Float_t fEnergyEta = 0;    //! energy in central region
   Int_t fNMPI = 0;           //! number of multiparton interaction
   Int_t fNLambdaEta = 0;     //!

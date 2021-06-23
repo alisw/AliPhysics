@@ -2377,6 +2377,15 @@ void AliAnalysisTaskEmcal::GeneratePythiaInfoObject(AliMCEvent* mcEvent)
     fPythiaInfo->SetPythiaEventWeight(ptWeight);}
 }
 
+double AliAnalysisTaskEmcal::GetEventWeightFromHeader() const {
+  double eventweight = -1.;
+  if(fIsPythia || fIsHepMC) {
+    if(fIsPythia && fPythiaHeader) eventweight = fPythiaHeader->EventWeight();
+    if(fIsHepMC && fHepMCHeader) eventweight = fHepMCHeader->EventWeight();
+  }
+  return eventweight;
+}
+
 double AliAnalysisTaskEmcal::GetCrossSectionFromHeader() const {
   double crosssection = -1.;
   if(fIsPythia || fIsHepMC) {

@@ -248,6 +248,43 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
   } else if (trainConfig == 19){ // var4
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109f020000000","0163103100000010"); // no NCell cut
+
+  // different NL scales
+  } else if (trainConfig == 20){ // no scale in NL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799309f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 21){ // 1.5% scale in NL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799409f020000000","0163103100000010"); // no NCell cut
+  } else if (trainConfig == 22){ // 3.5% scale in NL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799509f020000000","0163103100000010"); // no NCell cut
+
+  // different clusterization settings and different NonLins (applied in CF)
+  } else if (trainConfig == 25){ // S500A100,  min energy = 700MeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // INT7
+  } else if (trainConfig == 26){ // S500A100, min energy = 700MeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // INT7
+  } else if (trainConfig == 27){ // S500A100, min energy = 700MeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // INT7
+  } else if (trainConfig == 28){ // S100A50, min energy = 700MeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // INT7
+  } else if (trainConfig == 29){ // S100A50 min energy = 200MeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fei2220000","0163103100000010"); // INT7
+  } else if (trainConfig == 30){ // S100A50 min energy = 300MeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009feg2220000","0163103100000010"); // INT7
+
+  } else if (trainConfig == 31){ // S500A100,  min energy = 700MeV
+    cuts.AddCutPCMCalo("00052113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // EMC7
+  } else if (trainConfig == 32){ // S500A100, min energy = 700MeV
+    cuts.AddCutPCMCalo("00052113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // EMC7
+  } else if (trainConfig == 33){ // S500A100, min energy = 700MeV
+    cuts.AddCutPCMCalo("00052113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // EMC7
+  } else if (trainConfig == 34){ // S100A50, min energy = 700MeV
+    cuts.AddCutPCMCalo("00052113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // EMC7
+  } else if (trainConfig == 35){ // S100A50 min energy = 200MeV
+    cuts.AddCutPCMCalo("00052113","0dm00009f9730000dge0404000","411790009fei2220000","0163103100000010"); // EMC7
+  } else if (trainConfig == 36){ // S100A50 min energy = 300MeV
+    cuts.AddCutPCMCalo("00052113","0dm00009f9730000dge0404000","411790009feg2220000","0163103100000010"); // EMC7
+
+
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

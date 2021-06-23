@@ -761,7 +761,7 @@ void AliAnalysisTaskCutTest::UserExec(Option_t*) {
     TObjArray* allChargedTracks = 0;
     // Int_t multAll=0, multAcc=0, multRec=0;
     Int_t multAll = 0, multRec = 0;
-    Int_t *labelsAll = 0, *labelsAcc = 0, *labelsRec = 0;
+    //Int_t *labelsAll = 0, *labelsAcc = 0, *labelsRec = 0;
 
     allChargedTracks =
         AlidNdPtHelper::GetAllChargedTracks(fESD, AlidNdPtHelper::kTPCITS);
@@ -832,9 +832,9 @@ void AliAnalysisTaskCutTest::UserExec(Option_t*) {
                                static_cast<Double_t>(multMCTrueTracks)};
     fEventHist->Fill(valuesEvent);
 
-    labelsAll = new Int_t[entries];
-    labelsAcc = new Int_t[entries];
-    labelsRec = new Int_t[entries];
+    //labelsAll = new Int_t[entries];
+    //labelsAcc = new Int_t[entries];
+    //labelsRec = new Int_t[entries];
 
     for (Int_t i = 0; i < entries; ++i) {
         AliESDtrack* track = (AliESDtrack*)allChargedTracks->At(i);
@@ -843,7 +843,7 @@ void AliAnalysisTaskCutTest::UserExec(Option_t*) {
         if (track->Charge() == 0)
             continue;
 
-        labelsAll[multAll] = TMath::Abs(track->GetLabel());
+        //labelsAll[multAll] = TMath::Abs(track->GetLabel());
         multAll++;
 
         // esd track selection
@@ -853,7 +853,7 @@ void AliAnalysisTaskCutTest::UserExec(Option_t*) {
             FillHistograms(track, stack, vtxESD->GetZ(),
                            AlidNdPtHelper::kRecTracks, multMBTracks,
                            multRecTemp, multMCTrueTracks);
-            labelsRec[multRec] = TMath::Abs(track->GetLabel());
+            //labelsRec[multRec] = TMath::Abs(track->GetLabel());
             multRec++;
         }
     }
@@ -895,10 +895,11 @@ void AliAnalysisTaskCutTest::FillHistograms(
     esdTrack->GetImpactParameters(dca, bCov);
 
     Int_t nClust = esdTrack->GetTPCclusters(0);
+    /*
     Double_t chi2PerCluster = 0.;
     if (nClust > 0.)
         chi2PerCluster = esdTrack->GetTPCchi2() / Float_t(nClust);
-
+   */
     Double_t sigmaPt = pt * TMath::Sqrt(esdTrack->GetSigma1Pt2());
 
     fPtHist->Fill(esdTrack->GetSigned1Pt(),
@@ -926,7 +927,7 @@ void AliAnalysisTaskCutTest::FillHistograms(
         // Bool_t prim = stack->IsPhysicalPrimary(label);
         // Int_t pid = AlidNdPtHelper::ConvertPdgToPid(particle);
 
-        Int_t motherPdg = -1;
+        //Int_t motherPdg = -1;
         TParticle* mother = 0;
 
         // TParticle* prim_mother =
@@ -934,9 +935,8 @@ void AliAnalysisTaskCutTest::FillHistograms(
         Int_t motherLabel = particle->GetMother(0);
         if (motherLabel > 0)
             mother = stack->Particle(motherLabel);
-        if (mother)
-            motherPdg = TMath::Abs(
-                mother->GetPdgCode()); // take abs for visualisation only
+        //if (mother)
+        //    motherPdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only
         // Int_t mech = particle->GetUniqueID(); // production mechanism
 
         if (!particle->GetPDG())
@@ -945,7 +945,7 @@ void AliAnalysisTaskCutTest::FillHistograms(
         if (TMath::Abs(gq) < 0.001)
             return;
         Double_t gpt = particle->Pt();
-        Double_t geta = particle->Eta();
+        //Double_t geta = particle->Eta();
         Double_t deltaoversigma = -42;
         // Float_t qgpt = particle->Pt() * gq;
         // Float_t gphi = particle->Phi();

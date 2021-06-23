@@ -270,25 +270,57 @@ public:
    * @brief Conversion function between position in reg masks and channel ID for run1 setup
    * @param mask      Number of the mask
    * @param bitnumber Number of the bit in the mask
+   * @param onethirdsm Mark whether the supermodule is of type 1/3
    * @return          Channel ID beloging to bit number in reg mask
    * 
    * The reg mask consists of 6 separate masks each containing 16 bits,
    * resulting in 96 bits in total. In order to determin the channel ID
    * both mask number and bit number are needed
    */
-  static int GetChannelForMaskRun1(int mask, int bitnumber);
+  static int GetChannelForMaskRun1(int mask, int bitnumber, bool /*onethirdsm*/);
 
   /**
    * @brief Conversion function between position in reg masks and channel ID for run2 setup
    * @param mask      Number of the mask
    * @param bitnumber Number of the bit in the mask
+   * @param onethirdsm Mark whether the supermodule is of type 1/3
    * @return          Channel ID beloging to bit number in reg mask
    * 
    * The reg mask consists of 6 separate masks each containing 16 bits,
    * resulting in 96 bits in total. In order to determin the channel ID
    * both mask number and bit number are needed
    */
-  static int GetChannelForMaskRun2(int mask, int bitnumber);
+  static int GetChannelForMaskRun2(int mask, int bitnumber, bool onethirdsm);
+
+  /**
+   * @brief Draw L0 trigger mask from DCS config in cvmfs OCDB
+   * @param runnumber Run number for which to draw trigger mapping
+   * 
+   * Creating plot with the mask channels at L0 in eta-phi space.
+   * For easier reading, a frame is highlighting supermodules,
+   * TRUs and FastORs. In case a canvas exists, this canvas is used
+   * for plotting, otherwise a new canvas is created. 
+   * 
+   * Attention: Access to the OCDB on cvmfs is requested. The run
+   * number must be a valid physics run. Stand-alone runs or 
+   * technical runs are not guaranteed.
+   */
+  void drawL0MaskFromCVMFS(int runnumber) { drawMaskFromCVMFS(runnumber, false); }
+
+  /**
+   * @brief Draw L1 trigger mask from DCS config in cvmfs OCDB
+   * @param runnumber Run number for which to draw trigger mapping
+   * 
+   * Creating plot with the mask channels at L1 in eta-phi space.
+   * For easier reading, a frame is highlighting supermodules,
+   * TRUs and FastORs. In case a canvas exists, this canvas is used
+   * for plotting, otherwise a new canvas is created. 
+   * 
+   * Attention: Access to the OCDB on cvmfs is requested. The run
+   * number must be a valid physics run. Stand-alone runs or 
+   * technical runs are not guaranteed.
+   */
+  void drawL1MaskFromCVMFS(int runnumber) { drawMaskFromCVMFS(runnumber, true); }
 
 private:
   /**
@@ -344,12 +376,13 @@ private:
    * @brief Creating histogram template for FastOR masks monitoring histograms
    * @param name   Name of the histogram
    * @param title  Title of the histogram
+   * @param run2   Flag whether the run number is from run1 or run2
    * @return       Histogram template
    * 
    * Helper function initializing histogram template for the monitoring histograms
    * used in the fuctions MonitorMaskedFastORsL0 and MonitorMaskedFastORsL1
    */
-  TH2 *PrepareHistogram(const char *name, const char *title);
+  TH2 *PrepareHistogram(const char *name, const char *title, bool run2);
 
   /**
    * @brief Fill monitoring histogram with masked FastOR channels
@@ -362,6 +395,37 @@ private:
    */
   void FillMaskedFastors(TH2 *outputhist, const std::vector<AliEmcalTriggerMaskHandlerOCDB::FastORPosition> &fastors) const;
 
+  /**
+   * @brief Draw frame for run1 geometry
+   * 
+   * Drawing frames for supermodules, TRUs and FastORs using the run1 geometry.
+   * Setup consisting of full EMCAL, TRUs are aligned in phi direction. Small 
+   * lines indicate FastORs within TRU, intermediate size lines mark TRUs within 
+   * supermodules and big lines supermodules.
+   */
+  void drawRun1Frame();
+
+  /**
+   * @brief Draw frame for run2 geometry
+   * 
+   * Drawing frames for supermodules, TRUs and FastORs using the run1 geometry.
+   * Setup consisting of full EMCAL and DCAL, TRUs are aligned in eta direction 
+   * except for the samll supermodules. Small lines indicate FastORs within TRU, 
+   * intermediate size lines mark TRUs within supermodules and big lines supermodules.
+   */
+  void drawRun2Frame();
+
+  /**
+   * @brief Draw trigger mask at L0 or L1 for a given run number using the OCDB on cvmfs
+   * @param runnumber Run number 
+   * @param isLevel1 If true the mask is shown at L0, otherwise at L1
+   * 
+   * Helper function creating the monitoring plots of the trigger mask at L0 or at L1, 
+   * used in drawL0MaskFromCVMFS and drawL1MaskFromCVMFS
+   */
+  void drawMaskFromCVMFS(int runnumber, bool isLevel1);
+
+
   Int_t fCurrentRunnumber;                  //!<! Current run number of cache
   AliEMCALTriggerDCSConfig *fCurrentConfig; //!<! Cache object
 
@@ -369,6 +433,8 @@ private:
 
   ClassDef(AliEmcalTriggerMaskHandlerOCDB, 1);
 };
+
+;
 
 }
 

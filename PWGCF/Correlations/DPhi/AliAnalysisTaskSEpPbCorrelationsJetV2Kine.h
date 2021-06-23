@@ -21,7 +21,7 @@ class AliAnalysisTaskSEpPbCorrelationsJetV2Kine : public AliAnalysisTaskSE {
  void SetTrigPtBinning(Int_t nBins, Double_t *limits);
  void SetAssocPtBinning(Int_t nBins, Double_t *limits);
  void SetCentBinning(Int_t nBins, Double_t *limits);
- void FillCorrelationTracksTPCTPC(TObjArray *triggerArray, TObjArray *associateArray, AliTHn *triggerHist, AliTHn *correlationHist, TObjArray *selected_TPC_Pairs);
+ void FillCorrelationTracksTPCTPC(TObjArray *triggerArray, TObjArray *associateArray, AliTHn *triggerHist, AliTHn *correlationHist, TObjArray *selected_TPC_Pairs, Double_t dCentrality);
  void FillCorrelationTracksTPCTPCMixed(Double_t centrality, TObjArray *triggerArray, TObjArray *associateArray, AliTHn *MixedCorrelation);
  void FillCorrelationTracksTPCTPCFMDA(TObjArray *triggerArray, TObjArray *associateArray, AliTHn *triggerHist, AliTHn *correlationHist);
  void FillCorrelationTracksTPCTPCFMDA_Mixed(Double_t centrality, TObjArray *triggerArray, TObjArray *associateArray, AliTHn *correlationHist);
@@ -55,10 +55,20 @@ class AliAnalysisTaskSEpPbCorrelationsJetV2Kine : public AliAnalysisTaskSE {
 
  AliTHn     *fHistTPCTPC_SS; //!
  AliTHn     *fHistTPCTPC_Mixed_SS; //!
- AliTHn     *fHistTPCTPCTrig; //!
+ AliTHn     *fHistTPCTrig; //!
  AliTHn     *fHistTPCTPCFMDA; //!
  AliTHn     *fHistTPCTPCFMDA_Mixed; //!
  AliTHn     *fHistTPCTPCFMDATrig; //!
+
+ AliTHn     *fHistTPCFMDA; //!
+ AliTHn     *fHistTPCFMDC; //!
+ AliTHn     *fHistFMDAFMDC; //!
+ AliTHn     *fHistTPCFMDA_Mixed; //!
+ AliTHn     *fHistTPCFMDC_Mixed; //!
+ AliTHn     *fHistFMDAFMDC_Mixed; //!
+ AliTHn     *fHistFMDTrig; //!
+
+
  TAxis *fPtTrigAxis;
  TAxis *fPtAssocAxis;
  //TAxis *fZvtxAxis; 

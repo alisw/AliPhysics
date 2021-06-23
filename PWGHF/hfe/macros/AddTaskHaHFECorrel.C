@@ -108,7 +108,12 @@
    TString SPDnTrFileName;
    if (IsMC && !UseEpos) SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_MC.root"; //SPDnTrAvg_MC.root";
    else if (IsMC && UseEpos) SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_MC_EPOS.root"; //SPDnTrAvg_MC.root";
-   else SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_Data.root"; //SPDnTrAvg_Data.root";
+   else if (IsMC && !UseEventWeights) SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_MC_NoEW.root"; //SPDnTrAvg_MC.root";
+   else if (!IsMC && UseEpos) SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_Data_EPOS.root"; //SPDnTrAvg_MC.root";
+   else if (!IsMC && !UseEventWeights) SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_Data_NoEW.root"; //SPDnTrAvg_Data.root";
+   else  SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_Data.root"; //SPDnTrAvg_Data.root";
+
+
    TFile *SPDnTrFile  = TFile::Open(SPDnTrFileName.Data());
    if (SPDnTrFile) {    
      TH3F* SPDConfigProfiles= (TH3F*)SPDnTrFile->Get("SPDConfigs_Hist");

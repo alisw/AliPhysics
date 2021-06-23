@@ -185,6 +185,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TTree**                           fTreePiPiPiSameMother;                              //!<!
     /**  Tree containing information about an event where eta->pi+pi-pi0 was found if ID isn't covered by current implementations */
     TTree**                           fTreeEventInfoHNM;                                  //!<!
+    TTree**                           fTreeTrueNDMFromHNM;                                //!<!
     Short_t                           fCasePiPi;                                          ///< 0:PiPlPiMi 1:PiMiPiZero 1:PiPlPiZero
     Float_t                           fSamePiPiMotherID;                                  ///< ID of mother of two pions
     Float_t                           fSamePiPiMotherInvMass;                             ///< Invariant mass of mother of two pions
@@ -196,11 +197,16 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Float_t                           fTrackMultiplicityHNMEvent;                         ///< track multiplicity of an event where a true Eta was found
     Float_t                           fZVertexHNMEvent;                                   ///< z position of primary vertex of an event where a true Eta was found
     Float_t                           fPtHNM;                                             ///< pT of a true Eta
+    Float_t                           fPtNDM;
+    Float_t                           fInvMassNDM;
     Float_t                           fPDGMassNDM;                                        ///< PDG mass of either pi0 or eta
     Float_t                           fNDMMinPtPossible;                                  ///< min pt of NDM measurable for each method
     Float_t                           fPDGMassChargedPion;                                ///< PDG mass of either pi0 or eta
     Int_t                             fPDGCodeNDM;                                        ///< PDG code of either pi0 or eta
     Int_t                             fPDGCodeAnalyzedMeson;                              ///< PDG code of the analyzed heavy netural meson
+    Bool_t                            fEnableNDMEfficiency;                               ///< Turn On or Off if Histograms are created and used
+    Bool_t                            fEnableNDMInputSpectrum;                            ///< Turn On or Off if Histograms are created and used
+    Bool_t                            fEnableTreeTrueNDMFromHNM;                          ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt;    ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableAsymmetryPlotCombCPionVsNPion;               ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableAsymmetryPlot_NotAccepted;                   ///< Turn On or Off if Histograms are created and used
@@ -317,6 +323,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoMCHNMPiPlPiMiNDMEtavsPt;                      //!<! array of histos of produced HNM eta vs Pt
     /** array of histos of produced etas via pi+pi-pi0 in the specified y range, with decay products in respective y, eta ranges */
     TH1F**                            fHistoMCHNMPiPlPiMiNDMInAccPt;                      //!<!
+    TH1F**                            fHistoMCNDMFromHNMInputPt;                          //!<! array of histos of produced Pi0 coming from
+    TH1F**                            fHistoMCNDMFromHNMInputInAccPt;                     //!<!
     TH2F**                            fHistoMCHNMInAccVsNDMPt;                            //!<!
     // MC truth properties for heavy meson (and decay products)
     TH1F**                            fHistoMCHeavyAllPt;                                 //!<! array of histos with pt of all heavy mesons
@@ -498,7 +506,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 24);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 25);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

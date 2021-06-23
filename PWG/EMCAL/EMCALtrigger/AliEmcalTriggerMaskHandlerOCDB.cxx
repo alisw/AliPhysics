@@ -28,8 +28,14 @@
 #include <bitset>
 #include <functional>
 #include <iostream>
+#include <iterator>
+#include <map>
 
+#include <TCanvas.h>
 #include <TH2.h>
+#include <TLine.h>
+#include <TPad.h>
+#include <TSystem.h>
 
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -38,6 +44,7 @@
 #include "AliEMCALTriggerTRUDCSConfig.h"
 #include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEmcalTriggerMaskHandlerOCDB.h"
+#include "AliLog.h"
 
 ClassImp(PWG::EMCAL::AliEmcalTriggerMaskHandlerOCDB)
 
@@ -55,20 +62,22 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetMaskedFastorIndicesL0(int ru
   UpdateCache(runnumber);
   auto geo = GetGeometry(runnumber);
 
-  std::function<int (int, int)> ChannelMaskHandler = geo->GetTriggerMappingVersion() == 2 ? GetChannelForMaskRun2 : GetChannelForMaskRun1;
+  std::function<int (int, int, bool)> ChannelMaskHandler = geo->GetTriggerMappingVersion() == 2 ? GetChannelForMaskRun2 : GetChannelForMaskRun1;
   int itru = 0;
   for(auto truconfigobj : *fCurrentConfig->GetTRUArr()) {
     auto truconfig = dynamic_cast<AliEMCALTriggerTRUDCSConfig *>(truconfigobj);
     int localtru = itru % 32, detector = itru >= 32 ? 1 : 0,
         globaltru = geo->GetTriggerMapping()->GetTRUIndexFromSTUIndex(localtru, detector);
+    bool onethirdsm = ((globaltru >= 30 && globaltru < 32) || (globaltru >= 50 && globaltru < 52)); 
     for(int ipos = 0; ipos < 6; ipos++) {
       auto regmask = truconfig->GetMaskReg(ipos);
       std::bitset<16> bitsregmask(regmask);
       for(int ibit = 0; ibit < 16; ibit++) {
         if(bitsregmask.test(ibit)) {
-          auto channel = ChannelMaskHandler(ipos, ibit);
+          auto channel = ChannelMaskHandler(ipos, ibit, onethirdsm);
           int absfastor;
           geo->GetTriggerMapping()->GetAbsFastORIndexFromTRU(globaltru, channel, absfastor);
+          AliDebugStream(1) << GetName() << "Channel " << channel  << " in TRU " << globaltru << " ( abs fastor " << absfastor << ") masked." << std::endl;
           maskedfastors.push_back(absfastor);
         }
       }
@@ -95,18 +104,18 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetMaskedFastorIndicesL1(int ru
   std::vector<int> maskedfastors;
   // Find masked FastORs at L0
   auto maskedL0 = GetMaskedFastorIndicesL0(runnumber);
-  std::copy(maskedL0.begin(), maskedL0.end(), maskedfastors.begin());
+  std::copy(maskedL0.begin(), maskedL0.end(), std::back_inserter(maskedfastors));
 
   // Look for TRUs which are masked in the L1 region
   // For each STU which is masked at L1 mask also the FastORs 
   // if not yet masked at L0
   AliEMCALGeometry *geo = nullptr;
-  for(auto truID : GetGlobalMaskedTRUIndices()) {
+  for(auto truID : GetGlobalMaskedTRUIndices(runnumber)) {
     if(!geo) geo = GetGeometry(runnumber);
     for(int ichannel = 0; ichannel < 96; ichannel++) {
       int absfastor;
       geo->GetTriggerMapping()->GetAbsFastORIndexFromTRU(truID, ichannel, absfastor);
-      if(std::find(maskedfastors.begin(), maskedfastors.end(), absfastor)  != maskedfastors.end()) maskedfastors.push_back(absfastor);
+      if(std::find(maskedfastors.begin(), maskedfastors.end(), absfastor) == maskedfastors.end()) maskedfastors.push_back(absfastor);
     }
   }
 
@@ -133,13 +142,14 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetGlobalMaskedTRUIndices(int r
   auto geo = GetGeometry(runnumber);
 
   auto emcalstu = fCurrentConfig->GetSTUDCSConfig(false),
-       dcalstu = fCurrentConfig->GetSTUDCSConfig(false);
+       dcalstu = fCurrentConfig->GetSTUDCSConfig(true);
 
   if(emcalstu) {
     std::bitset<32> mask(emcalstu->GetRegion());
     for(int itru = 0; itru < 32; itru++) {
       if(!mask.test(itru)) {
         // TRU excluded from region, add to masked TRUs
+        AliDebugStream(1) << "EMCAL TRU " << itru << " masked in STU region" << std::endl;
         truindices.push_back(geo->GetTRUIndexFromSTUIndex(itru, 0));
       } 
     }
@@ -150,6 +160,7 @@ std::vector<int> AliEmcalTriggerMaskHandlerOCDB::GetGlobalMaskedTRUIndices(int r
     for(int itru = 0; itru < 14; itru++) {
       if(!mask.test(itru)) {
         // TRU excluded from region, add to masked TRUs
+        AliDebugStream(1) << "DCAL TRU " << itru << " masked in STU region" << std::endl;
         truindices.push_back(geo->GetTRUIndexFromSTUIndex(itru, 1));
       } 
     }
@@ -163,7 +174,7 @@ TH2 *AliEmcalTriggerMaskHandlerOCDB::MonitorMaskedFastORsL0(int runnumber) {
   std::string runstring = runnumber < 0 ? "Current" : Form("%d", runnumber);
   std::string histname = Form("maskedFastorsL0%s", runstring.data()), 
               histtitle = Form("Masked fastors at L0 for run %s", runstring.data());
-  auto outputhist = PrepareHistogram(histname.data(), histtitle.data());
+  auto outputhist = PrepareHistogram(histname.data(), histtitle.data(), GetGeometry(runnumber)->GetTriggerMappingVersion() == 2);
   auto maskedfastors = GetMaskedFastorPositionsL0(runnumber);
   FillMaskedFastors(outputhist, maskedfastors);
   return outputhist;
@@ -173,17 +184,18 @@ TH2 *AliEmcalTriggerMaskHandlerOCDB::MonitorMaskedFastORsL1(int runnumber) {
   std::string runstring = runnumber < 0 ? "Current" : Form("%d", runnumber);
   std::string histname = Form("maskedFastorsL1%s", runstring.data()), 
               histtitle = Form("Masked fastors at L1 for run %s", runstring.data());
-  auto outputhist = PrepareHistogram(histname.data(), histtitle.data());
+  auto outputhist = PrepareHistogram(histname.data(), histtitle.data(), GetGeometry(runnumber)->GetTriggerMappingVersion() == 2);
   auto maskedfastors = GetMaskedFastorPositionsL1(runnumber);
   FillMaskedFastors(outputhist, maskedfastors);
   return outputhist;
 }
 
-int AliEmcalTriggerMaskHandlerOCDB::GetChannelForMaskRun1(int mask, int bitnumber) {
+int AliEmcalTriggerMaskHandlerOCDB::GetChannelForMaskRun1(int mask, int bitnumber, bool /*onethirdsm*/) {
   return mask * 16 + bitnumber;
 }
 
-int AliEmcalTriggerMaskHandlerOCDB::GetChannelForMaskRun2(int mask, int bitnumber) {
+int AliEmcalTriggerMaskHandlerOCDB::GetChannelForMaskRun2(int mask, int bitnumber, bool onethirdsm) {
+  if(onethirdsm) return mask * 16 + bitnumber;
   const int kChannelMap[6][16] = {{ 8, 9,10,11,20,21,22,23,32,33,34,35,44,45,46,47},   // Channels in mask0
                                   {56,57,58,59,68,69,70,71,80,81,82,83,92,93,94,95},   // Channels in mask1
                                   { 4, 5, 6, 7,16,17,18,19,28,29,30,31,40,41,42,43},   // Channels in mask2
@@ -201,16 +213,19 @@ AliEMCALGeometry *AliEmcalTriggerMaskHandlerOCDB::GetGeometry(int runnumber) {
 }
 
 void AliEmcalTriggerMaskHandlerOCDB::ClearCache() {
-  if(fCurrentConfig) delete fCurrentConfig;
+  // In general the handler is non-owning, therefore
+  // we do not delete the object but rahther just set
+  // the pointer to nullptr.
   fCurrentConfig = nullptr;
   fCurrentRunnumber = -1;
 }
 
 void AliEmcalTriggerMaskHandlerOCDB::UpdateCache(int runnumber) {
   if((runnumber == fCurrentRunnumber) && fCurrentConfig) return;
+  AliInfoStream() << "Update trigger DCS config for run " << runnumber << std::endl;
   ClearCache();
   auto cdb = InitCDB(runnumber);
-  auto trgobject = cdb->Get("EMCAL/CalibTrigger")->GetObject();
+  auto trgobject = cdb->Get("EMCAL/Calib/Trigger")->GetObject();
   if(!trgobject) throw OCDBNotInitializedException();
   fCurrentConfig = dynamic_cast<AliEMCALTriggerDCSConfig *>(trgobject);
   if(!fCurrentConfig) throw OCDBNotInitializedException();
@@ -227,6 +242,7 @@ AliCDBManager *AliEmcalTriggerMaskHandlerOCDB::InitCDB(int runnumber) {
     auto currentrun = cdb->GetRun();
     if(currentrun != runnumber) {
       // Changing run numbre
+      AliInfoStream() << "Run number in CDB (" << currentrun << ") different from requested (" << runnumber << "), updating ..." << std::endl;
       cdb->SetRun(runnumber);
     }
   } else {
@@ -236,8 +252,9 @@ AliCDBManager *AliEmcalTriggerMaskHandlerOCDB::InitCDB(int runnumber) {
   return cdb;
 }
 
-TH2 *AliEmcalTriggerMaskHandlerOCDB::PrepareHistogram(const char *name, const char *title) {
-  TH2 *maskhist = new TH2I(name, title, 48, -0.5, 47.5, 104, -0.5, 103.5);
+TH2 *AliEmcalTriggerMaskHandlerOCDB::PrepareHistogram(const char *name, const char *title, bool run2) {
+  int ncol = run2 ? 104 : 64;
+  TH2 *maskhist = new TH2I(name, title, 48, -0.5, 47.5, ncol, -0.5, ncol - 0.5);
   maskhist->SetDirectory(nullptr);
   maskhist->GetXaxis()->SetTitle("#eta (col)");
   maskhist->GetYaxis()->SetTitle("#phi (row)");
@@ -248,4 +265,168 @@ void AliEmcalTriggerMaskHandlerOCDB::FillMaskedFastors(TH2 *outputhist, const st
   for(auto fastor : fastors) {
     outputhist->Fill(fastor.column, fastor.row);
   }
+}
+
+void AliEmcalTriggerMaskHandlerOCDB::drawRun1Frame(){
+  for(int iphi = 1; iphi < 64; iphi++){
+    auto fastorLine = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
+    fastorLine->Draw("same");
+  }
+  for(int ieta = 1; ieta < 48; ieta++){
+    auto fastorLine = new TLine(static_cast<double>(ieta) -0.5, -0.5, static_cast<double>(ieta) -0.5, -63.5);
+    fastorLine->Draw("same");
+  }
+  for(int isector = 0; isector < 5; isector++) {
+    int sectormin = isector * 12;
+    for(int itru = 0; itru < 2; itru++) {
+      int separator = sectormin + (itru+1) * 4;
+      auto truline = new TLine(-0.5, static_cast<double>(separator) - 0.5, 47.5, static_cast<double>(separator) - 0.5);
+      truline->SetLineWidth(2);
+      truline->Draw("same");
+    }
+  }
+  for(int iside = 0; iside <= 48; iside += 24) {
+    auto smline = new TLine(static_cast<double>(iside) - 0.5, -0.5, static_cast<double>(iside) - 0.5, 63.5);
+    smline->SetLineWidth(3);
+    smline->Draw("same");
+  }
+  for(int iphi = 0; iphi < 60; iphi += 12) {
+    auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
+    smline->SetLineWidth(3);
+    smline->Draw("same");
+  }
+  auto smline = new TLine(-0.5, 63.5, 47.5, 63.5);
+  smline->SetLineWidth(3);
+  smline->Draw("same");
+}
+
+void AliEmcalTriggerMaskHandlerOCDB::drawRun2Frame(){
+  // EMCAL
+  for(int iphi = 1; iphi < 64; iphi++){
+    auto fastorLine = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
+    fastorLine->Draw("same");
+  }
+  for(int ieta = 1; ieta < 48; ieta++){
+    auto fastorLine = new TLine(static_cast<double>(ieta) -0.5, -0.5, static_cast<double>(ieta) - 0.5, 63.5);
+    fastorLine->Draw("same");
+  }
+  for(int side = 0; side < 2; side++) {
+    int sideoffset = 24 * side;
+    for(int itru = 0; itru < 2; itru++) {
+      int truoffset = sideoffset + (itru+1)*8;
+      auto truline = new TLine(static_cast<int>(truoffset) - 0.5, -0.5, static_cast<int>(truoffset) - 0.5, 59.5);
+      truline->SetLineWidth(2);
+      truline->Draw("same");
+    }
+  }
+  for(int iside = 0; iside <= 48; iside += 24) {
+    auto smline = new TLine(static_cast<double>(iside) - 0.5, -0.5, static_cast<double>(iside) - 0.5, 63.5);
+    smline->SetLineWidth(3);
+    smline->Draw("same");
+  }
+  for(int iphi = 0; iphi < 60; iphi += 12) {
+    auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
+    smline->SetLineWidth(3);
+    smline->Draw("same");
+  }
+  for(auto iphi = 60; iphi <= 64; iphi += 4) {
+    auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
+    smline->SetLineWidth(3);
+    smline->Draw("same");
+  }
+
+  // DCAL
+  for(int side = 0; side < 2; side++) {
+    int sideoffset = (side == 0) ? 0 : 32;
+    for(int ieta = 0; ieta <= 16; ieta++) {
+      int etaoffset = sideoffset + ieta;
+      auto fastorline = new TLine(static_cast<double>(etaoffset - 0.5), 63.5, static_cast<double>(etaoffset) - 0.5, 99.5);
+      fastorline->Draw("same");
+    }
+    for(int iphi = 0; iphi <= 36; iphi++) {
+      int phioffset = iphi + 64;
+      auto fastorline = new TLine(static_cast<double>(sideoffset - 0.5), static_cast<double>(phioffset - 0.5), static_cast<double>(sideoffset+16) - 0.5, static_cast<double>(phioffset) - 0.5);
+      fastorline->Draw("same");
+    }
+    for(int isepeta = 0; isepeta < 2; isepeta++) {
+      int etaoffset = sideoffset + isepeta * 16;
+      auto smline = new TLine(static_cast<double>(etaoffset) - 0.5, 63.5, static_cast<double>(etaoffset) -0.5, 99.5);
+      smline->SetLineWidth(3);
+      smline->Draw("same");
+    }
+    for(auto iphi = 76; iphi <= 88; iphi += 12) {
+      auto smline = new TLine(static_cast<double>(sideoffset) - 0.5, static_cast<double>(iphi) - 0.5, static_cast<double>(sideoffset + 16) - 0.5, static_cast<double>(iphi) - 0.5); 
+      smline->SetLineWidth(3);
+      smline->Draw("same");
+    }
+    auto truseparator = new TLine(static_cast<double>(sideoffset + 8) - 0.5, 63.5, static_cast<double>(sideoffset + 8) - 0.5, 99.5);
+    truseparator->SetLineWidth(2);
+    truseparator->Draw("same");
+  }
+  for(auto ieta = 1; ieta < 48; ieta++) {
+    auto etaline = new TLine(static_cast<double>(ieta) - 0.5, 99.5, static_cast<double>(ieta) - 0.5, 103.5);
+    etaline->Draw("same");
+  }
+  for(auto iphi = 101; iphi <= 103; iphi++) {
+    auto philine = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<int>(iphi) - 0.5);
+    philine->Draw("same");
+  }
+  for(auto iphi = 100; iphi <= 104; iphi += 4) {
+    auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<int>(iphi) - 0.5);
+    smline->SetLineWidth(3);
+    smline->Draw("same");
+  }
+  for(auto ieta = 0; ieta <= 48; ieta += 24) {
+    auto smline = new TLine(static_cast<double>(ieta) - 0.5, 99.5, static_cast<double>(ieta) - 0.5, 103.5);
+    smline->SetLineWidth(3);
+    smline->Draw("same");
+  }
+}
+
+void AliEmcalTriggerMaskHandlerOCDB::drawMaskFromCVMFS(int runnumber, bool isLevel1) {
+  if(gSystem->AccessPathName("/cvmfs/alice-ocdb.cern.ch/calibration/data", kReadPermission )) {
+    Error("PWG::EMCAL::drawMappingFromCVMFS", "cvmfs repository alice-ocdb.cern.ch needs to be mounted on the system");
+    return;
+  }
+
+  std::map<int, std::pair<int, int>> years = {
+    {2010, {105524, 139667}},
+    {2011, {140390, 170718}},
+    {2012, {170730, 194306}},
+    {2013, {194481, 199162}},
+    {2015, {208402, 247167}},
+    {2016, {247656, 267252}},
+    {2017, {267402, 282843}},
+    {2018, {282908, 297635}}
+  };
+
+  int year = -1;
+  for(auto yearrange : years) {
+    if(runnumber >= yearrange.second.first  && runnumber <= yearrange.second.second) {
+      year = yearrange.first;
+      break;
+    }
+  }
+
+  if(year < 0) {
+    Error("PWG::EMCAL::drawMappingFromCVMFS", "Cannot obtain CDB path for run %d", runnumber);
+    return;
+  }
+
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage(Form("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/%d/OCDB", year));
+  auto maskhist = isLevel1 ? MonitorMaskedFastORsL1(runnumber) : MonitorMaskedFastORsL0(runnumber);
+  maskhist->SetDirectory(nullptr);
+  maskhist->SetStats(false);
+  maskhist->SetXTitle("col (#eta)");
+  maskhist->SetYTitle("row (#phi)");
+
+  if(!gPad) {
+    gPad = new TCanvas(Form("FastORMaskRun%d", runnumber), Form("FastOR mask for run %d", runnumber), 800, 600);
+  } else {
+    gPad->Clear();
+  }
+  maskhist->Draw("colz");
+  if(year < 2015) drawRun1Frame();
+  else drawRun2Frame();
 }

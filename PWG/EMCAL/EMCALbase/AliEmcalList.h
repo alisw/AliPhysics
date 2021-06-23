@@ -97,6 +97,18 @@ public:
    */
   void                        SetNameTrials(const char *name) { fNameNTrials = name; }
 
+  /**
+   * @brief Get name of the cross section histogram for weighting
+   * @return Name of the cross section histogram
+   */
+  const TString &             GetNameXsec() const { return fNameXsec; }
+
+  /**
+   * @brief Get name of the histogram with the number of trials for weighting
+   * @return Name of the histogram with the number of trials 
+   */
+  const TString &             GetNameTrials() const { return fNameNTrials; }
+
 private:
   // ####### Helper functions
 
