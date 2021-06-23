@@ -3361,6 +3361,26 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("u3510113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 0.3% - 0.5%
     cuts.AddCutCalo("u5a10113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 0.5% - 1.0%
 
+  } else if (trainConfig == 2434){ // few configs for EG2 triggered data, V0M est.
+    cuts.AddCutCalo("r018e113","411792109fe32220000","0r631031000000d0"); // EG2 trigg, NL12, mult. dep 0% - 0.01%
+    cuts.AddCutCalo("r158e113","411792109fe32220000","0r631031000000d0"); // EG2 trigg, NL12, mult. dep 0.01% - 0.05%
+    cuts.AddCutCalo("r5a8e113","411792109fe32220000","0r631031000000d0"); // EG2 trigg, NL12, mult. dep 0.05% - 0.1%
+  } else if (trainConfig == 2435){ //  few configs for EG2 triggered data, SPD est.
+    cuts.AddCutCalo("u018e113","411792109fe32220000","0r631031000000d0"); // EG2 trigg, NL12, mult. dep 0% - 0.1%
+    cuts.AddCutCalo("u138e113","411792109fe32220000","0r631031000000d0"); // EG2 trigg, NL12, mult. dep 0.1% - 0.3%
+    cuts.AddCutCalo("u358e113","411792109fe32220000","0r631031000000d0"); // EG2 trigg, NL12, mult. dep 0.3% - 0.5%
+    cuts.AddCutCalo("u5a8e113","411792109fe32220000","0r631031000000d0"); // EG2 trigg, NL12, mult. dep 0.5% - 1.0%
+  } else if (trainConfig == 2436){ // few configs for EG1 triggered data, V0M est.
+    cuts.AddCutCalo("r018d113","411792109fe32220000","0r631031000000d0"); // EG1 trigg, NL12, mult. dep 0% - 0.01%
+    cuts.AddCutCalo("r158d113","411792109fe32220000","0r631031000000d0"); // EG1 trigg, NL12, mult. dep 0.01% - 0.05%
+    cuts.AddCutCalo("r5a8d113","411792109fe32220000","0r631031000000d0"); // EG1 trigg, NL12, mult. dep 0.05% - 0.1%
+  } else if (trainConfig == 2437){ //  few configs for EG1 triggered data, SPD est.
+    cuts.AddCutCalo("u018d113","411792109fe32220000","0r631031000000d0"); // EG1 trigg, NL12, mult. dep 0% - 0.1%
+    cuts.AddCutCalo("u138d113","411792109fe32220000","0r631031000000d0"); // EG1 trigg, NL12, mult. dep 0.1% - 0.3%
+    cuts.AddCutCalo("u358d113","411792109fe32220000","0r631031000000d0"); // EG1 trigg, NL12, mult. dep 0.3% - 0.5%
+    cuts.AddCutCalo("u5a8d113","411792109fe32220000","0r631031000000d0"); // EG1 trigg, NL12, mult. dep 0.5% - 1.0%
+
+
 
   //*************************************************************************************************
   // 13 TeV EMCal Sphericity differential cuts
