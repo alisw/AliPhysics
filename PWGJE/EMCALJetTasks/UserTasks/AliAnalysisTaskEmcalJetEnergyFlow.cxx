@@ -44,7 +44,7 @@
    */
   AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow():
           AliAnalysisTaskEmcalJet(),
-          fHistManager(),IsMCprod(kTRUE)// ,fOutput{0}
+          fHistManager(),IsMCprod(kTRUE)// , fOutput{0}
   {
   }
   /**
@@ -53,7 +53,7 @@
    */
   AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow(const char* name):
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fHistManager(name),IsMCprod(kTRUE) // ,fOutput{0}
+  fHistManager(name),IsMCprod(kTRUE) // , fOutput{0}
   {
           SetMakeGeneralHistograms(1);
   }
@@ -601,6 +601,7 @@ else NumJet =fJetCollArray.GetEntries();
           DeltaEta = 0.0;
 
         DetjetCont1=0; DetjetCont2=0; GenjetCont1=0; GenjetCont2=0; //Reseting the containers at the start of each pair loop     
+
         if(IsMCprod){
                 MatchGenDetList.Clear();
                 GenHighRJetsList.Clear();
@@ -822,17 +823,18 @@ else NumJet =fJetCollArray.GetEntries();
 
                  } //End of MC production case
         else{
+          std::cout<<"If you see this when you run over MC then you're in trouble- point A"<<std::endl;
           // Casting the lower R half of the pair to a container and getting the accepted jets to a list
           DetjetCont1 = dynamic_cast<AliJetContainer*>(fJetCollArray[i]);
           DetjetCont1->SetJetEtaLimits(-max_eta,max_eta);
           for(auto jet:DetjetCont1->accepted()) DetLowRJetsList.Add(jet);
-          std::cout<<"If you see this when you run over MC then you're in trouble- point A"<<std::endl;
+          std::cout<<"If you see this when you run over MC then you're in trouble- point B"<<std::endl;
 
           // Casting the higher R half of the pair to a container and getting the accepted jets to a list
           DetjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1]);
           DetjetCont2->SetJetEtaLimits(-max_eta,max_eta);
           for(auto jet:DetjetCont2->accepted()) DetHighRJetsList.Add(jet);
-          std::cout<<"If you see this when you run over MC then you're in trouble- point B"<<std::endl;
+          std::cout<<"If you see this when you run over MC then you're in trouble- point C"<<std::endl;
 
         // For the case of data, match and calculate the energy flow only on the detector level jets for this R pair iteration
           if(DetLowRJetsList.GetEntries()==0||DetHighRJetsList.GetEntries()==0) continue;
@@ -840,7 +842,7 @@ else NumJet =fJetCollArray.GetEntries();
           JetMatcher(&DetLowRJetsList,kLowRJets,&DetHighRJetsList,kHighRJets, iLowRIndex_det,iHighRIndex_det,0,Max_dist,max_eta);
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   
-  for (Int_t j=0; j<iHighRIndex_det.GetSize()-1;j++) // loop over the low R jets
+                for (Int_t j=0; j<iHighRIndex_det.GetSize()-1;j++) // loop over the low R jets
                   {
                           if(iHighRIndex_det[j]>=0){  // if there is a match
                           Int_t match_index = iHighRIndex_det[j];
