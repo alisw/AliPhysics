@@ -44,7 +44,7 @@
    */
   AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow():
           AliAnalysisTaskEmcalJet(),
-          fHistManager()// ,fOutput{0}
+          fHistManager(),IsMCprod(kTRUE)// ,fOutput{0}
   {
   }
   /**
@@ -53,7 +53,7 @@
    */
   AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow(const char* name):
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fHistManager(name) // ,fOutput{0}
+  fHistManager(name),IsMCprod(kTRUE) // ,fOutput{0}
   {
           SetMakeGeneralHistograms(1);
   }
@@ -109,7 +109,7 @@
   Bool_t AliAnalysisTaskEmcalJetEnergyFlow::Run()
   {
           if(fOutput->IsUseScaling()) Printf("Scaling is enabled! \n");
-  
+          if(IsMCprod) Printf("MC production");
   
           return kTRUE;
   }
@@ -249,7 +249,7 @@
     }
   
     AliAnalysisTaskEmcalJetEnergyFlow* EFTask = new AliAnalysisTaskEmcalJetEnergyFlow(name);
-   (*EFTask).IsMCprod=SetMCprod;
+    EFTask->IsMCprod=SetMCprod;
     EFTask->SetCaloCellsName(cellName);
     EFTask->SetVzRange(-10,10);
   
@@ -400,8 +400,8 @@ void AliAnalysisTaskEmcalJetEnergyFlow::AllocateEnergyflowHistograms(){
 
 
   Int_t Pair_number = 3;
- if (IsMCprod)Int_t Pair_number = (fJetCollArray.GetEntries()/2)-1;
- else Int_t Pair_number = fJetCollArray.GetEntries()-1; 
+ if (IsMCprod) Pair_number = (fJetCollArray.GetEntries()/2)-1;
+ else Pair_number = fJetCollArray.GetEntries()-1; 
 
   for(Int_t i=0;i<Pair_number;i++){
        
@@ -583,8 +583,11 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
 
    Int_t Pair_number = 3;
   AliEmcalJet* Jet_genlowR =0; //Convenient pointer for the EF calculations @ Gen-level
- //if (IsMCprod)Int_t Pair_number = fJetCollArray.GetEntries()/2-1;
- // else Int_t Pair_number = fJetCollArray.GetEntries()-1; 
+ if (IsMCprod) Pair_number = fJetCollArray.GetEntries()/2-1;
+  else  Pair_number = fJetCollArray.GetEntries()-1; 
+  Int_t NumJet= 4;
+if (IsMCprod) NumJet=fJetCollArray.GetEntries()/2;
+else NumJet =fJetCollArray.GetEntries();
 
 //Loop over the number of comparison pairs
   for (Int_t i=0;i<Pair_number;i++)
@@ -595,11 +598,11 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
           pt_Ldet = 0.0;
           pt_Hdet = 0.0;
           DeltaEta = 0.0;
-     
+
+        DetjetCont1=0; DetjetCont2=0; GenjetCont1=0; GenjetCont2=0; //Reseting the containers at the start of each pair loop     
         if(IsMCprod){
                 MatchGenDetList.Clear();
                 GenHighRJetsList.Clear();
-                Int_t NumJet= fJetCollArray.GetEntries()/2; //Number of jet containers with different Rjet
 
            Contname= dynamic_cast<AliJetContainer*>(fJetCollArray[i])->GetName();
                 if(Contname.Contains("mcparticles"))
@@ -822,11 +825,12 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
           DetjetCont1 = dynamic_cast<AliJetContainer*>(fJetCollArray[i]);
           DetjetCont1->SetJetEtaLimits(-max_eta,max_eta);
           for(auto jet:DetjetCont1->accepted()) DetLowRJetsList.Add(jet);
-  
+        std::cout<<"If you see this when you run over MC then you're in trouble- point A"<<std::endl;
           // Casting the higher R half of the pair to a container and getting the accepted jets to a list
           DetjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1]);
           DetjetCont2->SetJetEtaLimits(-max_eta,max_eta);
           for(auto jet:DetjetCont2->accepted()) DetHighRJetsList.Add(jet);
+        std::cout<<"If you see this when you run over MC then you're in trouble- point B"<<std::endl;
         // For the case of data, match and calculate the energy flow only on the detector level jets for this R pair iteration
           if(DetLowRJetsList.GetEntries()==0||DetHighRJetsList.GetEntries()==0) continue;
           iLowRIndex_det.Set(DetHighRJetsList.GetEntries()); iHighRIndex_det.Set(DetLowRJetsList.GetEntries());

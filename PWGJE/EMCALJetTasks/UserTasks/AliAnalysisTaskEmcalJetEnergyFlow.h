@@ -50,32 +50,32 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void			JetMatcher(const TList *genJetsList,const Int_t &kGenJets,
    					   const TList *recJetsList,const Int_t &kRecJets,
    					   TArrayI &iGenIndex,TArrayI &iRecIndex,
-   					   Int_t iDebug = 0,Float_t maxDist = 0.3,Float_t max_eta = 0.5);	///< This is a re-implementation of the AliAnalysisHelperJetTasks::GetClosestJets adjusted for AliEmcalJet instead of AliAODjets for the function's inputs.
+   					   Int_t iDebug = 0,Float_t maxDist = 0.3,Float_t max_eta = 0.5);	// /< This is a re-implementation of the AliAnalysisHelperJetTasks::GetClosestJets adjusted for AliEmcalJet instead of AliAODjets for the function's inputs.
 	void			ExecOnce()				;
 	Bool_t			FillHistograms()			;
 	Bool_t			Run()					;
 
 	void			AllocateJetHistograms()			;
-	void			AllocateTrackHistograms()		; ///<Same as Sample task
-	void                    AllocateClusterHistograms()             ; ///<May remove later
-  	void                    AllocateCellHistograms()                ; ///<May remove later
+	void			AllocateTrackHistograms()		; // /<Same as Sample task
+	void                    AllocateClusterHistograms()             ; // /<May remove later
+  	void                    AllocateCellHistograms()                ; // /<May remove later
 	void			AllocateEnergyflowHistograms()		;
 
 	void                    DoJetLoop()                             ;
 	void                    DoTrackLoop()                           ;
 	void			FillEFHistograms()			;
-	void                    DoClusterLoop()                         ; ///<May remove later	
-	void                    DoCellLoop()                            ; ///<May remove later
+	void                    DoClusterLoop()                         ; // /<May remove later	
+	void                    DoCellLoop()                            ; // /<May remove later
 
-        Bool_t                  IsMCprod                                ;///<Flag for MC productions
-	THistManager            fHistManager                            ;///< Histogram manager
-//	TList*			fOutput					;///!<! Output list
+        Bool_t                  IsMCprod                                ;// /<Flag for MC productions
+	THistManager            fHistManager                            ;// /< Histogram manager
+//	TList*			fOutput					;// /!<! Output list
  	private:
  	 AliAnalysisTaskEmcalJetEnergyFlow(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
   	/// \cond CLASSIMP
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow, 8);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,10);
 	/// \endcond
 };
 #endif
