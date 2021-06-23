@@ -247,7 +247,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(10000);
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   config->SetMinimalBookingME(false);
