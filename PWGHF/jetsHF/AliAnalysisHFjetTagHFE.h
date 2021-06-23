@@ -289,6 +289,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
 	THnSparse                   *fNtrklEopHad;
 	TH1D                        *fHistphoPi0MC;
 	TH1D                        *fHistphoEtaMC;
+	TH2D                        *fNtrklRhoarea;
 
   TRandom                     *generator;
 
