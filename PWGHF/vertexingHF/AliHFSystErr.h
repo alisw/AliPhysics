@@ -398,6 +398,9 @@ class AliHFSystErr : public TNamed
   void InitScpp13TeV201620172018BDT(); // Sc, Lc->pK0S, BDT
 
   // data-driven non-prompt analyses
+  void InitNonPromptDzerotoKpi2017pp5TeVML();
+  void InitNonPromptDzerotoKpi2018PbPb5TeV010ML();
+  void InitNonPromptDzerotoKpi2018PbPb5TeV3050ML();
   void InitNonPromptDplustoKpipi2017pp5TeVML();
   void InitNonPromptDstoKKpi2017pp5TeVML();
   void InitNonPromptDstoKKpi2018PbPb5TeV010ML();
@@ -433,7 +436,7 @@ class AliHFSystErr : public TNamed
   Bool_t fIsDataDrivenFDAnalysis;   /// flag for the non-prompt data-driven analyses 
 
   /// \cond CLASSIMP
-  ClassDef(AliHFSystErr,14);  /// class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,15);  /// class for systematic errors of charm hadrons
   /// \endcond
 };
 

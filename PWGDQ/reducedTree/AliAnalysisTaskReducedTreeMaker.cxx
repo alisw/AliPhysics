@@ -2000,6 +2000,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     trackInfo->fTPCNclsShared = (UChar_t)values[AliDielectronVarManager::kNclsSTPC];
     trackInfo->fTPCCrossedRows = values[AliDielectronVarManager::kNFclsTPCr];
     trackInfo->fTPCsignal    = values[AliDielectronVarManager::kTPCsignal];
+    trackInfo->fTPCsignalTunedOnData    = values[AliDielectronVarManager::kTPCsignalTunedOnData];
     trackInfo->fTPCsignalN   = values[AliDielectronVarManager::kTPCsignalN];
     trackInfo->fTPCnSig[0]   = values[AliDielectronVarManager::kTPCnSigmaEle];
     trackInfo->fTPCnSig[1]   = values[AliDielectronVarManager::kTPCnSigmaPio];

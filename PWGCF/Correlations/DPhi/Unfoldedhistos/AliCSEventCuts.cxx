@@ -287,7 +287,12 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
           GetMCEventHandler()->InitOk() ? "true" : "false",
               GetMCEventHandler()->TreeK() ? "true" : "false",
                   GetMCEventHandler()->TreeTR() ? "true" : "false"));
-      if (fgIsMConlyTruth) {
+      if (fgIsOnTheFlyMC) {
+        /* not consistent behaviour when on the fly productions */
+        /* leave the MC data quality checks for the time being  */
+
+      }
+      else if (fgIsMConlyTruth) {
         /* track references are not there if fast MC, i.e. only truth productions */
         if (!GetMCEventHandler()->InitOk() || !GetMCEventHandler()->TreeK()){
           fCutsActivatedMask.SetBitNumber(kMCdataQuality);

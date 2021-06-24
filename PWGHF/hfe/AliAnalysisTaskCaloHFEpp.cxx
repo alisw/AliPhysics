@@ -95,6 +95,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	MinNtr(0),
 	MaxNtr(0),
         festimatorFile(""),
+        estimatorAvg(0),
 	//==== basic parameters ====
 	fNevents(0),
 	fNDB(0),
@@ -161,6 +162,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fRiso_phidiff_LS(0),
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
+	fWh_phidiff(0),
         fIsoArray(0),
         fHFArray(0),
 	fzvtx_Ntrkl(0),
@@ -273,6 +275,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	MinNtr(0),
 	MaxNtr(0),
         festimatorFile(""),
+        estimatorAvg(0),
 	//==== basic parameters ====
 	fNevents(0),
 	fNDB(0),
@@ -339,6 +342,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fRiso_phidiff_LS(0),
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
+	fWh_phidiff(0),
         fIsoArray(0),
         fHFArray(0),
 	fzvtx_Ntrkl(0),
@@ -499,6 +503,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_LS    = new TH2F("fRiso_phidiff_LS","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	fRiso_phidiff_35    = new TH2F("fRiso_phidiff_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
+	fWh_phidiff = new TH2F("fWh_phidiff","pT vs. dphi differnce",30,30,60,80,-3.,5.);
 	
         Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100,  800, 500, 20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
         Double_t xmin[11]={ 10,  -5,   0,   0,   0,   0,   0, -0.2,   0,  0, -1.5};
@@ -670,6 +675,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fRiso_phidiff_LS);
 	fOutputList->Add(fRiso_phidiff_35);
 	fOutputList->Add(fRiso_phidiff_LS_35);
+	fOutputList->Add(fWh_phidiff);
 	fOutputList->Add(fzvtx_Ntrkl);
 	fOutputList->Add(fzvtx_Nch);
 	fOutputList->Add(fzvtx_Ntrkl_Corr);
@@ -725,6 +731,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 //_____________________________________________________________________________
 void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 {
+
 
 	if(!gGrid){
                 cout << "no Grid connection, connecting to the Grid ..." << endl; 
@@ -956,25 +963,32 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 	//-----------Tracklet correction-------------------------
 
-        TFile* fEstimator = TFile::Open(festimatorFile.Data());
-	
+        if(!estimatorAvg)
+          {
+            cout << "No estimatorAvg and get one " << endl;
+            TFile* fEstimator = TFile::Open(festimatorFile.Data());
+            //fEstimator = TFile::Open(festimatorFile.Data());
+	    if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
+	    if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
+	   }
+
 	Double_t correctednAcc   = nAcc;
 	Double_t fRefMult = Nref;
 	Double_t WeightNtrkl = -1.;
 	Double_t WeightZvtx = -1.;
-	TProfile* estimatorAvg;
-	if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
-	if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
+	//TProfile* estimatorAvg;
+	//if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
+	//if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
 
-        //cout << "estimatorAvg = " << estimatorAvg << endl;
 
 	if(estimatorAvg){
 		correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
 		//correctednAcc= AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(estimatorAvg,nAcc,Zvertex,fRefMult);
+
 	} 
 	fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
-        fEstimator->Close();
+        //fEstimator->Close();
 
 	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
 	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
@@ -1409,6 +1423,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                                     {
                                      fHistPt_Iso->Fill(track->Pt());
                                      fEop_iso_eID->Fill(TrkPt,eop);
+
+                                     //////////// ---- W-h correlation /////////////
+
+                                     if(NtrackCone<3 && TrkPt>30)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE);
+
                                     }
 
 				if(pid_eleP)
@@ -2070,7 +2089,7 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 		TPCchi2NDFWasso = aWassotrack -> Chi2perNDF();
 		TrackPhi        = track->Phi();
 
-		if(ptWasso <1.) continue;
+		//if(ptWasso <1.) continue;
 
 		/////////////////////////
 		// track cut
@@ -2110,6 +2129,8 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 			fRiso_phidiff_35 -> Fill(Wphidiff,Riso);
 			if(!fFlagPhoto)fRiso_phidiff_LS_35 -> Fill(Wphidiff,Riso);
 		}
+
+                if(Riso<0.05)fWh_phidiff->Fill(TrackPt,Wphidiff);
 
 	}
 
@@ -2196,6 +2217,8 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(TFile* fEstimator, con
   if(!fMultEstimatorAvg){
 	AliFatal("fMultEstimatorAvg not found!");
 	}
+
+  //cout << "fMultEstimatorAvg = " << fMultEstimatorAvg << endl;
 
   return fMultEstimatorAvg;
 }

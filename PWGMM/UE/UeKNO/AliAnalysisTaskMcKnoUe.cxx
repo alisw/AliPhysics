@@ -709,9 +709,8 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 
 	// Trigger selection
 	UInt_t fSelectMask= fInputHandler->IsEventSelected();
-	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7;
-	if(!isINT7selected)
-		return;
+	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7||fSelectMask&AliVEvent::kMB;
+	if(!isINT7selected)  return;
 	hCounter->Fill(1);
 
 

@@ -502,6 +502,7 @@ void ProjectCombinHFAndFit(TString configInput=""){
   if(tuneMeanOnData<0){
     if(meson=="Dplus") massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
     else if(meson=="Dzero") massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+    else if(meson=="Ds") massD=TDatabasePDG::Instance()->GetParticle(431)->Mass();
   }else{
     massD=tuneMeanOnData;
   }
@@ -582,30 +583,32 @@ void ProjectCombinHFAndFit(TString configInput=""){
   TH3F* h3drefl=0x0;
   TH3F* h3dmcsig=0x0;
   TH1F* hSigmaMC=0x0;
-  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",fileNameMC.Data())) !=0){
+  if( (correctForRefl || nBinsWithFixSig>0) && gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",fileNameMC.Data())) !=0){
     printf("File %s with MC results does not exist -> exiting\n",fileNameMC.Data());
     return;
-  }  
-  TFile* filMC=new TFile(fileNameMC.Data());
-  if(filMC && filMC->IsOpen()){
-    TDirectoryFile* dfMC=(TDirectoryFile*)filMC->Get(dirNameMC.Data());
-    if(!dfMC){
-      printf("TDirectoryFile %s not found in TFile for MC\n",dirNameMC.Data());
-      filMC->ls();
-      return;
-    }
-    TList* lMC=(TList*)dfMC->Get(lstNameMC.Data());
-    hSigmaMC=FitMCInvMassSpectra(lMC,var);
-    if(nBinsWithFixSig>0 && !hSigmaMC){
-      printf("Fit to MC inv. mass spectra failed\n");
-      return;
-    }
-    if(hSigmaMC && !useSigmaManual){
-      for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++) sigmas[iPtBin]=hSigmaMC->GetBinContent(iPtBin+1);
-    }
-    if(correctForRefl){
-      h3drefl=(TH3F*)lMC->FindObject(Form("hMassVsPtVs%sRefl",var.Data()));
-      h3dmcsig=(TH3F*)lMC->FindObject(Form("hMassVsPtVs%sSig",var.Data()));
+  }
+  if(correctForRefl || nBinsWithFixSig>0){
+    TFile* filMC=new TFile(fileNameMC.Data());
+    if(filMC && filMC->IsOpen()){
+      TDirectoryFile* dfMC=(TDirectoryFile*)filMC->Get(dirNameMC.Data());
+      if(!dfMC){
+	printf("TDirectoryFile %s not found in TFile for MC\n",dirNameMC.Data());
+	filMC->ls();
+	return;
+      }
+      TList* lMC=(TList*)dfMC->Get(lstNameMC.Data());
+      hSigmaMC=FitMCInvMassSpectra(lMC,var);
+      if(nBinsWithFixSig>0 && !hSigmaMC){
+	printf("Fit to MC inv. mass spectra failed\n");
+	return;
+      }
+      if(hSigmaMC && !useSigmaManual){
+	for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++) sigmas[iPtBin]=hSigmaMC->GetBinContent(iPtBin+1);
+      }
+      if(correctForRefl){
+	h3drefl=(TH3F*)lMC->FindObject(Form("hMassVsPtVs%sRefl",var.Data()));
+	h3dmcsig=(TH3F*)lMC->FindObject(Form("hMassVsPtVs%sSig",var.Data()));
+      }
     }
   }
   
@@ -636,9 +639,12 @@ void ProjectCombinHFAndFit(TString configInput=""){
   hpoolEv->GetYaxis()->SetTitleOffset(1.4);
 
 
-  TCanvas* crf=new TCanvas("crf","Reflections",1200,800);
-  DivideCanvas(crf,nPtBins);
-
+  TCanvas* crf=0x0;
+  if(correctForRefl){
+    crf=new TCanvas("crf","Reflections",1200,800);
+    DivideCanvas(crf,nPtBins);
+  }
+  
   TCanvas* c1=new TCanvas("c1","Mass",1200,800);
   DivideCanvas(c1,nPtBins);
 
@@ -1322,7 +1328,7 @@ void ProjectCombinHFAndFit(TString configInput=""){
   }
 
   if(saveCanvasAsEps>0){
-    crf->SaveAs(Form("figures/ReflTemplates_%s_%s.eps",sigConf.Data(),suffix.Data()));
+    if(crf) crf->SaveAs(Form("figures/ReflTemplates_%s_%s.eps",sigConf.Data(),suffix.Data()));
     c1->SaveAs(Form("figures/InvMassSpectra_%s_%s_NoBkgSub.eps",sigConf.Data(),suffix.Data()));
     c2->SaveAs(Form("figures/InvMassSpectra_%s_%s_Rot.eps",sigConf.Data(),suffix.Data()));
     c3->SaveAs(Form("figures/InvMassSpectra_%s_%s_LS.eps",sigConf.Data(),suffix.Data()));
@@ -1827,6 +1833,7 @@ TH1F* FitMCInvMassSpectra(TList* lMC, TString var){
     hSigmaMC->SetBinContent(iPtBin+1,mcSigma);
     hSigmaMC->SetBinError(iPtBin+1,errMCsigma);
   }
+  cmc1->SaveAs("figures/InvMassSpectraMC.eps");
   return hSigmaMC;
 }
 

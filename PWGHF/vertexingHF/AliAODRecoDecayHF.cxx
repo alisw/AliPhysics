@@ -464,12 +464,19 @@ void AliAODRecoDecayHF::Getd0MeasMinusExpProng(Int_t ip, Double_t magf, Double_t
   Double_t errlxy2=secVtx->Error2DistanceXYToVertex(GetPrimaryVtx());
 
   AliAODTrack *trk = (AliAODTrack*)GetDaughter(ip);
-  AliExternalTrackParam etp; 
-  etp.CopyFromVTrack(trk);  
-  Double_t dz[2],dtrkcovar[3];
-  etp.PropagateToDCA(secVtx,magf,3.,dz,dtrkcovar);
-  Double_t pxt=etp.Px();
-  Double_t pyt=etp.Py();
+  Double_t pxt=0;
+  Double_t pyt=0;
+  if(trk){
+    AliExternalTrackParam etp;
+    etp.CopyFromVTrack(trk);
+    Double_t dz[2],dtrkcovar[3];
+    etp.PropagateToDCA(secVtx,magf,3.,dz,dtrkcovar);
+    pxt=etp.Px();
+    pyt=etp.Py();
+  }else{
+    pxt=PxProng(ip);
+    pyt=PyProng(ip);
+  }
   Double_t sinThetap=(pxt*Py()-pyt*Px())/(Pt()*PtProng(ip));
   diff=d0meas-lxy*sinThetap;
   errdiff=TMath::Sqrt(errd0meas*errd0meas+errlxy2*sinThetap*sinThetap);

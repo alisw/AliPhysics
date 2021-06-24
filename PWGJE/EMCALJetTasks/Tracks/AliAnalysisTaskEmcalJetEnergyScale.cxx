@@ -33,6 +33,7 @@
 #include <TCustomBinning.h>
 #include <TLinearBinning.h>
 #include <TCustomBinning.h>
+#include <TPDGCode.h>
 #include <TRandom.h>
 
 #include "AliAODInputHandler.h"
@@ -212,6 +213,9 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQAClusterM02VsE", "Cluster M02 vs energy; M02; E (GeV)", 150, 0., 1.5, 200, 0., 200.);
   fHistos->CreateTH2("hQAClusterFracLeadingVsE", "Cluster frac leading cell vs energy; E (GeV); Frac. leading cell", 200, 0., 200., 110, 0., 1.1);
   fHistos->CreateTH2("hQAClusterFracLeadingVsNcell", "Cluster frac leading cell vs number of cells; Number of cells; Frac. leading cell", 201, -0.5, 200.5, 110, 0., 1.1);
+  fHistos->CreateTH1("hPartConstPi0", "Particle-level consitutent spectrum of pi0 constituents", 200, 0., 200.);
+  fHistos->CreateTH1("hPartConstK0s", "Particle-level consitutent spectrum of K0 constituents", 200, 0., 200.);
+  fHistos->CreateTH1("hPartConstPhoton", "Particle-level consitutent spectrum of photon constituents", 200, 0., 200.);
   fHistos->CreateTH1("hFracPtHardPart", "Part. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
   fHistos->CreateTH1("hFracPtHardDet", "Det. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
   if(fDebugMaxJetOutliers) {
@@ -491,6 +495,15 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
   // efficiency x acceptance: Add histos for all accepted and reconstucted accepted jets
   for(auto partjet : partjets->accepted()){
     fHistos->FillTH1("hJetSpectrumPartAll", partjet->Pt());
+    for(auto itrk = 0; itrk < partjet->GetNumberOfTracks(); itrk++) {
+      auto constituent = partjet->Track(itrk);
+      switch(TMath::Abs(constituent->PdgCode())) {
+      case kPi0: fHistos->FillTH1("hPartConstPi0", constituent->Pt()); break;
+      case kK0Short: fHistos->FillTH1("hPartConstK0s", constituent->Pt()); break;
+      case kGamma: fHistos->FillTH1("hPartConstPhoton", constituent->Pt()); break;
+      default: break;
+      };
+    }
     auto detjet = partjet->ClosestJet();
     int tagstatus = 0;
     if(detjet) {

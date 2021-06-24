@@ -92,9 +92,12 @@ set(SRCS
   Correlationpp/AliAnalysisCorrelationEventCollection.cxx
   Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx
   Correlationpp/AliAnalysisTaskCorrelationhCasc.cxx
+  Correlationpp/AliAnalysisTaskCorrelationhCascDATA.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_BumpStudies.cxx
+  HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_PileUpStudies.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2MC.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
