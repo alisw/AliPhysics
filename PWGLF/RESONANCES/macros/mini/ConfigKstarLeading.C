@@ -64,14 +64,14 @@ Bool_t ConfigKstarLeading(
         out->SetMotherPDG(pdgCode[i]);
         out->SetMotherMass(motherMass[i]);
 
-        out->AddAxis(imID, 105, 0.75, 1.1);
-        out->AddAxis(ptID, 16, 2., 10.);
+        out->AddAxis(imID, 95, 0.75, 1.1);
+        out->AddAxis(ptID, 8, 2., 10.);
         if(!isPP ) out->AddAxis(multID,10,0.,100.);
         else out->AddAxis(multID, 10, 0., 100.); 
 
 
-        out->AddAxis(alID, 12, -0.25 * TMath::Pi(), 1.75 * TMath::Pi()); 
-        out->AddAxis(ptlID, 36, 2., 20.); 
+        out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
+        out->AddAxis(ptlID, 26, 4., 30.); 
          out->AddAxis(detaID, 16, -1.6, 1.6);   
     }
     return kTRUE;
