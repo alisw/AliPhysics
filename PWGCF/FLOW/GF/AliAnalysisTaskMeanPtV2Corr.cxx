@@ -36,6 +36,7 @@
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
+#include "AliAODMCHeader.h"
 
 ClassImp(AliAnalysisTaskMeanPtV2Corr);
 
@@ -1174,7 +1175,7 @@ for(Int_t i=0;i<1;i++) { //No PID = index is only 1
   for(Int_t i=0;i<1;i++) {
     FillCovariance(fCovariance[i],corrconfigs.at(i*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
     FillCovariance(fCovariance[i+4],corrconfigs.at((i+1)*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
-    FillCovariance(fCovariance[8],corrconfigs.at(14),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
+    FillCovariance(fCovariance[8],corrconfigs.at(15),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
     //following is not necessary since we don't have any POIs
   };
   PostData(3,fCovList);
@@ -1204,8 +1205,11 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
   Int_t lNchGen=0;
   Int_t lNchRec=0;
   Int_t nSpecies=7;
+  AliAODMCHeader *mcHeader = (AliAODMCHeader *)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if(!mcHeader) { printf("Could not fetch MC header!\n"); return; };
   for (Int_t ipart = 0; ipart < nPrim; ipart++) {
     lPart = (AliAODMCParticle*)tca->At(ipart);
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart, mcHeader, tca)) continue;
     if (!lPart) { partNotFetched++; continue; };
     /* get particlePDG */
     Int_t pdgcode = TMath::Abs(lPart->GetPdgCode());
@@ -1343,8 +1347,8 @@ void AliAnalysisTaskMeanPtV2Corr::CovSkipMpt(AliAODEvent *fAOD, const Double_t &
     FillCovariance(fCovariance[1],corrconfigs.at(i*4),l_Multi,1,wp[0],l_Random);
     FillCovariance(fCovariance[2],corrconfigs.at((i+1)*4),l_Multi,mptev,wp[0],l_Random);
     FillCovariance(fCovariance[3],corrconfigs.at((i+1)*4),l_Multi,1,wp[0],l_Random);
-    FillCovariance(fCovariance[4],corrconfigs.at(14),l_Multi,mptev,wp[0],l_Random);
-    FillCovariance(fCovariance[5],corrconfigs.at(14),l_Multi,1,wp[0],l_Random);
+    FillCovariance(fCovariance[4],corrconfigs.at(15),l_Multi,mptev,wp[0],l_Random);
+    FillCovariance(fCovariance[5],corrconfigs.at(15),l_Multi,1,wp[0],l_Random);
     //following is not necessary since we don't have any POIs
   };
   PostData(3,fCovList);
