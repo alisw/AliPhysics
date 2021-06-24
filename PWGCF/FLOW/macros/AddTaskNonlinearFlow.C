@@ -224,9 +224,9 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUE);
 		inSlotCounter++;
            	} else {
-		    mgr->ConnectInput(taskFlowEp,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUA"));
+		    mgr->ConnectInput(taskFlowEp,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUE"));
 		    inSlotCounter++;
-		    printf("NUA already loaded\n");
+		    printf("NUE already loaded\n");
 		}
 
 	} 
