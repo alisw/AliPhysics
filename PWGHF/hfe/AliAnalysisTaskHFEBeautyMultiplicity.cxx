@@ -2118,10 +2118,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
 
 		if((pdgGen>=500 && pdgGen<=599) || (pdgGen>=5000 && pdgGen<=5999)) fHistOrg_B->Fill(pTtrue);	//B-meson,baryon pT
 		if((pdgGen>=400 && pdgGen<=499) || (pdgGen>=4000 && pdgGen<=4999)) fHistOrg_D->Fill(pTtrue);	//D-meson,baryon pT
-		if(pdgGen>=410 || pdgGen<=419) fHistOrg_Dpm->Fill(pTtrue);	// D+ pT
-		if(pdgGen>=420 || pdgGen<=429) fHistOrg_D0->Fill(pTtrue);	// D0 pT
-		if(pdgGen>=430 || pdgGen<=439) fHistOrg_Ds->Fill(pTtrue);	// Ds pT
-		if(pdgGen==4122) 	       fHistOrg_Lc->Fill(pTtrue);	// Lc pT
+		if(pdgGen==411)  fHistOrg_Dpm->Fill(pTtrue);	// D+ pT
+		if(pdgGen==421)  fHistOrg_D0->Fill(pTtrue);	// D0 pT
+		if(pdgGen==431)  fHistOrg_Ds->Fill(pTtrue);	// Ds pT
+		if(pdgGen==4122) fHistOrg_Lc->Fill(pTtrue);	// Lc pT
 
         
         if(TMath::Abs(pdgGen)!=11) continue;    // except Non-electrons
