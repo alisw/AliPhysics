@@ -287,11 +287,11 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
 		// DefineOutput(2, TList::Class());
 		int inputslot = 1;
 		if (fNUA) {
-			DefineInput(inputslot, TFile::Class());
+			DefineInput(inputslot, TList::Class());
 			inputslot++;
                 }
 		if (fNUE) {
-			DefineInput(inputslot, TFile::Class());
+			DefineInput(inputslot, TList::Class());
 			inputslot++;
 		}
 	}
@@ -414,8 +414,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
                 }
 		// DefineOutput(2, TList::Class());
 		// int inputslot = 1;
-		DefineInput(1, TFile::Class());
-		DefineInput(2, TFile::Class());
+		DefineInput(1, TList::Class());
+		DefineInput(2, TList::Class());
 	}
 
 //_____________________________________________________________________________
