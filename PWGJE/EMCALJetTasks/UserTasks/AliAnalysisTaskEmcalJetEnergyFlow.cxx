@@ -97,6 +97,9 @@
   void AliAnalysisTaskEmcalJetEnergyFlow::ExecOnce()
   {
           AliAnalysisTaskEmcalJet::ExecOnce();
+          if(fOutput->IsUseScaling()) Printf("Scaling is enabled! \n");
+          if(IsMCprod) Printf("MC production");
+
   }
   /**
    * Run analysis code here, if needed.
@@ -108,9 +111,6 @@
   
   Bool_t AliAnalysisTaskEmcalJetEnergyFlow::Run()
   {
-          if(fOutput->IsUseScaling()) Printf("Scaling is enabled! \n");
-          if(IsMCprod) Printf("MC production");
-  
           return kTRUE;
   }
   /**
