@@ -91,7 +91,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    TH1F *fGlobalRT;        //!<! hist for RT distribution without D-meson selection
    TH1F *fHistPtLead;      //!<! hist for pT distribution of leading track
    TH3F *fRTvsZvtxvsMult;        //!<! distribution of RT as function of z of primary vertex and tracklet multiplicity
-   
+   TH1F *fNChargedInTrans; //!<! hist for NChargedDistribution
    
    AliNormalizationCounter *fCounter;  //!<! Counter for normalisation
    Bool_t fReadMC;         /// flag for reading MC

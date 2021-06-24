@@ -70,6 +70,7 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT():
    fGlobalRT(0),
    fHistPtLead(0),
    fRTvsZvtxvsMult(0),
+   fNChargedInTrans(0),
    fCounter(0),
    fReadMC(kFALSE),
    fMCOption(0),
@@ -107,6 +108,7 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT(const char *name, Int_t pdgSpecie
    fGlobalRT(0),
    fHistPtLead(0),
    fRTvsZvtxvsMult(0),
+   fNChargedInTrans(0),
    fCounter(0),
    fReadMC(kFALSE),
    fMCOption(0),
@@ -398,12 +400,14 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    
    fGlobalRT = new TH1F("fGlobalRT","RT for all events;R_{T};Entries",100,0,10);
    fHistPtLead = new TH1F("fHistPtLead","pT distribution of leading track;p_{T} (GeV/c);Entries",100,0,100);
-   fRTvsZvtxvsMult = new TH3F("fRTvsZvtxvsMult","RT vs Zvtx vs mult;R_{T};Z_{vtx} (cm);N_{trk}",100,0,10,200,-10,10,200,0,200);
+   fRTvsZvtxvsMult= new TH3F("fRTvsZvtxvsMult","RT vs Zvtx vs mult;R_{T};Z_{vtx} (cm);N_{trk}",100,0,10,200,-10,10,200,0,200);
    
-   
+   fNChargedInTrans = new TH1F("fNChargedInTrans","Charged Tracks in Transvers region;N_{ch};Entries",200,0,200);
+
    fListQAhists->Add(fGlobalRT);
    fListQAhists->Add(fHistPtLead);
    fListQAhists->Add(fRTvsZvtxvsMult); 
+   fListQAhists->Add(fNChargedInTrans); 
    
    PostData(1,fOutput);
    PostData(3,fOutputCounters);
@@ -822,6 +826,7 @@ Double_t AliAnalysisTaskSEDvsRT::CalculateRTVal(AliAODEvent* esdEvent)
          TList *listMin = (TList*)regionsMinMaxReco->At(1);
          
          trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / fAveMultiInTrans; //sum of transverse regions / average
+	 fNChargedInTrans->Fill(listMax->GetEntries() + listMin->GetEntries());
          fHistPtLead->Fill(LeadingPt);
       }
       
