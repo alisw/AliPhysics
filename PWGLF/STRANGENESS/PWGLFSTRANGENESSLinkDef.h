@@ -74,6 +74,7 @@
 #pragma link C++ class AliAnalysisCorrelationEventCollection+;
 #pragma link C++ class AliAnalysisTaskCorrelationhhK0s+;
 #pragma link C++ class AliAnalysisTaskCorrelationhCasc+;
+#pragma link C++ class AliAnalysisTaskCorrelationhCascDATA+;
 #pragma link C++ class AliAnalysisTaskStrVsMult+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_BumpStudies+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_PileUpStudies+;
