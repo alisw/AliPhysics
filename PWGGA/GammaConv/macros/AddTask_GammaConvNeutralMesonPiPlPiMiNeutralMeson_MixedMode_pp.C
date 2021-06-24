@@ -883,14 +883,29 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
       // EMC pp 13 TeV Fitting, Cut Variations very low EMCAL Pt
       // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   } else if(trainConfig == 900)  { //Standard EMCal 13TeV
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe32220000","32c51070a","0103103200000000","0453503000000000"); // INT7
-  //-----
-  //Calo Variations
-  //-----
+      cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe32220000","32c51070a","0103103200000000","0453503000000000"); // INT7
+      //-----
+      //Calo Variations
+      //-----
   } else if(trainConfig == 904)  { //EDC 13TeV MB, NCell: 0 (no cut up to 4 GeV ) -> 411792109fe30220000
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","32c51070a","0103103200000000","0453503000000000"); // INT7
+      cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","32c51070a","0103103200000000","0453503000000000"); // INT7
   } else if(trainConfig == 907)  { //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through ) -> 411792109fe3v220000
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe3v220000","32c51070a","0103103200000000","0453503000000000"); // INT7
+      cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe3v220000","32c51070a","0103103200000000","0453503000000000"); // INT7
+      //-----
+      //Trigger EG2: Calo Variations
+      //-----
+    } else if(trainConfig == 1004)  { //EDC 13TeV MB, NCell: 0 (no cut up to 4 GeV ) -> 411792109fe30220000
+      cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411792109fe30220000","32c51070a","0103103200000000","0453503000000000"); // INT7
+    } else if(trainConfig == 1007)  { //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through ) -> 411792109fe3v220000
+      cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411792109fe3v220000","32c51070a","0103103200000000","0453503000000000"); // INT7
+      //-----
+      //Trigger EG1: Calo Variations
+      //-----
+    } else if(trainConfig == 1104)  { //EDC 13TeV MB, NCell: 0 (no cut up to 4 GeV ) -> 411792109fe30220000
+      cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411792109fe30220000","32c51070a","0103103200000000","0453503000000000"); // INT7
+    } else if(trainConfig == 1107)  { //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through ) -> 411792109fe3v220000
+      cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411792109fe3v220000","32c51070a","0103103200000000","0453503000000000"); // INT7
+
   } else {
     Error(Form("GammaConvNeutralMeson_MixedMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
