@@ -126,7 +126,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 
                 if(!AllContainers->FindObject("NUA")) {
 
-		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA", uniqueID.Data()), TList::Class(), AliAnalysisManager::kInputContainer);
+		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);
                 TFile *inNUA;
 
                 if (fPeriod.EqualTo("LHC15o")) {
@@ -197,7 +197,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                 if(!AllContainers->FindObject("NUE")) {
                 TFile *inNUE = NULL;
 
-		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE", uniqueID.Data()), TList::Class(), AliAnalysisManager::kInputContainer);
+		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE"), TList::Class(), AliAnalysisManager::kInputContainer);
                 if (fPeriod.EqualTo("LHC15o")) {
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC18e1_MBEff_FD_wSyst_v2.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
