@@ -153,6 +153,7 @@
 #pragma link C++ class AliAnalysisTaskSELc2pKs0fromKFP+;
 #pragma link C++ class AliAnalysisTaskCheckAODdAODMatching+;
 #pragma link C++ class AliAnalysisTaskSEXicPlusToXi2PifromKFP+;
+#pragma link C++ class AliAnalysisTaskSEXiccPPToXicPlusPiPlusfromKFP+;
 
 /// ROOT6 tasks
 #ifdef __CLING__
