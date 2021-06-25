@@ -3740,7 +3740,6 @@ Bool_t AliConversionMesonCuts::SetToCloseV0sCut(Int_t toClose) {
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
 {// Set Cut
-  fPBremSmearing = 1.;
   if(fMode == 2){ //PCM-EMCal running
     switch(useMCPSmearing){
     case 0:
