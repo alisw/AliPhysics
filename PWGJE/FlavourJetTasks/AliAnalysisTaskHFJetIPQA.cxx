@@ -2308,10 +2308,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
         if(fDoLundPlane)RecursiveParents(jetrec, jetconrec,fJetConstTrackID);
 
-        //Rejection jets with pt>100 GeV/c and pt<5 GeV/c for the TC tagging as lnjp lookup has exactly these boundaries
-        if((fJetRecPt>100.)||(fJetRecPt<5.)){
-          continue;
-        }
+
 
         //_____________________________
         //Determination of impact parameters
@@ -2407,8 +2404,15 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           FillHist("fh2dnTracksvsJetPt",nTracks,fJetRecPt,1);
           continue;
         }
-        if(nTracks>0) FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi());
+        if(!(nTracks>0)){
+          continue;
+        }
+        FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi());
 
+        //Rejection jets with pt>100 GeV/c and pt<5 GeV/c for the TC tagging as lnjp lookup has exactly these boundaries
+        if((fJetRecPt>100.)||(fJetRecPt<5.)){
+          continue;
+        }
         //FillHist("fh1dParticlesPerJet",NJetParticles,1);
 
         DetermineIPVars(sImpParXY, sImpParXYSig, ipvalsig, ipval, chi2val, nGoodIPTracks);
