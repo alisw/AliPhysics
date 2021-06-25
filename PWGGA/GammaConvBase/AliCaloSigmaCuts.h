@@ -19,7 +19,7 @@
 class AliESDEvent;
 class AliAODEvent;
 class AliConversionPhotonBase;
-class AliKFVertex;
+class AliGAKFVertex;
 class TH1F;
 class TH2F;
 class AliPIDResponse;

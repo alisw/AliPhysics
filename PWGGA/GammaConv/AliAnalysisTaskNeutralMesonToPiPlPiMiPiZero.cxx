@@ -47,9 +47,9 @@
 #include "AliESDv0.h"
 #include "AliESDEvent.h"
 #include "AliESDpid.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "AliMCEventHandler.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliTriggerAnalysis.h"
 #include "AliCentrality.h"
 #include "AliMultiplicity.h"
@@ -2477,15 +2477,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 
   for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
     AliESDtrack *negPionCandidate = fESDEvent->GetTrack(lGoodNegPionIndexPrev[i]);
-    AliKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
+    AliGAKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
 
     for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
       AliESDtrack *posPionCandidate = fESDEvent->GetTrack(lGoodPosPionIndexPrev[j]);
-      AliKFParticle posPionCandidateKF( *posPionCandidate->GetConstrainedParam(), 211 );
+      AliGAKFParticle posPionCandidateKF( *posPionCandidate->GetConstrainedParam(), 211 );
 
       AliKFConversionPhoton* virtualPhoton = NULL;
       virtualPhoton = new AliKFConversionPhoton(negPionCandidateKF,posPionCandidateKF);
-      AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
+      AliGAKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
 // 			primaryVertexImproved+=*virtualPhoton;
       virtualPhoton->SetProductionVertex(primaryVertexImproved);
       virtualPhoton->SetTrackLabels( lGoodPosPionIndexPrev[j], lGoodNegPionIndexPrev[i]);

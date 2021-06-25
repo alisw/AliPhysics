@@ -10,7 +10,7 @@
 #include "TObject.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "TParticle.h"
 #include <iterator>
 #include <vector>
@@ -191,10 +191,10 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     const AliExternalTrackParam*   GetExternalTrackParam(AliESDv0 *fCurrentV0, Int_t &tracklabel, Int_t charge);
     const AliExternalTrackParam*   GetExternalTrackParamP(AliESDv0 *fCurrentV0, Int_t &tracklabel) {return GetExternalTrackParam(fCurrentV0,tracklabel,1);}
     const AliExternalTrackParam*   GetExternalTrackParamN(AliESDv0 *fCurrentV0, Int_t &tracklabel) {return GetExternalTrackParam(fCurrentV0,tracklabel,-1);}
-    AliKFParticle*                 GetPositiveKFParticle(AliAODv0 *fCurrentV0, Int_t fTrackLabel[2]);
-    AliKFParticle*                 GetNegativeKFParticle(AliAODv0 *fCurrentV0, Int_t fTrackLabel[2]);
-    AliKFParticle*                 GetPositiveKFParticle(AliESDv0 *fCurrentV0, Int_t fTrackLabel[2]);
-    AliKFParticle*                 GetNegativeKFParticle(AliESDv0 *fCurrentV0, Int_t fTrackLabel[2]);
+    AliGAKFParticle*                 GetPositiveKFParticle(AliAODv0 *fCurrentV0, Int_t fTrackLabel[2]);
+    AliGAKFParticle*                 GetNegativeKFParticle(AliAODv0 *fCurrentV0, Int_t fTrackLabel[2]);
+    AliGAKFParticle*                 GetPositiveKFParticle(AliESDv0 *fCurrentV0, Int_t fTrackLabel[2]);
+    AliGAKFParticle*                 GetNegativeKFParticle(AliESDv0 *fCurrentV0, Int_t fTrackLabel[2]);
 
     Bool_t               GetConversionPoint(const AliExternalTrackParam *pparam, const AliExternalTrackParam *nparam, Double_t convpos[3], Double_t dca[2]);
     Bool_t               GetHelixCenter(const AliExternalTrackParam *track, Double_t center[2]);

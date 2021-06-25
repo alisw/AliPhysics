@@ -25,7 +25,7 @@
 #include <TObjString.h>
 #include "AliIdentifiedPrimaryCuts.h"
 #include "AliAODConversionPhoton.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliAnalysisManager.h"

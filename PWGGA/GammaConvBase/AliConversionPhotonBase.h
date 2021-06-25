@@ -7,7 +7,7 @@
 #include "TObject.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "TParticle.h"
 #include <vector>
 #include "AliESDpid.h"
@@ -15,7 +15,7 @@
 #include "TRandom3.h"
 #include "AliPID.h"
 #include "AliESDtrack.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliMCEventHandler.h"
 #include "AliESDtrackCuts.h"
 #include "AliGenCocktailEventHeader.h"
