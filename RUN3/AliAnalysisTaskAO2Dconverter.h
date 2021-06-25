@@ -388,10 +388,10 @@ private:
     Int_t fPdgCode    = -99999; /// PDG code of the particle
     Int_t fStatusCode = -99999; /// generation status code
     uint8_t fFlags    = 0;     /// See enum MCParticleFlags
-    Int_t fMother0    = 0; /// Indices of the mother particles
-    Int_t fMother1    = 0;
-    Int_t fDaughter0  = 0; /// Indices of the daughter particles
-    Int_t fDaughter1  = 0;
+    Int_t fIndexMcParticles_Mother0    = 0; /// Indices of the mother particles
+    Int_t fIndexMcParticles_Mother1    = 0;
+    Int_t fIndexMcParticles_Daughter0  = 0; /// Indices of the daughter particles
+    Int_t fIndexMcParticles_Daughter1  = 0;
     Float_t fWeight   = 1;     /// particle weight from the generator or ML
 
     Float_t fPx = -999.f; /// x component of momentum
