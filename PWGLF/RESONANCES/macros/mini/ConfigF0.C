@@ -16,6 +16,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
 		Float_t                massup = 1.3,          //inv mass axis upper edge 
 		Int_t                  nbins = 1000,           //inv mass axis n bins
 		Int_t                  aodFilterBit = 5,      //filter bit for AOD analysis
+		Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom, //track quality cuts
 		AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPid = AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, // pid cut set
 		Float_t                nsigma = 3.0,          //nsigma of TPC PID cut
 		Bool_t                 enableMonitor = kTRUE) //enable single track QA plots
@@ -35,25 +36,37 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
   //-----------------------
   // CUTS
   //-----------------------
+  Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0);
+  AliRsnCutSetDaughterParticle * cutSetPi;
+  AliRsnCutSetDaughterParticle * cutSetQuality;
+  
+  AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
+
+  if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,aodFilterBit)){
+  //Set custom quality cuts for systematic checks
+    cutSetPi = new AliRsnCutSetDaughterParticle("cutPi", trkQualityCut, cutPid, AliPID::kPion, nsigma);
+    cutSetQuality = new AliRsnCutSetDaughterParticle("cutQuality", trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, 10.0);
+  }else{
   //use default quality cuts std 2010 with crossed rows TPC
   Bool_t useCrossedRows = 1; 
-  AliRsnCutSetDaughterParticle * cutSetPi = new AliRsnCutSetDaughterParticle("cutPi", cutPid, AliPID::kPion, nsigma, aodFilterBit, useCrossedRows);
+  cutSetPi = new AliRsnCutSetDaughterParticle("cutPi", cutPid, AliPID::kPion, nsigma, aodFilterBit, useCrossedRows);
   cutSetPi->SetUse2011StdQualityCuts(kTRUE);
+  //monitor single-track selection based on track quality cuts only
+  cutSetQuality = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, 10.0, aodFilterBit, useCrossedRows);
+  }
   Int_t icutPi = task->AddTrackCuts(cutSetPi);
+  Int_t icutQuality = task->AddTrackCuts(cutSetQuality);
 
   //set daughter cuts
   Int_t icut1 = icutPi;
   Int_t icut2 = icutPi;
 
-  //monitor single-track selection based on track quality cuts only
-  AliRsnCutSetDaughterParticle * cutSetQuality = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, 10.0, aodFilterBit, useCrossedRows);
-  Int_t icutQuality = task->AddTrackCuts(cutSetQuality);
  
   //QA plots 
   if (enableMonitor){
     Printf("======== Cut monitoring enabled");
 #ifdef __CINT__
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
 #endif
     AddMonitorOutput(isMC, cutSetQuality->GetMonitorOutput(), monitorOpt.Data(), 0);
     AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data(), 0);
@@ -226,5 +239,144 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
     outmy2->AddAxis(etaID, 200, -1., 1.);
   }
 
+  return kTRUE;
+}
+
+//-------------------------------------------------------  
+Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0)
+{
+  //Sets configuration for track quality object different from std quality cuts.
+  //Returns kTRUE if track quality cut object is successfully defined,
+  //returns kFALSE if an invalid set of cuts (customQualityCutsID) is chosen or if the
+  //object to be configured does not exist.
+
+  if ((!trkQualityCut)){
+    Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
+    return kFALSE;
+  }
+
+  if(customQualityCutsID>=1 && customQualityCutsID<100 && customQualityCutsID!=2){
+    trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
+    trkQualityCut->SetPtRange(0.15, 20000.0);
+    trkQualityCut->SetEtaRange(-0.8, 0.8);
+    Printf("::::: SetCustomQualityCut:: using standard 2011 track quality cuts");
+
+    if(!customFilterBit){//ESD
+      if(customQualityCutsID==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
+      else if(customQualityCutsID==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
+      else if(customQualityCutsID==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(5.);}
+      else if(customQualityCutsID==6){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(0.2);}
+      else if(customQualityCutsID==7){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(5.);}
+      else if(customQualityCutsID==8){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(2.3);}
+      else if(customQualityCutsID==9){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(60);}
+      else if(customQualityCutsID==10){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(100);}
+      else if(customQualityCutsID==11){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}
+      else if(customQualityCutsID==12){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
+      else if(customQualityCutsID==13){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(49.);}
+      else if(customQualityCutsID==14){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(4.);}
+      else if(customQualityCutsID==15){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(49.);}
+      else if(customQualityCutsID==16){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(25.);}
+      else if(customQualityCutsID==17){trkQualityCut->GetESDtrackCuts()->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);}
+      else if(customQualityCutsID==56){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
+      else if(customQualityCutsID==58){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3.);}
+      else if(customQualityCutsID==60){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}
+      else if(customQualityCutsID==64){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(25.);}
+    }else{//AOD
+      trkQualityCut->SetCheckOnlyFilterBit(kFALSE);
+      if(customQualityCutsID==4){trkQualityCut->SetDCARPtFormula("0.006+0.0200/pt^1.1");}
+      else if(customQualityCutsID==6){trkQualityCut->SetDCAZmax(0.2);}
+      else if(customQualityCutsID==8){trkQualityCut->SetTrackMaxChi2(2.3);}
+      else if(customQualityCutsID==10){trkQualityCut->SetMinNCrossedRowsTPC(100,kTRUE);}
+      else if(customQualityCutsID==12){trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.9,kTRUE);}
+      else if(customQualityCutsID==56){trkQualityCut->SetDCAZmax(1.);}
+      else if(customQualityCutsID==58){trkQualityCut->SetTrackMaxChi2(3.5);}
+      else if(customQualityCutsID==60){trkQualityCut->SetMinNCrossedRowsTPC(80,kTRUE);}
+    }
+
+    trkQualityCut->Print();
+    return kTRUE;
+  }else if(customQualityCutsID==2 || (customQualityCutsID>=100 && customQualityCutsID<200)){
+    trkQualityCut->SetDefaultsTPCOnly(kTRUE);
+    Printf("::::: SetCustomQualityCut:: using TPC-only track quality cuts");
+
+    if(customQualityCutsID==103){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXY(3.);}
+    else if(customQualityCutsID==104){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXY(1.);}
+    else if(customQualityCutsID==105){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(4.);}
+    else if(customQualityCutsID==106){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
+    else if(customQualityCutsID==107){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(7.);}
+    else if(customQualityCutsID==108){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(2.5);}
+    else if(customQualityCutsID==109){trkQualityCut->GetESDtrackCuts()->SetMinNClustersTPC(30);}
+    else if(customQualityCutsID==110){trkQualityCut->GetESDtrackCuts()->SetMinNClustersTPC(85);}
+
+    trkQualityCut->Print();
+    return kTRUE;
+  }else{
+    Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
+    return kFALSE;
+  }
+
+  //for pA 2013
+  //trkQualityCut->SetDefaults2011();//with filter bit=10
+  //reset filter bit to very loose cuts 
+  trkQualityCut->SetAODTestFilterBit(customFilterBit); 
+  //apply all other cuts "by hand"
+  trkQualityCut->SetCheckOnlyFilterBit(kFALSE);
+  trkQualityCut->SetMinNCrossedRowsTPC(70, kTRUE);
+  trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.8, kTRUE);
+  trkQualityCut->SetMaxChi2TPCConstrainedGlobal(36);//used for ESD only - for AOD does not correspond to any cut
+  trkQualityCut->SetTPCmaxChi2(4.0); //already in filter bit 0
+  trkQualityCut->SetRejectKinkDaughters(kTRUE); //already in filter bit 0
+  trkQualityCut->SetSPDminNClusters(AliESDtrackCuts::kAny);
+  trkQualityCut->SetITSmaxChi2(36);
+  trkQualityCut->AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);//already in defaults 2011
+  trkQualityCut->AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);//already in defaults 2011
+  trkQualityCut->AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);//already in defaults 2011
+
+  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kFilterBitCustom) {
+    trkQualityCut->SetCheckOnlyFilterBit(kTRUE);
+  } 
+  
+  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdLooserDCAXY){
+    trkQualityCut->SetDCARmax(2.4);
+  } else {
+    trkQualityCut->SetDCARPtFormula("0.0105+0.0350/pt^1.1");
+  }
+  
+  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdLooserDCAZ){
+    trkQualityCut->SetDCAZmax(3.2);
+  } else {
+    trkQualityCut->SetDCAZmax(2.0); 
+  }
+  
+  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdCrossedRows60){
+    trkQualityCut->SetMinNCrossedRowsTPC(60, kTRUE);
+  }
+  
+  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdCrossedRows80){
+    trkQualityCut->SetMinNCrossedRowsTPC(80, kTRUE);
+  }
+  
+  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdRowsToCls075){
+    trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.75, kTRUE);
+  }
+  
+  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdRowsToCls085){
+    trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.85, kTRUE);
+  }
+  
+  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdCls70){
+    trkQualityCut->SetAODTestFilterBit(10);
+    trkQualityCut->SetTPCminNClusters(70);
+  }
+  
+  if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdChi2TPCCls35){
+    trkQualityCut->SetTPCmaxChi2(3.5);
+  }
+  
+  trkQualityCut->SetPtRange(0.15, 200.0);
+  trkQualityCut->SetEtaRange(-0.8, 0.8);
+  
+  Printf("::::: SetCustomQualityCut:: using custom track quality cuts #%i",customQualityCutsID);
+  trkQualityCut->Print();
   return kTRUE;
 }
