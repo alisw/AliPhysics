@@ -412,6 +412,12 @@ public:
     kPairLinDCAsigZ,           // dca in z-plane calculated in orders of sigma calculated as (dcaD1 + dcaD2)/2)
     kPairLinDCAabsXY,          // dca in xy-plane in absolute values (cm) calculated as (dcaD1 + dcaD2)/2)
     kPairLinDCAabsZ,           // dca in z-plane in absolute values (cm) calculated as (dcaD1 + dcaD2)/2)
+    kPairDeltaDCAsigXY,        // dca in xy-plane calculated in orders of sigma calculated as fabs(dcaD1 - dcaD2)
+    kPairSumDCAsigXY,          // dca in xy-plane calculated in orders of sigma calculated as fabs(dcaD1 + dcaD2)
+    kPairGeomDCAsigXY,         // dca in xy-plane calculated in orders of sigma calculated as 2*sqrt(fabs(dcaD1 * dcaD2))
+    kPairGeomSignDCAsigXY,     // dca in xy-plane calculated in orders of sigma calculated as SGN(dcaD1)*SGN(dcaD2)*sqrt(fabs(dcaD1 * dcaD2))
+    kPairSignDCAsigXY,         // dca in xy-plane in absolute values (cm) calculated as SGN(dcaD1)*SGN(dcaD2)*sqrt(dcaD1^2 + dcaD2^2)
+
     kPairs,                  // number of Ev1PM pair candidates after all cuts
     kPairMax,                 //
   // Event specific variables
@@ -2349,6 +2355,13 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         values[AliDielectronVarManager::kPairLinDCAabsZ]     = (TMath::Abs(dca1[1]) + TMath::Abs(dca2[1])) / 2;
         values[AliDielectronVarManager::kPairLinDCAsigXY]    = (TMath::Abs(dcaSig1[0]) + TMath::Abs(dcaSig2[0])) / 2;
         values[AliDielectronVarManager::kPairLinDCAsigZ]     = (TMath::Abs(dcaSig1[1]) + TMath::Abs(dcaSig2[1])) / 2;
+
+	//new pair DCA var
+	values[AliDielectronVarManager::kPairDeltaDCAsigXY] = TMath::Abs(dcaSig1[0] - dcaSig2[0]);
+	values[AliDielectronVarManager::kPairSumDCAsigXY]   = TMath::Abs(dcaSig1[0] + dcaSig2[0]);
+	values[AliDielectronVarManager::kPairGeomDCAsigXY]  = TMath::Sqrt( TMath::Abs(dcaSig1[0] * dcaSig2[0]) );
+	values[AliDielectronVarManager::kPairGeomSignDCAsigXY]  = TMath::Sign(1.,dcaSig1[0]) * TMath::Sign(1.,dcaSig2[0]) * TMath::Sqrt( TMath::Abs(dcaSig1[0] * dcaSig2[0]) );
+	values[AliDielectronVarManager::kPairSignDCAsigXY]  = TMath::Sign(1.,dcaSig1[0]) * TMath::Sign(1.,dcaSig2[0]) * TMath::Sqrt( (dcaSig1[0]*dcaSig1[0] + dcaSig2[0]*dcaSig2[0]) / 2 );
       }
     }
   }

@@ -327,6 +327,12 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"PairLinDCAsigZ",        "#it{dca}_{z} (lin.)",                                "(#sigma)"},
   {"PairLinDCAabsXY",       "#it{dca}_{xy} (lin.)",                               "(cm)"},
   {"PairLinDCAabsZ",        "#it{dca}_{z} (lin.)",                                "(cm)"},
+  {"PairDeltaDCAsigXY",     "#Delta#it{dca}_{xy}",                                "(#sigma)"},
+  {"PairSumDCAsigXY",       "#Sigma#it{dca}_{xy}",                                "(#sigma)"},
+  {"PairGeomDCAsigXY",      "#it{dca}_{xy}^{geom}",                               "(#sigma)"},
+  {"PairGeomSignDCAsigXY",  "#it{dca}_{xy}^{geom}",                               "(#sigma)"},
+  {"PairSignDCAsigXY",      "#it{dca}_{xy}",                                      "(#sigma)"},
+
   {"Pairs",                  "pairs/event",                                        ""},
   //
   {"Xprim",                  "x_{prim.vtx}",                                       "(cm)"},
