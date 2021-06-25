@@ -864,7 +864,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree *tMuonCls = CreateTree(kMuonCls);
   if (fTreeStatus[kMuonCls])
   {
-    tMuonCls->Branch("fIndexMuons", &mucls.fIndexMuons, "fIndexMuons/I");
+    tMuonCls->Branch("fIndexFwdTracks", &mucls.fIndexFwdTracks, "fIndexFwdTracks/I");
     tMuonCls->Branch("fX", &mucls.fX, "fX/F");
     tMuonCls->Branch("fY", &mucls.fY, "fY/F");
     tMuonCls->Branch("fZ", &mucls.fZ, "fZ/F");
@@ -2076,7 +2076,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       for (Int_t imucl = 0; imucl < nmucl; ++imucl)
       {
         AliESDMuonCluster *muCluster = fESD->FindMuonCluster(mutrk->GetClusterId(imucl));
-        mucls.fIndexMuons = muTrackID;
+        mucls.fIndexFwdTracks = muTrackID;
         mucls.fX = AliMathBase::TruncateFloatFraction(muCluster->GetX(), mMuonCl);
         mucls.fY = AliMathBase::TruncateFloatFraction(muCluster->GetY(), mMuonCl);
         mucls.fZ = AliMathBase::TruncateFloatFraction(muCluster->GetZ(), mMuonCl);

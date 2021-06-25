@@ -491,7 +491,7 @@ private:
   struct {
     // Muon cluster data
 
-    Int_t   fIndexMuons = -1; /// The index of the muon track to which the clusters are attached
+    Int_t   fIndexFwdTracks = -1; /// The index of the muon track to which the clusters are attached
     Float_t fX = -999.f;         ///< cluster X position
     Float_t fY = -999.f;         ///< cluster Y position
     Float_t fZ = -999.f;         ///< cluster Z position
@@ -602,7 +602,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 17);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 18);
 };
 
 #endif
