@@ -503,7 +503,12 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_LS    = new TH2F("fRiso_phidiff_LS","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	fRiso_phidiff_35    = new TH2F("fRiso_phidiff_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
-	fWh_phidiff = new TH2F("fWh_phidiff","pT vs. dphi differnce",30,30,60,80,-3.,5.);
+
+   
+        Int_t binsWh[3]=   { 30, 100,   80}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xminWh[3]={  0,   0, -2.0};
+        Double_t xmaxWh[3]={ 30, 100,  6.0};
+	fWh_phidiff = new THnSparseD("fWh_phidiff","pT vs. dphi differnce",3,binsWh, xminWh, xmaxWh);
 	
         Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100,  800, 500, 20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
         Double_t xmin[11]={ 10,  -5,   0,   0,   0,   0,   0, -0.2,   0,  0, -1.5};
@@ -2130,7 +2135,12 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 			if(!fFlagPhoto)fRiso_phidiff_LS_35 -> Fill(Wphidiff,Riso);
 		}
 
-                if(Riso<0.05)fWh_phidiff->Fill(TrackPt,Wphidiff);
+                if(Riso<0.05)
+                   {
+                    Double_t valwh[3];
+                    valwh[0] = TrackPt; valwh[1] = ptWasso; valwh[2] = Wphidiff; 
+                    fWh_phidiff->Fill(valwh);
+                   }
 
 	}
 
