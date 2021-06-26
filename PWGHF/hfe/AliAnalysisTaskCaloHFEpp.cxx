@@ -505,9 +505,9 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 
    
-        Int_t binsWh[3]=   { 30, 100,   80}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
-        Double_t xminWh[3]={  0,   0, -2.0};
-        Double_t xmaxWh[3]={ 30, 100,  6.0};
+        Int_t binsWh[3]=   { 60, 100,   80}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xminWh[3]={ 20,   0, -2.0};
+        Double_t xmaxWh[3]={ 80, 100,  6.0};
 	fWh_phidiff = new THnSparseD("fWh_phidiff","pT vs. dphi differnce",3,binsWh, xminWh, xmaxWh);
 	
         Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100,  800, 500, 20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
