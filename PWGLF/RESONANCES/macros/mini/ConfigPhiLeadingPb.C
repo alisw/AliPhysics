@@ -65,7 +65,7 @@ Bool_t ConfigPhiLeadingPb(
         out->SetMotherPDG(pdgCode[i]);
         out->SetMotherMass(motherMass[i]);
 
-        out->AddAxis(imID, 95, 0.985, 1.08;
+        out->AddAxis(imID, 95, 0.985, 1.08);
         out->AddAxis(ptID, 8, 2., 10.);
         if(!isPP ) out->AddAxis(multID,10,0.,100.);
         else out->AddAxis(multID, 10, 0., 100.); 
