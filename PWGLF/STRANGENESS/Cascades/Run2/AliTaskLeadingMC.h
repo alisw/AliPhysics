@@ -187,7 +187,11 @@ private:
   float fMaxChargePt = 0;    //!
   float fEffEnergy = 0;      //!
   Int_t fNXiEtaFrag = 0;     //!
+  Int_t fNXiEtaUp = 0;       //!
+  Int_t fNXiEtaDown = 0;     //!
   float fPtXiEtaFrag[100];   //!
+  float fPtXiEtaUp[100];     //!
+  float fPtXiEtaDown[100];   //!
 
   // temporary variables
   Float_t fPt = 0;    //!
