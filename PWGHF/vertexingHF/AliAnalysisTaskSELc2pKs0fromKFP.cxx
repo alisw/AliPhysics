@@ -1343,7 +1343,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
     fVarNames[30] = "CombinedPIDProb_Pr"; // Bayesian PID probability of proton for bachelor track
     fVarNames[31] = "armenteros_K0s"; // armenteros qT/|alpha| for cascade
     fVarNames[32] = "nSigmaCombined_Pr"; // nSigma-combined for proton
-    fVarNames[33] = "nSigmaCombined_Pi0"; // nSigma-combined for proton from pions
+    fVarNames[33] = "nSigmaCombined_Pi_bach"; // nSigma-combined for proton from pions (for exclusion)
     fVarNames[34] = "cos_p_K0s";   // cos pointing angle of V0 from RecoCascadeHF
     fVarNames[35] = "d_len_K0s";    // decay length of V0 from RecoCascadeHF
     fVarNames[36] = "weightPtFlat"; // flat pT weight for MC
@@ -1392,7 +1392,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
     fVarNames[30] = "CombinedPIDProb_V0Pr"; // Bayesian PID probability of proton from Lam decay
     fVarNames[31] = "armenteros_Lam"; // armenteros qT/|alpha| for cascade
     fVarNames[32] = "nSigmaCombined_V0Pr"; // nSigma-combined for proton from Lam decay
-    fVarNames[33] = "nSigmaCombined_V0Pi"; // nSigma-combined for pion from Lam decay
+    fVarNames[33] = "nSigmaCombined_Pi_V0Pr"; // nSigma-combined for pion from Lam decay (for exclusion)
     fVarNames[34] = "cos_p_Lam"; // cosine pointing angle of cascade
     fVarNames[35] = "d_len_Lam"; // dlen of cascade
     fVarNames[36] = "weightPtFlat"; // flat pT weight for MC
