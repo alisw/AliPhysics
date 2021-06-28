@@ -1119,10 +1119,10 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01)
             continue;
 
-        float partEta = mcGenParticle->Eta();
-        float _maxEta = 0.5; // hard coded max eta; in all papers 0.5
+        float partY = mcGenParticle->Y();
+        float _maxY = 0.5; // hard coded max eta; in all papers 0.5
 
-        if (TMath::Abs(partEta) > _maxEta)
+        if (TMath::Abs(partY) > _maxY)
             continue; // apply same acceptance as in published spectra
         int particleType =
         AliMCSpectraWeights::IdentifyMCParticle(mcGenParticle);
