@@ -1300,7 +1300,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fTree_Lc = new TTree(nameoutput, "Lc variables tree");
-  Int_t nVar = 40;
+  Int_t nVar = 41;
   fVar_Lc = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -1343,13 +1343,14 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
     fVarNames[30] = "CombinedPIDProb_Pr"; // Bayesian PID probability of proton for bachelor track
     fVarNames[31] = "armenteros_K0s"; // armenteros qT/|alpha| for cascade
     fVarNames[32] = "nSigmaCombined_Pr"; // nSigma-combined for proton
-    fVarNames[33] = "cos_p_K0s";   // cos pointing angle of V0 from RecoCascadeHF
-    fVarNames[34] = "d_len_K0s";    // decay length of V0 from RecoCascadeHF
-    fVarNames[35] = "weightPtFlat"; // flat pT weight for MC
-    fVarNames[36] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
-    fVarNames[37] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
-    fVarNames[38] = "nTrackletsRaw"; // raw Ntrk
-    fVarNames[39] = "nTrackletsCorr"; // corrected Ntrk
+    fVarNames[33] = "nSigmaCombined_Pi_bach"; // nSigma-combined for proton from pions (for exclusion)
+    fVarNames[34] = "cos_p_K0s";   // cos pointing angle of V0 from RecoCascadeHF
+    fVarNames[35] = "d_len_K0s";    // decay length of V0 from RecoCascadeHF
+    fVarNames[36] = "weightPtFlat"; // flat pT weight for MC
+    fVarNames[37] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
+    fVarNames[38] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
+    fVarNames[39] = "nTrackletsRaw"; // raw Ntrk
+    fVarNames[40] = "nTrackletsCorr"; // corrected Ntrk
 
   }
   if (fIsAnaLc2Lpi) {
@@ -1391,13 +1392,14 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
     fVarNames[30] = "CombinedPIDProb_V0Pr"; // Bayesian PID probability of proton from Lam decay
     fVarNames[31] = "armenteros_Lam"; // armenteros qT/|alpha| for cascade
     fVarNames[32] = "nSigmaCombined_V0Pr"; // nSigma-combined for proton from Lam decay
-    fVarNames[33] = "cos_p_Lam"; // cosine pointing angle of cascade
-    fVarNames[34] = "d_len_Lam"; // dlen of cascade 
-    fVarNames[35] = "weightPtFlat"; // flat pT weight for MC
-    fVarNames[36] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
-    fVarNames[37] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
-    fVarNames[38] = "nTrackletsRaw"; // raw Ntrk
-    fVarNames[39] = "nTrackletsCorr"; // corrected Ntrk
+    fVarNames[33] = "nSigmaCombined_Pi_V0Pr"; // nSigma-combined for pion from Lam decay (for exclusion)
+    fVarNames[34] = "cos_p_Lam"; // cosine pointing angle of cascade
+    fVarNames[35] = "d_len_Lam"; // dlen of cascade
+    fVarNames[36] = "weightPtFlat"; // flat pT weight for MC
+    fVarNames[37] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
+    fVarNames[38] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
+    fVarNames[39] = "nTrackletsRaw"; // raw Ntrk
+    fVarNames[40] = "nTrackletsCorr"; // corrected Ntrk
 
 
   }
@@ -1623,19 +1625,27 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
 
   Float_t nSigmaTPC_v0Pos = 0.;
   Float_t nSigmaTPC_v0Neg = 0.;
+  Float_t nSigmaTPC_v0Pos_excl = 0.;
+  Float_t nSigmaTPC_v0Neg_excl = 0.;
   Float_t nSigmaTPC_bach  = 0.;
+  Float_t nSigmaTPC_bach_pi  = 0.;
   Float_t nSigmaTOF_v0Pos = 0.;
   Float_t nSigmaTOF_v0Neg = 0.;
+  Float_t nSigmaTOF_v0Pos_excl = 0.;
+  Float_t nSigmaTOF_v0Neg_excl = 0.;
   Float_t nSigmaTOF_bach  = 0.;
+  Float_t nSigmaTOF_bach_pi  = 0.;
 
   if (!fIsAnaLc2Lpi) {
     nSigmaTPC_v0Pos = fPID->NumberOfSigmasTPC(v0Pos, AliPID::kPion);
     nSigmaTPC_v0Neg = fPID->NumberOfSigmasTPC(v0Neg, AliPID::kPion);
     nSigmaTPC_bach  = fPID->NumberOfSigmasTPC(trackBach, AliPID::kProton);
+    nSigmaTPC_bach_pi = fPID->NumberOfSigmasTPC(trackBach, AliPID::kPion);
 
     nSigmaTOF_v0Pos = fPID->NumberOfSigmasTOF(v0Pos, AliPID::kPion);
     nSigmaTOF_v0Neg = fPID->NumberOfSigmasTOF(v0Neg, AliPID::kPion);
     nSigmaTOF_bach  = fPID->NumberOfSigmasTOF(trackBach, AliPID::kProton);
+    nSigmaTPC_bach_pi  = fPID->NumberOfSigmasTOF(trackBach, AliPID::kPion);
   }
   if (fIsAnaLc2Lpi) {
     nSigmaTPC_bach  = fPID->NumberOfSigmasTPC(trackBach, AliPID::kPion);
@@ -1643,16 +1653,25 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
     if (trackBach->Charge()>0) {
       nSigmaTPC_v0Pos = fPID->NumberOfSigmasTPC(v0Pos, AliPID::kProton);
       nSigmaTPC_v0Neg = fPID->NumberOfSigmasTPC(v0Neg, AliPID::kPion);
+      nSigmaTPC_v0Pos_excl = fPID->NumberOfSigmasTPC(v0Pos, AliPID::kPion);
+      nSigmaTPC_v0Neg_excl = fPID->NumberOfSigmasTPC(v0Neg, AliPID::kProton);
 
       nSigmaTOF_v0Pos = fPID->NumberOfSigmasTOF(v0Pos, AliPID::kProton);
       nSigmaTOF_v0Neg = fPID->NumberOfSigmasTOF(v0Neg, AliPID::kPion);
+      nSigmaTOF_v0Pos_excl = fPID->NumberOfSigmasTOF(v0Pos, AliPID::kPion);
+      nSigmaTOF_v0Neg_excl = fPID->NumberOfSigmasTOF(v0Neg, AliPID::kProton);
     }
     if (trackBach->Charge()<0) {
       nSigmaTPC_v0Pos = fPID->NumberOfSigmasTPC(v0Pos, AliPID::kPion);
       nSigmaTPC_v0Neg = fPID->NumberOfSigmasTPC(v0Neg, AliPID::kProton);
+      nSigmaTPC_v0Pos_excl = fPID->NumberOfSigmasTPC(v0Pos, AliPID::kProton);
+      nSigmaTPC_v0Neg_excl = fPID->NumberOfSigmasTPC(v0Neg, AliPID::kPion);
 
       nSigmaTOF_v0Pos = fPID->NumberOfSigmasTOF(v0Pos, AliPID::kPion);
       nSigmaTOF_v0Neg = fPID->NumberOfSigmasTOF(v0Neg, AliPID::kProton);
+      nSigmaTOF_v0Pos_excl = fPID->NumberOfSigmasTOF(v0Pos, AliPID::kProton);
+      nSigmaTOF_v0Neg_excl = fPID->NumberOfSigmasTOF(v0Neg, AliPID::kPion);
+        
     }
   }
 
@@ -1827,22 +1846,29 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   if (!fIsAnaLc2Lpi) {
   // nsigma_combined for proton bachelor from Lc
    fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_bach,nSigmaTOF_bach);
+   fVar_Lc[33] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_bach_pi,nSigmaTOF_bach_pi);
   } else {  // combined nsigma for proton from Lam decay 
-   if( trackBach->Charge()>0) fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Pos, nSigmaTOF_v0Pos);
-   if (trackBach->Charge()<0) fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Neg, nSigmaTOF_v0Neg);
+      if( trackBach->Charge()>0) {
+        fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Pos, nSigmaTOF_v0Pos);
+        fVar_Lc[33] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Pos_excl, nSigmaTOF_v0Pos_excl);
+      }
+      if (trackBach->Charge()<0) {
+        fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Neg, nSigmaTOF_v0Neg);
+        fVar_Lc[33] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Neg_excl, nSigmaTOF_v0Neg_excl);
+      }
   }
 
-  fVar_Lc[33] = cosPA_V0;
-  fVar_Lc[34] = AliVertexingHFUtils::DecayLengthFromKF(kfpV0,PV) ;   //d_len_K0s;
+  fVar_Lc[34] = cosPA_V0;
+  fVar_Lc[35] = AliVertexingHFUtils::DecayLengthFromKF(kfpV0,PV) ;   //d_len_K0s;
 
   if (fIsMC && fUseWeights && lab_Lc >= 0) { //add branches for MC pT weights
     Int_t labelProton = fabs(trackBach->GetLabel());
     AliAODMCParticle *mcProton = static_cast<AliAODMCParticle*>(mcArray->At(labelProton));
     Int_t IndexLc = mcProton->GetMother();
     AliAODMCParticle *mcLc = static_cast<AliAODMCParticle*>(mcArray->At(IndexLc));
-    fVar_Lc[35] = fFuncWeightPythia->Eval(mcLc->Pt()); // weight pT flat 
-    fVar_Lc[36] = fFuncWeightFONLL5overLHC13d3->Eval(mcLc->Pt()); // weight pT flat 
-    fVar_Lc[37] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcLc->Pt()); // weight pT flat 
+    fVar_Lc[36] = fFuncWeightPythia->Eval(mcLc->Pt()); // weight pT flat
+    fVar_Lc[37] = fFuncWeightFONLL5overLHC13d3->Eval(mcLc->Pt()); // weight pT flat
+    fVar_Lc[38] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcLc->Pt()); // weight pT flat
   }
 
 
@@ -1853,8 +1879,8 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
     Double_t nTrackletsEta10 = static_cast<Double_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
     Double_t nTrackletsEta10Corr = static_cast<Double_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta10,zPrimVertex,fRefMult));
     
-    fVar_Lc[38] = nTrackletsEta10;
-    fVar_Lc[39] = nTrackletsEta10Corr;
+    fVar_Lc[39] = nTrackletsEta10;
+    fVar_Lc[40] = nTrackletsEta10Corr;
   }
   
   // === QA tree ===
