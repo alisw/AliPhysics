@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskChargedFlow+;
+#pragma link C++ class AliAnalysisTaskCorrForFlow+;
 #pragma link C++ class AliAnalysisTaskDeform+;
 #pragma link C++ class AliAnalysisTaskGFWFlow+;
 #pragma link C++ class AliAnalysisTaskGFWPIDFlow+;
