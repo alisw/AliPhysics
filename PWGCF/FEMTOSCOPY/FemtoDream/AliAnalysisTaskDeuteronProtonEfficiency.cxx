@@ -1143,14 +1143,14 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	    // check if particle is a deuteron
 	    if(!(Particle2PDG == DeuteronPDG))	continue;
 
-	    fHistPtDeuteronRecPDG->Fill(PtProtonRec);
-	    fHistEtaDeuteronRecPDG->Fill(EtaProtonRec);
+	    fHistPtDeuteronRecPDG->Fill(PtDeuteronRec);
+	    fHistEtaDeuteronRecPDG->Fill(EtaDeuteronRec);
 
 	    // check if deuteron is a primary particle
 	    if((!Particle2->IsPhysicalPrimary())) continue;
 
-	    fHistPtDeuteronRecPrimary->Fill(PtProtonRec);
-	    fHistEtaDeuteronRecPrimary->Fill(EtaProtonRec);
+	    fHistPtDeuteronRecPrimary->Fill(PtDeuteronRec);
+	    fHistEtaDeuteronRecPrimary->Fill(EtaDeuteronRec);
 
 	    // apply track cuts
 	    if(!fESDtrackCutsDeuteron->AcceptTrack(Track2)) continue;
@@ -1181,8 +1181,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 
 	    }
 
-	    fHistPtDeuteronRecTrackCuts->Fill(PtProtonRec);
-	    fHistEtaDeuteronRecTrackCuts->Fill(EtaProtonRec);
+	    fHistPtDeuteronRecTrackCuts->Fill(PtDeuteronRec);
+	    fHistEtaDeuteronRecTrackCuts->Fill(EtaDeuteronRec);
 
 /*
 	    if((Particle1PDG == TritonPDG)	|| (Particle1PDG == -TritonPDG))      continue;
@@ -1321,14 +1321,14 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	    // check if particle is an antideuteron
 	    if(!(Particle2PDG == -DeuteronPDG))	continue;
 
-	    fHistPtAntiDeuteronRecPDG->Fill(PtProtonRec);
-	    fHistEtaAntiDeuteronRecPDG->Fill(EtaProtonRec);
+	    fHistPtAntiDeuteronRecPDG->Fill(PtDeuteronRec);
+	    fHistEtaAntiDeuteronRecPDG->Fill(EtaDeuteronRec);
 
 	    // check if antideuteron is a primary particle
 	    if((!Particle2->IsPhysicalPrimary())) continue;
 
-	    fHistPtAntiDeuteronRecPrimary->Fill(PtProtonRec);
-	    fHistEtaAntiDeuteronRecPrimary->Fill(EtaProtonRec);
+	    fHistPtAntiDeuteronRecPrimary->Fill(PtDeuteronRec);
+	    fHistEtaAntiDeuteronRecPrimary->Fill(EtaDeuteronRec);
 
 	    // apply track cuts
 	    if(!fESDtrackCutsDeuteron->AcceptTrack(Track2)) continue;
@@ -1359,8 +1359,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 
 	    }
 
-	    fHistPtAntiDeuteronRecTrackCuts->Fill(PtProtonRec);
-	    fHistEtaAntiDeuteronRecTrackCuts->Fill(EtaProtonRec);
+	    fHistPtAntiDeuteronRecTrackCuts->Fill(PtDeuteronRec);
+	    fHistEtaAntiDeuteronRecTrackCuts->Fill(EtaDeuteronRec);
 
 /*
 	    if((Particle1PDG == TritonPDG)	|| (Particle1PDG == -TritonPDG))      continue;
