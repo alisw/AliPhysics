@@ -10448,7 +10448,7 @@ void AliHFSystErr::InitDstoKKpi2018PbPb010BDT() {
   fCutsEff = new TH1F("fCutsEff","fCutsEff",50,0,50);
   for(Int_t i=1;i<=3;i++) fCutsEff->SetBinContent(i,0.09);
   for(Int_t i=4;i<=6;i++) fCutsEff->SetBinContent(i,0.06);
-  for(Int_t i=7;i<=50;i++) fCutsEff->SetBinContent(i,0.03);
+  for(Int_t i=7;i<=50;i++) fCutsEff->SetBinContent(i,0.04);
 
   // PID efficiency
   fPIDEff = new TH1F("fPIDEff","fPIDEff",50,0,50);
