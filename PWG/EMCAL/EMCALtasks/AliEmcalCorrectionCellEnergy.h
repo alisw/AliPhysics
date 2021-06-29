@@ -2,6 +2,7 @@
 #define ALIEMCALCORRECTIONCELLENERGY_H
 
 #include "AliEmcalCorrectionComponent.h"
+#include <array>
 
 /**
  * @class AliEmcalCorrectionCellEnergy
