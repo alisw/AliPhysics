@@ -247,6 +247,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistBGfrac;
   TH1F                        *fHistBGfracHFEev;
   TH1F                        *fHistBGrandHFEev;
+	TH2D                        *fHistNtrBGfrac;
   TH1F                        *fHistUE_org;
   TH1F                        *fHistUE_true;
   TH1F                        *fHistUE_reco;

@@ -218,6 +218,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
   fHistBGrandHFEev(0),
+	fHistNtrBGfrac(0),
   fHistUE_org(0),
   fHistUE_true(0),
   fHistUE_reco(0),
@@ -274,7 +275,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fNtrklEopHad(0),
   fHistphoPi0MC(0),//pho from pi0 without emb
   fHistphoEtaMC(0),//pho from eta without emb
-	fNtrklRhoarea(0),
+	fNtrklRhoarea(0),	
   //======parameter============
   fNref(0),
   Nch(0),
@@ -457,6 +458,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fHistBGfrac(0),
 	fHistBGfracHFEev(0),
 	fHistBGrandHFEev(0),
+	fHistNtrBGfrac(0),
 	fHistUE_org(0),
 	fHistUE_true(0),
 	fHistUE_reco(0),
@@ -1038,6 +1040,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fHistBGrandHFEev = new TH1F("fHistBGrandHFEev", "BG rand; #Delta p_{T}(GeV/c)", 300, -100.0, 200.0);
   fOutput->Add(fHistBGrandHFEev);
+
+	fHistNtrBGfrac = new TH2D("fHistNtrBGfrac","N_{tracklet} vs BG frac",301,-0.5,300.5,600,-100.0,500.0);
+	fOutput->Add(fHistNtrBGfrac);
 
   fHistUE_org = new TH1F("fHistUE_org", "UE from EPOS in generated level; p_{T}(GeV/c)", 100, 0.0, 10.0);
   fOutput->Add(fHistUE_org);
@@ -2216,6 +2221,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                                  Double_t BGfracHFE = randomcone - rho*acos(-1.0)*pow(jetRadius,2);
                                  fHistBGrandHFEev->Fill(randomcone);
                                  fHistBGfracHFEev->Fill(BGfracHFE);
+																 fHistNtrBGfrac->Fill(correctednAcc,BGfracHFE);
                                 }
 
                               double HFjetRap2[6];
