@@ -345,6 +345,9 @@ private:
 //===========================================================================================
 //   Variables for V0 Tree
 //===========================================================================================
+  Int_t fTreeVariablePosIndex;
+  Int_t fTreeVariableNegIndex; 
+  
     Float_t fTreeVariableChi2V0;         //!
     Float_t fTreeVariableDcaV0Daughters; //!
     Float_t fTreeVariableDcaV0ToPrimVertex; //!

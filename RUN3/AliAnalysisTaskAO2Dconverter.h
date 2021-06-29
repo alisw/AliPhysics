@@ -561,6 +561,8 @@ private:
 
     Int_t fIndexTracksPos = -1; // Positive track ID
     Int_t fIndexTracksNeg = -1; // Negative track ID
+    Int_t fIndexTracksPosFix = -1; // Positive track ID
+    Int_t fIndexTracksNegFix = -1; // Negative track ID
   } v0s;               //! structure to keep v0sinformation
 
   struct {

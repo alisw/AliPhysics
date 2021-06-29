@@ -203,6 +203,8 @@ fAmplitudeV0C(-1.),
 fClosestNonEmptyBC(-1),
 
 //---> Variables for fTreeV0
+fTreeVariablePosIndex(0),
+fTreeVariableNegIndex(0),
 fTreeVariableChi2V0(0),
 fTreeVariableDcaV0Daughters(0),
 fTreeVariableDcaV0ToPrimVertex(0),
@@ -572,6 +574,8 @@ fAmplitudeV0C(-1.),
 fClosestNonEmptyBC(-1),
 
 //---> Variables for fTreeV0
+fTreeVariablePosIndex(0),
+fTreeVariableNegIndex(0),
 fTreeVariableChi2V0(0),
 fTreeVariableDcaV0Daughters(0),
 fTreeVariableDcaV0ToPrimVertex(0),
@@ -1028,6 +1032,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         //Create Basic V0 Output Tree
         fTreeV0 = new TTree( "fTreeV0", "V0 Candidates");
         //-----------BASIC-INFO---------------------------
+      fTreeV0->Branch("fTreeVariablePosIndex",&fTreeVariablePosIndex,"fTreeVariablePosIndex/I");
+      fTreeV0->Branch("fTreeVariableNegIndex",&fTreeVariableNegIndex,"fTreeVariableNegIndex/I");
         fTreeV0->Branch("fTreeVariableChi2V0",&fTreeVariableChi2V0,"fTreeVariableChi2V0/F");
         fTreeV0->Branch("fTreeVariableDcaV0Daughters",&fTreeVariableDcaV0Daughters,"fTreeVariableDcaV0Daughters/F");
         fTreeV0->Branch("fTreeVariableDcaV0ToPrimVertex",&fTreeVariableDcaV0ToPrimVertex,"fTreeVariableDcaV0ToPrimVertex/F");
@@ -1928,6 +1934,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         if( v0->GetParamN()->Charge() < 0 && v0->GetParamP()->Charge() < 0 ){
             continue;
         }
+      
+      fTreeVariablePosIndex = v0->GetPindex();
+      fTreeVariableNegIndex = v0->GetNindex();
         
         Double_t tDecayVertexV0[3];
         v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
@@ -2211,6 +2220,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         // memory usage!
         
         //First Selection: Reject OnFly
+      if( lOnFlyStatus == 0 ) fTreeV0->Fill();
+      /*
         if( lOnFlyStatus == 0 ) {
             //Second Selection: rough 20-sigma band, parametric.
             //K0Short: Enough to parametrize peak broadening with linear function.
@@ -2249,6 +2260,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                    if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && fkSaveV0Tree && lKeepV0 ) fTreeV0->Fill();
                }
         }
+       */
+      
         
         //------------------------------------------------
         // Fill V0 tree over.
