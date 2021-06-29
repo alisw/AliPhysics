@@ -636,7 +636,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
  void AliAnalysisTaskSEpPbCorrelationsJetV2::DefineCorrOutput() {
 
 //========================= For Jet v2
-   Double_t binning_pt_assoc[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 8.0, 200.};
+   Double_t binning_pt_assoc[] = {0.5, 1.0, 1.5, 2.0, 3.0, 200.};
    Int_t nbins_pt_assoc = sizeof(binning_pt_assoc) / sizeof(Double_t) - 1; // For TPC-TPC
 
    Double_t binning_pt_lead[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 8.0};
