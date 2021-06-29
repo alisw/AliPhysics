@@ -1655,7 +1655,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       // PID hypothesis for the momentum extraction
       const AliPID::EParticleType tof_pid = AliPID::kPion;
       const float exp_time = TOFResponse.GetExpectedSignal(track, tof_pid);
-      if (exp_time >= 0) { // Check that the expected time is positive
+      if (exp_time > 0) { // Check that the expected time is positive
         // Expected beta for such hypothesis
         const Float_t exp_beta = (track->GetIntegratedLength() / exp_time / cspeed);
 
