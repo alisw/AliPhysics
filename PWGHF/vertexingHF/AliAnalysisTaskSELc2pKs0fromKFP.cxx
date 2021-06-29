@@ -1645,7 +1645,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
     nSigmaTOF_v0Pos = fPID->NumberOfSigmasTOF(v0Pos, AliPID::kPion);
     nSigmaTOF_v0Neg = fPID->NumberOfSigmasTOF(v0Neg, AliPID::kPion);
     nSigmaTOF_bach  = fPID->NumberOfSigmasTOF(trackBach, AliPID::kProton);
-    nSigmaTPC_bach_pi  = fPID->NumberOfSigmasTOF(trackBach, AliPID::kPion);
+    nSigmaTOF_bach_pi  = fPID->NumberOfSigmasTOF(trackBach, AliPID::kPion);
   }
   if (fIsAnaLc2Lpi) {
     nSigmaTPC_bach  = fPID->NumberOfSigmasTPC(trackBach, AliPID::kPion);
