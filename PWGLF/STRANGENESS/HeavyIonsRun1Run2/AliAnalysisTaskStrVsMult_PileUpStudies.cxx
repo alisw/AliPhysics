@@ -401,10 +401,6 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserCreateOutputObjects()
     fHistos_CascTopology->CreateTH1("V0CosPA_pileup","", 100, 0.99, 1.);
     fHistos_CascTopology->CreateTH1("CascRadius_pileup","", 90, 1., 10.);
     fHistos_CascTopology->CreateTH1("V0Radius_pileup","", 70, 3., 10.);
-    fHistos_CascTopology->CreateTH1("CascyXi_pileup","", 50, -0.5, 0.5);
-    fHistos_CascTopology->CreateTH1("CascyOmega_pileup","", 50, -0.5, 0.5);
-    fHistos_CascTopology->CreateTH1("CascCtauXi_pileup","", 100, 0., 15.);
-    fHistos_CascTopology->CreateTH1("CascCtauOmega_pileup","", 100, 0., 7.5);
     fHistos_CascTopology->CreateTH1("CascPt_pileup","", 100, 0., 15.);
     fHistos_CascTopology->CreateTH1("DcaV0Daughters_pileup","", 50, 0., 1.);
     fHistos_CascTopology->CreateTH1("DcaCascDaughters_pileup","", 50, 0., 1.);
@@ -418,10 +414,6 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserCreateOutputObjects()
     fHistos_CascTopology->CreateTH1("V0CosPA_nopileup","", 100, 0.99, 1.);
     fHistos_CascTopology->CreateTH1("CascRadius_nopileup","", 90, 1., 10.);
     fHistos_CascTopology->CreateTH1("V0Radius_nopileup","", 70, 3., 10.);
-    fHistos_CascTopology->CreateTH1("CascyXi_nopileup","", 50, -0.5, 0.5);
-    fHistos_CascTopology->CreateTH1("CascyOmega_nopileup","", 50, -0.5, 0.5);
-    fHistos_CascTopology->CreateTH1("CascCtauXi_nopileup","", 100, 0., 15.);
-    fHistos_CascTopology->CreateTH1("CascCtauOmega_nopileup","", 100, 0., 7.5);
     fHistos_CascTopology->CreateTH1("CascPt_nopileup","", 100, 0., 15.);
     fHistos_CascTopology->CreateTH1("DcaV0Daughters_nopileup","", 50, 0., 1.);
     fHistos_CascTopology->CreateTH1("DcaCascDaughters_nopileup","", 50, 0., 1.);
@@ -430,6 +422,22 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserCreateOutputObjects()
     fHistos_CascTopology->CreateTH1("DcaPosToPV_nopileup","", 80, 0.2, 1.);
     fHistos_CascTopology->CreateTH1("DcaNegToPV_nopileup","", 80, 0.2, 1.);
     fHistos_CascTopology->CreateTH1("InvMassLambdaDaughter_nopileup", "", 100, 1.11, 1.121);
+
+    if (fParticleAnalysisStatus[kxip]) {
+      fHistos_CascTopology->CreateTH1("CascyXi_pileup","", 50, -0.5, 0.5);
+      fHistos_CascTopology->CreateTH1("CascCtauXi_pileup","", 100, 0., 15.);
+
+      fHistos_CascTopology->CreateTH1("CascyXi_nopileup","", 50, -0.5, 0.5);
+      fHistos_CascTopology->CreateTH1("CascCtauXi_nopileup","", 100, 0., 15.);
+    }
+
+    if (fParticleAnalysisStatus[komp]) {
+      fHistos_CascTopology->CreateTH1("CascyOm_pileup","", 50, -0.5, 0.5);
+      fHistos_CascTopology->CreateTH1("CascCtauOm_pileup","", 100, 0., 7.5);
+
+      fHistos_CascTopology->CreateTH1("CascyOm_nopileup","", 50, -0.5, 0.5);
+      fHistos_CascTopology->CreateTH1("CascCtauOm_nopileup","", 100, 0., 7.5);
+    }
   }
   // PID Setup
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
