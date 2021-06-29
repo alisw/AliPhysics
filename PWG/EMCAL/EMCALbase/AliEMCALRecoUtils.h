@@ -166,7 +166,9 @@ public:
   void     SetNonLinearityThreshold(Int_t threshold)     { fNonLinearThreshold = threshold ; } //only for Alexie's non linearity correction
   Int_t    GetNonLinearityThreshold()              const { return fNonLinearThreshold      ; }
   void     SetUseTowerShaperNonlinarityCorrection(Bool_t doCorr)     { fUseShaperNonlin = doCorr ; }
-  void     SetUseTowerAdditionalScaleCorrection(Bool_t doCorr, Float_t val)               { fUseAdditionalScale = doCorr; fAdditionalScale = val;}
+  void     SetUseTowerAdditionalScaleCorrection(Bool_t doCorr)       { fUseAdditionalScale = doCorr;}
+  void     SetTowerAdditionalScaleCorrection(Int_t i, Float_t val)   { if(i < 3 && i >= 0) fAdditionalScaleSM[i] = val;
+                                                                       else AliInfo(Form("fAdditionalScaleSM index %d larger than 3 or negative, do nothing\n",i));}
 
   //-----------------------------------------------------
   // MC clusters energy smearing
@@ -615,9 +617,9 @@ private:
   Int_t      fNonLinearityFunction;      ///< Non linearity function choice, see enum NonlinearityFunctions
   Float_t    fNonLinearityParams[10];    ///< Parameters for the non linearity function
   Int_t	     fNonLinearThreshold;        ///< Non linearity threshold value for kBeamTest non linearity function
-  Bool_t     fUseShaperNonlin;        ///< Shaper non linearity correction for towers
+  Bool_t     fUseShaperNonlin;           ///< Shaper non linearity correction for towers
   Bool_t     fUseAdditionalScale;        ///< Switch for additional scale on cell level. Should not be used for standard Analyses
-  Float_t    fAdditionalScale;           ///< Value for additional scale on cell level. Should not be used for standard Analyses
+  Float_t    fAdditionalScaleSM[3];      ///< Value for additional scale on cell level. Should not be used for standard Analyses
 
   // Energy smearing for MC
   Bool_t     fSmearClusterEnergy;        ///< Smear cluster energy, to be done only for simulated data to match real data
@@ -736,7 +738,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 39) ;
+  ClassDef(AliEMCALRecoUtils, 40) ;
   /// \endcond
 
 };

@@ -53,7 +53,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fParticleType(0),                       fPosAlgo(0),
   fW0(0),                                 fShowerShapeCellLocationType(0),
   fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
-  fUseAdditionalScale(kFALSE),            fAdditionalScale(1),
+  fUseAdditionalScale(kFALSE),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fNCellEfficiencyFunction(0),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
@@ -110,7 +110,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fW0(reco.fW0),                                             fShowerShapeCellLocationType(reco.fShowerShapeCellLocationType),
   fNonLinearityFunction(reco.fNonLinearityFunction),         fNonLinearThreshold(reco.fNonLinearThreshold),
   fUseShaperNonlin(reco.fUseShaperNonlin),
-  fUseAdditionalScale(reco.fUseAdditionalScale),             fAdditionalScale(reco.fAdditionalScale),
+  fUseAdditionalScale(reco.fUseAdditionalScale),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fNCellEfficiencyFunction(reco.fNCellEfficiencyFunction),
   fCellsRecalibrated(reco.fCellsRecalibrated),
@@ -165,6 +165,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   for (Int_t i = 0; i < 10 ; i++) { fNCellEfficiencyParams[i] = reco.fNCellEfficiencyParams[i] ; }
   for (Int_t j = 0; j < 5  ; j++) { fMCGenerToAccept[j]       = reco.fMCGenerToAccept[j]       ; }
   for (Int_t j = 0; j < 4  ; j++) { fBadStatusSelection[j]    = reco.fBadStatusSelection[j]    ; }
+  for (Int_t j = 0; j < 3  ; j++) { fAdditionalScaleSM[j]     = reco.fAdditionalScaleSM[j]     ; }
 
   if(reco.fEMCALBadChannelMap) {
     // Copy constructor - not taking ownership over calibration histograms
@@ -220,7 +221,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fNonLinearThreshold        = reco.fNonLinearThreshold;
   fUseShaperNonlin           = reco.fUseShaperNonlin;
   fUseAdditionalScale        = reco.fUseAdditionalScale;
-  fAdditionalScale           = reco.fAdditionalScale;
+  for (Int_t j = 0; j < 3; j++)
+    fAdditionalScaleSM[j]         = reco.fAdditionalScaleSM[j];
   fSmearClusterEnergy        = reco.fSmearClusterEnergy;
   fNCellEfficiencyFunction   = reco.fNCellEfficiencyFunction;
 
@@ -453,7 +455,13 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
 
     // apply an additional scale on cell level. Not to be used for standard analyses!
     if(fUseAdditionalScale){
-      amp *= fAdditionalScale;
+      if( imod == 10 || imod == 11 || imod == 18 || imod == 19 ){ // 1/3 SM
+        amp *= fAdditionalScaleSM[2];
+      } else if( imod >= 12 && imod <=17 ){                       // 2/3 SM
+        amp *= fAdditionalScaleSM[1];
+      } else {                                                    // Full SM
+        amp *= fAdditionalScaleSM[0];
+      }
     }
 
     // correct cell energy based on pi0 calibration
@@ -2289,6 +2297,9 @@ void AliEMCALRecoUtils::InitParameters()
 
   // number of cell efficiency
   for (Int_t i = 0; i < 10  ; i++) fNCellEfficiencyParams[i] = 0.;
+
+  // additional scale for different SM types (default value is 1)
+  for (Int_t i = 0; i < 3; i++) fAdditionalScaleSM[i] = 1.;
 }
 
 ///
