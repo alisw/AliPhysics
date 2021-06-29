@@ -1168,8 +1168,8 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
         }
         if( physprim && assFlag[kxip] && ApplyCuts(kxip)) {
           if (fCasc_nITSTOFtracks>=1) fHistos_XiPlu->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
-          if (fCasc_nITSTOFtracks>=1) fHistos_XiPlu->FillTH3("h3_ptmasscent_2ITSTOFtracks", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
-          if (fCasc_nITSTOFtracks>=1) fHistos_XiPlu->FillTH3("h3_ptmasscent_3ITSTOFtracks", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
+          if (fCasc_nITSTOFtracks>=2) fHistos_XiPlu->FillTH3("h3_ptmasscent_2ITSTOFtracks", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
+          if (fCasc_nITSTOFtracks>=3) fHistos_XiPlu->FillTH3("h3_ptmasscent_3ITSTOFtracks", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
           if (fisMC) {
             if (!fispileupevent) fHistos_XiPlu->FillTH3("h3_ptmasscent_nopileupevts", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
             if (fisParticleFromOOB) {
@@ -1212,8 +1212,8 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
       if (fParticleAnalysisStatus[komp]) {
         if( physprim && assFlag[komm] && ApplyCuts(komm)) {
           if (fCasc_nITSTOFtracks>=1) fHistos_OmMin->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
-          if (fCasc_nITSTOFtracks>=1) fHistos_OmMin->FillTH3("h3_ptmasscent_2ITSTOFtracks", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
-          if (fCasc_nITSTOFtracks>=1) fHistos_OmMin->FillTH3("h3_ptmasscent_3ITSTOFtracks", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
+          if (fCasc_nITSTOFtracks>=2) fHistos_OmMin->FillTH3("h3_ptmasscent_2ITSTOFtracks", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
+          if (fCasc_nITSTOFtracks>=3) fHistos_OmMin->FillTH3("h3_ptmasscent_3ITSTOFtracks", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
           if (fisMC) {
             if (!fispileupevent) fHistos_OmMin->FillTH3("h3_ptmasscent_nopileupevts", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
             if (fisParticleFromOOB) {
@@ -1254,8 +1254,8 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
         }
         if( physprim && assFlag[komp] && ApplyCuts(komp)) {
           if (fCasc_nITSTOFtracks>=1) fHistos_OmPlu->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
-          if (fCasc_nITSTOFtracks>=1) fHistos_OmPlu->FillTH3("h3_ptmasscent_2ITSTOFtracks", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
-          if (fCasc_nITSTOFtracks>=1) fHistos_OmPlu->FillTH3("h3_ptmasscent_3ITSTOFtracks", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
+          if (fCasc_nITSTOFtracks>=2) fHistos_OmPlu->FillTH3("h3_ptmasscent_2ITSTOFtracks", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
+          if (fCasc_nITSTOFtracks>=3) fHistos_OmPlu->FillTH3("h3_ptmasscent_3ITSTOFtracks", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
           if (fisMC) {
             if (!fispileupevent) fHistos_OmPlu->FillTH3("h3_ptmasscent_nopileupevts", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
             if (fisParticleFromOOB) {
