@@ -10,6 +10,7 @@
 #include "TProfile.h"
 
 class TH1F;
+class TGraphErrors;
 class AliAODEvent;
 class AliMultSelection;
 class AliAODMCParticle;
@@ -57,6 +58,10 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	void SetWeightNtrklet(TH1D* hWeight){ fweightNtrkl = new TH1D(*hWeight); };
 
 	void SetMCtype(Bool_t iMCtype){ iGPMC = iMCtype; };
+
+	void SetWeightDmeson(TGraphErrors* WeightPt_Dmeson){ pTWeight_D = WeightPt_Dmeson;};
+	void SetWeightLc(TGraphErrors* WeightPt_Lc){ pTWeight_Lc = WeightPt_Lc;};
+	void SetWeightBmeson(TF1* WeightPt_Bmeson){ pTWeight_B = new TF1(*WeightPt_Bmeson);};
 
 
 
@@ -275,6 +280,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 
 	TProfile*	fMultiEstimatorAvg[2];
 	TH1D*		fweightNtrkl;
+	TGraphErrors* pTWeight_D;
+	TGraphErrors* pTWeight_Lc;
+	TF1* pTWeight_B;
 
         ClassDef(AliAnalysisTaskHFEBeautyMultiplicity, 1);
 };

@@ -44,6 +44,7 @@
 #include "AliESDVertex.h"
 #include "AliVertexingHFUtils.h"
 #include "AliKFParticle.h"
+#include "TGraphErrors.h"
 
 //---- Header for Monte Carlo
 #include "AliAODMCParticle.h"
@@ -258,7 +259,11 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistOrg_Dpm(0),	// original D+
     fHistOrg_D0(0),	// original D0
     fHistOrg_Ds(0),	// original Ds
-    fHistOrg_Lc(0)	// original Lc
+    fHistOrg_Lc(0),	// original Lc
+
+    pTWeight_D(0),
+    pTWeight_Lc(0),
+    pTWeight_B(0)
 
 
 {
@@ -467,7 +472,11 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistOrg_Dpm(0),	// original D+
     fHistOrg_D0(0),	// original D0
     fHistOrg_Ds(0),	// original Ds
-    fHistOrg_Lc(0)	// original Lc
+    fHistOrg_Lc(0),	// original Lc
+
+    pTWeight_D(0),
+    pTWeight_Lc(0),
+    pTWeight_B(0)
 
 
 {
@@ -1745,10 +1754,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
 		    	//-------- Heavy Flavour electron --------//
                     	if(pid_eleB)
-			{	
+			{
 				fNoB -> Fill(12);
 			    	fHistPt_HFE_MC_B -> Fill(track->Pt()); // HFE from B meson&baryon (MC)
-			    	fDCAxy_MC_B -> Fill(TrkPt, DCA[0]*charge*Bsign);
+			    	fDCAxy_MC_B -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_B->Eval(pTMom));
 		    	}
 
                     	if(pid_eleD)
@@ -1757,14 +1766,19 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 			    	fHistPt_HFE_MC_D -> Fill(track->Pt()); // HFE from D meson (MC)
 			    	fDCAxy_MC_D -> Fill(TrkPt, DCA[0]*charge*Bsign);
 
-			    	if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413) fDCAxy_MC_Dpm -> Fill(TrkPt, DCA[0]*charge*Bsign);
-			    	if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423) fDCAxy_MC_D0  -> Fill(TrkPt, DCA[0]*charge*Bsign);
-			    	if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)==433) fDCAxy_MC_Ds  -> Fill(TrkPt, DCA[0]*charge*Bsign);
+			    	if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413) fDCAxy_MC_Dpm -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+			    	if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423) fDCAxy_MC_D0  -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+			    	if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)==433) fDCAxy_MC_Ds  -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
 
 		    		if(TMath::Abs(pidM)==4122)
 				{			   // HFE from Lambda c (MC)
 			    		fHistPt_HFE_MC_Lc -> Fill(track->Pt());
-			    		fDCAxy_MC_Lc -> Fill(TrkPt, DCA[0]*charge*Bsign);
+
+					if(pTMom<10.0){
+			    			fDCAxy_MC_Lc -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_Lc->Eval(pTMom));
+					}else{
+			    			fDCAxy_MC_Lc -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_Lc->Eval(10));
+					}
 		    		}
 		    	}
 		    }
