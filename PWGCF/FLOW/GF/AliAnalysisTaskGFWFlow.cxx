@@ -442,9 +442,9 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       lTrack->GetXYZ(POStrk);
       Double_t DCA[] = {0.,0.,0.};
       for(Int_t i=0;i<3;i++) DCA[i] = POSvtx[i]-POStrk[i];
-      Double_t dcaxy = TMath::Sqrt(DCA[0]*DCA[0]+DCA[1]*DCA[1]);
-      Double_t lDCA[] = {TMath::Abs(DCA[2]),dcaxy};
-      Int_t trackbit = GetTrackBit(lTrack,lDCA);
+      // Double_t dcaxy = TMath::Sqrt(DCA[0]*DCA[0]+DCA[1]*DCA[1]);
+      // Double_t lDCA[] = {TMath::Abs(DCA[2]),dcaxy};
+      Int_t trackbit = GetTrackBit(lTrack,DCA);
       if(!trackbit) continue; //if no track bit is set, no need to continue
       Int_t combinedbit = CombineBits(vtxb,trackbit);
       if(fIsMC) {
@@ -598,9 +598,9 @@ Int_t AliAnalysisTaskGFWFlow::GetParticleBit(AliVParticle *mpa) {
 Int_t AliAnalysisTaskGFWFlow::GetTrackBit(AliAODTrack* mtr, Double_t *lDCA) {
   Int_t retbit=0;
   for(Int_t i=1;i<=fTotTrackFlags; i++) //track flags are 1-8
-    retbit+=fSelections[i]->AcceptTrack(mtr,lDCA,i);
+    retbit+=fSelections[i]->AcceptTrack(mtr,lDCA,i,kFALSE);
   //Nominal (TPC) tracks:
-  retbit+=fSelections[0]->AcceptTrack(mtr,lDCA);
+  retbit+=fSelections[0]->AcceptTrack(mtr,lDCA,0,kFALSE);
   //Also, add the ITS tracks:
   //retbit+=fSelections[12]->AcceptTrack(mtr,lDCA,12); //
   return retbit;
@@ -812,5 +812,4 @@ void AliAnalysisTaskGFWFlow::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("MidGapNV52","poiGapNeg refGapNeg | olGapNeg {5} refGapPos {-5}", kTRUE));
   corrconfigs.push_back(GetConf("MidGapPV52","refGapPos {5} refGapNeg {-5}", kFALSE));
   corrconfigs.push_back(GetConf("MidGapPV52","poiGapPos refGapPos | olGapPos {5} refGapNeg {-5}", kTRUE));
-
 }
