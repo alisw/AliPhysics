@@ -1327,50 +1327,50 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     fHistITSmapSelTracks->Fill(track_p0->GetITSClusterMap());
     if (status[iPosTrack_0] & 4){ // good bachelor track
       for(Int_t iv0=0; iv0<nv0; iv0++){
-	AliESDv0 *v0 = esd->GetV0(iv0);
-	if (!v0) continue;
-	Bool_t onFlyStatus=v0->GetOnFlyStatus();
-	if(onFlyStatus==kTRUE) continue;
-	if(v0->Pt()<fMinPtV0) continue;
-	UInt_t labPos = (UInt_t)TMath::Abs(v0->GetPindex());
-	UInt_t labNeg = (UInt_t)TMath::Abs(v0->GetNindex());
-	AliESDtrack *posVV0track=esd->GetTrack(labPos);
-	AliESDtrack *negVV0track=esd->GetTrack(labNeg);
-	if( !posVV0track || !negVV0track ) continue;
-	// bachelor must not be a v0-track
-	if (posVV0track->GetID() == track_p0->GetID() ||
-	    negVV0track->GetID() == track_p0->GetID()) continue;
-	// reject like-sign v0
-	if ( posVV0track->Charge() == negVV0track->Charge() ) continue;
-	// avoid ghost TPC tracks
-	if(!(posVV0track->GetStatus() & AliESDtrack::kTPCrefit) ||
-	   !(negVV0track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-	//  reject kinks (only necessary on AliESDtracks)
-	if (posVV0track->GetKinkIndex(0)>0  || negVV0track->GetKinkIndex(0)>0) continue;
-	Double_t xyz[3], pxpypz[3];
-	v0->XvYvZv(xyz);
-	v0->PxPyPz(pxpypz);
-	Double_t cv[21]; for(int i=0; i<21; i++) cv[i]=0;
-	AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
-	twoTrackArrayCasc->AddAt(track_p0,0);
-	twoTrackArrayCasc->AddAt(trackV0,1);
-	AliESDVertex* vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
-	if (vertexCasc == 0x0) {
-	  delete trackV0;
-	  twoTrackArrayCasc->Clear();
-	  continue;
-	}
-	AliAODVertex* vertexAOD = ConvertToAODVertex(vertexCasc);
-	AliAODRecoCascadeHF* theCascade=MakeCascade(twoTrackArrayCasc, vertexAOD, bzkG);
-	Double_t ptLcK0sp=theCascade->Pt();
-	Double_t invMassLcK0sp=theCascade->InvMassLctoK0sP();
-	fHistInvMassLcK0sp->Fill(invMassLcK0sp);
-	fHistPtLcK0sp->Fill(ptLcK0sp);
-	delete trackV0;
-	twoTrackArrayCasc->Clear();
-	delete theCascade;
-	delete vertexAOD;
-	delete vertexCasc;
+        AliESDv0 *v0 = esd->GetV0(iv0);
+        if (!v0) continue;
+        Bool_t onFlyStatus=v0->GetOnFlyStatus();
+        if(onFlyStatus==kTRUE) continue;
+        if(v0->Pt()<fMinPtV0) continue;
+        UInt_t labPos = (UInt_t)TMath::Abs(v0->GetPindex());
+        UInt_t labNeg = (UInt_t)TMath::Abs(v0->GetNindex());
+        AliESDtrack *posVV0track=esd->GetTrack(labPos);
+        AliESDtrack *negVV0track=esd->GetTrack(labNeg);
+        if( !posVV0track || !negVV0track ) continue;
+        // bachelor must not be a v0-track
+        if (posVV0track->GetID() == track_p0->GetID() ||
+            negVV0track->GetID() == track_p0->GetID()) continue;
+        // reject like-sign v0
+        if ( posVV0track->Charge() == negVV0track->Charge() ) continue;
+        // avoid ghost TPC tracks
+        if(!(posVV0track->GetStatus() & AliESDtrack::kTPCrefit) ||
+           !(negVV0track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        //  reject kinks (only necessary on AliESDtracks)
+        if (posVV0track->GetKinkIndex(0)>0  || negVV0track->GetKinkIndex(0)>0) continue;
+        Double_t xyz[3], pxpypz[3];
+        v0->XvYvZv(xyz);
+        v0->PxPyPz(pxpypz);
+        Double_t cv[21]; for(int i=0; i<21; i++) cv[i]=0;
+        AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
+        twoTrackArrayCasc->AddAt(track_p0,0);
+        twoTrackArrayCasc->AddAt(trackV0,1);
+        AliESDVertex* vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
+        if (vertexCasc == 0x0) {
+          delete trackV0;
+          twoTrackArrayCasc->Clear();
+          continue;
+        }
+        AliAODVertex* vertexAOD = ConvertToAODVertex(vertexCasc);
+        AliAODRecoCascadeHF* theCascade=MakeCascade(twoTrackArrayCasc, vertexAOD, bzkG);
+        Double_t ptLcK0sp=theCascade->Pt();
+        Double_t invMassLcK0sp=theCascade->InvMassLctoK0sP();
+        fHistInvMassLcK0sp->Fill(invMassLcK0sp);
+        fHistPtLcK0sp->Fill(ptLcK0sp);
+        delete trackV0;
+        twoTrackArrayCasc->Clear();
+        delete theCascade;
+        delete vertexAOD;
+        delete vertexCasc;
       }
     }
     if (track_p0->Charge() < 0) continue;
