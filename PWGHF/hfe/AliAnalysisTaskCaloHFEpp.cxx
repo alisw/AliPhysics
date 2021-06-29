@@ -505,9 +505,9 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 
    
-        Int_t binsWh[3]=   { 60, 100,   80}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Int_t binsWh[3]=   { 60, 120,   80}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
         Double_t xminWh[3]={ 20,   0, -2.0};
-        Double_t xmaxWh[3]={ 80, 100,  6.0};
+        Double_t xmaxWh[3]={ 80,  60,  6.0};
 	fWh_phidiff = new THnSparseD("fWh_phidiff","pT vs. dphi differnce",3,binsWh, xminWh, xmaxWh);
 	
         Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100,  800, 500, 20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
@@ -2044,7 +2044,7 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 
 	//##################### Systematic Parameters ##################### //
 	//---Track Cut
-	Double_t CutTrackEtaW[2] = {TrackEtaMin,TrackEtaMax};
+	Double_t CutTrackEtaW[2] = {-0.9,0.9};
 	Int_t CutTPCNClsW = NTPCClust;
 	Int_t CutITSNClsW = NITSClust; 
 	Int_t CutTPCNCrossedRowW = NCrossedRow;
@@ -2094,7 +2094,7 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 		TPCchi2NDFWasso = aWassotrack -> Chi2perNDF();
 		TrackPhi        = track->Phi();
 
-		//if(ptWasso <1.) continue;
+		if(ptWasso <0.3) continue;
 
 		/////////////////////////
 		// track cut
@@ -2108,7 +2108,7 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 		//==== 4.ITS cluster cut ====
 		if(aWassotrack->GetITSNcls() < CutITSNClsW) continue;  
 		//==== 5.SPD hit cut ====
-		if(!(aWassotrack -> HasPointOnITSLayer(0) || aWassotrack -> HasPointOnITSLayer(1))) continue;
+		//if(!(aWassotrack -> HasPointOnITSLayer(0) || aWassotrack -> HasPointOnITSLayer(1))) continue;
 		//==== 6.Eta cut ====
 		if(etaWasso>CutTrackEtaW[1] || etaWasso<CutTrackEtaW[0]) continue; 
 		//==== 7.DCA cut ====
