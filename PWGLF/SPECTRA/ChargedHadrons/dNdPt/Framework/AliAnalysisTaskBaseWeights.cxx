@@ -262,9 +262,8 @@ void AliAnalysisTaskBaseWeights::AnaEventMC() {
     fNaccWeightedSys = 0;
     fNaccWeightedSysRandom = 0;
 
-    fMCSpectraWeights = static_cast<AliMCSpectraWeightsHandler*>(
-                                                                 fEvent->FindListObject("fMCSpectraWeights"))
-    ->fMCSpectraWeight;
+    AliMCSpectraWeightsHandler* mcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject("fMCSpectraWeights"));
+    fMCSpectraWeights = (mcWeightsHandler) ? mcWeightsHandler->fMCSpectraWeight : nullptr;
 
     if (fMCSpectraWeights) {
         DebugPCC("found fMCSpectraWeights in this event\n");
