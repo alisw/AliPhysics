@@ -78,9 +78,9 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 		AliFatal("File with pT weight is not found!\n");
 		return;
     }
-    TGraphErrors* WeightPt_Dmeson = (TGraphErrors*)fpTWeight->Get("Ratio_Dmeson")->Clone("WeightPt_Dmeson");
-    TGraphErrors* WeightPt_Lc     = (TGraphErrors*)fpTWeight->Get("Ratio_Lc")->Clone("WeightPt_Lc");
-    TF1* WeightPt_Bmeson = (TF1*)fpTWeight->Get("Ratio_Bmeson")->Clone("WeightPt_Bmeson");
+    TGraphErrors* WeightPt_Dmeson = (TGraphErrors*)fpTWeight->Get("pTWeight_Dmeson")->Clone("WeightPt_Dmeson");
+    TGraphErrors* WeightPt_Lc     = (TGraphErrors*)fpTWeight->Get("pTWeight_Lc")->Clone("WeightPt_Lc");
+    TF1* WeightPt_Bmeson = (TF1*)fpTWeight->Get("pTWeight_Bmeson")->Clone("WeightPt_Bmeson");
 
     task->SetWeightDmeson(WeightPt_Dmeson);
     task->SetWeightLc(WeightPt_Lc);
