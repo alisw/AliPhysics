@@ -13,7 +13,7 @@ enum PartType {kk0s, klam, kalam, kxim, kxip, komm, komp, kallparts};
 
 struct V0filler{
 
-    uint8_t Mult;
+    unsigned char Mult;
     Double32_t Pt;
     Double32_t InvMass;
     Double32_t DcaV0Daught;     //[0,2.54,8]
