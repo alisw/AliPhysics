@@ -35,7 +35,7 @@ struct V0filler{
 
 struct Cascfiller{
     
-    uint8_t Mult;
+    unsigned char Mult;
     Double32_t Pt;
     Double32_t InvMassXi;
     Double32_t InvMassOm;

@@ -190,8 +190,8 @@ void AliAnalysisTaskV0multspec::UserExec(Option_t *)
     return; 
   } else {
     lMultiplicity = MultSelection->GetMultiplicityPercentile("V0M");
-    ffillV0->Mult = (uint8_t) lMultiplicity;
-    if(fAddCasc) ffillCasc->Mult = (uint8_t) lMultiplicity;
+    ffillV0->Mult = lMultiplicity;
+    if(fAddCasc) ffillCasc->Mult = lMultiplicity;
     lEvSelCode = MultSelection->GetEvSelCode(); //==0 means event is good. Set by AliMultSelectionTask
     fHistos_misc->FillTH1("hEvSelCode", lEvSelCode);
   }
