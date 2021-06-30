@@ -295,19 +295,19 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserCreateOutputObjects()
   //histograms for V0 variables
   if (fParticleAnalysisStatus[kk0s]) {
     fHistos_K0S = new THistManager("histos_K0S");
-    if(fisMC) fHistos_K0S->CreateTH2("h2_gen", "", fnptbins[kK0s], fptbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
-    fHistos_K0S->CreateTH3("h3_ptmasscent_def", "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
+    if(fisMC) fHistos_K0S->CreateTH2("h2_gen_noOOB", "", fnptbins[kK0s], fptbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
+    fHistos_K0S->CreateTH3("h3_ptmasscent_ITSTOF", "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
   }
   if (fParticleAnalysisStatus[klam]) {
     fHistos_Lam = new THistManager("histos_Lam");
     fHistos_ALam = new THistManager("histos_ALam");
-    fHistos_Lam->CreateTH3("h3_ptmasscent_def", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
-    fHistos_ALam->CreateTH3("h3_ptmasscent_def", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+    fHistos_Lam->CreateTH3("h3_ptmasscent_ITSTOF", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+    fHistos_ALam->CreateTH3("h3_ptmasscent_ITSTOF", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
     if(fisMC) {
-        fHistos_Lam->CreateTH2("h2_gen", "", fnptbins[kLam], fptbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+        fHistos_Lam->CreateTH2("h2_gen_noOOB", "", fnptbins[kLam], fptbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
         fHistos_Lam->CreateTH3("h3_FDmtxNUM_def", "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins[kLam], fcentbinning[kLam]);
         fHistos_Lam->CreateTH2("h2_FDmtxDEN_def", "", fnptbins[kLam], fptbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
-        fHistos_ALam->CreateTH2("h2_gen", "", fnptbins[kLam], fptbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+        fHistos_ALam->CreateTH2("h2_gen_noOOB", "", fnptbins[kLam], fptbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
         fHistos_ALam->CreateTH3("h3_FDmtxNUM_def", "", fnptbins[kLam], fptbinning[kLam], fnptbins[kXi], fptbinning[kXi], fncentbins[kLam], fcentbinning[kLam]);
         fHistos_ALam->CreateTH2("h2_FDmtxDEN_def", "", fnptbins[kLam], fptbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
     }
@@ -338,47 +338,70 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserCreateOutputObjects()
   if (fParticleAnalysisStatus[kxip]) {
     fHistos_XiMin = new THistManager("histos_XiMin");
     fHistos_XiPlu = new THistManager("histos_XiPlu");
-    fHistos_XiMin->CreateTH3("h3_ptmasscent_def", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    fHistos_XiPlu->CreateTH3("h3_ptmasscent_def", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    if(fisMC) fHistos_XiMin->CreateTH2("h2_gen", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    if(fisMC) fHistos_XiPlu->CreateTH2("h2_gen", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+
+    //Default histograms for generated and reconstructed 
+    fHistos_XiMin->CreateTH3("h3_ptmasscent_ITSTOF", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiPlu->CreateTH3("h3_ptmasscent_ITSTOF", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    if(fisMC) fHistos_XiMin->CreateTH2("h2_gen_noOOB", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    if(fisMC) fHistos_XiPlu->CreateTH2("h2_gen_noOOB", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+
+    //Other histograms for generated
+    if(fisMC) fHistos_XiMin->CreateTH2("h2_gen_nopileupevts", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    if(fisMC) fHistos_XiPlu->CreateTH2("h2_gen_nopileupevts", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    if(fisMC) fHistos_XiMin->CreateTH2("h2_gen_OOBonly", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    if(fisMC) fHistos_XiPlu->CreateTH2("h2_gen_OOBonly", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
     
+    //Other histograms for reconstructed
+    fHistos_XiMin->CreateTH3("h3_ptmasscent_noOOB", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiPlu->CreateTH3("h3_ptmasscent_noOOB", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiMin->CreateTH3("h3_ptmasscent_noOOB_ITSTOF", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiPlu->CreateTH3("h3_ptmasscent_noOOB_ITSTOF", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiMin->CreateTH3("h3_ptmasscent_nopileupevts", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiPlu->CreateTH3("h3_ptmasscent_nopileupevts", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiMin->CreateTH3("h3_ptmasscent_nopileupevts_ITSTOF", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiPlu->CreateTH3("h3_ptmasscent_nopileupevts_ITSTOF", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiMin->CreateTH3("h3_ptmasscent_OOBonly", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiPlu->CreateTH3("h3_ptmasscent_OOBonly", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiMin->CreateTH3("h3_ptmasscent_OOBonly_ITSTOF", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiPlu->CreateTH3("h3_ptmasscent_OOBonly_ITSTOF", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
     fHistos_XiMin->CreateTH3("h3_ptmasscent_2ITSTOFtracks", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
     fHistos_XiPlu->CreateTH3("h3_ptmasscent_2ITSTOFtracks", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
     fHistos_XiMin->CreateTH3("h3_ptmasscent_3ITSTOFtracks", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
     fHistos_XiPlu->CreateTH3("h3_ptmasscent_3ITSTOFtracks", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    fHistos_XiMin->CreateTH3("h3_ptmasscent_nopileupevts", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    fHistos_XiPlu->CreateTH3("h3_ptmasscent_nopileupevts", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    if(fisMC) fHistos_XiMin->CreateTH2("h2_gen_nopileupevts", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    if(fisMC) fHistos_XiPlu->CreateTH2("h2_gen_nopileupevts", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    fHistos_XiMin->CreateTH3("h3_ptmasscent_pileup", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    fHistos_XiPlu->CreateTH3("h3_ptmasscent_pileup", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    if(fisMC) fHistos_XiMin->CreateTH2("h2_gen_pileup", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    if(fisMC) fHistos_XiPlu->CreateTH2("h2_gen_pileup", "", fnptbins[kXi], fptbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    fHistos_XiMin->CreateTH3("h3_ptmasscent_nopileup", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-    fHistos_XiPlu->CreateTH3("h3_ptmasscent_nopileup", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
   }
   if (fParticleAnalysisStatus[komp]) {
     fHistos_OmMin = new THistManager("histos_OmMin");
     fHistos_OmPlu = new THistManager("histos_OmPlu");
-    fHistos_OmMin->CreateTH3("h3_ptmasscent_def", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    fHistos_OmPlu->CreateTH3("h3_ptmasscent_def", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    if(fisMC) fHistos_OmMin->CreateTH2("h2_gen", "", fnptbins[kOm], fptbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    if(fisMC) fHistos_OmPlu->CreateTH2("h2_gen", "", fnptbins[kOm], fptbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
 
-    fHistos_OmMin->CreateTH3("h3_ptmasscent_2ITSTOFtracks", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    fHistos_OmPlu->CreateTH3("h3_ptmasscent_2ITSTOFtracks", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);fHistos_OmMin->CreateTH3("h3_ptmasscent_3ITSTOFtracks", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    fHistos_OmPlu->CreateTH3("h3_ptmasscent_3ITSTOFtracks", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    fHistos_OmMin->CreateTH3("h3_ptmasscent_nopileupevts", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    fHistos_OmPlu->CreateTH3("h3_ptmasscent_nopileupevts", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    //Default histograms for generated and reconstructed 
+    fHistos_OmMin->CreateTH3("h3_ptmasscent_ITSTOF", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmPlu->CreateTH3("h3_ptmasscent_ITSTOF", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    if(fisMC) fHistos_OmMin->CreateTH2("h2_gen_noOOB", "", fnptbins[kOm], fptbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    if(fisMC) fHistos_OmPlu->CreateTH2("h2_gen_noOOB", "", fnptbins[kOm], fptbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+
+    //Other histograms for generated
     if(fisMC) fHistos_OmMin->CreateTH2("h2_gen_nopileupevts", "", fnptbins[kOm], fptbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
     if(fisMC) fHistos_OmPlu->CreateTH2("h2_gen_nopileupevts", "", fnptbins[kOm], fptbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    fHistos_OmMin->CreateTH3("h3_ptmasscent_pileup", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    fHistos_OmPlu->CreateTH3("h3_ptmasscent_pileup", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    if(fisMC) fHistos_OmMin->CreateTH2("h2_gen_pileup", "", fnptbins[kOm], fptbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    if(fisMC) fHistos_OmPlu->CreateTH2("h2_gen_pileup", "", fnptbins[kOm], fptbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    fHistos_OmMin->CreateTH3("h3_ptmasscent_nopileup", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-    fHistos_OmPlu->CreateTH3("h3_ptmasscent_nopileup", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    if(fisMC) fHistos_OmMin->CreateTH2("h2_gen_OOBonly", "", fnptbins[kOm], fptbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    if(fisMC) fHistos_OmPlu->CreateTH2("h2_gen_OOBonly", "", fnptbins[kOm], fptbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+
+    //Other histograms for reconstructed
+    fHistos_OmMin->CreateTH3("h3_ptmasscent_noOOB", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmPlu->CreateTH3("h3_ptmasscent_noOOB", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmMin->CreateTH3("h3_ptmasscent_noOOB_ITSTOF", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmPlu->CreateTH3("h3_ptmasscent_noOOB_ITSTOF", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmMin->CreateTH3("h3_ptmasscent_nopileupevts", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmPlu->CreateTH3("h3_ptmasscent_nopileupevts", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmMin->CreateTH3("h3_ptmasscent_nopileupevts_ITSTOF", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmPlu->CreateTH3("h3_ptmasscent_nopileupevts_ITSTOF", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmMin->CreateTH3("h3_ptmasscent_OOBonly", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmPlu->CreateTH3("h3_ptmasscent_OOBonly", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmMin->CreateTH3("h3_ptmasscent_OOBonly_ITSTOF", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmPlu->CreateTH3("h3_ptmasscent_OOBonly_ITSTOF", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmMin->CreateTH3("h3_ptmasscent_2ITSTOFtracks", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmPlu->CreateTH3("h3_ptmasscent_2ITSTOFtracks", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmMin->CreateTH3("h3_ptmasscent_3ITSTOFtracks", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmPlu->CreateTH3("h3_ptmasscent_3ITSTOFtracks", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
   }
   if (!fDefOnly && (fParticleAnalysisStatus[kxip] || fParticleAnalysisStatus[komp])) {
     for (int icut=0; icut<kCasccutsnum; icut++) {
@@ -567,13 +590,13 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
           else isOOBpileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i_MCtrk, header, MCTrackArray);
       if(!lPart || lPart->Y()<-0.5 || lPart->Y()>0.5 || !lPart->IsPhysicalPrimary()) continue;
       if (!isOOBpileup) {
-        if(fParticleAnalysisStatus[kk0s] && lPart->PdgCode()==310   ) fHistos_K0S->FillTH2("h2_gen",lPart->Pt(),lPercentile);
-        if(fParticleAnalysisStatus[klam] && lPart->PdgCode()==3122  ) fHistos_Lam->FillTH2("h2_gen",lPart->Pt(),lPercentile);
-        if(fParticleAnalysisStatus[kalam]&& lPart->PdgCode()==-3122 ) fHistos_ALam->FillTH2("h2_gen",lPart->Pt(),lPercentile);
-        if(fParticleAnalysisStatus[kxim] && lPart->PdgCode()==3312  ) fHistos_XiMin->FillTH2("h2_gen",lPart->Pt(),lPercentile);
-        if(fParticleAnalysisStatus[kxip] && lPart->PdgCode()==-3312 ) fHistos_XiPlu->FillTH2("h2_gen",lPart->Pt(),lPercentile);
-        if(fParticleAnalysisStatus[komm] && lPart->PdgCode()==3334  ) fHistos_OmMin->FillTH2("h2_gen",lPart->Pt(),lPercentile);
-        if(fParticleAnalysisStatus[komp] && lPart->PdgCode()==-3334 ) fHistos_OmPlu->FillTH2("h2_gen",lPart->Pt(),lPercentile);
+        if(fParticleAnalysisStatus[kk0s] && lPart->PdgCode()==310   ) fHistos_K0S->FillTH2("h2_gen_noOOB",lPart->Pt(),lPercentile);
+        if(fParticleAnalysisStatus[klam] && lPart->PdgCode()==3122  ) fHistos_Lam->FillTH2("h2_gen_noOOB",lPart->Pt(),lPercentile);
+        if(fParticleAnalysisStatus[kalam]&& lPart->PdgCode()==-3122 ) fHistos_ALam->FillTH2("h2_gen_noOOB",lPart->Pt(),lPercentile);
+        if(fParticleAnalysisStatus[kxim] && lPart->PdgCode()==3312  ) fHistos_XiMin->FillTH2("h2_gen_noOOB",lPart->Pt(),lPercentile);
+        if(fParticleAnalysisStatus[kxip] && lPart->PdgCode()==-3312 ) fHistos_XiPlu->FillTH2("h2_gen_noOOB",lPart->Pt(),lPercentile);
+        if(fParticleAnalysisStatus[komm] && lPart->PdgCode()==3334  ) fHistos_OmMin->FillTH2("h2_gen_noOOB",lPart->Pt(),lPercentile);
+        if(fParticleAnalysisStatus[komp] && lPart->PdgCode()==-3334 ) fHistos_OmPlu->FillTH2("h2_gen_noOOB",lPart->Pt(),lPercentile);
       }
 
       if (!fispileupevent) {
@@ -583,10 +606,10 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
         if(fParticleAnalysisStatus[komp] && lPart->PdgCode()==-3334 ) fHistos_OmPlu->FillTH2("h2_gen_nopileupevts",lPart->Pt(),lPercentile);
       }
       if (isOOBpileup) {
-        if(fParticleAnalysisStatus[kxim] && lPart->PdgCode()==3312  ) fHistos_XiMin->FillTH2("h2_gen_pileup",lPart->Pt(),lPercentile);
-        if(fParticleAnalysisStatus[kxip] && lPart->PdgCode()==-3312 ) fHistos_XiPlu->FillTH2("h2_gen_pileup",lPart->Pt(),lPercentile);
-        if(fParticleAnalysisStatus[komm] && lPart->PdgCode()==3334  ) fHistos_OmMin->FillTH2("h2_gen_pileup",lPart->Pt(),lPercentile);
-        if(fParticleAnalysisStatus[komp] && lPart->PdgCode()==-3334 ) fHistos_OmPlu->FillTH2("h2_gen_pileup",lPart->Pt(),lPercentile);
+        if(fParticleAnalysisStatus[kxim] && lPart->PdgCode()==3312  ) fHistos_XiMin->FillTH2("h2_gen_OOBonly",lPart->Pt(),lPercentile);
+        if(fParticleAnalysisStatus[kxip] && lPart->PdgCode()==-3312 ) fHistos_XiPlu->FillTH2("h2_gen_OOBonly",lPart->Pt(),lPercentile);
+        if(fParticleAnalysisStatus[komm] && lPart->PdgCode()==3334  ) fHistos_OmMin->FillTH2("h2_gen_OOBonly",lPart->Pt(),lPercentile);
+        if(fParticleAnalysisStatus[komp] && lPart->PdgCode()==-3334 ) fHistos_OmPlu->FillTH2("h2_gen_OOBonly",lPart->Pt(),lPercentile);
       }
     }
   }
@@ -826,11 +849,11 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
       }
       //filling with default cuts
       if (fParticleAnalysisStatus[kk0s]) {
-        if ( physprim && assFlag[kk0s] && ApplyCuts(kk0s)) fHistos_K0S->FillTH3("h3_ptmasscent_def", fV0_Pt, fV0_InvMassK0s, lPercentile);
+        if ( physprim && assFlag[kk0s] && ApplyCuts(kk0s)) fHistos_K0S->FillTH3("h3_ptmasscent_ITSTOF", fV0_Pt, fV0_InvMassK0s, lPercentile);
       }
       if (fParticleAnalysisStatus[klam]) {
-        if ( physprim && assFlag[klam] && ApplyCuts(klam)) fHistos_Lam->FillTH3("h3_ptmasscent_def", fV0_Pt, fV0_InvMassLam, lPercentile);
-        if ( physprim && assFlag[kalam] && ApplyCuts(kalam)) fHistos_ALam->FillTH3("h3_ptmasscent_def", fV0_Pt, fV0_InvMassALam, lPercentile);
+        if ( physprim && assFlag[klam] && ApplyCuts(klam)) fHistos_Lam->FillTH3("h3_ptmasscent_ITSTOF", fV0_Pt, fV0_InvMassLam, lPercentile);
+        if ( physprim && assFlag[kalam] && ApplyCuts(kalam)) fHistos_ALam->FillTH3("h3_ptmasscent_ITSTOF", fV0_Pt, fV0_InvMassALam, lPercentile);
         if(fisMC){
           //Feeddown matrix filling
           //numerator
@@ -1133,13 +1156,16 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
       //fills TH3 with default cuts
       if (fParticleAnalysisStatus[kxip]) {
         if( physprim && assFlag[kxim] && ApplyCuts(kxim)) {
-          if (fCasc_nITSTOFtracks>=1) fHistos_XiMin->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
+          if (fCasc_nITSTOFtracks>=1) fHistos_XiMin->FillTH3("h3_ptmasscent_ITSTOF", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
           if (fCasc_nITSTOFtracks>=2) fHistos_XiMin->FillTH3("h3_ptmasscent_2ITSTOFtracks", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
           if (fCasc_nITSTOFtracks>=3) fHistos_XiMin->FillTH3("h3_ptmasscent_3ITSTOFtracks", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
           if (fisMC) {
-            if (!fispileupevent) fHistos_XiMin->FillTH3("h3_ptmasscent_nopileupevts", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
+            if (!fispileupevent) {
+              fHistos_XiMin->FillTH3("h3_ptmasscent_nopileupevts", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
+              if (fCasc_nITSTOFtracks>=1) fHistos_XiMin->FillTH3("h3_ptmasscent_nopileupevts_ITSTOF", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
+            }
             if (fisParticleFromOOB) {
-              fHistos_XiMin->FillTH3("h3_ptmasscent_pileup", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
+              fHistos_XiMin->FillTH3("h3_ptmasscent_OOBonly", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
               fHistos_CascTopology->FillTH1("CascCosPA_pileup", fCasc_CascCosPA);
               fHistos_CascTopology->FillTH1("V0CosPA_pileup", fCasc_V0CosPA);
               fHistos_CascTopology->FillTH1("CascRadius_pileup", fCasc_CascRad);
@@ -1154,9 +1180,10 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
               fHistos_CascTopology->FillTH1("DcaPosToPV_pileup", fCasc_DcaPosToPV);
               fHistos_CascTopology->FillTH1("DcaNegToPV_pileup", fCasc_DcaNegToPV);
               fHistos_CascTopology->FillTH1("InvMassLambdaDaughter_pileup", fCasc_InvMassLam);
+              if (fCasc_nITSTOFtracks>=1) fHistos_XiMin->FillTH3("h3_ptmasscent_OOBonly_ITSTOF", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
             }
             if (!fisParticleFromOOB) {
-              fHistos_XiMin->FillTH3("h3_ptmasscent_nopileup", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
+              fHistos_XiMin->FillTH3("h3_ptmasscent_noOOB", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
               fHistos_CascTopology->FillTH1("CascCosPA_nopileup", fCasc_CascCosPA);
               fHistos_CascTopology->FillTH1("V0CosPA_nopileup", fCasc_V0CosPA);
               fHistos_CascTopology->FillTH1("CascRadius_nopileup", fCasc_CascRad);
@@ -1171,17 +1198,21 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
               fHistos_CascTopology->FillTH1("DcaPosToPV_nopileup", fCasc_DcaPosToPV);
               fHistos_CascTopology->FillTH1("DcaNegToPV_nopileup", fCasc_DcaNegToPV);
               fHistos_CascTopology->FillTH1("InvMassLambdaDaughter_nopileup", fCasc_InvMassLam);
+              if (fCasc_nITSTOFtracks>=1) fHistos_XiMin->FillTH3("h3_ptmasscent_noOOB_ITSTOF", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
             }
           }
         }
         if( physprim && assFlag[kxip] && ApplyCuts(kxip)) {
-          if (fCasc_nITSTOFtracks>=1) fHistos_XiPlu->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
+          if (fCasc_nITSTOFtracks>=1) fHistos_XiPlu->FillTH3("h3_ptmasscent_ITSTOF", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
           if (fCasc_nITSTOFtracks>=2) fHistos_XiPlu->FillTH3("h3_ptmasscent_2ITSTOFtracks", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
           if (fCasc_nITSTOFtracks>=3) fHistos_XiPlu->FillTH3("h3_ptmasscent_3ITSTOFtracks", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
           if (fisMC) {
-            if (!fispileupevent) fHistos_XiPlu->FillTH3("h3_ptmasscent_nopileupevts", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
+            if (!fispileupevent) {
+              fHistos_XiPlu->FillTH3("h3_ptmasscent_nopileupevts", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
+              if (fCasc_nITSTOFtracks>=1) fHistos_XiPlu->FillTH3("h3_ptmasscent_nopileupevts_ITSTOF", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
+            }
             if (fisParticleFromOOB) {
-              fHistos_XiPlu->FillTH3("h3_ptmasscent_pileup", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
+              fHistos_XiPlu->FillTH3("h3_ptmasscent_OOBonly", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
               fHistos_CascTopology->FillTH1("CascCosPA_pileup", fCasc_CascCosPA);
               fHistos_CascTopology->FillTH1("V0CosPA_pileup", fCasc_V0CosPA);
               fHistos_CascTopology->FillTH1("CascRadius_pileup", fCasc_CascRad);
@@ -1196,9 +1227,10 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
               fHistos_CascTopology->FillTH1("DcaPosToPV_pileup", fCasc_DcaPosToPV);
               fHistos_CascTopology->FillTH1("DcaNegToPV_pileup", fCasc_DcaNegToPV);
               fHistos_CascTopology->FillTH1("InvMassLambdaDaughter_pileup", fCasc_InvMassLam);
+              if (fCasc_nITSTOFtracks>=1) fHistos_XiPlu->FillTH3("h3_ptmasscent_OOBonly_ITSTOF", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
             }
             if (!fisParticleFromOOB) {
-              fHistos_XiPlu->FillTH3("h3_ptmasscent_nopileup", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
+              fHistos_XiPlu->FillTH3("h3_ptmasscent_noOOB", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
               fHistos_CascTopology->FillTH1("CascCosPA_nopileup", fCasc_CascCosPA);
               fHistos_CascTopology->FillTH1("V0CosPA_nopileup", fCasc_V0CosPA);
               fHistos_CascTopology->FillTH1("CascRadius_nopileup", fCasc_CascRad);
@@ -1213,19 +1245,23 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
               fHistos_CascTopology->FillTH1("DcaPosToPV_nopileup", fCasc_DcaPosToPV);
               fHistos_CascTopology->FillTH1("DcaNegToPV_nopileup", fCasc_DcaNegToPV);
               fHistos_CascTopology->FillTH1("InvMassLambdaDaughter_nopileup", fCasc_InvMassLam);
+              if (fCasc_nITSTOFtracks>=1) fHistos_XiPlu->FillTH3("h3_ptmasscent_noOOB_ITSTOF", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
             }
           }
         }
       }
       if (fParticleAnalysisStatus[komp]) {
         if( physprim && assFlag[komm] && ApplyCuts(komm)) {
-          if (fCasc_nITSTOFtracks>=1) fHistos_OmMin->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
+          if (fCasc_nITSTOFtracks>=1) fHistos_OmMin->FillTH3("h3_ptmasscent_ITSTOF", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
           if (fCasc_nITSTOFtracks>=2) fHistos_OmMin->FillTH3("h3_ptmasscent_2ITSTOFtracks", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
           if (fCasc_nITSTOFtracks>=3) fHistos_OmMin->FillTH3("h3_ptmasscent_3ITSTOFtracks", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
           if (fisMC) {
-            if (!fispileupevent) fHistos_OmMin->FillTH3("h3_ptmasscent_nopileupevts", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
+            if (!fispileupevent) {
+              fHistos_OmMin->FillTH3("h3_ptmasscent_nopileupevts", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
+              if (fCasc_nITSTOFtracks>=1) fHistos_OmMin->FillTH3("h3_ptmasscent_nopileupevts_ITSTOF", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
+            }
             if (fisParticleFromOOB) {
-              fHistos_OmMin->FillTH3("h3_ptmasscent_pileup", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
+              fHistos_OmMin->FillTH3("h3_ptmasscent_OOBonly", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
               fHistos_CascTopology->FillTH1("CascCosPA_pileup", fCasc_CascCosPA);
               fHistos_CascTopology->FillTH1("V0CosPA_pileup", fCasc_V0CosPA);
               fHistos_CascTopology->FillTH1("CascRadius_pileup", fCasc_CascRad);
@@ -1240,9 +1276,10 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
               fHistos_CascTopology->FillTH1("DcaPosToPV_pileup", fCasc_DcaPosToPV);
               fHistos_CascTopology->FillTH1("DcaNegToPV_pileup", fCasc_DcaNegToPV);
               fHistos_CascTopology->FillTH1("InvMassLambdaDaughter_pileup", fCasc_InvMassLam);
+              if (fCasc_nITSTOFtracks>=1) fHistos_OmMin->FillTH3("h3_ptmasscent_OOBonly_ITSTOF", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
             }
             if (!fisParticleFromOOB) {
-              fHistos_OmMin->FillTH3("h3_ptmasscent_nopileup", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
+              fHistos_OmMin->FillTH3("h3_ptmasscent_noOOB", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
               fHistos_CascTopology->FillTH1("CascCosPA_nopileup", fCasc_CascCosPA);
               fHistos_CascTopology->FillTH1("V0CosPA_nopileup", fCasc_V0CosPA);
               fHistos_CascTopology->FillTH1("CascRadius_nopileup", fCasc_CascRad);
@@ -1257,17 +1294,21 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
               fHistos_CascTopology->FillTH1("DcaPosToPV_nopileup", fCasc_DcaPosToPV);
               fHistos_CascTopology->FillTH1("DcaNegToPV_nopileup", fCasc_DcaNegToPV);
               fHistos_CascTopology->FillTH1("InvMassLambdaDaughter_nopileup", fCasc_InvMassLam);
+              if (fCasc_nITSTOFtracks>=1) fHistos_OmMin->FillTH3("h3_ptmasscent_noOOB_ITSTOF", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
             }
           }
         }
         if( physprim && assFlag[komp] && ApplyCuts(komp)) {
-          if (fCasc_nITSTOFtracks>=1) fHistos_OmPlu->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
+          if (fCasc_nITSTOFtracks>=1) fHistos_OmPlu->FillTH3("h3_ptmasscent_ITSTOF", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
           if (fCasc_nITSTOFtracks>=2) fHistos_OmPlu->FillTH3("h3_ptmasscent_2ITSTOFtracks", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
           if (fCasc_nITSTOFtracks>=3) fHistos_OmPlu->FillTH3("h3_ptmasscent_3ITSTOFtracks", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
           if (fisMC) {
-            if (!fispileupevent) fHistos_OmPlu->FillTH3("h3_ptmasscent_nopileupevts", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
+            if (!fispileupevent) {
+              fHistos_OmPlu->FillTH3("h3_ptmasscent_nopileupevts", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
+              if (fCasc_nITSTOFtracks>=1) fHistos_OmPlu->FillTH3("h3_ptmasscent_nopileupevts_ITSTOF", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
+            }
             if (fisParticleFromOOB) {
-              fHistos_OmPlu->FillTH3("h3_ptmasscent_pileup", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
+              fHistos_OmPlu->FillTH3("h3_ptmasscent_OOBonly", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
               fHistos_CascTopology->FillTH1("CascCosPA_pileup", fCasc_CascCosPA);
               fHistos_CascTopology->FillTH1("V0CosPA_pileup", fCasc_V0CosPA);
               fHistos_CascTopology->FillTH1("CascRadius_pileup", fCasc_CascRad);
@@ -1282,9 +1323,10 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
               fHistos_CascTopology->FillTH1("DcaPosToPV_pileup", fCasc_DcaPosToPV);
               fHistos_CascTopology->FillTH1("DcaNegToPV_pileup", fCasc_DcaNegToPV);
               fHistos_CascTopology->FillTH1("InvMassLambdaDaughter_pileup", fCasc_InvMassLam);
+              if (fCasc_nITSTOFtracks>=1) fHistos_OmPlu->FillTH3("h3_ptmasscent_OOBonly_ITSTOF", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
             }
             if (!fisParticleFromOOB) {
-              fHistos_OmPlu->FillTH3("h3_ptmasscent_nopileup", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
+              fHistos_OmPlu->FillTH3("h3_ptmasscent_noOOB", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
               fHistos_CascTopology->FillTH1("CascCosPA_nopileup", fCasc_CascCosPA);
               fHistos_CascTopology->FillTH1("V0CosPA_nopileup", fCasc_V0CosPA);
               fHistos_CascTopology->FillTH1("CascRadius_nopileup", fCasc_CascRad);
@@ -1299,6 +1341,7 @@ void AliAnalysisTaskStrVsMult_PileUpStudies::UserExec(Option_t *)
               fHistos_CascTopology->FillTH1("DcaPosToPV_nopileup", fCasc_DcaPosToPV);
               fHistos_CascTopology->FillTH1("DcaNegToPV_nopileup", fCasc_DcaNegToPV);
               fHistos_CascTopology->FillTH1("InvMassLambdaDaughter_nopileup", fCasc_InvMassLam);
+              if (fCasc_nITSTOFtracks>=1) fHistos_OmPlu->FillTH3("h3_ptmasscent_noOOB_ITSTOF", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
             }
           }
         }
