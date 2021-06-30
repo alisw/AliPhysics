@@ -20,11 +20,8 @@
 
 /**
  * \class AliAnalysisTaskEmcalJetEnergyFlow
- * \brief Implementation of analysis task which calculates the energy flow between jets of increasing
- *  jet radii. It derives from AliAnalysisTaskEmcalJet.
- *  After performing a geometrical matching for the jets of the different radii, it calculates the pt
- *  difference between subsequent pairs of them. Additionally some basic analysis on track and jet
- *  spectra is performed.
+ * \brief Implementation of analysis task which calculates the energy flow between jets of increasing jet radii. It derives from AliAnalysisTaskEmcalJet.
+ *  After performing a geometrical matching for the jets of the different radii, it calculates the pt difference between subsequent pairs of them. Additionally some basic analysis on track and jet spectra is performed.
  */
 
 class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
@@ -50,7 +47,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void			JetMatcher(const TList *genJetsList,const Int_t &kGenJets,
    					   const TList *recJetsList,const Int_t &kRecJets,
    					   TArrayI &iGenIndex,TArrayI &iRecIndex,
-   					   Int_t iDebug = 0,Float_t maxDist = 0.3,Float_t max_eta = 0.5);	// /< This is a re-implementation of the AliAnalysisHelperJetTasks::GetClosestJets adjusted for AliEmcalJet instead of AliAODjets for the function's inputs.
+   					   Int_t iDebug = 0,Float_t maxDist = 0.3,Float_t max_eta = 0.5);	///< This is a re-implementation of the AliAnalysisHelperJetTasks::GetClosestJets adjusted for AliEmcalJet instead of AliAODjets for the function's inputs.
 	void			ExecOnce()				;
 	Bool_t			FillHistograms()			;
 	Bool_t			Run()					;
@@ -68,14 +65,14 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void                    DoCellLoop()                            ; ///<May remove later
 
         Bool_t                  IsMCprod                                ;///<Flag for MC productions
-	THistManager            fHistManager                            ;///!<! Histogram manager
+	THistManager            fHistManager                            ;///<Hist manager
 //	TList*			fOutput					;///!<! Output list
  	private:
  	 AliAnalysisTaskEmcalJetEnergyFlow(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
   	/// \cond CLASSIMP
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,11);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,12);
 	/// \endcond
 };
 #endif
