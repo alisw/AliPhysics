@@ -2,7 +2,7 @@
 #define ALIEMCALCORRECTIONCELLENERGY_H
 
 #include "AliEmcalCorrectionComponent.h"
-#include <array>
+#include <vector>
 
 /**
  * @class AliEmcalCorrectionCellEnergy
@@ -49,7 +49,7 @@ private:
   Bool_t                 fDisableTempCalib;          ///< Off by default, disables temp calibration totally
   Bool_t                 fUseShaperCorrection;       ///< Off by default the correction for the shaper nonlinearity
   Bool_t                 fUseAdditionalScale;        ///< Off by default, enables an energy scale shift on cell level. Highly experimental!
-  std::array<Float_t, 3> fAdditionalScaleSM;         ///< values for additionalScale shift for 3 different types of SM: Full, 2/3 and 1/3
+  std::vector<Float_t>   fAdditionalScaleSM;         ///< values for additionalScale shift for 3 different types of SM: Full, 2/3 and 1/3
   TString                fCustomRecalibFilePath;     ///< Empty string by default the path to the OADB file of the custom energy recalibration
   Bool_t                 fLoad1DRecalibFactors;      ///< Flag to load 1D energy recalibration factors
 

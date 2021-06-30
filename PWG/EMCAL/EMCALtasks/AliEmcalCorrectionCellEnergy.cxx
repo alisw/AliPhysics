@@ -31,11 +31,14 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fDisableTempCalib(0)
   ,fUseShaperCorrection(0)
   ,fUseAdditionalScale(kFALSE)
+  ,fAdditionalScaleSM(0)
   ,fCustomRecalibFilePath("")
   ,fLoad1DRecalibFactors(0)
 {
-  for(Int_t i = 0; i < 3; ++i)
-    fAdditionalScaleSM[i] = 1;
+  for(unsigned int i = 0; i < 3; ++i){
+    fAdditionalScaleSM.push_back(1); // set default values to 1
+  }
+
 }
 
 /**
