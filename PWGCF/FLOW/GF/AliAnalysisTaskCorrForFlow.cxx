@@ -15,8 +15,6 @@
 
 #include "AliAnalysisTaskCorrForFlow.h"
 
-class AliAnalysisTaskCorrForFlow;
-
 using namespace std;
 
 ClassImp(AliAnalysisTaskCorrForFlow)
@@ -102,13 +100,15 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name) : AliAn
 //_____________________________________________________________________________
 AliAnalysisTaskCorrForFlow::~AliAnalysisTaskCorrForFlow()
 {
-    if(fOutputListCharged) {
-        delete fOutputListCharged;
-    }
+    // if(fOutputListCharged) {
+    //     delete fOutputListCharged;
+    // }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
 {
+    OpenFile(1);
+
     //just for testing
     fPtBinsTrigCharged = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0};
     fPtBinsAss = {0.5, 1.0, 1.5, 2.0, 3.0};
@@ -167,16 +167,22 @@ void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
     fhChargedME->SetVarTitle(4, "PVz");
     fOutputListCharged->Add(fhChargedME);
 
+    printf("Init OK. \n");
+
     PostData(1, fOutputListCharged);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
 {
+    printf("User exec... \n");
+
     fhEventCounter->Fill("Input",1);
 
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!fAOD) { return; }
+    if(!fAOD) { AliError("Event not loaded."); return; }
     if(!IsEventSelected()) { return; }
+
+    printf("Event OK. \n");
 
     fTracksTrigCharged = new TObjArray;
     fTracksTrigCharged->SetOwner(kTRUE);
@@ -185,7 +191,16 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
     fTracksAss->SetOwner(kTRUE);
 
     Int_t iTracks(fAOD->GetNumberOfTracks());
-    if(iTracks < 1 ) { return; }
+    if(iTracks < 1 ) {
+      fTracksTrigCharged->Clear();
+  	  delete fTracksTrigCharged;
+      fTracksAss->Clear();
+  	  delete fTracksAss;
+      AliWarning("No tracks in the event.");
+      return;
+    }
+
+    printf("Tracks OK. \n");
 
     for(Int_t i(0); i < iTracks; i++) {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
@@ -202,17 +217,25 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
         fHistPhiEta->Fill(track->Phi(), track->Eta());
     }
 
+    printf("Filling OK. \n");
+
     if(!fTracksTrigCharged->IsEmpty()){
       FillCorrelations();
       FillCorrelationsMixed();
     }
+
+    printf("Correlations OK. \n");
 
     fTracksTrigCharged->Clear();
 	  delete fTracksTrigCharged;
 
     fTracksAss->Clear();
 	  delete fTracksAss;
+
+    printf("Posting data... \n");
+
     PostData(1, fOutputListCharged);
+    return;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlow::Terminate(Option_t *)
