@@ -80,6 +80,7 @@
 #pragma link C++ class AliAnalysisTaskStrVsMult_PileUpStudies+;
 #pragma link C++ class AliAnalysisTaskStrangeCascadesTriggerAODRun2+;
 #pragma link C++ class AliAnalysisTaskStrangeCascadesTriggerAODRun2MC+;
+#pragma link C++ class AliAnalysisTaskV0multspec+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif
