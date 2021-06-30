@@ -132,6 +132,11 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
 
   Pt2DCompare(0x0),
   JC2DCompare(0x0),
+  JC2DCompareUp(0x0),
+  JC2DCompareDown(0x0),
+  JC2DCompareGluon(0x0),
+  JC2DCompareOther(0x0),
+  JC2DCompareUnmatched(0x0),
 
   PtComparisonVsJCDiff(0x0),
   JCComparisonVsPtDiff(0x0),
@@ -254,6 +259,11 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
 
   Pt2DCompare(0x0),
   JC2DCompare(0x0),
+  JC2DCompareUp(0x0),
+  JC2DCompareDown(0x0),
+  JC2DCompareGluon(0x0),
+  JC2DCompareOther(0x0),
+  JC2DCompareUnmatched(0x0),
 
   PtComparisonVsJCDiff(0x0),
   PtComparisonVsJCDiffUp(0x0),
@@ -523,6 +533,17 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   fOutput->Add(Pt2DCompare);
   JC2DCompare = new TH2F("JC2DCompare", "JC 2D Particle vs Detector",250, -3, 3, 250, -3, 3);
   fOutput->Add(JC2DCompare);
+  JC2DCompareUp = new TH2F("JC2DCompareUp", "JC 2D Particle vs Detector Up",250, -3, 3, 250, -3, 3);
+  fOutput->Add(JC2DCompareUp);
+  JC2DCompareDown = new TH2F("JC2DCompareDown", "JC 2D Particle vs Detector Down",250, -3, 3, 250, -3, 3);
+  fOutput->Add(JC2DCompareDown);
+  JC2DCompareGluon = new TH2F("JC2DCompareGluon", "JC 2D Particle vs Detector Gluon",250, -3, 3, 250, -3, 3);
+  fOutput->Add(JC2DCompareGluon);
+  JC2DCompareOther = new TH2F("JC2DCompareOther", "JC 2D Particle vs Detector Other",250, -3, 3, 250, -3, 3);
+  fOutput->Add(JC2DCompareOther);
+  JC2DCompareUnmatched = new TH2F("JC2DCompareUnmatched", "JC 2D Particle vs Detector Unmatched",250, -3, 3, 250, -3, 3);
+  fOutput->Add(JC2DCompareUnmatched);
+
 
 
   PtComparisonVsJCDiff = new TH2F("PtComparisonVsJCDiff", "Pt Det Vs Part Compared to JC",250,-0.5,149.5,250,-0.5,149.5);
@@ -972,9 +993,14 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
           JCComparisonUp->Fill(JetChargeDiff);
           fTreeBranch[20] = JetChargeDiff;
 
+
+
           PtComparisonVsJCDiffUp->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
 
           JCComparisonVsPtDiffUp->Fill(jetCharge,jetChargeParticle,PtDiff);
+
+          JC2DCompareUp->Fill(jetCharge,jetChargeParticle);
+
 
             if(JetPt < JetMidPt)
             {
@@ -1011,6 +1037,9 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
           JCComparisonVsPtDiffDown->Fill(jetCharge,jetChargeParticle,PtDiff);
 
+          JC2DCompareDown->Fill(jetCharge,jetChargeParticle);
+
+
             if(JetPt < JetMidPt)
             {
               JCDownLow->Fill(jetCharge);
@@ -1045,6 +1074,9 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
           PtComparisonVsJCDiffGluon->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
 
           JCComparisonVsPtDiffGluon->Fill(jetCharge,jetChargeParticle,PtDiff);
+
+          JC2DCompareGluon->Fill(jetCharge,jetChargeParticle);
+
 
             if(JetPt < JetMidPt)
             {
@@ -1083,6 +1115,9 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
           JCComparisonVsPtDiffUnmatched->Fill(jetCharge,jetChargeParticle,PtDiff);
 
+          JC2DCompareUnmatched->Fill(jetCharge,jetChargeParticle);
+
+
 
             if(JetPt < JetMidPt)
             {
@@ -1119,6 +1154,9 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
           PtComparisonVsJCDiffOther->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
 
           JCComparisonVsPtDiffOther->Fill(jetCharge,jetChargeParticle,PtDiff);
+
+          JC2DCompareOther->Fill(jetCharge,jetChargeParticle);
+
 
 
             if(JetPt < JetMidPt)
