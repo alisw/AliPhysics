@@ -2798,14 +2798,10 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 2166){
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799609fe32220000","0163103100000010"); // NCell >=2
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799609fe30220000","0163103100000010"); // no NCell cut
-    // 1.5% scale in NL, without MC finetuning
+    // no scale in NL, Triggered data, without MC finetuning
   } else if (trainConfig == 2167){
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799709fe32220000","0163103100000010"); // NCell >=2
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799709fe30220000","0163103100000010"); // no NCell cut
-    // 3.5% scale in NL, without MC finetuning
-  } else if (trainConfig == 2168){
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799809fe32220000","0163103100000010"); // NCell >=2
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799809fe30220000","0163103100000010"); // no NCell cut
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799609fe32220000","0163103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799609fe32220000","0163103100000010"); // EG1
 
   // PCM-EDC systematics
   } else if (trainConfig == 2200){ // PCM based systematics
