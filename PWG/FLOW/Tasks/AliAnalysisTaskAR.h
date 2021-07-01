@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 08.06.2021
+ * Last Modified Date: 01.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -47,8 +47,7 @@ enum kXYZ { kX, kY, kZ, LAST_EXYZ };
 class AliAnalysisTaskAR : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskAR();
-  AliAnalysisTaskAR(const char *name,
-                             Bool_t useParticleWeights = kFALSE);
+  AliAnalysisTaskAR(const char *name, Bool_t useParticleWeights = kFALSE);
   virtual ~AliAnalysisTaskAR();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -59,6 +58,7 @@ public:
   virtual void InitializeArraysForTrackControlHistograms();
   virtual void InitializeArraysForEventControlHistograms();
   virtual void InitializeArraysForCuts();
+  virtual void InitializeArraysForQvectors();
   virtual void InitializeArraysForFinalResultHistograms();
   virtual void InitializeArraysForFinalResultProfiles();
   virtual void InitializeArraysForMCAnalysis();
@@ -73,6 +73,7 @@ public:
   /* split calls in UserExec() depending on flags */
   virtual void AODExec();
   virtual void MCOnTheFlyExec();
+  virtual void FillProfiles();
 
   /* methods called in AODExec(): */
   virtual Bool_t SurviveEventCut(AliVEvent *ave);
@@ -97,7 +98,8 @@ public:
   TComplex TwoNestedLoops(Int_t n1, Int_t n2);
   TComplex ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3);
   TComplex FourNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4);
-  /* TComplex FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
+  /* TComplex FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t
+   * n5);
    */
   /* TComplex SixNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5,
    */
@@ -145,12 +147,6 @@ public:
     this->fBinsEventControlHistograms[kMUL][kBIN] = nbins;
     this->fBinsEventControlHistograms[kMUL][kLEDGE] = min;
     this->fBinsEventControlHistograms[kMUL][kUEDGE] = max;
-  };
-
-  void SetAveragePhiBinning(Int_t nbins, Double_t min, Double_t max) {
-    this->fBinsEventControlHistograms[kPHIAVG][kBIN] = nbins;
-    this->fBinsEventControlHistograms[kPHIAVG][kLEDGE] = min;
-    this->fBinsEventControlHistograms[kPHIAVG][kUEDGE] = max;
   };
 
   void SetCentralitySelCriterion(TString SelCriterion) {
@@ -203,14 +199,6 @@ public:
     }
     fMCFlowHarmonics = array;
   }
-  void SetMCCorrelators(std::vector<std::vector<Int_t>> correlators) {
-    this->fMCCorrelators = correlators;
-    for (int i = 0; i < LAST_EFINALPROFILE; ++i) {
-      fBinsFinalResultProfiles[i][kBIN] = fMCCorrelators.size();
-      fBinsFinalResultProfiles[i][kLEDGE] = 0;
-      fBinsFinalResultProfiles[i][kUEDGE] = fMCCorrelators.size();
-    }
-  }
   void SetMCPdfRange(Double_t min, Double_t max) {
     fMCPdfRange[kMIN] = min;
     fMCPdfRange[kMAX] = max;
@@ -229,12 +217,21 @@ public:
     fReducedAcceptanceRange[kMAX] = max;
     fReducedAcceptance = reduced;
   };
-  void SetMCResetWeights(Bool_t option) { fResetWeights = option; }
+
+  void SetResetWeights(Bool_t option) { fResetWeights = option; }
+
+  void SetCorrelators(std::vector<std::vector<Int_t>> correlators) {
+    this->fCorrelators = correlators;
+    for (int i = 0; i < LAST_EFINALPROFILE; ++i) {
+      fBinsFinalResultProfiles[i][kBIN] = fCorrelators.size();
+      fBinsFinalResultProfiles[i][kLEDGE] = 0;
+      fBinsFinalResultProfiles[i][kUEDGE] = fCorrelators.size();
+    }
+  }
 
 private:
   AliAnalysisTaskAR(const AliAnalysisTaskAR &aatmpf);
-  AliAnalysisTaskAR &
-  operator=(const AliAnalysisTaskAR &aatmpf);
+  AliAnalysisTaskAR &operator=(const AliAnalysisTaskAR &aatmpf);
 
   /* base list holding all output object (a.k.a. grandmother of all lists)
    */
@@ -285,7 +282,6 @@ private:
   Bool_t fMCNumberOfParticlesPerEventFluctuations;
   Int_t fMCNumberOfParticlesPerEvent;
   Int_t fMCNumberOfParticlesPerEventRange[LAST_EMINMAX];
-  std::vector<std::vector<Int_t>> fMCCorrelators;
 
   /* qvectors */
   TList *fQvectorList;
@@ -296,9 +292,10 @@ private:
   Double_t fReducedAcceptance;
   Double_t fReducedAcceptanceRange[LAST_EMINMAX];
   Bool_t fResetWeights;
+  std::vector<std::vector<Int_t>> fCorrelators;
 
   /* Increase this counter in each new version: */
-  ClassDef(AliAnalysisTaskAR, 4);
+  ClassDef(AliAnalysisTaskAR, 5);
 };
 
 #endif
