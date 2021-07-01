@@ -1431,7 +1431,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
                                      //////////// ---- W-h correlation /////////////
 
-                                     if(NtrackCone<3 && TrkPt>30)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE);
+                                     if(NtrackCone<3 && TrkPt>30 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE);
 
                                     }
 
