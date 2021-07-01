@@ -114,9 +114,11 @@ void AliAnalysisTaskBaseWeights::AddOutput() {
             multBins.push_back(i);
         }
     }
+    std::vector<double> etaBins{-1,-0.8,0.8,1};
+    std::vector<double> yBins{-1,-0.5,0.5,1};
 
-    Axis etaAxis{"#eta", "pseudorapidity", {-1.05, 1.05}, 21};
-    Axis yAxis{"y", "rapidity", {-1.05, 1.05}, 21};
+    Axis etaAxis{"#eta", "pseudorapidity", etaBins};
+    Axis yAxis{"y", "rapidity", yBins};
     Axis centAxis{"cent", "centrality", centBins};
     Axis multAxisNch{"Nch", "#it{N}_{ch}", multBins};
     Axis multAxisNacc{"Nacc", "#it{N}_{acc}", multBins};
@@ -262,9 +264,8 @@ void AliAnalysisTaskBaseWeights::AnaEventMC() {
     fNaccWeightedSys = 0;
     fNaccWeightedSysRandom = 0;
 
-    fMCSpectraWeights = static_cast<AliMCSpectraWeightsHandler*>(
-                                                                 fEvent->FindListObject("fMCSpectraWeights"))
-    ->fMCSpectraWeight;
+    AliMCSpectraWeightsHandler* mcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject("fMCSpectraWeights"));
+    fMCSpectraWeights = (mcWeightsHandler) ? mcWeightsHandler->fMCSpectraWeight : nullptr;
 
     if (fMCSpectraWeights) {
         DebugPCC("found fMCSpectraWeights in this event\n");
@@ -336,12 +337,14 @@ void AliAnalysisTaskBaseWeights::AnaTrackMC(Int_t flag) {
 
 
     // get the scaling factor
-    fMCweight = fMCSpectraWeights->GetMCSpectraWeightNominal(
-                                                             fMCParticle->Particle());
-    fMCweightSys = fMCSpectraWeights->GetMCSpectraWeightSystematics(
-                                                                    fMCParticle->Particle());
-    fMCweightRandom = GetRandomRoundDouble(fMCweight);
-    fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
+    if(fMCSpectraWeights){
+        fMCweight = fMCSpectraWeights->GetMCSpectraWeightNominal(
+                                                                 fMCParticle->Particle());
+        fMCweightSys = fMCSpectraWeights->GetMCSpectraWeightSystematics(
+                                                                        fMCParticle->Particle());
+        fMCweightRandom = GetRandomRoundDouble(fMCweight);
+        fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
+    }
 
     // Fill Histograms
     fHistEffContNominal.FillWeight(
@@ -401,12 +404,15 @@ void AliAnalysisTaskBaseWeights::AnaParticleMC(Int_t flag) {
     }
 
     // get the scaling factor
-    fMCweight = fMCSpectraWeights->GetMCSpectraWeightNominal(
-                                                             fMCParticle->Particle());
-    fMCweightSys = fMCSpectraWeights->GetMCSpectraWeightSystematics(
-                                                                    fMCParticle->Particle());
-    fMCweightRandom = GetRandomRoundDouble(fMCweight);
-    fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
+    if(fMCSpectraWeights)
+    {
+        fMCweight = fMCSpectraWeights->GetMCSpectraWeightNominal(
+                                                                 fMCParticle->Particle());
+        fMCweightSys = fMCSpectraWeights->GetMCSpectraWeightSystematics(
+                                                                        fMCParticle->Particle());
+        fMCweightRandom = GetRandomRoundDouble(fMCweight);
+        fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
+    }
 
     // fill histograms
     fHistEffContNominal.FillWeight(
