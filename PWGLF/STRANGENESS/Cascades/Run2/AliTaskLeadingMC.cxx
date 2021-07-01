@@ -113,6 +113,13 @@ void AliTaskLeadingMC::CreateOutputObjects()
   fTree->Branch("nmpi", &fNMPI, "nmpi/I");
   fTree->Branch("nLambdaEta", &fNLambdaEta, "nLambdaEta/I");
   fTree->Branch("nXiEta", &fNXiEta, "nXiEta/I");
+  fTree->Branch("ptXiEta", fPtXiEta, "ptEta[nXiEta]/F");
+  fTree->Branch("nXiEtaFrag", &fNXiEtaFrag, "nXiEtaFrag/I");
+  fTree->Branch("ptXiEtaFrag", fPtXiEtaFrag, "ptEtaFrag[nXiEtaFrag]/F");
+  fTree->Branch("nXiEtaUp", &fNXiEtaUp, "nXiEtaUp/I");
+  fTree->Branch("ptXiEtaUp", fPtXiEtaUp, "ptEtaUp[nXiEtaUp]/F");
+  fTree->Branch("nXiEtaDown", &fNXiEtaDown, "nXiEtaDown/I");
+  fTree->Branch("ptXiEtaDown", fPtXiEtaDown, "ptEtaDown[nXiEtaDown]/F");
   fTree->Branch("nOmegaEta", &fNOmegaEta, "nOmetaEta/I");
   fTree->Branch("nPiEta", &fNPiEta, "nPiEta/I");
   fTree->Branch("sumLambdaXi", &fSumPtLambdaEta, "sumPtLambda/F");
@@ -323,7 +330,7 @@ void AliTaskLeadingMC::loopMC(AliMCEvent *mcEvent){
   fP_cand_leadC=0;
   fN_cand_leadC=0;
 
-  fNch=0,fNchEta=0,fNchEtaA=0,fNchEtaC=0,fNLambdaEta=0,fNXiEta=0,fNOmegaEta=0,fNPiEta=0;
+  fNch=0,fNchEta=0,fNchEtaA=0,fNchEtaC=0,fNLambdaEta=0,fNXiEta=0,fNXiEtaFrag=0,fNXiEtaUp=0,fNXiEtaDown=0,fNOmegaEta=0,fNPiEta=0;
   fSumPtLambdaEta=fSumPtXiEta=fSumPtOmegaEta=fSumPtPiEta=0;
   fEnergyEta=0;
 
@@ -370,8 +377,35 @@ void AliTaskLeadingMC::loopMC(AliMCEvent *mcEvent){
 	fSumPtLambdaEta += pt;
       }
       if(TMath::Abs(part->GetPdgCode()) == 3312){ // Xi
+        fPtXiEta[fNXiEta] = pt;
 	fNXiEta++;
 	fSumPtXiEta += pt;
+        // look if it comes from fragmenetation
+        Int_t imoth = part->GetFirstMother();
+        AliMCParticle *partMCM;
+        TParticle *partM;
+        while(imoth >= 0 && fNXiEtaFrag < 100){
+          partMCM = (AliMCParticle *) mcEvent->GetTrack(imoth);  
+          partM = partMCM->Particle();
+          if(TMath::Abs(partM->GetPdgCode()) == 3){
+            fPtXiEtaFrag[fNXiEtaFrag] = pt;
+            fNXiEtaFrag++;
+            imoth = -1;
+          }
+          else if(TMath::Abs(partM->GetPdgCode()) == 1){
+            fPtXiEtaUp[fNXiEtaUp] = pt;
+            fNXiEtaUp++;
+            imoth = -1;
+          }
+          else if(TMath::Abs(partM->GetPdgCode()) == 2){
+            fPtXiEtaDown[fNXiEtaDown] = pt;
+            fNXiEtaDown++;
+            imoth = -1;
+          }
+          else{
+            imoth = partM->GetFirstMother();
+          }
+       }
       }
       if(TMath::Abs(part->GetPdgCode()) == 3334){ // Omega
 	fNOmegaEta++;

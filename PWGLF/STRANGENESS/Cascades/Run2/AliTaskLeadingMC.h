@@ -177,6 +177,7 @@ private:
   Int_t fNMPI = 0;           //! number of multiparton interaction
   Int_t fNLambdaEta = 0;     //!
   Int_t fNXiEta = 0;         //!
+  float fPtXiEta[100];       //!
   Int_t fNOmegaEta = 0;      //!
   Int_t fNPiEta = 0;         //!
   float fSumPtLambdaEta = 0; //!
@@ -185,6 +186,12 @@ private:
   float fSumPtPiEta = 0;     //!
   float fMaxChargePt = 0;    //!
   float fEffEnergy = 0;      //!
+  Int_t fNXiEtaFrag = 0;     //!
+  Int_t fNXiEtaUp = 0;       //!
+  Int_t fNXiEtaDown = 0;     //!
+  float fPtXiEtaFrag[100];   //!
+  float fPtXiEtaUp[100];     //!
+  float fPtXiEtaDown[100];   //!
 
   // temporary variables
   Float_t fPt = 0;    //!
@@ -202,7 +209,7 @@ private:
   Float_t fZ = 0;     //! impact point (cm) in the ZDC
   Int_t fLabel = 0;   //!
 	
-  ClassDef(AliTaskLeadingMC, 1); // example of analysis
+  ClassDef(AliTaskLeadingMC, 2); // example of analysis
 };
 
 #endif

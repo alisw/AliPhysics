@@ -188,6 +188,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fVertexerUseAbsDCA(true),
   fTrackCuts2pr{nullptr},
   fTrackCuts3pr{nullptr},
+  fTrackCutsBach{nullptr},
   fMaxTracksToProcess(9999999),
   fNPtBinsSingleTrack(6),
   fNPtBinsDzero(25),
@@ -396,6 +397,12 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
   fTrackCuts3pr->SetMaxDCAToVertexXY(1000.);
   fTrackCuts3pr->SetMinDCAToVertexXY(0.);
 
+  fTrackCutsBach = new AliESDtrackCuts("AliESDtrackCuts", "defaultbach");
+  fTrackCutsBach->SetPtRange(0.3, 1.e10);
+  fTrackCutsBach->SetEtaRange(-0.8, +0.8);
+  fTrackCutsBach->SetMinDCAToVertexXYPtDep("0.*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
+  fTrackCutsBach->SetMaxDCAToVertexXY(1.);
+  
   fNPtBinsSingleTrack = 6;
   Double_t defaultPtBinsSingleTrack[7] = {0., 0.5, 1., 1.5, 2., 3., 1000.};
   for (Int_t ib = 0; ib < fNPtBinsSingleTrack + 1; ib++)
@@ -1313,56 +1320,58 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     fHistTglSelTracks->Fill(track_p0->GetTgl());
     fHistImpParSelTracks2prong->Fill(d0track[0]);
     fHistEtaSelTracks2prong->Fill(track_p0->Eta());
-    if (status[iPosTrack_0] > 1){
+    if (status[iPosTrack_0] & 2){
       fHistImpParSelTracks3prong->Fill(d0track[0]);
       fHistEtaSelTracks3prong->Fill(track_p0->Eta());
     }
     fHistITSmapSelTracks->Fill(track_p0->GetITSClusterMap());
-    for(Int_t iv0=0; iv0<nv0; iv0++){
-      AliESDv0 *v0 = esd->GetV0(iv0);
-      if (!v0) continue;
-      Bool_t onFlyStatus=v0->GetOnFlyStatus();
-      if(onFlyStatus==kTRUE) continue;
-      if(v0->Pt()<fMinPtV0) continue;
-      UInt_t labPos = (UInt_t)TMath::Abs(v0->GetPindex());
-      UInt_t labNeg = (UInt_t)TMath::Abs(v0->GetNindex());
-      AliESDtrack *posVV0track=esd->GetTrack(labPos);
-      AliESDtrack *negVV0track=esd->GetTrack(labNeg);
-      if( !posVV0track || !negVV0track ) continue;
-      // bachelor must not be a v0-track
-      if (posVV0track->GetID() == track_p0->GetID() ||
-          negVV0track->GetID() == track_p0->GetID()) continue;
-      // reject like-sign v0
-      if ( posVV0track->Charge() == negVV0track->Charge() ) continue;
-      // avoid ghost TPC tracks
-      if(!(posVV0track->GetStatus() & AliESDtrack::kTPCrefit) ||
-         !(negVV0track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-      //  reject kinks (only necessary on AliESDtracks)
-      if (posVV0track->GetKinkIndex(0)>0  || negVV0track->GetKinkIndex(0)>0) continue;
-      Double_t xyz[3], pxpypz[3];
-      v0->XvYvZv(xyz);
-      v0->PxPyPz(pxpypz);
-      Double_t cv[21]; for(int i=0; i<21; i++) cv[i]=0;
-      AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
-      twoTrackArrayCasc->AddAt(track_p0,0);
-      twoTrackArrayCasc->AddAt(trackV0,1);
-      AliESDVertex* vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
-      if (vertexCasc == 0x0) {
+    if (status[iPosTrack_0] & 4){ // good bachelor track
+      for(Int_t iv0=0; iv0<nv0; iv0++){
+        AliESDv0 *v0 = esd->GetV0(iv0);
+        if (!v0) continue;
+        Bool_t onFlyStatus=v0->GetOnFlyStatus();
+        if(onFlyStatus==kTRUE) continue;
+        if(v0->Pt()<fMinPtV0) continue;
+        UInt_t labPos = (UInt_t)TMath::Abs(v0->GetPindex());
+        UInt_t labNeg = (UInt_t)TMath::Abs(v0->GetNindex());
+        AliESDtrack *posVV0track=esd->GetTrack(labPos);
+        AliESDtrack *negVV0track=esd->GetTrack(labNeg);
+        if( !posVV0track || !negVV0track ) continue;
+        // bachelor must not be a v0-track
+        if (posVV0track->GetID() == track_p0->GetID() ||
+            negVV0track->GetID() == track_p0->GetID()) continue;
+        // reject like-sign v0
+        if ( posVV0track->Charge() == negVV0track->Charge() ) continue;
+        // avoid ghost TPC tracks
+        if(!(posVV0track->GetStatus() & AliESDtrack::kTPCrefit) ||
+           !(negVV0track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        //  reject kinks (only necessary on AliESDtracks)
+        if (posVV0track->GetKinkIndex(0)>0  || negVV0track->GetKinkIndex(0)>0) continue;
+        Double_t xyz[3], pxpypz[3];
+        v0->XvYvZv(xyz);
+        v0->PxPyPz(pxpypz);
+        Double_t cv[21]; for(int i=0; i<21; i++) cv[i]=0;
+        AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
+        twoTrackArrayCasc->AddAt(track_p0,0);
+        twoTrackArrayCasc->AddAt(trackV0,1);
+        AliESDVertex* vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
+        if (vertexCasc == 0x0) {
+          delete trackV0;
+          twoTrackArrayCasc->Clear();
+          continue;
+        }
+        AliAODVertex* vertexAOD = ConvertToAODVertex(vertexCasc);
+        AliAODRecoCascadeHF* theCascade=MakeCascade(twoTrackArrayCasc, vertexAOD, bzkG);
+        Double_t ptLcK0sp=theCascade->Pt();
+        Double_t invMassLcK0sp=theCascade->InvMassLctoK0sP();
+        fHistInvMassLcK0sp->Fill(invMassLcK0sp);
+        fHistPtLcK0sp->Fill(ptLcK0sp);
         delete trackV0;
         twoTrackArrayCasc->Clear();
-        continue;
+        delete theCascade;
+        delete vertexAOD;
+        delete vertexCasc;
       }
-      AliAODVertex* vertexAOD = ConvertToAODVertex(vertexCasc);
-      AliAODRecoCascadeHF* theCascade=MakeCascade(twoTrackArrayCasc, vertexAOD, bzkG);
-      Double_t ptLcK0sp=theCascade->Pt();
-      Double_t invMassLcK0sp=theCascade->InvMassLctoK0sP();
-      fHistInvMassLcK0sp->Fill(invMassLcK0sp);
-      fHistPtLcK0sp->Fill(ptLcK0sp);
-      delete trackV0;
-      twoTrackArrayCasc->Clear();
-      delete theCascade;
-      delete vertexAOD;
-      delete vertexCasc;
     }
     if (track_p0->Charge() < 0) continue;
     for (Int_t iNegTrack_0 = 0; iNegTrack_0 < totTracks; iNegTrack_0++) {
@@ -1372,7 +1381,6 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       if (status[iNegTrack_0] == 0) continue;
       twoTrackArray->AddAt(track_p0, 0);
       twoTrackArray->AddAt(track_n0, 1);
-
 
       AliESDVertex* trkv = ReconstructSecondaryVertex(twoTrackArray, primVtxTrk);
       if (trkv == 0x0) {
@@ -1524,14 +1532,14 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       }
       delete trkv;
       if (fDo3Prong) {
-        if(status[iPosTrack_0]<=1) continue;
-        if(status[iNegTrack_0]<=1) continue;
+        if(status[iPosTrack_0] & 2 == 0) continue;
+        if(status[iNegTrack_0] & 2 == 0) continue;
         for (Int_t iPosTrack_1 = iPosTrack_0 + 1; iPosTrack_1 < totTracks; iPosTrack_1++) {
           AliESDtrack* track_p1 = esd->GetTrack(iPosTrack_1);
           if (!track_p1) continue;
           if (track_p1->Charge() < 0) continue;
           track_p1->GetPxPyPz(mom2);
-          if (status[iPosTrack_1] <= 1) continue;
+          if (status[iPosTrack_1] & 2 == 0) continue;
           // order tracks according to charge: +-+
           threeTrackArray->AddAt(track_p0, 0);
           threeTrackArray->AddAt(track_n0, 1);
@@ -1543,7 +1551,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
           AliESDtrack* track_n1 = esd->GetTrack(iNegTrack_1);
           if (!track_n1) continue;
           if (track_n1->Charge() > 0) continue;
-          if (status[iNegTrack_1] <= 1) continue;
+          if (status[iNegTrack_1] & 2 == 0) continue;
           track_n1->GetPxPyPz(mom2);
           // order tracks according to charge: -+-
           threeTrackArray->AddAt(track_n0, 0);
@@ -1809,6 +1817,9 @@ Int_t AliAnalysisTaskHFSimpleVertices::SingleTrkCuts(AliESDtrack* trk, AliESDVer
   if((retCodeCurrent == 1 || retCodeCurrent == 3) && !fTrackCuts2pr->AcceptTrack(trk)) retCode-=1;
   if(retCodeCurrent >= 2 && !fTrackCuts3pr->AcceptTrack(trk)) retCode-=2;
 
+  //test cuts for bachelor track
+  if(fTrackCutsBach->AcceptTrack(trk)) retCode+=4;
+  
   return retCode;
 }
 //______________________________________________________________________________

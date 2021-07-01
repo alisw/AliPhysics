@@ -1,5 +1,6 @@
 AliAnalysisTask *AddTaskJHOCFAMaster10h (TString taskName = "JHOCFAMaster10h", double ptMin = 0.5, Bool_t removebadarea = kFALSE,
-  Bool_t saveCatalystQA = kFALSE, Int_t Nsets = 6, TString configArray = "0 1 6 7 8 9")
+  Bool_t saveCatalystQA = kFALSE, Int_t Nsets = 6, TString configArray = "0 1 6 7 8 9",
+  Int_t Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -124,8 +125,8 @@ AliAnalysisTask *AddTaskJHOCFAMaster10h (TString taskName = "JHOCFAMaster10h", d
     myTask[i]->HOCFASetCentralityArray("0. 5. 10. 20. 30. 40. 50. 60. 70. 80.");
     myTask[i]->HOCFASetMinMultiplicity(10);
     myTask[i]->HOCFASetParticleWeights(kTRUE);
-    myTask[i]->HOCFASetNumberCombi(6);
-    myTask[i]->HOCFASetHarmoArray("2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5"); // 6 combis.
+    myTask[i]->HOCFASetNumberCombi(Ncombi);
+    myTask[i]->HOCFASetHarmoArray(Form("%s", combiArray.Data())); // 6 combis.
     mgr->AddTask((AliAnalysisTask *) myTask[i]);
   }
 

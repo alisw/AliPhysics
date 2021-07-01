@@ -59,8 +59,10 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fCombinedPIDThreshold(0.),
   fUseLcPID(kFALSE),
   fUseXic0PID(kFALSE),
+  fUseXiccPPPID(kFALSE),
   fUseXicPlusPID(kFALSE),
   fPidObjDau(0),
+  fPidObjPiFromXiccPP(0),
   fPidObjPiFromXicPlus(0),
   fPidObjPiFromXic0(0),
   fPidObjPiFromXi(0),
@@ -68,8 +70,10 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fPidObjPiFromV0(0),
   fPtMinLc(0.),
   fPtMinPrFromLc(0.),
+  fPtMinXiccPP(0.),
+  fPtMinXicPlus(0.),
   fPtMinXic0(0.),
-  fPtMinPiFromXic0(0.),
+  fPtMinPiFromPrimary(0.),
   fPtMinPiFromXi(0.),
   fProdTrackEtaRange(9999.),
   fProdUseAODFilterBit(kTRUE),
@@ -77,6 +81,8 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fProdMassTolKs0(9999.),
   fProdMassTolLambda(9999.),
   fProdMassTolXi(9999.),
+  fProdMassTolXiccPP(9999.),
+  fProdMassTolXicPlus(9999.),
   fProdMassTolXic0(9999.),
   fProdRfidMinV0(0.6),
   fProdRfidMaxV0(100.0),
@@ -107,6 +113,8 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fKFPXi_Chi2geoMax(100.),
   fKFPXi_Chi2topoMax(100.),
   fKFPXi_lDeltalMin(0.),
+  fKFPXiccPP_Chi2geoMax(100.),
+  fKFPXicPlus_Chi2geoMax(100.),
   fKFPXic0_Chi2geoMax(100.),
   fProdTrackTPCNCrossedRowsMin(0),
   fProdTrackTPCNCrossedRowsRatioMin(0.),
@@ -180,8 +188,10 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fCombinedPIDThreshold(source.fCombinedPIDThreshold),
   fUseLcPID(source.fUseLcPID),
   fUseXic0PID(source.fUseXic0PID),
+  fUseXiccPPPID(source.fUseXiccPPPID),
   fUseXicPlusPID(source.fUseXicPlusPID),
   fPidObjDau(source.fPidObjDau),
+  fPidObjPiFromXiccPP(source.fPidObjPiFromXiccPP),
   fPidObjPiFromXicPlus(source.fPidObjPiFromXicPlus),
   fPidObjPiFromXic0(source.fPidObjPiFromXic0),
   fPidObjPiFromXi(source.fPidObjPiFromXi),
@@ -189,8 +199,10 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fPidObjPiFromV0(source.fPidObjPiFromV0),
   fPtMinLc(source.fPtMinLc),
   fPtMinPrFromLc(source.fPtMinPrFromLc),
+  fPtMinXiccPP(source.fPtMinXiccPP),
+  fPtMinXicPlus(source.fPtMinXicPlus),
   fPtMinXic0(source.fPtMinXic0),
-  fPtMinPiFromXic0(source.fPtMinPiFromXic0),
+  fPtMinPiFromPrimary(source.fPtMinPiFromPrimary),
   fPtMinPiFromXi(source.fPtMinPiFromXi),
   fProdTrackEtaRange(source.fProdTrackEtaRange),
   fProdUseAODFilterBit(source.fProdUseAODFilterBit),
@@ -198,6 +210,8 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fProdMassTolKs0(source.fProdMassTolKs0),
   fProdMassTolLambda(source.fProdMassTolLambda),
   fProdMassTolXi(source.fProdMassTolXi),
+  fProdMassTolXiccPP(source.fProdMassTolXiccPP),
+  fProdMassTolXicPlus(source.fProdMassTolXicPlus),
   fProdMassTolXic0(source.fProdMassTolXic0),
   fProdRfidMinV0(source.fProdRfidMinV0),
   fProdRfidMaxV0(source.fProdRfidMaxV0),
@@ -228,6 +242,8 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fKFPXi_Chi2geoMax(source.fKFPXi_Chi2geoMax),
   fKFPXi_Chi2topoMax(source.fKFPXi_Chi2topoMax),
   fKFPXi_lDeltalMin(source.fKFPXi_lDeltalMin),
+  fKFPXiccPP_Chi2geoMax(source.fKFPXiccPP_Chi2geoMax),
+  fKFPXicPlus_Chi2geoMax(source.fKFPXicPlus_Chi2geoMax),
   fKFPXic0_Chi2geoMax(source.fKFPXic0_Chi2geoMax),
   fProdTrackTPCNCrossedRowsMin(source.fProdTrackTPCNCrossedRowsMin),
   fProdTrackTPCNCrossedRowsRatioMin(source.fProdTrackTPCNCrossedRowsRatioMin),
@@ -258,8 +274,10 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fCombinedPIDThreshold = source.fCombinedPIDThreshold;
   fUseLcPID = source.fUseLcPID;
   fUseXic0PID = source.fUseXic0PID;
+  fUseXiccPPPID = source.fUseXiccPPPID;
   fUseXicPlusPID = source.fUseXicPlusPID;
   fPidObjDau = source.fPidObjDau;
+  fPidObjPiFromXiccPP = source.fPidObjPiFromXiccPP;
   fPidObjPiFromXicPlus = source.fPidObjPiFromXicPlus;
   fPidObjPiFromXic0 = source.fPidObjPiFromXic0;
   fPidObjPiFromXi = source.fPidObjPiFromXi;
@@ -268,13 +286,17 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fProdUseAODFilterBit = source.fProdUseAODFilterBit;
   fPtMinLc = source.fPtMinLc;
   fPtMinPrFromLc = source.fPtMinPrFromLc;
+  fPtMinXiccPP = source.fPtMinXiccPP;
+  fPtMinXicPlus = source.fPtMinXicPlus;
   fPtMinXic0 = source.fPtMinXic0;
-  fPtMinPiFromXic0 = source.fPtMinPiFromXic0;
+  fPtMinPiFromPrimary = source.fPtMinPiFromPrimary;
   fPtMinPiFromXi = source.fPtMinPiFromXi;
   fProdTrackEtaRange = source.fProdTrackEtaRange;
   fProdMassTolLc = source.fProdMassTolLc;
   fProdMassTolKs0 = source.fProdMassTolKs0;
   fProdMassTolLambda = source.fProdMassTolLambda;
+  fProdMassTolXiccPP = source.fProdMassTolXiccPP;
+  fProdMassTolXicPlus = source.fProdMassTolXicPlus;
   fProdMassTolXic0 = source.fProdMassTolXic0;
   fProdRfidMinV0 = source.fProdRfidMinV0;
   fProdRfidMaxV0 = source.fProdRfidMaxV0;
@@ -304,6 +326,8 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fKFPXi_Chi2geoMax = source.fKFPXi_Chi2geoMax;
   fKFPXi_Chi2topoMax = source.fKFPXi_Chi2topoMax;
   fKFPXi_lDeltalMin = source.fKFPXi_lDeltalMin;
+  fKFPXiccPP_Chi2geoMax = source.fKFPXiccPP_Chi2geoMax;
+  fKFPXicPlus_Chi2geoMax = source.fKFPXicPlus_Chi2geoMax;
   fKFPXic0_Chi2geoMax = source.fKFPXic0_Chi2geoMax;
   fProdTrackTPCNCrossedRowsMin = source.fProdTrackTPCNCrossedRowsMin;
   fProdTrackTPCNCrossedRowsRatioMin = source.fProdTrackTPCNCrossedRowsRatioMin;
@@ -643,7 +667,7 @@ Bool_t AliRDHFCutsKFP::SingleTrkCuts(AliAODTrack *trk)
   if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
   //	if(!fAnalCuts->IsDaughterSelected(trk,fV1,esdTrackCuts)) return kFALSE;
   if(fabs(trk->Eta())>fProdTrackEtaRange) return kFALSE;
-  if(trk->Pt()<fPtMinPiFromXic0) return kFALSE;
+  if(trk->Pt()<fPtMinPiFromPrimary) return kFALSE;
 
   return kTRUE;
 }
@@ -656,7 +680,7 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_PrimaryPion(AliAODTrack *trk)
   if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
 
   // Kinematic Cuts & Acceptance
-  if ( trk->Pt()<=fPtMinPiFromXic0 || trk->Pt()>=100.0 ) return kFALSE;
+  if ( trk->Pt()<=fPtMinPiFromPrimary || trk->Pt()>=100.0 ) return kFALSE;
   if ( TMath::Abs(trk->Eta()) >= 0.8 ) return kFALSE;
 
   // Track Selection Cuts (TPC)
@@ -685,7 +709,7 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_PrimaryPion(AliAODTrack *trk)
     Int_t isPion = fPidObjPiFromXic0->MakeRawPid(trk, 2);
     if (isPion<1) return kFALSE;
   }
-  if(fUseXicPlusPID) {
+  if(fUseXicPlusPID || fUseXiccPPPID) {
     if(fPidObjPiFromXicPlus->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -693,8 +717,9 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_PrimaryPion(AliAODTrack *trk)
       fPidObjPiFromXicPlus->SetPidResponse(pidResp);
     }
     Int_t isPion = fPidObjPiFromXicPlus->MakeRawPid(trk, 2);
+    if (isPion<1) return kFALSE;
   }
-  
+
   return kTRUE;
 }
 
@@ -721,7 +746,7 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_SecondaryPion(AliAODTrack *trk)
   // PID
 //  Double_t nsigmaTPC = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kPion);
 //  if (TMath::Abs(nsigmaTPC) > 3) return kFALSE;
-  if(fUseXic0PID || fUseXicPlusPID) {
+  if(fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID) {
     if(fPidObjPiFromXi->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -741,7 +766,7 @@ Bool_t AliRDHFCutsKFP::SinglePionPoolCuts(AliAODTrack *trk)
 {
   if ( !trk ) return kFALSE;
   if ( trk->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin ) return kFALSE;
-  if(fUseXic0PID || fUseXicPlusPID) {
+  if(fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID) {
     if(fPidObjPiFromXi->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -814,7 +839,7 @@ Bool_t AliRDHFCutsKFP::SingleV0LambdaTotCuts(AliAODv0 *v0)
 
 //  if ( v0->DcaV0Daughters() > fProdDcaV0DaughtersMax ) return kFALSE;
 
-  if (fUseXic0PID || fUseXicPlusPID) {
+  if (fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID) {
     if (fPidObjPrFromV0->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1067,7 +1092,7 @@ Bool_t AliRDHFCutsKFP::SingleCascCuts(AliAODcascade *casc, Bool_t IsAnaOmegac0)
 //  Double_t nsigmaTPC = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kPion);
 //  if (TMath::Abs(nsigmaTPC) > 3) return kFALSE;
 
-  if (fUseXic0PID || fUseXicPlusPID) {
+  if (fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID) {
     if(fPidObjPiFromXi->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1127,7 +1152,7 @@ Bool_t AliRDHFCutsKFP::LambdaPIDCuts(AliAODv0 *v0)
     trackN = (AliAODTrack*)v0->GetDaughter(0);
   }
 
-  if (fUseXic0PID || fUseXicPlusPID) {
+  if (fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID) {
     if (fPidObjPrFromV0->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1165,7 +1190,7 @@ Bool_t AliRDHFCutsKFP::AntiLambdaPIDCuts(AliAODv0 *v0)
     trackN = (AliAODTrack*)v0->GetDaughter(0);
   }
 
-  if (fUseXic0PID || fUseXicPlusPID) {
+  if (fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID) {
     if (fPidObjPrFromV0->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1268,7 +1293,7 @@ Bool_t AliRDHFCutsKFP::SingleCascadeCuts(AliAODcascade *casc,Double_t *primvert,
 	if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
 	if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
 
-  if(fUseXic0PID || fUseXicPlusPID){
+  if(fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID){
     if(fPidObjPiFromXi->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1391,7 +1416,7 @@ Bool_t AliRDHFCutsKFP::SingleCascadeCutsRef(AliAODcascade *casc, Double_t *primv
 	if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
 	if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
 
-  if(fUseXic0PID || fUseXicPlusPID){
+  if(fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID){
     if(fPidObjPiFromXi->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();

@@ -44,6 +44,7 @@
 #include "AliESDVertex.h"
 #include "AliVertexingHFUtils.h"
 #include "AliKFParticle.h"
+#include "TGraphErrors.h"
 
 //---- Header for Monte Carlo
 #include "AliAODMCParticle.h"
@@ -173,6 +174,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     MinNtrklet(0),	    // Tracklet class (min)
     MaxNtrklet(9999),	    // Tracklet class (max)
 
+    fHist_Tracklet(0),
 
 
     //---- MC data ----//
@@ -250,7 +252,18 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fPhot_InvMass_vs_DCA3(0),
     fPhot_InvMass_vs_DCA_data(0),
     fPhot_InvMass_vs_DCA_data2(0),
-    fPhot_InvMass_vs_DCA_data3(0)
+    fPhot_InvMass_vs_DCA_data3(0),
+
+    fHistOrg_B(0),	// original B-meson
+    fHistOrg_D(0),	// original D-meson
+    fHistOrg_Dpm(0),	// original D+
+    fHistOrg_D0(0),	// original D0
+    fHistOrg_Ds(0),	// original Ds
+    fHistOrg_Lc(0),	// original Lc
+
+    pTWeight_D(0),
+    pTWeight_Lc(0),
+    pTWeight_B(0)
 
 
 {
@@ -374,6 +387,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     MinNtrklet(0),	    // Tracklet class (min)
     MaxNtrklet(9999),	    // Tracklet class (max)
 
+    fHist_Tracklet(0),
+
 
     //---- MC data ----//
     fMCcheckMother(0),
@@ -450,7 +465,19 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fPhot_InvMass_vs_DCA3(0),
     fPhot_InvMass_vs_DCA_data(0),
     fPhot_InvMass_vs_DCA_data2(0),
-    fPhot_InvMass_vs_DCA_data3(0)
+    fPhot_InvMass_vs_DCA_data3(0),
+
+    fHistOrg_B(0),	// original B-meson
+    fHistOrg_D(0),	// original D-meson
+    fHistOrg_Dpm(0),	// original D+
+    fHistOrg_D0(0),	// original D0
+    fHistOrg_Ds(0),	// original Ds
+    fHistOrg_Lc(0),	// original Lc
+
+    pTWeight_D(0),
+    pTWeight_Lc(0),
+    pTWeight_B(0)
+
 
 {
     //==== constructor ====//
@@ -853,6 +880,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   //Hadron Eta vs. Phi
     fHadronEtaPhi = new TH2F("fHadronEtaPhi","Eta vs. Phi (hadron)",180,-0.9,0.9,180,-0.9,0.9);
     fOutputList->Add(fHadronEtaPhi);
+
+  //tracklet distribution
+    fHist_Tracklet = new TH1F("fHist_Tracklet","fHist_Tracklet", 300,0,300);
+    fOutputList->Add(fHist_Tracklet);
     
 
 
@@ -1049,6 +1080,13 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fPhot_InvMass_vs_DCA_data3);
 
 
+  //original B,D meson
+    fHistOrg_B   = new TH1F("fHistOrg_B",  "MC original B-meson; p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistOrg_B);
+    fHistOrg_D   = new TH1F("fHistOrg_D",  "MC original D-meson; p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistOrg_D);
+    fHistOrg_Dpm = new TH1F("fHistOrg_Dpm","MC original D+; p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistOrg_Dpm);
+    fHistOrg_D0  = new TH1F("fHistOrg_D0", "MC original D0; p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistOrg_D0);
+    fHistOrg_Ds  = new TH1F("fHistOrg_Ds", "MC original Ds; p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistOrg_Ds);
+    fHistOrg_Lc  = new TH1F("fHistOrg_Lc", "MC original #Lambda_{c}; p_{T} [GeV/c];",1200,0,60);fOutputList->Add(fHistOrg_Lc);
 
 
     
@@ -1273,6 +1311,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 //______________________________ Separate Tracklet class ________________________________ 
     if(correctednAcc < MinNtrklet || correctednAcc > MaxNtrklet) return;
     fNevents->Fill(7);
+    fHist_Tracklet->Fill(correctednAcc);
 
     
 
@@ -1715,10 +1754,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
 		    	//-------- Heavy Flavour electron --------//
                     	if(pid_eleB)
-			{	
+			{
 				fNoB -> Fill(12);
 			    	fHistPt_HFE_MC_B -> Fill(track->Pt()); // HFE from B meson&baryon (MC)
-			    	fDCAxy_MC_B -> Fill(TrkPt, DCA[0]*charge*Bsign);
+			    	fDCAxy_MC_B -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_B->Eval(pTMom));
 		    	}
 
                     	if(pid_eleD)
@@ -1727,14 +1766,19 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 			    	fHistPt_HFE_MC_D -> Fill(track->Pt()); // HFE from D meson (MC)
 			    	fDCAxy_MC_D -> Fill(TrkPt, DCA[0]*charge*Bsign);
 
-			    	if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413) fDCAxy_MC_Dpm -> Fill(TrkPt, DCA[0]*charge*Bsign);
-			    	if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423) fDCAxy_MC_D0  -> Fill(TrkPt, DCA[0]*charge*Bsign);
-			    	if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)==433) fDCAxy_MC_Ds  -> Fill(TrkPt, DCA[0]*charge*Bsign);
+			    	if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413) fDCAxy_MC_Dpm -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+			    	if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423) fDCAxy_MC_D0  -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+			    	if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)==433) fDCAxy_MC_Ds  -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
 
 		    		if(TMath::Abs(pidM)==4122)
 				{			   // HFE from Lambda c (MC)
 			    		fHistPt_HFE_MC_Lc -> Fill(track->Pt());
-			    		fDCAxy_MC_Lc -> Fill(TrkPt, DCA[0]*charge*Bsign);
+
+					if(pTMom<10.0){
+			    			fDCAxy_MC_Lc -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_Lc->Eval(pTMom));
+					}else{
+			    			fDCAxy_MC_Lc -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_Lc->Eval(10));
+					}
 		    		}
 		    	}
 		    }
@@ -2085,6 +2129,14 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
             if(pdgGen==111) fHistMCorg_Pi0 -> Fill(iHijing, pTtrue); // pi0
             if(pdgGen==221) fHistMCorg_Eta -> Fill(iHijing, pTtrue); // eta
         }
+
+		if((pdgGen>=500 && pdgGen<=599) || (pdgGen>=5000 && pdgGen<=5999)) fHistOrg_B->Fill(pTtrue);	//B-meson,baryon pT
+		if((pdgGen>=400 && pdgGen<=499) || (pdgGen>=4000 && pdgGen<=4999)) fHistOrg_D->Fill(pTtrue);	//D-meson,baryon pT
+		if(pdgGen==411)  fHistOrg_Dpm->Fill(pTtrue);	// D+ pT
+		if(pdgGen==421)  fHistOrg_D0->Fill(pTtrue);	// D0 pT
+		if(pdgGen==431)  fHistOrg_Ds->Fill(pTtrue);	// Ds pT
+		if(pdgGen==4122) fHistOrg_Lc->Fill(pTtrue);	// Lc pT
+
         
         if(TMath::Abs(pdgGen)!=11) continue;    // except Non-electrons
         if(pTMom < 2.0) continue;

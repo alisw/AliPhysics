@@ -10,6 +10,7 @@
 #include "TProfile.h"
 
 class TH1F;
+class TGraphErrors;
 class AliAODEvent;
 class AliMultSelection;
 class AliAODMCParticle;
@@ -57,6 +58,10 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	void SetWeightNtrklet(TH1D* hWeight){ fweightNtrkl = new TH1D(*hWeight); };
 
 	void SetMCtype(Bool_t iMCtype){ iGPMC = iMCtype; };
+
+	void SetWeightDmeson(TGraphErrors* WeightPt_Dmeson){ pTWeight_D = WeightPt_Dmeson;};
+	void SetWeightLc(TGraphErrors* WeightPt_Lc){ pTWeight_Lc = WeightPt_Lc;};
+	void SetWeightBmeson(TF1* WeightPt_Bmeson){ pTWeight_B = new TF1(*WeightPt_Bmeson);};
 
 
 
@@ -182,7 +187,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
     	TH2F* fElectronEtaPhi;      // eta vs. phi (electron)
     	TH2F* fHadronEtaPhi;	    // eta vs. phi (hadron)
         
-    
+    	TH1F* fHist_Tracklet;
     
     
         //---- MC output ----//
@@ -260,7 +265,14 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH2F*		    fPhot_InvMass_vs_DCA3;
 	TH2F*		    fPhot_InvMass_vs_DCA_data;
 	TH2F*		    fPhot_InvMass_vs_DCA_data2;
-	TH2F*		    fPhot_InvMass_vs_DCA_data3; 
+	TH2F*		    fPhot_InvMass_vs_DCA_data3;
+
+	TH1F*		    fHistOrg_B;
+	TH1F*		    fHistOrg_D;
+	TH1F*		    fHistOrg_Dpm;
+	TH1F*		    fHistOrg_D0;
+	TH1F*		    fHistOrg_Ds;
+	TH1F*		    fHistOrg_Lc;
     
 
         AliAnalysisTaskHFEBeautyMultiplicity(const AliAnalysisTaskHFEBeautyMultiplicity&);                // not implemented
@@ -268,6 +280,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 
 	TProfile*	fMultiEstimatorAvg[2];
 	TH1D*		fweightNtrkl;
+	TGraphErrors* pTWeight_D;
+	TGraphErrors* pTWeight_Lc;
+	TF1* pTWeight_B;
 
         ClassDef(AliAnalysisTaskHFEBeautyMultiplicity, 1);
 };

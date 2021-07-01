@@ -864,7 +864,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree *tMuonCls = CreateTree(kMuonCls);
   if (fTreeStatus[kMuonCls])
   {
-    tMuonCls->Branch("fIndexMuons", &mucls.fIndexMuons, "fIndexMuons/I");
+    tMuonCls->Branch("fIndexFwdTracks", &mucls.fIndexFwdTracks, "fIndexFwdTracks/I");
     tMuonCls->Branch("fX", &mucls.fX, "fX/F");
     tMuonCls->Branch("fY", &mucls.fY, "fY/F");
     tMuonCls->Branch("fZ", &mucls.fZ, "fZ/F");
@@ -1017,10 +1017,10 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
       Kinematics->Branch("fStatusCode", &mcparticle.fStatusCode, "fStatusCode/I");
       Kinematics->Branch("fFlags", &mcparticle.fFlags, "fFlags/b");
 
-      Kinematics->Branch("fMother0", &mcparticle.fMother0, "fMother0/I");
-      Kinematics->Branch("fMother1", &mcparticle.fMother1, "fMother1/I");
-      Kinematics->Branch("fDaughter0", &mcparticle.fDaughter0, "fDaughter0/I");
-      Kinematics->Branch("fDaughter1", &mcparticle.fDaughter1, "fDaughter1/I");
+      Kinematics->Branch("fIndexMcParticles_Mother0", &mcparticle.fIndexMcParticles_Mother0, "fIndexMcParticles_Mother0/I");
+      Kinematics->Branch("fIndexMcParticles_Mother1", &mcparticle.fIndexMcParticles_Mother1, "fIndexMcParticles_Mother1/I");
+      Kinematics->Branch("fIndexMcParticles_Daughter0", &mcparticle.fIndexMcParticles_Daughter0, "fIndexMcParticles_Daughter0/I");
+      Kinematics->Branch("fIndexMcParticles_Daughter1", &mcparticle.fIndexMcParticles_Daughter1, "fIndexMcParticles_Daughter1/I");
       Kinematics->Branch("fWeight", &mcparticle.fWeight, "fWeight/F");
 
       Kinematics->Branch("fPx", &mcparticle.fPx, "fPx/F");
@@ -1496,16 +1496,16 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       Int_t nPrim = MCEvt ? MCEvt->Stack()->GetNprimary() : nMCprim;
       if (i >= nPrim)
         mcparticle.fFlags |= MCParticleFlags::ProducedInTransport;
-      mcparticle.fMother0 = particle ? particle->GetMother(0) : aodmcpt->GetMother();
-      if (mcparticle.fMother0 > -1)
-        mcparticle.fMother0 = kineIndex[mcparticle.fMother0] > -1 ? kineIndex[mcparticle.fMother0] + fOffsetLabel : -1;
-      mcparticle.fMother1 = -1;
-      mcparticle.fDaughter0 = particle ? particle->GetFirstDaughter() : aodmcpt->GetDaughterFirst();
-      if (mcparticle.fDaughter0 > -1)
-        mcparticle.fDaughter0 = kineIndex[mcparticle.fDaughter0] > -1 ? kineIndex[mcparticle.fDaughter0] + fOffsetLabel : -1;
-      mcparticle.fDaughter1 = particle ? particle->GetLastDaughter() : aodmcpt->GetDaughterLast();
-      if (mcparticle.fDaughter1 > -1)
-        mcparticle.fDaughter1 = kineIndex[mcparticle.fDaughter1] > -1 ? kineIndex[mcparticle.fDaughter1] + fOffsetLabel : -1;
+      mcparticle.fIndexMcParticles_Mother0 = particle ? particle->GetMother(0) : aodmcpt->GetMother();
+      if (mcparticle.fIndexMcParticles_Mother0 > -1)
+        mcparticle.fIndexMcParticles_Mother0 = kineIndex[mcparticle.fIndexMcParticles_Mother0] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Mother0] + fOffsetLabel : -1;
+      mcparticle.fIndexMcParticles_Mother1 = -1;
+      mcparticle.fIndexMcParticles_Daughter0 = particle ? particle->GetFirstDaughter() : aodmcpt->GetDaughterFirst();
+      if (mcparticle.fIndexMcParticles_Daughter0 > -1)
+        mcparticle.fIndexMcParticles_Daughter0 = kineIndex[mcparticle.fIndexMcParticles_Daughter0] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Daughter0] + fOffsetLabel : -1;
+      mcparticle.fIndexMcParticles_Daughter1 = particle ? particle->GetLastDaughter() : aodmcpt->GetDaughterLast();
+      if (mcparticle.fIndexMcParticles_Daughter1 > -1)
+        mcparticle.fIndexMcParticles_Daughter1 = kineIndex[mcparticle.fIndexMcParticles_Daughter1] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Daughter1] + fOffsetLabel : -1;
       mcparticle.fWeight = AliMathBase::TruncateFloatFraction(particle ? particle->GetWeight() : 1., mMcParticleW);
 
       mcparticle.fPx = AliMathBase::TruncateFloatFraction(particle ? particle->Px() : aodmcpt->Px(), mMcParticleMom);
@@ -1655,7 +1655,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       // PID hypothesis for the momentum extraction
       const AliPID::EParticleType tof_pid = AliPID::kPion;
       const float exp_time = TOFResponse.GetExpectedSignal(track, tof_pid);
-      if (exp_time >= 0) { // Check that the expected time is positive
+      if (exp_time > 0) { // Check that the expected time is positive
         // Expected beta for such hypothesis
         const Float_t exp_beta = (track->GetIntegratedLength() / exp_time / cspeed);
 
@@ -2076,7 +2076,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       for (Int_t imucl = 0; imucl < nmucl; ++imucl)
       {
         AliESDMuonCluster *muCluster = fESD->FindMuonCluster(mutrk->GetClusterId(imucl));
-        mucls.fIndexMuons = muTrackID;
+        mucls.fIndexFwdTracks = muTrackID;
         mucls.fX = AliMathBase::TruncateFloatFraction(muCluster->GetX(), mMuonCl);
         mucls.fY = AliMathBase::TruncateFloatFraction(muCluster->GetY(), mMuonCl);
         mucls.fZ = AliMathBase::TruncateFloatFraction(muCluster->GetZ(), mMuonCl);

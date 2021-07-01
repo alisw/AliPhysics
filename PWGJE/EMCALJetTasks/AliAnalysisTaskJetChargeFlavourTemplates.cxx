@@ -662,6 +662,15 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
       JetPt_ForThreshold = Jet1->Pt();
 
+      //Check for leading track Pt to reduce cominatorial jets.
+
+      if(Jet1->GetLeadingTrack()->Pt() < 5)
+      {
+
+          continue;
+          //std::cout << "LEADING TRACK TO SMALL!!!" << std::endl;
+      }
+
       if(JetPt_ForThreshold<fPtThreshold)
       {
 

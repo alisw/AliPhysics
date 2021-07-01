@@ -248,6 +248,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Bool_t fVertexerUseAbsDCA;
   AliESDtrackCuts* fTrackCuts2pr;  // Track cut object for 2 prongs
   AliESDtrackCuts* fTrackCuts3pr;  // Track cut object for 3 prongs
+  AliESDtrackCuts* fTrackCutsBach; // Track cut object for bachelor
   Int_t fMaxTracksToProcess;       // Max n. of tracks, to limit test duration
 
   Int_t fNPtBinsSingleTrack;   // Number of pt bins for single track cuts
@@ -291,7 +292,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Bool_t fEnableCPUTimeCheck;                   //flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds;              // flag to switch from seconds (default) to milliseconds
   
-  ClassDef(AliAnalysisTaskHFSimpleVertices,21);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,22);
 };
 
 

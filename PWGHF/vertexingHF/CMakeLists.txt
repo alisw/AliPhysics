@@ -176,6 +176,7 @@ set(SRCS
   AliAnalysisTaskSELc2pKs0fromKFP.cxx
   AliAnalysisTaskCheckAODdAODMatching.cxx
   AliAnalysisTaskSEXicPlusToXi2PifromKFP.cxx
+  AliAnalysisTaskSEXiccPPToXicPlusPiPlusfromKFP.cxx
 )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
