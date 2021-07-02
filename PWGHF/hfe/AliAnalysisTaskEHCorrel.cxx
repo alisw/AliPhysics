@@ -163,6 +163,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fWeight(1.0),
   fCalcHadronTrackEffi(kFALSE),
   fFillEHCorrel(kTRUE),
+  fRemovePileUpinMCGen(kFALSE),
   //Non-HFE
   fCalculateNonHFEEffi(kFALSE),
   fCalPi0EtaWeight(kFALSE),
@@ -357,6 +358,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fWeight(1.0),
   fCalcHadronTrackEffi(kFALSE),
   fFillEHCorrel(kTRUE),
+  fRemovePileUpinMCGen(kFALSE),
   //Non-HFE
   fCalculateNonHFEEffi(kFALSE),
   fCalPi0EtaWeight(kFALSE),
@@ -1907,6 +1909,11 @@ void AliAnalysisTaskEHCorrel::GetHadronTrackingEfficiency()
 
   //All hadrons
   for(Int_t imcArrayL=0; imcArrayL< fMCarray->GetEntries(); imcArrayL++){
+      
+    if(fRemovePileUpinMCGen){
+      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(imcArrayL, fMCHeader, fMCarray)) continue;
+    }
+      
     AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(imcArrayL);
     Int_t PDGcode = TMath::Abs(AODMCtrack->GetPdgCode());
 
