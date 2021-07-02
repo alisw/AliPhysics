@@ -8557,6 +8557,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 //________________________________________________________________________
 void AliCaloPhotonCuts::ApplySMWiseEnergyCorrection(AliVCluster* cluster, Int_t isMC, AliVEvent *event)
 {
+  // apply this correction to data only
+  if(isMC > 0) return;
+  
   if (!cluster) {
     AliInfo("Cluster pointer null!");
     return;
@@ -8598,32 +8601,33 @@ void AliCaloPhotonCuts::ApplySMWiseEnergyCorrection(AliVCluster* cluster, Int_t 
 
 
   if(isMC == 0){         // data; SM wise correction
-    if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
-      switch (clusterSMID){
-        // values determined on LHC16x & LHC17c
-        case 0: energy/=0.994364; break;
-        case 1: energy/=0.991352; break;
-        case 2: energy/=1.000522; break;
-        case 3: energy/=0.995918; break;
-        case 4: energy/=0.995661; break;
-        case 5: energy/=0.998285; break;
-        case 6: energy/=1.000275; break;
-        case 7: energy/=1.003544; break;
-        case 8: energy/=1.007220; break;
-        case 9: energy/=1.000911; break;
-        case 10: energy/=1.012508; break;
-        case 11: energy/=1.012867; break;
-        case 12: energy/=1.001028; break;
-        case 13: energy/=0.995514; break;
-        case 14: energy/=0.994373; break;
-        case 15: energy/=0.997765; break;
-        case 16: energy/=1.009084; break;
-        case 17: energy/=1.011123; break;
-        case 18: energy/=1.007118; break;
-        case 19: energy/=1.018894; break;
-        default: energy/=1.0; break;
-      }
-    } else if(fCurrentMC == k17pp5TeV){
+    // if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
+    //   switch (clusterSMID){
+    //     // values determined on LHC16x & LHC17c
+    //     case 0: energy/=0.994364; break;
+    //     case 1: energy/=0.991352; break;
+    //     case 2: energy/=1.000522; break;
+    //     case 3: energy/=0.995918; break;
+    //     case 4: energy/=0.995661; break;
+    //     case 5: energy/=0.998285; break;
+    //     case 6: energy/=1.000275; break;
+    //     case 7: energy/=1.003544; break;
+    //     case 8: energy/=1.007220; break;
+    //     case 9: energy/=1.000911; break;
+    //     case 10: energy/=1.012508; break;
+    //     case 11: energy/=1.012867; break;
+    //     case 12: energy/=1.001028; break;
+    //     case 13: energy/=0.995514; break;
+    //     case 14: energy/=0.994373; break;
+    //     case 15: energy/=0.997765; break;
+    //     case 16: energy/=1.009084; break;
+    //     case 17: energy/=1.011123; break;
+    //     case 18: energy/=1.007118; break;
+    //     case 19: energy/=1.018894; break;
+    //     default: energy/=1.0; break;
+    //   }
+    // } else
+    if(fCurrentMC == k17pp5TeV){
       switch (clusterSMID){
         // values determined on LHC17pq
         case 0: energy/=0.996406; break;

@@ -365,6 +365,14 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("00052113","411790009feg2220000","0r631031000000d0");  // EMC7
 
 
+  // NonLin settings with only test beam WO scale (no fine tuning)
+  } else if (trainConfig == 80){
+    cuts.AddCutCalo("00010113","411799609fe32220000","0r631031000000d0");  // INT7
+  } else if (trainConfig == 81){
+    cuts.AddCutCalo("0008e113","411799609fe32220000","0r631031000000d0");  // EG2
+    cuts.AddCutCalo("0008d113","411799609fe32220000","0r631031000000d0");  // EG1
+
+
 
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
