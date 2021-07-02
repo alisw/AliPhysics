@@ -92,7 +92,6 @@ public:
   TComplex Five(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
   TComplex Six(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6);
   TComplex Recursion(Int_t n, Int_t *harmonic, Int_t mult = 1, Int_t skip = 0);
-  Double_t CombinatorialWeight(Int_t n);
 
   /* methods for computing nested loops */
   TComplex TwoNestedLoops(Int_t n1, Int_t n2);
@@ -104,12 +103,14 @@ public:
   /* TComplex SixNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5,
    */
   /*                         Int_t n6); */
+  Double_t CombinatorialWeight(Int_t n);
 
   /* GetPointers Methods in case we need to manually trigger Terminate()
    */
   virtual void GetPointers(TList *list);
   virtual void GetPointersForControlHistograms();
-  virtual void GetPointersForOutputHistograms();
+  virtual void GetPointersForFinalResultHistograms();
+  virtual void GetPointersForFinalResultProfiles();
 
   /* Setters and getters for data analysis */
   void SetControlHistogramsList(TList *const chl) {
@@ -186,7 +187,8 @@ public:
   void SetFilterbit(Int_t Filterbit) { this->fFilterbit = Filterbit; }
 
   /* setters and getters for MC analsys */
-  void SetMCAnalysis(Bool_t mc) { this->fMCAnalaysis = mc; }
+  void SetMCAnalysis(Bool_t option) { this->fMCAnalaysis = option; }
+  void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
   void SetUseCustomSeed(const UInt_t seed) {
     this->fSeed = seed;
     this->fUseCustomSeed = kTRUE;
@@ -211,14 +213,15 @@ public:
     fMCNumberOfParticlesPerEventRange[kMIN] = min;
     fMCNumberOfParticlesPerEventRange[kMAX] = max;
   }
-  void SetMCNonUniformAcceptance(Double_t min, Double_t max, Double_t reduced) {
-    fUseWeights = kTRUE;
-    fReducedAcceptanceRange[kMIN] = min;
-    fReducedAcceptanceRange[kMAX] = max;
-    fReducedAcceptance = reduced;
-  };
 
-  void SetResetWeights(Bool_t option) { fResetWeights = option; }
+  void SetAcceptanceHistogram(TH1F *AcceptanceHistogram) {
+    this->fAcceptanceHistogram = AcceptanceHistogram;
+  }
+  void SetWeightHistogram(TH1F *WeightHistogram) {
+    this->fWeightHistogram = WeightHistogram;
+  }
+  void SetUseWeights(Bool_t option) { this->fUseWeights = option; }
+  void SetResetWeights(Bool_t option) { this->fResetWeights = option; }
 
   void SetCorrelators(std::vector<std::vector<Int_t>> correlators) {
     this->fCorrelators = correlators;
@@ -273,6 +276,7 @@ private:
   TList *fMCAnalysisList;
   TString fMCAnalysisListName;
   Bool_t fMCAnalaysis;
+  Bool_t fMCClosure;
   UInt_t fSeed;
   Bool_t fUseCustomSeed;
   TF1 *fMCPdf;
@@ -288,11 +292,9 @@ private:
   TComplex fQvector[kMaxHarmonic][kMaxPower];
   std::vector<Double_t> fPhi;
   std::vector<Double_t> fWeights;
-  Bool_t fUseWeights;
   TH1F *fAcceptanceHistogram;
   TH1F *fWeightHistogram;
-  Double_t fReducedAcceptance;
-  Double_t fReducedAcceptanceRange[LAST_EMINMAX];
+  Bool_t fUseWeights;
   Bool_t fResetWeights;
   std::vector<std::vector<Int_t>> fCorrelators;
 

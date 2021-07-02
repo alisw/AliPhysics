@@ -50,13 +50,15 @@ ClassImp(AliAnalysisTaskAR)
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       /* flags for MC analysis */
       fMCAnalysisList(nullptr), fMCAnalysisListName("MCAnalysis"),
-      fMCAnalaysis(kFALSE), fSeed(0), fUseCustomSeed(kFALSE), fMCPdf(nullptr),
-      fMCPdfName("pdf"), fMCFlowHarmonics(nullptr),
+      fMCAnalaysis(kFALSE), fMCClosure(kFALSE), fSeed(0),
+      fUseCustomSeed(kFALSE), fMCPdf(nullptr), fMCPdfName("pdf"),
+      fMCFlowHarmonics(nullptr),
       fMCNumberOfParticlesPerEventFluctuations(kFALSE),
       fMCNumberOfParticlesPerEvent(500),
       /* qvectors */
-      fQvectorList(nullptr), fPhi({}), fWeights({}), fUseWeights(kFALSE),
-      fReducedAcceptance(1.), fResetWeights(kFALSE), fCorrelators({}) {
+      fQvectorList(nullptr), fPhi({}), fWeights({}),
+      fAcceptanceHistogram(nullptr), fWeightHistogram(nullptr),
+      fUseWeights(kFALSE), fResetWeights(kFALSE), fCorrelators({}) {
   /* Constructor */
 
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR(const "
@@ -90,6 +92,7 @@ ClassImp(AliAnalysisTaskAR)
 
 AliAnalysisTaskAR::AliAnalysisTaskAR()
     : AliAnalysisTaskSE(),
+      /* Dummy constructor */
       /* Base list for all output objects*/
       fHistList(nullptr), fHistListName("outputStudentAnalysis"),
       /* list holding all control histograms */
@@ -101,14 +104,15 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       /* flags for MC analysis */
       fMCAnalysisList(nullptr), fMCAnalysisListName("MCAnalysis"),
-      fMCAnalaysis(kFALSE), fSeed(0), fUseCustomSeed(kFALSE), fMCPdf(nullptr),
-      fMCPdfName("pdf"), fMCFlowHarmonics(nullptr),
+      fMCAnalaysis(kFALSE), fMCClosure(kFALSE), fSeed(0),
+      fUseCustomSeed(kFALSE), fMCPdf(nullptr), fMCPdfName("pdf"),
+      fMCFlowHarmonics(nullptr),
       fMCNumberOfParticlesPerEventFluctuations(kFALSE),
       fMCNumberOfParticlesPerEvent(500),
       /* qvectors */
-      fQvectorList(nullptr), fPhi({}), fWeights({}), fUseWeights(kFALSE),
-      fReducedAcceptance(1.), fResetWeights(kFALSE), fCorrelators({}) {
-  /* Dummy constructor */
+      fQvectorList(nullptr), fPhi({}), fWeights({}),
+      fAcceptanceHistogram(nullptr), fWeightHistogram(nullptr),
+      fUseWeights(kFALSE), fResetWeights(kFALSE), fCorrelators({}) {
   /* initialze arrays in dummy constructor !!!! */
   this->InitializeArrays();
 
@@ -124,8 +128,10 @@ AliAnalysisTaskAR::~AliAnalysisTaskAR() {
     delete fHistList;
   }
 
-  if (fMCAnalaysis) {
+  if (fMCAnalaysis || fMCClosure) {
     delete gRandom;
+  }
+  if (fMCAnalaysis) {
     delete fMCPdf;
   }
 };
@@ -152,6 +158,10 @@ void AliAnalysisTaskAR::UserCreateOutputObjects() {
   if (fMCAnalaysis) {
     this->BookMCObjects();
   }
+  if (fMCAnalaysis || fMCClosure) {
+    delete gRandom;
+    fUseCustomSeed ? gRandom = new TRandom3(fSeed) : gRandom = new TRandom3(0);
+  }
 
   // *) Trick to avoid name clashes, part 2:
   TH1::AddDirectory(oldHistAddStatus);
@@ -175,11 +185,11 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     /* real data */
     AODExec();
   }
-	
-	// bail out if there are no azimuthal angles, i.e. due to event cut
+
+  // bail out if there are no azimuthal angles, i.e. due to event cut
   if (fPhi.empty()) {
     return;
-		}
+  }
 
   /* reset weights if required*/
   if (fResetWeights) {
@@ -469,12 +479,6 @@ void AliAnalysisTaskAR::InitializeArraysForMCAnalysis() {
     fMCNumberOfParticlesPerEventRange[i] =
         MCNumberOfParticlesPerEventRangeDefaults[i];
   }
-
-  /* range of reduced acceptance */
-  Double_t ReducedAcceptanceRangeDefault[LAST_EMINMAX] = {0., TMath::TwoPi()};
-  for (int i = 0; i < LAST_EMINMAX; ++i) {
-    fReducedAcceptanceRange[i] = ReducedAcceptanceRangeDefault[i];
-  }
 }
 
 void AliAnalysisTaskAR::BookAndNestAllLists() {
@@ -591,10 +595,6 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
 void AliAnalysisTaskAR::BookMCObjects() {
   /* book objects need for MC analysis */
 
-  // setup RNG
-  delete gRandom;
-  fUseCustomSeed ? gRandom = new TRandom3(fSeed) : gRandom = new TRandom3(0);
-
   /* protect at some point if fMCFlowHarmonics is empty */
   if (!fMCFlowHarmonics) {
     std::cout << __LINE__ << ": no flow harmonics defined" << std::endl;
@@ -699,7 +699,16 @@ void AliAnalysisTaskAR::AODExec() {
     nTracks_afterCut++;
 
     /* finally, fill azimuthal angels into vector */
-    fPhi.push_back(phi);
+    if (fMCClosure) {
+      Int_t AcceptanceBin = fAcceptanceHistogram->FindBin(phi);
+      if (gRandom->Uniform() <=
+          fAcceptanceHistogram->GetBinContent(AcceptanceBin)) {
+        fPhi.push_back(phi);
+        fWeights.push_back(fWeightHistogram->GetBinContent(AcceptanceBin));
+      }
+    } else {
+      fPhi.push_back(phi);
+    }
   }
 
   /* fill control histogram for Multiplicity after counting all tracks */
@@ -724,20 +733,17 @@ void AliAnalysisTaskAR::MCOnTheFlyExec() {
   /* set symmetry planes for MC analysis */
   MCPdfSymmetryPlanesSetup();
   /* loop over all particles in an event */
-  Double_t Phi = 0.;
+  Double_t Phi = 0.0;
+  Int_t AcceptanceBin = 0;
   for (int i = 0; i < GetMCNumberOfParticlesPerEvent(); ++i) {
     Phi = fMCPdf->GetRandom();
 
     if (fUseWeights) {
-      if (Phi > fReducedAcceptanceRange[kMIN] &&
-          Phi < fReducedAcceptanceRange[kMAX]) {
-        if (gRandom->Uniform() < fReducedAcceptance) {
-          fPhi.push_back(Phi);
-          fWeights.push_back(1 / fReducedAcceptance);
-        }
-      } else {
+      AcceptanceBin = fAcceptanceHistogram->FindBin(Phi);
+      if (gRandom->Uniform() <=
+          fAcceptanceHistogram->GetBinContent(AcceptanceBin)) {
         fPhi.push_back(Phi);
-        fWeights.push_back(1.);
+        fWeights.push_back(fWeightHistogram->GetBinContent(AcceptanceBin));
       }
     } else {
       fPhi.push_back(Phi);
@@ -1437,7 +1443,8 @@ void AliAnalysisTaskAR::GetPointers(TList *histList) {
 
   /* initialize all other objects */
   this->GetPointersForControlHistograms();
-  this->GetPointersForOutputHistograms();
+  this->GetPointersForFinalResultHistograms();
+  this->GetPointersForFinalResultProfiles();
 }
 
 void AliAnalysisTaskAR::GetPointersForControlHistograms() {
@@ -1481,8 +1488,8 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
   }
 }
 
-void AliAnalysisTaskAR::GetPointersForOutputHistograms() {
-  /* Get pointers for Output Histograms */
+void AliAnalysisTaskAR::GetPointersForFinalResultHistograms() {
+  /* Get pointers for final result Histograms */
 
   /* Get pointer for fFinalResultsList */
   fFinalResultsList =
@@ -1497,7 +1504,7 @@ void AliAnalysisTaskAR::GetPointersForOutputHistograms() {
   for (int var = 0; var < LAST_EFINALHIST; ++var) {
     fFinalResultHistograms[var] = dynamic_cast<TH1F *>(
         fFinalResultsList->FindObject(fFinalResultHistogramNames[var][0]));
-    if (!fTrackControlHistograms[var]) {
+    if (!fFinalResultHistograms[var]) {
       std::cout << __LINE__ << ": Did not get "
                 << fFinalResultHistogramNames[var][0] << std::endl;
       Fatal("GetPointersForOutputHistograms", "Invalid Pointer");
@@ -1509,11 +1516,30 @@ void AliAnalysisTaskAR::GetPointersForOutputHistograms() {
   /* fMaxBuffer = fBuffersFlagsPro->GetBinContent(2); */
 }
 
-/* TComplex Q(Int_t n, Int_t p) */
-/* { */
-/*  // Using the fact that Q{-n,p} = Q{n,p}^*. */
+void AliAnalysisTaskAR::GetPointersForFinalResultProfiles() {
+  /* Get pointers for final result Histograms */
 
-/*  if(n>=0){return Qvector[n][p];} */
-/*  return TComplex::Conjugate(Qvector[-n][p]); */
+  /* Get pointer for fFinalResultsList */
+  fFinalResultsList =
+      dynamic_cast<TList *>(fHistList->FindObject(fFinalResultsListName));
+  if (!fFinalResultsList) {
+    std::cout << __LINE__ << ": Did not get " << fFinalResultsListName
+              << std::endl;
+    Fatal("GetPointersForOutputHistograms", "Invalid Pointer");
+  }
 
-/* } */
+  /* get all pointers for final result histograms */
+  for (int var = 0; var < LAST_EFINALPROFILE; ++var) {
+    fFinalResultProfiles[var] = dynamic_cast<TProfile *>(
+        fFinalResultsList->FindObject(fFinalResultProfileNames[var][0]));
+    if (!fFinalResultProfiles[var]) {
+      std::cout << __LINE__ << ": Did not get "
+                << fFinalResultProfileNames[var][0] << std::endl;
+      Fatal("GetPointersForOutputProfiles", "Invalid Pointer");
+    }
+  }
+
+  /* Set again all flags: */
+  /* fFillBuffers = (Bool_t)fBuffersFlagsPro->GetBinContent(1); */
+  /* fMaxBuffer = fBuffersFlagsPro->GetBinContent(2); */
+}
