@@ -284,6 +284,17 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
   } else if (trainConfig == 36){ // S100A50 min energy = 300MeV
     cuts.AddCutPCMCalo("00052113","0dm00009f9730000dge0404000","411790009feg2220000","0163103100000010"); // EMC7
 
+    // NonLin settings with only test beam WO scale (no fine tuning)
+  } else if (trainConfig == 40){ // NL 96, nominal Bfield setting
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799609fe32220000","0163103100000010"); // INT7
+  } else if (trainConfig == 41){ // NL 96, nominal Bfield setting
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799609fe32220000","0163103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799609fe32220000","0163103100000010"); // EG1
+
+
+  } else if (trainConfig == 50){ // NL 96, low Bfield setting
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799609fe32220000","0163103100000010"); // INT7
+
 
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

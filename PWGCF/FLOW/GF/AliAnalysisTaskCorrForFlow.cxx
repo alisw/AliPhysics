@@ -175,10 +175,7 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
     if(!IsEventSelected()) { return; }
 
     fTracksTrigCharged = new TObjArray;
-    fTracksTrigCharged->SetOwner(kTRUE);
-
     fTracksAss = new TObjArray;
-    fTracksAss->SetOwner(kTRUE);
 
     Int_t iTracks(fAOD->GetNumberOfTracks());
     if(iTracks < 1 ) {

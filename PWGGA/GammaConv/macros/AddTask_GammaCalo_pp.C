@@ -3536,6 +3536,18 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2555) {
     cuts.AddCutCalo("00010113","411799509fe32220000","0r631031000000d0"); // NCell >=2
     cuts.AddCutCalo("00010113","411799509fe30220000","0r631031000000d0"); // NoNCell
+    // no scale in data NL without MC finetuning
+  } else if (trainConfig == 2556) {
+    cuts.AddCutCalo("00010113","411799609fe32220000","0r631031000000d0"); // NCell >=2
+    cuts.AddCutCalo("00010113","411799609fe30220000","0r631031000000d0"); // NoNCell
+    // 1.5% scale in data NL without MC finetuning
+  } else if (trainConfig == 2557) {
+    cuts.AddCutCalo("00010113","411799709fe32220000","0r631031000000d0"); // NCell >=2
+    cuts.AddCutCalo("00010113","411799709fe30220000","0r631031000000d0"); // NoNCell
+    // 3.5% scale in data NL without MC finetuning
+  } else if (trainConfig == 2558) {
+    cuts.AddCutCalo("00010113","411799809fe32220000","0r631031000000d0"); // NCell >=2
+    cuts.AddCutCalo("00010113","411799809fe30220000","0r631031000000d0"); // NoNCell
 
   // several configs to study peak position for different NonLinearity settings in adta and MC
   } else if (trainConfig == 2560) { // NonLin applied in CF, min energy = 700MeV
