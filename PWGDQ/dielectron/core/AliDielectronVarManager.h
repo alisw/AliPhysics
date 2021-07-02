@@ -2218,6 +2218,11 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kPairLinDCAsigZ]   = -999.;
   values[AliDielectronVarManager::kPairLinDCAabsXY]  = -999.;
   values[AliDielectronVarManager::kPairLinDCAabsZ]   = -999.;
+  values[AliDielectronVarManager::kPairDeltaDCAsigXY] = -999.;
+  values[AliDielectronVarManager::kPairSumDCAsigXY]   = -999.;
+  values[AliDielectronVarManager::kPairGeomDCAsigXY]  = -999.;
+  values[AliDielectronVarManager::kPairGeomSignDCAsigXY]  = -999.;
+  values[AliDielectronVarManager::kPairSignDCAsigXY]  = -999.;
   values[AliDielectronVarManager::kLeg1DCAsigXY]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAabsXY]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAsigXYZ]    = -999.;
@@ -2239,7 +2244,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   // check if calculation is requested
   if( Req(kPairDCAsigXY) || Req(kPairDCAsigZ) || Req(kPairDCAabsXY) || Req(kPairDCAabsZ) ||
-      Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ) ||
+      Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ) || Req(kPairDeltaDCAsigXY) || Req(kPairSumDCAsigXY) || Req(kPairGeomDCAsigXY) || Req(kPairGeomSignDCAsigXY) || Req(kPairSignDCAsigXY) ||
       Req(kPairDCAsigXYZ) || Req(kPairDCAabsXYZ) || Req(kLeg1DCAsigXYZ) || Req(kLeg1DCAabsXYZ) || Req(kLeg2DCAsigXYZ) || Req(kLeg2DCAabsXYZ) ||
       Req(kLeg1DCAsigXY) || Req(kLeg1DCAabsXY) || Req(kLeg2DCAsigXY) || Req(kLeg2DCAabsXY) || Req(kLeg1DCAsigZ) || Req(kLeg1DCAabsZ) ||
       Req(kLeg2DCAsigZ) || Req(kLeg2DCAabsZ) || Req(kLeg1DCAresZ) || Req(kLeg2DCAresZ) || Req(kDeltaDCAabsZ) )
