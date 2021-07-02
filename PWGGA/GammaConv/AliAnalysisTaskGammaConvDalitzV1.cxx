@@ -3499,13 +3499,8 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessMCParticles(){
     Int_t labelelectronChiC=-1;
     if(((AliConversionMesonCuts*)fCutMesonArray->At(fiCut))->MesonIsSelectedMCChiCAODESD(particle.get(),fAODESDEventMC,labelelectronChiC,labelpositronChiC,labelgammaChiC,((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetEtaShift())){
 
-<<<<<<< HEAD
       if (!fDoLightVersion) hMCChiCPt[fiCut]->Fill(particle->PtG(),fWeightJetJetMC); // All MC ChiC
-      //TParticle * gammaChiC  =fMCEvent->Particle(labelgammaChiC);
-=======
-      hMCChiCPt[fiCut]->Fill(particle->PtG(),fWeightJetJetMC); // All MC ChiC
       //AliMCParticle * gammaChiC  =fMCEvent->GetTrack(labelgammaChiC);
->>>>>>> Transition Adrian 4
       std::unique_ptr<AliDalitzAODESDMC>  gammaChiC = std::unique_ptr<AliDalitzAODESDMC>(fAODESDEventMC->Particle(labelgammaChiC));
       if( ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->PhotonIsSelectedMCAODESD( gammaChiC.get(),fAODESDEventMC,kFALSE) &&
           ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->ElectronIsSelectedMC(labelelectronChiC,fMCEvent,fAODESDEventMC) &&
