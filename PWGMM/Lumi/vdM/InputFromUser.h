@@ -14,12 +14,8 @@ void Set_input_file_names(Int_t Fill)
 		g_vdm_Fill = Fill;
 		g_n_Scans_in_Fill = 2;
 
-		// kimc: V0/T0 timing cut scan, May 18, 2021
-		//const char* CUT = "5m11.5_11p17.5";
-		//const char* CUT = "5.5m11.5_11.5p17.5";
-		const char* CUT = "6m11_12p17"; //Default
-		cout <<" Following V0/T0 timing cut is being used: " <<CUT <<endl;
-
+		const char* CUT = "5.5m11.5_11.5p17.5";
+		//cout <<" Following V0/T0 timing cut is being used: " <<CUT <<endl;
 		// set name of input files
 		sprintf(g_Input_vdm_File,      "../Fill-%d/vdm_time_4937_%s_1_v3.root",      g_vdm_Fill, CUT);
 		sprintf(g_Input_vdm_DDL2_File, "../Fill-%d/vdm_DDL2_4937-%s_1_v3.root",      g_vdm_Fill, CUT);
@@ -48,13 +44,8 @@ void Set_input_file_names(Int_t Fill)
 		g_vdm_Fill = Fill;
 		g_n_Scans_in_Fill = 2; 
 
-		// kimc: V0/T0 timing cut scan, May 18, 2021
-		//const char* CUT = "5m11.5_11p17.5";
-		//const char* CUT = "5.5m11.5_11.5p17.5";
-		const char* CUT = "6m11_12p17"; //Default
-		cout <<" Following V0/T0 timing cut is being used: " <<CUT <<endl;
-
-		// set name of input files
+		const char* CUT = "5.5m11.5_11.5p17.5";
+		//cout <<" Following V0/T0 timing cut is being used: " <<CUT <<endl;
 		sprintf(g_Input_vdm_File,      "../Fill-%d/vdm_time_6012_%s_1_v3.root",      g_vdm_Fill, CUT);
 		sprintf(g_Input_vdm_DDL2_File, "../Fill-%d/vdm_DDL2_6012-%s_1_v3.root",      g_vdm_Fill, CUT);
 		sprintf(g_Input_vdm_BPTX_File, "../Fill-%d/vdm_time_6012_%s_1_v3-BPTX.root", g_vdm_Fill, CUT);
@@ -69,21 +60,8 @@ void Set_input_file_names(Int_t Fill)
 		g_vdm_Fill = Fill;
 		g_n_Scans_in_Fill = 2; 
 
-		// set name of input files
-		//sprintf(g_Input_vdm_File,"../Fill-%d/vdm_time_6864_6m11_12p17_1_v3.root",g_vdm_Fill);
-		//sprintf(g_Input_vdm_DDL2_File,"../Fill-%d/vdm_DDL2_6864-6m11.root",g_vdm_Fill);
-		//sprintf(g_Input_vdm_BPTX_File,"../Fill-%d/vdm_time_6864_6m11_12p17_1_v3-BPTX.root",g_vdm_Fill);
-		// these are used by Hermann - used until May 18 update
-		//sprintf(g_Input_vdm_File,"../Fill-%d/vdm_time_6864_5m11.5_11p17.5_1_v3.root",g_vdm_Fill);
-		//sprintf(g_Input_vdm_DDL2_File,"../Fill-%d/vdm_DDL2_6864-5m11.5.root",g_vdm_Fill);
-		//sprintf(g_Input_vdm_BPTX_File,"../Fill-%d/vdm_time_6864_5m11.5_11p17.5_1_v3-BPTX.root",g_vdm_Fill);
-
-		// kimc: V0/T0 timing cut scan, May 18, 2021
-		const char* CUT1 = "5m11.5"; const char* CUT2 = "11p17.5"; //Default
-		//const char* CUT1 = "5.5m11.5"; const char* CUT2 = "11.5p17.5";
-		//const char* CUT1 = "6m11"; const char* CUT2 = "12p17";
-		cout <<"Following V0/T0 timing cut is being used: " <<CUT1 <<", " <<CUT2 <<endl;
-
+		const char* CUT1 = "5.5m11.5"; const char* CUT2 = "11.5p17.5";
+		//cout <<"Following V0/T0 timing cut is being used: " <<CUT1 <<", " <<CUT2 <<endl;
 		sprintf(g_Input_vdm_File,      "../Fill-%d/vdm_time_6864_%s_%s_1_v3.root",      g_vdm_Fill, CUT1, CUT2);
 		sprintf(g_Input_vdm_DDL2_File, "../Fill-%d/vdm_DDL2_6864-%s.root",              g_vdm_Fill, CUT1);
 		sprintf(g_Input_vdm_BPTX_File, "../Fill-%d/vdm_time_6864_%s_%s_1_v3-BPTX.root", g_vdm_Fill, CUT1, CUT2);

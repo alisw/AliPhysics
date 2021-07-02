@@ -88,7 +88,7 @@ void Create_single_normalisation_histogram(Int_t scan, Int_t opt)
 	h2->SetMinimum(min*0.99);
 	h2->SetMaximum(max*1.01);
 	h2->Draw("p");
-	c->Print(Form("c1b_QASingleNorm_%s.png", c->GetName()));
+	c->Print(Form("c1b_sngNorm_%s.%s", c->GetName(), FFormat));
 
 	// clean
 	delete [] file_name;  

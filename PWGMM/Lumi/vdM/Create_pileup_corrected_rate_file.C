@@ -9,7 +9,7 @@
 //-------------------------------------------------------
 
 void Create_one_pileup_corrected_rate_file(
-		Int_t scan_type, Int_t scan, const char *rate_name, Double_t ratioA, Double_t ratioC, bool systChk
+		Int_t scan_type, Int_t scan, const char *rate_name, Double_t ratioA, Double_t ratioC
 		)
 // scan_type: 1 => x-scan; 2 => y-scan
 // ratioA/ratioC -> parameters for the pileup correction
@@ -17,16 +17,16 @@ void Create_one_pileup_corrected_rate_file(
 	// create names for files
 	char *file_name_rate = new char[kg_string_size];
 	char *file_name_new_rate = new char[kg_string_size];
-	const char* sfx = systChk?"_syst":"";
+
 	if (scan_type == 1)
 	{
-		sprintf(file_name_rate,"../Fill-%d/BkgdCorrRate_%s_x_Scan_%d%s.root",g_vdm_Fill,rate_name,scan,sfx);
-		sprintf(file_name_new_rate,"../Fill-%d/PileupCorrRate_%s_x_Scan_%d%s.root",g_vdm_Fill,rate_name,scan,sfx);
+		sprintf(file_name_rate,"../Fill-%d/BkgdCorrRate_%s_x_Scan_%d.root",g_vdm_Fill,rate_name,scan);
+		sprintf(file_name_new_rate,"../Fill-%d/PileupCorrRate_%s_x_Scan_%d.root",g_vdm_Fill,rate_name,scan);
 	}
 	if (scan_type == 2)
 	{
-		sprintf(file_name_rate,"../Fill-%d/BkgdCorrRate_%s_y_Scan_%d%s.root",g_vdm_Fill,rate_name,scan,sfx);
-		sprintf(file_name_new_rate,"../Fill-%d/PileupCorrRate_%s_y_Scan_%d%s.root",g_vdm_Fill,rate_name,scan,sfx);
+		sprintf(file_name_rate,"../Fill-%d/BkgdCorrRate_%s_y_Scan_%d.root",g_vdm_Fill,rate_name,scan);
+		sprintf(file_name_new_rate,"../Fill-%d/PileupCorrRate_%s_y_Scan_%d.root",g_vdm_Fill,rate_name,scan);
 	}
 
 	// open file and get tree
@@ -105,10 +105,9 @@ void Create_one_pileup_corrected_rate_file(
 //-------------------------------------------------------
 
 void Create_pileup_corrected_rate_file(
-		Int_t Fill, const char *rate_name, Double_t ratioA, Double_t ratioC, bool systChk = false)
+		Int_t Fill, const char *rate_name, Double_t ratioA, Double_t ratioC)
 {
 	cout << " This will take a while, be patient " << endl;
-	if (systChk) cout <<" WARNING: you're about to generate an output for syst. err check!" <<endl;
 
 	// get name of files and set pointers to trees
 	Set_input_file_names(Fill);
@@ -117,8 +116,8 @@ void Create_pileup_corrected_rate_file(
 	// create files for all scans
 	for(Int_t i=0;i<g_n_Scans_in_Fill;i++)
 	{
-		Create_one_pileup_corrected_rate_file(1, i, rate_name, ratioA, ratioC, systChk); //x-scans
-		Create_one_pileup_corrected_rate_file(2, i, rate_name, ratioA, ratioC, systChk); //y-scans
+		Create_one_pileup_corrected_rate_file(1, i, rate_name, ratioA, ratioC); //x-scans
+		Create_one_pileup_corrected_rate_file(2, i, rate_name, ratioA, ratioC); //y-scans
 	}
 
 	return;

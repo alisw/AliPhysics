@@ -171,9 +171,11 @@ void Get_BBD_separations_7483(Int_t scan, Int_t opt)
 // this is valid for fills 4937, 6012 and 6864 (up to now)
 //-------------------------------------------------------
 
-void Get_BBD_separations(Int_t opt)
+void Get_BBD_separations(Int_t opt, const char* sys_opt)
 // opt: 0 => nominal separations
 // opt: 1 => separations corrected for orbit drift
+// sys_opt = "" default, other options are for systematic studies:
+// "+Q", "+xi", "-Q", "-xi"  
 {
   // -- get number of separations for first scan
   // For fills 4937, 6012 and 6864
@@ -186,12 +188,13 @@ void Get_BBD_separations(Int_t opt)
   // ** WARNING: Directory structure and nameing convention
   //    valid for fills 4937, 6012 and 6864
   char *bbd_file_name = new char[kg_string_size];
-  if (opt == 0) 
-    sprintf(bbd_file_name,"../Fill-%d/Corr-%d/FBCT-Nom/ROOT/bbroot_%d_V0.root",
-	    g_vdm_Fill,g_vdm_Fill,g_vdm_Fill);
+  if (opt == 0)
+	  //sprintf(bbd_file_name,"../Fill-%d/Corr-%d-sys/FBCT-NOM/ROOT/bbroot_%d_V0%s.root",
+	  sprintf(bbd_file_name,"../Fill-%d/Corr-%d-sys/FBCT-Nom/ROOT/bbroot_%d_V0%s.root", //kimc
+			  g_vdm_Fill,g_vdm_Fill,g_vdm_Fill,sys_opt);
   else
-    sprintf(bbd_file_name,"../Fill-%d/Corr-%d/FBCT/ROOT/bbroot_%d_V0.root",
-	    g_vdm_Fill,g_vdm_Fill,g_vdm_Fill);
+	  sprintf(bbd_file_name,"../Fill-%d/Corr-%d-sys/FBCT/ROOT/bbroot_%d_V0%s.root",
+			  g_vdm_Fill,g_vdm_Fill,g_vdm_Fill,sys_opt);
    
   // open  file and get the trees
   TFile *bbd_file = new TFile(bbd_file_name);
@@ -230,15 +233,15 @@ void Get_BBD_separations(Int_t opt)
     cout << " doing  scan " << scan << endl;
     // prepare file names for the output
     if (opt == 0) {
-      sprintf(sep_file_name_x,"../Fill-%d/NomBBDSep_x_Scan_%d.root",
-	      g_vdm_Fill,scan);
-      sprintf(sep_file_name_y,"../Fill-%d/NomBBDSep_y_Scan_%d.root",
-	      g_vdm_Fill,scan);
+      sprintf(sep_file_name_x,"../Fill-%d/NomBBD%sSep_x_Scan_%d.root",
+	      g_vdm_Fill,sys_opt,scan);
+      sprintf(sep_file_name_y,"../Fill-%d/NomBBD%sSep_y_Scan_%d.root",
+	      g_vdm_Fill,sys_opt,scan);
     } else {
-      sprintf(sep_file_name_x,"../Fill-%d/ODCBBDSep_x_Scan_%d.root",
-	      g_vdm_Fill,scan);
-      sprintf(sep_file_name_y,"../Fill-%d/ODCBBDSep_y_Scan_%d.root",
-	      g_vdm_Fill,scan);
+      sprintf(sep_file_name_x,"../Fill-%d/ODCBBD%sSep_x_Scan_%d.root",
+	      g_vdm_Fill,sys_opt,scan);
+      sprintf(sep_file_name_y,"../Fill-%d/ODCBBD%sSep_y_Scan_%d.root",
+	      g_vdm_Fill,sys_opt,scan);
     } 
     // -- create tree with separations
     TFile *BBDFile_x = new TFile(sep_file_name_x,"recreate");
@@ -272,6 +275,9 @@ void Get_BBD_separations(Int_t opt)
     bbd_sep_tree_y->Write();     
     BBDFile_y->Close();  
   } // end loop over scans
+
+  //
+  bbd_file->Close();
   
   // clean up
   delete [] sep_file_name_x;
@@ -297,7 +303,9 @@ void Get_BBD_separations(Int_t opt)
 // to orbit-drift-corrected separations 
 //-------------------------------------------------------
 
-void Create_BBD_separation_file(Int_t Fill)
+void Create_BBD_separation_file(Int_t Fill, const char* sys_opt)
+// sys_opt = "" default, other options are for systematic studies:
+// "+Q", "+xi", "-Q", "-xi"
 {
 
   // get name of files and set pointers to trees
@@ -315,8 +323,9 @@ void Create_BBD_separation_file(Int_t Fill)
       Get_BBD_separations_7483(i,1);
     }
   } else {
-    Get_BBD_separations(0); // NOM separations
-    Get_BBD_separations(1); // ODC separations
+    Get_BBD_separations(0,sys_opt);
+    Get_BBD_separations(1,sys_opt); 
   }
+
 
 }

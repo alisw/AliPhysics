@@ -532,11 +532,60 @@ Double_t Fit_rate_separation(
 		H1Temp->Delete();
 	}//Retry fit
 
+	/*
     TCanvas *c = new TCanvas(dName.c_str(), dName.c_str(), 800, 600); c->cd();
     TH1 *h = (TH1*)gr->GetHistogram(); h->SetTitle(Form("%s;Separation (mm); Rate (Hz)", dName.c_str())); h->Draw();
     gr->SetMarkerStyle(20); gr->Draw("pe same");
     fit_model->Draw("same");
-    c->Print(Form("../Fill-%d/QA_fits/%s.png", g_vdm_Fill, dName.c_str()));
+    c->Print(Form("../Fill-%d/QA_fits/%s.%s", g_vdm_Fill, dName.c_str(), FFormat));
+    //c->Print(Form("../Fill-%d/QA_fits/%s.png", g_vdm_Fill, dName.c_str()));
+	*/
+
+	#if 1
+	//Plot for public note, June 25
+	gStyle->SetOptStat(0);
+	gStyle->SetOptFit(0);
+
+	TCanvas* c1 = new TCanvas(dName.c_str(), dName.c_str(), 800, 600);
+	c1->cd()->SetLogy();
+
+	/*
+	TString T1 = dName.c_str();
+	T1.ReplaceAll("Fill", "Fill ");
+	T1.ReplaceAll("_ODCBBD", ", ");
+	T1.ReplaceAll("_OpticalIntensityCorrFBCT", "");
+	T1.ReplaceAll("_VBAandVBC", "V0, ");
+	T1.ReplaceAll("_TVX", " T0, ");
+	T1.ReplaceAll("_F1", "");
+	T1.ReplaceAll("_scan", "scan ");
+	T1.ReplaceAll("_i", ", bunch index ");
+	T1.ReplaceAll("_bc", " (ID ");
+	T1.ReplaceAll("_x", "), horizontal");
+	T1.ReplaceAll("_y", "), vertical");
+	*/
+
+	TH1F* H1 = (TH1F*)gr->GetHistogram();
+	H1->GetXaxis()->SetTitleOffset(1.1);
+	H1->GetXaxis()->SetRangeUser(-0.65, 0.65);
+	H1->GetYaxis()->SetRangeUser(0.1, H1->GetMaximum()*2.0);
+	//H1->SetTitle(Form("%s;Separation [mm];Rate [Hz]", T1.Data()));
+	H1->SetTitle(";Separation [mm];Rate [Hz]");
+	H1->DrawCopy();
+    gr->SetMarkerStyle(20);
+	gr->Draw("pe same");
+	fit_model->SetLineStyle(2);
+    fit_model->Draw("same");
+
+    TLegend *L1 = new TLegend(0.4, 0.2, 0.6, 0.35);
+    L1->SetMargin(0);
+    L1->SetBorderSize(0);
+    L1->SetTextAlign(13);
+    L1->AddEntry((TObject*)0, "ALICE", "");
+    L1->AddEntry((TObject*)0, "pp #sqrt{s} = 13 TeV", "");
+	L1->Draw();
+
+	c1->Print(Form("%s.eps", c1->GetName()));
+	#endif
 
 	//-------------------------------------------
 

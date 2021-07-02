@@ -37,6 +37,10 @@ using namespace std;
 #include <TMatrixDSym.h>
 #include <TPaveLabel.h>
 
+#include <TLine.h>
+#include <TString.h>
+#include <TObjString.h>
+
 #include "Math/IntegratorOptions.h"
 
 #endif

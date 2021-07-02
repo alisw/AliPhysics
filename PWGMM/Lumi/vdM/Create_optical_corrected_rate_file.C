@@ -6,21 +6,22 @@
 //-------------------------------------------------------
 // Create a corrected rate file for a given
 // trigger, using Ivan's files with the optical correction
+// WARNINGS:
+//   tested only for fills  4937, 6012 and 6864
+//   using the correction based on the ODC rates (ie directory FBCT, not FBCT-Nom)
+//   correction applied to IntensityCorrFBCTRate
 //-------------------------------------------------------
 
-void Create_optical_corrected_rate_file(Int_t Fill, const char *rate_name)
+void Create_optical_corrected_rate_file(
+		Int_t Fill, const char* intensity_name,	const char* rate_name, const char* sys_opt
+		)
+// sys_opt = "" default, other options are for systematic studies:
+// "+Q", "+xi", "-Q", "-xi"
 {
 
   // get name of files and set pointers to trees
   Set_input_file_names(Fill);
   Set_pointers_to_input_files_and_trees();
-
-  // create new rate files including the optical correction
-  // valid only for fills  4937, 6012 and 6864
-
-  // WARNING:
-  // using the correction based on the ODC rates
-  // correcting now IntensityCorrFBCTRate
 
   // -- get number of separations for first scan
   // For fills 4937, 6012 and 6864
@@ -38,22 +39,23 @@ void Create_optical_corrected_rate_file(Int_t Fill, const char *rate_name)
 
   // create  file name with optical correction
   char *optical_file_name = new char[kg_string_size];
-  if (!strcmp(rate_name, "TVX") == true)
-  {
-    sprintf(optical_file_name,"../Fill-%d/Corr-%d/FBCT/ROOT/OPT-bbroot_%d_T0.root",
-	    g_vdm_Fill,g_vdm_Fill,g_vdm_Fill);
-  }
+  if (strcmp(rate_name,"TVX") == 0)
+	  sprintf(optical_file_name,"../Fill-%d/Corr-%d-sys/FBCT/ROOT/OPT-bbroot_%d_T0%s.root",
+			  g_vdm_Fill,g_vdm_Fill,g_vdm_Fill,sys_opt);
   else
-  {
-     sprintf(optical_file_name,"../Fill-%d/Corr-%d/FBCT/ROOT/OPT-bbroot_%d_V0.root",
-	    g_vdm_Fill,g_vdm_Fill,g_vdm_Fill);
-  }
+	  sprintf(optical_file_name,"../Fill-%d/Corr-%d-sys/FBCT/ROOT/OPT-bbroot_%d_V0%s.root",
+			  g_vdm_Fill,g_vdm_Fill,g_vdm_Fill,sys_opt);
+
   // open  file and get the trees
   TFile *optical_file = new TFile(optical_file_name);
   TTree *optical_tree = (TTree *) optical_file->Get("optical");
   optical_tree->ResetBranchAddresses();
   Double_t *optLL0 = new Double_t [n_sep*2];
   optical_tree->SetBranchAddress("optLL0",optLL0);
+  Double_t LL000x;
+  optical_tree->SetBranchAddress("LL000x",&LL000x);
+  Double_t LL000y;
+  optical_tree->SetBranchAddress("LL000y",&LL000y);
 
   // info in Ivan's trees seems to be organised
   // in an outer loop over scans, then over bc
@@ -61,15 +63,29 @@ void Create_optical_corrected_rate_file(Int_t Fill, const char *rate_name)
   for(Int_t scan=0; scan<2;scan++) {
     cout << " doing  scan " << scan << endl;
     // prepare file names for the output and input
-    sprintf(file_name_new_rate_x,"../Fill-%d/OpticalIntensityCorrFBCTRate_%s_x_Scan_%d.root",
-	    g_vdm_Fill,rate_name,scan);
-    sprintf(file_name_new_rate_y,"../Fill-%d/OpticalIntensityCorrFBCTRate_%s_y_Scan_%d.root",
-	    g_vdm_Fill,rate_name,scan);
+
+	/*
+	//Causes segfault when BPTX is invoked - kimc
+    sprintf(file_name_new_rate_x,"../Fill-%d/OpticalIntensity%sCorrFBCTRate_%s_x_Scan_%d.root",
+	    g_vdm_Fill,sys_opt,rate_name,scan);
+    sprintf(file_name_new_rate_y,"../Fill-%d/OpticalIntensity%sCorrFBCTRate_%s_y_Scan_%d.root",
+	    g_vdm_Fill,sys_opt,rate_name,scan);
     sprintf(file_name_rate_x,"../Fill-%d/IntensityCorrFBCTRate_%s_x_Scan_%d.root",
 	    g_vdm_Fill,rate_name,scan);
     sprintf(file_name_rate_y,"../Fill-%d/IntensityCorrFBCTRate_%s_y_Scan_%d.root",
 	    g_vdm_Fill,rate_name,scan);
-    
+		*/
+   
+	//Modified by kimc
+    sprintf(file_name_new_rate_x,"../Fill-%d/OpticalIntensity%sCorr%sRate_%s_x_Scan_%d.root",
+			g_vdm_Fill,sys_opt, intensity_name, rate_name,scan);
+    sprintf(file_name_new_rate_y,"../Fill-%d/OpticalIntensity%sCorr%sRate_%s_y_Scan_%d.root",
+			g_vdm_Fill,sys_opt, intensity_name, rate_name,scan);
+    sprintf(file_name_rate_x,"../Fill-%d/IntensityCorr%sRate_%s_x_Scan_%d.root",
+			g_vdm_Fill, intensity_name, rate_name,scan);
+	sprintf(file_name_rate_y,"../Fill-%d/IntensityCorr%sRate_%s_y_Scan_%d.root",
+			g_vdm_Fill, intensity_name, rate_name,scan);
+
     // open file with rates in x
     TFile *RateFile_x = new TFile(file_name_rate_x);
     TTree *rate_tree_x = (TTree *) RateFile_x->Get("Rate");
@@ -110,10 +126,10 @@ void Create_optical_corrected_rate_file(Int_t Fill, const char *rate_name)
       rate_tree_x->GetEntry(k);
       rate_tree_y->GetEntry(k);      
       for(Int_t isep = 0;isep<n_sep;isep++) {
-	new_rate_x[isep] = rate_x[isep]/optLL0[isep];
-	new_rate_y[isep] = rate_y[isep]/optLL0[isep+n_sep];	
-	new_rate_error_x[isep] = rate_error_x[isep]/optLL0[isep];
-	new_rate_error_y[isep] = rate_error_y[isep]/optLL0[isep+n_sep];
+	new_rate_x[isep] = LL000x*rate_x[isep]/optLL0[isep];
+	new_rate_y[isep] = LL000y*rate_y[isep]/optLL0[isep+n_sep];	
+	new_rate_error_x[isep] = LL000x*rate_error_x[isep]/optLL0[isep];
+	new_rate_error_y[isep] = LL000y*rate_error_y[isep]/optLL0[isep+n_sep];
       }
       RateFile_new_x->cd();
       new_rate_x_tree->Fill();

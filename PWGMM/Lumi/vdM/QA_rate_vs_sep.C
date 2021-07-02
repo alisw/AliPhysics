@@ -77,6 +77,6 @@ void QA_rate_vs_sep(Int_t Fill, const char *rate_name, const char *rate_type,
 	frame->SetTitle(";separation (mm); rate (Hz)");
 	gr->Draw("p,e1,same");
 
-	rvss_C->Print(Form("c2a_QArate_Fill%i_%s_%s_%s_scanT%i_scan%i_bc%i.png",
-				Fill, rate_name, rate_type, sep_type, scan_type, scan, bc));
+	rvss_C->Print(Form("c2a_QArate_Fill%i_%s_%s_%s_scanT%i_scan%i_bc%i.%s",
+				Fill, rate_name, rate_type, sep_type, scan_type, scan, bc, FFormat));
 }

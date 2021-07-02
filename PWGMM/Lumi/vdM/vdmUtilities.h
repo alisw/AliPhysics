@@ -48,6 +48,37 @@ Double_t GetXSerr(Double_t Ax, Double_t Axe, Double_t Ay, Double_t Aye,
 	return xs*TMath::Sqrt(DeltaAx_2+DeltaAy_2+DeltaF_2);
 }
 
+//-------------------------------------------------------
+// From Ingrid. Needed in QA_hxhy_T0V0.C
+Double_t GetHxHy( Double_t Ax, Double_t Ay, Double_t R00x, Double_t R00y)
+// compute the effective beam width
+{
+
+    Double_t hx = Ax/R00x;
+    Double_t hy = Ay/R00y;
+    return hx*hy;
+}
+
+//-------------------------------------------------------
+// From Ingrid. Needed in QA_hxhy_T0V0.C
+
+Double_t GetHxHyerr(Double_t Ax, Double_t Axe, Double_t Ay, Double_t Aye,
+                  Double_t R00x, Double_t R00xe, Double_t R00y, Double_t R00ye)
+// compute the error on the effective beam widths
+
+{
+    // cross section
+    Double_t hxhy = GetHxHy(Ax,Ay,R00x,R00y);
+    // uncertainty from areas
+    Double_t DeltaAx_2 = (Axe*Axe)/(Ax*Ax);
+    Double_t DeltaAy_2 = (Aye*Aye)/(Ay*Ay);
+    // uncertainty from rates
+    Double_t DeltaR00x_2 = (R00xe*R00xe)/(R00x*R00x);
+    Double_t DeltaR00y_2 = (R00ye*R00ye)/(R00y*R00y);
+
+    // total uncertainty
+    return hxhy*TMath::Sqrt(DeltaAx_2+DeltaAy_2+DeltaR00x_2+DeltaR00y_2);
+}
 
 //-------------------------------------------------------
 // Set global pointers to input files and trees
