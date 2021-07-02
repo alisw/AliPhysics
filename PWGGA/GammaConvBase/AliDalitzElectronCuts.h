@@ -175,6 +175,9 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t GetCorrectedElectronTPCResponsePrimaryPair(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl);
   void ForceTPCRecalibrationAsFunctionOfConvRPrimaryPair(){fIsRecalibDepTPCClPrimaryPair = kFALSE;}
 
+  // LighOutputs
+  void SetDoLightVersion(Bool_t flag) { fDoLightVersion= flag;}
+
 
   protected:
 
@@ -246,6 +249,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t   fIsRecalibDepTPCClPrimaryPair;  //flg that always is kTRUE
   Int_t    fRecalibCurrentRunPrimaryPair;                   ///< runnumber for correct loading of recalib from OADB
   Int_t    fnRBinsPrimaryPair;                              //
+  Bool_t   fDoLightVersion;                                 //Switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
 
 
 
