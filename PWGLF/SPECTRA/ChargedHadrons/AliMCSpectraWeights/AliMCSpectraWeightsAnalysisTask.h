@@ -9,6 +9,8 @@
 #include "AliAnalysisTaskSE.h"
 #include "TH3F.h"
 #include "THn.h"
+#include "AliEventCuts.h"
+
 class TArrayD;
 class TString;
 class AliMCSpectraWeights;
@@ -16,7 +18,6 @@ class AliStack;
 class AliMCEvent;
 class AliVEvent;
 class TList;
-class AliEventCuts;
 
 /**
  * \class AliMCSpectraWeightsAnalysisTask

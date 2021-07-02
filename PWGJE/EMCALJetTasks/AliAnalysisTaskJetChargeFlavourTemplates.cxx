@@ -142,12 +142,12 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCComparisonVsPtDiffUnmatched(0x0),
 
 
-  ParticlePtAndJC(0x0),
-  ParticlePtAndJCUp(0x0),
-  ParticlePtAndJCDown(0x0),
-  ParticlePtAndJCGluon(0x0),
-  ParticlePtAndJCOther(0x0),
-  ParticlePtAndJCUnmatched(0x0),
+  //ParticlePtAndJC(0x0),
+  //ParticlePtAndJCUp(0x0),
+  //ParticlePtAndJCDown(0x0),
+  //ParticlePtAndJCGluon(0x0),
+  //ParticlePtAndJCOther(0x0),
+  //ParticlePtAndJCUnmatched(0x0),
 
   fTreeJets(0)
 {
@@ -270,12 +270,12 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCComparisonVsPtDiffUnmatched(0x0),
 
 
-  ParticlePtAndJC(0x0),
-  ParticlePtAndJCUp(0x0),
-  ParticlePtAndJCDown(0x0),
-  ParticlePtAndJCGluon(0x0),
-  ParticlePtAndJCOther(0x0),
-  ParticlePtAndJCUnmatched(0x0),
+  //ParticlePtAndJC(0x0),
+  //ParticlePtAndJCUp(0x0),
+  //ParticlePtAndJCDown(0x0),
+  //ParticlePtAndJCGluon(0x0),
+  //ParticlePtAndJCOther(0x0),
+  //ParticlePtAndJCUnmatched(0x0),
 
 
   fTreeJets(0)
@@ -319,83 +319,31 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
 
   fTreeBranchName[3]  = "JetCharge";
 
-  fTreeBranchName[4]  = "LowJetCharge";
+  fTreeBranchName[4] = "JCUp";
+  fTreeBranchName[5] = "JCDown";
+  fTreeBranchName[6] = "JCGluon";
+  fTreeBranchName[7] = "JCOther";
+  fTreeBranchName[8] = "JCUnmatched";
 
-  fTreeBranchName[5]  = "MidJetCharge";
+  fTreeBranchName[9]  = "ParticlePt";
+  fTreeBranchName[10]  = "ParticlePhi";
+  fTreeBranchName[11]  = "ParticleEta";
 
-  fTreeBranchName[6]  = "HighJetCharge";
+  fTreeBranchName[12]  = "ParticleJetCharge";
 
-  fTreeBranchName[7] = "JCUp";
-  fTreeBranchName[8] = "Low_JCUp";
-  fTreeBranchName[9] = "Mid_JCUp";
-  fTreeBranchName[10] = "High_JCUp";
+  fTreeBranchName[13] = "ParticleJCUp";
+  fTreeBranchName[14] = "ParticleJCDown";
+  fTreeBranchName[15] = "ParticleJCGluon";
+  fTreeBranchName[16] = "ParticleJCOther";
+  fTreeBranchName[17] = "ParticleJCUnmatched";
 
-  fTreeBranchName[11] = "JCDown";
-  fTreeBranchName[12] = "Low_JCDown";
-  fTreeBranchName[13] = "Mid_JCDown";
-  fTreeBranchName[14] = "High_JCDown";
-
-
-  fTreeBranchName[15] = "JCGluon";
-  fTreeBranchName[16] = "Low_JCGluon";
-  fTreeBranchName[17] = "Mid_JCGluon";
-  fTreeBranchName[18] = "High_JCGluon";
-
-  fTreeBranchName[19] = "JCOther";
-  fTreeBranchName[20] = "Low_JCOther";
-  fTreeBranchName[21] = "Mid_JCOther";
-  fTreeBranchName[22] = "High_JCOther";
-
-  fTreeBranchName[23] = "JCUnmatched";
-  fTreeBranchName[24] = "Low_JCUnmatched";
-  fTreeBranchName[25] = "Mid_JCUnmatched";
-  fTreeBranchName[26] = "High_JCUnmatched";
-
-  fTreeBranchName[27]  = "ParticlePt";
-  fTreeBranchName[28]  = "ParticlePhi";
-  fTreeBranchName[29]  = "ParticleEta";
-
-  fTreeBranchName[30]  = "ParticleJetCharge";
-
-  fTreeBranchName[31]  = "ParticleLowJetCharge";
-
-  fTreeBranchName[32]  = "ParticleMidJetCharge";
-
-  fTreeBranchName[33]  = "ParticleHighJetCharge";
-
-  fTreeBranchName[34] = "ParticleJCUp";
-  fTreeBranchName[35] = "ParticleLow_JCUp";
-  fTreeBranchName[36] = "ParticleMid_JCUp";
-  fTreeBranchName[37] = "ParticleHigh_JCUp";
-
-  fTreeBranchName[38] = "ParticleJCDown";
-  fTreeBranchName[39] = "ParticleLow_JCDown";
-  fTreeBranchName[40] = "ParticleMid_JCDown";
-  fTreeBranchName[41] = "ParticleHigh_JCDown";
-
-
-  fTreeBranchName[42] = "ParticleJCGluon";
-  fTreeBranchName[43] = "ParticleLow_JCGluon";
-  fTreeBranchName[44] = "ParticleMid_JCGluon";
-  fTreeBranchName[45] = "ParticleHigh_JCGluon";
-
-  fTreeBranchName[46] = "ParticleJCOther";
-  fTreeBranchName[47] = "ParticleLow_JCOther";
-  fTreeBranchName[48] = "ParticleMid_JCOther";
-  fTreeBranchName[49] = "ParticleHigh_JCOther";
-
-  fTreeBranchName[50] = "ParticleJCUnmatched";
-  fTreeBranchName[51] = "ParticleLow_JCUnmatched";
-  fTreeBranchName[52] = "ParticleMid_JCUnmatched";
-  fTreeBranchName[53] = "ParticleHigh_JCUnmatched";
-
-  fTreeBranchName[54] = "PtComparison";
-  fTreeBranchName[55] = "JCComparison";
-  fTreeBranchName[56] = "JCComparisonUp";
-  fTreeBranchName[57] = "JCComparisonDown";
-  fTreeBranchName[58] = "JCComparisonGluon";
-  fTreeBranchName[59] = "JCComparisonOther";
-  fTreeBranchName[60] = "JCComparisonUnmatched";
+  fTreeBranchName[18] = "PtComparison";
+  fTreeBranchName[19] = "JCComparison";
+  fTreeBranchName[20] = "JCComparisonUp";
+  fTreeBranchName[21] = "JCComparisonDown";
+  fTreeBranchName[22] = "JCComparisonGluon";
+  fTreeBranchName[23] = "JCComparisonOther";
+  fTreeBranchName[24] = "JCComparisonUnmatched";
 
 
 
@@ -605,6 +553,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   JCComparisonVsPtDiffUnmatched = new TH2F("JCComparisonVsPtDiffUnmatched", "JC Det vs Part Compared to Pt Unmatched", 30, -4, 4, 30, -4, 4);
   fOutput->Add(JCComparisonVsPtDiffUnmatched);
 
+/*
   ParticlePtAndJC = new TH3F("ParticlePtAndJC", "Pt Det vs Pt Part Vs JC Part Plot to JC Det",1500,-0.5,149.5,1500,-0.5,149.5, 30, -4, 4);
   fOutput->Add(ParticlePtAndJC);
 
@@ -618,7 +567,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   fOutput->Add(ParticlePtAndJCOther);
   ParticlePtAndJCUnmatched = new TH3F("ParticlePtAndJCUnmatched", "Pt Det vs Pt Part Vs JC Part Plot to JC Det - Unmatched",1500,-0.5,149.5,1500,-0.5,149.5, 30, -4, 4);
   fOutput->Add(ParticlePtAndJCUnmatched);
-
+*/
 
 
 
@@ -713,6 +662,15 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
       JetPt_ForThreshold = Jet1->Pt();
 
+      //Check for leading track Pt to reduce cominatorial jets.
+
+      if(Jet1->GetLeadingTrack()->Pt() < 5)
+      {
+
+          continue;
+          //std::cout << "LEADING TRACK TO SMALL!!!" << std::endl;
+      }
+
       if(JetPt_ForThreshold<fPtThreshold)
       {
 
@@ -782,14 +740,14 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
           fTreeBranch[1]=JetPhi;
           fTreeBranch[2]=Jet1->Eta();
 
-          fTreeBranch[0+27]=TruthJet->Pt();
-          fTreeBranch[1+27]=TruthJet->Phi();
-          fTreeBranch[2+27]=TruthJet->Eta();
+          fTreeBranch[9]=TruthJet->Pt();
+          fTreeBranch[10]=TruthJet->Phi();
+          fTreeBranch[11]=TruthJet->Eta();
 
           Double_t PtDiff = (Jet1->Pt() - TruthJet->Pt())/TruthJet->Pt();
 
           PtComparison->Fill(PtDiff);
-          fTreeBranch[54]= PtDiff;
+          fTreeBranch[18]= PtDiff;
 
           Pt2DCompare->Fill(Jet1->Pt(),TruthJet->Pt());
 
@@ -954,7 +912,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
           for (UInt_t iTruthConst = 0; iTruthConst < nTruthConstituents; iTruthConst++ )
           {
             AliMCParticle* TruthParticle = (AliMCParticle*) TruthJet->Track(iTruthConst);
-            jetChargeParticle += TruthParticle->Charge()*pow(TruthParticle->Pt(),JetChargeK);
+            jetChargeParticle += TruthParticle->Charge()/3*pow(TruthParticle->Pt(),JetChargeK);
           }
 
 
@@ -971,13 +929,13 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
         //Put The Jet Charge in the right place
         fTreeBranch[3] = jetCharge;
         JC->Fill(jetCharge);
-        fTreeBranch[3+27] = jetChargeParticle;
+        fTreeBranch[12] = jetChargeParticle;
         JCParticle->Fill(jetChargeParticle);
 
         Double_t JetChargeDiff = (jetCharge - jetChargeParticle)/jetChargeParticle;
 
         JCComparison->Fill(JetChargeDiff);
-        fTreeBranch[55] = JetChargeDiff;
+        fTreeBranch[19] = JetChargeDiff;
 
         JC2DCompare->Fill(jetCharge,jetChargeParticle);
 
@@ -991,23 +949,17 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
         if(JetPt < JetMidPt)
         {
-          fTreeBranch[4] = jetCharge;
           JCLow->Fill(jetCharge);
-          fTreeBranch[4+27] = jetChargeParticle;
           JCParticleLow->Fill(jetChargeParticle);
         }
         else if( JetPt > JetMidPt && JetPt < JetHighPt)
         {
-          fTreeBranch[5] = jetCharge;
           JCMid->Fill(jetCharge);
-          fTreeBranch[5+27] = jetChargeParticle;
           JCParticleMid->Fill(jetChargeParticle);
         }
         else
         {
-          fTreeBranch[6] = jetCharge;
           JCHigh->Fill(jetCharge);
-          fTreeBranch[6+27] = jetChargeParticle;
           JCParticleHigh->Fill(jetChargeParticle);
         }
 
@@ -1017,13 +969,13 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
         //Add Up JetCharge
         if(fCurrentPdg == 2)
         {
-          fTreeBranch[7] = jetCharge;
+          fTreeBranch[4] = jetCharge;
           JCUp->Fill(jetCharge);
-          fTreeBranch[7+27] = jetChargeParticle;
+          fTreeBranch[13] = jetChargeParticle;
           JCParticleUp->Fill(jetChargeParticle);
 
           JCComparisonUp->Fill(JetChargeDiff);
-          fTreeBranch[56] = JetChargeDiff;
+          fTreeBranch[20] = JetChargeDiff;
 
           PtComparisonVsJCDiffUp->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
 
@@ -1031,23 +983,17 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
             if(JetPt < JetMidPt)
             {
-              fTreeBranch[8] = jetCharge;
               JCUpLow->Fill(jetCharge);
-              fTreeBranch[8+27] = jetChargeParticle;
               JCParticleUpLow->Fill(jetChargeParticle);
             }
             else if( JetPt > JetMidPt && JetPt < JetHighPt)
             {
-              fTreeBranch[9] = jetCharge;
               JCUpMid->Fill(jetCharge);
-              fTreeBranch[9+27] = jetChargeParticle;
               JCParticleUpMid->Fill(jetChargeParticle);
             }
             else
             {
-              fTreeBranch[10] = jetCharge;
               JCUpHigh->Fill(jetCharge);
-              fTreeBranch[10+27] = jetChargeParticle;
               JCParticleUpHigh->Fill(jetChargeParticle);
             }
 
@@ -1058,13 +1004,13 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
         //Add Down JetCharge
         else if(fCurrentPdg == 1)
         {
-          fTreeBranch[11] = jetCharge;
+          fTreeBranch[5] = jetCharge;
           JCDown->Fill(jetCharge);
-          fTreeBranch[11+27] = jetChargeParticle;
+          fTreeBranch[14] = jetChargeParticle;
           JCParticleDown->Fill(jetChargeParticle);
 
           JCComparisonDown->Fill(JetChargeDiff);
-          fTreeBranch[57] = JetChargeDiff;
+          fTreeBranch[21] = JetChargeDiff;
 
           PtComparisonVsJCDiffDown->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
 
@@ -1072,23 +1018,17 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
             if(JetPt < JetMidPt)
             {
-              fTreeBranch[12] = jetCharge;
               JCDownLow->Fill(jetCharge);
-              fTreeBranch[12+27] = jetChargeParticle;
               JCParticleDownLow->Fill(jetChargeParticle);
             }
             else if( JetPt > JetMidPt && JetPt < JetHighPt)
             {
-              fTreeBranch[13] = jetCharge;
               JCDownMid->Fill(jetCharge);
-              fTreeBranch[13+27] = jetChargeParticle;
               JCParticleDownMid->Fill(jetChargeParticle);
             }
             else
             {
-              fTreeBranch[14] = jetCharge;
               JCDownHigh->Fill(jetCharge);
-              fTreeBranch[14+27] = jetChargeParticle;
               JCParticleDownHigh->Fill(jetChargeParticle);
             }
         }
@@ -1099,13 +1039,13 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
         //Add Gluon JetCharge
         else if(fCurrentPdg == 21)
         {
-          fTreeBranch[15] = jetCharge;
+          fTreeBranch[6] = jetCharge;
           JCGluon->Fill(jetCharge);
-          fTreeBranch[15+27] = jetChargeParticle;
+          fTreeBranch[15] = jetChargeParticle;
           JCParticleGluon->Fill(jetChargeParticle);
 
           JCComparisonGluon->Fill(JetChargeDiff);
-          fTreeBranch[58] = JetChargeDiff;
+          fTreeBranch[22] = JetChargeDiff;
 
           PtComparisonVsJCDiffGluon->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
 
@@ -1113,23 +1053,17 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
             if(JetPt < JetMidPt)
             {
-              fTreeBranch[16] = jetCharge;
               JCGluonLow->Fill(jetCharge);
-              fTreeBranch[16+27] = jetChargeParticle;
               JCParticleGluonLow->Fill(jetChargeParticle);
             }
             else if( JetPt > JetMidPt && JetPt < JetHighPt)
             {
-              fTreeBranch[17] = jetCharge;
               JCGluonMid->Fill(jetCharge);
-              fTreeBranch[17+27] = jetChargeParticle;
               JCParticleGluonMid->Fill(jetChargeParticle);
             }
             else
             {
-              fTreeBranch[18] = jetCharge;
               JCGluonHigh->Fill(jetCharge);
-              fTreeBranch[18+27] = jetChargeParticle;
               JCParticleGluonHigh->Fill(jetChargeParticle);
             }
 
@@ -1142,13 +1076,13 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
         else if(IndexOfMaximum == -1)
         {
 
-          fTreeBranch[23] = jetCharge;
+          fTreeBranch[7] = jetCharge;
           JCUnmatched->Fill(jetCharge);
-          fTreeBranch[23+27] = jetChargeParticle;
+          fTreeBranch[17] = jetChargeParticle;
           JCParticleUnmatched->Fill(jetChargeParticle);
 
           JCComparisonUnmatched->Fill(JetChargeDiff);
-          fTreeBranch[60] = JetChargeDiff;
+          fTreeBranch[24] = JetChargeDiff;
 
           PtComparisonVsJCDiffUnmatched->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
 
@@ -1157,26 +1091,17 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
             if(JetPt < JetMidPt)
             {
-
-              fTreeBranch[24] = jetCharge;
               JCUnmatchedLow->Fill(jetCharge);
-              fTreeBranch[24+27] = jetChargeParticle;
               JCParticleUnmatchedLow->Fill(jetChargeParticle);
             }
             else if( JetPt > JetMidPt && JetPt < JetHighPt)
             {
-
-              fTreeBranch[25] = jetCharge;
               JCUnmatchedMid->Fill(jetCharge);
-              fTreeBranch[25+27] = jetChargeParticle;
               JCParticleUnmatchedMid->Fill(jetChargeParticle);
             }
             else
             {
-
-              fTreeBranch[26] = jetCharge;
               JCUnmatchedHigh->Fill(jetCharge);
-              fTreeBranch[26+27] = jetChargeParticle;
               JCParticleUnmatchedHigh->Fill(jetChargeParticle);
             }
 
@@ -1188,13 +1113,13 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
         //Adding Other Flavour JetCharge
         else
         {
-          fTreeBranch[19] = jetCharge;
+          fTreeBranch[8] = jetCharge;
           JCOther->Fill(jetCharge);
-          fTreeBranch[19+27] = jetChargeParticle;
+          fTreeBranch[16] = jetChargeParticle;
           JCParticleOther->Fill(jetChargeParticle);
 
           JCComparisonOther->Fill(JetChargeDiff);
-          fTreeBranch[59] = JetChargeDiff;
+          fTreeBranch[23] = JetChargeDiff;
 
           PtComparisonVsJCDiffOther->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
 
@@ -1203,23 +1128,17 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
             if(JetPt < JetMidPt)
             {
-              fTreeBranch[20] = jetCharge;
               JCOtherLow->Fill(jetCharge);
-              fTreeBranch[20+27] = jetChargeParticle;
               JCParticleOtherLow->Fill(jetChargeParticle);
             }
             else if( JetPt > JetMidPt && JetPt < JetHighPt)
             {
-              fTreeBranch[21] = jetCharge;
               JCOtherMid->Fill(jetCharge);
-              fTreeBranch[21+27] = jetChargeParticle;
               JCParticleOtherMid->Fill(jetChargeParticle);
             }
             else
             {
-              fTreeBranch[22] = jetCharge;
               JCOtherHigh->Fill(jetCharge);
-              fTreeBranch[22+27] = jetChargeParticle;
               JCParticleOtherHigh->Fill(jetChargeParticle);
             }
 
@@ -1231,6 +1150,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
 
         fTreeJets->Fill();
+
 
 
 

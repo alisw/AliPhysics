@@ -308,6 +308,64 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("00010113","411793706f030000000","01631031000000d0"); // No NCell cut, TBNL
     cuts.AddCutCalo("00010113","411790406f030000000","01631031000000d0"); // No NCell cut, TBNL no scale
 
+  // Settings for different clusterizer
+  } else if (trainConfig == 50){ // std
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+  } else if (trainConfig == 51){ // var1
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+  } else if (trainConfig == 52){ // var2
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+  } else if (trainConfig == 53){ // var3
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+  } else if (trainConfig == 54){ // var4
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >= 2 cut
+
+  // Settings for different clusterizer without M02 and exotic cuts
+  } else if (trainConfig == 55){ // std
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 56){ // var1
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 57){ // var2
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 58){ // var3
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 59){ // var4
+    cuts.AddCutCalo("00010113","411792109f020000000","0r631031000000d0"); // No NCell cut
+
+  // several configs to study peak position for different NonLinearity settings in adta and MC
+  } else if (trainConfig == 60){ // NonLin applied in CF,  min energy = 700MeV
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0");  // INT7
+  } else if (trainConfig == 61){ // NonLin applied in CF,  min energy = 700MeV
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0");  // INT7
+  } else if (trainConfig == 62){ // NonLin applied in CF, min energy = 700MeV
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0");  // INT7
+  } else if (trainConfig == 63){ // NonLin applied in CF S100A50, min energy = 700MeV
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0");  // INT7
+  } else if (trainConfig == 64){ //  NonLin applied in CF S100A50, min energy = 200MeV
+    cuts.AddCutCalo("00010113","411790009fei2220000","0r631031000000d0");  // INT7
+  } else if (trainConfig == 65){ //  NonLin applied in CF S100A50, min energy = 300MeV
+    cuts.AddCutCalo("00010113","411790009feg2220000","0r631031000000d0");  // INT7
+
+  } else if (trainConfig == 70){ // NonLin applied in CF,  min energy = 700MeV
+    cuts.AddCutCalo("00052113","411790009fe32220000","0r631031000000d0");  // EMC7
+  } else if (trainConfig == 71){ // NonLin applied in CF,  min energy = 700MeV
+    cuts.AddCutCalo("00052113","411790009fe32220000","0r631031000000d0");  // EMC7
+  } else if (trainConfig == 72){ // NonLin applied in CF, min energy = 700MeV
+    cuts.AddCutCalo("00052113","411790009fe32220000","0r631031000000d0");  // EMC7
+  } else if (trainConfig == 73){ // NonLin applied in CF S100A50, min energy = 700MeV
+    cuts.AddCutCalo("00052113","411790009fe32220000","0r631031000000d0");  // EMC7
+  } else if (trainConfig == 74){ //  NonLin applied in CF S100A50, min energy = 200MeV
+    cuts.AddCutCalo("00052113","411790009fei2220000","0r631031000000d0");  // EMC7
+  } else if (trainConfig == 75){ //  NonLin applied in CF S100A50, min energy = 300MeV
+    cuts.AddCutCalo("00052113","411790009feg2220000","0r631031000000d0");  // EMC7
+
+
+
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

@@ -301,6 +301,9 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusMergedPtvsRJet;                       //! array of histos with clusters from vs distance to Jet axis
     TH2F**                  fHistoTrueClusPi0PtvsRJet;                          //! array of histos with clusters from true pi0s vs distance to Jet axis
     TH2F**                  fHistoTrueClusEtaPtvsRJet;                          //! array of histos with clusters from true etas vs distance to Jet axis
+    TH2F**                  fHistoTrueClusGammaPtvsRJet;                        //! array of histos with clusters from true gammas vs distance to Jet axis
+    TH2F**                  fHistoTrueClusElectronPtvsRJet;                     //! array of histos with clusters from true electrons vs distance to Jet axis
+    TH2F**                  fHistoTrueClusHadronPtvsRJet;                       //! array of histos with clusters from true hadrons vs distance to Jet axis
 
     // MC validated reconstructed quantities mesons
     TH2F**                  fHistoTruePi0PtY;                                   //! array of histos with validated pi0, pt, Y
@@ -407,7 +410,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 44);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 45);
 };
 
 #endif

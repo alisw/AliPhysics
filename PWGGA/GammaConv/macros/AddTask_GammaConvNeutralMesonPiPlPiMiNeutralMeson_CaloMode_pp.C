@@ -41,6 +41,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
     Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
     Bool_t    usePtDepSelectionWindowCut  = kFALSE,                   // use pt dependent meson selection window cut
+    Bool_t    enableSortingMCLabels       = kTRUE,                    // enable sorting for MC cluster labels
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -1078,6 +1079,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32230000","32c51070a","0103103100000000","0453503000000000"); // INT7
   } else if(trainConfig == 906)  { //EDC 13TeV MB, M02: 1 (1.0) -> 411792109fe32210000
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32210000","32c51070a","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 907)  { //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through ) -> 411792109fe3v220000
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe3v220000","32c51070a","0103103100000000","0453503000000000"); // INT7
     //-----
     //Meson Cut Variations
     //-----
@@ -1124,6 +1127,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 933)  { //EDC 13TeV MB, Ch.Pi 520MeV, TOF Cut 3
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51073l","0103103100000000","0453503000000000"); // INT7
 
+    //-----
+    //Omega Meson Cut Variations
+    //-----
+  } else if(trainConfig == 950)  { //EDC 13TeV MB, rapidity 5 (0.85)
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","045350j000000000"); // INT7
+  } else if(trainConfig == 951)  { //EDC 13TeV MB, rapidity 5 (0.85)
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","045350k000000000"); // INT7
 
 
     //-----
@@ -1141,6 +1151,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32230000","32c51070a","0103103100000000","0453503000000000"); // INT7
   } else if(trainConfig == 1006)  { //EDC 13TeV MB, M02: 1 (1.0) -> 411792109fe32210000
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32210000","32c51070a","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1007)  { //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through ) -> 411792109fe3v220000
+    cuts.AddCutHeavyMesonCalo("0008e113","411792109fe3v220000","32c51070a","0103103100000000","0453503000000000"); // INT7
     //-----
     //Trigger EG2: Meson Cut Variations
     //-----
@@ -1195,6 +1207,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32230000","32c51070a","0103103100000000","0453503000000000"); // INT7
   } else if(trainConfig == 1106)  { //EDC 13TeV MB, M02: 1 (1.0) -> 411792109fe32210000
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32210000","32c51070a","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 1007)  { //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through ) -> 411792109fe3v220000
+    cuts.AddCutHeavyMesonCalo("0008d113","411792109fe3v220000","32c51070a","0103103100000000","0453503000000000"); // INT7
     //-----
     //Trigger EG1: Meson Cut Variations
     //-----
@@ -1373,6 +1387,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask );
+
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

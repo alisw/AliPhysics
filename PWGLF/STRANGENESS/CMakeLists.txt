@@ -92,9 +92,13 @@ set(SRCS
   Correlationpp/AliAnalysisCorrelationEventCollection.cxx
   Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx
   Correlationpp/AliAnalysisTaskCorrelationhCasc.cxx
+  Correlationpp/AliAnalysisTaskCorrelationhCascDATA.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_BumpStudies.cxx
+  HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_PileUpStudies.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2MC.cxx
+  StrPDF/AliAnalysisTaskV0multspec.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
@@ -180,6 +184,7 @@ install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
 install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)
 install(DIRECTORY Correlationpp DESTINATION  PWGLF/STRANGENESS)
 install(DIRECTORY HeavyIonsRun1Run2/macros DESTINATION PWGLF/STRANGENESS/HeavyIonsRun1Run2)
+install(DIRECTORY StrPDF/macros DESTINATION PWGLF/STRANGENESS/StrPDF)
 install(DIRECTORY Ratios DESTINATION PWGLF/STRANGENESS/ FILES_MATCHING PATTERN "*.C")
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Cascades/corrections)

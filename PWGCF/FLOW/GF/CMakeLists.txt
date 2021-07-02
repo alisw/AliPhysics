@@ -25,9 +25,11 @@ include_directories(
 # Additional includes - alphabetical order except ROOT
 include_directories(
     ${ROOT_INCLUDE_DIRS}
+    ${AliPhysics_SOURCE_DIR}/CORRFW
     ${AliPhysics_SOURCE_DIR}/OADB
-	${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+	  ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+    ${AliPhysics_SOURCE_DIR}/PWG/Tools
     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
     ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/GF
 )
@@ -35,6 +37,7 @@ include_directories(
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskChargedFlow.cxx
+  AliAnalysisTaskCorrForFlow.cxx
   AliAnalysisTaskDeform.cxx
   AliAnalysisTaskFlowExample.cxx
   AliAnalysisTaskGFWFlow.cxx
@@ -56,9 +59,12 @@ set(SRCS
   AliAnalysisDecorrTask.cxx
   AliAnalysisTaskESEFlow.cxx
   AliAnalysisTaskFlowSquareBracket.cxx
-  AliAnalysisTaskNonlinearFlow.cxx
-  CorrelationCalculator.cxx
   )
+
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS AliAnalysisTaskNonlinearFlow.cxx)
+  list(APPEND SRCS CorrelationCalculator.cxx)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

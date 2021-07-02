@@ -19,7 +19,7 @@
 class AliESDEvent;
 class AliAODEvent;
 class AliConversionPhotonBase;
-class AliKFVertex;
+class AliGAKFVertex;
 class TH1F;
 class TH2F;
 class AliPIDResponse;
@@ -231,7 +231,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    GetNDaughterEnergyCut() const {return fNDaughterEnergyCut;}
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
     Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
-
+    Int_t    GetAlphaInTaskMode() const {return fAlphaInTaskMode;}
   protected:
     TRandom3    fRandom;                        ///<
     AliCaloPhotonCuts* fCaloPhotonCuts;         ///< CaloPhotonCutObject belonging to same main task
@@ -298,6 +298,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t*      fElectronLabelArray;            //[fElectronLabelArraySize] Array with elec/pos v0 label
     Int_t       fBackgroundHandler;             ///<
     Int_t       fMassParamFunction;             ///< flag to set the functions that should be used to paramterize NDM mass and width
+    Int_t       fAlphaInTaskMode;               ///<
 
     Int_t      fDoLightOutput;                 ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t      fDoMinPtCut;                    ///< do min pT cut
@@ -351,7 +352,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,48)
+    ClassDef(AliConversionMesonCuts,49)
     /// \endcond
 };
 

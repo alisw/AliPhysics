@@ -155,7 +155,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fHistoPastFutureBits(NULL),
   hCentrality(NULL),
   hCentralityNotFlat(NULL),
-  //hCentralityVsNumberOfPrimaryTracks(NULL),
+  hCentralityVsNumberOfPrimaryTracks(NULL),
   hVertexZ(NULL),
   hNPileupVertices(NULL),
   hPileupVertexToPrimZ(NULL),
@@ -299,7 +299,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fHistoPastFutureBits(NULL),
   hCentrality(ref.hCentrality),
   hCentralityNotFlat(ref.hCentralityNotFlat),
-  //hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
+  hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
   hVertexZ(ref.hVertexZ),
   hNPileupVertices(ref.hNPileupVertices),
   hPileupVertexToPrimZ(ref.hPileupVertexToPrimZ),
@@ -482,6 +482,11 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     }
   }
 
+
+  Int_t maxNTracks = 200; // pp case
+  if(fIsHeavyIon == 2) maxNTracks = 500; // pPb case
+  else if(fIsHeavyIon == 1) maxNTracks = 5000; // PbPb case
+
   // if(fIsHeavyIon > 0){ // commented as mult. dep. analyses in pp started
   if( fModCentralityClass == 20){ // high mult 0.1%
     const Int_t centBins = 145;
@@ -492,6 +497,8 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       else arrCent[i] = 100;
     }
     hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",centBins,arrCent);
+    if(!fDoLightOutput && fDetectorCentrality != -1) hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",centBins,arrCent,maxNTracks,0,maxNTracks);
+
   } else if( fModCentralityClass == 21){// high mult 0.01%
     const Int_t centBins = 235;
     Double_t arrCent[centBins + 1];
@@ -502,14 +509,14 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       else arrCent[i] = 100;
     }
     hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",centBins,arrCent);
+    if(!fDoLightOutput && fDetectorCentrality != -1) hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",centBins,arrCent,maxNTracks,0,maxNTracks);
   } else {
     hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",210,0,105);
+    if(!fDoLightOutput && fDetectorCentrality != -1) hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",210,0,105,maxNTracks,0,maxNTracks);
   }
-    fHistograms->Add(hCentrality);
-  // }
+  fHistograms->Add(hCentrality);
+  if(hCentralityVsNumberOfPrimaryTracks) fHistograms->Add(hCentralityVsNumberOfPrimaryTracks);
 
-  //hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
-  //fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
 
   hVertexZ              = new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
   fHistograms->Add(hVertexZ);
@@ -816,10 +823,9 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
   if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
   if(hCentrality)hCentrality->Fill(GetCentrality(event));
   if(hVertexZ)hVertexZ->Fill(event->GetPrimaryVertex()->GetZ());
-  //   if(hCentralityVsNumberOfPrimaryTracks)
-  //      hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(event),
-  //                                               ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
-  //                                                ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
+  if(hCentralityVsNumberOfPrimaryTracks) hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(event),
+                                                                                  ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+                                                                                  ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
 
   if(fIsHeavyIon == 1){
     AliEventplane *EventPlane = event->GetEventplane();
@@ -6955,10 +6961,11 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   if(hCentrality)hCentrality->Fill(GetCentrality(event));
 
   if(hVertexZ)hVertexZ->Fill(event->GetPrimaryVertex()->GetZ());
-//  if(hCentralityVsNumberOfPrimaryTracks)
-//    hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(event),
-//                        ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
-//                        ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
+
+  if(hCentralityVsNumberOfPrimaryTracks)
+   hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(event),
+                       ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+                       ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
 
   if(fIsHeavyIon == 1){
     AliEventplane *EventPlane = event->GetEventplane();

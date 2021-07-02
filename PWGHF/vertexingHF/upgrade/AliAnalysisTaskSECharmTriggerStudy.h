@@ -37,9 +37,9 @@ struct Charm2Prong
     float fInvMassD0;              /// inv mass of D0 hypothesis
     float fInvMassD0bar;           /// inv mass of D0bar hypothesis
     Double32_t fPt;                //[0.0,65.535,16]
-    Double32_t fPx;                //[0.0,65.535,16]
-    Double32_t fPy;                //[0.0,65.535,16]
-    Double32_t fPz;                //[0.0,65.535,16]
+    float fPx;                     // px
+    float fPy;                     // py
+    float fPz;                     // pz
     Double32_t fY;                 //[-1.023,1.023,11]
     Double32_t fCosP;              //[0.67233000,1.,15]
     Double32_t fCosPXY;            //[0.67233000,1.,15]
@@ -66,9 +66,9 @@ struct Charm3Prong
     float fInvMassPhiKKpi;
     float fInvMassPhipiKK;
     Double32_t fPt;                //[0.0,65.535,16]
-    Double32_t fPx;                //[0.0,65.535,16]
-    Double32_t fPy;                //[0.0,65.535,16]
-    Double32_t fPz;                //[0.0,65.535,16]
+    float fPx;                     // px
+    float fPy;                     // py
+    float fPz;                     // pz
     Double32_t fYDplus;            //[-1.023,1.023,11]
     Double32_t fYDs;               //[-1.023,1.023,11]
     Double32_t fYLc;               //[-1.023,1.023,11]
@@ -93,9 +93,9 @@ struct Dstar
     float fInvMass;
     float fInvMassD0;
     Double32_t fPt;                  //[0.0,65.535,16]
-    Double32_t fPx;                //[0.0,65.535,16]
-    Double32_t fPy;                //[0.0,65.535,16]
-    Double32_t fPz;                //[0.0,65.535,16]
+    float fPx;                       // px
+    float fPy;                       // py
+    float fPz;                       // pz
     Double32_t fY;                   //[-1.023,1.023,11]
     Double32_t fCosPD0;              //[0.67233000,1.,15]
     Double32_t fCosPXYD0;            //[0.67233000,1.,15]
@@ -205,9 +205,11 @@ struct GenHadron
 struct Track
 {
     Double32_t fPt;                //[0.0,65.535,16]
-    Double32_t fPx;                //[0.0,65.535,16]
-    Double32_t fPy;                //[0.0,65.535,16]
-    Double32_t fPz;                //[0.0,65.535,16]
+    float fPx;                     // px
+    float fPy;                     // py
+    float fPz;                     // pz
+    Double32_t fNsigmaTPCPr;       //[-5.12,5.12,10]
+    Double32_t fNsigmaTOFPr;       //[-5.12,5.12,10]
     int fIdx;                      /// track index
     unsigned char fSpecies;        /// flag for Nsigma compatibility with different particle species (pion, kaon, proton, electron)
 };
@@ -366,6 +368,8 @@ public:
         fNsigmaTOFThreshold = nsigmaTOF;
     }
 
+    void SetFilterBitTracks(int FB) { fFilterBitTracks = FB; }
+
     void SetFillOnlySignal(bool fillonlysignal = true) { fFillOnlySignal = fillonlysignal; }
     void SetFillGenTree(bool fill = true) { fFillGenTree = fill; }
     void SetFillGenHistos(bool fill = true) { fFillGenHistos = fill; } // to save (a lot of) space
@@ -429,6 +433,7 @@ private:
     double fKeepTracksWithMinPt;                        /// pT threshold for unidentified tracks to keep (if < 0 none is kept)
     double fNsigmaTPCThreshold;                         /// Nsigma threashold values for selection of identified tracks
     double fNsigmaTOFThreshold;                         /// Nsigma threashold values for selection of identified tracks
+    int fFilterBitTracks;                               /// Filter bit for track selection
     bool fFillOnlySignal;                               /// flag to fill only signal
     bool fFillGenTree;                                  /// flag to fill tree with generated information
     bool fFillGenHistos;                                /// flag to fill gen histos
@@ -444,7 +449,7 @@ private:
     bool fApplyCuts;  /// flag to enable cuts application
     TList *fListCuts; /// list of cut objects
 
-    ClassDef(AliAnalysisTaskSECharmTriggerStudy, 3);
+    ClassDef(AliAnalysisTaskSECharmTriggerStudy, 4);
 };
 
 #endif

@@ -26,7 +26,7 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
   }
   // CNM
   if(file_cnm.Contains("alien")) {
-    gSystem->Exec(Form("alien_cp %s cnmfile.root",file_cnm.Data()));
+    gSystem->Exec(Form("alien_cp %s .",file_cnm.Data()));
     TObjArray* Strings = file_cnm.Tokenize("/");
     TString namefile = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
     printf("CNM file is %s copied from %s\n",namefile.Data(),file_cnm.Data());

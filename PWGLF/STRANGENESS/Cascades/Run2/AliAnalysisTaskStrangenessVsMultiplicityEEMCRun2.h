@@ -394,7 +394,13 @@ private:
     //   Variables for Event Tree
     //===========================================================================================
     Int_t fRun;//!
-    Float_t fCentrality; //!
+    Float_t fCentrality_V0M; //!
+    Float_t fCentrality_ZDC; //!
+    Float_t fCentrality_ZDCFired; //!
+    Float_t fCentrality_RefMult05; //!
+    Float_t fCentrality_RefMult08; //!
+    Float_t fCentrality_SPDClusters; //!
+    Float_t fCentrality_SPDTracklets; //!
     Bool_t fMVPileupFlag; //!
     Bool_t fOOBPileupFlag; //!
     Bool_t  fEvSel_INELgtZEROtrue; //!
@@ -412,6 +418,9 @@ private:
     Int_t  fNTOFClusters;  //!
     Int_t  fNTOFMatches;   //!
     Int_t  fNTracksITSsa2010; //!
+    Int_t  fSPDtracklets; //!
+    Int_t  fSPDtrackletsA; //!
+    Int_t  fSPDtrackletsC; //!
     Int_t  fNTracksGlobal2015; //!
     Int_t  fNTracksGlobal2015TriggerPP; //!
     
@@ -525,7 +534,13 @@ private:
     Float_t fTreeVariableZPCpp;//!
     
     //Event Multiplicity Variables
-    Float_t fTreeVariableCentrality; //!
+    Float_t fTreeVariableCentrality_V0M; //!
+    Float_t fTreeVariableCentrality_ZDC; //!
+    Float_t fTreeVariableCentrality_ZDCFired; //!
+    Float_t fTreeVariableCentrality_RefMult05; //!
+    Float_t fTreeVariableCentrality_RefMult08; //!
+    Float_t fTreeVariableCentrality_SPDClusters; //!
+    Float_t fTreeVariableCentrality_SPDTracklets; //!
     Bool_t fTreeVariableMVPileupFlag; //!
     Bool_t fTreeVariableOOBPileupFlag; //!
     
@@ -779,7 +794,13 @@ private:
     Float_t fTreeCascVarZPCpp;//!
     
     //Event Multiplicity Variables
-    Float_t fTreeCascVarCentrality; //!
+    Float_t fTreeCascVarCentrality_V0M; //!
+    Float_t fTreeCascVarCentrality_ZDC; //!
+    Float_t fTreeCascVarCentrality_ZDCFired; //!
+    Float_t fTreeCascVarCentrality_RefMult05; //!
+    Float_t fTreeCascVarCentrality_RefMult08; //!
+    Float_t fTreeCascVarCentrality_SPDClusters; //!
+    Float_t fTreeCascVarCentrality_SPDTracklets; //!
     Bool_t fTreeCascVarMVPileupFlag; //!
     Bool_t fTreeCascVarOOBPileupFlag; //!
     

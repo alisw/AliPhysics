@@ -71,6 +71,8 @@ CellEnergy:                                         # Cell Energy correction com
     enableShaperCorrection: false                   # Correct all cells >50 GeV for the shaper detector effect (to be used with special testbeam nonlinearity)
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
+    enableAdditionalScale: false                    # Set an additional energy scale shift on cell level. HIGHLY EXPERIMENTAL and should not be used for standard analyses!
+    additionalScaleValuesSM: [1.0, 1.0, 1.0]        # Set values for additional scale on cell level for Full SM, 2/3 SM, and 1/3 SM
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellSingleChannelCalibration:                       # Cell Single Channel Energy correction component

@@ -164,7 +164,7 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   TH2F                                *JCComparisonVsPtDiffOther;                   //!
   TH2F                                *JCComparisonVsPtDiffUnmatched;               //!
 
-
+/*
   TH3F                                *ParticlePtAndJC;                       //!
 
   TH3F                                *ParticlePtAndJCUp;                     //!
@@ -172,11 +172,11 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   TH3F                                *ParticlePtAndJCGluon;                  //!
   TH3F                                *ParticlePtAndJCOther;                  //!
   TH3F                                *ParticlePtAndJCUnmatched;              //!
-
+*/
   // Here is the TTree
   TTree                               *fTreeJets;                                                  //!
   // These are the branch variables; there are nBranches of them
-  static const Int_t nBranchesJetChargeFlavourTemplates = 61;                                      //
+  static const Int_t nBranchesJetChargeFlavourTemplates = 25;                                      //
   Double_t                            fTreeBranch[nBranchesJetChargeFlavourTemplates];             //
   TChain                              *pChain;                                                     //
 

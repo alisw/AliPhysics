@@ -57,6 +57,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
+  void SetPtBinWidth(Float_t binw){
+    fCustomPtBinWidth=kTRUE;
+    fPtBinWidth=binw;
+  }
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
   void SetSystem(Int_t system){fSystem = system;}
   void SetUseFinePtBinsForSparse(Bool_t usefinebins=kTRUE) {fUseFinPtBinsForSparse=usefinebins;} //use only in case of few candidates (e.g. MC signal only)
@@ -244,9 +248,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t fEnableCandSampling = kFALSE;                            /// flag to apply candidate sampling
   Float_t fFracCandToKeep = 1.1;                                  /// fraction of candidates to be kept by sampling
   Float_t fMaxCandPtSampling = 0.;                                /// maximun candidate pt to apply sampling
-
+  Bool_t fCustomPtBinWidth = kFALSE;                     /// flag to set custom pt bin width in TH2F and THnSparse
+  Float_t fPtBinWidth = 0.1;                             /// pt bin width for TH2F and THnSparse
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs, 42);            /// AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs, 43);            /// AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

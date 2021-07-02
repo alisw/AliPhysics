@@ -1,5 +1,3 @@
-#include "AliAnalysisTaskDeuteronProtonEfficiency.h"
-#include "AliAnalysisTaskDeuteronProtonEfficiency.cxx"
 
 AliAnalysisTask *AddTaskDeuteronProtonEfficiency(){
 
@@ -37,11 +35,13 @@ AliAnalysisTask *AddTaskDeuteronProtonEfficiency(){
 
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 
-  AliAnalysisDataContainer *coutput_dp_efficiency = mgr->CreateContainer("pd_efficiency", TList::Class(), AliAnalysisManager::kOutputContainer,"pd_efficiency.root");
+  AliAnalysisDataContainer *coutput_dp_efficiency = mgr->CreateContainer("ProtonDeuteronEfficiency", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
 
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput_dp_efficiency);
 
   return task;
+
+
 
 }

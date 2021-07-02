@@ -1,7 +1,8 @@
 /* Copyright(c) 1998-2020, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// author: I.Lofnes, ingrid.mckibben.lofnes@cern.ch
+// authors: I.Lofnes, ingrid.mckibben.lofnes@cern.ch
+//          H.Degenhardt, hermann.franz.degenhardt@cern.ch
 // Analysis task for determining the vdm-scan stability
 //
 
@@ -16,7 +17,6 @@
 class AliESDEvent;
 class TH1D;
 class AliAnalysisCuts;
-class AliTriggerAnalysis;
 
 class AliAnalysisTaskVdmStability : public AliAnalysisTaskSE {
     
@@ -36,6 +36,8 @@ public:
     void SetNRuns(Int_t n){ fNRuns = n;}
     void SetNCases(Int_t c){ fNSelectionCases = c;}
     void SetFillTTree(Bool_t set){ fFillTTree = set;}
+    void SetDiffTimingCut(Float_t min, Float_t max){fV0TimeDiff_min = min; fV0TimeDiff_max = max;}
+    void SetSumTimingCut(Float_t min, Float_t max){fV0TimeSum_min = min; fV0TimeSum_max = max;}
     
 private:
     // bits toggled in the fEventTag data member
@@ -75,6 +77,11 @@ private:
     Bool_t fzCut10nCont0;               ///< event with zVertex +-10 and nCont > 0
     Bool_t fzCut30nCont1;               ///< event with zVertex +-30 and nCont > 1
     Bool_t fzCut10nCont1;               ///< event with zVertex +-10 and nCont > 1
+    
+    Float_t fV0TimeDiff_min;
+    Float_t fV0TimeDiff_max;
+    Float_t fV0TimeSum_min;
+    Float_t fV0TimeSum_max;
     
     ULong64_t fEventTag;                ///< Event tags
     

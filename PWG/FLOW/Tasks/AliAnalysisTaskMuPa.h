@@ -12,9 +12,13 @@
 #define ALIANALYSISTASKMUPA_H
 
 #include <AliAnalysisTaskSE.h>
-#include <AliAODTrack.h>
-#include <AliAODEvent.h>
 #include <AliVEvent.h>
+#include <AliAODEvent.h>
+#include <AliMCEvent.h>
+#include <AliVTrack.h>
+#include <AliVParticle.h>
+#include <AliAODTrack.h>
+#include <AliAODMCParticle.h>
 #include <TH1D.h>
 #include <TH1I.h>
 #include <TH2I.h>
@@ -34,6 +38,8 @@ const Int_t gEventHistograms = 2; // total number of non-classified event histog
 const Int_t gParticleHistograms = 9; // total number of non-classified particle histograms
 const Int_t gCentralMultiplicity = 1; // multiplicities defined centrally, e.g. ref. mult.
 const Int_t gWeights = 3; // phi, pt, eta
+const Int_t gQAAnomalousEvents = 1; // |vertex| = 0; 
+const Int_t gQASelfCorrelations = 3; // phi, pt, eta
 
 // enums:
 enum eBins {nBins,min,max};
@@ -83,18 +89,20 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void BookFinalResultsHistograms();
 
   // 2) Methods called in UserExec(Option_t *):
+  virtual void PrintEventInfo(AliVEvent *ave); // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enable via task->SetPrintEventInfo()  
   virtual void FillQAHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs);
   virtual void FilterEvent(AliVEvent *ave);
   virtual void FillControlEventHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs); // before or after event cuts, reco or sim
-  virtual void FillControlParticleHistograms(AliAODTrack *aTrack, const Int_t ba, const Int_t rs); // before or after particle cuts, reco or sim
+  virtual void FillControlParticleHistograms(AliVParticle *vParticle, const Int_t ba, const Int_t rs); // before or after particle cuts, reco or sim
   virtual void GlobalTracksAOD(AliAODEvent *aAOD);
   Bool_t SurvivesEventCuts(AliVEvent *ave);
-  Bool_t SurvivesParticleCuts(AliAODTrack *aTrack); // applied e.g. on TPC-only
+  Bool_t SurvivesParticleCuts(AliVParticle *vParticle); // applied e.g. on TPC-only
   virtual Double_t Weight(const Double_t &value, const char *variable);
   virtual void CalculateCorrelations();
   virtual void CalculateNestedLoops();
   virtual void ResetEventByEventQuantities();
   virtual void OnlineMonitoring();
+  Bool_t SpecifiedEvent(AliVEvent *ave);
 
   // 3) Methods called in Terminate(Option_t *):
   //    a) Get pointers:
@@ -109,8 +117,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual TComplex Two(Int_t n1, Int_t n2);
 
   // 5) Setters and getters:
-  void SetPeriod(const char *p) {this->fPeriod = p;};
+  void SetDataTakingPeriod(const char *dtp) {this->fDataTakingPeriod = dtp;};
   void SetAODNumber(const char *an) {this->fAODNumber = an;};
+  void SetVerbose(Bool_t v) {this->fVerbose = v;};
 
   void SetControlEventHistogramsList(TList* const cehl) {this->fControlEventHistogramsList = cehl;};
   TList* GetControlEventHistogramsList() const {return this->fControlEventHistogramsList;} 
@@ -181,6 +190,10 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fNContributorsCuts[0] = min;
    this->fNContributorsCuts[1] = max;
   }
+  void SetMinVertexDistance(const Double_t vd)
+  {
+   this->fMinVertexDistance = vd;
+  }
 
   // Remaining event distributions:
   void SetEventBins(const char* type, const Double_t nbins, const Double_t min, const Double_t max)
@@ -204,7 +217,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TList* GetControlParticleHistogramsList() const {return this->fControlParticleHistogramsList;} 
   void SetFilterBit(Int_t fb) {this->fFilterBit = fb;};
   Int_t GetFilterBit() const {return this->fFilterBit;};
- 
+  void SetUseOnlyPrimaries(Bool_t uop) {this->fUseOnlyPrimaries = uop;};
+  Int_t GetUseOnlyPrimaries() const {return this->fUseOnlyPrimaries;};
+
   // Kinematics:
   void SetKinematicsBins(const char* kv, const Double_t nbins, const Double_t min, const Double_t max)
   {
@@ -300,6 +315,12 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetWeightsHist(TH1D* const hist, const char *variable); // .cxx
   TH1D* GetHistogramWithWeights(const char *filePath, const char *variable); // .cxx
 
+  // Utility:
+  void Red(const char* text);
+  void Green(const char* text);
+  void Yellow(const char* text);
+  void Blue(const char* text);
+
   // *.) Online monitoring:
   void SetUpdateOutputFile(const Int_t uf, const char *uqof)
   {
@@ -317,6 +338,17 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fBailOutFile = new TString(uqof);
   };
 
+  // *.) Debugging:
+  void SetProcessOnlySpecifiedEvent(Int_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period)
+  {
+   this->fProcessOnlySpecifiedEvent = kTRUE; 
+   this->fRun = run;
+   this->fBunchCross = bunchCross;
+   this->fOrbit = orbit;  
+   this->fPeriod = period;
+  }; // void SetProcessOnlySpecifiedEvent(UInt_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period)
+  virtual void SetPrintEventInfo(){this->fPrintEventInfo = kTRUE;}; // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod)
+
  private:
   AliAnalysisTaskMuPa(const AliAnalysisTaskMuPa& aatmpf);
   AliAnalysisTaskMuPa& operator=(const AliAnalysisTaskMuPa& aatmpf);
@@ -324,10 +356,11 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // 0) Base list:
   TList *fBaseList; // base list to hold all output object (a.k.a. grandmother of all lists)
   TProfile *fBasePro; // keeps flags relevant for the whole analysis
-  TString fPeriod; // the data taking period, use e.g. task->SetPeriod("LHC10h")
+  TString fDataTakingPeriod; // the data taking period, use e.g. task->SetDataTakingPeriod("LHC10h")
   TString fAODNumber; // the AOD number, use e.g. task->SetPeriod("AOD160") (for "LHC10h")
   Bool_t fFillQAHistograms; // fill all QA histograms (this shall be done only in one task, since these histos are heavy 2D objects). Additional loop over particles is performed.
   Bool_t fTerminateAfterQA; // in UserExec(), bail out immediately after QA histograms are filled 
+  Bool_t fVerbose; // print all additional info like Green(__PRETTY_FUNCTION__); etc.
 
   // 1) QA:
   TList *fQAList; // base list to hold all QA output object
@@ -338,6 +371,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH2I *fQAIDvsFilterBit; // filterbit vs. atrack->ID()
   TH1D *fQAKinematicsFilterBits[gFilterBits][2][gKinematicVariables]; // kinematics [specified filter bit][reco,sim][phi,pt,eta,energy,charge] Use in combination with SetQAFilterBits(...)
   TArrayI *fQAFilterBits; // for these filterbits the kinematics in the previous line will be filled, use in combination with SetQAFilterBits(...)
+  TH1I *fQAAnomalousEvents; // counter for anomalous events
+  TH1D *fQASelfCorrelations[gQASelfCorrelations]; // check for self-correlatiosn
 
   // 2) Control event histograms:  
   TList *fControlEventHistogramsList; // list to hold all control event histograms
@@ -345,9 +380,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   //    Multiplicity:
   Double_t fMultiplicity; // this is my ebe multiplicity, i.e. sum of track weights used to calculate Q-vectors (see below also fSelectedTracks) 
   TH1D *fMultiplicityHist; // this is distribution of my multiplicity
-  TH1D *fCentralMultiplicityHist[gCentralMultiplicity]; // this is distribution of my multiplicity
-  Double_t fMultiplicityBins[3]; // [nBins,minCentrality,maxCentrality]
-  Double_t fMultiplicityCuts[2]; // [min,max]
+  TH1D *fCentralMultiplicityHist[gCentralMultiplicity]; // this is distribution of my multiplicity TBI 20210527 do I need this at all?
+  Double_t fMultiplicityBins[3]; // [nBins,minMultiplicity,maxMultiplicity]
+  Double_t fMultiplicityCuts[2]; // [min,max] TBI 20210527 this cuts temporarily on aAOD->GetNumberOfTracks()
   Int_t fSelectedTracks;         // this is counter of tracks used to calculate Q-vectors (see above also fMultiplicity) 
   TH1I *fSelectedTracksHist;     // this is distribution fSelectedTracks
   Int_t fSelectedTracksCuts[2];  // [min,max]
@@ -364,6 +399,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1I *fNContributorsHist[2][2]; //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
   Int_t fNContributorsBins[3];    // [nBins,min,max]
   Int_t fNContributorsCuts[2];    // [min,max]
+  Double_t fMinVertexDistance;    // if sqrt(vx^2+vy^2+vz^2) < fMinVertexDistance, the event is reject. This way, I remove suspicious events with |vertex| = 0.
 
   //    All remaining event histograms: 
   TH1D *fEventHistograms[2][gEventHistograms]; //! [before,after event cuts][ type - see enum ]
@@ -375,6 +411,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TProfile *fControlParticleHistogramsPro; // keeps flags relevant for the control particle histograms
   TExMap *fGlobalTracksAOD; //! global tracks in AOD
   Int_t fFilterBit; // filter bit (its meaning can change from one production to another)
+  Bool_t fUseOnlyPrimaries; // cut e.g. on AliAODTrack::kPrimary or aodmcParticle->IsPhysicalPrimary()
   //    Kinematics:
   TH1D *fKinematicsHist[2][2][gKinematicVariables]; // kinematics [before,after track cuts][reco,sim][phi,pt,eta,energy,charge]
   Double_t fKinematicsBins[gKinematicVariables][3]; // [phi,pt,eta,energy,charge][nBins,min,max]
@@ -431,9 +468,17 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TString *fUpdateFile;     // which file will be regularly updated with frequency fUpdateFrequency of events
   Int_t fMaxNumberOfEvents; // if this number of events is reached, write to external file fBailOutFile and bail out
   TString *fBailOutFile;    // in which file results will be bailed out after fMaxNumberOfEvents
+
+  // *.) Debugging:
+  Bool_t fProcessOnlySpecifiedEvent; // process only for the specified event
+  Int_t fRun;                       // run number
+  UShort_t fBunchCross;              // bunch crossing
+  UInt_t fOrbit;                     // orbit
+  UInt_t fPeriod;                    // period
+  Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,3);
+  ClassDef(AliAnalysisTaskMuPa,4);
 
 };
 

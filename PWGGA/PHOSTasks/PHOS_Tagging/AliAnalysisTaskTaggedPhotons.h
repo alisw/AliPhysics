@@ -30,7 +30,7 @@ class AliAnalysisTaskTaggedPhotons : public AliAnalysisTaskSE {
 
 public:
   
-  enum mcType{kFullMC, kSingleGamma, kSinglePi0, kSingleEta, kJetJet } ; 
+  enum mcType{kFullMC, kSingleGamma, kSinglePi0, kSingleEta, kJetJet, kDPMJET } ; 
   enum cutType{kDefCut, kLowECut} ;
   enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
   enum trackSelections{kLHC13x,kFAST,kCENTwoSSD,kCENTwSSD} ;

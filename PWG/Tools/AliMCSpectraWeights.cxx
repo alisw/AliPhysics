@@ -210,6 +210,7 @@ fUseMultiplicity(kTRUE), fUseMBFractions(kFALSE) {
     fNSysFlags = fAllSystematicFlags.size();
     fbTaskStatus = AliMCSpectraWeights::TaskState::kAllEmpty;
     fstFilePublished =
+//    "/home/alidock/ExpertInput/ExpertInput.root";
     "alien:///alice/cern.ch/user/p/phuhn/AllPublishedFractions.root";
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
@@ -1118,10 +1119,10 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01)
             continue;
 
-        float partEta = mcGenParticle->Eta();
-        float _maxEta = 0.5; // hard coded max eta; in all papers 0.5
+        float partY = mcGenParticle->Y();
+        float _maxY = 0.5; // hard coded max eta; in all papers 0.5
 
-        if (TMath::Abs(partEta) > _maxEta)
+        if (TMath::Abs(partY) > _maxY)
             continue; // apply same acceptance as in published spectra
         int particleType =
         AliMCSpectraWeights::IdentifyMCParticle(mcGenParticle);
@@ -1182,7 +1183,8 @@ int const AliMCSpectraWeights::IdentifyMCParticle(TParticle* mcParticle) {
 float const AliMCSpectraWeights::GetMultFromCent(int CentBin) const {
     if (fstCollisionSystem == "pp") {
         // for | eta | < 0.5
-        switch (CentBin) {
+        // pp 7 TeV
+        /* switch (CentBin) {
             case 0:
                 return 21.3;
             case 1:
@@ -1203,6 +1205,31 @@ float const AliMCSpectraWeights::GetMultFromCent(int CentBin) const {
                 return 3.9;
             case 9:
                 return 2.26;
+            default:
+                return -2.0;
+        }*/
+        // pp 13 TeV
+        switch (CentBin) {
+            case 0:
+                return 26.02;
+            case 1:
+                return 20.02;
+            case 2:
+                return 16.17;
+            case 3:
+                return 13.77;
+            case 4:
+                return 12.04;
+            case 5:
+                return 10.02;
+            case 6:
+                return 7.95;
+            case 7:
+                return 6.32;
+            case 8:
+                return 4.50;
+            case 9:
+                return 2.55;
             default:
                 return -2.0;
         }

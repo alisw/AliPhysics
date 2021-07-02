@@ -2470,6 +2470,9 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         } else if (fUseM02 == 3){
             if( (cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02)  && cluster->E() > 1 )
               failedM02  = kTRUE;
+        } else if (fUseM02 == 4){
+            if( cluster->GetM02()< fMinM02 && cluster->E() > 2 )
+              failedM02  = kTRUE;
         }
         if (fUseM20 && !passedNCellSpecial)
           if( cluster->GetM20()< fMinM20 || cluster->GetM20() > fMaxM20 )
@@ -6198,6 +6201,11 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fMinNCells=3;
     fMinENCell=1.;
     break;
+  case 14: // e   THIS IS PHOS-group STANDARD - also includes an M02 cut for E>2GeV
+    if (!fUseNCells) fUseNCells=2;
+    fMinNCells=3;
+    fMinENCell=2.;
+    break;
 
   // special cases for EMCal: this will randomly evaluate the NCell cut efficiency for MC
   // and let clusters with NCell<2 pass if sucessful, for data the normal NCell cut is applied
@@ -6695,6 +6703,10 @@ Bool_t AliCaloPhotonCuts::SetMinM02(Int_t minM02)
     if (!fUseM02) fUseM02=3;
     fMinM02 = 0.2;
     break;
+  case 14: // e   THIS IS THE PHOS-group standard - only apply the M02 cut in case E>2 GeV
+    if (!fUseM02) fUseM02=4;
+    fMinM02 = 0.1;
+    break;
 
   default:
     AliError(Form("Min M02 not defined %d",minM02));
@@ -6972,7 +6984,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             // XeXe 5.44 TeV 2017
             fCurrentMC == kXeXe5T17HIJING
           ){
-            energy *= FunctionNL_PHOSOnlyMC(energy, 1.012, -0.06, 0.7);
+            energy /= 0.977;
           }
         }
       }
@@ -8309,8 +8321,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           }
         } else if( fCurrentMC==kPbPb5T18HIJING ){
           if (fClusterType == 2 ){
-            energy /= FunctionNL_kSDM(energy, 0.991778, -2.60609, -1.63899); // added on 2019 07 29 , based on pp 5TeV
-            energy /= 1.0073; // 2019 08 30 - PCMPHOS
+            energy /= FunctionNL_kSDM(energy, 0.98986, -2.71956, -0.499509); // added on 2021 05 28, rerun phos
           }
         } else if( fCurrentMC==kXeXe5T17HIJING ){
           if (fClusterType == 1 ){
@@ -8443,6 +8454,85 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         }
       }
       break;
+
+
+  // *************** experimental settings for EMCal studies
+    // Setting to be used with scale on cell level of 0% instead of 5%
+    case 93:
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+          energy /= 1.00349;
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
+        }
+      }
+      break;
+    // Setting to be used with scale on cell level of 1.5% instead of 5%
+    case 94:
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+          energy /= 1.00349;
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
+          energy /= 1.015;
+        }
+      }
+      break;
+    // Setting to be used with scale on cell level of 3.5% instead of 5%
+    case 95:
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+          energy /= 1.00349;
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
+          energy /= 1.035;
+        }
+      }
+      break;
+    case 96: // same setting as 93 but without MC fine tuning
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
+        }
+      }
+      break;
+    // Setting to be used with scale on cell level of 1.5% instead of 5%
+    case 97: // same setting as 94 but without MC fine tuning
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
+          energy /= 1.015;
+        }
+      }
+      break;
+    // Setting to be used with scale on cell level of 3.5% instead of 5%
+    case 98: // same setting as 95 but without MC fine tuning
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
+          energy /= 1.035;
+        }
+      }
+      break;
+
 
 
 

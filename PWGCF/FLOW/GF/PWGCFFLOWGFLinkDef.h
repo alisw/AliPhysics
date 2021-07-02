@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskChargedFlow+;
+#pragma link C++ class AliAnalysisTaskCorrForFlow+;
 #pragma link C++ class AliAnalysisTaskDeform+;
 #pragma link C++ class AliAnalysisTaskGFWFlow+;
 #pragma link C++ class AliAnalysisTaskGFWPIDFlow+;
@@ -26,7 +27,12 @@
 #pragma link C++ class AliAnalysisDecorrTask+;
 #pragma link C++ class AliAnalysisTaskESEFlow+;
 #pragma link C++ class AliAnalysisTaskFlowSquareBracket+;
+#endif
+
+#ifdef __CLING__
+
 #pragma link C++ class AliAnalysisTaskNonlinearFlow+;
 #pragma link C++ class CorrelationCalculator+;
 #pragma link C++ class PhysicsProfile+;
+
 #endif

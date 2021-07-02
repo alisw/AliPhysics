@@ -12,7 +12,8 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 	Double_t minNtrklet = 0,
 	Double_t maxNtrklet = 9999,
 	Bool_t   iGPMC = kFALSE,
-	TString estimatorFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/estimatorAvg.root"
+	TString estimatorFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/estimatorAvg.root",
+	TString pTWeightFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/pTWeight.root"
 
 	)
 {
@@ -47,11 +48,10 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 
 
 
-
     //---- Get Estimator 
     TFile* fEstimator = TFile::Open(estimatorFilename.Data());
     if(!fEstimator){
-		AliFatal("File with multiplicity estimator not found!\n");
+		AliFatal("File with multiplicity estimator is not found!\n");
 		return;
     }
 
@@ -63,8 +63,6 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
     task->SetMultiProfileLHC16qt_MC(multiEstimatorAvgMB[1]);
 
 
-
-
     //---- Get weight for N tracklet
     TH1D* WeightNtrklet = (TH1D*)fEstimator->Get("weightNtrkl")->Clone("WeightNtrklet");
     if(!WeightNtrklet){
@@ -72,6 +70,21 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 	    return;
     }
     task->SetWeightNtrklet(WeightNtrklet);
+
+
+    //---- Get Pt Weight
+    TFile* fpTWeight = TFile::Open(pTWeightFilename.Data());
+    if(!fpTWeight){
+		AliFatal("File with pT weight is not found!\n");
+		return;
+    }
+    TGraphErrors* WeightPt_Dmeson = (TGraphErrors*)fpTWeight->Get("pTWeight_Dmeson")->Clone("WeightPt_Dmeson");
+    TGraphErrors* WeightPt_Lc     = (TGraphErrors*)fpTWeight->Get("pTWeight_Lc")->Clone("WeightPt_Lc");
+    TF1* 	  WeightPt_Bmeson = (TF1*)fpTWeight->Get("pTWeight_Bmeson")->Clone("WeightPt_Bmeson");
+
+    task->SetWeightDmeson(WeightPt_Dmeson);
+    task->SetWeightLc(WeightPt_Lc);
+    task->SetWeightBmeson(WeightPt_Bmeson);
 
 
 

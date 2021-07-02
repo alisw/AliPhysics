@@ -177,9 +177,9 @@ double AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliVParticle* particle)
 //**************************************************************************************************
 double AliMultDepSpecAnalysisTask::GetParticleWeight(AliVParticle* particle)
 {
-  // FIXME: add PCC handler
-  // get handler per event
-  //AliMCSpectraWeightsHandler* handler = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject("fMCSpectraWeights"));
+  if(fMCSpectraWeights){
+    return (fIsNominalPCC) ? fMCSpectraWeights->GetMCSpectraWeightNominal(particle->Particle()) : fMCSpectraWeights->GetMCSpectraWeightSystematics(particle->Particle());
+  }
   return 1.0;
 }
 
@@ -207,6 +207,12 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
     }
     fMCVtxZ = fMCEvent->GetPrimaryVertex()->GetZ();
     fAcceptEventMC = std::abs(fMCVtxZ) <= 10.;
+    
+    if (fMCUseDDC) {
+      // get mc spectra weights object for data-driven corrections
+      AliMCSpectraWeightsHandler* mcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject("fMCSpectraWeights"));
+      fMCSpectraWeights = (mcWeightsHandler) ? mcWeightsHandler->fMCSpectraWeight : nullptr;
+    }
   }
 
   // v0-mult: fEvent->GetVZEROData()->GetMTotV0A() + fEvent->GetVZEROData()->GetMTotV0C();
@@ -798,22 +804,14 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
   // in MC we always apply data driven corrections to account for wrong particle composition in the
   // generator cutMode 99 is for crosschecks without any data driven corrections (not part of systematics)
   if (isMC && cutMode != 99) {
-    // TODO: use enums for this once they are available
-    int pccMode = 0;        // 0 = default
-    int secScalingMode = 0; // 0 = default
+    fIsNominalPCC = true;
 
     // systematic variations related to the data driven corrections
     // the particle composition framework picks a new random systematic setup per event
     // do this multiple times to have a better feeling for the systematics
     if (cutMode >= 120 && cutMode <= 123) {
-      pccMode = 1;
+      fIsNominalPCC = false;
     }
-    // if(cutMode >= 124 && cutMode <= 127) {secScalingMode = 1;} // maybe here up or down
-    // specifically?
-
-    // SetParticleCompositionMode(pccMode);      // TODO: add this once PCC is ready
-    // SetSecondaryScalingMode(secScalingMode);  // TODO: add this once sec scaling is ready
-
     SetUseDataDrivenCorrections();
   }
   return true;

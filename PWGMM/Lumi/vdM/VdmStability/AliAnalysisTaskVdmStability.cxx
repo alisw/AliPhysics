@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // authors: I.Lofnes, ingrid.mckibben.lofnes@cern.ch
-//			H.Degenhardt, hermann.franz.degenhardt@cern.ch
+//          H.Degenhardt, hermann.franz.degenhardt@cern.ch
 // Analysis task for determining the vdm-scan stability
 //
 
@@ -30,7 +30,6 @@ using namespace std;
 #include <AliAnalysisManager.h>
 #include <AliVEvent.h>
 #include <AliESDEvent.h>
-#include <AliTriggerAnalysis.h>
 #include <AliESDVZERO.h>
 
 #include "AliAnalysisTaskVdmStability.h"
@@ -60,6 +59,10 @@ fzCut30nCont0(kFALSE),
 fzCut10nCont0(kFALSE),
 fzCut30nCont1(kFALSE),
 fzCut10nCont1(kFALSE),
+fV0TimeDiff_min(5.5),
+fV0TimeDiff_max(11.5),
+fV0TimeSum_min(11.5),
+fV0TimeSum_max(17.5),
 fEventTag(0),
 fEvent(0x0),
 fEventStatV0(0x0),
@@ -96,6 +99,10 @@ fzCut30nCont0(kFALSE),
 fzCut10nCont0(kFALSE),
 fzCut30nCont1(kFALSE),
 fzCut10nCont1(kFALSE),
+fV0TimeDiff_min(5.5),
+fV0TimeDiff_max(11.5),
+fV0TimeSum_min(11.5),
+fV0TimeSum_max(17.5),
 fEventTag(0),
 fEvent(0x0),
 fEventStatV0(0x0),
@@ -108,7 +115,6 @@ fFillTTree(false)
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());    //TList of event statistics
     DefineOutput(2, TTree::Class());    //event tree information
-    
 }
 
 //_________________________________________________________________________________
@@ -255,12 +261,11 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
     TString ftc = fEvent->GetFiredTriggerClasses();
     Bool_t isCINT7 = ftc.Contains("CINT7-B");
     Bool_t isCENT = ftc.Contains("CENT");
-    if (isCINT7 && isCENT)
-        fIsV0ANDfired = kTRUE;
+    if (isCINT7 && isCENT) fIsV0ANDfired = kTRUE;
     else fIsV0ANDfired = kFALSE;
     if (!fIsV0ANDfired) return;
     
-    //check if T0 trigger was fired
+    //check if which triggers were fired
     fIsT0fired = fEvent->GetHeader()->IsTriggerInputFired("0TVX");
 	fIsEMCALfired = fEvent->GetHeader()->IsTriggerInputFired("0EMC");
 	fIsMUfired = fEvent->GetHeader()->IsTriggerInputFired("0MSL");
@@ -268,7 +273,7 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
     
     //Check physics selection
     fSelectPhysics = kTRUE;
-    if( inputHandler){
+    if(inputHandler){
         if((isESD && inputHandler->GetEventSelection())){
             fSelectPhysics = inputHandler->IsEventSelected();
         }
@@ -278,13 +283,13 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
     fRunNumber = static_cast<UInt_t >(InputEvent()->GetRunNumber());
     
     //Set z-vertex information
-    const AliESDVertex* trackVtx    = fEvent->GetPrimaryVertexTracks();
+    const AliESDVertex* trackVtx = fEvent->GetPrimaryVertexTracks();
     fVtxZ = trackVtx->GetZ();
     fnVtxCont = trackVtx->GetNContributors();
     fIsGoodZ = CheckZVtx(fVtxZ, fnVtxCont, 10., kTRUE, 1);
     
     //Set V0 timing
-    AliESDVZERO * esdV0 = fEvent->GetVZEROData();
+    AliESDVZERO* esdV0 = fEvent->GetVZEROData();
     fTV0A = esdV0->GetV0ATime();
     fTV0C = esdV0->GetV0CTime();
     fGoodTime = CheckTime(fTV0A,fTV0C);
@@ -312,26 +317,6 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
     if ((fSelectPhysics) && !(fPileupEvent)) {
         fEventStatV0->Fill(kPileupEvents);
         if (fIsT0fired) fEventStatT0->Fill(kPileupEvents);
-    }
-    //Z-vertex
-    if ((fSelectPhysics) && (fIsGoodZ)) {
-        fEventStatV0->Fill(kGoodZEvents);
-        if (fIsT0fired) fEventStatT0->Fill(kGoodZEvents);
-    }
-    //Timing + PU
-    if ((fSelectPhysics) && (fGoodTime) && !(fPileupEvent) ) {
-        fEventStatV0->Fill(kV0andPUEvents);
-        if (fIsT0fired) fEventStatT0->Fill(kV0andPUEvents);
-    }
-    //Timing + z
-    if ((fSelectPhysics) && (fGoodTime) && (fIsGoodZ) ) {
-        fEventStatV0->Fill(kV0andZEvents);
-        if (fIsT0fired) fEventStatT0->Fill(kV0andZEvents);
-    }
-    //Timing + PU + z
-    if ((fSelectPhysics) && (fGoodTime) && !(fPileupEvent) && (fIsGoodZ) ) {
-        fEventStatV0->Fill(kV0andPUandZEvents);
-        if (fIsT0fired) fEventStatT0->Fill(kV0andPUandZEvents);
     }
     
     fzCut30 		= CheckZVtx(fVtxZ, fnVtxCont, 30., kFALSE, -999);
@@ -385,14 +370,14 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
 void AliAnalysisTaskVdmStability::AddEventTreeVariables(TTree* &tree)
 {
     tree->Branch("RunNumber", &fRunNumber);
-    tree->Branch("VtxZ", &fVtxZ);
-    tree->Branch("nVtxCont", &fnVtxCont);
+    //tree->Branch("VtxZ", &fVtxZ);
+    //tree->Branch("nVtxCont", &fnVtxCont);
     tree->Branch("PhysSelected",&fSelectPhysics);
     tree->Branch("V0Trigger",&fIsV0ANDfired);
     tree->Branch("T0Trigger",&fIsT0fired);
-    tree->Branch("EMCALTrigger",&fIsEMCALfired);
-    tree->Branch("MUONTrigger",&fIsMUfired);
-    tree->Branch("DIMUONTrigger",&fIsDIMUfired);
+    //tree->Branch("EMCALTrigger",&fIsEMCALfired);
+    //tree->Branch("MUONTrigger",&fIsMUfired);
+    //tree->Branch("DIMUONTrigger",&fIsDIMUfired);
     tree->Branch("PileupEvent",&fPileupEvent);
     tree->Branch("timeV0A",&fTV0A);
     tree->Branch("timeV0C",&fTV0C);
@@ -409,7 +394,8 @@ void AliAnalysisTaskVdmStability::Terminate(Option_t *)
 Bool_t AliAnalysisTaskVdmStability::CheckTime(Float_t timeA, Float_t timeC){
     Float_t tV0sum = timeA + timeC;
     Float_t tV0diff = timeA - timeC;
-    return (((5.5 < tV0diff) && (tV0diff < 11.5)) && ((11.5 < tV0sum) && (tV0sum < 17.5)));
+    //return (((5.5 < tV0diff) && (tV0diff < 11.5)) && ((11.5 < tV0sum) && (tV0sum < 17.5)));
+    return (((fV0TimeDiff_min < tV0diff) && (tV0diff < fV0TimeDiff_max)) && ((fV0TimeSum_min < tV0sum) && (tV0sum < fV0TimeSum_max)));
 }
 
 //Timing Run

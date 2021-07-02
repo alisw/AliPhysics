@@ -943,7 +943,7 @@ void AliAnalysisTaskK0SPFemto::UserExec(Option_t *) {
 	    {
 	      isMCsecond= kTRUE;
 	      //cout<<"Label: "<<label<<" "<<PDGcode<<endl;
-	   
+	      /*
 	      Int_t mcMotherLabel = tparticle->GetMother();
 	      Int_t mcMotherPdg = 0;
 	      AliAODMCParticle *mcMother = (AliAODMCParticle*)arrayMC->At(mcMotherLabel);
@@ -962,9 +962,34 @@ void AliAnalysisTaskK0SPFemto::UserExec(Option_t *) {
 	      MCmumPDGP2    = mcMotherPdg;
 	      MCgrammaIDP2  = mcGrandMotherLabel;
 	      MCgrammaPDGP2 = mcGrandMotherPdg;
-
+	      */
 	      //cout<<"1:------------------------------MCmumIDP2: "<<MCmumIDP2<<"   ----------------------------------MCmumPDGP2: "<<MCmumPDGP2<<endl;
 	      
+	      Int_t mcMotherLabel = tparticle->GetMother();
+	      Int_t mcMotherPdg = 0;
+	      Int_t mcGrandMotherLabel = 0;
+	      Int_t mcGrandMotherPdg = 0; 
+	      
+
+	      AliAODMCParticle *mcMother = (AliAODMCParticle*)arrayMC->At(mcMotherLabel);
+	      if(mcMother){
+		AliAODMCParticle *mcGrandMother = (AliAODMCParticle*)arrayMC->At(mcGrandMotherLabel);
+		mcGrandMotherLabel = mcMother->GetMother();
+		mcGrandMotherPdg = 0; 
+		    
+		//  if (mcMotherLabel < -1) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} //RAMONA : era questo 02/03/16
+		if(mcMotherLabel < 0) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} 
+		if(mcGrandMotherLabel < 0){mcGrandMotherPdg=0;}else{mcGrandMotherPdg = mcGrandMother->GetPdgCode();}
+	      }
+	      // cout<<"mcMotherlabel: "<<mcMotherLabel<<endl;
+
+	      //Mum id
+	      MCmumIDP2     = mcMotherLabel;
+	      MCmumPDGP2    = mcMotherPdg;
+	      MCgrammaIDP2  = mcGrandMotherLabel;
+	      MCgrammaPDGP2 = mcGrandMotherPdg;
+
+
 	      if (tparticle->IsPhysicalPrimary()) MCptcCodeP2 = 1;
 	      else if (tparticle->IsSecondaryFromMaterial()) MCptcCodeP2 = 2;
 	      else if (tparticle->IsSecondaryFromWeakDecay()) MCptcCodeP2 = 3;

@@ -36,6 +36,7 @@
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
+#include "AliAODMCHeader.h"
 
 ClassImp(AliAnalysisTaskMeanPtV2Corr);
 
@@ -46,6 +47,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
   fIsMC(kFALSE),
+  fBypassTriggerAndEvetCuts(kFALSE),
   fMCEvent(0),
   fUseRecoNchForMC(kTRUE),
   fRndm(0),
@@ -107,6 +109,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
   fIsMC(IsMC),
+  fBypassTriggerAndEvetCuts(kFALSE),
   fMCEvent(0),
   fUseRecoNchForMC(kTRUE),
   fNBootstrapProfiles(10),
@@ -199,8 +202,10 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
     DefineOutput(2,AliGFWFlowContainer::Class());
     DefineOutput(3,TList::Class());
   };
+  SetNchCorrelationCut(1,0,kFALSE);
 };
 AliAnalysisTaskMeanPtV2Corr::~AliAnalysisTaskMeanPtV2Corr() {
+  SetNchCorrelationCut(1,0,kFALSE);
 };
 void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   printf("Stage switch is %i\n\n\n",fStageSwitch);
@@ -661,7 +666,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   }
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
   Double_t l_Cent = lMultSel->GetMultiplicityPercentile(fCentEst->Data());
-  // if(!CheckTrigger(l_Cent)) return;
+  if(!fBypassTriggerAndEvetCuts)
+    if(!CheckTrigger(l_Cent)) return;
   Double_t vtxXYZ[] = {0.,0.,0.};
   if(!AcceptAOD(fAOD, vtxXYZ)) return;
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
@@ -697,7 +703,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::CheckTrigger(Double_t lCent) {
   return kTRUE;
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxXYZ) {
-  // if(!fEventCuts.AcceptEvent(inEv)) return 0;
+  if(!fBypassTriggerAndEvetCuts) if(!fEventCuts.AcceptEvent(inEv)) return 0;
   const AliAODVertex* vtx = dynamic_cast<const AliAODVertex*>(inEv->GetPrimaryVertex());
   if(!vtx || vtx->GetNContributors() < 1)
     return kFALSE;
@@ -1169,7 +1175,7 @@ for(Int_t i=0;i<1;i++) { //No PID = index is only 1
   for(Int_t i=0;i<1;i++) {
     FillCovariance(fCovariance[i],corrconfigs.at(i*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
     FillCovariance(fCovariance[i+4],corrconfigs.at((i+1)*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
-    FillCovariance(fCovariance[8],corrconfigs.at(14),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
+    FillCovariance(fCovariance[8],corrconfigs.at(15),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
     //following is not necessary since we don't have any POIs
   };
   PostData(3,fCovList);
@@ -1199,8 +1205,11 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
   Int_t lNchGen=0;
   Int_t lNchRec=0;
   Int_t nSpecies=7;
+  AliAODMCHeader *mcHeader = (AliAODMCHeader *)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if(!mcHeader) { printf("Could not fetch MC header!\n"); return; };
   for (Int_t ipart = 0; ipart < nPrim; ipart++) {
     lPart = (AliAODMCParticle*)tca->At(ipart);
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart, mcHeader, tca)) continue;
     if (!lPart) { partNotFetched++; continue; };
     /* get particlePDG */
     Int_t pdgcode = TMath::Abs(lPart->GetPdgCode());
@@ -1240,6 +1249,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
           fEfficiency[pidind+(2*nSpecies)]->Fill(lPart->Pt(),l_Cent);
     };
   };
+  if(fUseCorrCuts) if(!CheckNchCorrelation(lNchGen,lNchRec)) return;
   fNchTrueVsReco->Fill(lNchGen,lNchRec);
   PostData(1,fEfficiencyList);
 }
@@ -1337,8 +1347,8 @@ void AliAnalysisTaskMeanPtV2Corr::CovSkipMpt(AliAODEvent *fAOD, const Double_t &
     FillCovariance(fCovariance[1],corrconfigs.at(i*4),l_Multi,1,wp[0],l_Random);
     FillCovariance(fCovariance[2],corrconfigs.at((i+1)*4),l_Multi,mptev,wp[0],l_Random);
     FillCovariance(fCovariance[3],corrconfigs.at((i+1)*4),l_Multi,1,wp[0],l_Random);
-    FillCovariance(fCovariance[4],corrconfigs.at(14),l_Multi,mptev,wp[0],l_Random);
-    FillCovariance(fCovariance[5],corrconfigs.at(14),l_Multi,1,wp[0],l_Random);
+    FillCovariance(fCovariance[4],corrconfigs.at(15),l_Multi,mptev,wp[0],l_Random);
+    FillCovariance(fCovariance[5],corrconfigs.at(15),l_Multi,1,wp[0],l_Random);
     //following is not necessary since we don't have any POIs
   };
   PostData(3,fCovList);

@@ -57,6 +57,8 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD()
       fIsMC(false),
       fQ3Limit(0.0),
       fQ3LimitSample(0.0),
+      fQ3LimitSampleFraction(0.0),
+      fQ3LimitFraction(0.0),
       fRejectedParticles(nullptr),
       fAcceptedParticles(nullptr),
       fAcceptedParticlesButNoPPL(nullptr),
@@ -126,6 +128,8 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD(const char* n
       fIsMC(false),
       fQ3Limit(0.0),
       fQ3LimitSample(0.0),
+      fQ3LimitSampleFraction(0.0),
+      fQ3LimitFraction(0.0),
       fRejectedParticles(nullptr),
       fAcceptedParticles(nullptr),
       fAcceptedParticlesButNoPPL(nullptr),
@@ -1562,26 +1566,30 @@ bool AliAnalysisTaskThreeBodyFemtoAOD::MyLovely3BodyTrigger(AliAODEvent *evt ,  
       return false;
   }
 
+
   std::vector<std::vector<AliFemtoDreamBasePart>> ParticleVector { Protons, AntiProtons, Lambdas, AntiLambdas };
   float minQ3Part = CalculatePPLTriggerQ3Min(ParticleVector, 0, 2, 0, PDGCodes);
   float minQ3AntiPart = CalculatePPLTriggerQ3Min(ParticleVector, 1, 3, 1, PDGCodes);
+
   if(minQ3Part<fQ3Limit || minQ3AntiPart <fQ3Limit ){
+    float randomNumber = fRandomGen->Uniform(0.,1.);
+    if(randomNumber>fQ3LimitFraction){
+      return false;
+    }
     return true;
   }
 
-  if(fTriggerOnSample){
-    if(minQ3Part<fQ3LimitSample || minQ3AntiPart <fQ3LimitSample ){
-      float randomNumber = fRandomGen->Uniform(0.,1.);
-      if(randomNumber>0.2){
-        return false;
-      }
+
+  if(minQ3Part<fQ3LimitSample || minQ3AntiPart <fQ3LimitSample ){
+    float randomNumber = fRandomGen->Uniform(0.,1.);
+    if(randomNumber>fQ3LimitSampleFraction){
+      return false;
     }
-  }
-  if(minQ3Part>fQ3LimitSample && minQ3AntiPart >fQ3LimitSample ){
-    return false;
+    return true;
   }
 
-  return true;
+
+  return false;
 }
 
 double AliAnalysisTaskThreeBodyFemtoAOD::CalculatePPLTriggerQ3Min(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, std::vector<int> PDGCodes ){
