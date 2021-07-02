@@ -40,6 +40,9 @@ AliRsnMiniAnalysisTask * AddTaskF0
  Float_t     masslow       = 0.3,   //inv mass range lower boundary
  Float_t     massup        = 1.3,   //inv mass range upper boundary
  Int_t       nbins         = 1000,  //inv mass: N bins
+ Float_t     ptlow         = 0.0,   //pT axis low edge 
+ Float_t     ptup          = 20.0,   //pT axis upper edge 
+ Int_t       nbinspt       = 200,   //pT axis n bins
  Bool_t      enableTrackQA = kTRUE, //enable single track QA
  Bool_t      enableAdvEvtQA = kFALSE) //enable advanced QA for multiplicity and event properties
 {  
@@ -234,7 +237,7 @@ AliRsnMiniAnalysisTask * AddTaskF0
 #ifdef __CINT__
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigF0.C");
 #endif 
-  if (!ConfigF0(task, isMC, collSys, cutsPair, enaMultSel, masslow, massup, nbins, aodFilterBit,customQualityCutsID, cutPiPid, nsigma, enableTrackQA) ) return 0x0;
+  if (!ConfigF0(task, isMC, collSys, cutsPair, enaMultSel, masslow, massup, nbins, ptlow, ptup, nbinspt, aodFilterBit,customQualityCutsID, cutPiPid, nsigma, enableTrackQA) ) return 0x0;
   
   //-----------------------------------------------------------------------------------------------
   // -- CONTAINERS --------------------------------------------------------------------------------
