@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 01.07.2021
+ * Last Modified Date: 02.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -167,7 +167,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   /* clear weights */
   fWeights.clear();
 
-	// fill azimuthal angles and (maybe) weights
+  // fill azimuthal angles and (maybe) weights
   if (fMCAnalaysis) {
     /* MC analysis */
     MCOnTheFlyExec();
@@ -175,6 +175,11 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     /* real data */
     AODExec();
   }
+	
+	// bail out if there are no azimuthal angles, i.e. due to event cut
+  if (fPhi.empty()) {
+    return;
+		}
 
   /* reset weights if required*/
   if (fResetWeights) {
@@ -185,7 +190,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   CalculateQvectors();
 
   // fill final result profiles
-  FillProfiles();
+  FillFinalResultProfiles();
 }
 
 void AliAnalysisTaskAR::Terminate(Option_t *) {
@@ -891,61 +896,50 @@ void AliAnalysisTaskAR::CalculateQvectors() {
   }
 }
 
-void AliAnalysisTaskAR::FillProfiles() {
+void AliAnalysisTaskAR::FillFinalResultProfiles() {
   /* fill final result profiles */
 
-  // protect against no input
-	// i.e. no angles due to event cut
-  if (fPhi.empty()) {
-    return;
-  }
+  Double_t corr = 0.0;
+  Double_t weight = 0.0;
 
   // loop over all correlators
   for (auto V : fCorrelators) {
     // protect against insufficient amount of statistics
-		// i.e. number of paritcles is lower then the order of correlator due to track cuts
+    // i.e. number of paritcles is lower then the order of correlator due to
+    // track cuts
     if (fPhi.size() < V.size()) {
       return;
     }
+
+    // compute correlator
     switch (static_cast<int>(V.size())) {
     case 2:
-      fFinalResultProfiles[kHARDATA]->Fill(
-          V.size() - 1.5, Two(V.at(0), V.at(1)).Re() / Two(0, 0).Re(),
-          Two(0, 0).Re());
+      corr = Two(V.at(0), V.at(1)).Re();
+      weight = Two(0, 0).Re();
       break;
     case 3:
-      fFinalResultProfiles[kHARDATA]->Fill(
-          V.size() - 1.5,
-          Three(V.at(0), V.at(1), V.at(2)).Re() / Three(0, 0, 0).Re(),
-          Three(0, 0, 0).Re());
+      corr = Three(V.at(0), V.at(1), V.at(2)).Re();
+      weight = Three(0, 0, 0).Re();
       break;
     case 4:
-      fFinalResultProfiles[kHARDATA]->Fill(
-          V.size() - 1.5,
-          Four(V.at(0), V.at(1), V.at(2), V.at(3)).Re() / Four(0, 0, 0, 0).Re(),
-          Four(0, 0, 0, 0).Re());
+      corr = Four(V.at(0), V.at(1), V.at(2), V.at(3)).Re();
+      weight = Four(0, 0, 0, 0).Re();
       break;
     case 5:
-      fFinalResultProfiles[kHARDATA]->Fill(
-          V.size() - 1.5,
-          Five(V.at(0), V.at(1), V.at(2), V.at(3), V.at(4)).Re() /
-              Five(0, 0, 0, 0, 0).Re(),
-          Five(0, 0, 0, 0, 0).Re());
+      corr = Five(V.at(0), V.at(1), V.at(2), V.at(3), V.at(4)).Re();
+      weight = Five(0, 0, 0, 0, 0).Re();
       break;
     case 6:
-      fFinalResultProfiles[kHARDATA]->Fill(
-          V.size() - 1.5,
-          Six(V.at(0), V.at(1), V.at(2), V.at(3), V.at(4), V.at(5)).Re() /
-              Six(0, 0, 0, 0, 0, 0).Re(),
-          Six(0, 0, 0, 0, 0, 0).Re());
+      corr = Six(V.at(0), V.at(1), V.at(2), V.at(3), V.at(4), V.at(5)).Re();
+      weight = Six(0, 0, 0, 0, 0, 0).Re();
       break;
     default:
-      fFinalResultProfiles[kHARDATA]->Fill(
-          V.size() - 1.5,
-          Recursion(V.size(), V.data()).Re() /
-              Recursion(V.size(), std::vector<Int_t>(V.size(), 0).data()).Re(),
-          Recursion(V.size(), std::vector<Int_t>(V.size(), 0).data()).Re());
+      corr = Recursion(V.size(), V.data()).Re();
+      weight = Recursion(V.size(), std::vector<Int_t>(V.size(), 0).data()).Re();
     }
+
+    // fill final resutl profile
+    fFinalResultProfiles[kHARDATA]->Fill(V.size() - 1.5, corr / weight, weight);
   }
 }
 

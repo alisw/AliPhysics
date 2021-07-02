@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 01.07.2021
+ * Last Modified Date: 02.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -73,7 +73,7 @@ public:
   /* split calls in UserExec() depending on flags */
   virtual void AODExec();
   virtual void MCOnTheFlyExec();
-  virtual void FillProfiles();
+  virtual void FillFinalResultProfiles();
 
   /* methods called in AODExec(): */
   virtual Bool_t SurviveEventCut(AliVEvent *ave);
@@ -289,6 +289,8 @@ private:
   std::vector<Double_t> fPhi;
   std::vector<Double_t> fWeights;
   Bool_t fUseWeights;
+  TH1F *fAcceptanceHistogram;
+  TH1F *fWeightHistogram;
   Double_t fReducedAcceptance;
   Double_t fReducedAcceptanceRange[LAST_EMINMAX];
   Bool_t fResetWeights;
