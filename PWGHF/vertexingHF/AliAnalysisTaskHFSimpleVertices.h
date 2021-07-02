@@ -59,6 +59,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent);
   Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG);
   Int_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG, Double_t d0track[2]);
+  Bool_t SelectV0(AliESDv0 *v0, AliESDVertex* primvtx);
   AliESDVertex* ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx);
   AliAODVertex* ConvertToAODVertex(AliESDVertex* trkv);
   Int_t SelectInvMassAndPt2prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc2);
@@ -235,6 +236,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fMassDplus;         // D+ mass from PDG
   Double_t fMassDs;            // D_s mass from PDG
   Double_t fMassLambdaC;       // Lc mass from PDG
+  Double_t fMassK0s;           // K0s mass from PDG
 
   Int_t fSecVertexerAlgo;                  // Algorithm for secondary vertex
   AliVertexerTracks* fVertexerTracks;             // Run-2 vertexer
@@ -246,10 +248,11 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fVertexerMinParamChange;
   Double_t fVertexerMinRelChi2Change;
   Bool_t fVertexerUseAbsDCA;
-  AliESDtrackCuts* fTrackCuts2pr;  // Track cut object for 2 prongs
-  AliESDtrackCuts* fTrackCuts3pr;  // Track cut object for 3 prongs
-  AliESDtrackCuts* fTrackCutsBach; // Track cut object for bachelor
-  Int_t fMaxTracksToProcess;       // Max n. of tracks, to limit test duration
+  AliESDtrackCuts* fTrackCuts2pr;   // Track cut object for 2 prongs
+  AliESDtrackCuts* fTrackCuts3pr;   // Track cut object for 3 prongs
+  AliESDtrackCuts* fTrackCutsBach;  // Track cut object for bachelor
+  AliESDtrackCuts* fTrackCutsV0Dau; // Track cut object for V0 daughters
+  Int_t fMaxTracksToProcess;        // Max n. of tracks, to limit test duration
 
   Int_t fNPtBinsSingleTrack;   // Number of pt bins for single track cuts
   Double_t fPtBinLimsSingleTrack[kMaxNPtBinsDzero];   // [fNPtBinsSingleTrack+1] limits of pt bins for single track cuts
@@ -288,11 +291,13 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
   Double_t fMinPtV0;                            // minimum V0 pt for Lc->pK0s
+  Double_t fMinCosPointV0;                      // K0s cuts for Lc->pK0s
+  Double_t fCutOnK0sMass;                       // K0s cuts for Lc->pK0s
 
   Bool_t fEnableCPUTimeCheck;                   //flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds;              // flag to switch from seconds (default) to milliseconds
   
-  ClassDef(AliAnalysisTaskHFSimpleVertices,22);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,23);
 };
 
 
