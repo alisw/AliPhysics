@@ -99,8 +99,8 @@ class AliAnalysisTaskV0multspec : public AliAnalysisTaskSE {
     AliPIDResponse *fPIDResponse;                              //!
 
     //decide if to store cascade tree
-    bool fAddCasc;                                             //!
-    int fpart;                                                 //! which particle are we analyzing?
+    bool fAddCasc;                                             //
+    int fpart;                                                 // which particle are we analyzing?
 
     //flag for MC handeling
     bool fisMC;                                                 //
