@@ -420,7 +420,6 @@ void AddTask_OmegaToPiZeroGamma_pp(
     cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103w000000d0","0v631031000000d0"); // 4 sigma Pi0 selection plus Gamma dropout
   } else if( trainConfig == 2063) {
     // EG2 13TeV EMcal + Dcal, Background Variation (Swapping Method by Joshua)
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme mixed event
     cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0r631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough roation
     cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints
     cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS (Pi0)
@@ -447,6 +446,9 @@ void AddTask_OmegaToPiZeroGamma_pp(
     cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints (omega)
     cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0y631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough roation (Pi0)
     cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS (Pi0)
+  } else if( trainConfig == 2068) {
+    // EG2 13TeV EMcal + Dcal, Background Variation (Swapping Method by Joshua)
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme mixed event
   } else if( trainConfig == 2070) {
     // EG2 13TeV EMcal
     cuts.AddCut("0008e113","00200009327000008250400000","1111100067032230000","01631031000000d0","0v631031000000d0");
@@ -461,7 +463,6 @@ void AddTask_OmegaToPiZeroGamma_pp(
     cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103w000000d0","0v631031000000d0"); // 4 sigma Pi0 selection plus Gamma dropout
   } else if( trainConfig == 2073) {
     // EG2 13TeV EMcal + Dcal, Background Variation (Swapping Method by Joshua)
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme mixed event
     cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0r631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough roation
     cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints
     cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS (Pi0)
@@ -488,6 +489,9 @@ void AddTask_OmegaToPiZeroGamma_pp(
     cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints (omega)
     cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0y631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough roation (Pi0)
     cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS (Pi0)
+  } else if( trainConfig == 2078) {
+    // EG2 13TeV EMcal + Dcal, Background Variation (Swapping Method by Joshua)
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme mixed event
   } else if( trainConfig == 2080) {
     // EG1 13TeV EMcal
     cuts.AddCut("0008d113","00200009327000008250400000","1111100067032230000","01631031000000d0","0v631031000000d0");
@@ -502,7 +506,6 @@ void AddTask_OmegaToPiZeroGamma_pp(
     cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103w000000d0","0v631031000000d0"); // 4 sigma Pi0 selection plus Gamma dropout
   } else if( trainConfig == 2083) {
     // EG1 13TeV EMcal + Dcal, Background Variation (Swapping Method by Joshua)
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme mixed event
     cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0r631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough roation
     cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints
     cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS (Pi0)
@@ -529,6 +532,9 @@ void AddTask_OmegaToPiZeroGamma_pp(
     cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints (omega)
     cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0y631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough roation (Pi0)
     cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS (Pi0)
+  } else if( trainConfig == 2088) {
+    // EG1 13TeV EMcal + Dcal, Background Variation (Swapping Method by Joshua)
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme mixed event
 
   } else if( trainConfig == 2160) {
     // MB 13TeV PHOS
@@ -1272,143 +1278,134 @@ void AddTask_OmegaToPiZeroGamma_pp(
     cuts.AddCut("0008d113","00200009327000008250400000","411792109fe30220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints
     // EMCal + DCal
   } else if( trainConfig == 6060) {
-    // MB 13TeV EMcal
-    cuts.AddCut("00010113","00200009327000008250400000","111792109fe32220000","01631031000000d0","0v631031000000d0"); // standad with Omega TGPS
+    // MB 13TeV only EMCal
+    cuts.AddCut("00010113","00200009327000008250400000","1111100067032230000","01631031000000d0","0v631031000000d0");
   } else if( trainConfig == 6061) {
-    // MB 13TeV EMcal + Dcal
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // standad with Omega TGPS
+    // MB std EMCal + DCal
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0");
   } else if( trainConfig == 6062) {
-    // MB  EMCal + DCal
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // standad with Omega TGPS
+    // EG2 13TeV EMcal + Dcal, Pi0 selection plus Gamma dropout
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103u000000d0","0v631031000000d0"); // 1 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103v000000d0","0v631031000000d0"); // 3 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103w000000d0","0v631031000000d0"); // 4 sigma Pi0 selection plus Gamma dropout
   } else if( trainConfig == 6063) {
-    // MB 13TeV EMCal + DCal, Pi0 selection plus Gamma dropout
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103u000000d0","01631031000000d0"); // 1 sigma Pi0 selection plus Gamma dropout
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103v000000d0","01631031000000d0"); // 3 sigma Pi0 selection plus Gamma dropout
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103w000000d0","01631031000000d0"); // 4 sigma Pi0 selection plus Gamma dropout
+    // EG2 13TeV EMcal + Dcal, Background Variation (Swapping Method by Joshua)
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0r631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough roation
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS (Pi0)
   } else if( trainConfig == 6064) {
-    // MB 13TeV EMCal + DCal Background Variation (Swapping Method by Joshua)
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0r631031000000d0"); // background scheme swapping method trough roation (omega)
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // background scheme swapping method trough TGPS without constraints (omega)
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // background scheme swapping method trough TGPS with constraints (omega)
+    // EG2 13TeV EMCal + DCal, Pi0 selection plus Gamma dropout, alpha cut pi0
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631071000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, 0.0-0.85 alpha cut for pi0
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631051000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, 0.0-0.75 alpha cut for pi0
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631041000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, 0.0-0.65 alpha cut for pi0
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631081000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, 0.0-0.60 alpha cut for pi0
   } else if( trainConfig == 6065) {
-    // MB 13TeV EMCal + DCal, Pi0 selection plus Gamma dropout, pi0 sigma range
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103u000000d0","0x631031000000d0"); // 1 sigma Pi0, background scheme swapping method trough TGPS with constraints
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0, background scheme swapping method trough TGPS with constraints
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103v000000d0","0x631031000000d0"); // 3 sigma Pi0, background scheme swapping method trough TGPS with constraints
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103w000000d0","0x631031000000d0"); // 4 sigma Pi0, background scheme swapping method trough TGPS with constraints
-  } else if( trainConfig == 6066) {
-    // MB 13TeV EMCal + DCal, Pi0 selection plus Gamma dropout, alpha cut omega
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, OAC for Pi0 and Omega
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0163103100000000"); // 2 sigma Pi0 selection plus Gamma dropout, OAC for Pi0
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103100000000","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, OAC for Omega
+    // EG2 13TeV EMCal + DCal, Pi0 selection plus Gamma dropout, alpha cut omega
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, OAC Pi0 and Omega
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0163103100000000"); // 2 sigma Pi0 selection plus Gamma dropout, OAC Pi0
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103100000000","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, OAC Omega
     cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","0163103100000000","0163103100000000"); // 2 sigma Pi0 selection plus Gamma dropout, no OAC
+  } else if( trainConfig == 6066) {
+    // EG2 13TeV EMCal + DCal Background Variation (Swapping Method by Joshua), AP-like cut
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, no AP like cut
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031010000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 1 sigma
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031020000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 2 sigma
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031030000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 3 sigma
   } else if( trainConfig == 6067) {
-    // MB 13TeV EMCal + DCal Background Variation (Swapping Method by Joshua), AP-like cut
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, no AP like cut
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031010000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 1 sigma
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031020000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 2 sigma
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031030000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 3 sigma
-  } else if( trainConfig == 6068) {
-    // MB 13TeV EMCal + DCal Background Variation (Swapping around Pi0, Method by Joshua)
+    // EG2 13TeV EMcal + Dcal, Background Variation (Swapping around Pi0, Method by Joshua)
     cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints (omega)
     cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0y631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough roation (Pi0)
-    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints (Pi0)
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS (Pi0)
+  } else if( trainConfig == 6068) {
+    // EG2 13TeV EMcal + Dcal, Background Variation (Swapping Method by Joshua)
+    cuts.AddCut("00010113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme mixed event
   } else if( trainConfig == 6070) {
     // EG2 13TeV EMcal
-    cuts.AddCut("0008e113","00200009327000008250400000","111792109fe32220000","01631031000000d0","0v631031000000d0"); // standad with Omega TGPS
+    cuts.AddCut("0008e113","00200009327000008250400000","1111100067032230000","01631031000000d0","0v631031000000d0");
   } else if( trainConfig == 6071) {
     // EG2 13TeV EMcal + Dcal
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // standad with Omega TGPS
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // standad is with Omega TGPS
   } else if( trainConfig == 6072) {
-    // EG2  EMCal + DCal
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // standad with Omega TGPS
-  } else if( trainConfig == 6073) {
     // EG2 13TeV EMcal + Dcal, Pi0 selection plus Gamma dropout
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103u000000d0","01631031000000d0"); // 1 sigma Pi0 selection plus Gamma dropout
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103v000000d0","01631031000000d0"); // 3 sigma Pi0 selection plus Gamma dropout
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103w000000d0","01631031000000d0"); // 4 sigma Pi0 selection plus Gamma dropout
-  } else if( trainConfig == 6074) {
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103u000000d0","0v631031000000d0"); // 1 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103v000000d0","0v631031000000d0"); // 3 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103w000000d0","0v631031000000d0"); // 4 sigma Pi0 selection plus Gamma dropout
+  } else if( trainConfig == 6073) {
     // EG2 13TeV EMcal + Dcal, Background Variation (Swapping Method by Joshua)
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0r631031000000d0"); // background scheme swapping method trough roation
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // background scheme swapping method trough TGPS without constraints
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // background scheme swapping method trough TGPS with constraints
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0r631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough roation
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS (Pi0)
+  } else if( trainConfig == 6074) {
+    // EG2 13TeV EMCal + DCal, Pi0 selection plus Gamma dropout, alpha cut pi0
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631071000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, 0.0-0.85 alpha cut for pi0
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631051000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, 0.0-0.75 alpha cut for pi0
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631041000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, 0.0-0.65 alpha cut for pi0
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631081000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, 0.0-0.60 alpha cut for pi0
   } else if( trainConfig == 6075) {
-    // EG2 13TeV EMCal + DCal, Pi0 selection plus Gamma dropout, pi0 sigma range
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103u000000d0","0v631031000000d0"); // 1 sigma Pi0, background scheme swapping method trough TGPS
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // 2 sigma Pi0, background scheme swapping method trough TGPS
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103v000000d0","0v631031000000d0"); // 3 sigma Pi0, background scheme swapping method trough TGPS
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103w000000d0","0v631031000000d0"); // 4 sigma Pi0, background scheme swapping method trough TGPS
-  } else if( trainConfig == 6076) {
     // EG2 13TeV EMCal + DCal, Pi0 selection plus Gamma dropout, alpha cut omega
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, OAC for Pi0 and Omega
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0163103100000000"); // 2 sigma Pi0 selection plus Gamma dropout, OAC for Pi0
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103100000000","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, OAC for Omega
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, OAC Pi0 and Omega
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0163103100000000"); // 2 sigma Pi0 selection plus Gamma dropout, OAC Pi0
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103100000000","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, OAC Omega
     cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","0163103100000000","0163103100000000"); // 2 sigma Pi0 selection plus Gamma dropout, no OAC
+  } else if( trainConfig == 6076) {
+    // EG2 13TeV EMCal + DCal Background Variation (Swapping Method by Joshua), AP-like cut
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, no AP like cut
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031010000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 1 sigma
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031020000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 2 sigma
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031030000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 3 sigma
   } else if( trainConfig == 6077) {
-    // MB 13TeV EMCal + DCal Background Variation (Swapping Method by Joshua), AP-like cut
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, no AP like cut
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031010000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 1 sigma
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031020000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 2 sigma
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031030000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 3 sigma
-  } else if( trainConfig == 6078) {
     // EG2 13TeV EMcal + Dcal, Background Variation (Swapping around Pi0, Method by Joshua)
     cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints (omega)
     cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0y631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough roation (Pi0)
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints (Pi0)
-  } else if( trainConfig == 6079) {
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS (Pi0)
+  } else if( trainConfig == 6078) {
     // EG2 13TeV EMcal + Dcal, Background Variation (Swapping Method by Joshua)
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0r631031000000d0"); // background scheme swapping method trough roation
-    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0s631031000000d0"); // background scheme swapping method trough roation with weighting
-
+    cuts.AddCut("0008e113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme mixed event
   } else if( trainConfig == 6080) {
     // EG1 13TeV EMcal
-    cuts.AddCut("0008d113","00200009327000008250400000","1111100067032230000","01631031000000d0","01631031000000d0");
+    cuts.AddCut("0008d113","00200009327000008250400000","1111100067032230000","01631031000000d0","0v631031000000d0");
   } else if( trainConfig == 6081) {
-    /// EG1 13TeV EMcal + Dcal
+    // EG1 13TeV EMcal + Dcal
     cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // standad with Omega TGPS
   } else if( trainConfig == 6082) {
-    /// EG1 13TeV EMcal + Dcal
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // standad with Omega TGPS
-  } else if( trainConfig == 6083) {
     // EG1 13TeV EMcal + Dcal, Pi0 selection plus Gamma dropout
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103u000000d0","01631031000000d0"); // 1 sigma Pi0 selection plus Gamma dropout
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103v000000d0","01631031000000d0"); // 3 sigma Pi0 selection plus Gamma dropout
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103w000000d0","01631031000000d0"); // 4 sigma Pi0 selection plus Gamma dropout
-  } else if( trainConfig == 6084) {
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103u000000d0","0v631031000000d0"); // 1 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103v000000d0","0v631031000000d0"); // 3 sigma Pi0 selection plus Gamma dropout
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103w000000d0","0v631031000000d0"); // 4 sigma Pi0 selection plus Gamma dropout
+  } else if( trainConfig == 6083) {
     // EG1 13TeV EMcal + Dcal, Background Variation (Swapping Method by Joshua)
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0r631031000000d0"); // 2 sigma Pi0, background scheme swapping method trough roation
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // 2 sigma Pi0, background scheme swapping method trough TGPS without constraints
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0, background scheme swapping method trough TGPS with constraints
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0r631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough roation
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS (Pi0)
+  } else if( trainConfig == 6084) {
+    // EG1 13TeV EMCal + DCal, Pi0 selection plus Gamma dropout, alpha cut pi0
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631071000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, 0.0-0.85 alpha cut for pi0
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631051000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, 0.0-0.75 alpha cut for pi0
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631041000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, 0.0-0.65 alpha cut for pi0
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631081000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, 0.0-0.60 alpha cut for pi0
   } else if( trainConfig == 6085) {
-    // EG1 13TeV EMCal + DCal, Pi0 selection plus Gamma dropout, pi0 sigma range
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103u000000d0","0v631031000000d0"); // 1 sigma Pi0, background scheme swapping method trough TGPS
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // 2 sigma Pi0, background scheme swapping method trough TGPS
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103v000000d0","0v631031000000d0"); // 3 sigma Pi0, background scheme swapping method trough TGPS
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103w000000d0","0v631031000000d0"); // 4 sigma Pi0, background scheme swapping method trough TGPS
-  } else if( trainConfig == 6086) {
     // EG1 13TeV EMCal + DCal, Pi0 selection plus Gamma dropout, alpha cut omega
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, OAC for Pi0 and Omega
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0163103100000000"); // 2 sigma Pi0 selection plus Gamma dropout, OAC for Pi0
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103100000000","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, OAC for Omega
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, OAC Pi0 and Omega
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0163103100000000"); // 2 sigma Pi0 selection plus Gamma dropout, OAC Pi0
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103100000000","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, OAC Omega
     cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","0163103100000000","0163103100000000"); // 2 sigma Pi0 selection plus Gamma dropout, no OAC
-  } else if( trainConfig == 6087) {
+  } else if( trainConfig == 6086) {
     // EG1 13TeV EMCal + DCal Background Variation (Swapping Method by Joshua), AP-like cut
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, no AP like cut
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031010000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 1 sigma
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031020000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 2 sigma
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031030000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints, AP like cut 3 sigma
-  } else if( trainConfig == 6088) {
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS, no AP like cut
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031010000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS, AP like cut 1 sigma
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031020000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS, AP like cut 2 sigma
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0v631031030000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS, AP like cut 3 sigma
+  } else if( trainConfig == 6087) {
     // EG2 13TeV EMcal + Dcal, Background Variation (Swapping around Pi0, Method by Joshua)
     cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0x631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints (omega)
     cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0y631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough roation (Pi0)
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS with constraints (Pi0)
-  } else if( trainConfig == 6089) {
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0z631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme swapping method trough TGPS (Pi0)
+  } else if( trainConfig == 6088) {
     // EG1 13TeV EMcal + Dcal, Background Variation (Swapping Method by Joshua)
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0r631031000000d0"); // 2 sigma Pi0, background scheme swapping method trough roation
-    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","0s631031000000d0"); // 2 sigma Pi0, background scheme swapping method trough roation with weighting
+    cuts.AddCut("0008d113","00200009327000008250400000","411792109fe32220000","01631031000000d0","01631031000000d0"); // 2 sigma Pi0 selection plus Gamma dropout, background scheme mixed event
   } else {
     Error(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
