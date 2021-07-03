@@ -153,6 +153,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"P_OuterParam",           "#it{p}_{outer wall}^{TPC}",                          "(GeV/#it{c})"},
   {"Y_signed_InnerParam",    "sign. y_{inner wall}^{TPC}",                         "(GeV/#it{c})"},
   {"TPC_signal",             "TPC d#it{E}/d#it{x}",                                "(a.u.)"},
+  {"TPC_signal_tuned",       "TPC d#it{E}/d#it{x}",                                "(a.u.)"},
   {"TOF_signal",             "TOF signal",                                         "(ps)"},
   {"TOF_beta",               "TOF #beta",                                          "(#it{c})"},
   {"TOF_PIDbit",             "TOF PID bit",                                        ""},
