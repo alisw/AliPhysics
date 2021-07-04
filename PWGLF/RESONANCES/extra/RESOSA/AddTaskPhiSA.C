@@ -1,17 +1,4 @@
-
-#ifdef __ECLIPSE_IDE
-//  few includes and external declarations just for the IDE
-#include "Riostream.h"
-#include "TSystem.h"
-#include "AliAnalysisTaskFlowVectorCorrections.h"
-#include "AliAnalysisManager.h"
-#include "runAnalysis.H"
-
-#endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
-
-
-
-void AddTaskPhiSA(Int_t RunNo, char *analysislevel, Bool_t useShift, Bool_t bMCtruth, char* runtype, Float_t pairrapidity, char *systematiccut, Int_t dataperiod)
+void AddTaskPhiSA(char *analysislevel, const Bool_t useShift, Bool_t bMCtruth, char* runtype, Float_t pairrapidity, char *systematiccut, Int_t dataperiod, Int_t sw, Int_t MT)
 
 {
   // standard with task
@@ -21,101 +8,53 @@ void AddTaskPhiSA(Int_t RunNo, char *analysislevel, Bool_t useShift, Bool_t bMCt
 
 
 
-  gSystem->Load("libCore.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libEventMixing.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGLFresonances.so");
-  gSystem->Load("libPWGPPevcharQn.so");
-  gSystem->Load("libPWGPPevcharQnInterface.so");
-
-
-
-
-
-
-
-  gROOT->SetStyle("Plain");
-  //const char *configpath = ".";
-  const char *configpath = "alien:///alice/cern.ch/user/p/prottay/checktxt";
-
-  
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/runAnalysis.H");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/loadRunOptions.C");
-
-    
-  if (!loadRunOptions(kFALSE, configpath,dataperiod)) {
-    cout << "ERROR: configuration options not loaded. ABORTING!!!" << endl;
-    return;
-  }
-  
-  // sets name of grid generated macros
-  const char *taskname = Form("NewTpcTofPidTaskPhiWt%d",RunNo);
-  TString addincpath = "-I$ALICE_PHYSICS/include -I$ALICE_ROOT/include";
-
-  // add aliroot indlude path
-  gSystem->AddIncludePath(addincpath.Data());
-  
-  
-  //gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
-
-
-  AliAnalysisGrid      *alienHandler   =   NULL;
- 
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C"); // Needed for LHC2015o                        
-  AliMultSelectionTask *taskM = AddTaskMultSelection(kFALSE);            // kFALSE == User mode, kTRUE == Calibration mode                  
-  taskM->SetSelectedTriggerClass(AliVEvent::kINT7);
-  mgr->AddTask(taskM);
-
-
-
-
-
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskFlowQnVectorCorrections.C");
-  AliAnalysisDataContainer *corrTask = AddTaskFlowQnVectorCorrections();
-
-  cout<<"*******************************************************************"<<endl;
-  
+  AliAnalysisManager *mgr2 = AliAnalysisManager::GetAnalysisManager();  
+  const char *taskname = Form("NewTpcTofPidTaskKStarWt%d",20);  
+  cout<<"The name of task is:"<<taskname<<"****************"<<endl;
   
 
 
-
-  
-  // create task
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/AliAnalysisTaskPhiSA.cxx++g");
-  
-  
-  AliAnalysisTaskPhiSA* task = new AliAnalysisTaskPhiSA(taskname,RunNo,useShift);
+  if (sw==0)
+  gROOT->LoadMacro("AliAnalysisTaskPhiSA.cxx++g");                                                                                  
+  else if (sw==1)
+  gROOT->LoadMacro("AliAnalysisTaskPhiSA.cxx");                                                                                         
+  AliAnalysisTaskPhiSA* task = new AliAnalysisTaskPhiSA(taskname,useShift);
   task->SetAnalysisLevel(analysislevel);
   task->CheckPileUp(kFALSE);
   task->AcceptTPCVertex(kTRUE);
   task->SetPOIAndRPTrackType("GLOBAL","TPC");
   task->SetPairRapidityCut(pairrapidity);
-  task->SetSystemaicCutType(systematiccut);  
-  // Open external input files
-  //=====================================================================
+  task->SetSystemaicCutType(systematiccut);
+  
 
-  //shift correction
+
+
+  gROOT->SetStyle("Plain");                                                                                                                  
+  //const char *configpath = ".";
+  const char *configpath = "alien:///alice/cern.ch/user/p/prottay/checktxt";                                                                   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/runAnalysis.H");                                                          
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/loadRunOptions.C");                                                        
+  //gROOT->LoadMacro("runAnalysis.H");
+  //gROOT->LoadMacro("loadRunOptions.C");
+
+
+  if (!loadRunOptions(kFALSE, configpath,dataperiod)) {
+    cout << "ERROR: configuration options not loaded. ABORTING!!!" << endl;
+    return;
+  }
+
+
+  // Open external input files                                                                                                                   
+  //=====================================================================                                                                      
+
+  //shift correction                                                                                                                           
   if(useShift) {
     TFile *shiftFile = NULL;
     TList *shiftList = NULL;
     task->SetUseShifting(kTRUE);
-    //open the file with the weights:
+    //open the file with the weights:                                                                                                          
     shiftFile = TFile::Open(Form("/Users/ranbirsingh/SpinAlignment/EPlane/phi/systematic/data/shiftFiles/shift_%d.root",RunNo),"READ");
     if(shiftFile) {
-      //access the list which holds the profile with averages:
+      //access the list which holds the profile with averages:                                                                                 
       shiftList = (TList*)shiftFile->Get("avShift");
       task->SetShiftList(shiftList);
     }
@@ -124,8 +63,10 @@ void AddTaskPhiSA(Int_t RunNo, char *analysislevel, Bool_t useShift, Bool_t bMCt
       break;
     }
   }
-  
-  mgr->AddTask(task);
+
+
+
+
 
   if(useShift){
     TString outfilename = Form("AnalysisResults.root");
@@ -135,25 +76,93 @@ void AddTaskPhiSA(Int_t RunNo, char *analysislevel, Bool_t useShift, Bool_t bMCt
     cout << "Name of the output file    : " << outfilename.Data() << endl;
   }
 
-  //Connect input/output
-  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+  mgr2->AddTask(task);
   
-  if(useShift) {    
-    AliAnalysisDataContainer *cinputShift = mgr->CreateContainer("avShift",TList::Class(),AliAnalysisManager::kInputContainer); 
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("ShiftFlowOut", TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
-  } else {
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("FlowOut", TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
+ 
+  #ifndef __CLING__
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskFlowQnVectorCorrections.C");
+#endif
+  AliAnalysisDataContainer *corrTask = AddTaskFlowQnVectorCorrections();
+
+
+
+
+  if (bRunQnVectorAnalysisTask) {
+
+
+    printf("===================================================================================\n");
+    printf("\n                Hi i am in RunQnVectorAnalysisTask                            \n");
+    printf("===================================================================================\n");
+
+
+
+#ifndef __CLING__
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskQnVectorAnalysis.C");
+#endif
+    AliAnalysisTaskQnVectorAnalysis* taskQn = AddTaskQnVectorAnalysis(bUseMultiplicity, b2015DataSet);
+    taskQn->SetExpectedCorrectionPass(szCorrectionPass.Data());
+    taskQn->SetAlternativeCorrectionPass(szAltCorrectionPass.Data());
+
+    mgr2->AddTask(taskQn);
+
+
+    //create output container                                                                                                                 
+    AliAnalysisDataContainer *cOutputQnAnaEventQA =
+      mgr2->CreateContainer("QnAnalysisEventQA",
+			    TList::Class(),
+			    AliAnalysisManager::kOutputContainer,
+			    "QnAnalysisEventQA.root");
+    AliAnalysisDataContainer *coutput1 = mgr2->CreateContainer("FlowOut", TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
+
+
+    mgr2->ConnectInput(taskQn,  0, mgr2->GetCommonInputContainer());
+    mgr2->ConnectInput(taskQn,  1, corrTask);
+    mgr2->ConnectOutput(taskQn, 1, cOutputQnAnaEventQA );
+
+    if (MT==1)
+      {
+    mgr2->ConnectInput(task,  0, mgr2->GetCommonInputContainer());
+    mgr2->ConnectOutput(task, 1, coutput1 );
+      }
+    
   }
 
-  // connect input/output
-  mgr->ConnectInput(task, 0, cinput);
 
+
+  else
+
+  {
+
+
+ 
+    printf("===================================================================================\n");
+    printf("\n                Hi i am not in RunQnVectorAnalysisTask                            \n");
+    printf("===================================================================================\n");
+
+
+  AliAnalysisDataContainer *cinput = mgr2->GetCommonInputContainer();                                                                        
+  if(useShift) {                                                                                             
+
+    AliAnalysisDataContainer *cinputShift = mgr2->CreateContainer("avShift",TList::Class(),AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *coutput1 = mgr2->CreateContainer("ShiftFlowOut", TList::Class(), AliAnalysisManager::kOutputContainer, outfilename); 
+
+  }
+
+else
+  {
+  AliAnalysisDataContainer *coutput1 = mgr2->CreateContainer("AnOut", TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);  
+  }
+
+
+
+  
+  // connect input/output                                                                                                                     
+  mgr2->ConnectInput(task, 0, cinput);                                                                                                        
   if(useShift) {
-    mgr->ConnectInput(task,1,cinputShift);
+    mgr2->ConnectInput(task,1,cinputShift);
     cinputShift->SetData(shiftList);
-  }
-  mgr->ConnectOutput(task, 1, coutput1);
-  
-  
+  }     
+  mgr2->ConnectOutput(task, 1, coutput1);                                                                                                    
+
 }
-  
+}
