@@ -2812,11 +2812,11 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799709fe32220000","0163103100000010"); // EG1, PCMEMC FT
     // with EMC fine tuning
   } else if (trainConfig == 2176){ // nom Bfield
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799709fe32220000","0163103100000010"); // INT7, EMC FT
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799809fe32220000","0163103100000010"); // INT7, EMC FT
   } else if (trainConfig == 2177){ // nom Bfield
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799709fe32220000","0163103100000010"); // EG2, EMC FT
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799809fe32220000","0163103100000010"); // EG2, EMC FT
   } else if (trainConfig == 2178){ // nom Bfield
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799709fe32220000","0163103100000010"); // EG1, EMC FT
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799809fe32220000","0163103100000010"); // EG1, EMC FT
 
     // configs with rotation instead of mixing
   } else if (trainConfig == 2180){ // nom Bfield
