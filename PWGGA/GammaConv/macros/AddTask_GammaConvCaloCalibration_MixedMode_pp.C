@@ -291,8 +291,45 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799609fe32220000","0163103100000010"); // EG2
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799609fe32220000","0163103100000010"); // EG1
 
+    // NonLin settings with only test beam WO scale (PCMEDC fine tuning)
+  } else if (trainConfig == 42){ // NL 97, nominal Bfield setting
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799709fe32220000","0163103100000010"); // INT7
+  } else if (trainConfig == 43){ // NL 97, nominal Bfield setting
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799709fe32220000","0163103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799709fe32220000","0163103100000010"); // EG1
 
-  } else if (trainConfig == 50){ // NL 96, low Bfield setting
+    // NonLin settings with only test beam WO scale (EDC fine tuning)
+  } else if (trainConfig == 44){ // NL 98, nominal Bfield setting
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799809fe32220000","0r63103100000010"); // INT7
+  } else if (trainConfig == 45){ // NL 98, nominal Bfield setting
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799809fe32220000","0r63103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799809fe32220000","0r63103100000010"); // EG1
+
+
+  // Same as above (4x) settings but with rotation instead of mixing
+    // NonLin settings with only test beam WO scale (no fine tuning)
+  } else if (trainConfig == 50){ // NL 96, nominal Bfield setting
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799609fe32220000","0r63103100000010"); // INT7
+  } else if (trainConfig == 51){ // NL 96, nominal Bfield setting
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799609fe32220000","0r63103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799609fe32220000","0r63103100000010"); // EG1
+
+    // NonLin settings with only test beam WO scale (PCMEDC fine tuning)
+  } else if (trainConfig == 52){ // NL 97, nominal Bfield setting
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799709fe32220000","0r63103100000010"); // INT7
+  } else if (trainConfig == 53){ // NL 97, nominal Bfield setting
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799709fe32220000","0r63103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799709fe32220000","0r63103100000010"); // EG1
+
+    // NonLin settings with only test beam WO scale (EDC fine tuning)
+  } else if (trainConfig == 54){ // NL 98, nominal Bfield setting
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799809fe32220000","0r63103100000010"); // INT7
+  } else if (trainConfig == 55){ // NL 98, nominal Bfield setting
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799809fe32220000","0r63103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799809fe32220000","0r63103100000010"); // EG1
+
+
+  } else if (trainConfig == 60){ // NL 96, low Bfield setting
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799609fe32220000","0163103100000010"); // INT7
 
 
