@@ -164,7 +164,7 @@ void AliMCWeightsTask::UserExec(Option_t* option) {
 }
 
 AliMCWeightsTask*
-AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* collisionType, bool fUsePPMB) {
+AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* collisionType, bool fUsePPMB, const char* firstTrainPath) {
 #ifdef __AliMCWeightsTask_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();
 #endif
@@ -195,13 +195,14 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* coll
     std::string collisionSystem;
     switch (gen) { // TODO: fill path here
         case MCGeneratorType::PP_PYTHIA:
-            stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
-                                "pp_5TeV_FirstTrain_LHC17l3b_p_210329.root";
+            stTrainOutputPath = //"/home/alidock/ExpertInput/"
+                                "alien:///alice/cern.ch/user/p/phuhn/"
+                                "FirstTrain_pp_LHC17l3b_p_y05.root";
             collisionSystem = "pp";
             break;
         case MCGeneratorType::PP_PYTHIA_OLD:
             stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
-                                "pp_5TeV_FirstTrain_LHC16k5_ab_210329.root";
+                                "pp_5TeV_FirstTrain_LHC17l3b_p_210329.root";
             collisionSystem = "pp";
             break;
         case MCGeneratorType::PPB_EPOS:
@@ -209,12 +210,14 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* coll
             collisionSystem = "ppb";
             break;
         case MCGeneratorType::PBPB_HIJING:
-            stTrainOutputPath = "";
+            stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
+                                "FirstTrain_PbPb_LHC20e3a_y05.root";
             collisionSystem = "pbpb";
             break;
         default:
             break;
     }
+    if(firstTrainPath) stTrainOutputPath=firstTrainPath;
     if(collisionType) collisionSystem=collisionType;
 
     AliMCSpectraWeights* fMCSpectraWeights =
@@ -249,6 +252,6 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* coll
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
     DebugChrono("AliMCWeightsTask took " << duration << " microseconds\n");
 #endif
-
+    
     return task;
 }

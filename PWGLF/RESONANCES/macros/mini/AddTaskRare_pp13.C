@@ -158,8 +158,8 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
     }else{
         for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
         for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-        for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-        for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+        for(j=1;j<20;j++){multbins[nmult]=0.01*j; nmult++;}
+        for(j=2;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
         for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
     }
     nmult--;
@@ -3911,6 +3911,16 @@ Bool_t Config_Xik0(
         multbins[nmult]=0.01; nmult++;
         multbins[nmult]=0.05; nmult++;
         multbins[nmult]=0.1; nmult++;
+        multbins[nmult]=0.11; nmult++;
+        multbins[nmult]=0.12; nmult++;
+        multbins[nmult]=0.13; nmult++;
+        multbins[nmult]=0.14; nmult++;
+        multbins[nmult]=0.15; nmult++;
+        multbins[nmult]=0.16; nmult++;
+        multbins[nmult]=0.17; nmult++;
+        multbins[nmult]=0.18; nmult++;
+        multbins[nmult]=0.19; nmult++;
+        multbins[nmult]=0.2; nmult++;
         multbins[nmult]=1.; nmult++;
     }
     
