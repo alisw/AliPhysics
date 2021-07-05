@@ -169,40 +169,6 @@ void AliAnalysisTaskAR::UserCreateOutputObjects() {
   PostData(1, fHistList);
 }
 
-// void AliAnalysisTaskAR::UserExec(Option_t *) {
-//   /* main method called for analysis */
-
-//   /* clear azimuthal angles */
-//   fPhi.clear();
-//   /* clear weights */
-//   fWeights.clear();
-
-//   // fill azimuthal angles and (maybe) weights
-//   if (fMCAnalaysis) {
-//     /* MC analysis */
-//     MCOnTheFlyExec();
-//   } else {
-//     /* real data */
-//     AODExec();
-//   }
-
-//   // bail out if there are no azimuthal angles, i.e. due to event cut
-//   if (fPhi.empty()) {
-//     return;
-//   }
-
-//   /* reset weights if required*/
-//   if (fResetWeights) {
-//     std::fill(fWeights.begin(), fWeights.end(), 1.);
-//   }
-
-//   /* calculate all qvectors */
-//   CalculateQvectors();
-
-//   // fill final result profiles
-//   FillFinalResultProfiles();
-// }
-
 void AliAnalysisTaskAR::Terminate(Option_t *) {
   /* Accessing the merged output list for final compution or for off-line
    * computations (i.e. after merging)*/
@@ -730,13 +696,13 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   CalculateQvectors();
 
   // fill final result profile
-  FillFinalResultProfiles(kHARDATA);
+  FillFinalResultProfile(kHARDATA);
 
   // if option is given, repeat with weights resetted
   if (fResetWeights) {
     std::fill(fWeights.begin(), fWeights.end(), 1.);
     CalculateQvectors();
-    FillFinalResultProfiles(kHARDATARESET);
+    FillFinalResultProfile(kHARDATARESET);
   }
 
   // d) PostData:
@@ -746,7 +712,11 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 void AliAnalysisTaskAR::MCOnTheFlyExec() {
   // call this method for monte carlo analysis
 
-  // set symmetry planes for MC analysi
+  // reset angles and weights
+  fPhi.clear();
+  fWeights.clear();
+
+  // set symmetry planes for MC analysis
   MCPdfSymmetryPlanesSetup();
   // loop over all particles in an even
   Double_t Phi = 0.0;
@@ -768,13 +738,14 @@ void AliAnalysisTaskAR::MCOnTheFlyExec() {
 
   // compute Q-vectors
   CalculateQvectors();
-  // fill data
-  FillFinalResultProfiles(kHARDATA);
-  // reset weight and recompute Q-vectors
-  std::fill(fWeights.begin(), fWeights.end(), 1.);
-  CalculateQvectors();
-  // fill data
-  FillFinalResultProfiles(kHARDATARESET);
+  // fill data into final result profile
+  FillFinalResultProfile(kHARDATA);
+  // if option is given, reset weight and recompute Q-vectors
+  if (fResetWeights) {
+    std::fill(fWeights.begin(), fWeights.end(), 1.);
+    CalculateQvectors();
+    FillFinalResultProfile(kHARDATARESET);
+  }
 }
 
 Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
@@ -928,7 +899,7 @@ void AliAnalysisTaskAR::CalculateQvectors() {
   }
 }
 
-void AliAnalysisTaskAR::FillFinalResultProfiles(kFinalProfile fp) {
+void AliAnalysisTaskAR::FillFinalResultProfile(kFinalProfile fp) {
   /* fill final result profiles */
 
   Double_t corr = 0.0;
