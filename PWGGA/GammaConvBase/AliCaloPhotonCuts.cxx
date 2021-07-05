@@ -8515,7 +8515,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
-          energy /= FunctionNL_kSDM(energy, 0.984779, -3.82412, -0.465825);
+          energy /= FunctionNL_kSDM(energy, 0.969772, -3.13635, -0.468246);
         }
       }
       break;
