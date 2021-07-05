@@ -380,9 +380,9 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("0008d113","411799709fe32220000","0r631031000000d0");  // EG1
 
   // NonLin settings with only test beam WO scale (EDC fine tuning)
-  } else if (trainConfig == 82){
+  } else if (trainConfig == 84){
     cuts.AddCutCalo("00010113","411799809fe32220000","0r631031000000d0");  // INT7
-  } else if (trainConfig == 83){
+  } else if (trainConfig == 85){
     cuts.AddCutCalo("0008e113","411799809fe32220000","0r631031000000d0");  // EG2
     cuts.AddCutCalo("0008d113","411799809fe32220000","0r631031000000d0");  // EG1
 

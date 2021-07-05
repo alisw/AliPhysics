@@ -3579,13 +3579,14 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00052113","411790009feg2220000","0r631031000000d0"); // EMC7
 
     // configs with new cell scale and TestBeam NL + fine tuning
+    // no scale in data NL with PCMEMC fine tuning
   } else if (trainConfig == 2580) {
     cuts.AddCutCalo("00010113","411799709fe32220000","0r631031000000d0"); // INT7, PCMEMC fine tuning
   } else if (trainConfig == 2581) {
     cuts.AddCutCalo("0008e113","411799709fe32220000","0r631031000000d0"); // EG2, PCMEMC fine tuning
   } else if (trainConfig == 2582) {
     cuts.AddCutCalo("0008d113","411799709fe32220000","0r631031000000d0"); // EG1, PCMEMC fine tuning
-    // no scale in data NL with PCMEMC fine tuning
+    // no scale in data NL with EMC fine tuning
   } else if (trainConfig == 2583) {
     cuts.AddCutCalo("00010113","411799809fe32220000","0r631031000000d0"); // INT7, EMC fine tuning
   } else if (trainConfig == 2584) {
