@@ -180,6 +180,9 @@ private:
   float fPtXiEta[100];       //!
   Int_t fNOmegaEta = 0;      //!
   Int_t fNPiEta = 0;         //!
+  Int_t fNPi0Eta = 0;        //!
+  Int_t fNKchEta = 0;        //!
+  Int_t fNK0Eta = 0;         //!
   float fSumPtLambdaEta = 0; //!
   float fSumPtXiEta = 0;     //!
   float fSumPtOmegaEta = 0;  //!

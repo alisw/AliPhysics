@@ -122,6 +122,9 @@ void AliTaskLeadingMC::CreateOutputObjects()
   fTree->Branch("ptXiEtaDown", fPtXiEtaDown, "ptEtaDown[nXiEtaDown]/F");
   fTree->Branch("nOmegaEta", &fNOmegaEta, "nOmetaEta/I");
   fTree->Branch("nPiEta", &fNPiEta, "nPiEta/I");
+  fTree->Branch("nPi0Eta", &fNPi0Eta, "nPi0Eta/I");
+  fTree->Branch("nKchEta", &fNKchEta, "nKchEta/I");
+  fTree->Branch("nK0Eta", &fNK0Eta, "nK0Eta/I");
   fTree->Branch("sumLambdaXi", &fSumPtLambdaEta, "sumPtLambda/F");
   fTree->Branch("sumPtXi", &fSumPtXiEta, "sumPtXi/F");
   fTree->Branch("sumPtOmega", &fSumPtOmegaEta, "sumPtOmega/F");
@@ -330,7 +333,7 @@ void AliTaskLeadingMC::loopMC(AliMCEvent *mcEvent){
   fP_cand_leadC=0;
   fN_cand_leadC=0;
 
-  fNch=0,fNchEta=0,fNchEtaA=0,fNchEtaC=0,fNLambdaEta=0,fNXiEta=0,fNXiEtaFrag=0,fNXiEtaUp=0,fNXiEtaDown=0,fNOmegaEta=0,fNPiEta=0;
+  fNch=0,fNchEta=0,fNchEtaA=0,fNchEtaC=0,fNLambdaEta=0,fNXiEta=0,fNXiEtaFrag=0,fNXiEtaUp=0,fNXiEtaDown=0,fNOmegaEta=0,fNPiEta=0,fNPi0Eta=0,fNKchEta=0,fNK0Eta=0;
   fSumPtLambdaEta=fSumPtXiEta=fSumPtOmegaEta=fSumPtPiEta=0;
   fEnergyEta=0;
 
@@ -364,10 +367,19 @@ void AliTaskLeadingMC::loopMC(AliMCEvent *mcEvent){
 
 	if(pt > fMaxChargePt) fMaxChargePt = pt;
 	
-	if(TMath::Abs(part->GetPdgCode()) == 211){ // pions
+	if(TMath::Abs(part->GetPdgCode()) == 211){ // charged pions
 	  fNPiEta++;
 	  fSumPtPiEta += pt;
 	}
+        else if(TMath::Abs(part->GetPdgCode()) == 111){ // neutral pions
+          fNPi0Eta++;
+        }
+        else if(TMath::Abs(part->GetPdgCode()) == 321){ // neutral kaons
+          fNKchEta++;
+        }
+        else if(TMath::Abs(part->GetPdgCode()) == 311){ // neutral kaons
+          fNK0Eta++;
+        }
       }
     }
     
