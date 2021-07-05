@@ -1429,11 +1429,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                                      fHistPt_Iso->Fill(track->Pt());
                                      fEop_iso_eID->Fill(TrkPt,eop);
 
+
+                                    }
+
                                      //////////// ---- W-h correlation /////////////
 
                                      if(NtrackCone<3 && TrkPt>30 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE);
-
-                                    }
 
 				if(pid_eleP)
 				{
@@ -2094,7 +2095,7 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 		TPCchi2NDFWasso = aWassotrack -> Chi2perNDF();
 		TrackPhi        = track->Phi();
 
-		if(ptWasso <0.3) continue;
+		if(ptWasso <1.0) continue;
 
 		/////////////////////////
 		// track cut
