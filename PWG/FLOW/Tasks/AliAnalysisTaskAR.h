@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 02.07.2021
+ * Last Modified Date: 05.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -37,7 +37,7 @@ const Int_t kMaxPower = 20;
 enum kEvent { kCEN, kMUL, LAST_EEVENT };
 enum kTrack { kPT, kPHI, kETA, LAST_ETRACK };
 enum kFinalHist { kPHIAVG, LAST_EFINALHIST };
-enum kFinalProfile { kHARDATA, kHARTHEO, LAST_EFINALPROFILE };
+enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
 enum kName { kNAME, kTITLE, kXAXIS, LAST_ENAME };
 enum kBeforeAfter { kBEFORE, kAFTER, LAST_EBEFOREAFTER };
@@ -73,7 +73,7 @@ public:
   /* split calls in UserExec() depending on flags */
   virtual void AODExec();
   virtual void MCOnTheFlyExec();
-  virtual void FillFinalResultProfiles();
+  virtual void FillFinalResultProfiles(kFinalProfile fp);
 
   /* methods called in AODExec(): */
   virtual Bool_t SurviveEventCut(AliVEvent *ave);
@@ -299,7 +299,7 @@ private:
   std::vector<std::vector<Int_t>> fCorrelators;
 
   /* Increase this counter in each new version: */
-  ClassDef(AliAnalysisTaskAR, 5);
+  ClassDef(AliAnalysisTaskAR, 6);
 };
 
 #endif

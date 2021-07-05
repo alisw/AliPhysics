@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 02.07.2021
+ * Last Modified Date: 05.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -169,39 +169,39 @@ void AliAnalysisTaskAR::UserCreateOutputObjects() {
   PostData(1, fHistList);
 }
 
-void AliAnalysisTaskAR::UserExec(Option_t *) {
-  /* main method called for analysis */
+// void AliAnalysisTaskAR::UserExec(Option_t *) {
+//   /* main method called for analysis */
 
-  /* clear azimuthal angles */
-  fPhi.clear();
-  /* clear weights */
-  fWeights.clear();
+//   /* clear azimuthal angles */
+//   fPhi.clear();
+//   /* clear weights */
+//   fWeights.clear();
 
-  // fill azimuthal angles and (maybe) weights
-  if (fMCAnalaysis) {
-    /* MC analysis */
-    MCOnTheFlyExec();
-  } else {
-    /* real data */
-    AODExec();
-  }
+//   // fill azimuthal angles and (maybe) weights
+//   if (fMCAnalaysis) {
+//     /* MC analysis */
+//     MCOnTheFlyExec();
+//   } else {
+//     /* real data */
+//     AODExec();
+//   }
 
-  // bail out if there are no azimuthal angles, i.e. due to event cut
-  if (fPhi.empty()) {
-    return;
-  }
+//   // bail out if there are no azimuthal angles, i.e. due to event cut
+//   if (fPhi.empty()) {
+//     return;
+//   }
 
-  /* reset weights if required*/
-  if (fResetWeights) {
-    std::fill(fWeights.begin(), fWeights.end(), 1.);
-  }
+//   /* reset weights if required*/
+//   if (fResetWeights) {
+//     std::fill(fWeights.begin(), fWeights.end(), 1.);
+//   }
 
-  /* calculate all qvectors */
-  CalculateQvectors();
+//   /* calculate all qvectors */
+//   CalculateQvectors();
 
-  // fill final result profiles
-  FillFinalResultProfiles();
-}
+//   // fill final result profiles
+//   FillFinalResultProfiles();
+// }
 
 void AliAnalysisTaskAR::Terminate(Option_t *) {
   /* Accessing the merged output list for final compution or for off-line
@@ -221,7 +221,7 @@ void AliAnalysisTaskAR::Terminate(Option_t *) {
   fFinalResultHistograms[kPHIAVG]->SetBinContent(
       1, fTrackControlHistograms[kPHI][kAFTER]->GetMean());
 
-  /* compute analytical values for correlators */
+  // compute analytical values for correlators and fill them into profile
   if (fMCAnalaysis) {
     Double_t v = 1.;
     for (auto V : fCorrelators) {
@@ -438,6 +438,8 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultProfiles() {
       // kNAME, kTITLE, kXAXIS
       {"fFinalResultProfiles[kHARDATA]", "Flow Harmonics (Data)",
        ""}, // kHARDATA
+      {"fFinalResultProfiles[kHARDATARESET]",
+       "Flow Harmonics (Data, weights reset)", ""}, // kHARDATARESET
       {"fFinalResultProfiles[kHARTHEO]", "Flow Harmonics (Theory)",
        ""}, // kHARTHEO
   };
@@ -453,6 +455,7 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultProfiles() {
   Double_t BinsFinalResultProfileDefaults[LAST_EFINALPROFILE][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
       {1., 0., 1.}, // kHARDATA
+      {1., 0., 1.}, // kHARDATARESET
       {1., 0., 1.}, // kHARTHEO
   };
   /* initialize array of bins and edges for final result profiles */
@@ -626,42 +629,47 @@ void AliAnalysisTaskAR::BookMCObjects() {
   }
 }
 
-void AliAnalysisTaskAR::AODExec() {
-  /* general strategy */
-  /* 1. Get pointer to AOD event */
-  /* 2. Start analysis over AODs, i.e. fill fPhi */
-  /* 3. Reset event-by-event objects */
-  /* 4. PostData */
+void AliAnalysisTaskAR::UserExec(Option_t *) {
+  // general strategy
+  // 1. Reset event-by-event objects
+  // 2. Get pointer to AOD event
+  // 3. Start analysis over AODs, i.e. fill fPhi
+  // 4. Fill event objects
+  // 5. PostData
 
-  /* 1. Get pointer to AOD event */
+  // 1. Reset event-by-event objects
+  fPhi.clear();
+  fWeights.clear();
+
+  // 2. Get pointer to AOD event
   AliAODEvent *aAOD = dynamic_cast<AliAODEvent *>(InputEvent()); // from TaskSE
   if (!aAOD) {
     return;
   }
 
-  /* get centrality percentile */
+  // get centrality percentile
   Double_t centralityPercentile =
       dynamic_cast<AliMultSelection *>(aAOD->FindListObject("MultSelection"))
           ->GetMultiplicityPercentile(fCentralitySelCriterion);
 
-  /* fill centrality control histgrogram before event cut */
+  // fill centrality control histgrogram before event cut
   fEventControlHistograms[kCEN][kBEFORE]->Fill(centralityPercentile);
 
-  /* cut event */
+  // cut event
   if (!SurviveEventCut(aAOD)) {
     return;
   }
 
-  /* fill centrality control histogram after event cut */
+  // fill centrality control histogram after event cut
   fEventControlHistograms[kCEN][kAFTER]->Fill(centralityPercentile);
 
-  /* 2. Start analysis over AODs: */
+  // 3. Start analysis over AODs:
 
-  /* number of all tracks in current event */
+  //  number of all tracks in current event
   Int_t nTracks = aAOD->GetNumberOfTracks();
 
-  /* count number of valid tracks before and after cutting for computing
-   * multiplicity */
+  // count number of valid tracks before and after cutting for computing
+  // multiplicity
   Int_t nTracks_beforeCut = 0;
   Int_t nTracks_afterCut = 0;
 
@@ -699,15 +707,15 @@ void AliAnalysisTaskAR::AODExec() {
     nTracks_afterCut++;
 
     /* finally, fill azimuthal angels into vector */
-    if (fMCClosure) {
+    if (!fMCClosure) {
+      fPhi.push_back(phi);
+    } else {
       Int_t AcceptanceBin = fAcceptanceHistogram->FindBin(phi);
       if (gRandom->Uniform() <=
           fAcceptanceHistogram->GetBinContent(AcceptanceBin)) {
         fPhi.push_back(phi);
         fWeights.push_back(fWeightHistogram->GetBinContent(AcceptanceBin));
       }
-    } else {
-      fPhi.push_back(phi);
     }
   }
 
@@ -715,24 +723,32 @@ void AliAnalysisTaskAR::AODExec() {
   fEventControlHistograms[kMUL][kBEFORE]->Fill(nTracks_beforeCut);
   fEventControlHistograms[kMUL][kAFTER]->Fill(nTracks_afterCut);
 
-  // c) Reset event-by-event objects:
-  // ...
-  // Double_t px = aTrack->Px(); // x-component of momenta
-  // Double_t py = aTrack->Py(); // y-component of momenta
-  // Double_t pz = aTrack->Pz(); // z-component of momenta
-  // Double_t e = aTrack->E();  // energy
-  // Double_t charge = aTrack->Charge(); // charge
+  // 4. Fill event objects
+  /* reset weights if required*/
+
+  /* calculate all qvectors */
+  CalculateQvectors();
+
+  // fill final result profile
+  FillFinalResultProfiles(kHARDATA);
+
+  // if option is given, repeat with weights resetted
+  if (fResetWeights) {
+    std::fill(fWeights.begin(), fWeights.end(), 1.);
+    CalculateQvectors();
+    FillFinalResultProfiles(kHARDATARESET);
+  }
 
   // d) PostData:
   PostData(1, fHistList);
 }
 
 void AliAnalysisTaskAR::MCOnTheFlyExec() {
-  /* call this method for monte carlo analysis to fill fPhi */
+  // call this method for monte carlo analysis
 
-  /* set symmetry planes for MC analysis */
+  // set symmetry planes for MC analysi
   MCPdfSymmetryPlanesSetup();
-  /* loop over all particles in an event */
+  // loop over all particles in an even
   Double_t Phi = 0.0;
   Int_t AcceptanceBin = 0;
   for (int i = 0; i < GetMCNumberOfParticlesPerEvent(); ++i) {
@@ -749,6 +765,16 @@ void AliAnalysisTaskAR::MCOnTheFlyExec() {
       fPhi.push_back(Phi);
     }
   }
+
+  // compute Q-vectors
+  CalculateQvectors();
+  // fill data
+  FillFinalResultProfiles(kHARDATA);
+  // reset weight and recompute Q-vectors
+  std::fill(fWeights.begin(), fWeights.end(), 1.);
+  CalculateQvectors();
+  // fill data
+  FillFinalResultProfiles(kHARDATARESET);
 }
 
 Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
@@ -902,50 +928,54 @@ void AliAnalysisTaskAR::CalculateQvectors() {
   }
 }
 
-void AliAnalysisTaskAR::FillFinalResultProfiles() {
+void AliAnalysisTaskAR::FillFinalResultProfiles(kFinalProfile fp) {
   /* fill final result profiles */
 
   Double_t corr = 0.0;
   Double_t weight = 0.0;
 
   // loop over all correlators
-  for (auto V : fCorrelators) {
+  for (auto Corr : fCorrelators) {
     // protect against insufficient amount of statistics
     // i.e. number of paritcles is lower then the order of correlator due to
     // track cuts
-    if (fPhi.size() < V.size()) {
+    if (fPhi.size() < Corr.size()) {
       return;
     }
 
     // compute correlator
-    switch (static_cast<int>(V.size())) {
+    switch (static_cast<int>(Corr.size())) {
     case 2:
-      corr = Two(V.at(0), V.at(1)).Re();
+      corr = Two(Corr.at(0), Corr.at(1)).Re();
       weight = Two(0, 0).Re();
       break;
     case 3:
-      corr = Three(V.at(0), V.at(1), V.at(2)).Re();
+      corr = Three(Corr.at(0), Corr.at(1), Corr.at(2)).Re();
       weight = Three(0, 0, 0).Re();
       break;
     case 4:
-      corr = Four(V.at(0), V.at(1), V.at(2), V.at(3)).Re();
+      corr = Four(Corr.at(0), Corr.at(1), Corr.at(2), Corr.at(3)).Re();
       weight = Four(0, 0, 0, 0).Re();
       break;
     case 5:
-      corr = Five(V.at(0), V.at(1), V.at(2), V.at(3), V.at(4)).Re();
+      corr =
+          Five(Corr.at(0), Corr.at(1), Corr.at(2), Corr.at(3), Corr.at(4)).Re();
       weight = Five(0, 0, 0, 0, 0).Re();
       break;
     case 6:
-      corr = Six(V.at(0), V.at(1), V.at(2), V.at(3), V.at(4), V.at(5)).Re();
+      corr = Six(Corr.at(0), Corr.at(1), Corr.at(2), Corr.at(3), Corr.at(4),
+                 Corr.at(5))
+                 .Re();
       weight = Six(0, 0, 0, 0, 0, 0).Re();
       break;
     default:
-      corr = Recursion(V.size(), V.data()).Re();
-      weight = Recursion(V.size(), std::vector<Int_t>(V.size(), 0).data()).Re();
+      corr = Recursion(Corr.size(), Corr.data()).Re();
+      weight = Recursion(Corr.size(), std::vector<Int_t>(Corr.size(), 0).data())
+                   .Re();
     }
 
     // fill final resutl profile
-    fFinalResultProfiles[kHARDATA]->Fill(V.size() - 1.5, corr / weight, weight);
+    fFinalResultProfiles[fp]->Fill(Corr.size() - 1.5, corr / weight, weight);
   }
 }
 
