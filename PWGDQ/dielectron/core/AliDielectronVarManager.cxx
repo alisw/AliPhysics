@@ -225,6 +225,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"DeltaCotTheta",          "#Delta cot(#Theta)",                                 ""},
   {"DeltaPhiSumDiff",        "#Delta #phi(Sum,Diff)",                              "(rad.)"},
   {"DeltaPhiSumPos",         "#Delta #phi(Sum,e^{+})",                             "(rad.)"},
+  {"DeltaPhiSumPoszpi",      "#Delta #phi(Sum,e^{+})",                             "(rad.)"},
   {"DeltaPhiSumNeg",         "#Delta #phi(Sum,e^{-})",                             "(rad.)"},
   {"PairPlaneAngle1A",       "#Phi_{1A}",                                          "(rad.)"},
   {"PairPlaneAngle2A",       "#Phi_{2A}",                                          "(rad.)"},
@@ -273,6 +274,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Leg1Eta",                "Leg1 #eta",                                          ""},
   {"Leg2Eta",                "Leg2 #eta",                                          ""},
   {"DeltaPhi",               "#Delta #phi",                                        ""},
+  {"Accoplanarity",          "1. - |#Delta #phi|/#pi"                              ""},
   {"Leg1Phi",                "Leg1 #phi",                                          ""},
   {"Leg2Phi",                "Leg2 #phi",                                          ""},
   {"DeltaPhiChargeOrdered",  "#Delta #phi_{charge ordered}",                       ""},
@@ -624,7 +626,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 // Flow estimators for measured Jpsi
 // Eventplane Fourier calculation
   {"QnDeltaPhiTPCrpH2",         "#phi^{pair}-#Psi^{TPC}",                     ""},
+  {"QnDeltaPhiTPCrpH2Abs",         "|#phi^{pair}-#Psi^{TPC}|",                     ""},
   {"QnDeltaPhiTrackTPCrpH2",    "#phi^{Track}-#Psi^{TPC}",                     ""},
+  {"QnDeltaPhiTrackTPCrpH2Abs",    "|#phi^{Track}-#Psi^{TPC}|",                     ""},
   {"QnDeltaPhiTrackV0CrpH2",    "#phi^{Track}-#Psi^{V0C}",                     ""},
   {"QnDeltaPhiV0ArpH2",         "#phi^{pair}-#Psi^{V0A}",                     ""},
   {"QnDeltaPhiV0CrpH2",         "#phi^{pair}-#Psi^{V0C}",                     ""},
