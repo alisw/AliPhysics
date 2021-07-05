@@ -157,7 +157,7 @@ fUseMultiplicity(kTRUE), fUseMBFractions(kFALSE) {
     //        fstCentralities = cent;
     //    }
     fstPartTypes = {"Pion",       "Proton",    "Kaon",
-        "SigmaMinus", "SigmaPlus", "Rest"};
+        "SigmaMinus", "SigmaPlus", "Rest", "Lambda"};
 
     // setup systematics
     fAllSystematicFlags = {
@@ -349,9 +349,9 @@ void AliMCSpectraWeights::InitHistos() {
     DebugPCC("Initializing histograms\n");
     // Initalizing histograms
     // histogram charged patricles pt:multcent:type
-    std::array<float, 7> partArray{};
+    std::array<float, 8> partArray{};
     std::array<float, 6> partArrayDATA{};
-    for (int i = 0; i < 7; ++i) {
+    for (int i = 0; i < 8; ++i) {
         partArray[i] = -0.5 + i;
         if (i < 6)
             partArrayDATA[i] = -0.5 + i;
@@ -960,7 +960,7 @@ int const AliMCSpectraWeights::CheckAndIdentifyParticle(TParticle* part) {
         DebugPCC("Warning: particle has no PDG; skipped\n");
         return -2;
     }
-    if (TMath::Abs(part->GetPDG()->Charge()) < 0.01) {
+    if (TMath::Abs(part->GetPDG()->Charge()) < 0.01 && TMath::Abs(part->GetPdgCode()!=3122)) {
         DebugPCC("Warning: particle not charged\n");
         return -3;
     }
@@ -1116,7 +1116,7 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
             continue;
         if (!MCStack->IsPhysicalPrimary(iParticle))
             continue;
-        if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01)
+        if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01 && TMath::Abs(mcGenParticle->GetPdgCode()!=3122))
             continue;
 
         float partY = mcGenParticle->Y();
@@ -1172,6 +1172,9 @@ int const AliMCSpectraWeights::IdentifyMCParticle(TParticle* mcParticle) {
     // if(ipdg==11) return AliMCSpectraWeights::ParticleType::kElectron;
     // if(ipdg==13) return AliMCSpectraWeights::ParticleType::kMuon;
     // printf("AliMCSpectraWeights:: pdf code of rest particle %d\n", ipdg);
+    if(ipdg == 3122)
+        return GetPartTypeNumber(
+                                 AliMCSpectraWeights::ParticleType::kLambda);
     return GetPartTypeNumber(AliMCSpectraWeights::ParticleType::kRest);
 }
 
@@ -1446,6 +1449,8 @@ int const AliMCSpectraWeights::GetPartTypeNumber(
             return AliMCSpectraWeights::ParticleType::kSigmaMinus;
         case AliMCSpectraWeights::ParticleType::kSigmaPlus:
             return AliMCSpectraWeights::ParticleType::kSigmaPlus;
+        case AliMCSpectraWeights::ParticleType::kLambda:
+            return AliMCSpectraWeights::ParticleType::kLambda;
         case AliMCSpectraWeights::ParticleType::kRest:
             return AliMCSpectraWeights::ParticleType::kRest;
         default:
