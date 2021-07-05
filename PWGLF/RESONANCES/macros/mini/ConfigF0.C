@@ -15,6 +15,9 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
       		Float_t                masslow = 0.3,         //inv mass axis low edge 
 		Float_t                massup = 1.3,          //inv mass axis upper edge 
 		Int_t                  nbins = 1000,           //inv mass axis n bins
+	        Float_t                ptlow = 0.0,             //pT axis low edge 
+		Float_t                ptup = 20.0,              //pT axis upper edge 
+		Int_t                  nbinspt = 200,           //pT axis n bins
 		Int_t                  aodFilterBit = 5,      //filter bit for AOD analysis
 		Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom, //track quality cuts
 		AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPid = AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, // pid cut set
@@ -106,7 +109,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
     // axis X: invmass 
     out->AddAxis(imID, nbins, masslow, massup);
     //axis Y: mother pt
-    out->AddAxis(ptID, 200, 0.0, 20.0); //default use mother pt
+    out->AddAxis(ptID, nbinspt, ptlow, ptup); //default use mother pt
     //axis Z: multiplicity
     if (enaMultSel) out->AddAxis(multID, 100, 0.0, 100.0);
   }
@@ -137,7 +140,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
       // axis X: invmass 
       outtempl->AddAxis(imID, nbins, masslow, massup);
       //axis Y: mother pt
-      outtempl->AddAxis(ptID, 200, 0.0, 20.0); //default use mother pt
+      outtempl->AddAxis(ptID,  nbinspt, ptlow, ptup); //default use mother pt
       // axis Z: multrality-multiplicity
       if (enaMultSel) outtempl->AddAxis(multID, 100, 0.0, 100.0);
     }
@@ -155,7 +158,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
     // axis X: invmass 
     outtrue->AddAxis(imID, nbins, masslow, massup);
     //axis Y: mother pt
-    outtrue->AddAxis(ptID, 200, 0.0, 20.0); //default use mother pt
+    outtrue->AddAxis(ptID,  nbinspt, ptlow, ptup); //default use mother pt
     // axis Z: multiplicity
     if (enaMultSel) outtrue->AddAxis(multID, 100, 0.0, 100.0);
 
@@ -174,7 +177,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
     // axis X: invmass resolution
     outres->AddAxis(resID, 200, -0.01, 0.01);
     //axis Y: mother pt
-    outres->AddAxis(ptID, 200, 0.0, 20.0);
+    outres->AddAxis(ptID,  nbinspt, ptlow, ptup);
     // axis Z: multiplicity
     if (enaMultSel) outres->AddAxis(multID, 100, 0.0, 100.0);
 
@@ -189,7 +192,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
     outrap->SetMotherPDG(pdgCode);
     outrap->SetMotherMass(mass);
     outrap->SetPairCuts(cutsPair);
-    outrap->AddAxis(ptID, 160, 0.0, 16.0);
+    outrap->AddAxis(ptID,  nbinspt, ptlow, ptup);
     outrap->AddAxis(yID,  120, -0.6, 0.6);
     outrap->AddAxis(etaID, 200, -1., 1.);
 
@@ -202,7 +205,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
     outm->SetMotherMass(mass);
     outm->SetPairCuts(cutsPair);
     outm->AddAxis(imID, nbins, masslow, massup);
-    outm->AddAxis(ptID, 200, 0.0, 20.0);
+    outm->AddAxis(ptID,  nbinspt, ptlow, ptup);
     if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
 
     //GENERATED PAIRS
@@ -212,7 +215,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
     outmy->SetMotherPDG(pdgCode);
     outmy->SetMotherMass(mass);
     outmy->SetPairCuts(cutsPair);
-    outmy->AddAxis(ptID, 160, 0.0, 16.0);
+    outmy->AddAxis(ptID,  nbinspt, ptlow, ptup);
     outmy->AddAxis(yID,  120, -0.6, 0.6);
     outmy->AddAxis(etaID, 200, -1., 1.);
 
@@ -224,7 +227,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
     outm2->SetMotherMass(bgTemplateM[6]);
     outm2->SetPairCuts(cutsPair);
     outm2->AddAxis(imID, nbins, masslow, massup);
-    outm2->AddAxis(ptID, 200, 0.0, 20.0);
+    outm2->AddAxis(ptID,  nbinspt, ptlow, ptup);
     if (enaMultSel) outm2->AddAxis(multID, 100, 0.0, 100.0);
 
     //f2 GENERATED PAIRS
@@ -234,7 +237,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0,
     outmy2->SetMotherPDG(bgTemplatePDG[6]);
     outmy2->SetMotherMass(bgTemplateM[6]);
     outmy2->SetPairCuts(cutsPair);
-    outmy2->AddAxis(ptID, 160, 0.0, 16.0);
+    outmy2->AddAxis(ptID,  nbinspt, ptlow, ptup);
     outmy2->AddAxis(yID,  120, -0.6, 0.6);
     outmy2->AddAxis(etaID, 200, -1., 1.);
   }

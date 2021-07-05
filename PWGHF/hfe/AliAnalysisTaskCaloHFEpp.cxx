@@ -505,10 +505,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 
    
-        Int_t binsWh[3]=   { 60, 120,   80}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
-        Double_t xminWh[3]={ 20,   0, -2.0};
-        Double_t xmaxWh[3]={ 80,  60,  6.0};
-	fWh_phidiff = new THnSparseD("fWh_phidiff","pT vs. dphi differnce",3,binsWh, xminWh, xmaxWh);
+        Int_t binsWh[4]=   { 50,  60,   80,  50}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xminWh[4]={ 20,   0, -2.0,   0};
+        Double_t xmaxWh[4]={ 70,  60,  6.0, 0.5};
+	fWh_phidiff = new THnSparseD("fWh_phidiff","pT vs. dphi differnce",4,binsWh, xminWh, xmaxWh);
 	
         Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100,  800, 500, 20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
         Double_t xmin[11]={ 10,  -5,   0,   0,   0,   0,   0, -0.2,   0,  0, -1.5};
@@ -1429,11 +1429,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                                      fHistPt_Iso->Fill(track->Pt());
                                      fEop_iso_eID->Fill(TrkPt,eop);
 
+
+                                    }
+
                                      //////////// ---- W-h correlation /////////////
 
                                      if(NtrackCone<3 && TrkPt>30 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE);
-
-                                    }
 
 				if(pid_eleP)
 				{
@@ -2094,7 +2095,7 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 		TPCchi2NDFWasso = aWassotrack -> Chi2perNDF();
 		TrackPhi        = track->Phi();
 
-		if(ptWasso <0.3) continue;
+		if(ptWasso <1.0) continue;
 
 		/////////////////////////
 		// track cut
@@ -2135,10 +2136,10 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 			if(!fFlagPhoto)fRiso_phidiff_LS_35 -> Fill(Wphidiff,Riso);
 		}
 
-                if(Riso<0.05)
+                //if(Riso<0.05)
                    {
-                    Double_t valwh[3];
-                    valwh[0] = TrackPt; valwh[1] = ptWasso; valwh[2] = Wphidiff; 
+                    Double_t valwh[4];
+                    valwh[0] = TrackPt; valwh[1] = ptWasso; valwh[2] = Wphidiff; valwh[3] = Riso; 
                     fWh_phidiff->Fill(valwh);
                    }
 

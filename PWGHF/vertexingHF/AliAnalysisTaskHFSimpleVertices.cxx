@@ -176,6 +176,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMassDplus(0.),
   fMassDs(0.),
   fMassLambdaC(0.),
+  fMassK0s(0.),
   fSecVertexerAlgo(0),
   fVertexerTracks{nullptr},
   fO2Vertexer2Prong{},
@@ -189,6 +190,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fTrackCuts2pr{nullptr},
   fTrackCuts3pr{nullptr},
   fTrackCutsBach{nullptr},
+  fTrackCutsV0Dau{nullptr},
   fMaxTracksToProcess(9999999),
   fNPtBinsSingleTrack(6),
   fNPtBinsDzero(25),
@@ -210,6 +212,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fSelectJpsi(1),
   fSelectLcpKpi(1),
   fMinPtV0(0.),
+  fMinCosPointV0(0.),
+  fCutOnK0sMass(0.1),
   fEnableCPUTimeCheck(kFALSE),
   fCountTimeInMilliseconds(kFALSE)
 {
@@ -352,6 +356,8 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
   delete fOutput;
   delete fTrackCuts2pr;
   delete fTrackCuts3pr;
+  delete fTrackCutsBach;
+  delete fTrackCutsV0Dau;
   delete fVertexerTracks;
   if(fHistCPUTimeTrackVsNTracks) delete fHistCPUTimeTrackVsNTracks;
   if(fHistCPUTimeCandVsNTracks) delete fHistCPUTimeCandVsNTracks;
@@ -368,6 +374,7 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
   fMassDplus = TDatabasePDG::Instance()->GetParticle(411)->Mass();
   fMassDs = TDatabasePDG::Instance()->GetParticle(431)->Mass();
   fMassLambdaC = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  fMassK0s = TDatabasePDG::Instance()->GetParticle(310)->Mass();
 
   fTrackCuts2pr = new AliESDtrackCuts("AliESDtrackCuts", "default");
   fTrackCuts2pr->SetPtRange(0., 1.e10);
@@ -402,6 +409,12 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
   fTrackCutsBach->SetEtaRange(-0.8, +0.8);
   fTrackCutsBach->SetMinDCAToVertexXYPtDep("0.*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
   fTrackCutsBach->SetMaxDCAToVertexXY(1.);
+  
+  fTrackCutsV0Dau = new AliESDtrackCuts("AliESDtrackCuts", "defaultV0dau");
+  fTrackCutsV0Dau->SetPtRange(0.05, 1.e10);
+  fTrackCutsV0Dau->SetEtaRange(-1.1, +1.1);
+  fTrackCutsV0Dau->SetMinNCrossedRowsTPC(50);
+  fTrackCutsV0Dau->SetRequireTPCRefit(kTRUE);
   
   fNPtBinsSingleTrack = 6;
   Double_t defaultPtBinsSingleTrack[7] = {0., 0.5, 1., 1.5, 2., 3., 1000.};
@@ -729,6 +742,20 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     fLcSkimCuts[3]=minCosPointLcToPKPi;
     fLcSkimCuts[4]=minDecLenLcToPKPi;
 
+    
+    Double_t cutcpaV0 = GetJsonFloat(filename.Data(), "cosPAV0");
+    if(cutcpaV0>0){
+      fMinCosPointV0=cutcpaV0;
+      printf("cosPAV0 cut = %f\n",fMinCosPointV0);
+    }
+
+    Double_t cutinvmV0 = GetJsonFloat(filename.Data(), "cutInvMassV0");
+    if(cutinvmV0>0){
+      fCutOnK0sMass=cutinvmV0;
+      printf("invmass V0 cut = %f\n",fCutOnK0sMass);
+    }
+    
+    
     printf("---------------------------------------------\n");
 
     printf("---- TEST READOUT OF ARRAYS ----\n");
@@ -1347,6 +1374,10 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
            !(negVV0track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
         //  reject kinks (only necessary on AliESDtracks)
         if (posVV0track->GetKinkIndex(0)>0  || negVV0track->GetKinkIndex(0)>0) continue;
+        // track cuts on V0 daughters
+        if(!fTrackCutsV0Dau->AcceptTrack(posVV0track) || !fTrackCutsV0Dau->AcceptTrack(negVV0track)) continue;
+        // selections on K0s
+        if(!SelectV0(v0,primVtxTrk)) continue;
         Double_t xyz[3], pxpypz[3];
         v0->XvYvZv(xyz);
         v0->PxPyPz(pxpypz);
@@ -1532,14 +1563,14 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       }
       delete trkv;
       if (fDo3Prong) {
-        if(status[iPosTrack_0] & 2 == 0) continue;
-        if(status[iNegTrack_0] & 2 == 0) continue;
+        if((status[iPosTrack_0] & 2) == 0) continue;
+        if((status[iNegTrack_0] & 2) == 0) continue;
         for (Int_t iPosTrack_1 = iPosTrack_0 + 1; iPosTrack_1 < totTracks; iPosTrack_1++) {
           AliESDtrack* track_p1 = esd->GetTrack(iPosTrack_1);
           if (!track_p1) continue;
           if (track_p1->Charge() < 0) continue;
           track_p1->GetPxPyPz(mom2);
-          if (status[iPosTrack_1] & 2 == 0) continue;
+          if ((status[iPosTrack_1] & 2) == 0) continue;
           // order tracks according to charge: +-+
           threeTrackArray->AddAt(track_p0, 0);
           threeTrackArray->AddAt(track_n0, 1);
@@ -1551,7 +1582,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
           AliESDtrack* track_n1 = esd->GetTrack(iNegTrack_1);
           if (!track_n1) continue;
           if (track_n1->Charge() > 0) continue;
-          if (status[iNegTrack_1] & 2 == 0) continue;
+          if ((status[iNegTrack_1] & 2) == 0) continue;
           track_n1->GetPxPyPz(mom2);
           // order tracks according to charge: -+-
           threeTrackArray->AddAt(track_n0, 0);
@@ -1821,6 +1852,16 @@ Int_t AliAnalysisTaskHFSimpleVertices::SingleTrkCuts(AliESDtrack* trk, AliESDVer
   if(fTrackCutsBach->AcceptTrack(trk)) retCode+=4;
   
   return retCode;
+}
+//______________________________________________________________________________
+Bool_t AliAnalysisTaskHFSimpleVertices::SelectV0(AliESDv0 *v0, AliESDVertex* primvtx)
+{
+  // Apply V0 selections
+  Double_t cpa=v0->GetV0CosineOfPointingAngle(primvtx->GetX(),primvtx->GetY(),primvtx->GetZ());
+  if(cpa<fMinCosPointV0) return kFALSE;
+  Double_t invMassK0s = v0->GetEffMass(2,2);
+  if(TMath::Abs(invMassK0s-fMassK0s)>fCutOnK0sMass) return kFALSE;
+  return kTRUE;
 }
 //______________________________________________________________________________
 AliESDVertex* AliAnalysisTaskHFSimpleVertices::ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx)
