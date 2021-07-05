@@ -263,8 +263,12 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
 
     pTWeight_D(0),
     pTWeight_Lc(0),
-    pTWeight_B(0)
+    pTWeight_B(0),
 
+    fHistMCorg_Pi0_Enhance(0),	// enhanced pi0
+    fHistMCorg_Pi0_True(0),	// PYTHIA pi0
+    fHistMCorg_Eta_Enhance(0),	// enhanced eta
+    fHistMCorg_Eta_True(0)	// PYTHIA eta
 
 {
     // default constructor, don't allocate memory here!
@@ -476,7 +480,12 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
 
     pTWeight_D(0),
     pTWeight_Lc(0),
-    pTWeight_B(0)
+    pTWeight_B(0),
+
+    fHistMCorg_Pi0_Enhance(0),	// enhanced pi0
+    fHistMCorg_Pi0_True(0),	// PYTHIA pi0
+    fHistMCorg_Eta_Enhance(0),	// enhanced eta
+    fHistMCorg_Eta_True(0)	// PYTHIA eta
 
 
 {
@@ -1089,7 +1098,14 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fHistOrg_Lc  = new TH1F("fHistOrg_Lc", "MC original #Lambda_{c}; p_{T} [GeV/c];",1200,0,60);fOutputList->Add(fHistOrg_Lc);
 
 
+  //Pi0
+    fHistMCorg_Pi0_Enhance = new TH1F("fHistMCorg_Pi0_Enhance","MCorg Pi0 (enhance)", 1200, 0, 60);	fOutputList->Add(fHistMCorg_Pi0_Enhance);
+    fHistMCorg_Pi0_True = new TH1F("fHistMCorg_Pi0_True","MCorg Pi0 (PYTHIA)", 1200, 0, 60);		fOutputList->Add(fHistMCorg_Pi0_True);
     
+  //Eta
+    fHistMCorg_Eta_Enhance = new TH1F("fHistMCorg_Eta_Enhance","MCorg Pi0 (enhance)", 1200, 0, 60);	fOutputList->Add(fHistMCorg_Eta_Enhance);
+    fHistMCorg_Eta_True = new TH1F("fHistMCorg_Eta_True","MCorg Pi0 (PYTHIA)", 1200, 0, 60);		fOutputList->Add(fHistMCorg_Eta_True);
+
 
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
                                         // fOutputList object. the manager will in the end take care of writing your output to file
@@ -2071,8 +2087,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
             AliGenEventHeader* gh = (AliGenEventHeader*)lh->At(igene);
             if(gh)
             {
-                MCgen = gh -> GetName();    // Get particle name
-                if(igene == 0) NpureMC = gh -> NProduced();
+                MCgen = gh->GetName();    // Get particle name (PYTHIA,pi0,eta,...)
+                if(igene == 0) NpureMC = gh->NProduced();	// 0->PYTHIA
                 
                 if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc;  //if "pi" contains
                 if(MCgen.Contains(embeta))NembMCeta = NpureMCproc;  //if "eta" contains
@@ -2130,12 +2146,37 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
             if(pdgGen==221) fHistMCorg_Eta -> Fill(iHijing, pTtrue); // eta
         }
 
-		if((pdgGen>=500 && pdgGen<=599) || (pdgGen>=5000 && pdgGen<=5999)) fHistOrg_B->Fill(pTtrue);	//B-meson,baryon pT
-		if((pdgGen>=400 && pdgGen<=499) || (pdgGen>=4000 && pdgGen<=4999)) fHistOrg_D->Fill(pTtrue);	//D-meson,baryon pT
-		if(pdgGen==411)  fHistOrg_Dpm->Fill(pTtrue);	// D+ pT
-		if(pdgGen==421)  fHistOrg_D0->Fill(pTtrue);	// D0 pT
-		if(pdgGen==431)  fHistOrg_Ds->Fill(pTtrue);	// Ds pT
-		if(pdgGen==4122) fHistOrg_Lc->Fill(pTtrue);	// Lc pT
+
+	//-- pi0 --
+	if((iHijing > -1) && (pdgGen==111))
+	{
+		if(iEnhance){ 
+			fHistMCorg_Pi0_Enhance -> Fill(pTtrue);	// iHijing=0, enhanced pi0
+		}else{
+			fHistMCorg_Pi0_True -> Fill(pTtrue);	// iHijing=1, PYTHIA pi0
+		}
+	}
+	
+	//-- eta --
+	if((iHijing > -1) && (pdgGen==221))
+	{
+		if(iEnhance){ 
+			fHistMCorg_Eta_Enhance -> Fill(pTtrue);	// iHijing=0, enhanced eta
+		}else{
+			fHistMCorg_Eta_True -> Fill(pTtrue);	// iHijing=1, PYTHIA eta
+		}
+	}
+
+
+
+	//-- B,D meson --
+	if((pdgGen>=500 && pdgGen<=599) || (pdgGen>=5000 && pdgGen<=5999)) fHistOrg_B->Fill(pTtrue);	//B-meson,baryon pT
+	if((pdgGen>=400 && pdgGen<=499) || (pdgGen>=4000 && pdgGen<=4999)) fHistOrg_D->Fill(pTtrue);	//D-meson,baryon pT
+	if(pdgGen==411)  fHistOrg_Dpm->Fill(pTtrue);	// D+ pT
+	if(pdgGen==421)  fHistOrg_D0->Fill(pTtrue);	// D0 pT
+	if(pdgGen==431)  fHistOrg_Ds->Fill(pTtrue);	// Ds pT
+	if(pdgGen==4122) fHistOrg_Lc->Fill(pTtrue);	// Lc pT
+
 
         
         if(TMath::Abs(pdgGen)!=11) continue;    // except Non-electrons
