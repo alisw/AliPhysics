@@ -11,8 +11,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
 					       Int_t rejpileup = 1,
 					       Int_t vermix = 0,
 					       Int_t version = 0,
-					       TString EffFileName = "",
-					       )
+					       TString EffFileName = "")
 {
 
   //get the current analysis manager
