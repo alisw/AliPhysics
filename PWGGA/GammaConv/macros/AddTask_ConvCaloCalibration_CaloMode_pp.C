@@ -386,6 +386,28 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("0008e113","411799809fe32220000","0r631031000000d0");  // EG2
     cuts.AddCutCalo("0008d113","411799809fe32220000","0r631031000000d0");  // EG1
 
+  // NonLin settings with only test beam WO scale (no fine tuning) to test different clusterization settings and NonLin functions
+  } else if (trainConfig == 90){
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0");  // INT7, NonLin applied in CF
+  } else if (trainConfig == 91){
+    cuts.AddCutCalo("0008e113","411790009fe32220000","0r631031000000d0");  // EG2, NonLin applied in CF
+    cuts.AddCutCalo("0008d113","411790009fe32220000","0r631031000000d0");  // EG1, NonLin applied in CF
+  } else if (trainConfig == 92){
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0");  // INT7, NonLin applied in CF
+  } else if (trainConfig == 93){
+    cuts.AddCutCalo("0008e113","411790009fe32220000","0r631031000000d0");  // EG2, NonLin applied in CF
+    cuts.AddCutCalo("0008d113","411790009fe32220000","0r631031000000d0");  // EG1, NonLin applied in CF
+  } else if (trainConfig == 94){
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0");  // INT7, NonLin applied in CF
+  } else if (trainConfig == 95){
+    cuts.AddCutCalo("0008e113","411790009fe32220000","0r631031000000d0");  // EG2, NonLin applied in CF
+    cuts.AddCutCalo("0008d113","411790009fe32220000","0r631031000000d0");  // EG1, NonLin applied in CF
+  } else if (trainConfig == 96){ //with lower min energy (400MeV)
+    cuts.AddCutCalo("00010113","411790009feh2220000","0r631031000000d0");  // INT7, NonLin applied in CF
+  } else if (trainConfig == 97){ //with lower min energy (400MeV)
+    cuts.AddCutCalo("0008e113","411790009feh2220000","0r631031000000d0");  // EG2, NonLin applied in CF
+    cuts.AddCutCalo("0008d113","411790009feh2220000","0r631031000000d0");  // EG1, NonLin applied in CF
+
 
 
   } else {

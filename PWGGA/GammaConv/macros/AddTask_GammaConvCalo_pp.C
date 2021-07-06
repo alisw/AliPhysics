@@ -2786,16 +2786,25 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 2163){
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799309fe32220000","0163103100000010"); // NCell >=2
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799309fe30220000","0163103100000010"); // no NCell cut
-    // 1.5% scale in NL
-  } else if (trainConfig == 2164){
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799409fe32220000","0163103100000010"); // NCell >=2
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799409fe30220000","0163103100000010"); // no NCell cut
-    // 3.5% scale in NL
-  } else if (trainConfig == 2165){
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799509fe32220000","0163103100000010"); // NCell >=2
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799509fe30220000","0163103100000010"); // no NCell cut
 
     // configs to be used with new cell scale
+    // no scale in NL, without MC finetuning
+  } else if (trainConfig == 2164){ // nom Bfield
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // INT7, NL applied in CF
+  } else if (trainConfig == 2165){ // nom Bfield
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // EG2, NL applied in CF
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // EG1, NL applied in CF
+  } else if (trainConfig == 2166){ // nom Bfield
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // INT7, NL applied in CF
+  } else if (trainConfig == 2167){ // nom Bfield
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // EG2, NL applied in CF
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // EG1, NL applied in CF
+  } else if (trainConfig == 2168){ // nom Bfield with lower min energy (400MeV)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009feh2220000","0163103100000010"); // INT7, NL applied in CF
+  } else if (trainConfig == 2169){ // nom Bfield with lower min energy (400MeV)
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790009feh2220000","0163103100000010"); // EG2, NL applied in CF
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790009feh2220000","0163103100000010"); // EG1, NL applied in CF
+
     // no scale in NL, without MC finetuning
   } else if (trainConfig == 2170){ // nom Bfield
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799609fe32220000","0163103100000010"); // INT7, no FT
