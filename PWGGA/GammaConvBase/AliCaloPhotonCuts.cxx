@@ -8498,9 +8498,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         }
       }
       break;
-    case 96: // same setting as 93 but without MC fine tuning
+    case 96: // Settings to be used with new scale on cell level
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        // TB parametrization from Nico on Martin 100MeV points (without fine tuning) FOR RUN 2!
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
         } else {
@@ -8508,27 +8508,25 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         }
       }
       break;
-    // Setting to be used with scale on cell level of 1.5% instead of 5%
-    case 97: // same setting as 94 but without MC fine tuning
+    case 97: // Settings to be used with new scale on cell level
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        // TB parametrization from Nico on Martin 100MeV points (incl. PCM-EMC fine tuning) FOR RUN 2!
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
-          energy /= 1.015;
+          energy /= FunctionNL_kSDM(energy, 0.969772, -3.13635, -0.468246);
         }
       }
       break;
-    // Setting to be used with scale on cell level of 3.5% instead of 5%
-    case 98: // same setting as 95 but without MC fine tuning
+    case 98: // Settings to be used with new scale on cell level
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        // TB parametrization from Nico on Martin 100MeV points (incl. EMC-EMC fine tuning) FOR RUN 2!
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
-          energy /= 1.035;
+          energy /= FunctionNL_kSDM(energy, 0.984314, -3.30941, -0.399441);
         }
       }
       break;
@@ -8559,7 +8557,7 @@ void AliCaloPhotonCuts::ApplySMWiseEnergyCorrection(AliVCluster* cluster, Int_t 
 {
   // apply this correction to data only
   if(isMC > 0) return;
-  
+
   if (!cluster) {
     AliInfo("Cluster pointer null!");
     return;
