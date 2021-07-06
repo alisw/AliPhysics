@@ -891,22 +891,23 @@ void AliMCSpectraWeights::CountEventMult() {
     DebugPCC("in eta < " << eta << "and pT > " << lowPtCut << "\n");
     if (!fMCEvent)
         return;
-    AliStack* fMCStack = fMCEvent->Stack();
-    for (int ipart = 0; ipart < fMCStack->GetNtrack(); ipart++) {
-        TParticle* mcGenParticle = fMCStack->Particle(ipart);
-        if (!mcGenParticle)
+    for (int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++) {
+        AliMCParticle* fMCParticle = dynamic_cast<AliMCParticle*>(fMC->GetTrack(i));
+        if (!fMCParticle) {
+            std::cerr << "AliMCSpectraWeights::ERROR::noMCParticle\n";
             continue;
+        }
         if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart,
                                                                       fMCEvent))
             continue;
-        if (!fMCStack->IsPhysicalPrimary(ipart))
+        if (!fMCEvent->IsPhysicalPrimary(ipart))
             continue; // secondary rejection
-        if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01)
+        if (TMath::Abs(fMCParticle->Charge()) < 0.01)
             continue; // neutral rejection
-        float pEta = mcGenParticle->Eta();
+        float pEta = fMCParticle->Eta();
         if (TMath::Abs(pEta) > eta)
             continue; // acceptance cut
-        if (mcGenParticle->Pt() < lowPtCut)
+        if (fMCParticle->Pt() < lowPtCut)
             continue; // TODO: hard coded low pT cut
         ++fMultOrCent;
     }
@@ -1102,22 +1103,19 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
     bool const ispPbCollision = fstCollisionSystem.find("ppb")!=std::string::npos;
 
     for (int iParticle = 0; iParticle < fMCEvent->GetNumberOfTracks(); ++iParticle) {
-        TParticle* mcGenParticle = MCStack->Particle(iParticle);
-        if (!mcGenParticle) {
-            printf(
-                   "AliMCSpectraWeights::WARNING: mcGenParticle not available\n");
+        AliMCParticle* fMCParticle = dynamic_cast<AliMCParticle*>(fMC->GetTrack(i));
+        if (!fMCParticle) {
+            std::cerr << "AliMCSpectraWeights::ERROR::noMCParticle\n";
             continue;
         }
-        if (!mcGenParticle->GetPDG())
-            continue;
         if (!fMCEvent->IsPhysicalPrimary(iParticle))
             continue;
-        if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01 && TMath::Abs(mcGenParticle->GetPdgCode()!=3122))
+        if (TMath::Abs(fMCParticle->Charge()) < 0.01 && TMath::Abs(fMCParticle->PdgCode())!=3122))
             continue;
         if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iParticle, mcEvent)) // is from MC pile-up
             continue;
 
-        float partY = mcGenParticle->Y();
+        float partY = fMCParticle->Y();
         float _maxY = 0.5; // hard coded max eta; in all papers 0.5
 
         //for p-Pb this is 0 < y_cms < 0.5 with y_traf = -0.465
@@ -1130,7 +1128,7 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
                 continue; // apply same acceptance as in published spectra
         }
         int particleType =
-        AliMCSpectraWeights::IdentifyMCParticle(mcGenParticle);
+        AliMCSpectraWeights::IdentifyMCParticle(fMCParticle->Particle();
         if (particleType < 0)
             continue;
         //        std::array<float, 3>
@@ -1138,10 +1136,10 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         //                                      fMultOrCent,
         //                                      static_cast<float>(particleType)};
         DebugPCC("\t Fill with:\n");
-        DebugPCC("\t\tpT: " << mcGenParticle->Pt() << "\t mult: " << fMultOrCent
+        DebugPCC("\t\tpT: " << fMCParticle->Pt() << "\t mult: " << fMultOrCent
                  << "\t particle: " << particleType << "\n");
         fHistMCGenPrimTrackParticle->Fill(
-                                          static_cast<float>(mcGenParticle->Pt()), fMultOrCent,
+                                          static_cast<float>(fMCParticle->Pt()), fMultOrCent,
                                           static_cast<float>(particleType));
     }
 #ifdef __AliMCSpectraWeights_DebugTiming__
