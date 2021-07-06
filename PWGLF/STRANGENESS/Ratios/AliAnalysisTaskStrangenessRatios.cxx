@@ -13,6 +13,7 @@ using std::string;
 #include <TChain.h>
 #include <TH2F.h>
 #include <TList.h>
+#include <TRandom3.h>
 #include <TTree.h>
 
 // ALIROOT includes
@@ -144,6 +145,8 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
   fRecCascade->centrality = fEventCut.GetCentrality();
   fRecLambda->centrality = fEventCut.GetCentrality();
+
+  float rdmState{gRandom->Uniform()};
 
   std::vector<int> checkedLabel, checkedLambdaLabel;
   fGenCascade.isReconstructed = true;
@@ -311,7 +314,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
     }
   }
 
-  if (fFillLambdas)
+  if (fFillLambdas && rdmState < fLambdaDownscaling)
   {
     fGenLambda.isReconstructed = true;
     for (int iV0{0}; iV0 < ev->GetNumberOfV0s(); ++iV0)
@@ -464,7 +467,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fTree->Fill();
     }
 
-    if (fFillLambdas)
+    if (fFillLambdas && rdmState < fLambdaDownscaling)
     {
       //loop on generated
       for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT)
@@ -607,4 +610,9 @@ void AliAnalysisTaskStrangenessRatios::PostAllData()
   PostData(1, fList);
   PostData(2, fTree);
   PostData(2, fTreeLambda);
+}
+
+Bool_t AliAnalysisTaskStrangenessRatios::UserNotify() {
+  TString cfn{CurrentFileName()};
+  gRandom->SetSeed(cfn.Hash());
 }
