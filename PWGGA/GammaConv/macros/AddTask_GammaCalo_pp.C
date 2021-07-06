@@ -3594,6 +3594,22 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2585) {
     cuts.AddCutCalo("0008d113","411799809fe32220000","0r631031000000d0"); // EG1, EMC fine tuning
 
+  // several configs without any fine tuning to test different clusterization settings and NonLin functions
+  } else if (trainConfig == 2586) {
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0"); // INT7, no FT
+  } else if (trainConfig == 2587) {
+    cuts.AddCutCalo("0008e113","411790009fe32220000","0r631031000000d0"); // EG2, no FT
+    cuts.AddCutCalo("0008d113","411790009fe32220000","0r631031000000d0"); // EG1, no FT
+  } else if (trainConfig == 2588) {
+    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0"); // INT7, no FT
+  } else if (trainConfig == 2589) {
+    cuts.AddCutCalo("0008e113","411790009fe32220000","0r631031000000d0"); // EG2, no FT
+    cuts.AddCutCalo("0008d113","411790009fe32220000","0r631031000000d0"); // EG1, no FT
+  } else if (trainConfig == 2590) {//with lower min energy (400MeV)
+    cuts.AddCutCalo("00010113","411790009feh2220000","0r631031000000d0"); // INT7, no FT
+  } else if (trainConfig == 2591) {//with lower min energy (400MeV)
+    cuts.AddCutCalo("0008e113","411790009feh2220000","0r631031000000d0"); // EG2, no FT
+    cuts.AddCutCalo("0008d113","411790009feh2220000","0r631031000000d0"); // EG1, no FT
 
 
     //*************************************************************************************************

@@ -18,6 +18,7 @@
 #include "TH3.h"
 #include "TH3F.h"
 #include "THnSparse.h"
+#include "TGenPhaseSpace.h"
 #include <vector>
 #include <map>
 
@@ -107,6 +108,7 @@ void SetNumOfCaloModules              ( Int_t nModules)                         
 
   // BG HandlerSettings
   void CalculateBackground            ();
+  void CalculateBackgroundSwapp       ();
   void CalculateBackgroundRP          ();
   void RotateParticle                 ( AliAODConversionPhoton *gamma );
   void RotateParticleAccordingToEP    ( AliAODConversionPhoton *gamma,
@@ -262,11 +264,12 @@ protected:
   Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
   Int_t                   fUseEletronMatchingCalibration;                     // switch for calibration using electron tracks (1) or electrons from V0s (2) to cluster matching
 
+  TGenPhaseSpace          fGenPhaseSpace;                                     // TGenPhaseSpace needed for some cases of rotation method
 private:
   AliAnalysisTaskConvCaloCalibration(const AliAnalysisTaskConvCaloCalibration&); // Prevent copy-construction
   AliAnalysisTaskConvCaloCalibration &operator=(const AliAnalysisTaskConvCaloCalibration&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskConvCaloCalibration, 5);
+  ClassDef(AliAnalysisTaskConvCaloCalibration, 6);
 };
 
 #endif // AliAnalysisTaskConvCaloCalibration_H
