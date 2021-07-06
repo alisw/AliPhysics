@@ -13,6 +13,7 @@ using std::string;
 #include <TChain.h>
 #include <TH2F.h>
 #include <TList.h>
+#include <TRandom3.h>
 #include <TTree.h>
 
 // ALIROOT includes
@@ -145,6 +146,8 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
   fRecCascade->centrality = fEventCut.GetCentrality();
   fRecLambda->centrality = fEventCut.GetCentrality();
 
+  float rdmState{gRandom->Uniform()};
+
   std::vector<int> checkedLabel, checkedLambdaLabel;
   fGenCascade.isReconstructed = true;
   for (int iCasc = 0; iCasc < ev->GetNumberOfCascades(); iCasc++)
@@ -260,12 +263,12 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
     double lCrosRawsPos = pTrackCasc->GetTPCClusterInfo(2, 1);
     double lCrosRawsNeg = nTrackCasc->GetTPCClusterInfo(2, 1);
     double lCrosRawsBac = bTrackCasc->GetTPCClusterInfo(2, 1);
-    fCasc_LeastCRaws = (int)(lCrosRawsPos < lCrosRawsNeg ? std::min(lCrosRawsPos, lCrosRawsBac) : std::min(lCrosRawsNeg, lCrosRawsBac));
+    fCascLeastCRaws = (int)(lCrosRawsPos < lCrosRawsNeg ? std::min(lCrosRawsPos, lCrosRawsBac) : std::min(lCrosRawsNeg, lCrosRawsBac));
     //crossed raws / Findable clusters
     double lCrosRawsOvFPos = lCrosRawsPos / ((double)(pTrackCasc->GetTPCNclsF()));
     double lCrosRawsOvFNeg = lCrosRawsNeg / ((double)(nTrackCasc->GetTPCNclsF()));
     double lCrosRawsOvFBac = lCrosRawsBac / ((double)(bTrackCasc->GetTPCNclsF()));
-    fCasc_LeastCRawsOvF = lCrosRawsOvFPos < lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
+    fCascLeastCRawsOvF = lCrosRawsOvFPos < lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
     ///////////////////////////////
 
     //calculate DCA Bachelor-Baryon to remove "bump" structure in InvMass
@@ -311,7 +314,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
     }
   }
 
-  if (fFillLambdas)
+  if (fFillLambdas && rdmState < fLambdaDownscaling)
   {
     fGenLambda.isReconstructed = true;
     for (int iV0{0}; iV0 < ev->GetNumberOfV0s(); ++iV0)
@@ -384,6 +387,16 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fRecLambda->tpcClV0Pr = proton->GetTPCsignalN();
       fRecLambda->hasTOFhit = !pTrack->GetTOFBunchCrossing(bField) || !nTrack->GetTOFBunchCrossing(bField);
       fRecLambda->hasITSrefit = nTrack->GetStatus() & AliVTrack::kITSrefit || pTrack->GetStatus() & AliVTrack::kITSrefit;
+
+      //crossed raws
+      double lCrosRawsPos = pTrack->GetTPCClusterInfo(2, 1);
+      double lCrosRawsNeg = nTrack->GetTPCClusterInfo(2, 1);
+      fLambdaLeastCRaws = std::min(lCrosRawsPos, lCrosRawsNeg);
+      //crossed raws / Findable clusters
+      double lCrosRawsOvFPos = lCrosRawsPos / ((double)(pTrack->GetTPCNclsF()));
+      double lCrosRawsOvFNeg = lCrosRawsNeg / ((double)(nTrack->GetTPCNclsF()));
+      fLambdaLeastCRawsOvF = std::min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
+
       if (IsTopolSelectedLambda())
       {
         if (lambdaLabel != -1)
@@ -454,7 +467,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fTree->Fill();
     }
 
-    if (fFillLambdas)
+    if (fFillLambdas && rdmState < fLambdaDownscaling)
     {
       //loop on generated
       for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT)
@@ -527,12 +540,12 @@ AliAnalysisTaskStrangenessRatios *AliAnalysisTaskStrangenessRatios::AddTask(bool
       AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
 
   AliAnalysisDataContainer *coutput2 =
-      mgr->CreateContainer(Form("%s_treeXi", tskname.Data()), TTree::Class(),
+      mgr->CreateContainer(Form("%s_treeCascades", tskname.Data()), TTree::Class(),
                            AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   coutput2->SetSpecialOutput();
 
   AliAnalysisDataContainer *coutput3 =
-      mgr->CreateContainer(Form("%s_treeOmega", tskname.Data()), TTree::Class(),
+      mgr->CreateContainer(Form("%s_treeLambda", tskname.Data()), TTree::Class(),
                            AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   coutput3->SetSpecialOutput();
 
@@ -566,16 +579,23 @@ bool AliAnalysisTaskStrangenessRatios::IsTopolSelected(bool isOmega)
          fRecCascade->tpcClBach > fCutTPCclu &&
          fRecCascade->tpcClV0Pi > fCutTPCclu &&
          fRecCascade->tpcClV0Pr > fCutTPCclu &&
-         fCasc_LeastCRaws > fCutTPCrows &&
-         fCasc_LeastCRawsOvF > fCutRowsOvF;
+         fCascLeastCRaws > fCutTPCrows &&
+         fCascLeastCRawsOvF > fCutRowsOvF;
 }
 
-bool AliAnalysisTaskStrangenessRatios::IsTopolSelectedLambda() {
+bool AliAnalysisTaskStrangenessRatios::IsTopolSelectedLambda()
+{
   return fRecLambda->radius > fCutRadius[2] &&
-    fRecLambda->cosPA > fCosPALambda &&
-    fRecLambda->dcaPrPV > fCutDCALambdaPrToPV &&
-    fRecLambda->dcaPiPV > fCutDCALambdaPiToPV &&
-    fRecLambda->mass > fCutLambdaMass[0] && fRecLambda->mass < fCutLambdaMass[1];
+         fRecLambda->cosPA > fCosPALambda &&
+         fRecLambda->dcaPrPV > fCutDCALambdaPrToPV &&
+         fRecLambda->dcaPiPV > fCutDCALambdaPiToPV &&
+         fRecLambda->dcaV0tracks < fCutDCAV0tracks &&
+         std::abs(Eta2y(fRecLambda->pt, kLambdaMass, fRecCascade->eta)) < fCutY &&
+         fRecLambda->mass > fCutLambdaMass[0] && fRecLambda->mass < fCutLambdaMass[1] &&
+         std::abs(fRecLambda->tpcNsigmaPi) < fCutNsigmaTPC &&
+         std::abs(fRecLambda->tpcNsigmaPr) < fCutNsigmaTPC &&
+         fLambdaLeastCRaws > fCutTPCrows &&
+         fLambdaLeastCRawsOvF > fCutRowsOvF;
 }
 
 //
@@ -589,5 +609,13 @@ void AliAnalysisTaskStrangenessRatios::PostAllData()
 {
   PostData(1, fList);
   PostData(2, fTree);
-  PostData(2, fTreeLambda);
+  PostData(3, fTreeLambda);
+}
+
+Bool_t AliAnalysisTaskStrangenessRatios::UserNotify() {
+  TString cfn{CurrentFileName()};
+  AliInfo(Form("Setting hash for file %s", cfn.Data()));
+
+  gRandom->SetSeed(cfn.Hash());
+  return true;
 }

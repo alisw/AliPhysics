@@ -92,11 +92,13 @@ public:
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *);
+  virtual Bool_t UserNotify();
   virtual void   Terminate(Option_t *) {}
 
   AliEventCuts  fEventCut; ///<
 
   void SetFillLambdas(bool toogle = true) { fFillLambdas = toogle; }
+  void SetLambdaDownscaling(float scale = true) { fLambdaDownscaling = scale; }
 
   //Setters for topological cuts
   void SetRadiusCut(float xi = 1.2, float omega = 1., float lambda = 0.5) {fCutRadius[0]=xi; fCutRadius[1]=omega; fCutRadius[2]=lambda;}
@@ -141,6 +143,7 @@ private:
   bool fOnlyTrueCandidates = false;  ///< Save only true Xi and Omegas in MC
   bool fFillLambdas = false;
   bool fOnlyTrueLambdas = true;      ///< Save only true Lambdas in MC
+  float fLambdaDownscaling = 1.;
 
   //configurable cuts
   float fCutRadius[3] = {1.2, 1.0, 3.0};
@@ -163,8 +166,10 @@ private:
   int fCutTPCclu = 70;
   float fCutTPCrows = 80.;
   float fCutRowsOvF = 0.8;
-  double fCasc_LeastCRaws;
-  double fCasc_LeastCRawsOvF;
+  double fCascLeastCRaws;
+  double fCascLeastCRawsOvF;
+  double fLambdaLeastCRaws;
+  double fLambdaLeastCRawsOvF;
 
   float fCosPALambda = 0.97;
   float fCutDCALambdaPrToPV = 0.08;
