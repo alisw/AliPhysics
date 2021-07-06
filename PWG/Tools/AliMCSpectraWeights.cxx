@@ -892,7 +892,7 @@ void AliMCSpectraWeights::CountEventMult() {
     if (!fMCEvent)
         return;
     for (int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++) {
-        AliMCParticle* fMCParticle = dynamic_cast<AliMCParticle*>(fMC->GetTrack(i));
+        AliMCParticle* fMCParticle = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iParticle));
         if (!fMCParticle) {
             std::cerr << "AliMCSpectraWeights::ERROR::noMCParticle\n";
             continue;
@@ -1103,7 +1103,7 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
     bool const ispPbCollision = fstCollisionSystem.find("ppb")!=std::string::npos;
 
     for (int iParticle = 0; iParticle < fMCEvent->GetNumberOfTracks(); ++iParticle) {
-        AliMCParticle* fMCParticle = dynamic_cast<AliMCParticle*>(fMC->GetTrack(i));
+        AliMCParticle* fMCParticle = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iParticle));
         if (!fMCParticle) {
             std::cerr << "AliMCSpectraWeights::ERROR::noMCParticle\n";
             continue;
