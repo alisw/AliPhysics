@@ -459,12 +459,14 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   //       2333 // Phi_2body (10)
   //    2213333 // Phi_dalitz_eta (11)
   //    1113333 // Phi_dalitz_pi0 (12)
-  //XX  "443" Jpsi 
-  // 
+  //XX  "443" Jpsi (13)
+  //       2443 // Jpsi_2body (14)
+  //     223443 // Jpsi_radiative (15)
+  //
 
-  //THE TOTAL NUMBER OF HISTOS is defined IN THE HEADER: const Int_t nInputParticles = 14; (#of particles)
-  Int_t fParticleList_local[] = {111, 221, 331, 223331, 2233331, 113, 223, 2223, 3223, 333, 2333, 2213333, 1113333, 000};
-  TString fParticleListNames_local[] = {"Pi0","Eta","EtaP","EtaP_dalitz_photon","EtaP_dalitz_omega","Rho","Omega","Omega_2body","Omega_dalitz","Phi","Phi_2body","Phi_dalitz_eta","Phi_dalitz_pi0","Virtual_Photon"};
+  //THE TOTAL NUMBER OF HISTOS is defined IN THE HEADER: const Int_t nInputParticles = 17; (#of particles)
+  Int_t fParticleList_local[] = {111, 221, 331, 223331, 2233331, 113, 223, 2223, 3223, 333, 2333, 2213333, 1113333, 443,2443,223443,000};
+  TString fParticleListNames_local[] = {"Pi0","Eta","EtaP","EtaP_dalitz_photon","EtaP_dalitz_omega","Rho","Omega","Omega_2body","Omega_dalitz","Phi","Phi_2body","Phi_dalitz_eta","Phi_dalitz_pi0","Jpsi","Jpsi_2body","Jpsi_radiative","Virtual_Photon"};
   fParticleList       = fParticleList_local;
   fParticleListNames  = fParticleListNames_local;
 
@@ -737,6 +739,8 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
        break;
       case 333:
        break;
+      case 443:
+       break;
       default:
        continue;
       }
@@ -813,6 +817,11 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
          if(fdectyp==2) hindex[1]=10;
          if(fdectyp==3&&fdau3pdg==221) hindex[1]=11;
          if(fdectyp==3&&fdau3pdg==111) hindex[1]=12;
+         break;
+        case 443:
+         hindex[0]=13;
+         if(fdectyp==2) hindex[1]=14;
+         if(fdectyp==3&&fdau3pdg==22) hindex[1]=15;
          break;
         }
 
