@@ -614,5 +614,8 @@ void AliAnalysisTaskStrangenessRatios::PostAllData()
 
 Bool_t AliAnalysisTaskStrangenessRatios::UserNotify() {
   TString cfn{CurrentFileName()};
+  AliInfo(Form("Setting hash for file %s", cfn.Data()));
+
   gRandom->SetSeed(cfn.Hash());
+  return true;
 }
