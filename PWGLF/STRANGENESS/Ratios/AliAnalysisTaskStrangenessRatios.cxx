@@ -609,7 +609,7 @@ void AliAnalysisTaskStrangenessRatios::PostAllData()
 {
   PostData(1, fList);
   PostData(2, fTree);
-  PostData(2, fTreeLambda);
+  PostData(3, fTreeLambda);
 }
 
 Bool_t AliAnalysisTaskStrangenessRatios::UserNotify() {
