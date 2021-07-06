@@ -1120,6 +1120,8 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
             continue;
         if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01 && TMath::Abs(mcGenParticle->GetPdgCode()!=3122))
             continue;
+        if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iParticle, mcEvent)) // is from MC pile-up
+            continue;
 
         float partY = mcGenParticle->Y();
         float _maxY = 0.5; // hard coded max eta; in all papers 0.5
