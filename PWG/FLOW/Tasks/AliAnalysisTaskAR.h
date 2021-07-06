@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 05.07.2021
+ * Last Modified Date: 06.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -19,14 +19,15 @@
 #include "AliAODTrack.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliVEvent.h"
-#include "Riostream.h"
-#include "TComplex.h"
-#include "TDataType.h"
-#include "TF1.h"
-#include "TH1F.h"
-#include "TProfile.h"
-#include "TRandom3.h"
-#include "TString.h"
+#include <Riostream.h>
+#include <TComplex.h>
+#include <TDataType.h>
+#include <TF1.h>
+#include <TFile.h>
+#include <TH1F.h>
+#include <TProfile.h>
+#include <TRandom3.h>
+#include <TString.h>
 
 // global constants
 const Int_t kMaxHarmonic = 20;
@@ -97,7 +98,8 @@ public:
   TComplex ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3);
   TComplex FourNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4);
   // TComplex FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
-  // TComplex SixNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6);
+  // TComplex SixNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5,
+  // Int_t n6);
   Double_t CombinatorialWeight(Int_t n);
 
   // GetPointers Methods in case we need to manually trigger Terminate()
@@ -116,7 +118,7 @@ public:
   void SetFinalResultsList(TList *const frl) { this->fFinalResultsList = frl; };
   TList *GetFinalResultsList() const { return this->fFinalResultsList; }
 
-	// Control Histograms
+  // Control Histograms
   void SetPtBinning(Int_t nbins, Double_t min, Double_t max) {
     this->fBinsTrackControlHistograms[kPT][kBIN] = nbins;
     this->fBinsTrackControlHistograms[kPT][kLEDGE] = min;
@@ -143,7 +145,7 @@ public:
     this->fBinsEventControlHistograms[kMUL][kUEDGE] = max;
   };
 
-	// cuts
+  // cuts
   void SetCentralitySelCriterion(TString SelCriterion) {
     this->fCentralitySelCriterion = SelCriterion;
   }
@@ -202,12 +204,10 @@ public:
     fMCNumberOfParticlesPerEventRange[kMIN] = min;
     fMCNumberOfParticlesPerEventRange[kMAX] = max;
   }
-  void SetAcceptanceHistogram(TH1F *AcceptanceHistogram) {
-    this->fAcceptanceHistogram = AcceptanceHistogram;
-  }
-  void SetWeightHistogram(TH1F *WeightHistogram) {
-    this->fWeightHistogram = WeightHistogram;
-  }
+  void SetAcceptanceHistogram(TH1F *AcceptanceHistogram);
+  void SetAcceptanceHistogram(const char *Filename, const char *Histname);
+  void SetWeightHistogram(TH1F *WeightHistogram);
+  void SetWeightHistogram(const char *Filename, const char *Histname);
   void SetCorrelators(std::vector<std::vector<Int_t>> correlators) {
     this->fCorrelators = correlators;
     for (int i = 0; i < LAST_EFINALPROFILE; ++i) {
@@ -252,7 +252,7 @@ private:
   TH1F *fFinalResultHistograms[LAST_EFINALHIST];
   TString fFinalResultHistogramNames[LAST_EFINALHIST][LAST_ENAME];
   Double_t fBinsFinalResultHistograms[LAST_EFINALHIST][LAST_EBINS];
-	// arayy holding final resutl profiles
+  // arayy holding final resutl profiles
   TProfile *fFinalResultProfiles[LAST_EFINALPROFILE];
   TString fFinalResultProfileNames[LAST_EFINALPROFILE][LAST_ENAME];
   Double_t fBinsFinalResultProfiles[LAST_EFINALPROFILE][LAST_EBINS];

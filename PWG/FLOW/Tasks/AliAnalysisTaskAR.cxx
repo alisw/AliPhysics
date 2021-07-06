@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 05.07.2021
+ * Last Modified Date: 06.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -31,6 +31,7 @@
 #include <TH1.h>
 #include <TMath.h>
 #include <TRandom3.h>
+#include <TSystem.h>
 #include <cstdlib>
 #include <iostream>
 
@@ -904,6 +905,7 @@ void AliAnalysisTaskAR::FillFinalResultProfile(kFinalProfile fp) {
 
   Double_t corr = 0.0;
   Double_t weight = 0.0;
+  Int_t index = 0;
 
   // loop over all correlators
   for (auto Corr : fCorrelators) {
@@ -945,8 +947,9 @@ void AliAnalysisTaskAR::FillFinalResultProfile(kFinalProfile fp) {
                    .Re();
     }
 
+    index++;
     // fill final resutl profile
-    fFinalResultProfiles[fp]->Fill(Corr.size() - 1.5, corr / weight, weight);
+    fFinalResultProfiles[fp]->Fill(index - 0.5, corr / weight, weight);
   }
 }
 
@@ -1430,6 +1433,64 @@ TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2, Int_t n3,
     }
   }
   return Q / CombinatorialWeight(4);
+}
+
+void AliAnalysisTaskAR::SetAcceptanceHistogram(TH1F *AcceptanceHistogram) {
+  if (!AcceptanceHistogram) {
+    std::cout << __LINE__ << ": Did not get acceptance histogram" << std::endl;
+    Fatal("SetAccpetanceHistogram", "Invalid pointer");
+  }
+  this->fAcceptanceHistogram = AcceptanceHistogram;
+}
+
+void AliAnalysisTaskAR::SetAcceptanceHistogram(const char *Filename,
+                                               const char *Histname) {
+  // check if file exists
+  if (gSystem->AccessPathName(Filename, kFileExists)) {
+    std::cout << __LINE__ << ": File does not exist" << std::endl;
+    Fatal("SetAcceptanceHistogram", "Invalid file name");
+  }
+  TFile *file = new TFile(Filename, "READ");
+  if (!file) {
+    std::cout << __LINE__ << ": Cannot open file" << std::endl;
+    Fatal("SetAcceptanceHistogram", "ROOT file cannot be read");
+  }
+  this->fAcceptanceHistogram = dynamic_cast<TH1F *>(file->Get(Histname));
+  if (!fAcceptanceHistogram) {
+    std::cout << __LINE__ << ": No acceptance histogram" << std::endl;
+    Fatal("SetAcceptanceHistogram", "Cannot get acceptance histogram");
+  }
+  this->fAcceptanceHistogram->SetDirectory(0);
+  file->Close();
+}
+
+void AliAnalysisTaskAR::SetWeightHistogram(TH1F *WeightHistogram) {
+  if (!WeightHistogram) {
+    std::cout << __LINE__ << ": Did not get weight histogram" << std::endl;
+    Fatal("SetWeightHistogram", "Invalid pointer");
+  }
+  this->fWeightHistogram = WeightHistogram;
+}
+
+void AliAnalysisTaskAR::SetWeightHistogram(const char *Filename,
+                                               const char *Histname) {
+  // check if file exists
+  if (gSystem->AccessPathName(Filename, kFileExists)) {
+    std::cout << __LINE__ << ": File does not exist" << std::endl;
+    Fatal("SetWeightHistogram", "Invalid file name");
+  }
+  TFile *file = new TFile(Filename, "READ");
+  if (!file) {
+    std::cout << __LINE__ << ": Cannot open file" << std::endl;
+    Fatal("SetWeightHistogram", "ROOT file cannot be read");
+  }
+  this->fWeightHistogram = dynamic_cast<TH1F *>(file->Get(Histname));
+  if (!fWeightHistogram) {
+    std::cout << __LINE__ << ": No acceptance histogram" << std::endl;
+    Fatal("SetWeightHistogram", "Cannot get weight histogram");
+  }
+  this->fWeightHistogram->SetDirectory(0);
+  file->Close();
 }
 
 void AliAnalysisTaskAR::GetPointers(TList *histList) {
