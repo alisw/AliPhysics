@@ -52,7 +52,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     Int_t*                fParticleList;              // array with particle Pdg values
     TString*              fParticleListNames;         // array with particle names
 
-    const Int_t nInputParticles = 14;
+    const Int_t nInputParticles = 17;
 
     // Event histograms
     TH1F*                 fHistNEvents;               // number of events histo
@@ -179,7 +179,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     AliAnalysisTaskLMeeCocktailMC(const AliAnalysisTaskLMeeCocktailMC&); // Prevent copy-construction
     AliAnalysisTaskLMeeCocktailMC &operator=(const AliAnalysisTaskLMeeCocktailMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskLMeeCocktailMC, 2);
+    ClassDef(AliAnalysisTaskLMeeCocktailMC, 3);
 };
 
 #endif
