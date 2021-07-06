@@ -1099,15 +1099,9 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         AliMCSpectraWeights::CountEventMult();
     }
 
-    AliStack* MCStack = fMCEvent->Stack();
-    if (!MCStack) {
-        printf("AliMCSpectraWeights::ERROR: fMCStack not available\n");
-        return;
-    }
-
     bool const ispPbCollision = fstCollisionSystem.find("ppb")!=std::string::npos;
 
-    for (int iParticle = 0; iParticle < MCStack->GetNtrack(); ++iParticle) {
+    for (int iParticle = 0; iParticle < fMCEvent->GetNumberOfTracks(); ++iParticle) {
         TParticle* mcGenParticle = MCStack->Particle(iParticle);
         if (!mcGenParticle) {
             printf(
@@ -1116,7 +1110,7 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         }
         if (!mcGenParticle->GetPDG())
             continue;
-        if (!MCStack->IsPhysicalPrimary(iParticle))
+        if (!fMCEvent->IsPhysicalPrimary(iParticle))
             continue;
         if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01 && TMath::Abs(mcGenParticle->GetPdgCode()!=3122))
             continue;
