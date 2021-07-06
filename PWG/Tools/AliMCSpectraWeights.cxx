@@ -7,7 +7,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliMCEvent.h"
 #include "AliMCSpectraWeights.h"
-#include "AliStack.h"
+#include "AliMCParticle.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TH1D.h"
@@ -892,7 +892,7 @@ void AliMCSpectraWeights::CountEventMult() {
     if (!fMCEvent)
         return;
     for (int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++) {
-        AliMCParticle* fMCParticle = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iParticle));
+        AliMCParticle* fMCParticle = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(ipart));
         if (!fMCParticle) {
             std::cerr << "AliMCSpectraWeights::ERROR::noMCParticle\n";
             continue;
@@ -1110,7 +1110,7 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         }
         if (!fMCEvent->IsPhysicalPrimary(iParticle))
             continue;
-        if (TMath::Abs(fMCParticle->Charge()) < 0.01 && TMath::Abs(fMCParticle->PdgCode())!=3122))
+        if (TMath::Abs(fMCParticle->Charge()) < 0.01 && TMath::Abs(fMCParticle->PdgCode())!=3122)
             continue;
         if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iParticle, mcEvent)) // is from MC pile-up
             continue;
@@ -1128,7 +1128,7 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
                 continue; // apply same acceptance as in published spectra
         }
         int particleType =
-        AliMCSpectraWeights::IdentifyMCParticle(fMCParticle->Particle();
+        AliMCSpectraWeights::IdentifyMCParticle(fMCParticle->Particle());
         if (particleType < 0)
             continue;
         //        std::array<float, 3>
