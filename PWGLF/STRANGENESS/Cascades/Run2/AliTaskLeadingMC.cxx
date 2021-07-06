@@ -371,18 +371,22 @@ void AliTaskLeadingMC::loopMC(AliMCEvent *mcEvent){
 	  fNPiEta++;
 	  fSumPtPiEta += pt;
 	}
-        else if(TMath::Abs(part->GetPdgCode()) == 111){ // neutral pions
-          fNPi0Eta++;
-        }
         else if(TMath::Abs(part->GetPdgCode()) == 321){ // neutral kaons
           fNKchEta++;
+        }
+      }
+    }
+    else if(! charge){
+      if(TMath::Abs(part->Eta())<fEtaBarrel){
+        if(TMath::Abs(part->GetPdgCode()) == 111){ // neutral pions
+          fNPi0Eta++;
         }
         else if(TMath::Abs(part->GetPdgCode()) == 311){ // neutral kaons
           fNK0Eta++;
         }
       }
     }
-    
+
     if(TMath::Abs(part->Eta())<fEtaBarrel){
       if(TMath::Abs(part->GetPdgCode()) == 3122){ // lambda
 	fNLambdaEta++;
