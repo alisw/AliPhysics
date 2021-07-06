@@ -1105,6 +1105,8 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         return;
     }
 
+    bool const ispPbCollision = fstCollisionSystem.find("ppb")!=std::string::npos;
+
     for (int iParticle = 0; iParticle < MCStack->GetNtrack(); ++iParticle) {
         TParticle* mcGenParticle = MCStack->Particle(iParticle);
         if (!mcGenParticle) {
@@ -1122,8 +1124,15 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         float partY = mcGenParticle->Y();
         float _maxY = 0.5; // hard coded max eta; in all papers 0.5
 
-        if (TMath::Abs(partY) > _maxY)
-            continue; // apply same acceptance as in published spectra
+        //for p-Pb this is 0 < y_cms < 0.5 with y_traf = -0.465
+        //-->
+        if(ispPbCollision){
+            if( partY < 0.465 || partY > 0.965)
+                continue;
+        } else { // symmetric collision systems
+            if (TMath::Abs(partY) > _maxY)
+                continue; // apply same acceptance as in published spectra
+        }
         int particleType =
         AliMCSpectraWeights::IdentifyMCParticle(mcGenParticle);
         if (particleType < 0)
@@ -1380,7 +1389,8 @@ AliMCSpectraWeights::GetCentFromString(std::string const& cent) const {
  *  @return
  */
 float const AliMCSpectraWeights::GetCentFromMult(float const dMult) const {
-    if (fstCollisionSystem.find("pp") != std::string::npos) {
+    if (fstCollisionSystem.find("pp") != std::string::npos && fstCollisionSystem.find("ppb") == std::string::npos) {
+/* pp7TeV
         if (dMult > 18)
             return 0;
         if (dMult > 14.5)
@@ -1401,31 +1411,84 @@ float const AliMCSpectraWeights::GetCentFromMult(float const dMult) const {
             return 8;
         if (dMult > 0)
             return 9;
+*/
+// pp13TeV
+        if (dMult > 23.02)
+            return 0;
+        if (dMult > 18.09)
+            return 1;
+        if (dMult > 14.97)
+            return 2;
+        if (dMult > 12.91)
+            return 3;
+        if (dMult > 11.03)
+            return 4;
+        if (dMult > 8.99)
+            return 5;
+        if (dMult > 7.14)
+            return 6;
+        if (dMult > 5.41)
+            return 7;
+        if (dMult > 3.53)
+            return 8;
+        if (dMult > 0)
+            return 9;
     } else if (fstCollisionSystem.find("ppb") !=
-               std::string::npos) // TODO: include other systems
+               std::string::npos)
     {
-        //        switch (dMult) {
-        //            case 0:
-        //                return 45.0;
-        //            case 1:
-        //                return 36.2;
-        //            case 2:
-        //                return 30.5;
-        //            case 3:
-        //                return 23.2;
-        //            case 4:
-        //                return 16.1;
-        //            case 5:
-        //                return 9.8;
-        //            case 6:
-        //                return 4.4;
-        //            default:
-        //                return -2.0;
-        //        }
-
+        if (dMult > 40.6)
+            return 0;
+        if (dMult > 33.35)
+            return 1;
+        if (dMult > 26.85)
+            return 2;
+        if (dMult > 19.65)
+            return 3;
+        if (dMult > 12.9)
+            return 4;
+        if (dMult > 7.1)
+            return 5;
+        if (dMult > 0)
+            return 6;
     } else if (fstCollisionSystem.find("pbpb") != std::string::npos) {
-
+        if (dMult > 1447)
+            return 0;
+        if (dMult > 1130)
+            return 1;
+        if (dMult > 807)
+            return 2;
+        if (dMult > 537)
+            return 3;
+        if (dMult > 343)
+            return 4;
+        if (dMult > 205)
+            return 5;
+        if (dMult > 112)
+            return 6;
+        if (dMult > 55)
+            return 7;
+        if (dMult > 0)
+            return 8;
     } else if (fstCollisionSystem.find("xexe") != std::string::npos) {
+
+        if (dMult > 1053)
+            return 0;
+        if (dMult > 822)
+            return 1;
+        if (dMult > 592)
+            return 2;
+        if (dMult > 396)
+            return 3;
+        if (dMult > 256)
+            return 4;
+        if (dMult > 158)
+            return 5;
+        if (dMult > 91.2)
+            return 6;
+        if (dMult > 48.3)
+            return 7;
+        if (dMult > 0)
+            return 8;
     }
 
     return -1;
