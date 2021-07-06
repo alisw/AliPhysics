@@ -264,6 +264,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     pTWeight_D(0),
     pTWeight_Lc(0),
     pTWeight_B(0),
+    pTWeight_Pi0(0),
+    pTWeight_Eta(0),
 
     fHistMCorg_Pi0_Enhance(0),	// enhanced pi0
     fHistMCorg_Pi0_True(0),	// PYTHIA pi0
@@ -481,6 +483,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     pTWeight_D(0),
     pTWeight_Lc(0),
     pTWeight_B(0),
+    pTWeight_Pi0(0),
+    pTWeight_Eta(0),
 
     fHistMCorg_Pi0_Enhance(0),	// enhanced pi0
     fHistMCorg_Pi0_True(0),	// PYTHIA pi0
@@ -1465,11 +1469,14 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             {
                 AliAODMCParticle* fMCTrackpartMom = (AliAODMCParticle*) fMCarray->At(ilabelM);
                 FindMother(fMCTrackpartMom, ilabelGM, pidGM, pTGMom);
-                
-                pid_eleB = kTRUE;
-                pid_eleD = kFALSE;
-		pidM = pidGM;
-		pTMom = pTGMom;
+
+                if(pTGMom > 0)
+		{
+                	pid_eleB = kTRUE;
+                	pid_eleD = kFALSE;
+			pidM = pidGM;
+			pTMom = pTGMom;
+		}
             }
             
 	    if(pid_eleB) fNoB -> Fill(1);
@@ -1718,6 +1725,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             
             Bool_t fFlagNonHFE = kFALSE;    // photonic electron identification
             
+	    TF1 *pTWeight_phot;
 
             //========== Electron E/p ==========//
             if((TPCnSigma >= CutTPCNsigma[0] && TPCnSigma <= CutTPCNsigma[1]) && (m20 >= CutM20[0] && m20 <= CutM20[1]))  // TPC nsigma & shower shape cut
@@ -1747,23 +1755,28 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                     
 		    if(pid_ele == 1.0)
 		    {
+
 			fDCAxy_MC_ele -> Fill(TrkPt, DCA[0]*charge*Bsign);	//DCA (all electron)
 
                     	//-------- Photonic electron --------//
                     	if(pid_eleP)    // electron from photon & pi0 & eta (<- TMath::Abs(pdg)==11 && (pidM==22 || pidM==111 || pidM==221))
                     	{
-                        	fHistPho_Reco0->Fill(TrkPt);     // all information of photonic electron
-				fDCAxy_MC_Phot -> Fill(TrkPt, DCA[0]*charge*Bsign);	//DCA (total photonic electron)
+				if(pidM==111) pTWeight_phot = (TF1*)pTWeight_Pi0;	// mother pi0
+				if(pidM==221) pTWeight_phot = (TF1*)pTWeight_Eta;	// mother eta
+				
+
+                        	fHistPho_Reco0->Fill(TrkPt, pTWeight_phot->Eval(pTMom));     	// all information of photonic electron
+				fDCAxy_MC_Phot -> Fill(TrkPt, DCA[0]*charge*Bsign);		//DCA (total photonic electron)
 
 				//fPhot_InvMass_vs_DCA->Fill(Mass, DCA[0]*charge*Bsign);
                        
                        		if(fFlagNonHFE)
                        		{
-                          		fHistPho_Reco1->Fill(TrkPt); // Reconstructed by EMCal & TPC & InvMass
+                          		fHistPho_Reco1->Fill(TrkPt, pTWeight_phot->Eval(pTMom)); // Reconstructed by EMCal & TPC & InvMass
                         	}
                         	else
                        		{
-                           		fHistPho_Reco2->Fill(TrkPt); // Non-Reconstructed by EMCal & TPC & InvMass
+                           		fHistPho_Reco2->Fill(TrkPt, pTWeight_phot->Eval(pTMom)); // Non-Reconstructed by EMCal & TPC & InvMass
                         	}
                     	}
 

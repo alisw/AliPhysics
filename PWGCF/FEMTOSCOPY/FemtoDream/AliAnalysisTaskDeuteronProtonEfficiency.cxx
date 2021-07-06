@@ -263,6 +263,7 @@ AliAnalysisTaskDeuteronProtonEfficiency::AliAnalysisTaskDeuteronProtonEfficiency
 
   // Deuteron cuts
   fESDtrackCutsDeuteron = new AliESDtrackCuts("AliESDtrackCutsDeuteron","AliESDtrackCutsDeuteron");
+  fESDtrackCutsDeuteron = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); // FilterBit 128
   fESDtrackCutsDeuteron->SetEtaRange(-0.8,0.8);
   fESDtrackCutsDeuteron->SetPtRange(0.4,4.0);
   fESDtrackCutsDeuteron->SetMinNClustersTPC(80);
@@ -271,8 +272,8 @@ AliAnalysisTaskDeuteronProtonEfficiency::AliAnalysisTaskDeuteronProtonEfficiency
   fESDtrackCutsDeuteron->SetAcceptSharedTPCClusters(false);
 //  fESDtrackCutsDeuteron->SetMaxDCAToVertexXY(0.1);
 //  fESDtrackCutsDeuteron->SetMaxDCAToVertexZ(0.2);
-  fESDtrackCutsDeuteron->SetRequireITSPid(true); // FilterBit 256
-  fESDtrackCutsDeuteron->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);	// FilterBit 256
+//  fESDtrackCutsDeuteron->SetRequireITSPid(true); // FilterBit 256
+//  fESDtrackCutsDeuteron->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);	// FilterBit 256
 
 
 }
