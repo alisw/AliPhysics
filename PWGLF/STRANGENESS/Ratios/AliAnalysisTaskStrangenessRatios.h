@@ -163,8 +163,10 @@ private:
   int fCutTPCclu = 70;
   float fCutTPCrows = 80.;
   float fCutRowsOvF = 0.8;
-  double fCasc_LeastCRaws;
-  double fCasc_LeastCRawsOvF;
+  double fCascLeastCRaws;
+  double fCascLeastCRawsOvF;
+  double fLambdaLeastCRaws;
+  double fLambdaLeastCRawsOvF;
 
   float fCosPALambda = 0.97;
   float fCutDCALambdaPrToPV = 0.08;
