@@ -160,7 +160,7 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
 
     // create histograms
     
-    fHistChKaons = new TH2F("fHistChKaons","Number of pairs of K^{+/-} and K^{0} Vs DeltaPhi and Centrality",30,0,2*TMath::Pi(),100,0,100);
+    fHistChKaons = new TH2F("fHistChKaons","Number of pairs of K^{+/-} and K^{0} Vs DeltaPhi and Centrality",30,-1*(TMath::Pi()/2),3*TMath::Pi()/2,100,0,100);
     fHistChKaons->GetXaxis()->SetTitle("Delta Phi (in radians)");
     fHistChKaons->GetYaxis()->SetTitle("Centrality");
     fHistChKaons->SetOption("colz");
@@ -317,10 +317,10 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
             if(v0->MassK0Short() < 0.49 || v0->MassK0Short() > 0.51) continue;
             if(!AcceptV0(v0, vertex)) continue;
             Double_t V0Phi = v0->Phi();
-            Double_t deltaPhi = trackPhi-V0Phi;
+            Double_t deltaPhi = fabs(trackPhi-V0Phi);
             Double_t deltaEta = (fabs(track->Eta()) - fabs(v0->Eta()));
-            fHistChKaons->Fill(fabs(deltaPhi),centralityV0M);
-            fHistChKaons-> Fill(fabs(fabs(deltaPhi)-2*TMath::Pi()),centralityV0M);
+            fHistChKaons->Fill(deltaPhi,centralityV0M);
+            fHistChKaons->Fill(-deltaPhi,centralityV0M);
             if(deltaEta > 0.5) fHistEtaCuts->Fill(fabs(deltaPhi),centralityV0M);
             fHistEtaCuts-> Fill(fabs(fabs(deltaPhi)-2*TMath::Pi()),centralityV0M);
             fHistV0s->Fill(fabs(V0Phi),centralityV0M);
