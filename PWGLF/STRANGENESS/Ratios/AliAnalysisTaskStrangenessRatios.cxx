@@ -146,7 +146,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
   fRecCascade->centrality = fEventCut.GetCentrality();
   fRecLambda->centrality = fEventCut.GetCentrality();
 
-  float rdmState{static_cast<float>(gRandom->Uniform())};
+  double rdmState{gRandom->Uniform()};
 
   std::vector<int> checkedLabel, checkedLambdaLabel;
   fGenCascade.isReconstructed = true;
@@ -411,7 +411,6 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
   if (fMC)
   {
     fGenCascade.isReconstructed = false;
-    fGenLambda.isReconstructed = false;
     //OOB pileup
     AliAODMCHeader *header = static_cast<AliAODMCHeader *>(ev->FindListObject(AliAODMCHeader::StdBranchName()));
     if (!header)
@@ -469,6 +468,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
     if (fFillLambdas && rdmState < fLambdaDownscaling)
     {
+      fGenLambda.isReconstructed = false;
       //loop on generated
       for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT)
       {
@@ -482,7 +482,8 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         {
           continue;
         }
-        if (std::abs(track->Y()) > fCutY || !track->IsPhysicalPrimary() || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iT, header, MCTrackArray))
+
+        if (std::abs(track->Y()) > fCutY || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iT, header, MCTrackArray))
         { //removal of OOB pileup, cut on Y and PhysPrim
           continue;
         }
@@ -490,6 +491,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         fGenLambda.etaMC = track->Eta();
         fGenLambda.yMC = track->Y();
         fGenLambda.pdg = track->GetPdgCode();
+        fGenLambda.isPrimary = track->IsPhysicalPrimary();
         double pv[3], sv[3];
         track->XvYvZv(pv);
         for (int iD = track->GetDaughterFirst(); iD <= track->GetDaughterLast(); iD++)
@@ -506,7 +508,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           }
         }
         fGenLambda.ctMC = std::sqrt(Sq(pv[0] - sv[0]) + Sq(pv[1] - sv[1]) + Sq(pv[2] - sv[2])) * track->M() / track->P();
-        fTree->Fill();
+        fTreeLambda->Fill();
       }
     }
   }
