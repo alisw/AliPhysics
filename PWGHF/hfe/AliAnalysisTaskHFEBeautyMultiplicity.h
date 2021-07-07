@@ -202,6 +202,12 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F*	fHistPho_Reco0;
         TH1F*	fHistPho_Reco1;
         TH1F*	fHistPho_Reco2;
+        TH1F*	fHistPho_Reco0_Pi0;
+        TH1F*	fHistPho_Reco1_Pi0;
+        TH1F*	fHistPho_Reco2_Pi0;
+        TH1F*	fHistPho_Reco0_Eta;
+        TH1F*	fHistPho_Reco1_Eta;
+        TH1F*	fHistPho_Reco2_Eta;
     
         Int_t	NembMCpi0;
         Int_t	NembMCeta;
