@@ -967,26 +967,32 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     
   //Total photonic from pi0 (weight)
     fHistPho_Reco0_Pi0 = new TH1F("fHistPho_Reco0_Pi0", "Total photonic from Pi0 (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco0_Pi0->Sumw2();
     fOutputList->Add(fHistPho_Reco0_Pi0);
     
   //Reconstructed photonic from pi0 (weight)
     fHistPho_Reco1_Pi0 = new TH1F("fHistPho_Reco1_Pi0", "Reconstructed photonic from Pi0 (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco1_Pi0->Sumw2();
     fOutputList->Add(fHistPho_Reco1_Pi0);
 
   //Non-Reconstructed photonic from pi0 (weight)
     fHistPho_Reco2_Pi0 = new TH1F("fHistPho_Reco2_Pi0", "Non-Reconstructed photonic from Pi0 (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco2_Pi0->Sumw2();
     fOutputList->Add(fHistPho_Reco2_Pi0);
     
   //Total photonic from eta (weight)
     fHistPho_Reco0_Eta = new TH1F("fHistPho_Reco0_Eta", "Total photonic from Eta (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco0_Eta->Sumw2();
     fOutputList->Add(fHistPho_Reco0_Eta);
     
   //Reconstructed photonic from eta  (weight)
     fHistPho_Reco1_Eta = new TH1F("fHistPho_Reco1_Eta", "Reconstructed photonic from Eta (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco1_Eta->Sumw2();
     fOutputList->Add(fHistPho_Reco1_Eta);
 
   //Non-Reconstructed photonic from eta (weight)
     fHistPho_Reco2_Eta = new TH1F("fHistPho_Reco2_Eta", "Non-Reconstructed photonic from Eta (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco2_Eta->Sumw2();
     fOutputList->Add(fHistPho_Reco2_Eta);
     
   //check Eta range cut in MC
@@ -1035,26 +1041,32 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   
   //DCAxy from B
     fDCAxy_MC_B = new TH2F("fDCAxy_MC_B","p_{T} vs DCA_{xy} (MC : B-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_B->Sumw2();
     fOutputList->Add(fDCAxy_MC_B);
   
   //DCAxy from D
     fDCAxy_MC_D = new TH2F("fDCAxy_MC_D","p_{T} vs DCA_{xy} (MC : D-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_D->Sumw2();
     fOutputList->Add(fDCAxy_MC_D);
 
   //DCAxy from Dpm
     fDCAxy_MC_Dpm = new TH2F("fDCAxy_MC_Dpm","p_{T} vs DCA_{xy} (MC : D^{+},D^{*+});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_Dpm->Sumw2();
     fOutputList->Add(fDCAxy_MC_Dpm);
   
   //DCAxy from D0
     fDCAxy_MC_D0 = new TH2F("fDCAxy_MC_D0","p_{T} vs DCA_{xy} (MC : D^{0},D^{*0});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_D0->Sumw2();
     fOutputList->Add(fDCAxy_MC_D0);
   
   //DCAxy from Ds
     fDCAxy_MC_Ds = new TH2F("fDCAxy_MC_Ds","p_{T} vs DCA_{xy} (MC : D^{+}_{s},D^{*+}_{s});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_Ds->Sumw2();
     fOutputList->Add(fDCAxy_MC_Ds);
   
   //DCAxy from Lambda c 
     fDCAxy_MC_Lc = new TH2F("fDCAxy_MC_Lc","p_{T} vs DCA_{xy} (MC : #Lambda_{c});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_Lc->Sumw2();
     fOutputList->Add(fDCAxy_MC_Lc);
 
   //DCAxy elrctron
@@ -1797,7 +1809,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                     	{
 				if(pidM==111) fHistPho_Reco0_Pi0->Fill(TrkPt, pTWeight_Pi0->Eval(pTMom));     	// all photonic electron from pi0 (with weight)
 				if(pidM==221) fHistPho_Reco0_Eta->Fill(TrkPt, pTWeight_Eta->Eval(pTMom));     	// all photonic electron from eta (with weight)
-                        	fHistPho_Reco0->Fill(TrkPt);     			// all information of photonic electron (no weight)
+                        	fHistPho_Reco0->Fill(TrkPt);     						// all information of photonic electron (no weight)
 
 				fDCAxy_MC_Phot -> Fill(TrkPt, DCA[0]*charge*Bsign);	//DCA (total photonic electron)
 
@@ -1807,13 +1819,13 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                        		{
 					if(pidM==111) fHistPho_Reco1_Pi0->Fill(TrkPt, pTWeight_Pi0->Eval(pTMom));     	// Reco by EMCal & TPC & InvMass (pi0 with weight)
 					if(pidM==221) fHistPho_Reco1_Eta->Fill(TrkPt, pTWeight_Eta->Eval(pTMom));     	// Reco by EMCal & TPC & InvMass (eta with weight)
-                          		fHistPho_Reco1->Fill(TrkPt); // Reco by EMCal & TPC & InvMass (no weight)
+                          		fHistPho_Reco1->Fill(TrkPt); 							// Reco by EMCal & TPC & InvMass (no weight)
                         	}
                         	else
                        		{
 					if(pidM==111) fHistPho_Reco2_Pi0->Fill(TrkPt, pTWeight_Pi0->Eval(pTMom));     	// Non-Reco by EMCal & TPC & InvMass (pi0 with weight)
 					if(pidM==221) fHistPho_Reco2_Eta->Fill(TrkPt, pTWeight_Eta->Eval(pTMom));     	// Non-Reco by EMCal & TPC & InvMass (eta with weight)
-                           		fHistPho_Reco2->Fill(TrkPt); // Non-Reco by EMCal & TPC & InvMass (no weight)
+                           		fHistPho_Reco2->Fill(TrkPt); 							// Non-Reco by EMCal & TPC & InvMass (no weight)
                         	}
                     	}
 
