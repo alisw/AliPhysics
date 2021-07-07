@@ -1146,6 +1146,11 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     ////////////////////////////////
     Bool_t test = GetNMCPartProduced(); ///Getting number of particles produced by the MC generator
   }
+    
+  //////////Remove in bunch pileup events in MC///////////////
+  if(fRemovePileUpinMCGen){
+    if(AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(fMCHeader)) continue;
+  }
 
   ///////////////////
   //PID initialised//
