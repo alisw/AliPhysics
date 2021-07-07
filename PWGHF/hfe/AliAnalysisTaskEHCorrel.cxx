@@ -1137,7 +1137,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   fpVtx = fVevent->GetPrimaryVertex();
 
-e if(fCalcHadronTrackEffi || fCalnulateNonHFEEffi || fCalPi0EtaWeight){
+ if(fCalcHadronTrackEffi || fCalculateNonHFEEffi || fCalPi0EtaWeight){
     fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
     fMCHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
 
@@ -1147,7 +1147,7 @@ e if(fCalcHadronTrackEffi || fCalnulateNonHFEEffi || fCalPi0EtaWeight){
     Bool_t test = GetNMCPartProduced(); ///Getting number of particles produced by the MC generator
   }
     
-  //////////Remove in bunch pileup events in MC///////////////
+  /////Remove in bunch pileup events in MC////
   if(fRemovePileUpinMCGen){
     if(AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(fMCHeader)) return;
   }
