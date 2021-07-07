@@ -146,7 +146,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
   fRecCascade->centrality = fEventCut.GetCentrality();
   fRecLambda->centrality = fEventCut.GetCentrality();
 
-  float rdmState{gRandom->Uniform()};
+  float rdmState{static_cast<float>(gRandom->Uniform())};
 
   std::vector<int> checkedLabel, checkedLambdaLabel;
   fGenCascade.isReconstructed = true;
