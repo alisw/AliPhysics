@@ -466,7 +466,7 @@ void AliAnalysisHFEHCorrOnFlySim::HeavyFlavourCorrelations(TObject *obj, Int_t T
                     MotherOfTrgDummy = (AliVParticle*)fMcEvent->GetTrack(trigMomPosDummy);
                     pdgOfMotherDummy = TMath::Abs(MotherOfTrgDummy->PdgCode());
                     
-                    if(MomPDGDummy ==5 || (MomPDGDummy>500 && MomPDGDummy<600) || (MomPDGDummy>5000 && MomPDGDummy<6000)){ //B->e or B->X->e, loop stops when B is found or when there is no mother
+                    if(pdgOfMotherDummy ==5 || (pdgOfMotherDummy>500 && pdgOfMotherDummy<600) || (pdgOfMotherDummy>5000 && pdgOfMotherDummy<6000)){ //B->e or B->X->e, loop stops when B is found or when there is no mother
                         EleFromB=kTRUE;
                         
                         trigMomPosDummy = -1; //break the loop
