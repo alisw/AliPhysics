@@ -376,7 +376,7 @@ Bool_t Ali2PCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Fl
       fFlags_1[fNoOfTracks1]        = 0x0;
       fPt_1[fNoOfTracks1]           = pT;
       fEta_1[fNoOfTracks1]          = eta;
-      fPhi_1[fNoOfTracks1]          = ophi;
+      fPhi_1[fNoOfTracks1]          = phi;
       fAvgPt_1[fNoOfTracks1]        = (fhPositivePtAverage != nullptr) ? fhPositivePtAverage->GetBinContent(ixEta+1,ixPhi+1) : 0.0;
       fCorrection_1[fNoOfTracks1]   = corr;
       fN1_1                         += corr;
@@ -469,7 +469,7 @@ Bool_t Ali2PCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Fl
       fFlags_2[fNoOfTracks2]        = 0x0;
       fPt_2[fNoOfTracks2]           = pT;
       fEta_2[fNoOfTracks2]          = eta;
-      fPhi_2[fNoOfTracks2]          = ophi;
+      fPhi_2[fNoOfTracks2]          = phi;
       fAvgPt_2[fNoOfTracks2]        = (fhNegativePtAverage != nullptr) ? fhNegativePtAverage->GetBinContent(ixEta+1,ixPhi+1) : 0.0;
       fCorrection_2[fNoOfTracks2]   = corr;
       fN1_2                         += corr;
@@ -555,7 +555,9 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
         float deltaEta_d   = eta_1 - fEta_1[ix2];
         float deltaEta_c   = - deltaEta_d;
         float deltaPhi_d   = float(TVector2::Phi_0_2pi(phi_1 - fPhi_1[ix2]));
+        if (not(deltaPhi_d < fMax_deltaphi)) deltaPhi_d -= TMath::TwoPi();
         float deltaPhi_c   = float(TVector2::Phi_0_2pi(fPhi_1[ix2] - phi_1));
+        if (not(deltaPhi_c < fMax_deltaphi)) deltaPhi_c -= TMath::TwoPi();
 
         /* apply the pair correction if applicable */
         if (effcorr != NULL) {
@@ -635,7 +637,9 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
         float deltaEta_d   = eta_1 - fEta_2[ix2];
         float deltaEta_c   = - deltaEta_d;
         float deltaPhi_d   = float(TVector2::Phi_0_2pi(phi_1 - fPhi_2[ix2]));
+        if (not(deltaPhi_d < fMax_deltaphi)) deltaPhi_d -= TMath::TwoPi();
         float deltaPhi_c   = float(TVector2::Phi_0_2pi(fPhi_2[ix2] - phi_1));
+        if (not(deltaPhi_c < fMax_deltaphi)) deltaPhi_c -= TMath::TwoPi();
 
         /* apply the pair correction if applicable */
         if (effcorr != NULL) {
@@ -754,7 +758,9 @@ void Ali2PCorrelations::ProcessUnlikeSignPairs() {
         float deltaEta_d   = eta_1 - fEta_2[ix2];
         float deltaEta_c   = - deltaEta_d;
         float deltaPhi_d   = float(TVector2::Phi_0_2pi(phi_1 - fPhi_2[ix2]));
+        if (not(deltaPhi_d < fMax_deltaphi)) deltaPhi_d -= TMath::TwoPi();
         float deltaPhi_c   = float(TVector2::Phi_0_2pi(fPhi_2[ix2] - phi_1));
+        if (not(deltaPhi_c < fMax_deltaphi)) deltaPhi_c -= TMath::TwoPi();
 
         /* apply the pair correction if applicable */
         if (effcorr != NULL) {
