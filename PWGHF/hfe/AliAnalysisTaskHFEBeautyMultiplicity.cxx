@@ -184,9 +184,15 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fMCTrackpart(0),
     fMCheader(0),
 
-    fHistPho_Reco0(0),	    // Total photonic electron
-    fHistPho_Reco1(0),	    // Reconstructed photonic electron
-    fHistPho_Reco2(0),	    // Non-Reconstructed photonic electron
+    fHistPho_Reco0(0),	    // Total photonic electron(no weight)
+    fHistPho_Reco0_Pi0(0),  // Total photonic electron(pi0 weight)
+    fHistPho_Reco0_Eta(0),  // Total photonic electron(eta weight)
+    fHistPho_Reco1(0),	    // Reconstructed photonic electron(no weight)
+    fHistPho_Reco1_Pi0(0),  // Reconstructed photonic electron(pi0 weight)
+    fHistPho_Reco1_Eta(0),  // Reconstructed photonic electron(eta weight)
+    fHistPho_Reco2(0),	    // Non-Reconstructed photonic electron(no weight)
+    fHistPho_Reco2_Pi0(0),  // Non-Reconstructed photonic electron(pi0 weight)
+    fHistPho_Reco2_Eta(0),  // Non-Reconstructed photonic electron(eta weight)
     NembMCpi0(0),
     NembMCeta(0),
     NpureMCproc(0),
@@ -403,9 +409,15 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fMCTrackpart(0),
     fMCheader(0),
 
-    fHistPho_Reco0(0),	    // Total photonic electron
-    fHistPho_Reco1(0),	    // Reconstructed photonic electron
-    fHistPho_Reco2(0),	    // Non-Reconstructed photonic electron
+    fHistPho_Reco0(0),	    // Total photonic electron(no weight)
+    fHistPho_Reco0_Pi0(0),  // Total photonic electron(pi0 weight)
+    fHistPho_Reco0_Eta(0),  // Total photonic electron(eta weight)
+    fHistPho_Reco1(0),	    // Reconstructed photonic electron(no weight)
+    fHistPho_Reco1_Pi0(0),  // Reconstructed photonic electron(pi0 weight)
+    fHistPho_Reco1_Eta(0),  // Reconstructed photonic electron(eta weight)
+    fHistPho_Reco2(0),	    // Non-Reconstructed photonic electron(no weight)
+    fHistPho_Reco2_Pi0(0),  // Non-Reconstructed photonic electron(pi0 weight)
+    fHistPho_Reco2_Eta(0),  // Non-Reconstructed photonic electron(eta weight)
     NembMCpi0(0),
     NembMCeta(0),
     NpureMCproc(0),
@@ -941,7 +953,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNoD->GetXaxis()->SetBinLabel(13,"after PID");
 
 
-  //Total photonic electron(MC)
+  //Total photonic electron (MC)
     fHistPho_Reco0 = new TH1F("fHistPho_Reco0", "Total photonic electron (MC); p_{T} [GeV/c];",1200,0,60);
     fOutputList->Add(fHistPho_Reco0);
     
@@ -952,6 +964,36 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   //Non-Reconstructed photonic electron in data (MC)
     fHistPho_Reco2 = new TH1F("fHistPho_Reco2", "Non-Reconstructed photonic electron in data (MC); p_{T} [GeV/c];",1200,0,60);
     fOutputList->Add(fHistPho_Reco2);
+    
+  //Total photonic from pi0 (weight)
+    fHistPho_Reco0_Pi0 = new TH1F("fHistPho_Reco0_Pi0", "Total photonic from Pi0 (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco0_Pi0->Sumw2();
+    fOutputList->Add(fHistPho_Reco0_Pi0);
+    
+  //Reconstructed photonic from pi0 (weight)
+    fHistPho_Reco1_Pi0 = new TH1F("fHistPho_Reco1_Pi0", "Reconstructed photonic from Pi0 (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco1_Pi0->Sumw2();
+    fOutputList->Add(fHistPho_Reco1_Pi0);
+
+  //Non-Reconstructed photonic from pi0 (weight)
+    fHistPho_Reco2_Pi0 = new TH1F("fHistPho_Reco2_Pi0", "Non-Reconstructed photonic from Pi0 (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco2_Pi0->Sumw2();
+    fOutputList->Add(fHistPho_Reco2_Pi0);
+    
+  //Total photonic from eta (weight)
+    fHistPho_Reco0_Eta = new TH1F("fHistPho_Reco0_Eta", "Total photonic from Eta (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco0_Eta->Sumw2();
+    fOutputList->Add(fHistPho_Reco0_Eta);
+    
+  //Reconstructed photonic from eta  (weight)
+    fHistPho_Reco1_Eta = new TH1F("fHistPho_Reco1_Eta", "Reconstructed photonic from Eta (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco1_Eta->Sumw2();
+    fOutputList->Add(fHistPho_Reco1_Eta);
+
+  //Non-Reconstructed photonic from eta (weight)
+    fHistPho_Reco2_Eta = new TH1F("fHistPho_Reco2_Eta", "Non-Reconstructed photonic from Eta (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco2_Eta->Sumw2();
+    fOutputList->Add(fHistPho_Reco2_Eta);
     
   //check Eta range cut in MC
     fCheckEtaMC = new TH1F("fCheckEtaMC","check Eta range cut in MC", 160, -0.8, 0.8);
@@ -999,26 +1041,32 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   
   //DCAxy from B
     fDCAxy_MC_B = new TH2F("fDCAxy_MC_B","p_{T} vs DCA_{xy} (MC : B-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_B->Sumw2();
     fOutputList->Add(fDCAxy_MC_B);
   
   //DCAxy from D
     fDCAxy_MC_D = new TH2F("fDCAxy_MC_D","p_{T} vs DCA_{xy} (MC : D-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_D->Sumw2();
     fOutputList->Add(fDCAxy_MC_D);
 
   //DCAxy from Dpm
     fDCAxy_MC_Dpm = new TH2F("fDCAxy_MC_Dpm","p_{T} vs DCA_{xy} (MC : D^{+},D^{*+});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_Dpm->Sumw2();
     fOutputList->Add(fDCAxy_MC_Dpm);
   
   //DCAxy from D0
     fDCAxy_MC_D0 = new TH2F("fDCAxy_MC_D0","p_{T} vs DCA_{xy} (MC : D^{0},D^{*0});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_D0->Sumw2();
     fOutputList->Add(fDCAxy_MC_D0);
   
   //DCAxy from Ds
     fDCAxy_MC_Ds = new TH2F("fDCAxy_MC_Ds","p_{T} vs DCA_{xy} (MC : D^{+}_{s},D^{*+}_{s});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_Ds->Sumw2();
     fOutputList->Add(fDCAxy_MC_Ds);
   
   //DCAxy from Lambda c 
     fDCAxy_MC_Lc = new TH2F("fDCAxy_MC_Lc","p_{T} vs DCA_{xy} (MC : #Lambda_{c});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_Lc->Sumw2();
     fOutputList->Add(fDCAxy_MC_Lc);
 
   //DCAxy elrctron
@@ -1725,7 +1773,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             
             Bool_t fFlagNonHFE = kFALSE;    // photonic electron identification
             
-	    TF1 *pTWeight_phot;
 
             //========== Electron E/p ==========//
             if((TPCnSigma >= CutTPCNsigma[0] && TPCnSigma <= CutTPCNsigma[1]) && (m20 >= CutM20[0] && m20 <= CutM20[1]))  // TPC nsigma & shower shape cut
@@ -1755,28 +1802,30 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                     
 		    if(pid_ele == 1.0)
 		    {
-
 			fDCAxy_MC_ele -> Fill(TrkPt, DCA[0]*charge*Bsign);	//DCA (all electron)
 
                     	//-------- Photonic electron --------//
-                    	if(pid_eleP)    // electron from photon & pi0 & eta (<- TMath::Abs(pdg)==11 && (pidM==22 || pidM==111 || pidM==221))
+                    	if(pid_eleP && (pidM==111 || pidM==221))    // electron from photon(from pi0 or eta) & pi0 & eta
                     	{
-				if(pidM==111) pTWeight_phot = (TF1*)pTWeight_Pi0;	// mother pi0
-				if(pidM==221) pTWeight_phot = (TF1*)pTWeight_Eta;	// mother eta
-				
+				if(pidM==111) fHistPho_Reco0_Pi0->Fill(TrkPt, pTWeight_Pi0->Eval(pTMom));     	// all photonic electron from pi0 (with weight)
+				if(pidM==221) fHistPho_Reco0_Eta->Fill(TrkPt, pTWeight_Eta->Eval(pTMom));     	// all photonic electron from eta (with weight)
+                        	fHistPho_Reco0->Fill(TrkPt);     						// all information of photonic electron (no weight)
 
-                        	fHistPho_Reco0->Fill(TrkPt, pTWeight_phot->Eval(pTMom));     	// all information of photonic electron
-				fDCAxy_MC_Phot -> Fill(TrkPt, DCA[0]*charge*Bsign);		//DCA (total photonic electron)
+				fDCAxy_MC_Phot -> Fill(TrkPt, DCA[0]*charge*Bsign);	//DCA (total photonic electron)
 
 				//fPhot_InvMass_vs_DCA->Fill(Mass, DCA[0]*charge*Bsign);
                        
                        		if(fFlagNonHFE)
                        		{
-                          		fHistPho_Reco1->Fill(TrkPt, pTWeight_phot->Eval(pTMom)); // Reconstructed by EMCal & TPC & InvMass
+					if(pidM==111) fHistPho_Reco1_Pi0->Fill(TrkPt, pTWeight_Pi0->Eval(pTMom));     	// Reco by EMCal & TPC & InvMass (pi0 with weight)
+					if(pidM==221) fHistPho_Reco1_Eta->Fill(TrkPt, pTWeight_Eta->Eval(pTMom));     	// Reco by EMCal & TPC & InvMass (eta with weight)
+                          		fHistPho_Reco1->Fill(TrkPt); 							// Reco by EMCal & TPC & InvMass (no weight)
                         	}
                         	else
                        		{
-                           		fHistPho_Reco2->Fill(TrkPt, pTWeight_phot->Eval(pTMom)); // Non-Reconstructed by EMCal & TPC & InvMass
+					if(pidM==111) fHistPho_Reco2_Pi0->Fill(TrkPt, pTWeight_Pi0->Eval(pTMom));     	// Non-Reco by EMCal & TPC & InvMass (pi0 with weight)
+					if(pidM==221) fHistPho_Reco2_Eta->Fill(TrkPt, pTWeight_Eta->Eval(pTMom));     	// Non-Reco by EMCal & TPC & InvMass (eta with weight)
+                           		fHistPho_Reco2->Fill(TrkPt); 							// Non-Reco by EMCal & TPC & InvMass (no weight)
                         	}
                     	}
 

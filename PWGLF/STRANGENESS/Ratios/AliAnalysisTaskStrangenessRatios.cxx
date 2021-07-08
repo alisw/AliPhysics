@@ -146,7 +146,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
   fRecCascade->centrality = fEventCut.GetCentrality();
   fRecLambda->centrality = fEventCut.GetCentrality();
 
-  float rdmState{gRandom->Uniform()};
+  double rdmState{gRandom->Uniform()};
 
   std::vector<int> checkedLabel, checkedLambdaLabel;
   fGenCascade.isReconstructed = true;
@@ -278,7 +278,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
     //distance over total momentum
     double lOverP = std::sqrt((Sq(vtxCasc[0] - pv[0]) + Sq(vtxCasc[1] - pv[1]) + Sq(vtxCasc[2] - pv[2])) / (casc->Ptot2Xi() + 1e-10));
-    double ctLambda = std::sqrt(Sq(vtxCasc[0] - casc->GetSecVtxX()) + Sq(vtxCasc[1] - casc->GetSecVtxY()) + Sq(vtxCasc[2] - casc->GetSecVtxZ())) / (casc->P() + 1e-10);
+    // double ctLambda = std::sqrt(Sq(vtxCasc[0] - casc->GetSecVtxX()) + Sq(vtxCasc[1] - casc->GetSecVtxY()) + Sq(vtxCasc[2] - casc->GetSecVtxZ())) / (casc->P() + 1e-10);
 
     if (std::abs(casc->MassOmega() - kOmegaMass) * 1000 < 30)
     {
@@ -359,10 +359,10 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           fGenLambda.etaMC = lambda->Eta();
           fGenLambda.yMC = lambda->Y();
           fGenLambda.isPrimary = lambda->IsPhysicalPrimary();
-          double pv[3], sv[3];
-          lambda->XvYvZv(pv);
-          posPart->XvYvZv(sv);
-          fGenCascade.ctMC = std::sqrt(Sq(pv[0] - sv[0]) + Sq(pv[1] - sv[1]) + Sq(pv[2] - sv[2])) * lambda->M() / lambda->P();
+          double ov[3], dv[3];
+          lambda->XvYvZv(ov);
+          posPart->XvYvZv(dv);
+          fGenCascade.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * lambda->M() / lambda->P();
         }
         if (fOnlyTrueLambdas && fGenLambda.pdg == 0)
           continue;
@@ -411,7 +411,6 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
   if (fMC)
   {
     fGenCascade.isReconstructed = false;
-    fGenLambda.isReconstructed = false;
     //OOB pileup
     AliAODMCHeader *header = static_cast<AliAODMCHeader *>(ev->FindListObject(AliAODMCHeader::StdBranchName()));
     if (!header)
@@ -469,6 +468,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
     if (fFillLambdas && rdmState < fLambdaDownscaling)
     {
+      fGenLambda.isReconstructed = false;
       //loop on generated
       for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT)
       {
@@ -482,7 +482,8 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         {
           continue;
         }
-        if (std::abs(track->Y()) > fCutY || !track->IsPhysicalPrimary() || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iT, header, MCTrackArray))
+
+        if (std::abs(track->Y()) > fCutY || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iT, header, MCTrackArray))
         { //removal of OOB pileup, cut on Y and PhysPrim
           continue;
         }
@@ -490,8 +491,10 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         fGenLambda.etaMC = track->Eta();
         fGenLambda.yMC = track->Y();
         fGenLambda.pdg = track->GetPdgCode();
-        double pv[3], sv[3];
-        track->XvYvZv(pv);
+        fGenLambda.isPrimary = track->IsPhysicalPrimary();
+        double ov[3], dv[3];
+        track->XvYvZv(ov);
+        bool neutralDecay{true};
         for (int iD = track->GetDaughterFirst(); iD <= track->GetDaughterLast(); iD++)
         {
           auto daugh = (AliAODMCParticle *)fMCEvent->GetTrack(iD);
@@ -501,12 +504,15 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           }
           if (std::abs(daugh->GetPdgCode()) == AliPID::ParticleCode(AliPID::kProton))
           {
-            daugh->XvYvZv(sv);
+            neutralDecay = false;
+            daugh->XvYvZv(dv);
             break;
           }
         }
-        fGenLambda.ctMC = std::sqrt(Sq(pv[0] - sv[0]) + Sq(pv[1] - sv[1]) + Sq(pv[2] - sv[2])) * track->M() / track->P();
-        fTree->Fill();
+        if (neutralDecay)
+          continue;
+        fGenLambda.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * track->M() / track->P();
+        fTreeLambda->Fill();
       }
     }
   }
