@@ -332,6 +332,27 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
   } else if (trainConfig == 60){ // NL 96, low Bfield setting
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799609fe32220000","0163103100000010"); // INT7
 
+  } else if (trainConfig == 70){ // NL applied in CF, nominal Bfield setting
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0r63103100000010"); // INT7, NonLin applied in CF
+  } else if (trainConfig == 71){ // NL applied in CF, nominal Bfield setting
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790009fe32220000","0r63103100000010"); // EG2, NonLin applied in CF
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790009fe32220000","0r63103100000010"); // EG1, NonLin applied in CF
+  } else if (trainConfig == 72){ // NL applied in CF, nominal Bfield setting
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0r63103100000010"); // INT7, NonLin applied in CF
+  } else if (trainConfig == 73){ // NL applied in CF, nominal Bfield setting
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790009fe32220000","0r63103100000010"); // EG2, NonLin applied in CF
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790009fe32220000","0r63103100000010"); // EG1, NonLin applied in CF
+  } else if (trainConfig == 74){ // NL applied in CF, nominal Bfield setting
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0r63103100000010"); // INT7, NonLin applied in CF
+  } else if (trainConfig == 75){ // NL applied in CF, nominal Bfield setting
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790009fe32220000","0r63103100000010"); // EG2, NonLin applied in CF
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790009fe32220000","0r63103100000010"); // EG1, NonLin applied in CF
+  } else if (trainConfig == 76){ // NL applied in CF, nominal Bfield, with lower min energy (400MeV)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009feh2220000","0r63103100000010"); // INT7, NonLin applied in CF
+  } else if (trainConfig == 77){ // NL applied in CF, nominal Bfield, with lower min energy (400MeV)
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790009feh2220000","0r63103100000010"); // EG2, NonLin applied in CF
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790009feh2220000","0r63103100000010"); // EG1, NonLin applied in CF
+
 
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

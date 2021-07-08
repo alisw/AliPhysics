@@ -62,6 +62,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	void SetWeightDmeson(TGraphErrors* WeightPt_Dmeson){ pTWeight_D = WeightPt_Dmeson; };
 	void SetWeightLc(TGraphErrors* WeightPt_Lc){ pTWeight_Lc = WeightPt_Lc; };
 	void SetWeightBmeson(TF1* WeightPt_Bmeson){ pTWeight_B = WeightPt_Bmeson; };
+	void SetWeightPi0(TF1* WeightPt_Pi0){ pTWeight_Pi0 = WeightPt_Pi0; };
+	void SetWeightEta(TF1* WeightPt_Eta){ pTWeight_Eta = WeightPt_Eta; };
 
 
 
@@ -200,6 +202,12 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F*	fHistPho_Reco0;
         TH1F*	fHistPho_Reco1;
         TH1F*	fHistPho_Reco2;
+        TH1F*	fHistPho_Reco0_Pi0;
+        TH1F*	fHistPho_Reco1_Pi0;
+        TH1F*	fHistPho_Reco2_Pi0;
+        TH1F*	fHistPho_Reco0_Eta;
+        TH1F*	fHistPho_Reco1_Eta;
+        TH1F*	fHistPho_Reco2_Eta;
     
         Int_t	NembMCpi0;
         Int_t	NembMCeta;
@@ -288,6 +296,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TGraphErrors* pTWeight_D;
 	TGraphErrors* pTWeight_Lc;
 	TF1* pTWeight_B;
+	TF1* pTWeight_Pi0;
+	TF1* pTWeight_Eta;
 
         ClassDef(AliAnalysisTaskHFEBeautyMultiplicity, 1);
 };

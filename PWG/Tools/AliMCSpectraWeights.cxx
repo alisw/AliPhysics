@@ -7,7 +7,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliMCEvent.h"
 #include "AliMCSpectraWeights.h"
-#include "AliStack.h"
+#include "AliMCParticle.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TH1D.h"
@@ -891,22 +891,23 @@ void AliMCSpectraWeights::CountEventMult() {
     DebugPCC("in eta < " << eta << "and pT > " << lowPtCut << "\n");
     if (!fMCEvent)
         return;
-    AliStack* fMCStack = fMCEvent->Stack();
-    for (int ipart = 0; ipart < fMCStack->GetNtrack(); ipart++) {
-        TParticle* mcGenParticle = fMCStack->Particle(ipart);
-        if (!mcGenParticle)
+    for (int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++) {
+        AliMCParticle* fMCParticle = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(ipart));
+        if (!fMCParticle) {
+            std::cerr << "AliMCSpectraWeights::ERROR::noMCParticle\n";
             continue;
+        }
         if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart,
                                                                       fMCEvent))
             continue;
-        if (!fMCStack->IsPhysicalPrimary(ipart))
+        if (!fMCEvent->IsPhysicalPrimary(ipart))
             continue; // secondary rejection
-        if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01)
+        if (TMath::Abs(fMCParticle->Charge()) < 0.01)
             continue; // neutral rejection
-        float pEta = mcGenParticle->Eta();
+        float pEta = fMCParticle->Eta();
         if (TMath::Abs(pEta) > eta)
             continue; // acceptance cut
-        if (mcGenParticle->Pt() < lowPtCut)
+        if (fMCParticle->Pt() < lowPtCut)
             continue; // TODO: hard coded low pT cut
         ++fMultOrCent;
     }
@@ -1099,33 +1100,35 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         AliMCSpectraWeights::CountEventMult();
     }
 
-    AliStack* MCStack = fMCEvent->Stack();
-    if (!MCStack) {
-        printf("AliMCSpectraWeights::ERROR: fMCStack not available\n");
-        return;
-    }
+    bool const ispPbCollision = fstCollisionSystem.find("ppb")!=std::string::npos;
 
-    for (int iParticle = 0; iParticle < MCStack->GetNtrack(); ++iParticle) {
-        TParticle* mcGenParticle = MCStack->Particle(iParticle);
-        if (!mcGenParticle) {
-            printf(
-                   "AliMCSpectraWeights::WARNING: mcGenParticle not available\n");
+    for (int iParticle = 0; iParticle < fMCEvent->GetNumberOfTracks(); ++iParticle) {
+        AliMCParticle* fMCParticle = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iParticle));
+        if (!fMCParticle) {
+            std::cerr << "AliMCSpectraWeights::ERROR::noMCParticle\n";
             continue;
         }
-        if (!mcGenParticle->GetPDG())
+        if (!fMCEvent->IsPhysicalPrimary(iParticle))
             continue;
-        if (!MCStack->IsPhysicalPrimary(iParticle))
+        if (TMath::Abs(fMCParticle->Charge()) < 0.01 && TMath::Abs(fMCParticle->PdgCode())!=3122)
             continue;
-        if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01 && TMath::Abs(mcGenParticle->GetPdgCode()!=3122))
+        if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iParticle, mcEvent)) // is from MC pile-up
             continue;
 
-        float partY = mcGenParticle->Y();
+        float partY = fMCParticle->Y();
         float _maxY = 0.5; // hard coded max eta; in all papers 0.5
 
-        if (TMath::Abs(partY) > _maxY)
-            continue; // apply same acceptance as in published spectra
+        //for p-Pb this is 0 < y_cms < 0.5 with y_traf = -0.465
+        //-->
+        if(ispPbCollision){
+            if( partY < 0.465 || partY > 0.965)
+                continue;
+        } else { // symmetric collision systems
+            if (TMath::Abs(partY) > _maxY)
+                continue; // apply same acceptance as in published spectra
+        }
         int particleType =
-        AliMCSpectraWeights::IdentifyMCParticle(mcGenParticle);
+        AliMCSpectraWeights::IdentifyMCParticle(fMCParticle->Particle());
         if (particleType < 0)
             continue;
         //        std::array<float, 3>
@@ -1133,10 +1136,10 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         //                                      fMultOrCent,
         //                                      static_cast<float>(particleType)};
         DebugPCC("\t Fill with:\n");
-        DebugPCC("\t\tpT: " << mcGenParticle->Pt() << "\t mult: " << fMultOrCent
+        DebugPCC("\t\tpT: " << fMCParticle->Pt() << "\t mult: " << fMultOrCent
                  << "\t particle: " << particleType << "\n");
         fHistMCGenPrimTrackParticle->Fill(
-                                          static_cast<float>(mcGenParticle->Pt()), fMultOrCent,
+                                          static_cast<float>(fMCParticle->Pt()), fMultOrCent,
                                           static_cast<float>(particleType));
     }
 #ifdef __AliMCSpectraWeights_DebugTiming__
@@ -1380,7 +1383,8 @@ AliMCSpectraWeights::GetCentFromString(std::string const& cent) const {
  *  @return
  */
 float const AliMCSpectraWeights::GetCentFromMult(float const dMult) const {
-    if (fstCollisionSystem.find("pp") != std::string::npos) {
+    if (fstCollisionSystem.find("pp") != std::string::npos && fstCollisionSystem.find("ppb") == std::string::npos) {
+/* pp7TeV
         if (dMult > 18)
             return 0;
         if (dMult > 14.5)
@@ -1401,31 +1405,84 @@ float const AliMCSpectraWeights::GetCentFromMult(float const dMult) const {
             return 8;
         if (dMult > 0)
             return 9;
+*/
+// pp13TeV
+        if (dMult > 23.02)
+            return 0;
+        if (dMult > 18.09)
+            return 1;
+        if (dMult > 14.97)
+            return 2;
+        if (dMult > 12.91)
+            return 3;
+        if (dMult > 11.03)
+            return 4;
+        if (dMult > 8.99)
+            return 5;
+        if (dMult > 7.14)
+            return 6;
+        if (dMult > 5.41)
+            return 7;
+        if (dMult > 3.53)
+            return 8;
+        if (dMult > 0)
+            return 9;
     } else if (fstCollisionSystem.find("ppb") !=
-               std::string::npos) // TODO: include other systems
+               std::string::npos)
     {
-        //        switch (dMult) {
-        //            case 0:
-        //                return 45.0;
-        //            case 1:
-        //                return 36.2;
-        //            case 2:
-        //                return 30.5;
-        //            case 3:
-        //                return 23.2;
-        //            case 4:
-        //                return 16.1;
-        //            case 5:
-        //                return 9.8;
-        //            case 6:
-        //                return 4.4;
-        //            default:
-        //                return -2.0;
-        //        }
-
+        if (dMult > 40.6)
+            return 0;
+        if (dMult > 33.35)
+            return 1;
+        if (dMult > 26.85)
+            return 2;
+        if (dMult > 19.65)
+            return 3;
+        if (dMult > 12.9)
+            return 4;
+        if (dMult > 7.1)
+            return 5;
+        if (dMult > 0)
+            return 6;
     } else if (fstCollisionSystem.find("pbpb") != std::string::npos) {
-
+        if (dMult > 1447)
+            return 0;
+        if (dMult > 1130)
+            return 1;
+        if (dMult > 807)
+            return 2;
+        if (dMult > 537)
+            return 3;
+        if (dMult > 343)
+            return 4;
+        if (dMult > 205)
+            return 5;
+        if (dMult > 112)
+            return 6;
+        if (dMult > 55)
+            return 7;
+        if (dMult > 0)
+            return 8;
     } else if (fstCollisionSystem.find("xexe") != std::string::npos) {
+
+        if (dMult > 1053)
+            return 0;
+        if (dMult > 822)
+            return 1;
+        if (dMult > 592)
+            return 2;
+        if (dMult > 396)
+            return 3;
+        if (dMult > 256)
+            return 4;
+        if (dMult > 158)
+            return 5;
+        if (dMult > 91.2)
+            return 6;
+        if (dMult > 48.3)
+            return 7;
+        if (dMult > 0)
+            return 8;
     }
 
     return -1;

@@ -1678,17 +1678,16 @@ void AliMultSelectionTask::UserExec(Option_t *)
     }
     
     if (lVevent->GetNumberOfTracks()>0){
-      double_t averageDCAxyABS = dcaxyABS/(lVevent->GetNumberOfTracks());
-      double_t averageDCAzABS = dcazABS/(lVevent->GetNumberOfTracks());
-      double_t averageDCAxySQ = dcaxySQ/(lVevent->GetNumberOfTracks());
-      double_t averageDCAzSQ = dcazSQ/(lVevent->GetNumberOfTracks());
+      averageDCAxyABS = dcaxyABS/(lVevent->GetNumberOfTracks());
+      averageDCAzABS = dcazABS/(lVevent->GetNumberOfTracks());
+      averageDCAxySQ = dcaxySQ/(lVevent->GetNumberOfTracks());
+      averageDCAzSQ = dcazSQ/(lVevent->GetNumberOfTracks());
      }
     else {
-      
-      double_t averageDCAxyABS = dcaxyABS/(-1);
-      double_t averageDCAzABS = dcazABS/(-1);
-      double_t averageDCAxySQ = dcaxySQ/(-1);
-      double_t averageDCAzSQ = dcazSQ/(-1);
+      averageDCAxyABS = dcaxyABS/(-1);
+      averageDCAzABS = dcazABS/(-1);
+      averageDCAxySQ = dcaxySQ/(-1);
+      averageDCAzSQ = dcazSQ/(-1);
      }
 
     fNTracksDCAxyABS=averageDCAxyABS;

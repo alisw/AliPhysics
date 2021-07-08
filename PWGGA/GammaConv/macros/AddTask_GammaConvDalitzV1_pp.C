@@ -604,7 +604,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts   = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
-  AliConversionPhotonCuts **analysisCuts   = new AliConversionPhotonCuts*[numberOfCuts];
+  AliConversionPhotonCuts **analysisConvPhotonsCuts   = new AliConversionPhotonCuts*[numberOfCuts];
   MesonCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisMesonCuts   = new AliConversionMesonCuts*[numberOfCuts];
   ElecCutList->SetOwner(kTRUE);
@@ -614,12 +614,27 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   for(Int_t i = 0; i<numberOfCuts; i++){
     TString cutName( Form("%s_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetElectronCut(i)).Data(),(cuts.GetMesonCut(i)).Data() ) );
 
+    //Inizialtion of Events, Mesons, Conv Photons and Electrons cuts
     analysisEventCuts[i] = new AliConvEventCuts();
+    analysisMesonCuts[i] = new AliConversionMesonCuts();
+    analysisConvPhotonsCuts[i] = new AliConversionPhotonCuts();
+    analysisElecCuts[i] = new AliDalitzElectronCuts();
+
+    ////////////////////////////////////
+    //// LightOutputs for selection ////
+    ////////////////////////////////////
+
+    if (lightVersion){
+        analysisEventCuts[i]->SetLightOutput(2);
+        analysisConvPhotonsCuts[i]->SetLightOutput(2);
+        analysisMesonCuts[i]->SetLightOutput(2);
+        analysisElecCuts[i]->SetDoLightVersion(kTRUE);
+    }
+
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-    analysisCuts[i] = new AliConversionPhotonCuts();
 
     //////////////////////////////////////
     //// Material Budget Weights flag ////
@@ -627,25 +642,21 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 
     if (enableMatBudWeightsPi0 > 0){
         if (isMC > 0){
-            if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
+            if (analysisConvPhotonsCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
                 initializedMatBudWeigths_existing = kTRUE;}
             else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
         }
         else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
 
+    analysisConvPhotonsCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisConvPhotonsCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
+    ConvCutList->Add(analysisConvPhotonsCuts[i]);
+    analysisConvPhotonsCuts[i]->SetFillCutHistograms("",kFALSE);
 
-    analysisCuts[i]->SetV0ReaderName(V0ReaderName);
-    analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
-    ConvCutList->Add(analysisCuts[i]);
-    analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-
-    analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
-
-    analysisElecCuts[i] = new AliDalitzElectronCuts();
 
     ////////////////////////////////////
     //// Elec dE/dx PostCalibration ////
@@ -653,16 +664,16 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 
     if (enableElecdEdxPostCalibration){
         if (isMC == 0){
-            analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
+            analysisConvPhotonsCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
             analysisElecCuts[i]->SetDoElecDeDxPostCalibrationPrimaryPair(kTRUE);
             if(ForceRPostCalibration){
               //Dependance in range 0-33 on R, and not TPC dependace
-            analysisCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
+            analysisConvPhotonsCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
             analysisElecCuts[i]->ForceTPCRecalibrationAsFunctionOfConvRPrimaryPair();
             }
         } else{
         cout << "ERROR enableElecdEdxPostCalibration set to True even if it is MC file. Automatically reset to 0"<< endl;
-        analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
+        analysisConvPhotonsCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
         analysisElecCuts[i]->SetDoElecDeDxPostCalibrationPrimaryPair(kFALSE);
       }
     }
