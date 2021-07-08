@@ -221,7 +221,7 @@ bool AliFemtoWRzTrackCut::Pass( const AliFemtoTrack* track)
       else if (fMostProbable == 13) { //cut on Nsigma deuteron
         if (IsDeuteronNSigma(track->P().Mag(),track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()) )
           imost = 13;
-        if ( fdEdxcut && (track->P().Mag() < 3) && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal(), 4) )
+        if ( fdEdxcut && (track->P().Mag() < 3) && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal(), fmaxmom) )
           imost = 0;
       }
       else if (fMostProbable == 14) { //cut on Nsigma, EXCLUSIVE PID -- deuteron 
@@ -295,7 +295,7 @@ bool AliFemtoWRzTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
   double massPDGD=1.8756;
   if (fNsigmaTPCTOF) {
     //Identyfication with only TPC for mom<1.4 and TPC&TOF for mom>1.4
-    if (mom > 1.4){
+    if (mom > 1.3){
       if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < fNsigma))
         return true;
     }
