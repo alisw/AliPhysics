@@ -389,17 +389,17 @@ void AliAnalysisHFEHCorrOnFlySim::CalculateHFHadronCorrelations(){
       
       if(pdgHF==421 || pdgHF==411 || pdgHF==413 || pdgHF==11){ ///D0, D+, D*, e-
     
-    if(mcPartHF->Pt() <2 || mcPartHF->Pt() >25)continue;
-    //if(TMath::Abs(mcPartHF->Y()) > 0.5)continue;
-    if(TMath::Abs(mcPartHF->Eta()) > 1.0)continue;
+        if(mcPartHF->Pt() <2 || mcPartHF->Pt() >25)continue;
+        //if(TMath::Abs(mcPartHF->Y()) > 0.5)continue;
+        if(TMath::Abs(mcPartHF->Eta()) > 1.0)continue;
   
-    fArraySkipDDaugh->Reset(0);
-    fArraySkipDDaugh->AddAt(jPart,0);
-    flastdaugh=1;
-    RemoveNDaughterParticleArray(mcPartHF);
-    HeavyFlavourCorrelations(mcPartHF, jPart);
-      }
-  }
+        fArraySkipDDaugh->Reset(0);
+        fArraySkipDDaugh->AddAt(jPart,0);
+        flastdaugh=1;
+        RemoveNDaughterParticleArray(mcPartHF);
+        HeavyFlavourCorrelations(mcPartHF, jPart);
+     }
+   }
 }
 //______________________________| Remove decay particles of trigger
 void AliAnalysisHFEHCorrOnFlySim::RemoveNDaughterParticleArray(TObject* obj){
@@ -436,6 +436,9 @@ void AliAnalysisHFEHCorrOnFlySim::HeavyFlavourCorrelations(TObject *obj, Int_t T
     AliVParticle* TrigPart = (AliVParticle*)obj;
     if(!TrigPart) return;
     
+    AliVParticle *MotherOfTrg, *MotherOfTrgDummy;
+    Int_t pdgOfMother, pdgOfMotherDummy;
+    
     Int_t PDG_TrigPart  = TMath::Abs(TrigPart->PdgCode());
          if(PDG_TrigPart==421)    PDG_TrigPart = 1; //D0
     else if(PDG_TrigPart==411)    PDG_TrigPart = 2; //D+
@@ -446,35 +449,33 @@ void AliAnalysisHFEHCorrOnFlySim::HeavyFlavourCorrelations(TObject *obj, Int_t T
     Bool_t hasToSkip = kFALSE;
     Int_t softpi = -1;
     Int_t TrgMomPos  = TrigPart->GetMother();
-    
+        
     if(TrgMomPos > 0){
         
-        AliVParticle *MotherOfTrg = (AliVParticle*)fMcEvent->GetTrack(TrgMomPos);
+        MotherOfTrg = (AliVParticle*)fMcEvent->GetTrack(TrgMomPos);
         if(!MotherOfTrg) return;
-        Int_t pdgOfMother = TMath::Abs(MotherOfTrg->PdgCode());
+        pdgOfMother = TMath::Abs(MotherOfTrg->PdgCode());
         
         //////Separate e from D and B/////////
         Bool_t EleFromD=kFALSE, EleFromB=kFALSE;
         if(PDG_TrigPart==4){
             if(pdgOfMother==5||pdgOfMother==4||(pdgOfMother>400 && pdgOfMother<600)||(pdgOfMother>4000&&pdgOfMother<6000)){ //HFE
                 
-                if(pdgOfMother==5 || (pdgOfMother>500 && pdgOfMother<600) || (pdgOfMother>5000 && pdgOfMother<6000)) EleFromB=kTRUE; //b->e
-                
-                Int_t TrgGMomPos  = MotherOfTrg->GetMother();
-                if(TrgGMomPos >0){
-                    AliVParticle *GMotherOfTrg = (AliVParticle*)fMcEvent->GetTrack(TrgGMomPos);
-                    Int_t pdgOfGMother = TMath::Abs(GMotherOfTrg->PdgCode());
+                Int_t trigMomPosDummy = TrgMomPos;
+                while(trigMomPosDummy > 0){
+                    MotherOfTrgDummy = (AliVParticle*)fMcEvent->GetTrack(trigMomPosDummy);
+                    pdgOfMotherDummy = TMath::Abs(MotherOfTrgDummy->PdgCode());
                     
-                    if(pdgOfGMother==5 || (pdgOfGMother>500 && pdgOfGMother<600) || (pdgOfGMother>5000 && pdgOfGMother<6000)) EleFromB=kTRUE; //b->D->e
-                    
-                    Int_t TrgGGMomPos  = GMotherOfTrg->GetMother();
-                    if(TrgGGMomPos >0){
-                        AliVParticle *GGMotherOfTrg = (AliVParticle*)fMcEvent->GetTrack(TrgGGMomPos);
-                        Int_t pdgOfGGMother = TMath::Abs(GGMotherOfTrg->PdgCode());
-
-                        if(pdgOfGGMother==5 || (pdgOfGGMother>500 && pdgOfGGMother<600) || (pdgOfGGMother>5000 && pdgOfGGMother<6000)) EleFromB=kTRUE; //b->D->D->e
+                    if(MomPDGDummy ==5 || (MomPDGDummy>500 && MomPDGDummy<600) || (MomPDGDummy>5000 && MomPDGDummy<6000)){ //B->e or B->X->e, loop stops when B is found or when there is no mother
+                        EleFromB=kTRUE;
+                        
+                        trigMomPosDummy = -1; //break the loop
+                    }
+                    else {
+                        trigMomPosDummy = MotherOfTrgDummy->GetMother();
                     }
                 }
+                
                 if(!EleFromB) EleFromD=kTRUE;
             }
             if(EleFromD) PDG_TrigPart=10;
@@ -759,16 +760,16 @@ void AliAnalysisHFEHCorrOnFlySim::DefineHistoNames(){
     //3b. HF-Hadron Correlations
     if(fIsCorrOfHeavyFlavor){
         
-        Int_t     nbinsTrigHF[3] = {  15, 36,  20};
-        Double_t binlowTrigHF[3] = {-7.5, 0., -2.};
-        Double_t  binupTrigHF[3] = { 7.5, 36., 2.};
+        Int_t     nbinsTrigHF[3] = {  25, 36,  20};
+        Double_t binlowTrigHF[3] = {-12.5, 0., -2.};
+        Double_t  binupTrigHF[3] = { 12.5, 36., 2.};
         
-        Int_t     nbinsCorrHF[9] = {  25, 25,  20, 20,   30,               64,   50,    15, 10000};
+        Int_t     nbinsCorrHF[9] = {  25, 25,  20, 40,   30,               64,   50,    15, 10000};
         Double_t binlowCorrHF[9] = {-12.5, 0., -2., 0., -15., -TMath::Pi()/2,  -1.8,  -1.5, -0.5};
-        Double_t  binupCorrHF[9] = { 12.5, 25., 2., 10.,  15., (3*TMath::Pi())/2,   1.8,   13.5, 9999.5};
+        Double_t  binupCorrHF[9] = { 12.5, 25., 2., 20.,  15., (3*TMath::Pi())/2,   1.8,   13.5, 9999.5};
      
         THnSparseD *trigDPartPr   = new THnSparseD("HFTrgiggerProp","fHFTrgiggerProp;pdg;ptTrig;etaTrig;",3,nbinsTrigHF,binlowTrigHF,binupTrigHF);
-        THnSparseD *trigDPartCorr = new THnSparseD("2PCorrBtwn_HF-hadron","HFCorrelations;pdg;ptTrig;etaTrig;ptAss;etaAss;deltaPhi;deltaEta;pdgAss;",9,nbinsCorrHF,binlowCorrHF,binupCorrHF);
+        THnSparseD *trigDPartCorr = new THnSparseD("2PCorrBtwn_HF-hadron","HFCorrelations;pdg;ptTrig;etaTrig;ptAss;etaAss;deltaPhi;deltaEta;TypeAss;pdgAss;",9,nbinsCorrHF,binlowCorrHF,binupCorrHF);
      
         trigDPartPr->Sumw2();
         trigDPartCorr->Sumw2();
