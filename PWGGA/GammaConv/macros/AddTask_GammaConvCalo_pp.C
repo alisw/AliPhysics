@@ -2807,53 +2807,38 @@ void AddTask_GammaConvCalo_pp(
 
     // no scale in NL, without MC finetuning
   } else if (trainConfig == 2170){ // nom Bfield
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799609fe32220000","0163103100000010"); // INT7, no FT
-  } else if (trainConfig == 2171){ // nom Bfield
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799609fe32220000","0163103100000010"); // EG2, no FT
-  } else if (trainConfig == 2172){ // nom Bfield
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799609fe32220000","0163103100000010"); // EG1, no FT
-    // with PCMEMC fine tuning
-  } else if (trainConfig == 2173){ // nom Bfield
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799709fe32220000","0163103100000010"); // INT7, PCMEMC FT
-  } else if (trainConfig == 2174){ // nom Bfield
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799709fe32220000","0163103100000010"); // EG2, PCMEMC FT
-  } else if (trainConfig == 2175){ // nom Bfield
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799709fe32220000","0163103100000010"); // EG1, PCMEMC FT
-    // with EMC fine tuning
-  } else if (trainConfig == 2176){ // nom Bfield
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799809fe32220000","0163103100000010"); // INT7, EMC FT
-  } else if (trainConfig == 2177){ // nom Bfield
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799809fe32220000","0163103100000010"); // EG2, EMC FT
-  } else if (trainConfig == 2178){ // nom Bfield
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799809fe32220000","0163103100000010"); // EG1, EMC FT
-
-    // configs with rotation instead of mixing
-  } else if (trainConfig == 2180){ // nom Bfield
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799609fe32220000","0r63103100000010"); // INT7, no FT
-  } else if (trainConfig == 2181){ // nom Bfield
+  } else if (trainConfig == 2171){ // nom Bfield
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799609fe32220000","0r63103100000010"); // EG2, no FT
-  } else if (trainConfig == 2182){ // nom Bfield
+  } else if (trainConfig == 2172){ // nom Bfield
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799609fe32220000","0r63103100000010"); // EG1, no FT
-    // with PCMEMC fine tuning
-  } else if (trainConfig == 2183){ // nom Bfield
+    // with PCMEMC and EMC-EMC fine tuning
+  } else if (trainConfig == 2173){ // nom Bfield
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799709fe32220000","0r63103100000010"); // INT7, PCMEMC FT
-  } else if (trainConfig == 2184){ // nom Bfield
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799709fe32220000","0r63103100000010"); // EG2, PCMEMC FT
-  } else if (trainConfig == 2185){ // nom Bfield
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799709fe32220000","0r63103100000010"); // EG1, PCMEMC FT
-    // with EMC fine tuning
-  } else if (trainConfig == 2186){ // nom Bfield
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799809fe32220000","0r63103100000010"); // INT7, EMC FT
-  } else if (trainConfig == 2187){ // nom Bfield
+  } else if (trainConfig == 2174){ // nom Bfield
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799709fe32220000","0r63103100000010"); // EG2, PCMEMC FT
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799809fe32220000","0r63103100000010"); // EG2, EMC FT
-  } else if (trainConfig == 2188){ // nom Bfield
+  } else if (trainConfig == 2175){ // nom Bfield
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799709fe32220000","0r63103100000010"); // EG1, PCMEMC FT
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799809fe32220000","0r63103100000010"); // EG1, EMC FT
+
+  // with interpolation between PCM-EMC and EMC-EMC fine tuning (favorable option)
+  } else if (trainConfig == 2176){ // nom Bfield
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe32220000","0r63103100000010"); // INT7, EMC FT
+  } else if (trainConfig == 2177){ // nom Bfield
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799909fe32220000","0r63103100000010"); // EG2, EMC FT
+  } else if (trainConfig == 2178){ // nom Bfield
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799909fe32220000","0r63103100000010"); // EG1, EMC FT
 
 
   } else if (trainConfig == 2190){ // low Bfield
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799609fe32220000","0163103100000010"); // INT7, no FT
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799609fe32220000","0r63103100000010"); // INT7, no FT
   } else if (trainConfig == 2191){ // low Bfield
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799609fe32220000","0r63103100000010"); // INT7, no FT, rotation BG
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799709fe32220000","0r63103100000010"); // INT7, PCM-EMC FT
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799809fe32220000","0r63103100000010"); // INT7, EMC-EMC FT
+  } else if (trainConfig == 2192){ // low Bfield
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799909fe32220000","0r63103100000010"); // INT7, interpolation between PCM-EMC and EMC-EMC FT
 
 
   // PCM-EDC systematics
