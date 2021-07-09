@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 08.06.2021
+ * Last Modified Date: 06.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -26,16 +26,19 @@
 #include "AliAnalysisTaskAR.h"
 #include "AliLog.h"
 #include "AliMultSelection.h"
-#include "TColor.h"
-#include "TFile.h"
+#include <TColor.h>
+#include <TFile.h>
+#include <TH1.h>
 #include <TMath.h>
+#include <TRandom3.h>
+#include <TSystem.h>
 #include <cstdlib>
 #include <iostream>
 
 ClassImp(AliAnalysisTaskAR)
 
-    AliAnalysisTaskAR::AliAnalysisTaskAR(
-        const char *name, Bool_t useParticleWeights)
+    AliAnalysisTaskAR::AliAnalysisTaskAR(const char *name,
+                                         Bool_t useParticleWeights)
     : AliAnalysisTaskSE(name),
       /* Base list for all output objects*/
       fHistList(nullptr), fHistListName("outputStudentAnalysis"),
@@ -48,13 +51,15 @@ ClassImp(AliAnalysisTaskAR)
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       /* flags for MC analysis */
       fMCAnalysisList(nullptr), fMCAnalysisListName("MCAnalysis"),
-      fMCAnalaysis(kFALSE), fSeed(0), fUseCustomSeed(kFALSE), fMCPdf(nullptr),
-      fMCPdfName("pdf"), fMCFlowHarmonics(nullptr),
+      fMCAnalaysis(kFALSE), fMCClosure(kFALSE), fSeed(0),
+      fUseCustomSeed(kFALSE), fMCPdf(nullptr), fMCPdfName("pdf"),
+      fMCFlowHarmonics(nullptr),
       fMCNumberOfParticlesPerEventFluctuations(kFALSE),
-      fMCNumberOfParticlesPerEvent(500), fMCCorrelators({}),
+      fMCNumberOfParticlesPerEvent(500),
       /* qvectors */
-      fQvectorList(nullptr), fPhi({}), fWeights({}), fUseWeights(kFALSE),
-      fReducedAcceptance(1.), fResetWeights(kFALSE) {
+      fQvectorList(nullptr), fPhi({}), fWeights({}),
+      fAcceptanceHistogram(nullptr), fWeightHistogram(nullptr),
+      fUseWeights(kFALSE), fResetWeights(kFALSE), fCorrelators({}) {
   /* Constructor */
 
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR(const "
@@ -88,6 +93,7 @@ ClassImp(AliAnalysisTaskAR)
 
 AliAnalysisTaskAR::AliAnalysisTaskAR()
     : AliAnalysisTaskSE(),
+      /* Dummy constructor */
       /* Base list for all output objects*/
       fHistList(nullptr), fHistListName("outputStudentAnalysis"),
       /* list holding all control histograms */
@@ -99,14 +105,15 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       /* flags for MC analysis */
       fMCAnalysisList(nullptr), fMCAnalysisListName("MCAnalysis"),
-      fMCAnalaysis(kFALSE), fSeed(0), fUseCustomSeed(kFALSE), fMCPdf(nullptr),
-      fMCPdfName("pdf"), fMCFlowHarmonics(nullptr),
+      fMCAnalaysis(kFALSE), fMCClosure(kFALSE), fSeed(0),
+      fUseCustomSeed(kFALSE), fMCPdf(nullptr), fMCPdfName("pdf"),
+      fMCFlowHarmonics(nullptr),
       fMCNumberOfParticlesPerEventFluctuations(kFALSE),
-      fMCNumberOfParticlesPerEvent(500), fMCCorrelators({}),
+      fMCNumberOfParticlesPerEvent(500),
       /* qvectors */
-      fQvectorList(nullptr), fPhi({}), fWeights({}), fUseWeights(kFALSE),
-      fReducedAcceptance(1.), fResetWeights(kFALSE) {
-  /* Dummy constructor */
+      fQvectorList(nullptr), fPhi({}), fWeights({}),
+      fAcceptanceHistogram(nullptr), fWeightHistogram(nullptr),
+      fUseWeights(kFALSE), fResetWeights(kFALSE), fCorrelators({}) {
   /* initialze arrays in dummy constructor !!!! */
   this->InitializeArrays();
 
@@ -122,8 +129,10 @@ AliAnalysisTaskAR::~AliAnalysisTaskAR() {
     delete fHistList;
   }
 
-  if (fMCAnalaysis) {
+  if (fMCAnalaysis || fMCClosure) {
     delete gRandom;
+  }
+  if (fMCAnalaysis) {
     delete fMCPdf;
   }
 };
@@ -150,6 +159,10 @@ void AliAnalysisTaskAR::UserCreateOutputObjects() {
   if (fMCAnalaysis) {
     this->BookMCObjects();
   }
+  if (fMCAnalaysis || fMCClosure) {
+    delete gRandom;
+    fUseCustomSeed ? gRandom = new TRandom3(fSeed) : gRandom = new TRandom3(0);
+  }
 
   // *) Trick to avoid name clashes, part 2:
   TH1::AddDirectory(oldHistAddStatus);
@@ -157,79 +170,11 @@ void AliAnalysisTaskAR::UserCreateOutputObjects() {
   PostData(1, fHistList);
 }
 
-void AliAnalysisTaskAR::UserExec(Option_t *) {
-  /* main method called for analysis */
-
-  /* clear azimuthal angles */
-  fPhi.clear();
-  /* clear weights */
-  fWeights.clear();
-
-  if (fMCAnalaysis) {
-    /* MC analysis */
-    MCOnTheFlyExec();
-  } else {
-    /* real data */
-    AODExec();
-  }
-
-  /* reset weights if required*/
-  if (fResetWeights) {
-    std::fill(fWeights.begin(), fWeights.end(), 1.);
-  }
-
-  /* calculate all qvectors */
-  CalculateQvectors();
-
-  /* fill final result profiles */
-  for (auto V : fMCCorrelators) {
-    switch (static_cast<int>(V.size())) {
-    case 2:
-      fFinalResultProfiles[kHARDATA]->Fill(
-          V.size() - 1.5, Two(V.at(0), V.at(1)).Re() / Two(0, 0).Re(),
-          Two(0, 0).Re());
-      break;
-    case 3:
-      fFinalResultProfiles[kHARDATA]->Fill(
-          V.size() - 1.5,
-          Three(V.at(0), V.at(1), V.at(2)).Re() / Three(0, 0, 0).Re(),
-          Three(0, 0, 0).Re());
-      break;
-    case 4:
-      fFinalResultProfiles[kHARDATA]->Fill(
-          V.size() - 1.5,
-          Four(V.at(0), V.at(1), V.at(2), V.at(3)).Re() / Four(0, 0, 0, 0).Re(),
-          Four(0, 0, 0, 0).Re());
-      break;
-    case 5:
-      fFinalResultProfiles[kHARDATA]->Fill(
-          V.size() - 1.5,
-          Five(V.at(0), V.at(1), V.at(2), V.at(3), V.at(4)).Re() /
-              Five(0, 0, 0, 0, 0).Re(),
-          Five(0, 0, 0, 0, 0).Re());
-      break;
-    case 6:
-      fFinalResultProfiles[kHARDATA]->Fill(
-          V.size() - 1.5,
-          Six(V.at(0), V.at(1), V.at(2), V.at(3), V.at(4), V.at(5)).Re() /
-              Six(0, 0, 0, 0, 0, 0).Re(),
-          Six(0, 0, 0, 0, 0, 0).Re());
-      break;
-    default:
-      fFinalResultProfiles[kHARDATA]->Fill(
-          V.size() - 1.5,
-          Recursion(V.size(), V.data()).Re() /
-              Recursion(V.size(), std::vector<Int_t>(V.size(), 0).data()).Re(),
-          Recursion(V.size(), std::vector<Int_t>(V.size(), 0).data()).Re());
-    }
-  }
-}
-
 void AliAnalysisTaskAR::Terminate(Option_t *) {
   /* Accessing the merged output list for final compution or for off-line
    * computations (i.e. after merging)*/
 
-  /* fHistList = (TList *)GetOutputData(1); */
+  // fHistList = (TList *)GetOutputData(1);
   if (!fHistList) {
     std::cout << __LINE__ << ": Did not get " << fHistListName << std::endl;
     Fatal("Terminate", "Invalid Pointer to fHistList");
@@ -243,23 +188,15 @@ void AliAnalysisTaskAR::Terminate(Option_t *) {
   fFinalResultHistograms[kPHIAVG]->SetBinContent(
       1, fTrackControlHistograms[kPHI][kAFTER]->GetMean());
 
-  /* compute analytical values for correlators */
+  // compute analytical values for correlators and fill them into profile
   if (fMCAnalaysis) {
     Double_t v = 1.;
-    for (auto V : fMCCorrelators) {
+    for (auto V : fCorrelators) {
       v = 1.;
       for (auto i : V) {
         v *= fMCFlowHarmonics->GetAt(abs(i) - 1);
       }
       fFinalResultProfiles[kHARTHEO]->Fill(V.size() - 1.5, v);
-      std::cout << std::scientific << std::setprecision(6) << "v_" << V.size()
-                << std::endl
-                << "THEO="
-                << fFinalResultProfiles[kHARTHEO]->GetBinContent(V.size() - 1)
-                << std::endl
-                << "DATA="
-                << fFinalResultProfiles[kHARDATA]->GetBinContent(V.size() - 1)
-                << std::endl;
     }
   }
 }
@@ -269,6 +206,7 @@ void AliAnalysisTaskAR::InitializeArrays() {
   InitializeArraysForTrackControlHistograms();
   InitializeArraysForEventControlHistograms();
   InitializeArraysForCuts();
+  InitializeArraysForQvectors();
   InitializeArraysForFinalResultHistograms();
   InitializeArraysForFinalResultProfiles();
   InitializeArraysForMCAnalysis();
@@ -448,6 +386,15 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultHistograms() {
   }
 }
 
+void AliAnalysisTaskAR::InitializeArraysForQvectors() {
+  /* Make sure all Q-vectors are initially zero: */
+  for (Int_t h = 0; h < kMaxHarmonic; h++) {
+    for (Int_t p = 0; p < kMaxPower; p++) {
+      fQvector[h][p] = TComplex(0., 0.);
+    }
+  }
+}
+
 void AliAnalysisTaskAR::InitializeArraysForFinalResultProfiles() {
   /* initialize array for final result profiles */
   for (int var = 0; var < LAST_EFINALPROFILE; ++var) {
@@ -458,6 +405,8 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultProfiles() {
       // kNAME, kTITLE, kXAXIS
       {"fFinalResultProfiles[kHARDATA]", "Flow Harmonics (Data)",
        ""}, // kHARDATA
+      {"fFinalResultProfiles[kHARDATARESET]",
+       "Flow Harmonics (Data, weights reset)", ""}, // kHARDATARESET
       {"fFinalResultProfiles[kHARTHEO]", "Flow Harmonics (Theory)",
        ""}, // kHARTHEO
   };
@@ -473,6 +422,7 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultProfiles() {
   Double_t BinsFinalResultProfileDefaults[LAST_EFINALPROFILE][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
       {1., 0., 1.}, // kHARDATA
+      {1., 0., 1.}, // kHARDATARESET
       {1., 0., 1.}, // kHARTHEO
   };
   /* initialize array of bins and edges for final result profiles */
@@ -487,13 +437,6 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultProfiles() {
 void AliAnalysisTaskAR::InitializeArraysForMCAnalysis() {
   /* initialize arrays for MC analysis */
 
-  /* 1) Make sure all Q-vectors are initially zero: */
-  for (Int_t h = 0; h < kMaxHarmonic; h++) {
-    for (Int_t p = 0; p < kMaxPower; p++) {
-      fQvector[h][p] = TComplex(0., 0.);
-    }
-  }
-
   /* range of pdf */
   Double_t MCPdfRangeDefaults[LAST_EMINMAX] = {0.0, TMath::TwoPi()};
   for (int i = 0; i < LAST_EMINMAX; ++i) {
@@ -505,12 +448,6 @@ void AliAnalysisTaskAR::InitializeArraysForMCAnalysis() {
   for (int i = 0; i < LAST_EMINMAX; ++i) {
     fMCNumberOfParticlesPerEventRange[i] =
         MCNumberOfParticlesPerEventRangeDefaults[i];
-  }
-
-  /* range of reduced acceptance */
-  Double_t ReducedAcceptanceRangeDefault[LAST_EMINMAX] = {0., TMath::TwoPi()};
-  for (int i = 0; i < LAST_EMINMAX; ++i) {
-    fReducedAcceptanceRange[i] = ReducedAcceptanceRangeDefault[i];
   }
 }
 
@@ -628,10 +565,6 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
 void AliAnalysisTaskAR::BookMCObjects() {
   /* book objects need for MC analysis */
 
-  // setup RNG
-  delete gRandom;
-  fUseCustomSeed ? gRandom = new TRandom3(fSeed) : gRandom = new TRandom3(0);
-
   /* protect at some point if fMCFlowHarmonics is empty */
   if (!fMCFlowHarmonics) {
     std::cout << __LINE__ << ": no flow harmonics defined" << std::endl;
@@ -663,42 +596,47 @@ void AliAnalysisTaskAR::BookMCObjects() {
   }
 }
 
-void AliAnalysisTaskAR::AODExec() {
-  /* general strategy */
-  /* 1. Get pointer to AOD event */
-  /* 2. Start analysis over AODs, i.e. fill fPhi */
-  /* 3. Reset event-by-event objects */
-  /* 4. PostData */
+void AliAnalysisTaskAR::UserExec(Option_t *) {
+  // general strategy
+  // 1. Reset event-by-event objects
+  // 2. Get pointer to AOD event
+  // 3. Start analysis over AODs, i.e. fill fPhi
+  // 4. Fill event objects
+  // 5. PostData
 
-  /* 1. Get pointer to AOD event */
+  // 1. Reset event-by-event objects
+  fPhi.clear();
+  fWeights.clear();
+
+  // 2. Get pointer to AOD event
   AliAODEvent *aAOD = dynamic_cast<AliAODEvent *>(InputEvent()); // from TaskSE
   if (!aAOD) {
     return;
   }
 
-  /* get centrality percentile */
+  // get centrality percentile
   Double_t centralityPercentile =
       dynamic_cast<AliMultSelection *>(aAOD->FindListObject("MultSelection"))
           ->GetMultiplicityPercentile(fCentralitySelCriterion);
 
-  /* fill centrality control histgrogram before event cut */
+  // fill centrality control histgrogram before event cut
   fEventControlHistograms[kCEN][kBEFORE]->Fill(centralityPercentile);
 
-  /* cut event */
+  // cut event
   if (!SurviveEventCut(aAOD)) {
     return;
   }
 
-  /* fill centrality control histogram after event cut */
+  // fill centrality control histogram after event cut
   fEventControlHistograms[kCEN][kAFTER]->Fill(centralityPercentile);
 
-  /* 2. Start analysis over AODs: */
+  // 3. Start analysis over AODs:
 
-  /* number of all tracks in current event */
+  //  number of all tracks in current event
   Int_t nTracks = aAOD->GetNumberOfTracks();
 
-  /* count number of valid tracks before and after cutting for computing
-   * multiplicity */
+  // count number of valid tracks before and after cutting for computing
+  // multiplicity
   Int_t nTracks_beforeCut = 0;
   Int_t nTracks_afterCut = 0;
 
@@ -736,49 +674,78 @@ void AliAnalysisTaskAR::AODExec() {
     nTracks_afterCut++;
 
     /* finally, fill azimuthal angels into vector */
-    fPhi.push_back(phi);
+    if (!fMCClosure) {
+      fPhi.push_back(phi);
+    } else {
+      Int_t AcceptanceBin = fAcceptanceHistogram->FindBin(phi);
+      if (gRandom->Uniform() <=
+          fAcceptanceHistogram->GetBinContent(AcceptanceBin)) {
+        fPhi.push_back(phi);
+        fWeights.push_back(fWeightHistogram->GetBinContent(AcceptanceBin));
+      }
+    }
   }
 
   /* fill control histogram for Multiplicity after counting all tracks */
   fEventControlHistograms[kMUL][kBEFORE]->Fill(nTracks_beforeCut);
   fEventControlHistograms[kMUL][kAFTER]->Fill(nTracks_afterCut);
 
-  // c) Reset event-by-event objects:
-  // ...
-  // Double_t px = aTrack->Px(); // x-component of momenta
-  // Double_t py = aTrack->Py(); // y-component of momenta
-  // Double_t pz = aTrack->Pz(); // z-component of momenta
-  // Double_t e = aTrack->E();  // energy
-  // Double_t charge = aTrack->Charge(); // charge
+  // 4. Fill event objects
+  /* reset weights if required*/
+
+  /* calculate all qvectors */
+  CalculateQvectors();
+
+  // fill final result profile
+  FillFinalResultProfile(kHARDATA);
+
+  // if option is given, repeat with weights resetted
+  if (fResetWeights) {
+    std::fill(fWeights.begin(), fWeights.end(), 1.);
+    CalculateQvectors();
+    FillFinalResultProfile(kHARDATARESET);
+  }
 
   // d) PostData:
   PostData(1, fHistList);
 }
 
 void AliAnalysisTaskAR::MCOnTheFlyExec() {
-  /* call this method for monte carlo analysis to fill fPhi */
+  // call this method for monte carlo analysis
 
-  /* set symmetry planes for MC analysis */
+  // reset angles and weights
+  fPhi.clear();
+  fWeights.clear();
+
+  // set symmetry planes for MC analysis
   MCPdfSymmetryPlanesSetup();
-  /* loop over all particles in an event */
-  Double_t Phi = 0.;
+  // loop over all particles in an even
+  Double_t Phi = 0.0;
+  Int_t AcceptanceBin = 0;
   for (int i = 0; i < GetMCNumberOfParticlesPerEvent(); ++i) {
     Phi = fMCPdf->GetRandom();
 
     if (fUseWeights) {
-      if (Phi > fReducedAcceptanceRange[kMIN] &&
-          Phi < fReducedAcceptanceRange[kMAX]) {
-        if (gRandom->Uniform() < fReducedAcceptance) {
-          fPhi.push_back(Phi);
-          fWeights.push_back(1 / fReducedAcceptance);
-        }
-      } else {
+      AcceptanceBin = fAcceptanceHistogram->FindBin(Phi);
+      if (gRandom->Uniform() <=
+          fAcceptanceHistogram->GetBinContent(AcceptanceBin)) {
         fPhi.push_back(Phi);
-        fWeights.push_back(1.);
+        fWeights.push_back(fWeightHistogram->GetBinContent(AcceptanceBin));
       }
     } else {
       fPhi.push_back(Phi);
     }
+  }
+
+  // compute Q-vectors
+  CalculateQvectors();
+  // fill data into final result profile
+  FillFinalResultProfile(kHARDATA);
+  // if option is given, reset weight and recompute Q-vectors
+  if (fResetWeights) {
+    std::fill(fWeights.begin(), fWeights.end(), 1.);
+    CalculateQvectors();
+    FillFinalResultProfile(kHARDATARESET);
   }
 }
 
@@ -905,9 +872,6 @@ Int_t AliAnalysisTaskAR::GetMCNumberOfParticlesPerEvent() {
 void AliAnalysisTaskAR::CalculateQvectors() {
   /* Calculate Q-vectors. */
 
-  /* 1) Make sure all Q-vectors are initially zero; */
-  /* 2) Calculate Q-vectors for available angles and weights. */
-
   /* 1) Make sure all Q-vectors are initially zero: */
   for (Int_t h = 0; h < kMaxHarmonic; h++) {
     for (Int_t p = 0; p < kMaxPower; p++) {
@@ -933,6 +897,59 @@ void AliAnalysisTaskAR::CalculateQvectors() {
                                    wPhiToPowerP * TMath::Sin(h * dPhi));
       }
     }
+  }
+}
+
+void AliAnalysisTaskAR::FillFinalResultProfile(kFinalProfile fp) {
+  /* fill final result profiles */
+
+  Double_t corr = 0.0;
+  Double_t weight = 0.0;
+  Int_t index = 0;
+
+  // loop over all correlators
+  for (auto Corr : fCorrelators) {
+    // protect against insufficient amount of statistics
+    // i.e. number of paritcles is lower then the order of correlator due to
+    // track cuts
+    if (fPhi.size() < Corr.size()) {
+      return;
+    }
+
+    // compute correlator
+    switch (static_cast<int>(Corr.size())) {
+    case 2:
+      corr = Two(Corr.at(0), Corr.at(1)).Re();
+      weight = Two(0, 0).Re();
+      break;
+    case 3:
+      corr = Three(Corr.at(0), Corr.at(1), Corr.at(2)).Re();
+      weight = Three(0, 0, 0).Re();
+      break;
+    case 4:
+      corr = Four(Corr.at(0), Corr.at(1), Corr.at(2), Corr.at(3)).Re();
+      weight = Four(0, 0, 0, 0).Re();
+      break;
+    case 5:
+      corr =
+          Five(Corr.at(0), Corr.at(1), Corr.at(2), Corr.at(3), Corr.at(4)).Re();
+      weight = Five(0, 0, 0, 0, 0).Re();
+      break;
+    case 6:
+      corr = Six(Corr.at(0), Corr.at(1), Corr.at(2), Corr.at(3), Corr.at(4),
+                 Corr.at(5))
+                 .Re();
+      weight = Six(0, 0, 0, 0, 0, 0).Re();
+      break;
+    default:
+      corr = Recursion(Corr.size(), Corr.data()).Re();
+      weight = Recursion(Corr.size(), std::vector<Int_t>(Corr.size(), 0).data())
+                   .Re();
+    }
+
+    index++;
+    // fill final resutl profile
+    fFinalResultProfiles[fp]->Fill(index - 0.5, corr / weight, weight);
   }
 }
 
@@ -963,8 +980,7 @@ TComplex AliAnalysisTaskAR::Three(Int_t n1, Int_t n2, Int_t n3) {
   return three;
 }
 
-TComplex AliAnalysisTaskAR::Four(Int_t n1, Int_t n2, Int_t n3,
-                                          Int_t n4) {
+TComplex AliAnalysisTaskAR::Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4) {
   /* Generic four-particle correlation */
   /* <exp[i(n1*phi1+n2*phi2+n3*phi3+n4*phi4)]>. */
   TComplex four =
@@ -981,8 +997,8 @@ TComplex AliAnalysisTaskAR::Four(Int_t n1, Int_t n2, Int_t n3,
   return four;
 }
 
-TComplex AliAnalysisTaskAR::Five(Int_t n1, Int_t n2, Int_t n3,
-                                          Int_t n4, Int_t n5) {
+TComplex AliAnalysisTaskAR::Five(Int_t n1, Int_t n2, Int_t n3, Int_t n4,
+                                 Int_t n5) {
   /* Generic five-particle correlation */
   /* <exp[i(n1*phi1+n2*phi2+n3*phi3+n4*phi4+n5*phi5)]>. */
   TComplex five = Q(n1, 1) * Q(n2, 1) * Q(n3, 1) * Q(n4, 1) * Q(n5, 1) -
@@ -1041,7 +1057,7 @@ TComplex AliAnalysisTaskAR::Five(Int_t n1, Int_t n2, Int_t n3,
 }
 
 TComplex AliAnalysisTaskAR::Six(Int_t n1, Int_t n2, Int_t n3, Int_t n4,
-                                         Int_t n5, Int_t n6) {
+                                Int_t n5, Int_t n6) {
   /* Generic six-particle correlation */
   /* <exp[i(n1*phi1+n2*phi2+n3*phi3+n4*phi4+n5*phi5+n6*phi6)]>. */
   TComplex six =
@@ -1252,8 +1268,7 @@ TComplex AliAnalysisTaskAR::Six(Int_t n1, Int_t n2, Int_t n3, Int_t n4,
 }
 
 TComplex AliAnalysisTaskAR::Recursion(Int_t n, Int_t *harmonic,
-                                               Int_t mult /* = 1*/,
-                                               Int_t skip /*= 0*/) {
+                                      Int_t mult /* = 1*/, Int_t skip /*= 0*/) {
   // Calculate multi-particle correlators by using recursion (an improved
   // faster version) originally developed by Kristjan Gulbrandsen
   // (gulbrand@nbi.dk).
@@ -1335,8 +1350,7 @@ TComplex AliAnalysisTaskAR::TwoNestedLoops(Int_t n1, Int_t n2) {
   return Two / CombinatorialWeight(2);
 }
 
-TComplex AliAnalysisTaskAR::ThreeNestedLoops(Int_t n1, Int_t n2,
-                                                      Int_t n3) {
+TComplex AliAnalysisTaskAR::ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3) {
   // Calculation of <cos(n1*phi1+n2*phi2+n3*phi3)> and
   // <sin(n1*phi1+n2*phi2+n3*phi3)> with three nested loops.
 
@@ -1373,8 +1387,8 @@ TComplex AliAnalysisTaskAR::ThreeNestedLoops(Int_t n1, Int_t n2,
   return Q / CombinatorialWeight(3);
 }
 
-TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2,
-                                                     Int_t n3, Int_t n4) {
+TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2, Int_t n3,
+                                            Int_t n4) {
   // Calculation of <cos(n1*phi1+n2*phi2+n3*phi3+n4*phi4)> and
   // <sin(n1*phi1+n2*phi2+n3*phi3+n4*phi4)> with four nested loops.
 
@@ -1421,6 +1435,64 @@ TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2,
   return Q / CombinatorialWeight(4);
 }
 
+void AliAnalysisTaskAR::SetAcceptanceHistogram(TH1F *AcceptanceHistogram) {
+  if (!AcceptanceHistogram) {
+    std::cout << __LINE__ << ": Did not get acceptance histogram" << std::endl;
+    Fatal("SetAccpetanceHistogram", "Invalid pointer");
+  }
+  this->fAcceptanceHistogram = AcceptanceHistogram;
+}
+
+void AliAnalysisTaskAR::SetAcceptanceHistogram(const char *Filename,
+                                               const char *Histname) {
+  // check if file exists
+  if (gSystem->AccessPathName(Filename, kFileExists)) {
+    std::cout << __LINE__ << ": File does not exist" << std::endl;
+    Fatal("SetAcceptanceHistogram", "Invalid file name");
+  }
+  TFile *file = new TFile(Filename, "READ");
+  if (!file) {
+    std::cout << __LINE__ << ": Cannot open file" << std::endl;
+    Fatal("SetAcceptanceHistogram", "ROOT file cannot be read");
+  }
+  this->fAcceptanceHistogram = dynamic_cast<TH1F *>(file->Get(Histname));
+  if (!fAcceptanceHistogram) {
+    std::cout << __LINE__ << ": No acceptance histogram" << std::endl;
+    Fatal("SetAcceptanceHistogram", "Cannot get acceptance histogram");
+  }
+  this->fAcceptanceHistogram->SetDirectory(0);
+  file->Close();
+}
+
+void AliAnalysisTaskAR::SetWeightHistogram(TH1F *WeightHistogram) {
+  if (!WeightHistogram) {
+    std::cout << __LINE__ << ": Did not get weight histogram" << std::endl;
+    Fatal("SetWeightHistogram", "Invalid pointer");
+  }
+  this->fWeightHistogram = WeightHistogram;
+}
+
+void AliAnalysisTaskAR::SetWeightHistogram(const char *Filename,
+                                               const char *Histname) {
+  // check if file exists
+  if (gSystem->AccessPathName(Filename, kFileExists)) {
+    std::cout << __LINE__ << ": File does not exist" << std::endl;
+    Fatal("SetWeightHistogram", "Invalid file name");
+  }
+  TFile *file = new TFile(Filename, "READ");
+  if (!file) {
+    std::cout << __LINE__ << ": Cannot open file" << std::endl;
+    Fatal("SetWeightHistogram", "ROOT file cannot be read");
+  }
+  this->fWeightHistogram = dynamic_cast<TH1F *>(file->Get(Histname));
+  if (!fWeightHistogram) {
+    std::cout << __LINE__ << ": No acceptance histogram" << std::endl;
+    Fatal("SetWeightHistogram", "Cannot get weight histogram");
+  }
+  this->fWeightHistogram->SetDirectory(0);
+  file->Close();
+}
+
 void AliAnalysisTaskAR::GetPointers(TList *histList) {
   /* Initialize pointer for base list fHistList so we can initialize all other
    * objects and call terminate off-line*/
@@ -1433,7 +1505,8 @@ void AliAnalysisTaskAR::GetPointers(TList *histList) {
 
   /* initialize all other objects */
   this->GetPointersForControlHistograms();
-  this->GetPointersForOutputHistograms();
+  this->GetPointersForFinalResultHistograms();
+  this->GetPointersForFinalResultProfiles();
 }
 
 void AliAnalysisTaskAR::GetPointersForControlHistograms() {
@@ -1477,8 +1550,8 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
   }
 }
 
-void AliAnalysisTaskAR::GetPointersForOutputHistograms() {
-  /* Get pointers for Output Histograms */
+void AliAnalysisTaskAR::GetPointersForFinalResultHistograms() {
+  /* Get pointers for final result Histograms */
 
   /* Get pointer for fFinalResultsList */
   fFinalResultsList =
@@ -1493,7 +1566,7 @@ void AliAnalysisTaskAR::GetPointersForOutputHistograms() {
   for (int var = 0; var < LAST_EFINALHIST; ++var) {
     fFinalResultHistograms[var] = dynamic_cast<TH1F *>(
         fFinalResultsList->FindObject(fFinalResultHistogramNames[var][0]));
-    if (!fTrackControlHistograms[var]) {
+    if (!fFinalResultHistograms[var]) {
       std::cout << __LINE__ << ": Did not get "
                 << fFinalResultHistogramNames[var][0] << std::endl;
       Fatal("GetPointersForOutputHistograms", "Invalid Pointer");
@@ -1505,11 +1578,30 @@ void AliAnalysisTaskAR::GetPointersForOutputHistograms() {
   /* fMaxBuffer = fBuffersFlagsPro->GetBinContent(2); */
 }
 
-/* TComplex Q(Int_t n, Int_t p) */
-/* { */
-/*  // Using the fact that Q{-n,p} = Q{n,p}^*. */
+void AliAnalysisTaskAR::GetPointersForFinalResultProfiles() {
+  /* Get pointers for final result Histograms */
 
-/*  if(n>=0){return Qvector[n][p];} */
-/*  return TComplex::Conjugate(Qvector[-n][p]); */
+  /* Get pointer for fFinalResultsList */
+  fFinalResultsList =
+      dynamic_cast<TList *>(fHistList->FindObject(fFinalResultsListName));
+  if (!fFinalResultsList) {
+    std::cout << __LINE__ << ": Did not get " << fFinalResultsListName
+              << std::endl;
+    Fatal("GetPointersForOutputHistograms", "Invalid Pointer");
+  }
 
-/* } */
+  /* get all pointers for final result histograms */
+  for (int var = 0; var < LAST_EFINALPROFILE; ++var) {
+    fFinalResultProfiles[var] = dynamic_cast<TProfile *>(
+        fFinalResultsList->FindObject(fFinalResultProfileNames[var][0]));
+    if (!fFinalResultProfiles[var]) {
+      std::cout << __LINE__ << ": Did not get "
+                << fFinalResultProfileNames[var][0] << std::endl;
+      Fatal("GetPointersForOutputProfiles", "Invalid Pointer");
+    }
+  }
+
+  /* Set again all flags: */
+  /* fFillBuffers = (Bool_t)fBuffersFlagsPro->GetBinContent(1); */
+  /* fMaxBuffer = fBuffersFlagsPro->GetBinContent(2); */
+}
