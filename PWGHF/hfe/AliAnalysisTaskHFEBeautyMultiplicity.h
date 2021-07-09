@@ -61,9 +61,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 
 	void SetWeightDmeson(TGraphErrors* WeightPt_Dmeson){ pTWeight_D = WeightPt_Dmeson; };
 	void SetWeightLc(TGraphErrors* WeightPt_Lc){ pTWeight_Lc = WeightPt_Lc; };
-	void SetWeightBmeson(TF1* WeightPt_Bmeson){ pTWeight_B = WeightPt_Bmeson; };
-	void SetWeightPi0(TF1* WeightPt_Pi0){ pTWeight_Pi0 = WeightPt_Pi0; };
-	void SetWeightEta(TF1* WeightPt_Eta){ pTWeight_Eta = WeightPt_Eta; };
+	//void SetWeightBmeson(TF1* WeightPt_Bmeson){ pTWeight_B = WeightPt_Bmeson; };
+	//void SetWeightPi0(TF1* WeightPt_Pi0){ pTWeight_Pi0 = WeightPt_Pi0; };
+	//void SetWeightEta(TF1* WeightPt_Eta){ pTWeight_Eta = WeightPt_Eta; };
 
 
 
@@ -286,6 +286,11 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*	fHistMCorg_Pi0_True;
 	TH1F*	fHistMCorg_Eta_Enhance;
 	TH1F*	fHistMCorg_Eta_True;
+
+	TH2F* 	fHistPt_ele_vs_D;
+	TH2F* 	fHistPt_ele_vs_BtoD;
+	TH2F* 	fHistPt_ele_vs_B;
+	TH2F* 	fHistPt_ele_vs_Lc;
     
 
         AliAnalysisTaskHFEBeautyMultiplicity(const AliAnalysisTaskHFEBeautyMultiplicity&);                // not implemented

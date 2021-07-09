@@ -80,15 +80,15 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
     }
     TGraphErrors* WeightPt_Dmeson = (TGraphErrors*)fpTWeight->Get("pTWeight_Dmeson")->Clone("WeightPt_Dmeson");
     TGraphErrors* WeightPt_Lc     = (TGraphErrors*)fpTWeight->Get("pTWeight_Lc")->Clone("WeightPt_Lc");
-    TF1* 	  WeightPt_Bmeson = (TF1*)fpTWeight->Get("pTWeight_Bmeson")->Clone("WeightPt_Bmeson");
-    TF1* 	  WeightPt_Pi0 	  = (TF1*)fpTWeight->Get("pTWeight_Pi0")->Clone("WeightPt_Pi0");
-    TF1* 	  WeightPt_Eta    = (TF1*)fpTWeight->Get("pTWeight_Eta")->Clone("WeightPt_Eta");
+    //TF1* 	  WeightPt_Bmeson = (TF1*)fpTWeight->Get("pTWeight_Bmeson")->Clone("WeightPt_Bmeson");
+    //TF1* 	  WeightPt_Pi0 	  = (TF1*)fpTWeight->Get("pTWeight_Pi0")->Clone("WeightPt_Pi0");
+    //TF1* 	  WeightPt_Eta    = (TF1*)fpTWeight->Get("pTWeight_Eta")->Clone("WeightPt_Eta");
 
     task->SetWeightDmeson(WeightPt_Dmeson);
     task->SetWeightLc(WeightPt_Lc);
-    task->SetWeightBmeson(WeightPt_Bmeson);
-    task->SetWeightPi0(WeightPt_Pi0);
-    task->SetWeightEta(WeightPt_Eta);
+    //task->SetWeightBmeson(WeightPt_Bmeson);
+    //task->SetWeightPi0(WeightPt_Pi0);
+    //task->SetWeightEta(WeightPt_Eta);
 
 
 
