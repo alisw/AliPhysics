@@ -2477,23 +2477,20 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2064){ // EMCAL+DCAL NLM = 1-100, EG1, NL , std TM, swapping back.
     cuts.AddCutCalo("0008d113","411792109fe30220000","0r631031000000d0"); // EG1  NL 21 + TB dir. gamma
 
-  // configuration for V1 unfold Clusterizer with 1-100 local maxima
-  } else if (trainConfig == 2065){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
-    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
-  } else if (trainConfig == 2066){ // EMCAL+DCAL NLM = 1-100, EG2, NL , std TM, swapping back.
-    cuts.AddCutCalo("0008e113","411792109fe32220000","0r631031000000d0"); // EG2  NL 12 + TB dir. gamma
-    cuts.AddCutCalo("0008d113","411792109fe32220000","0r631031000000d0"); // EG1  NL 12 + TB dir. gamma
-
   // configuration for NxN Clusterizer with 1-2 local maxima
-  } else if (trainConfig == 2067){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
+  } else if (trainConfig == 2065){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
     cuts.AddCutCalo("00010113","411792109fe32220003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
-  } else if (trainConfig == 2068){ // EMCAL+DCAL NLM = 1-100, EG2, NL , std TM, swapping back.
+  } else if (trainConfig == 2066){ // EMCAL+DCAL NLM = 1-100, EG2, NL , std TM, swapping back.
     cuts.AddCutCalo("0008e113","411792109fe32220003","0r631031000000d0"); // EG2  NL 12 + TB dir. gamma
     cuts.AddCutCalo("0008d113","411792109fe32220003","0r631031000000d0"); // EG1  NL 12 + TB dir. gamma
 
-  } else if (trainConfig == 2069){  // EMCAL+DCAL without NCell cut
-    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
-
+    // configs for different triggers with new NonLins
+  } else if (trainConfig == 2067){
+    cuts.AddCutCalo("00010113","411799909fe30220000","0r631031000000d0"); // INT7 NL 99, no NCell cut (only use with cell scale)
+  } else if (trainConfig == 2068){
+    cuts.AddCutCalo("0008e113","411799909fe30220000","0r631031000000d0"); // EG2 NL 99, no NCell cut (only use with cell scale)
+  } else if (trainConfig == 2069){
+    cuts.AddCutCalo("0008d113","411799909fe30220000","0r631031000000d0"); // EG1 NL 99, no NCell cut (only use with cell scale)
 
 
   // TM studies (std cut f has fEOverPMax = 1.75)
