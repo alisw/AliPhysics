@@ -43,6 +43,8 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         void                    SetPtRangeAss(Double_t min, Double_t max) {fPtMinAss = min; fPtMaxAss = max; }
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
+        void                    SetPtBins(std::vector<Double_t> bins) { fPtBinsTrigCharged = bins; }
+        void                    SetPtBinsAss(std::vector<Double_t> bins) { fPtBinsAss = bins; }
 
     private:
 
