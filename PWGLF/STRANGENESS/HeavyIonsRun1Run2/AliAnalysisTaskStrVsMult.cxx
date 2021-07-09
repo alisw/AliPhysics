@@ -55,8 +55,8 @@ fisMC(kFALSE),
 fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
-fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-fCasc_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+fCasc_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
 //variables for V0 cuts
@@ -75,6 +75,7 @@ fV0_InvMassLam(0),
 fV0_InvMassALam(0),
 fV0_LeastCRaws(0),
 fV0_LeastCRawsOvF(0),
+fV0_LeastTPCcls(0),
 fV0_NSigPosProton(0),
 fV0_NSigPosPion(0),
 fV0_NSigNegProton(0),
@@ -101,6 +102,7 @@ fCasc_NSigBacPion(0),
 fCasc_NSigBacKaon(0),
 fCasc_LeastCRaws(0),
 fCasc_LeastCRawsOvF(0),
+fCasc_LeastTPCcls(0),
 fCasc_InvMassLam(0),
 fCasc_DcaV0Daught(0),
 fCasc_V0CosPA(0),
@@ -150,8 +152,8 @@ fisMC(kFALSE),
 fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
-fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 0.5, 0.8, 70., 0.8, 5., 20., 30., -95.},
-fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 0.005, 1., 0.99, 0.1, 0.1, -95., 0.5, 0.8, 3., 3., 3., 0.2, 0.2, 1.},
+fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 0.5, 0.8, 70., 0.8, 50., 5., 20., 30., -95.},
+fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 50., 0.005, 1., 0.99, 0.1, 0.1, -95., 0.5, 0.8, 3., 3., 3., 0.2, 0.2, 1.},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
 //variables for V0 cuts
@@ -170,6 +172,7 @@ fV0_InvMassLam(0),
 fV0_InvMassALam(0),
 fV0_LeastCRaws(0),
 fV0_LeastCRawsOvF(0),
+fV0_LeastTPCcls(0),
 fV0_NSigPosProton(0),
 fV0_NSigPosPion(0),
 fV0_NSigNegProton(0),
@@ -196,6 +199,7 @@ fCasc_NSigBacPion(0),
 fCasc_NSigBacKaon(0),
 fCasc_LeastCRaws(0),
 fCasc_LeastCRawsOvF(0),
+fCasc_LeastTPCcls(0),
 fCasc_InvMassLam(0),
 fCasc_DcaV0Daught(0),
 fCasc_V0CosPA(0),
@@ -572,6 +576,11 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double_t lCrosRawsOvFNeg = lCrosRawsNeg / ((double) (nTrack->GetTPCNclsF()));
         fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
 
+        //clusters for TPC PID
+        double_t lTPCclsPos = pTrack->GetTPCsignalN();
+        double_t lTPCclsNeg = nTrack->GetTPCsignalN();
+        fV0_LeastTPCcls = (int) TMath::Min(lTPCclsPos, lTPCclsNeg);
+
         //dca info
         fV0_DcaPosToPV  = TMath::Abs(pTrack->GetD(lBestPV[0], lBestPV[1], lMagField));
         fV0_DcaNegToPV  = TMath::Abs(nTrack->GetD(lBestPV[0], lBestPV[1], lMagField));
@@ -671,6 +680,11 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double_t lCrosRawsOvFPos = lCrosRawsPos/((double) (pTrack->GetTPCNclsF()));
         double_t lCrosRawsOvFNeg = lCrosRawsNeg/((double) (nTrack->GetTPCNclsF()));
         fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
+
+        //clusters for TPC PID
+        double_t lTPCclsPos = pTrack->GetTPCsignalN();
+        double_t lTPCclsNeg = nTrack->GetTPCsignalN();
+        fV0_LeastTPCcls = (int) TMath::Min(lTPCclsPos, lTPCclsNeg);
 
         //dca info
         fV0_DcaPosToPV = v0->DcaPosToPrimVertex();
@@ -809,6 +823,12 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double lCrosRawsOvFBac = lCrosRawsBac/((double) (bTrackCasc->GetTPCNclsF()));
         fCasc_LeastCRawsOvF = lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
 
+        //clusters for TPC PID
+        double_t lTPCclsPos = pTrackCasc->GetTPCsignalN();
+        double_t lTPCclsNeg = nTrackCasc->GetTPCsignalN();
+        double_t lTPCclsBac = bTrackCasc->GetTPCsignalN();
+        fCasc_LeastTPCcls = (int) (lTPCclsPos<lTPCclsNeg ? std::min(lTPCclsPos, lTPCclsBac) : std::min(lTPCclsNeg, lTPCclsBac));
+
         //V0 daughter mass (later to be checked against nominal)
         fCasc_InvMassLam = casc->GetEffMass(); //Note that GetEffMass() is inherited from AliESDv0 and it returns the mass of the V0 (and not of the cascade)
 
@@ -934,6 +954,12 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double lCrosRawsOvFNeg = lCrosRawsNeg / ((double)(nTrackCasc->GetTPCNclsF()));
         double lCrosRawsOvFBac = lCrosRawsBac / ((double)(bTrackCasc->GetTPCNclsF()));
         fCasc_LeastCRawsOvF = lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
+
+        //clusters for TPC PID
+        double_t lTPCclsPos = pTrackCasc->GetTPCsignalN();
+        double_t lTPCclsNeg = nTrackCasc->GetTPCsignalN();
+        double_t lTPCclsBac = bTrackCasc->GetTPCsignalN();
+        fCasc_LeastTPCcls = (int) (lTPCclsPos<lTPCclsNeg ? std::min(lTPCclsPos, lTPCclsBac) : std::min(lTPCclsNeg, lTPCclsBac));
 
         //DCA info
         fCasc_DcaCascDaught = casc->DcaXiDaughters();
@@ -1097,6 +1123,7 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kFALSE, kV0_V0Rad, 11, 0.9, 1.3);
   SetCutVariation(kFALSE, kV0_LeastCRaws, 11, 60, 80);
   SetCutVariation(kFALSE, kV0_LeastCRawsOvF, 11, 0.75, 0.90);
+  SetCutVariation(kFALSE, kV0_LeastTPCcls, 5, 40, 60);
   SetCutVariation(kFALSE, kV0_NSigPID, 6, 2, 7);
   SetCutVariation(kFALSE, kV0_PropLifetK0s, 11, 10, 40);
   SetCutVariation(kFALSE, kV0_PropLifetLam, 11, 10, 40);
@@ -1107,6 +1134,7 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kTRUE, kCasc_NSigPID, 6, 2, 7);
   SetCutVariation(kTRUE, kCasc_LeastCRaws, 11, 70, 90);
   SetCutVariation(kTRUE, kCasc_LeastCRawsOvF, 11, 0.75, 0.9);
+  SetCutVariation(kTRUE, kCasc_LeastTPCcls, 5, 40, 60);
   SetCutVariation(kTRUE, kCasc_InvMassLam, 5, 0.002, 0.006);
   SetCutVariation(kTRUE, kCasc_DcaV0Daught, 10, 0.5, 1.4);
   SetCutVariation(kTRUE, kCasc_V0CosPA, 21, 0.95, 0.999);
@@ -1138,6 +1166,8 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if (fV0_LeastCRaws<cutval_V0[kV0_LeastCRaws]) return kFALSE;
     // check candidate daughters' crossed TPC raws over findable
     if (fV0_LeastCRawsOvF<cutval_V0[kV0_LeastCRawsOvF]) return kFALSE;
+    // check candidate daughters' TPC clusters (note that the checked value is the lowest between the two daughter)
+    if (fV0_LeastTPCcls<cutval_V0[kV0_LeastTPCcls]) return kFALSE;
     // check candidate daughters' DCA to Primary Vertex (needs to be large because V0 decay is far from the Primary Vertex)
     if (fV0_DcaPosToPV<cutval_V0[kV0_DcaPosToPV] || fV0_DcaNegToPV<cutval_V0[kV0_DcaNegToPV]) return kFALSE;
     // check candidate daughters' DCA between them (needs to be small because they have to come from the same secondary vertex)
@@ -1174,6 +1204,8 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if(fCasc_LeastCRaws<cutval_Casc[kCasc_LeastCRaws]) return kFALSE;
     // check candidate daughters' crossed TPC raws over findable
     if(fCasc_LeastCRawsOvF<cutval_Casc[kCasc_LeastCRawsOvF]) return kFALSE;
+    // check candidate daughters' TPC clusters
+    if(fCasc_LeastTPCcls<cutval_Casc[kCasc_LeastTPCcls]) return kFALSE;
     // check candidate's 2D decay distance from PV (if it is too small, then it's not a weak decay)
     if(fCasc_CascRad<cutval_Casc[kCasc_CascRad]) return kFALSE;
     // check candidate V0 daughter's 2D decay distance from PV (if it is too small, then it's not a weak decay)
