@@ -38,22 +38,17 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow() : AliAnalysisTaskSE(),
     fPtMaxTrig(10.0),
     fPtMinAss(0.5),
     fPtMaxAss(1.5),
-    // fPtBinsTrigCharged(),
-    // fPtBinsAss(),
     fCentMin(0.0),
     fCentMax(10.0),
     fCentrality(-10.0),
     fAbsEtaMax(1.0),
     fPVz(100.0),
     fCentEstimator("V0M"),
-    // fEventCuts(0),
     fPoolMaxNEvents(2000),
     fPoolMinNTracks(50000),
     fMinEventsToMix(5),
     fNzVtxBins(10),
     fNCentBins(15),
-    // fzVtxBins(0),
-    // fCentBins(0),
     fMergingCut(0.0)
 {}
 //_____________________________________________________________________________
@@ -76,22 +71,17 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name) : AliAn
     fPtMaxTrig(10.0),
     fPtMinAss(0.5),
     fPtMaxAss(1.5),
-    // fPtBinsTrigCharged(),
-    // fPtBinsAss(),
     fCentMin(0.0),
     fCentMax(10.0),
     fCentrality(-10.0),
     fAbsEtaMax(1.0),
     fPVz(100.0),
     fCentEstimator("V0M"),
-    // fEventCuts(0),
     fPoolMaxNEvents(2000),
     fPoolMinNTracks(50000),
     fMinEventsToMix(5),
     fNzVtxBins(10),
     fNCentBins(15),
-    // fzVtxBins(0),
-    // fCentBins(0),
     fMergingCut(0.0)
 {
     DefineInput(0, TChain::Class());
@@ -105,9 +95,9 @@ void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
 {
     OpenFile(1);
 
-    //just for testing
-    fPtBinsTrigCharged = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0};
-    fPtBinsAss = {0.5, 1.0, 1.5, 2.0, 3.0};
+    // //just for testing
+    // fPtBinsTrigCharged = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0};
+    // fPtBinsAss = {0.5, 1.0, 1.5, 2.0, 3.0};
     fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
     fCentBins = {0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100};
 
