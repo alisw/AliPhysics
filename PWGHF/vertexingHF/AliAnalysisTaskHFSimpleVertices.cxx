@@ -725,8 +725,8 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
       AliFatal("Number of pT bins in JSON for Dplus at skims level not consistent, please check it");
 
     int nptbinlimsDsSkims = 0, ncDsSkims = 0, nptDsSkims = 0;
-    float* ptbinlimsDsSkims = GetJsonArray(filename.Data(),"pTBinsDSToPiKK",nptbinlimsDsSkims);
-    float** cutsDsSkims = GetJsonMatrix(filename.Data(),"cutsDSToPiKK",nptDsSkims,ncDsSkims);
+    float* ptbinlimsDsSkims = GetJsonArray(filename.Data(),"pTBinsDsToPiKK",nptbinlimsDsSkims);
+    float** cutsDsSkims = GetJsonMatrix(filename.Data(),"cutsDsToPiKK",nptDsSkims,ncDsSkims);
     if(nptbinlimsDsSkims-1 != nptDsSkims)
       AliFatal("Number of pT bins in JSON for Ds at skims level not consistent, please check it");
 
@@ -1405,8 +1405,10 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     track_p0->PropagateToDCA(primVtxTrk, bzkG, 100., d0track, covd0track);
     fHistPtSelTracks->Fill(track_p0->Pt());
     fHistTglSelTracks->Fill(track_p0->GetTgl());
-    fHistImpParSelTracks2prong->Fill(d0track[0]);
-    fHistEtaSelTracks2prong->Fill(track_p0->Eta());
+    if (status[iPosTrack_0] & 1){
+      fHistImpParSelTracks2prong->Fill(d0track[0]);
+      fHistEtaSelTracks2prong->Fill(track_p0->Eta());
+    }
     if (status[iPosTrack_0] & 2){
       fHistImpParSelTracks3prong->Fill(d0track[0]);
       fHistEtaSelTracks3prong->Fill(track_p0->Eta());
@@ -1469,7 +1471,8 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       AliESDtrack* track_n0 = esd->GetTrack(iNegTrack_0);
       track_n0->GetPxPyPz(mom1);
       if (track_n0->Charge() > 0) continue;
-      if (status[iNegTrack_0] == 0) continue;
+      if ((status[iPosTrack_0] & 1) == 0) continue;
+      if ((status[iNegTrack_0] & 1) == 0) continue;
       twoTrackArray->AddAt(track_p0, 0);
       twoTrackArray->AddAt(track_n0, 1);
 
