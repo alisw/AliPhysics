@@ -2828,6 +2828,14 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 2178){ // nom Bfield
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799909fe32220000","0r63103100000010"); // EG1, EMC FT
 
+  // with interpolation between PCM-EMC and EMC-EMC fine tuning (favorable option), no NCell cut
+  } else if (trainConfig == 2179){ // nom Bfield
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe30220000","0r63103100000010"); // INT7, interpolation between PCM-EMC and EMC-EMC FT, no NCell cut
+  } else if (trainConfig == 2180){ // nom Bfield
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799909fe30220000","0r63103100000010"); // EG2, interpolation between PCM-EMC and EMC-EMC FT, no NCell cut
+  } else if (trainConfig == 2181){ // nom Bfield
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799909fe30220000","0r63103100000010"); // EG1, interpolation between PCM-EMC and EMC-EMC FT, no NCell cut
+
 
   } else if (trainConfig == 2190){ // low Bfield
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799609fe32220000","0r63103100000010"); // INT7, no FT
@@ -2836,6 +2844,8 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799809fe32220000","0r63103100000010"); // INT7, EMC-EMC FT
   } else if (trainConfig == 2192){ // low Bfield
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799909fe32220000","0r63103100000010"); // INT7, interpolation between PCM-EMC and EMC-EMC FT
+  } else if (trainConfig == 2193){ // low Bfield
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799909fe30220000","0r63103100000010"); // INT7, interpolation between PCM-EMC and EMC-EMC FT, no NCell cut
 
 
   // PCM-EDC systematics
