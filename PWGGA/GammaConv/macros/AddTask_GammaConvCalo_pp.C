@@ -2493,13 +2493,10 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 2013) {  //   Smearing                                             |
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100a00010"); //   old implementation pol2
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100b00010"); //   new implementation pol2
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100c00010"); //   new implementation pol2 with Bremsstrahlung
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100d00010"); //   const
   } else if ( trainConfig == 2014) {  //   Smearing                                             |
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100e00010"); // pol1 no Bremsstrahlung
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100f00010"); // pol1 with Bremsstrahlung 0.01
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100g00010"); // pol1 with Bremsstrahlung 0.001
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100h00010"); // pol1 with Bremsstrahlung 0.1
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100o00010"); // 10% additional Bremsstrahlung 
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100p00010"); // 20% additional Bremsstrahlung
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100q00010"); // 30% additional Bremsstrahlung
 
   } else if ( trainConfig == 2015){ // min bias // EDC  // no nl
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe30220000","0163103100b00010"); // No NonLin
