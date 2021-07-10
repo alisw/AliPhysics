@@ -1,3 +1,29 @@
+
+#ifdef __ECLIPSE_IDE
+//  few includes and external declarations just for the IDE
+#include "Riostream.h"
+#include "TSystem.h"
+#include "AliAnalysisTaskFlowVectorCorrections.h"
+#include "AliAnalysisManager.h"
+AliAnalysisDataContainer* AddTaskFlowQnVectorCorrections();
+#endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
+
+
+#ifdef __CLING__
+// ROOT6 macro inclusion
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/runAnalysis.H>
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/loadRunOptions.C>
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskFlowQnVectorCorrections.C>
+#include <PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskQnVectorAnalysis.C>
+#endif
+
+
+using std::cout;
+using std::endl;
+
+
+
 void AddTaskPhiSA(char *analysislevel, const Bool_t useShift, Bool_t bMCtruth, char* runtype, Float_t pairrapidity, char *systematiccut, Int_t dataperiod, Int_t sw, Int_t MT)
 
 {
@@ -10,14 +36,18 @@ void AddTaskPhiSA(char *analysislevel, const Bool_t useShift, Bool_t bMCtruth, c
 
   AliAnalysisManager *mgr2 = AliAnalysisManager::GetAnalysisManager();  
   const char *taskname = Form("NewTpcTofPidTaskKStarWt%d",20);  
-  cout<<"The name of task is:"<<taskname<<"****************"<<endl;
+  std::cout<<"The name of task is:"<<taskname<<"****************"<<std::endl;
   
 
 
   if (sw==0)
-  gROOT->LoadMacro("AliAnalysisTaskPhiSA.cxx++g");                                                                                  
+#ifndef __CLING__
+  gROOT->LoadMacro("AliAnalysisTaskPhiSA.cxx++g");                                                                                         
+#endif                                                                                        
   else if (sw==1)
-  gROOT->LoadMacro("AliAnalysisTaskPhiSA.cxx");                                                                                         
+#ifndef __CLING__
+  gROOT->LoadMacro("AliAnalysisTaskPhiSA.cxx"); 
+#endif                                                                                        
   AliAnalysisTaskPhiSA* task = new AliAnalysisTaskPhiSA(taskname,useShift);
   task->SetAnalysisLevel(analysislevel);
   task->CheckPileUp(kFALSE);
@@ -31,14 +61,16 @@ void AddTaskPhiSA(char *analysislevel, const Bool_t useShift, Bool_t bMCtruth, c
 
   gROOT->SetStyle("Plain");                                                                                                                  
   //const char *configpath = ".";
-  const char *configpath = "alien:///alice/cern.ch/user/p/prottay/checktxt";                                                                   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/runAnalysis.H");                                                          
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/loadRunOptions.C");                                                        
-  //gROOT->LoadMacro("runAnalysis.H");
-  //gROOT->LoadMacro("loadRunOptions.C");
-
+  const char *configpath = "alien:///alice/cern.ch/user/p/prottay/checktxt";                  
+  #ifndef __CLING__
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/runAnalysis.H");                                                          
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/loadRunOptions.C");                                                        
+  gROOT->LoadMacro("runAnalysis.H");
+  gROOT->LoadMacro("loadRunOptions.C");
+  #endif                                                                                        
 
   if (!loadRunOptions(kFALSE, configpath,dataperiod)) {
-    cout << "ERROR: configuration options not loaded. ABORTING!!!" << endl;
+    std::cout << "ERROR: configuration options not loaded. ABORTING!!!" << std::endl;
     return;
   }
 
@@ -59,7 +91,7 @@ void AddTaskPhiSA(char *analysislevel, const Bool_t useShift, Bool_t bMCtruth, c
       task->SetShiftList(shiftList);
     }
     else {
-      cout<<" WARNING: the file <shift.root> with sin and cosine averages from the previous run was not available."<<endl;
+      std::cout<<" WARNING: the file <shift.root> with sin and cosine averages from the previous run was not available."<<std::endl;
       break;
     }
   }
@@ -70,10 +102,10 @@ void AddTaskPhiSA(char *analysislevel, const Bool_t useShift, Bool_t bMCtruth, c
 
   if(useShift){
     TString outfilename = Form("AnalysisResults.root");
-    cout << "Name of the output file    : " << outfilename.Data() << endl;
+    std::cout << "Name of the output file    : " << outfilename.Data() << std::endl;
   }
   else { TString outfilename = Form("AnalysisResults.root");
-    cout << "Name of the output file    : " << outfilename.Data() << endl;
+    std::cout << "Name of the output file    : " << outfilename.Data() << std::endl;
   }
 
   mgr2->AddTask(task);
@@ -118,13 +150,13 @@ void AddTaskPhiSA(char *analysislevel, const Bool_t useShift, Bool_t bMCtruth, c
     mgr2->ConnectInput(taskQn,  0, mgr2->GetCommonInputContainer());
     mgr2->ConnectInput(taskQn,  1, corrTask);
     mgr2->ConnectOutput(taskQn, 1, cOutputQnAnaEventQA );
-
     if (MT==1)
       {
+	std::cout<<"*****************hi i am inside MT loop*************************"<<std::endl;
     mgr2->ConnectInput(task,  0, mgr2->GetCommonInputContainer());
     mgr2->ConnectOutput(task, 1, coutput1 );
       }
-    
+
   }
 
 
@@ -143,8 +175,8 @@ void AddTaskPhiSA(char *analysislevel, const Bool_t useShift, Bool_t bMCtruth, c
   AliAnalysisDataContainer *cinput = mgr2->GetCommonInputContainer();                                                                        
   if(useShift) {                                                                                             
 
-    AliAnalysisDataContainer *cinputShift = mgr2->CreateContainer("avShift",TList::Class(),AliAnalysisManager::kInputContainer);
-    AliAnalysisDataContainer *coutput1 = mgr2->CreateContainer("ShiftFlowOut", TList::Class(), AliAnalysisManager::kOutputContainer, outfilename); 
+    AliAnalysisDataContainer *cinputShift = mgr->CreateContainer("avShift",TList::Class(),AliAnalysisManager::kInputContainer);
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("ShiftFlowOut", TList::Class(), AliAnalysisManager::kOutputContainer, outfilename); 
 
   }
 

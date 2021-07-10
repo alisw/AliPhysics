@@ -71,7 +71,10 @@
 #include "AliAnalysisUtils.h"
 #include "AliPhysicsSelection.h"
 #include "AliFlowEventSimple.h"
-#include "AliTimeRangeCut.h"
+//#include "AliTimeRangeCut.h"
+
+using std::cout;
+using std::endl;
 
 ClassImp(AliAnalysisTaskPhiSA)
 
@@ -329,7 +332,7 @@ AliAnalysisTaskPhiSA::AliAnalysisTaskPhiSA(const char *name, const Bool_t useshi
   printf("===================================================================================\n");
   printf("\n                HI I AM INSIDE .cxx after calling from ADDTASK                            \n");
   printf("===================================================================================\n");
-  cout<<"**********************TASK NAME************************:"<<name<<endl;
+  std::cout<<"**********************TASK NAME************************:"<<name<<std::endl;
 
 
 
@@ -756,7 +759,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
   
   if(fUseShift) {
     if(!fShiftList) {
-      cout<<"WARNING: fWeightsList or fShiftList is NULL."<<endl;
+      std::cout<<"WARNING: fWeightsList or fShiftList is NULL."<<std::endl;
       exit(0);  
     }
     fShiftList->SetOwner();
@@ -769,7 +772,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
 	(fShiftList->FindObject("full_cos_Term_V0A"));
       //fOutput->Add(fShiftCosTerm_v2);
     } else {
-      cout<<"WARNING: profile with cosine av.in shift corr. for V0A is not accessible"<<endl;
+      std::cout<<"WARNING: profile with cosine av.in shift corr. for V0A is not accessible"<<std::endl;
       exit(0);
     }
     
@@ -778,7 +781,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
 	(fShiftList->FindObject("full_sin_Term_V0A"));
       //fOutput->Add(fShiftSinTerm_v2);
     } else {
-      cout<<"WARNING: profile with sine av. in shift corr. for V0A is not accessible"<<endl;
+      std::cout<<"WARNING: profile with sine av. in shift corr. for V0A is not accessible"<<std::endl;
       exit(0);
     }
     
@@ -787,7 +790,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
 	(fShiftList->FindObject("full_cos_Term_V0C"));
       //fOutput->Add(fShiftCosTerm_v2);
     } else {
-      cout<<"WARNING: profile with cosine av.in shift corr. for V0C is not accessible"<<endl;
+      std::cout<<"WARNING: profile with cosine av.in shift corr. for V0C is not accessible"<<std::endl;
       exit(0);
     }
     
@@ -796,7 +799,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
 	(fShiftList->FindObject("full_sin_Term_V0C"));
       //fOutput->Add(fShiftSinTerm_v2);
     } else {
-      cout<<"WARNING: profile with sine av. in shift corr. for V0C is not accessible"<<endl;
+      std::cout<<"WARNING: profile with sine av. in shift corr. for V0C is not accessible"<<std::endl;
       exit(0);
     }
   } // end of if(fUseShift)
@@ -845,13 +848,13 @@ void AliAnalysisTaskPhiSA::UserExec(Option_t *)
     if (!fPIDResponse){Printf("ERROR: Could not retrieve PID Reasponse\n"); PostData(1, fOutput);return; }
     ReSet();
     
-    
+    /*
     AliTimeRangeCut  *fTimeRangeCut;
     fTimeRangeCut = new AliTimeRangeCut;
     fTimeRangeCut->InitFromEvent(event);
     if (fTimeRangeCut->CutEvent(event))
       return;
-    
+    */
 
     if(PassEvent(event)){
       
@@ -1022,7 +1025,7 @@ void AliAnalysisTaskPhiSA::UserExec(Option_t *)
       fHistEPV0C_recShift[centBin]->Fill(myEventPlaneV0C_rec);
 
       //raw, plain, rec, align, twist, scale
-      // if(myEventPlaneTPC!=0)cout<<" My event plane angle ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "<<myEventPlaneTPC<<"\t"<<myEventPlaneVZEROA<<"\t"<<myEventPlaneVZEROC<<"\t"<<myEventPlaneZDCA<<"\t"<<myEventPlaneZDCC<<"\t"<<myEventPlaneFMDA<<"\t"<<myEventPlaneFMDC<<endl;
+      // if(myEventPlaneTPC!=0)std::cout<<" My event plane angle ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "<<myEventPlaneTPC<<"\t"<<myEventPlaneVZEROA<<"\t"<<myEventPlaneVZEROC<<"\t"<<myEventPlaneZDCA<<"\t"<<myEventPlaneZDCC<<"\t"<<myEventPlaneFMDA<<"\t"<<myEventPlaneFMDC<<std::endl;
 
        TVector2 QfullTPC;
        TVector2 QfullV0A;
@@ -1041,7 +1044,7 @@ void AliAnalysisTaskPhiSA::UserExec(Option_t *)
        //if(fQVZeroA->Mod()!=0)fHistEPV0A[centBin]->Fill(fQVZeroA->Phi()/2.);//Centrality wise V0A EP
        //if(fQVZeroC->Mod()!=0)fHistEPV0C[centBin]->Fill(fQVZeroC->Phi()/2.);//Centrality wise V0A EP
        
-       //cout<<"In user e  ==== === "<<fQVZeroA->Phi()/2.<<"\t"<<fQVZeroA_new->Phi()/2.<<"\t"<<fQVZeroC->Phi()/2.<<"\t"<<fQVZeroC_new->Phi()/2.<<endl;
+       //std::cout<<"In user e  ==== === "<<fQVZeroA->Phi()/2.<<"\t"<<fQVZeroA_new->Phi()/2.<<"\t"<<fQVZeroC->Phi()/2.<<"\t"<<fQVZeroC_new->Phi()/2.<<std::endl;
        
 	if(centBin >=0 && centBin < kCenBin){
 	  
@@ -1179,7 +1182,7 @@ void AliAnalysisTaskPhiSA::UserExec(Option_t *)
 	
       }//isESD
       
-      //cout<<" Total particle after track cuts   "<<tracklist->GetEntries()<<"  "<<passtrack<<"  "<<nRP<<endl;
+      //std::cout<<" Total particle after track cuts   "<<tracklist->GetEntries()<<"  "<<passtrack<<"  "<<nRP<<std::endl;
       
       fHistPionVsKaonMult->Fill(fCurrentEventDoughterTwo,fCurrentEventDoughterOne);
       //fBufferPointer = (Int_t)(fCurrentEventCentralityBin)*10 + (Int_t)((fCurrentEventVz+10.0)/2.0);
@@ -1452,7 +1455,7 @@ Int_t AliAnalysisTaskPhiSA::MakeRealPair(TVector2 * QvA, TVector2 * QvC)
 	      
 	      QvA_new.Set(QvA_X, QvA_Y);
 	      QvC_new.Set(QvC_X, QvC_Y);
-	      //cout<<"The values ===== "<<Qv_X<<"\t"<< TMath::Cos(2.*DgtOne.Phi())<<"\t"<< TMath::Cos(2.*DgtTwo.Phi()) <<"\t"<<Qv_Y <<"\t"<< TMath::Sin(2.*DgtOne.Phi()) <<"\t"<< TMath::Sin(2.*DgtTwo.Phi())<<endl;
+	      //std::cout<<"The values ===== "<<Qv_X<<"\t"<< TMath::Cos(2.*DgtOne.Phi())<<"\t"<< TMath::Cos(2.*DgtTwo.Phi()) <<"\t"<<Qv_Y <<"\t"<< TMath::Sin(2.*DgtOne.Phi()) <<"\t"<< TMath::Sin(2.*DgtTwo.Phi())<<std::endl;
 	      
 	      Double_t EPAngle_new = QvC_new.Phi()/2.;
 	      //-------------
@@ -1530,7 +1533,7 @@ Int_t AliAnalysisTaskPhiSA::MakeLikePair(TVector2 * QvA, TVector2 * QvC)
 	      
 	      QvA_new.Set(QvA_X, QvA_Y);
 	      QvC_new.Set(QvC_X, QvC_Y);
-	      //cout<<"The values ===== "<<Qv_X<<"\t"<< TMath::Cos(2.*DgtOne.Phi())<<"\t"<< TMath::Cos(2.*DgtTwo.Phi()) <<"\t"<<Qv_Y <<"\t"<< TMath::Sin(2.*DgtOne.Phi()) <<"\t"<< TMath::Sin(2.*DgtTwo.Phi())<<endl;
+	      //std::cout<<"The values ===== "<<Qv_X<<"\t"<< TMath::Cos(2.*DgtOne.Phi())<<"\t"<< TMath::Cos(2.*DgtTwo.Phi()) <<"\t"<<Qv_Y <<"\t"<< TMath::Sin(2.*DgtOne.Phi()) <<"\t"<< TMath::Sin(2.*DgtTwo.Phi())<<std::endl;
 	      
 	      Double_t EPAngle_new = QvC_new.Phi()/2.;
 	      //-------------
@@ -1618,7 +1621,7 @@ Int_t AliAnalysisTaskPhiSA::MakeMixedPair(Int_t bufferPointer, TVector2 * QvA, T
 	  QvA_newm.Set(QvA_Xm, QvA_Ym);
 	  QvC_newm.Set(QvC_Xm, QvC_Ym);
 
-	  //cout<<"The values ===== "<<Qv_Xm<<"\t"<< TMath::Cos(2.*DgtOne.Phi())<<"\t"<< TMath::Cos(2.*DgtTwo.Phi()) <<"\t"<<Qv_Ym <<"\t"<< TMath::Sin(2.*DgtOne.Phi()) <<"\t"<< TMath::Sin(2.*DgtTwo.Phi())<<endl;
+	  //std::cout<<"The values ===== "<<Qv_Xm<<"\t"<< TMath::Cos(2.*DgtOne.Phi())<<"\t"<< TMath::Cos(2.*DgtTwo.Phi()) <<"\t"<<Qv_Ym <<"\t"<< TMath::Sin(2.*DgtOne.Phi()) <<"\t"<< TMath::Sin(2.*DgtTwo.Phi())<<std::endl;
 	  
 	  Double_t EPAngle_newm = QvC_newm.Phi()/2.;
 	  //-------------
@@ -1719,7 +1722,7 @@ void AliAnalysisTaskPhiSA::CopyCurrentToBuffer(Int_t bufferPointer,TVector2 *Qv)
       do 
 	{ Double_t rrr = Rand->Rndm();
 	  eventPointer = (Int_t)(Nmix*(1.0 - rrr));
-	  //cout<<"***********************value of event pointer***********************:"<<eventPointer<<endl;
+	  //std::cout<<"***********************value of event pointer***********************:"<<eventPointer<<std::endl;
 	} while(eventPointer < 0 || eventPointer >= Nmix);
     } 
   else 
@@ -1783,7 +1786,7 @@ Double_t AliAnalysisTaskPhiSA::CosThetaStar(TLorentzVector mother, TLorentzVecto
 
   TVector3 UnitNormal = normal.Unit();
 
-  //cout<<"Magnitude of normal vector  ==  "<<normal.Mag()<<"\t"<<UnitNormal.Mag()<<"\t"<<Qvect.Mod()<<"\t"<<EPVect.Mag()<<"\t"<<BeamVect.Mag()<<endl;
+  //std::cout<<"Magnitude of normal vector  ==  "<<normal.Mag()<<"\t"<<UnitNormal.Mag()<<"\t"<<Qvect.Mod()<<"\t"<<EPVect.Mag()<<"\t"<<BeamVect.Mag()<<std::endl;
   
   //TVector3 momentumM(mother.Vect());
   //TVector3 normal(mother.Y() / momentumM.Mag(), -mother.X() / momentumM.Mag(), 0.0);
@@ -1849,12 +1852,12 @@ void AliAnalysisTaskPhiSA::SetPOIAndRPTrackType(TString tracktype, TString rptra
   fTrackType = tracktype;
   fRPTrackType = rptracktype;
 
-  cout<<"Setting track type for POI and RP : "<<fTrackType.Data()<<"  "<<fRPTrackType.Data()<<endl;
+  std::cout<<"Setting track type for POI and RP : "<<fTrackType.Data()<<"  "<<fRPTrackType.Data()<<std::endl;
   /*
   if (!fUsercuts) {
     if (fTrackType.CompareTo("GLOBAL")==0){ 
       fAliESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
-      cout<<"GetStandardITSTPCTrackCuts2010  Track cuts will be used to select the track =============== "<<endl;
+      std::cout<<"GetStandardITSTPCTrackCuts2010  Track cuts will be used to select the track =============== "<<std::endl;
     }	
     if (fTrackType.CompareTo("TPC")==0){  
       fAliESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -1894,7 +1897,7 @@ Bool_t AliAnalysisTaskPhiSA::IsSelectedPION(AliVTrack *track)
       maxTOF = 3.0; 
       //else maxTOF = 2.0;
       accept = (nsTOF <= maxTOF);
-      //cout << " Inside (isTOF)  nsTPC    " <<nsTPC << " nsTOF    "<<nsTOF<< "       accecptTOF "<<accept<<endl;
+      //std::cout << " Inside (isTOF)  nsTPC    " <<nsTPC << " nsTOF    "<<nsTOF<< "       accecptTOF "<<accept<<std::endl;
 
     } 
   else 
@@ -1912,7 +1915,7 @@ Bool_t AliAnalysisTaskPhiSA::IsSelectedPION(AliVTrack *track)
       else if (pTPC > 0.5)
 	maxTPC = 2.0;
       accept = (nsTPC <= maxTPC);
-      //cout << " Inside (isTPC)  nsTPC    " <<pTPC<<"   "<<nsTPC << " nsTOF    "<<nsTOF<< "       accecptTPC "<<accept<<endl; 
+      //std::cout << " Inside (isTPC)  nsTPC    " <<pTPC<<"   "<<nsTPC << " nsTOF    "<<nsTOF<< "       accecptTPC "<<accept<<std::endl; 
 
     }//
   
@@ -1969,7 +1972,7 @@ Bool_t AliAnalysisTaskPhiSA::IsSelectedKAON(AliVTrack *track)
       maxTPC = 2.0;
 
       accept = (nsTPC <= maxTPC);
-      //cout << " Inside (isTPC)  nsTPC    " <<pTPC<<"   "<<nsTPC << " nsTOF    "<<nsTOF<< "       accecptTPC "<<accept<<endl; 
+      //std::cout << " Inside (isTPC)  nsTPC    " <<pTPC<<"   "<<nsTPC << " nsTOF    "<<nsTOF<< "       accecptTPC "<<accept<<std::endl; 
     }
   
   return accept; 
