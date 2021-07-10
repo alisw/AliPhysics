@@ -184,9 +184,15 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fMCTrackpart(0),
     fMCheader(0),
 
-    fHistPho_Reco0(0),	    // Total photonic electron
-    fHistPho_Reco1(0),	    // Reconstructed photonic electron
-    fHistPho_Reco2(0),	    // Non-Reconstructed photonic electron
+    fHistPho_Reco0(0),	    // Total photonic electron(no weight)
+    fHistPho_Reco0_Pi0(0),  // Total photonic electron(pi0 weight)
+    fHistPho_Reco0_Eta(0),  // Total photonic electron(eta weight)
+    fHistPho_Reco1(0),	    // Reconstructed photonic electron(no weight)
+    fHistPho_Reco1_Pi0(0),  // Reconstructed photonic electron(pi0 weight)
+    fHistPho_Reco1_Eta(0),  // Reconstructed photonic electron(eta weight)
+    fHistPho_Reco2(0),	    // Non-Reconstructed photonic electron(no weight)
+    fHistPho_Reco2_Pi0(0),  // Non-Reconstructed photonic electron(pi0 weight)
+    fHistPho_Reco2_Eta(0),  // Non-Reconstructed photonic electron(eta weight)
     NembMCpi0(0),
     NembMCeta(0),
     NpureMCproc(0),
@@ -270,7 +276,12 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistMCorg_Pi0_Enhance(0),	// enhanced pi0
     fHistMCorg_Pi0_True(0),	// PYTHIA pi0
     fHistMCorg_Eta_Enhance(0),	// enhanced eta
-    fHistMCorg_Eta_True(0)	// PYTHIA eta
+    fHistMCorg_Eta_True(0),	// PYTHIA eta
+
+    fHistPt_ele_vs_D(0),
+    fHistPt_ele_vs_BtoD(0),
+    fHistPt_ele_vs_B(0),
+    fHistPt_ele_vs_Lc(0)
 
 {
     // default constructor, don't allocate memory here!
@@ -403,9 +414,15 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fMCTrackpart(0),
     fMCheader(0),
 
-    fHistPho_Reco0(0),	    // Total photonic electron
-    fHistPho_Reco1(0),	    // Reconstructed photonic electron
-    fHistPho_Reco2(0),	    // Non-Reconstructed photonic electron
+    fHistPho_Reco0(0),	    // Total photonic electron(no weight)
+    fHistPho_Reco0_Pi0(0),  // Total photonic electron(pi0 weight)
+    fHistPho_Reco0_Eta(0),  // Total photonic electron(eta weight)
+    fHistPho_Reco1(0),	    // Reconstructed photonic electron(no weight)
+    fHistPho_Reco1_Pi0(0),  // Reconstructed photonic electron(pi0 weight)
+    fHistPho_Reco1_Eta(0),  // Reconstructed photonic electron(eta weight)
+    fHistPho_Reco2(0),	    // Non-Reconstructed photonic electron(no weight)
+    fHistPho_Reco2_Pi0(0),  // Non-Reconstructed photonic electron(pi0 weight)
+    fHistPho_Reco2_Eta(0),  // Non-Reconstructed photonic electron(eta weight)
     NembMCpi0(0),
     NembMCeta(0),
     NpureMCproc(0),
@@ -489,7 +506,12 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistMCorg_Pi0_Enhance(0),	// enhanced pi0
     fHistMCorg_Pi0_True(0),	// PYTHIA pi0
     fHistMCorg_Eta_Enhance(0),	// enhanced eta
-    fHistMCorg_Eta_True(0)	// PYTHIA eta
+    fHistMCorg_Eta_True(0),	// PYTHIA eta
+
+    fHistPt_ele_vs_D(0),
+    fHistPt_ele_vs_BtoD(0),
+    fHistPt_ele_vs_B(0),
+    fHistPt_ele_vs_Lc(0)
 
 
 {
@@ -941,7 +963,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNoD->GetXaxis()->SetBinLabel(13,"after PID");
 
 
-  //Total photonic electron(MC)
+  //Total photonic electron (MC)
     fHistPho_Reco0 = new TH1F("fHistPho_Reco0", "Total photonic electron (MC); p_{T} [GeV/c];",1200,0,60);
     fOutputList->Add(fHistPho_Reco0);
     
@@ -952,6 +974,36 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   //Non-Reconstructed photonic electron in data (MC)
     fHistPho_Reco2 = new TH1F("fHistPho_Reco2", "Non-Reconstructed photonic electron in data (MC); p_{T} [GeV/c];",1200,0,60);
     fOutputList->Add(fHistPho_Reco2);
+    
+  //Total photonic from pi0 (weight)
+    fHistPho_Reco0_Pi0 = new TH1F("fHistPho_Reco0_Pi0", "Total photonic from Pi0 (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco0_Pi0->Sumw2();
+    fOutputList->Add(fHistPho_Reco0_Pi0);
+    
+  //Reconstructed photonic from pi0 (weight)
+    fHistPho_Reco1_Pi0 = new TH1F("fHistPho_Reco1_Pi0", "Reconstructed photonic from Pi0 (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco1_Pi0->Sumw2();
+    fOutputList->Add(fHistPho_Reco1_Pi0);
+
+  //Non-Reconstructed photonic from pi0 (weight)
+    fHistPho_Reco2_Pi0 = new TH1F("fHistPho_Reco2_Pi0", "Non-Reconstructed photonic from Pi0 (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco2_Pi0->Sumw2();
+    fOutputList->Add(fHistPho_Reco2_Pi0);
+    
+  //Total photonic from eta (weight)
+    fHistPho_Reco0_Eta = new TH1F("fHistPho_Reco0_Eta", "Total photonic from Eta (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco0_Eta->Sumw2();
+    fOutputList->Add(fHistPho_Reco0_Eta);
+    
+  //Reconstructed photonic from eta  (weight)
+    fHistPho_Reco1_Eta = new TH1F("fHistPho_Reco1_Eta", "Reconstructed photonic from Eta (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco1_Eta->Sumw2();
+    fOutputList->Add(fHistPho_Reco1_Eta);
+
+  //Non-Reconstructed photonic from eta (weight)
+    fHistPho_Reco2_Eta = new TH1F("fHistPho_Reco2_Eta", "Non-Reconstructed photonic from Eta (weight); p_{T} [GeV/c];",1200,0,60);
+    fHistPho_Reco2_Eta->Sumw2();
+    fOutputList->Add(fHistPho_Reco2_Eta);
     
   //check Eta range cut in MC
     fCheckEtaMC = new TH1F("fCheckEtaMC","check Eta range cut in MC", 160, -0.8, 0.8);
@@ -999,26 +1051,32 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   
   //DCAxy from B
     fDCAxy_MC_B = new TH2F("fDCAxy_MC_B","p_{T} vs DCA_{xy} (MC : B-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_B->Sumw2();
     fOutputList->Add(fDCAxy_MC_B);
   
   //DCAxy from D
     fDCAxy_MC_D = new TH2F("fDCAxy_MC_D","p_{T} vs DCA_{xy} (MC : D-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_D->Sumw2();
     fOutputList->Add(fDCAxy_MC_D);
 
   //DCAxy from Dpm
     fDCAxy_MC_Dpm = new TH2F("fDCAxy_MC_Dpm","p_{T} vs DCA_{xy} (MC : D^{+},D^{*+});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_Dpm->Sumw2();
     fOutputList->Add(fDCAxy_MC_Dpm);
   
   //DCAxy from D0
     fDCAxy_MC_D0 = new TH2F("fDCAxy_MC_D0","p_{T} vs DCA_{xy} (MC : D^{0},D^{*0});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_D0->Sumw2();
     fOutputList->Add(fDCAxy_MC_D0);
   
   //DCAxy from Ds
     fDCAxy_MC_Ds = new TH2F("fDCAxy_MC_Ds","p_{T} vs DCA_{xy} (MC : D^{+}_{s},D^{*+}_{s});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_Ds->Sumw2();
     fOutputList->Add(fDCAxy_MC_Ds);
   
   //DCAxy from Lambda c 
     fDCAxy_MC_Lc = new TH2F("fDCAxy_MC_Lc","p_{T} vs DCA_{xy} (MC : #Lambda_{c});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_Lc->Sumw2();
     fOutputList->Add(fDCAxy_MC_Lc);
 
   //DCAxy elrctron
@@ -1109,6 +1167,41 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   //Eta
     fHistMCorg_Eta_Enhance = new TH1F("fHistMCorg_Eta_Enhance","MCorg Pi0 (enhance)", 1200, 0, 60);	fOutputList->Add(fHistMCorg_Eta_Enhance);
     fHistMCorg_Eta_True = new TH1F("fHistMCorg_Eta_True","MCorg Pi0 (PYTHIA)", 1200, 0, 60);		fOutputList->Add(fHistMCorg_Eta_True);
+
+  //electron pT vs mother pT
+    fHistPt_ele_vs_D = new TH2F("fHistPt_ele_vs_D","electron p_{T} vs Mother D p_{T}; electron p_{T} [GeV/c]; D-meson p_{T} [GeV/c]",1200,0,60,1200,0,60);
+    fOutputList->Add(fHistPt_ele_vs_D);
+
+    fHistPt_ele_vs_BtoD = new TH2F("fHistPt_ele_vs_BtoD","electron p_{T} vs Grand Mother B(->D) p_{T}; electron p_{T} [GeV/c]; B-meson p_{T} [GeV/c]",1200,0,60,1200,0,60);
+    fOutputList->Add(fHistPt_ele_vs_BtoD);
+
+    fHistPt_ele_vs_B = new TH2F("fHistPt_ele_vs_B","electron p_{T} vs Mother B p_{T}; electron p_{T} [GeV/c]; B-meson p_{T} [GeV/c]",1200,0,60,1200,0,60);
+    fOutputList->Add(fHistPt_ele_vs_B);
+
+    fHistPt_ele_vs_Lc = new TH2F("fHistPt_ele_vs_Lc","electron p_{T} vs Mother #Lambda_{c} p_{T}; electron p_{T} [GeV/c]; #Lambda_{c} p_{T} [GeV/c]",1200,0,60,1200,0,60);
+    fOutputList->Add(fHistPt_ele_vs_Lc);
+
+
+
+
+
+
+  //------------------//
+  //     pT weight    //
+  //------------------//
+  	//B-meson
+	  pTWeight_B = new TF1("pTWeight_B", "pol2");
+	  pTWeight_B->SetParameters(-3.56545e-01,3.11103e-01,3.19225e-03);
+	  
+	//Pi0
+	  pTWeight_Pi0 = new TF1("pTWeight_Pi0", "([0]*exp((-x/[1]) - (x*x/[2])) + x/[3])^[4]");
+	  pTWeight_Pi0->SetParameters(9.64967e-02,1.38490e+06,6.58746e+01,4.98144e+00,-4.51193e+00);
+
+	//Eta
+	  pTWeight_Eta = new TF1("pTWeight_Eta", "([0]*exp((-x/[1]) - (x*x/[2])) + x/[3])^[4]");
+	  pTWeight_Eta->SetParameters(2.96266e-01,8.86671e+05,8.01783e+01,4.82405e+00,-5.81330e+00);
+	  
+	  
 
 
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -1725,7 +1818,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             
             Bool_t fFlagNonHFE = kFALSE;    // photonic electron identification
             
-	    TF1 *pTWeight_phot;
 
             //========== Electron E/p ==========//
             if((TPCnSigma >= CutTPCNsigma[0] && TPCnSigma <= CutTPCNsigma[1]) && (m20 >= CutM20[0] && m20 <= CutM20[1]))  // TPC nsigma & shower shape cut
@@ -1755,28 +1847,39 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                     
 		    if(pid_ele == 1.0)
 		    {
-
 			fDCAxy_MC_ele -> Fill(TrkPt, DCA[0]*charge*Bsign);	//DCA (all electron)
 
                     	//-------- Photonic electron --------//
-                    	if(pid_eleP)    // electron from photon & pi0 & eta (<- TMath::Abs(pdg)==11 && (pidM==22 || pidM==111 || pidM==221))
+                    	if(pid_eleP && (pidM==111 || pidM==221))    // electron from photon(from pi0 or eta) & pi0 & eta
                     	{
-				if(pidM==111) pTWeight_phot = (TF1*)pTWeight_Pi0;	// mother pi0
-				if(pidM==221) pTWeight_phot = (TF1*)pTWeight_Eta;	// mother eta
-				
+				//if(pidM==111) fHistPho_Reco0_Pi0->Fill(TrkPt, pTWeight_Pi0->Eval(pTMom));     	// all photonic electron from pi0 (with weight)
+				//if(pidM==221) fHistPho_Reco0_Eta->Fill(TrkPt, pTWeight_Eta->Eval(pTMom));     	// all photonic electron from eta (with weight)
+                        	
+				fHistPho_Reco0->Fill(TrkPt);     							// all information of photonic electron (no weight)
+				if(iEmbPi0) fHistPho_Reco0_Pi0->Fill(TrkPt, pTWeight_Pi0->Eval(pTMom));     		// all photonic electron from enhance pi0 (with weight)
+				if(iEmbEta) fHistPho_Reco0_Eta->Fill(TrkPt, pTWeight_Eta->Eval(pTMom));     		// all photonic electron from enhance eta (with weight)
 
-                        	fHistPho_Reco0->Fill(TrkPt, pTWeight_phot->Eval(pTMom));     	// all information of photonic electron
-				fDCAxy_MC_Phot -> Fill(TrkPt, DCA[0]*charge*Bsign);		//DCA (total photonic electron)
+				fDCAxy_MC_Phot -> Fill(TrkPt, DCA[0]*charge*Bsign);	//DCA (total photonic electron)
 
 				//fPhot_InvMass_vs_DCA->Fill(Mass, DCA[0]*charge*Bsign);
                        
                        		if(fFlagNonHFE)
                        		{
-                          		fHistPho_Reco1->Fill(TrkPt, pTWeight_phot->Eval(pTMom)); // Reconstructed by EMCal & TPC & InvMass
+					//if(pidM==111) fHistPho_Reco1_Pi0->Fill(TrkPt, pTWeight_Pi0->Eval(pTMom));     // Reco by EMCal & TPC & InvMass (pi0 with weight)
+					//if(pidM==221) fHistPho_Reco1_Eta->Fill(TrkPt, pTWeight_Eta->Eval(pTMom));     // Reco by EMCal & TPC & InvMass (eta with weight)
+                          		
+					fHistPho_Reco1->Fill(TrkPt); 							// Reco by EMCal & TPC & InvMass  (no weight)
+					if(iEmbPi0) fHistPho_Reco1_Pi0->Fill(TrkPt, pTWeight_Pi0->Eval(pTMom));     	// Reco electron from enhance pi0 (pi0 with weight)
+					if(iEmbEta) fHistPho_Reco1_Eta->Fill(TrkPt, pTWeight_Eta->Eval(pTMom));     	// Reco electron from enhance eta (eta with weight)
                         	}
                         	else
                        		{
-                           		fHistPho_Reco2->Fill(TrkPt, pTWeight_phot->Eval(pTMom)); // Non-Reconstructed by EMCal & TPC & InvMass
+					//if(pidM==111) fHistPho_Reco2_Pi0->Fill(TrkPt, pTWeight_Pi0->Eval(pTMom));     // Non-Reco by EMCal & TPC & InvMass (pi0 with weight)
+					//if(pidM==221) fHistPho_Reco2_Eta->Fill(TrkPt, pTWeight_Eta->Eval(pTMom));    	// Non-Reco by EMCal & TPC & InvMass (eta with weight)
+                           		
+					fHistPho_Reco2->Fill(TrkPt); 							// Non-Reco by EMCal & TPC & InvMass (no weight)
+					if(iEmbPi0) fHistPho_Reco2_Pi0->Fill(TrkPt, pTWeight_Pi0->Eval(pTMom));     	// Non-Reco electron from enhance pi0 (pi0 with weight)
+					if(iEmbEta) fHistPho_Reco2_Eta->Fill(TrkPt, pTWeight_Eta->Eval(pTMom));     	// Non-Reco electron from enhance eta (eta with weight)
                         	}
                     	}
 
@@ -1834,8 +1937,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
             }
             
-
         }
+
   } // continue until all the tracks are processed (track roop)
 //_________________________________________________________________________________________________
 
@@ -2155,12 +2258,25 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
         
         if(iHijing > -1)
         {
-            if(pdgGen==111) fHistMCorg_Pi0 -> Fill(iHijing, pTtrue); // pi0
-            if(pdgGen==221) fHistMCorg_Eta -> Fill(iHijing, pTtrue); // eta
+            if(pdgGen==111)
+	    {
+		    fHistMCorg_Pi0->Fill(iHijing, pTtrue);
+		    if(iHijing==0){ fHistMCorg_Pi0_Enhance->Fill(pTtrue, pTWeight_Pi0->Eval(pTtrue)); }	// iHijing=0, enhanced pi0 with weight
+		    else{ 	    fHistMCorg_Pi0_True->Fill(pTtrue); }				// iHijing=1, PYTHIA pi0
+
+	    }
+
+            if(pdgGen==221)
+	    {
+		    fHistMCorg_Eta -> Fill(iHijing, pTtrue); // eta
+		    if(iHijing==0){ fHistMCorg_Eta_Enhance->Fill(pTtrue, pTWeight_Eta->Eval(pTtrue)); }	// iHijing=0, enhanced eta with weight
+		    else{ 	    fHistMCorg_Eta_True->Fill(pTtrue); }				// iHijing=1, PYTHIA eta
+	    }
+
         }
 
 
-	//-- pi0 --
+/*	//-- pi0 --
 	if((iHijing > -1) && (pdgGen==111))
 	{
 		if(iEnhance){ 
@@ -2179,7 +2295,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
 			fHistMCorg_Eta_True -> Fill(pTtrue);	// iHijing=1, PYTHIA eta
 		}
 	}
-
+*/
 
 
 	//-- B,D meson --
@@ -2193,42 +2309,46 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
 
         
         if(TMath::Abs(pdgGen)!=11) continue;    // except Non-electrons
-        if(pTMom < 2.0) continue;
+        if(pTMom < 1.0) continue;
         
         Int_t pdgGM = -99;
         Int_t labelGM = -1;
         Double_t pTGMom = -1.0;
-        
-        if(pdgMom!=0)
-        {
-            AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray -> At(labelMom);
-            if(IsDdecay(pdgMom))
-            {
-                fHistMCorg_D -> Fill(fMCparticle->Pt());             // D->e
-                FindMother(fMCparticleMom, labelGM, pdgGM, pTGMom);
-                
-                //if(IsBdecay(pdgGM))
-		if(iBevt)
-                {
-                    fHistMCorg_BD -> Fill(fMCparticle->Pt());        // B->D->e
-                    fPt_Btoe -> Fill(fMCparticle->Pt(), pTGMom);
-                }
-                
-            }
-            
-            if(IsBdecay(pdgMom))
-            {
-                fHistMCorg_B->Fill(fMCparticle->Pt());               // B->e
-                fPt_Btoe->Fill(fMCparticle->Pt(), pTMom);
-            }
 
-	    if(TMath::Abs(pdgMom)==4122)			     // Lambda_c -> e
+
+	if(pdgMom!=0)
+	{
+            AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray -> At(labelMom);
+
+	    if(IsDdecay(pdgMom))
 	    {
-		fHistMCorg_Lc -> Fill(fMCparticle->Pt());
+		    fHistMCorg_D->Fill(pTtrue);				// D->e
+		    fHistPt_ele_vs_D->Fill(pTtrue, pTMom);		// electron vs D-meson
+
+		    FindMother(fMCparticleMom, labelGM, pdgGM, pTGMom);
+
+		    if(iBevt)
+		    {
+			    fHistMCorg_BD->Fill(pTtrue);		// B->D->e
+			    fHistPt_ele_vs_BtoD->Fill(pTtrue, pTGMom);	// electron vs B(->D)
+		    }
 	    }
 
-            
-        }
+	    if(IsBdecay(pdgMom))
+	    {
+		    fHistMCorg_B->Fill(pTtrue);				// B->e
+		    fHistPt_ele_vs_B->Fill(pTtrue, pTMom);		// electron vs B-meson
+	    }
+
+	    if(TMath::Abs(pdgMom)==4122)
+	    {
+		    fHistMCorg_Lc->Fill(pTtrue);			// Lc->e
+		    fHistPt_ele_vs_Lc->Fill(pTtrue, pTMom);		// electron vs Lc
+	    }
+	
+	}
+
+
     }
     
     return;

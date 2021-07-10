@@ -28,6 +28,7 @@ AliRsnMiniAnalysisTask * AddTaskF0
 (
  TString     outNameSuffix = "f0",                         //suffix for output container
  Bool_t      isMC          = 0,                            //MC flag
+ Bool_t      isAOD          = 1,                            //AOD = 1, ESD = 0
  AliPIDResponse::EBeamType collSys = AliPIDResponse::kPP, //=0, kPPB=1, kPBPB=2 outNameSuffix
  UInt_t      triggerMask   = AliVEvent::kINT7,             //trigger selection
  Bool_t      enaMultSel    = kTRUE,                        //enable multiplicity axis
@@ -120,8 +121,8 @@ AliRsnMiniAnalysisTask * AddTaskF0
   AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
 
   //trigger 
-  task->UseESDTriggerMask(triggerMask); //ESD
-  //task->SelectCollisionCandidates(triggerMask); //AOD
+  if (!isAOD) task->UseESDTriggerMask(triggerMask); //ESD
+  else task->SelectCollisionCandidates(triggerMask); //AOD
   
   //-----------------------------------------------------------------------------------------------
   // -- MULTIPLICITY/CENTRALITY -------------------------------------------------------------------

@@ -8457,30 +8457,27 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 
 
   // *************** experimental settings for EMCal studies
-    // Setting to be used with scale on cell level of 0% instead of 5%
+    // with new cell scale, PCM-EMC fine tuning for low B field
     case 93:
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
         // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        // This was determined with the S300A100 clusterizer setting and with PCM-EMC! Should be very similar to case 97
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
-          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
-          energy /= 1.00349;
+          energy /= FunctionNL_kSDM(energy, 0.982087, -3.1388, -0.545095);
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
         }
       }
       break;
-    // Setting to be used with scale on cell level of 1.5% instead of 5%
+    // with new cell scale, EMC fine tuning for low B field
     case 94:
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
         // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
-          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
-          energy /= 1.00349;
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
-          energy /= 1.015;
         }
       }
       break;
@@ -8490,11 +8487,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
-          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
-          energy /= 1.00349;
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
-          energy /= 1.035;
         }
       }
       break;
@@ -8513,9 +8507,15 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         // TB parametrization from Nico on Martin 100MeV points (incl. PCM-EMC fine tuning) FOR RUN 2!
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          // fine tuning for pp 13 TeV lowB
+          if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
+            energy /= FunctionNL_kSDM(energy, 0.988503, -3.10024, -0.28337);
+            // fine tuning for pp 13 TeV nominal B (set as default)
+          } else {
+            energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
+          }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
-          energy /= FunctionNL_kSDM(energy, 0.969772, -3.13635, -0.468246);
         }
       }
       break;
@@ -8524,9 +8524,35 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         // TB parametrization from Nico on Martin 100MeV points (incl. EMC-EMC fine tuning) FOR RUN 2!
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          // fine tuning for pp 13 TeV lowB
+          if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
+            energy /= FunctionNL_kSDM(energy, 0.99759, -3.21271, -0.363656);
+            // fine tuning for pp 13 TeV nominal B (set as default)
+          } else {
+            energy /= FunctionNL_kSDM(energy, 0.984314, -3.30941, -0.399441);
+          }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
-          energy /= FunctionNL_kSDM(energy, 0.984314, -3.30941, -0.399441);
+        }
+      }
+      break;
+    case 99: // Settings to be used with new scale on cell level
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (incl. interpolation between PCM-EMC and EMC-EMC fine tuning) FOR RUN 2!
+        // EMC and PCM-EMC deviate by about 0.5% so interpolation of 0.25% is chosen
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          // fine tuning for pp 13 TeV lowB
+          if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
+            energy /= FunctionNL_kSDM(energy, 0.988503, -3.10024, -0.28337);
+            energy /= 1.0025;
+            // fine tuning for pp 13 TeV nominal B (set as default)
+          } else {
+            energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
+            energy /= 1.0025;
+          }
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
         }
       }
       break;
