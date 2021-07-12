@@ -11,6 +11,7 @@
 #pragma link C++ class AliAnalysisTaskSECharmHadronvn+;
 #pragma link C++ class AliAnalysisTaskSECheckCharmHadronBkg+;
 #pragma link C++ class AliAnalysisTaskSEHFTreeCreatorApply+;
+#pragma link C++ class AliAnalysisTaskSEDmesonTree+;
 #pragma link C++ class AliAnalysisTaskSENonPromptLc+;
 #pragma link C++ class AliHFMLResponse+;
 #pragma link C++ class AliHFMLResponseDplustoKpipi+;

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 //*************************************************************************
-// \class AliAnalysisTaskSENonPromptLc
+// \class AliAnalysisTaskSEDmesonTree
 // \brief Analysis task to produce trees of Lc candidates for ML analyses of non-prompt Lc
 // \authors:
 // F. Grosa, fabrizio.grosa@cern.ch
@@ -10,33 +10,36 @@
 
 #include <TRandom3.h>
 
-#include "AliAODMCHeader.h"
-#include "AliRDHFCutsLctopKpi.h"
-#include "AliRDHFCutsLctoV0.h"
-#include "AliHFMLVarHandlerLctopKpi.h"
-#include "AliHFMLVarHandlerNonPromptLc2V0bachelor.h"
+#include "AliAODRecoDecayHF2Prong.h"
+#include "AliAODRecoDecayHF3Prong.h"
+#include "AliAODRecoCascadeHF.h"
+#include "AliRDHFCutsD0toKpi.h"
+#include "AliRDHFCutsDplustoKpipi.h"
+#include "AliRDHFCutsDStartoKpipi.h"
+#include "AliHFMLVarHandlerD0toKpi.h"
+#include "AliHFMLVarHandlerDplustoKpipi.h"
+#include "AliHFMLVarHandlerDstartoD0pi.h"
 #include "AliVertexingHFUtils.h"
 #include "AliAnalysisUtils.h"
 #include "AliAODHandler.h"
 #include "AliAODExtension.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisVertexingHF.h"
 
-#include "AliAnalysisTaskSENonPromptLc.h"
+#include "AliAnalysisTaskSEDmesonTree.h"
 
 /// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSENonPromptLc);
+ClassImp(AliAnalysisTaskSEDmesonTree);
 /// \endcond
 
 //________________________________________________________________________
-AliAnalysisTaskSENonPromptLc::AliAnalysisTaskSENonPromptLc() : AliAnalysisTaskSE()
+AliAnalysisTaskSEDmesonTree::AliAnalysisTaskSEDmesonTree() : AliAnalysisTaskSE()
 {
     /// Default constructor
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSENonPromptLc::AliAnalysisTaskSENonPromptLc(const char *name, int decayChannel, AliRDHFCuts *analysisCuts, bool createMLtree) :
+AliAnalysisTaskSEDmesonTree::AliAnalysisTaskSEDmesonTree(const char *name, int decayChannel, AliRDHFCuts *analysisCuts, bool createMLtree) :
     AliAnalysisTaskSE(name),
     fDecChannel(decayChannel),
     fCreateMLtree(createMLtree)
@@ -52,7 +55,7 @@ AliAnalysisTaskSENonPromptLc::AliAnalysisTaskSENonPromptLc(const char *name, int
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSENonPromptLc::~AliAnalysisTaskSENonPromptLc()
+AliAnalysisTaskSEDmesonTree::~AliAnalysisTaskSEDmesonTree()
 {
     // Destructor
     delete fOutput;
@@ -65,26 +68,37 @@ AliAnalysisTaskSENonPromptLc::~AliAnalysisTaskSENonPromptLc()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSENonPromptLc::LocalInit()
+void AliAnalysisTaskSEDmesonTree::LocalInit()
 {
     // Initialization
 
-    if (fDecChannel == kLctopKpi)
+    switch (fDecChannel)
     {
-        AliRDHFCutsLctopKpi *copycut = new AliRDHFCutsLctopKpi(*(static_cast<AliRDHFCutsLctopKpi *>(fRDCuts)));
-        PostData(2, copycut);
-    }
-    else if (fDecChannel == kLctopK0s || fDecChannel == kLctopiL)
-    {
-        AliRDHFCutsLctoV0 *copycut = new AliRDHFCutsLctoV0(*(static_cast<AliRDHFCutsLctoV0 *>(fRDCuts)));
-        PostData(2, copycut);
+        case kD0toKpi:
+        {
+            AliRDHFCutsD0toKpi *copycut = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi *>(fRDCuts)));
+            PostData(2, copycut);
+            break;
+        }
+        case kDplustoKpipi:
+        {
+            AliRDHFCutsDplustoKpipi *copycut = new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi *>(fRDCuts)));
+            PostData(2, copycut);
+            break;
+        }
+        case kDstartoD0pi:
+        {
+            AliRDHFCutsDStartoKpipi *copycut = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi *>(fRDCuts)));
+            PostData(2, copycut);
+            break;
+        }
     }
 
     return;
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSENonPromptLc::UserCreateOutputObjects()
+void AliAnalysisTaskSEDmesonTree::UserCreateOutputObjects()
 {
     /// Create the output container
     //
@@ -106,11 +120,11 @@ void AliAnalysisTaskSENonPromptLc::UserCreateOutputObjects()
     fHistNEvents->GetXaxis()->SetBinLabel(9, "n. rejected for vertex out of accept");
     fHistNEvents->GetXaxis()->SetBinLabel(10, "n. rejected for pileup events");
     fHistNEvents->GetXaxis()->SetBinLabel(11, "no. of out centrality events");
-    fHistNEvents->GetXaxis()->SetBinLabel(12, "no. of Lc candidates");
-    fHistNEvents->GetXaxis()->SetBinLabel(13, "no. of Lc after filtering cuts");
-    fHistNEvents->GetXaxis()->SetBinLabel(14, "no. of Lc after selection cuts");
-    fHistNEvents->GetXaxis()->SetBinLabel(15, "no. of not on-the-fly rec Lc");
-    fHistNEvents->GetXaxis()->SetBinLabel(16, "no. of Lc rejected by preselect");
+    fHistNEvents->GetXaxis()->SetBinLabel(12, "no. of D candidates");
+    fHistNEvents->GetXaxis()->SetBinLabel(13, "no. of D after filtering cuts");
+    fHistNEvents->GetXaxis()->SetBinLabel(14, "no. of D after selection cuts");
+    fHistNEvents->GetXaxis()->SetBinLabel(15, "no. of not on-the-fly rec D");
+    fHistNEvents->GetXaxis()->SetBinLabel(16, "no. of D rejected by preselect");
     fHistNEvents->GetXaxis()->SetNdivisions(1, false);
     fHistNEvents->SetMinimum(0);
     fOutput->Add(fHistNEvents);
@@ -128,13 +142,17 @@ void AliAnalysisTaskSENonPromptLc::UserCreateOutputObjects()
     if (fCreateMLtree)
     {
         OpenFile(4);
-        if (fDecChannel == kLctopKpi)
-            fMLhandler = new AliHFMLVarHandlerLctopKpi(fPIDopt);
-        else if (fDecChannel == kLctopK0s || fDecChannel == kLctopiL)
+        switch (fDecChannel)
         {
-            fMLhandler = new AliHFMLVarHandlerNonPromptLc2V0bachelor(fPIDopt);
-            if(fUseKFRecoForV0bachelor)
-                (dynamic_cast<AliHFMLVarHandlerNonPromptLc2V0bachelor *>(fMLhandler))->SetUseKFParticleReco(); // currently for V0bachelor only
+            case kD0toKpi:
+                fMLhandler = new AliHFMLVarHandlerD0toKpi(fPIDopt);
+                break;
+            case kDplustoKpipi:
+                fMLhandler = new AliHFMLVarHandlerDplustoKpipi(fPIDopt);
+                break;
+            case kDstartoD0pi:
+                fMLhandler = new AliHFMLVarHandlerDstartoD0pi(fPIDopt);
+                break;
         }
 
         fMLhandler->SetAddSingleTrackVars(fAddSingleTrackVar);
@@ -144,7 +162,8 @@ void AliAnalysisTaskSENonPromptLc::UserCreateOutputObjects()
                 fMLhandler->SetFillOnlySignal();
             fMLhandler->SetFillBeautyMotherPt();
         }
-        fMLtree = fMLhandler->BuildTree("treeMLLc", "treeMLLc");
+
+        fMLtree = fMLhandler->BuildTree("treeMLD", "treeMLD");
         fMLtree->SetMaxVirtualSize(1.e+8);
         PostData(4, fMLtree);
     }
@@ -159,7 +178,7 @@ void AliAnalysisTaskSENonPromptLc::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
+void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
 {
     if (fCreateMLtree && fEnableEvtSampling && ((fOptionSampling == 0 && gRandom->Rndm() > fFracEvtToKeep) || (fOptionSampling == 1 && gRandom->Rndm() < 1-fFracEvtToKeep)))
     {
@@ -198,18 +217,34 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
         {
             AliAODExtension *ext = dynamic_cast<AliAODExtension *>(aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root"));
             AliAODEvent *aodFromExt = ext->GetAOD();
-            if (fDecChannel == kLctopKpi)
-                arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Charm3Prong"));
-            else if (fDecChannel == kLctopK0s || fDecChannel == kLctopiL)
-                arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("CascadesHF"));
+            switch (fDecChannel)
+            {
+                case kD0toKpi:
+                    arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Charm2Prong"));
+                    break;
+                case kDplustoKpipi:
+                    arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Charm3Prong"));
+                    break;
+                case kDstartoD0pi:
+                    arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("CascadesHF"));
+                break;
+            }
         }
     }
     else if (fAOD)
     {
-        if (fDecChannel == kLctopKpi)
-            arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Charm3Prong"));
-        else if (fDecChannel == kLctopK0s || fDecChannel == kLctopiL)
-            arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("CascadesHF"));
+        switch (fDecChannel)
+        {
+            case kD0toKpi:
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD->FindObject("Charm2Prong"));
+                break;
+            case kDplustoKpipi:
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD->FindObject("Charm3Prong"));
+                break;
+            case kDstartoD0pi:
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD->FindObject("CascadesHF"));
+            break;
+        }
     }
 
     if (!fAOD || !arrayCand)
@@ -288,58 +323,56 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
 
     for (int iCand = 0; iCand < arrayCand->GetEntriesFast(); iCand++)
     {
-        AliAODRecoDecayHF *lc = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(iCand));
+        AliAODRecoDecayHF *dMeson = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(iCand));
 
         bool unsetVtx = false;
         bool recVtx = false;
         AliAODVertex *origOwnVtx = nullptr;
 
-        int isSelected = IsCandidateSelected(lc, &vHF, unsetVtx, recVtx, origOwnVtx);
-        if (!isSelected || (fDecChannel == kLctopK0s && isSelected % 2 == 0) || (fDecChannel == kLctopiL && isSelected < 2))
+        int isSelected = IsCandidateSelected(dMeson, &vHF, unsetVtx, recVtx, origOwnVtx);
+        if (!isSelected)
         {
             if (unsetVtx)
-                lc->UnsetOwnPrimaryVtx();
+                dMeson->UnsetOwnPrimaryVtx();
             if (recVtx)
-                fRDCuts->CleanOwnPrimaryVtx(lc, fAOD, origOwnVtx);
+                fRDCuts->CleanOwnPrimaryVtx(dMeson, fAOD, origOwnVtx);
             continue;
         }
 
         fHistNEvents->Fill(13); // candidate selected
 
         // get MC truth
-        AliAODMCParticle *partLc = nullptr;
-        int labLc = -1;
+        AliAODMCParticle *partD = nullptr;
+        int labD = -1;
         int pdgCode0 = -999;
         int orig = 0;
         bool isCandInjected = false;
         float ptB = -999.;
-        int pdgLctopKpi[3] = {2212, 321, 211};
-        int pdgLctopK0s[2] = {2212, 310};
-        int pdgLctopiL[2] = {211, 3122};
-        int pdgDgK0stoDaughters[2] = {211, 211};
-        int pdgDgLtoDaughters[2] = {2212, 211};
+        int pdgD0Dau[2] = {321, 211};
+        int pdgDplusDau[3] = {321, 211, 211};
+        int pdgDstarDau[2] = {421, 211};
 
         if (fReadMC)
         {
             switch (fDecChannel)
             {
-                case kLctopKpi:
-                    labLc = (dynamic_cast<AliAODRecoDecayHF3Prong *>(lc))->MatchToMC(4122, arrayMC, 3, pdgLctopKpi);
+                case kD0toKpi:
+                    labD = (dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson))->MatchToMC(fPdgD, arrayMC, 2, pdgD0Dau);
                 break;
-                case kLctopK0s:
-                    labLc = (dynamic_cast<AliAODRecoCascadeHF *>(lc))->MatchToMC(4122, 310, pdgLctopK0s, pdgDgK0stoDaughters, arrayMC, true);
+                case kDplustoKpipi:
+                    labD = (dynamic_cast<AliAODRecoDecayHF3Prong *>(dMeson))->MatchToMC(fPdgD, arrayMC, 3, pdgDplusDau);
                 break;
-                case kLctopiL:
-                    labLc = (dynamic_cast<AliAODRecoCascadeHF *>(lc))->MatchToMC(4122, 3122, pdgLctopiL, pdgDgLtoDaughters, arrayMC, true);
+                case kDstartoD0pi:
+                    labD = (dynamic_cast<AliAODRecoCascadeHF *>(dMeson))->MatchToMC(fPdgD, 421, pdgDstarDau, pdgD0Dau, arrayMC, true);
                 break;
             }
 
-            if (labLc >= 0)
+            if (labD >= 0)
             {
-                partLc = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labLc));
-                if (fDecChannel == kLctopKpi) // check if signal is reflected
+                partD = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labD));
+                if (fDecChannel == kD0toKpi) // check if signal is reflected
                 {
-                    int labDau0 = dynamic_cast<AliAODTrack *>(lc->GetDaughter(0))->GetLabel();
+                    int labDau0 = dynamic_cast<AliAODTrack *>(dMeson->GetDaughter(0))->GetLabel();
                     AliAODMCParticle *dau0 = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(TMath::Abs(labDau0)));
                     pdgCode0 = TMath::Abs(dau0->GetPdgCode());
                 }
@@ -347,31 +380,22 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
             else
             {
                 if (fKeepOnlyBkgFromHIJING)
-                    isCandInjected = AliVertexingHFUtils::IsCandidateInjected(lc, mcHeader, arrayMC);
+                    isCandInjected = AliVertexingHFUtils::IsCandidateInjected(dMeson, mcHeader, arrayMC);
             }
 
-            if (partLc)
+            if (partD)
             {
-                orig = AliVertexingHFUtils::CheckOrigin(arrayMC, partLc, true);
-                ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, partLc);
+                orig = AliVertexingHFUtils::CheckOrigin(arrayMC, partD, true);
+                ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, partD);
             }
         }
         // fill tree for ML
         AliAODPidHF *pidHF = fRDCuts->GetPidHF();
         if (fCreateMLtree)
         {
-            if (fDecChannel == kLctopKpi) // Lc->pKpi
+            if (fDecChannel == kD0toKpi)
             {
-                if (fReadMC)
-                {
-                    int labD[3] = {-1, -1, -1};
-                    //check if resonant decay
-                    int  decay = 0;
-                    if(labLc && partLc)
-                        decay = AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC, partLc, labD);
-                    (dynamic_cast<AliHFMLVarHandlerLctopKpi *>(fMLhandler))->SetIsLcpKpiRes(decay);
-                }
-                if (isSelected == 1 || isSelected == 3) // pKpi
+                if (isSelected == 1 || isSelected == 3) // D0
                 {
                     bool isSignal = false;
                     bool isBkg = false;
@@ -381,7 +405,7 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
 
                     if (fReadMC)
                     {
-                        if (labLc >= 0)
+                        if (labD >= 0)
                         {
                             if (pdgCode0 == 211)
                                 isRefl = true;
@@ -389,7 +413,6 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
                                 isPrompt = true;
                             else if (orig == 5)
                                 isFD = true;
-
                             if (orig >= 4)
                                 isSignal = true;
                         }
@@ -402,11 +425,11 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
                     }
 
                     fMLhandler->SetCandidateType(isSignal, isBkg, isPrompt, isFD, isRefl);
-                    bool okSetVar = fMLhandler->SetVariables(lc, fAOD->GetMagneticField(), AliHFMLVarHandlerLctopKpi::kpKpi, pidHF);
+                    bool okSetVar = fMLhandler->SetVariables(dMeson, fAOD->GetMagneticField(), AliHFMLVarHandlerD0toKpi::kD0, pidHF);
                     if (okSetVar && !(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl))
                         fMLhandler->FillTree();
                 }
-                if (isSelected >= 2) // piKp
+                if (isSelected >= 2) // D0bar
                 {
                     bool isSignal = false;
                     bool isBkg = false;
@@ -416,15 +439,14 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
 
                     if (fReadMC)
                     {
-                        if (labLc >= 0)
+                        if (labD >= 0)
                         {
-                            if (pdgCode0 == 2212)
+                            if (pdgCode0 == 321)
                                 isRefl = true;
                             if (orig == 4)
                                 isPrompt = true;
                             else if (orig == 5)
                                 isFD = true;
-
                             if (orig >= 4)
                                 isSignal = true;
                         }
@@ -437,12 +459,13 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
                     }
 
                     fMLhandler->SetCandidateType(isSignal, isBkg, isPrompt, isFD, isRefl);
-                    bool okSetVar = fMLhandler->SetVariables(lc, fAOD->GetMagneticField(), AliHFMLVarHandlerLctopKpi::kpiKp, pidHF);
+                    bool okSetVar = fMLhandler->SetVariables(dMeson, fAOD->GetMagneticField(), AliHFMLVarHandlerD0toKpi::kD0bar, pidHF);
                     if (okSetVar && !(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl)) // add tag in tree handler for signal from pileup events?
                         fMLhandler->FillTree();
                 }
+                break;
             }
-            else // Lc->V0bachelor
+            else
             {
                 bool isSignal = false;
                 bool isBkg = false;
@@ -452,13 +475,12 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
 
                 if (fReadMC)
                 {
-                    if (labLc >= 0)
+                    if (labD >= 0)
                     {
                         if (orig == 4)
                             isPrompt = true;
                         else if (orig == 5)
                             isFD = true;
-
                         if (orig >= 4)
                             isSignal = true;
                     }
@@ -470,19 +492,18 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
                     fMLhandler->SetBeautyMotherPt(ptB);
                 }
 
-                int channel = (fDecChannel == kLctopK0s) ? AliHFMLVarHandlerNonPromptLc2V0bachelor::kpK0s : AliHFMLVarHandlerNonPromptLc2V0bachelor::kpiL;
-
                 fMLhandler->SetCandidateType(isSignal, isBkg, isPrompt, isFD, isRefl);
-                bool okSetVar = fMLhandler->SetVariables(lc, fAOD->GetMagneticField(), channel, pidHF);
+                bool okSetVar = fMLhandler->SetVariables(dMeson, fAOD->GetMagneticField(), 0, pidHF);
                 if (okSetVar && !(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl)) // add tag in tree handler for signal from pileup events?
                     fMLhandler->FillTree();
+                break;
             }
         }
 
         if (unsetVtx)
-            lc->UnsetOwnPrimaryVtx();
+            dMeson->UnsetOwnPrimaryVtx();
         if (recVtx)
-            fRDCuts->CleanOwnPrimaryVtx(lc, fAOD, origOwnVtx);
+            fRDCuts->CleanOwnPrimaryVtx(dMeson, fAOD, origOwnVtx);
     }
 
     PostData(1, fOutput);
@@ -492,22 +513,22 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSENonPromptLc::IsCandidateSelected(AliAODRecoDecayHF *&lc, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx)
+int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx)
 {
 
-    if (!lc || !vHF)
+    if (!dMeson || !vHF)
         return 0;
     fHistNEvents->Fill(11);
 
     // Preselection to speed up task
     TObjArray arrDauTracks(3);
     int nDau = 3;
-    if (fDecChannel == kLctopK0s)
+    if (fDecChannel == kD0toKpi)
         nDau = 2;
 
     for (int iDau = 0; iDau < nDau; iDau++)
     {
-        AliAODTrack *track = vHF->GetProng(fAOD, lc, iDau);
+        AliAODTrack *track = vHF->GetProng(fAOD, dMeson, iDau);
         arrDauTracks.AddAt(track, iDau);
     }
 
@@ -518,71 +539,80 @@ int AliAnalysisTaskSENonPromptLc::IsCandidateSelected(AliAODRecoDecayHF *&lc, Al
     }
 
     bool isSelBit = true;
-    if (fDecChannel == kLctopKpi)
+    switch (fDecChannel)
     {
-        isSelBit = lc->HasSelectionBit(AliRDHFCuts::kLcCuts);
-        if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF3Prong *>(lc)))
-        {
-            fHistNEvents->Fill(14);
-            return 0;
-        }
-    }
-    else
-    {
-        isSelBit = lc->HasSelectionBit(AliRDHFCuts::kLctoV0Cuts);
-        if (!isSelBit || !vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(lc), false))
-        {
-            fHistNEvents->Fill(14);
-            return 0;
-        }
+        case kD0toKpi:
+            isSelBit = dMeson->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
+            if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)))
+            {
+                fHistNEvents->Fill(14);
+                return 0;
+            }
+            break;
+        case kDplustoKpipi:
+            isSelBit = dMeson->HasSelectionBit(AliRDHFCuts::kDplusCuts);
+            if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF3Prong *>(dMeson)))
+            {
+                fHistNEvents->Fill(14);
+                return 0;
+            }
+            break;
+        case kDstartoD0pi:
+            isSelBit = dMeson->HasSelectionBit(AliRDHFCuts::kDstarCuts);
+            if (!isSelBit || !vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(dMeson), false))
+            {
+                fHistNEvents->Fill(14);
+                return 0;
+            }
+            break;
     }
 
     fHistNEvents->Fill(12);
 
     unsetVtx = false;
-    if (!lc->GetOwnPrimaryVtx())
+    if (!dMeson->GetOwnPrimaryVtx())
     {
-        lc->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fAOD->GetPrimaryVertex()));
+        dMeson->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fAOD->GetPrimaryVertex()));
         unsetVtx = true;
         // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
         // Pay attention if you use continue inside this loop!!!
     }
 
-    double ptLc = lc->Pt();
-    double yLc = lc->Y(4122);
+    double ptD = dMeson->Pt();
+    double yD = dMeson->Y(fPdgD);
 
     if (fCreateMLtree && fEnableCandSampling) // apply sampling in pt
     {
-        double pseudoRand = ptLc * 1000. - (long)(ptLc * 1000);
-        if (pseudoRand > fFracCandToKeep && ptLc < fMaxCandPtSampling)
+        double pseudoRand = ptD * 1000. - (long)(ptD * 1000);
+        if (pseudoRand > fFracCandToKeep && ptD < fMaxCandPtSampling)
         {
             if (unsetVtx)
-                lc->UnsetOwnPrimaryVtx();
+                dMeson->UnsetOwnPrimaryVtx();
             return 0;
         }
     }
 
-    int ptBin = fRDCuts->PtBin(ptLc);
+    int ptBin = fRDCuts->PtBin(ptD);
     if (ptBin < 0)
     {
         if (unsetVtx)
-            lc->UnsetOwnPrimaryVtx();
+            dMeson->UnsetOwnPrimaryVtx();
         return 0;
     }
 
-    bool isFidAcc = fRDCuts->IsInFiducialAcceptance(ptLc, yLc);
+    bool isFidAcc = fRDCuts->IsInFiducialAcceptance(ptD, yD);
     if (!isFidAcc)
     {
         if (unsetVtx)
-            lc->UnsetOwnPrimaryVtx();
+            dMeson->UnsetOwnPrimaryVtx();
         return 0;
     }
 
-    int isSelected = fRDCuts->IsSelected(lc, AliRDHFCuts::kAll, fAOD);
+    int isSelected = fRDCuts->IsSelected(dMeson, AliRDHFCuts::kAll, fAOD);
     if (!isSelected)
     {
         if (unsetVtx)
-            lc->UnsetOwnPrimaryVtx();
+            dMeson->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -591,33 +621,19 @@ int AliAnalysisTaskSENonPromptLc::IsCandidateSelected(AliAODRecoDecayHF *&lc, Al
 
     if (fRDCuts->GetIsPrimaryWithoutDaughters())
     {
-        if (lc->GetOwnPrimaryVtx())
-            origOwnVtx = new AliAODVertex(*lc->GetOwnPrimaryVtx());
-        if (fRDCuts->RecalcOwnPrimaryVtx(lc, fAOD))
+        if (dMeson->GetOwnPrimaryVtx())
+            origOwnVtx = new AliAODVertex(*dMeson->GetOwnPrimaryVtx());
+        if (fRDCuts->RecalcOwnPrimaryVtx(dMeson, fAOD))
             recVtx = true;
         else
-            fRDCuts->CleanOwnPrimaryVtx(lc, fAOD, origOwnVtx);
+            fRDCuts->CleanOwnPrimaryVtx(dMeson, fAOD, origOwnVtx);
     }
-
-    // retvalue case for kLctopKpi
-    // 1  Lc->pKpi
-    // 2  Lc->piKp
-    // 3  Lc->pKpi AND Lc->piKp
-
-    // retvalue case for kLctopK0s and kLctopiL
-    // 1  Lc->K0S + p
-    // 2  Lc->LambdaBar + pi
-    // 3  Lc->K0S + p AND Lc->LambdaBar + pi
-    // 4  Lc->Lambda + pi
-    // 5  Lc->K0S + p AND Lc->Lambda + pi
-    // 6  Lc->LambdaBar + pi AND Lc->Lambda + pi
-    // 7  Lc->K0S + p AND Lc->LambdaBar + pi AND Lc->Lambda + pi
 
     return isSelected;
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSENonPromptLc::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader)
+void AliAnalysisTaskSEDmesonTree::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader)
 {
     /// Fill MC histos for cuts study
     ///    - at GenLimAccStep and AccStep (if fFillAcceptanceLevel=false)
@@ -630,7 +646,7 @@ void AliAnalysisTaskSENonPromptLc::FillMCGenAccHistos(TClonesArray *arrayMC, Ali
         {
             AliAODMCParticle *mcPart = dynamic_cast<AliAODMCParticle *>(arrayMC->At(iPart));
 
-            if (TMath::Abs(mcPart->GetPdgCode()) == 4122)
+            if (TMath::Abs(mcPart->GetPdgCode()) == fPdgD)
             {
                 int orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true); //Prompt = 4, FeedDown = 5
                 bool isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
@@ -640,15 +656,27 @@ void AliAnalysisTaskSENonPromptLc::FillMCGenAccHistos(TClonesArray *arrayMC, Ali
                 int labDau[3] = {-1, -1, -1};
                 bool isFidAcc = false;
                 bool isDaugInAcc = false;
+                int nDau = -1;
 
-                if(fDecChannel == kLctopKpi)
-                    deca = AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC, mcPart, labDau);
-                else
-                    deca = AliVertexingHFUtils::CheckLcV0bachelorDecay(arrayMC, mcPart, labDau);
+                switch(fDecChannel)
+                {
+                    case kD0toKpi:
+                        nDau = 2;
+                        deca = AliVertexingHFUtils::CheckD0Decay(arrayMC, mcPart, labDau);
+                        break;
+                    case kDplustoKpipi:
+                        nDau = 3;
+                        deca = AliVertexingHFUtils::CheckDplusDecay(arrayMC, mcPart, labDau);
+                        break;
+                    case kDstartoD0pi:
+                        nDau = 3;
+                        deca = AliVertexingHFUtils::CheckDstarDecay(arrayMC, mcPart, labDau);
+                        break;
+                }
 
                 if (labDau[0] == -1)
                     continue; //protection against unfilled array of labels
-                if ((fDecChannel == kLctopKpi && deca > 0) || (fDecChannel == kLctopK0s && deca == 1) || (fDecChannel == kLctopiL && deca == 2))
+                if (deca > 0)
                     isGoodDecay = true;
 
                 if (isGoodDecay)
@@ -656,19 +684,19 @@ void AliAnalysisTaskSENonPromptLc::FillMCGenAccHistos(TClonesArray *arrayMC, Ali
                     double pt = mcPart->Pt();
                     double rapid = mcPart->Y();
                     isFidAcc = fRDCuts->IsInFiducialAcceptance(pt, rapid);
-                    isDaugInAcc = CheckDaugAcc(arrayMC, 3, labDau);
+                    isDaugInAcc = CheckDaugAcc(arrayMC, nDau, labDau);
 
                     if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid) < 0.5))
                     {
                         if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
                         {
-                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid,(double)deca};
+                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid};
                             fnSparseMC[0]->Fill(var4nSparseAcc);
                         }
                         else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
                         {
                             double ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
-                            double var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid, ptB,(double)deca};
+                            double var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid, ptB};
                             fnSparseMC[1]->Fill(var4nSparseAcc);
                         }
                     }
@@ -679,27 +707,36 @@ void AliAnalysisTaskSENonPromptLc::FillMCGenAccHistos(TClonesArray *arrayMC, Ali
 }
 
 //________________________________________________________________________
-bool AliAnalysisTaskSENonPromptLc::CheckDaugAcc(TClonesArray *arrayMC, int nProng, int *labDau)
+bool AliAnalysisTaskSEDmesonTree::CheckDaugAcc(TClonesArray *arrayMC, int nProng, int *labDau)
 {
     /// check if the decay products are in the good eta and pt range
 
     for (int iProng = 0; iProng < nProng; iProng++)
     {
+        bool isSoftPion = false;
         AliAODMCParticle *mcPartDaughter = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labDau[iProng]));
         if (!mcPartDaughter)
             return false;
 
+        if(fDecChannel == kDstartoD0pi)
+        {
+            AliAODMCParticle *mother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(mcPartDaughter->GetMother()));
+            if(TMath::Abs(mother->GetPdgCode()) == 413)
+                isSoftPion = true;
+        }
+
         double eta = mcPartDaughter->Eta();
         double pt = mcPartDaughter->Pt();
+        double minPt = (!isSoftPion) ? 0.1 : 0.06;
 
-        if (TMath::Abs(eta) > 0.9 || pt < 0.1)
+        if (TMath::Abs(eta) > 0.9 || pt < minPt)
             return false;
     }
     return true;
 }
 
 //_________________________________________________________________________
-void AliAnalysisTaskSENonPromptLc::CreateEffSparses()
+void AliAnalysisTaskSEDmesonTree::CreateEffSparses()
 {
     /// use sparses to be able to add variables if needed (multiplicity, Zvtx, etc)
 
@@ -709,34 +746,19 @@ void AliAnalysisTaskSENonPromptLc::CreateEffSparses()
     if (fUseFinPtBinsForSparse)
         nPtBins = nPtBins * 10;
 
-    int nBinsAccFD[knVarForSparseAccFD] = {nPtBins, 20, nPtBins, 6};
-    double xminAccFD[knVarForSparseAccFD] = {0., -1., 0., 0};
-    double xmaxAccFD[knVarForSparseAccFD] = {ptLims[nPtBinsCutObj], 1., ptLims[nPtBinsCutObj], 6};
-
-    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 20, 6};
-    double xminAcc[knVarForSparseAcc] = {0., -1., 0};
-    double xmaxAcc[knVarForSparseAcc] = {ptLims[nPtBinsCutObj], 1., 6};
+    int nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBins};
+    double xminAcc[knVarForSparseAccFD] = {0., -1., 0.};
+    double xmaxAcc[knVarForSparseAccFD] = {ptLims[nPtBinsCutObj], 1., ptLims[nPtBinsCutObj]};
 
     TString label[2] = {"fromC", "fromB"};
     for (int iHist = 0; iHist < 2; iHist++)
     {
         TString titleSparse = Form("MC nSparse (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist].Data());
-        fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAcc_%s", label[iHist].Data()), titleSparse.Data(),
-                                           (iHist == 0) ? knVarForSparseAcc : knVarForSparseAccFD,
-                                           (iHist == 0) ? nBinsAcc : nBinsAccFD,
-                                           (iHist == 0) ? xminAcc : xminAccFD,
-                                           (iHist == 0) ? xmaxAcc : xmaxAccFD);
+        fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAcc_%s", label[iHist].Data()), titleSparse.Data(), (iHist == 0) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
         fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
-        if (iHist == 0)
-        {
-            fnSparseMC[iHist]->GetAxis(2)->SetTitle("resonant channel");
-        }
-        else
-        {
+        if (iHist == 1)
             fnSparseMC[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
-            fnSparseMC[iHist]->GetAxis(3)->SetTitle("resonant channel");
-        }
         fOutput->Add(fnSparseMC[iHist]);
     }
 }
