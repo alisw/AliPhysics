@@ -44,6 +44,8 @@ AliRsnMiniAnalysisTask * AddTaskF0
  Float_t     ptlow         = 0.0,   //pT axis low edge 
  Float_t     ptup          = 20.0,   //pT axis upper edge 
  Int_t       nbinspt       = 200,   //pT axis n bins
+ Float_t     ptMClowCut    = 0.001, // lower pT cut on MC
+ Float_t     ptMCupCut     = 20.0,  // upper pT cut on MC
  Bool_t      enableTrackQA = kTRUE, //enable single track QA
  Bool_t      enableAdvEvtQA = kFALSE) //enable advanced QA for multiplicity and event properties
 {  
@@ -227,10 +229,13 @@ AliRsnMiniAnalysisTask * AddTaskF0
   //-----------------------------------------------------------------------------------------------
   AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
   cutY->SetRangeD(minYlab, maxYlab);
+  AliRsnCutMiniPair *cutPtMC = new AliRsnCutMiniPair("cutPtMC", AliRsnCutMiniPair::kPtMC);
+  cutPtMC->SetRangeD(ptMClowCut,ptMCupCut);
   
   AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
-  cutsPair->SetCutScheme(cutY->GetName());
+  if (isMC) cutsPair->AddCut(cutPtMC);
+  cutsPair->SetCutScheme(Form("%s&%s",cutY->GetName(),cutPtMC->GetName()));
 
   //-----------------------------------------------------------------------------------------------
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
