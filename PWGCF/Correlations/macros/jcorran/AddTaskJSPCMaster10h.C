@@ -37,7 +37,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double
   if(PassedVariations == 0) return 0; //Protection in case no valid Variation is passed
 
   //-------- JFlucWagons -------
-  const int Nsets  = PassedVariations; // number of configurations //GANESHA if this does not work, then do const int Nsets  = 10; //default max number of variations
+  const int Nsets  = PassedVariations; // number of configurations // TBC: if this does not work, then do const int Nsets  = 10; //default max number of variations
  
   // Loading of the correction map.
   TString MAPfilenames[Nsets];
