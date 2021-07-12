@@ -17,8 +17,10 @@
 #pragma link C++ class AliHFMLResponseDstoKKpi+;
 #pragma link C++ class AliHFMLResponseLctoV0bachelor+;
 #pragma link C++ class AliHFMLVarHandler+;
+#pragma link C++ class AliHFMLVarHandlerD0toKpi+;
 #pragma link C++ class AliHFMLVarHandlerDplustoKpipi+;
 #pragma link C++ class AliHFMLVarHandlerDstoKKpi+;
+#pragma link C++ class AliHFMLVarHandlerDstartoD0pi+;
 #pragma link C++ class AliHFMLVarHandlerNonPromptLc2V0bachelor+;
 #pragma link C++ class AliHFMLVarHandlerLctopKpi+;
 #pragma link C++ class AliHFTreeHandlerApply+;
