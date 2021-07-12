@@ -50,6 +50,7 @@ set(SRCS
     AliHFMLVarHandlerDstartoD0pi.cxx
     AliHFMLVarHandlerNonPromptLc2V0bachelor.cxx
     AliHFMLVarHandlerLctopKpi.cxx
+    AliAnalysisTaskSEDmesonTree.cxx
     AliAnalysisTaskSEDplus.cxx
     AliAnalysisTaskSEDs.cxx
     AliAnalysisTaskSENonPromptLc.cxx
