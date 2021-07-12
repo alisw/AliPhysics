@@ -1,25 +1,51 @@
-AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double ptMin = 0.5, Bool_t removebadarea = kFALSE, Bool_t saveCatalystQA = kFALSE)
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <algorithm> // for std::find
+#include <iterator> // for std::begin, std::end
+#include <vector>
+#include <TString.h>
+
+AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double ptMin = 0.5, std::string Variations = "tpconly", Bool_t removebadarea = kFALSE, Bool_t saveCatalystQA = kFALSE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+  //-------- Read in passed Variations -------- 
+  std::istringstream iss(Variations);
+
+  const int NPossibleVariations = 6;
+  std::string PossibleVariations[NPossibleVariations] = { "tpconly","hybrid", "V0M","zvtx6","zvtx12","zvtx" }; //for reference, these variations are allowed
+    
+  int PassedVariations = 0;
+  std::vector<TString> configNames;
+
+  do {
+        std::string subs;
+        iss >> subs;
+  
+        // Check if valid variation
+        bool exists = std::find(std::begin(PossibleVariations), std::end(PossibleVariations), subs) != std::end(PossibleVariations); 
+	if(exists)
+	{
+		PassedVariations++;
+		configNames.push_back(subs);	
+	}
+
+    } while (iss);
+
+  if(PassedVariations == 0) return 0; //Protection in case no valid Variation is passed
+
   //-------- JFlucWagons -------
-  const int Nsets  = 1; // number of configurations
-  TString configNames[Nsets] = {
-    "tpconly"//, 
-    //"hybrid", // 1
-    //"V0M",    // 2
-    //"zvtx6",  // 3
-    //"zvtx12"  // 4
-    //"nqq",    //  not yet implemented in JHSC code
-    //"subA",   //not yet implemented in JHSC code
-  };
+  const int Nsets  = PassedVariations; // number of configurations //GANESHA if this does not work, then do const int Nsets  = 10; //default max number of variations
+ 
   // Loading of the correction map.
   TString MAPfilenames[Nsets];
   TString MAPdirname = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
   AliJCorrectionMapTask *cMapTask = new AliJCorrectionMapTask ("JCorrectionMapTask");
 
   cMapTask->EnableEffCorrection ("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC10h-LHC11a10a_bis-0-Lists.root"); // Efficiency correction.
-  for (Int_t i = 0; i < Nsets; i++) {
+  for (Int_t i = 0; i < PassedVariations; i++) {
     MAPfilenames[i] = Form ("%sPhiWeights_LHC10h_Error_pt%02d_s_%s.root", MAPdirname.Data(), Int_t (ptMin * 10), configNames[i].Data());  // Azimuthal correction.
     cMapTask->EnablePhiCorrection (i, MAPfilenames[i]); // i is index for set file correction ->SetPhiCorrectionIndex(i);
   }
@@ -33,8 +59,8 @@ AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double
   selEvt = AliVEvent::kMB;// Minimum bias trigger for LHC10h.
 
   AliJCatalystTask *fJCatalyst[Nsets];  // One catalyst needed per configuration.
-  for (Int_t i = 0; i < Nsets; i++) {
-    fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", taskName.Data(), configNames[i].Data()));
+  for (Int_t i = 0; i < PassedVariations; i++) {
+    fJCatalyst[i] = new AliJCatalystTask(Form("fJCatalystTask_%s", configNames[i].Data()));
     cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << endl;
     fJCatalyst[i]->SelectCollisionCandidates(selEvt);
    
@@ -52,9 +78,18 @@ AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double
     } else {
       fJCatalyst[i]->SetTestFilterBit(tpconlyCut); // default
     }
+    if (strcmp(configNames[i].Data(), "zvtx6") == 0) {
+      fJCatalyst[i]->SetZVertexCut(6.);
+    }
+    if (strcmp(configNames[i].Data(), "zvtx") == 0) {
+      fJCatalyst[i]->SetZVertexCut(8.);
+    }
+    if (strcmp(configNames[i].Data(), "zvtx12") == 0) {
+        fJCatalyst[i]->SetZVertexCut(12.);
+    }
     fJCatalyst[i]->SetPtRange(ptMin, 5.0);
     fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
-    fJCatalyst[i]->SetPhiCorrectionIndex (i);
+    fJCatalyst[i]->SetPhiCorrectionIndex(i);
     mgr->AddTask((AliAnalysisTask *)fJCatalyst[i]);
   }
 
@@ -63,18 +98,18 @@ AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double
   TString SPC[SPCCombination] = { "2SPC", "3SPC", "4SPC" };
   AliJSPCTask *myTask[Nsets][SPCCombination];
 
-  for (Int_t i = 0; i < Nsets; i++){
+  for (Int_t i = 0; i < PassedVariations; i++){
   
    for(Int_t j = 0; j < SPCCombination; j++){
 
-	myTask[i][j] = new AliJSPCTask(Form("%s_s_%s_%s", taskName.Data(), configNames[i].Data(), SPC[j].Data()));
-  myTask[i][j]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
+	myTask[i][j] = new AliJSPCTask(Form("%s_%s_%s", taskName.Data(), configNames[i].Data(), SPC[j].Data()));
+  	myTask[i][j]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
 
-  myTask[i][j]->JSPCSetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
-  myTask[i][j]->JSPCSetSaveAllQA(kTRUE);
-  myTask[i][j]->JSPCSetMinNuPar(14.);
-  myTask[i][j]->JSPCSetFisherYates(kFALSE, 1.); 
-  myTask[i][j]->JSPCSetUseWeights(kFALSE);
+  	myTask[i][j]->JSPCSetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
+  	myTask[i][j]->JSPCSetSaveAllQA(kTRUE);
+  	myTask[i][j]->JSPCSetMinNuPar(14.);
+  	myTask[i][j]->JSPCSetFisherYates(kFALSE, 1.); 
+  	myTask[i][j]->JSPCSetUseWeights(kTRUE);
 
 	if(j==0){
 	  myTask[i][j]->JSPCSetCorrSet1(4., 6.,-2.,-2.,-2., 0., 0.,0.);
@@ -109,7 +144,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double
 	  myTask[i][j]->JSPCSetCorrSet8(0., 0., 0., 0., 0., 0., 0.,0.);
 	}
 
-  myTask[i][j]->JSPCSetMixed(kFALSE,2., kFALSE, kTRUE);
+  	myTask[i][j]->JSPCSetMixed(kFALSE,2., kFALSE, kTRUE);
 
 
 	mgr->AddTask((AliAnalysisTask *) myTask[i][j]);
@@ -120,7 +155,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *jHist[Nsets][SPCCombination+1];
 
-  for (Int_t i = 0; i < Nsets; i++) {
+  for (Int_t i = 0; i < PassedVariations; i++) {
     mgr->ConnectInput(fJCatalyst[i], 0, cinput);
 
     for(Int_t j = 0; j < SPCCombination; j++){
@@ -128,7 +163,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double
       jHist[i][j] = new AliAnalysisDataContainer();     
       jHist[i][j] = mgr->CreateContainer(Form ("%s", myTask[i][j]->GetName()),
         TList::Class(), AliAnalysisManager::kOutputContainer,
-        Form("%s:outputAnalysis", AliAnalysisManager::GetCommonFileName()));
+        Form("%s", AliAnalysisManager::GetCommonFileName()));
       mgr->ConnectOutput(myTask[i][j], 1, jHist[i][j]);
     }
 
