@@ -244,6 +244,24 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
                "#eta"}, // kAFTER
           },            // kETA
           {
+              {"fTrackControlHistograms[kTPCNCLS][BEFORE]",
+               "Number of clusters in TPC, before track cut", ""}, // kBEFORE
+              {"fTrackControlHistograms[kTPCNCLS][AFTER]",
+               "Number of clusters in TPC, after track cut", ""}, // kAFTER
+          },                                                      // kTPCNCLS
+          {
+              {"fTrackControlHistograms[kITSNCLS][BEFORE]",
+               "Number of clusters in ITS, before track cut", ""}, // kBEFORE
+              {"fTrackControlHistograms[kITSNCLS][AFTER]",
+               "Number of clusters in ITS, after track cut", ""}, // kAFTER
+          },                                                      // kITSNCLS
+          {
+              {"fTrackControlHistograms[kCHI2PERNDF][BEFORE]",
+               "CHI2PERNDF of track, before track cut", ""}, // kBEFORE
+              {"fTrackControlHistograms[kCHI2PERNDF][AFTER]",
+               "CHI2PERNDF of track, after track cut", ""}, // kAFTER
+          },                                                // kCHI2PERNDF
+          {
               {"fTrackControlHistograms[kDCAZ][BEFORE]",
                "DCA in Z, before track cut", ""}, // kBEFORE
               {"fTrackControlHistograms[kDCAZ][AFTER]",
@@ -272,6 +290,9 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
       {100., 0., 10.},            // kPT
       {360., 0., TMath::TwoPi()}, // kPHI
       {200., -2., 2.},            // kETA
+      {160., 0., 160.},           // kTPCNCLS
+      {1000., 0., 1000.},         // kITSNCLS
+      {100., 0., 10.},            // kCHI2PERNDF
       {100., -10., 10.},          // kDCAZ
       {100, -10., 10.},           // kDCAXY
   };
@@ -354,8 +375,11 @@ void AliAnalysisTaskAR::InitializeArraysForCuts() {
       {0., 5.},             // kPT
       {0., TMath::TwoPi()}, // kPHI
       {-3., 3.},            // kETA
-      {0., 1000},           // kDCAZ
-      {0., 1000},           // kDCAXY
+      {0., 160.},           // kTPCNCLS
+      {0., 200.},           // kITSNCLS
+      {0., 10.},            // kCHI2PERNDF
+      {-10., 10},           // kDCAZ
+      {-10., 10},           // kDCAXY
   };
   /* initialize array for track cuts */
   for (int var = 0; var < LAST_ETRACK; ++var) {
@@ -657,18 +681,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     return;
   }
 
-  // get centrality percentile
-  Double_t centralityPercentile =
-      dynamic_cast<AliMultSelection *>(aAOD->FindListObject("MultSelection"))
-          ->GetMultiplicityPercentile(fCentralitySelCriterion);
-
-  // get primary vertex object
-  AliAODVertex *PrimaryVertex = aAOD->GetPrimaryVertex();
-
-  // fill control histgrogram before event cut
-  fEventControlHistograms[kCEN][kBEFORE]->Fill(centralityPercentile);
-  fEventControlHistograms[kNCONTRIB][kBEFORE]->Fill(
-      PrimaryVertex->GetNContributors());
+  // fill event control histograms before cut
+  FillEventControlHistograms(kBEFORE, aAOD);
 
   // cut event
   if (!SurviveEventCut(aAOD)) {
@@ -676,9 +690,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   }
 
   // fill control histogram after event cut
-  fEventControlHistograms[kCEN][kAFTER]->Fill(centralityPercentile);
-  fEventControlHistograms[kNCONTRIB][kAFTER]->Fill(
-      PrimaryVertex->GetNContributors());
+  FillEventControlHistograms(kAFTER, aAOD);
 
   // 3. Start analysis over AODs:
 
@@ -702,16 +714,12 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     }
 
     /* get kinematic variables of the track */
-    Double_t pt = aTrack->Pt();
+    // Double_t pt = aTrack->Pt();
     Double_t phi = aTrack->Phi();
-    Double_t eta = aTrack->Eta();
+    // Double_t eta = aTrack->Eta();
 
-    /* fill track control histograms before cutting */
-    fTrackControlHistograms[kPT][kBEFORE]->Fill(pt);
-    fTrackControlHistograms[kPHI][kBEFORE]->Fill(phi);
-    fTrackControlHistograms[kETA][kBEFORE]->Fill(eta);
-    fTrackControlHistograms[kDCAZ][kBEFORE]->Fill(aTrack->ZAtDCA());
-    fTrackControlHistograms[kDCAXY][kBEFORE]->Fill(aTrack->DCA());
+    // fill track control histograms before track cut
+    FillTrackControlHistograms(kBEFORE, aTrack);
     nTracks_beforeCut++;
 
     /* cut track */
@@ -719,15 +727,11 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       continue;
     }
 
-    /* fill track control histograms after cutting */
-    fTrackControlHistograms[kPT][kAFTER]->Fill(pt);
-    fTrackControlHistograms[kPHI][kAFTER]->Fill(phi);
-    fTrackControlHistograms[kETA][kAFTER]->Fill(eta);
-    fTrackControlHistograms[kDCAZ][kAFTER]->Fill(aTrack->ZAtDCA());
-    fTrackControlHistograms[kDCAXY][kAFTER]->Fill(aTrack->DCA());
+    // fill track control histograms after track cut
+    FillTrackControlHistograms(kAFTER, aTrack);
     nTracks_afterCut++;
 
-    /* finally, fill azimuthal angels into vector */
+    // finally, fill azimuthal angles into vector
     if (!fMCClosure) {
       fPhi.push_back(phi);
     } else {
@@ -741,13 +745,13 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   }
 
   /* fill control histogram for Multiplicity after counting all tracks */
-  fEventControlHistograms[kMUL][kBEFORE]->Fill(nTracks_beforeCut);
-  fEventControlHistograms[kMUL][kAFTER]->Fill(nTracks_afterCut);
+  // fEventControlHistograms[kMUL][kBEFORE]->Fill(nTracks_beforeCut);
+  // fEventControlHistograms[kMUL][kAFTER]->Fill(nTracks_afterCut);
 
   // 4. Fill event objects
-  /* reset weights if required*/
+  // reset weights if required
 
-  /* calculate all qvectors */
+  // calculate all qvectors
   CalculateQvectors();
 
   // fill final result profile
@@ -765,7 +769,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 }
 
 void AliAnalysisTaskAR::MCOnTheFlyExec() {
-  // call this method for monte carlo analysis
+  // call this method for local monte carlo analysis
 
   // reset angles and weights
   fPhi.clear();
@@ -773,7 +777,7 @@ void AliAnalysisTaskAR::MCOnTheFlyExec() {
 
   // set symmetry planes for MC analysis
   MCPdfSymmetryPlanesSetup();
-  // loop over all particles in an even
+  // loop over all particles in an event
   Double_t Phi = 0.0;
   Int_t AcceptanceBin = 0;
   for (int i = 0; i < GetMCNumberOfParticlesPerEvent(); ++i) {
@@ -801,6 +805,38 @@ void AliAnalysisTaskAR::MCOnTheFlyExec() {
     CalculateQvectors();
     FillFinalResultProfile(kHARDATARESET);
   }
+}
+
+void AliAnalysisTaskAR::FillEventControlHistograms(kBeforeAfter BA,
+                                                   AliAODEvent *event) {
+  // fill event control histograms
+
+  // get centrality percentile
+  Double_t centralityPercentile =
+      dynamic_cast<AliMultSelection *>(event->FindListObject("MultSelection"))
+          ->GetMultiplicityPercentile(fCentralitySelCriterion);
+
+  // get primary vertex object
+  AliAODVertex *PrimaryVertex = event->GetPrimaryVertex();
+
+  // fill control histograms
+  fEventControlHistograms[kMUL][BA]->Fill(event->GetNumberOfTracks());
+  fEventControlHistograms[kCEN][BA]->Fill(centralityPercentile);
+  fEventControlHistograms[kNCONTRIB][BA]->Fill(
+      PrimaryVertex->GetNContributors());
+}
+
+void AliAnalysisTaskAR::FillTrackControlHistograms(kBeforeAfter BA,
+                                                   AliAODTrack *track) {
+  // fill track control histograms
+  fTrackControlHistograms[kPT][BA]->Fill(track->Pt());
+  fTrackControlHistograms[kPHI][BA]->Fill(track->Phi());
+  fTrackControlHistograms[kETA][BA]->Fill(track->Eta());
+  fTrackControlHistograms[kTPCNCLS][BA]->Fill(track->GetTPCNcls());
+  fTrackControlHistograms[kITSNCLS][BA]->Fill(track->GetITSNcls());
+  fTrackControlHistograms[kCHI2PERNDF][BA]->Fill(track->Chi2perNDF());
+  fTrackControlHistograms[kDCAZ][BA]->Fill(track->ZAtDCA());
+  fTrackControlHistograms[kDCAXY][BA]->Fill(track->DCA());
 }
 
 Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
@@ -839,7 +875,7 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
     return kFALSE;
   }
 
-  // nut event if primary vertex is too out of center
+  // cut event if primary vertex is too out of center
   if ((PrimaryVertex->GetX() < fPrimaryVertexCuts[kX][kMIN]) ||
       (PrimaryVertex->GetX() > fPrimaryVertexCuts[kX][kMAX])) {
     return kFALSE;
@@ -890,7 +926,21 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliAODTrack *aTrack) {
   // cut ETA
   if ((aTrack->Eta() < fTrackCuts[kETA][kMIN]) ||
       (aTrack->Eta() > fTrackCuts[kETA][kMAX])) {
-
+    return kFALSE;
+  }
+  // cut on number of clusters in the TPC
+  if ((aTrack->GetTPCNcls() < fTrackCuts[kTPCNCLS][kMIN]) ||
+      (aTrack->GetTPCNcls() > fTrackCuts[kTPCNCLS][kMAX])) {
+    return kFALSE;
+  }
+  // cut on number of clusters in the ITS
+  if ((aTrack->GetITSNcls() < fTrackCuts[kITSNCLS][kMIN]) ||
+      (aTrack->GetITSNcls() > fTrackCuts[kITSNCLS][kMAX])) {
+    return kFALSE;
+  }
+  // cut on chi2 / NDF of the track fit
+  if ((aTrack->Chi2perNDF() < fTrackCuts[kCHI2PERNDF][kMIN]) ||
+      (aTrack->Chi2perNDF() > fTrackCuts[kCHI2PERNDF][kMAX])) {
     return kFALSE;
   }
   // cut DCA in z direction
@@ -898,7 +948,6 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliAODTrack *aTrack) {
       (aTrack->ZAtDCA() > fTrackCuts[kDCAZ][kMAX])) {
     return kFALSE;
   }
-
   // cut DCA in xy plane
   if ((aTrack->DCA() < fTrackCuts[kDCAXY][kMIN]) ||
       (aTrack->DCA() > fTrackCuts[kDCAXY][kMAX])) {
@@ -1521,7 +1570,7 @@ void AliAnalysisTaskAR::SetAcceptanceHistogram(const char *Filename,
     std::cout << __LINE__ << ": No acceptance histogram" << std::endl;
     Fatal("SetAcceptanceHistogram", "Cannot get acceptance histogram");
   }
-	// keeps the histogram in memory after we close the file
+  // keeps the histogram in memory after we close the file
   this->fAcceptanceHistogram->SetDirectory(0);
   file->Close();
 }
@@ -1543,7 +1592,7 @@ void AliAnalysisTaskAR::SetWeightHistogram(const char *Filename,
     std::cout << __LINE__ << ": No acceptance histogram" << std::endl;
     Fatal("SetWeightHistogram", "Cannot get weight histogram");
   }
-	// keeps the histogram in memory after we close the file
+  // keeps the histogram in memory after we close the file
   this->fWeightHistogram->SetDirectory(0);
   file->Close();
 }

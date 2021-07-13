@@ -36,7 +36,17 @@ const Int_t kMaxPower = 20;
 
 // enumerations
 enum kEvent { kCEN, kMUL, kNCONTRIB, LAST_EEVENT };
-enum kTrack { kPT, kPHI, kETA, kDCAZ, kDCAXY, LAST_ETRACK };
+enum kTrack {
+  kPT,
+  kPHI,
+  kETA,
+  kTPCNCLS,
+  kITSNCLS,
+  kCHI2PERNDF,
+  kDCAZ,
+  kDCAXY,
+  LAST_ETRACK
+};
 enum kXYZ { kX, kY, kZ, LAST_EXYZ };
 enum kFinalHist { kPHIAVG, LAST_EFINALHIST };
 enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
@@ -71,7 +81,9 @@ public:
   virtual void BookFinalResultProfiles();
   virtual void BookMCObjects();
 
-  // split calls in UserExec() depending on flags
+  // functions called in UserExec()
+  virtual void FillEventControlHistograms(kBeforeAfter BA, AliAODEvent *event);
+  virtual void FillTrackControlHistograms(kBeforeAfter BA, AliAODTrack *track);
   virtual void MCOnTheFlyExec();
   virtual void FillFinalResultProfile(kFinalProfile fp);
 
