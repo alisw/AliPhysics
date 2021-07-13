@@ -386,6 +386,13 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("0008e113","411799809fe32220000","0r631031000000d0");  // EG2
     cuts.AddCutCalo("0008d113","411799809fe32220000","0r631031000000d0");  // EG1
 
+  // NonLin settings with only test beam WO scale (interpolation between PCM-EMC and EMC fine tuning)
+  } else if (trainConfig == 86){
+    cuts.AddCutCalo("00010113","411799909fe32220000","0r631031000000d0");  // INT7
+  } else if (trainConfig == 87){
+    cuts.AddCutCalo("0008e113","411799909fe32220000","0r631031000000d0");  // EG2
+    cuts.AddCutCalo("0008d113","411799909fe32220000","0r631031000000d0");  // EG1
+
   // NonLin settings with only test beam WO scale (no fine tuning) to test different clusterization settings and NonLin functions
   } else if (trainConfig == 90){
     cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0");  // INT7, NonLin applied in CF

@@ -42,7 +42,6 @@ set(SRCS
   AliAnalysisTaskFlowExample.cxx
   AliAnalysisTaskGFWFlow.cxx
   AliAnalysisTaskGFWPIDFlow.cxx
-  AliAnalysisTaskMeanPtV2Corr.cxx
   AliAnalysisTaskUniFlow.cxx
   AliAnalysisTaskUniFlowWithSphericity.cxx
   AliAnalysisTaskUniFlowMultiStrange.cxx
@@ -62,6 +61,7 @@ set(SRCS
   )
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS AliAnalysisTaskMeanPtV2Corr.cxx)
   list(APPEND SRCS AliAnalysisTaskNonlinearFlow.cxx)
   list(APPEND SRCS CorrelationCalculator.cxx)
 endif()

@@ -2374,8 +2374,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kPairDeltaDCAsigXY] = TMath::Abs(dcaSig1[0] - dcaSig2[0]);
 	values[AliDielectronVarManager::kPairSumDCAsigXY]   = TMath::Abs(dcaSig1[0] + dcaSig2[0]);
 	values[AliDielectronVarManager::kPairGeomDCAsigXY]  = TMath::Sqrt( TMath::Abs(dcaSig1[0] * dcaSig2[0]) );
-	values[AliDielectronVarManager::kPairGeomSignDCAsigXY]  = TMath::Sign(1.,dcaSig1[0]) * TMath::Sign(1.,dcaSig2[0]) * TMath::Sqrt( TMath::Abs(dcaSig1[0] * dcaSig2[0]) );
-	values[AliDielectronVarManager::kPairSignDCAsigXY]  = TMath::Sign(1.,dcaSig1[0]) * TMath::Sign(1.,dcaSig2[0]) * TMath::Sqrt( (dcaSig1[0]*dcaSig1[0] + dcaSig2[0]*dcaSig2[0]) / 2 );
+	values[AliDielectronVarManager::kPairGeomSignDCAsigXY] = pair->GetFirstDaughterP()->Charge() * pair->GetSecondDaughterP()->Charge() * TMath::Sign(1.,dcaSig1[0]) * TMath::Sign(1.,dcaSig2[0]) * TMath::Sqrt( TMath::Abs(dcaSig1[0] * dcaSig2[0]) );
+	values[AliDielectronVarManager::kPairSignDCAsigXY]     = pair->GetFirstDaughterP()->Charge() * pair->GetSecondDaughterP()->Charge() * TMath::Sign(1.,dcaSig1[0]) * TMath::Sign(1.,dcaSig2[0]) * TMath::Sqrt( (dcaSig1[0]*dcaSig1[0] + dcaSig2[0]*dcaSig2[0]) / 2 );
       }
     }
   }
