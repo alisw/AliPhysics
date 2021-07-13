@@ -12,7 +12,6 @@
 #include "AliMCEvent.h"
 #include "AliPhysicsSelection.h"
 #include "AliVEvent.h"
-#include "AliMultSelection.h"
 #include "AliPhysicsSelection.h"
 #include "TChain.h"
 #include "TList.h"
@@ -78,7 +77,11 @@ void AliMCWeightsTask::UserCreateOutputObjects() {
     fOutputList->Add((TObject*)fMCSpectraWeights->GetHistDataFraction());
     fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCFraction());
     fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCWeights());
-    //    fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCWeightsSys());
+
+    std::map<AliMCSpectraWeights::SysFlag, TH3F*> weights = fMCSpectraWeights->GetHistMCWeightsSys();
+    for (auto const& hist : weights) {
+        fOutputList->Add((TObject*)hist.second);
+    }
 
     PostData(1, fOutputList);
 #ifdef __AliMCWeightsTask_DebugTiming__
