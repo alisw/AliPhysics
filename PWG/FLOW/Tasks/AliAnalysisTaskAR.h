@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 06.07.2021
+ * Last Modified Date: 13.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -35,15 +35,15 @@ const Int_t kMaxCorrelator = 20;
 const Int_t kMaxPower = 20;
 
 // enumerations
-enum kEvent { kCEN, kMUL, LAST_EEVENT };
-enum kTrack { kPT, kPHI, kETA, LAST_ETRACK };
+enum kEvent { kCEN, kMUL, kNCONTRIB, LAST_EEVENT };
+enum kTrack { kPT, kPHI, kETA, kDCAZ, kDCAXY, LAST_ETRACK };
+enum kXYZ { kX, kY, kZ, LAST_EXYZ };
 enum kFinalHist { kPHIAVG, LAST_EFINALHIST };
 enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
 enum kName { kNAME, kTITLE, kXAXIS, LAST_ENAME };
 enum kBeforeAfter { kBEFORE, kAFTER, LAST_EBEFOREAFTER };
 enum kMinMax { kMIN, kMAX, LAST_EMINMAX };
-enum kXYZ { kX, kY, kZ, LAST_EXYZ };
 
 class AliAnalysisTaskAR : public AliAnalysisTaskSE {
 public:
@@ -118,64 +118,73 @@ public:
   void SetFinalResultsList(TList *const frl) { this->fFinalResultsList = frl; };
   TList *GetFinalResultsList() const { return this->fFinalResultsList; }
 
-  // Control Histograms
-  void SetPtBinning(Int_t nbins, Double_t min, Double_t max) {
-    this->fBinsTrackControlHistograms[kPT][kBIN] = nbins;
-    this->fBinsTrackControlHistograms[kPT][kLEDGE] = min;
-    this->fBinsTrackControlHistograms[kPT][kUEDGE] = max;
-  };
-  void SetPhiBinning(Int_t nbins, Double_t min, Double_t max) {
-    this->fBinsTrackControlHistograms[kPHI][kBIN] = nbins;
-    this->fBinsTrackControlHistograms[kPHI][kLEDGE] = min;
-    this->fBinsTrackControlHistograms[kPHI][kUEDGE] = max;
-  };
-  void SetEtaBinning(Int_t nbins, Double_t min, Double_t max) {
-    this->fBinsTrackControlHistograms[kETA][kBIN] = nbins;
-    this->fBinsTrackControlHistograms[kETA][kLEDGE] = min;
-    this->fBinsTrackControlHistograms[kETA][kUEDGE] = max;
-  };
-  void SetCenBinning(Int_t nbins, Double_t min, Double_t max) {
-    this->fBinsEventControlHistograms[kCEN][kBIN] = nbins;
-    this->fBinsEventControlHistograms[kCEN][kLEDGE] = min;
-    this->fBinsEventControlHistograms[kCEN][kUEDGE] = max;
-  };
-  void SetMulBinning(Int_t nbins, Double_t min, Double_t max) {
-    this->fBinsEventControlHistograms[kMUL][kBIN] = nbins;
-    this->fBinsEventControlHistograms[kMUL][kLEDGE] = min;
-    this->fBinsEventControlHistograms[kMUL][kUEDGE] = max;
-  };
+  // generic setter for track control histogram binning
+  void SetTrackControlHistogramBinning(kTrack Track, Int_t nbins, Double_t min,
+                                       Double_t max) {
+    if (Track > LAST_ETRACK) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetTrackControlHistogramBinning",
+            "Running out of bounds in SetTrackControlHistogramBinning");
+    }
+    this->fBinsTrackControlHistograms[Track][kBIN] = nbins;
+    this->fBinsTrackControlHistograms[Track][kLEDGE] = min;
+    this->fBinsTrackControlHistograms[Track][kUEDGE] = max;
+  }
+  // generic setter for event histogram binning
+  void SetEventControlHistogramBinning(kEvent Event, Int_t nbins, Double_t min,
+                                       Double_t max) {
+    if (Event > LAST_EEVENT) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetEventControlHistogramBinning",
+            "Running out of bounds in SetEventControlHistogramBinning");
+    }
+    this->fBinsEventControlHistograms[Event][kBIN] = nbins;
+    this->fBinsEventControlHistograms[Event][kLEDGE] = min;
+    this->fBinsEventControlHistograms[Event][kUEDGE] = max;
+  }
 
-  // cuts
+  // setters for cuts
+  // centrality selection criterion
+  // only use V0M, CL0/1, SPDTracklets
   void SetCentralitySelCriterion(TString SelCriterion) {
     this->fCentralitySelCriterion = SelCriterion;
   }
-  void SetPtCuts(Double_t min, Double_t max) {
-    this->fTrackCuts[kPT][kMIN] = min;
-    this->fTrackCuts[kPT][kMAX] = max;
+  // generic setter for track cuts
+  void SetTrackCuts(kTrack Track, Double_t min, Double_t max) {
+    if (Track > LAST_ETRACK) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetTrackCuts", "Running out of bounds in SetTrackCuts");
+    }
+    this->fTrackCuts[Track][kMIN] = min;
+    this->fTrackCuts[Track][kMAX] = max;
   }
-  void SetPhiCuts(Double_t min, Double_t max) {
-    this->fTrackCuts[kPHI][kMIN] = min;
-    this->fTrackCuts[kPHI][kMAX] = max;
+  // generic setter for event cuts
+  void SetEventCuts(kEvent Event, Double_t min, Double_t max) {
+    if (Event > LAST_EEVENT) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetEventCuts", "Running out of bounds in SetEventCuts");
+    }
+    this->fEventCuts[Event][kMIN] = min;
+    this->fEventCuts[Event][kMAX] = max;
   }
-  void SetEtaCuts(Double_t min, Double_t max) {
-    this->fTrackCuts[kETA][kMIN] = min;
-    this->fTrackCuts[kETA][kMAX] = max;
+  // generic setter primary vertex cut
+  void SetPrimaryVertexCuts(kXYZ xyz, Double_t min, Double_t max) {
+    if (xyz > LAST_EXYZ) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetPrimaryVertexCuts",
+            "Running out of bounds in SetPrimaryVertexCuts");
+    }
+    this->fPrimaryVertexCuts[xyz][kMIN] = min;
+    this->fPrimaryVertexCuts[xyz][kMAX] = max;
   }
-  void SetPrimaryVertexXCuts(Double_t min, Double_t max) {
-    this->fPrimaryVertexCuts[kX][kMIN] = min;
-    this->fPrimaryVertexCuts[kX][kMAX] = max;
-  }
-  void SetPrimaryVertexYCuts(Double_t min, Double_t max) {
-    this->fPrimaryVertexCuts[kY][kMIN] = min;
-    this->fPrimaryVertexCuts[kY][kMAX] = max;
-  }
-  void SetPrimaryVertexZCuts(Double_t min, Double_t max) {
-    this->fPrimaryVertexCuts[kZ][kMIN] = min;
-    this->fPrimaryVertexCuts[kZ][kMAX] = max;
-  }
+  // filterbit
+  // depends strongly on the data set
+  // typical choices are 1,128,256,768
   void SetFilterbit(Int_t Filterbit) { this->fFilterbit = Filterbit; }
+  // cut all non-primary particles
+  void SetPrimaryOnlyCut(Bool_t option) { this->fPrimaryOnly = option; }
 
-  // setters and getters for MC analsys
+  // setters for MC analsys
   void SetMCAnalysis(Bool_t option) { this->fMCAnalaysis = option; }
   void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
   void SetUseWeights(Bool_t option) { this->fUseWeights = option; }
@@ -204,10 +213,25 @@ public:
     fMCNumberOfParticlesPerEventRange[kMIN] = min;
     fMCNumberOfParticlesPerEventRange[kMAX] = max;
   }
-  void SetAcceptanceHistogram(TH1F *AcceptanceHistogram);
+  void SetAcceptanceHistogram(TH1F *AcceptanceHistogram) {
+    if (!AcceptanceHistogram) {
+      std::cout << __LINE__ << ": Did not get acceptance histogram"
+                << std::endl;
+      Fatal("SetAccpetanceHistogram", "Invalid pointer");
+    }
+    this->fAcceptanceHistogram = AcceptanceHistogram;
+  }
   void SetAcceptanceHistogram(const char *Filename, const char *Histname);
-  void SetWeightHistogram(TH1F *WeightHistogram);
+  void SetWeightHistogram(TH1F *WeightHistogram) {
+    if (!WeightHistogram) {
+      std::cout << __LINE__ << ": Did not get weight histogram" << std::endl;
+      Fatal("SetWeightHistogram", "Invalid pointer");
+    }
+    this->fWeightHistogram = WeightHistogram;
+  }
   void SetWeightHistogram(const char *Filename, const char *Histname);
+
+  // set correlators we want to compute
   void SetCorrelators(std::vector<std::vector<Int_t>> correlators) {
     this->fCorrelators = correlators;
     for (int i = 0; i < LAST_EFINALPROFILE; ++i) {
@@ -242,8 +266,10 @@ private:
   // cuts
   TString fCentralitySelCriterion;
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
+  Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
   Double_t fPrimaryVertexCuts[LAST_EXYZ][LAST_EMINMAX];
   Int_t fFilterbit;
+  Bool_t fPrimaryOnly;
 
   // Final results
   TList *fFinalResultsList;

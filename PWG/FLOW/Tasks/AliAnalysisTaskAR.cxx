@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 06.07.2021
+ * Last Modified Date: 13.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -46,7 +46,7 @@ ClassImp(AliAnalysisTaskAR)
       fControlHistogramsList(nullptr),
       fControlHistogramsListName("ControlHistograms"),
       /* cuts */
-      fCentralitySelCriterion("V0M"), fFilterbit(128),
+      fCentralitySelCriterion("V0M"), fFilterbit(128), fPrimaryOnly(kFALSE),
       /* Final results */
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       /* flags for MC analysis */
@@ -100,7 +100,7 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fControlHistogramsList(nullptr),
       fControlHistogramsListName("ControlHistograms"),
       /* cuts */
-      fCentralitySelCriterion("V0M"), fFilterbit(128),
+      fCentralitySelCriterion("V0M"), fFilterbit(128), fPrimaryOnly(kFALSE),
       /* Final results */
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       /* flags for MC analysis */
@@ -225,24 +225,36 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
       TrackControlHistogramNames[LAST_ETRACK][LAST_EBEFOREAFTER][LAST_ENAME] = {
           {
               // NAME, TITLE, XAXIS
-              {"fTrackControlHistograms[PT][BEFORE]", "pT, before cut",
-               "p_{T}"}, // BEFORE
-              {"fTrackControlHistograms[PT][AFTER]", "pT, after cut",
-               "p_{T}"}, // AFTER
-          },             // PT
+              {"fTrackControlHistograms[kPT][kBEFORE]", "pT, before track cut",
+               "p_{T}"}, // kBEFORE
+              {"fTrackControlHistograms[kPT][kAFTER]", "pT, after track cut",
+               "p_{T}"}, // kAFTER
+          },             // kPT
 
           {
-              {"fTrackControlHistograms[PHI][BEFORE]", "#varphi, before cut",
-               "#varphi"}, // BEFORE
-              {"fTrackControlHistograms[PHI][AFTER]", "#varphi, after cut",
-               "#varphi"}, // AFTER
-          },               // PHI
+              {"fTrackControlHistograms[kPHI][kBEFORE]",
+               "#varphi, before track cut", "#varphi"}, // kBEFORE
+              {"fTrackControlHistograms[kPHI][kAFTER]",
+               "#varphi, after track cut", "#varphi"}, // kAFTER
+          },                                           // kPHI
           {
-              {"fTrackControlHistograms[ETA][BEFORE]", "#eta, before cut",
-               "#eta"}, // BEFORE
-              {"fTrackControlHistograms[ETA][AFTER]", "#eta, after cut",
-               "#eta"}, // AFTER
-          },            // ETA
+              {"fTrackControlHistograms[kETA][kBEFORE]",
+               "#eta, before track cut", "#eta"}, // kBEFORE
+              {"fTrackControlHistograms[kETA][kAFTER]", "#eta, after track cut",
+               "#eta"}, // kAFTER
+          },            // kETA
+          {
+              {"fTrackControlHistograms[kDCAZ][BEFORE]",
+               "DCA in Z, before track cut", ""}, // kBEFORE
+              {"fTrackControlHistograms[kDCAZ][AFTER]",
+               "DCA in Z, after track cut", ""}, // kAFTER
+          },                                     // kDCAZ
+          {
+              {"fTrackControlHistograms[kDCAXY][BEFORE]",
+               "DCA in XY, before track cut", ""}, // kBEFORE
+              {"fTrackControlHistograms[kDCAXY][AFTER]",
+               "DCA in XY, after track cut", ""}, // kAFTER
+          },                                      // kDCAXY
       };
   /* initialize names for track control histograms */
   for (int var = 0; var < LAST_ETRACK; ++var) {
@@ -256,10 +268,12 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
 
   /* default bins for track control histograms */
   Double_t BinsTrackControlHistogramDefaults[LAST_ETRACK][LAST_EBINS] = {
-      // BIN LEDGE UEDGE
-      {100., 0., 10.},            // PT
-      {360., 0., TMath::TwoPi()}, // PHI
-      {200., -2., 2.}             // ETA
+      // kBIN kLEDGE kUEDGE
+      {100., 0., 10.},            // kPT
+      {360., 0., TMath::TwoPi()}, // kPHI
+      {200., -2., 2.},            // kETA
+      {100., -10., 10.},          // kDCAZ
+      {100, -10., 10.},           // kDCAXY
   };
   /* initialize array of bins and edges for track control histograms */
   for (int var = 0; var < LAST_ETRACK; ++var) {
@@ -280,20 +294,30 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
 
   /* name of event control histograms */
   TString
-      EventControlHistogramNames[LAST_ETRACK][LAST_EBEFOREAFTER][LAST_ENAME] = {
+      EventControlHistogramNames[LAST_EEVENT][LAST_EBEFOREAFTER][LAST_ENAME] = {
           {
               // NAME, TITLE, XAXIS
-              {"fEventControlHistograms[CEN][BEFORE]", "centrality, before cut",
-               "Centrality Percentile"}, // BEFORE
-              {"fEventControlHistograms[CEN][AFTER]", "centrality, after cut",
-               "Centrality Percentile"}, // AFTER
-          },                             // CEN
+              {"fEventControlHistograms[kCEN][kBEFORE]",
+               "centrality, before event cut",
+               "Centrality Percentile"}, // kBEFORE
+              {"fEventControlHistograms[kCEN][kAFTER]",
+               "centrality, after event cut",
+               "Centrality Percentile"}, // kAFTER
+          },                             // kCEN
           {
-              {"fEventControlHistograms[MUL][BEFORE]",
-               "multiplicity, before cut", "M"}, // BEFORE
-              {"fEventControlHistograms[MUL][AFTER]", "multiplicity, after cut",
-               "M"}, // AFTER
-          },         // MUL
+              {"fEventControlHistograms[kMUL][kBEFORE]",
+               "multiplicity, before event cut", "M"}, // kBEFORE
+              {"fEventControlHistograms[kMUL][kAFTER]",
+               "multiplicity, after event cut", "M"}, // kAFTER
+          },                                          // kMUL
+          {
+              {"fEventControlHistograms[kNCONTRIB][BEFORE]",
+               "Number of Contributers, before event cut",
+               "#Contributors"}, // kBEFORE
+              {"fEventControlHistograms[kNCONTRIB][AFTER]",
+               "Number of Contributers, after event cut",
+               "#Contributors"}, // kAFTER
+          },                     // kNCONTRIB
       };
   /* initialize names for event control histograms */
   for (int var = 0; var < LAST_EEVENT; ++var) {
@@ -305,11 +329,12 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
     }
   }
 
-  /* default bins for track control histograms */
+  /* default bins for event control histograms */
   Double_t BinsEventControlHistogramDefaults[LAST_EEVENT][LAST_EBINS] = {
-      // BIN LEDGE UEDGE
-      {10., 0., 100},     // CEN
-      {200., 0., 20000.}, // MUL
+      // kBIN kLEDGE kUEDGE
+      {10., 0., 100},     // kCEN
+      {200., 0., 20000.}, // kMUL
+      {100., 0., 5000.},  // kNCONTRIB
   };
   /* initialize array of bins and edges for track control histograms */
   for (int var = 0; var < LAST_EEVENT; ++var) {
@@ -326,14 +351,30 @@ void AliAnalysisTaskAR::InitializeArraysForCuts() {
   /* default track cuts */
   Double_t TrackCutDefaults[LAST_ETRACK][LAST_EMINMAX] = {
       // MIN MAX
-      {0., 5.},             // PT
-      {0., TMath::TwoPi()}, // PHI
-      {-3., 3.},            // ETA
+      {0., 5.},             // kPT
+      {0., TMath::TwoPi()}, // kPHI
+      {-3., 3.},            // kETA
+      {0., 1000},           // kDCAZ
+      {0., 1000},           // kDCAXY
   };
   /* initialize array for track cuts */
   for (int var = 0; var < LAST_ETRACK; ++var) {
     for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
       fTrackCuts[var][mm] = TrackCutDefaults[var][mm];
+    }
+  }
+
+  // default event cuts
+  Double_t EventCutDefaults[LAST_EEVENT][LAST_EMINMAX]{
+      // MIN MAX
+      {0., 100.},  // kCEN
+      {0., 20000}, // kMUL
+      {0., 1e6},   // kNCONTRIB
+  };
+  /* initialize array for event cuts */
+  for (int var = 0; var < LAST_EEVENT; ++var) {
+    for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
+      fEventCuts[var][mm] = EventCutDefaults[var][mm];
     }
   }
 
@@ -500,6 +541,7 @@ void AliAnalysisTaskAR::BookControlHistograms() {
                    fBinsTrackControlHistograms[var][kUEDGE]);
       fTrackControlHistograms[var][ba]->SetStats(kFALSE);
       fTrackControlHistograms[var][ba]->SetFillColor(fillColor[ba]);
+      fTrackControlHistograms[var][ba]->SetMinimum(0.0);
       fTrackControlHistograms[var][ba]->GetXaxis()->SetTitle(
           fTrackControlHistogramNames[var][ba][2]);
       fControlHistogramsList->Add(fTrackControlHistograms[var][ba]);
@@ -517,6 +559,7 @@ void AliAnalysisTaskAR::BookControlHistograms() {
                    fBinsEventControlHistograms[var][kUEDGE]);
       fEventControlHistograms[var][ba]->SetStats(kFALSE);
       fEventControlHistograms[var][ba]->SetFillColor(fillColor[ba]);
+      fEventControlHistograms[var][ba]->SetMinimum(0.0);
       fEventControlHistograms[var][ba]->GetXaxis()->SetTitle(
           fEventControlHistogramNames[var][ba][2]);
       fControlHistogramsList->Add(fEventControlHistograms[var][ba]);
@@ -619,16 +662,23 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       dynamic_cast<AliMultSelection *>(aAOD->FindListObject("MultSelection"))
           ->GetMultiplicityPercentile(fCentralitySelCriterion);
 
-  // fill centrality control histgrogram before event cut
+  // get primary vertex object
+  AliAODVertex *PrimaryVertex = aAOD->GetPrimaryVertex();
+
+  // fill control histgrogram before event cut
   fEventControlHistograms[kCEN][kBEFORE]->Fill(centralityPercentile);
+  fEventControlHistograms[kNCONTRIB][kBEFORE]->Fill(
+      PrimaryVertex->GetNContributors());
 
   // cut event
   if (!SurviveEventCut(aAOD)) {
     return;
   }
 
-  // fill centrality control histogram after event cut
+  // fill control histogram after event cut
   fEventControlHistograms[kCEN][kAFTER]->Fill(centralityPercentile);
+  fEventControlHistograms[kNCONTRIB][kAFTER]->Fill(
+      PrimaryVertex->GetNContributors());
 
   // 3. Start analysis over AODs:
 
@@ -660,6 +710,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     fTrackControlHistograms[kPT][kBEFORE]->Fill(pt);
     fTrackControlHistograms[kPHI][kBEFORE]->Fill(phi);
     fTrackControlHistograms[kETA][kBEFORE]->Fill(eta);
+    fTrackControlHistograms[kDCAZ][kBEFORE]->Fill(aTrack->ZAtDCA());
+    fTrackControlHistograms[kDCAXY][kBEFORE]->Fill(aTrack->DCA());
     nTracks_beforeCut++;
 
     /* cut track */
@@ -671,6 +723,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     fTrackControlHistograms[kPT][kAFTER]->Fill(pt);
     fTrackControlHistograms[kPHI][kAFTER]->Fill(phi);
     fTrackControlHistograms[kETA][kAFTER]->Fill(eta);
+    fTrackControlHistograms[kDCAZ][kAFTER]->Fill(aTrack->ZAtDCA());
+    fTrackControlHistograms[kDCAXY][kAFTER]->Fill(aTrack->DCA());
     nTracks_afterCut++;
 
     /* finally, fill azimuthal angels into vector */
@@ -751,20 +805,20 @@ void AliAnalysisTaskAR::MCOnTheFlyExec() {
 
 Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
 
-  /* Check if the current event survives event cuts */
+  // Check if the current event survives event cuts
 
-  /* Determine Ali{MC,ESD,AOD}Event: */
-  /* AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave); */
-  /* AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave); */
-  /* get object for determining centrality */
+  // Determine Ali{MC,ESD,AOD}Event:
+  // AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
+  // AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
+  // get object for determining centrality
 
-  /* cast into AOD event */
+  // cast into AOD event
   AliAODEvent *aAOD = dynamic_cast<AliAODEvent *>(ave);
   if (!aAOD) {
     return kFALSE;
   }
 
-  /* get centrality percentile */
+  // get centrality percentile
   AliMultSelection *ams =
       (AliMultSelection *)aAOD->FindListObject("MultSelection");
   if (!ams) {
@@ -773,38 +827,41 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
   Double_t MultiplicityPercentile =
       ams->GetMultiplicityPercentile(fCentralitySelCriterion);
 
-  /* cut event if it is not within the centrality percentile */
-  /* use edges of the event control histogram for cutting */
-  if (MultiplicityPercentile < fBinsEventControlHistograms[kCEN][kLEDGE]) {
-    return kFALSE;
-  }
-  if (MultiplicityPercentile > fBinsEventControlHistograms[kCEN][kUEDGE]) {
+  // cut event if it is not within the centrality percentile
+  if ((MultiplicityPercentile < fEventCuts[kCEN][kMIN]) ||
+      (MultiplicityPercentile > fEventCuts[kCEN][kMAX])) {
     return kFALSE;
   }
 
-  /* Get primary vertex */
+  // Get primary vertex
   AliAODVertex *PrimaryVertex = aAOD->GetPrimaryVertex();
   if (!PrimaryVertex) {
     return kFALSE;
   }
 
-  // cut event if primary vertex is too out of center
-  if (PrimaryVertex->GetX() < fPrimaryVertexCuts[kX][kMIN]) {
+  // nut event if primary vertex is too out of center
+  if ((PrimaryVertex->GetX() < fPrimaryVertexCuts[kX][kMIN]) ||
+      (PrimaryVertex->GetX() > fPrimaryVertexCuts[kX][kMAX])) {
     return kFALSE;
   }
-  if (PrimaryVertex->GetX() > fPrimaryVertexCuts[kX][kMAX]) {
+  if ((PrimaryVertex->GetY() < fPrimaryVertexCuts[kY][kMIN]) ||
+      (PrimaryVertex->GetY() > fPrimaryVertexCuts[kY][kMAX])) {
     return kFALSE;
   }
-  if (PrimaryVertex->GetY() < fPrimaryVertexCuts[kY][kMIN]) {
+  if ((PrimaryVertex->GetZ() < fPrimaryVertexCuts[kZ][kMIN]) ||
+      (PrimaryVertex->GetZ() > fPrimaryVertexCuts[kZ][kMAX])) {
     return kFALSE;
   }
-  if (PrimaryVertex->GetY() > fPrimaryVertexCuts[kY][kMAX]) {
+
+  // cut on multiplicity
+  if ((aAOD->GetNumberOfTracks() < fEventCuts[kMUL][kMIN]) ||
+      (aAOD->GetNumberOfTracks() > fEventCuts[kMUL][kMAX])) {
     return kFALSE;
   }
-  if (PrimaryVertex->GetZ() < fPrimaryVertexCuts[kZ][kMIN]) {
-    return kFALSE;
-  }
-  if (PrimaryVertex->GetZ() > fPrimaryVertexCuts[kZ][kMAX]) {
+
+  // cut on numbers of contriubters to the vertex
+  if ((PrimaryVertex->GetNContributors() < fEventCuts[kNCONTRIB][kMIN]) ||
+      (PrimaryVertex->GetNContributors() > fEventCuts[kNCONTRIB][kMAX])) {
     return kFALSE;
   }
 
@@ -812,27 +869,39 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
 }
 
 Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliAODTrack *aTrack) {
-  /* check if current track survives track cut */
+  // check if current track survives track cut
 
-  /* cut PT */
-  if (aTrack->Pt() < fTrackCuts[kPT][kMIN]) {
+  // if set, cut all non-primary particles away
+  if (fPrimaryOnly) {
+    if (aTrack->GetType() != AliAODTrack::kPrimary) {
+      return kFALSE;
+    }
+  }
+  // cut PT
+  if ((aTrack->Pt() < fTrackCuts[kPT][kMIN]) ||
+      (aTrack->Pt() > fTrackCuts[kPT][kMAX])) {
     return kFALSE;
   }
-  if (aTrack->Pt() > fTrackCuts[kPT][kMAX]) {
+  // cut PHI
+  if ((aTrack->Phi() < fTrackCuts[kPHI][kMIN]) ||
+      (aTrack->Phi() > fTrackCuts[kPHI][kMAX])) {
     return kFALSE;
   }
-  /* cut PHI */
-  if (aTrack->Phi() < fTrackCuts[kPHI][kMIN]) {
+  // cut ETA
+  if ((aTrack->Eta() < fTrackCuts[kETA][kMIN]) ||
+      (aTrack->Eta() > fTrackCuts[kETA][kMAX])) {
+
     return kFALSE;
   }
-  if (aTrack->Phi() > fTrackCuts[kPHI][kMAX]) {
+  // cut DCA in z direction
+  if ((aTrack->ZAtDCA() < fTrackCuts[kDCAZ][kMIN]) ||
+      (aTrack->ZAtDCA() > fTrackCuts[kDCAZ][kMAX])) {
     return kFALSE;
   }
-  /* cut ETA */
-  if (aTrack->Eta() < fTrackCuts[kETA][kMIN]) {
-    return kFALSE;
-  }
-  if (aTrack->Eta() > fTrackCuts[kETA][kMAX]) {
+
+  // cut DCA in xy plane
+  if ((aTrack->DCA() < fTrackCuts[kDCAXY][kMIN]) ||
+      (aTrack->DCA() > fTrackCuts[kDCAXY][kMAX])) {
     return kFALSE;
   }
 
@@ -1435,14 +1504,6 @@ TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2, Int_t n3,
   return Q / CombinatorialWeight(4);
 }
 
-void AliAnalysisTaskAR::SetAcceptanceHistogram(TH1F *AcceptanceHistogram) {
-  if (!AcceptanceHistogram) {
-    std::cout << __LINE__ << ": Did not get acceptance histogram" << std::endl;
-    Fatal("SetAccpetanceHistogram", "Invalid pointer");
-  }
-  this->fAcceptanceHistogram = AcceptanceHistogram;
-}
-
 void AliAnalysisTaskAR::SetAcceptanceHistogram(const char *Filename,
                                                const char *Histname) {
   // check if file exists
@@ -1460,20 +1521,13 @@ void AliAnalysisTaskAR::SetAcceptanceHistogram(const char *Filename,
     std::cout << __LINE__ << ": No acceptance histogram" << std::endl;
     Fatal("SetAcceptanceHistogram", "Cannot get acceptance histogram");
   }
+	// keeps the histogram in memory after we close the file
   this->fAcceptanceHistogram->SetDirectory(0);
   file->Close();
 }
 
-void AliAnalysisTaskAR::SetWeightHistogram(TH1F *WeightHistogram) {
-  if (!WeightHistogram) {
-    std::cout << __LINE__ << ": Did not get weight histogram" << std::endl;
-    Fatal("SetWeightHistogram", "Invalid pointer");
-  }
-  this->fWeightHistogram = WeightHistogram;
-}
-
 void AliAnalysisTaskAR::SetWeightHistogram(const char *Filename,
-                                               const char *Histname) {
+                                           const char *Histname) {
   // check if file exists
   if (gSystem->AccessPathName(Filename, kFileExists)) {
     std::cout << __LINE__ << ": File does not exist" << std::endl;
@@ -1489,6 +1543,7 @@ void AliAnalysisTaskAR::SetWeightHistogram(const char *Filename,
     std::cout << __LINE__ << ": No acceptance histogram" << std::endl;
     Fatal("SetWeightHistogram", "Cannot get weight histogram");
   }
+	// keeps the histogram in memory after we close the file
   this->fWeightHistogram->SetDirectory(0);
   file->Close();
 }
