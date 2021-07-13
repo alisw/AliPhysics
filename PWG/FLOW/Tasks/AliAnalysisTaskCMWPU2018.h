@@ -132,13 +132,13 @@ class AliAnalysisTaskCMWPU2018 : public AliAnalysisTaskSE {
   Float_t               fMinPtCut;  //
   Float_t               fMaxPtCut;  //
   Float_t               fDCAxyMax;  //                                                                                                        
-  Float_t               fDCAzMax;  // 
-  Float_t                 fChi2; 
-  Double_t         fPileUpSlopeParm;  //
-  Double_t         fPileUpConstParm;  //
-  Bool_t             bSkipPileUpCut;  //
-  Double_t              fEtaGapNeg;  //
-  Double_t              fEtaGapPos;  //
+  Float_t                fDCAzMax;  // 
+  Float_t                   fChi2; 
+  Double_t       fPileUpSlopeParm;  //
+  Double_t       fPileUpConstParm;  //
+  Bool_t           bSkipPileUpCut;  //
+  Double_t             fEtaGapNeg;  //
+  Double_t             fEtaGapPos;  //
   Float_t              fMinEtaCut;  //
   Float_t              fMaxEtaCut;  //
   Float_t             fTrkChi2Min;  //
@@ -157,96 +157,39 @@ class AliAnalysisTaskCMWPU2018 : public AliAnalysisTaskSE {
   //QA histograms:
   TH1F                  *fCentDistBeforCut;    //! Cent before Any Cut
   TH1F                  *fCentDistAfterCut;    //! Cent After All Cuts
-  TH2F                  *fHistEtaPtBeforCut;   //! Eta-Pt before Any Cut
-  TH2F                  *fHistEtaPhiBeforCut;  //! Eta-Phi before Any Cut
-  TH2F                  *fHistEtaPhiAfterCut;  //! Eta-Phi after trk Cut    
+  //TH2F                  *fHistEtaPtBeforCut;   //! Eta-Pt before Any Cut
+  //TH2F                  *fHistEtaPhiBeforCut;  //! Eta-Phi before Any Cut
+  //TH2F                  *fHistEtaPhiAfterCut;  //! Eta-Phi after trk Cut    
  
 
 
   
   //User Defined Histograms: 
-
-
-  ///Used For Tracking Efficiency:
-  TH1D          *fHCorrectMCposChrg;
-  TH1D          *fHCorrectMCposPion;
-  TH1D          *fHCorrectMCposKaon;
-  TH1D          *fHCorrectMCposProt;
-  TH1D          *fHCorrectMCnegChrg;
-  TH1D          *fHCorrectMCnegPion;
-  TH1D          *fHCorrectMCnegKaon;
-  TH1D          *fHCorrectMCnegProt;
-
-
-
-
-
   
   //QA and Stepcount 
   TH2F            *fHistAChrgVsCent;  //!
 
-  TH2F            *fHistTPConlyVsCL1Before;   //!  
-  TH2F            *fHistTPConlyVsV0MBefore;   //!
-  TH2F            *fHistCL0VsV0MBefore;   //!       
+  TH2F            *fHistTPConlyVsCL1Before;  //!  
+  TH2F            *fHistTPConlyVsV0MBefore;  //!
+  TH2F            *fHistCL0VsV0MBefore;      //!       
   TH2F            *fHistTPConlyVsCL1After;   //!    
   TH2F            *fHistTPConlyVsV0MAfter;   //!   
-  TH2F            *fHistCL0VsV0MAfter;   //!   
+  TH2F            *fHistCL0VsV0MAfter;       //!   
   TH2F            *fHistGlobalVsV0MBefore;   //!   
-  TH2F            *fHistGlobalVsV0MAfter;   //
-  TH2F            *fTPCvsGlobalTrkBefore; //!  Global vs TPC tracks for QA
-  TH2F            *fTPCvsGlobalTrkAfter; //!  Global vs TPC tracks for QA
+  TH2F            *fHistGlobalVsV0MAfter;    //!
+  TH2F            *fTPCvsGlobalTrkBefore;    //!  Global vs TPC tracks for QA
+  TH2F            *fTPCvsGlobalTrkAfter;     //!  Global vs TPC tracks for QA
   TH2F            *fHistTPCVsESDTrkBefore;   //!  
-  TH2F            *fHistTPCVsESDTrkAfter;   //
-  TH1F            *fHistPileUpCount;   //!
+  TH2F            *fHistTPCVsESDTrkAfter;    //!
+  TH1F            *fHistPileUpCount;         //!
 
-  TH1F            *fHistEventCount;   //!
+  TH1F            *fHistEventCount;        //!
   TH1F  	  *fHCorrectEVNTWGTChrg;   //!   //eventwgt for charge
 
-
-
-  ///v2 vs Ach (Results)
-  TProfile     *fHistv2AchChrgPos[2][10];
-  TProfile     *fHistv2AchPionPos[2][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonPos[2][10]; //!
-  TProfile     *fHistv2AchProtPos[2][10]; //!
-  TProfile     *fHistv2AchChrgNeg[2][10];
-  TProfile     *fHistv2AchPionNeg[2][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonNeg[2][10]; //!
-  TProfile     *fHistv2AchProtNeg[2][10]; //!
-
-  TProfile     *fHistv2AchChrgPosChrgNeg[2][10];
-  TProfile     *fHistv2AchPionPosPionNeg[2][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonPosKaonNeg[2][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchProtPosProtNeg[2][10]; //! [1st] = method, [2nd] = centrality.
-    
-  TProfile     *fHistv2AchChrgNegChrgPos[2][10];
-  TProfile     *fHistv2AchPionNegPionPos[2][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonNegKaonPos[2][10];
-  TProfile     *fHistv2AchProtNegProtPos[2][10]; //! [1st] = method, [2nd] = centrality.
-    
-
-
-  ///Used For NUA Corrections:
-  TH3F          *fHCorrectNUAposChrg[5];   //! [5] = centrality bins
-  TH3F          *fHCorrectNUAnegChrg[5];   //! 
-  TH3F          *fHCorrectNUAposPion[5];   //! 
-  TH3F          *fHCorrectNUAnegPion[5];   //! 
-  TH3F          *fHCorrectNUAposKaon[5];   //! 
-  TH3F          *fHCorrectNUAnegKaon[5];   //! 
-  TH3F          *fHCorrectNUAposProt[5];   //! 
-  TH3F          *fHCorrectNUAnegProt[5];   //! 
-
-
-  /// TO fill NUA for new Cut:
+  
+  /// TO fill NUA for new Cut: //these are used for filling NUA:
   TH3F          *fHFillNUAPosPID[5];    //! 
   TH3F          *fHFillNUANegPID[5];    //! 
-
- 
-  
-  TProfile      *fHistEPResolution[2];       //! EP resolution vs Cent
-  TProfile      *fHistEPResolutionAch[10];   //! EP resolution vs Ach 
-  TProfile      *fHistv2cumAchChrgAll[10];  //! Charge inclusive
-
 
   
   
