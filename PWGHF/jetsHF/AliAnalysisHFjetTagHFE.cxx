@@ -1041,7 +1041,7 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistBGrandHFEev = new TH1F("fHistBGrandHFEev", "BG rand; #Delta p_{T}(GeV/c)", 300, -100.0, 200.0);
   fOutput->Add(fHistBGrandHFEev);
 
-	fHistNtrBGfrac = new TH2D("fHistNtrBGfrac","N_{tracklet} vs BG frac",301,-0.5,300.5,600,-100.0,500.0);
+	fHistNtrBGfrac = new TH2D("fHistNtrBGfrac","N_{tracklet} vs BG frac",301,-0.5,300.5,6000,-100.0,500.0);
 	fOutput->Add(fHistNtrBGfrac);
 
   fHistUE_org = new TH1F("fHistUE_org", "UE from EPOS in generated level; p_{T}(GeV/c)", 100, 0.0, 10.0);
