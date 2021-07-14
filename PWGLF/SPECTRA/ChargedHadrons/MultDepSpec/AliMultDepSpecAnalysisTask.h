@@ -11,6 +11,7 @@ class AliVParticle;
 class TRandom3;
 class AliEventCuts;
 class AliESDtrackCuts;
+class AliESDtrack;
 
 class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE
 {
@@ -21,10 +22,6 @@ public:
     pt_true,
     mult_meas,
     mult_true,
-    sigma_pt,
-    delta_pt,
-    zv,
-    event_selection,
     LAST,
   };
 
@@ -77,6 +74,7 @@ public:
 protected:
   void DefineDefaultAxes(int maxMultMeas = 100, int maxMultTrue = 100); // called in AddTask
   void BookHistograms();                                                // called in UserCreateOutputObjects
+  void FillTrackQA(AliESDtrack* track);
 
   bool InitEvent();
   bool InitTrack(AliVTrack* track);
@@ -100,6 +98,7 @@ protected:
   AliMultDepSpecAnalysisTask& operator=(const AliMultDepSpecAnalysisTask&); // not implemented
 
   std::unique_ptr<TList> fOutputList{};       //!<! Output list
+  TList* fQAList{nullptr};                    //!<! QA list
   std::unique_ptr<AliEventCuts> fEventCuts{}; //!<! Event cuts
   AliESDtrackCuts* fTrackCuts{nullptr};       //->  Track cuts
   std::unique_ptr<TRandom3> fRand{};          //!<! Random generator
@@ -125,19 +124,13 @@ protected:
 
   // output Histograms
   std::map<unsigned int, Hist::Axis> fAxes{}; ///< axis definitions used in the histograms
-  Hist::Log<TH1I> fHist_trainInfo{};          //!<! train metadata string as bin lable and number of compute jobs as bin content
-  Hist::Log<TH1I> fHist_runStatistics{};      //!<! number of measured events per run (filled only for first event in job)
-  Hist::Hist<TH1D> fHist_event_selection{};   //!<! logging histogram to for event selection steps (filled only for first event in job)
-  Hist::Hist<TH1D> fHist_zVtx_evt_meas{};     //!<! measured z vertex position of all measured events (without z vertex position cut)
 
   Hist::Hist<TH1D> fHist_multDist_evt_meas{};   //!<! measured event distribution (contains contamination from events not in specified class or with wrong vertex position)
   Hist::Hist<TH2D> fHist_multPtSpec_trk_meas{}; //!<! measured tracks (contains contamination from secondary particles, particles smeared into acceptance and tracks originating from background events as defined above )
-  Hist::Hist<TH2D> fHist_ptReso_trk_meas{};     //!<! relatvie pT resolution from covariance matrix (from all tracks, including contamination defined above)
 
   // MC-only histograms
   Hist::Hist<TH2D> fHist_multPtSpec_trk_prim_meas{}; //!<! tracks from measured primaries (no contamination from secondaries, particles smeared into acceptance or background events)
   Hist::Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};  //!<! tracks from measured secondaries (no contamination from particles smeared into acceptance or background events)  [for QA to disentangle secondaries from other contamination]
-  Hist::Hist<TH2D> fHist_ptReso_trk_true{};          //!<! relative track pt resolution (no contamination from particles smeared into acceptance or background events)
 
   Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};  //!<! measured primary charged particles as function of true properties (no contamination from background events)
   Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};   //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
@@ -147,7 +140,33 @@ protected:
   Hist::Hist<THnSparseF> fHist_multCorrel_prim{}; //!<! multiplicity correlation of measured primary charged particles (excluding particles from background events)
   Hist::Hist<TH2D> fHist_ptCorrel_prim{};         //!<! pT correlation of measured primary charged particles  (excluding particles from background events)
 
-  Hist::Hist<TH1D> fHist_zVtx_evt_gen{}; //!<! true z vertex position of all generated events (without z vertex position cut)
+  // QA histograms
+  Hist::Log<TH1I> fHist_trainInfo{};       //!<! train metadata string as bin lable and number of compute jobs as bin content
+  Hist::Log<TH1I> fHist_runStatistics{};   //!<! number of measured events per run (filled only for first event in job)
+  Hist::Hist<TH1D> fHist_eventSelection{}; //!<! logging histogram to for event selection steps (filled only for first event in job)
+
+  Hist::Hist<TH1D> fHist_zVtxGen{};  //!<! true z vertex position of all generated events (without z vertex position cut)
+  Hist::Hist<TH1D> fHist_zVtxMeas{}; //!<! measured z vertex position of all measured events (without z vertex position cut)
+
+  Hist::Hist<TH2D> fHist_deltaPt{}; //!<! relative track pt resolution (no contamination from particles smeared into acceptance or background events)
+  Hist::Hist<TH2D> fHist_sigmaPt{}; //!<! relatvie pT resolution from covariance matrix (from all tracks, including contamination defined above)
+
+  Hist::Hist<TH2D> fHist_dcaXY{};             //!<! dca in xy plane vs pt
+  Hist::Hist<TH1D> fHist_signed1Pt{};         //!<!  signed 1/pt (1/(GeV/c))
+  Hist::Hist<TH1D> fHist_eta{};               //!<!  pseudorapidity
+  Hist::Hist<TH1D> fHist_phi{};               //!<!  azimuthal angle phi
+  Hist::Hist<TH1D> fHist_itsFoundClusters{};  //!<!  found clusters ITS
+  Hist::Hist<TH1D> fHist_itsHits{};           //!<!  hitmap ITS
+  Hist::Hist<TH1D> fHist_itsChi2PerCluster{}; //!<!  chi2 per cluster ITS
+
+  Hist::Hist<TH1D> fHist_tpcFindableClusters{};                //!<!  findable clusters TPC
+  Hist::Hist<TH1D> fHist_tpcFoundClusters{};                   //!<!  found clusters TPC
+  Hist::Hist<TH1D> fHist_tpcCrossedRows{};                     //!<!  crossed rows in TPC
+  Hist::Hist<TH1D> fHist_tpcCrossedRowsOverFindableClusters{}; //!<!  rows / findable clusters TPC
+  Hist::Hist<TH1D> fHist_tpcFractionSharedClusters{};          //!<!  fraction of shared clusters TPC
+  Hist::Hist<TH1D> fHist_tpcChi2PerCluster{};                  //!<!  chi2 per cluster TPC
+  Hist::Hist<TH1D> fHist_tpcGoldenChi2{};                      //!<! chi2 global vs tpc constrained track
+  Hist::Hist<TH1D> fHist_tpcGeomLength{};                      //!<! track length in active volume of the TPC
 
   // event related properties
   AliVEvent* fEvent{};                      //!<! Event object
