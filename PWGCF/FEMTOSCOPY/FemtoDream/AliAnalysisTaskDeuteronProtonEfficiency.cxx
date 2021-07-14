@@ -105,8 +105,8 @@ AliAnalysisTaskDeuteronProtonEfficiency::AliAnalysisTaskDeuteronProtonEfficiency
   fHistSEDAntiPairGen(0),
   fHistPtProtonRecPDG(0),
   fHistPtProtonRecPrimary(0),
-  fHistPtProtonRecPairPtCut(0),
   fHistPtProtonRecTrackCuts(0),
+  fHistPtProtonRecPairPtCut(0),
   fHistEtaProtonRecPDG(0),
   fHistEtaProtonRecPrimary(0),
   fHistEtaProtonRecTrackCuts(0),
@@ -207,8 +207,8 @@ AliAnalysisTaskDeuteronProtonEfficiency::AliAnalysisTaskDeuteronProtonEfficiency
   fHistPtProtonRecPairPtCut(0),
   fHistEtaProtonRecPDG(0),
   fHistEtaProtonRecPrimary(0),
-  fHistEtaProtonRecPairPtCut(0),
   fHistEtaProtonRecTrackCuts(0),
+  fHistEtaProtonRecPairPtCut(0),
   fHistPtAntiProtonRecPDG(0),
   fHistPtAntiProtonRecPrimary(0),
   fHistPtAntiProtonRecTrackCuts(0),
@@ -258,22 +258,18 @@ AliAnalysisTaskDeuteronProtonEfficiency::AliAnalysisTaskDeuteronProtonEfficiency
   fESDtrackCutsProton->SetMinNCrossedRowsTPC(70);
   fESDtrackCutsProton->SetMinRatioCrossedRowsOverFindableClustersTPC(0.83);
   fESDtrackCutsProton->SetAcceptSharedTPCClusters(false);
-//  fESDtrackCutsProton->SetMaxDCAToVertexXY(0.1);
-//  fESDtrackCutsProton->SetMaxDCAToVertexZ(0.2);
 
   // Deuteron cuts
   fESDtrackCutsDeuteron = new AliESDtrackCuts("AliESDtrackCutsDeuteron","AliESDtrackCutsDeuteron");
-  fESDtrackCutsDeuteron = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); // FilterBit 128
+//  fESDtrackCutsDeuteron = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); // FilterBit 128
   fESDtrackCutsDeuteron->SetEtaRange(-0.8,0.8);
   fESDtrackCutsDeuteron->SetPtRange(0.4,4.0);
   fESDtrackCutsDeuteron->SetMinNClustersTPC(80);
   fESDtrackCutsDeuteron->SetMinNCrossedRowsTPC(70);
   fESDtrackCutsDeuteron->SetMinRatioCrossedRowsOverFindableClustersTPC(0.83);
   fESDtrackCutsDeuteron->SetAcceptSharedTPCClusters(false);
-//  fESDtrackCutsDeuteron->SetMaxDCAToVertexXY(0.1);
-//  fESDtrackCutsDeuteron->SetMaxDCAToVertexZ(0.2);
-//  fESDtrackCutsDeuteron->SetRequireITSPid(true); // FilterBit 256
-//  fESDtrackCutsDeuteron->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);	// FilterBit 256
+  fESDtrackCutsDeuteron->SetRequireITSPid(true); // FilterBit 256
+  fESDtrackCutsDeuteron->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);	// FilterBit 256
 
 
 }
@@ -827,8 +823,6 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
   double EtaLimit2 = +0.8;
   double PairPtLimit1 = 1.0;
   double PairPtLimit2 = 2.0;
-  double ProtonPtLimit1 = 0.0;
-  double DeuteronPtLimit1 = 0.0;
   double ProtonpTPCThreshold = 0.7;
   double DeuteronpTPCThreshold = 1.4;
 
@@ -851,6 +845,23 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
   double PtProtonRec	 = 0.0;
   double PtDeuteronRec	 = 0.0;
   double PtHelium3Rec	 = 0.0;
+
+
+  // DCA calculation
+  Float_t xv_Proton[2];
+  Float_t yv_Proton[3];
+  Float_t xv_Deuteron[2];
+  Float_t yv_Deuteron[3];
+  
+  Float_t ProtonDCAxy;
+  Float_t ProtonDCAz;
+  Float_t DeuteronDCAxy;
+  Float_t DeuteronDCAz;
+
+  double ProtonDCAxyMax = 0.1;
+  double ProtonDCAzMax	= 0.2;
+  double DeuteronDCAxyMax = 0.1;
+  double DeuteronDCAzMax  = 0.2;
 
   double RelativeMomentum = 0.0;
 
@@ -1094,6 +1105,7 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	if(!fESDtrackCutsProton->AcceptTrack(Track1)) continue;
 	if(Track1->GetSign() < 1) continue;
 
+	// nsigma cuts
 	AliPIDResponse::EDetPidStatus status1TPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,Track1);
 	AliPIDResponse::EDetPidStatus status1TOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,Track1);
 
@@ -1117,6 +1129,13 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	  if(!(nSigmaTPCTOFproton < 3.0)) continue;
 
         }
+
+	// DCA cuts
+	Track1->GetImpactParameters(xv_Proton,yv_Proton);
+	ProtonDCAxy = xv_Proton[0];
+	ProtonDCAz  = xv_Proton[1];
+	if((ProtonDCAxy > ProtonDCAxyMax) || (ProtonDCAz > ProtonDCAzMax)) continue;
+
 
 	fHistPtProtonRecTrackCuts->Fill(PtProtonRec);
 	fHistEtaProtonRecTrackCuts->Fill(EtaProtonRec);
@@ -1181,6 +1200,12 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	      if(!(nSigmaTPCTOFdeuteron < 3.0)) continue;
 
 	    }
+
+	    // DCA cuts
+	    Track2->GetImpactParameters(xv_Deuteron,yv_Deuteron);
+	    DeuteronDCAxy = xv_Deuteron[0];
+	    DeuteronDCAz  = xv_Deuteron[1];
+	    if((DeuteronDCAxy > DeuteronDCAxyMax) || (DeuteronDCAz > DeuteronDCAzMax)) continue;
 
 	    fHistPtDeuteronRecTrackCuts->Fill(PtDeuteronRec);
 	    fHistEtaDeuteronRecTrackCuts->Fill(EtaDeuteronRec);
@@ -1296,6 +1321,13 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 
         }
 
+	// DCA cuts
+	Track1->GetImpactParameters(xv_Proton,yv_Proton);
+	ProtonDCAxy = xv_Proton[0];
+	ProtonDCAz  = xv_Proton[1];
+	if((ProtonDCAxy > ProtonDCAxyMax) || (ProtonDCAz > ProtonDCAzMax)) continue;
+
+
 	fHistPtAntiProtonRecTrackCuts->Fill(PtProtonRec);
 	fHistEtaAntiProtonRecTrackCuts->Fill(EtaProtonRec);
 
@@ -1359,6 +1391,12 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	      if(!(nSigmaTPCTOFdeuteron < 3.0)) continue;
 
 	    }
+
+	    // DCA cuts
+	    Track2->GetImpactParameters(xv_Deuteron,yv_Deuteron);
+	    DeuteronDCAxy = xv_Deuteron[0];
+	    DeuteronDCAz  = xv_Deuteron[1];
+	    if((DeuteronDCAxy > DeuteronDCAxyMax) || (DeuteronDCAz > DeuteronDCAzMax)) continue;
 
 	    fHistPtAntiDeuteronRecTrackCuts->Fill(PtDeuteronRec);
 	    fHistEtaAntiDeuteronRecTrackCuts->Fill(EtaDeuteronRec);
