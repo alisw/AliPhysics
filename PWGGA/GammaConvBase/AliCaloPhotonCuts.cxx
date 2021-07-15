@@ -6295,33 +6295,49 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fMinNCells=2;
     fMaxNCells=2;
     break;
-    // From pi0 tagging with PCM-EDC with TBNL+scale+FT applied on all clusters
+    // From pi0 tagging with PCM-EDC with TBNL+scale+FT applied on all clusters, Pol2 param
+    // using the new cell scale!
   case 30: // u
     fUseNCells=5;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0377925, 0.160758, -0.00357992);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0794055, 0.290664, -0.136717);
+    // old settings using no cell scale
+    // fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    // fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0377925, 0.160758, -0.00357992);
     break;
-    // From pi0 tagging with PCM-EDC with TBNL+scale+FT applied on only gamma clusters
+    // From pi0 tagging with PCM-EDC with TBNL+scale+FT applied on only gamma clusters, Pol2 param
+    // using the new cell scale!
   case 31: // v
     fUseNCells=7;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0377925, 0.160758, -0.00357992);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0794055, 0.290664, -0.136717);
+    // old settings using no cell scale
+    // fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    // fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0377925, 0.160758, -0.00357992);
     break;
-    // From pi0 tagging with PCM-EDC with TBNL+scale applied on all clusters
+    // From pi0 tagging with PCM-EDC with TBNL+scale applied on all clusters, Gaussian param
+    // using the new cell scale!
   case 32: // w
     fUseNCells=5;
     fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0387877, 0.104607, 0.0793534);
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.130462, 1.62858, 0.572064);
+    // old settings using no cell scale
+    // fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    // fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0387877, 0.104607, 0.0793534);
     break;
-    // From pi0 tagging with EDC with TBNL+scale+FT on all clusters
+    // From pi0 tagging with PCM-EDC with TBNL+scale+FT on all clusters, Gaussian param
+    // using the new cell scale!
   case 33: // x
     fUseNCells=5;
     fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0124651, -0.0961889, 0.16844);
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.130462, 1.62858, 0.572064);
+    // old settings using no cell scale
+    // fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    // fFuncNCellCutEfficiencyEMCal->SetParameters(0.0124651, -0.0961889, 0.16844);
     break;
     // Correction applied in Correction Framework
     // can be accessed by the chi2() variable of the cluster
