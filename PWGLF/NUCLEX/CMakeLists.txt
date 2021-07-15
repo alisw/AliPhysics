@@ -58,6 +58,7 @@ set(SRCS
   Exotica/LambdaN/AliAnalysisTaskLambdaNRun2.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNv0Bkg.cxx
+  Exotica/LambdaNN/AliAnalysisTaskLambdaNNRun2.cxx
   Exotica/Ps/AliAnalysisTaskPsEfficiency.cxx
   Exotica/dStar/AliAnalysisTaskdStar.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3Pi.cxx
@@ -69,6 +70,7 @@ set(SRCS
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskS3ParticleYields.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskHe3EffTree.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisCODEXS3task.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskTRDtriggerTracks.cxx
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypTritEventTree.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx

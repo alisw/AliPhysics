@@ -35,6 +35,7 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   void SetEtaV0Assoc(Float_t EtaV0Assoc){fEtaV0Assoc = EtaV0Assoc;}
   void SetFilterBit(Int_t FilterBitValue){fFilterBitValue = FilterBitValue;}
   void SetYear (Int_t year = 2010) { fYear = year;}
+  void SetHM (Bool_t isHM) { fisHM = isHM;}
   void SetAssocParticle (TString AssocParticle = "K0s") { fV0 = AssocParticle;}
 
   Float_t GetLengthInActiveZone( AliAODTrack *gt, Float_t deltaY, Float_t deltaZ, Float_t b );
@@ -84,6 +85,7 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   Float_t                  fEtaV0Assoc;
   Int_t                    fFilterBitValue;
   Int_t                    fYear;
+  Bool_t                   fisHM;
 
   TH1F*                   fHistPt;                   //! 
   TH1F*                   fHistDCAxym1;              //! 
@@ -95,6 +97,8 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH2F*                   fHistPtTMaxBefAllCfrDataMC; //!
   TH1F*                   fHistPtTMinBefAll;          //! 
   TH1F*                   fHistPtTMinBefAllMC;        //! 
+  TH2F*                   fHistPtMaxvsMultBefRSelection;     //! 
+  TH2F*                   fHistPtMaxvsMultAfterRSelection;     //! 
   TH2F*                   fHistPtvsMult;              //! 
   TH2F*                   fHistPtvsMultBefAll;        //! 
   TH2F*                   fHistPtMaxvsMult;           //! 
@@ -108,10 +112,12 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH3F*                   fHistNumberChargedTrigger; //!
   TH2F*                   fHist_eta_phi;                //!
   TH2F*                   fHist_eta_phi_PtMax;   	//!
+  TH1F*                   fHist_multiplicityAllSelEvents; 		//!
   TH1F*                   fHist_multiplicity; 		//!
   TH1F*                   fHist_multiplicity_EvwTrigger;//!
   TH1F*                   fHistEventMult;   		//!
   TH1F*                   fHistEventV0;   		//!
+  TH2F*                   fHistEventV0Pt;   		//!
   TH1F*                   fHistTrack;       		//!
   TH1F*                   fHistTOFBunchCrossing; //!
   TH2F*                   fHistLengthvsCrossedRowsAfterSel; //!

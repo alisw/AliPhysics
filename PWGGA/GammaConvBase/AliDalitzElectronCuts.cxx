@@ -24,7 +24,7 @@
 
 #include "AliDalitzElectronCuts.h"
 #include "AliAODConversionPhoton.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliAnalysisManager.h"
@@ -92,6 +92,14 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
   fPsiPairCut(0.45),
   fDeltaPhiCutMin(0.),
   fDeltaPhiCutMax(0.12),
+  fDoDifferentCut(0),
+  fSizeArray(6),
+  fPsiPairCutArray(NULL),
+  fDeltaPhiCutArray(NULL),
+  fpTDependanceCutArray(NULL),
+  fPsiPairpTDependanceCut(NULL),
+  fDeltaPhipTDependanceCutMin(NULL),
+  fDeltaPhipTDependanceCutMax(NULL),
   fMaxDCAVertexz(1000.),
   fMaxDCAVertexxy(1000.),
   fDCAVertexPt(""),
@@ -139,6 +147,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
   fIsRecalibDepTPCClPrimaryPair(kTRUE),
   fRecalibCurrentRunPrimaryPair(-1),
   fnRBinsPrimaryPair(4),
+  fDoLightVersion(kFALSE),
   fHistoEleMapRecalibPrimaryPair(NULL),
   fHistoPosMapRecalibPrimaryPair(NULL),
   fCutString(NULL),
@@ -194,6 +203,14 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const AliDalitzElectronCuts &ref) :
   fPsiPairCut(ref.fPsiPairCut),
   fDeltaPhiCutMin(ref.fDeltaPhiCutMin),
   fDeltaPhiCutMax(ref.fDeltaPhiCutMax),
+  fDoDifferentCut(ref.fDoDifferentCut),
+  fSizeArray(ref.fSizeArray),
+  fPsiPairCutArray(ref. fPsiPairCutArray),
+  fDeltaPhiCutArray(ref. fDeltaPhiCutArray),
+  fpTDependanceCutArray(ref. fpTDependanceCutArray),
+  fPsiPairpTDependanceCut(ref. fPsiPairpTDependanceCut),
+  fDeltaPhipTDependanceCutMin(ref. fDeltaPhipTDependanceCutMin),
+  fDeltaPhipTDependanceCutMax(ref. fDeltaPhipTDependanceCutMax),
   fMaxDCAVertexz(ref.fMaxDCAVertexz),
   fMaxDCAVertexxy(ref.fMaxDCAVertexxy),
   fDCAVertexPt(ref.fDCAVertexPt),
@@ -241,6 +258,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const AliDalitzElectronCuts &ref) :
   fIsRecalibDepTPCClPrimaryPair(ref.fIsRecalibDepTPCClPrimaryPair),
   fRecalibCurrentRunPrimaryPair(ref.fRecalibCurrentRunPrimaryPair),
   fnRBinsPrimaryPair(ref.fnRBinsPrimaryPair),
+  fDoLightVersion(ref.fDoLightVersion),
   fHistoEleMapRecalibPrimaryPair(NULL),
   fHistoPosMapRecalibPrimaryPair(NULL),
   fCutString(NULL),
@@ -275,22 +293,46 @@ AliDalitzElectronCuts::~AliDalitzElectronCuts() {
   // 	delete fHistograms;
   // fHistograms = NULL;
 
-   if(fCutString != NULL){
-      delete fCutString;
-      fCutString = NULL;
-   }
-     for (Int_t i = 0; i < fnRBinsPrimaryPair; i++) {
-    if( fHistoEleMapRecalibPrimaryPair[i]  != NULL){
-      delete fHistoEleMapRecalibPrimaryPair[i] ;
-      fHistoEleMapRecalibPrimaryPair[i]  =NULL;
+    if(fCutString != NULL){
+        delete fCutString;
+        fCutString = NULL;
     }
+    for (Int_t i = 0; i < fnRBinsPrimaryPair; i++) {
+        if( fHistoEleMapRecalibPrimaryPair[i]  != NULL){
+            delete fHistoEleMapRecalibPrimaryPair[i] ;
+            fHistoEleMapRecalibPrimaryPair[i]  =NULL;
+        }
 
-    if( fHistoPosMapRecalibPrimaryPair[i]  != NULL){
-      delete fHistoPosMapRecalibPrimaryPair[i] ;
-      fHistoPosMapRecalibPrimaryPair[i]  =NULL;
+        if( fHistoPosMapRecalibPrimaryPair[i]  != NULL){
+            delete fHistoPosMapRecalibPrimaryPair[i] ;
+            fHistoPosMapRecalibPrimaryPair[i]  =NULL;
+        }
     }
-
-  }
+    //////Arrays delets for new Cuts
+    if(fPsiPairCutArray){
+        delete [] fPsiPairCutArray;
+        fPsiPairCutArray = NULL;
+    }
+    if(fDeltaPhiCutArray){
+        delete [] fDeltaPhiCutArray;
+        fDeltaPhiCutArray = NULL;
+    }
+    if(fpTDependanceCutArray){
+        delete [] fpTDependanceCutArray;
+        fpTDependanceCutArray= NULL;
+    }
+    if(fPsiPairpTDependanceCut){
+        delete [] fPsiPairpTDependanceCut;
+       fPsiPairpTDependanceCut = NULL;
+    }
+    if(fDeltaPhipTDependanceCutMin){
+        delete [] fDeltaPhipTDependanceCutMin;
+        fDeltaPhipTDependanceCutMin= NULL;
+    }
+    if(fDeltaPhipTDependanceCutMax){
+        delete [] fDeltaPhipTDependanceCutMax;
+        fDeltaPhipTDependanceCutMax= NULL;
+    }
 }
 
 Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) {
@@ -388,6 +430,12 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     delete fHistograms;
     fHistograms=NULL;
   }
+
+  if(fDoLightVersion==kTRUE) {
+      AliInfo("Minimal output chosen");
+      return;
+  }
+
   if(fHistograms==NULL){
     fHistograms=new TList();
     if(name=="")fHistograms->SetName(Form("ElectronCuts_%s",cutName.Data()));
@@ -440,6 +488,8 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
   hdEdxCuts->GetXaxis()->SetBinLabel(9,"TOFelectron");
   hdEdxCuts->GetXaxis()->SetBinLabel(10,"out");
   fHistograms->Add(hdEdxCuts);
+
+  if (!fDoLightVersion){
 
   TAxis *AxisBeforeITS  = NULL;
   TAxis *AxisBeforedEdx = NULL;
@@ -529,7 +579,7 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     AxisBeforeTOF->Set(bins, newBins);
   }
   delete [] newBins;
-
+  }
   TH1::AddDirectory(kTRUE);
 
   // Event Cuts and Info
@@ -1023,15 +1073,32 @@ Double_t AliDalitzElectronCuts::GetNFindableClustersTPC(AliDalitzAODESD* lTrack)
   }
   return clsToF;
 }
-
-
-Bool_t AliDalitzElectronCuts::IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi )
+//NOTE New Function?
+// IsFromGammaConversion()
+Bool_t AliDalitzElectronCuts::IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi , Double_t pT)
 {
 //
 // Returns true if it is a gamma conversion according to psi pair value
-//
-  return ( (deltaPhi > fDeltaPhiCutMin  &&  deltaPhi < fDeltaPhiCutMax) &&
-  TMath::Abs(psiPair) < ( fPsiPairCut - fPsiPairCut/fDeltaPhiCutMax * deltaPhi ) );
+// New cuts implementation, adding pT Dependace
+    if (fDoDifferentCut==0){
+        return ( (deltaPhi > fDeltaPhiCutMin  &&  deltaPhi < fDeltaPhiCutMax) && TMath::Abs(psiPair) < ( fPsiPairCut - fPsiPairCut/fDeltaPhiCutMax * deltaPhi ) );
+    }
+    else if (fDoDifferentCut==1){
+        for(Int_t ii=0;ii<5;ii++){
+            if ( (deltaPhi >= fDeltaPhiCutArray[ii] && deltaPhi < fDeltaPhiCutArray[ii+1]) && (TMath::Abs(psiPair)<fPsiPairCutArray[ii]) ){
+             return kTRUE;
+            }
+        }
+        return kFALSE;
+    }
+    else if (fDoDifferentCut==2){//pT Dependace, triangular
+        for(Int_t ii=0;ii<3;ii++){
+            if (pT >= fpTDependanceCutArray[ii] && pT < fpTDependanceCutArray[ii+1] ){
+                    return ( (deltaPhi > fDeltaPhipTDependanceCutMin[ii]  &&  deltaPhi < fDeltaPhipTDependanceCutMax[ii]) && TMath::Abs(psiPair) < ( fPsiPairpTDependanceCut[ii] - fPsiPairpTDependanceCut[ii]/fDeltaPhipTDependanceCutMax[ii] * deltaPhi ) );
+            }
+        }
+    }
+    return kTRUE;//Warning correction.
 }
 
 ///________________________________________________________________________
@@ -2071,42 +2138,151 @@ Bool_t AliDalitzElectronCuts::SetPsiPairCut(Int_t psiCut) {
       fPsiPairCut = 10000.; //
       fDeltaPhiCutMin = -1000.;
       fDeltaPhiCutMax =  1000.;
+      fDoDifferentCut = 0; //0 Triangular, 1 Rectangular pt dependance
       break;
     case 1:
       fDoPsiPairCut = kTRUE;
       fPsiPairCut = 0.45; // Standard
       fDeltaPhiCutMin = 0.0;
       fDeltaPhiCutMax = 0.12;
+      fDoDifferentCut = 0; //0 Triangular, 1 Rectangular pt dependance
       break;
     case 2:
       fDoPsiPairCut = kTRUE;
       fPsiPairCut = 0.60;
       fDeltaPhiCutMin = 0.0;
       fDeltaPhiCutMax = 0.12;
+      fDoDifferentCut = 0; //0 Triangular, 1 Rectangular pt dependance
       break;
     case 3:
       fDoPsiPairCut = kTRUE;
       fPsiPairCut = 0.52;
       fDeltaPhiCutMin = 0.0;
       fDeltaPhiCutMax = 0.12;
+      fDoDifferentCut = 0; //0 Triangular, 1 Rectangular pt dependance
       break;
     case 4:
       fDoPsiPairCut = kTRUE;
       fPsiPairCut = 0.30;
       fDeltaPhiCutMin = 0.0;
       fDeltaPhiCutMax = 0.12;
+      fDoDifferentCut = 0; //0 Triangular, 1 Rectangular pt dependance
       break;
     case 5:
       fDoPsiPairCut = kTRUE;
       fPsiPairCut = 0.60;
       fDeltaPhiCutMin = 0.0;
       fDeltaPhiCutMax = 0.06;
+      fDoDifferentCut = 0; //0 Triangular, 1 Rectangular pt dependance
       break;
     case 6:
       fDoPsiPairCut = kTRUE;
       fPsiPairCut = 0.65;
       fDeltaPhiCutMin = 0.0;
       fDeltaPhiCutMax = 0.14;
+      fDoDifferentCut = 0; //0 Triangular, 1 Rectangular pt dependance
+      break;
+    case 7://Nomianl B kAny field 5%
+      fDoPsiPairCut = kTRUE;
+      fPsiPairCut = 0.92;
+      fDeltaPhiCutMin = 0.0;
+      fDeltaPhiCutMax = 0.12;
+      fDoDifferentCut = 0; //0 Triangular, 1 Rectangular pt dependance
+      break;
+    case 8://Nomianl B kAny field 8%
+      fDoPsiPairCut = kTRUE;
+      fPsiPairCut = 0.7;
+      fDeltaPhiCutMin = 0.0;
+      fDeltaPhiCutMax = 0.10;
+      fDoDifferentCut = 0; //0 Triangular, 1 Rectangular pt dependance
+      break;
+    case 10://a Low B kAny 5%
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 1; //0 Triangular, 1 Rectangular pt dependance
+      fPsiPairCutArray = new Double_t[fSizeArray]{0.98,0.95,0.9,0.46,0.0};
+      fDeltaPhiCutArray = new Double_t[fSizeArray]{0.0,0.02,0.04,0.06,0.08,0.1};
+      break;
+    case 11://b Low B kAny 8%
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 1; //0 Triangular, 1 Rectangular pt dependance
+      fPsiPairCutArray = new Double_t[fSizeArray]{0.98,0.95,0.78,0.0,0.0};
+      fDeltaPhiCutArray = new Double_t[fSizeArray]{0.0,0.02,0.04,0.06,0.08,0.1};
+      break;
+    case 12://c Low B kBoth 5%
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 1; //0 Triangular, 1 Rectangular pt dependance
+      fPsiPairCutArray = new Double_t[fSizeArray]{0.98,0.30,0.0,0.0,0.0};
+      fDeltaPhiCutArray = new Double_t[fSizeArray]{0.0,0.02,0.04,0.06,0.08,0.1};
+      break;
+    case 13://d Low B kBoth 8%
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 1; //0 Triangular, 1 Rectangular pt dependance
+      fPsiPairCutArray = new Double_t[fSizeArray]{0.98,0.11,0.0,0.0,0.0};
+      fDeltaPhiCutArray = new Double_t[fSizeArray]{0.0,0.02,0.04,0.06,0.08,0.1};
+      break;
+    case 14://e Nominal B kBoth 5%
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 1; //0 Triangular, 1 Rectangular pt dependance
+      fPsiPairCutArray = new Double_t[fSizeArray]{0.60,0.50,0.11,0.0,0.0};
+      fDeltaPhiCutArray = new Double_t[fSizeArray]{0.0,0.02,0.04,0.06,0.08,0.1};
+      break;
+    case 15://f Nomial B kBoth 8%
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 1; //0 Triangular, 1 Rectangular pt dependance
+      fPsiPairCutArray = new Double_t[fSizeArray]{0.50,0.44,0.07,0.0,0.0};
+      fDeltaPhiCutArray = new Double_t[fSizeArray]{0.0,0.02,0.04,0.06,0.08,0.1};
+      break;
+    case 16://g pT dependance triangular, Nominal B kAny
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 2; //0 Triangular, 1 Rectangular pt dependance
+      fpTDependanceCutArray = new Double_t[fSizeArray]{0.0,1.0,2.0,100.0,200.0,300.0};
+      fPsiPairpTDependanceCut = new Double_t[fSizeArray]{0.9,0.82,0.95,0.0,0.0,0.0};
+      fDeltaPhipTDependanceCutMin = new Double_t[fSizeArray]{0.0,0.0,0.0,0.0,0.0,0.0};
+      fDeltaPhipTDependanceCutMax = new Double_t[fSizeArray]{0.11,0.06,0.07,0.0,0.0,0.0};
+      break;
+    case 17://h pT dependance triangular, Nominal B kBoth
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 2; //0 Triangular, 1 Rectangular pt dependance
+      fpTDependanceCutArray = new Double_t[fSizeArray]{0.0,1.0,2.0,100.0,200.0,300.0};
+      fPsiPairpTDependanceCut = new Double_t[fSizeArray]{0.48,0.68,0.88,0.0,0.0,0.0};
+      fDeltaPhipTDependanceCutMin = new Double_t[fSizeArray]{0.0,0.0,0.0,0.0,0.0,0.0};
+      fDeltaPhipTDependanceCutMax = new Double_t[fSizeArray]{0.06,0.04,0.04,0.0,0.0,0.0};
+      break;
+    case 18://i Low B kBoth 10%
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 1; //0 Triangular, 1 Rectangular pt dependance
+      fPsiPairCutArray = new Double_t[fSizeArray]{0.98,0.06,0.0,0.0,0.0};
+      fDeltaPhiCutArray = new Double_t[fSizeArray]{0.0,0.02,0.04,0.06,0.08,0.1};
+      break;
+    case 19://j Nominal B kBoth 10%
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 1; //0 Triangular, 1 Rectangular pt dependance
+      fPsiPairCutArray = new Double_t[fSizeArray]{0.47,0.39,0.06,0.0,0.0};
+      fDeltaPhiCutArray = new Double_t[fSizeArray]{0.0,0.02,0.04,0.06,0.08,0.1};
+      break;
+    case 20://k Low B kAny 10%
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 1; //0 Triangular, 1 Rectangular pt dependance
+      fPsiPairCutArray = new Double_t[fSizeArray]{0.98,0.94,0.55,0.0,0.0};
+      fDeltaPhiCutArray = new Double_t[fSizeArray]{0.0,0.02,0.04,0.06,0.08,0.1};
+      break;
+    case 21://l Nominal B kAny 10%
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 1; //0 Triangular, 1 Rectangular pt dependance
+      fPsiPairCutArray = new Double_t[fSizeArray]{0.47,0.39,0.06,0.0,0.0};
+      fDeltaPhiCutArray = new Double_t[fSizeArray]{0.0,0.02,0.04,0.06,0.08,0.1};
+      break;
+    case 22://m Nominal B kAny 8%
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 1; //0 Triangular, 1 Rectangular pt dependance
+      fPsiPairCutArray = new Double_t[fSizeArray]{0.63,0.69,0.59,0.31,0.19};
+      fDeltaPhiCutArray = new Double_t[fSizeArray]{0.0,0.02,0.04,0.06,0.08,0.1};
+      break;
+    case 23://n Nominal B kAny 5%
+      fDoPsiPairCut = kTRUE;
+      fDoDifferentCut = 1; //0 Triangular, 1 Rectangular pt dependance
+      fPsiPairCutArray = new Double_t[fSizeArray]{0.57,0.66,0.45,0.29,0.17};
+      fDeltaPhiCutArray = new Double_t[fSizeArray]{0.0,0.02,0.04,0.06,0.08,0.1};
       break;
     default:
       cout<<"Warning: PsiPairCut not defined "<<fPsiPairCut<<endl;

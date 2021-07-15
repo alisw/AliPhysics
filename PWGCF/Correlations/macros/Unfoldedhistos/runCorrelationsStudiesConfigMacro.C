@@ -65,7 +65,7 @@ void runCorrelationsStudiesConfigMacro() {
   szpass = "2";
 
   /* Running conditions */
-  szAliPhysicsVersion = "vAN-20181128_ROOT6-1";
+  szAliPhysicsVersion = "vAN-20210519-1";
 
   /* the number of files we want to test */
   nNoOfInputFiles = 30;
@@ -996,10 +996,10 @@ void load2015pPbHIJINGTestRunNumber() {
   /* 2013 */
   szDataDir = "/alice/sim/2013/LHC13e7";
   /* 2013e7 uncalibrated pass 1 */
-  szDataPattern = "*/AOD158/*/AliAOD.root";
+  szDataPattern = "AOD158/*/AliAOD.root";
 
   /* the list of runs to analyze 2013e7*/
-  for (Int_t i = 0; i < 2 /*nruns*/; i++) {
+  for (Int_t i = 0; i < nruns; i++) {
     sprintf(buffer,"%d",runsno[i]);
     listOfActiveRuns.Add(new TObjString(buffer));
   }

@@ -9,129 +9,112 @@
 
 void Create_single_normalisation_histogram(Int_t scan, Int_t opt)
 // opt = 0 => fBCT; opt = 1 => BPTX
-
 {
-  // get the branches with intensity information
-  // (also, set the name of the output file)
-  char *file_name = new char[kg_string_size];
-  TTree *tree = g_vdm_Tree;
-  g_vdm_Tree->ResetBranchAddresses();
-  Double_t *bunch1 = new Double_t[3564];  
-  Double_t *bunch2 = new Double_t[3564];
-  Double_t timerel;
-  g_vdm_Tree->SetBranchAddress("timerel",&timerel);
-  if (opt == 0) {
-    g_vdm_Tree->SetBranchAddress("bunch1",bunch1);
-    g_vdm_Tree->SetBranchAddress("bunch2",bunch2);
-  } if (opt == 1) {
-    g_vdm_Tree->SetBranchAddress("bptx1",bunch1);
-    g_vdm_Tree->SetBranchAddress("bptx2",bunch2);
-  }
-  
-  // get the histograms with DCCT information
-  // two devices: A and B
-  TH1D* DCCT1AH = (TH1D*) g_vdm_File->Get("Beam1A");
-  TH1D* DCCT2AH = (TH1D*) g_vdm_File->Get("Beam2A");
-  TH1D* DCCT1BH = (TH1D*) g_vdm_File->Get("Beam1B");
-  TH1D* DCCT2BH = (TH1D*) g_vdm_File->Get("Beam2B");  
+	// get the branches with intensity information (also, set the name of the output file)
+	char *file_name = new char[kg_string_size];
+	TFile *NormFile = NULL;
+	g_vdm_Tree->ResetBranchAddresses();
+	Double_t timerel;
+	g_vdm_Tree->SetBranchAddress("timerel",&timerel);
+	if (opt == 0) {	sprintf(file_name,"../Fill-%d/FBCT_norm.root",g_vdm_Fill); }
+	if (opt == 1) { sprintf(file_name,"../Fill-%d/BPTX_norm.root",g_vdm_Fill); }
 
-  // get indices for start and end of scan
-  Int_t *indices = new Int_t [2];
-  indices[0]=indices[1]=-1;
-  FindIdicesOfScanStartEnd(scan, indices);
+	// --> set up tree with info on normalisation
+	NormFile = new TFile(file_name);      
+	TTree *norm_tree = (TTree *) NormFile->Get("Beam_Normalisation");
+	Double_t cf_dcct_1 = 0;
+	Double_t cf_dcct_2 = 0;  
+	norm_tree->ResetBranchAddresses();  
+	norm_tree->SetBranchAddress("cf_dcct_1",&cf_dcct_1);
+	norm_tree->SetBranchAddress("cf_dcct_2",&cf_dcct_2);
 
-  // create histograms
-  g_vdm_Tree->GetEntry(indices[0]);
-  Double_t t0 = timerel;
-  g_vdm_Tree->GetEntry(indices[1]);
-  Double_t t1 = timerel;
-  char *histo_name = new char[kg_string_size];
-  sprintf(histo_name,"Norm1_%d_%d_%d",g_vdm_Fill,scan,opt);
-  TH1D *h1 = new TH1D(histo_name,histo_name,((Int_t) (t1-t0)),t0,t1);
-  sprintf(histo_name,"Norm2_%d_%d_%d",g_vdm_Fill,scan,opt);
-  TH1D *h2 = new TH1D(histo_name,histo_name,((Int_t) (t1-t0)),t0,t1);
- 
-  // loop over tree to normalise each timerel
-  for(Int_t i=indices[0];i<indices[1];i++) {
-    // get relative time
-    g_vdm_Tree->GetEntry(i);
-    
-    // varaibles to store correction factors
-    Double_t cf_dcct_1a = 0;
-    Double_t cf_dcct_2a = 0;  
-    Double_t cf_dcct_1b = 0;
-    Double_t cf_dcct_2b = 0;  
+	// get indices for start and end of scan
+	Int_t *indices = new Int_t [2];
+	indices[0]=indices[1]=-1;
+	FindIdicesOfScanStartEnd(scan, indices);
 
-    // get the index of each histogram corresponding to the relative time
-    Int_t idx_DCCT1AH = GetHistogramIndex(DCCT1AH,timerel);
-    Int_t idx_DCCT1BH = GetHistogramIndex(DCCT1BH,timerel);  
-    Int_t idx_DCCT2AH = GetHistogramIndex(DCCT2AH,timerel);
-    Int_t idx_DCCT2BH = GetHistogramIndex(DCCT2BH,timerel);
-    
-    // get total intensity
-    Double_t total_beam1 = 0;
-    Double_t total_beam2 = 0;    
-    for(Int_t j=0;j<3564;j++) { // get total intensity
-      total_beam1 += bunch1[j];
-      total_beam2 += bunch2[j];      
-    }
+	// create histograms
+	g_vdm_Tree->GetEntry(indices[0]);
+	Double_t t0 = timerel;
+	g_vdm_Tree->GetEntry(indices[1]);
+	Double_t t1 = timerel;
+	char *histo_name = new char[kg_string_size];
+	sprintf(histo_name,"Norm1_%d_%d_%d",g_vdm_Fill,scan,opt);
+	TH1D *h1 = new TH1D(histo_name,histo_name,((Int_t) (t1-t0)),t0,t1);
+	sprintf(histo_name,"Norm2_%d_%d_%d",g_vdm_Fill,scan,opt);
+	TH1D *h2 = new TH1D(histo_name,histo_name,((Int_t) (t1-t0)),t0,t1);
 
-    // get correction factor 
-    cf_dcct_1a = ((DCCT1AH->GetBinContent(idx_DCCT1AH))/total_beam1);
-    cf_dcct_1b = ((DCCT1BH->GetBinContent(idx_DCCT1BH))/total_beam1);
-    cf_dcct_2a = ((DCCT2AH->GetBinContent(idx_DCCT2AH))/total_beam2);
-    cf_dcct_2b = ((DCCT2BH->GetBinContent(idx_DCCT2BH))/total_beam2);    
-    
-    // correction factor is average over A and B factors
-    Double_t cf_dcct_1 = 0.5*(cf_dcct_1a+cf_dcct_1b);
-    Double_t cf_dcct_2 = 0.5*(cf_dcct_2a+cf_dcct_2b);
+	// loop over tree to normalise each timerel
+	Double_t min = 1e6;
+	Double_t max = 1e-6;  
+	for (Int_t i=indices[0]; i<indices[1]; i++)
+	{
+		// get relative time
+		g_vdm_Tree->GetEntry(i);
+		norm_tree->GetEntry(i);
 
-    // fill histos
-    Int_t ibin=h1->FindBin(timerel);
-    h1->SetBinContent(ibin,cf_dcct_1);
-    h2->SetBinContent(ibin,cf_dcct_2);    
+		// fill histos
+		Int_t ibin=h1->FindBin(timerel);
+		h1->SetBinContent(ibin,cf_dcct_1);
+		h2->SetBinContent(ibin,cf_dcct_2);
 
-    /*
-    // print info
-    cout << " timerel " << timerel << endl;
-    cout << "   cf_dcct_1 = " << cf_dcct_1 << " cf_dcct_2 = " << cf_dcct_2 << endl;
-    */
-  }
+		if (min>cf_dcct_1) min = cf_dcct_1;
+		if (min>cf_dcct_2) min = cf_dcct_2;    
+		if (max<cf_dcct_1) max = cf_dcct_1;
+		if (max<cf_dcct_2) max = cf_dcct_2;    
 
-  // plot canvas
-  sprintf(histo_name,"Canvas_%d_%d_%d",g_vdm_Fill,scan,opt);
-  TCanvas *c = new TCanvas(histo_name,histo_name,900,600);
-  c->Divide(1,2);
-  c->cd(1);
-  h1->SetTitle(";timerel;correction for beam 1");
-  h1->Draw("p");
-  c->cd(2);
-  h2->SetTitle(";timerel;correction for beam 2");  
-  h2->Draw("p");
+		/*
+		// print info
+		if ( fabs(cf_dcct_1 - 1.0) > 1.e-3 || fabs(cf_dcct_2 - 1.0) > 1.e-3 )
+		{
+			cout <<Form("timerel %4.0f (i = %i): cf_dcct_1 %5.4f cf_dcct_2 %5.4f\n",
+					timerel,i,cf_dcct_1,cf_dcct_2);
+		}
+		*/
+	}
+	cout <<endl;
 
-  // clean
-  delete [] histo_name;
-  delete [] indices;
-  delete [] bunch1; 
-  delete [] bunch2; 
+	// plot canvas
+	sprintf(histo_name,"Fill%d_opt%d_scan%d", g_vdm_Fill, opt, scan);
+	TCanvas *c = new TCanvas(histo_name,histo_name,900,600);
+	c->Divide(1,2);
+	c->cd(1);
+	h1->SetTitle(";timerel;correction for beam 1");
+	h1->SetMinimum(min*0.99);
+	h1->SetMaximum(max*1.01);
+	h1->Draw("p");
+	c->cd(2);
+	h2->SetTitle(";timerel;correction for beam 2");
+	h2->SetMinimum(min*0.99);
+	h2->SetMaximum(max*1.01);
+	h2->Draw("p");
+	c->Print(Form("c1b_QASingleNorm_%s.png", c->GetName()));
 
-
+	// clean
+	delete [] file_name;  
+	delete [] histo_name;
+	delete [] indices;
+	return;
 }
 
 //-------------------------------------------------------
 // Create normalisation histograms 
 //-------------------------------------------------------
 
-void Create_normalisation_histograms(Int_t Fill, Int_t opt)
+void QA_normalisation_histograms(Int_t Fill, Int_t opt)
 // opt = 0 => fBCT; opt = 1 => BPTX
-
 {
-  // get name of files and set pointers to trees
-  Set_input_file_names(Fill);
-  Set_pointers_to_input_files_and_trees();
+	// get name of files and set pointers to trees
+	Set_input_file_names(Fill);
+	Set_pointers_to_input_files_and_trees();
 
-  // create histograms for all scans
-  for(Int_t i=0;i<g_n_Scans_in_Fill;i++) {
-     Create_single_normalisation_histogram(i,opt);
-  }
+	// create histograms for all scans
+	gStyle->SetOptStat(0);
+	gStyle->SetOptTitle(0);
+	for(Int_t i=0;i<g_n_Scans_in_Fill;i++)
+	{
+		Create_single_normalisation_histogram(i,opt);
+	}
+
+	return;
 }

@@ -20,6 +20,7 @@ add_subdirectory(DPhi)
 add_subdirectory(JCORRAN)
 add_subdirectory(ThreePart)
 add_subdirectory(EPCorrelation)
+add_subdirectory(KaonCorrelations)
 
 # Install the macros
 install(DIRECTORY macros DESTINATION PWGCF/Correlations)

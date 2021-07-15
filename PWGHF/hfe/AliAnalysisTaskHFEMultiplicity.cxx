@@ -613,7 +613,7 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
     
     
     
-    Int_t bins[9]        =          {250,200,100,400,400, 1000, 350,500,300};
+    Int_t bins[9]        =          {250,200,200,400,400, 1000, 350,500,300};
     Double_t xmin[9]    =    {  0, -10,0, 0,0,0, 0,0,-15};
     Double_t xmax[9]    =    {  50,10, 2,2,2, 2000, 350,50,15};
     
@@ -762,8 +762,8 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
         
         fEtaWeight = new TF1("fEtaWeight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
         
-        fPi0Weight->SetParameters( 1.46837e+03,-1.02586e-01, 1.18596e-03,1.73410,5.06623);
-        fEtaWeight->SetParameters(   3.67328e+02,-5.34727e-02,2.39322e-05,1.96562,5.23828);
+        fPi0Weight->SetParameters( 1.62474e+03,-1.17372e-01,1.42964e-03,1.64427e+00,4.93761e+00);
+        fEtaWeight->SetParameters(   3.67236e+02,-5.41467e-02,3.76799e-05,1.96809e+00,5.23929e+00);
     }
     fTrkMatchTrkPt->Sumw2();
     fSparseElectron->Sumw2();
@@ -1153,6 +1153,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
         if(!fUseTender) clu  = (AliAODCaloCluster*)fAOD->GetCaloCluster(index) ;
         if(fUseTender) clu = dynamic_cast<AliAODCaloCluster*>(fCaloClusters_tender->At(index));
         if(!clu) continue;
+       
         
         fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
         if (clu->IsEMCAL()){
@@ -1175,8 +1176,14 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
-            clut = clu->GetTOF()*1e9 ;
+            clut = clu->GetTOF()*1e+9; // ns
             energy = clu->E();
+              
+            if (!fReadMC) { //should not be applied in MC since it is not implemented
+            if(TMath::Abs(clut) > 50) continue;
+            if(clu->GetIsExotic()) continue; //remove exotic clusters
+            }
+            
             ncells= clu->GetNCells();
             fClusPhi->Fill(cluphi);
             fClusEtaPhi->Fill(clueta,cluphi);
@@ -1280,6 +1287,11 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
+            Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
+            if (!fReadMC) { //should not be applied in MC since it is not implemented
+                if(TMath::Abs(clustTime) > 50) continue; //50ns time cut to remove pileup
+                if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
+            }
             fTrkMatchTrkPt->Fill(TrkPt);
             fTrkMatchTrketa->Fill(TrkEta);
             fTrkMatchTrkphi->Fill(TrkPhi);

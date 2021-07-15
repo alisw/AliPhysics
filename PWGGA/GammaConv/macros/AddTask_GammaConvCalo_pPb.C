@@ -1152,32 +1152,12 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("8008e103","00200009f9730000dge0400000","411793405f032230000","0h63103100b00010");
     cuts.AddCutPCMCalo("8008d103","00200009f9730000dge0400000","411793405f032230000","0h63103100b00010");
 
-  // Nonlin testing configs (TB + finetuning)
-  } else if (trainConfig == 2050) { // NL 01 -> 100 MeV aggregation
-    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411796105f032230000","0h63103100b00010");
-  } else if (trainConfig == 2051) { // NL 01 -> 100 MeV aggregation
-    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411796105f032230000","0h63103100b00010");
-    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411796105f032230000","0h63103100b00010");
-  } else if (trainConfig == 2052) { // NL 02 -> 50 MeV aggregation
-    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411796205f032230000","0h63103100b00010");
-  } else if (trainConfig == 2053) { // NL 02 -> 50 MeV aggregation
-    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411796205f032230000","0h63103100b00010");
-    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411796205f032230000","0h63103100b00010");
-  } else if (trainConfig == 2054) { // NL 03 -> 150 MeV aggregation
-    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411796305f032230000","0h63103100b00010");
-  } else if (trainConfig == 2055) { // NL 03 -> 150 MeV aggregation
-    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411796305f032230000","0h63103100b00010");
-    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411796305f032230000","0h63103100b00010");
-  } else if (trainConfig == 2056) { // NL 04 -> 300 MeV aggregation
-    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411796405f032230000","0h63103100b00010");
-  } else if (trainConfig == 2057) { // NL 04 -> 300 MeV aggregation
-    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411796405f032230000","0h63103100b00010");
-    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411796405f032230000","0h63103100b00010");
-  } else if (trainConfig == 2058) { // NL 04 -> 300 MeV aggregation
-    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411796905f032230000","0h63103100b00010");
-  } else if (trainConfig == 2059) { // NL 04 -> 300 MeV aggregation
-    cuts.AddCutPCMCalo("8008e123","00200009f9730000dge0400000","411796905f032230000","0h63103100b00010");
-    cuts.AddCutPCMCalo("8008d123","00200009f9730000dge0400000","411796905f032230000","0h63103100b00010");
+  } else if (trainConfig == 2050) {
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411790105f032230000","0h63103100b00010"); // default NCell cut
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411790105f030230000","0h63103100b00010"); // no NCell cut
+  } else if (trainConfig == 2051) {
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411790105f03v230000","0h63103100b00010"); // NCell effi 1
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411790105f03q230000","0h63103100b00010"); // NCell effi 2
 
   } else if (trainConfig == 2060) { // no NCell cut
     cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411793105f030230000","0h63103100b00010");

@@ -159,9 +159,9 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   enum
   {
     kVarForSparse = 13,
-    kVarForSparseFD = 14,
+    kVarForSparseFD = 15,
     knVarForSparseMLMinimal = 3,
-    kVarForSparseAcc = 4,
+    kVarForSparseAcc = 5,
     kVarForTrackSparse = 7,
     kVarForImpPar = 3
   };

@@ -330,11 +330,11 @@ fGeorgiosTree->Branch("Trackv0Ncl",&fTTrackv0Ncl,"fTTrackv0Ncl[fTnv0][2]/I");
  * reduce disk space for background
 fGeorgiosTree->Branch("Trackv0CrR",&fTTrackv0CrR,"fTTrackv0CrR[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0CrF",&fTTrackv0CrF,"fTTrackv0CrF[fTnv0][2]/F");
+fGeorgiosTree->Branch("Trackv0FilterBit",&fTTrackv0FilterBit,"fTTrackv0FilterBit[fTnv0][2]/O");
+fGeorgiosTree->Branch("Trackv0Phi",&fTTrackv0Phi,"fTTrackv0Phi[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0ITStime",&fTTrackv0ITStime,"fTTrackv0ITStime[fTnv0][2]/O");
 fGeorgiosTree->Branch("Trackv0TOFtime",&fTTrackv0TOFtime,"fTTrackv0TOFtime[fTnv0][2]/O");
-fGeorgiosTree->Branch("Trackv0FilterBit",&fTTrackv0FilterBit,"fTTrackv0FilterBit[fTnv0][2]/O");
 */
-//fGeorgiosTree->Branch("Trackv0Phi",&fTTrackv0Phi,"fTTrackv0Phi[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0ID",&fTTrackv0ID,"fTTrackv0ID[fTnv0][2]/I");
 	
 #ifdef MONTECARLO
@@ -382,11 +382,11 @@ fGeorgiosTree->Branch("Trackv0ID",&fTTrackv0ID,"fTTrackv0ID[fTnv0][2]/I");
  * reducing disk space for background
  fGeorgiosTree->Branch("TrackCrR",&fTTrackCrR,"fTTrackCrR[fTnCascade][3]/F");
  fGeorgiosTree->Branch("TrackCrF",&fTTrackCrF,"fTTrackCrF[fTnCascade][3]/F");
- fGeorgiosTree->Branch("TrackITStime",&fTTrackITStime,"fTTrackITStime[fTnCascade][3]/O");
- fGeorgiosTree->Branch("TrackTOFtime",&fTTrackTOFtime,"fTTrackTOFtime[fTnCascade][3]/O");
  fGeorgiosTree->Branch("TrackFilterBit",&fTTrackFilterBit,"fTTrackFilterBit[fTnCascade][3]/O");
 */
 // fGeorgiosTree->Branch("TrackPhi",&fTTrackPhi,"fTTrackPhi[fTnCascade][3]/F");
+ fGeorgiosTree->Branch("TrackITStime",&fTTrackITStime,"fTTrackITStime[fTnCascade][3]/O");
+ fGeorgiosTree->Branch("TrackTOFtime",&fTTrackTOFtime,"fTTrackTOFtime[fTnCascade][3]/O");
  fGeorgiosTree->Branch("TrackID",&fTTrackID,"fTTrackID[fTnCascade][3]/I");
 
 #ifdef MONTECARLO
@@ -538,15 +538,15 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     fTTrackv0CrF[ii][jj]=-100000.;
     fTTrackv0Shared[ii][jj]=-100000;
     fTTrackv0TPCchi2[ii][jj]=-100000.;
-    fTTrackv0ITStime[ii][jj]=kFALSE;
-    fTTrackv0TOFtime[ii][jj]=kFALSE;
     fTTrackv0TPConly[ii][jj]=kFALSE;
     fTTrackv0ITScomplementary[ii][jj]=kFALSE;
     fTTrackv0ITSpure[ii][jj]=kFALSE;
     fTTrackv0GLOBAL[ii][jj]=kFALSE;
     fTTrackv0FilterBit[ii][jj]=0;
+    fTTrackv0Phi[ii][jj]=-100000.;
+    fTTrackv0ITStime[ii][jj]=kFALSE;
+    fTTrackv0TOFtime[ii][jj]=kFALSE;
 */
-//    fTTrackv0Phi[ii][jj]=-100000.;
     fTTrackv0ID[ii][jj]=-100000;
 
 #ifdef MONTECARLO
@@ -666,8 +666,6 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     fTTrackCrF[ii][jj]=-100000.;
     fTTrackShared[ii][jj]=-100000;
     fTTrackTPCchi2[ii][jj]=-100000.;
-    fTTrackITStime[ii][jj]=kFALSE;
-    fTTrackTOFtime[ii][jj]=kFALSE;
     fTTrackTPConly[ii][jj]=kFALSE;
     fTTrackITScomplementary[ii][jj]=kFALSE;
     fTTrackITSpure[ii][jj]=kFALSE;
@@ -675,6 +673,8 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     fTTrackFilterBit[ii][jj]=0;
 */
 //    fTTrackPhi[ii][jj]=-100000.;
+    fTTrackITStime[ii][jj]=kFALSE;
+    fTTrackTOFtime[ii][jj]=kFALSE;
     fTTrackID[ii][jj]=-100000;
    
 #ifdef MONTECARLO
@@ -911,11 +911,11 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
    fTTrackv0Ncl[fTnv0][jj] = TheTrackv0->GetNClsTPC();
    //fTTrackv0CrF[fTnv0][jj] = TheTrackv0->GetRatioCr();
    //fTTrackv0CrR[fTnv0][jj] = TheTrackv0->GetTPCCrossedRows();
-   //fTTrackv0ITStime[fTnv0][jj] = TheTrackv0->GetHasITSHit();
-   //fTTrackv0TOFtime[fTnv0][jj] = TheTrackv0->GetTOFTimingReuqirement();
    //fTTrackv0FilterBit[fTnv0][jj] = TheTrackv0->GetFilterMap();
 
 //   fTTrackv0Phi[fTnv0][jj] = (TheTrackv0->GetPhiAtRaidius().at(0)).at(0);//phi for r=85.cm ???
+//   fTTrackv0ITStime[fTnv0][jj] = TheTrackv0->GetHasITSHit();
+//   fTTrackv0TOFtime[fTnv0][jj] = TheTrackv0->GetTOFTimingReuqirement();
    fTTrackv0ID[fTnv0][jj] = TheTrackv0->GetIDTracks().at(0);
   }
 
@@ -1004,11 +1004,11 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::FillCascade(AliFemtoDreamCascade *TheCasc)
  *
   fTTrackCrF[fTnCascade][jj] = TheTrack->GetRatioCr();
   fTTrackCrR[fTnCascade][jj] = TheTrack->GetTPCCrossedRows();
-  fTTrackITStime[fTnCascade][jj] = TheTrack->GetHasITSHit();
-  fTTrackTOFtime[fTnCascade][jj] = TheTrack->GetTOFTimingReuqirement();
   fTTrackFilterBit[fTnCascade][jj] = TheTrack->GetFilterMap();
 */  
 //  fTTrackPhi[fTnCascade][jj] = (TheTrack->GetPhiAtRaidius().at(0)).at(0);//phi for r=85.cm ???
+  fTTrackITStime[fTnCascade][jj] = TheTrack->GetHasITSHit();
+  fTTrackTOFtime[fTnCascade][jj] = TheTrack->GetTOFTimingReuqirement();
   fTTrackID[fTnCascade][jj] = TheTrack->GetIDTracks().at(0);
  }
 

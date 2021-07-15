@@ -1020,6 +1020,7 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
 	//Output Histograms
 	fResults[icent] = NULL;
 	fCovResults[icent] = NULL; 
+	fJoinedCovResults[icent] = NULL; 
   	fMixedParticleHarmonics[icent] = NULL;
 
   }
@@ -1318,19 +1319,25 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
 	   break; //The next edge is a breaking point -> this bin does not exist anymore
 	}
 
-	 fResults[icent] = new TProfile("fResults","Result Analysis First Set Correlators",16,0.,16.,"s"); //centrality dependet output
+	 fResults[icent] = new TProfile("fResults","Result Analysis First Set Correlators",16,0.,16.,"s"); //centrality dependent output
 	 fResults[icent]->GetXaxis()->SetTitle("");
 	 fResults[icent]->GetYaxis()->SetTitle("");
 	 fResults[icent]->Sumw2();
 	 fFinalResultsList[icent]->Add(fResults[icent]);
 
-	 fCovResults[icent] = new TProfile("fCovResults","Result for Covariance Terms",32,0.,32.,"s"); //centrality dependet output
+	 fCovResults[icent] = new TProfile("fCovResults","Result for Covariance Terms",32,0.,32.,"s"); //centrality dependent output
 	 fCovResults[icent]->GetXaxis()->SetTitle("");
 	 fCovResults[icent]->GetYaxis()->SetTitle("");
 	 fCovResults[icent]->Sumw2();
 	 fFinalResultsList[icent]->Add(fCovResults[icent]); 
 
-	 fMixedParticleHarmonics[icent] = new TProfile("fMixedParticleHarmonics","fMixedParticleHarmonics",2,0.,2.,"s"); //centrality dependet output
+	 fJoinedCovResults[icent] = new TProfile("fJoinedCovResults","Result joined Covariance term calculated as one correlator <z> not product of two correlators <x*y>",16,0.,16.); //centrality dependent output 
+	 fJoinedCovResults[icent]->GetXaxis()->SetTitle("");
+	 fJoinedCovResults[icent]->GetYaxis()->SetTitle("");
+	 fJoinedCovResults[icent]->Sumw2();
+	 fFinalResultsList[icent]->Add(fJoinedCovResults[icent]);
+
+	 fMixedParticleHarmonics[icent] = new TProfile("fMixedParticleHarmonics","fMixedParticleHarmonics",2,0.,2.,"s"); //centrality dependent output
 	 fMixedParticleHarmonics[icent]->GetXaxis()->SetTitle("");
 	 fMixedParticleHarmonics[icent]->GetYaxis()->SetTitle("");
 	 fMixedParticleHarmonics[icent]->Sumw2(); 
@@ -2185,6 +2192,8 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_
     Double_t CorrelationDenom[8]={0.};
     Double_t Weight_CorrelationDenom[8]={0.};
 
+    Double_t CorrelationJoinedCov[8]={0.};
+    Double_t Weight_CorrelationJoinedCov[8]={0.};
 
     if(fNumber!=0)
     {
@@ -2199,6 +2208,17 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_
 
 	CorrelationDenom[0] = Data_Correlation[0];
 	Weight_CorrelationDenom[0] = Data_Correlation[1];
+
+
+	if(fNumber <= 4.) //calculated the joined product of numerator and denominator as one single correlator. Only possible for order of correlation in numerator <= 4
+	{
+		Int_t Number_JoinedCov = 3*fNumber;
+
+		this->Correlation(Number_JoinedCov, fa1,fa2,fa3,fa4,fa1,-1.*fa1,fa2,-1.*fa2,fa3,-1.*fa3,fa4,-1.*fa4,0.,0., Data_Correlation);  
+
+		CorrelationJoinedCov[0] = Data_Correlation[0];
+		Weight_CorrelationJoinedCov[0] = Data_Correlation[1];
+	}
 
 
     } //if(fNumber!=0)
@@ -2219,6 +2239,15 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_
 	CorrelationDenom[1] = Data_Correlation[0];
 	Weight_CorrelationDenom[1] = Data_Correlation[1];
 
+	if(fNumberSecond <= 4.) //calculated the joined product of numerator and denominator as one single correlator. Only possible for order of correlation in numerator <= 4
+	{
+		Int_t Number_JoinedCov = 3*fNumberSecond;
+
+		this->Correlation(Number_JoinedCov, fb1,fb2,fb3,fb4,fb1,-1.*fb1,fb2,-1.*fb2,fb3,-1.*fb3,fb4,-1.*fb4,0.,0., Data_Correlation);  
+
+		CorrelationJoinedCov[1] = Data_Correlation[0];
+		Weight_CorrelationJoinedCov[1] = Data_Correlation[1];
+	}
 
     } //if(fNumberSecond!=0)
 
@@ -2238,6 +2267,17 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_
 	CorrelationDenom[2] = Data_Correlation[0];
 	Weight_CorrelationDenom[2] = Data_Correlation[1];
 
+	if(fNumberThird <= 4.) //calculated the joined product of numerator and denominator as one single correlator. Only possible for order of correlation in numerator <= 4
+	{
+		Int_t Number_JoinedCov = 3*fNumberThird;
+
+		this->Correlation(Number_JoinedCov, fd1,fd2,fd3,fd4,fd1,-1.*fd1,fd2,-1.*fd2,fd3,-1.*fd3,fd4,-1.*fd4,0.,0., Data_Correlation);  
+
+		CorrelationJoinedCov[2] = Data_Correlation[0];
+		Weight_CorrelationJoinedCov[2] = Data_Correlation[1];
+	}
+
+
     } //if(fNumberThird!=0)
 
 
@@ -2256,6 +2296,17 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_
    	CorrelationDenom[3] = Data_Correlation[0];
 	Weight_CorrelationDenom[3] = Data_Correlation[1];
 
+	if(fNumberFourth <= 4.) //calculated the joined product of numerator and denominator as one single correlator. Only possible for order of correlation in numerator <= 4
+	{
+		Int_t Number_JoinedCov = 3*fNumberFourth;
+
+		this->Correlation(Number_JoinedCov, fe1,fe2,fe3,fe4,fe1,-1.*fe1,fe2,-1.*fe2,fe3,-1.*fe3,fe4,-1.*fe4,0.,0., Data_Correlation);  
+
+		CorrelationJoinedCov[3] = Data_Correlation[0];
+		Weight_CorrelationJoinedCov[3] = Data_Correlation[1];
+	}
+
+
     }//if(fNumberFourth!=0)
 
 
@@ -2272,6 +2323,16 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_
 
 	CorrelationDenom[4] = Data_Correlation[0];
 	Weight_CorrelationDenom[4] = Data_Correlation[1];
+
+	if(fNumberFifth <= 4.) //calculated the joined product of numerator and denominator as one single correlator. Only possible for order of correlation in numerator <= 4
+	{
+		Int_t Number_JoinedCov = 3*fNumberFifth;
+
+		this->Correlation(Number_JoinedCov, ff1,ff2,ff3,ff4,ff1,-1.*ff1,ff2,-1.*ff2,ff3,-1.*ff3,ff4,-1.*ff4,0.,0., Data_Correlation);  
+
+		CorrelationJoinedCov[4] = Data_Correlation[0];
+		Weight_CorrelationJoinedCov[4] = Data_Correlation[1];
+	}
 
     } //if(fNumberFifth!=0)
 
@@ -2291,6 +2352,16 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_
 	CorrelationDenom[5] = Data_Correlation[0];
 	Weight_CorrelationDenom[5] = Data_Correlation[1];
 
+	if(fNumberSixth <= 4.) //calculated the joined product of numerator and denominator as one single correlator. Only possible for order of correlation in numerator <= 4
+	{
+		Int_t Number_JoinedCov = 3*fNumberSixth;
+
+		this->Correlation(Number_JoinedCov, fg1,fg2,fg3,fg4,fg1,-1.*fg1,fg2,-1.*fg2,fg3,-1.*fg3,fg4,-1.*fg4,0.,0., Data_Correlation);  
+
+		CorrelationJoinedCov[5] = Data_Correlation[0];
+		Weight_CorrelationJoinedCov[5] = Data_Correlation[1];
+	}
+
     } //if(fNumberSixth!=0)
 
 
@@ -2307,6 +2378,16 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_
 
 	CorrelationDenom[6] = Data_Correlation[0];
 	Weight_CorrelationDenom[6] = Data_Correlation[1];
+
+	if(fNumberSeventh <= 4.) //calculated the joined product of numerator and denominator as one single correlator. Only possible for order of correlation in numerator <= 4
+	{
+		Int_t Number_JoinedCov = 3*fNumberSeventh;
+
+		this->Correlation(Number_JoinedCov, fh1,fh2,fh3,fh4,fh1,-1.*fh1,fh2,-1.*fh2,fh3,-1.*fh3,fh4,-1.*fh4,0.,0., Data_Correlation);  
+
+		CorrelationJoinedCov[6] = Data_Correlation[0];
+		Weight_CorrelationJoinedCov[6] = Data_Correlation[1];
+	}
 
     } //if(fNumberSeventh!=0)
 
@@ -2325,6 +2406,16 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_
 	CorrelationDenom[7] = Data_Correlation[0];
 	Weight_CorrelationDenom[7] = Data_Correlation[1];
 
+	if(fNumberEighth <= 4.) //calculated the joined product of numerator and denominator as one single correlator. Only possible for order of correlation in numerator <= 4
+	{
+		Int_t Number_JoinedCov = 3*fNumberEighth;
+
+		this->Correlation(Number_JoinedCov, fi1,fi2,fi3,fi4,fi1,-1.*fi1,fi2,-1.*fi2,fi3,-1.*fi3,fi4,-1.*fi4,0.,0., Data_Correlation);  
+
+		CorrelationJoinedCov[7] = Data_Correlation[0];
+		Weight_CorrelationJoinedCov[7] = Data_Correlation[1];
+	}
+
     } //if(fNumberEighth!=0)
 
 
@@ -2333,11 +2424,13 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_
      fResults[MainTask_CentBin]->Fill(2.*(Float_t)(i)+0.5,CorrelationNum[i],Weight_CorrelationNum[i]); //safe output first set of harmonics
      fResults[MainTask_CentBin]->Fill(2.*(Float_t)(i)+1.5,CorrelationDenom[i],Weight_CorrelationDenom[i]); //safe output first set of harmonics
 
-
      fCovResults[MainTask_CentBin]->Fill(4.*(Float_t)(i)+0.5,CorrelationNum[i]*CorrelationDenom[i],Weight_CorrelationNum[i]*Weight_CorrelationDenom[i]); //w_D*N*w_D*D
      fCovResults[MainTask_CentBin]->Fill(4.*(Float_t)(i)+1.5,Weight_CorrelationNum[i]*Weight_CorrelationDenom[i],1.); //w_N*w_D
      fCovResults[MainTask_CentBin]->Fill(4.*(Float_t)(i)+2.5,Weight_CorrelationNum[i],1.); //w_N
      fCovResults[MainTask_CentBin]->Fill(4.*(Float_t)(i)+3.5,Weight_CorrelationDenom[i],1.); //w_D 
+
+     fJoinedCovResults[MainTask_CentBin]->Fill(2.*(Float_t)(i)+0.5,CorrelationJoinedCov[i],Weight_CorrelationJoinedCov[i]); //Joined Cov Term z //GANESHA
+     fJoinedCovResults[MainTask_CentBin]->Fill(2.*(Float_t)(i)+1.5,Weight_CorrelationJoinedCov[i],1.); //w_z safe output first set of harmonics
 	
    } 
 

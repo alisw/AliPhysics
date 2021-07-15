@@ -71,6 +71,7 @@ set(SRCS
     AliAnalysisTaskSEpPbCorrelationsMCLEGOYS.cxx	
     AliTrigAssoPairST.cxx
     AliAnalysisTaskSEpPbCorrelationsJetV2.cxx
+    AliAnalysisTaskSEpPbCorrelationsJetV2Kine.cxx
     AliAnalysisTaskSEPbPbCorrelationsJetV2.cxx
     AliAnaTaskMomScan.cxx
     AliAnalysisTaskTwoPlusOne.cxx
@@ -116,6 +117,8 @@ set(SRCS
     Unfoldedhistos/AliCSTrackMaps.cxx
     Unfoldedhistos/AliCSTrackSelection.cxx
     Unfoldedhistos/AliDptDptCorrelations.cxx
+    Unfoldedhistos/Ali2PCorrelations.cxx
+    Unfoldedhistos/AliTwoParticleCorrelationsBase.cxx
    )
 
 # Headers from sources

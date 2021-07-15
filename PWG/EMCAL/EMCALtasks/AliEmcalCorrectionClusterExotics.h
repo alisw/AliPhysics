@@ -42,6 +42,7 @@ protected:
   TH1F                  *fEnergyExoticClustersNDiffCut; //!<!energy of exotic clusters, both exo and ndiff cut
   
   Float_t               fExoticMinCellAmplitude;     ///< Min energy of leading cell in order for exotic cut to be attempted
+  Float_t               fExoticMinCellInCrossAmplitude; ///< Min energy of cells in cross to be added, if below, not considered
   Float_t               fMaxFcross;                  ///< Max value of Fcross = 1-Ecross/ecell allowed for clusters to pass exotic cut
   Float_t               fCellCrossMaxTimeDiff;       ///< Max time difference allowed between leading cell and cross cells (in ns)
 
@@ -56,7 +57,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterExotics> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterExotics, 3); // EMCal cluster exotics correction component
+  ClassDef(AliEmcalCorrectionClusterExotics, 4); // EMCal cluster exotics correction component
   /// \endcond
 };
 

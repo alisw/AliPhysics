@@ -40,6 +40,9 @@ class AliFemtoDreamTrackCuts {
                                                 bool ContribSplitting);
   static AliFemtoDreamTrackCuts *OmegaBachKaonCuts(bool isMC, bool PileUpRej,
                                                    bool ContribSplitting);
+  static AliFemtoDreamTrackCuts *PrimPionCuts(bool isMC, bool DCAPlots,
+                                                bool CombSigma,
+                                                bool ContribSplitting);
   //  static AliFemtoDreamTrackCuts *OmegaKaonCuts(bool isMC,
   //                                               bool ContribSplitting);
 
@@ -215,9 +218,11 @@ class AliFemtoDreamTrackCuts {
     fPIDPITSThreshold = pITSThresh;
     fNSigValueITSmin = sigValITSmin;
     fNSigValueITSmax = sigValITSmax;
-    fdoITSnSigmaCut = kTRUE;
   }
   ;
+  void SetITSnSigmaCut(bool ITScut) {
+    fdoITSnSigmaCut = ITScut;
+  }
   void SetCutTOFInvMass(bool cutit = false) {
     fTOFInvMassCut = cutit;
    }

@@ -87,12 +87,14 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies() : AliAnalysisTa
   fMemCountAOD(0),
   fTrackMatcherRunningMode(0),
   fIsoMaxRadius(0.2),
+  fConversionTrackMatchR(0.4),
   fBuffer_NPrimaryTracks(0), 
   fBuffer_NClus(0), 
   fBuffer_IsProblem(kFALSE), 
   fBuffer_ClusterE(0), 
   fBuffer_ClusterM02(0), 
   fBuffer_ClusterM20(0), 
+  fBuffer_ClusterNCells(0), 
   fBuffer_Track_E(0), 
   fBuffer_Track_Px(0), 
   fBuffer_Track_Py(0), 
@@ -173,12 +175,14 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies(const char *name)
   fMemCountAOD(0),
   fTrackMatcherRunningMode(0),
   fIsoMaxRadius(0.2),
+  fConversionTrackMatchR(0.4),
   fBuffer_NPrimaryTracks(0), 
   fBuffer_NClus(0), 
   fBuffer_IsProblem(kFALSE), 
   fBuffer_ClusterE(0), 
   fBuffer_ClusterM02(0), 
   fBuffer_ClusterM20(0), 
+  fBuffer_ClusterNCells(0), 
   fBuffer_Track_E(0), 
   fBuffer_Track_Px(0), 
   fBuffer_Track_Py(0), 
@@ -339,6 +343,7 @@ void AliAnalysisTaskElectronStudies::UserCreateOutputObjects()
   fAnalysisTree->Branch("Cluster_E","std::vector<UShort_t>",&fBuffer_ClusterE);
   fAnalysisTree->Branch("Cluster_M02","std::vector<UShort_t>", &fBuffer_ClusterM02);
   fAnalysisTree->Branch("Cluster_M20","std::vector<UShort_t>", &fBuffer_ClusterM20);
+  fAnalysisTree->Branch("Cluster_NCells","std::vector<UShort_t>", &fBuffer_ClusterNCells);
   fAnalysisTree->Branch("Track_E","std::vector<UShort_t>", &fBuffer_Track_E);
   fAnalysisTree->Branch("Track_Px","std::vector<Short_t>", &fBuffer_Track_Px);
   fAnalysisTree->Branch("Track_Py","std::vector<Short_t>", &fBuffer_Track_Py);
@@ -515,6 +520,7 @@ void AliAnalysisTaskElectronStudies::ResetBuffer(){
     fBuffer_ClusterE.clear();  
     fBuffer_ClusterM02.clear();
     fBuffer_ClusterM20.clear();
+    fBuffer_ClusterNCells.clear();
     fBuffer_Track_E.clear();
     fBuffer_Track_Px.clear();
     fBuffer_Track_Py.clear();
@@ -614,9 +620,51 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
                 }
             }
 
-        }
+          } else{
+            // check for conv matching
+            if(!fReaderGammas) fReaderGammas    = fV0Reader->GetReconstructedGammas();
+            AliAODTrack *inTrackClosest = 0x0;
+            Float_t RClosest = 99999;
+            Float_t dEtaClosest = 99999;
+            Float_t dPhiClosest= 99999;
+            for (Int_t conv = 0; conv < fReaderGammas->GetEntriesFast(); conv++)
+            {
+              AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(conv);
+              for (Int_t i = 0;i < 2;i++){ // loop over daughters
+                Int_t tracklabel = PhotonCandidate->GetLabel(i);
+                AliAODTrack *inTrack = 0x0;
+                if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled()){
+                    inTrack = static_cast<AliAODTrack*>(fInputEvent->GetTrack(tracklabel));
+                } else {
+                    for(Int_t ii=0;ii<fInputEvent->GetNumberOfTracks();ii++) {
+                      inTrack = static_cast<AliAODTrack*>(fInputEvent->GetTrack(ii));
+                      if(inTrack){
+                        if(inTrack->GetID() == tracklabel) {
+                        break;
+                      }
+                    }
+                  }
+                } 
+                Float_t dEtaConv = 0;
+                Float_t dPhiConv = 0;
+                Bool_t propagated = ((AliCaloTrackMatcher*) fTMCuts->GetCaloTrackMatcherInstance())->PropagateV0TrackToClusterAndGetMatchingResidual(inTrack,clus,fInputEvent,dEtaConv,dPhiConv);
+                if (propagated){
+                  Double_t r = TMath::Sqrt(dEtaConv*dEtaConv + dPhiConv*dPhiConv);
+                  if(r < RClosest){
+                     inTrackClosest = inTrack;
+                     RClosest = r;
+                     dEtaClosest = dEtaConv;
+                     dPhiClosest = dPhiConv;
+                  }
+                }
+              } // end daughter loop
+            } // end conv photon loop 
+            if((RClosest < fConversionTrackMatchR) && inTrackClosest){ 
+             ProcessMatchedTrack(inTrackClosest,clus,kTRUE,dEtaClosest,dPhiClosest);
+            }
+          } // end conv matching case
 
-        delete clus;
+          delete clus;
       } // end of initial cluster loop
   }
 
@@ -662,7 +710,49 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
                 ProcessMatchedTrack(aodt,clus,kFALSE);
               }
           }
-        }
+                  } else{
+            // check for conv matching
+            if(!fReaderGammas) fReaderGammas    = fV0Reader->GetReconstructedGammas();
+            AliAODTrack *inTrackClosest = 0x0;
+            Float_t RClosest = 99999;
+            Float_t dEtaClosest = 99999;
+            Float_t dPhiClosest= 99999;
+            for (Int_t conv = 0; conv < fReaderGammas->GetEntriesFast(); conv++)
+            {
+              AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(conv);
+              for (Int_t i = 0;i < 2;i++){ // loop over daughters
+                Int_t tracklabel = PhotonCandidate->GetLabel(i);
+                AliAODTrack *inTrack = 0x0;
+                if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled()){
+                    inTrack = static_cast<AliAODTrack*>(fInputEvent->GetTrack(tracklabel));
+                } else {
+                    for(Int_t ii=0;ii<fInputEvent->GetNumberOfTracks();ii++) {
+                      inTrack = static_cast<AliAODTrack*>(fInputEvent->GetTrack(ii));
+                      if(inTrack){
+                        if(inTrack->GetID() == tracklabel) {
+                        break;
+                      }
+                    }
+                  }
+                } 
+                Float_t dEtaConv = 0;
+                Float_t dPhiConv = 0;
+                Bool_t propagated = ((AliCaloTrackMatcher*) fTMCuts->GetCaloTrackMatcherInstance())->PropagateV0TrackToClusterAndGetMatchingResidual(inTrack,clus,fInputEvent,dEtaConv,dPhiConv);
+                if (propagated){
+                  Double_t r = TMath::Sqrt(dEtaConv*dEtaConv + dPhiConv*dPhiConv);
+                  if(r < RClosest){
+                     inTrackClosest = inTrack;
+                     RClosest = r;
+                     dEtaClosest = dEtaConv;
+                     dPhiClosest = dPhiConv;
+                  }
+                }
+              } // end daughter loop
+            } // end conv photon loop 
+            if((RClosest < fConversionTrackMatchR) && inTrackClosest){ 
+             ProcessMatchedTrack(inTrackClosest,clus,kTRUE,dEtaClosest,dPhiClosest);
+            }
+          } // end conv matching case
 
       //ProcessTrackMatching(clus); // tree filling done here too
       
@@ -764,7 +854,7 @@ Bool_t AliAnalysisTaskElectronStudies::TrackIsSelectedAOD(AliAODTrack* lTrack) {
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, AliAODCaloCluster* clus, Bool_t isV0){
+void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, AliAODCaloCluster* clus, Bool_t isV0, Float_t dEtaV0, Float_t dPhiV0){
     Float_t clusPos[3]                      = { 0,0,0 };
     clus->GetPosition(clusPos);
     TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
@@ -773,6 +863,7 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
     
     output.ClusterE = ConvertToUShort(clus->E(),kShortScaleLow);
     output.ClusterM02 =  ConvertToUShort(clus->GetM02(),kShortScaleMiddle);
+    output.ClusterNCells = (UShort_t) clus->GetNCells();
    
     // fix for rounding issue causing it to sometimes be just below 0
     Double_t m20 = clus->GetM20();
@@ -829,9 +920,14 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
     Float_t tempEta = -9;
     Float_t tempPhi = -9;
     // Get dEta and dPhi of track on EMCal surface!
-    ((AliCaloTrackMatcher*) fTMCuts->GetCaloTrackMatcherInstance())->GetTrackClusterMatchingResidual(track->GetID(),clus->GetID(),tempEta,tempPhi);
-    output.Track_dEta = ConvertToShort(tempEta,kShortScaleHigh); 
-    output.Track_dPhi = ConvertToShort(tempPhi,kShortScaleHigh);
+    if(!isV0){
+      ((AliCaloTrackMatcher*) fTMCuts->GetCaloTrackMatcherInstance())->GetTrackClusterMatchingResidual(track->GetID(),clus->GetID(),tempEta,tempPhi);
+      output.Track_dEta = ConvertToShort(tempEta,kShortScaleHigh); 
+      output.Track_dPhi = ConvertToShort(tempPhi,kShortScaleHigh);
+    } else{ // matched a V0
+      output.Track_dEta = ConvertToShort(dEtaV0,kShortScaleHigh); 
+      output.Track_dPhi = ConvertToShort(dPhiV0,kShortScaleHigh);
+    }
 
     
     if(fIsMC){
@@ -1404,6 +1500,7 @@ void AliAnalysisTaskElectronStudies::PushToVectors(treeWriteContainer input){
     fBuffer_ClusterE.push_back(input.ClusterE);     
     fBuffer_ClusterM02.push_back(input.ClusterM02); 
     fBuffer_ClusterM20.push_back(input.ClusterM20); 
+    fBuffer_ClusterNCells.push_back(input.ClusterNCells); 
     fBuffer_Track_E.push_back(input.Track_E);
     fBuffer_Track_Px.push_back(input.Track_Px);
     fBuffer_Track_Py.push_back(input.Track_Py); 

@@ -297,7 +297,16 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         fPtV0 = KFV0.GetPt();
         fcTauK0s = fDecayLengthV0 * massK0s / fPtV0;
         fcTauL = fDecayLengthV0 * massL / fPtV0;
-        fDCAV0 = KFV0.GetDStoPoint(posF, covF);
+        
+        float dcaPointV0[8], dcaPointV0Cov[36];
+        KFV0.GetParametersAtPoint(posF, covF, dcaPointV0, dcaPointV0Cov);
+        float dcaV02 = 0;
+        for(int i = 0; i < 3; i++){
+            dcaV02 += (dcaPointV0[i] - pos[i]) * (dcaPointV0[i] - pos[i]);
+        }
+        fDCAV0 = TMath::Sqrt(dcaV02);
+        fImpParV0 = KFV0.GetDistanceFromVertexXY(primVertKF);
+        
         fCosPV0 = AliVertexingHFUtils::CosPointingAngleFromKF(KFV0, primVertKF);
 
         // Armenteros qT/|alpha|
@@ -326,7 +335,15 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         fDecayLength = AliVertexingHFUtils::DecayLengthFromKF(KFLc, primVertKF);
         fDecayLengthXY = AliVertexingHFUtils::DecayLengthXYFromKF(KFLc, primVertKF);
         fNormDecayLengthXY = AliVertexingHFUtils::ldlXYFromKF(KFLc, primVertKF);
-        fDCA = KFLc.GetDStoPoint(posF, covF);
+
+        float dcaPoint[8], dcaPointCov[36];
+        KFLc.GetParametersAtPoint(posF, covF, dcaPoint, dcaPointCov);
+        float dca2 = 0;
+        for(int i = 0; i < 3; i++){
+            dca2 += (dcaPoint[i] - pos[i]) * (dcaPoint[i] - pos[i]);
+        }
+        fDCA = TMath::Sqrt(dca2);
+        
         float massLcReco = 0., massLcRecoUnc = 0.;
         KFLc.GetMass(massLcReco, massLcRecoUnc);
         fInvMass = massLcReco;

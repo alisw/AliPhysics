@@ -9,6 +9,8 @@
 #include "AliMCEvent.h"
 #include "AliGFWCuts.h"
 #include "TString.h"
+#include "AliProfileBS.h"
+#include "TRandom.h"
 
 class TList;
 class TH1D;
@@ -57,6 +59,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void ProduceALICEPublished_CovProd(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void ProduceFBSpectra(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void ProduceEfficiencies(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void FilldPtRecovsTrue(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
@@ -77,7 +80,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetV2dPtMultiBins(Int_t nBins, Double_t *multibins);
   void SetEta(Double_t newval) { fEta = newval; };
   void SetEtaNch(Double_t newval) { fEtaNch = newval; };
-  void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = TMath::Abs(newval); };
+  void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = newval; };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
@@ -85,6 +88,11 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetConsistencyFlag(UInt_t newval) { fConsistencyFlag = newval; };
   void SetCentralityEstimator(TString newval) { if(fCentEst) delete fCentEst; fCentEst = new TString(newval); };
   void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); if(!fContSubfix->IsNull()) fContSubfix->Prepend("_"); };
+  void OverrideMCFlag(Bool_t newval) { fIsMC = newval; };
+  Int_t GetNtotTracks(AliAODEvent*, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
+  void SetUseRecoNchForMC(Bool_t newval) { fUseRecoNchForMC = newval; };
+  void SetNBootstrapProfiles(Int_t newval) {if(newval<0) {printf("Number of subprofiles cannot be < 0!\n"); return; }; fNBootstrapProfiles = newval; };
+  void SetWeightSubfix(TString newval) { fWeightSubfix=newval; }; //base (runno) + subfix (systflag), delimited by ;. First argument always base, unless is blank. In that case, w{RunNo} is used for base.
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -96,6 +104,9 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fExtendV0MAcceptance;
   Bool_t fIsMC;
   AliMCEvent *fMCEvent; //! MC event
+  Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
+  TRandom *fRndm; //For random number generation
+  Int_t fNBootstrapProfiles; //Number of profiles for bootstrapping
   TAxis *fPtAxis;
   TAxis *fMultiAxis;
   TAxis *fV0MMultiAxis;
@@ -110,20 +121,33 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Double_t fEtaV2Sep; //Please don't add multiple wagons with dif. values; implement subevents in the code instead. This would save TONS of CPU time.
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
+  TList *fMPTMCTrueList;  //!
   TList *fMPTList; //!
   TProfile **fmPT; //!
+  TProfile **fmPTMCTrue; //!
+  TProfile *fMptClosure; //!
   TH1D *fMultiDist;
+  TH2D **fMultiVsV0MCorr; //!
+  TH2D *fNchTrueVsReco; //!
+  TH2D* fDCAzVsPt;  //!
+  TH2D* fDCAxyVsPt; //!
+  TH1D* fDCAxy2011vs2010; //!
+  TH1D* fDCAxy; //!
+  TH1D* fdPt; //!
+  TH2D* fdPtRecoVsTrue; //!
   TProfile *fNchVsMulti;
   TProfile *fNchInBins;
   TList *fptVarList;
-  TProfile **fptvar; //!
+  AliProfileBS **fptvar; //!
   TList *fCovList;
   TList *fV2dPtList;
-  TProfile **fCovariance; //!
+  TList *fRecoVsTrueList;
+  AliProfileBS **fCovariance; //!
   Bool_t fmptSet;
   UInt_t fTriggerType;
   TList *fWeightList; //!
   AliGFWWeights **fWeights;//! This should be stored in TList
+  TString fWeightSubfix;
   TList *fNUAList; //!
   TH2D **fNUAHist; //!
   Int_t fRunNo; //!
@@ -139,16 +163,16 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   TH1D *fV0MMulti;
   TH1D *fV2dPtMulti;
-  Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn);
+  Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
-  Bool_t FillCovariance(TProfile* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt);
+  Bool_t FillCovariance(AliProfileBS* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt, const Double_t &l_rndm);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
   Bool_t fRequireReloadOnRunChange;
   Double_t *GetBinsFromAxis(TAxis *inax);
-  ClassDef(AliAnalysisTaskDeform,2);
+  ClassDef(AliAnalysisTaskDeform,5);
 };
 
 #endif

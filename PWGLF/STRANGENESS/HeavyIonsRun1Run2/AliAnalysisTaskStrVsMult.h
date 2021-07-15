@@ -16,8 +16,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     virtual ~AliAnalysisTaskStrVsMult();
 
     // enum and names.
-    enum cutnumb_V0{kV0_DcaV0Daught, kV0_DcaPosToPV, kV0_DcaNegToPV, kV0_V0CosPA, kV0_V0Rad, kV0_y, kV0_etaDaugh, kV0_LeastCRaws, kV0_LeastCRawsOvF, kV0_NSigPID, kV0_PropLifetK0s, kV0_PropLifetLam, kV0_TOFBunchCrossing, kV0cutsnum}; 
-    enum cutnumb_Casc{kCasc_DcaCascDaught, kCasc_CascCosPA, kCasc_CascRad, kCasc_NSigPID, kCasc_LeastCRaws, kCasc_LeastCRawsOvF, kCasc_InvMassLam, kCasc_DcaV0Daught, kCasc_V0CosPA, kCasc_DcaV0ToPV, kCasc_DcaBachToPV, kCasc_TOFBunchCrossing, kCasc_y, kCasc_etaDaugh, kCasc_PropLifetXi, kCasc_PropLifetOm, kCasc_V0Rad, kCasc_DcaMesToPV, kCasc_DcaBarToPV, kCasc_BacBarCosPA, kCasccutsnum}; // kCasc_etaPos, kCasc_etaNeg, kCasc_etaBac, kCasc_kinkidx,
+    enum cutnumb_V0{kV0_DcaV0Daught, kV0_DcaPosToPV, kV0_DcaNegToPV, kV0_V0CosPA, kV0_V0Rad, kV0_y, kV0_etaDaugh, kV0_LeastCRaws, kV0_LeastCRawsOvF, kV0_LeastTPCcls, kV0_NSigPID, kV0_PropLifetK0s, kV0_PropLifetLam, kV0_ITSTOFtracks, kV0cutsnum}; 
+    enum cutnumb_Casc{kCasc_DcaCascDaught, kCasc_CascCosPA, kCasc_CascRad, kCasc_NSigPID, kCasc_LeastCRaws, kCasc_LeastCRawsOvF, kCasc_LeastTPCcls, kCasc_InvMassLam, kCasc_DcaV0Daught, kCasc_V0CosPA, kCasc_DcaV0ToPV, kCasc_DcaBachToPV, kCasc_ITSTOFtracks, kCasc_y, kCasc_etaDaugh, kCasc_PropLifetXi, kCasc_PropLifetOm, kCasc_V0Rad, kCasc_DcaMesToPV, kCasc_DcaBarToPV, kCasc_BacBarCosPA, kCasccutsnum}; // kCasc_etaPos, kCasc_etaNeg, kCasc_etaBac, kCasc_kinkidx,
     enum particles{kK0s, kLam, kXi, kOm, knumpart}; 
     enum signedparticles{kk0s, klam, kalam, kxip, kxim, komp, komm, ksignednumpart}; 
 
@@ -28,6 +28,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //cut values setter
     void SetDefOnly(bool);
     void SetCutVal(bool, bool, int, double);
+    void SetParametricBacBarCosPA(int, float*, float*, int);
 
     //binning setters
     void SetCentbinning(int, int, double*);
@@ -84,13 +85,13 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double fV0_InvMassALam;                                   //!
     double fV0_LeastCRaws;                                    //!
     double fV0_LeastCRawsOvF;                                 //!
+    double fV0_LeastTPCcls;                                   //!
     double fV0_NSigPosProton;                                 //!
     double fV0_NSigPosPion;                                   //!
     double fV0_NSigNegProton;                                 //!
     double fV0_NSigNegPion;                                   //!
     double fV0_DistOverTotP;                                  //!
-    double fV0_NegTOFBunchCrossing;                           //!
-    double fV0_PosTOFBunchCrossing;                           //!
+    double fV0_ITSTOFtracks;                                  //!
     ULong64_t fV0_NegTrackStatus;                             //!
     ULong64_t fV0_PosTrackStatus;                             //!
     double fV0_kinkidx;                                       //!
@@ -111,14 +112,13 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double fCasc_NSigBacKaon;                                 //!
     double fCasc_LeastCRaws;                                  //!
     double fCasc_LeastCRawsOvF;                               //!
+    double fCasc_LeastTPCcls;                                 //!
     double fCasc_InvMassLam;                                  //!
     double fCasc_DcaV0Daught;                                 //!
     double fCasc_V0CosPA;                                     //!
     double fCasc_DcaV0ToPV;                                   //!
     double fCasc_DcaBachToPV;                                 //!
-    double fCasc_PosTOFBunchCrossing;                         //!
-    double fCasc_NegTOFBunchCrossing;                         //!
-    double fCasc_BacTOFBunchCrossing;                         //!
+    double fCasc_ITSTOFtracks;                                //!
     double fCasc_yXi;                                         //!
     double fCasc_yOm;                                         //!
     int fCasc_charge;                                         //!
@@ -134,7 +134,11 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     ULong64_t fCasc_NegTrackStatus;                           //!
     ULong64_t fCasc_PosTrackStatus;                           //!
     ULong64_t fCasc_BacTrackStatus;                           //!
-    double fCasc_BacBarCosPA;                                   //!
+    double fCasc_BacBarCosPA;                                 //!
+
+    bool fisParametricBacBarCosPA;                            //
+    TH1F *fHist_PtBacBarCosPA;                                //
+    int fCentLimit_BacBarCosPA;                               //
 
     //cut values to be set
     double cutval_V0[kV0cutsnum];                             //
@@ -166,8 +170,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 4); 
-    //version 4: introduced MC handeling
+    ClassDef(AliAnalysisTaskStrVsMult, 6); 
+    //version 6: introduced variations for # of TPC PID clusters and # of ITS-TOF tracks
 };
 
 #endif

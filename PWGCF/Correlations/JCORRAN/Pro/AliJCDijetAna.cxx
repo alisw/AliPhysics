@@ -559,6 +559,7 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                 ptpair = dijet.pt();
                 fhistos->fh_dijetInvM[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetInvMTrunc[lCBin][udijet]->Fill(mjj);
+                fhistos->fh_dijetInvMTrunc2[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetPtPair[lCBin][udijet]->Fill(ptpair);
                 dPhi = GetDeltaPhi(dijets.at(udijet).at(0).at(0), dijets.at(udijet).at(0).at(1));
                 fhistos->fh_dijetDeltaPhi[lCBin][udijet]->Fill(dPhi);
@@ -573,6 +574,7 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                 ptpair = dijet.pt();
                 fhistos->fh_dijetInvMDeltaPhiCut[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetInvMDeltaPhiCutTrunc[lCBin][udijet]->Fill(mjj);
+                fhistos->fh_dijetInvMDeltaPhiCutTrunc2[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetPtPairDeltaPhiCut[lCBin][udijet]->Fill(ptpair);
                 dPhi = GetDeltaPhi(dijets.at(udijet).at(1).at(0), dijets.at(udijet).at(1).at(1));
                 fhistos->fh_dijetDeltaPhiWithCut[lCBin][udijet]->Fill(dPhi);
@@ -726,6 +728,7 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
             if(bLeadingMatch && bSubleadingMatch) {
                 fhistos->fh_dijetResponse->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseTrunc->Fill(dijetDetMC.m(), dijet.m());
+                fhistos->fh_dijetResponseTrunc2->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_responseInfo->Fill("Dijet match",1.0);
             } else {
                 fhistos->fh_responseInfo->Fill("Dijet not match",1.0);
@@ -784,6 +787,7 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
             if(bLeadingMatch && bSubleadingMatchDeltaPhi) {
                 fhistos->fh_dijetResponseDeltaPhiCut->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseDeltaPhiCutTrunc->Fill(dijetDetMC.m(), dijet.m());
+                fhistos->fh_dijetResponseDeltaPhiCutTrunc2->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_responseInfo->Fill("Dijet DPhi match",1.0);
             } else {
                 fhistos->fh_responseInfo->Fill("Dijet DPhi not match",1.0);
@@ -850,6 +854,7 @@ double AliJCDijetAna::GetDeltaPhi(fastjet::PseudoJet jet1, fastjet::PseudoJet je
 
 // This should be done after SetSettings.
 void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBins) {
+    cout << "Initing histograms for AliJCDijetAna" << endl;
     histos->fh_info->Fill("Count", 1.0);
     histos->fh_info->Fill("MC", bIsMC);
     for(int i=0; i< nCentBins; i++) histos->fh_info->Fill(Form("Cent bin border %02d",i), nCentBins);

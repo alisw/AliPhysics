@@ -2641,7 +2641,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
 //          kfpLambda.GetMass(massLam, errormassLam);
 //          if (kfpLambda.GetMass()<0.1) {cout << "massLam==" << massLam << endl; cout << "errormassLam==" << errormassLam << endl;}
           fHistMassLambda_M->Fill(kfpLambda_m.GetMass());
-          if ( AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) && TMath::Abs(kfpLambda.GetE())>TMath::Abs(kfpLambda.GetPz()) ) {
+          if ( AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) && TMath::Abs(kfpLambda_m.GetE())>TMath::Abs(kfpLambda_m.GetPz()) ) {
 
             for (Int_t itrkPion2=0; itrkPion2<flag_trkN; itrkPion2++) { // Loop for bachelor in cascade pion-
               if ( trackN[itrkPion2]->GetID()==trkN->GetID() ) continue;
@@ -2787,7 +2787,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
               kfpXiMinus_m.SetNonlinearMassConstraint(massXi);
 //              kfpXiMinus_m.SetMassConstraint(massXi);
               fHistMassXiMinus_M->Fill(kfpXiMinus_m.GetMass());
-              if ( AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) && TMath::Abs(kfpXiMinus.GetE())>TMath::Abs(kfpXiMinus.GetPz()) ) {
+              if ( AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) && TMath::Abs(kfpXiMinus_m.GetE())>TMath::Abs(kfpXiMinus_m.GetPz()) ) {
 
               for (Int_t itrkBP=0; itrkBP<flag_trkP; itrkBP++) { // Loop for first bachelor pion+
                 if ( trackP[itrkBP]->GetID()==trkP->GetID() ) continue;
@@ -2969,7 +2969,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
           kfpAntiLambda_m.SetNonlinearMassConstraint(massLambda);
 //          kfpAntiLambda_m.SetMassConstraint(massLambda);
           fHistMassAntiLambda_M->Fill(kfpAntiLambda.GetMass());
-          if ( AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) && TMath::Abs(kfpAntiLambda.GetE())>TMath::Abs(kfpAntiLambda.GetPz()) ) {
+          if ( AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) && TMath::Abs(kfpAntiLambda_m.GetE())>TMath::Abs(kfpAntiLambda_m.GetPz()) ) {
 
             for (Int_t itrkPion2=0; itrkPion2<flag_trkP; itrkPion2++) { // Loop for bachelor in cascade pion+
               if ( trackP[itrkPion2]->GetID()==trkP->GetID() ) continue;
@@ -3116,7 +3116,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
               kfpXiPlus_m.SetNonlinearMassConstraint(massXi);
 //              kfpXiPlus_m.SetMassConstraint(massXi);
               fHistMassXiPlus_M->Fill(kfpXiPlus_m.GetMass());
-              if ( AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) && TMath::Abs(kfpXiPlus.GetE())>TMath::Abs(kfpXiPlus.GetPz()) ) {
+              if ( AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) && TMath::Abs(kfpXiPlus_m.GetE())>TMath::Abs(kfpXiPlus_m.GetPz()) ) {
               for (Int_t itrkBP=0; itrkBP<flag_trkN; itrkBP++) { // Loop for first bachelor pion-
                 if ( trackN[itrkBP]->GetID()==trkN->GetID() ) continue;
 
@@ -3733,7 +3733,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       KFParticle kfpLambda_m = kfpLambda;
       kfpLambda_m.SetNonlinearMassConstraint(massLambda);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) || TMath::Abs(kfpLambda.GetE()) <= TMath::Abs(kfpLambda.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) || TMath::Abs(kfpLambda_m.GetE()) <= TMath::Abs(kfpLambda_m.GetPz()) ) continue;
 
       KFParticle kfpPionOrKaon;
       if (!fIsAnaOmegac0) kfpPionOrKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, -211); // pion-
@@ -3767,7 +3767,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       if (!fIsAnaOmegac0) kfpXiMinus_m.SetNonlinearMassConstraint(massXi);
       if (fIsAnaOmegac0)  kfpXiMinus_m.SetNonlinearMassConstraint(massOmega);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) || TMath::Abs(kfpXiMinus.GetE()) <= TMath::Abs(kfpXiMinus.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) || TMath::Abs(kfpXiMinus_m.GetE()) <= TMath::Abs(kfpXiMinus_m.GetPz()) ) continue;
 
       for (Int_t itrkBP=0; itrkBP<flag_trkP; itrkBP++) { // Loop for first bachelor pion+
 
@@ -3865,7 +3865,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       KFParticle kfpAntiLambda_m = kfpAntiLambda;
       kfpAntiLambda_m.SetNonlinearMassConstraint(massLambda);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) || TMath::Abs(kfpAntiLambda.GetE()) <= TMath::Abs(kfpAntiLambda.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) || TMath::Abs(kfpAntiLambda_m.GetE()) <= TMath::Abs(kfpAntiLambda_m.GetPz()) ) continue;
 
       KFParticle kfpPionOrKaon;
       if (!fIsAnaOmegac0) kfpPionOrKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, 211); // pion+
@@ -3899,7 +3899,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       if (!fIsAnaOmegac0) kfpXiPlus_m.SetNonlinearMassConstraint(massXi);
       if (fIsAnaOmegac0)  kfpXiPlus_m.SetNonlinearMassConstraint(massOmega);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) || TMath::Abs(kfpXiPlus.GetE()) <= TMath::Abs(kfpXiPlus.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) || TMath::Abs(kfpXiPlus_m.GetE()) <= TMath::Abs(kfpXiPlus_m.GetPz()) ) continue;
 
       for (Int_t itrkBP=0; itrkBP<flag_trkN; itrkBP++) { // Loop for first bachelor pion-
 
@@ -4550,7 +4550,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0 = new TTree(nameoutput, "Xic0 variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0 = new TTree(nameoutput, "Omegac0 variables tree");
-  Int_t nVar = 43;
+  Int_t nVar = 45;
   fVar_Xic0 = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -4603,6 +4603,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   fVarNames[37] = "DCA_Xic0Dau_KF"; // DCA of Xic0's daughters (calculated from KF after Xi mass constraint)
   fVarNames[38] = "DCAxy_XiToPV_KF"; // DCA of Xi to PV in x-y plane (calculated from KF after Xi mass constraint)
   fVarNames[39] = "mass_Omega"; // mass of Omega
+  fVarNames[40] = "chi2topo_Xic0ToPV"; // chi2_topo of Xic0 to PV
+  fVarNames[41] = "PA_Xic0ToPV"; // pointing angle of Xic0 (pointing back to PV)
   }
 
   if (fIsAnaOmegac0) {
@@ -4652,10 +4654,12 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
     fVarNames[37] = "DCA_Omegac0Dau_KF"; // DCA of Omegac0's daughters (calculated from KF after Omega mass constraint)
     fVarNames[38] = "DCAxy_OmegaToPV_KF"; // DCA of Omega to PV in x-y plane (calculated from KF after Omega mass constraint)
     fVarNames[39] = "mass_Xi"; // mass of Xi
+    fVarNames[40] = "chi2topo_Omegac0ToPV"; // chi2_topo of Omegac0 to PV
+    fVarNames[41] = "PA_Omegac0ToPV"; // pointing angle of Omegac0 (pointing back to PV)
   }
-  fVarNames[40] = "weight";
-  fVarNames[41] = "weight_up";
-  fVarNames[42] = "weight_dw";
+  fVarNames[42] = "weight";
+  fVarNames[43] = "weight_up";
+  fVarNames[44] = "weight_dw";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -5342,9 +5346,9 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
       AliAODMCParticle *mcPiFromXic0 = static_cast<AliAODMCParticle*>(mcArray->At(labelPiFromXic0));
       Int_t IndexXic0 = mcPiFromXic0->GetMother();
       AliAODMCParticle *mcXic0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexXic0));
-      fVar_Xic0[40] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
-      fVar_Xic0[41] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
       fVar_Xic0[42] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
+      fVar_Xic0[43] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
+      fVar_Xic0[44] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
     }
   }
 
@@ -5357,6 +5361,10 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
   Float_t massCasc_Rej, err_massCasc_Rej;
   kfpCasc_Rej.GetMass(massCasc_Rej, err_massCasc_Rej);
   fVar_Xic0[39] = massCasc_Rej;
+
+  fVar_Xic0[40] = kfpXic0_PV.GetChi2()/kfpXic0_PV.GetNDF(); // chi2topo_Xic0ToPV
+  Double_t cosPA_Xic0ToPV = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXic0, PV);
+  fVar_Xic0[41] = TMath::ACos(cosPA_Xic0ToPV); // PA_Xic0ToPV
 
   fTree_Xic0->Fill();
 

@@ -167,6 +167,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   void GeneralTrackProperties();
   void AnalyzeRawData();
 
+  void SetMaxFacPtHard(Float_t maxfacpthard){ fMaxFacPtHard = maxfacpthard;} //FK
 
  private:
 
@@ -174,7 +175,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   // ######### CHECK FUNCTIONS
   Bool_t      IsTrackInAcceptance(AliVParticle* track, Bool_t isGen=0);
   Bool_t      IsEventInAcceptance(AliVEvent* event);
-
+  Bool_t      IsOutlier(); //FK// Tests if the event is pthard bin outlier
 
   // ######### STANDARD FUNCTIONS
   void        ExecOnceLocal();
@@ -334,7 +335,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 //   TH2D* fhTTH_CentV0M[kTG][fkTTbins];                    //! counter of semi-inclusive hadron TT versus V0M    centrality
    TH2D* fhTTH_V0Mnorm1[kTG][fkTTbins];                   //! counter of semi-inclusive hadron TT versus V0M/mean
 
-   TH2D* fhTTH_V0Mnorm1_PartLevel[fkTTbins];         //! counter of semi-inclusive hadron TT   V0M/mean particle level
+   TH2D* fhTTH_V0Mnorm1_PartLevel[fkTTbins];           //! counter of semi-inclusive hadron TT   V0M/mean particle level with V0 coincidence
+   TH2D* fhTTH_V0Mnorm_AllMB_PartLevel[fkTTbins];         //! counter of semi-inclusive hadron TT   V0M/mean particle level without V0 coincidence //FF
 
 //   TH3D* fhTTH_3D_V0Mnorm1[kTG][fkTTbins];           //! counter of semi-inclusive hadron l TT in MB versus V0M/mean
 
@@ -354,10 +356,12 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D* fhRecoilJetPtTTH_V0Mnorm1[kTG][fkTTbins];           //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
    TH2D* fhRecoilJetPtTTH_V0Mnorm1_PartLevel[fkTTbins];      //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
    TH2D* fhRecoilJetPtZero_TTH_V0Mnorm1_PartLevel[fkTTbins]; //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean. Jet pT is NOT CORRECTED on RhokT (added by KA)
+   TH2D* fhRecoilJetPtTTH_V0Mnorm_AllMB_PartLevel[fkTTbins]; //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean without V0 coincidence //FF
 
    TH3D* fhRecoilJetPhiTTH_V0Mnorm1[kTG][fkTTbins];                   //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)
    TH3D* fhRecoilJetPhiTTH_V0Mnorm1_PartLevel[fkTTbins];              //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias particle level
    TH3D* fhRecoilJetPtZero_DeltaPhi_TTH_V0Mnorm1_PartLevel[fkTTbins]; //! recoil jet  (V0M/mean , recoil jet pT,  delta phi). Jet pT is NOT CORRECTED on RhokT (added by KA)
+   TH3D* fhRecoilJetPhiTTH_V0Mnorm_AllMB_PartLevel[fkTTbins];         //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias particle level //FF
 
 //   THnSparse *fhRecoilJetTTH_V0Mnorm1[kTG][fkTTbins];      //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
 //   THnSparse *fhRecoilJetTTH_V0Mnorm1_PartLevel[fkTTbins]; //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
@@ -387,16 +391,22 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliFJWrapper*               fFastJetWrapper;          ///< EMB_clus wrapper for fast jet finding
 
 
-   TH3D* fhPtTrkTruePrimGen;                            //! physical primary mc particle eta vs pT  vs V0Mnorm
-   TH3D* fhPtTrkTruePrimRec;                            //! physical primary detector level track eta vs pT vs V0Mnorm
-   TH3D* fhPtTrkSecOrFakeRec;                           //! secondary tracks eta vs pT vs V0Mnorm
+   TH3D* fhPtTrkTruePrimGen;                                  //! physical primary mc particle eta vs pT  vs V0Mnorm
+   TH3D* fhPtTrkTruePrimRec;                                  //! physical primary detector level track eta vs pT vs V0Mnorm
+   TH3D* fhPtTrkSecOrFakeRec;                                 //! secondary tracks eta vs pT vs V0Mnorm
 
-   TH1D* fhJetPtPartLevelCorr;                          //! response matrix normalization spectrum, jet pT corrected on rho
-   TH1D* fhJetPtPartLevelZero;                          //! response matrix normalization spectrum, jet pT is not corrected on rho
+   // 1D Unfolding
+   TH1D* fhJetPtPartLevelCorr;                                //! response matrix normalization spectrum, jet pT corrected on rho
+   TH1D* fhJetPtPartLevelZero;                                //! response matrix normalization spectrum, jet pT is not corrected on rho
+   TH1D* fhRecoilJetPtPartLevelCorr[fkTTbins];                //! response matrix normalization spectrum, jet pT corrected on rho,  built from recoil jets //FF
 
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr;           //! response matrix jet pT corrected on rho
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelZero;           //! response matrix jet pT not corrected on rho
-   TH2D* fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr;     //! response matrix part level jet pT is not corrected on rho, detectot level jet pT is corrected on rho (added by KA)
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr;                 //! response matrix jet pT corrected on rho
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelZero;                 //! response matrix jet pT not corrected on rho
+   TH2D* fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr;           //! response matrix part level jet pT is not corrected on rho, detectot level jet pT is corrected on rho (added by KA)
+   TH2D* fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[fkTTbins]; //! response matrix jet pT corrected on rho built from recoil jets //FF
+
+   TH2D* fhImpurityInclusive_DetJetPtVsPartJetPtCorr;         //! Impurity distribution: matched jets where det. level jet is within |0.5| and part. one is out for inclusive jets //KA
+   TH2D* fhImpurityRecoil_DetJetPtVsPartJetPtCorr[fkTTbins];  //! Impurity distribution: matched jets where det. level jet is within |0.5| and part. one is out for recoil jets    //KA
 
    //2D unfolding
    // Jet pT is CORRECTED on Rhokt (particle and detector levels)
@@ -548,11 +558,14 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    Bool_t fTrigflag[3];                            //! trigger flags
    Int_t  fRunnumber;                              //! run number
 
+   Float_t  fMaxFacPtHard;   // Cut on  pthat events. How many times can be jet pT larger than pthat //FK
+
+
 
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 31); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 34); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }

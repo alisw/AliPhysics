@@ -392,11 +392,11 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
     if(!fFillTreeWithNsigmaPIDOnly) {
       if(fEnabledDet[kITS]) {
         fPIDtree->Branch("dEdxITS",&fdEdxITS,"dEdxITS/s");
-        fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
+        fPIDtree->Branch("ITSclsMap",&fITSclsMap,"ITSclsMap/b");
       }
       if(fEnabledDet[kTPC]) {
         fPIDtree->Branch("dEdxTPC",&fdEdxTPC,"dEdxTPC/s");
-        fPIDtree->Branch("ITSclsMap",&fITSclsMap,"ITSclsMap/b");
+        fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
       }
       if(fEnabledDet[kTOF]) {
         fPIDtree->Branch("ToF",&fToF,"ToF/s");
@@ -636,7 +636,6 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     }
 
     //PID
-    track->SetTOFsignalTunedOnData(100000); // force tune-on-data to have latest development of tail parametrisation in old AODs
     bool isDetOk[kNMaxDet] = {false,false,false};
     if (fPIDresp->CheckPIDStatus(AliPIDResponse::kITS,track) == AliPIDResponse::kDetPidOk) {
       fTrackInfoMap &= ~kHasNoITS;

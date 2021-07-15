@@ -90,6 +90,7 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() :
   fHistoNbVsNc(0),
   fHistOriginPrompt(0),
   fHistOriginFeeddown(0),
+  fHistPtBDecLenBXYFeeddown(0),
   fHistMotherID(0),
   fHistDSpecies(0),
   fHistBSpecies(0),
@@ -116,6 +117,9 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() :
   fPtMin(0.),
   fPtMax(40.),
   fNPtBins(40),
+  fPtMinB(0.),
+  fPtMaxB(40.),
+  fNPtBinsB(40),
   fYMin(-2.),
   fYMax(2.),
   fNYBins(40),
@@ -129,6 +133,10 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() :
     fHistYPtFeeddownAllDecay[i]=0x0;
     fHistYPtPrompt[i]=0x0;
     fHistYPtFeeddown[i]=0x0;
+    fHistPtDDecLenPrompt[i]=0x0;
+    fHistPtDDecLenXYPrompt[i]=0x0;
+    fHistPtDPtBDecLenFeeddown[i]=0x0;
+    fHistPtDPtBDecLenXYFeeddown[i]=0x0;
   }
   for(Int_t i=0; i<2; i++){
     fHistYPtD0byDecChannel[i]=0x0;
@@ -226,11 +234,11 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistYPtPrompt[3] = new TH2F("hyptDsprompt","Ds - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
   fHistYPtPrompt[4] = new TH2F("hyptLcprompt","Lc - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
 
-  fHistBYPtAllDecay[0] = new TH2F("hyptB0AllDecay","B0 - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
-  fHistBYPtAllDecay[1] = new TH2F("hyptBplusAllDecay","Bplus - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
-  fHistBYPtAllDecay[2] = new TH2F("hyptBstarAllDecay","Bstar - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
-  fHistBYPtAllDecay[3] = new TH2F("hyptBsAllDecay","Bs - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
-  fHistBYPtAllDecay[4] = new TH2F("hyptLbAllDecay","LB - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[0] = new TH2F("hyptB0AllDecay","B0 - All",fNPtBinsB, fPtMinB, fPtMaxB, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[1] = new TH2F("hyptBplusAllDecay","Bplus - All",fNPtBinsB, fPtMinB, fPtMaxB, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[2] = new TH2F("hyptBstarAllDecay","Bstar - All",fNPtBinsB, fPtMinB, fPtMaxB, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[3] = new TH2F("hyptBsAllDecay","Bs - All",fNPtBinsB, fPtMinB, fPtMaxB, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[4] = new TH2F("hyptLbAllDecay","LB - All",fNPtBinsB, fPtMinB, fPtMaxB, fNYBins, fYMin, fYMax);
 
   fHistYPtAllDecay[0] = new TH2F("hyptD0AllDecay","D0 - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
   fHistYPtAllDecay[1] = new TH2F("hyptDplusAllDecay","Dplus - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
@@ -257,6 +265,14 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistYPtFeeddown[3] = new TH2F("hyptDsfeedown","Ds - Feeddown",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
   fHistYPtFeeddown[4] = new TH2F("hyptLcfeedown","Lc - Feeddown",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
 
+  TString pnams[5]={"D0","Dplus","Dstar","Ds","Lc"};
+  for(Int_t j=0; j<5; j++){
+    fHistPtDDecLenPrompt[j] = new TH2F(Form("h%sPtDDecLenPrompt",pnams[j].Data()),"; p_{T}(D) ; Dec Len (cm)",fNPtBins, fPtMin, fPtMax,500,0.,5.);
+    fHistPtDDecLenXYPrompt[j] = new TH2F(Form("h%sPtDDecLenXYPrompt",pnams[j].Data()),"; p_{T}(D) ; Dec Len XY (cm)",fNPtBins, fPtMin, fPtMax,500,0.,5.);
+    fHistPtDPtBDecLenFeeddown[j] = new TH3F(Form("h%sPtDPtBDecLenFeeddown",pnams[j].Data()),"; p_{T}(D) ; p_{T} (B) ; Dec Len (cm)",fNPtBins, fPtMin, fPtMax,100,0.,100.,500,0.,5.);
+    fHistPtDPtBDecLenXYFeeddown[j] = new TH3F(Form("h%sPtDPtBDecLenXYFeeddown",pnams[j].Data()),"; p_{T}(D) ; p_{T} (B) ; Dec Len XY (cm)",fNPtBins, fPtMin, fPtMax,100,0.,100.,500,0.,5.);
+  }
+  
   for(Int_t ih=0; ih<5; ih++){
     fHistBYPtAllDecay[ih]->SetMinimum(0);
     fOutput->Add(fHistBYPtAllDecay[ih]);
@@ -270,6 +286,10 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
     fOutput->Add(fHistYPtPrompt[ih]);
     fHistYPtFeeddown[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtFeeddown[ih]);
+    fOutput->Add(fHistPtDDecLenPrompt[ih]);
+    fOutput->Add(fHistPtDDecLenXYPrompt[ih]);
+    fOutput->Add(fHistPtDPtBDecLenFeeddown[ih]);
+    fOutput->Add(fHistPtDPtBDecLenXYFeeddown[ih]);    
   }
 
   fHistYPtD0byDecChannel[0] = new TH2F("hyptD02","D0 - 2prong",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
@@ -298,6 +318,8 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistOriginFeeddown=new TH1F("hOriginFeeddown","",100,0.,0.5);
   fHistOriginFeeddown->SetMinimum(0);
   fOutput->Add(fHistOriginFeeddown);
+  fHistPtBDecLenBXYFeeddown = new TH2F("hPtBDecLenBXYFeeddown","; p_{T} (B) ; Dec Len XY (cm)",100,0.,100.,500,0.,5.);
+  fOutput->Add(fHistPtBDecLenBXYFeeddown);
   fHistMotherID=new TH1F("hMotherID","",1000,-1.5,998.5);
   fHistMotherID->SetMinimum(0);
   fOutput->Add(fHistMotherID);
@@ -685,7 +707,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
         }
       }
       Float_t rapid = -999.;
-      if (energy != TMath::Abs(pz))
+      if (TMath::Abs(energy-TMath::Abs(pz))>0.001)
       {
         rapid = 0.5 * TMath::Log((energy + pz) / (energy - pz));
       }
@@ -807,17 +829,43 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       Double_t disty = mcPart->Yv() - mcVtx[1];
       Double_t distz = mcPart->Zv() - mcVtx[2];
       Double_t distToVert = TMath::Sqrt(distx * distx + disty * disty + distz * distz);
+      Double_t distToVertXY = TMath::Sqrt(distx * distx + disty * disty);
+      AliVParticle* mcDau0 = nullptr;
+      Int_t iDau0=mcPart->GetDaughterFirst();
+      if(iDau0>=0){
+	if(isESD) mcDau0 = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iDau0));
+	else mcDau0 = dynamic_cast<AliAODMCParticle *>(arrayMC->At(iDau0));
+      }
+      Double_t declen3D=-9999.;
+      Double_t declenXY=-9999.;
+      if(mcDau0){
+	Double_t decdistx= mcDau0->Xv() - mcVtx[0];
+	Double_t decdisty  = mcDau0->Yv() - mcVtx[1];
+	Double_t decdistz = mcDau0->Zv() - mcVtx[2];
+	declen3D=TMath::Sqrt(decdistx * decdistx + decdisty * decdisty + decdistz * decdistz);
+	declenXY=TMath::Sqrt(decdistx * decdistx + decdisty * decdisty);
+      }
       fHistMotherID->Fill(mcPart->GetMother());
       Int_t iFromB = isESD ? AliVertexingHFUtils::CheckOrigin(mcEvent, dynamic_cast<AliMCParticle*>(mcPart), fSearchUpToQuark) : AliVertexingHFUtils::CheckOrigin(arrayMC, dynamic_cast<AliAODMCParticle*>(mcPart), fSearchUpToQuark);
       if (iFromB == 4)
       {
         fHistYPtPromptAllDecay[iSpecies]->Fill(pt, rapid);
         fHistOriginPrompt->Fill(distToVert);
+	if(mcDau0 && TMath::Abs(rapid)<0.8){
+	  fHistPtDDecLenPrompt[iSpecies]->Fill(pt,declen3D);
+	  fHistPtDDecLenXYPrompt[iSpecies]->Fill(pt,declenXY);
+	}
       }
       else if (iFromB == 5)
       {
+	Double_t ptB= isESD ? AliVertexingHFUtils::GetBeautyMotherPt(mcEvent, dynamic_cast<AliMCParticle*>(mcPart)) : AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, dynamic_cast<AliAODMCParticle*>(mcPart));
         fHistYPtFeeddownAllDecay[iSpecies]->Fill(pt, rapid);
         fHistOriginFeeddown->Fill(distToVert);
+	if(TMath::Abs(rapid)<0.8) fHistPtBDecLenBXYFeeddown->Fill(ptB,distToVertXY);
+	if(mcDau0 && TMath::Abs(rapid)<0.8){
+	  fHistPtDPtBDecLenFeeddown[iSpecies]->Fill(pt,ptB,declen3D);
+	  fHistPtDPtBDecLenXYFeeddown[iSpecies]->Fill(pt,ptB,declenXY);
+	}
       }
 
       if (iPart < 0)

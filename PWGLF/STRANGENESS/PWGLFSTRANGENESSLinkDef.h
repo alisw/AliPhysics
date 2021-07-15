@@ -34,6 +34,7 @@
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMCRun2+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2+;
+#pragma link C++ class AliTaskLeadingMC+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRun2pPb+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb+;
 #pragma link C++ class AliRunningCascadeCandidate+;
@@ -73,8 +74,13 @@
 #pragma link C++ class AliAnalysisCorrelationEventCollection+;
 #pragma link C++ class AliAnalysisTaskCorrelationhhK0s+;
 #pragma link C++ class AliAnalysisTaskCorrelationhCasc+;
+#pragma link C++ class AliAnalysisTaskCorrelationhCascDATA+;
 #pragma link C++ class AliAnalysisTaskStrVsMult+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_BumpStudies+;
+#pragma link C++ class AliAnalysisTaskStrVsMult_PileUpStudies+;
+#pragma link C++ class AliAnalysisTaskStrangeCascadesTriggerAODRun2+;
+#pragma link C++ class AliAnalysisTaskStrangeCascadesTriggerAODRun2MC+;
+#pragma link C++ class AliAnalysisTaskV0multspec+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif
@@ -85,6 +91,10 @@
 #pragma link C++ class AliAnalysisTaskStrangenessRatios+;
 #pragma link C++ class MiniCascade+;
 #pragma link C++ class MiniCascadeMC+;
+#pragma link C++ class MiniLambda+;
+#pragma link C++ class MiniLambdaMC+;
+#pragma link C++ class V0filler+;
+#pragma link C++ class Cascfiller+;
 //#pragma link C++ class std::vector<FindableHyperTriton<2>>+;
 //#pragma link C++ class std::vector<FindableHyperTriton<3>>+;
 #endif

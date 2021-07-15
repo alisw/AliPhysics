@@ -14,7 +14,7 @@
 //        Authors                                                     //
 //                                                                    //
 //        Cristiane Jahnke        (cristiane.jahnke@cern.ch)          //
-//        27 February, 2021                                           //
+//                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
 class TH1F;
@@ -35,11 +35,18 @@ class AliSelectNonHFE;
 class AliEventPoolManager;
 class AliEventPool;
 class TObjArray;
+//trigger simulation
+//for trigger simulation
+class AliEmcalTriggerDecisionContainer;
+class AliAnalysisTaskEmcalTriggerSelection;
+class AliEmcalTriggerMakerTask;
+
 
 //______________________________________________________________________
 //Library
 #include "AliAnalysisTaskSE.h"
 #include "AliLog.h"
+//#include "AliEmcalTriggerDecisionContainer.h"
 //______________________________________________________________________
 
 //______________________________________________________________________
@@ -59,6 +66,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	//void SetHFECuts(AliHFEcuts * const cuts) {fCuts = cuts;};
 	
 	void SetMCanalysis() {fIsMC = kTRUE;};
+    void SetNewClustersCut() {fIs_NewClustersCut = kTRUE;};
+    void DoTriggerSimulation() {fIsTriggerSimulation = kTRUE;};
 	
     void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
 	
@@ -74,6 +83,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	void SetUseTender() { fUseTender=kTRUE;};
     void SetMultiAnalysis() {fMultiAnalysis=kTRUE;};
     void SetSysHistos() {fIs_sys=kTRUE;};
+    
+    void SetNewEventSelection(){fnew_event_selection=kTRUE;};
     
     void Set_Fill_ESparse() {fFill_ESparse=kTRUE;};
     void Set_Fill_ESparseTPC() {fFill_ESparseTPC=kTRUE;};
@@ -155,9 +166,12 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 
 
     Bool_t				fIsMC;
+    Bool_t              fIs_NewClustersCut;
+    Bool_t              fIsTriggerSimulation;
 	Bool_t				fUseTender;
     Bool_t              fMultiAnalysis;
     Bool_t              fIs_sys;
+    Bool_t              fnew_event_selection;
     Bool_t              fFill_ESparse;
     Bool_t              fFill_ESparseTPC;
     Bool_t              fFill_MSparse;
@@ -204,16 +218,21 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     Bool_t               fEMCEG2DG2;
 	
 //DCal threshold separation
-	Bool_t				fEMCDG1;
-	Bool_t				fEMCDG2;
+	Bool_t				  fEMCDG1;
+	Bool_t				  fEMCDG2;
     
     Bool_t                fIsTrack1Emcal;
     Bool_t                fIsTrack1Dcal;
     Bool_t                fIsTrack2Emcal;
     Bool_t                fIsTrack2Dcal;
     
-    Bool_t              fIsEMCalCls;
-    Bool_t              fIsDCalCls;
+    Bool_t                fIsEMCalCls;
+    Bool_t                fIsDCalCls;
+    
+    Bool_t                    feg1;
+    Bool_t                    fdg1;
+    Bool_t                    feg2;
+    Bool_t                    fdg2;
     
     //SPD corrections
     TProfile2D*        fMultEstimatorAvg[1];
@@ -271,7 +290,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 
 //Vertex selection
-	Float_t					fZvtx;
+	Float_t					   fZvtx;
+    Float_t                    fXvtx;
+    Float_t                    fYvtx;
+    
     
 //global multiplicity values
     Double_t                    fV0Mult;
@@ -309,7 +331,49 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     
 	
 	TH2F				**fTPCnsigma_EoverP;
+    TH2F                **fHist_energy_pT;
 	TH1F				**fECluster;
+    
+    TH1F                *fECluster_mb;
+    TH1F                *fECluster_eg1;
+    TH1F                *fECluster_eg2;
+    TH1F                *fECluster_dg1;
+    TH1F                *fECluster_dg2;
+    
+    TH1F                *fECluster_ET_mb;
+    TH1F                *fECluster_ET_eg1;
+    TH1F                *fECluster_ET_eg2;
+    TH1F                *fECluster_ET_dg1;
+    TH1F                *fECluster_ET_dg2;
+    
+    //SM
+    TH2F                *fECluster_mb_SM;
+    TH2F                *fECluster_eg1_SM;
+    TH2F                *fECluster_eg2_SM;
+    TH2F                *fECluster_dg1_SM;
+    TH2F                *fECluster_dg2_SM;
+    TH2F                *fECluster_deg1_SM;
+    TH2F                *fECluster_deg2_SM;
+    
+    TH2F                *fECluster_ET_mb_SM;
+    TH2F                *fECluster_ET_eg1_SM;
+    TH2F                *fECluster_ET_eg2_SM;
+    TH2F                *fECluster_ET_dg1_SM;
+    TH2F                *fECluster_ET_dg2_SM;
+    TH2F                *fECluster_ET_deg1_SM;
+    TH2F                *fECluster_ET_deg2_SM;
+    
+    TH2F                *fPt_mb_SM;
+    TH2F                *fPt_eg1_SM;
+    TH2F                *fPt_eg2_SM;
+    TH2F                *fPt_dg1_SM;
+    TH2F                *fPt_dg2_SM;
+    TH2F                *fPt_deg1_SM;
+    TH2F                *fPt_deg2_SM;
+    
+    
+    
+    
 	TH1F				**fECluster_emcal;
 	TH1F				**fECluster_dcal;
 	
@@ -337,6 +401,24 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	TH1F				**fTracksPt;
 	TH1F				**fTracksQAPt;
+    
+    TH1F                *fhTPCCrossedRows_before;
+    TH1F                *fhTPCCrossedRows_after;
+    TH1F                *fhITSNcls_before;
+    TH1F                *fhITSNcls_after;
+    TH1F                *fhDCAxy_before;
+    TH1F                *fhDCAxy_after;
+    TH1F                *fhDCAz_before;
+    TH1F                *fhDCAz_after;
+    TH1F                *fhTPCchi2overNcls_before;
+    TH1F                *fhTPCchi2overNcls_after;
+    TH1F                *fhITSchi2overNcls_before;
+    TH1F                *fhITSchi2overNcls_after;
+    TH1F                *fh_pt_before;
+    TH1F                *fh_pt_after;
+
+    
+    
     TH1F                **fTracksMCPt;
 	
 	TH1F				**fVtxZ;
@@ -389,6 +471,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	//KF
 	TH2F				*fHist_InvMass_pt_ULS_KF;
+    
+    TH2F                *fHist_InvMass_pt_ULS_KF_eg1;
+    TH2F                *fHist_InvMass_pt_ULS_KF_eg2;
+    
 	TH2F				*fHist_InvMass_pt_LS_KF;
     
     TH2F                *fHist_Correlation_leg1_emcal_leg2_not;
@@ -512,6 +598,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH1F                *fPtMCparticle_EMCalpid_leg2;
     
     TH1F                *fPtMCparticle_EMCal_TM_e_from_JPsi;
+    TH1F                *fPtMCparticle_EMCal_TM_e_from_JPsi_eg1;
+    TH1F                *fPtMCparticle_EMCal_TM_e_from_JPsi_eg2;
     TH1F                *fPtMCparticle_EMCal_TM_electrons;
     TH1F                *fPtMCparticle_EMCalpid_leg1_e_from_JPsi;
     TH1F                *fPtMCparticle_EMCalpid_leg2_e_from_JPsi;
@@ -532,8 +620,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH1F                *fPtMCparticleAll_trueJPsi_pT_weight_prompt;
     
 	TH1F				*fPtMCparticleReco_e_from_JPsi;
-    
- 
+    TH1F                *fPtMCparticleReco_e_from_JPsi_eg1;
+    TH1F                *fPtMCparticleReco_e_from_JPsi_eg2;
     
 	TH1F				*fPtMCparticle_Total_e_from_JPsi;
     TH1F                *fPtMCparticle_Total_e_from_JPsi_sameMother;
@@ -541,6 +629,9 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH1F                *fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother;
     TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT;
     TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother;
+    TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1;
+    TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2;
+    
     TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight;
     TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt;
 	

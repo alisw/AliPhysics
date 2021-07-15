@@ -1,26 +1,31 @@
 AliGenerator* CreatePythia8Gen( TString lTune          = "pp",
                                 Float_t e_cms       = 13000.,
-                                Float_t fgAmplitude = 4.0
+                                Float_t fgAmplitude = 4.0,
+                                Float_t fpTcut      = 2.0,
+                                TString flimitMom   = "on"
                                 );
 
 AliGenerator* AddCustomMCGenPythia8Shoving(   TString lTune          = "pp-shoving",
                                        Float_t e_cms       = 13000.,
-                                       Float_t fgAmplitude = 4.0
+                                       Float_t fgAmplitude = 4.0,
+                                       Float_t fpTcut      = 2.0,
+                                       TString flimitMom   = "on"
                                        ) {
     
     
     gSystem->Load("liblhapdf");
     
     AliGenerator *genP  = NULL;
-    genP                = CreatePythia8Gen(lTune.Data(), e_cms, fgAmplitude);
+    genP                = CreatePythia8Gen(lTune.Data(), e_cms, fgAmplitude, fpTcut, flimitMom);
     
     return genP;
 }
 
 AliGenerator* CreatePythia8Gen( TString lTune,
                                Float_t e_cms,
-                               Float_t fgAmplitude
-                               ) {
+                               Float_t fgAmplitude,
+                               Float_t fpTcut,
+                               TString flimitMom) {
     
     gSystem->Load("libpythia6");
     gSystem->Load("libEGPythia6");
@@ -65,8 +70,8 @@ AliGenerator* CreatePythia8Gen( TString lTune,
         (AliPythia8::Instance())->ReadString("Ropewalk:doShoving = on"); //
         (AliPythia8::Instance())->ReadString("Ropewalk:doFlavour = off"); //
         (AliPythia8::Instance())->ReadString("Ropewalk:rCutOff = 10.0"); //
-        (AliPythia8::Instance())->ReadString("Ropewalk:limitMom = on"); //
-        (AliPythia8::Instance())->ReadString(Form("Ropewalk:pTcut = %lf",2.0)); //
+        (AliPythia8::Instance())->ReadString(Form("Ropewalk:limitMom = %s",flimitMom.Data())); //
+        (AliPythia8::Instance())->ReadString(Form("Ropewalk:pTcut = %lf",fpTcut)); //
         (AliPythia8::Instance())->ReadString("Ropewalk:r0 = 0.41"); //
         (AliPythia8::Instance())->ReadString("Ropewalk:m0 = 0.2"); //
         (AliPythia8::Instance())->ReadString(Form("Ropewalk:gAmplitude = %lf",fgAmplitude)); //

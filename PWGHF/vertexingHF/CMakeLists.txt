@@ -60,6 +60,7 @@ set(SRCS
   AliRDHFCutsB0toDStarPi.cxx
   AliRDHFCutsBPlustoD0Pi.cxx
   AliRDHFCutsD0toKpi.cxx
+  AliRDHFCutsD0toKpiBDT.cxx
   AliRDHFCutsJpsitoee.cxx
   AliRDHFCutsDplustoKpipi.cxx
   AliRDHFCutsDplustoK0spi.cxx
@@ -174,6 +175,8 @@ set(SRCS
   AliAnalysisTaskSEXic0Semileptonic.cxx
   AliAnalysisTaskSELc2pKs0fromKFP.cxx
   AliAnalysisTaskCheckAODdAODMatching.cxx
+  AliAnalysisTaskSEXicPlusToXi2PifromKFP.cxx
+  AliAnalysisTaskSEXiccPPToXicPlusPiPlusfromKFP.cxx
 )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)

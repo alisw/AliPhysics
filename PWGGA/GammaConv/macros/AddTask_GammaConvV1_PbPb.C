@@ -3002,6 +3002,17 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("13530a13","0dm00009f9730000dge0404000","5143103100000000"); //
     cuts.AddCutPCM("15910a13","0dm00009f9730000dge0404000","5143103100000000"); //
 
+  } else if (trainConfig == 671){ //std on the fly V0 finder
+    cuts.AddCutPCM("10130a13","00200009f9730000dge0400000","0143103100000000"); //
+    cuts.AddCutPCM("11310a13","00200009f9730000dge0400000","0143103100000000"); //
+    cuts.AddCutPCM("13530a13","00200009f9730000dge0400000","0143103100000000"); //
+    cuts.AddCutPCM("15910a13","00200009f9730000dge0400000","0143103100000000"); //
+  } else if (trainConfig == 672){ //std offline V0 finder
+    cuts.AddCutPCM("10130a13","10200009f9730000dge0400000","0143103100000000"); //
+    cuts.AddCutPCM("11310a13","10200009f9730000dge0400000","0143103100000000"); //
+    cuts.AddCutPCM("13530a13","10200009f9730000dge0400000","0143103100000000"); //
+    cuts.AddCutPCM("15910a13","10200009f9730000dge0400000","0143103100000000"); //
+
     // continuation LHC18qr_pass3
     } else if (trainConfig == 680){ // == 668
     cuts.AddCutPCM("13430d23","0dm00009f9730b00dge0404000","0143103100000000"); //

@@ -82,9 +82,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         StudyMCConversionRadius(Float_t  pt, Bool_t isolated, Int_t iSM, 
                                        Float_t m02, Int_t     mcTag, Int_t label) ;
   
-  void         StudyClustersInCone  (AliCaloTrackParticleCorrelation * aodParticle) ;
+  void         StudyClustersInCone  (AliCaloTrackParticleCorrelation * aodParticle,
+                                     Float_t coneptsum, Int_t centbin) ;
   
-  void         StudyTracksInCone    (AliCaloTrackParticleCorrelation * aodParticle) ;
+  void         StudyTracksInCone    (AliCaloTrackParticleCorrelation * aodParticle,
+                                     Float_t coneptsum, Int_t centbin) ;
   
   void         StudyClustersUEInCone(AliCaloTrackParticleCorrelation * aodParticle) ;
   
@@ -173,6 +175,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnStudyRCutInCone()             { fStudyRCutInCone = kTRUE ; }
   void         SwitchOffStudyRCutInCone()            { fStudyRCutInCone = kFALSE; }
   
+  void         SwitchOnEmbedPrimaryToUE()            { fEmbedUEInPrimMC = kTRUE ; }
+  void         SwitchOffEmbedPrimaryToUE()           { fEmbedUEInPrimMC = kFALSE; }
+
   void         SetNPtCutInCone(Int_t n)              { if(n < 19) fNPtCutsInCone = n ; }
   void         SetMinPtCutInConeAt(Int_t i,Float_t l){ if(i <= fNPtCutsInCone) fMinPtCutInCone[i] = l; }  
   void         SetMaxPtCutInConeAt(Int_t i,Float_t l){ if(i <= fNPtCutsInCone) fMaxPtCutInCone[i] = l; }
@@ -245,6 +250,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Int_t    fNumberMCParticleCases;                    ///< Number of histograms per MC particle type, maximum is fgkNmcPrimTypes
   
+  Int_t    fEmbedUEInPrimMC;                          ///< In case of embedding, activate the embedding of the generated MC particles into data
+
   Bool_t   fStudyPtCutInCone;                         ///<  Activate study of track/cluster min pT on sum of pT in cone
   Int_t    fNPtCutsInCone;                            ///<  Number of track/cluster min pT cut to test in cone for sum pT calculation.
   Float_t  fMinPtCutInCone[20];                       ///<  List of track/cluster min pT cut to test in cone for sum pT calculation.
@@ -298,7 +305,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fStudyExoticTrigger;                       ///<  Fill histograms with track and cluster pT when the trigger is exotic
   Int_t    fNExoCutInCandidate;                       ///<  Number of exoticity cuts in cluster selection to test in cone for sum pT calculation.
   Float_t  fExoCutInCandidate[20];                    ///<  List of exoticity cuts in cluster selection to test in cone for sum pT calculation.
-  
+
   TLorentzVector fMomentum;                           //!<! Temporary vector, avoid creation per event.
   TLorentzVector fMomIso;                             //!<! Temporary vector, avoid creation per event.
   TLorentzVector fMomDaugh1;                          //!<! Temporary vector, avoid creation per event.
@@ -348,6 +355,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH3F *   fhPtM02SumPtConeCharged;                    //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, charged in cone
   TH3F *   fhPtM02SumPtConeChargedMC[fgkNmcTypes];     //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, per MC particle, charged in cone
   
+  TH3F *   fhSpherocityM02SumPtCone;                   //!<!  ABCD Spherocity vs sum(ET)+sum(pT) cone vs M02, pT > 10 GeV
+  TH3F *   fhSpherocityM02SumPtConeCharged;            //!<!  ABCD Spherocity vs sum(ET)+sum(pT) cone vs M02 charged in cone, pT > 10 GeV
+  TH3F *   fhSpherocityMinPtM02SumPtCone[4];           //!<!  ABCD Spherocity for different pt cuts vs sum(ET)+sum(pT) cone vs M02, pT > 10 GeV
+  TH3F *   fhSpherocityMinPtM02SumPtConeCharged[4];    //!<!  ABCD Spherocity for different pt cuts vs sum(ET)+sum(pT) charged in conevs M02, pT > 10 GeV
+
   /// ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone vs centrality
   TH3F **  fhPtM02SumPtConeCent;                       //![GetNCentrBin()] 
   
@@ -362,6 +374,17 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   /// Different centrality bins and MC particle type origin
   TH3F **  fhPtM02SumPtConeChargedCentMC;              //![GetNCentrBin()*fNumberMCParticleCases] 
   
+  /// ABCD TH3F histogram Spherocity, Shower Shape and sum(ET)+sum(pT) cone vs centrality pt > 10 GeV
+  TH3F **  fhSpherocityM02SumPtConeCent;               //![GetNCentrBin()]
+
+  /// ABCD TH3F histogram Spherocity, Shower Shape and sum(ET)+sum(pT) cone vs centrality, charged particles in cone, pt > 10 GeV
+  TH3F **  fhSpherocityM02SumPtConeChargedCent;        //![GetNCentrBin()]
+
+  /// ABCD TH3F histogram Spherocity, for different min pT cut, Shower Shape and sum(ET)+sum(pT) cone vs centrality pt > 10 GeV
+  TH3F **  fhSpherocityMinPtM02SumPtConeCent;          //![GetNCentrBin()*4]
+
+  /// ABCD TH3F histogram Spherocity, for different min pT cut, Shower Shape and sum(ET)+sum(pT) cone vs centrality pt > 10 GeV
+  TH3F **  fhSpherocityMinPtM02SumPtConeChargedCent;   //![GetNCentrBin()*4]
 
   TH2F *   fhConeSumPtM02Cut[2] ;                      //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters
   TH2F *   fhConeSumPtM02CutMC[fgkNmcTypes][2] ;       //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters, per MC particle
@@ -686,7 +709,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F *   fhPtTrackInConeDCA[3];                        //!<! track DCAxy,z,constrained vs track pT, in cone with trigger pT > 10 GeV
   TH2F *   fhPtTrackInPerpConeDCA[3];                    //!<! track DCAxy,z,constrained vs track pT, in perpendicular cone trigger pT > 10 GeV
-   
+
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;
     
@@ -694,7 +717,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,51) ;
+  ClassDef(AliAnaParticleIsolation,52) ;
   /// \endcond
 
 } ;

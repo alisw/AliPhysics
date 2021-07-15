@@ -1016,7 +1016,7 @@ void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus)
 /// \param absID: cell absolute ID naumber
 /// \param cells: total list of cells in calo
 /// \param bc: bunch crossing number
-/// \param cellMinEn: minimum cell energy in sum of cells
+/// \param cellMinEn: minimum cell energy in sum of cells (only PHOS, AliEMCALRecoUtils has its own setting)
 ///
 //______________________________________________________________________________________
 Float_t AliCalorimeterUtils::GetECross(Int_t absID, AliVCaloCells* cells, Int_t bc, 
@@ -1025,8 +1025,7 @@ Float_t AliCalorimeterUtils::GetECross(Int_t absID, AliVCaloCells* cells, Int_t 
   if ( cells->IsEMCAL() ) 
   {
     Double_t tcell = cells->GetCellTime(absID);
- 
-    return fEMCALRecoUtils->GetECross(absID,tcell,cells,bc,cellMinEn,useWeight,energy);
+    return fEMCALRecoUtils->GetECross(absID,tcell,cells,bc,useWeight,energy);
   }
   else // PHOS
   { 

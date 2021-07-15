@@ -1,3 +1,6 @@
+#ifndef __VDM_UTILITIES_HH__
+#define __VDM_UTILITIES_HH__
+
 //-------------------------------------------------------
 // this header gathers functions that are used somewhere
 // else in the code
@@ -13,12 +16,12 @@
 Double_t GetXS( Double_t Ax, Double_t Ay, Double_t R00x, Double_t R00y, Double_t N1, Double_t N2)
 // compute the visible cross sections given the areas, the rates and the intensities
 {
-  const Double_t kF = 1e+25;   // conversion factor from mm^2 to mili-barns
+	const Double_t kF = 1e+25;   // conversion factor from mm^2 to mili-barns
 
-  Double_t Qx = R00x/Ax;
-  Double_t Qy = R00y/Ay;
-  Double_t R00 = 0.5*(R00x+R00y);
-  return kF*R00/(g_kLHCFreq*N1*N2*Qx*Qy); 
+	Double_t Qx = R00x/Ax;
+	Double_t Qy = R00y/Ay;
+	Double_t R00 = 0.5*(R00x+R00y);
+	return kF*R00/(g_kLHCFreq*N1*N2*Qx*Qy); 
 }
 
 //-------------------------------------------------------
@@ -32,18 +35,17 @@ Double_t GetXSerr(Double_t Ax, Double_t Axe, Double_t Ay, Double_t Aye,
 // as well as the corresponding errors
   
 {
-  // cross section
-  Double_t xs = GetXS(Ax,Ay,R00x,R00y,N1,N2);
-  // uncertainty from rates
-  Double_t F = (1.0/R00x)+(1.0/R00y);
-  Double_t DeltaF_2 = (((R00xe*R00xe)/(R00x*R00x*R00x*R00x)) +
-		       ((R00ye*R00ye)/(R00y*R00y*R00y*R00y)))/(F*F);
-  // uncertainty from areas
-  Double_t DeltaAx_2 = (Axe*Axe)/(Ax*Ax);
-  Double_t DeltaAy_2 = (Aye*Aye)/(Ay*Ay);
-  
-  // total uncertainty
-  return xs*TMath::Sqrt(DeltaAx_2+DeltaAy_2+DeltaF_2);
+	// cross section
+	Double_t xs = GetXS(Ax,Ay,R00x,R00y,N1,N2);
+	// uncertainty from rates
+	Double_t F = (1.0/R00x)+(1.0/R00y);
+	Double_t DeltaF_2 = (((R00xe*R00xe)/(R00x*R00x*R00x*R00x)) + ((R00ye*R00ye)/(R00y*R00y*R00y*R00y)))/(F*F);
+	// uncertainty from areas
+	Double_t DeltaAx_2 = (Axe*Axe)/(Ax*Ax);
+	Double_t DeltaAy_2 = (Aye*Aye)/(Ay*Ay);
+
+	// total uncertainty
+	return xs*TMath::Sqrt(DeltaAx_2+DeltaAy_2+DeltaF_2);
 }
 
 
@@ -53,20 +55,19 @@ Double_t GetXSerr(Double_t Ax, Double_t Axe, Double_t Ay, Double_t Aye,
 
 void Set_pointers_to_input_files_and_trees()
 {
-  // set pointers to files
-  g_vdm_File = new TFile(g_Input_vdm_File);
-  g_vdm_DDL2_File = new TFile(g_Input_vdm_DDL2_File);
-  g_vdm_BPTX_File = new TFile(g_Input_vdm_BPTX_File);
+	// set pointers to files
+	g_vdm_File = new TFile(g_Input_vdm_File);
+	g_vdm_DDL2_File = new TFile(g_Input_vdm_DDL2_File);
+	g_vdm_BPTX_File = new TFile(g_Input_vdm_BPTX_File);
 
-  // set pointers to trees
-  if (g_vdm_File) g_vdm_Tree = (TTree *) g_vdm_File->Get("VdM");
-  if (g_vdm_File) g_vdm_DDL2_Tree = (TTree *) g_vdm_DDL2_File->Get("DDL2");
-  if (g_vdm_File) g_vdm_BPTX_Tree = (TTree *) g_vdm_BPTX_File->Get("VdM-BPTX");
+	// set pointers to trees
+	if (g_vdm_File) g_vdm_Tree = (TTree *) g_vdm_File->Get("VdM");
+	if (g_vdm_File) g_vdm_DDL2_Tree = (TTree *) g_vdm_DDL2_File->Get("DDL2");
+	if (g_vdm_File) g_vdm_BPTX_Tree = (TTree *) g_vdm_BPTX_File->Get("VdM-BPTX");
 
-  // add trees as friends of main tree
-  g_vdm_Tree->AddFriend(g_vdm_BPTX_Tree);
-  g_vdm_Tree->AddFriend(g_vdm_DDL2_Tree);
-  
+	// add trees as friends of main tree
+	g_vdm_Tree->AddFriend(g_vdm_BPTX_Tree);
+	g_vdm_Tree->AddFriend(g_vdm_DDL2_Tree);
 }
 
 //-------------------------------------------------------
@@ -159,7 +160,6 @@ void Find_start_and_end_of_scans()
 //-------------------------------------------------------
 
 void FindIdicesOfScanStartEnd(Int_t scan, Int_t *indices)
-
 {
    // get separation files
   char file_name[kg_string_size];
@@ -201,7 +201,6 @@ void FindIdicesOfScanStartEnd(Int_t scan, Int_t *indices)
 //-------------------------------------------------------
 
 Int_t FindIdxBetweenScans(Int_t scan)
-
 {
   // get separation files
   char file_name[kg_string_size];
@@ -440,44 +439,126 @@ Double_t RatePileUpErr(Double_t r, Double_t re , TF1 *fPU)
 
 Int_t GetNumberInteractingBunchCrossings()
 {
-  TTree *Tree = (TTree *) g_vdm_File->Get("BCinteracting");
-  return Tree->GetEntries();
+	TTree *Tree = (TTree *) g_vdm_File->Get("BCinteracting");
+	return Tree->GetEntries();
 }
 
 //-------------------------------------------------------
 void GetBucketInfo(Int_t *BucketA, Int_t *BucketC)
 {
-  // get tree and set branches
-  Int_t lhca;
-  Int_t lhcc;
-  TTree *Tree = (TTree *) g_vdm_File->Get("BCinteracting");
-  TBranch *Branch2 = Tree->GetBranch("lhcA");
-  Branch2->SetAddress(&lhca);
-  TBranch *Branch3 = Tree->GetBranch("lhcC");
-  Branch3->SetAddress(&lhcc);
+	// get tree and set branches
+	Int_t lhca;
+	Int_t lhcc;
+	TTree *Tree = (TTree *) g_vdm_File->Get("BCinteracting");
 
-  // loop over tree to fill in info
-  Int_t nBC = Tree->GetEntries();
-  for (Int_t i=0;i<nBC;i++) {
-    Tree->GetEntry(i);
-    BucketA[i]=lhca;
-    BucketC[i]=lhcc;
-  }
+	TBranch *Branch2 = Tree->GetBranch("lhcA");
+	Branch2->SetAddress(&lhca);
+	TBranch *Branch3 = Tree->GetBranch("lhcC");
+	Branch3->SetAddress(&lhcc);
+
+	// loop over tree to fill in info
+	Int_t nBC = Tree->GetEntries();
+	for (Int_t i=0; i<nBC; i++)
+	{
+		Tree->GetEntry(i);
+		BucketA[i] = lhca;
+		BucketC[i] = lhcc;
+	}
 }
 
 //-------------------------------------------------------
 void GetBunchIndices(Int_t *bunches)
 {
-  // get tree and set branches
-  Int_t bc;
-  TTree *Tree = (TTree *) g_vdm_File->Get("BCinteracting");
-  TBranch *Branch = Tree->GetBranch("BC");
-  Branch->SetAddress(&bc);
+	// get tree and set branches
+	Int_t bc;
+	TTree *Tree = (TTree *) g_vdm_File->Get("BCinteracting");
+	TBranch *Branch = Tree->GetBranch("BC");
+	Branch->SetAddress(&bc);
 
-  // loop over tree to fill in info
-  Int_t nBC = Tree->GetEntries();
-  for (Int_t i=0;i<nBC;i++) {
-    Tree->GetEntry(i);
-    bunches[i]=bc;
-  }
+	// loop over tree to fill in info
+	Int_t nBC = Tree->GetEntries();
+	for (Int_t i=0; i<nBC; i++)
+	{
+		Tree->GetEntry(i);
+		bunches[i] = bc;
+	}
+	return;
 }
+
+
+//-------------------------------------------------------
+// new code from Ingrid
+
+Int_t GetNumberOfUsedInteractingBunchCrossings()
+{
+	TTree *Tree = (TTree *) g_vdm_File->Get("BCinteracting");
+	if (!(g_vdm_Fill == 6012)) return Tree->GetEntries();
+	else return Tree->GetEntries() - 8;
+}
+
+//-------------------------------------------------------
+// new code from Ingrid
+Bool_t UseBunchCrossing(Int_t i)
+{
+	if (!(g_vdm_Fill == 6012)) return kTRUE;
+
+	Int_t nIBC = GetNumberInteractingBunchCrossings();
+	Int_t bunches[nIBC];
+	GetBunchIndices(bunches);
+	cout << "bunch indice: " << i << " bunch number: " << bunches[i] << endl;
+
+	if (bunches[i]== 942 || bunches[i]==1022 || bunches[i]==1142 || bunches[i]==1655 ||
+		bunches[i]==1695 || bunches[i]==1735 || bunches[i]==1953 || bunches[i]==2033) return kFALSE;
+	else return kTRUE;
+}
+
+//-------------------------------------------------------
+// Mask out bad bunch crossings, Fill by Fill
+
+void SetBCBlacklists(bool Verbose = false)
+{
+	vector<int> Fills = {4937, 6012, 6864}; //Add fill number here
+
+	//Assign index to a Fill: automated - don't touch
+	for (unsigned int a=0; a<Fills.size(); a++)
+	{
+		bcBlacklist[a].clear(); //Reset
+		FillToI.insert(pair<int, int>(Fills[a], a));
+		IToFill.insert(pair<int, int>(a, Fills[a]));
+		if (a >= sizeof(bcBlacklist)/sizeof(bcBlacklist[0]))
+		{
+			cout <<"SetBCBlacklists:: exceeding pre-defined array size! Stop." <<endl;
+			return;
+		}
+	}
+
+	//Prepare bunch crossing blacklist, for each Fill
+	//bcBlacklist[ FillToI[4937] ] = {9999};
+	bcBlacklist[ FillToI[6012] ] = {942, 1022, 1142, 1655, 1695, 1735, 1953, 2033};
+	//bcBlacklist[ FillToI[6864] ] = {9999};
+
+	if (Verbose)
+	{
+		set<int>::iterator b;
+		for (unsigned int a=0; a<Fills.size(); a++)
+		for (b=bcBlacklist[a].begin(); b!=bcBlacklist[a].end(); b++)
+		{
+			cout <<Form("Preparing blacklist... Fill %i - bc %i", Fills[a], *b) <<endl;
+		}
+	}
+
+	return;
+}
+
+bool OnBCBlacklist(int Fill, int bc, bool Verbose = false)
+{
+	const int FillIndex = FillToI[Fill];
+    if (bcBlacklist[FillIndex].find(bc) != bcBlacklist[FillIndex].end())
+	{
+		if (Verbose) cout <<Form("BC %i in the Fill %i is on the blacklist!", bc, Fill) <<endl;
+		return true;
+	}
+    else return false;
+}
+
+#endif

@@ -39,7 +39,8 @@ class AliMCSpectraWeights : public TNamed {
         kKaon = 2,
         kSigmaMinus = 3,
         kSigmaPlus = 4,
-        kRest = 5
+        kRest = 5,
+        kLambda = 6
     }; /*!< enumerator of different particle types. */
     enum TaskState {
         kAllEmpty = 0,

@@ -34,7 +34,7 @@ AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
     //Do we have an MC handler?
     Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
     std::cout << "hasMC = " << hasMC << std::endl;
-    if(hasMC) kMixing = 0;
+    //if(hasMC) kMixing = 0;
     
     //=== Create the main dielectron task =============================
     AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDielectron_mb");

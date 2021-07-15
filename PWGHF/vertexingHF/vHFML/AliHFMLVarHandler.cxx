@@ -124,6 +124,8 @@ void AliHFMLVarHandler::AddCommonDmesonVarBranches() {
     fTreeVar->Branch("dca", &fDCA);
     if(fEnableBMotherPt)
         fTreeVar->Branch("pt_B", &fPtBMother);
+    if(fEnableBMotherPDG)
+        fTreeVar->Branch("pdg_B", &fPDGBMother);
 }
 
 //________________________________________________________________
@@ -134,7 +136,7 @@ void AliHFMLVarHandler::AddSingleTrackBranches() {
 
 //________________________________________________________________
 void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF) {
-    if(fPidOpt > kBayesAndNsigmaCombPID) {
+    if(fPidOpt > kBayesAndNsigmaDetAndNsigmaCombPID) {
         AliWarning("Wrong PID setting!");
         return;
     }
@@ -145,7 +147,7 @@ void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool 
     TString detName[knMaxDet4Pid] = {"TPC", "TOF"};
     TString rawPidName[knMaxDet4Pid] = {"dEdxTPC", "ToF"};
 
-    if(fPidOpt == kBayesPID || fPidOpt == kBayesAndNsigmaCombPID) {
+    if(fPidOpt == kBayesPID || fPidOpt == kBayesAndNsigmaCombPID || kBayesAndNsigmaDetAndNsigmaCombPID) {
         //initialise AliPIDCombined object for Bayesian PID
         if(!fPIDCombined)
             fPIDCombined = new AliPIDCombined();
@@ -166,7 +168,7 @@ void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool 
                 }
             }
         }
-        if(fPidOpt == kNsigmaCombPID || fPidOpt == kNsigmaDetAndCombPID || fPidOpt == kBayesAndNsigmaCombPID) {
+        if(fPidOpt == kNsigmaCombPID || fPidOpt == kNsigmaDetAndCombPID || fPidOpt == kBayesAndNsigmaCombPID || fPidOpt == kBayesAndNsigmaDetAndNsigmaCombPID) {
             for(unsigned int iPartHypo = 0; iPartHypo < knMaxHypo4Pid; iPartHypo++) {
                 if(!useHypo[iPartHypo]) 
                     continue;
@@ -190,7 +192,7 @@ void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool 
                 fTreeVar->Branch(Form("start_time_res_prong%d", iProng), &fStartTimeResProng[iProng]);
             }
         }
-        if(fPidOpt == kBayesPID || fPidOpt == kBayesAndNsigmaCombPID) {
+        if(fPidOpt == kBayesPID || fPidOpt == kBayesAndNsigmaCombPID || kBayesAndNsigmaDetAndNsigmaCombPID) {
             for(unsigned int iPartHypo = 0; iPartHypo < knMaxHypo4Pid; iPartHypo++) {
                 if(!useHypo[iPartHypo]) 
                     continue;
@@ -261,7 +263,7 @@ bool AliHFMLVarHandler::SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidh
                         pidhf->GetnSigmaTOF(prongtracks[iProng], parthypo[iPartHypo], nSigmaTOF);
                         sig[iProng][kTOF][iPartHypo] = nSigmaTOF;
                     }
-                    if((fPidOpt == kNsigmaCombPID || fPidOpt == kNsigmaDetAndCombPID || fPidOpt == kBayesAndNsigmaCombPID) && useTPC && useTOF) {
+                    if((fPidOpt == kNsigmaCombPID || fPidOpt == kNsigmaDetAndCombPID || fPidOpt == kBayesAndNsigmaCombPID || kBayesAndNsigmaDetAndNsigmaCombPID) && useTPC && useTOF) {
                         sigComb[iProng][iPartHypo] = AliVertexingHFUtils::CombineNsigmaTPCTOF(sig[iProng][kTPC][iPartHypo], 
                                                                                               sig[iProng][kTOF][iPartHypo]);
                     }
@@ -288,7 +290,7 @@ bool AliHFMLVarHandler::SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidh
                 }
             }
         }
-        if(fPidOpt == kBayesPID || fPidOpt == kBayesAndNsigmaCombPID) {
+        if(fPidOpt == kBayesPID || fPidOpt == kBayesAndNsigmaCombPID || kBayesAndNsigmaDetAndNsigmaCombPID) {
             double probTPCTOF[AliPID::kSPECIES] = {-1.};
             AliPIDResponse* pidrespo = pidhf->GetPidResponse(); //FIXME: TPC postcalibrations for Pb-Pb not implemented in AliPIDResponse
             unsigned int detUsed = fPIDCombined->ComputeProbabilities(prongtracks[iProng], pidrespo, probTPCTOF);
@@ -427,6 +429,23 @@ bool AliHFMLVarHandler::SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidh
                         continue;
                     fPIDNsigmaVector[iProng][kCombTPCTOF][iPartHypo] = sigComb[iProng][iPartHypo];
                     fPIDNsigmaVector[iProng][kBayesTPCTOF][iPartHypo] = probBayes[iProng][iPartHypo];
+                }
+            }
+            break;
+        }
+        case kBayesAndNsigmaDetAndNsigmaCombPID:
+        {
+            for(unsigned int iProng = 0; iProng < fNProngs; iProng++) {
+                for(unsigned int iPartHypo = 0; iPartHypo < knMaxHypo4Pid; iPartHypo++) {
+                    if(!useHypo[iPartHypo]) 
+                        continue;
+                    fPIDNsigmaVector[iProng][kCombTPCTOF][iPartHypo] = sigComb[iProng][iPartHypo];
+                    fPIDNsigmaVector[iProng][kBayesTPCTOF][iPartHypo] = probBayes[iProng][iPartHypo];
+                    for(int iDet = kTPC; iDet <= kTOF; iDet++) {
+                        if(!useDet[iDet]) 
+                            continue;
+                        fPIDNsigmaVector[iProng][iDet][iPartHypo] = sig[iProng][iDet][iPartHypo];
+                    }
                 }
             }
             break;

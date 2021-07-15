@@ -6,6 +6,8 @@
 
 
 #include <TH1F.h>
+#include <TH2F.h>
+#include <TH3F.h>
 #include <TTree.h>
 #include <TList.h>
 #include <AliAnalysisDataSlot.h>
@@ -40,8 +42,11 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
-  fJetRadius(0.2),
-
+  fJetRadius(0),
+  JetChargeK(0.5),
+  MotherFraction(0.8),
+  JetMidPt(40),
+  JetHighPt(80),
 
   fhJetPt(0x0),
   fhJetPhi(0x0),
@@ -80,7 +85,74 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCOtherHigh(0x0),
   JCUnmatchedHigh(0x0),
 
+  fhParticleJetPt(0x0),
+  fhParticleJetPhi(0x0),
+  fhParticleJetEta(0x0),
 
+  JCParticle(0x0),
+
+  JCParticleUp(0x0),
+  JCParticleDown(0x0),
+  JCParticleGluon(0x0),
+  JCParticleOther(0x0),
+  JCParticleUnmatched(0x0),
+
+  JCParticleLow(0x0),
+
+  JCParticleUpLow(0x0),
+  JCParticleDownLow(0x0),
+  JCParticleGluonLow(0x0),
+  JCParticleOtherLow(0x0),
+  JCParticleUnmatchedLow(0x0),
+
+
+  JCParticleMid(0x0),
+
+  JCParticleUpMid(0x0),
+  JCParticleDownMid(0x0),
+  JCParticleGluonMid(0x0),
+  JCParticleOtherMid(0x0),
+  JCParticleUnmatchedMid(0x0),
+
+  JCParticleHigh(0x0),
+
+  JCParticleUpHigh(0x0),
+  JCParticleDownHigh(0x0),
+  JCParticleGluonHigh(0x0),
+  JCParticleOtherHigh(0x0),
+  JCParticleUnmatchedHigh(0x0),
+
+  PtComparison(0x0),
+  JCComparison(0x0),
+  JCComparisonUp(0x0),
+  JCComparisonDown(0x0),
+  JCComparisonGluon(0x0),
+  JCComparisonOther(0x0),
+  JCComparisonUnmatched(0x0),
+
+  Pt2DCompare(0x0),
+  JC2DCompare(0x0),
+  JC2DCompareUp(0x0),
+  JC2DCompareDown(0x0),
+  JC2DCompareGluon(0x0),
+  JC2DCompareOther(0x0),
+  JC2DCompareUnmatched(0x0),
+
+  PtComparisonVsJCDiff(0x0),
+  JCComparisonVsPtDiff(0x0),
+  JCComparisonVsPtDiffUp(0x0),
+  JCComparisonVsPtDiffDown(0x0),
+  JCComparisonVsPtDiffGluon(0x0),
+  JCComparisonVsPtDiffOther(0x0),
+  JCComparisonVsPtDiffUnmatched(0x0),
+
+
+  //ParticlePtAndJC(0x0),
+  //ParticlePtAndJCUp(0x0),
+  //ParticlePtAndJCDown(0x0),
+  //ParticlePtAndJCGluon(0x0),
+  //ParticlePtAndJCOther(0x0),
+  //ParticlePtAndJCUnmatched(0x0),
 
   fTreeJets(0)
 {
@@ -96,7 +168,11 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
-  fJetRadius(0.2),
+  fJetRadius(0),
+  JetChargeK(0.5),
+  MotherFraction(0.8),
+  JetMidPt(40),
+  JetHighPt(80),
 
 
   fhJetPt(0x0),
@@ -110,7 +186,6 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCGluon(0x0),
   JCOther(0x0),
   JCUnmatched(0x0),
-
 
   JCLow(0x0),
 
@@ -137,6 +212,80 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCOtherHigh(0x0),
   JCUnmatchedHigh(0x0),
 
+  fhParticleJetPt(0x0),
+  fhParticleJetPhi(0x0),
+  fhParticleJetEta(0x0),
+
+  JCParticle(0x0),
+
+  JCParticleUp(0x0),
+  JCParticleDown(0x0),
+  JCParticleGluon(0x0),
+  JCParticleOther(0x0),
+  JCParticleUnmatched(0x0),
+
+  JCParticleLow(0x0),
+
+  JCParticleUpLow(0x0),
+  JCParticleDownLow(0x0),
+  JCParticleGluonLow(0x0),
+  JCParticleOtherLow(0x0),
+  JCParticleUnmatchedLow(0x0),
+
+
+  JCParticleMid(0x0),
+
+  JCParticleUpMid(0x0),
+  JCParticleDownMid(0x0),
+  JCParticleGluonMid(0x0),
+  JCParticleOtherMid(0x0),
+  JCParticleUnmatchedMid(0x0),
+
+  JCParticleHigh(0x0),
+
+  JCParticleUpHigh(0x0),
+  JCParticleDownHigh(0x0),
+  JCParticleGluonHigh(0x0),
+  JCParticleOtherHigh(0x0),
+  JCParticleUnmatchedHigh(0x0),
+
+  PtComparison(0x0),
+  JCComparison(0x0),
+  JCComparisonUp(0x0),
+  JCComparisonDown(0x0),
+  JCComparisonGluon(0x0),
+  JCComparisonOther(0x0),
+  JCComparisonUnmatched(0x0),
+
+  Pt2DCompare(0x0),
+  JC2DCompare(0x0),
+  JC2DCompareUp(0x0),
+  JC2DCompareDown(0x0),
+  JC2DCompareGluon(0x0),
+  JC2DCompareOther(0x0),
+  JC2DCompareUnmatched(0x0),
+
+  PtComparisonVsJCDiff(0x0),
+  PtComparisonVsJCDiffUp(0x0),
+  PtComparisonVsJCDiffDown(0x0),
+  PtComparisonVsJCDiffGluon(0x0),
+  PtComparisonVsJCDiffOther(0x0),
+  PtComparisonVsJCDiffUnmatched(0x0),
+
+  JCComparisonVsPtDiff(0x0),
+  JCComparisonVsPtDiffUp(0x0),
+  JCComparisonVsPtDiffDown(0x0),
+  JCComparisonVsPtDiffGluon(0x0),
+  JCComparisonVsPtDiffOther(0x0),
+  JCComparisonVsPtDiffUnmatched(0x0),
+
+
+  //ParticlePtAndJC(0x0),
+  //ParticlePtAndJCUp(0x0),
+  //ParticlePtAndJCDown(0x0),
+  //ParticlePtAndJCGluon(0x0),
+  //ParticlePtAndJCOther(0x0),
+  //ParticlePtAndJCUnmatched(0x0),
 
 
   fTreeJets(0)
@@ -160,7 +309,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
  void AliAnalysisTaskJetChargeFlavourTemplates::UserCreateOutputObjects()
 {
   // Echo jet radius
-  Info("TaskJets","Using jet radius R=%f",fJetRadius);
+  //Info("TaskJets","Using jet radius R=%f",fJetRadius);
 
   // Create user output.
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
@@ -180,37 +329,34 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
 
   fTreeBranchName[3]  = "JetCharge";
 
-  fTreeBranchName[4]  = "LowJetCharge";
+  fTreeBranchName[4] = "JCUp";
+  fTreeBranchName[5] = "JCDown";
+  fTreeBranchName[6] = "JCGluon";
+  fTreeBranchName[7] = "JCOther";
+  fTreeBranchName[8] = "JCUnmatched";
 
-  fTreeBranchName[5]  = "MidJetCharge";
+  fTreeBranchName[9]  = "ParticlePt";
+  fTreeBranchName[10]  = "ParticlePhi";
+  fTreeBranchName[11]  = "ParticleEta";
 
-  fTreeBranchName[6]  = "HighJetCharge";
+  fTreeBranchName[12]  = "ParticleJetCharge";
 
-  fTreeBranchName[7] = "JCUp";
-  fTreeBranchName[8] = "Low_JCUp";
-  fTreeBranchName[9] = "Mid_JCUp";
-  fTreeBranchName[10] = "High_JCUp";
+  fTreeBranchName[13] = "ParticleJCUp";
+  fTreeBranchName[14] = "ParticleJCDown";
+  fTreeBranchName[15] = "ParticleJCGluon";
+  fTreeBranchName[16] = "ParticleJCOther";
+  fTreeBranchName[17] = "ParticleJCUnmatched";
 
-  fTreeBranchName[11] = "JCDown";
-  fTreeBranchName[12] = "Low_JCDown";
-  fTreeBranchName[13] = "Mid_JCDown";
-  fTreeBranchName[14] = "High_JCDown";
+  fTreeBranchName[18] = "PtComparison";
+  fTreeBranchName[19] = "JCComparison";
+  fTreeBranchName[20] = "JCComparisonUp";
+  fTreeBranchName[21] = "JCComparisonDown";
+  fTreeBranchName[22] = "JCComparisonGluon";
+  fTreeBranchName[23] = "JCComparisonOther";
+  fTreeBranchName[24] = "JCComparisonUnmatched";
 
 
-  fTreeBranchName[15] = "JCGluon";
-  fTreeBranchName[16] = "Low_JCGluon";
-  fTreeBranchName[17] = "Mid_JCGluon";
-  fTreeBranchName[18] = "High_JCGluon";
 
-  fTreeBranchName[19] = "JCOther";
-  fTreeBranchName[20] = "Low_JCOther";
-  fTreeBranchName[21] = "Mid_JCOther";
-  fTreeBranchName[22] = "High_JCOther";
-
-  fTreeBranchName[23] = "JCUnmatched";
-  fTreeBranchName[24] = "Low_JCUnmatched";
-  fTreeBranchName[25] = "Mid_JCUnmatched";
-  fTreeBranchName[26] = "High_JCUnmatched";
 
   // Associate the branches
   for(Int_t iBranch=0; iBranch < nBranchesJetChargeFlavourTemplates; iBranch++){
@@ -234,66 +380,202 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   fOutput->Add(fhRunNumberCounter);
   */
 
-  JC= new TH1F("JC", "Jet Charge", 25, -3, 3);
+  JC= new TH1F("JC", "Jet Charge", 250, -3, 3);
   fOutput->Add(JC);
 
-  JCUp= new TH1F("JCUp", "Jet Charge Up", 25, -3, 3);
+  JCUp= new TH1F("JCUp", "Jet Charge Up", 250, -3, 3);
   fOutput->Add(JCUp);
-  JCDown= new TH1F("JCDown", "Jet Charge Down", 25, -3, 3);
+  JCDown= new TH1F("JCDown", "Jet Charge Down", 250, -3, 3);
   fOutput->Add(JCDown);
-  JCGluon= new TH1F("JCGluon", "Jet Charge Gluon", 25, -3, 3);
+  JCGluon= new TH1F("JCGluon", "Jet Charge Gluon", 250, -3, 3);
   fOutput->Add(JCGluon);
-  JCOther= new TH1F("JCOther", "Jet Charge Other", 25, -3, 3);
+  JCOther= new TH1F("JCOther", "Jet Charge Other", 250, -3, 3);
   fOutput->Add(JCOther);
-  JCUnmatched= new TH1F("JCUnmatched", "Jet Charge Unmatched", 25, -3, 3);
+  JCUnmatched= new TH1F("JCUnmatched", "Jet Charge Unmatched", 250, -3, 3);
   fOutput->Add(JCUnmatched);
 
 
 
 
-  JCLow= new TH1F("JCLow", "Jet Charge Low Pt ", 25, -3, 3);
+  JCLow= new TH1F("JCLow", "Jet Charge Low Pt ", 250, -3, 3);
   fOutput->Add(JCLow);
 
-  JCUpLow= new TH1F("JCUpLow", "Jet Charge Up Low Pt ", 25, -3, 3);
+  JCUpLow= new TH1F("JCUpLow", "Jet Charge Up Low Pt ", 250, -3, 3);
   fOutput->Add(JCUpLow);
-  JCDownLow= new TH1F("JCDownLow", "Jet Charge Down Low Pt", 25, -3, 3);
+  JCDownLow= new TH1F("JCDownLow", "Jet Charge Down Low Pt", 250, -3, 3);
   fOutput->Add(JCDownLow);
-  JCGluonLow= new TH1F("JCGluonLow", "Jet Charge Gluon Low Pt", 25, -3, 3);
+  JCGluonLow= new TH1F("JCGluonLow", "Jet Charge Gluon Low Pt", 250, -3, 3);
   fOutput->Add(JCGluonLow);
-  JCOtherLow= new TH1F("JCOtherLow", "Jet Charge Other Low Pt", 25, -3, 3);
+  JCOtherLow= new TH1F("JCOtherLow", "Jet Charge Other Low Pt", 250, -3, 3);
   fOutput->Add(JCOtherLow);
-  JCUnmatchedLow= new TH1F("JCUnmatchedLow", "Jet Charge Unmatched Low Pt", 25, -3, 3);
+  JCUnmatchedLow= new TH1F("JCUnmatchedLow", "Jet Charge Unmatched Low Pt", 250, -3, 3);
   fOutput->Add(JCUnmatchedLow);
 
 
 
-  JCMid= new TH1F("JCMid", "Jet Charge Mid Pt ", 25, -3, 3);
+  JCMid= new TH1F("JCMid", "Jet Charge Mid Pt ", 250, -3, 3);
   fOutput->Add(JCMid);
 
-  JCUpMid= new TH1F("JCUpMid", "Jet Charge Up Mid Pt ", 25, -3, 3);
+  JCUpMid= new TH1F("JCUpMid", "Jet Charge Up Mid Pt ", 250, -3, 3);
   fOutput->Add(JCUpMid);
-  JCDownMid= new TH1F("JCDownMid", "Jet Charge Down Mid Pt", 25, -3, 3);
+  JCDownMid= new TH1F("JCDownMid", "Jet Charge Down Mid Pt", 250, -3, 3);
   fOutput->Add(JCDownMid);
-  JCGluonMid= new TH1F("JCGluonMid", "Jet Charge Gluon Mid Pt", 25, -3, 3);
+  JCGluonMid= new TH1F("JCGluonMid", "Jet Charge Gluon Mid Pt", 250, -3, 3);
   fOutput->Add(JCGluonMid);
-  JCOtherMid= new TH1F("JCOtherMid", "Jet Charge Other Mid Pt", 25, -3, 3);
+  JCOtherMid= new TH1F("JCOtherMid", "Jet Charge Other Mid Pt", 250, -3, 3);
   fOutput->Add(JCOtherMid);
-  JCUnmatchedMid= new TH1F("JCUnmatchedMid", "Jet Charge Unmatched Mid Pt", 25, -3, 3);
+  JCUnmatchedMid= new TH1F("JCUnmatchedMid", "Jet Charge Unmatched Mid Pt", 250, -3, 3);
   fOutput->Add(JCUnmatchedMid);
 
-  JCHigh= new TH1F("JCHigh", "Jet Charge High Pt ", 25, -3, 3);
+  JCHigh= new TH1F("JCHigh", "Jet Charge High Pt ", 250, -3, 3);
   fOutput->Add(JCHigh);
 
-  JCUpHigh= new TH1F("JCUpHigh", "Jet Charge Up High Pt ", 25, -3, 3);
+  JCUpHigh= new TH1F("JCUpHigh", "Jet Charge Up High Pt ", 250, -3, 3);
   fOutput->Add(JCUpHigh);
-  JCDownHigh= new TH1F("JCDownHigh", "Jet Charge Down High Pt", 25, -3, 3);
+  JCDownHigh= new TH1F("JCDownHigh", "Jet Charge Down High Pt", 250, -3, 3);
   fOutput->Add(JCDownHigh);
-  JCGluonHigh= new TH1F("JCGluonHigh", "Jet Charge Gluon High Pt", 25, -3, 3);
+  JCGluonHigh= new TH1F("JCGluonHigh", "Jet Charge Gluon High Pt", 250, -3, 3);
   fOutput->Add(JCGluonHigh);
-  JCOtherHigh= new TH1F("JCOtherHigh", "Jet Charge Other High Pt", 25, -3, 3);
+  JCOtherHigh= new TH1F("JCOtherHigh", "Jet Charge Other High Pt", 250, -3, 3);
   fOutput->Add(JCOtherHigh);
-  JCUnmatchedHigh= new TH1F("JCUnmatchedHigh", "Jet Charge Unmatched High Pt", 25, -3, 3);
+  JCUnmatchedHigh= new TH1F("JCUnmatchedHigh", "Jet Charge Unmatched High Pt", 250, -3, 3);
   fOutput->Add(JCUnmatchedHigh);
+
+  fhParticleJetPt= new TH1F("fhParticleJetPt", "Jet Pt",1500,-0.5,149.5 );
+  fOutput->Add(fhParticleJetPt);
+  fhParticleJetPhi= new TH1F("fhParticleJetPhi", "Jet Phi",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
+  fOutput->Add(fhParticleJetPhi);
+  fhParticleJetEta= new TH1F("fhParticleJetEta", "Jet Eta",100,-2,2);
+  fOutput->Add(fhParticleJetEta);
+
+
+// Add Particle Jet Charge
+
+  JCParticle= new TH1F("JCParticle", "Jet Charge", 250, -3, 3);
+  fOutput->Add(JCParticle);
+
+  JCParticleUp= new TH1F("JCParticleUp", "Jet Charge Up", 250, -3, 3);
+  fOutput->Add(JCParticleUp);
+  JCParticleDown= new TH1F("JCParticleDown", "Jet Charge Down", 250, -3, 3);
+  fOutput->Add(JCParticleDown);
+  JCParticleGluon= new TH1F("JCParticleGluon", "Jet Charge Gluon", 250, -3, 3);
+  fOutput->Add(JCParticleGluon);
+  JCParticleOther= new TH1F("JCParticleOther", "Jet Charge Other", 250, -3, 3);
+  fOutput->Add(JCParticleOther);
+  JCParticleUnmatched= new TH1F("JCParticleUnmatched", "Jet Charge Unmatched", 250, -3, 3);
+  fOutput->Add(JCParticleUnmatched);
+
+
+
+  JCParticleLow= new TH1F("JCParticleLow", "Jet Charge Low Pt ", 250, -3, 3);
+  fOutput->Add(JCParticleLow);
+
+  JCParticleUpLow= new TH1F("JCParticleUpLow", "Jet Charge Up Low Pt ", 250, -3, 3);
+  fOutput->Add(JCParticleUpLow);
+  JCParticleDownLow= new TH1F("JCParticleDownLow", "Jet Charge Down Low Pt", 250, -3, 3);
+  fOutput->Add(JCParticleDownLow);
+  JCParticleGluonLow= new TH1F("JCParticleGluonLow", "Jet Charge Gluon Low Pt", 250, -3, 3);
+  fOutput->Add(JCParticleGluonLow);
+  JCParticleOtherLow= new TH1F("JCParticleOtherLow", "Jet Charge Other Low Pt", 250, -3, 3);
+  fOutput->Add(JCParticleOtherLow);
+  JCParticleUnmatchedLow= new TH1F("JCParticleUnmatchedLow", "Jet Charge Unmatched Low Pt", 250, -3, 3);
+  fOutput->Add(JCParticleUnmatchedLow);
+
+
+
+  JCParticleMid= new TH1F("JCParticleMid", "Jet Charge Mid Pt ", 250, -3, 3);
+  fOutput->Add(JCParticleMid);
+
+  JCParticleUpMid= new TH1F("JCParticleUpMid", "Jet Charge Up Mid Pt ", 250, -3, 3);
+  fOutput->Add(JCParticleUpMid);
+  JCParticleDownMid= new TH1F("JCParticleDownMid", "Jet Charge Down Mid Pt", 250, -3, 3);
+  fOutput->Add(JCParticleDownMid);
+  JCParticleGluonMid= new TH1F("JCParticleGluonMid", "Jet Charge Gluon Mid Pt", 250, -3, 3);
+  fOutput->Add(JCParticleGluonMid);
+  JCParticleOtherMid= new TH1F("JCParticleOtherMid", "Jet Charge Other Mid Pt", 250, -3, 3);
+  fOutput->Add(JCParticleOtherMid);
+  JCParticleUnmatchedMid= new TH1F("JCParticleUnmatchedMid", "Jet Charge Unmatched Mid Pt", 250, -3, 3);
+  fOutput->Add(JCParticleUnmatchedMid);
+
+  JCParticleHigh= new TH1F("JCParticleHigh", "Jet Charge High Pt ", 250, -3, 3);
+  fOutput->Add(JCParticleHigh);
+
+  JCParticleUpHigh= new TH1F("JCParticleUpHigh", "Jet Charge Up High Pt ", 250, -3, 3);
+  fOutput->Add(JCParticleUpHigh);
+  JCParticleDownHigh= new TH1F("JCParticleDownHigh", "Jet Charge Down High Pt", 250, -3, 3);
+  fOutput->Add(JCParticleDownHigh);
+  JCParticleGluonHigh= new TH1F("JCParticleGluonHigh", "Jet Charge Gluon High Pt", 250, -3, 3);
+  fOutput->Add(JCParticleGluonHigh);
+  JCParticleOtherHigh= new TH1F("JCParticleOtherHigh", "Jet Charge Other High Pt", 250, -3, 3);
+  fOutput->Add(JCParticleOtherHigh);
+  JCParticleUnmatchedHigh= new TH1F("JCParticleUnmatchedHigh", "Jet Charge Unmatched High Pt", 250, -3, 3);
+  fOutput->Add(JCParticleUnmatchedHigh);
+
+  //Add Comparison Histograms
+
+  PtComparison= new TH1F("PtComparison", "Pt Diffrence",250,-2,2 );
+  fOutput->Add(PtComparison);
+  JCComparison = new TH1F("JCComparison", "Jet Charge Comparison", 250, -3, 3);
+  fOutput->Add(JCComparison);
+
+  JCComparisonUp = new TH1F("JCComparisonUp", "Jet Charge Comparison Up", 250, -3, 3);
+  fOutput->Add(JCComparisonUp);
+  JCComparisonDown = new TH1F("JCComparisonDown", "Jet Charge Comparison Down", 250, -3, 3);
+  fOutput->Add(JCComparisonDown);
+  JCComparisonGluon = new TH1F("JCComparisonGluon", "Jet Charge Comparison Gluon", 250, -3, 3);
+  fOutput->Add(JCComparisonGluon);
+  JCComparisonOther = new TH1F("JCComparisonOther", "Jet Charge Comparison Other", 250, -3, 3);
+  fOutput->Add(JCComparisonOther);
+  JCComparisonUnmatched = new TH1F("JCComparisonUnmatched", "Jet Charge Comparison Unmatched", 250, -3, 3);
+  fOutput->Add(JCComparisonUnmatched);
+
+  Pt2DCompare = new TH2F("Pt2DCompare", "Pt 2D Particle vs Detector",1500,-0.5,149.5 ,1500,-0.5,149.5);
+  fOutput->Add(Pt2DCompare);
+  JC2DCompare = new TH2F("JC2DCompare", "JC 2D Particle vs Detector",250, -3, 3, 250, -3, 3);
+  fOutput->Add(JC2DCompare);
+  JC2DCompareUp = new TH2F("JC2DCompareUp", "JC 2D Particle vs Detector Up",250, -3, 3, 250, -3, 3);
+  fOutput->Add(JC2DCompareUp);
+  JC2DCompareDown = new TH2F("JC2DCompareDown", "JC 2D Particle vs Detector Down",250, -3, 3, 250, -3, 3);
+  fOutput->Add(JC2DCompareDown);
+  JC2DCompareGluon = new TH2F("JC2DCompareGluon", "JC 2D Particle vs Detector Gluon",250, -3, 3, 250, -3, 3);
+  fOutput->Add(JC2DCompareGluon);
+  JC2DCompareOther = new TH2F("JC2DCompareOther", "JC 2D Particle vs Detector Other",250, -3, 3, 250, -3, 3);
+  fOutput->Add(JC2DCompareOther);
+  JC2DCompareUnmatched = new TH2F("JC2DCompareUnmatched", "JC 2D Particle vs Detector Unmatched",250, -3, 3, 250, -3, 3);
+  fOutput->Add(JC2DCompareUnmatched);
+
+
+
+  PtComparisonVsJCDiff = new TH2F("PtComparisonVsJCDiff", "Pt Det Vs Part Compared to JC",250,-0.5,149.5,250,-0.5,149.5);
+  fOutput->Add(PtComparisonVsJCDiff);
+
+  PtComparisonVsJCDiffUp = new TH2F("PtComparisonVsJCDiffUp", "Pt Det Vs Part Compared to JC Up",250,-0.5,149.5,250,-0.5,149.5);
+  fOutput->Add(PtComparisonVsJCDiffUp);
+  PtComparisonVsJCDiffDown = new TH2F("PtComparisonVsJCDiffDown", "Pt Det Vs Part Compared to JC Down",250,-0.5,149.5,250,-0.5,149.5);
+  fOutput->Add(PtComparisonVsJCDiffDown);
+  PtComparisonVsJCDiffGluon = new TH2F("PtComparisonVsJCDiffGluon", "Pt Det Vs Part Compared to JC Gluon",250,-0.5,149.5,250,-0.5,149.5);
+  fOutput->Add(PtComparisonVsJCDiffGluon);
+  PtComparisonVsJCDiffOther = new TH2F("PtComparisonVsJCDiffOther", "Pt Det Vs Part Compared to JC Other",250,-0.5,149.5,250,-0.5,149.5);
+  fOutput->Add(PtComparisonVsJCDiffOther);
+  PtComparisonVsJCDiffUnmatched = new TH2F("PtComparisonVsJCDiffUnmatched", "Pt Det Vs Part Compared to JC Unmatched",250,-0.5,149.5,250,-0.5,149.5);
+  fOutput->Add(PtComparisonVsJCDiffUnmatched);
+
+  JCComparisonVsPtDiff = new TH2F("JCComparisonVsPtDiff", "JC Det vs Part Compared to Pt", 250, -3, 3, 250, -3, 3);
+  fOutput->Add(JCComparisonVsPtDiff);
+
+  JCComparisonVsPtDiffUp = new TH2F("JCComparisonVsPtDiffUp", "JC Det vs Part Compared to Pt Up", 250, -3, 3, 250, -3, 3);
+  fOutput->Add(JCComparisonVsPtDiffUp);
+  JCComparisonVsPtDiffDown = new TH2F("JCComparisonVsPtDiffDown", "JC Det vs Part Compared to Pt Down", 250, -3, 3, 250, -3, 3);
+  fOutput->Add(JCComparisonVsPtDiffDown);
+  JCComparisonVsPtDiffGluon = new TH2F("JCComparisonVsPtDiffGluon", "JC Det vs Part Compared to Pt Gluon", 250, -3, 3, 250, -3, 3);
+  fOutput->Add(JCComparisonVsPtDiffGluon);
+  JCComparisonVsPtDiffOther = new TH2F("JCComparisonVsPtDiffOther", "JC Det vs Part Compared to Pt Other", 250, -3, 3, 250, -3, 3);
+  fOutput->Add(JCComparisonVsPtDiffOther);
+  JCComparisonVsPtDiffUnmatched = new TH2F("JCComparisonVsPtDiffUnmatched", "JC Det vs Part Compared to Pt Unmatched", 250, -3, 3, 250, -3, 3);
+  fOutput->Add(JCComparisonVsPtDiffUnmatched);
+
+
+
 
 
 
@@ -322,15 +604,19 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
     if ((fCent>fCentMax) || (fCent<fCentMin))
       return 0;
   }
-
   // Initialise jet pointer
   //cout << "Running Fill Histograms" << endl;
   AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                                         // Get jet container (0 = ?)
   AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event
-  AliParticleContainer *MCParticleContainer = GetParticleContainer("mcparticles");
+  AliEmcalJet *TruthJet = NULL; //Original Jet in the event                                                                                                         // Get jet container (0 = ?)
+  AliJetContainer *JetGen= GetJetContainer(1); //Jet Container for event
+
+
+  AliParticleContainer *MCParticleContainer = JetGen->GetParticleContainer();
   Int_t nAcceptedJets = JetCont->GetNAcceptedJets();
   //TClonesArray *trackArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("HybridTracks"));
   Double_t JetPhi=0;
+  Double_t JetParticlePhi=0;
   Double_t JetPt_ForThreshold=0;
 
   if(JetCont) {
@@ -368,6 +654,8 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
       AliParticleContainer *fTrackCont = JetCont->GetParticleContainer();
       UInt_t nJetConstituents = Jet1->GetNumberOfTracks();
 
+
+
       //cout << nTest << "::::" << nMCConstituents << "::::" << nJetConstituents << endl;
 
 
@@ -386,23 +674,15 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
         continue;
       }
       else {
-      	// Filling the histograms here
-      	fhJetPt->Fill(Jet1->Pt());
-      	JetPhi=Jet1->Phi();
-      	if(JetPhi < -1*TMath::Pi())
-      	  JetPhi += (2*TMath::Pi());
-      	else if (JetPhi > TMath::Pi())
-      	  JetPhi -= (2*TMath::Pi());
-      	fhJetPhi->Fill(JetPhi);
-      	fhJetEta->Fill(Jet1->Eta());
-      	// Filling the TTree branch(es) here
-        Double_t JetPt;
 
-        JetPt = Jet1->Pt();
-        fTreeBranch[0]=Jet1->Pt();
+        //Check the jet leading track is Greater than 5 GeV to reduce cominatorial jets
 
-      	fTreeBranch[1]=JetPhi;
-      	fTreeBranch[2]=Jet1->Eta();
+        if(Jet1->GetLeadingTrack()->Pt() < 5)
+        {
+
+            continue;
+            //std::cout << "LEADING TRACK TO SMALL!!!" << std::endl;
+        }
 
 
         // Initialising the Tagged PYTHIA Jet.
@@ -424,29 +704,100 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
         Int_t fPdgCodes[100] = {};
         Int_t fCurrentPdg = 0;
         Int_t nMothers = 0;
-
         Double_t jetCharge = 0;
+        Double_t jetChargeParticle = 0;
+
+
 
         //Finding Pdg Code using TRUTH Jet.
 
 
         if(kHasTruthJet)
         {
-          //cout << "Has Matched Jet " << endl;
 
+          if(TruthJet->Pt()<fPtThreshold)
+          {
+
+            continue;
+          }
+
+          //std::cout <<"Leading Track Pt" <<  Jet1->GetLeadingTrack()->Pt()<< std::endl;
+
+
+
+          // Filling the histograms here
+          fhJetPt->Fill(Jet1->Pt());
+          fhParticleJetPt->Fill(TruthJet->Pt());
+
+          JetPhi=Jet1->Phi();
+          if(JetPhi < -1*TMath::Pi())
+            JetPhi += (2*TMath::Pi());
+          else if (JetPhi > TMath::Pi())
+            JetPhi -= (2*TMath::Pi());
+          fhJetPhi->Fill(JetPhi);
+
+          JetParticlePhi=TruthJet->Phi();
+          if(JetParticlePhi < -1*TMath::Pi())
+            JetParticlePhi += (2*TMath::Pi());
+          else if (JetParticlePhi > TMath::Pi())
+            JetParticlePhi -= (2*TMath::Pi());
+          fhParticleJetPhi->Fill(JetParticlePhi);
+
+          fhJetEta->Fill(Jet1->Eta());
+          fhParticleJetEta->Fill(TruthJet->Eta());
+          // Filling the TTree branch(es) here
+          Double_t JetPt;
+
+          JetPt = Jet1->Pt();
+          fTreeBranch[0]=Jet1->Pt();
+          fTreeBranch[1]=JetPhi;
+          fTreeBranch[2]=Jet1->Eta();
+
+          fTreeBranch[9]=TruthJet->Pt();
+          fTreeBranch[10]=TruthJet->Phi();
+          fTreeBranch[11]=TruthJet->Eta();
+
+          Double_t PtDiff = (Jet1->Pt() - TruthJet->Pt())/TruthJet->Pt();
+
+          PtComparison->Fill(PtDiff);
+          fTreeBranch[18]= PtDiff;
+
+          Pt2DCompare->Fill(Jet1->Pt(),TruthJet->Pt());
+
+
+          //cout << "Has Matched Jet " << endl;
+/*
+          std::cout << "Jet Phi: "  << Jet1->Phi() << std::endl;
+          std::cout << "Jet Eta: "  << Jet1->Eta() << std::endl;
+          std::cout << "Jet Energy: "  << Jet1->E() << std::endl;
+          std::cout << "Jet Pt:  "  << Jet1->Pt() << std::endl << std::endl;
+*/
           for (UInt_t iTruthConst = 0; iTruthConst < nTruthConstituents; iTruthConst++ )
           {
             AliMCParticle* TruthParticle = (AliMCParticle*) TruthJet->Track(iTruthConst);
 
             AliMCParticle *MotherParticle = (AliMCParticle*)  MCParticleContainer->GetParticle(TruthParticle->GetMother());
 
+            //cout << "Diff Phi: " << abs(MotherParticle->Phi() - Jet1->Phi()) << endl;
+            //cout << "Diff Eta: " << abs(MotherParticle->Eta() - Jet1->Eta()) << endl;
+            //cout << "Diff R: " << pow(pow((TruthParticle->Phi() - Jet1->Phi()),2) + pow((MotherParticle->Eta() - Jet1->Eta()),2),0.5)  << endl;
+            //cout << "Diff Pt: " << abs(TruthParticle->Pt() - Jet1->Pt()) << endl;
+            //cout << "Particle Pdg: " << TruthParticle->PdgCode() << endl;
+            //cout << "Particle Label: " << TruthParticle->GetLabel() << endl;
+            //cout << "Loop Counter : " << iTruthConst << endl  << endl;
+
             while(MotherParticle->GetMother() > 0)
             {
               MotherParticle = (AliMCParticle*) MCParticleContainer->GetParticle(MotherParticle->GetMother());
               //cout <<"Mother Get Result: " << MotherParticle->GetMother() << endl;
               //cout << "Particle Label: " << MotherParticle->Label() << endl;
-              //cout << "MParticle Pdg: " << MotherParticle->PdgCode() << endl;
-
+              //cout << "Particle Pdg: " << MotherParticle->PdgCode() << endl;
+/*
+              cout << "Particle Phi: " << MotherParticle->Phi() << endl;
+              cout << "Particle Eta: " << MotherParticle->Eta() << endl;
+              cout << "Particle Pt: " << MotherParticle->Pt() << endl;
+              cout << "Particle Pdg: " << MotherParticle->PdgCode() << endl << endl;
+*/
             }
 
             if(MotherParticle->E() < 3400)
@@ -454,6 +805,13 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
             fCurrentPdg = MotherParticle->PdgCode();
             fPdgCodes[nMothers] = fCurrentPdg;
             nMothers++;
+            /*
+            cout << "Particle Phi: " << MotherParticle->Phi() << endl;
+            cout << "Particle Eta: " << MotherParticle->Eta() << endl;
+            cout << "Particle Pt: " << MotherParticle->Pt() << endl;
+            cout << "Particle Energy: " << MotherParticle->E() << endl;
+            cout << "Particle Pdg: " << MotherParticle->PdgCode() << endl << endl;
+            */
             }
           }
 
@@ -504,10 +862,10 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
             int IndexOfMaximum = -1;
 
             // assigens index of maximum if the over limit factation of mother particles agree
-            Double_t limitFraction = 0.80;
+
             for(unsigned int i = 0; i < nUniques; i++)
             {
-              if(UniquePdgFrequency[i] > limitFraction)
+              if(UniquePdgFrequency[i] > MotherFraction)
               {
                 IndexOfMaximum = i;
               }
@@ -522,11 +880,10 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
             }
 
                   //Outputs for Checking
-          /*
+/*
                   if(nUniques > 1)
                   {
-                    // output PDG Codes for testing
-
+                    // output PDG Codes for testin
                     cout << "PdgCodes : [" ;
                     for(unsigned int i = 0; i < nMothers; i++)
                     {
@@ -556,69 +913,111 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
                     //cout << "Number of Uniques: " << nUniques << endl;
                     cout << "Final PDG Choice: " << fCurrentPdg << endl << endl;
                   }
-          */
+*/
 
           // Loop over the consituents
           for (UInt_t iJetConst = 0; iJetConst < nJetConstituents; iJetConst++ )
           {
             AliVParticle *JetParticle = Jet1->Track(iJetConst);
-            jetCharge += JetParticle->Charge()*pow(JetParticle->Pt(),0.5);
+            jetCharge += JetParticle->Charge()*pow(JetParticle->Pt(),JetChargeK);
+            //std::cout << JetParticle->Pt() << ",";
+          }
+
+          //std::cout << std:: endl;
+          for (UInt_t iTruthConst = 0; iTruthConst < nTruthConstituents; iTruthConst++ )
+          {
+            AliMCParticle* TruthParticle = (AliMCParticle*) TruthJet->Track(iTruthConst);
+            //std::cout << "Truth Charge Checker in e: " << TruthParticle->Charge()/3 << std::endl;
+            jetChargeParticle += TruthParticle->Charge()/3*pow(TruthParticle->Pt(),JetChargeK);
           }
 
 
 
-
-
-
-        // Create the Non Flavoured Jet CHarge
+        // Normalise the Non Flavoured Jet CHarge
 
         jetCharge/=pow(Jet1->Pt(),0.5);
 
+        // Normalise Particle level jet charge
+
+        jetChargeParticle/=pow(TruthJet->Pt(),0.5);
+
+
+        //Put The Jet Charge in the right place
         fTreeBranch[3] = jetCharge;
         JC->Fill(jetCharge);
+        fTreeBranch[12] = jetChargeParticle;
+        JCParticle->Fill(jetChargeParticle);
+
+        Double_t JetChargeDiff = (jetCharge - jetChargeParticle)/jetChargeParticle;
+
+        JCComparison->Fill(JetChargeDiff);
+        fTreeBranch[19] = JetChargeDiff;
+
+        JC2DCompare->Fill(jetCharge,jetChargeParticle);
+
+        //cout << JetChargeDiff << endl;
+
+        PtComparisonVsJCDiff->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
+
+        JCComparisonVsPtDiff->Fill(jetCharge,jetChargeParticle,PtDiff);
 
         //Split the Jet in to apporpate momentum bin.
 
-        if(JetPt < 40.)
+        if(JetPt < JetMidPt)
         {
-          fTreeBranch[4] = jetCharge;
           JCLow->Fill(jetCharge);
+          JCParticleLow->Fill(jetChargeParticle);
         }
-        else if( JetPt > 40. && JetPt < 80.)
+        else if( JetPt > JetMidPt && JetPt < JetHighPt)
         {
-          fTreeBranch[5] = jetCharge;
           JCMid->Fill(jetCharge);
+          JCParticleMid->Fill(jetChargeParticle);
         }
         else
         {
-          fTreeBranch[6] = jetCharge;
           JCHigh->Fill(jetCharge);
+          JCParticleHigh->Fill(jetChargeParticle);
         }
+
 
 
 
         //Add Up JetCharge
         if(fCurrentPdg == 2)
         {
-          fTreeBranch[7] = jetCharge;
+          fTreeBranch[4] = jetCharge;
           JCUp->Fill(jetCharge);
+          fTreeBranch[13] = jetChargeParticle;
+          JCParticleUp->Fill(jetChargeParticle);
+
+          JCComparisonUp->Fill(JetChargeDiff);
+          fTreeBranch[20] = JetChargeDiff;
 
 
-            if(JetPt < 40.)
+
+          PtComparisonVsJCDiffUp->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
+
+          JCComparisonVsPtDiffUp->Fill(jetCharge,jetChargeParticle,PtDiff);
+
+          JC2DCompareUp->Fill(jetCharge,jetChargeParticle);
+
+
+            if(JetPt < JetMidPt)
             {
-              fTreeBranch[8] = jetCharge;
               JCUpLow->Fill(jetCharge);
+              JCParticleUpLow->Fill(jetChargeParticle);
             }
-            else if( JetPt > 40. && JetPt < 80.)
+            else if( JetPt > JetMidPt && JetPt < JetHighPt)
             {
-              fTreeBranch[9] = jetCharge;
               JCUpMid->Fill(jetCharge);
+              JCParticleUpMid->Fill(jetChargeParticle);
             }
             else
             {
-              fTreeBranch[10] = jetCharge;
               JCUpHigh->Fill(jetCharge);
+              JCParticleUpHigh->Fill(jetChargeParticle);
             }
+
 
 
 
@@ -626,111 +1025,165 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
         //Add Down JetCharge
         else if(fCurrentPdg == 1)
         {
-          fTreeBranch[11] = jetCharge;
+          fTreeBranch[5] = jetCharge;
           JCDown->Fill(jetCharge);
+          fTreeBranch[14] = jetChargeParticle;
+          JCParticleDown->Fill(jetChargeParticle);
+
+          JCComparisonDown->Fill(JetChargeDiff);
+          fTreeBranch[21] = JetChargeDiff;
+
+          PtComparisonVsJCDiffDown->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
+
+          JCComparisonVsPtDiffDown->Fill(jetCharge,jetChargeParticle,PtDiff);
+
+          JC2DCompareDown->Fill(jetCharge,jetChargeParticle);
 
 
-            if(JetPt < 40.)
+            if(JetPt < JetMidPt)
             {
-              fTreeBranch[12] = jetCharge;
               JCDownLow->Fill(jetCharge);
+              JCParticleDownLow->Fill(jetChargeParticle);
             }
-            else if( JetPt > 40. && JetPt < 80.)
+            else if( JetPt > JetMidPt && JetPt < JetHighPt)
             {
-              fTreeBranch[13] = jetCharge;
               JCDownMid->Fill(jetCharge);
+              JCParticleDownMid->Fill(jetChargeParticle);
             }
             else
             {
-              fTreeBranch[14] = jetCharge;
               JCDownHigh->Fill(jetCharge);
+              JCParticleDownHigh->Fill(jetChargeParticle);
             }
         }
+
+
 
 
         //Add Gluon JetCharge
         else if(fCurrentPdg == 21)
         {
-          fTreeBranch[15] = jetCharge;
+          fTreeBranch[6] = jetCharge;
           JCGluon->Fill(jetCharge);
+          fTreeBranch[15] = jetChargeParticle;
+          JCParticleGluon->Fill(jetChargeParticle);
+
+          JCComparisonGluon->Fill(JetChargeDiff);
+          fTreeBranch[22] = JetChargeDiff;
+
+          PtComparisonVsJCDiffGluon->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
+
+          JCComparisonVsPtDiffGluon->Fill(jetCharge,jetChargeParticle,PtDiff);
+
+          JC2DCompareGluon->Fill(jetCharge,jetChargeParticle);
 
 
-            if(JetPt < 40.)
+            if(JetPt < JetMidPt)
             {
-              fTreeBranch[16] = jetCharge;
               JCGluonLow->Fill(jetCharge);
+              JCParticleGluonLow->Fill(jetChargeParticle);
             }
-            else if( JetPt > 40. && JetPt < 80.)
+            else if( JetPt > JetMidPt && JetPt < JetHighPt)
             {
-              fTreeBranch[17] = jetCharge;
               JCGluonMid->Fill(jetCharge);
+              JCParticleGluonMid->Fill(jetChargeParticle);
             }
             else
             {
-              fTreeBranch[18] = jetCharge;
               JCGluonHigh->Fill(jetCharge);
+              JCParticleGluonHigh->Fill(jetChargeParticle);
             }
 
 
         }
+
+
 
         //Add Unmatched JetCharge Catagory
         else if(IndexOfMaximum == -1)
         {
 
-          fTreeBranch[23] = jetCharge;
+          fTreeBranch[7] = jetCharge;
           JCUnmatched->Fill(jetCharge);
+          fTreeBranch[17] = jetChargeParticle;
+          JCParticleUnmatched->Fill(jetChargeParticle);
+
+          JCComparisonUnmatched->Fill(JetChargeDiff);
+          fTreeBranch[24] = JetChargeDiff;
+
+          PtComparisonVsJCDiffUnmatched->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
+
+          JCComparisonVsPtDiffUnmatched->Fill(jetCharge,jetChargeParticle,PtDiff);
+
+          JC2DCompareUnmatched->Fill(jetCharge,jetChargeParticle);
 
 
-            if(JetPt < 40.)
+
+            if(JetPt < JetMidPt)
             {
-
-              fTreeBranch[24] = jetCharge;
               JCUnmatchedLow->Fill(jetCharge);
+              JCParticleUnmatchedLow->Fill(jetChargeParticle);
             }
-            else if( JetPt > 40. && JetPt < 80.)
+            else if( JetPt > JetMidPt && JetPt < JetHighPt)
             {
-
-              fTreeBranch[25] = jetCharge;
               JCUnmatchedMid->Fill(jetCharge);
+              JCParticleUnmatchedMid->Fill(jetChargeParticle);
             }
             else
             {
-
-              fTreeBranch[26] = jetCharge;
               JCUnmatchedHigh->Fill(jetCharge);
+              JCParticleUnmatchedHigh->Fill(jetChargeParticle);
             }
 
 
         }
+
+
 
         //Adding Other Flavour JetCharge
         else
         {
-          fTreeBranch[19] = jetCharge;
+          fTreeBranch[8] = jetCharge;
           JCOther->Fill(jetCharge);
+          fTreeBranch[16] = jetChargeParticle;
+          JCParticleOther->Fill(jetChargeParticle);
+
+          JCComparisonOther->Fill(JetChargeDiff);
+          fTreeBranch[23] = JetChargeDiff;
+
+          PtComparisonVsJCDiffOther->Fill(Jet1->Pt(),TruthJet->Pt(),JetChargeDiff);
+
+          JCComparisonVsPtDiffOther->Fill(jetCharge,jetChargeParticle,PtDiff);
+
+          JC2DCompareOther->Fill(jetCharge,jetChargeParticle);
 
 
-            if(JetPt < 40.)
+
+            if(JetPt < JetMidPt)
             {
-              fTreeBranch[20] = jetCharge;
               JCOtherLow->Fill(jetCharge);
+              JCParticleOtherLow->Fill(jetChargeParticle);
             }
-            else if( JetPt > 40. && JetPt < 80.)
+            else if( JetPt > JetMidPt && JetPt < JetHighPt)
             {
-              fTreeBranch[21] = jetCharge;
               JCOtherMid->Fill(jetCharge);
+              JCParticleOtherMid->Fill(jetChargeParticle);
             }
             else
             {
-              fTreeBranch[22] = jetCharge;
               JCOtherHigh->Fill(jetCharge);
+              JCParticleOtherHigh->Fill(jetChargeParticle);
             }
 
         }
 
 
+
+
+
+
         fTreeJets->Fill();
+
 
 
 

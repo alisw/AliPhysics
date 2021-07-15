@@ -125,6 +125,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kPhiHePP5:   return "PhiHePP5";
       case kCosThetaToEventPlane:    return "CosThetaToEventPlane";
       case kAngleLeading: return "AngleToLeading";
+      case kDeltaEta: return "DeltaEta";
       case kFirstDaughterPt: return "FirstDaughterPt";
       case kSecondDaughterPt: return "SecondDaughterPt";
       case kFirstDaughterP: return "FirstDaughterP";
@@ -234,6 +235,14 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
             return angle;
          }
 //         AliWarning("This method is not yet implemented");
+         return 1E20;
+      case kDeltaEta:
+         l = event->LeadingParticle(fUseMCInfo);
+         if (l) {
+            l->Set4Vector(v,-1.0,fUseMCInfo);
+            Double_t deta = v.Eta() - pair->Sum(fUseMCInfo).Eta();
+            return deta;
+         }
          return 1E20;
       case kFirstDaughterPt:
          return pair->DaughterPt(0,fUseMCInfo);

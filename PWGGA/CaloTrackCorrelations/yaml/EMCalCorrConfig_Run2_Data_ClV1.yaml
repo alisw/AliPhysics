@@ -11,7 +11,8 @@ CellTimeCalib:
     enabled: true
     createHistos: true
     doCalibrateLowGain: true 
-    doCalibTimeEdep: false
+    doCalibTimeEdep: true
+    doMergedBCs: true
 Clusterizer:
     enabled: true
     clusterizer: kClusterizerv1

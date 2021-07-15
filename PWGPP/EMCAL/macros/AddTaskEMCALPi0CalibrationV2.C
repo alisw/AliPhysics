@@ -30,7 +30,9 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// \param calibPath : TString with full path and name of file with calibration factors from previous iteration.
 /// \param trigger   : TString, event that triggered must contain this string. Leave for backward compatibility with old wagons
 /// \param recalE    : Bool, recalibrate EMCal energy all other settings for clusterization & EMCal calibration are handled by correction frame work and correspodning yaml file
-/// \param simu      : Bool, simulation or data.
+/// \param simu      : Int, 0: data, 1: MC, 2: JJ MC
+/// \param fSaveCells: Bool, save the tree output for cells
+/// \param fSaveClusters : Bool, save the tree output for clusters
 /// \param minClusterEnergy : Double, minimum cluster energy used for pairing (GeV)
 /// \param maxClusterEnergy : Double, maximum cluster energy used for pairing (GeV)
 /// \param minNCells : Int, minimum number of cells for clusters
@@ -45,7 +47,13 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   TString calibPath              = "", // "alienpath/RecalibrationFactors.root"
   TString trigger                = "",
   Bool_t  recalE                 = kFALSE, 
-  Bool_t  simu                   = kFALSE,
+  Int_t  simu                    = 0,
+  Bool_t  fSaveHistos            = kTRUE,
+  Bool_t  fSaveCells             = kFALSE,
+  Bool_t  fSaveClusters          = kFALSE,
+  Bool_t  isHeavyIon             = kFALSE,
+  Bool_t  fNContCut              = kFALSE,
+  Float_t minCellEnergy          = 0.05,
   Double_t minClusterEnergy      = 0.7,
   Double_t maxClusterEnergy      = 10,
   Int_t minNCells                = 2,
@@ -53,7 +61,9 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   Float_t maxClusterTime         = 800,  // 610 ns in Run1
   Float_t maxDiffTimeClusterPair = 100,  //  20 ns in Run1  
   Bool_t bSameSM                 = kTRUE,
+  TString corrTaskSetting        = "",
   TString outputFile             = "", // AnalysisResults.root
+  TString periodName             = "",
   const char *trigSuffix         = ""
 ) 
 {
@@ -74,9 +84,11 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   
   TString wagon = trigSuffix;
   if ( wagon.Length() > 0 ) trigger = wagon;
+  wagon+="_";
+  wagon+=corrTaskSetting.Data();
   
-  AliAnalysisTaskEMCALPi0CalibSelectionV2 * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelectionV2(Form("EMCALPi0Calibration_%s",trigger.Data()));
-  //pi0calib->SetDebugLevel(10); 
+  AliAnalysisTaskEMCALPi0CalibSelectionV2 * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelectionV2(Form("EMCALPi0Calibration_%s_%s",trigger.Data(),corrTaskSetting.Data()));
+  pi0calib->SetCellMinEnergy(minCellEnergy);
   pi0calib->SetClusterMinEnergy(minClusterEnergy);
   pi0calib->SetClusterMaxEnergy(maxClusterEnergy);
   pi0calib->SetClusterLambda0Cuts(0.1,0.5);
@@ -86,6 +98,8 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   pi0calib->SetNCellsGroup(0);
   if (bSameSM) pi0calib->SwitchOnSameSM();
     else pi0calib->SwitchOffSameSM();
+
+  pi0calib->SetPeriodName(periodName);
   
   // Timing cuts
   pi0calib->SetPairDTimeCut(maxDiffTimeClusterPair);   
@@ -100,9 +114,33 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   
   pi0calib->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   pi0calib->SwitchOnLoadOwnGeometryMatrices();
+  // pi0calib->SetOADBFilePath("/home/ewa/alice/AliPhysics/OADB/OADB/EMCAL");
+  pi0calib->SetCorrectionTaskSetting(corrTaskSetting);
 
-  if( simu ) {
+  if( simu == 1 ) {
     pi0calib->SetIsMC();
+  } else if (simu == 2){
+    pi0calib->SetJJMC();
+  }
+
+  if( isHeavyIon ) {
+    pi0calib->SetHeavyIon();
+  }
+
+  if( fSaveHistos ){
+    pi0calib->SetSaveHistos();
+  }
+
+  if( fSaveCells ){
+    pi0calib->SetSaveCells();
+  }
+
+  if( fSaveClusters ){
+    pi0calib->SetSaveClusters();
+  }
+
+  if( fNContCut ){
+    pi0calib->SetNContributorsCut();
   }
   
   //---------------------
@@ -116,22 +154,34 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   if(outputFile.Length()==0) outputFile = AliAnalysisManager::GetCommonFileName(); 
 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-                                                                                                
-                                                                                                
-  AliAnalysisDataContainer *coutput = 0; 
+                                                                                                                                                              
+  AliAnalysisDataContainer *couthistos  = 0;
+  AliAnalysisDataContainer *couttree    = 0;
   if( wagon.Length()==0 ){
-    coutput = mgr->CreateContainer(Form("Pi0Calibration_Trig%s",trigger.Data()), TList::Class(), 
-                                   AliAnalysisManager::kOutputContainer,outputFile.Data());
+    couthistos  = mgr->CreateContainer( Form( "Pi0Calibration_Trig%s",trigger.Data() ),
+                                        TList::Class(),
+                                        AliAnalysisManager::kOutputContainer,
+                                        outputFile.Data() );
+    if( fSaveCells || fSaveClusters)    couttree    = mgr->CreateContainer( Form("Pi0Calibration_Trig%s_%s",trigger.Data(),corrTaskSetting.Data()) ,
+                                                                            TTree::Class(),
+                                                                            AliAnalysisManager::kOutputContainer,
+                                                                            Form("Pi0CalibrationTree_%s.root",corrTaskSetting.Data())); 
   } else {
-    TString containerName = "Pi0Calibration";
-    coutput = mgr->CreateContainer(wagon, TList::Class(), 
-                                   AliAnalysisManager::kOutputContainer,Form("%s:%s",outputFile.Data(),containerName.Data()));
+    TString containerName = Form("Pi0Calibration_%s",corrTaskSetting.Data()) ;
+    couthistos  = mgr->CreateContainer( wagon,
+                                        TList::Class(),
+                                        AliAnalysisManager::kOutputContainer,
+                                        Form("%s:%s",outputFile.Data(),containerName.Data()) );
+    if( (fSaveCells || fSaveClusters) )   couttree    = mgr->CreateContainer( Form("Pi0Calibration_Trig%s_%s",trigger.Data(), corrTaskSetting.Data()),
+                                                                            TTree::Class(),
+                                                                            AliAnalysisManager::kOutputContainer,
+                                                                            Form("Pi0CalibrationTree_%s.root",corrTaskSetting.Data())); 
   }  
   
   mgr->AddTask(pi0calib);
-                                                             
-  mgr->ConnectInput  (pi0calib, 0, cinput1);
-  mgr->ConnectOutput (pi0calib, 1, coutput);
+  mgr->ConnectInput(pi0calib, 0, cinput1);                                
+  mgr->ConnectOutput (pi0calib, 1, couthistos);
+  if(fSaveCells || fSaveClusters) mgr->ConnectOutput( pi0calib, 2, couttree);
 
   return pi0calib;
 }

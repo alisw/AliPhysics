@@ -96,6 +96,8 @@ private:
 	TH1D * fMultiplicyNS;
     TH1D * fMultiplicyAS;
     TH1D * fMultiplicyTS;
+    TH2D * fHistNchTotVsV0M;
+    TH2D * fHistNchTotVsV0A;
     TH1D * hGenEta;                                           //! Eta distribution of Generated tracks
     
     //TH1D * fMult2[5];
@@ -106,8 +108,8 @@ private:
 	TProfile * pNumDenTrueAll[3];
     TProfile * pSumPtTrueAll[3];
     
-    TH2D * hNumDen[3];
-    TH2D * hSumPt[3];
+    TH3D * hNumDen[3][4];
+    TH3D * hSumPt[3][4];
     
 	TProfile * pNumDenTrue[3];
 	

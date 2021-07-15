@@ -15,7 +15,7 @@
 #include "AliAODConversionParticle.h"
 #include "AliAODConversionPhoton.h"
 #include "AliKFConversionMother.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 
 class AliAODConversionMother : public AliAODConversionParticle{
 

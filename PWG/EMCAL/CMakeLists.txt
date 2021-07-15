@@ -35,3 +35,11 @@ add_subdirectory(EMCALtriggerPart)
 # Installing the macros
 install (DIRECTORY macros DESTINATION PWG/EMCAL)
 install (DIRECTORY config DESTINATION PWG/EMCAL)
+
+add_test(func_PWGEMCALtrigger_AliEmcalTriggerMaskContainer
+    env
+    PATH=$ENV{PATH}
+    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    ROOT_HIST=0
+    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalFastorMaskContainer.C")

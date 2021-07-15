@@ -37,13 +37,13 @@ endif()
 
 # Sources - alphabetical order
 set(SRCS
-  AliFemtoDreamEvent.cxx  
+  AliFemtoDreamEvent.cxx
   AliFemtoDreamEventHist.cxx
   AliFemtoDreamEventCuts.cxx
   AliFemtoDreamBasePart.cxx
   AliFemtoDreamTrack.cxx
   AliFemtoDreamTrackHist.cxx
-  AliFemtoDreamTrackMCHist.cxx 
+  AliFemtoDreamTrackMCHist.cxx
   AliFemtoDreamTrackCuts.cxx
   AliFemtoDreamv0.cxx
   AliFemtoDreamv0Hist.cxx
@@ -54,13 +54,13 @@ set(SRCS
   AliFemtoDreamCascadeCuts.cxx
   AliFemtoDreamControlSample.cxx
   AliFemtoDreamPairCleanerHists.cxx
-  AliFemtoDreamPairCleaner.cxx 
-  AliFemtoDreamCollConfig.cxx 
-  AliFemtoDreamCorrHists.cxx 
-  AliFemtoDreamPartContainer.cxx 
-  AliFemtoDreamZVtxMultContainer.cxx 
-  AliFemtoDreamPartCollection.cxx 
-  AliFemtoDreamAnalysis.cxx 
+  AliFemtoDreamPairCleaner.cxx
+  AliFemtoDreamCollConfig.cxx
+  AliFemtoDreamCorrHists.cxx
+  AliFemtoDreamPartContainer.cxx
+  AliFemtoDreamZVtxMultContainer.cxx
+  AliFemtoDreamPartCollection.cxx
+  AliFemtoDreamAnalysis.cxx
   AliAnalysisTaskFemtoDream.cxx
   AliAnalysisTaskFemtoDreamDeuteron.cxx
   AliAnalysisTaskNanoPt.cxx
@@ -70,16 +70,19 @@ set(SRCS
   AliAnalysisTaskLeuteronAOD.cxx
   AliAnalysisTaskLeuteronNanoAOD.cxx
   AliAnalysisTaskAODLoton.cxx
-  AliAnalysisTaskNanoBBar.cxx  
+  AliAnalysisTaskNanoBBar.cxx
   AliAnalysisTaskFemtoDreamPhi.cxx
   AliAnalysisTaskNanoAODFemtoDreamPhi.cxx
+  AliAnalysisTaskNanoAODFemtoDreamLambdaPhi.cxx
   AliAnalysisTaskFemtoDreamSigPi.cxx
   AliAnalysisTaskNanoAODFemtoDreamSigPi.cxx
   AliAnalysisTaskFemtoDreamPion.cxx
+  AliAnalysisTaskDeuteronProtonEfficiency.cxx
   AliAnalysisTaskNanoAODFemtoDreamPion.cxx
   AliAnalysisTaskNanoAODSigma0Femto.cxx
   AliAnalysisTaskNanoSigmaPlus.cxx
   AliAnalysisTaskNanoLD.cxx
+  AliAnalysisTaskLD.cxx
   AliAnalysisTaskGrandma.cxx
   AliAnalysisTaskOtonOmega.cxx
   AliOtonOmegaAnalysis.cxx

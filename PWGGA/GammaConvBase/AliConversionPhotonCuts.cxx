@@ -22,7 +22,7 @@
 
 #include "AliConversionPhotonCuts.h"
 
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliAODTrack.h"
 #include "AliAODv0.h"
 #include "AliAODEvent.h"

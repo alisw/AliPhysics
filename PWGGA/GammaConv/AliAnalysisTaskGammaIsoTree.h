@@ -473,7 +473,8 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fCaloPt;//!
     TH1F*                       fTrackPt;//!
     TH1F*                       fTrackEta;//!
-    TH1F*                       fTrackPhi;//!
+    TH2F*                       fTrackPhiPt;//!
+    TH2F*                       fTrackPhiMaxClusE;//!
     TH1F*                       fTrackPtHybridOnlyPosID;//!
     TH1F*                       fTrackEtaHybridOnlyPosID;//!
     TH1F*                       fTrackPhiHybridOnlyPosID;//!
@@ -697,12 +698,13 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Double_t                    fExclusionRadius;//
 
     Int_t                       fDebug;// debug flag
-
+    Double_t                    fMaxClusterE;//
     AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     // MC cluster & headers 
     Bool_t                fIsFromDesiredHeader;                                 // flag for MC headers
     Bool_t                fIsOverlappingWithOtherHeader;                        // flag for particles in MC overlapping between headers
     Bool_t                fAllowOverlapHeaders;                                 // enable overlapping headers for cluster selection
+    
     // //
     // // ─── FOR LIGHT TREE ──────────────────────────────────────────────
     // //
@@ -722,6 +724,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_ClusterM02; 
     std::vector<Float_t> fBuffer_ClusterM02Recalc; 
     std::vector<Float_t> fBuffer_ClusterM20; 
+    std::vector<UShort_t> fBuffer_ClusterNCells; 
     std::vector<Float_t> fBuffer_ClusterV1SplitMass; 
     std::vector<UShort_t> fBuffer_ClusterNLM; 
     std::vector<UShort_t> fBuffer_ClusterSM; // super module 
@@ -808,9 +811,10 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t IsWithinRadiusEMCal(Double_t eta, Double_t phi, Double_t riso);
     Bool_t IsWithinRadiusTPC(Double_t eta, Double_t phi, Double_t riso);
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
+    Float_t CalculateIsoCorrectionFactor(Double_t cEta, Double_t maxEta, Double_t r);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 37);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 41);
 
 };
 

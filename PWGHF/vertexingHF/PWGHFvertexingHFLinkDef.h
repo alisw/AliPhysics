@@ -17,6 +17,7 @@
 #pragma link C++ class AliVertexingHFUtils+;
 #pragma link C++ class AliHFSystErr+;
 #pragma link C++ class AliRDHFCutsD0toKpi+;
+#pragma link C++ class AliRDHFCutsD0toKpiBDT+;
 #pragma link C++ class AliRDHFCutsB0toDPi+;
 #pragma link C++ class AliRDHFCutsB0toDStarPi+;
 #pragma link C++ class AliRDHFCutsBPlustoD0Pi+;
@@ -151,8 +152,8 @@
 #pragma link C++ class AliAnalysisTaskSEXic0Semileptonic+;
 #pragma link C++ class AliAnalysisTaskSELc2pKs0fromKFP+;
 #pragma link C++ class AliAnalysisTaskCheckAODdAODMatching+;
-
-
+#pragma link C++ class AliAnalysisTaskSEXicPlusToXi2PifromKFP+;
+#pragma link C++ class AliAnalysisTaskSEXiccPPToXicPlusPiPlusfromKFP+;
 
 /// ROOT6 tasks
 #ifdef __CLING__

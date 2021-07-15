@@ -73,6 +73,20 @@ AliFlowAnalysisQvecEvent::AliFlowAnalysisQvecEvent()
   fVZAIm = 0;
   fVZAM = 0;
   
+  // ZNC each tow energy
+  fTowZNCraw0 = 0;
+  fTowZNCraw1 = 0;
+  fTowZNCraw2 = 0;
+  fTowZNCraw3 = 0;
+  fTowZNCraw4 = 0;
+  
+  // ZNA each tow energy
+  fTowZNAraw0 = 0;
+  fTowZNAraw1 = 0;
+  fTowZNAraw2 = 0;
+  fTowZNAraw3 = 0;
+  fTowZNAraw4 = 0;
+  
   // TPC (|eta|<0.8)
   fTPCRePosChPosEta = 0; // w * cos(theta+) eta+
   fTPCImPosChPosEta = 0; // w * sin(theta+) eta+

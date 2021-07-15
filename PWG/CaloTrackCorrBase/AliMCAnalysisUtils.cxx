@@ -132,7 +132,7 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
   }//First labels not the same
   
   if((counter1==999 || counter2==999))
-    AliWarning(Form("Genealogy too large, generations: cluster1: %d, cluster2= %d", counter1, counter2));
+    AliDebug(1,Form("Genealogy too large, generations: cluster1: %d, cluster2= %d", counter1, counter2));
   
   //printf("CheckAncestor:\n");
   
@@ -224,7 +224,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, const UShort_t * edep
 {    
   if( nlabels <= 0 )
   {
-    AliWarning("No MC labels available, please check!!!");
+    AliDebug(1,"No MC labels available, please check!!!");
     return kMCBadLabel;
   }
   
@@ -241,10 +241,10 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, const UShort_t * edep
   if ( labels[0] < 0 || labels[0] >= nprimaries )
   {
     if(labels[0] < 0)
-      AliWarning(Form("*** bad label ***:  label %d", labels[0]));
+      AliDebug(1,Form("*** bad label ***:  label %d", labels[0]));
     
     if(labels[0] >=  nprimaries)
-      AliWarning(Form("*** large label ***:  label %d, n tracks %d", labels[0], nprimaries));
+      AliDebug(1,Form("*** large label ***:  label %d, n tracks %d", labels[0], nprimaries));
     
     SetTagBit(tag,kMCBadLabel);
     
@@ -313,7 +313,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, const UShort_t * edep
       
       if(iMom < 0) 
       {
-        AliInfo(Form("pdg = %d, mother = %d, skip",pPdg,iMom));
+        AliDebug(1,Form("pdg = %d, mother = %d, skip",pPdg,iMom));
         break;
       }
       
@@ -354,7 +354,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, const UShort_t * edep
       
       if(iMom < 0) 
       {
-        AliInfo(Form("pdg = %d, mother = %d, skip",pPdg,iMom));
+        AliDebug(1,Form("pdg = %d, mother = %d, skip",pPdg,iMom));
       }
       else
       {
@@ -641,7 +641,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const U
   Int_t mesonPdg = meson->PdgCode();
   if ( mesonPdg != 111 && mesonPdg != 221 )
   {
-    AliWarning(Form("Wrong pi0/eta PDG : %d",mesonPdg));
+    AliDebug(1,Form("Wrong pi0/eta PDG : %d",mesonPdg));
     return;
   }
   
@@ -712,7 +712,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const U
   // Check if both daughters are photons
   if ( photon0->PdgCode() != 22 && photon1->PdgCode() != 22 )
   {
-    AliWarning(Form("Not overlapped. PDG:  daughter 1 = %d, of daughter 2 = %d",photon0->PdgCode(),photon1->PdgCode()));
+    AliDebug(1,Form("Not overlapped. PDG:  daughter 1 = %d, of daughter 2 = %d",photon0->PdgCode(),photon1->PdgCode()));
 
     return;
   }
@@ -772,7 +772,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const U
     // Trace back the mother in case it was a conversion
     if ( index >= mcevent->GetNumberOfTracks() )
     {
-      AliWarning(Form("Particle index %d larger than size of list %d!!",index,mcevent->GetNumberOfTracks()));
+      AliDebug(1,Form("Particle index %d larger than size of list %d!!",index,mcevent->GetNumberOfTracks()));
       continue;
     }
     
@@ -864,14 +864,14 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const U
   {
     // Two contributions not found in cluster, but not normal if too small opening angle and only one photon appears,
     // still check if opening angle is smaller than an EMCal cell and assign as merged 
-    AliInfo(Form("Opening angle %2.3f rad too small to not be a merged meson (%d): \n"
-           "\t Meson  E %2.2f GeV, Eta %2.3f, Phi %2.3f rad \n"
-           "\t Gamma1 E %2.2f GeV, Eta %2.3f, Phi %2.3f rad \n"
-           "\t Gamma2 E %2.2f GeV, Eta %2.3f, Phi %2.3f rad ",
-           angle, mesonPdg, 
-           meson    ->E(), meson    ->Eta(), meson    ->Phi(),
-           fDaughMom .E(), fDaughMom .Eta(), fDaughMom .Phi(),
-           fDaughMom2.E(), fDaughMom2.Eta(), fDaughMom2.Phi()));
+    AliDebug(1,Form("Opening angle %2.3f rad too small to not be a merged meson (%d): \n"
+                    "\t Meson  E %2.2f GeV, Eta %2.3f, Phi %2.3f rad \n"
+                    "\t Gamma1 E %2.2f GeV, Eta %2.3f, Phi %2.3f rad \n"
+                    "\t Gamma2 E %2.2f GeV, Eta %2.3f, Phi %2.3f rad ",
+                    angle, mesonPdg,
+                    meson    ->E(), meson    ->Eta(), meson    ->Phi(),
+                    fDaughMom .E(), fDaughMom .Eta(), fDaughMom .Phi(),
+                    fDaughMom2.E(), fDaughMom2.Eta(), fDaughMom2.Phi()));
     
     if ( mesonPdg == 111 ) SetTagBit(tag,kMCPi0);
     else                   SetTagBit(tag,kMCEta);
@@ -939,7 +939,7 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
         
         if ( !mother )
         {
-          AliInfo(Form("MC Mother not available for label %d",label));
+          AliDebug(1,Form("MC Mother not available for label %d",label));
           continue;
         }
         
@@ -1173,7 +1173,7 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
   
   if(!mcevent)
   {
-    AliWarning("MCEvent is not available, check analysis settings in configuration file!!");
+    AliDebug(1,"MCEvent is not available, check analysis settings in configuration file!!");
     
     ok = kFALSE;
     return fDaughMom;
@@ -1237,7 +1237,7 @@ TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliMCEvent* mcev
   
   if(!mcevent) 
   {
-    AliWarning("MCEvent is not available, check analysis settings in configuration file, STOP!!");
+    AliDebug(1,"MCEvent is not available, check analysis settings in configuration file!!");
     
     ok = kFALSE;
     return fMotherMom;
@@ -1272,7 +1272,7 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
   
   if ( !mcevent )
   {
-    AliWarning("MCEvent is not available, check analysis settings in configuration file!!");
+    AliDebug(1,"MCEvent is not available, check analysis settings in configuration file!!");
     
     ok = kFALSE;
     return fGMotherMom;
@@ -1316,7 +1316,7 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
     grandmomLabel =  grandmomP->GetMother();
   }
   
-  if(grandmomPDG!=pdg) AliInfo(Form("Mother with PDG %d, NOT found!",pdg));
+  if(grandmomPDG!=pdg) AliDebug(1,Form("Mother with PDG %d, NOT found!",pdg));
   
   ok = kTRUE;
   
@@ -1337,7 +1337,7 @@ TLorentzVector AliMCAnalysisUtils::GetFirstMotherWithPDG(Int_t label, Int_t pdg,
   
   if ( !mcevent )
   {
-    AliWarning("MCEvent is not available, check analysis settings in configuration file!!");
+    AliDebug(1,"MCEvent is not available, check analysis settings in configuration file!!");
     
     ok = kFALSE;
     return fGMotherMom;
@@ -1390,7 +1390,7 @@ TLorentzVector AliMCAnalysisUtils::GetFirstMotherWithPDGAndPrimary
   
   if ( !mcevent )
   {
-    AliWarning("MCEvent is not available, check analysis settings in configuration file!!");
+    AliDebug(1,"MCEvent is not available, check analysis settings in configuration file!!");
     
     ok = kFALSE;
     return fGMotherMom;
@@ -1422,8 +1422,14 @@ TLorentzVector AliMCAnalysisUtils::GetFirstMotherWithPDGAndPrimary
       fGMotherMom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->E());
       gparentlabel  = grandmomLabel ;
       
-      grandmomP     = mcevent->GetTrack(grandmomLabel);
-      grandmomLabel = grandmomP->GetMother();
+      if ( grandmomLabel >= 0)
+      {
+        grandmomP = mcevent->GetTrack(grandmomLabel);
+        if ( grandmomP )
+          grandmomLabel = grandmomP->GetMother();
+        else AliDebug(1,Form("Grandmother not found for label %d !",grandmomLabel));
+      }
+
       break;
     }
   }
@@ -1445,7 +1451,7 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(Int_t label, const AliMCEvent*
   
   if ( !mcevent )
   {
-    AliWarning("MCEvent is not available, check analysis settings in configuration file, STOP!!");
+    AliDebug(1,"MCEvent is not available, check analysis settings in configuration file!!");
     
     ok = kFALSE;
     return fGMotherMom;
@@ -1488,7 +1494,7 @@ void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg, 
 {  
   if(!mcevent)
   {
-    AliWarning("MCEvent is not available, check analysis settings in configuration file, STOP!!");
+    AliDebug(1,"MCEvent is not available, check analysis settings in configuration file!!");
     
     ok = kFALSE;
     return;
@@ -1533,7 +1539,7 @@ void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg, 
   else 
   {
     ok = kFALSE;
-    AliInfo(Form("Mother with PDG %d, not found!",pdg));
+    AliDebug(1,Form("Mother with PDG %d, not found!",pdg));
     return;
   }      
   
@@ -1547,7 +1553,7 @@ Int_t AliMCAnalysisUtils::GetNDaughters(Int_t label, const AliMCEvent* mcevent, 
 {  
   if ( !mcevent )
   {
-    AliWarning("MCEvent is not available, check analysis settings in configuration file, STOP!!");
+    AliDebug(1,"MCEvent is not available, check analysis settings in configuration file!!");
     
     ok=kFALSE;
     return -1;
@@ -1881,7 +1887,7 @@ void AliMCAnalysisUtils::PrintAncestry(AliMCEvent* mcevent, Int_t label, Int_t n
    
     if(!primary)
     {
-      AliWarning("primary pointer not available!!");
+      AliDebug(1,"primary pointer not available!!");
       return;
     }
     

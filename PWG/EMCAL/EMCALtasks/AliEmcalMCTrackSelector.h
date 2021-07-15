@@ -99,6 +99,18 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
    */
   void SetRejectPhotonMother(bool doReject)             { fRejectPhotonMothers = doReject; }
 
+  /**
+   * @brief Make Pi0 stable
+   * 
+   * Select Pi0 as stable (physical primary) particle, and reject particles where 
+   * an ancestor in the decay chain is a pi0. Ancestor is usually the mother, however
+   * in order to drop conversions of photons from pi0 to electrons any particle in the 
+   * decay chain is checked.
+   * 
+   * @param doSelect If true Pi0s are selected as primary particles and their daughters are rejected
+   */
+  void SelectStablePi0(bool doSelect)                   { fSelectStablePi0 = doSelect; }
+
   void SetOnlyHIJING(Bool_t s)                          { fOnlyHIJING       = s    ; }
 
   /**
@@ -175,6 +187,14 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
    * @param partMap Index map between particles in input and output container
    */
   void                      CopyMCParticles(TClonesArray* partIn, TClonesArray* partOut, AliNamedArrayI* partMap=0);
+
+  /**
+   * @brief Recursive check if the mother or another ancestor is a Pi0
+   * 
+   * @param part Particle to be checked
+   * @return True if any ancestor is a pi0, false otherwise
+   */
+  bool                      IsFromPi0Mother(const AliVParticle &part) const;
   
   
   TString                   fParticlesOutName;     ///< name of output particle array
@@ -183,6 +203,7 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   Bool_t                    fChargedMC;            ///< true = only charged particles
   Bool_t                    fOnlyHIJING;           ///< true = only HIJING particles
   Bool_t                    fRejectPhotonMothers;  ///< Reject photons that are mothers of other photons
+  Bool_t                    fSelectStablePi0;      ///< Select Pi0 as stable particle, and reject daughters of Pi0 in case they are physical primary
   Double_t                  fEtaMax;               ///< maximum eta to accept particles
   TString                   fParticlesMapName;     //!<! name of the particle map
   Bool_t                    fInit;                 //!<! true = task initialized
@@ -198,6 +219,6 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   AliEmcalMCTrackSelector(const AliEmcalMCTrackSelector&);            // not implemented
   AliEmcalMCTrackSelector &operator=(const AliEmcalMCTrackSelector&); // not implemented
 
-  ClassDef(AliEmcalMCTrackSelector, 5); 
+  ClassDef(AliEmcalMCTrackSelector, 6); 
 };
 #endif

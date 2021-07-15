@@ -40,7 +40,8 @@ CellEnergy_0cells:
 CellTimeCalib:
     createHistos: true
     doCalibrateLowGain: true 
-    doCalibTimeEdep: false
+    doCalibTimeEdep: true
+    doMergedBCs: true
 CellTimeCalib_0cells:
     enabled: true    
     

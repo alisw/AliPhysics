@@ -54,7 +54,6 @@ namespace
     int index = -1;
     float nSigmaTPC = -1.f;
     float nSigmaTOF = -1.f;
-    KFParticle particle = KFParticle();
   };
 
   constexpr float kDeuMass{1.87561};
@@ -161,17 +160,18 @@ AliAnalysisTaskHypertriton3::~AliAnalysisTaskHypertriton3()
   }
 
   if (fCosPAsplineFile)
-    delete fCosPAsplineFile;
-
-  if (fGenHypKF || fGenHypO2)
   {
-    if (fGenHypKF)
-      delete fGenHypKF;
-    if (fGenHypO2)
-      delete fGenHypO2;
+    delete fCosPAsplineFile;
+  }
+
+  if (fGenHypO2)
+  {
+    delete fGenHypO2;
   }
   else if (fRecHyp)
+  {
     delete fRecHyp;
+  }
 }
 
 void AliAnalysisTaskHypertriton3::UserCreateOutputObjects()
@@ -211,31 +211,14 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects()
 
   if (fMC && man->GetMCtruthEventHandler())
   {
-    if (fKF)
-    {
-      fGenHypKF = new SHyperTriton3KF;
-      fRecHyp = (RHyperTriton *)fGenHypKF;
-      fTreeHyp3->Branch("SHyperTriton", fGenHypKF);
-    }
-    else
-    {
-      fGenHypO2 = new SHyperTriton3O2;
-      fRecHyp = (RHyperTriton *)fGenHypO2;
-      fTreeHyp3->Branch("SHyperTriton", fGenHypO2);
-    }
+    fGenHypO2 = new SHyperTriton3O2;
+    fRecHyp = (RHyperTriton3O2 *)fGenHypO2;
+    fTreeHyp3->Branch("SHyperTriton", fGenHypO2);
   }
   else
   {
-    if (fKF)
-    {
-      fRecHyp = new RHyperTriton3KF;
-      fTreeHyp3->Branch("RHyperTriton", static_cast<RHyperTriton3KF *>(fRecHyp));
-    }
-    else
-    {
-      fRecHyp = new RHyperTriton3O2;
-      fTreeHyp3->Branch("RHyperTriton", static_cast<RHyperTriton3O2 *>(fRecHyp));
-    }
+    fRecHyp = new RHyperTriton3O2;
+    fTreeHyp3->Branch("RHyperTriton", static_cast<RHyperTriton3O2 *>(fRecHyp));
   }
   fCosPAsplineFile = TFile::Open(AliDataFile::GetFileName(fCosPAsplineName).data());
   if (fCosPAsplineFile)
@@ -358,34 +341,11 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
           int chargeIndex = (fSwapSign && iT == fMixingTrack) ? track->GetSigned1Pt() < 0 : track->GetSigned1Pt() > 0;
           helper.nSigmaTPC = nSigmasTPC[iT];
           helper.nSigmaTOF = nSigmasTOF[iT];
-          if (fKF)
-          {
-            double posmom[6], cov[21];
-            track->GetXYZ(posmom);
-            track->GetPxPyPz(posmom + 3);
-            track->GetCovarianceXYZPxPyPz(cov);
-            helper.particle.Create(posmom, cov, track->Charge(), kMasses[iT]);
-            helper.particle.Chi2() = track->GetTPCchi2();
-            helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
-          }
           if (iT == fMixingTrack && fEnableEventMixing)
             deuteronsForMixing.emplace_back(track, nSigmasTPC[iT], nSigmasTOF[iT], 0);
           else
           {
             helpers[iT][chargeIndex].push_back(helper);
-            if (fUseDoubleV0s)
-            {
-
-              if (iT == 0)
-                deuPiTracks[chargeIndex][0].push_back(track);
-              if (iT == 1)
-                prPiTracks[chargeIndex][0].push_back(track);
-              if (iT == 2)
-              {
-                deuPiTracks[chargeIndex][1].push_back(track);
-                prPiTracks[chargeIndex][1].push_back(track);
-              }
-            }
           }
         }
       }
@@ -403,18 +363,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
       int chargeIndex = track->GetSigned1Pt() > 0;
       helper.nSigmaTPC = mixTrack->nSigmaTPC;
       helper.nSigmaTOF = mixTrack->nSigmaTOF;
-      if (fKF)
-      {
-        double posmom[6], cov[21];
-        track->GetXYZ(posmom);
-        track->GetPxPyPz(posmom + 3);
-        track->GetCovarianceXYZPxPyPz(cov);
-        helper.particle.Create(posmom, cov, track->Charge(), kMasses[0]);
-        helper.particle.Chi2() = track->GetTPCchi2();
-        helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
-      }
       helpers[fMixingTrack][chargeIndex].push_back(helper);
-      //      fakeEvent.AddTrack(track);
     }
   }
 
@@ -482,369 +431,105 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
     fRecHyp->is_ITSrefit_pr = tracks[1]->GetStatus() & AliVTrack::kITSrefit;
     fRecHyp->is_ITSrefit_pi = tracks[2]->GetStatus() & AliVTrack::kITSrefit;
 
-    if (fLambdaCheck)
-    {
-      int nVertLambda{!fUseDoubleV0s};
-      if (!fUseDoubleV0s)
-      {
-        try
-        {
-          o2::track::TrackParCov *prTrack = static_cast<o2::track::TrackParCov *>((AliExternalTrackParam *)tracks[1]);
-          o2::track::TrackParCov *piTrack = static_cast<o2::track::TrackParCov *>((AliExternalTrackParam *)tracks[2]);
-          nVertLambda = fVertexerLambda.process(*prTrack, *piTrack);
-        }
-        catch (std::runtime_error &e)
-        {
-        }
-        if (nVertLambda)
-        {
-          auto vertLambda = fVertexerLambda.getPCACandidate();
-          fVertexerLambda.propagateTracksToVertex();
-          auto &prTrackL = fVertexerLambda.getTrack(0);
-          auto &piTrackL = fVertexerLambda.getTrack(1);
-          decayVtxLambda.SetCoordinates((float)(vertLambda[0] - pvPos[0]), (float)(vertLambda[1] - pvPos[1]), (float)(vertLambda[2] - pvPos[2]));
-          lproL.SetCoordinates((float)prTrackL.Pt(), (float)prTrackL.Eta(), (float)prTrackL.Phi(), kPMass);
-          lpiL.SetCoordinates((float)piTrackL.Pt(), (float)piTrackL.Eta(), (float)piTrackL.Phi(), kPiMass);
-        }
-      }
-
-      if (nVertLambda)
-      {
-        auto vertLambda = fVertexerLambda.getPCACandidate();
-        fVertexerLambda.propagateTracksToVertex();
-        auto &prTrackL = fVertexerLambda.getTrack(0);
-        auto &piTrackL = fVertexerLambda.getTrack(1);
-        ROOT::Math::XYZVectorF decayVtxLambda{(float)(vertLambda[0] - pvPos[0]), (float)(vertLambda[1] - pvPos[1]), (float)(vertLambda[2] - pvPos[2])};
-        lVector lproL{(float)prTrackL.Pt(), (float)prTrackL.Eta(), (float)prTrackL.Phi(), kPMass};
-        lVector lpiL{(float)piTrackL.Pt(), (float)piTrackL.Eta(), (float)piTrackL.Phi(), kPiMass};
-        lVector lambda{lproL + lpiL};
-        fRecHyp->mppi_vert = lambda.mass();
-        const float lambdaLen = std::sqrt(decayVtxLambda.Mag2());
-        fRecHyp->cosPA_Lambda = lambda.Vect().Dot(decayVtxLambda) / (lambda.P() * lambdaLen);
-        fRecHyp->dca_lambda_hyper = Hypot(decayVtx.x() - vertLambda[0], decayVtx.y() - vertLambda[1], decayVtx.z() - vertLambda[2]);
-      }
-    }
     return true;
   };
 
-  if (fUseDoubleV0s)
+  fVertexer.setBz(esdEvent->GetMagneticField());
+  fVertexerLambda.setBz(esdEvent->GetMagneticField());
+  int indices[2][3]{{1, 1, 0}, {0, 0, 1}};
+
+  RHyperTriton3O2 &o2RecHyp = *(RHyperTriton3O2 *)fRecHyp;
+
+  for (int idx{0}; idx < 2; ++idx)
   {
-
-    RHyperTriton3O2 &doubleV0sRecHyp = *(RHyperTriton3O2 *)fRecHyp;
-
-    auto acceptTracks = [&](std::array<AliESDtrack *, 3> tracks) -> bool {
-      int candidate = 0;
-      for (int iT{0}; iT < 3; ++iT)
-      {
-        float dca[2];
-        tracks[iT]->GetImpactParameters(dca[0], dca[1]);
-        double dcaNorm = std::hypot(dca[0], dca[1]);
-        float nSigmasTPC = fPIDResponse->NumberOfSigmasTPC(tracks[iT], kAliPID[iT]);
-        float nSigmasTOF = fPIDResponse->NumberOfSigmasTOF(tracks[iT], kAliPID[iT]);
-        bool requireTOFpid = tracks[iT]->P() > fRequireTOFpid[iT];
-        if (std::abs(nSigmasTPC) < fTPCsigmas[iT] && dcaNorm > fMinTrackDCA[iT] && tracks[iT]->Pt() < fTrackPtRange[iT][1] &&
-            tracks[iT]->Pt() > fTrackPtRange[iT][0] && tracks[iT]->GetTPCsignalN() >= fMinTPCpidClusters[iT])
-        {
-          candidate += (std::abs(nSigmasTOF) < fTOFsigmas[iT]) || (!HasTOF(tracks[iT]) && !requireTOFpid);
-        }
-      }
-      int accept = candidate < 3 ? 0 : 1;
-      return accept;
-    };
-
-    auto deuPiV0s = fV0Vertexer.Tracks2V0vertices3Body(deuPiTracks, esdEvent->GetPrimaryVertex(), esdEvent->GetMagneticField(), fPIDResponse);
-    auto prPiV0s = fV0Vertexer.Tracks2V0vertices3Body(prPiTracks, esdEvent->GetPrimaryVertex(), esdEvent->GetMagneticField(), fPIDResponse);
-
-    for (auto &deuPiV0 : deuPiV0s)
+    for (const auto &deu : helpers[kDeuteron][indices[idx][0]])
     {
-
-      int isPiPositive = CheckPionCharge(deuPiTracks, deuPiV0);
-      if (isPiPositive < 0)
-        continue;
-
-      int piIndex = isPiPositive ? deuPiV0.GetPindex() : deuPiV0.GetNindex();
-      int deuIndex = isPiPositive ? deuPiV0.GetNindex() : deuPiV0.GetPindex();
-
-      auto piTrack = deuPiTracks[isPiPositive][1][piIndex];
-      auto deuTrack = deuPiTracks[1 - isPiPositive][0][deuIndex];
-
-      for (auto &prPiV0 : prPiV0s)
+      int rotations{0};
+      auto deuTrackSnapshot = *deu.track;
+      double alpha = deu.track->GetAlpha();
+      do
       {
-
-        int isSecondPiPositive = CheckPionCharge(prPiTracks, prPiV0);
-        if (isSecondPiPositive < 0)
-          continue;
-
-        auto secondPiTrack = isSecondPiPositive ? prPiTracks[1][1][prPiV0.GetPindex()] : prPiTracks[0][1][prPiV0.GetNindex()];
-        if (piTrack != secondPiTrack) // require common pion
-          continue;
-
-        int prIndex = isPiPositive ? prPiV0.GetNindex() : prPiV0.GetPindex();
-        auto prTrack = prPiTracks[1 - isPiPositive][0][prIndex];
-
-        std::array<AliESDtrack *, 3> tracks{deuTrack, prTrack, piTrack};
-
-        if (tracks[0] == tracks[1] || tracks[1] == tracks[2] || tracks[0] == tracks[2])
-          continue;
-
-        if (deuPiTracks[1 - isPiPositive][0].size() < deuIndex)
-          continue;
-
-        if (prPiTracks[1 - isPiPositive][0].size() < prIndex)
-          continue;
-
-        if (!acceptTracks(tracks))
-          continue;
-
-        double firstXYZ[3], secondXYZ[3], firstCov[6], secondCov[6];
-        deuPiV0.GetXYZ(firstXYZ[0], firstXYZ[1], firstXYZ[2]);
-        prPiV0.GetXYZ(secondXYZ[0], secondXYZ[1], secondXYZ[2]);
-        deuPiV0.GetVertex().GetCovarianceMatrix(firstCov);
-        prPiV0.GetVertex().GetCovarianceMatrix(secondCov);
-        double vert[3], sigmaVert[3];
-        constexpr int covIndex[3]{0, 2, 5};
-        for (int i{0}; i < 3; ++i)
+        o2RecHyp.rotation = rotations;
+        if (rotations)
         {
-          vert[i] = (firstXYZ[i] / firstCov[covIndex[i]] + secondXYZ[i] / secondCov[covIndex[i]]) / (1. / firstCov[covIndex[i]] + 1. / secondCov[covIndex[i]]);
-          sigmaVert[i] = TMath::Sqrt(1. / (1. / (firstCov[covIndex[i]] * firstCov[covIndex[i]]) + 1. / (secondCov[covIndex[i]] * secondCov[covIndex[i]])));
-        }
-        double sumCov[6];
-        for (int i{0}; i < 6; ++i)
-        {
-          sumCov[i] = firstCov[i] + secondCov[i];
-        }
-
-        std::array<float, 3> nSigmasTPC{fPIDResponse->NumberOfSigmasTPC(tracks[0], kAliPID[0]), fPIDResponse->NumberOfSigmasTPC(tracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTPC(tracks[2], kAliPID[2])};
-        std::array<float, 3> nSigmasTOF{fPIDResponse->NumberOfSigmasTOF(tracks[0], kAliPID[0]), fPIDResponse->NumberOfSigmasTOF(tracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTOF(tracks[2], kAliPID[2])};
-
-        lVector ldeu{(float)tracks[0]->Pt(), (float)tracks[0]->Eta(), (float)tracks[0]->Phi(), kDeuMass};
-        lVector lpro{(float)tracks[1]->Pt(), (float)tracks[1]->Eta(), (float)tracks[1]->Phi(), kPMass};
-        lVector lpi{(float)tracks[2]->Pt(), (float)tracks[2]->Eta(), (float)tracks[2]->Phi(), kPiMass};
-        hypertriton = ldeu + lpro + lpi;
-        doubleV0sRecHyp.mppi = (lpro + lpi).mass2();
-        doubleV0sRecHyp.mdpi = (ldeu + lpi).mass2();
-        ROOT::Math::Boost boostHyper{hypertriton.BoostToCM()};
-        auto d{boostHyper(ldeu).Vect()};
-        auto lambda{boostHyper(lpro + lpi).Vect()};
-        auto p{boostHyper(lpro).Vect()};
-        auto pi{boostHyper(lpi).Vect()};
-        doubleV0sRecHyp.momDstar = std::sqrt(d.Mag2());
-        doubleV0sRecHyp.cosThetaStar = d.Dot(hypertriton.Vect()) / (doubleV0sRecHyp.momDstar * hypertriton.P());
-        doubleV0sRecHyp.cosTheta_ProtonPiH = p.Dot(pi) / std::sqrt(p.Mag2() * pi.Mag2());
-        decayVtx.SetCoordinates((float)(vert[0] - pvPos[0]), (float)(vert[1] - pvPos[1]), (float)(vert[2] - pvPos[2]));
-        doubleV0sRecHyp.candidates = 3;
-
-        double deuPos[3], proPos[3], piPos[3];
-
-        // AliESDVertex
-        AliESDVertex *decESDVtx = new AliESDVertex(vert, sigmaVert, "vert");
-
-        for (int i = 0; i < 3; i++)
-        {
-          tracks[i]->PropagateToDCA(decESDVtx, esdEvent->GetMagneticField(), 25.);
-        }
-
-        tracks[0]->GetXYZ(deuPos);
-        tracks[1]->GetXYZ(proPos);
-        tracks[2]->GetXYZ(piPos);
-
-        if (fMC && IsTrueHyperTriton3Candidate(tracks[0], tracks[1], tracks[2], mcEvent) >= 0)
-        {
-          int lab = std::abs(tracks[0]->GetLabel());
-          if (!mcEvent->IsSecondaryFromWeakDecay(lab))
-            continue;
-          AliVParticle *part = mcEvent->GetTrack(lab);
-          fHistDecVertexRes->Fill(vert[0] - part->Xv() + vert[1] - part->Yv() + vert[2] - part->Zv());
-        }
-
-        doubleV0sRecHyp.dca_de_pr = Hypot(deuPos[0] - proPos[0], deuPos[1] - proPos[1], deuPos[2] - proPos[2]);
-        if (doubleV0sRecHyp.dca_de_pr > fMaxTrack2TrackDCA[0])
-          continue;
-        doubleV0sRecHyp.dca_de_pi = Hypot(deuPos[0] - piPos[0], deuPos[1] - piPos[1], deuPos[2] - piPos[2]);
-        if (doubleV0sRecHyp.dca_de_pi > fMaxTrack2TrackDCA[1])
-          continue;
-
-        doubleV0sRecHyp.dca_pr_pi = Hypot(proPos[0] - piPos[0], proPos[1] - piPos[1], proPos[2] - piPos[2]);
-        if (doubleV0sRecHyp.dca_pr_pi > fMaxTrack2TrackDCA[2])
-          continue;
-
-        doubleV0sRecHyp.dca_pr_sv = Hypot(proPos[0] - vert[0], proPos[1] - vert[1], proPos[2] - vert[2]);
-        if (doubleV0sRecHyp.dca_pr_sv > fMaxTrack2SVDCA[1])
-          continue;
-
-        doubleV0sRecHyp.dca_pi_sv = Hypot(piPos[0] - vert[0], piPos[1] - vert[1], piPos[2] - vert[2]);
-        if (doubleV0sRecHyp.dca_pi_sv > fMaxTrack2SVDCA[2])
-          continue;
-
-        doubleV0sRecHyp.dca_de_sv = Hypot(deuPos[0] - vert[0], deuPos[1] - vert[1], deuPos[2] - vert[2]);
-        if (doubleV0sRecHyp.dca_de_sv > fMaxTrack2SVDCA[0])
-          continue;
-        
-        doubleV0sRecHyp.cosPA_Lambda = prPiV0.GetV0CosineOfPointingAngle();
-        doubleV0sRecHyp.chi2 = prPiV0.GetChi2V0() + deuPiV0.GetChi2V0();
-
-        for (int i = 0; i < 3; i++)
-        {
-          tracks[i]->PropagateToDCA(esdEvent->GetPrimaryVertex(), esdEvent->GetMagneticField(), 25.);
-        }
-
-        if (!fillTreeInfo(tracks, nSigmasTPC, nSigmasTOF))
-          continue;
-
-        bool record{!fMC || !fOnlyTrueCandidates};
-        if (fMC)
-        {
-          int momId = IsTrueHyperTriton3Candidate(tracks[0], tracks[1], tracks[2], mcEvent);
-          record = record || momId >= 0;
-          if (record)
-          {
-            if (fKF)
-              FillGenHypertriton(fGenHypKF, momId, true, mcEvent);
-            else
-              FillGenHypertriton(fGenHypO2, momId, true, mcEvent);
-            mcMap[momId] = 1;
-          }
-        }
-        if (record)
-          fTreeHyp3->Fill();
-      }
-    }
-  }
-  else
-  {
-
-    fVertexer.setBz(esdEvent->GetMagneticField());
-    fVertexerLambda.setBz(esdEvent->GetMagneticField());
-    int indices[2][3]{{1, 1, 0}, {0, 0, 1}};
-
-    KFPVertex kfPVertex;
-    kfPVertex.SetXYZ(pvPos[0], pvPos[1], pvPos[2]);
-    kfPVertex.SetCovarianceMatrix(pvCov[0], pvCov[1], pvCov[2], pvCov[3], pvCov[4], pvCov[5]);
-    kfPVertex.SetChi2(fEventCuts.GetPrimaryVertex()->GetChi2());
-    kfPVertex.SetNDF(fEventCuts.GetPrimaryVertex()->GetNDF());
-    kfPVertex.SetNContributors(fEventCuts.GetPrimaryVertex()->GetNContributors());
-
-    KFParticle prodVertex{kfPVertex};
-
-    RHyperTriton3KF &kfRecHyp = *(RHyperTriton3KF *)fRecHyp;
-    RHyperTriton3O2 &o2RecHyp = *(RHyperTriton3O2 *)fRecHyp;
-
-    for (int idx{0}; idx < 2; ++idx)
-    {
-      for (const auto &deu : helpers[kDeuteron][indices[idx][0]])
-      {
-        KFParticle oneCandidate;
-        if (fKF)
-        {
-          oneCandidate.Q() = deu.particle.GetQ();
-          oneCandidate.AddDaughter(deu.particle);
+          double deltaAngle{rotations * TMath::TwoPi() / (fTrackRotations + 1)};
+          deuTrackSnapshot.SetParamOnly(deu.track->GetX(), alpha + deltaAngle, deu.track->getParams());
         }
         for (const auto &p : helpers[kProton][indices[idx][1]])
         {
           if (deu.track == p.track)
             continue;
 
-          KFParticle twoCandidate{oneCandidate};
-          if (fKF)
-          {
-            twoCandidate.AddDaughter(p.particle);
-            kfRecHyp.chi2_deuprot = twoCandidate.GetChi2() / twoCandidate.GetNDF();
-            if (kfRecHyp.chi2_deuprot > fMaxKFchi2[0] || kfRecHyp.chi2_deuprot < 0.)
-              continue;
-          }
           for (const auto &pi : helpers[kPion][indices[idx][2]])
           {
             if (p.track == pi.track || deu.track == pi.track || deu.track == p.track)
               continue;
 
             ROOT::Math::SVector<double, 3U> vert;
-            if (!fKF)
+            lVector ldeu, lpro, lpi;
+            int nVert{0};
+
+            try
             {
-              int nVert{0};
-              try
-              {
-                nVert = fVertexer.process(*deu.track, *p.track, *pi.track);
-              }
-              catch (std::runtime_error &e)
-              {
-              }
-              if (!nVert)
-                continue;
-
-              fVertexer.propagateTracksToVertex();
-              auto &deuTrack = fVertexer.getTrack(0);
-              auto &prTrack = fVertexer.getTrack(1);
-              auto &piTrack = fVertexer.getTrack(2);
-              lVector ldeu{(float)deuTrack.Pt(), (float)deuTrack.Eta(), (float)deuTrack.Phi(), kDeuMass};
-              lVector lpro{(float)prTrack.Pt(), (float)prTrack.Eta(), (float)prTrack.Phi(), kPMass};
-              lVector lpi{(float)piTrack.Pt(), (float)piTrack.Eta(), (float)piTrack.Phi(), kPiMass};
-
-              hypertriton = ldeu + lpro + lpi;
-
-              o2RecHyp.mppi = (lpro + lpi).mass2();
-              o2RecHyp.mdpi = (ldeu + lpi).mass2();
-              ROOT::Math::Boost boostHyper{hypertriton.BoostToCM()};
-              auto d{boostHyper(ldeu).Vect()};
-              auto lambda{boostHyper(lpro + lpi).Vect()};
-              auto p{boostHyper(lpro).Vect()};
-              auto pi{boostHyper(lpi).Vect()};
-              o2RecHyp.momDstar = std::sqrt(d.Mag2());
-              o2RecHyp.cosThetaStar = d.Dot(hypertriton.Vect()) / (o2RecHyp.momDstar * hypertriton.P());
-              o2RecHyp.cosTheta_ProtonPiH = p.Dot(pi) / std::sqrt(p.Mag2() * pi.Mag2());
-              vert = fVertexer.getPCACandidate();
-              decayVtx.SetCoordinates((float)(vert[0] - pvPos[0]), (float)(vert[1] - pvPos[1]), (float)(vert[2] - pvPos[2]));
-              o2RecHyp.candidates = nVert;
-
-              double deuPos[3], proPos[3], piPos[3];
-              deuTrack.GetXYZ(deuPos);
-              prTrack.GetXYZ(proPos);
-              piTrack.GetXYZ(piPos);
-
-              o2RecHyp.dca_de_pr = Hypot(deuPos[0] - proPos[0], deuPos[1] - proPos[1], deuPos[2] - proPos[2]);
-              if (o2RecHyp.dca_de_pr > fMaxTrack2TrackDCA[0])
-                continue;
-              o2RecHyp.dca_de_pi = Hypot(deuPos[0] - piPos[0], deuPos[1] - piPos[1], deuPos[2] - piPos[2]);
-              if (o2RecHyp.dca_de_pi > fMaxTrack2TrackDCA[1])
-                continue;
-
-              o2RecHyp.dca_pr_pi = Hypot(proPos[0] - piPos[0], proPos[1] - piPos[1], proPos[2] - piPos[2]);
-              if (o2RecHyp.dca_pr_pi > fMaxTrack2TrackDCA[2])
-                continue;
-
-              o2RecHyp.dca_de_sv = Hypot(deuPos[0] - vert[0], deuPos[1] - vert[1], deuPos[2] - vert[2]);
-              if (o2RecHyp.dca_de_sv > fMaxTrack2SVDCA[0])
-                continue;
-              o2RecHyp.dca_pr_sv = Hypot(proPos[0] - vert[0], proPos[1] - vert[1], proPos[2] - vert[2]);
-              if (o2RecHyp.dca_pr_sv > fMaxTrack2SVDCA[1])
-                continue;
-              o2RecHyp.dca_pi_sv = Hypot(piPos[0] - vert[0], piPos[1] - vert[1], piPos[2] - vert[2]);
-              if (o2RecHyp.dca_pi_sv > fMaxTrack2SVDCA[2])
-                continue;
-
-              o2RecHyp.chi2 = fVertexer.getChi2AtPCACandidate();
+              nVert = fVertexer.process(deuTrackSnapshot, *p.track, *pi.track);
             }
-            else
+            catch (std::runtime_error &e)
             {
-              KFParticle kfHyperTriton{twoCandidate};
-              kfHyperTriton.AddDaughter(pi.particle);
-              kfRecHyp.chi2_3prongs = kfHyperTriton.GetChi2() / kfHyperTriton.GetNDF();
-              if (kfRecHyp.chi2_3prongs > fMaxKFchi2[1] || kfRecHyp.chi2_3prongs < 0.)
-                continue;
-              double mass = kfHyperTriton.GetMass();
-              if (mass < fMassWindow[0] || mass > fMassWindow[1])
-                continue;
-              vert[0] = kfHyperTriton.X();
-              vert[1] = kfHyperTriton.Y();
-              vert[2] = kfHyperTriton.Z();
-              decayVtx.SetCoordinates(kfHyperTriton.X() - prodVertex.X(), kfHyperTriton.Y() - prodVertex.Y(), kfHyperTriton.Z() - prodVertex.Z());
-              ROOT::Math::XYZVectorF mom{kfHyperTriton.Px(), kfHyperTriton.Py(), kfHyperTriton.Pz()};
-              hypertriton.SetCoordinates(kfHyperTriton.GetPt(), kfHyperTriton.GetEta(), kfHyperTriton.GetPhi(), kHyperTritonMass);
-
-              kfHyperTriton.SetProductionVertex(prodVertex);
-              kfRecHyp.chi2_topology = kfHyperTriton.GetChi2() / kfHyperTriton.GetNDF();
-              if (kfRecHyp.chi2_topology > fMaxKFchi2[2] || kfRecHyp.chi2_topology < 0.)
-                continue;
             }
+            if (!nVert)
+              continue;
+
+            fVertexer.propagateTracksToVertex();
+            auto &deuTrack = fVertexer.getTrack(0);
+            auto &prTrack = fVertexer.getTrack(1);
+            auto &piTrack = fVertexer.getTrack(2);
+            ldeu.SetCoordinates((float)deuTrack.Pt(), (float)deuTrack.Eta(), (float)deuTrack.Phi(), kDeuMass);
+            lpro.SetCoordinates((float)prTrack.Pt(), (float)prTrack.Eta(), (float)prTrack.Phi(), kPMass);
+            lpi.SetCoordinates((float)piTrack.Pt(), (float)piTrack.Eta(), (float)piTrack.Phi(), kPiMass);
+
+            hypertriton = ldeu + lpro + lpi;
+
+            o2RecHyp.mppi = (lpro + lpi).mass2();
+            o2RecHyp.mdpi = (ldeu + lpi).mass2();
+            ROOT::Math::Boost boostHyper{hypertriton.BoostToCM()};
+            auto d{boostHyper(ldeu).Vect()};
+            // auto lambda{boostHyper(lpro + lpi).Vect()};
+            auto pV{boostHyper(lpro).Vect()};
+            auto piV{boostHyper(lpi).Vect()};
+            o2RecHyp.momDstar = std::sqrt(d.Mag2());
+            o2RecHyp.cosThetaStar = d.Dot(hypertriton.Vect()) / (o2RecHyp.momDstar * hypertriton.P());
+            o2RecHyp.cosTheta_ProtonPiH = pV.Dot(piV) / std::sqrt(pV.Mag2() * piV.Mag2());
+            vert = fVertexer.getPCACandidate();
+            decayVtx.SetCoordinates((float)(vert[0] - pvPos[0]), (float)(vert[1] - pvPos[1]), (float)(vert[2] - pvPos[2]));
+            o2RecHyp.candidates = nVert;
+
+            double deuPos[3], proPos[3], piPos[3];
+            deuTrack.GetXYZ(deuPos);
+            prTrack.GetXYZ(proPos);
+            piTrack.GetXYZ(piPos);
+
+            o2RecHyp.dca_de_pr = Hypot(deuPos[0] - proPos[0], deuPos[1] - proPos[1], deuPos[2] - proPos[2]);
+            if (o2RecHyp.dca_de_pr > fMaxTrack2TrackDCA[0])
+              continue;
+            o2RecHyp.dca_de_pi = Hypot(deuPos[0] - piPos[0], deuPos[1] - piPos[1], deuPos[2] - piPos[2]);
+            if (o2RecHyp.dca_de_pi > fMaxTrack2TrackDCA[1])
+              continue;
+
+            o2RecHyp.dca_pr_pi = Hypot(proPos[0] - piPos[0], proPos[1] - piPos[1], proPos[2] - piPos[2]);
+            if (o2RecHyp.dca_pr_pi > fMaxTrack2TrackDCA[2])
+              continue;
+
+            o2RecHyp.dca_de_sv = Hypot(deuPos[0] - vert[0], deuPos[1] - vert[1], deuPos[2] - vert[2]);
+            if (o2RecHyp.dca_de_sv > fMaxTrack2SVDCA[0])
+              continue;
+            o2RecHyp.dca_pr_sv = Hypot(proPos[0] - vert[0], proPos[1] - vert[1], proPos[2] - vert[2]);
+            if (o2RecHyp.dca_pr_sv > fMaxTrack2SVDCA[1])
+              continue;
+            o2RecHyp.dca_pi_sv = Hypot(piPos[0] - vert[0], piPos[1] - vert[1], piPos[2] - vert[2]);
+            if (o2RecHyp.dca_pi_sv > fMaxTrack2SVDCA[2])
+              continue;
+
+            o2RecHyp.chi2 = fVertexer.getChi2AtPCACandidate();
 
             std::array<AliESDtrack *, 3> tracks{(AliESDtrack *)deu.track, (AliESDtrack *)p.track, (AliESDtrack *)pi.track};
             std::array<float, 3> nSigmaTPC{deu.nSigmaTPC, p.nSigmaTPC, pi.nSigmaTPC};
@@ -859,26 +544,25 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
               record = record || momId >= 0;
               if (record)
               {
-                if (fKF)
-                  FillGenHypertriton(fGenHypKF, momId, true, mcEvent);
-                else
-                  FillGenHypertriton(fGenHypO2, momId, true, mcEvent);
+                FillGenHypertriton(fGenHypO2, momId, true, mcEvent);
                 mcMap[momId] = 1;
               }
             }
             if (record)
+            {
               fTreeHyp3->Fill();
+            }
           }
         }
-      }
+      } while (rotations++ < fTrackRotations);
     }
-    if (fEnableEventMixing)
-      FillEventMixingPool(fEventCuts.GetCentrality(), pvPos[2], deuteronsForMixing);
   }
+  if (fEnableEventMixing)
+    FillEventMixingPool(fEventCuts.GetCentrality(), pvPos[2], deuteronsForMixing);
 
   if (fMC)
   {
-    RHyperTriton rec;
+    RHyperTriton3O2 rec;
     rec.centrality = fRecHyp->centrality;
     rec.trigger = fRecHyp->trigger;
     *fRecHyp = rec;
@@ -897,10 +581,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         continue;
       if (mcMap.find(iTrack) != mcMap.end())
         continue;
-      if (fKF)
-        FillGenHypertriton(fGenHypKF, iTrack, false, mcEvent);
-      else
-        FillGenHypertriton(fGenHypO2, iTrack, false, mcEvent);
+      FillGenHypertriton(fGenHypO2, iTrack, false, mcEvent);
       fTreeHyp3->Fill();
     }
   }
@@ -908,8 +589,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
   PostData(1, fListHist);
   PostData(2, fTreeHyp3);
 }
-
-void AliAnalysisTaskHypertriton3::Terminate(Option_t *) {}
 
 int AliAnalysisTaskHypertriton3::FindEventMixingCentBin(const float centrality)
 {

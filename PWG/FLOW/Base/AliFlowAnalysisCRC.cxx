@@ -675,7 +675,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   } // end of if(fUseVZERO)
 
   // ZDC *********************************************************************************************************
-
+  
   if(fUseZDC) {
     // Get Q vectors for the subevents
     AliFlowVector vQarray[2];
@@ -7397,7 +7397,8 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC2()
   } else {
     fQAZDCCutsFlag = kFALSE;
   }
-}
+} // end of RecenterCRCQVecZDC2()
+
 //=======================================================================================================================
 
 void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
@@ -9353,6 +9354,8 @@ void AliFlowAnalysisCRC::CalculateCMEZDC()
 
 void AliFlowAnalysisCRC::CalculateCMESPPP() //@Shi spectator plane participant plane method arXiv:1805.05300
 {
+  // ZDC QA cuts
+  if(fQAZDCCuts && !fQAZDCCutsFlag) {return;}
   //************************************************ Weights **************************************
   Double_t MulWeig = 1.;
   //@shi no file supplied
@@ -12566,6 +12569,7 @@ void AliFlowAnalysisCRC::FinalizeCMEZDC()
 } // end of void AliFlowAnalysisCRC::FinalizeCMEZDC()
 
 //=======================================================================================================================
+
 void AliFlowAnalysisCRC::FinalizeCMESPPP()
 {
 	cout << "*************************************" << endl;

@@ -22,6 +22,7 @@
 #include "AdditionalFunctions.h"
 #include "AliAnalysisManager.h"
 #include "AliAODHeader.h"
+#include "AliAODMCHeader.h"
 #include "AliCentrality.h"
 #include "AliPWGFunc.h"
 #include "AliPDG.h"
@@ -63,7 +64,7 @@ double TOFsignal(double *x, double *par) {
     return norm * TMath::Gaus(tail + mean, mean, sigma) * TMath::Exp(-tail * (x[0] - tail - mean) / (sigma * sigma));
 }
 
-void SetupTRD2013(TF1* neg[4], TF1* pos[4]) { 
+void SetupTRD2013(TF1* neg[4], TF1* pos[4]) {
   const double fgkPhiParamPos[4][4] = {
       {1.38984e+00, -2.10187e+01, 5.81724e-02, 1.91938e+01},
       {2.02372e+00, -2.44456e+00, 8.99000e-01, 9.22399e-01},
@@ -82,6 +83,23 @@ void SetupTRD2013(TF1* neg[4], TF1* pos[4]) {
       pos[iFunction]->SetParameter(iParam, fgkPhiParamPos[iFunction][iParam]);
     }
   }
+}
+
+double kHe3Mass = 2.809230089;
+
+constexpr double Sq(double x) { return x * x; }
+
+double Dist(const double a[3], const double b[3]) { return std::sqrt(Sq(a[0] - b[0]) + Sq(a[1] - b[1]) + Sq(a[2] - b[2])); }
+
+double ComputeHe3Ct(AliVParticle *he3Part, AliVParticle *dauPart)
+{
+    double primVertex[3];
+    double secVertex[3];
+    he3Part->XvYvZv(primVertex);
+    dauPart->XvYvZv(secVertex);
+    double decLength = Dist(secVertex, primVertex);
+    // std::cout<<kHe3Mass * decLength / he3Part->P()<<std::endl;
+    return kHe3Mass * decLength / he3Part->P();
 }
 
 }
@@ -123,6 +141,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fCharge{1.f}
    ,fIsMC{false}
    ,fFillOnlyEventHistos{false}
+   ,fAbsorptionCt{-1.f}
    ,fPID{nullptr}
    ,fTriggerMask{0}
    ,fMagField{0.f}
@@ -333,7 +352,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
       nSigmasBins[i] = -5. + i * 0.2;
       multBins[i] = i * 2.;
     }
-  
+
     fMultDistributionTPC = new TH3F("fMultDistributionTPC",";Reference Multiplicity;#it{p}_{T} (Gev/#it{c});TPC n#sigma", 50, multBins, nPtBins,pTbins, 50, nSigmasBins);
     fMultDistributionTOF = new TH3F("fMultDistributionTOF",";Reference Multiplicity;#it{p}_{T} (Gev/#it{c});TOF n#sigma", 50, multBins, nPtBins,pTbins, 50, nSigmasBins);
     fList->Add(fMultDistributionTPC);
@@ -445,7 +464,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   }
 
   AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
-  
+
   AliVEvent *ev = InputEvent();
 
   fCentrality = -1.f;
@@ -481,7 +500,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       }
     }
   }
-  
+
   if (!nanoHeader) {
     std::array <AliEventCuts::NormMask,4> norm_masks {
       AliEventCuts::kAnyEvent,
@@ -537,6 +556,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   TClonesArray *stack = nullptr;
   fRejectedParticles.clear();
   if (fIsMC || fPtShape) {
+    AliAODMCHeader *mcHeader = (AliAODMCHeader *)ev->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if (!mcHeader){
+      ::Fatal("AliAnalysisTaskNucleiYield::UserExec","MC header branch not found.");
+    }
     // get branch "mcparticles"
     stack = (TClonesArray*)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if (!stack)
@@ -544,6 +567,9 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
     /// Making the list of the deuterons we want to measure
     for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC) {
+      if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC, mcHeader, stack)) {
+        continue;
+      }
       AliAODMCParticle *part = (AliAODMCParticle*)stack->UncheckedAt(iMC);
       const int pdg = std::abs(part->GetPdgCode());
       const int iC = part->Charge() > 0 ? 1 : 0;
@@ -558,6 +584,19 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       if (fIsMC) fProduction->Fill(mult * part->P());
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (fSaveTrees) {
+        fAbsorptionCt = -1;
+        if(part->GetNDaughters()>0){
+          for (int c = part->GetDaughterFirst(); c <= part->GetDaughterLast(); ++c)
+          {
+            AliVParticle *dPart = (AliAODMCParticle*)stack->UncheckedAt(c);
+            int dPartPDG = std::abs(dPart->PdgCode());
+            if (dPartPDG != 22 && dPartPDG != 11)
+            {
+              fAbsorptionCt = ComputeHe3Ct(part, dPart);
+              break;
+            }
+          }
+        }
         SetSLightNucleus(part,fSimNucleus);
         fSTree->Fill();
       }
@@ -571,9 +610,9 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
     if (nanoHeader)
       TrackLoop(nanoTrack, true);
-    else
+    else {
       TrackLoop(aodTrack, false);
-    
+    }
   } // End AOD track loop
 
   //  Post output data.
@@ -680,7 +719,7 @@ float AliAnalysisTaskNucleiYield::GetTPCsigmas(AliVTrack* t) {
     const float p = t->GetTPCmomentum() / fPDGMass;
     const float r = AliExternalTrackParam::BetheBlochAleph(p, fCustomTPCpid[0], fCustomTPCpid[1],
         fCustomTPCpid[2], fCustomTPCpid[3], fCustomTPCpid[4]);
-    return (t->GetTPCsignal() - r) / (fCustomTPCpid[5] * r); 
+    return (t->GetTPCsignal() - r) / (fCustomTPCpid[5] * r);
   }
 }
 
@@ -866,6 +905,7 @@ int AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(AliVTrack *track,
 void AliAnalysisTaskNucleiYield::SetSLightNucleus(AliAODMCParticle* part, SLightNucleus& snucl) {
   snucl.pt = part->Pt();
   snucl.eta = part->Eta();
+  snucl.absCt = fAbsorptionCt;
   snucl.centrality = fCentrality;
   snucl.pdg = part->GetPdgCode();
   if (part->IsPhysicalPrimary())
@@ -924,11 +964,11 @@ Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliAODTrack *track) {
   float nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
   float lengthInActiveZoneTPC=esdTrack.GetLengthInActiveZone(0,fRequireDeadZoneWidth,220.,fMagField);
   double cutGeoNcrNclLength=fRequireCutGeoNcrNclLength-TMath::Power(TMath::Abs(esdTrack.GetSigned1Pt()),fRequireCutGeoNcrNclGeom1Pt);
-  
+
   if (lengthInActiveZoneTPC < cutGeoNcrNclLength) checkResult = kFALSE;
   if (nCrossedRowsTPC<fCutGeoNcrNclFractionNcr*cutGeoNcrNclLength) checkResult=kFALSE;
   if (esdTrack.GetTPCncls()<fCutGeoNcrNclFractionNcl*cutGeoNcrNclLength) checkResult=kFALSE;
-  
+
   return checkResult;
 }
 Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliNanoAODTrack *track) {

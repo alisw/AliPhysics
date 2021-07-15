@@ -166,6 +166,7 @@ fhJetPtPartLevelZero(0x0),
 fhJetPtPartLevelVsJetPtDetLevelCorr(0x0),                         //1D unfolding
 fhJetPtPartLevelVsJetPtDetLevelZero(0x0),                         //1D unfolding
 fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr(0x0),                   //1D unfolding (added by KA)
+fhImpurityInclusive_DetJetPtVsPartJetPtCorr(0x0),                          //Impurity distribution (added by KA)
 fhPhi_JetPtPartLevel_InclusiveJets(0x0),                          //2D unfolding
 fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets(0x0),     //2D unfolding
 fhPhi_JetPtZeroPartLevel_InclusiveJets(0x0),                      //2D unfolding (added by KA)
@@ -212,10 +213,16 @@ fMultFramework(kFALSE),
 fRho(0.),
 fRhoMC(0.),
 fRhoEMB(0.),
-fRunnumber(0)
+fRunnumber(0),
+fMaxFacPtHard(0)
 {
    //default constructor
-
+   //1D respnse matrix from recoil jets  //FF
+   for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
+      fhRecoilJetPtPartLevelCorr[itt] = NULL;
+      fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[itt] = NULL;
+      fhImpurityRecoil_DetJetPtVsPartJetPtCorr[itt] = NULL;
+   }
    //2D unfolding
    for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
       fhDeltaPhi_JetPtPartLevel[itt] = NULL;                               //2D unfolding
@@ -302,6 +309,7 @@ fRunnumber(0)
       }
 
       fhTTH_V0Mnorm1_PartLevel[i] = 0x0;
+      fhTTH_V0Mnorm_AllMB_PartLevel[i] = 0x0; //FF
       //fhTTH_3D_V0Mnorm1_PartLevel[i] = 0x0;
 
       //fhTTC_V0Mnorm1_PartLevel[i] = 0x0;
@@ -323,10 +331,13 @@ fRunnumber(0)
       fhRecoilJetPtTTH_V0Mnorm1_PartLevel[i] = 0x0;
       fhRecoilJetPtZero_TTH_V0Mnorm1_PartLevel[i] = NULL; //added by KA
       //fhRecoilJetPtTTC_V0Mnorm1_PartLevel[i] = 0x0;
+      fhRecoilJetPtTTH_V0Mnorm_AllMB_PartLevel[i] = 0x0; //FF
 
       fhRecoilJetPhiTTH_V0Mnorm1_PartLevel[i] = 0x0;
       fhRecoilJetPtZero_DeltaPhi_TTH_V0Mnorm1_PartLevel[i] = NULL; //added by KA
       //fhRecoilJetTTH_V0Mnorm1_PartLevel[i]    = 0x0;
+      fhRecoilJetPhiTTH_V0Mnorm_AllMB_PartLevel[i] = 0x0; //FF
+
 
       for(Int_t itg=kMB; itg<=kGA; itg++){
          //fhDeltaPtTTH_RC_CentV0M[itg][i] = 0x0;
@@ -546,10 +557,11 @@ fhJetPtPartLevelCorr(0x0),
 fhJetPtPartLevelZero(0x0),
 fhJetPtPartLevelVsJetPtDetLevelCorr(0x0),
 fhJetPtPartLevelVsJetPtDetLevelZero(0x0),
-fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr(0x0),         //1D unfolding (added by KA)
-fhPhi_JetPtPartLevel_InclusiveJets(0x0),           //2D unfolding
-fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets(0x0), //2D unfolding
-fhPhi_JetPtZeroPartLevel_InclusiveJets(0x0),                  //2D unfolding (added by KA)
+fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr(0x0),                   //1D unfolding (added by KA)
+fhImpurityInclusive_DetJetPtVsPartJetPtCorr(0x0),                          //Impurity distribution (added by KA)
+fhPhi_JetPtPartLevel_InclusiveJets(0x0),                          //2D unfolding
+fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets(0x0),     //2D unfolding
+fhPhi_JetPtZeroPartLevel_InclusiveJets(0x0),                      //2D unfolding (added by KA)
 fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets(0x0), //2D unfolding (added by KA)
 fhJetPtResolutionVsPtPartLevel(0x0),
 fhOneOverPtVsPhiNeg(0x0),
@@ -593,9 +605,17 @@ fMultFramework(kFALSE),
 fRho(0.),
 fRhoMC(0.),
 fRhoEMB(0.),
-fRunnumber(0)
+fRunnumber(0),
+fMaxFacPtHard(0)
 {
    //Constructor
+
+   //1D respnse matrix from recoil jets  //FF
+   for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
+      fhRecoilJetPtPartLevelCorr[itt]=NULL;
+      fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[itt]=NULL;
+      fhImpurityRecoil_DetJetPtVsPartJetPtCorr[itt] = NULL;
+   }
 
    //2D unfolding
    for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
@@ -683,6 +703,7 @@ fRunnumber(0)
       }
 
       fhTTH_V0Mnorm1_PartLevel[i] = 0x0;
+      fhTTH_V0Mnorm_AllMB_PartLevel[i] = 0x0; //FF
       //fhTTH_3D_V0Mnorm1_PartLevel[i] = 0x0;
       //fhTTC_V0Mnorm1_PartLevel[i] = 0x0;
 
@@ -703,10 +724,12 @@ fRunnumber(0)
       fhRecoilJetPtTTH_V0Mnorm1_PartLevel[i] = 0x0;
       fhRecoilJetPtZero_TTH_V0Mnorm1_PartLevel[i] = NULL; //added by KA
       //fhRecoilJetPtTTC_V0Mnorm1_PartLevel[i] = 0x0;
+      fhRecoilJetPtTTH_V0Mnorm_AllMB_PartLevel[i] = 0x0; //FF
 
       fhRecoilJetPhiTTH_V0Mnorm1_PartLevel[i] = 0x0;
       fhRecoilJetPtZero_DeltaPhi_TTH_V0Mnorm1_PartLevel[i] = NULL; //added by KA
       //fhRecoilJetTTH_V0Mnorm1_PartLevel[i]    = 0x0;
+      fhRecoilJetPhiTTH_V0Mnorm_AllMB_PartLevel[i] = 0x0; //FF
 
       for(Int_t itg=kMB; itg<=kGA; itg++){
          //fhDeltaPtTTH_RC_CentV0M[itg][i] = 0x0;
@@ -931,7 +954,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
    if(mode == AliAnalysisTaskEA::kMC || mode == AliAnalysisTaskEA::kEmbedding){
       trackContTrue = task->AddMCParticleContainer(mcpariclearraynamePartMC); //particle level MC particles
       trackContTrue->SetClassName("AliAODMCParticle");
-      trackContTrue->SetMinPt(0.15);
+      trackContTrue->SetMinPt(1e-3); // KA: old value was 0.15 GeV/c
       trackContTrue->SetEtaLimits(-5.1,5.1); //V0 eta range
 
       if(mode == AliAnalysisTaskEA::kEmbedding) trackContTrue->SetIsEmbedding(kTRUE);
@@ -939,7 +962,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
 
    if(mode == AliAnalysisTaskEA::kKine){
       trackContTrue = task->AddParticleContainer(mcpariclearraynamePartMC); //particle level MC particles
-      trackContTrue->SetMinPt(0.15);
+      trackContTrue->SetMinPt(1e-3); // KA: old value was 0.15 GeV/c
       trackContTrue->SetEtaLimits(-5.1,5.1); //V0 eta range
    }
 
@@ -970,34 +993,30 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
    AliJetContainer *jetContTrueKT = 0x0; //KT jet container with mc particle level jets pythia
    AliJetContainer *jetContDetKT  = 0x0; //KT jet container used when embedding with mc jets at detector level pythia
 
-
-
    if(mode != AliAnalysisTaskEA::kKine){
       //AKT DETECTOR LEVEL JET    (or combined event jet container when embedding)
       jetContRec   = task->AddJetContainer(jetarrayname,"TPC",jetRadius);
 
-      if(jetContRec) {
+      if(jetContRec){
          jetContRec->ConnectParticleContainer(trackCont);
          jetContRec->SetPercAreaCut(acut);
          jetContRec->SetMinPt(0.150);
-         jetContRec->SetMaxTrackPt(100.);
+         jetContRec->SetMaxTrackPt(100.0);
          jetContRec->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
-
-       }
+      }
 
       //KT DETECTOR LEVEL JET    (or combined event jet container when embedding)
       jetContRecKT   = task->AddJetContainer(ktjetarrayname,"TPC",jetRadiuskt);
 
-      if(jetContRecKT) {
+      if(jetContRecKT){
          jetContRecKT->ConnectParticleContainer(trackCont);
          //jetContRecKT->SetPercAreaCut(acut);
          jetContRecKT->SetMinPt(0.);
-         jetContRecKT->SetMaxTrackPt(100.);
+         jetContRecKT->SetMaxTrackPt(100.0);
          jetContRecKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRecKT->SetJetEtaLimits(-jetEtaRangekt,jetEtaRangekt);
-
-       }
+      }
     }
 
     if(mode == AliAnalysisTaskEA::kMC || mode == AliAnalysisTaskEA::kEmbedding || mode == AliAnalysisTaskEA::kKine || mode == AliAnalysisTaskEA::kEmbPy){
@@ -1007,7 +1026,8 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
       if(jetContTrue){
          jetContTrue->ConnectParticleContainer(trackContTrue);
          jetContTrue->SetPercAreaCut(acut);
-         jetContTrue->SetMinPt(0.15);
+         jetContTrue->SetMinPt(1e-3); // KA: old value is 0.15 GeV/c
+         jetContTrue->SetMaxTrackPt(1000.0); // added by K.A.
          jetContTrue->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
@@ -1018,6 +1038,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
       if(jetContTrueKT){
          jetContTrueKT->ConnectParticleContainer(trackContTrue);
          jetContTrueKT->SetMinPt(0.);
+         jetContTrueKT->SetMaxTrackPt(1000.0); // added by K.A.
          jetContTrueKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrueKT->SetJetEtaLimits(-jetEtaRangekt,jetEtaRangekt);
       }
@@ -1030,7 +1051,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
       if(jetContDet) {
          jetContDet->SetPercAreaCut(acut);
          jetContDet->SetMinPt(0.150);
-         jetContDet->SetMaxTrackPt(100.);
+         jetContDet->SetMaxTrackPt(100.0);
          jetContDet->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContDet->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
@@ -1041,7 +1062,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
       if(jetContDetKT) {
          //jetContDetKT->SetPercAreaCut(acut);
          jetContDetKT->SetMinPt(0.0);
-         jetContDetKT->SetMaxTrackPt(100.);
+         jetContDetKT->SetMaxTrackPt(100.0);
          jetContDetKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContDetKT->SetJetEtaLimits(-jetEtaRangekt,jetEtaRangekt);
       }
@@ -1113,10 +1134,11 @@ Bool_t AliAnalysisTaskEA::PassedMinBiasTrigger(){
 
   if(fMode == AliAnalysisTaskEA::kMC){
      //mc simulation emulate V0 coincidence trigger
-     AliVVZERO *vzeroAOD = InputEvent()->GetVZEROData();
+     /*AliVVZERO *vzeroAOD = InputEvent()->GetVZEROData();
      if(vzeroAOD){
         if(vzeroAOD->GetMTotV0A() > 0 && vzeroAOD->GetMTotV0C() > 0)  passedTrigger = kTRUE;
-     }
+     }*/
+     passedTrigger = kTRUE;
   }else if(fMode == AliAnalysisTaskEA::kKine){
      passedTrigger = kTRUE;
   }else{
@@ -1261,7 +1283,7 @@ Bool_t AliAnalysisTaskEA::IsEventInAcceptance(AliVEvent* event){
    //___________________________________________________
    //MULTIPLICITY SELECTIONS
 
-   //if(fMode == AliAnalysisTaskEA::kNormal){
+   if(fMode == AliAnalysisTaskEA::kNormal){
       fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
       if(!fMultSelection ||
          //!fMultSelection->IsEventSelected() ||
@@ -1273,7 +1295,7 @@ Bool_t AliAnalysisTaskEA::IsEventInAcceptance(AliVEvent* event){
          fHistEvtSelection->Fill(7.5); //count events rejected by multiplicity selection
          return kFALSE;
       }
-   //}
+   }
 
 
    //BEFORE VERTEX CUT
@@ -1339,6 +1361,62 @@ void AliAnalysisTaskEA::ExecOnceLocal(){
 
    return;
 }
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEA::IsOutlier(){ //FK// whole function
+   //Checks that this event is pthard bin outlier
+   //inspired by Bool_t AliConvEventCuts::IsJetJetMCEventAccepted
+
+   if(TMath::Abs(fMaxFacPtHard) < 1e-6) return kFALSE; //FK// skip
+
+   TList *genHeaders         = 0x0;
+   AliGenEventHeader* gh     = 0;
+   Float_t ptHard;
+   AliEmcalJet* jetMC = 0x0;
+
+   Bool_t bPythiaHeader = 0; // flag whether pythia header was found
+
+   if(MCEvent()){
+      genHeaders = MCEvent()->GetCocktailList(); //get list of MC cocktail headers
+   }
+
+   if(genHeaders){
+      for(Int_t i = 0; i<genHeaders->GetEntries(); i++){
+         gh = (AliGenEventHeader*)genHeaders->At(i);
+
+         AliGenPythiaEventHeader* pyhead= dynamic_cast<AliGenPythiaEventHeader*>(gh); //identify pythia header
+
+         if(pyhead){
+            bPythiaHeader = 1;
+            ptHard = pyhead->GetPtHard();
+
+	    for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
+               // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+               jetMC = jetIterator.second;  // Get the pointer to jet object
+               if(!jetMC)  continue;
+
+               //Compare jet pT and pt Hard
+               if(jetMC->Pt() > fMaxFacPtHard * ptHard){
+                  return kTRUE;
+               }
+            }
+         }
+      }
+      if(!bPythiaHeader){ //ptyhia header was not found
+          AliWarning("AliAnalysisTaskEA MC header not found");
+          fHistEvtSelection->Fill(9.5);
+          return kTRUE; //skip the event
+      }
+
+      return kFALSE;  //there was not outlier all jets have pT below fMaxFacPtHard * ptHard
+
+   }else{
+      fHistEvtSelection->Fill(9.5);
+      AliWarning("AliAnalysisTaskEA MC header not found");
+      return kTRUE; //MC header not found
+   }
+}
+
 
 //________________________________________________________________________
 //Int_t  AliAnalysisTaskEA::GetMaxDistanceFromBorder(AliVCluster* cluster){
@@ -1529,6 +1607,9 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
       fRhoEMB = GetMyRho(fKTJetContainerDetLevelEMB); //estimated backround pt density
    }
 
+   if(fMode == AliAnalysisTaskEA::kMC  || fMode == AliAnalysisTaskEA::kKine){
+      if(IsOutlier()) return kFALSE;
+   }
    //_________________________________________________________________
    // DECIDE WHETHER TO FILL SIGNAL TT OR REFERENCE TT  DEPENDING ON RANDOM  NUMBER
    fFillSigTT = kTRUE;
@@ -2438,23 +2519,24 @@ void AliAnalysisTaskEA::AnalyzeParticleLevel(){
                tmparr3[1] = fhRecoilJetPtEvtByEventRandomTTPartLevel->Integral(b1,b2);
                fhNumberOfHighPtJetsRecoilRandomTTPartLevel->Fill(tmparr3);
             }
+         }
             //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-            //Search for TT candidates in particle level physical primary mc particles
-            for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
-               mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
-               if(!mcParticle)  continue;
+         //Search for TT candidates in particle level physical primary mc particles
+         for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
+            mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
+            if(!mcParticle)  continue;
 
-               if(IsTrackInAcceptance(mcParticle, kPartLevel)){
-                  for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-                     if(fHadronTTLowPt[itt] < mcParticle->Pt() && mcParticle->Pt() < fHadronTTHighPt[itt]){
-                        myTT.SetPtEtaPhiM(mcParticle->Pt(),mcParticle->Eta(),mcParticle->Phi(),0.);
-                        fTTH_PartLevel[itt].push_back(myTT);
-                        fHadronTT_PartLevel[itt]++;   // there was a high pt
-                     }
+            if(IsTrackInAcceptance(mcParticle, kPartLevel)){
+               for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+                  if(fHadronTTLowPt[itt] < mcParticle->Pt() && mcParticle->Pt() < fHadronTTHighPt[itt]){
+                     myTT.SetPtEtaPhiM(mcParticle->Pt(),mcParticle->Eta(),mcParticle->Phi(),0.);
+                     fTTH_PartLevel[itt].push_back(myTT);
+                     fHadronTT_PartLevel[itt]++;   // there was a high pt
                   }
                }
+            }
 
 
 //               if(!mcParticle->Charge() && fMode == AliAnalysisTaskEA::kMC){
@@ -2483,24 +2565,24 @@ void AliAnalysisTaskEA::AnalyzeParticleLevel(){
 //                       }
 //                   }
 //                }
-            }//end of mc particle loop
+         }//end of mc particle loop
 
 
-            //++++++++++++++++++++++++++++++++++++++++++++++++++
-            for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
-               jet = jetIterator.second;
-               if(!jet)  continue;
-               fhJetPtEvtByEventPartLevel->Fill(jet->Pt());  //Fill event by event inclusive jet spectrum in CB
-            }
-            //++++++++++++++++++++++++++++++++++++++++++++++++++
+         //++++++++++++++++++++++++++++++++++++++++++++++++++
+         for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
+            jet = jetIterator.second;
+            if(!jet)  continue;
+            fhJetPtEvtByEventPartLevel->Fill(jet->Pt());  //Fill event by event inclusive jet spectrum in CB
+         }
+         //++++++++++++++++++++++++++++++++++++++++++++++++++
 
-            //chose trigger hadron TT   particle level
-            for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-               if(fHadronTT_PartLevel[itt]>0){
-                  fIndexTTH_PartLevel[itt] = fRandom->Integer(fHadronTT_PartLevel[itt]);
-                  idx = fIndexTTH_PartLevel[itt];
+         //chose trigger hadron TT   particle level
+         for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+            if(fHadronTT_PartLevel[itt]>0){
+               fIndexTTH_PartLevel[itt] = fRandom->Integer(fHadronTT_PartLevel[itt]);
+               idx = fIndexTTH_PartLevel[itt];
 
-
+               if(isMBpartlevel){
                   //count number of jets with pT larger than something in CB
                   tmparr3[2] = fMultV0Mnorm;
                   for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsCBPartLevel[itt]->GetAxis(0)->GetNbins(); ii++){
@@ -2510,87 +2592,100 @@ void AliAnalysisTaskEA::AnalyzeParticleLevel(){
                      tmparr3[1] = fhJetPtEvtByEventPartLevel->Integral(b1,b2);
                      fhNumberOfHighPtJetsCBPartLevel[itt]->Fill(tmparr3);
                   }
+               }
 
 
-                  fdeltapT_PartLevel[itt] = GetDeltaPt(fTTH_PartLevel[itt][idx].Phi(), fTTH_PartLevel[itt][idx].Eta(), phiLJmc, etaLJmc, phiSJmc, etaSJmc, fRhoMC, kPartLevel);
+               fdeltapT_PartLevel[itt] = GetDeltaPt(fTTH_PartLevel[itt][idx].Phi(), fTTH_PartLevel[itt][idx].Eta(), phiLJmc, etaLJmc, phiSJmc, etaSJmc, fRhoMC, kPartLevel);
                   //signal in events with hadron TT   particle level
 
+	       if(isMBpartlevel){
                   fhSignalTTH_PartLevel[fkV0A][itt]->Fill(fMultV0A_PartLevel);
                   fhSignalTTH_PartLevel[fkV0C][itt]->Fill(fMultV0C_PartLevel);
                   fhSignalTTH_PartLevel[fkV0M][itt]->Fill(fMultV0M_PartLevel);
                   fhSignalTTH_PartLevel[fkV0Mnorm1][itt]->Fill(fMultV0Mnorm_PartLevel);
-
+	       }
                   //fhV0MAssymVsV0MnormTTH_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fAsymV0M_PartLevel);
 
-                  //hadron trigger particle level
+               //hadron trigger particle level
 
-	          if(idx>-1){
+	       if(idx>-1){
 
 //                   sumJetPtTT       = 0.;
 //                   sumJetPtRecoil   = 0.;
 //                   sumTrackPtTT     = 0.;
 //                   sumTrackPtRecoil = 0.;
-//
-	     fhRhoTTHinMBpart[itt]->Fill(fRhoMC);
-	     fhDeltaPtTTH_RC_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fdeltapT_PartLevel[itt]);
+                  if(isMBpartlevel){
+	             fhRhoTTHinMBpart[itt]->Fill(fRhoMC);
+	             fhDeltaPtTTH_RC_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fdeltapT_PartLevel[itt]);
+		  }
+	          if(fFillSigTT && itt==0) continue;  // Do not fill reference
+	          if(!fFillSigTT && itt>0) continue;  // Do not fill signal
 
-	     if(fFillSigTT && itt==0) continue;  // Do not fill reference
-	     if(!fFillSigTT && itt>0) continue;  // Do not fill signal
-
-	     fhTTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fTTH_PartLevel[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
-	     //fhTTH_3D_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fAsymV0M_PartLevel, fTTH_PartLevel[itt][idx].Pt());
-
-
-	     //recoil jets  PARTICLE LEVEL
-	     for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
-		// trackIterator is a std::map of AliTLorentzVector and AliVTrack
-		jet = jetIterator.second;  // Get the pointer to jet object
-		if(!jet)  continue;
-
-		dphi = TVector2::Phi_0_2pi(jet->Phi()-fTTH_PartLevel[itt][idx].Phi());
-
-		jetPtCorrDet = jet->Pt() - fRhoMC*jet->Area();
-
-		fhRecoilJetPhiTTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, jetPtCorrDet, dphi);
-      fhRecoilJetPtZero_DeltaPhi_TTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, jet->Pt(), dphi); // added by KA
-
-//              tmparr[0] = fMultV0Mnorm_PartLevel;
-//              tmparr[1] = fAsymV0M_PartLevel;
-//              tmparr[2] = jetPtCorrDet;
-//              tmparr[3] = TMath::Abs(dphi);
-//              fhRecoilJetTTH_V0Mnorm1_PartLevel[itt]->Fill(tmparr);
+		  if(isMBpartlevel){ //FF
+	             fhTTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fTTH_PartLevel[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
+	             //fhTTH_3D_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fAsymV0M_PartLevel, fTTH_PartLevel[itt][idx].Pt());
+		  }
+                  fhTTH_V0Mnorm_AllMB_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fTTH_PartLevel[itt][idx].Pt()); //FF
 
 
-		if(TMath::Abs(TVector2::Phi_mpi_pi(dphi)) > TMath::Pi()/2){ //select recoil hemisphere and count jets
-		   fhRecoilJetPtEvtByEventPartLevel[itt]->Fill(jet->Pt());
-		   //sumJetPtRecoil += jet->Pt();
-		}//else{
-		   //sumJetPtTT     += jet->Pt(); //sum jet pT in
-		//}
+	         //recoil jets  PARTICLE LEVEL
+	         for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
+	            // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+	            jet = jetIterator.second;  // Get the pointer to jet object
+	            if(!jet)  continue;
+
+	            dphi = TVector2::Phi_0_2pi(jet->Phi()-fTTH_PartLevel[itt][idx].Phi());
+
+	            jetPtCorrDet = jet->Pt() - fRhoMC*jet->Area();
+
+	            if(isMBpartlevel){
+                       fhRecoilJetPhiTTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, jetPtCorrDet, dphi);
+                       fhRecoilJetPtZero_DeltaPhi_TTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, jet->Pt(), dphi); // added by KA
+
+//                     tmparr[0] = fMultV0Mnorm_PartLevel;
+//                     tmparr[1] = fAsymV0M_PartLevel;
+//                     tmparr[2] = jetPtCorrDet;
+//                     tmparr[3] = TMath::Abs(dphi);
+//                     fhRecoilJetTTH_V0Mnorm1_PartLevel[itt]->Fill(tmparr);
 
 
-		if(TMath::Abs(TVector2::Phi_mpi_pi(dphi)) > fPhiCut){
-		   //recoil jet hadron trigger
+	               if(TMath::Abs(TVector2::Phi_mpi_pi(dphi)) > TMath::Pi()/2){ //select recoil hemisphere and count jets
+                          fhRecoilJetPtEvtByEventPartLevel[itt]->Fill(jet->Pt());
+                          //sumJetPtRecoil += jet->Pt();
+                       }//else{
+	                  //sumJetPtTT     += jet->Pt(); //sum jet pT in
+	               //}
+	            }
 
-		   fhRecoilJetPtTTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, jetPtCorrDet);
-         fhRecoilJetPtZero_TTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, jet->Pt());
+                    fhRecoilJetPhiTTH_V0Mnorm_AllMB_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, jetPtCorrDet, dphi);
 
-		   tmparr3[0] = jetPtCorrDet;
-		   tmparr3[1] = jet->Area();
-		   tmparr3[2] = fMultV0Mnorm_PartLevel;
-		   fhJetPtAreaV0normTTH_PartLevel[itt]->Fill(tmparr3);
-		}
-	     }
 
-	     //count number of jets with pT larger than something in recoil region
-	     tmparr3[2] = fMultV0Mnorm_PartLevel;
-	     for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsRecoilPartLevel[itt]->GetAxis(0)->GetNbins(); ii++){
-		tmparr3[0] = fhNumberOfHighPtJetsRecoilPartLevel[itt]->GetAxis(0)->GetBinLowEdge(ii);
-		b1 = fhRecoilJetPtEvtByEventPartLevel[itt]->GetXaxis()->FindBin(tmparr3[0] + 1e-5);
-		b2 = fhRecoilJetPtEvtByEventPartLevel[itt]->GetXaxis()->GetNbins()+1;  //include overflow bin
-		tmparr3[1] = fhRecoilJetPtEvtByEventPartLevel[itt]->Integral(b1,b2);
-		fhNumberOfHighPtJetsRecoilPartLevel[itt]->Fill(tmparr3);
-	     }
+	            if(TMath::Abs(TVector2::Phi_mpi_pi(dphi)) > fPhiCut){
+	               //recoil jet hadron trigger
+
+	               if(isMBpartlevel){
+	                  fhRecoilJetPtTTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, jetPtCorrDet);
+                          fhRecoilJetPtZero_TTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, jet->Pt());
+
+
+	                  tmparr3[0] = jetPtCorrDet;
+	                  tmparr3[1] = jet->Area();
+	                  tmparr3[2] = fMultV0Mnorm_PartLevel;
+	                  fhJetPtAreaV0normTTH_PartLevel[itt]->Fill(tmparr3);
+	               }
+                       fhRecoilJetPtTTH_V0Mnorm_AllMB_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, jetPtCorrDet);
+	            }
+	         }
+
+	         //count number of jets with pT larger than something in recoil region
+	         tmparr3[2] = fMultV0Mnorm_PartLevel;
+	         for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsRecoilPartLevel[itt]->GetAxis(0)->GetNbins(); ii++){
+	            tmparr3[0] = fhNumberOfHighPtJetsRecoilPartLevel[itt]->GetAxis(0)->GetBinLowEdge(ii);
+	            b1 = fhRecoilJetPtEvtByEventPartLevel[itt]->GetXaxis()->FindBin(tmparr3[0] + 1e-5);
+	            b2 = fhRecoilJetPtEvtByEventPartLevel[itt]->GetXaxis()->GetNbins()+1;  //include overflow bin
+	            tmparr3[1] = fhRecoilJetPtEvtByEventPartLevel[itt]->Integral(b1,b2);
+	            fhNumberOfHighPtJetsRecoilPartLevel[itt]->Fill(tmparr3);
+	         }
 
 	     //Fill jet pt asymmetry particle level
 	     //if(sumJetPtRecoil + sumJetPtTT > 0){
@@ -2661,7 +2756,6 @@ void AliAnalysisTaskEA::AnalyzeParticleLevel(){
 //                }
 //             }
 //          }
-         }
       }
    }
 
@@ -2691,18 +2785,19 @@ void AliAnalysisTaskEA::AnalyzeParticleLevel(){
 }
 //_________________________________________________________________
 void AliAnalysisTaskEA::FillResponseMatrix(){
-   //EVALUATE SINGLE PARTICLE EFFICIENCY + FILL RESPONSE MATRIX
-   AliEmcalJet  *jet = NULL;        //jet pointer real jet
-   AliEmcalJet  *jetPartMC = NULL;  //jet pointer particle level MC jet
-   AliEmcalJet  *jetDetMC  = NULL;  //jet pointed detector level MC jet
-   AliVParticle *track = NULL; //jet constituent
-   AliVParticle *mcParticle = NULL; //mc particle
-   Bool_t bRecPrim = kFALSE;
-   Double_t jetPtCorrDet  = 0.;  //detector level jet pt corrected for rho
-   Double_t jetPtCorrPart = 0.;
 
+   if(fIsMinBiasTrig && fMode != AliAnalysisTaskEA::kKine){
 
-   if(fIsMinBiasTrig && fMode != AliAnalysisTaskEA::kKine) {
+      //EVALUATE SINGLE PARTICLE EFFICIENCY + FILL RESPONSE MATRIX
+      AliEmcalJet  *jet = NULL;        //jet pointer real jet
+      AliEmcalJet  *jetPartMC = NULL;  //jet pointer particle level MC jet
+      AliEmcalJet  *jetDetMC  = NULL;  //jet pointed detector level MC jet
+      AliVParticle *track = NULL; //jet constituent
+      AliVParticle *mcParticle = NULL; //mc particle
+      Bool_t bRecPrim = kFALSE;
+      Double_t jetPtCorrDet  = 0.;  //detector level jet pt corrected for rho
+      Double_t jetPtCorrPart = 0.;
+
       //pT spectrum of detector level physical primary tracks and secondary tracks
       if(fTrkContainerDetLevel && fParticleContainerPartLevel){
          for(auto trkIterator : fTrkContainerDetLevel->accepted_momentum() ){
@@ -2740,9 +2835,9 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
       //1) Find closest particle level and detector level jets
       //2) Get momentum shift due to fake tracks
       if(fJetContainerDetLevel){
+
          Double_t  sumAllTrackPtInJet   = 0.;
          Double_t  sumFakeTrackPtInJet  = 0.;
-
 
          for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
             jet = jetIterator.second;  // Get the pointer to jet object
@@ -2783,7 +2878,9 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
             //Fill Response matrix
             jetPartMC =  jet->ClosestJet();
             if(!jetPartMC) continue;
-            if(jetPartMC->Pt()<1e-3) continue; //prevents matching with a ghost
+
+            // KA: Set new relax condition "5e-4" because we consider particle level jets with pT > 1 MeV
+            if(jetPartMC->Pt() < 5e-4) continue; //prevents matching with a ghost
 
             jetPtCorrPart =  jetPartMC->Pt() - jetPartMC->Area()*fRhoMC;
             jetPtCorrDet  =  jet->Pt() - jet->Area()*fRho;
@@ -2792,13 +2889,52 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
             fhJetPtPartLevelVsJetPtDetLevelZero->Fill(jet->Pt(),jetPartMC->Pt()); //response matrix
             fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr->Fill(jetPtCorrDet, jetPartMC->Pt()); //response matrix (added by KA)
 
-            if(jetPtCorrPart>0){
-               fhJetPtResolutionVsPtPartLevel->Fill(jetPtCorrPart,(jetPtCorrDet-jetPtCorrPart)/jetPtCorrPart); //jet pT resolution
+            if(TMath::Abs(jetPartMC->Eta()) > 0.5) fhImpurityInclusive_DetJetPtVsPartJetPtCorr->Fill(jetPtCorrDet, jetPtCorrPart); // added by KA
+
+            if(jetPtCorrPart > 0) fhJetPtResolutionVsPtPartLevel->Fill(jetPtCorrPart,(jetPtCorrDet-jetPtCorrPart)/jetPtCorrPart); //jet pT resolution
+         }
+      }
+
+      //FF fill response matrix from recoil jets
+      //Search for TT candidates in particle level physical primary mc particles
+      //++++++++++++++++++++++++++++++++++++++++++++++++++
+      Int_t idx;
+      //chose trigger hadron TT particle level
+      for(Int_t itt=0; itt < fnHadronTTBins; itt++){
+         if(fHadronTT_PartLevel[itt] > 0){
+            idx = fIndexTTH_PartLevel[itt]; //was initialized in AnalyzeParticleLevel
+
+            //recoil jets  PARTICLE LEVEL
+            for(auto jetIterator : fJetContainerPartLevel->accepted_momentum()){
+               // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+               jet = jetIterator.second;  // Get the pointer to jet object
+               if(!jet)  continue;
+
+               if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTH_PartLevel[itt][idx].Phi())) > fPhiCut){
+                  jetPtCorrPart = jet->Pt() - fRhoMC*jet->Area();
+                  fhRecoilJetPtPartLevelCorr[itt]->Fill(jetPtCorrPart);
+               }
+            }
+
+            for(auto jetIterator : fJetContainerDetLevel->accepted_momentum()){
+               jet = jetIterator.second;  // Get the pointer to jet object
+               if(!jet)  continue;
+
+               jetPartMC =  jet->ClosestJet();
+               if(!jetPartMC) continue;
+               if(jetPartMC->Pt() < 5e-4) continue; //prevents matching with a ghost
+
+               jetPtCorrPart =  jetPartMC->Pt() - jetPartMC->Area()*fRhoMC;
+               jetPtCorrDet  =  jet->Pt() - jet->Area()*fRho;
+
+               if(TMath::Abs(TVector2::Phi_mpi_pi(jetPartMC->Phi()-fTTH_PartLevel[itt][idx].Phi())) > fPhiCut){
+                  fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[itt]->Fill(jetPtCorrDet,jetPtCorrPart);
+                  if(TMath::Abs(jetPartMC->Eta()) > 0.5) fhImpurityRecoil_DetJetPtVsPartJetPtCorr[itt]->Fill(jetPtCorrDet,jetPtCorrPart); // added by KA
+               }
             }
          }
       }
    }
-
    return;
 }
 //________________________________________________________________________
@@ -2807,10 +2943,10 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
 
    if(fIsMinBiasTrig && fMode == AliAnalysisTaskEA::kMC){
       //EVALUATE SINGLE PARTICLE EFFICIENCY + FILL RESPONSE MATRIX
-      AliEmcalJet  *jet = NULL;        //jet pointer real jet
-      AliEmcalJet  *jetDetMC  = NULL;  //jet pointed detector level MC jet
+      AliEmcalJet  *jet             = NULL; //jet pointer real jet
+      AliEmcalJet  *jetDetMC        = NULL; //jet pointed detector level MC jet
       AliVParticle *track_PartLevel = NULL; //jet constituent
-      AliVParticle *track_DetLevel = NULL; //mc particle
+      AliVParticle *track_DetLevel  = NULL; //mc particle
 
       Int_t iterationStep = 0;
       Double_t smearing_Of_PhiAngle = 0;
@@ -2838,7 +2974,8 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
             random_PhiAnglePartLevel = TMath::Pi()*fRandom->Uniform(0,2);  //(0,2pi)
             jetPtCorrPart = jet->Pt() - jet->Area()*fRhoMC;
 
-	    if(jet->Pt()>0.1){
+	         if(jet->Pt() > 5e-4){
+
                if(!jetDetMC){ //No associated MC detector level jet ->  Fill input for the miss function
 
                   fhPhi_JetPtPartLevel_InclusiveJets->Fill(random_PhiAnglePartLevel, jetPtCorrPart);
@@ -2890,32 +3027,35 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
                deltaPhi_angle_ParticleLevel = TVector2::Phi_0_2pi(jet->Phi() - phi_Angle_Of_TT_ParticleLevel);
                jetPtCorrPart = jet->Pt() - jet->Area()*fRhoMC;
 
-               //With 80 % probability, TT in Detector Level will be detected (recontruction efficiency). At this stage as the direction of TT is taken the random phi angle of TT in PARTICLE LEVEL
-               if(!jetDetMC){  //no matched detector level jet
+               if(jet->Pt() > 5e-4){
 
-                  fhDeltaPhi_JetPtPartLevel[iTT]->Fill(deltaPhi_angle_ParticleLevel, jetPtCorrPart);
-                  fhDeltaPhi_JetPtZero_PartLevel[iTT]->Fill(deltaPhi_angle_ParticleLevel, jet->Pt()); // added by KA
+                  //With 80 % probability, TT in Detector Level will be detected (recontruction efficiency). At this stage as the direction of TT is taken the random phi angle of TT in PARTICLE LEVEL
+                  if(!jetDetMC){  //no matched detector level jet
 
-               }else if(jetDetMC->Pt() < 1e-10) {  //matched to a ghost
+                     fhDeltaPhi_JetPtPartLevel[iTT]->Fill(deltaPhi_angle_ParticleLevel, jetPtCorrPart);
+                     fhDeltaPhi_JetPtZero_PartLevel[iTT]->Fill(deltaPhi_angle_ParticleLevel, jet->Pt()); // added by KA
 
-                  fhDeltaPhi_JetPtPartLevel[iTT]->Fill(deltaPhi_angle_ParticleLevel, jetPtCorrPart);
-                  fhDeltaPhi_JetPtZero_PartLevel[iTT]->Fill(deltaPhi_angle_ParticleLevel, jet->Pt()); // added by KA
+                  }else if(jetDetMC->Pt() < 1e-10) {  //matched to a ghost
 
-               }else{
-                  deltaPhi_angle_DetLevel = TVector2::Phi_0_2pi(jetDetMC->Phi() - phi_Angle_Of_TT_ParticleLevel);
-                  jetPtCorrDet = jetDetMC->Pt() - jetDetMC->Area()*fRho;
+                     fhDeltaPhi_JetPtPartLevel[iTT]->Fill(deltaPhi_angle_ParticleLevel, jetPtCorrPart);
+                     fhDeltaPhi_JetPtZero_PartLevel[iTT]->Fill(deltaPhi_angle_ParticleLevel, jet->Pt()); // added by KA
 
-                  fArray_for_filling[0] = deltaPhi_angle_DetLevel;
-		            fArray_for_filling[1] = jetPtCorrDet;
-		            fArray_for_filling[2] = deltaPhi_angle_ParticleLevel;
-		            fArray_for_filling[3] = jetPtCorrPart;
-                  fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[iTT]->Fill(fArray_for_filling);
+                  }else{
+                     deltaPhi_angle_DetLevel = TVector2::Phi_0_2pi(jetDetMC->Phi() - phi_Angle_Of_TT_ParticleLevel);
+                     jetPtCorrDet = jetDetMC->Pt() - jetDetMC->Area()*fRho;
 
-                  //Particle level jet pT is NOT corrected for RhokT
-		            fArray_for_filling[3] = jet->Pt();
-                  fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[iTT]->Fill(fArray_for_filling); // added by KA
+                     fArray_for_filling[0] = deltaPhi_angle_DetLevel;
+		               fArray_for_filling[1] = jetPtCorrDet;
+		               fArray_for_filling[2] = deltaPhi_angle_ParticleLevel;
+		               fArray_for_filling[3] = jetPtCorrPart;
+                     fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[iTT]->Fill(fArray_for_filling);
+
+                     //Particle level jet pT is NOT corrected for RhokT
+		               fArray_for_filling[3] = jet->Pt();
+                     fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[iTT]->Fill(fArray_for_filling); // added by KA
+                  }
                }
-            }
+            }//end recoil jets
          }
       }
    }
@@ -3383,7 +3523,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    fRandom = new TRandom3(0);
    //__________________________________________________________
    // Event statistics
-   fHistEvtSelection = new TH1D("fHistEvtSelection", "event selection", 9, 0, 9);
+   fHistEvtSelection = new TH1D("fHistEvtSelection", "event selection", 10, 0, 10);
    fHistEvtSelection->GetXaxis()->SetBinLabel(1,"events IN"); //0-1
    fHistEvtSelection->GetXaxis()->SetBinLabel(2,"incomplete DAQ (rejected)"); //1-2
    fHistEvtSelection->GetXaxis()->SetBinLabel(3,"pile up (rejected)"); //2-3
@@ -3393,6 +3533,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    fHistEvtSelection->GetXaxis()->SetBinLabel(7,"High Mult"); //6-7
    fHistEvtSelection->GetXaxis()->SetBinLabel(8,"IsEventSelected"); //7-8
    fHistEvtSelection->GetXaxis()->SetBinLabel(9,"MC MB events"); //8-9
+   fHistEvtSelection->GetXaxis()->SetBinLabel(10,"IsOutlier"); //9-10
 
 
    fOutput->Add(fHistEvtSelection);
@@ -4028,6 +4169,14 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          fOutput->Add((TH2D*) fhTTH_V0Mnorm1_PartLevel[itt]);
       }
 
+      //Trigger track pT spectrum single inclusive for MB  versus  V0Mnorm without V0 coincidence
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+         name = Form("hTT_MB_TTH%d_%d_V0Mnorm_AllMB_PartLevel", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         fhTTH_V0Mnorm_AllMB_PartLevel[itt] = new TH2D(name.Data(),name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 100, 0, 100);
+         fOutput->Add((TH2D*) fhTTH_V0Mnorm_AllMB_PartLevel[itt]);
+      }
+
+
 //      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
 //         name = Form("hTT_MB_3D_TTH%d_%d_V0Mnorm_PartLevel", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
 //         fhTTH_3D_V0Mnorm1_PartLevel[itt] = new TH3D(name.Data(),name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 21, -1, 1.1, 100, 0, 100);
@@ -4178,6 +4327,11 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          name = Form("RecoilJetPtZero_MB_TTH%d_%d_V0Mnorm_Rho%s_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt], rhotype.Data());
          fhRecoilJetPtZero_TTH_V0Mnorm1_PartLevel[itt] = new TH2D(name.Data(), name.Data(), nbinsV0Mnorm, 0., maxV0Mnorm, numberBins_jetpT_Zero, jetPtZero_Bins); // range (250, 0, 250) (added by KA)
          fOutput->Add((TH2D*) fhRecoilJetPtZero_TTH_V0Mnorm1_PartLevel[itt]);
+
+
+         name = Form("RecoilJetPt_AllMB_TTH%d_%d_V0Mnorm_Rho%s_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt], rhotype.Data());
+         fhRecoilJetPtTTH_V0Mnorm_AllMB_PartLevel[itt] = new TH2D(name.Data(), name.Data(), nbinsV0Mnorm, 0., maxV0Mnorm, numberBins_jetpT_RhokT, jetPtRhokT_Bins); // changed range: old-> (200, -20, 180) (added by FF)
+         fOutput->Add((TH2D*) fhRecoilJetPtTTH_V0Mnorm_AllMB_PartLevel[itt]);
       }
 
       // dphi of recoil jets associated to semi-inclusive hadron TT  in MB  with V0Mnorm (fMultV0Mnorm, jetPtCorrDet, dphi);
@@ -4191,6 +4345,11 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          name = Form("RecoilJetPtZero_DeltaPhi_TTH%d_%d_V0Mnorm_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
          fhRecoilJetPtZero_DeltaPhi_TTH_V0Mnorm1_PartLevel[itt] = new TH3D(name.Data(), name.Data(), nbinsV0Mnorm, arrV0Mnorm, numberBins_jetpT_Zero, jetPtZero_Bins, ndeltaPhiBins, deltaPhiBins); // added by KA
          fOutput->Add((TH3D*) fhRecoilJetPtZero_DeltaPhi_TTH_V0Mnorm1_PartLevel[itt]);
+
+         // Jet pT is CORRECTED on RhokT
+         name = Form("RecoilJetPhi_AllMB_TTH%d_%d_V0Mnorm_Rho%s_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt], rhotype.Data());
+         fhRecoilJetPhiTTH_V0Mnorm_AllMB_PartLevel[itt] = new TH3D(name.Data(), name.Data(), nbinsV0Mnorm, arrV0Mnorm, numberBins_jetpT_RhokT, jetPtRhokT_Bins, ndeltaPhiBins, deltaPhiBins); // added by FF
+         fOutput->Add((TH3D*) fhRecoilJetPhiTTH_V0Mnorm_AllMB_PartLevel[itt]);
       }
 
 
@@ -4338,6 +4497,13 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fhJetPtPartLevelZero = new TH1D("fhJetPtPartLevelZero","fhJetPtPartLevelZero", numberBins_jetpT_Zero, jetPtZero_Bins); //(250, 0, 250) added by KA
       fOutput->Add((TH1D*) fhJetPtPartLevelZero);
 
+      for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
+         //FF Normalization of response matrix filled from recoil jets
+         name = Form("fhRecoilJetPtPartLevelCorr_Rho%s_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
+         fhRecoilJetPtPartLevelCorr[itt] = new TH1D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins);
+         fOutput->Add((TH1D*) fhRecoilJetPtPartLevelCorr[itt]);
+      }
+
       name = Form("fhFractionOfSecInJet_Rho%s", rhotype.Data());
       fhFractionOfSecInJet = new TH2D(name.Data(), "Frac of jet pT carried by secondary tracks",50,0,50,210,0,1.05);
       fOutput->Add((TH2D*) fhFractionOfSecInJet);
@@ -4353,10 +4519,24 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr = new TH2D("JetPtPartLevelZero_Vs_JetPtDetLevelCorr","JetPtPartLevelZero_Vs_JetPtDetLevelCorr", numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_Zero, jetPtZero_Bins); // (270. -20, 250, 250, 0, 250) added by KA
       fOutput->Add((TH2D*) fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr);
 
+      name = Form("ImpurityInclusive_DetJetPtVsPartJetPt_Rho%s", rhotype.Data());
+      fhImpurityInclusive_DetJetPtVsPartJetPtCorr = new TH2D(name.Data(), "Matched inclusive jets where part. level one outside TPC fid. cut", numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_RhokT, jetPtRhokT_Bins); // (270, -20.0, 250, 270, -20.0, 270) added by KA
+      fOutput->Add((TH2D*) fhImpurityInclusive_DetJetPtVsPartJetPtCorr);
+
+      for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
+         //FF Response matrix filled from recoil jets
+	      name = Form("fhRecoilJetPtPartLevelVsJetPtDetLevelCorr_Rho%s_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
+         fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[itt] = new TH2D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_RhokT, jetPtRhokT_Bins); //(270, - 20.0, 250, 270, -20.0, 270) added by FF
+         fOutput->Add((TH2D*) fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[itt]);
+
+         name = Form("ImpurityRecoil_DetJetPtVsPartJetPt_Rho%s_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
+         fhImpurityRecoil_DetJetPtVsPartJetPtCorr[itt] = new TH2D(name.Data(), "Matched recoil jets where part. level one outside TPC fid. cut", numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_RhokT, jetPtRhokT_Bins); //(270, - 20.0, 250, 270, -20.0, 270) added by KA
+         fOutput->Add((TH2D*) fhImpurityRecoil_DetJetPtVsPartJetPtCorr[itt]);
+      }
+
       name = Form("fhJetPtResolutionVsPtPartLevel_Rho%s", rhotype.Data());
       fhJetPtResolutionVsPtPartLevel = new TH2D(name.Data(), name.Data(),100,0,100,50,0,2);
       fOutput->Add((TH2D*) fhJetPtResolutionVsPtPartLevel);
-
    }
 
    //2D unfolding -------------------------------

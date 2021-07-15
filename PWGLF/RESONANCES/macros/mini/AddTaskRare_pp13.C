@@ -158,8 +158,8 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
     }else{
         for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
         for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-        for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-        for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+        for(j=1;j<20;j++){multbins[nmult]=0.01*j; nmult++;}
+        for(j=2;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
         for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
     }
     nmult--;
@@ -2016,6 +2016,24 @@ Bool_t Config_Lambdakx(
         out->SetMotherMass(0.493677);
         out->SetPairCuts(cutsPairK);
         out->AddAxis(ptID,200,0.0,20.0);
+             
+        out = task->CreateOutput("Lambdakx_Kp_mother_REC", "HIST", "SINGLEREC");
+        out->SetDaughter(0, AliRsnDaughter::kUnknown);
+        out->SetDaughter(1, AliRsnDaughter::kUnknown);
+        out->SetMotherPDG(321);
+        out->SetCutID(0,iCutK);
+        out->SetMotherMass(0.493677);
+        out->SetPairCuts(cutsPairK);
+        out->AddAxis(ptID,200,0.0,20.0);
+        
+        out = task->CreateOutput("Lambdakx_Km_mother_REC", "HIST", "SINGLEREC");
+        out->SetDaughter(0, AliRsnDaughter::kUnknown);
+        out->SetDaughter(1, AliRsnDaughter::kUnknown);
+        out->SetMotherPDG(-321);
+        out->SetCutID(0,iCutK);
+        out->SetMotherMass(0.493677);
+        out->SetPairCuts(cutsPairK);
+        out->AddAxis(ptID,200,0.0,20.0);
         
         //for efficiency of (anti-)Lambda
         AliRsnCutMiniPair* cutetaV0=new AliRsnCutMiniPair("cutPseudorapidityV0", AliRsnCutMiniPair::kPseudorapidityRangeMC);
@@ -2681,6 +2699,24 @@ Bool_t Config_Lambdap(
         out->SetDaughter(0, AliRsnDaughter::kUnknown);
         out->SetDaughter(1, AliRsnDaughter::kUnknown);
         out->SetMotherPDG(-2212);
+        out->SetMotherMass(0.938272);
+        out->SetPairCuts(cutsPairP);
+        out->AddAxis(ptID,200,0.0,20.0);
+             
+        out = task->CreateOutput("Lambdap_Pp_mother_REC", "HIST", "SINGLEREC");
+        out->SetDaughter(0, AliRsnDaughter::kUnknown);
+        out->SetDaughter(1, AliRsnDaughter::kUnknown);
+        out->SetMotherPDG(2212);
+        out->SetCutID(0,iCutP);
+        out->SetMotherMass(0.938272);
+        out->SetPairCuts(cutsPairP);
+        out->AddAxis(ptID,200,0.0,20.0);
+        
+        out = task->CreateOutput("Lambdap_Pm_mother_REC", "HIST", "SINGLEREC");
+        out->SetDaughter(0, AliRsnDaughter::kUnknown);
+        out->SetDaughter(1, AliRsnDaughter::kUnknown);
+        out->SetMotherPDG(-2212);
+        out->SetCutID(0,iCutP);
         out->SetMotherMass(0.938272);
         out->SetPairCuts(cutsPairP);
         out->AddAxis(ptID,200,0.0,20.0);
@@ -3676,6 +3712,8 @@ Bool_t Config_Xik0(
     
     Double_t mass= 0.497611+1.32171;
     
+    bool PbpRapidityCut=kFALSE;
+    
     // selections for V0 daughters
     
     Int_t v0d_xrows=70;
@@ -3704,7 +3742,8 @@ Bool_t Config_Xik0(
     Bool_t  k0sSwitch=kTRUE;
     Float_t k0sCosPoinAn=0.97;
     
-    if(TrackCutsK/100000) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    if(TrackCutsK/1000000) PbpRapidityCut=kTRUE;//use Pb-p rapidity cut
+    if((TrackCutsK/100000)%10) k0s_massTolID=1;//use pT-dependent mass tolerance cut
     if((TrackCutsK/10000)%10==1) k0sSwitch=kFALSE;//no competing V0 rejection
     if((TrackCutsK/100)%100) k0s_pLife=(TrackCutsK/100)%100;
     if(TrackCutsK%100) k0s_piPIDCut=((float) (TrackCutsK%100))*0.1;
@@ -3829,7 +3868,8 @@ Bool_t Config_Xik0(
     // pair cuts
     AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
     if(system!=1) cutY->SetRangeD(-0.8,0.8);
-    else cutY->SetRangeD(-0.465,0.035);
+    else if(!PbpRapidityCut) cutY->SetRangeD(-0.865,0.835);
+    else cutY->SetRangeD(-0.835,0.865);
     
     AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
     AliRsnCutMiniPair* cutOOBP=new AliRsnCutMiniPair("cutOOBP",AliRsnCutMiniPair::kPassesOOBPileupCut);
@@ -3871,6 +3911,16 @@ Bool_t Config_Xik0(
         multbins[nmult]=0.01; nmult++;
         multbins[nmult]=0.05; nmult++;
         multbins[nmult]=0.1; nmult++;
+        multbins[nmult]=0.11; nmult++;
+        multbins[nmult]=0.12; nmult++;
+        multbins[nmult]=0.13; nmult++;
+        multbins[nmult]=0.14; nmult++;
+        multbins[nmult]=0.15; nmult++;
+        multbins[nmult]=0.16; nmult++;
+        multbins[nmult]=0.17; nmult++;
+        multbins[nmult]=0.18; nmult++;
+        multbins[nmult]=0.19; nmult++;
+        multbins[nmult]=0.2; nmult++;
         multbins[nmult]=1.; nmult++;
     }
     

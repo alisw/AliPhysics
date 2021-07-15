@@ -27,9 +27,12 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     void SetMaxPt(Float_t MaxPt = 8.0){fMaxPt = MaxPt;}
     void SetResolType(Int_t ResolType = 2){fResolType = ResolType;}
     void SetALTweight(Int_t ALTweightType = 1){fALTweightType = ALTweightType;}
-    void SetResFileName(TString name){ fResolDataSetName = name; }
+    void SetResFileName(TString name);
     void SetResFileLocal(Bool_t localres) {fLocalRes = localres; }
-    void SetEffFileName(TString name){ fFileNameEff = name; }
+    void SetEffFileName(TString name);
+
+    TH1F *GetEffHisto() {return fhwEffpT;}
+ 
 
     // For resolution smearing (from Theos LightFlavorGenerator)
     TObjArray       *fArr;
@@ -49,7 +52,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     Int_t*                fParticleList;              // array with particle Pdg values
     TString*              fParticleListNames;         // array with particle names
 
-    const Int_t nInputParticles = 14;
+    const Int_t nInputParticles = 17;
 
     // Event histograms
     TH1F*                 fHistNEvents;               // number of events histo
@@ -176,7 +179,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     AliAnalysisTaskLMeeCocktailMC(const AliAnalysisTaskLMeeCocktailMC&); // Prevent copy-construction
     AliAnalysisTaskLMeeCocktailMC &operator=(const AliAnalysisTaskLMeeCocktailMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskLMeeCocktailMC, 2);
+    ClassDef(AliAnalysisTaskLMeeCocktailMC, 3);
 };
 
 #endif

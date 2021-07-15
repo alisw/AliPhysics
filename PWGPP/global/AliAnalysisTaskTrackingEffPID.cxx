@@ -162,7 +162,7 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   hHistXsecVsPtHard = new TH1D("hXsecVsPtHard", " ; pthard (GeV/c) ; Xsec", 200,0.,100.);
   fOutputList->Add(hHistXsecVsPtHard);
   
-  TString axTit[5]={"#eta","#varphi","#it{p}_{T} (GeV/#it{c})","Multiplicity","z_{vertex} (cm)"};
+  TString axTit[6]={"#eta","#varphi","#it{p}_{T} (GeV/#it{c})","Multiplicity","z_{vertex} (cm)","Prod. Rad. (cm)"};
   if(fMultEstimator==0)  axTit[3]="N_{tracklets}";
   else if(fMultEstimator==1) axTit[3]="N_{contributors}";
   else if(fMultEstimator==2) axTit[3]="N_{TPCITStracks}";
@@ -170,9 +170,9 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   else if(fMultEstimator==4) axTit[3]="N_{TPCclusters}/1000";
   const int nPtBins=32;
   const int nMultBins=10;
-  int nbins[5]={10,18,nPtBins,nMultBins,4};
-  double xmin[5]={-1.,0.,0.,0,-10.};
-  double xmax[5]={1.,2*TMath::Pi(),30.,200.,10.};
+  int nbins[6]={10,18,nPtBins,nMultBins,4,60};
+  double xmin[6]={-1.,0.,0.,0,-10.,0.};
+  double xmax[6]={1.,2*TMath::Pi(),30.,200.,10.,3.};
   TString charge[2] = {"pos","neg"};
   double ptBins[nPtBins+1] = {0.00,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.50,
                               0.60,0.70,0.80,0.90,1.00,1.25,1.50,1.75,2.00,2.50,
@@ -220,16 +220,16 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; iSpecies++) {
     for (int iCharge = 0; iCharge < 2; ++iCharge) {
       fGenerated[iSpecies][iCharge] = new THnSparseF(Form("hGen_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-                                                     "Generated particles",5,nbins,xmin,xmax);
+                                                     "Generated particles",6,nbins,xmin,xmax);
       fGeneratedEvSel[iSpecies][iCharge] = new THnSparseF(Form("hGenEvSel_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-                                                          "Generated particles in selected events",5,nbins,xmin,xmax);
+                                                          "Generated particles in selected events",6,nbins,xmin,xmax);
       fReconstructed[iSpecies][iCharge] = new THnSparseF(Form("hReconstructed_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-                                                          "Reconstructed tracks",5,nbins,xmin,xmax);
+                                                          "Reconstructed tracks",6,nbins,xmin,xmax);
       fReconstructedTOF[iSpecies][iCharge] = new THnSparseF(Form("hReconstructedTOF_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-                                                            "Reconstructed tracks with TOF",5,nbins,xmin,xmax);
+                                                            "Reconstructed tracks with TOF",6,nbins,xmin,xmax);
       fReconstructedPID[iSpecies][iCharge] = new THnSparseF(Form("hReconstructedPID_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-                                                            "Reconstructed tracks with PID",5,nbins,xmin,xmax);
-      for(int iax=0; iax<5; iax++){
+                                                            "Reconstructed tracks with PID",6,nbins,xmin,xmax);
+      for(int iax=0; iax<6; iax++){
         fGenerated[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
         fGeneratedEvSel[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
         fReconstructed[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
@@ -354,6 +354,8 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
 
   fHistNEvents->Fill(1);
 
+  double xMCVertex =99999;
+  double yMCVertex =99999;
   double zMCVertex =99999;
   int nTracklets = 0;
   TClonesArray *aodMcArray = 0x0;
@@ -365,6 +367,8 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       AliError("Could not find MC Header in AOD");
       return;
     }
+    xMCVertex = aodMcHeader->GetVtxX();
+    yMCVertex = aodMcHeader->GetVtxY();
     zMCVertex = aodMcHeader->GetVtxZ();
     AliAODTracklets *mult=((AliAODEvent*)fInputEvent)->GetTracklets();
     if(mult) nTracklets=mult->GetNumberOfTracklets();
@@ -375,6 +379,8 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       AliError("Generated vertex not available");
       return;
     }
+    xMCVertex=mcVert->GetX();
+    yMCVertex=mcVert->GetY();
     zMCVertex=mcVert->GetZ();
     const AliMultiplicity *mult = ((AliESDEvent*)fInputEvent)->GetMultiplicity();
     if(mult) nTracklets=mult->GetNumberOfTracklets();
@@ -449,7 +455,11 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       if(fKeepOnlyUE && isInjected) continue;
     }
     fHistNParticles->Fill(4);
-    double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),multEstim,zMCVertex};
+    
+    double distx = part->Xv() - xMCVertex;
+    double disty = part->Yv() - yMCVertex;
+    double distXY = TMath::Sqrt(distx*distx+disty*disty);
+    double arrayForSparse[6]={part->Eta(),part->Phi(),part->Pt(),multEstim,zMCVertex,distXY};
     if(fUseImpPar) arrayForSparse[3]=imppar;
     const int pdg = std::abs(part->PdgCode());
     Int_t jPDG=-1;
@@ -533,7 +543,11 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     const double pt = fUseGeneratedKine ? mcPart->Pt() : track->Pt() * AliPID::ParticleCharge(iSpecies);
     const double eta = fUseGeneratedKine ? mcPart->Eta() : track->Eta();
     const double phi = fUseGeneratedKine ? mcPart->Phi() : track->Phi();
-    double arrayForSparseData[5]={eta,phi,pt,multEstim,zMCVertex};
+    double distx = mcPart->Xv() - xMCVertex;
+    double disty = mcPart->Yv() - yMCVertex;
+    double distXY = TMath::Sqrt(distx*distx+disty*disty);
+    
+    double arrayForSparseData[6]={eta,phi,pt,multEstim,zMCVertex,distXY};
     if(fUseImpPar) arrayForSparseData[3]=imppar;
     if(fUseLocDen) arrayForSparseData[3]=GetLocalTrackDens(trEtaPhiMap,eta,phi);
     bool TPCpid = std::abs(pid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;

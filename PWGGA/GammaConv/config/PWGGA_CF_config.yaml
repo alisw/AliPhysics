@@ -150,6 +150,8 @@ Clusterizer:                                        # Clusterizer component
     recalDistToBadChannels: true
     recalShowerShape: true                          # True will recalculate the shower shape
     load1DBadChMap: true                            # ADDED !!!!
+    remapMcAod: false
+    diffEAggregation: 0.0
 ClusterExotics:                                     # Cluster exotics identification component (actual removal is handled by the cluster container)
     enabled: true                                   # Whether to enable the task
     createHistos: true                              # Whether the task should create outputhistograms

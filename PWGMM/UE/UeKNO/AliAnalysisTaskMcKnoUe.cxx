@@ -132,7 +132,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskMcKnoUe) // classimp: necessary for root
 
 AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
-	fESD(0), fIsPythia(kTRUE),fIsppData(kFALSE),fIspPbData(kFALSE), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fLeadingTrackFilter(0x0), fTrackFilterForDCA(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), fDCAxy(0), fDCAz(0), hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchTSData(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0)
+	fESD(0), fIsPythia(kTRUE),fIsppData(kFALSE),fIspPbData(kFALSE), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fLeadingTrackFilter(0x0), fTrackFilterForDCA(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), fDCAxy(0), fDCAz(0),fRefmult08std(0),fpercentileV0M(0),fMultSelection(0x0), hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchTSData(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0),hRefMult08std(0),hMultV0M(0),hRefMultvsMultV0M(0)
 
 {
 	for(Int_t i=0;i<3;++i){ 
@@ -196,7 +196,7 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTaskSE(name),
-	fESD(0), fIsPythia(kTRUE),fIsppData(kFALSE),fIspPbData(kFALSE), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fLeadingTrackFilter(0x0), fTrackFilterForDCA(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), fDCAxy(0), fDCAz(0), hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchTSData(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0)
+	fESD(0), fIsPythia(kTRUE),fIsppData(kFALSE),fIspPbData(kFALSE), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fLeadingTrackFilter(0x0), fTrackFilterForDCA(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), fDCAxy(0), fDCAz(0),fRefmult08std(0),fpercentileV0M(0),fMultSelection(0x0), hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchTSData(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0),hRefMult08std(0),hMultV0M(0),hRefMultvsMultV0M(0)
 {
 	for(Int_t i=0;i<3;++i){
 
@@ -529,6 +529,18 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 	hNchTSData = new TH1D("hNchTSData","",100,-0.5,99.5); 
 	fOutputList->Add(hNchTSData);
 
+    hRefMult08std = 0;
+    hRefMult08std = new TH1D("hRefMult08std","Multiplicity (-0.8 < #eta < 0.8);N_{ch};count",3000,-0.5,2999.5);
+    fOutputList->Add(hRefMult08std);
+    
+    hMultV0M = 0;
+    hMultV0M = new TH1D("hMultV0M","V0M ;V0M percentile;count",100,0,100);
+    fOutputList->Add(hMultV0M);
+    
+    hRefMultvsMultV0M = 0;
+    hRefMultvsMultV0M = new TH2D("hRefMultvsMultV0M","N_{ch} vs V0M percentile;N_{ch}; v0M percentile",3000,-0.5,2999.5,100,0,100);
+    fOutputList->Add(hRefMultvsMultV0M);
+    
 	for(Int_t i=0;i<3;++i){
 		hPhiRec[i]= new TH1D(Form("hPhiRec_%s",nameReg[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
 		fOutputList->Add(hPhiRec[i]);
@@ -697,9 +709,8 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 
 	// Trigger selection
 	UInt_t fSelectMask= fInputHandler->IsEventSelected();
-	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7;
-	if(!isINT7selected)
-		return;
+	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7||fSelectMask&AliVEvent::kMB;
+	if(!isINT7selected)  return;
 	hCounter->Fill(1);
 
 
@@ -721,6 +732,26 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 	hasRecVertex=HasRecVertex();
 	if(!hasRecVertex)return;
 
+    
+    fRefmult08std = -999;
+    fpercentileV0M = -999;
+      
+    fRefmult08std=AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);     //tracklets
+    hRefMult08std->Fill(fRefmult08std);
+
+    fMultSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
+    //if (!fMultSelection)
+    //cout<<"------- No AliMultSelection Object Found --------"<<fMultSelection<<endl;
+   // if (fIspPb) {fpercentileV0M = fMultSelection->GetMultiplicityPercentile("V0A");}
+    //else {
+        fpercentileV0M = fMultSelection->GetMultiplicityPercentile("V0M");//}
+        
+    hMultV0M->Fill(fpercentileV0M);
+
+    //cout<<"------- V0M mult ==  "<<fpercentileV0M<<"--------"<<endl;
+      
+    hRefMultvsMultV0M->Fill(fRefmult08std,fpercentileV0M);
+    
 	hPtLeadingRecPSV->Fill(fRecLeadPt);
 	if(isGoodVtxPosMC)
 		hPtLeadingGenPSV->Fill(fGenLeadPt);

@@ -107,6 +107,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fLambda{false},
       fUseTPCmomentum{false},
       fNHarm{2},
+      fNucleus{AliPID::kHe3},
       fV0CalibrationFile{""},
       fListHist{nullptr},
       fTreeV0{nullptr},
@@ -310,8 +311,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
 
   AliPDG::AddParticlesToPdgDataBase();
 
-  fFatParticle = fLambda ? AliPID::kProton : AliPID::kHe3;
-  fHyperPDG = fLambda ? 3122 : 1010010030;
+  fFatParticle = fLambda ? AliPID::kProton : fNucleus;
+  fHyperPDG = fLambda ? 3122 : (fNucleus == AliPID::kHe3 ? 1010010030 : 1010010040);
 } // end UserCreateOutputObjects
 
 void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
@@ -784,7 +785,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     }
   }
 
-  if (fRHyperTriton.size() != 0 || fRHyperTritonFull.size() != 0 || fStoreAllEvents)
+  if (fRHyperTriton.size() != 0 || fRHyperTritonFull.size() != 0 || fStoreAllEvents || fMC)
     fTreeV0->Fill();
 
   PostData(1, fListHist);

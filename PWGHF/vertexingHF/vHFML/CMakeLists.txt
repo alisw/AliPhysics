@@ -44,15 +44,19 @@ set(SRCS
     AliHFMLResponseDstoKKpi.cxx
     AliHFMLResponseLctoV0bachelor.cxx
     AliHFMLVarHandler.cxx
+    AliHFMLVarHandlerD0toKpi.cxx
     AliHFMLVarHandlerDplustoKpipi.cxx
     AliHFMLVarHandlerDstoKKpi.cxx
+    AliHFMLVarHandlerDstartoD0pi.cxx
     AliHFMLVarHandlerNonPromptLc2V0bachelor.cxx
     AliHFMLVarHandlerLctopKpi.cxx
+    AliAnalysisTaskSEDmesonTree.cxx
     AliAnalysisTaskSEDplus.cxx
     AliAnalysisTaskSEDs.cxx
     AliAnalysisTaskSENonPromptLc.cxx
     AliAnalysisTaskSECharmHadronMLSelector.cxx
     AliAnalysisTaskSECharmHadronvn.cxx
+    AliAnalysisTaskSECheckCharmHadronBkg.cxx
     AliAnalysisTaskSEHFTreeCreatorApply.cxx
     AliHFTreeHandlerApply.cxx
     AliHFTreeHandlerApplyDstoKKpi.cxx

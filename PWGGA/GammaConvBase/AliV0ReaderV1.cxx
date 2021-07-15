@@ -42,7 +42,7 @@
 #include <TGeoGlobalMagField.h>
 
 #include "AliV0ReaderV1.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "AliAODv0.h"
 #include "AliESDv0.h"
 #include "AliAODEvent.h"
@@ -59,7 +59,7 @@
 #include "AliAODConversionPhoton.h"
 #include "AliConversionPhotonBase.h"
 #include "TVector.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliAnalysisManager.h"
@@ -686,7 +686,7 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
     return kFALSE;
   }
   // Set Magnetic Field
-  AliKFParticle::SetField(fInputEvent->GetMagneticField());
+  AliGAKFParticle::SetField(fInputEvent->GetMagneticField());
 
   if(fInputEvent->IsA()==AliAODEvent::Class() && fProduceV0findingEffi){
     fProduceV0findingEffi = kFALSE;
@@ -860,9 +860,9 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
   AliKFConversionPhoton *fCurrentMotherKF=NULL;
   //    fUseConstructGamma = kFALSE;
   //    cout << "construct gamma " << endl;
-  AliKFParticle fCurrentNegativeKFParticle(*(fCurrentExternalTrackParamNegative),11);
+  AliGAKFParticle fCurrentNegativeKFParticle(*(fCurrentExternalTrackParamNegative),11);
   //    cout << fCurrentExternalTrackParamNegative << "\t" << endl;
-  AliKFParticle fCurrentPositiveKFParticle(*(fCurrentExternalTrackParamPositive),-11);
+  AliGAKFParticle fCurrentPositiveKFParticle(*(fCurrentExternalTrackParamPositive),-11);
   //    cout << fCurrentExternalTrackParamPositive << "\t"  << endl;
   //    cout << currentTrackLabels[0] << "\t" << currentTrackLabels[1] << endl;
   //    cout << "construct gamma " <<fUseConstructGamma << endl;
@@ -873,7 +873,15 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
     fCurrentMotherKF->ConstructGamma(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
   }else{
     fCurrentMotherKF = new AliKFConversionPhoton(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+
+
+#ifndef PWGGAUSEKFPARTICLE
     fCurrentMotherKF->SetMassConstraint(0,0.0001);
+#else
+    //fCurrentMotherKF->SetMassConstraint(0,0.0001);
+    fCurrentMotherKF->SetNonlinearMassConstraint(0.);
+#endif // PWGGAUSEKFPARTICLE
+
   }
 
   // PID Cuts- positive track
@@ -909,7 +917,6 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
     if(labeln>-1) fNegativeMCParticle = fMCEvent->Particle(labeln);
     TParticle *fPositiveMCParticle = 0x0;
     if(labelp>-1) fPositiveMCParticle = fMCEvent->Particle(labelp);
-
     if(fPositiveMCParticle&&fNegativeMCParticle){
       fCurrentMotherKF->SetMCLabelPositive(labelp);
       fCurrentMotherKF->SetMCLabelNegative(labeln);
@@ -917,12 +924,14 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
   }
 
   // Update Vertex (moved for same eta compared to old)
-  //      cout << currentV0Index <<" \t before: \t" << fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
+  // cout << currentV0Index <<" \t before: \t" << fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
   if(fUseImprovedVertex == kTRUE){
-    AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
-    //        cout << "Prim Vtx: " << primaryVertexImproved.GetX() << "\t" << primaryVertexImproved.GetY() << "\t" << primaryVertexImproved.GetZ() << endl;
+    AliGAKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
+    //    cout << "Prim Vtx: " << primaryVertexImproved.GetX() << "\t" << primaryVertexImproved.GetY() << "\t" << primaryVertexImproved.GetZ() << endl;
     primaryVertexImproved+=*fCurrentMotherKF;
+    //    cout << "Prim Vtx after: " << primaryVertexImproved.GetX() << "\t" << primaryVertexImproved.GetY() << "\t" << primaryVertexImproved.GetZ() << endl;
     fCurrentMotherKF->SetProductionVertex(primaryVertexImproved);
+    // cout << currentV0Index <<" \t after: \t" << fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
   }
   // SetPsiPair
   Double_t convpos[3]={0,0,0};
@@ -941,7 +950,6 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
       fCurrentMotherKF=NULL;
       return 0x0;
     }
-
     fCurrentMotherKF->SetConversionPoint(convpos);
   }
 
@@ -962,8 +970,12 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
   fCurrentMotherKF->SetMass(fCurrentMotherKF->M());
 
   // Calculating invariant mass
+#ifndef PWGGAUSEKFPARTICLE
   Double_t mass=-99.0, mass_width=-99.0, Pt=-99.0, Pt_width=-99.0;
-  AliKFParticle fCurrentMotherKFForMass(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+#else
+  float mass=-99.0, mass_width=-99.0, Pt=-99.0, Pt_width=-99.0;
+#endif // PWGGAUSEKFPARTICLE
+  AliGAKFParticle fCurrentMotherKFForMass(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
   fCurrentMotherKFForMass.GetMass(mass,mass_width);
   fCurrentMotherKFForMass.GetPt(Pt,Pt_width);
   fCurrentInvMassPair=mass;
@@ -1609,7 +1621,7 @@ void AliV0ReaderV1::CalculateSphericity(){
     fNumberOfRecTracks = 0;
     for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
       AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
-      if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+      //if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
       if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
       if(TMath::Abs(curTrack->Eta())>0.8) continue;
       if(curTrack->Pt()<0.5) continue;
@@ -1963,6 +1975,7 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   //conversion point
   Double_t convX, convY, convZ;
   fCurrentV0->GetXYZ(convX,convY,convZ);
+
   Double_t convR = TMath::Sqrt(convX*convX+convY*convY);
   //recalculated conversion point
   Double_t convXrecalc=fCurrentMotherKF->GetConversionX();

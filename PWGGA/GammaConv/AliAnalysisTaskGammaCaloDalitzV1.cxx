@@ -44,7 +44,7 @@
 #include "AliVParticle.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliV0ReaderV1.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliConversionAODBGHandlerRP.h"
@@ -4189,7 +4189,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessElectronCandidates(){
 				Double_t psiPair = GetPsiPair(positronCandidate,electronCandidate);
 				Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->GetConstrainedParam()->Phi()-positronCandidate->GetConstrainedParam()->Phi());
 
-				if( ((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->IsFromGammaConversion(psiPair,deltaPhi ) ){
+				if( ((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->IsFromGammaConversion(psiPair,deltaPhi,TMath::Sqrt(positronCandidate->Pt()*positronCandidate->Pt()+electronCandidate->Pt()*electronCandidate->Pt()))){//ALERT New update
 					lElectronPsiIndex[i] = kFALSE;
 					lPositronPsiIndex[j] = kFALSE;
 				}
@@ -4214,7 +4214,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessElectronCandidates(){
 	for(UInt_t i = 0; i < lGoodElectronIndex.size(); i++){
 
 		AliESDtrack *electronCandidate = (AliESDtrack*)fInputEvent->GetTrack(lGoodElectronIndex[i]);
-		AliKFParticle electronCandidateKF( *electronCandidate->GetConstrainedParam(), ::kElectron );
+		AliGAKFParticle electronCandidateKF( *electronCandidate->GetConstrainedParam(), ::kElectron );
 
 		TLorentzVector electronCandidateTLV;
 
@@ -4224,7 +4224,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessElectronCandidates(){
 		for(UInt_t j = 0; j < lGoodPositronIndex.size(); j++){
 
 			AliESDtrack *positronCandidate = (AliESDtrack*) fInputEvent->GetTrack(lGoodPositronIndex[j]);
-			AliKFParticle positronCandidateKF( *positronCandidate->GetConstrainedParam(), ::kPositron );
+			AliGAKFParticle positronCandidateKF( *positronCandidate->GetConstrainedParam(), ::kPositron );
 			TLorentzVector positronCandidateTLV;
 
 			positronCandidateTLV.SetXYZM(positronCandidate->GetConstrainedParam()->Px(),positronCandidate->GetConstrainedParam()->Py(),positronCandidate->GetConstrainedParam()->Pz(),TDatabasePDG::Instance()->GetParticle(  ::kPositron   )->Mass());
@@ -4242,7 +4242,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessElectronCandidates(){
 			} else {
 				virtualPhoton = new AliKFConversionPhoton(electronCandidateKF,positronCandidateKF);
 
-					AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
+					AliGAKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
 					primaryVertexImproved+=*virtualPhoton;
 					virtualPhoton->SetProductionVertex(primaryVertexImproved);
 

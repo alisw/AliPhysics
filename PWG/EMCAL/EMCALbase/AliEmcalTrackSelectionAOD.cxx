@@ -239,7 +239,8 @@ Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString per
       period.BeginsWith("lhc15g6") || period.BeginsWith("lhc16c2") || period.BeginsWith("lhc16e1") || period.BeginsWith("lhc17f8") || 
       period.BeginsWith("lhc18b8") || period.BeginsWith("lhc18f5") || period.BeginsWith("lhc18g2") || period.BeginsWith("lhc17g8a") || 
       period.BeginsWith("lhc19a1") || period.BeginsWith("lhc19f4") || period.BeginsWith("lhc19d3") ||
-      period.BeginsWith("lhc17h6e2") ||  period.BeginsWith("lhc17h6f2")
+      period.BeginsWith("lhc17h6e2") ||  period.BeginsWith("lhc17h6f2") || period.BeginsWith("lhc21b8") ||
+      period.BeginsWith("lhc15h1") || period.BeginsWith("lhc15h2")
       ) {
     bits[0] = 8;
     bits[1] = 9;

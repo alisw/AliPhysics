@@ -160,6 +160,9 @@ fVertexBC(-200),             fRecalculateVertexBC(0),
 fUseAliCentrality(0),        fMultWithEventSel(0),
 fCentralityClass(""),        fCentralityOpt(0),
 fEventPlaneMethod(""),
+fSpherocity(-10),            fSpherocityMinPt(0),
+fCalculateSpherocity(0),     fStudySpherocityMinPt(0),
+fhSpherocity(0),             fhSpherocityCen(0),
 fFillInputNonStandardJetBranch(kFALSE),
 fNonStandardJets(new TClonesArray("AliAODJet",100)),          fInputNonStandardJetBranchName("jets"),
 fFillInputBackgroundJetBranch(kFALSE), 
@@ -180,7 +183,8 @@ fhPtHardEnClusterRatio(0),   fhPtHardEnClusterCenRatio(0),
 fEnergyHistogramNbins(0),    fHistoCentDependent(0),          fHistoPtDependent(0),
 fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept(""),
 fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventHeader(1),
-fAcceptMCPromptPhotonOnly(0),fRejectMCFragmentationPhoton(0)
+fAcceptMCPromptPhotonOnly(0),fRejectMCFragmentationPhoton(0),
+fRejectPileUpMCParticle(0)
 {
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsE   [i]= 0x0 ;
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsECen[i]= 0x0 ;
@@ -192,6 +196,7 @@ fAcceptMCPromptPhotonOnly(0),fRejectMCFragmentationPhoton(0)
   for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPtCen   [i]= 0x0 ;
   for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPtCenSignal[i]= 0x0 ;
   for(Int_t j = 0; j < 5; j++) { fMCGenerToAccept    [j] =  ""; fMCGenerIndexToAccept[j] = -1; }
+  for(Int_t j = 0; j < 4; j++) { fhSpherocityMinPtCut[j] = 0  ; fhSpherocityCenMinPtCut[j] = 0 ; fSpherocityPtCut[j] = -10 ;}
   
   InitParameters();
 }
@@ -337,7 +342,19 @@ Bool_t  AliCaloTrackReader::AcceptEventWithTriggerBit(UInt_t trigFired)
 //_____________________________________________________
 Bool_t  AliCaloTrackReader::AcceptParticleMCLabel(Int_t mcLabel) const
 {
-  if( !fMC || fNMCGenerToAccept <= 0 ) return kTRUE;
+  if ( !fMC ) return kTRUE ;
+
+  if ( fRejectPileUpMCParticle )
+  {
+    Bool_t pileup = IsMCParticleFromOutOfBunchPileupCollision(mcLabel);
+    if ( pileup )
+    {
+      AliDebug(2, Form("skip label %d, due to embedded pileup MC",mcLabel) );
+      return kFALSE;
+    }
+  }
+
+  if ( fNMCGenerToAccept <= 0 ) return kTRUE;
   
   TString genName;
   Int_t genIndex;
@@ -352,7 +369,8 @@ Bool_t  AliCaloTrackReader::AcceptParticleMCLabel(Int_t mcLabel) const
     if ( generOK && fMCGenerIndexToAccept[ig] >= 0 && fMCGenerToAccept[ig] != genIndex) generOK = kFALSE;
   }
   
-  if ( !generOK ) AliDebug(1, Form("skip label %d, gen %s",mcLabel,genName.Data()) );
+  if ( !generOK )
+    AliDebug(2, Form("skip label %d, gen %s",mcLabel,genName.Data()) );
 
   return generOK;
 }
@@ -489,6 +507,74 @@ Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit(UInt_t trigFired)
   }
   
   return kTRUE ; // accept the event
+}
+
+//_____________________________________________
+/// Calculate spherocity of the event
+/// Adapted from PWGLF/SPECTRA/Spherocity/AliSpherocityUtils.cxx
+/// Input  the list of filtered tracks fCTSTracks
+/// \param minPt : track min pT cut corresponding to fSpherocityMinPt except when several cuts studied, it can change.
+//____________________________________________________________________
+Float_t AliCaloTrackReader::CalculateEventSpherocity( Float_t minPt )
+{
+  Float_t pFull      = 0;
+  Float_t spherocity = 2;
+  Float_t sizeStep   = 0.1;
+  Int_t   nrec       = fCTSTracks->GetEntries();
+
+  // Computing total pt
+  Float_t sumpt = 0;
+  for(int i1 = 0; i1 < nrec; ++i1)
+  {
+    AliVTrack * track = (AliVTrack*) fCTSTracks->At(i1);
+    if ( track->Pt() > minPt )
+      sumpt += track->Pt();
+  }
+
+  // Getting thrust
+  for(Int_t i = 0; i < 360/(sizeStep); ++i)
+  {
+    Float_t numerator = 0;
+    Float_t phiparam  = 0;
+    Float_t nx = 0;
+    Float_t ny = 0;
+
+    phiparam=( (TMath::Pi()) * i * sizeStep ) / 180.; // parametrization of the angle
+    nx = TMath::Cos(phiparam);            // x component of an unitary vector n
+    ny = TMath::Sin(phiparam);            // y component of an unitary vector n
+
+    for(int i1 = 0; i1 < nrec; ++i1)
+    {
+      AliVTrack * track = (AliVTrack*) fCTSTracks->At(i1);
+      Float_t phi = track->Phi();
+      Float_t pt  = track->Pt();
+
+      if ( pt <= minPt )
+        continue;
+
+      Float_t pxA = pt * TMath::Cos( phi );
+      Float_t pyA = pt * TMath::Sin( phi );
+
+      // product between p proyection in XY plane and the unitary vector
+      numerator += TMath::Abs( ny * pxA - nx * pyA );
+    }
+
+    pFull = TMath::Power( (numerator / sumpt), 2 );
+
+    // Maximization of pFull
+    if ( pFull < spherocity )
+    {
+      spherocity = pFull;
+    }
+  }
+
+  Float_t finalSpherocity = ((spherocity)*TMath::Pi()*TMath::Pi())/4.0;
+
+  AliDebug(1,Form("Cen %d, nTrack %d, min pT %f, Spherocity %f\n",
+                  GetEventCentrality(), nrec, minPt, finalSpherocity));
+
+  return finalSpherocity;
+
 }
 
 //_____________________________________________
@@ -1383,7 +1469,58 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
         }
       }
     }
-  }
+
+    if ( fCalculateSpherocity )
+    {
+      if ( !fHistoCentDependent )
+      {
+        fhSpherocity = new TH1F
+        (Form("hSpherocity_MinPt%1.2fGeV",fSpherocityMinPt),
+         Form("Spherocity, #it{p}_{T} > %1.2f GeV/#it{c}",fSpherocityMinPt), 120, -0.1, 1.1);
+        fhSpherocity->SetXTitle("Spherocity");
+        fOutputContainer->Add(fhSpherocity);
+      }
+      else
+      {
+        fhSpherocityCen = new TH2F
+        (Form("hSpherocityCen_MinPt%1.2fGeV",fSpherocityMinPt),
+         Form("Spherocity vs Centrality, #it{p}_{T} > %1.2f GeV/#it{c}",fSpherocityMinPt),
+         120, -0.1, 1.1, 120, -10, 110);
+        fhSpherocityCen->SetXTitle("Spherocity");
+        fhSpherocityCen->SetYTitle("Centrality (%)");
+        fOutputContainer->Add(fhSpherocityCen);
+      }
+
+      if ( fStudySpherocityMinPt )
+      {
+        for(Int_t i = 0; i < 4; i++)
+        {
+          // Avoid same cut
+          if ( TMath::Abs(fSpherocityMinPt-fSpherocityMinPtCuts[i]) < 0.0001 ) continue;
+
+          if ( !fHistoCentDependent )
+          {
+            fhSpherocityMinPtCut[i] = new TH1F
+            (Form("hSpherocity_MinPt%1.2fGeV",fSpherocityMinPtCuts[i]),
+             Form("Spherocity, #it{p}_{T} > %1.2f GeV/#it{c}",fSpherocityMinPtCuts[i]),
+             120, -0.1, 1.1);
+            fhSpherocityMinPtCut[i]->SetXTitle("Spherocity");
+            fOutputContainer->Add(fhSpherocityMinPtCut[i]);
+          }
+          else
+          {
+            fhSpherocityCenMinPtCut[i] = new TH2F
+            (Form("hSpherocityCen_MinPt%1.2fGeV",fSpherocityMinPtCuts[i]),
+             Form("Spherocity vs Centrality, #it{p}_{T} > %1.2f GeV/#it{c}",fSpherocityMinPtCuts[i]),
+             120, -0.1, 1.1, 120, -10, 110);
+            fhSpherocityCenMinPtCut[i]->SetXTitle("Spherocity");
+            fhSpherocityCenMinPtCut[i]->SetYTitle("Centrality (%)");
+            fOutputContainer->Add(fhSpherocityCenMinPtCut[i]);
+          }
+        } // for
+      } // fStudySpherocityMinPt
+    } // fCalculateSpherocity
+  } // fFillCTS
   
   if ( fComparePtHardAndJetPt )
   {
@@ -1395,13 +1532,13 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
   }
 
   if ( fComparePtHardAndPromptPhotonPt )
-   {
-     fhPtHardPromptPhotonPtRatio = new TH1F
-     ("hPtHardPtPromptPhotonPtRatio","Generated prompt #gamma #it{p}_{T} / #it{p}_{T}^{hard}",100,0,10);
-     fhPtHardPromptPhotonPtRatio->SetYTitle("# events");
-     fhPtHardPromptPhotonPtRatio->SetXTitle("#it{p}_{T}^{prompt #gamma} / #it{p}_{T}^{hard}");
-     fOutputContainer->Add(fhPtHardPromptPhotonPtRatio);
-   }
+  {
+    fhPtHardPromptPhotonPtRatio = new TH1F
+    ("hPtHardPtPromptPhotonPtRatio","Generated prompt #gamma #it{p}_{T} / #it{p}_{T}^{hard}",100,0,10);
+    fhPtHardPromptPhotonPtRatio->SetYTitle("# events");
+    fhPtHardPromptPhotonPtRatio->SetXTitle("#it{p}_{T}^{prompt #gamma} / #it{p}_{T}^{hard}");
+    fOutputContainer->Add(fhPtHardPromptPhotonPtRatio);
+  }
 
   if ( fComparePtHardAndClusterPt )
   {
@@ -1853,6 +1990,11 @@ void AliCaloTrackReader::InitParameters()
   fTrackMultPtCut[8] = 15.0; fTrackMultPtCut[9] = 20.;  
   
   for(Int_t ism = 0; ism < 22; ism++) fScaleFactorPerSM[ism] = 1. ;    
+
+  fSpherocityMinPt = 0.15;
+  fCalculateSpherocity = kFALSE;
+  fSpherocityMinPtCuts[0] = 1; fSpherocityMinPtCuts[1] = 2;
+  fSpherocityMinPtCuts[2] = 3; fSpherocityMinPtCuts[3] = 4;
 }
 
 //__________________________________________________________________________
@@ -2293,28 +2435,53 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     fhNEventsAfterCut->Fill(21.5);
   }
   
+  if ( fCalculateSpherocity && fFillCTS )
+  {
+    fSpherocity = CalculateEventSpherocity(fSpherocityMinPt);
+    if ( !fHistoCentDependent )
+      fhSpherocity->Fill(fSpherocity);
+    else
+      fhSpherocityCen->Fill(fSpherocity,GetEventCentrality());
+
+    //printf("Reader 0) %f\n",fSpherocity);
+
+    if ( fStudySpherocityMinPt )
+    {
+      for(Int_t icut = 0; icut < 4; icut++)
+      {
+        fSpherocityPtCut[icut] = CalculateEventSpherocity(fSpherocityMinPtCuts[icut]);
+        if ( !fHistoCentDependent )
+          fhSpherocityMinPtCut[icut]->Fill(fSpherocityPtCut[icut]);
+        else
+          fhSpherocityCenMinPtCut[icut]->Fill(fSpherocityPtCut[icut],GetEventCentrality());
+
+        //printf("Reader %d) %f\n",icut+1,fSpherocityPtCut[icut]);
+      }
+    }
+  }
+
   //-----------------------------------
   // Get and filter calorimeter data
   //-----------------------------------
   
-  if(fFillEMCALCells)
+  if ( fFillEMCALCells )
     FillInputEMCALCells();
   
-  if(fFillPHOSCells)
+  if ( fFillPHOSCells )
     FillInputPHOSCells();
   
-  if(fFillEMCAL || fFillDCAL)
+  if ( fFillEMCAL || fFillDCAL )
     FillInputEMCAL();
   
-  if(fFillPHOS)
+  if ( fFillPHOS )
     FillInputPHOS();
   
   FillInputVZERO();
   
-  //one specified jet branch
-  if(fFillInputNonStandardJetBranch)
+  // one specified jet branch
+  if ( fFillInputNonStandardJetBranch )
     FillInputNonStandardJets();
-  if(fFillInputBackgroundJetBranch)
+  if ( fFillInputBackgroundJetBranch )
     FillInputBackgroundJets();
 
   AliDebug(1,"Event accepted for analysis");
@@ -4221,11 +4388,11 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
          fRejectEMCalTriggerEventsL1HighWithL1Low,fAcceptEventsWithBit.GetSize(),
          fRejectEventsWithBit.GetSize(),fRemoveCentralityTriggerOutliers);
   
-  printf("Event rejection use: AliVEventCuts %d, IsSPDPileup %d\n",
+  printf("Event rejection use: AliVEventCuts %d, Pileup %d\n",
          fUseEventCutsClass, fDoPileUpEventRejection);
   if ( fDoPileUpEventRejection == 1 )
   {
-    printf("\t SPD parameters: ");
+    printf("\t Pileup SPD parameters: ");
     for(Int_t iparam = 0; iparam < 5; iparam++) printf(" %d) %2.2f ", iparam, fPileUpParamSPD[iparam]);
     printf("\n");
   }

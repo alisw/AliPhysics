@@ -70,6 +70,7 @@ AliJFFlucTask::AliJFFlucTask():
 	fPt_min(0.2),
 	fPt_max(5.0),
 	fzvtxCut(10.0),
+	fremovebadarea(kFALSE),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
 	binning(BINNING_CENT_PbPb),
 	flags(0)
@@ -106,6 +107,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fPt_min(0.2),
 	fPt_max(5.0),
 	fzvtxCut(10.0),
+	fremovebadarea(kFALSE),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
 	binning(BINNING_CENT_PbPb),
 	flags(0)
@@ -394,7 +396,13 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 					if(fPcharge == -1)
 						continue;
 				}else continue;
-
+				
+				// Removal of bad area, now only with eta symmetric
+				Bool_t isBadArea = TMath::Abs(track->Eta()) > 0.6;
+				if(fremovebadarea) {
+					if(isBadArea) continue;
+				} 
+		
 				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++]) AliJBaseTrack;
 				itrack->SetID( TrackList->GetEntriesFast() );
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );

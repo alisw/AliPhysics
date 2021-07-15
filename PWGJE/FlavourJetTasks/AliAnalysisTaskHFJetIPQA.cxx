@@ -609,12 +609,17 @@ void AliAnalysisTaskHFJetIPQA::localtoglobal(Double_t alpha ,Double_t* local,Dou
 }
 */
 
-void AliAnalysisTaskHFJetIPQA::FillRecHistograms(Int_t jetflavour, Double_t recjetpt, Double_t fJetGenPt,Double_t fJetRecEta, Double_t fJetGenEta, Double_t fJetRecPhi, Int_t fUnfoldFracCalc){
+void AliAnalysisTaskHFJetIPQA::FillRecHistograms(Int_t jetflavour, Double_t recjetpt, Double_t fJetGenPt,Double_t fJetRecEta, Double_t fJetGenEta, Double_t fJetRecPhi){
   FillHist("fh1dJetRecPt",recjetpt, 1);  //this->fXsectionWeightingFactor );
   FillHist("fh1dJetRecEtaPhiAccepted",fJetRecEta,fJetRecPhi, 1);   //this->fXsectionWeightingFactor );
   //FillHist("fh1dJetRecPtAccepted",recjetpt, 1);  //this->fXsectionWeightingFactor );
+  //printf("%s: Filling fh1dJetRecPt with rec=%f\n",__FUNCTION__, recjetpt);
 
   if(fJetGenEta<-99) return;
+  if(PerformGenLevAcceptanceCuts(fJetGenEta)){
+    FillHist("fh2dGenJetPtVsRecJetPt",fJetGenPt, recjetpt,1);
+    //printf("%s: Filling fh2dGenJetPtVsRecJetPt with rec=%f, gen=%f\n", __FUNCTION__, recjetpt, fJetGenPt);
+  }
   if(fIsPythia){
     if(jetflavour==0)     FillHist("fh1dJetRecPtUnidentified",recjetpt, 1);    //this->fXsectionWeightingFactor );
       else if(jetflavour==1)FillHist("fh1dJetRecPtudsg",        recjetpt, 1);    //this->fXsectionWeightingFactor );
@@ -623,24 +628,24 @@ void AliAnalysisTaskHFJetIPQA::FillRecHistograms(Int_t jetflavour, Double_t recj
         //
         //Filling matched b jet pt histograms:
         //particle level jets without acceptance cuts, detector level jets with acceptance cuts. This is taken care of by using DefineCutsTaskpp cuts only for detlevel jets!
-        if(fUnfoldFracCalc<fUnfoldPseudeDataFrac) {
+        if((fNEvent%2)==0) {
           if((recjetpt>5)&&(recjetpt<120)){
-              //printf("Filling fh1dJetTrueMatchedPtb_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+              //printf("Filling fh1dJetTrueMatchedPtb_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent);
               FillHist("fh1dJetTrueMatchedPtb_PseudoData",fJetGenPt, 1);
           }
           if(PerformGenLevAcceptanceCuts(fJetGenEta)){
-              //printf("Filling fh2dJetGenPtVsJetRecPt_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+              //printf("Filling fh2dJetGenPtVsJetRecPt_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent);
               FillHist("fh2dJetGenPtVsJetRecPt_PseudoData",recjetpt, fJetGenPt,1);
               FillHist("fh2dJetGenPtVsJetWideRecPt_PseudoData",recjetpt, fJetGenPt,1);
           }
         }
         else{
            if((recjetpt>5)&&(recjetpt<120)){
-              //printf("Filling fh1dJetTrueMatchedPtb_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+              //printf("Filling fh1dJetTrueMatchedPtb_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent);
               FillHist("fh1dJetTrueMatchedPtb_Response", fJetGenPt, 1);
            }
           if(PerformGenLevAcceptanceCuts(fJetGenEta)){
-              //printf("Filling fh2dJetGenPtVsJetRecPt_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+              //printf("Filling fh2dJetGenPtVsJetRecPt_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent);
               FillHist("fh2dJetGenPtVsJetRecPt_Response",recjetpt, fJetGenPt,1);
               FillHist("fh2dJetGenPtVsJetWideRecPt_Response",recjetpt, fJetGenPt,1);
           }
@@ -657,18 +662,20 @@ Bool_t AliAnalysisTaskHFJetIPQA::PerformGenLevAcceptanceCuts(Double_t fJetGenEta
   return kTRUE;
 }
 
-void AliAnalysisTaskHFJetIPQA::FillGenHistograms(Int_t jetflavour,Double_t jetgenpt, Int_t fUnfoldFracCalc){
+void AliAnalysisTaskHFJetIPQA::FillGenHistograms(Int_t jetflavour,Double_t jetgenpt){
+    //printf("%s: Filling fh1dJetGenPt with gen=%f\n",__FUNCTION__, jetgenpt);
     FillHist("fh1dJetGenPt",jetgenpt, 1);
     if(jetflavour ==0)      FillHist("fh1dJetGenPtUnidentified",jetgenpt, 1);
     else if(jetflavour ==1) FillHist("fh1dJetGenPtudsg",jetgenpt, 1);
     else if(jetflavour ==2) FillHist("fh1dJetGenPtc",jetgenpt, 1);
+
     else if(jetflavour ==3){
-        if(fUnfoldFracCalc<fUnfoldPseudeDataFrac) {
-            //printf("Filling fh1dJetGenPtb_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+        if((fNEvent%2)==0) {
+            //printf("Filling fh1dJetGenPtb_PseudoData b hist fNEvent=%i\n", fNEvent);
             FillHist("fh1dJetGenPtb_PseudoData",jetgenpt, 1);
         }
         else{
-            //printf("Filling fh1dJetGenPtb_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+            //printf("Filling fh1dJetGenPtb_Response b hist fNEvent=%i\n", fNEvent);
             FillHist("fh1dJetGenPtb_Response",jetgenpt, 1);
         }
     }
@@ -1242,7 +1249,7 @@ Int_t AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const Al
       if(!(iPartIsInJet<0)){
         fIPSigPart=fTrackRecIPs[iPartIsInJet];
         //GetMCIP(pAOD,event, jetgen, fIPSigPart);
-       // printf("%s:: Got fIPSigPart=%f for track with label %i\n",__FUNCTION__,fIPSigPart, iTrackLabels[iPartIsInJet]);
+        //printf("%s:: Got fIPSigPart=%f for track with label %i\n",__FUNCTION__,fIPSigPart, iTrackLabels[iPartIsInJet]);
       }
 
       if(fIPSigPart>fMaxIP){
@@ -2059,7 +2066,7 @@ void AliAnalysisTaskHFJetIPQA::DefaultInitTreeVars(){
  * - Sort after storing track parameters as otherwise assignment wrt. IP and IPSig to different tracks!
  * */
 
-void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati>& sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXYSig, vector<Float_t> &ipvalsig, vector<Float_t> &ipval, Int_t &nGoodIPTracks)
+void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati>& sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati>& sImpParXYSig, vector<Float_t> &ipvalsig, vector<Float_t> &ipval, vector<Float_t>& chi2val, Int_t &nGoodIPTracks)
 {
     nGoodIPTracks=sImpParXY.size();
     if(nGoodIPTracks==0) return;
@@ -2072,9 +2079,11 @@ void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetI
     for(int iTrack=0;iTrack<nGoodIPTracks;iTrack++){
       ipvalsig.push_back(sImpParXYSig.at(iTrack).first);
       ipval.push_back(sImpParXY.at(iTrack).first);
-      //printf("HasIP0, ipval[%i]=%f, ipvalsig[%i]=%f\n", iTrack, ipval[iTrack], iTrack, ipvalsig[iTrack]);
+      chi2val.push_back(sImpParXY.at(iTrack).trackpt);
+      //printf("HasIP0, ipval[%i]=%f, ipvalsig[%i]=%f, chi2=%f\n", iTrack, ipval[iTrack], iTrack, ipvalsig[iTrack], chi2val.back());
     }
     if(((int)ipvalsig.size()!=nGoodIPTracks)||((int)ipval.size()!=nGoodIPTracks)) AliError("Size of IP vector not valid!\n");
+    if(ipvalsig.size()!=chi2val.size()) AliError("Size of chi2val vec not valid!\n");
     //if(hasIPs[0])printf("N=1: cursImParXY=%f, TrackWeight=%f,corridx=%i, pt=%f\n",sImpParXYSig.at(0).first, sImpParXYSig.at(0).second, sImpParXYSig.at(0).trackLabel, sImpParXYSig.at(0).trackpt);
     //if(hasIPs[1])printf("N=2: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(1).first, sImpParXYSig.at(1).second, sImpParXYSig.at(1).trackLabel, sImpParXYSig.at(1).trackpt);
     //if(hasIPs[2])printf("N=3: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(2).first, sImpParXYSig.at(2).second, sImpParXYSig.at(2).trackLabel, sImpParXYSig.at(2).trackpt);
@@ -2084,7 +2093,7 @@ void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetI
 void AliAnalysisTaskHFJetIPQA::PrintAllTreeVars(){
   fflush(stdout);
   printf("-------------------------------------\n");
-  printf("Printing all tree vars\n");
+  printf("Printing all tree vars, Event %i\n",fNEvent);
   printf("fJetRecPt %f\n",fJetRecPt);
   printf("fJetMass=%f\n",fJetMass);
   printf("fJetFlavour %i\n",fJetFlavour);
@@ -2114,9 +2123,6 @@ void AliAnalysisTaskHFJetIPQA::PrintAllTreeVars(){
 }
 
 Bool_t AliAnalysisTaskHFJetIPQA::Run(){
-    fNEvent++;
-    Int_t fUnfoldFracCalc=fNEvent%100;
-
     /*if(fUnfoldFracCalc<fUnfoldPseudeDataFrac){ printf("Generating Pseudo Data, fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);}
     else{printf("Generating Response matrix, fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);}*/
 
@@ -2130,7 +2136,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     AliAODEvent *ev = dynamic_cast<AliAODEvent*>(InputEvent());
     fEventVertex = dynamic_cast<AliAODVertex*>(ev->GetPrimaryVertex());
 
-    if(!fResponseMode)IsEventAccepted(ev);
+    IsEventAccepted(ev);
+    fNEvent++;
 
     fIsEsd =  (InputEvent()->IsA()==AliESDEvent::Class())? kTRUE : kFALSE;
    // EventwiseCleanup();
@@ -2222,7 +2229,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         if (!jetgen) continue;
           jetflavour=0; is_udgjet=kFALSE;
           jetflavour =IsMCJetPartonFast(jetgen,fJetRadius,is_udgjet);
-          if(PerformGenLevAcceptanceCuts(jetgen->Eta())) FillGenHistograms(jetflavour, jetgen->Pt(),fUnfoldFracCalc);
+          if(PerformGenLevAcceptanceCuts(jetgen->Eta())) FillGenHistograms(jetflavour, jetgen->Pt());
       }
         jetcongen->ResetCurrentID();
         jetconrec->ResetCurrentID();
@@ -2241,6 +2248,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     std::vector<SJetIpPati> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
     std::vector<Float_t> ipval;
     std::vector<Float_t> ipvalsig;
+    std::vector<Float_t> chi2val;
     std::vector <Int_t> fJetConstTrackID;
     std::vector <Int_t> iTrackLabels;
     std::vector <Double_t> fTrackRecPt;
@@ -2263,6 +2271,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
       sImpParXYZSig.clear();
       ipval.clear();
       ipvalsig.clear();
+      chi2val.clear();
       fJetConstTrackID.clear();
       fTrackRecIPs.clear();
       iTrackLabels.clear();
@@ -2297,8 +2306,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           }
         }
 
-        FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi(), fUnfoldFracCalc);
         if(fDoLundPlane)RecursiveParents(jetrec, jetconrec,fJetConstTrackID);
+
 
 
         //_____________________________
@@ -2363,7 +2372,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           Double_t cursImParXYZ    =TMath::Abs(GetValImpactParameter(   kXYZ,dca,cov))*sign;
           Double_t cursImParXYZSig =TMath::Abs(GetValImpactParameter(kXYZSig,dca,cov))*sign;
           //printf("cursImParXY=%f, cursImParXYSig=%f, cursImParXYZ=%f, cursImParXYZSig=%f\n", cursImParXY,cursImParXYSig, cursImParXYZ, cursImParXYZSig);
-          fTrackRecIPs.push_back(cursImParXY);
+          fTrackRecIPs.push_back(cursImParXYSig);
           fTrackRecPt.push_back(fTrackPt[NJetParticles]);
           //printf("%s: Track with label %i, IP=%f, pt=%f\n",__FUNCTION__, trackV->GetLabel(), cursImParXY, fTrackPt[NJetParticles]);
 
@@ -2374,10 +2383,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           iTrackITSHits[NJetParticles]=(int) vtrack->HasPointOnITSLayer(0) + (int) vtrack->HasPointOnITSLayer(1)+(int) vtrack->HasPointOnITSLayer(2) + (int) vtrack->HasPointOnITSLayer(3) + (int) vtrack->HasPointOnITSLayer(4) + (int) vtrack->HasPointOnITSLayer(5);
 
           //printf("Generated:fTrackChi2OverNDF=%f,  bTrackIsV0=%i, iTrackITSHits=%i\n",  fTrackChi2OverNDF[NJetParticles],bTrackIsV0[NJetParticles], iTrackITSHits[NJetParticles]);
-          SJetIpPati a(cursImParXY, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles]); sImpParXY.push_back(a);
-          SJetIpPati b(cursImParXYZ, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles]); sImpParXYZ.push_back(b);
-          SJetIpPati c(cursImParXYSig, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles]);sImpParXYSig.push_back(c);
-          SJetIpPati d(cursImParXYZSig, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles]);sImpParXYZSig.push_back(d);
+          SJetIpPati a(cursImParXY, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles],fTrackChi2OverNDF[NJetParticles]); sImpParXY.push_back(a);
+          SJetIpPati b(cursImParXYZ, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles],fTrackChi2OverNDF[NJetParticles]); sImpParXYZ.push_back(b);
+          SJetIpPati c(cursImParXYSig, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles],fTrackChi2OverNDF[NJetParticles]);sImpParXYSig.push_back(c);
+          SJetIpPati d(cursImParXYZSig, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles],fTrackChi2OverNDF[NJetParticles]);sImpParXYZSig.push_back(d);
           //printf("curImParXY=%f, isV0=%i, pt=%f\n",sImpParXYSig.back().first,sImpParXYSig.back().is_V0, sImpParXYSig.back().trackpt);
 
 
@@ -2395,10 +2404,18 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           FillHist("fh2dnTracksvsJetPt",nTracks,fJetRecPt,1);
           continue;
         }
+        if(!(nTracks>0)){
+          continue;
+        }
+        FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi());
 
+        //Rejection jets with pt>100 GeV/c and pt<5 GeV/c for the TC tagging as lnjp lookup has exactly these boundaries
+        if((fJetRecPt>100.)||(fJetRecPt<5.)){
+          continue;
+        }
         //FillHist("fh1dParticlesPerJet",NJetParticles,1);
 
-        DetermineIPVars(sImpParXY, sImpParXYSig, ipvalsig, ipval, nGoodIPTracks);
+        DetermineIPVars(sImpParXY, sImpParXYSig, ipvalsig, ipval, chi2val, nGoodIPTracks);
 
         //_____________________________
         //V0 tag decisions
@@ -2425,22 +2442,23 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
        //**************
        //Probability Dists
-       fJetProb=GetTrackProbability(fJetRecPt,nGoodIPTracks, ipvalsig);
+       fJetProb=GetTrackProbability(fJetRecPt,nGoodIPTracks, ipvalsig, chi2val);
 
        Double_t fLNJP=-999;
        if(fJetProb>0)fLNJP=-TMath::Log(fJetProb);
        if((fIsPythia)&&(fJetProb>0))bIsTrueGenV0Jet=GetGenV0Jets(jetrec, ev, iTrackLabels,fTrackRecIPs,fTrackRecPt,fJetFlavour, kTagDec, fLNJP);
        //if(bIsTrueGenV0Jet) printf("%s: Found true V0 jet!\n",__FUNCTION__);
 
-       if(sImpParXY.size()>0){
-         if((bIsTrueGenV0Jet!=sImpParXY[0].iv0MCID)&&((sImpParXY[0].is_V0==V0MC)||(sImpParXY[0].is_V0==V0TrueRec))&&(fLNJP>0)&&(fJetFlavour!=B)){
-           AliError(Form("Found Inconsistency! bIsTrueGenV0Jet=%i, sImpParIsV0=%i\n", bIsTrueGenV0Jet, sImpParXY[0].is_V0));
+       if(sImpParXYSig.size()>0){
+         if((bIsTrueGenV0Jet!=sImpParXYSig[0].iv0MCID)&&((sImpParXYSig[0].is_V0==V0MC)||(sImpParXYSig[0].is_V0==V0TrueRec))&&(fLNJP>0)&&(fJetFlavour!=B)){
+           AliError(Form("Found Inconsistency! bIsTrueGenV0Jet=%i, sImpParIsV0=%i\n", bIsTrueGenV0Jet, sImpParXYSig[0].is_V0));
            PrintAllTreeVars();
          }
        }
 
 
        //PrintAllTreeVars();
+       //if(fJetFlavour==B)PrintAllTreeVars();
        tJetTree->Fill();
        for(int iThresh=0;iThresh<fNThresholds;iThresh++){
          delete kTagDec[iThresh];
@@ -2601,36 +2619,38 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
   //Jet Properties
   fHistManager.CreateTH2("fh1dJetRecEtaPhiAccepted","detector level jet;#eta;phi",1,-0.5,0.5,1,0.,TMath::TwoPi(),"s");
   fHistManager.CreateTH2("fh2dAcceptedTracksEtaPhi","accepted tracks;#eta;phi",200,-0.9,0.9,200,0.,TMath::TwoPi(),"s");
-  fHistManager.CreateTH1("fh1dJetRecPt","detector level jets;pt (GeV/c); count",500,0,250,"s");
+  fHistManager.CreateTH1("fh1dJetRecPt","detector level jets;pt (GeV/c); count",300,0,300,"s");
   //fHistManager.CreateTH1("fh1dJetRecPtAccepted","accepted detector level jets;pt (GeV/c); count",500,0,250,"s");
   //fHistManager.CreateTH1("fh1dJetArea","fh1dJetArea;# Jet Area",100,0,1,"s");
   //fHistManager.CreateTH1("fh1dParticlesPerJet","fh1dParticlesPerJet;#, Particles/Jet",100,0,100,"s");
   //fHistManager.CreateTH2("fh2dNoAcceptedTracksvsJetArea","fh2dNoAcceptedTracksvsJetArea;No Accepted Tracks;JetArea",20,0,20,100,0,1);
   //MC properties
   if(fIsPythia){
-    fHistManager.CreateTH1("fh1dJetGenPt","generator level jets;pt (GeV/c); count",250,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetGenPtUnidentified","generator level jets (no flavour assigned);pt (GeV/c); count",250,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetGenPtudsg","generator level udsg jets;pt (GeV/c); count",250,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetGenPtc","generator level c jets;pt (GeV/c); count",250,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetGenPts","generator level s jets;pt (GeV/c); count",250,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetGenPt","generator level jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenPtUnidentified","generator level jets (no flavour assigned);pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenPtudsg","generator level udsg jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenPtc","generator level c jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenPts","generator level s jets;pt (GeV/c); count",300,0,300,"s");
 
     fHistManager.CreateTH2("fh2dJetGenPtVsJetRecPt_PseudoData","detector momentum response;red pt;gen pt",115,5,120,200,0,200,"s");
     fHistManager.CreateTH2("fh2dJetGenPtVsJetRecPt_Response","detector momentum response;rec pt;gen pt",115,5,120,200,0,200,"s");
-    fHistManager.CreateTH2("fh2dJetGenPtVsJetWideRecPt_PseudoData","detector momentum response;rec pt;gen pt",300,0,300,200,0,200,"s");;
-    fHistManager.CreateTH2("fh2dJetGenPtVsJetWideRecPt_Response","detector momentum response;rec pt;gen pt",300,0,300,200,0,200,"s");
+    fHistManager.CreateTH2("fh2dJetGenPtVsJetWideRecPt_PseudoData","detector momentum response;rec pt;gen pt",300,0,300,300,0,300,"s");;
+    fHistManager.CreateTH2("fh2dJetGenPtVsJetWideRecPt_Response","detector momentum response;rec pt;gen pt",300,0,300,300,0,300,"s");
 
-    fHistManager.CreateTH1("fh1dJetGenPtb_PseudoData","generator level b jets;pt (GeV/c); count",200,0,200,"s");
-    fHistManager.CreateTH1("fh1dJetGenPtb_Response","generator level b jets;pt (GeV/c); count",200,0,200,"s");
-    fHistManager.CreateTH1("fh1dJetGenMatchedPtb_PseudoData","generator level b jets;pt (GeV/c); count",200,0,200,"s");
-    fHistManager.CreateTH1("fh1dJetGenMatchedPtb_Response","generator level b jets;pt (GeV/c); count",200,0,200,"s");
+    fHistManager.CreateTH2("fh2dGenJetPtVsRecJetPt","detector momentum response;rec pt;gen pt",300,0,300,300,0,300,"s");;
+
+    fHistManager.CreateTH1("fh1dJetGenPtb_PseudoData","generator level b jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenPtb_Response","generator level b jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenMatchedPtb_PseudoData","generator level b jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetGenMatchedPtb_Response","generator level b jets;pt (GeV/c); count",300,0,300,"s");
 
     fHistManager.CreateTH1("fh1dJetRecPtudsg","detector level jets;pt (GeV/c); count",500,0,250,"s");
     fHistManager.CreateTH1("fh1dJetRecPtUnidentified","detector level jets;pt (GeV/c); count",500,0,250,"s");
     fHistManager.CreateTH1("fh1dJetRecPtc","detector level jets;pt (GeV/c); count",500,0,250,"s");
     fHistManager.CreateTH1("fh1dJetRecPts","detector level jets;pt (GeV/c); count",500,0,250,"s");
 
-    fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_PseudoData","detector level jets;pt (GeV/c); count",200,0,200,"s");
-    fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_Response","detector level jets;pt (GeV/c); count",200,0,200,"s");
+    fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_PseudoData","detector level jets;pt (GeV/c); count",300,0,300,"s");
+    fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_Response","detector level jets;pt (GeV/c); count",300,0,300,"s");
   }
 
   fh1DCutInclusive=(TH1D*)AddHistogramm("fh1DCutInclusive","fh1DCutInclusive",30,0,30);
@@ -2807,7 +2827,7 @@ void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
 
     printf("--------------------------------------------------------------------------------\n");
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-    printf("XXXXXXXXXX Code version 09.02.21 XXXXXXXXXX\n");
+    printf("XXXXXXXXXX Code version 23.06.21 XXXXXXXXXX\n");
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
     PrintSettings();
     PrintV0Settings();
@@ -3998,7 +4018,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
                         if(!fDoFlavourMatching) {
                           //if(!((part->GetStatus()==11) ||(part->GetStatus()==12))) continue;
                           if(!IsParton(pdg)) continue;
-                          if(d > radius) continue;
+                          if(d > fDaughtersRadius) continue;
                           kJetOrigin=pdg;
                         }
                         else{
@@ -4767,21 +4787,31 @@ void AliAnalysisTaskHFJetIPQA::GetLowUpperBinNo(int &iLowerBin, int &iUpperBin, 
     if(min!=fLowLowerBound) printf("WARNING: Extending lower limit from %f to bin boundary %f\n",min, fLowLowerBound);
 }
 
-Float_t AliAnalysisTaskHFJetIPQA::IntegrateIP(Float_t jetpt, Float_t IP, Int_t iN){
+Float_t AliAnalysisTaskHFJetIPQA::IntegrateIP(Float_t jetpt, Float_t IP, Int_t iN, Float_t Chi2){
   Int_t iZeroIPBin=-99;//=h2DProbLookup[iN]->GetXaxis()->FindBin(0.);
   Int_t iStartIPBin=-99;//=h2DProbLookup[iN]->GetXaxis()->FindBin(-25);
   Int_t iJetPtBin=-99;
   Int_t iIPBin=-99;
+  Float_t fChi2JetPt=-99;
+  Bool_t bChi2GT2=(Chi2>2.);
 
   //expand upper and lower values to bin boundaries. if value=bin boundary: expand to higher for upper limit and to lower for lower limit
-  GetLowUpperBinNo(iStartIPBin, iZeroIPBin, -25,0,"x",iN);
-  GetLowUpperBinNo(iStartIPBin, iIPBin, -25, -IP,"x",iN);
+  GetLowUpperBinNo(iStartIPBin, iZeroIPBin, -fAnalysisCuts[bAnalysisCut_MaxIPLNJP],0,"x",iN);
+  GetLowUpperBinNo(iStartIPBin, iIPBin, -fAnalysisCuts[bAnalysisCut_MaxIPLNJP], -IP,"x",iN);
+
   //if jetpt=binboundary->take higher bin
-  iJetPtBin=h2DProbLookup[iN]->GetYaxis()->FindBin(jetpt);
+  fChi2JetPt=jetpt+100*bChi2GT2;
+  iJetPtBin=h2DProbLookup[iN]->GetYaxis()->FindBin(fChi2JetPt);
+  if(TMath::Abs(100-h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin))<0.000001) AliError(Form("%s: Invalid lower boundary (%f) of h2DProbLookup bin!\n",__FUNCTION__, h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin)));
+  if(TMath::Abs(105-h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1))<0.000001) AliError(Form("%s: Invalid upper boundary (%f) of h2DProbLookup bin!\n",__FUNCTION__, h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1)));
+
+ // printf("%s: jetpt=%f, chi2=%f\n", __FUNCTION__, jetpt, Chi2);
+ // printf("%s: IP=%f, jetpt=%f, chi2=%f, fChi2JetPt=%f, iJetPtBin=%i, %f<jetptchi2<%f\n", __FUNCTION__, IP, jetpt, Chi2, fChi2JetPt, iJetPtBin, h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin), h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1));
 
   Float_t probnomi=h2DProbLookup[iN]->Integral(iStartIPBin,iIPBin,iJetPtBin,iJetPtBin);
   Float_t probdenomi=h2DProbLookup[iN]->Integral(iStartIPBin,iZeroIPBin,iJetPtBin,iJetPtBin);
   //printf("probnomi=%f, probdenomi=%f\n",probnomi, probdenomi);
+  if(!(probdenomi>0)) AliError(Form("%s: probdenomi=%f, iStartIPBin=%i, iZeroIPBin=%i, iJetPtBin=%i, jetpt=%f\n",__FUNCTION__, probdenomi, iStartIPBin, iZeroIPBin, iJetPtBin, jetpt));
   Float_t prob=probnomi/probdenomi;
   //printf("Integrate: Zero=%f, StartIP(-25)=%f, IPValue=%f, lowy=%f, upy=%f, prob=%f\n", h2DProbLookup[iN]->GetXaxis()->GetBinLowEdge(iZeroIPBin), h2DProbLookup[iN]->GetXaxis()->GetBinLowEdge(iStartIPBin),h2DProbLookup[iN]->GetXaxis()->GetBinLowEdge(iIPBin),h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin),h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1),prob);
 
@@ -4795,7 +4825,7 @@ Float_t AliAnalysisTaskHFJetIPQA::IntegrateIP(Float_t jetpt, Float_t IP, Int_t i
  * - if number of tracks within jet larger than available amount of templates -> take template with largest tracknumber
  * */
 
-Float_t AliAnalysisTaskHFJetIPQA::GetTrackProbability(Float_t jetpt, Int_t nGoodIPTracks, const vector<Float_t>& ipval){
+Float_t AliAnalysisTaskHFJetIPQA::GetTrackProbability(Float_t jetpt, Int_t nGoodIPTracks, const vector<Float_t>& ipval, const vector<Float_t>& chi2val){
   Float_t prob=1;
   Float_t probval=-999;
   Int_t nIPTracksAboveZero=0;
@@ -4806,8 +4836,8 @@ Float_t AliAnalysisTaskHFJetIPQA::GetTrackProbability(Float_t jetpt, Int_t nGood
       continue;
     }
     probval=-999;
-    if((int)iN>=fNTrackTypes){ probval=IntegrateIP(jetpt,ipval[iN], fNTrackTypes-1);}    //probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);}
-    else{probval=IntegrateIP(jetpt,ipval[iN], iN);}    //probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);}
+    if((int)iN>=fNTrackTypes){ probval=IntegrateIP(jetpt,ipval[iN], fNTrackTypes-1, chi2val[iN]);}    //probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);}
+    else{probval=IntegrateIP(jetpt,ipval[iN], iN, chi2val[iN]);}    //probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);}
     //printf("iN=%i: jetpt=%f, ipval[%i]=%f, prob=%f\n",iN, jetpt, iN, ipval[iN],probval);
     fTrackProb[iN]=probval;
     prob=prob*probval;

@@ -56,12 +56,14 @@
 #include "AliAODInputHandler.h"
 #include "AliESDInputHandler.h"
 #include "AliEventplane.h"
+#include "AliGenCocktailEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHerwigEventHeader.h"
 #include "AliGenHepMCEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
 #include "AliMCParticle.h"
 #include "AliMultiInputEventHandler.h"
 #include "AliMultSelection.h"
@@ -1662,13 +1664,26 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     if (MCEvent()) {
       fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
       if (!fPythiaHeader) {
-        // Check if AOD
+        // Generator header can be part of a cocktail, check cocktail headers
+        // AOD case, cocktail handled via AODMCHeader directly
         AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
         if (aodMCH) {
           for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
             fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
             if (fPythiaHeader) break;
+          }
+        } else {
+          // ESD case, can also be in cocktail header
+          // but must be obtained manually
+          auto cocktailheader = dynamic_cast<AliGenCocktailEventHeader *>(MCEvent()->GenEventHeader());
+          if(cocktailheader) {
+            TIter headeriter(cocktailheader->GetHeaders());
+            TObject *headerobject(nullptr);
+            while((headerobject = headeriter.Next())) {
+              fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerobject);
+              if(fPythiaHeader) break;
+            }
           }
         }
       }
@@ -1705,13 +1720,26 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fHerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(MCEvent()->GenEventHeader());
      
       if (!fHerwigHeader) {
-        // Check if AOD
+        // Generator header can be part of a cocktail, check cocktail headers
+        // AOD case, cocktail handled via AODMCHeader directly        
         AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
         if (aodMCH) {
           for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
             fHerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(aodMCH->GetCocktailHeader(i));
             if (fHerwigHeader) break;
+          }
+        } else {
+          // ESD case, can also be in cocktail header
+          // but must be obtained manually
+          auto cocktailheader = dynamic_cast<AliGenCocktailEventHeader *>(MCEvent()->GenEventHeader());
+          if(cocktailheader) {
+            TIter headeriter(cocktailheader->GetHeaders());
+            TObject *headerobject(nullptr);
+            while((headerobject = headeriter.Next())) {
+              fHerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(headerobject);
+              if(fHerwigHeader) break;
+            }
           }
         }
       }
@@ -1746,13 +1774,26 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fHepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(MCEvent()->GenEventHeader());
      
       if (!fHepMCHeader) {
-        // Check if AOD
+        // Generator header can be part of a cocktail, check cocktail headers
+        // AOD case, cocktail handled via AODMCHeader directly D
         AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
         if (aodMCH) {
           for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
             fHepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(aodMCH->GetCocktailHeader(i));
             if (fHepMCHeader) break;
+          }
+        } else {
+          // ESD case, can also be in cocktail header
+          // but must be obtained manually
+          auto cocktailheader = dynamic_cast<AliGenCocktailEventHeader *>(MCEvent()->GenEventHeader());
+          if(cocktailheader) {
+            TIter headeriter(cocktailheader->GetHeaders());
+            TObject *headerobject(nullptr);
+            while((headerobject = headeriter.Next())) {
+              fHepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(headerobject);
+              if(fHepMCHeader) break;
+            }
           }
         }
       }
@@ -2115,7 +2156,7 @@ AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDatase
   namedataset.ToLower();
   PtHardBinning_t binningtype = PtHardBinning_t::kBinningUnknown;
   MCProductionType_t prodtype = MCProductionType_t::kNoMC;
-  std::vector<TString> datasetsPthard20Pythia = {"lhc16c2", "lhc16h3", "lhc18b8", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3", "lhc19f4", "lhc20g4"};
+  std::vector<TString> datasetsPthard20Pythia = {"lhc16c2", "lhc16h3", "lhc18b8", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3", "lhc19f4", "lhc20g4", "lhc21b8"};
   std::vector<TString> datasetsPthard20HepMC = {"lhc20j3", "lhc20k1"};
   std::vector<TString> datasetsPthard13Pythia = {"lhc18i4a", "lhc18i4b2", "lhc19k3a", "lhc19k3b", "lhc19k3c"};
   std::vector<TString> datasetsPthard10Pythia = {"lhc12a15a", "lhc13b4"};
@@ -2336,6 +2377,24 @@ void AliAnalysisTaskEmcal::GeneratePythiaInfoObject(AliMCEvent* mcEvent)
     fPythiaInfo->SetPythiaEventWeight(ptWeight);}
 }
 
+double AliAnalysisTaskEmcal::GetEventWeightFromHeader() const {
+  double eventweight = -1.;
+  if(fIsPythia || fIsHepMC) {
+    if(fIsPythia && fPythiaHeader) eventweight = fPythiaHeader->EventWeight();
+    if(fIsHepMC && fHepMCHeader) eventweight = fHepMCHeader->EventWeight();
+  }
+  return eventweight;
+}
+
+double AliAnalysisTaskEmcal::GetCrossSectionFromHeader() const {
+  double crosssection = -1.;
+  if(fIsPythia || fIsHepMC) {
+    if(fIsPythia && fPythiaHeader) crosssection = fPythiaHeader->GetXsection();
+    if(fIsHepMC && fHepMCHeader) crosssection = fHepMCHeader->sigma_gen();
+  }
+  return crosssection;
+}
+
 AliAODInputHandler* AliAnalysisTaskEmcal::AddAODHandler()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -2392,3 +2451,14 @@ AliESDInputHandler* AliAnalysisTaskEmcal::AddESDHandler()
   return esdHandler;
 }
 
+AliMCEventHandler* AliAnalysisTaskEmcal::AddMCEventHandler() {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddESDHandler", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  AliMCEventHandler *handler = new AliMCEventHandler;
+  mgr->SetMCtruthEventHandler(handler);
+  return handler;
+}

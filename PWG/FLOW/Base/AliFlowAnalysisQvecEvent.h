@@ -39,7 +39,7 @@
 class AliFlowAnalysisQvecEvent {
  public:
   AliFlowAnalysisQvecEvent();
-  ~AliFlowAnalysisQvecEvent();
+  virtual ~AliFlowAnalysisQvecEvent();
   void setRunNum( Int_t runNum ) { this->fRunNum = runNum; }
   Int_t getRunNum() { return fRunNum; }
   void setCentrality( Double_t centrality ) { this->fCentrality = centrality; }
@@ -78,6 +78,29 @@ class AliFlowAnalysisQvecEvent {
   Double_t getVZAIm() { return fVZAIm; }
   void setVZAM( Double_t VZAM ) { this->fVZAM = VZAM; }
   Double_t getVZAM() { return fVZAM; }
+  
+  
+  void setTowZNCraw0( Double_t TowZNCraw0 ) { this->fTowZNCraw0 = TowZNCraw0; }
+  Double_t getTowZNCraw0() { return fTowZNCraw0; }
+  void setTowZNCraw1( Double_t TowZNCraw1 ) { this->fTowZNCraw1 = TowZNCraw1; }
+  Double_t getTowZNCraw1() { return fTowZNCraw1; }
+  void setTowZNCraw2( Double_t TowZNCraw2 ) { this->fTowZNCraw2 = TowZNCraw2; }
+  Double_t getTowZNCraw2() { return fTowZNCraw2; }
+  void setTowZNCraw3( Double_t TowZNCraw3 ) { this->fTowZNCraw3 = TowZNCraw3; }
+  Double_t getTowZNCraw3() { return fTowZNCraw3; }
+  void setTowZNCraw4( Double_t TowZNCraw4 ) { this->fTowZNCraw4 = TowZNCraw4; }
+  Double_t getTowZNCraw4() { return fTowZNCraw4; }
+  
+  void setTowZNAraw0( Double_t TowZNAraw0 ) { this->fTowZNAraw0 = TowZNAraw0; }
+  Double_t getTowZNAraw0() { return fTowZNAraw0; }
+  void setTowZNAraw1( Double_t TowZNAraw1 ) { this->fTowZNAraw1 = TowZNAraw1; }
+  Double_t getTowZNAraw1() { return fTowZNAraw1; }
+  void setTowZNAraw2( Double_t TowZNAraw2 ) { this->fTowZNAraw2 = TowZNAraw2; }
+  Double_t getTowZNAraw2() { return fTowZNAraw2; }
+  void setTowZNAraw3( Double_t TowZNAraw3 ) { this->fTowZNAraw3 = TowZNAraw3; }
+  Double_t getTowZNAraw3() { return fTowZNAraw3; }
+  void setTowZNAraw4( Double_t TowZNAraw4 ) { this->fTowZNAraw4 = TowZNAraw4; }
+  Double_t getTowZNAraw4() { return fTowZNAraw4; }
   
   void setTPCRePosChPosEta( Double_t TPCRePosChPosEta ) { this->fTPCRePosChPosEta = TPCRePosChPosEta; }
   Double_t getTPCRePosChPosEta() { return fTPCRePosChPosEta; }
@@ -145,6 +168,8 @@ class AliFlowAnalysisQvecEvent {
   void setTPC2MNegChNegEta( Double_t TPC2MNegChNegEta ) { this->fTPC2MNegChNegEta = TPC2MNegChNegEta; }
   Double_t getTPC2MNegChNegEta() { return fTPC2MNegChNegEta; }
   
+  
+  
  private:
   Int_t fRunNum;
   Double_t fCentrality;
@@ -167,6 +192,20 @@ class AliFlowAnalysisQvecEvent {
   Double_t fVZARe;
   Double_t fVZAIm;
   Double_t fVZAM;
+  
+  // ZNC each tow energy
+  Double_t fTowZNCraw0;
+  Double_t fTowZNCraw1;
+  Double_t fTowZNCraw2;
+  Double_t fTowZNCraw3;
+  Double_t fTowZNCraw4;
+  
+  // ZNA each tow energy
+  Double_t fTowZNAraw0;
+  Double_t fTowZNAraw1;
+  Double_t fTowZNAraw2;
+  Double_t fTowZNAraw3;
+  Double_t fTowZNAraw4;
   
   // TPC (|eta|<0.8)
   Double_t fTPCRePosChPosEta; // w * cos(theta+) eta+
