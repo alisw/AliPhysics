@@ -151,7 +151,9 @@ protected:
   Hist::Hist<TH2D> fHist_deltaPt{}; //!<! relative track pt resolution (no contamination from particles smeared into acceptance or background events)
   Hist::Hist<TH2D> fHist_sigmaPt{}; //!<! relatvie pT resolution from covariance matrix (from all tracks, including contamination defined above)
 
-  Hist::Hist<TH2D> fHist_dcaXY{};             //!<! dca in xy plane vs pt
+  Hist::Hist<TH2D> fHist_dcaXY{}; //!<! dca in xy plane vs pt
+  Hist::Hist<TH1D> fHist_dcaZ{};  //!<! dca along the beam line
+
   Hist::Hist<TH1D> fHist_signed1Pt{};         //!<!  signed 1/pt (1/(GeV/c))
   Hist::Hist<TH1D> fHist_eta{};               //!<!  pseudorapidity
   Hist::Hist<TH1D> fHist_phi{};               //!<!  azimuthal angle phi
