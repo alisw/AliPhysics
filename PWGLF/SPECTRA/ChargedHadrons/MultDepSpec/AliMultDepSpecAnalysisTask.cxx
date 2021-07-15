@@ -117,6 +117,7 @@ void AliMultDepSpecAnalysisTask::FillTrackQA(AliESDtrack* track)
   float dcaCov[3];
   track->GetImpactParameters(dca, dcaCov);
   fHist_dcaXY.Fill(fPt, dca[0]);
+  fHist_dcaZ.Fill(dca[1]);
 }
 
 //**************************************************************************************************
@@ -203,8 +204,11 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fQAList->Add(fHist_tpcGeomLength.GenerateHist("tpcGeomLength"));
 
     fHist_dcaXY.AddAxis(fAxes[pt_meas]);
-    fHist_dcaXY.AddAxis("dcaXY", "dca in xy plane", 100, -0.5, 0.5);
+    fHist_dcaXY.AddAxis("dcaXY", "dca XY (cm)", 100, -0.5, 0.5);
     fQAList->Add(fHist_dcaXY.GenerateHist("dcaXY"));
+
+    fHist_dcaZ.AddAxis("dcaZ", "dca Z (cm)", 100, -0.5, 0.5);
+    fQAList->Add(fHist_dcaZ.GenerateHist("dcaZ"));
   }
 
   BookHistogram(fHist_multDist_evt_meas, "multDist_evt_meas", {mult_meas});
