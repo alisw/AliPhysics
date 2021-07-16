@@ -63,10 +63,10 @@ void AddTaskPhiSA(char *analysislevel, const Bool_t useShift, Bool_t bMCtruth, c
   //const char *configpath = ".";
   const char *configpath = "alien:///alice/cern.ch/user/p/prottay/checktxt";                  
   #ifndef __CLING__
-  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/runAnalysis.H");                                                          
-  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/loadRunOptions.C");                                                        
-  gROOT->LoadMacro("runAnalysis.H");
-  gROOT->LoadMacro("loadRunOptions.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/runAnalysis.H");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/loadRunOptions.C");
+  //gROOT->LoadMacro("runAnalysis.H");
+  //gROOT->LoadMacro("loadRunOptions.C");
   #endif                                                                                        
 
   if (!loadRunOptions(kFALSE, configpath,dataperiod)) {
