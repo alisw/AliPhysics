@@ -46,77 +46,79 @@ class AliCFContainer;
 
 class AliAnalysisTaskMCPredictions : public AliAnalysisTaskSE {
 public:
-    AliAnalysisTaskMCPredictions();
-    AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 4000, Int_t lRebinFactor = 1);
-    virtual ~AliAnalysisTaskMCPredictions();
-
-    virtual void   UserCreateOutputObjects();
-    virtual void   UserExec(Option_t *option);
-    virtual void   Terminate(Option_t *);
-    Double_t MyRapidity(Double_t rE, Double_t rPz) const;
-    
-    //Check MC type
-    Bool_t IsHijing()  const;
-    Bool_t IsDPMJet()  const;
-    Bool_t IsEPOSLHC() const;
-    
-    Double_t ComputeDeltaPhi( Double_t phi1, Double_t phi2) const;
-    
-    void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
-    void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; } 
-    
-//---------------------------------------------------------------------------------------
-
-private:
-    // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
-    // your data member object is created on the worker nodes and streaming is not needed.
-    // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
-    TList  *fListHist;  //! List of Cascade histograms
-
-    //Histograms (Desired objects in this cross-checking task) 
-    TH1D *fHistEventCounter; //! histogram for event counting
-    TH1D *fHistChargedEta; //! histogram for event counting
-    
-    Int_t fSmallMultRange;
-    Int_t fLargeMultRange;
-    Int_t fRebinFactor;
-    Bool_t fkSelectINELgtZERO;
-    
-    //Basic Histograms for counting events as a function of V0M percentiles...
-    TH1D *fHistV0MMult;
-    TH1D *fHistSPDMult;
-    TH2D *fHistNchVsV0MMult;
-    TH2D *fHistNchVsSPDMult;
-    TH1D *fHistNpart;
-    TH2D *fHistNchVsNpart;
-    TH1D *fHistB;
-    TH2D *fHistNchVsB;
-    TH1D *fHistNMPI;
-    TH2D *fHistNchVsNMPI;
-    
-    TH1D *fHistPt[39];              //! for keeping track of base spectra
-    TH1D *fHistEta[39];              //! for keeping track of base spectra
-    TH2D *fHistPtVsV0MMult[39];     //! for keeping track of base spectra
-    TH2D *fHistPtVsSPDMult[39];     //! for keeping track of base spectra
-    TH2D *fHistPtVsNpart[39];       //! for keeping track of base spectra
-    TH2D *fHistPtVsB[39];           //! for keeping track of base spectra
-    TH2D *fHistPtVsNMPI[39];       //! for keeping track of base spectra
+  AliAnalysisTaskMCPredictions();
+  AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 4000, Int_t lRebinFactor = 1);
+  virtual ~AliAnalysisTaskMCPredictions();
   
-    Bool_t fkDo2pc;
-    Float_t fMinPtTriggerCharged; //for charged trigger
-    Float_t fMinPtTriggerXi; //for xi trigger
-    Float_t fMinPtTriggerPhi; //for phi trigger
-    TH1D *fEtaTriggerCharged;
-    TH1D *fEtaTriggerXi;
-    TH1D *fEtaTriggerPhi;
-    TH3D *fHist3d2pcSE[39]; //!
-    TH3D *fHist3d2pcXiSE[39]; //!
-    TH3D *fHist3d2pcPhiSE[39]; //!
-    
-    AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
-    AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
-
-    ClassDef(AliAnalysisTaskMCPredictions, 1);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
+  virtual void   Terminate(Option_t *);
+  Double_t MyRapidity(Double_t rE, Double_t rPz) const;
+  
+  //Check MC type
+  Bool_t IsHijing()  const;
+  Bool_t IsDPMJet()  const;
+  Bool_t IsEPOSLHC() const;
+  
+  Double_t ComputeDeltaPhi( Double_t phi1, Double_t phi2) const;
+  
+  void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
+  void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
+  void SetALICE3Mode ( Bool_t lOpt = kTRUE) { fkALICE3SiliconMode = lOpt; }
+  
+  //---------------------------------------------------------------------------------------
+  
+private:
+  // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
+  // your data member object is created on the worker nodes and streaming is not needed.
+  // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
+  TList  *fListHist;  //! List of Cascade histograms
+  
+  //Histograms (Desired objects in this cross-checking task)
+  TH1D *fHistEventCounter; //! histogram for event counting
+  TH1D *fHistChargedEta; //! histogram for event counting
+  
+  Int_t fSmallMultRange;
+  Int_t fLargeMultRange;
+  Int_t fRebinFactor;
+  Bool_t fkSelectINELgtZERO;
+  Bool_t fkALICE3SiliconMode; //if true, SPD multiplicity == full |eta|<4.0
+  
+  //Basic Histograms for counting events as a function of V0M percentiles...
+  TH1D *fHistV0MMult;
+  TH1D *fHistSPDMult;
+  TH2D *fHistNchVsV0MMult;
+  TH2D *fHistNchVsSPDMult;
+  TH1D *fHistNpart;
+  TH2D *fHistNchVsNpart;
+  TH1D *fHistB;
+  TH2D *fHistNchVsB;
+  TH1D *fHistNMPI;
+  TH2D *fHistNchVsNMPI;
+  
+  TH1D *fHistPt[39];              //! for keeping track of base spectra
+  TH1D *fHistEta[39];              //! for keeping track of base spectra
+  TH2D *fHistPtVsV0MMult[39];     //! for keeping track of base spectra
+  TH2D *fHistPtVsSPDMult[39];     //! for keeping track of base spectra
+  TH2D *fHistPtVsNpart[39];       //! for keeping track of base spectra
+  TH2D *fHistPtVsB[39];           //! for keeping track of base spectra
+  TH2D *fHistPtVsNMPI[39];       //! for keeping track of base spectra
+  
+  Bool_t fkDo2pc;
+  Float_t fMinPtTriggerCharged; //for charged trigger
+  Float_t fMinPtTriggerXi; //for xi trigger
+  Float_t fMinPtTriggerPhi; //for phi trigger
+  TH1D *fEtaTriggerCharged;
+  TH1D *fEtaTriggerXi;
+  TH1D *fEtaTriggerPhi;
+  TH3D *fHist3d2pcSE[39]; //!
+  TH3D *fHist3d2pcXiSE[39]; //!
+  TH3D *fHist3d2pcPhiSE[39]; //!
+  
+  AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
+  AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
+  
+  ClassDef(AliAnalysisTaskMCPredictions, 1);
 };
 
 #endif

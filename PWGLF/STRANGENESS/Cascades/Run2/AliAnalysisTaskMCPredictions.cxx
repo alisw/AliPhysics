@@ -101,6 +101,7 @@ fSmallMultRange(1000),
 fLargeMultRange(2000),
 fRebinFactor(1),
 fkSelectINELgtZERO(kTRUE),
+fkALICE3SiliconMode(kTRUE),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -142,6 +143,7 @@ fSmallMultRange(lNSmallBinning),
 fLargeMultRange(lNLargeBinning),
 fRebinFactor(lRebinFactor),
 fkSelectINELgtZERO(kTRUE),
+fkALICE3SiliconMode(kTRUE),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -441,10 +443,13 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   Long_t lNchEta8   = 0;
   Long_t lNchEta8to15   = 0;
   Long_t lNchEta10  = 0;
-  Long_t lNchEta14  = 0;
+  Long_t lNchEtaWide  = 0;
   Long_t lNchVZEROA = 0;
   Long_t lNchVZEROC = 0;
   Bool_t lEvSel_INELgtZEROStackPrimaries=kFALSE;
+  
+  Double_t lWideEta = 1.4;
+  if( fkALICE3SiliconMode ) lWideEta = 4.0; //ALICE 3 mode: |eta|<4 => "SPD"
   
   //----- Loop on Stack ----------------------------------------------------------------
   for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
@@ -466,7 +471,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
     if( (TMath::Abs(geta) > 0.8) && (TMath::Abs(geta) < 1.5) ) lNchEta8to15++;
     if( TMath::Abs(geta) < 1.0 ) lNchEta10++;
-    if( TMath::Abs(geta) < 1.4 ) lNchEta14++;
+    if( TMath::Abs(geta) < lWideEta ) lNchEtaWide++;
     if( TMath::Abs(geta) < 1.0 ) lEvSel_INELgtZEROStackPrimaries = kTRUE;
     if( 2.8 < geta && geta < 5.1 ) lNchVZEROA++;
     if(-3.7 < geta && geta <-1.7 ) lNchVZEROC++;
@@ -542,9 +547,9 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   fHistEventCounter->Fill(0.5);
   
   fHistV0MMult        -> Fill ( lNchVZEROA+lNchVZEROC );
-  fHistSPDMult        -> Fill ( lNchEta14 );
+  fHistSPDMult        -> Fill ( lNchEtaWide );
   fHistNchVsV0MMult   -> Fill ( lNchVZEROA+lNchVZEROC, lNchEta5  );
-  fHistNchVsSPDMult   -> Fill ( lNchEta14, lNchEta5  );
+  fHistNchVsSPDMult   -> Fill ( lNchEtaWide, lNchEta5  );
   fHistNpart          -> Fill ( fMC_NPart );
   fHistNchVsNpart     -> Fill ( fMC_NPart, lNchEta5  );
   fHistB              -> Fill ( fMC_b );
@@ -635,7 +640,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         if( TMath::Abs(lThisRap) < 0.5 ) {
           fHistPt[ih]->Fill(lThisPt);
           fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
-          fHistPtVsSPDMult[ih]->Fill(lNchEta14,lThisPt);
+          fHistPtVsSPDMult[ih]->Fill(lNchEtaWide,lThisPt);
           fHistPtVsNpart[ih]->Fill(fMC_NPart,lThisPt);
           fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
           fHistPtVsNMPI[ih]->Fill(fMC_NMPI,lThisPt);
