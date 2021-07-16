@@ -28,6 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
                     ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
                     ${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/lightvertexers
