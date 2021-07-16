@@ -2700,12 +2700,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0di00009327000008250400000","4117918077032230000","0163103100000010"); // INT7
 
   // NCell efficiency pp 13TeV
-  } else if (trainConfig == 2130){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3o220000","0163103100000010"); // NCell effi on MC,  NCE: TB for all clus
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3p220000","0163103100000010"); // NCell effi on MC,  NCE: P2 for all clus
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3q220000","0163103100000010"); // NCell effi on MC,  NCE: TB for gamma clus
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3r220000","0163103100000010"); // NCell effi on MC,  NCE: P2 for gamma clus
-  } else if (trainConfig == 2131){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
+  } else if (trainConfig == 2130){ // EMCAL+DCAL clusters standard cuts, INT7, NL 01, std TM,NonLin for without new cell scale
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100000010"); // No NCell cut (NCell >= 1)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NCell cut >= 2
+  } else if (trainConfig == 2131){ // EMCAL+DCAL clusters standard cuts, INT7, NL 99, std TM, NonLin for new cell scale
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe30220000","0163103100000010"); // No NCell cut (NCell >= 1)
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe32220000","0163103100000010"); // NCell cut >= 2
   } else if (trainConfig == 2132){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, new NCell calculation
