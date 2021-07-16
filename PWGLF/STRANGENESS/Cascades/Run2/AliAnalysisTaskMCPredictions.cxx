@@ -675,7 +675,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
       if( lThisPDG == lPDGCodes[ih] ) {
         //Check if primary (if needed) and if not don't use this particle
         if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
-        if( lCheckHFFeeddown[ih] == kTRUE && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=0 ) continue;
+        if( lCheckHFFeeddown[ih] == kTRUE && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
         //Fill Histograms
         fHistEta[ih] -> Fill ( lPart -> Eta() );
         if( TMath::Abs(lThisRap) < 0.5 ) {

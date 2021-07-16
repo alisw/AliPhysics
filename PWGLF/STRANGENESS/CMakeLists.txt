@@ -128,7 +128,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW OADB PWGUDbase PWGLFresonances)
+set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW OADB PWGUDbase PWGLFresonances PWGHFvertexingHF)
 
 # Generate the ROOT map
 # Dependecies
