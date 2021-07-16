@@ -64,6 +64,7 @@ public:
   
   void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
   void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
+  void SetALICE3Mode ( Bool_t lOpt = kTRUE) { fkALICE3SiliconMode = lOpt; }
   
   //---------------------------------------------------------------------------------------
   
