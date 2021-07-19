@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 15.07.2021
+ * Last Modified Date: 16.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -37,6 +37,14 @@ const Int_t kMaxPower = 20;
 
 // enumerations
 enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
+// set value of last element explicitly, count from 0
+enum kFilterbits {
+  kFB1 = 1,
+  kFB128 = 128,
+  kFB256 = 256,
+  kFB768 = 768,
+  LAST_EFILTERBIT = 4
+};
 enum kEvent { kCEN, kMUL, kNCONTRIB, LAST_EEVENT };
 enum kTrack {
   kPT,
@@ -55,6 +63,7 @@ enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
 enum kName { kNAME, kTITLE, kXAXIS, kYAXIS, LAST_ENAME };
 enum kBeforeAfter { kBEFORE, kAFTER, LAST_EBEFOREAFTER };
+const TString BAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
 enum kMinMax { kMIN, kMAX, LAST_EMINMAX };
 
 class AliAnalysisTaskAR : public AliAnalysisTaskSE {
@@ -270,28 +279,41 @@ private:
   TString fHistListName;
 
   // QA histograms
-  TList *fQAHistogramList;
-  TString fQAHistogramListName;
+  TList *fQAHistogramsList;
+  TString fQAHistogramsListName;
   Bool_t fFillQAHistograms;
-  TH2D *fCorCenEstimatorQAHistograms[LAST_ECENESTIMATORS *
-                                     (LAST_ECENESTIMATORS - 1) /
-                                     2][LAST_EBEFOREAFTER];
-  TString fCorCenEstimatorQAHistogramNames[LAST_ECENESTIMATORS *
-                                           (LAST_ECENESTIMATORS - 1) /
-                                           2][LAST_EBEFOREAFTER][LAST_ENAME];
-  Double_t fCorCenEstimatorQAHistogramBins[LAST_ECENESTIMATORS *
-                                           (LAST_ECENESTIMATORS - 1) /
-                                           2][2 * LAST_EBINS];
+
+  // centrality correlation histograms
+  TList *fCenCorQAHistogramsList;
+  TString fCenCorQAHistogramsListName;
+  TH2D *fCenCorQAHistograms[LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2]
+                           [LAST_EBEFOREAFTER];
+  TString fCenCorQAHistogramNames[LAST_ECENESTIMATORS *
+                                  (LAST_ECENESTIMATORS - 1) /
+                                  2][LAST_EBEFOREAFTER][LAST_ENAME];
+  Double_t fCenCorQAHistogramBins[LAST_ECENESTIMATORS *
+                                  (LAST_ECENESTIMATORS - 1) /
+                                  2][2 * LAST_EBINS];
+  // TH1F *fFBScanQAHistograms[LAST_EFILTERBIT][LAST_EBEFOREAFTER];
+  // TString fFBScanQAHistogramNames[LAST_EFILTERBIT][LAST_EBEFOREAFTER]
+  //                                [LAST_ENAME];
+  // Double_t fFBScanQAHistogramBins[LAST_EFILTERBIT][LAST_EBINS];
 
   // control histograms
   TList *fControlHistogramsList;
   TString fControlHistogramsListName;
+
+  // track control histograms
+  TList *fTrackControlHistogramsList;
+  TString fTrackControlHistogramsListName;
   TH1D *fTrackControlHistograms[LAST_ETRACK][LAST_EBEFOREAFTER];
   TString fTrackControlHistogramNames[LAST_ETRACK][LAST_EBEFOREAFTER]
                                      [LAST_ENAME];
-  // array holding bins of track control histograms
   Double_t fBinsTrackControlHistograms[LAST_ETRACK][LAST_EBINS];
-  // array holding event control histograms
+
+  // event control historams
+  TList *fEventControlHistogramsList;
+  TString fEventControlHistogramsListName;
   TH1D *fEventControlHistograms[LAST_EEVENT][LAST_EBEFOREAFTER];
   TString fEventControlHistogramNames[LAST_EEVENT][LAST_EBEFOREAFTER]
                                      [LAST_ENAME];

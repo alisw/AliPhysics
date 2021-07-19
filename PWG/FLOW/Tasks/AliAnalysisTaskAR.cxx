@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 15.07.2021
+ * Last Modified Date: 16.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -42,12 +42,21 @@ ClassImp(AliAnalysisTaskAR)
     : AliAnalysisTaskSE(name),
       // Base list for all output objects
       fHistList(nullptr), fHistListName("outputStudentAnalysis"),
-      // list holding QA histograms
-      fQAHistogramList(nullptr), fQAHistogramListName("QAHistograms"),
+      // list holding all QA histograms
+      fQAHistogramsList(nullptr), fQAHistogramsListName("QAHistograms"),
       fFillQAHistograms(kFALSE),
+      // list holding centrality estimator correlation histograms
+      fCenCorQAHistogramsList(nullptr),
+      fCenCorQAHistogramsListName("CentralityCorrelationQAHistograms"),
       // list holding all control histograms
       fControlHistogramsList(nullptr),
       fControlHistogramsListName("ControlHistograms"),
+      // sublists for track control histograms
+      fTrackControlHistogramsList(nullptr),
+      fTrackControlHistogramsListName("TrackControlHistograms"),
+      // sublists for event control histograms
+      fEventControlHistogramsList(nullptr),
+      fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
       fCentralitySelCriterion("V0M"), fFilterbit(128), fPrimaryOnly(kFALSE),
       // Final results
@@ -100,11 +109,20 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       // Base list for all output objects
       fHistList(nullptr), fHistListName("outputStudentAnalysis"),
       // list holding QA histograms
-      fQAHistogramList(nullptr), fQAHistogramListName("QAHistograms"),
+      fQAHistogramsList(nullptr), fQAHistogramsListName("QAHistograms"),
       fFillQAHistograms(kFALSE),
+      // list holding centrality estimator correlation histograms
+      fCenCorQAHistogramsList(nullptr),
+      fCenCorQAHistogramsListName("CentralityCorrelationQAHistograms"),
       // list holding all control histograms
       fControlHistogramsList(nullptr),
       fControlHistogramsListName("ControlHistograms"),
+      // sublists for track control histograms
+      fTrackControlHistogramsList(nullptr),
+      fTrackControlHistogramsListName("TrackControlHistograms"),
+      // sublists for event control histograms
+      fEventControlHistogramsList(nullptr),
+      fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
       fCentralitySelCriterion("V0M"), fFilterbit(128), fPrimaryOnly(kFALSE),
       // Final results
@@ -120,7 +138,7 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fQvectorList(nullptr), fPhi({}), fWeights({}),
       fAcceptanceHistogram(nullptr), fWeightHistogram(nullptr),
       fUseWeights(kFALSE), fResetWeights(kFALSE), fCorrelators({}) {
-  // initialze arrays in dummy constructor !!!!
+  // initialize arrays in dummy constructor !!!!
   this->InitializeArrays();
 
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR()");
@@ -229,58 +247,24 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
        ++cen) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
-      fCorCenEstimatorQAHistograms[cen][ba] = nullptr;
+      fCenCorQAHistograms[cen][ba] = nullptr;
     }
   }
 
   // names for QA histograms for the correlation between centrality estimators
-  TString CorCentralityEstimatorQAHistogramNames
-      [LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2][LAST_EBEFOREAFTER]
-      [LAST_ENAME] = {
-          {
-              // NAME, TITLE, XAXIS, YAXIS
-              {"fCorCenEstimatorQAHistograms[kV0M+kCL0][kBEFORE]",
-               "V0M vs CL0, before event cut", "V0M", "CL0"}, // kBEFORE
-              {"fCorCenEstimatorQAHistograms[kV0M+kCL0][kAFTER]",
-               "V0M vs CL0, after event cut", "V0M", "CL0"}, // kAFTER
-          },                                                 // kV0M + CL0
-          {
-              {"fCorCenEstimatorQAHistograms[kV0M+kCL1][kBEFORE]",
-               "V0M vs CL1, before event cut", "V0M", "CL1"}, // kBEFORE
-              {"fCorCenEstimatorQAHistograms[kV0M+kCL1][kAFTER]",
-               "V0M vs CL1, after event cut", "V0M", "CL1"}, // kAFTER
-          },                                                 // kV0M + CL1
-          {
-              {"fCorCenEstimatorQAHistograms[kV0M+kSPDTRACKLETS][kBEFORE]",
-               "V0M vs SPDTracklets, before event cut", "V0M",
-               "SPDTracklets"}, // kBEFORE
-              {"fCorCenEstimatorQAHistograms[kV0M+kSPDTRACKLETS][kAFTER]",
-               "V0M vs SPDTracklets, after event cut", "V0M",
-               "SPDTracklets"}, // kAFTER
-          },                    // kV0M + kSPDTRACKLETS
-          {
-              {"fCorCenEstimatorQAHistograms[kCL0+kCL1][kBEFORE]",
-               "CL0 vs CL1, before event cut", "CL0", "CL1"}, // kBEFORE
-              {"fCorCenEstimatorQAHistograms[kCL0+kCL1][kAFTER]",
-               "CL0 vs CL1, after event cut", "CL0", "CL1"}, // kAFTER
-          },                                                 // kCL0 + kCL1
-          {
-              {"fCorCenEstimatorQAHistograms[kCL0+kSPDTRACKLETS][kBEFORE]",
-               "CL0 vs kSPDTRACKLETS, before event cut", "CL0",
-               "SPDTracklets"}, // kBEFORE
-              {"fCorCenEstimatorQAHistograms[kCL0+kSPDTRACKLETS][kAFTER]",
-               "CL0 vs kSPDTRACKLETS, after event cut", "CL0",
-               "SPDTracklets"}, // kAFTER
-          },                    // kCL0 + kSPDTRACKLETS
-          {
-              {"fCorCenEstimatorQAHistograms[kCL1+kSPDTRACKLETS][kBEFORE]",
-               "CL1 vs kSPDTRACKLETS, before event cut", "CL1",
-               "SPDTracklets"}, // kBEFORE
-              {"fCorCenEstimatorQAHistograms[kCL1+kSPDTRACKLETS][kAFTER]",
-               "CL1 vs kSPDTRACKLETS, after event cut", "CL1",
-               "SPDTracklets"}, // kAFTER
-          },                    // kCL1 + kSPDTRACKLETS
-      };
+  TString CenCorQAHistogramNames[LAST_ECENESTIMATORS *
+                                 (LAST_ECENESTIMATORS - 1) / 2][LAST_ENAME] = {
+      // NAME, TITLE, XAXIS, YAXIS
+      {"fCorCenEstimatorQAHistograms[kV0M+kCL0]", "V0M vs CL0", "V0M", "CL0"},
+      {"fCorCenEstimatorQAHistograms[kV0M+kCL1]", "V0M vs CL1", "V0M", "CL1"},
+      {"fCorCenEstimatorQAHistograms[kV0M+kSPDTRACKLETS]",
+       "V0M vs SPDTracklets", "V0M", "SPDTracklets"},
+      {"fCorCenEstimatorQAHistograms[kCL0+kCL1]", "CL0 vs CL1", "CL0", "CL1"},
+      {"fCorCenEstimatorQAHistograms[kCL0+kSPDTRACKLETS]",
+       "CL0 vs kSPDTRACKLETS", "CL0", "SPDTracklets"},
+      {"fCorCenEstimatorQAHistograms[kCL1+kSPDTRACKLETS]",
+       "CL1 vs kSPDTRACKLETS", "CL1", "SPDTracklets"},
+  };
 
   // initialize names of QA histograms for the correlation between centrality
   // estimators
@@ -288,8 +272,12 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
        ++cen) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
       for (int name = 0; name < LAST_ENAME; ++name) {
-        fCorCenEstimatorQAHistogramNames[cen][ba][name] =
-            CorCentralityEstimatorQAHistogramNames[cen][ba][name];
+        if (name == kNAME || name == kTITLE) {
+          fCenCorQAHistogramNames[cen][ba][name] =
+              CenCorQAHistogramNames[cen][name] + BAName[ba];
+        } else
+          fCenCorQAHistogramNames[cen][ba][name] =
+              CenCorQAHistogramNames[cen][name];
       }
     }
   }
@@ -312,10 +300,77 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
        ++cen) {
     for (int bin = 0; bin < 2 * LAST_EBINS; ++bin) {
-      fCorCenEstimatorQAHistogramBins[cen][bin] =
+      fCenCorQAHistogramBins[cen][bin] =
           CorCenEstimatorQAHistogramBins[cen][bin];
     }
   }
+
+  // // initialize array for filterbit scan QA histograms
+  // for (int var = 0; var < LAST_EFILTERBIT; ++var) {
+  //   for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+  //     fFBScanQAHistograms[var][ba] = nullptr;
+  //   }
+  // }
+  // // names for filterbit scan QA histograms
+  // TString
+  //     FBScanQAHistogramNames[LAST_EFILTERBIT][LAST_EBEFOREAFTER][LAST_ENAME]
+  //     = {
+  //         {
+  //             // NAME, TITLE, XAXIS, YAXIS
+  //             {"fFBScanQAHistograms[kFB1][kBEFORE]",
+  //              "Filterbit 1, before track cut", "", ""}, // kBEFORE
+  //             {"fFBScanQAHistograms[kFB1][kAFTER]",
+  //              "Filterbit 1, after track cut", "", ""}, // kAFTER
+  //         },                                            // kFB1
+
+  //         {
+  //             {"fFBScanQAHistograms[kFB128][kBEFORE]",
+  //              "Filterbit 128, before track cut", "", ""}, // kBEFORE
+  //             {"fFBScanQAHistograms[kFB128][kAFTER]",
+  //              "Filterbit 128, after track cut", "", ""}, // kAFTER
+  //         },                                              // kFB128
+  //         {
+  //             {"fFBScanQAHistograms[kFB256][kBEFORE]",
+  //              "Filterbit 256, before track cut", "", ""}, // kBEFORE
+  //             {"fFBScanQAHistograms[kFB256][kAFTER]",
+  //              "Filterbit 256, after track cut", "", ""}, // kAFTER
+  //         },                                              // kFB256
+  //         {
+  //             {"fFBScanQAHistograms[kFB768][BEFORE]",
+  //              "Filterbit 768, before track cut", "", ""}, // kBEFORE
+  //             {"fFBScanQAHistograms[kFB768][AFTER]",
+  //              "Filterbit 768, after track cut", "", ""}, // kAFTER
+  //         },                                              // kFB768
+  //     };
+  // // initialize names for track control histograms
+  // for (int var = 0; var < LAST_EFILTERBIT; ++var) {
+  //   for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+  //     for (int name = 0; name < LAST_ENAME; ++name) {
+  //       fFBScanQAHistogramNames[var][ba][name] =
+  //           FBScanQAHistogramNames[var][ba][name];
+  //     }
+  //   }
+  // }
+
+  // // default bins for track control histograms
+  // Double_t BinsFB[LAST_ETRACK][LAST_EBINS] = {
+  //     // kBIN kLEDGE kUEDGE
+  //     {100., 0., 10.},            // kPT
+  //     {360., 0., TMath::TwoPi()}, // kPHI
+  //     {200., -2., 2.},            // kETA
+  //     {160., 0., 160.},           // kTPCNCLS
+  //     {1000., 0., 1000.},         // kITSNCLS
+  //     {100., 0., 10.},            // kCHI2PERNDF
+  //     {100., -10., 10.},          // kDCAZ
+  //     {100, -10., 10.},           // kDCAXY
+  // };
+  // // initialize array of bins and edges for track control histograms
+  // for (int var = 0; var < LAST_ETRACK; ++var) {
+  //   for (int bin = 0; bin < LAST_EBINS; ++bin) {
+  //     fBinsTrackControlHistograms[var][bin] =
+  //         BinsTrackControlHistogramDefaults[var][bin];
+  //   }
+  // }
 }
 
 void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
@@ -327,65 +382,28 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
   }
 
   // names for track control histograms
-  TString
-      TrackControlHistogramNames[LAST_ETRACK][LAST_EBEFOREAFTER][LAST_ENAME] = {
-          {
-              // NAME, TITLE, XAXIS, YAXIS
-              {"fTrackControlHistograms[kPT][kBEFORE]", "pT, before track cut",
-               "p_{T}", ""}, // kBEFORE
-              {"fTrackControlHistograms[kPT][kAFTER]", "pT, after track cut",
-               "p_{T}", ""}, // kAFTER
-          },                 // kPT
-
-          {
-              {"fTrackControlHistograms[kPHI][kBEFORE]",
-               "#varphi, before track cut", "#varphi", ""}, // kBEFORE
-              {"fTrackControlHistograms[kPHI][kAFTER]",
-               "#varphi, after track cut", "#varphi", ""}, // kAFTER
-          },                                               // kPHI
-          {
-              {"fTrackControlHistograms[kETA][kBEFORE]",
-               "#eta, before track cut", "#eta", ""}, // kBEFORE
-              {"fTrackControlHistograms[kETA][kAFTER]", "#eta, after track cut",
-               "#eta", ""}, // kAFTER
-          },                // kETA
-          {
-              {"fTrackControlHistograms[kTPCNCLS][BEFORE]",
-               "Number of clusters in TPC, before track cut", ""}, // kBEFORE
-              {"fTrackControlHistograms[kTPCNCLS][AFTER]",
-               "Number of clusters in TPC, after track cut", ""}, // kAFTER
-          },                                                      // kTPCNCLS
-          {
-              {"fTrackControlHistograms[kITSNCLS][BEFORE]",
-               "Number of clusters in ITS, before track cut", ""}, // kBEFORE
-              {"fTrackControlHistograms[kITSNCLS][AFTER]",
-               "Number of clusters in ITS, after track cut", ""}, // kAFTER
-          },                                                      // kITSNCLS
-          {
-              {"fTrackControlHistograms[kCHI2PERNDF][BEFORE]",
-               "CHI2PERNDF of track, before track cut", "", ""}, // kBEFORE
-              {"fTrackControlHistograms[kCHI2PERNDF][AFTER]",
-               "CHI2PERNDF of track, after track cut", "", ""}, // kAFTER
-          },                                                    // kCHI2PERNDF
-          {
-              {"fTrackControlHistograms[kDCAZ][BEFORE]",
-               "DCA in Z, before track cut", ""}, // kBEFORE
-              {"fTrackControlHistograms[kDCAZ][AFTER]",
-               "DCA in Z, after track cut", ""}, // kAFTER
-          },                                     // kDCAZ
-          {
-              {"fTrackControlHistograms[kDCAXY][BEFORE]",
-               "DCA in XY, before track cut", ""}, // kBEFORE
-              {"fTrackControlHistograms[kDCAXY][AFTER]",
-               "DCA in XY, after track cut", ""}, // kAFTER
-          },                                      // kDCAXY
-      };
+  TString TrackControlHistogramNames[LAST_ETRACK][LAST_ENAME] = {
+      // NAME, TITLE, XAXIS, YAXIS
+      {"fTrackControlHistograms[kPT]", "p_{T}", "p_{T}", ""},
+      {"fTrackControlHistograms[kPHI]", "#varphi", "#varphi", ""},
+      {"fTrackControlHistograms[kETA]", "#eta", "#eta", ""},
+      {"fTrackControlHistograms[kTPCNCLS]", "Number of clusters in TPC", ""},
+      {"fTrackControlHistograms[kITSNCLS]", "Number of clusters in ITS", ""},
+      {"fTrackControlHistograms[kCHI2PERNDF]", "CHI2PERNDF of track", "", ""},
+      {"fTrackControlHistograms[kDCAZ]", "DCA in Z", ""},
+      {"fTrackControlHistograms[kDCAXY]", "DCA in XY", ""}, // kBEFORE
+  };
   // initialize names for track control histograms
   for (int var = 0; var < LAST_ETRACK; ++var) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
       for (int name = 0; name < LAST_ENAME; ++name) {
-        fTrackControlHistogramNames[var][ba][name] =
-            TrackControlHistogramNames[var][ba][name];
+        if (name == kNAME || name == kTITLE) {
+          fTrackControlHistogramNames[var][ba][name] =
+              TrackControlHistogramNames[var][name] + BAName[ba];
+        } else {
+          fTrackControlHistogramNames[var][ba][name] =
+              TrackControlHistogramNames[var][name];
+        }
       }
     }
   }
@@ -420,38 +438,24 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
   }
 
   // name of event control histograms
-  TString
-      EventControlHistogramNames[LAST_EEVENT][LAST_EBEFOREAFTER][LAST_ENAME] = {
-          {
-              // NAME, TITLE, XAXIS
-              {"fEventControlHistograms[kCEN][kBEFORE]",
-               "centrality, before event cut",
-               "Centrality Percentile"}, // kBEFORE
-              {"fEventControlHistograms[kCEN][kAFTER]",
-               "centrality, after event cut",
-               "Centrality Percentile"}, // kAFTER
-          },                             // kCEN
-          {
-              {"fEventControlHistograms[kMUL][kBEFORE]",
-               "multiplicity, before event cut", "M"}, // kBEFORE
-              {"fEventControlHistograms[kMUL][kAFTER]",
-               "multiplicity, after event cut", "M"}, // kAFTER
-          },                                          // kMUL
-          {
-              {"fEventControlHistograms[kNCONTRIB][BEFORE]",
-               "Number of Contributers, before event cut", "#Contributors",
-               ""}, // kBEFORE
-              {"fEventControlHistograms[kNCONTRIB][AFTER]",
-               "Number of Contributers, after event cut", "#Contributors",
-               ""}, // kAFTER
-          },        // kNCONTRIB
-      };
+  TString EventControlHistogramNames[LAST_EEVENT][LAST_ENAME] = {
+      // NAME, TITLE, XAXIS, YAXIS
+      {"fEventControlHistograms[kCEN]", "centrality", "Centrality Percentile",
+       ""},
+      {"fEventControlHistograms[kMUL]", "multiplicity", "M", ""},
+      {"fEventControlHistograms[kNCONTRIB]", "Number of Contributers",
+       "#Contributors", ""},
+  };
   // initialize names for event control histograms
   for (int var = 0; var < LAST_EEVENT; ++var) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
       for (int name = 0; name < LAST_ENAME; ++name) {
-        fEventControlHistogramNames[var][ba][name] =
-            EventControlHistogramNames[var][ba][name];
+        if (name == kNAME || name == kTITLE) {
+          fEventControlHistogramNames[var][ba][name] =
+              EventControlHistogramNames[var][name] + BAName[ba];
+        } else
+          fEventControlHistogramNames[var][ba][name] =
+              EventControlHistogramNames[var][name];
       }
     }
   }
@@ -633,12 +637,18 @@ void AliAnalysisTaskAR::BookAndNestAllLists() {
     std::cout << __LINE__ << ": Did not get " << fHistListName << std::endl;
     Fatal("BookAndNestAllLists", "Invalid Pointer");
   }
-  // 1. Book and nest lists for QA histograms:
+  // 1. Book and nest lists for QA histograms
   if (fFillQAHistograms) {
-    fQAHistogramList = new TList();
-    fQAHistogramList->SetName(fQAHistogramListName);
-    fQAHistogramList->SetOwner(kTRUE);
-    fHistList->Add(fQAHistogramList);
+    fQAHistogramsList = new TList();
+    fQAHistogramsList->SetName(fQAHistogramsListName);
+    fQAHistogramsList->SetOwner(kTRUE);
+    fHistList->Add(fQAHistogramsList);
+
+    // centrality correlation QA histograms
+    fCenCorQAHistogramsList = new TList();
+    fCenCorQAHistogramsList->SetName(fCenCorQAHistogramsListName);
+    fCenCorQAHistogramsList->SetOwner(kTRUE);
+    fQAHistogramsList->Add(fCenCorQAHistogramsList);
   }
 
   // 2. Book and nest lists for control histograms:
@@ -646,6 +656,18 @@ void AliAnalysisTaskAR::BookAndNestAllLists() {
   fControlHistogramsList->SetName(fControlHistogramsListName);
   fControlHistogramsList->SetOwner(kTRUE);
   fHistList->Add(fControlHistogramsList);
+
+  // track control histograms
+  fTrackControlHistogramsList = new TList();
+  fTrackControlHistogramsList->SetName(fTrackControlHistogramsListName);
+  fTrackControlHistogramsList->SetOwner(kTRUE);
+  fControlHistogramsList->Add(fTrackControlHistogramsList);
+
+  // event control histograms
+  fEventControlHistogramsList = new TList();
+  fEventControlHistogramsList->SetName(fEventControlHistogramsListName);
+  fEventControlHistogramsList->SetOwner(kTRUE);
+  fControlHistogramsList->Add(fEventControlHistogramsList);
 
   // 3. Book and nest lists for final results:
   fFinalResultsList = new TList();
@@ -668,22 +690,22 @@ void AliAnalysisTaskAR::BookQAHistograms() {
   for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
        ++cen) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
-      fCorCenEstimatorQAHistograms[cen][ba] =
-          new TH2D(fCorCenEstimatorQAHistogramNames[cen][ba][kNAME],
-                   fCorCenEstimatorQAHistogramNames[cen][ba][kTITLE],
-                   fCorCenEstimatorQAHistogramBins[cen][kBIN],
-                   fCorCenEstimatorQAHistogramBins[cen][kLEDGE],
-                   fCorCenEstimatorQAHistogramBins[cen][kUEDGE],
-                   fCorCenEstimatorQAHistogramBins[cen][kBIN + LAST_EBINS],
-                   fCorCenEstimatorQAHistogramBins[cen][kLEDGE + LAST_EBINS],
-                   fCorCenEstimatorQAHistogramBins[cen][kUEDGE + LAST_EBINS]);
-      fCorCenEstimatorQAHistograms[cen][ba]->SetStats(kFALSE);
-      fCorCenEstimatorQAHistograms[cen][ba]->SetOption("colz");
-      fCorCenEstimatorQAHistograms[cen][ba]->GetXaxis()->SetTitle(
-          fCorCenEstimatorQAHistogramNames[cen][ba][kXAXIS]);
-      fCorCenEstimatorQAHistograms[cen][ba]->GetYaxis()->SetTitle(
-          fCorCenEstimatorQAHistogramNames[cen][ba][kYAXIS]);
-      fQAHistogramList->Add(fCorCenEstimatorQAHistograms[cen][ba]);
+      fCenCorQAHistograms[cen][ba] =
+          new TH2D(fCenCorQAHistogramNames[cen][ba][kNAME],
+                   fCenCorQAHistogramNames[cen][ba][kTITLE],
+                   fCenCorQAHistogramBins[cen][kBIN],
+                   fCenCorQAHistogramBins[cen][kLEDGE],
+                   fCenCorQAHistogramBins[cen][kUEDGE],
+                   fCenCorQAHistogramBins[cen][kBIN + LAST_EBINS],
+                   fCenCorQAHistogramBins[cen][kLEDGE + LAST_EBINS],
+                   fCenCorQAHistogramBins[cen][kUEDGE + LAST_EBINS]);
+      fCenCorQAHistograms[cen][ba]->SetStats(kFALSE);
+      fCenCorQAHistograms[cen][ba]->SetOption("colz");
+      fCenCorQAHistograms[cen][ba]->GetXaxis()->SetTitle(
+          fCenCorQAHistogramNames[cen][ba][kXAXIS]);
+      fCenCorQAHistograms[cen][ba]->GetYaxis()->SetTitle(
+          fCenCorQAHistogramNames[cen][ba][kYAXIS]);
+      fCenCorQAHistogramsList->Add(fCenCorQAHistograms[cen][ba]);
     }
   }
 }
@@ -710,7 +732,7 @@ void AliAnalysisTaskAR::BookControlHistograms() {
           fTrackControlHistogramNames[var][ba][kXAXIS]);
       fTrackControlHistograms[var][ba]->GetYaxis()->SetTitle(
           fTrackControlHistogramNames[var][ba][kYAXIS]);
-      fControlHistogramsList->Add(fTrackControlHistograms[var][ba]);
+      fTrackControlHistogramsList->Add(fTrackControlHistograms[var][ba]);
     }
   }
 
@@ -730,7 +752,7 @@ void AliAnalysisTaskAR::BookControlHistograms() {
           fEventControlHistogramNames[var][ba][kXAXIS]);
       fEventControlHistograms[var][ba]->GetYaxis()->SetTitle(
           fEventControlHistogramNames[var][ba][kYAXIS]);
-      fControlHistogramsList->Add(fEventControlHistograms[var][ba]);
+      fEventControlHistogramsList->Add(fEventControlHistograms[var][ba]);
     }
   }
 }
@@ -1014,18 +1036,18 @@ void AliAnalysisTaskAR::FillQAHistograms(kBeforeAfter BA, AliAODEvent *event) {
       dynamic_cast<AliMultSelection *>(event->FindListObject("MultSelection"))
           ->GetMultiplicityPercentile("SPDTracklets");
 
-  fCorCenEstimatorQAHistograms[0][BA]->Fill(centralityPercentile[kV0M],
-                                            centralityPercentile[kCL0]);
-  fCorCenEstimatorQAHistograms[1][BA]->Fill(centralityPercentile[kV0M],
-                                            centralityPercentile[kCL1]);
-  fCorCenEstimatorQAHistograms[2][BA]->Fill(
-      centralityPercentile[kV0M], centralityPercentile[kSPDTRACKLETS]);
-  fCorCenEstimatorQAHistograms[3][BA]->Fill(centralityPercentile[kV0M],
-                                            centralityPercentile[kCL0]);
-  fCorCenEstimatorQAHistograms[4][BA]->Fill(centralityPercentile[kV0M],
-                                            centralityPercentile[kCL1]);
-  fCorCenEstimatorQAHistograms[5][BA]->Fill(centralityPercentile[kV0M],
-                                            centralityPercentile[kCL1]);
+  fCenCorQAHistograms[0][BA]->Fill(centralityPercentile[kV0M],
+                                   centralityPercentile[kCL0]);
+  fCenCorQAHistograms[1][BA]->Fill(centralityPercentile[kV0M],
+                                   centralityPercentile[kCL1]);
+  fCenCorQAHistograms[2][BA]->Fill(centralityPercentile[kV0M],
+                                   centralityPercentile[kSPDTRACKLETS]);
+  fCenCorQAHistograms[3][BA]->Fill(centralityPercentile[kV0M],
+                                   centralityPercentile[kCL0]);
+  fCenCorQAHistograms[4][BA]->Fill(centralityPercentile[kV0M],
+                                   centralityPercentile[kCL1]);
+  fCenCorQAHistograms[5][BA]->Fill(centralityPercentile[kV0M],
+                                   centralityPercentile[kCL1]);
 }
 
 Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
