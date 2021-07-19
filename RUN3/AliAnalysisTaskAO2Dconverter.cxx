@@ -1512,6 +1512,19 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       mcparticle.fPy = AliMathBase::TruncateFloatFraction(particle ? particle->Py() : aodmcpt->Py(), mMcParticleMom);
       mcparticle.fPz = AliMathBase::TruncateFloatFraction(particle ? particle->Pz() : aodmcpt->Pz(), mMcParticleMom);
       mcparticle.fE = AliMathBase::TruncateFloatFraction(particle ? particle->Energy() : aodmcpt->E(), mMcParticleMom);
+      // HACK to avoid FPE in expression columns. Affect only particles in the Beam Pipe.
+      // TO BE REMOVED asap
+      const float limit = 1e-3;
+      if (TMath::Abs(mcparticle.fPx) < limit) {
+        mcparticle.fPx = AliMathBase::TruncateFloatFraction(limit, mMcParticleMom);
+      }
+      if (TMath::Abs(mcparticle.fPy) < limit) {
+        mcparticle.fPy = AliMathBase::TruncateFloatFraction(limit, mMcParticleMom);
+      }
+      if (TMath::Abs(mcparticle.fE) < limit) {
+        mcparticle.fE = AliMathBase::TruncateFloatFraction(limit, mMcParticleMom);
+      }
+      // End of HACK
 
       mcparticle.fVx = AliMathBase::TruncateFloatFraction(particle ? particle->Vx() : aodmcpt->Xv(), mMcParticlePos);
       mcparticle.fVy = AliMathBase::TruncateFloatFraction(particle ? particle->Vy() : aodmcpt->Yv(), mMcParticlePos);
