@@ -37,6 +37,7 @@
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
 #include "AliGenHijingEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 #include "AliDecorrFlowCorrTask.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
@@ -83,8 +84,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fIndexSampling{0},
     fAOD(nullptr),
     fIsMC(kFALSE),
-    fMCEvent(0),
-    fEvent(0),
+    fMCEvent(nullptr),
+    fEvent(nullptr),
     fInitTask{kFALSE},  
     fOnTheFly(kFALSE),
     fImpactParameterMC{0.0},
@@ -178,8 +179,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, Bool_t IsMC) : Al
     fIndexSampling{0},
     fAOD(nullptr),
     fIsMC(IsMC),
-    fMCEvent(0),
-    fEvent(0),
+    fMCEvent(nullptr),
+    fEvent(nullptr),
     fInitTask{kFALSE}, 
     fOnTheFly(kFALSE),  
     fImpactParameterMC{0.0},
@@ -716,8 +717,6 @@ void AliAnalysisDecorrTask::FillAfterWeights()
 //_____________________________________________________________________________
 void AliAnalysisDecorrTask::UserExec(Option_t *)
 {
-
-
     if(!fInitTask) { AliFatal("Something went wrong! Task not initialized"); return; }
     
     AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
@@ -786,6 +785,8 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         AliMultSelection *multSelect =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
         if(multSelect) centrality = multSelect->GetMultiplicityPercentile(fCentEstimator);
     }
+    if(centrality < 0) return;
+
     if(fFillAfterWeights && !fOnTheFly)
     {
         FillAfterWeights();
@@ -1110,7 +1111,6 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
 //Method to fill RP vectors and stat histograms
 void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const task)
 {
-
     ResetFlowVector(Qvector);
     ResetFlowVector(Qvector10P);
     ResetFlowVector(Qvector10M);
@@ -1896,7 +1896,7 @@ Double_t AliAnalysisDecorrTask::GetCentralityFromImpactParameter()
         }
         else 
         {
-            return -1.0;
+            continue;
         }
     }
     return -1.0;
@@ -1904,40 +1904,42 @@ Double_t AliAnalysisDecorrTask::GetCentralityFromImpactParameter()
 
 Bool_t AliAnalysisDecorrTask::IsMCEventSelected()
 {
-  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
-  if(!ev) { AliFatal("MC event not found!"); return kFALSE; }
+    AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+    if(!ev) { AliFatal("MC event not found!"); return kFALSE; }
 
-  AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
-  if(!header) { AliFatal("MC event not generated!"); return kFALSE; }
+    AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
+    if(!header) { AliFatal("MC event not generated!"); return kFALSE; }
 
-  const AliVVertex *vertex = ev->GetPrimaryVertex();
-  if(!ev) { AliError("Vertex of MC not found!"); }
+    const AliVVertex *vertex = ev->GetPrimaryVertex();
+    if(!ev) { AliError("Vertex of MC not found!"); }
 
-  if(TMath::Abs(vertex->GetX()) > fPVtxCutX) return kFALSE;
-  if(TMath::Abs(vertex->GetY()) > fPVtxCutY) return kFALSE;
-  if(TMath::Abs(vertex->GetZ()) > fPVtxCutZ) return kFALSE;
+    if(TMath::Abs(vertex->GetX()) > fPVtxCutX) return kFALSE;
+    if(TMath::Abs(vertex->GetY()) > fPVtxCutY) return kFALSE;
+    if(TMath::Abs(vertex->GetZ()) > fPVtxCutZ) return kFALSE;
 
-    
-  AliCollisionGeometry* headerH;
-  TString genName;
-  TList *ltgen = (TList*)ev->GetCocktailList();
-  if (ltgen) {
-  for(auto&& listObject: *ltgen){
-    genName = Form("%s",listObject->GetName());
-    if (genName.Contains("Hijing")) {
-      headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
-      break;
-      }
+    AliCollisionGeometry* headerH;
+    AliGenHepMCEventHeader* headertmp;
+    TString genName;
+    TList *ltgen = (TList*)ev->GetCocktailList();
+    if (ltgen) {
+        for(auto&& listObject: *ltgen){
+            genName = Form("%s",listObject->GetName());
+            if (genName.Contains("Hijing")) {
+                headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+                break;
+            }
+        }
     }
-  }
-  else
-    headerH = dynamic_cast<AliCollisionGeometry*>(ev->GenEventHeader());
-  if(headerH){
-      fImpactParameterMC = headerH->ImpactParameter();
-      if(!fImpactParameterMC) { AliFatal("Impact parameter not found"); return kFALSE; }
-  } 
-    
-  return kTRUE;
+    else 
+    {
+        headertmp = dynamic_cast<AliGenHepMCEventHeader*>(ev->GenEventHeader());
+    }
+    if(headertmp){
+        fImpactParameterMC = headertmp->impact_parameter();
+        if(!fImpactParameterMC) { AliFatal("Impact parameter not found"); return kFALSE; }
+    } 
+    else return kFALSE;  
+    return kTRUE;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisDecorrTask::IsEventSelected(TH1D* h)

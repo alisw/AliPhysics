@@ -137,6 +137,11 @@ void GenppRefFile(std::string cfgFileName) {
     AliHFSystErr* syst = static_cast<AliHFSystErr*>(infile->Get("AliHFSystErr"));
     if(!syst)
         syst = static_cast<AliHFSystErr*>(infile->Get("AliHFSystErrTopol"));
+    if(!syst)
+    {
+        std::cerr << "ERROR: AliHFSystErr object not found! Exit" << std::endl;
+        return;
+    }
 
     TH1F* hSystTrackingAverage = nullptr;
     TH1F* hSystPtShapeAverage = nullptr;
@@ -189,27 +194,50 @@ void GenppRefFile(std::string cfgFileName) {
         std::cout << hSigmaPPOrig->GetBinError(hSigmaPPOrig->GetNbinsX()) << std::endl;
         gSigmaPPSystDataReb = new TGraphAsymmErrors(0);
         gSigmaPPSystFeedDownReb = new TGraphAsymmErrors(0);
-        if(mesonName.compare("Lc") != 0)
+        for(int iPtReb=0; iPtReb<nPtBinsReb; iPtReb++)
         {
-            std::cout << "To be implemented" << std::endl;
-        }
-        else
-        {
-            for(int iPtReb=0; iPtReb<nPtBinsReb; iPtReb++)
-            {
-                double ptCent = hSigmaPPReb->GetBinCenter(iPtReb+1);
-                double sigma = hSigmaPPReb->GetBinContent(iPtReb+1);
-                double binWidth = hSigmaPPReb->GetBinWidth(iPtReb+1);
-                double systUncorr = 0.;
-                double systCorr = 0.;
-                double systFDLow = 0.;
-                double systFDHigh = 0.;
-                
-                double ptMin = hSigmaPPReb->GetXaxis()->GetBinLowEdge(iPtReb+1);
-                double ptMax = hSigmaPPReb->GetXaxis()->GetBinUpEdge(iPtReb+1);
-                int ptBinOrigLow = hSigmaPPOrig->FindBin(ptMin*1.0001);
-                int ptBinOrigHigh = hSigmaPPOrig->FindBin(ptMax*0.9999);
+            double ptCent = hSigmaPPReb->GetBinCenter(iPtReb+1);
+            double sigma = hSigmaPPReb->GetBinContent(iPtReb+1);
+            double binWidth = hSigmaPPReb->GetBinWidth(iPtReb+1);
+            double systUncorr = 0.;
+            double systCorr = 0.;
+            double systFDLow = 0.;
+            double systFDHigh = 0.;
 
+            double ptMin = hSigmaPPReb->GetXaxis()->GetBinLowEdge(iPtReb+1);
+            double ptMax = hSigmaPPReb->GetXaxis()->GetBinUpEdge(iPtReb+1);
+            int ptBinOrigLow = hSigmaPPOrig->FindBin(ptMin*1.0001);
+            int ptBinOrigHigh = hSigmaPPOrig->FindBin(ptMax*0.9999);
+
+            if(mesonName.compare("Lc") != 0)
+            {                    
+                for(int iPtOrig=ptBinOrigLow; iPtOrig<=ptBinOrigHigh; iPtOrig++)
+                {
+                    double ptOrig = hSigmaPPOrig->GetBinCenter(iPtOrig);
+                    double sigmaOrig  = hSigmaPPOrig->GetBinContent(iPtOrig) * hSigmaPPOrig->GetBinWidth(iPtOrig);
+                    double sysRawY    = syst->GetRawYieldErr(ptOrig);
+                    double sysCutV    = syst->GetSeleEffErr(ptOrig);
+                    double sysPID     = syst->GetPIDEffErr(ptOrig);
+                    double sysPtShape = syst->GetMCPtShapeErr(ptOrig);
+                    double sysTrack   = syst->GetTrackingEffErr(ptOrig);
+
+                    systUncorr += sysRawY * sysRawY * sigmaOrig * sigmaOrig;
+                    systCorr += TMath::Sqrt(sysCutV*sysCutV + sysPID*sysPID + sysPtShape*sysPtShape + sysTrack*sysTrack) * sigmaOrig;
+                    for(iPtGraph=0; iPtGraph<gSigmaPPSystFeedDownOrig->GetN(); iPtGraph++)
+                    {
+                        double ptGraph, y;
+                        gSigmaPPSystFeedDownOrig->GetPoint(iPtGraph, ptGraph, y);
+                        if(TMath::Abs(ptGraph - ptOrig) < 1.e-3)
+                        {
+                            systFDLow += gSigmaPPSystFeedDownOrig->GetErrorYlow(iPtGraph) * sigmaOrig;
+                            systFDHigh += gSigmaPPSystFeedDownOrig->GetErrorYhigh(iPtGraph) * sigmaOrig;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
                 for(int iPtOrig=ptBinOrigLow; iPtOrig<=ptBinOrigHigh; iPtOrig++)
                 {
                     double sigmaOrig  = hSigmaPPOrig->GetBinContent(iPtOrig) * hSigmaPPOrig->GetBinWidth(iPtOrig);
@@ -225,18 +253,17 @@ void GenppRefFile(std::string cfgFileName) {
                     systFDLow += hSystFDLowAverage->GetBinContent(iPtOrig) * sigmaOrig;
                     systFDHigh += hSystFDHighAverage->GetBinContent(iPtOrig) * sigmaOrig;
                 }
-
-                systUncorr = TMath::Sqrt(systUncorr) / binWidth;
-                systCorr /= binWidth;
-                double systUncData = TMath::Sqrt(systUncorr*systUncorr + systCorr*systCorr);
-                systFDLow /= binWidth;
-                systFDHigh /= binWidth;
-
-                gSigmaPPSystDataReb->SetPoint(iPtReb, ptCent, sigma);
-                gSigmaPPSystFeedDownReb->SetPoint(iPtReb, ptCent, sigma);
-                gSigmaPPSystDataReb->SetPointError(iPtReb, 0.3, 0.3, systUncData, systUncData);
-                gSigmaPPSystFeedDownReb->SetPointError(iPtReb, 0.3, 0.3, systFDLow, systFDHigh);
             }
+            systUncorr = TMath::Sqrt(systUncorr) / binWidth;
+            systCorr /= binWidth;
+            double systUncData = TMath::Sqrt(systUncorr*systUncorr + systCorr*systCorr);
+            systFDLow /= binWidth;
+            systFDHigh /= binWidth;
+
+            gSigmaPPSystDataReb->SetPoint(iPtReb, ptCent, sigma);
+            gSigmaPPSystFeedDownReb->SetPoint(iPtReb, ptCent, sigma);
+            gSigmaPPSystDataReb->SetPointError(iPtReb, 0.3, 0.3, systUncData, systUncData);
+            gSigmaPPSystFeedDownReb->SetPointError(iPtReb, 0.3, 0.3, systFDLow, systFDHigh);
         }
     }
 

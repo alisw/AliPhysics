@@ -71,26 +71,35 @@ private:
   Hist::Hist<TH1D> fHistDeltaPhi{};      //!<! measured phi difference between leading track and current track
   Hist::Hist<TH1D> fHistPtLeadCutLoss{}; //!<! events, discarded through pT Lead cut
 
-  Hist::Hist<TH1D> fHistMCResoPtLead{};    //!<! Difference Leading Track Pt and Particle Pt
-  Hist::Hist<TH1D> fHistMCResoPhiLead{};   //!<! Difference Leading Track Phi and Particle Phi
-  Hist::Hist<TH1D> fHistDiffToMCPtLead{};  //!<! Difference Leading Track Pt and Leading Particle Pt
-  Hist::Hist<TH1D> fHistDiffToMCPhiLead{}; //!<! Difference Leading Track Phi and Particle Phi
+  Hist::Hist<TH1D> fHistMCResoPtLead{};  //!<! Difference Leading Track Pt and corresponding Particle Pt
+  Hist::Hist<TH1D> fHistMCResoPhiLead{}; //!<! Difference Leading Track Phi and corresponding Particle Phi
 
-  Hist::Hist<TH2D> fHistPlateau{}; //!<! Plateau Histogram
-  Hist::Hist<TH2D> fHistSumPt{};
-  Hist::Hist<TH2D> fHistMultCorr{};
+  Hist::Hist<TH2D> fHistPlateau{};      //!<! Plateau Histogram
+  Hist::Hist<TH2D> fHistSumPt{};        //!<! Histogram for measuring pt correlations between regions
+  Hist::Hist<TH2D> fHistMultCorr{};     //!<! Histogram for measuring mult correlations between regions
+
+  Hist::Hist<TH2D> fHistMCPlateau{};      //!<! Plateau Histogram
+  Hist::Hist<TH2D> fHistMCSumPt{};        //!<! MC truth corresponding to fHistSumPt
+  Hist::Hist<TH2D> fHistMCMultCorr{};     //!<! MC truth corresponding to fHistMultCorr
+
+  Hist::Hist<TH1D> fHistMeanSumPt{};    //!<! Histogram for calculating mean sum pt in region as function of sum_pt total
+  Hist::Hist<TH1D> fHistMeanMult{};     //!<! Histogram for calculating mean mult in region as function of total mult
+
+  Hist::Hist<TH1D> fHistMCMeanSumPt{}; //!<! MC Particle information corresponding to fHistMeanSumPt
+  Hist::Hist<TH1D> fHistMCMeanMult{};  //!<! MC Particle information corresponding to fHistMeanMult
 
   // Additional event related properties
   double fPtLead{};  //!<! Leading track pT
   double fPhiLead{}; //!<! Leading track phi
 
-  double fMCPtLead{};    //!<! Leading MC particle pT
-  double fMCPhiLead{};   //!<! Leading MC particle phi
-  double fMCPtOfLead{};  //!<! To leading MC track corresponding particle pT
-  double fMCPhiOfLead{}; //!<! To leading MC track corresponding particle phi
+  double fMCPtOfLead{};    //!<! Leading MC particle pT
+  double fMCPhiOfLead{};   //!<! Leading MC particle phi
 
-  double fMultMeasTot{};
-  double fSumPtMeasTot{};
+  double fMultMeasTot{};    //!<! full phi multiplicity
+  double fSumPtMeasTot{};   //!<! full phi sum pt
+
+  double fMultTrueTot{};    //!<! generated full phi multiplicity
+  double fSumPtTrueTot{};   //!<! generated full phi sum pt
 
   /// \cond CLASSIMP
   ClassDef(AliMultDepSpecAnalysisTaskUE, 1); // example of analysis

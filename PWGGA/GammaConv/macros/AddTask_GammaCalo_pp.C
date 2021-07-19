@@ -3402,10 +3402,10 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792109fe3q220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: TB for gamma clus
     cuts.AddCutCalo("00010113","411792109fe3r220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: P2 for gamma clus
   } else if (trainConfig == 2501) { // new calculation
-    cuts.AddCutCalo("00010113","411792109fe3u220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: PCMEDC pi0 tagging for all clus
-    cuts.AddCutCalo("00010113","411792109fe3v220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: PCMEDC pi0 tagging for gamma clus
-    cuts.AddCutCalo("00010113","411792109fe3w220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: PCMEDC pi0 tagging for all clus, no NL fine tuning
-    cuts.AddCutCalo("00010113","411792109fe3x220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: EDC pi0 tagging for all clus
+    cuts.AddCutCalo("00010113","411799909fe3u220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: PCMEDC pi0 tagging for all clus, pol2 fit
+    cuts.AddCutCalo("00010113","411799909fe3v220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: PCMEDC pi0 tagging for gamma clus, pol2 fit
+    cuts.AddCutCalo("00010113","411799909fe3w220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: PCMEDC pi0 tagging for all clus, Gaussian Fit
+    cuts.AddCutCalo("00010113","411799909fe3x220000","0r631031000000d0"); // INT7 NL 12 + TB,  NCE: PCMEDC pi0 tagging for gamma clus, Gaussian Fit
   } else if (trainConfig == 2502) { // new calculation TB variations
     cuts.AddCutCalo("00010113","411792109fe3q220000","0r631031000000d0"); // INT7 NL 12 + TB
     cuts.AddCutCalo("00010113","411792109fe3r220000","0r631031000000d0"); // INT7 NL 12 + TB
@@ -3535,14 +3535,18 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2556) {
     cuts.AddCutCalo("00010113","411799609fe32220000","0r631031000000d0"); // NCell >=2
     cuts.AddCutCalo("00010113","411799609fe30220000","0r631031000000d0"); // NoNCell
-    // 1.5% scale in data NL without MC finetuning
+    // PCM EMC fine tuning with new cell scale
   } else if (trainConfig == 2557) {
     cuts.AddCutCalo("00010113","411799709fe32220000","0r631031000000d0"); // NCell >=2
     cuts.AddCutCalo("00010113","411799709fe30220000","0r631031000000d0"); // NoNCell
-    // 3.5% scale in data NL without MC finetuning
+    // EMC fine tuning with new cell scale
   } else if (trainConfig == 2558) {
     cuts.AddCutCalo("00010113","411799809fe32220000","0r631031000000d0"); // NCell >=2
     cuts.AddCutCalo("00010113","411799809fe30220000","0r631031000000d0"); // NoNCell
+    // PCM EMC fine tuning with new cell scale (2nd iteration)
+  } else if (trainConfig == 2559) {
+    cuts.AddCutCalo("00010113","411799409fe32220000","0r631031000000d0"); // NCell >=2
+    cuts.AddCutCalo("00010113","411799409fe30220000","0r631031000000d0"); // NoNCell
 
   // several configs to study peak position for different NonLinearity settings in adta and MC
   } else if (trainConfig == 2560) { // NonLin applied in CF, min energy = 700MeV
