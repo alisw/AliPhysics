@@ -473,14 +473,14 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
 
   // *.) Debugging:
   Bool_t fProcessOnlySpecifiedEvent; // process only for the specified event
-  Int_t fRun;                       // run number
+  Int_t fRun;                        // run number
   UShort_t fBunchCross;              // bunch crossing
   UInt_t fOrbit;                     // orbit
   UInt_t fPeriod;                    // period
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,5);
+  ClassDef(AliAnalysisTaskMuPa,6);
 
 };
 
