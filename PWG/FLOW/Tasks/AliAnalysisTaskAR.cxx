@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 16.07.2021
+ * Last Modified Date: 19.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -47,7 +47,10 @@ ClassImp(AliAnalysisTaskAR)
       fFillQAHistograms(kFALSE),
       // list holding centrality estimator correlation histograms
       fCenCorQAHistogramsList(nullptr),
-      fCenCorQAHistogramsListName("CentralityCorrelationQAHistograms"),
+      fCenCorQAHistogramsListName("CenCorQAHistograms"),
+      // list holding filterbit scan histograms
+      fFBScanQAHistogramsList(nullptr),
+      fFBScanQAHistogramsListName("FBScanQAHistograms"),
       // list holding all control histograms
       fControlHistogramsList(nullptr),
       fControlHistogramsListName("ControlHistograms"),
@@ -108,12 +111,15 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       // Dummy constructor
       // Base list for all output objects
       fHistList(nullptr), fHistListName("outputStudentAnalysis"),
-      // list holding QA histograms
+      // list holding all QA histograms
       fQAHistogramsList(nullptr), fQAHistogramsListName("QAHistograms"),
       fFillQAHistograms(kFALSE),
       // list holding centrality estimator correlation histograms
       fCenCorQAHistogramsList(nullptr),
-      fCenCorQAHistogramsListName("CentralityCorrelationQAHistograms"),
+      fCenCorQAHistogramsListName("CenCorQAHistograms"),
+      // list holding filterbit scan histograms
+      fFBScanQAHistogramsList(nullptr),
+      fFBScanQAHistogramsListName("FBScanQAHistograms"),
       // list holding all control histograms
       fControlHistogramsList(nullptr),
       fControlHistogramsListName("ControlHistograms"),
@@ -274,7 +280,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       for (int name = 0; name < LAST_ENAME; ++name) {
         if (name == kNAME || name == kTITLE) {
           fCenCorQAHistogramNames[cen][ba][name] =
-              CenCorQAHistogramNames[cen][name] + BAName[ba];
+              CenCorQAHistogramNames[cen][name] + kBAName[ba];
         } else
           fCenCorQAHistogramNames[cen][ba][name] =
               CenCorQAHistogramNames[cen][name];
@@ -305,72 +311,81 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
     }
   }
 
-  // // initialize array for filterbit scan QA histograms
-  // for (int var = 0; var < LAST_EFILTERBIT; ++var) {
-  //   for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
-  //     fFBScanQAHistograms[var][ba] = nullptr;
-  //   }
-  // }
-  // // names for filterbit scan QA histograms
-  // TString
-  //     FBScanQAHistogramNames[LAST_EFILTERBIT][LAST_EBEFOREAFTER][LAST_ENAME]
-  //     = {
-  //         {
-  //             // NAME, TITLE, XAXIS, YAXIS
-  //             {"fFBScanQAHistograms[kFB1][kBEFORE]",
-  //              "Filterbit 1, before track cut", "", ""}, // kBEFORE
-  //             {"fFBScanQAHistograms[kFB1][kAFTER]",
-  //              "Filterbit 1, after track cut", "", ""}, // kAFTER
-  //         },                                            // kFB1
+  // initialize array for filterbit scan QA histograms
+  fFBScanQAHistogram = nullptr;
+  // names for filterbit scan QA histograms
+  TString FBScanQAHistogramName[LAST_ENAME] = // NAME, TITLE, XAXIS, YAXIS
+      {"fFBScanQAHistograms", "Filterbit Scan", "Filterbit", ""};
+  // initialize names for track control histograms
+  for (int name = 0; name < LAST_ENAME; ++name) {
+    fFBScanQAHistogramName[name] = FBScanQAHistogramName[name];
+  }
 
-  //         {
-  //             {"fFBScanQAHistograms[kFB128][kBEFORE]",
-  //              "Filterbit 128, before track cut", "", ""}, // kBEFORE
-  //             {"fFBScanQAHistograms[kFB128][kAFTER]",
-  //              "Filterbit 128, after track cut", "", ""}, // kAFTER
-  //         },                                              // kFB128
-  //         {
-  //             {"fFBScanQAHistograms[kFB256][kBEFORE]",
-  //              "Filterbit 256, before track cut", "", ""}, // kBEFORE
-  //             {"fFBScanQAHistograms[kFB256][kAFTER]",
-  //              "Filterbit 256, after track cut", "", ""}, // kAFTER
-  //         },                                              // kFB256
-  //         {
-  //             {"fFBScanQAHistograms[kFB768][BEFORE]",
-  //              "Filterbit 768, before track cut", "", ""}, // kBEFORE
-  //             {"fFBScanQAHistograms[kFB768][AFTER]",
-  //              "Filterbit 768, after track cut", "", ""}, // kAFTER
-  //         },                                              // kFB768
-  //     };
-  // // initialize names for track control histograms
-  // for (int var = 0; var < LAST_EFILTERBIT; ++var) {
-  //   for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
-  //     for (int name = 0; name < LAST_ENAME; ++name) {
-  //       fFBScanQAHistogramNames[var][ba][name] =
-  //           FBScanQAHistogramNames[var][ba][name];
-  //     }
-  //   }
-  // }
+  // default bins for filterbit scan histograms
+  Double_t FBScanQAHistogramBin[LAST_EBINS] = {kMaxFilterbit, 0.,
+                                               kMaxFilterbit};
+  // initialize array of bins and edges for filterbit scan histogram
+  for (int bin = 0; bin < LAST_EBINS; ++bin) {
+    fFBScanQAHistogramBin[bin] = FBScanQAHistogramBin[bin];
+  }
 
-  // // default bins for track control histograms
-  // Double_t BinsFB[LAST_ETRACK][LAST_EBINS] = {
-  //     // kBIN kLEDGE kUEDGE
-  //     {100., 0., 10.},            // kPT
-  //     {360., 0., TMath::TwoPi()}, // kPHI
-  //     {200., -2., 2.},            // kETA
-  //     {160., 0., 160.},           // kTPCNCLS
-  //     {1000., 0., 1000.},         // kITSNCLS
-  //     {100., 0., 10.},            // kCHI2PERNDF
-  //     {100., -10., 10.},          // kDCAZ
-  //     {100, -10., 10.},           // kDCAXY
-  // };
-  // // initialize array of bins and edges for track control histograms
-  // for (int var = 0; var < LAST_ETRACK; ++var) {
-  //   for (int bin = 0; bin < LAST_EBINS; ++bin) {
-  //     fBinsTrackControlHistograms[var][bin] =
-  //         BinsTrackControlHistogramDefaults[var][bin];
-  //   }
-  // }
+  // initialize array of track filterbit scan QA histograms
+  for (int track = 0; track < LAST_ETRACK; ++track) {
+    for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
+      fFBTrackScanQAHistograms[track][fb] = nullptr;
+    }
+  }
+
+  // names for track filterbit scan QA histograms
+  TString FBTrackScanQAHistogramNames[LAST_ETRACK][LAST_ENAME] = {
+      // NAME, TITLE, XAXIS, YAXIS
+      {"fFBTrackScanQAHistogram[kPT]", "Filterbitscan p_{T}", "p_{t}", ""},
+      {"fFBTrackScanQAHistogram[kPHI]", "Filterbitscan #varphi", "#varphi", ""},
+      {"fFBTrackScanQAHistogram[kETA]", "Filterbitscan #eta", "#eta", ""},
+      {"fFBTrackScanQAHistogram[kTPCNCLS]",
+       "Filterbitscan number of TPC clusters", "", ""},
+      {"fFBTrackScanQAHistogram[kITSNCLS]",
+       "Filterbitscan number of ITS clusters", "", ""},
+      {"fFBTrackScanQAHistogram[kCHI2PERNDF]", "Filterbitscan #chi^{2}/NDF", "",
+       ""},
+      {"fFBTrackScanQAHistogram[kDCAZ]", "Filterbitscan DCA", "", ""},
+      {"fFBTrackScanQAHistogram[kDCAXY]", "Filterbitscan DCA in xy", "", ""},
+  };
+
+  // initialize names of QA histograms for the correlation between centrality
+  // estimators
+  for (int track = 0; track < LAST_ETRACK; ++track) {
+    for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
+      for (int name = 0; name < LAST_ENAME; ++name) {
+        if (name == kNAME || name == kTITLE) {
+          fFBTrackScanQAHistogramNames[track][fb][name] =
+              FBTrackScanQAHistogramNames[track][name] +
+              Form(" (%d) ", kTestFilterbit[fb]);
+        } else
+          fFBTrackScanQAHistogramNames[track][fb][name] =
+              FBTrackScanQAHistogramNames[track][name];
+      }
+    }
+  }
+  // default bins
+  Double_t FBTrackScanHistogramBins[LAST_ETRACK][LAST_EBINS] = {
+      // kBIN kLEDGE kUEDGE
+      {100., 0., 10.},            // kPT
+      {360., 0., TMath::TwoPi()}, // kPHI
+      {200., -2., 2.},            // kETA
+      {160., 0., 160.},           // kTPCNCLS
+      {1000., 0., 1000.},         // kITSNCLS
+      {100., 0., 10.},            // kCHI2PERNDF
+      {100., -10., 10.},          // kDCAZ
+      {100, -10., 10.},           // kDCAXY
+  };
+  // initialize array of bins and edges for track control histograms
+  for (int var = 0; var < LAST_ETRACK; ++var) {
+    for (int bin = 0; bin < LAST_EBINS; ++bin) {
+      fFBTrackScanQAHistogramBins[var][bin] =
+          FBTrackScanHistogramBins[var][bin];
+    }
+  }
 }
 
 void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
@@ -399,7 +414,7 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
       for (int name = 0; name < LAST_ENAME; ++name) {
         if (name == kNAME || name == kTITLE) {
           fTrackControlHistogramNames[var][ba][name] =
-              TrackControlHistogramNames[var][name] + BAName[ba];
+              TrackControlHistogramNames[var][name] + kBAName[ba];
         } else {
           fTrackControlHistogramNames[var][ba][name] =
               TrackControlHistogramNames[var][name];
@@ -423,7 +438,7 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
   // initialize array of bins and edges for track control histograms
   for (int var = 0; var < LAST_ETRACK; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
-      fBinsTrackControlHistograms[var][bin] =
+      fTrackControlHistogramBins[var][bin] =
           BinsTrackControlHistogramDefaults[var][bin];
     }
   }
@@ -452,7 +467,7 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
       for (int name = 0; name < LAST_ENAME; ++name) {
         if (name == kNAME || name == kTITLE) {
           fEventControlHistogramNames[var][ba][name] =
-              EventControlHistogramNames[var][name] + BAName[ba];
+              EventControlHistogramNames[var][name] + kBAName[ba];
         } else
           fEventControlHistogramNames[var][ba][name] =
               EventControlHistogramNames[var][name];
@@ -470,7 +485,7 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
   // initialize array of bins and edges for track control histograms
   for (int var = 0; var < LAST_EEVENT; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
-      fBinsEventControlHistograms[var][bin] =
+      fEventControlHistogramBins[var][bin] =
           BinsEventControlHistogramDefaults[var][bin];
     }
   }
@@ -555,7 +570,7 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultHistograms() {
   // initialize array of bins and edges for track control histograms
   for (int var = 0; var < LAST_EFINALHIST; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
-      fBinsFinalResultHistograms[var][bin] =
+      fFinalResultHistogramBins[var][bin] =
           BinsFinalResultHistogramDefaults[var][bin];
     }
   }
@@ -603,7 +618,7 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultProfiles() {
   // initialize array of bins and edges for final result profiles
   for (int var = 0; var < LAST_EFINALPROFILE; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
-      fBinsFinalResultProfiles[var][bin] =
+      fFinalResultProfileBins[var][bin] =
           BinsFinalResultProfileDefaults[var][bin];
     }
   }
@@ -649,6 +664,12 @@ void AliAnalysisTaskAR::BookAndNestAllLists() {
     fCenCorQAHistogramsList->SetName(fCenCorQAHistogramsListName);
     fCenCorQAHistogramsList->SetOwner(kTRUE);
     fQAHistogramsList->Add(fCenCorQAHistogramsList);
+
+    // filterbit QA histograms
+    fFBScanQAHistogramsList = new TList();
+    fFBScanQAHistogramsList->SetName(fFBScanQAHistogramsListName);
+    fFBScanQAHistogramsList->SetOwner(kTRUE);
+    fQAHistogramsList->Add(fFBScanQAHistogramsList);
   }
 
   // 2. Book and nest lists for control histograms:
@@ -708,13 +729,43 @@ void AliAnalysisTaskAR::BookQAHistograms() {
       fCenCorQAHistogramsList->Add(fCenCorQAHistograms[cen][ba]);
     }
   }
+
+  fFBScanQAHistogram =
+      new TH1D(fFBScanQAHistogramName[kNAME], fFBScanQAHistogramName[kTITLE],
+               fFBScanQAHistogramBin[kBIN], fFBScanQAHistogramBin[kLEDGE],
+               fFBScanQAHistogramBin[kUEDGE]);
+  int fb = 1;
+  for (int i = 0; i < kMaxFilterbit; ++i) {
+    fFBScanQAHistogram->GetXaxis()->SetBinLabel(i + 1, Form("%d", fb));
+    fb *= 2;
+  }
+	fFBScanQAHistogram->SetStats(kFALSE);
+	fFBScanQAHistogram->SetFillColor(kFillColor[kAFTER]);
+  fFBScanQAHistogramsList->Add(fFBScanQAHistogram);
+
+  for (int track = 0; track < LAST_ETRACK; ++track) {
+    for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
+      fFBTrackScanQAHistograms[track][fb] =
+          new TH1D(fFBTrackScanQAHistogramNames[track][fb][kNAME],
+                   fFBTrackScanQAHistogramNames[track][fb][kTITLE],
+                   fFBTrackScanQAHistogramBins[track][kBIN],
+                   fFBTrackScanQAHistogramBins[track][kLEDGE],
+                   fFBTrackScanQAHistogramBins[track][kUEDGE]);
+      fFBTrackScanQAHistograms[track][fb]->SetStats(kFALSE);
+      fFBTrackScanQAHistograms[track][fb]->SetFillColor(kFillColor[kAFTER]);
+      fFBTrackScanQAHistograms[track][fb]->GetXaxis()->SetTitle(
+          fFBTrackScanQAHistogramNames[track][fb][kXAXIS]);
+      fFBTrackScanQAHistograms[track][fb]->GetYaxis()->SetTitle(
+          fFBTrackScanQAHistogramNames[track][fb][kYAXIS]);
+      fFBScanQAHistogramsList->Add(fFBTrackScanQAHistograms[track][fb]);
+    }
+  }
 }
 
 void AliAnalysisTaskAR::BookControlHistograms() {
   // Book all control histograms
 
   // fill colors
-  Color_t fillColor[LAST_EBEFOREAFTER] = {kRed - 10, kGreen - 10};
 
   // book track control histograms
   for (int var = 0; var < LAST_ETRACK; ++var) {
@@ -722,11 +773,11 @@ void AliAnalysisTaskAR::BookControlHistograms() {
       fTrackControlHistograms[var][ba] =
           new TH1D(fTrackControlHistogramNames[var][ba][kNAME],
                    fTrackControlHistogramNames[var][ba][kTITLE],
-                   fBinsTrackControlHistograms[var][kBIN],
-                   fBinsTrackControlHistograms[var][kLEDGE],
-                   fBinsTrackControlHistograms[var][kUEDGE]);
+                   fTrackControlHistogramBins[var][kBIN],
+                   fTrackControlHistogramBins[var][kLEDGE],
+                   fTrackControlHistogramBins[var][kUEDGE]);
       fTrackControlHistograms[var][ba]->SetStats(kFALSE);
-      fTrackControlHistograms[var][ba]->SetFillColor(fillColor[ba]);
+      fTrackControlHistograms[var][ba]->SetFillColor(kFillColor[ba]);
       fTrackControlHistograms[var][ba]->SetMinimum(0.0);
       fTrackControlHistograms[var][ba]->GetXaxis()->SetTitle(
           fTrackControlHistogramNames[var][ba][kXAXIS]);
@@ -742,11 +793,11 @@ void AliAnalysisTaskAR::BookControlHistograms() {
       fEventControlHistograms[var][ba] =
           new TH1D(fEventControlHistogramNames[var][ba][kNAME],
                    fEventControlHistogramNames[var][ba][kTITLE],
-                   fBinsEventControlHistograms[var][kBIN],
-                   fBinsEventControlHistograms[var][kLEDGE],
-                   fBinsEventControlHistograms[var][kUEDGE]);
+                   fEventControlHistogramBins[var][kBIN],
+                   fEventControlHistogramBins[var][kLEDGE],
+                   fEventControlHistogramBins[var][kUEDGE]);
       fEventControlHistograms[var][ba]->SetStats(kFALSE);
-      fEventControlHistograms[var][ba]->SetFillColor(fillColor[ba]);
+      fEventControlHistograms[var][ba]->SetFillColor(kFillColor[ba]);
       fEventControlHistograms[var][ba]->SetMinimum(0.0);
       fEventControlHistograms[var][ba]->GetXaxis()->SetTitle(
           fEventControlHistogramNames[var][ba][kXAXIS]);
@@ -766,9 +817,9 @@ void AliAnalysisTaskAR::BookFinalResultHistograms() {
   for (int var = 0; var < LAST_EFINALHIST; ++var) {
     fFinalResultHistograms[var] = new TH1D(
         fFinalResultHistogramNames[var][0], fFinalResultHistogramNames[var][1],
-        fBinsFinalResultHistograms[var][kBIN],
-        fBinsFinalResultHistograms[var][kLEDGE],
-        fBinsFinalResultHistograms[var][kUEDGE]);
+        fFinalResultHistogramBins[var][kBIN],
+        fFinalResultHistogramBins[var][kLEDGE],
+        fFinalResultHistogramBins[var][kUEDGE]);
     fFinalResultHistograms[var]->SetStats(kFALSE);
     fFinalResultHistograms[var]->SetFillColor(colorFinalResult);
     fFinalResultHistograms[var]->GetXaxis()->SetTitle(
@@ -784,9 +835,9 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
   for (int var = 0; var < LAST_EFINALPROFILE; ++var) {
     fFinalResultProfiles[var] = new TProfile(
         fFinalResultProfileNames[var][0], fFinalResultProfileNames[var][1],
-        fBinsFinalResultProfiles[var][kBIN],
-        fBinsFinalResultProfiles[var][kLEDGE],
-        fBinsFinalResultProfiles[var][kUEDGE], nullptr);
+        fFinalResultProfileBins[var][kBIN],
+        fFinalResultProfileBins[var][kLEDGE],
+        fFinalResultProfileBins[var][kUEDGE], nullptr);
     fFinalResultProfiles[var]->SetStats(kFALSE);
     fFinalResultProfiles[var]->GetXaxis()->SetTitle(
         fFinalResultProfileNames[var][2]);
@@ -855,7 +906,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
   // fillhistograms before cut
   if (fFillQAHistograms) {
-    FillQAHistograms(kBEFORE, aAOD);
+    FillEventQAHistograms(kBEFORE, aAOD);
   }
   FillEventControlHistograms(kBEFORE, aAOD);
 
@@ -866,7 +917,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
   // fill histogram after event cut
   if (fFillQAHistograms) {
-    FillQAHistograms(kAFTER, aAOD);
+    FillEventQAHistograms(kAFTER, aAOD);
   }
   FillEventControlHistograms(kAFTER, aAOD);
 
@@ -889,6 +940,10 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     // protect against invalid pointers
     if (!aTrack) {
       continue;
+    }
+
+    if (fFillQAHistograms) {
+      FillFBScanQAHistograms(aTrack);
     }
 
     // get kinematic variables of the track
@@ -1017,7 +1072,8 @@ void AliAnalysisTaskAR::FillTrackControlHistograms(kBeforeAfter BA,
   fTrackControlHistograms[kDCAXY][BA]->Fill(track->DCA());
 }
 
-void AliAnalysisTaskAR::FillQAHistograms(kBeforeAfter BA, AliAODEvent *event) {
+void AliAnalysisTaskAR::FillEventQAHistograms(kBeforeAfter BA,
+                                              AliAODEvent *event) {
   // fill QA control histograms
 
   // get all centrality percentiles
@@ -1048,6 +1104,29 @@ void AliAnalysisTaskAR::FillQAHistograms(kBeforeAfter BA, AliAODEvent *event) {
                                    centralityPercentile[kCL1]);
   fCenCorQAHistograms[5][BA]->Fill(centralityPercentile[kV0M],
                                    centralityPercentile[kCL1]);
+}
+
+void AliAnalysisTaskAR::FillFBScanQAHistograms(AliAODTrack *track) {
+  // fill track QA histograms
+  int fb = 1;
+  for (int i = 0; i < kMaxFilterbit; ++i) {
+    if (track->TestFilterBit(fb)) {
+      fFBScanQAHistogram->Fill(fb);
+    }
+    fb *= 2;
+  }
+  for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
+    if (track->TestFilterBit(kTestFilterbit[fb])) {
+      fFBTrackScanQAHistograms[kPT][fb]->Fill(track->Pt());
+      fFBTrackScanQAHistograms[kPHI][fb]->Fill(track->Phi());
+      fFBTrackScanQAHistograms[kETA][fb]->Fill(track->Eta());
+      fFBTrackScanQAHistograms[kTPCNCLS][fb]->Fill(track->GetTPCNcls());
+      fFBTrackScanQAHistograms[kITSNCLS][fb]->Fill(track->GetITSNcls());
+      fFBTrackScanQAHistograms[kCHI2PERNDF][fb]->Fill(track->Chi2perNDF());
+      fFBTrackScanQAHistograms[kDCAZ][fb]->Fill(track->ZAtDCA());
+      fFBTrackScanQAHistograms[kDCAXY][fb]->Fill(track->DCA());
+    }
+  }
 }
 
 Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
@@ -1172,7 +1251,7 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliAODTrack *aTrack) {
   // for more information about filterbits see the online week
   // the filterbits can change from run to run
   // fill control histograms
-  if (aTrack->TestFilterBit(fFilterbit)) {
+  if (!aTrack->TestFilterBit(fFilterbit)) {
     return kFALSE;
   }
 
@@ -1825,9 +1904,9 @@ void AliAnalysisTaskAR::GetPointers(TList *histList) {
 }
 
 void AliAnalysisTaskAR::GetPointersForControlHistograms() {
-  // Get pointers for Control Histograms
+  // get pointers for Control Histograms
 
-  // Get pointer for fControlHistograms
+  // get pointer for fControlHistograms
   fControlHistogramsList =
       dynamic_cast<TList *>(fHistList->FindObject(fControlHistogramsListName));
   if (!fControlHistogramsList) {
@@ -1836,11 +1915,20 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
     Fatal("GetPointersForControlHistograms", "Invalid Pointer");
   }
 
+  // get pointer for fTrackControlHistogramsList
+  fTrackControlHistogramsList = dynamic_cast<TList *>(
+      fHistList->FindObject(fTrackControlHistogramsListName));
+  if (!fTrackControlHistogramsList) {
+    std::cout << __LINE__ << ": Did not get " << fTrackControlHistogramsListName
+              << std::endl;
+    Fatal("GetPointersForControlHistograms", "Invalid Pointer");
+  }
+
   // get all pointers for track control histograms
   for (int var = 0; var < LAST_ETRACK; ++var) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
       fTrackControlHistograms[var][ba] =
-          dynamic_cast<TH1D *>(fControlHistogramsList->FindObject(
+          dynamic_cast<TH1D *>(fTrackControlHistogramsList->FindObject(
               fTrackControlHistogramNames[var][ba][0]));
       if (!fTrackControlHistograms[var][ba]) {
         std::cout << __LINE__ << ": Did not get "
@@ -1850,11 +1938,20 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
     }
   }
 
+  // get pointer for fEventControlHistogramsList
+  fEventControlHistogramsList = dynamic_cast<TList *>(
+      fHistList->FindObject(fEventControlHistogramsListName));
+  if (!fEventControlHistogramsList) {
+    std::cout << __LINE__ << ": Did not get " << fEventControlHistogramsListName
+              << std::endl;
+    Fatal("GetPointersForControlHistograms", "Invalid Pointer");
+  }
+
   // get all pointers for event control histograms
   for (int var = 0; var < LAST_EEVENT; ++var) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
       fEventControlHistograms[var][ba] =
-          dynamic_cast<TH1D *>(fControlHistogramsList->FindObject(
+          dynamic_cast<TH1D *>(fEventControlHistogramsList->FindObject(
               fEventControlHistogramNames[var][ba][0]));
       if (!fEventControlHistograms[var][ba]) {
         std::cout << __LINE__ << ": Did not get "

@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 16.07.2021
+ * Last Modified Date: 19.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -34,17 +34,11 @@
 const Int_t kMaxHarmonic = 20;
 const Int_t kMaxCorrelator = 20;
 const Int_t kMaxPower = 20;
-
+const Int_t kMaxFilterbit = 11; // 2^(11-1)=1024
+const Int_t kNumberofTestFilterBit = 5;
+const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
 // enumerations
 enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
-// set value of last element explicitly, count from 0
-enum kFilterbits {
-  kFB1 = 1,
-  kFB128 = 128,
-  kFB256 = 256,
-  kFB768 = 768,
-  LAST_EFILTERBIT = 4
-};
 enum kEvent { kCEN, kMUL, kNCONTRIB, LAST_EEVENT };
 enum kTrack {
   kPT,
@@ -63,7 +57,8 @@ enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
 enum kName { kNAME, kTITLE, kXAXIS, kYAXIS, LAST_ENAME };
 enum kBeforeAfter { kBEFORE, kAFTER, LAST_EBEFOREAFTER };
-const TString BAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
+const TString kBAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
+const Color_t kFillColor[LAST_EBEFOREAFTER] = {kRed - 10, kGreen - 10};
 enum kMinMax { kMIN, kMAX, LAST_EMINMAX };
 
 class AliAnalysisTaskAR : public AliAnalysisTaskSE {
@@ -95,7 +90,8 @@ public:
   virtual void BookMCObjects();
 
   // functions called in UserExec()
-  virtual void FillQAHistograms(kBeforeAfter BA, AliAODEvent *event);
+  virtual void FillEventQAHistograms(kBeforeAfter BA, AliAODEvent *event);
+  virtual void FillFBScanQAHistograms(AliAODTrack *track);
   virtual void FillEventControlHistograms(kBeforeAfter BA, AliAODEvent *event);
   virtual void FillTrackControlHistograms(kBeforeAfter BA, AliAODTrack *track);
   virtual void FillFinalResultProfile(kFinalProfile fp);
@@ -155,9 +151,9 @@ public:
       Fatal("SetTrackControlHistogramBinning",
             "Running out of bounds in SetTrackControlHistogramBinning");
     }
-    this->fBinsTrackControlHistograms[Track][kBIN] = nbins;
-    this->fBinsTrackControlHistograms[Track][kLEDGE] = lowerEdge;
-    this->fBinsTrackControlHistograms[Track][kUEDGE] = upperEdge;
+    this->fTrackControlHistogramBins[Track][kBIN] = nbins;
+    this->fTrackControlHistogramBins[Track][kLEDGE] = lowerEdge;
+    this->fTrackControlHistogramBins[Track][kUEDGE] = upperEdge;
   }
   // generic setter for event histogram binning
   void SetEventControlHistogramBinning(kEvent Event, Int_t nbins,
@@ -167,9 +163,9 @@ public:
       Fatal("SetEventControlHistogramBinning",
             "Running out of bounds in SetEventControlHistogramBinning");
     }
-    this->fBinsEventControlHistograms[Event][kBIN] = nbins;
-    this->fBinsEventControlHistograms[Event][kLEDGE] = lowerEdge;
-    this->fBinsEventControlHistograms[Event][kUEDGE] = upperEdge;
+    this->fEventControlHistogramBins[Event][kBIN] = nbins;
+    this->fEventControlHistogramBins[Event][kLEDGE] = lowerEdge;
+    this->fEventControlHistogramBins[Event][kUEDGE] = upperEdge;
   }
 
   // setters for cuts
@@ -264,9 +260,9 @@ public:
   void SetCorrelators(std::vector<std::vector<Int_t>> correlators) {
     this->fCorrelators = correlators;
     for (int i = 0; i < LAST_EFINALPROFILE; ++i) {
-      fBinsFinalResultProfiles[i][kBIN] = fCorrelators.size();
-      fBinsFinalResultProfiles[i][kLEDGE] = 0;
-      fBinsFinalResultProfiles[i][kUEDGE] = fCorrelators.size();
+      fFinalResultProfileBins[i][kBIN] = fCorrelators.size();
+      fFinalResultProfileBins[i][kLEDGE] = 0;
+      fFinalResultProfileBins[i][kUEDGE] = fCorrelators.size();
     }
   }
 
@@ -294,10 +290,16 @@ private:
   Double_t fCenCorQAHistogramBins[LAST_ECENESTIMATORS *
                                   (LAST_ECENESTIMATORS - 1) /
                                   2][2 * LAST_EBINS];
-  // TH1F *fFBScanQAHistograms[LAST_EFILTERBIT][LAST_EBEFOREAFTER];
-  // TString fFBScanQAHistogramNames[LAST_EFILTERBIT][LAST_EBEFOREAFTER]
-  //                                [LAST_ENAME];
-  // Double_t fFBScanQAHistogramBins[LAST_EFILTERBIT][LAST_EBINS];
+  // filterbit scans histograms
+  TList *fFBScanQAHistogramsList;
+  TString fFBScanQAHistogramsListName;
+  TH1D *fFBScanQAHistogram;
+  TString fFBScanQAHistogramName[LAST_ENAME];
+  Double_t fFBScanQAHistogramBin[LAST_EBINS];
+  TH1D *fFBTrackScanQAHistograms[LAST_ETRACK][kNumberofTestFilterBit];
+  TString fFBTrackScanQAHistogramNames[LAST_ETRACK][kNumberofTestFilterBit]
+                                      [LAST_ENAME];
+  Double_t fFBTrackScanQAHistogramBins[LAST_ETRACK][LAST_EBINS];
 
   // control histograms
   TList *fControlHistogramsList;
@@ -309,7 +311,7 @@ private:
   TH1D *fTrackControlHistograms[LAST_ETRACK][LAST_EBEFOREAFTER];
   TString fTrackControlHistogramNames[LAST_ETRACK][LAST_EBEFOREAFTER]
                                      [LAST_ENAME];
-  Double_t fBinsTrackControlHistograms[LAST_ETRACK][LAST_EBINS];
+  Double_t fTrackControlHistogramBins[LAST_ETRACK][LAST_EBINS];
 
   // event control historams
   TList *fEventControlHistogramsList;
@@ -317,7 +319,7 @@ private:
   TH1D *fEventControlHistograms[LAST_EEVENT][LAST_EBEFOREAFTER];
   TString fEventControlHistogramNames[LAST_EEVENT][LAST_EBEFOREAFTER]
                                      [LAST_ENAME];
-  Double_t fBinsEventControlHistograms[LAST_EEVENT][LAST_EBINS];
+  Double_t fEventControlHistogramBins[LAST_EEVENT][LAST_EBINS];
 
   // cuts
   TString fCentralitySelCriterion;
@@ -333,11 +335,11 @@ private:
   // array holding final result histograms
   TH1D *fFinalResultHistograms[LAST_EFINALHIST];
   TString fFinalResultHistogramNames[LAST_EFINALHIST][LAST_ENAME];
-  Double_t fBinsFinalResultHistograms[LAST_EFINALHIST][LAST_EBINS];
+  Double_t fFinalResultHistogramBins[LAST_EFINALHIST][LAST_EBINS];
   // arayy holding final resutl profiles
   TProfile *fFinalResultProfiles[LAST_EFINALPROFILE];
   TString fFinalResultProfileNames[LAST_EFINALPROFILE][LAST_ENAME];
-  Double_t fBinsFinalResultProfiles[LAST_EFINALPROFILE][LAST_EBINS];
+  Double_t fFinalResultProfileBins[LAST_EFINALPROFILE][LAST_EBINS];
 
   // Monte Carlo analysis
   TList *fMCAnalysisList;
