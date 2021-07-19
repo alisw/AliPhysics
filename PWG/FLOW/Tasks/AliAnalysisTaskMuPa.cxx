@@ -593,10 +593,10 @@ void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
  // Initialize all data members which are not built-in types in this method.
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
- 
- fCentralityEstimator = TString("V0M"); // by default, we use V0M as centrality estimator. Can be customized with task->SetCentralityEstimator("V0M") 
+
  fDataTakingPeriod = TString("not set"); // can be customized with e.g. task->SetDataTakingPeriod("LHC10h");
- fAODNumber = TString("not set"); // can be customized with e.g. task->SetAODNumber("AOD160");
+ fAODNumber = TString("not set"); // can be customized with e.g. task->SetAODNumber("AOD160"); 
+ fCentralityEstimator = TString("V0M"); // by default, we use V0M as centrality estimator. Can be customized with task->SetCentralityEstimator("V0M") 
 
 } // void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
 
@@ -623,7 +623,7 @@ void AliAnalysisTaskMuPa::InitializeArrays()
 
 void AliAnalysisTaskMuPa::InitializeArraysForQvectors()
 {
- // TBI 20210514 finalize documentation
+ // Initialize all arrays for Q-vectors.
 
  // Initialize all arrays for Q-vectors:
  for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++) 
@@ -654,7 +654,7 @@ void AliAnalysisTaskMuPa::InitializeArraysForWeights()
 
 void AliAnalysisTaskMuPa::InitializeArraysForNestedLoopsHistograms()
 {
- // TBI 20210515 finalize documentation
+ // Initialize all arrays of histograms holding results for nested loops.
 
  // Initialize all arrays for nested loops:
  for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
@@ -677,7 +677,7 @@ void AliAnalysisTaskMuPa::InitializeArraysForNestedLoopsHistograms()
 
 void AliAnalysisTaskMuPa::InitializeArraysForCorrelationsHistograms()
 {
- // TBI 20210514 finalize documentation
+ // Initialize all arrays for histograms holding correlations.
 
  // Initialize all arrays for correlations (and nested loops):
  for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
@@ -1010,14 +1010,12 @@ void AliAnalysisTaskMuPa::InitializeArraysForCommonLabels()
 
 void AliAnalysisTaskMuPa::InsanityChecks()
 {
- // Check before bookings if all the values user has provided via setters make sense.
-
- return; // 20210517 disabled temporarily 
+ // Check before bookings if all the values the user has provided via setters make sense.
 
  // a) Multiplicity;
  // b) Centrality.
 
-  if(fVerbose){Green(__PRETTY_FUNCTION__);}
+ Green(__PRETTY_FUNCTION__);
 
  // a) TBI Multiplicity:
  // ...
@@ -1027,6 +1025,8 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  if(fCentralityBins[1]<0. || fCentralityBins[1] > 100.){cout<<__LINE__<<endl;exit(1);}
  if(fCentralityBins[2]<=0. || fCentralityBins[2] > 100.){cout<<__LINE__<<endl;exit(1);}
  if(fCentralityBins[2]<=fCentralityBins[1]){cout<<__LINE__<<endl;exit(1);}
+ if(!(fCentralityEstimator.EqualTo("V0M")||fCentralityEstimator.EqualTo("SPDTracklets")||
+      fCentralityEstimator.EqualTo("CL0")||fCentralityEstimator.EqualTo("CL1"))){cout<<__LINE__<<endl;exit(1);}
 
  // To do:
  // 1/ cout<<"FATAL: Only \"x\", \"y\" or \"z\" are supported for the 1st argument in this setter."<<endl; exit(0); TBI 20210512 move this to the insanity checks
@@ -1042,13 +1042,14 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBasePro = new TProfile("fBasePro","flags for the whole analysis",5,0.,5.);
+ fBasePro = new TProfile("fBasePro","flags for the whole analysis",6,0.,6.);
  fBasePro->SetStats(kFALSE);
  fBasePro->GetXaxis()->SetBinLabel(1,Form("fTaskName = %s",fTaskName.Data()));
  fBasePro->GetXaxis()->SetBinLabel(2,Form("fDataTakingPeriod = %s",fDataTakingPeriod.Data()));
- fBasePro->GetXaxis()->SetBinLabel(3,Form("fAODNumber = %s",fAODNumber.Data())); // TBI 20210513 
- //fBasePro->GetXaxis()->SetBinLabel(4,"fFillQAhistograms"); fBasePro->Fill(2.5,fFillQAHistograms);
- //fBasePro->GetXaxis()->SetBinLabel(5,"fTerminateAfterQA"); fBasePro->Fill(3.5,fTerminateAfterQA);
+ fBasePro->GetXaxis()->SetBinLabel(3,Form("fAODNumber = %s",fAODNumber.Data()));
+ fBasePro->GetXaxis()->SetBinLabel(4,"fFillQAhistograms"); fBasePro->Fill(4.5,fFillQAHistograms);
+ fBasePro->GetXaxis()->SetBinLabel(5,"fTerminateAfterQA"); fBasePro->Fill(5.5,fTerminateAfterQA);
+ fBasePro->GetXaxis()->SetBinLabel(6,"fVerbose"); fBasePro->Fill(6.5,fVerbose);
  fBaseList->Add(fBasePro);
 
 } // void AliAnalysisTaskMuPa::BookBaseProfile()
@@ -1567,9 +1568,14 @@ void AliAnalysisTaskMuPa::BookFinalResultsHistograms()
 
 void AliAnalysisTaskMuPa::BookQvectorHistograms()
 {
- // TBI 20210514 documentation
+ // Book all Q-vector histograms.
 
- // ... Flags for Q-vectors: TBI 20210513 temporarily here
+ // a) Book the profile holding flags;
+ // b) ...
+
+ if(fVerbose){Green(__PRETTY_FUNCTION__);} 
+
+ // a) Book the profile holding flags:
  fQvectorFlagsPro = new TProfile("fQvectorFlagsPro","flags for Q-vector objects",3,0.,3.);
  fQvectorFlagsPro->SetStats(kFALSE);
  fQvectorFlagsPro->SetLineColor(COLOR);
@@ -1583,6 +1589,8 @@ void AliAnalysisTaskMuPa::BookQvectorHistograms()
  fQvectorFlagsPro->Fill(2.5,fMaxCorrelator);
  fQvectorList->Add(fQvectorFlagsPro);
 
+ // b) ...
+
 } // void AliAnalysisTaskMuPa::BookQvectorHistograms()
 
 //=======================================================================================================================
@@ -1594,6 +1602,8 @@ void AliAnalysisTaskMuPa::BookWeightsHistograms()
  // a) Book the profile holding flags;
  // b) Common local labels;
  // c) Histograms.
+
+ if(fVerbose){Green(__PRETTY_FUNCTION__);} 
 
  // a) Book the profile holding flags:
  fWeightsFlagsPro = new TProfile("fWeightsFlagsPro","flags for particle weights",3,0.,3.);
