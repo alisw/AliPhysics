@@ -36,8 +36,7 @@
 #include <TH2.h>
 #include <TSystem.h>    // For I/O unit test
 
-#include "AliEMCALTriggerMappingV1.h"
-#include "AliEMCALTriggerMappingV2.h"
+#include "AliEMCALGeometry.h"
 #include "AliEmcalFastorMaskContainer.h"
 
 ClassImp(PWG::EMCAL::AliEmcalFastorMaskContainer)
@@ -67,19 +66,20 @@ void AliEmcalFastorMaskContainer::Browse(TBrowser *b) {
     Error("AliEmcalFastorMaskContainer::Browse", "Run type not defined, cannot draw bad channel mask");
     return;
   }
-  std::unique_ptr<AliEMCALTriggerMapping> triggermapping;
+  std::string geometryversion;
   switch(fRunType) {
-    case RunType_t::kRun1: triggermapping = std::unique_ptr<AliEMCALTriggerMapping>(new AliEMCALTriggerMappingV1); break;
-    case RunType_t::kRun2: triggermapping = std::unique_ptr<AliEMCALTriggerMapping>(new AliEMCALTriggerMappingV2); break;
+    case RunType_t::kRun1: geometryversion = "EMCAL_COMPLETE12SMV1"; break;
+    case RunType_t::kRun2: geometryversion = "EMCAL_COMPLETE12SMV1_DCAL_8SM"; break;
     case RunType_t::kRuntypeUndefined:
     default:
       Error("AliEmcalFastorMaskContainer::Browse", "Trigger mapping unknown");
   };
-  if(!triggermapping) {
-    Error("AliEmcalFastorMaskContainer::Browse", "Trigger mapping not set, cannot draw bad channel mask");
+  if(!geometryversion.length()) {
+    Error("AliEmcalFastorMaskContainer::Browse", "Geometry verion unknonw, cannot draw bad channel mask");
     return;
   }
 
+  auto triggermapping = AliEMCALGeometry::GetInstance(geometryversion.data())->GetTriggerMapping();
   int ncol = 48, nrow = fRunType == RunType_t::kRun1 ? 64 : 104;
   auto plot = new TH2C("TriggerMask", "Offline trigger mask (bad and dead)", ncol, -0.5, ncol - 0.5, nrow, -0.5, nrow - 0.5);
   plot->SetStats(false);

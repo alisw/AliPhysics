@@ -43,7 +43,7 @@
 #include "AliAODPid.h"
 #include "AliVParticle.h"
 #include "AliAODTrack.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliV0ReaderV1.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliAODMCParticle.h"

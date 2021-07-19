@@ -37,6 +37,10 @@ AliAnalysisTaskJetCharge::AliAnalysisTaskJetCharge() :
   fCentMin(0),
   fCentMax(10),
   fJetRadius(0.2),
+  JetChargeK(0.5),
+  JetMidPt(40),
+  JetHighPt(80),
+
   fhJetPt(0x0),
   fhJetPhi(0x0),
   fhJetEta(0x0),
@@ -64,6 +68,9 @@ AliAnalysisTaskJetCharge::AliAnalysisTaskJetCharge(const char *name) :
   fCentMin(0),
   fCentMax(10),
   fJetRadius(0.2),
+  JetChargeK(0.5),
+  JetMidPt(40),
+  JetHighPt(80),
 
   fhJetPt(0x0),
   fhJetPhi(0x0),
@@ -141,16 +148,16 @@ AliAnalysisTaskJetCharge::~AliAnalysisTaskJetCharge()
   fhJetEta= new TH1F("fhJetEta", "Jet Eta",100,-2,2);
   fOutput->Add(fhJetEta);
 
-  fhJetCharge= new TH1F("fhJetCharge", "Jet Charge", 25, -3, 3);
+  fhJetCharge= new TH1F("fhJetCharge", "Jet Charge", 250, -3, 3);
   fOutput->Add(fhJetCharge);
 
-  fhJetChargeLow= new TH1F("fhJetChargeLow", "Jet Charge", 25, -3, 3);
+  fhJetChargeLow= new TH1F("fhJetChargeLow", "Jet Charge", 250, -3, 3);
   fOutput->Add(fhJetChargeLow);
 
-  fhJetChargeMid= new TH1F("fhJetChargeMid", "Jet Charge", 25, -3, 3);
+  fhJetChargeMid= new TH1F("fhJetChargeMid", "Jet Charge", 250, -3, 3);
   fOutput->Add(fhJetChargeMid);
 
-  fhJetChargeHigh= new TH1F("fhJetChargeHigh", "Jet Charge", 25, -3, 3);
+  fhJetChargeHigh= new TH1F("fhJetChargeHigh", "Jet Charge", 250, -3, 3);
   fOutput->Add(fhJetChargeHigh);
 
 
@@ -216,13 +223,22 @@ Bool_t AliAnalysisTaskJetCharge::FillHistograms()
       {
         continue;
       }
-      else {
-      	// Filling the histograms here
+        //Check for leading track Pt to reduce cominatorial jets.
+
+        if(Jet1->GetLeadingTrack()->Pt() < 5)
+        {
+
+            continue;
+            //std::cout << "LEADING TRACK TO SMALL!!!" << std::endl;
+        }
+
+        // Filling the histograms here
         Double_t JetPt = 0;
           JetPt = Jet1->Pt();
           fTreeBranch[0]= Jet1->Pt();
           fhJetPt->Fill(JetPt);
 
+          JetPhi = Jet1->Phi();
           if(JetPhi < -1*TMath::Pi())
             JetPhi += (2*TMath::Pi());
           else if (JetPhi > TMath::Pi())
@@ -234,30 +250,29 @@ Bool_t AliAnalysisTaskJetCharge::FillHistograms()
           fhJetEta->Fill(Jet1->Eta());
 
           Double_t jetCharge = 0;
-          Double_t k = 0.5;
 
           // Loop over the consituents
           for (UInt_t iJetConst = 0; iJetConst < nJetConstituents; iJetConst++ )
           {
-            AliVParticle *fJetConst = Jet1->TrackAt(iJetConst, fTrackCont->GetArray());
+            AliVParticle *fJetConst = Jet1->Track(iJetConst);
 
             //Looping over the Mc Particles to find the matching particle.
 
-            jetCharge += fJetConst->Charge()*pow(fJetConst->Pt(),k);
+            jetCharge += fJetConst->Charge()*pow(fJetConst->Pt(),JetChargeK);
 
           }
 
-          jetCharge/=pow(Jet1->Pt(),k);
+          jetCharge/=pow(Jet1->Pt(),JetChargeK);
 
           fTreeBranch[3] = jetCharge;
           fhJetCharge->Fill(jetCharge);
 
-          if(JetPt < 40.)
+          if(JetPt < JetMidPt)
           {
             fTreeBranch[4] = jetCharge;
             fhJetChargeLow->Fill(jetCharge);
           }
-          else if( JetPt > 40. && JetPt < 80.)
+          else if( JetPt > JetMidPt && JetPt < JetHighPt)
           {
             fTreeBranch[5] = jetCharge;
             fhJetChargeMid->Fill(jetCharge);
@@ -277,7 +292,7 @@ Bool_t AliAnalysisTaskJetCharge::FillHistograms()
 
 
         //cout << "End of Jet" << endl;
-      }
+
     }
   }
   return kTRUE;

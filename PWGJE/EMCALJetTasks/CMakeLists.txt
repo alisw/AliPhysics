@@ -194,6 +194,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetHdEdxCorrelations.cxx
     UserTasks/AliAnalysisTaskEmcalJetHUtils.cxx
     UserTasks/AliAnalysisTaskEmcalJetHPerformance.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHPerformanceConstits.cxx
     UserTasks/AliAnalysisTaskEmcalJetHCorrelations.cxx
     UserTasks/AliAnalysisTaskEmcalJetMassBkg.cxx
     UserTasks/AliAnalysisTaskEmcalJetMass.cxx

@@ -41,41 +41,112 @@ class AliAnalysisTaskDeuteronProtonEfficiency : public AliAnalysisTaskSE
     TList		*fHistList;
 
     // Histograms for generated particles
-    TH1F    *fHistPtProtonGen;
-    TH1F    *fHistEtaProtonGen;
-    TH1F    *fHistPtAntiProtonGen;
-    TH1F    *fHistEtaAntiProtonGen;
-    TH1F    *fHistPtDeuteronGen;
-    TH1F    *fHistEtaDeuteronGen;
-    TH1F    *fHistPtAntiDeuteronGen;
-    TH1F    *fHistEtaAntiDeuteronGen;
-    TH1F    *fHistPtHelium3Gen;
-    TH1F    *fHistEtaHelium3Gen;
-    TH1F    *fHistPtAntiHelium3Gen;
-    TH1F    *fHistEtaAntiHelium3Gen;
-    TH1F    *fHistSEDPairGen;
-    TH1F    *fHistSEDAntiPairGen;
+
+    // generated protons
+    TH1F    *fHistPtProtonGenPDG;
+    TH1F    *fHistPtProtonGenPrimary;
+    TH1F    *fHistPtProtonGenEtaCut;
+    TH1F    *fHistPtProtonGenPairPtCut;
+    TH1F    *fHistEtaProtonGenPDG;
+    TH1F    *fHistEtaProtonGenPrimary;
+    TH1F    *fHistEtaProtonGenEtaCut;
+    TH1F    *fHistEtaProtonGenPairPtCut;
+
+    // generated antiprotons
+    TH1F    *fHistPtAntiProtonGenPDG;
+    TH1F    *fHistPtAntiProtonGenPrimary;
+    TH1F    *fHistPtAntiProtonGenEtaCut;
+    TH1F    *fHistPtAntiProtonGenPairPtCut;
+    TH1F    *fHistEtaAntiProtonGenPDG;
+    TH1F    *fHistEtaAntiProtonGenPrimary;
+    TH1F    *fHistEtaAntiProtonGenEtaCut;
+    TH1F    *fHistEtaAntiProtonGenPairPtCut;
+
+    // generated deuterons
+    TH1F    *fHistPtDeuteronGenPDG;
+    TH1F    *fHistPtDeuteronGenPrimary;
+    TH1F    *fHistPtDeuteronGenEtaCut;
+    TH1F    *fHistPtDeuteronGenPairPtCut;
+    TH1F    *fHistEtaDeuteronGenPDG;
+    TH1F    *fHistEtaDeuteronGenPrimary;
+    TH1F    *fHistEtaDeuteronGenEtaCut;
+    TH1F    *fHistEtaDeuteronGenPairPtCut;
+
+    // generated antideuterons
+    TH1F    *fHistPtAntiDeuteronGenPDG;
+    TH1F    *fHistPtAntiDeuteronGenPrimary;
+    TH1F    *fHistPtAntiDeuteronGenEtaCut;
+    TH1F    *fHistPtAntiDeuteronGenPairPtCut;
+    TH1F    *fHistEtaAntiDeuteronGenPDG;
+    TH1F    *fHistEtaAntiDeuteronGenPrimary;
+    TH1F    *fHistEtaAntiDeuteronGenEtaCut;
+    TH1F    *fHistEtaAntiDeuteronGenPairPtCut;
+
+    // generated pairs
+    TH1F    *fHistPtHelium3GenPairPtCut;
+    TH1F    *fHistEtaHelium3GenPairPtCut;
     TH2F    *fHistPtParticlesGen;
+    TH1F    *fHistSEDPairGen;
+
+    // generated antipairs
+    TH1F    *fHistPtAntiHelium3GenPairPtCut;
+    TH1F    *fHistEtaAntiHelium3GenPairPtCut;
     TH2F    *fHistPtAntiParticlesGen;
+    TH1F    *fHistSEDAntiPairGen;
 
-    // Histograms for reconstructed particles
-    TH1F    *fHistPtProtonRec;
-    TH1F    *fHistEtaProtonRec;
-    TH1F    *fHistPtAntiProtonRec;
-    TH1F    *fHistEtaAntiProtonRec;
-    TH1F    *fHistPtDeuteronRec;
-    TH1F    *fHistEtaDeuteronRec;
-    TH1F    *fHistPtAntiDeuteronRec;
-    TH1F    *fHistEtaAntiDeuteronRec;
-    TH1F    *fHistPtHelium3Rec;
-    TH1F    *fHistEtaHelium3Rec;
-    TH1F    *fHistPtAntiHelium3Rec;
-    TH1F    *fHistEtaAntiHelium3Rec;
-    TH1F    *fHistSEDPairRec;
-    TH1F    *fHistSEDAntiPairRec;
+    // reconstructed protons
+    TH1F    *fHistPtProtonRecPDG;
+    TH1F    *fHistPtProtonRecPrimary;
+    TH1F    *fHistPtProtonRecTrackCuts;
+    TH1F    *fHistPtProtonRecPairPtCut;
+    TH1F    *fHistEtaProtonRecPDG;
+    TH1F    *fHistEtaProtonRecPrimary;
+    TH1F    *fHistEtaProtonRecTrackCuts;
+    TH1F    *fHistEtaProtonRecPairPtCut;
+
+    // reconstructed antiprotons
+    TH1F    *fHistPtAntiProtonRecPDG;
+    TH1F    *fHistPtAntiProtonRecPrimary;
+    TH1F    *fHistPtAntiProtonRecTrackCuts;
+    TH1F    *fHistPtAntiProtonRecPairPtCut;
+    TH1F    *fHistEtaAntiProtonRecPDG;
+    TH1F    *fHistEtaAntiProtonRecPrimary;
+    TH1F    *fHistEtaAntiProtonRecTrackCuts;
+    TH1F    *fHistEtaAntiProtonRecPairPtCut;
+
+    // reconstructed deuterons
+    TH1F    *fHistPtDeuteronRecPDG;
+    TH1F    *fHistPtDeuteronRecPrimary;
+    TH1F    *fHistPtDeuteronRecTrackCuts;
+    TH1F    *fHistPtDeuteronRecPairPtCut;
+    TH1F    *fHistEtaDeuteronRecPDG;
+    TH1F    *fHistEtaDeuteronRecPrimary;
+    TH1F    *fHistEtaDeuteronRecTrackCuts;
+    TH1F    *fHistEtaDeuteronRecPairPtCut;
+
+    // reconstructed antideuterons
+    TH1F    *fHistPtAntiDeuteronRecPDG;
+    TH1F    *fHistPtAntiDeuteronRecPrimary;
+    TH1F    *fHistPtAntiDeuteronRecTrackCuts;
+    TH1F    *fHistPtAntiDeuteronRecPairPtCut;
+    TH1F    *fHistEtaAntiDeuteronRecPDG;
+    TH1F    *fHistEtaAntiDeuteronRecPrimary;
+    TH1F    *fHistEtaAntiDeuteronRecTrackCuts;
+    TH1F    *fHistEtaAntiDeuteronRecPairPtCut;
+
+    // reconstructed pairs
+    TH1F    *fHistPtHelium3RecPairPtCut;
+    TH1F    *fHistEtaHelium3RecPairPtCut;
     TH2F    *fHistPtParticlesRec;
-    TH2F    *fHistPtAntiParticlesRec;
+    TH1F    *fHistSEDPairRec;
 
+    // reconstructed antipairs
+    TH1F    *fHistPtAntiHelium3RecPairPtCut;
+    TH1F    *fHistEtaAntiHelium3RecPairPtCut;
+    TH2F    *fHistPtAntiParticlesRec;
+    TH1F    *fHistSEDAntiPairRec;
+
+    // event counter
     TH1F    *fHistEventCounter;
     AliPIDResponse *fPIDResponse;
 

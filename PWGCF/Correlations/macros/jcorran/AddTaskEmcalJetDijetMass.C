@@ -4,8 +4,8 @@ AliAnalysisTaskEmcalJetDijetMass *AddTaskEmcalJetDijetMass(
                                     const char *nclusters          = "usedefault",
                                     const char* ncells             = "usedefault",
                                     const char *suffix             = "",
-                                    TString taskName,
-                                    Bool_t isMC,
+                                    TString taskName               = "JEmcalJetDijetMassBaseClass",
+                                    Bool_t isMC               = false,
                                     TString sJCatalyst        = "JCatalystTask",
                                     TString sJCatalystDetMC   = "JCatalystDetMCTask",
                                     UInt_t flags              = 0,
@@ -37,6 +37,7 @@ AliAnalysisTaskEmcalJetDijetMass *AddTaskEmcalJetDijetMass(
       flags,
       centBins,
       jetCone,
+      ktjetCone,
       ktScheme,
       antiktScheme,
       usePionMass,
@@ -48,7 +49,7 @@ AliAnalysisTaskEmcalJetDijetMass *AddTaskEmcalJetDijetMass(
       minJetPt,
       constituentCut,
       deltaPhiCut,
-      matchingR
+      matchingR,
       trackingIneff
       );
 }

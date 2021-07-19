@@ -77,6 +77,11 @@
 #include "AliOADBContainer.h"
 #include "AliMathBase.h"
 #include "AliLog.h"
+#include "AliProdInfo.h"
+
+#include "RVersion.h"
+#include "ARVersion.h"
+// #include "APVersion.h"
 
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
@@ -227,7 +232,8 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     ft0(),
     fdd(),
     v0s(),
-    cascs()
+    cascs(),
+    fMetaData()
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -374,6 +380,33 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     ::Fatal("AliAnalysisTaskAO2Dconverter::UserExec", "Something is wrong with the event handler");
   }
 
+  // populate meta data only once
+  if (fMetaData.GetEntries() == 0) {
+    fMetaData.Add(new TObjString("DataType"), new TObjString((fTaskMode == kStandard) ? "RAW" : "MC"));
+    fMetaData.Add(new TObjString("Run"), new TObjString("2"));
+    TString converterVersion("aliroot ");
+    converterVersion += ALIROOT_VERSION;
+    converterVersion += ":";
+    converterVersion += ALIROOT_REVISION;
+    // TODO include above does not work?
+    // converterVersion += "; aliphysics "
+    // converterVersion += ALIPHYSICS_VERSION;
+    // converterVersion += ":";
+    // converterVersion += ALIPHYSICS_REVISION;
+    converterVersion += "; root ";
+    converterVersion += ROOT_RELEASE;
+    fMetaData.Add(new TObjString("Run2ConverterVersion"), new TObjString(converterVersion));
+
+    auto userInfo = fInputHandler->GetUserInfo();
+    AliProdInfo prodInfo(userInfo);
+    fMetaData.Add(new TObjString("ProducerAliRootVersion"), new TObjString(prodInfo.GetAlirootVersion()));
+    fMetaData.Add(new TObjString("ProducerROOTVersion"), new TObjString(prodInfo.GetRootVersion()));
+    fMetaData.Add(new TObjString("RecoPassName"), new TObjString(prodInfo.GetRecoPassName()));
+    fMetaData.Add(new TObjString("AnchorProduction"), new TObjString(prodInfo.GetAnchorProduction()));
+    fMetaData.Add(new TObjString("AnchorPassName"), new TObjString(prodInfo.GetAnchorPassName()));
+    fMetaData.Add(new TObjString("LPMProductionTag"), new TObjString(prodInfo.GetTag(AliProdInfo::kProdTag)));
+  }
+
   // In case of ESD we skip events like in the AOD filtering, for AOD this is not needed
   // We can use event cuts to avoid cases where we have zero reconstructed tracks
   bool skip_event = false;
@@ -490,6 +523,9 @@ void AliAnalysisTaskAO2Dconverter::FinishTaskOutput()
   FinishTF();
   fOutputFile->Write(); // Do not close the file since this is then re-opened and overwritten by the framework
   AliInfo(Form("Total size of output trees: %lu bytes\n", fBytes));
+
+  // write meta data
+  fOutputFile->WriteObject(&fMetaData, "metaData");
 }
 
 void AliAnalysisTaskAO2Dconverter::Terminate(Option_t *)
@@ -798,6 +834,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tFwdTrack->Branch("fMatchScoreMCHMFT", &fwdtracks.fMatchScoreMCHMFT, "fMatchScoreMCHMFT/F");
     tFwdTrack->Branch("fMatchMFTTrackID", &fwdtracks.fMatchMFTTrackID, "fMatchMFTTrackID/I");
     tFwdTrack->Branch("fMatchMCHTrackID", &fwdtracks.fMatchMCHTrackID, "fMatchMCHTrackID/I");
+    tFwdTrack->Branch("fMCHBitMap", &fwdtracks.fMCHBitMap, "fMCHBitMap/s"); 
     tFwdTrack->SetBasketSize("*", fBasketSizeEvents);
   }
 
@@ -827,7 +864,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree *tMuonCls = CreateTree(kMuonCls);
   if (fTreeStatus[kMuonCls])
   {
-    tMuonCls->Branch("fIndexMuons", &mucls.fIndexMuons, "fIndexMuons/I");
+    tMuonCls->Branch("fIndexFwdTracks", &mucls.fIndexFwdTracks, "fIndexFwdTracks/I");
     tMuonCls->Branch("fX", &mucls.fX, "fX/F");
     tMuonCls->Branch("fY", &mucls.fY, "fY/F");
     tMuonCls->Branch("fZ", &mucls.fZ, "fZ/F");
@@ -980,10 +1017,10 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
       Kinematics->Branch("fStatusCode", &mcparticle.fStatusCode, "fStatusCode/I");
       Kinematics->Branch("fFlags", &mcparticle.fFlags, "fFlags/b");
 
-      Kinematics->Branch("fMother0", &mcparticle.fMother0, "fMother0/I");
-      Kinematics->Branch("fMother1", &mcparticle.fMother1, "fMother1/I");
-      Kinematics->Branch("fDaughter0", &mcparticle.fDaughter0, "fDaughter0/I");
-      Kinematics->Branch("fDaughter1", &mcparticle.fDaughter1, "fDaughter1/I");
+      Kinematics->Branch("fIndexMcParticles_Mother0", &mcparticle.fIndexMcParticles_Mother0, "fIndexMcParticles_Mother0/I");
+      Kinematics->Branch("fIndexMcParticles_Mother1", &mcparticle.fIndexMcParticles_Mother1, "fIndexMcParticles_Mother1/I");
+      Kinematics->Branch("fIndexMcParticles_Daughter0", &mcparticle.fIndexMcParticles_Daughter0, "fIndexMcParticles_Daughter0/I");
+      Kinematics->Branch("fIndexMcParticles_Daughter1", &mcparticle.fIndexMcParticles_Daughter1, "fIndexMcParticles_Daughter1/I");
       Kinematics->Branch("fWeight", &mcparticle.fWeight, "fWeight/F");
 
       Kinematics->Branch("fPx", &mcparticle.fPx, "fPx/F");
@@ -1459,16 +1496,16 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       Int_t nPrim = MCEvt ? MCEvt->Stack()->GetNprimary() : nMCprim;
       if (i >= nPrim)
         mcparticle.fFlags |= MCParticleFlags::ProducedInTransport;
-      mcparticle.fMother0 = particle ? particle->GetMother(0) : aodmcpt->GetMother();
-      if (mcparticle.fMother0 > -1)
-        mcparticle.fMother0 = kineIndex[mcparticle.fMother0] > -1 ? kineIndex[mcparticle.fMother0] + fOffsetLabel : -1;
-      mcparticle.fMother1 = -1;
-      mcparticle.fDaughter0 = particle ? particle->GetFirstDaughter() : aodmcpt->GetDaughterFirst();
-      if (mcparticle.fDaughter0 > -1)
-        mcparticle.fDaughter0 = kineIndex[mcparticle.fDaughter0] > -1 ? kineIndex[mcparticle.fDaughter0] + fOffsetLabel : -1;
-      mcparticle.fDaughter1 = particle ? particle->GetLastDaughter() : aodmcpt->GetDaughterLast();
-      if (mcparticle.fDaughter1 > -1)
-        mcparticle.fDaughter1 = kineIndex[mcparticle.fDaughter1] > -1 ? kineIndex[mcparticle.fDaughter1] + fOffsetLabel : -1;
+      mcparticle.fIndexMcParticles_Mother0 = particle ? particle->GetMother(0) : aodmcpt->GetMother();
+      if (mcparticle.fIndexMcParticles_Mother0 > -1)
+        mcparticle.fIndexMcParticles_Mother0 = kineIndex[mcparticle.fIndexMcParticles_Mother0] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Mother0] + fOffsetLabel : -1;
+      mcparticle.fIndexMcParticles_Mother1 = -1;
+      mcparticle.fIndexMcParticles_Daughter0 = particle ? particle->GetFirstDaughter() : aodmcpt->GetDaughterFirst();
+      if (mcparticle.fIndexMcParticles_Daughter0 > -1)
+        mcparticle.fIndexMcParticles_Daughter0 = kineIndex[mcparticle.fIndexMcParticles_Daughter0] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Daughter0] + fOffsetLabel : -1;
+      mcparticle.fIndexMcParticles_Daughter1 = particle ? particle->GetLastDaughter() : aodmcpt->GetDaughterLast();
+      if (mcparticle.fIndexMcParticles_Daughter1 > -1)
+        mcparticle.fIndexMcParticles_Daughter1 = kineIndex[mcparticle.fIndexMcParticles_Daughter1] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Daughter1] + fOffsetLabel : -1;
       mcparticle.fWeight = AliMathBase::TruncateFloatFraction(particle ? particle->GetWeight() : 1., mMcParticleW);
 
       mcparticle.fPx = AliMathBase::TruncateFloatFraction(particle ? particle->Px() : aodmcpt->Px(), mMcParticleMom);
@@ -1618,7 +1655,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       // PID hypothesis for the momentum extraction
       const AliPID::EParticleType tof_pid = AliPID::kPion;
       const float exp_time = TOFResponse.GetExpectedSignal(track, tof_pid);
-      if (exp_time >= 0) { // Check that the expected time is positive
+      if (exp_time > 0) { // Check that the expected time is positive
         // Expected beta for such hypothesis
         const Float_t exp_beta = (track->GetIntegratedLength() / exp_time / cspeed);
 
@@ -2039,7 +2076,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       for (Int_t imucl = 0; imucl < nmucl; ++imucl)
       {
         AliESDMuonCluster *muCluster = fESD->FindMuonCluster(mutrk->GetClusterId(imucl));
-        mucls.fIndexMuons = muTrackID;
+        mucls.fIndexFwdTracks = muTrackID;
         mucls.fX = AliMathBase::TruncateFloatFraction(muCluster->GetX(), mMuonCl);
         mucls.fY = AliMathBase::TruncateFloatFraction(muCluster->GetY(), mMuonCl);
         mucls.fZ = AliMathBase::TruncateFloatFraction(muCluster->GetZ(), mMuonCl);
@@ -2428,10 +2465,12 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   FillTree(kMcCollision);
 
   // MC collision label
-  mccollisionlabel.fIndexMcCollisions = fBCCount;
-  mccollisionlabel.fMcMask = 0;
-  FillTree(kMcCollisionLabel);
-
+  // will be joined with Collisions, therefore fill it only when we fill Collisions
+  if (fillCollision) {
+    mccollisionlabel.fIndexMcCollisions = fBCCount;
+    mccollisionlabel.fMcMask = 0;
+    FillTree(kMcCollisionLabel);
+  }
 
   //---------------------------------------------------------------------------
   // Update the offsets at the end of each collision
@@ -2527,6 +2566,8 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   convertedTrack.fChi2MatchMCHMID = AliMathBase::TruncateFloatFraction(MUONTrack.GetChi2MatchTrigger(), mMuonTrCov);
   convertedTrack.fRAtAbsorberEnd = AliMathBase::TruncateFloatFraction(MUONTrack.GetRAtAbsorberEnd(), mMuonTrCov);
   convertedTrack.fPDca = AliMathBase::TruncateFloatFraction(pdca, mMuonTrCov);
+  
+  convertedTrack.fMCHBitMap = MUONTrack.GetMuonClusterMap();
 
   // Covariances matrix conversion
   using SMatrix55Std = ROOT::Math::SMatrix<double, 5>;
@@ -2686,6 +2727,8 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   convertedTrack.fChi2MatchMCHMID = AliMathBase::TruncateFloatFraction(MUONTrack.GetChi2MatchTrigger(), mMuonTrCov);
   convertedTrack.fRAtAbsorberEnd = AliMathBase::TruncateFloatFraction(MUONTrack.GetRAtAbsorberEnd(), mMuonTrCov);
   convertedTrack.fPDca = AliMathBase::TruncateFloatFraction(pdca, mMuonTrCov);
+
+  convertedTrack.fMCHBitMap = MUONTrack.GetMUONClusterMap();
 
   // Covariances matrix conversion
   using SMatrix55Std = ROOT::Math::SMatrix<double, 5>;

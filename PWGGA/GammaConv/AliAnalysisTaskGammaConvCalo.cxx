@@ -44,7 +44,7 @@
 #include "AliVParticle.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliConversionAODBGHandlerRP.h"
 #include "AliAODMCParticle.h"
@@ -5867,8 +5867,8 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
       }else {
         if (fDoMesonQA > 0 && fIsMC < 2) fHistoTrueMotherCaloEMNonLeadingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
       }
-    }    
-    
+    }
+
     SaftyLoopCounter = 0;
     while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
         SaftyLoopCounter++;
@@ -6450,7 +6450,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
       if (fDoMesonQA > 0 && fIsMC < 2) fHistoTrueMotherCaloEMNonLeadingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
     }
   }
-  
+
   SaftyLoopCounter = 0;
   while (tmpGammaMotherlabel > 0 && SaftyLoopCounter < 100) {
       SaftyLoopCounter++;
@@ -7017,8 +7017,8 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
           Int_t zbinJets = fBGHandler[fiCut]->GetZBinIndex(2);
           for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
             AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbinJets,mbinJets,nEventsInBG);
-            AliGammaConversionAODBGHandler::GammaConversionVertex* BGVertex = fBGHandler[fiCut]->GetBGEventVertex(zbinJets,mbinJets,nEventsInBG);
-            if(previousEventV0s){
+            if(previousEventV0s && previousEventV0s->size() > 0){
+              AliGammaConversionAODBGHandler::GammaConversionVertex* BGVertex = fBGHandler[fiCut]->GetBGEventVertex(zbinJets,mbinJets,nEventsInBG);
               Double_t BGJetEta = BGVertex->fX;
               Double_t BGJetPhi = BGVertex->fY;
               Int_t EtaSwap = 1;

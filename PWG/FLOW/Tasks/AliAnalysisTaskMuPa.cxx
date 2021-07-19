@@ -116,6 +116,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
   fBaseList->SetOwner(kTRUE);
 
   // Initialize all non-built in types:
+  fTaskName = name;
   this->InitializeNonBuiltInTypes();
 
   // Initialize all arrays:
@@ -216,6 +217,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
   // Important: arrays have to be initialized also in the dummy constructor. 
 
   // Initialize all non-built in types:
+  fTaskName = "";
   this->InitializeNonBuiltInTypes();
 
   // Initialize all arrays:
@@ -1040,12 +1042,13 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBasePro = new TProfile("fBasePro","flags for the whole analysis",4,0.,4.);
+ fBasePro = new TProfile("fBasePro","flags for the whole analysis",5,0.,5.);
  fBasePro->SetStats(kFALSE);
- fBasePro->GetXaxis()->SetBinLabel(1,Form("fDataTakingPeriod = %s",fDataTakingPeriod.Data()));
- fBasePro->GetXaxis()->SetBinLabel(2,Form("fAODNumber = %s",fAODNumber.Data())); // TBI 20210513 
- //fBasePro->GetXaxis()->SetBinLabel(3,"fFillQAhistograms"); fBasePro->Fill(2.5,fFillQAHistograms);
- //fBasePro->GetXaxis()->SetBinLabel(4,"fTerminateAfterQA"); fBasePro->Fill(3.5,fTerminateAfterQA);
+ fBasePro->GetXaxis()->SetBinLabel(1,Form("fTaskName = %s",fTaskName.Data()));
+ fBasePro->GetXaxis()->SetBinLabel(2,Form("fDataTakingPeriod = %s",fDataTakingPeriod.Data()));
+ fBasePro->GetXaxis()->SetBinLabel(3,Form("fAODNumber = %s",fAODNumber.Data())); // TBI 20210513 
+ //fBasePro->GetXaxis()->SetBinLabel(4,"fFillQAhistograms"); fBasePro->Fill(2.5,fFillQAHistograms);
+ //fBasePro->GetXaxis()->SetBinLabel(5,"fTerminateAfterQA"); fBasePro->Fill(3.5,fTerminateAfterQA);
  fBaseList->Add(fBasePro);
 
 } // void AliAnalysisTaskMuPa::BookBaseProfile()
@@ -2586,6 +2589,25 @@ void AliAnalysisTaskMuPa::SetWeightsHist(TH1D* const hist, const char *variable)
 
 } // void AliAnalysisTaskMuPa::SetWeightsHist(TH1D* const hwh, const char *type, const char *variable)
 
+//=======================================================================================================================
+
+TH1D* AliAnalysisTaskMuPa::GetWeightsHist(const char *variable)
+{
+ // The standard getter. 
+  
+ // Basic protection:
+ if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta"))){cout<<__LINE__<<endl;exit(1);}
+
+ Int_t ppe=-1;
+ if(TString(variable).EqualTo("phi")){ppe=0;} 
+ if(TString(variable).EqualTo("pt")){ppe=1;} 
+ if(TString(variable).EqualTo("eta")){ppe=2;} 
+
+ // Finally:
+ return fWeightsHist[ppe];
+
+} // TH1D* AliAnalysisTaskMuPa::GetWeightsHist(const char *variable)
+
 //=======================================================================================
 
 TH1D *AliAnalysisTaskMuPa::GetHistogramWithWeights(const char *filePath, const char *variable)
@@ -2614,8 +2636,9 @@ TH1D *AliAnalysisTaskMuPa::GetHistogramWithWeights(const char *filePath, const c
  // d) Access the external ROOT file and fetch the desired histogram with weights:
  TFile *weightsFile = TFile::Open(filePath,"READ");
  if(!weightsFile){cout<<__LINE__<<endl;exit(1);}
- hist = (TH1D*)(weightsFile->Get(Form("%s",variable)));
- if(!hist){cout<<__LINE__<<endl;exit(1);}
+ hist = (TH1D*)(weightsFile->Get(Form("%s_%s",variable,fTaskName.Data())));
+ if(!hist){hist = (TH1D*)(weightsFile->Get(Form("%s",variable)));} // yes, for some simple tests I can have only histogram named e.g. 'phi'
+ if(!hist){Red(Form("%s_%s",variable,fTaskName.Data())); cout<<__LINE__<<endl;exit(1);}
  hist->SetDirectory(0);
  hist->SetTitle(filePath);
 

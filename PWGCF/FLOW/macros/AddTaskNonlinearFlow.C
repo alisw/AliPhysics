@@ -120,13 +120,20 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
         
 	Int_t inSlotCounter=1;
 	TGrid::Connect("alien:");
+
+        TObjArray *AllContainers = mgr->GetContainers();
 	if(fNUA) {
-		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
-               
+
+                if(!AllContainers->FindObject("NUA")) {
+
+		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);
                 TFile *inNUA;
 
                 if (fPeriod.EqualTo("LHC15o")) {
 			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/WeightsPbPb15o.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+                } else if (fPeriod.EqualTo("LHC15oKatarina")) {
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/PhiWeight_Katarina.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
                 } else if (fPeriod.EqualTo("LHC17")) {
 	            taskFlowEp->SetUsePeriodWeigths(true);
@@ -169,19 +176,33 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                 } 
 					
                 TList* weight_list = NULL;
-		weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
-		cin_NUA->SetData(weight_list);
+		if (fPeriod.EqualTo("LHC15oKatarina")) {
+		    weight_list = dynamic_cast<TList*>(inNUA->Get("weightList"));
+                    cin_NUA->SetData(weight_list); 
+                } else {
+		    weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
+		    cin_NUA->SetData(weight_list);
+                }
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUA);
 		inSlotCounter++;
+		} else {
+		    mgr->ConnectInput(taskFlowEp,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUA"));
+		    inSlotCounter++;
+		    printf("NUA already loaded\n");
+		}
 	}
 
 	if(fNUE) {
 
-                TFile *inNUE;
+                if(!AllContainers->FindObject("NUE")) {
+                TFile *inNUE = NULL;
 
-		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
+		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE"), TList::Class(), AliAnalysisManager::kInputContainer);
                 if (fPeriod.EqualTo("LHC15o")) {
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC18e1_MBEff_FD_wSyst_v2.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+                } else if (fPeriod.EqualTo("LHC15oKatarina")) {
+			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/TrackingEfficiency_Katarina.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
                 } else {
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC17d20a1_WithModEff_Syst.root");
@@ -193,10 +214,21 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 			return 0;
 		}
                 TList* weight_list = NULL;
-		weight_list = dynamic_cast<TList*>(inNUE->Get("EffAndFD"));
-		cin_NUE->SetData(weight_list);
+                if (fPeriod.EqualTo("LHC15oKatarina")) {
+		    weight_list = dynamic_cast<TList*>(inNUE->Get("weightList"));
+		    cin_NUE->SetData(weight_list);
+                } else {
+		    weight_list = dynamic_cast<TList*>(inNUE->Get("EffAndFD"));
+		    cin_NUE->SetData(weight_list);
+                }
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUE);
 		inSlotCounter++;
+           	} else {
+		    mgr->ConnectInput(taskFlowEp,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUE"));
+		    inSlotCounter++;
+		    printf("NUE already loaded\n");
+		}
+
 	} 
 
 	// Return task pointer at the end

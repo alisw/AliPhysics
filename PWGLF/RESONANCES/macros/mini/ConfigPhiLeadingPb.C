@@ -42,7 +42,7 @@ Bool_t ConfigPhiLeadingPb(
 
     // Defining output objects
     const Int_t dims = 6;
-    Int_t useIM[dims] = {1, 1, 1, 1, isMC, isMC};
+    Int_t useIM[dims] = {1, 1, 0, 0, isMC, isMC};
     TString name[dims] = {"Unlike", "Mixing", "LikePP", "LikeMM", "True", "Mother"};
     TString comp[dims] = {"PAIR", "MIX", "PAIR", "PAIR", "TRUE", "MOTHER"};
     TString output[dims] = {"SPARSE", "SPARSE", "SPARSE", "SPARSE", "SPARSE", "SPARSE"};
@@ -65,14 +65,14 @@ Bool_t ConfigPhiLeadingPb(
         out->SetMotherPDG(pdgCode[i]);
         out->SetMotherMass(motherMass[i]);
 
-        out->AddAxis(imID, 215, 0.985, 1.2);
-        out->AddAxis(ptID, 40, 0., 20.);
+        out->AddAxis(imID, 95, 0.985, 1.08);
+        out->AddAxis(ptID, 8, 2., 10.);
         if(!isPP ) out->AddAxis(multID,10,0.,100.);
         else out->AddAxis(multID, 10, 0., 100.); 
 
-        out->AddAxis(alID, 36, -0.25 * TMath::Pi(), 1.75 * TMath::Pi()); 
-        out->AddAxis(ptlID, 40, 0., 20.); 
-         out->AddAxis(detaID, 32, -1.6, 1.6);
+        out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
+        out->AddAxis(ptlID, 26, 4., 30.); 
+         out->AddAxis(detaID, 16, -1.6, 1.6);
         
     }
     return kTRUE;

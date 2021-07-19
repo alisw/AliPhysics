@@ -117,6 +117,7 @@ AliAnalysisTaskJetHardestKt::AliAnalysisTaskJetHardestKt()
   fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
   fStoreDetLevelJets(kFALSE),
+  fStoreEventPlane(false),
   fEnableSubjetMatching(false),
   fSubstructureVariables(),
   fPtJet(nullptr),
@@ -156,6 +157,7 @@ AliAnalysisTaskJetHardestKt::AliAnalysisTaskJetHardestKt(const char* name)
   fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
   fStoreDetLevelJets(kFALSE),
+  fStoreEventPlane(false),
   fEnableSubjetMatching(false),
   fSubstructureVariables(),
   fPtJet(nullptr),
@@ -199,6 +201,7 @@ AliAnalysisTaskJetHardestKt::AliAnalysisTaskJetHardestKt(
   fMagFieldPolarity(other.fMagFieldPolarity),
   fDerivSubtrOrder(other.fDerivSubtrOrder),
   fStoreDetLevelJets(other.fStoreDetLevelJets),
+  fStoreEventPlane(other.fStoreEventPlane),
   fEnableSubjetMatching(other.fEnableSubjetMatching),
   fSubstructureVariables(other.fSubstructureVariables),
   fPtJet(nullptr),
@@ -282,6 +285,7 @@ void AliAnalysisTaskJetHardestKt::RetrieveAndSetTaskPropertiesFromYAMLConfig()
     fDerivSubtrOrder = fgkDerivSubtrOrderMap.at(tempStr);
   }
   fYAMLConfig.GetProperty({baseName, "storeDetLevelJets"}, fStoreDetLevelJets, false);
+  fYAMLConfig.GetProperty({baseName, "storeEventPlane"}, fStoreEventPlane, false);
   fYAMLConfig.GetProperty({baseName, "subjetMatching"}, fEnableSubjetMatching, false);
 }
 
@@ -389,17 +393,21 @@ void AliAnalysisTaskJetHardestKt::SetupTree()
     }
   }
   // Add pythia info from embedding.
-  if (fJetShapeType == kDetEmbPartPythia) {
+  // We don't need this anymore. But I leave the code here commented on the off chance we need to cross check again.
+  /*if (fJetShapeType == kDetEmbPartPythia) {
     fSubstructureVariables["pt_hard_bin"] = -1;
     fSubstructureVariables["pt_hard"] = -1;
     fSubstructureVariables["cross_section"] = -1;
     fSubstructureVariables["n_trials"] = -1;
-  }
+  }*/
   // Alternatively if in pythia, we'll fill it out directly from the variables that are already available.
   if (fIsPythia) {
     // Will be automatically filled by AliAnalysisTaskEmcal.
     fTreeSubstructure->Branch("pt_hard_bin", fPtHardInitialized ? &fPtHardBinGlobal : &fPtHardBin);
     fTreeSubstructure->Branch("pt_hard", &fPtHard);
+  }
+  if (fStoreEventPlane) {
+    fTreeSubstructure->Branch("event_plane_angle", &fEPV0);
   }
 
   // Add appropriate subjet matching fields.
@@ -651,13 +659,14 @@ Bool_t AliAnalysisTaskJetHardestKt::FillHistograms()
         }
 
         // Lastly, add the pythia information from the embedding helper if available.
-        const AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+        // See the definition above for why this is commented
+        /*const AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
         if (embeddingHelper) {
           fSubstructureVariables["pt_hard_bin"] = embeddingHelper->GetPtHardBin();
           fSubstructureVariables["pt_hard"] = embeddingHelper->GetPythiaPtHard();
           fSubstructureVariables["cross_section"] = embeddingHelper->GetPythiaXSection();
           fSubstructureVariables["n_trials"] = embeddingHelper->GetPythiaTrials();
-        }
+        }*/
       }
 
       // this is the mode to run over pythia to produce a det-part response
@@ -1578,6 +1587,7 @@ std::string AliAnalysisTaskJetHardestKt::toString() const
   tempSS << "Miscellaneous:\n";
   tempSS << "\tDerivative subtracter order: " << fDerivSubtrOrder << "\n";
   tempSS << "\tStore detector level jets: " << fStoreDetLevelJets << "\n";
+  tempSS << "\tStore event plane: " << fStoreEventPlane << "\n";
   tempSS << "\tEnable subjet matching: " << fEnableSubjetMatching << "\n";
   // Substructure variables:
   tempSS << "Substructure variables:\n";
@@ -1666,6 +1676,7 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskJetHardestKt& first,
   swap(first.fMagFieldPolarity, second.fMagFieldPolarity);
   swap(first.fDerivSubtrOrder, second.fDerivSubtrOrder);
   swap(first.fStoreDetLevelJets, second.fStoreDetLevelJets);
+  swap(first.fStoreEventPlane, second.fStoreEventPlane);
   swap(first.fSubstructureVariables, second.fSubstructureVariables);
   swap(first.fPtJet, second.fPtJet);
   swap(first.fHCheckResolutionSubjets, second.fHCheckResolutionSubjets);

@@ -35,6 +35,7 @@
 #include <TBits.h>
 #include <TRandom3.h>
 #include <TGrid.h>
+#include <TVector2.h>
 
 #include <AliLog.h>
 
@@ -228,6 +229,7 @@ public:
     kPOut,                   // momentum at outer wall of TPC, used for TRD studies
     kYsignedIn,              // signed local y at inner wall of TPC
     kTPCsignal,              // TPC dE/dx signal
+    kTPCsignalTunedOnData,   // TPC dE/dx signal (tuned on data)
 
     kTOFsignal,              // TOF signal
     kTOFbeta,                // TOF beta
@@ -306,7 +308,8 @@ public:
     kDeltaCotTheta,          // difference of cotangens of theta of daughters
 
     kDeltaPhiSumDiff,        //Azimuthal angle between sum and difference of momentum vector   
-    kDeltaPhiSumPos,         //Azimuthal angle between pair momentum vector (= sum of legs) and positron momentum vector   
+    kDeltaPhiSumPos,         //Azimuthal angle between pair momentum vector (= sum of legs) and positron momentum vector
+    kDeltaPhiSumPoszpi,      //Azimuthal angle between pair momentum vector (= sum of legs) and positron momentum vector defined between 0 and Pi
     kDeltaPhiSumNeg,         //Azimuthal angle between pair momentum vector (= sum of legs) and electron momentum vector   
     
     kPairPlaneAngle1A,         // angle between ee decay plane and x'-z reaction plane by using V0-A
@@ -356,6 +359,7 @@ public:
     kLeg1Eta,                // Eta of the first leg
     kLeg2Eta,                // Eta of the second leg
     kDeltaPhi,               // Absolute value of Delta Phi for the legs
+    kAccoplanarity,          // Accoplanarity of the legs
     kLeg1Phi,                // Phi of the first leg
     kLeg2Phi,                // Phi of the second leg
     kDeltaPhiChargeOrdered,  // Absolute value of Delta Phi for the legs
@@ -411,6 +415,12 @@ public:
     kPairLinDCAsigZ,           // dca in z-plane calculated in orders of sigma calculated as (dcaD1 + dcaD2)/2)
     kPairLinDCAabsXY,          // dca in xy-plane in absolute values (cm) calculated as (dcaD1 + dcaD2)/2)
     kPairLinDCAabsZ,           // dca in z-plane in absolute values (cm) calculated as (dcaD1 + dcaD2)/2)
+    kPairDeltaDCAsigXY,        // dca in xy-plane calculated in orders of sigma calculated as fabs(dcaD1 - dcaD2)
+    kPairSumDCAsigXY,          // dca in xy-plane calculated in orders of sigma calculated as fabs(dcaD1 + dcaD2)
+    kPairGeomDCAsigXY,         // dca in xy-plane calculated in orders of sigma calculated as 2*sqrt(fabs(dcaD1 * dcaD2))
+    kPairGeomSignDCAsigXY,     // dca in xy-plane calculated in orders of sigma calculated as SGN(dcaD1)*SGN(dcaD2)*sqrt(fabs(dcaD1 * dcaD2))
+    kPairSignDCAsigXY,         // dca in xy-plane in absolute values (cm) calculated as SGN(dcaD1)*SGN(dcaD2)*sqrt(dcaD1^2 + dcaD2^2)
+
     kPairs,                  // number of Ev1PM pair candidates after all cuts
     kPairMax,                 //
   // Event specific variables
@@ -652,7 +662,9 @@ public:
     // Flow estimators for measured Jpsis
     // Eventplane Fourier calculation
     kQnDeltaPhiTPCrpH2,
+    kQnDeltaPhiTPCrpH2Abs,
     kQnDeltaPhiTrackTPCrpH2, // Track delta phi for cross-checks
+    kQnDeltaPhiTrackTPCrpH2Abs, // Track delta phi for cross-checks (absolute)
     kQnDeltaPhiTrackV0CrpH2, // Track delta phi for cross-checks
     kQnDeltaPhiV0ArpH2,
     kQnDeltaPhiV0CrpH2,
@@ -1257,6 +1269,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
 
 
   values[AliDielectronVarManager::kTPCsignal]=particle->GetTPCsignal();
+  values[AliDielectronVarManager::kTPCsignalTunedOnData]=particle->GetTPCsignalTunedOnData();
 
   values[AliDielectronVarManager::kTOFsignal]=particle->GetTOFsignal();
 
@@ -1358,6 +1371,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   Double_t tpcNcls=particle->GetTPCNcls();
 
   if(Req(kQnDeltaPhiTrackTPCrpH2))   values[AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2]  = TVector2::Phi_mpi_pi(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kQnTPCrpH2]);
+  if(Req(kQnDeltaPhiTrackTPCrpH2Abs))   values[AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2Abs]  = TMath::Abs(TVector2::Phi_mpi_pi(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kQnTPCrpH2]));
   if(Req(kQnDeltaPhiTrackV0CrpH2))   values[AliDielectronVarManager::kQnDeltaPhiTrackV0CrpH2]  = TVector2::Phi_mpi_pi(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kQnV0CrpH2]);
 
   Double_t tpcNclsS = -99.;
@@ -1495,6 +1509,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 
   values[AliDielectronVarManager::kPIn]            =  0.;
   values[AliDielectronVarManager::kTPCsignal]      =  0.;
+  values[AliDielectronVarManager::kTPCsignalTunedOnData]    =  0.;
   values[AliDielectronVarManager::kTPCsignalN]     = -1.;
   values[AliDielectronVarManager::kTPCsignalNfrac] = -1.;
   values[AliDielectronVarManager::kTPCclsDiff]     = -999.;
@@ -1624,6 +1639,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     //restore TPC signal if it was changed
     pid->SetTPCsignal(origdEdx);
   }
+  
+  values[AliDielectronVarManager::kTPCsignalTunedOnData]=particle->GetTPCsignalTunedOnData();
 
   //EMCAL PID information
   Double_t eop=0;
@@ -1793,6 +1810,7 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   values[AliDielectronVarManager::kPIn]           = 0;
   values[AliDielectronVarManager::kYsignedIn]     = 0;
   values[AliDielectronVarManager::kTPCsignal]     = 0;
+  values[AliDielectronVarManager::kTPCsignalTunedOnData]     = 0;
   values[AliDielectronVarManager::kTOFsignal]     = 0;
   values[AliDielectronVarManager::kTOFbeta]       = 0;
   values[AliDielectronVarManager::kTPCnSigmaEleRaw]  = 0;
@@ -1874,6 +1892,7 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kPIn]           = 0;
   values[AliDielectronVarManager::kYsignedIn]     = 0;
   values[AliDielectronVarManager::kTPCsignal]     = 0;
+  values[AliDielectronVarManager::kTPCsignalTunedOnData]     = 0;
   values[AliDielectronVarManager::kTPCnSigmaEleRaw]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
@@ -1978,6 +1997,7 @@ inline void AliDielectronVarManager::FillVarAODMCParticle(const AliAODMCParticle
   values[AliDielectronVarManager::kPIn]           = 0;
   values[AliDielectronVarManager::kYsignedIn]     = 0;
   values[AliDielectronVarManager::kTPCsignal]     = 0;
+  values[AliDielectronVarManager::kTPCsignalTunedOnData]     = 0;
   values[AliDielectronVarManager::kTPCnSigmaEleRaw]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
   values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
@@ -2080,6 +2100,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kLegDistXY)) values[AliDielectronVarManager::kLegDistXY]    = pair->DistanceDaughtersXY();
   if(Req(kDeltaEta))  values[AliDielectronVarManager::kDeltaEta]     = pair->DeltaEta();
   if(Req(kDeltaPhi))  values[AliDielectronVarManager::kDeltaPhi]     = pair->DeltaPhi();
+  if(Req(kAccoplanarity))  values[AliDielectronVarManager::kAccoplanarity]     = 1. - (TMath::Abs(TVector2::Phi_mpi_pi(pair->DeltaPhi())))/TMath::Pi();
   if(Req(kMerr))      values[AliDielectronVarManager::kMerr]         = kfPair.GetErrMass()>1e-30&&kfPair.GetMass()>1e-30?kfPair.GetErrMass()/kfPair.GetMass():1000000;
 
   values[AliDielectronVarManager::kPairType]     = pair->GetType();
@@ -2091,9 +2112,10 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kPhivPair)) values[AliDielectronVarManager::kPhivPair]     = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
   
   values[AliDielectronVarManager::kDeltaPhiSumDiff]=-999; 
-  values[AliDielectronVarManager::kDeltaPhiSumPos]=-999; 
+  values[AliDielectronVarManager::kDeltaPhiSumPos]=-999;
+  values[AliDielectronVarManager::kDeltaPhiSumPoszpi]=-999; 
   values[AliDielectronVarManager::kDeltaPhiSumNeg]=-999; 
-  if(Req(kDeltaPhiSumDiff)||Req(kDeltaPhiSumPos)||Req(kDeltaPhiSumNeg)){
+  if(Req(kDeltaPhiSumDiff)||Req(kDeltaPhiSumPos)||Req(kDeltaPhiSumPoszpi)||Req(kDeltaPhiSumNeg)){
     // get track references from pair
     AliVParticle* d1 = pair->GetFirstDaughterP();
     AliVParticle* d2 = pair->GetSecondDaughterP();
@@ -2124,7 +2146,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         Double_t ppos[3];  
         static_cast<AliAODTrack*>(dpos)->PxPyPz(ppos);   
         TVector3 vl(ppos[0],ppos[1],ppos[2]);
-        values[AliDielectronVarManager::kDeltaPhiSumPos]=TMath::Abs(vSum.DeltaPhi(vl));           
+        values[AliDielectronVarManager::kDeltaPhiSumPos]=TMath::Abs(vSum.DeltaPhi(vl));
+	values[AliDielectronVarManager::kDeltaPhiSumPoszpi]=TMath::Abs(TVector2::Phi_mpi_pi(vSum.DeltaPhi(vl))); 
       }
       if(dneg!=0){ 
         Double_t pneg[3];  
@@ -2204,6 +2227,11 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kPairLinDCAsigZ]   = -999.;
   values[AliDielectronVarManager::kPairLinDCAabsXY]  = -999.;
   values[AliDielectronVarManager::kPairLinDCAabsZ]   = -999.;
+  values[AliDielectronVarManager::kPairDeltaDCAsigXY] = -999.;
+  values[AliDielectronVarManager::kPairSumDCAsigXY]   = -999.;
+  values[AliDielectronVarManager::kPairGeomDCAsigXY]  = -999.;
+  values[AliDielectronVarManager::kPairGeomSignDCAsigXY]  = -999.;
+  values[AliDielectronVarManager::kPairSignDCAsigXY]  = -999.;
   values[AliDielectronVarManager::kLeg1DCAsigXY]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAabsXY]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAsigXYZ]    = -999.;
@@ -2225,7 +2253,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   // check if calculation is requested
   if( Req(kPairDCAsigXY) || Req(kPairDCAsigZ) || Req(kPairDCAabsXY) || Req(kPairDCAabsZ) ||
-      Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ) ||
+      Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ) || Req(kPairDeltaDCAsigXY) || Req(kPairSumDCAsigXY) || Req(kPairGeomDCAsigXY) || Req(kPairGeomSignDCAsigXY) || Req(kPairSignDCAsigXY) ||
       Req(kPairDCAsigXYZ) || Req(kPairDCAabsXYZ) || Req(kLeg1DCAsigXYZ) || Req(kLeg1DCAabsXYZ) || Req(kLeg2DCAsigXYZ) || Req(kLeg2DCAabsXYZ) ||
       Req(kLeg1DCAsigXY) || Req(kLeg1DCAabsXY) || Req(kLeg2DCAsigXY) || Req(kLeg2DCAabsXY) || Req(kLeg1DCAsigZ) || Req(kLeg1DCAabsZ) ||
       Req(kLeg2DCAsigZ) || Req(kLeg2DCAabsZ) || Req(kLeg1DCAresZ) || Req(kLeg2DCAresZ) || Req(kDeltaDCAabsZ) )
@@ -2341,6 +2369,13 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         values[AliDielectronVarManager::kPairLinDCAabsZ]     = (TMath::Abs(dca1[1]) + TMath::Abs(dca2[1])) / 2;
         values[AliDielectronVarManager::kPairLinDCAsigXY]    = (TMath::Abs(dcaSig1[0]) + TMath::Abs(dcaSig2[0])) / 2;
         values[AliDielectronVarManager::kPairLinDCAsigZ]     = (TMath::Abs(dcaSig1[1]) + TMath::Abs(dcaSig2[1])) / 2;
+
+	//new pair DCA var
+	values[AliDielectronVarManager::kPairDeltaDCAsigXY] = TMath::Abs(dcaSig1[0] - dcaSig2[0]);
+	values[AliDielectronVarManager::kPairSumDCAsigXY]   = TMath::Abs(dcaSig1[0] + dcaSig2[0]);
+	values[AliDielectronVarManager::kPairGeomDCAsigXY]  = TMath::Sqrt( TMath::Abs(dcaSig1[0] * dcaSig2[0]) );
+	values[AliDielectronVarManager::kPairGeomSignDCAsigXY] = pair->GetFirstDaughterP()->Charge() * pair->GetSecondDaughterP()->Charge() * TMath::Sign(1.,dcaSig1[0]) * TMath::Sign(1.,dcaSig2[0]) * TMath::Sqrt( TMath::Abs(dcaSig1[0] * dcaSig2[0]) );
+	values[AliDielectronVarManager::kPairSignDCAsigXY]     = pair->GetFirstDaughterP()->Charge() * pair->GetSecondDaughterP()->Charge() * TMath::Sign(1.,dcaSig1[0]) * TMath::Sign(1.,dcaSig2[0]) * TMath::Sqrt( (dcaSig1[0]*dcaSig1[0] + dcaSig2[0]*dcaSig2[0]) / 2 );
       }
     }
   }
@@ -2408,6 +2443,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kLeg1Eta]      = feta1;
 	values[AliDielectronVarManager::kLeg2Eta]      = feta2;
   	values[AliDielectronVarManager::kDeltaPhi]     = TMath::Abs(fphi1 -fphi2 );
+	values[AliDielectronVarManager::kAccoplanarity]     = 1. - (TMath::Abs(TVector2::Phi_mpi_pi(fphi1-fphi2)))/TMath::Pi();
 	values[AliDielectronVarManager::kLeg1Phi]      = fphi1;
 	values[AliDielectronVarManager::kLeg2Phi]      = fphi2;
 	values[AliDielectronVarManager::kLeg1Pt]       = fpt1;
@@ -2498,6 +2534,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kLeg1Pt]       = fpt1;
 	values[AliDielectronVarManager::kLeg2Pt]       = fpt2;
   	values[AliDielectronVarManager::kDeltaPhi]     = lv1.DeltaPhi(lv2);
+	values[AliDielectronVarManager::kAccoplanarity]     = 1. - (TMath::Abs(TVector2::Phi_mpi_pi(lv1.DeltaPhi(lv2))))/TMath::Pi();
 	values[AliDielectronVarManager::kLeg1Phi]      = TVector2::Phi_0_2pi( (lv1).Phi() );
 	values[AliDielectronVarManager::kLeg2Phi]      = TVector2::Phi_0_2pi( (lv2).Phi() );
 
@@ -2655,6 +2692,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     }
 
   if(Req(kQnDeltaPhiTPCrpH2) || Req(kQnTPCrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiTPCrpH2]  = TVector2::Phi_mpi_pi(phi - qnTPCeventplane);
+  if(Req(kQnDeltaPhiTPCrpH2Abs) || Req(kQnTPCrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiTPCrpH2Abs]  = TMath::Abs(TVector2::Phi_mpi_pi(phi - qnTPCeventplane));
   if(Req(kQnDeltaPhiV0ArpH2) || Req(kQnV0ArpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiV0ArpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnV0ArpH2]);
   if(Req(kQnDeltaPhiV0CrpH2) || Req(kQnV0CrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiV0CrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnV0CrpH2]);
   if(Req(kQnDeltaPhiV0rpH2) || Req(kQnV0rpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiV0rpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnV0rpH2]);
@@ -2830,6 +2868,7 @@ inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *part
   values[AliDielectronVarManager::kPIn]           = 0;
   values[AliDielectronVarManager::kYsignedIn]     = 0;
   values[AliDielectronVarManager::kTPCsignal]     = 0;
+  values[AliDielectronVarManager::kTPCsignalTunedOnData]     = 0;
   values[AliDielectronVarManager::kTOFsignal]     = 0;
   values[AliDielectronVarManager::kTOFbeta]       = 0;
   values[AliDielectronVarManager::kTPCnSigmaEleRaw]  = 0;

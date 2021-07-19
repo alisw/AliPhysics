@@ -1,6 +1,7 @@
 AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster",
   UInt_t period = 0, double ptmin = 0.5, Bool_t removebadarea = kFALSE,
-  Bool_t saveCatalystQA = kFALSE)
+  Bool_t saveCatalystQA = kFALSE, Int_t Nsets = 5, TString configArray = "0 1 3 4 6",
+  Int_t Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
 {
 // Load Custom Configuration and parameters.
   enum { lhc15o = 0, lhc18q = 1, lhc18r = 2 };
@@ -9,20 +10,47 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster",
     "\t ptmin=" << ptmin << endl;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  const int Nsets = 8;  // Number of configurations.
-  TString configNames[Nsets] = {
-    "hybrid",     // 0 = default.
-    "global",     // 1 for filtering.
-    "SPD",        // 2 for centrality.
-    "pileup"      // 3 for outliers.
-    "zvtx6",    // 4: PVz < 6cm.
-    "zvtx8",   // 5: PVz < 8cm.
-    "ntpc80",   // 6: N_TPC > 80.
-    "ntpc100"   // 7: N_TPC > 100.
-  };
+  const int maxNsets = 7;   // Maximum number of configurations (= max number of mapfiles available).
+  Int_t iConfig = -1;
+  Int_t index = 0;
+  TString configNames[maxNsets];
+  std::stringstream sConfig;
+  sConfig << configArray;
+
+  while (sConfig >> iConfig) {
+    if (index >= Nsets) {break;}
+    switch(iConfig) { // Hardcoded names to prevent typo in file names.
+      case 0 :  // Default: hybrid.
+        configNames[index] = "hybrid";
+        break;
+      case 1 :  // Syst: global.
+        configNames[index] = "global";
+        break;
+      case 2 :  // Syst: nqq. TBI
+        configNames[index] = "nqq";
+        break;
+      case 3 :  // Syst: pileup.
+        configNames[index] = "pileup";
+        break;
+      case 4 :  // Syst: SPD.
+        configNames[index] = "SPD";
+        break;
+      case 5 :  // Syst: subA. TBI
+        configNames[index] = "subA";
+        break;
+      case 6 :  // Syst: ztx < 8.
+        configNames[index] = "zvtx";
+        break;
+      default :
+        printf("ERROR: Invalid configuration index. Skipping this element.\n");
+        Nsets--;  // To ensure the array is still the right length.
+        index--;  // To come back to the situation before the mess.
+    }
+    index++;
+  }
 
 // Load the correction map.
-  TString MAPfilenames[Nsets];
+  TString MAPfilenames[maxNsets];
   TString MAPdirname = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
   AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
 
@@ -54,14 +82,14 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster",
 
 // Set the JCatalystTasks for the event and track selection.
 // taskName added in the name of the catalyst to prevent merging issues between wagons.
-  AliJCatalystTask *fJCatalyst[Nsets];  // One tracking per config.
+  AliJCatalystTask *fJCatalyst[maxNsets];  // One tracking per config.
 
   for (int i = 0; i < Nsets; i++) {
     fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", taskName.Data(), configNames[i].Data()));
     cout << fJCatalyst[i]->GetJCatalystTaskName() << endl;
 
   // Set the correct flags to use.
-    if (i != 3) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);}
+    if (strcmp(configNames[i].Data(), "pileup") != 0) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);}
     if (period == lhc18q || period == lhc18r) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);}
 
   // Set the trigger and centrality selection.
@@ -70,31 +98,21 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster",
 
     fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
     fJCatalyst[i]->SetInitializeCentralityArray();
-    if (i == 2) {   // SPD clusters for the systematics.
+    if (strcmp(configNames[i].Data(), "SPD") == 0) {   // SPD clusters for the systematics.
       fJCatalyst[i]->SetCentDetName("CL1");
     } else {
       fJCatalyst[i]->SetCentDetName("V0M"); // V0M for the default analysis.
     }
 
   // Set the filtering and kinematic cuts.
-    if (i == 1) { // Global tracks for the systematics.
+    if (strcmp(configNames[i].Data(), "global") == 0) { // Global tracks for the systematics.
       fJCatalyst[i]->SetTestFilterBit(globalCut);
     } else {  // Hybrid tracks for the default analysis.
       fJCatalyst[i]->SetTestFilterBit(hybridCut);
     }
   
-    if (strcmp(configNames[i].Data(), "zvtx6") == 0) {    
-      fJCatalyst[i]->SetZVertexCut(6.0);
-    }
-    else if (strcmp(configNames[i].Data(), "zvtx8") == 0) {    
+    if (strcmp(configNames[i].Data(), "zvtx") == 0) {    
       fJCatalyst[i]->SetZVertexCut(8.0);
-    } // Else: do nothing, default is 10.
-
-    if (strcmp(configNames[i].Data(), "ntpc80") == 0) {    
-      fJCatalyst[i]->SetNumTPCClusters(80);
-    }
-    else if (strcmp(configNames[i].Data(), "ntpc100") == 0) {    
-      fJCatalyst[i]->SetNumTPCClusters(100);
     } // Else: do nothing, default is 10.
 
     fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
@@ -105,7 +123,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster",
   }   // End for.
 
 // Configure the analysis task wagons.
-  AliJHOCFATask *myTask[Nsets];
+  AliJHOCFATask *myTask[maxNsets];
   for (int i = 0; i < Nsets; i++) {
     myTask[i] = new AliJHOCFATask(Form("%s_s_%s", taskName.Data(), configNames[i].Data()));
     myTask[i]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
@@ -114,14 +132,14 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster",
     myTask[i]->HOCFASetCentralityArray("0. 5. 10. 20. 30. 40. 50. 60. 70. 80.");
     myTask[i]->HOCFASetMinMultiplicity(10);
     myTask[i]->HOCFASetParticleWeights(kTRUE);
-    myTask[i]->HOCFASetNumberCombi(6);
-    myTask[i]->HOCFASetHarmoArray("2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5"); // 6 combis.
+    myTask[i]->HOCFASetNumberCombi(Ncombi);
+    myTask[i]->HOCFASetHarmoArray(Form("%s", combiArray.Data())); // 6 combis.
     mgr->AddTask((AliAnalysisTask *) myTask[i]);
   }
 
 // Create the containers for input/output.
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer ();
-  AliAnalysisDataContainer *jHist[2*Nsets];
+  AliAnalysisDataContainer *jHist[2*maxNsets];
 
   // Connect input/output
   for (int i = 0; i < Nsets; i++) {

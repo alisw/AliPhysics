@@ -119,6 +119,8 @@ public:
   void EnableParticleSpecies(bool pi=true, bool kao=true, bool pr=true, bool el=false, bool deu=false, bool tr=false, bool He3=false);
   void EnableDetectors(bool ITS=false, bool TPC=true, bool TOF=true, bool HMPID=false);
 
+  AliESDtrackCuts *GetESDtrackCuts()                                          {return fESDtrackCuts;}
+
 private:
 
   bool IsVertexAccepted();

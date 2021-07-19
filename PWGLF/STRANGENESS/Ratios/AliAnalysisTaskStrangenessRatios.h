@@ -13,6 +13,37 @@ class TH2F;
 class TList;
 class TTree;
 
+struct MiniLambda {
+  Double32_t pt;
+  Double32_t eta;
+  Double32_t mass;
+  Double32_t ct;
+  Double32_t radius;      //[0,50.8,8]
+  Double32_t dcaV0PV;     //[0,10.16,8]
+  Double32_t dcaPiPV;     //[0,10.16,8]
+  Double32_t dcaPrPV;     //[0,10.16,8]
+  Double32_t dcaV0tracks; //[0,2.54,8]
+  Double32_t cosPA;       //[0.95,1,16]
+  Double32_t tpcNsigmaPi; //[-5,5,8]
+  Double32_t tpcNsigmaPr; //[-5,5,8]
+  unsigned char tpcClV0Pi;
+  unsigned char tpcClV0Pr;
+  unsigned char centrality;
+  bool matter;
+  bool hasTOFhit;
+  bool hasITSrefit;
+};
+
+struct MiniLambdaMC : public MiniLambda {
+  float ptMC;
+  float etaMC;
+  float ctMC;
+  float yMC;
+  int pdg;
+  bool isPrimary;
+  bool isReconstructed;
+};
+
 struct MiniCascade {
   Double32_t pt;
   Double32_t eta;
@@ -61,12 +92,16 @@ public:
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *);
+  virtual Bool_t UserNotify();
   virtual void   Terminate(Option_t *) {}
 
   AliEventCuts  fEventCut; ///<
 
+  void SetFillLambdas(bool toogle = true) { fFillLambdas = toogle; }
+  void SetLambdaDownscaling(float scale = true) { fLambdaDownscaling = scale; }
+
   //Setters for topological cuts
-  void SetRadiusCut(float xi = 1.2, float omega = 1.) {fCutRadius[0]=xi; fCutRadius[1]=omega;}
+  void SetRadiusCut(float xi = 1.2, float omega = 1., float lambda = 0.5) {fCutRadius[0]=xi; fCutRadius[1]=omega; fCutRadius[2]=lambda;}
   void SetRadiusV0Cut(float cut = 3.0) {fCutRadiusV0=cut;}
   void SetDCABachToPVCut(float cut = 0.1) {fCutDCABachToPV=cut;}
   void SetDCAV0toPVCut(float cut = 0.1) {fCutDCAV0toPV=cut;}
@@ -85,6 +120,7 @@ public:
   void SetCompetingMassCut(float omega = 0.008 /*GeV/c^2*/, float xi = 0. /*GeV/c^2*/) {fCutCompetingMass[0]=xi; fCutCompetingMass[1]=omega;}
   void SetTPCcluCut(int cut = 70) {fCutTPCclu=cut;}
   void SetSaveOnlyTrueCandidates(bool cut = true) { fOnlyTrueCandidates = cut; }
+  void SetSaveOnlyTrueLambdas(bool cut = true) { fOnlyTrueLambdas = cut; }
   void SetTPCRowsCut(float cut = 80.) {fCutTPCrows=cut;}
   void SetTPCRowOvFCut(float cut = 0.8) {fCutRowsOvF=cut;}
 
@@ -92,17 +128,25 @@ private:
   AliAnalysisTaskStrangenessRatios (const AliAnalysisTaskStrangenessRatios &source);
   AliAnalysisTaskStrangenessRatios &operator=(const AliAnalysisTaskStrangenessRatios &source);
 
+  void PostAllData();
+
   TList*          fList = nullptr;             //!<! List of the output histograms
-  TTree*          fTree = nullptr;           //!<! Tree for Xis and Omegas
+  TTree*          fTree = nullptr;             //!<! Tree for Xis and Omegas
+  TTree*          fTreeLambda = nullptr;       //!<! Tree for Lambdas
 
   MiniCascade* fRecCascade = nullptr;          //!<! Transient fRecCascade
   MiniCascadeMC fGenCascade;
+  MiniLambda* fRecLambda = nullptr;          //!<! Transient fRecLambda
+  MiniLambdaMC fGenLambda;
   AliPIDResponse* fPID = nullptr;              //!<! ALICE PID framework
   bool fMC;
   bool fOnlyTrueCandidates = false;  ///< Save only true Xi and Omegas in MC
+  bool fFillLambdas = false;
+  bool fOnlyTrueLambdas = true;      ///< Save only true Lambdas in MC
+  float fLambdaDownscaling = 1.;
 
   //configurable cuts
-  float fCutRadius[2] = {1.2, 1.0};
+  float fCutRadius[3] = {1.2, 1.0, 3.0};
   float fCutRadiusV0 = 3.0;
   float fCutDCABachToPV = 0.1;
   float fCutDCAV0toPV = 0.1;
@@ -122,10 +166,18 @@ private:
   int fCutTPCclu = 70;
   float fCutTPCrows = 80.;
   float fCutRowsOvF = 0.8;
-  double fCasc_LeastCRaws;
-  double fCasc_LeastCRawsOvF;
+  double fCascLeastCRaws;
+  double fCascLeastCRawsOvF;
+  double fLambdaLeastCRaws;
+  double fLambdaLeastCRawsOvF;
+
+  float fCosPALambda = 0.97;
+  float fCutDCALambdaPrToPV = 0.08;
+  float fCutDCALambdaPiToPV = 0.12;
+  float fCutLambdaMass[2] = {1.09f, 1.15f};
 
   bool IsTopolSelected(bool isXi = true);
+  bool IsTopolSelectedLambda();
   float Eta2y(float pt, float m, float eta) const;
 
 

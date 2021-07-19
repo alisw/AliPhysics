@@ -313,8 +313,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
 
   // Particle weights:
   void SetWeightsHist(TH1D* const hist, const char *variable); // .cxx
+  TH1D* GetWeightsHist(const char *variable); // . cxx
   TH1D* GetHistogramWithWeights(const char *filePath, const char *variable); // .cxx
-
+ 
   // Utility:
   void Red(const char* text);
   void Green(const char* text);
@@ -356,6 +357,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // 0) Base list:
   TList *fBaseList; // base list to hold all output object (a.k.a. grandmother of all lists)
   TProfile *fBasePro; // keeps flags relevant for the whole analysis
+  TString fTaskName; // e.g. Form("Task=>%.1f-%.1f",centrMin,centrMax)
   TString fDataTakingPeriod; // the data taking period, use e.g. task->SetDataTakingPeriod("LHC10h")
   TString fAODNumber; // the AOD number, use e.g. task->SetPeriod("AOD160") (for "LHC10h")
   Bool_t fFillQAHistograms; // fill all QA histograms (this shall be done only in one task, since these histos are heavy 2D objects). Additional loop over particles is performed.
@@ -478,7 +480,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,4);
+  ClassDef(AliAnalysisTaskMuPa,5);
 
 };
 

@@ -1,6 +1,6 @@
 #include "AliAODConversionMother.h"
 #include "AliKFConversionMother.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 
 // Author D. Lohner (Daniel.Lohner@cern.ch)
 
