@@ -188,10 +188,18 @@ class AliAnalysisTaskCMWPU2018 : public AliAnalysisTaskSE {
 
   
   /// TO fill NUA for new Cut: //these are used for filling NUA:
-  TH3F          *fHFillNUAPosPID[5];    //! 
-  TH3F          *fHFillNUANegPID[5];    //! 
-
+  //TH3F          *fHFillNUAPosPID[5];    //! 
+  //TH3F          *fHFillNUANegPID[5];    //! 
+  TH3F          *fHFillNUAPosPID;    //! 
+  TH3F          *fHFillNUANegPID;
   
+  TF1           *fSPDCutPU;     //!
+  TF1           *fV0CutPU;      //!
+  TF1           *fMultCutPU;    //!
+  TF1           *fCenCutLowPU;  //!
+  TF1           *fCenCutHighPU; //!
+
+ 
   
 
   ///Custom Functions:

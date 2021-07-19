@@ -136,14 +136,20 @@ AliAnalysisTaskCMWPU2018::AliAnalysisTaskCMWPU2018(const char *name): AliAnalysi
 
   fHistPileUpCount(NULL),
   fHistEventCount(NULL),
-  fHCorrectEVNTWGTChrg(NULL)
-  
+  fHCorrectEVNTWGTChrg(NULL),
+  fHFillNUAPosPID(NULL),
+  fHFillNUANegPID(NULL),
+  fSPDCutPU(NULL),
+  fV0CutPU(NULL),
+  fMultCutPU(NULL),
+  fCenCutLowPU(NULL),
+  fCenCutHighPU(NULL)   
 {
 
-  for(int i=0; i<5; i++){
-    fHFillNUAPosPID[i]  = NULL;
-    fHFillNUANegPID[i]  = NULL; 
-  }
+  //for(int i=0; i<5; i++){
+  //fHFillNUAPosPID[i]  = NULL;
+  //fHFillNUANegPID[i]  = NULL; 
+  //}
 
   
   //Must be here:
@@ -208,13 +214,20 @@ AliAnalysisTaskCMWPU2018::AliAnalysisTaskCMWPU2018():
 
   fHistPileUpCount(NULL),
   fHistEventCount(NULL),
-  fHCorrectEVNTWGTChrg(NULL)
+  fHCorrectEVNTWGTChrg(NULL),
+  fHFillNUAPosPID(NULL),
+  fHFillNUANegPID(NULL),
+  fSPDCutPU(NULL),
+  fV0CutPU(NULL),
+  fMultCutPU(NULL),
+  fCenCutLowPU(NULL),
+  fCenCutHighPU(NULL)    
 {
 
-  for(int i=0; i<5; i++){
-    fHFillNUAPosPID[i]  = NULL;
-    fHFillNUANegPID[i]  = NULL; 
-  }
+  //for(int i=0; i<5; i++){
+  //fHFillNUAPosPID[i]  = NULL;
+  //fHFillNUANegPID[i]  = NULL; 
+  //}
   
   //Not needed for Empty Constructor:
   //DefineInput(0,TChain::Class());
@@ -231,6 +244,13 @@ AliAnalysisTaskCMWPU2018::~AliAnalysisTaskCMWPU2018()
   if(fListTRKCorr)  delete fListTRKCorr;
   if(fListNUACorr)  delete fListNUACorr;
   if(fListV0MCorr)  delete fListV0MCorr;
+
+  //delete the functions:
+  if(fSPDCutPU)     delete fSPDCutPU;
+  if(fV0CutPU)      delete fV0CutPU;
+  if(fMultCutPU)    delete fMultCutPU;
+  if(fCenCutLowPU)  delete fCenCutLowPU; 
+  if(fCenCutHighPU) delete fCenCutHighPU; 
       
 }
 
@@ -276,6 +296,14 @@ void AliAnalysisTaskCMWPU2018::UserCreateOutputObjects()
   fListHist->Add(fCentDistBeforCut);
   fCentDistAfterCut = new TH1F("fCentDistAfterCut","Cent with all Cut; Cent (%); no.Events ",100,0,100);
   fListHist->Add(fCentDistAfterCut);
+  /*  
+  fHistEtaPtBeforCut = new TH2F("fHistEtaPtBeforCut","#eta vs p_{T} (wFB, w/o  cut)",24,-1.2,1.2,50,0,5);
+  fListHist->Add(fHistEtaPtBeforCut);
+  fHistEtaPhiBeforCut = new TH2F("fHistPhiEtaBeforCut","#phi vs #eta (wFB, w/o cut)",50,0,6.2835,24,-1.2,1.2);
+  fListHist->Add(fHistEtaPhiBeforCut);  
+  fHistEtaPhiAfterCut = new TH2F("fHistPhiEtaAfterCut","#phi vs #eta (with Wgts)",50,0,6.2835,24,-1.2,1.2);
+  fListHist->Add(fHistEtaPhiAfterCut);
+  */
 
 
 
@@ -314,10 +342,10 @@ void AliAnalysisTaskCMWPU2018::UserCreateOutputObjects()
   fTPCvsGlobalTrkAfter = new TH2F("fTPCvsGlobalTrkAfter","Global(FB32) vs TPC(FB128)",250,0,5000,250,0,5000);
   fListHist->Add(fTPCvsGlobalTrkAfter);
   
-  fHistTPCVsESDTrkBefore = new TH2F("fHistTPCVsESDTrkBefore","Before; TPC1; ESD trk",250,0,gMaxTPCcorrmult,250,0,gMaxESDtracks);
-  fListHist->Add(fHistTPCVsESDTrkBefore);
-  fHistTPCVsESDTrkAfter  = new TH2F("fHistTPCVsESDTrkAfter"," After;  TPC1; ESD trk",250,0,gMaxTPCcorrmult,250,0,gMaxESDtracks);
-  fListHist->Add(fHistTPCVsESDTrkAfter);
+  //fHistTPCVsESDTrkBefore = new TH2F("fHistTPCVsESDTrkBefore","Before; TPC1; ESD trk",250,0,gMaxTPCcorrmult,250,0,gMaxESDtracks);
+  //fListHist->Add(fHistTPCVsESDTrkBefore);
+  //fHistTPCVsESDTrkAfter  = new TH2F("fHistTPCVsESDTrkAfter"," After;  TPC1; ESD trk",250,0,gMaxTPCcorrmult,250,0,gMaxESDtracks);
+  //fListHist->Add(fHistTPCVsESDTrkAfter);
 
 
 
@@ -345,22 +373,39 @@ void AliAnalysisTaskCMWPU2018::UserCreateOutputObjects()
   else if(fParticle==3) sprintf(cpid,"Prot,Id %d",fParticle);
   else  sprintf(cpid,"Charge,Id %d",fParticle);
 
+
+  sprintf(name,"fHistEtaPhiVz_%d_Pos_Cent%d_Run%d",fParticle,0,1); 
+  sprintf(title,"%s Pos, Cent%d-%d, FB %d",cpid,0,90,fFilterBit);
+  fHFillNUAPosPID = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
+  fListHist->Add(fHFillNUAPosPID);
+
+  sprintf(name,"fHistEtaPhiVz_%d_Neg_Cent%d_Run%d",fParticle,0,1); 
+  sprintf(title,"%s Neg, Cent%d-%d, FB %d",cpid,0,90,fFilterBit);
+  fHFillNUANegPID = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
+  fListHist->Add(fHFillNUANegPID);
+
+  
+  //// PileUp Removal Functions:
+  fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
+
+  Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
+  fV0CutPU  = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+  fV0CutPU->SetParameters(parV0);
+
+  Double_t parFB32[8] = {2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
+  fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90);
+  fMultCutPU->SetParameters(parFB32);
+  
+  Double_t parV0CL0[6] = {0.320462, 0.961793, 1.02278, 0.0330054, -0.000719631, 6.90312e-06};
+  fCenCutLowPU  = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+  fCenCutLowPU->SetParameters(parV0CL0);
+  fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+  fCenCutHighPU->SetParameters(parV0CL0);
+
+
+
+  
     
-  for(int i=0; i<5; i++){
-    sprintf(name,"fHistEtaPhiVz_%d_Pos_Cent%d_Run%d",fParticle,i,1); 
-    sprintf(title,"%s Pos, Cent%d-%d, FB %d",cpid,gCentForNUA[i],gCentForNUA[i+1],fFilterBit);
-    fHFillNUAPosPID[i] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
-    fListHist->Add(fHFillNUAPosPID[i]);
-
-    sprintf(name,"fHistEtaPhiVz_%d_Neg_Cent%d_Run%d",fParticle,i,1); 
-    sprintf(title,"%s Neg, Cent%d-%d, FB %d",cpid,gCentForNUA[i],gCentForNUA[i+1],fFilterBit);
-    fHFillNUANegPID[i] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
-    fListHist->Add(fHFillNUANegPID[i]);    
-  }
-    
-
-
-
 
 
   if(fListTRKCorr){
@@ -373,7 +418,7 @@ void AliAnalysisTaskCMWPU2018::UserCreateOutputObjects()
   if(fListNUACorr){
     std::cout<<"\n UserCreateOutputObject::Info() Tlist for NUA Correction Found.!!\n"<<std::endl;
     //fListNUACorr->ls(); 
- }
+  }
   else{
     std::cout<<"\n\n ******* WARNING No TList NUA Correction!!\n using NUAWgt = 1.0 \n "<<std::endl;
   }
@@ -381,8 +426,7 @@ void AliAnalysisTaskCMWPU2018::UserCreateOutputObjects()
   if(fListV0MCorr){
     std::cout<<"\n UserCreateOutputObject::Info() Tlist for EVNTWGT Correction Found.!!\n"<<std::endl;
     //fListV0MCorr->ls();
- 
-}
+  }
   else{
     std::cout<<"\n\n ******* WARNING No TList EVNTWGT Correction!!\n using EVNTWGTWgt = 1.0 \n "<<std::endl;
   }
@@ -564,8 +608,10 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
 
 
   //Centrality array index for NUA correcion
-  Int_t cForNUA = 0;  
-
+  // Remove Centrality dependence..
+  
+  /*Int_t cForNUA = 0;  
+  
   if(centrality<5.0) {
     cForNUA = 0;
   }
@@ -580,7 +626,7 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
   }
   else if(centrality>=40){
     cForNUA = 4; // 4=40-90
-  }
+  }*/
 
 
 
@@ -794,7 +840,7 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
 	    isItPion = kTRUE;
 	  }
 	  // Using Circular cut for Pion: 	  
-	  else if(trkPt>0.5 && TMath::Abs(nSigRMSTPCTOFpion)<=3.0){
+	  else if(trkPt>0.5 && TMath::Abs(nSigRMSTPCTOFpion)<=fNSigmaTOFCut){
 	  isItPion = kTRUE;
 	  }
 	}
@@ -809,7 +855,7 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
 	  if(trkPt<=0.45 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut){
 	    isItKaon = kTRUE;
 	  }
-	  else if(trkPt>0.45 && TMath::Abs(nSigRMSTPCTOFkaon)<=2.5){
+	  else if(trkPt>0.45 && TMath::Abs(nSigRMSTPCTOFkaon)<=fNSigmaTOFCut){
 	    isItKaon = kTRUE;
 	  }
 	}
@@ -825,7 +871,7 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
 	    isItProt = kTRUE;
 	    if(trkChrg>0 && trkPt<0.4) isItProt = kFALSE;  
 	  }
-	  else if(trkPt>0.6 && TMath::Abs(nSigRMSTPCTOFprot)<=3.0){
+	  else if(trkPt>0.6 && TMath::Abs(nSigRMSTPCTOFprot)<=fNSigmaTOFCut){
 	    isItProt = kTRUE;
 	  }
 	}
@@ -843,50 +889,53 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
 	
 	
 	if(trkChrg > 0){	  
-
-	  if(fParticle==0)
-	    fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	 
 	  
+	  if(fParticle==0)
+	    fHFillNUAPosPID->Fill(pVtxZ,trkPhi,trkEta);
+	    //fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	 
+	    	  
 	  if(fParticle==1 && isItPion){
-	    fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    //fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    fHFillNUAPosPID->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 	  if(fParticle==2 && isItKaon){
-	    fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    //fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    fHFillNUAPosPID->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 	  if(fParticle==3 && isItProt){
-	    fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    //fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    fHFillNUAPosPID->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 
 	  
 	  
 	}///+ve Ch done	
 	else{  //-Ve charge
-	  	 
+		  
 	  if(fParticle==0)
-	  fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
-		    
+	    fHFillNUANegPID->Fill(pVtxZ,trkPhi,trkEta);
+	    //fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    
 	  if(fParticle==1 && isItPion){
-	    fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  
+	    //fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    fHFillNUANegPID->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 	  if(fParticle==2 && isItKaon){
-	    fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  
+	    //fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    fHFillNUANegPID->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 	  if(fParticle==3 && isItProt){
-	    fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  	    
+	    //fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    fHFillNUANegPID->Fill(pVtxZ,trkPhi,trkEta);
 	  }
-
-
-
+	  
 	}/// if -ve Particle
 	//----------- v2 vs Ach filled ---------
+         
 
+      }//----> with all trackCuts applied      
 
-	
-       
-       
-
-      }//with all trackCuts applied      
-    }//-------> if FB is validated
+    }//-----> if FB is validated
     
   }///------> 2nd Track loop Ends here.<--------
  
@@ -1058,26 +1107,24 @@ Bool_t AliAnalysisTaskCMWPU2018::CheckEventIsPileUp2018(AliAODEvent *faod) {
   */
 
 
-
+  /*
   TF1 *fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
 
-
   Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
-  TF1 *fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+  TF1 *fV0CutPU  = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
   fV0CutPU->SetParameters(parV0);
 
-
   Double_t parV0CL0[6] = {0.320462, 0.961793, 1.02278, 0.0330054, -0.000719631, 6.90312e-06};
-  TF1 *fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+
+  TF1 *fCenCutLowPU  = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
   fCenCutLowPU->SetParameters(parV0CL0);
   TF1 *fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
   fCenCutHighPU->SetParameters(parV0CL0);
 
-
   Double_t parFB32[8] = {2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
   TF1 *fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90);
   fMultCutPU->SetParameters(parFB32);
-
+ */
 
 
 
@@ -1153,34 +1200,34 @@ Bool_t AliAnalysisTaskCMWPU2018::CheckEventIsPileUp2018(AliAODEvent *faod) {
 
   if (centrCL0 < fCenCutLowPU->Eval(centrV0M))
     {
-      cout<<"*****************hi i am in 1st**************************:"<<endl;
+      //cout<<"*****************hi i am in 1st**************************:"<<endl;
       BisPileup=kTRUE;
     }
 
   if (centrCL0 > fCenCutHighPU->Eval(centrV0M))
     {
-      cout<<"*****************hi i am in 2nd**************************:"<<endl;
+      //cout<<"*****************hi i am in 2nd**************************:"<<endl;
       BisPileup=kTRUE;
     }
 
 
   if (Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls))
     {
-      cout<<"*****************hi i am in 3rd**************************:"<<endl;
+      //cout<<"*****************hi i am in 3rd**************************:"<<endl;
       BisPileup=kTRUE;
     }
         
 
   if (multV0On < fV0CutPU->Eval(multV0Tot))
     {
-      cout<<"*****************hi i am in 4th**************************:"<<endl;
+      //cout<<"*****************hi i am in 4th**************************:"<<endl;
       BisPileup=kTRUE;
     }
 
 
   if (Float_t(multTrk) < fMultCutPU->Eval(centrV0M))
     {
-      cout<<"*****************hi i am in 5th**************************:"<<endl;
+      //cout<<"*****************hi i am in 5th**************************:"<<endl;
       BisPileup=kTRUE;
     }
 
@@ -1207,14 +1254,7 @@ Bool_t AliAnalysisTaskCMWPU2018::CheckEventIsPileUp2018(AliAODEvent *faod) {
       fHistCL0VsV0MAfter->Fill(centrV0M,centrCL0);
     }
 
-
-
- 
-
-
-
  return BisPileup; 
-
 
 }
 
@@ -1650,8 +1690,6 @@ void AliAnalysisTaskCMWPU2018::GetMCCorrectionHist(Int_t run,Float_t centr){
   //   std::cout<<"\n\n !!!!**** Warning : No FB Efficiency Correction, run = "<<run<<"..!!!**** \n using MC TrkWgt = 1.0 \n"<<std::endl;
   // }
 }
-
-
 
 
 
