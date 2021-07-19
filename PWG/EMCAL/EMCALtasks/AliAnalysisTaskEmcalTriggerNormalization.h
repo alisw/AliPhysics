@@ -84,6 +84,18 @@ namespace EMCAL {
  * | p-Pb 8.16 TeV | CENT->CENTNOPMD            | EMC7, DMC7         |
  * | p-Pb 8.16 TeV | CENTNOPMD->CENTNOTRD       | EJ1, EG1, DJ1, DG1 |
  * 
+ * # Trigger correlation 
+ * 
+ * Further histograms are filled for each trigger cluster monitoring the correlation between
+ * different trigger classes. The diagonal elements are self-correlations and can therefore
+ * be used to as absolute event counter. The off-diagonal elements of the matrix monitor
+ * which triggers fire together with the trigger class and show the correlation of a trigger
+ * with other triggers, where the other trigger is always a subset.
+ * 
+ * Downscale factors can be checked comparing the event count of the off-diagonal element for
+ * the trigger to the diagonal eleemnt for a reference trigger. In this case the reference 
+ * process must not be downscaled.
+ * 
  * # Basic task configuration
  * 
  * A static Add function performs the basic task configuration. The tasks configures itself

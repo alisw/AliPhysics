@@ -1,4 +1,5 @@
 //Class for <pt>-v2 correlations
+//Author: Vytautas Vislavicius
 
 #include "AliAnalysisTaskMeanPtV2Corr.h"
 #include "AliEventCuts.h"
@@ -7,9 +8,11 @@
 #include "AliAnalysisUtils.h"
 #include "AliVEvent.h"
 #include "AliAODEvent.h"
+#include "AliESDEvent.h"
 #include "AliVTrack.h"
 #include "AliVParticle.h"
 #include "AliAODTrack.h"
+#include "AliESDtrack.h"
 #include "AliVVertex.h"
 #include "AliAODVertex.h"
 #include "AliCentrality.h"
@@ -658,6 +661,29 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   LoadWeightAndMPT();
 };
 void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
+  if(fStageSwitch == 7) { //Efficiencies on ESDs
+    AliESDEvent *fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+    if(!fESD) return;
+    if(fIsMC) {
+      fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
+      if (!fMCEvent) return;
+    }
+    if(!fEventCuts.AcceptEvent(fESD)) return;
+    AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+    if(!lMultSel) AliFatal("Mult selection not found!\n");
+    Double_t l_Cent = lMultSel->GetMultiplicityPercentile(fCentEst->Data());
+    if(!fBypassTriggerAndEvetCuts)
+      if(!CheckTrigger(l_Cent)) return;
+    Double_t vtxXYZ[] = {0,0,0};
+    Double_t vzt=0;
+    ProduceEfficiencies(fESD,vzt,l_Cent,vtxXYZ); //Disabling vz vertex
+      //Bypass these for now
+    // Double_t vtxXYZ[] = {0.,0.,0.};
+    // if(!AcceptAOD(fAOD, vtxXYZ)) return;
+    // Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
+
+    return;
+  }
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
   if(fIsMC) {
@@ -679,13 +705,14 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   if(fStageSwitch==3)
     FillCK(fAOD,vz,l_Cent,vtxXYZ);
   if(fStageSwitch==7)
-    ProduceEfficiencies(fAOD,vz,l_Cent,vtxXYZ);
+    ProduceEfficienciesOld(fAOD,vz,l_Cent,vtxXYZ);
   if(fStageSwitch==8)
     MCClosure_MeanPt(fAOD,vz,l_Cent,vtxXYZ);
   if(fStageSwitch==9)
     CovSkipMpt(fAOD,vz,l_Cent,vtxXYZ);
 };
 void AliAnalysisTaskMeanPtV2Corr::NotifyRun() {
+  if(fStageSwitch==7) return;
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   //Reinitialize AliEventCuts (done automatically on check):
   Bool_t dummy = fEventCuts.AcceptEvent(fAOD);
@@ -730,6 +757,22 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *l
   } else return kFALSE; //DCA cut is a must for now
   return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
 };
+Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptESDTrack(AliESDtrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp) {
+  if(mtr->Pt()<ptMin) return kFALSE;
+  if(mtr->Pt()>ptMax) return kFALSE;
+  if(ltrackXYZ) {
+    Float_t fD, fZ;
+    mtr->GetImpactParameters(fD,fZ);
+    ltrackXYZ[0] = fD;
+    ltrackXYZ[1] = fZ;
+    // mtr->GetXYZ(ltrackXYZ);
+    // ltrackXYZ[0] = ltrackXYZ[0]-vtxp[0];
+    // ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
+    // ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
+  } else return kFALSE; //DCA cut is a must for now
+  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+};
+
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot) {
   if(mtr->Pt()<ptMin) return kFALSE;
   if(mtr->Pt()>ptMax) return kFALSE;
@@ -742,6 +785,19 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *l
   if(fGFWNtotSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE)) nTot++;
   return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
 };
+Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptESDTrack(AliESDtrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot) {
+  if(mtr->Pt()<ptMin) return kFALSE;
+  if(mtr->Pt()>ptMax) return kFALSE;
+  if(ltrackXYZ) {
+    Float_t fD, fZ;
+    mtr->GetImpactParameters(fD,fZ);
+    ltrackXYZ[0] = fD;
+    ltrackXYZ[1] = fZ;
+  } else return kFALSE; //DCA cut is a must for now
+  if(fGFWNtotSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE)) nTot++;
+  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+};
+
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptParticle(AliVParticle *mpa) {
   if(!mpa->IsPhysicalPrimary()) return kFALSE;
   if(mpa->Charge()==0) return kFALSE;
@@ -1189,7 +1245,7 @@ for(Int_t i=0;i<1;i++) { //No PID = index is only 1
   Fillv2dPtFCs(corrconfigs.at(4),outVals[0][3]/outVals[0][0]-1,0,indx);
   PostData(4,fV2dPtList);
 }
-void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
+void AliAnalysisTaskMeanPtV2Corr::ProduceEfficienciesOld(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   AliAODTrack *lTrack;
   Double_t l_ptsum[]={0,0,0,0};
   Double_t l_ptCount[]={0,0,0,0};
@@ -1253,6 +1309,83 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
   fNchTrueVsReco->Fill(lNchGen,lNchRec);
   PostData(1,fEfficiencyList);
 }
+void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
+  AliESDtrack *lTrack;
+  Double_t l_ptsum[]={0,0,0,0};
+  Double_t l_ptCount[]={0,0,0,0};
+  Double_t trackXYZ[3];
+  Double_t ptMin = fPtBins[0];
+  Double_t ptMax = fPtBins[fNPtBins];
+  Float_t dcaxy, dcaz;
+  fV0MMulti->Fill(l_Cent);
+  // TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
+  Int_t nPrim = fMCEvent->GetNumberOfTracks();
+  AliMCParticle *lPart;
+  Int_t partNotFetched=0;
+  Int_t lNchGen=0;
+  Int_t lNchRec=0;
+  Int_t nSpecies=7;
+  AliMCSpectraWeightsHandler* mcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fAOD->FindListObject("fMCSpectraWeights"));
+  if(!mcWeightsHandler) AliFatal("MC weight handler not found!\n");
+  AliMCSpectraWeights *fMCSpectraWeights = (mcWeightsHandler) ? mcWeightsHandler->fMCSpectraWeight : nullptr;
+  if(!fMCSpectraWeights) AliFatal("Spectra weights not found!\n");
+
+  // if(!mcHeader) { printf("Could not fetch MC header!\n"); return; };
+  for (Int_t ipart = 0; ipart < nPrim; ipart++) {
+    lPart = (AliMCParticle*)fMCEvent->GetTrack(ipart);//ca->At(ipart);
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart, fMCEvent)) continue;
+    if (!lPart) { partNotFetched++; continue; };
+    /* get particlePDG */
+    Int_t pdgcode = TMath::Abs(lPart->PdgCode());
+    if (!lPart->IsPhysicalPrimary()) continue;
+    if (lPart->Charge()==0.) continue;
+    Double_t pt = lPart->Pt();
+    Double_t lEta = TMath::Abs(lPart->Eta());
+    if (pt<0.15 || pt>50.) continue;
+    if(pt>0.2 && pt<3 && lEta<fEtaNch) lNchGen++;
+    if (lEta > fEta) continue;
+    Double_t CompWeight = 1;
+    if(fMCSpectraWeights) {
+      CompWeight = fMCSpectraWeights->GetMCSpectraWeightNominal(lPart->Particle());
+    };
+    fEfficiency[nSpecies]->Fill(pt,l_Cent,CompWeight);
+    Int_t pidind = GetPIDIndex(pdgcode);
+    if(pidind) fEfficiency[nSpecies+pidind]->Fill(pt,l_Cent,CompWeight);
+  };
+  for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
+    lTrack = (AliESDtrack*)fAOD->GetTrack(lTr);
+    if(!lTrack) continue;
+    if(!AcceptESDTrack(lTrack,trackXYZ,ptMin,ptMax,0)) continue;
+    Double_t lpt = lTrack->Pt();
+    if(lpt>0.2 && lpt<3 && TMath::Abs(lTrack->Eta())<fEtaNch) lNchRec++;
+    Int_t fLabel = lTrack->GetLabel();
+    Int_t index = TMath::Abs(fLabel);
+    if (index < 0) continue;
+    lPart = (AliMCParticle*)fMCEvent->GetTrack(index);//(AliVParticle*)tca->At(index);//fMCEvent->Particle(index);
+    if(!lPart) continue;
+    if (TMath::Abs(lPart->Eta()) > fEta) continue;
+    Double_t CompWeight = 1;
+    if(fMCSpectraWeights) {
+      CompWeight = fMCSpectraWeights->GetMCSpectraWeightNominal(lPart->Particle());
+    };
+    Int_t pdgcode = lPart->PdgCode();
+    Int_t pidind = GetPIDIndex(pdgcode);
+    if(lPart->IsPhysicalPrimary()) {
+        fEfficiency[0]->Fill(lPart->Pt(),l_Cent,CompWeight);
+        if(pidind)
+          fEfficiency[pidind]->Fill(lPart->Pt(),l_Cent);
+    }
+    if(lPart->IsSecondaryFromWeakDecay() || lPart->IsSecondaryFromMaterial()) {
+        fEfficiency[2*nSpecies]->Fill(lPart->Pt(),l_Cent);
+        if(pidind)
+          fEfficiency[pidind+(2*nSpecies)]->Fill(lPart->Pt(),l_Cent);
+    };
+  };
+  if(fUseCorrCuts) if(!CheckNchCorrelation(lNchGen,lNchRec)) return;
+  fNchTrueVsReco->Fill(lNchGen,lNchRec);
+  PostData(1,fEfficiencyList);
+}
+
 void AliAnalysisTaskMeanPtV2Corr::CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   AliAODTrack *lTrack;
   Double_t wp[5] = {0,0,0,0,0}; //Initial values, [species][w*p]

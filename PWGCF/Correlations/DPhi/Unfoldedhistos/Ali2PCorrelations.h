@@ -86,8 +86,10 @@ private:
   /* histograms */
   TH2F                       *fhN2_12_vsPtPt[4];              //!<! track 1 and 2 weighted two particle distribution vs \f${p_T}_1, {p_T}_2\f$
   TH2F                       *fhN2_12_vsDEtaDPhi[4];          //!<! two-particle distribution vs \f$\Delta\eta,\;\Delta\phi\f$ 1-1,1-2,2-1,2-2, combinations
+  TH2F                       *fhN2_12_vsDEtaDPhi_na[4];          //!<! two-particle distribution vs \f$\Delta\eta,\;\Delta\phi\f$ 1-1,1-2,2-1,2-2, combinations, no aliasing
   TH2F                       *fhSum2PtPt_12_vsDEtaDPhi[4];    //!<! two-particle  \f$\sum {p_T}_1 {p_T}_2\f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$ 1-1,1-2,2-1,2-2, combinations
   TH2F                       *fhSum2DptDpt_12_vsDEtaDPhi[4];  //!<! two-particle  \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$ 1-1,1-2,2-1,2-2, combinations
+  TH2F                       *fhSum2DptDpt_12_vsDEtaDPhi_na[4];  //!<! two-particle  \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$ 1-1,1-2,2-1,2-2, combinations, no aliasing
 
   /* versus centrality  profiles */
   TProfile                   *fhN2_12_vsC[4];               //!<! weighted accumulated two particle distribution vs event centrality 1-1,1-2,2-1,2-2, combinations
@@ -107,7 +109,7 @@ private:
   Ali2PCorrelations& operator=(const Ali2PCorrelations&);
 
   /// \cond CLASSIMP
-  ClassDef(Ali2PCorrelations,1);
+  ClassDef(Ali2PCorrelations,2);
   /// \endcond
 };
 

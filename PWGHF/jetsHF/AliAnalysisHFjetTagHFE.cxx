@@ -218,6 +218,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
   fHistBGrandHFEev(0),
+	fHistNtrBGfrac(0),
   fHistUE_org(0),
   fHistUE_true(0),
   fHistUE_reco(0),
@@ -274,10 +275,11 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fNtrklEopHad(0),
   fHistphoPi0MC(0),//pho from pi0 without emb
   fHistphoEtaMC(0),//pho from eta without emb
+	fNtrklRhoarea(0),	
   //======parameter============
   fNref(0),
   Nch(0),
-	correctednAcc(0)
+	correctednAcc(-999)
   //fmcData(kFALSE)
 {
   // Default constructor.
@@ -456,6 +458,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fHistBGfrac(0),
 	fHistBGfracHFEev(0),
 	fHistBGrandHFEev(0),
+	fHistNtrBGfrac(0),
 	fHistUE_org(0),
 	fHistUE_true(0),
 	fHistUE_reco(0),
@@ -512,6 +515,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fNtrklEopHad(0),
 	fHistphoPi0MC(0),//photonic e from pi0 without emb
 	fHistphoEtaMC(0),//photonic e from eta without emb
+	fNtrklRhoarea(0),
 
 //======parameter============
         fNref(0),
@@ -1037,6 +1041,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistBGrandHFEev = new TH1F("fHistBGrandHFEev", "BG rand; #Delta p_{T}(GeV/c)", 300, -100.0, 200.0);
   fOutput->Add(fHistBGrandHFEev);
 
+	fHistNtrBGfrac = new TH2D("fHistNtrBGfrac","N_{tracklet} vs BG frac",301,-0.5,300.5,6000,-100.0,500.0);
+	fOutput->Add(fHistNtrBGfrac);
+
   fHistUE_org = new TH1F("fHistUE_org", "UE from EPOS in generated level; p_{T}(GeV/c)", 100, 0.0, 10.0);
   fOutput->Add(fHistUE_org);
 
@@ -1149,7 +1156,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fNtrklEopHad = new THnSparseD("NtrklcorrEopHad","Ntracklet vs Eop; N^{corr}_{trkl};p_{T};E/p",3,nBinEop,mim_Eop,max_Eop);
   fNtrklEopHad->Sumw2();
   fOutput->Add(fNtrklEopHad);
-	
+
+	fNtrklRhoarea = new TH2D("fNtrklRhoarea", "Ntrackelet vs Rho_area; N^{corr}_{trkl};#it{p}_{T}",301,-0.5,300.5,600,-100,500);
+	fOutput->Add(fNtrklRhoarea);
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
   // pi0 & eta weight
@@ -1598,7 +1607,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
          //AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);
          fJetsCont->ResetCurrentID();
          AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
-         if(!ippcoll)rho = fJetsCont->GetRhoVal();
+         if(!ippcoll || correctednAcc>-998)rho = fJetsCont->GetRhoVal();
          jetRadius = fJetsCont->GetJetRadius();
          //if(idbHFEj)cout << "rho = " << rho << endl; 
          //cout << "rho = " << rho << endl; 
@@ -1646,6 +1655,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
          fQAHistJetPhi->Fill(jetPhi); // QA
 
          fHistJetOrgArea->Fill(jetpT,Jarea);
+				 fNtrklRhoarea->Fill(correctednAcc,Rho_area);
 
          //if(fabs(jetEta)<0.6 && Ncont>2 && Jarea>0.2)  // 0.2 for 0.3
          if(fabs(jetEta)<fJetEtaCut && Ncont>2)  // 0.2 for 0.3
@@ -2211,6 +2221,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                                  Double_t BGfracHFE = randomcone - rho*acos(-1.0)*pow(jetRadius,2);
                                  fHistBGrandHFEev->Fill(randomcone);
                                  fHistBGfracHFEev->Fill(BGfracHFE);
+																 fHistNtrBGfrac->Fill(correctednAcc,BGfracHFE);
                                 }
 
                               double HFjetRap2[6];

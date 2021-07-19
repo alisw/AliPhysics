@@ -2,39 +2,16 @@
 #define AliMultDepSpecAnalysisTask_cxx
 
 #define PRECISION 1e-6
-
-#include "TSystem.h"
-#include "TList.h"
-#include "THnSparse.h"
-#include "TH1.h"
-#include "TRandom3.h"
-
-#include "AliLog.h"
-#include "AliAnalysisManager.h"
-#include "AliVEventHandler.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliMultSelection.h"
-#include "AliCentrality.h"
-#include "AliMultSelectionTask.h"
-
-#include "AliVEvent.h"
-#include "AliESDEvent.h"
-#include "AliMCEvent.h"
-#include "AliEventCuts.h"
-#include "AliESDZDC.h"
-
-#include "AliVTrack.h"
-#include "AliESDtrack.h"
-#include "AliAODTrack.h"
-#include "AliMCParticle.h"
-#include "AliAODMCParticle.h"
-#include "AliESDtrackCuts.h"
-#include "AliVHeader.h"
-
-#include "AliMCSpectraWeights.h"
-
-#include <iostream>
 #include "AliAnalysisHelpersHist.h"
+
+class AliMCSpectraWeights;
+class AliVTrack;
+class AliVParticle;
+class TRandom3;
+class AliEventCuts;
+class AliESDtrackCuts;
+class AliESDtrack;
 
 class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE
 {
@@ -45,38 +22,46 @@ public:
     pt_true,
     mult_meas,
     mult_true,
-    sigma_pt,
-    delta_pt,
-    zv,
     LAST,
+  };
+
+  // reference ('generated') event class for the measurement [this is where multiplicity distributions and mult dep pt spectra will be corrected to]
+  enum EventClass : unsigned int {
+    triggered = 0, // mc events that fulfil the (experimental!) trigger condition [varies from dataset to dataset]
+    fiducial,      // mc events that produce at least one charged particle within the fiducial phase space of the measurement [trusting only that trigger eff for these events is modelled properly]
+    inelgt0,       // mc events that produce at least one charged particle in eta > 1 [trusting simulation for extrapolation to events with particles produced only in the unmeasured region]
   };
 
   AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(){};
   AliMultDepSpecAnalysisTask(const char* name) : AliAnalysisTaskSE(name) { DefineOutput(1, TList::Class()); };
-  virtual ~AliMultDepSpecAnalysisTask(){};
-
-  virtual void UserCreateOutputObjects();
-  virtual void UserExec(Option_t*);
-  virtual void Terminate(Option_t*){};
+  ~AliMultDepSpecAnalysisTask()
+  {
+    if (fTrackCuts) delete fTrackCuts;
+  };
+  void UserCreateOutputObjects();
+  void UserExec(Option_t*);
+  void Terminate(Option_t*){};
 
   // Setters
+  void SetEventClass(unsigned int eventClass) { fMCEventClass = eventClass; }
   void SetTriggerMask(unsigned int triggermask) { fTriggerMask = triggermask; }
   void SetIsMC(bool isMC = true) { fIsMC = isMC; }
   void SetIsAOD(bool isAOD = true) { fIsESD = !isAOD; }
   void SetUseDataDrivenCorrections(bool useDDC = true) { fMCUseDDC = useDDC; }
-  void SetUseZDCCut(bool useZDC) { fUseZDCCut = useZDC; }
-  void SetIncludePeripheralEvents(bool includePeripheralEvents)
+  void SetIsNewReco(bool isNewReco = true) { fIsNewReco = isNewReco; }
+
+  void SetAxis(unsigned int dim, const std::string name, const std::string title, const std::vector<double>& binEdges, int nBins = 0);
+
+  void SetEtaRange(double minEta, double maxEta)
   {
-    fIncludePeripheralEvents = includePeripheralEvents;
+    fMinEta = minEta;
+    fMaxEta = maxEta;
   }
-
-  void SetAxis(unsigned int dim, const std::string name, const std::string title,
-               const std::vector<double>& binEdges, int nBins = 0);
-
-  void SetMinEta(double minEta) { fMinEta = minEta; }
-  void SetMaxEta(double maxEta) { fMaxEta = maxEta; }
-  void SetMinPt(double minPt) { fMinPt = minPt; }
-  void SetMaxPt(double maxPt) { fMaxPt = maxPt; }
+  void SetPtRange(double minPt, double maxPt)
+  {
+    fMinPt = minPt;
+    fMaxPt = maxPt;
+  }
 
   // Configure this object for a train run
   static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(const std::string& dataSet,
@@ -84,59 +69,27 @@ public:
                                                         TString options = "", bool isMC = false);
   void SaveTrainMetadata();
   bool SetupTask(std::string dataSet, TString options);
-  virtual bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode = 100);
+  bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode = 100);
 
 protected:
-  virtual void DefineDefaultAxes(int maxMultMeas = 100, int maxMultTrue = 100); // called in AddTask
-  virtual void BookHistograms();                     // called in UserCreateOutputObjects
+  void DefineDefaultAxes(int maxMultMeas = 100, int maxMultTrue = 100); // called in AddTask
+  void BookHistograms();                                                // called in UserCreateOutputObjects
+  void FillTrackQA(AliESDtrack* track);
 
-  virtual bool InitEvent();
-  virtual bool InitTrack(AliVTrack* track);
-
-  // ugly workaround because template members cannot be virtual
-  virtual bool InitParticle(AliMCParticle* particle)
-  {
-    return InitParticleBase(particle);
-  } // called for ESDs
-  virtual bool InitParticle(AliAODMCParticle* particle)
-  {
-    return InitParticleBase(particle);
-  } // called for AODs
-
-  virtual bool SelectTrack(bool count) { return true; }
-  virtual bool SelectParticle(bool count) { return true; }
+  bool InitEvent();
+  bool InitTrack(AliVTrack* track);
 
   void LoopMeas(bool count = false);
   void LoopTrue(bool count = false);
 
-  virtual void FillEventHistos();
-  virtual void FillEventHistosTrue();
-  virtual void FillMeasTrackHistos();
-  virtual void FillMeasParticleHistos();
-  virtual void FillTrueParticleHistos();
-
-  // this must be defined in header so it can be generated for types that are only present in derived classes
   template <typename T>
-  void BookHistogram(Hist::Hist<T>& histContainer, const std::string& histName,
-                     const std::vector<unsigned int>& dimensions, bool isFillWeigths = false)
-  {
-    for (auto& dim : dimensions) {
-      if (fAxes.find(dim) == fAxes.end()) {
-        AliFatal(Form("Not all axes for histogram %s were specified properly!", histName.data()));
-        return;
-      }
-      histContainer.AddAxis(fAxes[dim]);
-    }
-    fOutputList->Add(histContainer.GenerateHist(histName));
-  }
+  void BookHistogram(Hist::Hist<T>& histContainer, const std::string& histName, const std::vector<unsigned int>& dimensions);
 
   bool AcceptTrackQuality(AliVTrack* track);
   bool InitCentrality();
 
-  std::vector<double> GetMultBinEdges(int maxMult);
-  std::vector<double> GetMultBinEdges(std::vector<int> multSteps, std::vector<int> multBinWidth);
   template <typename Particle_t>
-  bool InitParticleBase(Particle_t* particle);
+  bool InitParticle(Particle_t* particle);
   double GetSecScalingFactor(AliVParticle* particle);
   double GetParticleWeight(AliVParticle* particle);
   unsigned long GetSeed();
@@ -144,68 +97,98 @@ protected:
   AliMultDepSpecAnalysisTask(const AliMultDepSpecAnalysisTask&);            // not implemented
   AliMultDepSpecAnalysisTask& operator=(const AliMultDepSpecAnalysisTask&); // not implemented
 
-  std::unique_ptr<TList> fOutputList{};          //!<! Output list
-  std::unique_ptr<AliEventCuts> fEventCuts{};    //!<! Event cuts
-  std::unique_ptr<AliESDtrackCuts> fTrackCuts{}; //->  Track cuts
-  std::unique_ptr<TRandom3> fRand{};             //!<! Random generator
+  std::unique_ptr<TList> fOutputList{};       //!<! Output list
+  TList* fQAList{nullptr};                    //!<! QA list
+  std::unique_ptr<AliEventCuts> fEventCuts{}; //!<! Event cuts
+  AliESDtrackCuts* fTrackCuts{nullptr};       //->  Track cuts
+  std::unique_ptr<TRandom3> fRand{};          //!<! Random generator
 
   std::string fTrainMetadata{}; ///<  metadata of the train run used to generate the output
 
-  bool fIsNominalSetting{};        ///< Flag to  propagate if this is the nominal cut setting
-  bool fIsESD{true};               ///< Flag for ESD usage
-  bool fIsMC{};                    ///< Flag for MC usage
-  bool fUseZDCCut{};               ///< Flag for zdc cut usage
-  bool fIncludePeripheralEvents{}; ///< include peripheral A-A events (cent>90)
-  bool fMCUseDDC{};                ///< Flag for data driven corrections usage
-  bool fIsNominalPCC{true};        ///< whether to run particle composition correction in nominal or in systematic mode
-  // Cuts
-  unsigned int fTriggerMask{AliVEvent::kAnyINT}; ///< Trigger mask
-  double fMinEta{-0.8};                          ///< Minimum eta cut
-  double fMaxEta{0.8};                           ///< Maximum eta cut
-  double fMinPt{0.15};                           ///< Minimum pT cut
-  double fMaxPt{50.0};                           ///< Maximum pT cut
+  unsigned int fMCEventClass{EventClass::fiducial}; ///< baseline event class that this measurement should be corrected to
+  bool fIsNominalSetting{};                         ///< Flag to  propagate if this is the nominal cut setting
+  bool fIsESD{true};                                ///< Flag for ESD usage
+  bool fIsMC{};                                     ///< Flag for MC usage
+  bool fIsNewReco{};                                ///< flag for new reconstructions (after mid 2020) where tighter chi2 cut has to be used and out-of-bunch pileup is simulated in MCs
+  bool fIncludePeripheralEvents{};                  ///< include peripheral A-A events (cent>90)
+  bool fMCUseDDC{};                                 ///< Flag for data driven corrections usage
+  bool fIsNominalPCC{true};                         ///< whether to run particle composition correction in nominal or in systematic mode
+  bool fMCIsINELGT0{};                              ///< flag for INEL>0 event (at least one charged particle in abs(eta) < 1)
 
-  // Output Histograms
-  std::map<unsigned int, Hist::Axis> fAxes{}; ///< Axis definitions used in the histograms
-  Hist::Log<TH1I> fHist_trainInfo{};          //!<! train metadata string as bin lable and number of jobs as fill
-  Hist::Log<TH1I> fHist_runStatistics{};      //!<! number of reconstructed events per run
+  // cuts
+  unsigned int fTriggerMask{AliVEvent::kMB | AliVEvent::kINT7}; ///< Trigger mask
+  double fMinEta{-0.8};                                         ///< Minimum eta cut
+  double fMaxEta{0.8};                                          ///< Maximum eta cut
+  double fMinPt{0.15};                                          ///< Minimum pT cut
+  double fMaxPt{10.0};                                          ///< Maximum pT cut
 
-  Hist::Hist<TH1D> fHist_zVtx_evt_trig_gen{}; //!<! generated z vertex position
-  Hist::Hist<TH1D> fHist_zVtx_evt_trig{};     //!<! measured z vertex position
+  // output Histograms
+  std::map<unsigned int, Hist::Axis> fAxes{}; ///< axis definitions used in the histograms
 
-  Hist::Hist<TH1D> fHist_multDist_evt_meas{};   //!<! measured event distribution
-  Hist::Hist<TH2D> fHist_multPtSpec_trk_meas{}; //!<! measured tracks
-  Hist::Hist<TH2D> fHist_ptReso_trk_meas{};     //!<! relatvie pT resolution from covariance matrix
+  Hist::Hist<TH1D> fHist_multDist_evt_meas{};   //!<! measured event distribution (contains contamination from events not in specified class or with wrong vertex position)
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_meas{}; //!<! measured tracks (contains contamination from secondary particles, particles smeared into acceptance and tracks originating from background events as defined above )
 
   // MC-only histograms
-  Hist::Hist<TH1D> fHist_multDist_evt_gen{};      //!<! multiplicity distribution of generated (triggered, z<10) events
-  Hist::Hist<TH2D> fHist_ptReso_trk_true{};       //!<! relative pt resolution from mc
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_prim_meas{}; //!<! tracks from measured primaries (no contamination from secondaries, particles smeared into acceptance or background events)
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};  //!<! tracks from measured secondaries (no contamination from particles smeared into acceptance or background events)  [for QA to disentangle secondaries from other contamination]
 
-  Hist::Hist<THnSparseF> fHist_multCorrel_evt{};     //!<! multilicity correlation of events [sparse wins for large histos (540% of 100x100 hist), pPb (140% of 200x200), PbPb (25% of 500x500)]
-  Hist::Hist<THnSparseF> fHist_multCorrel_prim{};    //!<! multiplicity correlation for reconstructed primary particles
-  Hist::Hist<TH2D> fHist_ptCorrel_prim{};            //!<! pT correlation of measured primary particles
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};      //!<! generated primaries (that fulfil trigger condition and maybe z vertex cut)
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};     //!<! reconstructed primaries
-  Hist::Hist<TH2D> fHist_multPtSpec_trk_prim_meas{}; //!<! measured primaries
-  Hist::Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};  //!<! measured secondaries
-  
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};  //!<! measured primary charged particles as function of true properties (no contamination from background events)
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};   //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
+  Hist::Hist<TH1D> fHist_multDist_evt_gen{};      //!<! generated event distribution  (from events within specified class and with proper vertex position)
+  Hist::Hist<TH1D> fHist_multDist_evt_gen_trig{}; //!<! generated event distribution (from events within specified class and with proper vertex position) that in addition fulfils the trigger condition [for QA to disentangle trigger eff from reco eff ]
+  Hist::Hist<THnSparseF> fHist_multCorrel_evt{};  //!<! multilicity correlation of measured events (excluding background events)
+  Hist::Hist<THnSparseF> fHist_multCorrel_prim{}; //!<! multiplicity correlation of measured primary charged particles (excluding particles from background events)
+  Hist::Hist<TH2D> fHist_ptCorrel_prim{};         //!<! pT correlation of measured primary charged particles  (excluding particles from background events)
+
+  // QA histograms
+  Hist::Log<TH1I> fHist_trainInfo{};       //!<! train metadata string as bin lable and number of compute jobs as bin content
+  Hist::Log<TH1I> fHist_runStatistics{};   //!<! number of measured events per run (filled only for first event in job)
+  Hist::Hist<TH1D> fHist_eventSelection{}; //!<! logging histogram to for event selection steps (filled only for first event in job)
+
+  Hist::Hist<TH1D> fHist_zVtxGen{};  //!<! true z vertex position of all generated events (without z vertex position cut)
+  Hist::Hist<TH1D> fHist_zVtxMeas{}; //!<! measured z vertex position of all measured events (without z vertex position cut)
+
+  Hist::Hist<TH2D> fHist_deltaPt{}; //!<! relative track pt resolution (no contamination from particles smeared into acceptance or background events)
+  Hist::Hist<TH2D> fHist_sigmaPt{}; //!<! relatvie pT resolution from covariance matrix (from all tracks, including contamination defined above)
+
+  Hist::Hist<TH2D> fHist_dcaXY{}; //!<! dca in xy plane vs pt
+  Hist::Hist<TH1D> fHist_dcaZ{};  //!<! dca along the beam line
+
+  Hist::Hist<TH1D> fHist_signed1Pt{};         //!<!  signed 1/pt (1/(GeV/c))
+  Hist::Hist<TH1D> fHist_eta{};               //!<!  pseudorapidity
+  Hist::Hist<TH1D> fHist_phi{};               //!<!  azimuthal angle phi
+  Hist::Hist<TH1D> fHist_itsFoundClusters{};  //!<!  found clusters ITS
+  Hist::Hist<TH1D> fHist_itsHits{};           //!<!  hitmap ITS
+  Hist::Hist<TH1D> fHist_itsChi2PerCluster{}; //!<!  chi2 per cluster ITS
+
+  Hist::Hist<TH1D> fHist_tpcFindableClusters{};                //!<!  findable clusters TPC
+  Hist::Hist<TH1D> fHist_tpcFoundClusters{};                   //!<!  found clusters TPC
+  Hist::Hist<TH1D> fHist_tpcCrossedRows{};                     //!<!  crossed rows in TPC
+  Hist::Hist<TH1D> fHist_tpcCrossedRowsOverFindableClusters{}; //!<!  rows / findable clusters TPC
+  Hist::Hist<TH1D> fHist_tpcFractionSharedClusters{};          //!<!  fraction of shared clusters TPC
+  Hist::Hist<TH1D> fHist_tpcChi2PerCluster{};                  //!<!  chi2 per cluster TPC
+  Hist::Hist<TH1D> fHist_tpcGoldenChi2{};                      //!<! chi2 global vs tpc constrained track
+  Hist::Hist<TH1D> fHist_tpcGeomLength{};                      //!<! track length in active volume of the TPC
+
   // event related properties
-  AliVEvent* fEvent{};    //!<! Event object
-  AliMCEvent* fMCEvent{}; //!<! MC event
-  AliMCSpectraWeights* fMCSpectraWeights{};           //!<! fMCSpectraWeights for data-driven corrections (particle composition and secondary scaling)
-  double fVtxZ{};         //!<! z position of z vertex
-  double fMCVtxZ{};       //!<! z position of z vertex in MC truth
-  double fMultMeas{};     //!<! measured central barrel track multiplicity
-  double fMultTrue{};     //!<! true multiplicity
+  AliVEvent* fEvent{};                      //!<! Event object
+  AliMCEvent* fMCEvent{};                   //!<! MC event
+  AliMCSpectraWeights* fMCSpectraWeights{}; //!<! fMCSpectraWeights for data-driven corrections (particle composition and secondary scaling)
+  bool fIsTriggered{};                      //!<! if event fired trigger
+  double fVtxZ{};                           //!<! z position of z vertex
+  double fMCVtxZ{};                         //!<! z position of z vertex in MC truth
+  double fMultMeas{};                       //!<! measured central barrel track multiplicity
+  double fMultTrue{};                       //!<! true multiplicity
 
-  bool fIsFirstEventInJob{true};     //!<!
-  int fRunNumber{};                  //!<! run number
-  unsigned long fEventNumber{};      //!<! event number
-  unsigned int fTimeStamp{};         //!<! event time stamp
-  float fCent{};                     //!<! event centrality
-  bool fIsAcceptedPeripheralEvent{}; //!<! event with centrality > 90% that passes the selection criteria
-  bool fAcceptEvent{};               //!<! decision if current event is selected
-  bool fAcceptEventMC{};             //!<! decision if current event is selected in mc truth
+  bool fIsFirstEventInJob{true}; //!<!
+  int fRunNumber{};              //!<! run number
+  unsigned long fEventNumber{};  //!<! event number
+  unsigned int fTimeStamp{};     //!<! event time stamp
+  float fCent{};                 //!<! event centrality
+  bool fMCIsGoodZPos{};          //!<! is mc event within acceptance (z<10)?
+  bool fMCIsGoodEventClass{};    //!<! decision if current event is in specified baseline event class
+  bool fAcceptEvent{};           //!<! decision if current event is selected
+  bool fMCAcceptEvent{};         //!<! decision if current event is of 'generated' event class and has good vertex position
 
   // track related properties
   double fPt{};      //!<! track pt
@@ -216,12 +199,11 @@ protected:
   double fMCPt{};  //!<! mc pt
   double fMCEta{}; //!<! mc eta
   double fMCPhi{}; //!<! mc phi
-  
+
   int fMCLabel{}; //!<! mc label
 
+  bool fMCIsPileupParticle{};   //!<! is particle resp. track from out-of-bunch pileup?
   bool fMCIsChargedPrimary{};   //!<! is charged primary?
-  bool fMCIsChargedSecDecay{};  //!<! is charged secondary from decay?
-  bool fMCIsChargedSecMat{};    //!<! is charged secondary from material?
   bool fMCIsChargedSecondary{}; //!<! is charged secondary?
 
   double fMCParticleWeight{1.}; //!<! scaling factor of particle to match data

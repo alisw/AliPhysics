@@ -182,6 +182,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fRiso_phidiff_LS;
 		TH2F*                   fRiso_phidiff_35;
 		TH2F*                   fRiso_phidiff_LS_35;
+		THnSparseD*             fWh_phidiff;
 		THnSparseD*             fIsoArray;      
 		THnSparseD*             fHFArray;      
 		TH2F*                   fzvtx_Ntrkl;

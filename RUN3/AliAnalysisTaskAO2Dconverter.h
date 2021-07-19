@@ -388,10 +388,10 @@ private:
     Int_t fPdgCode    = -99999; /// PDG code of the particle
     Int_t fStatusCode = -99999; /// generation status code
     uint8_t fFlags    = 0;     /// See enum MCParticleFlags
-    Int_t fMother0    = 0; /// Indices of the mother particles
-    Int_t fMother1    = 0;
-    Int_t fDaughter0  = 0; /// Indices of the daughter particles
-    Int_t fDaughter1  = 0;
+    Int_t fIndexMcParticles_Mother0    = 0; /// Indices of the mother particles
+    Int_t fIndexMcParticles_Mother1    = 0;
+    Int_t fIndexMcParticles_Daughter0  = 0; /// Indices of the daughter particles
+    Int_t fIndexMcParticles_Daughter1  = 0;
     Float_t fWeight   = 1;     /// particle weight from the generator or ML
 
     Float_t fPx = -999.f; /// x component of momentum
@@ -491,7 +491,7 @@ private:
   struct {
     // Muon cluster data
 
-    Int_t   fIndexMuons = -1; /// The index of the muon track to which the clusters are attached
+    Int_t   fIndexFwdTracks = -1; /// The index of the muon track to which the clusters are attached
     Float_t fX = -999.f;         ///< cluster X position
     Float_t fY = -999.f;         ///< cluster Y position
     Float_t fZ = -999.f;         ///< cluster Z position
@@ -602,7 +602,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 17);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 18);
 };
 
 #endif

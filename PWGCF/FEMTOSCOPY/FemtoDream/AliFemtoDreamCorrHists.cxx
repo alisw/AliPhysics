@@ -1166,14 +1166,11 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         }
 
         if (fillHists && fMomentumResolution) {
-          //Take a 1 MeV binning, this should be rebinned to the users liking, the range is
-          //hard coded. This assumed that the input is in GeV!
-
           TString MomResoSEName = TString::Format(
               "MomentumResolutionSE_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionSE[Counter] = new TH2F(MomResoSEName.Data(),
-                                               MomResoSEName.Data(), 2500, 0, 2.5,
-                                               2500, 0, 2.5);
+                                               MomResoSEName.Data(), *itNBins, *itKMin, *itKMax,
+                                               *itNBins, *itKMin, *itKMax);
           fMomResolutionSE[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolutionSE[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolutionSE[Counter]);
@@ -1181,8 +1178,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           TString MomResoSEAllName = TString::Format(
               "MomentumResolutionSEAll_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionSEAll[Counter] = new TH2F(MomResoSEAllName.Data(),
-                                                  MomResoSEAllName.Data(), 2500,
-                                                  0, 2.5, 2500, 0, 2.5);
+                                                  MomResoSEAllName.Data(), *itNBins, 
+						  *itKMin, *itKMax, *itNBins, *itKMin, *itKMax);
           fMomResolutionSEAll[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolutionSEAll[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolutionSEAll[Counter]);
@@ -1190,8 +1187,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           TString MomResoMEName = TString::Format(
               "MomentumResolutionME_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionME[Counter] = new TH2F(MomResoMEName.Data(),
-                                               MomResoMEName.Data(), 2500, 0, 2.5,
-                                               2500, 0, 2.5);
+                                               MomResoMEName.Data(), *itNBins, *itKMin, *itKMax,
+                                               *itNBins, *itKMin, *itKMax);
           fMomResolutionME[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolutionME[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolutionME[Counter]);
@@ -1199,8 +1196,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           TString MomResoMEAllName = TString::Format(
               "MomentumResolutionMEAll_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionMEAll[Counter] = new TH2F(MomResoMEAllName.Data(),
-                                               MomResoMEAllName.Data(), 2500, 0, 2.5,
-                                               2500, 0, 2.5);
+                                               MomResoMEAllName.Data(), *itNBins, *itKMin, *itKMax,
+                                               *itNBins, *itKMin, *itKMax);
           fMomResolutionMEAll[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolutionMEAll[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolutionMEAll[Counter]);
@@ -1209,7 +1206,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
               "MomentumResolutionDist_Particle%d_Particle%d", iPar1, iPar2);
           fMomResolutionDist[Counter] = new TH2F(MomResoDistName.Data(),
                                                  MomResoDistName.Data(), 500,
-                                                 -0.3, 0.3, 2500, 0, 2.5);
+                                                 -0.3, 0.3, *itNBins, *itKMin, *itKMax);
           fMomResolutionDist[Counter]->GetXaxis()->SetTitle(
               "k_{Reco}-k_{Generated}");
           fMomResolutionDist[Counter]->GetYaxis()->SetTitle("k_{Generated}");

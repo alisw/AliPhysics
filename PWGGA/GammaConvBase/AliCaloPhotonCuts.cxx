@@ -6295,33 +6295,49 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fMinNCells=2;
     fMaxNCells=2;
     break;
-    // From pi0 tagging with PCM-EDC with TBNL+scale+FT applied on all clusters
+    // From pi0 tagging with PCM-EDC with TBNL+scale+FT applied on all clusters, Pol2 param
+    // using the new cell scale!
   case 30: // u
     fUseNCells=5;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0377925, 0.160758, -0.00357992);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0794055, 0.290664, -0.136717);
+    // old settings using no cell scale
+    // fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    // fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0377925, 0.160758, -0.00357992);
     break;
-    // From pi0 tagging with PCM-EDC with TBNL+scale+FT applied on only gamma clusters
+    // From pi0 tagging with PCM-EDC with TBNL+scale+FT applied on only gamma clusters, Pol2 param
+    // using the new cell scale!
   case 31: // v
     fUseNCells=7;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0377925, 0.160758, -0.00357992);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0794055, 0.290664, -0.136717);
+    // old settings using no cell scale
+    // fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    // fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0377925, 0.160758, -0.00357992);
     break;
-    // From pi0 tagging with PCM-EDC with TBNL+scale applied on all clusters
+    // From pi0 tagging with PCM-EDC with TBNL+scale applied on all clusters, Gaussian param
+    // using the new cell scale!
   case 32: // w
     fUseNCells=5;
     fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0387877, 0.104607, 0.0793534);
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.130462, 1.62858, 0.572064);
+    // old settings using no cell scale
+    // fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    // fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0387877, 0.104607, 0.0793534);
     break;
-    // From pi0 tagging with EDC with TBNL+scale+FT on all clusters
+    // From pi0 tagging with PCM-EDC with TBNL+scale+FT on all clusters, Gaussian param
+    // using the new cell scale!
   case 33: // x
     fUseNCells=5;
     fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0124651, -0.0961889, 0.16844);
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.130462, 1.62858, 0.572064);
+    // old settings using no cell scale
+    // fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    // fFuncNCellCutEfficiencyEMCal->SetParameters(0.0124651, -0.0961889, 0.16844);
     break;
     // Correction applied in Correction Framework
     // can be accessed by the chi2() variable of the cluster
@@ -8457,44 +8473,147 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 
 
   // *************** experimental settings for EMCal studies
-    // Setting to be used with scale on cell level of 0% instead of 5%
+    // with new cell scale, PCM-EMC fine tuning for low B field
     case 93:
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
         // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        // This was determined with the S300A100 clusterizer setting and with PCM-EMC! Should be very similar to case 97
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
-          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
-          energy /= 1.00349;
+          energy /= FunctionNL_kSDM(energy, 0.982087, -3.1388, -0.545095);
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
         }
       }
       break;
-    // Setting to be used with scale on cell level of 1.5% instead of 5%
+    // Setting to be used with scale on cell level (same as 99 but with additional fine tuning for nominal B-field (2nd iteration))
     case 94:
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        // TB parametrization from Nico on Martin 100MeV points (incl. interpolation between PCM-EMC and EMC-EMC fine tuning) FOR RUN 2!
+        // EMC and PCM-EMC deviate by about 0.5% so interpolation of 0.25% is chosen
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
-          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
-          energy /= 1.00349;
+          // fine tuning for pp 13 TeV lowB
+          if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
+            energy /= FunctionNL_kSDM(energy, 0.988503, -3.10024, -0.28337);
+            energy /= 1.0025;
+            if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+              energy /= 0.99;
+            }
+            // fine tuning for pp 13 TeV nominal B (set as default)
+          } else {
+            energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
+            energy /= FunctionNL_DPOW(energy, 1.0508889228- 0.0025, -0.0521979548, -0.5000000000, 1.1101969933, -0.1080594716, -0.1948380491);
+            energy /= 1.0025;
+            if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+              energy /= 0.99;
+            }
+          }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
-          energy /= 1.015;
         }
       }
       break;
-    // Setting to be used with scale on cell level of 3.5% instead of 5%
+    // Setting to be used with scale on cell level (same as 99 but without fine tuning for 1 cell clusters)
     case 95:
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        // TB parametrization from Nico on Martin 100MeV points (incl. interpolation between PCM-EMC and EMC-EMC fine tuning) FOR RUN 2!
+        // EMC and PCM-EMC deviate by about 0.5% so interpolation of 0.25% is chosen
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
-          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
-          energy /= 1.00349;
+          // fine tuning for pp 13 TeV lowB
+          if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
+            energy /= FunctionNL_kSDM(energy, 0.988503, -3.10024, -0.28337);
+            energy /= 1.0025;
+            // fine tuning for pp 13 TeV nominal B (set as default)
+          } else {
+            energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
+            energy /= 1.0025;
+          }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
-          energy /= 1.035;
+        }
+      }
+      break;
+    case 96: // Settings to be used with new scale on cell level
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (without fine tuning) FOR RUN 2!
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
+        }
+      }
+      break;
+    case 97: // Settings to be used with new scale on cell level
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (incl. PCM-EMC fine tuning) FOR RUN 2!
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          // fine tuning for pp 13 TeV lowB
+          if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
+            energy /= FunctionNL_kSDM(energy, 0.988503, -3.10024, -0.28337);
+            if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+              energy /= 0.99;
+            }
+            // fine tuning for pp 13 TeV nominal B (set as default)
+          } else {
+            energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
+            if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+              energy /= 0.99;
+            }
+          }
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
+        }
+      }
+      break;
+    case 98: // Settings to be used with new scale on cell level
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (incl. EMC-EMC fine tuning) FOR RUN 2!
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          // fine tuning for pp 13 TeV lowB
+          if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
+            energy /= FunctionNL_kSDM(energy, 0.99759, -3.21271, -0.363656);
+            if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+              energy /= 0.99;
+            }
+            // fine tuning for pp 13 TeV nominal B (set as default)
+          } else {
+            energy /= FunctionNL_kSDM(energy, 0.984314, -3.30941, -0.399441);
+            if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+              energy /= 0.99;
+            }
+          }
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
+        }
+      }
+      break;
+    case 99: // Settings to be used with new scale on cell level
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (incl. interpolation between PCM-EMC and EMC-EMC fine tuning) FOR RUN 2!
+        // EMC and PCM-EMC deviate by about 0.5% so interpolation of 0.25% is chosen
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          // fine tuning for pp 13 TeV lowB
+          if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB ){
+            energy /= FunctionNL_kSDM(energy, 0.988503, -3.10024, -0.28337);
+            energy /= 1.0025;
+            if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+              energy /= 0.99;
+            }
+            // fine tuning for pp 13 TeV nominal B (set as default)
+          } else {
+            energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
+            energy /= 1.0025;
+            if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+              energy /= 0.99;
+            }
+          }
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
         }
       }
       break;
@@ -8523,6 +8642,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 //________________________________________________________________________
 void AliCaloPhotonCuts::ApplySMWiseEnergyCorrection(AliVCluster* cluster, Int_t isMC, AliVEvent *event)
 {
+  // apply this correction to data only
+  if(isMC > 0) return;
+
   if (!cluster) {
     AliInfo("Cluster pointer null!");
     return;
@@ -8564,32 +8686,33 @@ void AliCaloPhotonCuts::ApplySMWiseEnergyCorrection(AliVCluster* cluster, Int_t 
 
 
   if(isMC == 0){         // data; SM wise correction
-    if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
-      switch (clusterSMID){
-        // values determined on LHC16x & LHC17c
-        case 0: energy/=0.994364; break;
-        case 1: energy/=0.991352; break;
-        case 2: energy/=1.000522; break;
-        case 3: energy/=0.995918; break;
-        case 4: energy/=0.995661; break;
-        case 5: energy/=0.998285; break;
-        case 6: energy/=1.000275; break;
-        case 7: energy/=1.003544; break;
-        case 8: energy/=1.007220; break;
-        case 9: energy/=1.000911; break;
-        case 10: energy/=1.012508; break;
-        case 11: energy/=1.012867; break;
-        case 12: energy/=1.001028; break;
-        case 13: energy/=0.995514; break;
-        case 14: energy/=0.994373; break;
-        case 15: energy/=0.997765; break;
-        case 16: energy/=1.009084; break;
-        case 17: energy/=1.011123; break;
-        case 18: energy/=1.007118; break;
-        case 19: energy/=1.018894; break;
-        default: energy/=1.0; break;
-      }
-    } else if(fCurrentMC == k17pp5TeV){
+    // if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV ){
+    //   switch (clusterSMID){
+    //     // values determined on LHC16x & LHC17c
+    //     case 0: energy/=0.994364; break;
+    //     case 1: energy/=0.991352; break;
+    //     case 2: energy/=1.000522; break;
+    //     case 3: energy/=0.995918; break;
+    //     case 4: energy/=0.995661; break;
+    //     case 5: energy/=0.998285; break;
+    //     case 6: energy/=1.000275; break;
+    //     case 7: energy/=1.003544; break;
+    //     case 8: energy/=1.007220; break;
+    //     case 9: energy/=1.000911; break;
+    //     case 10: energy/=1.012508; break;
+    //     case 11: energy/=1.012867; break;
+    //     case 12: energy/=1.001028; break;
+    //     case 13: energy/=0.995514; break;
+    //     case 14: energy/=0.994373; break;
+    //     case 15: energy/=0.997765; break;
+    //     case 16: energy/=1.009084; break;
+    //     case 17: energy/=1.011123; break;
+    //     case 18: energy/=1.007118; break;
+    //     case 19: energy/=1.018894; break;
+    //     default: energy/=1.0; break;
+    //   }
+    // } else
+    if(fCurrentMC == k17pp5TeV){
       switch (clusterSMID){
         // values determined on LHC17pq
         case 0: energy/=0.996406; break;
@@ -9081,6 +9204,7 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC17g6b1a") == 0  )    return k17g6b1a;
 
   // pPb 8 TeV 2016 pass2 MC
+   else if ( namePeriod.Contains("LHC20f11d"))    return kLHC20f11d;
    else if ( namePeriod.CompareTo("LHC21d2a") == 0  )    return kLHC21d2a;
    else if ( namePeriod.CompareTo("LHC21d2b") == 0  )    return kLHC21d2b;
    else if ( namePeriod.CompareTo("LHC21d2c") == 0  )    return kLHC21d2c;

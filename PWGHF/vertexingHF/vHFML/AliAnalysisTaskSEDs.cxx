@@ -384,19 +384,20 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fOutput->Add(fChanHist[iHist]);
   }
 
-  fCosPHist3D = new TH3F("fCosPHist3D", "CosP vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
-  fCosPxyHist3D = new TH3F("fCosPxyHist3D", "CosPxy vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
-  fDLenHist3D = new TH3F("fDLenHist3D", "DLen vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 0.5);
-  fDLenxyHist3D = new TH3F("fDLenxyHist3D", "DLenxy vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 0.5);
-  fNDLenxyHist3D = new TH3F("fNDLenxyHist3D", "NDLenxy vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 11.);
-  fSigVertHist3D = new TH3F("fSigVertHist3D", "SigVert vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 0.1);
-  fDCAHist3D = new TH3F("fDCAHist3D", "DCA vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 0.1);
-  fNormIPHist3D = new TH3F("fNormIPHist3D", "nIP vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 6.);
-  fCosPiDsHist3D = new TH3F("fCosPiDsHist3D", "CosPiDs vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
-  fCosPiKPhiHist3D = new TH3F("fCosPiKPhiHist3D", "CosPiKPhi vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0., 0.5);
-  fPtProng0Hist3D = new TH3F("fPtProng0Hist3D", "Pt prong0 vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.0, 20.);
-  fPtProng1Hist3D = new TH3F("fPtProng1Hist3D", "Pt prong1 vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.0, 20.);
-  fPtProng2Hist3D = new TH3F("fPtProng2Hist3D", "Pt prong2 vs Ds mass", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins], 0., fPtLimits[fNPtBins], 100, 0.0, 20.);
+  Int_t nPtBins3D=(Int_t)fPtLimits[fNPtBins];
+  fCosPHist3D = new TH3F("fCosPHist3D", "CosP vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
+  fCosPxyHist3D = new TH3F("fCosPxyHist3D", "CosPxy vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
+  fDLenHist3D = new TH3F("fDLenHist3D", "DLen vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 0.5);
+  fDLenxyHist3D = new TH3F("fDLenxyHist3D", "DLenxy vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 0.5);
+  fNDLenxyHist3D = new TH3F("fNDLenxyHist3D", "NDLenxy vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 11.);
+  fSigVertHist3D = new TH3F("fSigVertHist3D", "SigVert vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 0.1);
+  fDCAHist3D = new TH3F("fDCAHist3D", "DCA vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 0.1);
+  fNormIPHist3D = new TH3F("fNormIPHist3D", "nIP vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 6.);
+  fCosPiDsHist3D = new TH3F("fCosPiDsHist3D", "CosPiDs vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0.5, 1.);
+  fCosPiKPhiHist3D = new TH3F("fCosPiKPhiHist3D", "CosPiKPhi vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0., 0.5);
+  fPtProng0Hist3D = new TH3F("fPtProng0Hist3D", "Pt prong0 vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0.0, 20.);
+  fPtProng1Hist3D = new TH3F("fPtProng1Hist3D", "Pt prong1 vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0.0, 20.);
+  fPtProng2Hist3D = new TH3F("fPtProng2Hist3D", "Pt prong2 vs Ds mass", nInvMassBins, minMass, maxMass, nPtBins3D, 0., fPtLimits[fNPtBins], 100, 0.0, 20.);
 
   if (!fReadMC && fDoCutVarHistos)
   {
@@ -415,11 +416,14 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fOutput->Add(fPtProng2Hist3D);
   }
 
-  fPtVsMass = new TH2F("hPtVsMass", "PtVsMass (prod. cuts)", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins] * 2, 0., fPtLimits[fNPtBins]);
-  fPtVsMassPhi = new TH2F("hPtVsMassPhi", "PtVsMass (phi selection)", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins] * 10, 0., fPtLimits[fNPtBins]);
-  fPtVsMassK0st = new TH2F("hPtVsMassK0st", "PtVsMass (K0* selection)", nInvMassBins, minMass, maxMass, (Int_t)fPtLimits[fNPtBins] * 10, 0., fPtLimits[fNPtBins]);
-  fYVsPt = new TH2F("hYVsPt", "YvsPt (prod. cuts)", (Int_t)fPtLimits[fNPtBins] * 2, 0., fPtLimits[fNPtBins], 80, -2., 2.);
-  fYVsPtSig = new TH2F("hYVsPtSig", "YvsPt (MC, only sig., prod. cuts)", (Int_t)fPtLimits[fNPtBins] * 2, 0., fPtLimits[fNPtBins], 80, -2., 2.);
+  Int_t scalptb=10;
+  if(fCustomPtBinWidth && fPtBinWidth>0.) scalptb=TMath::Nint(1./fPtBinWidth);
+  Int_t nPtBins2D=(Int_t)fPtLimits[fNPtBins]*scalptb;
+  fPtVsMass = new TH2F("hPtVsMass", "PtVsMass (prod. cuts)", nInvMassBins, minMass, maxMass, nPtBins2D, 0., fPtLimits[fNPtBins]);
+  fPtVsMassPhi = new TH2F("hPtVsMassPhi", "PtVsMass (phi selection)", nInvMassBins, minMass, maxMass, nPtBins2D, 0., fPtLimits[fNPtBins]);
+  fPtVsMassK0st = new TH2F("hPtVsMassK0st", "PtVsMass (K0* selection)", nInvMassBins, minMass, maxMass, nPtBins2D, 0., fPtLimits[fNPtBins]);
+  fYVsPt = new TH2F("hYVsPt", "YvsPt (prod. cuts)", nPtBins2D, 0., fPtLimits[fNPtBins], 80, -2., 2.);
+  fYVsPtSig = new TH2F("hYVsPtSig", "YvsPt (MC, only sig., prod. cuts)", nPtBins2D, 0., fPtLimits[fNPtBins], 80, -2., 2.);
 
   for (Int_t iPt = 0; iPt < fNPtBins; iPt++)
   {
@@ -1776,6 +1780,9 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   if (fUseFinPtBinsForSparse) {
     nPtBins = nPtBins*10;
     nPtBBins = 1500;
+  }else if(fCustomPtBinWidth && fPtBinWidth>0.){
+    Int_t scalptb=TMath::Nint(1./fPtBinWidth);
+    nPtBins = nPtBins*scalptb;
   }
 
   // use pp for default values
@@ -1924,7 +1931,12 @@ void AliAnalysisTaskSEDs::CreateImpactParameterSparses()
   //dimensions for THnSparse
   TString axTit[kVarForImpPar] = {"M_{K#pi#pi} (GeV/c^{2})", "#it{p}_{T} (GeV/c)", "Imp Par (#mum)"};
 
-  Int_t nbins[kVarForImpPar] = {nInvMassBins, (Int_t)fPtLimits[fNPtBins] * 2, 1000};
+  Int_t nPtBins = (Int_t)fPtLimits[fNPtBins]*2; // 500 MeV/c bin width by default
+  if(fCustomPtBinWidth && fPtBinWidth>0.){
+    Int_t scalptb=TMath::Nint(1./fPtBinWidth);
+    nPtBins = nPtBins*scalptb;
+  }
+  Int_t nbins[kVarForImpPar] = {nInvMassBins, nPtBins, 1000};
   Double_t xmin[kVarForImpPar] = {minMass, 0., -1000};
   Double_t xmax[kVarForImpPar] = {maxMass, fPtLimits[fNPtBins], 1000};
 
