@@ -123,6 +123,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoClusGammaERxSM(NULL),
   fHistoClusGammaERxNCellCrit(NULL),
   fHistoClusGammaERxNCellCritSM(NULL),
+  fHistoEVsM02(NULL),
+  fHistoEVsM02NCell4(NULL),
   fHistoMotherInvMassRejected(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
@@ -242,6 +244,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoClusGammaERxSM(NULL),
   fHistoClusGammaERxNCellCrit(NULL),
   fHistoClusGammaERxNCellCritSM(NULL),
+  fHistoEVsM02(NULL),
+  fHistoEVsM02NCell4(NULL),
   fHistoMotherInvMassRejected(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
@@ -495,6 +499,9 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         fHistoClusGammaERxNCellCrit    = new TH1F*[fnCuts];
         fHistoClusGammaERxSM           = new TH1F**[fnCuts];
         fHistoClusGammaERxNCellCritSM  = new TH1F**[fnCuts];
+        fHistoClusGammaERxNCellCritSM  = new TH1F**[fnCuts];
+        fHistoEVsM02                   = new TH2F*[fnCuts];
+        fHistoEVsM02NCell4             = new TH2F*[fnCuts];
         for(Int_t icuts = 0; icuts < fnCuts; icuts++){
           fHistoClusGammaERxSM[icuts]           = new TH1F*[fnModules];
           fHistoClusGammaERxNCellCritSM[icuts]  = new TH1F*[fnModules];
@@ -858,6 +865,14 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         fHistoClusGammaERxNCellCritSM[iCut][iModules] = new TH1F(Form("ClusGamma_E_Rx_NCellCrit_SM%i", iModules), Form("ClusGamma_E_Rx_NCellCrit_SM%i; E_{clus} (GeV/c)", iModules), nBinsClusterPt, arrClusPtBinning);
         fESDList[iCut]->Add(fHistoClusGammaERxNCellCritSM[iCut][iModules]);
       }
+      fHistoEVsM02[iCut]                       = new TH2F("ESD_ClusterE_M02", "ESD_ClusterE_M02", nBinsClusterPt, arrClusPtBinning, 200, 0, 2);
+      fHistoEVsM02[iCut]->SetXTitle("E_{cluster}(GeV)");
+      fHistoEVsM02[iCut]->SetYTitle("M_{02}");
+      fESDList[iCut]->Add(fHistoEVsM02[iCut]);
+      fHistoEVsM02NCell4[iCut]                       = new TH2F("ESD_ClusterE_M02_NCell4", "ESD_ClusterE_M02_NCell4", nBinsClusterPt, arrClusPtBinning, 200, 0, 2);
+      fHistoEVsM02NCell4[iCut]->SetXTitle("E_{cluster}(GeV)");
+      fHistoEVsM02NCell4[iCut]->SetYTitle("M_{02}");
+      fESDList[iCut]->Add(fHistoEVsM02NCell4[iCut]);
 
     }
 
@@ -905,7 +920,18 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         if (fHistoMotherMatchedInvMassPt[iCut]) fHistoMotherMatchedInvMassPt[iCut]->Sumw2();
       }
       if (fMesonRecoMode > 0){
+        if (fHistoMotherInvMassECalib[iCut]) fHistoMotherInvMassECalib[iCut]->Sumw2();
+        if (fHistoMotherBackInvMassECalib[iCut]) fHistoMotherBackInvMassECalib[iCut]->Sumw2();
         if (fHistoEVsNCellsInPiMass[iCut]) fHistoEVsNCellsInPiMass[iCut]->Sumw2();
+        if (fHistoClusGammaERxNCellCrit[iCut])  fHistoClusGammaERxNCellCrit[iCut]->Sumw2();
+        if (fHistoEVsM02[iCut])  fHistoEVsM02[iCut]->Sumw2();
+        if (fHistoEVsM02NCell4[iCut])  fHistoEVsM02NCell4[iCut]->Sumw2();
+        for(Int_t iModules = 0; iModules < fnModules; iModules++ ){
+          if(fHistoClusGammaERxSM[iCut][iModules])fHistoClusGammaERxSM[iCut][iModules]->Sumw2();
+          if(fHistoClusGammaERxNCellCritSM[iCut][iModules])fHistoClusGammaERxNCellCritSM[iCut][iModules]->Sumw2();
+          if (fHistoMotherInvMassECalibSM[iCut][iModules]) fHistoMotherInvMassECalibSM[iCut][iModules]->Sumw2();
+          if (fHistoMotherBackInvMassECalibSM[iCut][iModules]) fHistoMotherBackInvMassECalibSM[iCut][iModules]->Sumw2();
+        }
       }
     }
 
@@ -1264,17 +1290,23 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
       }
 
       // Calculate R for cross talk studies
-      if(clus->GetM02() > 0.1 && clus->GetM02() < 0.3){
-        Int_t iSM = fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID());
-        if(iSM >= 0 && iSM < 20){
-          fHistoClusGammaERxSM[fiCut][iSM]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
-        }
-        fHistoClusGammaERx[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
-        if(clus->GetNCells() > 4){
-          fHistoClusGammaERxNCellCrit[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
+      if(fDoMesonQA > 0){
+        if(clus->GetM02() > 0.1 && clus->GetM02() < 0.3){
+          Int_t iSM = fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID());
           if(iSM >= 0 && iSM < 20){
-            fHistoClusGammaERxNCellCritSM[fiCut][iSM]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
+            fHistoClusGammaERxSM[fiCut][iSM]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
           }
+          fHistoClusGammaERx[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
+          if(clus->GetNCells() > 4){
+            fHistoClusGammaERxNCellCrit[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
+            if(iSM >= 0 && iSM < 20){
+              fHistoClusGammaERxNCellCritSM[fiCut][iSM]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
+            }
+          }
+        }
+        fHistoEVsM02[fiCut]->Fill(PhotonCandidate->E(), clus->GetM02(), fWeightJetJetMC);
+        if(clus->GetNCells() > 4){
+          fHistoEVsM02NCell4[fiCut]->Fill(PhotonCandidate->E(), clus->GetM02(), fWeightJetJetMC);
         }
       }
 
