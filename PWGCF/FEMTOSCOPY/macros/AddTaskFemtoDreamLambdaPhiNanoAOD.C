@@ -11,8 +11,10 @@
 
 AliAnalysisTaskSE *AddTaskFemtoDreamLambdaPhiNanoAOD(bool isMC = false,
                                                TString CentEst = "kInt7",
+                                               const char* sTcut = "0",
                                                const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
+  TString sTsuffix = TString::Format("%s", sTcut);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -27,7 +29,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamLambdaPhiNanoAOD(bool isMC = false,
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
-  // evtCuts->SetSphericityCuts(0.7, 1);
+  if(sTsuffix=="1") {
+    evtCuts->SetSphericityCuts(0.7, 1);
+  }
 
   //Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
