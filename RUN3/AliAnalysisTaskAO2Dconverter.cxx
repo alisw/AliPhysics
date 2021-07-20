@@ -1521,8 +1521,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (TMath::Abs(mcparticle.fPy) < limit) {
         mcparticle.fPy = AliMathBase::TruncateFloatFraction(limit, mMcParticleMom);
       }
-      if (TMath::Abs(mcparticle.fE) < limit) {
-        mcparticle.fE = AliMathBase::TruncateFloatFraction(limit, mMcParticleMom);
+      if (TMath::Abs(mcparticle.fE - mcparticle.fPz) < limit) {
+        mcparticle.fE = AliMathBase::TruncateFloatFraction(mcparticle.fPz + limit, mMcParticleMom);
       }
       // End of HACK
 
