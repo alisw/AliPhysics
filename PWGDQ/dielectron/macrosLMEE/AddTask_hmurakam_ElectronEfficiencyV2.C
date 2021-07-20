@@ -5,9 +5,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
                                                                            TString configFile  = "./Config_hmurakam_ElectronEfficiencyV2.C",
                                                                            Bool_t tofcor       = kFALSE,
                                                                            TString year        = "16",
-                                                                           Bool_t usePhiV      = kTRUE,
-                                                                           Double_t maxMee     = 0.14,
-                                                                           Double_t minphiv    = 2.0,
                                                                            Bool_t DeactivateLS = kFALSE,
                                                                            TString outputFileName="LMEE.root",
                                                                            TString suffix="")
@@ -88,7 +85,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   // Pt
   if (usePtVector == true) {
     std::vector<double> ptBinsVec;
-    for (unsigned int i = 0; i < nBinsPt+1; ++i){
+    for (Int_t i = 0; i < nBinsPt+1; ++i){
       ptBinsVec.push_back(ptBins[i]);
     }
     task->SetPtBins(ptBinsVec);
@@ -97,24 +94,28 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   task->SetEtaBinsLinear  (minEtaBin, maxEtaBin, stepsEtaBin);
   task->SetPhiBinsLinear  (minPhiBin, maxPhiBin, stepsPhiBin);
   task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);
-  // Mass
-  if (useMassVector == true) {
-    std::vector<double> massBinsVec;
-    for (unsigned int i = 0; i < nBinsPt+1; ++i){
-      massBinsVec.push_back(massBins[i]);
-    }
-    task->SetMassBins(massBinsVec);
-  }
-  else task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
-  // PairPt
-  if(usePairPtVector == true){
-    std::vector<double> pairptBinsVec;
-    for (unsigned int i = 0; i < nBinsPairPt+1; ++i){
-      pairptBinsVec.push_back(pairptBins[i]);
-    }
-    task->SetPairPtBins(pairptBinsVec);
-  }
-  else task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
+
+  // mee
+  const Int_t Nmee = 1391;
+  Double_t mee[Nmee];  //  Double_t mee[Nmee] = {};
+  for(Int_t j=0;j<1100 ;j++) mee[j] = 0.001 * (j-  0)  +  0.0;//from 0 to 1.1 GeV/c2, every 1 MeV/c2
+  for(Int_t k=1100;k<Nmee;k++) mee[k] = 0.01  * (k-1100) +  1.1;//from 1.1 to 4 GeV/c2, evety 10 MeV/c2
+  //  TVectorD *v_mee = new TVectorD(Nmee);
+  //  for(Int_t k=0;k<Nmee;k++) (*v_mee)[k] = mee[k];
+  //  task->SetMassBins(v_mee);
+  std::vector<double> massBinsVec;
+  for (Int_t l = 0; l < Nmee; ++l) massBinsVec.push_back(mee[l]);
+  task->SetMassBins(massBinsVec);
+  
+  // ptee
+  const Int_t Nptee = 12;
+  Double_t ptee[Nptee] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 10.0};
+  //  TVectorD *v_ptee = new TVectorD(Nptee);
+  //  for(Int_t m=0;m<Nptee;m++) (*v_ptee)[m] = ptee[m];
+  //  task->SetPairPtBins(v_pTee);
+  std::vector<double> pteeBinsVec;
+  for (Int_t l = 0; l < Nptee; ++l) pteeBinsVec.push_back(ptee[l]);
+  task->SetPairPtBins(pteeBinsVec);
 
   // Resolution File, If resoFilename = "" no correction is applied
   SetResolutionFile(year);
@@ -136,15 +137,23 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   task->SetDoPairing(DoPairing);
   task->SetULSandLS(DoULSLS);
   task->SetDeactivateLS(DeactivateLS);
-
   task->SetPhiVBinsLinear(minPhiVBin, maxPhiVBin, stepsPhiVBin);
   task->SetFillPhiV(kFALSE);
+
+
+  //Set Phiv Cut
   task->SetPhiVCut(usePhiV,maxMee,minphiv);
 
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
   AddSingleLegMCSignal(task);
-  AddPairMCSignal(task);
+  if(whichGen == 0 || whichGen == 2){
+    AddPairMCSignalLFJPsi(task);
+  }else if(whichGen == 1){
+    AddPairMCSignalHF(task);
+  }else {
+    printf("no PairMCSignal added\n");
+  };
 
   // Adding cutsettings
   TObjArray*  arrNames=names.Tokenize(";");
