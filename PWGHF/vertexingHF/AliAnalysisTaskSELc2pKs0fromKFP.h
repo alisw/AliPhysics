@@ -147,6 +147,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         Bool_t                  fIsMC; ///< Flag of MC analysis
         Bool_t                  fUseWeights; ///< Flag to use pT weight functions
         Bool_t                  fKeepOnlyMCSignal; ///< flag to keep only signal candidates
+        Bool_t                  fKeepAllVariables; ///<flag to keep all possible variables that were removed to reduce the tree size
         Bool_t                  fIsAnaLc2Lpi; ///< Flag of Lc->Lpi analysis
 
         AliNormalizationCounter* fCounter; //!<! Counter for normalization
