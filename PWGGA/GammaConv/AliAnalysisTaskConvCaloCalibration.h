@@ -210,6 +210,8 @@ protected:
   TH1F***                 fHistoClusGammaERxSM;                               //!array of histos with cluster E in 0.1 < M02 < 0.3 for each SM
   TH1F**                  fHistoClusGammaERxNCellCrit;                        //!array of histos with cluster E in 0.1 < M02 < 0.3 and NCell > 4
   TH1F***                 fHistoClusGammaERxNCellCritSM;                      //!array of histos with cluster E in 0.1 < M02 < 0.3 and NCell > 4 for each SM
+  TH2F**                  fHistoEVsM02;                                       //!array of histos with cluster E vs M02
+  TH2F**                  fHistoEVsM02NCell4;                                 //!array of histos with cluster E vs M02 for NCell > 4
   TH1F**                  fHistoMotherInvMassRejected;                        //! array of histos with invariant mass pairs which were rejected
   TH1F**                  fHistoNEvents;                                      //! array of histos with event information
   TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
