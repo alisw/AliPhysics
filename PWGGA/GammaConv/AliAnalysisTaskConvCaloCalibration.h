@@ -206,6 +206,10 @@ protected:
   TH1F**                  fHistoClusGammaE;                                   //! array of histos with cluster, E
   TH1F***                 fHistoClusGammaPtSM;                                //! array of histos with cluster, pt
   TH1F***                 fHistoClusGammaESM;                                 //! array of histos with cluster, E
+  TH1F**                  fHistoClusGammaERx;                                 //!array of histos with cluster E in 0.1 < M02 < 0.3
+  TH1F***                 fHistoClusGammaERxSM;                               //!array of histos with cluster E in 0.1 < M02 < 0.3 for each SM
+  TH1F**                  fHistoClusGammaERxNCellCrit;                        //!array of histos with cluster E in 0.1 < M02 < 0.3 and NCell > 4
+  TH1F***                 fHistoClusGammaERxNCellCritSM;                      //!array of histos with cluster E in 0.1 < M02 < 0.3 and NCell > 4 for each SM
   TH1F**                  fHistoMotherInvMassRejected;                        //! array of histos with invariant mass pairs which were rejected
   TH1F**                  fHistoNEvents;                                      //! array of histos with event information
   TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
@@ -269,7 +273,7 @@ private:
   AliAnalysisTaskConvCaloCalibration(const AliAnalysisTaskConvCaloCalibration&); // Prevent copy-construction
   AliAnalysisTaskConvCaloCalibration &operator=(const AliAnalysisTaskConvCaloCalibration&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskConvCaloCalibration, 6);
+  ClassDef(AliAnalysisTaskConvCaloCalibration, 7);
 };
 
 #endif // AliAnalysisTaskConvCaloCalibration_H
