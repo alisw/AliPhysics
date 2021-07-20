@@ -141,6 +141,20 @@ void AddTask_ConvCaloTree(
   fConvCaloTree->SetV0ReaderName(V0ReaderName);
   mgr->AddTask(fConvCaloTree);
 
+  //create AliCaloTrackMatcher instance, if there is none present
+  TString TrackMatcherName = Form("CaloTrackMatcher_%i_%i",1,0);
+  if(corrTaskSetting.CompareTo("")){
+    TrackMatcherName = TrackMatcherName+"_"+corrTaskSetting.Data();
+    cout << "Using separate track matcher for correction framework setting: " << TrackMatcherName.Data() << endl;
+  }
+  if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
+    AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),1,0);
+    fTrackMatcher->SetV0ReaderName(V0ReaderName);
+    fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
+    mgr->AddTask(fTrackMatcher);
+    mgr->ConnectInput(fTrackMatcher,0,cinput);
+  }
+
   mgr->ConnectInput  (fConvCaloTree, 0,  cinput );
   mgr->ConnectOutput (fConvCaloTree, 1, mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ?  Form("GammaCaloQA_%s_%s", TaskEventCutnumber.Data(), TaskEMCCutnumber.Data()) : Form("GammaCaloQA_%s_%s_%s", TaskEventCutnumber.Data(), TaskEMCCutnumber.Data(),corrTaskSetting.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaCaloQA_%s_%s", mgr->GetCommonFileName(), TaskEventCutnumber.Data(), TaskEMCCutnumber.Data())) );
   mgr->ConnectOutput (fConvCaloTree, 2, mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ?  Form("ConvCaloPhotons_%s_%s", TaskEventCutnumber.Data(), TaskEMCCutnumber.Data()) : Form("ConvCaloPhotons_%s_%s_%s", TaskEventCutnumber.Data(), TaskEMCCutnumber.Data(),corrTaskSetting.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()) );

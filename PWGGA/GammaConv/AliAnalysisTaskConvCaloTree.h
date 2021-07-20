@@ -121,6 +121,8 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<Float_t>            fVBuffer_Cluster_Phi;                          //!<! vector buffer  Calo (PHOS or EDC) cluster phi
     std::vector<Short_t>            fVBuffer_Cluster_NCells;                       //!<! vector buffer  Calo (PHOS or EDC) cluster NCells
     std::vector<Short_t>            fVBuffer_Cluster_M02;                          //!<! vector buffer  Calo (PHOS or EDC) cluster M02
+    std::vector<Short_t>            fVBuffer_Cluster_Fcross;                       //!<! vector buffer  Calo (PHOS or EDC) cluster M02
+    std::vector<Bool_t>             fVBuffer_Cluster_Exotic;                       //!<! vector buffer  Calo (PHOS or EDC) cluster M02
     std::vector<unsigned int>       fVTrueClusterPi0DaughterIndex;                 //!<! vector buffer   store the MC stack ID of mother pi0 for true information
     std::vector<unsigned int>       fVTrueClusterEtaDaughterIndex;                 //!<! vector buffer   store the MC stack ID of mother eta for true information
     std::vector<Short_t>            fVTrueClusterMCId;                             //!<! vector buffer   store the MC stack ID of mother eta for true information
@@ -142,7 +144,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<Short_t>                 fVBuffer_Track_Calo_eta;                   //!<! vector buffer: track eta on Calo surface (*10000)
     std::vector<UShort_t>                fVBuffer_Track_Calo_phi;                   //!<! vector buffer: track eta on Calo surface (*10000)
 
-    ClassDef(AliAnalysisTaskConvCaloTree, 2);
+    ClassDef(AliAnalysisTaskConvCaloTree, 3);
 };
 
 
