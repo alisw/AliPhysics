@@ -1,5 +1,5 @@
 AliAnalysisTask *AddTaskJHOCFAMaster10h (TString taskName = "JHOCFAMaster10h", double ptMin = 0.5, Bool_t removebadarea = kFALSE,
-  Bool_t saveCatalystQA = kFALSE, Int_t Nsets = 6, TString configArray = "0 1 6 7 8 9",
+  Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Int_t Nsets = 6, TString configArray = "0 1 6 7 8 9",
   Int_t Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -53,7 +53,6 @@ AliAnalysisTask *AddTaskJHOCFAMaster10h (TString taskName = "JHOCFAMaster10h", d
     index++;
   }
 
-
 // Loading of the correction map.
   TString MAPfilenames[maxNsets];
   TString MAPdirname = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
@@ -77,9 +76,10 @@ AliAnalysisTask *AddTaskJHOCFAMaster10h (TString taskName = "JHOCFAMaster10h", d
     fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", taskName.Data(), configNames[i].Data()));
     cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << endl;
 
-  // TBI: Do we need the flag for outliers here?
+    if (applyHMOcut) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);}
     fJCatalyst[i]->SelectCollisionCandidates(configTrigger);
-    fJCatalyst[i]->SetSaveAllQA(saveCatalystQA); 
+    fJCatalyst[i]->SetSaveAllQA(saveCatalystQA);
+    fJCatalyst[i]->SetSaveHMOhist(saveHMOQA);
     fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
     fJCatalyst[i]->SetInitializeCentralityArray();
 
