@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 19.07.2021
+ * Last Modified Date: 20.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -51,6 +51,9 @@ ClassImp(AliAnalysisTaskAR)
       // list holding filterbit scan histograms
       fFBScanQAHistogramsList(nullptr),
       fFBScanQAHistogramsListName("FBScanQAHistograms"),
+      // list holding self correlation QA histograms
+      fSelfCorQAHistogramsList(nullptr),
+      fSelfCorQAHistogramsListName("SelfCorQAHistograms"),
       // list holding all control histograms
       fControlHistogramsList(nullptr),
       fControlHistogramsListName("ControlHistograms"),
@@ -120,6 +123,9 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       // list holding filterbit scan histograms
       fFBScanQAHistogramsList(nullptr),
       fFBScanQAHistogramsListName("FBScanQAHistograms"),
+      // list holding self correlation QA histograms
+      fSelfCorQAHistogramsList(nullptr),
+      fSelfCorQAHistogramsListName("SelfCorQAHistograms"),
       // list holding all control histograms
       fControlHistogramsList(nullptr),
       fControlHistogramsListName("ControlHistograms"),
@@ -352,8 +358,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       {"fFBTrackScanQAHistogram[kDCAXY]", "Filterbitscan DCA in xy", "", ""},
   };
 
-  // initialize names of QA histograms for the correlation between centrality
-  // estimators
+  // initialize names of QA histograms filterbit scan
   for (int track = 0; track < LAST_ETRACK; ++track) {
     for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
       for (int name = 0; name < LAST_ENAME; ++name) {
@@ -384,6 +389,50 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
       fFBTrackScanQAHistogramBins[var][bin] =
           FBTrackScanHistogramBins[var][bin];
+    }
+  }
+
+  // initialize arrays for self correlation QA histograms
+  for (int var = 0; var < kKinematic; ++var) {
+    for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+      fSelfCorQAHistograms[var][ba] = nullptr;
+    }
+  }
+
+  // names for self correlation QA histograms
+  TString SelfCorQAHistogramNames[kKinematic][LAST_ENAME] = {
+      // NAME, TITLE, XAXIS, YAXIS
+      {"fSelfCorQAHistograms[kPT]", "p_{T}^{1}-p_{T}^{2}", "#Delta p_{T}", ""},
+      {"fSelfCorQAHistograms[kPHI]", "#varphi_{1}-#varphi_{2}",
+       "#Delta #varphi", ""},
+      {"fSelfCorQAHistograms[kETA]", "#eta_{1}-#eta_{2}", "#Delta #eta", ""},
+  };
+
+  // initialize names for self correlation QA histograms
+  for (int var = 0; var < kKinematic; ++var) {
+    for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+      for (int name = 0; name < LAST_ENAME; ++name) {
+        if (name == kNAME || name == kTITLE) {
+          fSelfCorQAHistogramNames[var][ba][name] =
+              SelfCorQAHistogramNames[var][name] + kBAName[ba];
+        } else {
+          fSelfCorQAHistogramNames[var][ba][name] =
+              SelfCorQAHistogramNames[var][name];
+        }
+      }
+    }
+  }
+
+  Double_t SelfCorQAHistogramBins[kKinematic][LAST_EBINS] = {
+      // kBIN kLEDGE kUEDGE
+      {1000., -0.1, 0.1}, // kPT
+      {1000., -0.1, 0.1}, // kPHI
+      {1000., -0.1, 0.1}, // kETA
+  };
+  // initialize array of bins and edges for track control histograms
+  for (int var = 0; var < kKinematic; ++var) {
+    for (int bin = 0; bin < LAST_EBINS; ++bin) {
+      fSelfCorQAHistogramBins[var][bin] = SelfCorQAHistogramBins[var][bin];
     }
   }
 }
@@ -633,7 +682,7 @@ void AliAnalysisTaskAR::InitializeArraysForMCAnalysis() {
     fMCPdfRange[i] = MCPdfRangeDefaults[i];
   }
 
-  // range of fluctuations of number of particles produces per event
+  // range of fluctuations of number of particles produced per event
   Int_t MCNumberOfParticlesPerEventRangeDefaults[LAST_EMINMAX] = {500, 1000};
   for (int i = 0; i < LAST_EMINMAX; ++i) {
     fMCNumberOfParticlesPerEventRange[i] =
@@ -670,6 +719,12 @@ void AliAnalysisTaskAR::BookAndNestAllLists() {
     fFBScanQAHistogramsList->SetName(fFBScanQAHistogramsListName);
     fFBScanQAHistogramsList->SetOwner(kTRUE);
     fQAHistogramsList->Add(fFBScanQAHistogramsList);
+
+    // self correlation QA histograms
+    fSelfCorQAHistogramsList = new TList();
+    fSelfCorQAHistogramsList->SetName(fSelfCorQAHistogramsListName);
+    fSelfCorQAHistogramsList->SetOwner(kTRUE);
+    fQAHistogramsList->Add(fSelfCorQAHistogramsList);
   }
 
   // 2. Book and nest lists for control histograms:
@@ -739,8 +794,8 @@ void AliAnalysisTaskAR::BookQAHistograms() {
     fFBScanQAHistogram->GetXaxis()->SetBinLabel(i + 1, Form("%d", fb));
     fb *= 2;
   }
-	fFBScanQAHistogram->SetStats(kFALSE);
-	fFBScanQAHistogram->SetFillColor(kFillColor[kAFTER]);
+  fFBScanQAHistogram->SetStats(kFALSE);
+  fFBScanQAHistogram->SetFillColor(kFillColor[kAFTER]);
   fFBScanQAHistogramsList->Add(fFBScanQAHistogram);
 
   for (int track = 0; track < LAST_ETRACK; ++track) {
@@ -758,6 +813,25 @@ void AliAnalysisTaskAR::BookQAHistograms() {
       fFBTrackScanQAHistograms[track][fb]->GetYaxis()->SetTitle(
           fFBTrackScanQAHistogramNames[track][fb][kYAXIS]);
       fFBScanQAHistogramsList->Add(fFBTrackScanQAHistograms[track][fb]);
+    }
+  }
+
+  for (int var = 0; var < kKinematic; ++var) {
+    for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+      fSelfCorQAHistograms[var][ba] =
+          new TH1D(fSelfCorQAHistogramNames[var][ba][kNAME],
+                   fSelfCorQAHistogramNames[var][ba][kTITLE],
+                   fSelfCorQAHistogramBins[var][kBIN],
+                   fSelfCorQAHistogramBins[var][kLEDGE],
+                   fSelfCorQAHistogramBins[var][kUEDGE]);
+      fSelfCorQAHistograms[var][ba]->SetStats(kFALSE);
+      fSelfCorQAHistograms[var][ba]->SetFillColor(kFillColor[ba]);
+      fSelfCorQAHistograms[var][ba]->SetMinimum(0.0);
+      fSelfCorQAHistograms[var][ba]->GetXaxis()->SetTitle(
+          fSelfCorQAHistogramNames[var][ba][kXAXIS]);
+      fSelfCorQAHistograms[var][ba]->GetYaxis()->SetTitle(
+          fSelfCorQAHistogramNames[var][ba][kYAXIS]);
+      fSelfCorQAHistogramsList->Add(fSelfCorQAHistograms[var][ba]);
     }
   }
 }
@@ -942,6 +1016,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       continue;
     }
 
+    // fill filter bit scan QA histogram
     if (fFillQAHistograms) {
       FillFBScanQAHistograms(aTrack);
     }
@@ -1104,6 +1179,28 @@ void AliAnalysisTaskAR::FillEventQAHistograms(kBeforeAfter BA,
                                    centralityPercentile[kCL1]);
   fCenCorQAHistograms[5][BA]->Fill(centralityPercentile[kV0M],
                                    centralityPercentile[kCL1]);
+
+  // search for self correlations with nested loop
+  Int_t nTracks = event->GetNumberOfTracks();
+  // starting a loop over the first track
+  for (Int_t iTrack1 = 0; iTrack1 < nTracks; iTrack1++) {
+    AliAODTrack *aTrack1 =
+        dynamic_cast<AliAODTrack *>(event->GetTrack(iTrack1));
+    if (!aTrack1 || !SurviveTrackCut(aTrack1)) {
+      continue;
+    }
+    // starting a loop over the second track
+    for (Int_t iTrack2 = iTrack1 + 1; iTrack2 < nTracks; iTrack2++) {
+      AliAODTrack *aTrack2 =
+          dynamic_cast<AliAODTrack *>(event->GetTrack(iTrack2));
+      if (!aTrack2 || !SurviveTrackCut(aTrack2)) {
+        continue;
+      }
+      fSelfCorQAHistograms[kPHI][BA]->Fill(aTrack1->Phi() - aTrack2->Phi());
+      fSelfCorQAHistograms[kPT][BA]->Fill(aTrack1->Pt() - aTrack2->Pt());
+      fSelfCorQAHistograms[kETA][BA]->Fill(aTrack1->Eta() - aTrack2->Eta());
+    }
+  }
 }
 
 void AliAnalysisTaskAR::FillFBScanQAHistograms(AliAODTrack *track) {
@@ -1111,7 +1208,7 @@ void AliAnalysisTaskAR::FillFBScanQAHistograms(AliAODTrack *track) {
   int fb = 1;
   for (int i = 0; i < kMaxFilterbit; ++i) {
     if (track->TestFilterBit(fb)) {
-      fFBScanQAHistogram->Fill(fb);
+      fFBScanQAHistogram->Fill(i);
     }
     fb *= 2;
   }

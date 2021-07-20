@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 19.07.2021
+ * Last Modified Date: 20.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -51,6 +51,7 @@ enum kTrack {
   kDCAXY,
   LAST_ETRACK
 };
+const Int_t kKinematic = kETA + 1;
 enum kXYZ { kX, kY, kZ, LAST_EXYZ };
 enum kFinalHist { kPHIAVG, LAST_EFINALHIST };
 enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
@@ -300,6 +301,12 @@ private:
   TString fFBTrackScanQAHistogramNames[LAST_ETRACK][kNumberofTestFilterBit]
                                       [LAST_ENAME];
   Double_t fFBTrackScanQAHistogramBins[LAST_ETRACK][LAST_EBINS];
+  // self correlations
+  TList *fSelfCorQAHistogramsList;
+  TString fSelfCorQAHistogramsListName;
+  TH1D *fSelfCorQAHistograms[kKinematic][LAST_EBEFOREAFTER];
+  TString fSelfCorQAHistogramNames[kKinematic][LAST_EBEFOREAFTER][LAST_ENAME];
+  Double_t fSelfCorQAHistogramBins[kKinematic][LAST_EBINS];
 
   // control histograms
   TList *fControlHistogramsList;
