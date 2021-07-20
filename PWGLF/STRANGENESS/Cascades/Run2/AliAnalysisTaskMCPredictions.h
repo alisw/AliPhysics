@@ -78,23 +78,23 @@ private:
   TH1D *fHistEventCounter; //! histogram for event counting
   TH1D *fHistChargedEta; //! histogram for event counting
   
-  Int_t fSmallMultRange;
-  Int_t fLargeMultRange;
-  Int_t fRebinFactor;
-  Bool_t fkSelectINELgtZERO;
-  Bool_t fkALICE3SiliconMode; //if true, SPD multiplicity == full |eta|<4.0
+  Int_t fSmallMultRange; //!
+  Int_t fLargeMultRange; //!
+  Int_t fRebinFactor; //!
+  Bool_t fkSelectINELgtZERO; //!
+  Bool_t fkALICE3SiliconMode; //! //if true, SPD multiplicity == full |eta|<4.0
   
   //Basic Histograms for counting events as a function of V0M percentiles...
-  TH1D *fHistV0MMult;
-  TH1D *fHistSPDMult;
-  TH2D *fHistNchVsV0MMult;
-  TH2D *fHistNchVsSPDMult;
-  TH1D *fHistNpart;
-  TH2D *fHistNchVsNpart;
-  TH1D *fHistB;
-  TH2D *fHistNchVsB;
-  TH1D *fHistNMPI;
-  TH2D *fHistNchVsNMPI;
+  TH1D *fHistV0MMult; //!
+  TH1D *fHistSPDMult; //!
+  TH2D *fHistNchVsV0MMult; //!
+  TH2D *fHistNchVsSPDMult; //!
+  TH1D *fHistNpart; //!
+  TH2D *fHistNchVsNpart; //!
+  TH1D *fHistB; //!
+  TH2D *fHistNchVsB; //!
+  TH1D *fHistNMPI; //!
+  TH2D *fHistNchVsNMPI; //!
   
   TH1D *fHistPt[52];              //! for keeping track of base spectra
   TH1D *fHistEta[52];              //! for keeping track of base spectra
@@ -105,15 +105,15 @@ private:
   TH2D *fHistPtVsNMPI[52];       //! for keeping track of base spectra
   
   Bool_t fkDo2pc;
-  Float_t fMinPtTriggerCharged; //for charged trigger
+  Float_t fMinPtTriggerCharged;  //for charged trigger
   Float_t fMinPtTriggerXi; //for xi trigger
   Float_t fMinPtTriggerPhi; //for phi trigger
-  TH1D *fEtaTriggerCharged;
-  TH1D *fEtaTriggerXi;
-  TH1D *fEtaTriggerPhi;
-  TH3D *fHist3d2pcSE[52]; //!
-  TH3D *fHist3d2pcXiSE[52]; //!
-  TH3D *fHist3d2pcPhiSE[52]; //!
+  TH1D *fEtaTriggerCharged; //!
+  TH1D *fEtaTriggerXi; //!
+  TH1D *fEtaTriggerPhi; //!
+//  TH3D *fHist3d2pcSE[52]; //!
+//  TH3D *fHist3d2pcXiSE[52]; //!
+//  TH3D *fHist3d2pcPhiSE[52]; //!
   
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
