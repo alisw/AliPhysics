@@ -119,6 +119,12 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoClusGammaE(NULL),
   fHistoClusGammaPtSM(NULL),
   fHistoClusGammaESM(NULL),
+  fHistoClusGammaERx(NULL),
+  fHistoClusGammaERxSM(NULL),
+  fHistoClusGammaERxNCellCrit(NULL),
+  fHistoClusGammaERxNCellCritSM(NULL),
+  fHistoEVsM02(NULL),
+  fHistoEVsM02NCell4(NULL),
   fHistoMotherInvMassRejected(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
@@ -234,6 +240,12 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoClusGammaE(NULL),
   fHistoClusGammaPtSM(NULL),
   fHistoClusGammaESM(NULL),
+  fHistoClusGammaERx(NULL),
+  fHistoClusGammaERxSM(NULL),
+  fHistoClusGammaERxNCellCrit(NULL),
+  fHistoClusGammaERxNCellCritSM(NULL),
+  fHistoEVsM02(NULL),
+  fHistoEVsM02NCell4(NULL),
   fHistoMotherInvMassRejected(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
@@ -482,6 +494,19 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         fHistoClusGammaPtSM[icuts]        = new TH1F*[fnModules];
         fHistoClusGammaESM[icuts]         = new TH1F*[fnModules];
       }
+      if(fDoMesonQA > 0){
+        fHistoClusGammaERx             = new TH1F*[fnCuts];
+        fHistoClusGammaERxNCellCrit    = new TH1F*[fnCuts];
+        fHistoClusGammaERxSM           = new TH1F**[fnCuts];
+        fHistoClusGammaERxNCellCritSM  = new TH1F**[fnCuts];
+        fHistoClusGammaERxNCellCritSM  = new TH1F**[fnCuts];
+        fHistoEVsM02                   = new TH2F*[fnCuts];
+        fHistoEVsM02NCell4             = new TH2F*[fnCuts];
+        for(Int_t icuts = 0; icuts < fnCuts; icuts++){
+          fHistoClusGammaERxSM[icuts]           = new TH1F*[fnModules];
+          fHistoClusGammaERxNCellCritSM[icuts]  = new TH1F*[fnModules];
+        }
+      }
     }
 
     fHistoMotherInvMassPt             = new TH2F*[fnCuts];
@@ -547,79 +572,7 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     Double_t *arrPtBinning      = new Double_t[1200];
     Double_t *arrQAPtBinning    = new Double_t[1200];
     Double_t *arrClusPtBinning  = new Double_t[1200];
-    // Set special pt binning for pp 13TeV, pPb 8TeV
-    if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
-                ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ||
-                ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
-      if(fMesonRecoMode < 2){
-        nBinsPt                   = 235;
-        minPt                     = 0;
-        maxPt                     = 50;
-        binWidthPt                = 0.05;
-        for(Int_t i=0; i<nBinsPt+1;i++){
-          if (i < 1) arrPtBinning[i]              = 0.3*i;
-          else if(i<55) arrPtBinning[i]           = 0.3+0.05*(i-1);
-          else if(i<125) arrPtBinning[i]          = 3.+0.1*(i-55);
-          else if(i<185) arrPtBinning[i]          = 10.+0.25*(i-125);
-          else if(i<235) arrPtBinning[i]          = 25.+0.5*(i-185);
-          else  arrPtBinning[i]                   = maxPt;
-        }
-        nBinsQAPt                 = 221;
-        maxQAPt                   = 50;
-        for(Int_t i=0; i<nBinsQAPt+1;i++){
-          if(i<60) arrQAPtBinning[i]              = 0.05*i;
-          else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
-          else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
-          else if(i<210) arrQAPtBinning[i]        = 20.+0.5*(i-170);
-          else if(i<221) arrQAPtBinning[i]        = 40.+1.0*(i-210);
-          else arrQAPtBinning[i]                  = maxQAPt;
-        }
-        nBinsClusterPt            = 351;
-        maxClusterPt              = 50;
-        for(Int_t i=0; i<nBinsClusterPt+1;i++){
-          if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-          else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
-          else if(i<125) arrClusPtBinning[i]      = 3.+0.1*(i-55);
-          else if(i<155) arrClusPtBinning[i]      = 10.+0.2*(i-125);
-          else if(i<211) arrClusPtBinning[i]      = 16.+0.25*(i-155);
-          else if(i<251) arrClusPtBinning[i]      = 30.+0.5*(i-211);
-          else arrClusPtBinning[i]                = maxClusterPt;
-      }
-
-    } else if(fMesonRecoMode == 2){
-          nBinsPt                   = 165;
-          minPt                     = 0;
-          maxPt                     = 20;
-          binWidthPt                = 0.05;
-          for(Int_t i=0; i<nBinsPt+1;i++){
-            if (i < 1) arrPtBinning[i]              = 0.3*i;
-            else if(i<55) arrPtBinning[i]           = 0.3+0.05*(i-1);
-            else if(i<125) arrPtBinning[i]          = 3.+0.1*(i-55);
-            else if(i<165) arrPtBinning[i]          = 10.+0.25*(i-125);
-            else  arrPtBinning[i]                   = maxPt;
-          }
-          nBinsQAPt                 = 210;
-          maxQAPt                   = 20;
-          for(Int_t i=0; i<nBinsQAPt+1;i++){
-            if(i<60) arrQAPtBinning[i]              = 0.05*i;
-            else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
-            else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
-            else arrQAPtBinning[i]                  = maxQAPt;
-          }
-          nBinsClusterPt            = 171;
-          maxClusterPt              = 20;
-          for(Int_t i=0; i<nBinsClusterPt+1;i++){
-            if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-            else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
-            else if(i<125) arrClusPtBinning[i]      = 3.+0.1*(i-55);
-            else if(i<155) arrClusPtBinning[i]      = 10.+0.2*(i-125);
-            else if(i<171) arrClusPtBinning[i]      = 16.+0.25*(i-155);
-            else arrClusPtBinning[i]                = maxClusterPt;
-          }
-      }
-
-              // default binning
-    } else {
+    if(fMesonRecoMode < 2 && fDoMesonQA == 0){
       nBinsPt                   = 235;
       minPt                     = 0;
       maxPt                     = 50;
@@ -653,6 +606,72 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         else if(i<251) arrClusPtBinning[i]      = 30.+0.5*(i-211);
         else arrClusPtBinning[i]                = maxClusterPt;
     }
+
+  } else if(fMesonRecoMode == 2 && fDoMesonQA == 0){
+        nBinsPt                   = 165;
+        minPt                     = 0;
+        maxPt                     = 20;
+        binWidthPt                = 0.05;
+        for(Int_t i=0; i<nBinsPt+1;i++){
+          if (i < 1) arrPtBinning[i]              = 0.3*i;
+          else if(i<55) arrPtBinning[i]           = 0.3+0.05*(i-1);
+          else if(i<125) arrPtBinning[i]          = 3.+0.1*(i-55);
+          else if(i<165) arrPtBinning[i]          = 10.+0.25*(i-125);
+          else  arrPtBinning[i]                   = maxPt;
+        }
+        nBinsQAPt                 = 210;
+        maxQAPt                   = 20;
+        for(Int_t i=0; i<nBinsQAPt+1;i++){
+          if(i<60) arrQAPtBinning[i]              = 0.05*i;
+          else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
+          else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
+          else arrQAPtBinning[i]                  = maxQAPt;
+        }
+        nBinsClusterPt            = 171;
+        maxClusterPt              = 20;
+        for(Int_t i=0; i<nBinsClusterPt+1;i++){
+          if (i < 1) arrClusPtBinning[i]          = 0.3*i;
+          else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
+          else if(i<125) arrClusPtBinning[i]      = 3.+0.1*(i-55);
+          else if(i<155) arrClusPtBinning[i]      = 10.+0.2*(i-125);
+          else if(i<171) arrClusPtBinning[i]      = 16.+0.25*(i-155);
+          else arrClusPtBinning[i]                = maxClusterPt;
+        }
+              // default binning
+    } else {
+      nBinsPt                   = 310;
+      minPt                     = 0;
+      maxPt                     = 100;
+      binWidthPt                = 0.1;
+      for(Int_t i=0; i<nBinsPt+1;i++){
+        if (i < 1) arrPtBinning[i]              = 0.3*i;
+        else if(i<198) arrPtBinning[i]          = 0.3+0.1*(i-1);
+        else if(i<238) arrPtBinning[i]          = 20.+0.25*(i-198);
+        else if(i<278) arrPtBinning[i]          = 30.+0.5*(i-238);
+        else if(i<298) arrPtBinning[i]          = 50.+1.0*(i-278);
+        else if(i<310) arrPtBinning[i]          = 70.+2.5*(i-298);
+        else  arrPtBinning[i]                   = maxPt;
+      }
+      nBinsQAPt                 = 240;
+      maxQAPt                   = 100;
+      for(Int_t i=0; i<nBinsQAPt+1;i++){
+        if(i<100) arrQAPtBinning[i]             = 0.1*i;
+        else if(i<140) arrQAPtBinning[i]        = 10.+0.25*(i-100);
+        else if(i<180) arrQAPtBinning[i]        = 20.+0.5*(i-140);
+        else if(i<240) arrQAPtBinning[i]        = 40.+1.0*(i-180);
+        else arrQAPtBinning[i]                  = maxQAPt;
+      }
+      nBinsClusterPt            = 310;
+      maxClusterPt              = 100;
+      for(Int_t i=0; i<nBinsClusterPt+1;i++){
+        if (i < 1) arrClusPtBinning[i]          = 0.3*i;
+        else if(i<198) arrClusPtBinning[i]      = 0.3+0.1*(i-1);
+        else if(i<238) arrClusPtBinning[i]      = 20.+0.25*(i-198);
+        else if(i<278) arrClusPtBinning[i]      = 30.+0.5*(i-238);
+        else if(i<298) arrClusPtBinning[i]      = 50.+1.0*(i-278);
+        else if(i<310) arrClusPtBinning[i]      = 70.+2.5*(i-298);
+        else  arrClusPtBinning[i]               = maxClusterPt;
+      }
     }
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -835,6 +854,28 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoClusGammaESM[iCut][iModules]);
     }
 
+    if(fDoMesonQA > 0){
+      fHistoClusGammaERx[iCut]                     = new TH1F("ClusGamma_E_Rx", "ClusGamma_E_Rx; E_{clus} (GeV/c)", nBinsClusterPt, arrClusPtBinning);
+      fESDList[iCut]->Add(fHistoClusGammaERx[iCut]);
+      fHistoClusGammaERxNCellCrit[iCut]            = new TH1F("ClusGamma_E_Rx_NCellCrit", "ClusGamma_E_Rx_NCellCrit; E_{clus} (GeV/c)", nBinsClusterPt, arrClusPtBinning);
+      fESDList[iCut]->Add(fHistoClusGammaERx[iCut]);
+      for(Int_t iModules = 0; iModules < fnModules; iModules++ ){
+        fHistoClusGammaERxSM[iCut][iModules]          = new TH1F(Form("ClusGamma_E_Rx_SM%i", iModules), Form("ClusGamma_E_Rx_SM%i; E_{clus} (GeV/c)", iModules), nBinsClusterPt, arrClusPtBinning);
+        fESDList[iCut]->Add(fHistoClusGammaERxSM[iCut][iModules]);
+        fHistoClusGammaERxNCellCritSM[iCut][iModules] = new TH1F(Form("ClusGamma_E_Rx_NCellCrit_SM%i", iModules), Form("ClusGamma_E_Rx_NCellCrit_SM%i; E_{clus} (GeV/c)", iModules), nBinsClusterPt, arrClusPtBinning);
+        fESDList[iCut]->Add(fHistoClusGammaERxNCellCritSM[iCut][iModules]);
+      }
+      fHistoEVsM02[iCut]                       = new TH2F("ESD_ClusterE_M02", "ESD_ClusterE_M02", nBinsClusterPt, arrClusPtBinning, 200, 0, 2);
+      fHistoEVsM02[iCut]->SetXTitle("E_{cluster}(GeV)");
+      fHistoEVsM02[iCut]->SetYTitle("M_{02}");
+      fESDList[iCut]->Add(fHistoEVsM02[iCut]);
+      fHistoEVsM02NCell4[iCut]                       = new TH2F("ESD_ClusterE_M02_NCell4", "ESD_ClusterE_M02_NCell4", nBinsClusterPt, arrClusPtBinning, 200, 0, 2);
+      fHistoEVsM02NCell4[iCut]->SetXTitle("E_{cluster}(GeV)");
+      fHistoEVsM02NCell4[iCut]->SetYTitle("M_{02}");
+      fESDList[iCut]->Add(fHistoEVsM02NCell4[iCut]);
+
+    }
+
     fHistoMotherInvMassECalib[iCut]                       = new TH2F("ESD_Mother_InvMass_E_Calib", "ESD_Mother_InvMass_E_Calib", fMesonInvMassNBins, fMesonInvMassMin, fMesonInvMassMax, nBinsPt, arrPtBinning);
     fHistoMotherInvMassECalib[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
     fHistoMotherInvMassECalib[iCut]->SetYTitle("E_{cluster}(GeV)");
@@ -879,7 +920,18 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         if (fHistoMotherMatchedInvMassPt[iCut]) fHistoMotherMatchedInvMassPt[iCut]->Sumw2();
       }
       if (fMesonRecoMode > 0){
+        if (fHistoMotherInvMassECalib[iCut]) fHistoMotherInvMassECalib[iCut]->Sumw2();
+        if (fHistoMotherBackInvMassECalib[iCut]) fHistoMotherBackInvMassECalib[iCut]->Sumw2();
         if (fHistoEVsNCellsInPiMass[iCut]) fHistoEVsNCellsInPiMass[iCut]->Sumw2();
+        if (fHistoClusGammaERxNCellCrit[iCut])  fHistoClusGammaERxNCellCrit[iCut]->Sumw2();
+        if (fHistoEVsM02[iCut])  fHistoEVsM02[iCut]->Sumw2();
+        if (fHistoEVsM02NCell4[iCut])  fHistoEVsM02NCell4[iCut]->Sumw2();
+        for(Int_t iModules = 0; iModules < fnModules; iModules++ ){
+          if(fHistoClusGammaERxSM[iCut][iModules])fHistoClusGammaERxSM[iCut][iModules]->Sumw2();
+          if(fHistoClusGammaERxNCellCritSM[iCut][iModules])fHistoClusGammaERxNCellCritSM[iCut][iModules]->Sumw2();
+          if (fHistoMotherInvMassECalibSM[iCut][iModules]) fHistoMotherInvMassECalibSM[iCut][iModules]->Sumw2();
+          if (fHistoMotherBackInvMassECalibSM[iCut][iModules]) fHistoMotherBackInvMassECalibSM[iCut][iModules]->Sumw2();
+        }
       }
     }
 
@@ -1236,6 +1288,28 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
       }else {
         vectorClusterSM.push_back(0);
       }
+
+      // Calculate R for cross talk studies
+      if(fDoMesonQA > 0){
+        if(clus->GetM02() > 0.1 && clus->GetM02() < 0.3){
+          Int_t iSM = fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID());
+          if(iSM >= 0 && iSM < 20){
+            fHistoClusGammaERxSM[fiCut][iSM]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
+          }
+          fHistoClusGammaERx[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
+          if(clus->GetNCells() > 4){
+            fHistoClusGammaERxNCellCrit[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
+            if(iSM >= 0 && iSM < 20){
+              fHistoClusGammaERxNCellCritSM[fiCut][iSM]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
+            }
+          }
+        }
+        fHistoEVsM02[fiCut]->Fill(PhotonCandidate->E(), clus->GetM02(), fWeightJetJetMC);
+        if(clus->GetNCells() > 4){
+          fHistoEVsM02NCell4[fiCut]->Fill(PhotonCandidate->E(), clus->GetM02(), fWeightJetJetMC);
+        }
+      }
+
     }else{
       delete PhotonCandidate;
     }
@@ -1259,6 +1333,7 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
         fHistoClusGammaPtSM[fiCut][vectorClusterSM.at(iter)]->Fill(vectorCurrentClusters.at(iter)->Pt(),vectorPhotonWeight.at(iter));
         fHistoClusGammaESM[fiCut][vectorClusterSM.at(iter)]->Fill(vectorCurrentClusters.at(iter)->Pt(),vectorPhotonWeight.at(iter));
       }
+
 
       fClusterCandidates->Add(vectorCurrentClusters.at(iter));
     }
