@@ -29,7 +29,7 @@ public:
   enum EventClass : unsigned int {
     triggered = 0, // mc events that fulfil the (experimental!) trigger condition [varies from dataset to dataset]
     fiducial,      // mc events that produce at least one charged particle within the fiducial phase space of the measurement [trusting only that trigger eff for these events is modelled properly]
-    inelgt0,       // mc events that produce at least one charged particle in eta > 1 [trusting simulation for extrapolation to events with particles produced only in the unmeasured region]
+    inelgt0,       // mc events that produce at least one charged particle in |eta| < 1 [trusting simulation for extrapolation to events with particles produced only in the unmeasured region]
   };
 
   AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(){};
