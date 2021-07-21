@@ -53,6 +53,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 
     // Jet functions
     void ProcessJets();
+    Bool_t IsClusterInJet(Double_t clusEta, Double_t clusPhi, Bool_t isTrueJet, Int_t &matchedJet, Double_t &RJetPi0Cand);
 
     // for electron contamination
     void ProcessElectronCont();
@@ -194,7 +195,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTruevsRecJetPt;                               //! array of histos Jet rec. vs true pT
     TH2F**                  fHistoClusMergedPtvsRJetAccepted;                   //! array of histos with clusters in Jets vs distance between cluster and Jet axis
     TH2F**                  fHistoJetFragmFunc;                                 //! array of histos with clusters in Jets vs z (z = pJet*pPi0 / |pJet|)
-
+    TH2F**                  fHistoClusMergedPtvsM02FakeJet;                     //! array of histos with clusters which are in a reconstructed Jet but not in true Jet
+    TH2F**                  fHistoClusMergedPtvsM02MissedJet;                   //! array of histos with clusters which are in a true Jet but not in rec. Jet
 
     TH2F**                  fHistoPrimIdentified;                               //! pT of all matched clusters for prim electron candidates
     TH2F**                  fHistoPrimIdentifiedEoverP;                         //! E/p vs Pt for all matched clusters for prim electron candidates
@@ -410,7 +412,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 45);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 46);
 };
 
 #endif
