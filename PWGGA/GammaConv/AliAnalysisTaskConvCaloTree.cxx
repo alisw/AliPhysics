@@ -81,6 +81,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE()
   fVBuffer_Cluster_Phi(),
   fVBuffer_Cluster_NCells(),
   fVBuffer_Cluster_M02(),
+  fVBuffer_Cluster_Time(),
   fVBuffer_Cluster_Fcross(),
   fVBuffer_Cluster_Exotic(),
   fVTrueClusterPi0DaughterIndex(),
@@ -145,6 +146,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char *name) : Ali
   fVBuffer_Cluster_Phi(),
   fVBuffer_Cluster_NCells(),
   fVBuffer_Cluster_M02(),
+  fVBuffer_Cluster_Time(),
   fVBuffer_Cluster_Fcross(),
   fVBuffer_Cluster_Exotic(),
   fVTrueClusterPi0DaughterIndex(),
@@ -230,6 +232,7 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
     fPhotonTree->Branch("Cluster_Phi",                      &fVBuffer_Cluster_Phi);
     fPhotonTree->Branch("Cluster_NCells",                   &fVBuffer_Cluster_NCells);
     fPhotonTree->Branch("Cluster_M02",                      &fVBuffer_Cluster_M02);
+    fPhotonTree->Branch("Cluster_Time",                     &fVBuffer_Cluster_Time);
     if(fClusterCutsEMC){
       fPhotonTree->Branch("Cluster_Fcross",                 &fVBuffer_Cluster_Fcross);
       fPhotonTree->Branch("Cluster_isExotic",               &fVBuffer_Cluster_Exotic);
@@ -417,6 +420,7 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
     fVBuffer_Cluster_Phi.push_back(phiCluster);
     fVBuffer_Cluster_NCells.push_back((Short_t)clus->GetNCells());
     fVBuffer_Cluster_M02.push_back((Short_t)(clus->GetM02()*100));
+    fVBuffer_Cluster_Time.push_back((Short_t)(clus->GetTOF()*1e9)); // time in ns
     // calculate Ecross
     if(fClusterCutsEMC){
       AliVCaloCells* cells    = fInputEvent->GetEMCALCells();
@@ -775,6 +779,7 @@ void AliAnalysisTaskConvCaloTree::ResetBufferVectors(){
   fVBuffer_Cluster_Phi.clear();
   fVBuffer_Cluster_NCells.clear();
   fVBuffer_Cluster_M02.clear();
+  fVBuffer_Cluster_Time.clear();
   fVBuffer_Cluster_Fcross.clear();
   fVBuffer_Cluster_Exotic.clear();
   fVTrueClusterPi0DaughterIndex.clear();
