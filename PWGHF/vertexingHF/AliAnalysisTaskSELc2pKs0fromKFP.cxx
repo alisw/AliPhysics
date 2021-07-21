@@ -356,10 +356,12 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserCreateOutputObjects()
   fOutputWeight->Add(fHistMCGen_LcPt_weight);
   fOutputWeight->Add(f2DHistMCRec_LcPt_weight);
   PostData(6, fOutputWeight);
-
-  DefineTreeLc_Rec_QA();
-  PostData(7, fTree_Lc_QA);
   
+  if (fWriteLcQATree) {
+    DefineTreeLc_Rec_QA();
+    PostData(7, fTree_Lc_QA);
+  }
+
   //initialise AliPIDCombined object for Bayesian PID
   fPIDCombined = new AliPIDCombined;
   fPIDCombined->SetDefaultTPCPriors();
@@ -1835,6 +1837,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   if (!fIsAnaLc2Lpi) {
     // Combined PID response (Bayesian probability) [30]
     Double_t probTPCTOF[AliPID::kSPECIES] = {-1.};
+    fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
     UInt_t detUsed = fPIDCombined->ComputeProbabilities(trackBach, fPID, probTPCTOF);
     Double_t probProton = -1.;
     if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) { //TPC+TOF both present
@@ -1877,12 +1880,14 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   if (!fIsAnaLc2Lpi) {
     // Combined PID response (Bayesian probability) using only TPC [31]
     Double_t probTPC[AliPID::kSPECIES] = {-1.};
-    Double_t probProton = -1.;
     fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
     UInt_t detUsed = fPIDCombined->ComputeProbabilities(trackBach, fPID, probTPC);
-    if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask(AliPIDResponse::kDetTPC)) {// Check that TPC-only worked. If not, then return -1 as probability
+    Double_t probProton = -1.;
+    if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) {// Check that TPC-only worked. If not, then return -1 as probability
       probProton = probTPC[AliPID::kProton];
     }
+    //Reset detector mask for PIDCombined object to TPC+TOF
+    fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
     fVar_Lc[22] = probProton;
   }
     
