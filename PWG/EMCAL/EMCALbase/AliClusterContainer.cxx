@@ -63,10 +63,12 @@ AliClusterContainer::AliClusterContainer():
   fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
   fPhosMinM02(0),
+  fEmcalMinNcells(0),
   fEmcalMinM02(-1.),
   fEmcalMaxM02(DBL_MAX),
   fEmcalMaxM02CutEnergy(DBL_MAX),
   fMaxFracEnergyLeadingCell(DBL_MAX),
+  fSelectOneCellCluster(kTRUE),
   fEmcalMaxNCellEffCutEnergy(4.)
 {
   fBaseClassName = "AliVCluster";
@@ -88,10 +90,12 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
   fPhosMinM02(0),
+  fEmcalMinNcells(0),
   fEmcalMinM02(-1.),
   fEmcalMaxM02(DBL_MAX),
   fEmcalMaxM02CutEnergy(DBL_MAX),
   fMaxFracEnergyLeadingCell(DBL_MAX),
+  fSelectOneCellCluster(kTRUE),
   fEmcalMaxNCellEffCutEnergy(4.)
 {
   fBaseClassName = "AliVCluster";
@@ -326,14 +330,21 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
     rejectionReason |= kTimeCut;
     return kFALSE;
   }
-  if (fExoticCut && clus->GetIsExotic() && !GetPassedSpecialNCell(clus)) {
+  // GetPassedSpecialNCell disabling implicit cut on the number of cells
+  // for flagged 1-cell clusters
+  if (fExoticCut && clus->GetIsExotic() && !(fSelectOneCellCluster && GetPassedSpecialNCell(clus))) {
     rejectionReason |= kExoticCut;
     return kFALSE;
   }
 
   if (clus->IsEMCAL()) {
+    if(clus->GetNCells() < fEmcalMinNcells && !(fSelectOneCellCluster && GetPassedSpecialNCell(clus))) {
+      // explicit Ncell cut
+      rejectionReason |= kExoticCut;
+      return kFALSE;
+    }
     if (clus->GetNonLinCorrEnergy() < fEmcalMaxM02CutEnergy) {
-      if((clus->GetM02() < fEmcalMinM02 || clus->GetM02() > fEmcalMaxM02) && !GetPassedSpecialNCell(clus)) {
+      if((clus->GetM02() < fEmcalMinM02 || clus->GetM02() > fEmcalMaxM02) && !(fSelectOneCellCluster && GetPassedSpecialNCell(clus))) {
         rejectionReason |= kExoticCut; // Not really true, but there is a lack of leftover bits
         return kFALSE;
       }
@@ -347,7 +358,7 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
       double celltmp = fEMCALCells->GetCellAmplitude(clus->GetCellAbsId(icell));
       if(celltmp > ecellmax) ecellmax = celltmp;
     }
-    if(ecellmax/clus->E() > fMaxFracEnergyLeadingCell && !GetPassedSpecialNCell(clus)) {
+    if(ecellmax/clus->E() > fMaxFracEnergyLeadingCell && !(fSelectOneCellCluster && GetPassedSpecialNCell(clus))) {
       rejectionReason |= kExoticCut;
       return kFALSE;
     }

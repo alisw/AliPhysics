@@ -81,6 +81,7 @@ AliJCatalystTask::AliJCatalystTask():
 // QA part.
 	fMainList(NULL),
 	bSaveAllQA(kFALSE),
+	bSaveHMOhist(kFALSE),
 	fCentralityBins(16),
 	fcent_0(0.), fcent_1(0.), fcent_2(0.), fcent_3(0.), fcent_4(0.), fcent_5(0.), fcent_6(0.), fcent_7(0.), fcent_8(0.), fcent_9(0.), 
  fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.), fcent_15(0.), fcent_16(0.)
@@ -126,6 +127,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 // QA part.
 	fMainList(NULL),
 	bSaveAllQA(kFALSE),
+	bSaveHMOhist(kFALSE),
 	fCentralityBins(16),
 	fcent_0(0.), fcent_1(0.), fcent_2(0.), fcent_3(0.), fcent_4(0.), fcent_5(0.), fcent_6(0.), fcent_7(0.), fcent_8(0.), fcent_9(0.), 
  fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.), fcent_15(0.), fcent_16(0.)
@@ -160,6 +162,7 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
 // QA part.
 	fMainList(ap.fMainList),
 	bSaveAllQA(ap.bSaveAllQA),
+	bSaveHMOhist(ap.bSaveHMOhist),
 	fCentralityBins(ap.fCentralityBins),
 	fcent_0(ap.fcent_0), fcent_1(ap.fcent_1), fcent_2(ap.fcent_2), fcent_3(ap.fcent_3), fcent_4(ap.fcent_4), fcent_5(ap.fcent_5), fcent_6(ap.fcent_6), fcent_7(ap.fcent_7), fcent_8(ap.fcent_8), fcent_9(ap.fcent_9), fcent_10(ap.fcent_10), fcent_11(ap.fcent_11), fcent_12(ap.fcent_12), fcent_13(ap.fcent_13), fcent_14(ap.fcent_14), fcent_15(ap.fcent_15), fcent_16(ap.fcent_16)
 {
@@ -315,7 +318,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 			fVertexZHistogram[centBin][0]->Fill(fvertex[2]);
 		}
 
-		fIsGoodEvent = IsGoodEvent(paodEvent);
+		fIsGoodEvent = IsGoodEvent(paodEvent, centBin);
 		if(!fIsGoodEvent) {
 			return;
 		}
@@ -511,7 +514,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
     
 }
 //______________________________________________________________________________
-Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
+Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
 	//event selection here!
 	//check vertex
 	AliVVertex *vtx = event->GetPrimaryVertex();
@@ -628,7 +631,15 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
 				return kFALSE;
 
 		}
-		else{
+		else if (fperiod == AliJRunTable::kLHC10h) {	// High multiplicity outlier cuts for LHC10h based on the SCklm analysis.
+			cout << "Used period: " << fperiod << endl;
+			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][0]->Fill(GlobTracks, TPCTracks);}	// Fill the HMO histogram only if both bSave* are true.
+			if(!((double)TPCTracks > (-65.0 + 1.54*GlobTracks) && (double)TPCTracks < (90.0 + 2.30*GlobTracks))) {
+				return kFALSE;
+			}
+			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][1]->Fill(GlobTracks, TPCTracks);}
+		}
+		else {	// TBA: QA histo if chosen, possibility to choose between the two versions for LHC10h
 			if(!((double)TPCTracks > (-40.3+1.22*GlobTracks) && (double)TPCTracks < (32.1+1.59*GlobTracks)))
 				return kFALSE;
 		}
@@ -826,6 +837,7 @@ void AliJCatalystTask::InitializeArrays() {
 		  fPhiHistogram[icent][i] = NULL;
 		  fEtaHistogram[icent][i] = NULL;
 		  fMultHistogram[icent][i] = NULL;
+		  fHMOsHistogram[icent][i] = NULL;
 		}
 
 		fCentralityHistogram[icent] = NULL;
@@ -960,11 +972,22 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fChargeHistogram[icent][1] = new TH1I("fCharge_AfterCut","ChargeAfterCut",11,-5.5,5.5); 
 	 fControlHistogramsList[icent]->Add(fChargeHistogram[icent][1]);
 
-	 // n) Book histogram Centrality 
+	 // o) Book histogram Centrality 
 	 fCentralityHistogram[icent]= new TH1F("fCentralityHistogram_After","CentralityHistogramAfter",22,0.,110.);
 	 fCentralityHistogram[icent]->GetXaxis()->SetTitle("Centrality");
 	 fCentralityHistogram[icent]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fCentralityHistogram[icent]);
+
+	 // p) Book the TH2D for the HMOs in LHC10h.
+	 fHMOsHistogram[icent][0] = new TH2D("fHMOsHistogram_Before","Correlations before HMO cuts", 1000, 0.,5000., 1000, 0., 5000.);
+	 fHMOsHistogram[icent][0]->GetXaxis()->SetTitle("M_{global}");
+	 fHMOsHistogram[icent][0]->GetXaxis()->SetTitle("M_{TPC}");
+	 if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][0]);}
+
+	 fHMOsHistogram[icent][1] = new TH2D("fHMOsHistogram_After","Correlations after HMO cuts", 1000, 0.,5000., 1000, 0., 5000.);
+	 fHMOsHistogram[icent][1]->GetXaxis()->SetTitle("M_{global}");
+	 fHMOsHistogram[icent][1]->GetXaxis()->SetTitle("M_{TPC}");
+	 if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][1]);}
 
   }//for(Int_t icent=0; icent<fCentralityBins; icent++)
 }

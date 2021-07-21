@@ -52,7 +52,7 @@ ClassImp(AliAnalysisTaskStrangeCascadesTriggerAODRun2) // classimp: necessary fo
 
 AliAnalysisTaskStrangeCascadesTriggerAODRun2::AliAnalysisTaskStrangeCascadesTriggerAODRun2() : 
 AliAnalysisTaskSE(), fOutputList(0), 
-fTreeCascade(0), fTreeV0(0), fTreeRsn(0), fTreeRsnMixed(0), fTreePrimTrack(0), fDummyTree(0),
+fTreeCascade(0), fTreeV0(0), fTreeRsn(0), fTreeRsnBkg(0), fTreePrimTrack(0), fDummyTree(0),
 fPIDResponse(0), fUtils(0), 
 fRsnEvent(0), fRsnMiniEvent(0), fResonanceFinders(0), fRsnTrackCuts(0), fRsnPairCuts(0),
 fPairName(""), fMotherMass(0),
@@ -61,7 +61,7 @@ fPairName(""), fMotherMass(0),
 fSaveV0s(kTRUE), 
 fSaveRsn(kTRUE), 
 fSavePrimaries(kTRUE), 
-fUseEventMixing(kTRUE),
+fComputationType(""),
 
 //---> Variables controlling PV selections
 fkMaxPVR2D(10.), 
@@ -143,6 +143,8 @@ fTreeCascVarVZEROMultSig(0),        //! VZERO Multiplicity           - VZER0 sig
 fTreeCascVarVZEROMultSigCorr(0),    //! Corrected VZERO Multiplicity - VZER0 signal
 fTreeCascVarSPDMult(0),             //! SPD Multiplicity             - SPD Tracklets
 fTreeCascVar_TriggerMask(0),
+fTreeCascVarIsIncompleteDAQ(0),
+fTreeCascVarSPDPileupFlag(0),
 fTreeCascVarMVPileupFlag(0),
 fTreeCascVarOOBPileupFlag(0),
 //-----------DECAY-LENGTH-INFO--------------------
@@ -428,13 +430,13 @@ fTreeRsnVarEventNumber(0),
 //   Variables for Mixed Resonance Tree
 //===========================================================================================
 fTreeRsnFoundMixEvts(0),
-fTreeRsnMixedVarCutIDrsn(0),
-fTreeRsnMixedVarPx(0),
-fTreeRsnMixedVarPy(0),
-fTreeRsnMixedVarPz(0),
-fTreeRsnMixedVarInvMass(0),
-fTreeRsnMixedVarPassesOOBPileupCut(kFALSE),
-fTreeRsnMixedVarEventNumber(0),
+fTreeRsnBkgVarCutIDrsn(0),
+fTreeRsnBkgVarPx(0),
+fTreeRsnBkgVarPy(0),
+fTreeRsnBkgVarPz(0),
+fTreeRsnBkgVarInvMass(0),
+fTreeRsnBkgVarPassesOOBPileupCut(kFALSE),
+fTreeRsnBkgVarEventNumber(0),
 fDummyVarEventNumber(0), 
 //===========================================================================================
 //   Variables for Primary tracks Tree
@@ -515,9 +517,9 @@ fHistEventCounter(0)
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
-AliAnalysisTaskStrangeCascadesTriggerAODRun2::AliAnalysisTaskStrangeCascadesTriggerAODRun2(const char* name, Bool_t lSaveV0s, Bool_t lSaveRsn, Bool_t lSavePrimaries, Bool_t lUseEventMixing) : 
+AliAnalysisTaskStrangeCascadesTriggerAODRun2::AliAnalysisTaskStrangeCascadesTriggerAODRun2(const char* name, Bool_t lSaveV0s, Bool_t lSaveRsn, Bool_t lSavePrimaries, TString lcompType) : 
 AliAnalysisTaskSE(name), fOutputList(0), 
-fTreeCascade(0), fTreeV0(0), fTreeRsn(0), fTreeRsnMixed(0), fTreePrimTrack(0), fDummyTree(0),
+fTreeCascade(0), fTreeV0(0), fTreeRsn(0), fTreeRsnBkg(0), fTreePrimTrack(0), fDummyTree(0),
 fPIDResponse(0), fUtils(0), 
 fRsnEvent(0), fRsnMiniEvent(0), fResonanceFinders(0), fRsnTrackCuts(0), fRsnPairCuts(0),
 fPairName(""), fMotherMass(0),
@@ -526,7 +528,7 @@ fPairName(""), fMotherMass(0),
 fSaveV0s(kTRUE), 
 fSaveRsn(kTRUE), 
 fSavePrimaries(kTRUE), 
-fUseEventMixing(kTRUE),
+fComputationType(""),
 
 //---> Variables controlling PV selections
 fkMaxPVR2D(10.), 
@@ -608,6 +610,8 @@ fTreeCascVarVZEROMultSig(0),        //! VZERO Multiplicity           - VZER0 sig
 fTreeCascVarVZEROMultSigCorr(0),    //! Corrected VZERO Multiplicity - VZER0 signal
 fTreeCascVarSPDMult(0),             //! SPD Multiplicity             - SPD Tracklets
 fTreeCascVar_TriggerMask(0),
+fTreeCascVarIsIncompleteDAQ(0),
+fTreeCascVarSPDPileupFlag(0),
 fTreeCascVarMVPileupFlag(0),
 fTreeCascVarOOBPileupFlag(0),
 //-----------DECAY-LENGTH-INFO--------------------
@@ -893,13 +897,13 @@ fTreeRsnVarEventNumber(0),
 //   Variables for Mixed Resonance Tree
 //===========================================================================================
 fTreeRsnFoundMixEvts(0),
-fTreeRsnMixedVarCutIDrsn(0),
-fTreeRsnMixedVarPx(0),
-fTreeRsnMixedVarPy(0),
-fTreeRsnMixedVarPz(0),
-fTreeRsnMixedVarInvMass(0),
-fTreeRsnMixedVarPassesOOBPileupCut(kFALSE),
-fTreeRsnMixedVarEventNumber(0),
+fTreeRsnBkgVarCutIDrsn(0),
+fTreeRsnBkgVarPx(0),
+fTreeRsnBkgVarPy(0),
+fTreeRsnBkgVarPz(0),
+fTreeRsnBkgVarInvMass(0),
+fTreeRsnBkgVarPassesOOBPileupCut(kFALSE),
+fTreeRsnBkgVarEventNumber(0),
 fDummyVarEventNumber(0),
 //===========================================================================================
 //   Variables for Primary tracks Tree
@@ -977,20 +981,20 @@ fTreePrimVarEventNumber(0),
 //Histos
 fHistEventCounter(0)
 {
-    fSaveV0s        = lSaveV0s;
-    fSaveRsn        = lSaveRsn;
-    fSavePrimaries  = lSavePrimaries;
-    fUseEventMixing = lUseEventMixing;
+    fSaveV0s            = lSaveV0s;
+    fSaveRsn            = lSaveRsn;
+    fSavePrimaries      = lSavePrimaries;
+    fComputationType    = lcompType;
     
     // constructor
     DefineInput(0, TChain::Class());    
     
     DefineOutput(1, TList::Class());    
     DefineOutput(2, TTree::Class());//cascades
-    if( fSaveV0s                        ) DefineOutput(3, TTree::Class());//V0s
-    if( fSaveRsn                        ) DefineOutput(4, TTree::Class());//Resonances
-    if( fSaveRsn && fUseEventMixing     ) DefineOutput(5, TTree::Class());//Mixed events resonances
-    if( fSavePrimaries                  ) DefineOutput(6, TTree::Class());//Primaries
+    DefineOutput(3, TTree::Class());//V0s
+    DefineOutput(4, TTree::Class());//Resonances
+    DefineOutput(5, TTree::Class());//Mixed events resonances
+    DefineOutput(6, TTree::Class());//Primaries
 }
 //_____________________________________________________________________________
 AliAnalysisTaskStrangeCascadesTriggerAODRun2::~AliAnalysisTaskStrangeCascadesTriggerAODRun2()
@@ -1008,8 +1012,8 @@ AliAnalysisTaskStrangeCascadesTriggerAODRun2::~AliAnalysisTaskStrangeCascadesTri
     if(fTreeRsn) {
         delete fTreeRsn;    
     }
-    if(fTreeRsnMixed) {
-        delete fTreeRsnMixed;    
+    if(fTreeRsnBkg) {
+        delete fTreeRsnBkg;    
     }
     if(fTreePrimTrack) {
         delete fTreePrimTrack;    
@@ -1033,6 +1037,17 @@ AliAnalysisTaskStrangeCascadesTriggerAODRun2::~AliAnalysisTaskStrangeCascadesTri
 //_____________________________________________________________________________
 void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserCreateOutputObjects()
 {
+    // check computation type
+    Bool_t okComp = kFALSE;
+    if (fComputationType == "")         okComp = kTRUE;
+    if (fComputationType == "MIX")      okComp = kTRUE;
+    if (fComputationType == "ROTATE1")  okComp = kTRUE;
+    if (fComputationType == "ROTATE2")  okComp = kTRUE;
+    if (!okComp) {
+        AliError(Form("[%s] Unknown computation type", GetName()));
+        return;
+    }
+    
     //===========================================================================================
     //   Create Cascade output tree
     //===========================================================================================
@@ -1085,6 +1100,8 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarVZEROMultSigCorr" , &fTreeCascVarVZEROMultSigCorr , "fTreeCascVarVZEROMultSigCorr/I");
     fTreeCascade->Branch("fTreeCascVarSPDMult"          , &fTreeCascVarSPDMult          , "fTreeCascVarSPDMult/I");
     fTreeCascade->Branch("fTreeCascVar_TriggerMask"     , &fTreeCascVar_TriggerMask     , "fTreeCascVar_TriggerMask/i");
+    fTreeCascade->Branch("fTreeCascVarIsIncompleteDAQ"  , &fTreeCascVarIsIncompleteDAQ  , "fTreeCascVarIsIncompleteDAQ/O");
+    fTreeCascade->Branch("fTreeCascVarSPDPileupFlag"    , &fTreeCascVarSPDPileupFlag    , "fTreeCascVarSPDPileupFlag/O");
     fTreeCascade->Branch("fTreeCascVarMVPileupFlag"     , &fTreeCascVarMVPileupFlag     , "fTreeCascVarMVPileupFlag/O");
     fTreeCascade->Branch("fTreeCascVarOOBPileupFlag"    , &fTreeCascVarOOBPileupFlag    , "fTreeCascVarOOBPileupFlag/O");
     //-----------DECAY-LENGTH-INFO--------------------
@@ -1238,8 +1255,9 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserCreateOutputObjects()
     //===========================================================================================
     //   Create V0 output tree
     //===========================================================================================
-    if( fSaveV0s ){
-        fTreeV0 = new TTree("fTreeV0","V0Candidates");
+    fTreeV0 = new TTree("fTreeV0","V0Candidates");
+    if( fSaveV0s )
+    {
         //-----------BASIC-INFO---------------------------
         fTreeV0->Branch("fTreeV0VarMassAsK0s"           , &fTreeV0VarMassAsK0s              , "fTreeV0VarMassAsK0s/F");
         fTreeV0->Branch("fTreeV0VarMassAsLambda"        , &fTreeV0VarMassAsLambda           , "fTreeV0VarMassAsLambda/F");
@@ -1361,8 +1379,9 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserCreateOutputObjects()
     //===========================================================================================
     //   Create Resonance output tree
     //===========================================================================================
-    if( fSaveRsn ){
-        fTreeRsn = new TTree("fTreeRsn","ResonanceCandidates");
+    fTreeRsn = new TTree("fTreeRsn","ResonanceCandidates");
+    if( fSaveRsn )
+    {
         fTreeRsn->Branch("fTreeRsnVarCutIDrsn"           , &fTreeRsnVarCutIDrsn           , "fTreeRsnVarCutIDrsn/I");
         fTreeRsn->Branch("fTreeRsnVarPx"                 , &fTreeRsnVarPx                 , "fTreeRsnVarPx/F");
         fTreeRsn->Branch("fTreeRsnVarPy"                 , &fTreeRsnVarPy                 , "fTreeRsnVarPy/F");
@@ -1375,17 +1394,19 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserCreateOutputObjects()
     //===========================================================================================
     //   Create Mixed-events resonance output tree
     //===========================================================================================
-    if( fSaveRsn && fUseEventMixing ){
-        fTreeRsnMixed = new TTree("fTreeRsnMixed","MixedResonanceCandidates");
-        fTreeRsnMixed->Branch("fTreeRsnFoundMixEvts" , &fTreeRsnFoundMixEvts, "fTreeRsnFoundMixEvts/I");
+    fTreeRsnBkg = new TTree("fTreeRsnBkg","MixedResonanceCandidates");
+    if( fSaveRsn && ( fComputationType == "MIX" || fComputationType == "ROTATE1" || fComputationType == "ROTATE2" ) )
+    {
+        fTreeRsnBkg->Branch("fTreeRsnBkgVarCutIDrsn"           , &fTreeRsnBkgVarCutIDrsn           , "fTreeRsnBkgVarCutIDrsn/I");
+        fTreeRsnBkg->Branch("fTreeRsnBkgVarPx"                 , &fTreeRsnBkgVarPx                 , "fTreeRsnBkgVarPx/F");
+        fTreeRsnBkg->Branch("fTreeRsnBkgVarPy"                 , &fTreeRsnBkgVarPy                 , "fTreeRsnBkgVarPy/F");
+        fTreeRsnBkg->Branch("fTreeRsnBkgVarPz"                 , &fTreeRsnBkgVarPz                 , "fTreeRsnBkgVarPz/F");
+        fTreeRsnBkg->Branch("fTreeRsnBkgVarInvMass"            , &fTreeRsnBkgVarInvMass            , "fTreeRsnBkgVarInvMass/D");
+        fTreeRsnBkg->Branch("fTreeRsnBkgVarPassesOOBPileupCut" , &fTreeRsnBkgVarPassesOOBPileupCut , "fTreeRsnBkgVarPassesOOBPileupCut/O");
+        fTreeRsnBkg->Branch("fTreeRsnBkgVarEventNumber"   , &fTreeRsnBkgVarEventNumber   , "fTreeRsnBkgVarEventNumber/l");
         
-        fTreeRsnMixed->Branch("fTreeRsnMixedVarCutIDrsn"           , &fTreeRsnMixedVarCutIDrsn           , "fTreeRsnMixedVarCutIDrsn/I");
-        fTreeRsnMixed->Branch("fTreeRsnMixedVarPx"                 , &fTreeRsnMixedVarPx                 , "fTreeRsnMixedVarPx/F");
-        fTreeRsnMixed->Branch("fTreeRsnMixedVarPy"                 , &fTreeRsnMixedVarPy                 , "fTreeRsnMixedVarPy/F");
-        fTreeRsnMixed->Branch("fTreeRsnMixedVarPz"                 , &fTreeRsnMixedVarPz                 , "fTreeRsnMixedVarPz/F");
-        fTreeRsnMixed->Branch("fTreeRsnMixedVarInvMass"            , &fTreeRsnMixedVarInvMass            , "fTreeRsnMixedVarInvMass/D");
-        fTreeRsnMixed->Branch("fTreeRsnMixedVarPassesOOBPileupCut" , &fTreeRsnMixedVarPassesOOBPileupCut , "fTreeRsnMixedVarPassesOOBPileupCut/O");
-        fTreeRsnMixed->Branch("fTreeRsnMixedVarEventNumber"   , &fTreeRsnMixedVarEventNumber   , "fTreeRsnMixedVarEventNumber/l");
+        if( fComputationType == "MIX" )
+            fTreeRsnBkg->Branch("fTreeRsnFoundMixEvts" , &fTreeRsnFoundMixEvts, "fTreeRsnFoundMixEvts/I");
         
         fDummyTree = new TTree("fDummyTree","ResonanceCandidates");
         fDummyTree->Branch("fRsnMiniEvent"          , &fRsnMiniEvent            , 16000, 0);
@@ -1395,8 +1416,9 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserCreateOutputObjects()
     //===========================================================================================
     //   Create Primary tracks output tree
     //===========================================================================================
-    if( fSavePrimaries ){
-        fTreePrimTrack = new TTree("fTreePrimTrack","PrimaryTrackCandidates");
+    fTreePrimTrack = new TTree("fTreePrimTrack","PrimaryTrackCandidates");
+    if( fSavePrimaries )
+    {
         //-----------BASIC-INFO---------------------------
         fTreePrimTrack->Branch("fTreePrimVarCharge"             , &fTreePrimVarCharge               , "fTreePrimVarCharge/I");
         fTreePrimTrack->Branch("fTreePrimVarRapPion"            , &fTreePrimVarRapPion              , "fTreePrimVarRapPion/F");
@@ -1497,17 +1519,16 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserCreateOutputObjects()
     
     PostData(1, fOutputList); 
     PostData(2, fTreeCascade);
-    if( fSaveV0s                    ) PostData(3, fTreeV0);
-    if( fSaveRsn                    ) PostData(4, fTreeRsn);
-    if( fSaveRsn && fUseEventMixing ) PostData(5, fTreeRsnMixed);
-    if( fSavePrimaries              ) PostData(6, fTreePrimTrack);        
+    PostData(3, fTreeV0);
+    PostData(4, fTreeRsn);
+    PostData(5, fTreeRsnBkg);
+    PostData(6, fTreePrimTrack);        
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
 {
     // Main loop
     // Called for each event
-    
     AliAODEvent *lAODevent = 0x0;
     // Connect to the InputEvent
     lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
@@ -1592,13 +1613,15 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
         fnTrackletsCorrSHM = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvgSHM, countTreta1, vtx->GetZ(), fRefMultSHM));
     */
     
-    fTreeCascVarMVPileupFlag      = MultSelection->GetThisEventIsNotPileupMV();
-    fTreeCascVarOOBPileupFlag     = !fUtils->IsOutOfBunchPileUp(InputEvent());
-    fTreeCascVarCentrality        = fPercV0M;
-    fTreeCascVarVZEROMultSel      = fMultV0M;
-    fTreeCascVarVZEROMultSig      = fnV0M;
-    fTreeCascVarVZEROMultSigCorr  = fnV0MCorr;
-    fTreeCascVarSPDMult           = fnTracklets;
+    fTreeCascVarIsIncompleteDAQ     = !MultSelection->GetThisEventIsNotIncompleteDAQ();
+    fTreeCascVarSPDPileupFlag       = fUtils->IsPileUpSPD(InputEvent());
+    fTreeCascVarMVPileupFlag        = !MultSelection->GetThisEventIsNotPileupMV();
+    fTreeCascVarOOBPileupFlag       = fUtils->IsOutOfBunchPileUp(InputEvent());
+    fTreeCascVarCentrality          = fPercV0M;
+    fTreeCascVarVZEROMultSel        = fMultV0M;
+    fTreeCascVarVZEROMultSig        = fnV0M;
+    fTreeCascVarVZEROMultSigCorr    = fnV0MCorr;
+    fTreeCascVarSPDMult             = fnTracklets;
     
     //Implementation to do trigger selection a posteriori
     UInt_t fEvSel_TriggerMask =
@@ -1681,7 +1704,7 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
         lPosPx  = pTrack->Px() ; lPosPy  = pTrack->Py() ; lPosPz  = pTrack->Pz() ;
         lNegPx  = nTrack->Px() ; lNegPy  = nTrack->Py() ; lNegPz  = nTrack->Pz() ;
         
-        Double_t lV0Px = lPosPy + lNegPx;
+        Double_t lV0Px = lPosPx + lNegPx;
         Double_t lV0Py = lPosPy + lNegPy;
         Double_t lV0Pz = lPosPz + lNegPz;
 
@@ -2680,7 +2703,7 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
                         lPDGMass                = lK0sPDGMass;
                         lRap                    = fTreeV0VarRapK0Short;
                         
-                        lPosTPCNSigma           = fTreeV0VarPosNSigmaProton;
+                        lPosTPCNSigma           = fTreeV0VarPosNSigmaPion;
                         lNegTPCNSigma           = fTreeV0VarNegNSigmaPion;
                     }
                     if ( lV0Result->GetMassHypothesis() == AliV0Result::kLambda         )
@@ -2809,11 +2832,11 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
             }
             
         }
-    
+        
     }
     
-    if(IsEvtWithCascade && fSaveRsn){//Adaptation of AliRsnMiniAnalysisTask
-        
+    if(IsEvtWithCascade && fSaveRsn)//Adaptation of AliRsnMiniAnalysisTask
+    {
         // check current event
         fRsnEvent->SetRef(fInputEvent);
         fRsnEvent->SetPIDResponse(fPIDResponse);
@@ -2829,8 +2852,8 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
         fRsnMiniEvent->Angle()          = ComputeAngle();
         fRsnMiniEvent->Mult()           = fPercV0M;
         fRsnMiniEvent->Tracklets()      = fnTracklets;
-        fRsnMiniEvent->ID()             = fDummyTree->GetEntries();
-
+        fRsnMiniEvent->ID()             = fDummyTree ? fDummyTree->GetEntries() : 0;
+        
         // loop on daughters and assign track-related values
         Int_t nPos = 0;
         Int_t nNeg = 0;
@@ -2841,6 +2864,7 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
         
         AliRsnDaughter cursor;
         AliRsnMiniParticle *miniParticle = 0x0;
+        
         Int_t Idx = 0;
         for( Int_t iPart = 0 ; iPart < nPart ; iPart++)//loop on the nbr of particles
         {
@@ -2883,7 +2907,7 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
             }
             
         }
-
+        
         // get number of accepted tracks
         AliDebugClass(1, Form("Event %6llu: total = %5d, accepted = %4d (pos %4d, neg %4d, neu %4d)", fTreeCascVarEventNumber, nPart, (Int_t)fRsnMiniEvent->Particles().GetEntriesFast(), nPos, nNeg, nNeu));
         
@@ -2917,13 +2941,15 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
             // Find all the pairs in the event
             TObjArray lPairList;
             lPairList.SetOwner(kTRUE);
-            FillPair(fRsnMiniEvent, fRsnMiniEvent, lPairList, kTRUE);
+            FillPair(fRsnMiniEvent, fRsnMiniEvent, lPairList, "");
             
             // Gather the pair informations and store it in fTreeRsn
             nPair = lPairList.GetEntriesFast();
             AliRsnMiniPair *lPair = 0x0; // Pair of particles 1 and 2
             for( Int_t iPair = 0 ; iPair < nPair ; iPair++)
             {
+                //________________________________________________________________________
+                //Get the pair info
                 lPair = (AliRsnMiniPair*)lPairList[iPair];
                 
                 fTreeRsnVarCutIDrsn            = lCutIDrsn;
@@ -2935,6 +2961,10 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
                 fTreeRsnVarInvMass             = lPair->InvMass(kFALSE);
                 
                 fTreeRsnVarPassesOOBPileupCut  = lPair->PassesOOBPileupCut();
+                
+                //------------------------------------------------
+                // Fill Tree!
+                //------------------------------------------------
                 
                 fTreeRsn->Fill();
                 
@@ -2950,9 +2980,12 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
         // if a resonance is found in the event
         // save the AliRsnMiniEvent for event-mixing
         fDummyVarEventNumber = fTreeCascVarEventNumber;
-        if( fSaveRsn && fUseEventMixing && lHasAtLeastOneResonance ) fDummyTree->Fill();
+        if( fSaveRsn && lHasAtLeastOneResonance &&
+            ( fComputationType == "MIX" || fComputationType == "ROTATE1" || fComputationType == "ROTATE2" )
+        ) fDummyTree->Fill();
         
     }
+    
     
     if(IsEvtWithCascade && fSavePrimaries){
         
@@ -3181,7 +3214,7 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
                 
                 fPrimTrackCuts->GetPtRange  (lCutMinPtTracks    , lCutMaxPtTracks   );
                 fPrimTrackCuts->GetEtaRange (lCutMinEtaTracks   , lCutMaxEtaTracks  );
-                fPrimTrackCuts->GetPtRange  (lCutMinRapTracks   , lCutMaxRapTracks  );
+                fPrimTrackCuts->GetRapRange (lCutMinRapTracks   , lCutMaxRapTracks  );
                 
                 if (
                     //Check 1: Charge selection
@@ -3292,10 +3325,10 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
     // Post output data.
     PostData(1, fOutputList); 
     PostData(2, fTreeCascade);
-    if( fSaveV0s                    ) PostData(3, fTreeV0);
-    if( fSaveRsn                    ) PostData(4, fTreeRsn);
-    if( fSaveRsn && fUseEventMixing ) PostData(5, fTreeRsnMixed);                           
-    if( fSavePrimaries              ) PostData(6, fTreePrimTrack);
+    PostData(3, fTreeV0);
+    PostData(4, fTreeRsn);
+    PostData(5, fTreeRsnBkg);                           
+    PostData(6, fTreePrimTrack);
     
 }
 
@@ -3303,110 +3336,200 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
 // 
 void AliAnalysisTaskStrangeCascadesTriggerAODRun2::FinishTaskOutput()
 {
-    if( !fSaveRsn || !fUseEventMixing) return;
+    if( !fSaveRsn || !( fComputationType == "MIX" || fComputationType == "ROTATE1" || fComputationType == "ROTATE2" ) ) return;
     
     fDummyTree->SetBranchAddress("fRsnMiniEvent", &fRsnMiniEvent);
     fDummyTree->SetBranchAddress("fDummyVarEventNumber", &fDummyVarEventNumber);
     
+    Int_t nPair = 0;
     Int_t nEntries = fDummyTree->GetEntries();
 
-    printf("Performing event mixing with %d events...\n", nEntries);
+    printf("Computing background with %d events...\n", nEntries);
     
     // step 0 : check that everything is ready for event mixing
-    if( nEntries == 0 || fNMix < 1 ){
+    if( nEntries == 0 || ( fComputationType == "MIX" && fNMix < 1 ) ){
         printf("Stopping here, Resonance tree empty or NMix equal to 0\n");
         return;
     }
     
-    // step 1 : construct the pool of candidates --> search for good matchings
-    Int_t iEvt2 = 0;
-    Int_t NbrOfMatchedEvt[nEntries];
-    TString *MatchedEvt = new TString[nEntries];
-    //Initialize mixing event counter
-    for(Int_t iEvt = 0 ; iEvt < nEntries ; iEvt++){
-        NbrOfMatchedEvt[iEvt] = 0;
-        MatchedEvt[iEvt] = "|";
-    }
     
-    //Be careful about the indices !
-    for(Int_t iEvt1 = 0 ; iEvt1 < nEntries ; iEvt1++)//loop on event 1
+    if( fComputationType == "MIX" )
     {
-        fDummyTree->GetEntry(iEvt1);
-        // make a copy of the mini-event
-        AliRsnMiniEvent *miniEventRef = new AliRsnMiniEvent(*fRsnMiniEvent);
-        
-        if( NbrOfMatchedEvt[iEvt1] >= fNMix )
-        {
-            AliDebugClass(1, Form("Matches for event %5d = %d [%s] ", miniEventRef->ID(), NbrOfMatchedEvt[iEvt1], MatchedEvt[iEvt1].Data()));
-            continue;
+        // step 1 : construct the pool of candidates --> search for good matchings
+        Int_t iEvt2 = 0;
+        Int_t NbrOfMatchedEvt[nEntries];
+        TString *MatchedEvt = new TString[nEntries];
+        //Initialize mixing event counter
+        for(Int_t iEvt = 0 ; iEvt < nEntries ; iEvt++){
+            NbrOfMatchedEvt[iEvt] = 0;
+            MatchedEvt[iEvt] = "|";
         }
         
-        for(Int_t iMix = 1 ; iMix < nEntries ; iMix++)//loop on event 2
+        //Be careful about the indices !
+        for(Int_t iEvt1 = 0 ; iEvt1 < nEntries ; iEvt1++)//loop on event 1
         {
-            iEvt2 = iEvt1 + iMix;
+            fDummyTree->GetEntry(iEvt1);
+            // make a copy of the mini-event
+            AliRsnMiniEvent *miniEventRef = new AliRsnMiniEvent(*fRsnMiniEvent);
             
-            if( iEvt2 == iEvt1) continue; //we look for other events
-            if( iEvt2 >= nEntries ) iEvt2 -= nEntries; //look at events before iEvt1
-            
-            fDummyTree->GetEntry(iEvt2);
-            // skip if events do not match
-            if (!EventsMatch(miniEventRef, fRsnMiniEvent)) continue;
-            // skip if events already in the pool
-            if( MatchedEvt[iEvt1].Contains(Form("|%d|", iEvt2)) ) continue;
-            if( MatchedEvt[iEvt2].Contains(Form("|%d|", iEvt1)) ) continue;
-            
-            //cout <<"event 1 : " << iEvt1 << " ; event 2 : " << iEvt2 << endl;
-            //add new mixing candidate
-            MatchedEvt[iEvt1].Append(Form("%d|", iEvt2));
-            NbrOfMatchedEvt[iEvt1]++;
-            //if event1 and event2 match, and event2 dont have the required nbr of events yet, add event 1 to his pool
-            if( NbrOfMatchedEvt[iEvt2] < fNMix ){
-                MatchedEvt[iEvt2].Append(Form("%d|", iEvt1)); 
-                NbrOfMatchedEvt[iEvt2]++;
-            }
-            
-            if( NbrOfMatchedEvt[iEvt1] >= fNMix ) break;
-            
-        }//end loop event2
-        
-        AliDebugClass(1, Form("Matches for event %5d = %d [%s] ", miniEventRef->ID(), NbrOfMatchedEvt[iEvt1], MatchedEvt[iEvt1].Data()));
-        
-    }//end loop event1
-     
-    //step 2 : perform event mixing
-    TObjArray* EvtMixingPool = 0x0;
-    TObjString *os = 0x0;
-    
-    for(Int_t iEvt1 = 0 ; iEvt1 < nEntries ; iEvt1++)// loop event 1
-    {
-        fDummyTree->GetEntry(iEvt1);
-        
-        AliRsnMiniEvent* miniEventRef = new AliRsnMiniEvent(*fRsnMiniEvent);
-        ULong64_t CurrentEvtNbr = fDummyVarEventNumber;
-        
-        EvtMixingPool = MatchedEvt[iEvt1].Tokenize("|");
-        TObjArrayIter EvtMixingPoolIterator(EvtMixingPool);
-        
-        fTreeRsnFoundMixEvts = EvtMixingPool->GetEntries();
-        
-        while( ( os = (TObjString*)EvtMixingPoolIterator() ) )// loop on evt 2 = matching evt with evt 1
-        {
-            iEvt2 = (Int_t)( os->GetString().Atoi() );
-            
-            fDummyTree->GetEntry(iEvt2);
-            
-            Bool_t sameEvent = (miniEventRef->ID() == fRsnMiniEvent->ID());
-            if( sameEvent )
+            if( NbrOfMatchedEvt[iEvt1] >= fNMix )
             {
-                AliDebugClass(1, "Skipping same events");
+                AliDebugClass(1, Form("Matches for event %5d = %d [%s] ", miniEventRef->ID(), NbrOfMatchedEvt[iEvt1], MatchedEvt[iEvt1].Data()));
                 continue;
             }
+            
+            for(Int_t iMix = 1 ; iMix < nEntries ; iMix++)//loop on event 2
+            {
+                iEvt2 = iEvt1 + iMix;
+                
+                if( iEvt2 == iEvt1) continue; //we look for other events
+                if( iEvt2 >= nEntries ) iEvt2 -= nEntries; //look at events before iEvt1
+                
+                fDummyTree->GetEntry(iEvt2);
+                // skip if events do not match
+                if (!EventsMatch(miniEventRef, fRsnMiniEvent)) continue;
+                // skip if events already in the pool
+                if( MatchedEvt[iEvt1].Contains(Form("|%d|", iEvt2)) ) continue;
+                if( MatchedEvt[iEvt2].Contains(Form("|%d|", iEvt1)) ) continue;
+                
+                //cout <<"event 1 : " << iEvt1 << " ; event 2 : " << iEvt2 << endl;
+                //add new mixing candidate
+                MatchedEvt[iEvt1].Append(Form("%d|", iEvt2));
+                NbrOfMatchedEvt[iEvt1]++;
+                //if event1 and event2 match, and event2 dont have the required nbr of events yet, add event 1 to his pool
+                if( NbrOfMatchedEvt[iEvt2] < fNMix ){
+                    MatchedEvt[iEvt2].Append(Form("%d|", iEvt1)); 
+                    NbrOfMatchedEvt[iEvt2]++;
+                }
+                
+                if( NbrOfMatchedEvt[iEvt1] >= fNMix ) break;
+                
+            }//end loop event2
+            
+            AliDebugClass(1, Form("Matches for event %5d = %d [%s] ", miniEventRef->ID(), NbrOfMatchedEvt[iEvt1], MatchedEvt[iEvt1].Data()));
+            
+        }//end loop event1
+        
+        //step 2 : perform event mixing
+        TObjArray* EvtMixingPool = 0x0;
+        TObjString *os = 0x0;
+        
+        for(Int_t iEvt1 = 0 ; iEvt1 < nEntries ; iEvt1++)// loop event 1
+        {
+            fDummyTree->GetEntry(iEvt1);
+            
+            AliRsnMiniEvent* miniEventRef = new AliRsnMiniEvent(*fRsnMiniEvent);
+            ULong64_t CurrentEvtNbr = fDummyVarEventNumber;
+            
+            EvtMixingPool = MatchedEvt[iEvt1].Tokenize("|");
+            TObjArrayIter EvtMixingPoolIterator(EvtMixingPool);
+            
+            fTreeRsnFoundMixEvts = EvtMixingPool->GetEntries();
+            
+            while( ( os = (TObjString*)EvtMixingPoolIterator() ) )// loop on evt 2 = matching evt with evt 1
+            {
+                iEvt2 = (Int_t)( os->GetString().Atoi() );
+                
+                fDummyTree->GetEntry(iEvt2);
+                
+                Bool_t sameEvent = (miniEventRef->ID() == fRsnMiniEvent->ID());
+                if( sameEvent )
+                {
+                    AliDebugClass(1, "Skipping same events");
+                    continue;
+                }
+                
+                Int_t lCutIDrsn;
+                for (Int_t i = 0 ; i < fResonanceFinders.GetEntries() ; i++)
+                {
+                    AliRsnMiniResonanceFinder* f = (AliRsnMiniResonanceFinder*) fResonanceFinders[i];
+                
+                    // Get the relevant parameters for resonance finding
+                    lCutIDrsn       = f->GetResonanceCutID();
+                    fMotherMass     = f->GetResonanceMass();
+                    fPairName       = f->GetName();
+                    
+                    fCharge[0]      = f->GetCharge(0);
+                    fCharge[1]      = f->GetCharge(1);
+                    
+                    fDaughter[0]    = f->GetDaughter(0);
+                    fDaughter[1]    = f->GetDaughter(1);
+                    
+                    fCutID[0]       = f->GetCutID(0);
+                    fCutID[1]       = f->GetCutID(1);
+                    
+                    Bool_t IsSymmetric = (fCharge[0] == fCharge[1]) && (fDaughter[0] == fDaughter[1]);
+                    
+                    //
+                    // Find all the pairs in the event
+                    // if the two daughters are not symmetric (different particle or charge)
+                    // Also fill the symmetric pair
+                    //
+                    TObjArray lPairList;
+                    lPairList.SetOwner(kTRUE);
+                    //Here fComputationType == "MIX"
+                    FillPair(miniEventRef, fRsnMiniEvent, lPairList, fComputationType);
+                    if( !IsSymmetric ) FillPair(fRsnMiniEvent, miniEventRef, lPairList, fComputationType);
+                    
+                    // Gather the pair informations and store it in fTreeRsn
+                    nPair = lPairList.GetEntriesFast();
+                    AliRsnMiniPair *lPair = 0x0; // Pair of particles 1 and 2
+                    for( Int_t iPair = 0 ; iPair < nPair ; iPair++)
+                    {
+                        //________________________________________________________________________
+                        //Get the pair info
+                        lPair = (AliRsnMiniPair*)lPairList[iPair];
+                        
+                        fTreeRsnBkgVarCutIDrsn            = lCutIDrsn;
+                        
+                        fTreeRsnBkgVarPx                  = lPair->Sum(kFALSE).X();
+                        fTreeRsnBkgVarPy                  = lPair->Sum(kFALSE).Y();
+                        fTreeRsnBkgVarPz                  = lPair->Sum(kFALSE).Z();
+                        
+                        fTreeRsnBkgVarInvMass             = lPair->InvMass(kFALSE);
+                        
+                        fTreeRsnBkgVarPassesOOBPileupCut  = lPair->PassesOOBPileupCut();
+                        
+                        fTreeRsnBkgVarEventNumber         = CurrentEvtNbr;
+                        
+                        //------------------------------------------------
+                        // Fill Tree!
+                        //------------------------------------------------
+                        
+                        fTreeRsnBkg->Fill();
+                        
+                    }
+                    lPairList.Delete();
+                    
+                }
+                
+            }
+            
+            PostData(5, fTreeRsnBkg); 
+            
+            EvtMixingPool->Clear();
+            
+        }
+        
+        printf("Event mixing : done !\n");
+        
+        delete [] MatchedEvt;
+        
+    }
+    
+    if( fComputationType == "ROTATE1" || fComputationType == "ROTATE2" )
+    {
+        
+        for(Int_t iEvt = 0 ; iEvt < nEntries ; iEvt++)//loop on event 
+        {
+            fDummyTree->GetEntry(iEvt);
+            ULong64_t CurrentEvtNbr = fDummyVarEventNumber;
             
             Int_t lCutIDrsn;
             for (Int_t i = 0 ; i < fResonanceFinders.GetEntries() ; i++)
             {
                 AliRsnMiniResonanceFinder* f = (AliRsnMiniResonanceFinder*) fResonanceFinders[i];
-            
+                
                 // Get the relevant parameters for resonance finding
                 lCutIDrsn       = f->GetResonanceCutID();
                 fMotherMass     = f->GetResonanceMass();
@@ -3421,54 +3544,53 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::FinishTaskOutput()
                 fCutID[0]       = f->GetCutID(0);
                 fCutID[1]       = f->GetCutID(1);
                 
-                Bool_t IsSymmetric = (fCharge[0] == fCharge[1]) && (fDaughter[0] == fDaughter[1]);
-                
-                //
                 // Find all the pairs in the event
-                // if the two daughters are not symmetric (different particle or charge)
-                // Also fill the symmetric pair
-                //
                 TObjArray lPairList;
                 lPairList.SetOwner(kTRUE);
-                FillPair(miniEventRef, fRsnMiniEvent, lPairList, kTRUE);
-                if( !IsSymmetric ) FillPair(fRsnMiniEvent, miniEventRef, lPairList, kTRUE);
+                //Here fcompType == "ROTATE1" or fcompType == "ROTATE2"
+                FillPair(fRsnMiniEvent, fRsnMiniEvent, lPairList, fComputationType);
                 
                 // Gather the pair informations and store it in fTreeRsn
+                nPair = lPairList.GetEntriesFast();
                 AliRsnMiniPair *lPair = 0x0; // Pair of particles 1 and 2
-                for( Int_t iPair = 0 ; iPair < lPairList.GetEntriesFast() ; iPair++)
+                for( Int_t iPair = 0 ; iPair < nPair ; iPair++)
                 {
+                    //________________________________________________________________________
+                    //Get the pair info
                     lPair = (AliRsnMiniPair*)lPairList[iPair];
-                 
-                    fTreeRsnMixedVarCutIDrsn            = lCutIDrsn;
                     
-                    fTreeRsnMixedVarPx                  = lPair->Sum(kFALSE).X();
-                    fTreeRsnMixedVarPy                  = lPair->Sum(kFALSE).Y();
-                    fTreeRsnMixedVarPz                  = lPair->Sum(kFALSE).Z();
+                    fTreeRsnBkgVarCutIDrsn            = lCutIDrsn;
                     
-                    fTreeRsnMixedVarInvMass             = lPair->InvMass(kFALSE);
+                    fTreeRsnBkgVarPx                  = lPair->Sum(kFALSE).X();
+                    fTreeRsnBkgVarPy                  = lPair->Sum(kFALSE).Y();
+                    fTreeRsnBkgVarPz                  = lPair->Sum(kFALSE).Z();
                     
-                    fTreeRsnMixedVarPassesOOBPileupCut  = lPair->PassesOOBPileupCut();
+                    fTreeRsnBkgVarInvMass             = lPair->InvMass(kFALSE);
                     
-                    fTreeRsnMixedVarEventNumber         = CurrentEvtNbr;
+                    fTreeRsnBkgVarPassesOOBPileupCut  = lPair->PassesOOBPileupCut();
                     
-                    fTreeRsnMixed->Fill();
+                    fTreeRsnBkgVarEventNumber         = CurrentEvtNbr;
+                    
+                    //------------------------------------------------
+                    // Fill Tree!
+                    //------------------------------------------------
+                    
+                    fTreeRsnBkg->Fill();
                     
                 }
+                
                 lPairList.Delete();
                 
             }
             
+            PostData(5, fTreeRsnBkg); 
+            
         }
         
-        PostData(5, fTreeRsnMixed); 
-        
-        EvtMixingPool->Clear();
+        printf("Rotate1 : done !\n");
         
     }
     
-    printf("Event mixing : done !\n");
-    
-    delete [] MatchedEvt;
 }
 
 //_____________________________________________________________________________
@@ -3476,8 +3598,6 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::Terminate(Option_t *)
 {
     // terminate
     // called at the END of the analysis (when all events are processed)
-    
-    //if( fUseEventMixing && fSaveRsn) EventMixingRsn();
     
     TList *cRetrievedList = 0x0;
     cRetrievedList = (TList*)GetOutputData(1);
@@ -3675,14 +3795,27 @@ Bool_t AliAnalysisTaskStrangeCascadesTriggerAODRun2::CheckITSClusterRequirement(
     return kFALSE;
 }
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskStrangeCascadesTriggerAODRun2::FillPair(AliRsnMiniEvent *miniEventRef, AliRsnMiniEvent *fRsnMiniEvent, TObjArray &lPairList, Bool_t refFirst)
+Int_t AliAnalysisTaskStrangeCascadesTriggerAODRun2::FillPair(AliRsnMiniEvent *miniEventRef, AliRsnMiniEvent *fRsnMiniEvent, TObjArray &lPairList, TString lcompType)
 {
     //
     // Loops on the passed mini-event, and for each pair of particles
     // which satisfy the charge and cut requirements defined here, add an entry.
     // Returns the number of successful fillings.
-    // Last argument tells if the reference event for event-based values is the first or the second.
-    //
+    // Last argument tells if the type of pairing :
+    // -- ""        --> pair particles
+    // -- "ROTATE1" --> pair particles but rotate first particle
+    // -- "ROTATE2" --> pair particles but rotate second particle
+    
+    // check computation type
+    Bool_t okComp = kFALSE;
+    if (lcompType == "")         okComp = kTRUE;
+    if (lcompType == "MIX")      okComp = kTRUE;
+    if (lcompType == "ROTATE1")  okComp = kTRUE;
+    if (lcompType == "ROTATE2")  okComp = kTRUE;
+    if (!okComp) {
+        AliError(Form("[%s] Unknown computation type", GetName()));
+        //return 0;
+    }
     
     Int_t nadded = 0;
     
@@ -3744,6 +3877,10 @@ Int_t AliAnalysisTaskStrangeCascadesTriggerAODRun2::FillPair(AliRsnMiniEvent *mi
             }
             
             lPair->Fill(p1, p2, m1, m2, fMotherMass);
+            
+            // do rotation if needed
+            if( lcompType == "ROTATE1" ) lPair->InvertP(kTRUE);
+            if( lcompType == "ROTATE2" ) lPair->InvertP(kFALSE);
            
             // check pair against cuts
             if (fRsnPairCuts && !fRsnPairCuts->IsSelected(lPair)) continue;
