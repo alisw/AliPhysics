@@ -111,9 +111,9 @@ private:
   TH1D *fEtaTriggerCharged;
   TH1D *fEtaTriggerXi;
   TH1D *fEtaTriggerPhi;
-  TH3D *fHist3d2pcSE[52]; //!
-  TH3D *fHist3d2pcXiSE[52]; //!
-  TH3D *fHist3d2pcPhiSE[52]; //!
+  //TH3D *fHist3d2pcSE[52]; //!
+  //TH3D *fHist3d2pcXiSE[52]; //!
+  //TH3D *fHist3d2pcPhiSE[52]; //!
   
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
