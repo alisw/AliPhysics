@@ -356,11 +356,10 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserCreateOutputObjects()
   fOutputWeight->Add(fHistMCGen_LcPt_weight);
   fOutputWeight->Add(f2DHistMCRec_LcPt_weight);
   PostData(6, fOutputWeight);
+
+  DefineTreeLc_Rec_QA();
+  PostData(7, fTree_Lc_QA);
   
-  if (fWriteLcQATree) {
-    DefineTreeLc_Rec_QA();
-    PostData(7, fTree_Lc_QA);
-  }
 
   //initialise AliPIDCombined object for Bayesian PID
   fPIDCombined = new AliPIDCombined;
