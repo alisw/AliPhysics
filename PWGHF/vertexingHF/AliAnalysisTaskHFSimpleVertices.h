@@ -267,7 +267,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fPtBinLimsDsSkims[kMaxNPtBins3ProngsSkims];     // pt bins for Ds+ skim selections
   Double_t fPtBinLimsLcSkims[kMaxNPtBins3ProngsSkims];     // pt bins for Lc+ skim selections
   Double_t fPtBinLimsXicSkims[kMaxNPtBins3ProngsSkims];    // pt bins for Xic+ skim selections
-  Int_t fPtWithoutVtxToll;                                 // pt tolerance for selections before vertex reconstruction 
+  Double_t fPtWithoutVtxToll;                              // pt tolerance for selections before vertex reconstruction 
 
   Int_t fNPtBins;                     // Number of pt bins
   Double_t fPtBinLims[kMaxNPtBinsDzero];   // [fNPtBins+1] limits of pt bins
@@ -310,7 +310,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Bool_t fEnableCPUTimeCheck;                   //flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds;              // flag to switch from seconds (default) to milliseconds
   
-  ClassDef(AliAnalysisTaskHFSimpleVertices,23);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,24);
 };
 
 
