@@ -298,8 +298,7 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of cand wo bitmask");
    fHistNEvents->GetXaxis()->SetBinLabel(10,"D after cuts (No PID)");
    fHistNEvents->GetXaxis()->SetBinLabel(11,"D after cuts + PID)");
-   //fHistNEvents->GetXaxis()->SetBinLabel(12,"nEvents with RT calc");
-   fHistNEvents->GetXaxis()->SetBinLabel(12,"Test successful");
+   fHistNEvents->GetXaxis()->SetBinLabel(12,"nEvents with RT calc");
 
    fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
    fHistNEvents->Sumw2();
