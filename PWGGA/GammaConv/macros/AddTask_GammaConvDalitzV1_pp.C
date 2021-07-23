@@ -415,6 +415,16 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263l02223710", "0152103500000000");// Nominal B kAny 10%
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263m02223710", "0152103500000000");// Nominal B kAny 8%
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263n02223710", "0152103500000000");// Nominal B kAny 5%
+    } else if (trainConfig == 433) {//kANY and kBOTH with shared layer
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400a63f02223710", "0152103500000000");//kAny 8 % GG shared 0, mass standard
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400a63f02223c10", "0152103500000000");//kAny 8 % GG shared 0, mass 0.02
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400b63f02223710", "0152103500000000");//kAny 8 % GG shared 1, mass standard
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400b63f02223c10", "0152103500000000");//kAny 8 % GG shared 1, mas 0.02
+    } else if (trainConfig == 434) {//kANY and kBOTH with shared layer
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400c63f02223710", "0152103500000000");//kBoth 8 % GG shared 0, mass standard
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400c63f02223c10", "0152103500000000");//kBoth 8 % GG shared 0, mass 0.02
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400d63f02223710", "0152103500000000");//kBoth 8 % GG shared 1, mass standard
+    cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400d63f02223c10", "0152103500000000");//kBoth 8 % GG shared 1, mas 0.02
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////  6XX for lowB,    65X  lowB and MBW ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -553,6 +563,16 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863k02263710", "0152103500000000"); //kBoth 10 % of contamination from photons
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); //kAny Standard, contamination from photons
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863202263710", "0152103500000000"); //kBoth Standard, contamination from photons
+  } else if (trainConfig == 932) {//kANY and kBOTH with shared layer204c6400863d02263710
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400a63d02263710", "0152103500000000");//kAny 8 % GG shared 0, mass standard
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400a63d02263c10", "0152103500000000");//kAny 8 % GG shared 0, mass 0.02
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400b63d02263710", "0152103500000000");//kAny 8 % GG shared 1, mass standard
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400b63d02263c10", "0152103500000000");//kAny 8 % GG shared 1, mas 0.02
+  } else if (trainConfig == 933) {//kANY and kBOTH with shared layer
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400c63d02263710", "0152103500000000");//kBoth 8 % GG shared 0, mass standard
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400c63d02263c10", "0152103500000000");//kBoth 8 % GG shared 0, mass 0.02
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400d63d02263710", "0152103500000000");//kBoth 8 % GG shared 1, mass standard
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400d63d02263c10", "0152103500000000");//kBoth 8 % GG shared 1, mas 0.02
     //-----------------same as 6XX to be used with MBW extracted from 5TeV Nch
   } else if (trainConfig == 969) { // R 5-180 and remove r bin 55-72
     cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0404000", "204c6400263202263710", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent

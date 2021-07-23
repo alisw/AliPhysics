@@ -230,7 +230,7 @@ ClassImp( AliDalitzAODESD )
      }
     Bool_t AliDalitzAODESD::HasPointOnITSLayerG(Int_t i){
         if (fIsESD==kTRUE) return fESDtrack->HasPointOnITSLayer(i);
-        else return fAODtrack->HasPointOnITSLayer(i);   
+        else return fAODtrack->HasPointOnITSLayer(i);
      }
     Double_t AliDalitzAODESD::GetDCAxy(){
         return b[0];
@@ -242,5 +242,9 @@ ClassImp( AliDalitzAODESD )
         if (fIsESD==kTRUE) return kFALSE;//NOTE there is no FilterBit on ESD
         else return fAODtrack->TestFilterBit(bit);
      };
+    Bool_t AliDalitzAODESD::HasSharedPointOnITSLayerG(Int_t i){
+        if (fIsESD==kTRUE) return fESDtrack->HasSharedPointOnITSLayer(i);
+        else return fAODtrack->HasSharedPointOnITSLayer(i);
+     }
     
     
