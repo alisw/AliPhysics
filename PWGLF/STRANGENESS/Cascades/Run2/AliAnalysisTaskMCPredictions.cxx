@@ -212,11 +212,11 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   //Settings for charged particle counters (integers!)
   Int_t lNNchBins = fSmallMultRange/fRebinFactor;
   Double_t lLowNchBound  = -0.5;
-  Double_t lHighNchBound = -0.5 + ((double)(lNNchBins));
+  Double_t lHighNchBound = -0.5 + ((double)(fSmallMultRange));
   
   Int_t lNNchBinsV0M = fLargeMultRange/fRebinFactor;
   Double_t lLowNchBoundV0M  = -0.5;
-  Double_t lHighNchBoundV0M = -0.5 + ((double)(lNNchBinsV0M));
+  Double_t lHighNchBoundV0M = -0.5 + ((double)(fLargeMultRange));
   
   if(! fHistEventCounter ) {
     //Histogram Output: Event-by-Event
