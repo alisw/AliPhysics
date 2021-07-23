@@ -6255,33 +6255,37 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus(0)");
     fFuncNCellCutEfficiencyEMCal->SetParameters(2.71596e-01, 1.80393, 6.50026e-01);
     break;
-    // From TestBeam applied on all clusters. Only on "isolated" clusters
+    // From pi0 tagging with EMC-EMC with TBNL+scale+FT applied on all clusters, Pol2 param
+    // using the new cell scale!
   case 24: // o
     fUseNCells=5;
     fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118);
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0638141, 0.203806, -0.0774961);
     break;
-    // From ALICE applied on all cluster. Only on "isolated" clusters
+    // From pi0 tagging with PCM-EDC with TBNL+scale+FT applied on only gamma clusters, Pol2 param
+    // using the new cell scale!
   case 25: // p
-    fUseNCells=5;
-    fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus(0)");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(2.71596e-01, 1.80393, 6.50026e-01);
-    break;
-    // From TestBeam applied on gamma clusters. Only on "isolated" clusters
-  case 26: // q
     fUseNCells=7;
     fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118);
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0638141, 0.203806, -0.0774961);
     break;
-    // From ALICE applied on gamma cluster. Only on "isolated" clusters
+    // From pi0 tagging with PCM-EDC with TBNL+scale applied on all clusters, Gaussian param
+    // using the new cell scale!
+  case 26: // q
+    fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0864766, 1.50279, 0.61173);
+    break;
+    // From pi0 tagging with PCM-EDC with TBNL+scale applied on gamma clusters, Gaussian param
+    // using the new cell scale!
   case 27: // r
     fUseNCells=7;
     fMinNCells=2;
-    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus(0)");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(2.71596e-01, 1.80393, 6.50026e-01);
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0864766, 1.50279, 0.61173);
     break;
     // take only 1 cell clusters
   case 28: // s
@@ -6328,10 +6332,10 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     // fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
     // fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0387877, 0.104607, 0.0793534);
     break;
-    // From pi0 tagging with PCM-EDC with TBNL+scale+FT on all clusters, Gaussian param
+    // From pi0 tagging with PCM-EDC with TBNL+scale+FT on only gamma clusters, Gaussian param
     // using the new cell scale!
   case 33: // x
-    fUseNCells=5;
+    fUseNCells=7;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
     fFuncNCellCutEfficiencyEMCal->SetParameters(0.130462, 1.62858, 0.572064);
@@ -8503,7 +8507,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             // fine tuning for pp 13 TeV nominal B (set as default)
           } else {
             energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
-            energy /= FunctionNL_DExp(energy, 1.0363369, 0.5659247074, -2.7818482972, 1.0437012864, 0.3620283273, -2.8321172480);
             energy /= 1.0025;
             if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
               energy /= 0.99;
@@ -8607,6 +8610,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             // fine tuning for pp 13 TeV nominal B (set as default)
           } else {
             energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
+            energy /= FunctionNL_DExp(energy, 1.0363369, 0.5659247074, -2.7818482972, 1.0437012864, 0.3620283273, -2.8321172480);
             energy /= 1.0025;
             if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
               energy /= 0.99;
