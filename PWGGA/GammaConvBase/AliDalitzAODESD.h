@@ -90,6 +90,7 @@ public:
      Double_t GetDCAxy();
      Double_t GetDCAz();
      Bool_t TestFilterBitG(UInt_t bit) const;
+     Bool_t HasSharedPointOnITSLayerG(Int_t i);
      Bool_t   GetIsESD(){
          return fIsESD;
      }
