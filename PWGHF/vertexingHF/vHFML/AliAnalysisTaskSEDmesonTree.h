@@ -145,9 +145,12 @@ private:
     bool fEnableCandSampling = true;                       /// flag to apply candidate sampling
     float fFracCandToKeep = 1.1;                           /// fraction of candidates to be kept by sampling
     float fMaxCandPtSampling = 0.;                         /// maximun candidate pt to apply sampling
+    bool fAddNtrkl = false;                                /// flag to add number of tracklets in the tree
+    bool fAddCentr = false;                                /// flag to add centrality percentile in the tree
+    std::string fCentEstimator = "V0M";                    /// centrality estimator for tree
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDmesonTree, 1); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDmesonTree, 2); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 

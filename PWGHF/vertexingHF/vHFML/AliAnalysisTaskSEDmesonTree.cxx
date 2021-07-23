@@ -156,6 +156,7 @@ void AliAnalysisTaskSEDmesonTree::UserCreateOutputObjects()
         }
 
         fMLhandler->SetAddSingleTrackVars(fAddSingleTrackVar);
+        fMLhandler->SetAddGlobalEventVariables(fAddNtrkl, fAddCentr, fCentEstimator);
         if (fReadMC)
         {
             if (fFillOnlySignal)
@@ -393,6 +394,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
         AliAODPidHF *pidHF = fRDCuts->GetPidHF();
         if (fCreateMLtree)
         {
+            fMLhandler->SetGlobalEventVariables(fAOD);
             if (fDecChannel == kD0toKpi)
             {
                 if (isSelected == 1 || isSelected == 3) // D0
