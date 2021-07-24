@@ -632,12 +632,20 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
 
 		}
 		else if (fperiod == AliJRunTable::kLHC10h) {	// High multiplicity outlier cuts for LHC10h based on the SCklm analysis.
-			cout << "Used period: " << fperiod << endl;
-			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][0]->Fill(GlobTracks, TPCTracks);}	// Fill the HMO histogram only if both bSave* are true.
-			if(!((double)TPCTracks > (-65.0 + 1.54*GlobTracks) && (double)TPCTracks < (90.0 + 2.30*GlobTracks))) {
+			UInt_t MTPC = 0;
+			UInt_t Mglobal = 0;
+			for(int it = 0; it < nTracks; it++){
+				AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
+				if (!trackAOD) {continue;}
+				if (trackAOD->TestFilterBit(128)) {MTPC++;}
+				if (trackAOD->TestFilterBit(256)) {Mglobal++;}
+			}
+
+			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][0]->Fill(Mglobal, MTPC);}	// Fill the HMO histogram only if both bSave* are true.
+			if(!((double)MTPC > (-65.0 + 1.54*Mglobal) && (double)MTPC < (90.0 + 2.30*Mglobal))) {
 				return kFALSE;
 			}
-			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][1]->Fill(GlobTracks, TPCTracks);}
+			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][1]->Fill(Mglobal, MTPC);}
 		}
 		else {	// TBA: QA histo if chosen, possibility to choose between the two versions for LHC10h
 			if(!((double)TPCTracks > (-40.3+1.22*GlobTracks) && (double)TPCTracks < (32.1+1.59*GlobTracks)))
@@ -981,12 +989,12 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 // p) Book the TH2D for the HMOs in LHC10h.
 	 fHMOsHistogram[icent][0] = new TH2D("fHMOsHistogram_Before","Correlations before HMO cuts", 1000, 0.,5000., 1000, 0., 5000.);
 	 fHMOsHistogram[icent][0]->GetXaxis()->SetTitle("M_{global}");
-	 fHMOsHistogram[icent][0]->GetXaxis()->SetTitle("M_{TPC}");
+	 fHMOsHistogram[icent][0]->GetYaxis()->SetTitle("M_{TPC}");
 	 if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][0]);}
 
 	 fHMOsHistogram[icent][1] = new TH2D("fHMOsHistogram_After","Correlations after HMO cuts", 1000, 0.,5000., 1000, 0., 5000.);
 	 fHMOsHistogram[icent][1]->GetXaxis()->SetTitle("M_{global}");
-	 fHMOsHistogram[icent][1]->GetXaxis()->SetTitle("M_{TPC}");
+	 fHMOsHistogram[icent][1]->GetYaxis()->SetTitle("M_{TPC}");
 	 if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][1]);}
 
   }//for(Int_t icent=0; icent<fCentralityBins; icent++)
