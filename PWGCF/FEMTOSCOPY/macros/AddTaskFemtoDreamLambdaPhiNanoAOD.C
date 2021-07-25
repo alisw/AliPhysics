@@ -43,7 +43,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamLambdaPhiNanoAOD(bool isMC = false,
   //1. DCA to V0 vtx (def. < 1.5 cm)
   //2. DCA daugh to PV (def > 0.05 cm)
   v0Cuts->SetCutDCADaugTov0Vtx(maxDCAv0vtx);
-  v0Cuts->SetCutDCADaugToPrimVtx(minDCADaughPV)
+  v0Cuts->SetCutDCADaugToPrimVtx(minDCADaughPV);
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
