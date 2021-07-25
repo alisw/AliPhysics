@@ -186,6 +186,8 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
   TH1F* fAcceptedEventsButNoPPL;
   TH1F* fTripletsPerCollision;
   TH1F* fWhichSample;
+  TH1F* fSameEventOnlyLowestQ3;
+  TH1F* fSameEventOnlyLowestQ3Anti;
   int ftotalTripletCount;
   AliFemtoDreamEventCuts* fEventCutsTrigger;//
   TList* fEventCutsTriggerList;//!
