@@ -28,6 +28,7 @@
 #include "AliAODExtension.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisManager.h"
+#include "AliMultSelection.h"
 
 #include "AliAnalysisTaskSEDmesonTree.h"
 
