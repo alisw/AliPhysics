@@ -83,6 +83,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         void SetUseWeights(Bool_t opt) { fUseWeights = opt;}
         void SetUseMult(Bool_t opt) { fUseMult = opt;}
         void SetKeepOnlyMCSignal(Bool_t opt) {fKeepOnlyMCSignal = opt;}
+        void SetKeepAllVariables (Bool_t opt) {fKeepAllVariables = opt;}
         void SetAnalysisType(Int_t opt) { fAnalysisType = opt;}
         void SetReferenceMultiplicity(Double_t opt) {fRefMult = opt;}
         void SetMultVsZProfileLHC16qt1stBunch(TProfile* hprof){

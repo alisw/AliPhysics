@@ -1276,17 +1276,19 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineEvent()
 
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fTree_Event = new TTree(nameoutput, "Event");
-  Int_t nVar = 7;
+  Int_t nVar = 9;
   fVar_Event = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
   fVarNames[0]  = "centrality";
-  fVarNames[1]  = "z_vtx_reco";
-  fVarNames[2]  = "n_vtx_contributors";
-  fVarNames[3]  = "n_tracks";
-  fVarNames[4]  = "is_ev_rej";
-  fVarNames[5]  = "run_number";
-  fVarNames[6]  = "ev_id";
+  fVarNames[1]  = "x_vtx_reco";
+  fVarNames[2]  = "y_vtx_reco";
+  fVarNames[3]  = "z_vtx_reco";
+  fVarNames[4]  = "n_vtx_contributors";
+  fVarNames[5]  = "n_tracks";
+  fVarNames[6]  = "is_ev_rej";
+  fVarNames[7]  = "run_number";
+  fVarNames[8]  = "ev_id";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Event->Branch(fVarNames[ivar].Data(), &fVar_Event[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -1617,14 +1619,16 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineAnaHist()
 void AliAnalysisTaskSELc2pKs0fromKFP::FillEventROOTObjects()
 {
 
-  for (Int_t i=0; i<7; i++) {
+  for (Int_t i=0; i<9; i++) {
     fVar_Event[i] = 0.;
   }
 
   Double_t pos[3];
   fpVtx->GetXYZ(pos);
-
-  fVar_Event[1] = pos[2];
+  
+  fVar_Event[1] = pos[0];
+  fVar_Event[2] = pos[1];
+  fVar_Event[3] = pos[2];
 
   fTree_Event->Fill();
 
