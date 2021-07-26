@@ -533,7 +533,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
             bool isMLsel = false;
             double ptCand = dMeson->Pt();
             double centrality = -999.;
-            AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
+            AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
             if(multSelection)
                 centrality = multSelection->GetMultiplicityPercentile(fCentEstimator.data());
 
