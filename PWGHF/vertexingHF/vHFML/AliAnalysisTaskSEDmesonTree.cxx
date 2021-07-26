@@ -555,7 +555,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                             break;
                     }
 
-                    std::vector<double> var4nSparse = {mass, ptCand, centrality}; // FIXME: centrality
+                    std::vector<double> var4nSparse = {mass, ptCand, centrality};
                     var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
                     fnSparseReco[0]->Fill(var4nSparse.data());
                     if(fReadMC)
@@ -580,7 +580,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                             break;
                     }
 
-                    std::vector<double> var4nSparse = {mass, ptCand, centrality}; // FIXME: centrality
+                    std::vector<double> var4nSparse = {mass, ptCand, centrality};
                     var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
                     fnSparseReco[0]->Fill(var4nSparse.data());
                     if(fReadMC)
