@@ -6,7 +6,7 @@
 #include <vector>
 #include <TString.h>
 
-AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double ptMin = 0.5, std::string Variations = "tpconly", Bool_t removebadarea = kFALSE, Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE)
+AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double ptMin = 0.5, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

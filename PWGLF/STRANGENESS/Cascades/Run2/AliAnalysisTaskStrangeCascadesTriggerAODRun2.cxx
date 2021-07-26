@@ -25,7 +25,6 @@
 #include "TCanvas.h"
 #include "TList.h"
 #include "TTree.h"
-#include "TObjString.h"
 
 
 #include "AliAnalysisTask.h"
@@ -2918,7 +2917,6 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
         Bool_t lHasAtLeastOneResonance = kFALSE;
         
         Int_t lCutIDrsn;       // ID of cut set that identifies the resonance candidates
-        fTreeRsnVarEventNumber = fTreeCascVarEventNumber;
         
         for (Int_t i = 0 ; i < fResonanceFinders.GetEntries() ; i++)
         {
@@ -2961,6 +2959,8 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
                 fTreeRsnVarInvMass             = lPair->InvMass(kFALSE);
                 
                 fTreeRsnVarPassesOOBPileupCut  = lPair->PassesOOBPileupCut();
+                
+                fTreeRsnVarEventNumber         = fTreeCascVarEventNumber;
                 
                 //------------------------------------------------
                 // Fill Tree!
@@ -3887,6 +3887,9 @@ Int_t AliAnalysisTaskStrangeCascadesTriggerAODRun2::FillPair(AliRsnMiniEvent *mi
             
             lPairList.AddLast( new AliRsnMiniPair() );
             ( (AliRsnMiniPair*)lPairList.Last() )->Fill(p1, p2, m1, m2, fMotherMass);
+            // do rotation if needed
+            if( lcompType == "ROTATE1" ) ( (AliRsnMiniPair*)lPairList.Last() )->InvertP(kTRUE);
+            if( lcompType == "ROTATE2" ) ( (AliRsnMiniPair*)lPairList.Last() )->InvertP(kFALSE);
             nadded++;
         }
         

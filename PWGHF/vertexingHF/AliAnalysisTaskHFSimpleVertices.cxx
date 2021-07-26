@@ -704,7 +704,9 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     // Selections used in the skimming
     printf("------- CANDIDATE SELECTIONS FOR SKIMMING -------\n");
 
-    fPtWithoutVtxToll = GetJsonFloat(filename.Data(), "pTTolerance");
+    Double_t ptTol = GetJsonFloat(filename.Data(), "pTTolerance");
+    if(ptTol > 0)
+      fPtWithoutVtxToll = ptTol;
 
     int nptbinlimsDzeroSkims = 0, ncDzeroSkims = 0, nptDzeroSkims = 0;
     float* ptbinlimsDzeroSkims = GetJsonArray(filename.Data(),"pTBinsD0ToPiK",nptbinlimsDzeroSkims);
@@ -2245,7 +2247,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::SelectInvMassAndPt2prong(TObjArray* trkAr
   UInt_t pdg2[2];
   Int_t nprongs = 2;
   rd4massCalc2->SetPxPyPzProngs(nprongs, px, py, pz);
-  Double_t ptCand = rd4massCalc2->Pt() - fPtWithoutVtxToll;
+  Double_t ptCand = rd4massCalc2->Pt() + fPtWithoutVtxToll;
   Int_t iPtBinDzero = GetPtBin(ptCand, fPtBinLimsDzeroSkims, kMaxNPtBins2ProngsSkims);
   if(iPtBinDzero < 0) {
     retval &= ~(1 << kbitDzero);
@@ -2288,7 +2290,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::SelectInvMassAndPt3prong(TObjArray* trkAr
   UInt_t pdg3[3];
   Int_t nprongs = 3;
   rd4massCalc3->SetPxPyPzProngs(nprongs, px, py, pz);
-  Double_t ptCand = rd4massCalc3->Pt() - fPtWithoutVtxToll;
+  Double_t ptCand = rd4massCalc3->Pt() + fPtWithoutVtxToll;
   Int_t iPtBinDplus = GetPtBin(ptCand, fPtBinLimsDplusSkims, kMaxNPtBins3ProngsSkims);
   if(iPtBinDplus < 0) {
     retval &= ~(1 << kbitDplus);
@@ -2312,6 +2314,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::SelectInvMassAndPt3prong(TObjArray* trkAr
     retval &= ~(1 << kbitDplus);
   lolim=fDsSkimCuts[iPtBinDs][0];
   hilim=fDsSkimCuts[iPtBinDs][1];
+  Bool_t isSelDs[2] = {true, true}; 
   for (Int_t ih = 0; ih < 2; ih++) {
     Int_t k = ih * 2;
     pdg3[k] = 321;
@@ -2319,22 +2322,27 @@ Int_t AliAnalysisTaskHFSimpleVertices::SelectInvMassAndPt3prong(TObjArray* trkAr
     pdg3[2 - k] = 211;
     minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
     if ((retval & (1 << kbitDs)) && (minv2 < lolim * lolim || minv2 > hilim * hilim))
-      retval &= ~(1 << kbitDs);
+      isSelDs[ih] = false;
   }
+  if(!isSelDs[0] && !isSelDs[1])
+   retval &= ~(1 << kbitDs);
   lolim=fLcSkimCuts[iPtBinLc][0];
   hilim=fLcSkimCuts[iPtBinLc][1];
+  Bool_t isSelLc[2] = {true, true}; 
   pdg3[0] = 2212;
   pdg3[1] = 321;
   pdg3[2] = 211;
   minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
   if ((retval & (1 << kbitLc)) && (minv2 < lolim * lolim || minv2 > hilim * hilim))
-    retval &= ~(1 << kbitLc);
+    isSelLc[0] = false;
   pdg3[0] = 211;
   pdg3[1] = 321;
   pdg3[2] = 2212;
   minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
   if ((retval & (1 << kbitLc)) && (minv2 < lolim * lolim || minv2 > hilim * hilim))
-    retval &= ~(1 << kbitLc);
+    isSelLc[1] = false;
+  if(!isSelLc[0] && !isSelLc[1])
+   retval &= ~(1 << kbitLc);
 
   return retval;
 }

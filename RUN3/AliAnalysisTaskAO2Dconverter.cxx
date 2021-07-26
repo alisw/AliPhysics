@@ -1514,15 +1514,25 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       mcparticle.fE = AliMathBase::TruncateFloatFraction(particle ? particle->Energy() : aodmcpt->E(), mMcParticleMom);
       // HACK to avoid FPE in expression columns. Affect only particles in the Beam Pipe.
       // TO BE REMOVED asap
-      const float limit = 1e-3;
-      if (TMath::Abs(mcparticle.fPx) < limit) {
-        mcparticle.fPx = AliMathBase::TruncateFloatFraction(limit, mMcParticleMom);
-      }
-      if (TMath::Abs(mcparticle.fPy) < limit) {
-        mcparticle.fPy = AliMathBase::TruncateFloatFraction(limit, mMcParticleMom);
-      }
-      if (TMath::Abs(mcparticle.fE - mcparticle.fPz) < limit) {
-        mcparticle.fE = AliMathBase::TruncateFloatFraction(mcparticle.fPz + limit, mMcParticleMom);
+      {
+        const float limit = 1e-4;
+        const float mom = TMath::Sqrt(mcparticle.fPx * mcparticle.fPx + mcparticle.fPy * mcparticle.fPy + mcparticle.fPz * mcparticle.fPz);
+        const float eta = 0.5f * TMath::Log((mom + mcparticle.fPz) / (mom - mcparticle.fPz));
+        if (TMath::Abs(eta) > 0.9) {
+          if (TMath::Abs((mom - mcparticle.fPz) / mcparticle.fPz) <= limit) {
+            // Printf("Rewriting momentum %f to %f, with pz = %f", mcparticle.fPx, TMath::Sqrt((1.f + limit) * (1.f + limit) - 1.f) * mcparticle.fPz * 0.5, mcparticle.fPz);
+            mcparticle.fPx = AliMathBase::TruncateFloatFraction(TMath::Sqrt((1.f + limit) * (1.f + limit) - 1.f) * mcparticle.fPz * 0.5, mMcParticleMom);
+            mcparticle.fPy = AliMathBase::TruncateFloatFraction(TMath::Sqrt((1.f + limit) * (1.f + limit) - 1.f) * mcparticle.fPz * 0.5, mMcParticleMom);
+            const float mom2 = TMath::Sqrt(mcparticle.fPx * mcparticle.fPx + mcparticle.fPy * mcparticle.fPy + mcparticle.fPz * mcparticle.fPz);
+            const float eta2 = 0.5f * TMath::Log((mom + mcparticle.fPz) / (mom - mcparticle.fPz));
+            // Printf("After Mom: %f vs %f, diff = %f", mom, mom2, mom - mom2);
+            // Printf("After Eta: %f vs %f, diff = %f", eta, eta2, eta - eta2);
+          }
+          if (TMath::Abs(mcparticle.fE - mcparticle.fPz) < limit) {
+            // Printf("Rewriting energy");
+            mcparticle.fE = AliMathBase::TruncateFloatFraction(mcparticle.fPz + limit, mMcParticleMom);
+          }
+        }
       }
       // End of HACK
 
