@@ -148,16 +148,16 @@ AliAnalysisTaskJetCharge::~AliAnalysisTaskJetCharge()
   fhJetEta= new TH1F("fhJetEta", "Jet Eta",100,-2,2);
   fOutput->Add(fhJetEta);
 
-  fhJetCharge= new TH1F("fhJetCharge", "Jet Charge", 250, -3, 3);
+  fhJetCharge= new TH1F("fhJetCharge", "Jet Charge", 20, -1.6, 1.6);
   fOutput->Add(fhJetCharge);
 
-  fhJetChargeLow= new TH1F("fhJetChargeLow", "Jet Charge", 250, -3, 3);
+  fhJetChargeLow= new TH1F("fhJetChargeLow", "Jet Charge", 20, -1.6, 1.6);
   fOutput->Add(fhJetChargeLow);
 
-  fhJetChargeMid= new TH1F("fhJetChargeMid", "Jet Charge", 250, -3, 3);
+  fhJetChargeMid= new TH1F("fhJetChargeMid", "Jet Charge", 20, -1.6, 1.6);
   fOutput->Add(fhJetChargeMid);
 
-  fhJetChargeHigh= new TH1F("fhJetChargeHigh", "Jet Charge", 250, -3, 3);
+  fhJetChargeHigh= new TH1F("fhJetChargeHigh", "Jet Charge", 20, -1.6, 1.6);
   fOutput->Add(fhJetChargeHigh);
 
 
