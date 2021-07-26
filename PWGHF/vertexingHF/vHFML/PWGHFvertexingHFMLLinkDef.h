@@ -14,7 +14,9 @@
 #pragma link C++ class AliAnalysisTaskSEDmesonTree+;
 #pragma link C++ class AliAnalysisTaskSENonPromptLc+;
 #pragma link C++ class AliHFMLResponse+;
+#pragma link C++ class AliHFMLResponseD0toKpi+;
 #pragma link C++ class AliHFMLResponseDplustoKpipi+;
+#pragma link C++ class AliHFMLResponseDstartoD0pi+;
 #pragma link C++ class AliHFMLResponseDstoKKpi+;
 #pragma link C++ class AliHFMLResponseLctoV0bachelor+;
 #pragma link C++ class AliHFMLVarHandler+;
