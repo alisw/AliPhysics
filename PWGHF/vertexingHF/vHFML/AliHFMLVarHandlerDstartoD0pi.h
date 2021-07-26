@@ -6,7 +6,7 @@
 
 //*************************************************************************
 // \class AliHFMLVarHandlerDstartoD0pi
-// \brief helper class to handle a tree and variables for D+ ML analyses
+// \brief helper class to handle a tree and variables for D*+ ML analyses
 // \authors:
 // F. Grosa, fabrizio.grosa@cern.ch
 /////////////////////////////////////////////////////////////
