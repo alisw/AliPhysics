@@ -83,6 +83,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         void SetUseWeights(Bool_t opt) { fUseWeights = opt;}
         void SetUseMult(Bool_t opt) { fUseMult = opt;}
         void SetKeepOnlyMCSignal(Bool_t opt) {fKeepOnlyMCSignal = opt;}
+        void SetKeepAllVariables (Bool_t opt) {fKeepAllVariables = opt;}
         void SetAnalysisType(Int_t opt) { fAnalysisType = opt;}
         void SetReferenceMultiplicity(Double_t opt) {fRefMult = opt;}
         void SetMultVsZProfileLHC16qt1stBunch(TProfile* hprof){
@@ -147,6 +148,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         Bool_t                  fIsMC; ///< Flag of MC analysis
         Bool_t                  fUseWeights; ///< Flag to use pT weight functions
         Bool_t                  fKeepOnlyMCSignal; ///< flag to keep only signal candidates
+        Bool_t                  fKeepAllVariables; ///<flag to keep all possible variables that were removed to reduce the tree size
         Bool_t                  fIsAnaLc2Lpi; ///< Flag of Lc->Lpi analysis
 
         AliNormalizationCounter* fCounter; //!<! Counter for normalization
@@ -171,7 +173,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSELc2pKs0fromKFP(const AliAnalysisTaskSELc2pKs0fromKFP &source); // not implemented
         AliAnalysisTaskSELc2pKs0fromKFP& operator=(const AliAnalysisTaskSELc2pKs0fromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 7);
+        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 8);
 };
 
 #endif
