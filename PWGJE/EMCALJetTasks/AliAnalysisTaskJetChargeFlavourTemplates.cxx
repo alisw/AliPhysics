@@ -513,7 +513,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
 
   //Add Comparison Histograms
 
-  PtComparison= new TH1F("PtComparison", "Pt Diffrence",250,-1,1 );
+  PtComparison= new TH1F("PtComparison", "Pt Diffrence",50,-1,1 );
   fOutput->Add(PtComparison);
   JCComparison = new TH1F("JCComparison", "Jet Charge Comparison", 20, -2, 2);
   fOutput->Add(JCComparison);
@@ -529,19 +529,19 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   JCComparisonUnmatched = new TH1F("JCComparisonUnmatched", "Jet Charge Comparison Unmatched", 20, -1.6, 1.6);
   fOutput->Add(JCComparisonUnmatched);
 
-  Pt2DCompare = new TH2F("Pt2DCompare", "Pt 2D Particle vs Detector",1500,-0.5,149.5 ,1500,-0.5,149.5);
+  Pt2DCompare = new TH2F("Pt2DCompare", "Pt 2D Particle vs Detector",50,20,80 ,50,20,80);
   fOutput->Add(Pt2DCompare);
-  JC2DCompare = new TH2F("JC2DCompare", "JC 2D Particle vs Detector",20, -1.6, 1.6 20, -1.6, 1.6);
+  JC2DCompare = new TH2F("JC2DCompare", "JC 2D Particle vs Detector",20, -1.6, 1.6, 20, -1.6, 1.6);
   fOutput->Add(JC2DCompare);
-  JC2DCompareUp = new TH2F("JC2DCompareUp", "JC 2D Particle vs Detector Up",20, -1.6, 1.6 20, -1.6, 1.6);
+  JC2DCompareUp = new TH2F("JC2DCompareUp", "JC 2D Particle vs Detector Up",20, -1.6, 1.6, 20, -1.6, 1.6);
   fOutput->Add(JC2DCompareUp);
-  JC2DCompareDown = new TH2F("JC2DCompareDown", "JC 2D Particle vs Detector Down",20, -1.6, 1.6 20, -1.6, 1.6);
+  JC2DCompareDown = new TH2F("JC2DCompareDown", "JC 2D Particle vs Detector Down",20, -1.6, 1.6, 20, -1.6, 1.6);
   fOutput->Add(JC2DCompareDown);
-  JC2DCompareGluon = new TH2F("JC2DCompareGluon", "JC 2D Particle vs Detector Gluon",20, -1.6, 1.6 20, -1.6, 1.6);
+  JC2DCompareGluon = new TH2F("JC2DCompareGluon", "JC 2D Particle vs Detector Gluon",20, -1.6, 1.6, 20, -1.6, 1.6);
   fOutput->Add(JC2DCompareGluon);
-  JC2DCompareOther = new TH2F("JC2DCompareOther", "JC 2D Particle vs Detector Other",20, -1.6, 1.6 20, -1.6, 1.6);
+  JC2DCompareOther = new TH2F("JC2DCompareOther", "JC 2D Particle vs Detector Other",20, -1.6, 1.6, 20, -1.6, 1.6);
   fOutput->Add(JC2DCompareOther);
-  JC2DCompareUnmatched = new TH2F("JC2DCompareUnmatched", "JC 2D Particle vs Detector Unmatched",20, -1.6, 1.6 20, -1.6, 1.6);
+  JC2DCompareUnmatched = new TH2F("JC2DCompareUnmatched", "JC 2D Particle vs Detector Unmatched",20, -1.6, 1.6, 20, -1.6, 1.6);
   fOutput->Add(JC2DCompareUnmatched);
 
 
@@ -560,18 +560,18 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   PtComparisonVsJCDiffUnmatched = new TH2F("PtComparisonVsJCDiffUnmatched", "Pt Det Vs Part Compared to JC Unmatched",50,20,80,50,20,80);
   fOutput->Add(PtComparisonVsJCDiffUnmatched);
 
-  JCComparisonVsPtDiff = new TH2F("JCComparisonVsPtDiff", "JC Det vs Part Compared to Pt", 20, -1.6, 1.6 20, -1.6, 1.6);
+  JCComparisonVsPtDiff = new TH2F("JCComparisonVsPtDiff", "JC Det vs Part Compared to Pt", 20, -1.6, 1.6, 20, -1.6, 1.6);
   fOutput->Add(JCComparisonVsPtDiff);
 
-  JCComparisonVsPtDiffUp = new TH2F("JCComparisonVsPtDiffUp", "JC Det vs Part Compared to Pt Up", 20, -1.6, 1.6 20, -1.6, 1.6);
+  JCComparisonVsPtDiffUp = new TH2F("JCComparisonVsPtDiffUp", "JC Det vs Part Compared to Pt Up", 20, -1.6, 1.6, 20, -1.6, 1.6);
   fOutput->Add(JCComparisonVsPtDiffUp);
-  JCComparisonVsPtDiffDown = new TH2F("JCComparisonVsPtDiffDown", "JC Det vs Part Compared to Pt Down", 20, -1.6, 1.6 20, -1.6, 1.6);
+  JCComparisonVsPtDiffDown = new TH2F("JCComparisonVsPtDiffDown", "JC Det vs Part Compared to Pt Down", 20, -1.6, 1.6, 20, -1.6, 1.6);
   fOutput->Add(JCComparisonVsPtDiffDown);
-  JCComparisonVsPtDiffGluon = new TH2F("JCComparisonVsPtDiffGluon", "JC Det vs Part Compared to Pt Gluon", 20, -1.6, 1.6 20, -1.6, 1.6);
+  JCComparisonVsPtDiffGluon = new TH2F("JCComparisonVsPtDiffGluon", "JC Det vs Part Compared to Pt Gluon", 20, -1.6, 1.6, 20, -1.6, 1.6);
   fOutput->Add(JCComparisonVsPtDiffGluon);
-  JCComparisonVsPtDiffOther = new TH2F("JCComparisonVsPtDiffOther", "JC Det vs Part Compared to Pt Other", 20, -1.6, 1.6 20, -1.6, 1.6);
+  JCComparisonVsPtDiffOther = new TH2F("JCComparisonVsPtDiffOther", "JC Det vs Part Compared to Pt Other", 20, -1.6, 1.6, 20, -1.6, 1.6);
   fOutput->Add(JCComparisonVsPtDiffOther);
-  JCComparisonVsPtDiffUnmatched = new TH2F("JCComparisonVsPtDiffUnmatched", "JC Det vs Part Compared to Pt Unmatched", 20, -1.6, 1.6 20, -1.6, 1.6);
+  JCComparisonVsPtDiffUnmatched = new TH2F("JCComparisonVsPtDiffUnmatched", "JC Det vs Part Compared to Pt Unmatched", 20, -1.6, 1.6, 20, -1.6, 1.6);
   fOutput->Add(JCComparisonVsPtDiffUnmatched);
 
 
