@@ -531,7 +531,11 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
             std::vector<double> modelPred = {};
             bool isMLsel = false;
             double ptCand = dMeson->Pt();
-            double centrality = -1.;
+            double centrality = -999.;
+            AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
+            if(multSelection)
+                centrality = multSelection->GetMultiplicityPercentile(fCentEstimator.data());
+
             if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kDstartoD0pi)
             {
                 isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fAOD->GetMagneticField(), pidHF, 0);
