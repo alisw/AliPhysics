@@ -66,6 +66,8 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD()
       fAcceptedEventsButNoPPL(nullptr),
       fTripletsPerCollision(nullptr),
       fWhichSample(nullptr),
+      fSameEventOnlyLowestQ3(nullptr),
+      fSameEventOnlyLowestQ3Anti(nullptr),
       ftotalTripletCount(0),
       fEventCutsTrigger(nullptr),
       fEventCutsTriggerList(nullptr),
@@ -142,6 +144,8 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD(const char* n
       fAcceptedEventsButNoPPL(nullptr),
       fTripletsPerCollision(nullptr),
       fWhichSample(nullptr),
+      fSameEventOnlyLowestQ3(nullptr),
+      fSameEventOnlyLowestQ3Anti(nullptr),
       ftotalTripletCount(0),
       fEventCutsTrigger(nullptr),
       fEventCutsTriggerList(nullptr),
@@ -380,12 +384,16 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserCreateOutputObjects() {
     fAcceptedEventsButNoPPL =  new TH1F("fAcceptedEventsButNoPPL","fAcceptedEventsButNoPPL", 25, 0, 100);
     fTripletsPerCollision =  new TH1F("fTripletsPerCollision","fTripletsPerCollision", 25, 0, 25);
     fWhichSample = new TH1F("fWhichSample","fWhichSample", 4, 0, 4);
+    fSameEventOnlyLowestQ3 = new TH1F("fSameEventOnlyLowestQ3","fSameEventOnlyLowestQ3", 8000, 0, 8);
+    fSameEventOnlyLowestQ3Anti = new TH1F("fSameEventOnlyLowestQ3Anti","fSameEventOnlyLowestQ3Anti", 8000, 0, 8);
 
     fOtherHistos->Add(fRejectedEvents);
     fOtherHistos->Add(fAcceptedEvents);
     fOtherHistos->Add(fAcceptedEventsButNoPPL);
     fOtherHistos->Add(fTripletsPerCollision);
     fOtherHistos->Add(fWhichSample);
+    fOtherHistos->Add(fSameEventOnlyLowestQ3);
+    fOtherHistos->Add(fSameEventOnlyLowestQ3Anti);
 
 
     // Same event
@@ -780,6 +788,9 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserExec(Option_t *option) {
       fAcceptedEventsButNoPPL->Fill(Mult);
     }
 
+
+
+
     /*// proton proton proton 
     FillTripletDistribution( ParticleVector, 0, 0, 0, fSameEventTripletArray[3],PDGCodes, bins[1],fSameEventTripletMultArray[3], fSameEventTripletPhiThetaArray,2, *fConfig);
     // antiproton antiproton antiproton 
@@ -969,9 +980,24 @@ void AliAnalysisTaskThreeBodyFemtoAOD::FillTripletDistribution(std::vector<std::
   // if you want to get distribution for particles that are saved in particle vector as 1 2 3 element, just 
   // call the function with firstSpecies=1,secondSpecies=2,thirdSpecies=3
 
+  float minQ3Part = CalculatePPLTriggerQ3Min(ParticleVector, firstSpecies, secondSpecies, thirdSpecies, PDGCodes);
+
+
   auto Particle1Vector = ParticleVector.begin()+firstSpecies;
   auto Particle2Vector = ParticleVector.begin()+secondSpecies;
   auto Particle3Vector = ParticleVector.begin()+thirdSpecies;
+
+  if(firstSpecies==0){
+    if(minQ3Part>fQ3Limit){
+        fSameEventOnlyLowestQ3->Fill(minQ3Part);
+    }
+  }
+  else{
+    if(minQ3Part>fQ3Limit){
+        fSameEventOnlyLowestQ3Anti->Fill(minQ3Part);
+    }
+
+  } 
 
   // Get the PID codes std::vector<int> 
   auto itPDGPar1 = PDGCodes.begin()+firstSpecies;
@@ -1042,6 +1068,17 @@ void AliAnalysisTaskThreeBodyFemtoAOD::FillTripletDistribution(std::vector<std::
         float Q3 = sqrt(-Q32); // the minus from pion paper
         hist->Fill(Q3); 
         hist2d->Fill(Q3,mult+1); 
+        if(firstSpecies==0){
+          if(Q3<fQ3Limit){
+              fSameEventOnlyLowestQ3->Fill(Q3);
+          }
+        }
+        else{
+          if(Q3<fQ3Limit){
+              fSameEventOnlyLowestQ3Anti->Fill(Q3);
+          }
+
+        }
         
       }
     }
