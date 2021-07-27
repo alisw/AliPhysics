@@ -158,6 +158,27 @@ Bool_t AliEmcalCorrectionClusterNonLinearityMCAfterburner::Run()
           AliDebugStream(2) << "Using non-lin afterburner function No.4" << std::endl;
           AliDebugStream(2) << "old Energy: "<< oldEnergy<<", new Energy: "<<newEnergy<< std::endl;
        }
+       //This is function FunctionNL_kSDM combined with FunctionNL_DEXP from AliCaloPhotonCuts
+       // Additional interpolation between PCM-EMCal and EMCal-EMCal of 0.25%
+       // Additional 1% scaling for 1 cell clusters
+       if (fNonLinearityAfterburnerFunction == 5) {
+         newEnergy = oldEnergy;
+         // iteration 1 FT (direct fit with exponential on ratio)
+         newEnergy/= fNLAfterburnerPara[0] + TMath::Exp( fNLAfterburnerPara[1] + (fNLAfterburnerPara[2] * newEnergy));
+         // iteration 2 FT (indirect fit with exponentials on mass pos.)
+         if((fNLAfterburnerPara[6] - TMath::Exp(-fNLAfterburnerPara[7]*newEnergy+fNLAfterburnerPara[8]) ) != 0){
+           newEnergy /= ( (fNLAfterburnerPara[3] - TMath::Exp(-fNLAfterburnerPara[4]*newEnergy+fNLAfterburnerPara[5]) )/(fNLAfterburnerPara[6] - TMath::Exp(-fNLAfterburnerPara[7]*newEnergy+fNLAfterburnerPara[8]) ) );
+         }
+         // interpolation between PCMEMC and EMC (0.25%)
+         newEnergy/= fNLAfterburnerPara[9];
+         // Additional finetuning for 1 cell cluster
+         if(clus->GetNCells() == 1){
+           newEnergy/= fNLAfterburnerPara[10];
+         }
+
+         AliDebugStream(2) << "Using non-lin afterburner function No.5" << std::endl;
+         AliDebugStream(2) << "old Energy: "<< oldEnergy<<", new Energy: "<<newEnergy<< std::endl;
+       }
 
         //correction only works in a specific momentum range
         if (oldEnergy > 0.300) {
@@ -196,6 +217,7 @@ TString AliEmcalCorrectionClusterNonLinearityMCAfterburner::SummarizeMCProductio
 {
   // Globally valid testbeam fine tuning (separate values for Run1 and Run2)
   if ( namePeriod.CompareTo("kTestBeamFinalMCRun2") == 0  )    return "kTestBeamFinalMCRun2";
+  else if ( namePeriod.CompareTo("kTestBeamFinalMCRun2LowB") == 0  )    return "kTestBeamFinalMCRun2LowB";
   else if ( namePeriod.CompareTo("kTestBeamFinalMCRun213TeV") == 0  )    return "kTestBeamFinalMCRun213TeV";
   else if ( namePeriod.CompareTo("kTestBeamFinalMCRun1") == 0  )    return "kTestBeamFinalMCRun1";
   //...MC anchored to 2015 Data...
@@ -379,15 +401,38 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
     //These are the standard parameters extracted from the PCM method (one hit in EMCal + one converted gamma)
     case kPCM_EMCal:
       // globally valid Run2 fine tuning for the testbeam+shaper corrected clusters
+      // has to be used together with the cell scale!
       if(!namePeriod.CompareTo("kTestBeamFinalMCRun2")) {
+        fNonLinearityAfterburnerFunction = 5;
+        //There are no extracted parameters yet
+        //  Iteration-1 paramters
+        fNLAfterburnerPara[0] = 0.979235;
+        fNLAfterburnerPara[1] = -3.17131;
+        fNLAfterburnerPara[2] = -0.464198;
+
+        //  Iteration-2 paramters
+        fNLAfterburnerPara[3] = 1.0363369;
+        fNLAfterburnerPara[4] = 0.5659247074;
+        fNLAfterburnerPara[5] = -2.7818482972;
+        fNLAfterburnerPara[6] = 1.0437012864;
+        fNLAfterburnerPara[7] = 0.3620283273;
+        fNLAfterburnerPara[8] = -2.8321172480;
+
+        // interpolation between PCM-EMC and EMC-EMC
+        fNLAfterburnerPara[9] = 1.0025;
+
+        // additional fine tuning for 1 cell clusters
+        fNLAfterburnerPara[10] = 0.99;
+      }
+      else if( !namePeriod.CompareTo("kTestBeamFinalMCRun2LowB")) {
         fNonLinearityAfterburnerFunction = 4;
         //There are no extracted parameters yet
         //Iteration-1 paramters
-        fNLAfterburnerPara[0] = 0.987912;
-        fNLAfterburnerPara[1] = -2.94105;
-        fNLAfterburnerPara[2] = -0.273207;
+        fNLAfterburnerPara[0] = 0.988503;
+        fNLAfterburnerPara[1] = -3.10024;
+        fNLAfterburnerPara[2] = -0.28337;
         //Iteration-2 parameters
-        fNLAfterburnerPara[3] = 1.0;
+        fNLAfterburnerPara[3] = 1.0025; // additional factor from average to improve agreement
         fNLAfterburnerPara[4] = 0.99; // factor to be applied on 1 cell clusters only
         fNLAfterburnerPara[5] = 0;
       }
