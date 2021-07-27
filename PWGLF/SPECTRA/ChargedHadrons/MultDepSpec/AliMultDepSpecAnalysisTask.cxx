@@ -388,7 +388,7 @@ double AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliVParticle* particle)
 double AliMultDepSpecAnalysisTask::GetParticleWeight(AliVParticle* particle)
 {
   if (fMCSpectraWeights) {
-    return (!fMCPCCMode) ? fMCSpectraWeights->GetMCSpectraWeightNominal(particle->Particle()) : fMCSpectraWeights->GetMCSpectraWeightSystematics(particle->Particle()/*, fMCPCCMode */);
+    return fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCPCCMode);
   }
   return 1.0;
 }
