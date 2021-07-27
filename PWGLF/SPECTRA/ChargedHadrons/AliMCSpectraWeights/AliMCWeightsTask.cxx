@@ -77,11 +77,12 @@ void AliMCWeightsTask::UserCreateOutputObjects() {
     fOutputList->Add((TObject*)fMCSpectraWeights->GetHistDataFraction());
     fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCFraction());
     fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCWeights());
-
     std::map<AliMCSpectraWeights::SysFlag, TH3F*> weights = fMCSpectraWeights->GetHistMCWeightsSys();
     for (auto const& hist : weights) {
         fOutputList->Add((TObject*)hist.second);
     }
+    fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCWeightsSysUp());
+    fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCWeightsSysDown());
 
     PostData(1, fOutputList);
 #ifdef __AliMCWeightsTask_DebugTiming__
