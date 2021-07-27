@@ -610,14 +610,14 @@ bool AliMultDepSpecAnalysisTask::InitParticle(Particle_t* particle)
     AliFatal("Particle not found\n");
     return false;
   }
+  if (!(TMath::Abs(particle->Charge()) > 0.01)) return false; // reject all neutral particles
+
   fMCLabel = particle->GetLabel();
   // reject all particles and tracks that come from simulated out-of-bunch pileup
   if (fIsNewReco && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(fMCLabel, fMCEvent)) {
     fMCIsPileupParticle = true; // store this info as it is relevant for track loop as well
     return false;
   }
-
-  if (!(TMath::Abs(particle->Charge()) > 0.01)) return false; // reject all neutral particles
 
   fMCIsChargedPrimary = particle->IsPhysicalPrimary();
   fMCIsChargedSecondary = (fMCIsChargedPrimary) ? false : (particle->IsSecondaryFromWeakDecay() || particle->IsSecondaryFromMaterial());
