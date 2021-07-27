@@ -108,7 +108,6 @@ void AliMultDepSpecAnalysisTask::FillTrackQA(AliESDtrack* track)
   fHist_tpcFoundClusters.Fill(track->GetTPCclusters(0));
   fHist_tpcCrossedRows.Fill(track->GetTPCCrossedRows());
   fHist_tpcCrossedRowsOverFindableClusters.Fill((track->GetTPCNclsF() > 0) ? track->GetTPCCrossedRows() / track->GetTPCNclsF() : -1.);
-  fHist_tpcFractionSharedClusters.Fill((track->GetTPCclusters(0) > 0.) ? track->GetTPCnclsS() / track->GetTPCclusters(0) : -1.);
   fHist_tpcChi2PerCluster.Fill((track->GetTPCclusters(0) > 0.) ? track->GetTPCchi2() / track->GetTPCclusters(0) : -1.);
   fHist_tpcGoldenChi2.Fill(track->GetChi2TPCConstrainedVsGlobal(static_cast<AliESDVertex*>(const_cast<AliVVertex*>(fEvent->GetPrimaryVertex()))));
   if (track->GetInnerParam()) fHist_tpcGeomLength.Fill(track->GetLengthInActiveZone(1, 3., 220, fEvent->GetMagneticField()));
@@ -191,9 +190,6 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_tpcCrossedRowsOverFindableClusters.AddAxis("tpcCrossedRowsOverFindableClusters", "crossed rows / findable clusters TPC", 60, 0.7, 1.3);
     fQAList->Add(fHist_tpcCrossedRowsOverFindableClusters.GenerateHist("tpcCrossedRowsOverFindableClusters"));
 
-    fHist_tpcFractionSharedClusters.AddAxis("tpcFractionSharedClusters", "fraction shared clusters TPC", 100, 0., 1.);
-    fQAList->Add(fHist_tpcFractionSharedClusters.GenerateHist("tpcFractionSharedClusters"));
-
     fHist_tpcChi2PerCluster.AddAxis("chi2PerClusterTPC", "chi2 / cluster TPC", 140, 0., 7.);
     fQAList->Add(fHist_tpcChi2PerCluster.GenerateHist("tpcChi2PerCluster"));
 
@@ -220,6 +216,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     BookHistogram(fHist_multCorrel_evt, "multCorrel_evt", {mult_meas, mult_true});
     BookHistogram(fHist_multCorrel_prim, "multCorrel_prim", {mult_meas, mult_true});
     BookHistogram(fHist_ptCorrel_prim, "ptCorrel_prim", {pt_meas, pt_true});
+    BookHistogram(fHist_ptDist_prim_gen_trig, "ptDist_prim_gen_trig", {pt_true});
     BookHistogram(fHist_multPtSpec_prim_gen, "multPtSpec_prim_gen", {mult_true, pt_true});
     BookHistogram(fHist_multPtSpec_prim_meas, "multPtSpec_prim_meas", {mult_true, pt_true});
     BookHistogram(fHist_multPtSpec_trk_prim_meas, "multPtSpec_trk_prim_meas", {mult_meas, pt_meas});
@@ -240,6 +237,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_multCorrel_evt.GetSize(0.045) +
     fHist_multCorrel_prim.GetSize(0.045) +
     fHist_ptCorrel_prim.GetSize() +
+    fHist_ptDist_prim_gen_trig.GetSize() +
     fHist_multPtSpec_prim_gen.GetSize() +
     fHist_multPtSpec_prim_meas.GetSize() +
     fHist_multPtSpec_trk_prim_meas.GetSize() +
@@ -254,7 +252,6 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_tpcFoundClusters.GetSize() +
     fHist_tpcCrossedRows.GetSize() +
     fHist_tpcCrossedRowsOverFindableClusters.GetSize() +
-    fHist_tpcFractionSharedClusters.GetSize() +
     fHist_tpcChi2PerCluster.GetSize() +
     fHist_tpcGoldenChi2.GetSize() +
     fHist_tpcGeomLength.GetSize();
@@ -353,6 +350,10 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
       }
       trainInfo += " events";
 
+      if(!fMCEnableDDC || !fMCSpectraWeights) {
+        trainInfo += ", no DDCs";
+      }
+
       fHist_trainInfo.Fill(trainInfo.data());
       fIsFirstEventInJob = false;
     }
@@ -387,7 +388,7 @@ double AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliVParticle* particle)
 double AliMultDepSpecAnalysisTask::GetParticleWeight(AliVParticle* particle)
 {
   if (fMCSpectraWeights) {
-    return (fIsNominalPCC) ? fMCSpectraWeights->GetMCSpectraWeightNominal(particle->Particle()) : fMCSpectraWeights->GetMCSpectraWeightSystematics(particle->Particle());
+    return (!fMCPCCMode) ? fMCSpectraWeights->GetMCSpectraWeightNominal(particle->Particle()) : fMCSpectraWeights->GetMCSpectraWeightSystematics(particle->Particle()/*, fMCPCCMode */);
   }
   return 1.0;
 }
@@ -416,7 +417,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
     }
     fMCVtxZ = fMCEvent->GetPrimaryVertex()->GetZ();
 
-    if (fMCUseDDC) {
+    if (fMCEnableDDC) {
       // get mc spectra weights object for data-driven corrections
       AliMCSpectraWeightsHandler* mcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject("fMCSpectraWeights"));
       fMCSpectraWeights = (mcWeightsHandler) ? mcWeightsHandler->fMCSpectraWeight : nullptr;
@@ -547,6 +548,7 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
     } else if (fMCAcceptEvent) {
       for (int i = 0; i < fNRepetitions; ++i) {
         // ----- true particle histos ----
+        if (fIsTriggered) fHist_ptDist_prim_gen_trig.Fill(fMCPt);
         fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
         // ------------------------------
       }
@@ -633,7 +635,7 @@ bool AliMultDepSpecAnalysisTask::InitParticle(Particle_t* particle)
   fMCSecScaleWeight = 1.0;
   fNRepetitions = 1;
 
-  if (fMCUseDDC) {
+  if (fMCEnableDDC) {
     if (fMCIsChargedPrimary) {
       fMCParticleWeight = GetParticleWeight(static_cast<AliVParticle*>(particle));
       fNRepetitions = GetNRepetitons(fMCParticleWeight);
@@ -809,10 +811,10 @@ void AliMultDepSpecAnalysisTask::SaveTrainMetadata()
 //**************************************************************************************************
 bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet, TString options, int cutMode)
 {
-  if ((!isMC && (cutMode == 99 || cutMode > 119)) || cutMode < 99 || cutMode > 123) return false;
+  if ((!isMC && cutMode > 119) || cutMode < 100 || cutMode > 122) return false;
   if (cutMode == 100) fIsNominalSetting = true;
-  SetIsMC(isMC);
-  SetIsAOD(isAOD);
+  fIsMC = isMC;
+  fIsESD = !isAOD;
   if (!SetupTask(dataSet, options)) return false;
   string colSys = dataSet.substr(0, dataSet.find("_"));
 
@@ -834,7 +836,7 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
   fTrackCuts->SetDCAToVertex2D(false);
   fTrackCuts->SetRequireSigmaToVertex(false);
   fTrackCuts->SetMaxDCAToVertexZ(2.0);
-  fTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); // 7 sigma cut, dataset dependent
+  fTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); // 7 sigma cut
   fTrackCuts->SetAcceptKinkDaughters(false);
   fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);     // golden chi2 cut
   fTrackCuts->SetCutGeoNcrNcl(3, 130, 1.5, 0.85, 0.7); // geometrical length cut
@@ -888,18 +890,23 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
     fTrackCuts->SetCutGeoNcrNcl(2, 130, 1.5, 0.85, 0.7);
   }
 
-  // in MC we always apply data driven corrections to account for wrong particle composition in the
-  // generator cutMode 99 is for crosschecks without any data driven corrections (not part of systematics)
-  if (isMC && cutMode != 99) {
-    fIsNominalPCC = true;
+  fMCEnableDDC = true;
+  if (options.Contains("noDDC")) {
+    fMCEnableDDC = false;
+  }
 
-    // systematic variations related to the data driven corrections
-    // the particle composition framework picks a new random systematic setup per event
-    // do this multiple times to have a better feeling for the systematics
-    if (cutMode >= 120 && cutMode <= 123) {
-      fIsNominalPCC = false;
+  // in MC we always apply data driven corrections to account for wrong particle composition in the generator
+  if (isMC && fMCEnableDDC) {
+    fMCPCCMode = 0;
+    fMCSecScalingMode = 0;
+
+    if (cutMode == 120) {
+      fMCPCCMode = 1;             // shift correction factor up within its systematics
+    } else if (cutMode == 121) {
+      fMCPCCMode = -1;            // shift correction factor down within its systematics
+    } else if (cutMode == 122) {
+      fMCSecScalingMode = 1;      // use 3 template dca fits as variation
     }
-    SetUseDataDrivenCorrections();
   }
   return true;
 }
