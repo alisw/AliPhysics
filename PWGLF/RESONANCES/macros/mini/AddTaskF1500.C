@@ -8,8 +8,7 @@
 ****************************************************************************/
 #ifdef __CLING__
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
-//#include <PWGLF/RESONANCES/macros/mini/ConfigF1500.C>
-#include <./ConfigF1500.C>
+#include <PWGLF/RESONANCES/macros/mini/ConfigF1500.C>
 #endif
 
 enum pairYCutSet { kPairDefault,
@@ -19,7 +18,7 @@ enum pairYCutSet { kPairDefault,
 		 };
 
 enum eventCutSet { kEvtDefault = 0,  //data
-		   kEvtDefaultVtx8, 
+		   kEvtDefaultVtx8,
 		   kEvtDefaultVtx5,
 		   kNoPileUpCut,
 		   kMCEvt,         //MC events cuts
@@ -42,26 +41,26 @@ AliRsnMiniAnalysisTask * AddTaskF1500
  Float_t     masslow       = 0.9,   //inv mass range lower boundary
  Float_t     massup        = 2.5,   //inv mass range upper boundary
  Int_t       nbins         = 1600,  //inv mass: N bins
- Float_t     ptlow         = 0.0,   //pT axis low edge 
- Float_t     ptup          = 10.0,   //pT axis upper edge 
+ Float_t     ptlow         = 0.0,   //pT axis low edge
+ Float_t     ptup          = 10.0,   //pT axis upper edge
  Int_t       nbinspt       = 20,   //pT axis n bins
  Float_t     ptMClowCut    = 0.001, // lower pT cut on MC
  Float_t     ptMCupCut     = 20.0,  // upper pT cut on MC
  Bool_t      enableTrackQA = kTRUE, //enable single track QA
  Bool_t      enableAdvEvtQA = kFALSE) //enable advanced QA for multiplicity and event properties
-{  
+{
 
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
   /*Trigger selection
-  Std minimum bias trigger AliVEvent::kMB, corresponding to (V0A | V0C | SPD) to be used with 
+  Std minimum bias trigger AliVEvent::kMB, corresponding to (V0A | V0C | SPD) to be used with
   - pp 7 TeV (2010 data)
   - PbPb 2.76 TeV (2010 data and 2011 data)
   - pp 2.76 TeV (2011 data)
-  Centrality triggers AliVEvent::kCentral, AliVEvent::kSemicentral to be used with 
+  Centrality triggers AliVEvent::kCentral, AliVEvent::kSemicentral to be used with
   - PbPb 2.76 TeV (2011 data)
-  Std minimum bias trigger AliVEvent::kINT7, corrsesponding to (V0A & V0C) to be used with 
+  Std minimum bias trigger AliVEvent::kINT7, corrsesponding to (V0A & V0C) to be used with
   - pA 5.02 TeV (2013 data)
   - pp 13 TeV (2015 data)
   */
@@ -79,17 +78,17 @@ AliRsnMiniAnalysisTask * AddTaskF1500
   if (evtCutSetID>=eventCutSet::kMCEvt) {
     vtxZcut = 1.0e3; //cm
   }
-  
+
   if (evtCutSetID==eventCutSet::kMCEvtDefault) {
     vtxZcut = 10.0; //cm
   }
-    
+
   //-------------------------------------------
   //pair rapidity cut
   //-------------------------------------------
   Double_t minYlab = -0.5;
   Double_t maxYlab =  0.5;
-      
+
   if (pairCutSetID==pairYCutSet::kCentralTight) { //|y_cm|<0.3
     minYlab = -0.3;    maxYlab = 0.3;
   }
@@ -97,11 +96,11 @@ AliRsnMiniAnalysisTask * AddTaskF1500
   if (pairCutSetID==pairYCutSet::kpADefault) { //-0.5<y_cm<0.0
     minYlab = -0.465;    maxYlab = 0.035;
   }
-  
+
   if (pairCutSetID==pairYCutSet::kpACentral) { //|y_cm|<0.3
     minYlab = -0.765;    maxYlab = -0.165;
   }
-  
+
   //-------------------------------------------
   //mixing settings
   //-------------------------------------------
@@ -117,23 +116,23 @@ AliRsnMiniAnalysisTask * AddTaskF1500
   if (!mgr) {
     ::Error("AddTaskF1500", "No analysis manager to connect to.");
     return NULL;
-  } 
+  }
 
-  // create the task and configure 
+  // create the task and configure
   TString taskName = Form("RsnTaskF1500");
   AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
 
-  //trigger 
+  //trigger
   if (!isAOD) task->UseESDTriggerMask(triggerMask); //ESD
   else task->SelectCollisionCandidates(triggerMask); //AOD
-  
+
   //-----------------------------------------------------------------------------------------------
   // -- MULTIPLICITY/CENTRALITY -------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
   if (collSys==AliPIDResponse::kPP) task->UseMultiplicity("AliMultSelection_V0M");
   if (collSys==AliPIDResponse::kPPB) task->UseMultiplicity("AliMultSelection_V0A");
   if (collSys==AliPIDResponse::kPBPB) task->UseMultiplicity("AliMultSelection_V0M");
-  
+
   //-----------------------------------------------------------------------------------------------
   // -- EVENT MIXING CONFIG -----------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
@@ -142,17 +141,17 @@ AliRsnMiniAnalysisTask * AddTaskF1500
   task->SetMaxDiffVz(maxDiffVzMix);
   task->SetMaxDiffMult(maxDiffMultMix);
   //::Info("AddTaskF1500", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
-   
+
   //-----------------------------------------------------------------------------------------------
   // -- EVENT SELECTION ---------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
   if ((collSys==AliPIDResponse::kPP) && (!isMC)) cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup
-  cutVertex->SetCheckZResolutionSPD(); 
+  cutVertex->SetCheckZResolutionSPD();
   Printf("AddTaskF1500 - CheckZResolutionSPD:              ON");
-  cutVertex->SetCheckDispersionSPD(); 
+  cutVertex->SetCheckDispersionSPD();
   Printf("AddTaskF1500 - CheckDispersionSPD:               ON");
-  cutVertex->SetCheckZDifferenceSPDTrack(); 
+  cutVertex->SetCheckZDifferenceSPDTrack();
   Printf("AddTaskF1500 - CheckZDifferenceSPDTrack:         ON");
 
   //set check for pileup in 2013
@@ -161,7 +160,7 @@ AliRsnMiniAnalysisTask * AddTaskF1500
   cutEventUtils->SetCheckSPDClusterVsTrackletBG();
   Printf("AddTaskF1500 - CheckIncompleteDAQ:                  ON");
   Printf("AddTaskF1500 - SetCheckSPDClusterVsTrackletBG:      ON");
-  
+
   if (useMVPileUpSelection){
     cutEventUtils->SetUseMVPlpSelection(useMVPileUpSelection);
     cutEventUtils->SetMinPlpContribMV(MinPlpContribMV);
@@ -171,14 +170,14 @@ AliRsnMiniAnalysisTask * AddTaskF1500
     cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
     Printf("AddTaskF1500 - SPD Pile-up rejection:     ON \nSettings: MinPlpContribSPD = %i", MinPlpContribSPD);
   }
-  Printf("AddTaskF1500 - Pile-up rejection mode:     %i", rejectPileUp);   
-  
+  Printf("AddTaskF1500 - Pile-up rejection mode:     %i", rejectPileUp);
+
   AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
   eventCuts->AddCut(cutEventUtils);
   eventCuts->AddCut(cutVertex);
   eventCuts->SetCutScheme(Form("%s&%s", cutEventUtils->GetName(), cutVertex->GetName()));
   task->SetEventCuts(eventCuts);
-   
+
   //connect task
   mgr->AddTask(task);
 
@@ -186,41 +185,41 @@ AliRsnMiniAnalysisTask * AddTaskF1500
   // -- EVENT SELECTION MONITOR -------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
   //vertex position monitoring
-  Int_t vtxID = task->CreateValue(AliRsnMiniValue::kVz, kFALSE);  
+  Int_t vtxID = task->CreateValue(AliRsnMiniValue::kVz, kFALSE);
   AliRsnMiniOutput *outVtx = task->CreateOutput("eventVtx", "HIST", "EVENT");
   outVtx->AddAxis(vtxID, 500, -50.0, 50.0);
-  
-  //multiplicity or centrality monitoring 
-  //multiplicity or centrality with forward estimator from AliMulSelectionTask 
+
+  //multiplicity or centrality monitoring
+  //multiplicity or centrality with forward estimator from AliMulSelectionTask
   Int_t multID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
   //reference multiplicity (default with global tracks with good quality, if not available uses tracklets)
   Int_t multRefID = task->CreateValue(AliRsnMiniValue::kRefMult, kFALSE);
-    
+
   AliRsnMiniOutput *outMult = task->CreateOutput("eventMult", "HIST", "EVENT");
   outMult->AddAxis(multID, 100, 0.0, 100.0);
-    
+
   AliRsnMiniOutput *outRefMult = task->CreateOutput("eventRefMult", "HIST", "EVENT");
   outRefMult->AddAxis(multRefID, 400, 0.0, 400.0);
-    
-  if (enaMultSel) { 
+
+  if (enaMultSel) {
     TH2F* hvz = new TH2F("hVzVsCent","Vertex position vs centrality; multiplicity (%); z_{vtx} (cm); Counts", 101, 0., 101., 240, -12.0, 12.0);
-    if (collSys==AliPIDResponse::kPPB) 
+    if (collSys==AliPIDResponse::kPPB)
       hvz->GetXaxis()->SetTitle("V0A");
     else
       hvz->GetXaxis()->SetTitle("V0M");
     task->SetEventQAHist("vz", hvz);
-    
+
     TH2F* hRefMultiVsCent = new TH2F("hRefMultiVsCent","Reference multiplicity vs centrality; multiplicity (%); GLOBAL; Counts", 101, 0., 101., 400, 0., 400.);
-    if (collSys==AliPIDResponse::kPPB) 
+    if (collSys==AliPIDResponse::kPPB)
       hRefMultiVsCent->GetXaxis()->SetTitle("V0A");
-    else 
+    else
       hRefMultiVsCent->GetXaxis()->SetTitle("V0M");
     if (enableAdvEvtQA) task->SetEventQAHist("refmulti",hRefMultiVsCent);
-  
+
     TH2F* hMultiVsCent = new TH2F("hMultiVsCent","Multiplicity vs centrality; multiplicity (%); QUALITY (%); Counts", 101, 0., 101., 400, 0., 400.);
-    if (collSys==AliPIDResponse::kPPB) 
+    if (collSys==AliPIDResponse::kPPB)
       hMultiVsCent->GetXaxis()->SetTitle("V0A");
-    else 
+    else
       hMultiVsCent->GetXaxis()->SetTitle("V0M");
     if (enableAdvEvtQA) task->SetEventQAHist("multicent",hMultiVsCent);
   }
@@ -232,7 +231,7 @@ AliRsnMiniAnalysisTask * AddTaskF1500
   cutY->SetRangeD(minYlab, maxYlab);
   AliRsnCutMiniPair *cutPtMC = new AliRsnCutMiniPair("cutPtMC", AliRsnCutMiniPair::kPtMC);
   cutPtMC->SetRangeD(ptMClowCut,ptMCupCut);
-  
+
   AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
   if (isMC) cutsPair->AddCut(cutPtMC);
@@ -242,22 +241,21 @@ AliRsnMiniAnalysisTask * AddTaskF1500
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
 #ifdef __CINT__
-  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigF1500.C");
-  gROOT->LoadMacro("./ConfigF1500.C");
-#endif 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigF1500.C");
+#endif
   if (!ConfigF1500(task, isMC, collSys, cutsPair, enaMultSel, masslow, massup, nbins, ptlow, ptup, nbinspt, aodFilterBit,customQualityCutsID, cutPiPid, nsigma, enableTrackQA) ) return 0x0;
-  
+
   //-----------------------------------------------------------------------------------------------
   // -- CONTAINERS --------------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   Printf("AddTaskF1500 - Set OutputFileName : \n %s\n", outputFileName.Data() );
-  AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()), 
-							  TList::Class(), 
-							  AliAnalysisManager::kOutputContainer, 
+  AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()),
+							  TList::Class(),
+							  AliAnalysisManager::kOutputContainer,
 							  outputFileName);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, output);
-   
+
   return task;
 }
