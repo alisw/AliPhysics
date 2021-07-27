@@ -284,7 +284,7 @@ void AliAnalysisHe3MC::UserCreateOutputObjects()
 	fMCOutputTriton->Add(secondariesM->Clone());
 	
 	
-	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows");
+	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:label");
 	((TList*)(fMCOutputHe3->At(2)))->Add(fNtupleHe3);
 
 
@@ -1274,8 +1274,8 @@ void AliAnalysisHe3MC::FillNtuple(TNtuple* nt, AliAODMCParticle* part, AliAODEve
 		        //if (TMath::Abs(DCAz ) > fMaxDCAz)        continue;
 		        //if (TMath::Abs(DCAxy) > fMaxDCAxyCut)    continue;
 
-				//For reference //fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:Chi2TPC:Chi2ITS:TPCCrossedRows");
-				float vars [15];
+				//For reference //fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:Chi2TPC:Chi2ITS:TPCCrossedRows:label");
+				float vars [16];
 				vars[0] = track->P();
 				vars[1] = track->Pt();
 				vars[2] = track->GetTPCsignal();
@@ -1290,6 +1290,7 @@ void AliAnalysisHe3MC::FillNtuple(TNtuple* nt, AliAODMCParticle* part, AliAODEve
 				vars[12] = track->Chi2perNDF();
 				vars[13] = track->GetITSchi2();
 				vars[14] = track->GetTPCClusterInfo(2, 1);
+				vars[16] = part->GetLabel();
 				nt->Fill(vars);
 		}
 }
