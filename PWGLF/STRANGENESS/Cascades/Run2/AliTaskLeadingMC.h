@@ -5,6 +5,8 @@ class AliESDEvent;
 class TTree;
 class TDatabasePDG;
 class AliMCEvent;
+class TH3F;
+class TH2F;
 
 #include "AliAnalysisTask.h"
 
@@ -45,6 +47,11 @@ private:
   TTree *fTree = nullptr;      //!
   TDatabasePDG *fDB = nullptr; //!
 
+  TH3F * fH_SPD_VZERO; //!
+  TH3F * fH_SPD_ZDC; //!
+  TH2F * fH_SPD_VZERO_ev; //!
+  TH2F * fH_SPD_ZDC_ev; //!
+
   float fV0Perc = 0.;
   float	fZdcPerc = 0.;
   float fZdcPercFired = 0.;
@@ -52,9 +59,12 @@ private:
   float fMultRef8 = 0.;
   float fMultSPDcl = 0.;
   float fMultSPDtr = 0.;
+  int   fInelGT0 = 0;
   int   fSPDtracklets = 0;
   int   fSPDtrackletsA = 0;
   int   fSPDtrackletsC = 0;
+  int   fTOFclusters = 0;
+  int   fTOFclustersTrg = 0;
 
   int fIsTrackRef = 0;
 
@@ -178,6 +188,8 @@ private:
   Int_t fNLambdaEta = 0;     //!
   Int_t fNXiEta = 0;         //!
   float fPtXiEta[100];       //!
+  Int_t fNAntiXiEta = 0;     //!
+  float fPtAntiXiEta[100];   //!
   Int_t fNOmegaEta = 0;      //!
   Int_t fNPiEta = 0;         //!
   Int_t fNPi0Eta = 0;        //!

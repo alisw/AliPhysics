@@ -11,8 +11,12 @@
 
 AliAnalysisTaskSE *AddTaskFemtoDreamLambdaPhiNanoAOD(bool isMC = false,
                                                TString CentEst = "kInt7",
+                                               const char* sTcut = "0",
+                                               double maxDCAv0vtx = 1.5,
+                                               double minDCADaughPV = 0.05,
                                                const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
+  TString sTsuffix = TString::Format("%s", sTcut);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -27,12 +31,20 @@ AliAnalysisTaskSE *AddTaskFemtoDreamLambdaPhiNanoAOD(bool isMC = false,
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
-  // evtCuts->SetSphericityCuts(0.7, 1);
+  if(sTsuffix=="1") {
+    evtCuts->SetSphericityCuts(0.7, 1);
+  }
 
   //Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false); //PileUpRej, false
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
+  //Loosening cuts for Lambdas
+  //1. DCA to V0 vtx (def. < 1.5 cm)
+  //2. DCA daugh to PV (def > 0.05 cm)
+  v0Cuts->SetCutDCADaugTov0Vtx(maxDCAv0vtx);
+  v0Cuts->SetCutDCADaugToPrimVtx(minDCADaughPV);
+
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212); //Proton
@@ -42,9 +54,13 @@ AliAnalysisTaskSE *AddTaskFemtoDreamLambdaPhiNanoAOD(bool isMC = false,
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   PosAntiv0Daug->SetCutCharge(1);
-  AliFemtoDreamTrackCuts *NegAntiv0Daug =
-      AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
+  AliFemtoDreamTrackCuts *NegAntiv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
   NegAntiv0Daug->SetCutCharge(-1);
+  //Loosening cuts for AntiLambdas
+  //1. DCA to V0 vtx (def. < 1.5 cm)
+  //2. DCA daugh to PV (def > 0.05 cm)
+  Antiv0Cuts->SetCutDCADaugTov0Vtx(maxDCAv0vtx);
+  Antiv0Cuts->SetCutDCADaugToPrimVtx(minDCADaughPV);
 
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
   Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);

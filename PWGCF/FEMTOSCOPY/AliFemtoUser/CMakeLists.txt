@@ -168,6 +168,7 @@ set(SRCS
   AliFemtoCutMonitorPairMomRes.cxx
   AliFemtoCorrFctnPairsForCorrFit.cxx
   AliFemtoWRzTrackCut.cxx
+  AliFemtoCorrFctnDYDPhiSimpleWithCorrections.cxx
   )
 
 

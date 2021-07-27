@@ -416,6 +416,26 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("0008d113","411790009feh2220000","0r631031000000d0");  // EG1, NonLin applied in CF
 
 
+  // NCell efficiency studies
+  } else if (trainConfig == 100){
+    cuts.AddCutCalo("00010113","411799909fe30220000","0r631031000000d0");  // INT7 with M02/exotic cut
+    cuts.AddCutCalo("00010113","411799909f030000000","0r631031000000d0");  // INT7 without M02/exotic
+  } else if (trainConfig == 101){
+    cuts.AddCutCalo("00010113","411799609fe30220000","0r631031000000d0");  // INT7 with M02/exotic cut, no FT
+    cuts.AddCutCalo("00010113","411799609f030000000","0r631031000000d0");  // INT7 without M02/exotic, no FT
+  } else if (trainConfig == 102){
+    cuts.AddCutCalo("00010113","411799909f030000000","0r631031000000f0");  // INT7 without M02/exotic cut, opening angle cut: 0.19
+    cuts.AddCutCalo("00010113","411799909f030000000","0r631031000000g0");  // INT7 without M02/exotic cut, opening angle cut: 0.202
+  } else if (trainConfig == 103){
+    cuts.AddCutCalo("00010113","411799909fe32000000","0r631031000000d0");  // INT7 without M02 cut
+  } else if (trainConfig == 104){
+    cuts.AddCutCalo("0008e113","411799909fe32000000","0r631031000000d0");  // EG2 without M02 cut
+    cuts.AddCutCalo("0008d113","411799909fe32000000","0r631031000000d0");  // EG1 without M02 cut
+  } else if (trainConfig == 105){
+    cuts.AddCutCalo("00010113","411799909f032000000","0r631031000000d0");  // INT7 without M02/exotics cut
+  } else if (trainConfig == 106){
+    cuts.AddCutCalo("0008e113","411799909f032000000","0r631031000000d0");  // EG2 without M02/exotics cut
+    cuts.AddCutCalo("0008d113","411799909f032000000","0r631031000000d0");  // EG1 without M02/exotics cut
 
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

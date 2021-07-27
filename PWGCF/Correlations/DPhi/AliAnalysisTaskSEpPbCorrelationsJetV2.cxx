@@ -916,7 +916,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
 
     Int_t nCFStepstpcfmd=1;
 
-    Int_t iTrackBin_fmdAfmdC[] = {10, 24, 20};
+    Int_t iTrackBin_fmdAfmdC[] = {10, 48, 36};
     Int_t nTrackBin_fmdAfmdC = sizeof(iTrackBin_fmdAfmdC) / sizeof(Int_t);
 
     fHistReconstTrack = new AliTHn("fHistReconstTrack","fHistReconstTrack",nCFStepstpcfmd,nTrackBin_fmdAfmdC,iTrackBin_fmdAfmdC);
@@ -925,7 +925,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
     fHistReconstTrack->SetBinLimits(0, -10, 10);
 //    fHistReconstTrack->SetBinLimits(1, binning_cent_fmdfmd);
     fHistReconstTrack->SetBinLimits(1, 3.4,8.2);
-    fHistReconstTrack->SetBinLimits(2, -0.55*TMath::Pi(),1.45*TMath::Pi());
+    fHistReconstTrack->SetBinLimits(2, -0.5*TMath::Pi(),1.5*TMath::Pi());
 
     fHistReconstTrack->SetVarTitle(0,"z vertex");
 //    fHistReconstTrack->SetVarTitle(1,"Centrality");
@@ -935,7 +935,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
     fHistReconstTrackMix->SetBinLimits(0, -10, 10);
 //    fHistReconstTrackMix->SetBinLimits(1, binning_cent_fmdfmd);
     fHistReconstTrackMix->SetBinLimits(1, 3.4,8.2);
-    fHistReconstTrackMix->SetBinLimits(2, -0.55*TMath::Pi(),1.45*TMath::Pi());
+    fHistReconstTrackMix->SetBinLimits(2, -0.5*TMath::Pi(),1.5*TMath::Pi());
    
     fHistReconstTrackMix->SetVarTitle(0,"z vertex");
 //    fHistReconstTrackMix->SetVarTitle(1,"Centrality");

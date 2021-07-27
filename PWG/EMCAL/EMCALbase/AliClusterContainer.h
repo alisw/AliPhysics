@@ -292,19 +292,116 @@ class AliClusterContainer : public AliEmcalContainer {
    */
   Int_t                       GetNAcceptedClusters()                 const;
 
-  void                        SetClusTimeCut(Double_t min, Double_t max)   { fClusTimeCutLow  = min ; fClusTimeCutUp = max ; }
-  void                        SetMinMCLabel(Int_t s)                       { fMinMCLabel      = s   ; }
-  void                        SetMaxMCLabel(Int_t s)                       { fMaxMCLabel      = s   ; }
-  void                        SetMCLabelRange(Int_t min, Int_t max)        { SetMinMCLabel(min)     ; SetMaxMCLabel(max)    ; }
-  void                        SetExoticCut(Bool_t e)                       { fExoticCut       = e   ; }
-  void                        SetIncludePHOS(Bool_t b)                     { fIncludePHOS = b       ; }
-  void                        SetIncludePHOSonly(Bool_t b)                 { fIncludePHOSonly = b   ; }
-  void                        SetPhosMinNcells(Int_t n)                    { fPhosMinNcells = n; }
-  void                        SetPhosMinM02(Double_t m)                    { fPhosMinM02 = m; }
-  void 						            SetEmcalM02Range(Double_t min, Double_t max) { fEmcalMinM02 = min; fEmcalMaxM02 = max; }
-  void                        SetEmcalMaxM02Energy(Double_t max)           { fEmcalMaxM02CutEnergy = max; }
-  void                        SetMaxFractionEnergyLeadingCell(Double_t max)  { fMaxFracEnergyLeadingCell = max; }
-  void                        SetEmcalMaxNCellEfficiencyEnergy(Double_t max) { fEmcalMaxNCellEffCutEnergy = max; }
+  /**
+   * @brief Set accepted cluster time range (in seconds)
+   * @param mintimeSec Min. cluster time in seconds
+   * @param maxtimeSec Max. cluster time in seconds
+   * 
+   * Time range is defined with respect to the trigger. Cluster time is
+   * defined as the time of the leading cell in a cluster
+   */
+  void                        SetClusTimeCut(Double_t mintimeSec, Double_t maxtimeSec)   { fClusTimeCutLow  = mintimeSec ; fClusTimeCutUp = maxtimeSec ; }
+
+  /**
+   * @brief Set requirement for min. cluster MC label index
+   * @param minlabel Min. accepted label
+   */
+  void                        SetMinMCLabel(Int_t minlabel)                { fMinMCLabel      = minlabel   ; }
+
+  /**
+   * @brief Set requirement for max. cluster MC label index
+   * @param maxlabel Max. accepted label
+   */
+  void                        SetMaxMCLabel(Int_t maxlabel)                { fMaxMCLabel      = maxlabel   ; }
+
+  /**
+   * @brief Set accepted cluster MC label range
+   * @param minlabel Min. accepted label
+   * @param maxlabel Max. accepted label
+   */
+  void                        SetMCLabelRange(Int_t minlabel, Int_t maxlabel)        { SetMinMCLabel(minlabel)     ; SetMaxMCLabel(maxlabel)    ; }
+
+  /**
+   * @brief Switch on/off exoticity cut
+   * @param enabled If true the cut is enabled
+   * 
+   * Exoticity is defined as the fraction of energy in the leading cell with respect 
+   * to the 4 direct neighbors. Clusters are rejected if the relative energy in the
+   * leading tower is large.
+   */
+  void                        SetExoticCut(Bool_t enabled)                 { fExoticCut       = enabled    ; }
+
+  /**
+   * @brief Include PHOS cluster in the cluster selection
+   * @param included If true 
+   */
+  void                        SetIncludePHOS(Bool_t included)              { fIncludePHOS = included       ; }
+
+  /**
+   * @brief Only handle PHOS clusters in the cluster container
+   * @param phosOnly If true only PHOS clusters are loaded
+   */
+  void                        SetIncludePHOSonly(Bool_t phosOnly)          { fIncludePHOSonly = phosOnly   ; }
+
+  /**
+   * @briefSet min. number of cells required to accept PHOS clusters
+   * @param mincells Min. number of cells
+   * 
+   * Cut is applied only in case PHOS clusters are included in the cluster container
+   */
+  void                        SetPhosMinNcells(Int_t mincells)             { fPhosMinNcells = mincells     ; }
+
+  /**
+   * @brief Require min. PHOS M02 (shower shape parameter)
+   * @param minm02 Min. shower shape parameter
+   * 
+   * Cut is applied only in case PHOS clusters are included in the cluster container
+   */
+  void                        SetPhosMinM02(Double_t minm02)               { fPhosMinM02 = minm02          ; }
+
+  /**
+   * @brief Set min. number of cells required to accept EMCAL/DCAL clusters
+   * @param mincells Min. number of cells
+   */
+  void                        SetEmcalMinNcells(Int_t mincells)            { fEmcalMinNcells = mincells    ; }
+
+  /**
+   * @brief Set the EMCAL M02 range (shower shwpe parameter)
+   * @param min Min. M02 value
+   * @param max Max. M02 value
+   */
+  void 						            SetEmcalM02Range(Double_t minm02, Double_t maxm02) { fEmcalMinM02 = minm02; fEmcalMaxM02 = maxm02; }
+
+  /**
+   * @brief Set maximum energy for which the EMCAL shower shape cut is applied
+   * @param maxenergyGeV Max. energy
+   * 
+   * Energy is selected based on the seting in the default cluster energy.
+   */
+  void                        SetEmcalMaxM02Energy(Double_t maxenergyGeV)           { fEmcalMaxM02CutEnergy = maxenergyGeV; }
+  
+  /**
+   * @brief Require fraction of energy in the leading tower (entire cluster) below a certain limit
+   * @param maxfraction Max. fraction of energy in leading tower
+   */
+  void                        SetMaxFractionEnergyLeadingCell(Double_t maxfraction)  { fMaxFracEnergyLeadingCell = maxfraction; }
+
+  /**
+   * @brief Select one-cell clusters flagged by the correction framework
+   * @param doSelect If true one-cell clusters are selected even certain other cuts are failed
+   * 
+   * Disables the cut on the number of cells, the exoticity and the 
+   * shower shape parameter in case the cluster is a flagged one-cell 
+   * cluster as these cuts would always reject these clusters. By 
+   * default the cut is enabled.
+   */
+  void                        SetSelectOneCellCluster(Bool_t doSelect)               { fSelectOneCellCluster = doSelect; }
+
+  /**
+   * @brief Set maximum energy for which the selection of one-cell clusters is used
+   * @param maxenergyGeV Max. energy in GeV
+   */
+  void                        SetEmcalMaxNCellEfficiencyEnergy(Double_t maxenergyGeV) { fEmcalMaxNCellEffCutEnergy = maxenergyGeV; }
 
   /**
    * @brief Connect the container to the array with content stored inside the virtual event.
@@ -316,25 +413,47 @@ class AliClusterContainer : public AliEmcalContainer {
   void                        SetArray(const AliVEvent * event);
 
   /**
-   * @brief Set the energy cut of the applied on cluster energy of type t
-   * @param t Cluster energy type (base energy, non-linearity corrected energy, hadronically corrected energy)
-   * @param cut Cluster energy cut
+   * @brief Set max. energy for the cluster selection based on a certain energy type
+   * @param energytype Cluster energy type (base energy, non-linearity corrected energy, hadronically corrected energy)
+   * @param maxenergyGeV Max. cluster energy in GeV
    */
-  void                        SetClusUserDefEnergyCut(Int_t t, Double_t cut);
+  void                        SetClusUserDefEnergyCut(Int_t energytype, Double_t maxenergyGeV);
 
   /**
    * @brief Get the energy cut of the applied on cluster energy of type t
-   * @param t Cluster energy type (base energy, non-linearity corrected energy, hadronically corrected energy)
-   * @return Cluster energy cut
+   * @param energytype Cluster energy type (base energy, non-linearity corrected energy, hadronically corrected energy)
+   * @return Max. cluster energy in GeV
    */
-  Double_t                    GetClusUserDefEnergyCut(Int_t t) const;
+  Double_t                    GetClusUserDefEnergyCut(Int_t energytype) const;
 
-  void                        SetClusNonLinCorrEnergyCut(Double_t cut)                     { SetClusUserDefEnergyCut(AliVCluster::kNonLinCorr, cut); }
-  void                        SetClusHadCorrEnergyCut(Double_t cut)                        { SetClusUserDefEnergyCut(AliVCluster::kHadCorr, cut)   ; }
-  void                        SetDefaultClusterEnergy(Int_t d)                             { fDefaultClusterEnergy = d                             ; }
+  /**
+   * @brief Set max. cluster energy for cut based on energy corrected for non-linearity
+   * @param maxenergyGeV Max. cluster energy in GeV
+   */
+  void                        SetClusNonLinCorrEnergyCut(Double_t maxenergyGeV)               { SetClusUserDefEnergyCut(AliVCluster::kNonLinCorr, maxenergyGeV); }
 
+  /**
+   * @brief Set max. cluster energy for cut based on energy corrected for the hadronic component
+   * @param maxenergyGeV Max cluster energy in GeV
+   */
+  void                        SetClusHadCorrEnergyCut(Double_t maxenergyGeV)                  { SetClusUserDefEnergyCut(AliVCluster::kHadCorr, maxenergyGeV)   ; }
+
+  /**
+   * @brief Set the energy type used as default energy for the cluster selection
+   * @param energytype Energy type
+   */
+  void                        SetDefaultClusterEnergy(Int_t energytype)                    { fDefaultClusterEnergy = energytype                             ; }
+
+  /**
+   * @brief Get energy type used as default energy
+   * @return Energy type
+   */
   Int_t                       GetDefaultClusterEnergy() const                              { return fDefaultClusterEnergy                          ; }
 
+  /**
+   * @brief Get title of the container
+   * @return Title of the container
+   */
   const char*                 GetTitle() const;
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
@@ -397,17 +516,19 @@ class AliClusterContainer : public AliEmcalContainer {
   Bool_t           fIncludePHOSonly;            ///< flag to accept only PHOS clusters (and reject EMCal clusters)
   Int_t            fPhosMinNcells;              ///< min number of phos cells per cluster
   Double_t         fPhosMinM02;                 ///< min value of M02 for phos clusters
-  Double_t		     fEmcalMinM02;				   ///< min value of M02 for EMCAL clusters
-  Double_t 		     fEmcalMaxM02;				   ///< max value of M02 for EMCAL clusters
+  Int_t            fEmcalMinNcells;             ///< min number of cells per EMCAL cluster
+  Double_t		     fEmcalMinM02;				        ///< min value of M02 for EMCAL clusters
+  Double_t 		     fEmcalMaxM02;				        ///< max value of M02 for EMCAL clusters
   Double_t         fEmcalMaxM02CutEnergy;       ///< max EMCal cluster energy for which to apply M02 cut
   Double_t         fMaxFracEnergyLeadingCell;   ///< max fraction of energy in the leading cell
+  Bool_t           fSelectOneCellCluster;       ///< Apply special selection of flagged 1-cell cluster
   Double_t         fEmcalMaxNCellEffCutEnergy;  ///< maximum energy that a 1 cell cluster can have to be considered for NCell efficiency
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor
   AliClusterContainer& operator=(const AliClusterContainer& other); // assignment
 
-  ClassDef(AliClusterContainer,13);
+  ClassDef(AliClusterContainer,14);
 };
 
 /**

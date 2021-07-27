@@ -40,7 +40,9 @@ endif(KFParticle_FOUND)
 # Sources - alphabetical order
 set(SRCS 
     AliHFMLResponse.cxx
+    AliHFMLResponseD0toKpi.cxx
     AliHFMLResponseDplustoKpipi.cxx
+    AliHFMLResponseDstartoD0pi.cxx
     AliHFMLResponseDstoKKpi.cxx
     AliHFMLResponseLctoV0bachelor.cxx
     AliHFMLVarHandler.cxx

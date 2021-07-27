@@ -6,7 +6,7 @@
 #include <vector>
 #include <TString.h>
 
-AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double ptMin = 0.5, std::string Variations = "tpconly", Bool_t removebadarea = kFALSE, Bool_t saveCatalystQA = kFALSE)
+AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double ptMin = 0.5, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -60,11 +60,13 @@ AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double
 
   AliJCatalystTask *fJCatalyst[Nsets];  // One catalyst needed per configuration.
   for (Int_t i = 0; i < PassedVariations; i++) {
-    fJCatalyst[i] = new AliJCatalystTask(Form("fJCatalystTask_%s", configNames[i].Data()));
+    fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", taskName.Data(), configNames[i].Data()));
     cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << endl;
+    if (applyHMOcut) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);}
     fJCatalyst[i]->SelectCollisionCandidates(selEvt);
    
-    fJCatalyst[i]->SetSaveAllQA(saveCatalystQA); 
+    fJCatalyst[i]->SetSaveAllQA(saveCatalystQA);
+    fJCatalyst[i]->SetSaveHMOhist(saveHMOQA);
     fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
     fJCatalyst[i]->SetInitializeCentralityArray();
 
@@ -163,7 +165,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(TString taskName = "JSPCMaster10h", double
       jHist[i][j] = new AliAnalysisDataContainer();     
       jHist[i][j] = mgr->CreateContainer(Form ("%s", myTask[i][j]->GetName()),
         TList::Class(), AliAnalysisManager::kOutputContainer,
-        Form("%s", AliAnalysisManager::GetCommonFileName()));
+        Form("%s:outputAnalysis", AliAnalysisManager::GetCommonFileName()));
       mgr->ConnectOutput(myTask[i][j], 1, jHist[i][j]);
     }
 

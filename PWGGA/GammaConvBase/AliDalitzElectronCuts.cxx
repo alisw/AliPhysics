@@ -366,7 +366,7 @@ Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) 
     if(fITSCut==1){//At list on hit any layer of SPD point
         if (!aliaodtrack->HasPointOnITSLayerG(0)) return kFALSE;
     }
-    if(fITSCut==2){//At list on hit any layer of SPD point
+    if(fITSCut==2){//At list  hits on in the first layer and the second one SPD
         if ((!aliaodtrack->HasPointOnITSLayerG(0))&&(!aliaodtrack->HasPointOnITSLayerG(1))) return kFALSE;
     }
     if(fITSCut==3){//At list on hit any layer of SPD point
@@ -389,6 +389,18 @@ Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) 
     }
     if(fITSCut==9){//At list on hit any layer of SPD point
         if ((!aliaodtrack->HasPointOnITSLayerG(0))||((!aliaodtrack->HasPointOnITSLayerG(1))&&(aliaodtrack->GetITSclsG()<4))) return kFALSE;
+    }
+    if(fITSCut==10){//At list on hit in the first layer or the second layer of SPD (kAny), and shared with layer one
+        if (((!aliaodtrack->HasPointOnITSLayerG(0))&&(!aliaodtrack->HasPointOnITSLayerG(1)))&&(!aliaodtrack->HasSharedPointOnITSLayerG(0))) return kFALSE;
+    }
+    if(fITSCut==11){//At list on hit in the first layer or the second layer of SPD (kAny), and shared with layer two
+        if (((!aliaodtrack->HasPointOnITSLayerG(0))&&(!aliaodtrack->HasPointOnITSLayerG(1)))&&(!aliaodtrack->HasSharedPointOnITSLayerG(1))) return kFALSE;
+    }
+    if(fITSCut==12){//Two hits one in the first layer of SPD and in the second one (kBoth) and shared with layer one.
+        if (((!aliaodtrack->HasPointOnITSLayerG(0))||(!aliaodtrack->HasPointOnITSLayerG(1)))&&(!aliaodtrack->HasSharedPointOnITSLayerG(0))) return kFALSE;
+    }
+    if(fITSCut==13){//Two hits one in the first layer of SPD and in the second one (kBoth) and shared with layer two.
+        if (((!aliaodtrack->HasPointOnITSLayerG(0))||(!aliaodtrack->HasPointOnITSLayerG(1)))&&(!aliaodtrack->HasSharedPointOnITSLayerG(1))) return kFALSE;
     }
 
     //DCAcut
@@ -1595,10 +1607,27 @@ fITSCut=clsITSCut;//Important to update AOD, if yoy modifiy this options, please
       break;
     case 8:
       fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
+      //2 hit in any layer of SPD
       break;
     case 9: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
       fesdTrackCuts->SetMinNClustersITS(4);
       break;
+    case 10:
+      fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+//       lTrack->HasSharedPointOnITSLayer(0);//ALERT Alternative way, define varible and use in the Track.
+      break; //1 hit in any layer of SPD with not shared
+    case 11:
+      fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+//       lTrack->HasSharedPointOnITSLayer(1);
+      break; //1 hit in any layer of SPD with one shared
+    case 12:
+      fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
+//       lTrack->HasSharedPointOnITSLayer(0);
+      break; //2 hit in any layer of SPD with not shared
+    case 13:
+      fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
+//       lTrack->HasSharedPointOnITSLayer(1);
+      break; //2 hit in any layer of SPD with one shared
 
     default:
       cout<<"Warning: clsITSCut not defined "<<clsITSCut<<endl;

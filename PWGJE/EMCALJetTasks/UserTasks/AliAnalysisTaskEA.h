@@ -158,10 +158,13 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   Bool_t      Run();
   Bool_t      FillHistograms();
 
+
+
   void AnalyzeParticleLevel();
   void InitEventProperties();
   void EmbeddingFromTxtFile();
   void EmbeddingFromAODFile();
+  void FindDetectorLevelTT(); //fk
   void FillResponseMatrix();
   void FillResponseMatrix2D();
   void GeneralTrackProperties();
@@ -491,6 +494,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    //TProfile *fhXsectionEMB[kTG];  //! Xsection     after  event selection in      embedding
    TH1F *fhPtHardEMB[kTG];        //! pthard
 
+   THnSparse* fhNotMatchedJetPt[fkTTbins];  //!   fk    pt, area, eta, phi and Delta phi of jets which do not have matched particle level jet
+
    Double_t fZVertexCut;                              // vertex cut in z
 
    Int_t    fnHadronTTBins;                           // number of TT bins charged hadron
@@ -565,7 +570,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 34); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 35); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }

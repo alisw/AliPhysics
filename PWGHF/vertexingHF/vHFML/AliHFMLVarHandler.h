@@ -79,7 +79,7 @@ class AliHFMLVarHandler : public TObject
         void SetFillOnlySignal(bool fillopt = true) {fFillOnlySignal = fillopt;}
         void SetFillBeautyMotherPt(bool fillopt = true) {fEnableBMotherPt = fillopt;}
         void SetFillBeautyMotherPDG(bool fillopt = true) {fEnableBMotherPDG = fillopt;}
-        void SetAddGlobalEventVariables(bool filltrkl = true) {fEnableNtracklets = filltrkl;}
+        void SetAddGlobalEventVariables(bool filltrkl = true, bool fillcent = false, std::string centestim = "V0M") {fEnableNtracklets = filltrkl; fCentPercentile = fillcent; fCentEstimator = centestim;}
 
     protected:  
         //constant variables
@@ -129,10 +129,13 @@ class AliHFMLVarHandler : public TObject
         int fPDGBMother = 0;                                           /// B-mother PDG for feed-down
         AliPIDCombined* fPIDCombined = nullptr;                        //!<! object for combined PID probability (bayesian)
         bool fEnableNtracklets = false;                                /// Flag to add Ntracklets in tree
+        bool fEnableCentPercentile = false;                            /// Flag to add centrality percentile in tree
         int fNtracklets = -1;                                          /// Number of trackles in |eta|<1
+        double fCentPercentile = -1.;                                  /// centrality percentile
+        std::string fCentEstimator = "V0M";                            /// centrality estimator
 
     /// \cond CLASSIMP
-    ClassDef(AliHFMLVarHandler, 6); ///
+    ClassDef(AliHFMLVarHandler, 7); ///
     /// \endcond
 };
 #endif

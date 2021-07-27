@@ -171,7 +171,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fQAList->Add(fHist_phi.GenerateHist("phi"));
 
     fHist_itsFoundClusters.AddAxis("itsFoundClusters", "# clusters ITS", 7, -0.5, 6.5);
-    fQAList->Add(fHist_itsFoundClusters.GenerateHist("its-foundClusters"));
+    fQAList->Add(fHist_itsFoundClusters.GenerateHist("itsFoundClusters"));
 
     fHist_itsHits.AddAxis("itsHits", "layer ITS", 6, 0.5, 6.5);
     fQAList->Add(fHist_itsHits.GenerateHist("itsHits"));
@@ -179,17 +179,17 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_itsChi2PerCluster.AddAxis("itsChi2PerCluster", "chi2 per cluster ITS", 100, 0, 50);
     fQAList->Add(fHist_itsChi2PerCluster.GenerateHist("itsChi2PerCluster"));
 
-    fHist_tpcFindableClusters.AddAxis("findableClustersTPC", "# findable clusters TPC", 81, 79.5, 160.5);
+    fHist_tpcFindableClusters.AddAxis("tpcFindableClusters", "# findable clusters TPC", 81, 79.5, 160.5);
     fQAList->Add(fHist_tpcFindableClusters.GenerateHist("tpcFindableClusters"));
 
     fHist_tpcFoundClusters.AddAxis("foundClustersTPC", "# found clusters TPC", 81, 79.5, 160.5);
     fQAList->Add(fHist_tpcFoundClusters.GenerateHist("tpcFoundClusters"));
 
-    fHist_tpcCrossedRows.AddAxis("crossedRowsTPC", "# crossed rows TPC", 81, 79.5, 160.5);
+    fHist_tpcCrossedRows.AddAxis("tpcCrossedRows", "# crossed rows TPC", 81, 79.5, 160.5);
     fQAList->Add(fHist_tpcCrossedRows.GenerateHist("tpcCrossedRows"));
 
-    fHist_tpcCrossedRowsOverFindableClusters.AddAxis("crossedRowsOverFindableTPC", "crossed rows / findable clusters TPC", 60, 0.7, 1.3);
-    fQAList->Add(fHist_tpcCrossedRowsOverFindableClusters.GenerateHist("tpcCrossedRowsOverFindable"));
+    fHist_tpcCrossedRowsOverFindableClusters.AddAxis("tpcCrossedRowsOverFindableClusters", "crossed rows / findable clusters TPC", 60, 0.7, 1.3);
+    fQAList->Add(fHist_tpcCrossedRowsOverFindableClusters.GenerateHist("tpcCrossedRowsOverFindableClusters"));
 
     fHist_tpcFractionSharedClusters.AddAxis("tpcFractionSharedClusters", "fraction shared clusters TPC", 100, 0., 1.);
     fQAList->Add(fHist_tpcFractionSharedClusters.GenerateHist("tpcFractionSharedClusters"));
