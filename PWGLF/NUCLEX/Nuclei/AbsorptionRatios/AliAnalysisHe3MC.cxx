@@ -1290,7 +1290,7 @@ void AliAnalysisHe3MC::FillNtuple(TNtuple* nt, AliAODMCParticle* part, AliAODEve
 				vars[12] = track->Chi2perNDF();
 				vars[13] = track->GetITSchi2();
 				vars[14] = track->GetTPCClusterInfo(2, 1);
-				vars[16] = part->GetLabel();
+				vars[15] = part->GetLabel();
 				nt->Fill(vars);
 		}
 }
