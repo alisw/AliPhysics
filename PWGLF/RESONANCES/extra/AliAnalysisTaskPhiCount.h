@@ -44,11 +44,13 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        SetChi2ITScluster           ( Float_t   Chi2ITScluster )    { kChi2ITScluster = Chi2ITScluster; };
     void                        SetNSigmaPtDepXYDCA         ( Float_t   NSigmaPtDepXYDCA )  { kNSigmaPtDepXYDCA = NSigmaPtDepXYDCA; };
     void                        SetChi2TPCGlobal            ( Float_t   Chi2TPCGlobal )     { kChi2TPCGlobal = Chi2TPCGlobal; };
-    void                        SetkSgTPC_Alone             ( Float_t   kTPCSigma )         { kSgTPC_Alone = kTPCSigma; };
-    void                        SetkSgTPC_TOFVt             ( Float_t   kTPCSigma )         { kSgTPC_TOFVt = kTPCSigma; };
-    void                        SetkSgTOF_Veto              ( Float_t   kTOFSigma )         { kSgTOF_Veto = kTOFSigma; };
-    void                        SetfRunName                 ( TString   kRunName )          { fRunName = kRunName; };
-    void                        fSetEventCountLabels        ( TH1D * fEvCount );
+    void                        SetkSgTPC_Alone             ( Float_t   TPCSigma )          { kSgTPC_Alone = TPCSigma; };
+    void                        SetkSgTPC_TOFVt             ( Float_t   TPCSigma )          { kSgTPC_TOFVt = TPCSigma; };
+    void                        SetkSgTOF_Veto              ( Float_t   TOFSigma )          { kSgTOF_Veto = TOFSigma; };
+    void                        SetfRunName                 ( TString   RunName )           { fRunName = RunName; };
+    void                        SetkTriggerMask             ( ULong64_t TriggerMask )       { kTriggerMask = TriggerMask; };
+    void                        AddkTriggerMask             ( ULong64_t TriggerMask )       { kTriggerMask += TriggerMask; };
+    void                        fSetEventCountLabels        ( TH1D *    fEvCount );
     Bool_t                      GetMCFlag                   ( )                             { return kMCbool; };
     Bool_t                      GetPhiFlag                  ( )                             { return kPhibool; };
     Bool_t                      GetKaonFlag                 ( )                             { return kKaonbool; };
@@ -76,6 +78,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Float_t                     kChi2TPCGlobal;             //  Maximum Chi2 per TPC Global
     Float_t                     kChi2ITScluster;            //  Maximum Chi2 per ITS cluster
     TString                     fRunName;                   //  MultiRun name
+    ULong64_t                   kTriggerMask;               //  TriggerMask
     //
     //>->->->->->->->->->->->->->->->->->->->->->->->->->-> QC & Selection
     //
@@ -283,6 +286,18 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Bool_t                    fIsCandidateTruPhi          ( AliAODMCParticle* piKaon, AliAODMCParticle* pjKaon );
     //
     //>->->->->->->->->->->->->->->->->->->->->->->->->->-> Class Definition
+    //
+    enum    TRU_EvMask {
+        kTRU_NOTRG      =   BIT(0),
+        kTRU_INELGT0    =   BIT(1),
+        kTRU_NOSPDVTX   =   BIT(2),
+        kTRU_TRKSPDMM   =   BIT(3),
+        kTRU_VTXCUT     =   BIT(4),
+        kTRU_HAST10VTX  =   BIT(5),
+    };
+    enum    DAT_EvMask {
+        kDAT_INELGT0    =   BIT(0)
+    };
     //
     ClassDef(AliAnalysisTaskPhiCount, 1);
 };
