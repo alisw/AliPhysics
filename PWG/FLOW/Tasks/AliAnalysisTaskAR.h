@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 20.07.2021
+ * Last Modified Date: 27.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -143,7 +143,35 @@ public:
 
   // setters for QA histograms
   void SetFillQAHistograms(Bool_t option) { fFillQAHistograms = option; }
-
+  // generic setter for centrality correlation QA histogram binning
+  void SetCenCorQAHistogramBinning(Int_t index, Int_t xnbins,
+                                   Double_t xlowerEdge, Double_t xupperEdge,
+                                   Int_t ynbins, Double_t ylowerEdge,
+                                   Double_t yupperEdge) {
+    if (index > LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetCenCorQAHistogramBinning",
+            "Running out of bounds in SetCenCorQAHistogramBinning");
+    }
+    this->fCenCorQAHistogramBins[index][kBIN] = xnbins;
+    this->fCenCorQAHistogramBins[index][kLEDGE] = xlowerEdge;
+    this->fCenCorQAHistogramBins[index][kUEDGE] = xupperEdge;
+    this->fCenCorQAHistogramBins[index][kBIN + LAST_EBINS] = ynbins;
+    this->fCenCorQAHistogramBins[index][kLEDGE + LAST_EBINS] = ylowerEdge;
+    this->fCenCorQAHistogramBins[index][kUEDGE + LAST_EBINS] = yupperEdge;
+  }
+  // generic setter for self correlation QA histogram binning
+  void SetSelfCorQAHistogramBinning(kTrack Track, Int_t nbins,
+                                    Double_t lowerEdge, Double_t upperEdge) {
+    if (Track > LAST_ETRACK) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetSelfCorQAHistogramBinning",
+            "Running out of bounds in SetSelfCorQAHistogramBinning");
+    }
+    this->fSelfCorQAHistogramBins[Track][kBIN] = nbins;
+    this->fSelfCorQAHistogramBins[Track][kLEDGE] = lowerEdge;
+    this->fSelfCorQAHistogramBins[Track][kUEDGE] = upperEdge;
+  }
   // generic setter for track control histogram binning
   void SetTrackControlHistogramBinning(kTrack Track, Int_t nbins,
                                        Double_t lowerEdge, Double_t upperEdge) {
