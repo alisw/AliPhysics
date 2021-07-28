@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 20.07.2021
+ * Last Modified Date: 28.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -451,6 +451,7 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
       {"fTrackControlHistograms[kPT]", "p_{T}", "p_{T}", ""},
       {"fTrackControlHistograms[kPHI]", "#varphi", "#varphi", ""},
       {"fTrackControlHistograms[kETA]", "#eta", "#eta", ""},
+      {"fTrackControlHistograms[kCHARGE]", "Charge", "Q", ""},
       {"fTrackControlHistograms[kTPCNCLS]", "Number of clusters in TPC", ""},
       {"fTrackControlHistograms[kITSNCLS]", "Number of clusters in ITS", ""},
       {"fTrackControlHistograms[kCHI2PERNDF]", "CHI2PERNDF of track", "", ""},
@@ -478,6 +479,7 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
       {100., 0., 10.},            // kPT
       {360., 0., TMath::TwoPi()}, // kPHI
       {200., -2., 2.},            // kETA
+      {7., -3.5, 3.5},            // kCHARGE
       {160., 0., 160.},           // kTPCNCLS
       {1000., 0., 1000.},         // kITSNCLS
       {100., 0., 10.},            // kCHI2PERNDF
@@ -504,6 +506,9 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
   // name of event control histograms
   TString EventControlHistogramNames[LAST_EEVENT][LAST_ENAME] = {
       // NAME, TITLE, XAXIS, YAXIS
+      {"fEventControlHistograms[kX]", "Primary vertex X", "X", ""},
+      {"fEventControlHistograms[kY]", "Primary vertex Y", "Y", ""},
+      {"fEventControlHistograms[kZ]", "Primary vertex Z", "Z", ""},
       {"fEventControlHistograms[kCEN]", "centrality", "Centrality Percentile",
        ""},
       {"fEventControlHistograms[kMUL]", "multiplicity", "M", ""},
@@ -527,6 +532,9 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
   // default bins for event control histograms
   Double_t BinsEventControlHistogramDefaults[LAST_EEVENT][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
+      {40., -20., 20.},   // kX
+      {40., -20., 20.},   // kY
+      {40., -20., 20.},   // kZ
       {10., 0., 100},     // kCEN
       {200., 0., 20000.}, // kMUL
       {100., 0., 5000.},  // kNCONTRIB
@@ -565,6 +573,9 @@ void AliAnalysisTaskAR::InitializeArraysForCuts() {
   // default event cuts
   Double_t EventCutDefaults[LAST_EEVENT][LAST_EMINMAX]{
       // MIN MAX
+      {-20., 20.}, // kX
+      {-20., 20.}, // kY
+      {-20., 20.}, // kZ
       {0., 100.},  // kCEN
       {0., 20000}, // kMUL
       {0., 1e6},   // kNCONTRIB
@@ -573,20 +584,6 @@ void AliAnalysisTaskAR::InitializeArraysForCuts() {
   for (int var = 0; var < LAST_EEVENT; ++var) {
     for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
       fEventCuts[var][mm] = EventCutDefaults[var][mm];
-    }
-  }
-
-  // default primary vertex cuts
-  Double_t PrimaryVertexCutDefaults[LAST_EXYZ][LAST_EMINMAX] = {
-      // MIN MAX
-      {-10., 10.}, // X
-      {-10., 10.}, // Y
-      {-10., 10.}, // Z
-  };
-  // initialize array for track cuts
-  for (int xyz = 0; xyz < LAST_EXYZ; ++xyz) {
-    for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
-      fPrimaryVertexCuts[xyz][mm] = PrimaryVertexCutDefaults[xyz][mm];
     }
   }
 }
@@ -1132,6 +1129,9 @@ void AliAnalysisTaskAR::FillEventControlHistograms(kBeforeAfter BA,
   fEventControlHistograms[kCEN][BA]->Fill(centralityPercentile);
   fEventControlHistograms[kNCONTRIB][BA]->Fill(
       PrimaryVertex->GetNContributors());
+  fEventControlHistograms[kX][BA]->Fill(PrimaryVertex->GetX());
+  fEventControlHistograms[kY][BA]->Fill(PrimaryVertex->GetY());
+  fEventControlHistograms[kZ][BA]->Fill(PrimaryVertex->GetZ());
 }
 
 void AliAnalysisTaskAR::FillTrackControlHistograms(kBeforeAfter BA,
@@ -1140,6 +1140,7 @@ void AliAnalysisTaskAR::FillTrackControlHistograms(kBeforeAfter BA,
   fTrackControlHistograms[kPT][BA]->Fill(track->Pt());
   fTrackControlHistograms[kPHI][BA]->Fill(track->Phi());
   fTrackControlHistograms[kETA][BA]->Fill(track->Eta());
+  fTrackControlHistograms[kCHARGE][BA]->Fill(track->Charge());
   fTrackControlHistograms[kTPCNCLS][BA]->Fill(track->GetTPCNcls());
   fTrackControlHistograms[kITSNCLS][BA]->Fill(track->GetITSNcls());
   fTrackControlHistograms[kCHI2PERNDF][BA]->Fill(track->Chi2perNDF());
@@ -1263,16 +1264,16 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
   }
 
   // cut event if primary vertex is too out of center
-  if ((PrimaryVertex->GetX() < fPrimaryVertexCuts[kX][kMIN]) ||
-      (PrimaryVertex->GetX() > fPrimaryVertexCuts[kX][kMAX])) {
+  if ((PrimaryVertex->GetX() < fEventCuts[kX][kMIN]) ||
+      (PrimaryVertex->GetX() > fEventCuts[kX][kMAX])) {
     return kFALSE;
   }
-  if ((PrimaryVertex->GetY() < fPrimaryVertexCuts[kY][kMIN]) ||
-      (PrimaryVertex->GetY() > fPrimaryVertexCuts[kY][kMAX])) {
+  if ((PrimaryVertex->GetY() < fEventCuts[kY][kMIN]) ||
+      (PrimaryVertex->GetY() > fEventCuts[kY][kMAX])) {
     return kFALSE;
   }
-  if ((PrimaryVertex->GetZ() < fPrimaryVertexCuts[kZ][kMIN]) ||
-      (PrimaryVertex->GetZ() > fPrimaryVertexCuts[kZ][kMAX])) {
+  if ((PrimaryVertex->GetZ() < fEventCuts[kZ][kMIN]) ||
+      (PrimaryVertex->GetZ() > fEventCuts[kZ][kMAX])) {
     return kFALSE;
   }
 

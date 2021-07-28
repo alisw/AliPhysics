@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 27.07.2021
+ * Last Modified Date: 28.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -39,11 +39,12 @@ const Int_t kNumberofTestFilterBit = 5;
 const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
 // enumerations
 enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
-enum kEvent { kCEN, kMUL, kNCONTRIB, LAST_EEVENT };
+enum kEvent { kX, kY, kZ, kCEN, kMUL, kNCONTRIB, LAST_EEVENT };
 enum kTrack {
   kPT,
   kPHI,
   kETA,
+  kCHARGE,
   kTPCNCLS,
   kITSNCLS,
   kCHI2PERNDF,
@@ -52,7 +53,7 @@ enum kTrack {
   LAST_ETRACK
 };
 const Int_t kKinematic = kETA + 1;
-enum kXYZ { kX, kY, kZ, LAST_EXYZ };
+// enum kXYZ { kX, kY, kZ, LAST_EXYZ };
 enum kFinalHist { kPHIAVG, LAST_EFINALHIST };
 enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
@@ -221,16 +222,7 @@ public:
     this->fEventCuts[Event][kMIN] = min;
     this->fEventCuts[Event][kMAX] = max;
   }
-  // generic setter primary vertex cut
-  void SetPrimaryVertexCuts(kXYZ xyz, Double_t min, Double_t max) {
-    if (xyz > LAST_EXYZ) {
-      std::cout << __LINE__ << ": running out of bounds" << std::endl;
-      Fatal("SetPrimaryVertexCuts",
-            "Running out of bounds in SetPrimaryVertexCuts");
-    }
-    this->fPrimaryVertexCuts[xyz][kMIN] = min;
-    this->fPrimaryVertexCuts[xyz][kMAX] = max;
-  }
+
   // filterbit
   // depends strongly on the data set
   // typical choices are 1,128,256,768
@@ -360,7 +352,6 @@ private:
   TString fCentralitySelCriterion;
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
-  Double_t fPrimaryVertexCuts[LAST_EXYZ][LAST_EMINMAX];
   Int_t fFilterbit;
   Bool_t fPrimaryOnly;
 
