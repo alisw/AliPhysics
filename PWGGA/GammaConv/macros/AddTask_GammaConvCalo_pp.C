@@ -2749,7 +2749,7 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fj3n220000","0163103100000010"); //  Exotics > 4 GeV
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fk3n220000","0163103100000010"); //  Exotics > 5 GeV
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fl3n220000","0163103100000010"); //  Exotics > 6 GeV
-  } else if (trainConfig == 2143){ // Effi on isolated clusters only,  No NCell cut
+  } else if (trainConfig == 2144){ // Effi on isolated clusters only,  No NCell cut
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fi30220000","0163103100000010"); //  Exotics > 3 GeV
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fj30220000","0163103100000010"); //  Exotics > 4 GeV
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fk30220000","0163103100000010"); //  Exotics > 5 GeV
