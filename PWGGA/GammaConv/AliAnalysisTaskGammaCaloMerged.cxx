@@ -2784,7 +2784,7 @@ Bool_t AliAnalysisTaskGammaCaloMerged::IsClusterInJet(Double_t clusEta, Double_t
       } else if(fDoOutOfJet == 4){ // in jet on away side (like case 2 but additionally particle has to be inside Jet)
         if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
           // loop over all Jets and see if particle is not only oppsoite to Jet, but also in Jet
-          for(Int_t k=0; k<fConvJetReader->GetTrueNJets(); k++){
+          for(Int_t k=0; k<NJets; k++){
             Double_t dEta = vectorJetEta.at(k)-clusEta;
             Double_t dPhi = abs(vectorJetPhi.at(k)-clusPhi);
             if(dEta > TMath::Pi()) {
