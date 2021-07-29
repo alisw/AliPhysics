@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 28.07.2021
+ * Last Modified Date: 29.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -351,7 +351,11 @@ private:
   // cuts
   TString fCentralitySelCriterion;
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
+  TH1D *fTrackCutsCounter;
+  TString fTrackCutsCounterBinNames[LAST_ETRACK];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
+  TH1D *fEventCutsCounter;
+  TString fEventCutsCounterBinNames[LAST_EEVENT];
   Int_t fFilterbit;
   Bool_t fPrimaryOnly;
 

@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 28.07.2021
+ * Last Modified Date: 29.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -64,7 +64,8 @@ ClassImp(AliAnalysisTaskAR)
       fEventControlHistogramsList(nullptr),
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
-      fCentralitySelCriterion("V0M"), fFilterbit(128), fPrimaryOnly(kFALSE),
+      fCentralitySelCriterion("V0M"), fTrackCutsCounter(nullptr),
+      fEventCutsCounter(nullptr), fFilterbit(128), fPrimaryOnly(kFALSE),
       // Final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       // flags for MC analysis
@@ -136,7 +137,8 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fEventControlHistogramsList(nullptr),
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
-      fCentralitySelCriterion("V0M"), fFilterbit(128), fPrimaryOnly(kFALSE),
+      fCentralitySelCriterion("V0M"), fTrackCutsCounter(nullptr),
+      fEventCutsCounter(nullptr), fFilterbit(128), fPrimaryOnly(kFALSE),
       // Final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       // flags for MC analysis
@@ -256,6 +258,8 @@ void AliAnalysisTaskAR::InitializeArrays() {
 void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   // initialize array of QA histograms for the correlation between centrality
   // estimators
+  // there are N(N-1)/2 such correlators, i.e. the number of elemets above the
+  // diagonal of a square matrix
   for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
        ++cen) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
@@ -358,7 +362,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       {"fFBTrackScanQAHistogram[kDCAXY]", "Filterbitscan DCA in xy", "", ""},
   };
 
-  // initialize names of QA histograms filterbit scan
+  // initialize names
   for (int track = 0; track < LAST_ETRACK; ++track) {
     for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
       for (int name = 0; name < LAST_ENAME; ++name) {
@@ -384,7 +388,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       {100., -10., 10.},          // kDCAZ
       {100, -10., 10.},           // kDCAXY
   };
-  // initialize array of bins and edges for track control histograms
+  // initialize array of bins and edges
   for (int var = 0; var < LAST_ETRACK; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
       fFBTrackScanQAHistogramBins[var][bin] =
@@ -425,9 +429,9 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
 
   Double_t SelfCorQAHistogramBins[kKinematic][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
-      {1000., -0.1, 0.1}, // kPT
-      {1000., -0.1, 0.1}, // kPHI
-      {1000., -0.1, 0.1}, // kETA
+      {100., -0.1, 0.1}, // kPT
+      {100., -0.1, 0.1}, // kPHI
+      {100., -0.1, 0.1}, // kETA
   };
   // initialize array of bins and edges for track control histograms
   for (int var = 0; var < kKinematic; ++var) {
@@ -493,6 +497,14 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
           BinsTrackControlHistogramDefaults[var][bin];
     }
   }
+  // initialize bin names of track cuts counter histogram
+  TString TrackCutsCounterBinNames[LAST_ETRACK] = {
+      "kPT",      "kPHI",        "kETA",  "kCHARGE", "kTPCNCLS",
+      "kITSNCLS", "kCHI2PERNDF", "kDCAZ", "kDCAXY",
+  };
+  for (int name = 0; name < LAST_ETRACK; name++) {
+    fTrackCutsCounterBinNames[name] = TrackCutsCounterBinNames[name];
+  }
 }
 
 void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
@@ -545,6 +557,13 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
       fEventControlHistogramBins[var][bin] =
           BinsEventControlHistogramDefaults[var][bin];
     }
+  }
+  // initialize bin names of event cuts counter histogram
+  TString EventCutsCounterBinNames[LAST_EEVENT] = {
+      "kX", "kY", "kZ", "kCEN", "kMUL", "kNCONTRIB",
+  };
+  for (int name = 0; name < LAST_EEVENT; name++) {
+    fEventCutsCounterBinNames[name] = EventCutsCounterBinNames[name];
   }
 }
 
@@ -836,8 +855,16 @@ void AliAnalysisTaskAR::BookQAHistograms() {
 void AliAnalysisTaskAR::BookControlHistograms() {
   // Book all control histograms
 
-  // fill colors
-
+  // book histogram for counting trackcuts
+  fTrackCutsCounter = new TH1D("fTrackCutsCounter", "Count track cuts",
+                               LAST_ETRACK, 0, LAST_ETRACK);
+  fTrackCutsCounter->SetStats(kFALSE);
+  fTrackCutsCounter->SetFillColor(kFillColor[kAFTER]);
+  for (int bin = 0; bin < fTrackCutsCounter->GetNbinsX(); ++bin) {
+    fTrackCutsCounter->GetXaxis()->SetBinLabel(bin + 1,
+                                               fTrackCutsCounterBinNames[bin]);
+  }
+  fTrackControlHistogramsList->Add(fTrackCutsCounter);
   // book track control histograms
   for (int var = 0; var < LAST_ETRACK; ++var) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
@@ -858,6 +885,16 @@ void AliAnalysisTaskAR::BookControlHistograms() {
     }
   }
 
+  // book histogram for counting event cuts
+  fEventCutsCounter = new TH1D("fEventCutsCounter", "Count track cuts",
+                               LAST_EEVENT, 0, LAST_EEVENT);
+  fEventCutsCounter->SetStats(kFALSE);
+  fEventCutsCounter->SetFillColor(kFillColor[kAFTER]);
+  for (int bin = 0; bin < fEventCutsCounter->GetNbinsX(); ++bin) {
+    fEventCutsCounter->GetXaxis()->SetBinLabel(bin + 1,
+                                               fEventCutsCounterBinNames[bin]);
+  }
+  fEventControlHistogramsList->Add(fEventCutsCounter);
   // book event control histograms
   for (int var = 0; var < LAST_EEVENT; ++var) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
@@ -1236,6 +1273,9 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
   // AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
   // get object for determining centrality
 
+  // return flag at the event, if one cut is not passed, set it to false
+  Bool_t Flag = kTRUE;
+
   // cast into AOD event
   AliAODEvent *aAOD = dynamic_cast<AliAODEvent *>(ave);
   if (!aAOD) {
@@ -1254,7 +1294,8 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
   // cut event if it is not within the centrality percentile
   if ((MultiplicityPercentile < fEventCuts[kCEN][kMIN]) ||
       (MultiplicityPercentile > fEventCuts[kCEN][kMAX])) {
-    return kFALSE;
+    fEventCutsCounter->Fill(kCEN + 0.5);
+    Flag = kFALSE;
   }
 
   // Get primary vertex
@@ -1266,80 +1307,96 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
   // cut event if primary vertex is too out of center
   if ((PrimaryVertex->GetX() < fEventCuts[kX][kMIN]) ||
       (PrimaryVertex->GetX() > fEventCuts[kX][kMAX])) {
-    return kFALSE;
+    fEventCutsCounter->Fill(kX + 0.5);
+    Flag = kFALSE;
   }
   if ((PrimaryVertex->GetY() < fEventCuts[kY][kMIN]) ||
       (PrimaryVertex->GetY() > fEventCuts[kY][kMAX])) {
-    return kFALSE;
+    fEventCutsCounter->Fill(kY + 0.5);
+    Flag = kFALSE;
   }
   if ((PrimaryVertex->GetZ() < fEventCuts[kZ][kMIN]) ||
       (PrimaryVertex->GetZ() > fEventCuts[kZ][kMAX])) {
-    return kFALSE;
+    fEventCutsCounter->Fill(kZ + 0.5);
+    Flag = kFALSE;
   }
 
   // cut on multiplicity
   if ((aAOD->GetNumberOfTracks() < fEventCuts[kMUL][kMIN]) ||
       (aAOD->GetNumberOfTracks() > fEventCuts[kMUL][kMAX])) {
-    return kFALSE;
+    fEventCutsCounter->Fill(kMUL + 0.5);
+    Flag = kFALSE;
   }
 
   // cut on numbers of contriubters to the vertex
   if ((PrimaryVertex->GetNContributors() < fEventCuts[kNCONTRIB][kMIN]) ||
       (PrimaryVertex->GetNContributors() > fEventCuts[kNCONTRIB][kMAX])) {
-    return kFALSE;
+    fEventCutsCounter->Fill(kNCONTRIB + 0.5);
+    Flag = kFALSE;
   }
 
-  return kTRUE;
+  return Flag;
 }
 
 Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliAODTrack *aTrack) {
   // check if current track survives track cut
 
+  // return flag at the end, if one cut fails, set it to false
+  Bool_t Flag = kTRUE;
+
   // if set, cut all non-primary particles away
   if (fPrimaryOnly) {
     if (aTrack->GetType() != AliAODTrack::kPrimary) {
-      return kFALSE;
+      Flag = kFALSE;
     }
   }
   // cut PT
   if ((aTrack->Pt() < fTrackCuts[kPT][kMIN]) ||
       (aTrack->Pt() > fTrackCuts[kPT][kMAX])) {
-    return kFALSE;
+    fTrackCutsCounter->Fill(kPT + 0.5);
+    Flag = kFALSE;
   }
   // cut PHI
   if ((aTrack->Phi() < fTrackCuts[kPHI][kMIN]) ||
       (aTrack->Phi() > fTrackCuts[kPHI][kMAX])) {
-    return kFALSE;
+    fTrackCutsCounter->Fill(kPHI + 0.5);
+    Flag = kFALSE;
   }
   // cut ETA
   if ((aTrack->Eta() < fTrackCuts[kETA][kMIN]) ||
       (aTrack->Eta() > fTrackCuts[kETA][kMAX])) {
-    return kFALSE;
+    fTrackCutsCounter->Fill(kETA + 0.5);
+    Flag = kFALSE;
   }
   // cut on number of clusters in the TPC
   if ((aTrack->GetTPCNcls() < fTrackCuts[kTPCNCLS][kMIN]) ||
       (aTrack->GetTPCNcls() > fTrackCuts[kTPCNCLS][kMAX])) {
-    return kFALSE;
+    fTrackCutsCounter->Fill(kTPCNCLS + 0.5);
+    Flag = kFALSE;
   }
   // cut on number of clusters in the ITS
   if ((aTrack->GetITSNcls() < fTrackCuts[kITSNCLS][kMIN]) ||
       (aTrack->GetITSNcls() > fTrackCuts[kITSNCLS][kMAX])) {
-    return kFALSE;
+    fTrackCutsCounter->Fill(kITSNCLS + 0.5);
+    Flag = kFALSE;
   }
   // cut on chi2 / NDF of the track fit
   if ((aTrack->Chi2perNDF() < fTrackCuts[kCHI2PERNDF][kMIN]) ||
       (aTrack->Chi2perNDF() > fTrackCuts[kCHI2PERNDF][kMAX])) {
-    return kFALSE;
+    fTrackCutsCounter->Fill(kCHI2PERNDF + 0.5);
+    Flag = kFALSE;
   }
   // cut DCA in z direction
   if ((aTrack->ZAtDCA() < fTrackCuts[kDCAZ][kMIN]) ||
       (aTrack->ZAtDCA() > fTrackCuts[kDCAZ][kMAX])) {
-    return kFALSE;
+    fTrackCutsCounter->Fill(kDCAZ + 0.5);
+    Flag = kFALSE;
   }
   // cut DCA in xy plane
   if ((aTrack->DCA() < fTrackCuts[kDCAXY][kMIN]) ||
       (aTrack->DCA() > fTrackCuts[kDCAXY][kMAX])) {
-    return kFALSE;
+    fTrackCutsCounter->Fill(kDCAXY + 0.5);
+    Flag = kFALSE;
   }
 
   // cut with filtertbit
@@ -1350,10 +1407,9 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliAODTrack *aTrack) {
   // the filterbits can change from run to run
   // fill control histograms
   if (!aTrack->TestFilterBit(fFilterbit)) {
-    return kFALSE;
+    Flag = kFALSE;
   }
-
-  return kTRUE;
+  return Flag;
 }
 
 void AliAnalysisTaskAR::MCPdfSymmetryPlanesSetup() {
