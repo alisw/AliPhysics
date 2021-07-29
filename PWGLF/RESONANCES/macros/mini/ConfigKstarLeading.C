@@ -65,7 +65,7 @@ Bool_t ConfigKstarLeading(
         out->SetMotherMass(motherMass[i]);
 
         out->AddAxis(imID, 100, 0.75, 1.25);
-        out->AddAxis(ptID, 1, 2., 10.);
+        out->AddAxis(ptID, 4, 2., 10.);
         if(!isPP ) out->AddAxis(multID,5,0.,50.);
         else out->AddAxis(multID, 10, 0., 100.); 
 
