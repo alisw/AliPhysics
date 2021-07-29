@@ -40,7 +40,7 @@ const Int_t gCentralMultiplicity = 1; // multiplicities defined centrally, e.g. 
 const Int_t gWeights = 3; // phi, pt, eta
 const Int_t gQAAnomalousEvents = 1; // |vertex| = 0; 
 const Int_t gQASelfCorrelations = 3; // phi, pt, eta
-const Int_t gQAEventCutCounter = 21; // see TString secc[gQAEventCutCounter] in .cxx
+const Int_t gQAEventCutCounter = 22; // see TString secc[gQAEventCutCounter] in .cxx
 
 // enums:
 enum eBins {nBins,min,max};
@@ -487,7 +487,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fUseCentralityWeights[gCentralityEstimators]; // use centrality weights [V0M, SPDTracklets, CL0, CL1]
   TH1D *fCentralityWeightsHist[gCentralityEstimators]; // histograms holding centrality weights [V0M, SPDTracklets, CL0, CL1]
 
-  // 6) Correlations:
+  // 7) Correlations:
   TList *fCorrelationsList;            // list to hold all correlations objects
   TProfile *fCorrelationsFlagsPro;     // profile to hold all flags for correlations
   Bool_t fCalculateCorrelations;       // calculate and store correlations
@@ -524,7 +524,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,7);
+  ClassDef(AliAnalysisTaskMuPa,8);
 
 };
 
