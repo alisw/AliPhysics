@@ -352,6 +352,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       {"fFBTrackScanQAHistogram[kPT]", "Filterbitscan p_{T}", "p_{t}", ""},
       {"fFBTrackScanQAHistogram[kPHI]", "Filterbitscan #varphi", "#varphi", ""},
       {"fFBTrackScanQAHistogram[kETA]", "Filterbitscan #eta", "#eta", ""},
+      {"fFBTrackScanQAHistogram[kCHARGE]", "Filterbitscan Charge", "Q", ""},
       {"fFBTrackScanQAHistogram[kTPCNCLS]",
        "Filterbitscan number of TPC clusters", "", ""},
       {"fFBTrackScanQAHistogram[kITSNCLS]",
@@ -382,8 +383,9 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       {100., 0., 10.},            // kPT
       {360., 0., TMath::TwoPi()}, // kPHI
       {200., -2., 2.},            // kETA
+      {5., -2.5, 2.5},            // kCHARGE
       {160., 0., 160.},           // kTPCNCLS
-      {1000., 0., 1000.},         // kITSNCLS
+      {10., 0., 10.},             // kITSNCLS
       {100., 0., 10.},            // kCHI2PERNDF
       {100., -10., 10.},          // kDCAZ
       {100, -10., 10.},           // kDCAXY
@@ -1255,6 +1257,7 @@ void AliAnalysisTaskAR::FillFBScanQAHistograms(AliAODTrack *track) {
       fFBTrackScanQAHistograms[kPT][fb]->Fill(track->Pt());
       fFBTrackScanQAHistograms[kPHI][fb]->Fill(track->Phi());
       fFBTrackScanQAHistograms[kETA][fb]->Fill(track->Eta());
+      fFBTrackScanQAHistograms[kCHARGE][fb]->Fill(track->Charge());
       fFBTrackScanQAHistograms[kTPCNCLS][fb]->Fill(track->GetTPCNcls());
       fFBTrackScanQAHistograms[kITSNCLS][fb]->Fill(track->GetITSNcls());
       fFBTrackScanQAHistograms[kCHI2PERNDF][fb]->Fill(track->Chi2perNDF());
