@@ -122,9 +122,11 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
 
     //Own functions for data extraction
     void GetClusterReadout(AliVCluster* cluster, AliVEvent* event, Float_t cellarray[50][50]);
+    void GetClusterTime(AliVCluster* cluster, AliVEvent* event);
+
     void ResetBuffer();
 
-    
+
   protected:
     AliV0ReaderV1*          fV0Reader;                                          // basic photon Selection Task
     TString                 fV0ReaderName;
@@ -337,7 +339,7 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
     Bool_t                  fMergedClusterTreePartIsPrimary;			   //! is mother particle primary
     Short_t                 fMergedClusterTreePartPID;	 			   //! mother particle PID
     Float_t                 fMergedClusterTreePartPt;                                //! mother particle pT
-    Float_t                 fMergedClusterTreePartE;                               //! mother particle E 
+    Float_t                 fMergedClusterTreePartE;                               //! mother particle E
     Float_t                 fMergedClusterTreePartEta;				   //! mother particle eta
     Float_t                 fMergedClusterTreePartPhi;  				   //! mother particle phi
     Float_t                 fMergedClusterTreeClusterM02;                                 //! cluster m02
@@ -345,8 +347,14 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
 
 
 
+    TTree**                 tClusterTiming;
+    UChar_t                 MaxClusterN;
+    UChar_t*                fRow;
+    UChar_t*                fCol;
+    Float_t*                fTiming;
+    Float_t*                fEnergy;
 
-    
+
     // additional variables
     TRandom3                fRandom;                                            // random
     Int_t                   fnCuts;                                             // number of cuts to be analysed in parallel
@@ -374,7 +382,7 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMergedML(const AliAnalysisTaskGammaCaloMergedML&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMergedML &operator=(const AliAnalysisTaskGammaCaloMergedML&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMergedML, 40);
+    ClassDef(AliAnalysisTaskGammaCaloMergedML, 42);
 };
 
 #endif

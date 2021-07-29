@@ -1525,7 +1525,7 @@ void AddTask_GammaCaloMergedML_pp(
   } else if (trainConfig == 1541){
     cuts.AddCutMergedCalo("0008e113","411790106fe92000000","411790106fe92200001","0163300000000000"); // EG2+DG2
     cuts.AddCutMergedCalo("0008d113","411790106fe92200000","411790106fe92200001","0163300000000000"); // EG1+DG1
-    
+
     // systematics pp 8 TeV no TM
     // MB configs
   } else if (trainConfig == 3900){ // std
@@ -2051,7 +2051,13 @@ void AddTask_GammaCaloMergedML_pp(
       nContainer++;
     }
   }
-  
-  
+
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    if(isMC>0){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s_Cluster",(cuts.GetEventCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetClusterMergedCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaCaloMergedML_%i.root",trainConfig)) );
+      nContainer++;
+    }
+  }
+
   return;
 }
