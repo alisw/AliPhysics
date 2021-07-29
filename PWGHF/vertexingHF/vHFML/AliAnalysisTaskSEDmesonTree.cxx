@@ -250,7 +250,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Charm3Prong"));
                     break;
                 case kDstartoD0pi:
-                    arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("CascadesHF"));
+                    arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Dstar"));
                 break;
             }
         }
@@ -260,20 +260,20 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
         switch (fDecChannel)
         {
             case kD0toKpi:
-                arrayCand = dynamic_cast<TClonesArray *>(fAOD->FindObject("Charm2Prong"));
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Charm2Prong"));
                 break;
             case kDplustoKpipi:
-                arrayCand = dynamic_cast<TClonesArray *>(fAOD->FindObject("Charm3Prong"));
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD-->GetList()>FindObject("Charm3Prong"));
                 break;
             case kDstartoD0pi:
-                arrayCand = dynamic_cast<TClonesArray *>(fAOD->FindObject("CascadesHF"));
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Dstar"));
             break;
         }
     }
 
     if (!fAOD || !arrayCand)
     {
-        AliWarning("Candidate branch not found!\n");
+        AliError("Candidate branch not found!\n");
         PostData(1, fOutput);
         return;
     }
