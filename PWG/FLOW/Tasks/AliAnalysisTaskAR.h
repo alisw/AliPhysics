@@ -239,13 +239,13 @@ public:
     this->fSeed = seed;
     this->fUseCustomSeed = kTRUE;
   }
-  void SetMCFlowHarmonics(TArrayD *array) {
-    if (array->GetSize() > kMaxHarmonic) {
+  void SetMCFlowHarmonics(std::vector<Double_t> FlowHarmonics) {
+    if (FlowHarmonics.size() > kMaxHarmonic) {
       std::cout << __LINE__ << ": Array exceeds maximum allowed harmonic"
                 << std::endl;
       Fatal("SetFlowHarmonics", "Too many harmonics");
     }
-    fMCFlowHarmonics = array;
+    fMCFlowHarmonics = FlowHarmonics;
   }
   void SetMCPdfRange(Double_t min, Double_t max) {
     fMCPdfRange[kMIN] = min;
@@ -381,7 +381,7 @@ private:
   TF1 *fMCPdf;
   TString fMCPdfName;
   Double_t fMCPdfRange[LAST_EMINMAX];
-  TArrayD *fMCFlowHarmonics;
+  std::vector<Double_t> fMCFlowHarmonics;
   Bool_t fMCNumberOfParticlesPerEventFluctuations;
   Int_t fMCNumberOfParticlesPerEvent;
   Int_t fMCNumberOfParticlesPerEventRange[LAST_EMINMAX];

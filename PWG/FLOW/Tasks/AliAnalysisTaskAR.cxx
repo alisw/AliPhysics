@@ -72,8 +72,7 @@ ClassImp(AliAnalysisTaskAR)
       fMCAnalysisList(nullptr), fMCAnalysisListName("MCAnalysis"),
       fMCAnalaysis(kFALSE), fMCClosure(kFALSE), fSeed(0),
       fUseCustomSeed(kFALSE), fMCPdf(nullptr), fMCPdfName("pdf"),
-      fMCFlowHarmonics(nullptr),
-      fMCNumberOfParticlesPerEventFluctuations(kFALSE),
+      fMCFlowHarmonics({}), fMCNumberOfParticlesPerEventFluctuations(kFALSE),
       fMCNumberOfParticlesPerEvent(500),
       // qvectors
       fQvectorList(nullptr), fPhi({}), fWeights({}),
@@ -145,8 +144,7 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fMCAnalysisList(nullptr), fMCAnalysisListName("MCAnalysis"),
       fMCAnalaysis(kFALSE), fMCClosure(kFALSE), fSeed(0),
       fUseCustomSeed(kFALSE), fMCPdf(nullptr), fMCPdfName("pdf"),
-      fMCFlowHarmonics(nullptr),
-      fMCNumberOfParticlesPerEventFluctuations(kFALSE),
+      fMCFlowHarmonics({}), fMCNumberOfParticlesPerEventFluctuations(kFALSE),
       fMCNumberOfParticlesPerEvent(500),
       // qvectors
       fQvectorList(nullptr), fPhi({}), fWeights({}),
@@ -236,7 +234,7 @@ void AliAnalysisTaskAR::Terminate(Option_t *) {
     for (auto V : fCorrelators) {
       theoryValue = 1.;
       for (auto i : V) {
-        theoryValue *= fMCFlowHarmonics->GetAt(abs(i) - 1);
+        theoryValue *= fMCFlowHarmonics.at(abs(i) - 1);
       }
       fFinalResultProfiles[kHARTHEO]->Fill(V.size() - 1.5, theoryValue);
     }
@@ -960,7 +958,7 @@ void AliAnalysisTaskAR::BookMCObjects() {
   // book objects need for MC analysis
 
   // protect at some point if fMCFlowHarmonics is empty
-  if (!fMCFlowHarmonics) {
+  if (fMCFlowHarmonics.empty()) {
     std::cout << __LINE__ << ": no flow harmonics defined" << std::endl;
     Fatal("BookMCObjects", "Invalid Pointer");
   }
@@ -972,9 +970,10 @@ void AliAnalysisTaskAR::BookMCObjects() {
 
   // generate formula
   TString Formula = "1+";
-  for (int i = 1; i <= fMCFlowHarmonics->GetSize(); ++i) {
-    Formula += Form("2*[%d]*TMath::Cos(%d*(x-[%d]))", 2 * i - 1, i, 2 * i);
-    if (i < fMCFlowHarmonics->GetSize()) {
+  for (std::size_t i = 1; i <= fMCFlowHarmonics.size(); ++i) {
+    Formula += Form("2*[%d]*TMath::Cos(%d*(x-[%d]))", int(2 * i - 1), int(i),
+                    int(2 * i));
+    if (i < fMCFlowHarmonics.size()) {
       Formula += "+";
     }
   }
@@ -985,8 +984,8 @@ void AliAnalysisTaskAR::BookMCObjects() {
 
   // set flow harmonics
   // flow harmonics are parameters with odd index
-  for (int i = 0; i < fMCFlowHarmonics->GetSize(); ++i) {
-    fMCPdf->SetParameter(2 * i + 1, fMCFlowHarmonics->GetAt(i));
+  for (std::size_t i = 0; i < fMCFlowHarmonics.size(); ++i) {
+    fMCPdf->SetParameter(2 * i + 1, fMCFlowHarmonics.at(i));
   }
 }
 
@@ -1419,7 +1418,7 @@ void AliAnalysisTaskAR::MCPdfSymmetryPlanesSetup() {
   // set symmetry planes randomly on a event by event basis
   // Double_t Psi = 0;
   Double_t Psi = gRandom->Uniform(0., TMath::TwoPi());
-  for (int i = 0; i < fMCFlowHarmonics->GetSize(); ++i) {
+  for (std::size_t i = 0; i < fMCFlowHarmonics.size(); ++i) {
     fMCPdf->SetParameter(2 * (i + 1), Psi);
   }
 }
