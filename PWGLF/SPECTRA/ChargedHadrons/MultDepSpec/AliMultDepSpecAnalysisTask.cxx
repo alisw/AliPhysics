@@ -425,6 +425,11 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       AliError("fMCEvent not available\n");
       return false;
     }
+    if(fIsNewReco && AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(fMCEvent)) {
+      // reject all the events with simulated in-bunch pileup
+      return false;
+    }
+
     fMCVtxZ = fMCEvent->GetPrimaryVertex()->GetZ();
 
     if (fMCEnableDDC) {

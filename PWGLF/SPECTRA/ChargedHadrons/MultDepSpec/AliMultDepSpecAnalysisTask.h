@@ -4,13 +4,13 @@
 #define PRECISION 1e-6
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisHelpersHist.h"
+#include "AliESDtrackCuts.h"
 
 class AliMCSpectraWeights;
 class AliVTrack;
 class AliVParticle;
 class TRandom3;
 class AliEventCuts;
-class AliESDtrackCuts;
 class AliESDtrack;
 
 class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE
