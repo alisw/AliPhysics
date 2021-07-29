@@ -366,7 +366,7 @@ private:
   TH1D *fFinalResultHistograms[LAST_EFINALHIST];
   TString fFinalResultHistogramNames[LAST_EFINALHIST][LAST_ENAME];
   Double_t fFinalResultHistogramBins[LAST_EFINALHIST][LAST_EBINS];
-  // arayy holding final resutl profiles
+  // array holding final resutl profiles
   TProfile *fFinalResultProfiles[LAST_EFINALPROFILE];
   TString fFinalResultProfileNames[LAST_EFINALPROFILE][LAST_ENAME];
   Double_t fFinalResultProfileBins[LAST_EFINALPROFILE][LAST_EBINS];

@@ -921,7 +921,7 @@ void AliAnalysisTaskAR::BookFinalResultHistograms() {
 
   Color_t colorFinalResult = kBlue - 10;
 
-  // book event control histograms
+  // book final result histograms
   for (int var = 0; var < LAST_EFINALHIST; ++var) {
     fFinalResultHistograms[var] = new TH1D(
         fFinalResultHistogramNames[var][0], fFinalResultHistogramNames[var][1],
@@ -939,6 +939,7 @@ void AliAnalysisTaskAR::BookFinalResultHistograms() {
 void AliAnalysisTaskAR::BookFinalResultProfiles() {
   // Book all profiles to hold the final results
 
+  TString BinLabel = "";
   // book final result profiles
   for (int var = 0; var < LAST_EFINALPROFILE; ++var) {
     fFinalResultProfiles[var] = new TProfile(
@@ -951,6 +952,19 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
         fFinalResultProfileNames[var][2]);
     fFinalResultProfiles[var]->Sumw2();
     fFinalResultsList->Add(fFinalResultProfiles[var]);
+
+    // set bin labels
+    if (!fCorrelators.empty()) {
+      for (std::size_t bin = 0; bin < fCorrelators.size(); bin++) {
+        BinLabel = Form("#LT#LT%d#GT#GT", int(fCorrelators.at(bin).size()));
+        BinLabel += "_{";
+        for (auto Harmonic : fCorrelators.at(bin)) {
+          BinLabel += Form("%d,", Harmonic);
+        }
+        BinLabel += "}";
+        fFinalResultProfiles[var]->GetXaxis()->SetBinLabel(bin + 1, BinLabel);
+      }
+    }
   }
 }
 
