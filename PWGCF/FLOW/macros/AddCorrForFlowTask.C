@@ -9,7 +9,7 @@ AliAnalysisTaskCorrForFlow* AddCorrForFlowTask(TString name = "name", const char
     }
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":CorrForFlow";
-    TString taskName = Form("%S_%s",name.Data(),suffix);
+    TString taskName = Form("%s_%s",name.Data(),suffix);
     AliAnalysisTaskCorrForFlow* task = new AliAnalysisTaskCorrForFlow(taskName.Data());
     if(!task) return 0x0;
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
