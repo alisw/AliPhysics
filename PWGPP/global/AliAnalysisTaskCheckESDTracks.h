@@ -106,6 +106,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH1F* fHistNTracks;                //!<!  histo with N of tracks
   TH1F* fHistNTracksBackg;           //!<!  histo with N of background tracks
   TH1F* fHistNTracksEmbed;           //!<!  histo with N of embedded tracks
+  TH1F* fHistNTracksOOBPileup;       //!<!  histo with N of tracks from out of bunch pileup
   TH1F* fHistNV0Daughters;                //!<!  histo with N of V0-tracks
   TH1F* fHistNV0DaughtersBackg;           //!<!  histo with N of background V0-tracks
   TH1F* fHistNV0DaughtersEmbed;           //!<!  histo with N of embedded V0-tracks
@@ -273,7 +274,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
   Bool_t  fFillSparses;        // flag to control fill of THnSparse
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,28);
+  ClassDef(AliAnalysisTaskCheckESDTracks,29);
 };
 
 

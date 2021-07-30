@@ -57,6 +57,7 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistNV0Daughters{nullptr},
   fHistNV0DaughtersBackg{nullptr},
   fHistNV0DaughtersEmbed{nullptr},
+  fHistNTracksOOBPileup{nullptr},
   fHistCheckK0SelBackg{nullptr},
   fHistCheckK0SelEmbed{nullptr},
   fHistCheckK0SelMixed{nullptr},
@@ -234,6 +235,7 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistNTracks;
     delete fHistNTracksBackg;
     delete fHistNTracksEmbed;
+    delete fHistNTracksOOBPileup;
     delete fHistNV0Daughters;
     delete fHistNV0DaughtersBackg;
     delete fHistNV0DaughtersEmbed;
@@ -459,9 +461,11 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in ESD events ; N_{tracks}",2000,-0.5,19999.5);
   fHistNTracksBackg = new TH1F("hNTracksBackg", "Number of tracks in BKG events ; N_{tracks}",2000,-0.5,19999.5);
   fHistNTracksEmbed = new TH1F("hNTracksEmbed", "Number of tracks in Signal events ; N_{tracks}",2000,-0.5,19999.5);
+  fHistNTracksOOBPileup = new TH1F("hNTracksOOBPileup", "Number of tracks in out-of-bunch pileup events ; N_{tracks}",2000,-0.5,19999.5);
   fOutput->Add(fHistNTracks);
   fOutput->Add(fHistNTracksBackg);
   fOutput->Add(fHistNTracksEmbed);
+  fOutput->Add(fHistNTracksOOBPileup);
   fHistNV0Daughters = new TH1F("hNV0Daughters", "Number of V0-tracks in ESD events ; N_{V0-dau}",500,-0.5,4999.5);
   fHistNV0DaughtersBackg = new TH1F("hNV0DaughtersBackg", "Number of V0-tracks in BKG events ; N_{V0-dau}",500,-0.5,4999.5);
   fHistNV0DaughtersEmbed = new TH1F("hNV0DaughtersEmbed", "Number of V0-tracks in Signal events ; N_{V0-dau}",500,-0.5,4999.5);
@@ -930,6 +934,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 
   Int_t nBGtracks=0;
   Int_t nEmbeddedtracks=0;
+  Int_t nOOBPileuptracks=0;
   for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
     AliESDtrack * track = esd->GetTrack(iTrack);
     if (!track) continue;
@@ -1069,6 +1074,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       if(isBG) nBGtracks++;
       else nEmbeddedtracks++;
       AliMCParticle* mcPart=(AliMCParticle*)mcEvent->GetTrack(abstrlabel);
+      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(abstrlabel,mcEvent)) nOOBPileuptracks++;
       TParticle* part = mcEvent->Particle(abstrlabel);
       if (part){
         ptgen=part->Pt();
@@ -1313,7 +1319,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
   }
   fHistNTracksBackg->Fill(nBGtracks);
   fHistNTracksEmbed->Fill(nEmbeddedtracks);
-
+  fHistNTracksOOBPileup->Fill(nOOBPileuptracks);
 
   Int_t nv0s = esd->GetNumberOfV0s();
   Int_t nv0dau=0;
