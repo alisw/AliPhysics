@@ -1,2 +1,0 @@
-export FILESTOCHECK="voxelResTree.root alitpcdcalibres.root"
-export REMOVEROOTONERROR=""

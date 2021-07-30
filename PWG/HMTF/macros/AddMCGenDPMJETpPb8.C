@@ -1,4 +1,4 @@
-AliGenerator* AddMCGenDPMJETpPb8(Float_t e_cms = 8016)
+AliGenerator* AddMCGenDPMJETpPb8(Float_t e_cms = 8160.)
 {
   // Add Pythia generator: pt-hard bin or min bias
 
@@ -13,7 +13,7 @@ AliGenerator* AddMCGenDPMJETpPb8(Float_t e_cms = 8016)
 
   dpmjet->SetProjectile("P", 1, 1);
   dpmjet->SetTarget    ("A", 208, 82);
-  dpmjet->SetProjectileBeamEnergy(0.5 *e_cms * TMath::Sqrt(208./82.));
+  dpmjet->SetProjectileBeamEnergy(0.5 * e_cms * TMath::Sqrt(208./82.));
   dpmjet->SetImpactParameterRange(0., 20.);
 
   return dpmjet;
