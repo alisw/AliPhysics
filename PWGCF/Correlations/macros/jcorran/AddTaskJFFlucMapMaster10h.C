@@ -7,7 +7,7 @@ AliAnalysisTask *AddTaskJFFlucMapMaster10h(TString taskName="JFFlucMaster", doub
 	/// What about the correction map for the efficiency in LHC10h?
 
   //-------- JFlucWagons -------
-  const int Nsets  = 13; // number of configurations
+  const int Nsets  = 15; // number of configurations
  	AliJFFlucTask *myTask[Nsets];
 	TString configNames[Nsets] = {
 		"tpconly", 
@@ -22,7 +22,9 @@ AliAnalysisTask *AddTaskJFFlucMapMaster10h(TString taskName="JFFlucMaster", doub
 		"ntpc90",
 		"ntpc80",	// 10
 		"dcaxy1",
-		"dcaz2"
+		"dcaz2",	// 12
+		"chi03",
+		"chi35"	// 14
 	};
 
 	Int_t tpconlyCut = 128;
@@ -79,9 +81,15 @@ AliAnalysisTask *AddTaskJFFlucMapMaster10h(TString taskName="JFFlucMaster", doub
 	// s_dcaxy 1
 	iS = 11;
 	myTask[iS]->SetDCAxyCut(1);
-		// s_dcaz 2
+	// s_dcaz 2
 	iS = 12;
 	myTask[iS]->SetDCAzCut(2);
+	// s_chi2/ndf in [0.3, 4.0]
+	iS = 13;
+	myTask[iS]->SetChi2Cuts(0.3, 4.0);
+	// s_chi2/ndf in [0.1, 3.5]
+	iS = 14;
+	myTask[iS]->SetChi2Cuts(0.1, 3.5);
 
 	// Must add the tasks
 	for(int i=0;i<Nsets;i++) mgr->AddTask((AliAnalysisTask*) myTask[i]);

@@ -25,7 +25,7 @@ AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t 
     }
    
     //-------- JFlucWagons -------
-    const int Nsets  = 12; // number of configurations
+    const int Nsets  = 14; // number of configurations
  	AliJFFlucTask *myTask[Nsets];
 	TString configNames[Nsets] = {
 		"hybrid", // 0
@@ -39,7 +39,9 @@ AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t 
 		"ntpc90",	// 8
 		"ntpc80",
 		"dcaxy1",	// 10
-		"dcaz2"
+		"dcaz2",
+		"chi03",	// 12
+		"chi35"
 	};
    	Int_t hybridCut = 768;
     Int_t globalCut = 96;
@@ -102,12 +104,18 @@ AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t 
 	// s_ntpc 80
 	iS = 9;
 	myTask[iS]->SetNumTPCClusters(80);
-	// s_dcaxy 1
+	// s_dcaxy 1 cm
 	iS = 10;
 	myTask[iS]->SetDCAxyCut(1);
-		// s_dcaz 2
+		// s_dcaz 2cm
 	iS = 11;
 	myTask[iS]->SetDCAzCut(2);
+	// s_chi2/ndf in [0.3, 4.0]
+	iS = 12;
+	myTask[iS]->SetChi2Cuts(0.3, 4.0);
+	// s_chi2/ndf in [0.1, 3.5]
+	iS = 13;
+	myTask[iS]->SetChi2Cuts(0.1, 3.5);
 	
 	// Must add the tasks
 	for(int i=0;i<Nsets;i++) mgr->AddTask((AliAnalysisTask*) myTask[i]);
