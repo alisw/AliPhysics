@@ -146,7 +146,7 @@ void AddTask_GammaIsoTree(
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-
+      fEtaCut = 0.8;
       minSignalM02 = 0.1;
       maxSignalM02 = 0.5;
 
@@ -167,6 +167,7 @@ void AddTask_GammaIsoTree(
 
       minSignalM02 = 0.1;
       maxSignalM02 = 0.5;
+      fEtaCut = 0.8;
 
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
@@ -185,6 +186,7 @@ void AddTask_GammaIsoTree(
 
       minSignalM02 = 0.1;
       maxSignalM02 = 0.5;
+      fEtaCut = 0.8;
 
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;

@@ -32,7 +32,7 @@
 #endif
 
 #ifdef __AliMCSpectraWeights_DebugTiming__
-#define DebugChrono(x) std::cout << "\t" << x
+#define DebugChrono(x) std::cout << "\t AliMCSpectraWeights:Chrono::" << x
 #else
 #define DebugChrono(x)
 #endif
@@ -56,7 +56,7 @@ fstFilePublished(""), fstSavedObjName("fMCSpectraWeights"),
 fstSavedListName("AliMCWeightsTask"), fstPartTypes(0),
 fstCentralities(0), fBinsMultCent{0}, fBinsPt{0},
 fHistMCGenPrimTrackParticle(nullptr), fHistDataFractions(nullptr),
-fHistMCFractions(nullptr), fHistMCWeights(nullptr), fMCEvent(nullptr),
+fHistMCFractions(nullptr), fHistMCWeights(nullptr), fHistMCWeightsSysUp(nullptr), fHistMCWeightsSysDown(nullptr), fMCEvent(nullptr),
 fMultOrCent(0), fNPartTypes(6), fNCentralities(0),
 fbTaskStatus(AliMCSpectraWeights::TaskState::kAllEmpty),
 fFlag(AliMCSpectraWeights::SysFlag::kNominal), fUseMultiplicity(kTRUE),
@@ -78,7 +78,7 @@ fstFileMCSpectra(""), fstFilePublished(""),
 fstSavedObjName("fMCSpectraWeights"), fstSavedListName("AliMCWeightsTask"),
 fstPartTypes(), fstCentralities(), fBinsMultCent{0}, fBinsPt{0},
 fHistMCGenPrimTrackParticle(nullptr), fHistDataFractions(nullptr),
-fHistMCFractions(nullptr), fHistMCWeights(nullptr), fMCEvent(nullptr),
+fHistMCFractions(nullptr), fHistMCWeights(nullptr),  fHistMCWeightsSysUp(nullptr), fHistMCWeightsSysDown(nullptr), fMCEvent(nullptr),
 fMultOrCent(0), fNPartTypes(6), fNCentralities(0),
 fbTaskStatus(AliMCSpectraWeights::TaskState::kAllEmpty), fFlag(flag),
 fUseMultiplicity(kTRUE), fUseMBFractions(kFALSE) {
@@ -138,11 +138,21 @@ fUseMultiplicity(kTRUE), fUseMBFractions(kFALSE) {
         for (int i = 0; i < 201; ++i) {
             fBinsMultCent.push_back(i * 25);
         }
+        std::vector<std::string> cent{"MB",    "c0005", "c0510", "c0010",
+                                      "c1020", "c2040", "c4060", "c6080"};
+        fNCentralities = 8;
+        fstCentralities.clear();
+        fstCentralities = cent;
     } else if (fstCollisionSystem == "xexe") {
         fBinsMultCent.reserve(201);
         for (int i = 0; i < 201; ++i) {
             fBinsMultCent.push_back(i * 25);
         }
+        std::vector<std::string> cent{"MB",    "c0005", "c0510", "c0010",
+            "c1020", "c2040", "c4060", "c6080"};
+        fNCentralities = 8;
+        fstCentralities.clear();
+        fstCentralities = cent;
     } else {
         fBinsMultCent.reserve(101);
         for (int i = 0; i < 101; ++i) {
@@ -360,9 +370,10 @@ void AliMCSpectraWeights::InitHistos() {
     //    std::cout << "Create multiplicity binning\n";
     std::vector<float> _NchBinning{};
     if (!fUseMBFractions) {
+        int iCent = 0;
         for (auto const& cent : fstCentralities) {
             auto const _Nch =
-            AliMCSpectraWeights::GetMultTupleFromCent(std::stoi(cent));
+            AliMCSpectraWeights::GetMultTupleFromCent(iCent++);
             auto const _front = _Nch.front();
             auto const _back = _Nch.back();
             if (_NchBinning.size() < 1) {
@@ -460,6 +471,30 @@ void AliMCSpectraWeights::InitHistos() {
                                                static_cast<int>(partArrayDATA.size()) - 1,
                                                static_cast<float*>(partArrayDATA.data()));
         }
+
+        fHistMCWeightsSysUp = new TH3F(
+                                  "fHistMCWeightsSysUp",
+                                  "MC weight histogram for charged particle composition;#it{p}_{T} "
+                                  "(GeV/#it{c});multiplicity or centrality;Particle type",
+                                  static_cast<int>(fBinsPt.size()) - 1,
+                                  static_cast<float*>(fBinsPt.data()),
+                                  static_cast<int>(_NchBinning.size()) - 1,
+                                  static_cast<float*>(_NchBinning.data()),
+                                  static_cast<int>(partArrayDATA.size()) - 1,
+                                  static_cast<float*>(partArrayDATA.data()));
+
+        fHistMCWeightsSysDown = new TH3F(
+                                       "fHistMCWeightsSysDown",
+                                       "MC weight histogram for charged particle composition;#it{p}_{T} "
+                                       "(GeV/#it{c});multiplicity or centrality;Particle type",
+                                       static_cast<int>(fBinsPt.size()) - 1,
+                                       static_cast<float*>(fBinsPt.data()),
+                                       static_cast<int>(_NchBinning.size()) - 1,
+                                       static_cast<float*>(_NchBinning.data()),
+                                       static_cast<int>(partArrayDATA.size()) - 1,
+                                       static_cast<float*>(partArrayDATA.data()));
+
+
         DebugPCC("AliMCSpectraWeights: init histos systematics successful\n");
     }
 #ifdef __AliMCSpectraWeights_DebugTiming__
@@ -487,27 +522,32 @@ void AliMCSpectraWeights::LoadMeasuredFractions() {
     }
         fHistDataFractions->Reset(); // clean up for new input
     for (auto& part : fstPartTypes) {
-        //        DebugPCC("\tPart: " << part << "\n");
+        DebugPCC("\tPart: " << part << "\n");
         if (part.find("Rest") != std::string::npos ||
-            part.find("rest") != std::string::npos)
+            part.find("rest") != std::string::npos ||
+            part.find("Lambda") != std::string::npos ||
+            part.find("lambda") != std::string::npos){
+            DebugPCC("\t\t skipping " << part << "\n");
             continue; // there is no rest particles in measurement
+        }
+
         int const _iPart = GetPartTypeNumber(part);
         int iCent = 0;
         for (auto& cent : fstCentralities) {
-            //            DebugPCC("\t\tCent: " << cent << "\n");
-            // CollisionSystem:ParticleType:CentNumber:Stat/Sys:Function:FunctionVar
+            DebugPCC("\t\tCent: " << cent << "\n");
+//             CollisionSystem:ParticleType:CentNumber:Stat/Sys:Function:FunctionVar
             std::string stHistName{fstCollisionSystem};
             stHistName += part;
             stHistName += cent;
             stHistName += AliMCSpectraWeights::GetFunctionFromSysFlag(fFlag);
             stHistName += AliMCSpectraWeights::GetSysVarFromSysFlag(fFlag);
-            //            DebugPCC("\t\t\tLoading hist " << stHistName << "\n");
             if (fUseMBFractions) {
                 stHistName = fstCollisionSystem + part + std::to_string(iCent) +
                 "PublishedFractions";
                 if (fstCollisionSystem == "pp")
                     stHistName = fstCollisionSystem + part + "MB";
             }
+            DebugPCC("\t\t\tLoading hist " << stHistName << "\n");
             TH1D* hist = (TH1D*)fMeasuredFile->Get(stHistName.c_str());
             if (!hist) {
                 std::cerr << "AliMCSpectraWeights::Error: could not find "
@@ -525,19 +565,20 @@ void AliMCSpectraWeights::LoadMeasuredFractions() {
             } else
                 binEntry[1] = AliMCSpectraWeights::GetMultFromCent(cent);
             DebugPCC("\t\t\tWriting to fHistDataFractions\n");
-            DebugPCC("\t\t\t part: " << binEntry[2]
-                     << "\t mult: " << binEntry[1] << "\n");
+            DebugPCC("\t\t\t part: " << binEntry[2] << "\t mult: " << binEntry[1] << "\n");
             for (int ipt = 0; ipt < fHistDataFractions->GetNbinsX(); ++ipt) {
                 binEntry[0] = fHistDataFractions->GetXaxis()->GetBinCenter(ipt);
-                if (binEntry[0] <
-                    0.1) // pT cut; measurements start at 0.15 at best
+                if (binEntry[0] < 0.1){ // pT cut; measurements start at 0.15 at best
+                    DebugPCC("pt is smaller than 0.1\n");
                     continue;
-                //                DebugPCC("\t\t pT: " << binEntry[0]<<"\n");
+                }
+                DebugPCC("\t\t pT: " << binEntry[0]<<"\n");
                 auto const _FractionValue =
                 hist->GetBinContent(hist->FindBin(binEntry[0]));
                 DebugPCC("\t\t\t\t fraction: " << _FractionValue << "\n");
                 FillTH3WithValue(fHistDataFractions, binEntry, _FractionValue);
             }
+//            delete hist;
             ++iCent;
         }
     }
@@ -806,10 +847,9 @@ bool AliMCSpectraWeights::CalculateMCWeights() {
     for (int icent = 0; icent < fNCentralities; icent++) {
         if (fUseMBFractions && "pp" == fstCollisionSystem && icent > 0)
             continue;
-        //        DebugPCC("\t cent: " << icent << "\n");
+        DebugPCC("\t cent: " << icent << "\n");
         for (int ipart = 0; ipart < fNPartTypes; ipart++) {
-            //            DebugPCC("\t\t part: " << fstPartTypes[ipart] <<
-            //            "\n");
+        DebugPCC("\t\t part: " << fstPartTypes[ipart] <<"\n");
             for (int ipt = 0; ipt < static_cast<int>(fBinsPt.size()); ++ipt) {
                 float pt = fHistMCWeights->GetXaxis()->GetBinCenter(ipt);
                 if (pt < 0)
@@ -822,11 +862,11 @@ bool AliMCSpectraWeights::CalculateMCWeights() {
                 // static_cast<Double_t>(ipart)};
                 if (fUseMBFractions && "pp" == fstCollisionSystem)
                     binEntry[1] = 1.0;
-                //                DebugPCC("\t\t\t pT: " << binEntry[0]
-                //                                       << " mult: " <<
-                //                                       binEntry[1]
-                //                                       << " part: " <<
-                //                                       binEntry[2] << "\n");
+                DebugPCC("\t\t\t pT: " << binEntry[0]
+                                       << " mult: " <<
+                                       binEntry[1]
+                                       << " part: " <<
+                                       binEntry[2] << "\n");
 
                 auto const _iBinMC = fHistMCFractions->FindBin(
                                                                binEntry[0], binEntry[1], binEntry[2]);
@@ -846,11 +886,11 @@ bool AliMCSpectraWeights::CalculateMCWeights() {
                 if (dFractionMC != 0 && fstPartTypes[ipart] != "Rest") {
                     value = dFractionData / dFractionMC;
                 }
-                //                DebugPCC("\t\t\t fractionMC: "
-                //                         << dFractionMC << "\t fractionData: "
-                //                         << dFractionData
-                //                         << "\t weight factor: " << value
-                //                         << "\n");
+                DebugPCC("\t\t\t fractionMC: "
+                         << dFractionMC << "\t fractionData: "
+                         << dFractionData
+                         << "\t weight factor: " << value
+                         << "\n");
                 if (fDoSystematics) {
                     fHistMCWeightsSys[fFlag]->SetBinContent(_iBinWeight, value);
                     fHistMCWeightsSys[fFlag]->SetBinError(_iBinWeight, 1e-30);
@@ -869,6 +909,61 @@ bool AliMCSpectraWeights::CalculateMCWeights() {
     DebugChrono("CalculateMCWeights took " << duration << " microseconds\n");
 #endif
     return true;
+}
+
+bool AliMCSpectraWeights::CalculateSystematicUncertainties(){
+    DebugPCC("Calculating avager systematic effect\n");
+    for (auto const& cent : fstCentralities) {
+        DebugPCC("\t cent:" << cent << "\n");
+        for (auto const& part : fstPartTypes) {
+            DebugPCC("\t\t part:" << part << "\n");
+            if(part.find("Rest") != std::string::npos ||
+               part.find("rest") != std::string::npos ||
+               part.find("Lambda") != std::string::npos ||
+               part.find("lambda") != std::string::npos){
+                DebugPCC("\t\t\t skip rest\n");
+                continue; //skip rest
+            }
+
+            for(int ipT= 1; ipT<fHistMCWeights->GetNbinsX()+1;++ipT){
+                auto const _pT = fHistMCWeights->GetXaxis()->GetBinCenter(ipT);
+                auto const _mult = GetMultFromCent(GetCentFromString(cent));
+                auto const _part = GetPartTypeNumber(part);
+                auto const _bin = fHistMCWeights->FindBin(_pT, _mult, _part);
+
+                auto const _nomVal = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_bin);
+
+                DebugPCC("\t\t\t pT: " << _pT << " cent: " << _mult << " part: " << _part << "\n");
+                DebugPCC("\t\t\t nominal weight: " << _nomVal << "\n");
+
+                if(_nomVal <= 0.){
+                    DebugPCC("\t\t\t weight is too small\n");
+                    continue;
+                }
+
+                double _averageSys = 0;
+
+                for (auto const& _sys : fAllSystematicFlags) {
+                    auto const _sysVal = fHistMCWeightsSys[_sys]->GetBinContent(_bin);
+                    auto const _relSys = _sysVal/_nomVal;
+                    auto const _absDiffSys = TMath::Abs(1 - _relSys);
+                    _averageSys+=_absDiffSys*_absDiffSys;
+                }
+                _averageSys = TMath::Sqrt(_averageSys);
+                DebugPCC("\t\t\t average sys: " << _averageSys << " percent\n");
+
+                auto const _avgSysValUp = _nomVal * (1+_averageSys);
+                auto const _avgSysValDown = _nomVal * (1-_averageSys);
+
+                DebugPCC("\t\t\t sysUp: " << _avgSysValUp << "\n");
+                DebugPCC("\t\t\t sysDown: " << _avgSysValDown << "\n");
+
+                fHistMCWeightsSysUp->SetBinContent(_bin, _avgSysValUp);
+                fHistMCWeightsSysDown->SetBinContent(_bin, _avgSysValDown);
+            }
+        }
+    }
+    DebugPCC("\t... done\n");
 }
 
 /**
@@ -1011,7 +1106,7 @@ AliMCSpectraWeights::GetMCSpectraWeightNominal(TParticle* mcGenParticle) {
     float weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]
     ->GetBinContent(_iBin);
     if (weight <= 0) {
-        DebugPCC("ERROR: negative weight; set to 1\n");
+        DebugPCC("ERROR: negative weight " << weight << "; set to 1\n");
         weight = 1;
     }
     DebugPCC("GetMCSpectraWeight: nominal");
@@ -1029,7 +1124,7 @@ AliMCSpectraWeights::GetMCSpectraWeightNominal(TParticle* mcGenParticle) {
 }
 
 float const
-AliMCSpectraWeights::GetMCSpectraWeightSystematics(TParticle* mcGenParticle) {
+AliMCSpectraWeights::GetMCSpectraWeightSystematics(TParticle* mcGenParticle, Int_t SysCase) {
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();
 #endif
@@ -1049,7 +1144,13 @@ AliMCSpectraWeights::GetMCSpectraWeightSystematics(TParticle* mcGenParticle) {
         DebugPCC("Can't find bin\n");
         return 1;
     }
-    float weight = fHistMCWeightsSys[fFlag]->GetBinContent(_iBin);
+    float weight = 1 ;
+    if(SysCase > 0){
+        weight = fHistMCWeightsSysUp->GetBinContent(_iBin);
+    }
+    if(SysCase < 0){
+        weight = fHistMCWeightsSysDown->GetBinContent(_iBin);
+    }
     if (weight <= 0) {
         DebugPCC("ERROR: negative weight; set to 1\n");
         weight = 1;
@@ -1068,13 +1169,24 @@ AliMCSpectraWeights::GetMCSpectraWeightSystematics(TParticle* mcGenParticle) {
     return weight;
 }
 
+float const
+AliMCSpectraWeights::GetMCSpectraWeight(TParticle* mcGenParticle,
+                   Int_t SysCase){
+    if(0==SysCase){
+        return AliMCSpectraWeights::GetMCSpectraWeightNominal(mcGenParticle);
+    }
+    else{
+        return AliMCSpectraWeights::GetMCSpectraWeightSystematics(mcGenParticle, SysCase);
+    }
+}
+
 void AliMCSpectraWeights::StartNewEvent() {
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();
 #endif
     AliMCSpectraWeights::CountEventMult();
-    if (fDoSystematics)
-        AliMCSpectraWeights::SelectRndSysFlagForEvent();
+//    if (fDoSystematics)
+//        AliMCSpectraWeights::SelectRndSysFlagForEvent();
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();
     auto duration =
@@ -1259,7 +1371,7 @@ float const AliMCSpectraWeights::GetMultFromCent(int CentBin) const {
             default:
                 return -2.0;
         }
-    } else if (fstCollisionSystem == "pbpb") {
+    } else if (fstCollisionSystem == "pbpb" || fstCollisionSystem == "xexe") {
         // for | eta | < 0.5
         //        Centrality 0–5% 5–10% 10–20% 20–30% 30–40% 40–50% 50–60%
         //        60–70% 70–80% dNch /dη 1601 ± 60 1294 ± 49 966±37 649±23
@@ -1286,31 +1398,32 @@ float const AliMCSpectraWeights::GetMultFromCent(int CentBin) const {
             default:
                 return -2.0;
         }
-    } else if (fstCollisionSystem == "xexe") {
-        // for | eta | < 0.5
-        switch (CentBin) {
-            case 0:
-                return 1167;
-            case 1:
-                return 939;
-            case 2:
-                return 706;
-            case 3:
-                return 478;
-            case 4:
-                return 315;
-            case 5:
-                return 198;
-            case 6:
-                return 118;
-            case 7:
-                return 64.7;
-            case 8:
-                return 32;
-            default:
-                return -2.0;
-        }
     }
+//    else if (fstCollisionSystem == "xexe") {
+//        // for | eta | < 0.5
+//        switch (CentBin) {
+//            case 0:
+//                return 1167;
+//            case 1:
+//                return 939;
+//            case 2:
+//                return 706;
+//            case 3:
+//                return 478;
+//            case 4:
+//                return 315;
+//            case 5:
+//                return 198;
+//            case 6:
+//                return 118;
+//            case 7:
+//                return 64.7;
+//            case 8:
+//                return 32;
+//            default:
+//                return -2.0;
+//        }
+//    }
 
     return -1;
 }

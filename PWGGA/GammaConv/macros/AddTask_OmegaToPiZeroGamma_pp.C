@@ -824,7 +824,7 @@ void AddTask_OmegaToPiZeroGamma_pp(
   } else if( trainConfig == 2962) {
     // MB 13TeV EMcal + Dcal, timing cut variation
     cuts.AddCut("00010113","00200009327000008250400000","411792105fe32220000","01631031000000d0","0v631031000000d0"); // +-50
-    cuts.AddCut("00010113","00200009327000008250400000","41179210afe32220000","01631031000000d0","0v631031000000d0"); // -12.5 to +13
+    cuts.AddCut("00010113","00200009327000008250400000","41179210lfe32220000","01631031000000d0","0v631031000000d0"); // -12.5 to +13 with timing efficiency
   } else if( trainConfig == 2963) {
     // MB 13TeV EMcal + Dcal, track matching variation
     cuts.AddCut("00010113","00200009327000008250400000","4117921090e32220000","01631031000000d0","0v631031000000d0"); // no TM
@@ -860,7 +860,7 @@ void AddTask_OmegaToPiZeroGamma_pp(
   } else if( trainConfig == 2972) {
     // EG2 13TeV EMcal + Dcal, timing cut variation
     cuts.AddCut("0008e113","00200009327000008250400000","411792105fe32220000","01631031000000d0","0v631031000000d0"); // +-50
-    cuts.AddCut("0008e113","00200009327000008250400000","41179210afe32220000","01631031000000d0","0v631031000000d0"); // -12.5 to +13
+    cuts.AddCut("0008e113","00200009327000008250400000","41179210lfe32220000","01631031000000d0","0v631031000000d0"); // -12.5 to +13 with timing efficiency
   } else if( trainConfig == 2973) {
     // EG2 13TeV EMcal + Dcal, track matching variation
     cuts.AddCut("0008e113","00200009327000008250400000","4117921090e32220000","01631031000000d0","0v631031000000d0"); // no TM
@@ -896,7 +896,7 @@ void AddTask_OmegaToPiZeroGamma_pp(
   } else if( trainConfig == 2982) {
     // EG1 13TeV EMcal + Dcal, timing cut variation
     cuts.AddCut("0008d113","00200009327000008250400000","411792105fe32220000","01631031000000d0","0v631031000000d0"); // +-50
-    cuts.AddCut("0008d113","00200009327000008250400000","41179210afe32220000","01631031000000d0","0v631031000000d0"); // -12.5 to +13
+    cuts.AddCut("0008d113","00200009327000008250400000","41179210lfe32220000","01631031000000d0","0v631031000000d0"); // -12.5 to +13 with timing efficiency
   } else if( trainConfig == 2983) {
     // EG1 13TeV EMcal + Dcal, track matching variation
     cuts.AddCut("0008d113","00200009327000008250400000","4117921090e32220000","01631031000000d0","0v631031000000d0"); // no TM

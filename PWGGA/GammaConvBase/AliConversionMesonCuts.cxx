@@ -3793,7 +3793,7 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPSigSmearingCte  = 0.050;
       break;
     case 10:     //a     new implementation pol2
-      fUseMCPSmearing   = 1;
+      fUseMCPSmearing   = 3;
       fPSigSmearing     = 0.025*0.025;
       fPSigSmearingCte  = 0.03*0.03;
       break;
@@ -3829,23 +3829,23 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPSigSmearing     = -2.3334e-05;
       fPSigSmearingCte  = 8.34844e-05;
       break;
-    case 17:     //h            pol1 with 5% additional Bremsstrahlung
+    case 17:     //h            pol1 with 30% additional Bremsstrahlung
       fUseMCPSmearing   = 2;
-      fPBremSmearing    = 0.114*0.005;
+      fPBremSmearing    = 0.114*0.03;
       fPSigSmearing     = -2.3334e-05;
       fPSigSmearingCte  = 8.34844e-05;
       break;
-    case 24:     //o
+    case 24:     //o             10% additional Bremsstrahlung 
       fUseMCPSmearing   = 0;
       fPBremSmearing    = 0.114*0.01;
       break;
-    case 25:     //p
+    case 25:     //p             20% additional Bremsstrahlung
       fUseMCPSmearing   = 0;
       fPBremSmearing    = 0.114*0.02;
       break;
-    case 26:     //q
+    case 26:     //q             30% additional Bremsstrahlung
       fUseMCPSmearing   = 0;
-      fPBremSmearing    = 0.114*0.005;
+      fPBremSmearing    = 0.114*0.03;
       break;
     default:
       AliError("Warning: UseMCPSmearing not defined");

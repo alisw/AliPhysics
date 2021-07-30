@@ -104,7 +104,10 @@ public:
     kNCeAllClusters     = 1,
     kNCeTestBeam        = 2,
     kNCeGammaAndElec    = 3,
-    kNCePi0TaggedPCMEMC = 4
+    kNCePCMEMCGaussian  = 4,
+    kNCePCMEMCPol2      = 5,
+    kNCeEMCGaussian     = 6,
+    kNCeEMCPol2         = 7
   };
 
   /// Cluster position enum list of possible algoritms
@@ -738,7 +741,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 40) ;
+  ClassDef(AliEMCALRecoUtils, 41) ;
   /// \endcond
 
 };

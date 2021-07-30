@@ -1404,9 +1404,9 @@ void AddTask_GammaConvV1_pp(
     // TRD or ITS
 
   } else if (trainConfig == 690) { // R 5-180 and remove r bin 55-72
-    cuts.AddCutPCM("00010113", "0dm00089f9730000iih0474000", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
+    cuts.AddCutPCM("00010113", "0d200089f9730000iih0474000", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
     cuts.AddCutPCM("00010113", "0dm00089f9730000iih0474000", "0152103500000000"); // eta < 0.8  // remove  55-72 bin
-    cuts.AddCutPCM("00010113", "0d200089f9730000iih0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dd00089f9730000iih0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 691) { // R 5-180
     cuts.AddCutPCM("00010113", "0dh00089f9730000iih0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCM("00010113", "0di00089f9730000iih0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
@@ -1696,9 +1696,9 @@ void AddTask_GammaConvV1_pp(
     // testing with ITS or TRD
 
   } else if (trainConfig == 790) { // R 5-180 and remove r bin 55-72
-    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0474000", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0474000", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0474000", "0152103500000000"); // eta < 0.8  // remove  55-72 bin
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dd00009f9730000dge0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 791) { // R 5-180
     cuts.AddCutPCM("00010113", "0dh00009f9730000dge0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCM("00010113", "0di00009f9730000dge0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
@@ -1830,9 +1830,9 @@ void AddTask_GammaConvV1_pp(
     //  Nch from 5TeV and TRD-TOF
 
   } else if (trainConfig == 890) { // R 5-180 and remove r bin 55-72
-    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0474000", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0474000", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0474000", "0152103500000000"); // eta < 0.8  // remove  55-72 bin
-    cuts.AddCutPCM("00010113", "0d200009f9730000dge0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dd00009f9730000dge0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 891) { // R 5-180
     cuts.AddCutPCM("00010113", "0dh00009f9730000dge0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCM("00010113", "0di00009f9730000dge0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
@@ -1929,9 +1929,9 @@ void AddTask_GammaConvV1_pp(
 
 
   } else if (trainConfig == 990) { // R 5-180 and remove r bin 55-72
-    cuts.AddCutPCM("00010113", "0dm00089f9730000iih0474000", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
+    cuts.AddCutPCM("00010113", "0d200089f9730000iih0474000", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
     cuts.AddCutPCM("00010113", "0dm00089f9730000iih0474000", "0152103500000000"); // eta < 0.8  // remove  55-72 bin
-    cuts.AddCutPCM("00010113", "0d200089f9730000iih0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCM("00010113", "0dd00089f9730000iih0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 991) { // R 5-180
     cuts.AddCutPCM("00010113", "0dh00089f9730000iih0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCM("00010113", "0di00089f9730000iih0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts

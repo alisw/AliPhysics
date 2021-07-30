@@ -73,6 +73,7 @@ class AliAnalysisTaskBaseWeights : public AliAnalysisTaskMKBase
         Double_t                fMCweight;          //!<! MC weight of the current track/particle
         Double_t                fMCweightRandom;          //!<! MC weight of the current track/particle random rounded
         Double_t                fMCweightSys;
+        Double_t                fMCweightSysDown;
         Double_t                fMCweightSysRandom;
         Double_t                fNch;
         Double_t                fNchWeighted;
@@ -89,6 +90,7 @@ class AliAnalysisTaskBaseWeights : public AliAnalysisTaskMKBase
         Hist::Hist<THnF>        fHistEffContWeighted;
         Hist::Hist<THnF>        fHistEffContWeightedRandom;
         Hist::Hist<THnF>        fHistEffContWeightedSys;
+        Hist::Hist<THnF>        fHistEffContWeightedSysDown;
         Hist::Hist<THnF>        fHistEffContWeightedSysRandom;
 
         Hist::Hist<THnF>        fHistMultCorrelationNominal; //!<! N_acc vs N_ch pure/weighted/randomWeight

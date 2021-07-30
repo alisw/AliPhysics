@@ -194,6 +194,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMaxTracksToProcess(9999999),
   fNPtBinsSingleTrack(6),
   fNPtBinsDzero(25),
+  fPtWithoutVtxToll(0.1),
   fMinPtDzero(0.),
   fMaxPtDzero(9999.),
   fMinPtDplus(0.),
@@ -421,13 +422,13 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
   for (Int_t ib = 0; ib < fNPtBinsSingleTrack + 1; ib++)
       fPtBinLimsSingleTrack[ib] = defaultPtBinsSingleTrack[ib];
 
-  Double_t defaultSingleTrackCuts[7][kNCutVarsSingleTrack] =
-    {{0., 1000.}, /*  pt<0.5    */
-    {0., 1000.},  /* 0.5<pt<1   */
-    {0., 1000.},  /* 1<pt<1.5   */
-    {0., 1000.},  /* 1.5<pt<2   */
-    {0., 1000.},  /* 2<pt<3     */
-    {0., 1000.}}; /* pt>3       */
+  Double_t defaultSingleTrackCuts[6][kNCutVarsSingleTrack] =
+    {{0.0025, 1000.},  /* 0   < pt < 0.5    */
+     {0.0025, 1000.},  /* 0.5 < pt < 1      */
+     {0.0025, 1000.},  /* 1   < pt < 1.5    */
+     {0.0025, 1000.},  /* 1.5 < pt < 2      */
+     {0.0000, 1000.},  /* 2   < pt < 3      */
+     {0.0000, 1000.}}; /* 3   < pt < 1000   */
 
   for (Int_t ib = 0; ib < fNPtBinsSingleTrack; ib++) {
     for (Int_t jc = 0; jc < kNCutVarsSingleTrack; jc++) {
@@ -436,31 +437,51 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
     }
   }
 
-  fDzeroSkimCuts[0]=0.;      // pt
-  fDzeroSkimCuts[1]=0.;      // min mass
-  fDzeroSkimCuts[2]=3.;      // max mass
-  fDzeroSkimCuts[3]=-1.1;    // cos pointing angle
-  fDzeroSkimCuts[4]=999999.; // d0xd0
-  fJpsiSkimCuts[0]=0.;      // pt
-  fJpsiSkimCuts[1]=0.;      // min mass
-  fJpsiSkimCuts[2]=3.;      // max mass
-  fJpsiSkimCuts[3]=-1.1;    // cos pointing angle
-  fJpsiSkimCuts[4]=999999.; // d0xd0
-  fDplusSkimCuts[0]=0.;         // pt
-  fDplusSkimCuts[1]=0.;         // min mass
-  fDplusSkimCuts[2]=3.;         // max mass
-  fDplusSkimCuts[3]=-1.1;       // cos pointing angle
-  fDplusSkimCuts[4]=0.;         // dec len
-  fDsSkimCuts[0]=0.;         // pt
-  fDsSkimCuts[1]=0.;         // min mass
-  fDsSkimCuts[2]=3.;         // max mass
-  fDsSkimCuts[3]=-1.1;       // cos pointing angle
-  fDsSkimCuts[4]=0.;         // dec len
-  fLcSkimCuts[0]=0.;         // pt
-  fLcSkimCuts[1]=0.;         // min mass
-  fLcSkimCuts[2]=3.;         // max mass
-  fLcSkimCuts[3]=-1.1;       // cos pointing angle
-  fLcSkimCuts[4]=0.;         // dec len
+  Double_t defaultPtBins2Prongs[3] = {0., 5., 1000.};
+  Double_t defaultPtBins3Prongs[3] = {0., 5., 1000.};
+  for (Int_t ib = 0; ib < 2 + 1; ib++) {
+    fPtBinLimsDzeroSkims[ib] = defaultPtBins2Prongs[ib];
+    fPtBinLimsJpsiSkims[ib] = defaultPtBins2Prongs[ib];
+    fPtBinLimsDplusSkims[ib] = defaultPtBins3Prongs[ib];
+    fPtBinLimsDsSkims[ib] = defaultPtBins3Prongs[ib];
+    fPtBinLimsLcSkims[ib] = defaultPtBins3Prongs[ib];
+    fPtBinLimsXicSkims[ib] = defaultPtBins3Prongs[ib];
+  }
+
+  Double_t defaultDzeroSkimCuts[2][kNCutVars2Prong] =
+    {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
+     {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
+
+  Double_t defaultJpsiSkimCuts[2][kNCutVars2Prong] =
+    {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
+     {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
+
+  Double_t defaultDplusSkimCuts[2][kNCutVars3Prong] =
+    {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
+     {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
+
+  Double_t defaultDsSkimCuts[2][kNCutVars3Prong] =
+    {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
+     {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
+
+  Double_t defaultLcSkimCuts[2][kNCutVars3Prong] =
+    {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
+     {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
+
+  Double_t defaultXicSkimCuts[2][kNCutVars3Prong] =
+    {{0., 3., -1.1, 999999.},  /* 0   < pt < 5    */
+     {0., 3., -1.1, 999999.}}; /* 5   < pt < 1000   */
+
+  for(Int_t ib=0; ib<fNPtBins; ib++){
+    for(Int_t jc=0; jc<kNCutVars2Prong; jc++){
+      fDzeroSkimCuts[ib][jc]=defaultDzeroSkimCuts[ib][jc];
+      fJpsiSkimCuts[ib][jc]=defaultJpsiSkimCuts[ib][jc];
+      fDplusSkimCuts[ib][jc]=defaultDplusSkimCuts[ib][jc];
+      fDsSkimCuts[ib][jc]=defaultDsSkimCuts[ib][jc];
+      fLcSkimCuts[ib][jc]=defaultLcSkimCuts[ib][jc];
+      fXicSkimCuts[ib][jc]=defaultXicSkimCuts[ib][jc];
+    }
+  }
 
   fNPtBinsDzero=25;
   Double_t defaultPtBins[26] = {0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 12.0, 16.0, 20.0, 24.0, 36.0, 50.0, 100.0};
@@ -580,10 +601,10 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
       fTriggerMask = triggerMask[triggerMaskFromJSON];
     }
 
-    Double_t ptmintrack2 = GetJsonFloat(filename.Data(), "ptmintrack_2prong");
+    Double_t ptmintrack2 = GetJsonFloat(filename.Data(), "pTMinTrack2Prong");
     printf("Min pt track (2 prong)= %f\n", ptmintrack2);
     if(ptmintrack2>0) fTrackCuts2pr->SetPtRange(ptmintrack2, 1.e10);
-    Double_t ptmintrack3 = GetJsonFloat(filename.Data(), "ptmintrack_3prong");
+    Double_t ptmintrack3 = GetJsonFloat(filename.Data(), "pTMinTrack3Prong");
     printf("Min pt track (3 prong)= %f\n", ptmintrack3);
     if(ptmintrack3>0) fTrackCuts3pr->SetPtRange(ptmintrack3, 1.e10);
     Int_t do3Prongs = GetJsonInteger(filename.Data(), "do3prong");
@@ -604,16 +625,16 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     Int_t selectLcpKpi = GetJsonInteger(filename.Data(), "d_selectionFlagLc");
     printf("d_selectionFlagLc = %d\n", selectLcpKpi);
     if (selectLcpKpi >= 0) fSelectLcpKpi=selectLcpKpi;
-    Int_t minncluTPC = GetJsonInteger(filename.Data(), "d_tpcnclsfound");
+    Int_t minncluTPC = GetJsonInteger(filename.Data(), "tpcNClsFound");
     if(minncluTPC>0) printf("minncluTPC   = %d\n", minncluTPC);
     fTrackCuts2pr->SetMinNClustersTPC(minncluTPC);
     fTrackCuts3pr->SetMinNClustersTPC(minncluTPC);
 
     int nptbinlimsSingleTrack = 0;
-    float* ptbinsSingleTrack = GetJsonArray(filename.Data(),"ptbins_singletrack",nptbinlimsSingleTrack);
+    float* ptbinsSingleTrack = GetJsonArray(filename.Data(),"pTBinsTrack",nptbinlimsSingleTrack);
     int npt2Prong = 0, npt3Prong = 0, nc2Prong = 0, nc3Prong = 0;
-    float** cutsSingleTrack2Prong = GetJsonMatrix(filename.Data(),"cuts_singletrack_2prong",npt2Prong,nc2Prong);
-    float** cutsSingleTrack3Prong = GetJsonMatrix(filename.Data(),"cuts_singletrack_3prong",npt3Prong,nc3Prong);
+    float** cutsSingleTrack2Prong = GetJsonMatrix(filename.Data(),"cutsTrack2Prong",npt2Prong,nc2Prong);
+    float** cutsSingleTrack3Prong = GetJsonMatrix(filename.Data(),"cutsTrack3Prong",npt3Prong,nc3Prong);
     if((nptbinlimsSingleTrack-1 != npt3Prong) || (nptbinlimsSingleTrack-1 != npt2Prong))
       AliFatal("Number of pT bins in JSON for single track cuts of 2-prong and 3-prongs not consistent, please check it");
 
@@ -631,16 +652,16 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
       }
     }
 
-    Double_t etamax2 = GetJsonFloat(filename.Data(), "etamax_2prong");
+    Double_t etamax2 = GetJsonFloat(filename.Data(), "etaMax2Prong");
     printf("Max eta  (2 prong) = %f\n", etamax2);
     if(etamax2>0) fTrackCuts2pr->SetEtaRange(-etamax2, +etamax2);
-    Double_t etamax3 = GetJsonFloat(filename.Data(), "etamax_3prong");
+    Double_t etamax3 = GetJsonFloat(filename.Data(), "etaMax3Prong");
     printf("Max eta  (3 prong) = %f\n", etamax3);
     if(etamax3>0) fTrackCuts3pr->SetEtaRange(-etamax3, +etamax3);
 
     // vertexer parameters
     printf("--- DCAFitterN parameters ---\n");
-    Int_t b_propdca = GetJsonBool(filename.Data(),"b_propdca");
+    Int_t b_propdca = GetJsonBool(filename.Data(),"propToDCA");
     if(b_propdca==1){
       fVertexerPropagateToPCA = true;
       printf("propdca = %d\n",fVertexerPropagateToPCA);
@@ -648,23 +669,23 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
       fVertexerPropagateToPCA = false;
       printf("propdca = %d\n",fVertexerPropagateToPCA);
     }
-    Double_t d_maxr = GetJsonFloat(filename.Data(), "d_maxr");
+    Double_t d_maxr = GetJsonFloat(filename.Data(), "maxRad");
     if(d_maxr>0){
       fMaxDecVertRadius2=d_maxr*d_maxr;
       fVertexerMaxR=d_maxr;
       printf("maxr = %f\n",fVertexerMaxR);
     }
-    Double_t d_maxdzini = GetJsonFloat(filename.Data(), "d_maxdzini");
+    Double_t d_maxdzini = GetJsonFloat(filename.Data(), "maxDZIni");
     if(d_maxdzini>0){
       fVertexerMaxDZIni=d_maxdzini;
       printf("maxdzini = %f\n",fVertexerMaxDZIni);
     }
-    Double_t d_minparamchange = GetJsonFloat(filename.Data(), "d_minparamchange");
+    Double_t d_minparamchange = GetJsonFloat(filename.Data(), "minParamChange");
     if(d_minparamchange>0){
       fVertexerMinParamChange=d_minparamchange;
       printf("minparamchange = %f\n",fVertexerMinParamChange);
     }
-    Double_t d_minrelchi2change = GetJsonFloat(filename.Data(), "d_minrelchi2change");
+    Double_t d_minrelchi2change = GetJsonFloat(filename.Data(), "minRelChi2Change");
     if(d_minrelchi2change){
       fVertexerMinRelChi2Change=d_minrelchi2change;
       printf("minrelchi2change = %f\n",fVertexerMinRelChi2Change);
@@ -682,65 +703,106 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
 
     // Selections used in the skimming
     printf("------- CANDIDATE SELECTIONS FOR SKIMMING -------\n");
-    Double_t minPtDzeroToPiK = GetJsonFloat(filename.Data(), "mPtD0ToPiKMin");
-    Double_t minMassDzeroToPiK = GetJsonFloat(filename.Data(), "mInvMassD0ToPiKMin");
-    Double_t maxMassDzeroToPiK = GetJsonFloat(filename.Data(), "mInvMassD0ToPiKMax");
-    Double_t minCosPointDzeroToPiK = GetJsonFloat(filename.Data(), "mCPAD0ToPiKMin");
-    Double_t maxd0xd0DzeroToPiK = GetJsonFloat(filename.Data(), "mImpParProductD0ToPiKMax");
-    printf("Dzero cuts: pt > %f  ;  %f < mass < %f  ;  cospoint > %f  ; d0xd0  < %f\n",minPtDzeroToPiK,minMassDzeroToPiK,maxMassDzeroToPiK,minCosPointDzeroToPiK,maxd0xd0DzeroToPiK);
-    fDzeroSkimCuts[0]=minPtDzeroToPiK;
-    fDzeroSkimCuts[1]=minMassDzeroToPiK;
-    fDzeroSkimCuts[2]=maxMassDzeroToPiK;
-    fDzeroSkimCuts[3]=minCosPointDzeroToPiK;
-    fDzeroSkimCuts[4]=maxd0xd0DzeroToPiK;
 
-    Double_t minPtJpsiToEE = GetJsonFloat(filename.Data(), "mPtJpsiToEEMin");
-    Double_t minMassJpsiToEE = GetJsonFloat(filename.Data(), "mInvMassJpsiToEEMin");
-    Double_t maxMassJpsiToEE = GetJsonFloat(filename.Data(), "mInvMassJpsiToEEMax");
-    Double_t minCosPointJpsiToEE = GetJsonFloat(filename.Data(), "mCPAJpsiToEEMin");
-    Double_t maxd0xd0JpsiToEE = GetJsonFloat(filename.Data(), "mImpParProductJpsiToEEMax");
-    printf("Jpsi cuts: pt > %f  ;  %f < mass < %f  ;  cospoint > %f  ; d0xd0  < %f\n",minPtJpsiToEE,minMassJpsiToEE,maxMassJpsiToEE,minCosPointJpsiToEE,maxd0xd0JpsiToEE);
-    fJpsiSkimCuts[0]=minPtJpsiToEE;
-    fJpsiSkimCuts[1]=minMassJpsiToEE;
-    fJpsiSkimCuts[2]=maxMassJpsiToEE;
-    fJpsiSkimCuts[3]=minCosPointJpsiToEE;
-    fJpsiSkimCuts[4]=maxd0xd0JpsiToEE;
+    Double_t ptTol = GetJsonFloat(filename.Data(), "pTTolerance");
+    if(ptTol > 0)
+      fPtWithoutVtxToll = ptTol;
 
-    Double_t minPtDplusToPiKPi = GetJsonFloat(filename.Data(), "mPtDPlusToPiKPiMin");
-    Double_t minMassDplusToPiKPi = GetJsonFloat(filename.Data(), "mInvMassDPlusToPiKPiMin");
-    Double_t maxMassDplusToPiKPi = GetJsonFloat(filename.Data(), "mInvMassDPlusToPiKPiMax");
-    Double_t minCosPointDplusToPiKPi = GetJsonFloat(filename.Data(), "mCPADPlusToPiKPiMin");
-    Double_t minDecLenDplusToPiKPi = GetJsonFloat(filename.Data(), "mDecLenDPlusToPiKPiMin");
-    printf("Dplus cuts: pt > %f  ;  %f < mass < %f  ;  cospoint > %f  ; declen > %f\n",minPtDplusToPiKPi,minMassDplusToPiKPi,maxMassDplusToPiKPi,minCosPointDplusToPiKPi,minDecLenDplusToPiKPi);
-    fDplusSkimCuts[0]=minPtDplusToPiKPi;
-    fDplusSkimCuts[1]=minMassDplusToPiKPi;
-    fDplusSkimCuts[2]=maxMassDplusToPiKPi;
-    fDplusSkimCuts[3]=minCosPointDplusToPiKPi;
-    fDplusSkimCuts[4]=minDecLenDplusToPiKPi;
+    int nptbinlimsDzeroSkims = 0, ncDzeroSkims = 0, nptDzeroSkims = 0;
+    float* ptbinlimsDzeroSkims = GetJsonArray(filename.Data(),"pTBinsD0ToPiK",nptbinlimsDzeroSkims);
+    float** cutsDzeroSkims = GetJsonMatrix(filename.Data(),"cutsD0ToPiK",nptDzeroSkims,ncDzeroSkims);
+    if(nptbinlimsDzeroSkims-1 != nptDzeroSkims)
+      AliFatal("Number of pT bins in JSON for Dzero at skims level not consistent, please check it");
 
-    Double_t minPtDsToPiKK = GetJsonFloat(filename.Data(), "mPtDsToPiKKMin");
-    Double_t minMassDsToPiKK = GetJsonFloat(filename.Data(), "mInvMassDsToPiKKMin");
-    Double_t maxMassDsToPiKK = GetJsonFloat(filename.Data(), "mInvMassDsToPiKKMax");
-    Double_t minCosPointDsToPiKK = GetJsonFloat(filename.Data(), "mCPADsToPiKKMin");
-    Double_t minDecLenDsToPiKK = GetJsonFloat(filename.Data(), "mDecLenDsToPiKKMin");
-    printf("Ds   cuts: pt > %f  ;  %f < mass < %f  ;  cospoint > %f  ; declen > %f\n",minPtDsToPiKK,minMassDsToPiKK,maxMassDsToPiKK,minCosPointDsToPiKK,minDecLenDsToPiKK);
-    fDsSkimCuts[0]=minPtDsToPiKK;
-    fDsSkimCuts[1]=minMassDsToPiKK;
-    fDsSkimCuts[2]=maxMassDsToPiKK;
-    fDsSkimCuts[3]=minCosPointDsToPiKK;
-    fDsSkimCuts[4]=minDecLenDsToPiKK;
+    int nptbinlimsJpsiSkims = 0, ncJpsiSkims = 0, nptJpsiSkims = 0;
+    float* ptbinlimsJpsiSkims = GetJsonArray(filename.Data(),"pTBinsJpsiToEE",nptbinlimsJpsiSkims);
+    float** cutsJpsiSkims = GetJsonMatrix(filename.Data(),"cutsJpsiToEE",nptJpsiSkims,ncJpsiSkims);
+    if(nptbinlimsJpsiSkims-1 != nptJpsiSkims)
+      AliFatal("Number of pT bins in JSON for J/psi at skims level not consistent, please check it");
 
-    Double_t minPtLcToPKPi = GetJsonFloat(filename.Data(), "mPtLcToPKPiMin");
-    Double_t minMassLcToPKPi = GetJsonFloat(filename.Data(), "mInvMassLcToPKPiMin");
-    Double_t maxMassLcToPKPi = GetJsonFloat(filename.Data(), "mInvMassLcToPKPiMax");
-    Double_t minCosPointLcToPKPi = GetJsonFloat(filename.Data(), "mCPALcToPKPiMin");
-    Double_t minDecLenLcToPKPi = GetJsonFloat(filename.Data(), "mDecLenLcToPKPiMin");
-    printf("Lc   cuts: pt > %f  ;  %f < mass < %f  ;  cospoint > %f  ; declen > %f\n",minPtLcToPKPi,minMassLcToPKPi,maxMassLcToPKPi,minCosPointLcToPKPi,minDecLenLcToPKPi);
-    fLcSkimCuts[0]=minPtLcToPKPi;
-    fLcSkimCuts[1]=minMassLcToPKPi;
-    fLcSkimCuts[2]=maxMassLcToPKPi;
-    fLcSkimCuts[3]=minCosPointLcToPKPi;
-    fLcSkimCuts[4]=minDecLenLcToPKPi;
+    int nptbinlimsDplusSkims = 0, ncDplusSkims = 0, nptDplusSkims = 0;
+    float* ptbinlimsDplusSkims = GetJsonArray(filename.Data(),"pTBinsDPlusToPiKPi",nptbinlimsDplusSkims);
+    float** cutsDplusSkims = GetJsonMatrix(filename.Data(),"cutsDPlusToPiKPi",nptDplusSkims,ncDplusSkims);
+    if(nptbinlimsDplusSkims-1 != nptDplusSkims)
+      AliFatal("Number of pT bins in JSON for Dplus at skims level not consistent, please check it");
+
+    int nptbinlimsDsSkims = 0, ncDsSkims = 0, nptDsSkims = 0;
+    float* ptbinlimsDsSkims = GetJsonArray(filename.Data(),"pTBinsDsToPiKK",nptbinlimsDsSkims);
+    float** cutsDsSkims = GetJsonMatrix(filename.Data(),"cutsDsToPiKK",nptDsSkims,ncDsSkims);
+    if(nptbinlimsDsSkims-1 != nptDsSkims)
+      AliFatal("Number of pT bins in JSON for Ds at skims level not consistent, please check it");
+
+    int nptbinlimsLcSkims = 0, ncLcSkims = 0, nptLcSkims = 0;
+    float* ptbinlimsLcSkims = GetJsonArray(filename.Data(),"pTBinsLcToPKPi",nptbinlimsLcSkims);
+    float** cutsLcSkims = GetJsonMatrix(filename.Data(),"cutsLcToPKPi",nptLcSkims,ncLcSkims);
+    if(nptbinlimsLcSkims-1 != nptLcSkims)
+      AliFatal("Number of pT bins in JSON for Lc at skims level not consistent, please check it");
+
+    int nptbinlimsXicSkims = 0, ncXicSkims = 0, nptXicSkims = 0;
+    float* ptbinlimsXicSkims = GetJsonArray(filename.Data(),"pTBinsXicToPKPi",nptbinlimsXicSkims);
+    float** cutsXicSkims = GetJsonMatrix(filename.Data(),"cutsXicToPKPi",nptXicSkims,ncXicSkims);
+    if(nptbinlimsXicSkims-1 != nptXicSkims)
+      AliFatal("Number of pT bins in JSON for Xic at skims level not consistent, please check it");
+
+    for (Int_t ib = 0; ib < nptbinlimsDzeroSkims; ib++) {
+      fPtBinLimsDzeroSkims[ib] = ptbinlimsDzeroSkims[ib];
+    }
+    for (Int_t ib = 0; ib < nptDzeroSkims; ib++) {
+      for (Int_t jc = 0; jc < ncDzeroSkims; jc++) {
+        fDzeroSkimCuts[ib][jc] = cutsDzeroSkims[ib][jc];
+      }
+      AliWarning(Form("Dzero cuts: %f < pt < %f  ;  %f < mass < %f  ;  cospoint > %f  ; d0xd0  < %f\n", fPtBinLimsDzeroSkims[ib], fPtBinLimsDzeroSkims[ib+1], fDzeroSkimCuts[ib][0], fDzeroSkimCuts[ib][1], fDzeroSkimCuts[ib][2], fDzeroSkimCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsJpsiSkims; ib++) {
+      fPtBinLimsJpsiSkims[ib] = ptbinlimsJpsiSkims[ib];
+    }
+    for (Int_t ib = 0; ib < nptJpsiSkims; ib++) {
+      for (Int_t jc = 0; jc < ncJpsiSkims; jc++) {
+        fJpsiSkimCuts[ib][jc] = cutsJpsiSkims[ib][jc];
+      }
+      AliWarning(Form("J/psi cuts: %f < pt < %f  ;  %f < mass < %f  ;  cospoint > %f  ; d0xd0  < %f\n", fPtBinLimsJpsiSkims[ib], fPtBinLimsJpsiSkims[ib+1], fJpsiSkimCuts[ib][0], fJpsiSkimCuts[ib][1], fJpsiSkimCuts[ib][2], fJpsiSkimCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsDplusSkims; ib++) {
+      fPtBinLimsDplusSkims[ib] = ptbinlimsDplusSkims[ib];
+    }
+    for (Int_t ib = 0; ib < nptDplusSkims; ib++) {
+      for (Int_t jc = 0; jc < ncDplusSkims; jc++) {
+        fDplusSkimCuts[ib][jc] = cutsDplusSkims[ib][jc];
+      }
+      AliWarning(Form("Dplus cuts: %f < pt < %f  ; %f < mass < %f  ;  cospoint > %f  ; declen > %f\n", fPtBinLimsDplusSkims[ib], fPtBinLimsDplusSkims[ib+1], fDplusSkimCuts[ib][0], fDplusSkimCuts[ib][1], fDplusSkimCuts[ib][2], fDplusSkimCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsDsSkims; ib++) {
+      fPtBinLimsDsSkims[ib] = ptbinlimsDsSkims[ib];
+    }
+    for (Int_t ib = 0; ib < nptDsSkims; ib++) {
+      for (Int_t jc = 0; jc < ncDsSkims; jc++) {
+        fDsSkimCuts[ib][jc] = cutsDsSkims[ib][jc];
+      }
+      AliWarning(Form("Ds cuts: %f < pt < %f  ;  %f < mass < %f  ;  cospoint > %f  ; declen > %f\n", fPtBinLimsDsSkims[ib], fPtBinLimsDsSkims[ib+1], fDsSkimCuts[ib][0], fDsSkimCuts[ib][1], fDsSkimCuts[ib][2], fDsSkimCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsLcSkims; ib++) {
+      fPtBinLimsLcSkims[ib] = ptbinlimsLcSkims[ib];
+    }
+    for (Int_t ib = 0; ib < nptLcSkims; ib++) {
+      for (Int_t jc = 0; jc < ncLcSkims; jc++) {
+        fLcSkimCuts[ib][jc] = cutsLcSkims[ib][jc];
+      }
+      AliWarning(Form("Lc cuts: %f < pt < %f  ;  %f < mass < %f  ;  cospoint > %f  ; declen > %f\n", fPtBinLimsLcSkims[ib], fPtBinLimsLcSkims[ib+1], fLcSkimCuts[ib][0], fLcSkimCuts[ib][1], fLcSkimCuts[ib][2], fLcSkimCuts[ib][3]));
+    }
+
+    for (Int_t ib = 0; ib < nptbinlimsXicSkims; ib++) {
+      fPtBinLimsXicSkims[ib] = ptbinlimsXicSkims[ib];
+    }
+    for (Int_t ib = 0; ib < nptXicSkims; ib++) {
+      for (Int_t jc = 0; jc < ncXicSkims; jc++) {
+        fXicSkimCuts[ib][jc] = cutsXicSkims[ib][jc];
+      }
+      AliWarning(Form("Xic cuts: %f < pt < %f  ;  %f < mass < %f  ;  cospoint > %f  ; declen > %f\n", fPtBinLimsXicSkims[ib], fPtBinLimsXicSkims[ib+1], fXicSkimCuts[ib][0], fXicSkimCuts[ib][1], fXicSkimCuts[ib][2], fXicSkimCuts[ib][3]));
+    }
 
     
     Double_t cutcpaV0 = GetJsonFloat(filename.Data(), "cosPAV0");
@@ -1345,8 +1407,10 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     track_p0->PropagateToDCA(primVtxTrk, bzkG, 100., d0track, covd0track);
     fHistPtSelTracks->Fill(track_p0->Pt());
     fHistTglSelTracks->Fill(track_p0->GetTgl());
-    fHistImpParSelTracks2prong->Fill(d0track[0]);
-    fHistEtaSelTracks2prong->Fill(track_p0->Eta());
+    if (status[iPosTrack_0] & 1){
+      fHistImpParSelTracks2prong->Fill(d0track[0]);
+      fHistEtaSelTracks2prong->Fill(track_p0->Eta());
+    }
     if (status[iPosTrack_0] & 2){
       fHistImpParSelTracks3prong->Fill(d0track[0]);
       fHistEtaSelTracks3prong->Fill(track_p0->Eta());
@@ -1409,7 +1473,8 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       AliESDtrack* track_n0 = esd->GetTrack(iNegTrack_0);
       track_n0->GetPxPyPz(mom1);
       if (track_n0->Charge() > 0) continue;
-      if (status[iNegTrack_0] == 0) continue;
+      if ((status[iPosTrack_0] & 1) == 0) continue;
+      if ((status[iNegTrack_0] & 1) == 0) continue;
       twoTrackArray->AddAt(track_p0, 0);
       twoTrackArray->AddAt(track_n0, 1);
 
@@ -1976,14 +2041,15 @@ Int_t AliAnalysisTaskHFSimpleVertices::DzeroSkimCuts(AliAODRecoDecayHF2Prong* ca
   bool isD0 = true;
   bool isD0bar = true;
   Double_t ptCand = cand->Pt();
-  if (ptCand < fDzeroSkimCuts[0]) return 0;
+  Int_t iPtDzero = GetPtBin(ptCand, fPtBinLimsDzeroSkims, kMaxNPtBins2ProngsSkims);
+  if (iPtDzero < 0) return 0;
   Double_t m0=cand->InvMassD0();
   Double_t m0b=cand->InvMassD0bar();
-  if(m0 < fDzeroSkimCuts[1] || m0 > fDzeroSkimCuts[2]) isD0=false;
-  if(m0b < fDzeroSkimCuts[1] || m0b > fDzeroSkimCuts[2])  isD0bar=false;
+  if(m0 < fDzeroSkimCuts[iPtDzero][0] || m0 > fDzeroSkimCuts[iPtDzero][1]) isD0=false;
+  if(m0b < fDzeroSkimCuts[iPtDzero][0] || m0b > fDzeroSkimCuts[iPtDzero][1])  isD0bar=false;
   if (!isD0 && !isD0bar) return 0;
-  if (cand->CosPointingAngle() < fDzeroSkimCuts[3]) return 0;
-  if (cand->Prodd0d0() > fDzeroSkimCuts[4]) return 0;
+  if (cand->CosPointingAngle() < fDzeroSkimCuts[iPtDzero][2]) return 0;
+  if (cand->Prodd0d0() > fDzeroSkimCuts[iPtDzero][3]) return 0;
 
   Int_t returnValue=0;
   if(isD0) returnValue+=1;
@@ -1995,11 +2061,12 @@ Int_t AliAnalysisTaskHFSimpleVertices::DzeroSkimCuts(AliAODRecoDecayHF2Prong* ca
 Int_t AliAnalysisTaskHFSimpleVertices::JpsiSkimCuts(AliAODRecoDecayHF2Prong* cand)
 {
   Double_t ptCand = cand->Pt();
-  if (ptCand < fJpsiSkimCuts[0]) return 0;
+  Int_t iPtJpsi = GetPtBin(ptCand, fPtBinLimsJpsiSkims, kMaxNPtBins2ProngsSkims);
+  if (iPtJpsi < 0) return 0;
   Double_t m0=cand->InvMassJPSIee();
-  if(m0 < fJpsiSkimCuts[1] || m0 > fJpsiSkimCuts[2]) return 0;
-  if (cand->CosPointingAngle() < fJpsiSkimCuts[3]) return 0;
-  if (cand->Prodd0d0() > fJpsiSkimCuts[4]) return 0;
+  if(m0 < fJpsiSkimCuts[iPtJpsi][0] || m0 > fJpsiSkimCuts[iPtJpsi][1]) return 0;
+  if (cand->CosPointingAngle() < fJpsiSkimCuts[iPtJpsi][2]) return 0;
+  if (cand->Prodd0d0() > fJpsiSkimCuts[iPtJpsi][3]) return 0;
 
   return 1;
 }
@@ -2068,11 +2135,12 @@ Int_t AliAnalysisTaskHFSimpleVertices::DzeroSelectionCuts(AliAODRecoDecayHF2Pron
 Int_t AliAnalysisTaskHFSimpleVertices::DplusSkimCuts(AliAODRecoDecayHF3Prong* cand)
 {
   Double_t ptCand = cand->Pt();
-  if (ptCand < fDplusSkimCuts[0]) return 0;
+  Int_t iPtDplus = GetPtBin(ptCand, fPtBinLimsDplusSkims, kMaxNPtBins3ProngsSkims);
+  if (iPtDplus < 0) return 0;
   Double_t m=cand->InvMassDplus();
-  if(m < fDplusSkimCuts[1] || m > fDplusSkimCuts[2])  return 0;
-  if (cand->CosPointingAngle() < fDplusSkimCuts[3]) return 0;
-  if (cand->DecayLength2() < fDplusSkimCuts[4]*fDplusSkimCuts[4]) return 0;
+  if(m < fDplusSkimCuts[iPtDplus][0] || m > fDplusSkimCuts[iPtDplus][1])  return 0;
+  if (cand->CosPointingAngle() < fDplusSkimCuts[iPtDplus][2]) return 0;
+  if (cand->DecayLength2() < fDplusSkimCuts[iPtDplus][3]*fDplusSkimCuts[iPtDplus][3]) return 0;
 
   return 1;
 }
@@ -2103,14 +2171,15 @@ Int_t AliAnalysisTaskHFSimpleVertices::DsSkimCuts(AliAODRecoDecayHF3Prong* cand)
   bool isKKpi = true;
   bool ispiKK = true;
   Double_t ptCand = cand->Pt();
-  if (ptCand < fDsSkimCuts[0]) return 0;
+  Int_t iPtDs = GetPtBin(ptCand, fPtBinLimsDsSkims, kMaxNPtBins3ProngsSkims);
+  if (iPtDs < 0) return 0;
   Double_t mKKpi=cand->InvMassDsKKpi();
   Double_t mpiKK=cand->InvMassDspiKK();
-  if(mKKpi < fDsSkimCuts[1] || mKKpi > fDsSkimCuts[2]) isKKpi=false;
-  if(mpiKK < fDsSkimCuts[1] || mpiKK > fDsSkimCuts[2]) ispiKK=false;
+  if(mKKpi < fDsSkimCuts[iPtDs][0] || mKKpi > fDsSkimCuts[iPtDs][1]) isKKpi=false;
+  if(mpiKK < fDsSkimCuts[iPtDs][0] || mpiKK > fDsSkimCuts[iPtDs][1]) ispiKK=false;
   if (!isKKpi && !ispiKK) return 0;
-  if (cand->CosPointingAngle() < fDsSkimCuts[3]) return 0;
-  if (cand->DecayLength2() < fDsSkimCuts[4]*fDsSkimCuts[4]) return 0;
+  if (cand->CosPointingAngle() < fDsSkimCuts[iPtDs][2]) return 0;
+  if (cand->DecayLength2() < fDsSkimCuts[iPtDs][3]*fDsSkimCuts[iPtDs][3]) return 0;
 
   Int_t returnValue=0;
   if(isKKpi) returnValue+=1;
@@ -2123,14 +2192,15 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSkimCuts(AliAODRecoDecayHF3Prong* cand)
   bool ispKpi = true;
   bool ispiKp = true;
   Double_t ptCand = cand->Pt();
-  if (ptCand < fLcSkimCuts[0]) return 0;
+  Int_t iPtLc = GetPtBin(ptCand, fPtBinLimsLcSkims, kMaxNPtBins3ProngsSkims);
+  if (iPtLc < 0) return 0;
   Double_t mpKpi=cand->InvMassLcpKpi();
   Double_t mpiKp=cand->InvMassLcpiKp();
-  if(mpKpi < fLcSkimCuts[1] || mpKpi > fLcSkimCuts[2]) ispKpi=false;
-  if(mpiKp < fLcSkimCuts[1] || mpiKp > fLcSkimCuts[2]) ispiKp=false;
+  if(mpKpi < fLcSkimCuts[iPtLc][0] || mpKpi > fLcSkimCuts[iPtLc][1]) ispKpi=false;
+  if(mpiKp < fLcSkimCuts[iPtLc][0] || mpiKp > fLcSkimCuts[iPtLc][1]) ispiKp=false;
   if (!ispKpi && !ispiKp) return 0;
-  if (cand->CosPointingAngle() < fLcSkimCuts[3]) return 0;
-  if (cand->DecayLength2() < fLcSkimCuts[4]*fLcSkimCuts[4]) return 0;
+  if (cand->CosPointingAngle() < fLcSkimCuts[iPtLc][2]) return 0;
+  if (cand->DecayLength2() < fLcSkimCuts[iPtLc][3]*fLcSkimCuts[iPtLc][3]) return 0;
 
   Int_t returnValue=0;
   if(ispKpi) returnValue+=1;
@@ -2164,7 +2234,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::GetPtBinSingleTrack(Double_t ptTrack)
 //______________________________________________________________________________
 Int_t AliAnalysisTaskHFSimpleVertices::SelectInvMassAndPt2prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc2)
 {
-  Int_t retval = 0;
+  Int_t retval = (1 << kbitDzero) + (1 << kbitDzerobar) + (1 << kbitJpsi);
   Double_t momentum[3];
   Double_t px[2], py[2], pz[2];
   for (Int_t iTrack = 0; iTrack < 2; iTrack++) {
@@ -2177,27 +2247,37 @@ Int_t AliAnalysisTaskHFSimpleVertices::SelectInvMassAndPt2prong(TObjArray* trkAr
   UInt_t pdg2[2];
   Int_t nprongs = 2;
   rd4massCalc2->SetPxPyPzProngs(nprongs, px, py, pz);
+  Double_t ptCand = rd4massCalc2->Pt() + fPtWithoutVtxToll;
+  Int_t iPtBinDzero = GetPtBin(ptCand, fPtBinLimsDzeroSkims, kMaxNPtBins2ProngsSkims);
+  if(iPtBinDzero < 0) {
+    retval &= ~(1 << kbitDzero);
+    retval &= ~(1 << kbitDzerobar);
+  }
+  Int_t iPtBinJpsi = GetPtBin(ptCand, fPtBinLimsJpsiSkims, kMaxNPtBins2ProngsSkims);
+  if(iPtBinJpsi < 0) {
+    retval &= ~(1 << kbitJpsi);
+  }
   Double_t minv2;
-  Double_t lolim=fDzeroSkimCuts[1];
-  Double_t hilim=fDzeroSkimCuts[2];
+  Double_t lolim=fDzeroSkimCuts[iPtBinDzero][0];
+  Double_t hilim=fDzeroSkimCuts[iPtBinDzero][1];
   pdg2[0]=211; pdg2[1]=321;   // pi+ K- --> D0
   minv2 = rd4massCalc2->InvMass2(nprongs,pdg2);
-  if(minv2>lolim*lolim && minv2<hilim*hilim ) retval += (1 << kbitDzero);
+  if((retval & (1 << kbitDzero)) && (minv2<lolim*lolim || minv2>hilim*hilim)) retval &= ~(1 << kbitDzero);
   pdg2[0]=321; pdg2[1]=211;   // K+ pi- --> D0bar
   minv2 = rd4massCalc2->InvMass2(nprongs,pdg2);
-  if(minv2>lolim*lolim && minv2<hilim*hilim) retval+=(1 << kbitDzerobar);
-  lolim=fJpsiSkimCuts[1];
-  hilim=fJpsiSkimCuts[2];
+  if((retval & (1 << kbitDzerobar)) && (minv2<lolim*lolim || minv2>hilim*hilim)) retval &= ~(1 << kbitDzerobar);
+  lolim=fJpsiSkimCuts[iPtBinJpsi][0];
+  hilim=fJpsiSkimCuts[iPtBinJpsi][1];
   pdg2[0]=11; pdg2[1]=11;  //e+e- -->Jpsi
   minv2 = rd4massCalc2->InvMass2(nprongs,pdg2);
-  if(minv2>lolim*lolim && minv2<hilim*hilim && (retval & (1 << kbitJpsi)) == 0) retval+=(1 << kbitJpsi);
+  if((retval & (1 << kbitJpsi)) && (minv2<lolim*lolim || minv2>hilim*hilim)) retval &= ~(1 << kbitJpsi);
   return retval;
 }
 //______________________________________________________________________________
 Int_t AliAnalysisTaskHFSimpleVertices::SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3)
 {
 
-  Int_t retval = 0;
+  Int_t retval = (1 << kbitDplus) + (1 << kbitDs) + (1 << kbitLc);
   Double_t momentum[3];
   Double_t px[3], py[3], pz[3];
   for (Int_t iTrack = 0; iTrack < 3; iTrack++) {
@@ -2210,40 +2290,59 @@ Int_t AliAnalysisTaskHFSimpleVertices::SelectInvMassAndPt3prong(TObjArray* trkAr
   UInt_t pdg3[3];
   Int_t nprongs = 3;
   rd4massCalc3->SetPxPyPzProngs(nprongs, px, py, pz);
+  Double_t ptCand = rd4massCalc3->Pt() + fPtWithoutVtxToll;
+  Int_t iPtBinDplus = GetPtBin(ptCand, fPtBinLimsDplusSkims, kMaxNPtBins3ProngsSkims);
+  if(iPtBinDplus < 0) {
+    retval &= ~(1 << kbitDplus);
+  }
+  Int_t iPtBinDs = GetPtBin(ptCand, fPtBinLimsDsSkims, kMaxNPtBins3ProngsSkims);
+  if(iPtBinDs < 0) {
+    retval &= ~(1 << kbitDs);
+  }
+  Int_t iPtBinLc = GetPtBin(ptCand, fPtBinLimsLcSkims, kMaxNPtBins3ProngsSkims);
+  if(iPtBinLc < 0) {
+    retval &= ~(1 << kbitLc);
+  }
   Double_t minv2;
-  Double_t lolim=fDplusSkimCuts[1];
-  Double_t hilim=fDplusSkimCuts[2];
+  Double_t lolim=fDplusSkimCuts[iPtBinDplus][0];
+  Double_t hilim=fDplusSkimCuts[iPtBinDplus][1];
   pdg3[0] = 211;
   pdg3[1] = 321;
   pdg3[2] = 211;
   minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
-  if (minv2 > lolim * lolim && minv2 < hilim * hilim)
-    retval += (1 << kbitDplus);
-  lolim=fDsSkimCuts[1];
-  hilim=fDsSkimCuts[2];
+  if ((retval & (1 << kbitDplus)) && (minv2 < lolim * lolim || minv2 > hilim * hilim))
+    retval &= ~(1 << kbitDplus);
+  lolim=fDsSkimCuts[iPtBinDs][0];
+  hilim=fDsSkimCuts[iPtBinDs][1];
+  Bool_t isSelDs[2] = {true, true}; 
   for (Int_t ih = 0; ih < 2; ih++) {
     Int_t k = ih * 2;
     pdg3[k] = 321;
     pdg3[1] = 321;
     pdg3[2 - k] = 211;
     minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
-    if (minv2 > lolim * lolim && minv2 < hilim * hilim && (retval & (1 << kbitDs)) == 0)
-      retval += (1 << kbitDs);
+    if ((retval & (1 << kbitDs)) && (minv2 < lolim * lolim || minv2 > hilim * hilim))
+      isSelDs[ih] = false;
   }
-  lolim=fLcSkimCuts[1];
-  hilim=fLcSkimCuts[2];
+  if(!isSelDs[0] && !isSelDs[1])
+   retval &= ~(1 << kbitDs);
+  lolim=fLcSkimCuts[iPtBinLc][0];
+  hilim=fLcSkimCuts[iPtBinLc][1];
+  Bool_t isSelLc[2] = {true, true}; 
   pdg3[0] = 2212;
   pdg3[1] = 321;
   pdg3[2] = 211;
   minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
-  if (minv2 > lolim * lolim && minv2 < hilim * hilim && (retval & (1 << kbitLc)) == 0)
-    retval += (1 << kbitLc);
+  if ((retval & (1 << kbitLc)) && (minv2 < lolim * lolim || minv2 > hilim * hilim))
+    isSelLc[0] = false;
   pdg3[0] = 211;
   pdg3[1] = 321;
   pdg3[2] = 2212;
   minv2 = rd4massCalc3->InvMass2(nprongs, pdg3);
-  if (minv2 > lolim * lolim && minv2 < hilim * hilim && (retval & (1 << kbitLc)) == 0)
-    retval += (1 << kbitLc);
+  if ((retval & (1 << kbitLc)) && (minv2 < lolim * lolim || minv2 > hilim * hilim))
+    isSelLc[1] = false;
+  if(!isSelLc[0] && !isSelLc[1])
+   retval &= ~(1 << kbitLc);
 
   return retval;
 }

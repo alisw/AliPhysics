@@ -1679,10 +1679,25 @@ void AliEMCALRecoUtils::InitNCellEfficiencyParam()
     fNCellEfficiencyParams[1] = 1.28118;
     fNCellEfficiencyParams[2] = 0.583403;
   }
-  else if (fNCellEfficiencyFunction == kNCePi0TaggedPCMEMC) {
-    fNCellEfficiencyParams[0] = -0.0377925;
-    fNCellEfficiencyParams[1] = 0.160758;
-    fNCellEfficiencyParams[2] = -0.00357992;
+  else if (fNCellEfficiencyFunction == kNCePCMEMCGaussian) {
+    fNCellEfficiencyParams[0] = 0.130462;
+    fNCellEfficiencyParams[1] = 1.62858;
+    fNCellEfficiencyParams[2] = 0.572064;
+  }
+  else if (fNCellEfficiencyFunction == kNCePCMEMCPol2) {
+    fNCellEfficiencyParams[0] = -0.0794055;
+    fNCellEfficiencyParams[1] = 0.290664;
+    fNCellEfficiencyParams[2] = -0.136717;
+  }
+  else if (fNCellEfficiencyFunction == kNCeEMCGaussian) {
+    fNCellEfficiencyParams[0] = 0.0864766;
+    fNCellEfficiencyParams[1] = 1.50279;
+    fNCellEfficiencyParams[2] = 0.61173;
+  }
+  else if (fNCellEfficiencyFunction == kNCeEMCPol2) {
+    fNCellEfficiencyParams[0] = -0.0638141;
+    fNCellEfficiencyParams[1] = 0.203806;
+    fNCellEfficiencyParams[2] = -0.0774961;
   }
 
 }
@@ -1768,14 +1783,66 @@ Bool_t AliEMCALRecoUtils::GetIsNCellCorrected(AliVCluster* cluster, AliVCaloCell
       break;
     }
 
-    case kNCePi0TaggedPCMEMC:
+    case kNCePCMEMCGaussian:
     {
       // based on clusters which are part of a (PCM-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
       // mostly photon clusters and electron(conversion) clusters (purity about 95%)
       // exotics should be nearly cancled by that
-      // fNCellEfficiencyParams[0] = -0.0377925;
-      // fNCellEfficiencyParams[1] = 0.160758;
-      // fNCellEfficiencyParams[2] = -0.00357992;
+      // Gaussian par.
+      // fNCellEfficiencyParams[0] = 0.130462;
+      // fNCellEfficiencyParams[1] = 1.62858;
+      // fNCellEfficiencyParams[2] = 0.572064;
+      Float_t val = fNCellEfficiencyParams[0]*exp(
+                    -0.5*((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2])*
+                    ((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2]));
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCePCMEMCPol2:
+    {
+      // based on clusters which are part of a (PCM-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // mostly photon clusters and electron(conversion) clusters (purity about 95%)
+      // exotics should be nearly cancled by that
+      // Pol2 par.
+      // fNCellEfficiencyParams[0] = -0.0794055;
+      // fNCellEfficiencyParams[1] = 0.290664;
+      // fNCellEfficiencyParams[2] = -0.136717;
+      Float_t val = fNCellEfficiencyParams[0]*energy*energy +
+                    fNCellEfficiencyParams[1]*energy +
+                    fNCellEfficiencyParams[2];
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCeEMCGaussian:
+    {
+      // based on clusters which are part of a (EMC-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // mostly photon clusters and electron(conversion) clusters (purity about 95%)
+      // exotics should be nearly cancled by that
+      // Gaussian par.
+      // fNCellEfficiencyParams[0] = 0.0864766;
+      // fNCellEfficiencyParams[1] = 1.50279;
+      // fNCellEfficiencyParams[2] = 0.61173;
+      Float_t val = fNCellEfficiencyParams[0]*exp(
+                    -0.5*((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2])*
+                    ((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2]));
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCeEMCPol2:
+    {
+      // based on clusters which are part of a (EMC-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // mostly photon clusters and electron(conversion) clusters (purity about 95%)
+      // exotics should be nearly cancled by that
+      // Pol2 par.
+      // fNCellEfficiencyParams[0] = -0.0638141;
+      // fNCellEfficiencyParams[1] = 0.203806;
+      // fNCellEfficiencyParams[2] = -0.0774961;
       Float_t val = fNCellEfficiencyParams[0]*energy*energy +
                     fNCellEfficiencyParams[1]*energy +
                     fNCellEfficiencyParams[2];
@@ -2702,11 +2769,11 @@ Double_t AliEMCALRecoUtils::GetLowGainSlewing (Double_t energy) const
   Double_t offset = 0;
 
   if (energy > 14 && energy <= 80){
-    offset = 2.2048848 - 0.19256571*energy + 0.0034679678*TMath::Power(energy,2) - 1.9102064e-05*TMath::Power(energy,2);
+    offset = 2.2048848 - 0.19256571*energy + 0.0034679678*TMath::Power(energy,2) - 1.9102064e-05*TMath::Power(energy,3);
   } else if (energy <= 14) {
-    offset = 2.2048848 - 0.19256571*14 + 0.0034679678*TMath::Power(14,2) - 1.9102064e-05*TMath::Power(14,2);
+    offset = 2.2048848 - 0.19256571*14 + 0.0034679678*TMath::Power(14,2) - 1.9102064e-05*TMath::Power(14,3);
   } else {
-    offset = 2.2048848 - 0.19256571*80 + 0.0034679678*TMath::Power(80,2) - 1.9102064e-05*TMath::Power(80,2);
+    offset = 2.2048848 - 0.19256571*80 + 0.0034679678*TMath::Power(80,2) - 1.9102064e-05*TMath::Power(80,3);
   }
 
   return offset;

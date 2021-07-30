@@ -242,6 +242,7 @@ private:
     AliESDtrackCuts *fESDtrackCuts;   //! ESD track cuts used for primary track definition
     AliESDtrackCuts *fESDtrackCutsITSsa2010;  //! ESD track cuts used for ITSsa track definition
     AliESDtrackCuts *fESDtrackCutsGlobal2015; //! ESD track cuts used for global track definition
+    AliESDtrackCuts *fESDtrackCutsStandardITSTPC2011pp;
     AliAnalysisUtils *fUtils;         //! analysis utils (for MV pileup selection)
     
     AliEventCuts fEventCuts;                 /// Event cuts class
@@ -311,12 +312,18 @@ private:
     Bool_t fOOBPileupFlag; //!
     Float_t fTestVariable; //!
     Int_t fRun;//!
-
+    Int_t fNTracksGlobal; //!
+    Int_t fNtrk_pTgt2; //!
+    Int_t fNtrk_pTgt3; //!
+    Int_t fNtrk_pTgt5; //!
+    Float_t fpTSum; //!
+   
     //TOF info for OOB pileuo study
     Int_t  fSPDtracklets; //!
     Int_t  fSPDtrackletsA; //!
     Int_t  fSPDtrackletsC; //!
     Int_t  fNTOFClusters;  //!
+    Int_t  fNTOFtrgPads;  //!
     Int_t  fNTOFMatches;   //!
     Int_t  fNTracksITSsa2010; //!
     Int_t  fNTracksGlobal2015; //!
@@ -412,6 +419,10 @@ private:
     Bool_t fTreeVariableNegITSSharedClusters3;
     Bool_t fTreeVariableNegITSSharedClusters4;
     Bool_t fTreeVariableNegITSSharedClusters5;
+
+    Int_t fTreeVariableNTOFClusters; //!
+    Int_t fTreeVariableNTOFtrgPads; //!
+    Int_t fTreeVariableNTOFMatches; //!
     
     Bool_t fTreeVariableIsCowboy; //store if V0 is cowboy-like or sailor-like in XY plane
 
@@ -619,6 +630,10 @@ private:
     Bool_t fTreeCascVarBachITSSharedClusters4;
     Bool_t fTreeCascVarBachITSSharedClusters5;
 
+    Int_t fTreeCascVarNTOFClusters; //!
+    Int_t fTreeCascVarNTOFtrgPads; //!
+    Int_t fTreeCascVarNTOFMatches; //!
+    
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeCascVarNegTOFExpTDiff; //!
     Float_t fTreeCascVarPosTOFExpTDiff; //!

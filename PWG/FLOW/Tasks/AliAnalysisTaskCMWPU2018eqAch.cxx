@@ -108,7 +108,8 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): 
   fChi2(4.0),
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
-  bSkipNUA(kFALSE), 
+//bSkipNUA(kFALSE), 
+  bdataset(0), 
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -120,9 +121,6 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): 
   sCentrEstimator("V0M"),
   fCentDistBeforCut(NULL),
   fCentDistAfterCut(NULL),
-  fHistEtaPtBeforCut(NULL),
-  fHistEtaPhiBeforCut(NULL),
-  fHistEtaPhiAfterCut(NULL),  
   fHCorrectMCposChrg(NULL),
   fHCorrectMCposPion(NULL),
   fHCorrectMCposKaon(NULL),
@@ -131,29 +129,30 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): 
   fHCorrectMCnegPion(NULL),
   fHCorrectMCnegKaon(NULL),
   fHCorrectMCnegProt(NULL),      
-  fHistAChrgVsCent(NULL),
 
-  fHistTPConlyVsCL1Before(NULL),
-  fHistTPConlyVsV0MBefore(NULL),
-  fHistCL0VsV0MBefore(NULL),  
-  fHistTPConlyVsCL1After(NULL),
-  fHistTPConlyVsV0MAfter(NULL),
-  fHistCL0VsV0MAfter(NULL),
-  fHistGlobalVsV0MBefore(NULL),
-  fHistGlobalVsV0MAfter(NULL),
-  fTPCvsGlobalTrkBefore(NULL),
-  fTPCvsGlobalTrkAfter(NULL),
-  fHistTPCVsESDTrkBefore(NULL),
-  fHistTPCVsESDTrkAfter(NULL),
+  fHCorrectNUAposChrg(NULL),  
+  fHCorrectNUAnegChrg(NULL),  
+  fHCorrectNUAposPion(NULL),  
+  fHCorrectNUAnegPion(NULL),  
+  fHCorrectNUAposKaon(NULL),  
+  fHCorrectNUAnegKaon(NULL),  
+  fHCorrectNUAposProt(NULL),  
+  fHCorrectNUAnegProt(NULL),
 
-  fHistPileUpCount(NULL),
+  fSPDCutPU(NULL),
+  fV0CutPU(NULL),
+  fMultCutPU(NULL),
+  fCenCutLowPU(NULL),
+  fCenCutHighPU(NULL),   
+      
+
   fHistEventCount(NULL),
   fHCorrectEVNTWGTChrg(NULL)
   
 {
 
   for(int i=0;i<1;i++){
-    for(int j=0;j<10;j++){
+    for(int j=0;j<9;j++){
       fHistv2AchChrgPos[i][j] = NULL;
       fHistv2AchKaonPos[i][j] = NULL;    
       fHistv2AchProtPos[i][j] = NULL;      
@@ -176,7 +175,8 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): 
     }
   }
   
-  for(int i=0; i<5; i++){
+  //for(int i=0; i<5; i++){
+  /*
     fHCorrectNUAposChrg[i] = NULL;  
     fHCorrectNUAnegChrg[i] = NULL;  
     fHCorrectNUAposPion[i] = NULL;  
@@ -185,16 +185,21 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): 
     fHCorrectNUAnegKaon[i] = NULL;  
     fHCorrectNUAposProt[i] = NULL;  
     fHCorrectNUAnegProt[i] = NULL;    
-  }
+  
+    fHCorrectNUAposChrg = NULL;  
+    fHCorrectNUAnegChrg = NULL;  
+    fHCorrectNUAposPion = NULL;  
+    fHCorrectNUAnegPion = NULL;  
+    fHCorrectNUAposKaon = NULL;  
+    fHCorrectNUAnegKaon = NULL;  
+    fHCorrectNUAposProt = NULL;  
+    fHCorrectNUAnegProt = NULL;    
+  */  
+  //}
   
 
-  for(int i=0; i<5; i++){
-    fHFillNUAPosPID[i]  = NULL;
-    fHFillNUANegPID[i]  = NULL; 
-  }
-
   
-  for(int i=0; i<10; i++){
+  for(int i=0; i<9; i++){
     fHistv2cumAchChrgAll[i] = NULL;
   }
   
@@ -231,7 +236,8 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
   fChi2(4.0),
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
-  bSkipNUA(kFALSE), 
+//bSkipNUA(kFALSE), 
+  bdataset(0),   
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -243,9 +249,6 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
   sCentrEstimator("V0M"),
   fCentDistBeforCut(NULL),
   fCentDistAfterCut(NULL),
-  fHistEtaPtBeforCut(NULL),
-  fHistEtaPhiBeforCut(NULL),
-  fHistEtaPhiAfterCut(NULL),  
   fHCorrectMCposChrg(NULL),
   fHCorrectMCposPion(NULL),
   fHCorrectMCposKaon(NULL),
@@ -254,29 +257,30 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
   fHCorrectMCnegPion(NULL),
   fHCorrectMCnegKaon(NULL),
   fHCorrectMCnegProt(NULL),    
-  fHistAChrgVsCent(NULL),
 
-  fHistTPConlyVsCL1Before(NULL),
-  fHistTPConlyVsV0MBefore(NULL),
-  fHistCL0VsV0MBefore(NULL),
-  fHistTPConlyVsCL1After(NULL),
-  fHistTPConlyVsV0MAfter(NULL),
-  fHistCL0VsV0MAfter(NULL),
-  fHistGlobalVsV0MBefore(NULL),
-  fHistGlobalVsV0MAfter(NULL),
-  fTPCvsGlobalTrkBefore(NULL),
-  fTPCvsGlobalTrkAfter(NULL),
-  fHistTPCVsESDTrkBefore(NULL),
-  fHistTPCVsESDTrkAfter(NULL),
+  fHCorrectNUAposChrg(NULL),  
+  fHCorrectNUAnegChrg(NULL),  
+  fHCorrectNUAposPion(NULL),  
+  fHCorrectNUAnegPion(NULL),  
+  fHCorrectNUAposKaon(NULL),  
+  fHCorrectNUAnegKaon(NULL),  
+  fHCorrectNUAposProt(NULL),  
+  fHCorrectNUAnegProt(NULL),      
 
-  fHistPileUpCount(NULL),
+  fSPDCutPU(NULL),
+  fV0CutPU(NULL),
+  fMultCutPU(NULL),
+  fCenCutLowPU(NULL),
+  fCenCutHighPU(NULL),   
+
+
   fHistEventCount(NULL),
   fHCorrectEVNTWGTChrg(NULL)
 {
 
 
   for(int i=0;i<1;i++){
-    for(int j=0;j<10;j++){
+    for(int j=0;j<9;j++){
       fHistv2AchChrgPos[i][j] = NULL;
       fHistv2AchKaonPos[i][j] = NULL;    
       fHistv2AchProtPos[i][j] = NULL;      
@@ -299,7 +303,8 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
     }
   }
 
-  for(int i=0; i<5; i++){
+  //for(int i=0; i<5; i++){
+  /*
     fHCorrectNUAposChrg[i] = NULL;  
     fHCorrectNUAnegChrg[i] = NULL;  
     fHCorrectNUAposPion[i] = NULL;  
@@ -308,15 +313,20 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
     fHCorrectNUAnegKaon[i] = NULL;  
     fHCorrectNUAposProt[i] = NULL;  
     fHCorrectNUAnegProt[i] = NULL;  
-  }
-
-  for(int i=0; i<5; i++){
-    fHFillNUAPosPID[i]  = NULL;
-    fHFillNUANegPID[i]  = NULL; 
-  }
+  
+    fHCorrectNUAposChrg = NULL;  
+    fHCorrectNUAnegChrg = NULL;  
+    fHCorrectNUAposPion = NULL;  
+    fHCorrectNUAnegPion = NULL;  
+    fHCorrectNUAposKaon = NULL;  
+    fHCorrectNUAnegKaon = NULL;  
+    fHCorrectNUAposProt = NULL;  
+    fHCorrectNUAnegProt = NULL;  
+  */  
+  //}
 
     
-  for(int i=0; i<10; i++){
+  for(int i=0; i<9; i++){
     fHistv2cumAchChrgAll[i] = NULL;
   }
 
@@ -336,6 +346,16 @@ AliAnalysisTaskCMWPU2018eqAch::~AliAnalysisTaskCMWPU2018eqAch()
   if(fListTRKCorr)  delete fListTRKCorr;
   if(fListNUACorr)  delete fListNUACorr;
   if(fListV0MCorr)  delete fListV0MCorr;
+
+  //delete the functions:
+  if(fSPDCutPU)     delete fSPDCutPU;
+  if(fV0CutPU)      delete fV0CutPU;
+  if(fMultCutPU)    delete fMultCutPU;
+  if(fCenCutLowPU)  delete fCenCutLowPU; 
+  if(fCenCutHighPU) delete fCenCutHighPU; 
+  
+
+
       
 }
 
@@ -381,56 +401,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   fListHist->Add(fCentDistBeforCut);
   fCentDistAfterCut = new TH1F("fCentDistAfterCut","Cent with all Cut; Cent (%); no.Events ",100,0,100);
   fListHist->Add(fCentDistAfterCut);
-  
-  fHistEtaPtBeforCut = new TH2F("fHistEtaPtBeforCut","#eta vs p_{T} (wFB, w/o  cut)",24,-1.2,1.2,50,0,5);
-  fListHist->Add(fHistEtaPtBeforCut);
-  fHistEtaPhiBeforCut = new TH2F("fHistPhiEtaBeforCut","#phi vs #eta (wFB, w/o cut)",50,0,6.2835,24,-1.2,1.2);
-  fListHist->Add(fHistEtaPhiBeforCut);  
-  fHistEtaPhiAfterCut = new TH2F("fHistPhiEtaAfterCut","#phi vs #eta (with Wgts)",50,0,6.2835,24,-1.2,1.2);
-  fListHist->Add(fHistEtaPhiAfterCut);
-  
-
-
-
-  Int_t gMaxGlobalmult  = 4000;
-  Int_t gMaxTPCcorrmult = 5000;
-  Int_t gMaxESDtracks   = 20000;
-
-
-
-
-
-  fHistGlobalVsV0MBefore = new TH2F("fHistGlobalVsV0MBefore","Before;Cent(V0M);Global",100,0,100,500,0,gMaxGlobalmult);
-  fListHist->Add(fHistGlobalVsV0MBefore);
-  fHistGlobalVsV0MAfter  = new TH2F("fHistGlobalVsV0MAfter"," After; Cent(V0M);Global",100,0,100,500,0,gMaxGlobalmult);
-  fListHist->Add(fHistGlobalVsV0MAfter);
-
-  fHistTPConlyVsCL1Before = new TH2F("fHistTPConlyVsCL1Before","Before;Cent(CL1); TPC(FB128)",100,0,100,250,0,gMaxTPCcorrmult);
-  fListHist->Add(fHistTPConlyVsCL1Before);
-  fHistTPConlyVsCL1After  = new TH2F("fHistTPConlyVsCL1After","After; Cent(CL1); TPC(FB128) ",100,0,100,250,0,gMaxTPCcorrmult);
-  fListHist->Add(fHistTPConlyVsCL1After);
-
-  fHistTPConlyVsV0MBefore = new TH2F("fHistTPConlyVsV0MBefore","Before;Cent(V0M); TPC(FB128)",100,0,100,250,0,gMaxTPCcorrmult);
-  fListHist->Add(fHistTPConlyVsV0MBefore);
-  fHistTPConlyVsV0MAfter  = new TH2F("fHistTPConlyVsV0MAfter","After; Cent(V0M); TPC(FB128) ",100,0,100,250,0,gMaxTPCcorrmult);
-  fListHist->Add(fHistTPConlyVsV0MAfter);
-
-
-  fHistCL0VsV0MBefore = new TH2F("fHistCL0VsV0MBefore","Before;Cent(V0M); Cent(CL0)",100,0,100,100,0,100);
-  fListHist->Add(fHistCL0VsV0MBefore);
-  fHistCL0VsV0MAfter  = new TH2F("fHistCL0VsV0MAfter","After; Cent(V0M); Cent(CL0) ",100,0,100,100,0,100);
-  fListHist->Add(fHistCL0VsV0MAfter);
-
-
-  fTPCvsGlobalTrkBefore = new TH2F("fTPCvsGlobalTrkBefore","Global(FB32) vs TPC(FB128)",250,0,5000,250,0,5000);
-  fListHist->Add(fTPCvsGlobalTrkBefore);
-  fTPCvsGlobalTrkAfter = new TH2F("fTPCvsGlobalTrkAfter","Global(FB32) vs TPC(FB128)",250,0,5000,250,0,5000);
-  fListHist->Add(fTPCvsGlobalTrkAfter);
-  
-  fHistTPCVsESDTrkBefore = new TH2F("fHistTPCVsESDTrkBefore","Before; TPC1; ESD trk",500,0,gMaxTPCcorrmult,200,0,gMaxESDtracks);
-  fListHist->Add(fHistTPCVsESDTrkBefore);
-  fHistTPCVsESDTrkAfter  = new TH2F("fHistTPCVsESDTrkAfter"," After;  TPC1; ESD trk",500,0,gMaxTPCcorrmult,200,0,gMaxESDtracks);
-  fListHist->Add(fHistTPCVsESDTrkAfter);
+    
 
 
 
@@ -443,35 +414,61 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   Char_t title[1000];
  
 
-  Double_t centRange[11] = {0,5,10,20,30,40,50,60,70,80,90};
-
-  fHistAChrgVsCent = new TH2F("fHistAChrgVsCent","Ach vs Cent;Cent;Ach",18,0,90,1000,-1.0,1.0);
-  fListHist->Add(fHistAChrgVsCent);
+  Double_t centRange[10] = {0,5,10,20,30,40,50,60,80,90};
 
 
 
   // Acharge Binning with Equal Event per bin:
   //Cent 0-5
-  Double_t fAchBinCent0[11] = {-0.128, -0.02, -0.012, -0.008, -0.002, 0.002, 0.006, 0.01, 0.016, 0.024, 1 };
+  Double_t fAchBinCent0[11] = {-0.074, -0.018, -0.01, -0.004, 0, 0.004, 0.008, 0.012, 0.018, 0.024, 1};
   //Cent 5-10
-  Double_t fAchBinCent1[11] = {-0.126, -0.022, -0.014, -0.008, -0.002, 0.002, 0.006, 0.012, 0.018, 0.026,  1 };
+  Double_t fAchBinCent1[11] = {-0.09, -0.02, -0.012, -0.006, 0, 0.004, 0.008, 0.014, 0.018, 0.026, 1};
   //Cent 10-20 
-  Double_t fAchBinCent2[11] = {-0.142, -0.026, -0.016, -0.01, -0.004, 0.002, 0.008, 0.012, 0.02, 0.028,  1 };
+  Double_t fAchBinCent2[11] = {-0.108, -0.024, -0.014, -0.008, -0.002, 0.004, 0.008, 0.014, 0.022, 0.03, 1};
   //Cent 20-30 
-  Double_t fAchBinCent3[11] = {-0.202, -0.032, -0.02, -0.012, -0.006, 0.002, 0.008, 0.016, 0.024, 0.036,  1 };
+  Double_t fAchBinCent3[11] = {-0.134, -0.03, -0.018, -0.01, -0.002, 0.004, 0.01, 0.018, 0.026, 0.036, 1};
   //Cent 30-40 
-  Double_t fAchBinCent4[11] = {-0.192, -0.04, -0.026, -0.016, -0.006, 0.002, 0.01, 0.018, 0.028, 0.044, 1 };
+  Double_t fAchBinCent4[11] = {-0.174, -0.038, -0.024, -0.014, -0.004, 0.004, 0.012, 0.02, 0.03, 0.046, 1};
   //Cent 40-50 
-  Double_t fAchBinCent5[11] = {-0.24, -0.054, -0.034, -0.02, -0.01, 0.002, 0.012, 0.024, 0.038, 0.056, 1 };
+  Double_t fAchBinCent5[11] = {-0.242, -0.05, -0.032, -0.018, -0.008, 0.004, 0.014, 0.026, 0.038, 0.058, 1};
   //Cent 50-60 
-  Double_t fAchBinCent6[11] = {-0.328, -0.072, -0.046, -0.028, -0.014, 0.002, 0.016, 0.032, 0.05, 0.076, 1 };
-  //Cent 60-70 
+  Double_t fAchBinCent6[11] = {-0.41, -0.07, -0.044, -0.026, -0.01, 0.002, 0.018, 0.034, 0.052, 0.076, 1};
+  //Cent 60-80 
+  Double_t fAchBinCent7[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
+  //Cent 80-90 
+  Double_t fAchBinCent8[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
+    
+
+  // Acharge Binning with Equal Event per bin:
+  //Cent 0-5
+  Double_t fAchBinCent00[11] = {-0.128, -0.02, -0.012, -0.008, -0.002, 0.002, 0.006, 0.01, 0.016, 0.024, 1 };
+  //Cent 5-10
+  Double_t fAchBinCent11[11] = {-0.126, -0.022, -0.014, -0.008, -0.002, 0.002, 0.006, 0.012, 0.018, 0.026,  1 };
+  //Cent 10-20 
+  Double_t fAchBinCent22[11] = {-0.142, -0.026, -0.016, -0.01, -0.004, 0.002, 0.008, 0.012, 0.02, 0.028,  1 };
+  //Cent 20-30 
+  Double_t fAchBinCent33[11] = {-0.202, -0.032, -0.02, -0.012, -0.006, 0.002, 0.008, 0.016, 0.024, 0.036,  1 };
+  //Cent 30-40 
+  Double_t fAchBinCent44[11] = {-0.192, -0.04, -0.026, -0.016, -0.006, 0.002, 0.01, 0.018, 0.028, 0.044, 1 };
+  //Cent 40-50 
+  Double_t fAchBinCent55[11] = {-0.24, -0.054, -0.034, -0.02, -0.01, 0.002, 0.012, 0.024, 0.038, 0.056, 1 };
+  //Cent 50-60 
+  Double_t fAchBinCent66[11] = {-0.328, -0.072, -0.046, -0.028, -0.014, 0.002, 0.016, 0.032, 0.05, 0.076, 1 };  
+/*//Cent 60-70 
   Double_t fAchBinCent7[11] = {-0.526, -0.104, -0.066, -0.042, -0.018, 0.002, 0.022, 0.044, 0.07, 0.106, 1 };
   //Cent 70-80 
   Double_t fAchBinCent8[11] = {-0.818, -0.16, -0.102, -0.062, -0.03, 0.002, 0.032, 0.066, 0.106, 0.162, 1 };
   //Cent 80-90 
   Double_t fAchBinCent9[11] = {-0.818, -0.16, -0.102, -0.062, -0.03, 0.002, 0.032, 0.066, 0.106, 0.162, 1 };
- 
+  */
+
+
+  //Cent 60-80 
+  Double_t fAchBinCent77[11] = {-0.818, -0.132, -0.082, -0.05, -0.024, 0.002, 0.026, 0.052, 0.086, 0.134, 1 };
+  //Cent 80-90 
+  Double_t fAchBinCent88[11] = {-0.818, -0.16, -0.102, -0.062, -0.03, 0.002, 0.032, 0.066, 0.106, 0.162, 1 };
+  
+
 
 
   Double_t fAchBinSelect[11] = {0.0};
@@ -490,9 +487,11 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 		 
   // v2 vs Ach
   for(int i=0;i<1;i++){
-    for(int j=0;j<10;j++){
+    for(int j=0;j<9;j++){
  
 
+      if (bdataset==0)
+      {
 
       if(j==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent0[k]; } }
       if(j==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent1[k]; } }
@@ -503,19 +502,33 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       if(j==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent6[k]; } }
       if(j==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent7[k]; } }
       if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent8[k]; } }
-      if(j==9){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent9[k]; } }
-            
+      
+      }
 
+      else if (bdataset==1)
+      {
+	  if(j==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent00[k]; } }
+	  if(j==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent11[k]; } }
+	  if(j==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent22[k]; } }
+	  if(j==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent33[k]; } }
+	  if(j==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent44[k]; } }
+	  if(j==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent55[k]; } }
+	  if(j==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent66[k]; } }
+	  if(j==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent77[k]; } }
+	  if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent88[k]; } }
+	  
+	}   
+      
 
       ////Charge:
       sprintf(name,"fHistv2AchChrgPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchChrgPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchChrgPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgPos[i][j]);
       sprintf(name,"fHistv2AchChrgNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchChrgNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchChrgNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgNeg[i][j]);
 
@@ -523,12 +536,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 
       sprintf(name,"fHistv2AchChrgPosChrgNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgPosChrgNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchChrgPosChrgNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchChrgPosChrgNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgPosChrgNeg[i][j]);
       sprintf(name,"fHistv2AchChrgNegChrgPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgNegChrgPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchChrgNegChrgPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchChrgNegChrgPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgNegChrgPos[i][j]);
 
@@ -538,12 +551,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       //// Pion:
       sprintf(name,"fHistv2AchPionPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchPionPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchPionPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionPos[i][j]);
       sprintf(name,"fHistv2AchPionNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchPionNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchPionNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionNeg[i][j]);
 
@@ -551,12 +564,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       
       sprintf(name,"fHistv2AchPionPosPionNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionPosPionNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchPionPosPionNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchPionPosPionNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionPosPionNeg[i][j]);
       sprintf(name,"fHistv2AchPionNegPionPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionNegPionPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchPionNegPionPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchPionNegPionPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionNegPionPos[i][j]);  
       
@@ -564,24 +577,24 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       //// Kaon:
       sprintf(name,"fHistv2AchKaonPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchKaonPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchKaonPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonPos[i][j]);
       sprintf(name,"fHistv2AchKaonNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchKaonNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchKaonNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonNeg[i][j]);
 
 
       sprintf(name,"fHistv2AchKaonPosKaonNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonPosKaonNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchKaonPosKaonNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchKaonPosKaonNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonPosKaonNeg[i][j]);
       sprintf(name,"fHistv2AchKaonNegKaonPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonNegKaonPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchKaonNegKaonPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchKaonNegKaonPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonNegKaonPos[i][j]);      
             
@@ -589,24 +602,24 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       //// Proton:
       sprintf(name,"fHistv2AchProtPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchProtPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchProtPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtPos[i][j]);
       sprintf(name,"fHistv2AchProtNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchProtNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchProtNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtNeg[i][j]);
 
 
       sprintf(name,"fHistv2AchProtPosProtNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtPosProtNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchProtPosProtNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchProtPosProtNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtPosProtNeg[i][j]);
       sprintf(name,"fHistv2AchProtNegProtPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtNegProtPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchProtNegProtPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
       fHistv2AchProtNegProtPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtNegProtPos[i][j]);    
     }
@@ -622,26 +635,16 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   else if(fParticle==3) sprintf(cpid,"Prot,Id %d",fParticle);
   else  sprintf(cpid,"Charge,Id %d",fParticle);
   
-  for(int i=0; i<5; i++){
-    sprintf(name,"fHistEtaPhiVz_%d_Pos_Cent%d_Run%d",fParticle,i,1); 
-    sprintf(title,"%s Pos, Cent%d-%d, FB %d",cpid,gCentForNUA[i],gCentForNUA[i+1],fFilterBit);
-    fHFillNUAPosPID[i] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
-    fListHist->Add(fHFillNUAPosPID[i]);
-
-    sprintf(name,"fHistEtaPhiVz_%d_Neg_Cent%d_Run%d",fParticle,i,1); 
-    sprintf(title,"%s Neg, Cent%d-%d, FB %d",cpid,gCentForNUA[i],gCentForNUA[i+1],fFilterBit);
-    fHFillNUANegPID[i] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
-    fListHist->Add(fHFillNUANegPID[i]);    
-  }
       
 
 
-
   
 
   
-  for(int i=0; i<10; i++){
+  for(int i=0; i<9; i++){
 
+    if (bdataset==0)
+    {
     if(i==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent0[k]; } }
     if(i==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent1[k]; } }
     if(i==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent2[k]; } }
@@ -651,13 +654,27 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
     if(i==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent6[k]; } }
     if(i==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent7[k]; } }
     if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent8[k]; } }
-    if(i==9){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent9[k]; } }
+    }
+
+    else if (bdataset==1)
+    {
+    if(i==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent00[k]; } }
+    if(i==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent11[k]; } }
+    if(i==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent22[k]; } }
+    if(i==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent33[k]; } }
+    if(i==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent44[k]; } }
+    if(i==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent55[k]; } }
+    if(i==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent66[k]; } }
+    if(i==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent77[k]; } }
+    if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent88[k]; } }
+    }
+    
 
 
     ////Charge:
     sprintf(name,"fHistv2cumAchChrgAllQcumCent%d",i);
     sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[i],centRange[i+1]);
-    fHistv2cumAchChrgAll[i] = new TProfile(name,title,10,fAchBinSelect,"");
+    fHistv2cumAchChrgAll[i] = new TProfile(name,title,9,fAchBinSelect,"");
     fHistv2cumAchChrgAll[i]->Sumw2();
     fListHist->Add(fHistv2cumAchChrgAll[i]);    
 
@@ -666,7 +683,24 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   
 
 
+  //// PileUp Removal Functions:
+  fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
+
+  Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
+  fV0CutPU  = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+  fV0CutPU->SetParameters(parV0);
+
+  Double_t parFB32[8] = {2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
+  fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90);
+  fMultCutPU->SetParameters(parFB32);
   
+  Double_t parV0CL0[6] = {0.320462, 0.961793, 1.02278, 0.0330054, -0.000719631, 6.90312e-06};
+  fCenCutLowPU  = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+  fCenCutLowPU->SetParameters(parV0CL0);
+  fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+  fCenCutHighPU->SetParameters(parV0CL0);
+
+
 
 
 
@@ -724,7 +758,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   stepCount++;
 
 
-
+  
 
 
   fAOD = dynamic_cast <AliAODEvent*> (InputEvent());
@@ -787,7 +821,6 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 
   centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
-  //centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
 
  
   centrality = centrV0M;  // This Is Always Default, changes below for other options:
@@ -817,29 +850,21 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 
 
-
+  
   //Pile up cut function called--------------------------
 
   Bool_t kPileupEvent = kFALSE;
 
   kPileupEvent = CheckEventIsPileUp2018(fAOD);
   //if (!bSkipPileUpCut)
-    if(kPileupEvent)  return;
-    
+  if(kPileupEvent)  return;
   
-  /*
-  AliTimeRangeCut  *fTimeRangeCut;
-  fTimeRangeCut = new AliTimeRangeCut;
-  fTimeRangeCut->InitFromEvent(fAOD);
-  if (fTimeRangeCut->CutEvent(fAOD))
-    return;
-  */
-
+  
 
 
   //////////////////////////////////////////////////
 
-
+  
 
   if(centrality<fCentralityMin || centrality>fCentralityMax){ 
     return;
@@ -862,6 +887,10 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
   iCent = cent10bin;
 
+  if (iCent==8)
+    iCent=7;
+  if (iCent==9)
+    iCent=8;
 
   //Centrality array index for NUA correcion
   Int_t cForNUA = 0;  
@@ -888,7 +917,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 
 
-
+  
 
   
 
@@ -926,17 +955,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 
 
-
+  
   
   Float_t fMultTPCFull = 0;  // TPC mult estimate
   Float_t fMultGlobal  = 0;  // global track multiplicity
   
-  //Float_t fMultwRawFB  = 0;  // Uncorrected Multiplicity
-  //Float_t fMultCorrFB  = 0;  // Corrected Multiplicity  
-  //Int_t   gMultEtaNeg  = 0;
-  //Int_t   gMultEtaPos  = 0;
-  //Int_t   gMultEtaAll  = 0;
-
+  
   Float_t trkPt=0,trkPhi=0,trkEta=0,trkDCAxy=0.0, trkDCAz=0.0;
   Float_t trkChi2=0,trkdEdx=0,trkWgt=1.0;
   Int_t   trkChrg=0, trkTpcNC=0;
@@ -962,9 +986,6 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   
   Float_t fWgtEvent = 1.0; //Event Weight if Any.
 
-  /// TO be passed as Argument:
-  //Double_t fEtaGapNeg = -0.100;
-  //Double_t fEtaGapPos =  0.100;
   Double_t gPsiN = gHarmonic;
 
   
@@ -994,23 +1015,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();
       
 
-      //Apply track cuts here:
-      //     if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
       if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
-
-
-	  
-      //if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
-	  
-
-	  
-	//dcaXY  = track->DCA();
-	//dcaZ   = track->ZAtDCA();
-        
-	//---------->  Here I do All my track level analysis:
-    
-
 
 
 	  
@@ -1030,9 +1036,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	    if(binCont!=0) ptWgtMC = 1.0/binCont;      
 	  }
 	  
-	  if(fHCorrectNUAposChrg[cForNUA]){
-	    iBinNUA = fHCorrectNUAposChrg[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
-	    WgtNUA  = fHCorrectNUAposChrg[cForNUA]->GetBinContent(iBinNUA);	    
+	  //if(fHCorrectNUAposChrg[cForNUA]){
+	  if(fHCorrectNUAposChrg){
+	    //iBinNUA = fHCorrectNUAposChrg[cForNUA->FindBin(pVtxZ,trkPhi,trkEta);
+	    //WgtNUA  = fHCorrectNUAposChrg[cForNUA]->GetBinContent(iBinNUA);	    
+	    iBinNUA = fHCorrectNUAposChrg->FindBin(pVtxZ,trkPhi,trkEta);
+	    WgtNUA  = fHCorrectNUAposChrg->GetBinContent(iBinNUA);	    
 	  }
 	}
 	else{
@@ -1043,9 +1052,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	    if(binCont!=0) ptWgtMC = 1.0/binCont;  
 	  }
 	  
-	  if(fHCorrectNUAnegChrg[cForNUA]){
-	    iBinNUA = fHCorrectNUAnegChrg[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
-	    WgtNUA  = fHCorrectNUAnegChrg[cForNUA]->GetBinContent(iBinNUA);  
+	  //if(fHCorrectNUAnegChrg[cForNUA]){
+	  if(fHCorrectNUAnegChrg){
+	    //iBinNUA = fHCorrectNUAnegChrg[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
+	    //WgtNUA  = fHCorrectNUAnegChrg[cForNUA]->GetBinContent(iBinNUA);  
+	    iBinNUA = fHCorrectNUAnegChrg->FindBin(pVtxZ,trkPhi,trkEta);
+	    WgtNUA  = fHCorrectNUAnegChrg->GetBinContent(iBinNUA);  
 	  }
 	}
 
@@ -1054,6 +1066,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	if(WgtNUA>1e3) WgtNUA = 1;   // For empty bins which cause Wgt = infinity !!
 
 	trkWgt = WgtNUA*ptWgtMC;
+
 
 	if(trkChrg > 0){	  
 	  //fNumOfPos += trkWgt;
@@ -1154,12 +1167,11 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   
   Float_t fAchrgNet = (fNumOfPos - fNumOfNeg)/(fNumOfPos + fNumOfNeg); // Efficiency & NUA Corrected!
 
-  fHistAChrgVsCent->Fill(centrality, fAchrgNet, fWgtEvent);
   
  
 
 
-
+  
 
 
 
@@ -1237,10 +1249,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
       trkTpcNC = AODtrack->GetTPCNcls();
       trkDCAxy=  AODtrack->DCA();
       trkDCAz=   AODtrack->ZAtDCA();
-      
-      fHistEtaPtBeforCut->Fill(trkEta, trkPt);
-      fHistEtaPhiBeforCut->Fill(trkPhi,trkEta);
-      
+            
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
@@ -1251,11 +1260,6 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 
 
-      //if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
-
-	
-	//dcaXY  = track->DCA();
-	//dcaZ   = track->ZAtDCA();
         
 	//---------->  Here I do All my track level analysis:
 
@@ -1271,13 +1275,15 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	if(fParticle==1){
 	  nSigTPCpion = fPIDResponse->NumberOfSigmasTPC(AODtrack, AliPID::kPion);
 	  nSigTOFpion = fPIDResponse->NumberOfSigmasTOF(AODtrack, AliPID::kPion);
+          Double_t nSigRMSTPCTOFpion = TMath::Sqrt(nSigTPCpion*nSigTPCpion + nSigTOFpion*nSigTOFpion);
 	
-	  if(trkPt<=0.6 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut){
+
+	  if(trkPt<=0.5 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut){
 	    isItPion = kTRUE;
 	  }
 	  //else if(trkPt>0.6 && trkPt<=10.0 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut && TMath::Abs(nSigTOFpion)<=fNSigmaTOFCut){
 	  // Using Circular cut for Pion: 	  
-          else if(trkPt>0.6 && trkPt<=10.0 && TMath::Sqrt(nSigTPCpion*nSigTPCpion + nSigTOFpion*nSigTOFpion)<=fNSigmaTOFCut){
+	  else if(trkPt>0.5 && TMath::Abs(nSigRMSTPCTOFpion)<=fNSigmaTOFCut){
 	  isItPion = kTRUE;
 	  }
 	}
@@ -1285,24 +1291,28 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	else if(fParticle==2){
 	  nSigTPCkaon = fPIDResponse->NumberOfSigmasTPC(AODtrack, AliPID::kKaon);	
 	  nSigTOFkaon = fPIDResponse->NumberOfSigmasTOF(AODtrack, AliPID::kKaon);
+          Double_t nSigRMSTPCTOFkaon = TMath::Sqrt(nSigTPCkaon*nSigTPCkaon + nSigTOFkaon*nSigTOFkaon);
+
 
 	  if(trkPt<=0.45 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut){
 	    isItKaon = kTRUE;
 	  }
-	  else if(trkPt>0.45 && trkPt<=10.0 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut && TMath::Abs(nSigTOFkaon)<=fNSigmaTOFCut){
+	  else if(trkPt>0.45 && TMath::Abs(nSigRMSTPCTOFkaon)<=fNSigmaTOFCut){
 	    isItKaon = kTRUE;
 	  }
 	}
 	else if(fParticle==3){
 	  nSigTPCprot = fPIDResponse->NumberOfSigmasTPC(AODtrack, AliPID::kProton);    
 	  nSigTOFprot = fPIDResponse->NumberOfSigmasTOF(AODtrack, AliPID::kProton);
+          Double_t nSigRMSTPCTOFprot = TMath::Sqrt(nSigTPCprot*nSigTPCprot + nSigTOFprot*nSigTOFprot);
       
+
 	  //----- Proton 
-	  if(trkPt<=0.8 && TMath::Abs(nSigTPCprot)<=fNSigmaTPCCut){
+	  if(trkPt<=0.6 && TMath::Abs(nSigTPCprot)<=fNSigmaTPCCut){
 	    isItProt = kTRUE;
 	    if(trkChrg>0 && trkPt<0.4) isItProt = kFALSE;  //Proton below 0.4 GeV has beam Pipe Contamination
 	  }
-	  else if(trkPt>0.8 && trkPt<=10.0 && TMath::Abs(nSigTPCprot)<=fNSigmaTPCCut && TMath::Abs(nSigTOFprot)<=fNSigmaTOFCut){  
+	  else if(trkPt>0.6 && TMath::Abs(nSigRMSTPCTOFprot)<=fNSigmaTOFCut){
 	    isItProt = kTRUE;
 	  }
 	}
@@ -1342,21 +1352,33 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	  }
 
 	  ///NUA:
-	  if(fHCorrectNUAposChrg[cForNUA]){
-	    iBinNUA = fHCorrectNUAposChrg[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
-	    WgtNUA  = fHCorrectNUAposChrg[cForNUA]->GetBinContent(iBinNUA);
+	  //if(fHCorrectNUAposChrg[cForNUA]){
+	  if(fHCorrectNUAposChrg){
+	    //iBinNUA = fHCorrectNUAposChrg[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
+	    //WgtNUA  = fHCorrectNUAposChrg[cForNUA]->GetBinContent(iBinNUA);
+	    iBinNUA = fHCorrectNUAposChrg->FindBin(pVtxZ,trkPhi,trkEta);
+	    WgtNUA  = fHCorrectNUAposChrg->GetBinContent(iBinNUA);
 	  }
-	  if(fParticle==1 && isItPion && fHCorrectNUAposPion[cForNUA]){
-	    iBinNUA     = fHCorrectNUAposPion[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
-	    WgtNUAPion  = fHCorrectNUAposPion[cForNUA]->GetBinContent(iBinNUA);
+	  //if(fParticle==1 && isItPion && fHCorrectNUAposPion[cForNUA]){
+	  //iBinNUA     = fHCorrectNUAposPion[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
+	  // WgtNUAPion  = fHCorrectNUAposPion[cForNUA]->GetBinContent(iBinNUA);
+	  if(fParticle==1 && isItPion && fHCorrectNUAposPion){
+	    iBinNUA     = fHCorrectNUAposPion->FindBin(pVtxZ,trkPhi,trkEta);
+	    WgtNUAPion  = fHCorrectNUAposPion->GetBinContent(iBinNUA);
 	  }
-	  if(fParticle==2 && isItKaon && fHCorrectNUAposKaon[cForNUA]){
-	    iBinNUA     = fHCorrectNUAposKaon[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
-	    WgtNUAKaon  = fHCorrectNUAposKaon[cForNUA]->GetBinContent(iBinNUA);
+	  //if(fParticle==2 && isItKaon && fHCorrectNUAposKaon[cForNUA]){
+	  //iBinNUA     = fHCorrectNUAposKaon[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
+	  //WgtNUAKaon  = fHCorrectNUAposKaon[cForNUA]->GetBinContent(iBinNUA);
+	    if(fParticle==2 && isItKaon && fHCorrectNUAposKaon){
+	    iBinNUA     = fHCorrectNUAposKaon->FindBin(pVtxZ,trkPhi,trkEta);
+	    WgtNUAKaon  = fHCorrectNUAposKaon->GetBinContent(iBinNUA);
 	  }
-	  if(fParticle==3 && isItProt && fHCorrectNUAposProt[cForNUA]){
-	    iBinNUA     = fHCorrectNUAposProt[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
-	    WgtNUAProt  = fHCorrectNUAposProt[cForNUA]->GetBinContent(iBinNUA);
+	    //if(fParticle==3 && isItProt && fHCorrectNUAposProt[cForNUA]){
+	    //iBinNUA     = fHCorrectNUAposProt[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
+	    //WgtNUAProt  = fHCorrectNUAposProt[cForNUA]->GetBinContent(iBinNUA);
+	    if(fParticle==3 && isItProt && fHCorrectNUAposProt){
+	    iBinNUA     = fHCorrectNUAposProt->FindBin(pVtxZ,trkPhi,trkEta);
+	    WgtNUAProt  = fHCorrectNUAposProt->GetBinContent(iBinNUA);
 	  }       	  
 	}
 	else{
@@ -1383,21 +1405,33 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	  }
 	  
 	  ////NUA:
-	  if(fHCorrectNUAnegChrg[cForNUA]){
-	    iBinNUA = fHCorrectNUAnegChrg[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
-	    WgtNUA  = fHCorrectNUAnegChrg[cForNUA]->GetBinContent(iBinNUA);  
+	  //if(fHCorrectNUAnegChrg[cForNUA]){
+	  //iBinNUA = fHCorrectNUAnegChrg[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
+	  //WgtNUA  = fHCorrectNUAnegChrg[cForNUA]->GetBinContent(iBinNUA);  
+	    if(fHCorrectNUAnegChrg){
+	    iBinNUA = fHCorrectNUAnegChrg->FindBin(pVtxZ,trkPhi,trkEta);
+	    WgtNUA  = fHCorrectNUAnegChrg->GetBinContent(iBinNUA);  
 	  }
-	  if(fParticle==1 && isItPion && fHCorrectNUAnegPion[cForNUA]){
-	    iBinNUA     = fHCorrectNUAnegPion[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
-	    WgtNUAPion  = fHCorrectNUAnegPion[cForNUA]->GetBinContent(iBinNUA);
+	    //if(fParticle==1 && isItPion && fHCorrectNUAnegPion[cForNUA]){
+	    //iBinNUA     = fHCorrectNUAnegPion[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
+	    //WgtNUAPion  = fHCorrectNUAnegPion[cForNUA]->GetBinContent(iBinNUA);
+	    if(fParticle==1 && isItPion && fHCorrectNUAnegPion){
+	    iBinNUA     = fHCorrectNUAnegPion->FindBin(pVtxZ,trkPhi,trkEta);
+	    WgtNUAPion  = fHCorrectNUAnegPion->GetBinContent(iBinNUA);
 	  }
-	  if(fParticle==2 && isItKaon && fHCorrectNUAnegKaon[cForNUA]){
-	    iBinNUA     = fHCorrectNUAnegKaon[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
-	    WgtNUAKaon  = fHCorrectNUAnegKaon[cForNUA]->GetBinContent(iBinNUA);
+	    //if(fParticle==2 && isItKaon && fHCorrectNUAnegKaon[cForNUA]){
+	    //iBinNUA     = fHCorrectNUAnegKaon[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
+	    //WgtNUAKaon  = fHCorrectNUAnegKaon[cForNUA]->GetBinContent(iBinNUA);
+	    if(fParticle==2 && isItKaon && fHCorrectNUAnegKaon){
+	    iBinNUA     = fHCorrectNUAnegKaon->FindBin(pVtxZ,trkPhi,trkEta);
+	    WgtNUAKaon  = fHCorrectNUAnegKaon->GetBinContent(iBinNUA);
 	  }
-	  if(fParticle==3 && isItProt && fHCorrectNUAnegProt[cForNUA]){
-	    iBinNUA     = fHCorrectNUAnegProt[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
-	    WgtNUAProt  = fHCorrectNUAnegProt[cForNUA]->GetBinContent(iBinNUA);
+	    //if(fParticle==3 && isItProt && fHCorrectNUAnegProt[cForNUA]){
+	    //iBinNUA     = fHCorrectNUAnegProt[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
+	    //WgtNUAProt  = fHCorrectNUAnegProt[cForNUA]->GetBinContent(iBinNUA);
+	    if(fParticle==3 && isItProt && fHCorrectNUAnegProt){
+	    iBinNUA     = fHCorrectNUAnegProt->FindBin(pVtxZ,trkPhi,trkEta);
+	    WgtNUAProt  = fHCorrectNUAnegProt->GetBinContent(iBinNUA);
 	  }	  
 	}
 
@@ -1420,10 +1454,6 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	uqRe = TMath::Cos(gPsiN*trkPhi);
 	uqIm = TMath::Sin(gPsiN*trkPhi);
 
-	
-	fHistEtaPhiAfterCut->Fill(trkPhi,trkEta,trkWgt);
-
-
 
 
 
@@ -1432,9 +1462,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	if(trkChrg > 0){
 	
 
-	  if(fParticle==0 && bSkipNUA==kFALSE)
-	    fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
-	  
+	
 
 	  if(trkEta > fEtaGapPos){
 	    sumQ2xChrgPosEtaPos += trkWgt*uqRe;
@@ -1451,7 +1479,6 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	  
 	  if(fParticle==1 && isItPion){
 	
-
 	    if(trkEta > fEtaGapPos){
 	      sumQ2xPionPosEtaPos += trkWgtPion*uqRe;
 	      sumQ2yPionPosEtaPos += trkWgtPion*uqIm;
@@ -1462,8 +1489,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	      sumQ2yPionPosEtaNeg += trkWgtPion*uqIm;
 	      NumOfPionPosEtaNeg  += trkWgtPion;
 	    }
-	    if (bSkipNUA==kFALSE)
-	    fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    //if (bSkipNUA==kFALSE)
+	    //fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 	  if(fParticle==2 && isItKaon){
 	
@@ -1478,8 +1505,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	      sumQ2yKaonPosEtaNeg += trkWgtKaon*uqIm;
 	      NumOfKaonPosEtaNeg  += trkWgtKaon;
 	    }
-	    if (bSkipNUA==kFALSE)
-	      fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    //if (bSkipNUA==kFALSE)
+	    //fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 	  if(fParticle==3 && isItProt){
 	
@@ -1494,8 +1521,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	      sumQ2yProtPosEtaNeg += trkWgtProt*uqIm;
 	      NumOfProtPosEtaNeg  += trkWgtProt;
 	    }
-	    if (bSkipNUA==kFALSE)
-	      fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    //if (bSkipNUA==kFALSE)
+	    //fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 
 	  
@@ -1504,8 +1531,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	else{  //-Ve charge
 	  
 	
-	  if (fParticle==0 && bSkipNUA==kFALSE)
-	    fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	  //if (fParticle==0 && bSkipNUA==kFALSE)
+	  //fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
 		    
 	  if(trkEta > fEtaGapPos){
 	    sumQ2xChrgNegEtaPos += trkWgt*uqRe;
@@ -1531,8 +1558,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	      sumQ2yPionNegEtaNeg += trkWgtPion*uqIm;
 	      NumOfPionNegEtaNeg  += trkWgtPion;
 	    }
-	    if (bSkipNUA==kFALSE)	   
-	      fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  
+	    //if (bSkipNUA==kFALSE)	   
+	    //fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  
 	  }
 	  if(fParticle==2 && isItKaon){
 	
@@ -1547,8 +1574,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	      sumQ2yKaonNegEtaNeg += trkWgtKaon*uqIm;
 	      NumOfKaonNegEtaNeg  += trkWgtKaon;
 	    }
-	    if (bSkipNUA==kFALSE)	  
-	      fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  
+	    //if (bSkipNUA==kFALSE)	  
+	    //fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  
 	  }
 	  if(fParticle==3 && isItProt){
 	
@@ -1563,8 +1590,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	      sumQ2yProtNegEtaNeg += trkWgtProt*uqIm;
 	      NumOfProtNegEtaNeg  += trkWgtProt;
 	    }
-	    if (bSkipNUA==kFALSE)
-	      fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  	    
+	    //if (bSkipNUA==kFALSE)
+	    //fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  	    
 	  }
 
 
@@ -1587,7 +1614,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 
   /// Charge All(+-):
-
+  
   Float_t eventwgtcharge=1.0; 
    if(fHCorrectEVNTWGTChrg){
      eventwgtcharge=fHCorrectEVNTWGTChrg->GetBinContent(fHCorrectEVNTWGTChrg->GetXaxis()->FindBin(centrality));
@@ -1600,7 +1627,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   
   //Double_t c2WeightChrg     = fSumWgtEtaPosWhole*fSumWgtEtaNegWhole;//without eventwgt
   Double_t c2WeightChrg     = fSumWgtEtaPosWhole*fSumWgtEtaNegWhole; //with eventwgt
-  if (c2WeightChrg!=0.0)
+    
+if (c2WeightChrg!=0.0)
     {
 
   Double_t c2cumulantChrg   = (fSumTPCQn2xPosWhole*fSumTPCQn2xNegWhole + fSumTPCQn2yPosWhole*fSumTPCQn2yNegWhole)/c2WeightChrg;
@@ -1713,13 +1741,13 @@ Double_t c2cumulantChrgPosChrgNeg =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegChNeg + 
   if(fParticle==2){
     if((NumOfKaonPosEtaPos*fSumWgtEtaNeg)!=0.0){
       ///Kaon+:  
-      Double_t c2WeightKaonPos   =  NumOfKaonPosEtaPos*fSumWgtEtaNeg;
+      //Double_t c2WeightKaonPos   =  NumOfKaonPosEtaPos*fSumWgtEtaNeg;
       Double_t c2cumulantKaonPos =  (sumQ2xKaonPosEtaPos*fSumTPCQn2xNeg + sumQ2yKaonPosEtaPos*fSumTPCQn2yNeg)/c2WeightKaonPos;
       fHistv2AchKaonPos[0][iCent]->Fill(fAchrgNet, c2cumulantKaonPos, c2WeightKaonPos);   /// for denominator
     }
     if((NumOfKaonNegEtaPos*fSumWgtEtaNegChNeg)!=0.0){
       ///Kaon-:  
-      Double_t c2WeightKaonNeg   =  NumOfKaonNegEtaPos*fSumWgtEtaNegChNeg;
+      //Double_t c2WeightKaonNeg   =  NumOfKaonNegEtaPos*fSumWgtEtaNegChNeg;
       Double_t c2cumulantKaonNeg =  (sumQ2xKaonNegEtaPos*fSumTPCQn2xNegChNeg + sumQ2yKaonNegEtaPos*fSumTPCQn2yNegChNeg)/c2WeightKaonNeg;
       fHistv2AchKaonNeg[0][iCent]->Fill(fAchrgNet, c2cumulantKaonNeg, c2WeightKaonNeg);   /// for denominator
     }
@@ -1745,14 +1773,14 @@ Double_t c2cumulantChrgPosChrgNeg =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegChNeg + 
   if(fParticle==3){
     if((NumOfProtPosEtaPos*fSumWgtEtaNeg)!=0.0){
       ///Prot+:  
-      Double_t c2WeightProtPos   =  NumOfProtPosEtaPos*fSumWgtEtaNeg;
+      //Double_t c2WeightProtPos   =  NumOfProtPosEtaPos*fSumWgtEtaNeg;
       Double_t c2cumulantProtPos =  (sumQ2xProtPosEtaPos*fSumTPCQn2xNeg + sumQ2yProtPosEtaPos*fSumTPCQn2yNeg)/c2WeightProtPos;
       fHistv2AchProtPos[0][iCent]->Fill(fAchrgNet, c2cumulantProtPos, c2WeightProtPos);   /// for denominator
     }
 
     if((NumOfProtNegEtaPos*fSumWgtEtaNegChNeg)!=0.0){
       ///Prot-:  
-      Double_t c2WeightProtNeg   =  NumOfProtNegEtaPos*fSumWgtEtaNegChNeg;
+      //Double_t c2WeightProtNeg   =  NumOfProtNegEtaPos*fSumWgtEtaNegChNeg;
       Double_t c2cumulantProtNeg =  (sumQ2xProtNegEtaPos*fSumTPCQn2xNegChNeg + sumQ2yProtNegEtaPos*fSumTPCQn2yNegChNeg)/c2WeightProtNeg;
       fHistv2AchProtNeg[0][iCent]->Fill(fAchrgNet, c2cumulantProtNeg, c2WeightProtNeg);   /// for denominator
     }
@@ -1779,6 +1807,7 @@ Double_t c2cumulantChrgPosChrgNeg =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegChNeg + 
   //Last lines in Event loop
   fCentDistAfterCut->Fill(centrality);
   fHistEventCount->Fill(14.5); //final Event count.
+      
   PostData(1,fListHist);
 
   // std::cout<<" Info:UserExec()  Call Finished ..!!!\n";
@@ -1794,7 +1823,7 @@ Double_t c2cumulantChrgPosChrgNeg =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegChNeg + 
 Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp2018(AliAODEvent *faod) {
 
 
-
+  /*
   TF1 *fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
 
 
@@ -1813,7 +1842,7 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp2018(AliAODEvent *faod) 
   Double_t parFB32[8] = {2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
   TF1 *fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90);
   fMultCutPU->SetParameters(parFB32);
-
+  */
 
 
 
@@ -1889,34 +1918,34 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp2018(AliAODEvent *faod) 
 
   if (centrCL0 < fCenCutLowPU->Eval(centrV0M))
     {
-      cout<<"*****************hi i am in 1st**************************:"<<endl;
+      //cout<<"*****************hi i am in 1st**************************:"<<endl;
       BisPileup=kTRUE;
     }
 
   if (centrCL0 > fCenCutHighPU->Eval(centrV0M))
     {
-      cout<<"*****************hi i am in 2nd**************************:"<<endl;
+      //cout<<"*****************hi i am in 2nd**************************:"<<endl;
       BisPileup=kTRUE;
     }
 
 
   if (Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls))
     {
-      cout<<"*****************hi i am in 3rd**************************:"<<endl;
+      //cout<<"*****************hi i am in 3rd**************************:"<<endl;
       BisPileup=kTRUE;
     }
         
 
   if (multV0On < fV0CutPU->Eval(multV0Tot))
     {
-      cout<<"*****************hi i am in 4th**************************:"<<endl;
+      //cout<<"*****************hi i am in 4th**************************:"<<endl;
       BisPileup=kTRUE;
     }
 
 
   if (Float_t(multTrk) < fMultCutPU->Eval(centrV0M))
     {
-      cout<<"*****************hi i am in 5th**************************:"<<endl;
+      //cout<<"*****************hi i am in 5th**************************:"<<endl;
       BisPileup=kTRUE;
     }
 
@@ -1933,14 +1962,14 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp2018(AliAODEvent *faod) 
 
 
 
-  fHistTPConlyVsV0MBefore->Fill(centrV0M,multTrk);
-  fHistCL0VsV0MBefore->Fill(centrV0M,centrCL0);
+  //fHistTPConlyVsV0MBefore->Fill(centrV0M,multTrk);
+  //fHistCL0VsV0MBefore->Fill(centrV0M,centrCL0);
 
 
   if (!BisPileup)
     {
-      fHistTPConlyVsV0MAfter->Fill(centrV0M,multTrk);
-      fHistCL0VsV0MAfter->Fill(centrV0M,centrCL0);
+      //fHistTPConlyVsV0MAfter->Fill(centrV0M,multTrk);
+      //fHistCL0VsV0MAfter->Fill(centrV0M,centrCL0);
     }
 
 
@@ -2003,24 +2032,24 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp(AliAODEvent *faod) {
 
   //-- pile-up a la Dobrin for LHC15o -----
   if(PileUpMultiVertex(faod)) {
-    fHistPileUpCount->Fill(0.5);    
+    //fHistPileUpCount->Fill(0.5);    
     BisPileup=kTRUE;
   }
   Int_t isPileup = faod->IsPileupFromSPD(3);
   if(isPileup != 0) {
-    fHistPileUpCount->Fill(1.5);
+    //fHistPileUpCount->Fill(1.5);
     BisPileup=kTRUE;          
   }
   if(((AliAODHeader*)faod->GetHeader())->GetRefMultiplicityComb08() < 0) {
-    fHistPileUpCount->Fill(2.5);
+    //fHistPileUpCount->Fill(2.5);
     BisPileup=kTRUE;
   }
   if(faod->IsIncompleteDAQ())  {
-    fHistPileUpCount->Fill(3.5);
+    //fHistPileUpCount->Fill(3.5);
     BisPileup=kTRUE;
   }
   if(fabs(centrV0M-centrCL1)> 5.0)  {//default: 7.5
-    fHistPileUpCount->Fill(4.5);
+    //fHistPileUpCount->Fill(4.5);
     BisPileup=kTRUE;
   }
 
@@ -2031,7 +2060,7 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp(AliAODEvent *faod) {
   const AliAODVertex* vtSPD = faod->GetPrimaryVertexSPD();
 
   if(vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1) {
-    fHistPileUpCount->Fill(5.5);
+    //fHistPileUpCount->Fill(5.5);
     BisPileup=kTRUE;
   }
 
@@ -2047,7 +2076,7 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp(AliAODEvent *faod) {
   double nsigTrc = dz/errTrc;
 
   if(TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
-    fHistPileUpCount->Fill(6.5);
+    //fHistPileUpCount->Fill(6.5);
     BisPileup=kTRUE;
   }
 
@@ -2122,16 +2151,8 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp(AliAODEvent *faod) {
 
 
 
-  fTPCvsGlobalTrkBefore->Fill(multGlobal,multTPC);
-  fHistTPCVsESDTrkBefore->Fill(multTPCAll,multEsd);   //A. Dobrin
-  fHistTPConlyVsCL1Before->Fill(centrCL1,multTPCAll);
-  fHistTPConlyVsV0MBefore->Fill(centrV0M,multTPCAll);
-  fHistGlobalVsV0MBefore->Fill(centrV0M, multGlobal);
-
-
-
   if(multESDTPCDif > fPileUpConstParm) { 
-    fHistPileUpCount->Fill(7.5);
+    //fHistPileUpCount->Fill(7.5);
     BisPileup=kTRUE;
   }
   if(BisPileup==kFALSE) {
@@ -2142,22 +2163,17 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp(AliAODEvent *faod) {
     if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
     if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
     if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
-    if(BisPileup)     fHistPileUpCount->Fill(9.5);
-  }  
+    //if(BisPileup)     //fHistPileUpCount->Fill(9.5);
+      }  
 
 
   if (!bIsOutLier){
-    fTPCvsGlobalTrkAfter->Fill(multGlobal,multTPC);
 
     //fHistEventCount->Fill(stepCount); //5
     //stepCount++;
 
   }
     if(!BisPileup){
-    fHistTPCVsESDTrkAfter->Fill(multTPCAll,multEsd);  
-    fHistTPConlyVsCL1After->Fill(centrCL1,multTPCAll);
-    fHistTPConlyVsV0MAfter->Fill(centrV0M,multTPCAll);
-    fHistGlobalVsV0MAfter->Fill(centrV0M, multGlobal);
   
     //fHistEventCount->Fill(stepCount); //6
     //stepCount++
@@ -2260,25 +2276,6 @@ void AliAnalysisTaskCMWPU2018eqAch::SetupEventAndTaskConfigInfo(){
 
 
 
-  fHistPileUpCount = new TH1F("fHistPileUpCount", "fHistPileUpCount", 15, 0., 15.);
-  fHistPileUpCount->GetXaxis()->SetBinLabel(1,"plpMV");
-  fHistPileUpCount->GetXaxis()->SetBinLabel(2,"fromSPD");
-  fHistPileUpCount->GetXaxis()->SetBinLabel(3,"RefMultComb08");
-  fHistPileUpCount->GetXaxis()->SetBinLabel(4,"IncompleteDAQ");
-  fHistPileUpCount->GetXaxis()->SetBinLabel(5,"abs(V0M-CL1)>5.0");
-  fHistPileUpCount->GetXaxis()->SetBinLabel(6,"missingVtx");
-  fHistPileUpCount->GetXaxis()->SetBinLabel(7,"inconsistentVtx");
-  Int_t puConst = fPileUpConstParm;
-  //Int_t puConst = 3.0;
-  fHistPileUpCount->GetXaxis()->SetBinLabel(8,Form("multESDTPCDif>%d",puConst));
-  fHistPileUpCount->GetXaxis()->SetBinLabel(9,Form("multGlobTPCDif>%d",puConst));
-  fHistPileUpCount->GetXaxis()->SetBinLabel(10,"PileUpMultSelTask");
-  fListHist->Add(fHistPileUpCount);
-
-
-
-
-
 
 
   fHistEventCount = new TH1F("fHistEventCount","Event counts",15,0,15);
@@ -2324,32 +2321,43 @@ void AliAnalysisTaskCMWPU2018eqAch::GetNUACorrectionHist(Int_t run, Int_t kParti
   if(fListNUACorr){
 
     if(kParticleID==0){ //charge
-      for(int i=0;i<5;i++){
-	fHCorrectNUAposChrg[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Pos_Cent%d_Run%d",i,run)); 
-	fHCorrectNUAnegChrg[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Neg_Cent%d_Run%d",i,run));
-      }
+      //for(int i=0;i<5;i++){
+      //fHCorrectNUAposChrg[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Pos_Cent%d_Run%d",i,run)); 
+      //fHCorrectNUAnegChrg[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Neg_Cent%d_Run%d",i,run));
+
+	fHCorrectNUAposChrg = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Pos_Cent%d_Run%d",0,run)); 
+	fHCorrectNUAnegChrg = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Neg_Cent%d_Run%d",0,run));
+	//}
     }
     else if(kParticleID==1){ //Pion
-      for(int i=0;i<5;i++){
-	fHCorrectNUAposPion[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pion_Pos_Cent%d_Run%d",i,run)); 
-	fHCorrectNUAnegPion[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pion_Neg_Cent%d_Run%d",i,run));
-      }
+      //for(int i=0;i<5;i++){
+      //fHCorrectNUAposPion[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pion_Pos_Cent%d_Run%d",i,run)); 
+      //fHCorrectNUAnegPion[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pion_Neg_Cent%d_Run%d",i,run));
+	fHCorrectNUAposPion = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pion_Pos_Cent%d_Run%d",0,run)); 
+	fHCorrectNUAnegPion = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pion_Neg_Cent%d_Run%d",0,run));
+	//}
     }
     else if(kParticleID==2){ //Kaon
-      for(int i=0;i<5;i++){
-	fHCorrectNUAposKaon[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Kaon_Pos_Cent%d_Run%d",i,run)); 
-	fHCorrectNUAnegKaon[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Kaon_Neg_Cent%d_Run%d",i,run));
-      }
+      //for(int i=0;i<5;i++){
+      //fHCorrectNUAposKaon[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Kaon_Pos_Cent%d_Run%d",i,run)); 
+      //fHCorrectNUAnegKaon[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Kaon_Neg_Cent%d_Run%d",i,run));
+
+	fHCorrectNUAposKaon = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Kaon_Pos_Cent%d_Run%d",0,run)); 
+	fHCorrectNUAnegKaon = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Kaon_Neg_Cent%d_Run%d",0,run));
+	//}
     }
     else if(kParticleID==3){ //Proton
-      for(int i=0;i<5;i++){
-	fHCorrectNUAposProt[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Proton_Pos_Cent%d_Run%d",i,run)); 
-	fHCorrectNUAnegProt[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Proton_Neg_Cent%d_Run%d",i,run));
-      }
+      //for(int i=0;i<5;i++){
+      //fHCorrectNUAposProt[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Proton_Pos_Cent%d_Run%d",i,run)); 
+      //fHCorrectNUAnegProt[i] = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Proton_Neg_Cent%d_Run%d",i,run));
+
+	fHCorrectNUAposProt = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Proton_Pos_Cent%d_Run%d",0,run)); 
+	fHCorrectNUAnegProt = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Proton_Neg_Cent%d_Run%d",0,run));
+	//}
     }
     else{
-      for(int i=0;i<5;i++){
-	fHCorrectNUAposChrg[i]=NULL;
+      //for(int i=0;i<5;i++){
+      /*fHCorrectNUAposChrg[i]=NULL;
 	fHCorrectNUAnegChrg[i]=NULL;
 	fHCorrectNUAposPion[i]=NULL;
 	fHCorrectNUAnegPion[i]=NULL;
@@ -2357,7 +2365,16 @@ void AliAnalysisTaskCMWPU2018eqAch::GetNUACorrectionHist(Int_t run, Int_t kParti
 	fHCorrectNUAnegKaon[i]=NULL;
 	fHCorrectNUAposProt[i]=NULL;
 	fHCorrectNUAnegProt[i]=NULL;
-      }
+      */
+	fHCorrectNUAposChrg=NULL;
+	fHCorrectNUAnegChrg=NULL;
+	fHCorrectNUAposPion=NULL;
+	fHCorrectNUAnegPion=NULL;
+	fHCorrectNUAposKaon=NULL;
+	fHCorrectNUAnegKaon=NULL;
+	fHCorrectNUAposProt=NULL;
+	fHCorrectNUAnegProt=NULL;
+	//}
     }
     
   }//------> if list Exist

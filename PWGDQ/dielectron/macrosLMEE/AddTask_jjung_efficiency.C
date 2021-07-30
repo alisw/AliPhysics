@@ -1,5 +1,12 @@
 
-AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(TString name = "name", Bool_t isAOD, Bool_t getFromAlien = kFALSE, TString configFile="Config_jjung_lowmass.C", Bool_t DoCentralityCorrection = kFALSE, Int_t wagonnr = 0) {
+AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
+		TString name = "name", 
+		Bool_t isAOD, 
+		Bool_t getFromAlien = kFALSE, 
+		TString configFile="Config_jjung_lowmass.C", 
+		Bool_t DoCentralityCorrection = kFALSE,
+	        Int_t centrality,	
+		Int_t wagonnr = 0) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 
@@ -46,6 +53,13 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(TString name = "na
   // Creating an instance of the task
   AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(name.Data());
 
+  // #########################################################
+  // #########################################################
+  // Possibility to set generator. If nothing set all generators are taken into account
+  // task->SetGeneratorName(generatorName);
+  task->SetGeneratorMCSignalName(generatorNameForMCSignal);
+  task->SetGeneratorULSSignalName(generatorNameForULSSignal);
+
 
   // #########################################################
   // #########################################################
@@ -55,8 +69,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(TString name = "na
   task->SetTriggerMask(triggerNames); 
   task->SetEventFilter(SetupEventCuts(wagonnr)); //returns eventCuts from Config.
   task->SetCentrality(centMin, centMax);
-  
-
+ 
   // #########################################################
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
@@ -103,14 +116,29 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(TString name = "na
   task->SetEtaBinsLinear  (minEtaBin, maxEtaBin, stepsEtaBin);
   task->SetPhiBinsLinear  (minPhiBin, maxPhiBin, stepsPhiBin);
   task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);
-  task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
-  task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
+  if (useMeeVector == true) {
+    std::vector<double> meeBinsVec;
+    for (unsigned int i = 0; i < nBinsMee+1; ++i){
+      ptBinsVec.push_back(MeeBins[i]);
+    }
+    task->SetPtBins(meeBinsVec);
+  }
+  else task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
+  if (usePteeVector == true) {
+    std::vector<double> pteeBinsVec;
+    for (unsigned int i = 0; i < nBinsPtee+1; ++i){
+      ptBinsVec.push_back(PteeBins[i]);
+    }
+    task->SetPtBins(pteeBinsVec);
+  }
+  else task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
 
   // #########################################################
   // #########################################################
   // Resolution File, If resoFilename = "" no correction is applied
   task->SetResolutionFile(resoFilename);
   task->SetResolutionFileFromAlien(resoFilenameFromAlien);
+  task->SetSmearGenerated(SetGeneratedSmearingHistos);
   task->SetResolutionDeltaPtBinsLinear   (DeltaMomMin, DeltaMomMax, NbinsDeltaMom);
   task->SetResolutionRelPtBinsLinear   (RelMomMin, RelMomMax, NbinsRelMom);
   task->SetResolutionEtaBinsLinear  (DeltaEtaMin, DeltaEtaMax, NbinsDeltaEta);
@@ -125,9 +153,24 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(TString name = "na
 
   // #########################################################
   // #########################################################
+  // Set MCSignal and Cutsetting to fill the support histograms
+  task->SetSupportHistoMCSignalAndCutsetting(nMCSignal, nCutsetting);
+
+
+  // #########################################################
+  // #########################################################
+  // Set Cocktail weighting
+  task->SetDoCocktailWeighting(DoCocktailWeighting);
+  task->SetCocktailWeighting(CocktailFilename);
+  task->SetCocktailWeightingFromAlien(CocktailFilenameFromAlien);
+
+
+  // #########################################################
+  // #########################################################
   // Pairing related config
   task->SetDoPairing(DoPairing);
   task->SetULSandLS(DoULSLS);
+  task->SetDeactivateLS(DeactivateLS);
 
   // #########################################################
   // #########################################################
@@ -135,6 +178,34 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(TString name = "na
   // e.g. secondaries and primaries. or primaries from charm and resonances
   AddSingleLegMCSignal(task);
   AddPairMCSignal(task);
+  //Done in config
+  //std::vector<bool> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
+  //task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+
+  // #########################################################
+  // #########################################################
+  // Set mean and width correction for ITS, TPC and TOF
+  //set PID map for ITS TOF in MC.
+  TFile *rootfile = 0x0;
+  if(calibFileName != "") rootfile = TFile::Open(calibFileName,"READ");
+  if(rootfile && rootfile->IsOpen()){
+    TH3D *h3mean_ITS  = (TH3D*)rootfile->Get("h3mean_ITS");
+    TH3D *h3width_ITS = (TH3D*)rootfile->Get("h3width_ITS");
+    h3mean_ITS ->SetDirectory(0);
+    h3width_ITS->SetDirectory(0);
+    task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, h3mean_ITS, AliDielectronVarManager::kNSDDSSDclsEvent, AliDielectronVarManager::kPIn,  AliDielectronVarManager::kEta);
+    task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, h3width_ITS, AliDielectronVarManager::kNSDDSSDclsEvent, AliDielectronVarManager::kPIn,  AliDielectronVarManager::kEta );
+
+    TH3D *h3mean_TOF = (TH3D*)rootfile->Get("h3mean_TOF");
+    TH3D *h3width_TOF = (TH3D*)rootfile->Get("h3width_TOF");
+    h3mean_TOF ->SetDirectory(0);
+    h3width_TOF->SetDirectory(0);
+    task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, h3mean_TOF, AliDielectronVarManager::kNSDDSSDclsEvent, AliDielectronVarManager::kPIn,  AliDielectronVarManager::kEta);
+    task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, h3width_TOF, AliDielectronVarManager::kNSDDSSDclsEvent, AliDielectronVarManager::kPIn,  AliDielectronVarManager::kEta);
+
+    rootfile->Close();
+  }
+
 
 
   // #########################################################

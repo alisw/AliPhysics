@@ -28,6 +28,7 @@ AliRsnMiniAnalysisTask * AddTaskF0
 (
  TString     outNameSuffix = "f0",                         //suffix for output container
  Bool_t      isMC          = 0,                            //MC flag
+ Bool_t      isAOD          = 1,                            //AOD = 1, ESD = 0
  AliPIDResponse::EBeamType collSys = AliPIDResponse::kPP, //=0, kPPB=1, kPBPB=2 outNameSuffix
  UInt_t      triggerMask   = AliVEvent::kINT7,             //trigger selection
  Bool_t      enaMultSel    = kTRUE,                        //enable multiplicity axis
@@ -43,6 +44,8 @@ AliRsnMiniAnalysisTask * AddTaskF0
  Float_t     ptlow         = 0.0,   //pT axis low edge 
  Float_t     ptup          = 20.0,   //pT axis upper edge 
  Int_t       nbinspt       = 200,   //pT axis n bins
+ Float_t     ptMClowCut    = 0.001, // lower pT cut on MC
+ Float_t     ptMCupCut     = 20.0,  // upper pT cut on MC
  Bool_t      enableTrackQA = kTRUE, //enable single track QA
  Bool_t      enableAdvEvtQA = kFALSE) //enable advanced QA for multiplicity and event properties
 {  
@@ -120,8 +123,8 @@ AliRsnMiniAnalysisTask * AddTaskF0
   AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
 
   //trigger 
-  task->UseESDTriggerMask(triggerMask); //ESD
-  //task->SelectCollisionCandidates(triggerMask); //AOD
+  if (!isAOD) task->UseESDTriggerMask(triggerMask); //ESD
+  else task->SelectCollisionCandidates(triggerMask); //AOD
   
   //-----------------------------------------------------------------------------------------------
   // -- MULTIPLICITY/CENTRALITY -------------------------------------------------------------------
@@ -226,10 +229,13 @@ AliRsnMiniAnalysisTask * AddTaskF0
   //-----------------------------------------------------------------------------------------------
   AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
   cutY->SetRangeD(minYlab, maxYlab);
+  AliRsnCutMiniPair *cutPtMC = new AliRsnCutMiniPair("cutPtMC", AliRsnCutMiniPair::kPtMC);
+  cutPtMC->SetRangeD(ptMClowCut,ptMCupCut);
   
   AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
-  cutsPair->SetCutScheme(cutY->GetName());
+  if (isMC) cutsPair->AddCut(cutPtMC);
+  cutsPair->SetCutScheme(Form("%s&%s",cutY->GetName(),cutPtMC->GetName()));
 
   //-----------------------------------------------------------------------------------------------
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------

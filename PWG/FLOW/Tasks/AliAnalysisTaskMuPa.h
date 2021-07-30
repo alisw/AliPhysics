@@ -40,6 +40,7 @@ const Int_t gCentralMultiplicity = 1; // multiplicities defined centrally, e.g. 
 const Int_t gWeights = 3; // phi, pt, eta
 const Int_t gQAAnomalousEvents = 1; // |vertex| = 0; 
 const Int_t gQASelfCorrelations = 3; // phi, pt, eta
+const Int_t gQAEventCutCounter = 21; // see TString secc[gQAEventCutCounter] in .cxx
 
 // enums:
 enum eBins {nBins,min,max};
@@ -71,6 +72,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    virtual void InitializeArraysForControlParticleHistograms();
    virtual void InitializeArraysForQvectors();
    virtual void InitializeArraysForWeights();
+   virtual void InitializeArraysForCentralityWeights();
    virtual void InitializeArraysForCorrelationsHistograms();
    virtual void InitializeArraysForNestedLoopsHistograms();
    virtual void InitializeArraysForCommonLabels();
@@ -84,6 +86,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void BookControlParticleHistograms();
   virtual void BookQvectorHistograms();
   virtual void BookWeightsHistograms();
+  virtual void BookCentralityWeightsHistograms();
   virtual void BookCorrelationsHistograms();
   virtual void BookNestedLoopsHistograms();
   virtual void BookFinalResultsHistograms();
@@ -96,8 +99,10 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void FillControlParticleHistograms(AliVParticle *vParticle, const Int_t ba, const Int_t rs); // before or after particle cuts, reco or sim
   virtual void GlobalTracksAOD(AliAODEvent *aAOD);
   Bool_t SurvivesEventCuts(AliVEvent *ave);
+  void EventCutCounter(AliVEvent *ave); // only for QA
   Bool_t SurvivesParticleCuts(AliVParticle *vParticle); // applied e.g. on TPC-only
   virtual Double_t Weight(const Double_t &value, const char *variable);
+  virtual Double_t CentralityWeight(const Double_t &value, const char *estimator);
   virtual void CalculateCorrelations();
   virtual void CalculateNestedLoops();
   virtual void ResetEventByEventQuantities();
@@ -162,6 +167,31 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fCentralityCuts[1] = max;
   }
   void SetCentralityEstimator(const char *ce) {this->fCentralityEstimator = ce;};
+
+  void SetCentralityCorrelationsCuts(const char* firstEstimator, const char* secondEstimator, const Double_t cut)
+  {
+   // This is the cut:
+   // |(firstEstimator-secondEstimator)/(firstEstimator+secondEstimator)| > cut => reject the event
+
+   Int_t ce1 = -44;
+   Int_t ce2 = -44;
+
+   if(TString(firstEstimator).EqualTo("V0M")){ce1 = 0;} 
+   else if (TString(firstEstimator).EqualTo("SPDTracklets")){ce1 = 1;} 
+   else if (TString(firstEstimator).EqualTo("CL0")){ce1 = 2;} 
+   else if (TString(firstEstimator).EqualTo("CL1")){ce1 = 3;} 
+   else{exit(1);}
+
+   if(TString(secondEstimator).EqualTo("V0M")){ce2 = 0;} 
+   else if (TString(secondEstimator).EqualTo("SPDTracklets")){ce2 = 1;} 
+   else if (TString(secondEstimator).EqualTo("CL0")){ce2 = 2;} 
+   else if (TString(secondEstimator).EqualTo("CL1")){ce2 = 3;} 
+   else{exit(1);}
+
+   this->fUseCentralityCorrelationsCuts[ce1][ce2] = kTRUE;
+   this->fCentralityCorrelationsCuts[ce1][ce2] = cut;
+
+  } // void SetCentralityCorrelationsCuts(const char* firstEstimator, const char* secondEstimator, const Double_t cut)
 
   // Vertex:
   void SetVertexBins(Int_t const nbins, Double_t min, Double_t max)
@@ -313,7 +343,13 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
 
   // Particle weights:
   void SetWeightsHist(TH1D* const hist, const char *variable); // .cxx
+  TH1D* GetWeightsHist(const char *variable); // . cxx
   TH1D* GetHistogramWithWeights(const char *filePath, const char *variable); // .cxx
+ 
+  // Centrality weights:
+  void SetCentralityWeightsHist(TH1D* const hist, const char *estimator); // .cxx
+  TH1D* GetCentralityWeightsHist(const char *estimator); // . cxx
+  TH1D* GetHistogramWithCentralityWeights(const char *filePath, const char *estimator); // .cxx
 
   // Utility:
   void Red(const char* text);
@@ -356,9 +392,10 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // 0) Base list:
   TList *fBaseList; // base list to hold all output object (a.k.a. grandmother of all lists)
   TProfile *fBasePro; // keeps flags relevant for the whole analysis
+  TString fTaskName; // e.g. Form("Task=>%.1f-%.1f",centrMin,centrMax)
   TString fDataTakingPeriod; // the data taking period, use e.g. task->SetDataTakingPeriod("LHC10h")
   TString fAODNumber; // the AOD number, use e.g. task->SetPeriod("AOD160") (for "LHC10h")
-  Bool_t fFillQAHistograms; // fill all QA histograms (this shall be done only in one task, since these histos are heavy 2D objects). Additional loop over particles is performed.
+  Bool_t fFillQAHistograms; // fill all QA histograms (this shall be done only in one task, since these histos are heavy 2D objects). Additional loops over particles is performed.
   Bool_t fTerminateAfterQA; // in UserExec(), bail out immediately after QA histograms are filled 
   Bool_t fVerbose; // print all additional info like Green(__PRETTY_FUNCTION__); etc.
 
@@ -373,6 +410,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TArrayI *fQAFilterBits; // for these filterbits the kinematics in the previous line will be filled, use in combination with SetQAFilterBits(...)
   TH1I *fQAAnomalousEvents; // counter for anomalous events
   TH1D *fQASelfCorrelations[gQASelfCorrelations]; // check for self-correlatiosn
+  TH1I *fQAEventCutCounter; // counter for each event cut
 
   // 2) Control event histograms:  
   TList *fControlEventHistogramsList; // list to hold all control event histograms
@@ -392,6 +430,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Double_t fCentralityBins[3];  // [nBins,minCentrality,maxCentrality]
   TString fCentralityEstimator; // the default centrality estimator in this analysis, use e.g. task->SetCentralityEstimator("V0M")
   Double_t fCentralityCuts[2];  // [min,max]
+  Bool_t fUseCentralityCorrelationsCuts[gCentralityEstimators][gCentralityEstimators]; // use specific cut below 
+  Double_t fCentralityCorrelationsCuts[gCentralityEstimators][gCentralityEstimators]; // [firstEstimator][secondEstimator] |(firstEstimator-secondEstimator)/(firstEstimator+secondEstimator)| > cut => reject the event
   //    Vertex:
   TH1D *fVertexHist[2][2][3];     //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
   Double_t fVertexBins[3];        // [nBins,minVertex,maxVertex]
@@ -441,6 +481,12 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fUseWeights[gWeights]; // use weights [phi,pt,eta]
   TH1D *fWeightsHist[gWeights]; // histograms holding weights [phi,pt,eta]
 
+  // 6) Centrality weights: 
+  TList *fCentralityWeightsList;                       // list to hold all Q-vector objects       
+  TProfile *fCentralityWeightsFlagsPro;                // profile to hold all flags for CentralityWeights
+  Bool_t fUseCentralityWeights[gCentralityEstimators]; // use centrality weights [V0M, SPDTracklets, CL0, CL1]
+  TH1D *fCentralityWeightsHist[gCentralityEstimators]; // histograms holding centrality weights [V0M, SPDTracklets, CL0, CL1]
+
   // 6) Correlations:
   TList *fCorrelationsList;            // list to hold all correlations objects
   TProfile *fCorrelationsFlagsPro;     // profile to hold all flags for correlations
@@ -471,14 +517,14 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
 
   // *.) Debugging:
   Bool_t fProcessOnlySpecifiedEvent; // process only for the specified event
-  Int_t fRun;                       // run number
+  Int_t fRun;                        // run number
   UShort_t fBunchCross;              // bunch crossing
   UInt_t fOrbit;                     // orbit
   UInt_t fPeriod;                    // period
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,4);
+  ClassDef(AliAnalysisTaskMuPa,7);
 
 };
 
