@@ -54,10 +54,11 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistNTracks{nullptr},
   fHistNTracksBackg{nullptr},
   fHistNTracksEmbed{nullptr},
+  fHistNTracksOOBPileup{nullptr},
+  fHistNTracksOOBPileupVsNTracks{nullptr},
   fHistNV0Daughters{nullptr},
   fHistNV0DaughtersBackg{nullptr},
   fHistNV0DaughtersEmbed{nullptr},
-  fHistNTracksOOBPileup{nullptr},
   fHistCheckK0SelBackg{nullptr},
   fHistCheckK0SelEmbed{nullptr},
   fHistCheckK0SelMixed{nullptr},
@@ -236,6 +237,7 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistNTracksBackg;
     delete fHistNTracksEmbed;
     delete fHistNTracksOOBPileup;
+    delete fHistNTracksOOBPileupVsNTracks;
     delete fHistNV0Daughters;
     delete fHistNV0DaughtersBackg;
     delete fHistNV0DaughtersEmbed;
@@ -462,10 +464,12 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fHistNTracksBackg = new TH1F("hNTracksBackg", "Number of tracks in BKG events ; N_{tracks}",2000,-0.5,19999.5);
   fHistNTracksEmbed = new TH1F("hNTracksEmbed", "Number of tracks in Signal events ; N_{tracks}",2000,-0.5,19999.5);
   fHistNTracksOOBPileup = new TH1F("hNTracksOOBPileup", "Number of tracks in out-of-bunch pileup events ; N_{tracks}",2000,-0.5,19999.5);
+  fHistNTracksOOBPileupVsNTracks = new TH2F("hNTracksOOBPileupVsNTracks", " ; N_{tracks} ; N_{tracks OOB pileup}",200,-0.5,19999.5,200,-0.5,19999.5);
   fOutput->Add(fHistNTracks);
   fOutput->Add(fHistNTracksBackg);
   fOutput->Add(fHistNTracksEmbed);
   fOutput->Add(fHistNTracksOOBPileup);
+  fOutput->Add(fHistNTracksOOBPileupVsNTracks);
   fHistNV0Daughters = new TH1F("hNV0Daughters", "Number of V0-tracks in ESD events ; N_{V0-dau}",500,-0.5,4999.5);
   fHistNV0DaughtersBackg = new TH1F("hNV0DaughtersBackg", "Number of V0-tracks in BKG events ; N_{V0-dau}",500,-0.5,4999.5);
   fHistNV0DaughtersEmbed = new TH1F("hNV0DaughtersEmbed", "Number of V0-tracks in Signal events ; N_{V0-dau}",500,-0.5,4999.5);
@@ -1320,7 +1324,8 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
   fHistNTracksBackg->Fill(nBGtracks);
   fHistNTracksEmbed->Fill(nEmbeddedtracks);
   fHistNTracksOOBPileup->Fill(nOOBPileuptracks);
-
+  fHistNTracksOOBPileupVsNTracks->Fill(ntracks,nOOBPileuptracks);
+  
   Int_t nv0s = esd->GetNumberOfV0s();
   Int_t nv0dau=0;
   Int_t nBGv0dau=0;
