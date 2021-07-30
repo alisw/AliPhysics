@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 29.07.2021
+ * Last Modified Date: 30.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -34,7 +34,7 @@
 const Int_t kMaxHarmonic = 20;
 const Int_t kMaxCorrelator = 20;
 const Int_t kMaxPower = 20;
-const Int_t kMaxFilterbit = 11; // 2^(11-1)=1024
+const Int_t kMaxFilterbit = 15; // 2^(15-1)=16384
 const Int_t kNumberofTestFilterBit = 5;
 const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
 // enumerations
@@ -58,10 +58,12 @@ enum kFinalHist { kPHIAVG, LAST_EFINALHIST };
 enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
 enum kName { kNAME, kTITLE, kXAXIS, kYAXIS, LAST_ENAME };
+enum kMinMax { kMIN, kMAX, LAST_EMINMAX };
 enum kBeforeAfter { kBEFORE, kAFTER, LAST_EBEFOREAFTER };
 const TString kBAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
 const Color_t kFillColor[LAST_EBEFOREAFTER] = {kRed - 10, kGreen - 10};
-enum kMinMax { kMIN, kMAX, LAST_EMINMAX };
+enum kMode { kRECO, kSIM, LAST_EMODE };
+const TString kModeName[LAST_EMODE] = {"[kRECO]", "[kSIM]"};
 
 class AliAnalysisTaskAR : public AliAnalysisTaskSE {
 public:
@@ -89,19 +91,19 @@ public:
   virtual void BookControlHistograms();
   virtual void BookFinalResultHistograms();
   virtual void BookFinalResultProfiles();
-  virtual void BookMCObjects();
+  virtual void BookMCOnTheFlyObjects();
 
   // functions called in UserExec()
-  virtual void FillEventQAHistograms(kBeforeAfter BA, AliAODEvent *event);
+  virtual void FillEventQAHistograms(kBeforeAfter BA, AliVEvent *event);
   virtual void FillFBScanQAHistograms(AliAODTrack *track);
-  virtual void FillEventControlHistograms(kBeforeAfter BA, AliAODEvent *event);
-  virtual void FillTrackControlHistograms(kBeforeAfter BA, AliAODTrack *track);
+  virtual void FillEventControlHistograms(kBeforeAfter BA, AliVEvent *event);
+  virtual void FillTrackControlHistograms(kBeforeAfter BA, AliVParticle *avp);
   virtual void FillFinalResultProfile(kFinalProfile fp);
   virtual void MCOnTheFlyExec();
 
   // methods called in AODExec():
   virtual Bool_t SurviveEventCut(AliVEvent *ave);
-  virtual Bool_t SurviveTrackCut(AliAODTrack *aTrack);
+  virtual Bool_t SurviveTrackCut(AliVParticle *aTrack);
 
   // methods called MCOnTheFlyExec()
   virtual void MCPdfSymmetryPlanesSetup();
@@ -160,6 +162,19 @@ public:
     this->fCenCorQAHistogramBins[index][kBIN + LAST_EBINS] = ynbins;
     this->fCenCorQAHistogramBins[index][kLEDGE + LAST_EBINS] = ylowerEdge;
     this->fCenCorQAHistogramBins[index][kUEDGE + LAST_EBINS] = yupperEdge;
+  }
+  // generic setter for track scan QA histograms
+  void SetFBTrackScanQAHistogramBinning(kTrack Track, Int_t nbins,
+                                        Double_t lowerEdge,
+                                        Double_t upperEdge) {
+    if (Track > LAST_ETRACK) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetFBTrackScanQAHistogramBinning",
+            "Running out of bounds in SetFBTrackScanQAHistogramBinning");
+    }
+    this->fFBTrackScanQAHistogramBins[Track][kBIN] = nbins;
+    this->fFBTrackScanQAHistogramBins[Track][kLEDGE] = lowerEdge;
+    this->fFBTrackScanQAHistogramBins[Track][kUEDGE] = upperEdge;
   }
   // generic setter for self correlation QA histogram binning
   void SetSelfCorQAHistogramBinning(kTrack Track, Int_t nbins,
@@ -231,7 +246,7 @@ public:
   void SetPrimaryOnlyCut(Bool_t option) { this->fPrimaryOnly = option; }
 
   // setters for MC analsys
-  void SetMCAnalysis(Bool_t option) { this->fMCAnalaysis = option; }
+  void SetMCAnalysis(Bool_t option) { this->fMCOnTheFly = option; }
   void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
   void SetUseWeights(Bool_t option) { this->fUseWeights = option; }
   void SetResetWeights(Bool_t option) { this->fResetWeights = option; }
@@ -335,17 +350,17 @@ private:
   // track control histograms
   TList *fTrackControlHistogramsList;
   TString fTrackControlHistogramsListName;
-  TH1D *fTrackControlHistograms[LAST_ETRACK][LAST_EBEFOREAFTER];
-  TString fTrackControlHistogramNames[LAST_ETRACK][LAST_EBEFOREAFTER]
-                                     [LAST_ENAME];
+  TH1D *fTrackControlHistograms[LAST_EMODE][LAST_ETRACK][LAST_EBEFOREAFTER];
+  TString fTrackControlHistogramNames[LAST_EMODE][LAST_ETRACK]
+                                     [LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fTrackControlHistogramBins[LAST_ETRACK][LAST_EBINS];
 
   // event control historams
   TList *fEventControlHistogramsList;
   TString fEventControlHistogramsListName;
-  TH1D *fEventControlHistograms[LAST_EEVENT][LAST_EBEFOREAFTER];
-  TString fEventControlHistogramNames[LAST_EEVENT][LAST_EBEFOREAFTER]
-                                     [LAST_ENAME];
+  TH1D *fEventControlHistograms[LAST_EMODE][LAST_EEVENT][LAST_EBEFOREAFTER];
+  TString fEventControlHistogramNames[LAST_EMODE][LAST_EEVENT]
+                                     [LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fEventControlHistogramBins[LAST_EEVENT][LAST_EBINS];
 
   // cuts
@@ -374,7 +389,7 @@ private:
   // Monte Carlo analysis
   TList *fMCAnalysisList;
   TString fMCAnalysisListName;
-  Bool_t fMCAnalaysis;
+  Bool_t fMCOnTheFly;
   Bool_t fMCClosure;
   UInt_t fSeed;
   Bool_t fUseCustomSeed;
