@@ -55,6 +55,7 @@ set(SRCS
     AliAnalysisTaskSEDmesonTree.cxx
     AliAnalysisTaskSEDplus.cxx
     AliAnalysisTaskSEDs.cxx
+    AliAnalysisTaskSEDstarPolarization.cxx
     AliAnalysisTaskSENonPromptLc.cxx
     AliAnalysisTaskSECharmHadronMLSelector.cxx
     AliAnalysisTaskSECharmHadronvn.cxx
