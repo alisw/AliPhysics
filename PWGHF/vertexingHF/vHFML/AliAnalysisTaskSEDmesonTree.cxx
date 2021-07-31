@@ -263,7 +263,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                 arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Charm2Prong"));
                 break;
             case kDplustoKpipi:
-                arrayCand = dynamic_cast<TClonesArray *>(fAOD-->GetList()>FindObject("Charm3Prong"));
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Charm3Prong"));
                 break;
             case kDstartoD0pi:
                 arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Dstar"));
@@ -561,10 +561,19 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     fnSparseReco[0]->Fill(var4nSparse.data());
                     if(fReadMC)
                     {
-                        fnSparseReco[1]->Fill(var4nSparse.data());
-                        fnSparseReco[3]->Fill(var4nSparse.data());
-                        var4nSparse.insert(var4nSparse.end(), ptB);
-                        fnSparseReco[2]->Fill(var4nSparse.data());
+                        if(labD >= 0 && orig == 4)
+                        {
+                            fnSparseReco[1]->Fill(var4nSparse.data());
+                        }
+                        else if(labD < 0)
+                        {
+                            fnSparseReco[3]->Fill(var4nSparse.data());
+                        }
+                        else if(labD >= 0 && orig == 5)
+                        {
+                            var4nSparse.insert(var4nSparse.end(), ptB);
+                            fnSparseReco[2]->Fill(var4nSparse.data());
+                        }
                     }
                 }
             }
@@ -586,10 +595,19 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     fnSparseReco[0]->Fill(var4nSparse.data());
                     if(fReadMC)
                     {
-                        fnSparseReco[1]->Fill(var4nSparse.data());
-                        fnSparseReco[3]->Fill(var4nSparse.data());
-                        var4nSparse.insert(var4nSparse.end(), ptB);
-                        fnSparseReco[2]->Fill(var4nSparse.data());
+                        if(labD >= 0 && orig == 4)
+                        {
+                            fnSparseReco[1]->Fill(var4nSparse.data());
+                        }
+                        else if(labD < 0)
+                        {
+                            fnSparseReco[3]->Fill(var4nSparse.data());
+                        }
+                        else if(labD >= 0 && orig == 5)
+                        {
+                            var4nSparse.insert(var4nSparse.end(), ptB);
+                            fnSparseReco[2]->Fill(var4nSparse.data());
+                        }
                     }
                 }
             }
