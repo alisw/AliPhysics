@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 30.07.2021
+ * Last Modified Date: 31.07.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -1170,7 +1170,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
       // getting a pointer to a track
       AliMCParticle *MCParticle =
-          dynamic_cast<AliMCParticle *>(aAOD->GetTrack(iParticle));
+          dynamic_cast<AliMCParticle *>(aMC->GetTrack(iParticle));
 
       // protect against invalid pointers
       if (!MCParticle) {
@@ -1184,7 +1184,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
       // get kinematic variables of the track
       // Double_t pt = aTrack->Pt();
-      Double_t phi = MCParticle->Phi();
+      // Double_t phi = MCParticle->Phi();
       // Double_t eta = aTrack->Eta();
 
       // fill track control histograms before track cut
@@ -1252,6 +1252,7 @@ void AliAnalysisTaskAR::FillEventControlHistograms(kBeforeAfter BA,
   AliAODEvent *AODEvent = dynamic_cast<AliAODEvent *>(ave);
   AliMCEvent *MCEvent = dynamic_cast<AliMCEvent *>(ave);
 
+  // AOD event
   if (AODEvent) {
     // get centrality percentile
     Double_t centralityPercentile =
@@ -1273,18 +1274,21 @@ void AliAnalysisTaskAR::FillEventControlHistograms(kBeforeAfter BA,
     fEventControlHistograms[kRECO][kZ][BA]->Fill(PrimaryVertex->GetZ());
   }
 
+  // MC event
   if (MCEvent) {
-    // TBI
+    // const AliAODVertex *PrimaryVertex =
+    //     dynamic_cast<AliAODVertex *>(MCEvent->GetPrimaryVertex());
+    fEventControlHistograms[kSIM][kMUL][BA]->Fill(MCEvent->GetNumberOfTracks());
   }
 }
 
 void AliAnalysisTaskAR::FillTrackControlHistograms(kBeforeAfter BA,
                                                    AliVParticle *avp) {
+  // fill track control histograms
 
+  // aod track
   AliAODTrack *track = dynamic_cast<AliAODTrack *>(avp);
-
   if (track) {
-    // fill track control histograms
     fTrackControlHistograms[kRECO][kPT][BA]->Fill(track->Pt());
     fTrackControlHistograms[kRECO][kPHI][BA]->Fill(track->Phi());
     fTrackControlHistograms[kRECO][kETA][BA]->Fill(track->Eta());
@@ -1294,6 +1298,16 @@ void AliAnalysisTaskAR::FillTrackControlHistograms(kBeforeAfter BA,
     fTrackControlHistograms[kRECO][kCHI2PERNDF][BA]->Fill(track->Chi2perNDF());
     fTrackControlHistograms[kRECO][kDCAZ][BA]->Fill(track->ZAtDCA());
     fTrackControlHistograms[kRECO][kDCAXY][BA]->Fill(track->DCA());
+  }
+
+  // MC particle
+  AliMCParticle *MCParticle = dynamic_cast<AliMCParticle *>(avp);
+  if (MCParticle) {
+    // fill track control histograms
+    fTrackControlHistograms[kSIM][kPT][BA]->Fill(MCParticle->Pt());
+    fTrackControlHistograms[kSIM][kPHI][BA]->Fill(MCParticle->Phi());
+    fTrackControlHistograms[kSIM][kETA][BA]->Fill(MCParticle->Eta());
+    fTrackControlHistograms[kSIM][kCHARGE][BA]->Fill(MCParticle->Charge());
   }
 }
 
@@ -1535,8 +1549,27 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp) {
   // check MC particle
   AliMCParticle *MCParticle = dynamic_cast<AliMCParticle *>(avp);
   if (MCParticle) {
-    // TBI
-    Flag = kTRUE;
+    // if set, cut all non-primary particles away
+    if (fPrimaryOnly) {
+      if (MCParticle->IsPhysicalPrimary()) {
+        Flag = kFALSE;
+      }
+    }
+    // cut PT
+    if ((MCParticle->Pt() < fTrackCuts[kPT][kMIN]) ||
+        (MCParticle->Pt() > fTrackCuts[kPT][kMAX])) {
+      Flag = kFALSE;
+    }
+    // cut PHI
+    if ((MCParticle->Phi() < fTrackCuts[kPHI][kMIN]) ||
+        (MCParticle->Phi() > fTrackCuts[kPHI][kMAX])) {
+      Flag = kFALSE;
+    }
+    // cut ETA
+    if ((MCParticle->Eta() < fTrackCuts[kETA][kMIN]) ||
+        (MCParticle->Eta() > fTrackCuts[kETA][kMAX])) {
+      Flag = kFALSE;
+    }
   }
 
   return Flag;
