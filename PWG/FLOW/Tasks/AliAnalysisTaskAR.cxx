@@ -23,9 +23,14 @@
 
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
+#include "AliAODMCParticle.h"
 #include "AliAnalysisTaskAR.h"
 #include "AliLog.h"
+#include "AliMCEvent.h"
 #include "AliMultSelection.h"
+#include "AliVEvent.h"
+#include "AliVParticle.h"
+#include "AliVTrack.h"
 #include <TColor.h>
 #include <TFile.h>
 #include <TH1.h>
@@ -1180,8 +1185,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
 
       // getting a pointer to a track
-      AliMCParticle *MCParticle =
-          dynamic_cast<AliMCParticle *>(aMC->GetTrack(iParticle));
+      AliAODMCParticle *MCParticle =
+          dynamic_cast<AliAODMCParticle *>(aMC->GetTrack(iParticle));
 
       // protect against invalid pointers
       if (!MCParticle) {
@@ -1287,11 +1292,13 @@ void AliAnalysisTaskAR::FillEventControlHistograms(kBeforeAfter BA,
 
   // MC event
   if (MCEvent) {
-    AliAODVertex *PrimaryVertex = (AliAODVertex *)MCEvent->GetPrimaryVertex();
     fEventControlHistograms[kSIM][kMUL][BA]->Fill(MCEvent->GetNumberOfTracks());
-    fEventControlHistograms[kSIM][kX][BA]->Fill(PrimaryVertex->GetX());
-    fEventControlHistograms[kSIM][kY][BA]->Fill(PrimaryVertex->GetY());
-    fEventControlHistograms[kSIM][kZ][BA]->Fill(PrimaryVertex->GetZ());
+    // AliVVertex *avtx = (AliVVertex *)MCEvent->GetPrimaryVertex();
+    // if (avtx) {
+    //   fEventControlHistograms[kSIM][kX][BA]->Fill(avtx->GetX());
+    //   fEventControlHistograms[kSIM][kY][BA]->Fill(avtx->GetY());
+    //   fEventControlHistograms[kSIM][kZ][BA]->Fill(avtx->GetZ());
+    // }
   }
 }
 
@@ -1314,13 +1321,13 @@ void AliAnalysisTaskAR::FillTrackControlHistograms(kBeforeAfter BA,
   }
 
   // MC particle
-  AliMCParticle *MCParticle = dynamic_cast<AliMCParticle *>(avp);
+  AliAODMCParticle *MCParticle = dynamic_cast<AliAODMCParticle *>(avp);
   if (MCParticle) {
     // fill track control histograms
     fTrackControlHistograms[kSIM][kPT][BA]->Fill(MCParticle->Pt());
     fTrackControlHistograms[kSIM][kPHI][BA]->Fill(MCParticle->Phi());
     fTrackControlHistograms[kSIM][kETA][BA]->Fill(MCParticle->Eta());
-    fTrackControlHistograms[kSIM][kCHARGE][BA]->Fill(MCParticle->Charge());
+    fTrackControlHistograms[kSIM][kCHARGE][BA]->Fill(MCParticle->Charge() / 3.);
   }
 }
 
@@ -1478,29 +1485,27 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
   // check MC event
   AliMCEvent *aMC = dynamic_cast<AliMCEvent *>(ave);
   if (aMC) {
-    AliAODVertex *PrimaryVertex = (AliAODVertex *)aMC->GetPrimaryVertex();
-
-    // cut event if primary vertex is too out of center
-    if ((PrimaryVertex->GetX() < fEventCuts[kX][kMIN]) ||
-        (PrimaryVertex->GetX() > fEventCuts[kX][kMAX])) {
-			fEventCutsCounter[kSIM]->Fill(kX+0.5);
-      Flag = kFALSE;
-    }
-    if ((PrimaryVertex->GetY() < fEventCuts[kY][kMIN]) ||
-        (PrimaryVertex->GetY() > fEventCuts[kY][kMAX])) {
-			fEventCutsCounter[kSIM]->Fill(kY+0.5);
-      Flag = kFALSE;
-    }
-    if ((PrimaryVertex->GetZ() < fEventCuts[kZ][kMIN]) ||
-        (PrimaryVertex->GetZ() > fEventCuts[kZ][kMAX])) {
-			fEventCutsCounter[kSIM]->Fill(kZ+0.5);
-      Flag = kFALSE;
-    }
+    // // cut event if primary vertex is too out of center
+    // if ((aMC->GetPrimaryVertex()->GetX() < fEventCuts[kX][kMIN]) ||
+    //     (aMC->GetPrimaryVertex()->GetX() > fEventCuts[kX][kMAX])) {
+    //   fEventCutsCounter[kSIM]->Fill(kX + 0.5);
+    //   Flag = kFALSE;
+    // }
+    // if ((PrimaryVertex->GetY() < fEventCuts[kY][kMIN]) ||
+    //     (PrimaryVertex->GetY() > fEventCuts[kY][kMAX])) {
+    //   fEventCutsCounter[kSIM]->Fill(kY + 0.5);
+    //   Flag = kFALSE;
+    // }
+    // if ((PrimaryVertex->GetZ() < fEventCuts[kZ][kMIN]) ||
+    //     (PrimaryVertex->GetZ() > fEventCuts[kZ][kMAX])) {
+    //   fEventCutsCounter[kSIM]->Fill(kZ + 0.5);
+    //   Flag = kFALSE;
+    // }
 
     // cut on multiplicity
     if ((aMC->GetNumberOfTracks() < fEventCuts[kMUL][kMIN]) ||
         (aMC->GetNumberOfTracks() > fEventCuts[kMUL][kMAX])) {
-			fEventCutsCounter[kSIM]->Fill(kMUL+0.5);
+      fEventCutsCounter[kSIM]->Fill(kMUL + 0.5);
       Flag = kFALSE;
     }
   }
@@ -1589,7 +1594,7 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp) {
   }
 
   // check MC particle
-  AliMCParticle *MCParticle = dynamic_cast<AliMCParticle *>(avp);
+  AliAODMCParticle *MCParticle = dynamic_cast<AliAODMCParticle *>(avp);
   if (MCParticle) {
     // if set, cut all non-primary particles away
     if (fPrimaryOnly) {
@@ -1600,25 +1605,25 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp) {
     // cut PT
     if ((MCParticle->Pt() < fTrackCuts[kPT][kMIN]) ||
         (MCParticle->Pt() > fTrackCuts[kPT][kMAX])) {
-			fTrackCutsCounter[kSIM]->Fill(kPT+0.5);
+      fTrackCutsCounter[kSIM]->Fill(kPT + 0.5);
       Flag = kFALSE;
     }
     // cut PHI
     if ((MCParticle->Phi() < fTrackCuts[kPHI][kMIN]) ||
         (MCParticle->Phi() > fTrackCuts[kPHI][kMAX])) {
-			fTrackCutsCounter[kSIM]->Fill(kPHI+0.5);
+      fTrackCutsCounter[kSIM]->Fill(kPHI + 0.5);
       Flag = kFALSE;
     }
     // cut ETA
     if ((MCParticle->Eta() < fTrackCuts[kETA][kMIN]) ||
         (MCParticle->Eta() > fTrackCuts[kETA][kMAX])) {
-			fTrackCutsCounter[kSIM]->Fill(kETA+0.5);
+      fTrackCutsCounter[kSIM]->Fill(kETA + 0.5);
       Flag = kFALSE;
     }
     // cut CHARGE
-    if ((std::abs(MCParticle->Charge()) < fTrackCuts[kCHARGE][kMIN]) ||
-        (std::abs(MCParticle->Charge()) > fTrackCuts[kCHARGE][kMAX])) {
-			fTrackCutsCounter[kSIM]->Fill(kCHARGE+0.5);
+    if ((std::abs(MCParticle->Charge() / 3.) < fTrackCuts[kCHARGE][kMIN]) ||
+        (std::abs(MCParticle->Charge() / 3.) > fTrackCuts[kCHARGE][kMAX])) {
+      fTrackCutsCounter[kSIM]->Fill(kCHARGE + 0.5);
       Flag = kFALSE;
     }
   }
@@ -2256,8 +2261,8 @@ void AliAnalysisTaskAR::SetWeightHistogram(const char *Filename,
 }
 
 void AliAnalysisTaskAR::GetPointers(TList *histList) {
-  // Initialize pointer for base list fHistList so we can initialize all ot
-  // bjects and call terminate off-lin
+  // Initialize pointer for base list fHistList so we can initialize all of
+  // objects and call terminate off-line
 
   fHistList = histList;
   if (!fHistList) {
@@ -2285,13 +2290,18 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
 
   // get pointer for fTrackControlHistogramsList
   fTrackControlHistogramsList = dynamic_cast<TList *>(
-      fHistList->FindObject(fTrackControlHistogramsListName));
+      fControlHistogramsList->FindObject(fTrackControlHistogramsListName));
   if (!fTrackControlHistogramsList) {
     std::cout << __LINE__ << ": Did not get " << fTrackControlHistogramsListName
               << std::endl;
     Fatal("GetPointersForControlHistograms", "Invalid Pointer");
   }
 
+  // get pointers for track cut counter histograms
+  for (int mode = 0; mode < LAST_EMODE; ++mode) {
+    fTrackCutsCounter[mode] = dynamic_cast<TH1D *>(
+        fTrackControlHistogramsList->FindObject(fTrackCutsCounterNames[mode]));
+  }
   // get all pointers for track control histograms
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     for (int var = 0; var < LAST_ETRACK; ++var) {
@@ -2311,13 +2321,18 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
 
   // get pointer for fEventControlHistogramsList
   fEventControlHistogramsList = dynamic_cast<TList *>(
-      fHistList->FindObject(fEventControlHistogramsListName));
+      fControlHistogramsList->FindObject(fEventControlHistogramsListName));
   if (!fEventControlHistogramsList) {
     std::cout << __LINE__ << ": Did not get " << fEventControlHistogramsListName
               << std::endl;
     Fatal("GetPointersForControlHistograms", "Invalid Pointer");
   }
 
+  // get pointers for event cut counter histograms
+  for (int mode = 0; mode < LAST_EMODE; ++mode) {
+    fEventCutsCounter[mode] = dynamic_cast<TH1D *>(
+        fEventControlHistogramsList->FindObject(fEventCutsCounterNames[mode]));
+  }
   // get all pointers for event control histograms
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     for (int var = 0; var < LAST_EEVENT; ++var) {
@@ -2358,10 +2373,6 @@ void AliAnalysisTaskAR::GetPointersForFinalResultHistograms() {
       Fatal("GetPointersForOutputHistograms", "Invalid Pointer");
     }
   }
-
-  // Set again all flags:
-  // fFillBuffers = (Bool_t)fBuffersFlagsPro->GetBinContent(1);
-  // fMaxBuffer = fBuffersFlagsPro->GetBinContent(2);
 }
 
 void AliAnalysisTaskAR::GetPointersForFinalResultProfiles() {
@@ -2386,8 +2397,4 @@ void AliAnalysisTaskAR::GetPointersForFinalResultProfiles() {
       Fatal("GetPointersForOutputProfiles", "Invalid Pointer");
     }
   }
-
-  // Set again all flags:
-  // fFillBuffers = (Bool_t)fBuffersFlagsPro->GetBinContent(1);
-  // fMaxBuffer = fBuffersFlagsPro->GetBinContent(2);
 }
