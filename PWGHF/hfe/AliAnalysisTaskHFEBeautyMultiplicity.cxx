@@ -75,6 +75,29 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fUseTender(kTRUE),
     fCaloClusters_tender(0),
 
+  //---- Cut Parameter ----//
+  /*  TrackEtaMin(-0.6),
+    TrackEtaMax(0.6),
+    NsigmaMin(-1.0),
+    NsigmaMax(3.0),
+    HadNsigma(-3.5),
+    M20Min(0.015),
+    M20Max(0.3),
+    EopMin(0.8),
+    EopMax(1.2),
+    NTPCClust(100),
+    NITSClust(3),
+    TPCdEdx(80.0),
+    DCAxy(2.4),
+    DCAz(3.2),
+    NCrossedRow(100),
+    EtaPhiDiff(0.05),
+    PhotInvMass(0.15)*/
+    Nref(0),		    // RefMult
+    MinNtrklet(0),	    // Tracklet class (min)
+    MaxNtrklet(9999),	    // Tracklet class (max)
+
+
   //---- Data ----//
     fNevents(0),
     fCent(0),               // Centrality
@@ -169,10 +192,6 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fDCAxy_Ele_4(0),	    // electron DCA except photonic
 
     fHistConv_R(0),	    // conversion R (electron Unlike-Sign & InvMass < 0.15)
-
-    Nref(0),		    // RefMult
-    MinNtrklet(0),	    // Tracklet class (min)
-    MaxNtrklet(9999),	    // Tracklet class (max)
 
     fHist_Tracklet(0),
 
@@ -304,6 +323,28 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fUseTender(kTRUE),
     fCaloClusters_tender(0),
 
+  //---- Cut Parameter ----//
+  /*  TrackEtaMin(-0.6),
+    TrackEtaMax(0.6),
+    NsigmaMin(-1.0),
+    NsigmaMax(3.0),
+    HadNsigma(-3.5),
+    M20Min(0.015),
+    M20Max(0.3),
+    EopMin(0.8),
+    EopMax(1.2),
+    NTPCClust(100),
+    NITSClust(3),
+    TPCdEdx(80.0),
+    DCAxy(2.4),
+    DCAz(3.2),
+    NCrossedRow(100),
+    EtaPhiDiff(0.05),
+    PhotInvMass(0.15)*/
+    Nref(0),		    // RefMult
+    MinNtrklet(0),	    // Tracklet class (min)
+    MaxNtrklet(9999),	    // Tracklet class (max)
+
   //---- Data ----//
     fNevents(0),
     fCent(0),               // Centrality
@@ -399,10 +440,6 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
 
     fElectronEtaPhi(0),	    // eta vs. phi (electron)
     fHadronEtaPhi(0),	    // eta vs. phi (hadron)
-
-    Nref(0),		    // RefMult
-    MinNtrklet(0),	    // Tracklet class (min)
-    MaxNtrklet(9999),	    // Tracklet class (max)
 
     fHist_Tracklet(0),
 
@@ -1051,8 +1088,12 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   
   //DCAxy from B
     fDCAxy_MC_B = new TH2F("fDCAxy_MC_B","p_{T} vs DCA_{xy} (MC : B-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
-    fDCAxy_MC_B->Sumw2();
     fOutputList->Add(fDCAxy_MC_B);
+  
+  //DCAxy from B with weight
+    fDCAxy_MC_B_weight = new TH2F("fDCAxy_MC_B_weight","p_{T} vs DCA_{xy} (MC : B-meson with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_B_weight->Sumw2();
+    fOutputList->Add(fDCAxy_MC_B_weight);
   
   //DCAxy from D
     fDCAxy_MC_D = new TH2F("fDCAxy_MC_D","p_{T} vs DCA_{xy} (MC : D-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
@@ -1061,23 +1102,39 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
 
   //DCAxy from Dpm
     fDCAxy_MC_Dpm = new TH2F("fDCAxy_MC_Dpm","p_{T} vs DCA_{xy} (MC : D^{+},D^{*+});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
-    fDCAxy_MC_Dpm->Sumw2();
     fOutputList->Add(fDCAxy_MC_Dpm);
+  
+  //DCAxy from Dpm with weight
+    fDCAxy_MC_Dpm_weight = new TH2F("fDCAxy_MC_Dpm_weight","p_{T} vs DCA_{xy} (MC : D^{+},D^{*+} with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_Dpm_weight->Sumw2();
+    fOutputList->Add(fDCAxy_MC_Dpm_weight);
   
   //DCAxy from D0
     fDCAxy_MC_D0 = new TH2F("fDCAxy_MC_D0","p_{T} vs DCA_{xy} (MC : D^{0},D^{*0});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
-    fDCAxy_MC_D0->Sumw2();
     fOutputList->Add(fDCAxy_MC_D0);
+  
+  //DCAxy from D0 with weight
+    fDCAxy_MC_D0_weight = new TH2F("fDCAxy_MC_D0_weight","p_{T} vs DCA_{xy} (MC : D^{0},D^{*0} with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_D0_weight->Sumw2();
+    fOutputList->Add(fDCAxy_MC_D0_weight);
   
   //DCAxy from Ds
     fDCAxy_MC_Ds = new TH2F("fDCAxy_MC_Ds","p_{T} vs DCA_{xy} (MC : D^{+}_{s},D^{*+}_{s});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
-    fDCAxy_MC_Ds->Sumw2();
     fOutputList->Add(fDCAxy_MC_Ds);
+  
+  //DCAxy from Ds with weight
+    fDCAxy_MC_Ds_weight = new TH2F("fDCAxy_MC_Ds_weight","p_{T} vs DCA_{xy} (MC : D^{+}_{s},D^{*+}_{s} with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_Ds_weight->Sumw2();
+    fOutputList->Add(fDCAxy_MC_Ds_weight);
   
   //DCAxy from Lambda c 
     fDCAxy_MC_Lc = new TH2F("fDCAxy_MC_Lc","p_{T} vs DCA_{xy} (MC : #Lambda_{c});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
-    fDCAxy_MC_Lc->Sumw2();
     fOutputList->Add(fDCAxy_MC_Lc);
+
+  //DCAxy from Lambda c with weight
+    fDCAxy_MC_Lc_weight = new TH2F("fDCAxy_MC_Lc_weight","p_{T} vs DCA_{xy} (MC : #Lambda_{c} with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCAxy_MC_Lc_weight->Sumw2();
+    fOutputList->Add(fDCAxy_MC_Lc_weight);
 
   //DCAxy elrctron
     fDCAxy_MC_ele = new TH2F("fDCAxy_MC_ele","p_{T} vs DCA_{xy} (MC : electron);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
@@ -1236,20 +1293,21 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
     
     
   //********** Track Cut **********
-    Double_t CutTrackEta[2] = {-0.6, 0.6};
-    Double_t CutTPCNCls = 100;
-    Double_t CutITSNCls = 3;
-    Double_t CutTPCdEdx = 80;
-    Double_t CutDCAxy   = 2.4;
-    Double_t CutDCAz    = 3.2;
-    Double_t CutTPCNCrossedRow = 100;
-    Double_t CutDiff    = 0.05;
+    Double_t CutTrackEta[2] = {TrackEtaMin, TrackEtaMax};
+    Int_t CutTPCNCls = NTPCClust;
+    Int_t CutITSNCls = NITSClust;
+    Double_t CutTPCdEdx = TPCdEdx;
+    Double_t CutDCAxy   = DCAxy;
+    Double_t CutDCAz    = DCAz;
+    Int_t CutTPCNCrossedRow = NCrossedRow;
+    Double_t CutDiff    = EtaPhiDiff;
     
   //********** PID Cut **********
-    Double_t CutTPCNsigma[2] = {-1.0, 3.0};
-    Double_t CutM20[2] = {0.015, 0.3};
-    Double_t CutEop[2] = {0.8, 1.2};
-    Double_t CutHadNsigma = -3.5;
+    Double_t CutTPCNsigma[2] = {NsigmaMin, NsigmaMax};
+    Double_t CutM20[2] = {M20Min, M20Max};
+    Double_t CutEop[2] = {EopMin,EopMax};
+    Double_t CutHadNsigma = HadNsigma;
+        
         
 
 
@@ -1889,7 +1947,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 			{
 				fNoB -> Fill(12);
 			    	fHistPt_HFE_MC_B -> Fill(track->Pt()); // HFE from B meson&baryon (MC)
-			    	fDCAxy_MC_B -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_B->Eval(pTMom));
+			    	fDCAxy_MC_B -> Fill(TrkPt, DCA[0]*charge*Bsign); // no weight
+			    	fDCAxy_MC_B_weight -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_B->Eval(pTMom));
 		    	}
 
                     	if(pid_eleD)
@@ -1898,18 +1957,34 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 			    	fHistPt_HFE_MC_D -> Fill(track->Pt()); // HFE from D meson (MC)
 			    	fDCAxy_MC_D -> Fill(TrkPt, DCA[0]*charge*Bsign);
 
-			    	if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413) fDCAxy_MC_Dpm -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
-			    	if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423) fDCAxy_MC_D0  -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
-			    	if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)==433) fDCAxy_MC_Ds  -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+			    	if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413)
+				{
+					fDCAxy_MC_Dpm -> Fill(TrkPt, DCA[0]*charge*Bsign);  // no weight
+					fDCAxy_MC_Dpm_weight -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+				}
+
+			    	if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423)
+				{
+					fDCAxy_MC_D0  -> Fill(TrkPt, DCA[0]*charge*Bsign);  // no weight
+					fDCAxy_MC_D0_weight  -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+				}
+
+			    	if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)==433)
+				{
+					fDCAxy_MC_Ds  -> Fill(TrkPt, DCA[0]*charge*Bsign); // no weight
+					fDCAxy_MC_Ds_weight  -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+				}
 
 		    		if(TMath::Abs(pidM)==4122)
 				{			   // HFE from Lambda c (MC)
 			    		fHistPt_HFE_MC_Lc -> Fill(track->Pt());
+			    		
+					fDCAxy_MC_Lc -> Fill(TrkPt, DCA[0]*charge*Bsign); // no weight
 
 					if(pTMom<10.0){
-			    			fDCAxy_MC_Lc -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_Lc->Eval(pTMom));
+			    			fDCAxy_MC_Lc_weight -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_Lc->Eval(pTMom));
 					}else{
-			    			fDCAxy_MC_Lc -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_Lc->Eval(10));
+			    			fDCAxy_MC_Lc_weight -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_Lc->Eval(10));
 					}
 		    		}
 		    	}
@@ -1995,6 +2070,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
     */
     
     Bool_t flagPhotonicElec = kFALSE;
+    Double_t CutInvMass = PhotInvMass;
     
     int ntracks = -999;
     if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
@@ -2073,7 +2149,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
         if(fFlagLS){    // Like-sign
             if(TrkPt >= 1.0){
                 fInvmassLS -> Fill(TrkPt,mass);
-                if(mass <= 0.15){
+                if(mass <= PhotInvMass){
                     fDCAxy_LS_1 -> Fill(TrkPt, DCAxy*charge*Bsign);
                     fDCAxy_LS_2 -> Fill(TrkPt, DCAxy*charge);
                     fDCAxy_LS_3 -> Fill(TrkPt, DCAxy);
@@ -2084,7 +2160,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
         if(fFlagULS){   // Unlike-sign
             if(TrkPt >= 1.0){
                 fInvmassULS -> Fill(TrkPt,mass);
-                if(mass <= 0.15){
+                if(mass <= PhotInvMass){
                     fDCAxy_ULS_1 -> Fill(TrkPt, DCAxy*charge*Bsign);
                     fDCAxy_ULS_2 -> Fill(TrkPt, DCAxy*charge);
                     fDCAxy_ULS_3 -> Fill(TrkPt, DCAxy);
@@ -2111,7 +2187,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
 		}
        }
 
-        if(mass <= 0.15 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; // Tag Non-HFE (photonic electron by Invariant-mass method)
+        if(mass <= PhotInvMass && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; // Tag Non-HFE (photonic electron by Invariant-mass method)
 
     }
     fFlagPhotonicElec = flagPhotonicElec;

@@ -8,6 +8,23 @@ class AliAnalysisDataContainer;
 
 AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 	TString name = "name",
+	Double_t EtaMin = -0.6,
+	Double_t EtaMax = 0.6,
+	Double_t NsigmaMin = -1.0,
+	Double_t NsigmaMax = 3.0,
+	Double t HadNsigma = -3.5,
+	Double_t M20Min = 0.015,
+	Double_t M20Max = 0.3,
+	Double_t EopMin = 0.8,
+	Double_t EopMax = 1.2,
+	Double_t DCAxy = 2.4,
+	Double_t DCAz = 3.2,
+	Double_t Diff = 0.05,
+	Int_t NTPCClust = 100,
+	Int_t NITSClust = 3,
+	Int_t NCrossedRow = 100,
+	Double_t TPCdEdx = 80.0,
+	Double_t PhotInvMass = 0.15,
 	Double_t nref = 30.1,
 	Double_t minNtrklet = 0,
 	Double_t maxNtrklet = 9999,
@@ -41,6 +58,14 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 
     //---- my task
     AliAnalysisTaskHFEBeautyMultiplicity* task = new AliAnalysisTaskHFEBeautyMultiplicity(name.Data());
+    task->SetTrackEta(EtaMin, EtaMax);
+    task->SetNsigma(NsigmaMin, NsigmaMax, HadNsigma);
+    task->SetM20(M20Min, M20Max);
+    task->SetEop(EopMin, EopMax);
+    task->SetDCA(DCAxy, DCAz);
+    task->SetTrackClust(NTPCClust, NITSClust, NCrossedRow, TPCdEdx);
+    task->SetDiff(Diff);
+    task->SetMass(PhotInvMass);
     task->SetNref(nref);
     task->SetNtrkletMin(minNtrklet);
     task->SetNtrkletMax(maxNtrklet);
