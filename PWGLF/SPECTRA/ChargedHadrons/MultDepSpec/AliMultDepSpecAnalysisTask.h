@@ -45,9 +45,6 @@ public:
   // Setters
   void SetEventClass(unsigned int eventClass) { fMCEventClass = eventClass; }
   void SetTriggerMask(unsigned int triggermask) { fTriggerMask = triggermask; }
-  void SetIsMC(bool isMC = true) { fIsMC = isMC; }
-  void SetIsAOD(bool isAOD = true) { fIsESD = !isAOD; }
-  void SetUseDataDrivenCorrections(bool useDDC = true) { fMCUseDDC = useDDC; }
   void SetIsNewReco(bool isNewReco = true) { fIsNewReco = isNewReco; }
 
   void SetAxis(unsigned int dim, const std::string name, const std::string title, const std::vector<double>& binEdges, int nBins = 0);
@@ -72,8 +69,8 @@ public:
   bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode = 100);
 
 protected:
-  void DefineDefaultAxes(int maxMultMeas = 100, int maxMultTrue = 100); // called in AddTask
-  void BookHistograms();                                                // called in UserCreateOutputObjects
+  void DefineDefaultAxes(int maxMultMeas = 100, int maxMultTrue = 100);
+  void BookHistograms();
   void FillTrackQA(AliESDtrack* track);
 
   bool InitEvent();
@@ -111,9 +108,9 @@ protected:
   bool fIsMC{};                                     ///< Flag for MC usage
   bool fIsNewReco{};                                ///< flag for new reconstructions (after mid 2020) where tighter chi2 cut has to be used and out-of-bunch pileup is simulated in MCs
   bool fIncludePeripheralEvents{};                  ///< include peripheral A-A events (cent>90)
-  bool fMCUseDDC{};                                 ///< Flag for data driven corrections usage
-  bool fIsNominalPCC{true};                         ///< whether to run particle composition correction in nominal or in systematic mode
-  bool fMCIsINELGT0{};                              ///< flag for INEL>0 event (at least one charged particle in abs(eta) < 1)
+  bool fMCEnableDDC{true};                          ///< Flag for data driven corrections usage
+  int fMCPCCMode{0};                                ///< whether to run particle composition correction in nominal (0) or in systematic mode (-1,1)
+  int fMCSecScalingMode{0};                         ///< whether to run secondary scaling in nominal (0) or in systematic mode (1)
 
   // cuts
   unsigned int fTriggerMask{AliVEvent::kMB | AliVEvent::kINT7}; ///< Trigger mask
@@ -134,6 +131,7 @@ protected:
 
   Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};  //!<! measured primary charged particles as function of true properties (no contamination from background events)
   Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};   //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
+  Hist::Hist<TH1D> fHist_ptDist_prim_gen_trig{};  //!<! generated primary charged particles that fired the trigger as function of pt [for QA to quantify trigger bias]
   Hist::Hist<TH1D> fHist_multDist_evt_gen{};      //!<! generated event distribution  (from events within specified class and with proper vertex position)
   Hist::Hist<TH1D> fHist_multDist_evt_gen_trig{}; //!<! generated event distribution (from events within specified class and with proper vertex position) that in addition fulfils the trigger condition [for QA to disentangle trigger eff from reco eff ]
   Hist::Hist<THnSparseF> fHist_multCorrel_evt{};  //!<! multilicity correlation of measured events (excluding background events)
@@ -165,7 +163,6 @@ protected:
   Hist::Hist<TH1D> fHist_tpcFoundClusters{};                   //!<!  found clusters TPC
   Hist::Hist<TH1D> fHist_tpcCrossedRows{};                     //!<!  crossed rows in TPC
   Hist::Hist<TH1D> fHist_tpcCrossedRowsOverFindableClusters{}; //!<!  rows / findable clusters TPC
-  Hist::Hist<TH1D> fHist_tpcFractionSharedClusters{};          //!<!  fraction of shared clusters TPC
   Hist::Hist<TH1D> fHist_tpcChi2PerCluster{};                  //!<!  chi2 per cluster TPC
   Hist::Hist<TH1D> fHist_tpcGoldenChi2{};                      //!<! chi2 global vs tpc constrained track
   Hist::Hist<TH1D> fHist_tpcGeomLength{};                      //!<! track length in active volume of the TPC
@@ -189,6 +186,7 @@ protected:
   bool fMCIsGoodEventClass{};    //!<! decision if current event is in specified baseline event class
   bool fAcceptEvent{};           //!<! decision if current event is selected
   bool fMCAcceptEvent{};         //!<! decision if current event is of 'generated' event class and has good vertex position
+  bool fMCIsINELGT0{};           //!<! decision if this event is in INEL>0 event class (at least one charged particle in abs(eta) < 1)
 
   // track related properties
   double fPt{};      //!<! track pt
