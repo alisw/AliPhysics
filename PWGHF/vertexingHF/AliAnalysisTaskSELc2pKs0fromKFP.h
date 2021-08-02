@@ -128,6 +128,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         AliPIDCombined*         fPIDCombined;         //!<! combined PID response object
         AliRDHFCutsKFP*         fAnaCuts;             ///< Cuts
         AliAODVertex*           fpVtx;                //!<! primary vertex
+        AliAODVertex*           fpVtxOff;                //!<! primary vertex const off
         AliMCEvent*             fMCEvent;             //!<! corresponding mc event
         Double_t                fBzkG;                ///< magnetic field value [kG]
         Float_t                 fCentrality;           ///< Centrality
