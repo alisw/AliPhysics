@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 30.07.2021
+ * Last Modified Date: 02.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -179,7 +179,7 @@ public:
   // generic setter for self correlation QA histogram binning
   void SetSelfCorQAHistogramBinning(kTrack Track, Int_t nbins,
                                     Double_t lowerEdge, Double_t upperEdge) {
-    if (Track > LAST_ETRACK) {
+    if (Track > kKinematic) {
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetSelfCorQAHistogramBinning",
             "Running out of bounds in SetSelfCorQAHistogramBinning");
@@ -366,10 +366,12 @@ private:
   // cuts
   TString fCentralitySelCriterion;
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
-  TH1D *fTrackCutsCounter;
+  TH1D *fTrackCutsCounter[LAST_EMODE];
+	TString fTrackCutsCounterNames[LAST_EMODE];
   TString fTrackCutsCounterBinNames[LAST_ETRACK];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
-  TH1D *fEventCutsCounter;
+  TH1D *fEventCutsCounter[LAST_EMODE];
+	TString fEventCutsCounterNames[LAST_EMODE];
   TString fEventCutsCounterBinNames[LAST_EEVENT];
   Int_t fFilterbit;
   Bool_t fPrimaryOnly;
