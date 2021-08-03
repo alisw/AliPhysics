@@ -927,7 +927,6 @@ void AliAnalysisTaskSEDmesonTree::CreateRecoSparses()
             fnSparseReco[iHist]->GetAxis(iAx)->SetTitle(Form("ML output %d", iAx));
         if (iHist == 2)
             fnSparseReco[iHist]->GetAxis(6)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
-
         fOutput->Add(fnSparseReco[iHist]);
     }
 }
