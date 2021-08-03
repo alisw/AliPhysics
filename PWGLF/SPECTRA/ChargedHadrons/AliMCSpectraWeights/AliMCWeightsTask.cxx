@@ -210,7 +210,8 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* coll
             collisionSystem = "pp";
             break;
         case MCGeneratorType::PPB_EPOS:
-            stTrainOutputPath = "";
+            stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
+                                "FirstTrain_pPb_LHC20f11c.root";
             collisionSystem = "ppb";
             break;
         case MCGeneratorType::PBPB_HIJING:
