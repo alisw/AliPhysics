@@ -72,7 +72,8 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
     kDetEmbPart = 3, // embedding
     kDetEmbPartCorr = 4, // embedding, do embedded h+jet correlation
     kDetPart = 5, // pp response
-    kDetEmbDet = 6 // pp data embedding
+    kDetEmbDet = 6, // pp data embedding
+    kMCKine = 7 // generator level for kine trains
 //    kDetEmb = 3,  //detector embedded jets
 //    kPythiaDef = 5,
 //    kDetEmbPartPythia=6,

@@ -865,10 +865,12 @@ Bool_t AliAnalysisTaskJetCoreEmcal::FillHistograms()
 
 	fHistEvtSelection->Fill(1); // number of events before event selection
 	AliVEvent *ev = InputEvent();
-	if (!fEventCuts.AcceptEvent(ev)) {
-		fHistEvtSelection->Fill(2);
-		return kTRUE;
-	}
+  if(fJetShapeType!=kMCKine) {
+    if (!fEventCuts.AcceptEvent(ev)) {
+      fHistEvtSelection->Fill(2);
+      return kTRUE;
+    }
+  }
 
 	// centrality selection 
 	if(fDebug) Printf("centrality: %f\n", fCent);
