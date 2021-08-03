@@ -54,7 +54,6 @@ enum kTrack {
   LAST_ETRACK
 };
 const Int_t kKinematic = kETA + 1;
-// enum kXYZ { kX, kY, kZ, LAST_EXYZ };
 enum kFinalHist { kPHIAVG, LAST_EFINALHIST };
 enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
@@ -81,6 +80,7 @@ public:
   virtual void InitializeArraysForTrackControlHistograms();
   virtual void InitializeArraysForEventControlHistograms();
   virtual void InitializeArraysForCuts();
+  virtual void InitializeArraysForWeights();
   virtual void InitializeArraysForQvectors();
   virtual void InitializeArraysForFinalResultHistograms();
   virtual void InitializeArraysForFinalResultProfiles();
@@ -95,19 +95,17 @@ public:
   virtual void BookMCOnTheFlyObjects();
 
   // functions called in UserExec()
-  virtual void ClearEventObjects();
-  virtual void AggregateWeights();
-  virtual void ResetWeights();
+  virtual void MCOnTheFlyExec();
   virtual void FillEventQAHistograms(kBeforeAfter BA, AliVEvent *event);
   virtual void FillFBScanQAHistograms(AliAODTrack *track);
   virtual void FillEventControlHistograms(kBeforeAfter BA, AliVEvent *event);
   virtual void FillTrackControlHistograms(kBeforeAfter BA, AliVParticle *avp);
   virtual void FillFinalResultProfile(kFinalProfile fp);
-  virtual void MCOnTheFlyExec();
-
-  // methods called in AODExec():
   virtual Bool_t SurviveEventCut(AliVEvent *ave);
   virtual Bool_t SurviveTrackCut(AliVParticle *aTrack);
+  virtual void ClearEventObjects();
+  virtual void AggregateWeights();
+  virtual void ResetWeights();
 
   // methods called MCOnTheFlyExec()
   virtual void MCPdfSymmetryPlanesSetup();
@@ -122,8 +120,6 @@ public:
   TComplex Five(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
   TComplex Six(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6);
   TComplex Recursion(Int_t n, Int_t *harmonic, Int_t mult = 1, Int_t skip = 0);
-
-  // methods for computing nested loops
   TComplex TwoNestedLoops(Int_t n1, Int_t n2);
   TComplex ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3);
   TComplex FourNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4);
@@ -246,11 +242,11 @@ public:
   // depends strongly on the data set
   // typical choices are 1,128,256,768
   void SetFilterbit(Int_t Filterbit) { this->fFilterbit = Filterbit; }
-  // cut all non-primary particles
+  // cut all non-primary particles away
   void SetPrimaryOnlyCut(Bool_t option) { this->fPrimaryOnly = option; }
 
   // setters for MC analsys
-  void SetMCAnalysis(Bool_t option) { this->fMCOnTheFly = option; }
+  void SetMCOnTheFly(Bool_t option) { this->fMCOnTheFly = option; }
   void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
   void SetUseWeights(kTrack kinematic, Bool_t option) {
     if (kinematic > kKinematic) {
@@ -272,7 +268,7 @@ public:
   }
   void SetMCFlowHarmonics(std::vector<Double_t> FlowHarmonics) {
     if (FlowHarmonics.size() > kMaxHarmonic) {
-      std::cout << __LINE__ << ": Array exceeds maximum allowed harmonic"
+      std::cout << __LINE__ << ": Vector exceeds maximum allowed harmonic"
                 << std::endl;
       Fatal("SetFlowHarmonics", "Too many harmonics");
     }
@@ -290,6 +286,8 @@ public:
     fMCNumberOfParticlesPerEventRange[kMIN] = min;
     fMCNumberOfParticlesPerEventRange[kMAX] = max;
   }
+
+  // setters for acceptance and weight histograms for monte carlo closure
   void SetAcceptanceHistogram(kTrack kinematic, TH1D *AcceptanceHistogram) {
     if (!AcceptanceHistogram) {
       std::cout << __LINE__ << ": Did not get acceptance histogram"
@@ -313,7 +311,7 @@ public:
       std::cout << __LINE__ << ": Out of range" << std::endl;
       Fatal("SetWeightHistogram", "Out of range");
     }
-    this->fUseWeights[kinematic]=kTRUE;
+    this->fUseWeights[kinematic] = kTRUE;
     this->fWeightHistogram[kinematic] = WeightHistogram;
   }
   void SetWeightHistogram(kTrack kinematic, const char *Filename,
@@ -333,7 +331,7 @@ private:
   AliAnalysisTaskAR(const AliAnalysisTaskAR &aatmpf);
   AliAnalysisTaskAR &operator=(const AliAnalysisTaskAR &aatmpf);
 
-  // base list holding all output object (a.k.a. grandmother of all lists)
+  // base list
   TList *fHistList;
   TString fHistListName;
 
@@ -341,7 +339,6 @@ private:
   TList *fQAHistogramsList;
   TString fQAHistogramsListName;
   Bool_t fFillQAHistograms;
-
   // centrality correlation histograms
   TList *fCenCorQAHistogramsList;
   TString fCenCorQAHistogramsListName;
@@ -373,7 +370,6 @@ private:
   // control histograms
   TList *fControlHistogramsList;
   TString fControlHistogramsListName;
-
   // track control histograms
   TList *fTrackControlHistogramsList;
   TString fTrackControlHistogramsListName;
@@ -381,7 +377,6 @@ private:
   TString fTrackControlHistogramNames[LAST_EMODE][LAST_ETRACK]
                                      [LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fTrackControlHistogramBins[LAST_ETRACK][LAST_EBINS];
-
   // event control historams
   TList *fEventControlHistogramsList;
   TString fEventControlHistogramsListName;
@@ -410,14 +405,12 @@ private:
   TH1D *fFinalResultHistograms[LAST_EFINALHIST];
   TString fFinalResultHistogramNames[LAST_EFINALHIST][LAST_ENAME];
   Double_t fFinalResultHistogramBins[LAST_EFINALHIST][LAST_EBINS];
-  // array holding final resutl profiles
+  // array holding final result profiles
   TProfile *fFinalResultProfiles[LAST_EFINALPROFILE];
   TString fFinalResultProfileNames[LAST_EFINALPROFILE][LAST_ENAME];
   Double_t fFinalResultProfileBins[LAST_EFINALPROFILE][LAST_EBINS];
 
   // Monte Carlo analysis
-  TList *fMCAnalysisList;
-  TString fMCAnalysisListName;
   Bool_t fMCOnTheFly;
   Bool_t fMCClosure;
   UInt_t fSeed;
@@ -431,7 +424,6 @@ private:
   Int_t fMCNumberOfParticlesPerEventRange[LAST_EMINMAX];
 
   // qvectors
-  TList *fQvectorList;
   TComplex fQvector[kMaxHarmonic][kMaxPower];
   std::vector<Double_t> fKinematics[kKinematic];
   std::vector<Double_t> fKinematicWeights[kKinematic];

@@ -72,18 +72,16 @@ ClassImp(AliAnalysisTaskAR)
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
       fCentralitySelCriterion("V0M"), fFilterbit(128), fPrimaryOnly(kFALSE),
-      // Final results
+      // final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       // flags for MC analysis
-      fMCAnalysisList(nullptr), fMCAnalysisListName("MCAnalysis"),
       fMCOnTheFly(kFALSE), fMCClosure(kFALSE), fSeed(0), fUseCustomSeed(kFALSE),
       fMCPdf(nullptr), fMCPdfName("pdf"), fMCFlowHarmonics({}),
       fMCNumberOfParticlesPerEventFluctuations(kFALSE),
       fMCNumberOfParticlesPerEvent(500),
       // qvectors
-      fQvectorList(nullptr), fWeightsAggregated({}),
-      fUseWeightsAggregated(kFALSE), fResetWeightsAggregated(kFALSE),
-      fCorrelators({}) {
+      fWeightsAggregated({}), fUseWeightsAggregated(kFALSE),
+      fResetWeightsAggregated(kFALSE), fCorrelators({}) {
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR(const "
               "char *name, Bool_t useParticleWeights)");
 
@@ -144,15 +142,13 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       // Final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       // flags for MC analysis
-      fMCAnalysisList(nullptr), fMCAnalysisListName("MCAnalysis"),
       fMCOnTheFly(kFALSE), fMCClosure(kFALSE), fSeed(0), fUseCustomSeed(kFALSE),
       fMCPdf(nullptr), fMCPdfName("pdf"), fMCFlowHarmonics({}),
       fMCNumberOfParticlesPerEventFluctuations(kFALSE),
       fMCNumberOfParticlesPerEvent(500),
       // qvectors
-      fQvectorList(nullptr), fWeightsAggregated({}),
-      fUseWeightsAggregated(kFALSE), fResetWeightsAggregated(kFALSE),
-      fCorrelators({}) {
+      fWeightsAggregated({}), fUseWeightsAggregated(kFALSE),
+      fResetWeightsAggregated(kFALSE), fCorrelators({}) {
   // initialize arrays
   this->InitializeArrays();
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR()");
@@ -161,8 +157,8 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
 AliAnalysisTaskAR::~AliAnalysisTaskAR() {
   // Destructor
 
-  // fHlist owns all other data members, if we delete it, we will recursively
-  // delete all other objects associative with this object
+  // fHistlist owns (almost) all other data members, if we delete it, we will
+  // recursively delete all other objects associative with this object
   if (fHistList) {
     delete fHistList;
   }
@@ -180,10 +176,10 @@ AliAnalysisTaskAR::~AliAnalysisTaskAR() {
 void AliAnalysisTaskAR::UserCreateOutputObjects() {
   // Called at every worker node to initialize.
 
-  // 1) Trick to avoid name clashes, part 1;
-  // 2) Book and nest all lists;
-  // 3) Book all objects;
-  // *) Trick to avoid name clashes, part 2.
+  // 1) Trick to avoid name clashes, part 1
+  // 2) Book and nest all lists
+  // 3) Book all objects
+  // *) Trick to avoid name clashes, part 2
 
   // 1) Trick to avoid name clashes, part 1
   Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
@@ -223,16 +219,13 @@ void AliAnalysisTaskAR::Terminate(Option_t *) {
     Fatal("Terminate", "Invalid Pointer to fHistList");
   }
 
-  // Do some calculation in offline mode here:
-
-  // ... your code for offline calculations ...
-
   /* get average value of phi and write it into its own histogram */
   fFinalResultHistograms[kPHIAVG]->SetBinContent(
       1, fTrackControlHistograms[kRECO][kPHI][kAFTER]->GetMean());
 
   // for local MC Analysis
-  // compute analytical values for correlators and fill them into profile
+  // compute analytical values of correlators and fill them into final result
+  // profile
   if (fMCOnTheFly) {
     Double_t theoryValue = 1.;
     for (auto V : fCorrelators) {
@@ -251,6 +244,7 @@ void AliAnalysisTaskAR::InitializeArrays() {
   InitializeArraysForTrackControlHistograms();
   InitializeArraysForEventControlHistograms();
   InitializeArraysForCuts();
+  InitializeArraysForWeights();
   InitializeArraysForQvectors();
   InitializeArraysForFinalResultHistograms();
   InitializeArraysForFinalResultProfiles();
@@ -269,7 +263,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
     }
   }
 
-  // names for QA histograms for the correlation between centrality estimators
+  // set names
   TString CenCorQAHistogramNames[LAST_ECENESTIMATORS *
                                  (LAST_ECENESTIMATORS - 1) / 2][LAST_ENAME] = {
       // NAME, TITLE, XAXIS, YAXIS
@@ -283,9 +277,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       {"fCorCenEstimatorQAHistograms[kCL1+kSPDTRACKLETS]",
        "CL1 vs kSPDTRACKLETS", "CL1", "SPDTracklets"},
   };
-
-  // initialize names of QA histograms for the correlation between centrality
-  // estimators
+  // initialize names
   for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
        ++cen) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
@@ -300,12 +292,11 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
     }
   }
 
-  // default bins for QA histograms for the correlation between centrality
-  // estimators
+  // set default bins
   Double_t CorCenEstimatorQAHistogramBins[LAST_ECENESTIMATORS *
                                           (LAST_ECENESTIMATORS - 1) /
                                           2][2 * LAST_EBINS] = {
-      // kBIN kLEDGE kUEDGE kBIN kLEDGE kUEDGE
+      // kBIN kLEDGE kUEDGE kBIN+LAST_EBINS kLEDGE+LAST_EBINS kUEDGE+LAST_EBINS
       {50., 0., 100., 50., 0., 100.}, // kV0M + kCL0
       {50., 0., 100., 50., 0., 100.}, // kV0M + kCL1
       {50., 0., 100., 50., 0., 100.}, // kV0M + kSPDTRACKLETS
@@ -313,8 +304,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       {50., 0., 100., 50., 0., 100.}, // CL0 + kSPDTRACKLETS
       {50., 0., 100., 50., 0., 100.}, // CL1 + kSPDTRACKLETS
   };
-  // initialize array of bins and edges for QA histograms for the correlation
-  // between centrality
+  // initialize default bins
   for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
        ++cen) {
     for (int bin = 0; bin < 2 * LAST_EBINS; ++bin) {
@@ -324,31 +314,34 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   }
 
   // initialize array for filterbit scan QA histograms
+  // i.e. count the filterbits associated with all tracks
   fFBScanQAHistogram = nullptr;
-  // names for filterbit scan QA histograms
+  // set name
   TString FBScanQAHistogramName[LAST_ENAME] = // NAME, TITLE, XAXIS, YAXIS
       {"fFBScanQAHistograms", "Filterbit Scan", "Filterbit", ""};
-  // initialize names for track control histograms
+  // initialize names
   for (int name = 0; name < LAST_ENAME; ++name) {
     fFBScanQAHistogramName[name] = FBScanQAHistogramName[name];
   }
 
-  // default bins for filterbit scan histograms
+  // set bins
   Double_t FBScanQAHistogramBin[LAST_EBINS] = {kMaxFilterbit, 0.,
                                                kMaxFilterbit};
-  // initialize array of bins and edges for filterbit scan histogram
+  // initialize bins
   for (int bin = 0; bin < LAST_EBINS; ++bin) {
     fFBScanQAHistogramBin[bin] = FBScanQAHistogramBin[bin];
   }
 
-  // initialize array of track filterbit scan QA histograms
+  // initialize array of track scan filterbit scan QA histograms
+  // i.e. look at the spectra of kinematic varibles according to some filterbit
+  // which filterbit are used are hardcode in header
   for (int track = 0; track < LAST_ETRACK; ++track) {
     for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
       fFBTrackScanQAHistograms[track][fb] = nullptr;
     }
   }
 
-  // names for track filterbit scan QA histograms
+  // set names
   TString FBTrackScanQAHistogramNames[LAST_ETRACK][LAST_ENAME] = {
       // NAME, TITLE, XAXIS, YAXIS
       {"fFBTrackScanQAHistogram[kPT]", "Filterbitscan p_{T}", "p_{t}", ""},
@@ -379,7 +372,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       }
     }
   }
-  // default bins
+  // set default bins
   Double_t FBTrackScanHistogramBins[LAST_ETRACK][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
       {100., 0., 10.},            // kPT
@@ -392,7 +385,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       {100., -10., 10.},          // kDCAZ
       {100, -10., 10.},           // kDCAXY
   };
-  // initialize array of bins and edges
+  // initialize default bins
   for (int var = 0; var < LAST_ETRACK; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
       fFBTrackScanQAHistogramBins[var][bin] =
@@ -401,13 +394,16 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   }
 
   // initialize arrays for self correlation QA histograms
+  // i.e. compute k_i - k_j for i !=j for all kinematic variables
+  // of all tracks in each event
+  // if there are no self correlations, we expect a flat spectrum
   for (int var = 0; var < kKinematic; ++var) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
       fSelfCorQAHistograms[var][ba] = nullptr;
     }
   }
 
-  // names for self correlation QA histograms
+  // set names
   TString SelfCorQAHistogramNames[kKinematic][LAST_ENAME] = {
       // NAME, TITLE, XAXIS, YAXIS
       {"fSelfCorQAHistograms[kPT]", "p_{T}^{1}-p_{T}^{2}", "#Delta p_{T}", ""},
@@ -416,7 +412,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       {"fSelfCorQAHistograms[kETA]", "#eta_{1}-#eta_{2}", "#Delta #eta", ""},
   };
 
-  // initialize names for self correlation QA histograms
+  // initialize names
   for (int var = 0; var < kKinematic; ++var) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
       for (int name = 0; name < LAST_ENAME; ++name) {
@@ -431,13 +427,14 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
     }
   }
 
+  // set default bins
   Double_t SelfCorQAHistogramBins[kKinematic][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
       {100., -0.1, 0.1}, // kPT
       {100., -0.1, 0.1}, // kPHI
       {100., -0.1, 0.1}, // kETA
   };
-  // initialize array of bins and edges for track control histograms
+  // initialize default bins
   for (int var = 0; var < kKinematic; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
       fSelfCorQAHistogramBins[var][bin] = SelfCorQAHistogramBins[var][bin];
@@ -455,7 +452,7 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
     }
   }
 
-  // names for track control histograms
+  // set names
   TString TrackControlHistogramNames[LAST_ETRACK][LAST_ENAME] = {
       // NAME, TITLE, XAXIS, YAXIS
       {"fTrackControlHistograms[kPT]", "p_{T}", "p_{T}", ""},
@@ -468,7 +465,7 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
       {"fTrackControlHistograms[kDCAZ]", "DCA in Z", ""},
       {"fTrackControlHistograms[kDCAXY]", "DCA in XY", ""}, // kBEFORE
   };
-  // initialize names for track control histograms
+  // initialize names
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     for (int var = 0; var < LAST_ETRACK; ++var) {
       for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
@@ -486,7 +483,7 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
     }
   }
 
-  // default bins for track control histograms
+  // set default bins
   Double_t BinsTrackControlHistogramDefaults[LAST_ETRACK][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
       {100., 0., 10.},            // kPT
@@ -499,7 +496,7 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
       {100., -10., 10.},          // kDCAZ
       {100, -10., 10.},           // kDCAXY
   };
-  // initialize array of bins and edges for track control histograms
+  // initialize default bins
   for (int var = 0; var < LAST_ETRACK; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
       fTrackControlHistogramBins[var][bin] =
@@ -510,15 +507,16 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     fTrackCutsCounter[mode] = nullptr;
   }
-  // initialize names for track cuts counter histogram
+  // initialize name
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     fTrackCutsCounterNames[mode] = kModeName[mode] + "fTrackCutsCounter";
   }
-  // initialize bin names of track cuts counter histogram
+  // set bin names of track cuts counter histogram
   TString TrackCutsCounterBinNames[LAST_ETRACK] = {
       "kPT",      "kPHI",        "kETA",  "kCHARGE", "kTPCNCLS",
       "kITSNCLS", "kCHI2PERNDF", "kDCAZ", "kDCAXY",
   };
+  // initialize bin names of track cuts counter histogram
   for (int name = 0; name < LAST_ETRACK; name++) {
     fTrackCutsCounterBinNames[name] = TrackCutsCounterBinNames[name];
   }
@@ -534,7 +532,7 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
     }
   }
 
-  // name of event control histograms
+  // set name
   TString EventControlHistogramNames[LAST_EEVENT][LAST_ENAME] = {
       // NAME, TITLE, XAXIS, YAXIS
       {"fEventControlHistograms[kX]", "Primary vertex X", "X", ""},
@@ -546,7 +544,7 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
       {"fEventControlHistograms[kNCONTRIB]", "Number of Contributers",
        "#Contributors", ""},
   };
-  // initialize names for event control histograms
+  // initialize names
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     for (int var = 0; var < LAST_EEVENT; ++var) {
       for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
@@ -563,7 +561,7 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
     }
   }
 
-  // default bins for event control histograms
+  // set default bins
   Double_t BinsEventControlHistogramDefaults[LAST_EEVENT][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
       {40., -20., 20.},   // kX
@@ -573,18 +571,18 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
       {200., 0., 20000.}, // kMUL
       {100., 0., 5000.},  // kNCONTRIB
   };
-  // initialize array of bins and edges for track control histograms
+  // initialize default bins
   for (int var = 0; var < LAST_EEVENT; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
       fEventControlHistogramBins[var][bin] =
           BinsEventControlHistogramDefaults[var][bin];
     }
   }
-  // initialize track cuts counter histograms
+  // initialize track cuts counter histogram
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     fEventCutsCounter[mode] = nullptr;
   }
-  // initialize names for track cuts counter histogram
+  // initialize names
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     fEventCutsCounterNames[mode] = kModeName[mode] + "fEventCutsCounter";
   }
@@ -644,13 +642,14 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultHistograms() {
     fFinalResultHistograms[var] = nullptr;
   }
 
+  // set name
   TString FinalResultHistogramNames[LAST_EFINALHIST][LAST_ENAME] = {
       // NAME, TITLE, XAXIS
       {"fFinalResultHistograms[PHIAVG]", "Average #varphi", "#varphi",
        ""}, // PHIAVG
   };
 
-  // initialize names for final result histograms
+  // initialize name
   for (int var = 0; var < LAST_EFINALHIST; ++var) {
     for (int name = 0; name < LAST_ENAME; ++name) {
       fFinalResultHistogramNames[var][name] =
@@ -658,12 +657,12 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultHistograms() {
     }
   }
 
-  // default bins for final result histograms
+  // default bins
   Double_t BinsFinalResultHistogramDefaults[LAST_EFINALHIST][LAST_EBINS] = {
       // BIN LEDGE UEDGE
       {1., 0., 1.}, // AVGPHI
   };
-  // initialize array of bins and edges for track control histograms
+  // initialize default bins
   for (int var = 0; var < LAST_EFINALHIST; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
       fFinalResultHistogramBins[var][bin] =
@@ -672,14 +671,8 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultHistograms() {
   }
 }
 
-void AliAnalysisTaskAR::InitializeArraysForQvectors() {
-  // Make sure all Q-vectors are initially zero
-  for (Int_t h = 0; h < kMaxHarmonic; h++) {
-    for (Int_t p = 0; p < kMaxPower; p++) {
-      fQvector[h][p] = TComplex(0., 0.);
-    }
-  }
-  // initialize weight and acceptance histograms
+void AliAnalysisTaskAR::InitializeArraysForWeights() {
+  // initialize all necessary components for weight and acceptance histograms
   for (int k = 0; k < kKinematic; ++k) {
     fAcceptanceHistogram[k] = nullptr;
     fWeightHistogram[k] = nullptr;
@@ -690,12 +683,22 @@ void AliAnalysisTaskAR::InitializeArraysForQvectors() {
   }
 }
 
+void AliAnalysisTaskAR::InitializeArraysForQvectors() {
+  // initalize all arrays for Q-vectors
+  for (Int_t h = 0; h < kMaxHarmonic; h++) {
+    for (Int_t p = 0; p < kMaxPower; p++) {
+      fQvector[h][p] = TComplex(0., 0.);
+    }
+  }
+}
+
 void AliAnalysisTaskAR::InitializeArraysForFinalResultProfiles() {
   // initialize array for final result profiles
   for (int var = 0; var < LAST_EFINALPROFILE; ++var) {
     fFinalResultProfiles[var] = nullptr;
   }
 
+  // set names
   TString FinalResultProfileNames[LAST_EFINALPROFILE][LAST_ENAME] = {
       // kNAME, kTITLE, kXAXIS
       {"fFinalResultProfiles[kHARDATA]", "Flow Harmonics (Data)", "",
@@ -706,21 +709,21 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultProfiles() {
        ""}, // kHARTHEO
   };
 
-  // initialize names for final result profiles
+  // initialize names
   for (int var = 0; var < LAST_EFINALPROFILE; ++var) {
     for (int name = 0; name < LAST_ENAME; ++name) {
       fFinalResultProfileNames[var][name] = FinalResultProfileNames[var][name];
     }
   }
 
-  // default bins for final result histograms
+  // default bins
   Double_t BinsFinalResultProfileDefaults[LAST_EFINALPROFILE][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
       {1., 0., 1.}, // kHARDATA
       {1., 0., 1.}, // kHARDATARESET
       {1., 0., 1.}, // kHARTHEO
   };
-  // initialize array of bins and edges for final result profiles
+  // initialize default bins
   for (int var = 0; var < LAST_EFINALPROFILE; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
       fFinalResultProfileBins[var][bin] =
@@ -749,9 +752,9 @@ void AliAnalysisTaskAR::InitializeArraysForMCAnalysis() {
 void AliAnalysisTaskAR::BookAndNestAllLists() {
   // Book and nest all lists nested in the base list fHistList
 
-  // 1. Book and nest lists for QA histograms
-  // 2. Book and nest lists for control histograms
-  // 3. Book and nest lists for final results
+  // 1. Book and nest list for QA histograms
+  // 2. Book and nest list for control histograms
+  // 3. Book and nest list for final results
 
   if (!fHistList) {
     std::cout << __LINE__ << ": Did not get " << fHistListName << std::endl;
@@ -783,7 +786,7 @@ void AliAnalysisTaskAR::BookAndNestAllLists() {
     fQAHistogramsList->Add(fSelfCorQAHistogramsList);
   }
 
-  // 2. Book and nest lists for control histograms:
+  // 2. Book and nest lists for control histograms
   fControlHistogramsList = new TList();
   fControlHistogramsList->SetName(fControlHistogramsListName);
   fControlHistogramsList->SetOwner(kTRUE);
@@ -801,24 +804,17 @@ void AliAnalysisTaskAR::BookAndNestAllLists() {
   fEventControlHistogramsList->SetOwner(kTRUE);
   fControlHistogramsList->Add(fEventControlHistogramsList);
 
-  // 3. Book and nest lists for final results:
+  // 3. Book and nest lists for final results
   fFinalResultsList = new TList();
   fFinalResultsList->SetName(fFinalResultsListName);
   fFinalResultsList->SetOwner(kTRUE);
   fHistList->Add(fFinalResultsList);
-
-  // 4. Book and nest lists for MC Analsysis
-  if (fMCOnTheFly) {
-    fMCAnalysisList = new TList();
-    fMCAnalysisList->SetName(fMCAnalysisListName);
-    fMCAnalysisList->SetOwner(kTRUE);
-    fHistList->Add(fMCAnalysisList);
-  }
 }
 
 void AliAnalysisTaskAR::BookQAHistograms() {
   // Book all QA histograms
 
+  // book centrality estimator correlation QA histograms
   for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
        ++cen) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
@@ -841,10 +837,15 @@ void AliAnalysisTaskAR::BookQAHistograms() {
     }
   }
 
+  // book filter bit scan QA histogram
   fFBScanQAHistogram =
       new TH1D(fFBScanQAHistogramName[kNAME], fFBScanQAHistogramName[kTITLE],
                fFBScanQAHistogramBin[kBIN], fFBScanQAHistogramBin[kLEDGE],
                fFBScanQAHistogramBin[kUEDGE]);
+
+  // set labels of filter bit scan QA histograms
+  // filterbits are powers of 2, i.e 1,2,4,...
+  // label the bins accordingly up to the hardcoded maximum filter bit
   int fb = 1;
   for (int i = 0; i < kMaxFilterbit; ++i) {
     fFBScanQAHistogram->GetXaxis()->SetBinLabel(i + 1, Form("%d", fb));
@@ -854,6 +855,7 @@ void AliAnalysisTaskAR::BookQAHistograms() {
   fFBScanQAHistogram->SetFillColor(kFillColor[kAFTER]);
   fFBScanQAHistogramsList->Add(fFBScanQAHistogram);
 
+  // book track scan filterbit QA histograms
   for (int track = 0; track < LAST_ETRACK; ++track) {
     for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
       fFBTrackScanQAHistograms[track][fb] =
@@ -872,6 +874,7 @@ void AliAnalysisTaskAR::BookQAHistograms() {
     }
   }
 
+  // book self correlation QA histograms
   for (int var = 0; var < kKinematic; ++var) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
       fSelfCorQAHistograms[var][ba] =
@@ -969,7 +972,7 @@ void AliAnalysisTaskAR::BookControlHistograms() {
 }
 
 void AliAnalysisTaskAR::BookFinalResultHistograms() {
-  // Book all histograms to hold the final results
+  // Book final result histograms
 
   Color_t colorFinalResult = kBlue - 10;
 
@@ -989,9 +992,8 @@ void AliAnalysisTaskAR::BookFinalResultHistograms() {
 }
 
 void AliAnalysisTaskAR::BookFinalResultProfiles() {
-  // Book all profiles to hold the final results
+  // Book final result profiles
 
-  TString BinLabel = "";
   // book final result profiles
   for (int var = 0; var < LAST_EFINALPROFILE; ++var) {
     fFinalResultProfiles[var] = new TProfile(
@@ -1005,7 +1007,8 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
     fFinalResultProfiles[var]->Sumw2();
     fFinalResultsList->Add(fFinalResultProfiles[var]);
 
-    // set bin labels
+    // set bin labels, i.e. the name of the correlator like <<2>>_{-2,2}
+    TString BinLabel = "";
     if (!fCorrelators.empty()) {
       for (std::size_t bin = 0; bin < fCorrelators.size(); bin++) {
         BinLabel = Form("#LT#LT%d#GT#GT", int(fCorrelators.at(bin).size()));
@@ -1023,35 +1026,37 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
 void AliAnalysisTaskAR::BookMCOnTheFlyObjects() {
   // book objects need for MC analysis
 
-  // protect at some point if fMCFlowHarmonics is empty
+  // check if fMCFlowHarmonics is empty
   if (fMCFlowHarmonics.empty()) {
     std::cout << __LINE__ << ": no flow harmonics defined" << std::endl;
     Fatal("BookMCObjects", "Invalid Pointer");
   }
 
   // base setup for the pdf for MC analysis with flow harmonics
-  // 1. generate formula, i.e. fourier series
-  // 2. set flow harmonics as parameters as given by fMCFlowHarmonics
-  // 3. leave symmetry planes and set them later on a event by event basis
+  // generate formula, i.e. fourier series
+  // set flow harmonics as parameters as given by fMCFlowHarmonics
+  // leave symmetry planes and set them later on a event by event basis
 
-  // generate formula
+  // generate formula, f(phi) = [1 + 2*Sum_{i=1}{N} v_i
+  // cos(i*(phi-Psi_i))]/(2pi)
   TString Formula = "1+";
-  for (std::size_t i = 1; i <= fMCFlowHarmonics.size(); ++i) {
-    Formula += Form("2*[%d]*TMath::Cos(%d*(x-[%d]))", int(2 * i - 1), int(i),
-                    int(2 * i));
-    if (i < fMCFlowHarmonics.size()) {
+  for (std::size_t i = 0; i < fMCFlowHarmonics.size(); ++i) {
+    // we set 2n parameters
+    // [2i] -> v_i
+    // [2i+1] -> Psi_i
+    Formula += Form("2*[%d]*TMath::Cos(%d*(x-[%d]))", int(2 * i), int(i + 1),
+                    int(2 * i + 1));
+    if (i < fMCFlowHarmonics.size() - 1) {
       Formula += "+";
     }
   }
   Formula = "(" + Formula + ")/TMath::TwoPi()";
-  // create TF1 object
+  // create TF1 object with formaul
   fMCPdf = new TF1(fMCPdfName, Formula, 0., TMath::TwoPi());
-  fMCAnalysisList->Add(fMCPdf);
 
   // set flow harmonics
-  // flow harmonics are parameters with odd index
   for (std::size_t i = 0; i < fMCFlowHarmonics.size(); ++i) {
-    fMCPdf->SetParameter(2 * i + 1, fMCFlowHarmonics.at(i));
+    fMCPdf->SetParameter(2 * i, fMCFlowHarmonics.at(i));
   }
 }
 
@@ -1267,7 +1272,7 @@ void AliAnalysisTaskAR::MCOnTheFlyExec() {
   // reset angles and weights
   ClearEventObjects();
 
-  // set symmetry planes for MC analysis
+  // set symmetry plane
   MCPdfSymmetryPlanesSetup();
   // loop over all particles in an event
   Double_t Phi = 0.0;
@@ -1424,12 +1429,12 @@ void AliAnalysisTaskAR::FillTrackControlHistograms(kBeforeAfter BA,
 
 void AliAnalysisTaskAR::FillEventQAHistograms(kBeforeAfter BA, AliVEvent *ave) {
   // fill QA control histograms
-  // get all centrality percentiles
 
   AliAODEvent *AODEvent = dynamic_cast<AliAODEvent *>(ave);
   AliMCEvent *MCEvent = dynamic_cast<AliMCEvent *>(ave);
 
   if (AODEvent) {
+    // get all centrality percentiles
     Double_t centralityPercentile[LAST_ECENESTIMATORS];
 
     centralityPercentile[kV0M] = dynamic_cast<AliMultSelection *>(
@@ -1446,6 +1451,7 @@ void AliAnalysisTaskAR::FillEventQAHistograms(kBeforeAfter BA, AliVEvent *ave) {
             AODEvent->FindListObject("MultSelection"))
             ->GetMultiplicityPercentile("SPDTracklets");
 
+    // fill centrality estimator correlation histograms
     fCenCorQAHistograms[0][BA]->Fill(centralityPercentile[kV0M],
                                      centralityPercentile[kCL0]);
     fCenCorQAHistograms[1][BA]->Fill(centralityPercentile[kV0M],
@@ -1475,6 +1481,7 @@ void AliAnalysisTaskAR::FillEventQAHistograms(kBeforeAfter BA, AliVEvent *ave) {
         if (!aTrack2 || !SurviveTrackCut(aTrack2)) {
           continue;
         }
+        // compute differences
         fSelfCorQAHistograms[kPHI][BA]->Fill(aTrack1->Phi() - aTrack2->Phi());
         fSelfCorQAHistograms[kPT][BA]->Fill(aTrack1->Pt() - aTrack2->Pt());
         fSelfCorQAHistograms[kETA][BA]->Fill(aTrack1->Eta() - aTrack2->Eta());
@@ -1488,7 +1495,10 @@ void AliAnalysisTaskAR::FillEventQAHistograms(kBeforeAfter BA, AliVEvent *ave) {
 }
 
 void AliAnalysisTaskAR::FillFBScanQAHistograms(AliAODTrack *track) {
-  // fill track QA histograms
+  // fill filter bit scan QA histograms
+
+  // check for filterbits of the track
+  // filterbits are powers of 2, i.e. 1,2,4,8,...
   int fb = 1;
   for (int i = 0; i < kMaxFilterbit; ++i) {
     if (track->TestFilterBit(fb)) {
@@ -1496,6 +1506,8 @@ void AliAnalysisTaskAR::FillFBScanQAHistograms(AliAODTrack *track) {
     }
     fb *= 2;
   }
+
+  // scan kinematic variables for different filterbits
   for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
     if (track->TestFilterBit(kTestFilterbit[fb])) {
       fFBTrackScanQAHistograms[kPT][fb]->Fill(track->Pt());
@@ -1513,7 +1525,7 @@ void AliAnalysisTaskAR::FillFBScanQAHistograms(AliAODTrack *track) {
 
 Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
   // Check if the current event survives event cuts
-  // return flag at the event, if one cut is not passed, set it to kFALSE
+  // return flag at the end, if one cut is not passed, set it to kFALSE
   Bool_t Flag = kTRUE;
 
   // check AOD event
@@ -1724,14 +1736,14 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp) {
 
 void AliAnalysisTaskAR::MCPdfSymmetryPlanesSetup() {
   // set symmetry planes randomly on a event by event basis
-  // Double_t Psi = 0;
   Double_t Psi = gRandom->Uniform(0., TMath::TwoPi());
   for (std::size_t i = 0; i < fMCFlowHarmonics.size(); ++i) {
-    fMCPdf->SetParameter(2 * (i + 1), Psi);
+    fMCPdf->SetParameter(2 * i + 1, Psi);
   }
 }
 
 Int_t AliAnalysisTaskAR::GetMCNumberOfParticlesPerEvent() {
+  // compute number of paritcles per event, if set the number can fluctuate
 
   if (!fMCNumberOfParticlesPerEventFluctuations) {
     return fMCNumberOfParticlesPerEvent;
@@ -1742,16 +1754,16 @@ Int_t AliAnalysisTaskAR::GetMCNumberOfParticlesPerEvent() {
 };
 
 void AliAnalysisTaskAR::CalculateQvectors() {
-  // Calculate Q-vectors
+  // Calculate all Q-vectors
 
-  // 1) Make sure all Q-vectors are initially zero
+  // Make sure all Q-vectors are initially zero
   for (Int_t h = 0; h < kMaxHarmonic; h++) {
     for (Int_t p = 0; p < kMaxPower; p++) {
       fQvector[h][p] = TComplex(0., 0.);
     }
   }
 
-  // 2) Calculate Q-vectors for available angles and weights
+  // Calculate Q-vectors for available angles and weights
   Double_t dPhi = 0.;
   Double_t wPhi = 1.;         // particle weight
   Double_t wPhiToPowerP = 1.; // particle weight raised to power p
@@ -1820,7 +1832,7 @@ void AliAnalysisTaskAR::FillFinalResultProfile(kFinalProfile fp) {
     }
 
     index++;
-    // fill final resutl profile
+    // fill final result profile
     fFinalResultProfiles[fp]->Fill(index - 0.5, corr / weight, weight);
   }
 }
@@ -2181,6 +2193,7 @@ TComplex AliAnalysisTaskAR::Recursion(Int_t n, Int_t *harmonic,
 
 Double_t AliAnalysisTaskAR::CombinatorialWeight(Int_t n) {
   // calculate combinatrial weight for Qvectors
+  // used mainly for nested loops
   if (n >= static_cast<Int_t>(fKinematics[kPHI].size())) {
     std::cout << __LINE__ << ": Two few particles for this correlator"
               << std::endl;
@@ -2311,6 +2324,8 @@ TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2, Int_t n3,
 void AliAnalysisTaskAR::SetAcceptanceHistogram(kTrack kinematic,
                                                const char *Filename,
                                                const char *Histname) {
+  // set a acceptance histogram for monte carlo closure
+
   // check if index is out of range
   if (kinematic > kKinematic) {
     std::cout << __LINE__ << ": Out of range" << std::endl;
@@ -2328,7 +2343,7 @@ void AliAnalysisTaskAR::SetAcceptanceHistogram(kTrack kinematic,
   }
   this->fAcceptanceHistogram[kinematic] =
       dynamic_cast<TH1D *>(file->Get(Histname));
-  if (!fAcceptanceHistogram) {
+  if (!fAcceptanceHistogram[kinematic]) {
     std::cout << __LINE__ << ": No acceptance histogram" << std::endl;
     Fatal("SetAcceptanceHistogram", "Cannot get acceptance histogram");
   }
@@ -2340,6 +2355,8 @@ void AliAnalysisTaskAR::SetAcceptanceHistogram(kTrack kinematic,
 void AliAnalysisTaskAR::SetWeightHistogram(kTrack kinematic,
                                            const char *Filename,
                                            const char *Histname) {
+  // set weight histogram
+
   // check if index is out of range
   if (kinematic > kKinematic) {
     std::cout << __LINE__ << ": Out of range" << std::endl;
@@ -2356,7 +2373,7 @@ void AliAnalysisTaskAR::SetWeightHistogram(kTrack kinematic,
     Fatal("SetWeightHistogram", "ROOT file cannot be read");
   }
   this->fWeightHistogram[kinematic] = dynamic_cast<TH1D *>(file->Get(Histname));
-  if (!fWeightHistogram) {
+  if (!fWeightHistogram[kinematic]) {
     std::cout << __LINE__ << ": No acceptance histogram" << std::endl;
     Fatal("SetWeightHistogram", "Cannot get weight histogram");
   }
