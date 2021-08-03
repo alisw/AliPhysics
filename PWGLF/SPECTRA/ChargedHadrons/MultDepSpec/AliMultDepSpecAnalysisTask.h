@@ -82,7 +82,6 @@ protected:
   template <typename T>
   void BookHistogram(Hist::Hist<T>& histContainer, const std::string& histName, const std::vector<unsigned int>& dimensions);
 
-  bool AcceptTrackQuality(AliVTrack* track);
   bool InitCentrality();
 
   template <typename Particle_t>
