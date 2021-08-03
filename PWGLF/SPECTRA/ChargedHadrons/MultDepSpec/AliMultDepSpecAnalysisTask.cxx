@@ -57,6 +57,16 @@ void AliMultDepSpecAnalysisTask::DefineDefaultAxes(int maxMultMeas, int maxMultT
                                 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
                                 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5,
                                 6.0, 6.5, 7.0, 8.0, 9.0, 10.0};
+  if(fHighPtMode == 1) {
+    // simple extension of pt range to 50 GeV/c
+    std::vector<double> highPtBins = {20., 30., 40., 50.};
+    ptBins.insert(ptBins.end(), highPtBins.begin(), highPtBins.end());
+  } else if (fHighPtMode == 2) {
+    // binning for improved RAA reference up to 100 GeV/c
+    std::vector<double> highPtBins = {11., 12., 13., 14., 15., 16., 18., 20., 22., 24., 26., 30., 34., 40., 50., 60., 80., 100.};
+    ptBins.insert(ptBins.end(), highPtBins.begin(), highPtBins.end());
+  }
+  
   SetAxis(pt_meas, "pt_meas", "#it{p}^{ meas}_{T} (GeV/#it{c})", ptBins);
 
   int nBinsMultMeas = maxMultMeas + 1;
@@ -415,6 +425,11 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       AliError("fMCEvent not available\n");
       return false;
     }
+    if(fIsNewReco && AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(fMCEvent)) {
+      // reject all the events with simulated in-bunch pileup
+      return false;
+    }
+
     fMCVtxZ = fMCEvent->GetPrimaryVertex()->GetZ();
 
     if (fMCEnableDDC) {
@@ -479,14 +494,14 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
     // initialize particle properties
     bool isValidParticle = false;
     if (fIsMC) {
-      // mc lable corresponding to measured track (negative lable indicates bad quality track)
-      int mcLable = TMath::Abs(track->GetLabel());
+      // mc label corresponding to measured track (negative label indicates bad quality track)
+      int mcLabel = std::abs(track->GetLabel());
 
       // set mc particle properties and check if it is charged prim/sec and in kin range
       if (fIsESD) {
-        isValidParticle = InitParticle((AliMCParticle*)fMCEvent->GetTrack(mcLable));
+        isValidParticle = InitParticle((AliMCParticle*)fMCEvent->GetTrack(mcLabel));
       } else {
-        isValidParticle = InitParticle((AliAODMCParticle*)fMCEvent->GetTrack(mcLable));
+        isValidParticle = InitParticle((AliAODMCParticle*)fMCEvent->GetTrack(mcLabel));
       }
       if (fMCIsPileupParticle) continue; // skip tracks from pileup in mc
     }
@@ -571,12 +586,15 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
   fNRepetitions = 1;
   fMCIsPileupParticle = false;
 
+  // remove tracks from background events (signal filtering)
+  if(fIsMC && fIsNewReco && std::abs(track->GetLabel()) > 10000000) return false;
+
   fPt = track->Pt();
   fEta = track->Eta();
   if ((fPt <= fMinPt + PRECISION) || (fPt >= fMaxPt - PRECISION) || (fEta <= fMinEta + PRECISION) || (fEta >= fMaxEta - PRECISION)) {
     return false;
   }
-  if (!AcceptTrackQuality(track)) return false;
+  if (!fTrackCuts->IsSelected(track)) return false;
 
   if (fIsESD) {
     fSigmaPt = fPt * TMath::Sqrt(dynamic_cast<AliESDtrack*>(track)->GetSigma1Pt2());
@@ -610,14 +628,14 @@ bool AliMultDepSpecAnalysisTask::InitParticle(Particle_t* particle)
     AliFatal("Particle not found\n");
     return false;
   }
-  if (!(TMath::Abs(particle->Charge()) > 0.01)) return false; // reject all neutral particles
-
   fMCLabel = particle->GetLabel();
   // reject all particles and tracks that come from simulated out-of-bunch pileup
   if (fIsNewReco && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(fMCLabel, fMCEvent)) {
     fMCIsPileupParticle = true; // store this info as it is relevant for track loop as well
     return false;
   }
+
+  if (!(TMath::Abs(particle->Charge()) > 0.01)) return false; // reject all neutral particles
 
   fMCIsChargedPrimary = particle->IsPhysicalPrimary();
   fMCIsChargedSecondary = (fMCIsChargedPrimary) ? false : (particle->IsSecondaryFromWeakDecay() || particle->IsSecondaryFromMaterial());
@@ -685,16 +703,6 @@ unsigned long AliMultDepSpecAnalysisTask::GetSeed()
   seed <<= 3;
   seed += fTimeStamp;
   return seed;
-}
-
-//**************************************************************************************************
-/**
- * Function to select tracks with required quality.
- */
-//**************************************************************************************************
-bool AliMultDepSpecAnalysisTask::AcceptTrackQuality(AliVTrack* track)
-{
-  return fTrackCuts->IsSelected(track);
 }
 
 //**************************************************************************************************
@@ -983,6 +991,14 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   SetEtaRange(-0.8, 0.8);
   SetPtRange(0.15, 10.0);
 
+  if (options.Contains("highPtMode::50")) {
+    fHighPtMode = 1;
+    SetPtRange(0.15, 50.0);
+  } else if (options.Contains("highPtMode::100")) {
+    fHighPtMode = 2;
+    SetPtRange(0.15, 100.0);
+  }
+  
   DefineDefaultAxes(maxMultMeas, maxMultTrue);
   return true;
 }
