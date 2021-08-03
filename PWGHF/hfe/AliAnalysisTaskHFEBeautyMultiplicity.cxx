@@ -76,7 +76,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fCaloClusters_tender(0),
 
   //---- Cut Parameter ----//
-  /*  TrackEtaMin(-0.6),
+    TrackEtaMin(-0.6),
     TrackEtaMax(0.6),
     NsigmaMin(-1.0),
     NsigmaMax(3.0),
@@ -92,7 +92,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     DCAz(3.2),
     NCrossedRow(100),
     EtaPhiDiff(0.05),
-    PhotInvMass(0.15)*/
+    PhotInvMass(0.15),
     Nref(0),		    // RefMult
     MinNtrklet(0),	    // Tracklet class (min)
     MaxNtrklet(9999),	    // Tracklet class (max)
@@ -324,7 +324,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fCaloClusters_tender(0),
 
   //---- Cut Parameter ----//
-  /*  TrackEtaMin(-0.6),
+    TrackEtaMin(-0.6),
     TrackEtaMax(0.6),
     NsigmaMin(-1.0),
     NsigmaMax(3.0),
@@ -340,7 +340,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     DCAz(3.2),
     NCrossedRow(100),
     EtaPhiDiff(0.05),
-    PhotInvMass(0.15)*/
+    PhotInvMass(0.15),
     Nref(0),		    // RefMult
     MinNtrklet(0),	    // Tracklet class (min)
     MaxNtrklet(9999),	    // Tracklet class (max)
