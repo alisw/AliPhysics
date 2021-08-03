@@ -3507,6 +3507,10 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790109fj3l220000","0r631031000000d0"); // exotics > 4 GeV
     cuts.AddCutCalo("00010113","411790109fk3l220000","0r631031000000d0"); // exotics > 5 GeV
     cuts.AddCutCalo("00010113","411790109fl3l220000","0r631031000000d0"); // exotics > 6 GeV
+  } else if (trainConfig == 2542) { //no NCell cut, no exotics
+    cuts.AddCutCalo("00010113","411790109f030220000","0r631031000000d0"); // no exotic cut
+    cuts.AddCutCalo("00010113","411790109f030000000","0r631031000000d0"); // no exotics, no M02
+    cuts.AddCutCalo("00010113","4117901090030000000","0r631031000000d0"); // no exotics, no M02, no TM
 
     // Non Lin variations
   } else if (trainConfig == 2550) { // NCell effi: PCMEMC tagged pi0 clusters

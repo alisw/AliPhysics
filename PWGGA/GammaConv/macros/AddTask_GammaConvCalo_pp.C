@@ -2754,6 +2754,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fj30220000","0163103100000010"); //  Exotics > 4 GeV
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fk30220000","0163103100000010"); //  Exotics > 5 GeV
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fl30220000","0163103100000010"); //  Exotics > 6 GeV
+  } else if (trainConfig == 2145){ // Effi on isolated clusters only,  No NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109f030220000","0163103100000010"); //  no exotics
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109f030000000","0163103100000010"); //  no exotics, no M02
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901090030000000","0163103100000010"); //  no exotics, no M02, no TM
 
     // NCell effi from correction framework
   } else if (trainConfig == 2150){ // std. cuts no NL (to be applied in the CF)
