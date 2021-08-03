@@ -562,10 +562,10 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
       fMultTrue += fNRepetitions;
     } else if (fMCAcceptEvent) {
       for (int i = 0; i < fNRepetitions; ++i) {
-        // ----- true particle histos ----
+
         if (fIsTriggered) fHist_ptDist_prim_gen_trig.Fill(fMCPt);
         fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
-        // ------------------------------
+
       }
     }
   }
@@ -587,7 +587,7 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
   fMCIsPileupParticle = false;
 
   // remove tracks from background events (signal filtering)
-  if(fIsMC && fIsNewReco && std::abs(track->GetLabel()) >= 10000000) return false;
+  if(fIsMC && fIsNewReco && std::abs(track->GetLabel()) >= AliMCEvent::BgLabelOffset()) return false;
 
   fPt = track->Pt();
   fEta = track->Eta();
