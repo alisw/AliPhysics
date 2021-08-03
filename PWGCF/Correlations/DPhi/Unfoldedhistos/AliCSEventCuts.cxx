@@ -1043,8 +1043,19 @@ Float_t AliCSEventCuts::GetEventCentrality(AliVEvent *event) const
 
   if (fgIsOnTheFlyMC) {
     /* on the fly MC production */
-    /* multiplicity / centrality percentile already stored */
-    return fV0MCentrality;
+    switch(fCentralityDetector) {
+    case 0:
+      /* default centrality detector */
+      /* multiplicity / centrality percentile already stored */
+      return fV0MCentrality;
+    case 1:
+      /* alternative centrality detector */
+      /* multiplicity / centrality percentile already stored */
+      return fCL1Centrality;
+    default:
+      AliError("Wrong stored centrality detector");
+      return -1.0;
+    }
   }
 
   if (esdEvent != NULL) {
@@ -1235,8 +1246,19 @@ Float_t AliCSEventCuts::GetEventAltCentrality(AliVEvent *event) const
 
   if (fgIsOnTheFlyMC) {
     /* on the fly MC production */
-    /* multiplicity / centrality percentile already stored */
-    return fCL1Centrality;
+    switch(fCentralityDetector) {
+    case 0:
+      /* default centrality detector */
+      /* multiplicity / centrality percentile already stored */
+      return fCL1Centrality;
+    case 1:
+      /* alternative centrality detector */
+      /* multiplicity / centrality percentile already stored */
+      return fV0MCentrality;
+    default:
+      AliError("Wrong stored centrality detector");
+      return -1.0;
+    }
   }
 
   if (esdEvent != NULL) {
