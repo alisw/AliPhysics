@@ -58,13 +58,19 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fMultiplicityHist(NULL),
  fSelectedTracks(0),
  fSelectedTracksHist(NULL),
+ fUseSelectedTracksCuts(kFALSE),
  fCentrality(0.),
+ fUseCentralityCuts(kFALSE),
+ fUseNContributorsCuts(kFALSE),
  fMinVertexDistance(1.e-6),
 
  // Control particle histograms:
  fControlParticleHistogramsList(NULL),
  fControlParticleHistogramsPro(NULL),
+ fSimReco(NULL),
+ fUseFakeTracks(kFALSE),
  fGlobalTracksAOD(NULL),
+ fFilterGlobalTracksAOD(kFALSE),
  fFilterBit(128), // defaulted to TPC-only
  fUseOnlyPrimaries(kTRUE), 
 
@@ -173,13 +179,19 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fMultiplicityHist(NULL),
  fSelectedTracks(0),
  fSelectedTracksHist(NULL),
+ fUseSelectedTracksCuts(kFALSE),
  fCentrality(0.), 
+ fUseCentralityCuts(kFALSE),
+ fUseNContributorsCuts(kFALSE),
  fMinVertexDistance(0.),
 
  // Control particle histograms:
  fControlParticleHistogramsList(NULL),
  fControlParticleHistogramsPro(NULL),
+ fSimReco(NULL),
+ fUseFakeTracks(kFALSE),
  fGlobalTracksAOD(NULL),
+ fFilterGlobalTracksAOD(kFALSE),
  fFilterBit(-44),
  fUseOnlyPrimaries(kFALSE), 
 
@@ -250,8 +262,13 @@ AliAnalysisTaskMuPa::~AliAnalysisTaskMuPa()
 
  if(fBaseList) delete fBaseList;
 
- // if(fGlobalTracksAOD) delete fGlobalTracksAOD;
-  
+ if(fFilterGlobalTracksAOD)
+ { 
+  if(fGlobalTracksAOD) delete fGlobalTracksAOD;
+ } 
+ 
+ if(fSimReco) delete fSimReco;
+
 } // AliAnalysisTaskMuPa::~AliAnalysisTaskMuPa()
 
 //================================================================================================================
@@ -294,7 +311,11 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
  this->BookFinalResultsHistograms();
 
  // TBI 20210513 unclassified:
- fGlobalTracksAOD = new TExMap();
+ fSimReco = new TExMap(); // TBI 20210802 this doesn't have to be booked by default, only when running over MC
+ if(fFilterGlobalTracksAOD)
+ {
+  fGlobalTracksAOD = new TExMap();
+ }
 
  // *) Trick to avoid name clashes, part 2:
  TH1::AddDirectory(oldHistAddStatus);
@@ -309,7 +330,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
 {
  // Main loop (called for each event).
  // a) Get pointer to AOD event;
- // b) Filter out "normal global" tracks for default analysis and cut on their number;
+ // b) Filter out "normal global" tracks for default analysis and cut on their number (needed only for PID studies);
  // c) Filter from this event only what is needed, and store that info in local data members;
  // d) QA (if enabled);
  // e) Fill control event histograms before cuts;
@@ -328,14 +349,17 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  AliMCEvent *aMC = MCEvent();                                  // from TaskSE
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
 
- if(!aAOD){return;}
+ if(!aAOD){return;} // This means that at the moment I cannot process only kine, i.e. I process only reco, or both kine + reco
  if(fPrintEventInfo){this->PrintEventInfo(aAOD);}
  if(fProcessOnlySpecifiedEvent){if(!this->SpecifiedEvent(aAOD)){return;}} 
 
- // b) Filter out "normal global" tracks for default analysis and cut on their number:
+ // b) Filter out "normal global" tracks for default analysis and cut on their number (needed only for PID studies):
  //    'TPC-only' tracks and 'global constrained to vertex' come with negative ID, and are therefore not stored in fGlobalTracksAOD
- this->GlobalTracksAOD(aAOD); // [0] stands for default analysis TBI 202105
- if(0 == fGlobalTracksAOD->GetSize()) return; // yes, go to next event TBI 20210513 re-think this line, perhaps add some further check
+ if(fFilterGlobalTracksAOD)
+ {
+  this->GlobalTracksAOD(aAOD); 
+  if(0 == fGlobalTracksAOD->GetSize()) return; // yes, go to next event TBI 20210513 re-think this line, perhaps add some further check
+ }
 
  // c) Filter from this event only what is needed, and store that info in local data members:
  this->FilterEvent(aAOD);
@@ -343,10 +367,10 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  // d) QA (if enabled):
  if(fFillQAHistograms)
  {
-  if(aMC){FillQAHistograms(aMC,BEFORE,SIM);}
-  FillQAHistograms(aAOD,BEFORE,RECO);  
+  // if(aMC){FillQAHistograms(aMC,BEFORE,SIM);} // nothing is needed here for SIM at the moment
+  FillQAHistograms(aAOD,BEFORE,RECO);  // 
   if(!SurvivesEventCuts(aAOD)){return;} // TBI 20210531 add possibility to run only on sim, when this needs to be generalized
-  if(aMC){FillQAHistograms(aMC,AFTER,SIM);}
+  //if(aMC){FillQAHistograms(aMC,AFTER,SIM);} // nothing is needed here for SIM at the moment
   FillQAHistograms(aAOD,AFTER,RECO);
   if(fTerminateAfterQA){return;}
  } // if(fFillQAHistograms)
@@ -356,11 +380,14 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  this->FillControlEventHistograms(aAOD,BEFORE,RECO);
  
  // f) Event cuts:
- if(!SurvivesEventCuts(aAOD)){return;} // TBI 20210531 add possibility to run only on sim, when this needs to be generalized
+ if(!SurvivesEventCuts(aAOD)){return;} // TBI 20210531 add possibility to run only on sim, when this needs to be generalized. For kine+reco, I do not need to cut only on kine
 
  // g) Fill control event histograms after cuts:
  if(aMC){this->FillControlEventHistograms(aAOD,AFTER,SIM);}
  this->FillControlEventHistograms(aAOD,AFTER,RECO);
+
+ // h) Look up table:
+ if(aMC){this->MakeLookUpTable(aAOD,aMC);}
 
  // h) Start analysis over AODs:
  Double_t dPhi = 0., wPhi = 1.; // azimuthal angle and corresponding phi weight
@@ -368,19 +395,20 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  Double_t dEta = 0., wEta = 1.; // pseudorapidity and corresponding eta weight
  Double_t wToPowerP = 1.; // weight raised to power p
  Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
- fSelectedTracks = 0; // counter for tracks which survived all cuts, and which are added to Q-vectors
+ Int_t nSelectedTracksCounter = 0; // needed only to fill nested loops containers
  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  {
   AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to "a track" (i.e. any track)
   if(!aodTrack){continue;}
  
-  if(!aodTrack->TestFilterBit(fFilterBit)) continue; // TBI 20210514 this one has to be here, to avoid double or triple counting. Is it better to filter out all tracks in TArrayD?
-
   // Particle histograms and track cuts:
-  this->FillControlParticleHistograms(aodTrack,BEFORE,RECO);
-  if(!SurvivesParticleCuts(aodTrack)){continue;}
-  if(fSelectedTracks >= fSelectedTracksCuts[1]){break;}
-  this->FillControlParticleHistograms(aodTrack,AFTER,RECO);
+  if(!aMC)
+  { 
+   // fill directly only reco:
+   this->FillControlParticleHistograms(aodTrack,BEFORE,RECO);
+   if(!SurvivesParticleCuts(aodTrack)){continue;}
+   this->FillControlParticleHistograms(aodTrack,AFTER,RECO);
+  }
 
   // Finally, calculate Q-vectors:
   dPhi = aodTrack->Phi();
@@ -434,40 +462,53 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   // Nested loops containers:
   if(fCalculateNestedLoops)
   {
-   if(ftaNestedLoops[0]){ftaNestedLoops[0]->AddAt(dPhi,fSelectedTracks);} 
-   if(ftaNestedLoops[1]){ftaNestedLoops[1]->AddAt(wPhi*wPt*wEta,fSelectedTracks);} 
+   if(ftaNestedLoops[0]){ftaNestedLoops[0]->AddAt(dPhi,nSelectedTracksCounter);} 
+   if(ftaNestedLoops[1]){ftaNestedLoops[1]->AddAt(wPhi*wPt*wEta,nSelectedTracksCounter);} 
+   nSelectedTracksCounter++;
   }
 
-  fSelectedTracks++; // number of selected tracks, i.e. number of tracks added to Q-vector
-  fMultiplicity += wPhi*wPt*wEta; // this is really the multiplicity. Only if weights are unit, fMultiplicity = fSelectedTracks
+  // Sum of particle weights:
+  fMultiplicity += wPhi*wPt*wEta; // only if weights are unit, fMultiplicity = fSelectedTracks
 
  } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
 
-
- // If Monte Carlo information is available, fill control particle histograms with it:
+ // Efficiency corrections are obtained in the loop below.
+ // If Monte Carlo information is available, fill control particle histograms by using the look up table, to get all efficiencies.
  if(aMC)
  {
-  Int_t nTracks = aMC->GetNumberOfTracks(); // total number of Monte Carlo tracks
-  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all Monte Carlo tracks
+  Int_t nLabels = aMC->GetNumberOfTracks(); // total number of Monte Carlo tracks
+  for(Int_t iLabel=0;iLabel<nLabels;iLabel++) // starting a loop over all Monte Carlo tracks (i.e. labels in this context)
   {
-   AliAODMCParticle *aosamcParticle = (AliAODMCParticle*)aMC->GetTrack(iTrack);
-   if(!aosamcParticle){continue;} 
-   // Particle histograms and track cuts:
-   this->FillControlParticleHistograms(aosamcParticle,BEFORE,SIM);
-   if(!SurvivesParticleCuts(aosamcParticle)){continue;}
-   //if(fSelectedTracks >= fSelectedTracksCuts[1]){break;}
-   this->FillControlParticleHistograms(aosamcParticle,AFTER,SIM);
-  } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all Monte Carlo tracks
+   AliAODMCParticle *aodmcParticle = (AliAODMCParticle*)aMC->GetTrack(iLabel);
+   if(!aodmcParticle){continue;}  
+   // Get the corresponding reco particle:
+   // fSimReco->Add(label,iTrack); // "key" = label, "value" = iTrack
+   AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(fSimReco->GetValue(iLabel)));
+
+   // Track cuts are applied at MC particle.
+   // a) Sim and reco distributions before cuts:
+   this->FillControlParticleHistograms(aodmcParticle,BEFORE,SIM);
+   if(aodTrack)
+   {
+    this->FillControlParticleHistograms(aodTrack,BEFORE,RECO); // this one is with positive label, therefore this is not a fake track
+   }   
+   else if(!aodTrack && fUseFakeTracks)
+   {
+    aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(fSimReco->GetValue(TMath::Abs(iLabel))));
+    this->FillControlParticleHistograms(aodTrack,BEFORE,RECO); // this one is with negative label, therefore this is a fake track
+   }   
+   if(!aodTrack){continue;}
+
+   // b) Cut:
+   if(!SurvivesParticleCuts(aodmcParticle)){continue;} // for Monte Carlo particles, apply only the basic kinematic cuts + cut on charge
+
+   // c) Sim and reco distributions after cuts:
+   this->FillControlParticleHistograms(aodmcParticle,AFTER,SIM); // these are then generated particles in the desired phase-space window
+   if(!SurvivesParticleCuts(aodTrack)){continue;} // if Monte Carlo particle after reconstruction went out of phase-space window, we do not reconstruct it
+   this->FillControlParticleHistograms(aodTrack,AFTER,RECO);  
+
+  } // for(Int_t iLabel=0;iLabel<nLabels;iLabel++) // starting a loop over all Monte Carlo tracks
  } // if(aMC)
- 
- // TBI_20210515 I am a bit incosistent here, because control histogram have been filled nevertheles.
- /*
- if(fSelectedTracks < fSelectedTracksCuts[0])
- {
-  this->ResetEventByEventQuantities();
-  return;
- }
- */  
 
  // i) Fill e-b-e quantities:
  fMultiplicityHist->Fill(fMultiplicity);
@@ -527,12 +568,12 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
 {
  // Reset all global event-by-event quantities here:
 
- // a) Multiplicity;
+ // a) Multiplicities;
  // b) Centrality;
  // c) Q-vector;
  // d) Reset ebe containers for nested loops.
  
- // a) Multiplicity:
+ // a) Multiplicities:
  fMultiplicity = 0.;
  fSelectedTracks = 0;
 
@@ -752,12 +793,9 @@ void AliAnalysisTaskMuPa::InitializeArraysForQAHistograms()
  // b) Kinematics for specified filter bits (use in combination with SetQAFilterBits(...))
  for(Int_t fb=0;fb<gFilterBits;fb++)
  {
-  for(Int_t rs=0;rs<2;rs++)
+  for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4
   {
-   for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4
-   {
-    fQAKinematicsFilterBits[fb][rs][kv] = NULL;
-   }   
+   fQAKinematicsFilterBits[fb][kv] = NULL;   
   } 
  }
 
@@ -783,17 +821,15 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Multiplicity:
+ fMultiplicityBins[0] = 3000.;
+ fMultiplicityBins[1] = 0.;
+ fMultiplicityBins[2] = 3000.;
+ fSelectedTracksCuts[0] = -1;
+ fSelectedTracksCuts[1] = 1e6; // TBI 20210515 is this safe?
  for(Int_t m=0;m<gCentralMultiplicity;m++)
  { 
   fCentralMultiplicityHist[m] = NULL;
  } // for(Int_t m=0;m<gCentralMultiplicity;m++)
- fMultiplicityBins[0] = 3000.;
- fMultiplicityBins[1] = 0.;
- fMultiplicityBins[2] = 3000.;
- fMultiplicityCuts[0] = 0.;
- fMultiplicityCuts[1] = 3000.; 
- fSelectedTracksCuts[0] = -1;
- fSelectedTracksCuts[1] = 1e6; // TBI 20210515 is this safe?
 
  // b) Centrality:
  fCentralityBins[0] = 100.; 
@@ -834,6 +870,9 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  fVertexCuts[Y][1] = 10.;
  fVertexCuts[Z][0] = -10.;
  fVertexCuts[Z][1] = 10.;
+ fUseVertexCuts[X] = kFALSE;
+ fUseVertexCuts[Y] = kFALSE;
+ fUseVertexCuts[Z] = kFALSE;
 
  fNContributorsBins[0] = 3000.;
  fNContributorsBins[1] = 0.;
@@ -1000,31 +1039,38 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
  //    default phi cuts:
  fKinematicsCuts[PHI][0] = fKinematicsBins[PHI][1];
  fKinematicsCuts[PHI][1] = fKinematicsBins[PHI][2];
+ fUseKinematicsCuts[PHI] = kFALSE;
 
  //    default pt cuts:
  fKinematicsCuts[PT][0] = fKinematicsBins[PT][1];
  fKinematicsCuts[PT][1] = fKinematicsBins[PT][2];
+ fUseKinematicsCuts[PT] = kFALSE;
 
  //    default eta cuts:
  fKinematicsCuts[ETA][0] = fKinematicsBins[ETA][1];
  fKinematicsCuts[ETA][1] = fKinematicsBins[ETA][2];
+ fUseKinematicsCuts[ETA] = kFALSE;
 
  //    default e cuts:
  fKinematicsCuts[E][0] = fKinematicsBins[E][1];
  fKinematicsCuts[E][1] = fKinematicsBins[E][2];
+ fUseKinematicsCuts[E] = kFALSE;
 
  //    default charge cuts:
  fKinematicsCuts[CHARGE][0] = fKinematicsBins[CHARGE][1];
  fKinematicsCuts[CHARGE][1] = fKinematicsBins[CHARGE][2];
+ fUseKinematicsCuts[CHARGE] = kFALSE;
 
  //  d2) DCA:
  //    default DCA xy cuts:
  fDCACuts[0][0] = fDCABins[0][1];
  fDCACuts[0][1] = fDCABins[0][2];
-
  //    default DCA z cuts:
  fDCACuts[1][0] = fDCABins[1][1];
  fDCACuts[1][1] = fDCABins[1][2];
+ //    corresponding booleans:
+ fUseDCACuts[0] = kFALSE;
+ fUseDCACuts[1] = kFALSE;
 
  //  d3) Remaining:
  for(Int_t t=0;t<gParticleHistograms;t++)
@@ -1216,7 +1262,7 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
  TString skv[gKinematicVariables] = {"#varphi","p_{T}","#eta","energy","charge"};
  TString sae[gQAAnomalousEvents] = {"|vertex| = 0."};
  TString ssc[gQASelfCorrelations] = {"#varphi","p_{T}","#eta"};
- TString secc[gQAEventCutCounter] = {"nEvts","minMult","maxMult","minCent","maxCent","!avtx","minNContr","maxNContr","fMinVertexDistance",
+ TString secc[gQAEventCutCounter] = {"nEvts","minSelected","maxSelected","minCent","maxCent","!avtx","minNContr","maxNContr","fMinVertexDistance",
                                      "minVtxX","maxVtxX","minVtxY","maxVtxY","minVtxZ","maxVtxZ",
                                      "centCorrCut[0][1]","centCorrCut[0][2]","centCorrCut[0][3]","centCorrCut[1][2]","centCorrCut[1][3]","centCorrCut[2][3]","centFlattening"};
 
@@ -1273,17 +1319,14 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
  // b) Kinematics for specified filter bits (use in combination with SetQAFilterBits(...))
  for(Int_t fb=0;fb<fQAFilterBits->GetSize();fb++)
  {
-  for(Int_t rs=0;rs<2;rs++)
+  for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4
   {
-   for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4
-   {
-    fQAKinematicsFilterBits[fb][rs][kv] = new TH1D(Form("fQAKinematicsFilterBits[%d][%d][%d]",fb,rs,kv),Form("Filter bit: %d, %s, %s",(Int_t)fQAFilterBits->GetAt(fb),srs[rs].Data(),skv[kv].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]);
-    fQAKinematicsFilterBits[fb][rs][kv]->SetXTitle(skv[kv].Data());
-    fQAKinematicsFilterBits[fb][rs][kv]->SetLineColor(COLOR);
-    fQAKinematicsFilterBits[fb][rs][kv]->SetFillColor(FILLCOLOR);
-    fQAKinematicsFilterBits[fb][rs][kv]->SetMinimum(0.);
-    fQAList->Add(fQAKinematicsFilterBits[fb][rs][kv]);
-   }   
+   fQAKinematicsFilterBits[fb][kv] = new TH1D(Form("fQAKinematicsFilterBits[%d][%d]",fb,kv),Form("Filter bit: %d, %s",(Int_t)fQAFilterBits->GetAt(fb),skv[kv].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]);
+   fQAKinematicsFilterBits[fb][kv]->SetXTitle(skv[kv].Data());
+   fQAKinematicsFilterBits[fb][kv]->SetLineColor(COLOR);
+   fQAKinematicsFilterBits[fb][kv]->SetFillColor(FILLCOLOR);
+   fQAKinematicsFilterBits[fb][kv]->SetMinimum(0.);
+   fQAList->Add(fQAKinematicsFilterBits[fb][kv]);   
   } 
  }
 
@@ -1345,8 +1388,8 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  fControlEventHistogramsPro->SetLineColor(COLOR);
  fControlEventHistogramsPro->SetFillColor(FILLCOLOR);
  fControlEventHistogramsPro->GetXaxis()->SetBinLabel(1,Form("fCentralityEstimator = %s",fCentralityEstimator.Data()));
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(2,"minMult"); fControlEventHistogramsPro->Fill(1.5,fMultiplicityCuts[0]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(3,"maxMult"); fControlEventHistogramsPro->Fill(2.5,fMultiplicityCuts[1]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(2,"minSelected"); fControlEventHistogramsPro->Fill(1.5,fSelectedTracksCuts[0]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(3,"maxSelected"); fControlEventHistogramsPro->Fill(2.5,fSelectedTracksCuts[1]);
  fControlEventHistogramsPro->GetXaxis()->SetBinLabel(4,"minCent"); fControlEventHistogramsPro->Fill(3.5,fCentralityCuts[0]);
  fControlEventHistogramsPro->GetXaxis()->SetBinLabel(5,"maxCent"); fControlEventHistogramsPro->Fill(4.5,fCentralityCuts[1]);
  fControlEventHistogramsPro->GetXaxis()->SetBinLabel(6,"minNContr"); fControlEventHistogramsPro->Fill(5.5,fNContributorsCuts[0]);
@@ -1381,6 +1424,14 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  fMultiplicityHist->SetFillColor(FILLCOLOR);
  fMultiplicityHist->GetXaxis()->SetTitle("Multiplicity");
  fControlEventHistogramsList->Add(fMultiplicityHist);
+
+ fSelectedTracksHist = new TH1I("fSelectedTracksHist","selected tracks added in Q-vector, after all event and particle cuts",(Int_t)fMultiplicityBins[0],(Int_t)fMultiplicityBins[1],(Int_t)fMultiplicityBins[2]);
+ //fSelectedTracksHist->SetStats(kFALSE);
+ fSelectedTracksHist->SetLineColor(COLOR);
+ fSelectedTracksHist->SetFillColor(FILLCOLOR);
+ fSelectedTracksHist->GetXaxis()->SetTitle("integer counter of selected tracks ");
+ fControlEventHistogramsList->Add(fSelectedTracksHist);
+
  for(Int_t m=0;m<gCentralMultiplicity;m++)
  {
   fCentralMultiplicityHist[m] = new TH1D(Form("fCentralMultiplicityHist[%d]",m),smult[m].Data(),(Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
@@ -1390,13 +1441,6 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
   fCentralMultiplicityHist[m]->GetXaxis()->SetTitle(smult[m].Data());
   // fControlEventHistogramsList->Add(fCentralMultiplicityHist[m]); TBI 20210523 enable eventually
  }
-
- fSelectedTracksHist = new TH1I("fSelectedTracksHist","integer counter of selected tracks added in Q-vector",(Int_t)fMultiplicityBins[0],(Int_t)fMultiplicityBins[1],(Int_t)fMultiplicityBins[2]);
- //fSelectedTracksHist->SetStats(kFALSE);
- fSelectedTracksHist->SetLineColor(COLOR);
- fSelectedTracksHist->SetFillColor(FILLCOLOR);
- fSelectedTracksHist->GetXaxis()->SetTitle("integer counter of selected tracks ");
- fControlEventHistogramsList->Add(fSelectedTracksHist);
 
  // d) Centrality:
  for(Int_t ba=0;ba<2;ba++) // before/after cuts
@@ -1927,7 +1971,16 @@ void AliAnalysisTaskMuPa::FilterEvent(AliVEvent *ave)
   if(!ams){cout<<__LINE__<<endl;exit(1);}
   fCentrality = ams->GetMultiplicityPercentile(fCentralityEstimator.Data());
 
-  // ... 
+  // Count number of particles which survive all particle cuts, and are selected for the main analysis and added to Q-vectors:
+  fSelectedTracks = 0;
+  Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
+  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
+  {
+   AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to "a track" (i.e. any track)
+   if(!aodTrack){continue;}
+   if(!SurvivesParticleCuts(aodTrack)){continue;}
+   fSelectedTracks++;
+  } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  } // if(aAOD)
 
  return;
@@ -1976,6 +2029,7 @@ void AliAnalysisTaskMuPa::FillControlEventHistograms(AliVEvent *ave, const Int_t
  if(aMC)
  {
   // b) Vertex: TH1D *fVertexHist[2][2][3]; //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
+  //    TBI 20210802 this can be unified with AOD branch above
   AliAODVertex *avtx = (AliAODVertex*)aMC->GetPrimaryVertex();
   if(!avtx) return; 
   if(fVertexHist[ba][rs][X]){fVertexHist[ba][rs][X]->Fill(avtx->GetX());}
@@ -2046,7 +2100,7 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliVParticle *vParticle,
   if(fKinematicsHist[ba][rs][PT]){fKinematicsHist[ba][rs][PT]->Fill(aodmcParticle->Pt());}
   if(fKinematicsHist[ba][rs][ETA]){fKinematicsHist[ba][rs][ETA]->Fill(aodmcParticle->Eta());}
   if(fKinematicsHist[ba][rs][E]){fKinematicsHist[ba][rs][E]->Fill(aodmcParticle->E());}
-  if(fKinematicsHist[ba][rs][CHARGE]){fKinematicsHist[ba][rs][CHARGE]->Fill(aodmcParticle->Charge());}
+  if(fKinematicsHist[ba][rs][CHARGE]){fKinematicsHist[ba][rs][CHARGE]->Fill(aodmcParticle->Charge());} 
  } // if(aodmcParticle)
 
 } // AliAnalysisTaskMuPa::FillControlParticleHistograms(AliVTrack *vTrack, const Int_t ba, const Int_t rs)
@@ -2061,8 +2115,7 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
  // b) Only for QA count separately what each event cut is doing;
  // c) AOD.
 
- // a) Determine Ali{MC,ESD,AOD}Event:
- //AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
+ // a) Determine Ali{ESD,AOD}Event:
  //AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
 
@@ -2075,15 +2128,25 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
  // c) AOD:
  if(aAOD)
  {
-  // Remark: For each new cut you implement here, add corresponding support in EventCutCounter(...)
-  // Multiplicity:
-  if(aAOD->GetNumberOfTracks() < fMultiplicityCuts[0]) return kFALSE;
-  if(aAOD->GetNumberOfTracks() > fMultiplicityCuts[1]) return kFALSE;
+  // Remark 0: Cut first on event-by-event quantities which we calculated in FilterEvent().
+  //           At the moment, those are: fCentrality, fSelectedTracks
+
+  // Remark 1: For each new cut you implement here, add corresponding support in EventCutCounter(...)
 
   // Centrality:
-  if(fCentrality < fCentralityCuts[0]) return kFALSE;
-  if(fCentrality > fCentralityCuts[1]) return kFALSE;
- 
+  if(fUseCentralityCuts)
+  {
+   if(fCentrality < fCentralityCuts[0]) return kFALSE;
+   if(fCentrality > fCentralityCuts[1]) return kFALSE;
+  } 
+
+  // Selected tracks used to calculate Q-vectors, after all particle cuts have been applied:
+  if(fUseSelectedTracksCuts)
+  {
+   if(fSelectedTracks < fSelectedTracksCuts[0]) return kFALSE;
+   if(fSelectedTracks > fSelectedTracksCuts[1]) return kFALSE;
+  }
+
   // Centrality correlations cuts:
   // TBI 20210727 this can be optimized further, but nevermind now, since by default it will be used in any case
   AliMultSelection *ams = (AliMultSelection*)aAOD->FindListObject("MultSelection");
@@ -2105,22 +2168,33 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
   // Vertex:
   AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
   if(!avtx) return kFALSE; 
-  if((Int_t)avtx->GetNContributors()<fNContributorsCuts[0]) return kFALSE;
-  if((Int_t)avtx->GetNContributors()>fNContributorsCuts[1]) return kFALSE;
+  if(fUseNContributorsCuts)
+  {
+   if((Int_t)avtx->GetNContributors()<fNContributorsCuts[0]) return kFALSE;
+   if((Int_t)avtx->GetNContributors()>fNContributorsCuts[1]) return kFALSE;
+  }
 
   if(sqrt(pow(avtx->GetX(),2.) + pow(avtx->GetY(),2.) + pow(avtx->GetY(),2.)) < fMinVertexDistance)
   { 
-   Red(Form("%f",sqrt(pow(avtx->GetX(),2.) + pow(avtx->GetY(),2.) + pow(avtx->GetY(),2.)))); sleep(1); // TBI 20210527 remove this line eventualyy
    fQAAnomalousEvents->Fill(0.5); // |vertex| = 0.
    return kFALSE;
   }
 
-  if(avtx->GetX() < fVertexCuts[X][0]) return kFALSE;
-  if(avtx->GetX() > fVertexCuts[X][1]) return kFALSE; 
-  if(avtx->GetY() < fVertexCuts[Y][0]) return kFALSE;
-  if(avtx->GetY() > fVertexCuts[Y][1]) return kFALSE;
-  if(avtx->GetZ() < fVertexCuts[Z][0]) return kFALSE;
-  if(avtx->GetZ() > fVertexCuts[Z][1]) return kFALSE;
+  if(fUseVertexCuts[X])
+  {
+   if(avtx->GetX() < fVertexCuts[X][0]) return kFALSE;
+   if(avtx->GetX() > fVertexCuts[X][1]) return kFALSE; 
+  }
+  if(fUseVertexCuts[Y])
+  {
+   if(avtx->GetY() < fVertexCuts[Y][0]) return kFALSE;
+   if(avtx->GetY() > fVertexCuts[Y][1]) return kFALSE;
+  }
+  if(fUseVertexCuts[Z])
+  {
+   if(avtx->GetZ() < fVertexCuts[Z][0]) return kFALSE;
+   if(avtx->GetZ() > fVertexCuts[Z][1]) return kFALSE;
+  }
 
   // Remaining event cuts:
   // TBI 20210518 magnetic field value
@@ -2134,7 +2208,7 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
    if(fUseCentralityWeights[ce])
    {
     centralityWeight = CentralityWeight(ams->GetMultiplicityPercentile(sce[ce].Data()),sce[ce].Data());
-    if(gRandom->Uniform(0,1) > centralityWeight) return kFALSE; 
+    if(gRandom->Uniform(0,1) > centralityWeight) return kFALSE; // yes, since centralityWeight is normalized probability (see CentralityWeight(...))
    } 
   }
 
@@ -2166,32 +2240,50 @@ void AliAnalysisTaskMuPa::EventCutCounter(AliVEvent *ave)
   // Total number of events:
   fQAEventCutCounter->Fill(0.5);
 
-  // Multiplicity:
-  if(aAOD->GetNumberOfTracks() < fMultiplicityCuts[0]) fQAEventCutCounter->Fill(1.5);
-  if(aAOD->GetNumberOfTracks() > fMultiplicityCuts[1]) fQAEventCutCounter->Fill(2.5);
+  // Selected tracks for Q-vectors, after all event and particle cuts:
+  if(fUseSelectedTracksCuts)
+  { 
+   if(fSelectedTracks < fSelectedTracksCuts[0]) fQAEventCutCounter->Fill(1.5);
+   if(fSelectedTracks > fSelectedTracksCuts[1]) fQAEventCutCounter->Fill(2.5);
+  }
 
   // Centrality:
-  if(fCentrality < fCentralityCuts[0]) fQAEventCutCounter->Fill(3.5);
-  if(fCentrality > fCentralityCuts[1]) fQAEventCutCounter->Fill(4.5);
+  if(fUseCentralityCuts)
+  { 
+   if(fCentrality < fCentralityCuts[0]) fQAEventCutCounter->Fill(3.5);
+   if(fCentrality > fCentralityCuts[1]) fQAEventCutCounter->Fill(4.5);
+  }
 
   // Vertex:
   AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
   if(!avtx) fQAEventCutCounter->Fill(5.5);
-
-  if((Int_t)avtx->GetNContributors()<fNContributorsCuts[0]) fQAEventCutCounter->Fill(6.5);
-  if((Int_t)avtx->GetNContributors()>fNContributorsCuts[1]) fQAEventCutCounter->Fill(7.5);
+  if(fUseNContributorsCuts)
+  {
+   if((Int_t)avtx->GetNContributors()<fNContributorsCuts[0]) fQAEventCutCounter->Fill(6.5);
+   if((Int_t)avtx->GetNContributors()>fNContributorsCuts[1]) fQAEventCutCounter->Fill(7.5);
+  }
 
   if(sqrt(pow(avtx->GetX(),2.) + pow(avtx->GetY(),2.) + pow(avtx->GetY(),2.)) < fMinVertexDistance)
   { 
    fQAAnomalousEvents->Fill(0.5); // |vertex| = 0.
    fQAEventCutCounter->Fill(8.5);
   }
-  if(avtx->GetX() < fVertexCuts[X][0]) fQAEventCutCounter->Fill(9.5);
-  if(avtx->GetX() > fVertexCuts[X][1]) fQAEventCutCounter->Fill(10.5); 
-  if(avtx->GetY() < fVertexCuts[Y][0]) fQAEventCutCounter->Fill(11.5);
-  if(avtx->GetY() > fVertexCuts[Y][1]) fQAEventCutCounter->Fill(12.5);
-  if(avtx->GetZ() < fVertexCuts[Z][0]) fQAEventCutCounter->Fill(13.5);
-  if(avtx->GetZ() > fVertexCuts[Z][1]) fQAEventCutCounter->Fill(14.5);
+
+  if(fUseVertexCuts[X])
+  {
+   if(avtx->GetX() < fVertexCuts[X][0]) fQAEventCutCounter->Fill(9.5);
+   if(avtx->GetX() > fVertexCuts[X][1]) fQAEventCutCounter->Fill(10.5); 
+  }
+  if(fUseVertexCuts[Y])
+  {
+   if(avtx->GetY() < fVertexCuts[Y][0]) fQAEventCutCounter->Fill(11.5);
+   if(avtx->GetY() > fVertexCuts[Y][1]) fQAEventCutCounter->Fill(12.5);
+  }
+  if(fUseVertexCuts[Z])
+  {
+   if(avtx->GetZ() < fVertexCuts[Z][0]) fQAEventCutCounter->Fill(13.5);
+   if(avtx->GetZ() > fVertexCuts[Z][1]) fQAEventCutCounter->Fill(14.5);
+  }
  } // if(aAOD)
 
  // Centrality cuts:
@@ -2256,35 +2348,57 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
  AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(vParticle);
  
  // b) Cut on AOD track:
-
  if(aodTrack)
  {
+  // Filter bit:
+  if(!aodTrack->TestFilterBit(fFilterBit)) return kFALSE;
+ 
   // Trivial cuts:
-  if(TMath::Abs(aodTrack->Charge())<1./3.) return kFALSE; // take into account only charged particles 
   if(fUseOnlyPrimaries)
   {
    if(aodTrack->GetType() != AliAODTrack::kPrimary) return kFALSE; // take into account only primaries
   }
 
   // Kinematics:
-  if(aodTrack->Phi() < fKinematicsCuts[PHI][0]) return kFALSE;
-  if(aodTrack->Phi() >= fKinematicsCuts[PHI][1]) return kFALSE;
-  if(aodTrack->Pt() < fKinematicsCuts[PT][0]) return kFALSE;
-  if(aodTrack->Pt() >= fKinematicsCuts[PT][1]) return kFALSE;
-  if(aodTrack->Eta() < fKinematicsCuts[ETA][0]) return kFALSE;
-  if(aodTrack->Eta() >= fKinematicsCuts[ETA][1]) return kFALSE;
-  if(aodTrack->E() < fKinematicsCuts[E][0]) return kFALSE;
-  if(aodTrack->E() >= fKinematicsCuts[E][1]) return kFALSE;
-  if(aodTrack->Charge() < fKinematicsCuts[CHARGE][0]) return kFALSE;
-  if(aodTrack->Charge() >= fKinematicsCuts[CHARGE][1]) return kFALSE;
+  if(fUseKinematicsCuts[PHI])
+  {
+   if(aodTrack->Phi() < fKinematicsCuts[PHI][0]) return kFALSE;
+   if(aodTrack->Phi() >= fKinematicsCuts[PHI][1]) return kFALSE;
+  }
+  if(fUseKinematicsCuts[PT])
+  {
+   if(aodTrack->Pt() < fKinematicsCuts[PT][0]) return kFALSE;
+   if(aodTrack->Pt() >= fKinematicsCuts[PT][1]) return kFALSE;
+  }
+  if(fUseKinematicsCuts[ETA])
+  {
+   if(aodTrack->Eta() < fKinematicsCuts[ETA][0]) return kFALSE;
+   if(aodTrack->Eta() >= fKinematicsCuts[ETA][1]) return kFALSE;
+  }
+  if(fUseKinematicsCuts[E])
+  {
+   if(aodTrack->E() < fKinematicsCuts[E][0]) return kFALSE;
+   if(aodTrack->E() >= fKinematicsCuts[E][1]) return kFALSE;
+  }
+  if(fUseKinematicsCuts[CHARGE])
+  {
+   if(0 == aodTrack->Charge()) return kFALSE; // take into account only charged particles 
+   if(aodTrack->Charge() < fKinematicsCuts[CHARGE][0]) return kFALSE;
+   if(aodTrack->Charge() >= fKinematicsCuts[CHARGE][1]) return kFALSE;
+  }
 
   // DCA xy:
-  if(aodTrack->DCA() < fDCACuts[0][0]) return kFALSE;
-  if(aodTrack->DCA() >= fDCACuts[0][1]) return kFALSE;
- 
+  if(fUseDCACuts[0])
+  {
+   if(aodTrack->DCA() < fDCACuts[0][0]) return kFALSE;
+   if(aodTrack->DCA() >= fDCACuts[0][1]) return kFALSE;
+  } 
   // DCA z:
-  if(aodTrack->ZAtDCA() < fDCACuts[1][0]) return kFALSE;
-  if(aodTrack->ZAtDCA() >= fDCACuts[1][1]) return kFALSE;
+  if(fUseDCACuts[1])
+  {
+   if(aodTrack->ZAtDCA() < fDCACuts[1][0]) return kFALSE;
+   if(aodTrack->ZAtDCA() >= fDCACuts[1][1]) return kFALSE;
+  }
 
   // Remaining:
   if(aodTrack->GetTPCNcls() < fParticleCuts[TPCNcls][0]) return kFALSE;
@@ -2317,7 +2431,6 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
  if(aodmcParticle)
  {
   // Trivial cuts:
-  if(TMath::Abs(aodmcParticle->Charge())<1./3.) return kFALSE; // take into account only charged particles 
   if(fUseOnlyPrimaries)
   {
    if(!aodmcParticle->IsPrimary()) return kFALSE; // take into account only generated primaries 
@@ -2325,16 +2438,32 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
   }
 
   // Kinematics:
-  if(aodmcParticle->Phi() < fKinematicsCuts[PHI][0]) return kFALSE;
-  if(aodmcParticle->Phi() >= fKinematicsCuts[PHI][1]) return kFALSE;
-  if(aodmcParticle->Pt() < fKinematicsCuts[PT][0]) return kFALSE;
-  if(aodmcParticle->Pt() >= fKinematicsCuts[PT][1]) return kFALSE;
-  if(aodmcParticle->Eta() < fKinematicsCuts[ETA][0]) return kFALSE;
-  if(aodmcParticle->Eta() >= fKinematicsCuts[ETA][1]) return kFALSE;
-  if(aodmcParticle->E() < fKinematicsCuts[E][0]) return kFALSE;
-  if(aodmcParticle->E() >= fKinematicsCuts[E][1]) return kFALSE;
-  if(aodmcParticle->Charge() < fKinematicsCuts[CHARGE][0]) return kFALSE;
-  if(aodmcParticle->Charge() >= fKinematicsCuts[CHARGE][1]) return kFALSE;
+  if(fUseKinematicsCuts[PHI])
+  {
+   if(aodmcParticle->Phi() < fKinematicsCuts[PHI][0]) return kFALSE;
+   if(aodmcParticle->Phi() >= fKinematicsCuts[PHI][1]) return kFALSE;
+  }
+  if(fUseKinematicsCuts[PT])
+  {
+   if(aodmcParticle->Pt() < fKinematicsCuts[PT][0]) return kFALSE;
+   if(aodmcParticle->Pt() >= fKinematicsCuts[PT][1]) return kFALSE;
+  }
+  if(fUseKinematicsCuts[ETA])
+  {
+   if(aodmcParticle->Eta() < fKinematicsCuts[ETA][0]) return kFALSE;
+   if(aodmcParticle->Eta() >= fKinematicsCuts[ETA][1]) return kFALSE;
+  }
+  if(fUseKinematicsCuts[E])
+  {
+   if(aodmcParticle->E() < fKinematicsCuts[E][0]) return kFALSE;
+   if(aodmcParticle->E() >= fKinematicsCuts[E][1]) return kFALSE;
+  }
+  if(fUseKinematicsCuts[CHARGE])
+  {
+   if(0 == aodmcParticle->Charge()) return kFALSE;
+   if(aodmcParticle->Charge()/3 < fKinematicsCuts[CHARGE][0]) return kFALSE; // yes, since aodmcParticle->Charge() = 3 if aodTrack->Charge() = 3
+   if(aodmcParticle->Charge()/3 >= fKinematicsCuts[CHARGE][1]) return kFALSE;
+  }
 
  } // if(aodmcParticle)
  
@@ -2391,17 +2520,20 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
    }
 
    // Filter bit kinematics:
-   for(Int_t fb=0;fb<fQAFilterBits->GetSize();fb++)
+   if(rs == RECO)
    {
-    if(aTrack->TestFilterBit((Int_t)fQAFilterBits->GetAt(fb)))
+    for(Int_t fb=0;fb<fQAFilterBits->GetSize();fb++)
     {
-     fQAKinematicsFilterBits[fb][0][PHI]->Fill(aTrack->Phi());
-     fQAKinematicsFilterBits[fb][0][PT]->Fill(aTrack->Pt());
-     fQAKinematicsFilterBits[fb][0][ETA]->Fill(aTrack->Eta());
-     fQAKinematicsFilterBits[fb][0][E]->Fill(aTrack->E());
-     fQAKinematicsFilterBits[fb][0][CHARGE]->Fill(aTrack->Charge());
+     if(aTrack->TestFilterBit((Int_t)fQAFilterBits->GetAt(fb)))
+     {
+      fQAKinematicsFilterBits[fb][PHI]->Fill(aTrack->Phi());
+      fQAKinematicsFilterBits[fb][PT]->Fill(aTrack->Pt());
+      fQAKinematicsFilterBits[fb][ETA]->Fill(aTrack->Eta());
+      fQAKinematicsFilterBits[fb][E]->Fill(aTrack->E());
+      fQAKinematicsFilterBits[fb][CHARGE]->Fill(aTrack->Charge());
+     }
     }
-   }
+   } // if(rs == RECO)
    
   } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
 
@@ -2427,7 +2559,7 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
 
  if(aMC)
  {
-  // TBI 20210531 implement eventually also this branch
+  // nothing is needed here at the moment
  }
 
 } // void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs)
@@ -2887,7 +3019,7 @@ Double_t AliAnalysisTaskMuPa::CentralityWeight(const Double_t &value, const char
  } 
  else
  {
-  weight = fCentralityWeightsHist[ce]->GetBinContent(bin);
+  weight = fCentralityWeightsHist[ce]->GetBinContent(bin)*fCentralityWeightsHist[ce]->GetBinWidth(bin); // yes, since fCentralityWeightsHist is normalized p.d.f. (ensure that with the macro)
  }
   
  // In this context, it is assumed that centrality weight is a normalized probability (ensure that with the macro):
@@ -3153,5 +3285,61 @@ void AliAnalysisTaskMuPa::Blue(const char* text)
 } 
 
 //=======================================================================================
+
+void AliAnalysisTaskMuPa::MakeLookUpTable(AliAODEvent *aAOD, AliMCEvent *aMC)
+{
+ // For Monte Carlo analysis, establish a look up table between reco and kine particles.
+ // Algorithm: looping first over the reconstructed particles and building a look-up table which stores for each label index (kine) the corresponding track index (reco)
+ 
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
+ if(!aAOD){cout<<__LINE__<<endl;exit(1);}
+ if(!aMC){cout<<__LINE__<<endl;exit(1);}
+ if(0 != fSimReco->GetSize()){fSimReco->Delete();} // yes, this method determines mapping from scratch each time
+
+ AliAODTrack *aodTrack = NULL;
+ Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
+ for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all reconstructed tracks
+ {
+  aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack));
+  if(!aodTrack){continue;}
+
+  if(!SurvivesParticleCuts(aodTrack)){continue;} // without this, I have problenm with TPC-only and Global tracks, since they have the same Monte Carlo label
+  
+  Int_t label = aodTrack->GetLabel(); // Monte Carlo label, i.e. index of the particle in AliMCEvent *aMC
+  // The negative labels refer to fake tracks (see https://twiki.cern.ch/twiki/bin/viewauth/ALICE/TrackParametersMCTruth)
+  // * The absolute value of this label is the index of the particle within the *
+  // * MC stack. If the label is negative, this track was assigned a certain *
+  // * number of clusters that did not in fact belong to this track. *
+  // => In most analysis, fake tracks can be taken, use task->SetUseFakeTracks(kTRUE); to check the difference
+  fSimReco->Add(label,iTrack); // "key" = label, "value" = iTrack
+
+  /* 
+  // Use this code snippet to cross-check that the mapping went allright:
+  AliAODMCParticle *aodmcParticle = NULL;
+  Int_t nTracksMC = aMC->GetNumberOfTracks(); // total number of Monte Carlo tracks
+  for(Int_t iTrackMC=0;iTrackMC<nTracksMC;iTrackMC++) // starting a loop over all Monte Carlo tracks
+  {
+   if(TMath::Abs(label) == iTrackMC)
+   {
+    aodmcParticle = (AliAODMCParticle*)aMC->GetTrack(iTrackMC);    
+    cout<<aodTrack->Phi()<<" "<<aodmcParticle->Phi()<<endl;
+    cout<<aodTrack->Pt()<<" "<<aodmcParticle->Pt()<<endl;
+    cout<<aodTrack->Charge()<<" "<<aodmcParticle->Charge()/3<<endl;
+    cout<<endl;
+    break;
+   }
+  }
+  */
+
+ } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all reconstructed tracks
+
+} // void AliAnalysisTaskMuPa::MakeLookUpTable(AliAODEvent *aAOD, AliMCEvent *aMC)
+
+
+
+
+
+
 
 
