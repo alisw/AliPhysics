@@ -1,4 +1,4 @@
-AliAnalysisTaskCorrForFlow* AddCorrForFlowTask(TString name = "name")
+AliAnalysisTaskCorrForFlow* AddCorrForFlowTask(TString name = "name", const char* suffix = "")
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -9,11 +9,12 @@ AliAnalysisTaskCorrForFlow* AddCorrForFlowTask(TString name = "name")
     }
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":CorrForFlow";
-    AliAnalysisTaskCorrForFlow* task = new AliAnalysisTaskCorrForFlow(name.Data());
+    TString taskName = Form("%s_%s",name.Data(),suffix);
+    AliAnalysisTaskCorrForFlow* task = new AliAnalysisTaskCorrForFlow(taskName.Data());
     if(!task) return 0x0;
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
     mgr->AddTask(task);
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("Charged", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("Charged_%s",taskname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     return task;
 }
