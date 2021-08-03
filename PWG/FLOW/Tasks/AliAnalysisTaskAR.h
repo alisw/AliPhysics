@@ -313,6 +313,7 @@ public:
       std::cout << __LINE__ << ": Out of range" << std::endl;
       Fatal("SetWeightHistogram", "Out of range");
     }
+    this->fUseWeights[kinematic]=kTRUE;
     this->fWeightHistogram[kinematic] = WeightHistogram;
   }
   void SetWeightHistogram(kTrack kinematic, const char *Filename,

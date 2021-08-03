@@ -1128,13 +1128,53 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
         fKinematics[kPHI].push_back(aTrack->Phi());
         fKinematics[kETA].push_back(aTrack->Eta());
       } else {
-        Int_t AcceptanceBin =
-            fAcceptanceHistogram[kPHI]->FindBin(aTrack->Phi());
-        if (gRandom->Uniform() <=
-            fAcceptanceHistogram[kPHI]->GetBinContent(AcceptanceBin)) {
+        // Monte Carlo Closure
+        Int_t AcceptanceBin[kKinematic];
+        Double_t Acceptance[kKinematic];
+        Bool_t AcceptParticle = kTRUE;
+        // get bin according to kinematic variables
+        if (fAcceptanceHistogram[kPT]) {
+          AcceptanceBin[kPT] = fAcceptanceHistogram[kPT]->FindBin(aTrack->Pt());
+        }
+        if (fAcceptanceHistogram[kPHI]) {
+          AcceptanceBin[kPHI] =
+              fAcceptanceHistogram[kPHI]->FindBin(aTrack->Phi());
+        }
+        if (fAcceptanceHistogram[kETA]) {
+          AcceptanceBin[kETA] =
+              fAcceptanceHistogram[kETA]->FindBin(aTrack->Eta());
+        }
+        // get acceptance
+        for (int k = 0; k < kKinematic; ++k) {
+          if (fAcceptanceHistogram[k]) {
+            Acceptance[k] =
+                fAcceptanceHistogram[k]->GetBinContent(AcceptanceBin[k]);
+          } else {
+            Acceptance[k] = 1;
+          }
+        }
+        // test if particle gets accepted
+        for (int k = 0; k < kKinematic; ++k) {
+          if (gRandom->Uniform() >= Acceptance[k]) {
+            AcceptParticle = kFALSE;
+          }
+        }
+        if (AcceptParticle) {
+          fKinematics[kPT].push_back(aTrack->Pt());
+          if (fWeightHistogram[kPT]) {
+            fKinematicWeights[kPT].push_back(
+                fWeightHistogram[kPT]->GetBinContent(AcceptanceBin[kPT]));
+          }
           fKinematics[kPHI].push_back(aTrack->Phi());
-          fKinematicWeights[kPHI].push_back(
-              fWeightHistogram[kPHI]->GetBinContent(AcceptanceBin));
+          if (fWeightHistogram[kPHI]) {
+            fKinematicWeights[kPHI].push_back(
+                fWeightHistogram[kPHI]->GetBinContent(AcceptanceBin[kPHI]));
+          }
+          fKinematics[kETA].push_back(aTrack->Eta());
+          if (fWeightHistogram[kETA]) {
+            fKinematicWeights[kETA].push_back(
+                fWeightHistogram[kETA]->GetBinContent(AcceptanceBin[kETA]));
+          }
         }
       }
     }
@@ -2323,6 +2363,7 @@ void AliAnalysisTaskAR::SetWeightHistogram(kTrack kinematic,
   // keeps the histogram in memory after we close the file
   this->fWeightHistogram[kinematic]->SetDirectory(0);
   file->Close();
+  this->fUseWeights[kinematic] = kTRUE;
 }
 
 void AliAnalysisTaskAR::GetPointers(TList *histList) {
