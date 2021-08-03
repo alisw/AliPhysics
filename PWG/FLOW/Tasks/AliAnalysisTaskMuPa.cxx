@@ -25,6 +25,7 @@
 #include <AliMultSelection.h>
 #include <TFile.h>
 #include <unistd.h>
+#include <TRandom3.h>
 
 using std::cout;
 using std::endl;
@@ -126,6 +127,10 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
 
   // Initialize all arrays:
   this->InitializeArrays();
+
+  // Determine seed for gRandom:
+  delete gRandom;
+  gRandom = new TRandom3(0); // if uiSeed is 0, the seed is determined uniquely in space and time via TUUID
 
   // Define input and output slots here
   // Input slot #0 works with an AliFlowEventSimple
@@ -481,7 +486,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  PostData(1,fBaseList);
 
  // *) Online monitoring:
- cout<<"\n\033[1;32m"<<Form("INFO: Done with event #%d",(Int_t)fSelectedTracksHist->GetEntries())<<"\033[0m\n"<<endl; 
+ Green(Form("INFO: Done with event #%d",(Int_t)fSelectedTracksHist->GetEntries())); 
  if(fOnlineMonitoring){this->OnlineMonitoring();}
 
 } // void AliAnalysisTaskMuPa::UserExec(Option_t *)
@@ -1063,6 +1068,14 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  if(!(fCentralityEstimator.EqualTo("V0M")||fCentralityEstimator.EqualTo("SPDTracklets")||
       fCentralityEstimator.EqualTo("CL0")||fCentralityEstimator.EqualTo("CL1"))){cout<<__LINE__<<endl;exit(1);}
 
+ //   Centrality weights:
+ Int_t sum = 0;
+ for(Int_t ce=0;ce<gCentralityEstimators;ce++)
+ {
+  sum += (Int_t) fUseCentralityWeights[ce];
+ }
+ if(sum>1){Red("\n Usage of only one centrality weight is supported at the moment.\n");cout<<__LINE__<<endl;exit(1);}
+
  // To do:
  // 1/ cout<<"FATAL: Only \"x\", \"y\" or \"z\" are supported for the 1st argument in this setter."<<endl; exit(0); TBI 20210512 move this to the insanity checks
  // 2/ the same thing for SetKinematicsBins(..) and SetKinematicsCuts(..)
@@ -1205,7 +1218,7 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
  TString ssc[gQASelfCorrelations] = {"#varphi","p_{T}","#eta"};
  TString secc[gQAEventCutCounter] = {"nEvts","minMult","maxMult","minCent","maxCent","!avtx","minNContr","maxNContr","fMinVertexDistance",
                                      "minVtxX","maxVtxX","minVtxY","maxVtxY","minVtxZ","maxVtxZ",
-                                     "centCorrCut[0][1]","centCorrCut[0][2]","centCorrCut[0][3]","centCorrCut[1][2]","centCorrCut[1][3]","centCorrCut[2][3]"};
+                                     "centCorrCut[0][1]","centCorrCut[0][2]","centCorrCut[0][3]","centCorrCut[1][2]","centCorrCut[1][3]","centCorrCut[2][3]","centFlattening"};
 
  for(Int_t ba=0;ba<2;ba++)
  {
@@ -2112,6 +2125,19 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
   // Remaining event cuts:
   // TBI 20210518 magnetic field value
 
+  // Centrality weights (flattening): 
+  // Remark: since I am getting centrality weights from centrality distribution after the events cuts, flattening is applied here after all other event cuts:
+  if(!ams){cout<<__LINE__<<endl;exit(1);} // pointer was obtained previously
+  Double_t centralityWeight = -44.;
+  for(Int_t ce=0;ce<gCentralityEstimators;ce++)
+  {
+   if(fUseCentralityWeights[ce])
+   {
+    centralityWeight = CentralityWeight(ams->GetMultiplicityPercentile(sce[ce].Data()),sce[ce].Data());
+    if(gRandom->Uniform(0,1) > centralityWeight) return kFALSE; 
+   } 
+  }
+
  } // if(aAOD)
 
  return kTRUE;
@@ -2197,6 +2223,19 @@ void AliAnalysisTaskMuPa::EventCutCounter(AliVEvent *ave)
    } // if(fUseCentralityCorrelationsCuts[ce1][ce2])
   } // for(Int_t ce2=ce1+1;ce2<gCentralityEstimators;ce2++) 
  } // for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
+
+ // Centrality weights (flattening): 
+ // Remark: since I am getting centrality weights from centrality distribution after the events cuts, flattening is applied here after all other event cuts:
+ if(!ams){cout<<__LINE__<<endl;exit(1);} // pointer was obtained previously
+ Double_t centralityWeight = -44.;
+ for(Int_t ce=0;ce<gCentralityEstimators;ce++)
+ {
+  if(fUseCentralityWeights[ce])
+  {
+   centralityWeight = CentralityWeight(ams->GetMultiplicityPercentile(sce[ce].Data()),sce[ce].Data());
+   if(gRandom->Uniform(0,1) > centralityWeight) fQAEventCutCounter->Fill(21); // TBI 20210729 hw 21
+  } 
+ }
 
 } // void AliAnalysisTaskMuPa::EventCutCounter(AliVEvent *ave)
 
@@ -2832,11 +2871,11 @@ Double_t AliAnalysisTaskMuPa::CentralityWeight(const Double_t &value, const char
  // Basic protection:
  if(!(TString(estimator).EqualTo("V0M") || TString(estimator).EqualTo("SPDTracklets") || TString(estimator).EqualTo("CL0") || TString(estimator).EqualTo("CL1"))){cout<<__LINE__<<endl;exit(1);}
 
- Int_t ce = -1; // [V0M, SPDTracklets, CL0, CL1]
- if(TString(estimator).EqualTo("V0M")){ce=0;} 
- if(TString(estimator).EqualTo("SPDTracklets")){ce=1;} 
- if(TString(estimator).EqualTo("CL0")){ce=2;} 
- if(TString(estimator).EqualTo("CL1")){ce=3;} 
+ Int_t ce = -1; // this part has to be in sync. with enum eCentralityEstimator
+ if(TString(estimator).EqualTo("V0M")){ce=V0M;} 
+ if(TString(estimator).EqualTo("SPDTracklets")){ce=SPDTracklets;} 
+ if(TString(estimator).EqualTo("CL0")){ce=CL0;} 
+ if(TString(estimator).EqualTo("CL1")){ce=CL1;} 
 
  if(!fCentralityWeightsHist[ce]){cout<<__LINE__<<endl;exit(1);}
 
@@ -2850,7 +2889,10 @@ Double_t AliAnalysisTaskMuPa::CentralityWeight(const Double_t &value, const char
  {
   weight = fCentralityWeightsHist[ce]->GetBinContent(bin);
  }
- 
+  
+ // In this context, it is assumed that centrality weight is a normalized probability (ensure that with the macro):
+ if(weight < 0. || weight > 1.){Red(Form("\n weight = %f \n",weight));cout<<__LINE__<<endl;exit(1);}  
+
  return weight;
 
 } // AliAnalysisTaskMuPa::Weight(const Double_t &value, const char *estimator) // value, [V0M, SPDTracklets, CL0, CL1]
@@ -2888,11 +2930,11 @@ void AliAnalysisTaskMuPa::SetCentralityWeightsHist(TH1D* const hist, const char 
  // Basic protection:
  if(!(TString(estimator).EqualTo("V0M") || TString(estimator).EqualTo("SPDTracklets") || TString(estimator).EqualTo("CL0") || TString(estimator).EqualTo("CL1"))){cout<<__LINE__<<endl;exit(1);}
 
- Int_t ce = -1; // [V0M, SPDTracklets, CL0, CL1]
- if(TString(estimator).EqualTo("V0M")){ce=0;} 
- if(TString(estimator).EqualTo("SPDTracklets")){ce=1;} 
- if(TString(estimator).EqualTo("CL0")){ce=2;} 
- if(TString(estimator).EqualTo("CL1")){ce=3;} 
+ Int_t ce = -1; // this part has to be in sync. with enum eCentralityEstimator
+ if(TString(estimator).EqualTo("V0M")){ce=V0M;} 
+ if(TString(estimator).EqualTo("SPDTracklets")){ce=SPDTracklets;} 
+ if(TString(estimator).EqualTo("CL0")){ce=CL0;} 
+ if(TString(estimator).EqualTo("CL1")){ce=CL1;} 
 
  // Finally:
  hist->SetDirectory(0);
@@ -2932,11 +2974,11 @@ TH1D* AliAnalysisTaskMuPa::GetCentralityWeightsHist(const char *estimator)
  // Basic protection:
  if(!(TString(estimator).EqualTo("V0M") || TString(estimator).EqualTo("SPDTracklets") || TString(estimator).EqualTo("CL0") || TString(estimator).EqualTo("CL1"))){cout<<__LINE__<<endl;exit(1);}
 
- Int_t ce = -1; // [V0M, SPDTracklets, CL0, CL1]
- if(TString(estimator).EqualTo("V0M")){ce=0;} 
- if(TString(estimator).EqualTo("SPDTracklets")){ce=1;} 
- if(TString(estimator).EqualTo("CL0")){ce=2;} 
- if(TString(estimator).EqualTo("CL1")){ce=3;} 
+ Int_t ce = -1; //  this part has to be in sync. with enum eCentralityEstimator
+ if(TString(estimator).EqualTo("V0M")){ce=V0M;} 
+ if(TString(estimator).EqualTo("SPDTracklets")){ce=SPDTracklets;} 
+ if(TString(estimator).EqualTo("CL0")){ce=CL0;} 
+ if(TString(estimator).EqualTo("CL1")){ce=CL1;} 
 
  // Finally:
  return fCentralityWeightsHist[ce];
@@ -2965,7 +3007,9 @@ TH1D *AliAnalysisTaskMuPa::GetHistogramWithWeights(const char *filePath, const c
  // c) Check if the external ROOT file exists at specified path:
  if(gSystem->AccessPathName(filePath,kFileExists))
  {
-  cout<<Form("if(gSystem->AccessPathName(filePath,kFileExists)), filePath = %s",filePath)<<endl;exit(1);
+  Red(Form("if(gSystem->AccessPathName(filePath,kFileExists)), filePath = %s",filePath)); 
+  cout<<__LINE__<<endl;
+  exit(1);
  }
 
  // d) Access the external ROOT file and fetch the desired histogram with weights:
@@ -3006,7 +3050,9 @@ TH1D *AliAnalysisTaskMuPa::GetHistogramWithCentralityWeights(const char *filePat
  // c) Check if the external ROOT file exists at specified path:
  if(gSystem->AccessPathName(filePath,kFileExists))
  {
-  cout<<Form("if(gSystem->AccessPathName(filePath,kFileExists)), filePath = %s",filePath)<<endl;exit(1);
+  Red(Form("if(gSystem->AccessPathName(filePath,kFileExists)), filePath = %s",filePath));
+  cout<<__LINE__<<endl;
+  exit(1);
  }
 
  // d) Access the external ROOT file and fetch the desired histogram with weights:
@@ -3034,7 +3080,7 @@ Bool_t AliAnalysisTaskMuPa::SpecifiedEvent(AliVEvent *ave)
  // a) Determine Ali{MC,ESD,AOD}Event;
  // b) Wait for specified event.
 
- cout<<"\n\033[1;33m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Yellow(__PRETTY_FUNCTION__);}
 
  // a) Determine Ali{MC,ESD,AOD}Event:
  //AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
@@ -3062,7 +3108,7 @@ void AliAnalysisTaskMuPa::PrintEventInfo(AliVEvent *ave)
  // a) Determine Ali{MC,ESD,AOD}Event;
  // b) Wait for specified event.
 
- cout<<"\n\033[1;33m"<<__PRETTY_FUNCTION__<<"\033[0m\n"<<endl;
+ if(fVerbose){Yellow(__PRETTY_FUNCTION__);}
 
  // a) Determine Ali{MC,ESD,AOD}Event:
  //AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
@@ -3071,10 +3117,10 @@ void AliAnalysisTaskMuPa::PrintEventInfo(AliVEvent *ave)
 
  if(aAOD)
  {
-  cout<<"\033[1;33m"<<Form("aAOD->GetRunNumber() = %d",aAOD->GetRunNumber())<<"\033[0m"<<endl;
-  cout<<"\033[1;33m"<<Form("aAOD->GetBunchCrossNumber() = %d",aAOD->GetBunchCrossNumber())<<"\033[0m"<<endl;
-  cout<<"\033[1;33m"<<Form("aAOD->GetOrbitNumber() = %d",aAOD->GetOrbitNumber())<<"\033[0m"<<endl;
-  cout<<"\033[1;33m"<<Form("aAOD->GetPeriodNumber() = %d",aAOD->GetPeriodNumber())<<"\033[0m\n"<<endl;
+  Yellow(Form("aAOD->GetRunNumber() = %d",aAOD->GetRunNumber()));
+  Yellow(Form("aAOD->GetBunchCrossNumber() = %d",aAOD->GetBunchCrossNumber()));
+  Yellow(Form("aAOD->GetOrbitNumber() = %d",aAOD->GetOrbitNumber()));
+  Yellow(Form("aAOD->GetPeriodNumber() = %d",aAOD->GetPeriodNumber()));
  } // if(aAOD)
 
 } // void AliAnalysisTaskMuPa::PrintEventInfo(AliVEvent *ave)
