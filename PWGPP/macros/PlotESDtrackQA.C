@@ -98,8 +98,119 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
     return;    
   }
   TH1F* hNEvents=(TH1F*)l->FindObject("hNEvents");
+  Int_t nReadEvents=hNEvents->GetBinContent(1);
+  Int_t nPhysSelEvents=hNEvents->GetBinContent(2);
   Int_t nSelectedEvents=hNEvents->GetBinContent(6);
+  TH1F* hNTracks=(TH1F*)l->FindObject("hNTracks");
+  TH1F* hNTracksBackg=(TH1F*)l->FindObject("hNTracksBackg");
+  TH1F* hNTracksEmbed=(TH1F*)l->FindObject("hNTracksEmbed");
+  TH1F* hNTracksOOBPil=(TH1F*)l->FindObject("hNTracksOOBPileup");
 
+  Int_t lastFilled=hNEvents->GetNbinsX();
+  for(Int_t jBin=hNEvents->GetNbinsX(); jBin>1; jBin--){
+    if(hNEvents->GetBinContent(jBin)>0) break;
+    lastFilled=jBin;
+  }
+  hNEvents->GetXaxis()->SetRange(1,lastFilled);
+  hNEvents->SetStats(0);
+  
+  for(Int_t jBin=hNTracks->GetNbinsX(); jBin>1; jBin--){
+    if(hNTracks->GetBinContent(jBin)>0) break;
+    lastFilled=jBin;
+  }
+  hNTracks->GetXaxis()->SetRange(1,lastFilled);
+
+  Double_t maxTr=hNTracks->GetBinContent(hNTracks->GetMaximumBin());
+  if(hNTracksBackg && hNTracksBackg->GetBinContent(hNTracksBackg->GetMaximumBin())>maxTr) maxTr=hNTracksBackg->GetBinContent(hNTracksBackg->GetMaximumBin());
+  if(hNTracksEmbed && hNTracksEmbed->GetBinContent(hNTracksEmbed->GetMaximumBin())>maxTr) maxTr=hNTracksEmbed->GetBinContent(hNTracksEmbed->GetMaximumBin());
+  if(hNTracksOOBPil && hNTracksOOBPil->GetBinContent(hNTracksOOBPil->GetMaximumBin())>maxTr) maxTr=hNTracksOOBPil->GetBinContent(hNTracksOOBPil->GetMaximumBin());
+  hNTracks->SetMaximum(1.05*maxTr);
+
+  
+  TCanvas* cevt=new TCanvas("cevt","",1500,700);
+  cevt->Divide(2,1);
+  cevt->cd(1);
+  hNEvents->Draw();
+  TLatex* tEvRead=new TLatex(0.18,0.5,Form("# read events = %g",(float)nReadEvents));
+  tEvRead->SetNDC();
+  tEvRead->SetTextFont(43);
+  tEvRead->SetTextSize(22);
+  tEvRead->Draw();
+  TLatex* tEvPhysSel=new TLatex(0.18,0.42,Form("# events after phys sel = %g",(float)nPhysSelEvents));
+  tEvPhysSel->SetNDC();
+  tEvPhysSel->SetTextFont(43);
+  tEvPhysSel->SetTextSize(22);
+  tEvPhysSel->Draw();
+  TLatex* tEvSel=new TLatex(0.18,0.34,Form("# selected events = %g",(float)nSelectedEvents));
+  tEvSel->SetNDC();
+  tEvSel->SetTextFont(43);
+  tEvSel->SetTextSize(22);
+  tEvSel->Draw();
+
+  cevt->cd(2);
+  if(hNTracks){
+    hNTracks->SetLineColor(1);
+    hNTracks->SetLineWidth(2);
+    hNTracks->Draw();
+    TLegend* legtrabe=new TLegend(0.25,0.6,0.7,0.89);
+    legtrabe->AddEntry(hNTracks,"All tracks","L")->SetTextColor(1);
+    gPad->Update();
+    TPaveStats* stpa=(TPaveStats*)hNTracks->GetListOfFunctions()->FindObject("stats");
+    if(stpa){
+      stpa->SetTextColor(1);
+      stpa->SetY1NDC(0.76);
+      stpa->SetY2NDC(0.95);
+    }
+    if(hNTracksBackg){
+      hNTracksBackg->SetFillStyle(3001);
+      hNTracksBackg->SetFillColor(kGray+1);
+      hNTracksBackg->SetLineColor(kGray+2);
+      hNTracksBackg->SetLineWidth(1);
+      hNTracksBackg->Draw("sames");
+      legtrabe->AddEntry(hNTracksBackg,"Background ev","F")->SetTextColor(hNTracksBackg->GetLineColor());
+      gPad->Update();
+      TPaveStats* stpb=(TPaveStats*)hNTracksBackg->GetListOfFunctions()->FindObject("stats");
+      if(stpb){
+	stpb->SetTextColor(hNTracksBackg->GetLineColor());
+	stpb->SetY1NDC(0.56);
+	stpb->SetY2NDC(0.75);
+      }
+    }
+    if(hNTracksEmbed){
+      hNTracksEmbed->SetFillStyle(3001);
+      hNTracksEmbed->SetFillColor(4);
+      hNTracksEmbed->SetLineColor(4);
+      hNTracksEmbed->SetLineWidth(2);
+      hNTracksEmbed->Draw("sames");
+      legtrabe->AddEntry(hNTracksEmbed,"Signal (embedded) ev","F")->SetTextColor(hNTracksEmbed->GetLineColor());
+      gPad->Update();
+      TPaveStats* stpe=(TPaveStats*)hNTracksEmbed->GetListOfFunctions()->FindObject("stats");
+      if(stpe){
+	stpe->SetTextColor(hNTracksEmbed->GetLineColor());
+	stpe->SetY1NDC(0.36);
+	stpe->SetY2NDC(0.55);
+      }
+    }
+    if(hNTracksOOBPil){
+      hNTracksOOBPil->SetLineColor(2);
+      hNTracksOOBPil->SetLineWidth(3);
+      hNTracksOOBPil->Draw("sames");
+      legtrabe->AddEntry(hNTracksOOBPil,"Out-of-Bunch pileup ev","L")->SetTextColor(hNTracksOOBPil->GetLineColor());
+      gPad->Update();
+      TPaveStats* stpo=(TPaveStats*)hNTracksOOBPil->GetListOfFunctions()->FindObject("stats");
+      if(stpo){
+	stpo->SetTextColor(hNTracksOOBPil->GetLineColor());
+	stpo->SetY1NDC(0.16);
+	stpo->SetY2NDC(0.35);
+      }
+   }
+   hNTracks->Draw("same");
+   legtrabe->Draw();
+  }
+  gPad->Modified();
+  cevt->SaveAs("EventsAndTracks.png");
+
+  
   TH3F* hEtaPhiPtTPCsel=(TH3F*)l->FindObject("hEtaPhiPtTPCsel");
   TH3F* hEtaPhiPtTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSref");
   TH3F* hEtaPhiPtTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtTPCselSPDany");
