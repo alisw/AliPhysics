@@ -587,7 +587,7 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
   fMCIsPileupParticle = false;
 
   // remove tracks from background events (signal filtering)
-  if(fIsMC && fIsNewReco && std::abs(track->GetLabel()) > 10000000) return false;
+  if(fIsMC && fIsNewReco && std::abs(track->GetLabel()) >= 10000000) return false;
 
   fPt = track->Pt();
   fEta = track->Eta();
