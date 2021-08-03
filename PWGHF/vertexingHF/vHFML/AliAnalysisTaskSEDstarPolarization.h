@@ -29,6 +29,7 @@
 #include "AliAODMCHeader.h"
 #include "AliNormalizationCounter.h"
 #include "AliHFMLResponse.h"
+#include "AliHFMLResponseDstartoD0pi.h"
 
 class AliAnalysisTaskSEDstarPolarization : public AliAnalysisTaskSE
 {

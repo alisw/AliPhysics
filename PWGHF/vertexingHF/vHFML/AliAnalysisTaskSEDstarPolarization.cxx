@@ -14,7 +14,6 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoCascadeHF.h"
 #include "AliRDHFCutsDStartoKpipi.h"
-#include "AliHFMLResponseDstartoD0pi.h"
 #include "AliVertexingHFUtils.h"
 #include "AliAnalysisUtils.h"
 #include "AliAODHandler.h"
@@ -53,6 +52,8 @@ AliAnalysisTaskSEDstarPolarization::~AliAnalysisTaskSEDstarPolarization()
     delete fOutput;
     delete fListCuts;
     delete fRDCuts;
+    if(fApplyML && fMLResponse)
+        delete fMLResponse;
 }
 
 //________________________________________________________________________
@@ -103,8 +104,11 @@ void AliAnalysisTaskSEDstarPolarization::UserCreateOutputObjects()
         CreateEffSparses();
 
     //Loading of ML models
-    fMLResponse = new AliHFMLResponseDstartoD0pi("DstartoD0piMLResponse", "DstartoD0piMLResponse", fConfigPath.data());
-    fMLResponse->MLResponseInit();
+    if(fApplyML)
+    {
+        fMLResponse = new AliHFMLResponseDstartoD0pi("DstartoD0piMLResponse", "DstartoD0piMLResponse", fConfigPath.data());
+        fMLResponse->MLResponseInit();
+    }
 
     CreateRecoSparses();
 
@@ -147,12 +151,12 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         {
             AliAODExtension *ext = dynamic_cast<AliAODExtension *>(aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root"));
             AliAODEvent *aodFromExt = ext->GetAOD();
-            arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("CascadesHF"));
+            arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Dstar"));
         }
     }
     else if (fAOD)
     {
-        arrayCand = dynamic_cast<TClonesArray *>(fAOD->FindObject("CascadesHF"));
+        arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Dstar"));
     }
 
     if (!fAOD || !arrayCand)
@@ -261,7 +265,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 
         if (fReadMC)
         {
-            labD = (dynamic_cast<AliAODRecoCascadeHF *>(dStar))->MatchToMC(413, 421, pdgDstarDau, pdgD0Dau, arrayMC, true);
+            labD = dStar->MatchToMC(413, 421, pdgDstarDau, pdgD0Dau, arrayMC, false);
             partD = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labD));
 
             if (partD)
@@ -269,7 +273,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         }
 
         // actual analysis
-        double mass = dynamic_cast<AliAODRecoCascadeHF *>(dStar)->DeltaInvMass();
+        double mass = dStar->DeltaInvMass();
         double ptCand = dStar->Pt();
 
         AliAODTrack* dauPi = dynamic_cast<AliAODTrack *>(dStar->GetBachelor());
@@ -285,8 +289,9 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         double cosThetaStar = std::abs(fourVecPiCM.Pz() / fourVecPiCM.P());
         std::vector<double> var4nSparse = {mass, ptCand, cosThetaStar, centrality};
 
-        fnSparseReco[0]->Fill(var4nSparse.data());
-        if(fReadMC)
+        if(!fReadMC)
+            fnSparseReco[0]->Fill(var4nSparse.data());
+        else
         {
             if(labD > 0) {
                 if(orig == 4)
@@ -331,8 +336,7 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoCascadeHF 
         return 0;
     }
 
-    bool isSelBit = dStar->HasSelectionBit(AliRDHFCuts::kDstarCuts);
-    if (!isSelBit || !vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(dStar), false))
+    if (!vHF->FillRecoCasc(fAOD, dStar, false))
     {
         fHistNEvents->Fill(14);
         return 0;
@@ -509,9 +513,9 @@ void AliAnalysisTaskSEDstarPolarization::CreateEffSparses()
     if (fUseFinPtBinsForSparse)
         nPtBins = nPtBins * 10;
 
-    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 20, 5};
-    double xminAcc[knVarForSparseAcc] = {0., -1., 0.};
-    double xmaxAcc[knVarForSparseAcc] = {ptLims[nPtBinsCutObj], 1., 1.};
+    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 20, 5, 100};
+    double xminAcc[knVarForSparseAcc] = {0., -1., 0., 0.};
+    double xmaxAcc[knVarForSparseAcc] = {ptLims[nPtBinsCutObj], 1., 1., 100.};
 
     TString label[2] = {"fromC", "fromB"};
     for (int iHist = 0; iHist < 2; iHist++)
@@ -536,7 +540,7 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
         nPtBins = nPtBins * 10;
 
     int nMassBins = 500;
-    double massMin = 0.135, massMax = 0.160;
+    double massMin = 0.138, massMax = 0.160;
 
     int nCosThetaBins = 5;
 

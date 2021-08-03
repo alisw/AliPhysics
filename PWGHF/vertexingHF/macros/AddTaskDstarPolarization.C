@@ -17,7 +17,7 @@ AliAnalysisTaskSEDstarPolarization *AddTaskDstarPolarization(bool readMC = false
     TFile *fileCuts = TFile::Open(fileName.Data());
     if (!fileCuts || (fileCuts && !fileCuts->IsOpen()))
         ::Fatal("AddTaskDstarPolarization", "Cut file not found on Grid: analysis will not start!\n");
-    analysisCuts = (AliRDHFCutsDStartoKpipi*)fileCuts->Get(cutObjName.Data());
+    AliRDHFCutsDStartoKpipi *analysisCuts = (AliRDHFCutsDStartoKpipi*)fileCuts->Get(cutObjName.Data());
 
     // Analysis Task
     AliAnalysisTaskSEDstarPolarization *dMesonTask = new AliAnalysisTaskSEDstarPolarization("DstarPolarizationAnalysis", analysisCuts);

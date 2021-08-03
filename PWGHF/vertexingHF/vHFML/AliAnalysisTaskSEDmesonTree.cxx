@@ -69,6 +69,8 @@ AliAnalysisTaskSEDmesonTree::~AliAnalysisTaskSEDmesonTree()
 
     if (fCreateMLtree && fMLhandler)
         delete fMLhandler; // it also deletes the TTree
+    if (fApplyML && fMLResponse)
+        delete fMLResponse;
 }
 
 //________________________________________________________________________
@@ -387,7 +389,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     labD = (dynamic_cast<AliAODRecoDecayHF3Prong *>(dMeson))->MatchToMC(fPdgD, arrayMC, 3, pdgDplusDau);
                 break;
                 case kDstartoD0pi:
-                    labD = (dynamic_cast<AliAODRecoCascadeHF *>(dMeson))->MatchToMC(fPdgD, 421, pdgDstarDau, pdgD0Dau, arrayMC, true);
+                    labD = (dynamic_cast<AliAODRecoCascadeHF *>(dMeson))->MatchToMC(fPdgD, 421, pdgDstarDau, pdgD0Dau, arrayMC, false);
                 break;
             }
 
@@ -558,8 +560,9 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
 
                     std::vector<double> var4nSparse = {mass, ptCand, centrality};
                     var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
-                    fnSparseReco[0]->Fill(var4nSparse.data());
-                    if(fReadMC)
+                    if(!fReadMC)
+                        fnSparseReco[0]->Fill(var4nSparse.data());
+                    else
                     {
                         if(labD >= 0 && orig == 4)
                         {
@@ -592,8 +595,9 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
 
                     std::vector<double> var4nSparse = {mass, ptCand, centrality};
                     var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
-                    fnSparseReco[0]->Fill(var4nSparse.data());
-                    if(fReadMC)
+                    if(!fReadMC)
+                        fnSparseReco[0]->Fill(var4nSparse.data());
+                    else
                     {
                         if(labD >= 0 && orig == 4)
                         {
@@ -671,8 +675,7 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
             }
             break;
         case kDstartoD0pi:
-            isSelBit = dMeson->HasSelectionBit(AliRDHFCuts::kDstarCuts);
-            if (!isSelBit || !vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(dMeson), false))
+            if (!vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(dMeson), false))
             {
                 fHistNEvents->Fill(14);
                 return 0;
@@ -902,7 +905,7 @@ void AliAnalysisTaskSEDmesonTree::CreateRecoSparses()
             massTitle = "#it{M}(K#pi#pi) (GeV/#it{c})";
             break;
         case kDstartoD0pi:
-            massMin = 0.135;
+            massMin = 0.138;
             massMax = 0.160;
             massTitle = "#it{M}(K#pi#pi) #minus #it{M}(K#pi) (GeV/#it{c})";
             break;
