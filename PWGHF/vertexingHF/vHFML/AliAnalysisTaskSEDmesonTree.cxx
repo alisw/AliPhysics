@@ -250,7 +250,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Charm3Prong"));
                     break;
                 case kDstartoD0pi:
-                    arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("CascadesHF"));
+                    arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Dstar"));
                 break;
             }
         }
@@ -260,20 +260,20 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
         switch (fDecChannel)
         {
             case kD0toKpi:
-                arrayCand = dynamic_cast<TClonesArray *>(fAOD->FindObject("Charm2Prong"));
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Charm2Prong"));
                 break;
             case kDplustoKpipi:
-                arrayCand = dynamic_cast<TClonesArray *>(fAOD->FindObject("Charm3Prong"));
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Charm3Prong"));
                 break;
             case kDstartoD0pi:
-                arrayCand = dynamic_cast<TClonesArray *>(fAOD->FindObject("CascadesHF"));
+                arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Dstar"));
             break;
         }
     }
 
     if (!fAOD || !arrayCand)
     {
-        AliWarning("Candidate branch not found!\n");
+        AliError("Candidate branch not found!\n");
         PostData(1, fOutput);
         return;
     }
@@ -561,10 +561,19 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     fnSparseReco[0]->Fill(var4nSparse.data());
                     if(fReadMC)
                     {
-                        fnSparseReco[1]->Fill(var4nSparse.data());
-                        fnSparseReco[3]->Fill(var4nSparse.data());
-                        var4nSparse.insert(var4nSparse.end(), ptB);
-                        fnSparseReco[2]->Fill(var4nSparse.data());
+                        if(labD >= 0 && orig == 4)
+                        {
+                            fnSparseReco[1]->Fill(var4nSparse.data());
+                        }
+                        else if(labD < 0)
+                        {
+                            fnSparseReco[3]->Fill(var4nSparse.data());
+                        }
+                        else if(labD >= 0 && orig == 5)
+                        {
+                            var4nSparse.insert(var4nSparse.end(), ptB);
+                            fnSparseReco[2]->Fill(var4nSparse.data());
+                        }
                     }
                 }
             }
@@ -586,10 +595,19 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     fnSparseReco[0]->Fill(var4nSparse.data());
                     if(fReadMC)
                     {
-                        fnSparseReco[1]->Fill(var4nSparse.data());
-                        fnSparseReco[3]->Fill(var4nSparse.data());
-                        var4nSparse.insert(var4nSparse.end(), ptB);
-                        fnSparseReco[2]->Fill(var4nSparse.data());
+                        if(labD >= 0 && orig == 4)
+                        {
+                            fnSparseReco[1]->Fill(var4nSparse.data());
+                        }
+                        else if(labD < 0)
+                        {
+                            fnSparseReco[3]->Fill(var4nSparse.data());
+                        }
+                        else if(labD >= 0 && orig == 5)
+                        {
+                            var4nSparse.insert(var4nSparse.end(), ptB);
+                            fnSparseReco[2]->Fill(var4nSparse.data());
+                        }
                     }
                 }
             }
@@ -909,7 +927,6 @@ void AliAnalysisTaskSEDmesonTree::CreateRecoSparses()
             fnSparseReco[iHist]->GetAxis(iAx)->SetTitle(Form("ML output %d", iAx));
         if (iHist == 2)
             fnSparseReco[iHist]->GetAxis(6)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
-
         fOutput->Add(fnSparseReco[iHist]);
     }
 }
