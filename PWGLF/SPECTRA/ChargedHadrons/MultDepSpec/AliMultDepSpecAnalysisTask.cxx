@@ -573,7 +573,7 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
 
 //**************************************************************************************************
 /**
- * Initializes track properties and returns false if track is not availabel, has bad quality or is not in kinematic range.
+ * Initializes track properties and returns false if track is not available, has bad quality or is not in kinematic range.
  */
 //**************************************************************************************************
 bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
