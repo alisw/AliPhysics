@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 02.08.2021
+ * Last Modified Date: 03.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -39,6 +39,7 @@
 #include <TSystem.h>
 #include <cstdlib>
 #include <iostream>
+#include <vector>
 
 ClassImp(AliAnalysisTaskAR)
 
@@ -80,9 +81,9 @@ ClassImp(AliAnalysisTaskAR)
       fMCNumberOfParticlesPerEventFluctuations(kFALSE),
       fMCNumberOfParticlesPerEvent(500),
       // qvectors
-      fQvectorList(nullptr), fPhi({}), fWeights({}),
-      fAcceptanceHistogram(nullptr), fWeightHistogram(nullptr),
-      fUseWeights(kFALSE), fResetWeights(kFALSE), fCorrelators({}) {
+      fQvectorList(nullptr), fWeightsAggregated({}),
+      fUseWeightsAggregated(kFALSE), fResetWeightsAggregated(kFALSE),
+      fCorrelators({}) {
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR(const "
               "char *name, Bool_t useParticleWeights)");
 
@@ -149,9 +150,9 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fMCNumberOfParticlesPerEventFluctuations(kFALSE),
       fMCNumberOfParticlesPerEvent(500),
       // qvectors
-      fQvectorList(nullptr), fPhi({}), fWeights({}),
-      fAcceptanceHistogram(nullptr), fWeightHistogram(nullptr),
-      fUseWeights(kFALSE), fResetWeights(kFALSE), fCorrelators({}) {
+      fQvectorList(nullptr), fWeightsAggregated({}),
+      fUseWeightsAggregated(kFALSE), fResetWeightsAggregated(kFALSE),
+      fCorrelators({}) {
   // initialize arrays
   this->InitializeArrays();
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR()");
@@ -678,6 +679,15 @@ void AliAnalysisTaskAR::InitializeArraysForQvectors() {
       fQvector[h][p] = TComplex(0., 0.);
     }
   }
+  // initialize weight and acceptance histograms
+  for (int k = 0; k < kKinematic; ++k) {
+    fAcceptanceHistogram[k] = nullptr;
+    fWeightHistogram[k] = nullptr;
+    fUseWeights[k] = kFALSE;
+    fResetWeights[k] = kFALSE;
+    fKinematics[k] = {};
+    fKinematicWeights[k] = {};
+  }
 }
 
 void AliAnalysisTaskAR::InitializeArraysForFinalResultProfiles() {
@@ -1083,9 +1093,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       FillEventQAHistograms(kAFTER, aAOD);
     }
 
-    // reset event by event objects
-    fPhi.clear();
-    fWeights.clear();
+    // reset event objects
+    ClearEventObjects();
 
     //  get number of all tracks in current event
     Int_t nTracks = aAOD->GetNumberOfTracks();
@@ -1095,8 +1104,9 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     Int_t nTracks_beforeCut = 0;
     Int_t nTracks_afterCut = 0;
 
-    // loop over all tracks in the event
-    for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+    for (int iTrack = 0; iTrack < nTracks; ++iTrack) {
+
+      nTracks_beforeCut++;
 
       // getting a pointer to a track
       AliAODTrack *aTrack = dynamic_cast<AliAODTrack *>(aAOD->GetTrack(iTrack));
@@ -1106,38 +1116,25 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
         continue;
       }
 
-      // fill filter bit scan QA histogram
-      if (fFillQAHistograms) {
-        FillFBScanQAHistograms(aTrack);
-      }
-
-      // get kinematic variables of the track
-      // Double_t pt = aTrack->Pt();
-      Double_t phi = aTrack->Phi();
-      // Double_t eta = aTrack->Eta();
-
-      // fill track control histograms before track cut
-      FillTrackControlHistograms(kBEFORE, aTrack);
-      nTracks_beforeCut++;
-
-      // cut track
       if (!SurviveTrackCut(aTrack)) {
         continue;
       }
 
-      // fill track control histograms after track cut
-      FillTrackControlHistograms(kAFTER, aTrack);
       nTracks_afterCut++;
 
-      // finally, fill azimuthal angles into vector
+      // fill kinematic variables into event objects
       if (!fMCClosure) {
-        fPhi.push_back(phi);
+        fKinematics[kPT].push_back(aTrack->Pt());
+        fKinematics[kPHI].push_back(aTrack->Phi());
+        fKinematics[kETA].push_back(aTrack->Eta());
       } else {
-        Int_t AcceptanceBin = fAcceptanceHistogram->FindBin(phi);
+        Int_t AcceptanceBin =
+            fAcceptanceHistogram[kPHI]->FindBin(aTrack->Phi());
         if (gRandom->Uniform() <=
-            fAcceptanceHistogram->GetBinContent(AcceptanceBin)) {
-          fPhi.push_back(phi);
-          fWeights.push_back(fWeightHistogram->GetBinContent(AcceptanceBin));
+            fAcceptanceHistogram[kPHI]->GetBinContent(AcceptanceBin)) {
+          fKinematics[kPHI].push_back(aTrack->Phi());
+          fKinematicWeights[kPHI].push_back(
+              fWeightHistogram[kPHI]->GetBinContent(AcceptanceBin));
         }
       }
     }
@@ -1146,6 +1143,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     // fEventControlHistograms[kMUL][kBEFORE]->Fill(nTracks_beforeCut);
     // fEventControlHistograms[kMUL][kAFTER]->Fill(nTracks_afterCut);
 
+    // aggregate weights
+    AggregateWeights();
     // calculate qvectors
     CalculateQvectors();
 
@@ -1153,8 +1152,9 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     FillFinalResultProfile(kHARDATA);
 
     // if option is given, repeat with weights resetted
-    if (fResetWeights) {
-      std::fill(fWeights.begin(), fWeights.end(), 1.);
+    if (fUseWeightsAggregated && fResetWeightsAggregated) {
+      ResetWeights();
+      AggregateWeights();
       CalculateQvectors();
       FillFinalResultProfile(kHARDATARESET);
     }
@@ -1170,8 +1170,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     }
 
     // reset event by event objects
-    fPhi.clear();
-    fWeights.clear();
+    ClearEventObjects();
 
     // get number of all particles in current event
     Int_t nParticles = aMC->GetNumberOfTracks();
@@ -1226,8 +1225,7 @@ void AliAnalysisTaskAR::MCOnTheFlyExec() {
   // call this method for local monte carlo analysis
 
   // reset angles and weights
-  fPhi.clear();
-  fWeights.clear();
+  ClearEventObjects();
 
   // set symmetry planes for MC analysis
   MCPdfSymmetryPlanesSetup();
@@ -1237,27 +1235,80 @@ void AliAnalysisTaskAR::MCOnTheFlyExec() {
   for (int i = 0; i < GetMCNumberOfParticlesPerEvent(); ++i) {
     Phi = fMCPdf->GetRandom();
 
-    if (fUseWeights) {
-      AcceptanceBin = fAcceptanceHistogram->FindBin(Phi);
+    if (fUseWeights[kPHI]) {
+      AcceptanceBin = fAcceptanceHistogram[kPHI]->FindBin(Phi);
       if (gRandom->Uniform() <=
-          fAcceptanceHistogram->GetBinContent(AcceptanceBin)) {
-        fPhi.push_back(Phi);
-        fWeights.push_back(fWeightHistogram->GetBinContent(AcceptanceBin));
+          fAcceptanceHistogram[kPHI]->GetBinContent(AcceptanceBin)) {
+        fKinematics[kPHI].push_back(Phi);
+        fKinematicWeights[kPHI].push_back(
+            fWeightHistogram[kPHI]->GetBinContent(AcceptanceBin));
       }
     } else {
-      fPhi.push_back(Phi);
+      fKinematics[kPHI].push_back(Phi);
     }
   }
 
   // compute Q-vectors
+  AggregateWeights();
   CalculateQvectors();
   // fill data into final result profile
   FillFinalResultProfile(kHARDATA);
   // if option is given, reset weight and recompute Q-vectors
-  if (fResetWeights) {
-    std::fill(fWeights.begin(), fWeights.end(), 1.);
+  if (fUseWeightsAggregated && fResetWeightsAggregated) {
+    ResetWeights();
+    AggregateWeights();
     CalculateQvectors();
     FillFinalResultProfile(kHARDATARESET);
+  }
+}
+
+void AliAnalysisTaskAR::ClearEventObjects() {
+  // clear vectors holding kinematics and weights of an event
+  for (int k = 0; k < kKinematic; ++k) {
+    fKinematics[k].clear();
+    fKinematicWeights[k].clear();
+  }
+  fWeightsAggregated.clear();
+}
+
+void AliAnalysisTaskAR::AggregateWeights() {
+  // aggregate all kinematic weights into one vector
+  Double_t w[kKinematic];
+  Double_t tmp;
+  fWeightsAggregated.clear();
+
+  for (std::size_t i = 0; i < fKinematics[kPHI].size(); ++i) {
+    tmp = 1;
+    for (int k = 0; k < kKinematic; ++k) {
+      w[k] = 1.;
+      if (fUseWeights[k] && !fKinematicWeights[k].empty()) {
+        w[k] *= fKinematicWeights[k].at(i);
+      }
+    }
+    for (int k = 0; k < kKinematic; ++k) {
+      tmp *= w[k];
+    }
+    fWeightsAggregated.push_back(tmp);
+  }
+
+  for (int k = 0; k < kKinematic; ++k) {
+    if (fUseWeights[k]) {
+      fUseWeightsAggregated = kTRUE;
+    }
+    if (fResetWeights[k]) {
+      fResetWeightsAggregated = kTRUE;
+    }
+  }
+}
+
+void AliAnalysisTaskAR::ResetWeights() {
+  // reset weights to unity
+  for (int k = 0; k < kKinematic; ++k) {
+    if (fResetWeights[k] && !fKinematicWeights[k].empty()) {
+      for (std::size_t i = 0; i < fKinematicWeights[k].size(); ++i) {
+        fKinematicWeights[k].at(i) = 1.;
+      }
+    }
   }
 }
 
@@ -1660,18 +1711,18 @@ void AliAnalysisTaskAR::CalculateQvectors() {
     }
   }
 
-  // 2) Calculate Q-vectors for available angles and weights:
+  // 2) Calculate Q-vectors for available angles and weights
   Double_t dPhi = 0.;
   Double_t wPhi = 1.;         // particle weight
   Double_t wPhiToPowerP = 1.; // particle weight raised to power p
-  for (std::size_t i = 0; i < fPhi.size(); i++) {
-    dPhi = fPhi[i];
-    if (fUseWeights) {
-      wPhi = fWeights[i];
+  for (std::size_t i = 0; i < fKinematics[kPHI].size(); i++) {
+    dPhi = fKinematics[kPHI].at(i);
+    if (fUseWeightsAggregated) {
+      wPhi = fWeightsAggregated.at(i);
     }
     for (Int_t h = 0; h < kMaxHarmonic; h++) {
       for (Int_t p = 0; p < kMaxPower; p++) {
-        if (fUseWeights) {
+        if (fUseWeightsAggregated) {
           wPhiToPowerP = pow(wPhi, p);
         }
         fQvector[h][p] += TComplex(wPhiToPowerP * TMath::Cos(h * dPhi),
@@ -1693,7 +1744,7 @@ void AliAnalysisTaskAR::FillFinalResultProfile(kFinalProfile fp) {
     // protect against insufficient amount of statistics
     // i.e. number of paritcles is lower then the order of correlator due to
     // track cuts
-    if (fPhi.size() < Corr.size()) {
+    if (fKinematics[kPHI].size() < Corr.size()) {
       return;
     }
 
@@ -2090,7 +2141,7 @@ TComplex AliAnalysisTaskAR::Recursion(Int_t n, Int_t *harmonic,
 
 Double_t AliAnalysisTaskAR::CombinatorialWeight(Int_t n) {
   // calculate combinatrial weight for Qvectors
-  if (n >= static_cast<Int_t>(fPhi.size())) {
+  if (n >= static_cast<Int_t>(fKinematics[kPHI].size())) {
     std::cout << __LINE__ << ": Two few particles for this correlator"
               << std::endl;
     Fatal("Combinatorial weight",
@@ -2098,7 +2149,7 @@ Double_t AliAnalysisTaskAR::CombinatorialWeight(Int_t n) {
   }
   Double_t w = 1.0;
   for (int i = 0; i < n; ++i) {
-    w *= (fPhi.size() - i);
+    w *= (fKinematics[kPHI].size() - i);
   }
   return w;
 }
@@ -2111,18 +2162,19 @@ TComplex AliAnalysisTaskAR::TwoNestedLoops(Int_t n1, Int_t n2) {
 
   Double_t phi1 = 0., phi2 = 0.; // particle angle
   Double_t w1 = 1., w2 = 1.;     // particle weight
-  for (std::size_t i1 = 0; i1 < fPhi.size(); i1++) {
-    phi1 = fPhi[i1];
-    if (fUseWeights) {
-      w1 = fWeights[i1];
+  for (std::size_t i1 = 0; i1 < fKinematics[kPHI].size(); i1++) {
+
+    phi1 = fKinematics[kPHI].at(i1);
+    if (fUseWeightsAggregated) {
+      w1 *= fWeightsAggregated.at(i1);
     }
-    for (std::size_t i2 = 0; i2 < fPhi.size(); i2++) {
+    for (std::size_t i2 = 0; i2 < fKinematics[kPHI].size(); i2++) {
       if (i2 == i1) {
         continue;
       } // Get rid of autocorrelations
-      phi2 = fPhi[i2];
-      if (fUseWeights) {
-        w2 = fWeights[i2];
+      phi2 = fKinematics[kPHI].at(i2);
+      if (fUseWeightsAggregated) {
+        w2 *= fWeightsAggregated.at(i2);
       }
       Two += TComplex(TMath::Cos(n1 * w1 * phi1 + n2 * w2 * phi2),
                       TMath::Sin(n1 * w1 * phi1 + n2 * w2 * phi2));
@@ -2138,26 +2190,26 @@ TComplex AliAnalysisTaskAR::ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3) {
   TComplex Q(0., 0.);
   Double_t phi1 = 0., phi2 = 0., phi3 = 0.; // particle angle
   Double_t w1 = 1., w2 = 1., w3 = 1.;       // particle weight
-  for (std::size_t i1 = 0; i1 < fPhi.size(); i1++) {
-    phi1 = fPhi[i1];
-    if (fUseWeights) {
-      w1 = fWeights[i1];
+  for (std::size_t i1 = 0; i1 < fKinematics[kPHI].size(); i1++) {
+    phi1 = fKinematics[kPHI].at(i1);
+    if (fUseWeightsAggregated) {
+      w1 = fWeightsAggregated.at(i1);
     }
-    for (std::size_t i2 = 0; i2 < fPhi.size(); i2++) {
+    for (std::size_t i2 = 0; i2 < fKinematics[kPHI].size(); i2++) {
       if (i2 == i1) {
         continue;
       } // Get rid of autocorrelations
-      phi2 = fPhi[i2];
-      if (fUseWeights) {
-        w2 = fWeights[i2];
+      phi2 = fKinematics[kPHI].at(i2);
+      if (fUseWeightsAggregated) {
+        w2 = fWeightsAggregated.at(i2);
       }
-      for (std::size_t i3 = 0; i3 < fPhi.size(); i3++) {
+      for (std::size_t i3 = 0; i3 < fKinematics[kPHI].size(); i3++) {
         if (i3 == i1 || i3 == i2) {
           continue;
         } // Get rid of autocorrelations
-        phi3 = fPhi[i3];
-        if (fUseWeights) {
-          w3 = fWeights[i3];
+        phi3 = fKinematics[kPHI].at(i3);
+        if (fUseWeightsAggregated) {
+          w3 = fWeightsAggregated.at(i3);
         }
         Q += TComplex(
             TMath::Cos(n1 * w1 * phi1 + n2 * w2 * phi2 + n3 * w3 * phi3),
@@ -2176,34 +2228,34 @@ TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2, Int_t n3,
   TComplex Q(0., 0.);
   Double_t phi1 = 0., phi2 = 0., phi3 = 0., phi4 = 0.; // particle angle
   Double_t w1 = 1., w2 = 1., w3 = 1., w4 = 1.;         // particle weight
-  for (std::size_t i1 = 0; i1 < fPhi.size(); i1++) {
-    phi1 = fPhi[i1];
-    if (fUseWeights) {
-      w1 = fWeights[i1];
+  for (std::size_t i1 = 0; i1 < fKinematics[kPHI].size(); i1++) {
+    phi1 = fKinematics[kPHI].at(i1);
+    if (fUseWeightsAggregated) {
+      w1 = fWeightsAggregated.at(i1);
     }
-    for (std::size_t i2 = 0; i2 < fPhi.size(); i2++) {
+    for (std::size_t i2 = 0; i2 < fKinematics[kPHI].size(); i2++) {
       if (i2 == i1) {
         continue;
       } // Get rid of autocorrelations
-      phi2 = fPhi[i2];
-      if (fUseWeights) {
-        w2 = fWeights[i2];
+      phi2 = fKinematics[kPHI].at(i2);
+      if (fUseWeightsAggregated) {
+        w2 = fWeightsAggregated.at(i2);
       }
-      for (std::size_t i3 = 0; i3 < fPhi.size(); i3++) {
+      for (std::size_t i3 = 0; i3 < fKinematics[kPHI].size(); i3++) {
         if (i3 == i1 || i3 == i2) {
           continue;
         } // Get rid of autocorrelations
-        phi3 = fPhi[i3];
-        if (fUseWeights) {
-          w3 = fWeights[i3];
+        phi3 = fKinematics[kPHI].at(i3);
+        if (fUseWeightsAggregated) {
+          w3 = fWeightsAggregated.at(i3);
         }
-        for (std::size_t i4 = 0; i4 < fPhi.size(); i4++) {
+        for (std::size_t i4 = 0; i4 < fKinematics[kPHI].size(); i4++) {
           if (i4 == i1 || i4 == i2 || i4 == i3) {
             continue;
           } // Get rid of autocorrelations
-          phi4 = fPhi[i4];
-          if (fUseWeights) {
-            w4 = fWeights[i4];
+          phi4 = fKinematics[kPHI].at(i4);
+          if (fUseWeightsAggregated) {
+            w4 = fWeightsAggregated.at(i4);
           }
           Q += TComplex(TMath::Cos(n1 * w1 * phi1 + n2 * w2 * phi2 +
                                    n3 * w3 * phi3 + n4 * w4 * phi4),
@@ -2216,8 +2268,14 @@ TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2, Int_t n3,
   return Q / CombinatorialWeight(4);
 }
 
-void AliAnalysisTaskAR::SetAcceptanceHistogram(const char *Filename,
+void AliAnalysisTaskAR::SetAcceptanceHistogram(kTrack kinematic,
+                                               const char *Filename,
                                                const char *Histname) {
+  // check if index is out of range
+  if (kinematic > kKinematic) {
+    std::cout << __LINE__ << ": Out of range" << std::endl;
+    Fatal("SetAccpetanceHistogram", "Out of range");
+  }
   // check if file exists
   if (gSystem->AccessPathName(Filename, kFileExists)) {
     std::cout << __LINE__ << ": File does not exist" << std::endl;
@@ -2228,18 +2286,25 @@ void AliAnalysisTaskAR::SetAcceptanceHistogram(const char *Filename,
     std::cout << __LINE__ << ": Cannot open file" << std::endl;
     Fatal("SetAcceptanceHistogram", "ROOT file cannot be read");
   }
-  this->fAcceptanceHistogram = dynamic_cast<TH1D *>(file->Get(Histname));
+  this->fAcceptanceHistogram[kinematic] =
+      dynamic_cast<TH1D *>(file->Get(Histname));
   if (!fAcceptanceHistogram) {
     std::cout << __LINE__ << ": No acceptance histogram" << std::endl;
     Fatal("SetAcceptanceHistogram", "Cannot get acceptance histogram");
   }
   // keeps the histogram in memory after we close the file
-  this->fAcceptanceHistogram->SetDirectory(0);
+  this->fAcceptanceHistogram[kinematic]->SetDirectory(0);
   file->Close();
 }
 
-void AliAnalysisTaskAR::SetWeightHistogram(const char *Filename,
+void AliAnalysisTaskAR::SetWeightHistogram(kTrack kinematic,
+                                           const char *Filename,
                                            const char *Histname) {
+  // check if index is out of range
+  if (kinematic > kKinematic) {
+    std::cout << __LINE__ << ": Out of range" << std::endl;
+    Fatal("SetAccpetanceHistogram", "Out of range");
+  }
   // check if file exists
   if (gSystem->AccessPathName(Filename, kFileExists)) {
     std::cout << __LINE__ << ": File does not exist" << std::endl;
@@ -2250,13 +2315,13 @@ void AliAnalysisTaskAR::SetWeightHistogram(const char *Filename,
     std::cout << __LINE__ << ": Cannot open file" << std::endl;
     Fatal("SetWeightHistogram", "ROOT file cannot be read");
   }
-  this->fWeightHistogram = dynamic_cast<TH1D *>(file->Get(Histname));
+  this->fWeightHistogram[kinematic] = dynamic_cast<TH1D *>(file->Get(Histname));
   if (!fWeightHistogram) {
     std::cout << __LINE__ << ": No acceptance histogram" << std::endl;
     Fatal("SetWeightHistogram", "Cannot get weight histogram");
   }
   // keeps the histogram in memory after we close the file
-  this->fWeightHistogram->SetDirectory(0);
+  this->fWeightHistogram[kinematic]->SetDirectory(0);
   file->Close();
 }
 

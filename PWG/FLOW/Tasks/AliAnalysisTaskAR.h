@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 02.08.2021
+ * Last Modified Date: 03.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -29,6 +29,7 @@
 #include <TProfile.h>
 #include <TRandom3.h>
 #include <TString.h>
+#include <vector>
 
 // global constants
 const Int_t kMaxHarmonic = 20;
@@ -94,6 +95,9 @@ public:
   virtual void BookMCOnTheFlyObjects();
 
   // functions called in UserExec()
+  virtual void ClearEventObjects();
+  virtual void AggregateWeights();
+  virtual void ResetWeights();
   virtual void FillEventQAHistograms(kBeforeAfter BA, AliVEvent *event);
   virtual void FillFBScanQAHistograms(AliAODTrack *track);
   virtual void FillEventControlHistograms(kBeforeAfter BA, AliVEvent *event);
@@ -248,8 +252,20 @@ public:
   // setters for MC analsys
   void SetMCAnalysis(Bool_t option) { this->fMCOnTheFly = option; }
   void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
-  void SetUseWeights(Bool_t option) { this->fUseWeights = option; }
-  void SetResetWeights(Bool_t option) { this->fResetWeights = option; }
+  void SetUseWeights(kTrack kinematic, Bool_t option) {
+    if (kinematic > kKinematic) {
+      std::cout << __LINE__ << ": Out of range" << std::endl;
+      Fatal("SetUseWeights", "Out of range");
+    }
+    this->fUseWeights[kinematic] = option;
+  }
+  void SetResetWeights(kTrack kinematic, Bool_t option) {
+    if (kinematic > kKinematic) {
+      std::cout << __LINE__ << ": Out of range" << std::endl;
+      Fatal("SetResetWeights", "Out of range");
+    }
+    this->fResetWeights[kinematic] = option;
+  }
   void SetUseCustomSeed(const UInt_t seed) {
     this->fSeed = seed;
     this->fUseCustomSeed = kTRUE;
@@ -274,23 +290,33 @@ public:
     fMCNumberOfParticlesPerEventRange[kMIN] = min;
     fMCNumberOfParticlesPerEventRange[kMAX] = max;
   }
-  void SetAcceptanceHistogram(TH1D *AcceptanceHistogram) {
+  void SetAcceptanceHistogram(kTrack kinematic, TH1D *AcceptanceHistogram) {
     if (!AcceptanceHistogram) {
       std::cout << __LINE__ << ": Did not get acceptance histogram"
                 << std::endl;
       Fatal("SetAccpetanceHistogram", "Invalid pointer");
     }
-    this->fAcceptanceHistogram = AcceptanceHistogram;
+    if (kinematic > kKinematic) {
+      std::cout << __LINE__ << ": Out of range" << std::endl;
+      Fatal("SetAccpetanceHistogram", "Out of range");
+    }
+    this->fAcceptanceHistogram[kinematic] = AcceptanceHistogram;
   }
-  void SetAcceptanceHistogram(const char *Filename, const char *Histname);
-  void SetWeightHistogram(TH1D *WeightHistogram) {
+  void SetAcceptanceHistogram(kTrack kinematic, const char *Filename,
+                              const char *Histname);
+  void SetWeightHistogram(kTrack kinematic, TH1D *WeightHistogram) {
     if (!WeightHistogram) {
       std::cout << __LINE__ << ": Did not get weight histogram" << std::endl;
       Fatal("SetWeightHistogram", "Invalid pointer");
     }
-    this->fWeightHistogram = WeightHistogram;
+    if (kinematic > kKinematic) {
+      std::cout << __LINE__ << ": Out of range" << std::endl;
+      Fatal("SetWeightHistogram", "Out of range");
+    }
+    this->fWeightHistogram[kinematic] = WeightHistogram;
   }
-  void SetWeightHistogram(const char *Filename, const char *Histname);
+  void SetWeightHistogram(kTrack kinematic, const char *Filename,
+                          const char *Histname);
 
   // set correlators we want to compute
   void SetCorrelators(std::vector<std::vector<Int_t>> correlators) {
@@ -367,11 +393,11 @@ private:
   TString fCentralitySelCriterion;
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
   TH1D *fTrackCutsCounter[LAST_EMODE];
-	TString fTrackCutsCounterNames[LAST_EMODE];
+  TString fTrackCutsCounterNames[LAST_EMODE];
   TString fTrackCutsCounterBinNames[LAST_ETRACK];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
   TH1D *fEventCutsCounter[LAST_EMODE];
-	TString fEventCutsCounterNames[LAST_EMODE];
+  TString fEventCutsCounterNames[LAST_EMODE];
   TString fEventCutsCounterBinNames[LAST_EEVENT];
   Int_t fFilterbit;
   Bool_t fPrimaryOnly;
@@ -406,12 +432,15 @@ private:
   // qvectors
   TList *fQvectorList;
   TComplex fQvector[kMaxHarmonic][kMaxPower];
-  std::vector<Double_t> fPhi;
-  std::vector<Double_t> fWeights;
-  TH1D *fAcceptanceHistogram;
-  TH1D *fWeightHistogram;
-  Bool_t fUseWeights;
-  Bool_t fResetWeights;
+  std::vector<Double_t> fKinematics[kKinematic];
+  std::vector<Double_t> fKinematicWeights[kKinematic];
+  std::vector<Double_t> fWeightsAggregated;
+  TH1D *fAcceptanceHistogram[kKinematic];
+  TH1D *fWeightHistogram[kKinematic];
+  Bool_t fUseWeights[kKinematic];
+  Bool_t fUseWeightsAggregated;
+  Bool_t fResetWeights[kKinematic];
+  Bool_t fResetWeightsAggregated;
   std::vector<std::vector<Int_t>> fCorrelators;
 
   // Increase this counter in each new version:
