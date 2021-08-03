@@ -446,7 +446,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserExec(Option_t *)
   /// Recalculate PV with diamond constraint off
   AliVertexerTracks *vertexer = new AliVertexerTracks(aodEvent->GetMagneticField());
   vertexer->SetConstraintOff();
-  fpVtxOff = vertexer->FindPrimaryVertex(aodEvent);
+  fpVtxOff = static_cast<AliAODVertex*>(vertexer->FindPrimaryVertex(aodEvent));
   
 
   //------------------------------------------------
@@ -1295,13 +1295,13 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineEvent()
   fVarNames[3]  = "z_vtx_reco";
   fVarNames[4]  = "n_vtx_contributors";
   fVarNames[5]  = "n_tracks";
-  fVarNames[6]  = "is_ev_rej";
+  fVarNames[6]  = "is_ev_sel";
   fVarNames[7]  = "run_number";
   fVarNames[8]  = "ev_id";
   fVarNames[9]  = "x_vtx_reco_constOff";
   fVarNames[10]  = "y_vtx_reco_constOff";
   fVarNames[11]  = "z_vtx_reco_constOff";
-    fVarNames[12]  = "n_vtx_contributors_constOff";
+  fVarNames[12]  = "n_vtx_contributors_constOff";
   
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
@@ -1644,10 +1644,12 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillEventROOTObjects(AliAODEvent* aodEvent
   fVar_Event[2] = pos[1];
   fVar_Event[3] = pos[2];
   fVar_Event[4] = fpVtx->GetNContributors();
-  //fVar_Event[5] = n tracks
-  //fVar_Event[6] = is ev rej
+  fVar_Event[5] = aodEvent->GetNumberOfTracks();
+  //fVar_Event[6] = fAnaCuts->IsEventSelected(aodEvent);
   fVar_Event[7] = aodEvent->GetRunNumber();
-  //fVar_Event[8] = ev id
+  AliAODHeader *header = dynamic_cast<AliAODHeader*>(aodEvent->GetHeader());
+  ULong64_t eventId = header->GetEventIdAsLong();
+  fVar_Event[8] = eventId;
   fVar_Event[9] = fpVtxOff->GetX();
   fVar_Event[10] = fpVtxOff->GetY();
   fVar_Event[11] = fpVtxOff->GetZ();
