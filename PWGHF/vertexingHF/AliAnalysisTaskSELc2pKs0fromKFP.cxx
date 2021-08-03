@@ -80,9 +80,9 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
   fVar_LcMCGen(0),
   fListCuts(0),
   fIsMC(kFALSE),
-  fKeepAllVariables(kFALSE),
   fUseWeights(kFALSE),
   fKeepOnlyMCSignal(kTRUE),
+  fKeepAllVariables(kFALSE),
   fIsAnaLc2Lpi(kFALSE),
   fCounter(0),
   fHistEvents(0),
@@ -129,9 +129,9 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* nam
   fVar_LcMCGen(0),
   fListCuts(0),
   fIsMC(kFALSE),
-  fKeepAllVariables(kFALSE),
   fUseWeights(kFALSE),
   fKeepOnlyMCSignal(kTRUE),
+  fKeepAllVariables(kFALSE),
   fIsAnaLc2Lpi(kFALSE),
   fCounter(0),
   fHistEvents(0),
@@ -446,7 +446,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserExec(Option_t *)
   /// Recalculate PV with diamond constraint off
   AliVertexerTracks *vertexer = new AliVertexerTracks(aodEvent->GetMagneticField());
   vertexer->SetConstraintOff();
-  fpVtxOff = static_cast<AliAODVertex*>(vertexer->FindPrimaryVertex(aodEvent));
+  fpVtxOff = vertexer->FindPrimaryVertex(aodEvent);
   
 
   //------------------------------------------------
@@ -769,7 +769,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
   Double_t covP[21], covN[21], covB[21];
   const Int_t NDaughters = 2;
   const Float_t massKs0_PDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
-  const Float_t massLc_PDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  //const Float_t massLc_PDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
   const Float_t massLam_PDG = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
   for (UInt_t iCasc=0; iCasc<nCasc; iCasc++) {
@@ -1640,12 +1640,12 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillEventROOTObjects(AliAODEvent* aodEvent
   Double_t pos[3];
   fpVtx->GetXYZ(pos);
   
+
   fVar_Event[1] = pos[0];
   fVar_Event[2] = pos[1];
   fVar_Event[3] = pos[2];
   fVar_Event[4] = fpVtx->GetNContributors();
   fVar_Event[5] = aodEvent->GetNumberOfTracks();
-  //fVar_Event[6] = fAnaCuts->IsEventSelected(aodEvent);
   fVar_Event[7] = aodEvent->GetRunNumber();
   AliAODHeader *header = dynamic_cast<AliAODHeader*>(aodEvent->GetHeader());
   ULong64_t eventId = header->GetEventIdAsLong();
