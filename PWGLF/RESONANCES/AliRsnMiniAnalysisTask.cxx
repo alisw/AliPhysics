@@ -1498,8 +1498,10 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
          miniPair.P2(1) = p2;
 
          // do computations and fill output
-         def->FillMother(&miniPair, miniEvent, &fValues);
-         if (fKeepMotherInAcceptance){
+         if (def->IsMother() || def->IsMotherNoPileup()){
+             def->FillMother(&miniPair, miniEvent, &fValues);
+         }
+         if (fKeepMotherInAcceptance && def->IsMotherInAcc()){
 	         if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
 	         def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
 	      }
@@ -1628,15 +1630,17 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
 	 // assign momenta to computation object
          miniPair.Sum(0) = miniPair.Sum(1) = (p1 + p2);
          miniPair.FillRef(def->GetMotherMass());
-	 miniPair.P1(1) = p1;
-	 miniPair.P2(1) = p2;
+         miniPair.P1(1) = p1;
+	     miniPair.P2(1) = p2;
 
          // do computations
-         def->FillMother(&miniPair, miniEvent, &fValues);
-	 if(fKeepMotherInAcceptance){
-	      if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
-	      def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
-	 }
+         if (def->IsMother() || def->IsMotherNoPileup()){
+              def->FillMother(&miniPair, miniEvent, &fValues);
+         }
+	     if(fKeepMotherInAcceptance && def->IsMotherInAcc()){
+	          if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
+	          def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
+	     }
 
       }
    }
