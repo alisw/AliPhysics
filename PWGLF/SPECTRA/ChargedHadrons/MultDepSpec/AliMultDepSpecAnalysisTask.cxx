@@ -403,16 +403,6 @@ double AliMultDepSpecAnalysisTask::GetParticleWeight(AliVParticle* particle)
   return 1.0;
 }
 
-// helper function to reject events containing only background
-bool IsBackgroundEvent(AliVEvent* event) {
-  AliVTrack* track = nullptr;
-  for (int i = 0; i < event->GetNumberOfTracks(); ++i) {
-    track = dynamic_cast<AliVTrack*>(event->GetTrack(i));
-    if (std::abs(track->GetLabel()) < AliMCEvent::BgLabelOffset()) return false;
-  }
-  return true;
-}
-
 //**************************************************************************************************
 /**
  * Initialize event quantities. Sets fEvent, fMCEvent, fMeasMult, fTrueMult
@@ -435,9 +425,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       AliError("fMCEvent not available\n");
       return false;
     }
-    if(fIsNewReco && IsBackgroundEvent(fEvent)) {
-      return false;
-    }
+
     fMCVtxZ = fMCEvent->GetPrimaryVertex()->GetZ();
 
     if (fMCEnableDDC) {
