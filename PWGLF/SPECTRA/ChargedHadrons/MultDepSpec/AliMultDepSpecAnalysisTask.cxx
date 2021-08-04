@@ -436,7 +436,6 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       return false;
     }
     if(fIsNewReco && IsBackgroundEvent(fEvent)) {
-      // reject all the events with simulated in-bunch pileup
       return false;
     }
     fMCVtxZ = fMCEvent->GetPrimaryVertex()->GetZ();
