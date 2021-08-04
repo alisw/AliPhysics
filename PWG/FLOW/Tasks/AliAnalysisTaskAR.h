@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 03.08.2021
+ * Last Modified Date: 04.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -40,7 +40,7 @@ const Int_t kNumberofTestFilterBit = 5;
 const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
 // enumerations
 enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
-enum kEvent { kX, kY, kZ, kCEN, kMUL, kNCONTRIB, LAST_EEVENT };
+enum kEvent { kX, kY, kZ, kCEN, kMUL, kMULQ, kMULW, kNCONTRIB, LAST_EEVENT };
 enum kTrack {
   kPT,
   kPHI,
@@ -74,7 +74,7 @@ public:
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *);
 
-  // Methods called in the constructor:
+  // methods called in the constructor
   virtual void InitializeArrays();
   virtual void InitializeArraysForQAHistograms();
   virtual void InitializeArraysForTrackControlHistograms();
@@ -86,7 +86,7 @@ public:
   virtual void InitializeArraysForFinalResultProfiles();
   virtual void InitializeArraysForMCAnalysis();
 
-  // Methods called in UserCreateOutputObjects():
+  // methods called in UserCreateOutputObjects()
   virtual void BookAndNestAllLists();
   virtual void BookQAHistograms();
   virtual void BookControlHistograms();
@@ -111,7 +111,7 @@ public:
   virtual void MCPdfSymmetryPlanesSetup();
   virtual Int_t GetMCNumberOfParticlesPerEvent();
 
-  // Methods for computing qvectors
+  // methods for computing qvectors
   void CalculateQvectors();
   TComplex Q(Int_t n, Int_t p);
   TComplex Two(Int_t n1, Int_t n2);
@@ -134,7 +134,7 @@ public:
   virtual void GetPointersForFinalResultHistograms();
   virtual void GetPointersForFinalResultProfiles();
 
-  // Setters and getters for list objects
+  // setters and getters for list objects
   void SetControlHistogramsList(TList *const chl) {
     this->fControlHistogramsList = chl;
   };
@@ -255,6 +255,7 @@ public:
     }
     this->fUseWeights[kinematic] = option;
   }
+  // reset weights and redo the analysis
   void SetResetWeights(kTrack kinematic, Bool_t option) {
     if (kinematic > kKinematic) {
       std::cout << __LINE__ << ": Out of range" << std::endl;
@@ -266,6 +267,7 @@ public:
     this->fSeed = seed;
     this->fUseCustomSeed = kTRUE;
   }
+  // set flow harmonics for pdf
   void SetMCFlowHarmonics(std::vector<Double_t> FlowHarmonics) {
     if (FlowHarmonics.size() > kMaxHarmonic) {
       std::cout << __LINE__ << ": Vector exceeds maximum allowed harmonic"
@@ -436,8 +438,8 @@ private:
   Bool_t fResetWeightsAggregated;
   std::vector<std::vector<Int_t>> fCorrelators;
 
-  // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskAR, 6);
+  // increase this counter in each new version
+  ClassDef(AliAnalysisTaskAR, 7);
 };
 
 #endif

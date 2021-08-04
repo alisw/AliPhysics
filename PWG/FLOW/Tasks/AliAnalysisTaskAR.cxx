@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 03.08.2021
+ * Last Modified Date: 04.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -37,8 +37,10 @@
 #include <TMath.h>
 #include <TRandom3.h>
 #include <TSystem.h>
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
+#include <numeric>
 #include <vector>
 
 ClassImp(AliAnalysisTaskAR)
@@ -540,7 +542,12 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
       {"fEventControlHistograms[kZ]", "Primary vertex Z", "Z", ""},
       {"fEventControlHistograms[kCEN]", "centrality", "Centrality Percentile",
        ""},
-      {"fEventControlHistograms[kMUL]", "multiplicity", "M", ""},
+      {"fEventControlHistograms[kMUL]", "multiplicity (no track cuts)", "M",
+       ""},
+      {"fEventControlHistograms[kMULQ]",
+       "multiplicity (partilces used for Q-vector", "M", ""},
+      {"fEventControlHistograms[kMULW]", "multiplicity (computed from weights)",
+       "M", ""},
       {"fEventControlHistograms[kNCONTRIB]", "Number of Contributers",
        "#Contributors", ""},
   };
@@ -569,6 +576,8 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
       {40., -20., 20.},   // kZ
       {10., 0., 100},     // kCEN
       {200., 0., 20000.}, // kMUL
+      {200., 0., 20000.}, // kMULQ
+      {200., 0., 20000.}, // kMULW
       {100., 0., 5000.},  // kNCONTRIB
   };
   // initialize default bins
@@ -588,7 +597,7 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
   }
   // initialize bin names of event cuts counter histogram
   TString EventCutsCounterBinNames[LAST_EEVENT] = {
-      "kX", "kY", "kZ", "kCEN", "kMUL", "kNCONTRIB",
+      "kX", "kY", "kZ", "kCEN", "kMUL", "kMULQ", "kMULW", "kNCONTRIB",
   };
   for (int name = 0; name < LAST_EEVENT; name++) {
     fEventCutsCounterBinNames[name] = EventCutsCounterBinNames[name];
@@ -1061,7 +1070,7 @@ void AliAnalysisTaskAR::BookMCOnTheFlyObjects() {
 }
 
 void AliAnalysisTaskAR::UserExec(Option_t *) {
-  // if you do MC analysis locally, call MCOnTheFlyExec and bail out
+  // if we do MC analysis locally, call MCOnTheFlyExec and bail out
   if (fMCOnTheFly) {
     MCOnTheFlyExec();
     return;
@@ -1098,20 +1107,13 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       FillEventQAHistograms(kAFTER, aAOD);
     }
 
-    // reset event objects
+    // clear event objects
     ClearEventObjects();
 
-    //  get number of all tracks in current event
+    // get number of all tracks in current event
     Int_t nTracks = aAOD->GetNumberOfTracks();
 
-    // count number of valid tracks before and after cutting for computing
-    // multiplicity
-    Int_t nTracks_beforeCut = 0;
-    Int_t nTracks_afterCut = 0;
-
     for (int iTrack = 0; iTrack < nTracks; ++iTrack) {
-
-      nTracks_beforeCut++;
 
       // getting a pointer to a track
       AliAODTrack *aTrack = dynamic_cast<AliAODTrack *>(aAOD->GetTrack(iTrack));
@@ -1125,8 +1127,6 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
         continue;
       }
 
-      nTracks_afterCut++;
-
       // fill kinematic variables into event objects
       if (!fMCClosure) {
         fKinematics[kPT].push_back(aTrack->Pt());
@@ -1137,7 +1137,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
         Int_t AcceptanceBin[kKinematic];
         Double_t Acceptance[kKinematic];
         Bool_t AcceptParticle = kTRUE;
-        // get bin according to kinematic variables
+        // get bin of the acceptance histogram according to kinematic variables
         if (fAcceptanceHistogram[kPT]) {
           AcceptanceBin[kPT] = fAcceptanceHistogram[kPT]->FindBin(aTrack->Pt());
         }
@@ -1155,7 +1155,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
             Acceptance[k] =
                 fAcceptanceHistogram[k]->GetBinContent(AcceptanceBin[k]);
           } else {
-            Acceptance[k] = 1;
+            Acceptance[k] = 1.;
           }
         }
         // test if particle gets accepted
@@ -1164,6 +1164,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
             AcceptParticle = kFALSE;
           }
         }
+        // if particles is accepted, push its kinematic variables and weights
+        // into event objects
         if (AcceptParticle) {
           fKinematics[kPT].push_back(aTrack->Pt());
           if (fWeightHistogram[kPT]) {
@@ -1184,14 +1186,18 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       }
     }
 
-    // fill control histogram for Multiplicity after counting all tracks
-    // fEventControlHistograms[kMUL][kBEFORE]->Fill(nTracks_beforeCut);
-    // fEventControlHistograms[kMUL][kAFTER]->Fill(nTracks_afterCut);
-
     // aggregate weights
     AggregateWeights();
     // calculate qvectors
     CalculateQvectors();
+
+    // fill control histogram for Multiplicity after counting all tracks
+    fEventControlHistograms[kRECO][kMULQ][kBEFORE]->Fill(nTracks);
+    fEventControlHistograms[kRECO][kMULQ][kAFTER]->Fill(
+        fKinematics[kPHI].size());
+    fEventControlHistograms[kRECO][kMULW][kBEFORE]->Fill(nTracks);
+    fEventControlHistograms[kRECO][kMULW][kAFTER]->Fill(std::accumulate(
+        fWeightsAggregated.begin(), fWeightsAggregated.end(), 0));
 
     // fill final result profile
     FillFinalResultProfile(kHARDATA);
@@ -1220,12 +1226,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     // get number of all particles in current event
     Int_t nParticles = aMC->GetNumberOfTracks();
 
-    // count number of valid tracks before and after cutting for computing
-    // multiplicity
-    Int_t nParticles_beforeCut = 0;
-    Int_t nParticles_afterCut = 0;
-
-    // loop over all tracks in the event
+    // loop over all particles in the event
     for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
 
       // getting a pointer to a track
@@ -1249,7 +1250,6 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
       // fill track control histograms before track cut
       FillTrackControlHistograms(kBEFORE, MCParticle);
-      nParticles_beforeCut++;
 
       // cut track
       if (!SurviveTrackCut(MCParticle)) {
@@ -1258,7 +1258,6 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
       // fill track control histograms after track cut
       FillTrackControlHistograms(kAFTER, MCParticle);
-      nParticles_afterCut++;
     }
   }
 
@@ -1309,11 +1308,11 @@ void AliAnalysisTaskAR::MCOnTheFlyExec() {
 
 void AliAnalysisTaskAR::ClearEventObjects() {
   // clear vectors holding kinematics and weights of an event
+  fWeightsAggregated.clear();
   for (int k = 0; k < kKinematic; ++k) {
     fKinematics[k].clear();
     fKinematicWeights[k].clear();
   }
-  fWeightsAggregated.clear();
 }
 
 void AliAnalysisTaskAR::AggregateWeights() {
@@ -1323,7 +1322,7 @@ void AliAnalysisTaskAR::AggregateWeights() {
   fWeightsAggregated.clear();
 
   for (std::size_t i = 0; i < fKinematics[kPHI].size(); ++i) {
-    tmp = 1;
+    tmp = 1.;
     for (int k = 0; k < kKinematic; ++k) {
       w[k] = 1.;
       if (fUseWeights[k] && !fKinematicWeights[k].empty()) {
@@ -1336,6 +1335,8 @@ void AliAnalysisTaskAR::AggregateWeights() {
     fWeightsAggregated.push_back(tmp);
   }
 
+  // if we use at least one kinematic weight or at least one kinematic weight
+  // should be reset, aggregate that into one boolean for easier checking
   for (int k = 0; k < kKinematic; ++k) {
     if (fUseWeights[k]) {
       fUseWeightsAggregated = kTRUE;
@@ -1347,7 +1348,7 @@ void AliAnalysisTaskAR::AggregateWeights() {
 }
 
 void AliAnalysisTaskAR::ResetWeights() {
-  // reset weights to unity
+  // reset weights kinematic weights
   for (int k = 0; k < kKinematic; ++k) {
     if (fResetWeights[k] && !fKinematicWeights[k].empty()) {
       for (std::size_t i = 0; i < fKinematicWeights[k].size(); ++i) {
@@ -1793,9 +1794,8 @@ void AliAnalysisTaskAR::FillFinalResultProfile(kFinalProfile fp) {
 
   // loop over all correlators
   for (auto Corr : fCorrelators) {
-    // protect against insufficient amount of statistics
-    // i.e. number of paritcles is lower then the order of correlator due to
-    // track cuts
+    // protect against insufficient amount of statistics i.e. number of
+    // paritcles is lower then the order of correlator due to track cuts
     if (fKinematics[kPHI].size() < Corr.size()) {
       return;
     }
@@ -1831,9 +1831,9 @@ void AliAnalysisTaskAR::FillFinalResultProfile(kFinalProfile fp) {
                    .Re();
     }
 
-    index++;
     // fill final result profile
-    fFinalResultProfiles[fp]->Fill(index - 0.5, corr / weight, weight);
+    fFinalResultProfiles[fp]->Fill(index + 0.5, corr / weight, weight);
+    index++;
   }
 }
 
