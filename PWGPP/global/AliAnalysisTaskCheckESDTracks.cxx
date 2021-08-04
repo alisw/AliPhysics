@@ -457,7 +457,7 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(5,"Pass zSPD-zTrk vert sel");
   fHistNEvents->GetXaxis()->SetBinLabel(6,"|zvert|<10");
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Pileup cut");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"Generated pileup cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"Generated pileup");
   fOutput->Add(fHistNEvents);
 
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in ESD events ; N_{tracks}",2000,-0.5,19999.5);
@@ -924,10 +924,13 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     fHistNEvents->Fill(6);
   }
 
+
+  
   if(fReadMC){
     Bool_t isGenPileUp = AliAnalysisUtils::IsPileupInGeneratedEvent(mcEvent, "Hijing");
+    if(!isGenPileUp) isGenPileUp = AliAnalysisUtils::IsPileupInGeneratedEvent(mcEvent, "ythia");
     if(isGenPileUp && fRejectGeneratedEventsWithPileup) return;
-    fHistNEvents->Fill(7);
+    if(isGenPileUp) fHistNEvents->Fill(7);
   }
   
   fHistNtracksTPCselVsV0aftEvSel->Fill(vZEROampl,ntracksTPCsel);
