@@ -937,16 +937,19 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   }
 
   // book histogram for counting event cuts
+  // add 1 bin by hand for centrality correlation cut
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     fEventCutsCounter[mode] =
         new TH1D(fEventCutsCounterNames[mode], fEventCutsCounterNames[mode],
-                 LAST_EEVENT, 0, LAST_EEVENT);
+                 LAST_EEVENT + 1, 0, LAST_EEVENT + 1);
     fEventCutsCounter[mode]->SetStats(kFALSE);
     fEventCutsCounter[mode]->SetFillColor(kFillColor[kAFTER]);
     for (int bin = 0; bin < fEventCutsCounter[mode]->GetNbinsX(); ++bin) {
       fEventCutsCounter[mode]->GetXaxis()->SetBinLabel(
           bin + 1, fEventCutsCounterBinNames[bin]);
     }
+    fEventCutsCounter[mode]->GetXaxis()->SetBinLabel(LAST_EEVENT + 1,
+                                                     "CenCorCut");
     fEventControlHistogramsList->Add(fEventCutsCounter[mode]);
   }
   // book event control histograms
@@ -1612,6 +1615,7 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
       for (int j = 0; j < LAST_ECENESTIMATORS; ++j) {
         if (centralityPercentile[j] > m * centralityPercentile[i] + t ||
             centralityPercentile[j] < (centralityPercentile[i] - t) / m) {
+          fEventCutsCounter[kRECO]->Fill(LAST_EEVENT + 0.5);
           Flag = kFALSE;
         }
       }
