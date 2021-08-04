@@ -94,6 +94,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // 2) Methods called in UserExec(Option_t *):
   virtual void PrintEventInfo(AliVEvent *ave); // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enable via task->SetPrintEventInfo()  
   virtual void FillQAHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs);
+  virtual void FillQAHistograms(AliAODEvent *aAOD, AliMCEvent *aMC);
   virtual void FilterEvent(AliVEvent *ave);
   virtual void FillControlEventHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs); // before or after event cuts, reco or sim
   virtual void FillControlParticleHistograms(AliVParticle *vParticle, const Int_t ba, const Int_t rs); // before or after particle cuts, reco or sim
@@ -135,6 +136,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetTerminateAfterQA(Bool_t taqa) {this->fTerminateAfterQA = taqa;};
   Bool_t GetTerminateAfterQA() const {return this->fTerminateAfterQA;};
   void SetQAFilterBits(TArrayI *fb){this->fQAFilterBits = fb;};
+  void SetQACheckSelfCorrelations(Bool_t qacsc) {this->fQACheckSelfCorrelations = qacsc;};
 
   // Multiplicity:
   void SetMultiplicityBins(Int_t const nbins, Double_t min, Double_t max)
@@ -410,6 +412,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fFillQAHistograms; // fill all QA histograms (this shall be done only in one task, since these histos are heavy 2D objects). Additional loops over particles is performed.
   Bool_t fTerminateAfterQA; // in UserExec(), bail out immediately after QA histograms are filled 
   Bool_t fVerbose; // print all additional info like Green(__PRETTY_FUNCTION__); etc.
+  Int_t fEventCounter; // counter of all events, i.e. number of times UserExec() has been called
 
   // 1) QA:
   TList *fQAList; // base list to hold all QA output object
@@ -421,7 +424,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fQAKinematicsFilterBits[gFilterBits][gKinematicVariables]; // kinematics [specified filter bit][phi,pt,eta,energy,charge] Use in combination with SetQAFilterBits(...)
   TArrayI *fQAFilterBits; // for these filterbits the kinematics in the previous line will be filled, use in combination with SetQAFilterBits(...)
   TH1I *fQAAnomalousEvents; // counter for anomalous events
-  TH1D *fQASelfCorrelations[gQASelfCorrelations]; // check for self-correlatiosn
+  TH1D *fQASelfCorrelations[gQASelfCorrelations]; // check for self-correlations
+  TH1D *fQASimRecoSelfCorrelations[gQASelfCorrelations]; // check for self-correlations between simulated and reconstructed particles
+  Bool_t fQACheckSelfCorrelations; // kFALSE by default. If kTRUE, both fQASelfCorrelations[] and fQASimRecoSelfCorrelations[] are filled
   TH1I *fQAEventCutCounter; // counter for each event cut
 
   // 2) Control event histograms:  
@@ -543,7 +548,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,9);
+  ClassDef(AliAnalysisTaskMuPa,10);
 
 };
 
