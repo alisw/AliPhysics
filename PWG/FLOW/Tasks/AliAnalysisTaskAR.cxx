@@ -73,7 +73,7 @@ ClassImp(AliAnalysisTaskAR)
       fEventControlHistogramsList(nullptr),
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
-      fCentralitySelCriterion("V0M"), fFilterbit(128), fPrimaryOnly(kFALSE),
+      fCentralityEstimator("V0M"), fFilterbit(128), fPrimaryOnly(kFALSE),
       // final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       // flags for MC analysis
@@ -140,7 +140,7 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fEventControlHistogramsList(nullptr),
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
-      fCentralitySelCriterion("V0M"), fFilterbit(128), fPrimaryOnly(kFALSE),
+      fCentralityEstimator("V0M"), fFilterbit(128), fPrimaryOnly(kFALSE),
       // Final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       // flags for MC analysis
@@ -256,8 +256,8 @@ void AliAnalysisTaskAR::InitializeArrays() {
 void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   // initialize array of QA histograms for the correlation between centrality
   // estimators
-  // there are N(N-1)/2 such correlators, i.e. the number of elemets above the
-  // diagonal of a square matrix
+  // there are N(N-1)/2 such correlators, i.e. the number of elemets above/below
+  // the diagonal of a square matrix
   for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
        ++cen) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
@@ -265,53 +265,39 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
     }
   }
 
-  // set names
+  // initalize names in a loop
   TString CenCorQAHistogramNames[LAST_ECENESTIMATORS *
-                                 (LAST_ECENESTIMATORS - 1) / 2][LAST_ENAME] = {
-      // NAME, TITLE, XAXIS, YAXIS
-      {"fCorCenEstimatorQAHistograms[kV0M+kCL0]", "V0M vs CL0", "V0M", "CL0"},
-      {"fCorCenEstimatorQAHistograms[kV0M+kCL1]", "V0M vs CL1", "V0M", "CL1"},
-      {"fCorCenEstimatorQAHistograms[kV0M+kSPDTRACKLETS]",
-       "V0M vs SPDTracklets", "V0M", "SPDTracklets"},
-      {"fCorCenEstimatorQAHistograms[kCL0+kCL1]", "CL0 vs CL1", "CL0", "CL1"},
-      {"fCorCenEstimatorQAHistograms[kCL0+kSPDTRACKLETS]",
-       "CL0 vs kSPDTRACKLETS", "CL0", "SPDTracklets"},
-      {"fCorCenEstimatorQAHistograms[kCL1+kSPDTRACKLETS]",
-       "CL1 vs kSPDTRACKLETS", "CL1", "SPDTracklets"},
-  };
-  // initialize names
-  for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
-       ++cen) {
-    for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
-      for (int name = 0; name < LAST_ENAME; ++name) {
-        if (name == kNAME || name == kTITLE) {
-          fCenCorQAHistogramNames[cen][ba][name] =
-              CenCorQAHistogramNames[cen][name] + kBAName[ba];
-        } else
-          fCenCorQAHistogramNames[cen][ba][name] =
-              CenCorQAHistogramNames[cen][name];
+                                 (LAST_ECENESTIMATORS - 1) / 2][LAST_ENAME];
+  for (int cen1 = 0; cen1 < LAST_ECENESTIMATORS; ++cen1) {
+    for (int cen2 = cen1 + 1; cen2 < LAST_ECENESTIMATORS; ++cen2) {
+      for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+        fCenCorQAHistogramNames[IndexCenEstCorHistograms(cen1, cen2)][ba]
+                               [kNAME] =
+                                   "fCorCenEstimatorQAHistograms[" +
+                                   kCenEstimatorNames[cen1] + "+" +
+                                   kCenEstimatorNames[cen2] + "]" + kBAName[ba];
+        fCenCorQAHistogramNames[IndexCenEstCorHistograms(cen1, cen2)][ba]
+                               [kTITLE] =
+                                   kCenEstimatorNames[cen1] + " vs " +
+                                   kCenEstimatorNames[cen2] + kBAName[ba];
+        fCenCorQAHistogramNames[IndexCenEstCorHistograms(cen1, cen2)][ba]
+                               [kXAXIS] = kCenEstimatorNames[cen1];
+        fCenCorQAHistogramNames[IndexCenEstCorHistograms(cen1, cen2)][ba]
+                               [kYAXIS] = kCenEstimatorNames[cen2];
       }
     }
   }
 
   // set default bins
-  Double_t CorCenEstimatorQAHistogramBins[LAST_ECENESTIMATORS *
-                                          (LAST_ECENESTIMATORS - 1) /
-                                          2][2 * LAST_EBINS] = {
-      // kBIN kLEDGE kUEDGE kBIN+LAST_EBINS kLEDGE+LAST_EBINS kUEDGE+LAST_EBINS
-      {50., 0., 100., 50., 0., 100.}, // kV0M + kCL0
-      {50., 0., 100., 50., 0., 100.}, // kV0M + kCL1
-      {50., 0., 100., 50., 0., 100.}, // kV0M + kSPDTRACKLETS
-      {50., 0., 100., 50., 0., 100.}, // CL0 + kCL1
-      {50., 0., 100., 50., 0., 100.}, // CL0 + kSPDTRACKLETS
-      {50., 0., 100., 50., 0., 100.}, // CL1 + kSPDTRACKLETS
-  };
+  Double_t CorCenEstimatorQAHistogramBins[2 * LAST_EBINS] = {
+      // kBIN kLEDGE kUEDGE kBIN+LAST_EBINS kLEDGE+LAST_EBINS
+      // kUEDGE+LAST_EBINS
+      50., 0., 100., 50., 0., 100.};
   // initialize default bins
   for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
        ++cen) {
     for (int bin = 0; bin < 2 * LAST_EBINS; ++bin) {
-      fCenCorQAHistogramBins[cen][bin] =
-          CorCenEstimatorQAHistogramBins[cen][bin];
+      fCenCorQAHistogramBins[cen][bin] = CorCenEstimatorQAHistogramBins[bin];
     }
   }
 
@@ -335,8 +321,8 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   }
 
   // initialize array of track scan filterbit scan QA histograms
-  // i.e. look at the spectra of kinematic varibles according to some filterbit
-  // which filterbit are used are hardcode in header
+  // i.e. look at the spectra of kinematic varibles according to some
+  // filterbit which filterbit are used are hardcode in header
   for (int track = 0; track < LAST_ETRACK; ++track) {
     for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
       fFBTrackScanQAHistograms[track][fb] = nullptr;
@@ -545,7 +531,7 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
       {"fEventControlHistograms[kMUL]", "multiplicity (no track cuts)", "M",
        ""},
       {"fEventControlHistograms[kMULQ]",
-       "multiplicity (partilces used for Q-vector", "M", ""},
+       "multiplicity (particles used for Q-vector)", "M", ""},
       {"fEventControlHistograms[kMULW]", "multiplicity (computed from weights)",
        "M", ""},
       {"fEventControlHistograms[kNCONTRIB]", "Number of Contributers",
@@ -642,6 +628,13 @@ void AliAnalysisTaskAR::InitializeArraysForCuts() {
     for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
       fEventCuts[var][mm] = EventCutDefaults[var][mm];
     }
+  }
+
+  // default parameters for cutting on centrality correlation
+  Double_t DefaultCenCorCut[2] = {// m t
+                                  1.1, 2.};
+  for (int i = 0; i < 2; ++i) {
+    fCenCorCut[i] = DefaultCenCorCut[i];
   }
 }
 
@@ -1123,9 +1116,18 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
         continue;
       }
 
+      // fill QA track scan histograms
+      if (fFillQAHistograms) {
+        FillFBScanQAHistograms(aTrack);
+      }
+
+      // fill track control histogram before track cut
+      FillTrackControlHistograms(kBEFORE, aTrack);
       if (!SurviveTrackCut(aTrack)) {
         continue;
       }
+      // fill track control histogram after track cut
+      FillTrackControlHistograms(kAFTER, aTrack);
 
       // fill kinematic variables into event objects
       if (!fMCClosure) {
@@ -1137,7 +1139,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
         Int_t AcceptanceBin[kKinematic];
         Double_t Acceptance[kKinematic];
         Bool_t AcceptParticle = kTRUE;
-        // get bin of the acceptance histogram according to kinematic variables
+        // get bin of the acceptance histogram according to kinematic
+        // variables
         if (fAcceptanceHistogram[kPT]) {
           AcceptanceBin[kPT] = fAcceptanceHistogram[kPT]->FindBin(aTrack->Pt());
         }
@@ -1191,7 +1194,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     // calculate qvectors
     CalculateQvectors();
 
-    // fill control histogram for Multiplicity after counting all tracks
+    // fill control histogram for multiplicity after cutting tracks and
+    // computing Qvectors
     fEventControlHistograms[kRECO][kMULQ][kBEFORE]->Fill(nTracks);
     fEventControlHistograms[kRECO][kMULQ][kAFTER]->Fill(
         fKinematics[kPHI].size());
@@ -1358,6 +1362,18 @@ void AliAnalysisTaskAR::ResetWeights() {
   }
 }
 
+Int_t AliAnalysisTaskAR::IndexCenEstCorHistograms(Int_t i, Int_t j) {
+  // helper function for computing index of centrality estimator correlation
+  // histograms project 2D indeces of the entries above the diagonal to a 1D
+  // index
+  Int_t Index = 0;
+  for (int k = 0; k < i; ++k) {
+    Index += LAST_ECENESTIMATORS - (k + 1);
+  }
+  Index += j - i - 1;
+  return Index;
+}
+
 void AliAnalysisTaskAR::FillEventControlHistograms(kBeforeAfter BA,
                                                    AliVEvent *ave) {
 
@@ -1371,7 +1387,7 @@ void AliAnalysisTaskAR::FillEventControlHistograms(kBeforeAfter BA,
     Double_t centralityPercentile =
         dynamic_cast<AliMultSelection *>(
             AODEvent->FindListObject("MultSelection"))
-            ->GetMultiplicityPercentile(fCentralitySelCriterion);
+            ->GetMultiplicityPercentile(fCentralityEstimator);
 
     // get primary vertex object
     AliAODVertex *PrimaryVertex = AODEvent->GetPrimaryVertex();
@@ -1438,33 +1454,20 @@ void AliAnalysisTaskAR::FillEventQAHistograms(kBeforeAfter BA, AliVEvent *ave) {
     // get all centrality percentiles
     Double_t centralityPercentile[LAST_ECENESTIMATORS];
 
-    centralityPercentile[kV0M] = dynamic_cast<AliMultSelection *>(
-                                     AODEvent->FindListObject("MultSelection"))
-                                     ->GetMultiplicityPercentile("V0M");
-    centralityPercentile[kCL0] = dynamic_cast<AliMultSelection *>(
-                                     AODEvent->FindListObject("MultSelection"))
-                                     ->GetMultiplicityPercentile("CL0");
-    centralityPercentile[kCL1] = dynamic_cast<AliMultSelection *>(
-                                     AODEvent->FindListObject("MultSelection"))
-                                     ->GetMultiplicityPercentile("CL1");
-    centralityPercentile[kSPDTRACKLETS] =
-        dynamic_cast<AliMultSelection *>(
-            AODEvent->FindListObject("MultSelection"))
-            ->GetMultiplicityPercentile("SPDTracklets");
+    for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
+      centralityPercentile[i] =
+          dynamic_cast<AliMultSelection *>(
+              AODEvent->FindListObject("MultSelection"))
+              ->GetMultiplicityPercentile(kCenEstimatorNames[i]);
+    }
 
     // fill centrality estimator correlation histograms
-    fCenCorQAHistograms[0][BA]->Fill(centralityPercentile[kV0M],
-                                     centralityPercentile[kCL0]);
-    fCenCorQAHistograms[1][BA]->Fill(centralityPercentile[kV0M],
-                                     centralityPercentile[kCL1]);
-    fCenCorQAHistograms[2][BA]->Fill(centralityPercentile[kV0M],
-                                     centralityPercentile[kSPDTRACKLETS]);
-    fCenCorQAHistograms[3][BA]->Fill(centralityPercentile[kV0M],
-                                     centralityPercentile[kCL0]);
-    fCenCorQAHistograms[4][BA]->Fill(centralityPercentile[kV0M],
-                                     centralityPercentile[kCL1]);
-    fCenCorQAHistograms[5][BA]->Fill(centralityPercentile[kV0M],
-                                     centralityPercentile[kCL1]);
+    for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
+      for (int j = i + 1; j < LAST_ECENESTIMATORS; ++j) {
+        fCenCorQAHistograms[IndexCenEstCorHistograms(i, j)][BA]->Fill(
+            centralityPercentile[i], centralityPercentile[j]);
+      }
+    }
 
     // search for self correlations with nested loop
     Int_t nTracks = AODEvent->GetNumberOfTracks();
@@ -1539,7 +1542,7 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
       return kFALSE;
     }
     Double_t MultiplicityPercentile =
-        ams->GetMultiplicityPercentile(fCentralitySelCriterion);
+        ams->GetMultiplicityPercentile(fCentralityEstimator);
 
     // cut event if it is not within the centrality percentile
     if ((MultiplicityPercentile < fEventCuts[kCEN][kMIN]) ||
@@ -1583,6 +1586,35 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
         (PrimaryVertex->GetNContributors() > fEventCuts[kNCONTRIB][kMAX])) {
       fEventCutsCounter[kRECO]->Fill(kNCONTRIB + 0.5);
       Flag = kFALSE;
+    }
+
+    // cut on centrality estimator correlation
+    // ugly! cut on fundamental observerables instead but there are some
+    // really weird events we need to get rid off
+    Double_t centralityPercentile[LAST_ECENESTIMATORS];
+
+    // get all centrality estimates
+    for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
+      centralityPercentile[i] =
+          dynamic_cast<AliMultSelection *>(
+              aAOD->FindListObject("MultSelection"))
+              ->GetMultiplicityPercentile(kCenEstimatorNames[i]);
+    }
+    // cut away all events that are above the line
+    // y=mx+t
+    // and below
+    // y=(x-t)/m
+    // this gives a nice and symmetric cone around the diagonal y=x
+    // set m>1 such that the cone gets wider for larger centralities
+    Double_t m = fCenCorCut[0];
+    Double_t t = fCenCorCut[1];
+    for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
+      for (int j = 0; j < LAST_ECENESTIMATORS; ++j) {
+        if (centralityPercentile[j] > m * centralityPercentile[i] + t ||
+            centralityPercentile[j] < (centralityPercentile[i] - t) / m) {
+          Flag = kFALSE;
+        }
+      }
     }
   }
 

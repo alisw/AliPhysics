@@ -40,6 +40,8 @@ const Int_t kNumberofTestFilterBit = 5;
 const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
 // enumerations
 enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
+const TString kCenEstimatorNames[LAST_ECENESTIMATORS] = {"V0M", "CL0", "CL1",
+                                                         "SPDTracklets"};
 enum kEvent { kX, kY, kZ, kCEN, kMUL, kMULQ, kMULW, kNCONTRIB, LAST_EEVENT };
 enum kTrack {
   kPT,
@@ -106,6 +108,7 @@ public:
   virtual void ClearEventObjects();
   virtual void AggregateWeights();
   virtual void ResetWeights();
+  virtual Int_t IndexCenEstCorHistograms(Int_t i, Int_t j);
 
   // methods called MCOnTheFlyExec()
   virtual void MCPdfSymmetryPlanesSetup();
@@ -147,27 +150,33 @@ public:
   // setters for QA histograms
   void SetFillQAHistograms(Bool_t option) { fFillQAHistograms = option; }
   // generic setter for centrality correlation QA histogram binning
-  void SetCenCorQAHistogramBinning(Int_t index, Int_t xnbins,
+  void SetCenCorQAHistogramBinning(kCenEstimators cen1, Int_t xnbins,
                                    Double_t xlowerEdge, Double_t xupperEdge,
-                                   Int_t ynbins, Double_t ylowerEdge,
-                                   Double_t yupperEdge) {
-    if (index > LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2) {
+                                   kCenEstimators cen2, Int_t ynbins,
+                                   Double_t ylowerEdge, Double_t yupperEdge) {
+    if (cen1 >= LAST_ECENESTIMATORS || cen2 >= LAST_ECENESTIMATORS) {
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetCenCorQAHistogramBinning",
             "Running out of bounds in SetCenCorQAHistogramBinning");
     }
-    this->fCenCorQAHistogramBins[index][kBIN] = xnbins;
-    this->fCenCorQAHistogramBins[index][kLEDGE] = xlowerEdge;
-    this->fCenCorQAHistogramBins[index][kUEDGE] = xupperEdge;
-    this->fCenCorQAHistogramBins[index][kBIN + LAST_EBINS] = ynbins;
-    this->fCenCorQAHistogramBins[index][kLEDGE + LAST_EBINS] = ylowerEdge;
-    this->fCenCorQAHistogramBins[index][kUEDGE + LAST_EBINS] = yupperEdge;
+    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kBIN] =
+        xnbins;
+    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kLEDGE] =
+        xlowerEdge;
+    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kUEDGE] =
+        xupperEdge;
+    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)]
+                                [kBIN + LAST_EBINS] = ynbins;
+    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)]
+                                [kLEDGE + LAST_EBINS] = ylowerEdge;
+    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)]
+                                [kUEDGE + LAST_EBINS] = yupperEdge;
   }
   // generic setter for track scan QA histograms
   void SetFBTrackScanQAHistogramBinning(kTrack Track, Int_t nbins,
                                         Double_t lowerEdge,
                                         Double_t upperEdge) {
-    if (Track > LAST_ETRACK) {
+    if (Track >= LAST_ETRACK) {
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetFBTrackScanQAHistogramBinning",
             "Running out of bounds in SetFBTrackScanQAHistogramBinning");
@@ -179,7 +188,7 @@ public:
   // generic setter for self correlation QA histogram binning
   void SetSelfCorQAHistogramBinning(kTrack Track, Int_t nbins,
                                     Double_t lowerEdge, Double_t upperEdge) {
-    if (Track > kKinematic) {
+    if (Track >= kKinematic) {
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetSelfCorQAHistogramBinning",
             "Running out of bounds in SetSelfCorQAHistogramBinning");
@@ -191,7 +200,7 @@ public:
   // generic setter for track control histogram binning
   void SetTrackControlHistogramBinning(kTrack Track, Int_t nbins,
                                        Double_t lowerEdge, Double_t upperEdge) {
-    if (Track > LAST_ETRACK) {
+    if (Track >= LAST_ETRACK) {
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetTrackControlHistogramBinning",
             "Running out of bounds in SetTrackControlHistogramBinning");
@@ -203,7 +212,7 @@ public:
   // generic setter for event histogram binning
   void SetEventControlHistogramBinning(kEvent Event, Int_t nbins,
                                        Double_t lowerEdge, Double_t upperEdge) {
-    if (Event > LAST_EEVENT) {
+    if (Event >= LAST_EEVENT) {
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetEventControlHistogramBinning",
             "Running out of bounds in SetEventControlHistogramBinning");
@@ -216,12 +225,23 @@ public:
   // setters for cuts
   // centrality selection criterion
   // only use V0M, CL0/1, SPDTracklets
-  void SetCentralitySelCriterion(TString SelCriterion) {
-    this->fCentralitySelCriterion = SelCriterion;
+  void SetCentralityEstimator(TString CentralityEstimator) {
+    Bool_t Flag = kFALSE;
+    for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
+      if (CentralityEstimator.EqualTo(kCenEstimatorNames[i])) {
+        Flag = kTRUE;
+      }
+    }
+    if (Flag) {
+      this->fCentralityEstimator = CentralityEstimator;
+    } else {
+      std::cout << __LINE__ << ": No valid centrality estimator" << std::endl;
+      Fatal("SetCentralityEstimator", "No valid centrality estimator");
+    }
   }
   // generic setter for track cuts
   void SetTrackCuts(kTrack Track, Double_t min, Double_t max) {
-    if (Track > LAST_ETRACK) {
+    if (Track >= LAST_ETRACK) {
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetTrackCuts", "Running out of bounds in SetTrackCuts");
     }
@@ -230,14 +250,26 @@ public:
   }
   // generic setter for event cuts
   void SetEventCuts(kEvent Event, Double_t min, Double_t max) {
-    if (Event > LAST_EEVENT) {
+    if (Event >= LAST_EEVENT) {
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetEventCuts", "Running out of bounds in SetEventCuts");
     }
     this->fEventCuts[Event][kMIN] = min;
     this->fEventCuts[Event][kMAX] = max;
   }
-
+  // setter for centrality correlation cut
+  void SetCenCorCut(Double_t m, Double_t t) {
+    if (m < 1) {
+      std::cout << __LINE__ << ": slope too small" << std::endl;
+      Fatal("SetCenCorCut", "slope too small");
+    }
+    if (t < 1) {
+      std::cout << __LINE__ << ": offset too small" << std::endl;
+      Fatal("SetCenCorCut", "offset too small");
+    }
+    this->fCenCorCut[0] = m;
+    this->fCenCorCut[1] = t;
+  }
   // filterbit
   // depends strongly on the data set
   // typical choices are 1,128,256,768
@@ -249,7 +281,7 @@ public:
   void SetMCOnTheFly(Bool_t option) { this->fMCOnTheFly = option; }
   void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
   void SetUseWeights(kTrack kinematic, Bool_t option) {
-    if (kinematic > kKinematic) {
+    if (kinematic >= kKinematic) {
       std::cout << __LINE__ << ": Out of range" << std::endl;
       Fatal("SetUseWeights", "Out of range");
     }
@@ -257,7 +289,7 @@ public:
   }
   // reset weights and redo the analysis
   void SetResetWeights(kTrack kinematic, Bool_t option) {
-    if (kinematic > kKinematic) {
+    if (kinematic >= kKinematic) {
       std::cout << __LINE__ << ": Out of range" << std::endl;
       Fatal("SetResetWeights", "Out of range");
     }
@@ -269,7 +301,7 @@ public:
   }
   // set flow harmonics for pdf
   void SetMCFlowHarmonics(std::vector<Double_t> FlowHarmonics) {
-    if (FlowHarmonics.size() > kMaxHarmonic) {
+    if (FlowHarmonics.size() >= kMaxHarmonic) {
       std::cout << __LINE__ << ": Vector exceeds maximum allowed harmonic"
                 << std::endl;
       Fatal("SetFlowHarmonics", "Too many harmonics");
@@ -296,7 +328,7 @@ public:
                 << std::endl;
       Fatal("SetAccpetanceHistogram", "Invalid pointer");
     }
-    if (kinematic > kKinematic) {
+    if (kinematic >= kKinematic) {
       std::cout << __LINE__ << ": Out of range" << std::endl;
       Fatal("SetAccpetanceHistogram", "Out of range");
     }
@@ -309,7 +341,7 @@ public:
       std::cout << __LINE__ << ": Did not get weight histogram" << std::endl;
       Fatal("SetWeightHistogram", "Invalid pointer");
     }
-    if (kinematic > kKinematic) {
+    if (kinematic >= kKinematic) {
       std::cout << __LINE__ << ": Out of range" << std::endl;
       Fatal("SetWeightHistogram", "Out of range");
     }
@@ -388,7 +420,7 @@ private:
   Double_t fEventControlHistogramBins[LAST_EEVENT][LAST_EBINS];
 
   // cuts
-  TString fCentralitySelCriterion;
+  TString fCentralityEstimator;
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
   TH1D *fTrackCutsCounter[LAST_EMODE];
   TString fTrackCutsCounterNames[LAST_EMODE];
@@ -399,6 +431,7 @@ private:
   TString fEventCutsCounterBinNames[LAST_EEVENT];
   Int_t fFilterbit;
   Bool_t fPrimaryOnly;
+  Double_t fCenCorCut[2];
 
   // Final results
   TList *fFinalResultsList;
