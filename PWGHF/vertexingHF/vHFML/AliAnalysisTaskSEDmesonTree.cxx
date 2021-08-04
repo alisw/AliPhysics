@@ -51,6 +51,8 @@ AliAnalysisTaskSEDmesonTree::AliAnalysisTaskSEDmesonTree(const char *name, int d
     /// Standard constructor
     SetAnalysisCuts(analysisCuts);
 
+    SetDecayChannel(decayChannel);
+
     DefineOutput(1, TList::Class());
     DefineOutput(2, TList::Class());
     DefineOutput(3, AliNormalizationCounter::Class());

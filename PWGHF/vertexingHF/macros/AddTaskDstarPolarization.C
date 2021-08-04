@@ -36,7 +36,6 @@ AliAnalysisTaskSEDstarPolarization *AddTaskDstarPolarization(bool readMC = false
     AliAnalysisDataContainer *coutputCuts = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
     name = Form("coutputDstarPolarization%s", suffix.Data());
     AliAnalysisDataContainer *coutput = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
-    name = Form("coutputNormDstarPolarization%s", suffix.Data());
 
     mgr->ConnectInput(dMesonTask, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(dMesonTask, 1, coutput);
