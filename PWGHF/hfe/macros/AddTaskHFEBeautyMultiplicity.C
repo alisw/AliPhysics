@@ -12,7 +12,7 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 	Double_t EtaMax = 0.6,
 	Double_t NsigmaMin = -1.0,
 	Double_t NsigmaMax = 3.0,
-	Double t HadNsigma = -3.5,
+	Double_t HadNsigma = -3.5,
 	Double_t M20Min = 0.015,
 	Double_t M20Max = 0.3,
 	Double_t EopMin = 0.8,
