@@ -251,7 +251,7 @@ void AliTaskLeadingMC::Exec(Option_t *)
   AliMCEvent* mcEvent=NULL;
   AliMCEventHandler* eventHandler=NULL;
   TTree* treeTR=NULL;
-  fIsTrackRef = 1;
+  fIsTrackRef = fAskTrackRef;
   
   // recupera le info MC
   eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -267,14 +267,16 @@ void AliTaskLeadingMC::Exec(Option_t *)
   }
   
   // Get TrackRefs
-  treeTR = eventHandler->TreeTR();
-  if(!treeTR){
-    fIsTrackRef = 0;
+  if(fIsTrackRef){
+    treeTR = eventHandler->TreeTR();
+    if(!treeTR){
+      fIsTrackRef = 0;
+    }
+    else{
+      Printf("TrackReference found!");
+    }
   }
-  else{
-    Printf("TrackReference found!");
-  }
-  
+
   // Check ESD event
   if (!fESD) {
     Printf("ERROR: fESD not available");

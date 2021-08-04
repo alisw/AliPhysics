@@ -97,6 +97,7 @@ set(SRCS
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_BumpStudies.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_PileUpStudies.cxx
+  HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_SelectionStudies.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2MC.cxx
   StrPDF/AliAnalysisTaskV0multspec.cxx
