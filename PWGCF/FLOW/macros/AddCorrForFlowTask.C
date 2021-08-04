@@ -15,6 +15,6 @@ AliAnalysisTaskCorrForFlow* AddCorrForFlowTask(TString name = "name", const char
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
     mgr->AddTask(task);
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("Charged_%s",taskname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("Charged_%s",taskName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     return task;
 }
