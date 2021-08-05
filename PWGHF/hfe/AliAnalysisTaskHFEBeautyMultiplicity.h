@@ -104,17 +104,26 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TClonesArray*       fCaloClusters_tender;   // Tender cluster
 
 	//---- Cut Parameter ----//
-	Int_t NTPCClust, NITSClust, NCrossedRow;
+	
+	Double_t TrackEtaMin;
+	Double_t TrackEtaMax;
+	Double_t NsigmaMin;
+	Double_t NsigmaMax;
+	Double_t HadNsigma;
+	Double_t M20Min;
+	Double_t M20Max;
+	Double_t EopMin;
+	Double_t EopMax;
+	Int_t NTPCClust;
+	Int_t NITSClust;
 	Double_t TPCdEdx;
-	Double_t TrackEtaMin, TrackEtaMax;
-	Double_t NsigmaMin, NsigmaMax, HadNsigma;
-	Double_t M20Min, M20Max;
-	Double_t EopMin, EopMax;
-	Double_t DCAxy, DCAz;
+	Double_t DCAxy;
+	Double_t DCAz;
+	Int_t NCrossedRow;
 	Double_t EtaPhiDiff;
 	Double_t PhotInvMass;
 
-        
+
     
         TH1F* fNevents;
         TH1F* fCent;
