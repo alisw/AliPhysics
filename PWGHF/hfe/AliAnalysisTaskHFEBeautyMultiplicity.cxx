@@ -236,11 +236,16 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistPt_HFE_MC_Lc(0),   // measured lambda c->e
 
     fDCAxy_MC_B(0),	    // DCA from B
+    fDCAxy_MC_B_weight(0),  // DCA from B with weight
     fDCAxy_MC_D(0),	    // DCA from D
     fDCAxy_MC_Dpm(0),	    // DCA from D+,D*+
+    fDCAxy_MC_Dpm_weight(0),// DCA from D+,D*+ with weight
     fDCAxy_MC_D0(0),	    // DCA from D0,D*0
+    fDCAxy_MC_D0_weight(0), // DCA from D0,D*0 with weight
     fDCAxy_MC_Ds(0),	    // DCA from Ds+,D*+s
+    fDCAxy_MC_Ds_weight(0), // DCA from Ds+,D*+s with weight
     fDCAxy_MC_Lc(0),	    // DCA from Lambda
+    fDCAxy_MC_Lc_weight(0), // DCA from Lambda with weight
 
     fDCAxy_MC_ele(0),       // DCA True electron
     fDCAxy_MC_Phot(0),      // DCA True photonic electron
@@ -484,11 +489,16 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistPt_HFE_MC_Lc(0),   // measured lambda c->e
 
     fDCAxy_MC_B(0),	    // DCA from B
+    fDCAxy_MC_B_weight(0),  // DCA from B with weight
     fDCAxy_MC_D(0),	    // DCA from D
     fDCAxy_MC_Dpm(0),	    // DCA from D+,D*+
+    fDCAxy_MC_Dpm_weight(0),// DCA from D+,D*+ with weight
     fDCAxy_MC_D0(0),	    // DCA from D0,D*0
+    fDCAxy_MC_D0_weight(0), // DCA from D0,D*0 with weight
     fDCAxy_MC_Ds(0),	    // DCA from Ds+,D*+s
-    fDCAxy_MC_Lc(0), 	    // DCA from Lambda
+    fDCAxy_MC_Ds_weight(0), // DCA from Ds+,D*+s with weight
+    fDCAxy_MC_Lc(0),	    // DCA from Lambda
+    fDCAxy_MC_Lc_weight(0), // DCA from Lambda with weight
 
     fDCAxy_MC_ele(0),	    // DCA True electron
     fDCAxy_MC_Phot(0),      // DCA True photonic electron
