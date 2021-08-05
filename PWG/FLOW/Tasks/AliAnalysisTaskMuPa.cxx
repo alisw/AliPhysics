@@ -380,7 +380,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   FillQAHistograms(aAOD,AFTER,RECO);
 
   // Special QA cases when both AliMCEvent and AliAODEvent are needed:
-  FillQAHistograms(aAOD,aMC);
+  if(aAOD && aMC){FillQAHistograms(aAOD,aMC);}
 
   if(fTerminateAfterQA){return;}
  } // if(fFillQAHistograms)
@@ -623,7 +623,7 @@ void AliAnalysisTaskMuPa::OnlineMonitoring()
  // a) Update regularly the output file:
  if(fUpdateOutputFile)
  {
-  if(!fSelectedTracksHist){cout<<__LINE__<<endl;exit(1);} // TBI 20210515 is this histogram available also if I am doing only QA?
+  if(!fSelectedTracksHist){cout<<__LINE__<<endl;exit(1);}  
   Int_t currentEventNo = (Int_t)fSelectedTracksHist->GetEntries();
   if(0 == currentEventNo % fUpdateFrequency)
   {
@@ -639,7 +639,7 @@ void AliAnalysisTaskMuPa::OnlineMonitoring()
  // b) Bail out after specified number of events:
  if(fMaxNumberOfEvents > 0)
  {
-  if(!fSelectedTracksHist){cout<<__LINE__<<endl;exit(1);} // TBI 20210515 is this histogram available also if I am doing only QA?
+  if(!fSelectedTracksHist){cout<<__LINE__<<endl;exit(1);}  
   Int_t currentEventNo = (Int_t)fSelectedTracksHist->GetEntries();
   if(fMaxNumberOfEvents == currentEventNo)
   {
@@ -2641,7 +2641,7 @@ TComplex AliAnalysisTaskMuPa::Q(Int_t n, Int_t wp)
 
 TComplex AliAnalysisTaskMuPa::One(Int_t n1)
 {
- // Generic expression <exp[i(n1*phi1)]>. TBI comment
+ // Generic expression <exp[i(n1*phi1)]>.
 
  TComplex one = Q(n1,1);
 

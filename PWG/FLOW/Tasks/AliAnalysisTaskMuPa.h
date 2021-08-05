@@ -437,7 +437,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fMultiplicityHist;       // this is distribution of my multiplicity
   Double_t fMultiplicityBins[3]; // [nBins,minMultiplicity,maxMultiplicity]
   Int_t fSelectedTracks;         // this is an integer counter of tracks used to calculate Q-vectors, after all particle cuts have been applied
-  TH1I *fSelectedTracksHist;     // this is distribution fSelectedTracks
+  TH1I *fSelectedTracksHist;     // this is distribution fSelectedTracks. Also the counter of selected events for analysis (use e.g. in OnlineMonitoring())
   Int_t fSelectedTracksCuts[2];  // [min,max]
   Bool_t fUseSelectedTracksCuts; // kFALSE by default, set to kTRUE if task->SelectedTracksCuts(...) has been called
   TH1D *fCentralMultiplicityHist[gCentralMultiplicity]; // this is distribution of my multiplicity TBI 20210527 do I need this at all?
