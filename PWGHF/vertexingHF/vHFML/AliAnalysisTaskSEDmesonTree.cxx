@@ -86,20 +86,20 @@ void AliAnalysisTaskSEDmesonTree::LocalInit()
         {
             AliRDHFCutsD0toKpi *copycut = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi *>(fRDCuts)));
             PostData(2, copycut);
-            break;
         }
+        break;
         case kDplustoKpipi:
         {
             AliRDHFCutsDplustoKpipi *copycut = new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi *>(fRDCuts)));
             PostData(2, copycut);
-            break;
         }
+        break;
         case kDstartoD0pi:
         {
             AliRDHFCutsDStartoKpipi *copycut = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi *>(fRDCuts)));
             PostData(2, copycut);
-            break;
         }
+        break;
     }
 
     return;
