@@ -167,6 +167,8 @@ protected:
   Hist::Hist<TH1D> fHist_tpcGoldenChi2{};                      //!<! chi2 global vs tpc constrained track
   Hist::Hist<TH1D> fHist_tpcGeomLength{};                      //!<! track length in active volume of the TPC
 
+  Hist::Hist<TH1D> fHist_mcQA{};       //!<! tmp hist
+
   // event related properties
   AliVEvent* fEvent{};                      //!<! Event object
   AliMCEvent* fMCEvent{};                   //!<! MC event

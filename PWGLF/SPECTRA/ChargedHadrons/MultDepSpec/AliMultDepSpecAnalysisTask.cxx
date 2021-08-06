@@ -221,6 +221,13 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
   BookHistogram(fHist_multPtSpec_trk_meas, "multPtSpec_trk_meas", {mult_meas, pt_meas});
 
   if (fIsMC) {
+    // tmp histogram for mc qa
+    fHist_mcQA.AddAxis("filestats", "files", 2, 0.5, 2.5);
+    auto mcQAHist = fHist_mcQA.GenerateHist("brokenFiles");
+    mcQAHist->GetXaxis()->SetBinLabel(1, "all");
+    mcQAHist->GetXaxis()->SetBinLabel(2, "broken");
+    fOutputList->Add(mcQAHist);
+
     BookHistogram(fHist_multDist_evt_gen, "multDist_evt_gen", {mult_true});
     BookHistogram(fHist_multDist_evt_gen_trig, "multDist_evt_gen_trig", {mult_true});
     BookHistogram(fHist_multCorrel_evt, "multCorrel_evt", {mult_meas, mult_true});
@@ -437,8 +444,8 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
 
   // event info for random seeds
   fRunNumber = fEvent->GetRunNumber();
-  fTimeStamp = fEvent->GetTimeStamp();
-  fEventNumber = fEvent->GetHeader()->GetEventIdAsLong();
+  fTimeStamp = fEvent->GetTimeStamp(); // FIXME: multiple events have same time stamp... use fMCEvent->GenEventHeader()->InteractionTime()
+  fEventNumber = fEvent->GetHeader()->GetEventIdAsLong(); // FIXME: in MC this is always zero and therefore has no effect on the random seed...
 
   // check if event is accepted (dataset dependent)
   fAcceptEvent = fEventCuts->AcceptEvent(fEvent);
@@ -468,6 +475,21 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
   }
   LoopMeas(true); // set measured multiplicity fMeasMult
 
+  // ------- BEGIN TEMP for MC qa:
+  if (fIsMC) {
+    static int nNotTriggered = 0;
+    if (fEvent->GetEventNumberInFile() == 0) {
+      nNotTriggered = 0;
+      fHist_mcQA.Fill(1);
+    }
+    if(!fIsTriggered) {
+      nNotTriggered++;
+    }
+    if (nNotTriggered == 80) { // log if 80 (of 150) events in the file dont fire the trigger
+      fHist_mcQA.Fill(2);
+    }
+  }
+  // ------- END TEMP for MC qa:
   return true;
 }
 
