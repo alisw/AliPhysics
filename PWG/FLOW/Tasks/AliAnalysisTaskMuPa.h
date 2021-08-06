@@ -41,6 +41,7 @@ const Int_t gWeights = 3; // phi, pt, eta
 const Int_t gQAAnomalousEvents = 1; // |vertex| = 0; 
 const Int_t gQASelfCorrelations = 3; // phi, pt, eta
 const Int_t gQAEventCutCounter = 22; // see TString secc[gQAEventCutCounter] in .cxx
+const Int_t gQAParticleCutCounter = 35; // see TString spcc[gQAParticleCutCounter] in .cxx
 
 // enums:
 enum eBins {nBins,min,max};
@@ -102,6 +103,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t SurvivesEventCuts(AliVEvent *ave);
   void EventCutCounter(AliVEvent *ave); // only for QA
   Bool_t SurvivesParticleCuts(AliVParticle *vParticle); // applied e.g. on TPC-only
+  void ParticleCutCounter(AliVParticle *vParticle); // only for QA
   virtual Double_t Weight(const Double_t &value, const char *variable);
   virtual Double_t CentralityWeight(const Double_t &value, const char *estimator);
   virtual void CalculateCorrelations();
@@ -428,6 +430,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fQASimRecoSelfCorrelations[gQASelfCorrelations]; // check for self-correlations between simulated and reconstructed particles
   Bool_t fQACheckSelfCorrelations; // kFALSE by default. If kTRUE, both fQASelfCorrelations[] and fQASimRecoSelfCorrelations[] are filled
   TH1I *fQAEventCutCounter; // counter for each event cut
+  TH1I *fQAParticleCutCounter[2]; // counter for each particle cut. [0] = reco, [1] = sim
 
   // 2) Control event histograms:  
   TList *fControlEventHistogramsList; // list to hold all control event histograms
@@ -548,7 +551,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,10);
+  ClassDef(AliAnalysisTaskMuPa,11);
 
 };
 
