@@ -37,7 +37,7 @@ public:
     };
 
     AliAnalysisTaskSEDmesonTree();
-    AliAnalysisTaskSEDmesonTree(const char *name, int fDecChannel, AliRDHFCuts *analysiscuts, bool createMLtree);
+    AliAnalysisTaskSEDmesonTree(const char *name, int decChannel, AliRDHFCuts *analysiscuts, bool createMLtree);
     virtual ~AliAnalysisTaskSEDmesonTree();
 
     void SetReadMC(bool readMC = true)                                                            {fReadMC = readMC;}
@@ -51,7 +51,7 @@ public:
     void SetMLTreeAddTrackVar(bool flag = true)                                                   {fAddSingleTrackVar = flag;}
     void SetKeepOnlyBkgFromHIJING(bool keeponlyhijing = true)                                     {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
 
-    void SetDecayChannel(bool dec = kD0toKpi)
+    void SetDecayChannel(int dec = kD0toKpi)
     {
         fDecChannel = dec;
         switch(fDecChannel)
