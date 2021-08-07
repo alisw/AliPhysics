@@ -2,6 +2,10 @@ AliGenerator* CreatePythia8GenCustom( TString lTune          = "pp",
                                      Float_t e_cms       = 13000.
                                      );
 
+AliGenerator* CreatePythia8GenPbPb( TString lTune          = "pp",
+                                     Float_t e_cms       = 13000.
+                                     );
+
 AliGenerator* AddCustomMCGenPythia8( TString lTune          = "pp",
                                     Float_t e_cms       = 13000.
                                     ) {
