@@ -54,7 +54,17 @@ AliAnalysisTaskSEDmesonTree::AliAnalysisTaskSEDmesonTree(const char *name, int d
     SetDecayChannel(decayChannel);
 
     DefineOutput(1, TList::Class());
-    DefineOutput(2, TList::Class());
+    switch(fDecChannel){
+        case kD0toKpi:
+            DefineOutput(2,AliRDHFCutsD0toKpi::Class());       //Cut object for D0
+        break;
+        case kDplustoKpipi:
+            DefineOutput(2,AliRDHFCutsDplustoKpipi::Class());  //Cut object for Dplus
+        break;
+        case kDstartoD0pi:
+            DefineOutput(2,AliRDHFCutsDStartoKpipi::Class());  //Cut object for D*
+        break;
+    }
     DefineOutput(3, AliNormalizationCounter::Class());
     if (fCreateMLtree)
         DefineOutput(4, TTree::Class());
@@ -255,7 +265,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     break;
                 case kDstartoD0pi:
                     arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Dstar"));
-                break;
+                    break;
             }
         }
     }
@@ -271,7 +281,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                 break;
             case kDstartoD0pi:
                 arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Dstar"));
-            break;
+                break;
         }
     }
 
@@ -677,7 +687,7 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
             }
             break;
         case kDstartoD0pi:
-            if (!vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(dMeson), false))
+            if (!vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(dMeson), true))
             {
                 fHistNEvents->Fill(14);
                 return 0;

@@ -134,10 +134,6 @@ bool AliHFMLVarHandlerDstartoD0pi::SetVariables(AliAODRecoDecayHF* cand, float b
         prongtracks[2] = (AliAODTrack*)dzero->GetDaughter(0);
     }
 
-    //single track variables
-    for(unsigned int iProng = 0; iProng < fNProngs; iProng++) 
-        prongtracks[iProng] = (AliAODTrack*)cand->GetDaughter(iProng);
-
     if(fAddSingleTrackVar) {
         bool setsingletrack = SetSingleTrackVars(prongtracks);  
         if(!setsingletrack) 
