@@ -14,6 +14,7 @@
 #include <AliAnalysisTaskSE.h>
 #include <AliVEvent.h>
 #include <AliAODEvent.h>
+#include <AliAODHeader.h>
 #include <AliMCEvent.h>
 #include <AliVTrack.h>
 #include <AliVParticle.h>
@@ -35,13 +36,13 @@ const Int_t gCentralityEstimators = 4; // set here number of supported centralit
 const Int_t gKinematicVariables = 5; // number of supported kinematic variables: [phi,pt,eta,e,charge]
 const Int_t gFilterBits = 17; // number of filterbits to scan
 const Int_t gEventHistograms = 2; // total number of non-classified event histograms
-const Int_t gParticleHistograms = 9; // total number of non-classified particle histograms
+const Int_t gParticleHistograms = 10; // total number of non-classified particle histograms, keep in sync. with eParticle
 const Int_t gCentralMultiplicity = 1; // multiplicities defined centrally, e.g. ref. mult.
 const Int_t gWeights = 3; // phi, pt, eta
 const Int_t gQAAnomalousEvents = 1; // |vertex| = 0; 
 const Int_t gQASelfCorrelations = 3; // phi, pt, eta
 const Int_t gQAEventCutCounter = 22; // see TString secc[gQAEventCutCounter] in .cxx
-const Int_t gQAParticleCutCounter = 35; // see TString spcc[gQAParticleCutCounter] in .cxx
+const Int_t gQAParticleCutCounter = 37; // see TString spcc[gQAParticleCutCounter] in .cxx
 
 // enums:
 enum eBins {nBins,min,max};
@@ -51,8 +52,9 @@ enum eBeforeAfter { BEFORE = 0, AFTER = 1 };
 enum eRecoSim { RECO = 0, SIM = 1 };
 enum eKinematics { PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4 };
 enum eDefaultColors { COLOR = kBlack, FILLCOLOR = kGray };
-enum eParticle { TPCNcls, TPCnclsS, TPCnclsFractionShared, TPCNCrossedRows, TPCChi2perNDF, TPCFoundFraction, Chi2TPCConstrainedVsGlobal, ITSNcls, ITSChi2perNDF };
+enum eParticle { TPCNcls, TPCnclsS, TPCnclsFractionShared, TPCNCrossedRows, TPCChi2perNDF, TPCFoundFraction, Chi2TPCConstrainedVsGlobal, ITSNcls, ITSChi2perNDF, TPCNclsF };
 enum eEvent { MagneticField, PrimaryVertex };
+enum eCentralMultiplicity { RefMultComb08 };
 
 //================================================================================================================
 
@@ -126,6 +128,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual TComplex Two(Int_t n1, Int_t n2);
 
   // 5) Setters and getters:
+  void SetRealData(Bool_t rd){this->fRealData = rd;};
   void SetDataTakingPeriod(const char *dtp) {this->fDataTakingPeriod = dtp;};
   void SetAODNumber(const char *an) {this->fAODNumber = an;};
   void SetVerbose(Bool_t v) {this->fVerbose = v;};
@@ -227,6 +230,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetMinVertexDistance(const Double_t vd)
   {
    this->fMinVertexDistance = vd;
+   this->fUseMinVertexDistanceCut = kTRUE;
   }
 
   // Remaining event distributions:
@@ -325,6 +329,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    else if (TString(type).EqualTo("Chi2TPCConstrainedVsGlobal")){var = Chi2TPCConstrainedVsGlobal;}
    else if (TString(type).EqualTo("ITSNcls")){var = ITSNcls;}
    else if (TString(type).EqualTo("ITSChi2perNDF")){var = ITSChi2perNDF;}
+   else if (TString(type).EqualTo("TPCNclsF")){var = TPCNclsF;}
    this->fParticleBins[var][0] = nbins;
    this->fParticleBins[var][1] = min;
    this->fParticleBins[var][2] = max;
@@ -341,9 +346,11 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    else if (TString(type).EqualTo("Chi2TPCConstrainedVsGlobal")){var = Chi2TPCConstrainedVsGlobal;}
    else if (TString(type).EqualTo("ITSNcls")){var = ITSNcls;}
    else if (TString(type).EqualTo("ITSChi2perNDF")){var = ITSChi2perNDF;}
+   else if (TString(type).EqualTo("TPCNclsF")){var = TPCNclsF;}
    else{exit(1);}
    this->fParticleCuts[var][0] = min;
    this->fParticleCuts[var][1] = max;
+   this->fUseParticleCuts[var] = kTRUE;
   }
   void SetCalculateQvector(Bool_t cqv) {this->fCalculateQvector = cqv;};
   Bool_t GetCalculateQvector() const {return this->fCalculateQvector;};
@@ -408,6 +415,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // 0) Base list:
   TList *fBaseList; // base list to hold all output object (a.k.a. grandmother of all lists)
   TProfile *fBasePro; // keeps flags relevant for the whole analysis
+  Bool_t fRealData; // use SetRealData(...); in the steering macro
   TString fTaskName; // e.g. Form("Task=>%.1f-%.1f",centrMin,centrMax)
   TString fDataTakingPeriod; // the data taking period, use e.g. task->SetDataTakingPeriod("LHC10h")
   TString fAODNumber; // the AOD number, use e.g. task->SetPeriod("AOD160") (for "LHC10h")
@@ -421,6 +429,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TProfile *fQAPro; // keeps flags relevant for the QA analysis
   TH1D *fQACentralityHist[gCentralityEstimators][2]; // centrality distribution [all supported estimators][before, after event cuts]
   TH2D *fQACentralityCorrHist[gCentralityEstimators][gCentralityEstimators][2]; // correlations of centrality distributions from all supported estimators [before, after event cuts]
+  TH2D *fQAMultiplicityCorrHist[2]; // correlations between reference multiplicity and nSelected tracks [before, after event cuts]
   TH1I *fQAFilterBitScan; // for each track in AOD, dump its filterbits
   TH2I *fQAIDvsFilterBit; // filterbit vs. atrack->ID()
   TH1D *fQAKinematicsFilterBits[gFilterBits][gKinematicVariables]; // kinematics [specified filter bit][phi,pt,eta,energy,charge] Use in combination with SetQAFilterBits(...)
@@ -443,7 +452,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1I *fSelectedTracksHist;     // this is distribution fSelectedTracks. Also the counter of selected events for analysis (use e.g. in OnlineMonitoring())
   Int_t fSelectedTracksCuts[2];  // [min,max]
   Bool_t fUseSelectedTracksCuts; // kFALSE by default, set to kTRUE if task->SelectedTracksCuts(...) has been called
-  TH1D *fCentralMultiplicityHist[gCentralMultiplicity]; // this is distribution of my multiplicity TBI 20210527 do I need this at all?
+  TH1D *fCentralMultiplicityHist[gCentralMultiplicity][2]; // this is distribution of reference multiplicities, maintained centrally [before,after event cuts]
 
   //    Centrality:
   Double_t fCentrality;         // this is ebe centrality from default estimator
@@ -455,15 +464,16 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fUseCentralityCorrelationsCuts[gCentralityEstimators][gCentralityEstimators]; // use specific cut below 
   Double_t fCentralityCorrelationsCuts[gCentralityEstimators][gCentralityEstimators]; // [firstEstimator][secondEstimator] |(firstEstimator-secondEstimator)/(firstEstimator+secondEstimator)| > cut => reject the event
   //    Vertex:
-  TH1D *fVertexHist[2][2][3];     //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
-  Double_t fVertexBins[3];        // [nBins,minVertex,maxVertex]
-  Double_t fVertexCuts[3][2];     // [x,y,z][min,max] vertex components
-  Bool_t fUseVertexCuts[3];       // [x,y,z] use or not vertex cuts. Set the kTRUE only of task->SetVertexCuts(...) is called explicitly in steering macros
-  TH1I *fNContributorsHist[2][2]; //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
-  Int_t fNContributorsBins[3];    // [nBins,min,max]
-  Int_t fNContributorsCuts[2];    // [min,max]
-  Bool_t fUseNContributorsCuts;   // by default kFALSE, set to kTRUE if task->SetNContributorsCuts(...) is called in steering macros
-  Double_t fMinVertexDistance;    // if sqrt(vx^2+vy^2+vz^2) < fMinVertexDistance, the event is reject. This way, I remove suspicious events with |vertex| = 0.
+  TH1D *fVertexHist[2][2][3];      //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
+  Double_t fVertexBins[3];         // [nBins,minVertex,maxVertex]
+  Double_t fVertexCuts[3][2];      // [x,y,z][min,max] vertex components
+  Bool_t fUseVertexCuts[3];        // [x,y,z] use or not vertex cuts. Set the kTRUE only if task->SetVertexCuts(...) is called explicitly in steering macros
+  TH1I *fNContributorsHist[2][2];  //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
+  Int_t fNContributorsBins[3];     // [nBins,min,max]
+  Int_t fNContributorsCuts[2];     // [min,max]
+  Bool_t fUseNContributorsCuts;    // by default kFALSE, set to kTRUE if task->SetNContributorsCuts(...) is called in steering macros
+  Double_t fMinVertexDistance;     // if sqrt(vx^2+vy^2+vz^2) < fMinVertexDistance, the event is reject. This way, I remove suspicious events with |vertex| = 0.
+  Bool_t fUseMinVertexDistanceCut; // Set the kTRUE only if task->SetMinVertexDistance(...) is called explicitly in steering macros
 
   //    All remaining event histograms: 
   TH1D *fEventHistograms[2][gEventHistograms]; //! [before,after event cuts][ type - see enum ]
@@ -493,6 +503,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fParticleHist[2][2][gParticleHistograms]; //! distributions [before,after particle cuts][reco,sim][type - see enum]
   Double_t fParticleBins[gParticleHistograms][3]; // [nBins,min,max]
   Double_t fParticleCuts[gParticleHistograms][2]; // [type - see enum][min,max]
+  Bool_t fUseParticleCuts[gParticleHistograms];   // set to kTRUE, only if the correspondign SetParticleCuts(...) was used in the steering macros
 
   // 4) Q-vectors:
   TList *fQvectorList;        // list to hold all Q-vector objects       
@@ -551,7 +562,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,11);
+  ClassDef(AliAnalysisTaskMuPa,12);
 
 };
 
