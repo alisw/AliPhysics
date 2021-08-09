@@ -679,7 +679,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         if( lCheckHFFeeddown[ih] == kTRUE && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
         //Fill Histograms
         fHistEta[ih] -> Fill ( lPart -> Eta() );
-        if( TMath::Abs(lThisRap) < 0.5 ) {
+        if( TMath::Abs(lThisRap) < 0.5 && !fkALICE3SiliconMode ) {
           fHistPt[ih]->Fill(lThisPt);
           fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
           fHistPtVsSPDMult[ih]->Fill(lNchEtaWide,lThisPt);
@@ -687,6 +687,15 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
           fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
           fHistPtVsNMPI[ih]->Fill(fMC_NMPI,lThisPt);
         }
+        if( TMath::Abs(lThisRap) < 4.0 && fkALICE3SiliconMode ) {
+          fHistPt[ih]->Fill(lThisPt);
+          fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
+          fHistPtVsSPDMult[ih]->Fill(lNchEtaWide,lThisPt);
+          fHistPtVsNpart[ih]->Fill(fMC_NPart,lThisPt);
+          fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
+          fHistPtVsNMPI[ih]->Fill(fMC_NMPI,lThisPt);
+        }
+        
       }
     }
   }//End of loop on tracks
