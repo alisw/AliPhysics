@@ -2854,9 +2854,14 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799709fe32220000","0r63103100000010"); // INT7, PCM-EMC FT
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799809fe32220000","0r63103100000010"); // INT7, EMC-EMC FT
   } else if (trainConfig == 2192){ // low Bfield
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799909fe32220000","0r63103100000010"); // INT7, interpolation between PCM-EMC and EMC-EMC FT
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe32220000","0r63103100000010"); // INT7, interpolation between PCM-EMC and EMC-EMC FT
   } else if (trainConfig == 2193){ // low Bfield
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799909fe30220000","0r63103100000010"); // INT7, interpolation between PCM-EMC and EMC-EMC FT, no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe30220000","0r63103100000010"); // INT7, interpolation between PCM-EMC and EMC-EMC FT, no NCell cut
+  } else if (trainConfig == 2194){ // NCellEfficiency for lowB field
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe3s220000","0r63103100000010"); // INT7, NCellEffi from EMC-EMC, gaussian, all clus
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe3t220000","0r63103100000010"); // INT7, NCellEffi from EMC-EMC, gaussian, gamma clus
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe3u220000","0r63103100000010"); // INT7, NCellEffi from PCM-EMC, gaussian, all clus
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe3v220000","0r63103100000010"); // INT7, NCellEffi from PCM-EMC, gaussian, gamma clus
 
 
   // PCM-EDC systematics

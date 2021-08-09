@@ -6300,6 +6300,42 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
     fFuncNCellCutEfficiencyEMCal->SetParameters(0.0864766, 1.50279, 0.61173);
     break;
+
+    // Low B (0.2T) settings!
+
+    // From pi0 tagging with EMC-EMC with TBNL+scale applied on all clusters, Gaussian param
+    // using the new cell scale!
+  case 28: // s
+    fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0568889, 1.3386, 0.342261);
+    break;
+    // From pi0 tagging with EMC-EMC with TBNL+scale applied on gamma clusters, Gaussian param
+    // using the new cell scale!
+  case 29: // t
+    fUseNCells=7;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0568889, 1.3386, 0.342261);
+    break;
+
+    // From pi0 tagging with PCM-EMC with TBNL+scale applied on all clusters, Gaussian param
+    // using the new cell scale!
+  case 30: // u
+    fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.109982, 1.452, 0.378929);
+    break;
+    // From pi0 tagging with PCM-EMC with TBNL+scale applied on gamma clusters, Gaussian param
+    // using the new cell scale!
+  case 31: // v
+    fUseNCells=7;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.109982, 1.452, 0.378929);
+    break;
   default:
     AliError(Form("Min N cells Cut not defined %d",minNCells));
     return kFALSE;
