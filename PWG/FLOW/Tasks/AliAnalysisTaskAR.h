@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 04.08.2021
+ * Last Modified Date: 09.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -61,6 +61,7 @@ enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
 enum kName { kNAME, kTITLE, kXAXIS, kYAXIS, LAST_ENAME };
 enum kMinMax { kMIN, kMAX, LAST_EMINMAX };
+const TString kMMName[LAST_EMINMAX] = {"[kMIN]", "[kMAX]"};
 enum kBeforeAfter { kBEFORE, kAFTER, LAST_EBEFOREAFTER };
 const TString kBAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
 const Color_t kFillColor[LAST_EBEFOREAFTER] = {kRed - 10, kGreen - 10};
@@ -104,7 +105,8 @@ public:
   virtual void FillTrackControlHistograms(kBeforeAfter BA, AliVParticle *avp);
   virtual void FillFinalResultProfile(kFinalProfile fp);
   virtual Bool_t SurviveEventCut(AliVEvent *ave);
-  virtual Bool_t SurviveTrackCut(AliVParticle *aTrack);
+  virtual Bool_t SurviveTrackCut(AliVParticle *aTrack, Bool_t FillCounter);
+  virtual void CountSurvivingTracks(AliAODEvent *aAOD);
   virtual void ClearEventObjects();
   virtual void AggregateWeights();
   virtual void ResetWeights();
@@ -424,14 +426,16 @@ private:
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
   TH1D *fTrackCutsCounter[LAST_EMODE];
   TString fTrackCutsCounterNames[LAST_EMODE];
-  TString fTrackCutsCounterBinNames[LAST_ETRACK];
+  TString fTrackCutsCounterBinNames[LAST_ETRACK][LAST_EMINMAX];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
   TH1D *fEventCutsCounter[LAST_EMODE];
   TString fEventCutsCounterNames[LAST_EMODE];
-  TString fEventCutsCounterBinNames[LAST_EEVENT];
+  TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
   Int_t fFilterbit;
   Bool_t fPrimaryOnly;
   Double_t fCenCorCut[2];
+  Int_t fSurvivingTracks;
+  Int_t fSurvivingEvents;
 
   // Final results
   TList *fFinalResultsList;
