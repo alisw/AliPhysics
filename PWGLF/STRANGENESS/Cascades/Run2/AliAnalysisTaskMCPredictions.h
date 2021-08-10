@@ -65,6 +65,7 @@ public:
   void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
   void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
   void SetALICE3Mode ( Bool_t lOpt = kTRUE) { fkALICE3SiliconMode = lOpt; }
+  void SetWideRapidityCut ( Bool_t lOpt = kTRUE) { fkWideRapiditySpeciesStudy = lOpt; }
   
   //---------------------------------------------------------------------------------------
   
@@ -83,6 +84,7 @@ private:
   Int_t fRebinFactor;
   Bool_t fkSelectINELgtZERO;
   Bool_t fkALICE3SiliconMode; //if true, SPD multiplicity == full |eta|<4.0
+  Bool_t fkWideRapiditySpeciesStudy; //if true, |y|<4.0 instead of |y|<0.5 for PID
   
   //Basic Histograms for counting events as a function of V0M percentiles...
   TH1D *fHistV0MMult;
@@ -100,6 +102,8 @@ private:
   TH1D *fHistEta[52];              //! for keeping track of base spectra
   TH2D *fHistPtVsV0MMult[52];     //! for keeping track of base spectra
   TH2D *fHistPtVsSPDMult[52];     //! for keeping track of base spectra
+  TH2D *fHistEtaVsSPDMult[52];    //! for keeping track of base spectra
+  TH2D *fHistYVsSPDMult[52];    //! for keeping track of base spectra
   TH2D *fHistPtVsNpart[52];       //! for keeping track of base spectra
   TH2D *fHistPtVsB[52];           //! for keeping track of base spectra
   TH2D *fHistPtVsNMPI[52];       //! for keeping track of base spectra
