@@ -39,6 +39,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fBaseList(NULL),
  fBasePro(NULL),
  fRealData(kTRUE),
+ fUseFisherYates(kFALSE),
+ fRandomIndices(NULL),
  fFillQAHistograms(kFALSE),
  fTerminateAfterQA(kFALSE),
  fVerbose(kFALSE),
@@ -64,6 +66,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fUseSelectedTracksCuts(kFALSE),
  fCentrality(0.),
  fUseCentralityCuts(kFALSE),
+ fCentralityCorrelationCutVersion(0),
  fUseNContributorsCuts(kFALSE),
  fMinVertexDistance(1.e-6),
  fUseMinVertexDistanceCut(kFALSE),
@@ -102,6 +105,10 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fNestedLoopsList(NULL),        
  fNestedLoopsFlagsPro(NULL), 
  fCalculateNestedLoops(kFALSE),
+
+ // Toy NUA:
+ fToyNUAList(NULL), 
+ fToyNUAFlagsPro(NULL),   
 
  // Final results:
  fFinalResultsList(NULL),
@@ -164,6 +171,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fBaseList(NULL),
  fBasePro(NULL),
  fRealData(kTRUE),
+ fUseFisherYates(kFALSE),
+ fRandomIndices(NULL),
  fFillQAHistograms(kFALSE),
  fTerminateAfterQA(kFALSE),
  fVerbose(kFALSE),
@@ -189,6 +198,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fUseSelectedTracksCuts(kFALSE),
  fCentrality(0.), 
  fUseCentralityCuts(kFALSE),
+ fCentralityCorrelationCutVersion(0),
  fUseNContributorsCuts(kFALSE),
  fMinVertexDistance(0.),
  fUseMinVertexDistanceCut(kFALSE),
@@ -227,6 +237,10 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fNestedLoopsList(NULL),        
  fNestedLoopsFlagsPro(NULL), 
  fCalculateNestedLoops(kFALSE),
+
+ // Toy NUA:
+ fToyNUAList(NULL), 
+ fToyNUAFlagsPro(NULL),   
 
  // Final results:
  fFinalResultsList(NULL),
@@ -277,6 +291,8 @@ AliAnalysisTaskMuPa::~AliAnalysisTaskMuPa()
  
  if(fSimReco) delete fSimReco;
 
+ if(fUseFisherYates) delete fRandomIndices;
+
 } // AliAnalysisTaskMuPa::~AliAnalysisTaskMuPa()
 
 //================================================================================================================
@@ -317,6 +333,7 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
  this->BookCentralityWeightsHistograms();
  this->BookCorrelationsHistograms();
  this->BookNestedLoopsHistograms(); 
+ this->BookToyNUAHistograms(); 
  this->BookFinalResultsHistograms();
 
  // f) Book all look-up tables:
@@ -339,17 +356,19 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
 {
  // Main loop (called for each event).
  // a) Get pointer to AOD event;
- // b) Filter out "normal global" tracks for default analysis and cut on their number (needed only for PID studies);
- // c) Filter from this event only what is needed, and store that info in local data members;
- // d) QA (if enabled);
- // e) Fill control event histograms before cuts;
- // f) Event cuts;
- // g) Fill control event histograms after cuts;
- // h) Start analysis over AODs;
- // i) Fill e-b-e quantities;
- // j) Calculate correlations;
- // k) Calculate nested loops;
- // l) Reset event-by-event objects;
+ // b) Fisher-Yates algorithm;
+ // c) Filter out "normal global" tracks for default analysis and cut on their number (needed only for PID studies);
+ // d) Filter from this event only what is needed, and store that info in local data members;
+ // e) QA (if enabled);
+ // f) Fill control event histograms before cuts;
+ // g) Event cuts;
+ // h) Fill control event histograms after cuts;
+ // i) Look up table;
+ // j) Start analysis over AODs;
+ // k) Fill e-b-e quantities;
+ // l) Calculate correlations;
+ // m) Calculate nested loops;
+ // n) Reset event-by-event objects;
  // *) PostData.
 
  Green(__PRETTY_FUNCTION__); 
@@ -363,7 +382,10 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  if(fPrintEventInfo){this->PrintEventInfo(aAOD);}
  if(fProcessOnlySpecifiedEvent){if(!this->SpecifiedEvent(aAOD)){return;}} 
 
- // b) Filter out "normal global" tracks for default analysis and cut on their number (needed only for PID studies):
+ // b) Fisher-Yates algorithm:
+ if(fUseFisherYates){this->RandomIndices(aAOD);}
+
+ // c) Filter out "normal global" tracks for default analysis and cut on their number (needed only for PID studies):
  //    'TPC-only' tracks and 'global constrained to vertex' come with negative ID, and are therefore not stored in fGlobalTracksAOD
  if(fFilterGlobalTracksAOD)
  {
@@ -371,10 +393,10 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   if(0 == fGlobalTracksAOD->GetSize()) return; // yes, go to next event TBI 20210513 re-think this line, perhaps add some further check
  }
 
- // c) Filter from this event only what is needed, and store that info in local data members:
+ // d) Filter from this event only what is needed, and store that info in local data members:
  this->FilterEvent(aAOD);
 
- // d) QA (if enabled):
+ // e) QA (if enabled):
  if(fFillQAHistograms)
  {
   FillQAHistograms(aAOD,BEFORE,RECO); 
@@ -393,21 +415,21 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   if(fTerminateAfterQA){return;}
  } // if(fFillQAHistograms)
 
- // e) Fill control event histograms before cuts:
+ // f) Fill control event histograms before cuts:
  if(aMC){this->FillControlEventHistograms(aAOD,BEFORE,SIM);}
  this->FillControlEventHistograms(aAOD,BEFORE,RECO);
  
- // f) Event cuts:
+ // g) Event cuts:
  if(!SurvivesEventCuts(aAOD)){return;} // TBI 20210531 add possibility to run only on sim, when this needs to be generalized. For kine+reco, I do not need to cut only on kine
 
- // g) Fill control event histograms after cuts:
+ // h) Fill control event histograms after cuts:
  if(aMC){this->FillControlEventHistograms(aAOD,AFTER,SIM);}
  this->FillControlEventHistograms(aAOD,AFTER,RECO);
 
- // h) Look up table:
+ // i) Look up table:
  if(aMC){this->MakeLookUpTable(aAOD,aMC);}
 
- // h) Start analysis over AODs:
+ // j) Start analysis over AODs:
  Double_t dPhi = 0., wPhi = 1.; // azimuthal angle and corresponding phi weight
  Double_t dPt = 0., wPt = 1.; // transverse momentum and corresponding pT weight
  Double_t dEta = 0., wEta = 1.; // pseudorapidity and corresponding eta weight
@@ -416,7 +438,15 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  Int_t nSelectedTracksCounter = 0; // needed only to fill nested loops containers
  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  {
-  AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to "a track" (i.e. any track)
+  AliAODTrack *aodTrack = NULL;
+  if(!fUseFisherYates)
+  {
+   aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to "a track" (i.e. any track)
+  }
+  else
+  {
+   aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack((Int_t)fRandomIndices->GetAt(iTrack)));
+  }
   if(!aodTrack){continue;}
  
   // Particle histograms and track cuts:
@@ -502,6 +532,8 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    // Get the corresponding reco particle:
    // fSimReco->Add(label,iTrack); // "key" = label, "value" = iTrack
    AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(fSimReco->GetValue(iLabel)));
+   
+   if(fUseFisherYates){cout<<__LINE__<<endl;exit(1);} // TBI 20210810 check and validate if also here Fisher-Yates needs to be applied
 
    // Track cuts are applied at MC particle.
    // a) Sim and reco distributions before cuts:
@@ -528,17 +560,17 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   } // for(Int_t iLabel=0;iLabel<nLabels;iLabel++) // starting a loop over all Monte Carlo tracks
  } // if(aMC)
 
- // i) Fill e-b-e quantities:
+ // k) Fill e-b-e quantities:
  if(fMultiplicityHist){fMultiplicityHist->Fill(fMultiplicity);}
  if(fSelectedTracksHist){fSelectedTracksHist->Fill(fSelectedTracks);}
 
- // j) Calculate correlations:
+ // l) Calculate correlations:
  if(fCalculateCorrelations){this->CalculateCorrelations();}
 
- // k) Calculate nested loops:
+ // m) Calculate nested loops:
  if(fCalculateNestedLoops){this->CalculateNestedLoops();}
 
- // l) Reset event-by-event objects:
+ // n) Reset event-by-event objects:
  this->ResetEventByEventQuantities();
 
  // *) PostData:
@@ -589,7 +621,8 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
  // a) Multiplicities;
  // b) Centrality;
  // c) Q-vector;
- // d) Reset ebe containers for nested loops.
+ // d) Reset ebe containers for nested loops;
+ // e) Fisher-Yates algorithm.
  
  // a) Multiplicities:
  fMultiplicity = 0.;
@@ -615,6 +648,12 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
  {
   if(ftaNestedLoops[0]){ftaNestedLoops[0]->Reset();} 
   if(ftaNestedLoops[1]){ftaNestedLoops[1]->Reset();}  
+ }
+
+ // e) Fisher-Yates algorithm:
+ if(fUseFisherYates)
+ {
+  delete fRandomIndices;
  }
 
 } // void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
@@ -692,6 +731,7 @@ void AliAnalysisTaskMuPa::InitializeArrays()
  this->InitializeArraysForCentralityWeights();
  this->InitializeArraysForCorrelationsHistograms();
  this->InitializeArraysForNestedLoopsHistograms();
+ this->InitializeArraysForToyNUA();
  this->InitializeArraysForCommonLabels();
 
 } // void AliAnalysisTaskMuPa::InitializeArrays()
@@ -763,6 +803,22 @@ void AliAnalysisTaskMuPa::InitializeArraysForNestedLoopsHistograms()
  ftaNestedLoops[1] = NULL;
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForNestedLoopsHistograms()
+
+//================================================================================================================
+
+void AliAnalysisTaskMuPa::InitializeArraysForToyNUA()
+{
+ // Initialize all arrays for Toy NUA.
+
+ for(Int_t kv=0;kv<gKinematicVariables;kv++) 
+ { 
+  fUseToyNUA[kv] = kFALSE;
+  fToyNUACuts[kv][0] = 0.;
+  fToyNUACuts[kv][1] = 0.;
+  fToyNUACuts[kv][2] = 0.;
+ } 
+
+} // void AliAnalysisTaskMuPa::InitializeArraysForToyNUA()
 
 //================================================================================================================
 
@@ -895,10 +951,10 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
    } // for(Int_t xyz=0;xyz<3;xyz++)
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t xyz=0;xyz<3;xyz++)
- fVertexCuts[X][0] = -10.;
- fVertexCuts[X][1] = 10.;
- fVertexCuts[Y][0] = -10.;
- fVertexCuts[Y][1] = 10.;
+ fVertexCuts[X][0] = -1.;
+ fVertexCuts[X][1] = 1.;
+ fVertexCuts[Y][0] = -1.;
+ fVertexCuts[Y][1] = 1.;
  fVertexCuts[Z][0] = -10.;
  fVertexCuts[Z][1] = 10.;
  fUseVertexCuts[X] = kFALSE;
@@ -1136,6 +1192,8 @@ void AliAnalysisTaskMuPa::InsanityChecks()
 
  // a) Multiplicity;
  // b) Centrality.
+ // c) Centrality weights;
+ // d) Toy NUA.
 
  Green(__PRETTY_FUNCTION__);
 
@@ -1151,13 +1209,28 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  if(!(fCentralityEstimator.EqualTo("V0M")||fCentralityEstimator.EqualTo("SPDTracklets")||
       fCentralityEstimator.EqualTo("CL0")||fCentralityEstimator.EqualTo("CL1"))){cout<<__LINE__<<endl;exit(1);}
 
- //   Centrality weights:
+ // c) Centrality weights:
  Int_t sum = 0;
  for(Int_t ce=0;ce<gCentralityEstimators;ce++)
  {
   sum += (Int_t) fUseCentralityWeights[ce];
  }
  if(sum>1){Red("\n Usage of only one centrality weight is supported at the moment.\n");cout<<__LINE__<<endl;exit(1);}
+
+ // d) Toy NUA:
+ if(fUseToyNUA[PHI])
+ {
+  if(fToyNUACuts[PHI][1]<0.||fToyNUACuts[PHI][2]>TMath::TwoPi()){Red("\n In ToyNUA phi range is out of boundaries\n");cout<<__LINE__<<endl;exit(1);}
+ }
+ if(fUseToyNUA[PT])
+ {
+  if(fToyNUACuts[PT][1]<0.||fToyNUACuts[PT][2]>100.){Red("\n In ToyNUA pt range is out of boundaries\n");cout<<__LINE__<<endl;exit(1);}
+ }
+ if(fUseToyNUA[ETA])
+ {
+  if(fToyNUACuts[ETA][1]<-1.||fToyNUACuts[ETA][2]>1.){Red("\n In ToyNUA eta range is out of boundaries\n");cout<<__LINE__<<endl;exit(1);}
+ }
+ // TBI 20210810 add similar protection also for E and CHARGE
 
 } // void AliAnalysisTaskMuPa::InsanityChecks()
 
@@ -1169,7 +1242,7 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBasePro = new TProfile("fBasePro","flags for the whole analysis",7,0.,7.);
+ fBasePro = new TProfile("fBasePro","flags for the whole analysis",8,0.,8.);
  fBasePro->SetStats(kFALSE);
  fBasePro->GetXaxis()->SetBinLabel(1,Form("fTaskName = %s",fTaskName.Data()));
  fBasePro->GetXaxis()->SetBinLabel(2,Form("fDataTakingPeriod = %s",fDataTakingPeriod.Data()));
@@ -1178,6 +1251,7 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
  fBasePro->GetXaxis()->SetBinLabel(5,"fTerminateAfterQA"); fBasePro->Fill(5.5,fTerminateAfterQA);
  fBasePro->GetXaxis()->SetBinLabel(6,"fVerbose"); fBasePro->Fill(6.5,fVerbose);
  fBasePro->GetXaxis()->SetBinLabel(7,"fRealData"); fBasePro->Fill(7.5,fRealData);
+ fBasePro->GetXaxis()->SetBinLabel(8,"fUseFisherYates"); fBasePro->Fill(8.5,fUseFisherYates);
  fBaseList->Add(fBasePro);
 
 } // void AliAnalysisTaskMuPa::BookBaseProfile()
@@ -1188,14 +1262,15 @@ void AliAnalysisTaskMuPa::BookAndNestAllLists()
 {
  // Book and nest all lists nested in the base list fBaseList.
 
- // a) Book and nest lists for QA histograms;
- // b) Book and nest lists for control event histograms;
- // c) Book and nest lists for control particle histograms;
- // d) Book and nest lists for Q-vectors;
- // e) Book and nest lists for weights;
- // f) Book and nest lists for centrality weights;
- // g) Book and nest all lists for correlations;
- // h) Book and nest all lists for nested loops;
+ // a) QA histograms;
+ // b) Control event histograms;
+ // c) Control particle histograms;
+ // d) Q-vectors;
+ // e) Weights;
+ // f) Centrality weights;
+ // g) Correlations;
+ // h) Nested loops;
+ // i) Toy NUA.
 
  // *) Book and nest lists for final results.
 
@@ -1203,53 +1278,59 @@ void AliAnalysisTaskMuPa::BookAndNestAllLists()
 
  if(!fBaseList){cout<<__LINE__<<endl;exit(1);}
 
- // a) Book and nest lists for QA histograms:
+ // a) QA histograms:
  fQAList = new TList();
  fQAList->SetName("QA");
  fQAList->SetOwner(kTRUE);
  fBaseList->Add(fQAList);
 
- // b) Book and nest lists for control histograms:
+ // b) Control histograms:
  fControlEventHistogramsList = new TList();
  fControlEventHistogramsList->SetName("ControlEventHistograms");
  fControlEventHistogramsList->SetOwner(kTRUE);
  fBaseList->Add(fControlEventHistogramsList);
 
- // c) Book and nest lists for control particle histograms;
+ // c) Control particle histograms;
  fControlParticleHistogramsList = new TList();
  fControlParticleHistogramsList->SetName("ControlParticleHistograms");
  fControlParticleHistogramsList->SetOwner(kTRUE);
  fBaseList->Add(fControlParticleHistogramsList);
 
- // d) Book and nest lists for Q-vectors:
+ // d) Q-vectors:
  fQvectorList = new TList();
  fQvectorList->SetName("Q-vectors");
  fQvectorList->SetOwner(kTRUE);
  fBaseList->Add(fQvectorList);
 
- // e) Book and nest lists for weights:
+ // e) Weights:
  fWeightsList = new TList();
  fWeightsList->SetName("Weights");
  fWeightsList->SetOwner(kTRUE);
  fBaseList->Add(fWeightsList);
 
- // f) Book and nest lists for centrality weights:
+ // f) Centrality weights:
  fCentralityWeightsList = new TList();
  fCentralityWeightsList->SetName("CentralityWeights");
  fCentralityWeightsList->SetOwner(kTRUE);
  fBaseList->Add(fCentralityWeightsList);
 
- // g) Book and nest all lists for correlations:
+ // g) Correlations:
  fCorrelationsList = new TList();
  fCorrelationsList->SetName("Correlations");
  fCorrelationsList->SetOwner(kTRUE);
  fBaseList->Add(fCorrelationsList);
 
- // h) Book and nest all lists for nested loops:
+ // h) Nested loops:
  fNestedLoopsList = new TList();
  fNestedLoopsList->SetName("NestedLoops");
  fNestedLoopsList->SetOwner(kTRUE);
  fBaseList->Add(fNestedLoopsList);
+
+ // i) Toy NUA:
+ fToyNUAList = new TList();
+ fToyNUAList->SetName("ToyNUA");
+ fToyNUAList->SetOwner(kTRUE);
+ fBaseList->Add(fToyNUAList);
 
  // ...
 
@@ -1459,7 +1540,7 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
- fControlEventHistogramsPro = new TProfile("fControlEventHistogramsPro","flags for control event histograms",20,0.,20.);
+ fControlEventHistogramsPro = new TProfile("fControlEventHistogramsPro","flags for control event histograms",21,0.,21.);
  fControlEventHistogramsPro->SetStats(kFALSE);
  fControlEventHistogramsPro->SetLineColor(COLOR);
  fControlEventHistogramsPro->SetFillColor(FILLCOLOR);
@@ -1483,6 +1564,7 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  fControlEventHistogramsPro->GetXaxis()->SetBinLabel(18,"centCorrCut[1][2]"); fControlEventHistogramsPro->Fill(17.5,fCentralityCorrelationsCuts[1][2]);
  fControlEventHistogramsPro->GetXaxis()->SetBinLabel(19,"centCorrCut[1][3]"); fControlEventHistogramsPro->Fill(18.5,fCentralityCorrelationsCuts[1][3]);
  fControlEventHistogramsPro->GetXaxis()->SetBinLabel(20,"centCorrCut[2][3]"); fControlEventHistogramsPro->Fill(19.5,fCentralityCorrelationsCuts[2][3]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(21,"fCentralityCorrelationCutVersion"); fControlEventHistogramsPro->Fill(20.5,fCentralityCorrelationCutVersion);
  fControlEventHistogramsList->Add(fControlEventHistogramsPro);
 
  // b) Common local labels:
@@ -1540,7 +1622,9 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
    if(fRealData && 1==rs){continue;}
    for(Int_t xyz=0;xyz<3;xyz++)
    {
-    fVertexHist[ba][rs][xyz] = new TH1D(Form("fVertexHist[%d][%d][%d]",ba,rs,xyz),Form("%s, %s",sba[ba].Data(),srs[rs].Data()),(Int_t)fVertexBins[0],fVertexBins[1],fVertexBins[2]); 
+    fVertexHist[ba][rs][xyz] = new TH1D(Form("fVertexHist[%d][%d][%d]",ba,rs,xyz),Form("%s, %s",sba[ba].Data(),srs[rs].Data()),(Int_t)fVertexBins[0],
+                                        xyz==0||xyz==1 ? fVertexBins[1]/10. : fVertexBins[1], xyz==0||xyz==1 ? fVertexBins[2]/10 : fVertexBins[2]);
+                                        // Above line: since spread of x and y components is order of magnitude smaller than z, the bin range is adjusted manually    
     //fVertexHist[ba][rs][xyz]->SetStats(kFALSE);
     fVertexHist[ba][rs][xyz]->GetXaxis()->SetTitle(Form("V_{%s}",sxyz[xyz].Data()));
     fVertexHist[ba][rs][xyz]->SetLineColor(fBeforeAfterColor[ba]);
@@ -1773,6 +1857,29 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
  } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
 
 } // void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMuPa::BookToyNUAHistograms()
+{
+ // Book all toy NUA histograms.
+
+ // a) Book the profile holding flags;
+
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
+ // a) Book the profile holding flags:
+ fToyNUAFlagsPro = new TProfile("fToyNUAFlagsPro","flags for toy NUA",5,0.,5.);
+ fToyNUAFlagsPro->SetStats(kFALSE);
+ fToyNUAFlagsPro->GetXaxis()->SetLabelSize(0.04); 
+ fToyNUAFlagsPro->GetXaxis()->SetBinLabel(1,"fUseToyNUA[PHI]"); fToyNUAFlagsPro->Fill(0.5,fUseToyNUA[PHI]);
+ fToyNUAFlagsPro->GetXaxis()->SetBinLabel(2,"fUseToyNUA[PT]"); fToyNUAFlagsPro->Fill(1.5,fUseToyNUA[PT]);
+ fToyNUAFlagsPro->GetXaxis()->SetBinLabel(3,"fUseToyNUA[ETA]"); fToyNUAFlagsPro->Fill(2.5,fUseToyNUA[ETA]);
+ fToyNUAFlagsPro->GetXaxis()->SetBinLabel(4,"fUseToyNUA[E]"); fToyNUAFlagsPro->Fill(3.5,fUseToyNUA[E]);
+ fToyNUAFlagsPro->GetXaxis()->SetBinLabel(5,"fUseToyNUA[CHARGE]"); fToyNUAFlagsPro->Fill(4.5,fUseToyNUA[CHARGE]);
+ fToyNUAList->Add(fToyNUAFlagsPro);
+
+} // void AliAnalysisTaskMuPa::BookToyNUAHistograms()
 
 //=======================================================================================================================
 
@@ -2050,7 +2157,15 @@ void AliAnalysisTaskMuPa::FilterEvent(AliVEvent *ave)
   Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
   for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
   {
-   AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to "a track" (i.e. any track)
+   AliAODTrack *aodTrack = NULL;
+   if(!fUseFisherYates)
+   {
+    aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to "a track" (i.e. any track)
+   }
+   else
+   {
+    aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack((Int_t)fRandomIndices->GetAt(iTrack)));
+   }
    if(!aodTrack){continue;}
    if(!SurvivesParticleCuts(aodTrack)){continue;}
    fSelectedTracks++;
@@ -2175,12 +2290,15 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliVParticle *vParticle,
     fParticleHist[ba][rs][TPCChi2perNDF]->Fill((Double_t)aodTrack->GetTPCchi2()/(Double_t)aodTrack->GetTPCNcls());
    }
   }
-  if(fParticleHist[ba][rs][TPCFoundFraction]){fParticleHist[ba][rs][TPCFoundFraction]->Fill(aodTrack->GetTPCFoundFraction());}
+  if(fParticleHist[ba][rs][TPCFoundFraction])
+  { 
+   // "TPCFoundFraction" is defined as (Double_t)aodTrack->GetTPCNcls()/(Double_t)aodTrack->GetTPCNCrossedRows()
+   fParticleHist[ba][rs][TPCFoundFraction]->Fill(aodTrack->GetTPCFoundFraction());
+  }
   if(fParticleHist[ba][rs][Chi2TPCConstrainedVsGlobal]){fParticleHist[ba][rs][Chi2TPCConstrainedVsGlobal]->Fill(aodTrack->GetChi2TPCConstrainedVsGlobal());}
   if(fParticleHist[ba][rs][ITSNcls]){fParticleHist[ba][rs][ITSNcls]->Fill(aodTrack->GetITSNcls());}
   if(fParticleHist[ba][rs][ITSChi2perNDF]){if(TMath::Abs(aodTrack->GetITSNcls())>0.){fParticleHist[ba][rs][ITSChi2perNDF]->Fill(aodTrack->GetITSchi2()/aodTrack->GetITSNcls());}}
-  if(fParticleHist[ba][rs][TPCNclsF]){fParticleHist[ba][rs][TPCNclsF]->Fill(aodTrack->GetTPCNclsF());}
- } // if(aodTrack)
+  if(fParticleHist[ba][rs][TPCNclsF]){fParticleHist[ba][rs][TPCNclsF]->Fill(aodTrack->GetTPCNclsF());}}
 
  // c) Fill histograms for AOD MC particle:
  if(aodmcParticle)
@@ -2250,10 +2368,21 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
     {
      Double_t centrality1 = ams->GetMultiplicityPercentile(sce[ce1].Data());
      Double_t centrality2 = ams->GetMultiplicityPercentile(sce[ce2].Data());
-     if(centrality1+centrality2 > 0.) 
+     if(centrality1 > 0. && centrality2 > 0.) 
      {
-      if(TMath::Abs((centrality1-centrality2)/(centrality1+centrality2)) > fCentralityCorrelationsCuts[ce1][ce2]) return kFALSE;     
-     }
+      switch(fCentralityCorrelationCutVersion)
+      {
+       case 0: // relative 
+        if(TMath::Abs((centrality1-centrality2)/(centrality1+centrality2)) > fCentralityCorrelationsCuts[ce1][ce2]) return kFALSE;
+       break;
+       case 1: // absolute
+        if(TMath::Abs((centrality1-centrality2)) > fCentralityCorrelationsCuts[ce1][ce2]) return kFALSE;
+       break;
+       default:
+        cout<<__LINE__<<endl; exit(1);
+       break; 
+      } // switch(fCentralityCorrelationCutVersion)           
+     } // if(centrality1 > 0. && centrality2 > 0.) 
     } 
    } // for(Int_t ce2=ce1+1;ce2<gCentralityEstimators;ce2++) 
   } // for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
@@ -2570,6 +2699,28 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
    if(aodTrack->GetTPCNclsF() < fParticleCuts[TPCNclsF][0]) return kFALSE;
    if(aodTrack->GetTPCNclsF() >= fParticleCuts[TPCNclsF][1]) return kFALSE;
   }
+
+  // Toy NUA:
+  if(fUseToyNUA[PHI] && aodTrack->Phi() >= fToyNUACuts[PHI][1] && aodTrack->Phi() < fToyNUACuts[PHI][2])
+  {
+   if(gRandom->Uniform(0,1) > fToyNUACuts[PHI][0]) return kFALSE; 
+  }
+  if(fUseToyNUA[PT] && aodTrack->Pt() >= fToyNUACuts[PT][1] && aodTrack->Pt() < fToyNUACuts[PT][2])
+  {
+   if(gRandom->Uniform(0,1) > fToyNUACuts[PT][0]) return kFALSE; 
+  }
+  if(fUseToyNUA[ETA] && aodTrack->Eta() >= fToyNUACuts[ETA][1] && aodTrack->Eta() < fToyNUACuts[ETA][2])
+  {
+   if(gRandom->Uniform(0,1) > fToyNUACuts[ETA][0]) return kFALSE; 
+  }
+  if(fUseToyNUA[E] && aodTrack->E() >= fToyNUACuts[E][1] && aodTrack->E() < fToyNUACuts[E][2])
+  {
+   if(gRandom->Uniform(0,1) > fToyNUACuts[E][0]) return kFALSE; 
+  }
+  if(fUseToyNUA[CHARGE] && aodTrack->Charge() >= fToyNUACuts[CHARGE][1] && aodTrack->Charge() < fToyNUACuts[CHARGE][2])
+  {
+   if(gRandom->Uniform(0,1) > fToyNUACuts[CHARGE][0]) return kFALSE; 
+  }
  } // if(aodTrack)
 
  // c) Cut on AOD MC particle:
@@ -2839,16 +2990,24 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
   Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
   for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
   {
-   AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to "a track" (i.e. any track)
-   if(!aTrack){continue;}
+   AliAODTrack *aodTrack = NULL;
+   if(!fUseFisherYates)
+   {
+    aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to "a track" (i.e. any track)
+   }
+   else
+   {
+    aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack((Int_t)fRandomIndices->GetAt(iTrack)));
+   }
+   if(!aodTrack){continue;}
    
    // Filter bit distribution:
    for(Int_t fb=0;fb<gFilterBits;fb++) // 'fb' is a 'left shifting opetator', i.e. 1<<fb = filterbit
    {
-    if(aTrack->TestFilterBit(1<<fb))
+    if(aodTrack->TestFilterBit(1<<fb))
     {
      if(fQAFilterBitScan){fQAFilterBitScan->Fill(fb);}
-     if(fQAIDvsFilterBit){fQAIDvsFilterBit->Fill(fb,aTrack->GetID());}
+     if(fQAIDvsFilterBit){fQAIDvsFilterBit->Fill(fb,aodTrack->GetID());}
     }
    }
 
@@ -2857,13 +3016,13 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
    {
     for(Int_t fb=0;fb<fQAFilterBits->GetSize();fb++)
     {
-     if(aTrack->TestFilterBit((Int_t)fQAFilterBits->GetAt(fb)))
+     if(aodTrack->TestFilterBit((Int_t)fQAFilterBits->GetAt(fb)))
      {
-      if(fQAKinematicsFilterBits[fb][PHI]){fQAKinematicsFilterBits[fb][PHI]->Fill(aTrack->Phi());}
-      if(fQAKinematicsFilterBits[fb][PT]){fQAKinematicsFilterBits[fb][PT]->Fill(aTrack->Pt());}
-      if(fQAKinematicsFilterBits[fb][ETA]){fQAKinematicsFilterBits[fb][ETA]->Fill(aTrack->Eta());}
-      if(fQAKinematicsFilterBits[fb][E]){fQAKinematicsFilterBits[fb][E]->Fill(aTrack->E());}
-      if(fQAKinematicsFilterBits[fb][CHARGE]){fQAKinematicsFilterBits[fb][CHARGE]->Fill(aTrack->Charge());}
+      if(fQAKinematicsFilterBits[fb][PHI]){fQAKinematicsFilterBits[fb][PHI]->Fill(aodTrack->Phi());}
+      if(fQAKinematicsFilterBits[fb][PT]){fQAKinematicsFilterBits[fb][PT]->Fill(aodTrack->Pt());}
+      if(fQAKinematicsFilterBits[fb][ETA]){fQAKinematicsFilterBits[fb][ETA]->Fill(aodTrack->Eta());}
+      if(fQAKinematicsFilterBits[fb][E]){fQAKinematicsFilterBits[fb][E]->Fill(aodTrack->E());}
+      if(fQAKinematicsFilterBits[fb][CHARGE]){fQAKinematicsFilterBits[fb][CHARGE]->Fill(aodTrack->Charge());}
      }
     }
    } // if(rs == RECO)
@@ -2875,17 +3034,33 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
   {
    for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++) // starting a loop over the first track
    {
-    AliAODTrack *aTrack1 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack1)); // getting a pointer to "a track" (i.e. any track)
-    if(!aTrack1){continue;}
-    if(!SurvivesParticleCuts(aTrack1)){continue;} 
+    AliAODTrack *aodTrack1 = NULL;
+    if(!fUseFisherYates)
+    {
+     aodTrack1 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack1)); // getting a pointer to "a track" (i.e. any track)
+    }
+    else
+    {
+     aodTrack1 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack((Int_t)fRandomIndices->GetAt(iTrack1)));
+    }
+    if(!aodTrack1){continue;}
+    if(!SurvivesParticleCuts(aodTrack1)){continue;} 
     for(Int_t iTrack2=iTrack1+1;iTrack2<nTracks;iTrack2++) // starting a loop over the second track
     {
-     AliAODTrack *aTrack2 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack2)); // getting a pointer to "a track" (i.e. any track)
-     if(!aTrack2){continue;}
-     if(!SurvivesParticleCuts(aTrack2)){continue;} 
-     if(fQASelfCorrelations[0]){fQASelfCorrelations[0]->Fill(aTrack1->Phi()-aTrack2->Phi());}
-     if(fQASelfCorrelations[1]){fQASelfCorrelations[1]->Fill(aTrack1->Pt()-aTrack2->Pt());}  
-     if(fQASelfCorrelations[2]){fQASelfCorrelations[2]->Fill(aTrack1->Eta()-aTrack2->Eta());}
+     AliAODTrack *aodTrack2 = NULL;
+     if(!fUseFisherYates)
+     {
+      aodTrack2 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack2)); // getting a pointer to "a track" (i.e. any track)
+     }
+     else
+     {
+      aodTrack2 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack((Int_t)fRandomIndices->GetAt(iTrack2)));
+     }
+     if(!aodTrack2){continue;}
+     if(!SurvivesParticleCuts(aodTrack2)){continue;} 
+     if(fQASelfCorrelations[0]){fQASelfCorrelations[0]->Fill(aodTrack1->Phi()-aodTrack2->Phi());}
+     if(fQASelfCorrelations[1]){fQASelfCorrelations[1]->Fill(aodTrack1->Pt()-aodTrack2->Pt());}  
+     if(fQASelfCorrelations[2]){fQASelfCorrelations[2]->Fill(aodTrack1->Eta()-aodTrack2->Eta());}
     } // for(Int_t iTrack2=iTrack1+1;iTrack2<nTracks;iTrack2++) // starting a loop over the second track
    } // for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++) // starting a loop over the first track
   }
@@ -2930,6 +3105,9 @@ void AliAnalysisTaskMuPa::GlobalTracksAOD(AliAODEvent *aAOD)
  if(0 != fGlobalTracksAOD->GetSize()){fGlobalTracksAOD->Delete();} // yes, this method determines mapping from scratch each time
 
  // b) Determine the map:
+
+ if(fUseFisherYates){cout<<__LINE__<<endl;exit(1);} // TBI 20210810 check and validate if also here Fisher-Yates needs to be applied
+
  for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++)
  {
   AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack));
@@ -3712,6 +3890,57 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliAODEvent *aAOD, AliMCEvent *aMC)
  } // if(fQACheckSelfCorrelations)
 
 } // void AliAnalysisTaskMuPa::FillQAHistograms(AliAODEvent *aAOD, AliMCEvent *aMC)
+
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::RandomIndices(AliVEvent *ave)
+{
+ // Randomize indices using Fisher-Yates algorithm. 
+
+ // a) Determine Ali{MC,ESD,AOD}Event;
+ // b) Get total number of tracks;
+ // c) Fisher-Yates algorithm.
+
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
+ // a) Determine Ali{MC,ESD,AOD}Event:
+ AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
+ //AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
+ AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
+
+ // b) Get total number of tracks:
+ Int_t nTracks = 0;
+ if(aAOD)
+ {
+  nTracks = aAOD->GetNumberOfTracks();
+ }
+ else if(aMC)
+ {
+  nTracks = aMC->GetNumberOfTracks();
+ }
+
+ if(nTracks<1){return;}
+
+ // c) Fisher-Yates algorithm:
+ fRandomIndices = new TArrayI(nTracks);
+ fRandomIndices->Reset(); 
+ for(Int_t i=0;i<nTracks;i++)
+ {
+  fRandomIndices->AddAt(i,i);
+ }
+ for(Int_t i=nTracks-1;i>=1;i--)
+ {
+  Int_t j = gRandom->Integer(i+1);
+  Int_t temp = fRandomIndices->GetAt(j);
+  fRandomIndices->AddAt(fRandomIndices->GetAt(i),j);
+  fRandomIndices->AddAt(temp,i);
+ } // end of for(Int_t i=nTracks-1;i>=1;i--) 
+
+} // void AliAnalysisTaskMuPa::RandomIndices(AliVEvent *ave)
+
+
+
+
 
 
 

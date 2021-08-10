@@ -78,6 +78,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    virtual void InitializeArraysForCentralityWeights();
    virtual void InitializeArraysForCorrelationsHistograms();
    virtual void InitializeArraysForNestedLoopsHistograms();
+   virtual void InitializeArraysForToyNUA();
    virtual void InitializeArraysForCommonLabels();
 
   // 1) Methods called in UserCreateOutputObjects():
@@ -92,6 +93,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void BookCentralityWeightsHistograms();
   virtual void BookCorrelationsHistograms();
   virtual void BookNestedLoopsHistograms();
+  virtual void BookToyNUAHistograms();
   virtual void BookFinalResultsHistograms();
 
   // 2) Methods called in UserExec(Option_t *):
@@ -114,6 +116,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void OnlineMonitoring();
   Bool_t SpecifiedEvent(AliVEvent *ave);
   virtual void MakeLookUpTable(AliAODEvent *aAOD, AliMCEvent *aMC);
+  virtual void RandomIndices(AliVEvent *ave);
 
   // 3) Methods called in Terminate(Option_t *):
   //    a) Get pointers:
@@ -129,6 +132,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
 
   // 5) Setters and getters:
   void SetRealData(Bool_t rd){this->fRealData = rd;};
+  void SetUseFisherYates(Bool_t ufy){this->fUseFisherYates = ufy;};
   void SetDataTakingPeriod(const char *dtp) {this->fDataTakingPeriod = dtp;};
   void SetAODNumber(const char *an) {this->fAODNumber = an;};
   void SetVerbose(Bool_t v) {this->fVerbose = v;};
@@ -172,10 +176,11 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   }
   void SetCentralityEstimator(const char *ce) {this->fCentralityEstimator = ce;};
 
-  void SetCentralityCorrelationsCuts(const char* firstEstimator, const char* secondEstimator, const Double_t cut)
+  void SetCentralityCorrelationsCuts(const char* firstEstimator, const char* secondEstimator, const Double_t cut, const int cutVersion)
   {
-   // This is the cut:
-   // |(firstEstimator-secondEstimator)/(firstEstimator+secondEstimator)| > cut => reject the event
+   // This is the cutVersion:
+   // cutVersion = 0 (relative) : |(firstEstimator-secondEstimator)/(firstEstimator+secondEstimator)| > cut => reject the event
+   // cutVersion = 1 (absolute) : |(firstEstimator-secondEstimator)| > cut => reject the event
 
    Int_t ce1 = -44;
    Int_t ce2 = -44;
@@ -190,10 +195,13 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    else if (TString(secondEstimator).EqualTo("SPDTracklets")){ce2 = 1;} 
    else if (TString(secondEstimator).EqualTo("CL0")){ce2 = 2;} 
    else if (TString(secondEstimator).EqualTo("CL1")){ce2 = 3;} 
-   else{exit(1);}
+   else{exit(2);}
+
+   if(!(cutVersion==0||cutVersion==1)){exit(3);}
 
    this->fUseCentralityCorrelationsCuts[ce1][ce2] = kTRUE;
    this->fCentralityCorrelationsCuts[ce1][ce2] = cut;
+   this->fCentralityCorrelationCutVersion = cutVersion;
 
   } // void SetCentralityCorrelationsCuts(const char* firstEstimator, const char* secondEstimator, const Double_t cut)
 
@@ -374,6 +382,24 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D* GetCentralityWeightsHist(const char *estimator); // . cxx
   TH1D* GetHistogramWithCentralityWeights(const char *filePath, const char *estimator); // .cxx
 
+  // Toy NUA:
+  void SetToyNUACuts(const char* kc, const Double_t probability, const Double_t min, const Double_t max)
+  {
+   Int_t var = -44;
+   if(TString(kc).EqualTo("phi")){var = PHI;} 
+   else if (TString(kc).EqualTo("pt")){var = PT;} 
+   else if (TString(kc).EqualTo("eta")){var = ETA;}
+   else if (TString(kc).EqualTo("e")){var = E;}
+   else if (TString(kc).EqualTo("charge")){var = CHARGE;}
+   else{exit(1);}
+   if(probability<0.||probability>1.){exit(1);}
+   if(fToyNUACuts[var][1]>fToyNUACuts[var][2]){exit(1);}
+   this->fToyNUACuts[var][0] = probability;
+   this->fToyNUACuts[var][1] = min;
+   this->fToyNUACuts[var][2] = max;
+   this->fUseToyNUA[var] = kTRUE;
+  }
+
   // Utility:
   void Red(const char* text);
   void Green(const char* text);
@@ -416,6 +442,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TList *fBaseList; // base list to hold all output object (a.k.a. grandmother of all lists)
   TProfile *fBasePro; // keeps flags relevant for the whole analysis
   Bool_t fRealData; // use SetRealData(...); in the steering macro
+  Bool_t fUseFisherYates; // use SetUseFisherYates(kTRUE); in the steering macro to randomize particle indices
+  TArrayI *fRandomIndices; // array to store random indices obtained from Fisher-Yates algorithm 
   TString fTaskName; // e.g. Form("Task=>%.1f-%.1f",centrMin,centrMax)
   TString fDataTakingPeriod; // the data taking period, use e.g. task->SetDataTakingPeriod("LHC10h")
   TString fAODNumber; // the AOD number, use e.g. task->SetPeriod("AOD160") (for "LHC10h")
@@ -463,6 +491,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fUseCentralityCuts;    // kFALSE by default, set to kTRUE if task->SetCentralityCuts(...) is called
   Bool_t fUseCentralityCorrelationsCuts[gCentralityEstimators][gCentralityEstimators]; // use specific cut below 
   Double_t fCentralityCorrelationsCuts[gCentralityEstimators][gCentralityEstimators]; // [firstEstimator][secondEstimator] |(firstEstimator-secondEstimator)/(firstEstimator+secondEstimator)| > cut => reject the event
+  Int_t fCentralityCorrelationCutVersion; // see .cxx switch(fCentralityCorrelationCutVersion) for explanatio
   //    Vertex:
   TH1D *fVertexHist[2][2][3];      //! distribution of vertex components [before,after event cuts][reco,sim][x,y,z]
   Double_t fVertexBins[3];         // [nBins,minVertex,maxVertex]
@@ -531,13 +560,19 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fCalculateCorrelations;       // calculate and store correlations
   TProfile *fCorrelationsPro[4][6][3]; //! multiparticle correlations [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality]
 
-  // *) Nested loops:
+  // 8) Nested loops:
   TList *fNestedLoopsList;               // list to hold all nested loops objects
   TProfile *fNestedLoopsFlagsPro;        // profile to hold all flags for nested loops
   Bool_t fCalculateNestedLoops;          // calculate and store correlations with nested loops, as a cross-check
   TProfile *fNestedLoopsPro[4][6][3];    //! multiparticle correlations from nested loops [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality]
   //TProfile *fNestedLoopsPerDemandPro[3]; // which correlator needs to be cross-checked with nested loops (no setter => recompile). [0=integrated,1=vs. multiplicity,2=vs. centrality]
   TArrayD *ftaNestedLoops[2];            //! e-b-e container for nested loops [0=angles;1=product of all weights]   
+
+  // 9) Toy NUA:
+  TList *fToyNUAList;                           // list to hold all correlations objects
+  TProfile *fToyNUAFlagsPro;                    // profile to hold all flags for correlations
+  Bool_t fUseToyNUA[gKinematicVariables];       // use toy NUA for particular kinematic variable
+  Double_t fToyNUACuts[gKinematicVariables][3]; // stores probability [0] and NUA sector range min [1] and max [2]. Use task->SetToyNUACuts("variable",probability,min,max)
 
   // * Final results:
   TList *fFinalResultsList; // list to hold all histograms with final results
@@ -562,7 +597,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,12);
+  ClassDef(AliAnalysisTaskMuPa,13);
 
 };
 
