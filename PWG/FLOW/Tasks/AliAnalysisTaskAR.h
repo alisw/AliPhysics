@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 09.08.2021
+ * Last Modified Date: 10.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -42,7 +42,18 @@ const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
 enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
 const TString kCenEstimatorNames[LAST_ECENESTIMATORS] = {"V0M", "CL0", "CL1",
                                                          "SPDTracklets"};
-enum kEvent { kX, kY, kZ, kCEN, kMUL, kMULQ, kMULW, kNCONTRIB, LAST_EEVENT };
+enum kEvent {
+  kX,
+  kY,
+  kZ,
+  kVPOS,
+  kCEN,
+  kMUL,
+  kMULQ,
+  kMULW,
+  kNCONTRIB,
+  LAST_EEVENT
+};
 enum kTrack {
   kPT,
   kPHI,

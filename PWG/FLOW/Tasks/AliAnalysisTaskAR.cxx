@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 09.08.2021
+ * Last Modified Date: 10.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -531,6 +531,7 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
       {"fEventControlHistograms[kX]", "Primary vertex X", "X", ""},
       {"fEventControlHistograms[kY]", "Primary vertex Y", "Y", ""},
       {"fEventControlHistograms[kZ]", "Primary vertex Z", "Z", ""},
+      {"fEventControlHistograms[kVPOS]", "Vertex Position", "|r_{V}|", ""},
       {"fEventControlHistograms[kCEN]", "centrality", "Centrality Percentile",
        ""},
       {"fEventControlHistograms[kMUL]", "multiplicity (without track cuts)",
@@ -565,6 +566,7 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
       {40., -20., 20.},   // kX
       {40., -20., 20.},   // kY
       {40., -20., 20.},   // kZ
+      {100., 0., 100.},   // kVPOS
       {10., 0., 100},     // kCEN
       {200., 0., 20000.}, // kMUL
       {200., 0., 20000.}, // kMULQ
@@ -588,7 +590,7 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
   }
   // initialize bin names of event cuts counter histogram
   TString EventCutsCounterBinNames[LAST_EEVENT] = {
-      "kX", "kY", "kZ", "kCEN", "kMUL", "kMULQ", "kMULW", "kNCONTRIB",
+      "kX", "kY", "kZ", "kVPOS", "kCEN", "kMUL", "kMULQ", "kMULW", "kNCONTRIB",
   };
   for (int name = 0; name < LAST_EEVENT; name++) {
     for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
@@ -627,6 +629,7 @@ void AliAnalysisTaskAR::InitializeArraysForCuts() {
       {-20., 20.}, // kX
       {-20., 20.}, // kY
       {-20., 20.}, // kZ
+      {0., 100.},  // kVPOS
       {0., 100.},  // kCEN
       {0., 1e6},   // kMUL
       {0., 1e6},   // kMULQ
@@ -1409,15 +1412,19 @@ void AliAnalysisTaskAR::FillEventControlHistograms(kBeforeAfter BA,
     AliAODVertex *PrimaryVertex = AODEvent->GetPrimaryVertex();
 
     // fill control histograms
+    fEventControlHistograms[kRECO][kX][BA]->Fill(PrimaryVertex->GetX());
+    fEventControlHistograms[kRECO][kY][BA]->Fill(PrimaryVertex->GetY());
+    fEventControlHistograms[kRECO][kZ][BA]->Fill(PrimaryVertex->GetZ());
+    fEventControlHistograms[kRECO][kVPOS][BA]->Fill(
+        std::sqrt(PrimaryVertex->GetX() * PrimaryVertex->GetX() +
+                  PrimaryVertex->GetY() * PrimaryVertex->GetY() +
+                  PrimaryVertex->GetZ() * PrimaryVertex->GetZ()));
     fEventControlHistograms[kRECO][kMUL][BA]->Fill(
         AODEvent->GetNumberOfTracks());
     fEventControlHistograms[kRECO][kMULQ][BA]->Fill(fSurvivingTracks);
     fEventControlHistograms[kRECO][kCEN][BA]->Fill(centralityPercentile);
     fEventControlHistograms[kRECO][kNCONTRIB][BA]->Fill(
         PrimaryVertex->GetNContributors());
-    fEventControlHistograms[kRECO][kX][BA]->Fill(PrimaryVertex->GetX());
-    fEventControlHistograms[kRECO][kY][BA]->Fill(PrimaryVertex->GetY());
-    fEventControlHistograms[kRECO][kZ][BA]->Fill(PrimaryVertex->GetZ());
   }
 
   // MC event
@@ -1600,6 +1607,20 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
     }
     if (PrimaryVertex->GetZ() > fEventCuts[kZ][kMAX]) {
       fEventCutsCounter[kRECO]->Fill(2 * kZ + kMAX + 0.5);
+      Flag = kFALSE;
+    }
+
+    // additionally cut on absolute value of the vertex postion
+    //   there are suspicous events with |r_v|=0 that we do not trust
+    Double_t VPos = std::sqrt(PrimaryVertex->GetX() * PrimaryVertex->GetX() +
+                              PrimaryVertex->GetY() * PrimaryVertex->GetY() +
+                              PrimaryVertex->GetZ() * PrimaryVertex->GetZ());
+    if (VPos < fEventCuts[kVPOS][kMIN]) {
+      fEventCutsCounter[kRECO]->Fill(2 * kVPOS + kMIN + 0.5);
+      Flag = kFALSE;
+    }
+    if (VPos > fEventCuts[kVPOS][kMAX]) {
+      fEventCutsCounter[kRECO]->Fill(2 * kVPOS + kMAX + 0.5);
       Flag = kFALSE;
     }
 
