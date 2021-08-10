@@ -62,6 +62,10 @@ void AliMultDepSpecAnalysisTask::DefineDefaultAxes(int maxMultMeas, int maxMultT
     std::vector<double> highPtBins = {20., 30., 40., 50.};
     ptBins.insert(ptBins.end(), highPtBins.begin(), highPtBins.end());
   } else if (fHighPtMode == 2) {
+    // simple extension of pt range to 50 GeV/c with less bins
+    std::vector<double> highPtBins = {20., 50.};
+    ptBins.insert(ptBins.end(), highPtBins.begin(), highPtBins.end());
+  } else if (fHighPtMode == 3) {
     // binning for improved RAA reference up to 100 GeV/c
     std::vector<double> highPtBins = {11., 12., 13., 14., 15., 16., 18., 20., 22., 24., 26., 30., 34., 40., 50., 60., 80., 100.};
     ptBins.insert(ptBins.end(), highPtBins.begin(), highPtBins.end());
@@ -221,13 +225,6 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
   BookHistogram(fHist_multPtSpec_trk_meas, "multPtSpec_trk_meas", {mult_meas, pt_meas});
 
   if (fIsMC) {
-    // tmp histogram for mc qa
-    fHist_mcQA.AddAxis("filestats", "files", 2, 0.5, 2.5);
-    auto mcQAHist = fHist_mcQA.GenerateHist("brokenFiles");
-    mcQAHist->GetXaxis()->SetBinLabel(1, "all");
-    mcQAHist->GetXaxis()->SetBinLabel(2, "broken");
-    fOutputList->Add(mcQAHist);
-
     BookHistogram(fHist_multDist_evt_gen, "multDist_evt_gen", {mult_true});
     BookHistogram(fHist_multDist_evt_gen_trig, "multDist_evt_gen_trig", {mult_true});
     BookHistogram(fHist_multCorrel_evt, "multCorrel_evt", {mult_meas, mult_true});
@@ -475,21 +472,6 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
   }
   LoopMeas(true); // set measured multiplicity fMeasMult
 
-  // ------- BEGIN TEMP for MC qa:
-  if (fIsMC) {
-    static int nNotTriggered = 0;
-    if (fEvent->GetEventNumberInFile() == 0) {
-      nNotTriggered = 0;
-      fHist_mcQA.Fill(1);
-    }
-    if(!fIsTriggered) {
-      nNotTriggered++;
-    }
-    if (nNotTriggered == 80) { // log if 80 (of 150) events in the file dont fire the trigger
-      fHist_mcQA.Fill(2);
-    }
-  }
-  // ------- END TEMP for MC qa:
   return true;
 }
 
@@ -1012,8 +994,13 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   if (options.Contains("highPtMode::50")) {
     fHighPtMode = 1;
     SetPtRange(0.15, 50.0);
-  } else if (options.Contains("highPtMode::100")) {
+  }
+  if (options.Contains("highPtMode::50coarse")) {
     fHighPtMode = 2;
+    SetPtRange(0.15, 50.0);
+  }
+  if (options.Contains("highPtMode::100")) {
+    fHighPtMode = 3;
     SetPtRange(0.15, 100.0);
   }
   
