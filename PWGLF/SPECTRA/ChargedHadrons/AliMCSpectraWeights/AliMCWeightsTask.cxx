@@ -204,6 +204,16 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* coll
                                 "FirstTrain_pp_LHC17l3b_p_y05.root";
             collisionSystem = "pp";
             break;
+        case MCGeneratorType::PP_PYTHIA_PERUGIA11:
+            stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
+                                "FirstTrain_pp_LHC14j4d_Perugia11.root";
+            collisionSystem = "pp";
+            break;
+        case MCGeneratorType::PP_PYTHIA_PERUGIA0:
+            stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
+                                "FirstTrain_pp_LHC11b10a_Perugia0.root";
+            collisionSystem = "pp";
+            break;
         case MCGeneratorType::PP_PYTHIA_OLD:
             stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
                                 "pp_5TeV_FirstTrain_LHC17l3b_p_210329.root";
