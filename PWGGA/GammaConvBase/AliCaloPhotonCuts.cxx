@@ -4936,6 +4936,30 @@ Bool_t AliCaloPhotonCuts::SetClusterTypeCut(Int_t clusterType)
     fMomPercentage=0.1;
     fUsePhotonIsolation=kTRUE;
     break;
+  case 15: //EMCAL+DCAL clusters with isolation R=0.1 and pTCone=0.1*ET_Cluster, accessible via "f"
+    fClusterType=4;
+    fIsolationRadius=0.1;
+    fMomPercentage=0.1;
+    fUsePhotonIsolation=kTRUE;
+    break;
+  case 16: //EMCAL+DCAL clusters with isolation R=0.2 and pTCone=0.1*ET_Cluster, accessible via "g"
+    fClusterType=4;
+    fIsolationRadius=0.2;
+    fMomPercentage=0.1;
+    fUsePhotonIsolation=kTRUE;
+    break;
+  case 17: //EMCAL+DCAL clusters with isolation R=0.3 and pTCone=0.1*ET_Cluster, accessible via "h"
+    fClusterType=4;
+    fIsolationRadius=0.3;
+    fMomPercentage=0.1;
+    fUsePhotonIsolation=kTRUE;
+    break;
+  case 18: //EMCAL+DCAL clusters with isolation R=0.4 and pTCone=0.1*ET_Cluster, accessible via "i"
+    fClusterType=4;
+    fIsolationRadius=0.4;
+    fMomPercentage=0.1;
+    fUsePhotonIsolation=kTRUE;
+    break;
   default:
     AliError(Form("ClusterTypeCut not defined %d",clusterType));
     return kFALSE;

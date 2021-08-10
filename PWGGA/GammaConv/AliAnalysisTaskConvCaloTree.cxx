@@ -43,6 +43,8 @@ ClassImp(AliAnalysisTaskConvCaloTree)
 AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE(),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
+  fCaloIsolation(NULL),
+  fCaloIsolationName("PhotonIsolation"),
   fReaderGammas(NULL),
   fPIDResponse(NULL),
   fCorrTaskSetting(""),
@@ -69,6 +71,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE()
   fSaveClusters(0),
   fSaveConversions(0),
   fSaveTracks(0),
+  fUseClusterIsolation(0),
   fMinTrackPt(0),
   fInfoList(NULL),
   fHistoNEvents(NULL),
@@ -81,9 +84,13 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE()
   fVBuffer_Cluster_Phi(),
   fVBuffer_Cluster_NCells(),
   fVBuffer_Cluster_M02(),
-  fVBuffer_Cluster_Time(),
   fVBuffer_Cluster_Fcross(),
+  fVBuffer_Cluster_Time(),
   fVBuffer_Cluster_Exotic(),
+  fVBuffer_Cluster_Isolated(),
+  fVBuffer_Cluster_CellTimes(),
+  fVBuffer_Cluster_CellEnergies(),
+  fVBuffer_Cluster_CellIDs(),
   fVTrueClusterPi0DaughterIndex(),
   fVTrueClusterEtaDaughterIndex(),
   fVTrueClusterMCId(),
@@ -108,6 +115,8 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE()
 AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char *name) : AliAnalysisTaskSE(name),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
+  fCaloIsolation(NULL),
+  fCaloIsolationName("PhotonIsolation"),
   fReaderGammas(NULL),
   fPIDResponse(NULL),
   fCorrTaskSetting(""),
@@ -134,6 +143,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char *name) : Ali
   fSaveClusters(0),
   fSaveConversions(0),
   fSaveTracks(0),
+  fUseClusterIsolation(0),
   fMinTrackPt(0),
   fInfoList(0),
   fHistoNEvents(NULL),
@@ -146,9 +156,13 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char *name) : Ali
   fVBuffer_Cluster_Phi(),
   fVBuffer_Cluster_NCells(),
   fVBuffer_Cluster_M02(),
-  fVBuffer_Cluster_Time(),
   fVBuffer_Cluster_Fcross(),
+  fVBuffer_Cluster_Time(),
   fVBuffer_Cluster_Exotic(),
+  fVBuffer_Cluster_Isolated(),
+  fVBuffer_Cluster_CellTimes(),
+  fVBuffer_Cluster_CellEnergies(),
+  fVBuffer_Cluster_CellIDs(),
   fVTrueClusterPi0DaughterIndex(),
   fVTrueClusterEtaDaughterIndex(),
   fVTrueClusterMCId(),
@@ -184,6 +198,10 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
 {
   fV0Reader = (AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   if(!fV0Reader){printf("Error: No V0 Reader");return;}// GetV0Reader
+
+  //retrieve pointer to CaloIsolation Instance
+  if(fUseClusterIsolation) fCaloIsolation = (AliPhotonIsolation*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloIsolationName.Data());
+  if(!fCaloIsolation && fUseClusterIsolation){ AliFatal("AliPhotonIsolation instance could not be initialized!");}
 
   if(fOutputList != NULL){
     delete fOutputList;
@@ -223,7 +241,7 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
   if(fSaveClusters)
   {
     if(fIsMC > 1){
-      fPhotonTree->Branch("Event_Weight",                     &fBuffer_EventWeight,                     "Event_Weight/F");
+      fPhotonTree->Branch("Event_Weight",                   &fBuffer_EventWeight,                     "Event_Weight/F");
     }
     fPhotonTree->Branch("Event_VertexZ",                    &fBuffer_Event_Vertex_Z,                  "Event_VertexZ/F");
 
@@ -236,6 +254,14 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
     if(fClusterCutsEMC){
       fPhotonTree->Branch("Cluster_Fcross",                 &fVBuffer_Cluster_Fcross);
       fPhotonTree->Branch("Cluster_isExotic",               &fVBuffer_Cluster_Exotic);
+      fPhotonTree->Branch("Cluster_CellEnergies",           &fVBuffer_Cluster_CellEnergies);
+      fPhotonTree->Branch("Cluster_CellIDs",                &fVBuffer_Cluster_CellIDs);
+      if(fIsMC == 0){
+        fPhotonTree->Branch("Cluster_CellTimes",              &fVBuffer_Cluster_CellTimes);
+      }
+    }
+    if(fUseClusterIsolation){
+      fPhotonTree->Branch("Cluster_Isolated",               &fVBuffer_Cluster_Isolated);
     }
     if(fIsMC) fPhotonTree->Branch("Cluster_MotherPi0",      &fVTrueClusterPi0DaughterIndex);
     if(fIsMC) fPhotonTree->Branch("Cluster_MotherEta",      &fVTrueClusterEtaDaughterIndex);
@@ -408,18 +434,23 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
       continue;
     }
 
-    Float_t clusPos[3]                      = { 0,0,0 };
-    clus->GetPosition(clusPos);
-    TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
-    Float_t etaCluster                     = (Float_t)clusterVector.Eta();
-    Float_t phiCluster                     = (Float_t)clusterVector.Phi();
+    Double_t vertex[3] = {0};
+    InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+    TLorentzVector clusterVector;
+    clus->GetMomentum(clusterVector,vertex);
+    TLorentzVector tmpvec;
+    tmpvec.SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
+    AliAODConversionPhoton *PhotonCandidate=new AliAODConversionPhoton(&tmpvec);
+
+    Float_t etaCluster                     = (Float_t)PhotonCandidate->Eta();
+    Float_t phiCluster                     = (Float_t)PhotonCandidate->Phi();
     if (phiCluster < 0) phiCluster          += 2*TMath::Pi();
 
     fVBuffer_Cluster_E.push_back(clus->E());
     fVBuffer_Cluster_Eta.push_back(etaCluster);
     fVBuffer_Cluster_Phi.push_back(phiCluster);
     fVBuffer_Cluster_NCells.push_back((Short_t)clus->GetNCells());
-    fVBuffer_Cluster_M02.push_back((Short_t)(clus->GetM02()*100));
+    fVBuffer_Cluster_M02.push_back((Short_t)(clus->GetM02()*1000));
     fVBuffer_Cluster_Time.push_back((Short_t)(clus->GetTOF()*1e9)); // time in ns
     // calculate Ecross
     if(fClusterCutsEMC){
@@ -429,17 +460,31 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
       Float_t eCross          = ((AliCaloPhotonCuts*)fClusterCutsEMC)->GetECross(largestCellID,cells);
       fVBuffer_Cluster_Fcross.push_back((Short_t)(1000*(1-eCross/ecell1)));
       fVBuffer_Cluster_Exotic.push_back(clus->GetIsExotic());
+
+
+      Int_t nCellCluster = clus->GetNCells();
+      for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+        Int_t cellID = clus->GetCellAbsId(iCell);
+        Double_t cellAmp = cells->GetCellAmplitude(cellID);
+        fVBuffer_Cluster_CellEnergies.push_back(cellAmp);
+        fVBuffer_Cluster_CellIDs.push_back(cellID);
+        if(fIsMC == 0){
+          Double_t cellTime = cells->GetCellTime(cellID);
+          fVBuffer_Cluster_CellTimes.push_back(cellTime*1e9);
+        }
+      }
+
+    }
+
+    if(fUseClusterIsolation && fCaloIsolation){
+      Float_t ClusterPt = PhotonCandidate->Pt();
+      Float_t pTCone = 0.1*ClusterPt; // momPercantage = 0.1
+      fVBuffer_Cluster_Isolated.push_back(fCaloIsolation->GetIsolation(i,0.4,pTCone));
     }
 
 
+
     if(fIsMC > 0){// MC info
-      Double_t vertex[3] = {0};
-      InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
-      TLorentzVector clusterVector;
-      clus->GetMomentum(clusterVector,vertex);
-      TLorentzVector tmpvec;
-      tmpvec.SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
-      AliAODConversionPhoton *PhotonCandidate=new AliAODConversionPhoton(&tmpvec);
       if(!PhotonCandidate){
         fVTrueClusterPi0DaughterIndex.push_back(0);
         fVTrueClusterEtaDaughterIndex.push_back(0);
@@ -782,6 +827,10 @@ void AliAnalysisTaskConvCaloTree::ResetBufferVectors(){
   fVBuffer_Cluster_Time.clear();
   fVBuffer_Cluster_Fcross.clear();
   fVBuffer_Cluster_Exotic.clear();
+  fVBuffer_Cluster_CellTimes.clear();
+  fVBuffer_Cluster_Isolated.clear();
+  fVBuffer_Cluster_CellEnergies.clear();
+  fVBuffer_Cluster_CellIDs.clear();
   fVTrueClusterPi0DaughterIndex.clear();
   fVTrueClusterEtaDaughterIndex.clear();
   fVTrueClusterMCId.clear();
@@ -796,13 +845,11 @@ void AliAnalysisTaskConvCaloTree::ResetBufferVectors(){
   fVTrueConvPi0DaughterIndex.clear();
   fVTrueConvEtaDaughterIndex.clear();
 
-
   fVBuffer_Track_px.clear();
   fVBuffer_Track_py.clear();
   fVBuffer_Track_pz.clear();
   fVBuffer_Track_P.clear();
   fVBuffer_Track_Calo_eta.clear();
   fVBuffer_Track_Calo_phi.clear();
-
 
 }
