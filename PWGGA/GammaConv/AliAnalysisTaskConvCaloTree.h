@@ -37,6 +37,8 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
 
     void SetV0Reader                        ( AliV0ReaderV1 *v0Reader )                   { fV0Reader           = v0Reader     ; }
     void SetV0ReaderName(TString name)                                                    { fV0ReaderName       = name         ; }
+    void SetIsoTask                         ( AliPhotonIsolation *isoTask )               { fCaloIsolation      = isoTask      ; }
+    void SetIsoTaskName(TString name)                                                     { fCaloIsolationName  = name         ; }
     void SetEventCuts                       ( AliConvEventCuts* conversionCuts,
                                               Bool_t IsHeavyIon )                         {
                                                                                             fEventCuts          = conversionCuts;
@@ -51,6 +53,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     void SetSaveClusters                    ( Bool_t val  )                               { fSaveClusters       = val          ; }
     void SetSaveConversions                 ( Bool_t val  )                               { fSaveConversions    = val          ; }
     void SetSaveTracks                      ( Int_t  val  )                               { fSaveTracks         = val          ; }
+    void SetUseClusterIsolation             ( Bool_t val  )                               { fUseClusterIsolation= val          ; }
 
     void SetMinTrackPt                      ( Double_t tmp )                              { fMinTrackPt         = tmp          ; }
 
@@ -74,6 +77,8 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
   protected:
     AliV0ReaderV1*                  fV0Reader;                      ///< V0 Reader
     TString                         fV0ReaderName;                  ///< V0 Reader Name
+    AliPhotonIsolation*             fCaloIsolation;                 ///< Isolation Task
+    TString                         fCaloIsolationName;             ///< Photon Isolation task Name
     TClonesArray*                   fReaderGammas;                  ///< Array with conversion photons selected by V0Reader Cut
     AliPIDResponse*                 fPIDResponse;                   ///< PID response
     TString                         fCorrTaskSetting;               ///<
@@ -101,6 +106,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     Bool_t                          fSaveClusters;                  ///< flag to decide to save clusters
     Bool_t                          fSaveConversions;               ///< flag to decide to save conversions
     Int_t                           fSaveTracks;                    ///< flag to decide to save tracks
+    Bool_t                          fUseClusterIsolation;           ///< flag to decide if isolation should be checked
 
     // track cuts
     Double_t                        fMinTrackPt;                                   //!<! minimum required track pT
@@ -121,9 +127,13 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<Float_t>            fVBuffer_Cluster_Phi;                          //!<! vector buffer  Calo (PHOS or EDC) cluster phi
     std::vector<Short_t>            fVBuffer_Cluster_NCells;                       //!<! vector buffer  Calo (PHOS or EDC) cluster NCells
     std::vector<Short_t>            fVBuffer_Cluster_M02;                          //!<! vector buffer  Calo (PHOS or EDC) cluster M02
-    std::vector<Short_t>            fVBuffer_Cluster_Fcross;                       //!<! vector buffer  Calo (PHOS or EDC) cluster M02
-    std::vector<Short_t>            fVBuffer_Cluster_Time;                         //!<! vector buffer  Calo (PHOS or EDC) cluster M02
-    std::vector<Bool_t>             fVBuffer_Cluster_Exotic;                       //!<! vector buffer  Calo (PHOS or EDC) cluster M02
+    std::vector<Short_t>            fVBuffer_Cluster_Fcross;                       //!<! vector buffer  Calo (PHOS or EDC) cluster Exoticity
+    std::vector<Short_t>            fVBuffer_Cluster_Time;                         //!<! vector buffer  Calo (PHOS or EDC) cluster Time
+    std::vector<Bool_t>             fVBuffer_Cluster_Exotic;                       //!<! vector buffer  Calo (PHOS or EDC) cluster Exotic
+    std::vector<Bool_t>             fVBuffer_Cluster_Isolated;                     //!<! vector buffer  Calo (PHOS or EDC) cluster Isolated
+    std::vector<Short_t>            fVBuffer_Cluster_CellTimes;                    //!<! vector buffer  Calo (PHOS or EDC) cluster cell times (multiple clusters within one vector! So keept track of ncells per cluster)
+    std::vector<Float_t>            fVBuffer_Cluster_CellEnergies;                 //!<! vector buffer  Calo (PHOS or EDC) cluster cell energies (multiple clusters within one vector! So keept track of ncells per cluster)
+    std::vector<Short_t>            fVBuffer_Cluster_CellIDs;                      //!<! vector buffer  Calo (PHOS or EDC) cluster cell Ids (multiple clusters within one vector! So keept track of ncells per cluster)
     std::vector<unsigned int>       fVTrueClusterPi0DaughterIndex;                 //!<! vector buffer   store the MC stack ID of mother pi0 for true information
     std::vector<unsigned int>       fVTrueClusterEtaDaughterIndex;                 //!<! vector buffer   store the MC stack ID of mother eta for true information
     std::vector<Short_t>            fVTrueClusterMCId;                             //!<! vector buffer   store the MC stack ID of mother eta for true information
@@ -145,7 +155,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<Short_t>                 fVBuffer_Track_Calo_eta;                   //!<! vector buffer: track eta on Calo surface (*10000)
     std::vector<UShort_t>                fVBuffer_Track_Calo_phi;                   //!<! vector buffer: track eta on Calo surface (*10000)
 
-    ClassDef(AliAnalysisTaskConvCaloTree, 3);
+    ClassDef(AliAnalysisTaskConvCaloTree, 4);
 };
 
 

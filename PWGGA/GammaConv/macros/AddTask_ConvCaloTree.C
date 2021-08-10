@@ -14,7 +14,8 @@ void AddTask_ConvCaloTree(
   Bool_t    doSaveMCInfo                  = 0,
   Float_t   minTrackMomentum              = 0.3,
   Bool_t    enableTriggerOverlapRej       = kTRUE,
-  TString   settingMaxFacPtHard           = "3."       // maximum factor between hardest jet and ptHard generated
+  TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
+  Bool_t    useClusterIsolation           = kTRUE       // if isolation shoul be used
   ){
 
 
@@ -47,6 +48,16 @@ void AddTask_ConvCaloTree(
     return;
   } else {
     cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< endl;
+  }
+
+  //========= Check Iso Task in  ANALYSIS manager  =====
+  if(useClusterIsolation){
+    TString PhotonIsolationName = "PhotonIsolation";
+    if( !(AliPhotonIsolation*)mgr->GetTask(PhotonIsolationName.Data()) ){
+      AliPhotonIsolation* fPhotonIsolation = new AliPhotonIsolation(PhotonIsolationName.Data());
+      mgr->AddTask(fPhotonIsolation);
+      mgr->ConnectInput(fPhotonIsolation,0,cinput);
+    }
   }
 
   TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
@@ -136,6 +147,7 @@ void AddTask_ConvCaloTree(
   fConvCaloTree->SetMesonCuts(analysisMesonCuts);
   fConvCaloTree->SetCorrectionTaskSetting(corrTaskSetting);
   fConvCaloTree->SetIsMC(isMC);
+  fConvCaloTree->SetUseClusterIsolation(useClusterIsolation);
   if(isMC && doSaveMCInfo) fConvCaloTree->SetSaveMCInformation(kTRUE);
   fConvCaloTree->SetMinTrackPt(minTrackMomentum);
   fConvCaloTree->SetV0ReaderName(V0ReaderName);
