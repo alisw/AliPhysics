@@ -320,12 +320,18 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 	// Quality cuts for selecting the leading particle
 	// Hybrid tracks + Geometrical cut
 	if(!fGeometricalCut){
-		fGeometricalCut = new AliESDtrackCuts("fGeometricalCut");
-		if(fTrackID==0) fGeometricalCut->SetCutGeoNcrNcl(3, 130, 1.5, 0.85, 0.7);
-		if(fTrackID==11) fGeometricalCut->SetCutGeoNcrNcl(2, 130, 1.5, 0.85, 0.7);
-		if(fTrackID==12) fGeometricalCut->SetCutGeoNcrNcl(4, 130, 1.5, 0.85, 0.7);
-		if(fTrackID==13) fGeometricalCut->SetCutGeoNcrNcl(3, 120, 1.5, 0.85, 0.7);
-		if(fTrackID==14) fGeometricalCut->SetCutGeoNcrNcl(3, 140, 1.5, 0.85, 0.7);
+
+		fGeometricalCut = new AliESDtrackCuts("fGeometricalCut");	
+
+		if(fTrackID==11) { fGeometricalCut->SetCutGeoNcrNcl(2, 130, 1.5, 0.85, 0.7); printf("fTrackID = %d\n",fTrackID);}
+		else if(fTrackID==12) { fGeometricalCut->SetCutGeoNcrNcl(4, 130, 1.5, 0.85, 0.7); printf("fTrackID = %d\n",fTrackID);}
+		else if(fTrackID==13) { fGeometricalCut->SetCutGeoNcrNcl(3, 120, 1.5, 0.85, 0.7); printf("fTrackID = %d\n",fTrackID);}
+		else if(fTrackID==14) { fGeometricalCut->SetCutGeoNcrNcl(3, 140, 1.5, 0.85, 0.7); printf("fTrackID = %d\n",fTrackID);}
+		else{ 
+			printf("Nominal setting for the GeometricalCut - fTrackID = %d\n",fTrackID);
+			fGeometricalCut->SetCutGeoNcrNcl(3, 130, 1.5, 0.85, 0.7); 
+		}
+
 	}
 
 	// Track Cuts for Nch in the Transverse region and pT spectra
@@ -354,65 +360,84 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 			fTrackFilter->SetMaxChi2PerClusterTPC(4);
 			fTrackFilter->SetMaxDCAToVertexZ(2);
 			fTrackFilter->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==1){ //! Lower: SetMinNCrossedRowsTPC(60)
+		}
+		if(fTrackID==1){ //! Lower: SetMinNCrossedRowsTPC(60)
 			fTrackFilter->SetMinNCrossedRowsTPC(60);
 			fTrackFilter->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fTrackFilter->SetMaxChi2PerClusterTPC(4);
 			fTrackFilter->SetMaxDCAToVertexZ(2);
 			fTrackFilter->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==2){ //! Higher: SetMinNCrossedRowsTPC(100)
+		}
+		if(fTrackID==2){ //! Higher: SetMinNCrossedRowsTPC(100)
+			printf("fTrackFilter for fTrackID = %d\n",fTrackID);
 			fTrackFilter->SetMinNCrossedRowsTPC(100);
 			fTrackFilter->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fTrackFilter->SetMaxChi2PerClusterTPC(4);
 			fTrackFilter->SetMaxDCAToVertexZ(2);
 			fTrackFilter->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==3){ //! Lower: SetMinRatioCrossedRowsOverFindableClustersTPC(0.7) 
+		}
+		if(fTrackID==3){ //! Lower: SetMinRatioCrossedRowsOverFindableClustersTPC(0.7) 
 			fTrackFilter->SetMinNCrossedRowsTPC(70);
 			fTrackFilter->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
 			fTrackFilter->SetMaxChi2PerClusterTPC(4);
 			fTrackFilter->SetMaxDCAToVertexZ(2);
 			fTrackFilter->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==4){ //! Higher: SetMinRatioCrossedRowsOverFindableClustersTPC(0.9)
+		}
+		if(fTrackID==4){ //! Higher: SetMinRatioCrossedRowsOverFindableClustersTPC(0.9)
 			fTrackFilter->SetMinNCrossedRowsTPC(70);
 			fTrackFilter->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
 			fTrackFilter->SetMaxChi2PerClusterTPC(4);
 			fTrackFilter->SetMaxDCAToVertexZ(2);
 			fTrackFilter->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==5){ //! Lower: SetMaxChi2PerClusterTPC(3)  
+		}
+		if(fTrackID==5){ //! Lower: SetMaxChi2PerClusterTPC(3)  
 			fTrackFilter->SetMinNCrossedRowsTPC(70);
 			fTrackFilter->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fTrackFilter->SetMaxChi2PerClusterTPC(3);
 			fTrackFilter->SetMaxDCAToVertexZ(2);
 			fTrackFilter->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==6){ //! Higher: SetMaxChi2PerClusterTPC(5)
+		}
+		if(fTrackID==6){ //! Higher: SetMaxChi2PerClusterTPC(5)
 			fTrackFilter->SetMinNCrossedRowsTPC(70);
 			fTrackFilter->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fTrackFilter->SetMaxChi2PerClusterTPC(5);
 			fTrackFilter->SetMaxDCAToVertexZ(2);
 			fTrackFilter->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==7){ //! Lower: SetMaxChi2PerClusterITS(25)
+		}
+		if(fTrackID==7){ //! Lower: SetMaxChi2PerClusterITS(25)
 			fTrackFilter->SetMinNCrossedRowsTPC(70);
 			fTrackFilter->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fTrackFilter->SetMaxChi2PerClusterTPC(4);
 			fTrackFilter->SetMaxDCAToVertexZ(2);
 			fTrackFilter->SetMaxChi2PerClusterITS(25);
-		}else if(fTrackID==8){ //! Higher: SetMaxChi2PerClusterITS(49)
+		}
+		if(fTrackID==8){ //! Higher: SetMaxChi2PerClusterITS(49)
 			fTrackFilter->SetMinNCrossedRowsTPC(70);
 			fTrackFilter->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fTrackFilter->SetMaxChi2PerClusterTPC(4);
 			fTrackFilter->SetMaxDCAToVertexZ(2);
 			fTrackFilter->SetMaxChi2PerClusterITS(49);
-		}else if(fTrackID==9){ //! Lower: SetMaxDCAToVertexZ(1)
+		}
+		if(fTrackID==9){ //! Lower: SetMaxDCAToVertexZ(1)
 			fTrackFilter->SetMinNCrossedRowsTPC(70);
 			fTrackFilter->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fTrackFilter->SetMaxChi2PerClusterTPC(4);
 			fTrackFilter->SetMaxDCAToVertexZ(1);
 			fTrackFilter->SetMaxChi2PerClusterITS(36);
-		}else{ //! Lower: SetMaxDCAToVertexZ(5)
+		}
+		if(fTrackID==10){ //! Lower: SetMaxDCAToVertexZ(5)
 			fTrackFilter->SetMinNCrossedRowsTPC(70);
 			fTrackFilter->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fTrackFilter->SetMaxChi2PerClusterTPC(4);
 			fTrackFilter->SetMaxDCAToVertexZ(5);
+			fTrackFilter->SetMaxChi2PerClusterITS(36);
+		}
+		if((fTrackID==11)||(fTrackID==12)||(fTrackID==13)||(fTrackID==14)){ //! Nominal values
+			printf("fTrackFilter for fTrackID = %d\n",fTrackID);
+			fTrackFilter->SetMinNCrossedRowsTPC(70);
+			fTrackFilter->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+			fTrackFilter->SetMaxChi2PerClusterTPC(4);
+			fTrackFilter->SetMaxDCAToVertexZ(2);
 			fTrackFilter->SetMaxChi2PerClusterITS(36);
 		}
 
@@ -441,67 +466,86 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==1){ //! Lower: SetMinNCrossedRowsTPC(60)
+		}
+		if(fTrackID==1){ //! Lower: SetMinNCrossedRowsTPC(60)
 			fHybridTrackCuts1->SetMinNCrossedRowsTPC(60);
 			fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==2){ //! Higher: SetMinNCrossedRowsTPC(100)
+		}
+		if(fTrackID==2){ //! Higher: SetMinNCrossedRowsTPC(100)
 			fHybridTrackCuts1->SetMinNCrossedRowsTPC(100);
 			fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==3){ //! Lower: SetMinRatioCrossedRowsOverFindableClustersTPC(0.7) 
+		}
+		if(fTrackID==3){ //! Lower: SetMinRatioCrossedRowsOverFindableClustersTPC(0.7) 
 			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
 			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==4){ //! Higher: SetMinRatioCrossedRowsOverFindableClustersTPC(0.9)
+		}
+		if(fTrackID==4){ //! Higher: SetMinRatioCrossedRowsOverFindableClustersTPC(0.9)
 			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
 			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==5){ //! Lower: SetMaxChi2PerClusterTPC(3)  
+		}
+		if(fTrackID==5){ //! Lower: SetMaxChi2PerClusterTPC(3)  
 			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(3);
 			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==6){ //! Higher: SetMaxChi2PerClusterTPC(5)
+		}
+		if(fTrackID==6){ //! Higher: SetMaxChi2PerClusterTPC(5)
 			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(5);
 			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==7){ //! Lower: SetMaxChi2PerClusterITS(25)
+		}
+		if(fTrackID==7){ //! Lower: SetMaxChi2PerClusterITS(25)
 			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts1->SetMaxChi2PerClusterITS(25);
-		}else if(fTrackID==8){ //! Higher: SetMaxChi2PerClusterITS(49)
+		}
+		if(fTrackID==8){ //! Higher: SetMaxChi2PerClusterITS(49)
 			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts1->SetMaxChi2PerClusterITS(49);
-		}else if(fTrackID==9){ //! Lower: SetMaxDCAToVertexZ(1)
+		}
+		if(fTrackID==9){ //! Lower: SetMaxDCAToVertexZ(1)
 			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts1->SetMaxDCAToVertexZ(1);
 			fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
-		}else{ //! Lower: SetMaxDCAToVertexZ(5)
+		}
+		if(fTrackID==10){ //! Lower: SetMaxDCAToVertexZ(5)
 			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts1->SetMaxDCAToVertexZ(5);
 			fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
 		}
+		if((fTrackID==11)||(fTrackID==12)||(fTrackID==13)||(fTrackID==14)){ //! Nominal values
+			printf("fHybridTrackCuts1 for fTrackID = %d\n",fTrackID);
+			fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
+			fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+			fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
+			fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
+		}
+
 	} 
 
 	if(!fHybridTrackCuts2){
@@ -527,67 +571,86 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==1){ //! Lower: SetMinNCrossedRowsTPC(60)
+		}
+		if(fTrackID==1){ //! Lower: SetMinNCrossedRowsTPC(60)
 			fHybridTrackCuts2->SetMinNCrossedRowsTPC(60);
 			fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==2){ //! Higher: SetMinNCrossedRowsTPC(100)
+		}
+		if(fTrackID==2){ //! Higher: SetMinNCrossedRowsTPC(100)
 			fHybridTrackCuts2->SetMinNCrossedRowsTPC(100);
 			fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==3){ //! Lower: SetMinRatioCrossedRowsOverFindableClustersTPC(0.7) 
+		}
+		if(fTrackID==3){ //! Lower: SetMinRatioCrossedRowsOverFindableClustersTPC(0.7) 
 			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
 			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==4){ //! Higher: SetMinRatioCrossedRowsOverFindableClustersTPC(0.9)
+		}
+		if(fTrackID==4){ //! Higher: SetMinRatioCrossedRowsOverFindableClustersTPC(0.9)
 			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
 			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==5){ //! Lower: SetMaxChi2PerClusterTPC(3)  
+		}
+		if(fTrackID==5){ //! Lower: SetMaxChi2PerClusterTPC(3)  
 			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(3);
 			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==6){ //! Higher: SetMaxChi2PerClusterTPC(5)
+		}
+		if(fTrackID==6){ //! Higher: SetMaxChi2PerClusterTPC(5)
 			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(5);
 			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
-		}else if(fTrackID==7){ //! Lower: SetMaxChi2PerClusterITS(25)
+		}
+		if(fTrackID==7){ //! Lower: SetMaxChi2PerClusterITS(25)
 			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts2->SetMaxChi2PerClusterITS(25);
-		}else if(fTrackID==8){ //! Higher: SetMaxChi2PerClusterITS(49)
+		}
+		if(fTrackID==8){ //! Higher: SetMaxChi2PerClusterITS(49)
 			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
 			fHybridTrackCuts2->SetMaxChi2PerClusterITS(49);
-		}else if(fTrackID==9){ //! Lower: SetMaxDCAToVertexZ(1)
+		}
+		if(fTrackID==9){ //! Lower: SetMaxDCAToVertexZ(1)
 			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts2->SetMaxDCAToVertexZ(1);
 			fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
-		}else{ //! Lower: SetMaxDCAToVertexZ(5)
+		}
+		if(fTrackID==10){ //! Lower: SetMaxDCAToVertexZ(5)
 			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
 			fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
 			fHybridTrackCuts2->SetMaxDCAToVertexZ(5);
 			fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
 		}
+		if((fTrackID==11)||(fTrackID==12)||(fTrackID==13)||(fTrackID==14)){ //! Nominal values
+			printf("fHybridTrackCuts2 for fTrackID = %d\n",fTrackID);
+			fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
+			fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+			fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
+			fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
+			fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
+		}
+
 	} 
 
 	//OpenFile(1);
