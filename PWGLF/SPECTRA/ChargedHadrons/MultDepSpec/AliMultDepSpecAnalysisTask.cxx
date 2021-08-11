@@ -429,6 +429,11 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       AliError("fMCEvent not available\n");
       return false;
     }
+    if(fIsNewReco && AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(fMCEvent)) {
+      // reject all the rare events with simulated in-bunch pileup
+      // those events would have a biased true multiplicity as we cannot identify the particles actually coming from the trigger event
+      return false;
+    }
 
     fMCVtxZ = fMCEvent->GetPrimaryVertex()->GetZ();
 
@@ -586,7 +591,8 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
   fNRepetitions = 1;
   fMCIsPileupParticle = false;
 
-  // remove tracks from background events (signal filtering)
+  // temporary solution to remove tracks from background events (corresponds to fMCIsPileupParticle = true)
+  // FIXME: we may actually not want to reject those tracks but count them as contamination instead
   if(fIsMC && fIsNewReco && std::abs(track->GetLabel()) >= AliMCEvent::BgLabelOffset()) return false;
 
   fPt = track->Pt();
@@ -632,7 +638,7 @@ bool AliMultDepSpecAnalysisTask::InitParticle(Particle_t* particle)
   fMCIsPileupParticle = false;
   // reject all particles and tracks that come from simulated out-of-bunch pileup
   if (fIsNewReco && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(fMCLabel, fMCEvent)) {
-    fMCIsPileupParticle = true; // store this info as it is relevant for track loop as well FIXME: we may actually not want to reject those particles on track level
+    fMCIsPileupParticle = true; // store this info as it is relevant for track loop as well
     return false;
   }
 
