@@ -3907,9 +3907,34 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe32220000","3l63103100000010");
 
 
+
+
   //////////////////////    Mult slices  PCM-EDC pp 13 TeV   //////////////////////////////////
-// INT7 trigger	V0M high mult	EG2	EG1	SPD high mult
-// bit: 10	bit: 76	bit 8e	bit: 8d	bit: 75
+// INT7 trigger	V0M high mult	EG2	EG1	SPD high mult PHI7
+// bit: 10	bit: 76	bit 8e	bit: 8d	bit: 75 bit: 62
+  
+  } else if (trainConfig == 4090){  // MB
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // 
+  } else if (trainConfig == 4091){  // PHI7
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // 
+  } else if (trainConfig == 4092){  // V0M high mult
+    cuts.AddCutPCMCalo("00076113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // 
+  } else if (trainConfig == 4093){  // SPD high mult
+    cuts.AddCutPCMCalo("00075113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // 
+
+// ------------------------------
+  } else if (trainConfig == 4094){  // MB
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // 
+  } else if (trainConfig == 4095){  // EG2
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // 
+  } else if (trainConfig == 4096){  // EG1
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // 
+  } else if (trainConfig == 4097){  // V0M high mult
+    cuts.AddCutPCMCalo("00076113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // 
+  } else if (trainConfig == 4098){  // SPD high mult
+    cuts.AddCutPCMCalo("00075113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // 
+
+
 // ------------------------------
 // INT 7
   } else if (trainConfig == 4100){  // 10% mult slices	
