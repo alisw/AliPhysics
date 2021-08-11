@@ -2413,19 +2413,23 @@ void AddTask_GammaCalo_pp(
 
 
   } else if (trainConfig == 2040){ // no TM
-    cuts.AddCutCalo("00010113","4117921090e32220000","0r631031000000d0"); // INT7 NL 21 + TB
-    cuts.AddCutCalo("00010113","4117921090e30220000","0r631031000000d0"); // INT7 NL 21 + TB no NCell cut
+    cuts.AddCutCalo("00010113","4117901090e3n220000","0r631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("00010113","4117901090e30220000","0r631031000000d0"); // INT7 NL 21 + TB no NCell cut
   } else if (trainConfig == 2041){ // no TM (cell TM in correction framework)
-    cuts.AddCutCalo("00010113","4117921090e32220000","0r631031000000d0"); // INT7 NL 21 + TB
-    cuts.AddCutCalo("00010113","4117921090e30220000","0r631031000000d0"); // INT7 NL 21 + TB no NCell cut
+    cuts.AddCutCalo("00010113","4117901090e3n220000","0r631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("00010113","4117901090e30220000","0r631031000000d0"); // INT7 NL 21 + TB no NCell cut
   } else if (trainConfig == 2042){ // no TM EG2
-    cuts.AddCutCalo("0008e113","4117921090e32220000","0r631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("0008e113","4117901090e3n220000","0r631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("0008e113","4117901090e30220000","0r631031000000d0"); // INT7 NL 21 + TB
   } else if (trainConfig == 2043){ // no TM EG1
-    cuts.AddCutCalo("0008d113","4117921090e32220000","0r631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("0008d113","4117901090e3n220000","0r631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("0008d113","4117901090e30220000","0r631031000000d0"); // INT7 NL 21 + TB
   } else if (trainConfig == 2044){ // no TM (cell TM in correction framework)
-    cuts.AddCutCalo("0008e113","4117921090e32220000","0r631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("0008e113","4117901090e3n220000","0r631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("0008e113","4117901090e30220000","0r631031000000d0"); // INT7 NL 21 + TB
   } else if (trainConfig == 2045){ // no TM (cell TM in correction framework)
-    cuts.AddCutCalo("0008d113","4117921090e32220000","0r631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("0008d113","4117901090e3n220000","0r631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("0008d113","4117901090e30220000","0r631031000000d0"); // INT7 NL 21 + TB
 
     // configs for different triggers with NCell efficiency
   } else if (trainConfig == 2046){
@@ -3395,7 +3399,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("s0076113","411790109fe30220000","0r631031000000d0"); // VOM HM trigg with SPD estimator
     cuts.AddCutCalo("r0075113","411790109fe30220000","0r631031000000d0"); // SPD HM with V0M estimator
 
-    
+
   //*************************************************************************************************
   // 13 TeV EMCal Sphericity differential cuts
   //*************************************************************************************************

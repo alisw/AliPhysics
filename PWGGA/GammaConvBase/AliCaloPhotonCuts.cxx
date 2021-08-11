@@ -2417,28 +2417,34 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
             if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
             if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
-            Int_t tmpLabel = cluster->GetLabelAt(0);
-            AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
-
-            if(particle->GetPdgCode() == 22 || fUseNCells == 5){ // only evalute ncell effi for gamma clusters
-              Bool_t isCellIso = kTRUE;
-              AliVCaloCells* EMCcells    = NULL;
-              if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-                EMCcells                 = event->GetEMCALCells();
-                isCellIso = !IsCellNextToCluster(cluster->GetCellAbsId(0), 0.1, EMCcells);
+            Bool_t acceptClusterPDG = kTRUE;
+            if(fUseNCells == 7){ // in this case, only accept cluster if it has a leading photon contribution
+              Int_t tmpLabel = cluster->GetLabelAt(0);
+              if(tmpLabel >= 0){
+                AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+                if(particle->GetPdgCode() != 22){ // only evalute ncell effi for gamma clusters
+                  acceptClusterPDG = kFALSE;
+                }
               }
-              // evaluate effi function and compare to random number between 1 and 2
-              // if function value greater than random number, reject cluster. otherwise let it pass
-              // function is 1 for E>4 GeV -> will apply standard NCell cut then
-              if( (fRandom.Uniform(0,1) > fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) && !isCellIso ){
-                failed = kTRUE;
-              } else {
-                passedNCellSpecial = kTRUE;
-              }
-            } else {
-              failed = kTRUE;
             }
+            Bool_t isCellIso = kTRUE;
+            AliVCaloCells* EMCcells    = NULL;
+            if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+              EMCcells                 = event->GetEMCALCells();
+              isCellIso = !IsCellNextToCluster(cluster->GetCellAbsId(0), 0.1, EMCcells);
+            }
+            // evaluate effi function and compare to random number between 1 and 2
+            // if function value greater than random number, reject cluster. otherwise let it pass
+            // function is 1 for E>4 GeV -> will apply standard NCell cut then
+            if( (fRandom.Uniform(0,1) > fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) && !isCellIso && acceptClusterPDG ){
+              failed = kTRUE;
+            } else {
+              passedNCellSpecial = kTRUE;
+            }
+          } else {
+            failed = kTRUE;
           }
+
         } else {
           if (cluster->GetNCells() < fMinNCells)
             failed = kTRUE;
@@ -2564,10 +2570,12 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
           if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
           Int_t tmpLabel = cluster->GetLabelAt(0);
-          AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
-          if(particle->GetPdgCode() != 22){ // if no gamma cluster return
-            if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
-            return kFALSE;
+          if(tmpLabel >= 0){
+            AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+            if(particle->GetPdgCode() != 22){ // if no gamma cluster return
+              if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+              return kFALSE;
+            }
           }
         }
         // evaluate if cluster is isolated
