@@ -32,8 +32,10 @@ public:
 
     enum
     {
-        kDplustoKpipi = 0,
-        kDstoKKpi     = 1
+        kD0toKpi      = 0,
+        kDplustoKpipi = 1,
+        kDstartoD0pi  = 2,
+        kDstoKKpi     = 3
     };
 
     AliAnalysisTaskSECharmHadronMLSelector();
@@ -50,6 +52,7 @@ public:
     // Getters
     std::vector<int> GetSelectedCandidates() const                                                {return fChHadIdx;}
     std::vector<std::vector<double> > GetMLSCores() const                                         {return fMLScores;}
+    int GetIsSelected() const                                                                     {return fIsSelected;}
 
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
@@ -84,9 +87,10 @@ private:
 
     std::vector<int> fChHadIdx = {};                       /// vector with indexes of charm selected charm hadrons
     std::vector<std::vector<double> > fMLScores = {};      /// vector of vectors of ML output scores for each selected charm hadron
+    int fIsSelected = -1;                                  /// flag for selection (needed for ambiguous cases, i.e. D0)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSECharmHadronMLSelector, 2); /// AliAnalysisTaskSE for charm-hadron candidate selection with ML
+    ClassDef(AliAnalysisTaskSECharmHadronMLSelector, 3); /// AliAnalysisTaskSE for charm-hadron candidate selection with ML
                                                          /// \endcond
 };
 
