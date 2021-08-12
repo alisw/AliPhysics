@@ -407,12 +407,14 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     fMetaData.Add(new TObjString("LPMProductionTag"), new TObjString(prodInfo.GetTag(AliProdInfo::kProdTag)));
   }
 
+  // This call is necessary to initialize event cuts according to the current run number
+  bool alieventcut = fEventCuts.AcceptEvent(fESD);
+  
   // In case of ESD we skip events like in the AOD filtering, for AOD this is not needed
   // We can use event cuts to avoid cases where we have zero reconstructed tracks
   bool skip_event = false;
   if (fESD && (fUseEventCuts || fSkipPileup || fSkipTPCPileup))
   {
-    bool alieventcut = fEventCuts.AcceptEvent(fESD);
     skip_event = !alieventcut && fUseEventCuts;
   }
 
