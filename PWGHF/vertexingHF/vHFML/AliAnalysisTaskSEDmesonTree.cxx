@@ -8,6 +8,8 @@
 // F. Grosa, fabrizio.grosa@cern.ch
 /////////////////////////////////////////////////////////////
 
+#include "yaml-cpp/yaml.h"
+
 #include <TRandom3.h>
 
 #include "AliAODRecoDecayHF2Prong.h"
@@ -29,6 +31,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAnalysisManager.h"
 #include "AliMultSelection.h"
+#include "AliAnalysisTaskSECharmHadronMLSelector.h"
 
 #include "AliAnalysisTaskSEDmesonTree.h"
 
@@ -158,19 +161,41 @@ void AliAnalysisTaskSEDmesonTree::UserCreateOutputObjects()
 
     //Loading of ML models
     if(fApplyML) {
-        switch (fDecChannel)
+        if(!fDependOnMLSelector)
         {
-            case kD0toKpi:
-                fMLResponse = new AliHFMLResponseD0toKpi("D0toKpiMLResponse", "D0toKpiMLResponse", fConfigPath.data());
-                break;
-            case kDplustoKpipi:
-                fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.data());
-                break;
-            case kDstartoD0pi:
-                fMLResponse = new AliHFMLResponseDstartoD0pi("DstartoD0piMLResponse", "DstartoD0piMLResponse", fConfigPath.data());
-                break;
+            switch (fDecChannel)
+            {
+                case kD0toKpi:
+                    fMLResponse = new AliHFMLResponseD0toKpi("D0toKpiMLResponse", "D0toKpiMLResponse", fConfigPath.data());
+                    break;
+                case kDplustoKpipi:
+                    fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.data());
+                    break;
+                case kDstartoD0pi:
+                    fMLResponse = new AliHFMLResponseDstartoD0pi("DstartoD0piMLResponse", "DstartoD0piMLResponse", fConfigPath.data());
+                    break;
+            }
+            fMLResponse->MLResponseInit();
         }
-        fMLResponse->MLResponseInit();
+        else {
+            std::string configLocalPath = AliMLModelHandler::ImportFile(fConfigPath.data());
+            YAML::Node nodeList;
+            try
+            {
+                nodeList = YAML::LoadFile(configLocalPath);
+            }
+            catch (std::exception &e)
+            {
+                AliFatal(Form("Yaml-ccp error: %s! Exit", e.what()));
+            }
+            fPtLimsML = nodeList["BINS"].as<vector<float> >();
+
+            for (const auto &model : nodeList["MODELS"])
+            {
+                fMLScoreCuts.push_back(model["cut"].as<std::vector<double> >());
+                fMLOptScoreCuts.push_back(model["cut_opt"].as<std::vector<std::string> >());
+            }
+        }
 
         CreateRecoSparses();
     }
@@ -354,14 +379,37 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
 
     fHistNEvents->Fill(4); // accepted event
 
+
+    // check if the train includes the common ML selector for the given charm-hadron species
+    AliAnalysisTaskSECharmHadronMLSelector *taskMLSelect = nullptr;
+    std::vector<int> chHadIdx{};
+    std::vector<std::vector<double> > scoresFromMLSelector{}, scoresFromMLSelectorSecond{};
+    if(fDependOnMLSelector) 
+    {
+        taskMLSelect = dynamic_cast<AliAnalysisTaskSECharmHadronMLSelector*>(AliAnalysisManager::GetAnalysisManager()->GetTask(fMLSelectorName.data()));
+        if(!taskMLSelect)
+        {
+            AliFatal("ML Selector not present in train and ML models not compiled!");
+            return;
+        }
+        chHadIdx = taskMLSelect->GetSelectedCandidates();
+        scoresFromMLSelector = taskMLSelect->GetMLSCores();
+        scoresFromMLSelectorSecond = taskMLSelect->GetMLSCoresSecond();
+    }
+    else
+    {
+        for (int iCand = 0; iCand < arrayCand->GetEntriesFast(); iCand++)
+            chHadIdx.push_back(iCand);
+    }
+
     // vHF object is needed to call the method that refills the missing info of the candidates
     // if they have been deleted in dAOD reconstruction phase
     // in order to reduce the size of the file
     AliAnalysisVertexingHF vHF = AliAnalysisVertexingHF();
 
-    for (int iCand = 0; iCand < arrayCand->GetEntriesFast(); iCand++)
+    for (size_t iCand = 0; iCand < chHadIdx.size(); iCand++)
     {
-        AliAODRecoDecayHF *dMeson = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(iCand));
+        AliAODRecoDecayHF *dMeson = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(chHadIdx[iCand]));
 
         bool unsetVtx = false;
         bool recVtx = false;
@@ -553,7 +601,27 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
 
             if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kDstartoD0pi)
             {
-                isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fAOD->GetMagneticField(), pidHF, 0);
+                if(fDependOnMLSelector)
+                {
+                    std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptCand);
+                    int bin = low - fPtLimsML.begin() - 1;
+                    if(bin < 0)
+                        bin = 0;
+                    else if(bin > fPtLimsML.size()-2)
+                        bin = fPtLimsML.size()-2;
+
+                    isMLsel = true;
+                    for(size_t iScore = 0; iScore < scoresFromMLSelector[iCand].size(); iScore++) {
+                        if((fMLOptScoreCuts[bin][iScore] == "upper" && scoresFromMLSelector[iCand][iScore] > fMLScoreCuts[bin][iScore]) ||
+                           (fMLOptScoreCuts[bin][iScore] == "lower" && scoresFromMLSelector[iCand][iScore] < fMLScoreCuts[bin][iScore]))
+                        {
+                            isMLsel = false;
+                            break;
+                        }
+                    }
+                }
+                else
+                    isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fAOD->GetMagneticField(), pidHF, 0);
                 if(isMLsel)
                 {
                     double mass = -1.;
@@ -571,7 +639,10 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     }
 
                     std::vector<double> var4nSparse = {mass, ptCand, centrality};
-                    var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
+                    if(fDependOnMLSelector)
+                        var4nSparse.insert(var4nSparse.end(), scoresFromMLSelector[iCand].begin(), scoresFromMLSelector[iCand].end());
+                    else
+                        var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
                     if(!fReadMC)
                         fnSparseReco[0]->Fill(var4nSparse.data());
                     else
@@ -594,7 +665,27 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
             }
             if(fDecChannel == kD0toKpi && isSelected >= 2)
             {
-                isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fAOD->GetMagneticField(), pidHF, 1);
+                if(fDependOnMLSelector)
+                {
+                    std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptCand);
+                    int bin = low - fPtLimsML.begin() - 1;
+                    if(bin < 0)
+                        bin = 0;
+                    else if(bin > fPtLimsML.size()-2)
+                        bin = fPtLimsML.size()-2;
+
+                    isMLsel = true;
+                    for(size_t iScore = 0; iScore < scoresFromMLSelectorSecond[iCand].size(); iScore++) {
+                        if((fMLOptScoreCuts[bin][iScore] == "upper" && scoresFromMLSelectorSecond[iCand][iScore] > fMLScoreCuts[bin][iScore]) ||
+                           (fMLOptScoreCuts[bin][iScore] == "lower" && scoresFromMLSelectorSecond[iCand][iScore] < fMLScoreCuts[bin][iScore]))
+                        {
+                            isMLsel = false;
+                            break;
+                        }
+                    }
+                }
+                else
+                    isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fAOD->GetMagneticField(), pidHF, 1);
                 if(isMLsel)
                 {
                     double mass = -1.;
@@ -606,7 +697,10 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     }
 
                     std::vector<double> var4nSparse = {mass, ptCand, centrality};
-                    var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
+                    if(fDependOnMLSelector)
+                        var4nSparse.insert(var4nSparse.end(), scoresFromMLSelectorSecond[iCand].begin(), scoresFromMLSelectorSecond[iCand].end());
+                    else
+                        var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
                     if(!fReadMC)
                         fnSparseReco[0]->Fill(var4nSparse.data());
                     else
