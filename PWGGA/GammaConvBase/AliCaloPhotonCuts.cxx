@@ -6244,7 +6244,7 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     break;
   case 14: // e   THIS IS PHOS-group STANDARD - also includes an M02 cut for E>2GeV
     if (!fUseNCells) fUseNCells=2;
-    fMinNCells=3;
+    fMinNCells=2;
     fMinENCell=2.;
     break;
 
@@ -7037,6 +7037,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             fCurrentMC == kXeXe5T17HIJING
           ){
             energy /= 0.977;
+            energy /= FunctionNL_kSDM(energy, 0.988638, 3.25466, -6.67582, -0.0148077) ;
           }
         }
       }
