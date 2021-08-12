@@ -107,8 +107,9 @@ public:
         fMLOutputMax[0] = maxBkg; fMLOutputMax[1] = maxPrompt; fMLOutputMax[2] = maxFD;
     }
 
-    void SetIsDependentOnMLSelector(bool flag=true) {
+    void SetIsDependentOnMLSelector(bool flag=true, std::string name="MLSelector") {
         fDependOnMLSelector = flag;
+        fMLSelectorName = name;
     }
 
     // Implementation of interface methods
@@ -185,7 +186,7 @@ private:
     std::vector<float> fPtLimsML{};                                             /// pT bins in case application of ML model is done in MLSelector task   
     std::vector<std::vector<double> > fMLScoreCuts{};                           /// score cuts used in case application of ML model is done in MLSelector task   
     std::vector<std::vector<std::string> > fMLOptScoreCuts{};                   /// score cut options (lower, upper) used in case application of ML model is done in MLSelector task                                           
-    std::string fMLSelectorName = "MLSelector";
+    std::string fMLSelectorName = "MLSelector";                                 /// name of MLSelector task
 
     /// \cond CLASSIMP
     ClassDef(AliAnalysisTaskSEDmesonTree, 4); /// AliAnalysisTaskSE for production of D-meson trees
