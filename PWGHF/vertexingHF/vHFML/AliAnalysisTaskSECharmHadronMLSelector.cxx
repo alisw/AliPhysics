@@ -258,6 +258,7 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
     // select candidates
     fChHadIdx.clear();
     fMLScores.clear();
+    fMLScoresSecond.clear();
     AliAnalysisVertexingHF vHF = AliAnalysisVertexingHF();
 
     for(int iCand = 0; iCand < arrayCand->GetEntriesFast(); iCand++)
@@ -268,8 +269,8 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
         bool recVtx = false;
         AliAODVertex *origOwnVtx = nullptr;
 
-        std::vector<double> scores{};
-        int isSelected = IsCandidateSelected(chHad, &vHF, absPdgMom, unsetVtx, recVtx, origOwnVtx, scores);
+        std::vector<double> scores{}, scoresSecond{};
+        int isSelected = IsCandidateSelected(chHad, &vHF, absPdgMom, unsetVtx, recVtx, origOwnVtx, scores, scoresSecond);
 
         if (!isSelected || (fDecChannel == kDstoKKpi && !((isSelected & 4) || (isSelected & 8))))
         {
@@ -282,12 +283,16 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
 
         fChHadIdx.push_back(iCand);
         fMLScores.push_back(scores);
+        fMLScoresSecond.push_back(scoresSecond);
 
         for(size_t iScore = 0; iScore < scores.size(); iScore++)
         {
             if(iScore > 2)
                 break;
-            fHistBDTOutputVsPt[iScore]->Fill(chHad->Pt(), scores[iScore]);
+            if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kDstartoD0pi || (fDecChannel == kDstoKKpi && (isSelected & 4)))
+                fHistBDTOutputVsPt[iScore]->Fill(chHad->Pt(), scores[iScore]);
+            if((fDecChannel == kD0toKpi && (isSelected >= 2)) || (fDecChannel == kDstoKKpi && (isSelected & 8)))
+                fHistBDTOutputVsPt[iScore]->Fill(chHad->Pt(), scoresSecond[iScore]);
         }
         switch(fDecChannel)
         {
@@ -325,7 +330,8 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
 
 //________________________________________________________________________
 int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayHF *&chHad, AliAnalysisVertexingHF *vHF,
-                                                                int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> &modelPred)
+                                                                int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx,
+                                                                std::vector<double> &modelPred, std::vector<double> &modelPredSecond)
 {
     if(!chHad || !vHF )
         return 0;
@@ -408,6 +414,8 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
     // ML application
     AliAODPidHF *pidHF = fRDCuts->GetPidHF();
     int isMLsel = 0;
+    modelPred = {};
+    modelPredSecond = {};
     if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kDstartoD0pi || (fDecChannel == kDstoKKpi && (isSelected & 4)))
     {
         if(fMLResponse->IsSelectedMultiClass(modelPred, chHad, fAOD->GetMagneticField(), pidHF, 0))
@@ -415,9 +423,16 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
     }
     if((fDecChannel == kD0toKpi && (isSelected >= 2)) || (fDecChannel == kDstoKKpi && (isSelected & 8)))
     {
-        if(fMLResponse->IsSelectedMultiClass(modelPred, chHad, fAOD->GetMagneticField(), pidHF, 1))
+        if(fMLResponse->IsSelectedMultiClass(modelPredSecond, chHad, fAOD->GetMagneticField(), pidHF, 1))
             isMLsel += (fDecChannel != kDstoKKpi) ? 2 : 8;
     }
+
+    if(modelPred.size() > modelPredSecond.size())
+        for(int iScore=0; iScore<modelPred.size(); iScore++)
+            modelPredSecond.push_back(-9999.);
+    else if(modelPred.size() < modelPredSecond.size())
+        for(int iScore=0; iScore<modelPredSecond.size(); iScore++)
+            modelPred.push_back(-9999.);
 
     isSelected = isMLsel;
 
