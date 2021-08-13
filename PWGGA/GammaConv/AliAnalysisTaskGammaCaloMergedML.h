@@ -348,12 +348,13 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
 
 
     TTree**                 tClusterTiming;
-    UChar_t                 MaxClusterN;
+    UChar_t                 fClusterN;
     UChar_t*                fRow;
     UChar_t*                fCol;
+    UChar_t*                fSupMod;
     Float_t*                fTiming;
     Float_t*                fEnergy;
-
+    UChar_t                 isTiming;
 
     // additional variables
     TRandom3                fRandom;                                            // random
@@ -382,7 +383,7 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMergedML(const AliAnalysisTaskGammaCaloMergedML&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMergedML &operator=(const AliAnalysisTaskGammaCaloMergedML&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMergedML, 42);
+    ClassDef(AliAnalysisTaskGammaCaloMergedML, 45);
 };
 
 #endif

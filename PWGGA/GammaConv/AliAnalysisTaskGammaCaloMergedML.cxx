@@ -279,12 +279,14 @@ AliAnalysisTaskGammaCaloMergedML::AliAnalysisTaskGammaCaloMergedML(): AliAnalysi
   fMergedClusterTreePartPhi(0),
   fMergedClusterTreeClusterM02(0),
   fMergedClusterTreeClusterM20(0),
-  MaxClusterN(100),
+  fClusterN(0),
   fRow(NULL),
   fCol(NULL),
+  fSupMod(NULL),
   fTiming(NULL),
   fEnergy(NULL),
-  tClusterTiming(NULL)
+  tClusterTiming(NULL),
+  isTiming(1)
 {
   for(Int_t i=0; i<50; i++){
     for(Int_t j=0; j<50; j++){
@@ -510,12 +512,14 @@ AliAnalysisTaskGammaCaloMergedML::AliAnalysisTaskGammaCaloMergedML(const char *n
   fMergedClusterTreePartPhi(0),
   fMergedClusterTreeClusterM02(0),
   fMergedClusterTreeClusterM20(0),
-  MaxClusterN(100),
+  fClusterN(0),
   fRow(NULL),
   fCol(NULL),
+  fSupMod(NULL),
   fTiming(NULL),
   fEnergy(NULL),
-  tClusterTiming(NULL)
+  tClusterTiming(NULL),
+  isTiming(1)
 {
 
   for(Int_t i=0; i<50; i++){
@@ -1548,18 +1552,23 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
       //Adds Trees that hold information for machine learning
 
       //MaxClusterN = 100;
-      UChar_t nCells =0;
-      fRow = new UChar_t[MaxClusterN];
-      fCol = new UChar_t[MaxClusterN];
-      fTiming = new Float_t[MaxClusterN];
-      fEnergy = new Float_t[MaxClusterN];
+      UChar_t MaxClusterN = 100;
 
-      tClusterTiming[iCut] = new TTree(Form("%s_%s_%s_%s_Cluster", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()), Form("%s_%s_%s_%s_Cluster", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
-      tClusterTiming[iCut]->Branch("nCells", &nCells, "nCells/b");
-      tClusterTiming[iCut]->Branch("fCol", fCol, "fCol[nCells]/b");
-      tClusterTiming[iCut]->Branch("fRow", fRow, "fRow[nCells]/b");
+      if(isTiming > 0){
+        fRow = new UChar_t[MaxClusterN];
+        fCol = new UChar_t[MaxClusterN];
+        fSupMod = new UChar_t[MaxClusterN];
+        fTiming = new Float_t[MaxClusterN];
+        fEnergy = new Float_t[MaxClusterN];
 
-
+        tClusterTiming[iCut] = new TTree(Form("%s_%s_%s_%s_Cluster", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()), Form("%s_%s_%s_%s_Cluster", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
+        tClusterTiming[iCut]->Branch("fClusterN", &fClusterN, "fClusterN/b");
+        tClusterTiming[iCut]->Branch("fCol", fCol, "fCol[fClusterN]/b");
+        tClusterTiming[iCut]->Branch("fRow", fRow, "fRow[fClusterN]/b");
+        tClusterTiming[iCut]->Branch("fSupMod", fSupMod, "fSupMod[fClusterN]/b");
+        tClusterTiming[iCut]->Branch("fTiming", fTiming, "fTiming[fClusterN]/F");
+        tClusterTiming[iCut]->Branch("fEnergy", fEnergy, "fEnergy[fClusterN]/F");
+      }
 
 
 
@@ -1697,7 +1706,7 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
     nContainerOutput++;
   }
   for(Int_t iCut=0; iCut<fnCuts; iCut++){
-    if(fIsMC>0){
+    if(fIsMC>0 && isTiming>0){
       OpenFile(nContainerOutput);
       PostData(nContainerOutput, tClusterTiming[iCut]);
     }
@@ -2212,7 +2221,29 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessClusters(){
       }
     } // meson is selected
 
+    if(fIsMC>0 && isTiming>0){
 
+      AliVCaloCells* cells  = 0x0;
+      cells = InputEvent()->GetEMCALCells();
+      fClusterN = clus->GetNCells();
+      Int_t tempcol, temprow, tempsup;
+
+      if(fClusterN > 99) return;
+      for (Int_t iCell=0; iCell < fClusterN; ++iCell){
+        Int_t cellAbsID = clus->GetCellsAbsId()[iCell];
+        tempsup = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetModuleNumberAndCellPosition(cellAbsID, tempcol, temprow);
+
+        fCol[iCell] = tempcol;
+        fRow[iCell] = temprow;
+        fSupMod[iCell] = tempsup;
+
+        fEnergy[iCell] = cells->GetCellAmplitude(cellAbsID);
+        fTiming[iCell] = cells->GetCellTime(cellAbsID);
+      }
+
+      tClusterTiming[fiCut]->Fill();
+
+    }
 
     delete pi0cand;
     delete clusSub1;
@@ -4032,25 +4063,6 @@ void AliAnalysisTaskGammaCaloMergedML::GetClusterReadout(AliVCluster* cluster, A
   //}
 }
 
-void AliAnalysisTaskGammaCaloMergedML::GetClusterTime(AliVCluster* cluster, AliVEvent* event){
-  //Variables to determine min and max Cell-index for determining the cluster-size
-  Int_t irow = -1, icol = -1;
-  Int_t nSupMod=0;
-  //necessary for cell readout
-  AliVCaloCells* cells  = 0x0;
-  cells = event->GetEMCALCells();
-  //number of cells in the cluster
-  const Int_t nCells    = cluster->GetNCells();
-
-  // Find The min and max cell index
-  if (nCells <1) return;
-  for (Int_t iCell=0; iCell < nCells; iCell++){
-    Int_t cellAbsID         = cluster->GetCellsAbsId()[iCell];
-
-    nSupMod = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetModuleNumberAndCellPosition(cellAbsID, icol, irow);
-
-  }
-}
 
 
 
