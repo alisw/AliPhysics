@@ -147,8 +147,8 @@ AliRsnMiniAnalysisTask * AddTaskRhoKaon
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //
-   //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigRhoKaon.C");
-   gROOT->LoadMacro("ConfigRhoKaon.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigRhoKaon.C");
+   //gROOT->LoadMacro("ConfigRhoKaon.C");
     if (!ConfigRhoKaon(task, isMC, isPP, "",nsigmapionTPC,nsigmakaonTPC,nsigmapionTOF,nsigmakaonTOF,ptpk,pid,lmassrho,hmassrho,linvmass,hinvmass,invmassbins,enableMonitor,optSy)) return 0x0;
 
    //
