@@ -46,6 +46,7 @@ ClassImp(AliAnalysisTaskMeanPtV2Corr);
 AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   AliAnalysisTaskSE(),
   fStageSwitch(0),
+  fSystFlag(0),
   fContSubfix(0),
   fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
@@ -108,6 +109,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
 AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_t IsMC, TString stageSwitch, TString ContSubfix):
   AliAnalysisTaskSE(name),
   fStageSwitch(0),
+  fSystFlag(0),
   fContSubfix(0),
   fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
@@ -214,6 +216,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   printf("Stage switch is %i\n\n\n",fStageSwitch);
   if(!fGFWSelection) SetSystFlag(0);
   fGFWSelection->PrintSetup();
+  fSystFlag = fGFWSelection->GetSystFlagIndex();
   if(fGFWSelection->GetSystFlagIndex() == 13) SetCentralityEstimator("CL0");
   else if(fGFWSelection->GetSystFlagIndex() == 14) SetCentralityEstimator("CL1");
   OpenFile(1);
@@ -755,7 +758,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *l
     ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
     ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
   } else return kFALSE; //DCA cut is a must for now
-  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+  return fGFWSelection->AcceptTrack(mtr,fSystFlag==1?0:ltrackXYZ,0,kFALSE);//All complementary DCA track cuts for FB768 are disabled
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptESDTrack(AliESDtrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp) {
   if(mtr->Pt()<ptMin) return kFALSE;
@@ -765,12 +768,8 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptESDTrack(AliESDtrack *mtr, Double_t *l
     mtr->GetImpactParameters(fD,fZ);
     ltrackXYZ[0] = fD;
     ltrackXYZ[1] = fZ;
-    // mtr->GetXYZ(ltrackXYZ);
-    // ltrackXYZ[0] = ltrackXYZ[0]-vtxp[0];
-    // ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
-    // ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
   } else return kFALSE; //DCA cut is a must for now
-  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+  return fGFWSelection->AcceptTrack(mtr,fSystFlag==1?0:ltrackXYZ,0,kFALSE);//All complementary DCA track cuts for FB768 are disabled
 };
 
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot) {
@@ -783,7 +782,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *l
     ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
   } else return kFALSE; //DCA cut is a must for now
   if(fGFWNtotSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE)) nTot++;
-  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+  return fGFWSelection->AcceptTrack(mtr,fSystFlag==1?0:ltrackXYZ,0,kFALSE); //All complementary DCA track cuts for FB768 are disabled
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptESDTrack(AliESDtrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot) {
   if(mtr->Pt()<ptMin) return kFALSE;
@@ -795,7 +794,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptESDTrack(AliESDtrack *mtr, Double_t *l
     ltrackXYZ[1] = fZ;
   } else return kFALSE; //DCA cut is a must for now
   if(fGFWNtotSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE)) nTot++;
-  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+  return fGFWSelection->AcceptTrack(mtr,fSystFlag==1?0:ltrackXYZ,0,kFALSE); //All complementary DCA track cuts for FB768 are disabled
 };
 
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptParticle(AliVParticle *mpa) {

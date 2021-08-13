@@ -1,12 +1,15 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Contains the additional event and track selection used within the <AliGFW> framework.
+If used, modified, or distributed, please aknowledge the original author of this code.
 */
 #include "AliGFWCuts.h"
 const Int_t AliGFWCuts::fNTrackFlags=9;
 const Int_t AliGFWCuts::fNEventFlags=10;
 AliESDtrackCuts *AliGFWCuts::fTCFB32=0;
 AliESDtrackCuts *AliGFWCuts::fTCFB64=0;
+AliESDtrackCuts *AliGFWCuts::fTCFB256=0;
+AliESDtrackCuts *AliGFWCuts::fTCFB512=0;
 AliGFWCuts::AliGFWCuts():
   fSystFlag(0),
   fFilterBit(96),
@@ -49,9 +52,31 @@ Int_t AliGFWCuts::AcceptTrack(AliESDtrack* l_Tr, Double_t* l_DCA, const Int_t &B
     fTCFB64->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
     fTCFB64->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);
   };
+  if(!fTCFB256) {
+    fTCFB256 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    fTCFB256->SetMaxDCAToVertexXY(2.4);
+    fTCFB256->SetMaxDCAToVertexZ(3.2);
+    fTCFB256->SetDCAToVertex2D(kTRUE);
+    fTCFB256->SetMaxChi2TPCConstrainedGlobal(36);
+    fTCFB256->SetMaxFractionSharedTPCClusters(0.4);
+  }
+  if(!fTCFB512) {
+    fTCFB512 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    fTCFB512->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+    fTCFB512->SetRequireITSRefit(kTRUE);
+    //Not sure if the following are relevant or not. But they should be? Otherwise, this is left without any DCA cuts, etc.
+    fTCFB512->SetMaxDCAToVertexXY(2.4);
+    fTCFB512->SetMaxDCAToVertexZ(3.2);
+    fTCFB512->SetDCAToVertex2D(kTRUE);
+    fTCFB512->SetMaxChi2TPCConstrainedGlobal(36);
+    fTCFB512->SetMaxFractionSharedTPCClusters(0.4);
+  }
   if(TMath::Abs(l_Tr->Eta())>fEta) return 0;
   if(fFilterBit==96) {
     if(!fTCFB32->AcceptTrack(l_Tr) && !fTCFB64->AcceptTrack(l_Tr)) return 0;
+  }
+  if(fFilterBit==768) {
+    if(!fTCFB256->AcceptTrack(l_Tr) && !fTCFB512->AcceptTrack(l_Tr)) return 0;
   }
   // if(fFilterBit!=2) {//Check is not valid for ITSsa tracks
   //   if(l_Tr->GetTPCNclsF()<fTPCNcls) return 0;
