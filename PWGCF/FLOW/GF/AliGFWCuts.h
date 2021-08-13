@@ -1,6 +1,7 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Contains the additional event and track selection used within the <AliGFW> framework.
+If used, modified, or distributed, please aknowledge the original author of this code.
 */
 #ifndef ALIGFWCUTS__H
 #define ALIGFWCUTS__H
@@ -42,6 +43,8 @@ class AliGFWCuts {
   static const Int_t fNEventFlags;
   static AliESDtrackCuts *fTCFB32;
   static AliESDtrackCuts *fTCFB64;
+  static AliESDtrackCuts *fTCFB256;
+  static AliESDtrackCuts *fTCFB512;
   Bool_t NeedsExtraWeight() { return fRequiresExtraWeight; };
  private:
   Bool_t fRequiresExtraWeight;

@@ -3177,30 +3177,30 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
                 if( lMinDCAXYFormula.CompareTo("") )
                 {
                     lMinDCAXYFormula.ReplaceAll("pt","x");
-                    TFormula* lCutMinDCAToVertexXYPtDep = new TFormula("lCutMinDCAToVertexXYPtDep", lMinDCAXYFormula.Data());
+                    TFormula lCutMinDCAToVertexXYPtDep("lCutMinDCAToVertexXYPtDep", lMinDCAXYFormula.Data());
                     
-                    lCutMinDCAToVertexXY = lCutMinDCAToVertexXYPtDep->Eval(fTreePrimVarPt);
+                    lCutMinDCAToVertexXY = lCutMinDCAToVertexXYPtDep.Eval(fTreePrimVarPt);
                 }
                 if( lMinDCAZFormula.CompareTo("") )
                 {
                     lMinDCAZFormula.ReplaceAll("pt","x");
-                    TFormula* lCutMinDCAToVertexZPtDep = new TFormula("lCutMinDCAToVertexZPtDep", lMinDCAZFormula.Data());
+                    TFormula lCutMinDCAToVertexZPtDep("lCutMinDCAToVertexZPtDep", lMinDCAZFormula.Data());
                     
-                    lCutMinDCAToVertexZ = lCutMinDCAToVertexZPtDep->Eval(fTreePrimVarPt);
+                    lCutMinDCAToVertexZ = lCutMinDCAToVertexZPtDep.Eval(fTreePrimVarPt);
                 }
                 if( lMaxDCAXYFormula.CompareTo(""))
                 {
                     lMaxDCAXYFormula.ReplaceAll("pt","x");
-                    TFormula* lCutMaxDCAToVertexXYPtDep = new TFormula("lCutMaxDCAToVertexXYPtDep", lMaxDCAXYFormula.Data());
+                    TFormula lCutMaxDCAToVertexXYPtDep("lCutMaxDCAToVertexXYPtDep", lMaxDCAXYFormula.Data());
                     
-                    lCutMaxDCAToVertexXY = lCutMaxDCAToVertexXYPtDep->Eval(fTreePrimVarPt);
+                    lCutMaxDCAToVertexXY = lCutMaxDCAToVertexXYPtDep.Eval(fTreePrimVarPt);
                 }
                 if( lMaxDCAZFormula.CompareTo("") )
                 {
                     lMaxDCAZFormula.ReplaceAll("pt","x");
-                    TFormula* lCutMaxDCAToVertexZPtDep = new TFormula("lCutMaxDCAToVertexZPtDep", lMaxDCAZFormula.Data());
+                    TFormula lCutMaxDCAToVertexZPtDep("lCutMaxDCAToVertexZPtDep", lMaxDCAZFormula.Data());
                     
-                    lCutMaxDCAToVertexZ = lCutMaxDCAToVertexZPtDep->Eval(fTreePrimVarPt);
+                    lCutMaxDCAToVertexZ = lCutMaxDCAToVertexZPtDep.Eval(fTreePrimVarPt);
                 }
                 
                 Float_t lCutMinPtTracks     = 0.;

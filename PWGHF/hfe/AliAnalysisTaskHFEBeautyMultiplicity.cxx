@@ -236,11 +236,16 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistPt_HFE_MC_Lc(0),   // measured lambda c->e
 
     fDCAxy_MC_B(0),	    // DCA from B
+    fDCAxy_MC_B_weight(0),  // DCA from B with weight
     fDCAxy_MC_D(0),	    // DCA from D
     fDCAxy_MC_Dpm(0),	    // DCA from D+,D*+
+    fDCAxy_MC_Dpm_weight(0),// DCA from D+,D*+ with weight
     fDCAxy_MC_D0(0),	    // DCA from D0,D*0
+    fDCAxy_MC_D0_weight(0), // DCA from D0,D*0 with weight
     fDCAxy_MC_Ds(0),	    // DCA from Ds+,D*+s
+    fDCAxy_MC_Ds_weight(0), // DCA from Ds+,D*+s with weight
     fDCAxy_MC_Lc(0),	    // DCA from Lambda
+    fDCAxy_MC_Lc_weight(0), // DCA from Lambda with weight
 
     fDCAxy_MC_ele(0),       // DCA True electron
     fDCAxy_MC_Phot(0),      // DCA True photonic electron
@@ -484,11 +489,16 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistPt_HFE_MC_Lc(0),   // measured lambda c->e
 
     fDCAxy_MC_B(0),	    // DCA from B
+    fDCAxy_MC_B_weight(0),  // DCA from B with weight
     fDCAxy_MC_D(0),	    // DCA from D
     fDCAxy_MC_Dpm(0),	    // DCA from D+,D*+
+    fDCAxy_MC_Dpm_weight(0),// DCA from D+,D*+ with weight
     fDCAxy_MC_D0(0),	    // DCA from D0,D*0
+    fDCAxy_MC_D0_weight(0), // DCA from D0,D*0 with weight
     fDCAxy_MC_Ds(0),	    // DCA from Ds+,D*+s
-    fDCAxy_MC_Lc(0), 	    // DCA from Lambda
+    fDCAxy_MC_Ds_weight(0), // DCA from Ds+,D*+s with weight
+    fDCAxy_MC_Lc(0),	    // DCA from Lambda
+    fDCAxy_MC_Lc_weight(0), // DCA from Lambda with weight
 
     fDCAxy_MC_ele(0),	    // DCA True electron
     fDCAxy_MC_Phot(0),      // DCA True photonic electron
@@ -829,7 +839,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList -> Add(fM20_2);
 
   //Track Eta vs. Phi (after Track cut)
-    fTrkEtaPhi_AfterCut = new TH2F("fTrkEtaPhi_AfterCut","Track Eta vs. Phi (after cut);#eta,#phi (rad)",180,-0.9,0.9,630,0,6.3);
+    fTrkEtaPhi_AfterCut = new TH2F("fTrkEtaPhi_AfterCut","Track Eta vs. Phi (after cut);#eta (rad);#phi (rad)",180,-0.9,0.9,630,0,6.3);
     fOutputList->Add(fTrkEtaPhi_AfterCut);
 
   //E/p (all)
@@ -946,11 +956,11 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fHistConv_R);
 
   //Electron Eta vs. Phi
-    fElectronEtaPhi = new TH2F("fElectronEtaPhi","Eta vs. Phi (electron)",180,-0.9,0.9,180,-0.9,0.9);
+    fElectronEtaPhi = new TH2F("fElectronEtaPhi","Eta vs. Phi (electron)",180,-0.9,0.9,630,0.0,6.3);
     fOutputList->Add(fElectronEtaPhi);
     
   //Hadron Eta vs. Phi
-    fHadronEtaPhi = new TH2F("fHadronEtaPhi","Eta vs. Phi (hadron)",180,-0.9,0.9,180,-0.9,0.9);
+    fHadronEtaPhi = new TH2F("fHadronEtaPhi","Eta vs. Phi (hadron)",180,-0.9,0.9,630,0.0,6.3);
     fOutputList->Add(fHadronEtaPhi);
 
   //tracklet distribution
@@ -1865,14 +1875,17 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         //    Electron Identification    //
         //*******************************//
 
+	cout << CutTrackEta[0] << " , " << CutTrackEta[1] << endl;
+
             //---- 10.Eta cut ----
-            if(TrkEta > CutTrackEta[1] && TrkEta < CutTrackEta[0]) continue;
+            if(TrkEta > CutTrackEta[1] || TrkEta < CutTrackEta[0]) continue;
             fNtracks->Fill(10);
 	    	if(pid_eleB){ fNoB -> Fill(11); fHistPt_B_TrkCut9 -> Fill(TrkPt);}
 	    	if(pid_eleD){ fNoD -> Fill(11); fHistPt_D_TrkCut9 -> Fill(TrkPt);}
 
             fHistEopAll -> Fill(eop);
 	    fTrkEtaPhi_AfterCut->Fill(TrkEta, TrkPhi);
+
             
             Bool_t fFlagNonHFE = kFALSE;    // photonic electron identification
             

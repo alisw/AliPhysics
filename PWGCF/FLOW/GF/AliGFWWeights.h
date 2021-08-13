@@ -1,6 +1,8 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Contains the non-uniform acceptance correction.
+Primarily used with <AliGFW> framework.
+If used, modified, or distributed, please aknowledge the original author of this code.
 */
 #ifndef ALIGFWWEIGHTS__H
 #define ALIGFWWEIGHTS__H

@@ -101,6 +101,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18():
   fhMassTOF(0),
   EPVzAvsCentrality(0), 
   EPVzCvsCentrality(0), 
+  q2vsCentrality(0), 
   hQVzAQVzCvsCentrality(0),
   hQVzAQTPCvsCentrality(0),
   hQVzCQTPCvsCentrality(0),
@@ -116,7 +117,8 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18():
   hCos2DeltaVzCVzAvsCentrality(0),
   eventtype(-999),
   ftree(0),           
-  tCentrality(0),     
+  tCentrality(0),        
+  tq2(0),     
   tType(0),  
   tHasTOF(0),    
   tpT(0),  
@@ -171,6 +173,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18(const char *name):
     fhMassTOF(0),
     EPVzAvsCentrality(0), 
     EPVzCvsCentrality(0), 
+    q2vsCentrality(0), 
     hQVzAQVzCvsCentrality(0),
     hQVzAQTPCvsCentrality(0),
     hQVzCQTPCvsCentrality(0),
@@ -187,6 +190,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18(const char *name):
     eventtype(-999),
     ftree(0),           
     tCentrality(0),     
+    tq2(0),  
     tType(0),  
     tHasTOF(0),    
     tpT(0),  
@@ -329,6 +333,10 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
   fListHist->Add(EPVzCvsCentrality);
   
 
+  q2vsCentrality = new TH2D("q2vsCentrality" , "q2vsCentrality" , 200,0,20, 105,0,105);
+  fListHist->Add(q2vsCentrality);
+
+    
   // if(fNHarm < 3){
   //   hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-100,100,105,0,105);
   //   hQVzAQTPCvsCentrality = new TH2F("hQVzAQTPCvsCentrality","hQVzAQTPCvsCentrality",1000,-100,100,105,0,105);
@@ -381,6 +389,7 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
     ftree = new TTree(Form("ftree_%i",fptc),Form("ftree_%i",fptc));
  
     ftree->Branch("tCentrality"      ,&tCentrality      ,"tCentrality/D"    );
+    ftree->Branch("tq2"              ,&tq2              ,"tq2/D"            );
     ftree->Branch("tType"            ,&tType            ,"tType/D"          );
     ftree->Branch("tHasTOF"          ,&tHasTOF          ,"tHasTOF/D"        );
     ftree->Branch("tpT"              ,&tpT              ,"tpT/D"            );
@@ -773,6 +782,8 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
   const Int_t nTracks = aod->GetNumberOfTracks();
   // cout<<"TPC ev plane "<<nTracks<<endl;
   Double_t Qxtn = 0, Qytn = 0;
+   Double_t q2Vec[2] = {0.,0.};
+  Int_t multQvec=0;
   
   for (Int_t it1 = 0; it1 < nTracks; it1++) {
     AliAODTrack* aodTrk1 = (AliAODTrack*)aod->GetTrack(it1);
@@ -781,13 +792,29 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
       delete aodTrk1;
       continue;
     }
-    
+
     if (aodTrk1->TestFilterBit(768) && TMath::Abs(aodTrk1->Eta()) < 0.8 && aodTrk1->GetTPCNcls() >= 70 && aodTrk1->Pt() >= 0.2 && aodTrk1->Pt() < 3.){
       
       Qxtn += TMath::Cos(fNHarm*aodTrk1->Phi());
       Qytn += TMath::Sin(fNHarm*aodTrk1->Phi());
     }
-  }
+
+    //q2
+    if(aodTrk1->TestFilterBit(BIT(8))||aodTrk1->TestFilterBit(BIT(9))  && TMath::Abs(aodTrk1->Eta()) < 0.8 && aodTrk1->GetTPCNcls() >= 70 && aodTrk1->Pt() >= 0.2 && aodTrk1->Pt() < 3.) {
+      
+      Double_t qx=TMath::Cos(fNHarm*aodTrk1->Phi());
+      Double_t qy=TMath::Sin(fNHarm*aodTrk1->Phi());
+      
+      q2Vec[0]+=qx;
+      q2Vec[1]+=qy;
+      multQvec++;
+    }
+  }//track loop
+
+  Double_t q2 = 0.;
+  if(multQvec>0) q2 = TMath::Sqrt(q2Vec[0]*q2Vec[0]+q2Vec[1]*q2Vec[1])/TMath::Sqrt(multQvec);
+
+  q2vsCentrality  ->Fill(q2  , iCen); 
   // TBC
   Double_t evPlAngTPC = TMath::ATan2(Qytn, Qxtn)/fNHarm;
 
@@ -982,6 +1009,7 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
       uqV0C = TMath::Cos(fNHarm*tPhi)*QxcnCor+TMath::Sin(fNHarm*tPhi)*QycnCor;
 	  
       tCentrality      = iCen;
+      tq2              = q2;
       tType            = eventtype;
       tHasTOF          = hasTOF;
       tpT              = pt;

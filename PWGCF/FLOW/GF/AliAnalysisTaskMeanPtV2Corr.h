@@ -107,6 +107,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr(const AliAnalysisTaskMeanPtV2Corr&);
   AliAnalysisTaskMeanPtV2Corr& operator=(const AliAnalysisTaskMeanPtV2Corr&);
   Int_t fStageSwitch;
+  Int_t fSystFlag;
   TString *fContSubfix;
   TString *fCentEst;
   Bool_t fExtendV0MAcceptance;

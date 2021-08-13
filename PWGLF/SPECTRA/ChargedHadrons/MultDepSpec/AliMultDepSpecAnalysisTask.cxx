@@ -62,6 +62,10 @@ void AliMultDepSpecAnalysisTask::DefineDefaultAxes(int maxMultMeas, int maxMultT
     std::vector<double> highPtBins = {20., 30., 40., 50.};
     ptBins.insert(ptBins.end(), highPtBins.begin(), highPtBins.end());
   } else if (fHighPtMode == 2) {
+    // simple extension of pt range to 50 GeV/c with less bins
+    std::vector<double> highPtBins = {20., 50.};
+    ptBins.insert(ptBins.end(), highPtBins.begin(), highPtBins.end());
+  } else if (fHighPtMode == 3) {
     // binning for improved RAA reference up to 100 GeV/c
     std::vector<double> highPtBins = {11., 12., 13., 14., 15., 16., 18., 20., 22., 24., 26., 30., 34., 40., 50., 60., 80., 100.};
     ptBins.insert(ptBins.end(), highPtBins.begin(), highPtBins.end());
@@ -403,16 +407,6 @@ double AliMultDepSpecAnalysisTask::GetParticleWeight(AliVParticle* particle)
   return 1.0;
 }
 
-// helper function to reject events containing only background
-bool IsBackgroundEvent(AliVEvent* event) {
-  AliVTrack* track = nullptr;
-  for (int i = 0; i < event->GetNumberOfTracks(); ++i) {
-    track = dynamic_cast<AliVTrack*>(event->GetTrack(i));
-    if (std::abs(track->GetLabel()) < AliMCEvent::BgLabelOffset()) return false;
-  }
-  return true;
-}
-
 //**************************************************************************************************
 /**
  * Initialize event quantities. Sets fEvent, fMCEvent, fMeasMult, fTrueMult
@@ -435,9 +429,12 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       AliError("fMCEvent not available\n");
       return false;
     }
-    if(fIsNewReco && IsBackgroundEvent(fEvent)) {
+    if(fIsNewReco && AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(fMCEvent)) {
+      // reject all the rare events with simulated in-bunch pileup
+      // those events would have a biased true multiplicity as we cannot identify the particles actually coming from the trigger event
       return false;
     }
+
     fMCVtxZ = fMCEvent->GetPrimaryVertex()->GetZ();
 
     if (fMCEnableDDC) {
@@ -450,7 +447,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
   // event info for random seeds
   fRunNumber = fEvent->GetRunNumber();
   fTimeStamp = fEvent->GetTimeStamp();
-  fEventNumber = fEvent->GetHeader()->GetEventIdAsLong();
+  fEventNumber = fEvent->GetEventNumberInFile();
 
   // check if event is accepted (dataset dependent)
   fAcceptEvent = fEventCuts->AcceptEvent(fEvent);
@@ -558,7 +555,7 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
   }
 
   for (int i = 0; i < fMCEvent->GetNumberOfTracks(); ++i) {
-    // Sets fMCPt, fMCEta, ... and checks if particle in kin range
+    // sets fMCPt, fMCEta, ... and checks if particle in kin range
     if (fIsESD) {
       if (!InitParticle((AliMCParticle*)fMCEvent->GetTrack(i))) continue;
     } else {
@@ -594,7 +591,8 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
   fNRepetitions = 1;
   fMCIsPileupParticle = false;
 
-  // remove tracks from background events (signal filtering)
+  // temporary solution to remove tracks from background events (corresponds to fMCIsPileupParticle = true)
+  // FIXME: we may actually not want to reject those tracks but count them as contamination instead
   if(fIsMC && fIsNewReco && std::abs(track->GetLabel()) >= AliMCEvent::BgLabelOffset()) return false;
 
   fPt = track->Pt();
@@ -637,6 +635,7 @@ bool AliMultDepSpecAnalysisTask::InitParticle(Particle_t* particle)
     return false;
   }
   fMCLabel = particle->GetLabel();
+  fMCIsPileupParticle = false;
   // reject all particles and tracks that come from simulated out-of-bunch pileup
   if (fIsNewReco && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(fMCLabel, fMCEvent)) {
     fMCIsPileupParticle = true; // store this info as it is relevant for track loop as well
@@ -645,8 +644,8 @@ bool AliMultDepSpecAnalysisTask::InitParticle(Particle_t* particle)
 
   if (!(TMath::Abs(particle->Charge()) > 0.01)) return false; // reject all neutral particles
 
-  fMCIsChargedPrimary = particle->IsPhysicalPrimary();
-  fMCIsChargedSecondary = (fMCIsChargedPrimary) ? false : (particle->IsSecondaryFromWeakDecay() || particle->IsSecondaryFromMaterial());
+  fMCIsChargedPrimary = fMCEvent->IsPhysicalPrimary(fMCLabel);
+  fMCIsChargedSecondary = (fMCIsChargedPrimary) ? false : (fMCEvent->IsSecondaryFromWeakDecay(fMCLabel) || fMCEvent->IsSecondaryFromMaterial(fMCLabel));
 
   // not interested in anything non-final
   if (!(fMCIsChargedPrimary || fMCIsChargedSecondary)) return false;
@@ -1002,8 +1001,13 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   if (options.Contains("highPtMode::50")) {
     fHighPtMode = 1;
     SetPtRange(0.15, 50.0);
-  } else if (options.Contains("highPtMode::100")) {
+  }
+  if (options.Contains("highPtMode::50coarse")) {
     fHighPtMode = 2;
+    SetPtRange(0.15, 50.0);
+  }
+  if (options.Contains("highPtMode::100")) {
+    fHighPtMode = 3;
     SetPtRange(0.15, 100.0);
   }
   

@@ -37,6 +37,7 @@
 #pragma link C++ class AliAnalysisTaskPPvsRT_TPCTOF+;
 #pragma link C++ class AliAnalysisTaskSpectraRT+;
 #pragma link C++ class AliAnalysisTaskSpectraMC+;
+#pragma link C++ class AliAnalysisTaskGenRT+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;

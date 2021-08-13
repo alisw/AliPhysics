@@ -170,6 +170,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fzvtx_Ntrkl_Corr(0),
 	fzvtx_Corr(0),
 	fNtrkl_Corr(0),
+	fzvtx_V0M(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
 	fDCAxy_Pt_ele(0),
@@ -352,6 +353,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fNtrkl_Corr(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
+	fzvtx_V0M(0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
 	fDCAxy_Pt_LS(0),
@@ -526,6 +528,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",301,-0.5,300.5);
 	fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
 	fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
+
+        fzvtx_V0M = new TH2F("fzvtx_V0M","Zvertex vs V0M; zvtx; V0M",400,-20.,20.,301,-0.5,300.5);
 
 	fDCAxy_Pt_ele = new TH2F("fDCAxy_Pt_ele","DCA_{xy} vs Pt (electron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 	fDCAxy_Pt_had = new TH2F("fDCAxy_Pt_had","DCA_{xy} vs Pt (hadron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
@@ -965,6 +969,14 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	}
 	fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
+        //------------ V0 mult ----------------------
+
+        AliAODVZERO *vzeroAOD = dynamic_cast<AliAODVZERO *>( dynamic_cast<AliAODEvent *>(fAOD)->GetVZEROData());
+        Int_t V0AMult = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
+        Int_t V0CMult = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
+        Int_t V0Mult=V0AMult+V0CMult;
+
+	fzvtx_V0M->Fill(Zvertex,V0Mult);
 
 	//-----------Tracklet correction-------------------------
 
@@ -2239,15 +2251,26 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(TFile* fEstimator, c
     
   Int_t runNo  = fAOD->GetRunNumber();
    
-  Char_t *periodNames;
+  Char_t periodNames[100];
 
-  if (runNo>=256504 && runNo<=258537) periodNames = "SPDTrklMC_LHC16k";  //LHC16k
-  if (runNo>=258919 && runNo<=259888) periodNames = "SPDTrklMC_LHC16l"; //LHC16l
-  if (runNo>=259888) periodNames = "SPDTrklMC_LHC17"; //LHC17
+  if (runNo>=256941 && runNo<=264347) sprintf(periodNames, "SPDTrklMC_LHC16");  //LHC16
+  if (runNo>=270581 && runNo<=282704) sprintf(periodNames, "SPDTrklMC_LHC17"); //LHC17
+  if (runNo>=285009 && runNo<=294925) sprintf(periodNames, "SPDTrklMC_LHC18"); //LHC18
     
   //TFile* fEstimator = TFile::Open(festimatorFile.Data());
-  fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames))->Clone(periodNames);
+  //fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames))->Clone(periodNames);
     
+  if(!fEstimator){
+	AliFatal("File with estimator not found!");
+	}
+
+  fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames));
+
+  if(!fMultEstimatorAvg){
+	AliFatal("fMultEstimatorAvg not found!");
+	}
+
+
   return fMultEstimatorAvg;
 }
  //____________________________________________________________________________
