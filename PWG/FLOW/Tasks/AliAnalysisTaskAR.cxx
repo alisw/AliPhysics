@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 10.08.2021
+ * Last Modified Date: 13.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -21,10 +21,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include "AliAnalysisTaskAR.h"
 #include "AliAODEvent.h"
+#include "AliAODHeader.h"
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
-#include "AliAnalysisTaskAR.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliMultSelection.h"
@@ -528,17 +529,19 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
   // set name
   TString EventControlHistogramNames[LAST_EEVENT][LAST_ENAME] = {
       // NAME, TITLE, XAXIS, YAXIS
-      {"fEventControlHistograms[kX]", "Primary vertex X", "X", ""},
-      {"fEventControlHistograms[kY]", "Primary vertex Y", "Y", ""},
-      {"fEventControlHistograms[kZ]", "Primary vertex Z", "Z", ""},
+      {"fEventControlHistograms[kX]", "Primary Vertex X", "X", ""},
+      {"fEventControlHistograms[kY]", "Primary Vertex Y", "Y", ""},
+      {"fEventControlHistograms[kZ]", "Primary Vertex Z", "Z", ""},
       {"fEventControlHistograms[kVPOS]", "Vertex Position", "|r_{V}|", ""},
-      {"fEventControlHistograms[kCEN]", "centrality", "Centrality Percentile",
+      {"fEventControlHistograms[kCEN]", "Centrality", "Centrality Percentile",
        ""},
-      {"fEventControlHistograms[kMUL]", "multiplicity (without track cuts)",
+      {"fEventControlHistograms[kCENREF]", "Reference Centrality",
+       "Centrality Percentile", ""},
+      {"fEventControlHistograms[kMUL]", "Multiplicity (without track cuts)",
        "M", ""},
-      {"fEventControlHistograms[kMULQ]", "multiplicity (with track cuts)", "M",
+      {"fEventControlHistograms[kMULQ]", "Multiplicity (with track cuts)", "M",
        ""},
-      {"fEventControlHistograms[kMULW]", "multiplicity (computed from weights)",
+      {"fEventControlHistograms[kMULW]", "Multiplicity (computed from weights)",
        "M", ""},
       {"fEventControlHistograms[kNCONTRIB]", "Number of Contributers",
        "#Contributors", ""},
@@ -568,6 +571,7 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
       {40., -20., 20.},   // kZ
       {100., 0., 100.},   // kVPOS
       {10., 0., 100},     // kCEN
+      {10., 0., 100},     // kCENREF
       {200., 0., 20000.}, // kMUL
       {200., 0., 20000.}, // kMULQ
       {200., 0., 20000.}, // kMULW
@@ -590,7 +594,8 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
   }
   // initialize bin names of event cuts counter histogram
   TString EventCutsCounterBinNames[LAST_EEVENT] = {
-      "kX", "kY", "kZ", "kVPOS", "kCEN", "kMUL", "kMULQ", "kMULW", "kNCONTRIB",
+      "kX",      "kY",   "kZ",    "kVPOS", "kCEN",
+      "kCENREF", "kMUL", "kMULQ", "kMULW", "kNCONTRIB",
   };
   for (int name = 0; name < LAST_EEVENT; name++) {
     for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
@@ -626,15 +631,16 @@ void AliAnalysisTaskAR::InitializeArraysForCuts() {
   // default event cuts
   Double_t EventCutDefaults[LAST_EEVENT][LAST_EMINMAX]{
       // MIN MAX
-      {-20., 20.}, // kX
-      {-20., 20.}, // kY
-      {-20., 20.}, // kZ
-      {0., 100.},  // kVPOS
-      {0., 100.},  // kCEN
-      {0., 1e6},   // kMUL
-      {0., 1e6},   // kMULQ
-      {0., 1e6},   // kMULW
-      {0., 1e6},   // kNCONTRIB
+      {-20., 20.},       // kX
+      {-20., 20.},       // kY
+      {-20., 20.},       // kZ
+      {0., 100.},        // kVPOS
+      {0., 100.},        // kCEN
+      {-10000., 10000.}, // kCENREF
+      {0., 1e6},         // kMUL
+      {0., 1e6},         // kMULQ
+      {0., 1e6},         // kMULW
+      {0., 1e6},         // kNCONTRIB
   };
   // initialize array for event cuts
   for (int var = 0; var < LAST_EEVENT; ++var) {
@@ -1403,13 +1409,18 @@ void AliAnalysisTaskAR::FillEventControlHistograms(kBeforeAfter BA,
   // AOD event
   if (AODEvent) {
     // get centrality percentile
-    Double_t centralityPercentile =
-        dynamic_cast<AliMultSelection *>(
-            AODEvent->FindListObject("MultSelection"))
-            ->GetMultiplicityPercentile(fCentralityEstimator);
+    AliMultSelection *AMS = dynamic_cast<AliMultSelection *>(
+        AODEvent->FindListObject("MultSelection"));
+
+    // get reference centrality
+    AliAODHeader *Header = dynamic_cast<AliAODHeader *>(AODEvent->GetHeader());
 
     // get primary vertex object
     AliAODVertex *PrimaryVertex = AODEvent->GetPrimaryVertex();
+    if (!AMS || !PrimaryVertex || !Header) {
+      std::cout << __LINE__ << ": did not get pointers" << std::endl;
+      Fatal("FillEventControlHistograms", "Invalid pointers");
+    }
 
     // fill control histograms
     fEventControlHistograms[kRECO][kX][BA]->Fill(PrimaryVertex->GetX());
@@ -1419,10 +1430,15 @@ void AliAnalysisTaskAR::FillEventControlHistograms(kBeforeAfter BA,
         std::sqrt(PrimaryVertex->GetX() * PrimaryVertex->GetX() +
                   PrimaryVertex->GetY() * PrimaryVertex->GetY() +
                   PrimaryVertex->GetZ() * PrimaryVertex->GetZ()));
+    fEventControlHistograms[kRECO][kCEN][BA]->Fill(
+        AMS->GetMultiplicityPercentile(fCentralityEstimator));
+    // fRefMultComb08 combined reference multiplicity (tracklets + ITSTPC) in
+    // |eta|<0.8
+    fEventControlHistograms[kRECO][kCENREF][BA]->Fill(
+        Header->GetRefMultiplicityComb08());
     fEventControlHistograms[kRECO][kMUL][BA]->Fill(
         AODEvent->GetNumberOfTracks());
     fEventControlHistograms[kRECO][kMULQ][BA]->Fill(fSurvivingTracks);
-    fEventControlHistograms[kRECO][kCEN][BA]->Fill(centralityPercentile);
     fEventControlHistograms[kRECO][kNCONTRIB][BA]->Fill(
         PrimaryVertex->GetNContributors());
   }
@@ -1569,12 +1585,28 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
         ams->GetMultiplicityPercentile(fCentralityEstimator);
 
     // cut event if it is not within the centrality percentile
-    if ((MultiplicityPercentile < fEventCuts[kCEN][kMIN])) {
+    if (MultiplicityPercentile < fEventCuts[kCEN][kMIN]) {
       fEventCutsCounter[kRECO]->Fill(2 * kCEN + kMIN + 0.5);
       Flag = kFALSE;
     }
     if (MultiplicityPercentile > fEventCuts[kCEN][kMAX]) {
       fEventCutsCounter[kRECO]->Fill(2 * kCEN + kMAX + 0.5);
+      Flag = kFALSE;
+    }
+
+    // get refercence centrality percentile
+    AliAODHeader *Header = dynamic_cast<AliAODHeader *>(aAOD->GetHeader());
+    if (!Header) {
+      return kFALSE;
+    }
+    Double_t RefMultiplicityPercentile = Header->GetRefMultiplicityComb08();
+    // cut event if it is not within the reference centrality percentile
+    if (RefMultiplicityPercentile < fEventCuts[kCENREF][kMIN]) {
+      fEventCutsCounter[kRECO]->Fill(2 * kCENREF + kMIN + 0.5);
+      Flag = kFALSE;
+    }
+    if (RefMultiplicityPercentile > fEventCuts[kCENREF][kMAX]) {
+      fEventCutsCounter[kRECO]->Fill(2 * kCENREF + kMAX + 0.5);
       Flag = kFALSE;
     }
 

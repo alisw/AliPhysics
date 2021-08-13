@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 10.08.2021
+ * Last Modified Date: 13.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -48,6 +48,7 @@ enum kEvent {
   kZ,
   kVPOS,
   kCEN,
+  kCENREF,
   kMUL,
   kMULQ,
   kMULW,
@@ -172,6 +173,13 @@ public:
       Fatal("SetCenCorQAHistogramBinning",
             "Running out of bounds in SetCenCorQAHistogramBinning");
     }
+    if (xupperEdge < xlowerEdge && yupperEdge < ylowerEdge) {
+      std::cout << __LINE__
+                << ": upper edge has to be larger than the lower edge"
+                << std::endl;
+      Fatal("SetFBTrackScanQAHistogramBinning",
+            ": upper edge has to be larger than the lower edge");
+    }
     this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kBIN] =
         xnbins;
     this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kLEDGE] =
@@ -194,6 +202,13 @@ public:
       Fatal("SetFBTrackScanQAHistogramBinning",
             "Running out of bounds in SetFBTrackScanQAHistogramBinning");
     }
+    if (upperEdge < lowerEdge) {
+      std::cout << __LINE__
+                << ": upper edge has to be larger than the lower edge"
+                << std::endl;
+      Fatal("SetFBTrackScanQAHistogramBinning",
+            ": upper edge has to be larger than the lower edge");
+    }
     this->fFBTrackScanQAHistogramBins[Track][kBIN] = nbins;
     this->fFBTrackScanQAHistogramBins[Track][kLEDGE] = lowerEdge;
     this->fFBTrackScanQAHistogramBins[Track][kUEDGE] = upperEdge;
@@ -205,6 +220,13 @@ public:
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetSelfCorQAHistogramBinning",
             "Running out of bounds in SetSelfCorQAHistogramBinning");
+    }
+    if (upperEdge < lowerEdge) {
+      std::cout << __LINE__
+                << ": upper edge has to be larger than the lower edge"
+                << std::endl;
+      Fatal("SetSelfCorQAHistogramBinning",
+            ": upper edge has to be larger than the lower edge");
     }
     this->fSelfCorQAHistogramBins[Track][kBIN] = nbins;
     this->fSelfCorQAHistogramBins[Track][kLEDGE] = lowerEdge;
@@ -218,6 +240,13 @@ public:
       Fatal("SetTrackControlHistogramBinning",
             "Running out of bounds in SetTrackControlHistogramBinning");
     }
+    if (upperEdge < lowerEdge) {
+      std::cout << __LINE__
+                << ": upper edge has to be larger than the lower edge"
+                << std::endl;
+      Fatal("SetEventControlHistogramBinning",
+            ": upper edge has to be larger than the lower edge");
+    }
     this->fTrackControlHistogramBins[Track][kBIN] = nbins;
     this->fTrackControlHistogramBins[Track][kLEDGE] = lowerEdge;
     this->fTrackControlHistogramBins[Track][kUEDGE] = upperEdge;
@@ -229,6 +258,13 @@ public:
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetEventControlHistogramBinning",
             "Running out of bounds in SetEventControlHistogramBinning");
+    }
+    if (upperEdge < lowerEdge) {
+      std::cout << __LINE__
+                << ": upper edge has to be larger than the lower edge"
+                << std::endl;
+      Fatal("SetEventControlHistogramBinning",
+            ": upper edge has to be larger than the lower edge");
     }
     this->fEventControlHistogramBins[Event][kBIN] = nbins;
     this->fEventControlHistogramBins[Event][kLEDGE] = lowerEdge;
@@ -258,6 +294,11 @@ public:
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetTrackCuts", "Running out of bounds in SetTrackCuts");
     }
+    if (max < min) {
+      std::cout << __LINE__ << ": maximun has to be larger than the minimum"
+                << std::endl;
+      Fatal("SetTrackCuts", ": maximun has to be larger than the minimum");
+    }
     this->fTrackCuts[Track][kMIN] = min;
     this->fTrackCuts[Track][kMAX] = max;
   }
@@ -267,16 +308,21 @@ public:
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetEventCuts", "Running out of bounds in SetEventCuts");
     }
+    if (max < min) {
+      std::cout << __LINE__ << ": maximun has to be larger than the minimum"
+                << std::endl;
+      Fatal("SetEventCuts", ": maximun has to be larger than the minimum");
+    }
     this->fEventCuts[Event][kMIN] = min;
     this->fEventCuts[Event][kMAX] = max;
   }
   // setter for centrality correlation cut
   void SetCenCorCut(Double_t m, Double_t t) {
-    if (m < 1) {
+    if (m < 1.) {
       std::cout << __LINE__ << ": slope too small" << std::endl;
       Fatal("SetCenCorCut", "slope too small");
     }
-    if (t < 1) {
+    if (t < 1.) {
       std::cout << __LINE__ << ": offset too small" << std::endl;
       Fatal("SetCenCorCut", "offset too small");
     }
