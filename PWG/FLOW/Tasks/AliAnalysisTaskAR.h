@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 06.07.2021
+ * Last Modified Date: 04.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -24,26 +24,48 @@
 #include <TDataType.h>
 #include <TF1.h>
 #include <TFile.h>
-#include <TH1F.h>
+#include <TH1D.h>
+#include <TH2D.h>
 #include <TProfile.h>
 #include <TRandom3.h>
 #include <TString.h>
+#include <vector>
 
 // global constants
 const Int_t kMaxHarmonic = 20;
 const Int_t kMaxCorrelator = 20;
 const Int_t kMaxPower = 20;
-
+const Int_t kMaxFilterbit = 15; // 2^(15-1)=16384
+const Int_t kNumberofTestFilterBit = 5;
+const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
 // enumerations
-enum kEvent { kCEN, kMUL, LAST_EEVENT };
-enum kTrack { kPT, kPHI, kETA, LAST_ETRACK };
+enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
+const TString kCenEstimatorNames[LAST_ECENESTIMATORS] = {"V0M", "CL0", "CL1",
+                                                         "SPDTracklets"};
+enum kEvent { kX, kY, kZ, kCEN, kMUL, kMULQ, kMULW, kNCONTRIB, LAST_EEVENT };
+enum kTrack {
+  kPT,
+  kPHI,
+  kETA,
+  kCHARGE,
+  kTPCNCLS,
+  kITSNCLS,
+  kCHI2PERNDF,
+  kDCAZ,
+  kDCAXY,
+  LAST_ETRACK
+};
+const Int_t kKinematic = kETA + 1;
 enum kFinalHist { kPHIAVG, LAST_EFINALHIST };
 enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
-enum kName { kNAME, kTITLE, kXAXIS, LAST_ENAME };
-enum kBeforeAfter { kBEFORE, kAFTER, LAST_EBEFOREAFTER };
+enum kName { kNAME, kTITLE, kXAXIS, kYAXIS, LAST_ENAME };
 enum kMinMax { kMIN, kMAX, LAST_EMINMAX };
-enum kXYZ { kX, kY, kZ, LAST_EXYZ };
+enum kBeforeAfter { kBEFORE, kAFTER, LAST_EBEFOREAFTER };
+const TString kBAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
+const Color_t kFillColor[LAST_EBEFOREAFTER] = {kRed - 10, kGreen - 10};
+enum kMode { kRECO, kSIM, LAST_EMODE };
+const TString kModeName[LAST_EMODE] = {"[kRECO]", "[kSIM]"};
 
 class AliAnalysisTaskAR : public AliAnalysisTaskSE {
 public:
@@ -54,36 +76,45 @@ public:
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *);
 
-  // Methods called in the constructor:
+  // methods called in the constructor
   virtual void InitializeArrays();
+  virtual void InitializeArraysForQAHistograms();
   virtual void InitializeArraysForTrackControlHistograms();
   virtual void InitializeArraysForEventControlHistograms();
   virtual void InitializeArraysForCuts();
+  virtual void InitializeArraysForWeights();
   virtual void InitializeArraysForQvectors();
   virtual void InitializeArraysForFinalResultHistograms();
   virtual void InitializeArraysForFinalResultProfiles();
   virtual void InitializeArraysForMCAnalysis();
 
-  // Methods called in UserCreateOutputObjects():
+  // methods called in UserCreateOutputObjects()
   virtual void BookAndNestAllLists();
+  virtual void BookQAHistograms();
   virtual void BookControlHistograms();
   virtual void BookFinalResultHistograms();
   virtual void BookFinalResultProfiles();
-  virtual void BookMCObjects();
+  virtual void BookMCOnTheFlyObjects();
 
-  // split calls in UserExec() depending on flags
+  // functions called in UserExec()
   virtual void MCOnTheFlyExec();
+  virtual void FillEventQAHistograms(kBeforeAfter BA, AliVEvent *event);
+  virtual void FillFBScanQAHistograms(AliAODTrack *track);
+  virtual void FillEventControlHistograms(kBeforeAfter BA, AliVEvent *event);
+  virtual void FillTrackControlHistograms(kBeforeAfter BA, AliVParticle *avp);
   virtual void FillFinalResultProfile(kFinalProfile fp);
-
-  // methods called in AODExec():
   virtual Bool_t SurviveEventCut(AliVEvent *ave);
-  virtual Bool_t SurviveTrackCut(AliAODTrack *aTrack);
+  virtual Bool_t SurviveTrackCut(AliVParticle *aTrack);
+  virtual void ClearEventObjects();
+  virtual void AggregateWeights();
+  virtual void ResetWeights();
+  virtual Int_t IndexCenEstCorHistograms(Int_t i, Int_t j);
 
   // methods called MCOnTheFlyExec()
   virtual void MCPdfSymmetryPlanesSetup();
   virtual Int_t GetMCNumberOfParticlesPerEvent();
 
-  // Methods for computing qvectors
+  // methods for computing qvectors
   void CalculateQvectors();
   TComplex Q(Int_t n, Int_t p);
   TComplex Two(Int_t n1, Int_t n2);
@@ -92,8 +123,6 @@ public:
   TComplex Five(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
   TComplex Six(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6);
   TComplex Recursion(Int_t n, Int_t *harmonic, Int_t mult = 1, Int_t skip = 0);
-
-  // methods for computing nested loops
   TComplex TwoNestedLoops(Int_t n1, Int_t n2);
   TComplex ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3);
   TComplex FourNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4);
@@ -108,7 +137,7 @@ public:
   virtual void GetPointersForFinalResultHistograms();
   virtual void GetPointersForFinalResultProfiles();
 
-  // Setters and getters
+  // setters and getters for list objects
   void SetControlHistogramsList(TList *const chl) {
     this->fControlHistogramsList = chl;
   };
@@ -118,79 +147,166 @@ public:
   void SetFinalResultsList(TList *const frl) { this->fFinalResultsList = frl; };
   TList *GetFinalResultsList() const { return this->fFinalResultsList; }
 
-  // Control Histograms
-  void SetPtBinning(Int_t nbins, Double_t min, Double_t max) {
-    this->fBinsTrackControlHistograms[kPT][kBIN] = nbins;
-    this->fBinsTrackControlHistograms[kPT][kLEDGE] = min;
-    this->fBinsTrackControlHistograms[kPT][kUEDGE] = max;
-  };
-  void SetPhiBinning(Int_t nbins, Double_t min, Double_t max) {
-    this->fBinsTrackControlHistograms[kPHI][kBIN] = nbins;
-    this->fBinsTrackControlHistograms[kPHI][kLEDGE] = min;
-    this->fBinsTrackControlHistograms[kPHI][kUEDGE] = max;
-  };
-  void SetEtaBinning(Int_t nbins, Double_t min, Double_t max) {
-    this->fBinsTrackControlHistograms[kETA][kBIN] = nbins;
-    this->fBinsTrackControlHistograms[kETA][kLEDGE] = min;
-    this->fBinsTrackControlHistograms[kETA][kUEDGE] = max;
-  };
-  void SetCenBinning(Int_t nbins, Double_t min, Double_t max) {
-    this->fBinsEventControlHistograms[kCEN][kBIN] = nbins;
-    this->fBinsEventControlHistograms[kCEN][kLEDGE] = min;
-    this->fBinsEventControlHistograms[kCEN][kUEDGE] = max;
-  };
-  void SetMulBinning(Int_t nbins, Double_t min, Double_t max) {
-    this->fBinsEventControlHistograms[kMUL][kBIN] = nbins;
-    this->fBinsEventControlHistograms[kMUL][kLEDGE] = min;
-    this->fBinsEventControlHistograms[kMUL][kUEDGE] = max;
-  };
+  // setters for QA histograms
+  void SetFillQAHistograms(Bool_t option) { fFillQAHistograms = option; }
+  // generic setter for centrality correlation QA histogram binning
+  void SetCenCorQAHistogramBinning(kCenEstimators cen1, Int_t xnbins,
+                                   Double_t xlowerEdge, Double_t xupperEdge,
+                                   kCenEstimators cen2, Int_t ynbins,
+                                   Double_t ylowerEdge, Double_t yupperEdge) {
+    if (cen1 >= LAST_ECENESTIMATORS || cen2 >= LAST_ECENESTIMATORS) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetCenCorQAHistogramBinning",
+            "Running out of bounds in SetCenCorQAHistogramBinning");
+    }
+    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kBIN] =
+        xnbins;
+    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kLEDGE] =
+        xlowerEdge;
+    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kUEDGE] =
+        xupperEdge;
+    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)]
+                                [kBIN + LAST_EBINS] = ynbins;
+    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)]
+                                [kLEDGE + LAST_EBINS] = ylowerEdge;
+    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)]
+                                [kUEDGE + LAST_EBINS] = yupperEdge;
+  }
+  // generic setter for track scan QA histograms
+  void SetFBTrackScanQAHistogramBinning(kTrack Track, Int_t nbins,
+                                        Double_t lowerEdge,
+                                        Double_t upperEdge) {
+    if (Track >= LAST_ETRACK) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetFBTrackScanQAHistogramBinning",
+            "Running out of bounds in SetFBTrackScanQAHistogramBinning");
+    }
+    this->fFBTrackScanQAHistogramBins[Track][kBIN] = nbins;
+    this->fFBTrackScanQAHistogramBins[Track][kLEDGE] = lowerEdge;
+    this->fFBTrackScanQAHistogramBins[Track][kUEDGE] = upperEdge;
+  }
+  // generic setter for self correlation QA histogram binning
+  void SetSelfCorQAHistogramBinning(kTrack Track, Int_t nbins,
+                                    Double_t lowerEdge, Double_t upperEdge) {
+    if (Track >= kKinematic) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetSelfCorQAHistogramBinning",
+            "Running out of bounds in SetSelfCorQAHistogramBinning");
+    }
+    this->fSelfCorQAHistogramBins[Track][kBIN] = nbins;
+    this->fSelfCorQAHistogramBins[Track][kLEDGE] = lowerEdge;
+    this->fSelfCorQAHistogramBins[Track][kUEDGE] = upperEdge;
+  }
+  // generic setter for track control histogram binning
+  void SetTrackControlHistogramBinning(kTrack Track, Int_t nbins,
+                                       Double_t lowerEdge, Double_t upperEdge) {
+    if (Track >= LAST_ETRACK) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetTrackControlHistogramBinning",
+            "Running out of bounds in SetTrackControlHistogramBinning");
+    }
+    this->fTrackControlHistogramBins[Track][kBIN] = nbins;
+    this->fTrackControlHistogramBins[Track][kLEDGE] = lowerEdge;
+    this->fTrackControlHistogramBins[Track][kUEDGE] = upperEdge;
+  }
+  // generic setter for event histogram binning
+  void SetEventControlHistogramBinning(kEvent Event, Int_t nbins,
+                                       Double_t lowerEdge, Double_t upperEdge) {
+    if (Event >= LAST_EEVENT) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetEventControlHistogramBinning",
+            "Running out of bounds in SetEventControlHistogramBinning");
+    }
+    this->fEventControlHistogramBins[Event][kBIN] = nbins;
+    this->fEventControlHistogramBins[Event][kLEDGE] = lowerEdge;
+    this->fEventControlHistogramBins[Event][kUEDGE] = upperEdge;
+  }
 
-  // cuts
-  void SetCentralitySelCriterion(TString SelCriterion) {
-    this->fCentralitySelCriterion = SelCriterion;
+  // setters for cuts
+  // centrality selection criterion
+  // only use V0M, CL0/1, SPDTracklets
+  void SetCentralityEstimator(TString CentralityEstimator) {
+    Bool_t Flag = kFALSE;
+    for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
+      if (CentralityEstimator.EqualTo(kCenEstimatorNames[i])) {
+        Flag = kTRUE;
+      }
+    }
+    if (Flag) {
+      this->fCentralityEstimator = CentralityEstimator;
+    } else {
+      std::cout << __LINE__ << ": No valid centrality estimator" << std::endl;
+      Fatal("SetCentralityEstimator", "No valid centrality estimator");
+    }
   }
-  void SetPtCuts(Double_t min, Double_t max) {
-    this->fTrackCuts[kPT][kMIN] = min;
-    this->fTrackCuts[kPT][kMAX] = max;
+  // generic setter for track cuts
+  void SetTrackCuts(kTrack Track, Double_t min, Double_t max) {
+    if (Track >= LAST_ETRACK) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetTrackCuts", "Running out of bounds in SetTrackCuts");
+    }
+    this->fTrackCuts[Track][kMIN] = min;
+    this->fTrackCuts[Track][kMAX] = max;
   }
-  void SetPhiCuts(Double_t min, Double_t max) {
-    this->fTrackCuts[kPHI][kMIN] = min;
-    this->fTrackCuts[kPHI][kMAX] = max;
+  // generic setter for event cuts
+  void SetEventCuts(kEvent Event, Double_t min, Double_t max) {
+    if (Event >= LAST_EEVENT) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetEventCuts", "Running out of bounds in SetEventCuts");
+    }
+    this->fEventCuts[Event][kMIN] = min;
+    this->fEventCuts[Event][kMAX] = max;
   }
-  void SetEtaCuts(Double_t min, Double_t max) {
-    this->fTrackCuts[kETA][kMIN] = min;
-    this->fTrackCuts[kETA][kMAX] = max;
+  // setter for centrality correlation cut
+  void SetCenCorCut(Double_t m, Double_t t) {
+    if (m < 1) {
+      std::cout << __LINE__ << ": slope too small" << std::endl;
+      Fatal("SetCenCorCut", "slope too small");
+    }
+    if (t < 1) {
+      std::cout << __LINE__ << ": offset too small" << std::endl;
+      Fatal("SetCenCorCut", "offset too small");
+    }
+    this->fCenCorCut[0] = m;
+    this->fCenCorCut[1] = t;
   }
-  void SetPrimaryVertexXCuts(Double_t min, Double_t max) {
-    this->fPrimaryVertexCuts[kX][kMIN] = min;
-    this->fPrimaryVertexCuts[kX][kMAX] = max;
-  }
-  void SetPrimaryVertexYCuts(Double_t min, Double_t max) {
-    this->fPrimaryVertexCuts[kY][kMIN] = min;
-    this->fPrimaryVertexCuts[kY][kMAX] = max;
-  }
-  void SetPrimaryVertexZCuts(Double_t min, Double_t max) {
-    this->fPrimaryVertexCuts[kZ][kMIN] = min;
-    this->fPrimaryVertexCuts[kZ][kMAX] = max;
-  }
+  // filterbit
+  // depends strongly on the data set
+  // typical choices are 1,128,256,768
   void SetFilterbit(Int_t Filterbit) { this->fFilterbit = Filterbit; }
+  // cut all non-primary particles away
+  void SetPrimaryOnlyCut(Bool_t option) { this->fPrimaryOnly = option; }
 
-  // setters and getters for MC analsys
-  void SetMCAnalysis(Bool_t option) { this->fMCAnalaysis = option; }
+  // setters for MC analsys
+  void SetMCOnTheFly(Bool_t option) { this->fMCOnTheFly = option; }
   void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
-  void SetUseWeights(Bool_t option) { this->fUseWeights = option; }
-  void SetResetWeights(Bool_t option) { this->fResetWeights = option; }
+  void SetUseWeights(kTrack kinematic, Bool_t option) {
+    if (kinematic >= kKinematic) {
+      std::cout << __LINE__ << ": Out of range" << std::endl;
+      Fatal("SetUseWeights", "Out of range");
+    }
+    this->fUseWeights[kinematic] = option;
+  }
+  // reset weights and redo the analysis
+  void SetResetWeights(kTrack kinematic, Bool_t option) {
+    if (kinematic >= kKinematic) {
+      std::cout << __LINE__ << ": Out of range" << std::endl;
+      Fatal("SetResetWeights", "Out of range");
+    }
+    this->fResetWeights[kinematic] = option;
+  }
   void SetUseCustomSeed(const UInt_t seed) {
     this->fSeed = seed;
     this->fUseCustomSeed = kTRUE;
   }
-  void SetMCFlowHarmonics(TArrayD *array) {
-    if (array->GetSize() > kMaxHarmonic) {
-      std::cout << __LINE__ << ": Array exceeds maximum allowed harmonic"
+  // set flow harmonics for pdf
+  void SetMCFlowHarmonics(std::vector<Double_t> FlowHarmonics) {
+    if (FlowHarmonics.size() >= kMaxHarmonic) {
+      std::cout << __LINE__ << ": Vector exceeds maximum allowed harmonic"
                 << std::endl;
       Fatal("SetFlowHarmonics", "Too many harmonics");
     }
-    fMCFlowHarmonics = array;
+    fMCFlowHarmonics = FlowHarmonics;
   }
   void SetMCPdfRange(Double_t min, Double_t max) {
     fMCPdfRange[kMIN] = min;
@@ -204,16 +320,44 @@ public:
     fMCNumberOfParticlesPerEventRange[kMIN] = min;
     fMCNumberOfParticlesPerEventRange[kMAX] = max;
   }
-  void SetAcceptanceHistogram(TH1F *AcceptanceHistogram);
-  void SetAcceptanceHistogram(const char *Filename, const char *Histname);
-  void SetWeightHistogram(TH1F *WeightHistogram);
-  void SetWeightHistogram(const char *Filename, const char *Histname);
+
+  // setters for acceptance and weight histograms for monte carlo closure
+  void SetAcceptanceHistogram(kTrack kinematic, TH1D *AcceptanceHistogram) {
+    if (!AcceptanceHistogram) {
+      std::cout << __LINE__ << ": Did not get acceptance histogram"
+                << std::endl;
+      Fatal("SetAccpetanceHistogram", "Invalid pointer");
+    }
+    if (kinematic >= kKinematic) {
+      std::cout << __LINE__ << ": Out of range" << std::endl;
+      Fatal("SetAccpetanceHistogram", "Out of range");
+    }
+    this->fAcceptanceHistogram[kinematic] = AcceptanceHistogram;
+  }
+  void SetAcceptanceHistogram(kTrack kinematic, const char *Filename,
+                              const char *Histname);
+  void SetWeightHistogram(kTrack kinematic, TH1D *WeightHistogram) {
+    if (!WeightHistogram) {
+      std::cout << __LINE__ << ": Did not get weight histogram" << std::endl;
+      Fatal("SetWeightHistogram", "Invalid pointer");
+    }
+    if (kinematic >= kKinematic) {
+      std::cout << __LINE__ << ": Out of range" << std::endl;
+      Fatal("SetWeightHistogram", "Out of range");
+    }
+    this->fUseWeights[kinematic] = kTRUE;
+    this->fWeightHistogram[kinematic] = WeightHistogram;
+  }
+  void SetWeightHistogram(kTrack kinematic, const char *Filename,
+                          const char *Histname);
+
+  // set correlators we want to compute
   void SetCorrelators(std::vector<std::vector<Int_t>> correlators) {
     this->fCorrelators = correlators;
     for (int i = 0; i < LAST_EFINALPROFILE; ++i) {
-      fBinsFinalResultProfiles[i][kBIN] = fCorrelators.size();
-      fBinsFinalResultProfiles[i][kLEDGE] = 0;
-      fBinsFinalResultProfiles[i][kUEDGE] = fCorrelators.size();
+      fFinalResultProfileBins[i][kBIN] = fCorrelators.size();
+      fFinalResultProfileBins[i][kLEDGE] = 0;
+      fFinalResultProfileBins[i][kUEDGE] = fCorrelators.size();
     }
   }
 
@@ -221,70 +365,114 @@ private:
   AliAnalysisTaskAR(const AliAnalysisTaskAR &aatmpf);
   AliAnalysisTaskAR &operator=(const AliAnalysisTaskAR &aatmpf);
 
-  // base list holding all output object (a.k.a. grandmother of all lists)
+  // base list
   TList *fHistList;
   TString fHistListName;
+
+  // QA histograms
+  TList *fQAHistogramsList;
+  TString fQAHistogramsListName;
+  Bool_t fFillQAHistograms;
+  // centrality correlation histograms
+  TList *fCenCorQAHistogramsList;
+  TString fCenCorQAHistogramsListName;
+  TH2D *fCenCorQAHistograms[LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2]
+                           [LAST_EBEFOREAFTER];
+  TString fCenCorQAHistogramNames[LAST_ECENESTIMATORS *
+                                  (LAST_ECENESTIMATORS - 1) /
+                                  2][LAST_EBEFOREAFTER][LAST_ENAME];
+  Double_t fCenCorQAHistogramBins[LAST_ECENESTIMATORS *
+                                  (LAST_ECENESTIMATORS - 1) /
+                                  2][2 * LAST_EBINS];
+  // filterbit scans histograms
+  TList *fFBScanQAHistogramsList;
+  TString fFBScanQAHistogramsListName;
+  TH1D *fFBScanQAHistogram;
+  TString fFBScanQAHistogramName[LAST_ENAME];
+  Double_t fFBScanQAHistogramBin[LAST_EBINS];
+  TH1D *fFBTrackScanQAHistograms[LAST_ETRACK][kNumberofTestFilterBit];
+  TString fFBTrackScanQAHistogramNames[LAST_ETRACK][kNumberofTestFilterBit]
+                                      [LAST_ENAME];
+  Double_t fFBTrackScanQAHistogramBins[LAST_ETRACK][LAST_EBINS];
+  // self correlations
+  TList *fSelfCorQAHistogramsList;
+  TString fSelfCorQAHistogramsListName;
+  TH1D *fSelfCorQAHistograms[kKinematic][LAST_EBEFOREAFTER];
+  TString fSelfCorQAHistogramNames[kKinematic][LAST_EBEFOREAFTER][LAST_ENAME];
+  Double_t fSelfCorQAHistogramBins[kKinematic][LAST_EBINS];
 
   // control histograms
   TList *fControlHistogramsList;
   TString fControlHistogramsListName;
-  TH1F *fTrackControlHistograms[LAST_ETRACK][LAST_EBEFOREAFTER];
-  TString fTrackControlHistogramNames[LAST_ETRACK][LAST_EBEFOREAFTER]
-                                     [LAST_ENAME];
-  // array holding bins of track control histograms
-  Double_t fBinsTrackControlHistograms[LAST_ETRACK][LAST_EBINS];
-  // array holding event control histograms
-  TH1F *fEventControlHistograms[LAST_EEVENT][LAST_EBEFOREAFTER];
-  TString fEventControlHistogramNames[LAST_EEVENT][LAST_EBEFOREAFTER]
-                                     [LAST_ENAME];
-  Double_t fBinsEventControlHistograms[LAST_EEVENT][LAST_EBINS];
+  // track control histograms
+  TList *fTrackControlHistogramsList;
+  TString fTrackControlHistogramsListName;
+  TH1D *fTrackControlHistograms[LAST_EMODE][LAST_ETRACK][LAST_EBEFOREAFTER];
+  TString fTrackControlHistogramNames[LAST_EMODE][LAST_ETRACK]
+                                     [LAST_EBEFOREAFTER][LAST_ENAME];
+  Double_t fTrackControlHistogramBins[LAST_ETRACK][LAST_EBINS];
+  // event control historams
+  TList *fEventControlHistogramsList;
+  TString fEventControlHistogramsListName;
+  TH1D *fEventControlHistograms[LAST_EMODE][LAST_EEVENT][LAST_EBEFOREAFTER];
+  TString fEventControlHistogramNames[LAST_EMODE][LAST_EEVENT]
+                                     [LAST_EBEFOREAFTER][LAST_ENAME];
+  Double_t fEventControlHistogramBins[LAST_EEVENT][LAST_EBINS];
 
   // cuts
-  TString fCentralitySelCriterion;
+  TString fCentralityEstimator;
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
-  Double_t fPrimaryVertexCuts[LAST_EXYZ][LAST_EMINMAX];
+  TH1D *fTrackCutsCounter[LAST_EMODE];
+  TString fTrackCutsCounterNames[LAST_EMODE];
+  TString fTrackCutsCounterBinNames[LAST_ETRACK];
+  Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
+  TH1D *fEventCutsCounter[LAST_EMODE];
+  TString fEventCutsCounterNames[LAST_EMODE];
+  TString fEventCutsCounterBinNames[LAST_EEVENT];
   Int_t fFilterbit;
+  Bool_t fPrimaryOnly;
+  Double_t fCenCorCut[2];
 
   // Final results
   TList *fFinalResultsList;
   TString fFinalResultsListName;
   // array holding final result histograms
-  TH1F *fFinalResultHistograms[LAST_EFINALHIST];
+  TH1D *fFinalResultHistograms[LAST_EFINALHIST];
   TString fFinalResultHistogramNames[LAST_EFINALHIST][LAST_ENAME];
-  Double_t fBinsFinalResultHistograms[LAST_EFINALHIST][LAST_EBINS];
-  // arayy holding final resutl profiles
+  Double_t fFinalResultHistogramBins[LAST_EFINALHIST][LAST_EBINS];
+  // array holding final result profiles
   TProfile *fFinalResultProfiles[LAST_EFINALPROFILE];
   TString fFinalResultProfileNames[LAST_EFINALPROFILE][LAST_ENAME];
-  Double_t fBinsFinalResultProfiles[LAST_EFINALPROFILE][LAST_EBINS];
+  Double_t fFinalResultProfileBins[LAST_EFINALPROFILE][LAST_EBINS];
 
   // Monte Carlo analysis
-  TList *fMCAnalysisList;
-  TString fMCAnalysisListName;
-  Bool_t fMCAnalaysis;
+  Bool_t fMCOnTheFly;
   Bool_t fMCClosure;
   UInt_t fSeed;
   Bool_t fUseCustomSeed;
   TF1 *fMCPdf;
   TString fMCPdfName;
   Double_t fMCPdfRange[LAST_EMINMAX];
-  TArrayD *fMCFlowHarmonics;
+  std::vector<Double_t> fMCFlowHarmonics;
   Bool_t fMCNumberOfParticlesPerEventFluctuations;
   Int_t fMCNumberOfParticlesPerEvent;
   Int_t fMCNumberOfParticlesPerEventRange[LAST_EMINMAX];
 
   // qvectors
-  TList *fQvectorList;
   TComplex fQvector[kMaxHarmonic][kMaxPower];
-  std::vector<Double_t> fPhi;
-  std::vector<Double_t> fWeights;
-  TH1F *fAcceptanceHistogram;
-  TH1F *fWeightHistogram;
-  Bool_t fUseWeights;
-  Bool_t fResetWeights;
+  std::vector<Double_t> fKinematics[kKinematic];
+  std::vector<Double_t> fKinematicWeights[kKinematic];
+  std::vector<Double_t> fWeightsAggregated;
+  TH1D *fAcceptanceHistogram[kKinematic];
+  TH1D *fWeightHistogram[kKinematic];
+  Bool_t fUseWeights[kKinematic];
+  Bool_t fUseWeightsAggregated;
+  Bool_t fResetWeights[kKinematic];
+  Bool_t fResetWeightsAggregated;
   std::vector<std::vector<Int_t>> fCorrelators;
 
-  // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskAR, 6);
+  // increase this counter in each new version
+  ClassDef(AliAnalysisTaskAR, 7);
 };
 
 #endif

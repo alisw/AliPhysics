@@ -174,8 +174,6 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
   auto normhist = static_cast<TH2 *>(fHistos->FindObject("hTriggerNorm")),
        luminosityHist = static_cast<TH2 *>(fHistos->FindObject("hTriggerLuminosity")); 
   
-  std::array<std::string, 5> mixedtriggers = {"EDMC7", "EDG1", "EDG2", "EDJ1", "EDJ2"};
-
   std::vector<std::string> selectedTriggerClasses;
 
   // Min. bias trigger (reference trigger)
@@ -195,6 +193,7 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
 
       if(fCacheTriggerClasses.size()) {
         // Run contains EMCAL trigger, fill normhist and luminosities for EMCAL trigger
+        // Cache including also mixed trigger classes
         double mbweight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(match_triggerclass.data());
         normhist->Fill(normhist->GetXaxis()->GetBinCenter(mbbin), centralitypercentile, mbweight);
       
@@ -205,29 +204,6 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
           auto triggerbin = luminosityHist->GetXaxis()->FindBin(emcaltrigger.first.data());
           auto triggerweight = emcaltrigger.second * mbweight;
           luminosityHist->Fill(luminosityHist->GetXaxis()->GetBinCenter(triggerbin), centralitypercentile, triggerweight);
-        }
-
-        // fill luminosity
-        for(auto edtrigger : mixedtriggers) {
-          std::string emcaltriggerclass = "E" + edtrigger.substr(2),
-                      dcaltriggerclass = "D" + edtrigger.substr(2);
-          auto emcaltriggerEnabled = fCacheTriggerClasses.find(emcaltriggerclass),
-               dcaltriggerEnabled = fCacheTriggerClasses.find(dcaltriggerclass);
-          if((emcaltriggerEnabled != fCacheTriggerClasses.end()) || (dcaltriggerEnabled != fCacheTriggerClasses.end())) {
-            // Either EMCAL or DCAL trigger enabled, get downscale factor
-            // If EMCAL trigger enabled perfer this (covers practically all cases)
-            double downscaleTrigger = 0.;
-            if(emcaltriggerEnabled != fCacheTriggerClasses.end()) {
-              downscaleTrigger = fCacheDownscaleFactors[emcaltriggerclass];
-            } else {
-              // Only DCAL triggers would enabled
-              // this should never happen
-              downscaleTrigger = fCacheDownscaleFactors[dcaltriggerclass];
-            }
-            auto triggerbin = luminosityHist->GetXaxis()->FindBin(edtrigger.data());
-            auto triggerweight = downscaleTrigger * mbweight;
-            luminosityHist->Fill(luminosityHist->GetXaxis()->GetBinCenter(triggerbin), centralitypercentile, triggerweight);
-          }
         }
       }
     }

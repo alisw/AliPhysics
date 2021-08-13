@@ -36,12 +36,17 @@ class AliTaskLeadingMC : public AliAnalysisTask {
 
   void SetZDCPGeo(float xmin=9.,float xmax=27.,float ymin=-7.,float ymax=7.,float zmin=10000.,float zmax=13000.);
   void SetZDCNGeo(float xmin=-4.,float xmax=4.,float ymin=-4.,float ymax=4.,float zmin=11000.,float zmax=12500.);
+  
+  void AskTrackRef(bool value=true) { fAskTrackRef = value; }
+
 
 private: 
   // Notation
   // 1=(C)lockwise - 2=(A)nticlockwise
 
   static const int fgkDim = 50; // max array dimension
+
+  bool fAskTrackRef = false;
 
   AliESDEvent *fESD = nullptr; //!  ESD event
   TTree *fTree = nullptr;      //!

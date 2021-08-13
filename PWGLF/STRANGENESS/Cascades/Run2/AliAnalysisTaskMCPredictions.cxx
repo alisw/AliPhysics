@@ -104,6 +104,7 @@ fLargeMultRange(2000),
 fRebinFactor(1),
 fkSelectINELgtZERO(kTRUE),
 fkALICE3SiliconMode(kTRUE),
+fkWideRapiditySpeciesStudy(kFALSE),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -127,6 +128,8 @@ fEtaTriggerPhi(0)
     fHistEta[ih]         = 0x0;
     fHistPtVsV0MMult[ih] = 0x0;
     fHistPtVsSPDMult[ih] = 0x0;
+    fHistEtaVsSPDMult[ih]= 0x0;
+    fHistYVsSPDMult[ih]  = 0x0; 
     fHistPtVsNpart[ih]   = 0x0;
     fHistPtVsB[ih]       = 0x0;
     fHistPtVsNMPI[ih]   = 0x0;
@@ -146,6 +149,7 @@ fLargeMultRange(lNLargeBinning),
 fRebinFactor(lRebinFactor),
 fkSelectINELgtZERO(kTRUE),
 fkALICE3SiliconMode(kTRUE),
+fkWideRapiditySpeciesStudy(kFALSE),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -169,6 +173,8 @@ fEtaTriggerPhi(0)
     fHistEta[ih]         = 0x0;
     fHistPtVsV0MMult[ih] = 0x0;
     fHistPtVsSPDMult[ih] = 0x0;
+    fHistEtaVsSPDMult[ih]= 0x0;
+    fHistYVsSPDMult[ih]  = 0x0;
     fHistPtVsNpart[ih]   = 0x0;
     fHistPtVsB[ih]       = 0x0;
     fHistPtVsNMPI[ih]   = 0x0;
@@ -345,6 +351,18 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     if(! fHistPtVsSPDMult[ih] ) {
       fHistPtVsSPDMult[ih] = new TH2D(Form("fHistPtVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsSPDMult[ih]);
+    }
+  }
+  for(Int_t ih=0; ih<52; ih++){
+    if(! fHistEtaVsSPDMult[ih] ) {
+      fHistEtaVsSPDMult[ih] = new TH2D(Form("fHistEtaVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,200,-10,10);
+      fListHist->Add(fHistEtaVsSPDMult[ih]);
+    }
+  }
+  for(Int_t ih=0; ih<52; ih++){
+    if(! fHistYVsSPDMult[ih] ) {
+      fHistYVsSPDMult[ih] = new TH2D(Form("fHistYVsSPDMult%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,200,-10,10);
+      fListHist->Add(fHistYVsSPDMult[ih]);
     }
   }
   for(Int_t ih=0; ih<52; ih++){
@@ -679,7 +697,9 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         if( lCheckHFFeeddown[ih] == kTRUE && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
         //Fill Histograms
         fHistEta[ih] -> Fill ( lPart -> Eta() );
-        if( TMath::Abs(lThisRap) < 0.5 ) {
+        fHistEtaVsSPDMult[ih] -> Fill( lNchEtaWide, lPart -> Eta() );
+        fHistYVsSPDMult[ih] -> Fill( lNchEtaWide, lThisRap );
+        if( TMath::Abs(lThisRap) < 0.5 && !fkWideRapiditySpeciesStudy ) {
           fHistPt[ih]->Fill(lThisPt);
           fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
           fHistPtVsSPDMult[ih]->Fill(lNchEtaWide,lThisPt);
@@ -687,6 +707,15 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
           fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
           fHistPtVsNMPI[ih]->Fill(fMC_NMPI,lThisPt);
         }
+        if( TMath::Abs(lThisRap) < 4.0 && fkWideRapiditySpeciesStudy ) {
+          fHistPt[ih]->Fill(lThisPt);
+          fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
+          fHistPtVsSPDMult[ih]->Fill(lNchEtaWide,lThisPt);
+          fHistPtVsNpart[ih]->Fill(fMC_NPart,lThisPt);
+          fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
+          fHistPtVsNMPI[ih]->Fill(fMC_NMPI,lThisPt);
+        }
+        
       }
     }
   }//End of loop on tracks

@@ -37,7 +37,7 @@ public:
     };
 
     AliAnalysisTaskSEDmesonTree();
-    AliAnalysisTaskSEDmesonTree(const char *name, int fDecChannel, AliRDHFCuts *analysiscuts, bool createMLtree);
+    AliAnalysisTaskSEDmesonTree(const char *name, int decChannel, AliRDHFCuts *analysiscuts, bool createMLtree);
     virtual ~AliAnalysisTaskSEDmesonTree();
 
     void SetReadMC(bool readMC = true)                                                            {fReadMC = readMC;}
@@ -51,7 +51,7 @@ public:
     void SetMLTreeAddTrackVar(bool flag = true)                                                   {fAddSingleTrackVar = flag;}
     void SetKeepOnlyBkgFromHIJING(bool keeponlyhijing = true)                                     {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
 
-    void SetDecayChannel(bool dec = kD0toKpi)
+    void SetDecayChannel(int dec = kD0toKpi)
     {
         fDecChannel = dec;
         switch(fDecChannel)
@@ -105,6 +105,11 @@ public:
         fNMLBins[0] = nbinsBkg; fNMLBins[1] = nbinsPrompt; fNMLBins[2] = nbinsFD;
         fMLOutputMin[0] = minBkg; fMLOutputMin[1] = minPrompt; fMLOutputMin[2] = minFD;
         fMLOutputMax[0] = maxBkg; fMLOutputMax[1] = maxPrompt; fMLOutputMax[2] = maxFD;
+    }
+
+    void SetIsDependentOnMLSelector(bool flag=true, std::string name="MLSelector") {
+        fDependOnMLSelector = flag;
+        fMLSelectorName = name;
     }
 
     // Implementation of interface methods
@@ -177,9 +182,14 @@ private:
     int fNMLBins[3] = {1000, 100, 100};                                         /// number of bins for ML output axis in THnSparse
     double fMLOutputMin[3] = {0., 0., 0.};                                      /// min for ML output axis in THnSparse
     double fMLOutputMax[3] = {1., 1., 1.};                                      /// max for ML output axis in THnSparse
+    bool fDependOnMLSelector = false;                                           /// flag to read ML scores from a AliAnalysisTaskSECharmHadronMLSelector task
+    std::vector<float> fPtLimsML{};                                             /// pT bins in case application of ML model is done in MLSelector task   
+    std::vector<std::vector<double> > fMLScoreCuts{};                           /// score cuts used in case application of ML model is done in MLSelector task   
+    std::vector<std::vector<std::string> > fMLOptScoreCuts{};                   /// score cut options (lower, upper) used in case application of ML model is done in MLSelector task                                           
+    std::string fMLSelectorName = "MLSelector";                                 /// name of MLSelector task
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDmesonTree, 3); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDmesonTree, 4); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 

@@ -24,6 +24,9 @@
 #include "AliEventPoolManager.h"
 #include "AliVEvent.h"
 #include "AliTHn.h"
+#include "AliPID.h"
+#include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
 
 class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
 {
@@ -45,6 +48,8 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
         void                    SetPtBins(std::vector<Double_t> bins) { fPtBinsTrigCharged = bins; }
         void                    SetPtBinsAss(std::vector<Double_t> bins) { fPtBinsAss = bins; }
+        void                    SetDoPID(Bool_t pid = kTRUE) { fDoPID = pid; }
+        void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
 
     private:
 
@@ -56,6 +61,12 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         Double_t                GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
         void                    FillCorrelations();
         void                    FillCorrelationsMixed();
+        void                    FillCorrelationsPID(const Int_t pid);
+        void                    FillCorrelationsMixedPID(const Int_t pid);
+
+        Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
+        Bool_t                  HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?
+        Bool_t                  HasTrackPIDTOF(const AliAODTrack* track) const; // is TOF PID OK for this track ?
 
 
         AliAnalysisTaskCorrForFlow(const AliAnalysisTaskCorrForFlow&); // not implemented
@@ -64,19 +75,26 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         AliAODEvent*            fAOD;           //! input event
         TList*                  fOutputListCharged;    //! output list
         TObjArray*              fTracksTrigCharged; //!
+        TObjArray*              fTracksTrigPID[3]; //!
         TObjArray*              fTracksAss; //!
+        AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
+        AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
         AliEventPoolManager*    fPoolMgr;  //!  event pool manager for Event Mixing
         //output histograms
         TH1D*                   fhEventCounter; //!
         TH2D*                   fHistPhiEta; //!
         TH2D*                   fhTrigTracks; //!
+        TH2D*                   fhTrigTracksPID[3]; //!
         AliTHn*                 fhChargedSE; //!
         AliTHn*                 fhChargedME; //!
+        AliTHn*                 fhPidSE[3]; //!
+        AliTHn*                 fhPidME[3]; //!
 
 
         //event and track selection
         AliVEvent::EOfflineTriggerTypes    fTrigger;
-        Bool_t                  fIsHMpp;
+        Bool_t                  fIsHMpp; // [kFALSE]
+        Bool_t                  fDoPID; // [kFALSE]
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Double_t                fPtMinTrig;
@@ -103,7 +121,7 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlow, 1);
+        ClassDef(AliAnalysisTaskCorrForFlow, 2);
 };
 
 #endif

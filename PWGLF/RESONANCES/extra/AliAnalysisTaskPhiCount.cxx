@@ -679,19 +679,13 @@ bool        AliAnalysisTaskPhiCount::fIsPrimaryVertexCandidate ( )              
     // Recovering Primary Vertex from General methods and SPD
     auto    PrimaryVertexSPD    = fAOD->GetPrimaryVertexSPD();
     auto    PrimaryVertexTRK    = fAOD->GetPrimaryVertex();
-    AliMCVertex*   PrimaryVertexMCT     = nullptr;
-    if ( kMCbool )  PrimaryVertexMCT    = (AliMCVertex*)fMCD->GetPrimaryVertex();
             fPrimaryVertex      = PrimaryVertexTRK;
     
     // Requires the vertex is reconstructed by the SPD
     if ( !PrimaryVertexSPD  ||  PrimaryVertexSPD->GetNContributors() < 1 )
     {
         fFillEventEnumerate("NoSPDVTX");
-        if ( std::fabs(PrimaryVertexMCT->GetZ()) < kVertexCut ) {
-            fStoreTruePhi(kTRU_HAST10VTX+kTRU_NOSPDVTX);
-        }   else    {
-            fStoreTruePhi(kTRU_NOSPDVTX);
-        }
+        fStoreTruePhi(kTRU_NOSPDVTX);
         fPostData();
         return false;
     }
@@ -710,11 +704,7 @@ bool        AliAnalysisTaskPhiCount::fIsPrimaryVertexCandidate ( )              
         if ( std::fabs(VertexZSPD-VertexZTRK) > 0.5 )
         {
             fFillEventEnumerate("TRK-SPD Mismatch");
-            if ( std::fabs(PrimaryVertexMCT->GetZ()) < kVertexCut ) {
-                fStoreTruePhi(kTRU_HAST10VTX+kTRU_TRKSPDMM);
-            }   else    {
-                fStoreTruePhi(kTRU_TRKSPDMM);
-            }
+            fStoreTruePhi(kTRU_TRKSPDMM);
             fPostData();
             return false;
         }
@@ -726,11 +716,7 @@ bool        AliAnalysisTaskPhiCount::fIsPrimaryVertexCandidate ( )              
     if ( std::fabs(fPrimaryVertex->GetZ()) > kVertexCut )
     {
         fFillEventEnumerate("VTX<Cut");
-        if ( std::fabs(PrimaryVertexMCT->GetZ()) < kVertexCut ) {
-            fStoreTruePhi(kTRU_HAST10VTX+kTRU_VTXCUT);
-        }   else    {
-            fStoreTruePhi(kTRU_VTXCUT);
-        }
+        fStoreTruePhi(kTRU_VTXCUT);
         fPostData();
         return false;
     }
@@ -1167,6 +1153,8 @@ void        AliAnalysisTaskPhiCount::fSetZero( )                                
 void        AliAnalysisTaskPhiCount::fStoreTruePhi ( Int_t iMaskBit )           {
     // Loop over all primary MC particle
     if ( !kMCbool ) return;
+    AliMCVertex*   PrimaryVertexMCT = (AliMCVertex*)fMCD->GetPrimaryVertex();
+    if ( std::fabs(PrimaryVertexMCT->GetZ()) < kVertexCut ) fSetTrueEventMask(kTRU_HAST10VTX);
     Int_t           nTrack(AODMCTrackArray->GetEntriesFast());
     for ( Int_t iTrack(0); iTrack < nTrack; iTrack++ )
     {

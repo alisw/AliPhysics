@@ -4,13 +4,13 @@
 #define PRECISION 1e-6
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisHelpersHist.h"
+#include "AliESDtrackCuts.h"
 
 class AliMCSpectraWeights;
 class AliVTrack;
 class AliVParticle;
 class TRandom3;
 class AliEventCuts;
-class AliESDtrackCuts;
 class AliESDtrack;
 
 class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE
@@ -82,7 +82,6 @@ protected:
   template <typename T>
   void BookHistogram(Hist::Hist<T>& histContainer, const std::string& histName, const std::vector<unsigned int>& dimensions);
 
-  bool AcceptTrackQuality(AliVTrack* track);
   bool InitCentrality();
 
   template <typename Particle_t>
@@ -111,6 +110,7 @@ protected:
   bool fMCEnableDDC{true};                          ///< Flag for data driven corrections usage
   int fMCPCCMode{0};                                ///< whether to run particle composition correction in nominal (0) or in systematic mode (-1,1)
   int fMCSecScalingMode{0};                         ///< whether to run secondary scaling in nominal (0) or in systematic mode (1)
+  int fHighPtMode{0};                               ///< extend the binning and pt cuts for a high-pt analysis (mode 0: do not extend, mode 1: extend to 50, mode 2: extend to 100)
 
   // cuts
   unsigned int fTriggerMask{AliVEvent::kMB | AliVEvent::kINT7}; ///< Trigger mask

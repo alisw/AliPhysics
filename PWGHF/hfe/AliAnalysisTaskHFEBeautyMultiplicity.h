@@ -64,6 +64,17 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	//void SetWeightBmeson(TF1* WeightPt_Bmeson){ pTWeight_B = WeightPt_Bmeson; };
 	//void SetWeightPi0(TF1* WeightPt_Pi0){ pTWeight_Pi0 = WeightPt_Pi0; };
 	//void SetWeightEta(TF1* WeightPt_Eta){ pTWeight_Eta = WeightPt_Eta; };
+	
+
+	void SetTrackEta(Double_t etaMin, Double_t etaMax) {TrackEtaMin = etaMin, TrackEtaMax = etaMax;};
+	void SetNsigma(Double_t NsigMin, Double_t NsigMax, Double_t HadNsig) {NsigmaMin = NsigMin, NsigmaMax = NsigMax, HadNsigma = HadNsig;};
+	void SetM20(Double_t m20Min, Double_t m20Max) {M20Min = m20Min, M20Max = m20Max;};
+	void SetEop(Double_t eopMin, Double_t eopMax) {EopMin = eopMin, EopMax = eopMax;};
+	void SetDCA(Double_t xy, Double_t z) {DCAxy = xy, DCAz = z;};
+	void SetTrackClust(Int_t TPC, Int_t ITS, Int_t Crossed, Double_t dEdx) {NTPCClust = TPC, NITSClust = ITS, NCrossedRow = Crossed, TPCdEdx = dEdx;};
+	void SetDiff(Double_t diff) {EtaPhiDiff = diff;};
+	void SetMass(Double_t invmass) {PhotInvMass = invmass;};
+	
 
 
 
@@ -91,7 +102,28 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         Bool_t              fUseTender;             // switch to add tender
         TClonesArray*       fTracks_tender;         // Tender tracks
         TClonesArray*       fCaloClusters_tender;   // Tender cluster
-        
+
+	//---- Cut Parameter ----//
+	
+	Double_t TrackEtaMin;
+	Double_t TrackEtaMax;
+	Double_t NsigmaMin;
+	Double_t NsigmaMax;
+	Double_t HadNsigma;
+	Double_t M20Min;
+	Double_t M20Max;
+	Double_t EopMin;
+	Double_t EopMax;
+	Int_t NTPCClust;
+	Int_t NITSClust;
+	Double_t TPCdEdx;
+	Double_t DCAxy;
+	Double_t DCAz;
+	Int_t NCrossedRow;
+	Double_t EtaPhiDiff;
+	Double_t PhotInvMass;
+
+
     
         TH1F* fNevents;
         TH1F* fCent;
@@ -233,11 +265,16 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F*	fHistPt_HFE_MC_Lc;
 
 	TH2F*	fDCAxy_MC_B;
+	TH2F*	fDCAxy_MC_B_weight;
 	TH2F*	fDCAxy_MC_D;
 	TH2F*	fDCAxy_MC_Dpm;
+	TH2F*	fDCAxy_MC_Dpm_weight;
 	TH2F*	fDCAxy_MC_D0;
+	TH2F*	fDCAxy_MC_D0_weight;
 	TH2F*	fDCAxy_MC_Ds;
+	TH2F*	fDCAxy_MC_Ds_weight;
 	TH2F*	fDCAxy_MC_Lc;
+	TH2F*	fDCAxy_MC_Lc_weight;
 
 	TH2F*	fDCAxy_MC_ele;
 	TH2F*	fDCAxy_MC_Phot;
