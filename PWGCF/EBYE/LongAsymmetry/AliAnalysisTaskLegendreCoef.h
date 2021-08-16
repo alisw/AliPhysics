@@ -30,6 +30,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            SetNclTPC(Int_t ncl) { fTPCNcls = ncl; }
     void            SetPtLimits(Double_t ptmin, Double_t ptmax) { fPtmin = ptmin; fPtmax=ptmax; }
     void            SetEtaLimit(Double_t etalimit) { fEta = etalimit; }
+    void            SetFilterBit(Int_t filterbit) { fBit = filterbit; }
     void            SetPileUpRead(Bool_t flag) {fIsPileUpCuts = flag;}
     void            SetBuildBackground(Bool_t flag) {fIsBuildBG = flag; }
     void            SetBuildLegendre(Bool_t flag) {fIsBuildLG = flag; }
@@ -57,6 +58,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     Double_t fPtmin; //min PT
     Double_t fPtmax; //max PT
     Double_t fEta; //max eta
+    Int_t fBit; //filter bit - 96 default
     Bool_t fIsPileUpCuts; //pile up cuts flag
     Bool_t fIsBuildBG; //build background flag
     Bool_t fIsBuildLG; //calculates the legendre coefficients
