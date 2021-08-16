@@ -119,7 +119,6 @@ protected:
   double fMinPt{0.15};                                          ///< Minimum pT cut
   double fMaxPt{10.0};                                          ///< Maximum pT cut
 
-  // output Histograms
   std::map<unsigned int, Hist::Axis> fAxes{}; ///< axis definitions used in the histograms
 
   Hist::Hist<TH1D> fHist_multDist_evt_meas{};   //!<! measured event distribution (contains contamination from events not in specified class or with wrong vertex position)
@@ -131,12 +130,15 @@ protected:
 
   Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};  //!<! measured primary charged particles as function of true properties (no contamination from background events)
   Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};   //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
-  Hist::Hist<TH1D> fHist_ptDist_prim_gen_trig{};  //!<! generated primary charged particles that fired the trigger as function of pt [for QA to quantify trigger bias]
   Hist::Hist<TH1D> fHist_multDist_evt_gen{};      //!<! generated event distribution  (from events within specified class and with proper vertex position)
-  Hist::Hist<TH1D> fHist_multDist_evt_gen_trig{}; //!<! generated event distribution (from events within specified class and with proper vertex position) that in addition fulfils the trigger condition [for QA to disentangle trigger eff from reco eff ]
   Hist::Hist<THnSparseF> fHist_multCorrel_evt{};  //!<! multilicity correlation of measured events (excluding background events)
   Hist::Hist<THnSparseF> fHist_multCorrel_prim{}; //!<! multiplicity correlation of measured primary charged particles (excluding particles from background events)
   Hist::Hist<TH2D> fHist_ptCorrel_prim{};         //!<! pT correlation of measured primary charged particles  (excluding particles from background events)
+
+  // special trigger bias histograms
+  Hist::Hist<TH1D> fHist_multDist_evt_gen_trig{}; //!<! generated event distribution (from events within specified class and with proper vertex position) that in addition fulfils the trigger condition [to disentangle trigger eff from reco eff ]
+  Hist::Hist<TH1D> fHist_ptDist_prim_gen_trig{};  //!<! generated primary charged particles that fired the trigger as function of pt [to quantify trigger bias in fiducial or inelgt0 mode]
+  Hist::Hist<TH1D> fHist_ptDist_prim_gen_fidu{};  //!<! generated primary charged particles as function of pt in fiducial event class [to quantify trigger bias in triggered mode]
 
   // QA histograms
   Hist::Log<TH1I> fHist_trainInfo{};       //!<! train metadata string as bin lable and number of compute jobs as bin content
