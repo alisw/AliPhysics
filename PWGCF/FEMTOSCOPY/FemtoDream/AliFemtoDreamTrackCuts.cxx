@@ -1296,6 +1296,30 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::OmegaBachKaonCuts(
   return trackCuts;
 }
 
+AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimPionCuts(
+    bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting) {
+  AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
+  //you can leave DCA cut active, this will still be filled
+  //over the whole DCA_xy range
+  trackCuts->SetPlotDCADist(DCAPlots);
+  trackCuts->SetPlotCombSigma(CombSigma);
+  trackCuts->SetPlotContrib(ContribSplitting);
+  trackCuts->SetIsMonteCarlo(isMC);
+
+  trackCuts->SetFilterBit(96);
+  trackCuts->SetCutCharge(1);
+  trackCuts->SetPtRange(0.14, 4.0);
+  trackCuts->SetEtaRange(-0.8, 0.8);
+  trackCuts->SetNClsTPC(80);
+  trackCuts->SetDCAReCalculation(true);  //Get the dca from the PropagateToVetex
+  trackCuts->SetDCAVtxZ(0.3);
+  trackCuts->SetDCAVtxXY(0.3);
+  trackCuts->SetPID(AliPID::kPion, 0.5);
+  trackCuts->SetRejLowPtPionsTOF(false);
+
+  return trackCuts;
+}
+
 float AliFemtoDreamTrackCuts::CalculateTOFMassSquared(AliFemtoDreamTrack *Track) {
   float p = Track->GetP();
   float mass2sq = -999;

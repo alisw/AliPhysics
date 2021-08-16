@@ -745,9 +745,10 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     //Automatic Loop for linking directly to AliMultInput
     for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
       if(lStoreIfLight[iVar] || !fkLightTree){
-        Printf(Form("Connecting variable: %s",AliMultInput::VarName[iVar].Data()));
+        Printf(Form("Connecting variable number %i: %s",iVar,AliMultInput::VarName[iVar].Data()));
         if( !fInput->GetVariable(AliMultInput::VarName[iVar])){
           Printf(Form("Problem finding variable: %s ! Please check!",AliMultInput::VarName[iVar].Data()));
+          continue;
         }
         if( !fInput->GetVariable(AliMultInput::VarName[iVar])->IsInteger()  ) {
           fTreeEvent->Branch(fInput->GetVariable(AliMultInput::VarName[iVar])->GetName(), &fInput->GetVariable(AliMultInput::VarName[iVar])->GetRValue(), Form("%s/F",fInput->GetVariable(AliMultInput::VarName[iVar])->GetName()) );
@@ -1677,17 +1678,16 @@ void AliMultSelectionTask::UserExec(Option_t *)
     }
     
     if (lVevent->GetNumberOfTracks()>0){
-      double_t averageDCAxyABS = dcaxyABS/(lVevent->GetNumberOfTracks());
-      double_t averageDCAzABS = dcazABS/(lVevent->GetNumberOfTracks());
-      double_t averageDCAxySQ = dcaxySQ/(lVevent->GetNumberOfTracks());
-      double_t averageDCAzSQ = dcazSQ/(lVevent->GetNumberOfTracks());
+      averageDCAxyABS = dcaxyABS/(lVevent->GetNumberOfTracks());
+      averageDCAzABS = dcazABS/(lVevent->GetNumberOfTracks());
+      averageDCAxySQ = dcaxySQ/(lVevent->GetNumberOfTracks());
+      averageDCAzSQ = dcazSQ/(lVevent->GetNumberOfTracks());
      }
     else {
-      
-      double_t averageDCAxyABS = dcaxyABS/(-1);
-      double_t averageDCAzABS = dcazABS/(-1);
-      double_t averageDCAxySQ = dcaxySQ/(-1);
-      double_t averageDCAzSQ = dcazSQ/(-1);
+      averageDCAxyABS = dcaxyABS/(-1);
+      averageDCAzABS = dcazABS/(-1);
+      averageDCAxySQ = dcaxySQ/(-1);
+      averageDCAzSQ = dcazSQ/(-1);
      }
 
     fNTracksDCAxyABS=averageDCAxyABS;

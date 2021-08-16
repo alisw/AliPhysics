@@ -112,6 +112,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Int_t MinNtr;
 		Int_t MaxNtr;
                 TString festimatorFile;
+                TProfile* estimatorAvg;
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
@@ -181,6 +182,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fRiso_phidiff_LS;
 		TH2F*                   fRiso_phidiff_35;
 		TH2F*                   fRiso_phidiff_LS_35;
+		THnSparseD*             fWh_phidiff;
 		THnSparseD*             fIsoArray;      
 		THnSparseD*             fHFArray;      
 		TH2F*                   fzvtx_Ntrkl;
@@ -188,6 +190,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fzvtx_Ntrkl_Corr;
 		TH1F*                   fzvtx_Corr;
 		TH1F*                   fNtrkl_Corr;
+		TH2F*                   fzvtx_V0M;
 		TH2F*                   fNchNtr;
 		TH2F*                   fNchNtr_Corr;
 		TH2F*                   fDCAxy_Pt_ele;

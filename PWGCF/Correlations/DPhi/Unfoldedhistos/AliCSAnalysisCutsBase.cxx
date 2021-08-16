@@ -688,9 +688,9 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
       fgMCHandler = dynamic_cast<AliInputEventHandler *>(multiInputHandler->GetFirstMCEventHandler());
     } else {
       /* events already generated? */
-      if ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler() != nullptr)
-        printf("class of the mc truth event handler %s",(AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()->ClassName());
       fgMCHandler = dynamic_cast<AliInputEventHandler *>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+      if (fgMCHandler != nullptr)
+        AliInfoClass(TString::Format("Class of the mc truth event handler %s",fgMCHandler->ClassName()));
     }
 
     if (fgIsMC && !(fgMCHandler != NULL))

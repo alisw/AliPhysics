@@ -201,7 +201,8 @@ protected:
   AliMCEvent* fMCEvent{}; //!<! MC event
   double fMultMeas{};     //!<! measured central barrel track multiplicity
   double fMultTrue{};     //!<! true multiplicity
-  double fSumPtMeas{};
+  double fSumPtMeas{};    //!<! measured sum pt
+  double fSumPtTrue{};    //!<! true sum pt
 
   bool fIsFirstEventInJob{ true };   //!<!
   int fRunNumber{};                  //!<! run number

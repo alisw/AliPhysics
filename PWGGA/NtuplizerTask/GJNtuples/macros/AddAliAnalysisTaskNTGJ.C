@@ -105,6 +105,7 @@ AddAliAnalysisTaskNTGJ(TString name,
   AliTrackContainer * datatrackContainer = new AliTrackContainer("usedefault");
   if (track_cuts_period != "") {
     datatrackContainer->SetTrackCutsPeriod(track_cuts_period);
+    datatrackContainer->SetMinPt(0.15);
   }
   task->AdoptTrackContainer(datatrackContainer);
 
@@ -113,6 +114,7 @@ AddAliAnalysisTaskNTGJ(TString name,
     mctrackContainer->SetIsEmbedding(kTRUE);
     if (track_cuts_period != "") {
       mctrackContainer->SetTrackCutsPeriod(track_cuts_period);
+      mctrackContainer->SetMinPt(0.15);
     }
     task->AdoptTrackContainer(mctrackContainer);
   }

@@ -2,6 +2,7 @@
 #define ALIEMCALCORRECTIONCELLENERGY_H
 
 #include "AliEmcalCorrectionComponent.h"
+#include <vector>
 
 /**
  * @class AliEmcalCorrectionCellEnergy
@@ -47,7 +48,8 @@ private:
   Bool_t                 fUseNewRunDepTempCalib;     ///< Off by default the check in the OADB of the new run dependent temp calib Run1/Run2
   Bool_t                 fDisableTempCalib;          ///< Off by default, disables temp calibration totally
   Bool_t                 fUseShaperCorrection;       ///< Off by default the correction for the shaper nonlinearity
-  Float_t                fUseAdditionalScale;        ///< Off by default, enables an energy scale shift on cell level. Highly experimental!
+  Bool_t                 fUseAdditionalScale;        ///< Off by default, enables an energy scale shift on cell level. Highly experimental!
+  std::vector<Float_t>   fAdditionalScaleSM;         ///< values for additionalScale shift for 3 different types of SM: Full, 2/3 and 1/3
   TString                fCustomRecalibFilePath;     ///< Empty string by default the path to the OADB file of the custom energy recalibration
   Bool_t                 fLoad1DRecalibFactors;      ///< Flag to load 1D energy recalibration factors
 
@@ -58,7 +60,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellEnergy> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellEnergy, 8); // EMCal cell energy correction component
+  ClassDef(AliEmcalCorrectionCellEnergy, 9); // EMCal cell energy correction component
   /// \endcond
 };
 

@@ -158,8 +158,8 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
     }else{
         for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
         for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-        for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-        for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+        for(j=1;j<20;j++){multbins[nmult]=0.01*j; nmult++;}
+        for(j=2;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
         for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
     }
     nmult--;
@@ -3906,13 +3906,38 @@ Bool_t Config_Xik0(
         for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
     }else{
         multbins[nmult]=0.; nmult++;
-        multbins[nmult]=0.001; nmult++;
-        multbins[nmult]=0.005; nmult++;
-        multbins[nmult]=0.01; nmult++;
         multbins[nmult]=0.05; nmult++;
+        multbins[nmult]=0.06; nmult++;
+        multbins[nmult]=0.07; nmult++;
+        multbins[nmult]=0.08; nmult++;
+        multbins[nmult]=0.09; nmult++;
         multbins[nmult]=0.1; nmult++;
+        multbins[nmult]=0.11; nmult++;
+        multbins[nmult]=0.12; nmult++;
+        multbins[nmult]=0.13; nmult++;
+        multbins[nmult]=0.14; nmult++;
+        multbins[nmult]=0.15; nmult++;
+        multbins[nmult]=0.16; nmult++;
+        multbins[nmult]=0.17; nmult++;
+        multbins[nmult]=0.18; nmult++;
+        multbins[nmult]=0.19; nmult++;
+        multbins[nmult]=0.2; nmult++;
         multbins[nmult]=1.; nmult++;
     }
+    
+    // pT binning
+    Double_t ptbins[200];
+    int npt=0;
+    ptbins[npt]=0.; npt++;
+    ptbins[npt]=1.; npt++;
+    ptbins[npt]=2.; npt++;
+    for(j=1;j<=20;j++){ptbins[npt]=2+j*0.1; npt++;}
+    for(j=1;j<=6;j++){ptbins[npt]=4+j*0.5; npt++;}
+    ptbins[npt]=8; npt++;
+    ptbins[npt]=9; npt++;
+    ptbins[npt]=10; npt++;
+    ptbins[npt]=15; npt++;
+    ptbins[npt]=20; npt++;
     
     // -- Values ------------------------------------------------------------------------------------
     /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass,    kFALSE);
@@ -3965,6 +3990,7 @@ Bool_t Config_Xik0(
             name.Append("Rotated");
             comp.Form("ROTATE1");
             pairID=0;
+            continue;
         }else if(j==3){
             name.Append("_gen");
             comp.Form("MOTHER");
@@ -4005,7 +4031,7 @@ Bool_t Config_Xik0(
             //if(xID==imID) out->AddAxis(imID,240,1.8,3);// axis X: invmass
             if(xID==imID || xID==mmID) out->AddAxis(xID,400,1.8,2.2);// axis X: invmass
             else out->AddAxis(diffID,200,-0.02,0.02);// axis X: resolution
-            out->AddAxis(ptID,200,0.0,20.0);// axis Y: transverse momentum
+            out->AddAxis(ptID,npt,ptbins);//200,0.0,20.0);// axis Y: transverse momentum
             out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity
         }else if(j==7){//Phase-space histograms
             out->AddAxis(fdptmc,100,0.,10.);

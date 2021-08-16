@@ -247,6 +247,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistBGfrac;
   TH1F                        *fHistBGfracHFEev;
   TH1F                        *fHistBGrandHFEev;
+	TH2D                        *fHistNtrBGfrac;
   TH1F                        *fHistUE_org;
   TH1F                        *fHistUE_true;
   TH1F                        *fHistUE_reco;
@@ -281,14 +282,15 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
 	TH2F                        *fzvtx_Nch;
 	TH2F                        *fNchNtr_Corr;
   TH1D                        *fweightNtrkl;
-	TH2F                        *fNtrklcorr_HFjet;
-	TH2F                        *fNtrklcorr_ULSjet;
-	TH2F                        *fNtrklcorr_LSjet;
-	TH2F                        *fNtrklcorr_Hadjet;
+	THnSparse                   *fNtrklcorr_HFjet;
+	THnSparse                   *fNtrklcorr_ULSjet;
+	THnSparse                   *fNtrklcorr_LSjet;
+  THnSparse                   *fNtrklcorr_Hadjet;
 	THnSparse                   *fNtrklEopHFE;
 	THnSparse                   *fNtrklEopHad;
 	TH1D                        *fHistphoPi0MC;
 	TH1D                        *fHistphoEtaMC;
+	TH2D                        *fNtrklRhoarea;
 
   TRandom                     *generator;
 

@@ -43,7 +43,7 @@
 #include "AliVParticle.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliV0ReaderV1.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliAODMCParticle.h"
@@ -124,6 +124,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fHistoTruevsRecJetPt(NULL),
   fHistoClusMergedPtvsRJetAccepted(NULL),
   fHistoJetFragmFunc(NULL),
+  fHistoClusMergedPtvsM02FakeJet(NULL),
+  fHistoClusMergedPtvsM02MissedJet(NULL),
   fHistoPrimIdentified(NULL),
   fHistoPrimIdentifiedEoverP(NULL),
   fHistoPrimIdentifiedMC(NULL),
@@ -376,6 +378,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fHistoTruevsRecJetPt(NULL),
   fHistoClusMergedPtvsRJetAccepted(NULL),
   fHistoJetFragmFunc(NULL),
+  fHistoClusMergedPtvsM02FakeJet(NULL),
+  fHistoClusMergedPtvsM02MissedJet(NULL),
   fHistoPrimIdentified(NULL),
   fHistoPrimIdentifiedEoverP(NULL),
   fHistoPrimIdentifiedMC(NULL),
@@ -786,6 +790,10 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
         fHistoClusMergedPtvsRJetAccepted = new TH2F*[fnCuts];
         fHistoJetFragmFunc               = new TH2F*[fnCuts];
       }
+      if(fIsMC){
+        fHistoClusMergedPtvsM02FakeJet   = new TH2F*[fnCuts];
+        fHistoClusMergedPtvsM02MissedJet = new TH2F*[fnCuts];
+      }
     }
   }
 
@@ -1026,7 +1034,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 
       fJetHistograms[iCut] = new TList();
       fJetHistograms[iCut]->SetOwner(kTRUE);
-      fJetHistograms[iCut]->SetName(Form("%s_%s_%s Jet histograms", cutstringEvent.Data(), cutstringCalo.Data(), cutstringMeson.Data()));
+      fJetHistograms[iCut]->SetName(Form("%s_%s_%s_%s Jet histograms", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
 
       fHistoPtJet[iCut] = new TH1F("JetPt", "JetPt", 150, 0, 150);
       fJetHistograms[iCut]->Add(fHistoPtJet[iCut]);
@@ -1063,6 +1071,10 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
           fHistoTruevsRecJetPt[iCut]->GetXaxis()->SetTitle("rec. Jet #it{p}_{T}");
           fHistoTruevsRecJetPt[iCut]->GetYaxis()->SetTitle("true Jet #it{p}_{T}");
           fJetHistograms[iCut]->Add(fHistoTruevsRecJetPt[iCut]);
+          fHistoClusMergedPtvsM02FakeJet[iCut]                 = new TH2F("ClusMerged_Pt_M02_InFakeJet","ClusMerged_Pt_M02_InFakeJet;#it{p}_{T};#it{M}_{02}",ptBins, arrPtBinning,showerShapeBins, startShowerShape, endShowerShape);
+          fJetHistograms[iCut]->Add(fHistoClusMergedPtvsM02FakeJet[iCut]);
+          fHistoClusMergedPtvsM02MissedJet[iCut]                 = new TH2F("ClusMerged_Pt_M02_InMissedJet","ClusMerged_Pt_M02_InMissedJet;#it{p}_{T};#it{M}_{02}",ptBins, arrPtBinning,showerShapeBins, startShowerShape, endShowerShape);
+          fJetHistograms[iCut]->Add(fHistoClusMergedPtvsM02MissedJet[iCut]);
         }
       }
 
@@ -1083,6 +1095,8 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
           fHistoClusMergedPtvsRJetAccepted[iCut]->Sumw2();
           fHistoJetFragmFunc[iCut]->Sumw2();
         }
+        fHistoClusMergedPtvsM02FakeJet[iCut]->Sumw2();
+        fHistoClusMergedPtvsM02MissedJet[iCut]->Sumw2();
       }
     }
   }
@@ -2091,7 +2105,6 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
 void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 
   Int_t nclus = 0;
-  Bool_t IsClusAcceptedByJet = kFALSE;
   if(!fCorrTaskSetting.CompareTo("")){
     nclus = fInputEvent->GetNumberOfCaloClusters();
   } else {
@@ -2243,77 +2256,31 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     }
 
     Int_t matchedJet = 0;
+    Int_t matchedTrueJet = 0;
+    Bool_t passedJetCriterium = kFALSE; // is cluster in rec. Jet
+    Bool_t passedTrueJetCriterium = kFALSE; // is cluster in true Jet
+    Double_t RJetPi0Cand = 0; // distance between Jet and Cluster. Has to be saved if cluster is in two Jets. If yes choose nearest Jet
+    Double_t RTrueJetPi0Cand = 0; // distance between Jet and Cluster. Has to be saved if cluster is in two Jets. If yes choose nearest Jet
     if(fDoJetAnalysis){
-      if(fDoOutOfJet == 1) IsClusAcceptedByJet = kTRUE;
-      else IsClusAcceptedByJet = kFALSE;
       Float_t clusPos[3]={0,0,0};
       clus->GetPosition(clusPos);
       TVector3 clusterVectorJets(clusPos[0],clusPos[1],clusPos[2]);
       Double_t etaCluster = clusterVectorJets.Eta();
       Double_t phiCluster = (clusterVectorJets.Phi() > 0) ? clusterVectorJets.Phi() : clusterVectorJets.Phi() + 2*TMath::Pi();
-      if(fConvJetReader->GetNJets()>0){
-        fVectorJetEta = fConvJetReader->GetVectorJetEta();
-        fVectorJetPhi = fConvJetReader->GetVectorJetPhi();
-        for(Int_t ij=0; ij<fConvJetReader->GetNJets(); ij++){
-          Double_t DeltaEta = fVectorJetEta.at(ij)-etaCluster;
-          Double_t DeltaPhi = abs(fVectorJetPhi.at(ij)-phiCluster);
-          if(DeltaPhi > TMath::Pi()) {
-            DeltaPhi = 2*TMath::Pi() - DeltaPhi;
-          }
-          if(fDoOutOfJet == 2 || fDoOutOfJet == 4){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
-            DeltaEta = fVectorJetEta.at(ij) + etaCluster;
-            DeltaPhi = abs(TMath::Pi() - DeltaPhi);
-          }
-          Double_t RJetPi0Cand = TMath::Sqrt(DeltaEta*DeltaEta+DeltaPhi*DeltaPhi);
-          if(fConvJetReader->Get_Jet_Radius() > 0 ){
-            if(fDoOutOfJet == 0){ // in jet
-              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                IsClusAcceptedByJet = kTRUE;
-                matchedJet = ij;
-                break;
-              }
-            } else if(fDoOutOfJet == 1){ // out of jet
-              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                IsClusAcceptedByJet = kFALSE;
-                matchedJet = ij;
-                break;
-              }
-            } else if(fDoOutOfJet == 2){ // out of jet on away side
-              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                IsClusAcceptedByJet = kTRUE;
-                matchedJet = ij;
-                break;
-              }
-            } else if(fDoOutOfJet == 3){ // out of jet in interval [R, R+0.2]
-              if((RJetPi0Cand > fConvJetReader->Get_Jet_Radius()) && (RJetPi0Cand < fConvJetReader->Get_Jet_Radius() + 0.2)){
-                IsClusAcceptedByJet = kTRUE;
-                matchedJet = ij;
-                break;
-              }
-            } else if(fDoOutOfJet == 4){ // in jet on away side (like case 2 but additionally particle has to be inside Jet)
-              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                // loop over all Jets and see if particle is not only oppsoite to Jet, but also in Jet
-                for(Int_t k=0; k<fConvJetReader->GetNJets(); k++){
-                  Double_t dEta = fVectorJetEta.at(k)-etaCluster;
-                  Double_t dPhi = abs(fVectorJetPhi.at(k)-phiCluster);
-                  if(dEta > TMath::Pi()) {
-                    dEta = 2*TMath::Pi() - dEta;
-                  }
-                  Double_t RJetPi0CandInJet = TMath::Sqrt(dEta*dEta+dPhi*dPhi);
-                  if(RJetPi0CandInJet < fConvJetReader->Get_Jet_Radius()){
-                    IsClusAcceptedByJet = kTRUE;
-                    matchedJet = ij;
-                    break;
-                  }
-                }
-              }
-            }
-          }
-        }
+      // process reconstructed Jets
+      passedJetCriterium = IsClusterInJet(etaCluster, phiCluster, kFALSE, matchedJet, RJetPi0Cand);
+      if(fDoOutOfJet == 1) passedJetCriterium = !passedJetCriterium;
+      // process true Jets
+      if(fIsMC){
+        passedTrueJetCriterium = IsClusterInJet(etaCluster, phiCluster, kTRUE, matchedTrueJet, RTrueJetPi0Cand);
+        if(fDoOutOfJet == 1) passedTrueJetCriterium = !passedTrueJetCriterium;
+      }
         fVectorJetEta.clear();
         fVectorJetPhi.clear();
-      }
-      if(!IsClusAcceptedByJet){
+        // return for
+        // - MC if particle is not in rec or true jet (to be able to fill histos if pi0 is just in true jet)
+        // - data if particle is not in rec Jet (as there are no true jets)
+      if((!passedJetCriterium && !passedTrueJetCriterium && fIsMC > 0) || (fIsMC == 0 && !passedJetCriterium)){
         delete clus;
         delete tmpvec;
         delete PhotonCandidate;
@@ -2354,6 +2321,25 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
       ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SplitEnergy(absCellIdList[0], absCellIdList[1],
                                                                      clus, fInputEvent, fIsMC, clusSub1, clusSub2);
     }
+    if(fDoJetAnalysis){
+      // Cluster is in Jet but not in true Jet
+      if(matchedJet && !matchedTrueJet){
+        if(!fDoLightOutput) fHistoClusMergedPtvsM02FakeJet[fiCut]->Fill( PhotonCandidate->Pt(),
+                                                                         clus->GetM02(),
+                                                                         tempPhotonWeight);
+      // Cluster is not in Jet but it is in true Jet
+      } else if(!matchedJet && matchedTrueJet){
+        if(!fDoLightOutput) fHistoClusMergedPtvsM02MissedJet[fiCut]->Fill( PhotonCandidate->Pt(),
+                                                                           clus->GetM02(),
+                                                                           tempPhotonWeight);
+        // in case cluster is not in rec. Jet, continue!
+        delete clus;
+        delete tmpvec;
+        delete PhotonCandidate;
+        continue;
+      }
+    }
+
     fHistoClusMergedPtvsM02[fiCut]->Fill( PhotonCandidate->Pt(),
                           clus->GetM02(),
                           tempPhotonWeight);
@@ -2404,24 +2390,16 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
       fHistoClusMergedPtvsM02Accepted[fiCut]->Fill( PhotonCandidate->Pt(), clus->GetM02(), tempPhotonWeight);
       fHistoClusMergedEvsM02Accepted[fiCut]->Fill( PhotonCandidate->E(), clus->GetM02(), tempPhotonWeight);
 
-      if(fDoJetAnalysis && !fDoLightOutput && (fDoOutOfJet != 1 )){
+      if(fDoJetAnalysis && passedJetCriterium && !fDoLightOutput && (fDoOutOfJet != 1 )){
         fVectorJetPt  = fConvJetReader->GetVectorJetPt();
         fVectorJetPx  = fConvJetReader->GetVectorJetPx();
         fVectorJetPy  = fConvJetReader->GetVectorJetPy();
         fVectorJetPz  = fConvJetReader->GetVectorJetPz();
         fVectorJetEta = fConvJetReader->GetVectorJetEta();
         fVectorJetPhi = fConvJetReader->GetVectorJetPhi();
-        Double_t DeltaEta = fVectorJetEta.at(matchedJet)-PhotonCandidate->Eta();
-        Double_t DeltaPhi = abs(fVectorJetPhi.at(matchedJet)-PhotonCandidate->Phi());
-        if(DeltaPhi > M_PI) {
-            DeltaPhi = 2*M_PI - DeltaPhi;
-        }
-        Double_t RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
-        if(fDoOutOfJet == 2 || fDoOutOfJet == 4){
-          RJetPi0Cand = abs(TMath::Pi() - RJetPi0Cand);
-        }
+
         if(fConvJetReader->Get_Jet_Radius() > 0){
-          if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius() || (fDoOutOfJet == 3 && RJetPi0Cand > fConvJetReader->Get_Jet_Radius()) ){
+          if((RJetPi0Cand < fConvJetReader->Get_Jet_Radius() && fDoOutOfJet != 3) || (fDoOutOfJet == 3 && RJetPi0Cand > fConvJetReader->Get_Jet_Radius()) ){
             Double_t dotproduct = fVectorJetPx.at(matchedJet)*pi0cand->Px() + fVectorJetPy.at(matchedJet)*pi0cand->Py() + fVectorJetPz.at(matchedJet)*pi0cand->Pz();
             Double_t magn = pow(fVectorJetPx.at(matchedJet),2) + pow(fVectorJetPy.at(matchedJet),2) + pow(fVectorJetPz.at(matchedJet),2);
             Double_t z = dotproduct/magn;
@@ -2430,6 +2408,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
           }
         }
       }
+
       Int_t nlm = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetNumberOfLocalMaxima(clus, fInputEvent);
       if ( nlm < 11 ){
         fHistoClusNLMPt[fiCut]->Fill( nlm, PhotonCandidate->Pt());
@@ -2683,7 +2662,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessJets()
       fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
       fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
     }
-    if(fVectorJetPt.size() == fConvJetReader->GetNJets() && fVectorJetEta.size() == fConvJetReader->GetNJets() && fVectorJetPhi.size() == fConvJetReader->GetNJets() && fVectorJetArea.size() == fConvJetReader->GetNJets()){
+    if(fVectorJetPt.size() == fConvJetReader->GetNJets()){
 
       for(Int_t i=0; i<fConvJetReader->GetNJets(); i++){
         fHistoPtJet[fiCut]->Fill(fVectorJetPt.at(i));
@@ -2726,6 +2705,105 @@ void AliAnalysisTaskGammaCaloMerged::ProcessJets()
       fTrueVectorJetPhi.clear();
     }
   }
+}
+
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskGammaCaloMerged::IsClusterInJet(Double_t clusEta, Double_t clusPhi, Bool_t isTrueJet, Int_t &matchedJet, Double_t &RJetPi0Cand)
+{
+  if(fIsMC == 0 && isTrueJet == kTRUE) return kFALSE;
+
+  // set up important variables
+  matchedJet = 0;
+  RJetPi0Cand = 0;
+  Int_t NJets = 0;
+  vector<Double_t> vectorJetEta;
+  vector<Double_t> vectorJetPhi;
+
+  // get jet eta/phi from true or reconstructed Jet
+  if(isTrueJet){
+    NJets = fConvJetReader->GetTrueNJets();
+    vectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+    vectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+  } else {
+    NJets = fConvJetReader->GetNJets();
+    vectorJetEta  = fConvJetReader->GetVectorJetEta();
+    vectorJetPhi = fConvJetReader->GetVectorJetPhi();
+  }
+  if(NJets == 0) return kFALSE;
+
+  // generally dont assume the particle is in Jet.
+  // For out of Jet (==1) assume particle is in Jet and Set value to false if it is
+  Bool_t particleInJet = kFALSE;
+  if(fDoOutOfJet == 1) particleInJet = kTRUE;
+
+  for(Int_t j=0; j<NJets; j++){
+    Double_t DeltaEta = vectorJetEta.at(j)-clusEta;
+    Double_t DeltaPhi = abs(vectorJetPhi.at(j)-clusPhi);
+    if(fDoOutOfJet == 2 || fDoOutOfJet == 4){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
+      DeltaEta = vectorJetEta.at(j) + clusEta;
+      DeltaPhi = abs(TMath::Pi() - DeltaPhi);
+    }
+    if(DeltaPhi > TMath::Pi()) {
+      DeltaPhi = 2*TMath::Pi() - DeltaPhi;
+    }
+    Double_t RJetPi0Cand_tmp = TMath::Sqrt(DeltaEta*DeltaEta+DeltaPhi*DeltaPhi);
+    if(fConvJetReader->Get_Jet_Radius() > 0 ){
+      if(fDoOutOfJet == 0){ // in jet
+        if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+          // if the particle is in multiple Jet cones, take the nearest Jet
+          if(RJetPi0Cand_tmp < RJetPi0Cand) RJetPi0Cand = RJetPi0Cand_tmp;
+          matchedJet = j;
+          particleInJet = kTRUE;
+          // break;
+        }
+      } else if(fDoOutOfJet == 1){ // out of jet
+        // if the particle is in multiple Jet cones, take the nearest Jet
+        if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+          if(RJetPi0Cand_tmp < RJetPi0Cand) RJetPi0Cand = RJetPi0Cand_tmp;
+          matchedJet = j;
+          particleInJet = kFALSE;
+          // break;
+        }
+      } else if(fDoOutOfJet == 2){ // out of jet on away side
+        if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+          // if the particle is in multiple Jet cones, take the nearest Jet
+          if(RJetPi0Cand_tmp < RJetPi0Cand) RJetPi0Cand = RJetPi0Cand_tmp;
+          matchedJet = j;
+          particleInJet = kTRUE;
+          // break;
+        }
+      } else if(fDoOutOfJet == 3){ // out of jet in interval [R, R+0.2]
+        if((RJetPi0Cand > fConvJetReader->Get_Jet_Radius()) && (RJetPi0Cand < fConvJetReader->Get_Jet_Radius() + 0.2)){
+          // if the particle is in multiple Jet cones, take the nearest Jet
+          if(RJetPi0Cand_tmp < RJetPi0Cand) RJetPi0Cand = RJetPi0Cand_tmp;
+          matchedJet = j;
+          particleInJet = kTRUE;
+          // break;
+        }
+      } else if(fDoOutOfJet == 4){ // in jet on away side (like case 2 but additionally particle has to be inside Jet)
+        if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+          // loop over all Jets and see if particle is not only oppsoite to Jet, but also in Jet
+          for(Int_t k=0; k<NJets; k++){
+            Double_t dEta = vectorJetEta.at(k)-clusEta;
+            Double_t dPhi = abs(vectorJetPhi.at(k)-clusPhi);
+            if(dEta > TMath::Pi()) {
+              dEta = 2*TMath::Pi() - dEta;
+            }
+            Double_t RJetPi0CandInJet = TMath::Sqrt(dEta*dEta+dPhi*dPhi);
+            if(RJetPi0CandInJet < fConvJetReader->Get_Jet_Radius()){
+              // if the particle is in multiple Jet cones, take the nearest Jet
+              if(RJetPi0Cand_tmp < RJetPi0Cand) RJetPi0Cand = RJetPi0Cand_tmp;
+              matchedJet = j;
+              particleInJet = kTRUE;
+              // break;
+            }
+          }
+        }
+      }
+    }
+  }
+  return particleInJet;
 }
 
 //________________________________________________________________________
@@ -3597,13 +3675,9 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
-  Bool_t particleInJet = kFALSE;
-  if(fDoJetAnalysis){
-    if(fConvJetReader->GetTrueNJets()>0){
-      fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
-      fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
-    }
-  }
+  Bool_t passedJetCriterium = kFALSE;
+  Int_t matchedJet = 0;
+  Double_t RJetPi0Cand = 0;
 
   // Loop over all primary MC particle
   for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
@@ -3623,59 +3697,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
 
       // check if particle is in Jet
       if(fDoJetAnalysis){
-        if(fDoOutOfJet == 1) particleInJet = kTRUE;
-        else particleInJet = kFALSE;
-        for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
-          Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
-          Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
-          if(fDoOutOfJet == 2 || fDoOutOfJet == 4){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
-            DeltaEta = fTrueVectorJetEta.at(j) + particle->Eta();
-            DeltaPhi = abs(TMath::Pi() - DeltaPhi);
-          }
-          if(DeltaPhi > TMath::Pi()) {
-            DeltaPhi = 2*TMath::Pi() - DeltaPhi;
-          }
-          Double_t RJetPi0Cand = TMath::Sqrt(DeltaEta*DeltaEta+DeltaPhi*DeltaPhi);
-          if(fConvJetReader->Get_Jet_Radius() > 0 ){
-            if(fDoOutOfJet == 0){ // in jet
-              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                particleInJet = kTRUE;
-                break;
-              }
-            } else if(fDoOutOfJet == 1){ // out of jet
-              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                particleInJet = kFALSE;
-                break;
-              }
-            } else if(fDoOutOfJet == 2){ // out of jet on away side
-              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                particleInJet = kTRUE;
-                break;
-              }
-            } else if(fDoOutOfJet == 3){ // out of jet in interval [R, R+0.2]
-              if((RJetPi0Cand > fConvJetReader->Get_Jet_Radius()) && (RJetPi0Cand < fConvJetReader->Get_Jet_Radius() + 0.2)){
-                particleInJet = kTRUE;
-                break;
-              }
-            } else if(fDoOutOfJet == 4){ // in jet on away side (like case 2 but additionally particle has to be inside Jet)
-              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                // loop over all Jets and see if particle is not only oppsoite to Jet, but also in Jet
-                for(Int_t k=0; k<fConvJetReader->GetTrueNJets(); k++){
-                  Double_t dEta = fTrueVectorJetEta.at(k)-particle->Eta();
-                  Double_t dPhi = abs(fTrueVectorJetPhi.at(k)-particle->Phi());
-                  if(dEta > TMath::Pi()) {
-                    dEta = 2*TMath::Pi() - dEta;
-                  }
-                  Double_t RJetPi0CandInJet = TMath::Sqrt(dEta*dEta+dPhi*dPhi);
-                  if(RJetPi0CandInJet < fConvJetReader->Get_Jet_Radius()){
-                    particleInJet = kTRUE;
-                    break;
-                  }
-                }
-              }
-            }
-          }
-        }
+        passedJetCriterium = IsClusterInJet(particle->Eta(), particle->Phi(), kTRUE, matchedJet, RJetPi0Cand);
+        if(fDoOutOfJet == 1) passedJetCriterium = !passedJetCriterium;
       }
 
       Double_t mesonY = 1.e30;
@@ -3747,7 +3770,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
         }
       }
       // continue if in Jet analysis and cluster is not within Jet radius
-      if(fDoJetAnalysis && !particleInJet) continue;
+      if(fDoJetAnalysis && !passedJetCriterium) continue;
 
       // check if particle is pi0/eta from di-photon decay
       if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
@@ -3949,6 +3972,9 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
   if (fAODMCTrackArray == NULL) return;
 
   // Load Jet eta phi vectors
+  Bool_t passedJetCriterium = kFALSE;
+  Int_t matchedJet = 0;
+  Double_t RJetPi0Cand = 0;
   if(fDoJetAnalysis){
     if(fConvJetReader->GetTrueNJets()>0){
       fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
@@ -3973,61 +3999,10 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
         if(isMCFromMBHeader == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempParticleWeight = 1;
       }
       // check if particle is in Jet
-      Bool_t particleInJet = kFALSE;
+      // Bool_t particleInJet = kFALSE;
       if(fDoJetAnalysis){
-        if(fDoOutOfJet == 1) particleInJet = kTRUE;
-        else particleInJet = kFALSE;
-        for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
-          Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
-          Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
-          if(fDoOutOfJet == 2 || fDoOutOfJet == 4){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
-            DeltaEta = fTrueVectorJetEta.at(j) + particle->Eta();
-            DeltaPhi = abs(TMath::Pi() - DeltaPhi);
-          }
-          if(DeltaPhi > TMath::Pi()) {
-            DeltaPhi = 2*TMath::Pi() - DeltaPhi;
-          }
-          Double_t RJetPi0Cand = TMath::Sqrt(DeltaEta*DeltaEta+DeltaPhi*DeltaPhi);
-          if(fConvJetReader->Get_Jet_Radius() > 0 ){
-            if(fDoOutOfJet == 0){ // in jet
-              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                particleInJet = kTRUE;
-                break;
-              }
-            } else if(fDoOutOfJet == 1){ // out of jet
-              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                particleInJet = kFALSE;
-                break;
-              }
-            } else if(fDoOutOfJet == 2){ // out of jet on away side
-              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                particleInJet = kTRUE;
-                break;
-              }
-            } else if(fDoOutOfJet == 3){ // out of jet in interval [R, R+0.2]
-              if((RJetPi0Cand > fConvJetReader->Get_Jet_Radius()) && (RJetPi0Cand < fConvJetReader->Get_Jet_Radius() + 0.2)){
-                particleInJet = kTRUE;
-                break;
-              }
-            } else if(fDoOutOfJet == 4){ // in jet on away side (like case 2 but additionally particle has to be inside Jet)
-              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                // loop over all Jets and see if particle is not only oppsoite to Jet, but also in Jet
-                for(Int_t k=0; k<fConvJetReader->GetTrueNJets(); k++){
-                  Double_t dEta = fTrueVectorJetEta.at(k)-particle->Eta();
-                  Double_t dPhi = abs(fTrueVectorJetPhi.at(k)-particle->Phi());
-                  if(dEta > TMath::Pi()) {
-                    dEta = 2*TMath::Pi() - dEta;
-                  }
-                  Double_t RJetPi0CandInJet = TMath::Sqrt(dEta*dEta+dPhi*dPhi);
-                  if(RJetPi0CandInJet < fConvJetReader->Get_Jet_Radius()){
-                    particleInJet = kTRUE;
-                    break;
-                  }
-                }
-              }
-            }
-          }
-        }
+        passedJetCriterium = IsClusterInJet(particle->Eta(), particle->Phi(), kTRUE, matchedJet, RJetPi0Cand);
+        if(fDoOutOfJet == 1) passedJetCriterium = !passedJetCriterium;
       }
       Double_t mesonY = 1.e30;
       Double_t ratio  = 0;
@@ -4098,7 +4073,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
         }
       }
 
-      if(fDoJetAnalysis && !particleInJet) continue;
+      if(fDoJetAnalysis && !passedJetCriterium) continue;
 
       // check if particle is pi0/eta from di-photon decay
       if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))

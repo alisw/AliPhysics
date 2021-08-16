@@ -1,3 +1,9 @@
+/*
+Author: Vytautas Vislavicius
+Container to store the terms required to calculate higher order moments of the pT spectrum.
+Extra layer to calculate the moments. Current implementation supports only the first and second moments.
+If used, modified, or distributed, please aknowledge the original author of this code.
+*/
 #ifndef ALICKCONTAINER__H
 #define ALICKCONTAINER__H
 #include "TCollection.h"

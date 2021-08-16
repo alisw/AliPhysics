@@ -5,6 +5,8 @@ class AliESDEvent;
 class TTree;
 class TDatabasePDG;
 class AliMCEvent;
+class TH3F;
+class TH2F;
 
 #include "AliAnalysisTask.h"
 
@@ -34,6 +36,9 @@ class AliTaskLeadingMC : public AliAnalysisTask {
 
   void SetZDCPGeo(float xmin=9.,float xmax=27.,float ymin=-7.,float ymax=7.,float zmin=10000.,float zmax=13000.);
   void SetZDCNGeo(float xmin=-4.,float xmax=4.,float ymin=-4.,float ymax=4.,float zmin=11000.,float zmax=12500.);
+  
+  void AskTrackRef(bool value=true) { fAskTrackRef = value; }
+
 
 private: 
   // Notation
@@ -41,9 +46,16 @@ private:
 
   static const int fgkDim = 50; // max array dimension
 
+  bool fAskTrackRef = false;
+
   AliESDEvent *fESD = nullptr; //!  ESD event
   TTree *fTree = nullptr;      //!
   TDatabasePDG *fDB = nullptr; //!
+
+  TH3F * fH_SPD_VZERO; //!
+  TH3F * fH_SPD_ZDC; //!
+  TH2F * fH_SPD_VZERO_ev; //!
+  TH2F * fH_SPD_ZDC_ev; //!
 
   float fV0Perc = 0.;
   float	fZdcPerc = 0.;
@@ -52,9 +64,12 @@ private:
   float fMultRef8 = 0.;
   float fMultSPDcl = 0.;
   float fMultSPDtr = 0.;
+  int   fInelGT0 = 0;
   int   fSPDtracklets = 0;
   int   fSPDtrackletsA = 0;
   int   fSPDtrackletsC = 0;
+  int   fTOFclusters = 0;
+  int   fTOFclustersTrg = 0;
 
   int fIsTrackRef = 0;
 
@@ -177,14 +192,26 @@ private:
   Int_t fNMPI = 0;           //! number of multiparton interaction
   Int_t fNLambdaEta = 0;     //!
   Int_t fNXiEta = 0;         //!
+  float fPtXiEta[100];       //!
+  Int_t fNAntiXiEta = 0;     //!
+  float fPtAntiXiEta[100];   //!
   Int_t fNOmegaEta = 0;      //!
   Int_t fNPiEta = 0;         //!
+  Int_t fNPi0Eta = 0;        //!
+  Int_t fNKchEta = 0;        //!
+  Int_t fNK0Eta = 0;         //!
   float fSumPtLambdaEta = 0; //!
   float fSumPtXiEta = 0;     //!
   float fSumPtOmegaEta = 0;  //!
   float fSumPtPiEta = 0;     //!
   float fMaxChargePt = 0;    //!
   float fEffEnergy = 0;      //!
+  Int_t fNXiEtaFrag = 0;     //!
+  Int_t fNXiEtaUp = 0;       //!
+  Int_t fNXiEtaDown = 0;     //!
+  float fPtXiEtaFrag[100];   //!
+  float fPtXiEtaUp[100];     //!
+  float fPtXiEtaDown[100];   //!
 
   // temporary variables
   Float_t fPt = 0;    //!
@@ -202,7 +229,7 @@ private:
   Float_t fZ = 0;     //! impact point (cm) in the ZDC
   Int_t fLabel = 0;   //!
 	
-  ClassDef(AliTaskLeadingMC, 1); // example of analysis
+  ClassDef(AliTaskLeadingMC, 2); // example of analysis
 };
 
 #endif

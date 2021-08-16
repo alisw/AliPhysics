@@ -218,6 +218,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
   fHistBGrandHFEev(0),
+	fHistNtrBGfrac(0),
   fHistUE_org(0),
   fHistUE_true(0),
   fHistUE_reco(0),
@@ -274,10 +275,11 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fNtrklEopHad(0),
   fHistphoPi0MC(0),//pho from pi0 without emb
   fHistphoEtaMC(0),//pho from eta without emb
+	fNtrklRhoarea(0),	
   //======parameter============
   fNref(0),
   Nch(0),
-	correctednAcc(0)
+	correctednAcc(-999)
   //fmcData(kFALSE)
 {
   // Default constructor.
@@ -456,6 +458,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fHistBGfrac(0),
 	fHistBGfracHFEev(0),
 	fHistBGrandHFEev(0),
+	fHistNtrBGfrac(0),
 	fHistUE_org(0),
 	fHistUE_true(0),
 	fHistUE_reco(0),
@@ -512,6 +515,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fNtrklEopHad(0),
 	fHistphoPi0MC(0),//photonic e from pi0 without emb
 	fHistphoEtaMC(0),//photonic e from eta without emb
+	fNtrklRhoarea(0),
 
 //======parameter============
         fNref(0),
@@ -1037,6 +1041,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistBGrandHFEev = new TH1F("fHistBGrandHFEev", "BG rand; #Delta p_{T}(GeV/c)", 300, -100.0, 200.0);
   fOutput->Add(fHistBGrandHFEev);
 
+	fHistNtrBGfrac = new TH2D("fHistNtrBGfrac","N_{tracklet} vs BG frac",301,-0.5,300.5,6000,-100.0,500.0);
+	fOutput->Add(fHistNtrBGfrac);
+
   fHistUE_org = new TH1F("fHistUE_org", "UE from EPOS in generated level; p_{T}(GeV/c)", 100, 0.0, 10.0);
   fOutput->Add(fHistUE_org);
 
@@ -1117,16 +1124,19 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
   fOutput->Add(fNchNtr_Corr);
 
-  fNtrklcorr_HFjet = new TH2F("fNtrklcorr_HFjet","N tracklet after correction vs HFjet;N^{corr}_{trkl};p^{jet}_{T}",301,-0.5,300.5,600,-100,500);
-  fOutput->Add(fNtrklcorr_HFjet);
-
-  fNtrklcorr_ULSjet = new TH2F("fNtrklcorr_ULSjet","N tracklet after correction vs ULSjet;N^{corr}_{trkl};p^{jet}_{T}",301,-0.5,300.5,600,-100,500);
+	Int_t nBinJet[3] = {301,20,600};
+	Double_t mim_Jet[3] = {-0.5,0.0,-100.0};
+  Double_t max_Jet[3] = {300.5,20,500};
+	fNtrklcorr_HFjet = new THnSparseD("fNtrklcorr_HFjet","N tracklet after correction vs HFjet;N^{corr}_{trkl};p_{T};p^{jet}_{T}",3,nBinJet,mim_Jet,max_Jet);
+	fOutput->Add(fNtrklcorr_HFjet);
+  
+	fNtrklcorr_ULSjet = new THnSparseD("fNtrklcorr_ULSjet","N tracklet after correction vs ULSjet;N^{corr}_{trkl};p_{T};p^{jet}_{T}",3,nBinJet,mim_Jet,max_Jet);
   fOutput->Add(fNtrklcorr_ULSjet);
 
-  fNtrklcorr_LSjet = new TH2F("fNtrklcorr_LSjet","N tracklet after correction vs LSjet;N^{corr}_{trkl};p^{jet}_{T}",301,-0.5,300.5,600,-100,500);
+	fNtrklcorr_LSjet = new THnSparseD("fNtrklcorr_LSjet","N tracklet after correction vs LSjet;N^{corr}_{trkl};p_{T};p^{jet}_{T}",3,nBinJet,mim_Jet,max_Jet);
   fOutput->Add(fNtrklcorr_LSjet);
 
-  fNtrklcorr_Hadjet = new TH2F("fNtrklcorr_Hadjet","N tracklet after correction vs Hadjet;N^{corr}_{trkl};p^{jet}_{T}",301,-0.5,300.5,600,-100,500);
+	fNtrklcorr_Hadjet = new THnSparseD("fNtrklcorr_Hadjet","N tracklet after correction vs Hadjet;N^{corr}_{trkl};p_{T};p^{jet}_{T}",3,nBinJet,mim_Jet,max_Jet);
   fOutput->Add(fNtrklcorr_Hadjet);
 
   fHistphoPi0MC = new TH1D("fHistphoPi0MC","MC e^{photo} from pi0 without emb",100,0,50);
@@ -1146,7 +1156,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fNtrklEopHad = new THnSparseD("NtrklcorrEopHad","Ntracklet vs Eop; N^{corr}_{trkl};p_{T};E/p",3,nBinEop,mim_Eop,max_Eop);
   fNtrklEopHad->Sumw2();
   fOutput->Add(fNtrklEopHad);
-	
+
+	fNtrklRhoarea = new TH2D("fNtrklRhoarea", "Ntrackelet vs Rho_area; N^{corr}_{trkl};#it{p}_{T}",301,-0.5,300.5,600,-100,500);
+	fOutput->Add(fNtrklRhoarea);
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
   // pi0 & eta weight
@@ -1595,7 +1607,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
          //AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);
          fJetsCont->ResetCurrentID();
          AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
-         if(!ippcoll)rho = fJetsCont->GetRhoVal();
+         if(!ippcoll || correctednAcc>-998)rho = fJetsCont->GetRhoVal();
          jetRadius = fJetsCont->GetJetRadius();
          //if(idbHFEj)cout << "rho = " << rho << endl; 
          //cout << "rho = " << rho << endl; 
@@ -1643,6 +1655,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
          fQAHistJetPhi->Fill(jetPhi); // QA
 
          fHistJetOrgArea->Fill(jetpT,Jarea);
+				 fNtrklRhoarea->Fill(correctednAcc,Rho_area);
 
          //if(fabs(jetEta)<0.6 && Ncont>2 && Jarea>0.2)  // 0.2 for 0.3
          if(fabs(jetEta)<fJetEtaCut && Ncont>2)  // 0.2 for 0.3
@@ -2161,8 +2174,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 		       if(pt>4.0 && pt<18.0)
 		       {
 			       fHistHFjet_DCA->Fill(corrPt,epTarray[3]);
-			       fNtrklcorr_HFjet->Fill(correctednAcc,corrPt);
-		       }
+		         Double_t HFEjetvals[3];
+						 HFEjetvals[0]=correctednAcc;
+						 HFEjetvals[1]=pt;
+						 HFEjetvals[2]=corrPt;
+						 fNtrklcorr_HFjet->Fill(HFEjetvals);
+					 }
 		       if(Njet==0 || Njet==1)
 		       {
 			       Double_t dPhiHFjet_tmp = 0.0;
@@ -2204,6 +2221,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                                  Double_t BGfracHFE = randomcone - rho*acos(-1.0)*pow(jetRadius,2);
                                  fHistBGrandHFEev->Fill(randomcone);
                                  fHistBGfracHFEev->Fill(BGfracHFE);
+																 fHistNtrBGfrac->Fill(correctednAcc,BGfracHFE);
                                 }
 
                               double HFjetRap2[6];
@@ -2218,14 +2236,23 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 		    if(fFlagULS && pt>4.0 && pt<18.0) 
 		    {
 			    fHistULSjet_DCA->Fill(corrPt,epTarray[3]);
-			    fNtrklcorr_ULSjet->Fill(correctednAcc,corrPt);
+					Double_t ULSjetvals[3];
+					ULSjetvals[0]=correctednAcc;
+					ULSjetvals[1]=pt;
+					ULSjetvals[2]=corrPt;
+					fNtrklcorr_ULSjet->Fill(ULSjetvals);
 		    }
 		    if(fFlagLS)fHistLSjet->Fill(pt,corrPt);
 		    if(fFlagLS && pt>4.0 && pt<18.0) 
 		    {
 			    fHistLSjet_DCA->Fill(corrPt,epTarray[3]);
-			    fNtrklcorr_LSjet->Fill(correctednAcc,corrPt);
+					Double_t LSjetvals[3];
+					LSjetvals[0]=correctednAcc;
+					LSjetvals[1]=pt;
+					LSjetvals[2]=corrPt;
+					fNtrklcorr_LSjet->Fill(LSjetvals);
 		    }
+
 
                     // jet-hadron
                     if(pt>4.0 && pt<18.0) 
@@ -2926,7 +2953,11 @@ void AliAnalysisHFjetTagHFE::GetFakeHadronJet(Double_t pthad, Double_t *hpTarray
                if(TMath::Abs(Eta_hJet)<fJetEtaCut && pthad>4.0 && pthad<18.0)
 							 {
 									 fHistHadjet_DCA->Fill(corrPtHad,hpTarray[3]); 
-                   fNtrklcorr_Hadjet->Fill(correctednAcc,corrPtHad);
+									 Double_t Hadjetvals[3];
+									 Hadjetvals[0]=correctednAcc;
+									 Hadjetvals[1]=pthad;
+									 Hadjetvals[2]=corrPtHad;
+									 fNtrklcorr_Hadjet->Fill(Hadjetvals);
 							 }
 							 }
            jethad = fJetsCont->GetNextAcceptJet(); 

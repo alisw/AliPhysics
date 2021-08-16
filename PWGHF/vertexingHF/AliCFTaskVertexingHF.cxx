@@ -143,6 +143,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
   fMinLeadPtRT(6.0),
+  fAveMultInTransForRT(4.965),
   fAODProtection(0),
   fRejectOOBPileUpEvents(kFALSE),
   fKeepOnlyOOBPileupEvents(kFALSE)
@@ -215,6 +216,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
   fMinLeadPtRT(6.0),
+  fAveMultInTransForRT(4.965),
   fAODProtection(0),
   fRejectOOBPileUpEvents(kFALSE),
   fKeepOnlyOOBPileupEvents(kFALSE)
@@ -319,6 +321,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fFillMinimumSteps(c.fFillMinimumSteps),
   fCutOnMomConservation(c.fCutOnMomConservation),
   fMinLeadPtRT(c.fMinLeadPtRT),
+  fAveMultInTransForRT(c.fAveMultInTransForRT),
   fAODProtection(c.fAODProtection),
   fRejectOOBPileUpEvents(c.fRejectOOBPileUpEvents),
   fKeepOnlyOOBPileupEvents(c.fKeepOnlyOOBPileupEvents)
@@ -938,6 +941,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   Double_t rtval=-1.;
   if (fConfiguration==kRT) {
      //do RT determination if RT analysis
+    cfVtxHF->SetAveMultiInTrans(fAveMultInTransForRT);
      rtval = CalculateRTValue(aodEvent,mcHeader,cfVtxHF);
      cfVtxHF->SetRTValue(rtval);
   }

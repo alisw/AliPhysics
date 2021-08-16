@@ -81,9 +81,14 @@ AliJCatalystTask::AliJCatalystTask():
 // QA part.
 	fMainList(NULL),
 	bSaveAllQA(kFALSE),
+	bSaveHMOhist(kFALSE),
 	fCentralityBins(16),
 	fcent_0(0.), fcent_1(0.), fcent_2(0.), fcent_3(0.), fcent_4(0.), fcent_5(0.), fcent_6(0.), fcent_7(0.), fcent_8(0.), fcent_9(0.), 
- fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.), fcent_15(0.), fcent_16(0.)
+ 	fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.), fcent_15(0.), fcent_16(0.),
+ 	fChi2perNDF_min(0.1),	// TBC: Which default value do we choose?
+	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
+	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
+	fDCAz_max(3.2)	// TBC: Shall we keep 2010 default?
 {
 	//
 }
@@ -126,9 +131,14 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 // QA part.
 	fMainList(NULL),
 	bSaveAllQA(kFALSE),
+	bSaveHMOhist(kFALSE),
 	fCentralityBins(16),
 	fcent_0(0.), fcent_1(0.), fcent_2(0.), fcent_3(0.), fcent_4(0.), fcent_5(0.), fcent_6(0.), fcent_7(0.), fcent_8(0.), fcent_9(0.), 
- fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.), fcent_15(0.), fcent_16(0.)
+ 	fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.), fcent_15(0.), fcent_16(0.),
+ 	fChi2perNDF_min(0.1),	// TBC: Which default value do we choose?
+	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
+	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
+	fDCAz_max(3.2)	// TBC: Shall we keep 2010 default?
 {
 // Main list to save the output of the QA.
   fMainList = new TList();
@@ -160,6 +170,7 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
 // QA part.
 	fMainList(ap.fMainList),
 	bSaveAllQA(ap.bSaveAllQA),
+	bSaveHMOhist(ap.bSaveHMOhist),
 	fCentralityBins(ap.fCentralityBins),
 	fcent_0(ap.fcent_0), fcent_1(ap.fcent_1), fcent_2(ap.fcent_2), fcent_3(ap.fcent_3), fcent_4(ap.fcent_4), fcent_5(ap.fcent_5), fcent_6(ap.fcent_6), fcent_7(ap.fcent_7), fcent_8(ap.fcent_8), fcent_9(ap.fcent_9), fcent_10(ap.fcent_10), fcent_11(ap.fcent_11), fcent_12(ap.fcent_12), fcent_13(ap.fcent_13), fcent_14(ap.fcent_14), fcent_15(ap.fcent_15), fcent_16(ap.fcent_16)
 {
@@ -315,7 +326,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 			fVertexZHistogram[centBin][0]->Fill(fvertex[2]);
 		}
 
-		fIsGoodEvent = IsGoodEvent(paodEvent);
+		fIsGoodEvent = IsGoodEvent(paodEvent, centBin);
 		if(!fIsGoodEvent) {
 			return;
 		}
@@ -447,6 +458,32 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 			if(track->GetTPCNcls() < fNumTPCClusters)
 				continue;
 
+			// New: Get the values of the DCA according to the type of tracks.
+			Double_t DCAxy = 0.;	// DCA in the transverse plane.
+			Double_t DCAz = 0.;		// DCA along the beam axis.
+			if(fFilterBit == 128) {	// Constrained TPC-only tracks.
+				DCAxy = track->DCA();
+				DCAz = track->ZAtDCA();
+			}
+		  else {	// For the unconstrained tracks. TBC!
+		    AliAODVertex *primaryVertex = (AliAODVertex*)aod->GetPrimaryVertex();
+		    Double_t v[3];    // Coordinates of the PV
+		    Double_t pos[3];  // Coordinates of the track closest to PV
+
+		    primaryVertex->GetXYZ(v);
+		    track->GetXYZ(pos);
+		    DCAxy = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
+		    DCAz = pos[2] - v[2];
+		  }
+
+		  // New: Apply the cuts on the DCA values of the track.
+			if(TMath::Abs(DCAxy) > fDCAxy_max) {continue;}
+			if(TMath::Abs(DCAz) > fDCAz_max) {continue;}
+
+			// New: Apply the cut on the chi2 per ndf for the TPC tracks.
+			Double_t chi2NDF = track->Chi2perNDF();	// TBC: is this 100% the right one?
+			if((chi2NDF < fChi2perNDF_min) || (chi2NDF > fChi2perNDF_max)) {continue;}
+
 			if(track->TestFilterBit( fFilterBit )){ //
 				if( fPt_min > 0){
 					double Pt = track->Pt();
@@ -465,7 +502,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 				}
 				else continue;
 
-                if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
+        if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
                 // Removal of bad area, now only with eta symmetric
 				Bool_t isBadArea = TMath::Abs(track->Eta()) > 0.6;
 				if(fremovebadarea) {
@@ -511,7 +548,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
     
 }
 //______________________________________________________________________________
-Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
+Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
 	//event selection here!
 	//check vertex
 	AliVVertex *vtx = event->GetPrimaryVertex();
@@ -628,7 +665,23 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
 				return kFALSE;
 
 		}
-		else{
+		else if (fperiod == AliJRunTable::kLHC10h) {	// High multiplicity outlier cuts for LHC10h based on the SCklm analysis.
+			UInt_t MTPC = 0;
+			UInt_t Mglobal = 0;
+			for(int it = 0; it < nTracks; it++){
+				AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
+				if (!trackAOD) {continue;}
+				if (trackAOD->TestFilterBit(128)) {MTPC++;}
+				if (trackAOD->TestFilterBit(256)) {Mglobal++;}
+			}
+
+			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][0]->Fill(Mglobal, MTPC);}	// Fill the HMO histogram only if both bSave* are true.
+			if(!((double)MTPC > (-65.0 + 1.54*Mglobal) && (double)MTPC < (90.0 + 2.30*Mglobal))) {
+				return kFALSE;
+			}
+			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][1]->Fill(Mglobal, MTPC);}
+		}
+		else {	// TBA: QA histo if chosen, possibility to choose between the two versions for LHC10h
 			if(!((double)TPCTracks > (-40.3+1.22*GlobTracks) && (double)TPCTracks < (32.1+1.59*GlobTracks)))
 				return kFALSE;
 		}
@@ -826,6 +879,7 @@ void AliJCatalystTask::InitializeArrays() {
 		  fPhiHistogram[icent][i] = NULL;
 		  fEtaHistogram[icent][i] = NULL;
 		  fMultHistogram[icent][i] = NULL;
+		  fHMOsHistogram[icent][i] = NULL;
 		}
 
 		fCentralityHistogram[icent] = NULL;
@@ -960,11 +1014,22 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fChargeHistogram[icent][1] = new TH1I("fCharge_AfterCut","ChargeAfterCut",11,-5.5,5.5); 
 	 fControlHistogramsList[icent]->Add(fChargeHistogram[icent][1]);
 
-	 // n) Book histogram Centrality 
+	 // o) Book histogram Centrality 
 	 fCentralityHistogram[icent]= new TH1F("fCentralityHistogram_After","CentralityHistogramAfter",22,0.,110.);
 	 fCentralityHistogram[icent]->GetXaxis()->SetTitle("Centrality");
 	 fCentralityHistogram[icent]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fCentralityHistogram[icent]);
+
+	 // p) Book the TH2D for the HMOs in LHC10h.
+	 fHMOsHistogram[icent][0] = new TH2D("fHMOsHistogram_Before","Correlations before HMO cuts", 1000, 0.,5000., 1000, 0., 5000.);
+	 fHMOsHistogram[icent][0]->GetXaxis()->SetTitle("M_{global}");
+	 fHMOsHistogram[icent][0]->GetYaxis()->SetTitle("M_{TPC}");
+	 if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][0]);}
+
+	 fHMOsHistogram[icent][1] = new TH2D("fHMOsHistogram_After","Correlations after HMO cuts", 1000, 0.,5000., 1000, 0., 5000.);
+	 fHMOsHistogram[icent][1]->GetXaxis()->SetTitle("M_{global}");
+	 fHMOsHistogram[icent][1]->GetYaxis()->SetTitle("M_{TPC}");
+	 if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][1]);}
 
   }//for(Int_t icent=0; icent<fCentralityBins; icent++)
 }

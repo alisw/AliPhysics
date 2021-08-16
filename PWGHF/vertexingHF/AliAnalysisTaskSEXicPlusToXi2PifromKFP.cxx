@@ -523,7 +523,9 @@ Bool_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeMCAnalysis(TClonesArray *mcAr
       if ( pifromXi_flag && v0_flag && pifromLam_flag && prfromLam_flag ) {
         if ( TMath::Abs(mcPart->Y()) < 0.8 ) { // Acceptance
           Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcPart,kTRUE);
-          FillTreeGenXicPlus(mcPart, CheckOrigin);
+          AliAODMCParticle *mcDau_0 = (AliAODMCParticle*) mcArray->At(mcPart->GetDaughterFirst());
+          Double_t MLoverP = sqrt( pow(mcPart->Xv()-mcDau_0->Xv(),2.)+pow(mcPart->Yv()-mcDau_0->Yv(),2.)+pow(mcPart->Zv()-mcDau_0->Zv(),2.) ) * mcPart->M() / mcPart->P()*1.e4; // c*(proper lifetime) in um
+          FillTreeGenXicPlus(mcPart, CheckOrigin, MLoverP);
         }
       }
 
@@ -614,7 +616,9 @@ Bool_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeMCAnalysis(TClonesArray *mcAr
       if ( pifromXi_flag && v0_flag && pifromLam_flag && prfromLam_flag ) {
         if ( TMath::Abs(mcPart->Y()) < 0.8 ) { // Acceptance
           Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcPart,kTRUE);
-          FillTreeGenXicPlus(mcPart, CheckOrigin);
+          AliAODMCParticle *mcDau_0 = (AliAODMCParticle*) mcArray->At(mcPart->GetDaughterFirst());
+          Double_t MLoverP = sqrt( pow(mcPart->Xv()-mcDau_0->Xv(),2.)+pow(mcPart->Yv()-mcDau_0->Yv(),2.)+pow(mcPart->Zv()-mcDau_0->Zv(),2.) ) * mcPart->M() / mcPart->P()*1.e4; // c*(proper lifetime) in um
+          FillTreeGenXicPlus(mcPart, CheckOrigin, MLoverP);
         }
       }
     } // Second is Xi
@@ -650,7 +654,9 @@ Bool_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeMCAnalysis(TClonesArray *mcAr
       if ( pifromXi_flag && v0_flag && pifromLam_flag && prfromLam_flag ) {
         if ( TMath::Abs(mcPart->Y()) < 0.8 ) { // Acceptance
           Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcPart,kTRUE);
-          FillTreeGenXicPlus(mcPart, CheckOrigin);
+          AliAODMCParticle *mcDau_0 = (AliAODMCParticle*) mcArray->At(mcPart->GetDaughterFirst());
+          Double_t MLoverP = sqrt( pow(mcPart->Xv()-mcDau_0->Xv(),2.)+pow(mcPart->Yv()-mcDau_0->Yv(),2.)+pow(mcPart->Zv()-mcDau_0->Zv(),2.) ) * mcPart->M() / mcPart->P()*1.e4; // c*(proper lifetime) in um
+          FillTreeGenXicPlus(mcPart, CheckOrigin, MLoverP);
         }
       }
     } // Third is Xi
@@ -661,11 +667,11 @@ Bool_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeMCAnalysis(TClonesArray *mcAr
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeGenXicPlus(AliAODMCParticle *mcpart, Int_t CheckOrigin)
+void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeGenXicPlus(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP)
 {
   // Fill histograms or tree depending
 
-  for(Int_t i=0;i<4;i++){
+  for(Int_t i=0;i<5;i++){
     fVar_XicPlusMCGen[i] = -9999.;
   }
 
@@ -673,6 +679,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeGenXicPlus(AliAODMCParticle
   fVar_XicPlusMCGen[1] = mcpart->Pt();
   fVar_XicPlusMCGen[2] = CheckOrigin;
   fVar_XicPlusMCGen[3] = mcpart->GetPdgCode();
+  fVar_XicPlusMCGen[4] = MLoverP;
 
   if (fWriteXicPlusMCGenTree && fVar_XicPlusMCGen[1]>0.9999) fTree_XicPlusMCGen->Fill();
 
@@ -873,7 +880,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
       KFParticle kfpLambda_m = kfpLambda;
       kfpLambda_m.SetNonlinearMassConstraint(massLambda);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) || TMath::Abs(kfpLambda.GetE()) <= TMath::Abs(kfpLambda.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) || TMath::Abs(kfpLambda_m.GetE()) <= TMath::Abs(kfpLambda_m.GetPz()) ) continue;
 
       KFParticle kfpPionOrKaon;
       kfpPionOrKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, -211); // pion-
@@ -904,22 +911,33 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
       KFParticle kfpXiMinus_m = kfpXiMinus;
       kfpXiMinus_m.SetNonlinearMassConstraint(massXi);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) || TMath::Abs(kfpXiMinus.GetE()) <= TMath::Abs(kfpXiMinus.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiMinus_m) || TMath::Abs(kfpXiMinus_m.GetE()) <= TMath::Abs(kfpXiMinus_m.GetPz()) ) continue;
 
-      for (Int_t itrkBP_even=0; itrkBP_even<flag_trkP; itrkBP_even=itrkBP_even+2) { // Loop for first bachelor pion+
-        for (Int_t itrkBP_odd=1; itrkBP_odd<flag_trkP; itrkBP_odd=itrkBP_odd+2) { // Loop for second bachelor pion+
+      for (Int_t itrkBP_trk1=0; itrkBP_trk1<flag_trkP-1; itrkBP_trk1++) { // Loop for first bachelor pion+
+        for (Int_t itrkBP_trk2=itrkBP_trk1+1; itrkBP_trk2<flag_trkP; itrkBP_trk2++) { // Loop for second bachelor pion+
 
-          if ( trackP[itrkBP_even]->GetID() == ptrack->GetID() || trackP[itrkBP_odd]->GetID() == ptrack->GetID() || trackP[itrkBP_even]->GetID() == trackP[itrkBP_odd]->GetID() ) continue;
+          if ( trackP[itrkBP_trk1]->GetID() == ptrack->GetID() || trackP[itrkBP_trk2]->GetID() == ptrack->GetID() || trackP[itrkBP_trk1]->GetID() == trackP[itrkBP_trk2]->GetID() ) continue;
 
-          if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackP[itrkBP_even]) ) continue;
-          if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackP[itrkBP_odd]) ) continue;
+          if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackP[itrkBP_trk1]) ) continue;
+          if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackP[itrkBP_trk2]) ) continue;
 
-          KFParticle kfpBP_even  = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackP[itrkBP_even], 211);
-          KFParticle kfpBP_odd   = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackP[itrkBP_odd], 211);
+          // === pt(pion_0)<pt(pion_1) ===
+          AliAODTrack *trackPiFromXicPlus_LowPt = NULL, *trackPiFromXicPlus_HighPt = NULL;
+          trackPiFromXicPlus_LowPt  = trackP[itrkBP_trk1];
+          trackPiFromXicPlus_HighPt = trackP[itrkBP_trk2];
+
+          if (trackP[itrkBP_trk1]->Pt() > trackP[itrkBP_trk2]->Pt()) {
+            trackPiFromXicPlus_LowPt  = trackP[itrkBP_trk2];
+            trackPiFromXicPlus_HighPt = trackP[itrkBP_trk1];
+          }
+          // =============================
+          
+          KFParticle kfpBP_LowPt  = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackPiFromXicPlus_LowPt, 211);
+          KFParticle kfpBP_HighPt = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackPiFromXicPlus_HighPt, 211);
 
           // reconstruct XicPlus
           KFParticle kfpXicPlus;
-          const KFParticle *vXicPlusDs[3] = {&kfpXiMinus_m, &kfpBP_even, &kfpBP_odd};
+          const KFParticle *vXicPlusDs[3] = {&kfpXiMinus_m, &kfpBP_LowPt, &kfpBP_HighPt};
           kfpXicPlus.Construct(vXicPlusDs, 3);
 
           // chi2>0 && NDF>0
@@ -943,16 +961,16 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
           if (fWriteXicPlusTree) {
             Int_t lab_XicPlus = -9999;
             if (fIsMC) {
-              lab_XicPlus = MatchToMCXicPlus(ptrack, ntrack, btrack, trackP[itrkBP_even], trackP[itrkBP_odd], mcArray);
-              if (lab_XicPlus>=0) FillTreeRecXicPlusFromCasc(kfpXicPlus, trackP[itrkBP_even], kfpBP_even, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, trackP[itrkBP_odd], kfpBP_odd, kfpProton, kfpPionMinus, PV, mcArray, lab_XicPlus);
+              lab_XicPlus = MatchToMCXicPlus(ptrack, ntrack, btrack, trackP[itrkBP_trk1], trackP[itrkBP_trk2], mcArray);
+              if (lab_XicPlus>=0) FillTreeRecXicPlusFromCasc(kfpXicPlus, trackPiFromXicPlus_LowPt, kfpBP_LowPt, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, trackPiFromXicPlus_HighPt, kfpBP_HighPt, kfpProton, kfpPionMinus, PV, mcArray, lab_XicPlus);
             }
             if (!fIsMC) {
-             FillTreeRecXicPlusFromCasc(kfpXicPlus, trackP[itrkBP_even], kfpBP_even, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, trackP[itrkBP_odd], kfpBP_odd, kfpProton, kfpPionMinus, PV, mcArray, lab_XicPlus);
+             FillTreeRecXicPlusFromCasc(kfpXicPlus, trackPiFromXicPlus_LowPt, kfpBP_LowPt, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, trackPiFromXicPlus_HighPt, kfpBP_HighPt, kfpProton, kfpPionMinus, PV, mcArray, lab_XicPlus);
             }
           }
           kfpXicPlus.Clear();
-          kfpBP_odd.Clear();
-          kfpBP_even.Clear();
+          kfpBP_HighPt.Clear();
+          kfpBP_LowPt.Clear();
         } // Loop for second bachelor pion+
       } // Loop for first bachelor pion+
       kfpXiMinus_m.Clear();
@@ -1006,7 +1024,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
       KFParticle kfpAntiLambda_m = kfpAntiLambda;
       kfpAntiLambda_m.SetNonlinearMassConstraint(massLambda);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) || TMath::Abs(kfpAntiLambda.GetE()) <= TMath::Abs(kfpAntiLambda.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) || TMath::Abs(kfpAntiLambda_m.GetE()) <= TMath::Abs(kfpAntiLambda_m.GetPz()) ) continue;
 
       KFParticle kfpPionOrKaon;
       kfpPionOrKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, 211); // pion+
@@ -1037,22 +1055,33 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
       KFParticle kfpXiPlus_m = kfpXiPlus;
       kfpXiPlus_m.SetNonlinearMassConstraint(massXi);
 
-      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) || TMath::Abs(kfpXiPlus.GetE()) <= TMath::Abs(kfpXiPlus.GetPz()) ) continue;
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXiPlus_m) || TMath::Abs(kfpXiPlus_m.GetE()) <= TMath::Abs(kfpXiPlus_m.GetPz()) ) continue;
 
-      for (Int_t itrkBP_even=0; itrkBP_even<flag_trkN; itrkBP_even=itrkBP_even+2) { // Loop for first bachelor pion-
-        for (Int_t itrkBP_odd=1; itrkBP_odd<flag_trkN; itrkBP_odd=itrkBP_odd+2) { // Loop for second bachelor pion-
+      for (Int_t itrkBP_trk1=0; itrkBP_trk1<flag_trkN-1; itrkBP_trk1++) { // Loop for first bachelor pion-
+        for (Int_t itrkBP_trk2=itrkBP_trk1+1; itrkBP_trk2<flag_trkN; itrkBP_trk2++) { // Loop for second bachelor pion-
 
-          if ( trackN[itrkBP_even]->GetID() == ntrack->GetID() || trackN[itrkBP_odd]->GetID() == ntrack->GetID() || trackN[itrkBP_even]->GetID() == trackN[itrkBP_odd]->GetID() ) continue;
+          if ( trackN[itrkBP_trk1]->GetID() == ntrack->GetID() || trackN[itrkBP_trk2]->GetID() == ntrack->GetID() || trackN[itrkBP_trk1]->GetID() == trackN[itrkBP_trk2]->GetID() ) continue;
 
-          if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackN[itrkBP_even]) ) continue;
-          if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackN[itrkBP_odd]) ) continue;
+          if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackN[itrkBP_trk1]) ) continue;
+          if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackN[itrkBP_trk2]) ) continue;
 
-          KFParticle kfpBP_even  = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackN[itrkBP_even], -211);
-          KFParticle kfpBP_odd   = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackN[itrkBP_odd], -211);
+          // === pt(pion_0)<pt(pion_1) ===
+          AliAODTrack *trackPiFromAntiXicPlus_LowPt = NULL, *trackPiFromAntiXicPlus_HighPt = NULL;
+          trackPiFromAntiXicPlus_LowPt  = trackN[itrkBP_trk1];
+          trackPiFromAntiXicPlus_HighPt = trackN[itrkBP_trk2];
+
+          if (trackN[itrkBP_trk1]->Pt() > trackN[itrkBP_trk2]->Pt()) {
+            trackPiFromAntiXicPlus_LowPt  = trackN[itrkBP_trk2];
+            trackPiFromAntiXicPlus_HighPt = trackN[itrkBP_trk1];
+          }
+          // =============================
+
+          KFParticle kfpBP_LowPt  = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackPiFromAntiXicPlus_LowPt, -211);
+          KFParticle kfpBP_HighPt = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackPiFromAntiXicPlus_HighPt, -211);
 
           // reconstruct Anti-XicPlus
           KFParticle kfpAntiXicPlus;
-          const KFParticle *vXicPlusDs[3] = {&kfpXiPlus_m, &kfpBP_even, &kfpBP_odd};
+          const KFParticle *vXicPlusDs[3] = {&kfpXiPlus_m, &kfpBP_LowPt, &kfpBP_HighPt};
           kfpAntiXicPlus.Construct(vXicPlusDs, 3);
 
           // chi2>0 && NDF>0
@@ -1076,16 +1105,16 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
           if (fWriteXicPlusTree) {
             Int_t lab_AntiXicPlus = -9999.;
             if (fIsMC) {
-              lab_AntiXicPlus = MatchToMCAntiXicPlus(ntrack, ptrack, btrack, trackN[itrkBP_even], trackN[itrkBP_odd], mcArray);
-              if (lab_AntiXicPlus>=0) FillTreeRecXicPlusFromCasc(kfpAntiXicPlus, trackN[itrkBP_even], kfpBP_even, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, trackN[itrkBP_odd], kfpBP_odd, kfpAntiProton, kfpPionPlus, PV, mcArray, lab_AntiXicPlus);
+              lab_AntiXicPlus = MatchToMCAntiXicPlus(ntrack, ptrack, btrack, trackN[itrkBP_trk1], trackN[itrkBP_trk2], mcArray);
+              if (lab_AntiXicPlus>=0) FillTreeRecXicPlusFromCasc(kfpAntiXicPlus, trackPiFromAntiXicPlus_LowPt, kfpBP_LowPt, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, trackPiFromAntiXicPlus_HighPt, kfpBP_HighPt, kfpAntiProton, kfpPionPlus, PV, mcArray, lab_AntiXicPlus);
             }
             if (!fIsMC) {
-              FillTreeRecXicPlusFromCasc(kfpAntiXicPlus, trackN[itrkBP_even], kfpBP_even, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, trackN[itrkBP_odd], kfpBP_odd, kfpAntiProton, kfpPionPlus, PV, mcArray, lab_AntiXicPlus);
+              FillTreeRecXicPlusFromCasc(kfpAntiXicPlus, trackPiFromAntiXicPlus_LowPt, kfpBP_LowPt, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, trackPiFromAntiXicPlus_HighPt, kfpBP_HighPt, kfpAntiProton, kfpPionPlus, PV, mcArray, lab_AntiXicPlus);
             }
           }
           kfpAntiXicPlus.Clear();
-          kfpBP_odd.Clear();
-          kfpBP_even.Clear();
+          kfpBP_HighPt.Clear();
+          kfpBP_LowPt.Clear();
         } // Loop for second bachelor pion-
       } // Loop for first bachelor pion-
       kfpXiPlus_m.Clear();
@@ -1107,7 +1136,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
 }
 
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCXicPlus(AliAODTrack *trackProton, AliAODTrack *trackPionMinus_2, AliAODTrack *trackPionMinus_1, AliAODTrack *trackPionPlus_even, AliAODTrack *trackPionPlus_odd, TClonesArray *mcArray)
+Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCXicPlus(AliAODTrack *trackProton, AliAODTrack *trackPionMinus_2, AliAODTrack *trackPionMinus_1, AliAODTrack *trackPionPlus_trk1, AliAODTrack *trackPionPlus_trk2, TClonesArray *mcArray)
 {
   // Check if all of the tracks is matched to a MC signal
   // If no, return -1;
@@ -1125,15 +1154,15 @@ Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCXicPlus(AliAODTrack *trac
   if (labelPionMinus_1<0) return -1;
   AliAODMCParticle* mcPionMinus_1 = static_cast<AliAODMCParticle*>(mcArray->At(labelPionMinus_1));
 
-  Int_t labelPionPlus_even  = fabs(trackPionPlus_even->GetLabel());
-  if (labelPionPlus_even<0) return -1;
-  AliAODMCParticle* mcPionPlus_even = static_cast<AliAODMCParticle*>(mcArray->At(labelPionPlus_even));
+  Int_t labelPionPlus_trk1  = fabs(trackPionPlus_trk1->GetLabel());
+  if (labelPionPlus_trk1<0) return -1;
+  AliAODMCParticle* mcPionPlus_trk1 = static_cast<AliAODMCParticle*>(mcArray->At(labelPionPlus_trk1));
 
-  Int_t labelPionPlus_odd  = fabs(trackPionPlus_odd->GetLabel());
-  if (labelPionPlus_odd<0) return -1;
-  AliAODMCParticle* mcPionPlus_odd = static_cast<AliAODMCParticle*>(mcArray->At(labelPionPlus_odd));
+  Int_t labelPionPlus_trk2  = fabs(trackPionPlus_trk2->GetLabel());
+  if (labelPionPlus_trk2<0) return -1;
+  AliAODMCParticle* mcPionPlus_trk2 = static_cast<AliAODMCParticle*>(mcArray->At(labelPionPlus_trk2));
 
-  if ( mcProton->GetPdgCode() != 2212 || mcPionMinus_2->GetPdgCode() != -211 || mcPionMinus_1->GetPdgCode() != -211 || mcPionPlus_even->GetPdgCode() != 211 || mcPionPlus_odd->GetPdgCode() != 211 ) return -1; // check pdg
+  if ( mcProton->GetPdgCode() != 2212 || mcPionMinus_2->GetPdgCode() != -211 || mcPionMinus_1->GetPdgCode() != -211 || mcPionPlus_trk1->GetPdgCode() != 211 || mcPionPlus_trk2->GetPdgCode() != 211 ) return -1; // check pdg
 
   // === check Lambda ===
   Int_t IndexMother[2];
@@ -1157,8 +1186,8 @@ Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCXicPlus(AliAODTrack *trac
   // === check XicPlus ===
   Int_t IndexMother_XicPlusDau[3];
   IndexMother_XicPlusDau[0] = mcMother->GetMother(); // mother of Xi-
-  IndexMother_XicPlusDau[1] = mcPionPlus_even->GetMother();
-  IndexMother_XicPlusDau[2] = mcPionPlus_odd->GetMother();
+  IndexMother_XicPlusDau[1] = mcPionPlus_trk1->GetMother();
+  IndexMother_XicPlusDau[2] = mcPionPlus_trk2->GetMother();
   if ( IndexMother_XicPlusDau[0]<0 || IndexMother_XicPlusDau[1]<0 || IndexMother_XicPlusDau[2]<0 ) return -1; // check mother exist
   if ( IndexMother_XicPlusDau[0] != IndexMother_XicPlusDau[1] || IndexMother_XicPlusDau[0] != IndexMother_XicPlusDau[2] ) return -1; // check the same mother
   mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[0]));
@@ -1176,7 +1205,7 @@ Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCXicPlus(AliAODTrack *trac
 }
 
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCAntiXicPlus(AliAODTrack *trackAntiProton, AliAODTrack *trackPionPlus_2, AliAODTrack *trackPionPlus_1, AliAODTrack *trackPionMinus_even, AliAODTrack *trackPionMinus_odd, TClonesArray *mcArray)
+Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCAntiXicPlus(AliAODTrack *trackAntiProton, AliAODTrack *trackPionPlus_2, AliAODTrack *trackPionPlus_1, AliAODTrack *trackPionMinus_trk1, AliAODTrack *trackPionMinus_trk2, TClonesArray *mcArray)
 {
   // Check if all of the tracks is matched to a MC signal
   // If no, return -1;
@@ -1194,15 +1223,15 @@ Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCAntiXicPlus(AliAODTrack *
   if (labelPionPlus_1<0) return -1;
   AliAODMCParticle* mcPionPlus_1 = static_cast<AliAODMCParticle*>(mcArray->At(labelPionPlus_1));
 
-  Int_t labelPionMinus_even  = fabs(trackPionMinus_even->GetLabel());
-  if (labelPionMinus_even<0) return -1;
-  AliAODMCParticle* mcPionMinus_even = static_cast<AliAODMCParticle*>(mcArray->At(labelPionMinus_even));
+  Int_t labelPionMinus_trk1  = fabs(trackPionMinus_trk1->GetLabel());
+  if (labelPionMinus_trk1<0) return -1;
+  AliAODMCParticle* mcPionMinus_trk1 = static_cast<AliAODMCParticle*>(mcArray->At(labelPionMinus_trk1));
 
-  Int_t labelPionMinus_odd  = fabs(trackPionMinus_odd->GetLabel());
-  if (labelPionMinus_odd<0) return -1;
-  AliAODMCParticle* mcPionMinus_odd = static_cast<AliAODMCParticle*>(mcArray->At(labelPionMinus_odd));
+  Int_t labelPionMinus_trk2  = fabs(trackPionMinus_trk2->GetLabel());
+  if (labelPionMinus_trk2<0) return -1;
+  AliAODMCParticle* mcPionMinus_trk2 = static_cast<AliAODMCParticle*>(mcArray->At(labelPionMinus_trk2));
 
-  if ( mcAntiProton->GetPdgCode() != -2212 || mcPionPlus_2->GetPdgCode() != 211 || mcPionPlus_1->GetPdgCode() != 211 || mcPionMinus_even->GetPdgCode() != -211 || mcPionMinus_odd->GetPdgCode() != -211 ) return -1; // check pdg
+  if ( mcAntiProton->GetPdgCode() != -2212 || mcPionPlus_2->GetPdgCode() != 211 || mcPionPlus_1->GetPdgCode() != 211 || mcPionMinus_trk1->GetPdgCode() != -211 || mcPionMinus_trk2->GetPdgCode() != -211 ) return -1; // check pdg
 
   // === check Anti-Lambda ===
   Int_t IndexMother[2];
@@ -1225,8 +1254,8 @@ Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCAntiXicPlus(AliAODTrack *
   // === check Anti-XicPlus ===
   Int_t IndexMother_XicPlusDau[3];
   IndexMother_XicPlusDau[0] = mcMother->GetMother(); // mother of Xi+
-  IndexMother_XicPlusDau[1] = mcPionMinus_even->GetMother();
-  IndexMother_XicPlusDau[2] = mcPionMinus_odd->GetMother();
+  IndexMother_XicPlusDau[1] = mcPionMinus_trk1->GetMother();
+  IndexMother_XicPlusDau[2] = mcPionMinus_trk2->GetMother();
   // =======================
   if ( IndexMother_XicPlusDau[0]<0 || IndexMother_XicPlusDau[1]<0 || IndexMother_XicPlusDau[2]<0 ) return -1; // check mother exist
   if ( IndexMother_XicPlusDau[0] != IndexMother_XicPlusDau[1] || IndexMother_XicPlusDau[0] != IndexMother_XicPlusDau[2] ) return -1; // check the same mother
@@ -1616,7 +1645,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fTree_XicPlus = new TTree(nameoutput, "XicPlus variables tree");
-  Int_t nVar = 47;
+  Int_t nVar = 50;
   fVar_XicPlus = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -1672,11 +1701,14 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
   fVarNames[40] = "DCA_PiToPi"; // DCA of pi to pi
   fVarNames[41] = "DCAxy_Pi0ToXi"; // DCA of pion_0 to Xi in x-y plane
   fVarNames[42] = "DCAxy_Pi1ToXi"; // DCA of pion_1 to Xi in x-y plane
-  fVarNames[43] = "PA_XicPlusToPV"; // pointing angle of Xic (pointing back to PV)
+  fVarNames[43] = "PA_XicPlusToPV"; // pointing angle of XicPlus (pointing back to PV)
   fVarNames[44] = "DecayLxy_XicPlus"; // decay length of XicPlus in x-y plane
   fVarNames[45] = "chi2topo_XicPlus"; // chi2_topo of XicPlus to PV
+  fVarNames[46] = "ldl_XicPlus"; // l/dl of XicPlus
+  fVarNames[47] = "ct_XicPlus"; // lifetime of XicPlus
+  fVarNames[48] = "PA_XiToXicPlus"; // pointing angle of Xi (pointing back to XicPlus)
 
-  fVarNames[46] = "Source_XicPlus"; // flag for XicPlus MC truth (“4” prompt, "5" feed-down, “<0” background)
+  fVarNames[49] = "Source_XicPlus"; // flag for XicPlus MC truth (“4” prompt, "5" feed-down, “<0” background)
 
 //  fVarNames[26] = "CosThetaStar_PiFromXicPlus"; // CosThetaStar of pion coming from XicPlus
 //  fVarNames[27] = "CosThetaStar_Xi"; // CosThetaStar of Xi coming from XicPlus
@@ -1700,7 +1732,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeGenXicPlus()
 {
   const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
   fTree_XicPlusMCGen = new TTree(nameoutput,"XicPlus MC variables tree");
-  Int_t nVar = 4;
+  Int_t nVar = 5;
   fVar_XicPlusMCGen = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
   
@@ -1708,6 +1740,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeGenXicPlus()
   fVarNames[1] = "pt_XicPlus";
   fVarNames[2] = "Source_XicPlus";
   fVarNames[3] = "PDG_XicPlus";
+  fVarNames[4] = "MLoverP"; // c*(proper lifetime)
 
   /*
   fVarNames[ 0]="Centrality";
@@ -1779,17 +1812,17 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillEventROOTObjects()
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFParticle kfpXicPlus, AliAODTrack *trackPiFromXicPlus_even, KFParticle kfpBP_even, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, AliAODTrack *trackPiFromXicPlus_odd, KFParticle kfpBP_odd, KFParticle kfpProtonFromLam, KFParticle kfpPionFromLam, KFParticle PV, TClonesArray *mcArray, Int_t lab_XicPlus)
+void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFParticle kfpXicPlus, AliAODTrack *trackPiFromXicPlus_trk1, KFParticle kfpBP_trk1, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, AliAODTrack *trackPiFromXicPlus_trk2, KFParticle kfpBP_trk2, KFParticle kfpProtonFromLam, KFParticle kfpPionFromLam, KFParticle PV, TClonesArray *mcArray, Int_t lab_XicPlus)
 {
 
-  for (Int_t i=0; i<47; i++) {
+  for (Int_t i=0; i<50; i++) {
     fVar_XicPlus[i] = -9999.;
   }
 
-  Float_t nSigmaTPC_PiFromXicPlus_even = fPID->NumberOfSigmasTPC(trackPiFromXicPlus_even,AliPID::kPion);
-  Float_t nSigmaTOF_PiFromXicPlus_even = fPID->NumberOfSigmasTOF(trackPiFromXicPlus_even,AliPID::kPion);
-  Float_t nSigmaTPC_PiFromXicPlus_odd  = fPID->NumberOfSigmasTPC(trackPiFromXicPlus_odd,AliPID::kPion);
-  Float_t nSigmaTOF_PiFromXicPlus_odd  = fPID->NumberOfSigmasTOF(trackPiFromXicPlus_odd,AliPID::kPion);
+  Float_t nSigmaTPC_PiFromXicPlus_trk1 = fPID->NumberOfSigmasTPC(trackPiFromXicPlus_trk1,AliPID::kPion);
+  Float_t nSigmaTOF_PiFromXicPlus_trk1 = fPID->NumberOfSigmasTOF(trackPiFromXicPlus_trk1,AliPID::kPion);
+  Float_t nSigmaTPC_PiFromXicPlus_trk2 = fPID->NumberOfSigmasTPC(trackPiFromXicPlus_trk2,AliPID::kPion);
+  Float_t nSigmaTOF_PiFromXicPlus_trk2 = fPID->NumberOfSigmasTOF(trackPiFromXicPlus_trk2,AliPID::kPion);
 
   Float_t nSigmaTPC_PrFromLam  = fPID->NumberOfSigmasTPC(trkProton,AliPID::kProton);
   Float_t nSigmaTPC_PiFromLam  = fPID->NumberOfSigmasTPC(trkPion,AliPID::kPion);
@@ -1798,7 +1831,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
   nSigmaTPC_PiFromXi = fPID->NumberOfSigmasTPC(trackPiFromXiOrKaonFromOmega,AliPID::kPion);
   nSigmaTOF_PiFromXi = fPID->NumberOfSigmasTOF(trackPiFromXiOrKaonFromOmega,AliPID::kPion);
 
-  if ( fabs(nSigmaTPC_PiFromXicPlus_even)>=4. || fabs(nSigmaTPC_PiFromXicPlus_odd)>=4. || fabs(nSigmaTPC_PiFromXi)>=4. || fabs(nSigmaTPC_PrFromLam)>=4. || fabs(nSigmaTPC_PiFromLam)>=4. ) return;
+  if ( fabs(nSigmaTPC_PiFromXicPlus_trk1)>=4. || fabs(nSigmaTPC_PiFromXicPlus_trk2)>=4. || fabs(nSigmaTPC_PiFromXi)>=4. || fabs(nSigmaTPC_PrFromLam)>=4. || fabs(nSigmaTPC_PiFromLam)>=4. ) return;
 
 //  AliAODTrack *trk0 = (AliAODTrack*) (v0->GetDaughter(0));
 
@@ -1823,11 +1856,11 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
 //  KFParticle kfpXiMinus_pv = kfpXiMinus;
 //  kfpXiMinus_pv.SetProductionVertex(PV);
 
-  KFParticle kfpBP_XicPlus = kfpBP_even;
-  kfpBP_XicPlus.SetProductionVertex(kfpXicPlus);
+//  KFParticle kfpBP_XicPlus = kfpBP_trk1;
+//  kfpBP_XicPlus.SetProductionVertex(kfpXicPlus);
 
-  kfpBP_even.GetDistanceFromVertexXY(PV);
-  kfpBP_odd.GetDistanceFromVertexXY(PV);
+  kfpBP_trk1.GetDistanceFromVertexXY(PV);
+  kfpBP_trk2.GetDistanceFromVertexXY(PV);
 
   //************************** calculate l/Δl for Lambda *************************************
   Double_t dx_Lambda = PV.GetX()-kfpLambda.GetX();
@@ -1849,6 +1882,16 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
   dl_Xi = dl_Xi<0. ? 1.e8f : sqrt(dl_Xi)/l_Xi;
   if ( dl_Xi<=0 ) return;
   //***************************************************************************************
+  //************************** calculate l/Δl for Xic+ *************************************
+  Double_t dx_XicPlus = PV.GetX()-kfpXicPlus.GetX();
+  Double_t dy_XicPlus = PV.GetY()-kfpXicPlus.GetY();
+  Double_t dz_XicPlus = PV.GetZ()-kfpXicPlus.GetZ();
+  Double_t l_XicPlus = TMath::Sqrt(dx_XicPlus*dx_XicPlus + dy_XicPlus*dy_XicPlus + dz_XicPlus*dz_XicPlus);
+  Double_t dl_XicPlus = (PV.GetCovariance(0)+kfpXicPlus.GetCovariance(0))*dx_XicPlus*dx_XicPlus + (PV.GetCovariance(2)+kfpXicPlus.GetCovariance(2))*dy_XicPlus*dy_XicPlus + (PV.GetCovariance(5)+kfpXicPlus.GetCovariance(5))*dz_XicPlus*dz_XicPlus + 2*( (PV.GetCovariance(1)+kfpXicPlus.GetCovariance(1))*dx_XicPlus*dy_XicPlus + (PV.GetCovariance(3)+kfpXicPlus.GetCovariance(3))*dx_XicPlus*dz_XicPlus + (PV.GetCovariance(4)+kfpXicPlus.GetCovariance(4))*dy_XicPlus*dz_XicPlus );
+  if ( fabs(l_XicPlus)<1.e-8f ) l_XicPlus = 1.e-8f;
+  dl_XicPlus = dl_XicPlus<0. ? 1.e8f : sqrt(dl_XicPlus)/l_XicPlus;
+  if ( dl_XicPlus<=0 ) return;
+  //***************************************************************************************
 
   if ( kfpLambda_PV.GetChi2()/kfpLambda_PV.GetNDF() <= fAnaCuts->GetKFPLam_Chi2topoMin() ) return;
   if ( kfpXiMinus_PV.GetChi2()/kfpXiMinus_PV.GetNDF() >= fAnaCuts->GetKFPXi_Chi2topoMax() ) return;
@@ -1862,10 +1905,10 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
   if ( fabs(mass_XicPlus_PV-PDGmassXicPlus) > fAnaCuts->GetProdMassTolXicPlus() ) return;
 
 
-  fVar_XicPlus[0]  = nSigmaTPC_PiFromXicPlus_even; // TPC nsigma for pion_0 coming from XicPlus
-  fVar_XicPlus[1]  = nSigmaTOF_PiFromXicPlus_even; // TOF nsigma for pion_0 coming from XicPlus
-  fVar_XicPlus[2]  = nSigmaTPC_PiFromXicPlus_odd; // TPC nsigma for pion_1 coming from XicPlus
-  fVar_XicPlus[3]  = nSigmaTOF_PiFromXicPlus_odd; // TOF nsigma for pion_1 coming from XicPlus
+  fVar_XicPlus[0]  = nSigmaTPC_PiFromXicPlus_trk1; // TPC nsigma for pion_0 coming from XicPlus
+  fVar_XicPlus[1]  = nSigmaTOF_PiFromXicPlus_trk1; // TOF nsigma for pion_0 coming from XicPlus
+  fVar_XicPlus[2]  = nSigmaTPC_PiFromXicPlus_trk2; // TPC nsigma for pion_1 coming from XicPlus
+  fVar_XicPlus[3]  = nSigmaTOF_PiFromXicPlus_trk2; // TOF nsigma for pion_1 coming from XicPlus
   fVar_XicPlus[4]  = nSigmaTPC_PiFromXi; // TPC nsigma for pion coming from Xi
   fVar_XicPlus[5]  = nSigmaTOF_PiFromXi; // TOF nsigma for pion coming from Xi
   fVar_XicPlus[6]  = nSigmaTPC_PiFromLam; // TPC nsigma for pion coming from Lambda
@@ -1895,9 +1938,10 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
   fVar_XicPlus[18] = ct_Xi; // life time of Xi
 
   // calculate CosPointingAngle
-  Double_t cosPA_v0toXi = AliVertexingHFUtils::CosPointingAngleFromKF(kfpLambda_m, kfpXiMinus);
-  Double_t cosPA_v0toPV = AliVertexingHFUtils::CosPointingAngleFromKF(kfpLambda_m, PV);
-  Double_t cosPA_XiToPV = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXiMinus_m, PV);
+  Double_t cosPA_v0toXi      = AliVertexingHFUtils::CosPointingAngleFromKF(kfpLambda_m, kfpXiMinus);
+  Double_t cosPA_v0toPV      = AliVertexingHFUtils::CosPointingAngleFromKF(kfpLambda_m, PV);
+  Double_t cosPA_XiToPV      = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXiMinus_m, PV);
+  Double_t cosPA_XiToXicPlus = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXiMinus_m, kfpXicPlus);
   fVar_XicPlus[19] = TMath::ACos(cosPA_v0toXi); // pointing angle of Lmabda (pointing back to Xi)
   fVar_XicPlus[20] = TMath::ACos(cosPA_v0toPV); // pointing angle of Lambda (pointing back to PV)
   fVar_XicPlus[21] = TMath::ACos(cosPA_XiToPV); // pointing angle of Xi (pointing back to PV)
@@ -1910,8 +1954,8 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
   kfpXiMinus.GetMass(mass_Xi, err_mass_Xi);
   fVar_XicPlus[23] = mass_Xi; // mass of Xi (without mass const.)
 
-  fVar_XicPlus[24] = trackPiFromXicPlus_even->Pt(); // pt of pion_0 coming from XicPlus
-  fVar_XicPlus[25] = trackPiFromXicPlus_odd->Pt(); // pt of pion_1 coming from XicPlus
+  fVar_XicPlus[24] = trackPiFromXicPlus_trk1->Pt(); // pt of pion_0 coming from XicPlus
+  fVar_XicPlus[25] = trackPiFromXicPlus_trk2->Pt(); // pt of pion_1 coming from XicPlus
 
   fVar_XicPlus[26] = kfpXicPlus_PV.GetPt(); // pt of XicPlus
   if ( TMath::Abs(kfpXicPlus_PV.GetE())>TMath::Abs(kfpXicPlus_PV.GetPz()) ) {
@@ -1921,17 +1965,17 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
   fVar_XicPlus[29] = kfpXicPlus.GetChi2()/kfpXicPlus.GetNDF(); // chi2_geometry of XicPlus
 
   // --- chi2_prim of Pion to PV ---
-  KFParticle kfpBP_even_PV = kfpBP_even;
-  kfpBP_even_PV.SetProductionVertex(PV);
-  fVar_XicPlus[30] = kfpBP_even_PV.GetChi2()/kfpBP_even_PV.GetNDF(); // chi2_topo of pion_0 to PV
-  KFParticle kfpBP_odd_PV = kfpBP_odd;
-  kfpBP_odd_PV.SetProductionVertex(PV);
-  fVar_XicPlus[31] = kfpBP_odd_PV.GetChi2()/kfpBP_odd_PV.GetNDF(); // chi2_topo of pion_1 to PV
+  KFParticle kfpBP_trk1_PV = kfpBP_trk1;
+  kfpBP_trk1_PV.SetProductionVertex(PV);
+  fVar_XicPlus[30] = kfpBP_trk1_PV.GetChi2()/kfpBP_trk1_PV.GetNDF(); // chi2_topo of pion_0 to PV
+  KFParticle kfpBP_trk2_PV = kfpBP_trk2;
+  kfpBP_trk2_PV.SetProductionVertex(PV);
+  fVar_XicPlus[31] = kfpBP_trk2_PV.GetChi2()/kfpBP_trk2_PV.GetNDF(); // chi2_topo of pion_1 to PV
   // -------------------------------
   
   // --- DCA of Pion to PV ---
-  fVar_XicPlus[32] = kfpBP_even.GetDistanceFromVertexXY(PV); // DCA of pion_0 coming from XicPlus in x-y plane
-  fVar_XicPlus[33] = kfpBP_odd.GetDistanceFromVertexXY(PV); // DCA of pion_1 coming from XicPlus in x-y plane
+  fVar_XicPlus[32] = kfpBP_trk1.GetDistanceFromVertexXY(PV); // DCA of pion_0 coming from XicPlus in x-y plane
+  fVar_XicPlus[33] = kfpBP_trk2.GetDistanceFromVertexXY(PV); // DCA of pion_1 coming from XicPlus in x-y plane
   // -------------------------
 
   Float_t massK0S_Rec, err_massK0S;
@@ -1944,10 +1988,10 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
   fVar_XicPlus[36] = kfpPionFromLam.GetDistanceFromParticleXY(kfpProtonFromLam); // DCA of Lam's daughters
   fVar_XicPlus[37] = kfpPionOrKaon.GetDistanceFromParticleXY(kfpLambda_m); // DCA of Xi's daughters (calculated from KF after Lambda mass constraint)
   fVar_XicPlus[38] = kfpXiMinus_m.GetDistanceFromVertexXY(PV); // DCA of Xi to PV in x-y plane (calculated from KF after Xi mass constraint)
-  fVar_XicPlus[39] = kfpBP_even.GetDistanceFromParticleXY(kfpBP_odd); // DCA of pi to pi in x-y plane
-  fVar_XicPlus[40] = kfpBP_even.GetDistanceFromParticle(kfpBP_odd); // DCA of pi to pi
-  fVar_XicPlus[41] = kfpBP_even.GetDistanceFromParticleXY(kfpXiMinus_m); // DCA of pi_odd to Xi in x-y plane
-  fVar_XicPlus[42] = kfpBP_odd.GetDistanceFromParticleXY(kfpXiMinus_m); // DCA of pi_even to Xi in x-y plane
+  fVar_XicPlus[39] = kfpBP_trk1.GetDistanceFromParticleXY(kfpBP_trk2); // DCA of pi to pi in x-y plane
+  fVar_XicPlus[40] = kfpBP_trk1.GetDistanceFromParticle(kfpBP_trk2); // DCA of pi to pi
+  fVar_XicPlus[41] = kfpBP_trk1.GetDistanceFromParticleXY(kfpXiMinus_m); // DCA of pi_trk1 to Xi in x-y plane
+  fVar_XicPlus[42] = kfpBP_trk2.GetDistanceFromParticleXY(kfpXiMinus_m); // DCA of pi_trk2 to Xi in x-y plane
 
   // --- CosPointingAngle ---
   Double_t cosPA_XicPlusToPV = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXicPlus, PV);
@@ -1957,6 +2001,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
   kfpXicPlus_PV.GetDecayLengthXY(DecayLxy_XicPlus, err_DecayLxy_XicPlus);
   fVar_XicPlus[44] = DecayLxy_XicPlus; // decay length of XicPlus in x-y plane
   fVar_XicPlus[45] = kfpXicPlus_PV.GetChi2()/kfpXicPlus_PV.GetNDF(); // chi2_topo of XicPlus to PV
+  fVar_XicPlus[46] = l_XicPlus/dl_XicPlus; // l/dl of XicPlus
 
 //  fVar_XicPlus[26] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4132, 211, 3312, kfpXicPlus, kfpBP_XicPlus, kfpXiMinus_XicPlus);
 //  fVar_XicPlus[27] = AliVertexingHFUtils::CosThetaStarFromKF(1, 4132, 211, 3312, kfpXicPlus, kfpBP_XicPlus, kfpXiMinus_XicPlus);
@@ -1965,20 +2010,22 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
 //  fVar_XicPlus[33] = kfpLambda_Xi.GetChi2()/kfpLambda_Xi.GetNDF();
 //  fVar_XicPlus[34] = kfpXiMinus_XicPlus.GetChi2()/kfpXiMinus_XicPlus.GetNDF();
 
-//  Float_t ct_XicPlus=0., err_ct_XicPlus=0.;
-//  kfpXicPlus_PV.GetLifeTime(ct_XicPlus, err_ct_XicPlus);
-//  fVar_XicPlus[36] = ct_XicPlus;
+  Float_t ct_XicPlus=0., err_ct_XicPlus=0.;
+  kfpXicPlus_PV.GetLifeTime(ct_XicPlus, err_ct_XicPlus);
+  fVar_XicPlus[47] = ct_XicPlus;
 //  fVar_XicPlus[38] = casc->DcaV0Daughters(); // DCA_LamDau
-//  fVar_XicPlus[40] = kfpBP_even.GetDistanceFromParticle(kfpXiMinus_m); // DCA_XicPlusDau_KF
+//  fVar_XicPlus[40] = kfpBP_trk1.GetDistanceFromParticle(kfpXiMinus_m); // DCA_XicPlusDau_KF
+
+  fVar_XicPlus[48] = TMath::ACos(cosPA_XiToXicPlus); // pointing angle of Xi (pointing back to XicPlus)
 
   if (fIsMC) {
-    fVar_XicPlus[46] = lab_XicPlus;
+    fVar_XicPlus[49] = lab_XicPlus;
     // === weight ===
     /*
     if (lab_XicPlus>0) {
-      Int_t labelPion_even = fabs(trackPiFromXicPlus_even->GetLabel());
-      AliAODMCParticle* mcPion_even = static_cast<AliAODMCParticle*>(mcArray->At(labelPion_even));
-      AliAODMCParticle* mcXicPlus  = static_cast<AliAODMCParticle*>(mcArray->At(mcPion_even->GetMother()));
+      Int_t labelPion_trk1 = fabs(trackPiFromXicPlus_trk1->GetLabel());
+      AliAODMCParticle* mcPion_trk1 = static_cast<AliAODMCParticle*>(mcArray->At(labelPion_trk1));
+      AliAODMCParticle* mcXicPlus  = static_cast<AliAODMCParticle*>(mcArray->At(mcPion_trk1->GetMother()));
     }
     */
   }
@@ -1989,8 +2036,8 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
 
 
 //  fVar_XicPlus[10] = casc->DcaXiDaughters(); // DCA_XiDau
-//  fVar_XicPlus[32] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4132, 211, 3312, kfpXicPlus, kfpBP_even, kfpXiMinus_m);
-//  fVar_XicPlus[33] = AliVertexingHFUtils::CosThetaStarFromKF(1, 4132, 211, 3312, kfpXicPlus, kfpBP_even, kfpXiMinus_m);
+//  fVar_XicPlus[32] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4132, 211, 3312, kfpXicPlus, kfpBP_trk1, kfpXiMinus_m);
+//  fVar_XicPlus[33] = AliVertexingHFUtils::CosThetaStarFromKF(1, 4132, 211, 3312, kfpXicPlus, kfpBP_trk1, kfpXiMinus_m);
 
 //  fVar_XicPlus[3]  = TMath::Prob(kfpLambda.GetChi2(), kfpLambda.GetNDF());
 //  fVar_XicPlus[7]  = kfpLambda.GetPz();
@@ -2022,8 +2069,8 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
 //  fVar_XicPlus[35] = kfpXiMinus.GetY();
 //  fVar_XicPlus[36] = kfpXiMinus.GetZ();
 
-//  fVar_XicPlus[39] = trackPiFromXicPlus_even->Charge();
-//  fVar_XicPlus[41] = trackPiFromXicPlus_even->Pz();
+//  fVar_XicPlus[39] = trackPiFromXicPlus_trk1->Charge();
+//  fVar_XicPlus[41] = trackPiFromXicPlus_trk1->Pz();
 
 //  fVar_XicPlus[20] = kfpXicPlus.GetChi2()/kfpXicPlus.GetNDF();
 //  fVar_XicPlus[45] = TMath::Prob(kfpXicPlus.GetChi2(), kfpXicPlus.GetNDF());

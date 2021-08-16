@@ -230,6 +230,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kLHC18b11c,
 
       // pPb 8 TeV pass2 productions
+      kLHC20f11d, // MB general purpose
       kLHC21d2a, // GJ EMC+DCAL
       kLHC21d2b, // JJLow EMC+DCAL
       kLHC21d2c, // JJHigh EMC+DCAL
@@ -717,6 +718,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistElectronPositronClusterMatch;        // Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistElectronPositronClusterMatchSub;     // Electron/Positron P vs E - P in case of matching with a cluster
     TH2F*     fHistElectronPositronClusterMatchEoverP;  // Electron/Positron E/P vs PT of cluster in case of matching of Electron with cluster
+    TH2F*     fHistElectronPositronClusterMatchEoverPonVtx;  // Electron/Positron E/P(at Vtx) vs PT of cluster in case of matching of Electron with cluster
     TH2F*     fHistElectronClusterMatch;                // Electron P vs cluster E in case of matching with a cluster
     TH2F*     fHistPositronClusterMatch;                // Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistTrueElectronPositronClusterMatch;    // True Electron/Positron P vs cluster E in case of matching with a cluster
@@ -734,7 +736,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,121)
+    ClassDef(AliCaloPhotonCuts,123)
 };
 
 #endif

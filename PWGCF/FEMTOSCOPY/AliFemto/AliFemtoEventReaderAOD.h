@@ -291,7 +291,7 @@ private:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoEventReaderAOD, 33);
+  ClassDef(AliFemtoEventReaderAOD, 36);
   /// \endcond
 #endif
 

@@ -1,4 +1,4 @@
-AliAnalysisTaskStrangeCascadesTriggerAODRun2* AddTaskStrangeCascadesTriggerAODRun2(TString name = "name", TString lExtraOutputName = "", Bool_t lSaveV0s = kFALSE, Bool_t lSaveRsn = kFALSE, Bool_t lSavePrimaries = kFALSE, Bool_t lUseEventMixing = kFALSE)
+AliAnalysisTaskStrangeCascadesTriggerAODRun2* AddTaskStrangeCascadesTriggerAODRun2(TString name = "name", TString lExtraOutputName = "", Bool_t lSaveV0s = kFALSE, Bool_t lSaveRsn = kFALSE, Bool_t lSavePrimaries = kFALSE, TString lcompType = "")
 {
     // Creates, configures and attaches to the train a cascades check task.
     // Get the pointer to the existing analysis manager via the static access method.
@@ -26,7 +26,7 @@ AliAnalysisTaskStrangeCascadesTriggerAODRun2* AddTaskStrangeCascadesTriggerAODRu
     Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
     
     // Create and configure the task
-    AliAnalysisTaskStrangeCascadesTriggerAODRun2* task = new AliAnalysisTaskStrangeCascadesTriggerAODRun2(name.Data(), lSaveV0s, lSaveRsn, lSavePrimaries, lUseEventMixing);   
+    AliAnalysisTaskStrangeCascadesTriggerAODRun2* task = new AliAnalysisTaskStrangeCascadesTriggerAODRun2(name.Data(), lSaveV0s, lSaveRsn, lSavePrimaries, lcompType);   
     if(!task) return 0x0;
     
     mgr->AddTask(task);
@@ -35,7 +35,7 @@ AliAnalysisTaskStrangeCascadesTriggerAODRun2* AddTaskStrangeCascadesTriggerAODRu
     AliAnalysisDataContainer *coutputTreeCascade    = 0x0;
     AliAnalysisDataContainer *coutputTreeV0         = 0x0;
     AliAnalysisDataContainer *coutputTreeRsn        = 0x0;
-    AliAnalysisDataContainer *coutputTreeRsnMixed   = 0x0;
+    AliAnalysisDataContainer *coutputTreeRsnBkg     = 0x0;
     AliAnalysisDataContainer *coutputTreePrimTrack  = 0x0;
     
     coutputList = mgr->CreateContainer("coutputList", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
@@ -43,38 +43,29 @@ AliAnalysisTaskStrangeCascadesTriggerAODRun2* AddTaskStrangeCascadesTriggerAODRu
     coutputTreeCascade = mgr->CreateContainer("fTreeCascade", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
     coutputTreeCascade->SetSpecialOutput();
     
-    if( lSaveV0s )
-    {
-        coutputTreeV0 = mgr->CreateContainer("fTreeV0", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
-        coutputTreeV0->SetSpecialOutput();
-    }
     
-    if( lSaveRsn )
-    {
-        coutputTreeRsn = mgr->CreateContainer("fTreeRsn", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
-        coutputTreeRsn->SetSpecialOutput();
-        
-        if( lUseEventMixing )
-        {
-            coutputTreeRsnMixed = mgr->CreateContainer("fTreeRsnMixed", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
-            coutputTreeRsnMixed->SetSpecialOutput();
-        }
-    }
+    coutputTreeV0 = mgr->CreateContainer("fTreeV0", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
+    coutputTreeV0->SetSpecialOutput();
     
-    if( lSavePrimaries )
-    {
-        coutputTreePrimTrack = mgr->CreateContainer("fTreePrimTracks", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
-        coutputTreePrimTrack->SetSpecialOutput();
-    }
+    
+    coutputTreeRsn = mgr->CreateContainer("fTreeRsn", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
+    coutputTreeRsn->SetSpecialOutput();
+
+    coutputTreeRsnBkg = mgr->CreateContainer("fTreeRsnBkg", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
+    coutputTreeRsnBkg->SetSpecialOutput();
+    
+
+    coutputTreePrimTrack = mgr->CreateContainer("fTreePrimTracks", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
+    coutputTreePrimTrack->SetSpecialOutput();
     
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     
     mgr->ConnectOutput(task, 1, coutputList);
     mgr->ConnectOutput(task, 2, coutputTreeCascade);
-    if( lSaveV0s                    ) mgr->ConnectOutput(task, 3, coutputTreeV0);
-    if( lSaveRsn                    ) mgr->ConnectOutput(task, 4, coutputTreeRsn);
-    if( lSaveRsn && lUseEventMixing ) mgr->ConnectOutput(task, 5, coutputTreeRsnMixed);
-    if( lSavePrimaries              ) mgr->ConnectOutput(task, 6, coutputTreePrimTrack);
+    mgr->ConnectOutput(task, 3, coutputTreeV0);
+    mgr->ConnectOutput(task, 4, coutputTreeRsn);
+    mgr->ConnectOutput(task, 5, coutputTreeRsnBkg);
+    mgr->ConnectOutput(task, 6, coutputTreePrimTrack);
     
     return task;
 }

@@ -53,7 +53,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fParticleType(0),                       fPosAlgo(0),
   fW0(0),                                 fShowerShapeCellLocationType(0),
   fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
-  fUseAdditionalScale(kFALSE),            fAdditionalScale(1),
+  fUseAdditionalScale(kFALSE),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fNCellEfficiencyFunction(0),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
@@ -110,7 +110,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fW0(reco.fW0),                                             fShowerShapeCellLocationType(reco.fShowerShapeCellLocationType),
   fNonLinearityFunction(reco.fNonLinearityFunction),         fNonLinearThreshold(reco.fNonLinearThreshold),
   fUseShaperNonlin(reco.fUseShaperNonlin),
-  fUseAdditionalScale(reco.fUseAdditionalScale),             fAdditionalScale(reco.fAdditionalScale),
+  fUseAdditionalScale(reco.fUseAdditionalScale),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fNCellEfficiencyFunction(reco.fNCellEfficiencyFunction),
   fCellsRecalibrated(reco.fCellsRecalibrated),
@@ -165,6 +165,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   for (Int_t i = 0; i < 10 ; i++) { fNCellEfficiencyParams[i] = reco.fNCellEfficiencyParams[i] ; }
   for (Int_t j = 0; j < 5  ; j++) { fMCGenerToAccept[j]       = reco.fMCGenerToAccept[j]       ; }
   for (Int_t j = 0; j < 4  ; j++) { fBadStatusSelection[j]    = reco.fBadStatusSelection[j]    ; }
+  for (Int_t j = 0; j < 3  ; j++) { fAdditionalScaleSM[j]     = reco.fAdditionalScaleSM[j]     ; }
 
   if(reco.fEMCALBadChannelMap) {
     // Copy constructor - not taking ownership over calibration histograms
@@ -220,7 +221,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fNonLinearThreshold        = reco.fNonLinearThreshold;
   fUseShaperNonlin           = reco.fUseShaperNonlin;
   fUseAdditionalScale        = reco.fUseAdditionalScale;
-  fAdditionalScale           = reco.fAdditionalScale;
+  for (Int_t j = 0; j < 3; j++)
+    fAdditionalScaleSM[j]         = reco.fAdditionalScaleSM[j];
   fSmearClusterEnergy        = reco.fSmearClusterEnergy;
   fNCellEfficiencyFunction   = reco.fNCellEfficiencyFunction;
 
@@ -453,7 +455,13 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
 
     // apply an additional scale on cell level. Not to be used for standard analyses!
     if(fUseAdditionalScale){
-      amp *= fAdditionalScale;
+      if( imod == 10 || imod == 11 || imod == 18 || imod == 19 ){ // 1/3 SM
+        amp *= fAdditionalScaleSM[2];
+      } else if( imod >= 12 && imod <=17 ){                       // 2/3 SM
+        amp *= fAdditionalScaleSM[1];
+      } else {                                                    // Full SM
+        amp *= fAdditionalScaleSM[0];
+      }
     }
 
     // correct cell energy based on pi0 calibration
@@ -1671,10 +1679,25 @@ void AliEMCALRecoUtils::InitNCellEfficiencyParam()
     fNCellEfficiencyParams[1] = 1.28118;
     fNCellEfficiencyParams[2] = 0.583403;
   }
-  else if (fNCellEfficiencyFunction == kNCePi0TaggedPCMEMC) {
-    fNCellEfficiencyParams[0] = -0.0377925;
-    fNCellEfficiencyParams[1] = 0.160758;
-    fNCellEfficiencyParams[2] = -0.00357992;
+  else if (fNCellEfficiencyFunction == kNCePCMEMCGaussian) {
+    fNCellEfficiencyParams[0] = 0.130462;
+    fNCellEfficiencyParams[1] = 1.62858;
+    fNCellEfficiencyParams[2] = 0.572064;
+  }
+  else if (fNCellEfficiencyFunction == kNCePCMEMCPol2) {
+    fNCellEfficiencyParams[0] = -0.0794055;
+    fNCellEfficiencyParams[1] = 0.290664;
+    fNCellEfficiencyParams[2] = -0.136717;
+  }
+  else if (fNCellEfficiencyFunction == kNCeEMCGaussian) {
+    fNCellEfficiencyParams[0] = 0.0864766;
+    fNCellEfficiencyParams[1] = 1.50279;
+    fNCellEfficiencyParams[2] = 0.61173;
+  }
+  else if (fNCellEfficiencyFunction == kNCeEMCPol2) {
+    fNCellEfficiencyParams[0] = -0.0638141;
+    fNCellEfficiencyParams[1] = 0.203806;
+    fNCellEfficiencyParams[2] = -0.0774961;
   }
 
 }
@@ -1760,14 +1783,66 @@ Bool_t AliEMCALRecoUtils::GetIsNCellCorrected(AliVCluster* cluster, AliVCaloCell
       break;
     }
 
-    case kNCePi0TaggedPCMEMC:
+    case kNCePCMEMCGaussian:
     {
       // based on clusters which are part of a (PCM-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
       // mostly photon clusters and electron(conversion) clusters (purity about 95%)
       // exotics should be nearly cancled by that
-      // fNCellEfficiencyParams[0] = -0.0377925;
-      // fNCellEfficiencyParams[1] = 0.160758;
-      // fNCellEfficiencyParams[2] = -0.00357992;
+      // Gaussian par.
+      // fNCellEfficiencyParams[0] = 0.130462;
+      // fNCellEfficiencyParams[1] = 1.62858;
+      // fNCellEfficiencyParams[2] = 0.572064;
+      Float_t val = fNCellEfficiencyParams[0]*exp(
+                    -0.5*((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2])*
+                    ((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2]));
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCePCMEMCPol2:
+    {
+      // based on clusters which are part of a (PCM-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // mostly photon clusters and electron(conversion) clusters (purity about 95%)
+      // exotics should be nearly cancled by that
+      // Pol2 par.
+      // fNCellEfficiencyParams[0] = -0.0794055;
+      // fNCellEfficiencyParams[1] = 0.290664;
+      // fNCellEfficiencyParams[2] = -0.136717;
+      Float_t val = fNCellEfficiencyParams[0]*energy*energy +
+                    fNCellEfficiencyParams[1]*energy +
+                    fNCellEfficiencyParams[2];
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCeEMCGaussian:
+    {
+      // based on clusters which are part of a (EMC-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // mostly photon clusters and electron(conversion) clusters (purity about 95%)
+      // exotics should be nearly cancled by that
+      // Gaussian par.
+      // fNCellEfficiencyParams[0] = 0.0864766;
+      // fNCellEfficiencyParams[1] = 1.50279;
+      // fNCellEfficiencyParams[2] = 0.61173;
+      Float_t val = fNCellEfficiencyParams[0]*exp(
+                    -0.5*((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2])*
+                    ((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2]));
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCeEMCPol2:
+    {
+      // based on clusters which are part of a (EMC-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // mostly photon clusters and electron(conversion) clusters (purity about 95%)
+      // exotics should be nearly cancled by that
+      // Pol2 par.
+      // fNCellEfficiencyParams[0] = -0.0638141;
+      // fNCellEfficiencyParams[1] = 0.203806;
+      // fNCellEfficiencyParams[2] = -0.0774961;
       Float_t val = fNCellEfficiencyParams[0]*energy*energy +
                     fNCellEfficiencyParams[1]*energy +
                     fNCellEfficiencyParams[2];
@@ -2289,6 +2364,9 @@ void AliEMCALRecoUtils::InitParameters()
 
   // number of cell efficiency
   for (Int_t i = 0; i < 10  ; i++) fNCellEfficiencyParams[i] = 0.;
+
+  // additional scale for different SM types (default value is 1)
+  for (Int_t i = 0; i < 3; i++) fAdditionalScaleSM[i] = 1.;
 }
 
 ///
@@ -2691,11 +2769,11 @@ Double_t AliEMCALRecoUtils::GetLowGainSlewing (Double_t energy) const
   Double_t offset = 0;
 
   if (energy > 14 && energy <= 80){
-    offset = 2.2048848 - 0.19256571*energy + 0.0034679678*TMath::Power(energy,2) - 1.9102064e-05*TMath::Power(energy,2);
+    offset = 2.2048848 - 0.19256571*energy + 0.0034679678*TMath::Power(energy,2) - 1.9102064e-05*TMath::Power(energy,3);
   } else if (energy <= 14) {
-    offset = 2.2048848 - 0.19256571*14 + 0.0034679678*TMath::Power(14,2) - 1.9102064e-05*TMath::Power(14,2);
+    offset = 2.2048848 - 0.19256571*14 + 0.0034679678*TMath::Power(14,2) - 1.9102064e-05*TMath::Power(14,3);
   } else {
-    offset = 2.2048848 - 0.19256571*80 + 0.0034679678*TMath::Power(80,2) - 1.9102064e-05*TMath::Power(80,2);
+    offset = 2.2048848 - 0.19256571*80 + 0.0034679678*TMath::Power(80,2) - 1.9102064e-05*TMath::Power(80,3);
   }
 
   return offset;

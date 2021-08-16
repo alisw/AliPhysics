@@ -68,6 +68,7 @@ set(SRCS
     AliHFCorrFitter.cxx
     AliHFCorrFitSystematics.cxx
     AliDhCorrelationExtraction.cxx
+    AliAnalysisHFEHCorrOnFlySim.cxx
   )
 
 # Tasks that should only be compiled in ROOT 6

@@ -91,7 +91,10 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    TH1F *fGlobalRT;        //!<! hist for RT distribution without D-meson selection
    TH1F *fHistPtLead;      //!<! hist for pT distribution of leading track
    TH3F *fRTvsZvtxvsMult;        //!<! distribution of RT as function of z of primary vertex and tracklet multiplicity
-   
+   TH1F *fNChargedInTrans; //!<! hist for NChargedDistribution
+   TH1F *fNChargedInToward; //!<! hist for NChargedDistribution
+   TH1F *fNChargedInAway; //!<! hist for NChargedDistribution
+   TH1F *fNCharged; //!<! hist for NChargedDistribution
    
    AliNormalizationCounter *fCounter;  //!<! Counter for normalisation
    Bool_t fReadMC;         /// flag for reading MC
@@ -120,7 +123,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    THnSparse *fOutNsparse;    //!<! output THnSparse for RT analysis
    
    /// \cond CLASSIMP
-   ClassDef(AliAnalysisTaskSEDvsRT,2); /// charmed hadrons vs. RT task
+   ClassDef(AliAnalysisTaskSEDvsRT,3); /// charmed hadrons vs. RT task
    /// \endcond
 };
 

@@ -12,6 +12,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
                                       bool isMC = false,
                                       bool Systematic = false,
                                       int  pairCleanerSetting = 1,
+                                      bool reducedQA = true,
                                       const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -41,7 +42,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
 
   DeuteronCuts->SetFilterBit(256);
   DeuteronCuts->SetCutCharge(1);
-  DeuteronCuts->SetPtRange(0.4, 1.4);
+  DeuteronCuts->SetPtRange(0.4, 4.0);
   DeuteronCuts->SetEtaRange(-0.8, 0.8);
   DeuteronCuts->SetNClsTPC(80);
   DeuteronCuts->SetDCAReCalculation(true);  // Get the dca from PropagateToVertex
@@ -91,7 +92,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   
   AntiDeuteronCuts->SetFilterBit(256);
   AntiDeuteronCuts->SetCutCharge(-1);
-  AntiDeuteronCuts->SetPtRange(0.4, 1.4);
+  AntiDeuteronCuts->SetPtRange(0.4, 4.0);
   AntiDeuteronCuts->SetEtaRange(-0.8, 0.8);
   AntiDeuteronCuts->SetNClsTPC(80);
   AntiDeuteronCuts->SetDCAReCalculation(true);  // Get the dca from PropagateToVertex
@@ -223,6 +224,10 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
     ProtonCuts->SetMinimalBooking(true);
     AntiProtonCuts->SetMinimalBooking(true);
   }
+  if (fullBlastQA && reducedQA) {
+    ProtonCuts->SetMinimalBooking(true);
+    AntiProtonCuts->SetMinimalBooking(true);
+  }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto", false);
@@ -345,24 +350,32 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   config->SetMultBinning(true);
   config->SetmTBinning(true);
 
-  config->SetdPhidEtaPlotsSmallK(false);
-  config->SetdPhidEtaPlots(false);
-  config->SetPhiEtaBinnign(false);
-
-  if (fullBlastQA) {
+  // Further QA settings
+  if (fullBlastQA && !reducedQA) {
+    config->SetdPhidEtaPlotsSmallK(true);
+    config->SetdPhidEtaPlots(true);
+    config->SetPhiEtaBinnign(true);
+    config->SetkTBinning(true);
+    config->SetPtQA(true);
+    config->SetMassQA(true);
+    config->SetMinimalBookingME(false);
+  } else if (fullBlastQA && reducedQA) {
     config->SetdPhidEtaPlotsSmallK(false);
     config->SetdPhidEtaPlots(false);
     config->SetPhiEtaBinnign(false);
     config->SetkTBinning(true);
     config->SetPtQA(true);
-    config->SetMassQA(true);
+    config->SetMassQA(false);
     config->SetMinimalBookingME(false);
-  }
-
-  if (!fullBlastQA) {
+  } else {
+    config->SetdPhidEtaPlotsSmallK(false);
+    config->SetdPhidEtaPlots(false);
+    config->SetPhiEtaBinnign(false);
+    config->SetkTBinning(false);
+    config->SetPtQA(false);
+    config->SetMassQA(false);
     config->SetMinimalBookingME(true);
   }
-
 
   // Create the task
   //AliAnalysisTaskNanoLD* task = new AliAnalysisTaskNanoLD("femtoLD");  // NanoAOD task
