@@ -690,6 +690,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fzvtx_Ntrkl_Corr);
 	fOutputList->Add(fzvtx_Corr);
 	fOutputList->Add(fNtrkl_Corr);
+	fOutputList->Add(fzvtx_V0M);
 	fOutputList->Add(fNchNtr);
 	fOutputList->Add(fNchNtr_Corr);
 	fOutputList->Add(fDCAxy_Pt_ele);
