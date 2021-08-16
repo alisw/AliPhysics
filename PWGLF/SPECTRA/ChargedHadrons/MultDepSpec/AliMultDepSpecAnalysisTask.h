@@ -93,31 +93,31 @@ protected:
   AliMultDepSpecAnalysisTask(const AliMultDepSpecAnalysisTask&);            // not implemented
   AliMultDepSpecAnalysisTask& operator=(const AliMultDepSpecAnalysisTask&); // not implemented
 
-  std::unique_ptr<TList> fOutputList{};       //!<! Output list
+  std::unique_ptr<TList> fOutputList{};       //!<! output list
   TList* fQAList{nullptr};                    //!<! QA list
-  std::unique_ptr<AliEventCuts> fEventCuts{}; //!<! Event cuts
-  AliESDtrackCuts* fTrackCuts{nullptr};       //->  Track cuts
-  std::unique_ptr<TRandom3> fRand{};          //!<! Random generator
+  std::unique_ptr<AliEventCuts> fEventCuts{}; //!<! event cuts
+  AliESDtrackCuts* fTrackCuts{nullptr};       //-> track cuts
+  std::unique_ptr<TRandom3> fRand{};          //!<! random generator
 
   std::string fTrainMetadata{}; ///<  metadata of the train run used to generate the output
 
   unsigned int fMCEventClass{EventClass::fiducial}; ///< baseline event class that this measurement should be corrected to
-  bool fIsNominalSetting{};                         ///< Flag to  propagate if this is the nominal cut setting
-  bool fIsESD{true};                                ///< Flag for ESD usage
-  bool fIsMC{};                                     ///< Flag for MC usage
+  bool fIsNominalSetting{};                         ///< flag to  propagate if this is the nominal cut setting
+  bool fIsESD{true};                                ///< flag for ESD usage
+  bool fIsMC{};                                     ///< flag for MC usage
   bool fIsNewReco{};                                ///< flag for new reconstructions (after mid 2020) where tighter chi2 cut has to be used and out-of-bunch pileup is simulated in MCs
   bool fIncludePeripheralEvents{};                  ///< include peripheral A-A events (cent>90)
-  bool fMCEnableDDC{true};                          ///< Flag for data driven corrections usage
+  bool fMCEnableDDC{true};                          ///< flag for data driven corrections usage
   int fMCPCCMode{0};                                ///< whether to run particle composition correction in nominal (0) or in systematic mode (-1,1)
   int fMCSecScalingMode{0};                         ///< whether to run secondary scaling in nominal (0) or in systematic mode (1)
   int fHighPtMode{0};                               ///< extend the binning and pt cuts for a high-pt analysis (mode 0: do not extend, mode 1: extend to 50, mode 2: extend to 100)
 
   // cuts
-  unsigned int fTriggerMask{AliVEvent::kMB | AliVEvent::kINT7}; ///< Trigger mask
-  double fMinEta{-0.8};                                         ///< Minimum eta cut
-  double fMaxEta{0.8};                                          ///< Maximum eta cut
-  double fMinPt{0.15};                                          ///< Minimum pT cut
-  double fMaxPt{10.0};                                          ///< Maximum pT cut
+  unsigned int fTriggerMask{AliVEvent::kMB | AliVEvent::kINT7}; ///< trigger mask
+  double fMinEta{-0.8};                                         ///< minimum eta cut
+  double fMaxEta{0.8};                                          ///< maximum eta cut
+  double fMinPt{0.15};                                          ///< minimum pT cut
+  double fMaxPt{10.0};                                          ///< maximum pT cut
 
   std::map<unsigned int, Hist::Axis> fAxes{}; ///< axis definitions used in the histograms
 
@@ -170,7 +170,7 @@ protected:
   Hist::Hist<TH1D> fHist_tpcGeomLength{};                      //!<! track length in active volume of the TPC
 
   // event related properties
-  AliVEvent* fEvent{};                      //!<! Event object
+  AliVEvent* fEvent{};                      //!<! event object
   AliMCEvent* fMCEvent{};                   //!<! MC event
   AliMCSpectraWeights* fMCSpectraWeights{}; //!<! fMCSpectraWeights for data-driven corrections (particle composition and secondary scaling)
   bool fIsTriggered{};                      //!<! if event fired trigger
@@ -179,7 +179,7 @@ protected:
   double fMultMeas{};                       //!<! measured central barrel track multiplicity
   double fMultTrue{};                       //!<! true multiplicity
 
-  bool fIsFirstEventInJob{true}; //!<!
+  bool fIsFirstEventInJob{true}; //!<! flag set to true if the current event is the first one in this computing job
   int fRunNumber{};              //!<! run number
   unsigned long fEventNumber{};  //!<! event number
   unsigned int fTimeStamp{};     //!<! event time stamp
