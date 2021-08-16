@@ -50,6 +50,7 @@
 #include "AliRsnMiniAnalysisTask.h"
 #include "AliRsnMiniResonanceFinder.h"
 //#include "AliSpherocityUtils.h"
+#include "AliPPVsMultUtils.h"
 
 #include "AliTimeRangeCut.h"
 
@@ -1151,7 +1152,33 @@ Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
 	 }
 
 	 return MultSelection->GetMultiplicityPercentile(s.Data());
-      } else {
+      } 
+          else if (!fCentralityType.CompareTo("MULTV0M")){
+
+	Double_t computedRefMulti = -10.0;
+        Double_t mult=0;
+	
+	
+        if (isESD){AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(fInputEvent);
+    if (!esdevent) return kFALSE;
+    
+    AliPPVsMultUtils *mult_perc =new AliPPVsMultUtils();
+    mult= mult_perc->GetMultiplicityPercentile(esdevent, "V0M", kFALSE);
+    computedRefMulti=mult;}
+    	
+    else {
+    AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(fInputEvent);
+    if (!aodevent) return kFALSE;
+    AliPPVsMultUtils *mult_perc = new AliPPVsMultUtils();
+
+     mult= mult_perc->GetMultiplicityPercentile(aodevent, "V0M", kFALSE);
+    computedRefMulti=mult;
+      }  
+                   return computedRefMulti;
+		   
+      }
+
+        else {
          AliError(Form("String '%s' does not define a possible multiplicity/centrality computation", fCentralityType.Data()));
          return -1.0;
       }
