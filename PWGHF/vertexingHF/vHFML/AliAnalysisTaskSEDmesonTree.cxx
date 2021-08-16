@@ -1034,7 +1034,7 @@ void AliAnalysisTaskSEDmesonTree::CreateRecoSparses()
         fnSparseReco[iHist]->GetAxis(3)->SetTitle("centrality (%)");
         fnSparseReco[iHist]->GetAxis(4)->SetTitle("#it{N}_{tracklets}");
         for(int iAx=5; iAx<nVars; iAx++)
-            fnSparseReco[iHist]->GetAxis(iAx)->SetTitle(Form("ML output %d", iAx));
+            fnSparseReco[iHist]->GetAxis(iAx)->SetTitle(Form("ML output %d", iAx-5));
         fOutput->Add(fnSparseReco[iHist]);
     }
 }
