@@ -32,7 +32,7 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   
   void SetIsESD(Bool_t ESD){isESD = ESD;}
   void SetParameters(Float_t cutE){cutEta = cutE;}
-  Double_t GetMedian(Double_t *daArray);
+  Int_t TestPIDTPChypothesis(Float_t e, Float_t m, Float_t p);
   void SetCrossed(Int_t spd[4], TBits &crossed);
   Int_t GetChipId(Int_t index, Int_t &chipId2, Bool_t debug=0);
   Bool_t IsSTGFired(TBits bits, Int_t dphiMin=4, Int_t dphiMax=10, Bool_t tolerance = 1);
@@ -44,15 +44,15 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   AliESDtrackCuts *fTrackCutsBit0;
   AliESDtrackCuts *fTrackCutsBit1;
   AliESDtrackCuts *fTrackCutsBit4;
-  AliESDtrackCuts *fTrackCutsBit5;
   Bool_t isESD;
   Float_t cutEta;
 
   TList *fOutputList;		//<
   TH2I *hTriggerCounter;	//!
+  TH1I *hParticleTypeCounter; //
   TTree *tTwoTracks;		//!
   
-  Float_t fPtDaughter[2], fPtGenDaughter[2], fPt, fY, fM, fPhi, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma;
+  Float_t fPtDaughter[2], fPt, fY, fM, fPhi, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma;
   TLorentzVector fVectDaughter[2];
   Int_t fSignDaughter[2], fPdgDaughter[2], fChannel, fSign, fRunNumber, fADAdecision, fADCdecision, fV0Adecision, fV0Cdecision;
   Bool_t fTriggers[NTRIGGERS], fTriggerClass[3];
