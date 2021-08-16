@@ -120,17 +120,15 @@ public:
 private:
     enum
     {
-        knVarForSparseAcc    = 2,
-        knVarForSparseAccFD  = 3,
-        knVarForSparseReco   = 6,
-        knVarForSparseRecoFD = 7
+        knVarForSparseAcc    = 4,
+        knVarForSparseReco   = 8
     };
 
     AliAnalysisTaskSEDmesonTree(const AliAnalysisTaskSEDmesonTree &source);
     AliAnalysisTaskSEDmesonTree &operator=(const AliAnalysisTaskSEDmesonTree &source);
 
     int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx);
-    void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+    void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, int Ntracklets);
     bool CheckDaugAcc(TClonesArray *arrayMC, int nProng, int *labDau);
     void CreateEffSparses();
     void CreateRecoSparses();
