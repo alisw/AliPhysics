@@ -127,6 +127,7 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
       Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
+      Hypernuclei/Hyp2Body/AliAnalysisTaskHe3piAOD.cxx
 			Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
       Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
       Hypernuclei/Hyp3Body/Hypertriton3structures.cxx
