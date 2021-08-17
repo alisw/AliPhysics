@@ -9294,7 +9294,9 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC18P1JJ") == 0 ||
             namePeriod.Contains("LHC19d3") )            return kPP13T18P1JJ;
   //pp 13 TeV LHC18 JJ MC with high enrgy gamma in EMC, DMC, PHOS acc.
-  else if ( namePeriod.CompareTo("LHC19i3b1") == 0 ||
+  else if ( namePeriod.CompareTo("LHC19i3a1") == 0 ||
+            namePeriod.CompareTo("LHC19i3a2") == 0 ||
+            namePeriod.CompareTo("LHC19i3b1") == 0 ||
             namePeriod.CompareTo("LHC19i3b2") == 0 ||
             namePeriod.CompareTo("LHC19i3c1") == 0 ||
             namePeriod.CompareTo("LHC19i3c2") == 0 ) return kPP13T18P1JJTrigger;

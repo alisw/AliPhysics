@@ -57,7 +57,7 @@ void AliMultDepSpecAnalysisTask::DefineDefaultAxes(int maxMultMeas, int maxMultT
                                 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
                                 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5,
                                 6.0, 6.5, 7.0, 8.0, 9.0, 10.0};
-  if(fHighPtMode == 1) {
+  if (fHighPtMode == 1) {
     // simple extension of pt range to 50 GeV/c
     std::vector<double> highPtBins = {20., 30., 40., 50.};
     ptBins.insert(ptBins.end(), highPtBins.begin(), highPtBins.end());
@@ -70,7 +70,7 @@ void AliMultDepSpecAnalysisTask::DefineDefaultAxes(int maxMultMeas, int maxMultT
     std::vector<double> highPtBins = {11., 12., 13., 14., 15., 16., 18., 20., 22., 24., 26., 30., 34., 40., 50., 60., 80., 100.};
     ptBins.insert(ptBins.end(), highPtBins.begin(), highPtBins.end());
   }
-  
+
   SetAxis(pt_meas, "pt_meas", "#it{p}^{ meas}_{T} (GeV/#it{c})", ptBins);
 
   int nBinsMultMeas = maxMultMeas + 1;
@@ -230,11 +230,12 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     BookHistogram(fHist_multCorrel_evt, "multCorrel_evt", {mult_meas, mult_true});
     BookHistogram(fHist_multCorrel_prim, "multCorrel_prim", {mult_meas, mult_true});
     BookHistogram(fHist_ptCorrel_prim, "ptCorrel_prim", {pt_meas, pt_true});
-    BookHistogram(fHist_ptDist_prim_gen_trig, "ptDist_prim_gen_trig", {pt_true});
     BookHistogram(fHist_multPtSpec_prim_gen, "multPtSpec_prim_gen", {mult_true, pt_true});
     BookHistogram(fHist_multPtSpec_prim_meas, "multPtSpec_prim_meas", {mult_true, pt_true});
     BookHistogram(fHist_multPtSpec_trk_prim_meas, "multPtSpec_trk_prim_meas", {mult_meas, pt_meas});
     BookHistogram(fHist_multPtSpec_trk_sec_meas, "multPtSpec_trk_sec_meas", {mult_meas, pt_meas});
+    BookHistogram(fHist_ptDist_prim_gen_trig, "ptDist_prim_gen_trig", {pt_true});
+    BookHistogram(fHist_ptDist_prim_gen_fidu, "ptDist_prim_gen_fidu", {pt_true});
   }
 
   // check required memory
@@ -251,11 +252,12 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_multCorrel_evt.GetSize(0.045) +
     fHist_multCorrel_prim.GetSize(0.045) +
     fHist_ptCorrel_prim.GetSize() +
-    fHist_ptDist_prim_gen_trig.GetSize() +
     fHist_multPtSpec_prim_gen.GetSize() +
     fHist_multPtSpec_prim_meas.GetSize() +
     fHist_multPtSpec_trk_prim_meas.GetSize() +
     fHist_multPtSpec_trk_sec_meas.GetSize() +
+    fHist_ptDist_prim_gen_trig.GetSize() +
+    fHist_ptDist_prim_gen_fidu.GetSize() +
     fHist_signed1Pt.GetSize() +
     fHist_eta.GetSize() +
     fHist_phi.GetSize() +
@@ -364,7 +366,7 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
       }
       trainInfo += " events";
 
-      if(!fMCEnableDDC || !fMCSpectraWeights) {
+      if (!fMCEnableDDC || !fMCSpectraWeights) {
         trainInfo += ", no DDCs";
       }
 
@@ -429,7 +431,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       AliError("fMCEvent not available\n");
       return false;
     }
-    if(fIsNewReco && AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(fMCEvent)) {
+    if (fIsNewReco && AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(fMCEvent)) {
       // reject all the rare events with simulated in-bunch pileup
       // those events would have a biased true multiplicity as we cannot identify the particles actually coming from the trigger event
       return false;
@@ -565,12 +567,15 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
 
     if (count) {
       fMultTrue += fNRepetitions;
-    } else if (fMCAcceptEvent) {
+    } else {
       for (int i = 0; i < fNRepetitions; ++i) {
-
-        if (fIsTriggered) fHist_ptDist_prim_gen_trig.Fill(fMCPt);
-        fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
-
+        if (fMCAcceptEvent) {
+          fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
+          if (fIsTriggered) fHist_ptDist_prim_gen_trig.Fill(fMCPt); // quantify trigger bias in fiducial or inelgt0 mode
+        }
+        if (fMCIsGoodZPos) {                      // implicitly this is the fiducial event class as it is called only for Nch > 0
+          fHist_ptDist_prim_gen_fidu.Fill(fMCPt); // quantify trigger bias in triggered mode
+        }
       }
     }
   }
@@ -593,7 +598,7 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
 
   // temporary solution to remove tracks from background events (corresponds to fMCIsPileupParticle = true)
   // FIXME: we may actually not want to reject those tracks but count them as contamination instead
-  if(fIsMC && fIsNewReco && std::abs(track->GetLabel()) >= AliMCEvent::BgLabelOffset()) return false;
+  if (fIsMC && fIsNewReco && std::abs(track->GetLabel()) >= AliMCEvent::BgLabelOffset()) return false;
 
   fPt = track->Pt();
   fEta = track->Eta();
@@ -916,11 +921,11 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
     fMCSecScalingMode = 0;
 
     if (cutMode == 120) {
-      fMCPCCMode = 1;             // shift correction factor up within its systematics
+      fMCPCCMode = 1; // shift correction factor up within its systematics
     } else if (cutMode == 121) {
-      fMCPCCMode = -1;            // shift correction factor down within its systematics
+      fMCPCCMode = -1; // shift correction factor down within its systematics
     } else if (cutMode == 122) {
-      fMCSecScalingMode = 1;      // use 3 template dca fits as variation
+      fMCSecScalingMode = 1; // use 3 template dca fits as variation
     }
   }
   return true;
@@ -1010,7 +1015,7 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
     fHighPtMode = 3;
     SetPtRange(0.15, 100.0);
   }
-  
+
   DefineDefaultAxes(maxMultMeas, maxMultTrue);
   return true;
 }
