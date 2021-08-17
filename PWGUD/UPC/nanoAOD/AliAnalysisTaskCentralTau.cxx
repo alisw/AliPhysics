@@ -161,7 +161,8 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   if(!fEvent) return;
 
   fRunNumber = fEvent->GetRunNumber();
-  
+
+  AliTimeRangeCut fTimeRangeCut;
   fTimeRangeCut.InitFromEvent(InputEvent());
   if(fTimeRangeCut.CutEvent(InputEvent()))return;
 
@@ -242,6 +243,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   //
   // LOOP OVER TRACKS
   //
+  if (fEvent->GetNumberOfTracks() < 1) return;
   for(Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++){
     Bool_t goodTPCTrack = kTRUE;
     Bool_t goodITSTrack = kTRUE;

@@ -40,7 +40,6 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
  private:
  
   AliPIDResponse *fPIDResponse;
-  AliTimeRangeCut fTimeRangeCut;
   AliESDtrackCuts *fTrackCutsBit0;
   AliESDtrackCuts *fTrackCutsBit1;
   AliESDtrackCuts *fTrackCutsBit4;
@@ -62,7 +61,7 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   AliAnalysisTaskCentralTau(const AliAnalysisTaskCentralTau&); //not implemented
   AliAnalysisTaskCentralTau& operator =(const AliAnalysisTaskCentralTau&); //not implemented
   
-  ClassDef(AliAnalysisTaskCentralTau, 4);
+  ClassDef(AliAnalysisTaskCentralTau, 8);
 };
 
 #endif
