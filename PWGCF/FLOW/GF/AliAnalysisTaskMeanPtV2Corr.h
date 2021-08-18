@@ -138,6 +138,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TH1D *fMultiDist;
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
+  TH2D *fESDvsFB128; 
   TProfile *fNchVsMulti;
   TProfile *fNchInBins;
   TList *fptVarList;

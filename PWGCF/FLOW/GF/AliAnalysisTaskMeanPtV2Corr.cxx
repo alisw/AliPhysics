@@ -76,6 +76,8 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fMptClosure(0),
   fMultiDist(0),
   fMultiVsV0MCorr(0),
+  fNchTrueVsReco(0),
+  fESDvsFB128(0),
   fNchVsMulti(0),
   fNchInBins(0),
   fptVarList(0),
@@ -139,6 +141,8 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fMptClosure(0),
   fMultiDist(0),
   fMultiVsV0MCorr(0),
+  fNchTrueVsReco(0),
+  fESDvsFB128(0),
   fNchVsMulti(0),
   fNchInBins(0),
   fptVarList(0),
@@ -571,9 +575,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fMultiVsV0MCorr[0] = new TH2D("MultVsV0M_BeforeConsistency","MultVsV0M_BeforeConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
     fMultiVsV0MCorr[1] = new TH2D("MultVsV0M_AfterConsistency","MultVsV0M_AfterConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
     fMptClosure = new TProfile(Form("MeanPtClosure_%s%s",spNames[0].Data(),fGFWSelection->GetSystPF()),Form("MeanPtClosure_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fESDvsFB128 = new TH2D("ESDvsFB128","; N(FB128); N(ESD)",500,-0.5,4999.5,1500,-0.5,14999.5);
     fptVarList->Add(fMultiVsV0MCorr[0]);
     fptVarList->Add(fMultiVsV0MCorr[1]);
     fptVarList->Add(fMptClosure);
+    fptVarList->Add(fESDvsFB128);
     if(fIsMC) {
       fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
       fptVarList->Add(fNchTrueVsReco);
@@ -1397,6 +1403,7 @@ void AliAnalysisTaskMeanPtV2Corr::CovSkipMpt(AliAODEvent *fAOD, const Double_t &
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];
   Int_t nTotNoTracks=0;
+  Int_t nTotTracksFB128=0;
   if(fIsMC) {
     Int_t nTotNoTracksMC=0;
     Int_t nTotNoTracksReco=0;
@@ -1435,6 +1442,8 @@ void AliAnalysisTaskMeanPtV2Corr::CovSkipMpt(AliAODEvent *fAOD, const Double_t &
       if(!lTrack) continue;
       Double_t leta = lTrack->Eta();
       Double_t trackXYZ[] = {0.,0.,0.};
+      //Counting FB128 for QA:
+      if(lTrack->TestFilterBit(128)) nTotTracksFB128++;
       if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp)) continue;
       // if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1;
       if(leta<-fEtaV2Sep) lNegCount++;
@@ -1463,6 +1472,10 @@ void AliAnalysisTaskMeanPtV2Corr::CovSkipMpt(AliAODEvent *fAOD, const Double_t &
   Double_t l_Multi = fUseNch?(1.0*nTotNoTracks):l_Cent;
   //A check in case l_Multi is completely off the charts (in MC, sometimes it ends up being... -Xe-310???)
   if(fUseNch && l_Multi<1) return;
+  //Fetching number of ESD tracks -> for QA. Only after all the events are/were rejected
+  AliAODHeader *head = (AliAODHeader*)fAOD->GetHeader();
+  Int_t nESD = head->GetNumberOfESDTracks();
+  fESDvsFB128->Fill(nTotTracksFB128,nESD);
   Double_t l_Random = fRndm->Rndm();
   fCkCont->FillObs(wp,l_Multi,l_Random);
   fV0MMulti->Fill(l_Cent);
