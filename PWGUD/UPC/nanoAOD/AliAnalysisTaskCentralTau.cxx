@@ -278,10 +278,10 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   //
   // SETUP STG
   //
-//  Int_t crossedFO[4];
-//  TBits fFOCrossedChips(1200);
-//  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
-//  TBits fFOFiredChips = mult->GetFastOrFiredChips();
+  Int_t crossedFO[4];
+  TBits fFOCrossedChips(1200);
+  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
+  TBits fFOFiredChips = mult->GetFastOrFiredChips();
 
   //
   // TRACKS SETTING
@@ -301,7 +301,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   // SELECT TWO TRACKS
   //
   if(nGoodTracksTPC == 2 && nGoodTracksSPD == 2){
-//  	fFOCrossedChips.ResetAllBits(kFALSE);
+  	fFOCrossedChips.ResetAllBits(kFALSE);
 
     //
     // LOOP OVER TWO TRACKS
@@ -313,15 +313,15 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   	  //
   	  // Fast-OR chips crossed STG
   	  //
-//  	  if(isESD){
-//        AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
-//        if( !trk ) continue;
-//        crossedFO[0] = trk->GetITSModuleIndex(0);
-//        crossedFO[1] = trk->GetITSModuleIndex(1);
-//        crossedFO[2] = trk->GetITSModuleIndex(6);
-//        crossedFO[3] = trk->GetITSModuleIndex(7);
-//        SetCrossed(crossedFO, fFOCrossedChips);
-//      }
+  	  if(isESD){
+        AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
+        if( !trk ) continue;
+        crossedFO[0] = trk->GetITSModuleIndex(0);
+        crossedFO[1] = trk->GetITSModuleIndex(1);
+        crossedFO[2] = trk->GetITSModuleIndex(6);
+        crossedFO[3] = trk->GetITSModuleIndex(7);
+        SetCrossed(crossedFO, fFOCrossedChips);
+      }
 
   	  //
   	  // PID AND KINEMATIC INFO
@@ -360,9 +360,8 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
     //
     // SAVE STG DECISION
     //
-//    TBits fFOCrossFiredChips;
-//    fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
-//    fTriggers[9] = IsSTGFired(fFOCrossFiredChips,fRunNumber >= 295753 ? 9 : 3);
+    TBits fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
+    fTriggers[9] = IsSTGFired(fFOCrossFiredChips,fRunNumber >= 295753 ? 9 : 3);
 
     //
     // CHARGE? (OPPOSITE, LIKE)
