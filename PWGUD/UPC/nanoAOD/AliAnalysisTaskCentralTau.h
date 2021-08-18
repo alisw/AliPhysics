@@ -51,15 +51,15 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   TH1I *hParticleTypeCounter; //
   TTree *tTwoTracks;		//!
   
-  Float_t fPtDaughter[2], fPt, fY, fM, fPhi, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma;
+  Float_t fPtDaughter[2], fPt, fY, fM, fPhi, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4];
   TLorentzVector fVectDaughter[2];
-  Int_t fSignDaughter[2], fPdgDaughter[2], fChannel, fSign, fRunNumber, fADAdecision, fADCdecision, fV0Adecision, fV0Cdecision;
+  Int_t fSignDaughter[2], fChannel, fSign, fRunNumber, fADAdecision, fADCdecision, fV0Adecision, fV0Cdecision;
   Bool_t fTriggers[NTRIGGERS], fTriggerClass[3];
   
   AliAnalysisTaskCentralTau(const AliAnalysisTaskCentralTau&); //not implemented
   AliAnalysisTaskCentralTau& operator =(const AliAnalysisTaskCentralTau&); //not implemented
   
-  ClassDef(AliAnalysisTaskCentralTau, 10);
+  ClassDef(AliAnalysisTaskCentralTau, 12);
 };
 
 #endif
