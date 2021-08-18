@@ -221,6 +221,13 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fQAList->Add(fHist_dcaZ.GenerateHist("dcaZ"));
   }
 
+  // histogram to quantify how much MC and data differ in vertex finding for triggered events (excluding pileup)
+  fHist_vertexFinding.AddAxis("selectionStages", "", 2, -0.5, 1.5);
+  auto vertexFindingHist = fHist_vertexFinding.GenerateHist("vertexFinding");
+  vertexFindingHist->GetXaxis()->SetBinLabel(1, "triggered");
+  vertexFindingHist->GetXaxis()->SetBinLabel(2, "vertex");
+  fOutputList->Add(vertexFindingHist);
+
   BookHistogram(fHist_multDist_evt_meas, "multDist_evt_meas", {mult_meas});
   BookHistogram(fHist_multPtSpec_trk_meas, "multPtSpec_trk_meas", {mult_meas, pt_meas});
 
@@ -241,6 +248,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
   // check required memory
   double requiredMemory =
     fHist_eventSelection.GetSize() +
+    fHist_vertexFinding.GetSize() +
     fHist_zVtxMeas.GetSize() +
     fHist_multDist_evt_meas.GetSize() +
     fHist_multPtSpec_trk_meas.GetSize() +
@@ -318,9 +326,16 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
         fHist_eventSelection.Fill(i);
       }
     }
+    if (fEventCuts->CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex)) {
+      fHist_zVtxMeas.Fill(fVtxZ);
+    }
   }
-  if (fIsNominalSetting && fEventCuts->CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex)) {
-    fHist_zVtxMeas.Fill(fVtxZ);
+
+  if (fEventCuts->PassedCut(AliEventCuts::kPileUp) && fEventCuts->PassedCut(AliEventCuts::kTrigger)) {
+    fHist_vertexFinding.Fill(0);
+    if (fEventCuts->PassedCut(AliEventCuts::kVertex)) {
+      fHist_vertexFinding.Fill(1);
+    }
   }
 
   if (fIsMC) {
