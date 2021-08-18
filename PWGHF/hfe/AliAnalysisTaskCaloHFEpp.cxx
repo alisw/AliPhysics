@@ -96,6 +96,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	MaxNtr(0),
         festimatorFile(""),
         estimatorAvg(0),
+        NtrkWeightMC(0),
 	//==== basic parameters ====
 	fNevents(0),
 	fNDB(0),
@@ -235,7 +236,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistWeOrg(0),
         fHistWeOrgPos(0),
         fHistWeOrgNeg(0),
-        fMultEstimatorAvg(0)
+        fMultEstimatorAvg(0),
+        fweightNtrkl(0)
 
 {
 	// default constructor, don't allocate memory here!
@@ -277,6 +279,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	MaxNtr(0),
         festimatorFile(""),
         estimatorAvg(0),
+        NtrkWeightMC(0),
 	//==== basic parameters ====
 	fNevents(0),
 	fNDB(0),
@@ -416,7 +419,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistWeOrg(0),
         fHistWeOrgPos(0),
         fHistWeOrgNeg(0),
-        fMultEstimatorAvg(0)
+        fMultEstimatorAvg(0),
+        fweightNtrkl(0)
 {
 	// constructor
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -988,6 +992,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
             //fEstimator = TFile::Open(festimatorFile.Data());
 	    if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
 	    if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
+ 
+	    if(fMCarray && !NtrkWeightMC)
+	    {
+	       NtrkWeightMC = GetNtrkWeightMC(fEstimator);
+	    }
+
 	   }
 
 	Double_t correctednAcc   = nAcc;
@@ -1015,7 +1025,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	fNchNtr->Fill(correctednAcc,Nch);
 	if(fMCarray){
 		WeightZvtx = fCorrZvtx->Eval(Zvertex);
-		//WeightNtrkl = fweightNtrkl->GetBinContent(fweightNtrkl->FindBin(correctednAcc));
+		WeightNtrkl = NtrkWeightMC->GetBinContent(NtrkWeightMC->FindBin(correctednAcc));
 		fzvtx_Corr->Fill(Zvertex,WeightZvtx);
 		fNtrkl_Corr->Fill(correctednAcc,WeightNtrkl);
 		fNchNtr_Corr->Fill(correctednAcc,Nch,WeightNtrkl);
@@ -2274,6 +2284,23 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(TFile* fEstimator, c
 
   return fMultEstimatorAvg;
 }
+//____________________________________________________________________________
+TH1D* AliAnalysisTaskCaloHFEpp::GetNtrkWeightMC(TFile* fEstimator)
+{
+    
+  if(!fEstimator){
+	AliFatal("File with estimator not found!");
+	}
+
+  fweightNtrkl = (TProfile*)(fEstimator->Get("weightNtrkl"));
+
+  if(!fMultEstimatorAvg){
+	AliFatal("fMultEstimatorAvg not found!");
+	}
+
+  return fweightNtrkl;
+}
+
  //____________________________________________________________________________
 Double_t AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult)
 {
