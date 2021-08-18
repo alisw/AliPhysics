@@ -907,8 +907,8 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
     Bool_t hasTOFtime = status&AliVTrack::kTIME;
     Float_t length = atrack->GetIntegratedLength(); 
     //if (hasTOFout) hasTOF = kTRUE;
-    if (length > 350. && hasTOFout && hasTOFtime) hasTOF = kFALSE;
-	
+    if (length > 350. && hasTOFout && hasTOFtime) hasTOF = kTRUE;
+    
     TPCSignal=atrack->GetTPCsignal(); 
     
     if(fptc==1 || fptc==2 ){
