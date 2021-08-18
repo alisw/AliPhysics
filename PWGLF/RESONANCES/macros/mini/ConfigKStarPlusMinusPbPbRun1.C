@@ -342,7 +342,7 @@ Bool_t ConfigKStarPlusMinusPbPbRun1
     } 
       
     
-  
+  /*
     if (isMC) {
       
       TString mode = "SPARSE";
@@ -426,6 +426,7 @@ Bool_t ConfigKStarPlusMinusPbPbRun1
     outpsf->AddAxis(ptID,300,0.,3.);
 	
     }
+    */
     return kTRUE;
 }
 
