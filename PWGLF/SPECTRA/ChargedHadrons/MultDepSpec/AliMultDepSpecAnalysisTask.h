@@ -121,6 +121,8 @@ protected:
 
   std::map<unsigned int, Hist::Axis> fAxes{}; ///< axis definitions used in the histograms
 
+  Hist::Hist<TH1D> fHist_vertexFinding{}; //!<! histogram to quantify how many triggered events (excluding pileup events) have a vtx - used to compare data and MC and extract constant normalisation uncertaintiy for spectra
+
   Hist::Hist<TH1D> fHist_multDist_evt_meas{};   //!<! measured event distribution (contains contamination from events not in specified class or with wrong vertex position)
   Hist::Hist<TH2D> fHist_multPtSpec_trk_meas{}; //!<! measured tracks (contains contamination from secondary particles, particles smeared into acceptance and tracks originating from background events as defined above )
 
