@@ -141,9 +141,10 @@ protected:
   Hist::Hist<TH1D> fHist_ptDist_prim_gen_fidu{};  //!<! generated primary charged particles as function of pt in fiducial event class [to quantify trigger bias in triggered mode]
 
   // QA histograms
-  Hist::Log<TH1I> fHist_trainInfo{};       //!<! train metadata string as bin lable and number of compute jobs as bin content
-  Hist::Log<TH1I> fHist_runStatistics{};   //!<! number of measured events per run (filled only for first event in job)
-  Hist::Hist<TH1D> fHist_eventSelection{}; //!<! logging histogram to for event selection steps (filled only for first event in job)
+  Hist::Log<TH1I> fHist_trainInfo{};         //!<! train metadata string as bin lable and number of compute jobs as bin content
+  Hist::Log<TH1I> fHist_runStatistics{};     //!<! number of measured events per run
+  Hist::Hist<TH1D> fHist_eventSelection{};   //!<! logging histogram to for event selection steps
+  Hist::Hist<TH1D> fHist_eventSelectionMC{}; //!<! logging histogram to for event selection steps in mc
 
   Hist::Hist<TH1D> fHist_zVtxGen{};  //!<! true z vertex position of all generated events (without z vertex position cut)
   Hist::Hist<TH1D> fHist_zVtxMeas{}; //!<! measured z vertex position of all measured events (without z vertex position cut)
