@@ -149,13 +149,16 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fQAList->Add(fHist_trainInfo.GenerateHist("trainInfo"));
     fQAList->Add(fHist_runStatistics.GenerateHist("runStatistics"));
 
-    fHist_eventSelection.AddAxis("selectionStages", "event selection stages", 5, -0.5, 4.5);
+    fHist_eventSelection.AddAxis("selectionStages", "event selection stages", 8, -0.5, 7.5);
     auto evSelHist = fHist_eventSelection.GenerateHist("eventSelection");
     evSelHist->GetXaxis()->SetBinLabel(1, "all");
-    evSelHist->GetXaxis()->SetBinLabel(2, "triggered");
-    evSelHist->GetXaxis()->SetBinLabel(3, "preselected");
-    evSelHist->GetXaxis()->SetBinLabel(4, "vertex");
-    evSelHist->GetXaxis()->SetBinLabel(5, "vertex position");
+    evSelHist->GetXaxis()->SetBinLabel(2, "physics selection");
+    evSelHist->GetXaxis()->SetBinLabel(3, "no pileup");
+    evSelHist->GetXaxis()->SetBinLabel(4, "triggered");
+    evSelHist->GetXaxis()->SetBinLabel(5, "has vertex");
+    evSelHist->GetXaxis()->SetBinLabel(6, "vertex quality");
+    evSelHist->GetXaxis()->SetBinLabel(7, "event quality");
+    evSelHist->GetXaxis()->SetBinLabel(8, "vertex position");
     fQAList->Add(evSelHist);
 
     fHist_zVtxMeas.AddAxis("zv", "V^{ meas}_{z} (cm)", 61, -30.5, 30.5);
@@ -221,13 +224,6 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fQAList->Add(fHist_dcaZ.GenerateHist("dcaZ"));
   }
 
-  // histogram to quantify how much MC and data differ in vertex finding for triggered events (excluding pileup)
-  fHist_vertexFinding.AddAxis("selectionStages", "", 2, -0.5, 1.5);
-  auto vertexFindingHist = fHist_vertexFinding.GenerateHist("vertexFinding");
-  vertexFindingHist->GetXaxis()->SetBinLabel(1, "triggered");
-  vertexFindingHist->GetXaxis()->SetBinLabel(2, "vertex");
-  fOutputList->Add(vertexFindingHist);
-
   BookHistogram(fHist_multDist_evt_meas, "multDist_evt_meas", {mult_meas});
   BookHistogram(fHist_multPtSpec_trk_meas, "multPtSpec_trk_meas", {mult_meas, pt_meas});
 
@@ -248,7 +244,6 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
   // check required memory
   double requiredMemory =
     fHist_eventSelection.GetSize() +
-    fHist_vertexFinding.GetSize() +
     fHist_zVtxMeas.GetSize() +
     fHist_multDist_evt_meas.GetSize() +
     fHist_multPtSpec_trk_meas.GetSize() +
@@ -317,24 +312,31 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
   if (!InitEvent()) return;
 
   if (fIsNominalSetting) {
-    array<AliEventCuts::NormMask, 5> norm_masks{
-      AliEventCuts::kAnyEvent, AliEventCuts::kTriggeredEvent,
-      AliEventCuts::kPassesNonVertexRelatedSelections,
-      AliEventCuts::kHasReconstructedVertex, AliEventCuts::kPassesAllCuts};
-    for (int i = 0; i < 5; ++i) {
-      if (fEventCuts->CheckNormalisationMask(norm_masks[i])) {
-        fHist_eventSelection.Fill(i);
+    // all events -> after physics selection (with pileup rejection) -> no pileup -> triggered -> has vertex -> vertex quality -> event quality -> vertex position
+    fHist_eventSelection.Fill(0);
+    if (fEventPassesPhysSel) {
+      fHist_eventSelection.Fill(1);
+      if (fEventCuts->PassedCut(AliEventCuts::kPileUp) && fEventCuts->PassedCut(AliEventCuts::kTPCPileUp)) {
+        fHist_eventSelection.Fill(2);
+        if (fEventCuts->PassedCut(AliEventCuts::kTrigger)) {
+          fHist_eventSelection.Fill(3);
+          if (fEventCuts->PassedCut(AliEventCuts::kVertex)) {
+            fHist_eventSelection.Fill(4);
+            if (fEventCuts->CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex)) {
+              fHist_eventSelection.Fill(5);
+              if (fEventCuts->CheckNormalisationMask(AliEventCuts::kPassesNonVertexRelatedSelections)) {
+                fHist_eventSelection.Fill(6);
+                if (fEventCuts->CheckNormalisationMask(AliEventCuts::kPassesAllCuts)) {
+                  fHist_eventSelection.Fill(7);
+                }
+              }
+            }
+          }
+        }
       }
     }
     if (fEventCuts->CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex)) {
       fHist_zVtxMeas.Fill(fVtxZ);
-    }
-  }
-
-  if (fEventCuts->PassedCut(AliEventCuts::kPileUp) && fEventCuts->PassedCut(AliEventCuts::kTrigger)) {
-    fHist_vertexFinding.Fill(0);
-    if (fEventCuts->PassedCut(AliEventCuts::kVertex)) {
-      fHist_vertexFinding.Fill(1);
     }
   }
 
@@ -438,6 +440,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
   }
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+  fEventPassesPhysSel = bool(handl->IsEventSelected());
   fIsTriggered = handl->IsEventSelected() & fTriggerMask;
 
   if (fIsMC) {
