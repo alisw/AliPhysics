@@ -55,8 +55,6 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   TLorentzVector fVectDaughter[2];
   Int_t fSignDaughter[2], fPdgDaughter[2], fChannel, fSign, fRunNumber, fADAdecision, fADCdecision, fV0Adecision, fV0Cdecision;
   Bool_t fTriggers[NTRIGGERS], fTriggerClass[3];
-
-  TBits fFOCrossFiredChips;
   
   AliAnalysisTaskCentralTau(const AliAnalysisTaskCentralTau&); //not implemented
   AliAnalysisTaskCentralTau& operator =(const AliAnalysisTaskCentralTau&); //not implemented

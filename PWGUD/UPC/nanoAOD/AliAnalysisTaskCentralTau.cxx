@@ -67,7 +67,7 @@ using std::endl;
 AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau()
   : AliAnalysisTaskSE(),
     fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), isESD(kFALSE), cutEta(0.9), fOutputList(0),tTwoTracks(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
-    fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0), fPIDsigma(0), fFOCrossFiredChips(0)
+    fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0), fPIDsigma(0)//, fFOCrossFiredChips(0)
 {
 
 //Dummy constructor
@@ -79,7 +79,7 @@ AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau()
 AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau(const char *name)
   : AliAnalysisTaskSE(name),
     fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), isESD(kFALSE), cutEta(0.9), fOutputList(0), tTwoTracks(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
-    fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0), fPIDsigma(0), fFOCrossFiredChips(0)
+    fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0), fPIDsigma(0)//, fFOCrossFiredChips(0)
 {
   for(Int_t i = 0; i<NTRIGGERS; i++) fTriggers[i] = kFALSE;
   for(Int_t i = 0; i<3;  i++)fTriggerClass[i] = kFALSE;
@@ -278,10 +278,10 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   //
   // SETUP STG
   //
-  Int_t crossedFO[4];
-  TBits fFOCrossedChips(1200);
-  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
-  TBits fFOFiredChips = mult->GetFastOrFiredChips();
+//  Int_t crossedFO[4];
+//  TBits fFOCrossedChips(1200);
+//  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
+//  TBits fFOFiredChips = mult->GetFastOrFiredChips();
 
   //
   // TRACKS SETTING
@@ -301,7 +301,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   // SELECT TWO TRACKS
   //
   if(nGoodTracksTPC == 2 && nGoodTracksSPD == 2){
-  	fFOCrossedChips.ResetAllBits(kFALSE);
+//  	fFOCrossedChips.ResetAllBits(kFALSE);
 
     //
     // LOOP OVER TWO TRACKS
@@ -313,15 +313,15 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   	  //
   	  // Fast-OR chips crossed STG
   	  //
-  	  if(isESD){
-        AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
-        if( !trk ) continue;
-        crossedFO[0] = trk->GetITSModuleIndex(0);
-        crossedFO[1] = trk->GetITSModuleIndex(1);
-        crossedFO[2] = trk->GetITSModuleIndex(6);
-        crossedFO[3] = trk->GetITSModuleIndex(7);
-        SetCrossed(crossedFO, fFOCrossedChips);
-      }
+//  	  if(isESD){
+//        AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
+//        if( !trk ) continue;
+//        crossedFO[0] = trk->GetITSModuleIndex(0);
+//        crossedFO[1] = trk->GetITSModuleIndex(1);
+//        crossedFO[2] = trk->GetITSModuleIndex(6);
+//        crossedFO[3] = trk->GetITSModuleIndex(7);
+//        SetCrossed(crossedFO, fFOCrossedChips);
+//      }
 
   	  //
   	  // PID AND KINEMATIC INFO
@@ -360,8 +360,9 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
     //
     // SAVE STG DECISION
     //
-    fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
-    fTriggers[9] = IsSTGFired(fFOCrossFiredChips,fRunNumber >= 295753 ? 9 : 3);
+//    TBits fFOCrossFiredChips;
+//    fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
+//    fTriggers[9] = IsSTGFired(fFOCrossFiredChips,fRunNumber >= 295753 ? 9 : 3);
 
     //
     // CHARGE? (OPPOSITE, LIKE)
