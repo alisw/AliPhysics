@@ -269,6 +269,10 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
     	TrackIndexTPC[nGoodTracksTPC] = iTrack;
     	nGoodTracksTPC++;
     }
+    if (nGoodTracksTPC == 5) {
+      Printf("***** WARNING: Event has 5 TPC good tracks. Loop over tracks terminated.");
+      break;
+    }
   }//Track loop
 
   //
