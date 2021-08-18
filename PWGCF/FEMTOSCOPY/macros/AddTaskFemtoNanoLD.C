@@ -42,7 +42,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
 
   DeuteronCuts->SetFilterBit(256);
   DeuteronCuts->SetCutCharge(1);
-  DeuteronCuts->SetPtRange(0.4, 4.0);
+  DeuteronCuts->SetPtRange(0.4, 2.0);
   DeuteronCuts->SetEtaRange(-0.8, 0.8);
   DeuteronCuts->SetNClsTPC(80);
   DeuteronCuts->SetDCAReCalculation(true);  // Get the dca from PropagateToVertex
@@ -51,17 +51,18 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   DeuteronCuts->SetCutSharedCls(true);
   DeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
   DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 3.);
-  DeuteronCuts->SetITSnSigmaCut(false);
+  DeuteronCuts->SetITSnSigmaCut(true);
+  DeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   DeuteronCuts->SetRejLowPtPionsTOF(true);
   DeuteronCuts->SetCutSmallestSig(true);
 
   if (suffix == "1") {
     //pairCleanerSetting = 0;
-    //DeuteronCuts->SetPtRange(0.8, 2.5);
+    DeuteronCuts->SetPtRange(2.0, 4.0);
     //DeuteronCuts->SetFilterBit(256);
     //DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 60.);
-    DeuteronCuts->SetITSnSigmaCut(true);
-    DeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
+    //DeuteronCuts->SetITSnSigmaCut(true);
+    //DeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
   /*
   else if (suffix == "2") {
@@ -92,7 +93,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   
   AntiDeuteronCuts->SetFilterBit(256);
   AntiDeuteronCuts->SetCutCharge(-1);
-  AntiDeuteronCuts->SetPtRange(0.4, 4.0);
+  AntiDeuteronCuts->SetPtRange(0.4, 2.0);
   AntiDeuteronCuts->SetEtaRange(-0.8, 0.8);
   AntiDeuteronCuts->SetNClsTPC(80);
   AntiDeuteronCuts->SetDCAReCalculation(true);  // Get the dca from PropagateToVertex
@@ -101,17 +102,18 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   AntiDeuteronCuts->SetCutSharedCls(true);
   AntiDeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
   AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 3.);
-  AntiDeuteronCuts->SetITSnSigmaCut(false);
+  AntiDeuteronCuts->SetITSnSigmaCut(true);
+  AntiDeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   AntiDeuteronCuts->SetRejLowPtPionsTOF(true);
   AntiDeuteronCuts->SetCutSmallestSig(true);
 
   if (suffix == "1") {
     //pairCleanerSetting = 0;
-    //AntiDeuteronCuts->SetPtRange(0.8, 2.5);
+    AntiDeuteronCuts->SetPtRange(2.0, 4.0);
     //AntiDeuteronCuts->SetFilterBit(256);
     //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 60.);
-    AntiDeuteronCuts->SetITSnSigmaCut(true);
-    AntiDeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
+    //AntiDeuteronCuts->SetITSnSigmaCut(true);
+    //AntiDeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
   /*
   else if (suffix == "2") {
