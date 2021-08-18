@@ -121,8 +121,6 @@ protected:
 
   std::map<unsigned int, Hist::Axis> fAxes{}; ///< axis definitions used in the histograms
 
-  Hist::Hist<TH1D> fHist_vertexFinding{}; //!<! histogram to quantify how many triggered events (excluding pileup events) have a vtx - used to compare data and MC and extract constant normalisation uncertaintiy for spectra
-
   Hist::Hist<TH1D> fHist_multDist_evt_meas{};   //!<! measured event distribution (contains contamination from events not in specified class or with wrong vertex position)
   Hist::Hist<TH2D> fHist_multPtSpec_trk_meas{}; //!<! measured tracks (contains contamination from secondary particles, particles smeared into acceptance and tracks originating from background events as defined above )
 
@@ -186,6 +184,7 @@ protected:
   unsigned long fEventNumber{};  //!<! event number
   unsigned int fTimeStamp{};     //!<! event time stamp
   float fCent{};                 //!<! event centrality
+  bool fEventPassesPhysSel{};    //!<! event passes physics selection (usually also including pileup rejection)
   bool fMCIsGoodZPos{};          //!<! is mc event within acceptance (z<10)?
   bool fMCIsGoodEventClass{};    //!<! decision if current event is in specified baseline event class
   bool fAcceptEvent{};           //!<! decision if current event is selected
