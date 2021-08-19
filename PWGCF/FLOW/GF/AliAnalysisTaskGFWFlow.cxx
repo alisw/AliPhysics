@@ -298,7 +298,7 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
   };
   if(fProduceWeights) PostData(1,fWeightList);
   else PostData(1,fFC);
-  fMultiDist = new TH1D("Multiplicity_distribution","Multiplicity distribution",100, 0, 100);
+  fMultiDist = new TH1D(Form("Multiplicity_distribution%s",fSelections[fCurrSystFlag]->GetSystPF()),"Multiplicity distribution",100, 0, 100);
   PostData(2,fMultiDist);
   if(fAddQA) {
     fQAList = new TList();
