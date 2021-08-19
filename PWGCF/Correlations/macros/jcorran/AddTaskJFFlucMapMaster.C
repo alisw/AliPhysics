@@ -67,26 +67,23 @@ AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t 
 		myTask[i]->SetEtaRange(0.4, 0.8);
 		myTask[i]->SetPtRange(ptmin, 5.0);
 		myTask[i]->SetEffConfig(0,hybridCut);
+		myTask[i]->SetZVertexCut(8.);
 	}
 	// s_global
 	int iS = 1;
 	myTask[iS]->SetTestFilterBit(globalCut);
 	myTask[iS]->SetEffConfig(0,globalCut);
-	myTask[iS]->SetZVertexCut(8.);
 	// s_nqq
 	iS = 2;
 	myTask[iS]->SetParticleCharge(-1);
-	myTask[iS]->SetZVertexCut(8.);
   // s_subA
   iS = 3;
 	myTask[iS]->SelectSubevents(AliJFFlucTask::SUBEVENT_A); // subA
-	myTask[iS]->SetZVertexCut(8.);
 	//
 	//----------- Event related Check -------------
 	// s_SPD
 	iS = 4;
 	myTask[iS]->SetCentDetName("CL1");
-	myTask[iS]->SetZVertexCut(8.);
 	// s_zvtx
 	iS = 5;
 	myTask[iS]->SetZVertexCut(10.);
@@ -97,37 +94,29 @@ AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t 
 	} else if(period==lhc15o) {
 		myTask[iS]->AddFlags(AliJFFlucTask::FLUC_EBE_WEIGHTING); // CAN|T overwrite Flags!!! no weightening for 15o
 	}
-	myTask[iS]->SetZVertexCut(8.);
 	//
 		//----------- Track related Check -------------
 	// s_ntpc 100
 	iS = 7;
 	myTask[iS]->SetNumTPCClusters(100);
-	myTask[iS]->SetZVertexCut(8.);
 	// s_ntpc 90
 	iS = 8;
 	myTask[iS]->SetNumTPCClusters(90);
-	myTask[iS]->SetZVertexCut(8.);
 	// s_ntpc 80
 	iS = 9;
 	myTask[iS]->SetNumTPCClusters(80);
-	myTask[iS]->SetZVertexCut(8.);
 	// s_dcaxy 1 cm
 	iS = 10;
 	myTask[iS]->SetDCAxyCut(1);
-	myTask[iS]->SetZVertexCut(8.);
 		// s_dcaz 2cm
 	iS = 11;
 	myTask[iS]->SetDCAzCut(2);
-	myTask[iS]->SetZVertexCut(8.);
 	// s_chi2/ndf in [0.3, 4.0]
 	iS = 12;
 	myTask[iS]->SetChi2Cuts(0.3, 4.0);
-	myTask[iS]->SetZVertexCut(8.);
 	// s_chi2/ndf in [0.1, 3.5]
 	iS = 13;
 	myTask[iS]->SetChi2Cuts(0.1, 3.5);
-	myTask[iS]->SetZVertexCut(8.);
 	
 	// Must add the tasks
 	for(int i=0;i<Nsets;i++) mgr->AddTask((AliAnalysisTask*) myTask[i]);

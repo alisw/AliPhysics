@@ -60,26 +60,23 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 		myTask[i]->SetEffConfig(0,hybridCut);
 		myTask[i]->SetPhiCorrectionIndex(i);//cmaptask->EnablePhiCorrection(i,MAPfilenames[i]);
 		myTask[i]->SetRemoveBadArea(removebadarea);
+		myTask[i]->SetZVertexCut(8.);
 	}
 	// s_global
 	int iS = 1;
 	myTask[iS]->SetTestFilterBit(globalCut);
 	myTask[iS]->SetEffConfig(0,globalCut);
-	myTask[iS]->SetZVertexCut(8.);
 	// s_nqq
 	iS = 2;
 	myTask[iS]->SetParticleCharge(-1);
-	myTask[iS]->SetZVertexCut(8.);
     // s_subA
     iS = 3;
 	myTask[iS]->SelectSubevents(AliJFFlucTask::SUBEVENT_A); // subA
-	myTask[iS]->SetZVertexCut(8.);
 	//
 	//----------- Event related Check -------------
 	// s_SPD
 	iS = 4;
 	myTask[iS]->SetCentDetName("CL1");
-	myTask[iS]->SetZVertexCut(8.);
 	// s_zvtx
 	iS = 5;
 	myTask[iS]->SetZVertexCut(10.);
@@ -90,7 +87,6 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	} else if(period==lhc15o) {
 		myTask[iS]->AddFlags(AliJFFlucTask::FLUC_EBE_WEIGHTING); // CAN|T overwrite Flags!!! no weightening for 15o
 	}
-	myTask[iS]->SetZVertexCut(8.);
 	
 	// Must add the tasks
 	for(int i=0;i<Nsets;i++) mgr->AddTask((AliAnalysisTask*) myTask[i]);
