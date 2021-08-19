@@ -67,7 +67,7 @@ using std::endl;
 AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau()
   : AliAnalysisTaskSE(),
     fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), isESD(kFALSE), cutEta(0.9), fOutputList(0),tTwoTracks(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
-    fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0), fPIDsigma(0), fFOCrossFiredChips(0)
+    fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0)
 {
 
 //Dummy constructor
@@ -79,7 +79,7 @@ AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau()
 AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau(const char *name)
   : AliAnalysisTaskSE(name),
     fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), isESD(kFALSE), cutEta(0.9), fOutputList(0), tTwoTracks(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
-    fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0), fPIDsigma(0), fFOCrossFiredChips(0)
+    fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0)
 {
   for(Int_t i = 0; i<NTRIGGERS; i++) fTriggers[i] = kFALSE;
   for(Int_t i = 0; i<3;  i++)fTriggerClass[i] = kFALSE;
@@ -120,8 +120,8 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
   tTwoTracks = new TTree("tTwoTracks", "tTwoTracks");
   tTwoTracks ->Branch("fPt", &fPt, "fPt/F");
   tTwoTracks ->Branch("fPtDaughter", &fPtDaughter[0], "fPtDaughter[2]/F");
-  tTwoTracks ->Branch("fVectDaughter0", &fVectDaughter[0]);
-  tTwoTracks ->Branch("fVectDaughter1", &fVectDaughter[1]);
+  tTwoTracks ->Branch("fVectElectron", &fVectDaughter[0]);
+  tTwoTracks ->Branch("fVectOtherTrack", &fVectDaughter[1]);
   tTwoTracks ->Branch("fSignDaughter", &fSignDaughter[0], "fSignDaughter[2]/I");
   tTwoTracks ->Branch("fY", &fY, "fY/F");
   tTwoTracks ->Branch("fM", &fM, "fM/F");
@@ -132,7 +132,6 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
   tTwoTracks ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/F");
   tTwoTracks ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/F");
   tTwoTracks ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
-  tTwoTracks ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   tTwoTracks ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   tTwoTracks ->Branch("fTriggers", &fTriggers, Form("fTriggers[%i]/O",NTRIGGERS));
   tTwoTracks ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
@@ -269,6 +268,10 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
     	TrackIndexTPC[nGoodTracksTPC] = iTrack;
     	nGoodTracksTPC++;
     }
+    if (nGoodTracksTPC == 5) {
+      Printf("***** WARNING: Event has 5 TPC good tracks. Loop over tracks terminated.");
+      break;
+    }
   }//Track loop
 
   //
@@ -356,7 +359,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
     //
     // SAVE STG DECISION
     //
-    fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
+    TBits fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
     fTriggers[9] = IsSTGFired(fFOCrossFiredChips,fRunNumber >= 295753 ? 9 : 3);
 
     //
