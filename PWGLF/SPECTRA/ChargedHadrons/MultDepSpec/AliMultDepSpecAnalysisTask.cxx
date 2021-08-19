@@ -395,8 +395,8 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
     if (fMCAcceptEvent) {
       fHist_multDist_evt_gen.Fill(fMultTrue);
       if (fIsTriggered) fHist_multDist_evt_gen_trig.Fill(fMultTrue);
-      LoopTrue();
     }
+    LoopTrue();
   }
 
   if (!fAcceptEvent) return;
