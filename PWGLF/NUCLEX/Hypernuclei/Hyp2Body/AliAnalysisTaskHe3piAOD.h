@@ -48,6 +48,7 @@ struct MiniHyperMC : public MiniHyper
   float yMC;
   int pdg;
   bool isReconstructed;
+  bool isDuplicated = false;
 };
 
 class AliAnalysisTaskHe3piAOD : public AliAnalysisTaskSE
@@ -73,6 +74,8 @@ public:
 
   void SetCustomBetheBloch(float resolution, const float bethe[5]);
   double customNsigma(double mom, double sig);
+  void SaveOnlyTrueCandidates(bool toggle = true) { fOnlyTrueCandidates = toggle; }
+  void UseOnTheFly(bool toggle = true) { fUseOnTheFly = toggle; }
   void SetMassRange(float min, float max)
   {
     fMassRange[0] = min;
@@ -92,7 +95,8 @@ private:
   MiniHyperMC fGenHyper;
   AliPIDResponse *fPID = nullptr; //!<! ALICE PID framework
   bool fMC;
-  bool fOnlyTrueCandidates = false; ///< Save only true Xi and Omegas in MC
+  bool fOnlyTrueCandidates = true; ///< Save only true Hypertritons
+  bool fUseOnTheFly = false;
 
   float fCustomBethe[5] = {-166.11733, -0.11020473, 0.10851357, 2.7018593, -0.087597824}; /// default values are for LHC18qr
   float fCustomResolution = 0.05871;                                                      /// default values are for LHC18qr
