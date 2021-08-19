@@ -78,7 +78,7 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	myTask[iS]->SetCentDetName("CL1");
 	// s_zvtx
 	iS = 5;
-	myTask[iS]->SetZVertexCut(8);
+	myTask[iS]->SetZVertexCut(8.);
 	// s_pileup
 	iS = 6;
 	if(period==lhc18q || period==lhc18r) {
