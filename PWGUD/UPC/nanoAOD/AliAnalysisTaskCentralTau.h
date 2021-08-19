@@ -30,7 +30,6 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
   
-  void SetIsESD(Bool_t ESD){isESD = ESD;}
   void SetParameters(Float_t cutE){cutEta = cutE;}
   Int_t TestPIDTPChypothesis(Float_t e, Float_t m, Float_t p);
   void SetCrossed(Int_t spd[4], TBits &crossed);
@@ -43,7 +42,6 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   AliESDtrackCuts *fTrackCutsBit0;
   AliESDtrackCuts *fTrackCutsBit1;
   AliESDtrackCuts *fTrackCutsBit4;
-  Bool_t isESD;
   Float_t cutEta;
 
   TList *fOutputList;		//<

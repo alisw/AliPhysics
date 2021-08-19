@@ -18,40 +18,32 @@
 #include <string.h>
 
 // root headers
-#include "TROOT.h"
-#include "TH1I.h"
-#include "TTree.h"
 #include "TClonesArray.h"
-#include "TFile.h"
-#include "TDatabasePDG.h"
-#include "TLorentzVector.h"
 #include "TColor.h"
+#include "TDatabasePDG.h"
+#include "TFile.h"
+#include "TH1I.h"
+#include "TLorentzVector.h"
+#include "TObjArray.h"
 #include "TRandom.h"
+#include "TROOT.h"
+#include "TString.h"
+#include "TTree.h"
 
 // aliroot headers
 #include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-#include "AliAODEvent.h"
-#include "AliVVZERO.h"
-#include "AliAODZDC.h"
-#include "AliESDZDC.h"
-#include "AliPIDResponse.h"
-#include "AliAODTrack.h"
-#include "AliAODPid.h"
-#include "AliAODVertex.h"
-#include "AliTOFTriggerMask.h"
-#include "TObjArray.h"
 #include "AliDataFile.h"
-#include "TString.h"
-#include "AliTimeRangeCut.h"
-#include "AliOADBContainer.h"
-#include "AliVVertex.h"
-
-#include "AliESDEvent.h" 
-#include "AliESDtrack.h" 
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliMCEvent.h"
-
+#include "AliESDZDC.h"
+#include "AliInputEventHandler.h"
+#include "AliOADBContainer.h"
+#include "AliPIDResponse.h"
+#include "AliTimeRangeCut.h"
+#include "AliTOFTriggerMask.h"
+#include "AliVVertex.h"
+#include "AliVVZERO.h"
 
 // my headers
 #include "AliAnalysisTaskCentralTau.h"
@@ -66,7 +58,7 @@ using std::endl;
 //_____________________________________________________________________________
 AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau()
   : AliAnalysisTaskSE(),
-    fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), isESD(kFALSE), cutEta(0.9), fOutputList(0),tTwoTracks(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
+    fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), cutEta(0.9), fOutputList(0),tTwoTracks(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
     fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0)
 {
 
@@ -78,7 +70,7 @@ AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau()
 //_____________________________________________________________________________
 AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau(const char *name)
   : AliAnalysisTaskSE(name),
-    fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), isESD(kFALSE), cutEta(0.9), fOutputList(0), tTwoTracks(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
+    fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), cutEta(0.9), fOutputList(0), tTwoTracks(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
     fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0)
 {
   for(Int_t i = 0; i<NTRIGGERS; i++) fTriggers[i] = kFALSE;
@@ -203,26 +195,15 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   AliVVZERO *fV0data = fEvent->GetVZEROData();
   AliVAD *fADdata = fEvent->GetADData();
   
-  if(isESD){
-  	AliESDZDC *fZDCdata = (AliESDZDC*)fEvent->GetZDCData();
-  	fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
-  	fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
-  	Int_t detChZNA  = fZDCdata->GetZNATDCChannel();
-  	Int_t detChZNC  = fZDCdata->GetZNCTDCChannel();
-  	if (fEvent->GetRunNumber()>=245726 && fEvent->GetRunNumber()<=245793) detChZNA = 10;
-  	for (Int_t i=0;i<4;i++){ 
-  		fZNAtime[i] = fZDCdata->GetZDCTDCCorrected(detChZNA,i);
-  		fZNCtime[i] = fZDCdata->GetZDCTDCCorrected(detChZNC,i);
-		}
-  }
-  else{
-  	AliAODZDC *fZDCdata = (AliAODZDC*)fEvent->GetZDCData();
-  	fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
-  	fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
-  	for (Int_t i=0;i<4;i++){ 
-  		fZNAtime[i] = fZDCdata->GetZNATDCm(i);
-  		fZNCtime[i] = fZDCdata->GetZNCTDCm(i);
-		}
+  AliESDZDC *fZDCdata = (AliESDZDC*)fEvent->GetZDCData();
+  fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
+  fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
+  Int_t detChZNA  = fZDCdata->GetZNATDCChannel();
+  Int_t detChZNC  = fZDCdata->GetZNCTDCChannel();
+  if (fEvent->GetRunNumber()>=245726 && fEvent->GetRunNumber()<=245793) detChZNA = 10;
+  for (Int_t i=0;i<4;i++){
+    fZNAtime[i] = fZDCdata->GetZDCTDCCorrected(detChZNA,i);
+    fZNCtime[i] = fZDCdata->GetZDCTDCCorrected(detChZNC,i);
   }
 
   fV0Adecision = fV0data->GetV0ADecision();
@@ -246,24 +227,11 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   for(Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++){
     Bool_t goodTPCTrack = kTRUE;
     Bool_t goodITSTrack = kTRUE;
-    if(isESD){
-    	AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(iTrack));
-    	if( !trk ) continue;
-      if(!fTrackCutsBit1->AcceptTrack(trk)) goodITSTrack = kFALSE;
-	   	if(!fTrackCutsBit4->AcceptTrack(trk)) goodTPCTrack = kFALSE;
-    	else{ if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))  nGoodTracksSPD++;}
-	  }
-    else{
-    	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(fEvent->GetTrack(iTrack));
-    	if( !trk ) continue;
-    	if(!(trk->TestFilterBit(1<<1))) goodITSTrack = kFALSE;
-    	if(!(trk->TestFilterBit(1<<5))) goodTPCTrack = kFALSE;
-    	else{
-    		if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
-    		if(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk)nGoodTracksTOF++;
-    	}
-    }
-    AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(iTrack));
+    AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(iTrack));
+    if( !trk ) continue;
+    if(!fTrackCutsBit1->AcceptTrack(trk)) goodITSTrack = kFALSE;
+    if(!fTrackCutsBit4->AcceptTrack(trk)) goodTPCTrack = kFALSE;
+    else{ if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))  nGoodTracksSPD++;}
     if(goodTPCTrack){
     	TrackIndexTPC[nGoodTracksTPC] = iTrack;
     	nGoodTracksTPC++;
@@ -312,20 +280,17 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   	  //
   	  // Fast-OR chips crossed STG
   	  //
-  	  if(isESD){
-        AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
-        if( !trk ) continue;
-        crossedFO[0] = trk->GetITSModuleIndex(0);
-        crossedFO[1] = trk->GetITSModuleIndex(1);
-        crossedFO[2] = trk->GetITSModuleIndex(6);
-        crossedFO[3] = trk->GetITSModuleIndex(7);
-        SetCrossed(crossedFO, fFOCrossedChips);
-      }
+      AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
+      if( !trk ) continue;
+      crossedFO[0] = trk->GetITSModuleIndex(0);
+      crossedFO[1] = trk->GetITSModuleIndex(1);
+      crossedFO[2] = trk->GetITSModuleIndex(6);
+      crossedFO[3] = trk->GetITSModuleIndex(7);
+      SetCrossed(crossedFO, fFOCrossedChips);
 
   	  //
   	  // PID AND KINEMATIC INFO
   	  //
-      AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
 
       fPtDaughter[iTrack] = trk->Pt();
       fSignDaughter[iTrack] = trk->Charge();
@@ -397,14 +362,12 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
     }
   }//Two track loop
   
-  if(isESD){
-    Bool_t isCUP29, isCUP30, isCUP31;
-    isCUP29 = fTriggers[0] || fTriggers[1] || fTriggers[2];
-    isCUP30 = fTriggers[3] || fTriggers[4];
-    isCUP31 = fTriggers[5] || fTriggers[6];
-    fTriggerClass[0] = isCUP29; fTriggerClass[1] = isCUP30; fTriggerClass[2] = isCUP31;
-  }
-  
+  Bool_t isCUP29, isCUP30, isCUP31;
+  isCUP29 = fTriggers[0] || fTriggers[1] || fTriggers[2];
+  isCUP30 = fTriggers[3] || fTriggers[4];
+  isCUP31 = fTriggers[5] || fTriggers[6];
+  fTriggerClass[0] = isCUP29; fTriggerClass[1] = isCUP30; fTriggerClass[2] = isCUP31;
+
   PostData(1, fOutputList);
 
 }//UserExec
