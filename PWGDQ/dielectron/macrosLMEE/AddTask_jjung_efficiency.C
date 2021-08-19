@@ -14,6 +14,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   // #########################################################
   // Configuring Analysis Manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+  if(!mgr){
+    Error("AddTask_jjung_ElectronEfficiencyV2", "No analysis manager found.");
+    return 0;
+  }
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName = "AnalysisResults.root"; // create a subfolder in the file
 
@@ -108,6 +112,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   if (usePtVector == true) {
     std::vector<double> ptBinsVec;
     for (unsigned int i = 0; i < nBinsPt+1; ++i){
+      std::cout << PtBins[i] << std::endl;
       ptBinsVec.push_back(PtBins[i]);
     }
     task->SetPtBins(ptBinsVec);
@@ -119,17 +124,17 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   if (useMeeVector == true) {
     std::vector<double> meeBinsVec;
     for (unsigned int i = 0; i < nBinsMee+1; ++i){
-      ptBinsVec.push_back(MeeBins[i]);
+      meeBinsVec.push_back(MeeBins[i]);
     }
-    task->SetPtBins(meeBinsVec);
+    task->SetMassBins(meeBinsVec);
   }
   else task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
   if (usePteeVector == true) {
     std::vector<double> pteeBinsVec;
     for (unsigned int i = 0; i < nBinsPtee+1; ++i){
-      ptBinsVec.push_back(PteeBins[i]);
+      pteeBinsVec.push_back(PteeBins[i]);
     }
-    task->SetPtBins(pteeBinsVec);
+    task->SetPairPtBins(pteeBinsVec);
   }
   else task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
 

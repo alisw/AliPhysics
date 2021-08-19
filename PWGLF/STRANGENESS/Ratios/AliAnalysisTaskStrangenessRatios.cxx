@@ -155,6 +155,8 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
     AliAODcascade *casc = ev->GetCascade(iCasc);
     if (!casc)
       continue;
+    if (casc->GetOnFlyStatus() != fUseOnTheFly)
+      continue;
 
     //cascade and V0 2D radii
     double vtxCasc[3]{casc->DecayVertexXiX(), casc->DecayVertexXiY(), casc->DecayVertexXiZ()};
@@ -322,6 +324,8 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       AliAODv0 *v0{ev->GetV0(iV0)};
       if (!v0)
         continue;
+      if (v0->GetOnFlyStatus() != fUseOnTheFly)
+        continue;
 
       fRecLambda->radius = v0->RadiusSecVtx();
 
@@ -362,7 +366,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           double ov[3], dv[3];
           lambda->XvYvZv(ov);
           posPart->XvYvZv(dv);
-          fGenCascade.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * lambda->M() / lambda->P();
+          fGenLambda.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * lambda->M() / lambda->P();
         }
         if (fOnlyTrueLambdas && fGenLambda.pdg == 0)
           continue;

@@ -121,7 +121,26 @@ void AliAnalysisTaskHe3piAOD::UserExec(Option_t *)
     return;
   }
 
-  double bField{ev->GetMagneticField()};
+  AliAODMCHeader *header{nullptr};
+  TClonesArray *MCTrackArray{nullptr};
+  if (fMC) {
+    //OOB pileup
+    header = static_cast<AliAODMCHeader *>(ev->FindListObject(AliAODMCHeader::StdBranchName()));
+    if (!header)
+    {
+      AliWarning("No header found.");
+      PostAllData();
+      return;
+    }
+    MCTrackArray = dynamic_cast<TClonesArray *>(ev->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (!MCTrackArray)
+    {
+      AliWarning("No MC track array found.");
+      PostAllData();
+      return;
+    }
+  }
+
   auto pvObj = fEventCut.GetPrimaryVertex();
   double pv[3];
   pvObj->GetXYZ(pv);
@@ -157,7 +176,8 @@ void AliAnalysisTaskHe3piAOD::UserExec(Option_t *)
     AliAODv0 *v0{ev->GetV0(iV0)};
     if (!v0)
       continue;
-
+    if (v0->GetOnFlyStatus() != fUseOnTheFly)
+      continue;
     //get daughter tracks (positive, negative and bachelor)
     AliAODTrack *pTrack = dynamic_cast<AliAODTrack *>(v0->GetDaughter(0));
     AliAODTrack *nTrack = dynamic_cast<AliAODTrack *>(v0->GetDaughter(1));
@@ -180,33 +200,38 @@ void AliAnalysisTaskHe3piAOD::UserExec(Option_t *)
       fGenHyper.pdg = 0;
       auto posPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(pTrack->GetLabel()));
       auto negPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(nTrack->GetLabel()));
-      if (std::abs(posPart->GetPdgCode()) == AliPID::ParticleCode(AliPID::kHe3) ||
-          std::abs(negPart->GetPdgCode()) == AliPID::ParticleCode(AliPID::kHe3))
+      if ((posPart->GetPdgCode() == AliPID::ParticleCode(AliPID::kHe3) &&
+           negPart->GetPdgCode() == -AliPID::ParticleCode(AliPID::kPion)) ||
+          (negPart->GetPdgCode() == -AliPID::ParticleCode(AliPID::kHe3) &&
+           posPart->GetPdgCode() == AliPID::ParticleCode(AliPID::kPion)))
       {
         // Check hyper
         int labMothPos = posPart->GetMother();
         int labMothNeg = negPart->GetMother();
-        auto hyper = (AliAODMCParticle *)fMCEvent->GetTrack(labMothNeg);
-        if (hyper && labMothNeg == labMothPos && std::abs(hyper->GetPdgCode()) == kHyperPdg)
+        if (labMothNeg >= 0 && labMothNeg == labMothPos && !AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labMothNeg, header, MCTrackArray))
         {
-          hyperLabel = labMothNeg;
-          fGenHyper.pdg = hyper->GetPdgCode();
-          fGenHyper.ptMC = hyper->Pt();
-          fGenHyper.etaMC = hyper->Eta();
-          fGenHyper.yMC = hyper->Y();
-          double ov[3], dv[3];
-          hyper->XvYvZv(ov);
-          posPart->XvYvZv(dv);
-          fGenHyper.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * hyper->M() / hyper->P();
+          auto hyper = (AliAODMCParticle *)fMCEvent->GetTrack(labMothNeg);
+          if (hyper && std::abs(hyper->GetPdgCode()) == kHyperPdg)
+          {
+            hyperLabel = labMothNeg;
+            fGenHyper.pdg = hyper->GetPdgCode();
+            fGenHyper.ptMC = hyper->Pt();
+            fGenHyper.etaMC = hyper->Eta();
+            fGenHyper.yMC = hyper->Y();
+            double ov[3], dv[3];
+            hyper->XvYvZv(ov);
+            posPart->XvYvZv(dv);
+            fGenHyper.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * hyper->M() / hyper->P();
+          }
         }
       }
 
-      if (fOnlyTrueCandidates && fGenHyper.pdg == 0)
+      if (fOnlyTrueCandidates && hyperLabel < 0)
         continue;
     }
 
-    float pNsigma{fMC ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kHe3) : customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal())};
-    float nNsigma{fMC ? fPID->NumberOfSigmasTPC(nTrack, AliPID::kHe3) : customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal())};
+    double pNsigma{fMC ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kHe3) : customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal())};
+    double nNsigma{fMC ? fPID->NumberOfSigmasTPC(nTrack, AliPID::kHe3) : customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal())};
     if (std::abs(pNsigma) > 5 && std::abs(nNsigma) > 5)
     {
       continue;
@@ -224,8 +249,8 @@ void AliAnalysisTaskHe3piAOD::UserExec(Option_t *)
     double deltaPos[3]{sv[0] - pv[0], sv[1] - pv[1], sv[2] - pv[2]};
 
     LVector_t he3Vector, piVector, hyperVector;
-    float he3P[3]{fRecHyper->Matter ? v0->MomPosX() : v0->MomNegX(), fRecHyper->Matter ? v0->MomPosY() : v0->MomNegY(), fRecHyper->Matter ? v0->MomPosZ() : v0->MomNegZ()};
-    float piP[3]{!fRecHyper->Matter ? v0->MomPosX() : v0->MomNegX(), !fRecHyper->Matter ? v0->MomPosY() : v0->MomNegY(), !fRecHyper->Matter ? v0->MomPosZ() : v0->MomNegZ()};
+    double he3P[3]{fRecHyper->Matter ? v0->MomPosX() : v0->MomNegX(), fRecHyper->Matter ? v0->MomPosY() : v0->MomNegY(), fRecHyper->Matter ? v0->MomPosZ() : v0->MomNegZ()};
+    double piP[3]{!fRecHyper->Matter ? v0->MomPosX() : v0->MomNegX(), !fRecHyper->Matter ? v0->MomPosY() : v0->MomNegY(), !fRecHyper->Matter ? v0->MomPosZ() : v0->MomNegZ()};
 
     he3Vector.SetCoordinates(he3P[0] * 2, he3P[1] * 2, he3P[2] * 2, AliPID::ParticleMass(AliPID::kHe3));
     piVector.SetCoordinates(piP[0], piP[1], piP[2], AliPID::ParticleMass(AliPID::kPion));
@@ -267,29 +292,19 @@ void AliAnalysisTaskHe3piAOD::UserExec(Option_t *)
 
     if (hyperLabel != -1)
     {
-      checkedHyperLabel.push_back(hyperLabel);
+      if (std::find(checkedHyperLabel.begin(), checkedHyperLabel.end(), hyperLabel) != checkedHyperLabel.end())
+      {
+        fGenHyper.isDuplicated = true;
+      } else {
+        fGenHyper.isDuplicated = false;
+        checkedHyperLabel.push_back(hyperLabel);
+      }
     }
     fTree->Fill();
   }
 
   if (fMC)
   {
-    //OOB pileup
-    AliAODMCHeader *header = static_cast<AliAODMCHeader *>(ev->FindListObject(AliAODMCHeader::StdBranchName()));
-    if (!header)
-    {
-      AliWarning("No header found.");
-      PostAllData();
-      return;
-    }
-    TClonesArray *MCTrackArray = dynamic_cast<TClonesArray *>(ev->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (MCTrackArray == NULL)
-    {
-      AliWarning("No MC track array found.");
-      PostAllData();
-      return;
-    }
-
     fGenHyper.isReconstructed = false;
     //loop on generated
     for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT)
