@@ -248,11 +248,10 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     BookHistogram(fHist_multCorrel_prim, "multCorrel_prim", {mult_meas, mult_true});
     BookHistogram(fHist_ptCorrel_prim, "ptCorrel_prim", {pt_meas, pt_true});
     BookHistogram(fHist_multPtSpec_prim_gen, "multPtSpec_prim_gen", {mult_true, pt_true});
+    BookHistogram(fHist_multPtSpec_prim_gen_untrig, "multPtSpec_prim_gen_untrig", {mult_true, pt_true});
     BookHistogram(fHist_multPtSpec_prim_meas, "multPtSpec_prim_meas", {mult_true, pt_true});
     BookHistogram(fHist_multPtSpec_trk_prim_meas, "multPtSpec_trk_prim_meas", {mult_meas, pt_meas});
     BookHistogram(fHist_multPtSpec_trk_sec_meas, "multPtSpec_trk_sec_meas", {mult_meas, pt_meas});
-    BookHistogram(fHist_ptDist_prim_gen_trig, "ptDist_prim_gen_trig", {pt_true});
-    BookHistogram(fHist_ptDist_prim_gen_fidu, "ptDist_prim_gen_fidu", {pt_true});
   }
 
   // check required memory
@@ -271,11 +270,10 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_multCorrel_prim.GetSize(0.045) +
     fHist_ptCorrel_prim.GetSize() +
     fHist_multPtSpec_prim_gen.GetSize() +
+    fHist_multPtSpec_prim_gen_untrig.GetSize() +
     fHist_multPtSpec_prim_meas.GetSize() +
     fHist_multPtSpec_trk_prim_meas.GetSize() +
     fHist_multPtSpec_trk_sec_meas.GetSize() +
-    fHist_ptDist_prim_gen_trig.GetSize() +
-    fHist_ptDist_prim_gen_fidu.GetSize() +
     fHist_signed1Pt.GetSize() +
     fHist_eta.GetSize() +
     fHist_phi.GetSize() +
@@ -637,10 +635,10 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
       for (int i = 0; i < fNRepetitions; ++i) {
         if (fMCAcceptEvent) {
           fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
-          if (fIsTriggered) fHist_ptDist_prim_gen_trig.Fill(fMCPt); // quantify trigger bias in fiducial or inelgt0 mode
         }
-        if (fMCIsGoodZPos) {                      // implicitly this is the fiducial event class as it is called only for Nch > 0
-          fHist_ptDist_prim_gen_fidu.Fill(fMCPt); // quantify trigger bias in triggered mode
+        if (fMCIsGoodZPos && !fIsTriggered) {
+          // filled for events with Nch > 0 that did not fulfil the trigger (and physics selection) condition
+          fHist_multPtSpec_prim_gen_untrig.Fill(fMultTrue, fMCPt);
         }
       }
     }
