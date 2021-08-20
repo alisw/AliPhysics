@@ -171,6 +171,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fzvtx_Ntrkl_Corr(0),
 	fzvtx_Corr(0),
 	fNtrkl_Corr(0),
+	fNtrkl_noCorr(0),
 	fzvtx_V0M(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
@@ -354,6 +355,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fzvtx_Ntrkl_Corr(0),
 	fzvtx_Corr(0),
 	fNtrkl_Corr(0),
+	fNtrkl_noCorr(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
 	fzvtx_V0M(0),
@@ -530,6 +532,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
 	fzvtx_Corr = new TH1F("fzvtx_Corr","Zvertex after correction; zvtx; counts",400,-20.,20.);
 	fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",301,-0.5,300.5);
+	fNtrkl_noCorr = new TH1F("fNtrkl_noCorr","N_{tracklet} w.o. correction; zvtx; counts",301,-0.5,300.5);
 	fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
 	fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
 
@@ -694,6 +697,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fzvtx_Ntrkl_Corr);
 	fOutputList->Add(fzvtx_Corr);
 	fOutputList->Add(fNtrkl_Corr);
+	fOutputList->Add(fNtrkl_noCorr);
 	fOutputList->Add(fzvtx_V0M);
 	fOutputList->Add(fNchNtr);
 	fOutputList->Add(fNchNtr_Corr);
@@ -1028,6 +1032,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		WeightNtrkl = NtrkWeightMC->GetBinContent(NtrkWeightMC->FindBin(correctednAcc));
 		fzvtx_Corr->Fill(Zvertex,WeightZvtx);
 		fNtrkl_Corr->Fill(correctednAcc,WeightNtrkl);
+		fNtrkl_noCorr->Fill(correctednAcc);
 		fNchNtr_Corr->Fill(correctednAcc,Nch,WeightNtrkl);
 		fzvtx_Nch->Fill(Zvertex,Nch,WeightZvtx);
 	}
