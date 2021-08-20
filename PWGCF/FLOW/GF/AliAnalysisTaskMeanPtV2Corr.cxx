@@ -70,6 +70,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fEtaV2Sep(0.4),
   fPIDResponse(0),
   fBayesPID(0),
+  fQAList(0),
   fMPTList(0),
   fMPTListMC(0),
   fmPT(0),
@@ -135,6 +136,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fEtaV2Sep(0.4),
   fPIDResponse(0),
   fBayesPID(0),
+  fQAList(0),
   fMPTList(0),
   fMPTListMC(0),
   fmPT(0),
@@ -211,6 +213,9 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
     DefineOutput(2,AliGFWFlowContainer::Class());
     DefineOutput(3,TList::Class());
   };
+  if(fStageSwitch==10) {
+    DefineOutput(1,TList::Class());
+  }
   SetNchCorrelationCut(1,0,kFALSE);
 };
 AliAnalysisTaskMeanPtV2Corr::~AliAnalysisTaskMeanPtV2Corr() {
@@ -649,7 +654,12 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     if(fNBootstrapProfiles) for(Int_t i=0;i<6;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
     PostData(3,fCovList);
   }
-
+  if(fStageSwitch==10) {
+    fQAList = new TList();
+    fQAList->SetOwner(kTRUE);
+    fEventCuts.AddQAplotsToList(fQAList,kTRUE);
+    PostData(1,fQAList);
+  }
 
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
   if(fExtendV0MAcceptance) {
@@ -719,6 +729,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
     MCClosure_MeanPt(fAOD,vz,l_Cent,vtxXYZ);
   if(fStageSwitch==9)
     CovSkipMpt(fAOD,vz,l_Cent,vtxXYZ);
+  if(fStageSwitch==10)
+    QAOnly(fAOD,vz,l_Cent,vtxXYZ);
 };
 void AliAnalysisTaskMeanPtV2Corr::NotifyRun() {
   if(fStageSwitch==7) return;
@@ -818,6 +830,7 @@ Int_t AliAnalysisTaskMeanPtV2Corr::GetStageSwitch(TString instr) {
   if(instr.Contains("Efficiency")) return 7;
   if(instr.Contains("MC_MptClosure")) return 8;
   if(instr.Contains("CovSkipMpt")) return 9;
+  if(instr.Contains("QAOnly")) return 10;
   return 0;
 }
 void AliAnalysisTaskMeanPtV2Corr::FillWeightsMC(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
@@ -1506,6 +1519,10 @@ void AliAnalysisTaskMeanPtV2Corr::CovSkipMpt(AliAODEvent *fAOD, const Double_t &
   // Fillv2dPtFCs(corrconfigs.at(0),mptev,0,indx);
   // Fillv2dPtFCs(corrconfigs.at(4),mptev,0,indx);
   // PostData(4,fV2dPtList);
+}
+void AliAnalysisTaskMeanPtV2Corr::QAOnly(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
+  //Nothing to do here, event selection has been performed already. Just post the QA list and be done
+  PostData(1,fQAList);
 }
 
 Bool_t AliAnalysisTaskMeanPtV2Corr::FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t debug) {
