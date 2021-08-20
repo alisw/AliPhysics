@@ -18,6 +18,7 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   if(stage.Contains("Efficiency")) StageSwitch=7;
   if(stage.Contains("MC_MptClosure")) StageSwitch=8;
   if(stage.Contains("CovSkipMpt")) StageSwitch=9;
+  if(stage.Contains("QAOnly")) StageSwitch=10;
   if(StageSwitch==0) return 0;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -183,5 +184,15 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
     mgr->ConnectOutput(task,3,cOutputCov);
     return task;
   };
+  if(StageSwitch==10) {
+    TObjArray *AllContainers = mgr->GetContainers();
+    TString l_ContName=subfix.IsNull()?"":("_" + subfix);
+    // AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer(Form("MPTProfileList%s",l_ContName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    Bool_t gridConnected=kFALSE;
+    AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer(Form("QAContainer%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,1,cOutputMPT);
+    return task;
+  };
+
   return 0;
 }

@@ -64,6 +64,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void ProduceEfficiencies(AliESDEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void MCClosure_MeanPt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void QAOnly(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
@@ -131,6 +132,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Double_t fEtaV2Sep; //Please don't add multiple wagons with dif. values; implement subevents in the code instead. This would save TONS of CPU time.
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
+  TList *fQAList; //
   TList *fMPTList; //!
   TList *fMPTListMC; //!
   TProfile **fmPT; //!
@@ -138,7 +140,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TH1D *fMultiDist;
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
-  TH2D *fESDvsFB128; 
+  TH2D *fESDvsFB128;
   TProfile *fNchVsMulti;
   TProfile *fNchInBins;
   TList *fptVarList;
