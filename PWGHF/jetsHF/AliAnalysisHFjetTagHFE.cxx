@@ -12,6 +12,7 @@
 #include <TList.h>
 #include <TRandom.h>
 #include <TLorentzVector.h>
+#include "TFile.h"
 
 //
 #include "AliAODEvent.h"
@@ -192,6 +193,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   HFjetCorr2(0),
   HFjetCorr3(0),
   HFjetCorrUE(0),
+  HFjetCorrUE_bgfrac(0),
   HFjetParticle(0),
   HFjetDCA_c(0),
   HFjetDCA_b(0),
@@ -275,11 +277,13 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fNtrklEopHad(0),
   fHistphoPi0MC(0),//pho from pi0 without emb
   fHistphoEtaMC(0),//pho from eta without emb
-	fNtrklRhoarea(0),	
+  fNtrklRhoarea(0),
+  fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
+  fDelta_pT(0),	
   //======parameter============
   fNref(0),
   Nch(0),
-	correctednAcc(-999)
+  correctednAcc(-999)
   //fmcData(kFALSE)
 {
   // Default constructor.
@@ -432,6 +436,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	HFjetCorr2(0),
 	HFjetCorr3(0),
         HFjetCorrUE(0),
+        HFjetCorrUE_bgfrac(0),
 	HFjetParticle(0),
 	HFjetDCA_c(0),
 	HFjetDCA_b(0),
@@ -516,6 +521,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fHistphoPi0MC(0),//photonic e from pi0 without emb
 	fHistphoEtaMC(0),//photonic e from eta without emb
 	fNtrklRhoarea(0),
+        fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
+        fDelta_pT(0),	
 
 //======parameter============
         fNref(0),
@@ -949,6 +956,10 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   HFjetCorrUE = new THnSparseD("HFjetCorrUE","HF MC Corr (UE sub);p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC};  jet_{particle}; R match; pThard;", 7, nBine, mimHFj, maxHFj);
   HFjetCorrUE->Sumw2();
   fOutput->Add(HFjetCorrUE);
+
+  HFjetCorrUE_bgfrac = new THnSparseD("HFjetCorrUE_bgfrac","HF MC Corr (UE sub);p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC};  jet_{particle}; R match; pThard;", 7, nBine, mimHFj, maxHFj);
+  HFjetCorrUE_bgfrac->Sumw2();
+  fOutput->Add(HFjetCorrUE_bgfrac);
 
   HFjetParticle = new THnSparseD("HFjetParticle","HF particle;p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC};  jet_{particle}; R match; pThard;", 7, nBine, mimHFj, maxHFj);
   HFjetParticle->Sumw2();
@@ -1489,6 +1500,18 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
 	  }
   }
+
+  if(!ippcoll)
+    {
+     if(fMCarray && !fDelta_pT)
+        {
+            TFile* fBGgrac = TFile::Open(fbgfracFile.Data());
+            if(fJetEtaCut==0.7)fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR02");           
+            if(fJetEtaCut==0.6)fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR03");           
+            if(fJetEtaCut==0.5)fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR04");           
+            if(fJetEtaCut==0.3)fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR06");           
+        }
+    }
 
 
   // track
@@ -2284,7 +2307,14 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                        double corrPt_UE = pTeJet - pTeJet_UE;
                        HFjetVals4[0]=track->Pt(); HFjetVals4[1]=0.0; HFjetVals4[2] = corrPt_UE; HFjetVals4[3] = pTeJet; HFjetVals4[4] = pTeJetTrue; HFjetVals4[5] = 0.0; HFjetVals4[6] = 0.0;
                        HFjetCorrUE->Fill(HFjetVals4); 
-                      
+ 
+                       double HFjetVals5[7]; // sub UE in reco jet
+                       double bgfrac = fDelta_pT->GetRandom();
+                       if(bgfrac>=0 && bgfrac<1.0)bgfrac=0.0;
+                       double corrPt_UE_fbg = pTeJet - pTeJet_UE - bgfrac;
+                       HFjetVals4[0]=track->Pt(); HFjetVals4[1]=0.0; HFjetVals4[2] = corrPt_UE_fbg; HFjetVals4[3] = pTeJet; HFjetVals4[4] = pTeJetTrue; HFjetVals4[5] = 0.0; HFjetVals4[6] = 0.0;
+                       HFjetCorrUE_bgfrac->Fill(HFjetVals4); 
+                     
                        double HFjetRap1[6];
                        double dphi_jet_e = atan2(sin(jetPhi - phi),cos(jetPhi - phi));
                        HFjetRap1[0] = pTeJetTrue; HFjetRap1[1] = jetEta; HFjetRap1[2] = eta; HFjetRap1[3] = jetEta - eta; HFjetRap1[4] = dphi_jet_e; HFjetRap1[5] = sqrt(pow(jetEta - eta,2) + pow(dphi_jet_e,2)); 

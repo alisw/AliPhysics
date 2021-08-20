@@ -67,6 +67,7 @@ AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t 
 		myTask[i]->SetEtaRange(0.4, 0.8);
 		myTask[i]->SetPtRange(ptmin, 5.0);
 		myTask[i]->SetEffConfig(0,hybridCut);
+		myTask[i]->SetZVertexCut(8.);
 	}
 	// s_global
 	int iS = 1;
@@ -85,7 +86,7 @@ AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t 
 	myTask[iS]->SetCentDetName("CL1");
 	// s_zvtx
 	iS = 5;
-	myTask[iS]->SetZVertexCut(8);
+	myTask[iS]->SetZVertexCut(10.);
 	// s_pileup
 	iS = 6;
 	if(period==lhc18q || period==lhc18r) {

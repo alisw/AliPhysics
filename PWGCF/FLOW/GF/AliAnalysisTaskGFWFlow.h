@@ -57,7 +57,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
-  void SetTriggerType(AliVEvent::EOfflineTriggerTypes newval) { fTriggerType = newval; };
+  void SetTriggerType(UInt_t newval) { fTriggerType = newval; };
   Bool_t CheckTriggerVsCentrality(Double_t l_cent); //Hard cuts on centrality for special triggers
   void SetBypassCalculations(Bool_t newval) { fBypassCalculations = newval; };
   void SetCollisionSystem(Int_t newval) { fCollisionsSystem = newval; };
@@ -66,7 +66,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
  private:
   AliAnalysisTaskGFWFlow(const AliAnalysisTaskGFWFlow&);
   AliAnalysisTaskGFWFlow& operator=(const AliAnalysisTaskGFWFlow&);
-  AliVEvent::EOfflineTriggerTypes fTriggerType; //Need to store this for it to be able to work on trains
+  UInt_t fTriggerType; //Need to store this for it to be able to work on trains
   Bool_t fProduceWeights;
   AliGFWCuts **fSelections; //! Selection array; not store
   TList *fWeightList; //! Stored via PostData
