@@ -150,6 +150,13 @@ void AliAnalysisTaskSEDmesonTree::UserCreateOutputObjects()
     fHistNEvents->SetMinimum(0);
     fOutput->Add(fHistNEvents);
 
+    fSPDMult = new TH1F("hSPDMult", "Tracklets multiplicity; Tracklets ; Entries", 201, -0.5, 200.5);
+    fSPDMultCand = new TH1F("hSPDMultCand", "Tracklets multiplicity; Tracklets ; Entries", 201, -0.5, 200.5);
+    fSPDMultCandInMass = new TH1F("hSPDMultCandInMass", "Tracklets multiplicity; Tracklets ; Entries", 201, -0.5, 200.5);
+    fOutput->Add(fSPDMult);
+    fOutput->Add(fSPDMultCand);
+    fOutput->Add(fSPDMultCandInMass);
+
     // Sparses for efficiencies (only gen)
     if(fReadMC)
         CreateEffSparses();
@@ -379,7 +386,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
     }
 
     fHistNEvents->Fill(4); // accepted event
-
+    fSPDMult->Fill(Ntracklets);
 
     // check if the train includes the common ML selector for the given charm-hadron species
     AliAnalysisTaskSECharmHadronMLSelector *taskMLSelect = nullptr;
@@ -407,6 +414,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
     // if they have been deleted in dAOD reconstruction phase
     // in order to reduce the size of the file
     AliAnalysisVertexingHF vHF = AliAnalysisVertexingHF();
+    int nSelected = 0, nSelectedInMass = 0;
 
     for (size_t iCand = 0; iCand < chHadIdx.size(); iCand++)
     {
@@ -416,7 +424,8 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
         bool recVtx = false;
         AliAODVertex *origOwnVtx = nullptr;
 
-        int isSelected = IsCandidateSelected(dMeson, &vHF, unsetVtx, recVtx, origOwnVtx);
+        bool isInSignalRegion = false;
+        int isSelected = IsCandidateSelected(dMeson, &vHF, unsetVtx, recVtx, origOwnVtx, isInSignalRegion);
         if (!isSelected)
         {
             if (unsetVtx)
@@ -427,6 +436,11 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
         }
 
         fHistNEvents->Fill(13); // candidate selected
+        if(!fApplyML) {
+            nSelected++;
+            if(isInSignalRegion)
+                nSelectedInMass++;
+        }
 
         // get MC truth
         AliAODMCParticle *partD = nullptr;
@@ -625,6 +639,10 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fAOD->GetMagneticField(), pidHF, 0);
                 if(isMLsel)
                 {
+                    nSelected++;
+                    if(isInSignalRegion)
+                        nSelectedInMass++;
+
                     double mass = -1.;
                     switch(fDecChannel)
                     {
@@ -688,6 +706,10 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fAOD->GetMagneticField(), pidHF, 1);
                 if(isMLsel)
                 {
+                    nSelected++;
+                    if(isInSignalRegion)
+                        nSelectedInMass++;
+
                     double mass = -1.;
                     switch(fDecChannel)
                     {
@@ -728,6 +750,13 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
             fRDCuts->CleanOwnPrimaryVtx(dMeson, fAOD, origOwnVtx);
     }
 
+    if(nSelected > 0)
+    {
+        fSPDMultCand->Fill(Ntracklets);
+        if(nSelectedInMass > 0)
+            fSPDMultCandInMass->Fill(Ntracklets);
+    }
+
     PostData(1, fOutput);
     PostData(3, fCounter);
     if(fCreateMLtree)
@@ -735,7 +764,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx)
+int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, bool &isInSignalRegion)
 {
 
     if (!dMeson || !vHF)
@@ -849,6 +878,24 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
         else
             fRDCuts->CleanOwnPrimaryVtx(dMeson, fAOD, origOwnVtx);
     }
+
+    double mass = -1.;
+    switch(fDecChannel)
+    {
+        case kD0toKpi:
+            mass = dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)->InvMassD0();
+            break;
+        case kDplustoKpipi:
+            mass = dynamic_cast<AliAODRecoDecayHF3Prong *>(dMeson)->InvMassDplus();
+            break;
+        case kDstartoD0pi:
+            mass = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->DeltaInvMass();
+            break;
+    }
+
+    if((fDecChannel != kDstartoD0pi && TMath::Abs(mass-TDatabasePDG::Instance()->GetParticle(fPdgD)->Mass()) < 0.02) ||
+       (fDecChannel == kDstartoD0pi && TMath::Abs(mass-(TDatabasePDG::Instance()->GetParticle(fPdgD)->Mass()-TDatabasePDG::Instance()->GetParticle(421)->Mass())) < 0.007))
+        isInSignalRegion = true;
 
     return isSelected;
 }
