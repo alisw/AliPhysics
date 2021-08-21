@@ -182,6 +182,9 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
     mgr->ConnectOutput(task,2,cOutputFC);
     AliAnalysisDataContainer *cOutputCov  = mgr->CreateContainer(Form("Covariance%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,3,cOutputCov);
+    AliAnalysisDataContainer *cOutputQA = mgr->CreateContainer(Form("QAContainer%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,4,cOutputQA); //For QA
+
     return task;
   };
   if(StageSwitch==10) {
@@ -189,8 +192,8 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
     TString l_ContName=subfix.IsNull()?"":("_" + subfix);
     // AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer(Form("MPTProfileList%s",l_ContName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     Bool_t gridConnected=kFALSE;
-    AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer(Form("QAContainer%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
-    mgr->ConnectOutput(task,1,cOutputMPT);
+    AliAnalysisDataContainer *cOutputQA = mgr->CreateContainer(Form("QAContainer%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,1,cOutputQA);
     return task;
   };
 

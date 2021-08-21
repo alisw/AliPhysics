@@ -47,6 +47,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   AliAnalysisTaskSE(),
   fStageSwitch(0),
   fSystFlag(0),
+  fEventCutFlag(0),
   fContSubfix(0),
   fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
@@ -104,6 +105,11 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fPseudoEfficiency(2.),
   fV0MMulti(0),
   fV2dPtMulti(0),
+  fSPDCutPU(0),
+  fV0CutPU(0),
+  fCenCutLowPU(0),
+  fCenCutHighPU(0),
+  fMultCutPU(0),
   fDisablePID(kTRUE),
   fConsistencyFlag(3),
   fRequireReloadOnRunChange(kFALSE)
@@ -113,6 +119,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   AliAnalysisTaskSE(name),
   fStageSwitch(0),
   fSystFlag(0),
+  fEventCutFlag(0),
   fContSubfix(0),
   fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
@@ -170,6 +177,11 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fPseudoEfficiency(2.),
   fV0MMulti(0),
   fV2dPtMulti(0),
+  fSPDCutPU(0),
+  fV0CutPU(0),
+  fCenCutLowPU(0),
+  fCenCutHighPU(0),
+  fMultCutPU(0),
   fDisablePID(kTRUE),
   fConsistencyFlag(3),
   fRequireReloadOnRunChange(kFALSE)
@@ -212,6 +224,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
     DefineOutput(1,TList::Class());
     DefineOutput(2,AliGFWFlowContainer::Class());
     DefineOutput(3,TList::Class());
+    DefineOutput(4,TList::Class());
   };
   if(fStageSwitch==10) {
     DefineOutput(1,TList::Class());
@@ -653,6 +666,10 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     };
     if(fNBootstrapProfiles) for(Int_t i=0;i<6;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
     PostData(3,fCovList);
+    fQAList = new TList();
+    fQAList->SetOwner(kTRUE);
+    fEventCuts.AddQAplotsToList(fQAList,kTRUE);
+    PostData(4,fQAList);
   }
   if(fStageSwitch==10) {
     fQAList = new TList();
@@ -660,13 +677,31 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fEventCuts.AddQAplotsToList(fQAList,kTRUE);
     PostData(1,fQAList);
   }
-
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
   if(fExtendV0MAcceptance) {
     fEventCuts.OverrideCentralityFramework(1);
     fEventCuts.SetCentralityEstimators("V0M","CL0");
     fEventCuts.SetCentralityRange(0.f,101.f);
   }
+  //Creating cuts for 15o_pass2 and 18qr_pass3. 18qr_pass3 not implemented yet.
+  //Would like to do that in a more elegant way, but not at this point, unfortunatelly
+  if(fEventCutFlag) { //Only initialize them if necessary
+    fSPDCutPU = new TF1("fSPDCutPU", "450. + 3.9*x", 0, 50000);
+    fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+    fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+    if(fEventCutFlag==1 || fEventCutFlag==101) {
+       Double_t parV0[8] = {33.4237, 0.953516, 0.0712137, 227.923, 8.9239, -0.00319679, 0.000306314, -7.6627e-07};
+       fV0CutPU->SetParameters(parV0);
+       Double_t parV0CL0[6] = {0.0193587, 0.975914, 0.675714, 0.0292263, -0.000549509, 5.86421e-06};
+       fCenCutLowPU->SetParameters(parV0CL0);
+       fCenCutHighPU->SetParameters(parV0CL0);
+       Double_t parFB32[9] = {-812.822, 6.41796, 5421.83, -0.382601, 0.0299686, -26.6249, 321.388, -0.82615, 0.0167828};
+       fMultCutPU->SetParameters(parFB32);
+    }
+  };
+
   fGFWNtotSelection = new AliGFWCuts();
   fGFWNtotSelection->SetupCuts(0);
   fGFWNtotSelection->SetEta(fEtaNch);
@@ -735,11 +770,13 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
 void AliAnalysisTaskMeanPtV2Corr::NotifyRun() {
   if(fStageSwitch==7) return;
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  //Reinitialize AliEventCuts (done automatically on check):
-  Bool_t dummy = fEventCuts.AcceptEvent(fAOD);
-  //Then override PU cut if required:
-  if(fGFWSelection->GetSystFlagIndex()==15)
-    fEventCuts.fESDvsTPConlyLinearCut[0] = 1500.;
+  if(!fEventCutFlag || fEventCutFlag>100) { //Only relevant if we're using the standard AliEventCuts
+    //Reinitialize AliEventCuts (done automatically on check):
+    Bool_t dummy = fEventCuts.AcceptEvent(fAOD);
+    //Then override PU cut if required:
+    if(fGFWSelection->GetSystFlagIndex()==15)
+      fEventCuts.fESDvsTPConlyLinearCut[0] = 1500.;
+  };
 }
 void AliAnalysisTaskMeanPtV2Corr::Terminate(Option_t*) {
 };
@@ -751,7 +788,11 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::CheckTrigger(Double_t lCent) {
   return kTRUE;
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxXYZ) {
-  if(!fBypassTriggerAndEvetCuts) if(!fEventCuts.AcceptEvent(inEv)) return 0;
+  if(!fBypassTriggerAndEvetCuts) {
+    if(!fEventCutFlag) { if(!fEventCuts.AcceptEvent(inEv)) return 0; } //Don't perform AcceptEvent if not relevant
+    else if(!AcceptCustomEvent(inEv)) return 0;
+    if(fEventCutFlag>100) Bool_t dummy = fEventCuts.AcceptEvent(inEv); //if flag > 100, then also store QA output from AcceptEvent
+  };
   const AliAODVertex* vtx = dynamic_cast<const AliAODVertex*>(inEv->GetPrimaryVertex());
   if(!vtx || vtx->GetNContributors() < 1)
     return kFALSE;
@@ -1726,4 +1767,51 @@ Int_t AliAnalysisTaskMeanPtV2Corr::GetPIDIndex(const Int_t &pdgcode) {
   if(TMath::Abs(pdgcode)==3312) return 5;
   if(TMath::Abs(pdgcode)==3334) return 6;
   return 0;
+}
+Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptCustomEvent(AliAODEvent* fAOD) { //From Alex
+  Float_t v0Centr    = -100.;
+  Float_t cl1Centr   = -100.;
+  Float_t cl0Centr   = -100.;
+  AliMultSelection* MultSelection = 0x0;
+  MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+  if(!MultSelection) {
+    AliWarning("AliMultSelection object not found!");
+    return kFALSE;
+  } else {
+    v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
+    cl1Centr = MultSelection->GetMultiplicityPercentile("CL1");
+    cl0Centr = MultSelection->GetMultiplicityPercentile("CL0");
+  }
+  if(v0Centr>=80.||v0Centr<0) return kFALSE; //This would have to be adjusted for vs. V0M
+  Int_t nITSClsLy0 = fAOD->GetNumberOfITSClusters(0);
+  Int_t nITSClsLy1 = fAOD->GetNumberOfITSClusters(1);
+  Int_t nITSCls = nITSClsLy0 + nITSClsLy1;
+  AliAODTracklets *aodTrkl = (AliAODTracklets*)fAOD->GetTracklets();
+  Int_t nITSTrkls = aodTrkl->GetNumberOfTracklets();
+  const Int_t nTracks = fAOD->GetNumberOfTracks();
+  Int_t multTrk = 0;
+  for (Int_t it = 0; it < nTracks; it++) {
+    AliAODTrack* aodTrk = (AliAODTrack*)fAOD->GetTrack(it);
+    if(!aodTrk){
+        delete aodTrk;
+        continue;
+    }
+    if(aodTrk->TestFilterBit(32)) multTrk++;
+  }
+  AliAODVZERO* aodV0 = fAOD->GetVZEROData();
+  Float_t multV0a = aodV0->GetMTotV0A();
+  Float_t multV0c = aodV0->GetMTotV0C();
+  Float_t multV0Tot = multV0a + multV0c;
+  UShort_t multV0aOn = aodV0->GetTriggerChargeA();
+  UShort_t multV0cOn = aodV0->GetTriggerChargeC();
+  UShort_t multV0On = multV0aOn + multV0cOn;
+  //pile-up cuts
+  if(cl0Centr<fCenCutLowPU->Eval(v0Centr)) return kFALSE;
+  if (cl0Centr > fCenCutHighPU->Eval(v0Centr)) return kFALSE;
+  if(Float_t(nITSCls)>fSPDCutPU->Eval(nITSTrkls)) return kFALSE;
+  if(multV0On<fV0CutPU->Eval(multV0Tot)) return kFALSE;
+  if(Float_t(multTrk)<fMultCutPU->Eval(v0Centr)) return kFALSE;
+  if(((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08()<0) return kFALSE;
+  if(fAOD->IsIncompleteDAQ()) return kFALSE;
+  return kTRUE;
 }
