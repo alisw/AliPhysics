@@ -127,7 +127,7 @@ private:
     AliAnalysisTaskSEDmesonTree(const AliAnalysisTaskSEDmesonTree &source);
     AliAnalysisTaskSEDmesonTree &operator=(const AliAnalysisTaskSEDmesonTree &source);
 
-    int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx);
+    int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx, bool &isInSignalRegion);
     void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, int Ntracklets);
     bool CheckDaugAcc(TClonesArray *arrayMC, int nProng, int *labDau);
     void CreateEffSparses();
@@ -143,6 +143,9 @@ private:
                                                                                 ///[1]: Acc step FD D
     AliHFMLVarHandler *fMLhandler = nullptr;                                    //!<! object to handle ML tree creation and filling
     TTree *fMLtree = nullptr;                                                   //!<! tree with candidates for ML
+    TH1F *fSPDMult = nullptr;                                                   //!<! hist. of spd mult
+    TH1F *fSPDMultCand = nullptr;                                               //!<! hist. of spd mult for events with D candidates
+    TH1F *fSPDMultCandInMass = nullptr;                                         //!<! hist. of spd mult for events with D candidates in the mass range
 
     int fDecChannel = kD0toKpi;                                                 /// channel to analyse
     int fPdgD = 421;                                                            /// pdg code of the D meson
@@ -187,7 +190,7 @@ private:
     std::string fMLSelectorName = "MLSelector";                                 /// name of MLSelector task
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDmesonTree, 4); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDmesonTree, 5); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 
