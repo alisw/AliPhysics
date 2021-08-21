@@ -2757,6 +2757,14 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe3u220000","0r63103100000010"); // INT7, NCellEffi from PCM-EMC, gaussian, all clus
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe3v220000","0r63103100000010"); // INT7, NCellEffi from PCM-EMC, gaussian, gamma clus
 
+    // configs with new FT and old FT
+  } else if ( trainConfig == 2195){ //
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // INT7, new FT
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100000010"); // INT7, new FT
+  } else if ( trainConfig == 2196){ //
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30220000","0r63103100000010"); // INT7, old FT
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe3n220000","0r63103100000010"); // INT7, old FT
+
 
   // PCM-EDC systematics
   } else if (trainConfig == 2200){ // PCM based systematics
