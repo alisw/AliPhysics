@@ -668,7 +668,10 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     {
                         if(labD >= 0)
                         {
-                            if(fDecChannel == kD0toKpi && pdgCode0 == 321) continue;
+                            if(fDecChannel == kD0toKpi && pdgCode0 == 321)
+                            {
+                                fnSparseReco[4]->Fill(var4nSparse.data());
+                            }
                             if(orig == 4)fnSparseReco[1]->Fill(var4nSparse.data());
                             if(orig == 5)
                             {
@@ -736,6 +739,10 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                         else if(labD >= 0 && orig == 5 && pdgCode0 != 211)
                         {
                             fnSparseReco[2]->Fill(var4nSparse.data());
+                        }
+                        else if(labD >= 0 pdgCode0 == 211)
+                        {
+                            fnSparseReco[4]->Fill(var4nSparse.data());
                         }
                         else if(labD < 0)
                         {
@@ -1072,8 +1079,8 @@ void AliAnalysisTaskSEDmesonTree::CreateRecoSparses()
     if(fMultiClass)
         nVars = 8;
 
-    TString label[4] = {"all", "fromC", "fromB", "bkg"};
-    for (int iHist = 0; iHist < 4; iHist++)
+    TString label[5] = {"all", "fromC", "fromB", "bkg", "refl"};
+    for (int iHist = 0; iHist < 5; iHist++)
     {
         TString titleSparse = Form("Reco nSparse - %s", label[iHist].Data());
         fnSparseReco[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist].Data()), titleSparse.Data(), nVars, nBinsReco, xminReco, xmaxReco);
