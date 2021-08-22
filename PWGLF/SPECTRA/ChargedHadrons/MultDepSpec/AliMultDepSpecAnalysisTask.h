@@ -128,16 +128,16 @@ protected:
   Hist::Hist<TH2D> fHist_multPtSpec_trk_prim_meas{}; //!<! tracks from measured primaries (no contamination from secondaries, particles smeared into acceptance or background events)
   Hist::Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};  //!<! tracks from measured secondaries (no contamination from particles smeared into acceptance or background events)  [for QA to disentangle secondaries from other contamination]
 
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};  //!<! measured primary charged particles as function of true properties (no contamination from background events)
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};   //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
-  Hist::Hist<TH1D> fHist_multDist_evt_gen{};      //!<! generated event distribution  (from events within specified class and with proper vertex position)
-  Hist::Hist<THnSparseF> fHist_multCorrel_evt{};  //!<! multilicity correlation of measured events (excluding background events)
-  Hist::Hist<THnSparseF> fHist_multCorrel_prim{}; //!<! multiplicity correlation of measured primary charged particles (excluding particles from background events)
-  Hist::Hist<TH2D> fHist_ptCorrel_prim{};         //!<! pT correlation of measured primary charged particles  (excluding particles from background events)
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};        //!<! measured primary charged particles as function of true properties (no contamination from background events)
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};         //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen_sigloss{}; //!<! generated primary charged particles of events that did not pass the event selection as function of multiplicity and pt
+  Hist::Hist<TH1D> fHist_multDist_evt_gen{};            //!<! generated event distribution  (from events within specified class and with proper vertex position)
+  Hist::Hist<THnSparseF> fHist_multCorrel_evt{};        //!<! multilicity correlation of measured events (excluding background events)
+  Hist::Hist<THnSparseF> fHist_multCorrel_prim{};       //!<! multiplicity correlation of measured primary charged particles (excluding particles from background events)
+  Hist::Hist<TH2D> fHist_ptCorrel_prim{};               //!<! pT correlation of measured primary charged particles  (excluding particles from background events)
 
-  // special trigger bias histograms
   Hist::Hist<TH1D> fHist_multDist_evt_gen_trig{};      //!<! generated event distribution (from events within specified class and with proper vertex position) that in addition fulfils the trigger condition [to disentangle trigger eff from reco eff ]
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen_untrig{}; //!<! generated primary charged particles of events that did not fire the trigger as function of multiplicity and pt
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen_notrig{}; //!<! generated primary charged particles of events that did not fulfil physics selection and trigger condition as function of multiplicity and pt
 
   // QA histograms
   Hist::Log<TH1I> fHist_trainInfo{};         //!<! train metadata string as bin lable and number of compute jobs as bin content
