@@ -248,7 +248,8 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     BookHistogram(fHist_multCorrel_prim, "multCorrel_prim", {mult_meas, mult_true});
     BookHistogram(fHist_ptCorrel_prim, "ptCorrel_prim", {pt_meas, pt_true});
     BookHistogram(fHist_multPtSpec_prim_gen, "multPtSpec_prim_gen", {mult_true, pt_true});
-    BookHistogram(fHist_multPtSpec_prim_gen_untrig, "multPtSpec_prim_gen_untrig", {mult_true, pt_true});
+    BookHistogram(fHist_multPtSpec_prim_gen_sigloss, "multPtSpec_prim_gen_sigloss", {mult_true, pt_true});
+    BookHistogram(fHist_multPtSpec_prim_gen_notrig, "multPtSpec_prim_gen_notrig", {mult_true, pt_true});
     BookHistogram(fHist_multPtSpec_prim_meas, "multPtSpec_prim_meas", {mult_true, pt_true});
     BookHistogram(fHist_multPtSpec_trk_prim_meas, "multPtSpec_trk_prim_meas", {mult_meas, pt_meas});
     BookHistogram(fHist_multPtSpec_trk_sec_meas, "multPtSpec_trk_sec_meas", {mult_meas, pt_meas});
@@ -270,7 +271,8 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_multCorrel_prim.GetSize(0.045) +
     fHist_ptCorrel_prim.GetSize() +
     fHist_multPtSpec_prim_gen.GetSize() +
-    fHist_multPtSpec_prim_gen_untrig.GetSize() +
+    fHist_multPtSpec_prim_gen_sigloss.GetSize() +
+    fHist_multPtSpec_prim_gen_notrig.GetSize() +
     fHist_multPtSpec_prim_meas.GetSize() +
     fHist_multPtSpec_trk_prim_meas.GetSize() +
     fHist_multPtSpec_trk_sec_meas.GetSize() +
@@ -635,10 +637,12 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
       for (int i = 0; i < fNRepetitions; ++i) {
         if (fMCAcceptEvent) {
           fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
+          if (!fAcceptEvent) {
+            fHist_multPtSpec_prim_gen_sigloss.Fill(fMultTrue, fMCPt);
+          }
         }
         if (fMCIsGoodZPos && !fIsTriggered) {
-          // filled for events with Nch > 0 that did not fulfil the trigger (and physics selection) condition
-          fHist_multPtSpec_prim_gen_untrig.Fill(fMultTrue, fMCPt);
+          fHist_multPtSpec_prim_gen_notrig.Fill(fMultTrue, fMCPt);
         }
       }
     }
