@@ -91,6 +91,56 @@ AliGenerator* CreatePythia8GenCustom( TString lTune,
     (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationMode = 0");
     //===========================================================================
   }
+  if ( lTune.EqualTo("pp-mode2") ){
+    std::cout << " Setting pp-mode2 parameters..." << std::endl;
+    //Paper reference: https://arxiv.org/pdf/1505.01681.pdf ("mode 0")
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("StringPT:sigma = 0.335");
+    (AliPythia8::Instance())->ReadString("StringZ:aLund = 0.36");
+    (AliPythia8::Instance())->ReadString("StringZ:bLund = 0.56");
+    (AliPythia8::Instance())->ReadString("StringFlav:probQQtoQ = 0.078");
+    (AliPythia8::Instance())->ReadString("StringFlav:ProbStoUD = 0.2");
+    (AliPythia8::Instance())->ReadString("StringFlav:probQQ1toQQ0join = 0.0275,0.0275,0.0275,0.0275");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("MultiPartonInteractions:pT0Ref = 2.15");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("BeamRemnants:remnantMode = 1");
+    (AliPythia8::Instance())->ReadString("BeamRemnants:saturation = 5");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("ColourReconnection:mode = 1");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:allowDoubleJunRem = off");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:m0 = 0.3");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:allowJunctions = on");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:junctionCorrection = 1.20");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationMode = 2");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationPar = 0.18");
+    //===========================================================================
+  }
+  if ( lTune.EqualTo("pp-mode3") ){
+    std::cout << " Setting pp-mode2 parameters..." << std::endl;
+    //Paper reference: https://arxiv.org/pdf/1505.01681.pdf ("mode 0")
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("StringPT:sigma = 0.335");
+    (AliPythia8::Instance())->ReadString("StringZ:aLund = 0.36");
+    (AliPythia8::Instance())->ReadString("StringZ:bLund = 0.56");
+    (AliPythia8::Instance())->ReadString("StringFlav:probQQtoQ = 0.078");
+    (AliPythia8::Instance())->ReadString("StringFlav:ProbStoUD = 0.2");
+    (AliPythia8::Instance())->ReadString("StringFlav:probQQ1toQQ0join = 0.0275,0.0275,0.0275,0.0275");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("MultiPartonInteractions:pT0Ref = 2.05");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("BeamRemnants:remnantMode = 1");
+    (AliPythia8::Instance())->ReadString("BeamRemnants:saturation = 5");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("ColourReconnection:mode = 1");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:allowDoubleJunRem = off");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:m0 = 0.3");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:allowJunctions = on");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:junctionCorrection = 1.15");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationMode = 3");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationPar = 0.073");
+    //===========================================================================
+  }
   if ( lTune.EqualTo("pp-nocr") ){
     (AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = off");
     (AliPythia8::Instance())->ReadString("PartonLevel:earlyResDec = off");
