@@ -666,13 +666,15 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                         fnSparseReco[0]->Fill(var4nSparse.data());
                     else
                     {
-                        if(labD >= 0 && orig == 4)
+                        if(labD >= 0)
                         {
-                            fnSparseReco[1]->Fill(var4nSparse.data());
-                        }
-                        else if(labD >= 0 && orig == 5)
-                        {
-                            fnSparseReco[2]->Fill(var4nSparse.data());
+                            if(fDecChannel == kD0toKpi && pdgCode0 == 321) continue;
+                            if(orig == 4)fnSparseReco[1]->Fill(var4nSparse.data());
+                            if(orig == 5)
+                            {
+                                var4nSparse.insert(var4nSparse.end(), ptB);
+                                fnSparseReco[2]->Fill(var4nSparse.data());
+                            }
                         }
                         else if(labD < 0)
                         {
@@ -727,11 +729,11 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                         fnSparseReco[0]->Fill(var4nSparse.data());
                     else
                     {
-                        if(labD >= 0 && orig == 4)
+                        if(labD >= 0 && orig == 4 && pdgCode0 != 211)
                         {
                             fnSparseReco[1]->Fill(var4nSparse.data());
                         }
-                        else if(labD >= 0 && orig == 5)
+                        else if(labD >= 0 && orig == 5 && pdgCode0 != 211)
                         {
                             fnSparseReco[2]->Fill(var4nSparse.data());
                         }
