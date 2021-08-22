@@ -510,7 +510,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     {
                         if (labD >= 0)
                         {
-                            if (pdgCode0 == 211)
+                            if (pdgCode0 == 321)
                                 isRefl = true;
                             if (orig == 4)
                                 isPrompt = true;
@@ -544,7 +544,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     {
                         if (labD >= 0)
                         {
-                            if (pdgCode0 == 321)
+                            if (pdgCode0 == 211)
                                 isRefl = true;
                             if (orig == 4)
                                 isPrompt = true;
