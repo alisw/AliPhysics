@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 13.08.2021
+ * Last Modified Date: 23.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -43,18 +43,21 @@ enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
 const TString kCenEstimatorNames[LAST_ECENESTIMATORS] = {"V0M", "CL0", "CL1",
                                                          "SPDTracklets"};
 enum kEvent {
+  kMUL,
+  kMULQ,
+  kMULW,
+  kMULREF,
+  kNCONTRIB,
+  kCEN,
   kX,
   kY,
   kZ,
   kVPOS,
-  kCEN,
-  kCENREF,
-  kMUL,
-  kMULQ,
-  kMULW,
-  kNCONTRIB,
   LAST_EEVENT
 };
+const Int_t kMulEstimators = kNCONTRIB + 1;
+const TString kMulEstimatorNames[kMulEstimators] = {"kMUL", "kMULQ", "kMULW",
+                                                    "kMULREF", "kNCONTRIB"};
 enum kTrack {
   kPT,
   kPHI,
@@ -122,7 +125,7 @@ public:
   virtual void ClearEventObjects();
   virtual void AggregateWeights();
   virtual void ResetWeights();
-  virtual Int_t IndexCenEstCorHistograms(Int_t i, Int_t j);
+  virtual Int_t IndexCorHistograms(Int_t i, Int_t j, Int_t N);
 
   // methods called MCOnTheFlyExec()
   virtual void MCPdfSymmetryPlanesSetup();
@@ -167,32 +170,12 @@ public:
   void SetCenCorQAHistogramBinning(kCenEstimators cen1, Int_t xnbins,
                                    Double_t xlowerEdge, Double_t xupperEdge,
                                    kCenEstimators cen2, Int_t ynbins,
-                                   Double_t ylowerEdge, Double_t yupperEdge) {
-    if (cen1 >= LAST_ECENESTIMATORS || cen2 >= LAST_ECENESTIMATORS) {
-      std::cout << __LINE__ << ": running out of bounds" << std::endl;
-      Fatal("SetCenCorQAHistogramBinning",
-            "Running out of bounds in SetCenCorQAHistogramBinning");
-    }
-    if (xupperEdge < xlowerEdge && yupperEdge < ylowerEdge) {
-      std::cout << __LINE__
-                << ": upper edge has to be larger than the lower edge"
-                << std::endl;
-      Fatal("SetFBTrackScanQAHistogramBinning",
-            ": upper edge has to be larger than the lower edge");
-    }
-    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kBIN] =
-        xnbins;
-    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kLEDGE] =
-        xlowerEdge;
-    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kUEDGE] =
-        xupperEdge;
-    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)]
-                                [kBIN + LAST_EBINS] = ynbins;
-    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)]
-                                [kLEDGE + LAST_EBINS] = ylowerEdge;
-    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)]
-                                [kUEDGE + LAST_EBINS] = yupperEdge;
-  }
+                                   Double_t ylowerEdge, Double_t yupperEdge);
+  // generic setter for multiplicity correlation QA histogram binning
+  void SetMulCorQAHistogramBinning(kCenEstimators mul1, Int_t xnbins,
+                                   Double_t xlowerEdge, Double_t xupperEdge,
+                                   kCenEstimators mul2, Int_t ynbins,
+                                   Double_t ylowerEdge, Double_t yupperEdge);
   // generic setter for track scan QA histograms
   void SetFBTrackScanQAHistogramBinning(kTrack Track, Int_t nbins,
                                         Double_t lowerEdge,
@@ -443,6 +426,15 @@ private:
   Double_t fCenCorQAHistogramBins[LAST_ECENESTIMATORS *
                                   (LAST_ECENESTIMATORS - 1) /
                                   2][2 * LAST_EBINS];
+  // multiplicity correlation histograms
+  TList *fMulCorQAHistogramsList;
+  TString fMulCorQAHistogramsListName;
+  TH2D *fMulCorQAHistograms[kMulEstimators * (kMulEstimators - 1) / 2]
+                           [LAST_EBEFOREAFTER];
+  TString fMulCorQAHistogramNames[kMulEstimators * (kMulEstimators - 1) / 2]
+                                 [LAST_EBEFOREAFTER][LAST_ENAME];
+  Double_t fMulCorQAHistogramBins[kMulEstimators * (kMulEstimators - 1) / 2]
+                                 [2 * LAST_EBINS];
   // filterbit scans histograms
   TList *fFBScanQAHistogramsList;
   TString fFBScanQAHistogramsListName;
@@ -492,6 +484,7 @@ private:
   Bool_t fPrimaryOnly;
   Double_t fCenCorCut[2];
   Int_t fSurvivingTracks;
+  Double_t fSurvivingTracksWeighted;
   Int_t fSurvivingEvents;
 
   // Final results
