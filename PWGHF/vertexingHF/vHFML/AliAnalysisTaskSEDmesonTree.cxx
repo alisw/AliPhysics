@@ -668,15 +668,24 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     {
                         if(labD >= 0)
                         {
-                            if(fDecChannel == kD0toKpi && pdgCode0 == 321)
+                            if(fDecChannel == kD0toKpi)
                             {
-                                fnSparseReco[4]->Fill(var4nSparse.data());
+                                if(pdgCode0 == 321)fnSparseReco[4]->Fill(var4nSparse.data());
+                                else if(orig == 4 && pdgCode0 != 321)fnSparseReco[1]->Fill(var4nSparse.data());
+                                else if(orig == 5 && pdgCode0 != 321)
+                                {
+                                    var4nSparse.insert(var4nSparse.end(), ptB);
+                                    fnSparseReco[2]->Fill(var4nSparse.data());
+                                }
                             }
-                            if(orig == 4)fnSparseReco[1]->Fill(var4nSparse.data());
-                            if(orig == 5)
+                            else
                             {
-                                var4nSparse.insert(var4nSparse.end(), ptB);
-                                fnSparseReco[2]->Fill(var4nSparse.data());
+                                if(orig == 4)fnSparseReco[1]->Fill(var4nSparse.data());
+                                if(orig == 5)
+                                {
+                                    var4nSparse.insert(var4nSparse.end(), ptB);
+                                    fnSparseReco[2]->Fill(var4nSparse.data());
+                                }
                             }
                         }
                         else if(labD < 0)
@@ -732,17 +741,15 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                         fnSparseReco[0]->Fill(var4nSparse.data());
                     else
                     {
-                        if(labD >= 0 && orig == 4 && pdgCode0 != 211)
+                        if(labD >= 0)
                         {
-                            fnSparseReco[1]->Fill(var4nSparse.data());
-                        }
-                        else if(labD >= 0 && orig == 5 && pdgCode0 != 211)
-                        {
-                            fnSparseReco[2]->Fill(var4nSparse.data());
-                        }
-                        else if(labD >= 0 pdgCode0 == 211)
-                        {
-                            fnSparseReco[4]->Fill(var4nSparse.data());
+                            if(pdgCode0 == 211)fnSparseReco[4]->Fill(var4nSparse.data());
+                            else if(orig == 4 && pdgCode0 != 211)fnSparseReco[1]->Fill(var4nSparse.data());
+                            else if(orig == 5 && pdgCode0 != 211)
+                            {
+                                var4nSparse.insert(var4nSparse.end(), ptB);
+                                fnSparseReco[2]->Fill(var4nSparse.data());
+                            }
                         }
                         else if(labD < 0)
                         {
