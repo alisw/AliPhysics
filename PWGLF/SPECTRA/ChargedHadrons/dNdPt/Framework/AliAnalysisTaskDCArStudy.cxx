@@ -57,7 +57,9 @@ AliAnalysisTaskDCArStudy::~AliAnalysisTaskDCArStudy()
 void AliAnalysisTaskDCArStudy::AddOutput()
 {
     //dcar:pt:mult:mcinfo
-    AddAxis("DCAxy",500,-1,1);
+    auto const DCAbins = 500;
+    auto const DCAbinWidth = 2./DCAbins;
+    AddAxis("DCAxy",DCAbins+1,-1-DCAbinWidth/2.,1+DCAbinWidth/2);
     AddAxis("pt");
     AddAxis("nTracks", "mult6kcoarse");
     AddAxis("cent");
