@@ -175,7 +175,7 @@ private:
     std::string fCentEstimator = "V0M";                                         /// centrality estimator for tree
                     
     // ML tree application
-    THnSparseF* fnSparseReco[4] = {nullptr, nullptr, nullptr, nullptr};         //!<! THnSparse for reco candidates
+    THnSparseF* fnSparseReco[5] = {nullptr, nullptr, nullptr, nullptr, nullptr};         //!<! THnSparse for reco candidates
     bool fApplyML = false;                                                      /// flag to enable ML application
     bool fMultiClass = false;                                                   /// flag to enable multi-class models (Bkg, Prompt, FD)
     std::string fConfigPath = "";                                               /// path to ML config file
