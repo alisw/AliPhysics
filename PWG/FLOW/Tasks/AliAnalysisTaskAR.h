@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 23.08.2021
+ * Last Modified Date: 24.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -121,7 +121,7 @@ public:
   virtual void FillFinalResultProfile(kFinalProfile fp);
   virtual Bool_t SurviveEventCut(AliVEvent *ave);
   virtual Bool_t SurviveTrackCut(AliVParticle *aTrack, Bool_t FillCounter);
-  virtual void CountSurvivingTracks(AliAODEvent *aAOD);
+  virtual void GetMultiplicities(AliAODEvent *aAOD);
   virtual void ClearEventObjects();
   virtual void AggregateWeights();
   virtual void ResetWeights();
@@ -469,6 +469,7 @@ private:
   TString fEventControlHistogramNames[LAST_EMODE][LAST_EEVENT]
                                      [LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fEventControlHistogramBins[LAST_EEVENT][LAST_EBINS];
+  Double_t fMultiplicity[kMulEstimators];
 
   // cuts
   TString fCentralityEstimator;
@@ -483,9 +484,6 @@ private:
   Int_t fFilterbit;
   Bool_t fPrimaryOnly;
   Double_t fCenCorCut[2];
-  Int_t fSurvivingTracks;
-  Double_t fSurvivingTracksWeighted;
-  Int_t fSurvivingEvents;
 
   // Final results
   TList *fFinalResultsList;
