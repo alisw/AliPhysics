@@ -394,7 +394,11 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   TLegend * legtrhyp=new TLegend(0.6,0.5,0.89,0.89);
   legtrhyp->SetHeader("Mass Hypo in tracking");
   for(Int_t jsp=0; jsp<9; jsp++){ 
-    hdEdxVsPTPCsel[jsp]=(TH2F*)l->FindObject(Form("hdEdxVsPTPCsel%s",partNames[jsp].Data()));
+    hdEdxVsPTPCsel[jsp]=(TH2F*)l->FindObject(Form("hdEdxVsPTPCselNoTOFbc%s",partNames[jsp].Data()));
+    if(!hdEdxVsPTPCsel[jsp]){
+      // old version of the task
+      hdEdxVsPTPCsel[jsp]=(TH2F*)l->FindObject(Form("hdEdxVsPTPCsel%s",partNames[jsp].Data()));
+    }
     hdEdxVsPTPCsel[jsp]->GetXaxis()->SetTitle("p_{TPC} (GeV/c)");
     hdEdxVsPTPCsel[jsp]->GetYaxis()->SetTitle("TPC dE/dx");
     hdEdxVsPTPCsel[jsp]->SetTitle(Form("Tracked with %s mass hypothesis - TPC cuts",partNames[jsp].Data()));

@@ -124,13 +124,16 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistNtracksSPDanyVsV0aftEvSel;    //!<!  histo of tracks vs. centr.
 
   TH2F* fHistdEdxVsP[9];              //!<!  histo of dE/dx for hypos (all tracks)
-  TH2F* fHistdEdxVsPTPCsel[9];        //!<!  histo of dE/dx for hypos (TPC cuts)
+  TH2F* fHistdEdxVsPTPCselNoTOFbc[9]; //!<!  histo of dE/dx for hypos (TPC cuts)
+  TH2F* fHistdEdxVsPTPCselTOFbc[9];   //!<!  histo of dE/dx for hypos (TPC cuts)
   TH2F* fHistdEdxVsPTPCselITSref[9];  //!<!  histo of dE/dx for hypos (ITSrefit)
   TH2F* fHistdEdxVsP0[9];              //!<!  histo of dE/dx for hypos (all tracks)
   TH2F* fHistdEdxVsPTPCsel0[9];        //!<!  histo of dE/dx for hypos (TPC cuts)
   TH2F* fHistdEdxVsPTPCselITSref0[9];  //!<!  histo of dE/dx for hypos (ITSrefit)
-  TH2F* fHistCorrelHypo0HypoTPCsel;        //!<!  correl. f PID hypos in tracking steps
-  TH2F* fHistCorrelHypo0HypoTPCselITSref;  //!<!  correl. f PID hypos in tracking steps
+  TH2F* fHistHypoVsPTPCselNoTOFbc;     //!<!  PID hypo in tracking vs p
+  TH2F* fHistHypoVsPTPCselTOFbc;     //!<!  PID hypo in tracking vs p
+  TH2F* fHistCorrelHypo0HypoTPCsel;        //!<!  correl. of PID hypos in tracking steps
+  TH2F* fHistCorrelHypo0HypoTPCselITSref;  //!<!  correl. of PID hypos in tracking steps
 
   TH2F* fHistnSigmaVsPdEdxTPCsel[9];  //!<!  histo of nSigma for particle species
 
@@ -275,7 +278,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
   Bool_t  fFillSparses;        // flag to control fill of THnSparse
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,29);
+  ClassDef(AliAnalysisTaskCheckESDTracks,30);
 };
 
 
