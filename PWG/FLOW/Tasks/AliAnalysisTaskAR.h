@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 04.08.2021
+ * Last Modified Date: 24.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -31,18 +31,38 @@
 #include <TString.h>
 #include <vector>
 
-// global constants
+// global constants for qvectors
 const Int_t kMaxHarmonic = 20;
 const Int_t kMaxCorrelator = 20;
 const Int_t kMaxPower = 20;
+// global constants for QA filterbit scan
 const Int_t kMaxFilterbit = 15; // 2^(15-1)=16384
 const Int_t kNumberofTestFilterBit = 5;
 const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
-// enumerations
+
+// centrality estimators
 enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
 const TString kCenEstimatorNames[LAST_ECENESTIMATORS] = {"V0M", "CL0", "CL1",
                                                          "SPDTracklets"};
-enum kEvent { kX, kY, kZ, kCEN, kMUL, kMULQ, kMULW, kNCONTRIB, LAST_EEVENT };
+// event variables
+enum kEvent {
+  kMUL,
+  kMULQ,
+  kMULW,
+  kMULREF,
+  kNCONTRIB,
+  kCEN,
+  kX,
+  kY,
+  kZ,
+  kVPOS,
+  LAST_EEVENT
+};
+// multiplicity estimators
+const Int_t kMulEstimators = kNCONTRIB + 1;
+const TString kMulEstimatorNames[kMulEstimators] = {"kMUL", "kMULQ", "kMULW",
+                                                    "kMULREF", "kNCONTRIB"};
+// track variables
 enum kTrack {
   kPT,
   kPHI,
@@ -55,12 +75,15 @@ enum kTrack {
   kDCAXY,
   LAST_ETRACK
 };
+// kinematic variables
 const Int_t kKinematic = kETA + 1;
+// various gloabl objects
 enum kFinalHist { kPHIAVG, LAST_EFINALHIST };
 enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
 enum kName { kNAME, kTITLE, kXAXIS, kYAXIS, LAST_ENAME };
 enum kMinMax { kMIN, kMAX, LAST_EMINMAX };
+const TString kMMName[LAST_EMINMAX] = {"[kMIN]", "[kMAX]"};
 enum kBeforeAfter { kBEFORE, kAFTER, LAST_EBEFOREAFTER };
 const TString kBAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
 const Color_t kFillColor[LAST_EBEFOREAFTER] = {kRed - 10, kGreen - 10};
@@ -104,11 +127,13 @@ public:
   virtual void FillTrackControlHistograms(kBeforeAfter BA, AliVParticle *avp);
   virtual void FillFinalResultProfile(kFinalProfile fp);
   virtual Bool_t SurviveEventCut(AliVEvent *ave);
-  virtual Bool_t SurviveTrackCut(AliVParticle *aTrack);
+  virtual Bool_t SurviveTrackCut(AliVParticle *aTrack, Bool_t FillCounter);
+  virtual void GetMultiplicities(AliAODEvent *aAOD);
   virtual void ClearEventObjects();
+  virtual void FillEventObjects(AliAODTrack* track);
   virtual void AggregateWeights();
   virtual void ResetWeights();
-  virtual Int_t IndexCenEstCorHistograms(Int_t i, Int_t j);
+  virtual Int_t IndexCorHistograms(Int_t i, Int_t j, Int_t N);
 
   // methods called MCOnTheFlyExec()
   virtual void MCPdfSymmetryPlanesSetup();
@@ -153,25 +178,12 @@ public:
   void SetCenCorQAHistogramBinning(kCenEstimators cen1, Int_t xnbins,
                                    Double_t xlowerEdge, Double_t xupperEdge,
                                    kCenEstimators cen2, Int_t ynbins,
-                                   Double_t ylowerEdge, Double_t yupperEdge) {
-    if (cen1 >= LAST_ECENESTIMATORS || cen2 >= LAST_ECENESTIMATORS) {
-      std::cout << __LINE__ << ": running out of bounds" << std::endl;
-      Fatal("SetCenCorQAHistogramBinning",
-            "Running out of bounds in SetCenCorQAHistogramBinning");
-    }
-    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kBIN] =
-        xnbins;
-    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kLEDGE] =
-        xlowerEdge;
-    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)][kUEDGE] =
-        xupperEdge;
-    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)]
-                                [kBIN + LAST_EBINS] = ynbins;
-    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)]
-                                [kLEDGE + LAST_EBINS] = ylowerEdge;
-    this->fCenCorQAHistogramBins[IndexCenEstCorHistograms(cen1, cen2)]
-                                [kUEDGE + LAST_EBINS] = yupperEdge;
-  }
+                                   Double_t ylowerEdge, Double_t yupperEdge);
+  // generic setter for multiplicity correlation QA histogram binning
+  void SetMulCorQAHistogramBinning(kCenEstimators mul1, Int_t xnbins,
+                                   Double_t xlowerEdge, Double_t xupperEdge,
+                                   kCenEstimators mul2, Int_t ynbins,
+                                   Double_t ylowerEdge, Double_t yupperEdge);
   // generic setter for track scan QA histograms
   void SetFBTrackScanQAHistogramBinning(kTrack Track, Int_t nbins,
                                         Double_t lowerEdge,
@@ -180,6 +192,13 @@ public:
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetFBTrackScanQAHistogramBinning",
             "Running out of bounds in SetFBTrackScanQAHistogramBinning");
+    }
+    if (upperEdge < lowerEdge) {
+      std::cout << __LINE__
+                << ": upper edge has to be larger than the lower edge"
+                << std::endl;
+      Fatal("SetFBTrackScanQAHistogramBinning",
+            ": upper edge has to be larger than the lower edge");
     }
     this->fFBTrackScanQAHistogramBins[Track][kBIN] = nbins;
     this->fFBTrackScanQAHistogramBins[Track][kLEDGE] = lowerEdge;
@@ -193,6 +212,13 @@ public:
       Fatal("SetSelfCorQAHistogramBinning",
             "Running out of bounds in SetSelfCorQAHistogramBinning");
     }
+    if (upperEdge < lowerEdge) {
+      std::cout << __LINE__
+                << ": upper edge has to be larger than the lower edge"
+                << std::endl;
+      Fatal("SetSelfCorQAHistogramBinning",
+            ": upper edge has to be larger than the lower edge");
+    }
     this->fSelfCorQAHistogramBins[Track][kBIN] = nbins;
     this->fSelfCorQAHistogramBins[Track][kLEDGE] = lowerEdge;
     this->fSelfCorQAHistogramBins[Track][kUEDGE] = upperEdge;
@@ -204,6 +230,13 @@ public:
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetTrackControlHistogramBinning",
             "Running out of bounds in SetTrackControlHistogramBinning");
+    }
+    if (upperEdge < lowerEdge) {
+      std::cout << __LINE__
+                << ": upper edge has to be larger than the lower edge"
+                << std::endl;
+      Fatal("SetEventControlHistogramBinning",
+            ": upper edge has to be larger than the lower edge");
     }
     this->fTrackControlHistogramBins[Track][kBIN] = nbins;
     this->fTrackControlHistogramBins[Track][kLEDGE] = lowerEdge;
@@ -217,6 +250,13 @@ public:
       Fatal("SetEventControlHistogramBinning",
             "Running out of bounds in SetEventControlHistogramBinning");
     }
+    if (upperEdge < lowerEdge) {
+      std::cout << __LINE__
+                << ": upper edge has to be larger than the lower edge"
+                << std::endl;
+      Fatal("SetEventControlHistogramBinning",
+            ": upper edge has to be larger than the lower edge");
+    }
     this->fEventControlHistogramBins[Event][kBIN] = nbins;
     this->fEventControlHistogramBins[Event][kLEDGE] = lowerEdge;
     this->fEventControlHistogramBins[Event][kUEDGE] = upperEdge;
@@ -224,7 +264,6 @@ public:
 
   // setters for cuts
   // centrality selection criterion
-  // only use V0M, CL0/1, SPDTracklets
   void SetCentralityEstimator(TString CentralityEstimator) {
     Bool_t Flag = kFALSE;
     for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
@@ -245,6 +284,11 @@ public:
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetTrackCuts", "Running out of bounds in SetTrackCuts");
     }
+    if (max < min) {
+      std::cout << __LINE__ << ": maximum has to be larger than the minimum"
+                << std::endl;
+      Fatal("SetTrackCuts", ": maximum has to be larger than the minimum");
+    }
     this->fTrackCuts[Track][kMIN] = min;
     this->fTrackCuts[Track][kMAX] = max;
   }
@@ -254,16 +298,21 @@ public:
       std::cout << __LINE__ << ": running out of bounds" << std::endl;
       Fatal("SetEventCuts", "Running out of bounds in SetEventCuts");
     }
+    if (max < min) {
+      std::cout << __LINE__ << ": maximum has to be larger than the minimum"
+                << std::endl;
+      Fatal("SetEventCuts", ": maximum has to be larger than the minimum");
+    }
     this->fEventCuts[Event][kMIN] = min;
     this->fEventCuts[Event][kMAX] = max;
   }
   // setter for centrality correlation cut
   void SetCenCorCut(Double_t m, Double_t t) {
-    if (m < 1) {
+    if (m < 1.) {
       std::cout << __LINE__ << ": slope too small" << std::endl;
       Fatal("SetCenCorCut", "slope too small");
     }
-    if (t < 1) {
+    if (t < 1.) {
       std::cout << __LINE__ << ": offset too small" << std::endl;
       Fatal("SetCenCorCut", "offset too small");
     }
@@ -384,6 +433,15 @@ private:
   Double_t fCenCorQAHistogramBins[LAST_ECENESTIMATORS *
                                   (LAST_ECENESTIMATORS - 1) /
                                   2][2 * LAST_EBINS];
+  // multiplicity correlation histograms
+  TList *fMulCorQAHistogramsList;
+  TString fMulCorQAHistogramsListName;
+  TH2D *fMulCorQAHistograms[kMulEstimators * (kMulEstimators - 1) / 2]
+                           [LAST_EBEFOREAFTER];
+  TString fMulCorQAHistogramNames[kMulEstimators * (kMulEstimators - 1) / 2]
+                                 [LAST_EBEFOREAFTER][LAST_ENAME];
+  Double_t fMulCorQAHistogramBins[kMulEstimators * (kMulEstimators - 1) / 2]
+                                 [2 * LAST_EBINS];
   // filterbit scans histograms
   TList *fFBScanQAHistogramsList;
   TString fFBScanQAHistogramsListName;
@@ -394,7 +452,7 @@ private:
   TString fFBTrackScanQAHistogramNames[LAST_ETRACK][kNumberofTestFilterBit]
                                       [LAST_ENAME];
   Double_t fFBTrackScanQAHistogramBins[LAST_ETRACK][LAST_EBINS];
-  // self correlations
+  // self correlation histograms
   TList *fSelfCorQAHistogramsList;
   TString fSelfCorQAHistogramsListName;
   TH1D *fSelfCorQAHistograms[kKinematic][LAST_EBEFOREAFTER];
@@ -419,16 +477,19 @@ private:
                                      [LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fEventControlHistogramBins[LAST_EEVENT][LAST_EBINS];
 
+  // array holding centrality estimates
+  Double_t fMultiplicity[kMulEstimators];
+
   // cuts
   TString fCentralityEstimator;
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
   TH1D *fTrackCutsCounter[LAST_EMODE];
   TString fTrackCutsCounterNames[LAST_EMODE];
-  TString fTrackCutsCounterBinNames[LAST_ETRACK];
+  TString fTrackCutsCounterBinNames[LAST_ETRACK][LAST_EMINMAX];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
   TH1D *fEventCutsCounter[LAST_EMODE];
   TString fEventCutsCounterNames[LAST_EMODE];
-  TString fEventCutsCounterBinNames[LAST_EEVENT];
+  TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
   Int_t fFilterbit;
   Bool_t fPrimaryOnly;
   Double_t fCenCorCut[2];
@@ -472,7 +533,7 @@ private:
   std::vector<std::vector<Int_t>> fCorrelators;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 7);
+  ClassDef(AliAnalysisTaskAR, 8);
 };
 
 #endif
