@@ -61,13 +61,17 @@ struct SLightNucleus {
   float pt;
   float eta;
   float absCt;
+  float xOrigin;
+  float yOrigin;
+  float zOrigin;
   int   pdg;
   int   flag;
   char  centrality;
+  bool  isReco;
 };
 
 struct RLightNucleus {
-  enum { 
+  enum {
     kT0fill = BIT(0),
     kPrimary = BIT(1),
     kSecondaryMaterial = BIT(2),
@@ -122,7 +126,7 @@ public:
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
   void SetRequireTOFpidSigmas (float sig) { fRequireTOFpidSigmas = sig; }
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
-  void SetTPCActiveLengthCut (bool apply = true, float dzone = 3.0, float length = 130, float gcut1 = 1.5, float gcut2 = 0.85, float gcut3 = 0.7) { 
+  void SetTPCActiveLengthCut (bool apply = true, float dzone = 3.0, float length = 130, float gcut1 = 1.5, float gcut2 = 0.85, float gcut3 = 0.7) {
     SetApplyTPCActiveLengthCut(apply);
     SetRequireDeadZoneWidth(dzone);
     SetRequireCutGeoNcrNclLength(length);
@@ -185,7 +189,7 @@ public:
   TArrayF             fPtCorrectionM;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for matter
   double              fOptionalTOFcleanup;   ///<
 
-  std::vector<float>  fINT7intervals;        ///< Array containing the centrality interval where we select only kINT7 triggers  
+  std::vector<float>  fINT7intervals;        ///< Array containing the centrality interval where we select only kINT7 triggers
 private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
@@ -282,7 +286,7 @@ private:
   Float_t               fTOFminPtTrees;         ///<  Pt after which the TOF pid is required to save the tree
   RLightNucleus         fRecNucleus;            ///<  Reconstructed nucleus
   SLightNucleus         fSimNucleus;            ///<  Simulated nucleus
-
+  std::vector<int>      fRecoNucleiMCindex;     ///<  Index of the MC particle that are reconstructed
 
   AliPID::EParticleType fParticle;              ///<  Particle specie
   TArrayF               fCentBins;              ///<  Centrality bins
@@ -357,6 +361,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       if (part) {
         good2save = std::abs(part->PdgCode()) == fPDG;
         SetSLightNucleus(part, fSimNucleus);
+        fRecoNucleiMCindex.emplace_back(mcId);
       } else
         good2save = false;
     }
@@ -394,7 +399,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
   const int iTof = beta > EPS ? 1 : 0;
   float pT = track->Pt() * fCharge;
   float p_TPC = track->GetTPCmomentum() * fCharge;
-  float p = track->P(); 
+  float p = track->P();
   int pid_mask = PassesPIDSelection(track);
   bool pid_check = (pid_mask & 7) == 7;
   if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
@@ -476,7 +481,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       fTOFT0FillSignal[iC]->Fill(fCentrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
       fTOFT0FillNsigma[iC]->Fill(fCentrality, pT, tof_n_sigma);
     }
-    else { 
+    else {
       fTOFNoT0FillSignal[iC]->Fill(fCentrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
       fTOFNoT0FillNsigma[iC]->Fill(fCentrality, pT, tof_n_sigma);
     }
