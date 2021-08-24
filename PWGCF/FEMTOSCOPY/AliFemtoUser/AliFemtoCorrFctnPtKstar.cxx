@@ -29,8 +29,8 @@ AliFemtoCorrFctn(),
   fPtKstar2part = new TH2D(Form("PtvsKstar2part%s",title),"Pt vs kstar (part 2)",200,0.0,2.0, 200, 0.0, 4.0);
   fPtKstarDen2part = new TH2D(Form("PtvsKstarDen2part%s",title),"Pt vs kstar in mixed events (part 2)",200,0.0,2.0, 200, 0.0, 4.0);
 
-  fPairPtKstar = new TH2D(Form("PairPtvsKstar%s",title),"Pair Pt vs kstar (part 1)",100,0.0,0.5, 300, 0.0, 6.0);
-  fPairPtKstarDen = new TH2D(Form("PairPtvsKstarDen%s",title),"Pair Pt vs kstar in mixed events (part 1)",100,0.0,0.5, 300, 0.0, 6.0);
+  fPairPtKstar2part = new TH2D(Form("PairPtvsKstar%s",title),"Pair Pt vs kstar (part 1)",100,0.0,0.5, 300, 0.0, 6.0);
+  fPairPtKstarDen2part = new TH2D(Form("PairPtvsKstarDen%s",title),"Pair Pt vs kstar in mixed events (part 1)",100,0.0,0.5, 300, 0.0, 6.0);
 
   }
 
@@ -41,8 +41,8 @@ AliFemtoCorrFctnPtKstar::AliFemtoCorrFctnPtKstar(const AliFemtoCorrFctnPtKstar& 
   fPtKstarDen(0),
   fPtKstar2part(0),
   fPtKstarDen2part(0),
-  fPairPtKstar(0),
-  fPairPtKstarDen(0)
+  fPairPtKstar2part(0),
+  fPairPtKstarDen2part(0)
 {
   // copy constructor
   if (fPtKstar) delete fPtKstar;
@@ -58,8 +58,8 @@ AliFemtoCorrFctnPtKstar::~AliFemtoCorrFctnPtKstar(){
     delete  fPtKstarDen;
     delete  fPtKstar2part;
     delete  fPtKstarDen2part;
-    delete  fPairPtKstar;
-    delete  fPairPtKstarDen;
+    delete  fPairPtKstar2part;
+    delete  fPairPtKstarDen2part;
 }
 //_________________________
 AliFemtoCorrFctnPtKstar& AliFemtoCorrFctnPtKstar::operator=(const AliFemtoCorrFctnPtKstar& aCorrFctn)
@@ -80,11 +80,11 @@ AliFemtoCorrFctnPtKstar& AliFemtoCorrFctnPtKstar::operator=(const AliFemtoCorrFc
   if (fPtKstarDen2part) delete fPtKstarDen2part;
   fPtKstarDen2part = new TH2D(*aCorrFctn.fPtKstarDen2part);
   
-  if (fPairPtKstar) delete fPairPtKstar;
-  fPairPtKstar = new TH2D(*aCorrFctn.fPairPtKstar);
+  if (fPairPtKstar2part) delete fPairPtKstar2part;
+  fPairPtKstar2part = new TH2D(*aCorrFctn.fPairPtKstar2part);
   
-  if (fPairPtKstarDen) delete fPairPtKstarDen;
-  fPairPtKstarDen = new TH2D(*aCorrFctn.fPairPtKstarDen);
+  if (fPairPtKstarDen2part) delete fPairPtKstarDen2part;
+  fPairPtKstarDen2part = new TH2D(*aCorrFctn.fPairPtKstarDen2part);
   
   return *this;
 }
@@ -124,7 +124,7 @@ void AliFemtoCorrFctnPtKstar::AddRealPair( AliFemtoPair* pair){
  double pT2 = TMath::Hypot(px2, py2);
  fPtKstar2part->Fill(tKStar,pT2);
 
- fPairPtKstar->Fill(tKStar,tPairPt);
+ fPairPtKstar2part->Fill(tKStar,tPairPt);
 
 }
 //____________________________
@@ -137,7 +137,7 @@ void AliFemtoCorrFctnPtKstar::AddMixedPair( AliFemtoPair* pair){
  double pT = TMath::Hypot(px, py);
  
  fPtKstarDen->Fill(tKStar,pT);
- fPairPtKstarDen->Fill(tKStar,tPairPt);  
+ fPairPtKstarDen2part->Fill(tKStar,tPairPt);  
  
  double px2 = pair->Track2()->Track()->P().x();
  double py2 = pair->Track2()->Track()->P().y();
@@ -154,8 +154,8 @@ void AliFemtoCorrFctnPtKstar::WriteHistos()
   fPtKstarDen->Write();
   fPtKstar2part->Write();
   fPtKstarDen2part->Write();
-  fPairPtKstar->Write();
-  fPairPtKstarDen->Write();
+  fPairPtKstar2part->Write();
+  fPairPtKstarDen2part->Write();
 
 }
 
@@ -168,8 +168,8 @@ TList* AliFemtoCorrFctnPtKstar::GetOutputList()
   tOutputList->Add(fPtKstarDen);
   tOutputList->Add(fPtKstar2part);
   tOutputList->Add(fPtKstarDen2part);
-  tOutputList->Add(fPairPtKstar);
-  tOutputList->Add(fPairPtKstarDen);
+  tOutputList->Add(fPairPtKstar2part);
+  tOutputList->Add(fPairPtKstarDen2part);
 
   return tOutputList;
 }
