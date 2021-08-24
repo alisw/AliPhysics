@@ -331,6 +331,15 @@ public:
   TH1C *   GetEMCALL1PhaseInTimeRecalibrationForAllSM(Short_t par=0) const      { return (TH1C*)fEMCALL1PhaseInTimeRecalibration->At(par) ; }
   void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TObjArray *map);
   void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TH1C* h, Short_t par=0);
+  Bool_t ExtrapolateTrackToEMCalSurfaceExperimental(AliExternalTrackParam *trkParam, 
+                                                             Double_t emcalR,
+                                                             Double_t mass, 
+                                                             Double_t step, 
+                                                             Float_t &eta, 
+                                                             Float_t &phi,
+                                                             Float_t &pt);
+  static Bool_t PropagateTrackToBxByBzExperimental(AliExternalTrackParam *track, Double_t x, Double_t m,Double_t maxStep, Bool_t rotateTo=kTRUE, 
+				       Double_t maxSnp=0.8,Int_t sign=0, Bool_t addTimeStep=kFALSE,Bool_t correctMaterialBudget=kTRUE);  
 
   void SwitchOnParRun()  { fIsParRun = kTRUE ; }
   void SwitchOffParRun() { fIsParRun = kFALSE ; }
@@ -741,7 +750,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 41) ;
+  ClassDef(AliEMCALRecoUtils, 42) ;
   /// \endcond
 
 };
