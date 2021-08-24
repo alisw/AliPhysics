@@ -834,7 +834,7 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
         if(angle > fMaxOpening3D) continue;				 //! Cut on Opening Angle
         if(invmass > fMaxInvMass) continue;				//! Cut on Invariant Mass
 
-        if((fCharge1*fCharge2)>0.0){	
+        if((fCharge1*fCharge2)>0.0){
             if(invmass < 1.0){ 
                 fLSign->Fill( valueSign, weight);
                 //if switched on produces mcstackdump for likesign with commonmother in gen 1
