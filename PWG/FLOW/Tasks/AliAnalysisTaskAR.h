@@ -31,17 +31,20 @@
 #include <TString.h>
 #include <vector>
 
-// global constants
+// global constants for qvectors
 const Int_t kMaxHarmonic = 20;
 const Int_t kMaxCorrelator = 20;
 const Int_t kMaxPower = 20;
+// global constants for QA filterbit scan
 const Int_t kMaxFilterbit = 15; // 2^(15-1)=16384
 const Int_t kNumberofTestFilterBit = 5;
 const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
-// enumerations
+
+// centrality estimators
 enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
 const TString kCenEstimatorNames[LAST_ECENESTIMATORS] = {"V0M", "CL0", "CL1",
                                                          "SPDTracklets"};
+// event variables
 enum kEvent {
   kMUL,
   kMULQ,
@@ -55,9 +58,11 @@ enum kEvent {
   kVPOS,
   LAST_EEVENT
 };
+// multiplicity estimators
 const Int_t kMulEstimators = kNCONTRIB + 1;
 const TString kMulEstimatorNames[kMulEstimators] = {"kMUL", "kMULQ", "kMULW",
                                                     "kMULREF", "kNCONTRIB"};
+// track variables
 enum kTrack {
   kPT,
   kPHI,
@@ -70,7 +75,9 @@ enum kTrack {
   kDCAXY,
   LAST_ETRACK
 };
+// kinematic variables
 const Int_t kKinematic = kETA + 1;
+// various gloabl objects
 enum kFinalHist { kPHIAVG, LAST_EFINALHIST };
 enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
@@ -123,6 +130,7 @@ public:
   virtual Bool_t SurviveTrackCut(AliVParticle *aTrack, Bool_t FillCounter);
   virtual void GetMultiplicities(AliAODEvent *aAOD);
   virtual void ClearEventObjects();
+  virtual void FillEventObjects(AliAODTrack* track);
   virtual void AggregateWeights();
   virtual void ResetWeights();
   virtual Int_t IndexCorHistograms(Int_t i, Int_t j, Int_t N);
@@ -256,7 +264,6 @@ public:
 
   // setters for cuts
   // centrality selection criterion
-  // only use V0M, CL0/1, SPDTracklets
   void SetCentralityEstimator(TString CentralityEstimator) {
     Bool_t Flag = kFALSE;
     for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
@@ -278,9 +285,9 @@ public:
       Fatal("SetTrackCuts", "Running out of bounds in SetTrackCuts");
     }
     if (max < min) {
-      std::cout << __LINE__ << ": maximun has to be larger than the minimum"
+      std::cout << __LINE__ << ": maximum has to be larger than the minimum"
                 << std::endl;
-      Fatal("SetTrackCuts", ": maximun has to be larger than the minimum");
+      Fatal("SetTrackCuts", ": maximum has to be larger than the minimum");
     }
     this->fTrackCuts[Track][kMIN] = min;
     this->fTrackCuts[Track][kMAX] = max;
@@ -292,9 +299,9 @@ public:
       Fatal("SetEventCuts", "Running out of bounds in SetEventCuts");
     }
     if (max < min) {
-      std::cout << __LINE__ << ": maximun has to be larger than the minimum"
+      std::cout << __LINE__ << ": maximum has to be larger than the minimum"
                 << std::endl;
-      Fatal("SetEventCuts", ": maximun has to be larger than the minimum");
+      Fatal("SetEventCuts", ": maximum has to be larger than the minimum");
     }
     this->fEventCuts[Event][kMIN] = min;
     this->fEventCuts[Event][kMAX] = max;
@@ -445,7 +452,7 @@ private:
   TString fFBTrackScanQAHistogramNames[LAST_ETRACK][kNumberofTestFilterBit]
                                       [LAST_ENAME];
   Double_t fFBTrackScanQAHistogramBins[LAST_ETRACK][LAST_EBINS];
-  // self correlations
+  // self correlation histograms
   TList *fSelfCorQAHistogramsList;
   TString fSelfCorQAHistogramsListName;
   TH1D *fSelfCorQAHistograms[kKinematic][LAST_EBEFOREAFTER];
@@ -469,6 +476,8 @@ private:
   TString fEventControlHistogramNames[LAST_EMODE][LAST_EEVENT]
                                      [LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fEventControlHistogramBins[LAST_EEVENT][LAST_EBINS];
+
+  // array holding centrality estimates
   Double_t fMultiplicity[kMulEstimators];
 
   // cuts
@@ -524,7 +533,7 @@ private:
   std::vector<std::vector<Int_t>> fCorrelators;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 7);
+  ClassDef(AliAnalysisTaskAR, 8);
 };
 
 #endif

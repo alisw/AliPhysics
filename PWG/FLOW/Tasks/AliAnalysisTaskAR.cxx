@@ -183,7 +183,7 @@ AliAnalysisTaskAR::~AliAnalysisTaskAR() {
 };
 
 void AliAnalysisTaskAR::UserCreateOutputObjects() {
-  // Called at every worker node to initialize.
+  // Called at every worker node to initialize objects
 
   // 1) Trick to avoid name clashes, part 1
   // 2) Book and nest all lists
@@ -308,6 +308,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   }
 
   // initialize arrays for multiplicity correlation histograms
+  // there are also N(N-1)/2 such correlators
   for (int mul = 0; mul < kMulEstimators * (kMulEstimators - 1) / 2; ++mul) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
       fMulCorQAHistograms[mul][ba] = nullptr;
@@ -412,7 +413,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       {100., 0., 10.},            // kPT
       {360., 0., TMath::TwoPi()}, // kPHI
       {200., -2., 2.},            // kETA
-      {5., -2.5, 2.5},            // kCHARGE
+      {7., -3.5, 3.5},            // kCHARGE
       {160., 0., 160.},           // kTPCNCLS
       {10., 0., 10.},             // kITSNCLS
       {100., 0., 10.},            // kCHI2PERNDF
@@ -1181,8 +1182,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   // get pointer to MC event
   AliMCEvent *aMC = MCEvent();
 
-  // count how many tracks of this event actually survive track cuts
-  // use this for cutting on multiplicity
+  // compute multiplicities
+  // this requries an additional loop over all tracks in the event
   GetMultiplicities(aAOD);
 
   // fill histograms before cut
@@ -1233,9 +1234,9 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
       // fill kinematic variables into event objects
       if (!fMCClosure) {
-        fKinematics[kPT].push_back(aTrack->Pt());
-        fKinematics[kPHI].push_back(aTrack->Phi());
-        fKinematics[kETA].push_back(aTrack->Eta());
+
+        FillEventObjects(aTrack);
+
       } else {
         // Monte Carlo Closure
         Int_t AcceptanceBin[kKinematic];
@@ -1272,21 +1273,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
         // if particle is accepted, push its kinematic variables and weights
         // into event objects
         if (AcceptParticle) {
-          fKinematics[kPT].push_back(aTrack->Pt());
-          if (fWeightHistogram[kPT]) {
-            fKinematicWeights[kPT].push_back(
-                fWeightHistogram[kPT]->GetBinContent(AcceptanceBin[kPT]));
-          }
-          fKinematics[kPHI].push_back(aTrack->Phi());
-          if (fWeightHistogram[kPHI]) {
-            fKinematicWeights[kPHI].push_back(
-                fWeightHistogram[kPHI]->GetBinContent(AcceptanceBin[kPHI]));
-          }
-          fKinematics[kETA].push_back(aTrack->Eta());
-          if (fWeightHistogram[kETA]) {
-            fKinematicWeights[kETA].push_back(
-                fWeightHistogram[kETA]->GetBinContent(AcceptanceBin[kETA]));
-          }
+          FillEventObjects(aTrack);
         }
       }
     }
@@ -1313,9 +1300,9 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
     // fill histograms after cut
     FillEventControlHistograms(kAFTER, aMC);
-    if (fFillQAHistograms) {
-      FillEventQAHistograms(kAFTER, aMC);
-    }
+    // if (fFillQAHistograms) {
+    //   FillEventQAHistograms(kAFTER, aMC);
+    // }
 
     // reset event by event objects
     ClearEventObjects();
@@ -1409,6 +1396,26 @@ void AliAnalysisTaskAR::ClearEventObjects() {
   for (int k = 0; k < kKinematic; ++k) {
     fKinematics[k].clear();
     fKinematicWeights[k].clear();
+  }
+}
+
+void AliAnalysisTaskAR::FillEventObjects(AliAODTrack *track) {
+  // fill kinematic variables and weights into event objects
+
+  fKinematics[kPT].push_back(track->Pt());
+  if (fWeightHistogram[kPT]) {
+    fKinematicWeights[kPT].push_back(fWeightHistogram[kPT]->GetBinContent(
+        fWeightHistogram[kPT]->FindBin(track->Pt())));
+  }
+  fKinematics[kPHI].push_back(track->Phi());
+  if (fWeightHistogram[kPHI]) {
+    fKinematicWeights[kPHI].push_back(fWeightHistogram[kPHI]->GetBinContent(
+        fWeightHistogram[kPHI]->FindBin(track->Phi())));
+  }
+  fKinematics[kETA].push_back(track->Eta());
+  if (fWeightHistogram[kETA]) {
+    fKinematicWeights[kETA].push_back(fWeightHistogram[kETA]->GetBinContent(
+        fWeightHistogram[kETA]->FindBin(track->Eta())));
   }
 }
 
@@ -1645,7 +1652,8 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
   AliAODEvent *aAOD = dynamic_cast<AliAODEvent *>(ave);
   if (aAOD) {
 
-    // cut on multiplicity, i.e. the number of total tracks of the event
+    // cut on multiplicity
+    // number of total tracks of the event
     if (fMultiplicity[kMUL] < fEventCuts[kMUL][kMIN]) {
       fEventCutsCounter[kRECO]->Fill(2 * kMUL + kMIN + 0.5);
       Flag = kFALSE;
@@ -1654,9 +1662,7 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
       fEventCutsCounter[kRECO]->Fill(2 * kMUL + kMAX + 0.5);
       Flag = kFALSE;
     }
-
-    // cut on multiplicity, i.e. the number of tracks that survive track cuts
-    // and are used for the calculation of Q-vectors
+    // number of tracks that survive track cuts
     if (fMultiplicity[kMULQ] < fEventCuts[kMULQ][kMIN]) {
       fEventCutsCounter[kRECO]->Fill(2 * kMULQ + kMIN + 0.5);
       Flag = kFALSE;
@@ -1665,6 +1671,7 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
       fEventCutsCounter[kRECO]->Fill(2 * kMULQ + kMAX + 0.5);
       Flag = kFALSE;
     }
+    // sum of weighted surviving tracks
     if (fMultiplicity[kMULW] < fEventCuts[kMULW][kMIN]) {
       fEventCutsCounter[kRECO]->Fill(2 * kMULW + kMIN + 0.5);
       Flag = kFALSE;
@@ -1673,8 +1680,7 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
       fEventCutsCounter[kRECO]->Fill(2 * kMULW + kMAX + 0.5);
       Flag = kFALSE;
     }
-
-    // cut on numbers of contriubters to the vertex
+    // numbers of contriubters to the vertex
     if (fMultiplicity[kNCONTRIB] < fEventCuts[kNCONTRIB][kMIN]) {
       fEventCutsCounter[kRECO]->Fill(2 * kNCONTRIB + kMIN + 0.5);
       Flag = kFALSE;
@@ -2029,18 +2035,17 @@ void AliAnalysisTaskAR::GetMultiplicities(AliAODEvent *aAOD) {
   fMultiplicity[kNCONTRIB] = PrimaryVertex->GetNContributors();
 
   // reference multiplicity
+  // combined reference multiplicity (tracklets + ITSTPC) in |eta|<0.8
   AliAODHeader *Header = dynamic_cast<AliAODHeader *>(aAOD->GetHeader());
   fMultiplicity[kMULREF] = Header->GetRefMultiplicityComb08();
 
   // multiplicity as number of tracks that survive track cuts
   fMultiplicity[kMULQ] = 0;
-  // multiplicity as the weighted sum of all surviveing tracks
+  // multiplicity as the weighted sum of all surviving tracks
   fMultiplicity[kMULW] = 0;
   Double_t w = 1.;
-  // get number of all tracks in current event
-  Int_t nTracks = aAOD->GetNumberOfTracks();
 
-  for (int iTrack = 0; iTrack < nTracks; ++iTrack) {
+  for (int iTrack = 0; iTrack < fMultiplicity[kMUL]; ++iTrack) {
 
     // getting a pointer to a track
     AliAODTrack *aTrack = dynamic_cast<AliAODTrack *>(aAOD->GetTrack(iTrack));
