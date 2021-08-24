@@ -2160,9 +2160,9 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("p6a10113","0dm00009f9730000dge0404000","24466510ga01ee00000","0h63103100000010"); // 60-100%
   } else if ( trainConfig == 818){ // rerun 2021
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466510ga012200000","0h63103100000010"); // 300 MeV
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466000ga01ee00000","0h63103100000010"); // 300 MeV - no non-lin
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466510ga01ee00000","0h63103100000010"); // 300 MeV
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466510ga09ee00000","0h63103100000010"); // 100 MeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 300 MeV with 100 MeV non-lin
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga09ee00000","0h63103100000010"); // 100 MeV with 100 MeV non-lin
 
     //Normal B Option
   } else if ( trainConfig == 820){ // Default cut, with TM   with eta<0.8
@@ -2212,7 +2212,8 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 850){ // Default cut, with TM
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466510ga012200000","0h63103100000010"); // INT7
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466510ga01ee00000","0h63103100000010"); // INT7
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466510ga09ee00000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga09ee00000","0h63103100000010"); // INT7
 
   //*************************************************************************************************
   // 13 TeV PHOS - setup
