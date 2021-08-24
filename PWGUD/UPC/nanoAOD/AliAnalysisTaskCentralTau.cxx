@@ -73,8 +73,8 @@ AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau(const char *name)
     fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), cutEta(0.9), fOutputList(0), tTwoTracks(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
     fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0)
 {
-  for(Int_t i = 0; i<NTRIGGERS; i++) fTriggers[i] = kFALSE;
-  for(Int_t i = 0; i<3;  i++)fTriggerClass[i] = kFALSE;
+  for(Int_t i = 0; i<(sizeof(fTriggers)/sizeof(fTriggers[0])); i++)          fTriggers[i] = kFALSE;
+  for(Int_t i = 0; i<(sizeof(fTriggerClass)/sizeof(fTriggerClass[0]));  i++) fTriggerClass[i] = kFALSE;
   DefineOutput(1, TList::Class());
 
 }//AliAnalysisTaskCentralTau

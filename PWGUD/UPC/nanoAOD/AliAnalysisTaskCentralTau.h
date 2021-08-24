@@ -3,8 +3,6 @@
 /* $Id$ */
 
 #ifndef AliAnalysisTaskCentralTau_H
-const Int_t NTRIGGERINPUTS = 11;
-const Int_t NTRIGGERS = 10;
 #define AliAnalysisTaskCentralTau_H
 
 class TH1;
@@ -52,12 +50,12 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   Float_t fPtDaughter[2], fPt, fY, fM, fPhi, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4];
   TLorentzVector fVectDaughter[2];
   Int_t fSignDaughter[2], fChannel, fSign, fRunNumber, fADAdecision, fADCdecision, fV0Adecision, fV0Cdecision;
-  Bool_t fTriggers[NTRIGGERS], fTriggerClass[3];
+  Bool_t fTriggers[10], fTriggerClass[3];
   
   AliAnalysisTaskCentralTau(const AliAnalysisTaskCentralTau&); //not implemented
   AliAnalysisTaskCentralTau& operator =(const AliAnalysisTaskCentralTau&); //not implemented
   
-  ClassDef(AliAnalysisTaskCentralTau, 13);
+  ClassDef(AliAnalysisTaskCentralTau, 14);
 };
 
 #endif
