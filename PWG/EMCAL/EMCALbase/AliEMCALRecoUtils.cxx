@@ -5380,18 +5380,18 @@ const Double_t kEpsilon = 0.00001;
       Double_t meanZ = param[3];
       Double_t meanA = param[2];
       Double_t meanZoverA = meanZ/meanA;
-     AliDebug(2,Form(" --> The following information has been extracted\n")); 
-     AliDebug(2,Form(" Propagation lenghth (cm): %f\n" ,length)); 
-     AliDebug(2,Form(" meanDensiy (g/cc): %f\n" ,meanDensiy)); 
-     AliDebug(2,Form(" meanZoverA: %f\n" ,meanZoverA)); 
-     AliDebug(2,Form(" meanX0 (cm): %f\n" ,meanX0)); 
-     AliDebug(2,Form(" meanZ: %f\n" ,meanZ)); 
+    //  printf(" --> The following information has been extracted\n"); 
+    //  printf(" Propagation lenghth (cm): %f\n" ,length); 
+    //  printf(" meanDensiy (g/cc): %f\n" ,meanDensiy); 
+    //  printf(" meanZoverA: %f\n" ,meanZoverA); 
+    //  printf(" meanX0 (cm): %f\n" ,meanX0); 
+    //  printf(" meanZ: %f\n" ,meanZ); 
       // determine excitation energy from mean Z (GeV)
       Double_t excitationE;
       if (meanZ < 13) excitationE = (12. * meanZ + 7.) * 1.e-9;
       else excitationE = (9.76 * meanZ + 58.8 * TMath::Power(meanZ,-0.19)) * 1.e-9;
 
-      AliDebug(2,Form("Optaining excitation energy in (eV): %f\n",excitationE*1e9));
+      // printf("Optaining excitation energy in (eV): %f\n",excitationE*1e9);
 
       // determine density effect for ionization losses of charged particles
       // values given in table
@@ -5423,9 +5423,9 @@ const Double_t kEpsilon = 0.00001;
           }
       }
 
-      AliDebug(2,"According to paper density correction parameters were set to:\n");
-      AliDebug(2,Form("x0= %f\n" ,x0));
-      AliDebug(2,Form("x1= %f\n" ,x1));
+      // printf("According to paper density correction parameters were set to:\n");
+      // printf("x0= %f\n" ,x0);
+      // printf("x1= %f\n" ,x1);
       
       // Calculate dEdx
       Double_t bg=track->P()/mass;
@@ -5476,17 +5476,16 @@ const Double_t kEpsilon = 0.00001;
     // }
     // TGeoMaterial *material = startnode->GetVolume()->GetMedium()->GetMaterial();
     // TGeoMaterial *
-    AliDebug(2,Form("Critical energy (MeV): %f\n", ECritSolid));
-    AliDebug(2,Form("Mass: %f\n", mass));
+    // printf("Critical energy (MeV): %f\n", ECritSolid);
+    // printf("Mass: %f\n", mass);
      
     Double_t p = track->GetP();
     Double_t trackE = TMath::Sqrt((p*p) + (mass*mass));
-    AliDebug(2,Form("Track Energy %f\n", trackE*1000));
-    
+    // printf("Track Energy %f\n", trackE*1000);
     if((mass>=0.000510)&&(mass<=0.000512)){ // if electron
-            AliDebug(2,"IsElectron\n");
+            // printf("IsElectron\n");
       if((trackE*1000)>ECritSolid){ // compare energies in MeV
-            AliDebug(2,Form("Energy %f was higher than crit\n",track->E()*1000));
+            // printf("Energy %f was higher than crit\n",track->E()*1000);
             dEdxRadiationLoss = trackE/meanX0; // energy loss dedx due to bremsstrahlung in GeV
             
       }
