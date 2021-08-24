@@ -291,8 +291,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t      ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, AliMCEvent *mcEvent,Int_t isMC, Double_t weight=1., Long_t clusterID = -1);
     Bool_t      ClusterIsSelectedBeforeTrackMatch(){return fIsCurrentClusterAcceptedBeforeTM;}
-    Bool_t      ClusterIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent);
-    Bool_t      ClusterIsSelectedElecMC(TParticle *particle,AliMCEvent *mcEvent);
+    Bool_t      ClusterIsSelectedMC(AliMCParticle *particle,AliMCEvent *mcEvent);
+    Bool_t      ClusterIsSelectedElecMC(AliMCParticle *particle,AliMCEvent *mcEvent);
     Bool_t      ClusterIsSelectedElecAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
     Bool_t      ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
     Bool_t      ClusterIsIsolated(Int_t clusterID, AliAODConversionPhoton *PhotonCandidate);
@@ -413,8 +413,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetLocMaxCutEDiff(Double_t diffCut)             {fLocMaxCutEDiff  = diffCut; return;}
 
     //Set Electron Cluster calibration
-    void        SetElectronClusterCalibration(Bool_t calib)     {fUseElectronClusterCalibration = calib; return;};
-    Bool_t      GetElectronClusterCalibration()                 {return fUseElectronClusterCalibration;};
+    void        SetElectronClusterCalibration(Bool_t calib)     {fUseElectronClusterCalibration = calib; return;}
+    Bool_t      GetElectronClusterCalibration()                 {return fUseElectronClusterCalibration;}
 
     // GetCellIds for EMCal PHOS
     Int_t       GetCaloCellIdFromEtaPhi(const Double_t eta, const Double_t phi);
@@ -460,7 +460,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetExoticsMinCellEnergyCut(Double_t minE)       { fExoticMinEnergyCell = minE; return;}
     void        SetExoticsQA(Bool_t enable)                     { fDoExoticsQA         = enable; return;}
 
-    Float_t     GetMinClusterEnergy()                           { return fMinEnergy;};
+    Float_t     GetMinClusterEnergy()                           { return fMinEnergy;}
 
     Double_t    GetMinEtaCut() {return fMinEtaCut;}
     Double_t    GetMaxEtaCut() {return fMaxEtaCut;}

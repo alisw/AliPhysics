@@ -861,12 +861,12 @@ Bool_t AliConversionCuts::EventIsSelected(AliVEvent *fInputEvent, AliMCEvent *fM
 }
 
 ///________________________________________________________________________
-Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma){
+Bool_t AliConversionCuts::PhotonIsSelectedMC(AliMCParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma){
    // MonteCarlo Photon Selection
 
    if(!mcEvent)return kFALSE;
 
-   if (particle->GetPdgCode() == 22){
+   if (particle->PdgCode() == 22){
 
 
      if( particle->Eta() > (fEtaCut) || particle->Eta() < (-fEtaCut) )
@@ -876,27 +876,27 @@ Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcE
             return kFALSE;
       }
 
-      if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+      if(particle->GetMother() >-1 && mcEvent->GetTrack(particle->GetMother())->PdgCode() == 22){
          return kFALSE; // no photon as mothers!
       }
 
-      if(particle->GetMother(0) >= mcEvent->GetNumberOfPrimaries()){
+      if(particle->GetMother() >= mcEvent->GetNumberOfPrimaries()){
          return kFALSE; // the gamma has a mother, and it is not a primary particle
       }
 
       if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
 
       // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
-      TParticle* ePos = NULL;
-      TParticle* eNeg = NULL;
+      AliMCParticle* ePos = NULL;
+      AliMCParticle* eNeg = NULL;
 
       if(particle->GetNDaughters() >= 2){
-         for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
-            TParticle *tmpDaughter = mcEvent->Particle(daughterIndex);
+         for(Int_t daughterIndex=particle->GetDaughterFirst();daughterIndex<=particle->GetDaughterLast();daughterIndex++){
+            AliMCParticle *tmpDaughter = (AliMCParticle*) mcEvent->GetTrack(daughterIndex);
             if(tmpDaughter->GetUniqueID() == 5){
-               if(tmpDaughter->GetPdgCode() == 11){
+               if(tmpDaughter->PdgCode() == 11){
                   eNeg = tmpDaughter;
-               } else if(tmpDaughter->GetPdgCode() == -11){
+               } else if(tmpDaughter->PdgCode() == -11){
                   ePos = tmpDaughter;
                }
             }
@@ -921,26 +921,26 @@ Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcE
             return kFALSE;
       }
 
-      if(ePos->R()>fMaxR){
+      if(ePos->Particle()->R()>fMaxR){
          return kFALSE; // cuts on distance from collision point
       }
 
-      if(TMath::Abs(ePos->Vz()) > fMaxZ){
+      if(TMath::Abs(ePos->Zv()) > fMaxZ){
          return kFALSE;  // outside material
       }
-      if(TMath::Abs(eNeg->Vz()) > fMaxZ){
+      if(TMath::Abs(eNeg->Zv()) > fMaxZ){
          return kFALSE;  // outside material
       }
 
-      if( ePos->R() <= ((TMath::Abs(ePos->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
+      if( ePos->Particle()->R() <= ((TMath::Abs(ePos->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
          return kFALSE;  // line cut to exclude regions where we do not reconstruct
-      } else if ( fEtaCutMin != -0.1 &&   ePos->R() >= ((TMath::Abs(ePos->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+      } else if ( fEtaCutMin != -0.1 &&   ePos->Particle()->R() >= ((TMath::Abs(ePos->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
          return kFALSE;
       }
 
-      if( eNeg->R() <= ((TMath::Abs(eNeg->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
+      if( eNeg->Particle()->R() <= ((TMath::Abs(eNeg->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
          return kFALSE; // line cut to exclude regions where we do not reconstruct
-      } else if ( fEtaCutMin != -0.1 &&   eNeg->R() >= ((TMath::Abs(eNeg->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+      } else if ( fEtaCutMin != -0.1 &&   eNeg->Particle()->R() >= ((TMath::Abs(eNeg->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
          return kFALSE;
       }
 
@@ -1682,37 +1682,37 @@ Bool_t AliConversionCuts::PIDProbabilityCut(AliConversionPhotonBase *photon, Ali
 
 
 ///________________________________________________________________________
-Bool_t AliConversionCuts::AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg){
+Bool_t AliConversionCuts::AcceptanceCut(AliMCParticle *particle, AliMCParticle * ePos,AliMCParticle* eNeg){
    // MC Acceptance Cuts
    //(Certain areas were excluded for photon reconstruction)
 
-   if(particle->R()>fMaxR){
+   if(TMath::Sqrt(particle->Xv()*particle->Xv()+particle->Yv()*particle->Yv())>fMaxR){
       return kFALSE;}
 
-   if(ePos->R()>fMaxR){
+   if(TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv())>fMaxR){
       return kFALSE;
    }
 
-   if(ePos->R()<fMinR){
+   if(TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv())<fMinR){
       return kFALSE;
    }
 
-   if( ePos->R() <= ((TMath::Abs(ePos->Vz())*fLineCutZRSlope)-fLineCutZValue)){
+   if( TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv()) <= ((TMath::Abs(ePos->Zv())*fLineCutZRSlope)-fLineCutZValue)){
       return kFALSE;
    }
-   else if (fUseEtaMinCut &&  ePos->R() >= ((TMath::Abs(ePos->Vz())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
-      return kFALSE;
-   }
-
-   if(TMath::Abs(eNeg->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+   else if (fUseEtaMinCut &&  TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv()) >= ((TMath::Abs(ePos->Zv())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
       return kFALSE;
    }
 
-   if(eNeg->Vz()!=ePos->Vz()||eNeg->R()!=ePos->R()){
+   if(TMath::Abs(eNeg->Zv()) > fMaxZ ){ // cuts out regions where we do not reconstruct
       return kFALSE;
    }
 
-   if(TMath::Abs(ePos->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+   if(eNeg->Zv()!=ePos->Zv()||TMath::Sqrt(eNeg->Xv()*eNeg->Xv()+eNeg->Yv()*eNeg->Yv())!=TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv())){
+      return kFALSE;
+   }
+
+   if(TMath::Abs(ePos->Zv()) > fMaxZ ){ // cuts out regions where we do not reconstruct
       return kFALSE;
    }
 
@@ -4164,9 +4164,9 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 					if(GeneratorName.CompareTo(GeneratorInList) == 0){
 						if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
                             if(mcEvent){
-                                if (mcEvent->Particle(firstindexA)->GetPdgCode() == fAddedSignalPDGCode ) {
+                                if (mcEvent->GetTrack(firstindexA)->PdgCode() == fAddedSignalPDGCode ) {
 									if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
-                                        if (gh->NProduced() > 10 && mcEvent->Particle(firstindexA+10)->GetPdgCode() == fAddedSignalPDGCode ){
+                                        if (gh->NProduced() > 10 && mcEvent->GetTrack(firstindexA+10)->PdgCode() == fAddedSignalPDGCode ){
 // 											cout << "cond 1: "<< fnHeaders << endl;
 											fnHeaders++;
 											continue;
@@ -4236,10 +4236,10 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 				if(GeneratorName.CompareTo(GeneratorInList) == 0){
 					if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
                         if(mcEvent){
-                            if (mcEvent->Particle(firstindex)->GetPdgCode() == fAddedSignalPDGCode ) {
+                            if (mcEvent->GetTrack(firstindex)->PdgCode() == fAddedSignalPDGCode ) {
 								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
 // 									cout << "produced " << gh->NProduced() << " with box generator" << endl;
-                                    if (gh->NProduced() > 10 && mcEvent->Particle(firstindex+10)->GetPdgCode() == fAddedSignalPDGCode){
+                                    if (gh->NProduced() > 10 && mcEvent->GetTrack(firstindex+10)->PdgCode() == fAddedSignalPDGCode){
 // 										cout << "one of them was a pi0 or eta" <<  endl;
 										fNotRejectedStart[number] = firstindex;
 										fNotRejectedEnd[number] = lastindex;
@@ -4337,8 +4337,8 @@ Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent,
 	Int_t accepted = 0;
 	if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
         if( index >= mcEvent->GetNumberOfPrimaries()){ // Secondary Particle
-            if( ((TParticle*)mcEvent->Particle(index))->GetMother(0) < 0) return 1; // Secondary Particle without Mother??
-            return IsParticleFromBGEvent(((TParticle*)mcEvent->Particle(index))->GetMother(0),mcEvent,InputEvent);
+            if( ((AliMCParticle*)mcEvent->GetTrack(index))->GetMother() < 0) return 1; // Secondary Particle without Mother??
+            return IsParticleFromBGEvent(((AliMCParticle*)mcEvent->GetTrack(index))->GetMother(),mcEvent,InputEvent);
 		}
 		for(Int_t i = 0;i<fnHeaders;i++){
 			if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
@@ -4444,9 +4444,9 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliMCE
 	Double_t mesonMass = 0;
 	Int_t PDGCode = 0;
 	if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
-        mesonPt = ((TParticle*)mcEvent->Particle(index))->Pt();
-        mesonMass = ((TParticle*)mcEvent->Particle(index))->GetCalcMass();
-        PDGCode = ((TParticle*)mcEvent->Particle(index))->GetPdgCode();
+        mesonPt = ((AliMCParticle*)mcEvent->GetTrack(index))->Pt();
+        mesonMass = ((AliMCParticle*)mcEvent->GetTrack(index))->M();
+        PDGCode = ((AliMCParticle*)mcEvent->GetTrack(index))->PdgCode();
 	}
 	else if(InputEvent->IsA()==AliAODEvent::Class()){
 		TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
