@@ -224,30 +224,6 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects()
 	double binLimIP[nBinsIP+1];
 	for(int i=0; i<=nBinsIP; i++) binLimIP[i] = minIP + (maxIP-minIP)/nBinsIP*(double)i;
 	
-	int nBinsInvMassK0s = 100;
-	double minInvMassK0s = 0;
-	double maxInvMassK0s = 1;
-	double binLimInvMassK0s[nBinsInvMassK0s+1];
-	for(int i=0; i<=nBinsInvMassK0s; i++) binLimInvMassK0s[i] = minInvMassK0s + double(i)*(maxInvMassK0s/nBinsInvMassK0s);
-	
-	int nBinsProdRadi = 200;
-	double minProdRadi = 0.;
-	double maxProdRadi = 20.;
-	double binLimProdRadi[nBinsProdRadi+1];
-	for(int i=0; i<=nBinsProdRadi; i++) binLimProdRadi[i] = minProdRadi + double(i)*(maxProdRadi/nBinsProdRadi);
-	
-	int nBinsCent = 20;
-	double minCent = 0.;
-	double maxCent = 100.;
-	double binLimCent[nBinsCent+1];
-	for(int i=0; i<=nBinsCent; i++) binLimCent[i] = minCent + double(i)*(maxCent/nBinsCent);
-	
-	int nBinsMult = 60;
-	double minMult = 0.;
-	double maxMult = 30000.;
-	double binLimMult[nBinsMult+1];
-	for(int i=0; i<=nBinsMult; i++) binLimMult[i] = minMult + double(i)*(maxMult/nBinsMult);
-	
 	// event qa
 	hVertexZ = new TH1F("hVertexZ", "", 600, -30, 30);
 	fOutputList->Add(hVertexZ);
@@ -455,8 +431,6 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *)
 	
 		double fTPCnSigma = fPidResponse->NumberOfSigmasTPC(aodTrack, AliPID::kElectron);
 		double fTOFnSigma = fPidResponse->NumberOfSigmasTOF(aodTrack, AliPID::kElectron);
-		double fTPCnSigmaPi = fPidResponse->NumberOfSigmasTPC(aodTrack, AliPID::kPion);
-		double fTOFnSigmaPi = fPidResponse->NumberOfSigmasTOF(aodTrack, AliPID::kPion);
 		
 		hTPCnsigma->Fill(aodTrack->P(), fTPCnSigma);
 		hTOFnsigma->Fill(aodTrack->P(), fTOFnSigma);
@@ -475,7 +449,6 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *)
 				if(fTPCnSigma >= fTPCnsigmaLow && fTPCnSigma <= fTPCnsigmaHigh) hV0ElecTPCnsigmaNume->Fill(aodTrack->Pt(), fTPCnSigma);
 			}
 		}
-
 
 		if(TMath::Abs(fTOFnSigma) > fTOFnsigma) continue;
 
