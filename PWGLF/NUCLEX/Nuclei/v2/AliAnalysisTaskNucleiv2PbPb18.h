@@ -99,7 +99,9 @@ class AliAnalysisTaskNucleiv2PbPb18 : public AliAnalysisTaskSE {
   TH2D *EPVzCvsCentrality  ; 
 
   // q2 vs centrality
-  TH2D *q2vsCentrality  ; 
+  TH2D *q2TPCvsCentrality  ; 
+  TH2D *q2V0AvsCentrality  ; 
+  TH2D *q2V0CvsCentrality  ; 
   
   // For SP resolution
   
@@ -127,7 +129,8 @@ class AliAnalysisTaskNucleiv2PbPb18 : public AliAnalysisTaskSE {
   // TTree
   TTree *ftree;                //! Some Information on the tracks
   Double_t tCentrality      ;
-  Double_t tq2              ;
+  Double_t tq2TPC           ;
+  Double_t tq2V0C           ;
   Double_t tType            ;
   Double_t tHasTOF          ;
   Double_t tpT              ;
