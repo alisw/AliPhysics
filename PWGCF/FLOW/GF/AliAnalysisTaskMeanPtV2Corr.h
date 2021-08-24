@@ -63,7 +63,6 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void FillMeanPtMC(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void FillCK(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void ProduceFBSpectra(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void ProduceEfficienciesOld(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void ProduceEfficiencies(AliESDEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void MCClosure_MeanPt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
@@ -170,6 +169,10 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TH2D **fEfficiency; //TH2Ds for efficiency calculation
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
+  TH3D *fDCAxyVsPt_noChi2;
+  TH2D *fWithinDCAvsPt_withChi2;
+  TH3D *fDCAxyVsPt_withChi2;
+  TH2D *fWithinDCAvsPt_noChi2;
   TH1D *fV0MMulti;
   TH1D *fV2dPtMulti;
   Double_t fCorrPar[2]; //Yes need to store
