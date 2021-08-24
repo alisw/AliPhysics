@@ -36,7 +36,7 @@ set(SRCS
     AliAnalysisTaskSatellites.cxx
     AliAnalysisTaskUpcEtaC.cxx
     AliAnalysisTaskUpcFilter.cxx
-                AliAnalysisTaskUpcFourPi.cxx
+    AliAnalysisTaskUpcFourPi.cxx
     AliAnalysisTaskUpcK0sK0s.cxx          
     AliAnalysisTaskUpcPhi.cxx
     AliAnalysisTaskUPCPhiTest.cxx
@@ -58,6 +58,7 @@ set(SRCS
     AliUPCEvent.cxx
     AliUPCMuonTrack.cxx
     AliUPCTrack.cxx
+    nanoAOD/AliAnalysisTaskCentralTau.cxx
     nanoAOD/AliAnalysisTaskFilterUPCNanoAOD.cxx
     nanoAOD/AliAODUPCReplicator.cxx
     nanoAOD/AliAnalysisTaskUpcTriggerCounter.cxx

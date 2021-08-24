@@ -1,5 +1,3 @@
-#include "AliAnalysisTaskCentralTau.h"
-
 AliAnalysisTaskCentralTau *AddTaskCentralTau(Float_t cutEta = 0.9){
   
   //--- get the current analysis manager ---//
