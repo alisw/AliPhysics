@@ -73,8 +73,8 @@ AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau(const char *name)
     fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), cutEta(0.9), fOutputList(0), tTwoTracks(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
     fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0)
 {
-  for(Int_t i = 0; i<NTRIGGERS; i++) fTriggers[i] = kFALSE;
-  for(Int_t i = 0; i<3;  i++)fTriggerClass[i] = kFALSE;
+  for(Int_t i = 0; i<(sizeof(fTriggers)/sizeof(fTriggers[0])); i++)          fTriggers[i] = kFALSE;
+  for(Int_t i = 0; i<(sizeof(fTriggerClass)/sizeof(fTriggerClass[0]));  i++) fTriggerClass[i] = kFALSE;
   DefineOutput(1, TList::Class());
 
 }//AliAnalysisTaskCentralTau
@@ -125,7 +125,7 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
   tTwoTracks ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/F");
   tTwoTracks ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   tTwoTracks ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-  tTwoTracks ->Branch("fTriggers", &fTriggers, Form("fTriggers[%i]/O",NTRIGGERS));
+  tTwoTracks ->Branch("fTriggers", &fTriggers, Form("fTriggers[%i]/O",(sizeof(fTriggers)/sizeof(fTriggers[0]))));
   tTwoTracks ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
   tTwoTracks ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");
   tTwoTracks ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
