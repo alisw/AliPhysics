@@ -333,7 +333,7 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
   fListHist->Add(EPVzCvsCentrality);
   
 
-  q2vsCentrality = new TH2D("q2vsCentrality" , "q2vsCentrality" , 200,0,20, 105,0,105);
+  q2vsCentrality = new TH2D("q2vsCentrality" , "q2vsCentrality", 105,0,105 , 2000,0,20);
   fListHist->Add(q2vsCentrality);
 
     
@@ -813,8 +813,8 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
 
   Double_t q2 = 0.;
   if(multQvec>0) q2 = TMath::Sqrt(q2Vec[0]*q2Vec[0]+q2Vec[1]*q2Vec[1])/TMath::Sqrt(multQvec);
-
-  q2vsCentrality  ->Fill(q2  , iCen); 
+  
+  q2vsCentrality  ->Fill( iCen, q2); 
   // TBC
   Double_t evPlAngTPC = TMath::ATan2(Qytn, Qxtn)/fNHarm;
 
@@ -907,8 +907,8 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
     Bool_t hasTOFtime = status&AliVTrack::kTIME;
     Float_t length = atrack->GetIntegratedLength(); 
     //if (hasTOFout) hasTOF = kTRUE;
-    if (length > 350. && hasTOFout && hasTOFtime) hasTOF = kFALSE;
-	
+    if (length > 350. && hasTOFout && hasTOFtime) hasTOF = kTRUE;
+    
     TPCSignal=atrack->GetTPCsignal(); 
     
     if(fptc==1 || fptc==2 ){

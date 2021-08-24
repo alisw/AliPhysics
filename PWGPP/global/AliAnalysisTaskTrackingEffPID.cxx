@@ -441,7 +441,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     }else{
       fHistNParticles->Fill(2);
     }
-    if(fPrimarySelectionOpt==1 && !part->IsPhysicalPrimary()) continue;
+    if(fPrimarySelectionOpt==1 && !fMCEvent->IsPhysicalPrimary(iMC)) continue;
     if(fPrimarySelectionOpt==2){
       // primary particle selection based on origin of particle
       double pRad2=part->Xv()*part->Xv()+part->Yv()*part->Yv();
@@ -514,7 +514,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       fHistNTracks->Fill(3);
     }
     
-    if (fPrimarySelectionOpt==1 && !mcPart->IsPhysicalPrimary()) continue;
+    if (fPrimarySelectionOpt==1 && !fMCEvent->IsPhysicalPrimary(lab)) continue;
     if(fPrimarySelectionOpt==2){
       // primary particle selection based on origin of particle
       double pRad2=mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv();

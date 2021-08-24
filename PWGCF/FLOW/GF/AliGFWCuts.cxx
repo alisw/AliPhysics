@@ -18,6 +18,7 @@ AliGFWCuts::AliGFWCuts():
   fTPCNcls(70),
   fVtxZ(10),
   fEta(0.8),
+  fPtDepXYCut(0x0),
   fRequiresExtraWeight(kTRUE)
 {
 };
@@ -44,20 +45,21 @@ Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, const Int_t &B
     return 0;
   return 1<<BitShift;
 };
-Int_t AliGFWCuts::AcceptTrack(AliESDtrack* l_Tr, Double_t* l_DCA, const Int_t &BitShift, const Bool_t &lDisableDCAxyCheck) {
+Int_t AliGFWCuts::AcceptTrack(AliESDtrack* l_Tr, Double_t* l_DCA, const Int_t &BitShift, UInt_t &PrimFlags) {
   //Initialize ESDtrackCuts if needed:
-  if(!fTCFB32) fTCFB32 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  if(!fTCFB32) fTCFB32 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
   if(!fTCFB64) {
-    fTCFB64 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+    fTCFB64 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
     fTCFB64->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
     fTCFB64->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);
   };
+  //For FB768, DCA cut is little bit more complicated and primary estimation is not _that_ straightforward. For now, we'll fit just the xy distribution
   if(!fTCFB256) {
     fTCFB256 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
     fTCFB256->SetMaxDCAToVertexXY(2.4);
     fTCFB256->SetMaxDCAToVertexZ(3.2);
     fTCFB256->SetDCAToVertex2D(kTRUE);
-    fTCFB256->SetMaxChi2TPCConstrainedGlobal(36);
+    // fTCFB256->SetMaxChi2TPCConstrainedGlobal(36);
     fTCFB256->SetMaxFractionSharedTPCClusters(0.4);
   }
   if(!fTCFB512) {
@@ -68,32 +70,33 @@ Int_t AliGFWCuts::AcceptTrack(AliESDtrack* l_Tr, Double_t* l_DCA, const Int_t &B
     fTCFB512->SetMaxDCAToVertexXY(2.4);
     fTCFB512->SetMaxDCAToVertexZ(3.2);
     fTCFB512->SetDCAToVertex2D(kTRUE);
-    fTCFB512->SetMaxChi2TPCConstrainedGlobal(36);
+    // fTCFB512->SetMaxChi2TPCConstrainedGlobal(36);
     fTCFB512->SetMaxFractionSharedTPCClusters(0.4);
   }
+  Double_t l_Pt = l_Tr->Pt();
+  if(l_Pt<0.01) return 0; //If below 10 MeV, throw away the track immediatelly -> Otherwise, problems calculating DCAxy value
+  PrimFlags=0; //Initial value for primary selection -- initially, not a primary
   if(TMath::Abs(l_Tr->Eta())>fEta) return 0;
   if(fFilterBit==96) {
     if(!fTCFB32->AcceptTrack(l_Tr) && !fTCFB64->AcceptTrack(l_Tr)) return 0;
+    if(TMath::Abs(l_DCA[0]) < fPtDepXYCut->Eval(l_Pt)) PrimFlags+=1;
   }
   if(fFilterBit==768) {
     if(!fTCFB256->AcceptTrack(l_Tr) && !fTCFB512->AcceptTrack(l_Tr)) return 0;
+    PrimFlags+=1; //Here assume DCA cut is passed by default -- it's implemented in ESDtrackCuts
   }
-  // if(fFilterBit!=2) {//Check is not valid for ITSsa tracks
-  //   if(l_Tr->GetTPCNclsF()<fTPCNcls) return 0;
-  // } else {
-  //   UInt_t status = l_Tr->GetStatus();
-  //   if ((status&AliESDtrack::kITSrefit)==0) return 0;
-  //   if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)) return 0;
-  // };
+  //chi2 TPC vs global constrained could be a custom number, but it's 36 everywhere anyways
+  Double_t chi2TPCConstrained = GetChi2TPCConstrained(l_Tr);
+  if(!(chi2TPCConstrained<0) && chi2TPCConstrained<36.) PrimFlags+=2;
   if(!l_DCA) return 1<<BitShift;
   if(l_DCA[1]>fDCAzCut) return 0;
-  if(lDisableDCAxyCheck) return 1<<BitShift;
-  Double_t DCAxycut;
-  if(fFilterBit!=2) DCAxycut = 0.0105+0.0350/TMath::Power(l_Tr->Pt(),1.1);//*fDCAxyCut/7.; //TPC tracks and my ITS cuts
-  else DCAxycut = 0.0231+0.0315/TMath::Power(l_Tr->Pt(),1.3);
-  Double_t DCAxyValue = l_DCA[0];//TMath::Sqrt(l_DCA[0]*l_DCA[0] + l_DCA[1]*l_DCA[1]);
-  if(DCAxyValue>DCAxycut*(fDCAxyCut/7.))
-    return 0;
+  // if(lDisableDCAxyCheck) return 1<<BitShift;
+  // Double_t DCAxycut;
+  // if(fFilterBit!=2) DCAxycut = 0.0105+0.0350/TMath::Power(l_Tr->Pt(),1.1);//*fDCAxyCut/7.; //TPC tracks and my ITS cuts
+  // else DCAxycut = 0.0231+0.0315/TMath::Power(l_Tr->Pt(),1.3);
+  // Double_t DCAxyValue = l_DCA[0];//TMath::Sqrt(l_DCA[0]*l_DCA[0] + l_DCA[1]*l_DCA[1]);
+  // if(DCAxyValue>DCAxycut*(fDCAxyCut/7.))
+  //   return 0;
   return 1<<BitShift;
 };
 
@@ -124,6 +127,8 @@ void AliGFWCuts::ResetCuts() {
   fVtxZ=10;
   fEta=0.8;
   fRequiresExtraWeight=kTRUE;
+  SetPtDepDCAXY("[0]*(0.0015 + 0.005/(x^1.1))");//"0.0105+0.0350/(x^1.1)");
+  fPtDepXYCut->SetParameter(0,fDCAxyCut);
 };
 void AliGFWCuts::PrintSetup() {
   printf("**********\n");
@@ -154,9 +159,11 @@ void AliGFWCuts::SetupTrackCuts(Int_t sysflag) {
   case 2:
     fDCAxyCut=10.;
     fRequiresExtraWeight=kTRUE;
+    fPtDepXYCut->SetParameter(0,fDCAxyCut);
     break;
   case 3:
     fDCAxyCut=4.;
+    fPtDepXYCut->SetParameter(0,fDCAxyCut);
     fRequiresExtraWeight=kTRUE;
     break;
   case 4:
@@ -323,3 +330,15 @@ TString *AliGFWCuts::GetFlagDescription(Int_t sysflag) {
   else retst->Append("Unknown_%i",sysflag);
   return retst;
 };
+Double_t AliGFWCuts::GetChi2TPCConstrained(const AliESDtrack *l_Tr) {
+  const AliESDEvent* esdEvent = l_Tr->GetESDEvent();
+  // get vertex
+  const AliESDVertex* vertex = 0;
+  Double_t chi2TPCConstrainedVsGlobal=-2; //Initial value
+  vertex = esdEvent->GetPrimaryVertexTracks();
+  if (!vertex || !vertex->GetStatus()) vertex = esdEvent->GetPrimaryVertexSPD();
+  //TPC vertex not considered
+  // if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexTPC) vertex = esdEvent->GetPrimaryVertexTPC();
+  if (vertex->GetStatus()) chi2TPCConstrainedVsGlobal = l_Tr->GetChi2TPCConstrainedVsGlobal(vertex);
+  return chi2TPCConstrainedVsGlobal;
+}

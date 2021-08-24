@@ -96,6 +96,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	MaxNtr(0),
         festimatorFile(""),
         estimatorAvg(0),
+        NtrkWeightMC(0),
 	//==== basic parameters ====
 	fNevents(0),
 	fNDB(0),
@@ -170,6 +171,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fzvtx_Ntrkl_Corr(0),
 	fzvtx_Corr(0),
 	fNtrkl_Corr(0),
+	fNtrkl_noCorr(0),
 	fzvtx_V0M(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
@@ -235,7 +237,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistWeOrg(0),
         fHistWeOrgPos(0),
         fHistWeOrgNeg(0),
-        fMultEstimatorAvg(0)
+        fMultEstimatorAvg(0),
+        fweightNtrkl(0)
 
 {
 	// default constructor, don't allocate memory here!
@@ -277,6 +280,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	MaxNtr(0),
         festimatorFile(""),
         estimatorAvg(0),
+        NtrkWeightMC(0),
 	//==== basic parameters ====
 	fNevents(0),
 	fNDB(0),
@@ -351,6 +355,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fzvtx_Ntrkl_Corr(0),
 	fzvtx_Corr(0),
 	fNtrkl_Corr(0),
+	fNtrkl_noCorr(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
 	fzvtx_V0M(0),
@@ -416,7 +421,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistWeOrg(0),
         fHistWeOrgPos(0),
         fHistWeOrgNeg(0),
-        fMultEstimatorAvg(0)
+        fMultEstimatorAvg(0),
+        fweightNtrkl(0)
 {
 	// constructor
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -526,10 +532,11 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
 	fzvtx_Corr = new TH1F("fzvtx_Corr","Zvertex after correction; zvtx; counts",400,-20.,20.);
 	fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",301,-0.5,300.5);
+	fNtrkl_noCorr = new TH1F("fNtrkl_noCorr","N_{tracklet} w.o. correction; zvtx; counts",301,-0.5,300.5);
 	fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
 	fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
 
-        fzvtx_V0M = new TH2F("fzvtx_V0M","Zvertex vs V0M; zvtx; V0M",400,-20.,20.,301,-0.5,300.5);
+        fzvtx_V0M = new TH2F("fzvtx_V0M","Zvertex vs V0M; zvtx; V0M",400,-20.,20.,1501,-0.5,1500.5);
 
 	fDCAxy_Pt_ele = new TH2F("fDCAxy_Pt_ele","DCA_{xy} vs Pt (electron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 	fDCAxy_Pt_had = new TH2F("fDCAxy_Pt_had","DCA_{xy} vs Pt (hadron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
@@ -690,6 +697,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fzvtx_Ntrkl_Corr);
 	fOutputList->Add(fzvtx_Corr);
 	fOutputList->Add(fNtrkl_Corr);
+	fOutputList->Add(fNtrkl_noCorr);
+	fOutputList->Add(fzvtx_V0M);
 	fOutputList->Add(fNchNtr);
 	fOutputList->Add(fNchNtr_Corr);
 	fOutputList->Add(fDCAxy_Pt_ele);
@@ -987,6 +996,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
             //fEstimator = TFile::Open(festimatorFile.Data());
 	    if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
 	    if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
+ 
+	    if(fMCarray && !NtrkWeightMC)
+	    {
+	       NtrkWeightMC = GetNtrkWeightMC(fEstimator);
+	    }
+
 	   }
 
 	Double_t correctednAcc   = nAcc;
@@ -1014,9 +1029,10 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	fNchNtr->Fill(correctednAcc,Nch);
 	if(fMCarray){
 		WeightZvtx = fCorrZvtx->Eval(Zvertex);
-		//WeightNtrkl = fweightNtrkl->GetBinContent(fweightNtrkl->FindBin(correctednAcc));
+		WeightNtrkl = NtrkWeightMC->GetBinContent(NtrkWeightMC->FindBin(correctednAcc));
 		fzvtx_Corr->Fill(Zvertex,WeightZvtx);
 		fNtrkl_Corr->Fill(correctednAcc,WeightNtrkl);
+		fNtrkl_noCorr->Fill(correctednAcc);
 		fNchNtr_Corr->Fill(correctednAcc,Nch,WeightNtrkl);
 		fzvtx_Nch->Fill(Zvertex,Nch,WeightZvtx);
 	}
@@ -2273,6 +2289,23 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(TFile* fEstimator, c
 
   return fMultEstimatorAvg;
 }
+//____________________________________________________________________________
+TH1D* AliAnalysisTaskCaloHFEpp::GetNtrkWeightMC(TFile* fEstimator)
+{
+    
+  if(!fEstimator){
+	AliFatal("File with estimator not found!");
+	}
+
+  fweightNtrkl = (TProfile*)(fEstimator->Get("weightNtrkl"));
+
+  if(!fMultEstimatorAvg){
+	AliFatal("fMultEstimatorAvg not found!");
+	}
+
+  return fweightNtrkl;
+}
+
  //____________________________________________________________________________
 Double_t AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult)
 {

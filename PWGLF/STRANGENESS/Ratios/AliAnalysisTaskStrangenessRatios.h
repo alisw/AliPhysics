@@ -123,6 +123,7 @@ public:
   void SetSaveOnlyTrueLambdas(bool cut = true) { fOnlyTrueLambdas = cut; }
   void SetTPCRowsCut(float cut = 80.) {fCutTPCrows=cut;}
   void SetTPCRowOvFCut(float cut = 0.8) {fCutRowsOvF=cut;}
+  void UseOnTheFly(bool toggle = true) { fUseOnTheFly = toggle; }
 
 private:
   AliAnalysisTaskStrangenessRatios (const AliAnalysisTaskStrangenessRatios &source);
@@ -175,6 +176,7 @@ private:
   float fCutDCALambdaPrToPV = 0.08;
   float fCutDCALambdaPiToPV = 0.12;
   float fCutLambdaMass[2] = {1.09f, 1.15f};
+  bool fUseOnTheFly = false;
 
   bool IsTopolSelected(bool isXi = true);
   bool IsTopolSelectedLambda();

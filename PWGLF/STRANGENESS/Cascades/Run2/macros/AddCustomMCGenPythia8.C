@@ -13,7 +13,7 @@ AliGenerator* AddCustomMCGenPythia8( TString lTune          = "pp",
   gSystem->Load("liblhapdf");
   
   AliGenerator *genP  = NULL;
-  if( !lTune.EqualTo("PbPb") ){
+  if( !lTune.Contains("pp") ){
     genP                = CreatePythia8GenCustom(lTune, e_cms);
   }else{
     genP                = CreatePythia8GenPbPb(lTune, e_cms);
@@ -89,6 +89,56 @@ AliGenerator* CreatePythia8GenCustom( TString lTune,
     (AliPythia8::Instance())->ReadString("ColourReconnection:allowJunctions = on");
     (AliPythia8::Instance())->ReadString("ColourReconnection:junctionCorrection = 1.43");
     (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationMode = 0");
+    //===========================================================================
+  }
+  if ( lTune.EqualTo("pp-mode2") ){
+    std::cout << " Setting pp-mode2 parameters..." << std::endl;
+    //Paper reference: https://arxiv.org/pdf/1505.01681.pdf ("mode 0")
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("StringPT:sigma = 0.335");
+    (AliPythia8::Instance())->ReadString("StringZ:aLund = 0.36");
+    (AliPythia8::Instance())->ReadString("StringZ:bLund = 0.56");
+    (AliPythia8::Instance())->ReadString("StringFlav:probQQtoQ = 0.078");
+    (AliPythia8::Instance())->ReadString("StringFlav:ProbStoUD = 0.2");
+    (AliPythia8::Instance())->ReadString("StringFlav:probQQ1toQQ0join = 0.0275,0.0275,0.0275,0.0275");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("MultiPartonInteractions:pT0Ref = 2.15");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("BeamRemnants:remnantMode = 1");
+    (AliPythia8::Instance())->ReadString("BeamRemnants:saturation = 5");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("ColourReconnection:mode = 1");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:allowDoubleJunRem = off");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:m0 = 0.3");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:allowJunctions = on");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:junctionCorrection = 1.20");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationMode = 2");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationPar = 0.18");
+    //===========================================================================
+  }
+  if ( lTune.EqualTo("pp-mode3") ){
+    std::cout << " Setting pp-mode2 parameters..." << std::endl;
+    //Paper reference: https://arxiv.org/pdf/1505.01681.pdf ("mode 0")
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("StringPT:sigma = 0.335");
+    (AliPythia8::Instance())->ReadString("StringZ:aLund = 0.36");
+    (AliPythia8::Instance())->ReadString("StringZ:bLund = 0.56");
+    (AliPythia8::Instance())->ReadString("StringFlav:probQQtoQ = 0.078");
+    (AliPythia8::Instance())->ReadString("StringFlav:ProbStoUD = 0.2");
+    (AliPythia8::Instance())->ReadString("StringFlav:probQQ1toQQ0join = 0.0275,0.0275,0.0275,0.0275");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("MultiPartonInteractions:pT0Ref = 2.05");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("BeamRemnants:remnantMode = 1");
+    (AliPythia8::Instance())->ReadString("BeamRemnants:saturation = 5");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("ColourReconnection:mode = 1");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:allowDoubleJunRem = off");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:m0 = 0.3");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:allowJunctions = on");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:junctionCorrection = 1.15");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationMode = 3");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationPar = 0.073");
     //===========================================================================
   }
   if ( lTune.EqualTo("pp-nocr") ){
@@ -181,16 +231,20 @@ AliGenerator* CreatePythia8GenPbPb( TString lTune,
   std::cout << " Desired PYTHIA configuration: "<< lTune.Data()<< std::endl;
   std::cout << "*****************************************************************" << std::endl;
   // set process (MB)
-  gener->SetProcess(kPyMbDefault);
+  if(lTune.EqualTo("PbPb")) gener->SetProcess(kPyAngantyr);
+  if(lTune.EqualTo("XeXe")) gener->SetProcess(kPyAngantyrXeXe);
+  if(lTune.EqualTo("KrKr")) gener->SetProcess(kPyAngantyrKrKr);
+  if(lTune.EqualTo("ArAr")) gener->SetProcess(kPyAngantyrArAr);
+  if(lTune.EqualTo("OO")) gener->SetProcess(kPyAngantyrOO);
   
   //Centre of mass energy
   gener->SetEnergyCMS(e_cms); // in GeV
   
   //random seed based on time
-  (AliPythia8::Instance())->ReadString("Beams:idA = 1000822080");
-  (AliPythia8::Instance())->ReadString("Beams:idB = 1000822080");
-  (AliPythia8::Instance())->ReadString("PhaseSpace:pTHatMax = -1.0"); //this should be fixed in the constructor
-  (AliPythia8::Instance())->ReadString("Main:timesAllowErrors = 50000");
+//  (AliPythia8::Instance())->ReadString("Beams:idA = 1000822080");
+//  (AliPythia8::Instance())->ReadString("Beams:idB = 1000822080");
+//  (AliPythia8::Instance())->ReadString("PhaseSpace:pTHatMax = -1.0"); //this should be fixed in the constructor
+//  (AliPythia8::Instance())->ReadString("Main:timesAllowErrors = 50000");
   
   (AliPythia8::Instance())->ReadString("HeavyIon:SigFitNGen = 0");
   (AliPythia8::Instance())->ReadString("HeavyIon:SigFitDefPar = 13.88,1.84,0.22,0.0,0.0,0.0,0.0,0.0");
