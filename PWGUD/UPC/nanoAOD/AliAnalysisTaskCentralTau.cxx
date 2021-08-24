@@ -125,7 +125,7 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
   tTwoTracks ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/F");
   tTwoTracks ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   tTwoTracks ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-  tTwoTracks ->Branch("fTriggers", &fTriggers, Form("fTriggers[%i]/O",NTRIGGERS));
+  tTwoTracks ->Branch("fTriggers", &fTriggers, Form("fTriggers[%i]/O",(sizeof(fTriggers)/sizeof(fTriggers[0]))));
   tTwoTracks ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
   tTwoTracks ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");
   tTwoTracks ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
