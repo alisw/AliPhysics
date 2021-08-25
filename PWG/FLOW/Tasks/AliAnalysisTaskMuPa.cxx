@@ -45,6 +45,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fTerminateAfterQA(kFALSE),
  fVerbose(kFALSE),
  fEventCounter(0),
+ fRandomSeed(0),
 
  // QA:
  fQAList(NULL),
@@ -80,6 +81,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fFilterGlobalTracksAOD(kFALSE),
  fFilterBit(128), // defaulted to TPC-only
  fUseOnlyPrimaries(kTRUE), 
+ fAtLeastOnePointInTheSPD(kFALSE),
+ fIgnoreGlobalConstrained(kFALSE),
 
  // Q-vectors:
  fQvectorList(NULL),
@@ -145,10 +148,6 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
   // Initialize all arrays:
   this->InitializeArrays();
 
-  // Determine seed for gRandom:
-  delete gRandom;
-  gRandom = new TRandom3(0); // if uiSeed is 0, the seed is determined uniquely in space and time via TUUID
-
   // Define input and output slots here
   // Input slot #0 works with an AliFlowEventSimple
   //DefineInput(0, AliFlowEventSimple::Class());  
@@ -177,6 +176,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fTerminateAfterQA(kFALSE),
  fVerbose(kFALSE),
  fEventCounter(0),
+ fRandomSeed(0),
 
  // QA:
  fQAList(NULL),
@@ -212,6 +212,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fFilterGlobalTracksAOD(kFALSE),
  fFilterBit(-44),
  fUseOnlyPrimaries(kFALSE), 
+ fAtLeastOnePointInTheSPD(kFALSE),
+ fIgnoreGlobalConstrained(kFALSE),
 
  // Q-vectors:
  fQvectorList(NULL),
@@ -303,10 +305,11 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
 
  // a) Check before bookings if all the values user has provided via setters make sense;
  // b) Trick to avoid name clashes, part 1;
- // c) Book base profile;
- // d) Book and nest all lists;
- // e) Book all objects;
- // f) Book all look-up tables;
+ // c) Book random generator;
+ // d) Book base profile;
+ // e) Book and nest all lists;
+ // f) Book all objects;
+ // g) Book all look-up tables;
  // *) Trick to avoid name clashes, part 2.
  
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
@@ -318,13 +321,17 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
  Bool_t oldHistAddStatus = TH1::AddDirectoryStatus(); 
  TH1::AddDirectory(kFALSE);
 
- // c) Book base profile:€5
+ // c) Book random generator:
+ delete gRandom;
+ gRandom = new TRandom3(fRandomSeed); // if uiSeed is 0, the seed is determined uniquely in space and time via TUUID
+
+ // d) Book base profiles:
  this->BookBaseProfile();
 
- // d) Book and nest all lists:
+ // e) Book and nest all lists:
  this->BookAndNestAllLists();
 
- // e) Book all objects:
+ // f) Book all objects:
  this->BookQAHistograms();
  this->BookControlEventHistograms();
  this->BookControlParticleHistograms();
@@ -336,7 +343,7 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
  this->BookToyNUAHistograms(); 
  this->BookFinalResultsHistograms();
 
- // f) Book all look-up tables:
+ // g) Book all look-up tables:
  fSimReco = new TExMap(); // TBI 20210802 this doesn't have to be booked by default, only when running over MC
  if(fFilterGlobalTracksAOD)
  {
@@ -984,18 +991,20 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  } // for(Int_t ba=0;ba<2;ba++)
 
  // defaults bins:
- fEventBins[MagneticField][0] = 4;
- fEventBins[MagneticField][1] = -2.;
- fEventBins[MagneticField][2] = 2.;
+ fEventBins[MagneticField][0] = 20;
+ fEventBins[MagneticField][1] = -20.;
+ fEventBins[MagneticField][2] = 10.;
  fEventBins[PrimaryVertex][0] = 1;
  fEventBins[PrimaryVertex][1] = 0.;
  fEventBins[PrimaryVertex][2] = 1.;
 
  // default cuts:
- fEventCuts[MagneticField][0] = -1.;
- fEventCuts[MagneticField][1] = 1.;
- fEventCuts[PrimaryVertex][0] = 0.;
- fEventCuts[PrimaryVertex][1] = 1.;
+ fEventCuts[MagneticField][0] = -5.5;
+ fEventCuts[MagneticField][1] = 5.5;
+ fUseEventCuts[MagneticField] = kFALSE;
+ fEventCuts[PrimaryVertex][0] = -44;  
+ fEventCuts[PrimaryVertex][1] = -44;
+ fUseEventCuts[PrimaryVertex] = kFALSE;
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
 
@@ -1124,6 +1133,14 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
  fParticleBins[TPCNclsF][1] = 0.;
  fParticleBins[TPCNclsF][2] = 1.;
 
+ fParticleBins[HasPointOnITSLayer][0] = 6;
+ fParticleBins[HasPointOnITSLayer][1] = 0.;
+ fParticleBins[HasPointOnITSLayer][2] = 6.;
+
+ fParticleBins[IsGlobalConstrained][0] = 2;
+ fParticleBins[IsGlobalConstrained][1] = 0.;
+ fParticleBins[IsGlobalConstrained][2] = 2.;
+
  // d) The default particle cuts: 
  //  These cuts are used by default, if you want other cuts, indicate that via dedicated setters.
  //  d1) Kinematics:
@@ -1242,16 +1259,19 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBasePro = new TProfile("fBasePro","flags for the whole analysis",8,0.,8.);
+ fBasePro = new TProfile("fBasePro","flags for the whole analysis",9,0.,9.);
  fBasePro->SetStats(kFALSE);
+ fBasePro->SetLineColor(COLOR);
+ fBasePro->SetFillColor(FILLCOLOR);
  fBasePro->GetXaxis()->SetBinLabel(1,Form("fTaskName = %s",fTaskName.Data()));
  fBasePro->GetXaxis()->SetBinLabel(2,Form("fDataTakingPeriod = %s",fDataTakingPeriod.Data()));
  fBasePro->GetXaxis()->SetBinLabel(3,Form("fAODNumber = %s",fAODNumber.Data()));
- fBasePro->GetXaxis()->SetBinLabel(4,"fFillQAhistograms"); fBasePro->Fill(4.5,fFillQAHistograms);
- fBasePro->GetXaxis()->SetBinLabel(5,"fTerminateAfterQA"); fBasePro->Fill(5.5,fTerminateAfterQA);
- fBasePro->GetXaxis()->SetBinLabel(6,"fVerbose"); fBasePro->Fill(6.5,fVerbose);
- fBasePro->GetXaxis()->SetBinLabel(7,"fRealData"); fBasePro->Fill(7.5,fRealData);
- fBasePro->GetXaxis()->SetBinLabel(8,"fUseFisherYates"); fBasePro->Fill(8.5,fUseFisherYates);
+ fBasePro->GetXaxis()->SetBinLabel(4,"fFillQAhistograms"); fBasePro->Fill(3.5,fFillQAHistograms);
+ fBasePro->GetXaxis()->SetBinLabel(5,"fTerminateAfterQA"); fBasePro->Fill(4.5,fTerminateAfterQA);
+ fBasePro->GetXaxis()->SetBinLabel(6,"fVerbose"); fBasePro->Fill(5.5,fVerbose);
+ fBasePro->GetXaxis()->SetBinLabel(7,"fRealData"); fBasePro->Fill(6.5,fRealData);
+ fBasePro->GetXaxis()->SetBinLabel(8,"fUseFisherYates"); fBasePro->Fill(7.5,fUseFisherYates);
+ fBasePro->GetXaxis()->SetBinLabel(9,"fRandomSeed"); fBasePro->Fill(8.5,fRandomSeed);
  fBaseList->Add(fBasePro);
 
 } // void AliAnalysisTaskMuPa::BookBaseProfile()
@@ -1385,7 +1405,7 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
                                         "dca_xy_min","dca_xy_max","dca_z_min","dca_z_max","TPCNcls_min","TPCNcls_max","TPCnclsS_min","TPCnclsS_max",
                                         "TPCnclsFractionShared_min","TPCnclsFractionShared_max","TPCNCrossedRows_min","TPCNCrossedRows_max","Chi2perNDF_min","Chi2perNDF_max",
                                         "TPCFoundFraction_min","TPCFoundFraction_max","Chi2TPCConstrainedVsGlobal_min","Chi2TPCConstrainedVsGlobal_max",
-                                        "ITSNcls_min","ITSNcls_max","ITSChi2perNDF_min","ITSChi2perNDF_max","TPCNclsF_min","TPCNclsF_max"};
+                                        "ITSNcls_min","ITSNcls_max","ITSChi2perNDF_min","ITSChi2perNDF_max","TPCNclsF_min","TPCNclsF_max","fAtLeastOnePointInTheSPD","fIgnoreGlobalConstrained"};
 
  for(Int_t ba=0;ba<2;ba++)
  {
@@ -1677,10 +1697,14 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
- fControlParticleHistogramsPro = new TProfile("fControlParticleHistogramsPro","flags for control particle histograms",2,0.,2.);
+ fControlParticleHistogramsPro = new TProfile("fControlParticleHistogramsPro","flags for control particle histograms",4,0.,4.);
+ fControlParticleHistogramsPro->SetLineColor(COLOR);
+ fControlParticleHistogramsPro->SetFillColor(FILLCOLOR);
  fControlParticleHistogramsPro->SetStats(kFALSE);
  fControlParticleHistogramsPro->GetXaxis()->SetBinLabel(1,"fFilterBit"); fControlParticleHistogramsPro->Fill(0.5,fFilterBit);
  fControlParticleHistogramsPro->GetXaxis()->SetBinLabel(2,"fUseOnlyPrimaries"); fControlParticleHistogramsPro->Fill(1.5,fUseOnlyPrimaries);
+ fControlParticleHistogramsPro->GetXaxis()->SetBinLabel(3,"fAtLeastOnePointInTheSPD"); fControlParticleHistogramsPro->Fill(2.5,fAtLeastOnePointInTheSPD);
+ fControlParticleHistogramsPro->GetXaxis()->SetBinLabel(4,"fIgnoreGlobalConstrained"); fControlParticleHistogramsPro->Fill(3.5,fIgnoreGlobalConstrained);
  fControlParticleHistogramsList->Add(fControlParticleHistogramsPro);
 
  // b) Common local labels:
@@ -1690,7 +1714,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
  TString srs[2] = {"reconstructed","simulated"};
  TString skv[gKinematicVariables] = {"#varphi","p_{T}","#eta","energy","charge"};
  TString stype[gParticleHistograms] = {"TPCNcls","TPCnclsS","TPCnclsFractionShared","TPCNCrossedRows","TPCChi2perNDF","TPCFoundFraction","Chi2TPCConstrainedVsGlobal","ITSNcls","ITSChi2perNDF",
-                                       "TPCNclsF"};
+                                       "TPCNclsF","HasPointOnITSLayer","IsGlobalConstrained"};
 
  // c) Kinematics:
  for(Int_t ba=0;ba<2;ba++)
@@ -1700,7 +1724,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
    if(fRealData && 1==rs){continue;}
    for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4 TBI 20210512 this is not enforced to be in sync with the definition of enums
    {
-    fKinematicsHist[ba][rs][kv] = new TH1D(Form("fKinematicsHist[%d][%d][%d]",ba,rs,kv),Form("%s, %s",sba[ba].Data(),srs[rs].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]); 
+    fKinematicsHist[ba][rs][kv] = new TH1D(Form("fKinematicsHist[%d][%d][%d]",ba,rs,kv),Form("%d, %s, %s",fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]); 
     //fKinematicsHist[ba][rs][kv]->SetStats(kFALSE);
     fKinematicsHist[ba][rs][kv]->GetXaxis()->SetTitle(skv[kv].Data());
     fKinematicsHist[ba][rs][kv]->SetMinimum(0.);
@@ -1719,7 +1743,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
    if(fRealData && 1==rs){continue;}
    for(Int_t xyTz=0;xyTz<2;xyTz++) 
    {
-    fDCAHist[ba][rs][xyTz] = new TH1D(Form("fDCAHist[%d][%d][%d]",ba,rs,xyTz),Form("%s, %s",sba[ba].Data(),srs[rs].Data()),(Int_t)fDCABins[xyTz][0],fDCABins[xyTz][1],fDCABins[xyTz][2]); 
+    fDCAHist[ba][rs][xyTz] = new TH1D(Form("fDCAHist[%d][%d][%d]",ba,rs,xyTz),Form("%d, %s, %s",fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fDCABins[xyTz][0],fDCABins[xyTz][1],fDCABins[xyTz][2]); 
     //fDCAHist[ba][rs][xyTz]->SetStats(kFALSE);
     fDCAHist[ba][rs][xyTz]->GetXaxis()->SetTitle(sxyTz[xyTz].Data());
     fDCAHist[ba][rs][xyTz]->SetMinimum(0.);
@@ -1738,13 +1762,18 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
    if(fRealData && 1==rs){continue;}
    for(Int_t t=0;t<gParticleHistograms;t++) // type, see enum 'eParticle'
    {
-    fParticleHist[ba][rs][t] = new TH1D(Form("fParticleHist[%d][%d][%d]",ba,rs,t),Form("%s, %s, %s",stype[t].Data(),sba[ba].Data(),srs[rs].Data()),(Int_t)fParticleBins[t][0],fParticleBins[t][1],fParticleBins[t][2]);  
+    fParticleHist[ba][rs][t] = new TH1D(Form("fParticleHist[%d][%d][%d]",ba,rs,t),Form("%d, %s, %s",fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fParticleBins[t][0],fParticleBins[t][1],fParticleBins[t][2]);  
     fParticleHist[ba][rs][t]->GetXaxis()->SetTitle(stype[t].Data());
     fParticleHist[ba][rs][t]->SetMinimum(0.);  
     fParticleHist[ba][rs][t]->SetLineColor(fBeforeAfterColor[ba]);
     fParticleHist[ba][rs][t]->SetFillColor(fBeforeAfterColor[ba]-10);
     fControlParticleHistogramsList->Add(fParticleHist[ba][rs][t]); 
    } // for(Int_t t=0;t<gParticleHistograms;t++)
+
+   // fine tuning for some histograms:
+   fParticleHist[ba][rs][IsGlobalConstrained]->GetXaxis()->SetBinLabel(1,"IsGlobalConstrained = kTRUE"); 
+   fParticleHist[ba][rs][IsGlobalConstrained]->GetXaxis()->SetBinLabel(2,"IsGlobalConstrained = kFALSE"); 
+
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t ba=0;ba<2;ba++)
 
@@ -2213,7 +2242,7 @@ void AliAnalysisTaskMuPa::FillControlEventHistograms(AliVEvent *ave, const Int_t
   if(fCentralMultiplicityHist[RefMultComb08][ba]){fCentralMultiplicityHist[RefMultComb08][ba]->Fill(aodheader->GetRefMultiplicityComb08());}
 
   // e) Remaining event distributions:
-  if(fEventHistograms[ba][MagneticField]){fEventHistograms[ba][MagneticField]->Fill(aAOD->GetMagneticField());}
+  if(fEventHistograms[ba][MagneticField]){fEventHistograms[ba][MagneticField]->Fill(aodheader->GetMagneticField());} // Solenoid Magnetic Field in kG
   if(fEventHistograms[ba][PrimaryVertex]){fEventHistograms[ba][PrimaryVertex]->Fill(0.44);} // here we only count # of events with valid pointer aAOD->GetPrimaryVertex()  
  } // if(aAOD)
 
@@ -2299,6 +2328,24 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliVParticle *vParticle,
   if(fParticleHist[ba][rs][ITSNcls]){fParticleHist[ba][rs][ITSNcls]->Fill(aodTrack->GetITSNcls());}
   if(fParticleHist[ba][rs][ITSChi2perNDF]){if(TMath::Abs(aodTrack->GetITSNcls())>0.){fParticleHist[ba][rs][ITSChi2perNDF]->Fill(aodTrack->GetITSchi2()/aodTrack->GetITSNcls());}}
   if(fParticleHist[ba][rs][TPCNclsF]){fParticleHist[ba][rs][TPCNclsF]->Fill(aodTrack->GetTPCNclsF());}}
+  if(fParticleHist[ba][rs][HasPointOnITSLayer])
+  {
+   for(Int_t l=1;l<=6;l++) // loop over ITS layers
+   {
+    if(aodTrack->HasPointOnITSLayer(l)){fParticleHist[ba][rs][HasPointOnITSLayer]->Fill(l-0.5);} // fill in the center of the bin   
+   }
+  }
+  if(fParticleHist[ba][rs][IsGlobalConstrained])
+  {
+   if(aodTrack->IsGlobalConstrained())
+   {
+    fParticleHist[ba][rs][IsGlobalConstrained]->Fill(0.44); // keep in sync. with the booking of this histogram
+   } 
+   else
+   {
+    fParticleHist[ba][rs][IsGlobalConstrained]->Fill(1.44); // keep in sync. with the booking of this histogram
+   }  
+  }
 
  // c) Fill histograms for AOD MC particle:
  if(aodmcParticle)
@@ -2420,9 +2467,6 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
    if(avtx->GetZ() < fVertexCuts[Z][0]) return kFALSE;
    if(avtx->GetZ() > fVertexCuts[Z][1]) return kFALSE;
   }
-
-  // Remaining event cuts:
-  // TBI 20210518 magnetic field value
 
   // Centrality weights (flattening): 
   // Remark: since I am getting centrality weights from centrality distribution after the events cuts, flattening is applied here after all other event cuts:
@@ -2591,7 +2635,7 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
  {
   // Filter bit:
   if(!aodTrack->TestFilterBit(fFilterBit)) return kFALSE;
- 
+
   // Trivial cuts:
   if(fUseOnlyPrimaries)
   {
@@ -2626,18 +2670,28 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
    if(aodTrack->Charge() >= fKinematicsCuts[CHARGE][1]) return kFALSE;
   }
 
-  // DCA xy:
-  if(fUseDCACuts[0])
+  // DCA:
+  if(fUseDCACuts[0]||fUseDCACuts[1])
   {
-   if(aodTrack->DCA() < fDCACuts[0][0]) return kFALSE;
-   if(aodTrack->DCA() >= fDCACuts[0][1]) return kFALSE;
-  } 
-  // DCA z:
-  if(fUseDCACuts[1])
-  {
-   if(aodTrack->ZAtDCA() < fDCACuts[1][0]) return kFALSE;
-   if(aodTrack->ZAtDCA() >= fDCACuts[1][1]) return kFALSE;
-  }
+   Float_t dcaXY = aodTrack->DCA(); 
+   Float_t dcaZ = aodTrack->ZAtDCA(); 
+   if(!aodTrack->TestBit(AliAODTrack::kIsDCA))
+   {
+    aodTrack->GetImpactParameters(dcaXY,dcaZ); 
+   } 
+   // DCA xy:
+   if(fUseDCACuts[0])
+   {
+    if(dcaXY < fDCACuts[0][0]) return kFALSE;
+    if(dcaXY >= fDCACuts[0][1]) return kFALSE;
+   } 
+   // DCA z:
+   if(fUseDCACuts[1])
+   {
+    if(dcaZ < fDCACuts[1][0]) return kFALSE;
+    if(dcaZ >= fDCACuts[1][1]) return kFALSE;
+   }
+  } // if(fUseDCACuts[0]||fUseDCACuts[1])
 
   // Remaining particle cuts:
   if(fUseParticleCuts[TPCNcls])
@@ -2698,6 +2752,14 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
   {
    if(aodTrack->GetTPCNclsF() < fParticleCuts[TPCNclsF][0]) return kFALSE;
    if(aodTrack->GetTPCNclsF() >= fParticleCuts[TPCNclsF][1]) return kFALSE;
+  }
+  if(fAtLeastOnePointInTheSPD)
+  {
+   if(!(aodTrack->HasPointOnITSLayer(1) || aodTrack->HasPointOnITSLayer(2))) return kFALSE;
+  }
+  if(fIgnoreGlobalConstrained) // kTRUE by default
+  {
+   if(aodTrack->IsGlobalConstrained()) return kFALSE;
   }
 
   // Toy NUA:
@@ -2824,18 +2886,28 @@ void AliAnalysisTaskMuPa::ParticleCutCounter(AliVParticle *vParticle)
    if(aodTrack->Charge() >= fKinematicsCuts[CHARGE][1]) fQAParticleCutCounter[RECO]->Fill(12.5);
   }
 
-  // DCA xy:
-  if(fUseDCACuts[0])
+  // DCA:
+  if(fUseDCACuts[0]||fUseDCACuts[1])
   {
-   if(aodTrack->DCA() < fDCACuts[0][0]) fQAParticleCutCounter[RECO]->Fill(13.5);
-   if(aodTrack->DCA() >= fDCACuts[0][1]) fQAParticleCutCounter[RECO]->Fill(14.5);
-  } 
-  // DCA z:
-  if(fUseDCACuts[1])
-  {
-   if(aodTrack->ZAtDCA() < fDCACuts[1][0]) fQAParticleCutCounter[RECO]->Fill(15.5);
-   if(aodTrack->ZAtDCA() >= fDCACuts[1][1]) fQAParticleCutCounter[RECO]->Fill(16.5);
-  }
+   Float_t dcaXY = aodTrack->DCA(); 
+   Float_t dcaZ = aodTrack->ZAtDCA(); 
+   if(!aodTrack->TestBit(AliAODTrack::kIsDCA))
+   {
+    aodTrack->GetImpactParameters(dcaXY,dcaZ); 
+   } 
+   // DCA xy:
+   if(fUseDCACuts[0])
+   {
+    if(dcaXY < fDCACuts[0][0]) fQAParticleCutCounter[RECO]->Fill(13.5);
+    if(dcaXY >= fDCACuts[0][1]) fQAParticleCutCounter[RECO]->Fill(14.5);
+   } 
+   // DCA z:
+   if(fUseDCACuts[1])
+   {
+    if(dcaZ < fDCACuts[1][0]) fQAParticleCutCounter[RECO]->Fill(15.5);
+    if(dcaZ >= fDCACuts[1][1]) fQAParticleCutCounter[RECO]->Fill(16.5);
+   }
+  } // if(fUseDCACuts[0]||fUseDCACuts[1])
 
   // Remaining particle cuts:
   if(fUseParticleCuts[TPCNcls])
@@ -2896,6 +2968,14 @@ void AliAnalysisTaskMuPa::ParticleCutCounter(AliVParticle *vParticle)
   {
    if(aodTrack->GetTPCNclsF() < fParticleCuts[TPCNclsF][0]) fQAParticleCutCounter[RECO]->Fill(35.5);
    if(aodTrack->GetTPCNclsF() >= fParticleCuts[TPCNclsF][1]) fQAParticleCutCounter[RECO]->Fill(36.5);
+  }
+  if(fAtLeastOnePointInTheSPD)
+  {
+   if(!(aodTrack->HasPointOnITSLayer(1) || aodTrack->HasPointOnITSLayer(2))) fQAParticleCutCounter[RECO]->Fill(37.5);
+  }
+  if(fIgnoreGlobalConstrained) // kTRUE by default
+  {
+   if(aodTrack->IsGlobalConstrained()) fQAParticleCutCounter[RECO]->Fill(38.5);
   }
  } // if(aodTrack)
 
@@ -3874,7 +3954,7 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliAODEvent *aAOD, AliMCEvent *aMC)
   {
    aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack));
    if(!aodTrack){continue;}
-   if(!SurvivesParticleCuts(aodTrack)){continue;} // without this, I have problenm with TPC-only and Global tracks, since they have the same Monte Carlo label
+   if(!SurvivesParticleCuts(aodTrack)){continue;} // without this, I have problem with TPC-only and Global tracks, since they have the same Monte Carlo label
 
    // The corresponding Monte Carlo particle:
    aodmcParticle = dynamic_cast<AliAODMCParticle*>(aMC->GetTrack(aodTrack->GetLabel()));

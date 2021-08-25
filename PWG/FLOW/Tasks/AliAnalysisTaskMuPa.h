@@ -36,13 +36,13 @@ const Int_t gCentralityEstimators = 4; // set here number of supported centralit
 const Int_t gKinematicVariables = 5; // number of supported kinematic variables: [phi,pt,eta,e,charge]
 const Int_t gFilterBits = 17; // number of filterbits to scan
 const Int_t gEventHistograms = 2; // total number of non-classified event histograms
-const Int_t gParticleHistograms = 10; // total number of non-classified particle histograms, keep in sync. with eParticle
+const Int_t gParticleHistograms = 12; // total number of non-classified particle histograms, keep in sync. with eParticle
 const Int_t gCentralMultiplicity = 1; // multiplicities defined centrally, e.g. ref. mult.
 const Int_t gWeights = 3; // phi, pt, eta
 const Int_t gQAAnomalousEvents = 1; // |vertex| = 0; 
 const Int_t gQASelfCorrelations = 3; // phi, pt, eta
 const Int_t gQAEventCutCounter = 22; // see TString secc[gQAEventCutCounter] in .cxx
-const Int_t gQAParticleCutCounter = 37; // see TString spcc[gQAParticleCutCounter] in .cxx
+const Int_t gQAParticleCutCounter = 39; // see TString spcc[gQAParticleCutCounter] in .cxx
 
 // enums:
 enum eBins {nBins,min,max};
@@ -52,7 +52,7 @@ enum eBeforeAfter { BEFORE = 0, AFTER = 1 };
 enum eRecoSim { RECO = 0, SIM = 1 };
 enum eKinematics { PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4 };
 enum eDefaultColors { COLOR = kBlack, FILLCOLOR = kGray };
-enum eParticle { TPCNcls, TPCnclsS, TPCnclsFractionShared, TPCNCrossedRows, TPCChi2perNDF, TPCFoundFraction, Chi2TPCConstrainedVsGlobal, ITSNcls, ITSChi2perNDF, TPCNclsF };
+enum eParticle { TPCNcls, TPCnclsS, TPCnclsFractionShared, TPCNCrossedRows, TPCChi2perNDF, TPCFoundFraction, Chi2TPCConstrainedVsGlobal, ITSNcls, ITSChi2perNDF, TPCNclsF, HasPointOnITSLayer, IsGlobalConstrained };
 enum eEvent { MagneticField, PrimaryVertex };
 enum eCentralMultiplicity { RefMultComb08 };
 
@@ -136,6 +136,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetDataTakingPeriod(const char *dtp) {this->fDataTakingPeriod = dtp;};
   void SetAODNumber(const char *an) {this->fAODNumber = an;};
   void SetVerbose(Bool_t v) {this->fVerbose = v;};
+  void SetRandomSeed(UInt_t rs) {this->fRandomSeed = rs;};
 
   void SetControlEventHistogramsList(TList* const cehl) {this->fControlEventHistogramsList = cehl;};
   TList* GetControlEventHistogramsList() const {return this->fControlEventHistogramsList;} 
@@ -260,6 +261,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    else{exit(1);}
    this->fEventCuts[var][0] = min;
    this->fEventCuts[var][1] = max;
+   this->fUseEventCuts[var] = kTRUE;
   }
   void SetControlParticleHistogramsList(TList* const cphl) {this->fControlParticleHistogramsList = cphl;};
   TList* GetControlParticleHistogramsList() const {return this->fControlParticleHistogramsList;} 
@@ -359,7 +361,10 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fParticleCuts[var][0] = min;
    this->fParticleCuts[var][1] = max;
    this->fUseParticleCuts[var] = kTRUE;
-  }
+  }  
+  void SetAtLeastOnePointInTheSPD(Bool_t alopits) {this->fAtLeastOnePointInTheSPD = alopits;};
+  void SetIgnoreGlobalConstrained(Bool_t igc) {this->fIgnoreGlobalConstrained = igc;};
+
   void SetCalculateQvector(Bool_t cqv) {this->fCalculateQvector = cqv;};
   Bool_t GetCalculateQvector() const {return this->fCalculateQvector;};
 
@@ -451,6 +456,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fTerminateAfterQA; // in UserExec(), bail out immediately after QA histograms are filled 
   Bool_t fVerbose; // print all additional info like Green(__PRETTY_FUNCTION__); etc.
   Int_t fEventCounter; // counter of all events, i.e. number of times UserExec() has been called
+  UInt_t fRandomSeed; // argument to TRandom3 constructor. By default is 0, use SetRandomSeed(...) to change it
 
   // 1) QA:
   TList *fQAList; // base list to hold all QA output object
@@ -508,6 +514,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fEventHistograms[2][gEventHistograms]; //! [before,after event cuts][ type - see enum ]
   Double_t fEventBins[gEventHistograms][3]; // [nBins,min,max]
   Double_t fEventCuts[gEventHistograms][2]; // [type - see enum][min,max]
+  Bool_t fUseEventCuts[gEventHistograms]; // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
 
   // 3) Control particle histograms:  
   TList *fControlParticleHistogramsList; // list to hold all control histograms for particle distributions
@@ -533,6 +540,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Double_t fParticleBins[gParticleHistograms][3]; // [nBins,min,max]
   Double_t fParticleCuts[gParticleHistograms][2]; // [type - see enum][min,max]
   Bool_t fUseParticleCuts[gParticleHistograms];   // set to kTRUE, only if the correspondign SetParticleCuts(...) was used in the steering macros
+  Bool_t fAtLeastOnePointInTheSPD; // set to kTRUE via SetAtLeastOnePointInTheSPD( ... ), only tracks with one or two points in the SPD are taken
+  Bool_t fIgnoreGlobalConstrained; // set to kTRUE by default, to avouid double counting in some cases.
 
   // 4) Q-vectors:
   TList *fQvectorList;        // list to hold all Q-vector objects       
@@ -543,8 +552,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TComplex fQvector[49][9];   //! Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1]  
 
   // 5) Particle weights: 
-  TList *fWeightsList;                  // list to hold all Q-vector objects       
-  TProfile *fWeightsFlagsPro;           // profile to hold all flags for weights
+  TList *fWeightsList;          // list to hold all Q-vector objects       
+  TProfile *fWeightsFlagsPro;   // profile to hold all flags for weights
   Bool_t fUseWeights[gWeights]; // use weights [phi,pt,eta]
   TH1D *fWeightsHist[gWeights]; // histograms holding weights [phi,pt,eta]
 
@@ -597,7 +606,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,13);
+  ClassDef(AliAnalysisTaskMuPa,14);
 
 };
 
