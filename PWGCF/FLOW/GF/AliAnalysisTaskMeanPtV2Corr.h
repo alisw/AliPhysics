@@ -16,6 +16,9 @@
 #include "AliMCSpectraWeights.h"
 #include "AliAODTracklets.h"
 #include "AliAODVZERO.h"
+#include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
+#include "AliESDEvent.h"
 
 
 class TList;
@@ -104,6 +107,8 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetNchCorrelationCut(Double_t l_slope=1, Double_t l_offset=0, Bool_t l_enable=kTRUE) { fCorrPar[0] = l_slope; fCorrPar[1] = l_offset; fUseCorrCuts = l_enable; };
   Bool_t CheckNchCorrelation(const Int_t &lNchGen, const Int_t &lNchRec) { return (fCorrPar[0]*lNchGen + fCorrPar[1] < lNchRec); };
   void SetBypassTriggerAndEventCuts(Bool_t newval) { fBypassTriggerAndEvetCuts = newval; };
+  void SetV0PUCut(TString newval) { if(fV0CutPU) delete fV0CutPU; fV0CutPU = new TF1("fV0CutPU", newval.Data(), 0, 100000);
+}
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -182,6 +187,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TF1 *fCenCutLowPU; //Store these
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
+  AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
   Bool_t FillCovariance(AliProfileBS* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt, const Double_t &l_rndm);
@@ -190,6 +196,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t AcceptCustomEvent(AliAODEvent*);
+  Bool_t AcceptCustomEvent(AliESDEvent*);
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
   Bool_t fRequireReloadOnRunChange;
