@@ -666,7 +666,9 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
 
   // temporary solution to remove tracks from background events (corresponds to fMCIsPileupParticle = true)
   // FIXME: we may actually not want to reject those tracks but count them as contamination instead
-  if (fIsMC && fIsNewReco && std::abs(track->GetLabel()) >= AliMCEvent::BgLabelOffset()) return false;
+  if (fIsMC && fIsNewReco && std::abs(track->GetLabel()) >= AliMCEvent::BgLabelOffset()) {
+    return false;
+  }
 
   fPt = track->Pt();
   fEta = track->Eta();
@@ -710,7 +712,7 @@ bool AliMultDepSpecAnalysisTask::InitParticle(Particle_t* particle)
   fMCLabel = particle->GetLabel();
   fMCIsPileupParticle = false;
   // reject all particles and tracks that come from simulated out-of-bunch pileup
-  if (fIsNewReco && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(fMCLabel, fMCEvent)) {
+  if (fIsNewReco && (fMCEvent->IsFromSubsidiaryEvent(fMCLabel) || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(fMCLabel, fMCEvent))) {
     fMCIsPileupParticle = true; // store this info as it is relevant for track loop as well
     return false;
   }
