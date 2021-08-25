@@ -21,7 +21,9 @@ AliFemtoCorrFctn(),
   fPtKstar(0),
   fPtKstarDen(0),
   fPtKstar2part(0),
-  fPtKstarDen2part(0)
+  fPtKstarDen2part(0),
+  fPairPtKstar2part(0),
+  fPairPtKstarDen2part(0)
 {
   fPtKstar = new TH2D(Form("PtvsKstar1part%s",title),"Pt vs kstar (part 1)",200,0.0,2.0, 200, 0.0, 4.0);
   fPtKstarDen = new TH2D(Form("PtvsKstarDen1part%s",title),"Pt vs kstar in mixed events (part 1)",200,0.0,2.0, 200, 0.0, 4.0);
@@ -29,8 +31,8 @@ AliFemtoCorrFctn(),
   fPtKstar2part = new TH2D(Form("PtvsKstar2part%s",title),"Pt vs kstar (part 2)",200,0.0,2.0, 200, 0.0, 4.0);
   fPtKstarDen2part = new TH2D(Form("PtvsKstarDen2part%s",title),"Pt vs kstar in mixed events (part 2)",200,0.0,2.0, 200, 0.0, 4.0);
 
-  fPairPtKstar2part = new TH2D(Form("PairPtvsKstar%s",title),"Pair Pt vs kstar (part 1)",100,0.0,0.5, 300, 0.0, 6.0);
-  fPairPtKstarDen2part = new TH2D(Form("PairPtvsKstarDen%s",title),"Pair Pt vs kstar in mixed events (part 1)",100,0.0,0.5, 300, 0.0, 6.0);
+  fPairPtKstar2part = new TH2D(Form("PairPtvsKstar%s",title),"Pair Pt vs kstar ",100,0.0,0.5, 300, 0.0, 6.0);
+  fPairPtKstarDen2part = new TH2D(Form("PairPtvsKstarDen%s",title),"Pair Pt vs kstar in mixed events ",100,0.0,0.5, 300, 0.0, 6.0);
 
   }
 
