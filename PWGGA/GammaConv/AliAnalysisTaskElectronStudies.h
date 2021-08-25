@@ -142,7 +142,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     TClonesArray*               fAODMCTrackArray;    // storage of track array
    
     AliEMCALGeometry*           fGeomEMCAL;    // pointer to EMCAL geometry
-    
+    AliEMCALRecoUtils*          fEMCalRecoUtils;
     // cuts and setting
     TString                     fCorrTaskSetting;           //
     AliConvEventCuts*           fEventCuts;                 // event cuts
@@ -187,6 +187,14 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
 
     TH1F*                       fGenPtElectrons;
     TH1F*                       fGenPtElectronsInEmcalAcc;
+    
+    
+    TH2F*                       fTrackPvsPOnSurface;
+    TH2F*                       fTrackPvsPOnSurfaceOwn;
+    TH2F*                       fTrackRefPvsR;
+    TH1F*                       fTrackPOnSurface;
+    TH1F*                       fTrackPOnSurfaceOwn;
+    TH1F*                       fTrackPOnSurfaceTrue;
 
     Long64_t                    fTreeBuffSize;           ///< allowed uncompressed buffer size per tree
     Long64_t                    fMemCountAOD;            //!<! accumulated tree size before AutoSave
@@ -236,6 +244,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     void ProcessMCCaloPhoton(AliAODCaloCluster* clus,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag);
     void ProcessCaloPhotons();
     void ProcessTracks(); // only needed for track effi
+    void ProcessTracksESD(); // only needed for track effi
     Bool_t TrackIsSelectedAOD(AliAODTrack* lTrack);
     void ProcessMatchedTrack(AliAODTrack* track, AliAODCaloCluster* clus, Bool_t isV0, Float_t dEtaV0 = 99, Float_t dPhiV0 = 99);
     void ProcessMCParticles();
@@ -256,7 +265,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     std::pair<Double_t,Double_t> ProcessChargedIsolation(AliAODTrack* track);
     AliAnalysisTaskElectronStudies(const AliAnalysisTaskElectronStudies&); // Prevent copy-construction
     AliAnalysisTaskElectronStudies& operator=(const AliAnalysisTaskElectronStudies&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskElectronStudies, 13);
+    ClassDef(AliAnalysisTaskElectronStudies, 14);
 
 };
 
