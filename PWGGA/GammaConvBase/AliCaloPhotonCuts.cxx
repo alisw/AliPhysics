@@ -8077,10 +8077,12 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         } else if(fCurrentMC==k17e2 || fCurrentMC == k18j3 || fCurrentMC == k16h3) {
           if(fClusterType==2){
             energy /= FunctionNL_kSDM(energy, 0.988638, 3.25466, -6.67582, -0.0148077) ;
+            energy /= FunctionNL_kSDM(energy, 0.997783, 5.47875, -12.3443, 0.00287078) ;
           }
         } else if(fCurrentMC==k17l3b || fCurrentMC==k18j2 || fCurrentMC==k17l4b || fCurrentMC == k18b8 || fCurrentMC == k18b10 || fCurrentMC==k18l2) {
           if(fClusterType==2){
             energy /= FunctionNL_kSDM(energy, 0.988638, 3.25466, -6.67582, -0.0148077) ;
+            energy /= FunctionNL_kSDM(energy, 0.997783, 5.47875, -12.3443, 0.00287078) ;
           }
         } else if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
           if(fClusterType==1 ){
@@ -8136,9 +8138,15 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           } else if(fClusterType==2) {
             energy /= (FunctionNL_DExp(energy, 1.0154938040, 0.3062978125, -3.9089772679, 1.0061692542, 513.7621552761, -3566.4426936867 ) * 0.996512);
           }
-       } else if(fCurrentMC==k17l3b || fCurrentMC==k18j2 || fCurrentMC==k17l4b || fCurrentMC == k18b8 || fCurrentMC == k18b10 || fCurrentMC==k18l2) {
+       } else if(fCurrentMC==k17e2 || fCurrentMC == k18j3 || fCurrentMC == k16h3) {
           if(fClusterType==2){
-            energy /= FunctionNL_kSDM(energy, 1.01008, -2.41975, -1.43326);
+            energy /= FunctionNL_kSDM(energy, 0.988638, 3.25466, -6.67582, -0.0148077) ;
+            energy /= FunctionNL_kSDM(energy, 0.997685, 5.66189, -17.1505, 0.0142028) ;
+          }
+        } else if(fCurrentMC==k17l3b || fCurrentMC==k18j2 || fCurrentMC==k17l4b || fCurrentMC == k18b8 || fCurrentMC == k18b10 || fCurrentMC==k18l2) {
+          if(fClusterType==2){
+            energy /= FunctionNL_kSDM(energy, 0.988638, 3.25466, -6.67582, -0.0148077) ;
+            energy /= FunctionNL_kSDM(energy, 0.997685, 5.66189, -17.1505, 0.0142028) ;
           }
        } else if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
           if(fClusterType==1 ){
