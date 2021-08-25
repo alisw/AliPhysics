@@ -810,7 +810,7 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
   tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNclsF());
 
-  tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
+  //tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
   //tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   //tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
 
