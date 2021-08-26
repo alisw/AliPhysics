@@ -137,6 +137,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetAODNumber(const char *an) {this->fAODNumber = an;};
   void SetVerbose(Bool_t v) {this->fVerbose = v;};
   void SetRandomSeed(UInt_t rs) {this->fRandomSeed = rs;};
+  void SetTrigger(const char *t) {this->fTrigger = t; this->fUseTrigger = kTRUE;};
 
   void SetControlEventHistogramsList(TList* const cehl) {this->fControlEventHistogramsList = cehl;};
   TList* GetControlEventHistogramsList() const {return this->fControlEventHistogramsList;} 
@@ -457,6 +458,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fVerbose; // print all additional info like Green(__PRETTY_FUNCTION__); etc.
   Int_t fEventCounter; // counter of all events, i.e. number of times UserExec() has been called
   UInt_t fRandomSeed; // argument to TRandom3 constructor. By default is 0, use SetRandomSeed(...) to change it
+  TString fTrigger; // offline trigger, use e.g. task->SetTrigger("kMB")
+  Bool_t fUseTrigger; // kFALSE by default. Set automatically when task->SetTrigger(...) is called
 
   // 1) QA:
   TList *fQAList; // base list to hold all QA output object
@@ -474,6 +477,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fQACheckSelfCorrelations; // kFALSE by default. If kTRUE, both fQASelfCorrelations[] and fQASimRecoSelfCorrelations[] are filled
   TH1I *fQAEventCutCounter; // counter for each event cut
   TH1I *fQAParticleCutCounter[2]; // counter for each particle cut. [0] = reco, [1] = sim
+  TH1I *fQATrigger[2]; // counter for triggers [0] = before event cuts, [1] = after event cuts
 
   // 2) Control event histograms:  
   TList *fControlEventHistogramsList; // list to hold all control event histograms
@@ -606,7 +610,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,14);
+  ClassDef(AliAnalysisTaskMuPa,15);
 
 };
 
