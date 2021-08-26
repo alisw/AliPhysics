@@ -5494,7 +5494,7 @@ const Double_t kEpsilon = 0.00001;
     }
 
     // correct with dEdx
-    if(! track->CorrectForMeanMaterialdEdx(xx0,xrho,mass,dEdx,kTRUE)); // with angle correction
+    track->CorrectForMeanMaterialdEdx(xx0,xrho,mass,dEdx,kTRUE); // with angle correction
     
     }
     if (rotateTo){
