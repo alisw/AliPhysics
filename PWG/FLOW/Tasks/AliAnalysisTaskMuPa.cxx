@@ -46,6 +46,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fVerbose(kFALSE),
  fEventCounter(0),
  fRandomSeed(0),
+ fUseTrigger(kFALSE),
 
  // QA:
  fQAList(NULL),
@@ -177,6 +178,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fVerbose(kFALSE),
  fEventCounter(0),
  fRandomSeed(0),
+ fUseTrigger(kFALSE),
 
  // QA:
  fQAList(NULL),
@@ -719,6 +721,7 @@ void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
  fDataTakingPeriod = TString("not set"); // can be customized with e.g. task->SetDataTakingPeriod("LHC10h");
  fAODNumber = TString("not set"); // can be customized with e.g. task->SetAODNumber("AOD160"); 
  fCentralityEstimator = TString("V0M"); // by default, we use V0M as centrality estimator. Can be customized with task->SetCentralityEstimator("V0M") 
+ fTrigger = TString("not set"); 
 
 } // void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
 
@@ -857,7 +860,8 @@ void AliAnalysisTaskMuPa::InitializeArraysForQAHistograms()
  // a) Centrality and multiplicity;
  // b) Kinematics for specified filter bits;
  // c) Check for self-correlations;
- // d) Particle cut counters.
+ // d) Particle cut counters;
+ // e) Trigger counter.
 
  // a) Centrality and multiplicity:
  for(Int_t ba=0;ba<2;ba++)
@@ -894,6 +898,12 @@ void AliAnalysisTaskMuPa::InitializeArraysForQAHistograms()
  for(Int_t rs=0;rs<2;rs++)
  {
   fQAParticleCutCounter[rs] = NULL;
+ }
+
+ // e) Trigger counter:
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  fQATrigger[ba] = NULL;
  }
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForQAHistograms()
@@ -1210,7 +1220,8 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  // a) Multiplicity;
  // b) Centrality.
  // c) Centrality weights;
- // d) Toy NUA.
+ // d) Toy NUA;
+ // e) Supported triggers.
 
  Green(__PRETTY_FUNCTION__);
 
@@ -1249,6 +1260,15 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  }
  // TBI 20210810 add similar protection also for E and CHARGE
 
+ // e) Supported triggers:
+ if(fUseTrigger && !(fTrigger.EqualTo("kAny") || fTrigger.EqualTo("kMB") || fTrigger.EqualTo("kINT7") || fTrigger.EqualTo("kCentral") || fTrigger.EqualTo("kSemiCentral") || 
+      fTrigger.EqualTo("kCentral_kMB") || fTrigger.EqualTo("kSemiCentral_kMB")))
+ {
+  Red(Form("The trigger \"%s\" is not supported (yet).",fTrigger.Data()));
+  cout<<__LINE__<<endl;
+  exit(1);
+ } 
+
 } // void AliAnalysisTaskMuPa::InsanityChecks()
 
 //=======================================================================================================================
@@ -1259,7 +1279,7 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBasePro = new TProfile("fBasePro","flags for the whole analysis",9,0.,9.);
+ fBasePro = new TProfile("fBasePro","flags for the whole analysis",11,0.,11.);
  fBasePro->SetStats(kFALSE);
  fBasePro->SetLineColor(COLOR);
  fBasePro->SetFillColor(FILLCOLOR);
@@ -1272,6 +1292,8 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
  fBasePro->GetXaxis()->SetBinLabel(7,"fRealData"); fBasePro->Fill(6.5,fRealData);
  fBasePro->GetXaxis()->SetBinLabel(8,"fUseFisherYates"); fBasePro->Fill(7.5,fUseFisherYates);
  fBasePro->GetXaxis()->SetBinLabel(9,"fRandomSeed"); fBasePro->Fill(8.5,fRandomSeed);
+ fBasePro->GetXaxis()->SetBinLabel(10,Form("fTrigger = %s",fTrigger.Data()));
+ fBasePro->GetXaxis()->SetBinLabel(11,"fUseTrigger"); fBasePro->Fill(10.5,fUseTrigger);
  fBaseList->Add(fBasePro);
 
 } // void AliAnalysisTaskMuPa::BookBaseProfile()
@@ -1378,7 +1400,8 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
  // e) Anomalous events;
  // f) Check for self-correlations;
  // g) Event cut counter;
- // h) Particle cut counter.
+ // h) Particle cut counter;
+ // i) Trigger counter.
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
@@ -1540,6 +1563,23 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
   }
   fQAParticleCutCounter[rs]->SetMinimum(0.);
   fQAList->Add(fQAParticleCutCounter[rs]);
+ }
+
+ // i) Trigger counter:
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  fQATrigger[ba] = new TH1I(Form("fQATrigger[%d]",ba),Form("trigger counter, %s",0==ba?"before":"after"),7,0,7);
+  fQATrigger[ba]->SetLineColor(fBeforeAfterColor[ba]);
+  fQATrigger[ba]->SetFillColor(fBeforeAfterColor[ba]-10);
+  fQATrigger[ba]->GetXaxis()->SetBinLabel(1,"kAny");
+  fQATrigger[ba]->GetXaxis()->SetBinLabel(2,"kMB");
+  fQATrigger[ba]->GetXaxis()->SetBinLabel(3,"kINT7");
+  fQATrigger[ba]->GetXaxis()->SetBinLabel(4,"kCentral");
+  fQATrigger[ba]->GetXaxis()->SetBinLabel(5,"kSemiCentral");
+  fQATrigger[ba]->GetXaxis()->SetBinLabel(6,"kCentral_kMB");
+  fQATrigger[ba]->GetXaxis()->SetBinLabel(7,"kSemiCentral_kMB");
+  fQATrigger[ba]->SetMinimum(0.);
+  fQAList->Add(fQATrigger[ba]);
  }
 
 } // void AliAnalysisTaskMuPa::BookQAHistograms()
@@ -2388,6 +2428,46 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
 
   // Remark 1: For each new cut you implement here, add corresponding support in EventCutCounter(...)
 
+  // Trigger:
+  if(fUseTrigger)
+  {
+   UInt_t fSelectMask = fInputHandler->IsEventSelected();
+   Bool_t bIsSelected = kFALSE;
+   if(fTrigger.EqualTo("kAny"))
+   {
+    bIsSelected = fSelectMask & AliVEvent::kAny;
+   }
+   else if(fTrigger.EqualTo("kMB"))
+   {
+    bIsSelected = fSelectMask & AliVEvent::kMB;
+   }
+   else if(fTrigger.EqualTo("kINT7")) 
+   {
+    bIsSelected = fSelectMask & AliVEvent::kINT7;
+   }
+   else if(fTrigger.EqualTo("kCentral"))
+   {
+    bIsSelected = fSelectMask & AliVEvent::kCentral;
+   }
+   else if(fTrigger.EqualTo("kSemiCentral"))
+   {
+    bIsSelected = fSelectMask & AliVEvent::kSemiCentral;
+   }
+   else if(fTrigger.EqualTo("kCentral_kMB"))
+   {
+    bIsSelected = (fSelectMask & AliVEvent::kCentral) || (fSelectMask & AliVEvent::kMB);
+   }
+   else if(fTrigger.EqualTo("kSemiCentral_kMB"))
+   {
+    bIsSelected = (fSelectMask & AliVEvent::kSemiCentral) || (fSelectMask & AliVEvent::kMB);
+   }
+   else 
+   {
+    cout<<__LINE__<<endl; exit(1);
+   }
+   if(!bIsSelected){ return kFALSE; }
+  } // if(fUseTrigger)
+
   // Centrality:
   if(fUseCentralityCuts)
   {
@@ -3144,8 +3224,42 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
     } // for(Int_t iTrack2=iTrack1+1;iTrack2<nTracks;iTrack2++) // starting a loop over the second track
    } // for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++) // starting a loop over the first track
   }
- } // if(aAOD)
 
+  // Trigger:
+  if(rs == RECO && fQATrigger[ba])
+  {
+   UInt_t fSelectMask = fInputHandler->IsEventSelected();
+   if(fSelectMask & AliVEvent::kAny)
+   {
+    fQATrigger[ba]->Fill(0.5);
+   }
+   if(fSelectMask & AliVEvent::kMB)
+   {
+    fQATrigger[ba]->Fill(1.5);
+   }
+   if(fSelectMask & AliVEvent::kINT7)
+   {
+    fQATrigger[ba]->Fill(2.5);
+   }
+   if(fSelectMask & AliVEvent::kCentral)
+   {
+    fQATrigger[ba]->Fill(3.5);
+   }
+   if(fSelectMask & AliVEvent::kSemiCentral)
+   {
+    fQATrigger[ba]->Fill(4.5);
+   }
+   if((fSelectMask & AliVEvent::kCentral) || (fSelectMask & AliVEvent::kMB))
+   {
+    fQATrigger[ba]->Fill(5.5);
+   }
+   if((fSelectMask & AliVEvent::kSemiCentral) || (fSelectMask & AliVEvent::kMB))
+   {
+    fQATrigger[ba]->Fill(6.5);
+   }
+  } // if(rs == RECO && fQATrigger[ba])
+
+ } // if(aAOD)
 
  // c) MC QA:
  if(aMC)
