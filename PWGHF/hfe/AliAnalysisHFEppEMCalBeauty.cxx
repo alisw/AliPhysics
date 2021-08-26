@@ -116,7 +116,7 @@ fDCalDG2(kFALSE),
 
 fRecalIP(kTRUE),
 
-fEtarange(0.7),
+fEtarange(0.6),
 fTPCNCrRows(70),
 fRatioCrossedRowOverFindable(0.8),
 fITSNclus(3),
@@ -586,7 +586,7 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
  
     fHistPhi = new TH1F("fHistPhi", "Phi distribution of global tracks;#phi;Counts", 100,0, 2*TMath::Pi() ); 
     fHistPhi->Sumw2();
-    fOutputList->Add(fHistPhi);   	  
+    fOutputList->Add(fHistPhi);       
 
     fHistEtaPhi_TPC = new TH2F("fHistEtaPhi_TPC","#eta-#phi distribution of TPC tracks;#eta;#phi",300,-1.5,1.5,200,-1.0,7.0);
     fHistEtaPhi_TPC->Sumw2();
@@ -666,11 +666,11 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
 
 
 //THnSparse
-  Int_t bins[6]		=      	{500, 200, 200, 200, 200,500};
-  Double_t xmin[6]	=	{  0,  -10,   0,   0,   0,    0 };
-  Double_t xmax[6]	=	{  100,   10,   2,   2,  2,    50};
+  Int_t bins[6]   =       {500, 200, 200, 200, 200,500};
+  Double_t xmin[6]  = {  0,  -10,   0,   0,   0,    0 };
+  Double_t xmax[6]  = {  100,   10,   2,   2,  2,    50};
 
-  fSparseElectron 	= new THnSparseD ("Electron","Electron;#it{p}(GeV/#it{c});n#sigma;E/#it{p}(GeV/#it{c});M02;M20;Cluster Energy(GeV);",6 ,bins,xmin,xmax);
+  fSparseElectron   = new THnSparseD ("Electron","Electron;#it{p}(GeV/#it{c});n#sigma;E/#it{p}(GeV/#it{c});M02;M20;Cluster Energy(GeV);",6 ,bins,xmin,xmax);
   fSparseElectron->GetAxis(0)->SetName("pT");     
   fSparseElectron->GetAxis(1)->SetName("nSigma");
   fSparseElectron->GetAxis(2)->SetName("E/p");
@@ -1150,21 +1150,21 @@ void AliAnalysisHFEppEMCalBeauty::UserExec(Option_t *)
   fHistEvent->Fill(7);
 
   Bool_t isPileupfromSPDmulbins=fAOD->IsPileupFromSPDInMultBins(); //This function checks if there was a pile up reconstructed with SPD
-	if(isPileupfromSPDmulbins) return;
+  if(isPileupfromSPDmulbins) return;
   fHistEvent->Fill(9);
 
  Int_t minContributors=5;    //minimum contributors to the pilup vertices, multi-vertex
  Double_t minChi2=5.; 
  Double_t minWeiZDiff=15;   //minimum of the sqrt of weighted distance between the primary and the pilup vertex, multi-vertex
  Bool_t checkPlpFromDifferentBC=kFALSE;
-	
+  
  AliAnalysisUtils utils;
  utils.SetMinPlpContribMV(minContributors); //Multi Vertex pileup selection
  utils.SetMaxPlpChi2MV(minChi2);   //max value of Chi2perNDF of the pileup vertex, multi-vertex
  utils.SetMinWDistMV(minWeiZDiff);
  utils.SetCheckPlpFromDifferentBCMV(checkPlpFromDifferentBC); //SPD Pileup slection
  Bool_t isPileupFromMV = utils.IsPileUpMV(fAOD);      //check for multi-vertexer pile-up
-	
+  
  if(isPileupFromMV) return;
  fHistEvent->Fill(11);
 
@@ -1320,7 +1320,14 @@ for(Int_t icl=0; icl<Nclust; icl++)
       fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
      
      if(clust->IsEMCAL())
-     {    
+     {
+        //Removing exotic clusters using IsExotic function in data and using M02 min cut
+        if(!fIsMC)
+        if(clust->GetIsExotic()) continue;
+        Double_t m02 = clust->GetM02();
+        if(m02 < 0.02) continue;
+            
+
          AliAODCaloCells &cells = *(fAOD->GetEMCALCells());
          Double_t clustE = clust->E(); //clust->E();
          if(clustE < 0.3) continue;
@@ -1389,7 +1396,7 @@ for(Int_t icl=0; icl<Nclust; icl++)
     if(track->PropagateToDCA(vertex, fAOD->GetMagneticField(), 20., d0z0, cov))  
     fHistdcaxy->Fill(d0z0[0],pt);
     fHistdcaz->Fill( d0z0[1],pt);
-    EtaPhiWoC->Fill(track->Eta(),track->Phi());   	
+    EtaPhiWoC->Fill(track->Eta(),track->Phi());     
    
     if(tracktypeTrig!=1) continue;    //==========TRACK cuts Applied =====
     Nch++;
@@ -1453,16 +1460,16 @@ for(Int_t icl=0; icl<Nclust; icl++)
   if(EMCalIndex < 0) continue;
   
   if( pt < 0.5) continue;      
-	fHistPtMatch->Fill(track->Pt());
+  fHistPtMatch->Fill(track->Pt());
 
-	AliAODCaloCluster *clustMatch=0x0;
+  AliAODCaloCluster *clustMatch=0x0;
 
-	if(!fUseTender) if(EMCalIndex >= 0) clustMatch = (AliAODCaloCluster*)fAOD->GetCaloCluster(EMCalIndex) ;
+  if(!fUseTender) if(EMCalIndex >= 0) clustMatch = (AliAODCaloCluster*)fAOD->GetCaloCluster(EMCalIndex) ;
   if(fUseTender) if(EMCalIndex >= 0)clustMatch = dynamic_cast<AliAODCaloCluster*>(fCaloClusters_tender->At(EMCalIndex));
-				
-	Short_t NcellsInCluster = clustMatch->GetNCells();
+        
+  Short_t NcellsInCluster = clustMatch->GetNCells();
 
-	      Double_t emcphi = -999, emceta=-999;
+        Double_t emcphi = -999, emceta=-999;
         fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
         if(clustMatch && clustMatch->IsEMCAL())
         {
@@ -1485,14 +1492,20 @@ for(Int_t icl=0; icl<Nclust; icl++)
             
             if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
             if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
-        		
+            
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
-	          if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
-     
-	          fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
-	          fEMCTrkMatch_Phi->Fill(track->Pt(),fPhiDiff);
-	          fEMCTrkMatch_Eta->Fill(track->Pt(),fEtaDiff);        
-	          fEMCClsEtaPhiTrkMatch->Fill(emceta,emcphi);
+            if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+
+            Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
+            if(!fIsMC){
+              if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
+              //if(TMath::Abs(clustTime) > 50) continue; //50ns time cut to remove pileup not sure if I need this cut
+            }
+
+            fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
+            fEMCTrkMatch_Phi->Fill(track->Pt(),fPhiDiff);
+            fEMCTrkMatch_Eta->Fill(track->Pt(),fEtaDiff);        
+            fEMCClsEtaPhiTrkMatch->Fill(emceta,emcphi);
    
            Double_t Etrkmatch = -999.0, Eoptrk = -999.0 , M02trkmatch = -999.0, M20trkmatch = -999.0;
            Etrkmatch = clustMatch->E(); //clustMatch->E();
@@ -1507,7 +1520,7 @@ for(Int_t icl=0; icl<Nclust; icl++)
            fvalueElectron[3] = M02trkmatch; // shower shape cut
            fvalueElectron[4] = M20trkmatch;
            fvalueElectron[5] = Etrkmatch; //cluster energy after matching
-	         fSparseElectron->Fill(fvalueElectron); //Electron information spa
+           fSparseElectron->Fill(fvalueElectron); //Electron information spa
      
            EtaPhiAfTCATM->Fill(track->Eta(),track->Phi());
            EMCalEta_TPCpT->Fill(track->Pt());

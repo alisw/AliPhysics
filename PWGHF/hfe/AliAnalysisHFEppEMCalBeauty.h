@@ -93,7 +93,7 @@ fDCalDG2(kFALSE),
 
 fRecalIP(kTRUE),
 
-fEtarange(0.7),
+fEtarange(0.6),
 fTPCNCrRows(70),
 fRatioCrossedRowOverFindable(0.8),
 fITSNclus(3),
@@ -312,8 +312,8 @@ fRVsULSElecPt(0),
 fRVsLSElecPt(0),
 
 fnBinsDCAHisto(400),
-fCalculateMCTemplWeightCalc(kFALSE), // Set Mannualy
-fFillMCTemplates(kFALSE), // Set Mannualy
+fCalculateMCTemplWeightCalc(kTRUE), // Set Mannualy
+fFillMCTemplates(kTRUE), // Set Mannualy
 
 fBHadpT(0),
 fBMesonpT(0),
@@ -377,20 +377,20 @@ fvalueElectron = new Double_t[6];
 //-----------------selections cuts----------------------------------------------------------------  
 
   void SetMCAnalysis(Bool_t isMC){fIsMC=isMC;}
-  void SetAODanalysis(Bool_t IsAOD) {fIsAOD=IsAOD;};
+  void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
 
-  void SetTrigger(AliVEvent::EOfflineTriggerTypes trigger){ftrigger=trigger;}
+  void SetTrigger(AliVEvent::EOfflineTriggerTypes trigger){ftrigger =trigger;}
 
-  void SetTenderSwitch(Bool_t usetender){fUseTender=usetender;};
-  void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC=flagClsEMC;};
-  void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL=flagClsDCAL;};
+  void SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
+  void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
+  void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
 
   void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
   void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
   void SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
   void SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
 
-  void SwitchRecalImpPar(Bool_t fSwitchRIP) {fRecalIP=fSwitchRIP;};
+  void SwitchRecalImpPar(Bool_t fSwitchRIP) {fRecalIP = fSwitchRIP;};
 
   //----------Setter for Track and PID cuts
  
@@ -403,13 +403,13 @@ fvalueElectron = new Double_t[6];
   void SetDCACut(Double_t DCAxyCut,Double_t DCAzCut){ fDCAxyCut=DCAxyCut; fDCAzCut=DCAzCut;}
   void SetTPCnsigma(Double_t TPCnsigmin,Double_t TPCnsigmax){fTPCnsigmin=TPCnsigmin;  fTPCnsigmax=TPCnsigmax;}
   void SetEopE(Double_t EopEMin,Double_t EopEMax){ fCutEopEMin=EopEMin; fCutEopEMax=EopEMax;}
-  void SetShowerShapeEM02(Double_t M02Min, Double_t M02Max1, Double_t M02Max2, Double_t M02Max3) {fM02Min=M02Min; fM02Max1=M02Max1; fM02Max2=M02Max2; fM02Max3=M02Max3;};
+  void SetShowerShapeEM02(Double_t M02Min, Double_t M02Max1, Double_t M02Max2, Double_t M02Max3) {fM02Min = M02Min; fM02Max1 = M02Max1; fM02Max2 = M02Max2; fM02Max3 = M02Max3;};
    
   //------------Setters for Photonic Electron Selection Cuts
   void SetInvMassCut(Double_t InvmassCut){fInvmassCut=InvmassCut;}
   void SetAssoTPCclus(Int_t AssoTPCCluster){fAssoTPCCluster=AssoTPCCluster;}
   void SetAssoITSrefit(Bool_t AssoITSRefit){fAssoITSRefit= AssoITSRefit;}
-  void SetAssopTMin(Double_t AssopTMin){fAssopTMin=AssopTMin;}
+  void SetAssopTMin(Double_t AssopTMin){fAssopTMin = AssopTMin;}
   void SetAssoEtarange(Double_t AssoEtarange){fAssoEtarange=AssoEtarange;}
   void SetAssoTPCnsig(Double_t AssoTPCnsig){fAssoTPCnsig=AssoTPCnsig;}
 
@@ -436,7 +436,7 @@ fvalueElectron = new Double_t[6];
   Int_t GetHFE(AliAODMCParticle *, TClonesArray *);
   Int_t GetElecSourceType(AliAODMCParticle *,Double_t &ptm);
 
-  void    SetNonHFEEffi(Bool_t fSwitch) {fCalculateNonHFEEffi=fSwitch;};
+  void    SetNonHFEEffi(Bool_t fSwitch) {fCalculateNonHFEEffi = fSwitch;};
   void    GetPi0EtaWeight(THnSparse *SparseWeight);
   void    SelectPhotonicElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC);		
 
@@ -448,10 +448,10 @@ fvalueElectron = new Double_t[6];
   AliHFEpid *GetPID() const {return fPID;};
 //______________________________________________________________________
 
-//  void    SwitchMCTemplateWeightCalc(Bool_t SwitchMCTempWeight) {fCalculateMCTemplWeightCalc=SwitchMCTempWeight;};
-//  void    SwitchFillMCTemplate(Bool_t fSwitch) {fFillMCTemplates=fSwitch;};
-
+  void    SwitchMCTemplateWeightCalc(Bool_t SwitchMCTempWeight) {fCalculateMCTemplWeightCalc = SwitchMCTempWeight;};
   void    GetMCTemplateWeight();
+
+  void    SwitchFillMCTemplate(Bool_t fSwitch) {fFillMCTemplates = fSwitch;};
   Bool_t  GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA);
   void    SetDmesonWeightHist(TH1 *D1, TH1 *D2, TH1 *D3);
   void    SetBmesonWeightHist(TH1 *B1, TH1 *B2, TH1 *B3);
@@ -461,8 +461,6 @@ fvalueElectron = new Double_t[6];
   void    SetDmesonWeightHistPbPb(TH1 *D0, TH1 *DPlus, TH1 *Ds, TH1 *Lc);
   void    GetDWeightPbPb(AliAODMCParticle *Part, Int_t PDG, Double_t &DCentWeight);
 
-
-  
 //______________________________________________________________________
     
 
@@ -773,6 +771,7 @@ fvalueElectron = new Double_t[6];
  THnSparse  *fSprsTemplatesWeight;//!
  THnSparse  *fSprsTemplatesWeightVar1;//!
  THnSparse  *fSprsTemplatesWeightVar2;//!
+
 
 
   AliAnalysisHFEppEMCalBeauty(const AliAnalysisHFEppEMCalBeauty&); // not implemented
