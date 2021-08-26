@@ -43,7 +43,10 @@ Int_t AssoTPCCluster= 60,
 Bool_t AssoITSRefit= kTRUE ,
 Double_t AssopTMin= 0.1  ,
 Double_t AssoEtarange= 0.9 ,
-Double_t AssoTPCnsig=  3.0
+Double_t AssoTPCnsig=  3.0,
+
+Bool_t SwitchMCTempWeight= kTRUE,
+Bool_t SwitchFillMCTemp = kTRUE
 
 )
 
@@ -109,7 +112,10 @@ if(trigger==AliVEvent::kINT7)
     HFeTask->SetEMCalTriggerEG2(kFALSE);
     HFeTask->SetEMCalTriggerDG2(kFALSE);
 
-    if(isMC)
+    HFeTask->SwitchMCTemplateWeightCalc(SwitchMCTempWeight);
+    HFeTask->SwitchFillMCTemplate(SwitchFillMCTemp);
+
+    if(SwitchFillMCTemp)
     {
         TString DMesonWeightMaps, BMesonWeightMaps, CharmpTWeightMaps;
         
