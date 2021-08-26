@@ -37,6 +37,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
 #include "AliESDtrack.h"
+#include "AliVertexerTracks.h"
 #include "AliCentrality.h"
 #include "AliNormalizationCounter.h"
 #include "AliAnalysisTaskSELc2pKs0fromKFP.h"
@@ -62,6 +63,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
   fPIDCombined(0),
   fAnaCuts(0),
   fpVtx(0),
+  fpVtxOff(0),
   fMCEvent(0),
   fBzkG(0),
   fCentrality(0),
@@ -78,9 +80,9 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
   fVar_LcMCGen(0),
   fListCuts(0),
   fIsMC(kFALSE),
-  fKeepAllVariables(kFALSE),
   fUseWeights(kFALSE),
   fKeepOnlyMCSignal(kTRUE),
+  fKeepAllVariables(kFALSE),
   fIsAnaLc2Lpi(kFALSE),
   fCounter(0),
   fHistEvents(0),
@@ -110,6 +112,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* nam
   fPIDCombined(0),
   fAnaCuts(cuts),
   fpVtx(0),
+  fpVtxOff(0),
   fMCEvent(0),
   fBzkG(0),
   fCentrality(0),
@@ -126,9 +129,9 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* nam
   fVar_LcMCGen(0),
   fListCuts(0),
   fIsMC(kFALSE),
-  fKeepAllVariables(kFALSE),
   fUseWeights(kFALSE),
   fKeepOnlyMCSignal(kTRUE),
+  fKeepAllVariables(kFALSE),
   fIsAnaLc2Lpi(kFALSE),
   fCounter(0),
   fHistEvents(0),
@@ -439,6 +442,12 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserExec(Option_t *)
   fHistEvents->Fill(2);
 
   fCounter->StoreEvent(aodEvent,fAnaCuts,fIsMC);
+  
+  /// Recalculate PV with diamond constraint off
+  AliVertexerTracks *vertexer = new AliVertexerTracks(aodEvent->GetMagneticField());
+  vertexer->SetConstraintOff();
+  fpVtxOff = vertexer->FindPrimaryVertex(aodEvent);
+  
 
   //------------------------------------------------
   // MC analysis setting                                                                    
@@ -538,7 +547,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserExec(Option_t *)
 
   if(!fAnaCuts) return;
 
-  FillEventROOTObjects();
+  FillEventROOTObjects(aodEvent);
 
 //------------------------------------------------
 // Main analysis done in this function
@@ -760,7 +769,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
   Double_t covP[21], covN[21], covB[21];
   const Int_t NDaughters = 2;
   const Float_t massKs0_PDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
-  const Float_t massLc_PDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  //const Float_t massLc_PDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
   const Float_t massLam_PDG = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
   for (UInt_t iCasc=0; iCasc<nCasc; iCasc++) {
@@ -1276,7 +1285,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineEvent()
 
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fTree_Event = new TTree(nameoutput, "Event");
-  Int_t nVar = 9;
+  Int_t nVar = 13;
   fVar_Event = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -1286,9 +1295,14 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineEvent()
   fVarNames[3]  = "z_vtx_reco";
   fVarNames[4]  = "n_vtx_contributors";
   fVarNames[5]  = "n_tracks";
-  fVarNames[6]  = "is_ev_rej";
+  fVarNames[6]  = "is_ev_sel";
   fVarNames[7]  = "run_number";
   fVarNames[8]  = "ev_id";
+  fVarNames[9]  = "x_vtx_reco_constOff";
+  fVarNames[10]  = "y_vtx_reco_constOff";
+  fVarNames[11]  = "z_vtx_reco_constOff";
+  fVarNames[12]  = "n_vtx_contributors_constOff";
+  
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Event->Branch(fVarNames[ivar].Data(), &fVar_Event[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -1616,20 +1630,31 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineAnaHist()
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSELc2pKs0fromKFP::FillEventROOTObjects()
+void AliAnalysisTaskSELc2pKs0fromKFP::FillEventROOTObjects(AliAODEvent* aodEvent)
 {
 
   for (Int_t i=0; i<9; i++) {
     fVar_Event[i] = 0.;
   }
-
+  
   Double_t pos[3];
   fpVtx->GetXYZ(pos);
   
+
   fVar_Event[1] = pos[0];
   fVar_Event[2] = pos[1];
   fVar_Event[3] = pos[2];
-
+  fVar_Event[4] = fpVtx->GetNContributors();
+  fVar_Event[5] = aodEvent->GetNumberOfTracks();
+  fVar_Event[7] = aodEvent->GetRunNumber();
+  AliAODHeader *header = dynamic_cast<AliAODHeader*>(aodEvent->GetHeader());
+  ULong64_t eventId = header->GetEventIdAsLong();
+  fVar_Event[8] = eventId;
+  fVar_Event[9] = fpVtxOff->GetX();
+  fVar_Event[10] = fpVtxOff->GetY();
+  fVar_Event[11] = fpVtxOff->GetZ();
+  fVar_Event[12] = fpVtxOff->GetNContributors();
+  
   fTree_Event->Fill();
 
   return;
