@@ -182,10 +182,12 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistNtrackeltsPtTPCselSPDanyTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
 
   TH3F* fHistTPCchi2PerClusPhiPtTPCsel;        //!<!  histo of chi2 vs. pt and phi;
+  TH3F* fHistTPCchi2PerClusPhiPtTPCselTOFbc;   //!<!  histo of chi2 vs. pt and phi;
   TH3F* fHistTPCchi2PerClusPhiPtTPCselITSref;  //!<!  histo of chi2 vs. pt and phi;
   TH3F* fHistTPCchi2PerClusPhiPtTPCselSPDany;  //!<!  histo of chi2 vs. pt and phi;
 
   TH3F* fHistSig1ptCovMatPhiPtTPCsel;        //!<!  histo of sigma 1/pt vs. pt and phi;
+  TH3F* fHistSig1ptCovMatPhiPtTPCselTOFbc;   //!<!  histo of sigma 1/pt vs. pt and phi;
   TH3F* fHistSig1ptCovMatPhiPtTPCselITSref;  //!<!  histo of sigma 1/pt vs. pt and phi;
   TH3F* fHistSig1ptCovMatPhiPtTPCselSPDany;  //!<!  histo of sigma 1/pt vs. pt and phi;
 
@@ -278,7 +280,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
   Bool_t  fFillSparses;        // flag to control fill of THnSparse
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,30);
+  ClassDef(AliAnalysisTaskCheckESDTracks,31);
 };
 
 

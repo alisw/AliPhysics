@@ -1349,14 +1349,19 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   
   TH3F* hptresTPC3d=(TH3F*)l->FindObject("hSig1ptCovMatPhiPtTPCsel");
   if(!hptresTPC3d) hptresTPC3d=(TH3F*)l->FindObject("hTPCsig1ptPerClusPhiPtTPCsel"); // old name
+  TH3F* hptresTPCTOF3d=(TH3F*)l->FindObject("hSig1ptCovMatPhiPtTPCselTOFbc");
   TH3F* hptresITS3d=(TH3F*)l->FindObject("hSig1ptCovMatPhiPtTPCselITSref");
   if(!hptresITS3d) hptresITS3d=(TH3F*)l->FindObject("hTPCsig1ptPerClusPhiPtTPCselITSref");
   TH3F* hptresSPD3d=(TH3F*)l->FindObject("hSig1ptCovMatPhiPtTPCselSPDany");
   if(!hptresSPD3d) hptresSPD3d=(TH3F*)l->FindObject("hTPCsig1ptPerClusPhiPtTPCselSPDany");
   TH2D* hptresTPC=(TH2D*)hptresTPC3d->Project3D("xy");
+  TH2D* hptresTPCTOF=0x0;
+  if(hptresTPCTOF3d) hptresTPCTOF=(TH2D*)hptresTPCTOF3d->Project3D("xy");
   TH2D* hptresITS=(TH2D*)hptresITS3d->Project3D("xy");
   TH2D* hptresSPD=(TH2D*)hptresSPD3d->Project3D("xy");
   TProfile* pptresTPC=hptresTPC->ProfileX("pptresTPC");
+  TProfile* pptresTPCTOF=0x0;
+  if(hptresTPCTOF) pptresTPCTOF=hptresTPCTOF->ProfileX("pptresTPCTOF");
   TProfile* pptresITS=hptresITS->ProfileX("pptresITS");
   TProfile* pptresSPD=hptresSPD->ProfileX("pptresSPD");
   pptresTPC->GetYaxis()->SetTitle(hptresTPC3d->GetXaxis()->GetTitle());
@@ -1365,6 +1370,12 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   pptresTPC->SetTitle("p_{T} resolution from cov. matrix");
   pptresTPC->SetLineColor(1);
   pptresTPC->SetMarkerStyle(20);
+  pptresTPC->SetMarkerColor(1);
+  if(pptresTPCTOF){
+    pptresTPCTOF->SetLineColor(kGray+1);
+    pptresTPCTOF->SetMarkerStyle(22);
+    pptresTPCTOF->SetMarkerColor(kGray+1);
+  }
   pptresTPC->SetMarkerColor(1);
   pptresITS->SetLineColor(kRed+1);
   pptresITS->SetMarkerStyle(25);
@@ -1383,10 +1394,12 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   pptresTPC->SetMinimum(0);
   pptresTPC->SetMaximum(0.08);
   pptresTPC->Draw();
+  if(pptresTPCTOF) pptresTPCTOF->Draw("same");
   pptresITS->Draw("same");
   pptresSPD->Draw("same");
   TLegend* leg=new TLegend(0.17,0.7,0.4,0.87);
   leg->AddEntry(pptresTPC,"TPC only","P");
+  if(pptresTPCTOF) leg->AddEntry(pptresTPCTOF,"TPC only, TOF bc=0","P");
   leg->AddEntry(pptresITS,"ITSrefit","P");
   leg->AddEntry(pptresSPD,"SPD any","P");
   leg->Draw();
