@@ -336,6 +336,7 @@ fRVsULSElecPt(0),
 fRVsLSElecPt(0),
 
 fnBinsDCAHisto(400),
+
 fCalculateMCTemplWeightCalc(kFALSE),
 fFillMCTemplates(kFALSE),
 
@@ -757,8 +758,8 @@ if(fIsMC)
   fPthfe_rec_TrkSel = new TH1F("fPthfe_rec_TrkSel","; p_{T} [GeV/c]; Counts",100,0,10);   
   fOutputList->Add(fPthfe_rec_TrkSel);
 
-//nonhfe efficiency
-
+//nonhfe tagging efficiency
+  if(fCalculateWeight){
   Int_t bin[5] =     {250,30,2,10,100}; //pT, PDG, EnhancedSigOrNot, pi0etaType, Radius
   Double_t xminWt[5] = {0,0,0,-1,0};
   Double_t xmaxWt[5] = {50,3,2,9,10};
@@ -771,7 +772,7 @@ if(fIsMC)
   fSprsPi0EtaWeightCal->GetAxis(4)->SetName("Radius");
   fSprsPi0EtaWeightCal->Sumw2();
   fOutputList->Add(fSprsPi0EtaWeightCal);
-
+ 
   Int_t nbinspt[3] = {400, 30, 10};
   Double_t binlow[3] = {0., 0, -1.};
   Double_t binup[3] = {40, 3, 9};
@@ -781,7 +782,6 @@ if(fIsMC)
   fPi0EtaSpectraSp->GetAxis(2)->SetName("type");
   fPi0EtaSpectraSp->Sumw2();
   fOutputList->Add(fPi0EtaSpectraSp);
- 
 
   pi0MC= new TH1F("pi0MC",";p_{t} (GeV/c)",250,0,50.);
   pi0MC->Sumw2();
@@ -794,15 +794,15 @@ if(fIsMC)
   gammaMC= new TH1F("gammaMC",";p_{t} (GeV/c)",250,0,50.);
   gammaMC->Sumw2();
   fOutputList->Add(gammaMC);
-
+  }
+  
+  if(fCalculateNonHFEEffi){
   fRealInclsElecPt = new TH1F("fRealInclsElecPt","p_{T} distribution of MC tagged inclusive electrons;p_{T} (GeV/c);counts",250,0,50);
   fOutputList->Add(fRealInclsElecPt);
-
 
   fNonHFeTrkPt = new TH1F("fNonHFeTrkPt","Non-HF electrons from all generators;p_{T} (GeV/c);counts",250,0,50);
   fNonHFeTrkPt->Sumw2();
   fOutputList->Add(fNonHFeTrkPt);
-
 
   fNonHFeEmbTrkPt = new TH1F("fNonHFeEmbTrkPt","Non-HF electrons from embedded #pi^{0} and #eta + No mom;p_{T} (GeV/c);counts",250,0,50);
   fNonHFeEmbTrkPt->Sumw2();
@@ -839,7 +839,6 @@ if(fIsMC)
   fRecoEtaeEmbWeightTrkPt = new TH1F("fRecoEtaeEmbWeightTrkPt","Reco Non-HF electrons from embedded #eta  + No mom with weight;p_{T} (GeV/c);counts",250,0,50);
   fRecoEtaeEmbWeightTrkPt->Sumw2();
   fOutputList->Add(fRecoEtaeEmbWeightTrkPt);
-
 
   fNonHFePairInvmassLS = new TH1F("fNonHFePairInvmassLS", "Inv mass of LS (e,e) if both e- are Non-HFE; mass(GeV/c^2); counts;",  50,0,0.5);
   fNonHFePairInvmassLS->Sumw2();
@@ -929,7 +928,6 @@ if(fIsMC)
   fRecoEtaULSeEmbWeightTrkPt->Sumw2();
   fOutputList->Add(fRecoEtaULSeEmbWeightTrkPt);
 
-  
   fRVsULSElecPt  = new TH2F("fRVsULSElecPt","#it{p}_{T} distribution of ULS electrons;#it{p}_{T} (GeV/#it{c});Radius",250,0,50,300,0,30);
   fRVsULSElecPt->Sumw2();
   fOutputList->Add(fRVsULSElecPt);
@@ -953,7 +951,6 @@ if(fIsMC)
   fHFeConvRadius = new TH2F("fHFeConvRadius","Conv Radius distribution of HF electrons;#it{p}_{T} (GeV/#it{c});Radius",250,0,50,300,0,30);
   fHFeConvRadius->Sumw2();
   fOutputList->Add(fHFeConvRadius);
-
   //-----------------------------------------R-Tagg-----------------------------------------------------------
   fNonHFeEmbTrkRConv = new TH2F("fNonHFeEmbTrkRConv","Conv Radius distribution of ;#it{p}_{T} (GeV/#it{c});Radius",250,0,50,300,0,30);
   fNonHFeEmbTrkRConv->Sumw2();
@@ -986,11 +983,11 @@ if(fIsMC)
   fRecoEtaeEmbWeightTrkRConv = new TH2F("fRecoEtaeEmbWeightTrkRConv","Conv Radius distribution of ;#it{p}_{T} (GeV/#it{c});Radius",250,0,50,300,0,30);
   fRecoEtaeEmbWeightTrkRConv->Sumw2();
   fOutputList->Add(fRecoEtaeEmbWeightTrkRConv);
-
+  }
 //---------------------------DCA Templates --------------------------------------------------------------------------------------------------
 
-  //if(fCalculateMCTemplWeightCalc)
-  //{
+  if(fCalculateMCTemplWeightCalc)
+  {
     fBHadpT = new TH1F("fBHadpT","B hadron pT;p_{T} (GeV/c);counts",500,0,50);
     fBHadpT->Sumw2();
     fOutputList->Add(fBHadpT);
@@ -1026,10 +1023,10 @@ if(fIsMC)
     fLambdaCpT = new TH1F("fLambdaCpT","Prompt Lammda_c pT;p_{T} (GeV/c);counts",500,0,50);
     fLambdaCpT->Sumw2();
     fOutputList->Add(fLambdaCpT);
-  //}
+  }
 
-  //if(fFillMCTemplates)
-  //{
+  if(fFillMCTemplates)
+  {
         fDElecDCA = new TH2F("fDElecDCA","D meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
         fOutputList->Add(fDElecDCA);
         
@@ -1080,7 +1077,7 @@ if(fIsMC)
         fSprsTemplatesWeightVar2->Sumw2();
         fOutputList->Add(fSprsTemplatesWeightVar2);
         
-  //}
+  }
 
 
 }
@@ -1196,8 +1193,6 @@ void AliAnalysisHFEppEMCalBeauty::UserExec(Option_t *)
     if(fAOD->GetMagneticField()<0) fMagSign = -1;
 
   //cout<<"  CXX fIsMC  ===    "<< fIsMC<<endl;
-  //cout<<"  CXX fCalculateMCTemplWeightCalc  ===    "<< fCalculateMCTemplWeightCalc<<endl;  
-  //cout<<"  CXX fFillMCTemplates  ===    "<< fFillMCTemplates<<endl; 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
   ///////////////////////////////////
   //Initialization for MC analysis///
@@ -1223,15 +1218,13 @@ if(fIsMC)
         
         /////////////////////////////////
         //Calculate Pi0 and Eta weight //
-        /////////////////////////////////
-        fCalculateWeight=kFALSE;
+        ///////////////////////////////// 
+        if(fCalculateWeight) GetPi0EtaWeight(fSprsPi0EtaWeightCal);
         
-        GetPi0EtaWeight(fSprsPi0EtaWeightCal);
-
         /////////////////////////////////
         //Histos for MC template Weight//
         /////////////////////////////////    
-        GetMCTemplateWeight();
+        if(fCalculateMCTemplWeightCalc) GetMCTemplateWeight();
     
     }
     if (!fMCHeader) {
@@ -1445,7 +1438,7 @@ for(Int_t icl=0; icl<Nclust; icl++)
     fTrkDCA = d0z0[0] * track->Charge() * fMagSign;
 
     Bool_t fFillTem = kFALSE;
-    if(fIsMC)   //
+    if(fFillMCTemplates)   //
     {
        fFillTem = GetMCDCATemplates(track, fTrkDCA);
     }
@@ -2755,7 +2748,7 @@ void AliAnalysisHFEppEMCalBeauty::GetMCTemplateWeight()
 //====================================================================================================================================
 
 //________________________________________________________________________
-Bool_t AliAnalysisHFEppEMCalBeauty::GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA)
+Bool_t AliAnalysisHFEppEMCalBeauty::GetMCDCATemplates(AliAODTrack *track, Double_t TrkDCA)
 {
     //Fill MC template histograms
     

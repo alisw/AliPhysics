@@ -312,8 +312,9 @@ fRVsULSElecPt(0),
 fRVsLSElecPt(0),
 
 fnBinsDCAHisto(400),
-fCalculateMCTemplWeightCalc(kTRUE), // Set Mannualy
-fFillMCTemplates(kTRUE), // Set Mannualy
+
+fCalculateMCTemplWeightCalc(kFALSE),
+fFillMCTemplates(kFALSE),
 
 fBHadpT(0),
 fBMesonpT(0),
@@ -380,7 +381,9 @@ fvalueElectron = new Double_t[6];
   void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
 
   void SetTrigger(AliVEvent::EOfflineTriggerTypes trigger){ftrigger =trigger;}
-
+  
+  void SwitchPi0EtaWeightCalc(Bool_t SwitchPi0EtaWeight){fCalculateWeight=SwitchPi0EtaWeight;};
+  
   void SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
   void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
   void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
@@ -436,7 +439,8 @@ fvalueElectron = new Double_t[6];
   Int_t GetHFE(AliAODMCParticle *, TClonesArray *);
   Int_t GetElecSourceType(AliAODMCParticle *,Double_t &ptm);
 
-  void    SetNonHFEEffi(Bool_t fSwitch) {fCalculateNonHFEEffi = fSwitch;};
+
+  void    SetNonHFEEffi(Bool_t fSwitch) {fCalculateNonHFEEffi=fSwitch;};
   void    GetPi0EtaWeight(THnSparse *SparseWeight);
   void    SelectPhotonicElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC);		
 
@@ -448,11 +452,10 @@ fvalueElectron = new Double_t[6];
   AliHFEpid *GetPID() const {return fPID;};
 //______________________________________________________________________
 
-  void    SwitchMCTemplateWeightCalc(Bool_t SwitchMCTempWeight) {fCalculateMCTemplWeightCalc = SwitchMCTempWeight;};
+  void    SwitchMCTemplateWeightCalc(Bool_t SwitchMCTempWeight){fCalculateMCTemplWeightCalc=SwitchMCTempWeight;};
+  void    SwitchFillMCTemplate(Bool_t SwitchFillMCTemp) {fFillMCTemplates=SwitchFillMCTemp;};
   void    GetMCTemplateWeight();
-
-  void    SwitchFillMCTemplate(Bool_t fSwitch) {fFillMCTemplates = fSwitch;};
-  Bool_t  GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA);
+  Bool_t  GetMCDCATemplates(AliAODTrack *track, Double_t TrkDCA);
   void    SetDmesonWeightHist(TH1 *D1, TH1 *D2, TH1 *D3);
   void    SetBmesonWeightHist(TH1 *B1, TH1 *B2, TH1 *B3);
   void    GetBWeight(AliAODMCParticle *Part, Double_t &BCentWeight, Double_t &BMinWeight, Double_t &BMaxWeight);
@@ -463,11 +466,10 @@ fvalueElectron = new Double_t[6];
 
 //______________________________________________________________________
     
-
  private:
   
-  Bool_t        fIsMC;
-  Bool_t        fIsAOD;         //!flag for AOD analysis
+  Bool_t        fIsMC;//
+  Bool_t        fIsAOD;//   
 
   AliVEvent::EOfflineTriggerTypes ftrigger;
 
@@ -631,17 +633,17 @@ fvalueElectron = new Double_t[6];
   TH2F  *fLSElecDCA;//!  
    
  //Used in the function FindMother
-  Bool_t        fIsHFE1;//!
-  Bool_t        fIsHFE2;//!
-  Bool_t        fIsNonHFE;//!
-  Bool_t        fIsFromD;//!
-  Bool_t        fIsFromBarionB;//!
-  Bool_t        fIsFromMesonB;//!
-  Bool_t        fIsFromBarionBD;//!
-  Bool_t        fIsFromMesonBD;//!
-  Bool_t        fIsFromPi0;//!
-  Bool_t        fIsFromEta;//!
-  Bool_t        fIsFromGamma;//!
+  Bool_t        fIsHFE1;//
+  Bool_t        fIsHFE2;//
+  Bool_t        fIsNonHFE;//
+  Bool_t        fIsFromD;//
+  Bool_t        fIsFromBarionB;//
+  Bool_t        fIsFromMesonB;//
+  Bool_t        fIsFromBarionBD;//
+  Bool_t        fIsFromMesonBD;//
+  Bool_t        fIsFromPi0;//
+  Bool_t        fIsFromEta;//
+  Bool_t        fIsFromGamma;//
 
 
   AliAODMCHeader    *fMCHeader;//!
@@ -665,8 +667,8 @@ fvalueElectron = new Double_t[6];
 
     //non hfe
 
-  Bool_t     fIsFrmEmbPi0;//!
-  Bool_t     fIsFrmEmbEta;//!
+  Bool_t     fIsFrmEmbPi0;//
+  Bool_t     fIsFrmEmbEta;//
   Int_t      ftype;//!
   Double_t   fWeight;//!
 
@@ -676,7 +678,7 @@ fvalueElectron = new Double_t[6];
   TF1       *fPi0Weight;//!
   TF1       *fEtaWeight;//!
 
-  Bool_t    fCalculateWeight;//!
+  Bool_t    fCalculateWeight;//
   THnSparse *fSprsPi0EtaWeightCal;//!
   THnSparseF  *fPi0EtaSpectraSp;//!
  
@@ -721,11 +723,10 @@ fvalueElectron = new Double_t[6];
  TH1F       *fRecoPi0ULSeEmbWeightTrkPt;//!
  TH1F       *fRecoEtaULSeEmbWeightTrkPt;//!
 
- Bool_t    fCalculateNonHFEEffi;//!
+ Bool_t    fCalculateNonHFEEffi;//
 
  Int_t     fnBinsDCAHisto;//!
- Bool_t    fCalculateMCTemplWeightCalc;//!
-
+ Bool_t    fCalculateMCTemplWeightCalc;//
 
  TH1F       *fBHadpT;//!
  TH1F       *fBMesonpT;//!
@@ -737,7 +738,7 @@ fvalueElectron = new Double_t[6];
  TH1F       *fDspT;//!
  TH1F       *fLambdaCpT;//!
 
-  Bool_t    fFillMCTemplates;//!
+  Bool_t    fFillMCTemplates;//
   TH1F      *fDcent;//
   TH1F      *fDUp;//
   TH1F      *fDDown;//
