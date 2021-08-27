@@ -106,6 +106,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void GlobalTracksAOD(AliAODEvent *aAOD);
   Bool_t SurvivesEventCuts(AliVEvent *ave);
   void EventCutCounter(AliVEvent *ave); // only for QA
+  void SequentialEventCutCounter(AliVEvent *ave); // only for QA
   Bool_t SurvivesParticleCuts(AliVParticle *vParticle); // applied e.g. on TPC-only
   void ParticleCutCounter(AliVParticle *vParticle); // only for QA
   virtual Double_t Weight(const Double_t &value, const char *variable);
@@ -476,6 +477,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fQASimRecoSelfCorrelations[gQASelfCorrelations]; // check for self-correlations between simulated and reconstructed particles
   Bool_t fQACheckSelfCorrelations; // kFALSE by default. If kTRUE, both fQASelfCorrelations[] and fQASimRecoSelfCorrelations[] are filled
   TH1I *fQAEventCutCounter; // counter for each event cut
+  TH1I *fQASequentialEventCutCounter; // sequential counter for event cuts
   TH1I *fQAParticleCutCounter[2]; // counter for each particle cut. [0] = reco, [1] = sim
   TH1I *fQATrigger[2]; // counter for triggers [0] = before event cuts, [1] = after event cuts
 
@@ -610,7 +612,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,15);
+  ClassDef(AliAnalysisTaskMuPa,16);
 
 };
 
