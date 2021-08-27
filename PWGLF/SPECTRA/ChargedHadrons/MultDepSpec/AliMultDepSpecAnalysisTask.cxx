@@ -566,7 +566,7 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
     // initialize particle properties
     bool isValidParticle = false;
     if (fIsMC) {
-      // mc label corresponding to measured track (negative label indicates bad quality track, background tracks have are stored with an offset)
+      // mc label corresponding to measured track (negative label indicates bad quality track, background tracks are stored with an offset)
       int mcLabel = std::abs(track->GetLabel());
 
       // set mc particle properties and check if it is charged prim/sec and in kin range
