@@ -57,6 +57,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fQAAnomalousEvents(NULL),
  fQACheckSelfCorrelations(kFALSE),
  fQAEventCutCounter(NULL),
+ fQASequentialEventCutCounter(NULL),
 
  // Control event histograms:
  fControlEventHistogramsList(NULL),
@@ -189,6 +190,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fQAAnomalousEvents(NULL),
  fQACheckSelfCorrelations(kFALSE),
  fQAEventCutCounter(NULL),
+ fQASequentialEventCutCounter(NULL),
  
  // Control event histograms:
  fControlEventHistogramsList(NULL),
@@ -1437,8 +1439,8 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
   {
    fQACentralityHist[ce1][ba] = new TH1D(Form("fQACentralityHist[%d][%d]",ce1,ba),Form("%s,%s",sce[ce1].Data(),sba[ba].Data()),(Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2]);
    //fQACentralityHist[ce1][ba]->SetStats(kFALSE);
-   fQACentralityHist[ce1][ba]->SetLineColor(bLineColor);
-   fQACentralityHist[ce1][ba]->SetFillColor(bFillColor);
+   fQACentralityHist[ce1][ba]->SetLineColor(fBeforeAfterColor[ba]);
+   fQACentralityHist[ce1][ba]->SetFillColor(fBeforeAfterColor[ba]-10);
    fQACentralityHist[ce1][ba]->GetXaxis()->SetTitle("centrality");
    fQAList->Add(fQACentralityHist[ce1][ba]);
 
@@ -1446,9 +1448,7 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
    for(Int_t ce2=ce1+1;ce2<gCentralityEstimators;ce2++)
    {
     fQACentralityCorrHist[ce1][ce2][ba] = new TH2D(Form("fQACentralityCorrHist[%d][%d][%d]",ce1,ce2,ba),Form("%s vs. %s, %s",sce[ce1].Data(),sce[ce2].Data(),sba[ba].Data()),
-                                          (Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2],(Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2]);
-    //fQACentralityCorrHist[ce1][ce2][ba]->SetLineColor(bLineColor);
-    //fQACentralityCorrHist[ce1][ce2][ba]->SetFillColor(bFillColor);
+                                          100,0.,100.,100,0.,100.);
     fQACentralityCorrHist[ce1][ce2][ba]->SetOption("col");
     fQACentralityCorrHist[ce1][ce2][ba]->GetXaxis()->SetTitle(Form("centrality %s",sce[ce1].Data()));
     fQACentralityCorrHist[ce1][ce2][ba]->GetYaxis()->SetTitle(Form("centrality %s",sce[ce2].Data()));
@@ -1549,6 +1549,17 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
  }
  fQAEventCutCounter->SetMinimum(0.);
  fQAList->Add(fQAEventCutCounter);
+
+ // sequential version:
+ fQASequentialEventCutCounter = new TH1I("fQASequentialEventCutCounter","sequential counter",gQAEventCutCounter,0,gQAEventCutCounter);
+ fQASequentialEventCutCounter->SetLineColor(COLOR);
+ fQASequentialEventCutCounter->SetFillColor(FILLCOLOR);
+ for(Int_t ae=1;ae<=gQAEventCutCounter;ae++)
+ {
+  fQASequentialEventCutCounter->GetXaxis()->SetBinLabel(ae,secc[ae-1].Data());
+ }
+ fQASequentialEventCutCounter->SetMinimum(0.);
+ fQAList->Add(fQASequentialEventCutCounter);
 
  // h) Particle cut counter:
  for(Int_t rs=0;rs<2;rs++)
@@ -2417,7 +2428,7 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
  // b) Only for QA count separately what each event cut is doing:
  if(fFillQAHistograms)
  {
-  if(aAOD){EventCutCounter(aAOD);}
+  if(aAOD){this->EventCutCounter(aAOD); this->SequentialEventCutCounter(aAOD);}
  }
 
  // c) AOD:
@@ -2426,7 +2437,7 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
   // Remark 0: Cut first on event-by-event quantities which we calculated in FilterEvent().
   //           At the moment, those are: fCentrality, fSelectedTracks
 
-  // Remark 1: For each new cut you implement here, add corresponding support in EventCutCounter(...)
+  // Remark 1: For each new cut you implement here, add corresponding support in EventCutCounter(...) and SequentialEventCutCounter(...)
 
   // Trigger:
   if(fUseTrigger)
@@ -2688,6 +2699,128 @@ void AliAnalysisTaskMuPa::EventCutCounter(AliVEvent *ave)
  }
 
 } // void AliAnalysisTaskMuPa::EventCutCounter(AliVEvent *ave)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMuPa::SequentialEventCutCounter(AliVEvent *ave)
+{
+ // Simple QA function to summarize what each event cut is doing individually.
+
+ // a) Determine Ali{MC,ESD,AOD}Event;
+ // b) AOD.
+
+ // a) Determine Ali{MC,ESD,AOD}Event:
+ //AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
+ //AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
+ AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
+
+ // b) AOD:
+ if(aAOD)
+ {
+  // Remark: Keep in sync with TString secc[gQASequentialEventCutCounter] = ...
+ 
+  // Basic protection:
+  if(!fQASequentialEventCutCounter){return;}
+
+  // Total number of events:
+  fQASequentialEventCutCounter->Fill(0.5);
+
+  // Selected tracks for Q-vectors, after all event and particle cuts:
+  if(fUseSelectedTracksCuts)
+  { 
+   if(fSelectedTracks < fSelectedTracksCuts[0]) { fQASequentialEventCutCounter->Fill(1.5); return; }
+   if(fSelectedTracks > fSelectedTracksCuts[1]) { fQASequentialEventCutCounter->Fill(2.5); return; }
+  }
+
+  // Centrality:
+  if(fUseCentralityCuts)
+  { 
+   if(fCentrality < fCentralityCuts[0]) { fQASequentialEventCutCounter->Fill(3.5); return; }
+   if(fCentrality > fCentralityCuts[1]) { fQASequentialEventCutCounter->Fill(4.5); return; }
+  }
+
+  // Vertex:
+  AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
+  if(!avtx) { fQASequentialEventCutCounter->Fill(5.5); return; }
+  if(fUseNContributorsCuts)
+  {
+   if((Int_t)avtx->GetNContributors()<fNContributorsCuts[0]) { fQASequentialEventCutCounter->Fill(6.5); return; }
+   if((Int_t)avtx->GetNContributors()>fNContributorsCuts[1]) { fQASequentialEventCutCounter->Fill(7.5); return; }
+  }
+
+  if(fUseMinVertexDistanceCut)
+  {
+   if(sqrt(pow(avtx->GetX(),2.) + pow(avtx->GetY(),2.) + pow(avtx->GetY(),2.)) < fMinVertexDistance)
+   { 
+    fQAAnomalousEvents->Fill(0.5); // |vertex| = 0.
+    fQASequentialEventCutCounter->Fill(8.5); return; 
+   }
+  }
+
+  if(fUseVertexCuts[X])
+  {
+   if(avtx->GetX() < fVertexCuts[X][0]) { fQASequentialEventCutCounter->Fill(9.5); return; }
+   if(avtx->GetX() > fVertexCuts[X][1]) { fQASequentialEventCutCounter->Fill(10.5); return; }
+  }
+  if(fUseVertexCuts[Y])
+  {
+   if(avtx->GetY() < fVertexCuts[Y][0]) { fQASequentialEventCutCounter->Fill(11.5); return; }
+   if(avtx->GetY() > fVertexCuts[Y][1]) { fQASequentialEventCutCounter->Fill(12.5); return; }
+  }
+  if(fUseVertexCuts[Z])
+  {
+   if(avtx->GetZ() < fVertexCuts[Z][0]) { fQASequentialEventCutCounter->Fill(13.5); return; }
+   if(avtx->GetZ() > fVertexCuts[Z][1]) { fQASequentialEventCutCounter->Fill(14.5); return; }
+  }
+ } // if(aAOD)
+
+ // Centrality cuts:
+ AliMultSelection *ams = (AliMultSelection*)aAOD->FindListObject("MultSelection");
+ if(!ams){cout<<__LINE__<<endl;exit(1);}
+ TString sce[gCentralityEstimators] = {"V0M", "SPDTracklets", "CL0", "CL1"}; // keep this in sync with enum eCentralityEstimator in .h
+ for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
+ {
+  for(Int_t ce2=ce1+1;ce2<gCentralityEstimators;ce2++)
+  {
+   if(fUseCentralityCorrelationsCuts[ce1][ce2])
+   {
+    Double_t centrality1 = ams->GetMultiplicityPercentile(sce[ce1].Data());
+    Double_t centrality2 = ams->GetMultiplicityPercentile(sce[ce2].Data());
+    if(centrality1+centrality2 > 0.) 
+    {
+     if(TMath::Abs((centrality1-centrality2)/(centrality1+centrality2)) > fCentralityCorrelationsCuts[ce1][ce2])
+     {
+      // Determine programatically which bin is that:
+      for(Int_t b=1; b<=fQASequentialEventCutCounter->GetNbinsX();b++)
+      {
+       if(TString(fQASequentialEventCutCounter->GetXaxis()->GetBinLabel(b)).EqualTo(Form("centCorrCut[%d][%d]",ce1,ce2)))
+       {
+        //cout<<Form("%d %d",ce1,ce2)<<endl;
+        //cout<<Form("%d",b)<<endl;
+        //cout<<fQASequentialEventCutCounter->GetXaxis()->GetBinLabel(b)<<endl;
+        fQASequentialEventCutCounter->Fill(b-0.5); return; 
+       } // if(TString(fQASequentialEventCutCounter->GetBinLabel(b)).EqualTo(Form("centCorrCut[%d][%d]",ce1,ce2)))
+      } // for(Int_t b=1; b<=fQASequentialEventCutCounter->GetNBinsX();b++)
+     } // if(TMath::Abs((centrality1-centrality2)/(centrality1+centrality2)) > fCentralityCorrelationsCuts[ce1][ce2]) 
+    } // if(centrality1+centrality2 > 0.) 
+   } // if(fUseCentralityCorrelationsCuts[ce1][ce2])
+  } // for(Int_t ce2=ce1+1;ce2<gCentralityEstimators;ce2++) 
+ } // for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
+
+ // Centrality weights (flattening): 
+ // Remark: since I am getting centrality weights from centrality distribution after the events cuts, flattening is applied here after all other event cuts:
+ if(!ams){cout<<__LINE__<<endl;exit(1);} // pointer was obtained previously
+ Double_t centralityWeight = -44.;
+ for(Int_t ce=0;ce<gCentralityEstimators;ce++)
+ {
+  if(fUseCentralityWeights[ce])
+  {
+   centralityWeight = CentralityWeight(ams->GetMultiplicityPercentile(sce[ce].Data()),sce[ce].Data());
+   if(gRandom->Uniform(0,1) > centralityWeight) { fQASequentialEventCutCounter->Fill(21); return; }
+  } 
+ }
+
+} // void AliAnalysisTaskMuPa::SequentialEventCutCounter(AliVEvent *ave)
 
 //=======================================================================================================================
 
