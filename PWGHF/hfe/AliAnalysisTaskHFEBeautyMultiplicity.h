@@ -279,6 +279,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH2F*	fDCAxy_MC_ele;
 	TH2F*	fDCAxy_MC_Phot;
     	
+	TH1F*	fHistPt_B_TrkCut;
 	TH1F*	fHistPt_B_TrkCut0;
 	TH1F*	fHistPt_B_TrkCut1;
 	TH1F*	fHistPt_B_TrkCut2;
@@ -289,7 +290,11 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*	fHistPt_B_TrkCut7;
 	TH1F*	fHistPt_B_TrkCut8;
 	TH1F*	fHistPt_B_TrkCut9;
+	TH1F*	fHistPt_B_TrkCut10;
+	TH1F*	fHistPt_B_TrkCut11;
+	TH1F*	fHistPt_B_TrkCut12;
 
+	TH1F*	fHistPt_D_TrkCut;
 	TH1F*	fHistPt_D_TrkCut0;
 	TH1F*	fHistPt_D_TrkCut1;
 	TH1F*	fHistPt_D_TrkCut2;
@@ -300,6 +305,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*	fHistPt_D_TrkCut7;
 	TH1F*	fHistPt_D_TrkCut8;
 	TH1F*	fHistPt_D_TrkCut9;
+	TH1F*	fHistPt_D_TrkCut10;
+	TH1F*	fHistPt_D_TrkCut11;
+	TH1F*	fHistPt_D_TrkCut12;
 
 	TH2F*	fNtrkletNch;
 	TH2F*	fNtrkletNch_Corr;
