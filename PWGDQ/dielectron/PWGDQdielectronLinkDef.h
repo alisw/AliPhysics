@@ -65,6 +65,7 @@
 #pragma link C++ class AliAnalysisTaskTGReducedTree+;
 #pragma link C++ class AliAnalysisTaskReducedTreeDS+;
 #pragma link C++ class AliAnalysisTaskLMeeCocktailMC+;
+#pragma link C++ class AliAnalysisTaskLMeePureMC+;
 #pragma link C++ class AliCocktailSmearing+;
 #pragma link C++ class AliAnalysisTaskCharm+;
 #pragma link C++ class AliAnalysisTaskBeauty+;
