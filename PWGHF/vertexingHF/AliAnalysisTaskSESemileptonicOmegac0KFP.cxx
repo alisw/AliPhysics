@@ -482,7 +482,7 @@ Bool_t AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeMCAnalysis(TClonesArray *m
                     e_flag = kTRUE;
                     mcepart = mcdau;
                 }
-                if(TMath::Abs(mcdau->GetPdgCode()==3334)){
+                if(TMath::Abs(mcdau->GetPdgCode())==3334){
                     omega_flag = kTRUE;
                     mccascpart = mcdau;
                 }

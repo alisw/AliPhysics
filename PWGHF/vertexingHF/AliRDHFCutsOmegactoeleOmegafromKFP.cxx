@@ -65,7 +65,6 @@ AliRDHFCutsOmegactoeleOmegafromKFP::AliRDHFCutsOmegactoeleOmegafromKFP(const cha
   fProdMassTolLambda(0.010),
   fProdMassTolOmega(0.008),
   fProdMassTolOmegaRough(0.025),
-  fProdMassRejXi(0.008),
   fProdRfidMinV0(0.6),
   fProdRfidMaxV0(100.0),
   fProdRfidMinOmega(0.6),
@@ -158,7 +157,6 @@ AliRDHFCutsOmegactoeleOmegafromKFP::AliRDHFCutsOmegactoeleOmegafromKFP(const Ali
   fProdMassTolLambda(source.fProdMassTolLambda),
   fProdMassTolOmega(source.fProdMassTolOmega),
   fProdMassTolOmegaRough(source.fProdMassTolOmegaRough),
-  fProdMassRejXi(source.fProdMassRejXi),
   fProdRfidMinV0(source.fProdRfidMinV0),
   fProdRfidMaxV0(source.fProdRfidMaxV0),
   fProdRfidMinOmega(source.fProdRfidMinOmega),
@@ -240,7 +238,6 @@ AliRDHFCutsOmegactoeleOmegafromKFP &AliRDHFCutsOmegactoeleOmegafromKFP::operator
   fProdMassTolLambda = source.fProdMassTolLambda;
   fProdMassTolOmega = source.fProdMassTolOmega;
   fProdMassTolOmegaRough = source.fProdMassTolOmegaRough;
-  fProdMassRejXi = source.fProdMassRejXi;
   fProdRfidMinV0 = source.fProdRfidMinV0;
   fProdRfidMaxV0 = source.fProdRfidMaxV0;
   fProdRfidMinOmega = source.fProdRfidMinOmega;
@@ -734,9 +731,6 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::SingleCascadeCuts(AliAODcascade *casc
 
   if(TMath::Abs(massOmega-momegaPDG)>fProdMassTolOmega)
      return kFALSE;
-
-  if(TMath::Abs(massXi-mxiPDG)<fProdMassRejXi)
-  return kFALSE;
   
   Double_t lPosXi[3];
   lPosXi[0] = casc->DecayVertexXiX();
