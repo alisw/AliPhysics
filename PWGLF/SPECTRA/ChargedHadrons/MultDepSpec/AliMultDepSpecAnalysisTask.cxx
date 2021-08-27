@@ -558,23 +558,22 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
   if (count) {
     fMultMeas = 0;
   }
-  AliVTrack* track = nullptr;
-  for (int i = 0; i < fEvent->GetNumberOfTracks(); ++i) {
-    track = dynamic_cast<AliVTrack*>(fEvent->GetTrack(i));
+  for (int trackID = 0; trackID < fEvent->GetNumberOfTracks(); ++trackID) {
+    AliVTrack* track = dynamic_cast<AliVTrack*>(fEvent->GetTrack(trackID));
     // set track properties and check if track is in kin range and has good quality
     if (!InitTrack(track)) continue;
 
     // initialize particle properties
     bool isValidParticle = false;
     if (fIsMC) {
-      // mc label corresponding to measured track (negative label indicates bad quality track)
+      // mc label corresponding to measured track (negative label indicates bad quality track, background tracks have are stored with an offset)
       int mcLabel = std::abs(track->GetLabel());
 
       // set mc particle properties and check if it is charged prim/sec and in kin range
       if (fIsESD) {
-        isValidParticle = InitParticle((AliMCParticle*)fMCEvent->GetTrack(mcLabel));
+        isValidParticle = InitParticle<AliMCParticle>(mcLabel);
       } else {
-        isValidParticle = InitParticle((AliAODMCParticle*)fMCEvent->GetTrack(mcLabel));
+        isValidParticle = InitParticle<AliAODMCParticle>(mcLabel);
       }
       if (fMCIsPileupParticle) continue; // skip tracks from pileup in mc
     }
@@ -622,13 +621,14 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
     fMultTrue = 0;
   }
 
-  for (int i = 0; i < fMCEvent->GetNumberOfTracks(); ++i) {
+  for (int particleID = 0; particleID < fMCEvent->GetNumberOfTracks(); ++particleID) {
     // sets fMCPt, fMCEta, ... and checks if particle in kin range
     if (fIsESD) {
-      if (!InitParticle((AliMCParticle*)fMCEvent->GetTrack(i))) continue;
+      if (!InitParticle<AliMCParticle>(particleID)) continue;
     } else {
-      if (!InitParticle((AliAODMCParticle*)fMCEvent->GetTrack(i))) continue;
+      if (!InitParticle<AliAODMCParticle>(particleID)) continue;
     }
+
     if (!fMCIsChargedPrimary) continue;
 
     if (count) {
@@ -699,28 +699,31 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
 //**************************************************************************************************
 /**
  * Initializes particle properties and returns false if not charged primary or secondary or if
- * particle is of kinematic range range. Works for AliMCParticles (ESD) and AliAODMCParticles (AOD).
+ * particle is of kinematic range range. Works for AliMCParticle (ESD) and AliAODMCParticle (AOD).
  */
 //**************************************************************************************************
 template <typename Particle_t>
-bool AliMultDepSpecAnalysisTask::InitParticle(Particle_t* particle)
+bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
 {
+  Particle_t* particle = static_cast<Particle_t*>(fMCEvent->GetTrack(particleID));
+
   if (!particle) {
     AliFatal("Particle not found\n");
     return false;
   }
+  // in case of enbedded pileup particleID will be different from the mc label stored in the particle
   fMCLabel = particle->GetLabel();
   fMCIsPileupParticle = false;
   // reject all particles and tracks that come from simulated out-of-bunch pileup
-  if (fIsNewReco && (fMCEvent->IsFromSubsidiaryEvent(fMCLabel) || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(fMCLabel, fMCEvent))) {
+  if (fIsNewReco && (fMCEvent->IsFromSubsidiaryEvent(particleID) || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(particleID, fMCEvent))) {
     fMCIsPileupParticle = true; // store this info as it is relevant for track loop as well
     return false;
   }
 
   if (!(TMath::Abs(particle->Charge()) > 0.01)) return false; // reject all neutral particles
 
-  fMCIsChargedPrimary = fMCEvent->IsPhysicalPrimary(fMCLabel);
-  fMCIsChargedSecondary = (fMCIsChargedPrimary) ? false : (fMCEvent->IsSecondaryFromWeakDecay(fMCLabel) || fMCEvent->IsSecondaryFromMaterial(fMCLabel));
+  fMCIsChargedPrimary = fMCEvent->IsPhysicalPrimary(particleID);
+  fMCIsChargedSecondary = (fMCIsChargedPrimary) ? false : (fMCEvent->IsSecondaryFromWeakDecay(particleID) || fMCEvent->IsSecondaryFromMaterial(particleID));
 
   // not interested in anything non-final
   if (!(fMCIsChargedPrimary || fMCIsChargedSecondary)) return false;
