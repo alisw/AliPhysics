@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKSEDMESONTREE_H
 #define ALIANALYSISTASKSEDMESONTREE_H
 
-/* Copyright(c) 1998-2020, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2021, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 //*************************************************************************
@@ -143,9 +143,9 @@ private:
                                                                                 ///[1]: Acc step FD D
     AliHFMLVarHandler *fMLhandler = nullptr;                                    //!<! object to handle ML tree creation and filling
     TTree *fMLtree = nullptr;                                                   //!<! tree with candidates for ML
-    TH1F *fSPDMult = nullptr;                                                   //!<! hist. of spd mult
-    TH1F *fSPDMultCand = nullptr;                                               //!<! hist. of spd mult for events with D candidates
-    TH1F *fSPDMultCandInMass = nullptr;                                         //!<! hist. of spd mult for events with D candidates in the mass range
+    TH2F *fSPDMultVsCent = nullptr;                                             //!<! hist. of spd mult vs. centrality percentile
+    TH2F *fSPDMultVsCentCand = nullptr;                                         //!<! hist. of spd mult vs. centrality percentile for events with D candidates
+    TH2F *fSPDMultVsCentCandInMass = nullptr;                                   //!<! hist. of spd mult vs. centrality percentile for events with D candidates in the mass range
 
     int fDecChannel = kD0toKpi;                                                 /// channel to analyse
     int fPdgD = 421;                                                            /// pdg code of the D meson
@@ -190,7 +190,7 @@ private:
     std::string fMLSelectorName = "MLSelector";                                 /// name of MLSelector task
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDmesonTree, 5); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDmesonTree, 6); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 
