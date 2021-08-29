@@ -41,8 +41,9 @@ const Int_t gCentralMultiplicity = 1; // multiplicities defined centrally, e.g. 
 const Int_t gWeights = 3; // phi, pt, eta
 const Int_t gQAAnomalousEvents = 1; // |vertex| = 0; 
 const Int_t gQASelfCorrelations = 3; // phi, pt, eta
-const Int_t gQAEventCutCounter = 22; // see TString secc[gQAEventCutCounter] in .cxx
+const Int_t gQAEventCutCounter = 23; // see TString secc[gQAEventCutCounter] in .cxx
 const Int_t gQAParticleCutCounter = 39; // see TString spcc[gQAParticleCutCounter] in .cxx
+const Int_t gGenericCorrelations = 1; // correlations between various quantities (see .cxx for documentation)
 
 // enums:
 enum eBins {nBins,min,max};
@@ -145,6 +146,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // QA:
   void SetFillQAHistograms(Bool_t fqah) {this->fFillQAHistograms = fqah;};
   Bool_t GetFillQAHistograms() const {return this->fFillQAHistograms;};
+  void SetFillQAHistogramsAll(Bool_t fqaha) {this->fFillQAHistogramsAll = fqaha;};
+  Bool_t GetFillQAHistogramsAll() const {return this->fFillQAHistogramsAll;};
   void SetTerminateAfterQA(Bool_t taqa) {this->fTerminateAfterQA = taqa;};
   Bool_t GetTerminateAfterQA() const {return this->fTerminateAfterQA;};
   void SetQAFilterBits(TArrayI *fb){this->fQAFilterBits = fb;};
@@ -265,6 +268,14 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fEventCuts[var][1] = max;
    this->fUseEventCuts[var] = kTRUE;
   }
+
+  // Generic correlations:
+  void SetSelContrTreshold(const Float_t treshold)
+  {
+   this->fSelContrTreshold = treshold;
+   this->fUseGenericCorrelationsCuts[0] = kTRUE;
+  }
+
   void SetControlParticleHistogramsList(TList* const cphl) {this->fControlParticleHistogramsList = cphl;};
   TList* GetControlParticleHistogramsList() const {return this->fControlParticleHistogramsList;} 
   void SetUseFakeTracks(const Bool_t uft) {this->fUseFakeTracks = uft;};
@@ -454,7 +465,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TString fTaskName; // e.g. Form("Task=>%.1f-%.1f",centrMin,centrMax)
   TString fDataTakingPeriod; // the data taking period, use e.g. task->SetDataTakingPeriod("LHC10h")
   TString fAODNumber; // the AOD number, use e.g. task->SetPeriod("AOD160") (for "LHC10h")
-  Bool_t fFillQAHistograms; // fill all QA histograms (this shall be done only in one task, since these histos are heavy 2D objects). Additional loops over particles is performed.
+  Bool_t fFillQAHistograms; // fill QA histograms (this shall be done only in one task, since these histos are heavy 2D objects). Additional loops over particles is performed.
+  Bool_t fFillQAHistogramsAll; // if kFALSE, only most important QA histograms a filled
   Bool_t fTerminateAfterQA; // in UserExec(), bail out immediately after QA histograms are filled 
   Bool_t fVerbose; // print all additional info like Green(__PRETTY_FUNCTION__); etc.
   Int_t fEventCounter; // counter of all events, i.e. number of times UserExec() has been called
@@ -468,6 +480,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fQACentralityHist[gCentralityEstimators][2]; // centrality distribution [all supported estimators][before, after event cuts]
   TH2D *fQACentralityCorrHist[gCentralityEstimators][gCentralityEstimators][2]; // correlations of centrality distributions from all supported estimators [before, after event cuts]
   TH2D *fQAMultiplicityCorrHist[2]; // correlations between reference multiplicity and nSelected tracks [before, after event cuts]
+  TH2D *fQAGenericCorrHist[gGenericCorrelations][2]; // correlations between various quantities (see .cxx for documentation) [before, after event cuts]
   TH1I *fQAFilterBitScan; // for each track in AOD, dump its filterbits
   TH2I *fQAIDvsFilterBit; // filterbit vs. atrack->ID()
   TH1D *fQAKinematicsFilterBits[gFilterBits][gKinematicVariables]; // kinematics [specified filter bit][phi,pt,eta,energy,charge] Use in combination with SetQAFilterBits(...)
@@ -493,6 +506,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Int_t fSelectedTracksCuts[2];  // [min,max]
   Bool_t fUseSelectedTracksCuts; // kFALSE by default, set to kTRUE if task->SelectedTracksCuts(...) has been called
   TH1D *fCentralMultiplicityHist[gCentralMultiplicity][2]; // this is distribution of reference multiplicities, maintained centrally [before,after event cuts]
+  Bool_t fUseGenericCorrelationsCuts[gGenericCorrelations]; // each of them is automatically set to kTRUE when setter is called, e.g. [0] with SetSelContrTreshold(...), etc.
+  Double_t fSelContrTreshold;    // use via setter task->SetSelContrTreshold(...), applied as: fSelectedTracks > fSelContrTreshold * (Int_t)avtx->GetNContributors()
 
   //    Centrality:
   Double_t fCentrality;         // this is ebe centrality from default estimator
@@ -520,7 +535,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fEventHistograms[2][gEventHistograms]; //! [before,after event cuts][ type - see enum ]
   Double_t fEventBins[gEventHistograms][3]; // [nBins,min,max]
   Double_t fEventCuts[gEventHistograms][2]; // [type - see enum][min,max]
-  Bool_t fUseEventCuts[gEventHistograms]; // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
+  Bool_t fUseEventCuts[gEventHistograms];   // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
 
   // 3) Control particle histograms:  
   TList *fControlParticleHistogramsList; // list to hold all control histograms for particle distributions
@@ -612,7 +627,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,16);
+  ClassDef(AliAnalysisTaskMuPa,17);
 
 };
 
