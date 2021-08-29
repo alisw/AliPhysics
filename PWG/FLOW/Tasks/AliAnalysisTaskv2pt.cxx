@@ -124,6 +124,7 @@ AliAnalysisTaskv2pt::AliAnalysisTaskv2pt(const char *name): AliAnalysisTaskSE(na
   fHCorrectMCnegKaon(NULL),
   fHCorrectMCnegProt(NULL),      
 
+  fHistTPConlyVsCL1Before(NULL),
   fHistTPConlyVsV0MBefore(NULL),
   fHistCL0VsV0MBefore(NULL),  
   fHistTPConlyVsCL1After(NULL),
@@ -224,7 +225,7 @@ AliAnalysisTaskv2pt::AliAnalysisTaskv2pt():
   fHCorrectMCnegKaon(NULL),
   fHCorrectMCnegProt(NULL),    
  
-
+  fHistTPConlyVsCL1Before(NULL),
   fHistTPConlyVsV0MBefore(NULL),
   fHistCL0VsV0MBefore(NULL),  
   fHistTPConlyVsCL1After(NULL),
