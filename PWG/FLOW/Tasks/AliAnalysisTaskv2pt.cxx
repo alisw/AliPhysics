@@ -157,15 +157,23 @@ AliAnalysisTaskv2pt::AliAnalysisTaskv2pt(const char *name): AliAnalysisTaskSE(na
   fHistEventCount(NULL)
 {
 
-  /*
-  for(int i=0;i<2;i++){
-    for(int j=0;j<2;j++){
-      //for (int k=0;k<1;k++){
+  
+  for(int i=0;i<1;i++){
+    for(int j=0;j<10;j++){
+
       fHistv2AchChrgPos[i][j] = NULL;
+      fHistv2AchPionPos[i][j] = NULL;
+      fHistv2AchKaonPos[i][j] = NULL;
+      fHistv2AchProtPos[i][j] = NULL;
+
+      fHistv2AchChrgNeg[i][j] = NULL;
+      fHistv2AchPionNeg[i][j] = NULL;
+      fHistv2AchKaonNeg[i][j] = NULL;
+      fHistv2AchProtNeg[i][j] = NULL;
       
     }
   }
-  */
+  
   
  
    for(int i=0; i<10; i++){
@@ -260,7 +268,21 @@ AliAnalysisTaskv2pt::AliAnalysisTaskv2pt():
   fHistEventCount(NULL)
 {
   
+  for(int i=0;i<1;i++){
+    for(int j=0;j<10;j++){
+      //for (int k=0;k<1;k++){
+      fHistv2AchChrgPos[i][j] = NULL;
+      fHistv2AchPionPos[i][j] = NULL;
+      fHistv2AchKaonPos[i][j] = NULL;
+      fHistv2AchProtPos[i][j] = NULL;
 
+      fHistv2AchChrgNeg[i][j] = NULL;
+      fHistv2AchPionNeg[i][j] = NULL;
+      fHistv2AchKaonNeg[i][j] = NULL;
+      fHistv2AchProtNeg[i][j] = NULL;
+      
+    }
+  }
     
   for(int i=0; i<10; i++){
     fHistv2cumAchChrgAll[i] = NULL;

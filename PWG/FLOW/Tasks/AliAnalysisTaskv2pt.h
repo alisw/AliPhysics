@@ -36,14 +36,7 @@ class    AliMultSelection;
 class    AliAnalysisUtils;
 
 
-TProfile     *fHistv2AchChrgPos[1][10];
-TProfile     *fHistv2AchPionPos[1][10]; //! [1st] = method, [2nd] = centrality.
-TProfile     *fHistv2AchKaonPos[1][10]; //!
-TProfile     *fHistv2AchProtPos[1][10]; //!
-TProfile     *fHistv2AchChrgNeg[1][10];
-TProfile     *fHistv2AchPionNeg[1][10]; //! [1st] = method, [2nd] = centrality.
-TProfile     *fHistv2AchKaonNeg[1][10]; //!
-TProfile     *fHistv2AchProtNeg[1][10]; //!
+
 
 class AliAnalysisTaskv2pt : public AliAnalysisTaskSE {
 
@@ -225,6 +218,14 @@ class AliAnalysisTaskv2pt : public AliAnalysisTaskSE {
   TProfile     *fHistv2AchProtNeg[2][10][10]; //!
   */
 
+TProfile     *fHistv2AchChrgPos[1][10];
+TProfile     *fHistv2AchPionPos[1][10]; //! [1st] = method, [2nd] = centrality.
+TProfile     *fHistv2AchKaonPos[1][10]; //!
+TProfile     *fHistv2AchProtPos[1][10]; //!
+TProfile     *fHistv2AchChrgNeg[1][10];
+TProfile     *fHistv2AchPionNeg[1][10]; //! [1st] = method, [2nd] = centrality.
+TProfile     *fHistv2AchKaonNeg[1][10]; //!
+TProfile     *fHistv2AchProtNeg[1][10]; //!
   ///Used For NUA Corrections:
  
 
