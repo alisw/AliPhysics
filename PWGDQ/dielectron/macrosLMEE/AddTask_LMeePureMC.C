@@ -21,6 +21,6 @@ AliAnalysisTaskLMeePureMC* AddTask_LMeePureMC() {
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,mgr->CreateContainer("LMeePureMC", TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName()));
 
-  return;
+  return task;
 
 }
