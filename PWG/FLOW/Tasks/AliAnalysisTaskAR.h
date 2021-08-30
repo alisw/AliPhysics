@@ -22,6 +22,7 @@
 #include <Riostream.h>
 #include <TComplex.h>
 #include <TDataType.h>
+#include <TExMap.h>
 #include <TF1.h>
 #include <TFile.h>
 #include <TH1D.h>
@@ -129,9 +130,9 @@ public:
   virtual void FillFinalResultProfile(kFinalProfile fp);
   virtual Bool_t SurviveEventCut(AliVEvent *ave);
   virtual Bool_t SurviveTrackCut(AliVParticle *aTrack, Bool_t FillCounter);
-  virtual void GetMultiplicities(AliAODEvent *aAOD);
+  virtual void FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC);
   virtual void ClearEventObjects();
-  virtual void FillEventObjects(AliAODTrack *track);
+  virtual void FillTrackObjects(AliAODTrack *track);
   virtual void AggregateWeights();
   virtual void ResetWeights();
   virtual Int_t IndexCorHistograms(Int_t i, Int_t j, Int_t N);
@@ -265,19 +266,8 @@ public:
 
   // setters for cuts
   // centrality selection criterion
-  void SetCentralityEstimator(TString CentralityEstimator) {
-    Bool_t Flag = kFALSE;
-    for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
-      if (CentralityEstimator.EqualTo(kCenEstimatorNames[i])) {
-        Flag = kTRUE;
-      }
-    }
-    if (Flag) {
-      this->fCentralityEstimator = CentralityEstimator;
-    } else {
-      std::cout << __LINE__ << ": No valid centrality estimator" << std::endl;
-      Fatal("SetCentralityEstimator", "No valid centrality estimator");
-    }
+  void SetCentralityEstimator(kCenEstimators CentralityEstimator) {
+    this->fCentralityEstimator = CentralityEstimator;
   }
   // generic setter for track cuts
   void SetTrackCuts(kTrack Track, Double_t min, Double_t max) {
@@ -494,11 +484,14 @@ private:
                                      [LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fEventControlHistogramBins[LAST_EEVENT][LAST_EBINS];
 
-  // array holding centrality estimates
+  // array holding multiplicity estimates
   Double_t fMultiplicity[kMulEstimators];
 
+  // array hoding centrality estimates
+  Double_t fCentrality[LAST_ECENESTIMATORS];
+
   // cuts
-  TString fCentralityEstimator;
+  kCenEstimators fCentralityEstimator;
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
   TH1D *fTrackCutsCounter[LAST_EMODE];
   TString fTrackCutsCounterNames[LAST_EMODE];
@@ -526,7 +519,7 @@ private:
   TString fFinalResultProfileNames[LAST_EFINALPROFILE][LAST_ENAME];
   Double_t fFinalResultProfileBins[LAST_EFINALPROFILE][LAST_EBINS];
 
-  // Monte Carlo analysis
+  // Monte Carlo on the fly/closure
   Bool_t fMCOnTheFly;
   Bool_t fMCClosure;
   UInt_t fSeed;
@@ -538,6 +531,9 @@ private:
   Bool_t fMCNumberOfParticlesPerEventFluctuations;
   Int_t fMCNumberOfParticlesPerEvent;
   Int_t fMCNumberOfParticlesPerEventRange[LAST_EMINMAX];
+
+  // Monte Carlo objects
+  TExMap *fLookUpTable;
 
   // qvectors
   TComplex fQvector[kMaxHarmonic][kMaxPower];
