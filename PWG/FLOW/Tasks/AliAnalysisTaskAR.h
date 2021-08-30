@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 24.08.2021
+ * Last Modified Date: 30.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -89,6 +89,7 @@ const TString kBAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
 const Color_t kFillColor[LAST_EBEFOREAFTER] = {kRed - 10, kGreen - 10};
 enum kMode { kRECO, kSIM, LAST_EMODE };
 const TString kModeName[LAST_EMODE] = {"[kRECO]", "[kSIM]"};
+enum kCorCut { kDIFFABS, kDIFFREL };
 
 class AliAnalysisTaskAR : public AliAnalysisTaskSE {
 public:
@@ -130,7 +131,7 @@ public:
   virtual Bool_t SurviveTrackCut(AliVParticle *aTrack, Bool_t FillCounter);
   virtual void GetMultiplicities(AliAODEvent *aAOD);
   virtual void ClearEventObjects();
-  virtual void FillEventObjects(AliAODTrack* track);
+  virtual void FillEventObjects(AliAODTrack *track);
   virtual void AggregateWeights();
   virtual void ResetWeights();
   virtual Int_t IndexCorHistograms(Int_t i, Int_t j, Int_t N);
@@ -307,17 +308,33 @@ public:
     this->fEventCuts[Event][kMAX] = max;
   }
   // setter for centrality correlation cut
-  void SetCenCorCut(Double_t m, Double_t t) {
-    if (m < 1.) {
-      std::cout << __LINE__ << ": slope too small" << std::endl;
-      Fatal("SetCenCorCut", "slope too small");
+  // void SetCenCorCut(Double_t m, Double_t t) {
+  //   if (m < 1.) {
+  //     std::cout << __LINE__ << ": slope too small" << std::endl;
+  //     Fatal("SetCenCorCut", "slope too small");
+  //   }
+  //   if (t < 1.) {
+  //     std::cout << __LINE__ << ": offset too small" << std::endl;
+  //     Fatal("SetCenCorCut", "offset too small");
+  //   }
+  //   this->fCenCorCut[0] = m;
+  //   this->fCenCorCut[1] = t;
+  void SetCenCorCut(Double_t cut, kCorCut mode) {
+    if (cut < 0) {
+      std::cout << __LINE__ << ": bound too small" << std::endl;
+      Fatal("SetCenCorCut", "bound small");
     }
-    if (t < 1.) {
-      std::cout << __LINE__ << ": offset too small" << std::endl;
-      Fatal("SetCenCorCut", "offset too small");
+    this->fCenCorCut = cut;
+    this->fCenCorCutMode = mode;
+  }
+  // setter for multiplicity correlation cut
+  void SetMulCorCut(Double_t cut, kCorCut mode) {
+    if (cut < 0) {
+      std::cout << __LINE__ << ": bound too small" << std::endl;
+      Fatal("SetCenCorCut", "bound small");
     }
-    this->fCenCorCut[0] = m;
-    this->fCenCorCut[1] = t;
+    this->fMulCorCut = cut;
+    this->fMulCorCutMode = mode;
   }
   // filterbit
   // depends strongly on the data set
@@ -492,7 +509,10 @@ private:
   TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
   Int_t fFilterbit;
   Bool_t fPrimaryOnly;
-  Double_t fCenCorCut[2];
+  Double_t fCenCorCut;
+  kCorCut fCenCorCutMode;
+  Double_t fMulCorCut;
+  kCorCut fMulCorCutMode;
 
   // Final results
   TList *fFinalResultsList;
