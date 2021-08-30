@@ -81,7 +81,7 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
     task -> SetMinNtr(minNtr);
     task -> SetMaxNtr(maxNtr);
     task -> SetEstimatorFile(estimatorFilename);
-    task -> SetSetMultType(mtype);
+    task -> SetMultType(mtype);
 
     /*
     TFile* fEstimator=TFile::Open(estimatorFilename.Data());
