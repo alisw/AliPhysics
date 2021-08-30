@@ -85,7 +85,7 @@ protected:
   bool InitCentrality();
 
   template <typename Particle_t>
-  bool InitParticle(Particle_t* particle);
+  bool InitParticle(int particleID);
   double GetSecScalingFactor(AliVParticle* particle);
   double GetParticleWeight(AliVParticle* particle);
   unsigned long GetSeed();

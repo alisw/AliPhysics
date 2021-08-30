@@ -1234,7 +1234,8 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 							if (gamma1->GetNLabels()>0){
 								for (Int_t k =0; k<(Int_t)gamma1->GetNLabels(); k++){
 									PhotonCandidate1.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
-									// Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
+                                    // Int_t pdgCode = fMCEvent->GetTrack(mclabelsCluster[k])->PdgCode();
+									// cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 								}
 							}
 							truePhotonMotherID1 = IsRealPhoton(&PhotonCandidate1, fAODMCTrackArray, iCut, fWeightJetJetMC);
@@ -1265,7 +1266,8 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 									if (gamma2->GetNLabels()>0){
 										for (Int_t k =0; k<(Int_t)gamma2->GetNLabels(); k++){
 											PhotonCandidate2.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
-											// Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
+                                            // Int_t pdgCode = fMCEvent->GetTrack(mclabelsCluster[k])->PdgCode();
+											// cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 										}
 									}
 									truePhotonMotherID2 = IsRealPhoton(&PhotonCandidate2, fAODMCTrackArray, iCut, fWeightJetJetMC);

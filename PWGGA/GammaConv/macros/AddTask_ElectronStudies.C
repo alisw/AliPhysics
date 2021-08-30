@@ -134,6 +134,12 @@ void AddTask_ElectronStudies(
       TaskClusterCutnumberEMC           = "4117921060e32000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
       TaskTMCut                         = "4117921062e32000000";
+  } else if(trainConfig == 100){  // no event cuts (to be used for particle gun)
+      TaskEventCutnumber                = "00000000";
+      TaskClusterCutnumberEMC           = "4117900060l30000000";
+                                         //411792106fe32220000 latest and greates
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117900062l30000000";
 
   //
   // ─── OLD NL ─────────────────────────────────────────────────────────────────────

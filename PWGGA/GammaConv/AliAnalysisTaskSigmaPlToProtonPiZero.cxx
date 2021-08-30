@@ -428,9 +428,9 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 	// Generiertes Spektrum der Sigma+
 	if(fIsMC > 0){
 		for(Int_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
-			TParticle* sigma = (TParticle *)fMCEvent->Particle(i);
+			AliMCParticle* sigma = (AliMCParticle *)fMCEvent->GetTrack(i);
 			if (!sigma) continue;
-			if(sigma->GetPdgCode() == 3222){
+			if(sigma->PdgCode() == 3222){
 				Double_t sigmaPt = sigma->Pt();
 				if(fHistSigmaPlusMCGen) fHistSigmaPlusMCGen->Fill(sigmaPt);
 			}
@@ -615,7 +615,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 						      if (gamma1->GetNLabels()>0){
 						        for (Int_t k =0; k<(Int_t)gamma1->GetNLabels(); k++){
 						          PhotonCandidate1.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
-						          // Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
+						          // Int_t pdgCode = ((AliMCParticle*) fMCEvent->GetTrack(mclabelsCluster[k]))->PdgCode();
 						          // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 						        }
 						      }
@@ -644,7 +644,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 								      if (gamma2->GetNLabels()>0){
 								        for (Int_t k =0; k<(Int_t)gamma2->GetNLabels(); k++){
 								          PhotonCandidate2.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
-								          // Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
+										  // Int_t pdgCode = ((AliMCParticle*) fMCEvent->GetTrack(mclabelsCluster[k]))->PdgCode();
 						          // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 								        }
 								      }
@@ -782,11 +782,12 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsRealProtonKink(AliESDkink* kink,A
 	//if (Label1>MCNTracks) return kFALSE;
 	//if (Label2>MCNTracks) return kFALSE;
 
-	TParticle *KinkSigmaCandidate = fMCStack->Particle(TMath::Abs(Label1)); //mother MC particle object
-	TParticle *KinkProtonCandidate = fMCStack->Particle(TMath::Abs(Label2)); //daughter MC particle object
+	TObjArray* ParticlesFromStack = new TObjArray(*fMCStack->Particles());
+	AliMCParticle *KinkSigmaCandidate = new AliMCParticle(fMCStack->Particle(TMath::Abs(Label1)), ParticlesFromStack, Label1); //mother MC particle object
+	AliMCParticle *KinkProtonCandidate = new AliMCParticle(fMCStack->Particle(TMath::Abs(Label2)), ParticlesFromStack, Label2); //daughter MC particle object
 
-	Int_t code1 = KinkSigmaCandidate->GetPdgCode(); //mother's pdg code obtained from MC mother object
-	Int_t code2 = KinkProtonCandidate->GetPdgCode(); //daughter's pdg code obtained from MC daughter object
+	Int_t code1 = KinkSigmaCandidate->PdgCode(); //mother's pdg code obtained from MC mother object
+	Int_t code2 = KinkProtonCandidate->PdgCode(); //daughter's pdg code obtained from MC daughter object
 
 	if( (code1==3222) && (code2==2212) ){
 		return kTRUE;
@@ -797,30 +798,30 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsRealProtonKink(AliESDkink* kink,A
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsRealPhoton(AliAODConversionPhoton *PhotonCandidate, AliMCEvent* fMCEvent)
 { //checks if a reconstructed photon from sigma plus
-	TParticle *Photon = NULL;
+	AliMCParticle *Photon = NULL;
 	if (PhotonCandidate->GetNCaloPhotonMCLabels() > 0){
 		// Photon = PhotonCandidate->GetMCParticle(fMCEvent);
 		if (PhotonCandidate->GetCaloPhotonMCLabel(0) < 0) return kFALSE;
-		Photon = fMCEvent->Particle(PhotonCandidate->GetCaloPhotonMCLabel(0));
+		Photon = (AliMCParticle*) fMCEvent->GetTrack(PhotonCandidate->GetCaloPhotonMCLabel(0));
 		if (Photon) {
-			if(Photon->GetPdgCode() == 22){
-				if (Photon->GetMother(0) < 0) return kFALSE;
-				TParticle* motherPart2 = (TParticle*)fMCEvent->Particle(Photon->GetMother(0));
-				if (motherPart2->GetMother(0) < 0) return kFALSE;
-				TParticle* grandmotherPart2 = (TParticle*)fMCEvent->Particle(motherPart2->GetMother(0));
-				if(motherPart2->GetPdgCode() == 111 && grandmotherPart2->GetPdgCode() == 3222){
+			if(Photon->PdgCode() == 22){
+				if (Photon->GetMother() < 0) return kFALSE;
+				AliMCParticle* motherPart2 = (AliMCParticle*)fMCEvent->GetTrack(Photon->GetMother());
+				if (motherPart2->GetMother() < 0) return kFALSE;
+				AliMCParticle* grandmotherPart2 = (AliMCParticle*)fMCEvent->GetTrack(motherPart2->GetMother());
+				if(motherPart2->PdgCode() == 111 && grandmotherPart2->PdgCode() == 3222){
 					return kTRUE;
 				} else {
 					return kFALSE;
 				}
-			} else if(Photon->GetPdgCode() == 11 || Photon->GetPdgCode() == -11){
-				if (Photon->GetMother(0) < 0) return kFALSE;
-				TParticle* motherPart2 = (TParticle*)fMCEvent->Particle(Photon->GetMother(0));
-				if (motherPart2->GetMother(0) < 0) return kFALSE;
-				TParticle* grandmotherPart2 = (TParticle*)fMCEvent->Particle(motherPart2->GetMother(0));
-				if (grandmotherPart2->GetMother(0) < 0) return kFALSE;
-				TParticle* grandgrandmotherPart2 = (TParticle*)fMCEvent->Particle(grandmotherPart2->GetMother(0));
-				if(motherPart2->GetPdgCode() == 22 && grandmotherPart2->GetPdgCode() == 111  && grandgrandmotherPart2->GetPdgCode() == 3222){
+			} else if(Photon->PdgCode() == 11 || Photon->PdgCode() == -11){
+				if (Photon->GetMother() < 0) return kFALSE;
+				AliMCParticle* motherPart2 = (AliMCParticle*)fMCEvent->GetTrack(Photon->GetMother());
+				if (motherPart2->GetMother() < 0) return kFALSE;
+				AliMCParticle* grandmotherPart2 = (AliMCParticle*)fMCEvent->GetTrack(motherPart2->GetMother());
+				if (grandmotherPart2->GetMother() < 0) return kFALSE;
+				AliMCParticle* grandgrandmotherPart2 = (AliMCParticle*)fMCEvent->GetTrack(grandmotherPart2->GetMother());
+				if(motherPart2->PdgCode() == 22 && grandmotherPart2->PdgCode() == 111  && grandgrandmotherPart2->PdgCode() == 3222){
 					return kTRUE;
 				} else {
 					return kFALSE;

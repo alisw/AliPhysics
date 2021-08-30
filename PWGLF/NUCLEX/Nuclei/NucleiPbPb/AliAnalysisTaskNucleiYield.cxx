@@ -555,6 +555,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
   TClonesArray *stack = nullptr;
   fRejectedParticles.clear();
+  std::vector<std::pair<int, SLightNucleus>> genParticles;
   if (fIsMC || fPtShape) {
     AliAODMCHeader *mcHeader = (AliAODMCHeader *)ev->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if (!mcHeader){
@@ -598,12 +599,13 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
           }
         }
         SetSLightNucleus(part,fSimNucleus);
-        fSTree->Fill();
+        genParticles.emplace_back(iMC, fSimNucleus);
       }
       if (part->IsPhysicalPrimary() && fIsMC) fTotal[iC]->Fill(fCentrality,part->Pt());
     }
   }
 
+  fRecoNucleiMCindex.clear();
   /// Checking how many deuterons in acceptance are reconstructed well
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
     AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(ev->GetTrack(iT));
@@ -614,6 +616,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       TrackLoop(aodTrack, false);
     }
   } // End AOD track loop
+
+  for (auto& gen : genParticles) {
+    fSimNucleus = gen.second;
+    fSimNucleus.isReco = std::find(fRecoNucleiMCindex.begin(), fRecoNucleiMCindex.end(), gen.first) != fRecoNucleiMCindex.end();
+    fSTree->Fill();
+  }
 
   //  Post output data.
   PostData(1, fList);
@@ -908,6 +916,10 @@ void AliAnalysisTaskNucleiYield::SetSLightNucleus(AliAODMCParticle* part, SLight
   snucl.absCt = fAbsorptionCt;
   snucl.centrality = fCentrality;
   snucl.pdg = part->GetPdgCode();
+  snucl.xOrigin = part->Xv();
+  snucl.yOrigin = part->Yv();
+  snucl.zOrigin = part->Zv();
+
   if (part->IsPhysicalPrimary())
     snucl.flag = SLightNucleus::kPrimary;
   else if (part->IsSecondaryFromWeakDecay())
