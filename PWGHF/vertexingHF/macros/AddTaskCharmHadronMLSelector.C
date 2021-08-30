@@ -49,6 +49,12 @@ AliAnalysisTaskSECharmHadronMLSelector *AddTaskCharmHadronMLSelector(TString fil
         taskName += "Ds";
         suffix.Prepend("Ds");
     }
+    else if (decCh == AliAnalysisTaskSECharmHadronMLSelector::kD0toKpi)
+    {
+        analysisCut = (AliRDHFCutsD0toKpi *)filecuts->Get(cutObjName);
+        taskName += "D0";
+        suffix.Prepend("D0");
+    }
     if (!analysisCut)
     {
         Printf("FATAL: Specific AliRDHFCuts not found");
