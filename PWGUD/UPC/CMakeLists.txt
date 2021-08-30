@@ -32,6 +32,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
+    AliAnalysisTaskJPsi_DG.cxx
     AliAnalysisTaskLumiStabi.cxx
     AliAnalysisTaskSatellites.cxx
     AliAnalysisTaskUpcEtaC.cxx
