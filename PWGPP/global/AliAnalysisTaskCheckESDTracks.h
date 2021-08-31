@@ -90,6 +90,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetRejectGeneratedEventsWithPileup(Bool_t opt=kTRUE){
     fRejectGeneratedEventsWithPileup=opt;
   }
+  void SetRejectParticlesFromOutOfBunchPileup(Bool_t opt=kTRUE){
+    fRejectParticlesFromOutOfBunchPileup=opt;
+  }
 
   AliESDtrackCuts* GetTrackCutObject() const {return fTrCutsTPC;}
 
@@ -265,6 +268,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Bool_t  fUsePileupCut;       // flag use/not use phys pileup cut
   Bool_t  fRejectGeneratedEventsWithPileup;  // reject events with generated pileup
+  Bool_t  fRejectParticlesFromOutOfBunchPileup; // flag to reject tracks from particles generated in out of bunch pileup
   Int_t   fTriggerMask;        // mask used in physics selection
   Bool_t fSelectOnCentrality;  // flag to activate cut on centrality
   Double_t fMinCentrality;     // centrality: lower limit
@@ -280,7 +284,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
   Bool_t  fFillSparses;        // flag to control fill of THnSparse
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,31);
+  ClassDef(AliAnalysisTaskCheckESDTracks,32);
 };
 
 
