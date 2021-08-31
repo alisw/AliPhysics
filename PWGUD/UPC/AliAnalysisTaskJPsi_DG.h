@@ -9,6 +9,7 @@ class TH1;
 class TTree;
 class TList;
 class TBits;
+class AliESDtrackCuts;
 
 #include "AliTimeRangeCut.h"
 #include "AliAnalysisTaskSE.h"
