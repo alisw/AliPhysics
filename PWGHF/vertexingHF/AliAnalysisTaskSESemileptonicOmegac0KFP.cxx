@@ -506,7 +506,11 @@ Bool_t AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeMCAnalysis(TClonesArray *m
             */
               
             if(e_flag && omega_flag){
-                FillTreeGenOmegac0(mcpart,CheckOrigin);
+                
+                AliAODMCParticle *mcdau_0 = (AliAODMCParticle*)mcArray->At(mcpart->GetDaughterFirst());
+                Double_t MLOverP = sqrt( pow(mcpart->Xv() - mcdau_0->Xv(),2.) +  pow(mcpart->Yv() - mcdau_0->Yv(),2.) +  pow(mcpart->Zv() - mcdau_0->Zv(),2.)) * mcpart-> M() / mcpart->P()*1.e4;
+                
+                FillTreeGenOmegac0(mcpart,CheckOrigin, MLOverP);
             }
         } // Omegac0 4332
         
@@ -517,17 +521,18 @@ Bool_t AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeMCAnalysis(TClonesArray *m
 //************************
 }//MakeMCAnalysis
 //---------------------------------------------------------------------------------------------
-void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeGenOmegac0(AliAODMCParticle *mcpart, Int_t CheckOrigin)
+void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeGenOmegac0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLOverP)
 {
 
     // Fill histograms or tree depending
-    for (Int_t i=0; i<4; i++){
+    for (Int_t i=0; i<5; i++){
         fVar_Omegac0MCGen[i] = -9999.;
     }
     fVar_Omegac0MCGen[0] = mcpart->Y();
     fVar_Omegac0MCGen[1] = mcpart->Pt();
     fVar_Omegac0MCGen[2] = CheckOrigin;
     fVar_Omegac0MCGen[3] = mcpart->GetPdgCode();
+    fVar_Omegac0MCGen[4] = MLOverP;
     
     if(fWriteOmegac0MCGenTree) fTree_Omegac0MCGen ->Fill();
     
@@ -1412,7 +1417,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeMCGenOmegac0()
 
     const char* nameoutput = GetOutputSlot(6)->GetContainer()->GetName();
     fTree_Omegac0MCGen = new TTree(nameoutput,"Omegac0 MC varibales tree");
-    Int_t nVar = 4;
+    Int_t nVar = 5;
     fVar_Omegac0MCGen = new Float_t[nVar];
     TString *fVarNames = new TString[nVar];
     
@@ -1420,6 +1425,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeMCGenOmegac0()
     fVarNames[1] = "pT_Omegac0";
     fVarNames[2] = "CheckOrigin_SourceOmegac0";
     fVarNames[3] = "PDG_Omegac0";
+    fVarNames[4] = "ct_Omegac0";
     
     for(Int_t ivar=0; ivar<nVar; ivar++){
         fTree_Omegac0MCGen->Branch(fVarNames[ivar].Data(),&fVar_Omegac0MCGen[ivar], Form("%s/F",fVarNames[ivar].Data()));
