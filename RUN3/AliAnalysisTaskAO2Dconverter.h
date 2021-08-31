@@ -50,6 +50,7 @@ public:
   virtual void SetCompression(UInt_t compress=101) {fCompress = compress; }
   virtual void SetMaxBytes(ULong_t nbytes = 100000000) {fMaxBytes = nbytes;}
   void SetEMCALAmplitudeThreshold(Double_t threshold) { fEMCALAmplitudeThreshold = threshold; }
+  void SetEMCALFractionL1MonitoringEvents(Double_t fraction) { fFractionL1MonitorEventsEMCAL = fraction; }
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
@@ -435,12 +436,13 @@ private:
     // Calorimeter trigger data (EMCAL & PHOS)
     Int_t fIndexBCs = 0u;         /// Index to BC table
     Short_t fFastOrAbsID = - 1;   /// FastOR absolute ID
-    Float_t fLnAmplitude = -1.f;  /// L0 amplitude (ADC) := Peak Amplitude
+    Short_t fLnAmplitude = -1.f;  /// L0 amplitude (ADC) := Peak Amplitude
     Int_t fTriggerBits = 0;       /// Online trigger bits
     Char_t fCaloType = -1;        /// Calorimeter type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calotrigger;                  //! structure to keep calo trigger info
 
   struct FwdTrackPars {   /// Forward track parameters
+
     Int_t   fIndexCollisions = -1;    /// The index of the collision vertex in the TF, to which the track is attached
     Int_t fIndexBCs = 0u; /// Index to BC table
     Int_t fTrackType = 3; /// MuonStandaloneTrack on ForwardTrackTypeEnum (O2 Framework/DataTypes.h)
@@ -582,6 +584,7 @@ private:
   TH1F *fCentralityINT7 = nullptr; ///! Centrality histogram for the INT7 triggers
   TH1I *fHistPileupEvents = nullptr; ///! Counter histogram for pileup events
   Double_t fEMCALAmplitudeThreshold = 0.1; ///< EMCAL amplitude threshold (for compression - default: 100 MeV := cluster cell threshold)
+  Double_t fFractionL1MonitorEventsEMCAL = 0.001; ///< Fraction of monitoring events (full payload) for EMCAL L1 trigger
 
   /// Byte counter
   ULong_t fBytes = 0; ///! Number of bytes stored in all trees
@@ -597,7 +600,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 20);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 19);
 };
 
 #endif
