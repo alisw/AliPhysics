@@ -717,13 +717,16 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::SingleCascadeCuts(AliAODcascade *casc
   Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
   Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
   Double_t momegaPDG =  TDatabasePDG::Instance()->GetParticle(3334)->Mass();
-  
+   
+  Bool_t isparticle = kTRUE;
+    
+ /*
+   // ====== follwing cuts will be replaced by KFP_Cuts
   Double_t massLambda = casc->MassLambda();
   Double_t massAntiLambda = casc->MassAntiLambda();
   if(TMath::Abs(massLambda-mLPDG)>fProdMassTolLambda && TMath::Abs(massAntiLambda-mLPDG)>fProdMassTolLambda) 
      return kFALSE;
-
-  Bool_t isparticle = kTRUE;
+  
   if(TMath::Abs(massAntiLambda-mLPDG)<fProdMassTolLambda) isparticle = kFALSE;
   
   Double_t massXi = casc->MassXi();
@@ -772,7 +775,8 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::SingleCascadeCuts(AliAODcascade *casc
   Double_t lV0CosineOfPointingAngleXi = casc->CosPointingAngle(lPosXi);
   if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
   if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
-
+*/
+    
   if(fUseCascadePID)
   {
     if(fPidObjCascPi->GetPidResponse()==0x0){
@@ -831,11 +835,11 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::SingleCascadeCuts(AliAODcascade *casc
       
   }  // fUseCascPID
     
-	Double_t RapOmega = casc->RapOmega();
-	if(RapOmega<fProdCascRapMin || RapOmega>fProdCascRapMax) return kFALSE;
+//  Double_t RapOmega = casc->RapOmega();
+//	if(RapOmega<fProdCascRapMin || RapOmega>fProdCascRapMax) return kFALSE;
 
-	Double_t EtaOmega = 0.5*TMath::Log((ptotxi+casc->MomXiZ())/(ptotxi-casc->MomXiZ()));
-	if(EtaOmega<fProdCascEtaMin || EtaOmega>fProdCascEtaMax) return kFALSE;
+//	Double_t EtaOmega = 0.5*TMath::Log((ptotxi+casc->MomXiZ())/(ptotxi-casc->MomXiZ()));
+//	if(EtaOmega<fProdCascEtaMin || EtaOmega>fProdCascEtaMax) return kFALSE;
 
   return kTRUE;
 }
