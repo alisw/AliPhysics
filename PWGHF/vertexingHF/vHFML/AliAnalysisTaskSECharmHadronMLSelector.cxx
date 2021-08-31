@@ -18,6 +18,7 @@
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsD0toKpi.h"
+#include "AliRDHFCutsDStartoKpipi.h"
 #include "AliHFMLResponseDplustoKpipi.h"
 #include "AliHFMLResponseDstoKKpi.h"
 #include "AliHFMLResponseD0toKpi.h"
@@ -76,6 +77,11 @@ void AliAnalysisTaskSECharmHadronMLSelector::LocalInit()
         AliRDHFCutsD0toKpi *copycut = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi *>(fRDCuts)));
         PostData(2, copycut);
     }
+    else if (fDecChannel == kDstartoD0pi)
+    {
+        AliRDHFCutsDStartoKpipi *copycut = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi *>(fRDCuts)));
+        PostData(2, copycut);
+    }
     return;
 }
 
@@ -127,6 +133,11 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserCreateOutputObjects()
             fMLResponse->MLResponseInit();
             massD = TDatabasePDG::Instance()->GetParticle(431)->Mass();
             break;
+        case kDstartoD0pi:
+            fMLResponse = new AliHFMLResponseD0toKpi("DstartoD0piMLResponse", "DstartoD0piMLResponse", fConfigPath.Data());
+            fMLResponse->MLResponseInit();
+            massD = TDatabasePDG::Instance()->GetParticle(413)->Mass() - TDatabasePDG::Instance()->GetParticle(421)->Mass();
+            break; 
         case kD0toKpi:
             fMLResponse = new AliHFMLResponseD0toKpi("D0toKpiMLResponse", "D0toKpiMLResponse", fConfigPath.Data());
             fMLResponse->MLResponseInit();
@@ -134,7 +145,15 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserCreateOutputObjects()
             break; 
     }
 
-    fHistMassVsPt = new TH2F("fHistMassVsPt", ";#it{p}_{T} (GeV/#it{c});inv mass (GeV/#it{c}^{2})", 500, 0., 50., 200, massD-0.2, massD+0.2);
+    double minMass = massD-0.2;
+    double maxMass = massD+0.2;
+    if(fDecChannel == kDstartoD0pi)
+    {
+        minMass = 0.138;
+        maxMass = 0.165;
+    }
+
+    fHistMassVsPt = new TH2F("fHistMassVsPt", ";#it{p}_{T} (GeV/#it{c});inv mass (GeV/#it{c}^{2})", 500, 0., 50., 200, minMass, maxMass);
     fOutput->Add(fHistMassVsPt);
 
     PostData(1, fOutput);
