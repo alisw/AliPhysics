@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 30.08.2021
+ * Last Modified Date: 31.08.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -176,6 +176,11 @@ AliAnalysisTaskAR::~AliAnalysisTaskAR() {
     delete fHistList;
   }
 
+  // delete lookuptable
+  if (fLookUpTable) {
+    delete fLookUpTable;
+  }
+
   // delete RNG, if neccessary
   if (fMCOnTheFly || fMCClosure) {
     delete gRandom;
@@ -208,6 +213,8 @@ void AliAnalysisTaskAR::UserCreateOutputObjects() {
   this->BookControlHistograms();
   this->BookFinalResultHistograms();
   this->BookFinalResultProfiles();
+  this->fLookUpTable = new TExMap();
+
   if (fMCOnTheFly) {
     this->BookMCOnTheFlyObjects();
   }
@@ -618,7 +625,7 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
       {200., 0., 10000.}, // kMULQ
       {200., 0., 10000.}, // kMULW
       {200., 0., 10000.}, // kMULREF
-      {100., 0., 5000.},  // kNCONTRIB
+      {100., 0., 10000.}, // kNCONTRIB
       {10., 0., 100},     // kCEN
       {40., -20., 20.},   // kX
       {40., -20., 20.},   // kY
@@ -1182,7 +1189,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   // Check event cut
   // Start Analysis
   // 		over AOD
-  // 		over MC
+  // 		over AOD and MC
+  // 		TBI over MC only
   // PostData
 
   // Get pointers to event
@@ -1191,8 +1199,14 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   // get pointer to MC event
   AliMCEvent *aMC = MCEvent();
 
-  // compute multiplicities
-  // this requries an additional loop over all tracks in the event
+  // bail of it AOD event is invald
+  //   this means we cannot process MC only
+  if (!aAOD) {
+    return;
+  }
+
+  // compute event objects
+  // this requries an inital loop over all tracks in the event
   FillEventObjects(aAOD, aMC);
 
   // fill histograms before cut
@@ -1203,8 +1217,13 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   FillEventControlHistograms(kBEFORE, aAOD);
   FillEventControlHistograms(kBEFORE, aMC);
 
-  // start analysis over AODEvent
-  if (aAOD && SurviveEventCut(aAOD)) {
+  // check if event survives cut
+  if (!SurviveEventCut(aAOD)) {
+    return;
+  }
+
+  // start analysis over AODEvent only
+  if (aAOD && !aMC) {
 
     // fill histograms after cut
     FillEventControlHistograms(kAFTER, aAOD);
@@ -1217,11 +1236,12 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
     // get number of all tracks in current event
     Int_t nTracks = aAOD->GetNumberOfTracks();
+    AliAODTrack *aTrack = nullptr;
 
     for (int iTrack = 0; iTrack < nTracks; ++iTrack) {
 
       // getting a pointer to a track
-      AliAODTrack *aTrack = dynamic_cast<AliAODTrack *>(aAOD->GetTrack(iTrack));
+      aTrack = dynamic_cast<AliAODTrack *>(aAOD->GetTrack(iTrack));
 
       // protect against invalid pointers
       if (!aTrack) {
@@ -1305,53 +1325,64 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     }
   }
 
-  // start analysis over MC event
-  if (aMC && SurviveEventCut(aMC)) {
-
+  // start analysis over MC and AOD to compute efficiencies
+  if (aMC && aAOD) {
     // fill histograms after cut
     FillEventControlHistograms(kAFTER, aMC);
-    // if (fFillQAHistograms) {
-    //   FillEventQAHistograms(kAFTER, aMC);
-    // }
+    FillEventControlHistograms(kAFTER, aAOD);
+
+    if (fFillQAHistograms) {
+      FillEventQAHistograms(kAFTER, aMC);
+      FillEventControlHistograms(kAFTER, aAOD);
+    }
 
     // reset event by event objects
     ClearEventObjects();
 
     // get number of all particles in current event
     Int_t nParticles = aMC->GetNumberOfTracks();
-
+    AliAODMCParticle *MCParticle = nullptr;
+    AliAODTrack *aTrack = nullptr;
     // loop over all particles in the event
     for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
 
       // getting a pointer to a track
-      AliAODMCParticle *MCParticle =
-          dynamic_cast<AliAODMCParticle *>(aMC->GetTrack(iParticle));
+      MCParticle = dynamic_cast<AliAODMCParticle *>(aMC->GetTrack(iParticle));
 
       // protect against invalid pointers
       if (!MCParticle) {
         continue;
       }
 
-      // fill filter bit scan QA histogram
-      // if (fFillQAHistograms) {
-      //   FillFBScanQAHistograms(MCParticle);
-      // }
-
-      // get kinematic variables of the track
-      // Double_t pt = aTrack->Pt();
-      // Double_t phi = MCParticle->Phi();
-      // Double_t eta = aTrack->Eta();
-
-      // fill track control histograms before track cut
+      // fill control histogram before cutting
       FillTrackControlHistograms(kBEFORE, MCParticle);
 
-      // cut track
+      // get corresponding AODTrack, if it exists
+      aTrack = dynamic_cast<AliAODTrack *>(
+          aAOD->GetTrack(fLookUpTable->GetValue(iParticle)));
+      if (aTrack) {
+        // if it exists, fill control histogram before cutting
+        FillTrackControlHistograms(kBEFORE, aTrack);
+      } else {
+        // bail out, if there is no corresponding track
+        continue;
+      }
+
+      // cut MC particle
       if (!SurviveTrackCut(MCParticle, kTRUE)) {
         continue;
       }
 
-      // fill track control histograms after track cut
+      // fill control histogram after cutting
       FillTrackControlHistograms(kAFTER, MCParticle);
+
+      // cut AOD Track
+      if (!SurviveTrackCut(aTrack, kTRUE)) {
+        continue;
+      }
+
+      // fill control histogram after cutting
+      FillTrackControlHistograms(kAFTER, aTrack);
     }
   }
 
@@ -1564,7 +1595,7 @@ void AliAnalysisTaskAR::FillTrackControlHistograms(kBeforeAfter BA,
 }
 
 void AliAnalysisTaskAR::FillEventQAHistograms(kBeforeAfter BA, AliVEvent *ave) {
-  // fill QA control histograms
+  // fill event QA control histograms
 
   AliAODEvent *AODEvent = dynamic_cast<AliAODEvent *>(ave);
   AliMCEvent *MCEvent = dynamic_cast<AliMCEvent *>(ave);
@@ -1578,6 +1609,7 @@ void AliAnalysisTaskAR::FillEventQAHistograms(kBeforeAfter BA, AliVEvent *ave) {
       }
     }
 
+    // file multiplicity correlation histograms
     for (int i = 0; i < kMulEstimators; ++i) {
       for (int j = i + 1; j < kMulEstimators; ++j) {
         fMulCorQAHistograms[IndexCorHistograms(i, j, kMulEstimators)][BA]->Fill(
@@ -1587,17 +1619,17 @@ void AliAnalysisTaskAR::FillEventQAHistograms(kBeforeAfter BA, AliVEvent *ave) {
 
     // search for self correlations with nested loop
     Int_t nTracks = AODEvent->GetNumberOfTracks();
+    AliAODTrack *aTrack1 = nullptr;
+    AliAODTrack *aTrack2 = nullptr;
     // starting a loop over the first track
     for (Int_t iTrack1 = 0; iTrack1 < nTracks; iTrack1++) {
-      AliAODTrack *aTrack1 =
-          dynamic_cast<AliAODTrack *>(AODEvent->GetTrack(iTrack1));
+      aTrack1 = dynamic_cast<AliAODTrack *>(AODEvent->GetTrack(iTrack1));
       if (!aTrack1 || !SurviveTrackCut(aTrack1, kFALSE)) {
         continue;
       }
       // starting a loop over the second track
       for (Int_t iTrack2 = iTrack1 + 1; iTrack2 < nTracks; iTrack2++) {
-        AliAODTrack *aTrack2 =
-            dynamic_cast<AliAODTrack *>(AODEvent->GetTrack(iTrack2));
+        aTrack2 = dynamic_cast<AliAODTrack *>(AODEvent->GetTrack(iTrack2));
         if (!aTrack2 || !SurviveTrackCut(aTrack2, kFALSE)) {
           continue;
         }
@@ -1831,29 +1863,30 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
   // check MC event
   AliMCEvent *aMC = dynamic_cast<AliMCEvent *>(ave);
   if (aMC) {
+
+    // cut on multiplicity
+    // if ((aMC->GetNumberOfTracks() < fEventCuts[kMUL][kMIN]) ||
+    //     (aMC->GetNumberOfTracks() > fEventCuts[kMUL][kMAX])) {
+    //   fEventCutsCounter[kSIM]->Fill(kMUL + 0.5);
+    //   Flag = kFALSE;
+    // }
+
     // // cut event if primary vertex is too out of center
     // if ((aMC->GetPrimaryVertex()->GetX() < fEventCuts[kX][kMIN]) ||
     //     (aMC->GetPrimaryVertex()->GetX() > fEventCuts[kX][kMAX])) {
     //   fEventCutsCounter[kSIM]->Fill(kX + 0.5);
     //   Flag = kFALSE;
     // }
-    // if ((PrimaryVertex->GetY() < fEventCuts[kY][kMIN]) ||
-    //     (PrimaryVertex->GetY() > fEventCuts[kY][kMAX])) {
+    // if ((aMC->GetPrimaryVertex()->GetY() < fEventCuts[kY][kMIN]) ||
+    //     (aMC->GetPrimaryVertex()->GetY() > fEventCuts[kY][kMAX])) {
     //   fEventCutsCounter[kSIM]->Fill(kY + 0.5);
     //   Flag = kFALSE;
     // }
-    // if ((PrimaryVertex->GetZ() < fEventCuts[kZ][kMIN]) ||
-    //     (PrimaryVertex->GetZ() > fEventCuts[kZ][kMAX])) {
+    // if ((aMC->GetPrimaryVertex()->GetZ() < fEventCuts[kZ][kMIN]) ||
+    //     (aMC->GetPrimaryVertex()->GetZ() > fEventCuts[kZ][kMAX])) {
     //   fEventCutsCounter[kSIM]->Fill(kZ + 0.5);
     //   Flag = kFALSE;
     // }
-
-    // cut on multiplicity
-    if ((aMC->GetNumberOfTracks() < fEventCuts[kMUL][kMIN]) ||
-        (aMC->GetNumberOfTracks() > fEventCuts[kMUL][kMAX])) {
-      fEventCutsCounter[kSIM]->Fill(kMUL + 0.5);
-      Flag = kFALSE;
-    }
   }
 
   return Flag;
@@ -2018,36 +2051,66 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
   // check MC particle
   AliAODMCParticle *MCParticle = dynamic_cast<AliAODMCParticle *>(avp);
   if (MCParticle) {
+    // cut PT
+    if (MCParticle->Pt() < fTrackCuts[kPT][kMIN]) {
+      if (FillCounter) {
+        fTrackCutsCounter[kSIM]->Fill(2 * kPT + kMIN + 0.5);
+      }
+      Flag = kFALSE;
+    }
+    if (MCParticle->Pt() > fTrackCuts[kPT][kMAX]) {
+      if (FillCounter) {
+        fTrackCutsCounter[kSIM]->Fill(2 * kPT + kMAX + 0.5);
+      }
+      Flag = kFALSE;
+    }
+    // cut PHI
+    if (MCParticle->Phi() < fTrackCuts[kPHI][kMIN]) {
+      if (FillCounter) {
+        fTrackCutsCounter[kSIM]->Fill(2 * kPHI + kMIN + 0.5);
+      }
+      Flag = kFALSE;
+    }
+    if (MCParticle->Phi() > fTrackCuts[kPHI][kMAX]) {
+      if (FillCounter) {
+        fTrackCutsCounter[kSIM]->Fill(2 * kPHI + kMAX + 0.5);
+      }
+      Flag = kFALSE;
+    }
+    // cut ETA
+    if (MCParticle->Eta() < fTrackCuts[kETA][kMIN]) {
+      if (FillCounter) {
+        fTrackCutsCounter[kSIM]->Fill(2 * kETA + kMIN + 0.5);
+      }
+      Flag = kFALSE;
+    }
+    if (MCParticle->Eta() > fTrackCuts[kETA][kMAX]) {
+      if (FillCounter) {
+        fTrackCutsCounter[kSIM]->Fill(2 * kETA + kMAX + 0.5);
+      }
+      Flag = kFALSE;
+    }
+    // cut on absolute value of CHARGE
+    // set kMIN value larger than 0 and all neutral particles are cut away
+    if (std::abs(MCParticle->Charge() / 3) <= fTrackCuts[kCHARGE][kMIN]) {
+      if (FillCounter) {
+        fTrackCutsCounter[kSIM]->Fill(2 * kCHARGE + kMIN + 0.5);
+      }
+      Flag = kFALSE;
+    }
+    if (std::abs(MCParticle->Charge() / 3) >= fTrackCuts[kCHARGE][kMAX]) {
+      if (FillCounter) {
+        fTrackCutsCounter[kSIM]->Fill(2 * kCHARGE + kMAX + 0.5);
+      }
+      Flag = kFALSE;
+    }
     // if set, cut all non-primary particles away
     if (fPrimaryOnly) {
       if (MCParticle->IsPrimary()) {
         // if (MCParticle->IsPhysicalPrimary())
+        fTrackCutsCounter[kSIM]->Fill(2 * LAST_ETRACK + 1.5);
         Flag = kFALSE;
       }
-    }
-    // cut PT
-    if ((MCParticle->Pt() < fTrackCuts[kPT][kMIN]) ||
-        (MCParticle->Pt() > fTrackCuts[kPT][kMAX])) {
-      fTrackCutsCounter[kSIM]->Fill(kPT + 0.5);
-      Flag = kFALSE;
-    }
-    // cut PHI
-    if ((MCParticle->Phi() < fTrackCuts[kPHI][kMIN]) ||
-        (MCParticle->Phi() > fTrackCuts[kPHI][kMAX])) {
-      fTrackCutsCounter[kSIM]->Fill(kPHI + 0.5);
-      Flag = kFALSE;
-    }
-    // cut ETA
-    if ((MCParticle->Eta() < fTrackCuts[kETA][kMIN]) ||
-        (MCParticle->Eta() > fTrackCuts[kETA][kMAX])) {
-      fTrackCutsCounter[kSIM]->Fill(kETA + 0.5);
-      Flag = kFALSE;
-    }
-    // cut CHARGE
-    if ((std::abs(MCParticle->Charge() / 3.) < fTrackCuts[kCHARGE][kMIN]) ||
-        (std::abs(MCParticle->Charge() / 3.) > fTrackCuts[kCHARGE][kMAX])) {
-      fTrackCutsCounter[kSIM]->Fill(kCHARGE + 0.5);
-      Flag = kFALSE;
     }
   }
   return Flag;
@@ -2066,7 +2129,7 @@ void AliAnalysisTaskAR::FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC) {
   // multiplicity as number of tracks
   fMultiplicity[kMUL] = aAOD->GetNumberOfTracks();
 
-  // multiplicity as number of contributor to the primary vertex
+  // multiplicity as number of contributors to the primary vertex
   AliAODVertex *PrimaryVertex = aAOD->GetPrimaryVertex();
   fMultiplicity[kNCONTRIB] = PrimaryVertex->GetNContributors();
 
@@ -2082,9 +2145,13 @@ void AliAnalysisTaskAR::FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC) {
   Double_t w = 1.;
 
   AliAODTrack *aTrack = nullptr;
+  // fLookUpTable->Clear();
+  if (0 != fLookUpTable->GetSize()) {
+    fLookUpTable->Delete();
+  }
   for (int iTrack = 0; iTrack < fMultiplicity[kMUL]; ++iTrack) {
 
-    // getting a pointer to a track
+    // getting pointer to a track
     aTrack = dynamic_cast<AliAODTrack *>(aAOD->GetTrack(iTrack));
 
     // protect against invalid pointers
@@ -2092,30 +2159,31 @@ void AliAnalysisTaskAR::FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC) {
       continue;
     }
 
-    if (SurviveTrackCut(aTrack, kFALSE)) {
-      fMultiplicity[kMULQ] += 1;
+    if (!SurviveTrackCut(aTrack, kFALSE)) {
+      continue;
+    }
+    fMultiplicity[kMULQ] += 1;
 
-      w = 1.;
-      if (fUseWeights[kPT] && fWeightHistogram[kPT]) {
-        w *= fWeightHistogram[kPT]->GetBinContent(
-            fWeightHistogram[kPT]->FindBin(aTrack->Pt()));
-      }
-      if (fUseWeights[kPHI] && fWeightHistogram[kPHI]) {
-        w *= fWeightHistogram[kPHI]->GetBinContent(
-            fWeightHistogram[kPHI]->FindBin(aTrack->Phi()));
-      }
-      if (fUseWeights[kETA] && fWeightHistogram[kETA]) {
-        w *= fWeightHistogram[kETA]->GetBinContent(
-            fWeightHistogram[kETA]->FindBin(aTrack->Eta()));
-      }
-      fMultiplicity[kMULW] += w;
+    w = 1.;
+    if (fUseWeights[kPT] && fWeightHistogram[kPT]) {
+      w *= fWeightHistogram[kPT]->GetBinContent(
+          fWeightHistogram[kPT]->FindBin(aTrack->Pt()));
+    }
+    if (fUseWeights[kPHI] && fWeightHistogram[kPHI]) {
+      w *= fWeightHistogram[kPHI]->GetBinContent(
+          fWeightHistogram[kPHI]->FindBin(aTrack->Phi()));
+    }
+    if (fUseWeights[kETA] && fWeightHistogram[kETA]) {
+      w *= fWeightHistogram[kETA]->GetBinContent(
+          fWeightHistogram[kETA]->FindBin(aTrack->Eta()));
+    }
+    fMultiplicity[kMULW] += w;
 
-      // since we are already looping over the events, create a look up table if
-      // we also have a monte carlo event
-      if (aMC) {
-        // "key" = label, "value" = iTrack
-        fLookUpTable->Add(aTrack->GetLabel(), iTrack);
-      }
+    // since we are already looping over the events, create a look up table if
+    // we also have a monte carlo event
+    if (aMC) {
+      // "key" = label, "value" = iTrack
+      fLookUpTable->Add(aTrack->GetLabel(), iTrack);
     }
   }
 }
