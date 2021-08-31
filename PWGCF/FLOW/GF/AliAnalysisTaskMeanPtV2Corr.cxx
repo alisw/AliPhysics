@@ -67,6 +67,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fUseNch(kFALSE),
   fUseWeightsOne(kFALSE),
   fEta(0.8),
+  fEtaLow(-9999),
   fEtaNch(0.8),
   fEtaV2Sep(0.4),
   fPIDResponse(0),
@@ -144,6 +145,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fUseNch(kFALSE),
   fUseWeightsOne(kFALSE),
   fEta(0.8),
+  fEtaLow(-9999),
   fEtaNch(0.8),
   fEtaV2Sep(0.4),
   fPIDResponse(0),
@@ -750,8 +752,9 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
     Double_t l_Cent = lMultSel->GetMultiplicityPercentile(fCentEst->Data());
     if(!fBypassTriggerAndEvetCuts)
       if(!CheckTrigger(l_Cent)) return;
-    if(!AcceptCustomEvent(fESD)) return;
+    if(fEventCutFlag) if(!AcceptCustomEvent(fESD)) return;
     Bool_t dummy = fEventCuts.AcceptEvent(fESD); //for QA
+    if(!fEventCutFlag && !dummy) return;
     if(!fGFWSelection->AcceptVertex(fESD)) return;
     if(fIsMC) {
       fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
@@ -1347,7 +1350,10 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
       Bool_t passChi2=(primSelFlag&1);
       Bool_t passDCA =(primSelFlag&2);
       Bool_t passBoth=(passChi2&&passDCA);
-      if(TMath::Abs(lTrack->Eta()) > fEta) continue;
+      Double_t l_Eta = lTrack->Eta();
+      if(fEtaLow>-999) { if((l_Eta<fEtaLow) || (l_Eta>fEta)) continue; }
+      else if(TMath::Abs(l_Eta) > fEta) continue;
+      // if(TMath::Abs(lTrack->Eta()) > fEta) continue;
       fDCAxyVsPt_noChi2->Fill(lTrack->Pt(),0.,trackXYZ[0]);
       if(passDCA) fWithinDCAvsPt_noChi2->Fill(lTrack->Pt(),0.);
       if(passChi2) {
@@ -1381,7 +1387,8 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
     Double_t lEta = TMath::Abs(lPart->Eta());
     if (pt<0.15 || pt>50.) continue;
     if(pt>0.2 && pt<3 && lEta<fEtaNch) lNchGen++;
-    if (lEta > fEta) continue;
+    if(fEtaLow>-999) { if((lEta<fEtaLow) || (lEta>fEta)) continue; }
+    else if(TMath::Abs(lEta) > fEta) continue;
     Double_t CompWeight = 1;
     if(fMCSpectraWeights) {
       CompWeight = fMCSpectraWeights->GetMCSpectraWeightNominal(lPart->Particle());
@@ -1409,7 +1416,9 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
     if (index < 0) continue;
     lPart = (AliMCParticle*)fMCEvent->GetTrack(index);//(AliVParticle*)tca->At(index);//fMCEvent->Particle(index);
     if(!lPart) continue;
-    if (TMath::Abs(lPart->Eta()) > fEta) continue;
+    Double_t l_Eta = lPart->Eta();
+    if(fEtaLow>-999) { if((l_Eta<fEtaLow) || (l_Eta>fEta)) continue; }
+    else if(TMath::Abs(l_Eta) > fEta) continue;
     Double_t CompWeight = 1;
     if(fMCSpectraWeights) {
       CompWeight = fMCSpectraWeights->GetMCSpectraWeightNominal(lPart->Particle());
