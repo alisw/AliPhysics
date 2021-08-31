@@ -510,7 +510,7 @@ Bool_t AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeMCAnalysis(TClonesArray *m
                 AliAODMCParticle *mcdau_0 = (AliAODMCParticle*)mcArray->At(mcpart->GetDaughterFirst());
                 Double_t MLOverP = sqrt( pow(mcpart->Xv() - mcdau_0->Xv(),2.) +  pow(mcpart->Yv() - mcdau_0->Yv(),2.) +  pow(mcpart->Zv() - mcdau_0->Zv(),2.)) * mcpart-> M() / mcpart->P()*1.e4;
                 
-                FillTreeGenOmegac0(mcpart,CheckOrigin，MLOverP);
+                FillTreeGenOmegac0(mcpart,CheckOrigin, MLOverP);
             }
         } // Omegac0 4332
         
@@ -521,7 +521,7 @@ Bool_t AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeMCAnalysis(TClonesArray *m
 //************************
 }//MakeMCAnalysis
 //---------------------------------------------------------------------------------------------
-void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeGenOmegac0(AliAODMCParticle *mcpart, Int_t CheckOrigin， Double_t MLOverP)
+void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeGenOmegac0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLOverP)
 {
 
     // Fill histograms or tree depending
