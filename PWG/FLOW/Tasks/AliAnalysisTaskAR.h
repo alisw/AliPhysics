@@ -160,6 +160,7 @@ public:
 
   // GetPointers Methods in case we need to manually trigger Terminate()
   virtual void GetPointers(TList *list);
+  virtual void GetPointersForQAHistograms();
   virtual void GetPointersForControlHistograms();
   virtual void GetPointersForFinalResultHistograms();
   virtual void GetPointersForFinalResultProfiles();

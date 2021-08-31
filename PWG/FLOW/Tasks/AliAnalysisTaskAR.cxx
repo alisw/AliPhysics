@@ -2906,8 +2906,123 @@ void AliAnalysisTaskAR::GetPointers(TList *histList) {
 
   // initialize all other objects
   this->GetPointersForControlHistograms();
+  this->GetPointersForQAHistograms();
   this->GetPointersForFinalResultHistograms();
   this->GetPointersForFinalResultProfiles();
+}
+
+void AliAnalysisTaskAR::GetPointersForQAHistograms() {
+  // get pointers for QA Histograms
+
+  // get pointer for fControlHistograms
+  fQAHistogramsList =
+      dynamic_cast<TList *>(fHistList->FindObject(fQAHistogramsListName));
+  // if the pointer is null, then there was no QA
+  if (!fQAHistogramsList) {
+    return;
+  }
+
+  // get pointer for fCenCorQAHistogramsList
+  fCenCorQAHistogramsList = dynamic_cast<TList *>(
+      fQAHistogramsList->FindObject(fCenCorQAHistogramsListName));
+  if (!fCenCorQAHistogramsList) {
+    std::cout << __LINE__ << ": Did not get " << fCenCorQAHistogramsListName
+              << std::endl;
+    Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+  }
+
+  // get pointers for centrality correlation histograms
+  for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
+       ++cen) {
+    for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+      fCenCorQAHistograms[cen][ba] =
+          dynamic_cast<TH2D *>(fCenCorQAHistogramsList->FindObject(
+              fCenCorQAHistogramNames[cen][ba][kNAME]));
+      if (!fCenCorQAHistograms[cen][ba]) {
+        std::cout << __LINE__ << ": Did not get "
+                  << fCenCorQAHistogramNames[cen][ba][kNAME] << std::endl;
+        Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+      }
+    }
+  }
+
+  // get pointer for fMulCorQAHistogramsList
+  fMulCorQAHistogramsList = dynamic_cast<TList *>(
+      fQAHistogramsList->FindObject(fMulCorQAHistogramsListName));
+  if (!fMulCorQAHistogramsList) {
+    std::cout << __LINE__ << ": Did not get " << fMulCorQAHistogramsList
+              << std::endl;
+    Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+  }
+
+  // get pointers for multiplicity correlation histograms
+  for (int mul = 0; mul < kMulEstimators; ++mul) {
+    for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+      fMulCorQAHistograms[mul][ba] =
+          dynamic_cast<TH2D *>(fMulCorQAHistogramsList->FindObject(
+              fMulCorQAHistogramNames[mul][ba][kNAME]));
+      if (!fMulCorQAHistograms[mul][ba]) {
+        std::cout << __LINE__ << ": Did not get "
+                  << fMulCorQAHistogramNames[mul][ba][kNAME] << std::endl;
+        Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+      }
+    }
+  }
+
+  // get pointer for fFBScanQAHistogramsList
+  fFBScanQAHistogramsList = dynamic_cast<TList *>(
+      fQAHistogramsList->FindObject(fFBScanQAHistogramsListName));
+  if (!fFBScanQAHistogramsList) {
+    std::cout << __LINE__ << ": Did not get " << fFBScanQAHistogramsListName
+              << std::endl;
+    Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+  }
+
+  // get pointer for filter bit scan histogram
+  fFBScanQAHistogram = dynamic_cast<TH1D *>(
+      fFBScanQAHistogramsList->FindObject(fFBScanQAHistogramName[kNAME]));
+  if (!fFBScanQAHistogram) {
+    std::cout << __LINE__ << ": Did not get " << fFBScanQAHistogramName
+              << std::endl;
+    Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+  }
+
+  // get pointer track scan filterbit QA histograms
+  for (int track = 0; track < LAST_ETRACK; ++track) {
+    for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
+      fFBTrackScanQAHistograms[track][fb] =
+          dynamic_cast<TH1D *>(fFBScanQAHistogramsList->FindObject(
+              fFBTrackScanQAHistogramNames[track][fb][kNAME]));
+      if (!fFBTrackScanQAHistograms[track][fb]) {
+        std::cout << __LINE__ << ": Did not get "
+                  << fFBTrackScanQAHistogramNames[track][fb][kNAME]
+                  << std::endl;
+        Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+      }
+    }
+  }
+
+  // get pointer for fSelfCorQAHistogramsList
+  fSelfCorQAHistogramsList = dynamic_cast<TList *>(
+      fQAHistogramsList->FindObject(fSelfCorQAHistogramsListName));
+  if (!fSelfCorQAHistogramsList) {
+    std::cout << __LINE__ << ": Did not get " << fSelfCorQAHistogramsListName
+              << std::endl;
+    Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+  }
+  // get pointers for self correlation QA histograms
+  for (int var = 0; var < kKinematic; ++var) {
+    for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+      fSelfCorQAHistograms[var][ba] =
+          dynamic_cast<TH1D *>(fSelfCorQAHistogramsList->FindObject(
+              fSelfCorQAHistogramNames[var][ba][kNAME]));
+      if (!fSelfCorQAHistograms[var][ba]) {
+        std::cout << __LINE__ << ": Did not get "
+                  << fSelfCorQAHistogramNames[var][ba][kNAME] << std::endl;
+        Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+      }
+    }
+  }
 }
 
 void AliAnalysisTaskAR::GetPointersForControlHistograms() {
@@ -2942,10 +3057,10 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
       for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
         fTrackControlHistograms[mode][var][ba] =
             dynamic_cast<TH1D *>(fTrackControlHistogramsList->FindObject(
-                fTrackControlHistogramNames[mode][var][ba][0]));
+                fTrackControlHistogramNames[mode][var][ba][kNAME]));
         if (!fTrackControlHistograms[mode][var][ba]) {
           std::cout << __LINE__ << ": Did not get "
-                    << fTrackControlHistogramNames[mode][var][ba][0]
+                    << fTrackControlHistogramNames[mode][var][ba][kNAME]
                     << std::endl;
           Fatal("GetPointersForControlHistograms", "Invalid Pointer");
         }
@@ -2973,10 +3088,10 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
       for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
         fEventControlHistograms[mode][var][ba] =
             dynamic_cast<TH1D *>(fEventControlHistogramsList->FindObject(
-                fEventControlHistogramNames[mode][var][ba][0]));
+                fEventControlHistogramNames[mode][var][ba][kNAME]));
         if (!fEventControlHistograms[mode][var][ba]) {
           std::cout << __LINE__ << ": Did not get "
-                    << fEventControlHistogramNames[mode][var][ba][0]
+                    << fEventControlHistogramNames[mode][var][ba][kNAME]
                     << std::endl;
           Fatal("GetPointersForControlHistograms", "Invalid Pointer");
         }
@@ -3000,10 +3115,10 @@ void AliAnalysisTaskAR::GetPointersForFinalResultHistograms() {
   // get all pointers for final result histograms
   for (int var = 0; var < LAST_EFINALHIST; ++var) {
     fFinalResultHistograms[var] = dynamic_cast<TH1D *>(
-        fFinalResultsList->FindObject(fFinalResultHistogramNames[var][0]));
+        fFinalResultsList->FindObject(fFinalResultHistogramNames[var][kNAME]));
     if (!fFinalResultHistograms[var]) {
       std::cout << __LINE__ << ": Did not get "
-                << fFinalResultHistogramNames[var][0] << std::endl;
+                << fFinalResultHistogramNames[var][kNAME] << std::endl;
       Fatal("GetPointersForOutputHistograms", "Invalid Pointer");
     }
   }
