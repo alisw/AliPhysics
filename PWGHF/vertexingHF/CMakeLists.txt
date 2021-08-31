@@ -178,6 +178,7 @@ set(SRCS
   AliAnalysisTaskSEXicPlusToXi2PifromKFP.cxx
   AliAnalysisTaskSEXiccPPToXicPlusPiPlusfromKFP.cxx
   AliAnalysisTaskSESemileptonicOmegac0KFP.cxx
+  AliRDHFCutsOmegactoeleOmegafromKFP.cxx
 )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
