@@ -50,6 +50,7 @@ public:
   virtual void SetCompression(UInt_t compress=101) {fCompress = compress; }
   virtual void SetMaxBytes(ULong_t nbytes = 100000000) {fMaxBytes = nbytes;}
   void SetEMCALAmplitudeThreshold(Double_t threshold) { fEMCALAmplitudeThreshold = threshold; }
+  void SetEMCALFractionL1MonitoringEvents(Double_t fraction) { fFractionL1MonitorEventsEMCAL = fraction; }
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
@@ -62,6 +63,7 @@ public:
     kFwdTrackCov,
     kCalo,
     kCaloTrigger,
+    kEmcalTrigger,
     kMuonCls,
     kZdc,
     kFV0A,
@@ -434,7 +436,7 @@ private:
   } calo;                         //! structure to keep EMCAL info
 
   struct {
-    // Calorimeter trigger data (EMCAL & PHOS)
+    // Calorimeter trigger data (PHOS)
     Int_t fIndexBCs = 0u;        /// Index to BC table
     Short_t fFastOrAbsID = - 1;   /// FastOR absolute ID
     Float_t fL0Amplitude = -1.f;  /// L0 amplitude (ADC) := Peak Amplitude
@@ -444,6 +446,13 @@ private:
     Int_t fTriggerBits = 0;       /// Online trigger bits
     Char_t fCaloType = -1;            /// Calorimeter type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calotrigger;                  //! structure to keep calo trigger info
+
+  struct {
+    // EMCAL trigger data
+    Int_t fIndexDCs = 0u;         /// Index to BC table
+    Short_t fAbsID = -1;          /// FastOR Abs ID (Event properties; Payload type: 10001, Median for EMCAL: 10002, Median for DCAL: 10003)
+    Short_t fADC = -1;            /// FastOR ADC and event properties
+  } emcaltrigger;                 //! structure to 
 
   struct FwdTrackPars {   /// Forward track parameters
     Int_t   fIndexCollisions = -1;    /// The index of the collision vertex in the TF, to which the track is attached
@@ -587,6 +596,7 @@ private:
   TH1F *fCentralityINT7 = nullptr; ///! Centrality histogram for the INT7 triggers
   TH1I *fHistPileupEvents = nullptr; ///! Counter histogram for pileup events
   Double_t fEMCALAmplitudeThreshold = 0.1; ///< EMCAL amplitude threshold (for compression - default: 100 MeV := cluster cell threshold)
+  Double_t fFractionL1MonitorEventsEMCAL = 0.001; ///< Fraction of monitoring events (full payload) for EMCAL L1 trigger
 
   /// Byte counter
   ULong_t fBytes = 0; ///! Number of bytes stored in all trees
