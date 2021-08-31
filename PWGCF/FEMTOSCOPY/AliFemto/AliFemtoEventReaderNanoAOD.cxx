@@ -563,7 +563,7 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
 	trackCopy->SetNSigmaTPCE(nsigmaTPCE);
 	trackCopy->SetNSigmaTPCD(nsigmaTPCD);
 
- 	trackCopy->SetTPCsignal(aodtrack->GetTPCsignal());
+//	trackCopy->SetTPCsignal(aodtrack->GetTPCsignal());
 //	trackCopy->SetTPCsignalS(1);
 //	trackCopy->SetTPCsignalN(aodtrack->GetTPCsignalN());
 
