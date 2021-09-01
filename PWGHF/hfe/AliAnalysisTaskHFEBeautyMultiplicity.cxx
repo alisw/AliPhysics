@@ -93,6 +93,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     NCrossedRow(100),
     EtaPhiDiff(0.05),
     PhotInvMass(0.15),
+    PhotMinPt(0.1),
     Nref(0),		    // RefMult
     MinNtrklet(0),	    // Tracklet class (min)
     MaxNtrklet(9999),	    // Tracklet class (max)
@@ -354,6 +355,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     NCrossedRow(100),
     EtaPhiDiff(0.05),
     PhotInvMass(0.15),
+    PhotMinPt(0.1),
     Nref(0),		    // RefMult
     MinNtrklet(0),	    // Tracklet class (min)
     MaxNtrklet(9999),	    // Tracklet class (max)
@@ -2027,7 +2029,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
                     			if(pid_eleD)
 					{
-						fNoD -> Fill(12);
+						fNoD -> Fill(16);
 			    			fHistPt_HFE_MC_D -> Fill(track->Pt()); // HFE from D meson (MC)
 			    			fDCAxy_MC_D -> Fill(TrkPt, DCA[0]*charge*Bsign);
 
@@ -2146,6 +2148,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
     
     Bool_t flagPhotonicElec = kFALSE;
     Double_t CutInvMass = PhotInvMass;
+    Double_t CutMinPt = PhotMinPt;
     
     int ntracks = -999;
     if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
@@ -2199,7 +2202,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
         }
         
         //-----loose cut on partner electron
-        if(ptAsso < 0.1) continue;
+        if(ptAsso < PhotMinPt) continue;
         if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
         if(AssoTrackNsigma < -3 || AssoTrackNsigma > 3) continue;
         //if(AssoTPCchi2perNDF >= 4) continue;
