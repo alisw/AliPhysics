@@ -79,7 +79,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void FillWPCounter(Double_t[5], Double_t, Double_t);
   void CalculateMptValues(Double_t[4], Double_t[5]);
   Bool_t LoadMyWeights(const Int_t &lRunNo = 0);
-  Int_t GetBayesPIDIndex(AliAODTrack*);
+  Int_t GetBayesPIDIndex(AliVTrack*);
   Double_t GetMyWeight(Double_t eta, Double_t phi, Int_t pidind);
   void ChangeMptSet(Bool_t newval) {fmptSet = newval; };
   Int_t GetPIDIndex(const Int_t &pdgcode);
