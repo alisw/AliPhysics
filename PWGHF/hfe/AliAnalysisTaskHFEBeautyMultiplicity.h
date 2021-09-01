@@ -73,7 +73,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	void SetDCA(Double_t xy, Double_t z) {DCAxy = xy, DCAz = z;};
 	void SetTrackClust(Int_t TPC, Int_t ITS, Int_t Crossed, Double_t dEdx) {NTPCClust = TPC, NITSClust = ITS, NCrossedRow = Crossed, TPCdEdx = dEdx;};
 	void SetDiff(Double_t diff) {EtaPhiDiff = diff;};
-	void SetMass(Double_t invmass) {PhotInvMass = invmass;};
+	void SetMass(Double_t invmass, Double_t photPt) {PhotInvMass = invmass, PhotMinPt = photPt;};
 	
 
 
@@ -122,6 +122,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	Int_t NCrossedRow;
 	Double_t EtaPhiDiff;
 	Double_t PhotInvMass;
+	Double_t PhotMinPt;
 
 
     

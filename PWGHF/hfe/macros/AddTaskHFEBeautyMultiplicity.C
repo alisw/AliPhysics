@@ -25,6 +25,7 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 	Int_t NCrossedRow = 100,
 	Double_t TPCdEdx = 80.0,
 	Double_t PhotInvMass = 0.15,
+	Double_t PhotMinPt = 0.1,
 	Double_t nref = 30.1,
 	Double_t minNtrklet = 0,
 	Double_t maxNtrklet = 9999,
@@ -65,7 +66,7 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
     task->SetDCA(DCAxy, DCAz);
     task->SetTrackClust(NTPCClust, NITSClust, NCrossedRow, TPCdEdx);
     task->SetDiff(Diff);
-    task->SetMass(PhotInvMass);
+    task->SetMass(PhotInvMass, PhotMinPt);
     task->SetNref(nref);
     task->SetNtrkletMin(minNtrklet);
     task->SetNtrkletMax(maxNtrklet);
