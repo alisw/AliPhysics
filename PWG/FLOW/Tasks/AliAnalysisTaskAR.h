@@ -552,7 +552,7 @@ private:
   std::vector<std::vector<Int_t>> fCorrelators;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 8);
+  ClassDef(AliAnalysisTaskAR, 9);
 };
 
 #endif
