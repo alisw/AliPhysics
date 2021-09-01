@@ -47,9 +47,11 @@ include_directories(${ROOT_INCLUDE_DIRS}
                    )
 
 # Sources in alphabetical order
+if(FASTJET_FOUND)
 set(SRCS
     GJNtuples/AliAnalysisTaskNTGJ.cxx
    )
+endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
