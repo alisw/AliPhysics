@@ -79,7 +79,7 @@ class AliAnalysisTaskSESemileptonicOmegac0KFP : public AliAnalysisTaskSE
     void                    SetWriteOmegac0MCGenTree(Bool_t a) {fWriteOmegac0MCGenTree = a;}
     Bool_t                  GetWriteOmegac0MCGenTree() const {return fWriteOmegac0MCGenTree;}
     
-    void                    FillTreeGenOmegac0(AliAODMCParticle *mcpart, Int_t CheckOrigin);
+    void                    FillTreeGenOmegac0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLOverP);
     
     void                    FillEventROOTObjects();
 

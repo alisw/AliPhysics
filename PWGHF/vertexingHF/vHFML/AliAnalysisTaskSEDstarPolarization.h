@@ -67,8 +67,8 @@ public:
 private:
     enum
     {
-        knVarForSparseAcc    = 4,
-        knVarForSparseReco   = 4,
+        knVarForSparseAcc    = 6,
+        knVarForSparseReco   = 6,
     };
 
     AliAnalysisTaskSEDstarPolarization(const AliAnalysisTaskSEDstarPolarization &source);

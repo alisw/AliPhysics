@@ -2614,7 +2614,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
                     {
                         firstJetFound = true;
                         Double_t EmbeddingPt = GetDeltaPtPerpEmbedding(jetrec->Eta(), jetrec->Phi());
-                        fh2DeltaPtEmbeddCorrelationPerpendicular->Fill(fJetContainerData->GetRhoVal(), EmbeddingPt);
+                        fh2DeltaPtEmbeddCorrelationPerpendicular->Fill(EmbeddingPt, fJetContainerData->GetRhoVal());
                     }
                 }
 

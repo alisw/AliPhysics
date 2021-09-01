@@ -79,7 +79,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void FillWPCounter(Double_t[5], Double_t, Double_t);
   void CalculateMptValues(Double_t[4], Double_t[5]);
   Bool_t LoadMyWeights(const Int_t &lRunNo = 0);
-  Int_t GetBayesPIDIndex(AliAODTrack*);
+  Int_t GetBayesPIDIndex(AliVTrack*);
   Double_t GetMyWeight(Double_t eta, Double_t phi, Int_t pidind);
   void ChangeMptSet(Bool_t newval) {fmptSet = newval; };
   Int_t GetPIDIndex(const Int_t &pdgcode);
@@ -88,7 +88,8 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetMultiBins(Int_t nBins, Double_t *multibins);
   void SetV0MBins(Int_t nBins, Double_t *multibins);
   void SetV2dPtMultiBins(Int_t nBins, Double_t *multibins);
-  void SetEta(Double_t newval) { fEta = newval; };
+  void SetEta(Double_t newval) { fEta = newval; fEtaLow=-9999; };
+  void SetEta(Double_t etaLow, Double_t etaHigh) { fEtaLow = etaLow; fEta = etaHigh; };
   void SetEtaNch(Double_t newval) { fEtaNch = newval; };
   void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = newval; };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
@@ -136,6 +137,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t fUseNch;
   Bool_t fUseWeightsOne;
   Double_t fEta;
+  Double_t fEtaLow;
   Double_t fEtaNch;
   Double_t fEtaV2Sep; //Please don't add multiple wagons with dif. values; implement subevents in the code instead. This would save TONS of CPU time.
   AliPIDResponse *fPIDResponse; //!

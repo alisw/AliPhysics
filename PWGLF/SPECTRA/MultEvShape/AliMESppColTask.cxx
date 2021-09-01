@@ -188,22 +188,22 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
         FillCorrelationSE(mult_comb08, selectedTracks1, 3, 0);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks1, 3, 0);
       }
-//       if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.3 && sfer<=0.6){
-// //         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
-// 			TObjArray *selectedTracks2=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
-//         if(!selectedTracks2) break;
-//         selectedTracks2->SetOwner(kTRUE);
-//         FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0);
-//         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
-//       }
-//       if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
-// //         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
-// 			TObjArray *selectedTracks3=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
-//         if(!selectedTracks3) break;
-//         selectedTracks3->SetOwner(kTRUE);
-//         FillCorrelationSE(mult_comb08, selectedTracks3, 9, 0);
-//         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks3, 9, 0);
-//       }
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 /*&& sfer>0.3 && sfer<=0.6*/){
+//         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
+			TObjArray *selectedTracks2=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
+        if(!selectedTracks2) break;
+        selectedTracks2->SetOwner(kTRUE);
+        FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0);
+        FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
+      }
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 /*&& sfer>0.6 && sfer<=1.0*/){
+//         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
+			TObjArray *selectedTracks3=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
+        if(!selectedTracks3) break;
+        selectedTracks3->SetOwner(kTRUE);
+        FillCorrelationSE(mult_comb08, selectedTracks3, 9, 0);
+        FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks3, 9, 0);
+      }
         ESD=0;
     }while(ESD==1);
 
@@ -218,22 +218,22 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
         FillCorrelationSE(MC_mult_glob08, selectedTracksMC1, 3, 1);
         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC1, 3, 1);
       }
-//       if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_sfer>0.3 && MC_sfer<=0.6){
+      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 /*&& MC_sfer>0.3 && MC_sfer<=0.6*/){
 // // 		TObjArray *selectedTracksMC2=FindLeadingObjects(fMCtracks, 1);
-// 			TObjArray *selectedTracksMC2=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
-// 		if(!selectedTracksMC2) return;
-// 		selectedTracksMC2->SetOwner(kTRUE);
-//         FillCorrelationSE(MC_mult_glob08, selectedTracksMC2, 6, 1);
-//         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC2, 6, 1);
-//       }
-//       if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 /*&& MC_sfer>0.6 && MC_sfer<=1.0*/){
+			TObjArray *selectedTracksMC2=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
+		if(!selectedTracksMC2) return;
+		selectedTracksMC2->SetOwner(kTRUE);
+        FillCorrelationSE(MC_mult_glob08, selectedTracksMC2, 6, 1);
+        FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC2, 6, 1);
+      }
+      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 /*&& MC_sfer>0.6 && MC_sfer<=1.0*/){
 // // 		TObjArray *selectedTracksMC3=FindLeadingObjects(fMCtracks, 1);
-// 			TObjArray *selectedTracksMC3=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
-// 		if(!selectedTracksMC3) return;
-// 		selectedTracksMC3->SetOwner(kTRUE);
-//         FillCorrelationSE(MC_mult_glob08, selectedTracksMC3, 9, 1);
-//         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC3, 9, 1);
-//       }
+			TObjArray *selectedTracksMC3=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
+		if(!selectedTracksMC3) return;
+		selectedTracksMC3->SetOwner(kTRUE);
+        FillCorrelationSE(MC_mult_glob08, selectedTracksMC3, 9, 1);
+        FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC3, 9, 1);
+      }
     }
 }
   
@@ -618,7 +618,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool1->PrintInfo();
   // 		pool1->SetTargetEvents(5);
 
-        if (/*pool1->IsReady()  || (*/pool1->GetCurrentNEvents() >= 5  && pool1->GetCurrentNEvents() <= 15){
+        if (pool1->IsReady() || pool1->GetCurrentNEvents() > 5){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool1->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -669,7 +669,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool2->PrintInfo();
   // 		pool2->SetTargetEvents(5);
 
-        if (pool2->IsReady()  /*|| (pool2->GetCurrentNEvents() > 5  && pool2->GetCurrentNEvents() <= 10)*/){
+        if (pool2->GetCurrentNEvents() >= 5  && pool2->GetCurrentNEvents() <= 15){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool2->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -721,7 +721,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool3->PrintInfo();
   // 		pool3->SetTargetEvents(5);
 
-        if (pool3->IsReady() /*|| (pool3->GetCurrentNEvents() > 5  && pool3->GetCurrentNEvents() <= 10)*/){
+        if (pool3->GetCurrentNEvents() >= 5  && pool3->GetCurrentNEvents() <= 210){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool3->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -774,7 +774,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
 //         poolMC1->PrintInfo();
   // 		poolMC1->SetTargetEvents(5);
 
-        if (/*poolMC1->IsReady()*/  poolMC1->GetCurrentNEvents() >= 5  && poolMC1->GetCurrentNEvents() <= 15){
+        if (poolMC1->IsReady() || poolMC1->GetCurrentNEvents() > 5){
           Int_t nMix = poolMC1->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
             TObjArray* mixEvents = poolMC1->GetEvent(jMix);
@@ -822,7 +822,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
 //         poolMC2->PrintInfo();
   // 		poolMC2->SetTargetEvents(5);
 
-        if (poolMC2->IsReady() && poolMC2->GetCurrentNEvents() > 5 && poolMC2->GetCurrentNEvents() <= 10){
+        if (poolMC2->GetCurrentNEvents() >= 5 && poolMC2->GetCurrentNEvents() <= 15){
           Int_t nMix = poolMC2->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
             TObjArray* mixEvents = poolMC2->GetEvent(jMix);
@@ -871,7 +871,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
 //         poolMC3->PrintInfo();
   // 		poolMC3->SetTargetEvents(5);
 
-        if (poolMC3->IsReady() && poolMC3->GetCurrentNEvents() > 5 && poolMC3->GetCurrentNEvents() <= 10){
+        if (poolMC3->GetCurrentNEvents() >= 5 && poolMC3->GetCurrentNEvents() <= 210){
           Int_t nMix = poolMC3->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
             TObjArray* mixEvents = poolMC3->GetEvent(jMix);

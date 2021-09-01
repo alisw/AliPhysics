@@ -1,6 +1,8 @@
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSESemileptonicOmegac0KFP.h"
+#include "AliNormalizationCounter.h"
+#include <TTree.h>
 #include <TString.h>
 #include <TList.h>
 #include "TFile.h"
