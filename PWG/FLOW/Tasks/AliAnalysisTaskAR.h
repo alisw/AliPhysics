@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 31.08.2021
+ * Last Modified Date: 01.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -40,7 +40,6 @@ const Int_t kMaxPower = 20;
 const Int_t kMaxFilterbit = 15; // 2^(15-1)=16384
 const Int_t kNumberofTestFilterBit = 5;
 const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
-
 // centrality estimators
 enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
 const TString kCenEstimatorNames[LAST_ECENESTIMATORS] = {"V0M", "CL0", "CL1",
@@ -131,13 +130,13 @@ public:
   virtual Bool_t SurviveEventCut(AliVEvent *ave);
   virtual Bool_t SurviveTrackCut(AliVParticle *aTrack, Bool_t FillCounter);
   virtual void FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC);
-  virtual void ClearEventObjects();
+  virtual void ClearVectors();
   virtual void FillTrackObjects(AliAODTrack *track);
   virtual void AggregateWeights();
   virtual void ResetWeights();
   virtual Int_t IndexCorHistograms(Int_t i, Int_t j, Int_t N);
 
-  // methods called MCOnTheFlyExec()
+  // methods called in MCOnTheFlyExec()
   virtual void MCPdfSymmetryPlanesSetup();
   virtual Int_t GetMCNumberOfParticlesPerEvent();
 
@@ -268,6 +267,11 @@ public:
   // setters for cuts
   // centrality selection criterion
   void SetCentralityEstimator(kCenEstimators CentralityEstimator) {
+    if (CentralityEstimator >= LAST_ECENESTIMATORS) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetCentralityEstimator",
+            "Running out of bounds in SetCentralityEstimator");
+    }
     this->fCentralityEstimator = CentralityEstimator;
   }
   // generic setter for track cuts
@@ -322,7 +326,7 @@ public:
   void SetMulCorCut(Double_t cut, kCorCut mode) {
     if (cut < 0) {
       std::cout << __LINE__ << ": bound too small" << std::endl;
-      Fatal("SetCenCorCut", "bound small");
+      Fatal("SetMulCorCut", "bound small");
     }
     this->fMulCorCut = cut;
     this->fMulCorCutMode = mode;
@@ -334,7 +338,7 @@ public:
   // cut all non-primary particles away
   void SetPrimaryOnlyCut(Bool_t option) { this->fPrimaryOnly = option; }
 
-  // setters for MC analsys
+  // setters for MC on the fly analysis
   void SetMCOnTheFly(Bool_t option) { this->fMCOnTheFly = option; }
   void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
   void SetUseWeights(kTrack kinematic, Bool_t option) {
@@ -408,7 +412,7 @@ public:
   void SetWeightHistogram(kTrack kinematic, const char *Filename,
                           const char *Histname);
 
-  // set correlators we want to compute
+  // set correlators to be computed
   void SetCorrelators(std::vector<std::vector<Int_t>> correlators) {
     this->fCorrelators = correlators;
     for (int i = 0; i < LAST_EFINALPROFILE; ++i) {
@@ -430,6 +434,8 @@ private:
   TList *fQAHistogramsList;
   TString fQAHistogramsListName;
   Bool_t fFillQAHistograms;
+  // array holding all centrality estimates
+  Double_t fCentrality[LAST_ECENESTIMATORS];
   // centrality correlation histograms
   TList *fCenCorQAHistogramsList;
   TString fCenCorQAHistogramsListName;
@@ -441,6 +447,8 @@ private:
   Double_t fCenCorQAHistogramBins[LAST_ECENESTIMATORS *
                                   (LAST_ECENESTIMATORS - 1) /
                                   2][2 * LAST_EBINS];
+  // array holding all multiplicity estimates
+  Double_t fMultiplicity[kMulEstimators];
   // multiplicity correlation histograms
   TList *fMulCorQAHistogramsList;
   TString fMulCorQAHistogramsListName;
@@ -485,14 +493,7 @@ private:
                                      [LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fEventControlHistogramBins[LAST_EEVENT][LAST_EBINS];
 
-  // array holding multiplicity estimates
-  Double_t fMultiplicity[kMulEstimators];
-
-  // array hoding centrality estimates
-  Double_t fCentrality[LAST_ECENESTIMATORS];
-
   // cuts
-  kCenEstimators fCentralityEstimator;
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
   TH1D *fTrackCutsCounter[LAST_EMODE];
   TString fTrackCutsCounterNames[LAST_EMODE];
@@ -503,6 +504,7 @@ private:
   TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
   Int_t fFilterbit;
   Bool_t fPrimaryOnly;
+  kCenEstimators fCentralityEstimator;
   Double_t fCenCorCut;
   kCorCut fCenCorCutMode;
   Double_t fMulCorCut;
@@ -533,7 +535,7 @@ private:
   Int_t fMCNumberOfParticlesPerEvent;
   Int_t fMCNumberOfParticlesPerEventRange[LAST_EMINMAX];
 
-  // Monte Carlo objects
+  // Look up tabel between MC and data particles
   TExMap *fLookUpTable;
 
   // qvectors

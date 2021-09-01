@@ -77,7 +77,7 @@ ClassImp(AliAnalysisTaskAR)
       fEventControlHistogramsList(nullptr),
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
-      fCentralityEstimator(kV0M), fFilterbit(128), fPrimaryOnly(kFALSE),
+      fFilterbit(128), fPrimaryOnly(kFALSE), fCentralityEstimator(kV0M),
       fCenCorCut(20), fCenCorCutMode(kDIFFABS), fMulCorCut(500),
       fMulCorCutMode(kDIFFABS),
       // final results
@@ -149,7 +149,7 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fEventControlHistogramsList(nullptr),
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
-      fCentralityEstimator(kV0M), fFilterbit(128), fPrimaryOnly(kFALSE),
+      fFilterbit(128), fPrimaryOnly(kFALSE), fCentralityEstimator(kV0M),
       fCenCorCut(20), fCenCorCutMode(kDIFFABS), fMulCorCut(500),
       fMulCorCutMode(kDIFFABS),
       // final results
@@ -1186,11 +1186,11 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
   // general strategy
   // Get pointer(s) to event (reconstructed,simulated)
+  // Fill event objects
   // Check event cut
-  // Start Analysis
-  // 		over AOD
-  // 		over AOD and MC
-  // 		TBI over MC only
+  // Start Analysis either
+  // 		over AOD only or
+  // 		over AOD and MC (TBI over MC only)
   // PostData
 
   // Get pointers to event
@@ -1199,8 +1199,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   // get pointer to MC event
   AliMCEvent *aMC = MCEvent();
 
-  // bail of it AOD event is invald
-  //   this means we cannot process MC only
+  // bail out of it AOD event is invald
+  // this means we cannot process MC only
   if (!aAOD) {
     return;
   }
@@ -1209,7 +1209,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   // this requries an inital loop over all tracks in the event
   FillEventObjects(aAOD, aMC);
 
-  // fill histograms before cut
+  // fill event histograms before cut
   if (fFillQAHistograms) {
     FillEventQAHistograms(kBEFORE, aAOD);
     FillEventQAHistograms(kBEFORE, aMC);
@@ -1222,17 +1222,19 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     return;
   }
 
+  // fill event histograms after cut
+  FillEventControlHistograms(kAFTER, aAOD);
+  FillEventControlHistograms(kAFTER, aMC);
+  if (fFillQAHistograms) {
+    FillEventQAHistograms(kAFTER, aAOD);
+    FillEventQAHistograms(kAFTER, aMC);
+  }
+
   // start analysis over AODEvent only
   if (aAOD && !aMC) {
 
-    // fill histograms after cut
-    FillEventControlHistograms(kAFTER, aAOD);
-    if (fFillQAHistograms) {
-      FillEventQAHistograms(kAFTER, aAOD);
-    }
-
-    // clear event objects
-    ClearEventObjects();
+    // clear vectors holding kinematics and weights
+    ClearVectors();
 
     // get number of all tracks in current event
     Int_t nTracks = aAOD->GetNumberOfTracks();
@@ -1327,17 +1329,9 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
   // start analysis over MC and AOD to compute efficiencies
   if (aMC && aAOD) {
-    // fill histograms after cut
-    FillEventControlHistograms(kAFTER, aMC);
-    FillEventControlHistograms(kAFTER, aAOD);
 
-    if (fFillQAHistograms) {
-      FillEventQAHistograms(kAFTER, aMC);
-      FillEventQAHistograms(kAFTER, aAOD);
-    }
-
-    // reset event by event objects
-    ClearEventObjects();
+    // reset vectors holding kinematics and weights
+    ClearVectors();
 
     // get number of all particles in current event
     Int_t nParticles = aMC->GetNumberOfTracks();
@@ -1346,7 +1340,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     // loop over all particles in the event
     for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
 
-      // getting a pointer to a track
+      // getting a pointer to a MCparticle
       MCParticle = dynamic_cast<AliAODMCParticle *>(aMC->GetTrack(iParticle));
 
       // protect against invalid pointers
@@ -1394,7 +1388,7 @@ void AliAnalysisTaskAR::MCOnTheFlyExec() {
   // call this method for local monte carlo analysis
 
   // reset angles and weights
-  ClearEventObjects();
+  ClearVectors();
 
   // set symmetry plane
   MCPdfSymmetryPlanesSetup();
@@ -1431,7 +1425,7 @@ void AliAnalysisTaskAR::MCOnTheFlyExec() {
   }
 }
 
-void AliAnalysisTaskAR::ClearEventObjects() {
+void AliAnalysisTaskAR::ClearVectors() {
   // clear vectors holding kinematics and weights of an event
   fWeightsAggregated.clear();
   for (int k = 0; k < kKinematic; ++k) {
@@ -1775,7 +1769,7 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
     }
 
     // additionally cut on absolute value of the vertex postion
-    //   there are suspicous events with |r_v|=0 that we do not trust
+    // there are suspicous events with |r_v|=0 that we do not trust
     Double_t VPos = std::sqrt(PrimaryVertex->GetX() * PrimaryVertex->GetX() +
                               PrimaryVertex->GetY() * PrimaryVertex->GetY() +
                               PrimaryVertex->GetZ() * PrimaryVertex->GetZ());
@@ -1834,6 +1828,8 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
     // }
 
     // cut on multiplicity correlation
+    // ugly! cut on fundamental observerables instead but there are some
+    // really weird events we need to get rid off
     Double_t mulDiff = 0;
     for (int i = 0; i < kMulEstimators; ++i) {
       for (int j = i + 1; j < kMulEstimators; ++j) {
@@ -2145,7 +2141,6 @@ void AliAnalysisTaskAR::FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC) {
   Double_t w = 1.;
 
   AliAODTrack *aTrack = nullptr;
-  // fLookUpTable->Clear();
   if (0 != fLookUpTable->GetSize()) {
     fLookUpTable->Delete();
   }
