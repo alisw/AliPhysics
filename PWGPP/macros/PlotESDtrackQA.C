@@ -100,7 +100,15 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   TH1F* hNEvents=(TH1F*)l->FindObject("hNEvents");
   Int_t nReadEvents=hNEvents->GetBinContent(1);
   Int_t nPhysSelEvents=hNEvents->GetBinContent(2);
-  Int_t nSelectedEvents=hNEvents->GetBinContent(6);
+  Int_t nSelectedEvents=hNEvents->GetBinContent(7);
+  if(hNEvents->GetBinContent(7)<0.001){
+    TString bin6tit=hNEvents->GetXaxis()->GetBinLabel(6);
+    if(bin6tit.Contains("ileup")){
+      printf("Old task version, event counts taken from bin 6\n");
+      nSelectedEvents=hNEvents->GetBinContent(6);
+    }
+  }
+
   TH1F* hNTracks=(TH1F*)l->FindObject("hNTracks");
   TH1F* hNTracksBackg=(TH1F*)l->FindObject("hNTracksBackg");
   TH1F* hNTracksEmbed=(TH1F*)l->FindObject("hNTracksEmbed");
