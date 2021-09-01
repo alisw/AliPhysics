@@ -275,6 +275,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         // actual analysis
         double mass = dStar->DeltaInvMass();
         double ptCand = dStar->Pt();
+        double pCand = dStar->P();
 
         AliAODTrack* dauPi = dynamic_cast<AliAODTrack *>(dStar->GetBachelor());
         AliAODRecoDecayHF2Prong* dauD0 = dynamic_cast<AliAODRecoDecayHF2Prong *>(dStar->Get2Prong());
@@ -286,8 +287,17 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         fourVecPiCM = boostv12(fourVecPi);
         fourVecD0CM = boostv12(fourVecD0);
 
-        double cosThetaStar = std::abs(fourVecPiCM.Pz() / fourVecPiCM.P());
-        std::vector<double> var4nSparse = {mass, ptCand, cosThetaStar, centrality};
+        ROOT::Math::XYZVector normalVec = ROOT::Math::XYZVector(dStar->Py() / ptCand, -dStar->Px() / ptCand, 0.);
+        ROOT::Math::XYZVector helicityVec = ROOT::Math::XYZVector(dStar->Px() / pCand, dStar->Py() / pCand, dStar->Pz() / pCand);
+        ROOT::Math::XYZVector beamVec = ROOT::Math::XYZVector(0., 0., 1.);
+
+        ROOT::Math::XYZVector threeVecPiCM = fourVecPiCM.Vect();
+
+        double cosThetaStarProd = TMath::Abs(normalVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+        double cosThetaStarHelicity = TMath::Abs(helicityVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+        double cosThetaStarBeam = TMath::Abs(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+
+        std::vector<double> var4nSparse = {mass, ptCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, centrality};
 
         if(!fReadMC)
             fnSparseReco[0]->Fill(var4nSparse.data());
@@ -444,6 +454,7 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
                 if (isGoodDecay)
                 {
                     double pt = mcPart->Pt();
+                    double p = mcPart->P();
                     double rapid = mcPart->Y();
                     isFidAcc = fRDCuts->IsInFiducialAcceptance(pt, rapid);
                     isDaugInAcc = CheckDaugAcc(arrayMC, nDau, labDau);
@@ -457,16 +468,25 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
 
                         ROOT::Math::Boost boostv12{fourVecDstar.BoostToCM()};
                         fourVecPiCM = boostv12(fourVecPi);
-                        double cosThetaStar = fourVecPiCM.Pz() / fourVecPiCM.P();
+
+                        ROOT::Math::XYZVector normalVec = ROOT::Math::XYZVector(mcPart->Py() / pt, -mcPart->Px() / pt, 0.);
+                        ROOT::Math::XYZVector helicityVec = ROOT::Math::XYZVector(mcPart->Px() / p, mcPart->Py() / p, mcPart->Pz() / p);
+                        ROOT::Math::XYZVector beamVec = ROOT::Math::XYZVector(0., 0., 1.);
+
+                        ROOT::Math::XYZVector threeVecPiCM = fourVecPiCM.Vect();
+
+                        double cosThetaStarProd = TMath::Abs(normalVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+                        double cosThetaStarHelicity = TMath::Abs(helicityVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+                        double cosThetaStarBeam = TMath::Abs(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
 
                         if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
                         {
-                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStar, centrality};
+                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, centrality};
                             fnSparseMC[0]->Fill(var4nSparseAcc);
                         }
                         else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
                         {
-                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStar, centrality};
+                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, centrality};
                             fnSparseMC[1]->Fill(var4nSparseAcc);
                         }
                     }
@@ -513,9 +533,9 @@ void AliAnalysisTaskSEDstarPolarization::CreateEffSparses()
     if (fUseFinPtBinsForSparse)
         nPtBins = nPtBins * 10;
 
-    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 20, 5, 100};
-    double xminAcc[knVarForSparseAcc] = {0., -1., 0., 0.};
-    double xmaxAcc[knVarForSparseAcc] = {ptLims[nPtBinsCutObj], 1., 1., 100.};
+    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 20, 5, 5, 5, 100};
+    double xminAcc[knVarForSparseAcc] = {0., -1., 0., 0., 0., 0.};
+    double xmaxAcc[knVarForSparseAcc] = {ptLims[nPtBinsCutObj], 1., 1., 1., 1., 100.};
 
     TString label[2] = {"fromC", "fromB"};
     for (int iHist = 0; iHist < 2; iHist++)
@@ -524,8 +544,10 @@ void AliAnalysisTaskSEDstarPolarization::CreateEffSparses()
         fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAcc_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
         fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
-        fnSparseMC[iHist]->GetAxis(2)->SetTitle("|cos(#theta*)|");
-        fnSparseMC[iHist]->GetAxis(3)->SetTitle("centrality");
+        fnSparseMC[iHist]->GetAxis(2)->SetTitle("|cos(#theta*)| (beam)");
+        fnSparseMC[iHist]->GetAxis(3)->SetTitle("|cos(#theta*)| (production)");
+        fnSparseMC[iHist]->GetAxis(4)->SetTitle("|cos(#theta*)| (helicity)");
+        fnSparseMC[iHist]->GetAxis(5)->SetTitle("centrality");
         fOutput->Add(fnSparseMC[iHist]);
     }
 }
@@ -544,9 +566,9 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
 
     int nCosThetaBins = 5;
 
-    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, nCosThetaBins, 100};
-    double xminReco[knVarForSparseReco] = {massMin, 0., 0., 0.};
-    double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 1., 100.};
+    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, nCosThetaBins, nCosThetaBins, nCosThetaBins, 100};
+    double xminReco[knVarForSparseReco] = {massMin, 0., 0., 0., 0., 0.};
+    double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 1., 1., 1., 100.};
 
     TString label[4] = {"all", "fromC", "fromB", "bkg"};
     for (int iHist = 0; iHist < 4; iHist++)
@@ -555,8 +577,10 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
         fnSparseReco[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseReco, nBinsReco, xminReco, xmaxReco);
         fnSparseReco[iHist]->GetAxis(0)->SetTitle("#it{M}(K#pi#pi) #minus #it{M}(K#pi) (GeV/#it{c})");
         fnSparseReco[iHist]->GetAxis(1)->SetTitle("#it{p}_{T} (GeV/c)");
-        fnSparseReco[iHist]->GetAxis(2)->SetTitle("|cos(#theta*)|");
-        fnSparseReco[iHist]->GetAxis(3)->SetTitle("centrality %");
+        fnSparseReco[iHist]->GetAxis(2)->SetTitle("|cos(#theta*)| (beam)");
+        fnSparseReco[iHist]->GetAxis(3)->SetTitle("|cos(#theta*)| (production)");
+        fnSparseReco[iHist]->GetAxis(4)->SetTitle("|cos(#theta*)| (helicity)");
+        fnSparseReco[iHist]->GetAxis(5)->SetTitle("centrality %");
 
         fOutput->Add(fnSparseReco[iHist]);
     }
