@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 31.08.2021
+ * Last Modified Date: 01.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -1333,7 +1333,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
     if (fFillQAHistograms) {
       FillEventQAHistograms(kAFTER, aMC);
-      FillEventControlHistograms(kAFTER, aAOD);
+      FillEventQAHistograms(kAFTER, aAOD);
     }
 
     // reset event by event objects
