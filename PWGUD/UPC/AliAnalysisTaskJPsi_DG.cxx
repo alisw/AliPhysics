@@ -386,6 +386,7 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
         {
             PostData(1, fTreeJPsi);
             PostData(2, fOutputList);
+            delete [] fIndicesOfGoodTracks; 
             return;        
         }
         hCounterCuts->Fill(iSelectionCounter);
@@ -412,9 +413,6 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
     if(isMuonPair < isElectronPair) TrkTrkKinematics(fIndicesOfGoodTracks, massMuon);
     else TrkTrkKinematics(fIndicesOfGoodTracks, massElectron);
     
-    // Clean up
-    delete [] fIndicesOfGoodTracks;
-
     // Check if SPD cluster matches FOhits (according to MB's macro)
     Int_t crossedFO[4];
     TBits fFOCrossedChips(1200); 
@@ -435,6 +433,9 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
 
     fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
     fMatchingSPD = IsSTGFired(fFOCrossFiredChips,fRunNumber >= 295753 ? 9 : 3);
+
+    // Clean up
+    delete [] fIndicesOfGoodTracks;
 
     // ##########################################################
     // Data from the other detectors
