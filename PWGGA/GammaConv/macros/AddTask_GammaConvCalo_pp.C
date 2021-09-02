@@ -2214,6 +2214,13 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466510ga01ee00000","0h63103100000010"); // INT7
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // INT7
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga09ee00000","0h63103100000010"); // INT7
+  } else if ( trainConfig == 851){ // V0M mult selection PCMPHOS
+    cuts.AddCutPCMCalo("m0110113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 0-1%
+    cuts.AddCutPCMCalo("m1510113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 1-5%
+    cuts.AddCutPCMCalo("m5k10113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 5-20%
+    cuts.AddCutPCMCalo("n2410113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 20-40%
+    cuts.AddCutPCMCalo("n4710113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 40-70%
+    cuts.AddCutPCMCalo("n7a10113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 70-100%
 
   //*************************************************************************************************
   // 13 TeV PHOS - setup
@@ -2829,6 +2836,9 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("o5k10113","0dm00009f9730000dge0404000","4117918077032230000","0h63103100000010"); // INT7 5-20%
     cuts.AddCutPCMCalo("p2610113","0dm00009f9730000dge0404000","4117918077032230000","0h63103100000010"); // INT7 20-60%
     cuts.AddCutPCMCalo("p6a10113","0dm00009f9730000dge0404000","4117918077032230000","0h63103100000010"); // INT7 60-100%
+  } else if (trainConfig == 2223){ // EMCAL updated cuts (Sep 2021)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0h63103100000010"); // INT7 with NCell efficiency (PCM-EMC tagged, gamma clus, gaussian param)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0h63103100000010"); // no NCell cut
 
  // special V0AND configurations for PCM cut QA
   } else if (trainConfig == 2250){  // std cut
