@@ -44,6 +44,9 @@ const Int_t gQASelfCorrelations = 3; // phi, pt, eta
 const Int_t gQAEventCutCounter = 23; // see TString secc[gQAEventCutCounter] in .cxx
 const Int_t gQAParticleCutCounter = 39; // see TString spcc[gQAParticleCutCounter] in .cxx
 const Int_t gGenericCorrelations = 1; // correlations between various quantities (see .cxx for documentation)
+const Int_t gMaxBins = 10000; // max number of kine bins
+const Int_t gMaxOrder = 12; // 
+const Int_t gMaxIndex = 10000; // 
 
 // enums:
 enum eBins {nBins,min,max};
@@ -80,6 +83,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    virtual void InitializeArraysForCorrelationsHistograms();
    virtual void InitializeArraysForNestedLoopsHistograms();
    virtual void InitializeArraysForToyNUA();
+   virtual void InitializeArraysForTest0();
    virtual void InitializeArraysForCommonLabels();
 
   // 1) Methods called in UserCreateOutputObjects():
@@ -95,6 +99,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void BookCorrelationsHistograms();
   virtual void BookNestedLoopsHistograms();
   virtual void BookToyNUAHistograms();
+  virtual void BookTest0Histograms();
   virtual void BookFinalResultsHistograms();
 
   // 2) Methods called in UserExec(Option_t *):
@@ -119,6 +124,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t SpecifiedEvent(AliVEvent *ave);
   virtual void MakeLookUpTable(AliAODEvent *aAOD, AliMCEvent *aMC);
   virtual void RandomIndices(AliVEvent *ave);
+  virtual void CalculateTest0();
+  virtual void GenerateCorrelationsLabels();
 
   // 3) Methods called in Terminate(Option_t *):
   //    a) Get pointers:
@@ -302,6 +309,20 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fKinematicsBins[var][1] = min;
    this->fKinematicsBins[var][2] = max;
   }
+  void SetNonEqualKinematicsBins(const char* kv, const Int_t nbins, Double_t *ranges)
+  {
+   // this has an effect only on QV and final results histograms, but not on control histograms, which are always booked with equal-sized bins
+   Int_t var = -44;
+   if(TString(kv).EqualTo("phi")){var = PHI;} 
+   else if (TString(kv).EqualTo("pt")){var = PT;} 
+   else if (TString(kv).EqualTo("eta")){var = ETA;}
+   else if (TString(kv).EqualTo("e")){var = E;}
+   else if (TString(kv).EqualTo("charge")){var = CHARGE;}
+   else{exit(1);}
+   this->fNonEqualKinematicsnBins[var] = nbins;
+   this->fNonEqualKinematicsRanges[var] = TArrayD(nbins,ranges);
+   this->fUseNonEqualKinematicsBins[var] = kTRUE;
+  }
 
   void SetKinematicsCuts(const char* kc, const Double_t min, const Double_t max)
   {
@@ -384,6 +405,10 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetCalculateCorrelations(Bool_t cc) {this->fCalculateCorrelations = cc;};
   Bool_t GetCalculateCorrelations() const {return this->fCalculateCorrelations;};
 
+  void SetCalculateTest0(Bool_t c) {this->fCalculateTest0 = c;};
+  Bool_t GetCalculateTest0() const {return this->fCalculateTest0;};
+  void SetFileWithLabels(const char *externalFile){this->fFileWithLabels = new TString(externalFile);}
+ 
   void SetCalculateNestedLoops(Bool_t cnl) {this->fCalculateNestedLoops = cnl;};
   Bool_t GetCalculateNestedLoops() const {return this->fCalculateNestedLoops;};
 
@@ -549,6 +574,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   //    Kinematics:
   TH1D *fKinematicsHist[2][2][gKinematicVariables]; // kinematics [before,after track cuts][reco,sim][phi,pt,eta,energy,charge]
   Double_t fKinematicsBins[gKinematicVariables][3]; // [phi,pt,eta,energy,charge][nBins,min,max]
+  Int_t fNonEqualKinematicsnBins[gKinematicVariables]; // [phi,pt,eta,energy,charge] just nBins
+  TArrayD fNonEqualKinematicsRanges[gKinematicVariables]; // [phi,pt,eta,energy,charge] bin ranges
+  Bool_t fUseNonEqualKinematicsBins[gKinematicVariables]; // kFALSE by default. In that case, equal-sized bins are used
   Double_t fKinematicsCuts[gKinematicVariables][2]; // [phi,pt,eta,energy,charge][min,max]
   Bool_t fUseKinematicsCuts[gKinematicVariables];   // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
   //    DCA:
@@ -591,18 +619,26 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TProfile *fCorrelationsPro[4][6][3]; //! multiparticle correlations [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality]
 
   // 8) Nested loops:
-  TList *fNestedLoopsList;               // list to hold all nested loops objects
-  TProfile *fNestedLoopsFlagsPro;        // profile to hold all flags for nested loops
-  Bool_t fCalculateNestedLoops;          // calculate and store correlations with nested loops, as a cross-check
-  TProfile *fNestedLoopsPro[4][6][3];    //! multiparticle correlations from nested loops [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality]
+  TList *fNestedLoopsList;                 // list to hold all nested loops objects
+  TProfile *fNestedLoopsFlagsPro;          // profile to hold all flags for nested loops
+  Bool_t fCalculateNestedLoops;            // calculate and store correlations with nested loops, as a cross-check
+  TProfile *fNestedLoopsPro[4][6][3];      //! multiparticle correlations from nested loops [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality]
   //TProfile *fNestedLoopsPerDemandPro[3]; // which correlator needs to be cross-checked with nested loops (no setter => recompile). [0=integrated,1=vs. multiplicity,2=vs. centrality]
-  TArrayD *ftaNestedLoops[2];            //! e-b-e container for nested loops [0=angles;1=product of all weights]   
+  TArrayD *ftaNestedLoops[2];              //! e-b-e container for nested loops [0=angles;1=product of all weights]   
 
   // 9) Toy NUA:
   TList *fToyNUAList;                           // list to hold all correlations objects
   TProfile *fToyNUAFlagsPro;                    // profile to hold all flags for correlations
   Bool_t fUseToyNUA[gKinematicVariables];       // use toy NUA for particular kinematic variable
   Double_t fToyNUACuts[gKinematicVariables][3]; // stores probability [0] and NUA sector range min [1] and max [2]. Use task->SetToyNUACuts("variable",probability,min,max)
+
+  //10) Test0:  
+  TList *fTest0List;            // TBI
+  TProfile *fTest0FlagsPro;     // TBI 
+  Bool_t fCalculateTest0;       // TBI
+  TProfile *fTest0Pro[gMaxOrder][gMaxIndex][3]; //! TBI [order][index][0=integrated,1=vs. multiplicity,2=vs. centrality]
+  TString *fFileWithLabels; //! external file which specifies all labels of interest
+  TString *fTest0Labels[gMaxOrder][gMaxIndex]; // all labels: k-p'th order is stored in k-1'th index. So yes, I also store 1-p
 
   // * Final results:
   TList *fFinalResultsList; // list to hold all histograms with final results
@@ -627,7 +663,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,17);
+  ClassDef(AliAnalysisTaskMuPa,18);
 
 };
 
