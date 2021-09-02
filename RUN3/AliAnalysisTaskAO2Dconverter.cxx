@@ -685,7 +685,6 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tEvents->Branch("fNumContrib", &collision.fN, "fNumContrib/s");
     tEvents->Branch("fCollisionTime", &collision.fCollisionTime, "fCollisionTime/F");
     tEvents->Branch("fCollisionTimeRes", &collision.fCollisionTimeRes, "fCollisionTimeRes/F");
-    tEvents->Branch("fCollisionTimeMask", &collision.fCollisionTimeMask, "fCollisionTimeMask/b");
     tEvents->SetBasketSize("*", fBasketSizeEvents);
   }
 
@@ -1178,22 +1177,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       eventTime[i] = TOFResponse.GetStartTime(mom) * 1.e-3;       // ps to ns
       eventTimeRes[i] = TOFResponse.GetStartTimeRes(mom) * 1.e-3; // ps to ns
       eventTimeWeight[i] = 1. / (eventTimeRes[i] * eventTimeRes[i]);
-
-      //PH The part below is just a place holder
-      if (TOFResponse.GetStartTimeMask(mom) & 0x1)
-        SETBIT(collision.fCollisionTimeMask, 0);
-      else
-        CLRBIT(collision.fCollisionTimeMask, 0);
-      //
-      if (TOFResponse.GetStartTimeMask(mom) & 0x2)
-        SETBIT(collision.fCollisionTimeMask, 1);
-      else
-        CLRBIT(collision.fCollisionTimeMask, 1);
-      //
-      if (TOFResponse.GetStartTimeMask(mom) & 0x3)
-        SETBIT(collision.fCollisionTimeMask, 2);
-      else
-        CLRBIT(collision.fCollisionTimeMask, 2);
     }
 
     // Recalculate unique event time and its resolution
