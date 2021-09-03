@@ -1068,7 +1068,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("p2610113", "0dm00009f9730000dge0404000", "0152103500000000"); // 20-60%
     cuts.AddCutPCM("p6a10113", "0dm00009f9730000dge0404000", "0152103500000000"); // 60-100%
   } else if (trainConfig == 455){ // PCM Isolated Pi0 analysis
-    cuts.AddCutPCM("00010113", "08m00009f9730000dge0404000", "4152103500000000");
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "4152103500000000");
   } else if (trainConfig == 456){ // PCM HighPtHadron analysis
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "5152103500000000");
 
