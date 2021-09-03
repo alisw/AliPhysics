@@ -1179,8 +1179,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 
   // if required, reject events without a recognised p, K or pi track
   if(fRejEvWoutpKpi){
-    // the event must have at least 1 proton, 1 kaon and 1 pion
-    if(fnProt==0 && fnKaon==0 && fnPion==0){
+    // the event must have at least 1 proton, or 1 kaon, or 1 pion
+    if(fnProt==0 || fnKaon==0 || fnPion==0){
       fnProt=999;
       fnKaon=999;
       fnPion=999;
