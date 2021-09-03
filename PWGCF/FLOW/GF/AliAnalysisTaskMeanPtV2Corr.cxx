@@ -1384,9 +1384,9 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
     if (!lPart->IsPhysicalPrimary()) continue;
     if (lPart->Charge()==0.) continue;
     Double_t pt = lPart->Pt();
-    Double_t lEta = TMath::Abs(lPart->Eta());
+    Double_t lEta = lPart->Eta();
     if (pt<0.15 || pt>50.) continue;
-    if(pt>0.2 && pt<3 && lEta<fEtaNch) lNchGen++;
+    if(pt>0.2 && pt<3 && TMath::Abs(lEta)<fEtaNch) lNchGen++;
     if(fEtaLow>-999) { if((lEta<fEtaLow) || (lEta>fEta)) continue; }
     else if(TMath::Abs(lEta) > fEta) continue;
     Double_t CompWeight = 1;

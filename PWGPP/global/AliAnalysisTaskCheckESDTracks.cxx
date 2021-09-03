@@ -1063,7 +1063,6 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Int_t abstrlabel=TMath::Abs(track->GetLabel());
     Bool_t matchingLabels=kFALSE;
     if(fReadMC && (TMath::Abs(track->GetTPCLabel()) == TMath::Abs(track->GetITSLabel()))) matchingLabels=kTRUE;
-    if(fReadMC && fRejectParticlesFromOutOfBunchPileup && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(abstrlabel,mcEvent)) continue;
     Float_t dedx=track->GetTPCsignal();
     Int_t  pidtr=track->GetPIDForTracking();
     Int_t  pidtr0=track->GetPIDForTracking0();
@@ -1103,7 +1102,10 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       if(isBG) nBGtracks++;
       else nEmbeddedtracks++;
       AliMCParticle* mcPart=(AliMCParticle*)mcEvent->GetTrack(abstrlabel);
-      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(abstrlabel,mcEvent)) nOOBPileuptracks++;
+      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(abstrlabel,mcEvent)){
+	nOOBPileuptracks++;
+	if(fRejectParticlesFromOutOfBunchPileup) continue;
+      }
       TParticle* part = mcEvent->Particle(abstrlabel);
       if (part){
         ptgen=part->Pt();
