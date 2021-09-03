@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 01.09.2021
+ * Last Modified Date: 03.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -89,7 +89,6 @@ const TString kBAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
 const Color_t kFillColor[LAST_EBEFOREAFTER] = {kRed - 10, kGreen - 10};
 enum kMode { kRECO, kSIM, LAST_EMODE };
 const TString kModeName[LAST_EMODE] = {"[kRECO]", "[kSIM]"};
-enum kCorCut { kDIFFABS, kDIFFREL };
 
 class AliAnalysisTaskAR : public AliAnalysisTaskSE {
 public:
@@ -314,22 +313,14 @@ public:
   //   }
   //   this->fCenCorCut[0] = m;
   //   this->fCenCorCut[1] = t;
-  void SetCenCorCut(Double_t cut, kCorCut mode) {
-    if (cut < 0) {
-      std::cout << __LINE__ << ": bound too small" << std::endl;
-      Fatal("SetCenCorCut", "bound small");
-    }
-    this->fCenCorCut = cut;
-    this->fCenCorCutMode = mode;
+  void SetCenCorCut(Double_t m, Double_t t) {
+    this->fCenCorCut[0] = m;
+    this->fCenCorCut[1] = t;
   }
   // setter for multiplicity correlation cut
-  void SetMulCorCut(Double_t cut, kCorCut mode) {
-    if (cut < 0) {
-      std::cout << __LINE__ << ": bound too small" << std::endl;
-      Fatal("SetMulCorCut", "bound small");
-    }
-    this->fMulCorCut = cut;
-    this->fMulCorCutMode = mode;
+  void SetMulCorCut(Double_t m, Double_t t) {
+    this->fMulCorCut[0] = m;
+    this->fMulCorCut[1] = t;
   }
   // filterbit
   // depends strongly on the data set
@@ -505,10 +496,8 @@ private:
   Int_t fFilterbit;
   Bool_t fPrimaryOnly;
   kCenEstimators fCentralityEstimator;
-  Double_t fCenCorCut;
-  kCorCut fCenCorCutMode;
-  Double_t fMulCorCut;
-  kCorCut fMulCorCutMode;
+  Double_t fCenCorCut[2];
+  Double_t fMulCorCut[2];
 
   // Final results
   TList *fFinalResultsList;
@@ -552,7 +541,7 @@ private:
   std::vector<std::vector<Int_t>> fCorrelators;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 9);
+  ClassDef(AliAnalysisTaskAR, 10);
 };
 
 #endif
