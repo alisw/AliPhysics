@@ -1834,6 +1834,7 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
     // cut on multiplicity correlation
     // ugly! cut on fundamental observerables instead but there are some
     // really weird events we need to get rid off
+    // logic is same as above
     Double_t m_mul = fMulCorCut[0];
     Double_t t_mul = fMulCorCut[1];
     for (int i = 0; i < kMulEstimators; ++i) {
