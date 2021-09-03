@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 01.09.2021
+ * Last Modified Date: 03.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -78,8 +78,6 @@ ClassImp(AliAnalysisTaskAR)
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
       fFilterbit(128), fPrimaryOnly(kFALSE), fCentralityEstimator(kV0M),
-      fCenCorCut(20), fCenCorCutMode(kDIFFABS), fMulCorCut(500),
-      fMulCorCutMode(kDIFFABS),
       // final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       // flags for MC analysis
@@ -150,8 +148,6 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
       fFilterbit(128), fPrimaryOnly(kFALSE), fCentralityEstimator(kV0M),
-      fCenCorCut(20), fCenCorCutMode(kDIFFABS), fMulCorCut(500),
-      fMulCorCutMode(kDIFFABS),
       // final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       // flags for MC analysis
@@ -705,20 +701,25 @@ void AliAnalysisTaskAR::InitializeArraysForCuts() {
   }
 
   // default parameters for cutting on centrality correlation
-  // Double_t DefaultCenCorCut[2] = {// m t
-  //                                 1.1, 2.};
-  // for (int i = 0; i < 2; ++i) {
-  //   fCenCorCut[i] = DefaultCenCorCut[i];
-  // }
-
-  // initialize array for multiplicity estimators
-  for (int mul = 0; mul < kMulEstimators; ++mul) {
-    fMultiplicity[mul] = 0;
+  Double_t DefaultCenCorCut[2] = {// m t
+                                  1.3, 10.};
+  for (int i = 0; i < 2; ++i) {
+    fCenCorCut[i] = DefaultCenCorCut[i];
   }
-
   // initialize array for centrality estimators
   for (int cen = 0; cen < LAST_ECENESTIMATORS; ++cen) {
     fCentrality[cen] = 0;
+  }
+
+  // default parameters for cutting on multiplicity correlation
+  Double_t DefaultMulCorCut[2] = {// m t
+                                  1.3, 700.};
+  for (int i = 0; i < 2; ++i) {
+    fMulCorCut[i] = DefaultMulCorCut[i];
+  }
+  // initialize array for multiplicity estimators
+  for (int mul = 0; mul < kMulEstimators; ++mul) {
+    fMultiplicity[mul] = 0;
   }
 }
 
@@ -1049,11 +1050,11 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   }
 
   // book histogram for counting event cuts
-  // add 2 bins by hand for centrality/multiplicity correlation cut
+  // add 4 bins by hand for centrality/multiplicity correlation cuts
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     fEventCutsCounter[mode] =
         new TH1D(fEventCutsCounterNames[mode], fEventCutsCounterNames[mode],
-                 2 * (LAST_EEVENT + 1), 0, 2 * (LAST_EEVENT + 1));
+                 2 * (LAST_EEVENT + 2), 0, 2 * (LAST_EEVENT + 2));
     fEventCutsCounter[mode]->SetFillColor(kFillColor[kAFTER]);
     for (int bin = 0; bin < LAST_EEVENT; ++bin) {
       for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
@@ -1062,9 +1063,13 @@ void AliAnalysisTaskAR::BookControlHistograms() {
       }
     }
     fEventCutsCounter[mode]->GetXaxis()->SetBinLabel(2 * LAST_EEVENT + 1,
-                                                     "CenCorCut");
+                                                     "CenCorCut[kMIN]");
     fEventCutsCounter[mode]->GetXaxis()->SetBinLabel(2 * LAST_EEVENT + 2,
-                                                     "MulCorCut");
+                                                     "CenCorCut[kMAX]");
+    fEventCutsCounter[mode]->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 1) + 1,
+                                                     "MulCorCut[kMIN]");
+    fEventCutsCounter[mode]->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 1) + 2,
+                                                     "MulCorCut[kMAX]");
     fEventControlHistogramsList->Add(fEventCutsCounter[mode]);
   }
   // book event control histograms
@@ -1785,44 +1790,43 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
     // cut on centrality estimator correlation
     // ugly! cut on fundamental observerables instead but there are some
     // really weird events we need to get rid off
-    Double_t cenDiff = 0;
-    for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
-      for (int j = i + 1; j < LAST_ECENESTIMATORS; ++j) {
-        // protect against division by zero
-        if (fCentrality[i] > 0. && fCentrality[j] > 0.) {
-          if (fCenCorCutMode == kDIFFABS) {
-            cenDiff = std::abs(fCentrality[i] - fCentrality[j]);
-          } else if (fCenCorCutMode == kDIFFREL) {
-            cenDiff = std::abs(fCentrality[i] - fCentrality[j]) /
-                      (fCentrality[i] + fCentrality[j]);
-          } else {
-            Fatal("SurviveEventCut", "No centrality difference");
-          }
-          if (cenDiff > fCenCorCut) {
-            fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + 0.5);
-            Flag = kFALSE;
-          }
-        }
-      }
-    }
     // cut away all events that are above the line
     // y=mx+t
     // and below
     // y=(x-t)/m
     // this gives a nice and symmetric cone around the diagonal y=x
     // set m>1 such that the cone gets wider for larger centralities
-    // Double_t m = fCenCorCut[0];
-    // Double_t t = fCenCorCut[1];
+    Double_t m_cen = fCenCorCut[0];
+    Double_t t_cen = fCenCorCut[1];
+    for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
+      for (int j = i + 1; j < LAST_ECENESTIMATORS; ++j) {
+        if (fCentrality[j] > m_cen * fCentrality[i] + t_cen) {
+          fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + kMIN + 0.5);
+          Flag = kFALSE;
+        }
+        if (fCentrality[j] < (fCentrality[i] - t_cen) / m_cen) {
+          fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + kMAX + 0.5);
+          Flag = kFALSE;
+        }
+      }
+    }
+    // Double_t cenDiff = 0;
     // for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
-    //   for (int j = i+1; j < LAST_ECENESTIMATORS; ++j) {
-    //     if (centralityPercentile[j] > m * centralityPercentile[i] + t) {
-    //       fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + kMIN + 0.5);
-    //       Flag = kFALSE;
-    //     }
-    //     if (centralityPercentile[j] < (centralityPercentile[i] - t) / m)
-    //     {
-    //       fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + kMAX + 0.5);
-    //       Flag = kFALSE;
+    //   for (int j = i + 1; j < LAST_ECENESTIMATORS; ++j) {
+    //     // protect against division by zero
+    //     if (fCentrality[i] > 0. && fCentrality[j] > 0.) {
+    //       if (fCenCorCutMode == kDIFFABS) {
+    //         cenDiff = std::abs(fCentrality[i] - fCentrality[j]);
+    //       } else if (fCenCorCutMode == kDIFFREL) {
+    //         cenDiff = std::abs(fCentrality[i] - fCentrality[j]) /
+    //                   (fCentrality[i] + fCentrality[j]);
+    //       } else {
+    //         Fatal("SurviveEventCut", "No centrality difference");
+    //       }
+    //       if (cenDiff > fCenCorCut) {
+    //         fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + 0.5);
+    //         Flag = kFALSE;
+    //       }
     //     }
     //   }
     // }
@@ -1830,30 +1834,49 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
     // cut on multiplicity correlation
     // ugly! cut on fundamental observerables instead but there are some
     // really weird events we need to get rid off
-    Double_t mulDiff = 0;
+    Double_t m_mul = fMulCorCut[0];
+    Double_t t_mul = fMulCorCut[1];
     for (int i = 0; i < kMulEstimators; ++i) {
       for (int j = i + 1; j < kMulEstimators; ++j) {
-        // exclude kMUL, since it is not a good estimate
+        // skip kMul which is a bad multiplicity estimate
         if (i == kMUL || j == kMUL) {
           continue;
+          ;
         }
-        // protect against division by zero
-        if (fMultiplicity[i] > 0. && fMultiplicity[j] > 0.) {
-          if (fMulCorCutMode == kDIFFABS) {
-            mulDiff = std::abs(fMultiplicity[i] - fMultiplicity[j]);
-          } else if (fMulCorCutMode == kDIFFREL) {
-            mulDiff = std::abs(fMultiplicity[i] - fMultiplicity[j]) /
-                      (fMultiplicity[i] + fMultiplicity[j]);
-          } else {
-            Fatal("SurviveEventCut", "No multiplicity difference");
-          }
+        if (fMultiplicity[j] > m_mul * fMultiplicity[i] + t_mul) {
+          fEventCutsCounter[kRECO]->Fill(2 * (LAST_EEVENT + 1) + kMIN + 0.5);
+          Flag = kFALSE;
         }
-        if (mulDiff > fMulCorCut) {
-          fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + 1.5);
+        if (fMultiplicity[j] < (fMultiplicity[i] - t_mul) / m_mul) {
+          fEventCutsCounter[kRECO]->Fill(2 * (LAST_EEVENT + 1) + kMAX + 0.5);
           Flag = kFALSE;
         }
       }
     }
+    // Double_t mulDiff = 0;
+    // for (int i = 0; i < kMulEstimators; ++i) {
+    //   for (int j = i + 1; j < kMulEstimators; ++j) {
+    //     // exclude kMUL, since it is not a good estimate
+    //     if (i == kMUL || j == kMUL) {
+    //       continue;
+    //     }
+    //     // protect against division by zero
+    //     if (fMultiplicity[i] > 0. && fMultiplicity[j] > 0.) {
+    //       if (fMulCorCutMode == kDIFFABS) {
+    //         mulDiff = std::abs(fMultiplicity[i] - fMultiplicity[j]);
+    //       } else if (fMulCorCutMode == kDIFFREL) {
+    //         mulDiff = std::abs(fMultiplicity[i] - fMultiplicity[j]) /
+    //                   (fMultiplicity[i] + fMultiplicity[j]);
+    //       } else {
+    //         Fatal("SurviveEventCut", "No multiplicity difference");
+    //       }
+    //     }
+    //     if (mulDiff > fMulCorCut) {
+    //       fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + 1.5);
+    //       Flag = kFALSE;
+    //     }
+    //   }
+    // }
   }
 
   // check MC event
