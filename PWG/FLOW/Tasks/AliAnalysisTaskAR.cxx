@@ -1801,11 +1801,11 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
     for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
       for (int j = i + 1; j < LAST_ECENESTIMATORS; ++j) {
         if (fCentrality[j] > m_cen * fCentrality[i] + t_cen) {
-          fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + kMIN + 0.5);
+          fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + kMAX + 0.5);
           Flag = kFALSE;
         }
         if (fCentrality[j] < (fCentrality[i] - t_cen) / m_cen) {
-          fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + kMAX + 0.5);
+          fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + kMIN + 0.5);
           Flag = kFALSE;
         }
       }
@@ -1839,17 +1839,17 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliVEvent *ave) {
     Double_t t_mul = fMulCorCut[1];
     for (int i = 0; i < kMulEstimators; ++i) {
       for (int j = i + 1; j < kMulEstimators; ++j) {
-        // skip kMul which is a bad multiplicity estimate
+        // skip kMul since it is a bad multiplicity estimate
         if (i == kMUL || j == kMUL) {
           continue;
           ;
         }
         if (fMultiplicity[j] > m_mul * fMultiplicity[i] + t_mul) {
-          fEventCutsCounter[kRECO]->Fill(2 * (LAST_EEVENT + 1) + kMIN + 0.5);
+          fEventCutsCounter[kRECO]->Fill(2 * (LAST_EEVENT + 1) + kMAX + 0.5);
           Flag = kFALSE;
         }
         if (fMultiplicity[j] < (fMultiplicity[i] - t_mul) / m_mul) {
-          fEventCutsCounter[kRECO]->Fill(2 * (LAST_EEVENT + 1) + kMAX + 0.5);
+          fEventCutsCounter[kRECO]->Fill(2 * (LAST_EEVENT + 1) + kMIN + 0.5);
           Flag = kFALSE;
         }
       }
