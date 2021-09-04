@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 03.09.2021
+ * Last Modified Date: 04.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -176,14 +176,14 @@ public:
   // setters for QA histograms
   void SetFillQAHistograms(Bool_t option) { fFillQAHistograms = option; }
   // generic setter for centrality correlation QA histogram binning
-  void SetCenCorQAHistogramBinning(kCenEstimators cen1, Int_t xnbins,
+  void SetCenCorQAHistogramBinning(Int_t cen1, Int_t xnbins,
                                    Double_t xlowerEdge, Double_t xupperEdge,
-                                   kCenEstimators cen2, Int_t ynbins,
+                                   Int_t cen2, Int_t ynbins,
                                    Double_t ylowerEdge, Double_t yupperEdge);
   // generic setter for multiplicity correlation QA histogram binning
-  void SetMulCorQAHistogramBinning(kCenEstimators mul1, Int_t xnbins,
+  void SetMulCorQAHistogramBinning(Int_t mul1, Int_t xnbins,
                                    Double_t xlowerEdge, Double_t xupperEdge,
-                                   kCenEstimators mul2, Int_t ynbins,
+                                   Int_t mul2, Int_t ynbins,
                                    Double_t ylowerEdge, Double_t yupperEdge);
   // generic setter for track scan QA histograms
   void SetFBTrackScanQAHistogramBinning(kTrack Track, Int_t nbins,

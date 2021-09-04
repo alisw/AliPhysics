@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 03.09.2021
+ * Last Modified Date: 04.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -2794,9 +2794,8 @@ TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2, Int_t n3,
 }
 
 void AliAnalysisTaskAR::SetCenCorQAHistogramBinning(
-    kCenEstimators cen1, Int_t xnbins, Double_t xlowerEdge, Double_t xupperEdge,
-    kCenEstimators cen2, Int_t ynbins, Double_t ylowerEdge,
-    Double_t yupperEdge) {
+    Int_t cen1, Int_t xnbins, Double_t xlowerEdge, Double_t xupperEdge,
+    Int_t cen2, Int_t ynbins, Double_t ylowerEdge, Double_t yupperEdge) {
   if (cen1 >= LAST_ECENESTIMATORS || cen2 >= LAST_ECENESTIMATORS) {
     std::cout << __LINE__ << ": running out of bounds" << std::endl;
     Fatal("SetCenCorQAHistogramBinning",
@@ -2823,9 +2822,8 @@ void AliAnalysisTaskAR::SetCenCorQAHistogramBinning(
 }
 
 void AliAnalysisTaskAR::SetMulCorQAHistogramBinning(
-    kCenEstimators mul1, Int_t xnbins, Double_t xlowerEdge, Double_t xupperEdge,
-    kCenEstimators mul2, Int_t ynbins, Double_t ylowerEdge,
-    Double_t yupperEdge) {
+    Int_t mul1, Int_t xnbins, Double_t xlowerEdge, Double_t xupperEdge,
+    Int_t mul2, Int_t ynbins, Double_t ylowerEdge, Double_t yupperEdge) {
   if (mul1 >= kMulEstimators || mul2 >= kMulEstimators) {
     std::cout << __LINE__ << ": running out of bounds" << std::endl;
     Fatal("SetMulCorQAHistogramBinning",
@@ -2837,18 +2835,18 @@ void AliAnalysisTaskAR::SetMulCorQAHistogramBinning(
     Fatal("SetMulCorQAHistogramBinning",
           ": upper edge has to be larger than the lower edge");
   }
-  this->fMulCorQAHistogramBins[IndexCorHistograms(
-      mul1, mul2, LAST_ECENESTIMATORS)][kBIN] = xnbins;
-  this->fMulCorQAHistogramBins[IndexCorHistograms(
-      mul1, mul2, LAST_ECENESTIMATORS)][kLEDGE] = xlowerEdge;
-  this->fMulCorQAHistogramBins[IndexCorHistograms(
-      mul1, mul2, LAST_ECENESTIMATORS)][kUEDGE] = xupperEdge;
-  this->fMulCorQAHistogramBins[IndexCorHistograms(
-      mul1, mul2, LAST_ECENESTIMATORS)][kBIN + LAST_EBINS] = ynbins;
-  this->fMulCorQAHistogramBins[IndexCorHistograms(
-      mul1, mul2, LAST_ECENESTIMATORS)][kLEDGE + LAST_EBINS] = ylowerEdge;
-  this->fMulCorQAHistogramBins[IndexCorHistograms(
-      mul1, mul2, LAST_ECENESTIMATORS)][kUEDGE + LAST_EBINS] = yupperEdge;
+  this->fMulCorQAHistogramBins[IndexCorHistograms(mul1, mul2, kMulEstimators)]
+                              [kBIN] = xnbins;
+  this->fMulCorQAHistogramBins[IndexCorHistograms(mul1, mul2, kMulEstimators)]
+                              [kLEDGE] = xlowerEdge;
+  this->fMulCorQAHistogramBins[IndexCorHistograms(mul1, mul2, kMulEstimators)]
+                              [kUEDGE] = xupperEdge;
+  this->fMulCorQAHistogramBins[IndexCorHistograms(mul1, mul2, kMulEstimators)]
+                              [kBIN + LAST_EBINS] = ynbins;
+  this->fMulCorQAHistogramBins[IndexCorHistograms(mul1, mul2, kMulEstimators)]
+                              [kLEDGE + LAST_EBINS] = ylowerEdge;
+  this->fMulCorQAHistogramBins[IndexCorHistograms(mul1, mul2, kMulEstimators)]
+                              [kUEDGE + LAST_EBINS] = yupperEdge;
 }
 
 void AliAnalysisTaskAR::SetAcceptanceHistogram(kTrack kinematic,
