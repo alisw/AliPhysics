@@ -218,6 +218,11 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           fGenCascade.etaMC = cascade->Eta();
           fGenCascade.yMC = cascade->Y();
           physPrim = cascade->IsPhysicalPrimary();
+          fGenCascade.flag = 0u;
+          if (physPrim)
+            fGenCascade.flag |= kPrimary;
+          else
+            fGenCascade.flag |= cascade->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
           double pv[3], sv[3];
           cascade->XvYvZv(pv);
           bacPart->XvYvZv(sv);
@@ -367,6 +372,11 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           lambda->XvYvZv(ov);
           posPart->XvYvZv(dv);
           fGenLambda.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * lambda->M() / lambda->P();
+          fGenLambda.flag = 0u;
+          if (lambda->IsPrimary())
+            fGenLambda.flag |= kPrimary;
+          else
+            fGenLambda.flag |= lambda->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
         }
         if (fOnlyTrueLambdas && fGenLambda.pdg == 0)
           continue;
@@ -454,6 +464,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fGenCascade.pdg = track->GetPdgCode();
       double pv[3], sv[3];
       track->XvYvZv(pv);
+      bool goodDecay{false};
       for (int iD = track->GetDaughterFirst(); iD <= track->GetDaughterLast(); iD++)
       {
         auto daugh = (AliAODMCParticle *)fMCEvent->GetTrack(iD);
@@ -464,10 +475,18 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         if (std::abs(daugh->GetPdgCode()) == kLambdaPdg)
         {
           daugh->XvYvZv(sv);
+          goodDecay = true;
           break;
         }
       }
+      if (!goodDecay)
+        continue;
       fGenCascade.ctMC = std::sqrt(Sq(pv[0] - sv[0]) + Sq(pv[1] - sv[1]) + Sq(pv[2] - sv[2])) * track->M() / track->P();
+      fGenCascade.flag = 0u;
+      if (track->IsPrimary())
+        fGenCascade.flag |= kPrimary;
+      else
+        fGenCascade.flag |= track->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
       fTree->Fill();
     }
 
@@ -516,6 +535,12 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         }
         if (neutralDecay)
           continue;
+        fGenLambda.flag = 0u;
+        if (track->IsPrimary())
+          fGenLambda.flag |= kPrimary;
+        else
+          fGenLambda.flag |= track->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
+
         fGenLambda.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * track->M() / track->P();
         fTreeLambda->Fill();
       }
@@ -623,7 +648,8 @@ void AliAnalysisTaskStrangenessRatios::PostAllData()
   PostData(3, fTreeLambda);
 }
 
-Bool_t AliAnalysisTaskStrangenessRatios::UserNotify() {
+Bool_t AliAnalysisTaskStrangenessRatios::UserNotify()
+{
   TString cfn{CurrentFileName()};
   AliInfo(Form("Setting hash for file %s", cfn.Data()));
 
