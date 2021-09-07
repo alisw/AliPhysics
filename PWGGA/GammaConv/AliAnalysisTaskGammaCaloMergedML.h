@@ -122,9 +122,8 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
 
     //Own functions for data extraction
     void GetClusterReadout(AliVCluster* cluster, AliVEvent* event, Float_t cellarray[50][50]);
-    void GetClusterTime(AliVCluster* cluster, AliVEvent* event);
 
-    void ResetBuffer();
+
 
 
   protected:
@@ -329,13 +328,14 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
     TTree**                 tTrueMergedCaloClusterEta;			   //! array of trees with MC information of merged clusters from eta
     TTree**                 tTrueMergedCaloClusterBck;                          //! array of tress with MC information of merged clusters from background
 
-    Float_t                 fMergedClusterTreeCluster[50][50];		   //! energy of cluster
+    UChar_t                 fMergedClusterCellN; //! number of cells in cluster
+    Float_t*                fMergedClusterTreeCluster;		   //! energy of cluster
     UChar_t                 fMergedClusterTreeClusterType;			   //! cluster classification
     Float_t                 fMergedClusterTreeClusterEnergy;			   //! cluster energy
     Float_t                 fMergedClusterTreeClusterPt; 				   //! cluster pt
-    UChar_t                 fMergedClusterTreeClusterModNum;			   //! cluster supermodule number
-    UChar_t                 fMergedClusterTreeClusterXPos;				   //! coloumn of leading cell
-    UChar_t                 fMergedClusterTreeClusterYPos;				   //! row of leading cell
+    UChar_t*                fMergedClusterTreeClusterModNum;			   //! cells supermodule numbers
+    UChar_t*                fMergedClusterTreeClusterCol;				   //! coloumn numbers of cells
+    UChar_t*                fMergedClusterTreeClusterRow;				   //! row numbers of cells
     Bool_t                  fMergedClusterTreePartIsPrimary;			   //! is mother particle primary
     Short_t                 fMergedClusterTreePartPID;	 			   //! mother particle PID
     Float_t                 fMergedClusterTreePartPt;                                //! mother particle pT
@@ -347,14 +347,7 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
 
 
 
-    TTree**                 tClusterTiming;
-    UChar_t                 fClusterN;
-    UChar_t*                fRow;
-    UChar_t*                fCol;
-    UChar_t*                fSupMod;
-    Float_t*                fTiming;
-    Float_t*                fEnergy;
-    UChar_t                 isTiming;
+
 
     // additional variables
     TRandom3                fRandom;                                            // random
@@ -383,7 +376,7 @@ class AliAnalysisTaskGammaCaloMergedML : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMergedML(const AliAnalysisTaskGammaCaloMergedML&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMergedML &operator=(const AliAnalysisTaskGammaCaloMergedML&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMergedML, 45);
+    ClassDef(AliAnalysisTaskGammaCaloMergedML, 46);
 };
 
 #endif

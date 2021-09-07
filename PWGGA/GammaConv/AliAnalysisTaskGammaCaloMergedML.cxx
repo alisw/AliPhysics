@@ -265,12 +265,14 @@ AliAnalysisTaskGammaCaloMergedML::AliAnalysisTaskGammaCaloMergedML(): AliAnalysi
   fMinAllowedPi0OverlapsMC(-1),
   fMaxAllowedPi0OverlapsMC(-1),
   fHistoPi0EvsGammaOverlapE(NULL),
+  fMergedClusterCellN(0),
+  fMergedClusterTreeCluster(NULL),
   fMergedClusterTreeClusterType(0),
   fMergedClusterTreeClusterEnergy(0),
   fMergedClusterTreeClusterPt(0),
-  fMergedClusterTreeClusterModNum(0),
-  fMergedClusterTreeClusterXPos(0),
-  fMergedClusterTreeClusterYPos(0),
+  fMergedClusterTreeClusterModNum(NULL),
+  fMergedClusterTreeClusterCol(NULL),
+  fMergedClusterTreeClusterRow(NULL),
   fMergedClusterTreePartIsPrimary(0),
   fMergedClusterTreePartPID(0),
   fMergedClusterTreePartPt(0),
@@ -278,23 +280,8 @@ AliAnalysisTaskGammaCaloMergedML::AliAnalysisTaskGammaCaloMergedML(): AliAnalysi
   fMergedClusterTreePartEta(0),
   fMergedClusterTreePartPhi(0),
   fMergedClusterTreeClusterM02(0),
-  fMergedClusterTreeClusterM20(0),
-  fClusterN(0),
-  fRow(NULL),
-  fCol(NULL),
-  fSupMod(NULL),
-  fTiming(NULL),
-  fEnergy(NULL),
-  tClusterTiming(NULL),
-  isTiming(1)
-{
-  for(Int_t i=0; i<50; i++){
-    for(Int_t j=0; j<50; j++){
-      fMergedClusterTreeCluster[i][j]=0.;
-    }
-  }
-
-}
+  fMergedClusterTreeClusterM20(0)
+{}
 
 //________________________________________________________________________
 AliAnalysisTaskGammaCaloMergedML::AliAnalysisTaskGammaCaloMergedML(const char *name):
@@ -498,12 +485,14 @@ AliAnalysisTaskGammaCaloMergedML::AliAnalysisTaskGammaCaloMergedML(const char *n
   fMinAllowedPi0OverlapsMC(-1),
   fMaxAllowedPi0OverlapsMC(-1),
   fHistoPi0EvsGammaOverlapE(NULL),
+  fMergedClusterCellN(0),
+  fMergedClusterTreeCluster(NULL),
   fMergedClusterTreeClusterType(0),
   fMergedClusterTreeClusterEnergy(0),
   fMergedClusterTreeClusterPt(0),
-  fMergedClusterTreeClusterModNum(0),
-  fMergedClusterTreeClusterXPos(0),
-  fMergedClusterTreeClusterYPos(0),
+  fMergedClusterTreeClusterModNum(NULL),
+  fMergedClusterTreeClusterCol(NULL),
+  fMergedClusterTreeClusterRow(NULL),
   fMergedClusterTreePartIsPrimary(0),
   fMergedClusterTreePartPID(0),
   fMergedClusterTreePartPt(0),
@@ -511,22 +500,14 @@ AliAnalysisTaskGammaCaloMergedML::AliAnalysisTaskGammaCaloMergedML(const char *n
   fMergedClusterTreePartEta(0),
   fMergedClusterTreePartPhi(0),
   fMergedClusterTreeClusterM02(0),
-  fMergedClusterTreeClusterM20(0),
-  fClusterN(0),
-  fRow(NULL),
-  fCol(NULL),
-  fSupMod(NULL),
-  fTiming(NULL),
-  fEnergy(NULL),
-  tClusterTiming(NULL),
-  isTiming(1)
+  fMergedClusterTreeClusterM20(0)
 {
 
-  for(Int_t i=0; i<50; i++){
-    for(Int_t j=0; j<50; j++){
-      fMergedClusterTreeCluster[i][j] = 0.;
-    }
-  }
+  //for(Int_t i=0; i<50; i++){
+  //  for(Int_t j=0; j<50; j++){
+  //    fMergedClusterTreeCluster[i][j] = 0.;
+  //  }
+  //}
 
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -539,7 +520,7 @@ AliAnalysisTaskGammaCaloMergedML::AliAnalysisTaskGammaCaloMergedML(const char *n
   DefineOutput(8, TTree::Class());
   DefineOutput(9, TTree::Class());
   DefineOutput(10, TTree::Class());
-  DefineOutput(11, TTree::Class());
+
 
 }
 
@@ -948,7 +929,13 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
     tTrueMergedCaloClusterPi0                 = new TTree*[fnCuts];
     tTrueMergedCaloClusterEta                 = new TTree*[fnCuts];
     tTrueMergedCaloClusterBck                 = new TTree*[fnCuts];
-    tClusterTiming                            = new TTree*[fnCuts];
+
+    UChar_t MaxClusterCellN = 100;
+    fMergedClusterTreeCluster                 = new Float_t[MaxClusterCellN];
+    fMergedClusterTreeClusterModNum           = new UChar_t[MaxClusterCellN];
+    fMergedClusterTreeClusterCol             = new UChar_t[MaxClusterCellN];
+    fMergedClusterTreeClusterRow             = new UChar_t[MaxClusterCellN];
+
 
     fHistoMCHeaders                               = new TH1I*[fnCuts];
     fHistoMCPi0Pt                                 = new TH1F*[fnCuts];
@@ -1551,35 +1538,16 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
 
       //Adds Trees that hold information for machine learning
 
-      //MaxClusterN = 100;
-      UChar_t MaxClusterN = 100;
-
-      if(isTiming > 0){
-        fRow = new UChar_t[MaxClusterN];
-        fCol = new UChar_t[MaxClusterN];
-        fSupMod = new UChar_t[MaxClusterN];
-        fTiming = new Float_t[MaxClusterN];
-        fEnergy = new Float_t[MaxClusterN];
-
-        tClusterTiming[iCut] = new TTree(Form("%s_%s_%s_%s_Cluster", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()), Form("%s_%s_%s_%s_Cluster", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
-        tClusterTiming[iCut]->Branch("fClusterN", &fClusterN, "fClusterN/b");
-        tClusterTiming[iCut]->Branch("fCol", fCol, "fCol[fClusterN]/b");
-        tClusterTiming[iCut]->Branch("fRow", fRow, "fRow[fClusterN]/b");
-        tClusterTiming[iCut]->Branch("fSupMod", fSupMod, "fSupMod[fClusterN]/b");
-        tClusterTiming[iCut]->Branch("fTiming", fTiming, "fTiming[fClusterN]/F");
-        tClusterTiming[iCut]->Branch("fEnergy", fEnergy, "fEnergy[fClusterN]/F");
-      }
-
-
 
       tTrueMergedCaloClusterPi0[iCut] = new TTree(Form("%s_%s_%s_%s_Pio", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()), Form("%s_%s_%s_%s_Pi0", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
-      tTrueMergedCaloClusterPi0[iCut]->Branch("Cluster",             fMergedClusterTreeCluster, "Cluster[50][50]/F");
+      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterCellN", &fMergedClusterCellN, "ClusterCellN/b");
+      tTrueMergedCaloClusterPi0[iCut]->Branch("Cluster",             fMergedClusterTreeCluster, "Cluster[fMergedClusterCellN]/F");
       tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterType",         &fMergedClusterTreeClusterType,"ClusterType/b");
       tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterE",            &fMergedClusterTreeClusterEnergy, "ClusterE/F");
       tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterPt",           &fMergedClusterTreeClusterPt, "ClusterPt/F");
-      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterModuleNumber", &fMergedClusterTreeClusterModNum, "ClusterModuleNumber/b");
-      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterX",            &fMergedClusterTreeClusterXPos, "ClusterX/b");
-      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterY",            &fMergedClusterTreeClusterYPos, "ClusterY/b");
+      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterModuleNumber", fMergedClusterTreeClusterModNum, "ClusterModuleNumber[fMergedClusterCellN]/b");
+      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterCol",            fMergedClusterTreeClusterCol, "ClusterCol[fMergedClusterCellN]/b");
+      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterRow",            fMergedClusterTreeClusterRow, "ClusterRow[fMergedClusterCellN]/b");
       tTrueMergedCaloClusterPi0[iCut]->Branch("PartIsPrimary",       &fMergedClusterTreePartIsPrimary, "PartIsPrimary/O");
       tTrueMergedCaloClusterPi0[iCut]->Branch("PartPID",             &fMergedClusterTreePartPID, "PartPID/S");
       tTrueMergedCaloClusterPi0[iCut]->Branch("PartPt",              &fMergedClusterTreePartPt, "PartPt/F");
@@ -1591,14 +1559,15 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
 
 
       tTrueMergedCaloClusterEta[iCut] = new TTree(Form("%s_%s_%s_%s_Eta", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()), Form("%s_%s_%s_%s_Eta", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
-      tTrueMergedCaloClusterEta[iCut]->Branch("Cluster",             fMergedClusterTreeCluster, "Cluster[50][50]/F");
+      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterCellN", &fMergedClusterCellN, "ClusterCellN/b");
+      tTrueMergedCaloClusterEta[iCut]->Branch("Cluster",             fMergedClusterTreeCluster, "Cluster[fMergedClusterCellN]/F");
       tTrueMergedCaloClusterEta[iCut]->Branch("ClusterType",         &fMergedClusterTreeClusterType,"ClusterType/b");
       tTrueMergedCaloClusterEta[iCut]->Branch("ClusterE",            &fMergedClusterTreeClusterEnergy, "ClusterE/F");
       tTrueMergedCaloClusterEta[iCut]->Branch("ClusterPt",           &fMergedClusterTreeClusterPt, "ClusterPt/F");
-      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterModuleNumber", &fMergedClusterTreeClusterModNum, "ClusterModuleNumber/b");
-      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterX",            &fMergedClusterTreeClusterXPos, "ClusterX/b");
-      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterY",            &fMergedClusterTreeClusterYPos, "ClusterY/b");
-      tTrueMergedCaloClusterEta[iCut]->Branch("IsPrimary",           &fMergedClusterTreePartIsPrimary, "IsPrimary/O");
+      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterModuleNumber", fMergedClusterTreeClusterModNum, "ClusterModuleNumber[fMergedClusterCellN]/b");
+      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterCol",            fMergedClusterTreeClusterCol, "ClusterCol[fMergedClusterCellN]/b");
+      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterRow",            fMergedClusterTreeClusterRow, "ClusterRow[fMergedClusterCellN]/b");
+      tTrueMergedCaloClusterEta[iCut]->Branch("PartIsPrimary",           &fMergedClusterTreePartIsPrimary, "PartIsPrimary/O");
       tTrueMergedCaloClusterEta[iCut]->Branch("PartPID",             &fMergedClusterTreePartPID, "PartPID/S");
       tTrueMergedCaloClusterEta[iCut]->Branch("PartPt",              &fMergedClusterTreePartPt, "PartPt/F");
       tTrueMergedCaloClusterEta[iCut]->Branch("PartE",               &fMergedClusterTreePartE, "PartE/F");
@@ -1611,13 +1580,14 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
 
 
       tTrueMergedCaloClusterBck[iCut] = new TTree(Form("%s_%s_%s_%s_Bck", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()), Form("%s_%s_%s_%s_Bck", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
-      tTrueMergedCaloClusterBck[iCut]->Branch("Cluster",             fMergedClusterTreeCluster, "Cluster[50][50]/F");
+      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterCellN", &fMergedClusterCellN, "ClusterCellN/b");
+      tTrueMergedCaloClusterBck[iCut]->Branch("Cluster",             fMergedClusterTreeCluster, "Cluster[fMergedClusterCellN]/F");
       tTrueMergedCaloClusterBck[iCut]->Branch("ClusterType",         &fMergedClusterTreeClusterType,"ClusterType/b");
       tTrueMergedCaloClusterBck[iCut]->Branch("ClusterE",            &fMergedClusterTreeClusterEnergy, "ClusterE/F");
       tTrueMergedCaloClusterBck[iCut]->Branch("ClusterPt",           &fMergedClusterTreeClusterPt, "ClusterPt/F");
-      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterModuleNumber", &fMergedClusterTreeClusterModNum, "ClusterModuleNumber/b");
-      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterX",            &fMergedClusterTreeClusterXPos, "ClusterX/b");
-      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterY",            &fMergedClusterTreeClusterYPos, "ClusterY/b");
+      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterModuleNumber", fMergedClusterTreeClusterModNum, "ClusterModuleNumber[fMergedClusterCellN]/b");
+      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterCol",            fMergedClusterTreeClusterCol, "ClusterCol[fMergedClusterCellN]/b");
+      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterRow",            fMergedClusterTreeClusterRow, "ClusterRow[fMergedClusterCellN]/b");
       tTrueMergedCaloClusterBck[iCut]->Branch("PartPID",             &fMergedClusterTreePartPID, "PartPID/S");
       tTrueMergedCaloClusterBck[iCut]->Branch("PartPt",              &fMergedClusterTreePartPt, "PartPt/F");
       tTrueMergedCaloClusterBck[iCut]->Branch("PartE",               &fMergedClusterTreePartE, "PartE/F");
@@ -1705,13 +1675,7 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
     }
     nContainerOutput++;
   }
-  for(Int_t iCut=0; iCut<fnCuts; iCut++){
-    if(fIsMC>0 && isTiming>0){
-      OpenFile(nContainerOutput);
-      PostData(nContainerOutput, tClusterTiming[iCut]);
-    }
-    nContainerOutput++;
-  }
+
 
 }
 //_____________________________________________________________________________
@@ -2221,29 +2185,7 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessClusters(){
       }
     } // meson is selected
 
-    if(fIsMC>0 && isTiming>0){
 
-      AliVCaloCells* cells  = 0x0;
-      cells = InputEvent()->GetEMCALCells();
-      fClusterN = clus->GetNCells();
-      Int_t tempcol, temprow, tempsup;
-
-      if(fClusterN > 99) return;
-      for (Int_t iCell=0; iCell < fClusterN; ++iCell){
-        Int_t cellAbsID = clus->GetCellsAbsId()[iCell];
-        tempsup = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetModuleNumberAndCellPosition(cellAbsID, tempcol, temprow);
-
-        fCol[iCell] = tempcol;
-        fRow[iCell] = temprow;
-        fSupMod[iCell] = tempsup;
-
-        fEnergy[iCell] = cells->GetCellAmplitude(cellAbsID);
-        fTiming[iCell] = cells->GetCellTime(cellAbsID);
-      }
-
-      tClusterTiming[fiCut]->Fill();
-
-    }
 
     delete pi0cand;
     delete clusSub1;
@@ -2672,38 +2614,59 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
                                     AliAODConversionPhoton *TrueSubClusterCandidate2)
 {
   Float_t m02 = cluster->GetM02();
+
+  // Fill tree variables
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
-
-
-  //Some Tree Variables
   TLorentzVector clusVec;
   Double_t vert[3] = {mcProdVtxX,mcProdVtxY,mcProdVtxZ};
   cluster->GetMomentum(clusVec, vert);
+
+
   fMergedClusterTreeClusterPt = clusVec.Pt();
   fMergedClusterTreeClusterEnergy = cluster->E();
   fMergedClusterTreeClusterM02 = m02;
   fMergedClusterTreeClusterM20 = cluster->GetM20();
+
 
   fMergedClusterTreePartPt = TrueClusterCandidate->Pt();
   fMergedClusterTreePartE = TrueClusterCandidate->E();
   fMergedClusterTreePartEta = TrueClusterCandidate->Eta();
   fMergedClusterTreePartPhi = TrueClusterCandidate->Phi();
 
-  GetClusterReadout(cluster, fInputEvent, fMergedClusterTreeCluster);
 
-  Int_t tempXPos=0;
-  Int_t tempYPos=0;
-  Int_t tempModNum=0;
-  Int_t Cellid = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(cluster, fInputEvent);
+  AliVCaloCells* cells  = 0x0;
+  cells = InputEvent()->GetEMCALCells();
+  fMergedClusterCellN = cluster->GetNCells();
+  if(fMergedClusterCellN > 99) return;
 
-  tempModNum = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetModuleNumberAndCellPosition(Cellid, tempXPos, tempYPos);
-  fMergedClusterTreeClusterModNum = tempModNum;
-  fMergedClusterTreeClusterXPos = tempXPos;
-  fMergedClusterTreeClusterYPos = tempYPos;
+  Int_t tempcol, temprow, tempsup;
+  for (Int_t iCell=0; iCell < fMergedClusterCellN; ++iCell){
+        Int_t cellAbsID = cluster->GetCellsAbsId()[iCell];
+        tempsup = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetModuleNumberAndCellPosition(cellAbsID, tempcol, temprow);
+
+        fMergedClusterTreeClusterCol[iCell] = tempcol;
+        fMergedClusterTreeClusterRow[iCell] = temprow;
+        fMergedClusterTreeClusterModNum[iCell] = tempsup;
+
+        fMergedClusterTreeCluster[iCell] = cells->GetCellAmplitude(cellAbsID);
+      }
+
+
+  //GetClusterReadout(cluster, fInputEvent, fMergedClusterTreeCluster);
+
+  //Int_t tempXPos=0;
+  //Int_t tempYPos=0;
+  //Int_t tempModNum=0;
+  //Int_t Cellid = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(cluster, fInputEvent);
+
+  //tempModNum = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetModuleNumberAndCellPosition(Cellid, tempXPos, tempYPos);
+  //fMergedClusterTreeClusterModNum = tempModNum;
+  //fMergedClusterTreeClusterCol = tempXPos;
+  //fMergedClusterTreeClusterRow = tempYPos;
 
   Double_t tempClusterWeight       = fWeightJetJetMC;
   AliAODMCParticle *Photon = NULL;
@@ -2853,7 +2816,6 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
 	    fMergedClusterTreePartIsPrimary = 1;
 	  }
 	  tTrueMergedCaloClusterPi0[fiCut]->Fill();
-	  ResetBuffer();
         }
         if (motherPDG == 221) {//Eta
 	  fHistoTrueClusMergedPureFromEtaPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
@@ -2864,7 +2826,6 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
 	    fMergedClusterTreePartIsPrimary = 1;
 	  }
 	  tTrueMergedCaloClusterEta[fiCut]->Fill();
-	  ResetBuffer();
 	}
       } else if (clusterClass == 1 && TrueClusterCandidate->IsMergedPartConv()){
         if (motherPDG == 111){//Pi0
@@ -2879,7 +2840,6 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
 	    fMergedClusterTreePartIsPrimary = 1;
 	  }
 	  tTrueMergedCaloClusterPi0[fiCut]->Fill();
-	  ResetBuffer();
         }
         if (motherPDG == 221){//Eta
           fHistoTrueClusMergedPartConvFromEtaPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
@@ -2890,7 +2850,6 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
 	    fMergedClusterTreePartIsPrimary = 1;
 	  }
 	  tTrueMergedCaloClusterEta[fiCut]->Fill();
-	  ResetBuffer();
 	}
       } else if (clusterClass == 2){//2
         if (motherPDG == 111){//Pi0
@@ -2905,7 +2864,6 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
 	    fMergedClusterTreePartIsPrimary = 1;
 	  }
 	  tTrueMergedCaloClusterPi0[fiCut]->Fill();
-	  ResetBuffer();
         } if (motherPDG == 221){//Eta
           fHistoTrueClusGammaFromEtaPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
 	  fMergedClusterTreeClusterType = clusterClass;
@@ -2915,7 +2873,6 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
 	    fMergedClusterTreePartIsPrimary = 1;
 	  }
 	  tTrueMergedCaloClusterEta[fiCut]->Fill();
-	  ResetBuffer();
 	}
       } else if (clusterClass == 3){//3
         if (motherPDG == 111) {//Pi0
@@ -2930,7 +2887,6 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
 	    fMergedClusterTreePartIsPrimary = 1;
 	  }
 	  tTrueMergedCaloClusterPi0[fiCut]->Fill();
-	  ResetBuffer();
         }
         if (motherPDG == 221){//eta
           fHistoTrueClusElectronFromEtaPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, tempClusterWeight);
@@ -2941,7 +2897,6 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
 	    fMergedClusterTreePartIsPrimary = 1;
 	  }
 	  tTrueMergedCaloClusterEta[fiCut]->Fill();
-	  ResetBuffer();
 	}
       }
 
@@ -3083,7 +3038,6 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
       fMergedClusterTreeClusterType = clusterClass;
       fMergedClusterTreePartPID = motherPDG;
       tTrueMergedCaloClusterBck[fiCut]->Fill();
-      ResetBuffer();
 
       if (fDoMesonQA > 0){
         fHistoTrueClusGammaEM02[fiCut]->Fill(TrueClusterCandidate->E(), m02, tempClusterWeight);
@@ -3121,7 +3075,6 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
       fMergedClusterTreeClusterType = clusterClass;
       fMergedClusterTreePartPID = motherPDG;
       tTrueMergedCaloClusterBck[fiCut]->Fill();
-      ResetBuffer();
 
       if (fDoMesonQA > 0){
         fHistoTrueClusElectronEM02[fiCut]->Fill(TrueClusterCandidate->E(), m02, tempClusterWeight);
@@ -3163,7 +3116,6 @@ void AliAnalysisTaskGammaCaloMergedML::ProcessTrueClusterCandidatesAOD(AliAODCon
       fMergedClusterTreeClusterType = clusterClass;
       fMergedClusterTreePartPID = TMath::Abs(pdgCodeParticle);
       tTrueMergedCaloClusterBck[fiCut]->Fill();
-      ResetBuffer();
 
       if(fDoMesonQA > 1){
         fHistoTrueClusBGEvsM02[fiCut]->Fill(TrueClusterCandidate->E(), m02, tempClusterWeight);
@@ -4061,31 +4013,4 @@ void AliAnalysisTaskGammaCaloMergedML::GetClusterReadout(AliVCluster* cluster, A
   //  }
   //std::cout<<"\n";
   //}
-}
-
-
-
-
-
-void AliAnalysisTaskGammaCaloMergedML::ResetBuffer(){
-  fMergedClusterTreeClusterType = 0;
-  fMergedClusterTreeClusterEnergy = 0;
-  fMergedClusterTreeClusterPt = 0;
-  fMergedClusterTreeClusterXPos = 0;
-  fMergedClusterTreeClusterYPos = 0;
-  fMergedClusterTreeClusterModNum = 0;
-  fMergedClusterTreePartIsPrimary = 0;
-  fMergedClusterTreePartPID = 0;
-  fMergedClusterTreePartPt = 0;
-  fMergedClusterTreePartE = 0;
-  fMergedClusterTreePartEta = 0;
-  fMergedClusterTreePartPhi = 0;
-  fMergedClusterTreeClusterM02 = 0;
-  fMergedClusterTreeClusterM20 = 0;
-
-  for(Int_t i=0; i<50; i++){
-    for(Int_t j=0; j<50; j++){
-      fMergedClusterTreeCluster[i][j] = 0.;
-    }
-  }
 }

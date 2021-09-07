@@ -2052,12 +2052,7 @@ void AddTask_GammaCaloMergedML_pp(
     }
   }
 
-  for(Int_t i = 0; i<numberOfCuts; i++){
-    if(isMC>0){
-      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s_Cluster",(cuts.GetEventCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetClusterMergedCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaCaloMergedML_%i.root",trainConfig)) );
-      nContainer++;
-    }
-  }
+
 
   return;
 }
