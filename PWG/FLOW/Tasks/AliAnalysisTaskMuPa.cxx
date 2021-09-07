@@ -2534,7 +2534,7 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliVParticle *vParticle,
   if(fParticleHist[ba][rs][Chi2TPCConstrainedVsGlobal]){fParticleHist[ba][rs][Chi2TPCConstrainedVsGlobal]->Fill(aodTrack->GetChi2TPCConstrainedVsGlobal());}
   if(fParticleHist[ba][rs][ITSNcls]){fParticleHist[ba][rs][ITSNcls]->Fill(aodTrack->GetITSNcls());}
   if(fParticleHist[ba][rs][ITSChi2perNDF]){if(TMath::Abs(aodTrack->GetITSNcls())>0.){fParticleHist[ba][rs][ITSChi2perNDF]->Fill(aodTrack->GetITSchi2()/aodTrack->GetITSNcls());}}
-  if(fParticleHist[ba][rs][TPCNclsF]){fParticleHist[ba][rs][TPCNclsF]->Fill(aodTrack->GetTPCNclsF());}}
+  if(fParticleHist[ba][rs][TPCNclsF]){fParticleHist[ba][rs][TPCNclsF]->Fill(aodTrack->GetTPCNclsF());}
   if(fParticleHist[ba][rs][HasPointOnITSLayer])
   {
    for(Int_t l=1;l<=6;l++) // loop over ITS layers
@@ -2553,6 +2553,7 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliVParticle *vParticle,
     fParticleHist[ba][rs][IsGlobalConstrained]->Fill(1.44); // keep in sync. with the booking of this histogram
    }  
   }
+ } // if(aodTrack)
 
  // c) Fill histograms for AOD MC particle:
  if(aodmcParticle)
