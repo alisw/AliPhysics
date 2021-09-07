@@ -933,8 +933,8 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
     UChar_t MaxClusterCellN = 100;
     fMergedClusterTreeCluster                 = new Float_t[MaxClusterCellN];
     fMergedClusterTreeClusterModNum           = new UChar_t[MaxClusterCellN];
-    fMergedClusterTreeClusterCol             = new UChar_t[MaxClusterCellN];
-    fMergedClusterTreeClusterRow             = new UChar_t[MaxClusterCellN];
+    fMergedClusterTreeClusterCol              = new UChar_t[MaxClusterCellN];
+    fMergedClusterTreeClusterRow              = new UChar_t[MaxClusterCellN];
 
 
     fHistoMCHeaders                               = new TH1I*[fnCuts];
@@ -1541,13 +1541,13 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
 
       tTrueMergedCaloClusterPi0[iCut] = new TTree(Form("%s_%s_%s_%s_Pio", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()), Form("%s_%s_%s_%s_Pi0", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
       tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterCellN", &fMergedClusterCellN, "ClusterCellN/b");
-      tTrueMergedCaloClusterPi0[iCut]->Branch("Cluster",             fMergedClusterTreeCluster, "Cluster[fMergedClusterCellN]/F");
+      tTrueMergedCaloClusterPi0[iCut]->Branch("Cluster",             fMergedClusterTreeCluster, "Cluster[ClusterCellN]/F");
       tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterType",         &fMergedClusterTreeClusterType,"ClusterType/b");
       tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterE",            &fMergedClusterTreeClusterEnergy, "ClusterE/F");
       tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterPt",           &fMergedClusterTreeClusterPt, "ClusterPt/F");
-      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterModuleNumber", fMergedClusterTreeClusterModNum, "ClusterModuleNumber[fMergedClusterCellN]/b");
-      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterCol",            fMergedClusterTreeClusterCol, "ClusterCol[fMergedClusterCellN]/b");
-      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterRow",            fMergedClusterTreeClusterRow, "ClusterRow[fMergedClusterCellN]/b");
+      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterModuleNumber", fMergedClusterTreeClusterModNum, "ClusterModuleNumber[ClusterCellN]/b");
+      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterCol",            fMergedClusterTreeClusterCol, "ClusterCol[ClusterCellN]/b");
+      tTrueMergedCaloClusterPi0[iCut]->Branch("ClusterRow",            fMergedClusterTreeClusterRow, "ClusterRow[ClusterCellN]/b");
       tTrueMergedCaloClusterPi0[iCut]->Branch("PartIsPrimary",       &fMergedClusterTreePartIsPrimary, "PartIsPrimary/O");
       tTrueMergedCaloClusterPi0[iCut]->Branch("PartPID",             &fMergedClusterTreePartPID, "PartPID/S");
       tTrueMergedCaloClusterPi0[iCut]->Branch("PartPt",              &fMergedClusterTreePartPt, "PartPt/F");
@@ -1560,13 +1560,13 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
 
       tTrueMergedCaloClusterEta[iCut] = new TTree(Form("%s_%s_%s_%s_Eta", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()), Form("%s_%s_%s_%s_Eta", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
       tTrueMergedCaloClusterEta[iCut]->Branch("ClusterCellN", &fMergedClusterCellN, "ClusterCellN/b");
-      tTrueMergedCaloClusterEta[iCut]->Branch("Cluster",             fMergedClusterTreeCluster, "Cluster[fMergedClusterCellN]/F");
+      tTrueMergedCaloClusterEta[iCut]->Branch("Cluster",             fMergedClusterTreeCluster, "Cluster[ClusterCellN]/F");
       tTrueMergedCaloClusterEta[iCut]->Branch("ClusterType",         &fMergedClusterTreeClusterType,"ClusterType/b");
       tTrueMergedCaloClusterEta[iCut]->Branch("ClusterE",            &fMergedClusterTreeClusterEnergy, "ClusterE/F");
       tTrueMergedCaloClusterEta[iCut]->Branch("ClusterPt",           &fMergedClusterTreeClusterPt, "ClusterPt/F");
-      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterModuleNumber", fMergedClusterTreeClusterModNum, "ClusterModuleNumber[fMergedClusterCellN]/b");
-      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterCol",            fMergedClusterTreeClusterCol, "ClusterCol[fMergedClusterCellN]/b");
-      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterRow",            fMergedClusterTreeClusterRow, "ClusterRow[fMergedClusterCellN]/b");
+      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterModuleNumber", fMergedClusterTreeClusterModNum, "ClusterModuleNumber[ClusterCellN]/b");
+      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterCol",            fMergedClusterTreeClusterCol, "ClusterCol[ClusterCellN]/b");
+      tTrueMergedCaloClusterEta[iCut]->Branch("ClusterRow",            fMergedClusterTreeClusterRow, "ClusterRow[ClusterCellN]/b");
       tTrueMergedCaloClusterEta[iCut]->Branch("PartIsPrimary",           &fMergedClusterTreePartIsPrimary, "PartIsPrimary/O");
       tTrueMergedCaloClusterEta[iCut]->Branch("PartPID",             &fMergedClusterTreePartPID, "PartPID/S");
       tTrueMergedCaloClusterEta[iCut]->Branch("PartPt",              &fMergedClusterTreePartPt, "PartPt/F");
@@ -1581,13 +1581,13 @@ void AliAnalysisTaskGammaCaloMergedML::UserCreateOutputObjects(){
 
       tTrueMergedCaloClusterBck[iCut] = new TTree(Form("%s_%s_%s_%s_Bck", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()), Form("%s_%s_%s_%s_Bck", cutstringEvent.Data(), cutstringCalo.Data(), cutstringCaloMerged.Data(), cutstringMeson.Data()));
       tTrueMergedCaloClusterBck[iCut]->Branch("ClusterCellN", &fMergedClusterCellN, "ClusterCellN/b");
-      tTrueMergedCaloClusterBck[iCut]->Branch("Cluster",             fMergedClusterTreeCluster, "Cluster[fMergedClusterCellN]/F");
+      tTrueMergedCaloClusterBck[iCut]->Branch("Cluster",             fMergedClusterTreeCluster, "Cluster[ClusterCellN]/F");
       tTrueMergedCaloClusterBck[iCut]->Branch("ClusterType",         &fMergedClusterTreeClusterType,"ClusterType/b");
       tTrueMergedCaloClusterBck[iCut]->Branch("ClusterE",            &fMergedClusterTreeClusterEnergy, "ClusterE/F");
       tTrueMergedCaloClusterBck[iCut]->Branch("ClusterPt",           &fMergedClusterTreeClusterPt, "ClusterPt/F");
-      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterModuleNumber", fMergedClusterTreeClusterModNum, "ClusterModuleNumber[fMergedClusterCellN]/b");
-      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterCol",            fMergedClusterTreeClusterCol, "ClusterCol[fMergedClusterCellN]/b");
-      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterRow",            fMergedClusterTreeClusterRow, "ClusterRow[fMergedClusterCellN]/b");
+      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterModuleNumber", fMergedClusterTreeClusterModNum, "ClusterModuleNumber[ClusterCellN]/b");
+      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterCol",            fMergedClusterTreeClusterCol, "ClusterCol[ClusterCellN]/b");
+      tTrueMergedCaloClusterBck[iCut]->Branch("ClusterRow",            fMergedClusterTreeClusterRow, "ClusterRow[ClusterCellN]/b");
       tTrueMergedCaloClusterBck[iCut]->Branch("PartPID",             &fMergedClusterTreePartPID, "PartPID/S");
       tTrueMergedCaloClusterBck[iCut]->Branch("PartPt",              &fMergedClusterTreePartPt, "PartPt/F");
       tTrueMergedCaloClusterBck[iCut]->Branch("PartE",               &fMergedClusterTreePartE, "PartE/F");
