@@ -138,12 +138,15 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual TComplex Q(Int_t n, Int_t p);
   virtual TComplex One(Int_t n1);
   virtual TComplex Two(Int_t n1, Int_t n2);
+  virtual TComplex Three(Int_t n1, Int_t n2, Int_t n3);
+  virtual TComplex Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4);
 
   // 5) Setters and getters:
   void SetRealData(Bool_t rd){this->fRealData = rd;};
   void SetUseFisherYates(Bool_t ufy){this->fUseFisherYates = ufy;};
   void SetDataTakingPeriod(const char *dtp) {this->fDataTakingPeriod = dtp;};
   void SetAODNumber(const char *an) {this->fAODNumber = an;};
+  void SetRunNumber(const char *rn) {this->fRunNumber = rn;};
   void SetVerbose(Bool_t v) {this->fVerbose = v;};
   void SetRandomSeed(UInt_t rs) {this->fRandomSeed = rs;};
   void SetTrigger(const char *t) {this->fTrigger = t; this->fUseTrigger = kTRUE;};
@@ -489,7 +492,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TArrayI *fRandomIndices; // array to store random indices obtained from Fisher-Yates algorithm 
   TString fTaskName; // e.g. Form("Task=>%.1f-%.1f",centrMin,centrMax)
   TString fDataTakingPeriod; // the data taking period, use e.g. task->SetDataTakingPeriod("LHC10h")
-  TString fAODNumber; // the AOD number, use e.g. task->SetPeriod("AOD160") (for "LHC10h")
+  TString fAODNumber; // the AOD number, use e.g. task->SetAODNumber("AOD160")
+  TString fRunNumber; // the run number, use e.g. task->SetRunNumber("000123456"). For sim, strip off 000 
   Bool_t fFillQAHistograms; // fill QA histograms (this shall be done only in one task, since these histos are heavy 2D objects). Additional loops over particles is performed.
   Bool_t fFillQAHistogramsAll; // if kFALSE, only most important QA histograms a filled
   Bool_t fTerminateAfterQA; // in UserExec(), bail out immediately after QA histograms are filled 
@@ -574,9 +578,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   //    Kinematics:
   TH1D *fKinematicsHist[2][2][gKinematicVariables]; // kinematics [before,after track cuts][reco,sim][phi,pt,eta,energy,charge]
   Double_t fKinematicsBins[gKinematicVariables][3]; // [phi,pt,eta,energy,charge][nBins,min,max]
-  Int_t fNonEqualKinematicsnBins[gKinematicVariables]; // [phi,pt,eta,energy,charge] just nBins
-  TArrayD fNonEqualKinematicsRanges[gKinematicVariables]; // [phi,pt,eta,energy,charge] bin ranges
-  Bool_t fUseNonEqualKinematicsBins[gKinematicVariables]; // kFALSE by default. In that case, equal-sized bins are used
+  Int_t fNonEqualKinematicsnBins[gKinematicVariables]; // [phi,pt,eta,energy,charge] just nBins -> TBI most likely, I won't ever need this, remove
+  TArrayD fNonEqualKinematicsRanges[gKinematicVariables]; // [phi,pt,eta,energy,charge] bin ranges -> TBI most likely, I won't ever need this, remove
+  Bool_t fUseNonEqualKinematicsBins[gKinematicVariables]; // kFALSE by default. In that case, equal-sized bins are used -> TBI most likely, I won't ever need this, remove
   Double_t fKinematicsCuts[gKinematicVariables][2]; // [phi,pt,eta,energy,charge][min,max]
   Bool_t fUseKinematicsCuts[gKinematicVariables];   // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
   //    DCA:
