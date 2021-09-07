@@ -32,7 +32,7 @@
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliAnalysisManager.h"
-#include "AliCentrality.h"
+#include "AliMultSelection.h"
 #include "AliStack.h"
 #include "TFile.h"
 
@@ -915,10 +915,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsEvent(AliVEven
   fGetNumberOfCascadesHist->Fill(aAOD->GetNumberOfCascades()); // TBI not validated
   fGetMagneticFieldHist->Fill(aAOD->GetMagneticField()); // TBI not validated
   fGetEventTypeHist->Fill(aAOD->GetEventType()); // TBI not validated
-  if(aAOD->GetCentrality())
-  {
-   fGetCentralityHist->Fill(aAOD->GetCentrality()->GetCentralityPercentile("V0M")); // TBI not validated
-  }
+  AliMultSelection *ams = (AliMultSelection*)aAOD->FindListObject("MultSelection");
+  if(!ams){cout<<__LINE__<<endl;exit(1);}
+  fGetCentralityHist->Fill(ams->GetMultiplicityPercentile("V0M")); 
+
   // AOD primary vertex:
   AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
   fVertexXYZ[0]->Fill(avtx->GetX());
