@@ -196,6 +196,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
 
     fHist_Tracklet(0),
 
+    fNsigma_Electron(0),
+    fNsigma_Hadron(0),
 
     //---- MC data ----//
     fMCcheckMother(0),
@@ -458,6 +460,9 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
 
     fHist_Tracklet(0),
 
+    fNsigma_Electron(0),
+    fNsigma_Hadron(0),
+
 
     //---- MC data ----//
     fMCcheckMother(0),
@@ -653,7 +658,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNevents->GetXaxis()->SetBinLabel(8,"tracklet class");
     
   //Primary Zvertex vs. SPD Zvertex
-    fVtxCorrelation = new TH2F("fVtxCorrelation",";Z_{vertex}^{Primary} (cm);Z_{vertex}^{SPD} (cm)",1200,-30,30,1200,-30,30);
+    fVtxCorrelation = new TH2F("fVtxCorrelation",";Z_{vertex}^{Primary} (cm);Z_{vertex}^{SPD} (cm)",600,-30,30,600,-30,30);
     fOutputList->Add(fVtxCorrelation);
 
   //Number of contribution
@@ -665,7 +670,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fCent);
 
   //Multiplicity
-    fMult = new TH2F("fMult","Track multiplicity;centrality(%);",100,0,100,20000,0,20000);
+    fMult = new TH2F("fMult","Track multiplicity;centrality(%);",100,0,100,2000,0,2000);
     fOutputList->Add(fMult);
 
   //Zvertex  
@@ -685,11 +690,11 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fVtxY);
 
   //Z vertex vs N tracklets
-    fZvtx_Ntrklet = new TH2F("fZvtx_Ntrklet","Zvertex vs N tracklets;Z_{vertex} [cm];N^{SPD}_{tracklets}",400,-20,20,4001,-0.5,4000.5);
+    fZvtx_Ntrklet = new TH2F("fZvtx_Ntrklet","Zvertex vs N tracklets;Z_{vertex} [cm];N^{SPD}_{tracklets}",400,-20,20,401,-0.5,400.5);
     fOutputList->Add(fZvtx_Ntrklet);
 
   //Z vertex vs N tracklets (Corrected)
-    fZvtx_Ntrklet_Corr = new TH2F("fZvtx_Ntrklet_Corr","Zvertex vs N tracklets (Corrected);Z_{vertex} [cm];N^{SPD}_{tracklets}",400,-20,20,4001,-0.5,4000.5);
+    fZvtx_Ntrklet_Corr = new TH2F("fZvtx_Ntrklet_Corr","Zvertex vs N tracklets (Corrected);Z_{vertex} [cm];N^{SPD}_{tracklets}",400,-20,20,401,-0.5,400.5);
     fOutputList->Add(fZvtx_Ntrklet_Corr);
 
   //EMCal Cluster Eta and Phi
@@ -773,8 +778,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fTOFnsig);
 
   //ITS Nsigma distribution (electron)
-    fITSnsig = new TH2F("fITSnsig","All track ITS Nsigma distribution (electron);p (GeV/c);n^{ITS}_{#sigma_{electron}}",300,0,15,200,-10,10);
-    fOutputList->Add(fITSnsig);
+    //fITSnsig = new TH2F("fITSnsig","All track ITS Nsigma distribution (electron);p (GeV/c);n^{ITS}_{#sigma_{electron}}",300,0,15,200,-10,10);
+    //fOutputList->Add(fITSnsig);
 
   //TPC Nsigma vs. Eta (pT > 2 GeV/c)
     fTPCnsigEta0 = new TH2F("fTPCnsigEta0","TPC Nsigma (electron) vs. Eta;#eta;n^{TPC}_{#sigma_{electron}}",40,-1,1,200,-10,10);
@@ -833,8 +838,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fTOFnsig_2);
 
   //ITS Nsigma distribution (after track cut)
-    fITSnsig_2 = new TH2F("fITSnsig_2","ITS Nsigma distribution (after track cut);p (GeV/c);n^{ITS}_{#sigma_{electron}}",300,0,15,200,-10,10);
-    fOutputList->Add(fITSnsig_2);
+    //fITSnsig_2 = new TH2F("fITSnsig_2","ITS Nsigma distribution (after track cut);p (GeV/c);n^{ITS}_{#sigma_{electron}}",300,0,15,200,-10,10);
+    //fOutputList->Add(fITSnsig_2);
 
   //TPC CrossedRows (after track cut)
     fTPCCrossedRow_2 = new TH1F("fTPCCrossedRow_2","No of TPC CrossedRow; N^{ITS}_{CrossedRow}; counts",200,0.,200.); 
@@ -989,7 +994,14 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fHist_Tracklet = new TH1F("fHist_Tracklet","fHist_Tracklet", 300,0,300);
     fOutputList->Add(fHist_Tracklet);
     
+  
+  //Check Nsigma (electron)
+    fNsigma_Electron = new TH2F("fNsigma_Electron","fNsigma_Electron;p_{T} [GeV/c];n^{TPC}_{#sigma}",600,0,30,200,-10,10);
+    fOutputList->Add(fNsigma_Electron);
 
+  //Check Nsigma (Hadron)
+    fNsigma_Hadron = new TH2F("fNsigma_Hadron","fNsigma_Hadron;p_{T} [GeV/c];n^{TPC}_{#sigma}",600,0,30,200,-10,10);
+    fOutputList->Add(fNsigma_Hadron);
 
 
 
@@ -1218,7 +1230,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
 
 
   //Tracklet vs. N charged
-    fNtrkletNch = new TH2F("fNtrkletNch","N tracklet (after correction) vs. N charged particle;N_{tracklets}^{corr};N_{ch}",4001,-0.5,4000.5,4001,-0.5,4000.5);
+    fNtrkletNch = new TH2F("fNtrkletNch","N tracklet (after correction) vs. N charged particle;N_{tracklets}^{corr};N_{ch}",401,-0.5,400.5,401,-0.5,400.5);
     fOutputList->Add(fNtrkletNch);
 
   //Tracklet (corrected)
@@ -1226,7 +1238,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fNtrklet_Corr);
 
   //Tracklet vs. N charged (correcte)
-    fNtrkletNch_Corr = new TH2F("fNtrkletNch_Corr","N tracklet (after weight correction) vs. N charged particle;N_{tracklets}^{corr};N_{ch}",4001,-0.5,4000.5,4001,-0.5,4000.5);
+    fNtrkletNch_Corr = new TH2F("fNtrkletNch_Corr","N tracklet (after weight correction) vs. N charged particle;N_{tracklets}^{corr};N_{ch}",401,-0.5,400.5,401,-0.5,400.5);
     fOutputList->Add(fNtrkletNch_Corr);
 
 
@@ -1750,7 +1762,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         ITSnSigma = fpidResponse -> NumberOfSigmasITS(track, AliPID::kElectron);
         fTPCnsig -> Fill(TrkP,TPCnSigma);
         fTOFnsig -> Fill(TrkP,TOFnSigma);
-        fITSnsig -> Fill(TrkP,ITSnSigma);
+        //fITSnsig -> Fill(TrkP,ITSnSigma);
         
         //---- pion ----//
         TPCnSigma_Pi = fpidResponse -> NumberOfSigmasTPC(track, AliPID::kPion);
@@ -1885,7 +1897,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             fdEdx_2    -> Fill(TrkP,dEdx);  //after cut track (P vs dE/dx)
             fTPCnsig_2 -> Fill(TrkP,TPCnSigma);
             fTOFnsig_2 -> Fill(TrkP,TOFnSigma);
-            fITSnsig_2 -> Fill(TrkP,ITSnSigma);
+            //fITSnsig_2 -> Fill(TrkP,ITSnSigma);
 	    fTPCCrossedRow_2 -> Fill(TPCCrossedRows);
 
 	
@@ -2088,6 +2100,11 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                 }
 
             }
+
+	    //==== N sigma check ====
+	    if((m20 >= CutM20[0] && m20 <= CutM20[1]) && (eop >= CutEop[0] && eop <= CutEop[1])) fNsigma_Electron->Fill(TrkPt,TPCnSigma);//electron
+	    if(m20 >= 0.5 && eop <= 0.6) fNsigma_Hadron->Fill(TrkPt, TPCnSigma);
+	    
             
         }
 
