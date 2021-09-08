@@ -30,7 +30,7 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   
   void SetParameters(Float_t cutE){cutEta = cutE;}
   Int_t TestPIDTPChypothesis(Float_t e, Float_t m, Float_t p);
-  void AliAnalysisTaskCentralTau::TPCsignalInfo(AliESDtrack *trk, Int_t trkID);
+  void TPCsignalInfo(AliESDtrack *trk, Int_t trkID);
   void SetCrossed(Int_t spd[4], TBits &crossed);
   Int_t GetChipId(Int_t index, Int_t &chipId2, Bool_t debug=0);
   Bool_t IsSTGFired(TBits bits, Int_t dphiMin=4, Int_t dphiMax=10, Bool_t tolerance = 1);
@@ -44,9 +44,11 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   Float_t cutEta;
 
   TList *fOutputList;		//<
+  TList *fOutputPID;   //<
   TH2I *hTriggerCounter;	//!
   TH1I *hParticleTypeCounter; //
   TTree *tTwoTracks;		//!
+  TTree *tPID;    //!
   
   Float_t fPtDaughter[2], fPt, fY, fM, fPhi, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4];
   TLorentzVector fVectDaughter[2];
