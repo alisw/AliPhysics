@@ -158,6 +158,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDisableITSatHighPt{100.f}
    ,fDisableTPCpidAtHighPt{100.f}
    ,fEnablePtCorrection{false}
+   ,fRequireITSrefit{true}
+   ,fRequireTPCrefit{true}
    ,fRequireITSrecPoints{2u}
    ,fRequireTPCrecPoints{0u}
    ,fRequireITSsignal{0u}
@@ -169,6 +171,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireYmin{-0.5f}
    ,fRequireYmax{0.5f}
    ,fRequireMaxChi2{4.f}
+   ,fRequireMaxITSChi2{36.f}
    ,fRequireMaxDCAxy{0.12f}
    ,fRequireMaxDCAz{1.f}
    ,fRequireTPCpidSigmas{3.f}
