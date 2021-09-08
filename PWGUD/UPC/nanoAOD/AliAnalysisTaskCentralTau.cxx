@@ -130,8 +130,13 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
   tTwoTracks ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");
   tTwoTracks ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
   tTwoTracks ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
+  tTwoTracks ->Branch("fPIDpt", &fPIDpt[0], "fPIDpt[2]/F");
+  tTwoTracks ->Branch("fTPCsignal", &fTPCsignal[0], "fTPCsignal[2]/F");
+  tTwoTracks ->Branch("fTOFsignal", &fTOFsignal[0], "fTOFsignal[2]/F");
+  tTwoTracks ->Branch("fTPCmostProbableTrackID", &fTPCmostProbableTrackType[0], "fTPCmostProbableTrackID/I");
+  tTwoTracks ->Branch("fTOFmostProbableTrackID", &fTOFmostProbableTrackType[0], "fTOFmostProbableTrackID/I");
   fOutputList->Add(tTwoTracks);
-  
+
   hTriggerCounter = new TH2I("hTriggerCounter","Number of analyzed UPC triggers per run",3,1,4,3000,295000,298000);
   fOutputList->Add(hTriggerCounter);
   hParticleTypeCounter = new TH1I("hParticleTypeCounter","Electron, Muon, Pion",4,-0.5,3.5);
@@ -298,6 +303,13 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
       Float_t PIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
       Float_t PIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
       Float_t PIDTPCPion = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+      Float_t PIDTPCKaon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+      Float_t PIDTPCProton = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+      Float_t PIDTOFElectron = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
+      Float_t PIDTOFMuon = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
+      Float_t PIDTOFPion = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
+      Float_t PIDTOFKaon = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
+      Float_t PIDTOFProton = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
 
       qTrack[iTrack] = trk->Charge();
 
@@ -379,6 +391,37 @@ Int_t AliAnalysisTaskCentralTau::TestPIDTPChypothesis(Float_t e, Float_t m, Floa
   else if (m < e && m < p) return 2; // It is a muon
   else if (p < e && p < m) return 3; // It is a pion
   else return 0;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskCentralTau::TPCsignalInfo(AliESDtrack *trk, Int_t trkID){
+
+
+//  Float_tfTPCsignal[2],fTOFsignal[2];
+//  Int_t fTPCmostProbableTrackType[2], fTOFmostProbableTrackType[2];
+
+  fPIDpt[trkID] = trk->Pt();
+  fTPCsignal[trkID] = trk->GetTPCsignal();
+  fTOFsignal[trkID] = trk->GetTOFsignal();
+
+  Float_t PIDTPC[5];
+  PIDTPC[0] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+  PIDTPC[1] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+  PIDTPC[2] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+  PIDTPC[3] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+  PIDTPC[4] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+
+  fTPCmostProbableTrackType[trkID] = *std::min_element(PIDTPC, PIDTPC + 5);
+
+  Float_t PIDTOF[5];
+  PIDTOF[0] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
+  PIDTOF[1] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
+  PIDTOF[2] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
+  PIDTOF[3] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
+  PIDTOF[4] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
+
+  fTOFmostProbableTrackType[trkID] = *std::min_element(PIDTOF, PIDTOF + 5);
+
 }
 
 //_____________________________________________________________________________
