@@ -42,6 +42,7 @@ struct MiniLambdaMC : public MiniLambda {
   int pdg;
   bool isPrimary;
   bool isReconstructed;
+  unsigned char flag;
 };
 
 struct MiniCascade {
@@ -82,10 +83,17 @@ struct MiniCascadeMC : public MiniCascade {
   float yMC;
   int pdg;
   bool isReconstructed;
+  unsigned char flag;
 };
 
 class AliAnalysisTaskStrangenessRatios : public AliAnalysisTaskSE {
 public:
+  enum StatusFlag {
+    kPrimary = BIT(0),
+    kSecondaryFromWD = BIT(1),
+    kSecondaryFromMaterial = BIT(2)
+  };
+
   AliAnalysisTaskStrangenessRatios(bool isMC = false, TString taskname = "StrangenessRatios");
   static AliAnalysisTaskStrangenessRatios* AddTask(bool isMC, TString tskname, TString suffix);
   virtual ~AliAnalysisTaskStrangenessRatios();

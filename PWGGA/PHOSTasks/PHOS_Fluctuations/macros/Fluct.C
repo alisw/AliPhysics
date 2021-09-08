@@ -88,7 +88,7 @@ void Fluct(const char* dataset="collection.xml")
   task1->SetPi0PtCut(0.3,1.) ;
   mgr->AddTask(task1);
   
-  AliAnalysisPHOSFluctuations *task2 = new AliAnalysisPHOSFluctuations("PhiFullEtaGPHOSPt03_10");
+  AliAnalysisPHOSFluctuations *task2 = new AliAnalysisPHOSFluctuations("PhiFullEtaGPhosPt03_10");
   task2->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
   task2->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi); 
   task2->SetChargedPtCut(0.3,1.) ;
@@ -98,51 +98,29 @@ void Fluct(const char* dataset="collection.xml")
   task2->SetPi0PtCut(0.3,1.) ;
   mgr->AddTask(task2);
 
-  AliAnalysisPHOSFluctuations *task2a = new AliAnalysisPHOSFluctuations("PhiPHOSEtaGPHOSPt03_10");
-  task2a->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
-  task2a->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kPhosPhi); 
-  task2a->SetChargedPtCut(0.3,1.) ;
-  task2a->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
-  task2a->SetPhotonPtCut(0.3,1.) ;
-  task2a->SetPi0Cut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
-  task2a->SetPi0PtCut(0.3,1.) ;
-  mgr->AddTask(task2a);
-
-  AliAnalysisPHOSFluctuations *task3 = new AliAnalysisPHOSFluctuations("PhiPHOSEtaFullPt03_10");
+  AliAnalysisPHOSFluctuations *task3 = new AliAnalysisPHOSFluctuations("PhiFullEtaPhosPt03_10");
   task3->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
-  task3->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kPhosPhi); 
+  task3->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kFullPhi); 
   task3->SetChargedPtCut(0.3,1.) ;
-  task3->SetPhotonCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kPhosPhi);
+  task3->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kFullPhi);
   task3->SetPhotonPtCut(0.3,1.) ;
-  task3->SetPi0Cut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
+  task3->SetPi0Cut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kFullPhi) ;
   task3->SetPi0PtCut(0.3,1.) ;
   mgr->AddTask(task3);
 
-
-  AliAnalysisPHOSFluctuations *task3a = new AliAnalysisPHOSFluctuations("PhiGPHOSEtaFullPt03_10");
-  task3a->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
-  task3a->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi); 
-  task3a->SetChargedPtCut(0.3,1.) ;
-  task3a->SetPhotonCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kPhosPhi);
-  task3a->SetPhotonPtCut(0.3,1.) ;
-  task3a->SetPi0Cut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
-  task3a->SetPi0PtCut(0.3,1.) ;
-  mgr->AddTask(task3a);
-
-  AliAnalysisPHOSFluctuations *task4 = new AliAnalysisPHOSFluctuations("PhiGPHOSEtaGPHOSPt03_10");
+  AliAnalysisPHOSFluctuations *task4 = new AliAnalysisPHOSFluctuations("PhiPhosEtaFullPt03_10");
   task4->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
-  task4->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi); 
+  task4->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kPhosPhi); 
   task4->SetChargedPtCut(0.3,1.) ;
-  task4->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
+  task4->SetPhotonCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kPhosPhi);
   task4->SetPhotonPtCut(0.3,1.) ;
-  task4->SetPi0Cut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
+  task4->SetPi0Cut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
   task4->SetPi0PtCut(0.3,1.) ;
   mgr->AddTask(task4);
 
-  //pi+- in PHOS rapidity, full Phi
-  AliAnalysisPHOSFluctuations *task5 = new AliAnalysisPHOSFluctuations("PhiGPHOSEtaPHOSPt03_10");
+  AliAnalysisPHOSFluctuations *task5 = new AliAnalysisPHOSFluctuations("PhiPhosEtaGPhosPt03_10");
   task5->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
-  task5->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kFullPhi); 
+  task5->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kPhosPhi); 
   task5->SetChargedPtCut(0.3,1.) ;
   task5->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
   task5->SetPhotonPtCut(0.3,1.) ;
@@ -150,10 +128,9 @@ void Fluct(const char* dataset="collection.xml")
   task5->SetPi0PtCut(0.3,1.) ;
   mgr->AddTask(task5);
 
-  //pi+- in PHOS rapidity, PHOS Phi
-  AliAnalysisPHOSFluctuations *task6 = new AliAnalysisPHOSFluctuations("PhiPHOSEtaPHOSPt03_10");
+  AliAnalysisPHOSFluctuations *task6 = new AliAnalysisPHOSFluctuations("PhiPhosEtaPhosPt03_10");
   task6->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
-  task6->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kFullPhi); 
+  task6->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi); 
   task6->SetChargedPtCut(0.3,1.) ;
   task6->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
   task6->SetPhotonPtCut(0.3,1.) ;
@@ -161,77 +138,164 @@ void Fluct(const char* dataset="collection.xml")
   task6->SetPi0PtCut(0.3,1.) ;
   mgr->AddTask(task6);
 
-  //pi+- in PHOS rapidity, PHOS Phi
-  AliAnalysisPHOSFluctuations *task7 = new AliAnalysisPHOSFluctuations("PhiPHOSEtaPHOSPt04_10");
+  AliAnalysisPHOSFluctuations *task7 = new AliAnalysisPHOSFluctuations("PhiGPhosEtaFullPt03_10");
   task7->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
-  task7->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kFullPhi); 
-  task7->SetChargedPtCut(0.4,1.) ;
-  task7->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
-  task7->SetPhotonPtCut(0.4,1.) ;
-  task7->SetPi0Cut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
-  task7->SetPi0PtCut(0.4,1.) ;
+  task7->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi); 
+  task7->SetChargedPtCut(0.3,1.) ;
+  task7->SetPhotonCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kPhosPhi);
+  task7->SetPhotonPtCut(0.3,1.) ;
+  task7->SetPi0Cut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
+  task7->SetPi0PtCut(0.3,1.) ;
   mgr->AddTask(task7);
 
-  //pi+- in PHOS rapidity, PHOS Phi
-  AliAnalysisPHOSFluctuations *task8 = new AliAnalysisPHOSFluctuations("PhiPHOSEtaPHOSPtPi004_10");
+  AliAnalysisPHOSFluctuations *task8 = new AliAnalysisPHOSFluctuations("PhiGPhosEtaGPhosPt03_10");
   task8->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
-  task8->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kFullPhi); 
-  task8->SetChargedPtCut(0.4,1.) ;
+  task8->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi); 
+  task8->SetChargedPtCut(0.3,1.) ;
   task8->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
-  task8->SetPhotonPtCut(0.4,1.) ;
+  task8->SetPhotonPtCut(0.3,1.) ;
   task8->SetPi0Cut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
-  task8->SetPi0PtCut(0.42,1.) ;
+  task8->SetPi0PtCut(0.3,1.) ;
   mgr->AddTask(task8);
 
-
-  //pi+- in PHOS rapidity, PHOS Phi
-  AliAnalysisPHOSFluctuations *task9 = new AliAnalysisPHOSFluctuations("PhiPHOSEtaPHOSPt02_05");
+  //pi+- in PHOS rapidity, full Phi
+  AliAnalysisPHOSFluctuations *task9 = new AliAnalysisPHOSFluctuations("PhiGPhosEtaPhosPt03_10");
   task9->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
-  task9->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi); 
-  task9->SetChargedPtCut(0.2,0.5) ;
+  task9->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kFullPhi); 
+  task9->SetChargedPtCut(0.3,1.) ;
   task9->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
-  task9->SetPhotonPtCut(0.2,0.5) ;
+  task9->SetPhotonPtCut(0.3,1.) ;
   task9->SetPi0Cut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
-  task9->SetPi0PtCut(0.2,0.5) ;
+  task9->SetPi0PtCut(0.3,1.) ;
   mgr->AddTask(task9);
 
-  //pi+- in PHOS rapidity, PHOS Phi
-  AliAnalysisPHOSFluctuations *task10 = new AliAnalysisPHOSFluctuations("PhiFullEtaFullPt02_05");
+
+
+  AliAnalysisPHOSFluctuations *task10 = new AliAnalysisPHOSFluctuations("PhiFullEtaFullPt04_10");
   task10->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
-  task10->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi); 
-  task10->SetChargedPtCut(0.2,0.5) ;
-  task10->SetPhotonCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi);
-  task10->SetPhotonPtCut(0.2,0.5) ;
-  task10->SetPi0Cut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi) ;
-  task10->SetPi0PtCut(0.2,0.5) ;
+  task10->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kFullPhi); 
+  task10->SetChargedPtCut(0.4,1.) ;
+  task10->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
+  task10->SetPhotonPtCut(0.4,1.) ;
+  task10->SetPi0Cut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
+  task10->SetPi0PtCut(0.4,1.) ;
   mgr->AddTask(task10);
+
+  //pi+- in PHOS rapidity, PHOS Phi
+  AliAnalysisPHOSFluctuations *task11 = new AliAnalysisPHOSFluctuations("PhiPhosEtaPhosPt04_10");
+  task11->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
+  task11->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kFullPhi); 
+  task11->SetChargedPtCut(0.4,1.) ;
+  task11->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
+  task11->SetPhotonPtCut(0.4,1.) ;
+  task11->SetPi0Cut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
+  task11->SetPi0PtCut(0.4,1.) ;
+  mgr->AddTask(task11);
+
+
+  //pi+- in PHOS rapidity, PHOS Phi
+  AliAnalysisPHOSFluctuations *task12 = new AliAnalysisPHOSFluctuations("PhiGPhosEtaPhosPt04_10");
+  task12->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
+  task12->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kFullPhi); 
+  task12->SetChargedPtCut(0.4,1.) ;
+  task12->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
+  task12->SetPhotonPtCut(0.4,1.) ;
+  task12->SetPi0Cut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
+  task12->SetPi0PtCut(0.4,1.) ;
+  mgr->AddTask(task12);
+
+
+  AliAnalysisPHOSFluctuations *task13 = new AliAnalysisPHOSFluctuations("PhiFullEtaFullPt01_03");
+  task13->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
+  task13->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi); 
+  task13->SetChargedPtCut(0.1,0.3) ;
+  task13->SetPhotonCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi);
+  task13->SetPhotonPtCut(0.1,0.3) ;
+  task13->SetPi0Cut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi) ;
+  task13->SetPi0PtCut(0.1,0.3) ;
+  mgr->AddTask(task13);
+
+  AliAnalysisPHOSFluctuations *task14 = new AliAnalysisPHOSFluctuations("PhiPhosEtaPhosPt01_03");
+  task14->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
+  task14->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi); 
+  task14->SetChargedPtCut(0.1,0.3) ;
+  task14->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
+  task14->SetPhotonPtCut(0.1,0.3) ;
+  task14->SetPi0Cut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
+  task14->SetPi0PtCut(0.1,0.3) ;
+  mgr->AddTask(task14);
+
+
+  AliAnalysisPHOSFluctuations *task15 = new AliAnalysisPHOSFluctuations("PhiFullEtaFullPt02_05");
+  task15->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
+  task15->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi); 
+  task15->SetChargedPtCut(0.2,0.5) ;
+  task15->SetPhotonCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi);
+  task15->SetPhotonPtCut(0.2,0.5) ;
+  task15->SetPi0Cut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi) ;
+  task15->SetPi0PtCut(0.2,0.5) ;
+  mgr->AddTask(task15);
+
+  AliAnalysisPHOSFluctuations *task16 = new AliAnalysisPHOSFluctuations("PhiPhosEtaPhosPt02_05");
+  task16->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
+  task16->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi); 
+  task16->SetChargedPtCut(0.2,0.5) ;
+  task16->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
+  task16->SetPhotonPtCut(0.2,0.5) ;
+  task16->SetPi0Cut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
+  task16->SetPi0PtCut(0.2,0.5) ;
+  mgr->AddTask(task16);
+
+
+ AliAnalysisPHOSFluctuations *task17 = new AliAnalysisPHOSFluctuations("PhiFullEtaFullPt05_10");
+  task17->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
+  task17->SetChargedCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi); 
+  task17->SetChargedPtCut(0.5,1.) ;
+  task17->SetPhotonCut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi);
+  task17->SetPhotonPtCut(0.5,1.) ;
+  task17->SetPi0Cut(AliAnalysisPHOSFluctuations::kTpcEta,AliAnalysisPHOSFluctuations::kFullPhi) ;
+  task17->SetPi0PtCut(0.5,1.) ;
+  mgr->AddTask(task17);
+
+  AliAnalysisPHOSFluctuations *task18 = new AliAnalysisPHOSFluctuations("PhiPhosEtaPhosPt05_10");
+  task18->SetRunType(AliAnalysisPHOSFluctuations::kpp); 
+  task18->SetChargedCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi); 
+  task18->SetChargedPtCut(0.5,1.) ;
+  task18->SetPhotonCut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi);
+  task18->SetPhotonPtCut(0.5,1.) ;
+  task18->SetPi0Cut(AliAnalysisPHOSFluctuations::kPhosEta,AliAnalysisPHOSFluctuations::kPhosPhi) ;
+  task18->SetPi0PtCut(0.5,1.) ;
+  mgr->AddTask(task18);
+
 
   AliAnalysisDataContainer *cinput   = mgr->GetCommonInputContainer(); 
 
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("PhiFullEtaFullPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("PhiFullEtaGPHOSPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
-  AliAnalysisDataContainer *coutput2a = mgr->CreateContainer("PhiPHOSEtaGPHOSPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("PhiGPhosEtaFullPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
-  AliAnalysisDataContainer *coutput3a = mgr->CreateContainer("PhiGPHOSEtaFullPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("PhiGPhosEtaGPHOSPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
-  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("PhiGPhosEtaPHOSPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
-  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("PhiPhosEtaPHOSPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
-  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("PhiPhosEtaPHOSPt04_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
-  AliAnalysisDataContainer *coutput8 = mgr->CreateContainer("PhiPhosEtaPHOSPtPi004_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
-  AliAnalysisDataContainer *coutput9 = mgr->CreateContainer("PhiPHOSEtaPHOSPt02_05",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
-  AliAnalysisDataContainer *coutput10 = mgr->CreateContainer("PhiFullEtaFullPt02_05",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("PhiFullEtaGPhosPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("PhiFullEtaPhosPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("PhiPhosEtaFullPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("PhiPhosEtaGPhosPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("PhiPhosEtaPhosPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("PhiGPhosEtaFullPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput8 = mgr->CreateContainer("PhiGPhosEtaGPhosPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput9 = mgr->CreateContainer("PhiGPhosEtaPhosPt03_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput10 = mgr->CreateContainer("PhiFullEtaFullPt04_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput11 = mgr->CreateContainer("PhiPhosEtaPhosPt04_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput12 = mgr->CreateContainer("PhiGPhosEtaPhosPt04_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput13 = mgr->CreateContainer("PhiFullEtaFullPt01_03",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput14 = mgr->CreateContainer("PhiPhosEtaPhosPt01_03",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput15 = mgr->CreateContainer("PhiFullEtaFullPt02_05",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput16 = mgr->CreateContainer("PhiPhosEtaPhosPt02_05",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput17 = mgr->CreateContainer("PhiFullEtaFullPt05_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
+  AliAnalysisDataContainer *coutput18 = mgr->CreateContainer("PhiPhosEtaPhosPt05_10",TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root");
   
   // Connect input/output
   mgr->ConnectInput(task1 , 0, cinput);
   mgr->ConnectOutput(task1, 1, coutput1);
   mgr->ConnectInput(task2 , 0, cinput);
   mgr->ConnectOutput(task2, 1, coutput2);
-  mgr->ConnectInput(task2a , 0, cinput);
-  mgr->ConnectOutput(task2a, 1, coutput2a);
   mgr->ConnectInput(task3 , 0, cinput);
   mgr->ConnectOutput(task3, 1, coutput3);
-  mgr->ConnectInput(task3a , 0, cinput);
-  mgr->ConnectOutput(task3a, 1, coutput3a);
   mgr->ConnectInput(task4 , 0, cinput);
   mgr->ConnectOutput(task4, 1, coutput4);
   mgr->ConnectInput(task5 , 0, cinput);
@@ -242,6 +306,26 @@ void Fluct(const char* dataset="collection.xml")
   mgr->ConnectOutput(task7, 1, coutput7);
   mgr->ConnectInput(task8 , 0, cinput);
   mgr->ConnectOutput(task8, 1, coutput8);
+  mgr->ConnectInput(task9 , 0, cinput);
+  mgr->ConnectOutput(task9, 1, coutput9);
+  mgr->ConnectInput(task10 , 0, cinput);
+  mgr->ConnectOutput(task10, 1, coutput10);
+  mgr->ConnectInput(task11 , 0, cinput);
+  mgr->ConnectOutput(task11, 1, coutput11);
+  mgr->ConnectInput(task12 , 0, cinput);
+  mgr->ConnectOutput(task12, 1, coutput12);
+  mgr->ConnectInput(task13 , 0, cinput);
+  mgr->ConnectOutput(task13, 1, coutput13);
+  mgr->ConnectInput(task14 , 0, cinput);
+  mgr->ConnectOutput(task14, 1, coutput14);
+  mgr->ConnectInput(task15 , 0, cinput);
+  mgr->ConnectOutput(task15, 1, coutput15);
+  mgr->ConnectInput(task16 , 0, cinput);
+  mgr->ConnectOutput(task16, 1, coutput16);
+  mgr->ConnectInput(task17 , 0, cinput);
+  mgr->ConnectOutput(task17, 1, coutput17);
+  mgr->ConnectInput(task18 , 0, cinput);
+  mgr->ConnectOutput(task18, 1, coutput18);
    
   if (mgr->InitAnalysis()) {
     mgr->PrintStatus();

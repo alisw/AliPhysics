@@ -515,6 +515,11 @@ void AliHFSystErr::Init(Int_t decay){
           else                InitLctopKpi2010pp();
         }
       }
+      else if (fCollisionType==1) {
+        if(fCentralityClass=="010") InitLctopKpi2018PbPb010();
+        else if(fCentralityClass=="3050") InitLctopKpi2018PbPb3050();
+        else AliFatal("Not yet implemented");
+      }
       else if (fCollisionType==2) {
         if(fRunNumber==13 || fRunNumber==2013) {
           if (fIsBDTAnalysis) InitLctopKpi2013pPbBDT();
@@ -8785,6 +8790,84 @@ void AliHFSystErr::InitLctopKpi2013pPbBDT() {
   // BR
   fBR= new TH1F("fBR","fBR",12,0,12);
   for(Int_t i=1; i<=12; i++) fBR->SetBinContent(i,0.05);
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitLctopKpi2018PbPb010() {
+
+  //
+  // Lc->pKpi syst errors 0-10%. Responsible: J. Norman, C. Bartels
+  //  2018 Pb-Pb sample
+  //
+  SetNameTitle("AliHFSystErr","SystErrLctopKpi2018PbPb010");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",20,4,24);
+  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.04); // 4% error on sigmaV0and
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,4,24);
+  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.10); //
+
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",20,4,24);
+  for(Int_t i=1;i<=20;i++) fRawYield->SetBinContent(i,0.08); //
+
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",20,4,24);
+  for(Int_t i=1;i<=20;i++) fCutsEff->SetBinContent(i,0.08); //
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",20,4,24);
+  for(Int_t i=1;i<=20;i++) fPIDEff->SetBinContent(i,0.05);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,4,24);
+  for(Int_t i=1; i<=20; i++) fMCPtShape->SetBinContent(i,0.02); // 
+
+  // BR
+  fBR= new TH1F("fBR","fBR",20,4,24);
+  for(Int_t i=1; i<=20; i++) fBR->SetBinContent(i,0.05);
+
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitLctopKpi2018PbPb3050() {
+
+  //
+  // Lc->pKpi syst errors 30-50%. Responsible: J. Norman, C. Bartels
+  //  2018 Pb-Pb sample
+  //
+  SetNameTitle("AliHFSystErr","SystErrLctopKpi2018PbPb3050");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",20,4,24);
+  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.04); // 4% error on sigmaV0and
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,4,24);
+  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.10); //
+
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",20,4,24);
+  for(Int_t i=1;i<=20;i++) fRawYield->SetBinContent(i,0.08); //
+
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",20,4,24);
+  for(Int_t i=1;i<=20;i++) fCutsEff->SetBinContent(i,0.08); //
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",20,4,24);
+  for(Int_t i=1;i<=20;i++) fPIDEff->SetBinContent(i,0.05);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,4,24);
+  for(Int_t i=1; i<=20; i++) fMCPtShape->SetBinContent(i,0.02); // 
+
+  // BR
+  fBR= new TH1F("fBR","fBR",20,4,24);
+  for(Int_t i=1; i<=20; i++) fBR->SetBinContent(i,0.05);
+
 }
 
 

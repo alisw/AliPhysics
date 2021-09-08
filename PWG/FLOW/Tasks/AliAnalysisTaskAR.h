@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 24.08.2021
+ * Last Modified Date: 03.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -22,6 +22,7 @@
 #include <Riostream.h>
 #include <TComplex.h>
 #include <TDataType.h>
+#include <TExMap.h>
 #include <TF1.h>
 #include <TFile.h>
 #include <TH1D.h>
@@ -39,7 +40,6 @@ const Int_t kMaxPower = 20;
 const Int_t kMaxFilterbit = 15; // 2^(15-1)=16384
 const Int_t kNumberofTestFilterBit = 5;
 const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
-
 // centrality estimators
 enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
 const TString kCenEstimatorNames[LAST_ECENESTIMATORS] = {"V0M", "CL0", "CL1",
@@ -128,14 +128,14 @@ public:
   virtual void FillFinalResultProfile(kFinalProfile fp);
   virtual Bool_t SurviveEventCut(AliVEvent *ave);
   virtual Bool_t SurviveTrackCut(AliVParticle *aTrack, Bool_t FillCounter);
-  virtual void GetMultiplicities(AliAODEvent *aAOD);
-  virtual void ClearEventObjects();
-  virtual void FillEventObjects(AliAODTrack* track);
+  virtual void FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC);
+  virtual void ClearVectors();
+  virtual void FillTrackObjects(AliAODTrack *track);
   virtual void AggregateWeights();
   virtual void ResetWeights();
   virtual Int_t IndexCorHistograms(Int_t i, Int_t j, Int_t N);
 
-  // methods called MCOnTheFlyExec()
+  // methods called in MCOnTheFlyExec()
   virtual void MCPdfSymmetryPlanesSetup();
   virtual Int_t GetMCNumberOfParticlesPerEvent();
 
@@ -158,6 +158,7 @@ public:
 
   // GetPointers Methods in case we need to manually trigger Terminate()
   virtual void GetPointers(TList *list);
+  virtual void GetPointersForQAHistograms();
   virtual void GetPointersForControlHistograms();
   virtual void GetPointersForFinalResultHistograms();
   virtual void GetPointersForFinalResultProfiles();
@@ -264,19 +265,13 @@ public:
 
   // setters for cuts
   // centrality selection criterion
-  void SetCentralityEstimator(TString CentralityEstimator) {
-    Bool_t Flag = kFALSE;
-    for (int i = 0; i < LAST_ECENESTIMATORS; ++i) {
-      if (CentralityEstimator.EqualTo(kCenEstimatorNames[i])) {
-        Flag = kTRUE;
-      }
+  void SetCentralityEstimator(kCenEstimators CentralityEstimator) {
+    if (CentralityEstimator >= LAST_ECENESTIMATORS) {
+      std::cout << __LINE__ << ": running out of bounds" << std::endl;
+      Fatal("SetCentralityEstimator",
+            "Running out of bounds in SetCentralityEstimator");
     }
-    if (Flag) {
-      this->fCentralityEstimator = CentralityEstimator;
-    } else {
-      std::cout << __LINE__ << ": No valid centrality estimator" << std::endl;
-      Fatal("SetCentralityEstimator", "No valid centrality estimator");
-    }
+    this->fCentralityEstimator = CentralityEstimator;
   }
   // generic setter for track cuts
   void SetTrackCuts(kTrack Track, Double_t min, Double_t max) {
@@ -307,17 +302,25 @@ public:
     this->fEventCuts[Event][kMAX] = max;
   }
   // setter for centrality correlation cut
+  // void SetCenCorCut(Double_t m, Double_t t) {
+  //   if (m < 1.) {
+  //     std::cout << __LINE__ << ": slope too small" << std::endl;
+  //     Fatal("SetCenCorCut", "slope too small");
+  //   }
+  //   if (t < 1.) {
+  //     std::cout << __LINE__ << ": offset too small" << std::endl;
+  //     Fatal("SetCenCorCut", "offset too small");
+  //   }
+  //   this->fCenCorCut[0] = m;
+  //   this->fCenCorCut[1] = t;
   void SetCenCorCut(Double_t m, Double_t t) {
-    if (m < 1.) {
-      std::cout << __LINE__ << ": slope too small" << std::endl;
-      Fatal("SetCenCorCut", "slope too small");
-    }
-    if (t < 1.) {
-      std::cout << __LINE__ << ": offset too small" << std::endl;
-      Fatal("SetCenCorCut", "offset too small");
-    }
     this->fCenCorCut[0] = m;
     this->fCenCorCut[1] = t;
+  }
+  // setter for multiplicity correlation cut
+  void SetMulCorCut(Double_t m, Double_t t) {
+    this->fMulCorCut[0] = m;
+    this->fMulCorCut[1] = t;
   }
   // filterbit
   // depends strongly on the data set
@@ -326,7 +329,7 @@ public:
   // cut all non-primary particles away
   void SetPrimaryOnlyCut(Bool_t option) { this->fPrimaryOnly = option; }
 
-  // setters for MC analsys
+  // setters for MC on the fly analysis
   void SetMCOnTheFly(Bool_t option) { this->fMCOnTheFly = option; }
   void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
   void SetUseWeights(kTrack kinematic, Bool_t option) {
@@ -400,7 +403,7 @@ public:
   void SetWeightHistogram(kTrack kinematic, const char *Filename,
                           const char *Histname);
 
-  // set correlators we want to compute
+  // set correlators to be computed
   void SetCorrelators(std::vector<std::vector<Int_t>> correlators) {
     this->fCorrelators = correlators;
     for (int i = 0; i < LAST_EFINALPROFILE; ++i) {
@@ -422,6 +425,8 @@ private:
   TList *fQAHistogramsList;
   TString fQAHistogramsListName;
   Bool_t fFillQAHistograms;
+  // array holding all centrality estimates
+  Double_t fCentrality[LAST_ECENESTIMATORS];
   // centrality correlation histograms
   TList *fCenCorQAHistogramsList;
   TString fCenCorQAHistogramsListName;
@@ -433,6 +438,8 @@ private:
   Double_t fCenCorQAHistogramBins[LAST_ECENESTIMATORS *
                                   (LAST_ECENESTIMATORS - 1) /
                                   2][2 * LAST_EBINS];
+  // array holding all multiplicity estimates
+  Double_t fMultiplicity[kMulEstimators];
   // multiplicity correlation histograms
   TList *fMulCorQAHistogramsList;
   TString fMulCorQAHistogramsListName;
@@ -477,11 +484,7 @@ private:
                                      [LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fEventControlHistogramBins[LAST_EEVENT][LAST_EBINS];
 
-  // array holding centrality estimates
-  Double_t fMultiplicity[kMulEstimators];
-
   // cuts
-  TString fCentralityEstimator;
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
   TH1D *fTrackCutsCounter[LAST_EMODE];
   TString fTrackCutsCounterNames[LAST_EMODE];
@@ -492,7 +495,9 @@ private:
   TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
   Int_t fFilterbit;
   Bool_t fPrimaryOnly;
+  kCenEstimators fCentralityEstimator;
   Double_t fCenCorCut[2];
+  Double_t fMulCorCut[2];
 
   // Final results
   TList *fFinalResultsList;
@@ -506,7 +511,7 @@ private:
   TString fFinalResultProfileNames[LAST_EFINALPROFILE][LAST_ENAME];
   Double_t fFinalResultProfileBins[LAST_EFINALPROFILE][LAST_EBINS];
 
-  // Monte Carlo analysis
+  // Monte Carlo on the fly/closure
   Bool_t fMCOnTheFly;
   Bool_t fMCClosure;
   UInt_t fSeed;
@@ -518,6 +523,9 @@ private:
   Bool_t fMCNumberOfParticlesPerEventFluctuations;
   Int_t fMCNumberOfParticlesPerEvent;
   Int_t fMCNumberOfParticlesPerEventRange[LAST_EMINMAX];
+
+  // Look up tabel between MC and data particles
+  TExMap *fLookUpTable;
 
   // qvectors
   TComplex fQvector[kMaxHarmonic][kMaxPower];
@@ -533,7 +541,7 @@ private:
   std::vector<std::vector<Int_t>> fCorrelators;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 8);
+  ClassDef(AliAnalysisTaskAR, 10);
 };
 
 #endif

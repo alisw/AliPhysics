@@ -2739,9 +2739,40 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
    Int_t eventId = 0;
    Double_t trackRTval = -1;
    if (esdEvent->GetHeader()) eventId = GetEventIdAsLong(esdEvent->GetHeader());
-   AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
-   AliESDtrackCuts* esdCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-   trackFilter->AddCuts(esdCutsTPC);
+   // standard parameters ------------------- //
+    double maxdcaz = 2.;
+    double minratiocrossrowstpcover = 0.8;
+    double maxfraclusterstpcshared = 0.4;
+    double maxchi2perclustertpc = 4.0;
+    double maxchi2perclusterits = 36.;
+    double geowidth = 3.;
+    double geolenght = 130.;
+    double maxchi2tpcglobal = 36.;
+    // ------------------------------------- //
+   
+    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
+    AliESDtrackCuts* esdTrackCutsRun2 = new AliESDtrackCuts("esdTrackCutsRun2");
+    // TPC
+    esdTrackCutsRun2->SetCutGeoNcrNcl(geowidth,geolenght,1.5,0.85,0.7);
+    esdTrackCutsRun2->SetRequireTPCRefit(kTRUE);
+    esdTrackCutsRun2->SetMinRatioCrossedRowsOverFindableClustersTPC(minratiocrossrowstpcover);
+    esdTrackCutsRun2->SetMaxChi2PerClusterTPC(maxchi2perclustertpc);
+    esdTrackCutsRun2->SetMaxFractionSharedTPCClusters(maxfraclusterstpcshared);
+    //esdTrackCutsRun2[iTc]->SetMaxChi2TPCConstrainedGlobal(maxchi2tpcglobal); TODO VZ: check this cut
+    // ITS
+    esdTrackCutsRun2->SetRequireITSRefit(kTRUE);
+    esdTrackCutsRun2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+
+    esdTrackCutsRun2->SetMaxChi2PerClusterITS(maxchi2perclusterits);
+// primary selection
+    esdTrackCutsRun2->SetDCAToVertex2D(kFALSE);
+    esdTrackCutsRun2->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCutsRun2->SetMaxDCAToVertexZ(maxdcaz);
+    esdTrackCutsRun2->SetAcceptKinkDaughters(kFALSE);
+    esdTrackCutsRun2->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+ 
+   //AliESDtrackCuts* esdCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+   trackFilter->AddCuts(esdTrackCutsRun2);
 
 
    const Int_t nESDTracks = esdEvent->GetNumberOfTracks();
@@ -2754,7 +2785,7 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
       part = esdEvent->GetTrack(iT);
       eta = part->Eta();
       pt  = part->Pt();
-      if (TMath::Abs(eta) > 1.5) continue; //temporary, hardcoded eta cut to default value
+      if (TMath::Abs(eta) > 0.8) continue; //temporary, hardcoded eta cut to default value
       if (!(TMath::Abs(pt) > 0.15)) continue;
 
       // Default track filter (to be checked)

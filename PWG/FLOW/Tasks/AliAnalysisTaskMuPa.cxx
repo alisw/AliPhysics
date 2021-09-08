@@ -16,8 +16,8 @@
 /************************************** 
 *   TBI add description eventually    * 
 **************************************/ 
-  
-#include <Riostream.h>
+ 
+#include <Riostream.h> 
 #include <AliAnalysisTaskMuPa.h>
 #include <AliLog.h>
 #include <AliAODEvent.h>
@@ -29,6 +29,8 @@
 
 using std::cout;
 using std::endl;
+using std::string;
+using std::ifstream;
 
 ClassImp(AliAnalysisTaskMuPa)
 
@@ -116,6 +118,12 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  // Toy NUA:
  fToyNUAList(NULL), 
  fToyNUAFlagsPro(NULL),   
+
+ // Test0:
+ fTest0List(NULL), 
+ fTest0FlagsPro(NULL),   
+ fCalculateTest0(kFALSE),
+ fFileWithLabels(NULL),
 
  // Final results:
  fFinalResultsList(NULL),
@@ -252,6 +260,12 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fToyNUAList(NULL), 
  fToyNUAFlagsPro(NULL),   
 
+ // Test0:
+ fTest0List(NULL), 
+ fTest0FlagsPro(NULL),   
+ fCalculateTest0(kFALSE),
+ fFileWithLabels(NULL),
+
  // Final results:
  fFinalResultsList(NULL),
 
@@ -349,6 +363,7 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
  this->BookCorrelationsHistograms();
  this->BookNestedLoopsHistograms(); 
  this->BookToyNUAHistograms(); 
+ this->BookTest0Histograms(); 
  this->BookFinalResultsHistograms();
 
  // g) Book all look-up tables:
@@ -383,7 +398,8 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  // k) Fill e-b-e quantities;
  // l) Calculate correlations;
  // m) Calculate nested loops;
- // n) Reset event-by-event objects;
+ // n) Calculate Test0;
+ // o) Reset event-by-event objects;
  // *) PostData.
 
  Green(__PRETTY_FUNCTION__); 
@@ -585,7 +601,10 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  // m) Calculate nested loops:
  if(fCalculateNestedLoops){this->CalculateNestedLoops();}
 
- // n) Reset event-by-event objects:
+ // n) Calculate Test0:
+ if(fCalculateTest0){this->CalculateTest0();}
+
+ // o) Reset event-by-event objects:
  this->ResetEventByEventQuantities();
 
  // *) PostData:
@@ -726,6 +745,7 @@ void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
 
  fDataTakingPeriod = TString("not set"); // can be customized with e.g. task->SetDataTakingPeriod("LHC10h");
  fAODNumber = TString("not set"); // can be customized with e.g. task->SetAODNumber("AOD160"); 
+ fRunNumber = TString("not set"); // can be customized with e.g. task->SetRunNumber("000123456"); 
  fCentralityEstimator = TString("V0M"); // by default, we use V0M as centrality estimator. Can be customized with task->SetCentralityEstimator("V0M") 
  fTrigger = TString("not set"); 
 
@@ -748,6 +768,7 @@ void AliAnalysisTaskMuPa::InitializeArrays()
  this->InitializeArraysForCorrelationsHistograms();
  this->InitializeArraysForNestedLoopsHistograms();
  this->InitializeArraysForToyNUA();
+ this->InitializeArraysForTest0();
  this->InitializeArraysForCommonLabels();
 
 } // void AliAnalysisTaskMuPa::InitializeArrays()
@@ -835,6 +856,26 @@ void AliAnalysisTaskMuPa::InitializeArraysForToyNUA()
  } 
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForToyNUA()
+
+//================================================================================================================
+
+void AliAnalysisTaskMuPa::InitializeArraysForTest0()
+{
+ // Initialize all arrays for Test0
+
+ for(Int_t mo=0;mo<gMaxOrder;mo++) 
+ { 
+  for(Int_t mi=0;mi<gMaxIndex;mi++) 
+  { 
+   fTest0Labels[mo][mi] = NULL;
+   for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
+   { 
+    fTest0Pro[mo][mi][v] = NULL;
+   } 
+  }
+ }
+
+} // void AliAnalysisTaskMuPa::InitializeArraysForTest0()
 
 //================================================================================================================
 
@@ -1085,6 +1126,14 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
  fKinematicsBins[CHARGE][1] = -2.;
  fKinematicsBins[CHARGE][2] = 3.;
 
+ // non-equal bins:
+ for(Int_t kv=0;kv<gKinematicVariables;kv++)
+ {
+  fNonEqualKinematicsnBins[kv] = 0;
+  fNonEqualKinematicsRanges[kv] = TArrayD(0,NULL); // yes!
+  fUseNonEqualKinematicsBins[kv] = kFALSE;
+ }
+
  // b) DCA:
  for(Int_t ba=0;ba<2;ba++)
  {
@@ -1286,6 +1335,8 @@ void AliAnalysisTaskMuPa::InsanityChecks()
   exit(1);
  } 
 
+ //Green("=> Done with InsanityChecks()!");
+
 } // void AliAnalysisTaskMuPa::InsanityChecks()
 
 //=======================================================================================================================
@@ -1296,22 +1347,23 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBasePro = new TProfile("fBasePro","flags for the whole analysis",12,0.,12.);
+ fBasePro = new TProfile("fBasePro","flags for the whole analysis",13,0.,13.);
  fBasePro->SetStats(kFALSE);
  fBasePro->SetLineColor(COLOR);
  fBasePro->SetFillColor(FILLCOLOR);
  fBasePro->GetXaxis()->SetBinLabel(1,Form("fTaskName = %s",fTaskName.Data()));
  fBasePro->GetXaxis()->SetBinLabel(2,Form("fDataTakingPeriod = %s",fDataTakingPeriod.Data()));
  fBasePro->GetXaxis()->SetBinLabel(3,Form("fAODNumber = %s",fAODNumber.Data()));
- fBasePro->GetXaxis()->SetBinLabel(4,"fFillQAhistograms"); fBasePro->Fill(3.5,fFillQAHistograms);
- fBasePro->GetXaxis()->SetBinLabel(5,"fFillQAhistogramsAll"); fBasePro->Fill(4.5,fFillQAHistogramsAll);
- fBasePro->GetXaxis()->SetBinLabel(6,"fTerminateAfterQA"); fBasePro->Fill(5.5,fTerminateAfterQA);
- fBasePro->GetXaxis()->SetBinLabel(7,"fVerbose"); fBasePro->Fill(6.5,fVerbose);
- fBasePro->GetXaxis()->SetBinLabel(8,"fRealData"); fBasePro->Fill(7.5,fRealData);
- fBasePro->GetXaxis()->SetBinLabel(9,"fUseFisherYates"); fBasePro->Fill(8.5,fUseFisherYates);
- fBasePro->GetXaxis()->SetBinLabel(10,"fRandomSeed"); fBasePro->Fill(9.5,fRandomSeed);
- fBasePro->GetXaxis()->SetBinLabel(11,Form("fTrigger = %s",fTrigger.Data()));
- fBasePro->GetXaxis()->SetBinLabel(12,"fUseTrigger"); fBasePro->Fill(11.5,fUseTrigger);
+ fBasePro->GetXaxis()->SetBinLabel(4,Form("fRunNumber = %s",fRunNumber.Data()));
+ fBasePro->GetXaxis()->SetBinLabel(5,"fFillQAhistograms"); fBasePro->Fill(3.5,fFillQAHistograms);
+ fBasePro->GetXaxis()->SetBinLabel(6,"fFillQAhistogramsAll"); fBasePro->Fill(4.5,fFillQAHistogramsAll);
+ fBasePro->GetXaxis()->SetBinLabel(7,"fTerminateAfterQA"); fBasePro->Fill(5.5,fTerminateAfterQA);
+ fBasePro->GetXaxis()->SetBinLabel(8,"fVerbose"); fBasePro->Fill(6.5,fVerbose);
+ fBasePro->GetXaxis()->SetBinLabel(9,"fRealData"); fBasePro->Fill(7.5,fRealData);
+ fBasePro->GetXaxis()->SetBinLabel(10,"fUseFisherYates"); fBasePro->Fill(8.5,fUseFisherYates);
+ fBasePro->GetXaxis()->SetBinLabel(11,"fRandomSeed"); fBasePro->Fill(9.5,fRandomSeed);
+ fBasePro->GetXaxis()->SetBinLabel(12,Form("fTrigger = %s",fTrigger.Data()));
+ fBasePro->GetXaxis()->SetBinLabel(13,"fUseTrigger"); fBasePro->Fill(11.5,fUseTrigger);
  fBaseList->Add(fBasePro);
 
 } // void AliAnalysisTaskMuPa::BookBaseProfile()
@@ -1330,7 +1382,8 @@ void AliAnalysisTaskMuPa::BookAndNestAllLists()
  // f) Centrality weights;
  // g) Correlations;
  // h) Nested loops;
- // i) Toy NUA.
+ // i) Toy NUA;
+ // j) Test0.
 
  // *) Book and nest lists for final results.
 
@@ -1391,6 +1444,12 @@ void AliAnalysisTaskMuPa::BookAndNestAllLists()
  fToyNUAList->SetName("ToyNUA");
  fToyNUAList->SetOwner(kTRUE);
  fBaseList->Add(fToyNUAList);
+
+ // i) Test0:
+ fTest0List = new TList();
+ fTest0List->SetName("Test0");
+ fTest0List->SetOwner(kTRUE);
+ fBaseList->Add(fTest0List);
 
  // ...
 
@@ -1494,6 +1553,7 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
   // Common booking for generic correlations:
   for(Int_t gc=0;gc<gGenericCorrelations;gc++)
   {
+   fQAGenericCorrHist[gc][ba]->SetOption("col");
    fQAGenericCorrHist[gc][ba]->SetLineColor(fBeforeAfterColor[ba]);
    fQAGenericCorrHist[gc][ba]->SetFillColor(fBeforeAfterColor[ba]-10);
    fQAList->Add(fQAGenericCorrHist[gc][ba]);
@@ -1693,14 +1753,14 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  TString smult[gCentralMultiplicity] = {"RefMultComb08"};
 
  // c) Multiplicity:
- fMultiplicityHist = new TH1D("fMultiplicityHist","multiplicity = sum of particle weights of tracks in Q-vector",(Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
+ fMultiplicityHist = new TH1D("fMultiplicityHist",Form("%s, multiplicity = sum of particle weights in Q-vector",fRunNumber.Data()),(Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
  //fMultiplicityHist->SetStats(kFALSE);
  fMultiplicityHist->SetLineColor(COLOR);
  fMultiplicityHist->SetFillColor(FILLCOLOR);
  fMultiplicityHist->GetXaxis()->SetTitle("Multiplicity");
  fControlEventHistogramsList->Add(fMultiplicityHist);
 
- fSelectedTracksHist = new TH1I("fSelectedTracksHist","selected tracks added in Q-vector, after all event and particle cuts",(Int_t)fMultiplicityBins[0],(Int_t)fMultiplicityBins[1],(Int_t)fMultiplicityBins[2]);
+ fSelectedTracksHist = new TH1I("fSelectedTracksHist",Form("%s, selected particles in Q-vector, after all event and particle cuts",fRunNumber.Data()),(Int_t)fMultiplicityBins[0],(Int_t)fMultiplicityBins[1],(Int_t)fMultiplicityBins[2]);
  //fSelectedTracksHist->SetStats(kFALSE);
  fSelectedTracksHist->SetLineColor(COLOR);
  fSelectedTracksHist->SetFillColor(FILLCOLOR);
@@ -1711,7 +1771,7 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  {
   for(Int_t ba=0;ba<2;ba++) // before/after cuts
   { 
-   fCentralMultiplicityHist[m][ba] = new TH1D(Form("fCentralMultiplicityHist[%d][%d]",m,ba),sba[ba].Data(),(Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
+   fCentralMultiplicityHist[m][ba] = new TH1D(Form("fCentralMultiplicityHist[%d][%d]",m,ba),Form("%s, %s",fRunNumber.Data(),sba[ba].Data()),(Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
    fCentralMultiplicityHist[m][ba]->SetStats(kFALSE);
    fCentralMultiplicityHist[m][ba]->SetLineColor(fBeforeAfterColor[ba]);
    fCentralMultiplicityHist[m][ba]->SetFillColor(fBeforeAfterColor[ba]-10);
@@ -1723,7 +1783,7 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  // d) Centrality:
  for(Int_t ba=0;ba<2;ba++) // before/after cuts
  { 
-  fCentralityHist[ba] = new TH1D(Form("fCentralityHist[%d]",ba),Form("%s, %s",sba[ba].Data(),fCentralityEstimator.Data()),(Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2]);
+  fCentralityHist[ba] = new TH1D(Form("fCentralityHist[%d]",ba),Form("%s, %s, %s",fRunNumber.Data(),sba[ba].Data(),fCentralityEstimator.Data()),(Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2]); // keep changes title in sync. with MakeCentralityWeights.C macro
   //fCentralityHist[ba]->SetStats(kFALSE);
   fCentralityHist[ba]->SetLineColor(fBeforeAfterColor[ba]);
   fCentralityHist[ba]->SetFillColor(fBeforeAfterColor[ba]-10);
@@ -1739,7 +1799,7 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
    if(fRealData && 1==rs){continue;}
    for(Int_t xyz=0;xyz<3;xyz++)
    {
-    fVertexHist[ba][rs][xyz] = new TH1D(Form("fVertexHist[%d][%d][%d]",ba,rs,xyz),Form("%s, %s",sba[ba].Data(),srs[rs].Data()),(Int_t)fVertexBins[0],
+    fVertexHist[ba][rs][xyz] = new TH1D(Form("fVertexHist[%d][%d][%d]",ba,rs,xyz),Form("%s, %s, %s",fRunNumber.Data(),sba[ba].Data(),srs[rs].Data()),(Int_t)fVertexBins[0],
                                         xyz==0||xyz==1 ? fVertexBins[1]/10. : fVertexBins[1], xyz==0||xyz==1 ? fVertexBins[2]/10 : fVertexBins[2]);
                                         // Above line: since spread of x and y components is order of magnitude smaller than z, the bin range is adjusted manually    
     //fVertexHist[ba][rs][xyz]->SetStats(kFALSE);
@@ -1756,7 +1816,7 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
   for(Int_t rs=0;rs<2;rs++)
   {
    if(fRealData && 1==rs){continue;}
-   fNContributorsHist[ba][rs] = new TH1I(Form("fNContributorsHist[%d][%d]",ba,rs),Form("%s, %s",sba[ba].Data(),srs[rs].Data()),(Int_t)fNContributorsBins[0],fNContributorsBins[1],fNContributorsBins[2]); 
+   fNContributorsHist[ba][rs] = new TH1I(Form("fNContributorsHist[%d][%d]",ba,rs),Form("%s, %s, %s",fRunNumber.Data(),sba[ba].Data(),srs[rs].Data()),(Int_t)fNContributorsBins[0],fNContributorsBins[1],fNContributorsBins[2]); 
    //fNContributorsHist[ba][rs]->SetStats(kFALSE);
    fNContributorsHist[ba][rs]->GetXaxis()->SetTitle("avtx->GetNContributors()");
    fNContributorsHist[ba][rs]->SetLineColor(fBeforeAfterColor[ba]);
@@ -1770,7 +1830,7 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  {
   for(Int_t t=0;t<gEventHistograms;t++) // type, see enum 'eEvent'
   {
-   fEventHistograms[ba][t] = new TH1D(Form("fEventHistograms[%d][%d]",ba,t),Form("%s, %s",sba[ba].Data(),stype[t].Data()),(Int_t)fEventBins[t][0],fEventBins[t][1],fEventBins[t][2]); 
+   fEventHistograms[ba][t] = new TH1D(Form("fEventHistograms[%d][%d]",ba,t),Form("%s, %s, %s",fRunNumber.Data(),sba[ba].Data(),stype[t].Data()),(Int_t)fEventBins[t][0],fEventBins[t][1],fEventBins[t][2]); 
    fEventHistograms[ba][t]->SetLineColor(fBeforeAfterColor[ba]);  
    fEventHistograms[ba][t]->SetFillColor(fBeforeAfterColor[ba]-10);
    fControlEventHistogramsList->Add(fEventHistograms[ba][t]); 
@@ -1821,7 +1881,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
    if(fRealData && 1==rs){continue;}
    for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4 TBI 20210512 this is not enforced to be in sync with the definition of enums
    {
-    fKinematicsHist[ba][rs][kv] = new TH1D(Form("fKinematicsHist[%d][%d][%d]",ba,rs,kv),Form("%d, %s, %s",fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]); 
+    fKinematicsHist[ba][rs][kv] = new TH1D(Form("fKinematicsHist[%d][%d][%d]",ba,rs,kv),Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]); 
     //fKinematicsHist[ba][rs][kv]->SetStats(kFALSE);
     fKinematicsHist[ba][rs][kv]->GetXaxis()->SetTitle(skv[kv].Data());
     fKinematicsHist[ba][rs][kv]->SetMinimum(0.);
@@ -1840,7 +1900,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
    if(fRealData && 1==rs){continue;}
    for(Int_t xyTz=0;xyTz<2;xyTz++) 
    {
-    fDCAHist[ba][rs][xyTz] = new TH1D(Form("fDCAHist[%d][%d][%d]",ba,rs,xyTz),Form("%d, %s, %s",fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fDCABins[xyTz][0],fDCABins[xyTz][1],fDCABins[xyTz][2]); 
+    fDCAHist[ba][rs][xyTz] = new TH1D(Form("fDCAHist[%d][%d][%d]",ba,rs,xyTz),Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fDCABins[xyTz][0],fDCABins[xyTz][1],fDCABins[xyTz][2]); 
     //fDCAHist[ba][rs][xyTz]->SetStats(kFALSE);
     fDCAHist[ba][rs][xyTz]->GetXaxis()->SetTitle(sxyTz[xyTz].Data());
     fDCAHist[ba][rs][xyTz]->SetMinimum(0.);
@@ -1859,7 +1919,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
    if(fRealData && 1==rs){continue;}
    for(Int_t t=0;t<gParticleHistograms;t++) // type, see enum 'eParticle'
    {
-    fParticleHist[ba][rs][t] = new TH1D(Form("fParticleHist[%d][%d][%d]",ba,rs,t),Form("%d, %s, %s",fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fParticleBins[t][0],fParticleBins[t][1],fParticleBins[t][2]);  
+    fParticleHist[ba][rs][t] = new TH1D(Form("fParticleHist[%d][%d][%d]",ba,rs,t),Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fParticleBins[t][0],fParticleBins[t][1],fParticleBins[t][2]);  
     fParticleHist[ba][rs][t]->GetXaxis()->SetTitle(stype[t].Data());
     fParticleHist[ba][rs][t]->SetMinimum(0.);  
     fParticleHist[ba][rs][t]->SetLineColor(fBeforeAfterColor[ba]);
@@ -2009,6 +2069,58 @@ void AliAnalysisTaskMuPa::BookToyNUAHistograms()
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMuPa::BookTest0Histograms()
+{
+ // Book all Test0 histograms.
+
+ // a) Book the profile holding flags;
+ // b) Generate all labels;
+ // c) ...
+
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
+ // a) Book the profile holding flags:
+ fTest0FlagsPro = new TProfile("fTest0FlagsPro","flags for Test0",5,0.,5.);
+ fTest0FlagsPro->SetStats(kFALSE);
+ fTest0FlagsPro->GetXaxis()->SetLabelSize(0.04); 
+ fTest0FlagsPro->GetXaxis()->SetBinLabel(1,"fCalculateTest0"); fTest0FlagsPro->Fill(0.5,fCalculateTest0);
+ fTest0List->Add(fTest0FlagsPro);
+
+ if(!fCalculateTest0){return;}
+ 
+ // b) Generate all labels:
+ this->GenerateCorrelationsLabels();  
+
+ // c) ...
+ Int_t vvvariableNBins[3] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0]};
+ Double_t vvvariableMinMax[3][2] = { {0.,1.}, // integrated 
+                                    {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
+                                    {fCentralityBins[1],fCentralityBins[2]} // centrality
+                                   };
+ TString vvVariable[3] = {"integrated","multiplicity","centrality"};
+
+ for(Int_t mo=0;mo<gMaxOrder;mo++) 
+ { 
+  for(Int_t mi=0;mi<gMaxIndex;mi++) 
+  { 
+   if(fTest0Labels[mo][mi]) // book only explicitly requested correlators, other via external file, or with hardcoded loops 
+   {
+    for(Int_t v=0;v<3;v++) 
+    { 
+     fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%d]",mo,mi,v),fTest0Labels[mo][mi]->Data(),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
+     fTest0Pro[mo][mi][v]->SetStats(kFALSE);
+     fTest0Pro[mo][mi][v]->Sumw2();
+     fTest0Pro[mo][mi][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
+     fTest0List->Add(fTest0Pro[mo][mi][v]);
+    }
+   } // if(fTest0Labels[mo][mi]) 
+  }
+ }
+
+} // void AliAnalysisTaskMuPa::BookTest0Histograms()
+
+//=======================================================================================================================
+
 void AliAnalysisTaskMuPa::BookFinalResultsHistograms()
 {
  // Book all histograms to hold the final results.
@@ -2081,7 +2193,7 @@ void AliAnalysisTaskMuPa::BookWeightsHistograms()
  for(Int_t w=0;w<gWeights;w++) // use weights [phi,pt,eta]
  {
   if(!fUseWeights[w]){continue;}
-  if(!fWeightsHist[w]) // yes, because these histos are cloned from the exteral ones, see SetWeightsHist(TH1D* const hist, const char *variable)
+  if(!fWeightsHist[w]) // yes, because these histos are cloned from the external ones, see SetWeightsHist(TH1D* const hist, const char *variable)
   {
    fWeightsHist[w] = new TH1D(Form("fWeightsHist[%d]",w),"",(Int_t)fKinematicsBins[w][0],fKinematicsBins[w][1],fKinematicsBins[w][2]);
    fWeightsHist[w]->SetTitle(Form("Particle weights for %s",sWeights[w].Data()));
@@ -2424,7 +2536,7 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliVParticle *vParticle,
   if(fParticleHist[ba][rs][Chi2TPCConstrainedVsGlobal]){fParticleHist[ba][rs][Chi2TPCConstrainedVsGlobal]->Fill(aodTrack->GetChi2TPCConstrainedVsGlobal());}
   if(fParticleHist[ba][rs][ITSNcls]){fParticleHist[ba][rs][ITSNcls]->Fill(aodTrack->GetITSNcls());}
   if(fParticleHist[ba][rs][ITSChi2perNDF]){if(TMath::Abs(aodTrack->GetITSNcls())>0.){fParticleHist[ba][rs][ITSChi2perNDF]->Fill(aodTrack->GetITSchi2()/aodTrack->GetITSNcls());}}
-  if(fParticleHist[ba][rs][TPCNclsF]){fParticleHist[ba][rs][TPCNclsF]->Fill(aodTrack->GetTPCNclsF());}}
+  if(fParticleHist[ba][rs][TPCNclsF]){fParticleHist[ba][rs][TPCNclsF]->Fill(aodTrack->GetTPCNclsF());}
   if(fParticleHist[ba][rs][HasPointOnITSLayer])
   {
    for(Int_t l=1;l<=6;l++) // loop over ITS layers
@@ -2443,6 +2555,7 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliVParticle *vParticle,
     fParticleHist[ba][rs][IsGlobalConstrained]->Fill(1.44); // keep in sync. with the booking of this histogram
    }  
   }
+ } // if(aodTrack)
 
  // c) Fill histograms for AOD MC particle:
  if(aodmcParticle)
@@ -3550,7 +3663,6 @@ TComplex AliAnalysisTaskMuPa::Q(Int_t n, Int_t wp)
  
 } // TComplex AliAnalysisTaskMuPa::Q(Int_t n, Int_t wp)
 
-
 //=======================================================================================================================
 
 TComplex AliAnalysisTaskMuPa::One(Int_t n1)
@@ -3577,6 +3689,35 @@ TComplex AliAnalysisTaskMuPa::Two(Int_t n1, Int_t n2)
 
 //=======================================================================================================================
 
+TComplex AliAnalysisTaskMuPa::Three(Int_t n1, Int_t n2, Int_t n3)
+{
+ // Generic three-particle correlation <exp[i(n1*phi1+n2*phi2+n3*phi3)]>.
+
+ TComplex three = Q(n1,1)*Q(n2,1)*Q(n3,1)-Q(n1+n2,2)*Q(n3,1)-Q(n2,1)*Q(n1+n3,2)
+                - Q(n1,1)*Q(n2+n3,2)+2.*Q(n1+n2+n3,3); 
+
+ return three;
+
+} // TComplex AliAnalysisTaskMuPa::Three(Int_t n1, Int_t n2, Int_t n3)
+
+//=======================================================================================================================
+
+TComplex AliAnalysisTaskMuPa::Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4)
+{
+ // Generic four-particle correlation <exp[i(n1*phi1+n2*phi2+n3*phi3+n4*phi4)]>.
+
+ TComplex four = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)-Q(n2,1)*Q(n1+n3,2)*Q(n4,1)
+               - Q(n1,1)*Q(n2+n3,2)*Q(n4,1)+2.*Q(n1+n2+n3,3)*Q(n4,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)
+               + Q(n2+n3,2)*Q(n1+n4,2)-Q(n1,1)*Q(n3,1)*Q(n2+n4,2)+Q(n1+n3,2)*Q(n2+n4,2)
+               + 2.*Q(n3,1)*Q(n1+n2+n4,3)-Q(n1,1)*Q(n2,1)*Q(n3+n4,2)+Q(n1+n2,2)*Q(n3+n4,2)
+               + 2.*Q(n2,1)*Q(n1+n3+n4,3)+2.*Q(n1,1)*Q(n2+n3+n4,3)-6.*Q(n1+n2+n3+n4,4);
+
+ return four;
+
+} // TComplex AliAnalysisTaskMuPa::Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4)
+
+//=======================================================================================================================
+
 void AliAnalysisTaskMuPa::CalculateCorrelations() 
 {
  // Calculate analytically multiparticle correlations from Q-vectors. 
@@ -3596,6 +3737,19 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
   if(fCorrelationsPro[0][h-1][1]){fCorrelationsPro[0][h-1][1]->Fill(fSelectedTracks+0.5,twoC,wTwo);}
   // vs. centrality:
   if(fCorrelationsPro[0][h-1][2]){fCorrelationsPro[0][h-1][2]->Fill(fCentrality,twoC,wTwo);}
+
+  // 4p:
+  //cout<<"   => CalculateCorrelations(void), 4p .... "<<endl;
+  if(fMultiplicity<4){return;}
+  TComplex fourC = Four(h,h,-h,-h)/Four(0,0,0,0).Re(); // cos
+  //TComplex fourS = Four(h,h,-h,-h)/Four(0,0,0,0).Im(); // sin
+  Double_t wFour = Four(0,0,0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+  // integrated:
+  if(fCorrelationsPro[1][h-1][0]){fCorrelationsPro[1][h-1][0]->Fill(0.5,fourC,wFour);}
+  // vs. multiplicity:
+  if(fCorrelationsPro[1][h-1][1]){fCorrelationsPro[1][h-1][1]->Fill(fSelectedTracks+0.5,fourC,wFour);}
+  // vs. centrality:
+  if(fCorrelationsPro[1][h-1][2]){fCorrelationsPro[1][h-1][2]->Fill(fCentrality,fourC,wFour);}
  } 
 
 } // void AliAnalysisTaskMuPa::CalculateCorrelations() 
@@ -3634,8 +3788,6 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
   } // for(int i2=0; i2<nTracks; ++i2)
  } // for(int i1=0; i1<nTracks; ++i1)
 
- return; // TBI 20210515 remove when you add support for below
-
  // 4p:
  if(fSelectedTracks<4){return;}
  cout<<"      CalculateNestedLoops(void), 4-p correlations .... "<<endl;
@@ -3671,6 +3823,16 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
    } // for(int i3=0; i3<fSelectedTracks; i3++)
   } // for(int i2=0; i2<nTracks; ++i2)
  } // for(int i1=0; i1<nTracks; ++i1)
+
+
+
+
+ 
+ return; // TBI temporarily here
+
+
+
+
 
  // 6p:
  if(fSelectedTracks<6){return;}
@@ -4353,10 +4515,280 @@ void AliAnalysisTaskMuPa::RandomIndices(AliVEvent *ave)
 
 } // void AliAnalysisTaskMuPa::RandomIndices(AliVEvent *ave)
 
+//=======================================================================================
 
+void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
+{
+ // Generate the labels of all correlations of interest.
+ // Algorithm: a) If external file is specified, parse through it and fetch line by line all labels. FS is comma.
+ //            b) If external file is NOT specified, determine the labels from the hardcoded loops below.
 
+ Int_t counter[gMaxOrder] = {0}; // is this safe?
+ for(Int_t o=0;o<gMaxOrder;o++){counter[o] = 0;} // now it's safe
+  
+ if(fFileWithLabels && !gSystem->AccessPathName(fFileWithLabels->Data(),kFileExists))
+ {
+  // external file exist locally, get all labels of interest from there:
+  string line;
+  ifstream myfile;
+  myfile.open(fFileWithLabels->Data());
+  Int_t order = -44;
+  while (getline(myfile,line))
+  { 
+   order = TString(line).Tokenize(" ")->GetEntries();
+   if(0 == order){continue;} // empty lines, or the label format which is not supported
+   // 1-p => 0, 2-p => 1, etc.:
+   fTest0Labels[order-1][counter[order-1]] = new TString(line); // okay...
+   //cout<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl;
+   counter[order-1]++;
+   //cout<<TString(line).Data()<<endl;
+   //cout<<oa->GetEntries()<<endl;    
+  }
+  myfile.close();
+ }
+ else
+ {
+  // get all labels of interest systematically from loops below:
+  // TBI 20210902 buggy, some entries are duplicated
 
+  // 1p:
+  // TBI 20210902 
+  // fTest0Labels[0][index1p] = ... 
 
+  // 2p:
+  Int_t index2p = 0;
+  for(Int_t h1=-fMaxHarmonic;h1<=fMaxHarmonic;h1++) 
+  {  
+   if(0==h1){continue;}
+   for(Int_t h2=-fMaxHarmonic;h2<=fMaxHarmonic;h2++) 
+   {
+    if(0==h2){continue;}
+    if(h2>h1){continue;} // eliminating trivial permutations
+    if(abs(h2)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+    if(0 != h1+h2){continue;} // isotropy
+    fTest0Labels[1][index2p] = new TString(Form("%d,%d",h1,h2));
+    index2p++;
+    //cout<<Form("%d,%d",h1,h2)<<endl;
+   }
+  }
+
+  // 3p:
+  Int_t index3p = 0;
+  for(Int_t h1=-fMaxHarmonic;h1<=fMaxHarmonic;h1++) 
+  { 
+   if(0==h1){continue;}
+   for(Int_t h2=-fMaxHarmonic;h2<=fMaxHarmonic;h2++) 
+   {
+    if(0==h2){continue;}
+    if(h2>h1){continue;} // eliminating trivial permutations
+    if(abs(h2)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+    for(Int_t h3=-fMaxHarmonic;h3<=fMaxHarmonic;h3++) 
+    {
+     if(0==h3){continue;}
+     if(h3>h1||h3>h2){continue;} // eliminating trivial permutations
+     if(abs(h3)>abs(h1)||abs(h2)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+     if(0 != h1+h2+h3){continue;} // isotropy
+     fTest0Labels[2][index3p] = new TString(Form("%d,%d,%d",h1,h2,h3));
+     index3p++;
+     //cout<<Form("%d,%d,%d",h1,h2,h3)<<endl;
+    }
+   }
+  }
+
+  // 4p:
+  Int_t index4p = 0;
+  for(Int_t h1=-fMaxHarmonic;h1<=fMaxHarmonic;h1++) 
+  { 
+   if(0==h1){continue;}
+   for(Int_t h2=-fMaxHarmonic;h2<=fMaxHarmonic;h2++) 
+   {
+    if(0==h2){continue;}
+    if(h2>h1){continue;} // eliminating trivial permutations
+    for(Int_t h3=-fMaxHarmonic;h3<=fMaxHarmonic;h3++) 
+    {
+     if(0==h3){continue;}
+     if(h3>h1||h3>h2){continue;} // eliminating trivial permutations
+     if(abs(h3)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+     for(Int_t h4=-fMaxHarmonic;h4<=fMaxHarmonic;h4++) 
+     {
+      if(0==h4){continue;}
+      if(h4>h1||h4>h2||h4>h3){continue;} // eliminating trivial permutations
+      if(abs(h4)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+      if(0 != h1+h2+h3+h4){continue;} // isotropy
+      fTest0Labels[3][index4p] = new TString(Form("%d,%d,%d,%d",h1,h2,h3,h4));
+      index4p++;
+      //cout<<Form("%d,%d,%d,%d",h1,h2,h3,h4)<<endl;
+     }
+    }
+   }
+  }
+
+  // 5p:
+  Int_t index5p = 0;
+  for(Int_t h1=-fMaxHarmonic;h1<=fMaxHarmonic;h1++) 
+  { 
+   if(0==h1){continue;}
+   for(Int_t h2=-fMaxHarmonic;h2<=fMaxHarmonic;h2++) 
+   { 
+    if(0==h2){continue;}
+    if(h2>h1){continue;} // eliminating trivial permutations
+    for(Int_t h3=-fMaxHarmonic;h3<=fMaxHarmonic;h3++) 
+    {
+     if(0==h3){continue;}
+     if(h3>h1||h3>h2){continue;} // eliminating trivial permutations
+     if(abs(h3)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+     for(Int_t h4=-fMaxHarmonic;h4<=fMaxHarmonic;h4++) 
+     {
+      if(0==h4){continue;}
+      if(h4>h1||h4>h2||h4>h3){continue;} // eliminating trivial permutations
+      if(abs(h4)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+      for(Int_t h5=-fMaxHarmonic;h5<=fMaxHarmonic;h5++) 
+      {
+       if(0==h5){continue;}
+       if(h5>h1||h5>h2||h5>h3||h5>h4){continue;} // eliminating trivial permutations
+       if(abs(h5)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+       if(0 != h1+h2+h3+h4+h5){continue;} // isotropy
+       fTest0Labels[4][index5p] = new TString(Form("%d,%d,%d,%d,%d",h1,h2,h3,h4,h5));
+       index5p++;
+       //cout<<Form("%d,%d,%d,%d,%d",h1,h2,h3,h4,h5)<<endl;
+      }
+     }
+    }
+   }
+  }
+
+  // 6p:
+  Int_t index6p = 0;
+  for(Int_t h1=-fMaxHarmonic;h1<=fMaxHarmonic;h1++) 
+  { 
+   if(0==h1){continue;}
+   for(Int_t h2=-fMaxHarmonic;h2<=fMaxHarmonic;h2++) 
+   { 
+    if(0==h2){continue;}
+    if(h2>h1){continue;} // eliminating trivial permutations
+    for(Int_t h3=-fMaxHarmonic;h3<=fMaxHarmonic;h3++) 
+    {
+     if(0==h3){continue;}
+     if(h3>h1||h3>h2){continue;} // eliminating trivial permutations
+     if(abs(h3)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+     for(Int_t h4=-fMaxHarmonic;h4<=fMaxHarmonic;h4++) 
+     {
+      if(0==h4){continue;}
+      if(h4>h1||h4>h2||h4>h3){continue;} // eliminating trivial permutations
+      if(abs(h4)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+      for(Int_t h5=-fMaxHarmonic;h5<=fMaxHarmonic;h5++) 
+      {
+       if(0==h5){continue;}
+       if(h5>h1||h5>h2||h5>h3||h5>h4){continue;} // eliminating trivial permutations
+       if(abs(h5)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+       for(Int_t h6=-fMaxHarmonic;h6<=fMaxHarmonic;h6++) 
+       {
+        if(0==h6){continue;}
+        if(h6>h1||h6>h2||h6>h3||h6>h4||h6>h5){continue;} // eliminating trivial permutations
+        if(abs(h6)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+        if(0 != h1+h2+h3+h4+h5+h6){continue;} // isotropy
+        fTest0Labels[5][index6p] = new TString(Form("%d,%d,%d,%d,%d,%d",h1,h2,h3,h4,h5,h6));
+        index6p++;
+        //cout<<Form("%d,%d,%d,%d,%d,%d",h1,h2,h3,h4,h5,h6)<<endl;
+       }
+      }
+     }
+    }
+   }
+  }
+
+ } // else
+
+} // void AliAnalysisTaskMuPa::GenerateCorrelationsLabels() 
+
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::CalculateTest0()
+{
+ // TBI comment a weather here
+
+ Double_t correlation = 0.;
+ Double_t weight = 0.;
+ Int_t n[gMaxOrder] = {0}; // array holding harmonics
+
+ for(Int_t mo=0;mo<gMaxOrder;mo++) 
+ { 
+  for(Int_t mi=0;mi<gMaxIndex;mi++) 
+  { 
+   if(fTest0Labels[mo][mi])
+   {
+    // Extract harmonics from TString, FS is " ": 
+    for(Int_t h=0;h<=mo;h++)
+    {
+     n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi(); // okay... Check if there is a performance penalty here TBI 20210906 . Can I use  string[t-1] - '0';
+    }
+
+    switch(mo+1) // which order? yes, mo+1
+    {
+     case 1:
+      correlation = One(n[0]).Re();
+      weight = One(n[0]).Re();
+     break;
+
+     case 2: 
+      correlation = Two(n[0],n[1]).Re();
+      weight = Two(0,0).Re();
+     break;
+
+     case 3: 
+      correlation = Three(n[0],n[1],n[2]).Re();
+      weight = Three(0,0,0).Re();
+     break;
+ 
+     case 4: 
+      correlation = Four(n[0],n[1],n[2],n[3]).Re();
+      weight = Four(0,0,0,0).Re();
+     break;
+
+/* TBI 20210907 enable eventaully
+     case 5: 
+      correlation = Five(n[0],n[1],n[2],n[3],n[4]).Re();
+      weight = Five(0,0,0,0,0).Re();
+     break;
+
+     case 6: 
+      correlation = Six(n[0],n[1],n[2],n[3],n[4],n[5]).Re();
+      weight = Six(0,0,0,0,0,0).Re();
+     break;
+
+     case 7: 
+      correlation = Seven(n[0],n[1],n[2],n[3],n[4],n[5],n[6]).Re();
+      weight = Seven(0,0,0,0,0,0,0).Re();
+     break;
+
+     case 8: 
+      correlation = Eight(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7]).Re();
+      weight = Eight(0,0,0,0,0,0,0,0).Re();
+     break;
+*/
+
+     default:
+      cout<<fTest0Labels[mo][mi]->Data()<<endl;
+      cout<<"not supported yet"<<endl;
+      return; // TBI 20210907 or continue?
+    } // switch(mo)
+       
+    // Finally, fill:
+    for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
+    { 
+     if(!(weight > 0.)){cout<<__LINE__<<endl;exit(1);}
+     // integrated:
+     if(fTest0Pro[mo][mi][0]){fTest0Pro[mo][mi][0]->Fill(0.5,correlation/weight,weight);}
+     // vs. multiplicity:
+     if(fTest0Pro[mo][mi][1]){fTest0Pro[mo][mi][1]->Fill(fSelectedTracks+0.5,correlation/weight,weight);}
+     // vs. centrality:
+     if(fTest0Pro[mo][mi][2]){fTest0Pro[mo][mi][2]->Fill(fCentrality,correlation/weight,weight);}
+    } // for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
+   } // if(fTest0Labels[mo][mi])
+  } // for(Int_t mi=0;mi<gMaxIndex;mi++) 
+ } // for(Int_t mo=0;mo<gMaxOrder;mo++) 
+
+} // void AliAnalysisTaskMuPa::CalculateTest0()
 
 
 

@@ -115,19 +115,19 @@ void CalorimeterFiducialCut(AliFiducialCut* fidCut, TString calorimeter, Int_t y
 //  if ( year == 2016 )     fidCut->SetSimpleEMCALFiducialCut(0.67, 261.2, 318.8) ;
 //  else                    fidCut->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ;
     
-    if ( year == 2016 ) // DCal 2 regions
-    {
-      Float_t etamax[] = { 0.67,-0.25 };
-      fidCut->AddEMCALFidCutMaxEtaArray(2,etamax);
-      Float_t etamin[] = { 0.25,-0.67 };
-      fidCut->AddEMCALFidCutMinEtaArray(2,etamin);
-      
-      Float_t phimax[] = { 318.8, 318.8 };
-      fidCut->AddEMCALFidCutMaxPhiArray(2,phimax);
-      Float_t phimin[] = { 261.2, 261.2 };
-      fidCut->AddEMCALFidCutMinPhiArray(2,phimin);
-    }
-    else // DCal 3 regions
+//    if ( year == 2016 ) // DCal 2 regions
+//    {
+//      Float_t etamax[] = { 0.67,-0.25 };
+//      fidCut->AddEMCALFidCutMaxEtaArray(2,etamax);
+//      Float_t etamin[] = { 0.25,-0.67 };
+//      fidCut->AddEMCALFidCutMinEtaArray(2,etamin);
+//
+//      Float_t phimax[] = { 318.8, 318.8 };
+//      fidCut->AddEMCALFidCutMaxPhiArray(2,phimax);
+//      Float_t phimin[] = { 261.2, 261.2 };
+//      fidCut->AddEMCALFidCutMinPhiArray(2,phimin);
+//    }
+//    else // DCal 3 regions
     {
       Float_t etamax[] = { 0.67,-0.25, 0.67 };
       fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
@@ -152,19 +152,19 @@ void CalorimeterFiducialCut(AliFiducialCut* fidCut, TString calorimeter, Int_t y
     //fidCut->SetSimpleEMCALFiducialCut(0.67,  81.2, 325.8) ; //20 SM
     
     // EMCal, 1 region - DCal 2 regions, remove 1/3 DCal
-    if ( year == 2016 )
-    {
-      Float_t etamax[] = { 0.67, 0.67,-0.25 };
-      fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
-      Float_t etamin[] = {-0.67, 0.25,-0.67 };
-      fidCut->AddEMCALFidCutMinEtaArray(3,etamin);
-      
-      Float_t phimax[] = { 185.8, 318.8, 318.8 };
-      fidCut->AddEMCALFidCutMaxPhiArray(3,phimax);
-      Float_t phimin[] = {  81.2, 261.2, 261.2 };
-      fidCut->AddEMCALFidCutMinPhiArray(3,phimin);
-    }
-    else // EMCal, 1 region - DCal 3 regions
+//    if ( year == 2016 )
+//    {
+//      Float_t etamax[] = { 0.67, 0.67,-0.25 };
+//      fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
+//      Float_t etamin[] = {-0.67, 0.25,-0.67 };
+//      fidCut->AddEMCALFidCutMinEtaArray(3,etamin);
+//
+//      Float_t phimax[] = { 185.8, 318.8, 318.8 };
+//      fidCut->AddEMCALFidCutMaxPhiArray(3,phimax);
+//      Float_t phimin[] = {  81.2, 261.2, 261.2 };
+//      fidCut->AddEMCALFidCutMinPhiArray(3,phimin);
+//    }
+//    else // EMCal, 1 region - DCal 3 regions
     {
       Float_t etamax[] = { 0.67, 0.67,-0.25, 0.67 };
       fidCut->AddEMCALFidCutMaxEtaArray(4,etamax);
@@ -212,19 +212,19 @@ void CalorimeterFiducialCutForIsolationAnalysis( AliFiducialCut* fidCut, TString
 //    if ( year == 2016 )     fidCut->SetSimpleEMCALFiducialCut(0.52, 261.2, 318.8) ;
 //    else                    fidCut->SetSimpleEMCALFiducialCut(0.52, 261.2, 325.8) ;
       
-      if ( year == 2016 ) // DCal 2 Regions
-      {
-        Float_t etamax[] = { 0.52,-0.25 };
-        fidCut->AddEMCALFidCutMaxEtaArray(2,etamax);
-        Float_t etamin[] = { 0.25,-0.52 };
-        fidCut->AddEMCALFidCutMinEtaArray(2,etamin);
-        
-        Float_t phimax[] = { 318.8, 318.8 };
-        fidCut->AddEMCALFidCutMaxPhiArray(2,phimax);
-        Float_t phimin[] = { 261.2, 261.2 };
-        fidCut->AddEMCALFidCutMinPhiArray(2,phimin);
-      }
-      else // DCal 3 regions
+//      if ( year == 2016 ) // DCal 2 Regions
+//      {
+//        Float_t etamax[] = { 0.52,-0.25 };
+//        fidCut->AddEMCALFidCutMaxEtaArray(2,etamax);
+//        Float_t etamin[] = { 0.25,-0.52 };
+//        fidCut->AddEMCALFidCutMinEtaArray(2,etamin);
+//
+//        Float_t phimax[] = { 318.8, 318.8 };
+//        fidCut->AddEMCALFidCutMaxPhiArray(2,phimax);
+//        Float_t phimin[] = { 261.2, 261.2 };
+//        fidCut->AddEMCALFidCutMinPhiArray(2,phimin);
+//      }
+//      else // DCal 3 regions
       {
         Float_t etamax[] = { 0.52,-0.25, 0.52 };
         fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
@@ -244,24 +244,24 @@ void CalorimeterFiducialCutForIsolationAnalysis( AliFiducialCut* fidCut, TString
     }
     
     // Acceptance of EMCal+DCal
-    if ( kAnaCaloTrackCorr.Contains("FullCalo") && year > 2014) 
+    if ( kAnaCaloTrackCorr.Contains("FullCalo") && year > 2014)
     {
       //fidCut->SetSimpleEMCALFiducialCut(0.52,  81.2, 325.8) ; //20 SM
-      
+
       // EMCal, 1 region - DCal 2 regions, remove 1/3 DCal
-      if ( year == 2016 )
-      {
-        Float_t etamax[] = { 0.52, 0.52,-0.25 };
-        fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
-        Float_t etamin[] = {-0.52, 0.25,-0.52 };
-        fidCut->AddEMCALFidCutMinEtaArray(3,etamin);
-        
-        Float_t phimax[] = { 185.8, 318.8, 318.8 };
-        fidCut->AddEMCALFidCutMaxPhiArray(3,phimax);
-        Float_t phimin[] = {  81.2, 261.2, 261.2 };
-        fidCut->AddEMCALFidCutMinPhiArray(3,phimin);
-      }
-      else // EMCal, 1 region - DCal 3 regions
+//      if ( year == 2016 )
+//      {
+//        Float_t etamax[] = { 0.52, 0.52,-0.25 };
+//        fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
+//        Float_t etamin[] = {-0.52, 0.25,-0.52 };
+//        fidCut->AddEMCALFidCutMinEtaArray(3,etamin);
+//
+//        Float_t phimax[] = { 185.8, 318.8, 318.8 };
+//        fidCut->AddEMCALFidCutMaxPhiArray(3,phimax);
+//        Float_t phimin[] = {  81.2, 261.2, 261.2 };
+//        fidCut->AddEMCALFidCutMinPhiArray(3,phimin);
+//      }
+//      else // EMCal, 1 region - DCal 3 regions
       {
         Float_t etamax[] = { 0.52, 0.52,-0.25, 0.52 };
         fidCut->AddEMCALFidCutMaxEtaArray(4,etamax);
@@ -288,19 +288,19 @@ void CalorimeterFiducialCutForIsolationAnalysis( AliFiducialCut* fidCut, TString
 //    if ( year == 2016 ) fidCut->SetSimpleEMCALFiducialCut(0.52, 270.5, 309.5) ;
 //    else                fidCut->SetSimpleEMCALFiducialCut(0.52, 270.5, 316.5) ;
       
-      if ( year == 2016 ) // DCal 2 regions, remove 1/3 DCal
-      {
-        Float_t etamax[] = { 0.52,-0.25 };
-        fidCut->AddEMCALFidCutMaxEtaArray(2,etamax);
-        Float_t etamin[] = { 0.25,-0.52 };
-        fidCut->AddEMCALFidCutMinEtaArray(2,etamin);
-        
-        Float_t phimax[] = { 309.5, 309.5 };
-        fidCut->AddEMCALFidCutMaxPhiArray(2,phimax);
-        Float_t phimin[] = { 270.5, 270.5 };
-        fidCut->AddEMCALFidCutMinPhiArray(2,phimin);
-      }
-      else // DCal 2 regions, remove 1/3 for trigger, not for cone content 
+//      if ( year == 2016 ) // DCal 2 regions, remove 1/3 DCal
+//      {
+//        Float_t etamax[] = { 0.52,-0.25 };
+//        fidCut->AddEMCALFidCutMaxEtaArray(2,etamax);
+//        Float_t etamin[] = { 0.25,-0.52 };
+//        fidCut->AddEMCALFidCutMinEtaArray(2,etamin);
+//
+//        Float_t phimax[] = { 309.5, 309.5 };
+//        fidCut->AddEMCALFidCutMaxPhiArray(2,phimax);
+//        Float_t phimin[] = { 270.5, 270.5 };
+//        fidCut->AddEMCALFidCutMinPhiArray(2,phimin);
+//      }
+//      else // DCal 2 regions, remove 1/3 for trigger, not for cone content
       {
         Float_t etamax[] = { 0.52,-0.25 };
         fidCut->AddEMCALFidCutMaxEtaArray(2,etamax);
@@ -354,8 +354,47 @@ void CalorimeterFiducialCutForIsolationAnalysis( AliFiducialCut* fidCut, TString
   
   if ( kAnaCutsString.Contains("TightAcc") )
   {
+    printf("CalorimeterFiducialCutForIsolationAnalysis::Tight acceptance!\n");
+
     if ( calorimeter == "EMCAL" ) fidCut->SetSimpleEMCALFiducialCut(0.27, 103, 157) ; // EMC 
   }
+  else if ( kAnaCutsString.Contains("OpenAcc") )
+  {
+    printf("CalorimeterFiducialCutForIsolationAnalysis::Open acceptance!\n");
+
+    if ( kAnaCaloTrackCorr.Contains("FullCalo") && year > 2014)
+    {
+      //fidCut->SetSimpleEMCALFiducialCut(0.67,  81.2, 325.8) ; //20 SM
+
+      Float_t etamax[] = { 0.67, 0.67,-0.25, 0.67 };
+      fidCut->AddEMCALFidCutMaxEtaArray(4,etamax);
+      Float_t etamin[] = {-0.67, 0.25,-0.67,-0.67 };
+      fidCut->AddEMCALFidCutMinEtaArray(4,etamin);
+
+      Float_t phimax[] = { 185.8, 318.8, 318.8, 325.8 };
+      fidCut->AddEMCALFidCutMaxPhiArray(4,phimax);
+      Float_t phimin[] = {  81.2, 261.2, 261.2, 321.2 };
+      fidCut->AddEMCALFidCutMinPhiArray(4,phimin);
+    } // full calo
+    else if      ( calorimeter == "EMCAL" )
+    {
+      if      ( year > 2014 ) fidCut->SetSimpleEMCALFiducialCut(0.67,  81.2, 185.8) ; //12 SM
+      else if ( year > 2010 ) fidCut->SetSimpleEMCALFiducialCut(0.67,  81.2, 178.8) ; //10 SM
+      else                    fidCut->SetSimpleEMCALFiducialCut(0.67,  81.2, 118.8) ; // 4 SM
+    }
+    else if ( calorimeter == "DCAL"  )
+    {
+      Float_t etamax[] = { 0.67,-0.25, 0.67 };
+      fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
+      Float_t etamin[] = { 0.25,-0.67,-0.67 };
+      fidCut->AddEMCALFidCutMinEtaArray(3,etamin);
+
+      Float_t phimax[] = { 318.8, 318.8, 325.8 };
+      fidCut->AddEMCALFidCutMaxPhiArray(3,phimax);
+      Float_t phimin[] = { 261.2, 261.2, 321.2 };
+      fidCut->AddEMCALFidCutMinPhiArray(3,phimin);
+    } // DCal
+  } // open acc
 }
 
 ///
@@ -2050,7 +2089,7 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 ///   
 ///   Options for analysisString:
 ///    * Analysis: "Photon","InvMass","Electron", "DecayPi0", "MergedPi0", "Charged", "QA", "Isolation", "Correlation", "Generator", "Random","ClusterShape","Exo", "GammaJet"
-///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "MultiIsoRUESubMethods","TightAcc", "FixIsoConeExcess","IsoBandUEGap","IsoBandUEGapFix05"
+///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "MultiIsoRUESubMethods","TightAcc","OpenAcc","FixIsoConeExcess","IsoBandUEGap","IsoBandUEGapFix05"
 ///    * Common: "SelectEmbed","HighMult","MCRealCaloAcc","PerSM","PerTCard","PerNCells","Bkg"
 ///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.7","TMEoP1.5"
 ///    * QA: QACellsOnly, QAClustersOnly

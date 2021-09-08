@@ -226,6 +226,12 @@ void AliAnalysisTaskJPsi_DG::UserCreateOutputObjects()
 
     // Counter for events passing each cut
     hCounterCuts = new TH1F("hCounterCuts", "# of events passing each cut", 10, -0.5, 9.5);
+    hCounterCuts->GetXaxis()->SetBinLabel(1,"0: non-empty ev");
+    hCounterCuts->GetXaxis()->SetBinLabel(2,"1: vrtx contrib");
+    hCounterCuts->GetXaxis()->SetBinLabel(3,"2: vrtx Z dist");
+    hCounterCuts->GetXaxis()->SetBinLabel(4,"3: two good trks");
+    hCounterCuts->GetXaxis()->SetBinLabel(5,"4: CCUP31 trigg");
+
     fOutputList->Add(hCounterCuts);
 
     // Number of triggered events per each run
@@ -303,33 +309,7 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
     if(fTimeRangeCut.CutEvent(InputEvent())) return;
 
     // ##########################################################
-        // CUT 1
-        // Central UPC trigger CCUP31
-        // Filling the histograms for the purposes of luminosity calculation
-        fTriggerName = fEvent->GetFiredTriggerClasses();
-        Bool_t triggered = kFALSE;
-        if(fRunNumber < 295881){
-            if(fTriggerName.Contains("CCUP31-B-NOPF-CENTNOTRD")){
-                triggered = kTRUE;
-                hCounterTrigger->Fill(fRunNumber);
-            } 
-        }
-        if(fRunNumber >= 295881){
-            if(fTriggerName.Contains("CCUP31-B-SPD2-CENTNOTRD")){
-                triggered = kTRUE;
-                hCounterTrigger->Fill(fRunNumber);
-            }
-        }
-        if(!triggered)
-        {
-            PostData(1, fTreeJPsi);
-            PostData(2, fOutputList);
-            return;        
-        }
-        hCounterCuts->Fill(iSelectionCounter);
-        iSelectionCounter++;
-    // ##########################################################
-        // CUT 2 & 3
+        // CUT 1 & 2
         // Check if each event has at maximum 1 vertex within 15 cm from the IP in beam direction
         const AliVVertex *fVertex = fEvent->GetPrimaryVertex();
         // At least two tracks associated with the vertex
@@ -351,30 +331,28 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
         hCounterCuts->Fill(iSelectionCounter);
         iSelectionCounter++;
     // ##########################################################
-        // CUT 4 
+        // CUT 3 
         // Select events with two good central tracks
         Int_t nTrks = fEvent->GetNumberOfTracks();
-        Bool_t goodTPCTrack = kFALSE;
-        Bool_t goodSPDTrack = kFALSE;
-        Int_t nGoodTracksSPD = 0;
         Int_t nGoodTracksTPC = 0;
+        Int_t nGoodTracksSPD = 0;
         Int_t *fIndicesOfGoodTracks = new Int_t[nTrks];
-        Int_t nGoodTracks = 0;
         for(Int_t iTrk(0); iTrk < nTrks; iTrk++){
             AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(iTrk));
+
             // If the track is empty
             if(!trk) continue;
+
             // Count good TPC tracks:
             if(fTrackCutsBit4->AcceptTrack(trk)){
-                goodTPCTrack = kTRUE;
                 nGoodTracksTPC++;
             }
+            
             // Count good SPD tracks:
             if(fTrackCutsBit4->AcceptTrack(trk) && trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1)){
-                goodSPDTrack = kTRUE;
-                nGoodTracksSPD++;
                 // If the track satisfies both the SPD and TPC criterion, add it to the list:
-                fIndicesOfGoodTracks[nGoodTracks] = iTrk;
+                fIndicesOfGoodTracks[nGoodTracksSPD] = iTrk;
+                nGoodTracksSPD++;  
             }
         }
         // Continue only if two good central tracks are found
@@ -383,6 +361,33 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
             PostData(2, fOutputList);
             delete [] fIndicesOfGoodTracks; 
             return;
+        }
+        hCounterCuts->Fill(iSelectionCounter);
+        iSelectionCounter++;
+    // ##########################################################
+        // CUT 4
+        // Central UPC trigger CCUP31
+        // Filling the histograms for the purposes of luminosity calculation
+        fTriggerName = fEvent->GetFiredTriggerClasses();
+        Bool_t triggered = kFALSE;
+        if(fRunNumber < 295881){
+            if(fTriggerName.Contains("CCUP31-B-NOPF-CENTNOTRD")){
+                triggered = kTRUE;
+                hCounterTrigger->Fill(fRunNumber);
+            } 
+        }
+        if(fRunNumber >= 295881){
+            if(fTriggerName.Contains("CCUP31-B-SPD2-CENTNOTRD")){
+                triggered = kTRUE;
+                hCounterTrigger->Fill(fRunNumber);
+            }
+        }
+        if(!triggered)
+        {
+            PostData(1, fTreeJPsi);
+            PostData(2, fOutputList);
+            delete [] fIndicesOfGoodTracks; 
+            return;        
         }
         hCounterCuts->Fill(iSelectionCounter);
         iSelectionCounter++;
@@ -408,9 +413,6 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
     if(isMuonPair < isElectronPair) TrkTrkKinematics(fIndicesOfGoodTracks, massMuon);
     else TrkTrkKinematics(fIndicesOfGoodTracks, massElectron);
     
-    // Clean up
-    delete [] fIndicesOfGoodTracks;
-
     // Check if SPD cluster matches FOhits (according to MB's macro)
     Int_t crossedFO[4];
     TBits fFOCrossedChips(1200); 
@@ -431,6 +433,9 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
 
     fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
     fMatchingSPD = IsSTGFired(fFOCrossFiredChips,fRunNumber >= 295753 ? 9 : 3);
+
+    // Clean up
+    delete [] fIndicesOfGoodTracks;
 
     // ##########################################################
     // Data from the other detectors

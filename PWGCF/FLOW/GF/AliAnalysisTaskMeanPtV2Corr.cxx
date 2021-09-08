@@ -1384,9 +1384,9 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
     if (!lPart->IsPhysicalPrimary()) continue;
     if (lPart->Charge()==0.) continue;
     Double_t pt = lPart->Pt();
-    Double_t lEta = TMath::Abs(lPart->Eta());
+    Double_t lEta = lPart->Eta();
     if (pt<0.15 || pt>50.) continue;
-    if(pt>0.2 && pt<3 && lEta<fEtaNch) lNchGen++;
+    if(pt>0.2 && pt<3 && TMath::Abs(lEta)<fEtaNch) lNchGen++;
     if(fEtaLow>-999) { if((lEta<fEtaLow) || (lEta>fEta)) continue; }
     else if(TMath::Abs(lEta) > fEta) continue;
     Double_t CompWeight = 1;
@@ -1425,6 +1425,8 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
     };
     Int_t pdgcode = lPart->PdgCode();
     Int_t pidind = fDisablePID?0:GetPIDIndex(pdgcode);
+    Int_t pidindBayes = GetBayesPIDIndex(lTrack);
+    if(pidind && (pidind!=pidindBayes+1)) pidind=0; //If the true PID does not correspond to bayesian, then drop this track
     if(lPart->IsPhysicalPrimary()) {
         fDCAxyVsPt_noChi2->Fill(lPart->Pt(),0.,trackXYZ[0],CompWeight);
         if(passDCA) fWithinDCAvsPt_noChi2->Fill(lPart->Pt(),0.,CompWeight);
@@ -1434,7 +1436,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
         }
         if(passBoth) {
           fEfficiency[0]->Fill(lPart->Pt(),l_Cent,CompWeight);
-          if(!fDisablePID && pidind) fEfficiency[pidind]->Fill(lPart->Pt(),l_Cent);
+          if(!fDisablePID && pidind) fEfficiency[pidind]->Fill(lPart->Pt(),l_Cent,CompWeight);
         };
     } else if(lPart->IsSecondaryFromWeakDecay()) {
       fDCAxyVsPt_noChi2->Fill(lPart->Pt(),1.,trackXYZ[0],CompWeight);
@@ -1445,7 +1447,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
       }
       if(passBoth) {
         fEfficiency[2*nSpecies]->Fill(lPart->Pt(),l_Cent);
-        if(!fDisablePID && pidind) fEfficiency[pidind+(2*nSpecies)]->Fill(lPart->Pt(),l_Cent);
+        if(!fDisablePID && pidind) fEfficiency[pidind+(2*nSpecies)]->Fill(lPart->Pt(),l_Cent,CompWeight);
       }
     } else if(lPart->IsSecondaryFromMaterial()) {
       fDCAxyVsPt_noChi2->Fill(lPart->Pt(),2.,trackXYZ[0],CompWeight);
@@ -1456,7 +1458,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
       }
       if(passBoth) {
         fEfficiency[2*nSpecies]->Fill(lPart->Pt(),l_Cent);
-        if(!fDisablePID && pidind) fEfficiency[pidind+(2*nSpecies)]->Fill(lPart->Pt(),l_Cent);
+        if(!fDisablePID && pidind) fEfficiency[pidind+(2*nSpecies)]->Fill(lPart->Pt(),l_Cent,CompWeight);
       }
     };
   };
@@ -1707,7 +1709,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::WithinSigma(Double_t SigmaCut, AliAODTrack *
   Double_t nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(inTrack,partType);
   return (TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF) < SigmaCut);
 }
-Int_t AliAnalysisTaskMeanPtV2Corr::GetBayesPIDIndex(AliAODTrack *l_track) {
+Int_t AliAnalysisTaskMeanPtV2Corr::GetBayesPIDIndex(AliVTrack *l_track) {
   Double_t l_Probs[AliPID::kSPECIES];
   Double_t l_MaxProb[] = {0.95,0.85,0.85};
   Bool_t l_TOFUsed = fBayesPID->ComputeProbabilities(l_track, fPIDResponse, l_Probs) & AliPIDResponse::kDetTOF;

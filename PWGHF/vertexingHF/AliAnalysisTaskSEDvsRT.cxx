@@ -370,10 +370,9 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
 
 
     fTrackFilter[iTc] = new AliAnalysisFilter(Form("fTrackFilter%d",iTc));
-    if (iTc != 0) esdTrackCutsRun2[iTc] = new AliESDtrackCuts(Form("esdTrackCutsRun2%d",iTc));
+    esdTrackCutsRun2[iTc] = new AliESDtrackCuts(Form("esdTrackCutsRun2%d",iTc));
 
     // TPC
-    if (iTc != 0) { //variations using ITS-TPC
     esdTrackCutsRun2[iTc]->SetCutGeoNcrNcl(geowidth,geolenght,1.5,0.85,0.7);
     esdTrackCutsRun2[iTc]->SetRequireTPCRefit(kTRUE);
     esdTrackCutsRun2[iTc]->SetMinRatioCrossedRowsOverFindableClustersTPC(minratiocrossrowstpcover);
@@ -401,11 +400,6 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
     	esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("7.5*(0.0026+0.0050/pt^1.01)");
     else
       esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); // (7*(------))
-    }
-    else { //Default: TPC-only track filter
-      esdTrackCutsRun2[iTc] = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    }
-
 
 
     fTrackFilter[iTc]->AddCuts(esdTrackCutsRun2[iTc]);

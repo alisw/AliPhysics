@@ -19,32 +19,6 @@ add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/AutoTrendQA
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA/phys/
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/omega3pi
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CPVperf
-		    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOSCalib
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Correlation
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_embedding
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Run2embedding
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_EpRatio
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Fluctuations
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_GAFlow
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_NeutralMeson
-		    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb_MC
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPbQA
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_pp_pi0
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Tagging
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_TriggerQA
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_pp_8TeV_2012
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Run2
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_LHC16_pp
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/UserTasks
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Resonances
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOSCorrectionFW
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
@@ -55,7 +29,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/TENDER/Tender
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/OADB
-		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+		            ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase/
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
@@ -81,10 +55,10 @@ set(SRCS
     PHOS_embedding/AliAnalysisTaskPi0DiffEfficiency.cxx
     PHOS_embedding/AliAnalysisTaskPi0Efficiency.cxx
     PHOS_embedding/AliPHOSEmbedding.cxx
-    PHOS_Fluctuations/AliAnalysisPHOSFluctuations.cxx
     PHOS_Run2embedding/AliPHOSEmbeddingRun2.cxx
     PHOS_Run2embedding/AliPHOSEventCounter.cxx
     PHOS_EpRatio/AliAnalysisTaskEpRatio.cxx
+    PHOS_Fluctuations/AliAnalysisPHOSFluctuations.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlow.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlowMC.cxx
     PHOS_LHC16_pp/AliAnalysisTaskPP13.cxx
