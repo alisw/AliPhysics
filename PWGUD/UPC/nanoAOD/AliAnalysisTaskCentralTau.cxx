@@ -145,6 +145,9 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
   hParticleTypeCounter = new TH1I("hParticleTypeCounter","Electron, Muon, Pion",4,-0.5,3.5);
   fOutputList->Add(hParticleTypeCounter);
 
+  PostData(1, fOutputList);
+
+
   fOutputPID = new TList();
   fOutputPID ->SetOwner(); // @suppress("Ambiguous problem")
 
@@ -348,9 +351,11 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
       }
     }
 
-    PostData(2, fOutputPID);
 
-  	if (!isOneTrackElectron) return;
+  	if (!isOneTrackElectron) {
+      PostData(2, fOutputPID);
+  	  return;
+  	}
 
     //
     // SAVE STG DECISION
@@ -400,6 +405,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   fTriggerClass[0] = isCUP29; fTriggerClass[1] = isCUP30; fTriggerClass[2] = isCUP31;
 
   PostData(1, fOutputList);
+  PostData(2, fOutputPID);
 
 }//UserExec
 
