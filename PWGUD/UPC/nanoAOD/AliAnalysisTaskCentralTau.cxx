@@ -145,9 +145,6 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
   hParticleTypeCounter = new TH1I("hParticleTypeCounter","Electron, Muon, Pion",4,-0.5,3.5);
   fOutputList->Add(hParticleTypeCounter);
 
-  PostData(1, fOutputList);
-
-
   fOutputPID = new TList();
   fOutputPID ->SetOwner(); // @suppress("Ambiguous problem")
 
@@ -158,7 +155,9 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
   tPID ->Branch("fTPCmostProbableTrackType", &fTPCmostProbableTrackType[0], "fTPCmostProbableTrackType[2]/I");
   tPID ->Branch("fTOFmostProbableTrackType", &fTOFmostProbableTrackType[0], "fTOFmostProbableTrackType[2]/I");
   fOutputPID->Add(tPID);
-     
+
+
+  PostData(1, fOutputList);
   PostData(2, fOutputPID);
 
 }//UserCreateOutputObjects
@@ -311,7 +310,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
       SetCrossed(crossedFO, fFOCrossedChips);
 
       // PID standalone analysis
-      TPCsignalInfo(trk, iTrack);
+      TPCandTOFsignalInfo(trk, iTrack);
 
   	  //
   	  // PID AND KINEMATIC INFO
@@ -351,6 +350,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
       }
     }
 
+    tPID->Fill();
 
   	if (!isOneTrackElectron) {
       PostData(2, fOutputPID);
@@ -419,11 +419,7 @@ Int_t AliAnalysisTaskCentralTau::TestPIDTPChypothesis(Float_t e, Float_t m, Floa
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCentralTau::TPCsignalInfo(AliESDtrack *trk, Int_t trkID){
-
-
-//  Float_tfTPCsignal[2],fTOFsignal[2];
-//  Int_t fTPCmostProbableTrackType[2], fTOFmostProbableTrackType[2];
+void AliAnalysisTaskCentralTau::TPCandTOFsignalInfo(AliESDtrack *trk, Int_t trkID){
 
   fPIDpt[trkID] = trk->Pt();
   fTPCsignal[trkID] = trk->GetTPCsignal();

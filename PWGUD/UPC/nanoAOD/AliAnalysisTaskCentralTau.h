@@ -30,7 +30,7 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   
   void SetParameters(Float_t cutE){cutEta = cutE;}
   Int_t TestPIDTPChypothesis(Float_t e, Float_t m, Float_t p);
-  void TPCsignalInfo(AliESDtrack *trk, Int_t trkID);
+  void TPCandTOFsignalInfo(AliESDtrack *trk, Int_t trkID);
   void SetCrossed(Int_t spd[4], TBits &crossed);
   Int_t GetChipId(Int_t index, Int_t &chipId2, Bool_t debug=0);
   Bool_t IsSTGFired(TBits bits, Int_t dphiMin=4, Int_t dphiMax=10, Bool_t tolerance = 1);
