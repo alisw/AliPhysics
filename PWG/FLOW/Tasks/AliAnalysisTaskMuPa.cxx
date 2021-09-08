@@ -119,6 +119,13 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fToyNUAList(NULL), 
  fToyNUAFlagsPro(NULL),   
 
+ // Internal validation:
+ fInternalValidationList(NULL),
+ fInternalValidationFlagsPro(NULL),
+ fUseInternalValidation(kFALSE),
+ fnEventsInternalValidation(1e4),
+ fInternalValidationHarmonics(NULL),
+
  // Test0:
  fTest0List(NULL), 
  fTest0FlagsPro(NULL),   
@@ -260,6 +267,13 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fToyNUAList(NULL), 
  fToyNUAFlagsPro(NULL),   
 
+ // Internal validation:
+ fInternalValidationList(NULL),
+ fInternalValidationFlagsPro(NULL),
+ fUseInternalValidation(kFALSE),
+ fnEventsInternalValidation(0),
+ fInternalValidationHarmonics(NULL),
+
  // Test0:
  fTest0List(NULL), 
  fTest0FlagsPro(NULL),   
@@ -363,6 +377,7 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
  this->BookCorrelationsHistograms();
  this->BookNestedLoopsHistograms(); 
  this->BookToyNUAHistograms(); 
+ this->BookInternalValidationHistograms(); 
  this->BookTest0Histograms(); 
  this->BookFinalResultsHistograms();
 
@@ -404,6 +419,8 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
 
  Green(__PRETTY_FUNCTION__); 
  fEventCounter++;
+
+ if(fUseInternalValidation){this->InternalValidation(); return;} // only do internal validation for all implemented correlations against the theoretical values
 
  // a) Get pointer to AOD event:
  AliMCEvent *aMC = MCEvent();                                  // from TaskSE
@@ -768,6 +785,7 @@ void AliAnalysisTaskMuPa::InitializeArrays()
  this->InitializeArraysForCorrelationsHistograms();
  this->InitializeArraysForNestedLoopsHistograms();
  this->InitializeArraysForToyNUA();
+ this->InitializeArraysForInternalValidation();
  this->InitializeArraysForTest0();
  this->InitializeArraysForCommonLabels();
 
@@ -856,6 +874,18 @@ void AliAnalysisTaskMuPa::InitializeArraysForToyNUA()
  } 
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForToyNUA()
+
+//================================================================================================================
+
+void AliAnalysisTaskMuPa::InitializeArraysForInternalValidation()
+{
+ // Initialize all arrays for internal validation.
+
+ // Multiplicity range: min <= M < max
+ fMultRangeInternalValidation[0] = 1000; // min
+ fMultRangeInternalValidation[1] = 1001; // max
+
+} // void AliAnalysisTaskMuPa::InitializeArraysForInternalValidation()
 
 //================================================================================================================
 
@@ -1287,7 +1317,8 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  // b) Centrality.
  // c) Centrality weights;
  // d) Toy NUA;
- // e) Supported triggers.
+ // e) Supported triggers;
+ // f) Internal validation.
 
  Green(__PRETTY_FUNCTION__);
 
@@ -1333,6 +1364,22 @@ void AliAnalysisTaskMuPa::InsanityChecks()
   Red(Form("The trigger \"%s\" is not supported (yet).",fTrigger.Data()));
   cout<<__LINE__<<endl;
   exit(1);
+ } 
+
+ // f) Internal validation:
+ if(fUseInternalValidation)
+ {
+  if(fnEventsInternalValidation < 1){cout<<__LINE__<<endl;exit(1);}
+  if(fMultRangeInternalValidation[0] >= fMultRangeInternalValidation[1]){cout<<__LINE__<<endl;exit(1);}
+  if(!fInternalValidationHarmonics){cout<<__LINE__<<endl;exit(1);}
+  for(Int_t h=0;h<fInternalValidationHarmonics->GetSize();h++)
+  {
+   if(TMath::Abs(fInternalValidationHarmonics->GetAt(h)) > 0.5)
+   {
+    cout<<Form("v_%d = %f is too large to be taken seriously.",h+1,fInternalValidationHarmonics->GetAt(h))<<endl;
+    cout<<__LINE__<<endl;exit(1);
+   }
+  }
  } 
 
  //Green("=> Done with InsanityChecks()!");
@@ -1383,7 +1430,8 @@ void AliAnalysisTaskMuPa::BookAndNestAllLists()
  // g) Correlations;
  // h) Nested loops;
  // i) Toy NUA;
- // j) Test0.
+ // j) Internal validation;
+ // k) Test0.
 
  // *) Book and nest lists for final results.
 
@@ -1445,7 +1493,13 @@ void AliAnalysisTaskMuPa::BookAndNestAllLists()
  fToyNUAList->SetOwner(kTRUE);
  fBaseList->Add(fToyNUAList);
 
- // i) Test0:
+ // j) Internal validation:
+ fInternalValidationList = new TList();
+ fInternalValidationList->SetName("InternalValidation");
+ fInternalValidationList->SetOwner(kTRUE);
+ fBaseList->Add(fInternalValidationList);
+
+ // k) Test0:
  fTest0List = new TList();
  fTest0List->SetName("Test0");
  fTest0List->SetOwner(kTRUE);
@@ -2057,6 +2111,8 @@ void AliAnalysisTaskMuPa::BookToyNUAHistograms()
  // a) Book the profile holding flags:
  fToyNUAFlagsPro = new TProfile("fToyNUAFlagsPro","flags for toy NUA",5,0.,5.);
  fToyNUAFlagsPro->SetStats(kFALSE);
+ fToyNUAFlagsPro->SetLineColor(COLOR);
+ fToyNUAFlagsPro->SetFillColor(FILLCOLOR);
  fToyNUAFlagsPro->GetXaxis()->SetLabelSize(0.04); 
  fToyNUAFlagsPro->GetXaxis()->SetBinLabel(1,"fUseToyNUA[PHI]"); fToyNUAFlagsPro->Fill(0.5,fUseToyNUA[PHI]);
  fToyNUAFlagsPro->GetXaxis()->SetBinLabel(2,"fUseToyNUA[PT]"); fToyNUAFlagsPro->Fill(1.5,fUseToyNUA[PT]);
@@ -2066,6 +2122,39 @@ void AliAnalysisTaskMuPa::BookToyNUAHistograms()
  fToyNUAList->Add(fToyNUAFlagsPro);
 
 } // void AliAnalysisTaskMuPa::BookToyNUAHistograms()
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMuPa::BookInternalValidationHistograms()
+{
+ // Book all internal validation histograms.
+
+ // a) Book the profile holding flags;
+
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
+ // a) Book the profile holding flags:
+ fInternalValidationFlagsPro = new TProfile("fInternalValidationFlagsPro","flags for internal validation",7,0.,7.);
+ fInternalValidationFlagsPro->SetStats(kFALSE);
+ fInternalValidationFlagsPro->SetLineColor(COLOR);
+ fInternalValidationFlagsPro->SetFillColor(FILLCOLOR);
+ fInternalValidationFlagsPro->GetXaxis()->SetLabelSize(0.04); 
+ fInternalValidationFlagsPro->GetXaxis()->SetBinLabel(1,"fUseInternalValidation"); fInternalValidationFlagsPro->Fill(0.5,fUseInternalValidation);
+ for(Int_t e=0;e<7;e++) // hardwired support for harmonics v1-v6
+ {
+  fInternalValidationFlagsPro->GetXaxis()->SetBinLabel(e+2,Form("v_{%d}",e+1)); 
+  if(fInternalValidationHarmonics && (e+1 <= fInternalValidationHarmonics->GetSize()))
+  {
+   fInternalValidationFlagsPro->Fill(e+1+0.5,fInternalValidationHarmonics->GetAt(e));
+  }
+  else
+  {
+   fInternalValidationFlagsPro->Fill(e+1+0.5,0.0); // default values of all harmonics are 0
+  }
+ } // for(Int_t e=0;e<fInternalValidationHarmonics->GetSize()) 
+ fInternalValidationList->Add(fInternalValidationFlagsPro);
+
+} // void AliAnalysisTaskMuPa::BookInternalValidationHistograms()
 
 //=======================================================================================================================
 
@@ -3727,7 +3816,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
  {
   // 2p:
   //cout<<"   => CalculateCorrelations(void), 2p .... "<<endl;
-  if(fMultiplicity<2){return;}
+  if(fSelectedTracks<2){return;}
   TComplex twoC = Two(h,-h)/Two(0,0).Re(); // cos
   //TComplex twoS = Two(h,-h)/Two(0,0).Im(); // sin
   Double_t wTwo = Two(0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
@@ -3740,7 +3829,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
 
   // 4p:
   //cout<<"   => CalculateCorrelations(void), 4p .... "<<endl;
-  if(fMultiplicity<4){return;}
+  if(fSelectedTracks<4){return;}
   TComplex fourC = Four(h,h,-h,-h)/Four(0,0,0,0).Re(); // cos
   //TComplex fourS = Four(h,h,-h,-h)/Four(0,0,0,0).Im(); // sin
   Double_t wFour = Four(0,0,0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
@@ -4720,7 +4809,7 @@ void AliAnalysisTaskMuPa::CalculateTest0()
     // Extract harmonics from TString, FS is " ": 
     for(Int_t h=0;h<=mo;h++)
     {
-     n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi(); // okay... Check if there is a performance penalty here TBI 20210906 . Can I use  string[t-1] - '0';
+     n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi(); // okay...
     }
 
     switch(mo+1) // which order? yes, mo+1
@@ -4789,6 +4878,109 @@ void AliAnalysisTaskMuPa::CalculateTest0()
  } // for(Int_t mo=0;mo<gMaxOrder;mo++) 
 
 } // void AliAnalysisTaskMuPa::CalculateTest0()
+
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::InternalValidation()
+{
+ // Internal validation against theoretical values in on-the-fly study for all implemented correlators. 
+
+ // a) Configure Fourier like p.d.f. for azimuthal angles;
+ // b) Loop over on-the-fly events.
+ //    b0) Reset ebe quantities;
+ //    b1) Determine multiplicity and reaction plane;
+ //    b2) Loop over particles;
+ //    b3) Calculate correlations;
+ // c) Bail out directly from here when done;
+ // d) Hasta la vista.
+
+ // a) Configure Fourier like p.d.f. for azimuthal angles:
+ TF1 *fPhiPDF = new TF1("fPhiPDF","1+2.*[1]*TMath::Cos(x-[0])+2.*[2]*TMath::Cos(2.*(x-[0]))+2.*[3]*TMath::Cos(3.*(x-[0]))+2.*[4]*TMath::Cos(4.*(x-[0]))+2.*[5]*TMath::Cos(5.*(x-[0]))+2.*[6]*TMath::Cos(6.*(x-[0]))",0.,TMath::TwoPi());
+ fPhiPDF->SetParName(0,"Reaction Plane");
+ fPhiPDF->SetParameter(0,0.);
+ for(Int_t h=1;h<=6;h++)
+ {
+  fPhiPDF->SetParName(h,Form("v_{%d}",h)); 
+  if(h<=fInternalValidationHarmonics->GetSize())
+  { 
+   fPhiPDF->SetParameter(h,fInternalValidationHarmonics->GetAt(h-1));
+  }
+  else
+  {
+   fPhiPDF->SetParameter(h,0.);
+  } 
+ } // for(Int_t h=1;h<=6;h++)
+ 
+ // b) Loop over on-the-fly events:
+ Double_t step = 10.; // in percentage. Used only for the printout of progress
+ TStopwatch watch;
+ watch.Start();
+ for(Int_t e=0;e<fnEventsInternalValidation;e++) 
+ {
+  if(1.*e/(fnEventsInternalValidation) > step/100.)
+  {
+   cout<<Form("Simulated %d%% events of requested %d",(Int_t)step,fnEventsInternalValidation)<<endl;
+   watch.Print(); watch.Continue();
+   step+=10.;
+  } 
+
+  // b0) Reset ebe quantities:
+  this->ResetEventByEventQuantities();
+
+  // b1) Determine multiplicity and reaction plane:
+  Int_t nMult = gRandom->Uniform(fMultRangeInternalValidation[0],fMultRangeInternalValidation[1]);
+  Double_t fReactionPlane = gRandom->Uniform(0.,TMath::TwoPi());
+  fPhiPDF->SetParameter(0,fReactionPlane);
+
+  // b2) Loop over particles:
+  Double_t dPhi = 0.;
+  for(Int_t p=0;p<nMult;p++) 
+  {   
+   // Particle angle:
+   dPhi = fPhiPDF->GetRandom(); 
+   // Fill Q-vector (simplified version, without weights):
+   for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
+   {
+    for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+    {
+     fQvector[h][wp] += TComplex(TMath::Cos(h*dPhi),TMath::Sin(h*dPhi));    
+    } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
+   } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
+  } // for(Int_t p=0;p<nMult;p++) 
+
+  // b3) Calculate correlations:
+  fSelectedTracks = nMult;
+  fCentrality = gRandom->Uniform(0.,100.); // in any case it's meaningless in this exercise
+  this->CalculateCorrelations();
+ } // for(Int_t e=0;e<fnEventsInternalValidation;e++) 
+
+ // c) Bail out directly from here when done:
+ //    For the file name, I use again "AnalysisResults.root", not to bother with updating all scripts
+ cout<<Form("\nInternal validation is over after %d events on-the-fly.\nDumping results in the file %s ....",fnEventsInternalValidation,"AnalysisResults.root")<<endl;
+ sleep(2);
+ TFile *f = new TFile("AnalysisResults.root","recreate");
+ fBaseList->Write(fBaseList->GetName(),TObject::kSingleKey);
+ f->Close();
+ cout<<"Dumped!\n"<<endl;
+
+ // d) Hasta la vista:
+ exit(1);
+
+} // void AliAnalysisTaskMuPa::InternalValidation()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

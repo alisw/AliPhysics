@@ -30,6 +30,8 @@
 #include <TArrayD.h>
 #include <TArrayI.h>
 #include <TSystem.h>
+#include <TF1.h>
+#include <TStopwatch.h>
 
 // Global variables:
 const Int_t gCentralityEstimators = 4; // set here number of supported centrality estimators
@@ -83,6 +85,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    virtual void InitializeArraysForCorrelationsHistograms();
    virtual void InitializeArraysForNestedLoopsHistograms();
    virtual void InitializeArraysForToyNUA();
+   virtual void InitializeArraysForInternalValidation();
    virtual void InitializeArraysForTest0();
    virtual void InitializeArraysForCommonLabels();
 
@@ -99,10 +102,12 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void BookCorrelationsHistograms();
   virtual void BookNestedLoopsHistograms();
   virtual void BookToyNUAHistograms();
+  virtual void BookInternalValidationHistograms();
   virtual void BookTest0Histograms();
   virtual void BookFinalResultsHistograms();
 
   // 2) Methods called in UserExec(Option_t *):
+  virtual void InternalValidation();
   virtual void PrintEventInfo(AliVEvent *ave); // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enable via task->SetPrintEventInfo()  
   virtual void FillQAHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs);
   virtual void FillQAHistograms(AliAODEvent *aAOD, AliMCEvent *aMC);
@@ -446,6 +451,22 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fUseToyNUA[var] = kTRUE;
   }
 
+  // Internal validation:
+  void SetUseInternalValidation(Bool_t uiv, Int_t nEvts) 
+  {
+   this->fUseInternalValidation = uiv; 
+   this->fnEventsInternalValidation = nEvts;
+   this->fCalculateQvector = kTRUE; // yes, otherwise this check is pointless
+   this->fCalculateCorrelations = kTRUE; // yes, otherwise this check is pointless
+   this->fCalculateTest0 = kTRUE; // yes, otherwise this check is pointless
+  };
+  void SetMultRangeInternalValidation(Int_t min, Int_t max) 
+  {
+   this->fMultRangeInternalValidation[0] = min; 
+   this->fMultRangeInternalValidation[1] = max;
+  };
+  void SetInternalValidationHarmonics(TArrayD *ivh){this->fInternalValidationHarmonics = ivh;};
+
   // Utility:
   void Red(const char* text);
   void Green(const char* text);
@@ -631,12 +652,20 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TArrayD *ftaNestedLoops[2];              //! e-b-e container for nested loops [0=angles;1=product of all weights]   
 
   // 9) Toy NUA:
-  TList *fToyNUAList;                           // list to hold all correlations objects
-  TProfile *fToyNUAFlagsPro;                    // profile to hold all flags for correlations
+  TList *fToyNUAList;                           // list to hold all Toy NUA objects
+  TProfile *fToyNUAFlagsPro;                    // profile to hold all flags for Toy NUA
   Bool_t fUseToyNUA[gKinematicVariables];       // use toy NUA for particular kinematic variable
   Double_t fToyNUACuts[gKinematicVariables][3]; // stores probability [0] and NUA sector range min [1] and max [2]. Use task->SetToyNUACuts("variable",probability,min,max)
 
-  //10) Test0:  
+  //10) Internal validation:
+  TList *fInternalValidationList;        // list to hold all objects for internal validation
+  TProfile *fInternalValidationFlagsPro; // profile to hold all flags for internal validation
+  Bool_t fUseInternalValidation;         // use internal validation
+  Int_t fnEventsInternalValidation;      // how many events will be sampled on-the-fly for internal validation
+  TArrayD *fInternalValidationHarmonics; // 0 = v1, 1 = v2, etc.
+  Int_t fMultRangeInternalValidation[2]; // min and max values for uniform multiplicity distribution in on-the-fly analysis
+
+  //11) Test0:  
   TList *fTest0List;            // TBI
   TProfile *fTest0FlagsPro;     // TBI 
   Bool_t fCalculateTest0;       // TBI
@@ -667,7 +696,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,18);
+  ClassDef(AliAnalysisTaskMuPa,19);
 
 };
 
