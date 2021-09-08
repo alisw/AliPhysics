@@ -136,8 +136,8 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
   tTwoTracks ->Branch("fPIDpt", &fPIDpt[0], "fPIDpt[2]/F");
   tTwoTracks ->Branch("fTPCsignal", &fTPCsignal[0], "fTPCsignal[2]/F");
   tTwoTracks ->Branch("fTOFsignal", &fTOFsignal[0], "fTOFsignal[2]/F");
-  tTwoTracks ->Branch("fTPCmostProbableTrackID", &fTPCmostProbableTrackType[0], "fTPCmostProbableTrackID/I");
-  tTwoTracks ->Branch("fTOFmostProbableTrackID", &fTOFmostProbableTrackType[0], "fTOFmostProbableTrackID/I");
+  tTwoTracks ->Branch("fTPCmostProbableTrackType", &fTPCmostProbableTrackType[0], "fTPCmostProbableTrackType[2]/I");
+  tTwoTracks ->Branch("fTOFmostProbableTrackType", &fTOFmostProbableTrackType[0], "fTOFmostProbableTrackType[2]/I");
   fOutputList->Add(tTwoTracks);
 
   hTriggerCounter = new TH2I("hTriggerCounter","Number of analyzed UPC triggers per run",3,1,4,3000,295000,298000);
@@ -155,8 +155,8 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
   tPID ->Branch("fPIDpt", &fPIDpt[0], "fPIDpt[2]/F");
   tPID ->Branch("fTPCsignal", &fTPCsignal[0], "fTPCsignal[2]/F");
   tPID ->Branch("fTOFsignal", &fTOFsignal[0], "fTOFsignal[2]/F");
-  tPID ->Branch("fTPCmostProbableTrackID", &fTPCmostProbableTrackType[0], "fTPCmostProbableTrackID/I");
-  tPID ->Branch("fTOFmostProbableTrackID", &fTOFmostProbableTrackType[0], "fTOFmostProbableTrackID/I");
+  tPID ->Branch("fTPCmostProbableTrackType", &fTPCmostProbableTrackType[0], "fTPCmostProbableTrackType[2]/I");
+  tPID ->Branch("fTOFmostProbableTrackType", &fTOFmostProbableTrackType[0], "fTOFmostProbableTrackType[2]/I");
   fOutputPID->Add(tPID);
      
   PostData(2, fOutputPID);
