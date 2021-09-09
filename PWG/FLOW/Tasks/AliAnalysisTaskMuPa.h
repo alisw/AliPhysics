@@ -145,6 +145,15 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual TComplex Two(Int_t n1, Int_t n2);
   virtual TComplex Three(Int_t n1, Int_t n2, Int_t n3);
   virtual TComplex Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4);
+  virtual TComplex Five(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
+  virtual TComplex Six(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6);
+  virtual TComplex Seven(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7);
+  virtual TComplex Eight(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8);
+  virtual TComplex Nine(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8, Int_t n9);
+  virtual TComplex Ten(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8, Int_t n9, Int_t n10);
+  virtual TComplex Eleven(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8, Int_t n9, Int_t n10, Int_t n11);
+  virtual TComplex Twelve(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8, Int_t n9, Int_t n10, Int_t n11, Int_t n12);
+  virtual TComplex Recursion(Int_t n, Int_t* harmonic, Int_t mult = 1, Int_t skip = 0); // Credits: Kristjan Gulbrandsen (gulbrand@nbi.dk) 
 
   // 5) Setters and getters:
   void SetRealData(Bool_t rd){this->fRealData = rd;};
@@ -623,7 +632,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fCalculateQvector;   // to calculate or not to calculate Q-vector components, that's a Boolean...
   Int_t fMaxHarmonic;         // 6 (not going beyond v6, if you change this value, change also fQvector[49][9]) 
   Int_t fMaxCorrelator;       // 8 (not going beyond 8-p correlations, if you change this value, change also fQvector[49][9]) 
-  TComplex fQvector[49][9];   //! Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1]  
+  //TComplex fQvector[49][9];   //! Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1]  
+  TComplex fQvector[73][13];   //! Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*12+1][12+1]  
 
   // 5) Particle weights: 
   TList *fWeightsList;          // list to hold all Q-vector objects       
