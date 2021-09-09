@@ -175,7 +175,7 @@ void AliAnalysisTaskJPsi_DG::UserCreateOutputObjects()
     // OUTPUT TREE:
 
     fTreeJPsi = new TTree("fTreeJPsi", "fTreeJPsi");
-    // Basic things
+    // Basic things:
     fTreeJPsi->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
     fTreeJPsi->Branch("fTriggerName", &fTriggerName);
     // PID, sigmas:
@@ -198,11 +198,11 @@ void AliAnalysisTaskJPsi_DG::UserCreateOutputObjects()
     fTreeJPsi->Branch("fQ1", &fQ1, "fQ1/D");
     fTreeJPsi->Branch("fQ2", &fQ2, "fQ2/D");
     // Info from the detectors:
-    // ZDC
+    // ZDC:
     fTreeJPsi->Branch("fZNA_energy", &fZNA_energy, "fZNA_energy/D");
     fTreeJPsi->Branch("fZNC_energy", &fZNC_energy, "fZNC_energy/D");
-    fTreeJPsi->Branch("fZNA_time", &fZNA_time[0], "fZNA_TDC[4]/D");
-    fTreeJPsi->Branch("fZNA_time", &fZNC_time[0], "fZNC_TDC[4]/D");
+    fTreeJPsi->Branch("fZNA_time", &fZNA_time[0], "fZNA_time[4]/D");
+    fTreeJPsi->Branch("fZNC_time", &fZNC_time[0], "fZNC_time[4]/D");
     // V0:
     fTreeJPsi->Branch("fV0A_dec", &fV0A_dec, "fV0A_dec/I");
     fTreeJPsi->Branch("fV0C_dec", &fV0C_dec, "fV0C_dec/I");
@@ -213,7 +213,7 @@ void AliAnalysisTaskJPsi_DG::UserCreateOutputObjects()
     fTreeJPsi->Branch("fADC_dec", &fADC_dec, "fADC_dec/I");
     fTreeJPsi->Branch("fADA_time", &fADA_time, "fADA_time/D");
     fTreeJPsi->Branch("fADC_time", &fADC_time, "fADC_time/D");
-    // Matching SPD clusters with FOhits
+    // Matching SPD clusters with FOhits:
     fTreeJPsi->Branch("fMatchingSPD", &fMatchingSPD, "fMatchingSPD/O");
     
     PostData(1, fTreeJPsi);
@@ -301,12 +301,30 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
         iSelectionCounter++;
     // ##########################################################
 
-    // Get the run number associated to the ESD event
+    // Get the run number associated with the ESD event
     fRunNumber = fEvent->GetRunNumber(); 
 
     // Time range cuts: https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGRunList18r 
     fTimeRangeCut.InitFromEvent(InputEvent());
     if(fTimeRangeCut.CutEvent(InputEvent())) return;
+
+    // Check the central UPC trigger CCUP31
+    // Fill the hCounterTrigger (to calculate the integrated lumi of the analysed sample)
+    // Cut on trigger will be performed later (# 4)
+    fTriggerName = fEvent->GetFiredTriggerClasses();
+    Bool_t triggered = kFALSE;
+    if(fRunNumber < 295881){
+        if(fTriggerName.Contains("CCUP31-B-NOPF-CENTNOTRD")){
+            triggered = kTRUE;
+            hCounterTrigger->Fill(fRunNumber);
+        } 
+    }
+    if(fRunNumber >= 295881){
+        if(fTriggerName.Contains("CCUP31-B-SPD2-CENTNOTRD")){
+            triggered = kTRUE;
+            hCounterTrigger->Fill(fRunNumber);
+        }
+    }
 
     // ##########################################################
         // CUT 1 & 2
@@ -367,21 +385,6 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
     // ##########################################################
         // CUT 4
         // Central UPC trigger CCUP31
-        // Filling the histograms for the purposes of luminosity calculation
-        fTriggerName = fEvent->GetFiredTriggerClasses();
-        Bool_t triggered = kFALSE;
-        if(fRunNumber < 295881){
-            if(fTriggerName.Contains("CCUP31-B-NOPF-CENTNOTRD")){
-                triggered = kTRUE;
-                hCounterTrigger->Fill(fRunNumber);
-            } 
-        }
-        if(fRunNumber >= 295881){
-            if(fTriggerName.Contains("CCUP31-B-SPD2-CENTNOTRD")){
-                triggered = kTRUE;
-                hCounterTrigger->Fill(fRunNumber);
-            }
-        }
         if(!triggered)
         {
             PostData(1, fTreeJPsi);
@@ -548,8 +551,8 @@ Bool_t AliAnalysisTaskJPsi_DG::IsSTGFired(TBits bits, Int_t dphiMin, Int_t dphiM
     for (Int_t dphi=dphiMin;dphi<=dphiMax;dphi++) for (Int_t i=0; i<20; ++i) stg |= phi[i] & phi[(i+dphi)%20];
     return stg;
 }
-void AliAnalysisTaskJPsi_DG::Terminate(Option_t *)
 //_____________________________________________________________________________
+void AliAnalysisTaskJPsi_DG::Terminate(Option_t *)
 {
     // the end
 }
