@@ -805,9 +805,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   {
     tCaloTrigger->Branch("fIndexBCs", &calotrigger.fIndexBCs, "fIndexBCs/I");
     tCaloTrigger->Branch("fFastOrAbsID", &calotrigger.fFastOrAbsID, "fFastOrAbsID/S");
-    tCaloTrigger->Branch("fL0Amplitude", &calotrigger.fL0Amplitude, "fL0Amplitude/F");
-    tCaloTrigger->Branch("fL1TimeSum", &calotrigger.fL1TimeSum, "fL1TimeSum/F");
-    tCaloTrigger->Branch("fNL0Times", &calotrigger.fNL0Times, "fNL0Times/B");
+    tCaloTrigger->Branch("fLnAmplitude", &calotrigger.fLnAmplitude, "fLnAmplitude/F");
     tCaloTrigger->Branch("fTriggerBits", &calotrigger.fTriggerBits, "fTriggerBits/I");
     tCaloTrigger->Branch("fCaloType", &calotrigger.fCaloType, "fCaloType/B");
     tCaloTrigger->SetBasketSize("*", fBasketSizeEvents);
@@ -1904,40 +1902,12 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   } // end loop on calo cells
   eventextra.fNentries[kCalo] = ncalocells_filled;
 
-  AliEMCALGeometry *geo = AliEMCALGeometry::GetInstanceFromRunNumber(fVEvent->GetRunNumber()); // Needed for EMCAL trigger mapping
-  AliVCaloTrigger *calotriggers = fVEvent->GetCaloTrigger("EMCAL");
-  calotriggers->Reset();
+  // TODO add EMCAL and PHOS code here
   Int_t ncalotriggers_filled = 0; // total number of EMCAL triggers filled per event
-  while (calotriggers->Next())
-  {
-    calotrigger.fIndexBCs = fBCCount;
-    int col, row, fastorID;
-    calotriggers->GetPosition(col, row);
-    // filter null entries: they usually have negative entries and no trigger bits
-    // in case of trigger bits the energy can be 0 or negative but the trigger position is marked
-    int l1timesum, triggerbits;
-    calotriggers->GetTriggerBits(triggerbits);
-    calotriggers->GetL1TimeSum(l1timesum);
-    if (!triggerbits && l1timesum <= 0)
-      continue;
-    // store trigger
-    geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(col, row, fastorID);
-    calotrigger.fFastOrAbsID = fastorID;
-    calotriggers->GetAmplitude(calotrigger.fL0Amplitude);
-    calotrigger.fL0Amplitude = AliMathBase::TruncateFloatFraction(calotrigger.fL0Amplitude, mCaloAmp);
-    calotrigger.fL1TimeSum = AliMathBase::TruncateFloatFraction(l1timesum, mCaloAmp);
-    calotriggers->GetTime(calotrigger.fL0Time);
-    calotrigger.fL0Time = AliMathBase::TruncateFloatFraction(calotrigger.fL0Time, mCaloTime);
-    calotriggers->GetTriggerBits(calotrigger.fTriggerBits);
-    Int_t nL0times;
-    calotriggers->GetNL0Times(nL0times);
-    calotrigger.fNL0Times = nL0times;
-    calotrigger.fTriggerBits = triggerbits;
-    calotrigger.fCaloType = 1;
-    FillTree(kCaloTrigger);
-    if (fTreeStatus[kCaloTrigger])
-      ncalotriggers_filled++;
-  }
+  calotrigger.fIndexBCs = fBCCount;
+  FillTree(kCaloTrigger);
+  if (fTreeStatus[kCaloTrigger])
+    ncalotriggers_filled++;
   eventextra.fNentries[kCaloTrigger] = ncalotriggers_filled;
 
   //------PHOS trigger -----------

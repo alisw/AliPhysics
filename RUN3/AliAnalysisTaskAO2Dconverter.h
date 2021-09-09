@@ -433,14 +433,11 @@ private:
 
   struct {
     // Calorimeter trigger data (EMCAL & PHOS)
-    Int_t fIndexBCs = 0u;        /// Index to BC table
+    Int_t fIndexBCs = 0u;         /// Index to BC table
     Short_t fFastOrAbsID = - 1;   /// FastOR absolute ID
-    Float_t fL0Amplitude = -1.f;  /// L0 amplitude (ADC) := Peak Amplitude
-    Float_t fL0Time = -1.f;       /// L0 time
-    Int_t fL1TimeSum = -1;        /// L1 amplitude (ADC) := Integral over L0 time samples
-    Char_t fNL0Times = -1;        /// Number of L0 times
+    Float_t fLnAmplitude = -1.f;  /// L0 amplitude (ADC) := Peak Amplitude
     Int_t fTriggerBits = 0;       /// Online trigger bits
-    Char_t fCaloType = -1;            /// Calorimeter type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
+    Char_t fCaloType = -1;        /// Calorimeter type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calotrigger;                  //! structure to keep calo trigger info
 
   struct FwdTrackPars {   /// Forward track parameters
@@ -600,7 +597,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 19);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 20);
 };
 
 #endif
