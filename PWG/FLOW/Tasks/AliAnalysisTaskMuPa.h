@@ -461,10 +461,11 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   }
 
   // Internal validation:
-  void SetUseInternalValidation(Bool_t uiv, Int_t nEvts) 
+  void SetUseInternalValidation(Bool_t uiv, Int_t nEvts, Bool_t rescale) 
   {
    this->fUseInternalValidation = uiv; 
    this->fnEventsInternalValidation = nEvts;
+   this->fRescaleWithTheoreticalInput = rescale;
    this->fCalculateQvector = kTRUE; // yes, otherwise this check is pointless
    this->fCalculateCorrelations = kTRUE; // yes, otherwise this check is pointless
    this->fCalculateTest0 = kTRUE; // yes, otherwise this check is pointless
@@ -671,6 +672,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TList *fInternalValidationList;        // list to hold all objects for internal validation
   TProfile *fInternalValidationFlagsPro; // profile to hold all flags for internal validation
   Bool_t fUseInternalValidation;         // use internal validation
+  Bool_t fRescaleWithTheoreticalInput;   // if kTRUE, all measured correlators are rescaled with theoretical input, so that in profiles everything is at 1
   Int_t fnEventsInternalValidation;      // how many events will be sampled on-the-fly for internal validation
   TArrayD *fInternalValidationHarmonics; // 0 = v1, 1 = v2, etc.
   Int_t fMultRangeInternalValidation[2]; // min and max values for uniform multiplicity distribution in on-the-fly analysis
@@ -706,7 +708,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,19);
+  ClassDef(AliAnalysisTaskMuPa,20);
 
 };
 

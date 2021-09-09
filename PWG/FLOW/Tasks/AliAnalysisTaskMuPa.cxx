@@ -125,6 +125,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fInternalValidationList(NULL),
  fInternalValidationFlagsPro(NULL),
  fUseInternalValidation(kFALSE),
+ fRescaleWithTheoreticalInput(kFALSE),
  fnEventsInternalValidation(1e4),
  fInternalValidationHarmonics(NULL),
 
@@ -275,6 +276,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fInternalValidationList(NULL),
  fInternalValidationFlagsPro(NULL),
  fUseInternalValidation(kFALSE),
+ fRescaleWithTheoreticalInput(kFALSE),
  fnEventsInternalValidation(0),
  fInternalValidationHarmonics(NULL),
 
@@ -1384,6 +1386,7 @@ void AliAnalysisTaskMuPa::InsanityChecks()
     cout<<__LINE__<<endl;exit(1);
    }
   }
+  if(fRescaleWithTheoreticalInput && fCalculateNestedLoops){cout<<__LINE__<<endl;exit(1);}
  } 
 
  //Green("=> Done with InsanityChecks()!");
@@ -4099,6 +4102,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
   TComplex twoC = Two(h,-h)/Two(0,0).Re(); // cos
   //TComplex twoS = Two(h,-h)/Two(0,0).Im(); // sin
   Double_t wTwo = Two(0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationHarmonics->GetAt(h-1))>0.){twoC/=pow(fInternalValidationHarmonics->GetAt(h-1),2.);}
   // integrated:
   if(fCorrelationsPro[0][h-1][0]){fCorrelationsPro[0][h-1][0]->Fill(0.5,twoC,wTwo);}
   // vs. multiplicity:
@@ -4112,6 +4116,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
   TComplex fourC = Four(h,h,-h,-h)/Four(0,0,0,0).Re(); // cos
   //TComplex fourS = Four(h,h,-h,-h)/Four(0,0,0,0).Im(); // sin
   Double_t wFour = Four(0,0,0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationHarmonics->GetAt(h-1))>0.){fourC/=pow(fInternalValidationHarmonics->GetAt(h-1),4.);}
   // integrated:
   if(fCorrelationsPro[1][h-1][0]){fCorrelationsPro[1][h-1][0]->Fill(0.5,fourC,wFour);}
   // vs. multiplicity:
@@ -4125,6 +4130,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
   TComplex sixC = Six(h,h,h,-h,-h,-h)/Six(0,0,0,0,0,0).Re(); // cos
   //TComplex sixS = Six(h,h,h,-h,-h,-h)/Six(0,0,0,0,0,0).Im(); // sin
   Double_t wSix = Six(0,0,0,0,0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationHarmonics->GetAt(h-1))>0.){sixC/=pow(fInternalValidationHarmonics->GetAt(h-1),6.);}
   // integrated:
   if(fCorrelationsPro[2][h-1][0]){fCorrelationsPro[2][h-1][0]->Fill(0.5,sixC,wSix);}
   // vs. multiplicity:
@@ -4138,6 +4144,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
   TComplex eightC = Eight(h,h,h,h,-h,-h,-h,-h)/Eight(0,0,0,0,0,0,0,0).Re(); // cos
   //TComplex eightS = Eight(h,h,h,h,-h,-h,-h,-h)/Eight(0,0,0,0,0,0).Im(); // sin
   Double_t wEight = Eight(0,0,0,0,0,0,0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationHarmonics->GetAt(h-1))>0.){eightC/=pow(fInternalValidationHarmonics->GetAt(h-1),8.);}
   // integrated:
   if(fCorrelationsPro[3][h-1][0]){fCorrelationsPro[3][h-1][0]->Fill(0.5,eightC,wEight);}
   // vs. multiplicity:
@@ -5188,6 +5195,8 @@ void AliAnalysisTaskMuPa::InternalValidation()
  //    b3) Calculate correlations;
  // c) Bail out directly from here when done;
  // d) Hasta la vista.
+
+ Green(__PRETTY_FUNCTION__);
 
  // a) Configure Fourier like p.d.f. for azimuthal angles:
  TF1 *fPhiPDF = new TF1("fPhiPDF","1+2.*[1]*TMath::Cos(x-[0])+2.*[2]*TMath::Cos(2.*(x-[0]))+2.*[3]*TMath::Cos(3.*(x-[0]))+2.*[4]*TMath::Cos(4.*(x-[0]))+2.*[5]*TMath::Cos(5.*(x-[0]))+2.*[6]*TMath::Cos(6.*(x-[0]))",0.,TMath::TwoPi());
