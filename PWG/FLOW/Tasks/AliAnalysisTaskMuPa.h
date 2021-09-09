@@ -47,7 +47,8 @@ const Int_t gQAEventCutCounter = 23; // see TString secc[gQAEventCutCounter] in 
 const Int_t gQAParticleCutCounter = 39; // see TString spcc[gQAParticleCutCounter] in .cxx
 const Int_t gGenericCorrelations = 1; // correlations between various quantities (see .cxx for documentation)
 const Int_t gMaxBins = 10000; // max number of kine bins
-const Int_t gMaxOrder = 12; // 
+const Int_t gMaxCorrelator = 12; // 
+const Int_t gMaxHarmonic = 6; // 
 const Int_t gMaxIndex = 10000; // 
 
 // enums:
@@ -430,6 +431,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetCalculateNestedLoops(Bool_t cnl) {this->fCalculateNestedLoops = cnl;};
   Bool_t GetCalculateNestedLoops() const {return this->fCalculateNestedLoops;};
 
+  void SetCalculateCustomNestedLoop(Bool_t ccnl) {this->fCalculateCustomNestedLoop = ccnl;};
+  Bool_t GetCalculateCustomNestedLoop() const {return this->fCalculateCustomNestedLoop;};
+
   void SetFinalResultsList(TList* const frl) {this->fFinalResultsList = frl;};
   TList* GetFinalResultsList() const {return this->fFinalResultsList;}
 
@@ -635,7 +639,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Int_t fMaxHarmonic;         // 6 (not going beyond v6, if you change this value, change also fQvector[49][9]) 
   Int_t fMaxCorrelator;       // 8 (not going beyond 8-p correlations, if you change this value, change also fQvector[49][9]) 
   //TComplex fQvector[49][9];   //! Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1]  
-  TComplex fQvector[73][13];   //! Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*12+1][12+1]  
+  TComplex fQvector[gMaxHarmonic*gMaxCorrelator+1][gMaxCorrelator+1]; //! Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*12+1][12+1]  
 
   // 5) Particle weights: 
   TList *fWeightsList;          // list to hold all Q-vector objects       
@@ -659,6 +663,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TList *fNestedLoopsList;                 // list to hold all nested loops objects
   TProfile *fNestedLoopsFlagsPro;          // profile to hold all flags for nested loops
   Bool_t fCalculateNestedLoops;            // calculate and store correlations with nested loops, as a cross-check
+  Bool_t fCalculateCustomNestedLoop;       // validate e-b-e all correlations with custom nested loop
   TProfile *fNestedLoopsPro[4][6][3];      //! multiparticle correlations from nested loops [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality]
   //TProfile *fNestedLoopsPerDemandPro[3]; // which correlator needs to be cross-checked with nested loops (no setter => recompile). [0=integrated,1=vs. multiplicity,2=vs. centrality]
   TArrayD *ftaNestedLoops[2];              //! e-b-e container for nested loops [0=angles;1=product of all weights]   
@@ -682,9 +687,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TList *fTest0List;            // TBI
   TProfile *fTest0FlagsPro;     // TBI 
   Bool_t fCalculateTest0;       // TBI
-  TProfile *fTest0Pro[gMaxOrder][gMaxIndex][3]; //! TBI [order][index][0=integrated,1=vs. multiplicity,2=vs. centrality]
+  TProfile *fTest0Pro[gMaxCorrelator][gMaxIndex][3]; //! TBI [order][index][0=integrated,1=vs. multiplicity,2=vs. centrality]
   TString *fFileWithLabels; //! external file which specifies all labels of interest
-  TString *fTest0Labels[gMaxOrder][gMaxIndex]; // all labels: k-p'th order is stored in k-1'th index. So yes, I also store 1-p
+  TString *fTest0Labels[gMaxCorrelator][gMaxIndex]; // all labels: k-p'th order is stored in k-1'th index. So yes, I also store 1-p
 
   // * Final results:
   TList *fFinalResultsList; // list to hold all histograms with final results
