@@ -123,7 +123,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual Double_t Weight(const Double_t &value, const char *variable);
   virtual Double_t CentralityWeight(const Double_t &value, const char *estimator);
   virtual void CalculateCorrelations();
-  virtual void CalculateNestedLoops();
+  virtual void CalculateNestedLoops(); // calculate all standard isotropic correlations  
+  virtual Double_t CalculateCustomNestedLoop(TArrayI *harmonics); // calculate nested loop for the specified harmonics
   virtual void ResetEventByEventQuantities();
   virtual void OnlineMonitoring();
   Bool_t SpecifiedEvent(AliVEvent *ave);

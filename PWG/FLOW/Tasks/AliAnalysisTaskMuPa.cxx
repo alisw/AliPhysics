@@ -4338,6 +4338,216 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
 
 //=======================================================================================================================
 
+Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
+{
+ // For the specified harmonics, get the correlation from nested loops.
+ // Order of correlator is the number of harmonics, i.e. the number of elements in an array.
+
+ // a) Determine the order of correlator;
+ // b) Custom nested loop;
+ // c) Return value. 
+
+ if(!harmonics){cout<<__LINE__<<endl;exit(1);}
+
+ // a) Determine the order of correlator;
+ Int_t order = harmonics->GetSize();
+ if(0==order||order>12){cout<<__LINE__<<endl;exit(1);}
+ //cout<<"custom calculus, order = "<<order<<endl;
+
+ // b) Custom nested loop:
+ TProfile *profile = new TProfile("profile","",1,0.,1.); // helper profile to get all averages automatically
+ //profile->Sumw2();
+ Double_t value = 0.; // cos of current multiplet
+ Double_t weight = 1.; // weight of current multiplet
+ for(int i1=0; i1<fSelectedTracks; i1++)
+ {
+  //if(i1==fSelectedTracks-1){cout<<"done with loop #1"<<endl;}
+  Double_t dPhi1 = ftaNestedLoops[0]->GetAt(i1);
+  Double_t dW1 = ftaNestedLoops[1]->GetAt(i1);
+  if(1==order)
+  {
+   value = TMath::Cos(harmonics->GetAt(0)*dPhi1);   
+   weight = dW1;
+   profile->Fill(0.5,value,weight);
+   continue;
+  }
+  for(int i2=0; i2<fSelectedTracks; i2++)
+  {
+   //if(i2==fSelectedTracks-1){cout<<"done with loop #2"<<endl;}
+   if(i2==i1){continue;}
+   Double_t dPhi2 = ftaNestedLoops[0]->GetAt(i2);
+   Double_t dW2 = ftaNestedLoops[1]->GetAt(i2);
+   if(2==order)
+   {
+    value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2);   
+    weight = dW1*dW2;
+    profile->Fill(0.5,value,weight);
+    continue;
+   }
+   for(int i3=0; i3<fSelectedTracks; i3++)
+   {
+    //if(i3==fSelectedTracks-1){cout<<"done with loop #3"<<endl;}
+    if(i3==i1||i3==i2){continue;}
+    Double_t dPhi3 = ftaNestedLoops[0]->GetAt(i3);
+    Double_t dW3 = ftaNestedLoops[1]->GetAt(i3);
+    if(3==order)
+    {
+     value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3);   
+     weight = dW1*dW2*dW3;
+     profile->Fill(0.5,value,weight);
+     continue;
+    }
+    for(int i4=0; i4<fSelectedTracks; i4++)
+    {
+     //if(i4==fSelectedTracks-1){cout<<"done with loop #4"<<endl;}
+     if(i4==i1||i4==i2||i4==i3){continue;}
+     Double_t dPhi4 = ftaNestedLoops[0]->GetAt(i4);
+     Double_t dW4 = ftaNestedLoops[1]->GetAt(i4);
+     if(4==order)
+     {
+      value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4);   
+      weight = dW1*dW2*dW3*dW4;
+      profile->Fill(0.5,value,weight);
+      continue;
+     }
+     for(int i5=0; i5<fSelectedTracks; i5++)
+     {
+      //if(i5==fSelectedTracks-1){cout<<"done with loop #5"<<endl;}
+      if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
+      Double_t dPhi5 = ftaNestedLoops[0]->GetAt(i5);
+      Double_t dW5 = ftaNestedLoops[1]->GetAt(i5);
+      if(5==order)
+      {
+       value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5);   
+       weight = dW1*dW2*dW3*dW4*dW5;
+       profile->Fill(0.5,value,weight);
+       continue;
+      }
+      for(int i6=0; i6<fSelectedTracks; i6++)
+      {
+       //if(i6==fSelectedTracks-1){cout<<"done with loop #6"<<endl;}
+       if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
+       Double_t dPhi6 = ftaNestedLoops[0]->GetAt(i6);
+       Double_t dW6 = ftaNestedLoops[1]->GetAt(i6);
+       if(6==order)
+       {
+        value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                         + harmonics->GetAt(5)*dPhi6);   
+        weight = dW1*dW2*dW3*dW4*dW5*dW6;
+        profile->Fill(0.5,value,weight);
+        continue;
+       }
+       for(int i7=0; i7<fSelectedTracks; i7++)
+       {
+        //if(i7==fSelectedTracks-1){cout<<"done with loop #7"<<endl;}
+        if(i7==i1||i7==i2||i7==i3||i7==i4||i7==i5||i7==i6){continue;}
+        Double_t dPhi7 = ftaNestedLoops[0]->GetAt(i7);
+        Double_t dW7 = ftaNestedLoops[1]->GetAt(i7);
+        if(7==order)
+        {
+         value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                          + harmonics->GetAt(5)*dPhi6 + harmonics->GetAt(6)*dPhi7);   
+         weight = dW1*dW2*dW3*dW4*dW5*dW6*dW7;
+         profile->Fill(0.5,value,weight);
+         continue;
+        }
+        for(int i8=0; i8<fSelectedTracks; i8++)
+        {
+         //if(i8==fSelectedTracks-1){cout<<"done with loop #8"<<endl;}
+         if(i8==i1||i8==i2||i8==i3||i8==i4||i8==i5||i8==i6||i8==i7){continue;}
+         Double_t dPhi8 = ftaNestedLoops[0]->GetAt(i8);
+         Double_t dW8 = ftaNestedLoops[1]->GetAt(i8);
+         if(8==order)
+         {
+          value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                           + harmonics->GetAt(5)*dPhi6 + harmonics->GetAt(6)*dPhi7 + harmonics->GetAt(7)*dPhi8);   
+          weight = dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8;
+          profile->Fill(0.5,value,weight);
+          continue;
+         }
+         for(int i9=0; i9<fSelectedTracks; i9++)
+         {
+          //if(i9==fSelectedTracks-1){cout<<"done with loop #9"<<endl;}
+          if(i9==i1||i9==i2||i9==i3||i9==i4||i9==i5||i9==i6||i9==i7||i9==i8){continue;}
+          Double_t dPhi9 = ftaNestedLoops[0]->GetAt(i9);
+          Double_t dW9 = ftaNestedLoops[1]->GetAt(i9);
+          if(9==order)
+          {
+           value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                            + harmonics->GetAt(5)*dPhi6 + harmonics->GetAt(6)*dPhi7 + harmonics->GetAt(7)*dPhi8 + harmonics->GetAt(8)*dPhi9);   
+           weight = dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8*dW9;
+           profile->Fill(0.5,value,weight);
+           continue;
+          }
+          for(int i10=0; i10<fSelectedTracks; i10++)
+          {
+           //if(i10==fSelectedTracks-1){cout<<"done with loop #10"<<endl;}
+           if(i10==i1||i10==i2||i10==i3||i10==i4||i10==i5||i10==i6||i10==i7||i10==i8||i10==i9){continue;}
+           Double_t dPhi10 = ftaNestedLoops[0]->GetAt(i10);
+           Double_t dW10 = ftaNestedLoops[1]->GetAt(i10);
+           if(10==order)
+           {
+            value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                             + harmonics->GetAt(5)*dPhi6 + harmonics->GetAt(6)*dPhi7 + harmonics->GetAt(7)*dPhi8 + harmonics->GetAt(8)*dPhi9 + harmonics->GetAt(9)*dPhi10);   
+            weight = dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8*dW9*dW10;
+            profile->Fill(0.5,value,weight);
+            continue;
+           }
+           for(int i11=0; i11<fSelectedTracks; i11++)
+           {
+            //if(i11==fSelectedTracks-1){cout<<"done with loop #11"<<endl;}
+            if(i11==i1||i11==i2||i11==i3||i11==i4||i11==i5||i11==i6||i11==i7||i11==i8||i11==i9||i11==i10){continue;}
+            Double_t dPhi11 = ftaNestedLoops[0]->GetAt(i11);
+            Double_t dW11 = ftaNestedLoops[1]->GetAt(i11);
+            if(11==order)
+            {
+             value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                              + harmonics->GetAt(5)*dPhi6 + harmonics->GetAt(6)*dPhi7 + harmonics->GetAt(7)*dPhi8 + harmonics->GetAt(8)*dPhi9 + harmonics->GetAt(9)*dPhi10
+                              + harmonics->GetAt(10)*dPhi11);   
+             weight = dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8*dW9*dW10*dW11;
+             profile->Fill(0.5,value,weight);
+             continue;
+            }
+            for(int i12=0; i12<fSelectedTracks; i12++)
+            {
+             //if(i12==fSelectedTracks-1){cout<<"done with loop #12"<<endl;}
+             if(i12==i1||i12==i2||i12==i3||i12==i4||i12==i5||i12==i6||i12==i7||i12==i8||i12==i9||i12==i10||i12==i11){continue;}
+             Double_t dPhi12 = ftaNestedLoops[0]->GetAt(i12);
+             Double_t dW12 = ftaNestedLoops[1]->GetAt(i12);
+             if(12==order)
+             {
+              value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                               + harmonics->GetAt(5)*dPhi6 + harmonics->GetAt(6)*dPhi7 + harmonics->GetAt(7)*dPhi8 + harmonics->GetAt(8)*dPhi9 + harmonics->GetAt(9)*dPhi10
+                               + harmonics->GetAt(10)*dPhi11 + harmonics->GetAt(11)*dPhi12);   
+              weight = dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8*dW9*dW10*dW11*dW12;
+              profile->Fill(0.5,value,weight);
+              continue;
+             }
+
+             // ... it's easy to continue the above pattern here
+
+            } // for(int i12=0; i12<fSelectedTracks; i12++)
+           } // for(int i11=0; i11<fSelectedTracks; i11++)
+          } // for(int i10=0; i10<fSelectedTracks; i10++)
+         } // for(int i9=0; i9<fSelectedTracks; i9++)
+        } // for(int i8=0; i8<fSelectedTracks; i8++)
+       } // for(int i7=0; i7<fSelectedTracks; i7++)
+      } // for(int i6=0; i6<fSelectedTracks; i6++)
+     } // for(int i5=0; i5<fSelectedTracks; i5++)
+    } // for(int i4=0; i4<fSelectedTracks; i4++)   
+   } // for(int i3=0; i3<fSelectedTracks; i3++)
+  } // for(int i2=0; i2<fSelectedTracks; i2++)
+ } // for(int i1=0; i1<fSelectedTracks; i1++)
+
+ // c) Return value:
+ Double_t finalValue = profile->GetBinContent(1);
+ delete profile;
+ return finalValue;
+ 
+} // Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
+
+//=======================================================================================================================
+
 void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
 {
  // Make a ratio fNestedLoopsPro[....]/fCorrelationsPro[....]. If results are the same, these ratios must be 1.
