@@ -725,5 +725,5 @@ void AliAnalysisTaskCorrForFlow::PrintSetup(){
   printf("\n **************************** \n");
   printf("\t fAbsEtaMax: (Double_t) %f\n",    fAbsEtaMax);
   printf("\t fPtMinTrig -- fPtMaxTrig: (Double_t) %f -- %f\n",    fPtMinTrig, fPtMaxTrig);
-  printf("\t fPtMinAss -- fPtMaxAss: (Double_t) %f\n",    fPtMinAss, fPtMaxAss);
+  printf("\t fPtMinAss -- fPtMaxAss: (Double_t) %f -- %f\n",    fPtMinAss, fPtMaxAss);
 }
