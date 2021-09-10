@@ -58,7 +58,7 @@ using std::endl;
 //_____________________________________________________________________________
 AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau()
   : AliAnalysisTaskSE(),
-    fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), cutEta(0.9), fOutputList(0),tTwoTracks(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
+    fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), cutEta(0.9), fOutputList(0), fOutputPID(0), tTwoTracks(0), tPID(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
     fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0)
 {
 
@@ -70,12 +70,13 @@ AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau()
 //_____________________________________________________________________________
 AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau(const char *name)
   : AliAnalysisTaskSE(name),
-    fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), cutEta(0.9), fOutputList(0), tTwoTracks(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
+    fPIDResponse(0), fTrackCutsBit0(0), fTrackCutsBit1(0), fTrackCutsBit4(0), cutEta(0.9), fOutputList(0), fOutputPID(0), tTwoTracks(0),tPID(0), hTriggerCounter(0), hParticleTypeCounter(0), fPt(0), fY(0), fM(0), fPhi(0),
     fZNAenergy(0), fZNCenergy(0), fChannel(0), fSign(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0)
 {
-  for(Int_t i = 0; i<(sizeof(fTriggers)/sizeof(fTriggers[0])); i++)          fTriggers[i] = kFALSE;
-  for(Int_t i = 0; i<(sizeof(fTriggerClass)/sizeof(fTriggerClass[0]));  i++) fTriggerClass[i] = kFALSE;
+  for(Int_t i = 0; i<(Int_t)(sizeof(fTriggers)/sizeof(fTriggers[0])); i++)          fTriggers[i] = kFALSE;
+  for(Int_t i = 0; i<(Int_t)(sizeof(fTriggerClass)/sizeof(fTriggerClass[0]));  i++) fTriggerClass[i] = kFALSE;
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 
 }//AliAnalysisTaskCentralTau
 
@@ -88,6 +89,8 @@ AliAnalysisTaskCentralTau::~AliAnalysisTaskCentralTau()
   if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
      delete fOutputList;
      fOutputList = 0x0;
+     delete fOutputPID;
+     fOutputPID = 0x0;
   }
 
 }//~AliAnalysisTaskCentralTau
@@ -125,19 +128,37 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
   tTwoTracks ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/F");
   tTwoTracks ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   tTwoTracks ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-  tTwoTracks ->Branch("fTriggers", &fTriggers, Form("fTriggers[%i]/O",(sizeof(fTriggers)/sizeof(fTriggers[0]))));
+  tTwoTracks ->Branch("fTriggers", &fTriggers, Form("fTriggers[%i]/O",(Int_t)(sizeof(fTriggers)/sizeof(fTriggers[0]))));
   tTwoTracks ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
   tTwoTracks ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");
   tTwoTracks ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
   tTwoTracks ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
+  tTwoTracks ->Branch("fPIDpt", &fPIDpt[0], "fPIDpt[2]/F");
+  tTwoTracks ->Branch("fTPCsignal", &fTPCsignal[0], "fTPCsignal[2]/F");
+  tTwoTracks ->Branch("fTOFsignal", &fTOFsignal[0], "fTOFsignal[2]/F");
+  tTwoTracks ->Branch("fTPCmostProbableTrackType", &fTPCmostProbableTrackType[0], "fTPCmostProbableTrackType[2]/I");
+  tTwoTracks ->Branch("fTOFmostProbableTrackType", &fTOFmostProbableTrackType[0], "fTOFmostProbableTrackType[2]/I");
   fOutputList->Add(tTwoTracks);
-  
+
   hTriggerCounter = new TH2I("hTriggerCounter","Number of analyzed UPC triggers per run",3,1,4,3000,295000,298000);
   fOutputList->Add(hTriggerCounter);
   hParticleTypeCounter = new TH1I("hParticleTypeCounter","Electron, Muon, Pion",4,-0.5,3.5);
   fOutputList->Add(hParticleTypeCounter);
-     
+
+  fOutputPID = new TList();
+  fOutputPID ->SetOwner(); // @suppress("Ambiguous problem")
+
+  tPID = new TTree("tPID", "tPID");
+  tPID ->Branch("fPIDpt", &fPIDpt[0], "fPIDpt[2]/F");
+  tPID ->Branch("fTPCsignal", &fTPCsignal[0], "fTPCsignal[2]/F");
+  tPID ->Branch("fTOFsignal", &fTOFsignal[0], "fTOFsignal[2]/F");
+  tPID ->Branch("fTPCmostProbableTrackType", &fTPCmostProbableTrackType[0], "fTPCmostProbableTrackType[2]/I");
+  tPID ->Branch("fTOFmostProbableTrackType", &fTOFmostProbableTrackType[0], "fTOFmostProbableTrackType[2]/I");
+  fOutputPID->Add(tPID);
+
+
   PostData(1, fOutputList);
+  PostData(2, fOutputPID);
 
 }//UserCreateOutputObjects
 
@@ -288,6 +309,9 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
       crossedFO[3] = trk->GetITSModuleIndex(7);
       SetCrossed(crossedFO, fFOCrossedChips);
 
+      // PID standalone analysis
+      TPCandTOFsignalInfo(trk, iTrack);
+
   	  //
   	  // PID AND KINEMATIC INFO
   	  //
@@ -298,6 +322,13 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
       Float_t PIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
       Float_t PIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
       Float_t PIDTPCPion = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+      Float_t PIDTPCKaon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+      Float_t PIDTPCProton = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+      Float_t PIDTOFElectron = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
+      Float_t PIDTOFMuon = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
+      Float_t PIDTOFPion = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
+      Float_t PIDTOFKaon = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
+      Float_t PIDTOFProton = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
 
       qTrack[iTrack] = trk->Charge();
 
@@ -319,7 +350,12 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
       }
     }
 
-  	if (!isOneTrackElectron) return;
+    tPID->Fill();
+
+  	if (!isOneTrackElectron) {
+      PostData(2, fOutputPID);
+  	  return;
+  	}
 
     //
     // SAVE STG DECISION
@@ -369,6 +405,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   fTriggerClass[0] = isCUP29; fTriggerClass[1] = isCUP30; fTriggerClass[2] = isCUP31;
 
   PostData(1, fOutputList);
+  PostData(2, fOutputPID);
 
 }//UserExec
 
@@ -379,6 +416,32 @@ Int_t AliAnalysisTaskCentralTau::TestPIDTPChypothesis(Float_t e, Float_t m, Floa
   else if (m < e && m < p) return 2; // It is a muon
   else if (p < e && p < m) return 3; // It is a pion
   else return 0;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskCentralTau::TPCandTOFsignalInfo(AliESDtrack *trk, Int_t trkID){
+
+  fPIDpt[trkID] = trk->Pt();
+  fTPCsignal[trkID] = trk->GetTPCsignal();
+  fTOFsignal[trkID] = trk->GetTOFsignal();
+
+  Float_t PIDTPC[5];
+  PIDTPC[0] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+  PIDTPC[1] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+  PIDTPC[2] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+  PIDTPC[3] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+  PIDTPC[4] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+
+  fTPCmostProbableTrackType[trkID] = std::distance(std::begin(PIDTPC),std::min_element(std::begin(PIDTPC),std::end(PIDTPC)));
+
+  Float_t PIDTOF[5];
+  PIDTOF[0] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
+  PIDTOF[1] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
+  PIDTOF[2] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
+  PIDTOF[3] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
+  PIDTOF[4] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
+
+  fTOFmostProbableTrackType[trkID] = std::distance(std::begin(PIDTOF),std::min_element(std::begin(PIDTOF),std::end(PIDTOF)));
 }
 
 //_____________________________________________________________________________
