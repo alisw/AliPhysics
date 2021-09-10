@@ -62,7 +62,7 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   AliAnalysisTaskCentralTau(const AliAnalysisTaskCentralTau&); //not implemented
   AliAnalysisTaskCentralTau& operator =(const AliAnalysisTaskCentralTau&); //not implemented
   
-  ClassDef(AliAnalysisTaskCentralTau, 14);
+  ClassDef(AliAnalysisTaskCentralTau, 15);
 };
 
 #endif
