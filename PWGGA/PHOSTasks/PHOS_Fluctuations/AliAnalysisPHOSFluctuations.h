@@ -24,7 +24,7 @@ public:
   enum runtype{kpp,kpPb,kPbPb} ;
 
   AliAnalysisPHOSFluctuations(){} 
-  AliAnalysisPHOSFluctuations(const char *name = "AliAnalysisPHOSFluctuations");
+  AliAnalysisPHOSFluctuations(const char *name);
   AliAnalysisPHOSFluctuations(const AliAnalysisPHOSFluctuations&){} // not implemented
   AliAnalysisPHOSFluctuations& operator=(const AliAnalysisPHOSFluctuations&ap){   // not implemented
     this->~AliAnalysisPHOSFluctuations();
