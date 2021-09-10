@@ -463,6 +463,12 @@ private:
     Int_t fMatchMFTTrackID = -1;
     Int_t fMatchMCHTrackID = -1;
     UShort_t fMCHBitMap = 0u;
+    // MID bit map
+    // | non-bending plane (4bit) | bending plane (4bit) |
+    // i-th chamber can be tested with: fMIDBitMap & (1<<i)
+    UShort_t fMIDBitMap = 0u;
+    UInt_t fMIDBoards = 0;
+    
 
     // "Covariance matrix"
     // The diagonal elements represent the errors = Sqrt(C[i,i])

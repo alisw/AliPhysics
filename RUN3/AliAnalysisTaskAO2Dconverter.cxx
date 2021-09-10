@@ -835,7 +835,9 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tFwdTrack->Branch("fMatchScoreMCHMFT", &fwdtracks.fMatchScoreMCHMFT, "fMatchScoreMCHMFT/F");
     tFwdTrack->Branch("fMatchMFTTrackID", &fwdtracks.fMatchMFTTrackID, "fMatchMFTTrackID/I");
     tFwdTrack->Branch("fMatchMCHTrackID", &fwdtracks.fMatchMCHTrackID, "fMatchMCHTrackID/I");
-    tFwdTrack->Branch("fMCHBitMap", &fwdtracks.fMCHBitMap, "fMCHBitMap/s"); 
+    tFwdTrack->Branch("fMCHBitMap", &fwdtracks.fMCHBitMap, "fMCHBitMap/s");
+    tFwdTrack->Branch("fMIDBitMap", &fwdtracks.fMIDBitMap, "fMIDBitMap/s"); 
+    tFwdTrack->Branch("fMIDBoards", &fwdtracks.fMIDBoards, "fMIDBoards/i"); 
     tFwdTrack->SetBasketSize("*", fBasketSizeEvents);
   }
 
@@ -2551,8 +2553,20 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   convertedTrack.fChi2MatchMCHMID = AliMathBase::TruncateFloatFraction(MUONTrack.GetChi2MatchTrigger(), mMuonTrCov);
   convertedTrack.fRAtAbsorberEnd = AliMathBase::TruncateFloatFraction(MUONTrack.GetRAtAbsorberEnd(), mMuonTrCov);
   convertedTrack.fPDca = AliMathBase::TruncateFloatFraction(pdca, mMuonTrCov);
-  
+
+  //MCH and MID words
   convertedTrack.fMCHBitMap = MUONTrack.GetMuonClusterMap();
+  UInt_t midpattern = MUONTrack.GetHitsPatternInTrigChTrk();
+  UShort_t midbitmap = 0;
+  for (int icath=0; icath < 2; icath++){
+    for (int ich=0; ich < 4; ich++){
+      if (AliESDMuonTrack::IsChamberHit(midpattern,icath,ich)) midbitmap |= 1<<(ich+icath*4);
+    }
+  }
+  convertedTrack.fMIDBitMap = midbitmap;
+  UChar_t midboard = (AliESDMuonTrack::GetCrossedBoard(midpattern) & 0xFF) ;
+  convertedTrack.fMIDBoards = ((midboard << 24) | (midboard << 16) | (midboard  << 8) | midboard) & 0xFFFFFFFF;
+  
 
   // Covariances matrix conversion
   using SMatrix55Std = ROOT::Math::SMatrix<double, 5>;
@@ -2713,7 +2727,18 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   convertedTrack.fRAtAbsorberEnd = AliMathBase::TruncateFloatFraction(MUONTrack.GetRAtAbsorberEnd(), mMuonTrCov);
   convertedTrack.fPDca = AliMathBase::TruncateFloatFraction(pdca, mMuonTrCov);
 
+  //MCH and MID words
   convertedTrack.fMCHBitMap = MUONTrack.GetMUONClusterMap();
+  UInt_t midpattern = MUONTrack.GetMUONTrigHitsMapTrk();
+  UShort_t midbitmap = 0;
+  for (int icath=0; icath < 2; icath++){
+    for (int ich=0; ich < 4; ich++){
+      if (AliESDMuonTrack::IsChamberHit(midpattern,icath,ich)) midbitmap |= 1<<(ich+icath*4);
+    }
+  }
+  convertedTrack.fMIDBitMap = midbitmap;
+  UChar_t midboard = (AliESDMuonTrack::GetCrossedBoard(midpattern) & 0xFF) ;
+  convertedTrack.fMIDBoards = ((midboard << 24) | (midboard << 16) | (midboard  << 8) | midboard) & 0xFFFFFFFF;
 
   // Covariances matrix conversion
   using SMatrix55Std = ROOT::Math::SMatrix<double, 5>;
