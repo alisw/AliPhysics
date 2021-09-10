@@ -2564,8 +2564,8 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
     }
   }
   convertedTrack.fMIDBitMap = midbitmap;
-  UChar_t midboard = (AliESDMuonTrack::GetCrossedBoard(midpattern) & 0xFF) ;
-  convertedTrack.fMIDBoards = ((midboard << 24) | (midboard << 16) | (midboard  << 8) | midboard) & 0xFFFFFFFF;
+  UInt_t midboard = static_cast<UInt_t>(AliESDMuonTrack::GetCrossedBoard(midpattern));
+  convertedTrack.fMIDBoards = (midboard << 24) | (midboard << 16) | (midboard  << 8) | midboard;
   
 
   // Covariances matrix conversion
@@ -2737,8 +2737,8 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
     }
   }
   convertedTrack.fMIDBitMap = midbitmap;
-  UChar_t midboard = (AliESDMuonTrack::GetCrossedBoard(midpattern) & 0xFF) ;
-  convertedTrack.fMIDBoards = ((midboard << 24) | (midboard << 16) | (midboard  << 8) | midboard) & 0xFFFFFFFF;
+  UInt_t midboard = static_cast<UInt_t>(AliESDMuonTrack::GetCrossedBoard(midpattern));
+  convertedTrack.fMIDBoards = (midboard << 24) | (midboard << 16) | (midboard  << 8) | midboard;
 
   // Covariances matrix conversion
   using SMatrix55Std = ROOT::Math::SMatrix<double, 5>;
