@@ -91,11 +91,13 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	pTe("name"),
 	massMin(0),
 	Nref(0),
+	NrefV0(0),
 	Nch(0),
 	MinNtr(0),
 	MaxNtr(0),
         festimatorFile(""),
         estimatorAvg(0),
+        estimatorV0Avg(0),
         NtrkWeightMC(0),
         fmult_type(0),
 	//==== basic parameters ====
@@ -169,6 +171,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHFArray(0),
 	fzvtx_Ntrkl(0),
 	fzvtx_Nch(0),
+	fzvtx_Ntrkl_V0(0),
 	fzvtx_Ntrkl_Corr(0),
 	fzvtx_Corr(0),
 	fNtrkl_Corr(0),
@@ -276,11 +279,13 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	pTe("name"),
 	massMin(0),
 	Nref(0),
+	NrefV0(0),
 	Nch(0),
 	MinNtr(0),
 	MaxNtr(0),
         festimatorFile(""),
         estimatorAvg(0),
+        estimatorV0Avg(0),
         NtrkWeightMC(0),
         fmult_type(0),
 	//==== basic parameters ====
@@ -354,6 +359,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHFArray(0),
 	fzvtx_Ntrkl(0),
 	fzvtx_Nch(0),
+	fzvtx_Ntrkl_V0(0),
 	fzvtx_Ntrkl_Corr(0),
 	fzvtx_Corr(0),
 	fNtrkl_Corr(0),
@@ -531,6 +537,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 
         fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
 	fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",400,-20.,20.,301,-0.5,300.5);
+	fzvtx_Ntrkl_V0 = new TH2F("fzvtx_Ntrkl_V0","N tracklet vs V0 after correction; SPD Tracklets; V0",1501,-0.5,1500.5,1501,-0.5,1500.5);
 	fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",400,-20.,20.0,1501,-0.5,1500.5);
 	fzvtx_Corr = new TH1F("fzvtx_Corr","Zvertex after correction; zvtx; counts",400,-20.,20.);
 	fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",1501,-0.5,1500.5);
@@ -696,6 +703,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fWh_phidiff);
 	fOutputList->Add(fzvtx_Ntrkl);
 	fOutputList->Add(fzvtx_Nch);
+	fOutputList->Add(fzvtx_Ntrkl_V0);
 	fOutputList->Add(fzvtx_Ntrkl_Corr);
 	fOutputList->Add(fzvtx_Corr);
 	fOutputList->Add(fNtrkl_Corr);
@@ -999,17 +1007,15 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 	//-----------Tracklet correction-------------------------
 
-        if(fmult_type==1)nAcc = V0Mult;
-
-        if(!estimatorAvg)
+        if(!estimatorAvg || !estimatorV0Avg)
           {
             cout << "No estimatorAvg and get one " << endl;
             cout << "type =  " << fmult_type << endl;
             TFile* fEstimator = TFile::Open(festimatorFile.Data());
             cout << " fEstimator =  " <<  fEstimator << endl;
-            //fEstimator = TFile::Open(festimatorFile.Data());
-	    if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD,fmult_type);
-	    if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD,fmult_type);
+	    if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD,0);  // get SPD vs. Z
+	    if(!fMCarray)estimatorV0Avg = GetEstimatorHistogram(fEstimator,fAOD,1); // get V0 vs.Z
+	    if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD,fmult_type); 
  
 	    if(fMCarray && !NtrkWeightMC)
 	    {
@@ -1019,8 +1025,10 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	   }
 
 	Double_t correctednAcc   = nAcc;
+	Double_t correctedV0nAcc   = V0Mult;
  
 	Double_t fRefMult = Nref;
+	Double_t fRefMultV0 = NrefV0;
 	Double_t WeightNtrkl = -1.;
 	Double_t WeightZvtx = -1.;
 	//TProfile* estimatorAvg;
@@ -1028,10 +1036,14 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	//if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
 
 	if(estimatorAvg){
-		correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
-		//correctednAcc= AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(estimatorAvg,nAcc,Zvertex,fRefMult);
+		correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));  // SPD correction
+	}
 
-	} 
+	if(estimatorV0Avg){
+		correctedV0nAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorV0Avg,V0Mult,Zvertex,fRefMultV0));  // V0 correction
+	}
+ 
+	fzvtx_Ntrkl_V0->Fill(correctednAcc,correctedV0nAcc);
 	fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
         //fEstimator->Close();
@@ -1054,6 +1066,9 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	//////////////////////////////////
 	// Separate by multiplicity class
 	//////////////////////////////////
+
+        if(fmult_type==1) correctednAcc = correctedV0nAcc; // for V0 mult dep study
+
 	if(correctednAcc<CutMinNtr || correctednAcc > CutMaxNtr) return;
 	fNevents->Fill(7); 
 
