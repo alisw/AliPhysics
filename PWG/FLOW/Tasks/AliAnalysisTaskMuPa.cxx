@@ -128,7 +128,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fUseInternalValidation(kFALSE),
  fRescaleWithTheoreticalInput(kFALSE),
  fnEventsInternalValidation(1e4),
- fInternalValidationHarmonics(NULL),
+ fInternalValidationAmplitudes(NULL),
+ fInternalValidationPlanes(NULL),
 
  // Test0:
  fTest0List(NULL), 
@@ -280,7 +281,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fUseInternalValidation(kFALSE),
  fRescaleWithTheoreticalInput(kFALSE),
  fnEventsInternalValidation(0),
- fInternalValidationHarmonics(NULL),
+ fInternalValidationAmplitudes(NULL),
+ fInternalValidationPlanes(NULL),
 
  // Test0:
  fTest0List(NULL), 
@@ -1380,12 +1382,13 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  {
   if(fnEventsInternalValidation < 1){cout<<__LINE__<<endl;exit(1);}
   if(fMultRangeInternalValidation[0] >= fMultRangeInternalValidation[1]){cout<<__LINE__<<endl;exit(1);}
-  if(!fInternalValidationHarmonics){cout<<__LINE__<<endl;exit(1);}
-  for(Int_t h=0;h<fInternalValidationHarmonics->GetSize();h++)
+  if(!fInternalValidationAmplitudes){cout<<__LINE__<<endl;exit(1);}
+  if(!fInternalValidationPlanes){cout<<__LINE__<<endl;exit(1);}
+  for(Int_t h=0;h<fInternalValidationAmplitudes->GetSize();h++)
   {
-   if(TMath::Abs(fInternalValidationHarmonics->GetAt(h)) > 0.5)
+   if(TMath::Abs(fInternalValidationAmplitudes->GetAt(h)) > 0.5)
    {
-    cout<<Form("v_%d = %f is too large to be taken seriously.",h+1,fInternalValidationHarmonics->GetAt(h))<<endl;
+    cout<<Form("v_%d = %f is too large to be taken seriously (will cause negative probabilties).",h+1,fInternalValidationAmplitudes->GetAt(h))<<endl;
     cout<<__LINE__<<endl;exit(1);
    }
   }
@@ -2147,7 +2150,7 @@ void AliAnalysisTaskMuPa::BookInternalValidationHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
- fInternalValidationFlagsPro = new TProfile("fInternalValidationFlagsPro","flags for internal validation",7,0.,7.);
+ fInternalValidationFlagsPro = new TProfile("fInternalValidationFlagsPro","flags for internal validation",13,0.,13.);
  fInternalValidationFlagsPro->SetStats(kFALSE);
  fInternalValidationFlagsPro->SetLineColor(COLOR);
  fInternalValidationFlagsPro->SetFillColor(FILLCOLOR);
@@ -2156,15 +2159,29 @@ void AliAnalysisTaskMuPa::BookInternalValidationHistograms()
  for(Int_t e=0;e<7;e++) // hardwired support for harmonics v1-v6
  {
   fInternalValidationFlagsPro->GetXaxis()->SetBinLabel(e+2,Form("v_{%d}",e+1)); 
-  if(fInternalValidationHarmonics && (e+1 <= fInternalValidationHarmonics->GetSize()))
+  if(fInternalValidationAmplitudes && (e+1 <= fInternalValidationAmplitudes->GetSize()))
   {
-   fInternalValidationFlagsPro->Fill(e+1+0.5,fInternalValidationHarmonics->GetAt(e));
+   fInternalValidationFlagsPro->Fill(e+1+0.5,fInternalValidationAmplitudes->GetAt(e));
   }
   else
   {
    fInternalValidationFlagsPro->Fill(e+1+0.5,0.0); // default values of all harmonics are 0
   }
- } // for(Int_t e=0;e<fInternalValidationHarmonics->GetSize()) 
+ } // for(Int_t e=0;e<fInternalValidationAmplitudes->GetSize()) 
+ for(Int_t e=8;e<14;e++) // hardwired support for symmetry planesa Psi1-Psi6
+ {
+  fInternalValidationFlagsPro->GetXaxis()->SetBinLabel(e,Form("#Psi_{%d}",e-7)); 
+/* TBI 20210910 fix this later
+  if(fInternalValidationPlanes && (e-7 <= fInternalValidationPlanes->GetSize()))
+  {
+   fInternalValidationFlagsPro->Fill(e+1+0.5,fInternalValidationPlanes->GetAt(e));
+  }
+  else
+  {
+   fInternalValidationFlagsPro->Fill(e+1+0.5,0.0); // default values of all harmonics are 0
+  }
+*/
+ } // for(Int_t e=0;e<fInternalValidationPlanes->GetSize()) 
  fInternalValidationList->Add(fInternalValidationFlagsPro);
 
 } // void AliAnalysisTaskMuPa::BookInternalValidationHistograms()
@@ -4125,7 +4142,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    }
    delete harmonics;
   } // if(fCalculateCustomNestedLoop)
-  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationHarmonics->GetAt(h-1))>0.){twoC/=pow(fInternalValidationHarmonics->GetAt(h-1),2.);}
+  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){twoC/=pow(fInternalValidationAmplitudes->GetAt(h-1),2.);}
   // integrated:
   if(fCorrelationsPro[0][h-1][0]){fCorrelationsPro[0][h-1][0]->Fill(0.5,twoC,wTwo);}
   // vs. multiplicity:
@@ -4158,7 +4175,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    }
    delete harmonics;
   } // if(fCalculateCustomNestedLoop)
-  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationHarmonics->GetAt(h-1))>0.){fourC/=pow(fInternalValidationHarmonics->GetAt(h-1),4.);}
+  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){fourC/=pow(fInternalValidationAmplitudes->GetAt(h-1),4.);}
   // integrated:
   if(fCorrelationsPro[1][h-1][0]){fCorrelationsPro[1][h-1][0]->Fill(0.5,fourC,wFour);}
   // vs. multiplicity:
@@ -4193,7 +4210,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    }
    delete harmonics;
   } // if(fCalculateCustomNestedLoop)
-  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationHarmonics->GetAt(h-1))>0.){sixC/=pow(fInternalValidationHarmonics->GetAt(h-1),6.);}
+  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){sixC/=pow(fInternalValidationAmplitudes->GetAt(h-1),6.);}
   // integrated:
   if(fCorrelationsPro[2][h-1][0]){fCorrelationsPro[2][h-1][0]->Fill(0.5,sixC,wSix);}
   // vs. multiplicity:
@@ -4230,7 +4247,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    }
    delete harmonics;
   } // if(fCalculateCustomNestedLoop)
-  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationHarmonics->GetAt(h-1))>0.){eightC/=pow(fInternalValidationHarmonics->GetAt(h-1),8.);}
+  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){eightC/=pow(fInternalValidationAmplitudes->GetAt(h-1),8.);}
   // integrated:
   if(fCorrelationsPro[3][h-1][0]){fCorrelationsPro[3][h-1][0]->Fill(0.5,eightC,wEight);}
   // vs. multiplicity:
@@ -5503,7 +5520,23 @@ void AliAnalysisTaskMuPa::CalculateTest0()
      }
      delete harmonics;
     } // if(fCalculateCustomNestedLoop)
- 
+  
+    // To ease comparison, rescale with theoretical value. Now all Test0 results shall be at 1:
+    if(fUseInternalValidation && fRescaleWithTheoreticalInput)
+    {
+     TArrayI *harmonics = new TArrayI(mo+1);
+     for(Int_t i=0;i<mo+1;i++)
+     {
+      harmonics->SetAt(n[i],i);
+     }
+     TComplex theoreticalValue = TheoreticalValue(harmonics,fInternalValidationAmplitudes,fInternalValidationPlanes);
+     if(TMath::Abs(theoreticalValue.Re()) > 0.)
+     {     
+      correlation /= theoreticalValue.Re();
+     }
+     delete harmonics;
+    } // if(fUseInternalValidation && fRescaleWithTheoreticalInput)
+
     // Finally, fill:
     for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
     { 
@@ -5533,28 +5566,48 @@ void AliAnalysisTaskMuPa::InternalValidation()
  //    b1) Determine multiplicity and reaction plane;
  //    b2) Loop over particles;
  //    b3) Calculate correlations;
+ //    b4) Optionally, cross-check with nested loops;
  // c) Bail out directly from here when done;
- // d) Hasta la vista.
+ // d) Printout of comparison: standard isotropic vs. Test0;
+ // e) Hasta la vista.
 
  Green(__PRETTY_FUNCTION__);
 
  // a) Configure Fourier like p.d.f. for azimuthal angles:
- TF1 *fPhiPDF = new TF1("fPhiPDF","1+2.*[1]*TMath::Cos(x-[0])+2.*[2]*TMath::Cos(2.*(x-[0]))+2.*[3]*TMath::Cos(3.*(x-[0]))+2.*[4]*TMath::Cos(4.*(x-[0]))+2.*[5]*TMath::Cos(5.*(x-[0]))+2.*[6]*TMath::Cos(6.*(x-[0]))",0.,TMath::TwoPi());
- fPhiPDF->SetParName(0,"Reaction Plane");
- fPhiPDF->SetParameter(0,0.);
- for(Int_t h=1;h<=6;h++)
+ //    Remark: [12] is random reaction plane, keep in sync with fPhiPDF->SetParameter(12,fReactionPlane); below
+ TF1 *fPhiPDF = new TF1("fPhiPDF","1+2.*[0]*TMath::Cos(x-[1]-[12])+2.*[2]*TMath::Cos(2.*(x-[3]-[12]))+2.*[4]*TMath::Cos(3.*(x-[5]-[12]))+2.*[6]*TMath::Cos(4.*(x-[7]-[12]))+2.*[8]*TMath::Cos(5.*(x-[9]-[12]))+2.*[10]*TMath::Cos(6.*(x-[11]-[12]))",0.,TMath::TwoPi());  
+ for(Int_t h=0;h<gMaxHarmonic;h++)
  {
-  fPhiPDF->SetParName(h,Form("v_{%d}",h)); 
-  if(h<=fInternalValidationHarmonics->GetSize())
+  fPhiPDF->SetParName(2*h,Form("v_{%d}",h+1)); // set name v_n
+  fPhiPDF->SetParName(2*h+1,Form("Psi_{%d}",h+1)); // set name psi_n
+  // initialize v_n:
+  if(h+1<=fInternalValidationAmplitudes->GetSize())
   { 
-   fPhiPDF->SetParameter(h,fInternalValidationHarmonics->GetAt(h-1));
+   fPhiPDF->SetParameter(2*h,fInternalValidationAmplitudes->GetAt(h));
   }
   else
   {
-   fPhiPDF->SetParameter(h,0.);
+   fPhiPDF->SetParameter(2*h,0.);
   } 
- } // for(Int_t h=1;h<=6;h++)
- 
+  // initialize psi_n:
+  if(h+1<=fInternalValidationPlanes->GetSize())
+  { 
+   fPhiPDF->SetParameter(2*h+1,fInternalValidationPlanes->GetAt(h));
+  }
+  else
+  {
+   fPhiPDF->SetParameter(2*h+1,0.);
+  } 
+ } // for(Int_t h=0;h<6;h++)
+
+ // cross-check set vn's and psin's:
+ /*
+ for(Int_t h=0;h<12;h++)
+ {
+  cout<<h<<" "<<fPhiPDF->GetParName(h)<<" = "<<fPhiPDF->GetParameter(h)<<endl;
+ } 
+ */
+
  // b) Loop over on-the-fly events:
  Double_t step = 10.; // in percentage. Used only for the printout of progress
  TStopwatch watch;
@@ -5574,7 +5627,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
   // b1) Determine multiplicity and reaction plane:
   Int_t nMult = gRandom->Uniform(fMultRangeInternalValidation[0],fMultRangeInternalValidation[1]);
   Double_t fReactionPlane = gRandom->Uniform(0.,TMath::TwoPi());
-  fPhiPDF->SetParameter(0,fReactionPlane);
+  fPhiPDF->SetParameter(12,fReactionPlane);
 
   // b2) Loop over particles:
   Double_t dPhi = 0.;
@@ -5619,16 +5672,89 @@ void AliAnalysisTaskMuPa::InternalValidation()
  fBaseList->Write(fBaseList->GetName(),TObject::kSingleKey);
  f->Close();
  cout<<"Dumped!\n"<<endl;
+ 
+ // d) Printout of comparison: standard isotropic vs. Test0:
+ //    d0) Standard isotropic:
+ if(fCalculateCorrelations && !fCalculateNestedLoops)
+ {
+  Int_t nBinsQV = fCorrelationsPro[0][0][0]->GetNbinsX();
+  Double_t valueQV = 0.;
+  for(Int_t o=0;o<4;o++)
+  {
+   cout<<Form("   ==== <<%d>>-particle correlations ====",2*(o+1))<<endl;
+   for(Int_t h=0;h<6;h++)
+   {
+    for(Int_t b=1;b<=nBinsQV;b++)
+    {
+     if(fCorrelationsPro[o][h][0]){valueQV = fCorrelationsPro[o][h][0]->GetBinContent(b);}
+     if(TMath::Abs(valueQV)>0.)
+     {
+      cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<" +/- "<<fCorrelationsPro[o][h][0]->GetBinError(b)<<endl; 
+     } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
+    } // for(Int_t b=1;b<=nBinsQV;b++) 
+   } // for(Int_t h=0;h<6;h++)
+  } // for(Int_t o=0;o<4;o++) 
+ } // if(fCalculateCorrelations && !fCalculateNestedLoops)
 
- // d) Hasta la vista:
+ cout<<"\n=============================\n"<<endl;
+
+ //    d1) Test0:
+ if(fCalculateTest0)
+ {
+  for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
+  { 
+   for(Int_t mi=0;mi<gMaxIndex;mi++) 
+   { 
+    if(fTest0Pro[mo][mi][0])
+    {
+     cout<<fTest0Pro[mo][mi][0]->GetTitle()<<" = "<<fTest0Pro[mo][mi][0]->GetBinContent(1)<<" +/- "<<fTest0Pro[mo][mi][0]->GetBinError(1)<<endl;
+    } 
+   }
+  } 
+ } // if(fCalculateTest0)
+
+ // e) Hasta la vista:
  exit(1);
 
 } // void AliAnalysisTaskMuPa::InternalValidation()
 
+//=======================================================================================
 
+TComplex AliAnalysisTaskMuPa::TheoreticalValue(TArrayI *harmonics, TArrayD *amplitudes, TArrayD *planes)
+{
+ // For the specified harmonics, from available amplitudes and symmetry planes, return the theoretical value of correlator.
+ // See Eq. (2) in MVC, originally derived in R. S. Bhalerao, M. Luzum, and J.-Y. Ollitrault, Phys. Rev. C 84, 034910 (2011), arXiv:1104.4740 [nucl-th].
 
+ // a) Insanity checks;
+ // b) Main calculus;
+ // c) Return value.
 
+ //Green(__PRETTY_FUNCTION__);
 
+ // a) Insanity checks:
+ if(!harmonics){cout<<__LINE__<<endl;exit(1);}
+ if(!amplitudes){cout<<__LINE__<<endl;exit(1);}
+ if(!planes){cout<<__LINE__<<endl;exit(1);}
+ if(amplitudes->GetSize() != planes->GetSize())
+ {
+  Red(Form("amplitudes->GetSize() = %d",amplitudes->GetSize()));
+  Red(Form("planes->GetSize() = %d",planes->GetSize()));
+  cout<<__LINE__<<endl;exit(1);
+ }
+
+ // b) Main calculus:
+ TComplex value = TComplex(1.,0.,kTRUE); // yes, polar representation
+ for(Int_t h=0;h<harmonics->GetSize();h++)
+ {
+  //cout<<"h = "<<h<<" ... "<<TMath::Abs(harmonics->GetAt(h))<<endl;
+  // Using polar form of TComplex (Double_t re, Double_t im=0, Bool_t polar=kFALSE)
+  value *= TComplex(amplitudes->GetAt(TMath::Abs(harmonics->GetAt(h))-1),1.*harmonics->GetAt(h)*planes->GetAt(TMath::Abs(harmonics->GetAt(h))-1),kTRUE); 
+ } // for(Int_t h=0;h<harmonics->GetSize();h++)
+
+ // c) Return value:
+ return value;
+
+} // TComplex AliAnalysisTaskMuPa::TheoreticalValue(TArrayI *harmonics, TArrayD *amplitudes, TArrayD *planes)
 
 
 

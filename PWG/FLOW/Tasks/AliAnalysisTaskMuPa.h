@@ -156,6 +156,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual TComplex Eleven(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8, Int_t n9, Int_t n10, Int_t n11);
   virtual TComplex Twelve(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8, Int_t n9, Int_t n10, Int_t n11, Int_t n12);
   virtual TComplex Recursion(Int_t n, Int_t* harmonic, Int_t mult = 1, Int_t skip = 0); // Credits: Kristjan Gulbrandsen (gulbrand@nbi.dk) 
+  virtual TComplex TheoreticalValue(TArrayI *harmonics, TArrayD *amplitudes, TArrayD *planes); // for the specified amplitudes and symmetry planes, return the theoretical value of correlator
 
   // 5) Setters and getters:
   void SetRealData(Bool_t rd){this->fRealData = rd;};
@@ -480,7 +481,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fMultRangeInternalValidation[0] = min; 
    this->fMultRangeInternalValidation[1] = max;
   };
-  void SetInternalValidationHarmonics(TArrayD *ivh){this->fInternalValidationHarmonics = ivh;};
+  void SetInternalValidationAmplitudes(TArrayD *iva){this->fInternalValidationAmplitudes = iva;};
+  void SetInternalValidationPlanes(TArrayD *ivp){this->fInternalValidationPlanes = ivp;};
 
   // Utility:
   void Red(const char* text);
@@ -675,13 +677,14 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Double_t fToyNUACuts[gKinematicVariables][3]; // stores probability [0] and NUA sector range min [1] and max [2]. Use task->SetToyNUACuts("variable",probability,min,max)
 
   //10) Internal validation:
-  TList *fInternalValidationList;        // list to hold all objects for internal validation
-  TProfile *fInternalValidationFlagsPro; // profile to hold all flags for internal validation
-  Bool_t fUseInternalValidation;         // use internal validation
-  Bool_t fRescaleWithTheoreticalInput;   // if kTRUE, all measured correlators are rescaled with theoretical input, so that in profiles everything is at 1
-  Int_t fnEventsInternalValidation;      // how many events will be sampled on-the-fly for internal validation
-  TArrayD *fInternalValidationHarmonics; // 0 = v1, 1 = v2, etc.
-  Int_t fMultRangeInternalValidation[2]; // min and max values for uniform multiplicity distribution in on-the-fly analysis
+  TList *fInternalValidationList;         // list to hold all objects for internal validation
+  TProfile *fInternalValidationFlagsPro;  // profile to hold all flags for internal validation
+  Bool_t fUseInternalValidation;          // use internal validation
+  Bool_t fRescaleWithTheoreticalInput;    // if kTRUE, all measured correlators are rescaled with theoretical input, so that in profiles everything is at 1
+  Int_t fnEventsInternalValidation;       // how many events will be sampled on-the-fly for internal validation
+  TArrayD *fInternalValidationAmplitudes; // 0 = v1, 1 = v2, etc.
+  TArrayD *fInternalValidationPlanes;     // 0 = Psi1, 1 = Psi2, etc.
+  Int_t fMultRangeInternalValidation[2];  // min and max values for uniform multiplicity distribution in on-the-fly analysis
 
   //11) Test0:  
   TList *fTest0List;            // TBI
