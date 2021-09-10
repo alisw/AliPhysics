@@ -34,6 +34,7 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 		TString  pte = "pte",
 		Double_t MassMin,
 		Double_t nref,
+		Double_t nrefV0,
 		TString estimatorFilename,
 		Int_t minNtr,
 		Int_t maxNtr,
@@ -78,6 +79,7 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
     task -> SetptCut(pte);
     task -> SetMassMin(MassMin);
     task -> SetNref(nref);
+    task -> SetNrefV0(nrefV0);
     task -> SetMinNtr(minNtr);
     task -> SetMaxNtr(maxNtr);
     task -> SetEstimatorFile(estimatorFilename);
