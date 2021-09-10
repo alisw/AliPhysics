@@ -91,17 +91,16 @@ Int_t AliGFWCuts::AcceptTrack(AliESDtrack* l_Tr, Double_t* l_DCA, const Int_t &B
   if(TMath::Abs(l_Tr->Eta())>fEta) return 0;
   if(fFilterBit==96) {
     if(!fTCFB32->AcceptTrack(l_Tr) && !fTCFB64->AcceptTrack(l_Tr)) return 0;
-    if(TMath::Abs(l_DCA[0]) < fPtDepXYCut->Eval(l_Pt)) PrimFlags+=1;
+    if(l_DCA) if(TMath::Abs(l_DCA[0]) < fPtDepXYCut->Eval(l_Pt)) PrimFlags+=1;
   }
   if(fFilterBit==768) {
     if(!fTCFB256->AcceptTrack(l_Tr) && !fTCFB512->AcceptTrack(l_Tr)) return 0;
-    if(TMath::Abs(l_DCA[0]) < fPtDepXYCut->Eval(l_Pt)) PrimFlags+=1; //Here assume DCA cut is passed by default -- it's implemented in ESDtrackCuts
+    if(l_DCA) if(TMath::Abs(l_DCA[0]) < fPtDepXYCut->Eval(l_Pt)) PrimFlags+=1; //Here assume DCA cut is passed by default -- it's implemented in ESDtrackCuts
   }
   if(fFilterBit==16) {
     if(!fTCFB16->AcceptTrack(l_Tr)) return 0;
-    if(TMath::Abs(l_DCA[0]) < fPtDepXYCut->Eval(l_Pt)) PrimFlags+=1; //Here assume DCA cut is passed by default -- it's implemented in ESDtrackCuts
+    if(l_DCA) if(TMath::Abs(l_DCA[0]) < fPtDepXYCut->Eval(l_Pt)) PrimFlags+=1; //Here assume DCA cut is passed by default -- it's implemented in ESDtrackCuts
   }
-
   //chi2 TPC vs global constrained could be a custom number, but it's 36 everywhere anyways
   Double_t chi2TPCConstrained = GetChi2TPCConstrained(l_Tr);
   if(!(chi2TPCConstrained<0) && chi2TPCConstrained<36.) PrimFlags+=2;
