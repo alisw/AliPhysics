@@ -1,3 +1,5 @@
+//#include "AliAnalysisTaskCentralTau.h"
+
 AliAnalysisTaskCentralTau *AddTaskCentralTau(Float_t cutEta = 0.9){
   
   //--- get the current analysis manager ---//
@@ -30,11 +32,13 @@ AliAnalysisTaskCentralTau *AddTaskCentralTau(Float_t cutEta = 0.9){
 
    // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("ListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:Upc", AliAnalysisManager::GetCommonFileName()));  
-
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("ListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:Upc", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("PID", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:Upc", AliAnalysisManager::GetCommonFileName()));
+  
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput);
+  mgr->ConnectOutput(task, 2, coutput2);
 
 return task;
 }
