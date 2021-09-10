@@ -75,37 +75,37 @@ protected:
   static const int NCENT = 20; 
   static const int NPID = 4 ; 
 
-  float fPhPtMin = 0.3 ; 
-  float fPhPtMax = 1.  ;
-  float fPi0PtMin = 0.3 ; 
-  float fPi0PtMax = 1.  ;
-  float fChPtMin = 0.3 ; 
-  float fChPtMax = 1.  ;
+  float fPhPtMin  ; 
+  float fPhPtMax ;
+  float fPi0PtMin  ; 
+  float fPi0PtMax   ;
+  float fChPtMin  ; 
+  float fChPtMax   ;
 
-  float fChEtaCutMax = 0.8 ; 
-  float fPhEtaCutMax = 0.8 ; 
-  float fPi0EtaCutMax = 0.8 ; 
+  float fChEtaCutMax  ; 
+  float fPhEtaCutMax  ; 
+  float fPi0EtaCutMax  ; 
 
-  float fChPhiMin = 0. ; 
-  float fChPhiMax = 6.2831853  ;
-  float fPhPhiMin = 0. ; 
-  float fPhPhiMax = 6.2831853  ;
-  float fPi0PhiMin = 0. ; 
-  float fPi0PhiMax = 6.2831853  ;
+  float fChPhiMin ; 
+  float fChPhiMax ;
+  float fPhPhiMin ; 
+  float fPhPhiMax ;
+  float fPi0PhiMin ; 
+  float fPi0PhiMax ;
 
-  Int_t fRunNumber =0 ;                           //!
-  double fCentrality =0.;                         //!
-  int fCentBin =0 ;
-  runtype   fRunType = kpp;
-  AliPPVsMultUtils * fPPUtils = nullptr;          //!
-  THashList * fOutputContainer = nullptr;         //! final histogram container 
-  TList   * fCurrentMixedList = nullptr;          //! list of previous evetns for given centrality
+  Int_t fRunNumber ;                           //!
+  double fCentrality ;                         //!
+  int fCentBin ;
+  runtype   fRunType ;
+  AliPPVsMultUtils * fPPUtils ;          //!
+  THashList * fOutputContainer ;         //! final histogram container 
+  TList   * fCurrentMixedList ;          //! list of previous evetns for given centrality
   TList   * fPHOSEvents[20][NCENT] ;              //!Previous events for mixing
 
-  TClonesArray       *fStack = nullptr;           //! Pointer to MC stack (AOD)
-  AliPIDResponse     *fPIDResponse  = nullptr;    //! PID response 
-  AliAnalysisUtils   *fUtils = nullptr;           //!
-  TClonesArray       *fArrGamma  = nullptr ;      //! list of photons in event
+  TClonesArray       *fStack ;           //! Pointer to MC stack (AOD)
+  AliPIDResponse     *fPIDResponse ;    //! PID response 
+  AliAnalysisUtils   *fUtils ;           //!
+  TClonesArray       *fArrGamma ;      //! list of photons in event
 
   std::vector<int> fpi0list ;               //!
   std::vector<int> fChPrimaryList1 ;        //!
@@ -114,80 +114,80 @@ protected:
   std::vector<int> fPi0PrimaryList ;        //! 
   std::vector<int> frecpi0 ;                //!
 
-  int fRecPhot[NPID] ={0} ;                 //!
-  int fRecPhotTrue[NPID]={0} ;              //!  
-  int fRecPhotTruePi0[NPID]={0} ;           //!
-  int fRecPhotTruePi0Single[NPID]={0} ;     //!
+  int fRecPhot[NPID] ;                 //!
+  int fRecPhotTrue[NPID] ;              //!  
+  int fRecPhotTruePi0[NPID];           //!
+  int fRecPhotTruePi0Single[NPID];     //!
 
-  int fRecPipm = 0;
-  int fRecPipmTrue = 0;
+  int fRecPipm ;
+  int fRecPipmTrue ;
 
   //QA histos
-  TH1F * fhSelEvents = nullptr;     //!
-  TH1F * fhTrackPt = nullptr ;      //!
-  TH1F * fhPionPt = nullptr ;       //!
-  TH1F * fhKaonPt = nullptr ;       //!
-  TH1F * fhProtonPt = nullptr ;     //!
-  TH1F * fhUndefPt = nullptr ;      //!
-  TH1F * fhPhotonPt = nullptr ;     //!
-  TH1F * fhMCPhotonPt = nullptr ;   //!
+  TH1F * fhSelEvents ;     //!
+  TH1F * fhTrackPt ;      //!
+  TH1F * fhPionPt  ;       //!
+  TH1F * fhKaonPt  ;       //!
+  TH1F * fhProtonPt  ;     //!
+  TH1F * fhUndefPt  ;      //!
+  TH1F * fhPhotonPt  ;     //!
+  TH1F * fhMCPhotonPt  ;   //!
 
   //MC histos
-  TH1F * fhMCPrimPi0N = nullptr ;        //!
-  TH1F * fhMCPrimPi01N  = nullptr;       //!
-  TH1F * fhMCPrimPi0NoresN = nullptr ;   //!
-  TH1F * fhMCPrimPi0Nores1N = nullptr ;  //!
+  TH1F * fhMCPrimPi0N  ;        //!
+  TH1F * fhMCPrimPi01N  ;       //!
+  TH1F * fhMCPrimPi0NoresN  ;   //!
+  TH1F * fhMCPrimPi0Nores1N  ;  //!
 
-  TH1F * fhMCPrimGammaN = nullptr ;      //!
-  TH1F * fhMCPrimGamma1N = nullptr;      //!
-  TH1F * fhMCPrimGammaPi0N = nullptr ;   //!
-  TH1F * fhMCPrimGammaPi01N = nullptr ;  //!
-  TH1F * fhMCPrimGammaPi0SingleN = nullptr ;        //!
-  TH1F * fhMCPrimGammaPi0Single1N = nullptr ;       //!
-  TH1F * fhMCPrimGammaAllSingleN = nullptr ;        //!
-  TH1F * fhMCPrimGammaAllSingle1N = nullptr ;       //!
-  TH1F * fhMCPrimGammaPi0SingleNoresN = nullptr ;   //!
-  TH1F * fhMCPrimGammaPi0SingleNores1N = nullptr ;  //!
+  TH1F * fhMCPrimGammaN  ;      //!
+  TH1F * fhMCPrimGamma1N ;      //!
+  TH1F * fhMCPrimGammaPi0N  ;   //!
+  TH1F * fhMCPrimGammaPi01N  ;  //!
+  TH1F * fhMCPrimGammaPi0SingleN  ;        //!
+  TH1F * fhMCPrimGammaPi0Single1N  ;       //!
+  TH1F * fhMCPrimGammaAllSingleN  ;        //!
+  TH1F * fhMCPrimGammaAllSingle1N  ;       //!
+  TH1F * fhMCPrimGammaPi0SingleNoresN  ;   //!
+  TH1F * fhMCPrimGammaPi0SingleNores1N  ;  //!
 
-  TH1F * fhMCPrimPipmN = nullptr ;                    //!  
-  TH1F * fhMCPrimPipm1N  = nullptr;                   //!
-  TH1F * fhMCPrimPipmNoresNa = nullptr ;              //!
-  TH1F * fhMCPrimPipmNores1Na  = nullptr;             //!
-  TH1F * fhMCPrimPipmNoresNb = nullptr ;              //!
-  TH1F * fhMCPrimPipmNores1Nb  = nullptr;             //!
-  TH1F * fhMCPrimPipmPi0 = nullptr ;                  //!
-  TH1F * fhMCPrimPipmPi0Nores = nullptr ;             //!
-  TH1F * fhMCPrimPipmGamma = nullptr ;                //!
-  TH1F * fhMCPrimPipmGammaPi0  = nullptr;             //!
-  TH1F * fhMCPrimPipmGammaPi0Single  = nullptr;       //!
-  TH1F * fhMCPrimPipmGammaAllSingle  = nullptr;       //!
-  TH1F * fhMCPrimPipmGammaPi0SingleNores = nullptr ;  //!
+  TH1F * fhMCPrimPipmN  ;                    //!  
+  TH1F * fhMCPrimPipm1N  ;                   //!
+  TH1F * fhMCPrimPipmNoresNa  ;              //!
+  TH1F * fhMCPrimPipmNores1Na  ;             //!
+  TH1F * fhMCPrimPipmNoresNb  ;              //!
+  TH1F * fhMCPrimPipmNores1Nb  ;             //!
+  TH1F * fhMCPrimPipmPi0  ;                  //!
+  TH1F * fhMCPrimPipmPi0Nores  ;             //!
+  TH1F * fhMCPrimPipmGamma  ;                //!
+  TH1F * fhMCPrimPipmGammaPi0  ;             //!
+  TH1F * fhMCPrimPipmGammaPi0Single  ;       //!
+  TH1F * fhMCPrimPipmGammaAllSingle  ;       //!
+  TH1F * fhMCPrimPipmGammaPi0SingleNores  ;  //!
 
-  TH1F * fhPipmN = nullptr ;                           //!
-  TH1F * fhPipm1N  = nullptr;                          //!
-  TH1F * fhPipmTrueN = nullptr ;                       //!
-  TH1F * fhPipmTrue1N = nullptr ;                      //!
+  TH1F * fhPipmN  ;                           //!
+  TH1F * fhPipm1N  ;                          //!
+  TH1F * fhPipmTrueN  ;                       //!
+  TH1F * fhPipmTrue1N  ;                      //!
 
-  TH1F * fhGammaN[NPID] = {nullptr} ;                  //!
-  TH1F * fhGamma1N[NPID] = {nullptr} ;                 //!
-  TH1F * fhGammaTrueN[NPID] = {nullptr} ;              //!
-  TH1F * fhGammaTrue1N[NPID] = {nullptr} ;             //!
-  TH1F * fhGammaTruePi0N[NPID] = {nullptr} ;           //!
-  TH1F * fhGammaTruePi01N[NPID] = {nullptr} ;          //!
-  TH1F * fhGammaTruePi0SingleN[NPID] = {nullptr} ;     //!
-  TH1F * fhGammaTruePi0Single1N[NPID] = {nullptr} ;    //!
+  TH1F * fhGammaN[NPID] ;                  //!
+  TH1F * fhGamma1N[NPID] ;                 //!
+  TH1F * fhGammaTrueN[NPID] ;              //!
+  TH1F * fhGammaTrue1N[NPID] ;             //!
+  TH1F * fhGammaTruePi0N[NPID] ;           //!
+  TH1F * fhGammaTruePi01N[NPID] ;          //!
+  TH1F * fhGammaTruePi0SingleN[NPID] ;     //!
+  TH1F * fhGammaTruePi0Single1N[NPID] ;    //!
 
-  TH1F * fhGammaPipm[NPID] = {nullptr} ;               //!
-  TH1F * fhGammaPipmTrue[NPID] = {nullptr} ;           //!
-  TH1F * fhGammaPipmTruePi0[NPID] = {nullptr} ;        //!
-  TH1F * fhGammaPipmTruePi0Single[NPID] = {nullptr} ;  //!
+  TH1F * fhGammaPipm[NPID] ;               //!
+  TH1F * fhGammaPipmTrue[NPID] ;           //!
+  TH1F * fhGammaPipmTruePi0[NPID] ;        //!
+  TH1F * fhGammaPipmTruePi0Single[NPID] ;  //!
 
   //Inv masses
-  TH2F * fhReal[NPID] = {nullptr} ;                    //! 
-  TH2F * fhRealTrue[NPID]  = {nullptr};                //!   
-  TH2F * fhRealCommon[NPID]  = {nullptr};              //!
-  TH2F * fhMixed[NPID] = {nullptr} ;                   //!  
-  TH2F * fEgammaEpi0 = nullptr;                        //!
+  TH2F * fhReal[NPID] ;                    //! 
+  TH2F * fhRealTrue[NPID] ;                //!   
+  TH2F * fhRealCommon[NPID] ;              //!
+  TH2F * fhMixed[NPID] ;                   //!  
+  TH2F * fEgammaEpi0 ;                        //!
 
   ClassDef(AliAnalysisPHOSFluctuations, 1); // PHOS analysis task
 };
