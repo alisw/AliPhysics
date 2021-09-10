@@ -32,7 +32,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   TFile *file = TFile::Open("alien:///alice/cern.ch/user/s/sitang/AMPT_Centrality_Calibration/Centrality.root");
 
 //  TFile *file = TFile::Open("./Centrality/Centrality.root");
-//  TH1D *h_Charge  = (TH1D*)file->Get("hChargeV0A"); h_Charge->SetDirectory(0);
+  TH1D *h_Charge  = (TH1D*)file->Get("hChargeV0A"); h_Charge->SetDirectory(0);
   file->Close();
 
   // create input container
