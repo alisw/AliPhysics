@@ -83,6 +83,7 @@ AliAnalysisTaskJPsiMC_DG::AliAnalysisTaskJPsiMC_DG() : // initializer list
     fRunNumber(0),
     // Histograms:
     hCounterCuts(0),
+    hPtRecGen(0),
     // PID, sigmas:
     fTrk1SigIfMu(0),
     fTrk1SigIfEl(0),
@@ -121,6 +122,7 @@ AliAnalysisTaskJPsiMC_DG::AliAnalysisTaskJPsiMC_DG(const char* name) : // initia
     fRunNumber(0),
     // Histograms:
     hCounterCuts(0),
+    hPtRecGen(0),
     // PID, sigmas:
     fTrk1SigIfMu(0),
     fTrk1SigIfEl(0),
@@ -263,6 +265,11 @@ void AliAnalysisTaskJPsiMC_DG::UserCreateOutputObjects()
     //hCounterCuts->GetXaxis()->SetBinLabel(5,"4: CCUP31 trigg");
 
     fOutputList->Add(hCounterCuts);
+
+    Int_t n_bins = 2000;
+    // x axis = pt generated, y axis = pt reconstructed
+    hPtRecGen = new TH2F("hPtRecGen", "pt rec vs pt gen", n_bins, 0., 2., n_bins, 0., 2.);
+    fOutputList->Add(hPtRecGen);
 
     PostData(3, fOutputList); 
 
@@ -450,7 +457,10 @@ void AliAnalysisTaskJPsiMC_DG::UserExec(Option_t *)
 
     if(isMuonPair < isElectronPair) TrkTrkKinematics(fIndicesOfGoodTracks, massMuon);
     else TrkTrkKinematics(fIndicesOfGoodTracks, massElectron);
-    
+
+    // Fill the 2D histogram of pt gen and pt rec
+    hPtRecGen->Fill(fPtGen,fPt);
+
     // Check if SPD cluster matches FOhits (according to MB's macro)
     Int_t crossedFO[4];
     TBits fFOCrossedChips(1200); 
