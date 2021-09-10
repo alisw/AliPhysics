@@ -1489,6 +1489,9 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
             fDoMassCut = kTRUE;
             fMassCut = 0.520;
             break;
+		case 22: //m cut at eta prime mass
+			fDoMassCut = kTRUE;
+			fMassCut = 0.95778;
 		default:
 			cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;
