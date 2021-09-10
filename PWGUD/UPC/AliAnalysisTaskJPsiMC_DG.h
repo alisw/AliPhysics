@@ -50,6 +50,7 @@ class AliAnalysisTaskJPsiMC_DG : public AliAnalysisTaskSE
         Int_t       fRunNumber;
         // Histograms:
         TH1F        *hCounterCuts;      //! to count the number of events passing each of the cuts
+        TH2F        *hPtRecGen;
         // PID, sigmas:
         Double_t    fTrk1SigIfMu;
         Double_t    fTrk1SigIfEl;

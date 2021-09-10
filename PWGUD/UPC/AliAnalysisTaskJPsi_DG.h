@@ -44,13 +44,17 @@ class AliAnalysisTaskJPsi_DG : public AliAnalysisTaskSE
         Int_t       fRunNumber;
         TString     fTriggerName;
         // Histograms:
-        TH1F        *hCounterCuts;      //! to count the number of events passing each of the cuts
-        TH1F        *hCounterTrigger;   //! to count the number of events per run passing trigger conditions
+        TH1F    *hCounterCuts;      //! to count the number of events passing each of the cuts
+        TH1F    *hCounterTrigger;   //! to count the number of events per run passing trigger conditions
+        TH1F    *hVertexContrib;
+        TH1F    *hVertexZ;
+        TH2I    *hADdecision;
+        TH2I    *hV0decision;
         // PID, sigmas:
-        Double_t    fTrk1SigIfMu;
-        Double_t    fTrk1SigIfEl;
-        Double_t    fTrk2SigIfMu;
-        Double_t    fTrk2SigIfEl;
+        Double_t fTrk1SigIfMu;
+        Double_t fTrk1SigIfEl;
+        Double_t fTrk2SigIfMu;
+        Double_t fTrk2SigIfEl;
         // Kinematics:
         Double_t fPt;   //! transverse momentum
         Double_t fPhi;  //! azimuthal angle
@@ -65,6 +69,9 @@ class AliAnalysisTaskJPsi_DG : public AliAnalysisTaskSE
         Double_t fPhi2;
         Double_t fQ1;   //! charges
         Double_t fQ2;
+        // Vertex info:
+        Double_t fVertexZ;
+        Int_t    fVertexContrib;
         // Info from the detectors:
         // ZDC
         Double_t fZNA_energy;
