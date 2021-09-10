@@ -52,14 +52,74 @@ ClassImp(AliAnalysisPHOSFluctuations)
 //________________________________________________________________________
 AliAnalysisPHOSFluctuations::AliAnalysisPHOSFluctuations(const char *name) 
 : AliAnalysisTaskSE(name),
-  fOutputContainer(nullptr),
-  fStack(nullptr),
-  fPIDResponse(nullptr),
-  fUtils(nullptr),
+  fPhPtMin(0.3), 
+  fPhPtMax(1.),
+  fPi0PtMin(0.3), 
+  fPi0PtMax(1.),
+  fChPtMin(0.3), 
+  fChPtMax(1.),
+  fChEtaCutMax(0.8), 
+  fPhEtaCutMax(0.8), 
+  fPi0EtaCutMax(0.8), 
+  fChPhiMin(0.), 
+  fChPhiMax(6.2831853 ),
+  fPhPhiMin(0.), 
+  fPhPhiMax(6.2831853 ),
+  fPi0PhiMin(0.), 
+  fPi0PhiMax(6.2831853 ),
+  fRunNumber(0),                           
+  fCentrality(0),                         
+  fCentBin(0),
   fRunType(kpp),
-  fCentrality(0.), 
-  fArrGamma(nullptr),
-  fCurrentMixedList(nullptr)
+  fPPUtils(nullptr),          
+  fOutputContainer(nullptr),         
+  fCurrentMixedList(nullptr),          
+  fStack(nullptr),           
+  fPIDResponse (nullptr),   
+  fUtils(nullptr),           
+  fArrGamma (nullptr),      
+  fRecPipm(0),
+  fRecPipmTrue(0),
+  fhSelEvents(nullptr),     
+  fhTrackPt(nullptr),      
+  fhPionPt(nullptr),       
+  fhKaonPt(nullptr),       
+  fhProtonPt(nullptr),     
+  fhUndefPt(nullptr),      
+  fhPhotonPt(nullptr),     
+  fhMCPhotonPt(nullptr),   
+  fhMCPrimPi0N(nullptr),        
+  fhMCPrimPi01N (nullptr),       
+  fhMCPrimPi0NoresN(nullptr),   
+  fhMCPrimPi0Nores1N(nullptr),  
+  fhMCPrimGammaN(nullptr),      
+  fhMCPrimGamma1N(nullptr),      
+  fhMCPrimGammaPi0N(nullptr),   
+  fhMCPrimGammaPi01N(nullptr),  
+  fhMCPrimGammaPi0SingleN(nullptr),        
+  fhMCPrimGammaPi0Single1N(nullptr),       
+  fhMCPrimGammaAllSingleN(nullptr),        
+  fhMCPrimGammaAllSingle1N(nullptr),       
+  fhMCPrimGammaPi0SingleNoresN(nullptr),   
+  fhMCPrimGammaPi0SingleNores1N(nullptr),  
+  fhMCPrimPipmN(nullptr),                      
+  fhMCPrimPipm1N (nullptr),                   
+  fhMCPrimPipmNoresNa(nullptr),              
+  fhMCPrimPipmNores1Na (nullptr),             
+  fhMCPrimPipmNoresNb(nullptr),              
+  fhMCPrimPipmNores1Nb (nullptr),             
+  fhMCPrimPipmPi0(nullptr),                  
+  fhMCPrimPipmPi0Nores(nullptr),             
+  fhMCPrimPipmGamma(nullptr),                
+  fhMCPrimPipmGammaPi0 (nullptr),             
+  fhMCPrimPipmGammaPi0Single (nullptr),       
+  fhMCPrimPipmGammaAllSingle (nullptr),       
+  fhMCPrimPipmGammaPi0SingleNores(nullptr),  
+  fhPipmN(nullptr),                           
+  fhPipm1N (nullptr),                          
+  fhPipmTrueN(nullptr),                       
+  fhPipmTrue1N(nullptr),                      
+  fEgammaEpi0(nullptr)                        
 {
     
   // Output slots #0 write into a TH1 container
@@ -68,9 +128,30 @@ AliAnalysisPHOSFluctuations::AliAnalysisPHOSFluctuations(const char *name)
   for(Int_t i=0;i<20;i++)
     for(Int_t j=0;j<NCENT;j++)
       fPHOSEvents[i][j]=nullptr ;    //Container for PHOS photons
+  for(Int_t i=0;i<NPID;i++){
+    fRecPhot[i] =0;
+    fRecPhotTrue[i] =0;
+    fRecPhotTruePi0[i] =0;
+    fRecPhotTruePi0Single[i] =0;
+    fhGammaN[i]=nullptr ;                  
+    fhGamma1N[i]=nullptr ;                 
+    fhGammaTrueN[i]=nullptr ;              
+    fhGammaTrue1N[i]=nullptr ;             
+    fhGammaTruePi0N[i]=nullptr ;           
+    fhGammaTruePi01N[i]=nullptr ;          
+    fhGammaTruePi0SingleN[i]=nullptr ;     
+    fhGammaTruePi0Single1N[i]=nullptr ;    
 
+    fhGammaPipm[i]=nullptr ;               
+    fhGammaPipmTrue[i]=nullptr ;           
+    fhGammaPipmTruePi0[i]=nullptr ;        
+    fhGammaPipmTruePi0Single[i]=nullptr ;  
+    fhReal[i]=nullptr ;                     
+    fhRealTrue[i]=nullptr ;                  
+    fhRealCommon[i]=nullptr ;              
+    fhMixed[i]=nullptr ;                     
+  }
 }
-
 //________________________________________________________________________
 void AliAnalysisPHOSFluctuations::UserCreateOutputObjects()
 {
