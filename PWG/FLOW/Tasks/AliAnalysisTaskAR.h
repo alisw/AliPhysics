@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 04.09.2021
+ * Last Modified Date: 10.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -38,8 +38,9 @@ const Int_t kMaxCorrelator = 20;
 const Int_t kMaxPower = 20;
 // global constants for QA filterbit scan
 const Int_t kMaxFilterbit = 15; // 2^(15-1)=16384
-const Int_t kNumberofTestFilterBit = 5;
-const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
+const Int_t kNumberofTestFilterBit = 6;
+const Int_t kTestFilterbit[kNumberofTestFilterBit] = {1,   92,  128,
+                                                      256, 512, 768};
 // centrality estimators
 enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
 const TString kCenEstimatorNames[LAST_ECENESTIMATORS] = {"V0M", "CL0", "CL1",
@@ -175,6 +176,9 @@ public:
 
   // setters for QA histograms
   void SetFillQAHistograms(Bool_t option) { fFillQAHistograms = option; }
+  void SetFillQACorHistogramsOnly(Bool_t option) {
+    fFillQACorHistogramsOnly = option;
+  }
   // generic setter for centrality correlation QA histogram binning
   void SetCenCorQAHistogramBinning(Int_t cen1, Int_t xnbins,
                                    Double_t xlowerEdge, Double_t xupperEdge,
@@ -326,8 +330,20 @@ public:
   // depends strongly on the data set
   // typical choices are 1,128,256,768
   void SetFilterbit(Int_t Filterbit) { this->fFilterbit = Filterbit; }
+  // cut all neutral particles away
+  void SetChargedOnlyCut(Bool_t option) { this->fChargedOnly = option; }
   // cut all non-primary particles away
   void SetPrimaryOnlyCut(Bool_t option) { this->fPrimaryOnly = option; }
+  // only use kinematics cuts
+  // need for running over MC data
+  void SetMCCutsOnly(Bool_t option) { this->fMCCutsOnly = option; }
+  void SetCenFlattenHist(TH1D *hist) {
+    std::cout << __LINE__ << ": Did not get centrality flattening histogram"
+              << std::endl;
+    Fatal("SetCenFlattenHist", "Invalid pointer");
+    this->fCenFlatten = kTRUE;
+    this->fCenFlattenHist = hist;
+  };
 
   // setters for MC on the fly analysis
   void SetMCOnTheFly(Bool_t option) { this->fMCOnTheFly = option; }
@@ -425,6 +441,8 @@ private:
   TList *fQAHistogramsList;
   TString fQAHistogramsListName;
   Bool_t fFillQAHistograms;
+  // only fill correlation histograms
+  Bool_t fFillQACorHistogramsOnly;
   // array holding all centrality estimates
   Double_t fCentrality[LAST_ECENESTIMATORS];
   // centrality correlation histograms
@@ -494,10 +512,14 @@ private:
   TString fEventCutsCounterNames[LAST_EMODE];
   TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
   Int_t fFilterbit;
+  Bool_t fChargedOnly;
   Bool_t fPrimaryOnly;
+  Bool_t fMCCutsOnly;
   kCenEstimators fCentralityEstimator;
   Double_t fCenCorCut[2];
   Double_t fMulCorCut[2];
+  Bool_t fCenFlatten;
+  TH1D *fCenFlattenHist;
 
   // Final results
   TList *fFinalResultsList;
