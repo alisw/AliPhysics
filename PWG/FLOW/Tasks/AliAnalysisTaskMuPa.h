@@ -45,7 +45,7 @@ const Int_t gQAAnomalousEvents = 1; // |vertex| = 0;
 const Int_t gQASelfCorrelations = 3; // phi, pt, eta
 const Int_t gQAEventCutCounter = 23; // see TString secc[gQAEventCutCounter] in .cxx
 const Int_t gQAParticleCutCounter = 39; // see TString spcc[gQAParticleCutCounter] in .cxx
-const Int_t gGenericCorrelations = 1; // correlations between various quantities (see .cxx for documentation)
+const Int_t gGenericCorrelations = 4; // correlations between various quantities (see .cxx for documentation)
 const Int_t gMaxBins = 10000; // max number of kine bins
 const Int_t gMaxCorrelator = 12; // 
 const Int_t gMaxHarmonic = 6; // 
@@ -472,9 +472,6 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fUseInternalValidation = uiv; 
    this->fnEventsInternalValidation = nEvts;
    this->fRescaleWithTheoreticalInput = rescale;
-   this->fCalculateQvector = kTRUE; // yes, otherwise this check is pointless
-   this->fCalculateCorrelations = kTRUE; // yes, otherwise this check is pointless
-   this->fCalculateTest0 = kTRUE; // yes, otherwise this check is pointless
   };
   void SetMultRangeInternalValidation(Int_t min, Int_t max) 
   {
