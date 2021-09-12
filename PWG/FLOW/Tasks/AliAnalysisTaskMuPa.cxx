@@ -1393,6 +1393,11 @@ void AliAnalysisTaskMuPa::InsanityChecks()
    }
   }
   if(fRescaleWithTheoreticalInput && fCalculateNestedLoops){cout<<__LINE__<<endl;exit(1);}
+
+  if(!fCalculateQvector){cout<<__LINE__<<endl;exit(1);} 
+
+  if(!fCalculateCorrelations){Yellow("\INFO: fUseInternalValidation is kTRUE and fCalculateCorrelations is kFALSE.\n      Fine if you validate only Test0...\n");sleep(10.44);} 
+  if(!fCalculateTest0){Yellow("\nINFO: fUseInternalValidation is kTRUE and fCalculateTest0 is kFALSE.\n      Fine if you validate only standard isotropic correlations...\n");sleep(10.44);} 
  } 
 
  //Green("=> Done with InsanityChecks()!");
@@ -1576,22 +1581,28 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
 
  for(Int_t ba=0;ba<2;ba++)
  {
-  if(!fFillQAHistogramsAll){break;} 
   // Centrality correlations:
   for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++)
   {
-   fQACentralityHist[ce1][ba] = new TH1D(Form("fQACentralityHist[%d][%d]",ce1,ba),Form("%s,%s",sce[ce1].Data(),sba[ba].Data()),(Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2]);
-   //fQACentralityHist[ce1][ba]->SetStats(kFALSE);
-   fQACentralityHist[ce1][ba]->SetLineColor(fBeforeAfterColor[ba]);
-   fQACentralityHist[ce1][ba]->SetFillColor(fBeforeAfterColor[ba]-10);
-   fQACentralityHist[ce1][ba]->GetXaxis()->SetTitle("centrality");
-   fQAList->Add(fQACentralityHist[ce1][ba]);
+   if(!fFillQAHistogramsAll && ce1 > 0){break;} // I need only ce1 = 0 in correlations below
+
+   if(fFillQAHistogramsAll) // there is a default centrality distributon in event histos
+   {
+    fQACentralityHist[ce1][ba] = new TH1D(Form("fQACentralityHist[%d][%d]",ce1,ba),Form("%s,%s",sce[ce1].Data(),sba[ba].Data()),(Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2]);
+    //fQACentralityHist[ce1][ba]->SetStats(kFALSE);
+    fQACentralityHist[ce1][ba]->SetLineColor(fBeforeAfterColor[ba]);
+    fQACentralityHist[ce1][ba]->SetFillColor(fBeforeAfterColor[ba]-10);
+    fQACentralityHist[ce1][ba]->GetXaxis()->SetTitle("centrality");
+    fQAList->Add(fQACentralityHist[ce1][ba]);
+   }
 
    // 2D correlation plot, only upper diagonal is booked:
    for(Int_t ce2=ce1+1;ce2<gCentralityEstimators;ce2++)
    {
+    if(!fFillQAHistogramsAll && ce2 > ce1+1){break;} // take only 1 correlation as an example
+
     fQACentralityCorrHist[ce1][ce2][ba] = new TH2D(Form("fQACentralityCorrHist[%d][%d][%d]",ce1,ce2,ba),Form("%s vs. %s, %s",sce[ce1].Data(),sce[ce2].Data(),sba[ba].Data()),
-                                          100,0.,100.,100,0.,100.);
+                                                   100,0.,100.,100,0.,100.);
     fQACentralityCorrHist[ce1][ce2][ba]->SetOption("col");
     fQACentralityCorrHist[ce1][ce2][ba]->GetXaxis()->SetTitle(Form("centrality %s",sce[ce1].Data()));
     fQACentralityCorrHist[ce1][ce2][ba]->GetYaxis()->SetTitle(Form("centrality %s",sce[ce2].Data()));
@@ -1601,21 +1612,45 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
 
   // Multiplicity correlations:
   fQAMultiplicityCorrHist[ba] = new TH2D(Form("fQAMultiplicityCorrHist[%d]",ba),Form("reference mult vs. nSelectedTracks, %s",sba[ba].Data()),
-                                        (Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2],(Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
+                                         (Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2],(Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
   fQAMultiplicityCorrHist[ba]->SetOption("col");
   fQAMultiplicityCorrHist[ba]->GetXaxis()->SetTitle("RefMultComb08");
   fQAMultiplicityCorrHist[ba]->GetYaxis()->SetTitle("nSelectedTracks");
   fQAList->Add(fQAMultiplicityCorrHist[ba]);
 
-  // Generic correlations:
+  // Generic correlations (before and after cuts):
+  // 0: fSelectedTracks vs. avtx->GetNContributors()
+  // 1: fCentrality vs. fCentralMultiplicityHist (RefMult08 at the moment)
+  // 2: vtx_z vs. fCentralMultiplicityHist (RefMult08 at the moment)
+  // 3: vtx_z vs. fSelectedTracks
+
   // 0: fSelectedTracks vs. avtx->GetNContributors()
   fQAGenericCorrHist[0][ba] = new TH2D(Form("fQAGenericCorrHist[0][%d]",ba),"fSelectedTracks vs. avtx->GetNContributors()",
-                                        (Int_t)fMultiplicityBins[0],(Int_t)fMultiplicityBins[1],(Int_t)fMultiplicityBins[2],
-                                        (Int_t)fNContributorsBins[0],fNContributorsBins[1],fNContributorsBins[2]);
+                                       (Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2],
+                                       (Int_t)fNContributorsBins[0],fNContributorsBins[1],fNContributorsBins[2]);
   fQAGenericCorrHist[0][ba]->GetXaxis()->SetTitle("fSelectedTracks");
   fQAGenericCorrHist[0][ba]->GetYaxis()->SetTitle("avtx->GetNContributors()");
 
-  // 1: ...
+  // 1: fCentrality vs. fCentralMultiplicityHist (RefMult08 at the moment)
+  fQAGenericCorrHist[1][ba] = new TH2D(Form("fQAGenericCorrHist[1][%d]",ba),Form("%s vs. %s",fCentralityEstimator.Data(),"RefMult08"),
+                                       (Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2],
+                                       (Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
+  fQAGenericCorrHist[1][ba]->GetXaxis()->SetTitle(fCentralityEstimator.Data());
+  fQAGenericCorrHist[1][ba]->GetYaxis()->SetTitle("RefMult08");
+
+  // 2: vtx_z vs. fCentralMultiplicityHist (RefMult08 at the moment)
+  fQAGenericCorrHist[2][ba] = new TH2D(Form("fQAGenericCorrHist[2][%d]",ba),Form("%s vs. %s","V_{z}","RefMult08"),
+                                       (Int_t)fVertexBins[0]/10,fVertexBins[1],fVertexBins[2],
+                                       (Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
+  fQAGenericCorrHist[2][ba]->GetXaxis()->SetTitle("V_{z}");
+  fQAGenericCorrHist[2][ba]->GetYaxis()->SetTitle("RefMult08");
+
+  // 3: vtx_z vs. fSelectedTracks
+  fQAGenericCorrHist[3][ba] = new TH2D(Form("fQAGenericCorrHist[3][%d]",ba),Form("%s vs. %s","V_{z}","fSelectedTracks"),
+                                       (Int_t)fVertexBins[0]/10,fVertexBins[1],fVertexBins[2],
+                                       (Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
+  fQAGenericCorrHist[3][ba]->GetXaxis()->SetTitle("V_{z}");
+  fQAGenericCorrHist[3][ba]->GetYaxis()->SetTitle("fSelectedTracks");
 
   // Common booking for generic correlations:
   for(Int_t gc=0;gc<gGenericCorrelations;gc++)
@@ -1658,19 +1693,21 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
  }
 
  // b) Kinematics for specified filter bits (use in combination with SetQAFilterBits(...))
- for(Int_t fb=0;fb<fQAFilterBits->GetSize();fb++)
- {
-  if(!fFillQAHistogramsAll){break;} 
-  for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4
+ if(fQAFilterBits && fFillQAHistogramsAll)
+ { 
+  for(Int_t fb=0;fb<fQAFilterBits->GetSize();fb++)
   {
-   fQAKinematicsFilterBits[fb][kv] = new TH1D(Form("fQAKinematicsFilterBits[%d][%d]",fb,kv),Form("Filter bit: %d, %s",(Int_t)fQAFilterBits->GetAt(fb),skv[kv].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]);
-   fQAKinematicsFilterBits[fb][kv]->SetXTitle(skv[kv].Data());
-   fQAKinematicsFilterBits[fb][kv]->SetLineColor(COLOR);
-   fQAKinematicsFilterBits[fb][kv]->SetFillColor(FILLCOLOR);
-   fQAKinematicsFilterBits[fb][kv]->SetMinimum(0.);
-   fQAList->Add(fQAKinematicsFilterBits[fb][kv]);   
-  } 
- }
+   for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4
+   {
+    fQAKinematicsFilterBits[fb][kv] = new TH1D(Form("fQAKinematicsFilterBits[%d][%d]",fb,kv),Form("Filter bit: %d, %s",(Int_t)fQAFilterBits->GetAt(fb),skv[kv].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]);
+    fQAKinematicsFilterBits[fb][kv]->SetXTitle(skv[kv].Data());
+    fQAKinematicsFilterBits[fb][kv]->SetLineColor(COLOR);
+    fQAKinematicsFilterBits[fb][kv]->SetFillColor(FILLCOLOR);
+    fQAKinematicsFilterBits[fb][kv]->SetMinimum(0.);
+    fQAList->Add(fQAKinematicsFilterBits[fb][kv]);   
+   } 
+  }
+ } // if(fQAFilterBits && fFillQAHistogramsAll)
 
  // e) Anomalous events:
  // 0 : count events with |vertex| = 0
@@ -1692,6 +1729,7 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
  for(Int_t sc=0;sc<gQASelfCorrelations;sc++)
  {
   if(!fQACheckSelfCorrelations){break;}
+  if(!fFillQAHistogramsAll){break;} 
 
   // Self-correlations in reconstructed sample:
   fQASelfCorrelations[sc] = new TH1D(Form("fQASelfCorrelations[%d]",sc),Form("Check for self-correlations in: %s_{1} - %s_{2}",ssc[sc].Data(),ssc[sc].Data()),200,-0.1,0.1); // TBI 20210526 hw limits
@@ -2222,7 +2260,7 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
  { 
   for(Int_t mi=0;mi<gMaxIndex;mi++) 
   { 
-   if(fTest0Labels[mo][mi]) // book only explicitly requested correlators, other via external file, or with hardcoded loops 
+   if(fTest0Labels[mo][mi]) // book only explicitly requested correlators, either via external file, or with hardcoded loops 
    {
     for(Int_t v=0;v<3;v++) 
     { 
@@ -3611,7 +3649,7 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
    }
 
    // Filter bit kinematics:
-   if(rs == RECO)
+   if(rs == RECO && fQAFilterBits)
    {
     for(Int_t fb=0;fb<fQAFilterBits->GetSize();fb++)
     {
@@ -3624,7 +3662,7 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
       if(fQAKinematicsFilterBits[fb][CHARGE]){fQAKinematicsFilterBits[fb][CHARGE]->Fill(aodTrack->Charge());}
      }
     }
-   } // if(rs == RECO)
+   } // if(rs == RECO && fQAFilterBits)
    
   } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
 
@@ -3707,9 +3745,12 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
    {
     if(fQAGenericCorrHist[0][ba]){fQAGenericCorrHist[0][ba]->Fill(fSelectedTracks,(Int_t)avtx->GetNContributors());}
    }
-
-   // 1: ...
-
+   // 1: fCentrality vs. fCentralMultiplicityHist (RefMult08 at the moment)
+   if(fQAGenericCorrHist[1][ba] && aodheader){fQAGenericCorrHist[1][ba]->Fill(fCentrality,aodheader->GetRefMultiplicityComb08());}
+   // 2: vtx_z vs. fCentralMultiplicityHist (RefMult08 at the moment)
+   if(fQAGenericCorrHist[2][ba] && aodheader && avtx){fQAGenericCorrHist[2][ba]->Fill(avtx->GetZ(),aodheader->GetRefMultiplicityComb08());}
+   // 3: vtx_z vs. fSelectedTracks
+   if(fQAGenericCorrHist[3][ba] && avtx){fQAGenericCorrHist[3][ba]->Fill(avtx->GetZ(),fSelectedTracks);}
   } // if(rs == RECO)
 
  } // if(aAOD)
@@ -4142,7 +4183,8 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    }
    delete harmonics;
   } // if(fCalculateCustomNestedLoop)
-  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){twoC/=pow(fInternalValidationAmplitudes->GetAt(h-1),2.);}
+  if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
+     TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){twoC/=pow(fInternalValidationAmplitudes->GetAt(h-1),2.);}
   // integrated:
   if(fCorrelationsPro[0][h-1][0]){fCorrelationsPro[0][h-1][0]->Fill(0.5,twoC,wTwo);}
   // vs. multiplicity:
@@ -4175,7 +4217,8 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    }
    delete harmonics;
   } // if(fCalculateCustomNestedLoop)
-  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){fourC/=pow(fInternalValidationAmplitudes->GetAt(h-1),4.);}
+  if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
+     TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){fourC/=pow(fInternalValidationAmplitudes->GetAt(h-1),4.);}
   // integrated:
   if(fCorrelationsPro[1][h-1][0]){fCorrelationsPro[1][h-1][0]->Fill(0.5,fourC,wFour);}
   // vs. multiplicity:
@@ -4210,7 +4253,8 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    }
    delete harmonics;
   } // if(fCalculateCustomNestedLoop)
-  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){sixC/=pow(fInternalValidationAmplitudes->GetAt(h-1),6.);}
+  if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
+     TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){sixC/=pow(fInternalValidationAmplitudes->GetAt(h-1),6.);}
   // integrated:
   if(fCorrelationsPro[2][h-1][0]){fCorrelationsPro[2][h-1][0]->Fill(0.5,sixC,wSix);}
   // vs. multiplicity:
@@ -4247,7 +4291,8 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    }
    delete harmonics;
   } // if(fCalculateCustomNestedLoop)
-  if(fUseInternalValidation&&fRescaleWithTheoreticalInput&&TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){eightC/=pow(fInternalValidationAmplitudes->GetAt(h-1),8.);}
+  if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
+     TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){eightC/=pow(fInternalValidationAmplitudes->GetAt(h-1),8.);}
   // integrated:
   if(fCorrelationsPro[3][h-1][0]){fCorrelationsPro[3][h-1][0]->Fill(0.5,eightC,wEight);}
   // vs. multiplicity:
@@ -4985,7 +5030,7 @@ TH1D *AliAnalysisTaskMuPa::GetHistogramWithCentralityWeights(const char *filePat
  TFile *weightsFile = TFile::Open(filePath,"READ");
  if(!weightsFile){cout<<__LINE__<<endl;exit(1);}
  hist = (TH1D*)(weightsFile->Get(Form("%s_%s",estimator,fTaskName.Data())));
- if(!hist){hist = (TH1D*)(weightsFile->Get(Form("%s",estimator)));} // yes, for some simple tests I can have only histogram named e.g. 'phi'
+ if(!hist){hist = (TH1D*)(weightsFile->Get(Form("%s",estimator)));}
  if(!hist){Red(Form("%s_%s",estimator,fTaskName.Data())); cout<<__LINE__<<endl;exit(1);}
  hist->SetDirectory(0);
  hist->SetTitle(filePath);
@@ -5241,7 +5286,7 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
    order = TString(line).Tokenize(" ")->GetEntries();
    if(0 == order){continue;} // empty lines, or the label format which is not supported
    // 1-p => 0, 2-p => 1, etc.:
-   fTest0Labels[order-1][counter[order-1]] = new TString(line); // okay...
+   fTest0Labels[order-1][counter[order-1]] = new TString(line); // okay...  
    //cout<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl;
    counter[order-1]++;
    //cout<<TString(line).Data()<<endl;
@@ -5418,19 +5463,32 @@ void AliAnalysisTaskMuPa::CalculateTest0()
  { 
   for(Int_t mi=0;mi<gMaxIndex;mi++) 
   { 
+   // Sanitize the labels (if necessary, locally this is irrelevant):
+   if(!fTest0Labels[mo][mi]) // I do not stream them, so trying to get them from the booked profiles, where they are stored in the titles
+   {
+    for(Int_t v=0;v<3;v++) 
+    {
+     if(fTest0Pro[mo][mi][v])
+     {
+      fTest0Labels[mo][mi] = new TString(fTest0Pro[mo][mi][v]->GetTitle()); // there is no memory leak here, since this is executed only once on Grid due to if(!fTest0Labels[mo][mi])
+      break; // yes, since for all v they are the same, so I just need to fetch it from one
+     }
+    }
+   } // if(!fTest0Labels[mo][mi])
+
    if(fTest0Labels[mo][mi])
    {
     // Extract harmonics from TString, FS is " ": 
     for(Int_t h=0;h<=mo;h++)
     {
-     n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi(); // okay...
+     n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi();
     }
 
     switch(mo+1) // which order? yes, mo+1
     {
      case 1:
       correlation = One(n[0]).Re();
-      weight = One(n[0]).Re();
+      weight = One(0).Re();
      break;
 
      case 2: 
@@ -5522,7 +5580,7 @@ void AliAnalysisTaskMuPa::CalculateTest0()
     } // if(fCalculateCustomNestedLoop)
   
     // To ease comparison, rescale with theoretical value. Now all Test0 results shall be at 1:
-    if(fUseInternalValidation && fRescaleWithTheoreticalInput)
+    if(fUseInternalValidation && fInternalValidationAmplitudes && fInternalValidationPlanes && fRescaleWithTheoreticalInput)
     {
      TArrayI *harmonics = new TArrayI(mo+1);
      for(Int_t i=0;i<mo+1;i++)
@@ -5581,7 +5639,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
   fPhiPDF->SetParName(2*h,Form("v_{%d}",h+1)); // set name v_n
   fPhiPDF->SetParName(2*h+1,Form("Psi_{%d}",h+1)); // set name psi_n
   // initialize v_n:
-  if(h+1<=fInternalValidationAmplitudes->GetSize())
+  if(fInternalValidationAmplitudes && h+1<=fInternalValidationAmplitudes->GetSize())
   { 
    fPhiPDF->SetParameter(2*h,fInternalValidationAmplitudes->GetAt(h));
   }
@@ -5590,7 +5648,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
    fPhiPDF->SetParameter(2*h,0.);
   } 
   // initialize psi_n:
-  if(h+1<=fInternalValidationPlanes->GetSize())
+  if(fInternalValidationPlanes && h+1<=fInternalValidationPlanes->GetSize())
   { 
    fPhiPDF->SetParameter(2*h+1,fInternalValidationPlanes->GetAt(h));
   }
@@ -5655,8 +5713,8 @@ void AliAnalysisTaskMuPa::InternalValidation()
   // b3) Calculate correlations:
   fSelectedTracks = nMult;
   fCentrality = gRandom->Uniform(0.,100.); // in any case it's meaningless in this exercise
-  this->CalculateCorrelations();
-  this->CalculateTest0();
+  if(fCalculateCorrelations){this->CalculateCorrelations();}
+  if(fCalculateTest0){this->CalculateTest0();}
 
   // b4) Optionally, cross-check with nested loops:
   if(fCalculateNestedLoops){this->CalculateNestedLoops();}
@@ -5689,7 +5747,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
      if(fCorrelationsPro[o][h][0]){valueQV = fCorrelationsPro[o][h][0]->GetBinContent(b);}
      if(TMath::Abs(valueQV)>0.)
      {
-      cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<" +/- "<<fCorrelationsPro[o][h][0]->GetBinError(b)<<endl; 
+      cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<" +/- "<<fCorrelationsPro[o][h][0]->GetBinError(1)<<endl; 
      } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
     } // for(Int_t b=1;b<=nBinsQV;b++) 
    } // for(Int_t h=0;h<6;h++)
