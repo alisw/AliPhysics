@@ -1396,8 +1396,8 @@ void AliAnalysisTaskMuPa::InsanityChecks()
 
   if(!fCalculateQvector){cout<<__LINE__<<endl;exit(1);} 
 
-  if(!fCalculateCorrelations){Yellow("\nWARNING: fUseInternalValidation is kTRUE and fCalculateCorrelations is kFALSE.\n         Fine if you validate only Test0...\n");sleep(4.4);} 
-  if(!fCalculateTest0){Yellow("\nWARNING: fUseInternalValidation is kTRUE and fCalculateTest0 is kFALSE.\n         Fine if you validate only standard isotropic correlations...\n");sleep(4.4);} 
+  if(!fCalculateCorrelations){Yellow("\INFO: fUseInternalValidation is kTRUE and fCalculateCorrelations is kFALSE.\n      Fine if you validate only Test0...\n");sleep(10.44);} 
+  if(!fCalculateTest0){Yellow("\nINFO: fUseInternalValidation is kTRUE and fCalculateTest0 is kFALSE.\n      Fine if you validate only standard isotropic correlations...\n");sleep(10.44);} 
  } 
 
  //Green("=> Done with InsanityChecks()!");
@@ -2260,7 +2260,7 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
  { 
   for(Int_t mi=0;mi<gMaxIndex;mi++) 
   { 
-   if(fTest0Labels[mo][mi]) // book only explicitly requested correlators, other via external file, or with hardcoded loops 
+   if(fTest0Labels[mo][mi]) // book only explicitly requested correlators, either via external file, or with hardcoded loops 
    {
     for(Int_t v=0;v<3;v++) 
     { 
@@ -5030,7 +5030,7 @@ TH1D *AliAnalysisTaskMuPa::GetHistogramWithCentralityWeights(const char *filePat
  TFile *weightsFile = TFile::Open(filePath,"READ");
  if(!weightsFile){cout<<__LINE__<<endl;exit(1);}
  hist = (TH1D*)(weightsFile->Get(Form("%s_%s",estimator,fTaskName.Data())));
- if(!hist){hist = (TH1D*)(weightsFile->Get(Form("%s",estimator)));} // yes, for some simple tests I can have only histogram named e.g. 'phi'
+ if(!hist){hist = (TH1D*)(weightsFile->Get(Form("%s",estimator)));}
  if(!hist){Red(Form("%s_%s",estimator,fTaskName.Data())); cout<<__LINE__<<endl;exit(1);}
  hist->SetDirectory(0);
  hist->SetTitle(filePath);
@@ -5286,7 +5286,7 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
    order = TString(line).Tokenize(" ")->GetEntries();
    if(0 == order){continue;} // empty lines, or the label format which is not supported
    // 1-p => 0, 2-p => 1, etc.:
-   fTest0Labels[order-1][counter[order-1]] = new TString(line); // okay...
+   fTest0Labels[order-1][counter[order-1]] = new TString(line); // okay...  
    //cout<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl;
    counter[order-1]++;
    //cout<<TString(line).Data()<<endl;
@@ -5463,19 +5463,32 @@ void AliAnalysisTaskMuPa::CalculateTest0()
  { 
   for(Int_t mi=0;mi<gMaxIndex;mi++) 
   { 
+   // Sanitize the labels (if necessary, locally this is irrelevant):
+   if(!fTest0Labels[mo][mi]) // I do not stream them, so trying to get them from the booked profiles, where they are stored in the titles
+   {
+    for(Int_t v=0;v<3;v++) 
+    {
+     if(fTest0Pro[mo][mi][v])
+     {
+      fTest0Labels[mo][mi] = new TString(fTest0Pro[mo][mi][v]->GetTitle()); // there is no memory leak here, since this is executed only once on Grid due to if(!fTest0Labels[mo][mi])
+      break; // yes, since for all v they are the same, so I just need to fetch it from one
+     }
+    }
+   } // if(!fTest0Labels[mo][mi])
+
    if(fTest0Labels[mo][mi])
    {
     // Extract harmonics from TString, FS is " ": 
     for(Int_t h=0;h<=mo;h++)
     {
-     n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi(); // okay...
+     n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi();
     }
 
     switch(mo+1) // which order? yes, mo+1
     {
      case 1:
       correlation = One(n[0]).Re();
-      weight = One(n[0]).Re();
+      weight = One(0).Re();
      break;
 
      case 2: 
@@ -5700,8 +5713,8 @@ void AliAnalysisTaskMuPa::InternalValidation()
   // b3) Calculate correlations:
   fSelectedTracks = nMult;
   fCentrality = gRandom->Uniform(0.,100.); // in any case it's meaningless in this exercise
-  this->CalculateCorrelations();
-  this->CalculateTest0();
+  if(fCalculateCorrelations){this->CalculateCorrelations();}
+  if(fCalculateTest0){this->CalculateTest0();}
 
   // b4) Optionally, cross-check with nested loops:
   if(fCalculateNestedLoops){this->CalculateNestedLoops();}
@@ -5734,7 +5747,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
      if(fCorrelationsPro[o][h][0]){valueQV = fCorrelationsPro[o][h][0]->GetBinContent(b);}
      if(TMath::Abs(valueQV)>0.)
      {
-      cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<" +/- "<<fCorrelationsPro[o][h][0]->GetBinError(b)<<endl; 
+      cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<" +/- "<<fCorrelationsPro[o][h][0]->GetBinError(1)<<endl; 
      } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
     } // for(Int_t b=1;b<=nBinsQV;b++) 
    } // for(Int_t h=0;h<6;h++)

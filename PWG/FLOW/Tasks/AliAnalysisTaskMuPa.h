@@ -49,7 +49,7 @@ const Int_t gGenericCorrelations = 4; // correlations between various quantities
 const Int_t gMaxBins = 10000; // max number of kine bins
 const Int_t gMaxCorrelator = 12; // 
 const Int_t gMaxHarmonic = 6; // 
-const Int_t gMaxIndex = 10000; // 
+const Int_t gMaxIndex = 10000; //
 
 // enums:
 enum eBins {nBins,min,max};
@@ -714,7 +714,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,20);
+  ClassDef(AliAnalysisTaskMuPa,21);
 
 };
 
