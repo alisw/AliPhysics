@@ -573,17 +573,17 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
 
 
   } else if(trainConfig == 210)  { //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through )
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe3n220000","32c51070a","0103603l00000000","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe3n220000","32c51070m","0103603l00000000","0453503000000000"); // INT7
   } else if(trainConfig == 211)  { //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through )
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe3n220000","32c51070a","0103603l00000000","0453503000000000"); // EG2
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe3n220000","32c51070m","0103603l00000000","0453503000000000"); // EG2
   } else if(trainConfig == 212)  { //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through )
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe3n220000","32c51070a","0103603l00000000","0453503000000000"); // EG1
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe3n220000","32c51070m","0103603l00000000","0453503000000000"); // EG1
   } else if(trainConfig == 213)  { //EDC 13TeV MB, NCell: 0
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe3n220000","32c51070a","0103603l00000000","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe3n220000","32c51070m","0103603l00000000","0453503000000000"); // INT7
   } else if(trainConfig == 214)  { //EDC 13TeV MB, NCell: 0
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe3n220000","32c51070a","0103603l00000000","0453503000000000"); // EG2
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe3n220000","32c51070m","0103603l00000000","0453503000000000"); // EG2
   } else if(trainConfig == 215)  { //EDC 13TeV MB, NCell: 0
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe3n220000","32c51070a","0103603l00000000","0453503000000000"); // EG1
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe3n220000","32c51070m","0103603l00000000","0453503000000000"); // EG1
 
     // PCM-PHOS
   } else if ( trainConfig == 250 ) { // INT7 + PHI7
