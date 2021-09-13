@@ -77,8 +77,9 @@ ClassImp(AliAnalysisTaskAR)
       fEventControlHistogramsList(nullptr),
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
-      fFilterbit(128), fUseFilterbit(kFALSE), fChargedOnly(kFALSE),
-      fPrimaryOnly(kFALSE), fCentralityEstimator(kV0M), fUseCenCorCuts(kFALSE),
+      fTrackCutsValues(nullptr), fEventCutsValues(nullptr), fFilterbit(128),
+      fUseFilterbit(kFALSE), fChargedOnly(kFALSE), fPrimaryOnly(kFALSE),
+      fCentralityEstimator(kV0M), fUseCenCorCuts(kFALSE),
       fUseMulCorCuts(kFALSE), fUseCenFlatten(kFALSE), fCenFlattenHist(nullptr),
       // final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
@@ -149,8 +150,9 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fEventControlHistogramsList(nullptr),
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
-      fFilterbit(128), fUseFilterbit(kFALSE), fChargedOnly(kFALSE),
-      fPrimaryOnly(kFALSE), fCentralityEstimator(kV0M), fUseCenCorCuts(kFALSE),
+      fTrackCutsValues(nullptr), fEventCutsValues(nullptr), fFilterbit(128),
+      fUseFilterbit(kFALSE), fChargedOnly(kFALSE), fPrimaryOnly(kFALSE),
+      fCentralityEstimator(kV0M), fUseCenCorCuts(kFALSE),
       fUseMulCorCuts(kFALSE), fUseCenFlatten(kFALSE), fCenFlattenHist(nullptr),
       // final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
@@ -181,8 +183,8 @@ AliAnalysisTaskAR::~AliAnalysisTaskAR() {
     delete fLookUpTable;
   }
 
-  // delete RNG, if neccessary
-  if (fMCOnTheFly || fMCClosure) {
+  // delete RNG
+  if (gRandom) {
     delete gRandom;
   }
   // delete pdf, if necessary
@@ -218,10 +220,9 @@ void AliAnalysisTaskAR::UserCreateOutputObjects() {
   if (fMCOnTheFly) {
     this->BookMCOnTheFlyObjects();
   }
-  if (fMCOnTheFly || fMCClosure) {
-    delete gRandom;
-    fUseCustomSeed ? gRandom = new TRandom3(fSeed) : gRandom = new TRandom3(0);
-  }
+  // seed RNG
+  delete gRandom;
+  fUseCustomSeed ? gRandom = new TRandom3(fSeed) : gRandom = new TRandom3(0);
 
   // *) Trick to avoid name clashes, part
   TH1::AddDirectory(oldHistAddStatus);
@@ -666,15 +667,15 @@ void AliAnalysisTaskAR::InitializeArraysForCuts() {
   // default track cuts
   Double_t TrackCutDefaults[LAST_ETRACK][LAST_EMINMAX] = {
       // MIN MAX
-      {0., 5.},             // kPT
-      {0., TMath::TwoPi()}, // kPHI
-      {-3., 3.},            // kETA
-      {0.9, 3.1},           // kCHARGE
-      {0., 160.},           // kTPCNCLS
-      {0., 10.},            // kITSNCLS
-      {0., 10.},            // kCHI2PERNDF
-      {-10., 10},           // kDCAZ
-      {-10., 10},           // kDCAXY
+      {-99., -99.}, // kPT
+      {-99., -99.}, // kPHI
+      {-99., -99.}, // kETA
+      {-99., -99.}, // kCHARGE
+      {-99., -99.}, // kTPCNCLS
+      {-99., -99.}, // kITSNCLS
+      {-99., -99.}, // kCHI2PERNDF
+      {-99., -99.}, // kDCAZ
+      {-99., -99.}, // kDCAXY
   };
   // initialize array for track cuts
   for (int var = 0; var < LAST_ETRACK; ++var) {
@@ -687,16 +688,16 @@ void AliAnalysisTaskAR::InitializeArraysForCuts() {
   // default event cuts
   Double_t EventCutDefaults[LAST_EEVENT][LAST_EMINMAX]{
       // MIN MAX
-      {0., 1e6},   // kMUL
-      {0., 1e6},   // kMULQ
-      {0., 1e6},   // kMULW
-      {0., 1e6},   // kMULREF
-      {0., 1e6},   // kNCONTRIB
-      {0., 100.},  // kCEN
-      {-20., 20.}, // kX
-      {-20., 20.}, // kY
-      {-20., 20.}, // kZ
-      {0., 100.},  // kVPOS
+      {-999., -999.}, // kMUL
+      {-999., -999.}, // kMULQ
+      {-999., -999.}, // kMULW
+      {-999., -999.}, // kMULREF
+      {-999., -999.}, // kNCONTRIB
+      {-999., -999.}, // kCEN
+      {-999., -999.}, // kX
+      {-999., -999.}, // kY
+      {-999., -999.}, // kZ
+      {-999., -999.}, // kVPOS
   };
   // initialize array for event cuts
   for (int var = 0; var < LAST_EEVENT; ++var) {
@@ -1021,11 +1022,11 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   // Book all control histograms
 
   // book histogram for counting trackcuts
-  // add 3 bins manually for filterbit, charged and primary only cut
+  // add 3 bins manually for filterbit, charged only and primary only cut
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     fTrackCutsCounter[mode] =
         new TH1D(fTrackCutsCounterNames[mode], fTrackCutsCounterNames[mode],
-                 2 * LAST_ETRACK + 2, 0, 2 * LAST_ETRACK + 2);
+                 2 * LAST_ETRACK + 3, 0, 2 * LAST_ETRACK + 3);
     fTrackCutsCounter[mode]->SetFillColor(kFillColor[kAFTER]);
     for (int bin = 0; bin < LAST_ETRACK; ++bin) {
       for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
@@ -1041,6 +1042,37 @@ void AliAnalysisTaskAR::BookControlHistograms() {
                                                      "PrimaryOnly");
     fTrackControlHistogramsList->Add(fTrackCutsCounter[mode]);
   }
+  // book histogram holding values of all track cuts
+  fTrackCutsValues = new TH1D("fTrackCutsValues", "fTrackCutsValues",
+                              2 * LAST_ETRACK + 3, 0, 2 * LAST_ETRACK + 3);
+  fTrackCutsValues->SetFillColor(kFillColor[kAFTER]);
+
+  for (int bin = 0; bin < LAST_ETRACK; ++bin) {
+    for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
+      fTrackCutsValues->SetBinContent(2 * bin + mm + 1, fTrackCuts[bin][mm]);
+      fTrackCutsValues->GetXaxis()->SetBinLabel(
+          2 * bin + mm + 1, fTrackCutsCounterBinNames[bin][mm]);
+    }
+  }
+  if (fUseFilterbit) {
+    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 1, fFilterbit);
+  } else {
+    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 1, -99);
+  }
+  fTrackCutsValues->GetXaxis()->SetBinLabel(2 * LAST_ETRACK + 1, "Filterbit");
+  if (fChargedOnly) {
+    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 2, 99);
+  } else {
+    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 2, -99);
+  }
+  fTrackCutsValues->GetXaxis()->SetBinLabel(2 * LAST_ETRACK + 2, "ChargedOnly");
+  if (fPrimaryOnly) {
+    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 3, 99);
+  } else {
+    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 3, -99);
+  }
+  fTrackCutsValues->GetXaxis()->SetBinLabel(2 * LAST_ETRACK + 3, "PrimaryOnly");
+  fTrackControlHistogramsList->Add(fTrackCutsValues);
   // book track control histograms
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     for (int var = 0; var < LAST_ETRACK; ++var) {
@@ -1089,6 +1121,47 @@ void AliAnalysisTaskAR::BookControlHistograms() {
                                                      "fCenFlatten");
     fEventControlHistogramsList->Add(fEventCutsCounter[mode]);
   }
+  // book histogram holding values of all event cuts
+  fEventCutsValues = new TH1D("fEventCutsValues", "fEventCutsValues",
+                              2 * LAST_EEVENT + 5, 0, 2 * LAST_EEVENT + 5);
+  fEventCutsValues->SetFillColor(kFillColor[kAFTER]);
+
+  for (int bin = 0; bin < LAST_EEVENT; ++bin) {
+    for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
+      fEventCutsValues->SetBinContent(2 * bin + mm + 1, fEventCuts[bin][mm]);
+      fEventCutsValues->GetXaxis()->SetBinLabel(
+          2 * bin + mm + 1, fEventCutsCounterBinNames[bin][mm]);
+    }
+  }
+  if (fUseCenCorCuts) {
+    fEventCutsValues->SetBinContent(2 * LAST_EEVENT + 1, fCenCorCut[0]);
+    fEventCutsValues->SetBinContent(2 * LAST_EEVENT + 2, fCenCorCut[1]);
+  } else {
+    fEventCutsValues->SetBinContent(2 * LAST_EEVENT + 1, -99);
+    fEventCutsValues->SetBinContent(2 * LAST_EEVENT + 2, -99);
+  }
+  fEventCutsValues->GetXaxis()->SetBinLabel(2 * LAST_EEVENT + 1, "m_{CEN}");
+  fEventCutsValues->GetXaxis()->SetBinLabel(2 * LAST_EEVENT + 2, "t_{CEN}");
+  if (fUseMulCorCuts) {
+    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 1) + 1, fMulCorCut[0]);
+    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 1) + 2, fMulCorCut[1]);
+  } else {
+    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 1) + 1, -99);
+    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 1) + 2, -99);
+  }
+  fEventCutsValues->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 1) + 1,
+                                            "m_{MUL}");
+  fEventCutsValues->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 1) + 2,
+                                            "t_{MUL}");
+  if (fUseCenFlatten) {
+    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 1, 99);
+  } else {
+    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 1, -99);
+  }
+  fEventCutsValues->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 2) + 1,
+                                            "fUseCenFlatten");
+  fEventControlHistogramsList->Add(fEventCutsValues);
+
   // book event control histograms
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     for (int var = 0; var < LAST_EEVENT; ++var) {
@@ -1521,8 +1594,8 @@ void AliAnalysisTaskAR::ResetWeights() {
 
 Int_t AliAnalysisTaskAR::IndexCorHistograms(Int_t i, Int_t j, Int_t N) {
   // helper function for computing index of correlation histograms
-  // this function project 2D indeces of the entries above the diagonal to a 1D
-  // index, example with N=3
+  // this function project 2D indeces of the entries above the diagonal to a
+  // 1D index, example with N=3
   //    i->
   // j( 00 01 02 )
   // |( 10 11 12 )

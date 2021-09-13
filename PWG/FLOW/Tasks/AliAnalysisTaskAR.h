@@ -502,11 +502,13 @@ private:
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
   Bool_t fUseTrackCuts[LAST_ETRACK];
   TH1D *fTrackCutsCounter[LAST_EMODE];
+  TH1D *fTrackCutsValues;
   TString fTrackCutsCounterNames[LAST_EMODE];
   TString fTrackCutsCounterBinNames[LAST_ETRACK][LAST_EMINMAX];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
   Bool_t fUseEventCuts[LAST_EEVENT];
   TH1D *fEventCutsCounter[LAST_EMODE];
+  TH1D *fEventCutsValues;
   TString fEventCutsCounterNames[LAST_EMODE];
   TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
   Int_t fFilterbit;
