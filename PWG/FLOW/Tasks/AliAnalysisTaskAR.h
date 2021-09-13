@@ -338,12 +338,15 @@ public:
   // need for running over MC data
   void SetMCCutsOnly(Bool_t option) { this->fMCCutsOnly = option; }
   void SetCenFlattenHist(TH1D *hist) {
-    std::cout << __LINE__ << ": Did not get centrality flattening histogram"
-              << std::endl;
-    Fatal("SetCenFlattenHist", "Invalid pointer");
+    if (!hist) {
+      std::cout << __LINE__ << ": Did not get centrality flattening histogram"
+                << std::endl;
+      Fatal("SetCenFlattenHist", "Invalid pointer");
+    }
     this->fCenFlatten = kTRUE;
     this->fCenFlattenHist = hist;
   };
+  void SetCenFlattenHist(const char *Filename, const char *Histname);
 
   // setters for MC on the fly analysis
   void SetMCOnTheFly(Bool_t option) { this->fMCOnTheFly = option; }

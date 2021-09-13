@@ -2917,6 +2917,30 @@ void AliAnalysisTaskAR::SetWeightHistogram(kTrack kinematic,
   this->fUseWeights[kinematic] = kTRUE;
 }
 
+void AliAnalysisTaskAR::SetCenFlattenHist(const char *Filename,
+                                          const char *Histname) {
+  // get histogram for centrality flattening
+  // check if file exists
+  if (gSystem->AccessPathName(Filename, kFileExists)) {
+    std::cout << __LINE__ << ": File does not exist" << std::endl;
+    Fatal("SetCenFlattenHist", "Invalid file name");
+  }
+  TFile *file = new TFile(Filename, "READ");
+  if (!file) {
+    std::cout << __LINE__ << ": Cannot open file" << std::endl;
+    Fatal("SetCenFlattenHist", "ROOT file cannot be read");
+  }
+  this->fCenFlattenHist = dynamic_cast<TH1D *>(file->Get(Histname));
+  if (!fCenFlattenHist) {
+    std::cout << __LINE__ << ": No histogram" << std::endl;
+    Fatal("SetCenFlattenHist", "Cannot get histogram");
+  }
+  // keeps the histogram in memory after we close the file
+  this->fCenFlattenHist->SetDirectory(0);
+  file->Close();
+  this->fCenFlatten = kTRUE;
+}
+
 void AliAnalysisTaskAR::GetPointers(TList *histList) {
   // Initialize pointer for base list fHistList so we can initialize all of
   // objects and call terminate off-line
