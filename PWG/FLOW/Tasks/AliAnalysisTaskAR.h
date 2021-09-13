@@ -228,6 +228,10 @@ public:
     this->fSelfCorQAHistogramBins[Track][kLEDGE] = lowerEdge;
     this->fSelfCorQAHistogramBins[Track][kUEDGE] = upperEdge;
   }
+  // only fill control histograms
+  void SetFillControlHistogramsOnly(Bool_t option) {
+    this->fFillControlHistogramsOnly = option;
+  }
   // generic setter for track control histogram binning
   void SetTrackControlHistogramBinning(kTrack Track, Int_t nbins,
                                        Double_t lowerEdge, Double_t upperEdge) {
@@ -329,6 +333,10 @@ public:
   void SetChargedOnlyCut(Bool_t option) { this->fChargedOnly = option; }
   // cut all non-primary particles away
   void SetPrimaryOnlyCut(Bool_t option) { this->fPrimaryOnly = option; }
+  // cut all non-global track away
+  void SetGlobalTracksOnlyCut(Bool_t option) {
+    this->fGlobalTracksOnly = option;
+  }
   // flatten centrality if necessary
   void SetCenFlattenHist(TH1D *hist) {
     if (!hist) {
@@ -515,7 +523,7 @@ private:
   Bool_t fUseFilterbit;
   Bool_t fChargedOnly;
   Bool_t fPrimaryOnly;
-  // Bool_t fMCCutsOnly;
+  Bool_t fGlobalTracksOnly;
   kCenEstimators fCentralityEstimator;
   Double_t fCenCorCut[2];
   Bool_t fUseCenCorCuts;
@@ -535,6 +543,8 @@ private:
   TProfile *fFinalResultProfiles[LAST_EFINALPROFILE];
   TString fFinalResultProfileNames[LAST_EFINALPROFILE][LAST_ENAME];
   Double_t fFinalResultProfileBins[LAST_EFINALPROFILE][LAST_EBINS];
+  // only fill control histograms
+  Bool_t fFillControlHistogramsOnly;
 
   // Monte Carlo on the fly/closure
   Bool_t fMCOnTheFly;
@@ -566,7 +576,7 @@ private:
   std::vector<std::vector<Int_t>> fCorrelators;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 10);
+  ClassDef(AliAnalysisTaskAR, 11);
 };
 
 #endif
