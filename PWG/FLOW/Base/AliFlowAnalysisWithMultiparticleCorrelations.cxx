@@ -734,7 +734,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlow
  // c) Calculate products needed for SC error propagation.
 
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlowEventSimple *anEvent)"; 
- if(!anEvent){Fatal(sMethodName.Data(),"'anEvent'!?!? You again!!!!");}
+ if(!anEvent){Fatal(sMethodName.Data(),"anEvent");}
 
  // a) Calculate all booked multi-particle correlations:
  Double_t dMultRP = fSelectRandomlyRPs ? fnSelectedRandomlyRPs : anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member? 
@@ -756,7 +756,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlow
     if(sBinLabel.EqualTo("")){break;} 
     Double_t num = CastStringToCorrelation(sBinLabel.Data(),kTRUE);
     Double_t den = CastStringToCorrelation(sBinLabel.Data(),kFALSE);
-    Double_t weight = den; // TBI: add support for other options for the weight eventually
+    Double_t weight = den;
     if(den>0.) 
     {
      fCorrelationsPro[cs][co]->Fill(b-.5,num/den,weight);
@@ -780,7 +780,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateDiffCorrelations(Ali
  // Calculate differential multi-particle correlations from Q-, p- and q-vector components.
 
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlowEventSimple *anEvent)"; 
- if(!anEvent){Fatal(sMethodName.Data(),"'anEvent'!?!? You again!!!!");}
+ if(!anEvent){Fatal(sMethodName.Data(),"anEvent");}
 
  Int_t nBins = 0; // TBI promote this to data member? 
  for(Int_t cs=0;cs<2;cs++) // [0=cos,1=sin]
@@ -795,51 +795,50 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateDiffCorrelations(Ali
   } // for(Int_t co=0;co<4;co++) // [1p,2p,3p,4p]
  } // for(Int_t cs=0;cs<2;cs++) // [0=cos,1=sin]
 
- // TBI: The lines below are genuine, most delicious, spaghetti ever... To be reimplemented (one day).
  if(fCalculateDiffCos)
  {
- for(Int_t b=1;b<=nBins;b++)
- {
-  fDiffBinNo = b-1;
-  // <2'>:  
-  Double_t num2 = TwoDiff(fDiffHarmonics[1][0],fDiffHarmonics[1][1]).Re();
-  Double_t den2 = TwoDiff(0,0).Re();
-  Double_t w2 = den2; // TBI add support for other options for the weight
-  if(den2>0.){fDiffCorrelationsPro[0][1]->Fill(fDiffCorrelationsPro[0][1]->GetBinCenter(b),num2/den2,w2);} 
-  // <3'>:  
-  Double_t num3 = ThreeDiff(fDiffHarmonics[2][0],fDiffHarmonics[2][1],fDiffHarmonics[2][2]).Re();
-  Double_t den3 = ThreeDiff(0,0,0).Re();
-  Double_t w3 = den3; // TBI add support for other options for the weight
-  if(den3>0.){fDiffCorrelationsPro[0][2]->Fill(fDiffCorrelationsPro[0][2]->GetBinCenter(b),num3/den3,w3);} 
-  // <4'>:  
-  Double_t num4 = FourDiff(fDiffHarmonics[3][0],fDiffHarmonics[3][1],fDiffHarmonics[3][2],fDiffHarmonics[3][3]).Re();
-  Double_t den4 = FourDiff(0,0,0,0).Re();
-  Double_t w4 = den4; // TBI add support for other options for the weight
-  if(den4>0.){fDiffCorrelationsPro[0][3]->Fill(fDiffCorrelationsPro[0][3]->GetBinCenter(b),num4/den4,w4);} 
- } // for(Int_t b=1;b<=nBins;b++)
+  for(Int_t b=1;b<=nBins;b++)
+  {
+   fDiffBinNo = b-1;
+   // <2'>:  
+   Double_t num2 = TwoDiff(fDiffHarmonics[1][0],fDiffHarmonics[1][1]).Re();
+   Double_t den2 = TwoDiff(0,0).Re();
+   Double_t w2 = den2; // TBI add support for other options for the weight
+   if(den2>0.){fDiffCorrelationsPro[0][1]->Fill(fDiffCorrelationsPro[0][1]->GetBinCenter(b),num2/den2,w2);} 
+   // <3'>:  
+   Double_t num3 = ThreeDiff(fDiffHarmonics[2][0],fDiffHarmonics[2][1],fDiffHarmonics[2][2]).Re();
+   Double_t den3 = ThreeDiff(0,0,0).Re();
+   Double_t w3 = den3; // TBI add support for other options for the weight
+   if(den3>0.){fDiffCorrelationsPro[0][2]->Fill(fDiffCorrelationsPro[0][2]->GetBinCenter(b),num3/den3,w3);} 
+   // <4'>:  
+   Double_t num4 = FourDiff(fDiffHarmonics[3][0],fDiffHarmonics[3][1],fDiffHarmonics[3][2],fDiffHarmonics[3][3]).Re();
+   Double_t den4 = FourDiff(0,0,0,0).Re();
+   Double_t w4 = den4; // TBI add support for other options for the weight
+   if(den4>0.){fDiffCorrelationsPro[0][3]->Fill(fDiffCorrelationsPro[0][3]->GetBinCenter(b),num4/den4,w4);} 
+  } // for(Int_t b=1;b<=nBins;b++)
  }
- // TBI: The lines below are genuine, most delicious, spaghetti ever... To be reimplemented (one day).
+
  if(fCalculateDiffSin)
  {
- for(Int_t b=1;b<=nBins;b++)
- {
-  fDiffBinNo = b-1;
-  // <2'>:  
-  Double_t num2 = TwoDiff(fDiffHarmonics[1][0],fDiffHarmonics[1][1]).Im();
-  Double_t den2 = TwoDiff(0,0).Re();
-  Double_t w2 = den2; // TBI add support for other options for the weight
-  if(den2>0.){fDiffCorrelationsPro[1][1]->Fill(fDiffCorrelationsPro[1][1]->GetBinCenter(b),num2/den2,w2);} 
-  // <3'>:  
-  Double_t num3 = ThreeDiff(fDiffHarmonics[2][0],fDiffHarmonics[2][1],fDiffHarmonics[2][2]).Im();
-  Double_t den3 = ThreeDiff(0,0,0).Re();
-  Double_t w3 = den3; // TBI add support for other options for the weight
-  if(den3>0.){fDiffCorrelationsPro[1][2]->Fill(fDiffCorrelationsPro[1][2]->GetBinCenter(b),num3/den3,w3);} 
-  // <4'>:  
-  Double_t num4 = FourDiff(fDiffHarmonics[3][0],fDiffHarmonics[3][1],fDiffHarmonics[3][2],fDiffHarmonics[3][3]).Im();
-  Double_t den4 = FourDiff(0,0,0,0).Re();
-  Double_t w4 = den4; // TBI add support for other options for the weight
-  if(den4>0.){fDiffCorrelationsPro[1][3]->Fill(fDiffCorrelationsPro[1][3]->GetBinCenter(b),num4/den4,w4);} 
- } // for(Int_t b=1;b<=nBins;b++)
+  for(Int_t b=1;b<=nBins;b++)
+  {
+   fDiffBinNo = b-1;
+   // <2'>:  
+   Double_t num2 = TwoDiff(fDiffHarmonics[1][0],fDiffHarmonics[1][1]).Im();
+   Double_t den2 = TwoDiff(0,0).Re();
+   Double_t w2 = den2; // TBI add support for other options for the weight
+   if(den2>0.){fDiffCorrelationsPro[1][1]->Fill(fDiffCorrelationsPro[1][1]->GetBinCenter(b),num2/den2,w2);} 
+   // <3'>:  
+   Double_t num3 = ThreeDiff(fDiffHarmonics[2][0],fDiffHarmonics[2][1],fDiffHarmonics[2][2]).Im();
+   Double_t den3 = ThreeDiff(0,0,0).Re();
+   Double_t w3 = den3; // TBI add support for other options for the weight
+   if(den3>0.){fDiffCorrelationsPro[1][2]->Fill(fDiffCorrelationsPro[1][2]->GetBinCenter(b),num3/den3,w3);} 
+   // <4'>:  
+   Double_t num4 = FourDiff(fDiffHarmonics[3][0],fDiffHarmonics[3][1],fDiffHarmonics[3][2],fDiffHarmonics[3][3]).Im();
+   Double_t den4 = FourDiff(0,0,0,0).Re();
+   Double_t w4 = den4; // TBI add support for other options for the weight
+   if(den4>0.){fDiffCorrelationsPro[1][3]->Fill(fDiffCorrelationsPro[1][3]->GetBinCenter(b),num4/den4,w4);} 
+  } // for(Int_t b=1;b<=nBins;b++)
  }
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::CalculateDiffCorrelations(AliFlowEventSimple *anEvent)
@@ -851,7 +850,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateEtaGaps(AliFlowEvent
  // Calculate 2-p correlations with eta gaps.
 
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CalculateEtaGaps(AliFlowEventSimple *anEvent)"; 
- if(!anEvent){Fatal(sMethodName.Data(),"'anEvent'? What's wrong with you today...");}
+ if(!anEvent){Fatal(sMethodName.Data(),"anEvent");}
 
  TComplex Qa[6][11] = {{TComplex(0.,0.)}}; // -eta [harmonic][eta gap]
  Double_t Ma[6][11] = {{0.}}; // multiplicity for -eta TBI this shall not depend on harmonic, clearly
@@ -931,7 +930,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateEtaGaps(AliFlowEvent
 Double_t AliFlowAnalysisWithMultiparticleCorrelations::CastStringToCorrelation(const char *string, Bool_t numerator)
 {
  // Cast string of the generic form Cos/Sin(-n_1,-n_2,...,n_{k-1},n_k) in the corresponding correlation value.
- // If you issue a call to this method with setting numerator = kFALSE, then you are getting back for free
+ // If you call this method with setting numerator = kFALSE, then you are getting back for free
  // the corresponding denumerator (a.k.a. weight 'number of combinations').
 
  // TBI:
@@ -1079,12 +1078,10 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateEbECumulants(AliFlow
 {
  // Calculate e-b-e cumulants from Q-vector components.
 
- // TBI this mathod is far (very far, in fact) from being finalized :'(
-
  // a) Calculate and store e-b-e cumulants.
 
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CalculateEbECumulants(AliFlowEventSimple *anEvent)"; 
- if(!anEvent){Fatal(sMethodName.Data(),"'anEvent'!?!? You again!!!!");}
+ if(!anEvent){Fatal(sMethodName.Data(),"anEvent");}
 
  // a) Calculate and store e-b-e cumulants:
  Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member? 
@@ -1134,6 +1131,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateEbECumulants(AliFlow
    if(2==fDontGoBeyond){continue;}
    
    /*
+
 
    // 3-p:
    for(Int_t n3=n2;n3<=fMaxHarmonic;n3++) 
@@ -1269,6 +1267,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateEbECumulants(AliFlow
    } // for(Int_t n3=n2;n3<=fMaxHarmonic;n3++) 
  
   */
+
 
   } // for(Int_t n2=n1;n2<=fMaxHarmonic;n2++)
  } // for(Int_t n1=-fMaxHarmonic;n1<=fMaxHarmonic;n1++) 

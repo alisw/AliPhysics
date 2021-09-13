@@ -18,6 +18,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
     Error("AddTask_jjung_ElectronEfficiencyV2", "No analysis manager found.");
     return 0;
   }
+  else { std::cout << "Analysis manager found!" << std::endl;}
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName = "AnalysisResults.root"; // create a subfolder in the file
 
@@ -41,16 +42,16 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   if (err) { Error("AddTask_jjung_ElectronEfficiency_v2","Config(s) could not be loaded!"); return 0x0; }
 
   // Download resolution file (configured in your config.C)
-  // if (GetResolutionFromAlien == kTRUE)
-  //   std::cout << "Trying to download resolution file" << std::endl;
-  //   gSystem->Exec(Form("alien_cp alien://%s .",resoFilenameFromAlien.c_str()));
-  //   std::cout << "Load resolution file from AliEn" << std::endl;
-  // }
-  //
-  // // Download centrality file (configured in your config.C)
-  // if (GetCentralityFromAlien == kTRUE && !gSystem->Exec(Form("alien_cp alien://%s .",CentralityFilenameFromAlien.c_str()))){
-  //   std::cout << "Load centrality file from AliEn" << std::endl;
-  // }
+  //if (GetResolutionFromAlien == kTRUE){
+  //  std::cout << "Trying to download resolution file" << std::endl;
+  //  gSystem->Exec(Form("alien_cp alien://%s .",resoFilenameFromAlien.c_str()));
+  //  std::cout << "Load resolution file from AliEn" << std::endl;
+  //}
+ 
+  //// Download centrality file (configured in your config.C)
+  //if (GetCentralityFromAlien == kTRUE && !gSystem->Exec(Form("alien_cp alien://%s .",CentralityFilenameFromAlien.c_str()))){
+  //  std::cout << "Load centrality file from AliEn" << std::endl;
+  //}
 
   // #########################################################
   // #########################################################
@@ -73,7 +74,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   task->SetTriggerMask(triggerNames); 
   task->SetEventFilter(SetupEventCuts(wagonnr)); //returns eventCuts from Config.
   task->SetCentrality(centMin, centMax);
- 
   // #########################################################
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
@@ -112,7 +112,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   if (usePtVector == true) {
     std::vector<double> ptBinsVec;
     for (unsigned int i = 0; i < nBinsPt+1; ++i){
-      std::cout << PtBins[i] << std::endl;
       ptBinsVec.push_back(PtBins[i]);
     }
     task->SetPtBins(ptBinsVec);
@@ -143,6 +142,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   // Resolution File, If resoFilename = "" no correction is applied
   task->SetResolutionFile(resoFilename);
   task->SetResolutionFileFromAlien(resoFilenameFromAlien);
+  task->SetResolutionFile(resoFilename,resoFilenameFromAlien);
   task->SetSmearGenerated(SetGeneratedSmearingHistos);
   task->SetResolutionDeltaPtBinsLinear   (DeltaMomMin, DeltaMomMax, NbinsDeltaMom);
   task->SetResolutionRelPtBinsLinear   (RelMomMin, RelMomMax, NbinsRelMom);
@@ -155,6 +155,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   // #########################################################
   // Set centrality correction. If resoFilename = "" no correction is applied
   task->SetCentralityFile(centralityFilename);
+  task->SetCentralityFile(centralityFilename,centralityFilenameFromAlien);
 
   // #########################################################
   // #########################################################
@@ -168,7 +169,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   task->SetDoCocktailWeighting(DoCocktailWeighting);
   task->SetCocktailWeighting(CocktailFilename);
   task->SetCocktailWeightingFromAlien(CocktailFilenameFromAlien);
-
+  task->SetCocktailWeighting(CocktailFilename,CocktailFilenameFromAlien);
 
   // #########################################################
   // #########################################################
@@ -192,7 +193,17 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   // Set mean and width correction for ITS, TPC and TOF
   //set PID map for ITS TOF in MC.
   TFile *rootfile = 0x0;
-  if(calibFileName != "") rootfile = TFile::Open(calibFileName,"READ");
+  if(calibFileName != "") rootfile = TFile::Open(calibFileName.c_str(),"READ");
+  if(calibFileNameFromAlien != "" && !rootfile && getFromAlien){
+    std::cout << "Location in AliEN: " << calibFileNameFromAlien << std::endl;
+    gSystem->Exec(Form("alien_cp alien://%s .", calibFileNameFromAlien.c_str()));
+    std::cout << "Copy resolution from Alien" << std::endl;
+    rootfile = TFile::Open(calibFileName.c_str(), "READ");
+
+    if (!rootfile) { 
+      std::cout << "Could not open file: " << calibFileNameFromAlien << std::endl;
+    }
+  }
   if(rootfile && rootfile->IsOpen()){
     TH3D *h3mean_ITS  = (TH3D*)rootfile->Get("h3mean_ITS");
     TH3D *h3width_ITS = (TH3D*)rootfile->Get("h3width_ITS");

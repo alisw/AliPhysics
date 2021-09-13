@@ -2,33 +2,37 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef AliAnalysisTaskJPsi_DG_H
-#define AliAnalysisTaskJPsi_DG_H
+#ifndef AliAnalysisTaskJPsiMC_DG_H
+#define AliAnalysisTaskJPsiMC_DG_H
 
 class TH1;
 class TTree;
 class TList;
+class TFile;
 class TBits;
 class AliESDtrackCuts;
+class AliPIDResponse;
+class AliTOFTriggerMask;
 
 #include "AliTimeRangeCut.h"
 #include "AliAnalysisTaskSE.h"
 
-class AliPIDResponse;
-class AliTOFTriggerMask;
-
-class AliAnalysisTaskJPsi_DG : public AliAnalysisTaskSE
+class AliAnalysisTaskJPsiMC_DG : public AliAnalysisTaskSE
 {
     public:
-                AliAnalysisTaskJPsi_DG(); // a constructor
-                AliAnalysisTaskJPsi_DG(const char *name);
-        virtual ~AliAnalysisTaskJPsi_DG();	// a destructor
+                AliAnalysisTaskJPsiMC_DG(); // a constructor
+                AliAnalysisTaskJPsiMC_DG(const char *name);
+        virtual ~AliAnalysisTaskJPsiMC_DG();	// a destructor
 
         virtual void    UserCreateOutputObjects(); // here one can define output objects
         virtual void    UserExec(Option_t* option);	// called for each single event
+        virtual void    ReplayTriggersMC(AliVEvent *fEvent);
+        virtual void    RunMCGenerated();
         virtual void    Terminate(Option_t* option); // usually empty, called at the end
 
+        void    SetNeutralPions(Bool_t Neutral);
         void    TrkTrkKinematics(Int_t *fIndicesOfGoodTrks, Double_t fTrkMass);
+        void    FillMCGenTree(TLorentzVector v);
         void    SetCrossed(Int_t spd[4], TBits &crossed);
         Int_t   GetChipId(Int_t index, Int_t &chipId2, Bool_t debug = 0);
         Bool_t  IsSTGFired(TBits bits, Int_t dphiMin = 4, Int_t dphiMax = 10, Bool_t tolerance = 1);
@@ -37,24 +41,21 @@ class AliAnalysisTaskJPsi_DG : public AliAnalysisTaskSE
         AliPIDResponse  *fPIDResponse;
         AliTimeRangeCut fTimeRangeCut;
         AliESDtrackCuts *fTrackCutsBit4;
+        Bool_t          isNeutralPions;
 
         AliVEvent   *fEvent;
         TList       *fOutputList;   //! output list
-        TTree       *fTreeJPsi;     //! analysis tree
+        TTree       *fTreeJPsiMCRec;//! analysis tree on MC rec level
+        TTree       *fTreeJPsiMCGen;//! analysis tree on MC gen level
         Int_t       fRunNumber;
-        TString     fTriggerName;
         // Histograms:
-        TH1F    *hCounterCuts;      //! to count the number of events passing each of the cuts
-        TH1F    *hCounterTrigger;   //! to count the number of events per run passing trigger conditions
-        TH1F    *hVertexContrib;
-        TH1F    *hVertexZ;
-        TH2I    *hADdecision;
-        TH2I    *hV0decision;
+        TH1F        *hCounterCuts;      //! to count the number of events passing each of the cuts
+        TH2F        *hPtRecGen;
         // PID, sigmas:
-        Double_t fTrk1SigIfMu;
-        Double_t fTrk1SigIfEl;
-        Double_t fTrk2SigIfMu;
-        Double_t fTrk2SigIfEl;
+        Double_t    fTrk1SigIfMu;
+        Double_t    fTrk1SigIfEl;
+        Double_t    fTrk2SigIfMu;
+        Double_t    fTrk2SigIfEl;
         // Kinematics:
         Double_t fPt;   //! transverse momentum
         Double_t fPhi;  //! azimuthal angle
@@ -69,9 +70,6 @@ class AliAnalysisTaskJPsi_DG : public AliAnalysisTaskSE
         Double_t fPhi2;
         Double_t fQ1;   //! charges
         Double_t fQ2;
-        // Vertex info:
-        Double_t fVertexZ;
-        Int_t    fVertexContrib;
         // Info from the detectors:
         // ZDC
         Double_t fZNA_energy;
@@ -92,11 +90,24 @@ class AliAnalysisTaskJPsi_DG : public AliAnalysisTaskSE
         // Matching SPD clusters with FOhits
         Bool_t fMatchingSPD;
         TBits fFOCrossFiredChips;
+        // Trigger inputs for MC data
+        Bool_t  fTriggerInputsMC[11];
+        TFile   *fSPDfile;
+        TFile   *fTOFfile;
+        Int_t   fLoadedRun;
+        TH2F    *hTOFeff;
+        TH1D    *hSPDeff;
+        AliTOFTriggerMask *fTOFmask;
+        // MC kinematics on generated level
+        Double_t    fPtGen;
+        Double_t    fYGen;
+        Double_t    fMGen;
+        Double_t    fPhiGen;
 
-        AliAnalysisTaskJPsi_DG(const AliAnalysisTaskJPsi_DG&); // not implemented
-        AliAnalysisTaskJPsi_DG& operator=(const AliAnalysisTaskJPsi_DG&); // not implemented
+        AliAnalysisTaskJPsiMC_DG(const AliAnalysisTaskJPsiMC_DG&); // not implemented
+        AliAnalysisTaskJPsiMC_DG& operator=(const AliAnalysisTaskJPsiMC_DG&); // not implemented
 
-        ClassDef(AliAnalysisTaskJPsi_DG, 1);
+        ClassDef(AliAnalysisTaskJPsiMC_DG, 1);
 };
 
 #endif

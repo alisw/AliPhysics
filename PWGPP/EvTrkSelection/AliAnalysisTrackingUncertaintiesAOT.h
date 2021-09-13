@@ -118,7 +118,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   void SetnBinsDCAxy_histTpcItsMatch(Int_t n)  {fnBinsDCAxy_histTpcItsMatch = n;}
 
   // switch on/off MC spectra weights
-  void SetUseMCWeights()  {fUseMCWeights = kFALSE;}
+  void SetUseMCWeights()  {fUseMCWeights = kTRUE;}
 
  private:
     
