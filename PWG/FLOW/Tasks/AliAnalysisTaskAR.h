@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 10.09.2021
+ * Last Modified Date: 13.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -290,6 +290,7 @@ public:
     }
     this->fTrackCuts[Track][kMIN] = min;
     this->fTrackCuts[Track][kMAX] = max;
+    this->fUseTrackCuts[Track] = kTRUE;
   }
   // generic setter for event cuts
   void SetEventCuts(kEvent Event, Double_t min, Double_t max) {
@@ -304,46 +305,38 @@ public:
     }
     this->fEventCuts[Event][kMIN] = min;
     this->fEventCuts[Event][kMAX] = max;
+    this->fUseEventCuts[Event] = kTRUE;
   }
-  // setter for centrality correlation cut
-  // void SetCenCorCut(Double_t m, Double_t t) {
-  //   if (m < 1.) {
-  //     std::cout << __LINE__ << ": slope too small" << std::endl;
-  //     Fatal("SetCenCorCut", "slope too small");
-  //   }
-  //   if (t < 1.) {
-  //     std::cout << __LINE__ << ": offset too small" << std::endl;
-  //     Fatal("SetCenCorCut", "offset too small");
-  //   }
-  //   this->fCenCorCut[0] = m;
-  //   this->fCenCorCut[1] = t;
   void SetCenCorCut(Double_t m, Double_t t) {
     this->fCenCorCut[0] = m;
     this->fCenCorCut[1] = t;
+    this->fUseCenCorCuts = kTRUE;
   }
   // setter for multiplicity correlation cut
   void SetMulCorCut(Double_t m, Double_t t) {
     this->fMulCorCut[0] = m;
     this->fMulCorCut[1] = t;
+    this->fUseMulCorCuts = kTRUE;
   }
   // filterbit
   // depends strongly on the data set
   // typical choices are 1,128,256,768
-  void SetFilterbit(Int_t Filterbit) { this->fFilterbit = Filterbit; }
+  void SetFilterbit(Int_t Filterbit) {
+    this->fFilterbit = Filterbit;
+    this->fUseFilterbit = kTRUE;
+  }
   // cut all neutral particles away
   void SetChargedOnlyCut(Bool_t option) { this->fChargedOnly = option; }
   // cut all non-primary particles away
   void SetPrimaryOnlyCut(Bool_t option) { this->fPrimaryOnly = option; }
-  // only use kinematics cuts
-  // need for running over MC data
-  void SetMCCutsOnly(Bool_t option) { this->fMCCutsOnly = option; }
+  // flatten centrality if necessary
   void SetCenFlattenHist(TH1D *hist) {
     if (!hist) {
       std::cout << __LINE__ << ": Did not get centrality flattening histogram"
                 << std::endl;
       Fatal("SetCenFlattenHist", "Invalid pointer");
     }
-    this->fCenFlatten = kTRUE;
+    this->fUseCenFlatten = kTRUE;
     this->fCenFlattenHist = hist;
   };
   void SetCenFlattenHist(const char *Filename, const char *Histname);
@@ -507,21 +500,26 @@ private:
 
   // cuts
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
+  Bool_t fUseTrackCuts[LAST_ETRACK];
   TH1D *fTrackCutsCounter[LAST_EMODE];
   TString fTrackCutsCounterNames[LAST_EMODE];
   TString fTrackCutsCounterBinNames[LAST_ETRACK][LAST_EMINMAX];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
+  Bool_t fUseEventCuts[LAST_EEVENT];
   TH1D *fEventCutsCounter[LAST_EMODE];
   TString fEventCutsCounterNames[LAST_EMODE];
   TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
   Int_t fFilterbit;
+  Bool_t fUseFilterbit;
   Bool_t fChargedOnly;
   Bool_t fPrimaryOnly;
-  Bool_t fMCCutsOnly;
+  // Bool_t fMCCutsOnly;
   kCenEstimators fCentralityEstimator;
   Double_t fCenCorCut[2];
+  Bool_t fUseCenCorCuts;
   Double_t fMulCorCut[2];
-  Bool_t fCenFlatten;
+  Bool_t fUseMulCorCuts;
+  Bool_t fUseCenFlatten;
   TH1D *fCenFlattenHist;
 
   // Final results
