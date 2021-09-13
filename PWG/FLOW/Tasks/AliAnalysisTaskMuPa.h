@@ -45,11 +45,11 @@ const Int_t gQAAnomalousEvents = 1; // |vertex| = 0;
 const Int_t gQASelfCorrelations = 3; // phi, pt, eta
 const Int_t gQAEventCutCounter = 23; // see TString secc[gQAEventCutCounter] in .cxx
 const Int_t gQAParticleCutCounter = 39; // see TString spcc[gQAParticleCutCounter] in .cxx
-const Int_t gGenericCorrelations = 4; // correlations between various quantities (see .cxx for documentation)
+const Int_t gGenericCorrelations = 5; // correlations between various quantities (see .cxx for documentation)
 const Int_t gMaxBins = 10000; // max number of kine bins
 const Int_t gMaxCorrelator = 12; // 
 const Int_t gMaxHarmonic = 6; // 
-const Int_t gMaxIndex = 10000; //
+const Int_t gMaxIndex = 100; // per order
 
 // enums:
 enum eBins {nBins,min,max};
@@ -428,6 +428,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetCalculateTest0(Bool_t c) {this->fCalculateTest0 = c;};
   Bool_t GetCalculateTest0() const {return this->fCalculateTest0;};
   void SetFileWithLabels(const char *externalFile){this->fFileWithLabels = new TString(externalFile);}
+  TProfile* GetTest0Pro(const Int_t order, const Int_t index, const Int_t var){return this->fTest0Pro[order][index][var];}
  
   void SetCalculateNestedLoops(Bool_t cnl) {this->fCalculateNestedLoops = cnl;};
   Bool_t GetCalculateNestedLoops() const {return this->fCalculateNestedLoops;};
@@ -486,6 +487,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void Green(const char* text);
   void Yellow(const char* text);
   void Blue(const char* text);
+  TObject* GetObjectFromList(TList *list, Char_t *objectName); // see .cxx
 
   // *.) Online monitoring:
   void SetUpdateOutputFile(const Int_t uf, const char *uqof)
@@ -688,7 +690,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TProfile *fTest0FlagsPro;     // TBI 
   Bool_t fCalculateTest0;       // TBI
   TProfile *fTest0Pro[gMaxCorrelator][gMaxIndex][3]; //! TBI [order][index][0=integrated,1=vs. multiplicity,2=vs. centrality]
-  TString *fFileWithLabels; //! external file which specifies all labels of interest
+  TString *fFileWithLabels; // external file which specifies all labels of interest
   TString *fTest0Labels[gMaxCorrelator][gMaxIndex]; // all labels: k-p'th order is stored in k-1'th index. So yes, I also store 1-p
 
   // * Final results:
@@ -714,7 +716,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,21);
+  ClassDef(AliAnalysisTaskMuPa,22);
 
 };
 
