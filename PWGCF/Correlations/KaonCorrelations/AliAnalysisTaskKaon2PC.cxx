@@ -77,7 +77,7 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(),
     fHistEtaCuts(0),
     fHistPosKaons(0),
     fHistNegKaons(0),
-    fHistK0Pairs(0),
+    fHistK0s(0),
     fHistV0M(0),
     //fHistV0s(0),
     fLpTCut(0.4),
@@ -112,7 +112,7 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC(const char* name) : AliAnalysisTa
     fHistEtaCuts(0),
     fHistPosKaons(0),
     fHistNegKaons(0),
-    fHistK0Pairs(0),
+    fHistK0s(0),
     fHistV0M(0),
     //fHistV0s(0),
     fLpTCut(0.4),
@@ -184,10 +184,10 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fHistNegKaons->GetYaxis()->SetTitle("Centrality");
     fHistNegKaons->SetOption("colz");
     
-    fHistK0Pairs = new TH2F("fHistK0Pairs", "Number of V0s Vs V0 Phi; Centrality",30,0,2*TMath::Pi(),100,0,100);
-    fHistK0Pairs->GetXaxis()->SetTitle("V0 Phi (in radians)");
-    fHistK0Pairs->GetYaxis()->SetTitle("Centrality");
-    fHistK0Pairs->SetOption("colz");
+    fHistK0s = new TH2F("fHistK0s", "Number of V0s Vs V0 Phi; Centrality",30,0,2*TMath::Pi(),100,0,100);
+    fHistK0s->GetXaxis()->SetTitle("V0 Phi (in radians)");
+    fHistK0s->GetYaxis()->SetTitle("Centrality");
+    fHistK0s->SetOption("colz");
     
     fHistV0M = new TH1F("fHistV0M", "Centrality Histogram", 100, 0, 100);
     fHistV0M->GetXaxis()->SetTitle("centrality");
@@ -201,7 +201,7 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fOutput->Add(fHistEtaCuts);
     fOutput->Add(fHistPosKaons);
     fOutput->Add(fHistNegKaons);
-    fOutput->Add(fHistK0Pairs);
+    fOutput->Add(fHistK0s);
     fOutput->Add(fHistV0M);
     //fOutput->Add(fHistV0s);
     PostData(1, fOutput);               // postdata will notify the analysis manager of changes / updates to the
@@ -335,7 +335,7 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
             if(!AcceptV0(v0, vertex)) continue;
             Double_t V0Phi = v0->Phi();
             //fHistV0s->Fill(nv0s);
-            fHistK0Pairs->Fill(V0Phi, centralityV0M);
+            fHistK0s->Fill(V0Phi, centralityV0M);
             Double_t deltaPhi = trackPhi-V0Phi;
             if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
             if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());

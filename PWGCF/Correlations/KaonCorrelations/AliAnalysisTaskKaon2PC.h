@@ -50,7 +50,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE {
     TH2F            *fHistNegKaons;
     TH1F            *fHistV0M;
 //    TH1F            *fHistV0s;
-    TH2F            *fHistK0Pairs;
+    TH2F            *fHistK0s;
     
     Double_t        fLpTCut;        //not a pointer???
 	Double_t        fUpTCut;
