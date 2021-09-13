@@ -3173,6 +3173,13 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
   ftrackSelStatusKaon->Reset();
   ftrackSelStatusPion->Reset();
 
+
+  if(fRejEvWoutpKpi) {
+    fnProt = 0; // number of PID selected protons
+    fnKaon = 0; // number of PID selected kaons
+    fnPion = 0; // number of PID selected pions
+  }
+
   for(Int_t itrack=0;itrack<aod->GetNumberOfTracks();itrack++){
     fhistMonitoring->Fill(3);
     Int_t iSelProton=0,iSelKaon=0,iSelPion=0;
@@ -3237,11 +3244,6 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
     ftrackArraySel->AddAt(itrack,fnSel);
   
     // PID SELECTION
-    if(fRejEvWoutpKpi) {
-      fnProt = 0; // number of PID selected protons
-      fnKaon = 0; // number of PID selected kaons
-      fnPion = 0; // number of PID selected pions
-    }
     IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,kTRUE);
     //    if(itrack%50==0)Printf("Track %d, pt: %f",itrack,track->Pt());
     ftrackSelStatusProton->AddAt(iSelProton,fnSel);
