@@ -170,6 +170,7 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHdEdxPerformance+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHdEdxCorrelations+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformanceConstits+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalResponseOutliers+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalOnlinePatchesRef+;
@@ -191,6 +192,7 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliEmcalTriggerOfflineSelection+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskPtEMCalTrigger+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskPtEMCalTriggerV1+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskTrackSkim+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliEMCalTriggerExtraCuts+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliEMCalTriggerEventData+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliEMCalTriggerEventSelection+;

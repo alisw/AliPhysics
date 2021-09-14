@@ -22,7 +22,7 @@
 #include "AliAnalysisTaskResolution.h"
 #include "TChain.h"
 #include "AliAnalysisManager.h"
-#include "TParticle.h"
+// #include "TParticle.h"
 #include "TVectorF.h"
 #include "AliPIDResponse.h"
 #include "AliESDtrackCuts.h"
@@ -238,8 +238,8 @@ void AliAnalysisTaskResolution::ProcessPhotons(){
 		fGammaRecCoords(4) = gamma->GetConversionZ();
 		fChi2ndf = gamma->GetChi2perNDF();
 		if(MCEvent()){
-            TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCEvent);
-            TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCEvent);
+            AliVParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCEvent);
+            AliVParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCEvent);
 // 			cout << "generate Daughters: "<<posDaughter << "\t" << negDaughter << endl;
             if(fMCEvent && fEventCuts->GetSignalRejection() != 0){
                 Int_t isPosFromMBHeader = fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCEvent, fESDEvent);
@@ -249,22 +249,22 @@ void AliAnalysisTaskResolution::ProcessPhotons(){
 			
 			if(posDaughter == NULL || negDaughter == NULL){ 
 				continue;
-			} else if(posDaughter->GetMother(0) != negDaughter->GetMother(0) || (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1)){ 
+            } else if(posDaughter->GetMother() != negDaughter->GetMother() || (posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1)){
 				continue;
 			} else {
 // 				cout << "same mother" << endl;
 				Int_t pdgCodePos; 
-				if (posDaughter->GetPdgCode()) pdgCodePos = posDaughter->GetPdgCode(); else continue;
+                if (posDaughter->PdgCode()) pdgCodePos = posDaughter->PdgCode(); else continue;
 				Int_t pdgCodeNeg; 
-				if (negDaughter->GetPdgCode()) pdgCodeNeg = negDaughter->GetPdgCode(); else continue;
+                if (negDaughter->PdgCode()) pdgCodeNeg = negDaughter->PdgCode(); else continue;
 // 				cout << "PDG codes daughters: " << pdgCodePos << "\t" << pdgCodeNeg << endl;
 				Int_t pdgCode; 
-                if (gamma->GetMCParticle(fMCEvent)->GetPdgCode()) pdgCode = gamma->GetMCParticle(fMCEvent)->GetPdgCode(); else continue;
+                if (gamma->GetMCParticle(fMCEvent)->PdgCode()) pdgCode = gamma->GetMCParticle(fMCEvent)->PdgCode(); else continue;
 // 				cout << "PDG code: " << pdgCode << endl;
 				if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11)
 					continue;
 				else if ( !(pdgCodeNeg==pdgCodePos)){
-                    TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCEvent);
+                    AliVParticle *truePhotonCanditate = gamma->GetMCParticle(fMCEvent);
 					if(pdgCode == 111) 
 						continue;
 					else if (pdgCode == 221) 
@@ -274,8 +274,8 @@ void AliAnalysisTaskResolution::ProcessPhotons(){
 							fGammaMCCoords(0) = truePhotonCanditate->Pt();
                             fGammaMCCoords(1) = gamma->GetNegativeMCDaughter(fMCEvent)->Phi();
                             fGammaMCCoords(2) = gamma->GetNegativeMCDaughter(fMCEvent)->Eta();
-                            fGammaMCCoords(3) = gamma->GetNegativeMCDaughter(fMCEvent)->R();
-                            fGammaMCCoords(4) = gamma->GetNegativeMCDaughter(fMCEvent)->Vz();
+                            fGammaMCCoords(3) = gamma->GetNegativeMCDaughter(fMCEvent)->Particle()->R();
+                            fGammaMCCoords(4) = gamma->GetNegativeMCDaughter(fMCEvent)->Zv();
 							
 							if (fTreeResolution){
 								fTreeResolution->Fill();

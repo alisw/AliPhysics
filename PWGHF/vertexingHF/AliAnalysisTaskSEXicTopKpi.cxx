@@ -209,6 +209,12 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fPtSoftPionCand_insideScLoop(0)
   ,fKeepGenPtMC(kTRUE)
   ,fAbsValueScCharge(-1)
+  ,fSwitchOffTopCuts(kFALSE)
+  ,fSwitchOffPIDafterFilt(kFALSE)
+  ,fnProt(999)
+  ,fnKaon(999)
+  ,fnPion(999)
+  ,fRejEvWoutpKpi(kFALSE)
 {
   /// Default constructor
 
@@ -336,6 +342,12 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fPtSoftPionCand_insideScLoop(0)
   ,fKeepGenPtMC(kTRUE)
   ,fAbsValueScCharge(-1)
+  ,fSwitchOffTopCuts(kFALSE)
+  ,fSwitchOffPIDafterFilt(kFALSE)
+  ,fnProt(999)
+  ,fnKaon(999)
+  ,fnPion(999)
+  ,fRejEvWoutpKpi(kFALSE)
 {
   /// Default constructor
 
@@ -562,6 +574,13 @@ void AliAnalysisTaskSEXicTopKpi::Init()
     printf("===== !!! INPUT VALUE NOT VALID !!! Putting it to -1 (keep both Sc0 and Sc++)\n\n");
     fAbsValueScCharge = -1;
   }
+
+  printf("\n\n##### fRejEvWoutpKpi: %d\n",fRejEvWoutpKpi);
+  if(fRejEvWoutpKpi)  printf("\t===> Events without recognised p, K, pi rejected!\n");
+  printf("\n\n##### fSwitchOffTopCuts: %d\n",fSwitchOffTopCuts);
+  if(fSwitchOffTopCuts) printf("\t===> Topological selections not applied!\n");
+  printf("\n\n##### fSwitchOffPIDafterFilt: %d\n",fSwitchOffPIDafterFilt);
+  if(fSwitchOffTopCuts && fSwitchOffPIDafterFilt) printf("===> PID selections after filtering not applied!\n");
 
   return;
 }
@@ -854,14 +873,14 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
 
   // extra variables for c-deuteron
   if(fIsCdeuteronAnalysis){
-    var = new Float_t[50];
+    var = new Float_t[62];
     Short_t resp;
-    TString varNames[51]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","deutStatusTrk0","deutStatusTrk1","deutStatusTrk2","pdgMotherTrk0","pdgMotherTrk1","pdgMotherTrk2","eventImpactParameter","massHypoFilt_respCuts_respPID"};
+    TString varNames[63]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","deutStatusTrk0","deutStatusTrk1","deutStatusTrk2","pdgMotherTrk0","pdgMotherTrk1","pdgMotherTrk2","eventImpactParameter","pdgTrk0","pdgTrk1","pdgTrk2","dcaTrk0","dcaTrk1","dcaTrk2","dcaErrTrk0","dcaErrTrk1","dcaErrTrk2","angleTrk0","angleTrk1","angleTrk2","massHypoFilt_respCuts_respPID"};
     fTreeVar=new TTree("T","tree with variables");
-    for(Int_t k=0;k<50;k++){
+    for(Int_t k=0;k<62;k++){
       fTreeVar->Branch(varNames[k].Data(),&var[k]);
     }
-    fTreeVar->Branch(varNames[50].Data(),&resp);
+    fTreeVar->Branch(varNames[62].Data(),&resp);
   } else{
     var = new Float_t[33];
     Short_t resp;
@@ -1158,6 +1177,22 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     return;
   }
 
+  // if required, reject events without a recognised p, K or pi track
+  if(fRejEvWoutpKpi){
+    // the event must have at least 1 proton, or 1 kaon, or 1 pion
+    if(fnProt==0 || fnKaon==0 || fnPion==0){
+      fnProt=999;
+      fnKaon=999;
+      fnPion=999;
+      delete fvHF;
+      PostData(1,fNentries);
+      PostData(2,fCounter);
+      PostData(3,fOutput);
+      PostData(4,fTreeVar);
+      return;
+    }
+  }
+
   
   //  Int_t pdgDg[3]={211,321,2212};
   
@@ -1192,13 +1227,13 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 
   // c-deuteron has a few extra variables
   if(fIsCdeuteronAnalysis){
-    var = new Float_t[50];
-    TString varNames[51]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","deutStatusTrk0","deutStatusTrk1","deutStatusTrk2","pdgMotherTrk0","pdgMotherTrk1","pdgMotherTrk2","eventImpactParameter","massHypoFilt_respCuts_respPID"};
+    var = new Float_t[62];
+    TString varNames[63]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","deutStatusTrk0","deutStatusTrk1","deutStatusTrk2","pdgMotherTrk0","pdgMotherTrk1","pdgMotherTrk2","eventImpactParameter","pdgTrk0","pdgTrk1","pdgTrk2","dcaTrk0","dcaTrk1","dcaTrk2","dcaErrTrk0","dcaErrTrk1","dcaErrTrk2","angleTrk0","angleTrk1","angleTrk2","massHypoFilt_respCuts_respPID"};
     if(fFillTree){
-      for(Int_t k=0;k<50;k++){
+      for(Int_t k=0;k<62;k++){
         fTreeVar->SetBranchAddress(varNames[k].Data(),&var[k]);
       }
-      fTreeVar->SetBranchAddress(varNames[50].Data(),&resp);
+      fTreeVar->SetBranchAddress(varNames[62].Data(),&resp);
     }
   } else{
     var = new Float_t[33];
@@ -1343,7 +1378,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	}
   fCandCounter_onTheFly->Fill(4); // in fiducial acceptance
 
-	if(io3Prong->GetReducedChi2()>fMaxVtxChi2Cut){
+	if(io3Prong->GetReducedChi2()>fMaxVtxChi2Cut && !fSwitchOffTopCuts){
 	  AliAODVertex *vtx3 = (AliAODVertex*)io3Prong->GetSecondaryVtx();
 	  if(vtx3){delete vtx3;vtx3=0;}
 	  if(unsetvtx)io3Prong->UnsetOwnPrimaryVtx();
@@ -1652,8 +1687,18 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  // POSTPONED HERE !!!
 	  //
 	  //massHypothesis=isSeleCuts&massHypothesis;
-	  if(fExplore_PIDstdCuts)   massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
-	  else                      massHypothesis=isSeleCuts&massHypothesis;
+
+    if(fSwitchOffTopCuts) { // here we switch the topological selections on candidates off
+      //
+      // if wee keep the selection on PID, modify the massHypothesis
+      // otherwise, do not touch it
+      if(!fSwitchOffPIDafterFilt) massHypothesis=resp_onlyPID&massHypothesis;
+    }
+    else {  // this is the default
+      if(fExplore_PIDstdCuts)   massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
+	    else                      massHypothesis=isSeleCuts&massHypothesis;
+    }
+
 	  //
 	  //
 
@@ -2687,6 +2732,13 @@ void AliAnalysisTaskSEXicTopKpi::IsSelectedPID(AliAODTrack *track,Int_t &iSelPio
     }
   }
 
+  if(fRejEvWoutpKpi) {
+    // update the number of recognised p, K, pi
+    if(iSelProton>0)  fnProt++;
+    if(iSelKaon>0)    fnKaon++;
+    if(iSelPion>0)    fnPion++;
+  }
+
 }
 
 
@@ -2939,12 +2991,19 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
     varPointer[40] = -1; // MC pt background deuteron track 0
     varPointer[41] = -1; // MC pt background deuteron track 1
     varPointer[42] = -1; // MC pt background deuteron track 2
-    varPointer[43] = -4; // status of deuteron - primary, secondary or other
-    varPointer[44] = -4; // status of deuteron - primary, secondary or other
-    varPointer[45] = -4; // status of deuteron - primary, secondary or other
-    varPointer[46] = -1; // pdg of deuteron mother
-    varPointer[47] = -1; // pdg of deuteron mother
-    varPointer[48] = -1; // pdg of deuteron mother
+    varPointer[43] = -4; // status of deuteron track 0 - primary, secondary or other
+    varPointer[44] = -4; // status of deuteron track 1- primary, secondary or other
+    varPointer[45] = -4; // status of deuteron track 2- primary, secondary or other
+    varPointer[46] = -1; // pdg of deuteron mother track 0
+    varPointer[47] = -1; // pdg of deuteron mother track 1
+    varPointer[48] = -1; // pdg of deuteron mother track 2
+    varPointer[49] = mcHeader->GetImpactParameter();
+    for(int i=0;i<3;i++){
+      varPointer[50+i] = -999; // pdg of track i
+      varPointer[53+i] = -999; // dca of track i
+      varPointer[56+i] = -999; // dca error of track i
+      varPointer[59+i] = -999; // sine of angle between reco track and true momentum of track i
+    }
     if(flagMC>1000){
       if(p && array_MC){
         Int_t mcLabel = p->GetLabel();
@@ -2957,6 +3016,10 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
     else{
       for(int i=0; i<3; i++){
         AliAODTrack* trk_prong = (AliAODTrack*) cand->GetDaughter(i);
+        AliAODTrack* trk_clone = (AliAODTrack*)trk_prong->Clone("trk_clone");
+        Double_t trkDCA[2] = { 0.0,0.0 }, trkCOV[3] = { 0.0,0.0,0.0 };
+        if(!trk_clone->PropagateToDCA(aod->GetPrimaryVertex(), aod->GetMagneticField(), 99999, trkDCA, trkCOV))
+        delete trk_clone;
         Int_t prLabel = TMath::Abs(trk_prong->GetLabel());
         if(prLabel>=0){
           AliAODMCParticle* partMC_prong = (AliAODMCParticle*) array_MC->At(prLabel);
@@ -2977,10 +3040,17 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
           }
           Bool_t isTrackInjected = AliVertexingHFUtils::IsTrackInjected(trk_prong,mcHeader,array_MC);
           if(isTrackInjected) varPointer[43+i] += 3;
+          varPointer[50+i] = pdg;
+          varPointer[53+i] = trkDCA[0];
+          varPointer[56+i] = TMath::Sqrt(trkCOV[0]);
+          Double_t trackP[2] = {trk_prong->Px(), trk_prong->Py()};
+          Double_t partP[2] {partMC_prong->Px(), partMC_prong->Py()};
+          // angle between reco track and true momentum direction
+          Double_t angle = TMath::ACos( (trackP[0]*partP[0] + trackP[1]*partP[1]) / (TMath::Sqrt(trackP[0]*trackP[0]+trackP[1]*trackP[1])*TMath::Sqrt(partP[0]*partP[0]+partP[1]*partP[1])) );
+          varPointer[59+i] = TMath::Sin(angle);
         }
       }
     }
-    varPointer[49] = mcHeader->GetImpactParameter();
   }
 
   fTreeVar->Fill();
@@ -3103,6 +3173,13 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
   ftrackSelStatusKaon->Reset();
   ftrackSelStatusPion->Reset();
 
+
+  if(fRejEvWoutpKpi) {
+    fnProt = 0; // number of PID selected protons
+    fnKaon = 0; // number of PID selected kaons
+    fnPion = 0; // number of PID selected pions
+  }
+
   for(Int_t itrack=0;itrack<aod->GetNumberOfTracks();itrack++){
     fhistMonitoring->Fill(3);
     Int_t iSelProton=0,iSelKaon=0,iSelPion=0;
@@ -3121,7 +3198,7 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
         if(isBkgTrackInjected && pdg!=1000010020) continue; 
         // if looking at bkg, keep only a small percentage of available tracks (5%)
         Double_t pt_track = track->Pt()*1000.;  // rejection from the 4th decimal digit
-        if( TMath::Abs(pt_track-int(pt_track))>fRejFactorBkgUpgrade ) continue;
+        if( TMath::Abs(pt_track-floor(pt_track))>fRejFactorBkgUpgrade ) continue;
       }
     }
     if(fIsXicUpgradeAnalysis && fReadMC) {
@@ -3135,7 +3212,7 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
 
         // if looking at bkg, keep only a small percentage of available tracks (5%)
         Double_t pt_track = track->Pt()*1000.;  // rejection from the 4th decimal digit
-        if( TMath::Abs(pt_track-int(pt_track))>fRejFactorBkgUpgrade ) continue;
+        if( TMath::Abs(pt_track-floor(pt_track))>fRejFactorBkgUpgrade ) continue;
       }
       else{ // it means that the track comes from a true Xic
         if(fIsKeepOnlyBkgXicUpgradeAnalysis)  continue; // skip the track if we want to study pure combinatorial bkg without keeping tracks of true Xic's
@@ -3143,7 +3220,7 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
     }
     else if(fIsXicUpgradeAnalysis && !fReadMC && fSys==2){ // we enter here if we run on real Pb-Pb data
       Double_t pt_track = track->Pt()*1000.;  // rejection from the 4th decimal digit
-      if( TMath::Abs(pt_track-int(pt_track))>fRejFactorBkgUpgrade ) continue; // if looking at bkg, keep only a small percentage of available tracks (5%)
+      if( TMath::Abs(pt_track-floor(pt_track))>fRejFactorBkgUpgrade ) continue; // if looking at bkg, keep only a small percentage of available tracks (5%)
     }
 
     //    Printf("selecting track");

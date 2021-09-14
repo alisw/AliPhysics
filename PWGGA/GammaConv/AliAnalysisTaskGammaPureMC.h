@@ -60,9 +60,9 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     // MC functions
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void ProcessMCParticles();
-    bool IsInPCMAcceptance(TParticle* part) const;
-    bool IsInPHOSAcceptance(TParticle* part) const;
-    bool IsInEMCalAcceptance(TParticle* part) const;
+    bool IsInPCMAcceptance(AliVParticle* part) const;
+    bool IsInPHOSAcceptance(AliVParticle* part) const;
+    bool IsInEMCalAcceptance(AliVParticle* part) const;
 
     // additional functions
     void SetLogBinningXTH1(TH1* histoRebin);

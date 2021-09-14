@@ -40,16 +40,22 @@ endif(KFParticle_FOUND)
 # Sources - alphabetical order
 set(SRCS 
     AliHFMLResponse.cxx
+    AliHFMLResponseD0toKpi.cxx
     AliHFMLResponseDplustoKpipi.cxx
+    AliHFMLResponseDstartoD0pi.cxx
     AliHFMLResponseDstoKKpi.cxx
     AliHFMLResponseLctoV0bachelor.cxx
     AliHFMLVarHandler.cxx
+    AliHFMLVarHandlerD0toKpi.cxx
     AliHFMLVarHandlerDplustoKpipi.cxx
     AliHFMLVarHandlerDstoKKpi.cxx
+    AliHFMLVarHandlerDstartoD0pi.cxx
     AliHFMLVarHandlerNonPromptLc2V0bachelor.cxx
     AliHFMLVarHandlerLctopKpi.cxx
+    AliAnalysisTaskSEDmesonTree.cxx
     AliAnalysisTaskSEDplus.cxx
     AliAnalysisTaskSEDs.cxx
+    AliAnalysisTaskSEDstarPolarization.cxx
     AliAnalysisTaskSENonPromptLc.cxx
     AliAnalysisTaskSECharmHadronMLSelector.cxx
     AliAnalysisTaskSECharmHadronvn.cxx

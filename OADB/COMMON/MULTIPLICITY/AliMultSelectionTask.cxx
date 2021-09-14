@@ -104,7 +104,7 @@ ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
-fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
+fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkPropDCA(kFALSE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE), fkLightTree(kTRUE),
 fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
@@ -184,6 +184,14 @@ fZpaFired(0),
 fZpcFired(0),
 fNTracks(0),
 fNTracksTPCout(0),
+fNTracksITSrefit(0),
+fNTracksMaxDCAz(0),
+fNTracksMaxDCAz01(0),
+fNTracksMaxDCAz00(0),
+fNTracksDCAxyABS(0),
+fNTracksDCAzABS(0),
+fNTracksDCAxySQ(0),
+fNTracksDCAzSQ(0),
 fNTracksGlobal2015(0),
 fNTracksGlobal2015Trigger(0),
 fNTracksITSsa2010(0),
@@ -268,7 +276,7 @@ fOADB(nullptr)
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
 : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0),
-fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
+fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkPropDCA(kFALSE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkPreferSuperCalib(kFALSE), fkLightTree(kTRUE),
 fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
@@ -348,6 +356,14 @@ fZpaFired(0),
 fZpcFired(0),
 fNTracks(0),
 fNTracksTPCout(0),
+fNTracksITSrefit(0),
+fNTracksMaxDCAz(0),
+fNTracksMaxDCAz01(0),
+fNTracksMaxDCAz00(0),
+fNTracksDCAxyABS(0),
+fNTracksDCAzABS(0),
+fNTracksDCAxySQ(0),
+fNTracksDCAzSQ(0),
 fNTracksGlobal2015(0),
 fNTracksGlobal2015Trigger(0),
 fNTracksITSsa2010(0),
@@ -724,11 +740,24 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
     fTreeEvent->Branch("fMC_IsPileup", &fMC_IsPileup, "fMC_IsPileup/O");
     
+    if(!fkLightTree){
+      fTreeEvent->Branch("fNTracksMaxDCAz", &fNTracksMaxDCAz, "fNTracksMaxDCAz/F");
+      fTreeEvent->Branch("fNTracksMaxDCAz01", &fNTracksMaxDCAz01, "fNTracksMaxDCAz01/F");
+      fTreeEvent->Branch("fNTracksMaxDCAz00", &fNTracksMaxDCAz00, "fNTracksMaxDCAz00/F");
+      fTreeEvent->Branch("fNTracksDCAxyABS", &fNTracksDCAxyABS, "fNTracksDCAxyABS/F");
+      fTreeEvent->Branch("fNTracksDCAzABS", &fNTracksDCAzABS, "fNTracksDCAzABS/F");
+      fTreeEvent->Branch("fNTracksDCAxySQ", &fNTracksDCAxySQ, "fNTracksDCAxySQ/F");
+      fTreeEvent->Branch("fNTracksDCAzSQ", &fNTracksDCAzSQ, "fNTracksDCAzSQ/F");
+      fTreeEvent->Branch("fNTracksITSrefit", &fNTracksITSrefit, "fNTracksITSrefit/I");
+    }
+    
     //Automatic Loop for linking directly to AliMultInput
     for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
-      if(lStoreIfLight[iVar]){
+      if(lStoreIfLight[iVar] || !fkLightTree){
+        Printf(Form("Connecting variable number %i: %s",iVar,AliMultInput::VarName[iVar].Data()));
         if( !fInput->GetVariable(AliMultInput::VarName[iVar])){
           Printf(Form("Problem finding variable: %s ! Please check!",AliMultInput::VarName[iVar].Data()));
+          continue;
         }
         if( !fInput->GetVariable(AliMultInput::VarName[iVar])->IsInteger()  ) {
           fTreeEvent->Branch(fInput->GetVariable(AliMultInput::VarName[iVar])->GetName(), &fInput->GetVariable(AliMultInput::VarName[iVar])->GetRValue(), Form("%s/F",fInput->GetVariable(AliMultInput::VarName[iVar])->GetName()) );
@@ -1584,12 +1613,83 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fNTracksGlobal2015Trigger   -> SetValueInteger( 0 );
     fNTracksITSsa2010           -> SetValueInteger( 0 );
     
+    // Set DCA variables to default
+    Float_t dcaxyABS = 0;
+    Float_t dcazABS = 0;
+    Float_t dcaxySQ = 0;
+    Float_t dcazSQ = 0;
+    Float_t Maxdcaz = 0;
+    Float_t Maxdcaz01 = 0;
+    Float_t Maxdcaz00 = 0;
+
+    Float_t averageDCAxyABS = 0;
+    Float_t averageDCAzABS = 0;
+    Float_t averageDCAxySQ = 0;
+    Float_t averageDCAzSQ = 0;
+
+    fNTracksDCAxyABS=0;
+    fNTracksDCAzABS=0;
+    fNTracksDCAxySQ=0;
+    fNTracksDCAzSQ=0;
+    fNTracksMaxDCAz=0;
+    fNTracksMaxDCAz01=0;
+    fNTracksMaxDCAz00=0;
+
+    Int_t ITSrefitTracks = 0;
+    fNTracksITSrefit=0;
+    
+    // Getting Primary Vertex
+    const AliVVertex *primaryVertex = lVevent -> GetPrimaryVertex();
+
+    // Getting Magnetic Field
+    double_t bf = lVevent->GetMagneticField();
+    
     //Count tracks with various selections
     Float_t ntrackINELgtONE=0.;
     for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
       AliVTrack *track = lVevent -> GetVTrack( itrack );
       if ( !track ) continue;
       
+      if (fkPropDCA){
+        AliExternalTrackParam ctrack;
+        ctrack.CopyFromVTrack(track);
+        
+        double_t dzz[2];
+        double_t covd0[3];
+        
+        // Propagating to DCA:
+        ctrack.PropagateToDCA(primaryVertex,bf,1000.,dzz, covd0);
+        
+        // Sum of xy and z components of DCA:
+        dcaxyABS = dcaxyABS + TMath::Abs(dzz[0]);
+        dcazABS = dcazABS + TMath::Abs(dzz[1]);
+        
+        dcaxySQ = dcaxySQ + dzz[0]*dzz[0];
+        dcazSQ = dcazSQ + dzz[1]*dzz[1];
+
+	//without DCAxy Cut:
+	if (TMath::Abs(dzz[1])>Maxdcaz){
+		Maxdcaz = TMath::Abs(dzz[1]);		
+	}
+
+	//with DCAxy Cut:
+	if (TMath::Abs(dzz[0])<0.1){ // "loose" DCAxy cut
+		if (TMath::Abs(dzz[1])>Maxdcaz01){
+			Maxdcaz01 = TMath::Abs(dzz[1]);		
+		}	
+	}
+
+	if (TMath::Abs(dzz[0])<(0.0182 + 0.0350/(track->Pt()))){ //"strict" DCAxy Cut 
+		if (TMath::Abs(dzz[1])>Maxdcaz00){
+			Maxdcaz00 = TMath::Abs(dzz[1]);		
+		}	
+	}
+	
+      }
+      
+      // Get ITSrefit counts
+      if(!((track->GetStatus() & AliVTrack::kITSrefit)==0)) ITSrefitTracks++;
+            
       //Only ITSsa tracks
       if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
         fNTracksITSsa2010 -> SetValueInteger( fNTracksITSsa2010->GetValueInteger() + 1);
@@ -1610,6 +1710,28 @@ void AliMultSelectionTask::UserExec(Option_t *)
       if ( TMath::Abs( track -> GetTOFExpTDiff() ) < 30 )
         fNTracksGlobal2015Trigger -> SetValueInteger( fNTracksGlobal2015Trigger->GetValueInteger() + 1);
     }
+    
+    if (lVevent->GetNumberOfTracks()>0){
+      averageDCAxyABS = dcaxyABS/(lVevent->GetNumberOfTracks());
+      averageDCAzABS = dcazABS/(lVevent->GetNumberOfTracks());
+      averageDCAxySQ = dcaxySQ/(lVevent->GetNumberOfTracks());
+      averageDCAzSQ = dcazSQ/(lVevent->GetNumberOfTracks());
+     }
+    else {
+      averageDCAxyABS = dcaxyABS/(-1);
+      averageDCAzABS = dcazABS/(-1);
+      averageDCAxySQ = dcaxySQ/(-1);
+      averageDCAzSQ = dcazSQ/(-1);
+     }
+
+    fNTracksMaxDCAz=Maxdcaz;
+    fNTracksMaxDCAz01=Maxdcaz01;
+    fNTracksMaxDCAz00=Maxdcaz00;
+    fNTracksDCAxyABS=averageDCAxyABS;
+    fNTracksDCAzABS=averageDCAzABS;
+    fNTracksDCAxySQ=averageDCAxySQ;
+    fNTracksDCAzSQ=averageDCAzSQ;
+    fNTracksITSrefit=ITSrefitTracks;
     
     Long_t lNTPCout = 0;
     fNTracksTPCout->SetValueInteger(lNTPCout);

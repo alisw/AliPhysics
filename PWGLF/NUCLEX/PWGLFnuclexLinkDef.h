@@ -48,6 +48,7 @@
 #pragma link C++ class AliLightNTrackMCHist+;
 #pragma link C++ class AliAnalysisTaskAntipd+;
 #pragma link C++ class AliAnalysisTaskHe3+;
+#pragma link C++ class AliAnalysisHe3MC+;
 #pragma link C++ class AliAnalysisTaskHe3_ESD+;
 #pragma link C++ class AliAnalysisTaskNuclei+;
 /// * DeltaMasses
@@ -126,6 +127,9 @@
 #pragma link C++ class std::vector<SGenericTracklet>+;
 #pragma link C++ class AliSelectorFindableHyperTriton3Body+;
 #pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
+#pragma link C++ class AliAnalysisTaskHe3piAOD+;
+#pragma link C++ class MiniHyper+;
+#pragma link C++ class MiniHyperMC+;
 #pragma link C++ class RHyperTriton+;
 #pragma link C++ class RHyperTriton3KF+;
 #pragma link C++ class RHyperTriton3O2+;

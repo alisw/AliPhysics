@@ -42,7 +42,7 @@
 #include <TGeoGlobalMagField.h>
 
 #include "AliV0ReaderV1.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "AliAODv0.h"
 #include "AliESDv0.h"
 #include "AliAODEvent.h"
@@ -59,7 +59,7 @@
 #include "AliAODConversionPhoton.h"
 #include "AliConversionPhotonBase.h"
 #include "TVector.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliAnalysisManager.h"
@@ -686,7 +686,7 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
     return kFALSE;
   }
   // Set Magnetic Field
-  AliKFParticle::SetField(fInputEvent->GetMagneticField());
+  AliGAKFParticle::SetField(fInputEvent->GetMagneticField());
 
   if(fInputEvent->IsA()==AliAODEvent::Class() && fProduceV0findingEffi){
     fProduceV0findingEffi = kFALSE;
@@ -860,9 +860,9 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
   AliKFConversionPhoton *fCurrentMotherKF=NULL;
   //    fUseConstructGamma = kFALSE;
   //    cout << "construct gamma " << endl;
-  AliKFParticle fCurrentNegativeKFParticle(*(fCurrentExternalTrackParamNegative),11);
+  AliGAKFParticle fCurrentNegativeKFParticle(*(fCurrentExternalTrackParamNegative),11);
   //    cout << fCurrentExternalTrackParamNegative << "\t" << endl;
-  AliKFParticle fCurrentPositiveKFParticle(*(fCurrentExternalTrackParamPositive),-11);
+  AliGAKFParticle fCurrentPositiveKFParticle(*(fCurrentExternalTrackParamPositive),-11);
   //    cout << fCurrentExternalTrackParamPositive << "\t"  << endl;
   //    cout << currentTrackLabels[0] << "\t" << currentTrackLabels[1] << endl;
   //    cout << "construct gamma " <<fUseConstructGamma << endl;
@@ -873,7 +873,15 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
     fCurrentMotherKF->ConstructGamma(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
   }else{
     fCurrentMotherKF = new AliKFConversionPhoton(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+
+
+#ifndef PWGGAUSEKFPARTICLE
     fCurrentMotherKF->SetMassConstraint(0,0.0001);
+#else
+    //fCurrentMotherKF->SetMassConstraint(0,0.0001);
+    fCurrentMotherKF->SetNonlinearMassConstraint(0.);
+#endif // PWGGAUSEKFPARTICLE
+
   }
 
   // PID Cuts- positive track
@@ -905,10 +913,10 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 //     cout << "recProp: " <<  fCurrentMotherKF->GetTrackLabelPositive() << "\t" << fCurrentMotherKF->GetTrackLabelNegative() << endl;
 //     cout << "MC: " <<  labeln << "\t" << labelp << endl;
 
-    TParticle *fNegativeMCParticle = 0x0;
-    if(labeln>-1) fNegativeMCParticle = fMCEvent->Particle(labeln);
-    TParticle *fPositiveMCParticle = 0x0;
-    if(labelp>-1) fPositiveMCParticle = fMCEvent->Particle(labelp);
+    AliMCParticle *fNegativeMCParticle = 0x0;
+    if(labeln>-1)  fNegativeMCParticle = (AliMCParticle*) fMCEvent->GetTrack(labeln);
+    AliMCParticle *fPositiveMCParticle = 0x0;
+    if(labelp>-1)  fPositiveMCParticle = (AliMCParticle*) fMCEvent->GetTrack(labelp);
 
     if(fPositiveMCParticle&&fNegativeMCParticle){
       fCurrentMotherKF->SetMCLabelPositive(labelp);
@@ -917,12 +925,14 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
   }
 
   // Update Vertex (moved for same eta compared to old)
-  //      cout << currentV0Index <<" \t before: \t" << fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
+  // cout << currentV0Index <<" \t before: \t" << fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
   if(fUseImprovedVertex == kTRUE){
-    AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
-    //        cout << "Prim Vtx: " << primaryVertexImproved.GetX() << "\t" << primaryVertexImproved.GetY() << "\t" << primaryVertexImproved.GetZ() << endl;
+    AliGAKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
+    //    cout << "Prim Vtx: " << primaryVertexImproved.GetX() << "\t" << primaryVertexImproved.GetY() << "\t" << primaryVertexImproved.GetZ() << endl;
     primaryVertexImproved+=*fCurrentMotherKF;
+    //    cout << "Prim Vtx after: " << primaryVertexImproved.GetX() << "\t" << primaryVertexImproved.GetY() << "\t" << primaryVertexImproved.GetZ() << endl;
     fCurrentMotherKF->SetProductionVertex(primaryVertexImproved);
+    // cout << currentV0Index <<" \t after: \t" << fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
   }
   // SetPsiPair
   Double_t convpos[3]={0,0,0};
@@ -941,7 +951,6 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
       fCurrentMotherKF=NULL;
       return 0x0;
     }
-
     fCurrentMotherKF->SetConversionPoint(convpos);
   }
 
@@ -962,8 +971,12 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
   fCurrentMotherKF->SetMass(fCurrentMotherKF->M());
 
   // Calculating invariant mass
+#ifndef PWGGAUSEKFPARTICLE
   Double_t mass=-99.0, mass_width=-99.0, Pt=-99.0, Pt_width=-99.0;
-  AliKFParticle fCurrentMotherKFForMass(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+#else
+  float mass=-99.0, mass_width=-99.0, Pt=-99.0, Pt_width=-99.0;
+#endif // PWGGAUSEKFPARTICLE
+  AliGAKFParticle fCurrentMotherKFForMass(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
   fCurrentMotherKFForMass.GetMass(mass,mass_width);
   fCurrentMotherKFForMass.GetPt(Pt,Pt_width);
   fCurrentInvMassPair=mass;
@@ -1794,28 +1807,28 @@ void AliV0ReaderV1::CalculatePtMaxSector(){
   return;
 }
 ///________________________________________________________________________
-Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliMCEvent *mcEvent, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax){
+Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliMCEvent *mcEvent, AliMCParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax){
   // MonteCarlo Photon Selection
   if(!mcEvent)return kFALSE;
 
-  if (particle->GetPdgCode() == 22){
+  if (particle->PdgCode() == 22){
     // check whether particle is within eta range
     if( TMath::Abs(particle->Eta()) > etaMax ) return kFALSE;
     // check if particle doesn't have a photon as mother
-    if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+    if(particle->GetMother() >-1 && mcEvent->GetTrack(particle->GetMother())->PdgCode() == 22){
       return kFALSE; // no photon as mothers!
     }
     // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
-    TParticle* ePos = NULL;
-    TParticle* eNeg = NULL;
+    AliMCParticle* ePos = NULL;
+    AliMCParticle* eNeg = NULL;
     if(particle->GetNDaughters() >= 2){
-      for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
+      for(Int_t daughterIndex=particle->GetDaughterFirst();daughterIndex<=particle->GetDaughterLast();daughterIndex++){
         if(daughterIndex<0) continue;
-        TParticle *tmpDaughter = mcEvent->Particle(daughterIndex);
+        AliMCParticle *tmpDaughter = (AliMCParticle*) mcEvent->GetTrack(daughterIndex);
         if(tmpDaughter->GetUniqueID() == 5){
-          if(tmpDaughter->GetPdgCode() == 11){
+          if(tmpDaughter->PdgCode() == 11){
             eNeg = tmpDaughter;
-          } else if(tmpDaughter->GetPdgCode() == -11){
+          } else if(tmpDaughter->PdgCode() == -11){
             ePos = tmpDaughter;
           }
         }
@@ -1824,29 +1837,30 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliMCEvent *mcEvent, TParticle *
     if(ePos == NULL || eNeg == NULL){ // means we do not have two daughters from pair production
       return kFALSE;
     }
+
     // check if electrons are in correct eta window
     if( TMath::Abs(ePos->Eta()) > etaMax ||
       TMath::Abs(eNeg->Eta()) > etaMax )
       return kFALSE;
 
     // check if photons have converted in reconstructable range
-    if(ePos->R() > rMax){
+    if(TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv()) > rMax){
       return kFALSE; // cuts on distance from collision point
     }
-    if(TMath::Abs(ePos->Vz()) > zMax){
+    if(TMath::Abs(ePos->Zv()) > zMax){
       return kFALSE;  // outside material
     }
-    if(TMath::Abs(eNeg->Vz()) > zMax){
+    if(TMath::Abs(eNeg->Zv()) > zMax){
       return kFALSE;  // outside material
     }
 
 
     Double_t lineCutZRSlope = tan(2*atan(exp(-etaMax)));
     Double_t lineCutZValue = 7.;
-    if( ePos->R() <= ((TMath::Abs(ePos->Vz()) * lineCutZRSlope) - lineCutZValue)){
+    if( TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv()) <= ((TMath::Abs(ePos->Zv()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE;  // line cut to exclude regions where we do not reconstruct
     }
-    if( eNeg->R() <= ((TMath::Abs(eNeg->Vz()) * lineCutZRSlope) - lineCutZValue)){
+    if( TMath::Sqrt(eNeg->Xv()*eNeg->Xv()+eNeg->Yv()*eNeg->Yv()) <= ((TMath::Abs(eNeg->Zv()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
     }
 
@@ -1865,24 +1879,24 @@ void AliV0ReaderV1::CreatePureMCHistosForV0FinderEffiESD(){
 
   // Loop over all primary MC particle
   for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
-    if (fEventCuts->IsConversionPrimaryESD( fMCEvent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+    if (fEventCuts->IsConversionPrimaryESD(fMCEvent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
       // fill primary histogram
-      TParticle* particle = (TParticle *)fMCEvent->Particle(i);
+      AliMCParticle* particle = (AliMCParticle *)fMCEvent->GetTrack(i);
       if (!particle) continue;
-      if (ParticleIsConvertedPhoton(fMCEvent, particle, 0.9, 180.,250. )){
-        if(particle->GetFirstDaughter()<0) continue;
-        TParticle *tmpDaughter = fMCEvent->Particle(particle->GetFirstDaughter());
+      if (ParticleIsConvertedPhoton(fMCEvent, particle, 0.9, 180.,250.)){
+        if(particle->GetDaughterFirst()<0) continue;
+        AliMCParticle *tmpDaughter = (AliMCParticle*) fMCEvent->GetTrack(particle->GetDaughterFirst());
         if (!tmpDaughter) continue;
-        fHistoMCGammaPtvsR->Fill(particle->Pt(),tmpDaughter->R());
+        fHistoMCGammaPtvsR->Fill(particle->Pt(),tmpDaughter->Particle()->R());
         fHistoMCGammaPtvsPhi->Fill(particle->Pt(),particle->Phi());
-        fHistoMCGammaRvsPhi->Fill(tmpDaughter->R(),particle->Phi());
+        fHistoMCGammaRvsPhi->Fill(tmpDaughter->Particle()->R(),particle->Phi());
       }
       if (ParticleIsConvertedPhoton(fMCEvent, particle, 1.4, 180.,250. )){
-        if(particle->GetFirstDaughter()<0) continue;
-        TParticle *tmpDaughter = fMCEvent->Particle(particle->GetFirstDaughter());
+        if(particle->GetDaughterFirst()<0) continue;
+        AliMCParticle *tmpDaughter = (AliMCParticle*) fMCEvent->GetTrack(particle->GetDaughterFirst());
         if (!tmpDaughter) continue;
         fHistoMCGammaPtvsEta->Fill(particle->Pt(),particle->Eta());
-        fHistoMCGammaRvsEta->Fill(tmpDaughter->R(),particle->Eta());
+        fHistoMCGammaRvsEta->Fill(tmpDaughter->Particle()->R(),particle->Eta());
         fHistoMCGammaPhivsEta->Fill(particle->Phi(),particle->Eta());
       }
     }
@@ -1904,32 +1918,32 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
   Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,tracklabelPos)->GetLabel());
   Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,tracklabelNeg)->GetLabel());
 
-  TParticle* negPart = 0x0;
-  if(labeln>-1) negPart = (TParticle *)fMCEvent->Particle(labeln);
-  TParticle* posPart = 0x0;
-  if(labelp>-1) posPart = (TParticle *)fMCEvent->Particle(labelp);
+  AliMCParticle* negPart = 0x0;
+  if(labeln>-1) negPart = (AliMCParticle *)fMCEvent->GetTrack(labeln);
+  AliMCParticle* posPart = 0x0;
+  if(labelp>-1) posPart = (AliMCParticle *)fMCEvent->GetTrack(labelp);
 
   if ( negPart == NULL || posPart == NULL ) return;
 //   if (!(negPart->GetPdgCode() == 11)) return;
 //   if (!(posPart->GetPdgCode() == -11)) return;
-  Long_t motherlabelNeg = negPart->GetFirstMother();
-  Long_t motherlabelPos = posPart->GetFirstMother();
+  Long_t motherlabelNeg = negPart->GetMother();
+  Long_t motherlabelPos = posPart->GetMother();
 
 //   cout << "mother neg " << motherlabelNeg << " mother pos " << motherlabelPos << endl;
-  if (motherlabelNeg>-1 && motherlabelNeg == motherlabelPos && negPart->GetFirstMother() != -1){
-    if (fEventCuts->IsConversionPrimaryESD( fMCEvent, negPart->GetFirstMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+  if (motherlabelNeg>-1 && motherlabelNeg == motherlabelPos && negPart->GetMother() != -1){
+    if (fEventCuts->IsConversionPrimaryESD( fMCEvent, negPart->GetMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
 
-      TParticle* mother =  (TParticle *)fMCEvent->Particle(motherlabelNeg);
-      if (mother->GetPdgCode() == 22 ){
+      AliMCParticle* mother =  (AliMCParticle *)fMCEvent->GetTrack(motherlabelNeg);
+      if (mother->PdgCode() == 22 ){
         if (!CheckVectorForDoubleCount(fVectorFoundGammas,motherlabelNeg ) ){
           if (ParticleIsConvertedPhoton(fMCEvent, mother, 0.9, 180.,250. )){
-            fHistoRecMCGammaPtvsR->Fill(mother->Pt(),negPart->R());
+            fHistoRecMCGammaPtvsR->Fill(mother->Pt(),negPart->Particle()->R());
             fHistoRecMCGammaPtvsPhi->Fill(mother->Pt(),mother->Phi());
-            fHistoRecMCGammaRvsPhi->Fill(negPart->R(),mother->Phi());
+            fHistoRecMCGammaRvsPhi->Fill(negPart->Particle()->R(),mother->Phi());
           }
           if (ParticleIsConvertedPhoton(fMCEvent, mother, 1.4, 180.,250. )){
             fHistoRecMCGammaPtvsEta->Fill(mother->Pt(),mother->Eta());
-            fHistoRecMCGammaRvsEta->Fill(negPart->R(),mother->Eta());
+            fHistoRecMCGammaRvsEta->Fill(negPart->Particle()->R(),mother->Eta());
             fHistoRecMCGammaPhivsEta->Fill(mother->Phi(),mother->Eta());
           }
 //           cout << "new gamma found" << endl;
@@ -1937,7 +1951,7 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
           if (ParticleIsConvertedPhoton(fMCEvent, mother, 0.9, 180.,250. )){
             fHistoRecMCGammaMultiPt->Fill(mother->Pt());
             fHistoRecMCGammaMultiPhi->Fill(mother->Phi());
-            fHistoRecMCGammaMultiR->Fill(negPart->R());
+            fHistoRecMCGammaMultiR->Fill(negPart->Particle()->R());
           }
           if (ParticleIsConvertedPhoton(fMCEvent, mother, 1.4, 180.,250. )){
             fHistoRecMCGammaMultiPtvsEta->Fill(mother->Pt(),mother->Eta());
@@ -1963,6 +1977,7 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   //conversion point
   Double_t convX, convY, convZ;
   fCurrentV0->GetXYZ(convX,convY,convZ);
+
   Double_t convR = TMath::Sqrt(convX*convX+convY*convY);
   //recalculated conversion point
   Double_t convXrecalc=fCurrentMotherKF->GetConversionX();

@@ -242,6 +242,7 @@ private:
     AliESDtrackCuts *fESDtrackCuts;   //! ESD track cuts used for primary track definition
     AliESDtrackCuts *fESDtrackCutsITSsa2010;  //! ESD track cuts used for ITSsa track definition
     AliESDtrackCuts *fESDtrackCutsGlobal2015; //! ESD track cuts used for global track definition
+    AliESDtrackCuts *fESDtrackCutsStandardITSTPC2011pp;
     AliAnalysisUtils *fUtils;         //! analysis utils (for MV pileup selection)
     
     AliEventCuts fEventCuts;                 /// Event cuts class
@@ -300,14 +301,29 @@ private:
     Float_t fZNCpp;//!
     Float_t fZPApp;//!
     Float_t fZPCpp;//!
-    Float_t fCentrality; //!
+    Float_t fCentrality_V0M; //!
+    Float_t fCentrality_ZDC; //!
+    Float_t fCentrality_ZDCFired; //!
+    Float_t fCentrality_RefMult05; //!
+    Float_t fCentrality_RefMult08; //!
+    Float_t fCentrality_SPDClusters; //!
+    Float_t fCentrality_SPDTracklets; //!
     Bool_t fMVPileupFlag; //!
     Bool_t fOOBPileupFlag; //!
     Float_t fTestVariable; //!
     Int_t fRun;//!
-
+    Int_t fNTracksGlobal; //!
+    Int_t fNtrk_pTgt2; //!
+    Int_t fNtrk_pTgt3; //!
+    Int_t fNtrk_pTgt5; //!
+    Float_t fpTSum; //!
+   
     //TOF info for OOB pileuo study
+    Int_t  fSPDtracklets; //!
+    Int_t  fSPDtrackletsA; //!
+    Int_t  fSPDtrackletsC; //!
     Int_t  fNTOFClusters;  //!
+    Int_t  fNTOFtrgPads;  //!
     Int_t  fNTOFMatches;   //!
     Int_t  fNTracksITSsa2010; //!
     Int_t  fNTracksGlobal2015; //!
@@ -403,6 +419,10 @@ private:
     Bool_t fTreeVariableNegITSSharedClusters3;
     Bool_t fTreeVariableNegITSSharedClusters4;
     Bool_t fTreeVariableNegITSSharedClusters5;
+
+    Int_t fTreeVariableNTOFClusters; //!
+    Int_t fTreeVariableNTOFtrgPads; //!
+    Int_t fTreeVariableNTOFMatches; //!
     
     Bool_t fTreeVariableIsCowboy; //store if V0 is cowboy-like or sailor-like in XY plane
 
@@ -419,7 +439,13 @@ private:
     Int_t   fTreeVariableClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
-    Float_t fTreeVariableCentrality; //!
+    Float_t fTreeVariableCentrality_V0M; //!
+    Float_t fTreeVariableCentrality_ZDC; //!
+    Float_t fTreeVariableCentrality_ZDCFired; //!
+    Float_t fTreeVariableCentrality_RefMult05; //!
+    Float_t fTreeVariableCentrality_RefMult08; //!
+    Float_t fTreeVariableCentrality_SPDClusters; //!
+    Float_t fTreeVariableCentrality_SPDTracklets; //!
     Float_t fTreeVariableZNApp;//!
     Float_t fTreeVariableZNCpp;//!
     Float_t fTreeVariableZPApp;//!
@@ -604,6 +630,10 @@ private:
     Bool_t fTreeCascVarBachITSSharedClusters4;
     Bool_t fTreeCascVarBachITSSharedClusters5;
 
+    Int_t fTreeCascVarNTOFClusters; //!
+    Int_t fTreeCascVarNTOFtrgPads; //!
+    Int_t fTreeCascVarNTOFMatches; //!
+    
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeCascVarNegTOFExpTDiff; //!
     Float_t fTreeCascVarPosTOFExpTDiff; //!
@@ -620,7 +650,13 @@ private:
     Int_t   fTreeCascVarClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
-    Float_t fTreeCascVarCentrality; //!
+    Float_t fTreeCascVarCentrality_V0M; //!
+    Float_t fTreeCascVarCentrality_ZDC; //!
+    Float_t fTreeCascVarCentrality_ZDCFired; //!
+    Float_t fTreeCascVarCentrality_RefMult05; //!
+    Float_t fTreeCascVarCentrality_RefMult08; //!
+    Float_t fTreeCascVarCentrality_SPDClusters; //!
+    Float_t fTreeCascVarCentrality_SPDTracklets; //!
     Float_t fTreeCascVarZNApp;//!
     Float_t fTreeCascVarZNCpp;//!
     Float_t fTreeCascVarZPApp;//!

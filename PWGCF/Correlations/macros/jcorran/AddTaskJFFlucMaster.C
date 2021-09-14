@@ -60,6 +60,7 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 		myTask[i]->SetEffConfig(0,hybridCut);
 		myTask[i]->SetPhiCorrectionIndex(i);//cmaptask->EnablePhiCorrection(i,MAPfilenames[i]);
 		myTask[i]->SetRemoveBadArea(removebadarea);
+		myTask[i]->SetZVertexCut(8.);
 	}
 	// s_global
 	int iS = 1;
@@ -78,7 +79,7 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	myTask[iS]->SetCentDetName("CL1");
 	// s_zvtx
 	iS = 5;
-	myTask[iS]->SetZVertexCut(8);
+	myTask[iS]->SetZVertexCut(10.);
 	// s_pileup
 	iS = 6;
 	if(period==lhc18q || period==lhc18r) {

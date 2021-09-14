@@ -44,7 +44,8 @@ AliAnalysisTaskEmcalJetDijetMass::AliAnalysisTaskEmcalJetDijetMass() :
     AliAnalysisTaskEmcalJet(),
     //fHistManager(),
     fana(NULL),
-    fhistos(NULL)
+    fhistos(NULL),
+    fJOutput(NULL)
 {
 }
 
@@ -57,7 +58,8 @@ AliAnalysisTaskEmcalJetDijetMass::AliAnalysisTaskEmcalJetDijetMass(const char *n
     AliAnalysisTaskEmcalJet(name, kTRUE),
     //fHistManager(name),
     fana(NULL),
-    fhistos(NULL)
+    fhistos(NULL),
+    fJOutput(NULL)
 {
     SetMakeGeneralHistograms(kTRUE);
 }
@@ -69,6 +71,7 @@ AliAnalysisTaskEmcalJetDijetMass::~AliAnalysisTaskEmcalJetDijetMass()
 {
     delete fhistos;
     delete fana;
+    delete fJOutput;
 }
 
 /**
@@ -79,7 +82,27 @@ void AliAnalysisTaskEmcalJetDijetMass::UserCreateOutputObjects()
 {
     AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
+    // For testing, later connect to addtask macro:
+    fjetCone=0.4;
+    fktJetCone=0.4;
+    fktScheme=1;
+    fantiktScheme=1;
+    fusePionMass=0;
+    fuseDeltaPhiBGSubtr=1;
+    fparticleEtaCut=0.9;
+    fparticlePtCut=0.15;
+    fleadingJetCut=20;
+    fsubleadingJetCut=20;
+    fMinJetPt=5;
+    fconstituentCut=5;
+    fdeltaPhiCut=2;
+    fmatchingR=0.3;
+    ftrackingIneff=0.0;
     std::vector<double> fcentralityBins = {0,10,20,40,60,80};
+
+    OpenFile(1);
+    fJOutput = gDirectory;
+    fJOutput->cd();
 
     //fhistos = new AliAnalysisTaskEmcalJetDijetMassHisto();
     fhistos = new AliJCDijetHistos();
@@ -88,25 +111,102 @@ void AliAnalysisTaskEmcalJetDijetMass::UserCreateOutputObjects()
     fhistos->CreateEventTrackHistos();
     fhistos->fHMG->Print();
 
+    /* //Work in progress
+    const int fNCentBin = fcentralityBins.size()-1;
+    TH1D *fh_events[fNCentBin];
+    for (int i=0; i<fNCentBin; i++) {
+        fh_events[i] = new TH1D(Form("h_eventsCentBin%02d",i), Form("h_eventsCentBin%02d",i), 40, 0.0, 40.0 );
+    }
+    */
+
     fana = new AliJCDijetAna();
 
+    TString sktScheme;
+    TString santiktScheme;
+    switch (fktScheme) {
+        case 0:  sktScheme = "E_scheme";
+                 break;
+        case 1:  sktScheme = "pt_scheme";
+                 break;
+        case 2:  sktScheme = "pt2_scheme";
+                 break;
+        case 3:  sktScheme = "Et_scheme";
+                 break;
+        case 4:  sktScheme = "Et2_scheme";
+                 break;
+        case 5:  sktScheme = "BIpt_scheme";
+                 break;
+        case 6:  sktScheme = "BIpt2_scheme";
+                 break;
+        default: sktScheme = "Unknown, check macro arguments!";
+                 break;
+    }
+    switch (fantiktScheme) {
+        case 0:  santiktScheme = "E_scheme";
+                 break;
+        case 1:  santiktScheme = "pt_scheme";
+                 break;
+        case 2:  santiktScheme = "pt2_scheme";
+                 break;
+        case 3:  santiktScheme = "Et_scheme";
+                 break;
+        case 4:  santiktScheme = "Et2_scheme";
+                 break;
+        case 5:  santiktScheme = "BIpt_scheme";
+                 break;
+        case 6:  santiktScheme = "BIpt2_scheme";
+                 break;
+        default: santiktScheme = "Unknown, check macro arguments!";
+                 break;
+    }
+
+    cout << endl;
+    cout << "===========SETTINGS===========" << endl;
+    cout << "MC:                         " << fIsMC << endl;
+    cout << "Centrality bins:            ";
+    for(unsigned i=0; i< fcentralityBins.size(); i++) cout << fcentralityBins.at(i) << " ";
+    cout << endl;
+    cout << "Jet cone size:              " << fjetCone << endl;
+    cout << "kt-jet cone size:           " << fktJetCone << endl;
+    cout << "Using kt-jet scheme:        " << sktScheme.Data() << endl;
+    cout << "Using antikt-jet scheme:    " << santiktScheme.Data() << endl;
+    cout << "Using pion mass:            " << fusePionMass << endl;
+    cout << "Using DeltaPhi in BG subtr: " << fuseDeltaPhiBGSubtr << endl;
+    cout << "Particle eta cut:           " << fparticleEtaCut << endl;
+    cout << "Particle pt cut:            " << fparticlePtCut << endl;
+    cout << "Dijet leading jet cut:      " << fleadingJetCut << endl;
+    cout << "Dijet subleading jet cut:   " << fsubleadingJetCut << endl;
+    cout << "Jet min pt cut:             " << fMinJetPt << endl;
+    cout << "Jet leading const. cut:     " << fconstituentCut << endl;
+    cout << "Dijet DeltaPhi cut:         pi/" << fdeltaPhiCut << endl;
+    cout << "Matching R for MC:          " << fmatchingR << endl;
+    cout << "Tracking ineff for DetMC:   " << ftrackingIneff << endl;
+    cout << endl;
+
+    if(fusePionMass && (fktScheme!=0 || fantiktScheme!=0)) {
+        cout << "Warning: Using pion mass for jets but not using E_scheme!" << endl;
+        cout << endl;
+    }
+
 #if !defined(__CINT__) && !defined(__MAKECINT__)
-    //fana->SetSettings(fDebug,
-    //                  fparticleEtaCut,
-    //                  fparticlePtCut,
-    //                  fjetCone,
-    //                  fktJetCone,
-    //                  fktScheme,
-    //                  fantiktScheme,
-    //                  fusePionMass,
-    //                  fuseDeltaPhiBGSubtr,
-    //                  fconstituentCut,
-    //                  fleadingJetCut,
-    //                  fsubleadingJetCut,
-    //                  fMinJetPt,
-    //                  fdeltaPhiCut,
-    //                  fmatchingR,
-    //                  0.0); //Tracking ineff only for det level.
+    fana->SetSettings(fDebug,
+                      fparticleEtaCut,
+                      fparticlePtCut,
+                      fjetCone,
+                      fktJetCone,
+                      fktScheme,
+                      fantiktScheme,
+                      fusePionMass,
+                      fuseDeltaPhiBGSubtr,
+                      fconstituentCut,
+                      fleadingJetCut,
+                      fsubleadingJetCut,
+                      fMinJetPt,
+                      fdeltaPhiCut,
+                      fmatchingR,
+                      0.0); //Tracking ineff only for det level.
+
+    fana->InitHistos(fhistos, fIsMC, fcentralityBins.size());
 #endif
 
 
@@ -118,7 +218,8 @@ void AliAnalysisTaskEmcalJetDijetMass::UserCreateOutputObjects()
     //    fOutput->Add(obj);
     //}
 
-    PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+    //PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+    PostData(1, fJOutput); // Post data for ALL output slots > 0 here.
 }
 
 /**
@@ -129,6 +230,8 @@ void AliAnalysisTaskEmcalJetDijetMass::UserCreateOutputObjects()
  */
 Bool_t AliAnalysisTaskEmcalJetDijetMass::FillHistograms()
 {
+    //cout << "AliAnalysisTaskEmcalJetDijetMass::FillHistograms" << endl;
+    fhistos->fh_eventSel->Fill("events wo/ cuts",1.0);
     DoJetLoop();
     DoTrackLoop();
     //DoClusterLoop();
@@ -192,6 +295,7 @@ void AliAnalysisTaskEmcalJetDijetMass::DoTrackLoop()
     while ((partCont = static_cast<AliParticleContainer*>(next()))) {
         groupname = partCont->GetName();
         UInt_t count = 0;
+        //fana->CalculateJets(fInputList, fhistos, fCentBin);
         for(auto part : partCont->accepted()) {
             if (!part) continue;
             count++;
@@ -230,6 +334,7 @@ void AliAnalysisTaskEmcalJetDijetMass::DoTrackLoop()
             }
         }
         sumAcceptedTracks += count;
+        //cout << "sumAcceptedTracks: " << sumAcceptedTracks << endl;
 
         histname = TString::Format("%s/histNTracks_%d", groupname.Data(), fCentBin);
         //fHistManager.FillTH1(histname, count);
@@ -485,14 +590,21 @@ AliAnalysisTaskEmcalJetDijetMass *AliAnalysisTaskEmcalJetDijetMass::AddTaskEmcal
     mgr->AddTask(dijetMassTask);
 
     // Create containers for input/output
-    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer()  ;
     TString contname(name);
     contname += "_histos";
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
-            TList::Class(),AliAnalysisManager::kOutputContainer,
-            Form("%s", AliAnalysisManager::GetCommonFileName()));
-    mgr->ConnectInput  (dijetMassTask, 0,  cinput1 );
-    mgr->ConnectOutput (dijetMassTask, 1, coutput1 );
+    mgr->ConnectInput  (dijetMassTask, 0, cinput );
+    AliAnalysisDataContainer *emcalHist = mgr->CreateContainer(Form("%scontainerList",name.Data()),
+            TList::Class(), AliAnalysisManager::kOutputContainer,
+            Form("%s:%s",AliAnalysisManager::GetCommonFileName(), name.Data()));
+    AliAnalysisDataContainer *jHist = mgr->CreateContainer(Form("%scontainer",name.Data()),
+            TDirectory::Class(), AliAnalysisManager::kOutputContainer,
+            Form("%s:%s",AliAnalysisManager::GetCommonFileName(), name.Data()));
+    mgr->ConnectOutput (dijetMassTask, 1, emcalHist );
+    mgr->ConnectOutput (dijetMassTask, 1, jHist );
+    //cout << "AliAnalysisDataContainer *jHist = mgr->CreateContainer(" << Form("%scontainer",dijetMassTask->GetName()) << "," << endl;
+    //cout << "       TDirectory::Class(), AliAnalysisManager::kOutputContainer," << endl;
+    //cout << "       " << Form("%s:%s",AliAnalysisManager::GetCommonFileName(), dijetMassTask->GetName()) << ");" << endl;
 
     return dijetMassTask;
 }

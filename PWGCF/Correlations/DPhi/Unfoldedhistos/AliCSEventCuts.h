@@ -108,6 +108,7 @@ public:
                       /// Gets the centrality of the current event
                       /// \return event centrality in percentage
   Double_t            GetCentrality() { return fCentrality; }
+  void                StoreCentMultEstimationHistos(const TH1 *v0mh = nullptr, const TH1 *cl1mh = nullptr, const TH1 *cl1egmh = nullptr); 
 
 private:
   /* we set them private to force cuts string consistency */
@@ -127,6 +128,7 @@ private:
   virtual void        PrintCutWithParams(Int_t paramID) const;
   virtual void        PrintTrigger(UInt_t &printed, UInt_t trigger, const char *name) const;
 
+  float               GetOnTheFlyMultiplicity(AliVEvent *event, float etamin, float etamax) const;
   Int_t               GetNumberOfVertexContributors(AliVEvent *event) const;
   Bool_t              PassVertexResolutionAndDispersionTh(AliVEvent *event) const;
   Bool_t              AcceptSPDTracksVtxDist(AliVEvent *event) const;
@@ -189,6 +191,8 @@ private:
   Float_t             fCL1Centrality;         ///< the event CL1 centrality
   Int_t               fReferenceMultiplicity; ///< event reference multiplicity
   Int_t               fV0Multiplicity;        ///< the event V0 multiplicity
+  Int_t               fCL1Multiplicity;       ///< the event CL1 multiplicity
+  Int_t               fCL1EtaGapMultiplicity; ///< the event CL1 with an eta gap multiplicity
   Int_t               fNoOfAODTracks;         ///< the number of AOD tracks
   Int_t               fNoOfESDTracks;         ///< the number of ESD tracks
   Int_t               fNoOfFB32Tracks;        ///< the number of globals tracks with tight DCA
@@ -208,6 +212,12 @@ private:
   TH1F               *fhCutsStatistics;                ///< the cuts statistics
   TH1F               *fhUniqueCutsStatistics;          ///< the unique cuts statistics
   TH2F               *fhCutsCorrelation;               ///< cuts correlation
+  TH2F               *fhV0Multiplicity;                ///< the V0M multiplicity for on the fly productions
+  TH2F               *fhCL1Multiplicity;               ///< the CL1 multiplicity for on the fly productions
+  TH2F               *fhCL1EtaGapMultiplicity;         ///< the CL1 with an eta gap multiplicity for on the fly productions
+  const TH1          *fhV0MCentMult;                   ///< the V0M Centrality / Multiplicity estimation histogram
+  const TH1          *fhCL1CentMult;                   ///< the CL1 Centrality / Multiplicity estimation histogram
+  const TH1          *fhCL1EtaGapCentMult;             ///< the CL1 with an eta gap Centrality / Multiplicity estimation histogram
   TH1F               *fhCentrality[2];                 ///< the event centrality histogram (b/a)
   TH1F               *fhVertexZ[2];                    ///< the event vertex z histograms (b/a)
   TH2F               *fhSPDClustersVsTracklets[2];     ///< SPD clusters vs number of tracklets histogram (b/a)
@@ -230,7 +240,7 @@ private:
   AliCSEventCuts& operator=(const AliCSEventCuts&);
 
   /// \cond CLASSIMP
-  ClassDef(AliCSEventCuts,11);
+  ClassDef(AliCSEventCuts,12);
   /// \endcond
 };
 

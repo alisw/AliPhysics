@@ -161,6 +161,12 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   void SetCalculateEtaGaps(Bool_t ceg) {this->fCalculateEtaGaps = ceg;};
   Bool_t GetCalculateEtaGaps() const {return this->fCalculateEtaGaps;};
 
+  // Utility:
+  void Red(const char* text);
+  void Green(const char* text);
+  void Yellow(const char* text);
+  void Blue(const char* text);
+
  private:
   AliAnalysisTaskMultiparticleCorrelations(const AliAnalysisTaskMultiparticleCorrelations& aatqc);
   AliAnalysisTaskMultiparticleCorrelations& operator=(const AliAnalysisTaskMultiparticleCorrelations& aatqc);
@@ -249,7 +255,7 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   // Eta gaps:
   Bool_t fCalculateEtaGaps; // calculate correlations with eta gaps
 
-  ClassDef(AliAnalysisTaskMultiparticleCorrelations,6);
+  ClassDef(AliAnalysisTaskMultiparticleCorrelations,7);
 
 };
 

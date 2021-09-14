@@ -146,6 +146,11 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
 
   TH2F                                *Pt2DCompare;                         //!
   TH2F                                *JC2DCompare;                         //!
+  TH2F                                *JC2DCompareUp;                         //!
+  TH2F                                *JC2DCompareDown;                         //!
+  TH2F                                *JC2DCompareGluon;                         //!
+  TH2F                                *JC2DCompareOther;                         //!
+  TH2F                                *JC2DCompareUnmatched;                         //!
 
   TH2F                                *PtComparisonVsJCDiff;                      //!
 
@@ -164,7 +169,7 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   TH2F                                *JCComparisonVsPtDiffOther;                   //!
   TH2F                                *JCComparisonVsPtDiffUnmatched;               //!
 
-
+/*
   TH3F                                *ParticlePtAndJC;                       //!
 
   TH3F                                *ParticlePtAndJCUp;                     //!
@@ -172,11 +177,11 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   TH3F                                *ParticlePtAndJCGluon;                  //!
   TH3F                                *ParticlePtAndJCOther;                  //!
   TH3F                                *ParticlePtAndJCUnmatched;              //!
-
+*/
   // Here is the TTree
   TTree                               *fTreeJets;                                                  //!
   // These are the branch variables; there are nBranches of them
-  static const Int_t nBranchesJetChargeFlavourTemplates = 61;                                      //
+  static const Int_t nBranchesJetChargeFlavourTemplates = 25;                                      //
   Double_t                            fTreeBranch[nBranchesJetChargeFlavourTemplates];             //
   TChain                              *pChain;                                                     //
 

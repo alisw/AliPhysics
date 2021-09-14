@@ -83,8 +83,9 @@ AliAnalysisTaskSECharmTriggerStudy::AliAnalysisTaskSECharmTriggerStudy(const cha
                                                                                                            fEnableBeauty4Prongs(false),
                                                                                                            fEnableTracks(0),
                                                                                                            fKeepTracksWithMinPt(-1.),
-                                                                                                           fNsigmaTPCThreshold(3.),
-                                                                                                           fNsigmaTOFThreshold(3.),
+                                                                                                           fNsigmaTPCThreshold(5.),
+                                                                                                           fNsigmaTOFThreshold(5.),
+                                                                                                           fFilterBitTracks(4),
                                                                                                            fFillOnlySignal(false),
                                                                                                            fFillGenTree(false),
                                                                                                            fFillGenHistos(true),
@@ -1226,7 +1227,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
     int nTracks = fAOD->GetNumberOfTracks();
     for(int iTrack = 0; iTrack < nTracks; iTrack++) {
         AliAODTrack* trackAOD = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
-        if(!trackAOD || !trackAOD->TestFilterBit(BIT(4)))
+        if(!trackAOD || !trackAOD->TestFilterBit(BIT(fFilterBitTracks)) || TMath::Abs(trackAOD->Eta())>0.8)
             continue;
         Track track;
         track.fPt = trackAOD->Pt();
@@ -1253,6 +1254,10 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
             NsigmaTOFPr = fPIDresp->NumberOfSigmasTOF(trackAOD, AliPID::kProton);
             NsigmaTOFEl = fPIDresp->NumberOfSigmasTOF(trackAOD, AliPID::kElectron);
         }
+
+        track.fNsigmaTPCPr = NsigmaTPCPr;
+        track.fNsigmaTOFPr = NsigmaTOFPr;
+
         if(TMath::Abs(NsigmaTPCPi) < fNsigmaTPCThreshold && (TMath::Abs(NsigmaTOFPi) < fNsigmaTOFThreshold || NsigmaTOFPi == -999.))
             track.fSpecies |= kPion;
         if(TMath::Abs(NsigmaTPCK) < fNsigmaTPCThreshold && (TMath::Abs(NsigmaTOFK) < fNsigmaTOFThreshold || NsigmaTOFK == -999.))

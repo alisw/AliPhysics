@@ -4,10 +4,10 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliFemtoDreamEvent+;  
+#pragma link C++ class AliFemtoDreamEvent+;
 #pragma link C++ class AliFemtoDreamEventHist+;
 #pragma link C++ class AliFemtoDreamEventCuts+;
-#pragma link C++ class AliFemtoDreamBasePart+;    
+#pragma link C++ class AliFemtoDreamBasePart+;
 #pragma link C++ class AliFemtoDreamTrack+;
 #pragma link C++ class AliFemtoDreamTrackHist+;
 #pragma link C++ class AliFemtoDreamTrackMCHist+;
@@ -38,7 +38,9 @@
 #pragma link C++ class AliAnalysisTaskLeuteronNanoAOD+;
 #pragma link C++ class AliAnalysisTaskNanoBBar+;
 #pragma link C++ class AliAnalysisTaskFemtoDreamPhi+;
+#pragma link C++ class AliAnalysisTaskDeuteronProtonEfficiency+;
 #pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamPhi+;
+#pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamLambdaPhi + ;
 #pragma link C++ class AliAnalysisTaskFemtoDreamSigPi+;
 #pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamSigPi+;
 #pragma link C++ class AliAnalysisTaskFemtoDreamPion+;

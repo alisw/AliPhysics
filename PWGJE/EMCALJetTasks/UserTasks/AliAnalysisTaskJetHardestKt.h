@@ -118,6 +118,7 @@ class AliAnalysisTaskJetHardestKt : public AliAnalysisTaskEmcalJet
   void SetMaxCentrality(Float_t t) { fCentMax = t; }
   void SetDerivativeSubtractionOrder(Int_t c) { fDerivSubtrOrder = c; }
   void SetDetLevelJetsOn(Bool_t t) { fStoreDetLevelJets = t; }
+  void SetStoreEventPlane(Bool_t t) { fStoreEventPlane = t; }
   void SetEnableSubjetMatching(bool b) { fEnableSubjetMatching = b; }
 
   // Initialize the task
@@ -221,6 +222,7 @@ class AliAnalysisTaskJetHardestKt : public AliAnalysisTaskEmcalJet
   Float_t fMagFieldPolarity; ///<  polarity, to calculate phimin
   Int_t fDerivSubtrOrder;    ///<  Order of the derivative subtraction.
   Bool_t fStoreDetLevelJets; ///<  If true, store the detector level jet quantities
+  bool fStoreEventPlane;     ///<  If true, store the event plane angle
   bool fEnableSubjetMatching; ///<  If true, preform subjet matching.
 
   // Tree variables
@@ -234,7 +236,7 @@ class AliAnalysisTaskJetHardestKt : public AliAnalysisTaskEmcalJet
 
  private:
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetHardestKt, 2)  // Jet hardest kt
+  ClassDef(AliAnalysisTaskJetHardestKt, 3)  // Jet hardest kt
   /// \endcond
 };
 

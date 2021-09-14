@@ -52,7 +52,7 @@ public:
 	AliJCatalystTask& operator = (const AliJCatalystTask& ap);
 	virtual ~AliJCatalystTask();
 
-	// methods to fill from AliAnalysisTaskSE
+	// methods to fill from AliAnalysisTaskSE.
 	virtual void UserCreateOutputObjects();
 	virtual void Init();
 	virtual void LocalInit() { Init(); }
@@ -73,7 +73,7 @@ public:
 	void SetDebugLevel(int debuglevel){
 		fDebugLevel = debuglevel; cout <<"setting Debug Level = " << fDebugLevel << endl;}
 	float ReadCentrality(AliAODEvent *aod, TString Trig);
-	Bool_t IsGoodEvent(AliAODEvent* aod);
+	Bool_t IsGoodEvent(AliAODEvent* aod, Int_t thisCent);
 	double GetCentralityFromImpactPar(double ip);
 	// Read AOD or KineOnly files
 	void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList, float fCent);
@@ -95,8 +95,8 @@ public:
 	Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
 	void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut;
 		cout << "setting z vertex cut = " << fzvtxCut << endl;}
-    void SetRemoveBadArea( Bool_t shallweremove ){ fremovebadarea = shallweremove;
-					cout << "setting RemoveBadArea = " << fremovebadarea << endl;}
+  void SetRemoveBadArea( Bool_t shallweremove ){ fremovebadarea = shallweremove;
+		cout << "setting RemoveBadArea = " << fremovebadarea << endl;}
 	double GetZVertexCut() const{return fzvtxCut;}
 	void SetParticleCharge( int charge ){ fPcharge = charge;
 		cout << "setting particle charge = " << charge << endl;}
@@ -120,6 +120,28 @@ public:
 	bool GetIsGoodEvent(){ return fIsGoodEvent; }
 	void SetNoCentralityBin( bool nocent) { fnoCentBin = nocent;}
 	AliJCorrectionMapTask *GetAliJCorrectionMapTask() {return fJCorMapTask;}
+
+// Methods to provide QA output and additional selection cuts.
+  TList* GetCataList() const {return fMainList;}
+  virtual void InitializeArrays();
+  virtual void BookControlHistograms();
+	virtual void FillControlHistograms(AliAODTrack *thisTrack, Int_t whichHisto, Float_t cent, Double_t *v);
+  void SetSaveAllQA(Bool_t SaveQA){ bSaveAllQA = SaveQA; }
+  void SetSaveHMOhist (Bool_t SaveHMO) {bSaveHMOhist = SaveHMO;}
+  Int_t GetCentralityBin(Float_t cent);
+  void SetCentrality(Float_t cen0, Float_t cen1, Float_t cen2, Float_t cen3, Float_t cen4, Float_t cen5, Float_t cen6, Float_t cen7, Float_t cen8, Float_t cen9, Float_t cen10, Float_t cen11, Float_t cen12, Float_t cen13, Float_t cen14, Float_t cen15, Float_t cen16 ) {fcent_0 = cen0; fcent_1 = cen1; fcent_2 = cen2; fcent_3 = cen3; fcent_4 = cen4; fcent_5 = cen5; fcent_6 = cen6; fcent_7 = cen7; fcent_8 = cen8; fcent_9 = cen9; fcent_10 = cen10; fcent_11 = cen11; fcent_12 = cen12; fcent_13 = cen13; fcent_14 = cen14; fcent_15 = cen15; fcent_16 = cen16;}
+  void SetInitializeCentralityArray(); //Set Centrality array inside the task. Must be called in addTask.
+  	void SetChi2Cuts(double chiMin, double chiMax) {
+		fChi2perNDF_min = chiMin; fChi2perNDF_max = chiMax;
+		cout << "setting chi2perNDF cuts, min = " << fChi2perNDF_min << " and max = " << fChi2perNDF_max << endl;
+	}
+	void SetDCAxyCut(double DCAxyMax) {fDCAxy_max = DCAxyMax;
+		cout << "setting DCAxy cut = " << fDCAxy_max << endl;
+	}
+	void SetDCAzCut(double DCAzMax) {fDCAz_max = DCAzMax;
+		cout << "setting DCAz cut = " << fDCAz_max << endl;
+	}
+
 
 private:
 	TClonesArray * fInputList;  // tracklist
@@ -160,7 +182,36 @@ private:
 	TAxis *fCentBinEff; // for different cent bin for MC eff
 	UInt_t phiMapIndex; //
 
-	ClassDef(AliJCatalystTask, 1);
+// Data members for the QA of the catalyst.
+	TList *fMainList;		// Mother list containing all possible output of the catalyst task.
+	Bool_t bSaveAllQA;		// if kTRUE: All Standard QA Histograms are saved (default kFALSE).
+	Bool_t bSaveHMOhist;	// if kTRUE: Save the TH2D for the HMO in LHC10h (bSaveAllQA must be kTRUE as well).
+	Int_t fCentralityBins;		// Set to 16, for at maximum 16 bins in case of centrality 0 to 80 in 5% steps. Less bins and different steps may be used.
+	Float_t fcent_0, fcent_1, fcent_2, fcent_3, fcent_4, fcent_5, fcent_6, fcent_7, fcent_8, fcent_9, fcent_10, fcent_11, fcent_12, fcent_13, fcent_14, fcent_15, fcent_16;
+  		// fcent_i holds the edge of a centrality bin.
+  Float_t fcentralityArray[17];		// Number of centrality bins for the control histograms.
+  double fChi2perNDF_min;	// Minimum requirement for chi2/ndf for TPC
+	double fChi2perNDF_max;	// Maximum requirement for chi2/ndf for TPC
+	double fDCAxy_max;	// Maximum requirement for the DCA in transverse plane.
+	double fDCAz_max;	// Maximum requirement for the DCA along the beam axis.
 
+	TList *fControlHistogramsList[16];		//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible. 
+  TH1F *fPTHistogram[16][2];		//! 0: P_t Before Track Selection, 1: P_t After Track Selection.
+  TH1F *fPhiHistogram[16][2];		//! 0: Phi Before Track Selection, 1: Phi After Track Selection.
+  TH1F *fEtaHistogram[16][2];		//! 0: Eta Before Track Selection, 1: Eta After Track Selection.
+  TH1F *fMultHistogram[16][2];		//! 0: Multiplicity Before Track Selection, 1: Mult. After Track Selection.
+  TH1F *fTPCClustersHistogram[16][2];		//! 0: TPC Clusters Before Track Selection, 1: TPC Clusters After Track Selection.
+  TH1F *fITSClustersHistogram[16][2];		//! 0: ITS Clusters Before Track Selection, 1: ITS Clusters After Track Selection.
+  TH1F *fChiSquareTPCHistogram[16][2];		//! 0: ChiSquare TPC Before Track Selection, 1: ChiSquare TPC After Track Selection.
+  TH1F *fDCAzHistogram[16][2];		//! 0: DCAz Before Track Selection, 1: DCAz After Track Selection.
+  TH1F *fDCAxyHistogram[16][2];		//! 0: DCAxy Before Track Selection, 1: DCAxy After Track Selection.
+  TH1I *fChargeHistogram[16][2];		//! 0: Charge Before Track Selection, 1: Charge After Track Selection.
+  TH1F *fCentralityHistogram[16];		//! Centrality After Corresponding Cut.
+  TH1F *fVertexXHistogram[16][2];		//! 0: Vertex X Before Corresponding, 1: Vertex X After Corresponding Cut.
+  TH1F *fVertexYHistogram[16][2];		//! 0: Vertex Y Before Corresponding, 1: Vertex Y After Corresponding Cut.
+  TH1F *fVertexZHistogram[16][2];		//! 0: Vertex Z Before Corresponding, 1: Vertex Z After Corresponding Cut.
+  TH2D *fHMOsHistogram[16][2];		//! 0: Correlations between global and TPC tracks before, 1: after HMO cut.
+
+	ClassDef(AliJCatalystTask, 3);
 };
 #endif // AliJCatalystTask_H

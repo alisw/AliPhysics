@@ -38,7 +38,7 @@ AliGenerator* CreatePythia8Gen( TString lTune,
     std::cout << " Desired PYTHIA configuration: "<< lTune.Data()<< std::endl;
     std::cout << "*****************************************************************" << std::endl;
     // set process (MB)
-    gener->SetProcess(kPyMbDefault);
+    gener->SetProcess(kPyMbAtlasTuneMC09);
     
     //Centre of mass energy
     gener->SetEnergyCMS(e_cms); // in GeV
@@ -49,6 +49,7 @@ AliGenerator* CreatePythia8Gen( TString lTune,
     pythia->ReadString("PhaseSpace:pTHatMax = -1.0"); //this should be fixed in the constructor
     pythia->ReadString(Form("PhaseSpace:mHatMin=%f ",mHatMin));
     pythia->ReadString("Main:timesAllowErrors = 50000");
+    pythia->ReadString("SoftQCD:inelastic = off");
     if( lTune.EqualTo("gluon") ) pythia->ReadString("HardQCD:gg2gg = on");
     if( lTune.EqualTo("quark") ) pythia->ReadString("HardQCD:gg2qqbar = on");
     

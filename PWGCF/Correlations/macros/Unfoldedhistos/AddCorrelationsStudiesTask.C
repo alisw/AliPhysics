@@ -63,6 +63,11 @@ AliAnalysisTaskSE *AddCorrelationsStudiesTask(const char *mincenstr, const char 
       if (mincen[icen] < 500 && ((int(mincen[icen] / 100)*100 != mincen[icen]) || (int(maxcen[icen] / 100)*100 != maxcen[icen]))) {
         /* short centrality range */
         switch(centqualifier){
+        case 0:
+          centclass = 0;
+          lowedge = 0;
+          upedge = 0;
+          break;
         case 1:
         case 3:
           centclass = 3;
@@ -93,6 +98,11 @@ AliAnalysisTaskSE *AddCorrelationsStudiesTask(const char *mincenstr, const char 
       }
       else {
         switch(centqualifier){
+        case 0:
+          centclass = 0;
+          lowedge = 0;
+          upedge = 0;
+          break;
         case 1:
         case 3:
           centclass = 1;

@@ -214,7 +214,8 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fDCAbachelorPV(0.04),
     fDCAbaryonDaughterPV(0.03),
     fDCAmesonDaughterPV(0.04),
-    fHistV0AmplitudeVsPVposition(0)
+    fHistV0AmplitudeVsPVposition(0),
+    fonTheFlyMC(kFALSE)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -376,7 +377,8 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fDCAbachelorPV(0.04),
     fDCAbaryonDaughterPV(0.03),
     fDCAmesonDaughterPV(0.04),
-    fHistV0AmplitudeVsPVposition(0)
+    fHistV0AmplitudeVsPVposition(0),
+    fonTheFlyMC(kFALSE)
 {
     // constructor
 
@@ -1181,7 +1183,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             	if ((mcPartPdg != 310) && (mcPartPdg != 3122) && (mcPartPdg != (-3122)) && TMath::Abs(mcPartPdg) !=3312 ) continue; // keep only Lambdas and K0S and charged Xi (for the feedDownCorrection)
             	Bool_t IsFromCascade = kFALSE;
             	
-                //if(fAnalysisAOD){
+                if(!fonTheFlyMC){
                 	Int_t mother  = mcTrack->GetMother();
                 	mcMotherParticle = static_cast<AliMCParticle*>(fmcEvent->GetTrack(mother));
                 	Int_t motherPDG = 0;
@@ -1211,7 +1213,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
                 	etaDau0 = daughter0->Eta();
                 	etaDau1 = daughter1->Eta();
-                //}
+                }
                 pdg_parton = GetOriginalPartonPDG(mcTrack);
 
                 if(TMath::Abs(pdg_parton)<7)originalPartonType=0;
@@ -2198,11 +2200,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodPrimaryTrackESD(const AliESDtra
  {      
           // Pseudorapidity cut
           if (TMath::Abs(t->Eta())>=fEtaCut) return kFALSE;
-          const AliESDEvent* esdEvent = (AliESDEvent*) t->GetESDEvent();
-          if(!esdEvent) {
-            cout << "No ESD event" << endl;
-            return kFALSE;
-          }
+          
           if(fFilterBit==16||fFilterBit==256){
             fESDTrackCuts->SetMaxDCAToVertexXY(2.4); 
             fESDTrackCuts->SetMaxDCAToVertexZ(3.2); 
@@ -2715,7 +2713,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
         triggEta = trig->Eta();
         triggPhi = trig->Phi();
         if(triggPt<fPtTrigMin) continue;
-        if(trig->WhichCandidate()<4) continue;
+        if(trig->WhichCandidate()<4&&trig->WhichCandidate()>0) continue;
         if(Xih) massTrig=trig->M();
 
         Int_t idbintrigg [4];

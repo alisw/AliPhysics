@@ -485,42 +485,43 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
   // Loop over all primary MC particle
   for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
     // fill primary histograms
-    TParticle* particle         = NULL;
-    particle                    = (TParticle *)fMCEvent->Particle(i);
+    AliVParticle* particle     = NULL;
+    particle                    = (AliVParticle *)fMCEvent->GetTrack(i);
     if (!particle) continue;
+    Float_t particleWeight      = particle->Particle()->GetWeight();
     Bool_t hasMother            = kFALSE;
     Bool_t particleIsPrimary    = kTRUE;
 
-    if (particle->GetMother(0)>-1){
+    if (particle->GetMother()>-1){
       hasMother         = kTRUE;
       particleIsPrimary = kFALSE;
     }
-    TParticle*      motherParticle  = NULL;
-    if (hasMother)  motherParticle  = (TParticle*)fMCEvent->Particle(particle->GetMother(0));
+    AliVParticle*  motherParticle   = NULL;
+    if (hasMother)  motherParticle  = (AliVParticle*)fMCEvent->GetTrack(particle->GetMother());
     if (motherParticle) hasMother   = kTRUE;
     else                hasMother   = kFALSE;
 
     Bool_t motherIsPrimary                                = kFALSE;
     if(hasMother){
-      if(motherParticle->GetMother(0)>-1) motherIsPrimary = kFALSE;
+      if(motherParticle->GetMother()>-1) motherIsPrimary = kFALSE;
       else                                motherIsPrimary = kTRUE;
     }
 
-    TParticle* grandMotherParticle  = NULL;
+    AliVParticle* grandMotherParticle  = NULL;
     Bool_t motherHasMother          = kFALSE;
     if (hasMother && !motherIsPrimary) {
-      grandMotherParticle           = (TParticle*)fMCEvent->Particle(motherParticle->GetMother(0));
+      grandMotherParticle           = (AliVParticle*)fMCEvent->GetTrack(motherParticle->GetMother());
       motherHasMother               = kTRUE;
     }
 
     Bool_t grandMotherIsPrimary                                      = kFALSE;
     if (motherHasMother) {
-      if(grandMotherParticle->GetMother(0)>-1)  grandMotherIsPrimary = kFALSE;
-      else                                      grandMotherIsPrimary = kTRUE;
+      if(grandMotherParticle->GetMother()>-1)  grandMotherIsPrimary = kFALSE;
+      else                                     grandMotherIsPrimary = kTRUE;
     }
 
-    if (!(TMath::Abs(particle->Energy()-particle->Pz())>0.)) continue;
-    Double_t yPre = (particle->Energy()+particle->Pz())/(particle->Energy()-particle->Pz());
+    if (!(TMath::Abs(particle->E()-particle->Pz())>0.)) continue;
+    Double_t yPre = (particle->E()+particle->Pz())/(particle->E()-particle->Pz());
     if( yPre <= 0 ) continue;
 
     Double_t y = 0.5*TMath::Log(yPre);
@@ -531,350 +532,350 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
     else if (fAnalyzedMeson==2) PdgAnalyzedParticle = 211; // set to pi+ pdg code, but both are accepted, no distinction between pi+ and pi-
 
     // pi0/eta/pi+- from source
-    if(TMath::Abs(particle->GetPdgCode())==PdgAnalyzedParticle && hasMother==kTRUE){
+    if(TMath::Abs(particle->PdgCode())==PdgAnalyzedParticle && hasMother==kTRUE){
       if (TMath::Abs(y) > fMaxY) continue;
-      if(motherIsPrimary && fHasMother[GetParticlePosLocal(motherParticle->GetPdgCode())]){
+      if(motherIsPrimary && fHasMother[GetParticlePosLocal(motherParticle->PdgCode())]){
 
-        switch(motherParticle->GetPdgCode()){
+        switch(motherParticle->PdgCode()){
           case 221:
-            fHistPtYDaughterSource[0]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[0]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[0]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[0]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[0]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[0]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[0]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[0]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 310:
-            fHistPtYDaughterSource[1]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[1]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[1]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[1]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[1]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[1]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[1]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[1]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 130:
-            fHistPtYDaughterSource[2]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[2]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[2]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[2]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[2]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[2]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[2]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[2]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 3122:
-            fHistPtYDaughterSource[3]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[3]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[3]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[3]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[3]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[3]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[3]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[3]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 113:
-            fHistPtYDaughterSource[4]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[4]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[4]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[4]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[4]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[4]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[4]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[4]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 331:
-            fHistPtYDaughterSource[5]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[5]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[5]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[5]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[5]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[5]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[5]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[5]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 223:
-            fHistPtYDaughterSource[6]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[6]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[6]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[6]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[6]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[6]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[6]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[6]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 213:
-            fHistPtYDaughterSource[7]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[7]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[7]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[7]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[7]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[7]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[7]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[7]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case -213:
-            fHistPtYDaughterSource[8]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[8]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[8]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[8]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[8]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[8]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[8]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[8]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 333:
-            fHistPtYDaughterSource[9]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[9]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[9]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[9]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[9]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[9]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[9]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[9]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 443:
-            fHistPtYDaughterSource[10]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[10]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[10]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[10]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[10]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[10]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[10]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[10]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 2114:
-            fHistPtYDaughterSource[11]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[11]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[11]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[11]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[11]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[11]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[11]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[11]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 2214:
-            fHistPtYDaughterSource[12]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[12]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[12]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[12]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[12]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[12]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[12]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[12]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 1114:
-            fHistPtYDaughterSource[13]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[13]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[13]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[13]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[13]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[13]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[13]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[13]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 2224:
-            fHistPtYDaughterSource[14]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[14]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[14]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[14]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[14]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[14]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[14]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[14]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 321:
-            fHistPtYDaughterSource[15]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[15]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[15]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[15]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[15]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[15]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[15]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[15]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case -321:
-            fHistPtYDaughterSource[16]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[16]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[16]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[16]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[16]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[16]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[16]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[16]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case -3334:
-            fHistPtYDaughterSource[17]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[17]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[17]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[17]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[17]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[17]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[17]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[17]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 3334:
-            fHistPtYDaughterSource[18]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[18]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[18]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[18]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[18]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[18]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[18]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[18]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case -3312:
-            fHistPtYDaughterSource[19]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[19]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[19]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[19]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[19]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[19]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[19]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[19]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 3312:
-            fHistPtYDaughterSource[20]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[20]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[20]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[20]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[20]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[20]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[20]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[20]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 3224:
-            fHistPtYDaughterSource[21]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[21]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[21]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[21]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[21]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[21]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[21]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[21]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 3114:
-            fHistPtYDaughterSource[22]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[22]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[22]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[22]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[22]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[22]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[22]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[22]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           case 313:
-            fHistPtYDaughterSource[23]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiDaughterSource[23]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            fHistPtDaughterPtSourceInput[23]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-            fHistPhiDaughterPhiSourceInput[23]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+            fHistPtYDaughterSource[23]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiDaughterSource[23]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            fHistPtDaughterPtSourceInput[23]->Fill(particle->Pt(), motherParticle->Pt(), particleWeight);
+            fHistPhiDaughterPhiSourceInput[23]->Fill(particle->Phi(), motherParticle->Phi(), particleWeight);
             break;
           default:
-            fHistPdgDaughterSourceRest->Fill(motherParticle->GetPdgCode());
+            fHistPdgDaughterSourceRest->Fill(motherParticle->PdgCode());
             break;
         }
       }
     }
 
     // source
-    if(particle->GetPdgCode()!=PdgAnalyzedParticle && particleIsPrimary && fHasMother[GetParticlePosLocal(particle->GetPdgCode())]){
+    if(particle->PdgCode()!=PdgAnalyzedParticle && particleIsPrimary && fHasMother[GetParticlePosLocal(particle->PdgCode())]){
       if (TMath::Abs(y) > fMaxY) continue;
 
-      switch(particle->GetPdgCode()){
+      switch(particle->PdgCode()){
         case 221:
-          fHistPtYInput[0]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[0]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[0]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[0]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[0]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[0]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[0]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[0]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 310:
-          fHistPtYInput[1]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[1]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[1]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[1]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[1]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[1]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[1]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[1]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 130:
-          fHistPtYInput[2]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[2]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[2]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[2]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[2]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[2]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[2]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[2]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 3122:
-          fHistPtYInput[3]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[3]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[3]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[3]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[3]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[3]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[3]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[3]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 113:
-          fHistPtYInput[4]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[4]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[4]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[4]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[4]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[4]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[4]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[4]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 331:
-          fHistPtYInput[5]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[5]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[5]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[5]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[5]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[5]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[5]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[5]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 223:
-          fHistPtYInput[6]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[6]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[6]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[6]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[6]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[6]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[6]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[6]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 213:
-          fHistPtYInput[7]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[7]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[7]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[7]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[7]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[7]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[7]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[7]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case -213:
-          fHistPtYInput[8]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[8]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[8]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[8]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[8]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[8]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[8]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[8]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 333:
-          fHistPtYInput[9]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[9]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[9]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[9]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[9]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[9]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[9]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[9]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 443:
-          fHistPtYInput[10]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[10]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[10]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[10]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[10]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[10]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[10]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[10]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 2114:
-          fHistPtYInput[11]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[11]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[11]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[11]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[11]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[11]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[11]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[11]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 2214:
-          fHistPtYInput[12]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[12]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[12]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[12]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[12]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[12]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[12]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[12]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 1114:
-          fHistPtYInput[13]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[13]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[13]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[13]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[13]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[13]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[13]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[13]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 2224:
-          fHistPtYInput[14]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[14]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[14]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[14]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[14]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[14]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[14]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[14]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 321:
-          fHistPtYInput[15]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[15]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[15]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[15]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[15]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[15]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[15]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[15]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case -321:
-          fHistPtYInput[16]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[16]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[16]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[16]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[16]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[16]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[16]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[16]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case -3334:
-          fHistPtYInput[17]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[17]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[17]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[17]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[17]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[17]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[17]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[17]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 3334:
-          fHistPtYInput[18]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[18]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[18]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[18]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[18]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[18]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[18]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[18]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case -3312:
-          fHistPtYInput[19]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[19]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[19]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[19]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[19]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[19]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[19]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[19]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 3312:
-          fHistPtYInput[20]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[20]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[20]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[20]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[20]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[20]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[20]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[20]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 3224:
-          fHistPtYInput[21]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[21]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[21]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[21]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[21]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[21]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[21]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[21]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 3114:
-          fHistPtYInput[22]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[22]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[22]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[22]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[22]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[22]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[22]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[22]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         case 313:
-          fHistPtYInput[23]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPtPhiInput[23]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistDecayChannelsInput[23]->Fill(0., particle->GetWeight());
-          fHistDecayChannelsInput[23]->Fill(GetDecayChannel(fMCEvent, particle), particle->GetWeight());
+          fHistPtYInput[23]->Fill(particle->Pt(), particle->Y(), particleWeight);
+          fHistPtPhiInput[23]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+          fHistDecayChannelsInput[23]->Fill(0., particleWeight);
+          fHistDecayChannelsInput[23]->Fill(GetDecayChannel(fMCEvent, particle), particleWeight);
           break;
         default:
-          fHistPdgInputRest->Fill(particle->GetPdgCode());
+          fHistPdgInputRest->Fill(particle->PdgCode());
           break;
       }
     }
 
     // gamma from X/pi0 from source
-    if (particle->GetPdgCode()==22 && motherHasMother) {
+    if (particle->PdgCode()==22 && motherHasMother) {
       // additional condition to remove gammas out of eta range
       if (fMaxEta>0){
         if (TMath::Abs(particle->Eta()) > fMaxEta) continue;
       } else {
         if (TMath::Abs(y) > fMaxY) continue;
       }
-      if (grandMotherIsPrimary && fHasMother[GetParticlePosLocal(grandMotherParticle->GetPdgCode())]) {
+      if (grandMotherIsPrimary && fHasMother[GetParticlePosLocal(grandMotherParticle->PdgCode())]) {
 
-        switch(grandMotherParticle->GetPdgCode()){
+        switch(grandMotherParticle->PdgCode()){
           case 310:
-            fHistPtYGammaFromXFromInput[0]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiGammaFromXFromInput[0]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            if(motherParticle->GetPdgCode() == 111) {
-              fHistPtYGammaFromPi0FromInput[0]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-              fHistPtPhiGammaFromPi0FromInput[0]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+            fHistPtYGammaFromXFromInput[0]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiGammaFromXFromInput[0]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            if(motherParticle->PdgCode() == 111) {
+              fHistPtYGammaFromPi0FromInput[0]->Fill(particle->Pt(), particle->Y(), particleWeight);
+              fHistPtPhiGammaFromPi0FromInput[0]->Fill(particle->Pt(), particle->Phi(), particleWeight);
             }
             break;
           case 130:
-            fHistPtYGammaFromXFromInput[1]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiGammaFromXFromInput[1]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            if(motherParticle->GetPdgCode() == 111) {
-              fHistPtYGammaFromPi0FromInput[1]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-              fHistPtPhiGammaFromPi0FromInput[1]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+            fHistPtYGammaFromXFromInput[1]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiGammaFromXFromInput[1]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            if(motherParticle->PdgCode() == 111) {
+              fHistPtYGammaFromPi0FromInput[1]->Fill(particle->Pt(), particle->Y(), particleWeight);
+              fHistPtPhiGammaFromPi0FromInput[1]->Fill(particle->Pt(), particle->Phi(), particleWeight);
             }
             break;
           case 3122:
-            fHistPtYGammaFromXFromInput[2]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-            fHistPtPhiGammaFromXFromInput[2]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-            if(motherParticle->GetPdgCode() == 111) {
-              fHistPtYGammaFromPi0FromInput[2]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-              fHistPtPhiGammaFromPi0FromInput[2]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+            fHistPtYGammaFromXFromInput[2]->Fill(particle->Pt(), particle->Y(), particleWeight);
+            fHistPtPhiGammaFromXFromInput[2]->Fill(particle->Pt(), particle->Phi(), particleWeight);
+            if(motherParticle->PdgCode() == 111) {
+              fHistPtYGammaFromPi0FromInput[2]->Fill(particle->Pt(), particle->Y(), particleWeight);
+              fHistPtPhiGammaFromPi0FromInput[2]->Fill(particle->Pt(), particle->Phi(), particleWeight);
             }
             break;
         }
@@ -1178,7 +1179,7 @@ void AliAnalysisTaskHadronicCocktailMC::InitializeDecayChannelHist(TH1F* hist, I
 }
 
 //_________________________________________________________________________________
-Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliMCEvent* mcEvent, TParticle* part) {
+Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliMCEvent* mcEvent, AliVParticle* part) {
 
   Int_t nDaughters = part->GetNDaughters();
   if (nDaughters > 10) return 19.;
@@ -1186,7 +1187,7 @@ Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliMCEvent* mcEvent, 
   std::vector<Long64_t> *PdgDaughter = new std::vector<Long64_t>(nDaughters);
   Long64_t tempPdgCode = 0;
   for (Int_t i=0; i<nDaughters; i++) {
-    tempPdgCode = (Long64_t)((TParticle*)mcEvent->Particle(part->GetFirstDaughter()+i))->GetPdgCode();
+    tempPdgCode = (Long64_t)((AliVParticle*)mcEvent->GetTrack(part->GetDaughterFirst()+i))->PdgCode();
     if (TMath::Abs(tempPdgCode) == 111 || TMath::Abs(tempPdgCode) == 113 || TMath::Abs(tempPdgCode) == 130 || TMath::Abs(tempPdgCode) == 310 || TMath::Abs(tempPdgCode) == 223 || TMath::Abs(tempPdgCode) == 221 || TMath::Abs(tempPdgCode) == 331 || TMath::Abs(tempPdgCode) == 2112 || TMath::Abs(tempPdgCode) == 3122 || TMath::Abs(tempPdgCode) == 9000111 || TMath::Abs(tempPdgCode) == 9010221 || TMath::Abs(tempPdgCode) == 3322)
       tempPdgCode = TMath::Abs(tempPdgCode);
     PdgDaughter->at(i) = tempPdgCode;
@@ -1195,7 +1196,7 @@ Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliMCEvent* mcEvent, 
 
   Double_t returnVal = -1.;
 
-  switch (part->GetPdgCode()) {
+  switch (part->PdgCode()) {
     case 221:
       if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22)
         returnVal = 1.;

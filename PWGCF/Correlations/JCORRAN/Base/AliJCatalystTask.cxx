@@ -77,7 +77,18 @@ AliJCatalystTask::AliJCatalystTask():
 	pPhiWeights(0),
 	grEffCor(0),
 	fCentBinEff(0),
-	phiMapIndex(0)
+	phiMapIndex(0),
+// QA part.
+	fMainList(NULL),
+	bSaveAllQA(kFALSE),
+	bSaveHMOhist(kFALSE),
+	fCentralityBins(16),
+	fcent_0(0.), fcent_1(0.), fcent_2(0.), fcent_3(0.), fcent_4(0.), fcent_5(0.), fcent_6(0.), fcent_7(0.), fcent_8(0.), fcent_9(0.), 
+ 	fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.), fcent_15(0.), fcent_16(0.),
+ 	fChi2perNDF_min(0.1),	// TBC: Which default value do we choose?
+	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
+	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
+	fDCAz_max(3.2)	// TBC: Shall we keep 2010 default?
 {
 	//
 }
@@ -116,10 +127,28 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	pPhiWeights(0),
 	grEffCor(0),
 	fCentBinEff(0),
-	phiMapIndex(0)
+	phiMapIndex(0),
+// QA part.
+	fMainList(NULL),
+	bSaveAllQA(kFALSE),
+	bSaveHMOhist(kFALSE),
+	fCentralityBins(16),
+	fcent_0(0.), fcent_1(0.), fcent_2(0.), fcent_3(0.), fcent_4(0.), fcent_5(0.), fcent_6(0.), fcent_7(0.), fcent_8(0.), fcent_9(0.), 
+ 	fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.), fcent_15(0.), fcent_16(0.),
+ 	fChi2perNDF_min(0.1),	// TBC: Which default value do we choose?
+	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
+	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
+	fDCAz_max(3.2)	// TBC: Shall we keep 2010 default?
 {
+// Main list to save the output of the QA.
+  fMainList = new TList();
+  fMainList->SetName("fJCatalystOutput");
+  fMainList->SetOwner(kTRUE);
 
-	DefineOutput(1, TDirectory::Class());
+	InitializeArrays();
+
+	//DefineOutput(1, TDirectory::Class());	// Uncommented in the current version on AliPhysics.
+	DefineOutput(1, TList::Class());
 }
 
 //____________________________________________________________________________
@@ -137,8 +166,13 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
 	pPhiWeights(ap.pPhiWeights),
 	grEffCor(ap.grEffCor),
 	fCentBinEff(ap.fCentBinEff),
-	phiMapIndex(ap.phiMapIndex)
-	
+	phiMapIndex(ap.phiMapIndex),
+// QA part.
+	fMainList(ap.fMainList),
+	bSaveAllQA(ap.bSaveAllQA),
+	bSaveHMOhist(ap.bSaveHMOhist),
+	fCentralityBins(ap.fCentralityBins),
+	fcent_0(ap.fcent_0), fcent_1(ap.fcent_1), fcent_2(ap.fcent_2), fcent_3(ap.fcent_3), fcent_4(ap.fcent_4), fcent_5(ap.fcent_5), fcent_6(ap.fcent_6), fcent_7(ap.fcent_7), fcent_8(ap.fcent_8), fcent_9(ap.fcent_9), fcent_10(ap.fcent_10), fcent_11(ap.fcent_11), fcent_12(ap.fcent_12), fcent_13(ap.fcent_13), fcent_14(ap.fcent_14), fcent_15(ap.fcent_15), fcent_16(ap.fcent_16)
 {
 	AliInfo("----DEBUG AliJCatalystTask COPY ----");
 }
@@ -158,7 +192,7 @@ AliJCatalystTask::~AliJCatalystTask()
 {
 	delete fInputList;
 	delete fInputListALICE;
-	//delete fOutput;
+	if (fMainList) {delete fMainList;}
 }
 
 //________________________________________________________________________
@@ -170,6 +204,8 @@ void AliJCatalystTask::UserCreateOutputObjects()
 	fInputListALICE->SetOwner(kTRUE);
 
 	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+	OpenFile(1);
+	
 	fJCorMapTask = (AliJCorrectionMapTask*)man->GetTask(fJCorMapTaskName);
 	if(!fJCorMapTask ) AliInfo("----CHECK if AliJCorrectionMapTask Missing ----");
 	if( fJCorMapTask ) {
@@ -178,6 +214,9 @@ void AliJCatalystTask::UserCreateOutputObjects()
 	}
 
 	gRandom->SetSeed();
+
+	BookControlHistograms();
+	PostData(1, fMainList);
 
 	//OpenFile(1);
 	//fOutput = gDirectory;
@@ -190,8 +229,9 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 {
 	// Processing of one event
 	if(!((Entry()-1)%100))  AliInfo(Form(" Processing event # %lld",  Entry()));
+
 	// initializing variables from last event
-        fJCatalystEntry = fEntry;
+	fJCatalystEntry = fEntry;
 	fInputList->Clear();
 	fInputListALICE->Clear();
 
@@ -208,10 +248,11 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 		if(flags & FLUC_KINEONLYEXT) {
 			AliInputEventHandler*  fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
 			mcEvent = fMcHandler->MCEvent();
-
-		} else {
+		}
+		else {
 			mcEvent = MCEvent();
 		}
+
 		if (!mcEvent) {
 			AliError("ERROR: mcEvent not available");
 			return;
@@ -223,16 +264,20 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 			AliGenHepMCEventHeader* hepHeader = dynamic_cast<AliGenHepMCEventHeader*>(mcEvent->GenEventHeader());
 			if (hijingHeader) {
 				fImpactParameter = hijingHeader->ImpactParameter();
-    			} else if (dpmHeader) {
+    	}
+    	else if (dpmHeader) {
 				fImpactParameter = dpmHeader->ImpactParameter();
-    			} else if (hepHeader) {
+    	}
+    	else if (hepHeader) {
 				fImpactParameter = hepHeader->impact_parameter();
-			} else {
-			       DEBUG( 4,  "KineOnly no header in event generator" );       			      
+			}
+			else {
+				DEBUG( 4,  "KineOnly no header in event generator" );       			      
 			}
 
 			fcent = GetCentralityFromImpactPar(fImpactParameter);
 		}
+
 		if(flags & FLUC_ALICE_IPINFO){
 			//force to use ALICE impact parameter setting
 			double ALICE_Cent[8] = {0, 5, 10, 20, 30, 40, 50, 60};
@@ -242,12 +287,15 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 					fcent = 0.5f*(ALICE_Cent[icent]+ALICE_Cent[icent+1]);
 			}
 		}
+
 		if(fnoCentBin) fcent = 1.0; // forcing no centrality selection
 		if(flags & FLUC_KINEONLYEXT) {
 			ReadKineTracks( mcEvent->Stack(), fInputList, fInputListALICE, fcent ) ; // read tracklist
-		} else {
+		}
+		else {
 			ReadKineTracks( mcEvent, fInputList, fInputListALICE, fcent ) ; // read tracklist
 		}
+
 		AliGenEventHeader *header = mcEvent->GenEventHeader();
 		if(!header)
 			return;
@@ -255,19 +303,41 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 		header->PrimaryVertex(gVertexArray);
 		for(int i = 0; i < 3; i++)
 			fvertex[i] = gVertexArray.At(i);
-	} else { // Kine
+	}
+
+	else { // Kine
 		paodEvent = dynamic_cast<AliAODEvent*>(InputEvent());
 		if(fnoCentBin) {
 			fcent = 1.0;
-		} else {
+		}
+		else {
 			fcent = ReadCentrality(paodEvent,fCentDetName);
 		}
 		fRunNum = paodEvent->GetRunNumber();
 
-		fIsGoodEvent = IsGoodEvent(paodEvent);
+		// Get the centrality bin for the current centrality event.
+		Int_t centBin = GetCentralityBin(fcent);
+		if (centBin == -1) {return;}
+
+		ReadVertexInfo(paodEvent, fvertex);	// Read vertex info before selection.
+		if (bSaveAllQA) {
+			fVertexXHistogram[centBin][0]->Fill(fvertex[0]);
+			fVertexYHistogram[centBin][0]->Fill(fvertex[1]);
+			fVertexZHistogram[centBin][0]->Fill(fvertex[2]);
+		}
+
+		fIsGoodEvent = IsGoodEvent(paodEvent, centBin);
 		if(!fIsGoodEvent) {
 			return;
 		}
+
+		if (bSaveAllQA) {	// Save the vertex and centrality if PV passes the selection.
+			fVertexXHistogram[centBin][1]->Fill(fvertex[0]);
+			fVertexYHistogram[centBin][1]->Fill(fvertex[1]);
+			fVertexZHistogram[centBin][1]->Fill(fvertex[2]);
+			fCentralityHistogram[centBin]->Fill(fcent);
+		}
+
 		// Load correction maps in the event loop
 		//if( fEvtNum == 1 && fJCorMapTask ) {
 
@@ -277,10 +347,12 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 				AliJFFlucAnalysis::GetBin(fcent,AliJFFlucAnalysis::BINNING_CENT_PbPb);
 			pPhiWeights = fJCorMapTask->GetCorrectionMap(phiMapIndex,fRunNum,fcBin);
 		}
+
 		ReadAODTracks( paodEvent, fInputList, fcent ) ; // read tracklist
 		ReadVertexInfo( paodEvent, fvertex); // read vertex info
 	} // AOD
 	fZvert = fvertex[2];
+
 }
 
 //______________________________________________________________________________
@@ -290,6 +362,7 @@ void AliJCatalystTask::ReadVertexInfo ( AliAODEvent *aod, double*  fvtx )
 	fvtx[1] = aod->GetPrimaryVertex()->GetY();
 	fvtx[2] = aod->GetPrimaryVertex()->GetZ();
 }
+
 //______________________________________________________________________________
 float AliJCatalystTask::ReadCentrality( AliAODEvent *aod, TString Trig ){
 	AliMultSelection *pms = (AliMultSelection*)aod->FindListObject("MultSelection");
@@ -306,7 +379,7 @@ void AliJCatalystTask::Init()
 void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, float fcent)
 {
 	//aod->Print();
-	if(flags & FLUC_MC){  // how to get a flag to check  MC or not !
+	if(flags & FLUC_MC) {  // how to get a flag to check  MC or not !
 		TClonesArray *mcArray = (TClonesArray*) aod->FindListObject(AliAODMCParticle::StdBranchName());
 		if(!mcArray){ Printf("Error not a proper MC event"); };  // check mc array
 
@@ -318,6 +391,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 				Error("ReadEventAODMC","Could not read particle %d",it);
 				continue;
 			}
+
 			if( track->IsPhysicalPrimary() ){
 				// insert AMTP weak decay switch here
 				if(flags & FLUC_EXCLUDEWDECAY){
@@ -334,7 +408,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 							}
 						}
 					}
-				} // weak decay particles are exclude
+				} // weak decay particles are excluded.
 
 				if(fPt_min > 0){
 					double Pt = track->Pt();
@@ -347,30 +421,69 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 				if(ch < 0){
 					if(fPcharge == 1)
 						continue;
-				}else
-				if(ch > 0){
+				}
+				else if(ch > 0){
 					if(fPcharge == -1)
 						continue;
-				}else continue;
-                                if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
+				}
+				else continue;
+        
+        if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
 				AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 				itrack->SetLabel(track->GetLabel());
 				itrack->SetParticleType( pdg);
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 				itrack->SetCharge(ch) ;
 			}
-		}
-	}else{
+		}	// for( int it=0; it < nt ; it++){
+	} // end: if(flags & FLUC_MC)
+
+	else {	// Read AOD reco tracks.
 		Int_t nt = aod->GetNumberOfTracks();
+		if (bSaveAllQA) {fMultHistogram[GetCentralityBin(fcent)][0]->Fill(nt);}
+
 		Int_t ntrack =0;
+		Double_t PV[3] = {0.};
+		ReadVertexInfo(aod, PV);
+
 		for( int it=0; it<nt ; it++){
 			AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
-			if(!track){
+			if(!track) {
 				Error("ReadEventAOD", "Could not read particle %d", (int) it);
 				continue;
 			}
+
+			if (bSaveAllQA) {FillControlHistograms(track, 0, fcent, PV);}	// Fill the QA histograms before the track selection.
+
 			if(track->GetTPCNcls() < fNumTPCClusters)
 				continue;
+
+			// New: Get the values of the DCA according to the type of tracks.
+			Double_t DCAxy = 0.;	// DCA in the transverse plane.
+			Double_t DCAz = 0.;		// DCA along the beam axis.
+			if(fFilterBit == 128) {	// Constrained TPC-only tracks.
+				DCAxy = track->DCA();
+				DCAz = track->ZAtDCA();
+			}
+		  else {	// For the unconstrained tracks. TBC!
+		    AliAODVertex *primaryVertex = (AliAODVertex*)aod->GetPrimaryVertex();
+		    Double_t v[3];    // Coordinates of the PV
+		    Double_t pos[3];  // Coordinates of the track closest to PV
+
+		    primaryVertex->GetXYZ(v);
+		    track->GetXYZ(pos);
+		    DCAxy = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
+		    DCAz = pos[2] - v[2];
+		  }
+
+		  // New: Apply the cuts on the DCA values of the track.
+			if(TMath::Abs(DCAxy) > fDCAxy_max) {continue;}
+			if(TMath::Abs(DCAz) > fDCAz_max) {continue;}
+
+			// New: Apply the cut on the chi2 per ndf for the TPC tracks.
+			Double_t chi2NDF = track->Chi2perNDF();	// TBC: is this 100% the right one?
+			if((chi2NDF < fChi2perNDF_min) || (chi2NDF > fChi2perNDF_max)) {continue;}
+
 			if(track->TestFilterBit( fFilterBit )){ //
 				if( fPt_min > 0){
 					double Pt = track->Pt();
@@ -382,19 +495,22 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 				if(ch < 0){
 					if(fPcharge == 1)
 						continue;
-				}else
-				if(ch > 0){
+				}
+				else if(ch > 0){
 					if(fPcharge == -1)
 						continue;
-				}else continue;
+				}
+				else continue;
 
-                if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
+        if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
                 // Removal of bad area, now only with eta symmetric
 				Bool_t isBadArea = TMath::Abs(track->Eta()) > 0.6;
 				if(fremovebadarea) {
 					if(isBadArea) continue;
 				} 
 				
+				if (bSaveAllQA) {FillControlHistograms(track, 1, fcent, PV);}	// Fill the QA histograms after the track selection.
+
 				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++]) AliJBaseTrack;
 				itrack->SetID( TrackList->GetEntriesFast() );
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
@@ -416,20 +532,23 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 						Double_t phi = itrack->Phi();
 						Double_t eta = itrack->Eta();
 						w = pPhiWeights->GetBinContent(pPhiWeights->FindBin(phi,eta,fZvert));
-					} else {
+					}
+					else {
 						w = 1.0;
 					}
 					if(w > 1e-6) phi_module_corr = w;
 				}
 				itrack->SetWeight(phi_module_corr);
-			}
+			}	// End: if(track->TestFilterBit( fFilterBit ))
 		}
+
 	} //read aod reco track done.
 	if(fDebugLevel>1) cout << "Tracks: " << TrackList->GetEntriesFast() << endl;
+	if (bSaveAllQA) {fMultHistogram[GetCentralityBin(fcent)][1]->Fill(TrackList->GetEntriesFast());}
     
 }
 //______________________________________________________________________________
-Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
+Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
 	//event selection here!
 	//check vertex
 	AliVVertex *vtx = event->GetPrimaryVertex();
@@ -545,7 +664,24 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
 			if(tfb32tof < mu32tof-nsigma[0]*sigma32tof || tfb32tof > mu32tof+nsigma[1]*sigma32tof)
 				return kFALSE;
 
-		}else{
+		}
+		else if (fperiod == AliJRunTable::kLHC10h) {	// High multiplicity outlier cuts for LHC10h based on the SCklm analysis.
+			UInt_t MTPC = 0;
+			UInt_t Mglobal = 0;
+			for(int it = 0; it < nTracks; it++){
+				AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
+				if (!trackAOD) {continue;}
+				if (trackAOD->TestFilterBit(128)) {MTPC++;}
+				if (trackAOD->TestFilterBit(256)) {Mglobal++;}
+			}
+
+			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][0]->Fill(Mglobal, MTPC);}	// Fill the HMO histogram only if both bSave* are true.
+			if(!((double)MTPC > (-65.0 + 1.54*Mglobal) && (double)MTPC < (90.0 + 2.30*Mglobal))) {
+				return kFALSE;
+			}
+			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][1]->Fill(Mglobal, MTPC);}
+		}
+		else {	// TBA: QA histo if chosen, possibility to choose between the two versions for LHC10h
 			if(!((double)TPCTracks > (-40.3+1.22*GlobTracks) && (double)TPCTracks < (32.1+1.59*GlobTracks)))
 				return kFALSE;
 		}
@@ -722,5 +858,251 @@ double AliJCatalystTask::GetCentralityFromImpactPar(double ip) {
 			return centmean[i];
 	}
 	return 0.0;
+}
+
+//______________________________________________________________________________
+void AliJCatalystTask::InitializeArrays() {
+	for(Int_t icent=0; icent<fCentralityBins; icent++){
+
+		fControlHistogramsList[icent] = NULL;
+		for(Int_t i=0; i<2; i++) {
+		  fVertexXHistogram[icent][i] = NULL;
+		  fVertexYHistogram[icent][i] = NULL;
+		  fVertexZHistogram[icent][i] = NULL;
+		  fTPCClustersHistogram[icent][i] = NULL;
+		  fITSClustersHistogram[icent][i] = NULL;
+		  fChiSquareTPCHistogram[icent][i] = NULL;
+		  fDCAzHistogram[icent][i] = NULL;
+		  fDCAxyHistogram[icent][i] = NULL;
+	    fChargeHistogram[icent][i] = NULL;
+	    fPTHistogram[icent][i] = NULL;
+		  fPhiHistogram[icent][i] = NULL;
+		  fEtaHistogram[icent][i] = NULL;
+		  fMultHistogram[icent][i] = NULL;
+		  fHMOsHistogram[icent][i] = NULL;
+		}
+
+		fCentralityHistogram[icent] = NULL;
+	}
+}
+
+//______________________________________________________________________________
+void AliJCatalystTask::BookControlHistograms(){
+
+for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bins
+{
+
+	//Check if value of this centrality bin is negative -> if yes: break. We do not need anymore
+	if(fcentralityArray[icent+1] < 0)
+	{
+	   break; //The next edge is a breaking point -> this bin does not exist anymore
+	}
+
+	fControlHistogramsList[icent] = new TList();
+	fControlHistogramsList[icent]->SetName(Form("ControlHistograms_%.1f-%.1f", fcentralityArray[icent], fcentralityArray[icent+1]));
+	fControlHistogramsList[icent]->SetOwner(kTRUE);
+	if(bSaveAllQA){	fMainList->Add(fControlHistogramsList[icent]); }
+
+	 // a) Book histogram to hold pt spectra:
+	 fPTHistogram[icent][0] = new TH1F("fPTHist_BeforeTrackSelection","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][0]->GetXaxis()->SetTitle("P_t");
+	 fPTHistogram[icent][0]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][0]);
+
+	 fPTHistogram[icent][1] = new TH1F("fPTHist_AfterTrackSelection","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][1]->GetXaxis()->SetTitle("P_t");
+	 fPTHistogram[icent][1]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][1]);
+	 
+	 // b) Book histogram to hold phi spectra
+	 fPhiHistogram[icent][0] = new TH1F("fPhiHist_BeforeTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
+	 fPhiHistogram[icent][0]->GetXaxis()->SetTitle("Phi");
+	 fPhiHistogram[icent][0]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][0]);
+
+	 fPhiHistogram[icent][1] = new TH1F("fPhiHist_AfterTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
+	 fPhiHistogram[icent][1]->GetXaxis()->SetTitle("Phi");
+	 fPhiHistogram[icent][1]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][1]);
+
+	 // c) Book histogram to hold eta distribution before track selection:
+	 fEtaHistogram[icent][0] = new TH1F("fEtaHist_BeforeTrackSelection","Eta Distribution",1000,-1.,1.); 
+	 fEtaHistogram[icent][0]->GetXaxis()->SetTitle("Eta");
+	 fEtaHistogram[icent][0]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][0]);
+
+	 fEtaHistogram[icent][1] = new TH1F("fEtaHist_AfterTrackSelection","Eta Distribution",1000,-1.,1.);
+	 fEtaHistogram[icent][1]->GetXaxis()->SetTitle("Eta");
+	 fEtaHistogram[icent][1]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][1]);
+
+	 // d) Book histogam to hold multiplicty distributions 
+	 fMultHistogram[icent][0] = new TH1F("fMultiHisto_BeforeTrackSelection","Multiplicity",30000,0.,30000.); 
+	 fMultHistogram[icent][0]->GetXaxis()->SetTitle("Multiplicity M");
+	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][0]);
+	 
+	 fMultHistogram[icent][1] = new TH1F("fMultiHisto_AfterTrackSelection","Multiplicity",30000,0.,30000.); 
+	 fMultHistogram[icent][1]->GetXaxis()->SetTitle("Multiplicity M");
+	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][1]);
+
+	 // e) Book histogam for Vertex X 
+	 fVertexXHistogram[icent][0] = new TH1F("fVertexX_BeforeEventSelection","VertexXBefore",1000,-20.,20.); 
+	 fVertexXHistogram[icent][0]->GetXaxis()->SetTitle("");
+	 fControlHistogramsList[icent]->Add(fVertexXHistogram[icent][0]);
+
+	 fVertexXHistogram[icent][1] = new TH1F("fVertexX_AfterEventSelection","VertexXAfter",1000,-20.,20.); 
+	 fVertexXHistogram[icent][1]->GetXaxis()->SetTitle("");
+	 fControlHistogramsList[icent]->Add(fVertexXHistogram[icent][1]);
+
+	 // f) Book histogam for Vertex Y 
+	 fVertexYHistogram[icent][0] = new TH1F("fVertexY_BeforeEventSelection","VertexYBefore",1000,-20.,20.); 
+	 fVertexYHistogram[icent][0]->GetXaxis()->SetTitle("");
+	 fControlHistogramsList[icent]->Add(fVertexYHistogram[icent][0]);
+
+	 fVertexYHistogram[icent][1] = new TH1F("fVertexY_AfterEventSelection","VertexYAfter",1000,-20.,20.); 
+	 fVertexYHistogram[icent][1]->GetXaxis()->SetTitle("");
+	 fControlHistogramsList[icent]->Add(fVertexYHistogram[icent][1]);
+
+	 // g) Book histogam for Vertex Z 
+	 fVertexZHistogram[icent][0] = new TH1F("fVertexZ_BeforeEventSelection","VertexZBefore",1000,-20.,20.); 
+	 fVertexZHistogram[icent][0]->GetXaxis()->SetTitle("");
+	 fControlHistogramsList[icent]->Add(fVertexZHistogram[icent][0]);
+
+	 fVertexZHistogram[icent][1] = new TH1F("fVertexZ_AfterEventSelection","VertexZAfter",1000,-20.,20.); 
+	 fVertexZHistogram[icent][1]->GetXaxis()->SetTitle("");
+	 fControlHistogramsList[icent]->Add(fVertexZHistogram[icent][1]);
+
+	 // i) Book histogram for number of TPC clustes 
+	 fTPCClustersHistogram[icent][0] = new TH1F("fTPCClusters_BeforeCut","TPCClustersBeforeCut",170,0.,170.); 
+	 fControlHistogramsList[icent]->Add(fTPCClustersHistogram[icent][0]);
+
+	 fTPCClustersHistogram[icent][1] = new TH1F("fTPCClusters_AfterCut","TPCClustersAfterCut",170,0.,170.); 
+	 fControlHistogramsList[icent]->Add(fTPCClustersHistogram[icent][1]);
+
+	 //j) Book histogram for number of ITC clusters 
+	 fITSClustersHistogram[icent][0] = new TH1F("fITSClusters_BeforeCut","ITSClustersBeforeCut",10,0.,10.); 
+	 fControlHistogramsList[icent]->Add(fITSClustersHistogram[icent][0]);
+
+	 fITSClustersHistogram[icent][1] = new TH1F("fITSClusters_AfterCut","ITSClustersAfterCut",10,0.,10.); 
+	 fControlHistogramsList[icent]->Add(fITSClustersHistogram[icent][1]);
+
+	 // k) Book histogram for chi square TPC 
+	 fChiSquareTPCHistogram[icent][0] = new TH1F("fChiSquareTPC_BeforeCut","ChiSquareTPCBeforeCut",1000,0.,20.); 
+	 fControlHistogramsList[icent]->Add(fChiSquareTPCHistogram[icent][0]);
+
+	 fChiSquareTPCHistogram[icent][1] = new TH1F("fChiSquareTPC_AfterCut","ChiSquareTPCAfterCut",1000,0.,20.); 
+	 fControlHistogramsList[icent]->Add(fChiSquareTPCHistogram[icent][1]);
+
+	  // l) Book histogram for DCAz
+	 fDCAzHistogram[icent][0] = new TH1F("fDCAz_BeforeCut","DCAzBeforeCut",1000,-10.,10.);  
+	 fControlHistogramsList[icent]->Add(fDCAzHistogram[icent][0]);
+
+	 fDCAzHistogram[icent][1] = new TH1F("fDCAz_AfterCut","DCAzAfterCut",1000,-10.,10.); 
+	 fControlHistogramsList[icent]->Add(fDCAzHistogram[icent][1]);
+	 
+	 // m) Book histogram for DCAxy
+	 fDCAxyHistogram[icent][0] = new TH1F("fDCAxy_BeforeCut","DCAxyBeforeCut",1000,-10.,10.); 
+	 fControlHistogramsList[icent]->Add(fDCAxyHistogram[icent][0]);
+
+	 fDCAxyHistogram[icent][1] = new TH1F("fDCAxy_AfterCut","DCAxyAfterCut",1000,-10.,10.); 
+	 fControlHistogramsList[icent]->Add(fDCAxyHistogram[icent][1]); 
+
+	 // n) Book histogram for Charge
+	 fChargeHistogram[icent][0] = new TH1I("fCharge_BeforeCut","ChargeBeforeCut",11,-5.5,5.5); 
+	 fControlHistogramsList[icent]->Add(fChargeHistogram[icent][0]);
+
+	 fChargeHistogram[icent][1] = new TH1I("fCharge_AfterCut","ChargeAfterCut",11,-5.5,5.5); 
+	 fControlHistogramsList[icent]->Add(fChargeHistogram[icent][1]);
+
+	 // o) Book histogram Centrality 
+	 fCentralityHistogram[icent]= new TH1F("fCentralityHistogram_After","CentralityHistogramAfter",22,0.,110.);
+	 fCentralityHistogram[icent]->GetXaxis()->SetTitle("Centrality");
+	 fCentralityHistogram[icent]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fCentralityHistogram[icent]);
+
+	 // p) Book the TH2D for the HMOs in LHC10h.
+	 fHMOsHistogram[icent][0] = new TH2D("fHMOsHistogram_Before","Correlations before HMO cuts", 1000, 0.,5000., 1000, 0., 5000.);
+	 fHMOsHistogram[icent][0]->GetXaxis()->SetTitle("M_{global}");
+	 fHMOsHistogram[icent][0]->GetYaxis()->SetTitle("M_{TPC}");
+	 if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][0]);}
+
+	 fHMOsHistogram[icent][1] = new TH2D("fHMOsHistogram_After","Correlations after HMO cuts", 1000, 0.,5000., 1000, 0., 5000.);
+	 fHMOsHistogram[icent][1]->GetXaxis()->SetTitle("M_{global}");
+	 fHMOsHistogram[icent][1]->GetYaxis()->SetTitle("M_{TPC}");
+	 if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][1]);}
+
+  }//for(Int_t icent=0; icent<fCentralityBins; icent++)
+}
+
+//______________________________________________________________________________
+void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t whichHisto, Float_t cent, Double_t *v) {
+
+// Get the corresponding centrality bin.
+	Int_t CentralityBin = GetCentralityBin(cent);
+
+	Float_t ValueDCAxy = 999.;   // DCA in the xy-plane.
+	Float_t ValueDCAz = 999.;    // DCA along z.
+
+	if (fFilterBit == 128)  // These methods work only for constrained TPConly tracks.
+	{ //These two quantities are the DCA from global tracks but not what we will cut on.
+	  ValueDCAxy = thisTrack->DCA();
+	  ValueDCAz = thisTrack->ZAtDCA();
+	}
+	else  //For the unconstrained tracks.
+	{
+	  Double_t pos[3];  //Coordinates of the track closest to PV?
+
+	  thisTrack->GetXYZ(pos);
+	  ValueDCAxy = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
+	  ValueDCAz = pos[2] - v[2];
+	}
+
+	fPTHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Pt());
+	fPhiHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Phi());
+  fEtaHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Eta());
+  fTPCClustersHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetTPCNcls());
+  fITSClustersHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetITSNcls());
+  fChiSquareTPCHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Chi2perNDF());
+  fDCAzHistogram[CentralityBin][whichHisto]->Fill(ValueDCAz);
+  fDCAxyHistogram[CentralityBin][whichHisto]->Fill(ValueDCAxy);
+  fChargeHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Charge());
+}
+
+//______________________________________________________________________________
+Int_t AliJCatalystTask::GetCentralityBin(Float_t cent)
+{
+  //if this functions returns a negative value -> Error. No Centrality could be selected
+	
+  //Check for centrality bin
+  for(Int_t icent=0; icent<fCentralityBins+1; icent++) //loop over all centrality bins
+  {
+		if(fcentralityArray[icent]<0) {return -1;}
+		if(cent >= fcentralityArray[icent]) { continue; } 
+		else { return icent-1; } 
+  }	
+
+  //We went through all centrality edges without returning. This means, that the measured value is bigger than the maximum centrality that we want for our analyis
+  return -1;
+
+}
+
+//______________________________________________________________________________
+void AliJCatalystTask::SetInitializeCentralityArray()
+{
+
+ TString sMethodName = "void AliJCatalystTask::SetInitializeCentralityArray()";
+
+  Float_t ListCentralities[17] = { fcent_0, fcent_1, fcent_2, fcent_3, fcent_4, fcent_5, fcent_6, fcent_7, fcent_8, fcent_9, fcent_10, fcent_11, fcent_12, fcent_13, fcent_14, fcent_15, fcent_16 };
+
+  for(Int_t i=0; i<17; i++) { fcentralityArray[i] = ListCentralities[i]; }
+
+  //Protections
+  if(fcentralityArray[0] < 0 || fcentralityArray[1] < 0) { Fatal(sMethodName.Data(),"First Centrality bin not defined"); } //They need at least one well defined centrality bin
+
+  for(Int_t icent=0; icent<fCentralityBins; icent++)
+  {
+		//The next bin should be a valid boundery, i.e. it is > 0. but it is also smaller than the previous boundery -> Wrong ordering
+		if( fcentralityArray[icent+1] > 0. && fcentralityArray[icent+1] < fcentralityArray[icent] ) { Fatal(sMethodName.Data(),"Wrong ordering of centrality bounderies"); }
+  }
 }
 

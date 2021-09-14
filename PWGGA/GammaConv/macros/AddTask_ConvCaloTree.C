@@ -14,7 +14,8 @@ void AddTask_ConvCaloTree(
   Bool_t    doSaveMCInfo                  = 0,
   Float_t   minTrackMomentum              = 0.3,
   Bool_t    enableTriggerOverlapRej       = kTRUE,
-  TString   settingMaxFacPtHard           = "3."       // maximum factor between hardest jet and ptHard generated
+  TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
+  Bool_t    useClusterIsolation           = kTRUE       // if isolation shoul be used
   ){
 
 
@@ -47,6 +48,16 @@ void AddTask_ConvCaloTree(
     return;
   } else {
     cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< endl;
+  }
+
+  //========= Check Iso Task in  ANALYSIS manager  =====
+  if(useClusterIsolation){
+    TString PhotonIsolationName = "PhotonIsolation";
+    if( !(AliPhotonIsolation*)mgr->GetTask(PhotonIsolationName.Data()) ){
+      AliPhotonIsolation* fPhotonIsolation = new AliPhotonIsolation(PhotonIsolationName.Data());
+      mgr->AddTask(fPhotonIsolation);
+      mgr->ConnectInput(fPhotonIsolation,0,cinput);
+    }
   }
 
   TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
@@ -136,10 +147,25 @@ void AddTask_ConvCaloTree(
   fConvCaloTree->SetMesonCuts(analysisMesonCuts);
   fConvCaloTree->SetCorrectionTaskSetting(corrTaskSetting);
   fConvCaloTree->SetIsMC(isMC);
+  fConvCaloTree->SetUseClusterIsolation(useClusterIsolation);
   if(isMC && doSaveMCInfo) fConvCaloTree->SetSaveMCInformation(kTRUE);
   fConvCaloTree->SetMinTrackPt(minTrackMomentum);
   fConvCaloTree->SetV0ReaderName(V0ReaderName);
   mgr->AddTask(fConvCaloTree);
+
+  //create AliCaloTrackMatcher instance, if there is none present
+  TString TrackMatcherName = Form("CaloTrackMatcher_%i_%i",1,0);
+  if(corrTaskSetting.CompareTo("")){
+    TrackMatcherName = TrackMatcherName+"_"+corrTaskSetting.Data();
+    cout << "Using separate track matcher for correction framework setting: " << TrackMatcherName.Data() << endl;
+  }
+  if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
+    AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),1,0);
+    fTrackMatcher->SetV0ReaderName(V0ReaderName);
+    fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
+    mgr->AddTask(fTrackMatcher);
+    mgr->ConnectInput(fTrackMatcher,0,cinput);
+  }
 
   mgr->ConnectInput  (fConvCaloTree, 0,  cinput );
   mgr->ConnectOutput (fConvCaloTree, 1, mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ?  Form("GammaCaloQA_%s_%s", TaskEventCutnumber.Data(), TaskEMCCutnumber.Data()) : Form("GammaCaloQA_%s_%s_%s", TaskEventCutnumber.Data(), TaskEMCCutnumber.Data(),corrTaskSetting.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaCaloQA_%s_%s", mgr->GetCommonFileName(), TaskEventCutnumber.Data(), TaskEMCCutnumber.Data())) );

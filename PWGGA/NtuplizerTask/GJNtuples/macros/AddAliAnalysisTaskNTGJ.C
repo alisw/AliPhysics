@@ -7,7 +7,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 
 
 AliAnalysisTaskNTGJ *
-AddAliAnalysisTaskNTGJ(TString suffixName,
+AddAliAnalysisTaskNTGJ(TString name,
                        TString emcal_correction_filename,
                        const UInt_t pSel,
                        bool physics_selection,
@@ -105,6 +105,7 @@ AddAliAnalysisTaskNTGJ(TString suffixName,
   AliTrackContainer * datatrackContainer = new AliTrackContainer("usedefault");
   if (track_cuts_period != "") {
     datatrackContainer->SetTrackCutsPeriod(track_cuts_period);
+    datatrackContainer->SetMinPt(0.15);
   }
   task->AdoptTrackContainer(datatrackContainer);
 
@@ -113,6 +114,7 @@ AddAliAnalysisTaskNTGJ(TString suffixName,
     mctrackContainer->SetIsEmbedding(kTRUE);
     if (track_cuts_period != "") {
       mctrackContainer->SetTrackCutsPeriod(track_cuts_period);
+      mctrackContainer->SetMinPt(0.15);
     }
     task->AdoptTrackContainer(mctrackContainer);
   }
@@ -178,8 +180,8 @@ AddAliAnalysisTaskNTGJ(TString suffixName,
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
   TString filename = mgr->GetCommonFileName();
-
-  filename += suffixName.Data();
+  filename += ":AliAnalysisTaskNTGJ";
+  //filename += name.Data();
     
   mgr->ConnectOutput(task, 1,
                      mgr->CreateContainer("tree", TTree::Class(),

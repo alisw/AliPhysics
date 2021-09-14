@@ -35,25 +35,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskCutTest.cxx
-  ChargedHadrons/dNdPt/AlidNdPtUnifiedAnalysisTask.cxx
-  ChargedHadrons/dNdPt/MeanPtRaw/AliAnalysisTaskMeanPtRaw.cxx
-  ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
-  ChargedHadrons/dNdPt/AlidNdPtAnalysis.cxx
-  ChargedHadrons/dNdPt/AlidNdPtAnalysisPbPb.cxx
-  ChargedHadrons/dNdPt/AlidNdPtAnalysisPbPb2011.cxx
-  ChargedHadrons/dNdPt/AlidNdPtAnalysisPbPbAOD.cxx
-  ChargedHadrons/dNdPt/AlidNdPtAnalysispPb.cxx
-  ChargedHadrons/dNdPt/AlidNdPtBackgroundCuts.cxx
-  ChargedHadrons/dNdPt/AlidNdPtCorrection.cxx
-  ChargedHadrons/dNdPt/AlidNdPtCutAnalysis.cxx
-  ChargedHadrons/dNdPt/AlidNdPtCutAnalysisPbPb.cxx
-  ChargedHadrons/dNdPt/AlidNdPt.cxx
-  ChargedHadrons/dNdPt/AlidNdPtEfficiency.cxx
-  ChargedHadrons/dNdPt/AlidNdPtEventCuts.cxx
-  ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
-  ChargedHadrons/dNdPt/AlidNdPtTask.cxx
   ChargedHadrons/AliMCSpectraWeights/AliMCSpectraWeightsAnalysisTask.cxx
   ChargedHadrons/dNdPt/Framework/AlidNdPtTools.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKBase.cxx
@@ -66,12 +47,6 @@ set(SRCS
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectra.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraV0M.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskFilterEventTPCdEdx.cxx
-  ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
-  ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
-  ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
-  ChargedHadrons/dNdPt/AlimPtAnalysis.cxx
-  ChargedHadrons/dNdPt/AlimPtMatrix.cxx
-  ChargedHadrons/dNdPt/AlimPtMatrixZDC.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskSpectraDPhi.cxx
   ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
@@ -84,6 +59,7 @@ set(SRCS
   PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsRT_TPCTOF.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskSpectraRT.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskSpectraMC.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskGenRT.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
