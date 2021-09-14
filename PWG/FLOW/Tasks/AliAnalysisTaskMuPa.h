@@ -49,7 +49,7 @@ const Int_t gGenericCorrelations = 5; // correlations between various quantities
 const Int_t gMaxBins = 10000; // max number of kine bins
 const Int_t gMaxCorrelator = 12; // 
 const Int_t gMaxHarmonic = 6; // 
-const Int_t gMaxIndex = 100; // per order
+const Int_t gMaxIndex = 300; // per order
 
 // enums:
 enum eBins {nBins,min,max};
@@ -132,7 +132,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void MakeLookUpTable(AliAODEvent *aAOD, AliMCEvent *aMC);
   virtual void RandomIndices(AliVEvent *ave);
   virtual void CalculateTest0();
-  virtual void GenerateCorrelationsLabels();
+  virtual void StoreLabelsInPlaceholder(const char *source); 
+  virtual Bool_t RetrieveCorrelationsLabels();
 
   // 3) Methods called in Terminate(Option_t *):
   //    a) Get pointers:
@@ -427,9 +428,17 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
 
   void SetCalculateTest0(Bool_t c) {this->fCalculateTest0 = c;};
   Bool_t GetCalculateTest0() const {return this->fCalculateTest0;};
-  void SetFileWithLabels(const char *externalFile){this->fFileWithLabels = new TString(externalFile);}
-  TProfile* GetTest0Pro(const Int_t order, const Int_t index, const Int_t var){return this->fTest0Pro[order][index][var];}
- 
+  void SetFileWithLabels(const char *externalFile) 
+  {
+   this->fFileWithLabels = new TString(externalFile); 
+   if(gSystem->AccessPathName(fFileWithLabels->Data(),kFileExists)){exit(1);} // convention is opposite to Bash
+   this->StoreLabelsInPlaceholder("external");
+  }
+
+  void SetTest0List(TList* const list) {this->fTest0List = list;};
+  TList* GetTest0List() const {return this->fTest0List;} 
+  TProfile* GetTest0Pro(const Int_t order, const Int_t index, const Int_t var) {return this->fTest0Pro[order][index][var];}
+
   void SetCalculateNestedLoops(Bool_t cnl) {this->fCalculateNestedLoops = cnl;};
   Bool_t GetCalculateNestedLoops() const {return this->fCalculateNestedLoops;};
 
@@ -488,6 +497,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void Yellow(const char* text);
   void Blue(const char* text);
   TObject* GetObjectFromList(TList *list, Char_t *objectName); // see .cxx
+  Int_t NumberOfNonEmptyLines(const char *externalFile);  
 
   // *.) Online monitoring:
   void SetUpdateOutputFile(const Int_t uf, const char *uqof)
@@ -686,12 +696,14 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Int_t fMultRangeInternalValidation[2];  // min and max values for uniform multiplicity distribution in on-the-fly analysis
 
   //11) Test0:  
-  TList *fTest0List;            // TBI
-  TProfile *fTest0FlagsPro;     // TBI 
-  Bool_t fCalculateTest0;       // TBI
-  TProfile *fTest0Pro[gMaxCorrelator][gMaxIndex][3]; //! TBI [order][index][0=integrated,1=vs. multiplicity,2=vs. centrality]
+  TList *fTest0List; // list to hold all objects for Test0
+  TProfile *fTest0FlagsPro; // store all flags for Test0
+  Bool_t fCalculateTest0; // calculate or not Test0 in general. Which one specifically, that's governed with fCalculateSpecificTest0[gMaxCorrelator][gMaxIndex]
+  Bool_t fTest0LabelsWereStoredInPlaceholder; // Test0 labels were stored successfully in fTest0LabelsPlaceholder. From there, they will be extracted at run-time when booking
+  TProfile *fTest0Pro[gMaxCorrelator][gMaxIndex][3]; // [gMaxCorrelator][gMaxIndex][3] [order][index][0=integrated,1=vs. multiplicity,2=vs. centrality]
   TString *fFileWithLabels; // external file which specifies all labels of interest
   TString *fTest0Labels[gMaxCorrelator][gMaxIndex]; // all labels: k-p'th order is stored in k-1'th index. So yes, I also store 1-p
+  TH1I *fTest0LabelsPlaceholder; // temporary workaround: store all Test0 labels in this histogram, until I find a better implementation
 
   // * Final results:
   TList *fFinalResultsList; // list to hold all histograms with final results
@@ -716,7 +728,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,22);
+  ClassDef(AliAnalysisTaskMuPa,23);
 
 };
 
