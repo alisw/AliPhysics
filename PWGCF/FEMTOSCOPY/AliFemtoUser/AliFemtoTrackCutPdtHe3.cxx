@@ -260,7 +260,7 @@ bool AliFemtoTrackCutPdtHe3::IsProtonNSigma(float mom, float fNsigma, float nsig
         if (TMath::Abs(nsigmaTPCP) < fNsigma)
             return true;
     }
-
+    return false;
 
 }
 bool AliFemtoTrackCutPdtHe3::IsDeuteronNSigma(float mom, float fNsigma, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD)
@@ -282,7 +282,7 @@ bool AliFemtoTrackCutPdtHe3::IsDeuteronNSigma(float mom, float fNsigma, float ma
         if (TMath::Abs(nsigmaTPCD) < fNsigma)
             return true;
     } 
-  
+    return false;
 }
 bool AliFemtoTrackCutPdtHe3::IsTritonNSigma(float mom, float fNsigma, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT)
 {
@@ -303,22 +303,20 @@ bool AliFemtoTrackCutPdtHe3::IsTritonNSigma(float mom, float fNsigma, float mass
         if (TMath::Abs(nsigmaTPCT) < fNsigma)
             return true;
     } 
-  
+    return false;
 }
 bool AliFemtoTrackCutPdtHe3::IsHe3NSigma(float mom, float fNsigma, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3)
 {
     //double massPDGD=2.8089;
     if (fNsigmaTPCTOF) {
-
         if (TMath::Abs(nsigmaTPCHe3) < fNsigma)
             return true;
-        
-        
     }
     else{
         if (TMath::Abs(nsigmaTPCHe3) < fNsigma)
             return true;
-    } 
+    }
+    return false;
   
 }
 

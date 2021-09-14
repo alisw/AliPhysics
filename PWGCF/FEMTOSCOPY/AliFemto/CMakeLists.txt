@@ -126,6 +126,8 @@ set(SRCS
   AliFemtoCutMonitorParticleYPt_pion.cxx  
   AliFemtoCutMonitorParticleYPt_proton.cxx
   AliFemtoEventReaderAODKinematicsMultSelection.cxx
+  AliFemtoSimpleAnalysisOnlyMixP1.cxx
+  AliFemtoVertexMultAnalysisOnlyMixP1.cxx
   )
 
 # Headers from sources
