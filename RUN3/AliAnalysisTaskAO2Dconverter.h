@@ -436,7 +436,7 @@ private:
     // Calorimeter trigger data (EMCAL & PHOS)
     Int_t fIndexBCs = 0u;         /// Index to BC table
     Short_t fFastOrAbsID = - 1;   /// FastOR absolute ID
-    Short_t fLnAmplitude = -1.f;  /// L0 amplitude (ADC) := Peak Amplitude
+    Short_t fLnAmplitude = -1;    /// L0 amplitude (ADC) := Peak Amplitude
     Int_t fTriggerBits = 0;       /// Online trigger bits
     Char_t fCaloType = -1;        /// Calorimeter type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calotrigger;                  //! structure to keep calo trigger info
