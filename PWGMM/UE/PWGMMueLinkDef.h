@@ -15,6 +15,7 @@
 #pragma link C++ class AliAnalysisTaskGenUeVsMult+;
 #pragma link C++ class AliAnalysisTaskMcKnoUeSyst+;
 #pragma link C++ class AliAnalysisTaskMcKno+;
+#pragma link C++ class AliAnalysisTaskChargedVsRT+;
 #pragma link C++ class AliAnalysisTaskDataKno+;
 #pragma link C++ class AliAnalysisTaskGenMcKno+;
 #pragma link C++ class AliAnalysisTaskGenUeNchTS+;

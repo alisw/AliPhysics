@@ -15,8 +15,12 @@
 #include "AliTaskLeadingMC.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliMultSelection.h"
+#include "AliMultiplicity.h"
+#include "AliPWG0Helper.h"
 
 #include "TH1D.h"
+#include "TH2F.h"
+#include "TH3F.h"
 
 ClassImp(AliTaskLeadingMC)
 
@@ -34,6 +38,10 @@ AliAnalysisTask(name, "")
   DefineInput(0, TChain::Class());
 
   DefineOutput(0, TTree::Class());// crea una slot di output "0" per un oggetto della classe TH1D
+  DefineOutput(1, TH3F::Class());// crea una slot di output "0" per un oggetto della classe TH1D
+  DefineOutput(2, TH3F::Class());// crea una slot di output "0" per un oggetto della classe TH1D
+  DefineOutput(3, TH2F::Class());// crea una slot di output "0" per un oggetto della classe TH1D
+  DefineOutput(4, TH2F::Class());// crea una slot di output "0" per un oggetto della classe TH1D
 }
 //________________________________________________________________________
 void AliTaskLeadingMC::SetZDCPGeo(float xmin,float xmax,float ymin,float ymax,float zmin,float zmax){
@@ -96,14 +104,39 @@ void AliTaskLeadingMC::CreateOutputObjects()
   // global observables MC generator
   fTree->Branch("v0mPerc", &fV0Perc, "v0mPerc/F");
   fTree->Branch("zdcPerc", &fZdcPerc, "zdcPerc/F");
+  fTree->Branch("zdcPercFired", &fZdcPercFired, "zdcPercFired/F");
+  fTree->Branch("multRef5", &fMultRef5, "multRef5/F");
+  fTree->Branch("multRef8", &fMultRef8, "multRef8/F");
+  fTree->Branch("multSPDcl", &fMultSPDcl, "multSPDcl/F");
+  fTree->Branch("multSPDtr", &fMultSPDtr, "multSPDtr/F");
+  fTree->Branch("inelGT0",&fInelGT0,"inelGT0/I");
+  fTree->Branch("SPDtracklets", &fSPDtracklets, "SPDtracklets/I");
+  fTree->Branch("SPDtrackletsA", &fSPDtrackletsA, "SPDtrackletsA/I");
+  fTree->Branch("SPDtrackletsC", &fSPDtrackletsC, "SPDtrackletsC/I");
+  fTree->Branch("TOFclusters", &fTOFclusters, "TOFclusters/I");
+  fTree->Branch("TOFclustersTrg", &fTOFclustersTrg, "TOFclustersTrg/I");
   fTree->Branch("nch", &fNch, "nch/I");
   fTree->Branch("nchEta", &fNchEta, "nchEta/I");
+  fTree->Branch("nchEtaA", &fNchEtaA, "nchEtaA/I");
+  fTree->Branch("nchEtaC", &fNchEtaC, "nchEtaC/I");
   fTree->Branch("energyhEta", &fEnergyEta, "energyEta/F");  
   fTree->Branch("nmpi", &fNMPI, "nmpi/I");
   fTree->Branch("nLambdaEta", &fNLambdaEta, "nLambdaEta/I");
   fTree->Branch("nXiEta", &fNXiEta, "nXiEta/I");
-  fTree->Branch("nOmegaEta", &fNOmegaEta, "nOmetaEta/I");
+  fTree->Branch("ptXiEta", fPtXiEta, "ptXiEta[nXiEta]/F");
+  fTree->Branch("nAntiXiEta", &fNAntiXiEta, "nAntiXiEta/I");
+  fTree->Branch("ptAntiXiEta", fPtAntiXiEta, "ptAntiXiEta[nAntiXiEta]/F");
+  fTree->Branch("nXiEtaFrag", &fNXiEtaFrag, "nXiEtaFrag/I");
+  fTree->Branch("ptXiEtaFrag", fPtXiEtaFrag, "ptEtaFrag[nXiEtaFrag]/F");
+  fTree->Branch("nXiEtaUp", &fNXiEtaUp, "nXiEtaUp/I");
+  fTree->Branch("ptXiEtaUp", fPtXiEtaUp, "ptEtaUp[nXiEtaUp]/F");
+  fTree->Branch("nXiEtaDown", &fNXiEtaDown, "nXiEtaDown/I");
+  fTree->Branch("ptXiEtaDown", fPtXiEtaDown, "ptEtaDown[nXiEtaDown]/F");
+  fTree->Branch("nOmegaEta", &fNOmegaEta, "nOmegaEta/I");
   fTree->Branch("nPiEta", &fNPiEta, "nPiEta/I");
+  fTree->Branch("nPi0Eta", &fNPi0Eta, "nPi0Eta/I");
+  fTree->Branch("nKchEta", &fNKchEta, "nKchEta/I");
+  fTree->Branch("nK0Eta", &fNK0Eta, "nK0Eta/I");
   fTree->Branch("sumLambdaXi", &fSumPtLambdaEta, "sumPtLambda/F");
   fTree->Branch("sumPtXi", &fSumPtXiEta, "sumPtXi/F");
   fTree->Branch("sumPtOmega", &fSumPtOmegaEta, "sumPtOmega/F");
@@ -202,6 +235,15 @@ void AliTaskLeadingMC::CreateOutputObjects()
   fTree->Branch("pdgM_cand_leadN2", fPdgM_cand_leadN2, "pdgM_cand_leadN2[n_cand_leadA]/I");
   
   PostData(0, fTree);	
+
+  fH_SPD_VZERO = new TH3F("hSPD_VZERO",";#eta;SPD perc (%); VOM perc (%)",200,-10,10,100,0,100,100,0,100);
+  PostData(1, fH_SPD_VZERO);
+  fH_SPD_ZDC = new TH3F("hSPD_ZDC",";#eta;SPD perc (%); ZDC perc (%)",200,-10,10,100,0,100,100,0,100);
+  PostData(2, fH_SPD_ZDC);
+  fH_SPD_VZERO_ev = new TH2F("hSPD_VZERO_ev",";SPD perc (%); VOM perc (%)",100,0,100,100,0,100);
+  PostData(3, fH_SPD_VZERO_ev);
+  fH_SPD_ZDC_ev = new TH2F("hSPD_ZDC_ev",";SPD perc (%); ZDC perc (%)",100,0,100,100,0,100);
+  PostData(4, fH_SPD_ZDC_ev);
 }
 //________________________________________________________________________
 void AliTaskLeadingMC::Exec(Option_t *) 
@@ -209,7 +251,7 @@ void AliTaskLeadingMC::Exec(Option_t *)
   AliMCEvent* mcEvent=NULL;
   AliMCEventHandler* eventHandler=NULL;
   TTree* treeTR=NULL;
-  fIsTrackRef = 1;
+  fIsTrackRef = fAskTrackRef;
   
   // recupera le info MC
   eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -225,19 +267,26 @@ void AliTaskLeadingMC::Exec(Option_t *)
   }
   
   // Get TrackRefs
-  treeTR = eventHandler->TreeTR();
-  if(!treeTR){
-    fIsTrackRef = 0;
+  if(fIsTrackRef){
+    treeTR = eventHandler->TreeTR();
+    if(!treeTR){
+      fIsTrackRef = 0;
+    }
+    else{
+      Printf("TrackReference found!");
+    }
   }
-  else{
-    Printf("TrackReference found!");
-  }
-  
+
   // Check ESD event
   if (!fESD) {
     Printf("ERROR: fESD not available");
     return;
   }  
+
+  fTOFclusters = fESD->GetTOFHeader()->GetNumberOfTOFclusters();
+  fTOFclustersTrg = fESD->GetTOFHeader()->GetNumberOfTOFtrgPads();
+
+  fInelGT0 = 0;
 
   // percentile selections ($ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C required)
   fV0Perc = 500;
@@ -249,8 +298,28 @@ void AliTaskLeadingMC::Exec(Option_t *)
   } else {
      //V0M Multiplicity 
      fV0Perc = MultSelection->GetMultiplicityPercentile("V0M");
+     fZdcPercFired = MultSelection->GetMultiplicityPercentile("ZPNACpp");
      fZdcPerc = MultSelection->GetMultiplicityPercentile("ZPNACTowerpp");
+     fMultRef5 = MultSelection->GetMultiplicityPercentile("RefMult05");
+     fMultRef8 = MultSelection->GetMultiplicityPercentile("RefMult08");
+     fMultSPDcl = MultSelection->GetMultiplicityPercentile("SPDClusters");
+     fMultSPDtr = MultSelection->GetMultiplicityPercentile("SPDTracklets");
   }
+
+  //SPDTracklets to get a midrapidity Nch estimator
+  AliMultiplicity* multiplicity =  fESD->GetMultiplicity();
+  fSPDtracklets = 0;
+  fSPDtrackletsA = 0;
+  fSPDtrackletsC = 0;
+  for (auto it = 0; it<multiplicity->GetNumberOfTracklets(); it++) {
+     Double_t eta = multiplicity->GetEta(it);
+     if ( abs(eta) < 0.5 ){
+       fSPDtracklets++;
+       if(eta < 0) fSPDtrackletsA++;
+       else fSPDtrackletsC++;
+     }
+  }
+
 
   // fill signal reconstructed in ZDCs
   fillZDCreco();
@@ -276,12 +345,15 @@ void AliTaskLeadingMC::Exec(Option_t *)
   
   fTree->Fill();
   PostData(0, fTree);
+  PostData(1, fH_SPD_VZERO);
+  PostData(2, fH_SPD_ZDC);
+  PostData(3, fH_SPD_VZERO_ev);
+  PostData(4, fH_SPD_ZDC_ev);
 }  
 //________________________________________________________________________
 void AliTaskLeadingMC::loopMC(AliMCEvent *mcEvent){
   // # of reco tracks and primaries from MC
   Int_t ntra = mcEvent->GetNumberOfTracks();
-  Int_t nprimaries = mcEvent->GetNumberOfPrimaries();
 
   fMaxChargePt = 0;
   fEffEnergy = 0;
@@ -292,18 +364,31 @@ void AliTaskLeadingMC::loopMC(AliMCEvent *mcEvent){
   fP_cand_leadC=0;
   fN_cand_leadC=0;
 
-  fNch=0,fNchEta=0,fNLambdaEta=0,fNXiEta=0,fNOmegaEta=0,fNPiEta=0;
+  fNch=0,fNchEta=0,fNchEtaA=0,fNchEtaC=0,fNLambdaEta=0,fNXiEta=0,fNAntiXiEta=0,fNXiEtaFrag=0,fNXiEtaUp=0,fNXiEtaDown=0,fNOmegaEta=0,fNPiEta=0,fNPi0Eta=0,fNKchEta=0,fNK0Eta=0;
   fSumPtLambdaEta=fSumPtXiEta=fSumPtOmegaEta=fSumPtPiEta=0;
   fEnergyEta=0;
 
+  if(fSPDtracklets){
+    fH_SPD_VZERO_ev->Fill(fMultSPDcl,fV0Perc);
+    fH_SPD_ZDC_ev->Fill(fMultSPDcl,fZdcPerc);
+  }
+
   // loop MC particles
+  Int_t nPrim = mcEvent->Stack()->GetNprimary();
+  for (Int_t i = 0; i < nPrim; i++){
+    TParticle *part = mcEvent->Stack()->Particle(i);
+    if (!AliPWG0Helper::IsPrimaryCharged(part, nPrim)) continue;
+    Double_t eta = part->Eta();
+    if (fabs(eta) < 1.0) fInelGT0 = true;
+  }
+
   Float_t px,py,pz,pt;
   for(Int_t i = 0; i < ntra ;i++){
     // get particle from stack
     AliMCParticle *MCpart = (AliMCParticle *) mcEvent->GetTrack(i);
     TParticle *part = MCpart->Particle(); 
     
-    Int_t status = part->GetStatusCode();
+    Int_t status = (part->GetStatusCode() == 1);
     
     // get momentum
     px = part->Px();
@@ -312,33 +397,104 @@ void AliTaskLeadingMC::loopMC(AliMCEvent *mcEvent){
     pt = sqrt(px*px + py*py);
     
     Int_t charge = 0;
-    
+
     if(fDB->GetParticle(part->GetPdgCode())) charge = Int_t(fDB->GetParticle(part->GetPdgCode())->Charge());
     else continue; // skip particles with undefined pdg
 
+    if(charge) {
+      status = AliPWG0Helper::IsPrimaryCharged(part, nPrim); // official definition of charged primary
+    }
+    else{
+      if (part->GetFirstDaughter() != -1 && part->GetFirstDaughter() < nPrim) status = 0;
+    }
+
     if(status && charge){ // charged particles
       fNch++;
+
+      if(fSPDtracklets){
+        if(part->Eta() < -9.999){
+          fH_SPD_VZERO->Fill(-9.999,fMultSPDcl,fV0Perc);
+          fH_SPD_ZDC->Fill(-9.999,fMultSPDcl,fZdcPerc);
+        }
+        else if(part->Eta() > 9.999){
+          fH_SPD_VZERO->Fill(9.999,fMultSPDcl,fV0Perc);
+          fH_SPD_ZDC->Fill(9.999,fMultSPDcl,fZdcPerc);
+        }
+        else{
+          fH_SPD_VZERO->Fill(part->Eta(),fMultSPDcl,fV0Perc);
+          fH_SPD_ZDC->Fill(part->Eta(),fMultSPDcl,fZdcPerc);
+        }
+      }
+
       if(TMath::Abs(part->Eta())<fEtaBarrel){
 	fEnergyEta+=part->Energy();
 	fNchEta++;
+        if(part->Eta() < 0) fNchEtaA++;
+        else fNchEtaC++;
 
 	if(pt > fMaxChargePt) fMaxChargePt = pt;
 	
-	if(TMath::Abs(part->GetPdgCode()) == 211){ // pions
+	if(TMath::Abs(part->GetPdgCode()) == 211){ // charged pions
 	  fNPiEta++;
 	  fSumPtPiEta += pt;
 	}
+        else if(TMath::Abs(part->GetPdgCode()) == 321){ // neutral kaons
+          fNKchEta++;
+        }
       }
     }
-    
+    else if(! charge){
+      if(TMath::Abs(part->Eta())<fEtaBarrel){
+        if(TMath::Abs(part->GetPdgCode()) == 111){ // neutral pions
+          fNPi0Eta++;
+        }
+        else if(TMath::Abs(part->GetPdgCode()) == 311){ // K0s neutral kaons
+          fNK0Eta++;
+        }
+      }
+    }
+
     if(TMath::Abs(part->Eta())<fEtaBarrel){
       if(TMath::Abs(part->GetPdgCode()) == 3122){ // lambda
 	fNLambdaEta++;
 	fSumPtLambdaEta += pt;
       }
       if(TMath::Abs(part->GetPdgCode()) == 3312){ // Xi
-	fNXiEta++;
+        if(part->GetPdgCode() > 0){
+          fPtXiEta[fNXiEta] = pt;
+          fNXiEta++;
+        }
+        else{
+          fPtXiEta[fNAntiXiEta] = pt;
+          fNAntiXiEta++;
+        }
 	fSumPtXiEta += pt;
+        // look if it comes from fragmenetation
+        Int_t imoth = part->GetFirstMother();
+        AliMCParticle *partMCM;
+        TParticle *partM;
+        while(imoth >= 0 && fNXiEtaFrag < 100){
+          partMCM = (AliMCParticle *) mcEvent->GetTrack(imoth);  
+          partM = partMCM->Particle();
+          if(TMath::Abs(partM->GetPdgCode()) == 3){
+            fPtXiEtaFrag[fNXiEtaFrag] = pt;
+            fNXiEtaFrag++;
+            imoth = -1;
+          }
+          else if(TMath::Abs(partM->GetPdgCode()) == 1){
+            fPtXiEtaUp[fNXiEtaUp] = pt;
+            fNXiEtaUp++;
+            imoth = -1;
+          }
+          else if(TMath::Abs(partM->GetPdgCode()) == 2){
+            fPtXiEtaDown[fNXiEtaDown] = pt;
+            fNXiEtaDown++;
+            imoth = -1;
+          }
+          else{
+            imoth = partM->GetFirstMother();
+          }
+       }
       }
       if(TMath::Abs(part->GetPdgCode()) == 3334){ // Omega
 	fNOmegaEta++;

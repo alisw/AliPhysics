@@ -17,7 +17,6 @@
 #include "TChain.h"
 #include "TRandom.h"
 #include "AliAnalysisManager.h"
-#include "TParticle.h"
 #include "TVectorF.h"
 #include "AliPIDResponse.h"
 #include "TFile.h"
@@ -3727,7 +3726,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
        if (clus->GetNLabels()>0){
          for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
            PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
-           // Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
+           // Int_t pdgCode = fMCEvent->GetTrack(mclabelsCluster[k])->PdgCode();
            // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
          }
        }

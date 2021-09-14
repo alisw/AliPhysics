@@ -53,6 +53,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fParticleType(0),                       fPosAlgo(0),
   fW0(0),                                 fShowerShapeCellLocationType(0),
   fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
+  fUseAdditionalScale(kFALSE),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fNCellEfficiencyFunction(0),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
@@ -109,6 +110,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fW0(reco.fW0),                                             fShowerShapeCellLocationType(reco.fShowerShapeCellLocationType),
   fNonLinearityFunction(reco.fNonLinearityFunction),         fNonLinearThreshold(reco.fNonLinearThreshold),
   fUseShaperNonlin(reco.fUseShaperNonlin),
+  fUseAdditionalScale(reco.fUseAdditionalScale),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fNCellEfficiencyFunction(reco.fNCellEfficiencyFunction),
   fCellsRecalibrated(reco.fCellsRecalibrated),
@@ -163,6 +165,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   for (Int_t i = 0; i < 10 ; i++) { fNCellEfficiencyParams[i] = reco.fNCellEfficiencyParams[i] ; }
   for (Int_t j = 0; j < 5  ; j++) { fMCGenerToAccept[j]       = reco.fMCGenerToAccept[j]       ; }
   for (Int_t j = 0; j < 4  ; j++) { fBadStatusSelection[j]    = reco.fBadStatusSelection[j]    ; }
+  for (Int_t j = 0; j < 3  ; j++) { fAdditionalScaleSM[j]     = reco.fAdditionalScaleSM[j]     ; }
 
   if(reco.fEMCALBadChannelMap) {
     // Copy constructor - not taking ownership over calibration histograms
@@ -217,6 +220,9 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fNonLinearityFunction      = reco.fNonLinearityFunction;
   fNonLinearThreshold        = reco.fNonLinearThreshold;
   fUseShaperNonlin           = reco.fUseShaperNonlin;
+  fUseAdditionalScale        = reco.fUseAdditionalScale;
+  for (Int_t j = 0; j < 3; j++)
+    fAdditionalScaleSM[j]         = reco.fAdditionalScaleSM[j];
   fSmearClusterEnergy        = reco.fSmearClusterEnergy;
   fNCellEfficiencyFunction   = reco.fNCellEfficiencyFunction;
 
@@ -445,6 +451,17 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
     // take out non lin from shaper for low gain cells
     if(fUseShaperNonlin && isLowGain){
       amp = CorrectShaperNonLin(amp,1.);
+    }
+
+    // apply an additional scale on cell level. Not to be used for standard analyses!
+    if(fUseAdditionalScale){
+      if( imod == 10 || imod == 11 || imod == 18 || imod == 19 ){ // 1/3 SM
+        amp *= fAdditionalScaleSM[2];
+      } else if( imod >= 12 && imod <=17 ){                       // 2/3 SM
+        amp *= fAdditionalScaleSM[1];
+      } else {                                                    // Full SM
+        amp *= fAdditionalScaleSM[0];
+      }
     }
 
     // correct cell energy based on pi0 calibration
@@ -1662,10 +1679,25 @@ void AliEMCALRecoUtils::InitNCellEfficiencyParam()
     fNCellEfficiencyParams[1] = 1.28118;
     fNCellEfficiencyParams[2] = 0.583403;
   }
-  else if (fNCellEfficiencyFunction == kNCePi0TaggedPCMEMC) {
-    fNCellEfficiencyParams[0] = -0.0377925;
-    fNCellEfficiencyParams[1] = 0.160758;
-    fNCellEfficiencyParams[2] = -0.00357992;
+  else if (fNCellEfficiencyFunction == kNCePCMEMCGaussian) {
+    fNCellEfficiencyParams[0] = 0.130462;
+    fNCellEfficiencyParams[1] = 1.62858;
+    fNCellEfficiencyParams[2] = 0.572064;
+  }
+  else if (fNCellEfficiencyFunction == kNCePCMEMCPol2) {
+    fNCellEfficiencyParams[0] = -0.0794055;
+    fNCellEfficiencyParams[1] = 0.290664;
+    fNCellEfficiencyParams[2] = -0.136717;
+  }
+  else if (fNCellEfficiencyFunction == kNCeEMCGaussian) {
+    fNCellEfficiencyParams[0] = 0.0864766;
+    fNCellEfficiencyParams[1] = 1.50279;
+    fNCellEfficiencyParams[2] = 0.61173;
+  }
+  else if (fNCellEfficiencyFunction == kNCeEMCPol2) {
+    fNCellEfficiencyParams[0] = -0.0638141;
+    fNCellEfficiencyParams[1] = 0.203806;
+    fNCellEfficiencyParams[2] = -0.0774961;
   }
 
 }
@@ -1751,14 +1783,66 @@ Bool_t AliEMCALRecoUtils::GetIsNCellCorrected(AliVCluster* cluster, AliVCaloCell
       break;
     }
 
-    case kNCePi0TaggedPCMEMC:
+    case kNCePCMEMCGaussian:
     {
       // based on clusters which are part of a (PCM-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
       // mostly photon clusters and electron(conversion) clusters (purity about 95%)
       // exotics should be nearly cancled by that
-      // fNCellEfficiencyParams[0] = -0.0377925;
-      // fNCellEfficiencyParams[1] = 0.160758;
-      // fNCellEfficiencyParams[2] = -0.00357992;
+      // Gaussian par.
+      // fNCellEfficiencyParams[0] = 0.130462;
+      // fNCellEfficiencyParams[1] = 1.62858;
+      // fNCellEfficiencyParams[2] = 0.572064;
+      Float_t val = fNCellEfficiencyParams[0]*exp(
+                    -0.5*((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2])*
+                    ((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2]));
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCePCMEMCPol2:
+    {
+      // based on clusters which are part of a (PCM-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // mostly photon clusters and electron(conversion) clusters (purity about 95%)
+      // exotics should be nearly cancled by that
+      // Pol2 par.
+      // fNCellEfficiencyParams[0] = -0.0794055;
+      // fNCellEfficiencyParams[1] = 0.290664;
+      // fNCellEfficiencyParams[2] = -0.136717;
+      Float_t val = fNCellEfficiencyParams[0]*energy*energy +
+                    fNCellEfficiencyParams[1]*energy +
+                    fNCellEfficiencyParams[2];
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCeEMCGaussian:
+    {
+      // based on clusters which are part of a (EMC-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // mostly photon clusters and electron(conversion) clusters (purity about 95%)
+      // exotics should be nearly cancled by that
+      // Gaussian par.
+      // fNCellEfficiencyParams[0] = 0.0864766;
+      // fNCellEfficiencyParams[1] = 1.50279;
+      // fNCellEfficiencyParams[2] = 0.61173;
+      Float_t val = fNCellEfficiencyParams[0]*exp(
+                    -0.5*((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2])*
+                    ((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2]));
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCeEMCPol2:
+    {
+      // based on clusters which are part of a (EMC-EMC) cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // mostly photon clusters and electron(conversion) clusters (purity about 95%)
+      // exotics should be nearly cancled by that
+      // Pol2 par.
+      // fNCellEfficiencyParams[0] = -0.0638141;
+      // fNCellEfficiencyParams[1] = 0.203806;
+      // fNCellEfficiencyParams[2] = -0.0774961;
       Float_t val = fNCellEfficiencyParams[0]*energy*energy +
                     fNCellEfficiencyParams[1]*energy +
                     fNCellEfficiencyParams[2];
@@ -2280,6 +2364,9 @@ void AliEMCALRecoUtils::InitParameters()
 
   // number of cell efficiency
   for (Int_t i = 0; i < 10  ; i++) fNCellEfficiencyParams[i] = 0.;
+
+  // additional scale for different SM types (default value is 1)
+  for (Int_t i = 0; i < 3; i++) fAdditionalScaleSM[i] = 1.;
 }
 
 ///
@@ -2682,11 +2769,11 @@ Double_t AliEMCALRecoUtils::GetLowGainSlewing (Double_t energy) const
   Double_t offset = 0;
 
   if (energy > 14 && energy <= 80){
-    offset = 2.2048848 - 0.19256571*energy + 0.0034679678*TMath::Power(energy,2) - 1.9102064e-05*TMath::Power(energy,2);
+    offset = 2.2048848 - 0.19256571*energy + 0.0034679678*TMath::Power(energy,2) - 1.9102064e-05*TMath::Power(energy,3);
   } else if (energy <= 14) {
-    offset = 2.2048848 - 0.19256571*14 + 0.0034679678*TMath::Power(14,2) - 1.9102064e-05*TMath::Power(14,2);
+    offset = 2.2048848 - 0.19256571*14 + 0.0034679678*TMath::Power(14,2) - 1.9102064e-05*TMath::Power(14,3);
   } else {
-    offset = 2.2048848 - 0.19256571*80 + 0.0034679678*TMath::Power(80,2) - 1.9102064e-05*TMath::Power(80,2);
+    offset = 2.2048848 - 0.19256571*80 + 0.0034679678*TMath::Power(80,2) - 1.9102064e-05*TMath::Power(80,3);
   }
 
   return offset;
@@ -5185,6 +5272,260 @@ void AliEMCALRecoUtils::SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TH1C* h
   TH1C *clone = new TH1C(*h);
   clone->SetDirectory(NULL);
   fEMCALL1PhaseInTimeRecalibration->AddAt(clone,parNumber);
+}
+
+/**
+ * @brief function that allows propagation of a track to EMCal surface. In this case, full BetheBloch inspired by GEANT
+ *  is used instead of an approximation of BetheBloch for solids (Silicon) that is normally used.
+ * 
+ * For electrons the enrrgy loss due to Bremsstrahlung is accounted for above critial Energy E_Crit
+ * of the respective (mean) material passed in the step
+ * 
+ * @param trkParam track parameters
+ * @param emcalR radius of emcal surface used for propagation (cm)
+ * @param mass mass hypothesis used for track extrpolation (GeV/c2)
+ * @param step step length for propagation
+ * @param eta return. Track eta on emcal surface
+ * @param phi return. Track phi on emcal surface
+ * @param pt return. Track pt on emcal surface
+ */
+ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurfaceExperimental(AliExternalTrackParam *trkParam, 
+                                                             Double_t emcalR,
+                                                             Double_t mass, 
+                                                             Double_t step, 
+                                                             Float_t &eta, 
+                                                             Float_t &phi,
+                                                             Float_t &pt){
+
+  eta = -999, phi = -999, pt = -999;
+  
+  if (!trkParam) return kFALSE;
+  
+  if (!PropagateTrackToBxByBzExperimental(trkParam, emcalR, mass, step, kTRUE, 0.8, -1)) return kFALSE;
+  
+  Double_t trkPos[3] = {0.,0.,0.};
+  
+  if (!trkParam->GetXYZ(trkPos)) return kFALSE;
+  
+  TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+  
+  eta = trkPosVec.Eta();
+  phi = trkPosVec.Phi();
+  pt  = trkParam->Pt();
+  
+  if ( phi < 0 )
+    phi += TMath::TwoPi();
+  
+  return kTRUE;
+}
+
+/**
+ * @brief Function that 
+ * 
+ * @param track external track parameters of tracks
+ * @param xToGo x of where to propagate to in cm
+ * @param mass mass assumption use for propagation
+ * @param maxStep size of each step done for propagation in cm
+ * @param rotateTo 
+ * @param maxSnp 
+ * @param sign  
+ * @param addTimeStep 
+ * @param correctMaterialBudget if true, track momentum will be corrected for passed material
+ * @return Bool_t 
+ */
+Bool_t AliEMCALRecoUtils::PropagateTrackToBxByBzExperimental(AliExternalTrackParam *track,
+				       Double_t xToGo,Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp,Int_t sign, Bool_t addTimeStep,
+				       Bool_t correctMaterialBudget){
+const Double_t kEpsilon = 0.00001;
+  Double_t xpos     = track->GetX();
+  Int_t dir         = (xpos<xToGo) ? 1:-1;
+
+  while ( (xToGo-xpos)*dir > kEpsilon){
+    Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
+    Double_t x    = xpos+step;
+    Double_t xyz0[3],xyz1[3],param[7];
+    track->GetXYZ(xyz0);   //starting global position
+
+    Double_t b[3]; AliTrackerBase::GetBxByBz(xyz0,b); // getting the local Bx, By and Bz
+
+    if (!track->GetXYZAt(x,b[2],xyz1)) return kFALSE;   // no prolongation
+    xyz1[2]+=kEpsilon; // waiting for bug correction in geo
+
+    //    if (maxSnp>0 && TMath::Abs(track->GetSnpAt(x,b[2])) >= maxSnp) return kFALSE;
+    if (!track->PropagateToBxByBz(x,b))  return kFALSE;
+    if (maxSnp>0 && TMath::Abs(track->GetSnp())>=maxSnp) return kFALSE;
+
+
+    // New part to correct properly for material traversed
+    if (correctMaterialBudget) {
+      AliTrackerBase::MeanMaterialBudget(xyz0,xyz1,param);    
+      Double_t xrho=param[0]*param[4], xx0=param[1]; // thickness in unit of radiation length so x/x0 
+      if (sign) {
+        if (sign<0) xrho = -xrho;
+      } else { // determine automatically the sign from direction
+	       if (dir>0) xrho = -xrho; // outward should be negative
+      }    
+      // DIFFERENCE TO NORMAL PROPAGATION STARTING HERE
+      // if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
+     // calculate traversed length
+      Double_t length = TMath::Sqrt((xyz1[0]-xyz0[0])*(xyz1[0]-xyz0[0])+
+                       (xyz1[1]-xyz0[1])*(xyz1[1]-xyz0[1])+
+                       (xyz1[2]-xyz0[2])*(xyz1[2]-xyz0[2]));
+ 
+
+      Double_t meanDensiy = param[0]; // [g/cm3]
+      // Double_t meanZoverA = param[5];
+     
+      Double_t meanX0 = length/xx0;
+      Double_t meanZ = param[3];
+      Double_t meanA = param[2];
+      Double_t meanZoverA = meanZ/meanA;
+    //  printf(" --> The following information has been extracted\n"); 
+    //  printf(" Propagation lenghth (cm): %f\n" ,length); 
+    //  printf(" meanDensiy (g/cc): %f\n" ,meanDensiy); 
+    //  printf(" meanZoverA: %f\n" ,meanZoverA); 
+    //  printf(" meanX0 (cm): %f\n" ,meanX0); 
+    //  printf(" meanZ: %f\n" ,meanZ); 
+      // determine excitation energy from mean Z (GeV)
+      Double_t excitationE;
+      if (meanZ < 13) excitationE = (12. * meanZ + 7.) * 1.e-9;
+      else excitationE = (9.76 * meanZ + 58.8 * TMath::Power(meanZ,-0.19)) * 1.e-9;
+
+      // printf("Optaining excitation energy in (eV): %f\n",excitationE*1e9);
+
+      // determine density effect for ionization losses of charged particles
+      // values given in table
+      // https://journals.aps.org/prb/abstract/10.1103/PhysRevB.3.3681
+
+      // default values for silicon used in normal propagation, so always the same values for x0 and x1
+      // however one can obtain x0 and x1 for solids and liquid given by formula in paper depending on Cbar
+      // which is related to plasma energy
+      Double_t x0 = 0.2; // first junction density correction
+      Double_t x1 = 3;   // second junction density correction
+
+      // calculate CBAR = - C
+      Double_t cbar=2*TMath::Log(excitationE*1e9/28.816*TMath::Sqrt(meanDensiy*meanZoverA))-1; // todo
+      
+      // selection for solids and liquids, for a gas different formular would need to be used to obtain x0 and x1
+      if(excitationE*1.e9<100){ // <100eV
+           x1 = 2.0;
+           if(cbar < 3.681){
+               x0 = 0.2;
+           } else{
+               x0 = 0.326*cbar-1.0;
+           }
+      } else{
+          x1 = 3.0;
+          if(cbar < 5.215){
+            x0 = 0.2;
+          } else{
+            x0 = 0.326*cbar - 1.5;
+          }
+      }
+
+      // printf("According to paper density correction parameters were set to:\n");
+      // printf("x0= %f\n" ,x0);
+      // printf("x1= %f\n" ,x1);
+      
+      // Calculate dEdx
+      Double_t bg=track->P()/mass;
+      if (mass<0) {
+        if (mass<-990) {
+          return kFALSE;
+          }
+          bg = -2*bg;
+      }
+      // dEdx from Bethe-Bloch inspired by GEANT. Normally material properties are
+      // assumed to be from silicon, we now apply proper corrections
+      // assuming that we have a solid or liquid and NOT A GAS
+      // bg  - beta*gamma
+      // kp0 - density [g/cm^3]
+      // kp1 - density effect first junction point
+      // kp2 - density effect second junction point
+      // kp3 - mean excitation energy [GeV]
+      // kp4 - mean Z/A
+      //
+      Double_t dEdx=AliExternalTrackParam::BetheBlochGeant(bg,meanDensiy,x0,x1,excitationE,meanZoverA);
+
+
+     // If one finds mass hypothesis to be electron mass
+     // calculate corrections for Bremsstrahlung
+     // one can safely assume dE/dx aprox E/X0 for electrons
+     // above a critical energy Ecrit above which this is the dominant
+     // source of energy loss. 
+     //
+     // we obtain ECrit with emperical formulas relating ECrit to Z
+     // formula only correct for solids and electrons
+     // 
+     // below Ecrit no additional corrections are applied
+     // we also neglect moller and bhabha cross section for collision energy losses 
+     // we also also neglect any corrections needed at ultra high energies (LPM effect)
+     Double_t dEdxRadiationLoss = 0;
+     // check first if radiative loss is dominant by determining the critival energy following Rossi definition
+     Double_t ECritSolid = 610 /(meanZ+1.24);//MeV, only valid for solids, obtained for PDG Fig 33.14
+     //  Double_t ECritGas = 710 /(meanZ+0.92); //MeV, only valid for solids, obtained for PDG Fig 33.14
+     // cant really figure out if I am in a Gas or solid, sinse we might traverse Gas and solid
+     // might be able to use 
+     //
+    //    TGeoNode *currentnode = 0;
+    // TGeoNode *startnode = gGeoManager->InitTrack(start, dir);
+    // if (!startnode) {
+    //   AliDebugClass(1,Form("start point out of geometry: x %f, y %f, z %f",
+    // 		 start[0],start[1],start[2]));
+    //   return 0.0;
+    // }
+    // TGeoMaterial *material = startnode->GetVolume()->GetMedium()->GetMaterial();
+    // TGeoMaterial *
+    // printf("Critical energy (MeV): %f\n", ECritSolid);
+    // printf("Mass: %f\n", mass);
+     
+    Double_t p = track->GetP();
+    Double_t trackE = TMath::Sqrt((p*p) + (mass*mass));
+    // printf("Track Energy %f\n", trackE*1000);
+    if((mass>=0.000510)&&(mass<=0.000512)){ // if electron
+            // printf("IsElectron\n");
+      if((trackE*1000)>ECritSolid){ // compare energies in MeV
+            // printf("Energy %f was higher than crit\n",track->E()*1000);
+            dEdxRadiationLoss = trackE/meanX0; // energy loss dedx due to bremsstrahlung in GeV
+            
+      }
+
+      dEdx = dEdxRadiationLoss; // use radiation energy losses in case of electron
+    }
+
+    // correct with dEdx
+    track->CorrectForMeanMaterialdEdx(xx0,xrho,mass,dEdx,kTRUE); // with angle correction
+    
+    }
+    if (rotateTo){
+      track->GetXYZ(xyz1);   // global position
+      Double_t alphan = TMath::ATan2(xyz1[1], xyz1[0]); 
+      /*
+	if (maxSnp>0) {
+	if (TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
+	Double_t ca=TMath::Cos(alphan-track->GetAlpha()), sa=TMath::Sin(alphan-track->GetAlpha());
+	Double_t sf=track->GetSnp(), cf=TMath::Sqrt((1.-sf)*(1.+sf));
+	Double_t sinNew =  sf*ca - cf*sa;
+	if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
+	}
+      */
+      if (!track->AliExternalTrackParam::Rotate(alphan)) return kFALSE;
+      if (maxSnp>0 && TMath::Abs(track->GetSnp())>=maxSnp) return kFALSE;
+    }
+    xpos = track->GetX();    
+    if (addTimeStep && track->IsStartedTimeIntegral()) {
+      if (!rotateTo) track->GetXYZ(xyz1); // if rotateTo==kTRUE, then xyz1 is already extracted
+      Double_t dX=xyz0[0]-xyz1[0],dY=xyz0[1]-xyz1[1],dZ=xyz0[2]-xyz1[2]; 
+      Double_t d=TMath::Sqrt(dX*dX + dY*dY + dZ*dZ);
+      if (sign) {if (sign>0) d = -d;}  // step sign is imposed, positive means inward direction
+      else { // determine automatically the sign from direction
+	if (dir<0) d = -d;
+      }
+      track->AddTimeStep(d);
+    }
+  }
+  return kTRUE;
+  
 }
 
 ///

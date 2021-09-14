@@ -57,18 +57,20 @@ AliAnalysisTaskDCArStudy::~AliAnalysisTaskDCArStudy()
 void AliAnalysisTaskDCArStudy::AddOutput()
 {
     //dcar:pt:mult:mcinfo
-    AddAxis("DCAxy",5000,-1,1);
+    auto const DCAbins = 500;
+    auto const DCAbinWidth = 2./DCAbins;
+    AddAxis("DCAxy",DCAbins+1,-1-DCAbinWidth/2.,1+DCAbinWidth/2);
     AddAxis("pt");
-    AddAxis("nTracks",4000, -0.5, 3999.5);
+    AddAxis("nTracks", "mult6kcoarse");
     AddAxis("cent");
     AddAxis("MCinfo",4,-1.5,2.5); // 0=prim, 1=decay 2=material -1=data
     fHistDCA = CreateHist("fHistDCA");
     fOutputList->Add(fHistDCA);
 
     //dcar:pt:mult:mcinfo
-    AddAxis("DCAxy",5000,-20,20);
+    AddAxis("DCAxy",500,-1,1);
     AddAxis("TPCpt","pt");
-    AddAxis("nTracks",4000, -0.5, 3999.5);
+    AddAxis("nTracks", "mult6kcoarse");
     AddAxis("cent");
     AddAxis("MCinfo",4,-1.5,2.5); // 0=prim, 1=decay 2=material -1=data
     fHistDCATPC = CreateHist("fHistDCATPC");

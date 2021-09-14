@@ -7,6 +7,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
 #include "TComplex.h"
+#include "AliVParticle.h"
 #include "TAxis.h"
 #include "AliDecorrFlowCorrTask.h"
 
@@ -70,6 +71,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetCurrSystFlag(int sys) { fCurrSystFlag = sys; }
         //void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; }  //outdated, derived from CorrTask
         void                    SetRequireTwoPart(Bool_t req) { fRequireTwoPart = req; }
+        void                    SetOnTheFly(bool otf) { fOnTheFly = otf; }
     
     private:
         static const Int_t      fNumHarms = 13;             // maximum harmonics length of flow vector array
@@ -89,9 +91,11 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Bool_t                  LoadWeights();
         double                  GetWeights(double dPhi, double dEta, double dVz);
         Bool_t                  IsEventSelected(TH1D* h = nullptr);
+        Bool_t                  IsMCEventSelected();
         Bool_t                  IsEventRejectedAddPileUp(const int fPileupCut) const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
         Int_t                   GetSamplingIndex() const;
+        Double_t                GetCentralityFromImpactParameter();
         //Weights and QA hists
         AliGFWWeights*          fWeights;                   //!
         TList*                  fWeightList;                //!
@@ -119,8 +123,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    FillAfterWeights();         
         
         //Flow methods
-        bool                    IsWithinRP(const AliAODTrack* track) const;
-        bool                    IsWithinPOI(const AliAODTrack* track) const;
+        bool                    IsWithinRP(const AliVParticle* track) const;
+        bool                    IsWithinPOI(const AliVParticle* track) const;
         void                    FillRPvectors(const AliDecorrFlowCorrTask* const task);
         Int_t                   FillPOIvectors(const AliDecorrFlowCorrTask* const task, const double dPtLow, const double dPtHigh); 
         void                    FillPtBvectors(const AliDecorrFlowCorrTask* const task, const double dPtLow, const double dPtHigh); 
@@ -219,8 +223,10 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         AliAODEvent*            fAOD;                       //! input event
         Bool_t                  fIsMC;
         AliMCEvent*             fMCEvent;                   //! MC event
+        AliVEvent*              fEvent;                     //!
         Bool_t                  fInitTask;                  //Initialization
-        
+        Bool_t                  fOnTheFly;                  
+        Double_t                fImpactParameterMC;
         std::vector<AliDecorrFlowCorrTask*>    fVecCorrTask;   //
         
         //cuts & selection: Analysis
@@ -246,6 +252,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                PtEdges[NPtBinMax+1];
         Double_t                fCentMin;
         Double_t                fCentMax;
+        Double_t                fPVtxCutX;
+        Double_t                fPVtxCutY;
         Double_t                fPVtxCutZ;
         Bool_t                  fRequireHighPtTracks;
         Int_t                   fNHighPtTracks;
@@ -287,7 +295,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TH2D*                   fhQAEventsfMultTPCvsTOF;    //!
         TH2D*                   fhQAEventsfMultTPCvsESD;    //!
 
-        ClassDef(AliAnalysisDecorrTask, 2);
+        ClassDef(AliAnalysisDecorrTask, 1);
 };
 
 #endif

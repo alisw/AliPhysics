@@ -31,7 +31,17 @@
 #include <iostream>
 #include "TComplex.h"
 #include "TRandom3.h"
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 #include "AliDecorrFlowCorrTask.h"
+#include "AliVParticle.h"
+#include "AliVTrack.h"
+#include "AliAODMCParticle.h"
 
 #include "AliAnalysisDecorrTask.h"
 
@@ -74,8 +84,11 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fIndexSampling{0},
     fAOD(nullptr),
     fIsMC(kFALSE),
-    fMCEvent(0),
-    fInitTask{kFALSE},   
+    fMCEvent(nullptr),
+    fEvent(nullptr),
+    fInitTask{kFALSE},  
+    fOnTheFly(kFALSE),
+    fImpactParameterMC{0.0},
     fVecCorrTask{},
 
     fSampling{kFALSE},
@@ -96,6 +109,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fCentAxis(new TAxis()),
     fCentMin{0.0},
     fCentMax{50.0},
+    fPVtxCutX{3.},
+    fPVtxCutY{3.},
     fPVtxCutZ{10.0},
     fRequireHighPtTracks{kFALSE},
     fNHighPtTracks{1},
@@ -164,8 +179,11 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, Bool_t IsMC) : Al
     fIndexSampling{0},
     fAOD(nullptr),
     fIsMC(IsMC),
-    fMCEvent(0),
-    fInitTask{kFALSE},   
+    fMCEvent(nullptr),
+    fEvent(nullptr),
+    fInitTask{kFALSE}, 
+    fOnTheFly(kFALSE),  
+    fImpactParameterMC{0.0},
     fVecCorrTask{},
 
     fSampling{kFALSE},
@@ -186,6 +204,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, Bool_t IsMC) : Al
     fCentAxis(new TAxis()),
     fCentMin{0.0},
     fCentMax{50.0},
+    fPVtxCutX{3.},
+    fPVtxCutY{3.},
     fPVtxCutZ{10.0},
     fRequireHighPtTracks{kFALSE},
     fNHighPtTracks{0},
@@ -263,9 +283,9 @@ Bool_t AliAnalysisDecorrTask::InitTask()
     }
 
     AliInfo("Weight List loaded");
-
+    
     if(fIsMC) AliInfo("Running over MC data!");
-
+    AliInfo("Creating output objects");
     return kTRUE;
 }
 
@@ -523,6 +543,7 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         fQA->Add(fhQAEventsfMultTPCvsESD);
     }
 
+    AliInfo("Output objects created");
     PostData(1, fFlowList);
     PostData(2, fFlowWeights);
     PostData(3, fQA);
@@ -696,28 +717,45 @@ void AliAnalysisDecorrTask::FillAfterWeights()
 //_____________________________________________________________________________
 void AliAnalysisDecorrTask::UserExec(Option_t *)
 {
-
-
     if(!fInitTask) { AliFatal("Something went wrong! Task not initialized"); return; }
     
-    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!fAOD) { return; }
-    
+    AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
+    AliVEventHandler* inputHandler = (AliVEventHandler*) (man->GetInputEventHandler());
     if(fIsMC) {
-        fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
+        fMCEvent = inputHandler->MCEvent();
         if (!fMCEvent) return;
     }
+    else if(fOnTheFly)
+    {
+        fEvent = dynamic_cast<AliVEvent*>(MCEvent());
+    }
+    else
+    {   
+        fEvent = dynamic_cast<AliVEvent*>(InputEvent());
+        fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+        if(!fAOD) { return; }
+    }
+    if(!fEvent) { AliFatal("fEvent not found!"); return; }
+
     //Event selection
     if(fFillQA) {
         TH1D* fhEventSel = (TH1D*)fQA->FindObject("fhEventSel");
         if(!fhEventSel) cout << "fhEventSel not found" << endl;
     } 
-    if(!IsEventSelected(fhEventSel)) { return; }
-
     
-    FillWeights();
+    if(fOnTheFly)
+    {
+        if(!IsMCEventSelected()) { return; }
 
-    if(!fUseWeightsOne)
+    }
+    else
+    {
+        if(!IsEventSelected(fhEventSel)) { return; }
+    }
+    
+    if(!fOnTheFly && fFillQA) FillWeights();
+
+    if(!fUseWeightsOne && !fOnTheFly)
     {
         if(!LoadWeights())
         {
@@ -725,7 +763,6 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
             return;
         }
     }
-
     //Get centrality of event
     Float_t centrality(0);
     //Use Nch for small systems
@@ -738,20 +775,24 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         if(centrality>0) {
             fhCentVsCharged->Fill(SmallSyscentrality,centrality);
         }
-
+    }
+    else if(fOnTheFly)
+    {
+        centrality = GetCentralityFromImpactParameter();
     }
     //Else uses centrality from selected centrality estimator
     else {
         AliMultSelection *multSelect =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
         if(multSelect) centrality = multSelect->GetMultiplicityPercentile(fCentEstimator);
     }
-    if(fFillAfterWeights)
+    if(centrality < 0) return;
+
+    if(fFillAfterWeights && !fOnTheFly)
     {
         FillAfterWeights();
     }
     //Subsampling - 10 subsamples
     fIndexSampling = GetSamplingIndex();
-
     //Multiplicity
     //Int_t iTracks(fAOD->GetNumberOfTracks());
     //Fill RP vectors
@@ -761,7 +802,6 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     {
         const AliDecorrFlowCorrTask* const task = fVecCorrTask.at(iTask);
         if(!task) { AliError("AliDecorrFlowCorrTask does not exist"); return; }
-
         FillRPvectors(task);
         bRef = task->fbDoRef;
         bDiff = task->fbDoDiff;
@@ -769,7 +809,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         bPtRef = task->fbDoPtRef; 
         bPtB = task->fbDoPtB; 
         if(bRef) { CalculateCorrelations(task, centrality, -1.0, -1.0, bRef, kFALSE, kFALSE, kFALSE, kFALSE); }
-
+        
         int iNumPtBins = fPtAxis->GetNbins();
 
         //Loop over Pt bins
@@ -1071,7 +1111,6 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
 //Method to fill RP vectors and stat histograms
 void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const task)
 {
-
     ResetFlowVector(Qvector);
     ResetFlowVector(Qvector10P);
     ResetFlowVector(Qvector10M);
@@ -1081,9 +1120,73 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
     double dGap = task->fdGaps[0]; 
     if(dGap > -1.0) { bHasGap = kTRUE; } else { bHasGap = kFALSE; }
     double dEtaLimit = 0.5*dGap;
-    double dVz = fAOD->GetPrimaryVertex()->GetZ();
+    double dVz = (fOnTheFly)?0.0:fAOD->GetPrimaryVertex()->GetZ();
     
-    if(fIsMC)
+    if(fOnTheFly)
+    {
+        AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+        Int_t iNumTracks = ev->GetNumberOfPrimaries();
+        if(iNumTracks < 1) { return; }
+        for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) 
+        {
+            AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
+
+            if(!track) { continue; }
+            
+            //excluding non stable particles
+            if(!(ev->IsPhysicalPrimary(iTrack))) continue;
+            if(track->Charge() == 0) continue;
+            
+            bIsRP = IsWithinRP(track);
+            if (!bIsRP) { continue; }
+
+            double dPhi = track->Phi();
+            double dEta = track->Eta();
+
+            //Calculating weights    
+            double dWeight = 1.0;
+            
+            //Filling Q-vectors for RPs
+            if(!bHasGap)
+            {
+                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+                {
+                    for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                    {
+                        Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                        Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                        Qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                    } //End for iPower
+                }  //End for iHarm
+            }
+            // RFP in positive and negative eta acceptance
+            if(dEta > dEtaLimit && bHasGap)
+            {
+                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
+                {
+                    for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                    {
+                        Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                        Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                        Qvector10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                    }  //End for iPower
+                }  //End for iHarm
+            }
+            else if(dEta < -dEtaLimit && bHasGap)
+            {
+                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
+                {
+                    for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                    {
+                        Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                        Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                        Qvector10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                    } //End for iPower
+                } //End for iHarm
+            }  //end if eta gap
+        }  //end track loop
+    }
+    else if(fIsMC)
     {
         TClonesArray* tca = (TClonesArray*)fAOD->FindListObject("mcparticles");
         Int_t nPrim = tca->GetEntries();
@@ -1224,10 +1327,91 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
     if(dGap > -1.0) { bHasGap = kTRUE; } else { bHasGap = kFALSE; }
     double dEtaLimit = 0.5*dGap;
 
-    double dVz = fAOD->GetPrimaryVertex()->GetZ();
+    double dVz = (fOnTheFly)?0.0:fAOD->GetPrimaryVertex()->GetZ();
     Int_t TrackCounter = 0;
+    if(fOnTheFly)
+    {
+        AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+        Int_t iNumTracks = ev->GetNumberOfPrimaries();
+        if(iNumTracks < 1) { return 0; }
+        for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) 
+        {
+            AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
+            if(!track) { continue; }
 
-    if(fIsMC)
+            //excluding non stable particles
+            if(!(ev->IsPhysicalPrimary(iTrack))) continue;
+            if(track->Charge() == 0) continue;
+
+            double dPt = track->Pt();
+            double dPhi = track->Phi();
+            double dEta = track->Eta();
+
+            //if (Abs(dEta) < dEtaLimit) { continue; } Why the hell is this here?
+
+            //Check for overlap with RPs
+            bool bIsWithinRP = IsWithinRP(track);
+
+            //Check that particle is in POI range
+            bool bIsWithinPOI = IsWithinPOI(track);
+
+            if(!bIsWithinPOI) { continue; }
+
+            //Load weights
+            double dWeight = 1.0;
+
+            //POI with no eta gap
+            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
+            {
+                TrackCounter++;
+                if(!bHasGap)
+                {
+                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+                    {
+                        for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                        {
+                            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                            pvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);           
+                            //Check if there is overlap of POI and RP
+                            if(bIsWithinRP)
+                            {
+                                qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                            }
+                        }  //End for iPower
+                    }  //End for iHarm
+                }
+                //POI with eta gap
+                if(dEta > dEtaLimit && bHasGap)
+                {
+                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
+                    {
+                        for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                        {
+                            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                            pvector10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                            
+                        } //End for iPower
+                    }  //End for iHarm
+                }
+                if (dEta < -dEtaLimit && bHasGap)
+                {
+                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
+                    {
+                        for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                        {
+                            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                            pvector10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                            
+                        } //End for iPower
+                    } //End for iHarm
+                }  // end if eta gap
+            } //end if dPtLow < dPt < dPtHigh
+        } //end for track  
+    }
+    else if(fIsMC)
     {
         TClonesArray* tca = (TClonesArray*)fAOD->FindListObject("mcparticles");
         Int_t nPrim = tca->GetEntries();
@@ -1394,8 +1578,6 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
         } //end for track
     }
     
-
-    
     return TrackCounter;
 }
 
@@ -1414,9 +1596,90 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
     if(dGap > -1.0) { bHasGap = kTRUE; } else { bHasGap = kFALSE; }
     double dEtaLimit = 0.5*dGap;
 
-    double dVz = fAOD->GetPrimaryVertex()->GetZ();
+    double dVz = (fOnTheFly)?0.0:fAOD->GetPrimaryVertex()->GetZ();
+    if(fOnTheFly)
+    {
+        AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+        Int_t iNumTracks = ev->GetNumberOfPrimaries();
+        if(iNumTracks < 1) { return; }
+        for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) 
+        {
+            AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
+            if(!track) { continue; }
 
-    if(fIsMC)
+            //excluding non stable particles
+            if(!(ev->IsPhysicalPrimary(iTrack))) continue;
+            if(track->Charge() == 0) continue;
+
+            double dPt = track->Pt();
+            double dPhi = track->Phi();
+            double dEta = track->Eta();
+
+            //if (Abs(dEta) < dEtaLimit) { continue; } Why the hell is this here?
+
+            //Check for overlap with RPs
+            bool bIsWithinRP = IsWithinRP(track);
+
+            //Check that particle is in POI range
+            bool bIsWithinPOI = IsWithinPOI(track);
+
+            if(!bIsWithinPOI) { continue; }
+
+            //Load weights
+            double dWeight = 1.0;
+
+            //POI with no eta gap
+            if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
+            {
+                if(!bHasGap)
+                {
+                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+                    {
+                        for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                        {
+                            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                            pvectorPtB[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+                            //Check if there is overlap of POI and RP
+                            if(bIsWithinRP)
+                            {
+                                qvectorPtB[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                            }
+                        }  //End for iPower
+                    }  //End for iHarm
+                }
+                //POI with eta gap
+                if(dEta > dEtaLimit && bHasGap)
+                {
+                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
+                    {
+                        for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                        {
+                            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                            pvectorPtB10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                        
+                        } //End for iPower
+                    }  //End for iHarm
+                }
+                if (dEta < -dEtaLimit && bHasGap)
+                {
+                    for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++)
+                    {
+                        for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                        {
+                            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                            pvectorPtB10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                            
+                        } //End for iPower
+                    } //End for iHarm
+                }  // end if eta gap
+            } //end if dPtLow < dPt < dPtHigh
+        } //end for track
+    }
+    else if(fIsMC)
     {
         TClonesArray* tca = (TClonesArray*)fAOD->FindListObject("mcparticles");
         Int_t nPrim = tca->GetEntries();
@@ -1585,7 +1848,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
     return;
 }
 
-bool AliAnalysisDecorrTask::IsWithinRP(const AliAODTrack* track) const
+bool AliAnalysisDecorrTask::IsWithinRP(const AliVParticle* track) const
 {
     if(fAbsEtaMax > 0.0 && Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
     if(fRFPsPtMax > 0.0 && track->Pt() < fRFPsPtMin) { return kFALSE; }
@@ -1594,7 +1857,7 @@ bool AliAnalysisDecorrTask::IsWithinRP(const AliAODTrack* track) const
     return kTRUE;
 }
 
-bool AliAnalysisDecorrTask::IsWithinPOI(const AliAODTrack* track) const
+bool AliAnalysisDecorrTask::IsWithinPOI(const AliVParticle* track) const
 {
     if(fAbsEtaMax > 0.0 && Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
     if(fPOIsPtmax > 0.0 && track->Pt() < fPOIsPtmin) { return kFALSE; }
@@ -1621,6 +1884,63 @@ Int_t AliAnalysisDecorrTask::GetSamplingIndex() const
     return index;
 }
 
+Double_t AliAnalysisDecorrTask::GetCentralityFromImpactParameter()
+{
+    Double_t b[] = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,9999};
+    Double_t cent[] = {2.5,7.5,15.,25.,35.,45.,55.,65.,75.,90.};
+    for(Int_t i(0);i<10;i++)
+    {
+        if(fImpactParameterMC <= b[i+1] && fImpactParameterMC > b[i]) 
+        {
+            return cent[i];
+        }
+        else 
+        {
+            continue;
+        }
+    }
+    return -1.0;
+}
+
+Bool_t AliAnalysisDecorrTask::IsMCEventSelected()
+{
+    AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+    if(!ev) { AliFatal("MC event not found!"); return kFALSE; }
+
+    AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
+    if(!header) { AliFatal("MC event not generated!"); return kFALSE; }
+
+    const AliVVertex *vertex = ev->GetPrimaryVertex();
+    if(!ev) { AliError("Vertex of MC not found!"); }
+
+    if(TMath::Abs(vertex->GetX()) > fPVtxCutX) return kFALSE;
+    if(TMath::Abs(vertex->GetY()) > fPVtxCutY) return kFALSE;
+    if(TMath::Abs(vertex->GetZ()) > fPVtxCutZ) return kFALSE;
+
+    AliCollisionGeometry* headerH;
+    AliGenHepMCEventHeader* headertmp;
+    TString genName;
+    TList *ltgen = (TList*)ev->GetCocktailList();
+    if (ltgen) {
+        for(auto&& listObject: *ltgen){
+            genName = Form("%s",listObject->GetName());
+            if (genName.Contains("Hijing")) {
+                headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+                break;
+            }
+        }
+    }
+    else 
+    {
+        headertmp = dynamic_cast<AliGenHepMCEventHeader*>(ev->GenEventHeader());
+    }
+    if(headertmp){
+        fImpactParameterMC = headertmp->impact_parameter();
+        if(!fImpactParameterMC) { AliFatal("Impact parameter not found"); return kFALSE; }
+    } 
+    else return kFALSE;  
+    return kTRUE;
+}
 //_____________________________________________________________________________
 Bool_t AliAnalysisDecorrTask::IsEventSelected(TH1D* h)
 {

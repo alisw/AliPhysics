@@ -30,6 +30,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            SetNclTPC(Int_t ncl) { fTPCNcls = ncl; }
     void            SetPtLimits(Double_t ptmin, Double_t ptmax) { fPtmin = ptmin; fPtmax=ptmax; }
     void            SetEtaLimit(Double_t etalimit) { fEta = etalimit; }
+    void            SetFilterBit(Int_t filterbit) { fBit = filterbit; }
     void            SetPileUpRead(Bool_t flag) {fIsPileUpCuts = flag;}
     void            SetBuildBackground(Bool_t flag) {fIsBuildBG = flag; }
     void            SetBuildLegendre(Bool_t flag) {fIsBuildLG = flag; }
@@ -39,6 +40,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            GetMCPosBackground(TH2D* hist) { fMCPosBackgroundHist = hist; }
     void            GetMCNegBackground(TH2D* hist) { fMCNegBackgroundHist = hist; }
     void            GetMCChargedBackground(TH2D* hist) { fMCChargedBackgroundHist = hist; }
+    void            GetNeventsCentHist(TH1D* hist) { fNeventCentHist = hist; }
 
   private:
     Double_t GetSingleAnCoef(int order, TH1D *hist); //method to get direct an
@@ -56,6 +58,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     Double_t fPtmin; //min PT
     Double_t fPtmax; //max PT
     Double_t fEta; //max eta
+    Int_t fBit; //filter bit - 96 default
     Bool_t fIsPileUpCuts; //pile up cuts flag
     Bool_t fIsBuildBG; //build background flag
     Bool_t fIsBuildLG; //calculates the legendre coefficients
@@ -65,6 +68,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     TH2D* fMCPosBackgroundHist; //input MC background histogram for positive tracks (eta,cent)
     TH2D* fMCNegBackgroundHist; //input MC background histogram for negative tracks (eta,cent)
     TH2D* fMCChargedBackgroundHist; //input MC background histogram for positive and negative tracks (eta,cent)
+    TH1D* fNeventCentHist; //input Nevents vs centrality histogram 
     AliEventCuts fEventCuts;
 
     AliAnalysisTaskLegendreCoef(const AliAnalysisTaskLegendreCoef&); // not implemented

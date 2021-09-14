@@ -72,6 +72,7 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fEventCut{false},
   fUseTrackCutsForAOD{false},
   fUseGeneratedKine{true},
+  fRejectEventsWithSameBunchPileup{false},
   fRejectPileupParticles{true},
   fRejectTracksOfPileupPart{false},
   fPrimarySelectionOpt{1},
@@ -131,11 +132,13 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   fOutputList = new TList();
   fOutputList->SetOwner(true);
 
-  fHistNEvents = new TH1F("hNEvents", "Number of processed events",4,-0.5,3.5);
+  fHistNEvents = new TH1F("hNEvents", "Number of processed events",6,-0.5,5.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"Generator name selected");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"MC selected");
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"Reco Selected");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"Generated Pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Generated same-bunch Pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"MC selected");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"Reco Selected");
   fOutputList->Add(fHistNEvents);
 
   fHistNParticles = new TH1D("hNParticles", "Number of particles",5,-0.5,4.5);
@@ -353,6 +356,14 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   }
 
   fHistNEvents->Fill(1);
+  if(AliAnalysisUtils::IsPileupInGeneratedEvent(fMCEvent,"ythia")) fHistNEvents->Fill(2);
+  if(AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(fMCEvent,"ythia")){
+    fHistNEvents->Fill(3);
+    if(fRejectEventsWithSameBunchPileup){
+      PostData(1, fOutputList);
+      return;
+    }
+  }
 
   double xMCVertex =99999;
   double yMCVertex =99999;
@@ -391,7 +402,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     PostData(1, fOutputList);
     return;
   }
-  fHistNEvents->Fill(2);
+  fHistNEvents->Fill(4);
 
   const AliVVertex* vtTrc = fInputEvent->GetPrimaryVertex();
   double pos[3],cov[6];
@@ -441,7 +452,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     }else{
       fHistNParticles->Fill(2);
     }
-    if(fPrimarySelectionOpt==1 && !part->IsPhysicalPrimary()) continue;
+    if(fPrimarySelectionOpt==1 && !fMCEvent->IsPhysicalPrimary(iMC)) continue;
     if(fPrimarySelectionOpt==2){
       // primary particle selection based on origin of particle
       double pRad2=part->Xv()*part->Xv()+part->Yv()*part->Yv();
@@ -476,14 +487,12 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       if(eventAccepted) fGeneratedEvSel[jPDG][iCharge]->Fill(arrayForSparse);
     }
   }
-
   if (!eventAccepted) {
     delete trEtaPhiMap;
     PostData(1, fOutputList);
     return;
   }
-  fHistNEvents->Fill(3);
-
+  fHistNEvents->Fill(5);
 
   for (int iT = 0; iT < (int)fInputEvent->GetNumberOfTracks(); ++iT) {
     /// Get the track and do the minimal cuts
@@ -514,7 +523,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       fHistNTracks->Fill(3);
     }
     
-    if (fPrimarySelectionOpt==1 && !mcPart->IsPhysicalPrimary()) continue;
+    if (fPrimarySelectionOpt==1 && !fMCEvent->IsPhysicalPrimary(lab)) continue;
     if(fPrimarySelectionOpt==2){
       // primary particle selection based on origin of particle
       double pRad2=mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv();

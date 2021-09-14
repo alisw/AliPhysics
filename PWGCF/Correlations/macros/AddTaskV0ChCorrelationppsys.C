@@ -25,6 +25,8 @@ if (!mgr->GetInputEventHandler()) {
   AliAnalysisTaskV0ChCorrelationppsys* task  = new AliAnalysisTaskV0ChCorrelationppsys(taskName.Data(), cenMin,cenMax,effCorr); 
   
   task->SetAnalysisMC(isMC);
+  task->SetV0h(kTRUE);
+  task->Sethh(kTRUE);
   //------------------------------Mixing part------------------------------
   task->SetMixingTracks(5000);
   task->SetPoolSize(200); 
@@ -45,7 +47,7 @@ if (!mgr->GetInputEventHandler()) {
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
   //task->SetV0MCPtMin(3);
-  task->SetV0PtMin(3.);
+  task->SetV0PtMin(8.);
   task->SetV0PtMax(16.);
   task->SetV0Eta(0.7);
   task->SetK0sLifeTimeMin(0);

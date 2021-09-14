@@ -651,7 +651,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
     
     container -> SetBinLimits(ipTRT,binLimpT);
     printf("pt\n");
-    container -> SetBinLimits(iyRT,binLimRT);
+    container -> SetBinLimits(iyRT,binLimy);
     printf("y\n");
     container -> SetBinLimits(imultRT,binLimmult);
     printf("multiplicity\n");

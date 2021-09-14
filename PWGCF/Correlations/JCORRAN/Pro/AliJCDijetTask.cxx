@@ -362,6 +362,7 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
                 //AliGenPythiaEventHeader *pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
                 if(pythiaGenHeader) fptHardBin = pythiaGenHeader->GetPtHard();
                 else fptHardBin = 0.0;
+                //cout << "genHeader " << i << ": " << pythiaGenHeader << ", fptHardBin: " << fptHardBin << endl;
             }
         }
         //cout << "fptHardBin: " << fptHardBin << endl;

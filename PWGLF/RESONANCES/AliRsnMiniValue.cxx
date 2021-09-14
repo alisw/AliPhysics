@@ -229,9 +229,9 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
             l->Set4Vector(v,-1.0,fUseMCInfo);
             Double_t angle = v.Phi() - pair->Sum(fUseMCInfo).Phi();
 
-            //return angle w.r.t. leading particle in the range -pi/4, 7/4pi
-            while (angle >= 1.75 * TMath::Pi()) angle -= 2 * TMath::Pi();
-            while (angle < -0.25 * TMath::Pi()) angle += 2 * TMath::Pi();
+            //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
+            while (angle >= 1.5 * TMath::Pi()) angle -= 2 * TMath::Pi();
+            while (angle < -0.5 * TMath::Pi()) angle += 2 * TMath::Pi();
             return angle;
          }
 //         AliWarning("This method is not yet implemented");

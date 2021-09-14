@@ -23,7 +23,7 @@
 #include "AliCaloSigmaCuts.h"
 #include "AliPIDResponse.h"
 #include "AliAODPid.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliAnalysisManager.h"

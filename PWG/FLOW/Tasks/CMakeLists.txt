@@ -94,7 +94,10 @@ set(SRCS
   AliAnalysisTaskCVEUNIpt.cxx
   AliAnalysisTaskCMWPUeqAch.cxx
   AliAnalysisTaskCMWPUuncAch.cxx
+  AliAnalysisTaskv2pt.cxx
   AliAnalysisTaskMuPa.cxx
+  AliAnalysisTaskAR.cxx
+  AliAnalysisTaskGammaDeltaPID.cxx
 )
 
 # Headers from sources

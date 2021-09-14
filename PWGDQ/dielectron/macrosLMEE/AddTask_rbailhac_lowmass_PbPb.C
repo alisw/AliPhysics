@@ -10,8 +10,8 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
 					       const TString outputFileName="LMEE.root",
 					       Int_t rejpileup = 1,
 					       Int_t vermix = 0,
-					       Int_t version = 0
-					       )
+					       Int_t version = 0,
+					       TString EffFileName = "")
 {
 
   //get the current analysis manager
@@ -238,6 +238,13 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
       mix->SetDepth(Nmix);
       if(!isMC) diel->SetMixingHandler(mix);
     }
+
+    // Efficiency per leg
+    if((EffFileName.Contains(".root"))){
+      printf("reading Efficiency of leg: %s\n",EffFileName.Data());
+      diel->InitLegEffMap(EffFileName.Data());
+    }
+    
     
     task->AddDielectron(diel);
     

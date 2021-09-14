@@ -56,6 +56,10 @@ AliAnalysisTaskEmcalRawSTU::AliAnalysisTaskEmcalRawSTU(const char *name):
     SetCaloTriggersName("usedefault");
 }
 
+bool AliAnalysisTaskEmcalRawSTU::IsTriggerSelected() {
+    return (fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA);
+}
+
 void AliAnalysisTaskEmcalRawSTU::UserCreateOutputObjects(){
     AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
@@ -70,23 +74,28 @@ void AliAnalysisTaskEmcalRawSTU::UserCreateOutputObjects(){
 }
 
 bool AliAnalysisTaskEmcalRawSTU::Run(){
-
+    AliDebugStream(1) << "Start new event" << std::endl;
     auto triggers = fInputEvent->GetFiredTriggerClasses();
     bool isEG1 = (fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA) && triggers.Contains("EG1"),
          isEG2 = (fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA) && triggers.Contains("EG2"),
          isDG1 = (fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA) && triggers.Contains("DG1"),
          isDG2 = (fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA) && triggers.Contains("DG2");
     if(!(isEG1 || isEG2 || isDG1 || isDG2)) return false;
+    AliDebugStream(1) << "Event was selected" << std::endl;
 
     fCaloTriggers->Reset();
     int col, row, triggerbitsRaw;
+    int nall(0), nsel(0);
     while(fCaloTriggers->Next()) {
+        nall++;
         fCaloTriggers->GetTriggerBits(triggerbitsRaw);
         if(!triggerbitsRaw) continue;
-        std::bitset<sizeof(triggerbitsRaw)> triggerbits;
+        nsel++;
+        std::bitset<sizeof(triggerbitsRaw) * 8> triggerbits(triggerbitsRaw);
         fCaloTriggers->GetPosition(col, row);
 
         if(triggerbits.test(kL1GammaHigh) || (triggerbits.test(kL1GammaHigh + kTriggerTypeEnd))) {
+            AliDebugStream(2) << "Found patch High" << std::endl;
             // Gamma high
             bool filledCombined = false;
             if(isEG1) {
@@ -103,6 +112,7 @@ bool AliAnalysisTaskEmcalRawSTU::Run(){
             }
         }
         if(triggerbits.test(kL1GammaLow) || (triggerbits.test(kL1GammaLow + kTriggerTypeEnd))) {
+            AliDebugStream(2) << "Found patch Low" << std::endl;
             // Gamma low
             bool filledCombined = false;
             if(isEG2) {
@@ -119,6 +129,7 @@ bool AliAnalysisTaskEmcalRawSTU::Run(){
             }
         }
     }
+    AliDebugStream(1) << "All: " << nall << ", sel " << nsel << std::endl;
     
     return true;
 }

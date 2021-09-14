@@ -150,6 +150,18 @@ public:
 		flags |= nflags;
 	}
 
+// Methods to provide additional selection cuts.
+  void SetChi2Cuts(double chiMin, double chiMax) {
+		fChi2perNDF_min = chiMin; fChi2perNDF_max = chiMax;
+		cout << "setting chi2perNDF cuts, min = " << fChi2perNDF_min << " and max = " << fChi2perNDF_max << endl;
+	}
+	void SetDCAxyCut(double DCAxyMax) {fDCAxy_max = DCAxyMax;
+		cout << "setting DCAxy cut = " << fDCAxy_max << endl;
+	}
+	void SetDCAzCut(double DCAzMax) {fDCAz_max = DCAzMax;
+		cout << "setting DCAz cut = " << fDCAz_max << endl;
+	}
+
 private:
 	TClonesArray *fInputList;  // tracklist
 	TDirectory *fOutput;     // output
@@ -188,7 +200,12 @@ private:
 	BINNING binning;
 
 	UInt_t flags;
-	
+
+// Additional cuts for the selection criteria.
+  double fChi2perNDF_min;	// Minimum requirement for chi2/ndf for TPC
+	double fChi2perNDF_max;	// Maximum requirement for chi2/ndf for TPC
+	double fDCAxy_max;	// Maximum requirement for the DCA in transverse plane.
+	double fDCAz_max;	// Maximum requirement for the DCA along the beam axis.	
 
 	ClassDef(AliJFFlucTask, 1);
 

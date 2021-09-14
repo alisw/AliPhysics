@@ -21,6 +21,7 @@ TString fileNameMC="";
 TString suffix="";
 TString fileNameToy="";
 
+TString meson="Dzero";
 const Int_t maxPtBins=30;
 Int_t nPtBins=8;
 Double_t binLims[maxPtBins+1]={0.,1.,2.,3.,4.,5.,6.,8.,12.};
@@ -115,8 +116,8 @@ void ComputeEfficiencyFromCombinHF(TString configInput=""){
     funcPtBWeight->SetParameter(0,1.);
   }
 
-  TString dirName=Form("PWG3_D2H_InvMassDzeroLowPt%s",suffix.Data());
-  TString lstName=Form("coutputDzero%s",suffix.Data());
+  TString dirName=Form("PWG3_D2H_InvMass%sLowPt%s",meson.Data(),suffix.Data());
+  TString lstName=Form("coutput%s%s",meson.Data(),suffix.Data());
   
   if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",fileNameMC.Data())) !=0){
     printf("File %s with raw data results does not exist -> exiting\n",fileNameMC.Data());
@@ -131,7 +132,6 @@ void ComputeEfficiencyFromCombinHF(TString configInput=""){
   }
   TList* l=(TList*)df->Get(lstName.Data());
 
-
   // aceptance from toy MC
   TFile* fileAccToy=new TFile(fileNameToy.Data());
   TH2D* hPtVsYGenAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenAcc");
@@ -140,6 +140,7 @@ void ComputeEfficiencyFromCombinHF(TString configInput=""){
   TH1D* hPtGenAccToy=(TH1D*)fileAccToy->Get("hPtGenAcc");
   TH1D* hPtGenLimAccToy=(TH1D*)fileAccToy->Get("hPtGenLimAcc");
   hAccToyFine=(TH1D*)fileAccToy->Get("hAccVsPt");
+  if(!hAccToyFine) hAccToyFine=(TH1D*)fileAccToy->Get("hGenAccOverGenLimAcc");
   TH1D* hPtGenAccToyR=(TH1D*)hPtGenAccToy->Rebin(nPtBins,"hPtGenAccToyReb",binLims);
   TH1D* hPtGenLimAccToyR=(TH1D*)hPtGenLimAccToy->Rebin(nPtBins,"hPtGenLimAccToyReb",binLims);
   TH1D* hAccToyB=(TH1D*)hPtGenAccToyR->Clone("hAccToyB");
@@ -153,7 +154,7 @@ void ComputeEfficiencyFromCombinHF(TString configInput=""){
   hAccToyB->SetMarkerColor(kGreen+2);
   hAccToyB->SetStats(0);
   hAccToyFine->SetLineColor(kGreen+2);
-
+  
   Int_t iybin1=hPtVsYGenAccToy->GetYaxis()->FindBin(-0.499999);
   Int_t iybin2=hPtVsYGenAccToy->GetYaxis()->FindBin(0.499999);
   TH1D* hptga=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga");
@@ -1943,6 +1944,10 @@ Bool_t ReadConfig(TString configName){
     else if(strstr(line,"AcceptanceFile")){
       readok=fscanf(confFil,"%s",name);
       fileNameToy=name;
+    }
+    else if(strstr(line,"Meson")){
+      readok=fscanf(confFil,"%s",name);
+      meson=name;
     }
     else if(strstr(line,"MultWeiFile")){
       readok=fscanf(confFil,"%s",name);

@@ -383,8 +383,8 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Bool_t fCalculateQvector;      // to calculate or not to calculate Q-vector components, that's a Boolean...
   TComplex fQvector[49][9];      // Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1]  
   Bool_t fCalculateDiffQvectors; // to calculate or not to calculate p- and q-vector components, that's a Boolean...  
-  TComplex fpvector[100][49][9]; // p-vector components [bin][fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1] TBI hardwired 100
-  TComplex fqvector[100][49][9]; // q-vector components [bin][fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1] TBI hardwired 100
+  TComplex fpvector[100][49][9]; // p-vector components [bin][fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1]  
+  TComplex fqvector[100][49][9]; // q-vector components [bin][fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1] 
 
   // 3.) Correlations:
   TList *fCorrelationsList;           // list to hold all correlations objects
@@ -394,11 +394,11 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Int_t fMaxHarmonic;                 // 6 (not going beyond v6, if you change this value, change also fQvector[49][9]) 
   Int_t fMaxCorrelator;               // 8 (not going beyond 8-p correlations, if you change this value, change also fQvector[49][9]) 
   Bool_t fCalculateIsotropic;         // calculate only isotropic correlations
-  Bool_t fCalculateSame;              // calculate only 'same abs harmonics' correlations TBI 
+  Bool_t fCalculateSame;              // calculate only 'same abs harmonics' correlations 
   Bool_t fSkipZeroHarmonics;          // skip correlations which have some of the harmonicc equal to zero
-  Bool_t fCalculateSameIsotropic;     // calculate all isotropic correlations in 'same abs harmonic' TBI this can be implemented better
+  Bool_t fCalculateSameIsotropic;     // calculate all isotropic correlations in 'same abs harmonic' TBI this can be implemented better 
   Bool_t fCalculateAll;               // calculate all possible correlations 
-  Int_t  fDontGoBeyond;               // do not go beyond fDontGoBeyond-p correlators
+  Int_t  fDontGoBeyond;               // do not go beyond fDontGoBeyond-p correlators 
   Bool_t fCalculateOnlyForHarmonicQC; // calculate only isotropic correlations in |fHarmonicQC|
   Bool_t fCalculateOnlyForSC;         // calculate only correlations needed for 'standard candles'
   Bool_t fCalculateOnlyCos;           // calculate only 'cos' correlations

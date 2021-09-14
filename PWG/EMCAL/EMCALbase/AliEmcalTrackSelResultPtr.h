@@ -419,7 +419,7 @@ std::ostream &operator<<(std::ostream &stream, const AliEmcalTrackSelResultPtr &
 /**
  * @class TestAliEmcalTrackSelResultPtr
  * @brief Unit test for class AliEmcalTrackSelResultPtr
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALTESTS
  * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
  * @since Dec 18, 2017
  * 

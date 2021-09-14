@@ -2209,14 +2209,20 @@ void AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt, Double_t *
        mpi0sigma[2]= 3.87566e-05/pt/pt+1.84051e-04/pt+7.18421e-03-2.63501e-03*sqrt(pt)+6.00855e-04*pt ;     
     }
      else{ //MC
-       mpi0mean[0] = -8.62894e-01+(4.21137e-02+9.00413e-02*pt+1.73223e-01*pt*pt+2.48775e-01*pt*pt*pt+pt*pt*pt*pt)/(4.14581e-02+9.17339e-02*pt+1.73818e-01*pt*pt+2.46946e-01*pt*pt*pt+pt*pt*pt*pt) ;
-       mpi0mean[1] = mpi0mean[0] ; 
-       mpi0mean[2] = -8.63067e-01+(4.20217e-02+9.05160e-02*pt+1.72378e-01*pt*pt+2.49348e-01*pt*pt*pt+pt*pt*pt*pt)/(4.15580e-02+9.12717e-02*pt+1.74676e-01*pt*pt+2.46369e-01*pt*pt*pt+pt*pt*pt*pt) ;
-         
-       mpi0sigma[0] = 1.73961e-04/pt/pt+4.99234e-04/pt+5.68265e-03-1.63436e-03*sqrt(pt)+6.00855e-04*pt ; 
-       mpi0sigma[1] = mpi0sigma[0] ;
-       mpi0sigma[2] = 6.85192e-05/pt/pt+8.14321e-04/pt+5.12473e-03-1.40452e-03*sqrt(pt)+6.00855e-04*pt ; 
-         
+       if(pt>10.)pt=10.; //Parameterization range  
+       mpi0mean[0] =-8.61014e-01+(5.50263e-02+1.10471e-01*pt+2.12022e-01*pt*pt+2.81838e-01*pt*pt*pt+pt*pt*pt*pt)/
+                                 (5.30372e-02+1.19715e-01*pt+2.00787e-01*pt*pt+2.88677e-01*pt*pt*pt+pt*pt*pt*pt) ;  
+       mpi0mean[1]= mpi0mean[0];  
+       mpi0mean[2]= -8.61467e-01+(5.46153e-02+1.12343e-01*pt+2.09392e-01*pt*pt+2.83297e-01*pt*pt*pt+pt*pt*pt*pt)/
+                                 (5.34450e-02+1.17836e-01*pt+2.03415e-01*pt*pt+2.87174e-01*pt*pt*pt+pt*pt*pt*pt) ;  
+       mpi0sigma[0]= 1.80963e-03/pt-2.26438e-03/sqrt(pt)+6.06384e-03 -2.96752e-04*sqrt(pt)-1.88350e-05*pt ;
+       mpi0sigma[1]= mpi0sigma[0] ;
+       mpi0sigma[2]= 2.25872e-03/pt-4.32329e-03/sqrt(pt)+8.74958e-03 -1.68033e-03*sqrt(pt)+ 2.03470e-04*pt ; 
+       if(fMCType==kSinglePi0){ //width in single pi0 is smaller (fit simulations)
+          mpi0sigma[0]=0.90; 
+          mpi0sigma[1]=0.90; 
+          mpi0sigma[2]=0.90; 
+       }
      }
      
   }
@@ -2740,17 +2746,26 @@ Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * 
   if(fMCType==kSingleEta){
     parentPDG=221; 
   }
+  if(fMCType==kDPMJET){
+    parentPDG=111; 
+  }
   while(mother>-1 && pdg!=parentPDG){
     particle = (AliAODMCParticle*) fStack->At(mother);
     mother = particle->GetMother() ;
     pdg = particle->GetPdgCode() ;
   }
   if(pdg!=parentPDG){
-    return 0. ;
+    if(fMCType==kDPMJET)
+      return 1.;
+    else
+      return 0. ;
   }
   
   //Particle within 1 cm from the virtex
   Double_t x = particle->Pt() ;
+  if(fMCType==kDPMJET){
+    return 1./(2.73839e+01*TMath::Exp(-x*4.93582)+1.) ;
+  }
   if(x<0.4) x=0.4 ;
   return fWeightParamPi0[0]*(TMath::Power(x,fWeightParamPi0[1])*
        (fWeightParamPi0[2]+x*fWeightParamPi0[3]+x*x)/

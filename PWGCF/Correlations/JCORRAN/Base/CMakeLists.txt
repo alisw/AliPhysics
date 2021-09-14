@@ -64,6 +64,10 @@ set(SRCS
   AliJFFlucAnalysis.cxx
   AliAnalysisAnaTwoMultiCorrelations.cxx
   AliJHSCTask.cxx
+  AliAnalysisTaskHOCFA.cxx
+  AliJHOCFATask.cxx
+  AliAnalysisSPC.cxx
+  AliJSPCTask.cxx
   AliJXtTask.cxx
   AliJXtAnalysis.cxx
   AliJHistogramInterface.cxx

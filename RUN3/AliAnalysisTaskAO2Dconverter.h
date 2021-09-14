@@ -11,6 +11,7 @@
 #include "AliEventCuts.h"
 #include "AliTriggerAnalysis.h"
 #include <TString.h>
+#include <TMap.h>
 
 #include "TClass.h"
 
@@ -49,6 +50,7 @@ public:
   virtual void SetCompression(UInt_t compress=101) {fCompress = compress; }
   virtual void SetMaxBytes(ULong_t nbytes = 100000000) {fMaxBytes = nbytes;}
   void SetEMCALAmplitudeThreshold(Double_t threshold) { fEMCALAmplitudeThreshold = threshold; }
+  void SetEMCALFractionL1MonitoringEvents(Double_t fraction) { fFractionL1MonitorEventsEMCAL = fraction; }
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
@@ -61,7 +63,6 @@ public:
     kFwdTrackCov,
     kCalo,
     kCaloTrigger,
-    kMuonCls,
     kZdc,
     kFV0A,
     kFV0C,
@@ -220,8 +221,6 @@ private:
     // The prototype below can be switched on request
     Float_t fCollisionTime = -999.f;    /// Event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
     Float_t fCollisionTimeRes = -999.f; /// Resolution on the event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
-    UChar_t fCollisionTimeMask = 0u;    /// Mask with the method used to compute the event time (0x1=T0-TOF,0x2=T0A,0x3=TOC) for each momentum bins
-
   } collision; //! structure to keep the primary vertex (avoid name conflicts)
 
   struct {
@@ -329,6 +328,10 @@ private:
     // Track extrapolation to EMCAL surface
     Float_t fTrackEtaEMCAL = -999.f; /// Track eta at the EMCAL surface
     Float_t fTrackPhiEMCAL = -999.f; /// Track phi at the EMCAL surface
+
+    // Time information about the track
+    Float_t fTrackTime = -999.f;    /// Track time
+    Float_t fTrackTimeRes = -999.f; /// Track time reso
   } tracks;                      //! structure to keep track information
 
   struct {
@@ -387,10 +390,10 @@ private:
     Int_t fPdgCode    = -99999; /// PDG code of the particle
     Int_t fStatusCode = -99999; /// generation status code
     uint8_t fFlags    = 0;     /// See enum MCParticleFlags
-    Int_t fMother0    = 0; /// Indices of the mother particles
-    Int_t fMother1    = 0;
-    Int_t fDaughter0  = 0; /// Indices of the daughter particles
-    Int_t fDaughter1  = 0;
+    Int_t fIndexMcParticles_Mother0    = 0; /// Indices of the mother particles
+    Int_t fIndexMcParticles_Mother1    = 0;
+    Int_t fIndexMcParticles_Daughter0  = 0; /// Indices of the daughter particles
+    Int_t fIndexMcParticles_Daughter1  = 0;
     Float_t fWeight   = 1;     /// particle weight from the generator or ML
 
     Float_t fPx = -999.f; /// x component of momentum
@@ -434,17 +437,15 @@ private:
 
   struct {
     // Calorimeter trigger data (EMCAL & PHOS)
-    Int_t fIndexBCs = 0u;        /// Index to BC table
+    Int_t fIndexBCs = 0u;         /// Index to BC table
     Short_t fFastOrAbsID = - 1;   /// FastOR absolute ID
-    Float_t fL0Amplitude = -1.f;  /// L0 amplitude (ADC) := Peak Amplitude
-    Float_t fL0Time = -1.f;       /// L0 time
-    Int_t fL1TimeSum = -1;        /// L1 amplitude (ADC) := Integral over L0 time samples
-    Char_t fNL0Times = -1;        /// Number of L0 times
+    Short_t fLnAmplitude = -1;    /// L0 amplitude (ADC) := Peak Amplitude
     Int_t fTriggerBits = 0;       /// Online trigger bits
-    Char_t fCaloType = -1;            /// Calorimeter type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
+    Char_t fCaloType = -1;        /// Calorimeter type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calotrigger;                  //! structure to keep calo trigger info
 
   struct FwdTrackPars {   /// Forward track parameters
+
     Int_t   fIndexCollisions = -1;    /// The index of the collision vertex in the TF, to which the track is attached
     Int_t fIndexBCs = 0u; /// Index to BC table
     Int_t fTrackType = 3; /// MuonStandaloneTrack on ForwardTrackTypeEnum (O2 Framework/DataTypes.h)
@@ -463,6 +464,13 @@ private:
     Float_t fMatchScoreMCHMFT = -999.f;
     Int_t fMatchMFTTrackID = -1;
     Int_t fMatchMCHTrackID = -1;
+    UShort_t fMCHBitMap = 0u;
+    // MID bit map
+    // | non-bending plane (4bit) | bending plane (4bit) |
+    // i-th chamber can be tested with: fMIDBitMap & (1<<i)
+    UShort_t fMIDBitMap = 0u;
+    UInt_t fMIDBoards = 0;
+    
 
     // "Covariance matrix"
     // The diagonal elements represent the errors = Sqrt(C[i,i])
@@ -485,19 +493,6 @@ private:
     Char_t fRho1PtTgl    = 0;      /// 128*fC[3,4]/Sigma1Pt/SigmaTgl
 
   } fwdtracks; //! structure to keep forward tracks parameters and covariances
-
-  struct {
-    // Muon cluster data
-
-    Int_t   fIndexMuons = -1; /// The index of the muon track to which the clusters are attached
-    Float_t fX = -999.f;         ///< cluster X position
-    Float_t fY = -999.f;         ///< cluster Y position
-    Float_t fZ = -999.f;         ///< cluster Z position
-    Float_t fErrX = -999.f;      ///< transverse position errors
-    Float_t fErrY = -999.f;      ///< transverse position errors
-    Float_t fCharge = -999.f;    ///< cluster charge
-    Float_t fChi2 = -999.f;      ///< cluster chi2
-  } mucls;              //! structure to keep muon clusters information
 
   struct {
     Int_t   fIndexBCs = 0u;                 /// Index to BC table
@@ -585,10 +580,14 @@ private:
   TH1F *fCentralityINT7 = nullptr; ///! Centrality histogram for the INT7 triggers
   TH1I *fHistPileupEvents = nullptr; ///! Counter histogram for pileup events
   Double_t fEMCALAmplitudeThreshold = 0.1; ///< EMCAL amplitude threshold (for compression - default: 100 MeV := cluster cell threshold)
+  Double_t fFractionL1MonitorEventsEMCAL = 0.001; ///< Fraction of monitoring events (full payload) for EMCAL L1 trigger
 
   /// Byte counter
   ULong_t fBytes = 0; ///! Number of bytes stored in all trees
   ULong_t fMaxBytes = 100000000; ///| Approximative size limit on the total TF output trees
+
+  /// Meta data
+  TMap fMetaData; ///! meta data object for output file
 
   /// Pointer to the output file
   TFile * fOutputFile = 0x0; ///! Pointer to the output file
@@ -597,7 +596,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 16);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 20);
 };
 
 #endif

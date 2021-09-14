@@ -13,7 +13,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   const Int_t nBinTrigPt = sizeof(trigPtLimits) / sizeof(Double_t) - 1;
   task->SetTrigPtBinning(nBinTrigPt, trigPtLimits);
 
-  Double_t assocPtLimits[] = {0.5, 1., 1.5, 2., 50.};
+  Double_t assocPtLimits[] = {0.5, 1., 1.5, 50.};
   const Int_t nBinAssocPt = sizeof(assocPtLimits) / sizeof(Double_t) - 1;
   task->SetAssocPtBinning(nBinAssocPt, assocPtLimits);
 
@@ -21,7 +21,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   task->SetAssoCut(1.0);
  
   task->SetPtMin(0.5);
-  task->SetPtMax(50.);
+  task->SetPtMax(10.);
 
   task->SetCen1(0);
   task->SetCen2(10);
@@ -31,6 +31,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   TGrid::Connect("alien://");
   TFile *file = TFile::Open("alien:///alice/cern.ch/user/s/sitang/AMPT_Centrality_Calibration/Centrality.root");
 
+//  TFile *file = TFile::Open("./Centrality/Centrality.root");
   TH1D *h_Charge  = (TH1D*)file->Get("hChargeV0A"); h_Charge->SetDirectory(0);
   file->Close();
 
