@@ -135,7 +135,9 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fTest0List(NULL), 
  fTest0FlagsPro(NULL),   
  fCalculateTest0(kFALSE),
+ fTest0LabelsWereStoredInPlaceholder(kFALSE),
  fFileWithLabels(NULL),
+ fTest0LabelsPlaceholder(NULL),
 
  // Final results:
  fFinalResultsList(NULL),
@@ -288,7 +290,9 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fTest0List(NULL), 
  fTest0FlagsPro(NULL),   
  fCalculateTest0(kFALSE),
+ fTest0LabelsWereStoredInPlaceholder(kFALSE),
  fFileWithLabels(NULL),
+ fTest0LabelsPlaceholder(NULL),
 
  // Final results:
  fFinalResultsList(NULL),
@@ -358,7 +362,7 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
  // g) Book all look-up tables;
  // *) Trick to avoid name clashes, part 2.
  
- if(fVerbose){Green(__PRETTY_FUNCTION__);}
+ Green(__PRETTY_FUNCTION__);
 
  // a) Check before bookings if all the values user has provided via setters make sense:
  this->InsanityChecks();
@@ -400,6 +404,8 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
 
  // *) Trick to avoid name clashes, part 2:
  TH1::AddDirectory(oldHistAddStatus);
+
+ Green("\nINFO: All objects were booked!\n");;
 
  PostData(1,fBaseList);
 
@@ -478,7 +484,8 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  this->FillControlEventHistograms(aAOD,BEFORE,RECO);
  
  // g) Event cuts:
- if(!SurvivesEventCuts(aAOD)){return;} // TBI 20210531 add possibility to run only on sim, when this needs to be generalized. For kine+reco, I do not need to cut only on kine
+ if(!SurvivesEventCuts(aAOD)){Red("INFO: This event didn't survive all cuts!");return;} // TBI 20210531 add possibility to run only on sim, when this needs to be generalized. For kine+reco, I do not need to cut only on kine
+ Green("INFO: This event survived all cuts!");
 
  // h) Fill control event histograms after cuts:
  if(aMC){this->FillControlEventHistograms(aAOD,AFTER,SIM);}
@@ -2246,8 +2253,9 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
  // Book all Test0 histograms.
 
  // a) Book the profile holding flags;
- // b) Generate all labels;
- // c) ...
+ // b) Make sure all labels are stored in the placeholder;
+ // c) Retreive labels from placeholder;
+ // d) Book what needs to be booked.
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
@@ -2260,10 +2268,22 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
 
  if(!fCalculateTest0){return;}
  
- // b) Generate all labels:
- this->GenerateCorrelationsLabels();  
+ // b) Make sure all labels are stored in the placeholder:
+ if(!fTest0LabelsWereStoredInPlaceholder)
+ {
+  Yellow("INFO: Generating Test0 labels internally and dumping them in TH1I* fTest0LabelsPlaceholder");
+  this->StoreLabelsInPlaceholder("internal"); // generate labels at runtime
+ }
+ else
+ {
+  Yellow("INFO: All Test0 labels were generated from external file, and they were dumped into TH1I* fTest0LabelsPlaceholder");
+ }
+ if(fTest0LabelsPlaceholder){fTest0List->Add(fTest0LabelsPlaceholder);}
 
- // c) ...
+ // c) Retreive labels from placeholder:
+ if(!(this->RetrieveCorrelationsLabels())){cout<<__LINE__<<endl;exit(1);}
+
+ // d) Book what needs to be booked:
  Int_t vvvariableNBins[3] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0]};
  Double_t vvvariableMinMax[3][2] = { {0.,1.}, // integrated 
                                     {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
@@ -2275,7 +2295,7 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
  { 
   for(Int_t mi=0;mi<gMaxIndex;mi++) 
   { 
-   if(fTest0Labels[mo][mi]) // book only explicitly requested correlators, either via external file, or with hardcoded loops 
+   if(!fTest0Labels[mo][mi]){continue;} 
    {
     for(Int_t v=0;v<3;v++) 
     { 
@@ -2283,11 +2303,11 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
      fTest0Pro[mo][mi][v]->SetStats(kFALSE);
      fTest0Pro[mo][mi][v]->Sumw2();
      fTest0Pro[mo][mi][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
-     fTest0List->Add(fTest0Pro[mo][mi][v]);
-    }
+     fTest0List->Add(fTest0Pro[mo][mi][v]); // yes, this has to be here
+    } // for(Int_t v=0;v<3;v++) 
    } // if(fTest0Labels[mo][mi]) 
-  }
- }
+  } // for(Int_t mi=0;mi<gMaxIndex;mi++) 
+ } // for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
 
 } // void AliAnalysisTaskMuPa::BookTest0Histograms()
 
@@ -5184,6 +5204,34 @@ TObject* AliAnalysisTaskMuPa::GetObjectFromList(TList *list, Char_t *objectName)
 
 //=======================================================================================
 
+Int_t AliAnalysisTaskMuPa::NumberOfNonEmptyLines(const char *externalFile)
+{
+ // Count number of non-empty lines in some external file.
+
+ if(gSystem->AccessPathName(externalFile,kFileExists))
+ {
+  Red(Form("if(gSystem->AccessPathName(externalFile,kFileExists)), externalFile = %s",externalFile)); 
+  cout<<__LINE__<<endl;
+  exit(1);
+ }
+
+ string line;
+ ifstream myfile;
+ myfile.open(externalFile);
+ Int_t nLines = 0;
+ while (getline(myfile,line))
+ { 
+  if(TString(line).EqualTo("")){continue;}
+  nLines++;
+ }
+ myfile.close();
+
+ return nLines;
+
+} // Int_t AliAnalysisTaskMuPa::NumberOfNonEmptyLines(const char *externalFile)
+
+//=======================================================================================
+
 void AliAnalysisTaskMuPa::MakeLookUpTable(AliAODEvent *aAOD, AliMCEvent *aMC)
 {
  // For Monte Carlo analysis, establish a look up table between reco and kine particles.
@@ -5330,35 +5378,44 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
  // Algorithm: a) If external file is specified, parse through it and fetch line by line all labels. FS is comma.
  //            b) If external file is NOT specified, determine the labels from the hardcoded loops below.
 
+ // a) Generate labels of interest;
+ // b) Set that labels were generated;
+ // c) For generated labels, book profiles.
+
+ // a) Generate labels of interest:
  Int_t counter[gMaxCorrelator] = {0}; // is this safe?
  for(Int_t o=0;o<gMaxCorrelator;o++){counter[o] = 0;} // now it's safe
-  
- if(fFileWithLabels && !gSystem->AccessPathName(fFileWithLabels->Data(),kFileExists))
+
+ if(fFileWithLabels)
  {
   // external file exist locally, get all labels of interest from there:
   string line;
   ifstream myfile;
   myfile.open(fFileWithLabels->Data());
   Int_t order = -44;
+  Int_t bin = 1; // used only for fTest0LabelsPlaceholder
   while (getline(myfile,line))
   { 
    order = TString(line).Tokenize(" ")->GetEntries();
    if(0 == order){continue;} // empty lines, or the label format which is not supported
    // 1-p => 0, 2-p => 1, etc.:
    fTest0Labels[order-1][counter[order-1]] = new TString(line); // okay...  
-   //cout<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl;
+   fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[order-1][counter[order-1]]->Data());
+   //cout<<__LINE__<<": "<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl;
    counter[order-1]++;
    //cout<<TString(line).Data()<<endl;
    //cout<<oa->GetEntries()<<endl;    
   }
   myfile.close();
+  //fTest0LabelsWereStoredInPlaceholder = kTRUE;
  }
  else
  {
   // get all labels of interest systematically from loops below:
   // TBI 20210902 buggy, some entries are duplicated
+  // TBI 20210914 when hitting at gMaxIndex, there is seg. violation
 
-  cout<<__LINE__<<" : this branch is not validated yet"<<endl; exit(1);
+  Yellow("\nWARNING : this branch is not validated and optimized yet, some entries are duplicated!!\n"); sleep(1.44);
 
   // 1p:
   // TBI 20210902 
@@ -5375,7 +5432,7 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
     if(h2>h1){continue;} // eliminating trivial permutations
     if(abs(h2)>abs(h1)){continue;} // eliminating -1*(...) symmetry
     if(0 != h1+h2){continue;} // isotropy
-    fTest0Labels[1][index2p] = new TString(Form("%d,%d",h1,h2));
+    fTest0Labels[1][index2p] = new TString(Form("%d %d",h1,h2));
     index2p++;
     //cout<<Form("%d,%d",h1,h2)<<endl;
    }
@@ -5397,7 +5454,7 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
      if(h3>h1||h3>h2){continue;} // eliminating trivial permutations
      if(abs(h3)>abs(h1)||abs(h2)>abs(h1)){continue;} // eliminating -1*(...) symmetry
      if(0 != h1+h2+h3){continue;} // isotropy
-     fTest0Labels[2][index3p] = new TString(Form("%d,%d,%d",h1,h2,h3));
+     fTest0Labels[2][index3p] = new TString(Form("%d %d %d",h1,h2,h3));
      index3p++;
      //cout<<Form("%d,%d,%d",h1,h2,h3)<<endl;
     }
@@ -5424,7 +5481,7 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
       if(h4>h1||h4>h2||h4>h3){continue;} // eliminating trivial permutations
       if(abs(h4)>abs(h1)){continue;} // eliminating -1*(...) symmetry
       if(0 != h1+h2+h3+h4){continue;} // isotropy
-      fTest0Labels[3][index4p] = new TString(Form("%d,%d,%d,%d",h1,h2,h3,h4));
+      fTest0Labels[3][index4p] = new TString(Form("%d %d %d %d",h1,h2,h3,h4));
       index4p++;
       //cout<<Form("%d,%d,%d,%d",h1,h2,h3,h4)<<endl;
      }
@@ -5457,7 +5514,7 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
        if(h5>h1||h5>h2||h5>h3||h5>h4){continue;} // eliminating trivial permutations
        if(abs(h5)>abs(h1)){continue;} // eliminating -1*(...) symmetry
        if(0 != h1+h2+h3+h4+h5){continue;} // isotropy
-       fTest0Labels[4][index5p] = new TString(Form("%d,%d,%d,%d,%d",h1,h2,h3,h4,h5));
+       fTest0Labels[4][index5p] = new TString(Form("%d %d %d %d %d",h1,h2,h3,h4,h5));
        index5p++;
        //cout<<Form("%d,%d,%d,%d,%d",h1,h2,h3,h4,h5)<<endl;
       }
@@ -5496,7 +5553,7 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
         if(h6>h1||h6>h2||h6>h3||h6>h4||h6>h5){continue;} // eliminating trivial permutations
         if(abs(h6)>abs(h1)){continue;} // eliminating -1*(...) symmetry
         if(0 != h1+h2+h3+h4+h5+h6){continue;} // isotropy
-        fTest0Labels[5][index6p] = new TString(Form("%d,%d,%d,%d,%d,%d",h1,h2,h3,h4,h5,h6));
+        fTest0Labels[5][index6p] = new TString(Form("%d %d %d %d %d %d",h1,h2,h3,h4,h5,h6));
         index6p++;
         //cout<<Form("%d,%d,%d,%d,%d,%d",h1,h2,h3,h4,h5,h6)<<endl;
        }
@@ -5506,9 +5563,314 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
    }
   }
 
+  //fTest0LabelsWereStoredInPlaceholder = kTRUE;
+
  } // else
 
+ /* TBI 20210914 obsolete code, remove eventually
+ 
+ // b) Set that labels were generated:
+ fTest0LabelsWereGenerated = kTRUE;
+
+ // c) For generated labels, book profiles:
+ Int_t vvvariableNBins[3] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0]};
+ Double_t vvvariableMinMax[3][2] = { {0.,1.}, // integrated 
+                                    {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
+                                    {fCentralityBins[1],fCentralityBins[2]} // centrality
+                                   };
+ TString vvVariable[3] = {"integrated","multiplicity","centrality"};
+ for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
+ { 
+  for(Int_t mi=0;mi<gMaxIndex;mi++) 
+  { 
+   if(!fCalculateSpecificTest0[mo][mi]){continue;} 
+   {
+    for(Int_t v=0;v<3;v++) 
+    { 
+     fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%d]",mo,mi,v),fTest0Labels[mo][mi]->Data(),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
+     fTest0Pro[mo][mi][v]->SetStats(kFALSE);
+     fTest0Pro[mo][mi][v]->Sumw2();
+     fTest0Pro[mo][mi][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
+     //fTest0List->Add(fTest0Pro[mo][mi][v]); this is done in BookTest0Histograms()
+    } // for(Int_t v=0;v<3;v++) 
+   } // if(fTest0Labels[mo][mi]) 
+  } // for(Int_t mi=0;mi<gMaxIndex;mi++) 
+ } // for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
+
+ */
+
 } // void AliAnalysisTaskMuPa::GenerateCorrelationsLabels() 
+
+//=======================================================================================
+
+Bool_t AliAnalysisTaskMuPa::RetrieveCorrelationsLabels()
+{
+ // Generate the labels of all correlations of interest, i.e. retrieve them from TH1I *fTest0LabelsPlaceholder
+
+ Int_t counter[gMaxCorrelator] = {0}; // is this safe?
+ for(Int_t o=0;o<gMaxCorrelator;o++){counter[o] = 0;} // now it's safe
+
+ Int_t nBins = fTest0LabelsPlaceholder->GetXaxis()->GetNbins();
+
+ Int_t order = -44;
+ for(Int_t b=1;b<=nBins;b++)
+ {
+  order = TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)).Tokenize(" ")->GetEntries();
+  if(0 == order){continue;} // empty lines, or the label format which is not supported
+  // 1-p => 0, 2-p => 1, etc.:
+  fTest0Labels[order-1][counter[order-1]] = new TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)); // okay...  
+  //cout<<__LINE__<<": "<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl;
+  counter[order-1]++;
+ } // for(Int_t b=1;b<=nBins;b++)
+
+ return kTRUE;
+
+} // void AliAnalysisTaskMuPa::RetrieveCorrelationsLabels() 
+
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
+{
+ // Storal all Test0 labels in the temporary placeholder. 
+
+ // source = "external" => fetch Test0 labels from external file
+ // source = "internal" => generate all Test0 labels automatocally with internal code
+
+ if(!(TString(source).EqualTo("external") || TString(source).EqualTo("internal"))){cout<<__LINE__<<endl;exit(1);}
+
+ Int_t counter[gMaxCorrelator] = {0}; // is this safe?
+ for(Int_t o=0;o<gMaxCorrelator;o++){counter[o] = 0;} // now it's safe
+
+ if(TString(source).EqualTo("external"))
+ {
+  // Count quickly number of Test0 labels:
+  Int_t nLabels = NumberOfNonEmptyLines(fFileWithLabels->Data());
+  if(!(nLabels > 0)){cout<<__LINE__<<endl;exit(1);}
+
+  // Book the placeholder for all labels (temporary workaround): 
+  fTest0LabelsPlaceholder = new TH1I("fTest0LabelsPlaceholder",Form("placeholder for all labels, %d in total",nLabels),nLabels,0,nLabels);  
+
+  Int_t bin = 1; // used only for fTest0LabelsPlaceholder
+  // external file exist locally, get all labels of interest from there:
+  string line;
+  ifstream myfile;
+  myfile.open(fFileWithLabels->Data());
+  Int_t order = -44;
+  while (getline(myfile,line))
+  { 
+   order = TString(line).Tokenize(" ")->GetEntries();
+   if(0 == order){continue;} // empty lines, or the label format which is not supported
+   // 1-p => 0, 2-p => 1, etc.:
+   fTest0Labels[order-1][counter[order-1]] = new TString(line); // okay...  
+   fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[order-1][counter[order-1]]->Data());
+   //cout<<__LINE__<<": "<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl;
+   counter[order-1]++;
+   //cout<<TString(line).Data()<<endl;
+   //cout<<oa->GetEntries()<<endl;    
+  }
+  myfile.close();
+  fTest0LabelsWereStoredInPlaceholder = kTRUE;
+ }
+ else if(TString(source).EqualTo("internal"))
+ {
+  // get all labels of interest systematically from loops below:
+  // TBI 20210902 buggy, some entries are duplicated
+  // TBI 20210914 when hitting at gMaxIndex, there is seg. violation
+
+  Yellow("\nWARNING : this branch is not validated and optimized yet, some entries are duplicated!!\n"); sleep(1.44);
+
+  // Book the placeholder for all labels (temporary workaround): 
+  fTest0LabelsPlaceholder = new TH1I("fTest0LabelsPlaceholder","placeholder for all labels (temporary workaround)",gMaxCorrelator*gMaxIndex,0,gMaxCorrelator*gMaxIndex);  
+  // TBI 20210914 instead of upper limit gMaxCorrelator*gMaxIndex, use in the previous line the exact number of bins
+
+  Int_t bin = 1; // used only for fTest0LabelsPlaceholder
+
+  // 1p:
+  // TBI 20210902 
+  // fTest0Labels[0][index1p] = ... 
+
+  // 2p:
+  Int_t index2p = 0;
+  for(Int_t h1=-fMaxHarmonic;h1<=fMaxHarmonic;h1++) 
+  {  
+   if(0==h1){continue;}
+   for(Int_t h2=-fMaxHarmonic;h2<=fMaxHarmonic;h2++) 
+   {
+    if(0==h2){continue;}
+    if(h2>h1){continue;} // eliminating trivial permutations
+    if(abs(h2)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+    if(0 != h1+h2){continue;} // isotropy
+    fTest0Labels[1][index2p] = new TString(Form("%d %d",h1,h2));
+    fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[1][index2p]->Data());
+    index2p++;
+    //cout<<Form("%d,%d",h1,h2)<<endl;
+   }
+  }
+
+  // 3p:
+  Int_t index3p = 0;
+  for(Int_t h1=-fMaxHarmonic;h1<=fMaxHarmonic;h1++) 
+  { 
+   if(0==h1){continue;}
+   for(Int_t h2=-fMaxHarmonic;h2<=fMaxHarmonic;h2++) 
+   {
+    if(0==h2){continue;}
+    if(h2>h1){continue;} // eliminating trivial permutations
+    if(abs(h2)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+    for(Int_t h3=-fMaxHarmonic;h3<=fMaxHarmonic;h3++) 
+    {
+     if(0==h3){continue;}
+     if(h3>h1||h3>h2){continue;} // eliminating trivial permutations
+     if(abs(h3)>abs(h1)||abs(h2)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+     if(0 != h1+h2+h3){continue;} // isotropy
+     fTest0Labels[2][index3p] = new TString(Form("%d %d %d",h1,h2,h3));
+     fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[2][index3p]->Data());
+     index3p++;
+     //cout<<Form("%d,%d,%d",h1,h2,h3)<<endl;
+    }
+   }
+  }
+
+  // 4p:
+  Int_t index4p = 0;
+  for(Int_t h1=-fMaxHarmonic;h1<=fMaxHarmonic;h1++) 
+  { 
+   if(0==h1){continue;}
+   for(Int_t h2=-fMaxHarmonic;h2<=fMaxHarmonic;h2++) 
+   {
+    if(0==h2){continue;}
+    if(h2>h1){continue;} // eliminating trivial permutations
+    for(Int_t h3=-fMaxHarmonic;h3<=fMaxHarmonic;h3++) 
+    {
+     if(0==h3){continue;}
+     if(h3>h1||h3>h2){continue;} // eliminating trivial permutations
+     if(abs(h3)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+     for(Int_t h4=-fMaxHarmonic;h4<=fMaxHarmonic;h4++) 
+     {
+      if(0==h4){continue;}
+      if(h4>h1||h4>h2||h4>h3){continue;} // eliminating trivial permutations
+      if(abs(h4)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+      if(0 != h1+h2+h3+h4){continue;} // isotropy
+      fTest0Labels[3][index4p] = new TString(Form("%d %d %d %d",h1,h2,h3,h4));
+      fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[3][index4p]->Data());
+      index4p++;
+      //cout<<Form("%d,%d,%d,%d",h1,h2,h3,h4)<<endl;
+     }
+    }
+   }
+  }
+
+  // 5p:
+  Int_t index5p = 0;
+  for(Int_t h1=-fMaxHarmonic;h1<=fMaxHarmonic;h1++) 
+  { 
+   if(0==h1){continue;}
+   for(Int_t h2=-fMaxHarmonic;h2<=fMaxHarmonic;h2++) 
+   { 
+    if(0==h2){continue;}
+    if(h2>h1){continue;} // eliminating trivial permutations
+    for(Int_t h3=-fMaxHarmonic;h3<=fMaxHarmonic;h3++) 
+    {
+     if(0==h3){continue;}
+     if(h3>h1||h3>h2){continue;} // eliminating trivial permutations
+     if(abs(h3)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+     for(Int_t h4=-fMaxHarmonic;h4<=fMaxHarmonic;h4++) 
+     {
+      if(0==h4){continue;}
+      if(h4>h1||h4>h2||h4>h3){continue;} // eliminating trivial permutations
+      if(abs(h4)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+      for(Int_t h5=-fMaxHarmonic;h5<=fMaxHarmonic;h5++) 
+      {
+       if(0==h5){continue;}
+       if(h5>h1||h5>h2||h5>h3||h5>h4){continue;} // eliminating trivial permutations
+       if(abs(h5)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+       if(0 != h1+h2+h3+h4+h5){continue;} // isotropy
+       fTest0Labels[4][index5p] = new TString(Form("%d %d %d %d %d",h1,h2,h3,h4,h5));
+       fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[4][index5p]->Data());
+       index5p++;
+       //cout<<Form("%d,%d,%d,%d,%d",h1,h2,h3,h4,h5)<<endl;
+      }
+     }
+    }
+   }
+  }
+
+  // 6p:
+  Int_t index6p = 0;
+  for(Int_t h1=-fMaxHarmonic;h1<=fMaxHarmonic;h1++) 
+  { 
+   if(0==h1){continue;}
+   for(Int_t h2=-fMaxHarmonic;h2<=fMaxHarmonic;h2++) 
+   { 
+    if(0==h2){continue;}
+    if(h2>h1){continue;} // eliminating trivial permutations
+    for(Int_t h3=-fMaxHarmonic;h3<=fMaxHarmonic;h3++) 
+    {
+     if(0==h3){continue;}
+     if(h3>h1||h3>h2){continue;} // eliminating trivial permutations
+     if(abs(h3)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+     for(Int_t h4=-fMaxHarmonic;h4<=fMaxHarmonic;h4++) 
+     {
+      if(0==h4){continue;}
+      if(h4>h1||h4>h2||h4>h3){continue;} // eliminating trivial permutations
+      if(abs(h4)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+      for(Int_t h5=-fMaxHarmonic;h5<=fMaxHarmonic;h5++) 
+      {
+       if(0==h5){continue;}
+       if(h5>h1||h5>h2||h5>h3||h5>h4){continue;} // eliminating trivial permutations
+       if(abs(h5)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+       for(Int_t h6=-fMaxHarmonic;h6<=fMaxHarmonic;h6++) 
+       {
+        if(0==h6){continue;}
+        if(h6>h1||h6>h2||h6>h3||h6>h4||h6>h5){continue;} // eliminating trivial permutations
+        if(abs(h6)>abs(h1)){continue;} // eliminating -1*(...) symmetry
+        if(0 != h1+h2+h3+h4+h5+h6){continue;} // isotropy
+        fTest0Labels[5][index6p] = new TString(Form("%d %d %d %d %d %d",h1,h2,h3,h4,h5,h6));
+        fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[5][index6p]->Data());
+        index6p++;
+        //cout<<Form("%d,%d,%d,%d,%d,%d",h1,h2,h3,h4,h5,h6)<<endl;
+       }
+      }
+     }
+    }
+   }
+  }
+
+  fTest0LabelsWereStoredInPlaceholder = kTRUE;
+
+ } // else if(TString(source).EqualTo("internal"))
+
+
+ /*
+ // b) Set that labels were generated:
+
+ // c) For generated labels, book profiles:
+ Int_t vvvariableNBins[3] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0]};
+ Double_t vvvariableMinMax[3][2] = { {0.,1.}, // integrated 
+                                    {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
+                                    {fCentralityBins[1],fCentralityBins[2]} // centrality
+                                   };
+ TString vvVariable[3] = {"integrated","multiplicity","centrality"};
+ for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
+ { 
+  for(Int_t mi=0;mi<gMaxIndex;mi++) 
+  { 
+   if(!fCalculateSpecificTest0[mo][mi]){continue;} 
+   {
+    for(Int_t v=0;v<3;v++) 
+    { 
+     fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%d]",mo,mi,v),fTest0Labels[mo][mi]->Data(),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
+     fTest0Pro[mo][mi][v]->SetStats(kFALSE);
+     fTest0Pro[mo][mi][v]->Sumw2();
+     fTest0Pro[mo][mi][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
+     //fTest0List->Add(fTest0Pro[mo][mi][v]); this is done in BookTest0Histograms()
+    } // for(Int_t v=0;v<3;v++) 
+   } // if(fTest0Labels[mo][mi]) 
+  } // for(Int_t mi=0;mi<gMaxIndex;mi++) 
+ } // for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
+ */
+ 
+} // void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
 
 //=======================================================================================
 
@@ -5526,7 +5888,7 @@ void AliAnalysisTaskMuPa::CalculateTest0()
   { 
    // TBI 20210913 I do not have to loop each time all the way up to gMaxCorrelator and gMaxIndex, but nevermind now, it's not a big efficiency loss.
 
-   // Sanitize the labels (if necessary, locally this is irrelevant): 
+   // Sanitize the labels (If necessary. Locally this is irrelevant): 
    if(!fTest0Labels[mo][mi]) // I do not stream them, so trying to get them from the booked profiles, where they are stored in the titles
    {
     for(Int_t v=0;v<3;v++) 
@@ -5544,6 +5906,7 @@ void AliAnalysisTaskMuPa::CalculateTest0()
     // Extract harmonics from TString, FS is " ": 
     for(Int_t h=0;h<=mo;h++)
     {
+     //cout<<Form("h = %d, fTest0Labels[%d][%d] = ",h,mo,mi)<<fTest0Labels[mo][mi]->Data()<<endl;
      n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi();
     }
 
