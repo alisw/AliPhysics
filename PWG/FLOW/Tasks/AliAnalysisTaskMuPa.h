@@ -133,7 +133,6 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void RandomIndices(AliVEvent *ave);
   virtual void CalculateTest0();
   virtual void StoreLabelsInPlaceholder(const char *source); 
-  virtual void GenerateCorrelationsLabels();
   virtual Bool_t RetrieveCorrelationsLabels();
 
   // 3) Methods called in Terminate(Option_t *):
@@ -430,14 +429,6 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetCalculateTest0(Bool_t c) {this->fCalculateTest0 = c;};
   Bool_t GetCalculateTest0() const {return this->fCalculateTest0;};
   void SetFileWithLabels(const char *externalFile) 
-  {
-   // Call always SetCalculateTest0(...) first
-   this->fFileWithLabels = new TString(externalFile); 
-   if(gSystem->AccessPathName(fFileWithLabels->Data(),kFileExists)){exit(1);} // convention is opposite to Bash
-   if(fCalculateTest0){this->GenerateCorrelationsLabels();}else{exit(1);}
-  }
-
-  void SetFileWithLabels_v2(const char *externalFile) 
   {
    this->fFileWithLabels = new TString(externalFile); 
    if(gSystem->AccessPathName(fFileWithLabels->Data(),kFileExists)){exit(1);} // convention is opposite to Bash
@@ -737,7 +728,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,22);
+  ClassDef(AliAnalysisTaskMuPa,23);
 
 };
 
