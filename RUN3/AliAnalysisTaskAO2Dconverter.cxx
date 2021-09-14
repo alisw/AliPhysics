@@ -784,6 +784,8 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tTracksExtra->Branch("fTOFExpMom", &tracks.fTOFExpMom, "fTOFExpMom/F");
     tTracksExtra->Branch("fTrackEtaEMCAL", &tracks.fTrackEtaEMCAL, "fTrackEtaEMCAL/F");
     tTracksExtra->Branch("fTrackPhiEMCAL", &tracks.fTrackPhiEMCAL, "fTrackPhiEMCAL/F");
+    tTracksExtra->Branch("fTrackTime", &tracks.fTrackTime, "fTrackTime/F");
+    tTracksExtra->Branch("fTrackTimeRes", &tracks.fTrackTimeRes, "fTrackTimeRes/F");
     tTracksExtra->SetBasketSize("*", fBasketSizeTracks);
   }
 
@@ -1644,13 +1646,25 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         // Expected beta for such hypothesis
         const Float_t exp_beta = (track->GetIntegratedLength() / exp_time / cspeed);
 
-        tracks.fTOFExpMom = AliMathBase::TruncateFloatFraction(
+        tracks.fTOFExpMom = exp_beta < 1.f ? AliMathBase::TruncateFloatFraction(
           AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
             TMath::Sqrt(1. - (exp_beta * exp_beta)),
-          mTrack1Pt);
+          mTrack1Pt) : 0.f;
       } else {
         tracks.fTOFExpMom = 0.f;
       }
+
+      tracks.fTrackTime = 0.f;
+      tracks.fTrackTimeRes = -1.f;
+      if (hasTOF) {
+        if (track->GetPIDForTracking() >= 0 && track->GetPIDForTracking() <= 15) {
+          tracks.fTrackTime = (track->GetTOFsignal() - TOFResponse.GetExpectedSignal(track, static_cast<AliPID::EParticleType>(track->GetPIDForTracking()))) * 1e-3; // tof time in ns, taken from the definition of Ruben scaled by 1000 to convert from mus to ns
+          tracks.fTrackTimeRes = 200e-3;
+        }
+      }
+
+      tracks.fTrackTime = AliMathBase::TruncateFloatFraction(tracks.fTrackTime, mTrackSignal);
+      tracks.fTrackTimeRes = AliMathBase::TruncateFloatFraction(tracks.fTrackTimeRes, mTrackSignal);
 
       tracks.fTrackEtaEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackEtaOnEMCal(), mTrackPosEMCAL);
       tracks.fTrackPhiEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackPhiOnEMCal(), mTrackPosEMCAL);

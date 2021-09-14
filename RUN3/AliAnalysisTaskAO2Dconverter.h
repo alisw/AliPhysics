@@ -328,6 +328,10 @@ private:
     // Track extrapolation to EMCAL surface
     Float_t fTrackEtaEMCAL = -999.f; /// Track eta at the EMCAL surface
     Float_t fTrackPhiEMCAL = -999.f; /// Track phi at the EMCAL surface
+
+    // Time information about the track
+    Float_t fTrackTime = -999.f;    /// Track time
+    Float_t fTrackTimeRes = -999.f; /// Track time reso
   } tracks;                      //! structure to keep track information
 
   struct {
