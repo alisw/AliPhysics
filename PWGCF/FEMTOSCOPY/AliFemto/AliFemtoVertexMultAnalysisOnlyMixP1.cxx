@@ -1,8 +1,11 @@
-
-// wdf Fudan
+//===============================================================================//
+// dongfang.wang@cern.ch
+// AliFemtoVertexMultAnalysisOnlyMixP1: Making pool which keep update/save
+// as long as the first particle has been found in this event!
+// Only difference with AliFemtoVertexMultAnalysis.cxx in line 217.
+//===============================================================================//
 
 #include "AliFemtoVertexMultAnalysisOnlyMixP1.h"
-
 #include "AliFemtoParticleCollection.h"
 #include "AliFemtoTrackCut.h"
 #include "AliFemtoV0Cut.h"
@@ -17,13 +20,6 @@
   ClassImp(AliFemtoVertexMultAnalysisOnlyMixP1);
   /// \endcond
 #endif
-
-//////////////////////////////////////////////////////////////////////////////////
-// dongfang.wang@cern.ch                                                        //
-// AliFemtoVertexMultAnalysisOnlyMixP1: Making pool which keep update/save      //
-// only this event has first particle                                           //
-//////////////////////////////////////////////////////////////////////////////////
-
 
 AliFemtoVertexMultAnalysisOnlyMixP1::AliFemtoVertexMultAnalysisOnlyMixP1(   UInt_t binsVertex,
                                                                             Double_t minVertex,
@@ -85,8 +81,6 @@ AliFemtoVertexMultAnalysisOnlyMixP1::AliFemtoVertexMultAnalysisOnlyMixP1(   UInt
         fMult[0],
         fMult[1]
     );
-    //test;
-    number = 10;
 }
 AliFemtoVertexMultAnalysisOnlyMixP1::AliFemtoVertexMultAnalysisOnlyMixP1(const AliFemtoVertexMultAnalysisOnlyMixP1 &OriAnalysis):
     AliFemtoSimpleAnalysisOnlyMixP1(OriAnalysis),
@@ -163,8 +157,7 @@ AliFemtoVertexMultAnalysisOnlyMixP1& AliFemtoVertexMultAnalysisOnlyMixP1::operat
         fMult[0],
         fMult[1]
     );
-
-    number = OriAnalysis.number;
+    
     return *this;
 }
 
@@ -196,14 +189,13 @@ TList* AliFemtoVertexMultAnalysisOnlyMixP1::ListSettings()
 }
 
 void AliFemtoVertexMultAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* HbtEventToProcess){
-    cout<<"AliFemtoVertexMultAnalysisOnlyMixP1 ProcessEvent"<<endl;
     const Double_t  vertexZ = HbtEventToProcess->PrimVertPos().z(),
                     mult = HbtEventToProcess->UncorrectedNumberOfPrimaries();
 
     fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ, mult);
 
     if (!fMixingBuffer) {
-        cout<<"no fMixingBuffer"<<endl;
+        
         if (vertexZ < fVertexZ[0]) {
         fUnderFlowVertexZ++;
         }
@@ -227,19 +219,4 @@ void AliFemtoVertexMultAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* HbtE
     // NULL out the mixing buffer after event processed
     fMixingBuffer = NULL;
 
-}
-
-
-bool AliFemtoVertexMultAnalysisOnlyMixP1::Pass(float inputcut)
-{
-    cout<<"AliFemtoVertexMultAnalysisOnlyMixP1 Pass"<<inputcut<<endl;
-
-
-}
-
-void AliFemtoVertexMultAnalysisOnlyMixP1::Test(float InputNumber){ 
-    cout<<"AliFemtoVertexMultAnalysisOnlyMixP1 Test "<<InputNumber<<endl;
-    number = InputNumber;
-
-    AliFemtoSimpleAnalysisOnlyMixP1::Test(number);
 }

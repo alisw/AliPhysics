@@ -1,16 +1,14 @@
 #ifndef AliFemtoVertexMultAnalysisOnlyMixP1_hh
 #define AliFemtoVertexMultAnalysisOnlyMixP1_hh
-
+//===============================================================================//
+// dongfang.wang@cern.ch
+// AliFemtoVertexMultAnalysisOnlyMixP1: Making pool which keep update/save
+// as long as the first particle has been found in this event!
+// Only difference with AliFemtoVertexMultAnalysis.cxx in line 217.
+//===============================================================================//
 
 #include "AliFemtoSimpleAnalysisOnlyMixP1.h"
 
-//////////////////////////////////////////////////////////////////////////////////
-// dongfang.wang@cern.ch                                                        //
-// AliFemtoVertexMultAnalysisOnlyMixP1: Making pool which keep update/save      //
-// only this event has first particle                                           //
-//////////////////////////////////////////////////////////////////////////////////
-
-// class wdf 2021.8.17 
 class AliFemtoVertexMultAnalysisOnlyMixP1 : public AliFemtoSimpleAnalysisOnlyMixP1{
 
     public:
@@ -48,12 +46,6 @@ class AliFemtoVertexMultAnalysisOnlyMixP1 : public AliFemtoSimpleAnalysisOnlyMix
         UInt_t fOverFlowMult;     ///< number of events encountered which had too large multiplicity
         UInt_t fUnderFlowMult;    ///< number of events encountered which had too small multiplicity
 
-    public:
-        // wdf for test
-        virtual bool Pass(float inputcut);
-        void Test(float InputNumber);
-    private:
-        float  number;
     //----------------------------------------------------------------------------------------------------------------
     //----------------------------------------------------------------------------------------------------------------
     //----------------------------------------------------------------------------------------------------------------

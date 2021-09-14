@@ -1,3 +1,8 @@
+//==============================================================\\
+// dowang track cut for p-d/t/He3 analysis                      \\
+// deuteron part refer to AliFemtoWRzTrackCut.h                 \\
+//==============================================================\\
+
 #include "AliFemtoTrackCutPdtHe3.h"
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3():
 AliFemtoESDTrackCut()
@@ -189,56 +194,54 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track)
             return false;
     
     if (fMostProbable) {
+        
         int imost=0;
         //****N Sigma Method****
         if (fPIDMethod==0) {
             if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting (in LHC10h)
-                if (IsProtonNSigma(track->P().Mag(), fNsigmaP, track->NSigmaTPCP(), track->NSigmaTOFP()) ) 
-                {
+                if (IsProtonNSigma(track->P().Mag(), fNsigmaP, track->NSigmaTPCP(), track->NSigmaTOFP()) ) {
                     imost = 4;
                 }
-                else if (fMostProbable == 13) 
-                {   //cut on Nsigma deuteron
-                    if (IsDeuteronNSigma(track->P().Mag(),fNsigmaD, track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()) 
-                        && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
-                        && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) 
-                        && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK()) 
-                        && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP()) 
-                    )
+            }
+            else if (fMostProbable == 13){   //cut on Nsigma deuteron
+                if (IsDeuteronNSigma(track->P().Mag(),fNsigmaD, track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD())
+                    && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
+                    && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
+                    && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
+                    && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP())){
                         imost = 13;
-                    // wwwww!
                 }
-                else if (fMostProbable == 14) 
-                {   //cut on Nsigma triton
-                    if (IsTritonNSigma(track->P().Mag(),fNsigmaD, track->MassTOF(), fNsigmaMass, track->NSigmaTPCT(), track->NSigmaTOFT()) 
-                        && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
-                        && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) 
-                        && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK()) 
-                        && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP()) 
-                    )
-                        imost = 13;
-                    // wwwww!
+            }
+            else if (fMostProbable == 14){   //cut on Nsigma triton
+                if (IsTritonNSigma(track->P().Mag(),fNsigmaD, track->MassTOF(), fNsigmaMass, track->NSigmaTPCT(), track->NSigmaTOFT())
+                    && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
+                    && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
+                    && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
+                    && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP())){
+                    imost = 14;
                 }
-                else if (fMostProbable == 15) 
-                {   //cut on Nsigma He3
-                    if (IsHe3NSigma(track->P().Mag(),fNsigmaD, track->MassTOF(), fNsigmaMass, track->NSigmaTPCH(), track->NSigmaTOFH()) 
-                        && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
-                        && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) 
-                        && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK()) 
-                        && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP()) 
-                    )
-                        imost = 13;
-                    // wwwww!
+                   
+            }
+            else if (fMostProbable == 15){
+                if (IsHe3NSigma(track->P().Mag(),fNsigmaD, track->MassTOF(), fNsigmaMass, track->NSigmaTPCH(), track->NSigmaTOFH())
+                    && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
+                    && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
+                    && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
+                    && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP())){
+                        imost = 15;
                 }
+
             }
             if (imost != fMostProbable) {
                 return false;
             }
+            
         }
-
-    }
     fNTracksPassed++ ;
+   
     return true;
+    
+    }
     
 }
 bool AliFemtoTrackCutPdtHe3::IsProtonNSigma(float mom, float fNsigma, float nsigmaTPCP, float nsigmaTOFP)

@@ -1,3 +1,13 @@
+//==============================================================================//
+// dongfang.wang@cern.ch                                                        //
+// AliFemtoSimpleAnalysisOnlyMixP1: Only keep update/save first particle        //
+// The key is in line 200(if current event has first particle, but not have     //
+// second particle, then save it)                                               //
+// and line 260(Only allow first particle in mixing pool making pair            //
+// with second particle in current event                                        //
+//==============================================================================//
+
+#include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoSimpleAnalysisOnlyMixP1.h"
 #include "AliFemtoTrackCut.h"
 #include "AliFemtoV0Cut.h"
@@ -17,19 +27,9 @@
   /// \endcond
 #endif
 
-//////////////////////////////////////////////////////////////////////////////////
-// dongfang.wang@cern.ch                                                        //
-// AliFemtoSimpleAnalysisOnlyMixP1: Only keep update/save first particle        //
-// The key is in line 200(if current event has first particle, but not have     //
-// second particle, then save it)                                               //
-// and line 260(Only allow first particle in mixing pool making pair            //
-// with second particle in current event                                        //
-//                                                                              //
-//////////////////////////////////////////////////////////////////////////////////
-
 
 template <class TrackCollectionType, class TrackCutType>
-void DoFillParticleCollection(TrackCutType *cut,
+void DoFillParticleCollectionOnlyMixP1(TrackCutType *cut,
                               TrackCollectionType *track_collection,
                               AliFemtoParticleCollection *output)
 {
@@ -49,7 +49,7 @@ void DoFillParticleCollection(TrackCutType *cut,
 //
 // The actual loop implementation has been moved to the collection-generic
 // DoFillParticleCollection() function
-void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
+void FillHbtParticleCollectionOnlyMixP1(AliFemtoParticleCut *partCut,
                                const AliFemtoEvent *hbtEvent,
                                AliFemtoParticleCollection *partCollection,
                                bool performSharedDaughterCut=kFALSE)
@@ -63,7 +63,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
   // cut is cutting on Tracks
   case hbtTrack:
     {
-      DoFillParticleCollection(
+      DoFillParticleCollectionOnlyMixP1(
 			       (AliFemtoTrackCut*)partCut,
 			       hbtEvent->TrackCollection(),
 			       partCollection
@@ -86,7 +86,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
       }
     } else {
 
-      DoFillParticleCollection(
+      DoFillParticleCollectionOnlyMixP1(
         v0_cut,
         hbtEvent->V0Collection(),
         partCollection
@@ -113,7 +113,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
     }
     else
     {
-      DoFillParticleCollection(
+      DoFillParticleCollectionOnlyMixP1(
         (AliFemtoXiTrackCut*)partCut,
         hbtEvent->XiCollection(),
         partCollection
@@ -125,7 +125,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
   // cut is cutting on Kinks
   case hbtKink:
 
-    DoFillParticleCollection(
+    DoFillParticleCollectionOnlyMixP1(
       (AliFemtoKinkCut*)partCut,
       hbtEvent->KinkCollection(),
       partCollection
@@ -142,20 +142,19 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
 }
 
 // Leave this here to appease any legacy code that expected a non-const AliFemtoEvent
-void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
+void FillHbtParticleCollectionOnlyMixP1(AliFemtoParticleCut *partCut,
                                AliFemtoEvent *hbtEvent,
                                AliFemtoParticleCollection *partCollection,
                                bool performSharedDaughterCut)
 {
-  FillHbtParticleCollection(partCut, const_cast<const AliFemtoEvent*>(hbtEvent), partCollection, performSharedDaughterCut);
+  FillHbtParticleCollectionOnlyMixP1(partCut, const_cast<const AliFemtoEvent*>(hbtEvent), partCollection, performSharedDaughterCut);
 }
 
 
 AliFemtoSimpleAnalysisOnlyMixP1::AliFemtoSimpleAnalysisOnlyMixP1():
     AliFemtoSimpleAnalysis()
 {
-    //ccc;
-  number = 10;
+
 }
 AliFemtoSimpleAnalysisOnlyMixP1::AliFemtoSimpleAnalysisOnlyMixP1(const AliFemtoSimpleAnalysisOnlyMixP1 &OriAnalysis):
     AliFemtoSimpleAnalysis(OriAnalysis)
@@ -175,20 +174,16 @@ AliFemtoSimpleAnalysisOnlyMixP1& AliFemtoSimpleAnalysisOnlyMixP1::operator=(cons
 
     AliFemtoSimpleAnalysisOnlyMixP1::operator=(OriAnalysis);
 
-    number = OriAnalysis.number;
     return *this;
 }
 
 void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent){
-
-    cout<<"AliFemtoSimpleAnalysisOnlyMixP1 ProcessEvent"<<endl;
 
     fPicoEvent = nullptr;
     AddEventProcessed();
     EventBegin(hbtEvent);
     bool tmpPassEvent = fEventCut->Pass(hbtEvent);
     if (!tmpPassEvent) {
-        cout<<"no pass"<<endl;
         fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
         EventEnd(hbtEvent);  // cleanup for EbyE
         return;
@@ -199,7 +194,7 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
      
     AliFemtoParticleCollection *collection1 = fPicoEvent->FirstParticleCollection(),
                                *collection2 = fPicoEvent->SecondParticleCollection();
-    // wdf 2020.8.17
+    
     // only collection1 == nullptr, we delete this event!
     if (collection1 == nullptr){
         cout << "E-AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent: new PicoEvent is missing particle collections!\n";
@@ -218,14 +213,14 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
         return;  
     }
 
-    FillHbtParticleCollection(fFirstParticleCut,
+    FillHbtParticleCollectionOnlyMixP1(fFirstParticleCut,
                             hbtEvent,
                             fPicoEvent->FirstParticleCollection(),
                             fPerformSharedDaughterCut);
 
     // fill second particle cut if not analyzing identical particles
     if ( !AnalyzeIdenticalParticles() ) {
-        FillHbtParticleCollection(fSecondParticleCut,
+        FillHbtParticleCollectionOnlyMixP1(fSecondParticleCut,
                                 hbtEvent,
                                 fPicoEvent->SecondParticleCollection(),
                                 fPerformSharedDaughterCut);
@@ -260,7 +255,7 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
         }else {
             // MakePairs("mixed", collection1,
             //                storedEvent->SecondParticleCollection());
-            // only make first particle in pool with second particle in current event
+            // dowang: only make first particle in pool with second particle in current event
             MakePairs("mixed", storedEvent->FirstParticleCollection(),collection2);
         }
 
@@ -276,16 +271,3 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
 
 }
 
-
-
-bool AliFemtoSimpleAnalysisOnlyMixP1::Pass(float inputcut)
-{
-
-    cout<<"AliFemtoSimpleAnalysisOnlyMixP1 Pass"<<inputcut<<endl;
-
-}
-
-void AliFemtoSimpleAnalysisOnlyMixP1::Test(float InputNumber){
-    cout<<"AliFemtoSimpleAnalysisOnlyMixP1 Test "<<InputNumber<<endl;
-    number = InputNumber;
-}

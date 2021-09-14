@@ -3,9 +3,10 @@
 
 #include "AliFemtoESDTrackCut.h"
 
-
-// wdf 2020.8.17
-// deuteron part refer to AliFemtoWRzTrackCut.h
+//==============================================================\\
+// dowang track cut for p-d/t/He3 analysis                      \\
+// deuteron part refer to AliFemtoWRzTrackCut.h                 \\
+//==============================================================\\
 
 class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 
@@ -15,7 +16,10 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         virtual ~AliFemtoTrackCutPdtHe3();
         AliFemtoTrackCutPdtHe3& operator =(const AliFemtoTrackCutPdtHe3 &aCut);
         virtual bool Pass(const AliFemtoTrack* aTrack);
-
+        // label
+        void SetMostProbableDeuteron();
+        void SetMostProbableTriton();
+        void SetMostProbableHe3();
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -23,6 +27,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         float fNsigmaHe3;
 
         float fNsigmaRejection;
+
 
         bool IsProtonNSigma(float mom, float fNsigma, float nsigmaTPCP, float nsigmaTOFP);
         bool IsDeuteronNSigma(float mom, float fNsigma, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
@@ -39,5 +44,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         
 
 };
-
+inline void AliFemtoTrackCutPdtHe3::SetMostProbableDeuteron() { fMostProbable = 13; }
+inline void AliFemtoTrackCutPdtHe3::SetMostProbableTriton() { fMostProbable = 14; }
+inline void AliFemtoTrackCutPdtHe3::SetMostProbableHe3() { fMostProbable = 15; }
 #endif
