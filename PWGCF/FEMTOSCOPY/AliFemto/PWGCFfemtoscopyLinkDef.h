@@ -125,6 +125,10 @@
 #pragma link C++ class std::vector<AliFemtoConfigObject>;
 #pragma link C++ class std::vector<AliFemtoConfigObject>::iterator;
 #pragma link C++ class std::vector<std::pair<double, double>>;
+
+// Dong-Fang: 2021.9.14
+#pragma link C++ class AliFemtoSimpleAnalysisOnlyMixP1;
+#pragma link C++ class AliFemtoVertexMultAnalysisOnlyMixP1;
 // ^ these std:: classes required here for use in ROOT-5 macros (ROOT-6 should be ok)
 
 #endif
