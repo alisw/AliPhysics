@@ -95,7 +95,6 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2fwdtrackcov",
   "O2calo",
   "O2calotrigger",
-  "O2muoncluster",
   "O2zdc",
   "O2fv0a",
   "O2fv0c",
@@ -124,7 +123,6 @@ const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
   "Forward tracks Covariances",
   "Calorimeter cells",
   "Calorimeter triggers",
-  "MUON clusters",
   "ZDC",
   "FV0A",
   "FV0C",
@@ -225,7 +223,6 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     calo(),
     calotrigger(),
     fwdtracks(),
-    mucls(),
     zdc(),
     fv0a(),
     fv0c(),
@@ -835,7 +832,9 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tFwdTrack->Branch("fMatchScoreMCHMFT", &fwdtracks.fMatchScoreMCHMFT, "fMatchScoreMCHMFT/F");
     tFwdTrack->Branch("fMatchMFTTrackID", &fwdtracks.fMatchMFTTrackID, "fMatchMFTTrackID/I");
     tFwdTrack->Branch("fMatchMCHTrackID", &fwdtracks.fMatchMCHTrackID, "fMatchMCHTrackID/I");
-    tFwdTrack->Branch("fMCHBitMap", &fwdtracks.fMCHBitMap, "fMCHBitMap/s"); 
+    tFwdTrack->Branch("fMCHBitMap", &fwdtracks.fMCHBitMap, "fMCHBitMap/s");
+    tFwdTrack->Branch("fMIDBitMap", &fwdtracks.fMIDBitMap, "fMIDBitMap/s"); 
+    tFwdTrack->Branch("fMIDBoards", &fwdtracks.fMIDBoards, "fMIDBoards/i"); 
     tFwdTrack->SetBasketSize("*", fBasketSizeEvents);
   }
 
@@ -861,21 +860,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tFwdTrack->SetBasketSize("*", fBasketSizeEvents);
   }
 
-  // Associate branches for MUON clusters
-  TTree *tMuonCls = CreateTree(kMuonCls);
-  if (fTreeStatus[kMuonCls])
-  {
-    tMuonCls->Branch("fIndexFwdTracks", &mucls.fIndexFwdTracks, "fIndexFwdTracks/I");
-    tMuonCls->Branch("fX", &mucls.fX, "fX/F");
-    tMuonCls->Branch("fY", &mucls.fY, "fY/F");
-    tMuonCls->Branch("fZ", &mucls.fZ, "fZ/F");
-    tMuonCls->Branch("fErrX", &mucls.fErrX, "fErrX/F");
-    tMuonCls->Branch("fErrY", &mucls.fErrY, "fErrY/F");
-    tMuonCls->Branch("fCharge", &mucls.fCharge, "fCharge/F");
-    tMuonCls->Branch("fChi2", &mucls.fChi2, "fChi2/F");
-    tMuonCls->SetBasketSize("*", fBasketSizeEvents);
-  }
-
+  
   // Associuate branches for ZDC
   TTree *tZdc = CreateTree(kZdc);
   if (fTreeStatus[kZdc])
@@ -2043,7 +2028,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   if (fAOD) fAOD->GetMuonTracks(&muonTracks);
 
   Int_t nmu_filled = 0;   // total number of muons filled per event
-  Int_t nmucl_filled = 0; // total number of clusters filled per event
 
   if (fESD) {
     for (Int_t imu = 0; imu < nmu; ++imu)
@@ -2058,23 +2042,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       Int_t muTrackID = fOffsetMuTrackID + imu;
       Int_t nmucl = mutrk->GetNClusters();
 
-      for (Int_t imucl = 0; imucl < nmucl; ++imucl)
-      {
-        AliESDMuonCluster *muCluster = fESD->FindMuonCluster(mutrk->GetClusterId(imucl));
-        mucls.fIndexFwdTracks = muTrackID;
-        mucls.fX = AliMathBase::TruncateFloatFraction(muCluster->GetX(), mMuonCl);
-        mucls.fY = AliMathBase::TruncateFloatFraction(muCluster->GetY(), mMuonCl);
-        mucls.fZ = AliMathBase::TruncateFloatFraction(muCluster->GetZ(), mMuonCl);
-        mucls.fErrX = AliMathBase::TruncateFloatFraction(muCluster->GetErrX(), mMuonClErr);
-        mucls.fErrY = AliMathBase::TruncateFloatFraction(muCluster->GetErrY(), mMuonClErr);
-        mucls.fCharge = AliMathBase::TruncateFloatFraction(muCluster->GetCharge(), mMuonCl);
-        mucls.fChi2 = AliMathBase::TruncateFloatFraction(muCluster->GetChi2(), mMuonClErr);
-        FillTree(kMuonCls);
-        if (fTreeStatus[kMuonCls])
-          nmucl_filled++;
-      } // End loop on muon clusters for the current muon track
-      // In case we need connection to clusters, activate next lines
-      // fwdtracks.fClusterIndex += fwdtracks.fNclusters;
       fwdtracks.fNClusters = nmucl;
 
       FillTree(kFwdTrack);
@@ -2105,8 +2072,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   
   eventextra.fNentries[kFwdTrack] = nmu_filled;
   eventextra.fNentries[kFwdTrackCov] = nmu_filled;
-  eventextra.fNentries[kMuonCls] = nmucl_filled;
-
+  
   //---------------------------------------------------------------------------
   // ZDC
   AliESDZDC *esdzdc = fESD ? fESD->GetESDZDC() : nullptr;
@@ -2551,8 +2517,20 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   convertedTrack.fChi2MatchMCHMID = AliMathBase::TruncateFloatFraction(MUONTrack.GetChi2MatchTrigger(), mMuonTrCov);
   convertedTrack.fRAtAbsorberEnd = AliMathBase::TruncateFloatFraction(MUONTrack.GetRAtAbsorberEnd(), mMuonTrCov);
   convertedTrack.fPDca = AliMathBase::TruncateFloatFraction(pdca, mMuonTrCov);
-  
+
+  //MCH and MID words
   convertedTrack.fMCHBitMap = MUONTrack.GetMuonClusterMap();
+  UInt_t midpattern = MUONTrack.GetHitsPatternInTrigChTrk();
+  UShort_t midbitmap = 0;
+  for (int icath=0; icath < 2; icath++){
+    for (int ich=0; ich < 4; ich++){
+      if (AliESDMuonTrack::IsChamberHit(midpattern,icath,ich)) midbitmap |= 1<<(ich+icath*4);
+    }
+  }
+  convertedTrack.fMIDBitMap = midbitmap;
+  UInt_t midboard = static_cast<UInt_t>(AliESDMuonTrack::GetCrossedBoard(midpattern));
+  convertedTrack.fMIDBoards = (midboard << 24) | (midboard << 16) | (midboard  << 8) | midboard;
+  
 
   // Covariances matrix conversion
   using SMatrix55Std = ROOT::Math::SMatrix<double, 5>;
@@ -2713,7 +2691,18 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
   convertedTrack.fRAtAbsorberEnd = AliMathBase::TruncateFloatFraction(MUONTrack.GetRAtAbsorberEnd(), mMuonTrCov);
   convertedTrack.fPDca = AliMathBase::TruncateFloatFraction(pdca, mMuonTrCov);
 
+  //MCH and MID words
   convertedTrack.fMCHBitMap = MUONTrack.GetMUONClusterMap();
+  UInt_t midpattern = MUONTrack.GetMUONTrigHitsMapTrk();
+  UShort_t midbitmap = 0;
+  for (int icath=0; icath < 2; icath++){
+    for (int ich=0; ich < 4; ich++){
+      if (AliESDMuonTrack::IsChamberHit(midpattern,icath,ich)) midbitmap |= 1<<(ich+icath*4);
+    }
+  }
+  convertedTrack.fMIDBitMap = midbitmap;
+  UInt_t midboard = static_cast<UInt_t>(AliESDMuonTrack::GetCrossedBoard(midpattern));
+  convertedTrack.fMIDBoards = (midboard << 24) | (midboard << 16) | (midboard  << 8) | midboard;
 
   // Covariances matrix conversion
   using SMatrix55Std = ROOT::Math::SMatrix<double, 5>;

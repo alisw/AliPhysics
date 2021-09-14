@@ -574,7 +574,7 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 				vec_hMCTrk[0]=1;
               }
               if(d==9){
-                Int_t bin=(98+jm);
+                Int_t bin=(97+jm);
 				((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
 				vec_hMCTrk[0]=2;
 				  }			
@@ -669,7 +669,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool2->PrintInfo();
   // 		pool2->SetTargetEvents(5);
 
-        if (pool2->GetCurrentNEvents() >= 5  && pool2->GetCurrentNEvents() <= 50){
+        if (pool2->GetCurrentNEvents() >= 5  && pool2->GetCurrentNEvents() <= 15){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool2->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -721,7 +721,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool3->PrintInfo();
   // 		pool3->SetTargetEvents(5);
 
-        if (pool3->GetCurrentNEvents() >= 5  && pool3->GetCurrentNEvents() <= 100){
+        if (pool3->GetCurrentNEvents() >= 5  && pool3->GetCurrentNEvents() <= 180){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool3->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -822,7 +822,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
 //         poolMC2->PrintInfo();
   // 		poolMC2->SetTargetEvents(5);
 
-        if (poolMC2->GetCurrentNEvents() >= 5 && poolMC2->GetCurrentNEvents() <= 50){
+        if (poolMC2->GetCurrentNEvents() >= 5 && poolMC2->GetCurrentNEvents() <= 15){
           Int_t nMix = poolMC2->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
             TObjArray* mixEvents = poolMC2->GetEvent(jMix);
@@ -871,7 +871,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
 //         poolMC3->PrintInfo();
   // 		poolMC3->SetTargetEvents(5);
 
-        if (poolMC3->GetCurrentNEvents() >= 5 && poolMC3->GetCurrentNEvents() <= 100){
+        if (poolMC3->GetCurrentNEvents() >= 5 && poolMC3->GetCurrentNEvents() <= 180){
           Int_t nMix = poolMC3->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
             TObjArray* mixEvents = poolMC3->GetEvent(jMix);

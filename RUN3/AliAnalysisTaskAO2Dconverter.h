@@ -62,7 +62,6 @@ public:
     kFwdTrackCov,
     kCalo,
     kCaloTrigger,
-    kMuonCls,
     kZdc,
     kFV0A,
     kFV0C,
@@ -463,6 +462,12 @@ private:
     Int_t fMatchMFTTrackID = -1;
     Int_t fMatchMCHTrackID = -1;
     UShort_t fMCHBitMap = 0u;
+    // MID bit map
+    // | non-bending plane (4bit) | bending plane (4bit) |
+    // i-th chamber can be tested with: fMIDBitMap & (1<<i)
+    UShort_t fMIDBitMap = 0u;
+    UInt_t fMIDBoards = 0;
+    
 
     // "Covariance matrix"
     // The diagonal elements represent the errors = Sqrt(C[i,i])
@@ -485,19 +490,6 @@ private:
     Char_t fRho1PtTgl    = 0;      /// 128*fC[3,4]/Sigma1Pt/SigmaTgl
 
   } fwdtracks; //! structure to keep forward tracks parameters and covariances
-
-  struct {
-    // Muon cluster data
-
-    Int_t   fIndexFwdTracks = -1; /// The index of the muon track to which the clusters are attached
-    Float_t fX = -999.f;         ///< cluster X position
-    Float_t fY = -999.f;         ///< cluster Y position
-    Float_t fZ = -999.f;         ///< cluster Z position
-    Float_t fErrX = -999.f;      ///< transverse position errors
-    Float_t fErrY = -999.f;      ///< transverse position errors
-    Float_t fCharge = -999.f;    ///< cluster charge
-    Float_t fChi2 = -999.f;      ///< cluster chi2
-  } mucls;              //! structure to keep muon clusters information
 
   struct {
     Int_t   fIndexBCs = 0u;                 /// Index to BC table
@@ -600,7 +592,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 19);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 20);
 };
 
 #endif
