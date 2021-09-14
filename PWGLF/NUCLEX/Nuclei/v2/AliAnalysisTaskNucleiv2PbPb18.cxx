@@ -341,6 +341,8 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
 
   q2TPCvsCentrality = new TH2D("q2TPCvsCentrality" , "q2TPCvsCentrality", 105,0,105 , 2000,0,20);
   fListHist->Add(q2TPCvsCentrality);
+  q2V0AvsCentrality = new TH2D("q2V0AvsCentrality" , "q2V0AvsCentrality", 105,0,105 , 2000,0,20);
+  fListHist->Add(q2V0AvsCentrality);
   q2V0CvsCentrality = new TH2D("q2V0CvsCentrality" , "q2V0CvsCentrality", 105,0,105 , 2000,0,20);
   fListHist->Add(q2V0CvsCentrality);
 
