@@ -3474,6 +3474,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008e113","0dg00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // RBins    min = 95,     max = 180
 
 
+  } else if ( trainConfig == 3130){//alpha, std 3 == <=1.0 (for smearing studies)
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310a100000010"); //a: alpha meson variation 1 0<alpha<0.2
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310b100000010"); //b: alpha meson variation 1 0.2<alpha<0.6
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310c100000010"); //c: alpha meson variation 1 0.6<alpha<1.0
 
 
     // Variations for systematics PCM-EDC 13 TeV EG1
@@ -3586,6 +3590,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008d113","0dg00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // RBins    min = 95,     max = 180
 
 
+  } else if ( trainConfig == 3230){//alpha, std 3 == <=1.0 (for smearing studies)
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310a100000010"); //a: alpha meson variation 1 0<alpha<0.2
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310b100000010"); //b: alpha meson variation 1 0.2<alpha<0.6
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310c100000010"); //c: alpha meson variation 1 0.6<alpha<1.0
 
 
 
@@ -3908,6 +3916,11 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dl00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // RBins    min = 72,     max = 95
     cuts.AddCutPCMCalo("00010113","0dg00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // RBins    min = 95,     max = 180
 
+
+  } else if ( trainConfig == 3530){//alpha, std 3 == <=1.0 (for smearing studies)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310a100000010"); //a: alpha meson variation 1 0<alpha<0.2
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310b100000010"); //b: alpha meson variation 1 0.2<alpha<0.6
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310c100000010"); //c: alpha meson variation 1 0.6<alpha<1.0
 
   //*************************************************************************************************
   //PCM-EMC in Jet

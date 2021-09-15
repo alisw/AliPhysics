@@ -1162,6 +1162,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //NCell 0, NL 01
   } else if(trainConfig == 973)  { //Standard EDC 13TeV MB, Std Cut
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070a","0103103100000000","0453503000000000"); // INT7
+    //NCell 2 + NCell eficiency, NL 01
+  } else if(trainConfig == 983)  { //Standard EDC 13TeV MB, Std Cut
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe3n220000","32c51070a","0103103100000000","0453503000000000"); // INT7
     //-----
     //Trigger EG2: Calo Variations
     //-----
@@ -1247,6 +1250,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070a","01031s3100000000","0453503000000000"); // INT7
   } else if(trainConfig == 1075)  { //EDC 13TeV MB, min/max pt cut v (no min pt, max pt  25gev), NCell Cut 0
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070a","01031v3100000000","0453503000000000"); // INT7
+
+    //NCell 2 + NCell effi, NL 01
+  } else if(trainConfig == 1083)  { //EDC 13TeV EG2, NCell: n NCell2 + NCell effi in MC
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe3n220000","32c51070a","0103103100000000","0453503000000000"); // EG2
+  } else if(trainConfig == 1084)  { //EDC 13TeV EG2, min/max pt cut s (no min pt, max pt 20gev), NCell: n NCell2 + NCell effi in MC
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe3n220000","32c51070a","01031s3100000000","0453503000000000"); // EG2
+  } else if(trainConfig == 1085)  { //EDC 13TeV EG2, min/max pt cut v (no min pt, max pt  25gev), NCell: n NCell2 + NCell effi in MC
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe3n220000","32c51070a","01031v3100000000","0453503000000000"); // EG2
 
 
     //-----
@@ -1336,6 +1347,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070a","01031s3100000000","0453503000000000"); // INT7
   } else if(trainConfig == 1175)  { //EDC 13TeV MB, min/max pt cut v (no min pt, max pt  25gev), NCell Cut 0
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070a","01031v3100000000","0453503000000000"); // INT7
+
+    //NCell 2 + NCell effi, NL 01
+  } else if(trainConfig == 1183)  { //EDC 13TeV EG1, NCell: n NCell2 + NCell effi in MC
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe3n220000","32c51070a","0103103100000000","0453503000000000"); // EG1
+  } else if(trainConfig == 1184)  { //EDC 13TeV EG1, min/max pt cut s (no min pt, max pt 20gev), NCell: n NCell2 + NCell effi in MC
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe3n220000","32c51070a","01031s3100000000","0453503000000000"); // EG1
+  } else if(trainConfig == 1185)  { //EDC 13TeV EG1, min/max pt cut v (no min pt, max pt  25gev), NCell: n NCell2 + NCell effi in MC
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe3n220000","32c51070a","01031v3100000000","0453503000000000"); // EG1
 
   } else {
     Error(Form("GammaConvNeutralMeson_CaloMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
