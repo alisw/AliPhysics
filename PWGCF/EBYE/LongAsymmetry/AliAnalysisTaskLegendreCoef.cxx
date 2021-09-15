@@ -352,37 +352,60 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
 //_____________________________________________________________________________
 void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *background, Float_t centrality, char *type)
 {
-  TH1D *RanDistHist[5],*RanHist[5];//random distribution histograms
+  // TH1D *RanDistHist[5],*RanHist[5];//random distribution histograms
   TRandom2 *ran = new TRandom2();//random number for uniform distribution
   double ntracks = signal->Integral();
   int n; 
   char histname[50];
-  for (int s=0; s<5; s++){//5 random histograms
-    n = sprintf (histname, "RanHist%i", s+1);
-    RanHist[s] = new TH1D(histname,histname, 16, -fEta, fEta);
-    RanHist[s]->Sumw2();
-    n = sprintf (histname, "RanDistHist%i", s+1);
-    RanDistHist[s] = new TH1D(histname,histname, 16, -fEta, fEta);
-    RanDistHist[s]->Sumw2();
-  }
+  // double intb = background->Integral();
+  // background->Scale((double)ntracks/intb);
 
-  //generating random uniform distributions
-  for (int s=0; s<5; s++){
-    RanHist[s]->Reset("ICE");
-    for (int rn=0; rn<ntracks; rn++) {RanHist[s]->Fill(ran->Uniform(-fEta,fEta));}
-        //printf("first ranhist normal is %f\n",RanHist[s]->Integral());
-    RanHist[s]->Scale(16.0/(double)ntracks);
-    //printf("ranhist normal is %f\n",RanHist[s]->Integral());
+  // for (int s=0; s<5; s++){//5 random histograms
+  //   n = sprintf (histname, "RanHist%i", s+1);
+  //   RanHist[s] = new TH1D(histname,histname, 16, -fEta, fEta);
+  //   RanHist[s]->Sumw2();
+  //   n = sprintf (histname, "RanDistHist%i", s+1);
+  //   RanDistHist[s] = new TH1D(histname,histname, 16, -fEta, fEta);
+  //   RanDistHist[s]->Sumw2();
+  // }
 
-  }
+  TH1D *histeu = new TH1D("histeu","",16,-fEta,fEta);
+  TH1D *hister = new TH1D("hister","",16,-fEta,fEta);
 
-  //generating random sample distributions
-  for (int s=0; s<5; s++){
-    RanDistHist[s]->Reset("ICE");
-    for (int rn=0; rn<ntracks; rn++) {RanDistHist[s]->Fill(background->GetRandom());}
-    RanDistHist[s]->Divide(background);
-    //printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
+  // //generating random uniform distributions
+  // for (int s=0; s<5; s++){
+  //   RanHist[s]->Reset("ICE");
+  //   for (int rn=0; rn<ntracks; rn++) {RanHist[s]->Fill(ran->Uniform(-fEta,fEta));}
+  //       //printf("first ranhist normal is %f\n",RanHist[s]->Integral());
+  //   RanHist[s]->Scale(16.0/(double)ntracks);
+  //   printf("ranhist normal is %f\n",RanHist[s]->Integral());
+
+  // }
+
+  // //generating random sample distributions
+  // for (int s=0; s<5; s++){
+  //   RanDistHist[s]->Reset("ICE");
+  //   for (int rn=0; rn<ntracks; rn++) {RanDistHist[s]->Fill(background->GetRandom());}
+  //   RanDistHist[s]->Divide(background);
+  //   printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
+  // }
+
+        //Rescale background so integral matches mult
+  double intb = background->Integral();
+  background->Scale(double(ntracks)/intb);
+  
+  for(int j =0;j<ntracks;j++){
+      histeu->Fill(gRandom->Uniform(-fEta,fEta));
+      hister->Fill(background->GetRandom());
   }
+  histeu->Scale(16./double(ntracks));
+  //printf("ranhist histeu normal is %f\n",histeu->Integral());
+
+  hister->Divide(background);
+  //printf("ranhist hister normal is %f\n",hister->Integral());
+
+
+
 
   //normalizing signal hist
   signal->Divide(background);
@@ -395,21 +418,36 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
   ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,signal),2.0));
   n = sprintf (histname, "a2%s", type);
   ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,signal),2.0));
-  for (int s=0; s<5; s++){
-    n = sprintf (histname, "Ra1%s", type);
-    ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,RanHist[s]),2.0));
-    n = sprintf (histname, "RDa1%s", type);
-    ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,RanDistHist[s]),2.0));
-    n = sprintf (histname, "Ra2%s", type);
-    ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,RanHist[s]),2.0));
-    n = sprintf (histname, "RDa2%s", type);
-    ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,RanDistHist[s]),2.0));
-  }  
 
-  for (int s=0; s<5; s++){
-    delete (RanHist[s]);
-    delete (RanDistHist[s]);    
-  }
+  
+  n = sprintf (histname, "Ra1%s", type);
+  ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,histeu),2.0));
+  n = sprintf (histname, "RDa1%s", type);
+  ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,hister),2.0));
+  n = sprintf (histname, "Ra2%s", type);
+  ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,histeu),2.0));
+  n = sprintf (histname, "RDa2%s", type);
+  ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,hister),2.0));
+   
+
+
+  // for (int s=0; s<5; s++){
+  //   n = sprintf (histname, "Ra1%s", type);
+  //   ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,RanHist[s]),2.0));
+  //   n = sprintf (histname, "RDa1%s", type);
+  //   ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,RanDistHist[s]),2.0));
+  //   n = sprintf (histname, "Ra2%s", type);
+  //   ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,RanHist[s]),2.0));
+  //   n = sprintf (histname, "RDa2%s", type);
+  //   ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,RanDistHist[s]),2.0));
+  // }  
+
+  // for (int s=0; s<5; s++){
+  //   delete (RanHist[s]);
+  //   delete (RanDistHist[s]);    
+  // }
+  delete histeu;
+  delete hister;
   return;
 }
 //_____________________________________________________________________________
