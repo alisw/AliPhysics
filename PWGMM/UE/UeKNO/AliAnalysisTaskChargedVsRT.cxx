@@ -92,6 +92,7 @@ using std::endl;
 
 #include "AliAnalysisTaskChargedVsRT.h"
 
+
 const Char_t * NameReg_3[3]={"NS","AS","TS"};
 
 
@@ -1369,7 +1370,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				}
 			}
 
-
+            delete newTrack;
 		}
 	}else{
 		for(Int_t iT = 0; iT < nTracks; ++iT) {
@@ -1492,7 +1493,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				}
 			}
 
-
+            delete newTrack;
 		}
 	}
 	return nNchRec;
