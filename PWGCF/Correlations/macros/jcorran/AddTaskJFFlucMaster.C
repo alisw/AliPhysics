@@ -67,7 +67,7 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 		myTask[i]->SetTestFilterBit(hybridCut);
 		myTask[i]->SetEtaRange(0.4, 0.8);
 		myTask[i]->SetPtRange(ptmin, 5.0);
-		myTask[i]->SetEffConfig(0,hybridCut);
+		myTask[i]->SetEffConfig(1,hybridCut);
 		myTask[i]->SetPhiCorrectionIndex(i);//cmaptask->EnablePhiCorrection(i,MAPfilenames[i]);
 		myTask[i]->SetRemoveBadArea(removebadarea);
 		myTask[i]->SetZVertexCut(8.);
@@ -75,7 +75,7 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	// s_global
 	int iS = 1;
 	myTask[iS]->SetTestFilterBit(globalCut);
-	myTask[iS]->SetEffConfig(0,globalCut);
+	myTask[iS]->SetEffConfig(1,globalCut);
 	// s_nqq
 	iS = 2;
 	myTask[iS]->SetParticleCharge(-1);
