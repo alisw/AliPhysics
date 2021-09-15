@@ -808,7 +808,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   {
     tCaloTrigger->Branch("fIndexBCs", &calotrigger.fIndexBCs, "fIndexBCs/I");
     tCaloTrigger->Branch("fFastOrAbsID", &calotrigger.fFastOrAbsID, "fFastOrAbsID/S");
-    tCaloTrigger->Branch("fLnAmplitude", &calotrigger.fLnAmplitude, "fLnAmplitude/F");
+    tCaloTrigger->Branch("fLnAmplitude", &calotrigger.fLnAmplitude, "fLnAmplitude/S");
     tCaloTrigger->Branch("fTriggerBits", &calotrigger.fTriggerBits, "fTriggerBits/I");
     tCaloTrigger->Branch("fCaloType", &calotrigger.fCaloType, "fCaloType/B");
     tCaloTrigger->SetBasketSize("*", fBasketSizeEvents);
