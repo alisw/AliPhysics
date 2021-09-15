@@ -247,6 +247,12 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   TProfile      *fAvgSin3PsivsCentEtaPos; //!
   TProfile      *fAvgCos3PsivsCentEtaNeg; //!
   TProfile      *fAvgSin3PsivsCentEtaNeg; //!  
+
+  TH2F         *fHistV0CDetqVectorvsCent; //!!
+  TH2F         *fHistV0ADetqVectorvsCent; //!!
+  TH2F         *fHistTPCPosqVectorvsCent; //!!
+  TH2F         *fHistTPCNegqVectorvsCent; //!!    
+    
   
   TH1F          *fHistVertexZcm;     //!
   TProfile      *fHistVxvsVzMinBias; //!

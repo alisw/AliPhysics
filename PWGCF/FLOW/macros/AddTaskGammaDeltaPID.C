@@ -3,7 +3,7 @@ void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fP
 {
   // standard with task
   printf("===================================================================================\n");
-  printf("\n                PID: Initialising AliAnalysisTaskCMWPU2018 (local)                \n");
+  printf("\n                Initialising Task: AliAnalysisTaskGammaDeltaPID                  \n");
   printf("===================================================================================\n");
 
 
@@ -23,7 +23,7 @@ void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fP
   TString TaskCMWPID;
   TaskCMWPID.Form("gTaskCMWCent%d_%d_%s", gCentMin, gCentMax, suffix);
 
-  AliAnalysisTaskCMWPU2018loc *task_CMW = new AliAnalysisTaskCMWPU2018loc(TaskCMWPID);
+  AliAnalysisTaskGammaDeltaPID *task_CMW = new AliAnalysisTaskGammaDeltaPID(TaskCMWPID);
 
   ///-------> Analysis Object Created, now pass the arguments
   if(sTrigger=="kMB" || sTrigger=="kmb" || sTrigger=="MB"){   // if We want MB Trigger
