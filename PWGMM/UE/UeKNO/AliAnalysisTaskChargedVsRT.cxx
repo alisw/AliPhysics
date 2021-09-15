@@ -1370,7 +1370,6 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				}
 			}
 
-            delete newTrack;
 		}
 	}else{
 		for(Int_t iT = 0; iT < nTracks; ++iT) {
@@ -1493,7 +1492,6 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				}
 			}
 
-            delete newTrack;
 		}
 	}
 	return nNchRec;
