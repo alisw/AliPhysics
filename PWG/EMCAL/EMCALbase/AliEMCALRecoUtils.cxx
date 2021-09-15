@@ -53,6 +53,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fParticleType(0),                       fPosAlgo(0),
   fW0(0),                                 fShowerShapeCellLocationType(0),
   fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
+  fUseDetermineLowGain(kFALSE), fCalibData(0),
   fUseAdditionalScale(kFALSE),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fNCellEfficiencyFunction(0),
@@ -110,6 +111,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fW0(reco.fW0),                                             fShowerShapeCellLocationType(reco.fShowerShapeCellLocationType),
   fNonLinearityFunction(reco.fNonLinearityFunction),         fNonLinearThreshold(reco.fNonLinearThreshold),
   fUseShaperNonlin(reco.fUseShaperNonlin),
+  fUseDetermineLowGain(reco.fUseDetermineLowGain), 
+  fCalibData(reco.fCalibData),
   fUseAdditionalScale(reco.fUseAdditionalScale),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fNCellEfficiencyFunction(reco.fNCellEfficiencyFunction),
@@ -220,6 +223,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fNonLinearityFunction      = reco.fNonLinearityFunction;
   fNonLinearThreshold        = reco.fNonLinearThreshold;
   fUseShaperNonlin           = reco.fUseShaperNonlin;
+  fUseDetermineLowGain       = reco.fUseDetermineLowGain;
+  fCalibData                 = reco.fCalibData;
   fUseAdditionalScale        = reco.fUseAdditionalScale;
   for (Int_t j = 0; j < 3; j++)
     fAdditionalScaleSM[j]         = reco.fAdditionalScaleSM[j];
@@ -444,7 +449,6 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
     if ( bad ) return kFALSE;
   }
   Bool_t isLowGain = !(cells->GetCellHighGain(absID));//HG = false -> LG = true
-
   //Recalibrate energy
   amp  = cells->GetCellAmplitude(absID);
   if (!fCellsRecalibrated && IsRecalibrationOn()){
@@ -2695,6 +2699,14 @@ void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells, Int_t bc)
   for (Int_t iCell = 0; iCell < nEMcell; iCell++)
   {
     cells->GetCell( iCell, absId, ecellin, tcellin, mclabel, efrac );
+
+    // user selected to not use LG info stored in cells. Instead info is determined
+    // using ADC value of cell
+    if(fUseDetermineLowGain){
+      isCellHG = ! GetCellLGInfoFromADC(absId,cells);
+      // copy info from input cells and just overwrite HG info
+      cells->SetCell( iCell, absId, ecellin, tcellin, mclabel, efrac, isCellHG );
+    }
     isCellHG = cells->GetCellHighGain(absId);
 
     accept = AcceptCalibrateCell(absId, bc, ecell ,tcell ,cells);
@@ -5079,6 +5091,50 @@ void AliEMCALRecoUtils::SetEMCALChannelRecalibrationFactors1D(const TH1S* h) {
   fEMCALRecalibrationFactors->AddAt(clone,0);
 }
 
+// returns true if cell is Low Gain. Rather than from the cell object, this info
+// it determined using the cell ADC value
+Bool_t AliEMCALRecoUtils::GetCellLGInfoFromADC(Int_t absId, AliVCaloCells* cells){
+ 
+ Bool_t isLowGain = kFALSE;
+ AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+
+ if(!geom){
+    AliError("No instance of the geometry is available");
+    return kFALSE;
+ }
+
+ Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
+
+ geom->GetCellIndex(absId,imod,iTower,iIphi,iIeta);
+ geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
+
+ Float_t amp  = cells->GetCellAmplitude(absId);
+ if (!fCalibData) {
+    AliCDBEntry *entry = static_cast<AliCDBEntry*>(AliCDBManager::Instance()->Get("EMCAL/Calib/Data"));
+    if (entry) 
+      fCalibData =  static_cast<AliEMCALCalibData*>(entry->GetObject());
+    if (!fCalibData)
+      AliFatal("Calibration parameters not found in CDB!");
+  }
+
+  // get from calib object the conversion factor to get back to ADC
+  // conversion taken from AliEMCALDigitizer::DigitizeEnergyTime
+  Float_t ADCpedestalEC = fCalibData->GetADCpedestal(imod, ieta, iphi);
+  Float_t ADCchannelEC = fCalibData->GetADCchannel(imod, ieta, iphi);
+  Float_t ADCchannelECDecal = fCalibData->GetADCchannelDecal(imod, ieta, iphi);
+
+
+  Float_t adc = (amp + ADCpedestalEC) / ADCchannelEC / ADCchannelECDecal;
+  // Float_t adc = (amp + ADCpedestalEC) / ADCchannelEC;
+
+  if ( adc >  CaloConstants::OVERFLOWCUT ) // same decision as in digitizer
+    isLowGain = kTRUE;
+  else
+    isLowGain = kFALSE;
+
+  return isLowGain;
+}
+
 TH2F * AliEMCALRecoUtils::GetEMCALChannelRecalibrationFactors(Int_t iSM) const{
 
   if(!fUse1Drecalib){
@@ -5181,6 +5237,11 @@ void AliEMCALRecoUtils::SetEMCALChannelStatusMap1D(const TH1C* h) {
   TH1C *clone = new TH1C(*h);
   clone->SetDirectory(NULL);
   fEMCALBadChannelMap->AddAt(clone,0);
+}
+
+void AliEMCALRecoUtils::SetEMCALCalibData(AliEMCALCalibData* cfile){
+   if(!fCalibData) fCalibData = new AliEMCALCalibData("emcCalib");
+   fCalibData = cfile; // assignment operator is defined
 }
 
 TH2I* AliEMCALRecoUtils::GetEMCALChannelStatusMap(Int_t iSM) const{
