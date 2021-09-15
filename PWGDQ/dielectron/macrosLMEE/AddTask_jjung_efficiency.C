@@ -1,6 +1,7 @@
 
 AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
-		TString name = "name", 
+		TString name = "name",
+ 		TString outputname = "AnalysisResults.root",	
 		Bool_t isAOD, 
 		Bool_t getFromAlien = kFALSE, 
 		TString configFile="Config_jjung_lowmass.C", 
@@ -20,7 +21,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   }
   else { std::cout << "Analysis manager found!" << std::endl;}
   TString fileName = AliAnalysisManager::GetCommonFileName();
-  fileName = "AnalysisResults.root"; // create a subfolder in the file
+  fileName = outputname; // create a subfolder in the file
 
   // #########################################################
   // #########################################################
@@ -35,11 +36,12 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
     configBasePath=Form("%s/",gSystem->pwd());
   }
   TString configFilePath(configBasePath+configFile);
+  std::cout << configFilePath << std::endl;
 
   // Loading config and cutlib
   Bool_t err=kFALSE;
   err |= gROOT->LoadMacro(configFilePath.Data());
-  if (err) { Error("AddTask_jjung_ElectronEfficiency_v2","Config(s) could not be loaded!"); return 0x0; }
+  //if (err) { Error("AddTask_jjung_ElectronEfficiency_v2","Config(s) could not be loaded!"); return 0x0; }
 
   // Download resolution file (configured in your config.C)
   //if (GetResolutionFromAlien == kTRUE){
@@ -239,6 +241,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer("efficiency", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("efficiency%d",wagonnr), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   return task;
 }
