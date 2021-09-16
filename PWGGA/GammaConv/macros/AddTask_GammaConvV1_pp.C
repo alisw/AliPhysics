@@ -959,23 +959,23 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 411){
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // excluding 55-72 cm, eta 0.8
   } else if (trainConfig == 412){
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0162103500000000");  
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0r62103500000000");  
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0s62103500000000");    
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0t62103500000000");    
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0u62103500000000");    
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0162103500000000");
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0r62103500000000");
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0s62103500000000");
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0t62103500000000");
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0u62103500000000");
   } else if (trainConfig == 413){
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0162103500800000");  
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0r62103500800000");  
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0s62103500800000");    
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0t62103500800000");    
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0u62103500800000");    
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0162103500800000");
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0r62103500800000");
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0s62103500800000");
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0t62103500800000");
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0u62103500800000");
   } else if (trainConfig == 414){
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0162103500900000");  
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0r62103500900000");  
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0s62103500900000");    
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0t62103500900000");    
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0u62103500900000");    
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0162103500900000");
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0r62103500900000");
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0s62103500900000");
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0t62103500900000");
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0u62103500900000");
 
   } else if (trainConfig == 415){ // rapdity variations
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // excluding 55-72 cm, eta 0.8
@@ -1239,11 +1239,11 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g RDep Pt Cut
     cuts.AddCutPCM("00010113", "0dm000w9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g RDep Pt Cut Soft
     cuts.AddCutPCM("00010113", "0dm000w9f9730000iih0404000", "0152103520000000"); // eta < 0.8  // g RDep Pt Cut Soft (Meson Cat>=2)
-  } else if (trainConfig == 646) { // RBins RDep Pt Cut  
+  } else if (trainConfig == 646) { // RBins RDep Pt Cut
     cuts.AddCutPCM("00010113", "0dh000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g Pt Cut 0.075 GeV (e+- 0.040)
     cuts.AddCutPCM("00010113", "0di000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g Pt Cut 0.075 GeV (e+- 0.040)
     cuts.AddCutPCM("00010113", "0dj000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g Pt Cut 0.075 GeV (e+- 0.040)
-  } else if (trainConfig == 647) { // RBins RDep Pt Cut  
+  } else if (trainConfig == 647) { // RBins RDep Pt Cut
     cuts.AddCutPCM("00010113", "0dk000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g Pt Cut 0.075 GeV (e+- 0.040)
     cuts.AddCutPCM("00010113", "0dl000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g Pt Cut 0.075 GeV (e+- 0.040)
     cuts.AddCutPCM("00010113", "0dg000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g Pt Cut 0.075 GeV (e+- 0.040)
@@ -1345,7 +1345,7 @@ void AddTask_GammaConvV1_pp(
 
 
    // systematics for 13 TeV- LowB
-    // defauul cut  AM 
+    // defauul cut  AM
     //  .AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
 
   } else if (trainConfig == 681) {   // min pT variations
@@ -1384,7 +1384,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00089f9730000iig0404000", "0152103500000000"); // Psi pair 0.30 dep
     cuts.AddCutPCM("00010113", "0dm00089227300008250404000", "0152103500000000"); // old cuts (run1)
 
-  } else if (trainConfig == 687) {   
+  } else if (trainConfig == 687) {
     cuts.AddCutPCM("00010113", "0dm00089f9730000iih0404000", "0252103500000000"); // variation BG scheme track mult
     cuts.AddCutPCM("00010113", "0dm00089f9730000iih0404000", "0r52103500000000"); // variation BG scheme track mult
     cuts.AddCutPCM("00010113", "0dm00089f9730000iih0404000", "0152107500000000"); // alpha meson 0.85
@@ -1709,7 +1709,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dg00009f9730000dge0474000", "0152103500000000"); // eta < 0.8  // Test improved cuts
 
 
-    //-----------------same as 7XX to be used with MBW extracted from 5TeV  
+    //-----------------same as 7XX to be used with MBW extracted from 5TeV
 
 
   } else if (trainConfig == 819) { // R 5-180 and remove r bin 55-72
@@ -1737,7 +1737,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0454000", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103520000000"); // eta < 0.8  // Test improved cuts
 
-    //-----------------same as 7XX to be used with MBW extracted from 5TeV Nch  
+    //-----------------same as 7XX to be used with MBW extracted from 5TeV Nch
 
 
   } else if (trainConfig == 869) { // R 5-180 and remove r bin 55-72
@@ -1776,7 +1776,7 @@ void AddTask_GammaConvV1_pp(
 
 
     // systematics for 13 TeV
-    // defauul cut  AM 
+    // defauul cut  AM
     //  .AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // eta < 0.8  // Test improved cuts
 
   } else if (trainConfig == 881) {   // min pT variations
@@ -1815,7 +1815,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00009f9730000dgg0404000", "0152103500000000"); // Psi pair 0.30 dep
     cuts.AddCutPCM("00010113", "0dm00009227300008250404000", "0152103500000000"); // old cuts (run1)
 
-  } else if (trainConfig == 887) {   
+  } else if (trainConfig == 887) {
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0252103500000000"); // variation BG scheme track mult
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0r52103500000000"); // variation BG scheme track mult
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152107500000000"); // alpha meson 0.85
@@ -1899,7 +1899,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00089f9730000iih0454000", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCM("00010113", "0dm00089f9730000iih0404000", "0152103520000000"); // eta < 0.8  // Test improved cuts
 
-    //-----------------same as 6XX to be used with MBW extracted from 5TeV Nch  
+    //-----------------same as 6XX to be used with MBW extracted from 5TeV Nch
 
 
   } else if (trainConfig == 969) { // R 5-180 and remove r bin 55-72
@@ -1947,11 +1947,11 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g RDep Pt Cut
     cuts.AddCutPCM("00010113", "0dm000w9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g RDep Pt Cut Soft
     cuts.AddCutPCM("00010113", "0dm000w9f9730000iih0404000", "0152103520000000"); // eta < 0.8  // g RDep Pt Cut Soft (Meson Cat>=2)
-  } else if (trainConfig == 996) { // RBins RDep Pt Cut  
+  } else if (trainConfig == 996) { // RBins RDep Pt Cut
     cuts.AddCutPCM("00010113", "0dh000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g Pt Cut 0.075 GeV (e+- 0.040)
     cuts.AddCutPCM("00010113", "0di000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g Pt Cut 0.075 GeV (e+- 0.040)
     cuts.AddCutPCM("00010113", "0dj000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g Pt Cut 0.075 GeV (e+- 0.040)
-  } else if (trainConfig == 997) { // RBins RDep Pt Cut  
+  } else if (trainConfig == 997) { // RBins RDep Pt Cut
     cuts.AddCutPCM("00010113", "0dk000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g Pt Cut 0.075 GeV (e+- 0.040)
     cuts.AddCutPCM("00010113", "0dl000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g Pt Cut 0.075 GeV (e+- 0.040)
     cuts.AddCutPCM("00010113", "0dg000v9f9730000iih0404000", "0152103500000000"); // eta < 0.8  // g Pt Cut 0.075 GeV (e+- 0.040)
@@ -2315,7 +2315,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm0000939730000dge0474000", "0152103500000000"); // -4 < n*sigma < 5 (default: -3 < n*sigma < 4)
     cuts.AddCutPCM("00010113", "0dm0000969730000dge0474000", "0152103500000000"); // -2.5 < n*sigma < 4
   } else if (trainConfig == 2711) { // dEdx pion line
-    cuts.AddCutPCM("00010113", "0dm00009f5730000dge0474000", "0152103500000000"); // n*sigma < 2, -10 (default: 1, 0.5 above max. mom.) 
+    cuts.AddCutPCM("00010113", "0dm00009f5730000dge0474000", "0152103500000000"); // n*sigma < 2, -10 (default: 1, 0.5 above max. mom.)
     cuts.AddCutPCM("00010113", "0dm00009f1730000dge0474000", "0152103500000000"); // n*sigma < 0, -10 above max. mom.
     cuts.AddCutPCM("00010113", "0dm00009f9030000dge0474000", "0152103500000000"); // min. mom.: 0.5 GeV (default: 0.4 GeV)
     cuts.AddCutPCM("00010113", "0dm00009f9630000dge0474000", "0152103500000000"); // min. mom.: 0.25 GeV
@@ -2334,8 +2334,8 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00009f9730000dhe0474000", "0152103500000000"); // psi_pair < 0.18 * exp(-0.050*chi2/ndf)
   } else if (trainConfig == 2715) { // psi pair
     cuts.AddCutPCM("00010113", "0dm00009f9730000dgd0474000", "0152103500000000"); // psi_pair < 0.15 * exp(-0.055*chi2/ndf) (default: psi_pair < 0.18 * exp(-0.055*chi2/ndf))
-    cuts.AddCutPCM("00010113", "0dm00009f9730000dgg0474000", "0152103500000000"); // psi_pair < 0.30 * exp(-0.055*chi2/ndf) 
-    cuts.AddCutPCM("00010113", "0dm00009f9730000dgf0474000", "0152103500000000"); // psi_pair < 0.20 * exp(-0.055*chi2/ndf) 
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dgg0474000", "0152103500000000"); // psi_pair < 0.30 * exp(-0.055*chi2/ndf)
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dgf0474000", "0152103500000000"); // psi_pair < 0.20 * exp(-0.055*chi2/ndf)
   } else if (trainConfig == 2716) { // cos(PA), TRD yes/no
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0374000", "0152103500000000"); // cos(PA) > 0.75 (default: 0.85)
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0674000", "0152103500000000"); // cos(PA) > 0.9
@@ -2345,7 +2345,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0374000", "0152105500000000"); // alpha < 0.75 (default: 1)
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0674000", "0152107500000000"); // alpha < 0.85
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0474000", "0152101500000000"); // alpha < 0.65 * tanh(1.8 * pT)
-    cuts.AddCutPCM("00010113", "0dm00009227300008250474000", "0152103500000000"); // old cuts (run1) 
+    cuts.AddCutPCM("00010113", "0dm00009227300008250474000", "0152103500000000"); // old cuts (run1)
 
   // ------------ 13 TeV in multiplicity classes for use without MBW ----
   } else if (trainConfig == 2751) { // Multiplicity selection, ITS + TRD photons
@@ -2359,15 +2359,24 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // 5 - 10%
 
   } else if ( trainConfig == 3000){ // PCM Gamma smearing calib
-    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500000000"); // 
-    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","015210d500000000"); // 
-    cuts.AddCutPCM("00010113","0dm00009f9730000dge3404000","0152103500000000"); // 
-    cuts.AddCutPCM("00010113","0dm00009f9730000dge3404000","015210d500000000"); // 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500000000"); //
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","015210d500000000"); //
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge3404000","0152103500000000"); //
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge3404000","015210d500000000"); //
   } else if ( trainConfig == 3001){ // PCM Gamma smearing calib
-    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500000000"); // 
-    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500b00000"); // 
-    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500o00000"); // 
-    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500p00000"); // 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500000000"); //
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500b00000"); //
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500o00000"); //
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500p00000"); //
+
+  } else if (trainConfig == 3002){ // Input for PCM gamma smearing calib. using all available triggers
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // excluding 55-72 cm, eta 0.8 (same as 411)
+  } else if (trainConfig == 3003){ // Input for PCM gamma smearing calib. using all available triggers
+    cuts.AddCutPCM("0008e113", "0dm00009f9730000dge0404000", "0152103500000000"); // excluding 55-72 cm, eta 0.8 // EG2
+    cuts.AddCutPCM("0008d113", "0dm00009f9730000dge0404000", "0152103500000000"); // excluding 55-72 cm, eta 0.8 // EG1
+  } else if (trainConfig == 3004){ // Input for PCM gamma smearing calib. using all available triggers
+    cuts.AddCutPCM("00075113", "0dm00009f9730000dge0404000", "0152103500000000"); // excluding 55-72 cm, eta 0.8 // SPD high mult
+    cuts.AddCutPCM("00076113", "0dm00009f9730000dge0404000", "0152103500000000"); // excluding 55-72 cm, eta 0.8 // V0M high mult
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -2537,8 +2546,8 @@ if(!cuts.AreValid()){
     if ( trainConfig == 89 ){
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
     }
-    if ( trainConfig == 745  || trainConfig == 746  || trainConfig == 747  || trainConfig == 748  || trainConfig == 749  || 
-	 trainConfig == 895  || trainConfig == 896  || trainConfig == 897  || trainConfig == 898  || trainConfig == 899  || 
+    if ( trainConfig == 745  || trainConfig == 746  || trainConfig == 747  || trainConfig == 748  || trainConfig == 749  ||
+	 trainConfig == 895  || trainConfig == 896  || trainConfig == 897  || trainConfig == 898  || trainConfig == 899  ||
 	 trainConfig == 645  || trainConfig == 646  || trainConfig == 647  || trainConfig == 995  || trainConfig == 996  || trainConfig == 997     ){
       analysisCuts[i]->SetPtCutArraySize(6);
       analysisCuts[i]->SetRArraySize(7);
