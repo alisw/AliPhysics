@@ -2378,6 +2378,16 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00075113", "0dm00009f9730000dge0404000", "0152103500000000"); // excluding 55-72 cm, eta 0.8 // SPD high mult
     cuts.AddCutPCM("00076113", "0dm00009f9730000dge0404000", "0152103500000000"); // excluding 55-72 cm, eta 0.8 // V0M high mult
 
+    // same cuts as above but with alpha cut < 0.2 (only very symmetric decays)
+  } else if (trainConfig == 3005){ // Input for PCM gamma smearing calib. using all available triggers
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "015210a500000000"); // excluding 55-72 cm, eta 0.8, alpha < 0.2
+  } else if (trainConfig == 3006){ // Input for PCM gamma smearing calib. using all available triggers
+    cuts.AddCutPCM("0008e113", "0dm00009f9730000dge0404000", "015210a500000000"); // excluding 55-72 cm, eta 0.8, alpha < 0.2 // EG2
+    cuts.AddCutPCM("0008d113", "0dm00009f9730000dge0404000", "015210a500000000"); // excluding 55-72 cm, eta 0.8, alpha < 0.2 // EG1
+  } else if (trainConfig == 3007){ // Input for PCM gamma smearing calib. using all available triggers
+    cuts.AddCutPCM("00075113", "0dm00009f9730000dge0404000", "015210a500000000"); // excluding 55-72 cm, eta 0.8, alpha < 0.2 // SPD high mult
+    cuts.AddCutPCM("00076113", "0dm00009f9730000dge0404000", "015210a500000000"); // excluding 55-72 cm, eta 0.8, alpha < 0.2 // V0M high mult
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
