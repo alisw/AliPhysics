@@ -1833,6 +1833,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         tracks.fTOFSignal = NAN;
         tracks.fLength = NAN;
         tracks.fTOFExpMom = NAN;
+        tracks.fTrackTime = NAN;
+        tracks.fTrackTimeRes = NAN;
 
         if (fTaskMode == kMC)
         {
