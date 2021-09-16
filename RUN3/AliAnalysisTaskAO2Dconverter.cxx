@@ -780,7 +780,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tTracksExtra->Branch("fTOFChi2", &tracks.fTOFChi2, "fTOFChi2/F");
     tTracksExtra->Branch("fTPCSignal", &tracks.fTPCSignal, "fTPCSignal/F");
     tTracksExtra->Branch("fTRDSignal", &tracks.fTRDSignal, "fTRDSignal/F");
-    tTracksExtra->Branch("fTOFSignal", &tracks.fTOFSignal, "fTOFSignal/F");
+    // tTracksExtra->Branch("fTOFSignal", &tracks.fTOFSignal, "fTOFSignal/F");
     tTracksExtra->Branch("fLength", &tracks.fLength, "fLength/F");
     tTracksExtra->Branch("fTOFExpMom", &tracks.fTOFExpMom, "fTOFExpMom/F");
     tTracksExtra->Branch("fTrackEtaEMCAL", &tracks.fTrackEtaEMCAL, "fTrackEtaEMCAL/F");
@@ -1620,11 +1620,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
       tracks.fTPCSignal = AliMathBase::TruncateFloatFraction(track->GetTPCsignal(), mTrackSignal);
       tracks.fTRDSignal = AliMathBase::TruncateFloatFraction(track->GetTRDsignal(), mTrackSignal);
-      tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(hasTOF ? track->GetTOFsignal() : 0.f, mTrackSignal);
+      // tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(hasTOF ? track->GetTOFsignal() : 0.f, mTrackSignal);
       tracks.fLength = AliMathBase::TruncateFloatFraction(track->GetIntegratedLength(), mTrackSignal);
 
       // Speed of ligth in TOF units
-      const Float_t cspeed = 0.029979246f;
+      constexpr Float_t cspeed = 0.029979246f;
       // PID hypothesis for the momentum extraction
       const AliPID::EParticleType tof_pid = AliPID::kPion;
       const float exp_time = TOFResponse.GetExpectedSignal(track, tof_pid);
@@ -1633,9 +1633,10 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         const Float_t exp_beta = (track->GetIntegratedLength() / exp_time / cspeed);
 
         tracks.fTOFExpMom = exp_beta < 1.f ? AliMathBase::TruncateFloatFraction(
-          AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
-            TMath::Sqrt(1. - (exp_beta * exp_beta)),
-          mTrack1Pt) : 0.f;
+                                               AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
+                                                 TMath::Sqrt(1. - (exp_beta * exp_beta)),
+                                               mTrack1Pt)
+                                           : 0.f;
       } else {
         tracks.fTOFExpMom = 0.f;
       }
@@ -1644,8 +1645,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       tracks.fTrackTimeRes = -1.f;
       if (hasTOF) {
         if (track->GetPIDForTracking() >= 0 && track->GetPIDForTracking() <= 15) {
-          tracks.fTrackTime = (track->GetTOFsignal() - TOFResponse.GetExpectedSignal(track, static_cast<AliPID::EParticleType>(track->GetPIDForTracking()))) * 1e-3; // tof time in ns, taken from the definition of Ruben scaled by 1000 to convert from mus to ns
           tracks.fTrackTimeRes = 200e-3;
+          const float tofExpMom = tracks.fTOFExpMom / cspeed;
+          const float length = tracks.fLength;
+          const float massZ = AliPID::ParticleMassZ(track->GetPIDForTracking());
+          const float energy = sqrt((massZ * massZ) + (tofExpMom * tofExpMom));
+          const float exp = length * energy / (cspeed * tofExpMom);
+          tracks.fTrackTime = (track->GetTOFsignal() - exp) * 1e-3; // tof time in ns, taken from the definition of Ruben scaled by 1000 to convert from mus to ns
         }
       }
 
@@ -1829,7 +1835,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         tracks.fTOFChi2 = NAN;
         tracks.fTPCSignal = NAN;
         tracks.fTRDSignal = NAN;
-        tracks.fTOFSignal = NAN;
+        // tracks.fTOFSignal = NAN;
         tracks.fLength = NAN;
         tracks.fTOFExpMom = NAN;
         tracks.fTrackTime = NAN;

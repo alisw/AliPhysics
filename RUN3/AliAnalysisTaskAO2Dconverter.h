@@ -321,7 +321,7 @@ private:
     // PID
     Float_t fTPCSignal = -999.f; /// dE/dX TPC
     Float_t fTRDSignal = -999.f; /// dE/dX TRD
-    Float_t fTOFSignal = -999.f; /// TOFsignal
+    // Float_t fTOFSignal = -999.f; /// TOFsignal
     Float_t fLength = -999.f;    /// Int.Lenght @ TOF
     Float_t fTOFExpMom = -999.f; /// TOF Expected momentum based on the expected time of pions
 
