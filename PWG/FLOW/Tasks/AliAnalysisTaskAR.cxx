@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 13.09.2021
+ * Last Modified Date: 16.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -506,15 +506,18 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
   // set names
   TString TrackControlHistogramNames[LAST_ETRACK][LAST_ENAME] = {
       // NAME, TITLE, XAXIS, YAXIS
-      {"fTrackControlHistograms[kPT]", "p_{T}", "p_{T}", ""},
+      {"fTrackControlHistograms[kPT]", "p_{T}", "p_{T} [GeV]", ""},
       {"fTrackControlHistograms[kPHI]", "#varphi", "#varphi", ""},
       {"fTrackControlHistograms[kETA]", "#eta", "#eta", ""},
-      {"fTrackControlHistograms[kCHARGE]", "Charge", "Q", ""},
-      {"fTrackControlHistograms[kTPCNCLS]", "Number of clusters in TPC", ""},
-      {"fTrackControlHistograms[kITSNCLS]", "Number of clusters in ITS", ""},
-      {"fTrackControlHistograms[kCHI2PERNDF]", "CHI2PERNDF of track", "", ""},
-      {"fTrackControlHistograms[kDCAZ]", "DCA in Z", ""},
-      {"fTrackControlHistograms[kDCAXY]", "DCA in XY", ""}, // kBEFORE
+      {"fTrackControlHistograms[kCHARGE]", "Charge", "Q [e]", ""},
+      {"fTrackControlHistograms[kTPCNCLS]", "Number of clusters in TPC",
+       "N_{TPCNCLS}"},
+      {"fTrackControlHistograms[kITSNCLS]", "Number of clusters in ITS",
+       "N_{ITSNCLS}"},
+      {"fTrackControlHistograms[kCHI2PERNDF]", "CHI2PERNDF of track",
+       "#chi^{2}/NDF", ""},
+      {"fTrackControlHistograms[kDCAZ]", "DCA in Z", "DCA_{Z}"},
+      {"fTrackControlHistograms[kDCAXY]", "DCA in XY", "DCA_{XY}"},
   };
   // initialize names
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
@@ -595,15 +598,16 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
        ""},
       {"fEventControlHistograms[kMULW]", "Multiplicity (computed from weights)",
        "M", ""},
-      {"fEventControlHistograms[kMULREF]", "Reference Multipliticy", "M", ""},
+      {"fEventControlHistograms[kMULREF]", "Reference Multipliticy", "M_{ref}",
+       ""},
       {"fEventControlHistograms[kNCONTRIB]", "Number of Contributors",
-       "#Contributors", ""},
+       "M_{contrib}", ""},
       {"fEventControlHistograms[kCEN]", "Centrality", "Centrality Percentile",
        ""},
-      {"fEventControlHistograms[kX]", "Primary Vertex X", "X", ""},
-      {"fEventControlHistograms[kY]", "Primary Vertex Y", "Y", ""},
-      {"fEventControlHistograms[kZ]", "Primary Vertex Z", "Z", ""},
-      {"fEventControlHistograms[kVPOS]", "Vertex Position", "|r_{V}|", ""},
+      {"fEventControlHistograms[kX]", "Primary Vertex X", "#bf{V}_{X}", ""},
+      {"fEventControlHistograms[kY]", "Primary Vertex Y", "#bf{V}_{Y}", ""},
+      {"fEventControlHistograms[kZ]", "Primary Vertex Z", "#bf{V}_{Z}", ""},
+      {"fEventControlHistograms[kVPOS]", "Vertex Position", "|#bf{V}|", ""},
   };
 
   // initialize names

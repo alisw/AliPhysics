@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 13.09.2021
+ * Last Modified Date: 16.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -296,6 +296,9 @@ public:
     this->fTrackCuts[Track][kMAX] = max;
     this->fUseTrackCuts[Track] = kTRUE;
   }
+  void SetTrackCuts(kTrack Track, Bool_t option) {
+    this->fUseTrackCuts[Track] = option;
+  }
   // generic setter for event cuts
   void SetEventCuts(kEvent Event, Double_t min, Double_t max) {
     if (Event >= LAST_EEVENT) {
@@ -311,17 +314,22 @@ public:
     this->fEventCuts[Event][kMAX] = max;
     this->fUseEventCuts[Event] = kTRUE;
   }
+  void SetEventCuts(kEvent Event, Bool_t option) {
+    this->fUseEventCuts[Event] = option;
+  }
   void SetCenCorCut(Double_t m, Double_t t) {
     this->fCenCorCut[0] = m;
     this->fCenCorCut[1] = t;
     this->fUseCenCorCuts = kTRUE;
   }
+  void SetCenCorCut(Bool_t option) { this->fUseCenCorCuts = option; }
   // setter for multiplicity correlation cut
   void SetMulCorCut(Double_t m, Double_t t) {
     this->fMulCorCut[0] = m;
     this->fMulCorCut[1] = t;
     this->fUseMulCorCuts = kTRUE;
   }
+  void SetMulCorCut(Bool_t option) { this->fUseMulCorCuts = option; }
   // filterbit
   // depends strongly on the data set
   // typical choices are 1,128,256,768
