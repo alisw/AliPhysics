@@ -2108,7 +2108,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (mutrk->GetInverseBendingMomentum()==FLT_MAX && mutrk->GetThetaX()==0 && mutrk->GetThetaY()==0 && mutrk->GetZ()==0) continue; //skip tracks whose parameter values are still at their default (not real muon tracks)
       fwdtracks = MUONtoFwdTrack(*mutrk);
       fwdtracks.fIndexCollisions = fCollisionCount;
-      fwdtracks.fIndexBCs = fBCCount;
 
       // Now MUON clusters for the current track
       Int_t muTrackID = fOffsetMuTrackID + imu;
@@ -2131,7 +2130,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
       fwdtracks = MUONtoFwdTrack(*mutrk);
       fwdtracks.fIndexCollisions = fCollisionCount;
-      fwdtracks.fIndexBCs = fBCCount;
 
       // No MUON clusters for the AOD track
       
