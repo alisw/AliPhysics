@@ -460,6 +460,9 @@ private:
     Float_t fChi2MatchMCHMID = -999.f;
     Float_t fChi2MatchMCHMFT = -999.f;
     Float_t fMatchScoreMCHMFT = -999.f;
+    // Time information about the track
+    Float_t fTrackTime = -999.f;    /// Track time
+    Float_t fTrackTimeRes = -999.f; /// Track time reso
     Int_t fIndexMFTTracks = -1;
     Int_t fIndexFwdTracks_MatchMCHTrack = -1;
     UShort_t fMCHBitMap = 0u;

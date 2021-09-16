@@ -833,6 +833,8 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tFwdTrack->Branch("fChi2MatchMCHMID", &fwdtracks.fChi2MatchMCHMID, "fChi2MatchMCHMID/F");
     tFwdTrack->Branch("fChi2MatchMCHMFT", &fwdtracks.fChi2MatchMCHMFT, "fChi2MatchMCHMFT/F");
     tFwdTrack->Branch("fMatchScoreMCHMFT", &fwdtracks.fMatchScoreMCHMFT, "fMatchScoreMCHMFT/F");
+    tFwdTrack->Branch("fTrackTime", &fwdtracks.fTrackTime, "fTrackTime/F");
+    tFwdTrack->Branch("fTrackTimeRes", &fwdtracks.fTrackTimeRes, "fTrackTimeRes/F");
     tFwdTrack->Branch("fIndexMFTTracks", &fwdtracks.fIndexMFTTracks, "fIndexMFTTracks/I");
     tFwdTrack->Branch("fIndexFwdTracks_MatchMCHTrack", &fwdtracks.fIndexFwdTracks_MatchMCHTrack, "fIndexFwdTracks_MatchMCHTrack/I");
     tFwdTrack->Branch("fMCHBitMap", &fwdtracks.fMCHBitMap, "fMCHBitMap/s");
