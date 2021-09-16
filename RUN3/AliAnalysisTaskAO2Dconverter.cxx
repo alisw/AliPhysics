@@ -819,7 +819,6 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   if (fTreeStatus[kFwdTrack])
   {
     tFwdTrack->Branch("fIndexCollisions", &fwdtracks.fIndexCollisions, "fIndexCollisions/I");
-    tFwdTrack->Branch("fIndexBCs", &fwdtracks.fIndexBCs, "fIndexBCs/I");
     tFwdTrack->Branch("fTrackType", &fwdtracks.fTrackType, "fTrackType/I");
     tFwdTrack->Branch("fX", &fwdtracks.fX, "fX/F");
     tFwdTrack->Branch("fY", &fwdtracks.fY, "fY/F");
@@ -834,8 +833,8 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tFwdTrack->Branch("fChi2MatchMCHMID", &fwdtracks.fChi2MatchMCHMID, "fChi2MatchMCHMID/F");
     tFwdTrack->Branch("fChi2MatchMCHMFT", &fwdtracks.fChi2MatchMCHMFT, "fChi2MatchMCHMFT/F");
     tFwdTrack->Branch("fMatchScoreMCHMFT", &fwdtracks.fMatchScoreMCHMFT, "fMatchScoreMCHMFT/F");
-    tFwdTrack->Branch("fMatchMFTTrackID", &fwdtracks.fMatchMFTTrackID, "fMatchMFTTrackID/I");
-    tFwdTrack->Branch("fMatchMCHTrackID", &fwdtracks.fMatchMCHTrackID, "fMatchMCHTrackID/I");
+    tFwdTrack->Branch("fIndexMFTTracks", &fwdtracks.fIndexMFTTracks, "fIndexMFTTracks/I");
+    tFwdTrack->Branch("fIndexFwdTracks_MatchMCHTrack", &fwdtracks.fIndexFwdTracks_MatchMCHTrack, "fIndexFwdTracks_MatchMCHTrack/I");
     tFwdTrack->Branch("fMCHBitMap", &fwdtracks.fMCHBitMap, "fMCHBitMap/s");
     tFwdTrack->Branch("fMIDBitMap", &fwdtracks.fMIDBitMap, "fMIDBitMap/s"); 
     tFwdTrack->Branch("fMIDBoards", &fwdtracks.fMIDBoards, "fMIDBoards/i"); 
@@ -2111,7 +2110,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (mutrk->GetInverseBendingMomentum()==FLT_MAX && mutrk->GetThetaX()==0 && mutrk->GetThetaY()==0 && mutrk->GetZ()==0) continue; //skip tracks whose parameter values are still at their default (not real muon tracks)
       fwdtracks = MUONtoFwdTrack(*mutrk);
       fwdtracks.fIndexCollisions = fCollisionCount;
-      fwdtracks.fIndexBCs = fBCCount;
 
       // Now MUON clusters for the current track
       Int_t muTrackID = fOffsetMuTrackID + imu;
@@ -2134,7 +2132,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
       fwdtracks = MUONtoFwdTrack(*mutrk);
       fwdtracks.fIndexCollisions = fCollisionCount;
-      fwdtracks.fIndexBCs = fBCCount;
 
       // No MUON clusters for the AOD track
       
