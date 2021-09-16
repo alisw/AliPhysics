@@ -47,12 +47,10 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     AliHFJetsTagging.cxx
     AliHFJetTaggingIP.cxx
-    AliAnalysisTaskBJetTC.cxx		
     AliAnalysisHFjetTagHFE.cxx
     AliAnalysisTaskEmcalHFCJQA.cxx	    
     AliAnalysisTaskEmcalHFeJetCorrel.cxx		    
     AliAnalysisTaskEmcalJetBJetTaggingIP.cxx
-    AliAnalysisTaskEmcalJetBtagSV.cxx          
     AliRDHFJetsCuts.cxx
     AliRDHFJetsCutsVertex.cxx
     AliHFJetsTaggingVertex.cxx
@@ -60,7 +58,6 @@ set(SRCS
     AliHFJetsContainerVertex.cxx
     AliDJetRawYieldUncertainty.cxx
     AliAnalysisTaskDJetCorrelations.cxx
-    AliATDJetCorrDev.cxx
     AliAnalysisTaskDJetCorrelationsQA.cxx
     AliAnalysisTaskDmesonsFilterCJ.cxx
     AliEmbeddingEventForHFTask.cxx
@@ -68,6 +65,11 @@ set(SRCS
 )
 
 if(FASTJET_FOUND)
+    set(SRCS ${SRCS}
+    AliAnalysisTaskEmcalJetBtagSV.cxx          
+    AliAnalysisTaskBJetTC.cxx		
+    AliATDJetCorrDev.cxx
+    )
 
 
     include_directories(#${AliPhysics_SOURCE_DIR}/HLT/FJWrapper
