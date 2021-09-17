@@ -1885,6 +1885,10 @@ Bool_t AliDalitzElectronCuts::SetPtCut(Int_t ptCut)
       fPtMinCut = 1.1;
       fPtMaxCut = 9999;
       break;
+    case 9:
+      fPtMinCut = 0.02;
+      fPtMaxCut = 9999;
+      break;
     default:
       cout<<"Warning: PtCut not defined "<<ptCut<<endl;
       return kFALSE;
