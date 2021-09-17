@@ -85,6 +85,12 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   AliAnalysisTaskSE(),
   fCFManager(0x0),
   fHistEventsProcessed(0x0),
+  fNChargedInTrans(0x0),
+  fPTDistributionInTransverse(0x0),
+  fGlobalRT(0x0),
+  fStepRecoPIDRT(0x0),
+  fHistPtLead(0x0),
+  fOutputRT(0x0),
   fCorrelation(0x0),
   fListProfiles(0),
   fCountMC(0),
@@ -158,6 +164,12 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   AliAnalysisTaskSE(name),
   fCFManager(0x0),
   fHistEventsProcessed(0x0),
+  fNChargedInTrans(0x0),
+  fPTDistributionInTransverse(0x0),
+  fGlobalRT(0x0),
+  fStepRecoPIDRT(0x0),
+  fHistPtLead(0x0),
+  fOutputRT(0x0),
   fCorrelation(0x0),
   fListProfiles(0),
   fCountMC(0),
@@ -234,7 +246,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   DefineOutput(4,AliRDHFCuts::Class());
   for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
   DefineOutput(5,TList::Class()); // slot #5 keeps the zvtx Ntrakclets correction profiles
-
+  DefineOutput(6,TList::Class());
   fCuts->PrintAll();
 }
 
@@ -263,6 +275,12 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   AliAnalysisTaskSE(c),
   fCFManager(c.fCFManager),
   fHistEventsProcessed(c.fHistEventsProcessed),
+  fNChargedInTrans(c.fNChargedInTrans),
+  fPTDistributionInTransverse(c.fPTDistributionInTransverse),
+  fGlobalRT(c.fGlobalRT),
+  fStepRecoPIDRT(c.fStepRecoPIDRT),
+  fHistPtLead(c.fHistPtLead),
+  fOutputRT(c.fOutputRT),
   fCorrelation(c.fCorrelation),
   fListProfiles(c.fListProfiles),
   fCountMC(c.fCountMC),
@@ -577,6 +595,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
   PostData(3,fCorrelation) ;
+    // TList for output
+  if (fConfiguration==kRT) PostData(6,fOutputRT) ;
 
   AliDebug(3,Form("*** Processing event %d\n", fEvents));
 
@@ -943,7 +963,12 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
      //do RT determination if RT analysis
     cfVtxHF->SetAveMultiInTrans(fAveMultInTransForRT);
      rtval = CalculateRTValue(aodEvent,mcHeader,cfVtxHF);
+     if (rtval<0.) {
+       delete cfVtxHF;
+       return;
+     }
      cfVtxHF->SetRTValue(rtval);
+     fGlobalRT->Fill(rtval);
   }
 
   //  printf("Multiplicity estimator %d, value %2.2f\n",fMultiplicityEstimator,multiplicity);
@@ -1332,6 +1357,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
                 }
                 fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID, fWeight*weigPID);
                 icountRecoPID++;
+		if(fConfiguration==kRT) fStepRecoPIDRT->Fill(rtval);
                 AliDebug(3,"Reco PID cuts passed and container filled \n");
                 if(!fAcceptanceUnf){
                   Double_t fill[4]; //fill response matrix
@@ -1747,10 +1773,31 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   fHistEventsProcessed->GetXaxis()->SetBinLabel(8,"AOD/dAOD #events ok");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(9,"Candidates from OOB pile-up");
 
-  PostData(1,fHistEventsProcessed) ;
+    // TList for output
+  if (fConfiguration==kRT) {
+    fOutputRT = new TList();
+    fOutputRT->SetOwner();
+    fOutputRT->SetName("OutputHistos");
+    
+    fNChargedInTrans = new TH1F("fNChargedInTrans","Charged Tracks in Transvers region;N_{ch};Entries",200,0,200);
+    fPTDistributionInTransverse = new TH1F("fPTDistributionInTransverse","pT distribution of all charged particles in Transverse region",250,0,50);
+    fGlobalRT = new TH1F("fGlobalRT","RT for all events;R_{T};Entries",100,0,10);
+    fStepRecoPIDRT = new TH1F("fStepRecoPIDRT","RT for events with selected D;R_{T};Entries",100,0,10);
+    fHistPtLead = new TH1F("fHistPtLead","pT distribution of leading track;p_{T} (GeV/c);Entries",100,0,100);
+    
+    fOutputRT->Add(fNChargedInTrans);
+    fOutputRT->Add(fPTDistributionInTransverse);
+    fOutputRT->Add(fGlobalRT);
+    fOutputRT->Add(fStepRecoPIDRT);
+    fOutputRT->Add(fHistPtLead);
+  }
+
+  PostData(1,fHistEventsProcessed);
   PostData(2,fCFManager->GetParticleContainer()) ;
   PostData(3,fCorrelation) ;
 
+    // TList for output
+  if (fConfiguration==kRT) PostData(6,fOutputRT);
 }
 
 
@@ -2826,6 +2873,8 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
          listMin = (TList*)regionsMinMaxReco->At(1);
 
          trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / cf->GetAveMultiInTrans(); //sum of transverse regions / average
+	 fNChargedInTrans->Fill(listMax->GetEntries() + listMin->GetEntries());
+         fHistPtLead->Fill(LeadingPt);
       }
 
    }
@@ -2960,6 +3009,11 @@ TObjArray *AliCFTaskVertexingHF::SortRegionsRT(const AliVParticle* leading, TObj
       if(region == -1) transverse2->Add(part);
       if(region == 2) toward->Add(part);
       if(region == -2) away->Add(part);
+
+      if(region == 1 || region == -1) fPTDistributionInTransverse->Fill(part->Pt());
+
+      
+      
    }//end loop on tracks
 
    return regionParticles;

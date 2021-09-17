@@ -780,7 +780,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tTracksExtra->Branch("fTOFChi2", &tracks.fTOFChi2, "fTOFChi2/F");
     tTracksExtra->Branch("fTPCSignal", &tracks.fTPCSignal, "fTPCSignal/F");
     tTracksExtra->Branch("fTRDSignal", &tracks.fTRDSignal, "fTRDSignal/F");
-    tTracksExtra->Branch("fTOFSignal", &tracks.fTOFSignal, "fTOFSignal/F");
+    // tTracksExtra->Branch("fTOFSignal", &tracks.fTOFSignal, "fTOFSignal/F");
     tTracksExtra->Branch("fLength", &tracks.fLength, "fLength/F");
     tTracksExtra->Branch("fTOFExpMom", &tracks.fTOFExpMom, "fTOFExpMom/F");
     tTracksExtra->Branch("fTrackEtaEMCAL", &tracks.fTrackEtaEMCAL, "fTrackEtaEMCAL/F");
@@ -819,7 +819,6 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   if (fTreeStatus[kFwdTrack])
   {
     tFwdTrack->Branch("fIndexCollisions", &fwdtracks.fIndexCollisions, "fIndexCollisions/I");
-    tFwdTrack->Branch("fIndexBCs", &fwdtracks.fIndexBCs, "fIndexBCs/I");
     tFwdTrack->Branch("fTrackType", &fwdtracks.fTrackType, "fTrackType/I");
     tFwdTrack->Branch("fX", &fwdtracks.fX, "fX/F");
     tFwdTrack->Branch("fY", &fwdtracks.fY, "fY/F");
@@ -834,8 +833,10 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tFwdTrack->Branch("fChi2MatchMCHMID", &fwdtracks.fChi2MatchMCHMID, "fChi2MatchMCHMID/F");
     tFwdTrack->Branch("fChi2MatchMCHMFT", &fwdtracks.fChi2MatchMCHMFT, "fChi2MatchMCHMFT/F");
     tFwdTrack->Branch("fMatchScoreMCHMFT", &fwdtracks.fMatchScoreMCHMFT, "fMatchScoreMCHMFT/F");
-    tFwdTrack->Branch("fMatchMFTTrackID", &fwdtracks.fMatchMFTTrackID, "fMatchMFTTrackID/I");
-    tFwdTrack->Branch("fMatchMCHTrackID", &fwdtracks.fMatchMCHTrackID, "fMatchMCHTrackID/I");
+    tFwdTrack->Branch("fTrackTime", &fwdtracks.fTrackTime, "fTrackTime/F");
+    tFwdTrack->Branch("fTrackTimeRes", &fwdtracks.fTrackTimeRes, "fTrackTimeRes/F");
+    tFwdTrack->Branch("fIndexMFTTracks", &fwdtracks.fIndexMFTTracks, "fIndexMFTTracks/I");
+    tFwdTrack->Branch("fIndexFwdTracks_MatchMCHTrack", &fwdtracks.fIndexFwdTracks_MatchMCHTrack, "fIndexFwdTracks_MatchMCHTrack/I");
     tFwdTrack->Branch("fMCHBitMap", &fwdtracks.fMCHBitMap, "fMCHBitMap/s");
     tFwdTrack->Branch("fMIDBitMap", &fwdtracks.fMIDBitMap, "fMIDBitMap/s"); 
     tFwdTrack->Branch("fMIDBoards", &fwdtracks.fMIDBoards, "fMIDBoards/i"); 
@@ -1617,15 +1618,15 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       tracks.fITSChi2NCl = AliMathBase::TruncateFloatFraction((track->GetITSNcls() ? track->GetITSchi2() / track->GetITSNcls() : 0), mTrackCovOffDiag);
       tracks.fTPCChi2NCl = AliMathBase::TruncateFloatFraction((track->GetTPCNcls() ? track->GetTPCchi2() / track->GetTPCNcls() : 0), mTrackCovOffDiag);
       tracks.fTRDChi2 = AliMathBase::TruncateFloatFraction(track->GetTRDchi2(), mTrackCovOffDiag);
-      tracks.fTOFChi2 = AliMathBase::TruncateFloatFraction(hasTOF ? sqrt(track->GetTOFsignalDx() * track->GetTOFsignalDx() + track->GetTOFsignalDz() * track->GetTOFsignalDz()) : 0.f, mTrackCovOffDiag);
+      tracks.fTOFChi2 = AliMathBase::TruncateFloatFraction(hasTOF ? sqrt(track->GetTOFsignalDx() * track->GetTOFsignalDx() + track->GetTOFsignalDz() * track->GetTOFsignalDz()) : -1.f, mTrackCovOffDiag);
 
       tracks.fTPCSignal = AliMathBase::TruncateFloatFraction(track->GetTPCsignal(), mTrackSignal);
       tracks.fTRDSignal = AliMathBase::TruncateFloatFraction(track->GetTRDsignal(), mTrackSignal);
-      tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(hasTOF ? track->GetTOFsignal() : 0.f, mTrackSignal);
+      // tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(hasTOF ? track->GetTOFsignal() : 0.f, mTrackSignal);
       tracks.fLength = AliMathBase::TruncateFloatFraction(track->GetIntegratedLength(), mTrackSignal);
 
       // Speed of ligth in TOF units
-      const Float_t cspeed = 0.029979246f;
+      constexpr Float_t cspeed = 0.029979246f;
       // PID hypothesis for the momentum extraction
       const AliPID::EParticleType tof_pid = AliPID::kPion;
       const float exp_time = TOFResponse.GetExpectedSignal(track, tof_pid);
@@ -1634,9 +1635,10 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         const Float_t exp_beta = (track->GetIntegratedLength() / exp_time / cspeed);
 
         tracks.fTOFExpMom = exp_beta < 1.f ? AliMathBase::TruncateFloatFraction(
-          AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
-            TMath::Sqrt(1. - (exp_beta * exp_beta)),
-          mTrack1Pt) : 0.f;
+                                               AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
+                                                 TMath::Sqrt(1. - (exp_beta * exp_beta)),
+                                               mTrack1Pt)
+                                           : 0.f;
       } else {
         tracks.fTOFExpMom = 0.f;
       }
@@ -1645,8 +1647,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       tracks.fTrackTimeRes = -1.f;
       if (hasTOF) {
         if (track->GetPIDForTracking() >= 0 && track->GetPIDForTracking() <= 15) {
-          tracks.fTrackTime = (track->GetTOFsignal() - TOFResponse.GetExpectedSignal(track, static_cast<AliPID::EParticleType>(track->GetPIDForTracking()))) * 1e-3; // tof time in ns, taken from the definition of Ruben scaled by 1000 to convert from mus to ns
           tracks.fTrackTimeRes = 200e-3;
+          const float tofExpMom = tracks.fTOFExpMom / cspeed;
+          const float length = tracks.fLength;
+          const float massZ = AliPID::ParticleMassZ(track->GetPIDForTracking());
+          const float energy = sqrt((massZ * massZ) + (tofExpMom * tofExpMom));
+          const float exp = length * energy / (cspeed * tofExpMom);
+          tracks.fTrackTime = (track->GetTOFsignal() - exp) * 1e-3; // tof time in ns, taken from the definition of Ruben scaled by 1000 to convert from mus to ns
         }
       }
 
@@ -1830,9 +1837,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         tracks.fTOFChi2 = NAN;
         tracks.fTPCSignal = NAN;
         tracks.fTRDSignal = NAN;
-        tracks.fTOFSignal = NAN;
+        // tracks.fTOFSignal = NAN;
         tracks.fLength = NAN;
         tracks.fTOFExpMom = NAN;
+        tracks.fTrackTime = NAN;
+        tracks.fTrackTimeRes = NAN;
 
         if (fTaskMode == kMC)
         {
@@ -2109,7 +2118,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (mutrk->GetInverseBendingMomentum()==FLT_MAX && mutrk->GetThetaX()==0 && mutrk->GetThetaY()==0 && mutrk->GetZ()==0) continue; //skip tracks whose parameter values are still at their default (not real muon tracks)
       fwdtracks = MUONtoFwdTrack(*mutrk);
       fwdtracks.fIndexCollisions = fCollisionCount;
-      fwdtracks.fIndexBCs = fBCCount;
 
       // Now MUON clusters for the current track
       Int_t muTrackID = fOffsetMuTrackID + imu;
@@ -2132,7 +2140,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
       fwdtracks = MUONtoFwdTrack(*mutrk);
       fwdtracks.fIndexCollisions = fCollisionCount;
-      fwdtracks.fIndexBCs = fBCCount;
 
       // No MUON clusters for the AOD track
       

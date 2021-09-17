@@ -312,6 +312,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Int_t GetFilterBit() const {return this->fFilterBit;};
   void SetUseOnlyPrimaries(Bool_t uop) {this->fUseOnlyPrimaries = uop;};
   Int_t GetUseOnlyPrimaries() const {return this->fUseOnlyPrimaries;};
+  void SetPrimaryDefinitionInMonteCarlo(const char *pdimc) {this->fPrimaryDefinitionInMonteCarlo = pdimc;};
 
   // Needed only for PID studies, setting FilterBit avoids double-counting:
   void SetFilterGlobalTracksAOD(const Bool_t fgta){this->fFilterGlobalTracksAOD = fgta;}; 
@@ -540,7 +541,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TString fTaskName; // e.g. Form("Task=>%.1f-%.1f",centrMin,centrMax)
   TString fDataTakingPeriod; // the data taking period, use e.g. task->SetDataTakingPeriod("LHC10h")
   TString fAODNumber; // the AOD number, use e.g. task->SetAODNumber("AOD160")
-  TString fRunNumber; // the run number, use e.g. task->SetRunNumber("000123456"). For sim, strip off 000 
+  TString fRunNumber; // the run number, use e.g. task->SetRunNumber("000123456"). For sim, strip off 000.
   Bool_t fFillQAHistograms; // fill QA histograms (this shall be done only in one task, since these histos are heavy 2D objects). Additional loops over particles is performed.
   Bool_t fFillQAHistogramsAll; // if kFALSE, only most important QA histograms a filled
   Bool_t fTerminateAfterQA; // in UserExec(), bail out immediately after QA histograms are filled 
@@ -622,6 +623,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fFilterGlobalTracksAOD; // by default kFALSE, set to kTRUE when task->SetFilterGlobalTracksAOD(); is used. Neded only for PID studies, setting FilterBit avoids double-counting
   Int_t fFilterBit; // filter bit (its meaning can change from one production to another)
   Bool_t fUseOnlyPrimaries; // cut e.g. on AliAODTrack::kPrimary or aodmcParticle->IsPhysicalPrimary()
+  TString fPrimaryDefinitionInMonteCarlo; // supported: "IsPhysicalPrimary" (default), "IsPrimary", ... Set via task->SetPrimaryDefinitionInMonteCarlo("...")
+
   //    Kinematics:
   TH1D *fKinematicsHist[2][2][gKinematicVariables]; // kinematics [before,after track cuts][reco,sim][phi,pt,eta,energy,charge]
   Double_t fKinematicsBins[gKinematicVariables][3]; // [phi,pt,eta,energy,charge][nBins,min,max]
@@ -728,7 +731,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,23);
+  ClassDef(AliAnalysisTaskMuPa,24);
 
 };
 

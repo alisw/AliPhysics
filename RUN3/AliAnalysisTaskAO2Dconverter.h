@@ -321,7 +321,7 @@ private:
     // PID
     Float_t fTPCSignal = -999.f; /// dE/dX TPC
     Float_t fTRDSignal = -999.f; /// dE/dX TRD
-    Float_t fTOFSignal = -999.f; /// TOFsignal
+    // Float_t fTOFSignal = -999.f; /// TOFsignal
     Float_t fLength = -999.f;    /// Int.Lenght @ TOF
     Float_t fTOFExpMom = -999.f; /// TOF Expected momentum based on the expected time of pions
 
@@ -444,11 +444,9 @@ private:
     Char_t fCaloType = -1;        /// Calorimeter type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calotrigger;                  //! structure to keep calo trigger info
 
-  struct FwdTrackPars {   /// Forward track parameters
-
-    Int_t   fIndexCollisions = -1;    /// The index of the collision vertex in the TF, to which the track is attached
-    Int_t fIndexBCs = 0u; /// Index to BC table
-    Int_t fTrackType = 3; /// MuonStandaloneTrack on ForwardTrackTypeEnum (O2 Framework/DataTypes.h)
+  struct FwdTrackPars {          /// Forward track parameters
+    Int_t fIndexCollisions = -1; /// The index of the collision vertex in the TF, to which the track is attached
+    Int_t fTrackType = 3;        /// MuonStandaloneTrack on ForwardTrackTypeEnum (O2 Framework/DataTypes.h)
     Float_t fX = -999.f;
     Float_t fY = -999.f;
     Float_t fZ = -999.f;
@@ -462,8 +460,11 @@ private:
     Float_t fChi2MatchMCHMID = -999.f;
     Float_t fChi2MatchMCHMFT = -999.f;
     Float_t fMatchScoreMCHMFT = -999.f;
-    Int_t fMatchMFTTrackID = -1;
-    Int_t fMatchMCHTrackID = -1;
+    // Time information about the track
+    Float_t fTrackTime = -999.f;    /// Track time
+    Float_t fTrackTimeRes = -999.f; /// Track time reso
+    Int_t fIndexMFTTracks = -1;
+    Int_t fIndexFwdTracks_MatchMCHTrack = -1;
     UShort_t fMCHBitMap = 0u;
     // MID bit map
     // | non-bending plane (4bit) | bending plane (4bit) |
@@ -596,7 +597,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 20);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 21);
 };
 
 #endif

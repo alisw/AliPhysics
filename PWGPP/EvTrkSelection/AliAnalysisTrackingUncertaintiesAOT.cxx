@@ -388,7 +388,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTrackingUncertaintiesAOT::UserExec(Option_t *)
 {
-  printf("======> UserExec!!! \n\n\n");
+  //  printf("======> UserExec!!! \n\n\n");
   //
   // main event loop
   //
@@ -633,8 +633,6 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
     else fHistSelV0multNTPCout->Fill(V0mult,nTPCout);
   }
 
-  Int_t countTracksFill=0;
-
   for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
 
     isph=-1;
@@ -667,6 +665,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
         pdgPart = part->GetPDG();
         if(pdgPart){
           code    = pdgPart->PdgCode();
+	  abscode = TMath::Abs(code);
           if(mcEvent->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) isph=1;
           else {
             isph = 0;
@@ -763,10 +762,10 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
             if(mfl==3 && uniqueID == kPDecay) partType = 1; //secondaries from strangeness
             else partType = 2;  //from material
           }
-          if(TMath::Abs(code)==11)   specie = 0;
-          if(TMath::Abs(code)==211)  specie = 1;
-          if(TMath::Abs(code)==321)  specie = 2;
-          if(TMath::Abs(code)==2212) specie = 3;
+          if(abscode ==  11)  specie = 0;
+          if(abscode == 211)  specie = 1;
+          if(abscode == 321)  specie = 2;
+          if(abscode ==2212)  specie = 3;
         }
       }
     }
@@ -895,12 +894,10 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
               if(fDCAz){
                 Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n};
                 fHistMC->Fill(vec4Sparse,weight);
-		countTracksFill+=1;
               }
               else {
                 Double_t vec4Sparse[8] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_n};
                 fHistMC->Fill(vec4Sparse,weight);
-		countTracksFill+=1;
               }
             }
             else {
@@ -946,7 +943,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
       fHistMCWeights->Fill(weight,iWeightedPart);
     }
   } // end of track loop
-  //  cout<<" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    n of tracks filled histo MC in event    "<<countTracksFill<<endl;
+
   TH2F * histTPCITS = (TH2F *) fListHist->FindObject("histTPCITS");
   TH2F * histTPCCL1 = (TH2F *) fListHist->FindObject("histTPCCL1");
   TH2F * histTPCntrkl = (TH2F *) fListHist->FindObject("histTPCntrkl");
