@@ -225,6 +225,7 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kAngleLeading:
          l = event->LeadingParticle(fUseMCInfo);
          if (l) {
+             if (pair->ContainsIndex(l->Index())) return 1E20;
             l->Set4Vector(v,-1.0,fUseMCInfo);
             Double_t angle = v.Phi() - pair->Sum(fUseMCInfo).Phi();
 
