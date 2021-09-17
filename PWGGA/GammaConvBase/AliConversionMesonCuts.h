@@ -232,6 +232,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
     Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
     Int_t    GetAlphaInTaskMode() const {return fAlphaInTaskMode;}
+
+    // Jet specific function
+    Bool_t  IsParticleInJet(std::vector<Double_t> vectorJetEta, std::vector<Double_t> vectorJetPhi, Double_t JetRadius, Double_t partEta, Double_t partPhi, Int_t &matchedJet, Double_t &RJetPi0Cand);
+
   protected:
     TRandom3    fRandom;                        ///<
     AliCaloPhotonCuts* fCaloPhotonCuts;         ///< CaloPhotonCutObject belonging to same main task
@@ -352,7 +356,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,49)
+    ClassDef(AliConversionMesonCuts,50)
     /// \endcond
 };
 
