@@ -612,13 +612,13 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
     aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(fSimReco->GetValue(TMath::Abs(iLabel))));
     this->FillControlParticleHistograms(aodTrack,BEFORE,RECO); // this one is with negative label, therefore this is a fake track
    }   
-   if(!aodTrack){continue;}
 
    // b) Cut:
    if(!SurvivesParticleCuts(aodmcParticle)){continue;} // for Monte Carlo particles, apply only the basic kinematic cuts + cut on charge
 
    // c) Sim and reco distributions after cuts:
    this->FillControlParticleHistograms(aodmcParticle,AFTER,SIM); // these are then generated particles in the desired phase-space window
+   if(!aodTrack){continue;}
    if(!SurvivesParticleCuts(aodTrack)){continue;} // if Monte Carlo particle after reconstruction went out of phase-space window, we do not reconstruct it
    this->FillControlParticleHistograms(aodTrack,AFTER,RECO);  
 
@@ -781,6 +781,7 @@ void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
  fAODNumber = TString("not set"); // can be customized with e.g. task->SetAODNumber("AOD160"); 
  fRunNumber = TString("not set"); // can be customized with e.g. task->SetRunNumber("000123456"); 
  fCentralityEstimator = TString("V0M"); // by default, we use V0M as centrality estimator. Can be customized with task->SetCentralityEstimator("V0M") 
+ fPrimaryDefinitionInMonteCarlo = TString("IsPhysicalPrimary"); // supported: "IsPhysicalPrimary" (default), "IsPrimary", ... Set via task->SetPrimaryDefinitionInMonteCarlo("...")
  fTrigger = TString("not set"); 
 
 } // void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
@@ -1407,6 +1408,15 @@ void AliAnalysisTaskMuPa::InsanityChecks()
   if(!fCalculateTest0){Yellow("\nINFO: fUseInternalValidation is kTRUE and fCalculateTest0 is kFALSE.\n      Fine if you validate only standard isotropic correlations...\n");sleep(10.44);} 
  } 
 
+ // g) Primaries:
+ if(fUseOnlyPrimaries)
+ {
+  if(!(fPrimaryDefinitionInMonteCarlo.EqualTo("IsPhysicalPrimary") || fPrimaryDefinitionInMonteCarlo.EqualTo("IsPrimary") ) )
+  {
+   cout<<__LINE__<<endl;exit(1);
+  }
+ }
+
  //Green("=> Done with InsanityChecks()!");
 
 } // void AliAnalysisTaskMuPa::InsanityChecks()
@@ -2006,6 +2016,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
   for(Int_t rs=0;rs<2;rs++)
   {
    if(fRealData && 1==rs){continue;}
+
    for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4 TBI 20210512 this is not enforced to be in sync with the definition of enums
    {
     fKinematicsHist[ba][rs][kv] = new TH1D(Form("fKinematicsHist[%d][%d][%d]",ba,rs,kv),Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]); 
@@ -3383,9 +3394,15 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
   // Trivial cuts:
   if(fUseOnlyPrimaries)
   {
-   if(!aodmcParticle->IsPrimary()) return kFALSE; // take into account only generated primaries 
-   //if(!aodmcParticle->IsPhysicalPrimary()) return kFALSE; // take into account only what ALICE defines as primaries
-  }
+   if(fPrimaryDefinitionInMonteCarlo.EqualTo("IsPhysicalPrimary"))
+   {
+    if(!aodmcParticle->IsPhysicalPrimary()) return kFALSE; // take into account only what ALICE defines as primaries
+   }
+   else if(fPrimaryDefinitionInMonteCarlo.EqualTo("IsPrimary"))
+   {
+    if(!aodmcParticle->IsPrimary()) return kFALSE; // take into account only generated primaries 
+   }
+  } // if(fUseOnlyPrimaries)
 
   // Kinematics:
   if(fUseKinematicsCuts[PHI])
