@@ -2445,6 +2445,18 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00075113", "0dm00009f9730000dge0404000", "015210a500000000"); // excluding 55-72 cm, eta 0.8, alpha < 0.2 // SPD high mult
     cuts.AddCutPCM("00076113", "0dm00009f9730000dge0404000", "015210a500000000"); // excluding 55-72 cm, eta 0.8, alpha < 0.2 // V0M high mult
 
+  } else if (trainConfig == 3010){ // different smearings applied. Std cut other than that
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500i00000"); // smearing based on ratio fits (no Brems.)
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500j00000"); // smearing based on ratio fits (10% Brems)
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500k00000"); // smearing based on ratio fits (20% Brems)
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500l00000"); // smearing based on ratio fits (30% Brems)
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500m00000"); // smearing based on ratio fits (120% Brems)
+
+  } else if (trainConfig == 3011){ // old std. smearing
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500b00000"); //
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500c00000"); //
+
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

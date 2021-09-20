@@ -276,6 +276,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t    fPBremSmearing;                 ///
     Double_t    fPSigSmearing;                  ///
     Double_t    fPSigSmearingCte;               ///
+    Double_t    fPSigSmearingRatio;             ///
     Double_t    fDCAGammaGammaCut;              ///< cut value for the maximum distance between the two photons [cm]
     Double_t    fDCAZMesonPrimVtxCut;           ///< cut value for the maximum distance in Z between the production point of the Meson & the primary vertex [cm]
     Double_t    fDCARMesonPrimVtxCut;           ///< cut value for the maximum distance in R between the production point of the Meson & the primary vertex [cm]
@@ -356,7 +357,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,50)
+    ClassDef(AliConversionMesonCuts,51)
     /// \endcond
 };
 
