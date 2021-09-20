@@ -230,7 +230,8 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name): Al
   hAvgDelta4vsCentPP(NULL),
   hAvgDelta4vsCentNN(NULL),    
   hAvgDelta4vsCentOS(NULL),  
-  
+
+  fHCorrectV0ChWeghts(NULL),
   fHCorrectNUAChrgPos(NULL),
   fHCorrectNUAChrgNeg(NULL),
   fHCorrectNUAkPIDPos(NULL),
@@ -242,11 +243,15 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name): Al
   fHCorrectMCNegChrg(NULL),
   fHCorrectMCNegPion(NULL),
   fHCorrectMCNegKaon(NULL),
-  fHCorrectMCNegProt(NULL),
-  fHCorrectTPCQxEtaPos(NULL),
-  fHCorrectTPCQyEtaPos(NULL),
-  fHCorrectTPCQxEtaNeg(NULL),
-  fHCorrectTPCQyEtaNeg(NULL),  
+  fHCorrectMCNegProt(NULL),  
+  fHCorrectTPCQnxEtaPos(NULL),
+  fHCorrectTPCQnyEtaPos(NULL),
+  fHCorrectTPCQnxEtaNeg(NULL),
+  fHCorrectTPCQnyEtaNeg(NULL),
+  fHCorrectTPCQ3xEtaPos(NULL),
+  fHCorrectTPCQ3yEtaPos(NULL),
+  fHCorrectTPCQ3xEtaNeg(NULL),
+  fHCorrectTPCQ3yEtaNeg(NULL),    
   
   fHistV0Pt(NULL),              
   fHistV0Eta(NULL),              
@@ -437,7 +442,8 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   hAvgDelta4vsCentPP(NULL),
   hAvgDelta4vsCentNN(NULL),    
   hAvgDelta4vsCentOS(NULL),
-  
+
+  fHCorrectV0ChWeghts(NULL),
   fHCorrectNUAChrgPos(NULL),
   fHCorrectNUAChrgNeg(NULL),
   fHCorrectNUAkPIDPos(NULL),
@@ -450,11 +456,14 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   fHCorrectMCNegPion(NULL),
   fHCorrectMCNegKaon(NULL),
   fHCorrectMCNegProt(NULL),
-  fHCorrectTPCQxEtaPos(NULL),
-  fHCorrectTPCQyEtaPos(NULL),
-  fHCorrectTPCQxEtaNeg(NULL),
-  fHCorrectTPCQyEtaNeg(NULL),
-
+  fHCorrectTPCQnxEtaPos(NULL),
+  fHCorrectTPCQnyEtaPos(NULL),
+  fHCorrectTPCQnxEtaNeg(NULL),
+  fHCorrectTPCQnyEtaNeg(NULL),
+  fHCorrectTPCQ3xEtaPos(NULL),
+  fHCorrectTPCQ3yEtaPos(NULL),
+  fHCorrectTPCQ3xEtaNeg(NULL),
+  fHCorrectTPCQ3yEtaNeg(NULL),  
   
   fHistV0Pt(NULL),              
   fHistV0Eta(NULL),              
@@ -918,8 +927,11 @@ void AliAnalysisTaskGammaDeltaPID::UserCreateOutputObjects()
   std::cout<<"\n ==========> UserCreateOutputObject::Info() The Analysis Settings: <============ "<<std::endl;  
 
   char pairname[10];//
-  
-  if(gParticleID==1){
+
+  if(gParticleID==0){
+    sprintf(pairname,"h-h");
+  }
+  else if(gParticleID==1){
     sprintf(pairname,"pi-pi");
   }
   else if(gParticleID==2){
@@ -1154,14 +1166,19 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   Double_t fQxV0CHarm3=0,fQyV0CHarm3=0,fQxV0AHarm3=0,fQyV0AHarm3=0;  
   Double_t fSumMV0A = 0;
   Double_t fSumMV0C = 0;
-
+  Int_t ibinV0;
   
   for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
 
     fMultV0 = fAODV0->GetMultiplicity(iV0);
 
-    ///Todo: Read V0 gain files in Second Pass!
-    fMultV0 = fMultV0*fV0chGain;
+    /// V0 Channel Gain Correction:
+    if(fHCorrectV0ChWeghts){ 
+      ibinV0 = fHCorrectV0ChWeghts->FindBin(pVtxZ,iV0);
+      fV0chGain = fHCorrectV0ChWeghts->GetBinContent(ibinV0); 
+    }
+    
+    fMultV0 = fMultV0*fV0chGain;   //Corrected Multiplicity
     
     hAvgV0ChannelsvsVz->Fill(iV0+0.5, pVtxZ, fMultV0);
 
@@ -1275,7 +1292,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   
   
 
-
+  //// ZDC Event plane: To be Implemented Later....!!
 
 
 
@@ -1436,18 +1453,29 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   ///------ Apply TPC <Q> vector corrections:--------
   Int_t icentbin=1;
   
-  ///Also to be applied for Psi3: todo...!!
-  if(fHCorrectTPCQxEtaPos && fHCorrectTPCQyEtaPos){ ///prevents Code break!
-    icentbin = fHCorrectTPCQxEtaPos->FindBin(centrality);
-    fQnxPos -= fHCorrectTPCQxEtaPos->GetBinContent(icentbin); 
-    fQnyPos -= fHCorrectTPCQyEtaPos->GetBinContent(icentbin);   /// ***Careful with Names => Qx and Qy DONT MISS-match!!!
+  ///<Q> correction for Psi2:
+  if(fHCorrectTPCQnxEtaPos && fHCorrectTPCQnyEtaPos){ ///prevents Code break!
+    icentbin = fHCorrectTPCQnxEtaPos->FindBin(centrality);
+    fQnxPos -= fHCorrectTPCQnxEtaPos->GetBinContent(icentbin); 
+    fQnyPos -= fHCorrectTPCQnyEtaPos->GetBinContent(icentbin);   /// ***Careful with Names => Qx and Qy DONT MISS-match!!!
   }
-  if(fHCorrectTPCQxEtaNeg && fHCorrectTPCQyEtaNeg){///prevents Code break!
-    icentbin = fHCorrectTPCQxEtaNeg->FindBin(centrality);
-    fQnxNeg -= fHCorrectTPCQxEtaNeg->GetBinContent(icentbin);
-    fQnyNeg -= fHCorrectTPCQyEtaNeg->GetBinContent(icentbin);    /// ***Careful with Names => Qx and Qy 
+  if(fHCorrectTPCQnxEtaNeg && fHCorrectTPCQnyEtaNeg){ ///prevents Code break!
+    icentbin = fHCorrectTPCQnxEtaNeg->FindBin(centrality);
+    fQnxNeg -= fHCorrectTPCQnxEtaNeg->GetBinContent(icentbin);
+    fQnyNeg -= fHCorrectTPCQnyEtaNeg->GetBinContent(icentbin);    /// ***Careful with Names => Qx and Qy 
   }
 
+  ///<Q> correction for Psi3:
+  if(fHCorrectTPCQ3xEtaPos && fHCorrectTPCQ3yEtaPos){ ///prevents Code break!
+    icentbin = fHCorrectTPCQ3xEtaPos->FindBin(centrality);
+    fQ3xPos -= fHCorrectTPCQ3xEtaPos->GetBinContent(icentbin); 
+    fQ3yPos -= fHCorrectTPCQ3yEtaPos->GetBinContent(icentbin);   /// ***Careful with Names => Qx and Qy DONT MISS-match!!!
+  }
+  if(fHCorrectTPCQ3xEtaNeg && fHCorrectTPCQ3yEtaNeg){ ///prevents Code break!
+    icentbin = fHCorrectTPCQ3xEtaNeg->FindBin(centrality);
+    fQ3xNeg -= fHCorrectTPCQ3xEtaNeg->GetBinContent(icentbin);
+    fQ3yNeg -= fHCorrectTPCQ3yEtaNeg->GetBinContent(icentbin);    /// ***Careful with Names => Qx and Qy 
+  }
   //-------------------------------------------------
 
 
@@ -1576,10 +1604,24 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   vector<Double_t> vecNUEWeightPID;   //Charge
 
  
-  Int_t kPIDtrk1=gParticleID;   ///gParticleID is Set From AddTask
-  Int_t kPIDtrk2=gParticleID;   /// // 1 = Pi-Pi, 2 = K-K, Prot-Prot, 
+  Int_t kPIDtrk1=gParticleID;   /// gParticleID is Set From AddTask
+  Int_t kPIDtrk2=gParticleID;   /// 0 = hadron (h-h), 1 = Pi-Pi, 2 = K-K, 3 = Prot-Prot, 
 
+  /// If we want single Identified:    
+  if(gParticleID==10){
+    kPIDtrk1 = 0; //Ch
+    kPIDtrk2 = 1; //Pion
+  }
+  else if(gParticleID==20){
+    kPIDtrk1 = 0; //Ch
+    kPIDtrk2 = 2; //Kaon
+  }
+  else if(gParticleID==30){
+    kPIDtrk1 = 0; //Ch
+    kPIDtrk2 = 3; //P
+  }
 
+  
   
   Bool_t bPIDoktrk1=kFALSE, bPIDoktrk2=kFALSE;
   Double_t ptWgtMCPIDtrk1 = 1.0, WgtNUAPIDtrk1 = 1.0;
@@ -2916,7 +2958,7 @@ void AliAnalysisTaskGammaDeltaPID::SetupEventAndTaskConfigInfo(){
 
   fHistAnalysisInfo->GetXaxis()->SetBinLabel(10,"ZDC Gain/Q App"); 
   //if(fListV0MCorr){
-  //fHistAnalysisInfo->SetBinContent(9,1);
+  //fHistAnalysisInfo->SetBinContent(10,1);
   //}
   
   fHistAnalysisInfo->GetXaxis()->SetBinLabel(11,"Reserved");
@@ -2991,19 +3033,27 @@ void AliAnalysisTaskGammaDeltaPID::GetNUACorrectionHist(Int_t run, Int_t kPartic
     fHCorrectNUAkPIDPos = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dPos_Run%d",kParticleID,run)); 
     fHCorrectNUAkPIDNeg = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dNeg_Run%d",kParticleID,run)); 
     
-    if(fHCorrectNUAChrgPos && fHCorrectNUAChrgNeg){
-      cout<<"\n=========== Info:: Setting up NUA corrections for run "<<run<<"============"<<endl;   
-    }
+    //if(fHCorrectNUAChrgPos && fHCorrectNUAChrgNeg){
+    //cout<<"\n=========== Info:: Setting up NUA corrections for run "<<run<<"============"<<endl;   
+    //}
 
-    fHCorrectTPCQxEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCosNPsivsCentEtaPosRun%d",run));
-    fHCorrectTPCQyEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSinNPsivsCentEtaPosRun%d",run));
-    fHCorrectTPCQxEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCosNPsivsCentEtaNegRun%d",run));
-    fHCorrectTPCQyEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSinNPsivsCentEtaNegRun%d",run));
 
-    if(fHCorrectNUAChrgPos && fHCorrectNUAChrgNeg){
-      cout<<"\n=========== Info:: Found TPC <Q> vectors for run "<<run<<"============"<<endl;
-      //fHistTaskConfigParameters->SetBinContent(15,1);
-    }
+    /// Now Get Average Q vector:
+    fHCorrectTPCQnxEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCosNPsivsCentEtaPosRun%d",run));
+    fHCorrectTPCQnyEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSinNPsivsCentEtaPosRun%d",run));
+    fHCorrectTPCQnxEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCosNPsivsCentEtaNegRun%d",run));
+    fHCorrectTPCQnyEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSinNPsivsCentEtaNegRun%d",run));
+
+    fHCorrectTPCQ3xEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCos3PsivsCentEtaPosRun%d",run));
+    fHCorrectTPCQ3yEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSin3PsivsCentEtaPosRun%d",run));
+    fHCorrectTPCQ3xEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCos3PsivsCentEtaNegRun%d",run));
+    fHCorrectTPCQ3yEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSin3PsivsCentEtaNegRun%d",run));
+          
+
+    
+    //if(fHCorrectNUAChrgPos && fHCorrectNUAChrgNeg){
+    //cout<<"\n=========== Info:: Found TPC <Q> vectors for run "<<run<<"============"<<endl;   
+    //}
 
   }
   else {
@@ -3013,7 +3063,7 @@ void AliAnalysisTaskGammaDeltaPID::GetNUACorrectionHist(Int_t run, Int_t kPartic
 
 
 
-//void AliAnalysisTaskGammaDeltaPID::GetV0MCorrectionHist(Int_t run, Int_t kHarmonic){  /* To be added.!! (if needed) */}
+
 void AliAnalysisTaskGammaDeltaPID::GetMCCorrectionHist(){
 
     if(fListTRKCorr) {
@@ -3028,12 +3078,20 @@ void AliAnalysisTaskGammaDeltaPID::GetMCCorrectionHist(){
       fHCorrectMCNegKaon =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyKaonNeg");
       fHCorrectMCNegProt =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyProtNeg");
     }
-
 }
 
-  
+void AliAnalysisTaskGammaDeltaPID::GetV0MCorrectionHist(Int_t run, Int_t kHarmonic){ 
 
-
+  if(fListV0MCorr){
+    fHCorrectV0ChWeghts = (TH2F *) fListV0MCorr->FindObject(Form("hWgtV0ChannelsvsVzRun%d",run));
+    if(fHCorrectV0ChWeghts){
+      printf("\n ::Info() V0 Channel Weights Found for Run %d ",run);
+    }
+  }
+  else{
+    fHCorrectV0ChWeghts=NULL;
+  } 
+}
 
 
 
