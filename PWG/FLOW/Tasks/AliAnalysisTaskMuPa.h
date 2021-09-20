@@ -162,6 +162,11 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // 5) Setters and getters:
   void SetRealData(Bool_t rd){this->fRealData = rd;};
   void SetUseFisherYates(Bool_t ufy){this->fUseFisherYates = ufy;};
+  void SetFixedNumberOfRandomlySelectedParticles(Int_t fnorsp)
+  {
+   this->fFixedNumberOfRandomlySelectedParticles = fnorsp;
+   this->fUseFixedNumberOfRandomlySelectedParticles = kTRUE;
+  };
   void SetDataTakingPeriod(const char *dtp) {this->fDataTakingPeriod = dtp;};
   void SetAODNumber(const char *an) {this->fAODNumber = an;};
   void SetRunNumber(const char *rn) {this->fRunNumber = rn;};
@@ -550,6 +555,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   UInt_t fRandomSeed; // argument to TRandom3 constructor. By default is 0, use SetRandomSeed(...) to change it
   TString fTrigger; // offline trigger, use e.g. task->SetTrigger("kMB")
   Bool_t fUseTrigger; // kFALSE by default. Set automatically when task->SetTrigger(...) is called
+  Bool_t fUseFixedNumberOfRandomlySelectedParticles; // use or not fixed number of randomly selected particles in each event. Use always in combination with SetUseFisherYates(kTRUE)
+  Int_t fFixedNumberOfRandomlySelectedParticles; // set here a fixed number of randomly selected particles in each event. Use always in combination with SetUseFisherYates(kTRUE)
 
   // 1) QA:
   TList *fQAList; // base list to hold all QA output object
@@ -731,7 +738,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,24);
+  ClassDef(AliAnalysisTaskMuPa,25);
 
 };
 
