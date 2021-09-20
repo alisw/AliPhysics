@@ -1115,11 +1115,10 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
     GetNUACorrectionHist(runNumber,0); // kPID = 0 = charge 
 
     if(fListTRKCorr) GetMCCorrectionHist();  //gRequiredPID is redundant. We read in all PID and Charge Efficiency.
-
-  
-    //if(bV0MGainCorr) {
-    //GetV0MCorrectionHist(runNumber);
-    //}
+    
+    if(fListV0MCorr) {
+     GetV0MCorrectionHist(runNumber);
+    }
 
     gOldRunNumber = runNumber;
   }
