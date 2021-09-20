@@ -113,6 +113,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fPBremSmearing(1.),
   fPSigSmearing(0),
   fPSigSmearingCte(0),
+  fPSigSmearingRatio(1),
   fDCAGammaGammaCut(1000),
   fDCAZMesonPrimVtxCut(1000),
   fDCARMesonPrimVtxCut(1000),
@@ -237,6 +238,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fPBremSmearing(ref.fPBremSmearing),
   fPSigSmearing(ref.fPSigSmearing),
   fPSigSmearingCte(ref.fPSigSmearingCte),
+  fPSigSmearingRatio(ref.fPSigSmearingRatio),
   fDCAGammaGammaCut(ref.fDCAGammaGammaCut),
   fDCAZMesonPrimVtxCut(ref.fDCAZMesonPrimVtxCut),
   fDCARMesonPrimVtxCut(ref.fDCARMesonPrimVtxCut),
@@ -3835,6 +3837,40 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPSigSmearing     = -2.3334e-05;
       fPSigSmearingCte  = 8.34844e-05;
       break;
+    case 18:     //i             indirect fit on ratio data/MC with powerlaw
+      fUseMCPSmearing   = 4;
+      fPSigSmearing     = 0.000639119;
+      fPSigSmearingCte  = -0.997739;
+      fPSigSmearingRatio= 1.1155;
+      break;
+    case 19:     //j             indirect fit on ratio data/MC with powerlaw + Bremsstarhlung
+      fUseMCPSmearing   = 4;
+      fPBremSmearing    = 0.114*0.1; // 10% Bremsstarhlung
+      fPSigSmearing     = 0.000639119;
+      fPSigSmearingCte  = -0.997739;
+      fPSigSmearingRatio= 1.1155;
+      break;
+    case 20:     //k             indirect fit on ratio data/MC with powerlaw + Bremsstarhlung
+      fUseMCPSmearing   = 4;
+      fPBremSmearing    = 0.114*0.2; // 20% Bremsstarhlung
+      fPSigSmearing     = 0.000639119;
+      fPSigSmearingCte  = -0.997739;
+      fPSigSmearingRatio= 1.1155;
+      break;
+    case 21:     //l             indirect fit on ratio data/MC with powerlaw + Bremsstarhlung
+      fUseMCPSmearing   = 4;
+      fPBremSmearing    = 0.114*0.3; // 30% Bremsstarhlung
+      fPSigSmearing     = 0.000639119;
+      fPSigSmearingCte  = -0.997739;
+      fPSigSmearingRatio= 1.1155;
+      break;
+    case 22:     //m             indirect fit on ratio data/MC with powerlaw + Bremsstarhlung
+      fUseMCPSmearing   = 4;
+      fPBremSmearing    = 0.114*1.2; // additional 20% Bremsstarhlung
+      fPSigSmearing     = 0.000639119;
+      fPSigSmearingCte  = -0.997739;
+      fPSigSmearingRatio= 1.1155;
+      break;
     case 24:     //o             10% additional Bremsstrahlung
       fUseMCPSmearing   = 0;
       fPBremSmearing    = 0.114*0.01;
@@ -4423,6 +4459,9 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
       facPSig = fRandom.Gaus(P,TMath::Sqrt(fPSigSmearingCte+fPSigSmearing*P));
     } else if (fUseMCPSmearing == 3) {
       facPSig = fRandom.Gaus(P,TMath::Sqrt(fPSigSmearingCte+fPSigSmearing*P*P));
+    } else if (fUseMCPSmearing == 4) {
+      Double_t sigma = P*(TMath::Power(P,fPSigSmearing) - fPSigSmearingCte) *(TMath::Sqrt(fPSigSmearingRatio*fPSigSmearingRatio - 1))/0.135;
+      facPSig = fRandom.Gaus(P,sigma);
     }
   }
 
