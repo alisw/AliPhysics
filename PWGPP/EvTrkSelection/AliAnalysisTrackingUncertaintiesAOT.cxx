@@ -858,7 +858,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
             if(IsConsistentWithPid(iSpec, track)) {
               Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_d,dca[0]};
               if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
-              histTpcItsMatch->Fill(vecHistTpcItsMatch);
+              histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
               if(fMC){
                 if(fDCAz)
                 {
@@ -909,7 +909,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
           if(IsConsistentWithPid(iSpec, track)) {
             Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_n,dca[0]};
             if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
-            histTpcItsMatch->Fill(vecHistTpcItsMatch);
+            histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
             if(fMC){
               if(fDCAz){
                 Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n};
