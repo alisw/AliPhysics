@@ -4460,7 +4460,7 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
     } else if (fUseMCPSmearing == 3) {
       facPSig = fRandom.Gaus(P,TMath::Sqrt(fPSigSmearingCte+fPSigSmearing*P*P));
     } else if (fUseMCPSmearing == 4) {
-      Double_t sigma = P*(TMath::Power(P,fPSigSmearing) - fPSigSmearingCte) *(TMath::Sqrt(fPSigSmearingRatio*fPSigSmearingRatio - 1))/0.135;
+      Double_t sigma = P*(TMath::Power(P,fPSigSmearing) + fPSigSmearingCte) *(TMath::Sqrt(fPSigSmearingRatio*fPSigSmearingRatio - 1))/0.135;
       facPSig = fRandom.Gaus(P,sigma);
     }
   }
