@@ -50,6 +50,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fEventCounter(0),
  fRandomSeed(0),
  fUseTrigger(kFALSE),
+ fUseFixedNumberOfRandomlySelectedParticles(kFALSE),
+ fFixedNumberOfRandomlySelectedParticles(0),
 
  // QA:
  fQAList(NULL),
@@ -205,6 +207,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fEventCounter(0),
  fRandomSeed(0),
  fUseTrigger(kFALSE),
+ fUseFixedNumberOfRandomlySelectedParticles(kFALSE),
+ fFixedNumberOfRandomlySelectedParticles(0),
 
  // QA:
  fQAList(NULL),
@@ -500,7 +504,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  Double_t dEta = 0., wEta = 1.; // pseudorapidity and corresponding eta weight
  Double_t wToPowerP = 1.; // weight raised to power p
  Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
- Int_t nSelectedTracksCounter = 0; // needed only to fill nested loops containers
+ Int_t nSelectedTracksCounter = 0; 
  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  {
   AliAODTrack *aodTrack = NULL;
@@ -577,11 +581,21 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   {
    if(ftaNestedLoops[0]){ftaNestedLoops[0]->AddAt(dPhi,nSelectedTracksCounter);} 
    if(ftaNestedLoops[1]){ftaNestedLoops[1]->AddAt(wPhi*wPt*wEta,nSelectedTracksCounter);} 
-   nSelectedTracksCounter++;
   }
 
   // Sum of particle weights:
   fMultiplicity += wPhi*wPt*wEta; // only if weights are unit, fMultiplicity = fSelectedTracks
+
+  // Counter of selected tracks in the current event:
+  nSelectedTracksCounter++;
+
+  // Break the loop if only fixed number of particles is taken from each event:
+  if(fUseFixedNumberOfRandomlySelectedParticles && fFixedNumberOfRandomlySelectedParticles == nSelectedTracksCounter)
+  {
+   Yellow(Form("INFO: Breaking the loop over particles, since requested fixed number of %d particles was reached\n",fFixedNumberOfRandomlySelectedParticles));
+   Yellow(Form("      Just for the record, the total number of particles in this event which survive all cuts is %d ",fSelectedTracks));
+   break;
+  }
 
  } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
 
@@ -599,7 +613,8 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(fSimReco->GetValue(iLabel)));
    
    if(fUseFisherYates){cout<<__LINE__<<endl;exit(1);} // TBI 20210810 check and validate if also here Fisher-Yates needs to be applied
-
+   if(fUseFixedNumberOfRandomlySelectedParticles){cout<<__LINE__<<endl;exit(1);} // TBI 202109199 check and validate if also here this needs to be supported
+                                                        
    // Track cuts are applied at MC particle.
    // a) Sim and reco distributions before cuts:
    this->FillControlParticleHistograms(aodmcParticle,BEFORE,SIM);
@@ -695,7 +710,7 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
  // a) Multiplicities:
  fMultiplicity = 0.;
  fSelectedTracks = 0;
-
+ 
  // b) Centrality:
  fCentrality = 0.;
 
@@ -1336,7 +1351,9 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  // c) Centrality weights;
  // d) Toy NUA;
  // e) Supported triggers;
- // f) Internal validation.
+ // f) Internal validation;
+ // g) Primaries;
+ // h) Fisher-Yates + max random selection.
 
  Green(__PRETTY_FUNCTION__);
 
@@ -1417,6 +1434,19 @@ void AliAnalysisTaskMuPa::InsanityChecks()
   }
  }
 
+ // h) Fisher-Yates + max random selection.
+ if(fUseFixedNumberOfRandomlySelectedParticles && !fUseFisherYates)
+ {
+  Red("if(fUseFixedNumberOfRandomlySelectedParticles && !fUseFisherYates)"); 
+  cout<<__LINE__<<endl;exit(1);
+ }
+
+ if(fUseFixedNumberOfRandomlySelectedParticles && fFixedNumberOfRandomlySelectedParticles <=0) // keep in sync with initialization at 0
+ {
+  Red(Form("fFixedNumberOfRandomlySelectedParticles = %d",fFixedNumberOfRandomlySelectedParticles));
+  cout<<__LINE__<<endl;exit(1);
+ }
+ 
  //Green("=> Done with InsanityChecks()!");
 
 } // void AliAnalysisTaskMuPa::InsanityChecks()
@@ -1429,7 +1459,7 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBasePro = new TProfile("fBasePro","flags for the whole analysis",13,0.,13.);
+ fBasePro = new TProfile("fBasePro","flags for the whole analysis",15,0.,15.);
  fBasePro->SetStats(kFALSE);
  fBasePro->SetLineColor(COLOR);
  fBasePro->SetFillColor(FILLCOLOR);
@@ -1437,15 +1467,17 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
  fBasePro->GetXaxis()->SetBinLabel(2,Form("fDataTakingPeriod = %s",fDataTakingPeriod.Data()));
  fBasePro->GetXaxis()->SetBinLabel(3,Form("fAODNumber = %s",fAODNumber.Data()));
  fBasePro->GetXaxis()->SetBinLabel(4,Form("fRunNumber = %s",fRunNumber.Data()));
- fBasePro->GetXaxis()->SetBinLabel(5,"fFillQAhistograms"); fBasePro->Fill(3.5,fFillQAHistograms);
- fBasePro->GetXaxis()->SetBinLabel(6,"fFillQAhistogramsAll"); fBasePro->Fill(4.5,fFillQAHistogramsAll);
- fBasePro->GetXaxis()->SetBinLabel(7,"fTerminateAfterQA"); fBasePro->Fill(5.5,fTerminateAfterQA);
- fBasePro->GetXaxis()->SetBinLabel(8,"fVerbose"); fBasePro->Fill(6.5,fVerbose);
- fBasePro->GetXaxis()->SetBinLabel(9,"fRealData"); fBasePro->Fill(7.5,fRealData);
- fBasePro->GetXaxis()->SetBinLabel(10,"fUseFisherYates"); fBasePro->Fill(8.5,fUseFisherYates);
- fBasePro->GetXaxis()->SetBinLabel(11,"fRandomSeed"); fBasePro->Fill(9.5,fRandomSeed);
+ fBasePro->GetXaxis()->SetBinLabel(5,"fFillQAhistograms"); fBasePro->Fill(4.5,fFillQAHistograms);
+ fBasePro->GetXaxis()->SetBinLabel(6,"fFillQAhistogramsAll"); fBasePro->Fill(5.5,fFillQAHistogramsAll);
+ fBasePro->GetXaxis()->SetBinLabel(7,"fTerminateAfterQA"); fBasePro->Fill(6.5,fTerminateAfterQA);
+ fBasePro->GetXaxis()->SetBinLabel(8,"fVerbose"); fBasePro->Fill(7.5,fVerbose);
+ fBasePro->GetXaxis()->SetBinLabel(9,"fRealData"); fBasePro->Fill(8.5,fRealData);
+ fBasePro->GetXaxis()->SetBinLabel(10,"fUseFisherYates"); fBasePro->Fill(9.5,fUseFisherYates);
+ fBasePro->GetXaxis()->SetBinLabel(11,"fRandomSeed"); fBasePro->Fill(10.5,fRandomSeed);
  fBasePro->GetXaxis()->SetBinLabel(12,Form("fTrigger = %s",fTrigger.Data()));
- fBasePro->GetXaxis()->SetBinLabel(13,"fUseTrigger"); fBasePro->Fill(11.5,fUseTrigger);
+ fBasePro->GetXaxis()->SetBinLabel(13,"fUseTrigger"); fBasePro->Fill(12.5,fUseTrigger);
+ fBasePro->GetXaxis()->SetBinLabel(14,"fUseFixedNumberOfRandomlySelectedParticles"); fBasePro->Fill(13.5,fUseFixedNumberOfRandomlySelectedParticles);
+ fBasePro->GetXaxis()->SetBinLabel(15,"fFixedNumberOfRandomlySelectedParticles"); fBasePro->Fill(14.5,fFixedNumberOfRandomlySelectedParticles);
  fBaseList->Add(fBasePro);
 
 } // void AliAnalysisTaskMuPa::BookBaseProfile()
@@ -2117,6 +2149,10 @@ void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
     fCorrelationsPro[k][n][v]->SetStats(kFALSE);
     fCorrelationsPro[k][n][v]->Sumw2();
     fCorrelationsPro[k][n][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
+    if(fUseFixedNumberOfRandomlySelectedParticles && 1==v) // just a warning for the meaning of multiplicity in this special case
+    {
+     fCorrelationsPro[k][n][1]->GetXaxis()->SetTitle("WARNING: for each multiplicity, fFixedNumberOfRandomlySelectedParticles is selected randomly in Q-vector");
+    }
     //fCorrelationsPro[k][n][v]->SetFillColor(colorsW[v]-10);
     //fCorrelationsPro[k][n][v]->SetLineColor(colorsW[v]);
     fCorrelationsList->Add(fCorrelationsPro[k][n][v]);
@@ -2178,6 +2214,10 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
     fNestedLoopsPro[k][n][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
     //fNestedLoopsPro[k][n][v]->SetFillColor(colorsW[v]-10);
     //fNestedLoopsPro[k][n][v]->SetLineColor(colorsW[v]);
+    if(fUseFixedNumberOfRandomlySelectedParticles && 1==v) // just a warning for the meaning of multiplicity in this special case
+    {
+     fNestedLoopsPro[k][n][1]->GetXaxis()->SetTitle("WARNING: for each multiplicity, fFixedNumberOfRandomlySelectedParticles is selected randomly in Q-vector");
+    }
     fNestedLoopsList->Add(fNestedLoopsPro[k][n][v]);
    } // for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
   } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
@@ -2314,6 +2354,10 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
      fTest0Pro[mo][mi][v]->SetStats(kFALSE);
      fTest0Pro[mo][mi][v]->Sumw2();
      fTest0Pro[mo][mi][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
+     if(fUseFixedNumberOfRandomlySelectedParticles && 1==v) // just a warning for the meaning of multiplicity in this special case
+     {
+      fTest0Pro[mo][mi][1]->GetXaxis()->SetTitle("WARNING: for each multiplicity, fFixedNumberOfRandomlySelectedParticles is selected randomly in Q-vector");
+     }
      fTest0List->Add(fTest0Pro[mo][mi][v]); // yes, this has to be here
     } // for(Int_t v=0;v<3;v++) 
    } // if(fTest0Labels[mo][mi]) 
@@ -5276,6 +5320,24 @@ void AliAnalysisTaskMuPa::MakeLookUpTable(AliAODEvent *aAOD, AliMCEvent *aMC)
   // * number of clusters that did not in fact belong to this track. *
   // => In most analysis, fake tracks can be taken, use task->SetUseFakeTracks(kTRUE); to check the difference
   fSimReco->Add(label,iTrack); // "key" = label, "value" = iTrack
+
+  /*
+  // If you get a warning "Error in <TExMap::Add>: key 16818 is not unique", that means (AB) that
+  // the same Monte Carlo track was reconstructed 2 times. These are split tracks with similar kinematics, as the following demonstrates: 
+  
+     cout<<label<<" : "<<iTrack<<" : "<<aodTrack->Pt()<<" "<<aodTrack->Phi()<<" "<<aodTrack->Eta()<<" "<<endl;
+     E-TExMap::Add: key 16818 is not unique
+     16818 : 4186 : 0.507678 1.4243 -0.219647  
+     16818 : 4421 : 0.509203 1.42869 -0.211075 
+
+     E-TExMap::Add: key 46022 is not unique
+     46022 : 4384 : 0.381138 0.483679 -0.578404 
+     46022 : 4513 : 0.379616 0.479594 -0.577281 
+
+  // In this case, only the 1st particle is added to TExMap, while the 2nd one is automatically ignored with the above warning.
+  // This shall not have too much of an impact on pT weights calculations, since if particles are not reconstructed in some pT range, 
+  // then both split tracks (very close to each other) won't be reconstructed. TBI but do perhaps some study nevertheless
+  */
 
   /* 
   // Use this code snippet to cross-check that the mapping went allright:
