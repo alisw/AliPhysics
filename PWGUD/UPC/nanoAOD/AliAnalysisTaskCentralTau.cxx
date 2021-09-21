@@ -426,20 +426,20 @@ void AliAnalysisTaskCentralTau::TPCandTOFsignalInfo(AliESDtrack *trk, Int_t trkI
   fTOFsignal[trkID] = trk->GetTOFsignal();
 
   Float_t PIDTPC[5];
-  PIDTPC[0] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
-  PIDTPC[1] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
-  PIDTPC[2] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
-  PIDTPC[3] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
-  PIDTPC[4] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+  PIDTPC[0] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron));
+  PIDTPC[1] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon));
+  PIDTPC[2] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion));
+  PIDTPC[3] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon));
+  PIDTPC[4] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton));
 
   fTPCmostProbableTrackType[trkID] = std::distance(std::begin(PIDTPC),std::min_element(std::begin(PIDTPC),std::end(PIDTPC)));
 
   Float_t PIDTOF[5];
-  PIDTOF[0] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
-  PIDTOF[1] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
-  PIDTOF[2] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
-  PIDTOF[3] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
-  PIDTOF[4] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
+  PIDTOF[0] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron));
+  PIDTOF[1] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon));
+  PIDTOF[2] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion));
+  PIDTOF[3] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon));
+  PIDTOF[4] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton));
 
   fTOFmostProbableTrackType[trkID] = std::distance(std::begin(PIDTOF),std::min_element(std::begin(PIDTOF),std::end(PIDTOF)));
 }
