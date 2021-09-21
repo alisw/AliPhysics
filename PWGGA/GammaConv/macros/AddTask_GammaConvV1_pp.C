@@ -2456,6 +2456,9 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500b00000"); //
     cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500c00000"); //
 
+  } else if (trainConfig == 3012){ // new smearing with pol2
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500n00000"); // smearing based on pol2 (no Brems)
+
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

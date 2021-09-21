@@ -3919,6 +3919,32 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310b100000010"); //b: alpha meson variation 1 0.2<alpha<0.6
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310c100000010"); //c: alpha meson variation 1 0.6<alpha<1.0
 
+  //----------------- smearing studies ---------------------//
+  } else if ( trainConfig == 3531){//different smearings
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100i00010"); // gaussian smearing based on indirect fits
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100j00010"); // gaussian smearing based on indirect fits + 10% Brems
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100k00010"); // gaussian smearing based on indirect fits + 20% Brems
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100l00010"); // gaussian smearing based on indirect fits + 30% Brems
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100m00010"); // gaussian smearing based on indirect fits + 120% Brems
+  } else if ( trainConfig == 3532){//different smearings
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100b00010"); // old std. smearing (pol2)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100c00010"); // old std. smearing (pol2)
+  } else if ( trainConfig == 3533){// new smearing with pol2
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100n00010"); // new smearing (pol2)
+
+    // configs with NCell cut + NCell efficiency
+  } else if ( trainConfig == 3540){//different smearings
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100i00010"); // gaussian smearing based on indirect fits
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100j00010"); // gaussian smearing based on indirect fits + 10% Brems
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100k00010"); // gaussian smearing based on indirect fits + 20% Brems
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100l00010"); // gaussian smearing based on indirect fits + 30% Brems
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100m00010"); // gaussian smearing based on indirect fits + 120% Brems
+  } else if ( trainConfig == 3541){//different smearings
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100b00010"); // old std. smearing (pol2)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100c00010"); // old std. smearing (pol2)
+  } else if ( trainConfig == 3542){// new smearing with pol2
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100n00010"); // new smearing (pol2)
+
   //*************************************************************************************************
   //PCM-EMC in Jet
   //*************************************************************************************************

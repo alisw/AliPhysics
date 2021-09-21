@@ -3871,6 +3871,11 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPSigSmearingCte  = -0.997739;
       fPSigSmearingRatio= 1.1155;
       break;
+    case 23:     //n        new implementation pol2, est. from EMC trigg data
+      fUseMCPSmearing   = 3;
+      fPSigSmearing     = 6.29223e-05;
+      fPSigSmearingCte  = -1.52715e-06;
+      break;
     case 24:     //o             10% additional Bremsstrahlung
       fUseMCPSmearing   = 0;
       fPBremSmearing    = 0.114*0.01;
@@ -4458,9 +4463,12 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
     } else if (fUseMCPSmearing == 2) {
       facPSig = fRandom.Gaus(P,TMath::Sqrt(fPSigSmearingCte+fPSigSmearing*P));
     } else if (fUseMCPSmearing == 3) {
-      facPSig = fRandom.Gaus(P,TMath::Sqrt(fPSigSmearingCte+fPSigSmearing*P*P));
+      Double_t sigma = fPSigSmearingCte+fPSigSmearing*P*P;
+      if(sigma < 0) sigma = 0;
+      facPSig = fRandom.Gaus(P,TMath::Sqrt(sigma));
     } else if (fUseMCPSmearing == 4) {
       Double_t sigma = P*(TMath::Power(P,fPSigSmearing) + fPSigSmearingCte) *(TMath::Sqrt(fPSigSmearingRatio*fPSigSmearingRatio - 1))/0.135;
+      if(sigma < 0) sigma = 0;
       facPSig = fRandom.Gaus(P,sigma);
     }
   }
