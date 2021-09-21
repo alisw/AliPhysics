@@ -6,7 +6,6 @@
 #pragma link C++ class AliAnalysisTaskMKBase+;
 #pragma link C++ class AliAnalysisTaskMKTest+;
 #pragma link C++ class AliAnalysisTaskTPCMatchEff+;
-#pragma link C++ class AliAnalysisTaskDCArStudy+;
 #pragma link C++ class AliAnalysisTaskPtResStudy+;
 #pragma link C++ class AliAnalysisTaskEffContStudy+;
 #pragma link C++ class AliAnalysisTaskUEStudy+;
@@ -21,6 +20,7 @@
 #pragma link C++ class AliMultDepSpecAnalysisTask+;
 #pragma link C++ class AliMultDepSpecAnalysisTaskOLD+;
 #pragma link C++ class AliMultDepSpecAnalysisTaskUE+;
+#pragma link C++ class AliAnalysisTaskDCArStudy+;
 #pragma link C++ class AliAnalysisTaskCutStudies+;
 #pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
 #pragma link C++ class AliAnalysisTaskSpectraINEL0+;
