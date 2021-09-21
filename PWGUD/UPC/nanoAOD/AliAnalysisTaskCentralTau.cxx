@@ -142,7 +142,7 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
 
   hTriggerCounter = new TH2I("hTriggerCounter","Number of analyzed UPC triggers per run",3,1,4,3000,295000,298000);
   fOutputList->Add(hTriggerCounter);
-  hParticleTypeCounter = new TH1I("hParticleTypeCounter","Electron, Muon, Pion",4,-0.5,3.5);
+  hParticleTypeCounter = new TH1I("hParticleTypeCounter","Electron, Muon, Pion, Kaon, Proton",6,-0.5,5.5);
   fOutputList->Add(hParticleTypeCounter);
 
   fOutputPID = new TList();
@@ -284,6 +284,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   TLorentzVector vDiTauCandidate;
 
   Float_t nSigmaMuon[2], nSigmaElectron[2], nSigmaPion[2], dEdx[2];
+  Int_t trackPIDid[2];
 
   //
   // SELECT TWO TRACKS
@@ -295,6 +296,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
     // LOOP OVER TWO TRACKS
     //
   	Bool_t isOneTrackElectron = kFALSE;
+  	Bool_t isHighPt = kFALSE; // Selecting low pt tracks to avoid ambiguity in PID (electron/kaon)
   	Int_t electronTrackID = -1;
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
 
@@ -303,6 +305,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   	  //
       AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
       if( !trk ) continue;
+      if(trk->Pt() > 1.5) isHighPt = kTRUE;
       crossedFO[0] = trk->GetITSModuleIndex(0);
       crossedFO[1] = trk->GetITSModuleIndex(1);
       crossedFO[2] = trk->GetITSModuleIndex(6);
@@ -319,32 +322,17 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
       fPtDaughter[iTrack] = trk->Pt();
       fSignDaughter[iTrack] = trk->Charge();
 
-      Float_t PIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
-      Float_t PIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
-      Float_t PIDTPCPion = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
-      Float_t PIDTPCKaon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
-      Float_t PIDTPCProton = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
-      Float_t PIDTOFElectron = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
-      Float_t PIDTOFMuon = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
-      Float_t PIDTOFPion = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
-      Float_t PIDTOFKaon = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
-      Float_t PIDTOFProton = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
-
       qTrack[iTrack] = trk->Charge();
 
       vElectron[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
       vMuon[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
       vPion[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
 
-      nSigmaElectron[iTrack] = PIDTPCElectron;
-      nSigmaMuon[iTrack] = PIDTPCMuon;
-      nSigmaPion[iTrack] = PIDTPCPion;
-
       dEdx[iTrack] = trk->GetTPCsignal();
 
-      Int_t trackPIDid = TestPIDTPChypothesis(nSigmaElectron[iTrack], nSigmaMuon[iTrack], nSigmaPion[iTrack]);
-      hParticleTypeCounter->Fill(trackPIDid);
-      if (trackPIDid == 1) {
+      trackPIDid[iTrack] = TestPIDhypothesis(trk);
+      hParticleTypeCounter->Fill(trackPIDid[iTrack]);
+      if (trackPIDid[iTrack] == 0) {
         isOneTrackElectron = kTRUE;
         electronTrackID = iTrack;
       }
@@ -357,11 +345,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   	  return;
   	}
 
-    //
-    // SAVE STG DECISION
-    //
-    TBits fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
-    fTriggers[9] = IsSTGFired(fFOCrossFiredChips,fRunNumber >= 295753 ? 9 : 3);
+    if(isHighPt) return; // PID ambiguity cut. If one track is too high, reject the event
 
     //
     // CHARGE? (OPPOSITE, LIKE)
@@ -373,23 +357,24 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
     // SAVE KINEMATICS
     //
     Int_t otherTrackID = -1;
-    if (electronTrackID == 0) otherTrackID = 1;
+    if(electronTrackID == 0) otherTrackID = 1;
     else otherTrackID = 0;
-    if(TestPIDTPChypothesis(nSigmaElectron[otherTrackID], nSigmaMuon[otherTrackID], nSigmaPion[otherTrackID]) == 1) {
+    if(trackPIDid[otherTrackID] == 3 || trackPIDid[otherTrackID] == 4) return; // we are not interested in kaons and protons
+    if(trackPIDid[otherTrackID] == 0) {
       vDiTauCandidate = vElectron[electronTrackID]+vElectron[otherTrackID];
       fVectDaughter[0] = vElectron[electronTrackID];
       fVectDaughter[1] = vElectron[otherTrackID];
       fChannel = 1;
       FillTree(tTwoTracks,vDiTauCandidate);
     }
-    if(TestPIDTPChypothesis(nSigmaElectron[otherTrackID], nSigmaMuon[otherTrackID], nSigmaPion[otherTrackID]) == 2) {
+    if(trackPIDid[otherTrackID] == 1) {
       vDiTauCandidate = vElectron[electronTrackID]+vMuon[otherTrackID];
       fVectDaughter[0] = vElectron[electronTrackID];
       fVectDaughter[1] = vMuon[otherTrackID];
       fChannel = 2;
       FillTree(tTwoTracks,vDiTauCandidate);
     }
-    if(TestPIDTPChypothesis(nSigmaElectron[otherTrackID], nSigmaMuon[otherTrackID], nSigmaPion[otherTrackID]) == 3) {
+    if(trackPIDid[otherTrackID] == 2) {
       vDiTauCandidate = vElectron[electronTrackID]+vPion[otherTrackID];
       fVectDaughter[0] = vElectron[electronTrackID];
       fVectDaughter[1] = vPion[otherTrackID];
@@ -404,18 +389,70 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
   isCUP31 = fTriggers[5] || fTriggers[6];
   fTriggerClass[0] = isCUP29; fTriggerClass[1] = isCUP30; fTriggerClass[2] = isCUP31;
 
+  //
+  // SAVE STG DECISION
+  //
+  TBits fFOCrossFiredChips = fFOCrossedChips & fFOFiredChips;
+  fTriggers[9] = IsSTGFired(fFOCrossFiredChips,fRunNumber >= 295753 ? 9 : 3);
+
   PostData(1, fOutputList);
   PostData(2, fOutputPID);
 
 }//UserExec
 
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskCentralTau::TestPIDTPChypothesis(Float_t e, Float_t m, Float_t p){
-  // Choose, which particle it is accroding to PID
-  if      (e < m && e < p) return 1; // It is an electron
-  else if (m < e && m < p) return 2; // It is a muon
-  else if (p < e && p < m) return 3; // It is a pion
-  else return 0;
+Int_t AliAnalysisTaskCentralTau::TestPIDhypothesis(AliESDtrack *trk)
+// Choose, which particle it is accroding to PID
+{
+
+  Float_t PIDTPC[5];
+  PIDTPC[0] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron));
+  PIDTPC[1] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon));
+  PIDTPC[2] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion));
+  PIDTPC[3] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon));
+  PIDTPC[4] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton));
+  Int_t idTPC = std::distance(std::begin(PIDTPC),std::min_element(std::begin(PIDTPC),std::end(PIDTPC)));
+  Float_t PIDTPCpick[3] = {PIDTPC[0],PIDTPC[1],PIDTPC[2]};
+  Int_t idTPCpick = std::distance(std::begin(PIDTPCpick),std::min_element(std::begin(PIDTPCpick),std::end(PIDTPCpick)));
+
+  Float_t PIDTOF[5];
+  PIDTOF[0] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron));
+  PIDTOF[1] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon));
+  PIDTOF[2] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion));
+  PIDTOF[3] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon));
+  PIDTOF[4] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton));
+  Int_t idTOF = std::distance(std::begin(PIDTOF),std::min_element(std::begin(PIDTOF),std::end(PIDTOF)));
+
+  if      (idTPC == 0 || idTPC == 1 || idTPC == 2){
+    if      (idTOF == 3) return 3; // probably kaon
+    else if (idTOF == 4) return 4; // probably proton
+    else {
+      if (idTPC == 0) return 0; // probably electron
+      if (idTPC == 1) return 1; // probably muon
+      if (idTPC == 2) return 2; // probably pion
+    }
+  }
+  else if (idTPC == 3){
+    if      (idTOF == 3) return 3; // probably kaon
+    else if (idTOF == 4) return 4; // probably proton
+    else {
+      if (idTPCpick == 0) return 0; // probably misidentified electron
+      if (idTPCpick == 1) return 1; // probably misidentified muon
+      if (idTPCpick == 2) return 2; // probably misidentified pion
+    }
+  }
+  else {
+    if      (idTOF == 3) return 3; // probably kaon
+    else if (idTOF == 4) return 4; // probably proton
+    else {
+      if (idTPCpick == 0) return 0; // probably misidentified electron
+      if (idTPCpick == 1) return 1; // probably misidentified muon
+      if (idTPCpick == 2) return 2; // probably misidentified pion
+    }
+  }
+
+  Printf("Something is wrong with your brilliant logic, genius!");
+  return -1;
 }
 
 //_____________________________________________________________________________
