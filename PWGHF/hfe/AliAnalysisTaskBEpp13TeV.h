@@ -14,6 +14,7 @@ class TClonesArray;
 class AliAODMCParticle;
 class TClonesArray;
 class AliAODMCParticle;
+class TRandom3;
 
 class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE  
 {
@@ -78,6 +79,23 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	void SetITSlayer(int itsLayer) { fITSlayer = itsLayer; }
 	void SetPIDCuts(double tpcPIDlow, double tpcPIDhigh, double tofPID) { fTPCnsigmaLow = tpcPIDlow;fTPCnsigmaHigh = tpcPIDhigh; fTOFnsigma = tofPID; }
 
+
+	// Setter for B corr (central)
+	void SetBcorrCentLow(TF1* BcorrFcentL) { fBmesonCorrCentLow = BcorrFcentL; }
+	void SetBcorrCentHigh(TF1* BcorrFcentH) { fBmesonCorrCentHigh = BcorrFcentH; }
+	void SetBcorrMinLow(TF1* BcorrFminL) { fBmesonCorrMinLow = BcorrFminL; }
+	void SetBcorrMinHigh(TF1* BcorrFminH) { fBmesonCorrMinHigh = BcorrFminH; }
+	void SetBcorrMaxLow(TF1* BcorrFmaxL) { fBmesonCorrMaxLow = BcorrFmaxL; }
+	void SetBcorrMaxHigh(TF1* BcorrFmaxH) { fBmesonCorrMaxHigh = BcorrFmaxH; }
+
+	// Setter for D corr (central)
+	void SetDcorrFtn(TF1* DcorrF) { fDmesonCorr = DcorrF; }
+	void SetDcorrFtnVar1(TF1* DcorrFVar1) { fDmesonCorrVar1 = DcorrFVar1; }
+	void SetDcorrFtnVar2(TF1* DcorrFVar2) { fDmesonCorrVar2 = DcorrFVar2; }
+
+	// Setter for Lc corr (central)
+	void SetLccorrFtn(TF1* LccorrF) {fLcCorr = LccorrF;};
+
   private:
 
 	bool PassEventCuts(AliAODEvent *event);
@@ -123,7 +141,9 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 
 	// generated level
 	TH1F	*hBhadronPt;
+	TH1F	*hBhadronPtCorr;
 	TH1F	*hD0Pt;
+	TH1F	*hD0PtCorr;
 	TH1F	*hLcPt;
 
 	TH1F	*hGenBePt;
@@ -144,10 +164,42 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	TH2F	*dcaTrack;
 	TH2F	*dcaPion;
 	TH2F	*dcaBeauty;
-	TH2F	*dcaCharm;
+	TH2F	*dcaBeautyCorr;
+	TH2F	*dcaBeautyCorrVar1;
+	TH2F	*dcaBeautyCorrVar2;
+	TH2F	*dcaBzero;
+	TH2F	*dcaBplus;
+	TH2F	*dcaBszero;
+	TH2F	*dcaLb;
+	TH2F	*DelecVsDmother;
+	TH2F	*dcaDmeson;
+	TH2F	*dcaDmesonCorr;
+	TH2F	*dcaDmesonCorrVar1;
+	TH2F	*dcaDmesonCorrVar2;
+	TH2F	*dcaDzero;
+	TH2F	*dcaDplus;
+	TH2F	*dcaDsplus;
+	TH2F	*dcaLc;
 	TH2F	*dcaDalitz;
 	TH2F	*dcaConv;
+	
+	// B corr
+    TF1         *fBmesonCorrCentLow;
+    TF1         *fBmesonCorrCentHigh;
+    TF1         *fBmesonCorrMinLow;
+    TF1         *fBmesonCorrMinHigh;
+    TF1         *fBmesonCorrMaxLow;
+    TF1         *fBmesonCorrMaxHigh;
 
+    // D corr
+    TF1         *fDmesonCorr;
+    TF1         *fDmesonCorrVar1;
+    TF1         *fDmesonCorrVar2;
+
+    // Lc corr
+    TF1         *fLcCorr;
+
+    TRandom3    *fRnd;
 	
     AliAnalysisTaskBEpp13TeV(const AliAnalysisTaskBEpp13TeV&); // not implemented
     AliAnalysisTaskBEpp13TeV& operator=(const AliAnalysisTaskBEpp13TeV&); // not implemented

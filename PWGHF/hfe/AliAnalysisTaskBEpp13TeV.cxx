@@ -26,6 +26,7 @@
 #include "AliAnalysisUtils.h"
 #include "TClonesArray.h"
 #include "AliAODMCParticle.h"
+#include "TRandom3.h"
 #include "AliAnalysisTaskBEpp13TeV.h"
 
 class AliAnalysisTaskBEpp13TeV;    // your analysis class
@@ -71,7 +72,9 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV()
 ,hPhi(0)
 
 ,hBhadronPt(0)
+,hBhadronPtCorr(0)
 ,hD0Pt(0)
+,hD0PtCorr(0)
 ,hLcPt(0)
 
 ,hGenBePt(0)
@@ -90,9 +93,36 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV()
 ,dcaTrack(0)
 ,dcaPion(0)
 ,dcaBeauty(0)
-,dcaCharm(0)
+,dcaBeautyCorr(0)
+,dcaBeautyCorrVar1(0)
+,dcaBeautyCorrVar2(0)
+,dcaBzero(0)
+,dcaBplus(0)
+,dcaBszero(0)
+,dcaLb(0)
+,DelecVsDmother(0)
+,dcaDmeson(0)
+,dcaDmesonCorr(0)
+,dcaDmesonCorrVar1(0)
+,dcaDmesonCorrVar2(0)
+,dcaDzero(0)
+,dcaDplus(0)
+,dcaDsplus(0)
+,dcaLc(0)
 ,dcaDalitz(0)
 ,dcaConv(0)
+
+,fBmesonCorrCentLow(0)
+,fBmesonCorrCentHigh(0)
+,fBmesonCorrMinLow(0)
+,fBmesonCorrMinHigh(0)
+,fBmesonCorrMaxLow(0)
+,fBmesonCorrMaxHigh(0)
+,fDmesonCorr(0)
+,fDmesonCorrVar1(0)
+,fDmesonCorrVar2(0)
+,fLcCorr(0)
+,fRnd(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -135,7 +165,9 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char* name)
 ,hPhi(0)
 
 ,hBhadronPt(0)
+,hBhadronPtCorr(0)
 ,hD0Pt(0)
+,hD0PtCorr(0)
 ,hLcPt(0)
 
 ,hGenBePt(0)
@@ -154,9 +186,36 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char* name)
 ,dcaTrack(0)
 ,dcaPion(0)
 ,dcaBeauty(0)
-,dcaCharm(0)
+,dcaBeautyCorr(0)
+,dcaBeautyCorrVar1(0)
+,dcaBeautyCorrVar2(0)
+,dcaBzero(0)
+,dcaBplus(0)
+,dcaBszero(0)
+,dcaLb(0)
+,DelecVsDmother(0)
+,dcaDmeson(0)
+,dcaDmesonCorr(0)
+,dcaDmesonCorrVar1(0)
+,dcaDmesonCorrVar2(0)
+,dcaDzero(0)
+,dcaDplus(0)
+,dcaDsplus(0)
+,dcaLc(0)
 ,dcaDalitz(0)
 ,dcaConv(0)
+
+,fBmesonCorrCentLow(0)
+,fBmesonCorrCentHigh(0)
+,fBmesonCorrMinLow(0)
+,fBmesonCorrMinHigh(0)
+,fBmesonCorrMaxLow(0)
+,fBmesonCorrMaxHigh(0)
+,fDmesonCorr(0)
+,fDmesonCorrVar1(0)
+,fDmesonCorrVar2(0)
+,fLcCorr(0)
+,fRnd(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -202,70 +261,155 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects()
   // example of a histogram
   hNrEvents = new TH1F("hNrEvents","number of events",1,0.,1.);
   fOutputList->Add(hNrEvents);
+  
   hFilterMask = new TH1F("hFilterMask", "", 2, 0., 2.);
   fOutputList->Add(hFilterMask);
+  
   hTPCnCrossedRow = new TH1F("hTPCnCrossedRow", "", 200, 0., 200.);
   fOutputList->Add(hTPCnCrossedRow);
+  
   hTPCclsPID = new TH1F("hTPCclsPID", "", 200, 0., 200.);
   fOutputList->Add(hTPCclsPID);
+  
   hTPCchi2 = new TH1F("hTPCchi2", "", 100, 0., 10.);
   fOutputList->Add(hTPCchi2);
+  
   hTPCclsRatio = new TH1F("hTPCclsRatio", "", 15, 0., 1.5);
   fOutputList->Add(hTPCclsRatio);
+  
   hITSNcls= new TH1F("hITSNcls", "", 10, 0., 10.);
   fOutputList->Add(hITSNcls);
+  
   hITSlayer = new TH1F("hITSlayer", "", 3, 0.5, 3.5);
   fOutputList->Add(hITSlayer);
+  
   hDCAxy = new TH1F("hDCAxy", "", 600, -3., 3.);
   fOutputList->Add(hDCAxy);
+  
   hDCAz = new TH1F("hDCAz", "", 600, -3., 3.);
   fOutputList->Add(hDCAz);
+  
   hPt = new TH1F("hPt", "pt; (GeV/c)", 300, 0., 30.);
   fOutputList->Add(hPt);
+  
   hEta = new TH1F("hEta", "", 200, -1., 1.);
   fOutputList->Add(hEta);
+  
   hPhi = new TH1F("hPhi", "", 700, -0.5, 6.5);
   fOutputList->Add(hPhi);
+  
   hBhadronPt = new TH1F("hBhadronPt", "", 100, 0, 100);
   fOutputList->Add(hBhadronPt);
+  
+  hBhadronPtCorr = new TH1F("hBhadronPtCorr", "", 100, 0, 100);
+  fOutputList->Add(hBhadronPtCorr);
+  
   hD0Pt = new TH1F("hD0Pt", "", 12, ptbinningD0);
   fOutputList->Add(hD0Pt);
+  
+  hD0PtCorr = new TH1F("hD0PtCorr", "", 12, ptbinningD0);
+  fOutputList->Add(hD0PtCorr);
+  
   hLcPt = new TH1F("hLcPt", "", 6, ptbinningLc);
   fOutputList->Add(hLcPt);
+  
   hGenBePt = new TH1F("hGenBePt", "", nPtBins, ptbinningX);
   fOutputList->Add(hGenBePt);
+  
   hRecBePt_track = new TH1F("hRecBePt_track", "", nPtBins, ptbinningX);
   fOutputList->Add(hRecBePt_track);
+  
   hRecBePt_tof = new TH1F("hRecBePt_tof", "", nPtBins, ptbinningX);
   fOutputList->Add(hRecBePt_tof);
+  
   hRecBePt_tpc = new TH1F("hRecBePt_tpc", "", nPtBins, ptbinningX);
   fOutputList->Add(hRecBePt_tpc);
+  
   hTPCnsigma = new TH2F("hTPCnsigma", "n#sigma_{TPC} vs #it{p}; #it{p} (GeV/#it{c}); n#sigma_{TPC}", 500, 0., 10., 400, -10., 10.);
   fOutputList->Add(hTPCnsigma);
+  
   hTPCnsigmaTOFcut = new TH2F("hTPCnsigmaTOFcut", "n#sigma_{TPC |TOFcut} vs #it{p}; #it{p} (GeV/#it{c}); n#sigma_{TPC}", 500, 0., 10., 400, -10., 10.);
   fOutputList->Add(hTPCnsigmaTOFcut);
+  
   hTPCnsigmaTOFcutPt = new TH2F("hTPCnsigmaTOFcutPt", "n#sigma_{TPC |TOFcut} vs #it{p}_{T}; #it{p}_{T} (GeV/#it{c}); n#sigma_{TPC}", nPtBins, ptbinningX, nBinsPID, binLimPID);
   fOutputList->Add(hTPCnsigmaTOFcutPt);
+  
   hTPCnsigmaQA = new TH2F("hTPCnsigmaQA", "n#sigma_{TPC} QA vs #it{p}; #it{p} (GeV/#it{c}); n#sigma_{TPC}", 500, 0., 10., 400, -10., 10.);
   fOutputList->Add(hTPCnsigmaQA);
+  
   hTPCnsigmaPiQA = new TH2F("hTPCnsigmaPiQA", "n#sigma_{TPC |TOFcut} vs #it{p}; #it{p} (GeV/#it{c}); n#sigma_{TPC}", 500, 0., 10., 400, -10., 10.);
   fOutputList->Add(hTPCnsigmaPiQA);
+  
   hTOFnsigma = new TH2F("hTOFnsigma", "n#sigma_{TOF} vs #it{p}; #it{p} (GeV/#it{c}); n#sigma_{TOF}", 500, 0., 10., 400, -10., 10.);
   fOutputList->Add(hTOFnsigma);
+  
   hTOFnsigmaQA = new TH2F("hTOFnsigmaQA", "n#sigma_{TOF} vs #it{p}; #it{p} (GeV/#it{c}); n#sigma_{TOF}", 500, 0., 10., 400, -10., 10.);
   fOutputList->Add(hTOFnsigmaQA);
+  
   dcaTrack = new TH2F("dcaTrack", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaTrack);
+  
   dcaPion = new TH2F("dcaPion", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaPion);
+  
   dcaBeauty = new TH2F("dcaBeauty", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaBeauty);
-  dcaCharm = new TH2F("dcaCharm", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
-  fOutputList->Add(dcaCharm);
+  
+  dcaBeautyCorr = new TH2F("dcaBeautyCorr", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaBeautyCorr);
+  
+  dcaBeautyCorrVar1 = new TH2F("dcaBeautyCorrVar1", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaBeautyCorrVar1);
+  
+  dcaBeautyCorrVar2 = new TH2F("dcaBeautyCorrVar2", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaBeautyCorrVar2);
+
+  dcaBzero = new TH2F("dcaBzero", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaBzero);
+
+  dcaBplus = new TH2F("dcaBplus", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaBplus);
+
+  dcaBszero = new TH2F("dcaBszero", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaBszero);
+
+  dcaLb = new TH2F("dcaLb", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaLb);
+  
+  DelecVsDmother = new TH2F("DelecVsDmother", "", 12, ptbinningD0, nPtBins, ptbinningX);
+  fOutputList->Add(DelecVsDmother);
+  
+  dcaDmeson = new TH2F("dcaDmeson", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaDmeson);
+  
+  dcaDmesonCorr = new TH2F("dcaDmesonCorr", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaDmesonCorr);
+  
+  dcaDmesonCorrVar1 = new TH2F("dcaDmesonCorrVar1", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaDmesonCorrVar1);
+  
+  dcaDmesonCorrVar2 = new TH2F("dcaDmesonCorrVar2", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaDmesonCorrVar2);
+  
+  dcaDzero = new TH2F("dcaDzero", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaDzero);
+  
+  dcaDplus = new TH2F("dcaDplus", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaDplus);
+  
+  dcaDsplus = new TH2F("dcaDsplus", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaDsplus);
+  
+  dcaLc = new TH2F("dcaLc", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaLc);
+  
   dcaDalitz = new TH2F("dcaDalitz", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaDalitz);
+  
   dcaConv = new TH2F("dcaConv", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaConv);
+
+  fRnd = new TRandom3(0);
     
   PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
                                         // fOutputList object. the manager will in the end take care of writing your output to file
@@ -311,7 +455,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *)
 	}
   }
 
-
+  // generated MC loop
   if(fIsMC){
 		
 	fAODArrayMCInfo = dynamic_cast<TClonesArray *>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -325,15 +469,24 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *)
 	  fAODMCParticle = (AliAODMCParticle*) fAODArrayMCInfo->At(iMC);
 	  
 	  int hf = -999;
-	  double hfpt = -999., hfeta = -999.;
+	  double hfpt = -999., hfeta = -999., wghtD, wghtB;;
 	  hf = GetHeavyFlavours(fAODMCParticle, hfpt, hfeta);
 	  
 	  if(TMath::Abs(hfeta)<0.5){
-		if(hf==kPromptD0) hD0Pt->Fill(hfpt);
+		if(hf==kPromptD0){
+		  hD0Pt->Fill(hfpt);
+		  wghtD = fDmesonCorr->Eval(hfpt);
+		  hD0PtCorr->Fill(hfpt, wghtD);
+		}
 		if(hf==kPromptLc) hLcPt->Fill(hfpt);
 	  }
 	  if(TMath::Abs(hfeta<0.8)){
-		if(hf==kPromptB || hf==kNonPromptD) hBhadronPt->Fill(hfpt);
+		if(hf==kPromptB || hf==kNonPromptD){
+		  hBhadronPt->Fill(hfpt);
+		  if(hfpt<=3.5) wghtB = fBmesonCorrCentLow->Eval(hfpt);
+		  if(hfpt>3.5) wghtB = fBmesonCorrCentHigh->Eval(hfpt);
+		  hBhadronPtCorr->Fill(hfpt, wghtB);
+		}
 	  }
 
 	  int src = -999, srcPdg = -999;
@@ -379,7 +532,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *)
 	double mcelectronSourcePt=-999.;
 	if(fIsMC){
 	  fAODMCParticle = NULL;
-			
+
 	  int label = TMath::Abs(aodTrack->GetLabel());
 	  if(label < fAODArrayMCInfo->GetEntriesFast())
 		fAODMCParticle = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(label));
@@ -387,15 +540,79 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *)
 		AliDebug(2, "Associated MC particle found");
 		mcelectronSource = GetElecSource(fAODMCParticle, mcelectronSourcePt, mcelectronSourcePDG);
 	  }
-	  
 	  // Fill beauty dca information
 	  if(mcelectronSource==kDirectBeauty || mcelectronSource==kBeautyCharm){
 		hRecBePt_track->Fill(pt);
 		dcaBeauty->Fill(pt, IP);
+		
+		double wghtB = -99., wghtBvar1 = -99., wghtBvar2 = -99.;
+		if(pt>mcelectronSourcePt){
+		  wghtB = 1.;
+		  wghtBvar1 = 1.;
+		  wghtBvar2 = 1.;
+		}else{
+		  if(mcelectronSourcePt<=3.5){
+			wghtB = fBmesonCorrCentLow->Eval(mcelectronSourcePt);
+			wghtBvar1 = fBmesonCorrMinLow->Eval(mcelectronSourcePt);
+			wghtBvar2 = fBmesonCorrMaxLow->Eval(mcelectronSourcePt);
+		  }else if(mcelectronSourcePt>3.5){
+			wghtB = fBmesonCorrCentHigh->Eval(mcelectronSourcePt);
+			wghtBvar1 = fBmesonCorrMinHigh->Eval(mcelectronSourcePt);
+			wghtBvar2 = fBmesonCorrMaxHigh->Eval(mcelectronSourcePt);
+		  }
+		}
+		
+		// B hadron dca correction
+		double rndmB = fRnd->Rndm();
+        if(rndmB<wghtB){
+		  dcaBeautyCorr->Fill(pt, IP);
+		  if(TMath::Abs(mcelectronSourcePDG)==511) dcaBzero->Fill(pt, IP);
+		  else if(TMath::Abs(mcelectronSourcePDG)==521) dcaBplus->Fill(pt, IP);
+		  else if(TMath::Abs(mcelectronSourcePDG)==531) dcaBszero->Fill(pt, IP);
+		  else dcaLb->Fill(pt, IP);
+		}
+		if(rndmB<wghtBvar1) dcaBeautyCorrVar1->Fill(pt, IP);
+        if(rndmB<wghtBvar2) dcaBeautyCorrVar2->Fill(pt, IP);
 	  }
+	  
 	  // Fill charm dca information
 	  if(mcelectronSource==kDirectCharm){
-		dcaCharm->Fill(pt, IP);
+		if(TMath::Abs(mcelectronSourcePDG)==421 || TMath::Abs(mcelectronSourcePDG)==411 || TMath::Abs(mcelectronSourcePDG)==431){
+		  DelecVsDmother->Fill(mcelectronSourcePt, pt);
+		  dcaDmeson->Fill(pt, IP);
+		  double wghtD = -99., wghtDvar1 = -99., wghtDvar2 = -99.;
+		  if(pt>mcelectronSourcePt){
+			wghtD = 1.;
+			wghtDvar1 = 1.;
+			wghtDvar2 = 1.;
+		  }else{
+			wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+			wghtDvar1 = fDmesonCorrVar1->Eval(mcelectronSourcePt);
+			wghtDvar2 = fDmesonCorrVar2->Eval(mcelectronSourcePt);
+			//if(pt>=1. && pt<1.1)  wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+			//if(pt>=1.1 && pt<1.3) wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+			//if(pt>=1.3 && pt<1.5) wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+			//if(pt>=1.5 && pt<2.)  wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+			//if(pt>=2. && pt<2.5)  wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+			//if(pt>=2.5 && pt<3.)  wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+			//if(pt>=3. && pt<4.)   wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+			//if(pt>=4 && pt<5.)    wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+			//if(pt>=5. && pt<6.)   wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+			//if(pt>=6. && pt<8.)   wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+			//if(pt>=8. && pt<10.)  wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+			//if(pt>=10.)           wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
+		  }
+		  double rndmD = fRnd->Rndm();
+		  if(rndmD<wghtD){
+			dcaDmesonCorr->Fill(pt, IP);
+			if(TMath::Abs(mcelectronSourcePDG)==421) dcaDzero->Fill(pt, IP);
+			if(TMath::Abs(mcelectronSourcePDG)==411) dcaDplus->Fill(pt, IP);
+			if(TMath::Abs(mcelectronSourcePDG)==431) dcaDsplus->Fill(pt, IP);
+		  }
+		  if(rndmD<wghtDvar1) dcaDmesonCorrVar1->Fill(pt, IP);
+		  if(rndmD<wghtDvar2) dcaDmesonCorrVar2->Fill(pt, IP);
+		}
+		if(TMath::Abs(mcelectronSourcePDG)==4122) dcaLc->Fill(pt, IP);
 	  }
 	  // Fill Dalitz dca information
 	  if(mcelectronSource>=5 && mcelectronSource<=15){
@@ -492,7 +709,7 @@ bool AliAnalysisTaskBEpp13TeV::PassPileUpEvent(AliAODEvent *event){
 bool AliAnalysisTaskBEpp13TeV::PassTrackCuts(AliAODTrack *track){
 
 	if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return false;
-	if(TMath::Abs(track->Eta()) >= 0.8) return false;
+	if(TMath::Abs(track->Eta()) > 0.8) return false;
 	if(track->Pt()<0.5 || track->Pt()>15.) return false;
 
 	// basic tracking
