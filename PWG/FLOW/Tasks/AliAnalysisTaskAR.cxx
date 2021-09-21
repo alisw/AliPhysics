@@ -516,8 +516,8 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
        "N_{ITSNCLS}"},
       {"fTrackControlHistograms[kCHI2PERNDF]", "CHI2PERNDF of track",
        "#chi^{2}/NDF", ""},
-      {"fTrackControlHistograms[kDCAZ]", "DCA in Z", "DCA_{Z}"},
-      {"fTrackControlHistograms[kDCAXY]", "DCA in XY", "DCA_{XY}"},
+      {"fTrackControlHistograms[kDCAZ]", "DCA in Z", "DCA_{Z} [cm]"},
+      {"fTrackControlHistograms[kDCAXY]", "DCA in XY", "DCA_{XY} [cm]"},
   };
   // initialize names
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
@@ -604,10 +604,14 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
        "M_{contrib}", ""},
       {"fEventControlHistograms[kCEN]", "Centrality", "Centrality Percentile",
        ""},
-      {"fEventControlHistograms[kX]", "Primary Vertex X", "#bf{V}_{X}", ""},
-      {"fEventControlHistograms[kY]", "Primary Vertex Y", "#bf{V}_{Y}", ""},
-      {"fEventControlHistograms[kZ]", "Primary Vertex Z", "#bf{V}_{Z}", ""},
-      {"fEventControlHistograms[kVPOS]", "Vertex Position", "|#bf{V}|", ""},
+      {"fEventControlHistograms[kX]", "Primary Vertex X", "#bf{V}_{X} [cm]",
+       ""},
+      {"fEventControlHistograms[kY]", "Primary Vertex Y", "#bf{V}_{Y} [cm]",
+       ""},
+      {"fEventControlHistograms[kZ]", "Primary Vertex Z", "#bf{V}_{Z} [cm]",
+       ""},
+      {"fEventControlHistograms[kVPOS]", "Vertex Position", "|#bf{V}| [cm]",
+       ""},
   };
 
   // initialize names
