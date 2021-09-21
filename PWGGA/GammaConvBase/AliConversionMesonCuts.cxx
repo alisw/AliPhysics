@@ -3841,40 +3841,40 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fUseMCPSmearing   = 4;
       fPSigSmearing     = 0.000639119;
       fPSigSmearingCte  = -0.997739;
-      fPSigSmearingRatio= 1.1155;
+      fPSigSmearingRatio= 1.1635;
       break;
     case 19:     //j             indirect fit on ratio data/MC with powerlaw + Bremsstarhlung
       fUseMCPSmearing   = 4;
       fPBremSmearing    = 0.114*0.1; // 10% Bremsstarhlung
       fPSigSmearing     = 0.000639119;
       fPSigSmearingCte  = -0.997739;
-      fPSigSmearingRatio= 1.1155;
+      fPSigSmearingRatio= 1.1635;
       break;
     case 20:     //k             indirect fit on ratio data/MC with powerlaw + Bremsstarhlung
       fUseMCPSmearing   = 4;
       fPBremSmearing    = 0.114*0.2; // 20% Bremsstarhlung
       fPSigSmearing     = 0.000639119;
       fPSigSmearingCte  = -0.997739;
-      fPSigSmearingRatio= 1.1155;
+      fPSigSmearingRatio= 1.1635;
       break;
     case 21:     //l             indirect fit on ratio data/MC with powerlaw + Bremsstarhlung
       fUseMCPSmearing   = 4;
       fPBremSmearing    = 0.114*0.3; // 30% Bremsstarhlung
       fPSigSmearing     = 0.000639119;
       fPSigSmearingCte  = -0.997739;
-      fPSigSmearingRatio= 1.1155;
+      fPSigSmearingRatio= 1.1635;
       break;
     case 22:     //m             indirect fit on ratio data/MC with powerlaw + Bremsstarhlung
       fUseMCPSmearing   = 4;
       fPBremSmearing    = 0.114*1.2; // additional 20% Bremsstarhlung
       fPSigSmearing     = 0.000639119;
       fPSigSmearingCte  = -0.997739;
-      fPSigSmearingRatio= 1.1155;
+      fPSigSmearingRatio= 1.1635;
       break;
     case 23:     //n        new implementation pol2, est. from EMC trigg data
       fUseMCPSmearing   = 3;
-      fPSigSmearing     = 6.29223e-05;
-      fPSigSmearingCte  = -1.52715e-06;
+      fPSigSmearing     = 9.61405e-05;
+      fPSigSmearingCte  = -5.45058e-06;
       break;
     case 24:     //o             10% additional Bremsstrahlung
       fUseMCPSmearing   = 0;
