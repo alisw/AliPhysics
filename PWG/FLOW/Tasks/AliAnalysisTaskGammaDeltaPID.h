@@ -65,6 +65,8 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   void SetCentralityPercentileMin(Double_t cMin) {this->fCentralityMin  = cMin;}
   void SetCentralityPercentileMax(Double_t cMax) {this->fCentralityMax  = cMax;}
   void SetCentralityEstimator(TString sEstim)    {this->sCentrEstimator = sEstim;}
+  void SetDetectorForEventPlane(TString sDetEP)  {this->sDetectorforEP = sDetEP;}
+  
   void SetVzRangeMin(Double_t vzMin)             {this->fMinVzCut       = vzMin;}
   void SetVzRangeMax(Double_t vzMax)             {this->fMaxVzCut       = vzMax;}
   void SetPileUpCutParam(Float_t m,Float_t c)    {this->fPileUpSlopeParm = m; this->fPileUpConstParm = c;}
@@ -185,8 +187,12 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   Float_t               fMinVzCut;  //
   Float_t               fMaxVzCut;  //
   TString         sCentrEstimator;  //
+  TString          sDetectorforEP;  //
+  Bool_t         bUseV0EventPlane;  //
   Bool_t            bSkipAnalysis;  //
 
+  
+  
   
   /// Chunzheng: V0 (Lambda) Cut parameters:
   Double_t                   fV0PtMin; //
@@ -348,18 +354,29 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   TH1D         *fHCorrectMCNegKaon; //!
   TH1D         *fHCorrectMCNegProt; //!
 
-  TH1D         *fHCorrectTPCQnxEtaPos; //!
-  TH1D         *fHCorrectTPCQnyEtaPos; //!
-  TH1D         *fHCorrectTPCQnxEtaNeg; //!
-  TH1D         *fHCorrectTPCQnyEtaNeg; //!
+  TH1D         *fHCorrectTPCQNxEtaPos; //!
+  TH1D         *fHCorrectTPCQNyEtaPos; //!
+  TH1D         *fHCorrectTPCQNxEtaNeg; //!
+  TH1D         *fHCorrectTPCQNyEtaNeg; //!
 
   TH1D         *fHCorrectTPCQ3xEtaPos; //!
   TH1D         *fHCorrectTPCQ3yEtaPos; //!
   TH1D         *fHCorrectTPCQ3xEtaNeg; //!
   TH1D         *fHCorrectTPCQ3yEtaNeg; //!  
 
+  TH1D         *fHCorrectQNxV0C; //!
+  TH1D         *fHCorrectQNyV0C; //!
+  TH1D         *fHCorrectQNxV0A; //!
+  TH1D         *fHCorrectQNyV0A; //!
+
+  TH1D         *fHCorrectQ3xV0C; //!
+  TH1D         *fHCorrectQ3yV0C; //!
+  TH1D         *fHCorrectQ3xV0A; //!
+  TH1D         *fHCorrectQ3yV0A; //!  
 
 
+
+    
   /// chunzheng: V0 QA Histograms
   TH1D             *fHistV0Pt;              //! Raw V0s' pT
   TH1D             *fHistV0Eta;             //! Raw V0s' eta
@@ -409,7 +426,7 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
 
   ///Custom Functions:
   void  GetNUACorrectionHist(Int_t run=0,Int_t kParticleID=0);
-  void  GetV0MCorrectionHist(Int_t run=0,Int_t kHarmonic=0);
+  void  GetV0MCorrectionHist(Int_t run=0);
   void  GetMCCorrectionHist();
   
   Bool_t CheckEventIsPileUp(AliAODEvent* faod);

@@ -1,5 +1,5 @@
 
-void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fPtMax=2.0,Double_t fV0DautPtMax=2.0,Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,Double_t fChi2=4.0, Int_t gNclustTPC=70, Int_t fparticle=3,Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Bool_t bSkipPileUp=kFALSE, TString sCentEstimator="V0M",Float_t fVzMin = -10.0, Float_t fVzMax = 10.0,TString sTrigger="kINT7",Int_t vnHarmonic=2,TString sMCfilePath="alien:///alice/cern.ch/user/m/mhaque/nuanue18/HijingMC_LHC18q_FB768_DeftCut.root",TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",TString sDetWgtsFile = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",Bool_t bSkipAnalysis=kFALSE,Bool_t bFillLambda=kTRUE,Double_t fMassMean = 1.115683, Double_t fV0MassCut = 0.005, Double_t fV0CosPAmin = 0.995, Double_t fV0RapidityMax=0.5, Double_t fV0DecLenMin=3.0, Double_t fV0DecLenMax=100, Double_t fV0DCAToPrimVtx=1.5, Double_t fV0DcaDiffDautMax=1.0, Double_t fV0DautDCAToPrimVtxMin = 0.02, const char *suffix = "")
+void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fPtMax=2.0,Double_t fV0DautPtMax=2.0,Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,Double_t fChi2=4.0, Int_t gNclustTPC=70, Int_t fparticle=3,Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Bool_t bSkipPileUp=kFALSE, TString sCentEstimator="V0M",Float_t fVzMin = -10.0, Float_t fVzMax = 10.0,TString sTrigger="kINT7",Int_t vnHarmonic=2,TString sDetforEP="kV0A",TString sMCfilePath="alien:///alice/cern.ch/user/m/mhaque/nuanue18/HijingMC_LHC18q_FB768_DeftCut.root",TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",TString sDetWgtsFile = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",Bool_t bSkipAnalysis=kFALSE,Bool_t bFillLambda=kTRUE,Double_t fMassMean = 1.115683, Double_t fV0MassCut = 0.005, Double_t fV0CosPAmin = 0.995, Double_t fV0RapidityMax=0.5, Double_t fV0DecLenMin=3.0, Double_t fV0DecLenMax=100, Double_t fV0DCAToPrimVtx=1.5, Double_t fV0DcaDiffDautMax=1.0, Double_t fV0DautDCAToPrimVtxMin = 0.02, const char *suffix = "")
 {
   // standard with task
   printf("===================================================================================\n");
@@ -57,17 +57,22 @@ void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fP
   task_CMW->SetParticle(fparticle);
   task_CMW->SetPileUpCutParam(fSlope,fConst);
   task_CMW->SetFlagSkipPileUpCuts(bSkipPileUp);  
-  task_CMW->SetFlagSkipAnalysis(bSkipAnalysis);  
-  //
+  task_CMW->SetFlagSkipAnalysis(bSkipAnalysis);
+  task_CMW->SetDetectorForEventPlane(sDetforEP);       // Options are: "kV0A","kV0C","kTPC" [ todo: Add option for TPC eta Pos or Neg side. ]
 
   if(sCentEstimator=="V0" || sCentEstimator=="V0M"){ 
     task_CMW->SetCentralityEstimator("V0M");    
   }
   else{
-    task_CMW->SetCentralityEstimator(sCentEstimator);          //  use the Estimator provided in AddTask.
+    task_CMW->SetCentralityEstimator(sCentEstimator);  //  use the Estimator provided in AddTask.
   }
-     
 
+
+
+
+
+
+  
   //// Hardcode some cuts: Can be made variable if Needed.
 
   // Gap in btween the TPC event plane:
@@ -180,8 +185,8 @@ void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fP
 
   if(fV0ZDCWgtsFile) {    
     fListDetWgts = dynamic_cast <TList*> (fV0ZDCWgtsFile->FindObjectAny("fWgtsV0ZDC"));
-    std::cout<<" \n ==============> TList found for V0/ZDC wgts, here is all the histograms : ";
-    fListDetWgts->ls(); ///To be commented after check!
+    std::cout<<" \n ==============> TList found for V0/ZDC wgts.. GOOD! ";
+    // fListDetWgts->ls(); 
 
     if(fListDetWgts) {
       task_CMW->SetListForV0MCorr(fListDetWgts);
