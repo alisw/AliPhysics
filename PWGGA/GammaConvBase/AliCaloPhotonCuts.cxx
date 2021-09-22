@@ -8419,9 +8419,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= (FunctionNL_kSDM(energy, 0.91336, -2.57765, -0.334976) ); //updated 7 Dec 2018 - peripheral (60-80%) pcmcalo correction
           }
           if(fClusterType==2){
-            energy /= FunctionNL_kSDM(energy, 1.02357, -2.19441, -3.10045); //updated on 2019 01 18 - PCMPHOS based on centrality 20-50%
-            energy /= FunctionNL_kSDM(energy, 1.00081, -2.09128, -2.41587); //updated on 2019 02 18 - PCMPHOS based on centrality 20-50%
-            energy /= 0.9835; // 2019 08 30 - PCMPHOS
+            energy /= FunctionNL_kSDM(energy, 0.98986, -2.71956, -0.499509); // added on 2021 05 28, rerun phos
           }
         } else if( fCurrentMC==kPbPb5T18HIJING ){
           if (fClusterType == 2 ){
