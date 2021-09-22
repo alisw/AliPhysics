@@ -2,8 +2,8 @@
 * See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef AliAnalysisTaskCentralTau_H
-#define AliAnalysisTaskCentralTau_H
+#ifndef ALIANALYSISTASKCENTRALTAU_H
+#define ALIANALYSISTASKCENTRALTAU_H
 
 class TH1;
 class TH2;
@@ -29,7 +29,7 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
   
   void SetParameters(Float_t cutE){cutEta = cutE;}
-  Int_t TestPIDTPChypothesis(Float_t e, Float_t m, Float_t p);
+  Int_t TestPIDhypothesis(AliESDtrack *trk);
   void TPCandTOFsignalInfo(AliESDtrack *trk, Int_t trkID);
   void SetCrossed(Int_t spd[4], TBits &crossed);
   Int_t GetChipId(Int_t index, Int_t &chipId2, Bool_t debug=0);
@@ -62,7 +62,7 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   AliAnalysisTaskCentralTau(const AliAnalysisTaskCentralTau&); //not implemented
   AliAnalysisTaskCentralTau& operator =(const AliAnalysisTaskCentralTau&); //not implemented
   
-  ClassDef(AliAnalysisTaskCentralTau, 15);
+  ClassDef(AliAnalysisTaskCentralTau, 25);
 };
 
 #endif
