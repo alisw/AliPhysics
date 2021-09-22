@@ -126,6 +126,7 @@
 #pragma link C++ class AliAnalysisTaskProtonQA+;
 #pragma link C++ class AliAnalysisTaskProtonAbsorbtion+;
 // spherocity analysis
+#pragma link C++ class AliAnalysisTaskS0+;
 #pragma link C++ class AliTransverseEventShape+;
 #pragma link C++ class AliSpherocityUtils+;
 #pragma link C++ class AliAnalysisSphericityTask+;
