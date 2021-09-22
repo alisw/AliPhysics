@@ -166,7 +166,11 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name): Al
   fAvgSin3PsivsCentEtaPos(NULL),
   fAvgCos3PsivsCentEtaNeg(NULL),
   fAvgSin3PsivsCentEtaNeg(NULL),  
-
+  fHistV0CDetqVectorvsCent(NULL),
+  fHistV0ADetqVectorvsCent(NULL),
+  fHistTPCPosqVectorvsCent(NULL),
+  fHistTPCNegqVectorvsCent(NULL),
+  
   fHistVertexZcm(NULL),
   fHistVxvsVzMinBias(NULL),
   fHistVyvsVzMinBias(NULL),  
@@ -226,7 +230,8 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name): Al
   hAvgDelta4vsCentPP(NULL),
   hAvgDelta4vsCentNN(NULL),    
   hAvgDelta4vsCentOS(NULL),  
-  
+
+  fHCorrectV0ChWeghts(NULL),
   fHCorrectNUAChrgPos(NULL),
   fHCorrectNUAChrgNeg(NULL),
   fHCorrectNUAkPIDPos(NULL),
@@ -238,11 +243,15 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name): Al
   fHCorrectMCNegChrg(NULL),
   fHCorrectMCNegPion(NULL),
   fHCorrectMCNegKaon(NULL),
-  fHCorrectMCNegProt(NULL),
-  fHCorrectTPCQxEtaPos(NULL),
-  fHCorrectTPCQyEtaPos(NULL),
-  fHCorrectTPCQxEtaNeg(NULL),
-  fHCorrectTPCQyEtaNeg(NULL),  
+  fHCorrectMCNegProt(NULL),  
+  fHCorrectTPCQnxEtaPos(NULL),
+  fHCorrectTPCQnyEtaPos(NULL),
+  fHCorrectTPCQnxEtaNeg(NULL),
+  fHCorrectTPCQnyEtaNeg(NULL),
+  fHCorrectTPCQ3xEtaPos(NULL),
+  fHCorrectTPCQ3yEtaPos(NULL),
+  fHCorrectTPCQ3xEtaNeg(NULL),
+  fHCorrectTPCQ3yEtaNeg(NULL),    
   
   fHistV0Pt(NULL),              
   fHistV0Eta(NULL),              
@@ -369,6 +378,10 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   fAvgSin3PsivsCentEtaPos(NULL),
   fAvgCos3PsivsCentEtaNeg(NULL),
   fAvgSin3PsivsCentEtaNeg(NULL),  
+  fHistV0CDetqVectorvsCent(NULL),
+  fHistV0ADetqVectorvsCent(NULL),
+  fHistTPCPosqVectorvsCent(NULL),
+  fHistTPCNegqVectorvsCent(NULL),
   
   fHistVertexZcm(NULL),
   fHistVxvsVzMinBias(NULL),
@@ -429,7 +442,8 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   hAvgDelta4vsCentPP(NULL),
   hAvgDelta4vsCentNN(NULL),    
   hAvgDelta4vsCentOS(NULL),
-  
+
+  fHCorrectV0ChWeghts(NULL),
   fHCorrectNUAChrgPos(NULL),
   fHCorrectNUAChrgNeg(NULL),
   fHCorrectNUAkPIDPos(NULL),
@@ -442,11 +456,14 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   fHCorrectMCNegPion(NULL),
   fHCorrectMCNegKaon(NULL),
   fHCorrectMCNegProt(NULL),
-  fHCorrectTPCQxEtaPos(NULL),
-  fHCorrectTPCQyEtaPos(NULL),
-  fHCorrectTPCQxEtaNeg(NULL),
-  fHCorrectTPCQyEtaNeg(NULL),
-
+  fHCorrectTPCQnxEtaPos(NULL),
+  fHCorrectTPCQnyEtaPos(NULL),
+  fHCorrectTPCQnxEtaNeg(NULL),
+  fHCorrectTPCQnyEtaNeg(NULL),
+  fHCorrectTPCQ3xEtaPos(NULL),
+  fHCorrectTPCQ3yEtaPos(NULL),
+  fHCorrectTPCQ3xEtaNeg(NULL),
+  fHCorrectTPCQ3yEtaNeg(NULL),  
   
   fHistV0Pt(NULL),              
   fHistV0Eta(NULL),              
@@ -594,7 +611,7 @@ void AliAnalysisTaskGammaDeltaPID::UserCreateOutputObjects()
   Double_t fCentBinsZDC[41] = {0.};
   for(int i=1;i<41;i++)  fCentBinsZDC[i] = i*2.0;
   
-
+  ///
   fAvgCosNPsivsCentEtaPos = new TProfile("fAvgCosNPsivsCentEtaPos",Form("<cos(%d#Psi)> vs cent",gHarmonic),90,0,90);
   fListHist->Add(fAvgCosNPsivsCentEtaPos);
   fAvgSinNPsivsCentEtaPos = new TProfile("fAvgSinNPsivsCentEtaPos",Form("<sin(%d#Psi)> vs cent",gHarmonic),90,0,90);
@@ -604,18 +621,25 @@ void AliAnalysisTaskGammaDeltaPID::UserCreateOutputObjects()
   fAvgSinNPsivsCentEtaNeg = new TProfile("fAvgSinNPsivsCentEtaNeg",Form("<sin(%d#Psi)> vs cent",gHarmonic),90,0,90);
   fListHist->Add(fAvgSinNPsivsCentEtaNeg);
 
-  fAvgCos3PsivsCentEtaPos = new TProfile("fAvgCos3PsivsCentEtaPos",Form("<cos(%d#Psi)> vs cent",gHarmonic),90,0,90);
+  fAvgCos3PsivsCentEtaPos = new TProfile("fAvgCos3PsivsCentEtaPos",Form("<cos(%d#Psi)> vs cent",3),90,0,90);
   fListHist->Add(fAvgCos3PsivsCentEtaPos);
-  fAvgSin3PsivsCentEtaPos = new TProfile("fAvgSin3PsivsCentEtaPos",Form("<sin(%d#Psi)> vs cent",gHarmonic),90,0,90);
+  fAvgSin3PsivsCentEtaPos = new TProfile("fAvgSin3PsivsCentEtaPos",Form("<sin(%d#Psi)> vs cent",3),90,0,90);
   fListHist->Add(fAvgSin3PsivsCentEtaPos);
-  fAvgCos3PsivsCentEtaNeg = new TProfile("fAvgCos3PsivsCentEtaNeg",Form("<cos(%d#Psi)> vs cent",gHarmonic),90,0,90);
+  fAvgCos3PsivsCentEtaNeg = new TProfile("fAvgCos3PsivsCentEtaNeg",Form("<cos(%d#Psi)> vs cent",3),90,0,90);
   fListHist->Add(fAvgCos3PsivsCentEtaNeg);
-  fAvgSin3PsivsCentEtaNeg = new TProfile("fAvgSin3PsivsCentEtaNeg",Form("<sin(%d#Psi)> vs cent",gHarmonic),90,0,90);
+  fAvgSin3PsivsCentEtaNeg = new TProfile("fAvgSin3PsivsCentEtaNeg",Form("<sin(%d#Psi)> vs cent",3),90,0,90);
   fListHist->Add(fAvgSin3PsivsCentEtaNeg);
   
+  ///q-Vector for ESE:
+  fHistV0CDetqVectorvsCent = new TH2F("fHistV0CDetqVectorvsCent","q V0Cdet  vs Cent; Cent; q vect;",10,centRange,200,0,1.0);
+  fListHist->Add(fHistV0CDetqVectorvsCent);
+  fHistV0ADetqVectorvsCent = new TH2F("fHistV0ADetqVectorvsCent","q V0Adet  vs Cent; Cent; q vect;",10,centRange,200,0,1.0);
+  fListHist->Add(fHistV0ADetqVectorvsCent);  
+  fHistTPCPosqVectorvsCent = new TH2F("fHistTPCPosqVectorvsCent","q TPC pos vs Cent; Cent; q vect;",10,centRange,200,0,1.0);
+  fListHist->Add(fHistTPCPosqVectorvsCent);
+  fHistTPCNegqVectorvsCent = new TH2F("fHistTPCNegqVectorvsCent","q TPC neg vs Cent; Cent; q vect;",10,centRange,200,0,1.0);
+  fListHist->Add(fHistTPCNegqVectorvsCent);
 
-
-  
 
   
   fHistVertexZcm     = new TH1F("fHistVertexZcm"," V_{z}; V_{z} cm; events ",100,-10,10);
@@ -903,8 +927,11 @@ void AliAnalysisTaskGammaDeltaPID::UserCreateOutputObjects()
   std::cout<<"\n ==========> UserCreateOutputObject::Info() The Analysis Settings: <============ "<<std::endl;  
 
   char pairname[10];//
-  
-  if(gParticleID==1){
+
+  if(gParticleID==0){
+    sprintf(pairname,"h-h");
+  }
+  else if(gParticleID==1){
     sprintf(pairname,"pi-pi");
   }
   else if(gParticleID==2){
@@ -1088,11 +1115,10 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
     GetNUACorrectionHist(runNumber,0); // kPID = 0 = charge 
 
     if(fListTRKCorr) GetMCCorrectionHist();  //gRequiredPID is redundant. We read in all PID and Charge Efficiency.
-
-  
-    //if(bV0MGainCorr) {
-    //GetV0MCorrectionHist(runNumber);
-    //}
+    
+    if(fListV0MCorr) {
+     GetV0MCorrectionHist(runNumber);
+    }
 
     gOldRunNumber = runNumber;
   }
@@ -1139,14 +1165,19 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   Double_t fQxV0CHarm3=0,fQyV0CHarm3=0,fQxV0AHarm3=0,fQyV0AHarm3=0;  
   Double_t fSumMV0A = 0;
   Double_t fSumMV0C = 0;
-
+  Int_t ibinV0;
   
   for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
 
     fMultV0 = fAODV0->GetMultiplicity(iV0);
 
-    ///Todo: Read V0 gain files in Second Pass!
-    fMultV0 = fMultV0*fV0chGain;
+    /// V0 Channel Gain Correction:
+    if(fHCorrectV0ChWeghts){ 
+      ibinV0 = fHCorrectV0ChWeghts->FindBin(pVtxZ,iV0);
+      fV0chGain = fHCorrectV0ChWeghts->GetBinContent(ibinV0); 
+    }
+    
+    fMultV0 = fMultV0*fV0chGain;   //Corrected Multiplicity
     
     hAvgV0ChannelsvsVz->Fill(iV0+0.5, pVtxZ, fMultV0);
 
@@ -1169,7 +1200,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   }
 
 
-  if(fSumMV0A<=1e-3 || fSumMV0C<=1e-3)   return;         /// this means there is not enough tracks in V0 Detectors in this event!!
+  if(fSumMV0A<=1e-4 || fSumMV0C<=1e-4)   return;         /// this means there is not enough tracks in V0 Detectors in this event!!
 
 
   //Scaled by Multiplicity to remove Mult-fluctuations:
@@ -1260,7 +1291,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   
   
 
-
+  //// ZDC Event plane: To be Implemented Later....!!
 
 
 
@@ -1400,24 +1431,10 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
 
 
-  ///------ Apply TPC <Q> vector correction:--------
-  Int_t icentbin=1;
-  
-  if(fHCorrectTPCQxEtaPos && fHCorrectTPCQyEtaPos){ ///prevents Code break!
-    icentbin = fHCorrectTPCQxEtaPos->FindBin(centrality);
-    SumQnxTPCPos -= fHCorrectTPCQxEtaPos->GetBinContent(icentbin); 
-    SumQnyTPCPos -= fHCorrectTPCQyEtaPos->GetBinContent(icentbin);   /// ***Careful with Names => Qx and Qy DONT MISS-match!!!
-  }
-  if(fHCorrectTPCQxEtaNeg && fHCorrectTPCQyEtaNeg){///prevents Code break!
-    icentbin = fHCorrectTPCQxEtaNeg->FindBin(centrality);
-    SumQnxTPCNeg -= fHCorrectTPCQxEtaNeg->GetBinContent(icentbin);
-    SumQnyTPCNeg -= fHCorrectTPCQyEtaNeg->GetBinContent(icentbin);    /// ***Careful with Names => Qx and Qy 
-  }
-  //-------------------------------------------------
 
   
 
-  if(fWgtMultTPCPos<1 || fWgtMultTPCNeg<1) return;         /// this means there is not enough tracks in this event!!
+  if(fWgtMultTPCPos<0.1 || fWgtMultTPCNeg<0.1) return;         /// this means there is not enough tracks in this event!!
 
 
   //Scaled by Multiplicity to remove Event by event fluctuation.
@@ -1431,6 +1448,36 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   Double_t fQ3xNeg = SumQ3xTPCNeg/fWgtMultTPCNeg;
   Double_t fQ3yNeg = SumQ3yTPCNeg/fWgtMultTPCNeg;  
 		    
+
+  ///------ Apply TPC <Q> vector corrections:--------
+  Int_t icentbin=1;
+  
+  ///<Q> correction for Psi2:
+  if(fHCorrectTPCQnxEtaPos && fHCorrectTPCQnyEtaPos){ ///prevents Code break!
+    icentbin = fHCorrectTPCQnxEtaPos->FindBin(centrality);
+    fQnxPos -= fHCorrectTPCQnxEtaPos->GetBinContent(icentbin); 
+    fQnyPos -= fHCorrectTPCQnyEtaPos->GetBinContent(icentbin);   /// ***Careful with Names => Qx and Qy DONT MISS-match!!!
+  }
+  if(fHCorrectTPCQnxEtaNeg && fHCorrectTPCQnyEtaNeg){ ///prevents Code break!
+    icentbin = fHCorrectTPCQnxEtaNeg->FindBin(centrality);
+    fQnxNeg -= fHCorrectTPCQnxEtaNeg->GetBinContent(icentbin);
+    fQnyNeg -= fHCorrectTPCQnyEtaNeg->GetBinContent(icentbin);    /// ***Careful with Names => Qx and Qy 
+  }
+
+  ///<Q> correction for Psi3:
+  if(fHCorrectTPCQ3xEtaPos && fHCorrectTPCQ3yEtaPos){ ///prevents Code break!
+    icentbin = fHCorrectTPCQ3xEtaPos->FindBin(centrality);
+    fQ3xPos -= fHCorrectTPCQ3xEtaPos->GetBinContent(icentbin); 
+    fQ3yPos -= fHCorrectTPCQ3yEtaPos->GetBinContent(icentbin);   /// ***Careful with Names => Qx and Qy DONT MISS-match!!!
+  }
+  if(fHCorrectTPCQ3xEtaNeg && fHCorrectTPCQ3yEtaNeg){ ///prevents Code break!
+    icentbin = fHCorrectTPCQ3xEtaNeg->FindBin(centrality);
+    fQ3xNeg -= fHCorrectTPCQ3xEtaNeg->GetBinContent(icentbin);
+    fQ3yNeg -= fHCorrectTPCQ3yEtaNeg->GetBinContent(icentbin);    /// ***Careful with Names => Qx and Qy 
+  }
+  //-------------------------------------------------
+
+
   
   /// <Q> vector for TPC event plane (if Recentering is needed):
   fAvgCosNPsivsCentEtaPos->Fill(centrality,fQnxPos); 
@@ -1479,6 +1526,11 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   hTPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsi3TPCPos - 3*fPsi3TPCNeg));         ///TPC Psi3 Resolution
 
 
+  /// Get Full TPC EP for V0-Correlation:
+  Double_t fQnxTPCFull = fQnxPos + fQnxNeg;   //By corrections applied above they are already Recentered.
+  Double_t fQnyTPCFull = fQnyPos + fQnyNeg;
+  
+  
   hV0CV0APsiNCorrelation->Fill(centrality,TMath::Cos(gPsiN*fPsiNV0A - gPsiN*fPsiNV0C));
   hV0CTPCPsiNCorrelation->Fill(centrality,TMath::Cos(gPsiN*fPsiNTPCPos - gPsiN*fPsiNV0C));
   hV0ATPCPsiNCorrelation->Fill(centrality,TMath::Cos(gPsiN*fPsiNTPCPos - gPsiN*fPsiNV0A));
@@ -1487,12 +1539,26 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   hV0CTPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsiNTPCPos - 3*fPsiNV0C));
   hV0ATPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsiNTPCPos - 3*fPsiNV0A));
 
+  //// Store q-vectors for ESE: (Make sure the qx,qy vectors are recentered in the above..!!)
+
+  
+  /// For V0X, we use CL1 Centrality removes autocorrelation Biases  // ***hardcoded to prevent accidentally using another Estimator.!
+  fHistV0CDetqVectorvsCent->Fill(centrCL1,TMath::Sqrt(fQnxV0C*fQnxV0C + fQnyV0C*fQnyV0C));
+  fHistV0ADetqVectorvsCent->Fill(centrCL1,TMath::Sqrt(fQnxV0A*fQnxV0A + fQnyV0A*fQnyV0A));
+  
+  /// For TPC, we use V0 Centrality   // ***hardcoded to prevent accidentally using another Estimator.!
+  fHistTPCPosqVectorvsCent->Fill(centrV0M,TMath::Sqrt(fQnxPos*fQnxPos + fQnyPos*fQnyPos));
+  fHistTPCNegqVectorvsCent->Fill(centrV0M,TMath::Sqrt(fQnxNeg*fQnxNeg + fQnyNeg*fQnyNeg));
+  
+
   
 
 
 
-  
 
+
+
+  
   if(bSkipAnalysis){
     //Okay we are skipping the nested loops and other Analyses.
     //So just fill QAs here and get out..
@@ -1537,10 +1603,24 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   vector<Double_t> vecNUEWeightPID;   //Charge
 
  
-  Int_t kPIDtrk1=gParticleID;   ///gParticleID is Set From AddTask
-  Int_t kPIDtrk2=gParticleID;   /// // 1 = Pi-Pi, 2 = K-K, Prot-Prot, 
+  Int_t kPIDtrk1=gParticleID;   /// gParticleID is Set From AddTask
+  Int_t kPIDtrk2=gParticleID;   /// 0 = hadron (h-h), 1 = Pi-Pi, 2 = K-K, 3 = Prot-Prot, 
 
+  /// If we want single Identified:    
+  if(gParticleID==10){
+    kPIDtrk1 = 0; //Ch
+    kPIDtrk2 = 1; //Pion
+  }
+  else if(gParticleID==20){
+    kPIDtrk1 = 0; //Ch
+    kPIDtrk2 = 2; //Kaon
+  }
+  else if(gParticleID==30){
+    kPIDtrk1 = 0; //Ch
+    kPIDtrk2 = 3; //P
+  }
 
+  
   
   Bool_t bPIDoktrk1=kFALSE, bPIDoktrk2=kFALSE;
   Double_t ptWgtMCPIDtrk1 = 1.0, WgtNUAPIDtrk1 = 1.0;
@@ -2877,7 +2957,7 @@ void AliAnalysisTaskGammaDeltaPID::SetupEventAndTaskConfigInfo(){
 
   fHistAnalysisInfo->GetXaxis()->SetBinLabel(10,"ZDC Gain/Q App"); 
   //if(fListV0MCorr){
-  //fHistAnalysisInfo->SetBinContent(9,1);
+  //fHistAnalysisInfo->SetBinContent(10,1);
   //}
   
   fHistAnalysisInfo->GetXaxis()->SetBinLabel(11,"Reserved");
@@ -2952,19 +3032,27 @@ void AliAnalysisTaskGammaDeltaPID::GetNUACorrectionHist(Int_t run, Int_t kPartic
     fHCorrectNUAkPIDPos = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dPos_Run%d",kParticleID,run)); 
     fHCorrectNUAkPIDNeg = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dNeg_Run%d",kParticleID,run)); 
     
-    if(fHCorrectNUAChrgPos && fHCorrectNUAChrgNeg){
-      cout<<"\n=========== Info:: Setting up NUA corrections for run "<<run<<"============"<<endl;   
-    }
+    //if(fHCorrectNUAChrgPos && fHCorrectNUAChrgNeg){
+    //cout<<"\n=========== Info:: Setting up NUA corrections for run "<<run<<"============"<<endl;   
+    //}
 
-    fHCorrectTPCQxEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCosNPsivsCentEtaPosRun%d",run));
-    fHCorrectTPCQyEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSinNPsivsCentEtaPosRun%d",run));
-    fHCorrectTPCQxEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCosNPsivsCentEtaNegRun%d",run));
-    fHCorrectTPCQyEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSinNPsivsCentEtaNegRun%d",run));
 
-    if(fHCorrectNUAChrgPos && fHCorrectNUAChrgNeg){
-      cout<<"\n=========== Info:: Found TPC <Q> vectors for run "<<run<<"============"<<endl;
-      //fHistTaskConfigParameters->SetBinContent(15,1);
-    }
+    /// Now Get Average Q vector:
+    fHCorrectTPCQnxEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCosNPsivsCentEtaPosRun%d",run));
+    fHCorrectTPCQnyEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSinNPsivsCentEtaPosRun%d",run));
+    fHCorrectTPCQnxEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCosNPsivsCentEtaNegRun%d",run));
+    fHCorrectTPCQnyEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSinNPsivsCentEtaNegRun%d",run));
+
+    fHCorrectTPCQ3xEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCos3PsivsCentEtaPosRun%d",run));
+    fHCorrectTPCQ3yEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSin3PsivsCentEtaPosRun%d",run));
+    fHCorrectTPCQ3xEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCos3PsivsCentEtaNegRun%d",run));
+    fHCorrectTPCQ3yEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSin3PsivsCentEtaNegRun%d",run));
+          
+
+    
+    //if(fHCorrectNUAChrgPos && fHCorrectNUAChrgNeg){
+    //cout<<"\n=========== Info:: Found TPC <Q> vectors for run "<<run<<"============"<<endl;   
+    //}
 
   }
   else {
@@ -2974,7 +3062,7 @@ void AliAnalysisTaskGammaDeltaPID::GetNUACorrectionHist(Int_t run, Int_t kPartic
 
 
 
-//void AliAnalysisTaskGammaDeltaPID::GetV0MCorrectionHist(Int_t run, Int_t kHarmonic){  /* To be added.!! (if needed) */}
+
 void AliAnalysisTaskGammaDeltaPID::GetMCCorrectionHist(){
 
     if(fListTRKCorr) {
@@ -2989,12 +3077,20 @@ void AliAnalysisTaskGammaDeltaPID::GetMCCorrectionHist(){
       fHCorrectMCNegKaon =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyKaonNeg");
       fHCorrectMCNegProt =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyProtNeg");
     }
-
 }
 
-  
+void AliAnalysisTaskGammaDeltaPID::GetV0MCorrectionHist(Int_t run, Int_t kHarmonic){ 
 
-
+  if(fListV0MCorr){
+    fHCorrectV0ChWeghts = (TH2F *) fListV0MCorr->FindObject(Form("hWgtV0ChannelsvsVzRun%d",run));
+    if(fHCorrectV0ChWeghts){
+      printf("\n ::Info() V0 Channel Weights Found for Run %d ",run);
+    }
+  }
+  else{
+    fHCorrectV0ChWeghts=NULL;
+  } 
+}
 
 
 

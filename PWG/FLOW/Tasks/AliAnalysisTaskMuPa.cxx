@@ -50,6 +50,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fEventCounter(0),
  fRandomSeed(0),
  fUseTrigger(kFALSE),
+ fUseFixedNumberOfRandomlySelectedParticles(kFALSE),
+ fFixedNumberOfRandomlySelectedParticles(0),
 
  // QA:
  fQAList(NULL),
@@ -135,7 +137,9 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fTest0List(NULL), 
  fTest0FlagsPro(NULL),   
  fCalculateTest0(kFALSE),
+ fTest0LabelsWereStoredInPlaceholder(kFALSE),
  fFileWithLabels(NULL),
+ fTest0LabelsPlaceholder(NULL),
 
  // Final results:
  fFinalResultsList(NULL),
@@ -203,6 +207,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fEventCounter(0),
  fRandomSeed(0),
  fUseTrigger(kFALSE),
+ fUseFixedNumberOfRandomlySelectedParticles(kFALSE),
+ fFixedNumberOfRandomlySelectedParticles(0),
 
  // QA:
  fQAList(NULL),
@@ -288,7 +294,9 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fTest0List(NULL), 
  fTest0FlagsPro(NULL),   
  fCalculateTest0(kFALSE),
+ fTest0LabelsWereStoredInPlaceholder(kFALSE),
  fFileWithLabels(NULL),
+ fTest0LabelsPlaceholder(NULL),
 
  // Final results:
  fFinalResultsList(NULL),
@@ -358,7 +366,7 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
  // g) Book all look-up tables;
  // *) Trick to avoid name clashes, part 2.
  
- if(fVerbose){Green(__PRETTY_FUNCTION__);}
+ Green(__PRETTY_FUNCTION__);
 
  // a) Check before bookings if all the values user has provided via setters make sense:
  this->InsanityChecks();
@@ -400,6 +408,8 @@ void AliAnalysisTaskMuPa::UserCreateOutputObjects()
 
  // *) Trick to avoid name clashes, part 2:
  TH1::AddDirectory(oldHistAddStatus);
+
+ Green("\nINFO: All objects were booked!\n");;
 
  PostData(1,fBaseList);
 
@@ -478,7 +488,8 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  this->FillControlEventHistograms(aAOD,BEFORE,RECO);
  
  // g) Event cuts:
- if(!SurvivesEventCuts(aAOD)){return;} // TBI 20210531 add possibility to run only on sim, when this needs to be generalized. For kine+reco, I do not need to cut only on kine
+ if(!SurvivesEventCuts(aAOD)){Red("INFO: This event didn't survive all cuts!");return;} // TBI 20210531 add possibility to run only on sim, when this needs to be generalized. For kine+reco, I do not need to cut only on kine
+ Green("INFO: This event survived all cuts!");
 
  // h) Fill control event histograms after cuts:
  if(aMC){this->FillControlEventHistograms(aAOD,AFTER,SIM);}
@@ -493,7 +504,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  Double_t dEta = 0., wEta = 1.; // pseudorapidity and corresponding eta weight
  Double_t wToPowerP = 1.; // weight raised to power p
  Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
- Int_t nSelectedTracksCounter = 0; // needed only to fill nested loops containers
+ Int_t nSelectedTracksCounter = 0; 
  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  {
   AliAODTrack *aodTrack = NULL;
@@ -570,11 +581,21 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   {
    if(ftaNestedLoops[0]){ftaNestedLoops[0]->AddAt(dPhi,nSelectedTracksCounter);} 
    if(ftaNestedLoops[1]){ftaNestedLoops[1]->AddAt(wPhi*wPt*wEta,nSelectedTracksCounter);} 
-   nSelectedTracksCounter++;
   }
 
   // Sum of particle weights:
   fMultiplicity += wPhi*wPt*wEta; // only if weights are unit, fMultiplicity = fSelectedTracks
+
+  // Counter of selected tracks in the current event:
+  nSelectedTracksCounter++;
+
+  // Break the loop if only fixed number of particles is taken from each event:
+  if(fUseFixedNumberOfRandomlySelectedParticles && fFixedNumberOfRandomlySelectedParticles == nSelectedTracksCounter)
+  {
+   Yellow(Form("INFO: Breaking the loop over particles, since requested fixed number of %d particles was reached\n",fFixedNumberOfRandomlySelectedParticles));
+   Yellow(Form("      Just for the record, the total number of particles in this event which survive all cuts is %d ",fSelectedTracks));
+   break;
+  }
 
  } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
 
@@ -592,7 +613,8 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(fSimReco->GetValue(iLabel)));
    
    if(fUseFisherYates){cout<<__LINE__<<endl;exit(1);} // TBI 20210810 check and validate if also here Fisher-Yates needs to be applied
-
+   if(fUseFixedNumberOfRandomlySelectedParticles){cout<<__LINE__<<endl;exit(1);} // TBI 202109199 check and validate if also here this needs to be supported
+                                                        
    // Track cuts are applied at MC particle.
    // a) Sim and reco distributions before cuts:
    this->FillControlParticleHistograms(aodmcParticle,BEFORE,SIM);
@@ -605,13 +627,13 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
     aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(fSimReco->GetValue(TMath::Abs(iLabel))));
     this->FillControlParticleHistograms(aodTrack,BEFORE,RECO); // this one is with negative label, therefore this is a fake track
    }   
-   if(!aodTrack){continue;}
 
    // b) Cut:
    if(!SurvivesParticleCuts(aodmcParticle)){continue;} // for Monte Carlo particles, apply only the basic kinematic cuts + cut on charge
 
    // c) Sim and reco distributions after cuts:
    this->FillControlParticleHistograms(aodmcParticle,AFTER,SIM); // these are then generated particles in the desired phase-space window
+   if(!aodTrack){continue;}
    if(!SurvivesParticleCuts(aodTrack)){continue;} // if Monte Carlo particle after reconstruction went out of phase-space window, we do not reconstruct it
    this->FillControlParticleHistograms(aodTrack,AFTER,RECO);  
 
@@ -688,7 +710,7 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
  // a) Multiplicities:
  fMultiplicity = 0.;
  fSelectedTracks = 0;
-
+ 
  // b) Centrality:
  fCentrality = 0.;
 
@@ -774,6 +796,7 @@ void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
  fAODNumber = TString("not set"); // can be customized with e.g. task->SetAODNumber("AOD160"); 
  fRunNumber = TString("not set"); // can be customized with e.g. task->SetRunNumber("000123456"); 
  fCentralityEstimator = TString("V0M"); // by default, we use V0M as centrality estimator. Can be customized with task->SetCentralityEstimator("V0M") 
+ fPrimaryDefinitionInMonteCarlo = TString("IsPhysicalPrimary"); // supported: "IsPhysicalPrimary" (default), "IsPrimary", ... Set via task->SetPrimaryDefinitionInMonteCarlo("...")
  fTrigger = TString("not set"); 
 
 } // void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
@@ -1328,7 +1351,9 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  // c) Centrality weights;
  // d) Toy NUA;
  // e) Supported triggers;
- // f) Internal validation.
+ // f) Internal validation;
+ // g) Primaries;
+ // h) Fisher-Yates + max random selection.
 
  Green(__PRETTY_FUNCTION__);
 
@@ -1400,6 +1425,28 @@ void AliAnalysisTaskMuPa::InsanityChecks()
   if(!fCalculateTest0){Yellow("\nINFO: fUseInternalValidation is kTRUE and fCalculateTest0 is kFALSE.\n      Fine if you validate only standard isotropic correlations...\n");sleep(10.44);} 
  } 
 
+ // g) Primaries:
+ if(fUseOnlyPrimaries)
+ {
+  if(!(fPrimaryDefinitionInMonteCarlo.EqualTo("IsPhysicalPrimary") || fPrimaryDefinitionInMonteCarlo.EqualTo("IsPrimary") ) )
+  {
+   cout<<__LINE__<<endl;exit(1);
+  }
+ }
+
+ // h) Fisher-Yates + max random selection.
+ if(fUseFixedNumberOfRandomlySelectedParticles && !fUseFisherYates)
+ {
+  Red("if(fUseFixedNumberOfRandomlySelectedParticles && !fUseFisherYates)"); 
+  cout<<__LINE__<<endl;exit(1);
+ }
+
+ if(fUseFixedNumberOfRandomlySelectedParticles && fFixedNumberOfRandomlySelectedParticles <=0) // keep in sync with initialization at 0
+ {
+  Red(Form("fFixedNumberOfRandomlySelectedParticles = %d",fFixedNumberOfRandomlySelectedParticles));
+  cout<<__LINE__<<endl;exit(1);
+ }
+ 
  //Green("=> Done with InsanityChecks()!");
 
 } // void AliAnalysisTaskMuPa::InsanityChecks()
@@ -1412,7 +1459,7 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBasePro = new TProfile("fBasePro","flags for the whole analysis",13,0.,13.);
+ fBasePro = new TProfile("fBasePro","flags for the whole analysis",15,0.,15.);
  fBasePro->SetStats(kFALSE);
  fBasePro->SetLineColor(COLOR);
  fBasePro->SetFillColor(FILLCOLOR);
@@ -1420,15 +1467,17 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
  fBasePro->GetXaxis()->SetBinLabel(2,Form("fDataTakingPeriod = %s",fDataTakingPeriod.Data()));
  fBasePro->GetXaxis()->SetBinLabel(3,Form("fAODNumber = %s",fAODNumber.Data()));
  fBasePro->GetXaxis()->SetBinLabel(4,Form("fRunNumber = %s",fRunNumber.Data()));
- fBasePro->GetXaxis()->SetBinLabel(5,"fFillQAhistograms"); fBasePro->Fill(3.5,fFillQAHistograms);
- fBasePro->GetXaxis()->SetBinLabel(6,"fFillQAhistogramsAll"); fBasePro->Fill(4.5,fFillQAHistogramsAll);
- fBasePro->GetXaxis()->SetBinLabel(7,"fTerminateAfterQA"); fBasePro->Fill(5.5,fTerminateAfterQA);
- fBasePro->GetXaxis()->SetBinLabel(8,"fVerbose"); fBasePro->Fill(6.5,fVerbose);
- fBasePro->GetXaxis()->SetBinLabel(9,"fRealData"); fBasePro->Fill(7.5,fRealData);
- fBasePro->GetXaxis()->SetBinLabel(10,"fUseFisherYates"); fBasePro->Fill(8.5,fUseFisherYates);
- fBasePro->GetXaxis()->SetBinLabel(11,"fRandomSeed"); fBasePro->Fill(9.5,fRandomSeed);
+ fBasePro->GetXaxis()->SetBinLabel(5,"fFillQAhistograms"); fBasePro->Fill(4.5,fFillQAHistograms);
+ fBasePro->GetXaxis()->SetBinLabel(6,"fFillQAhistogramsAll"); fBasePro->Fill(5.5,fFillQAHistogramsAll);
+ fBasePro->GetXaxis()->SetBinLabel(7,"fTerminateAfterQA"); fBasePro->Fill(6.5,fTerminateAfterQA);
+ fBasePro->GetXaxis()->SetBinLabel(8,"fVerbose"); fBasePro->Fill(7.5,fVerbose);
+ fBasePro->GetXaxis()->SetBinLabel(9,"fRealData"); fBasePro->Fill(8.5,fRealData);
+ fBasePro->GetXaxis()->SetBinLabel(10,"fUseFisherYates"); fBasePro->Fill(9.5,fUseFisherYates);
+ fBasePro->GetXaxis()->SetBinLabel(11,"fRandomSeed"); fBasePro->Fill(10.5,fRandomSeed);
  fBasePro->GetXaxis()->SetBinLabel(12,Form("fTrigger = %s",fTrigger.Data()));
- fBasePro->GetXaxis()->SetBinLabel(13,"fUseTrigger"); fBasePro->Fill(11.5,fUseTrigger);
+ fBasePro->GetXaxis()->SetBinLabel(13,"fUseTrigger"); fBasePro->Fill(12.5,fUseTrigger);
+ fBasePro->GetXaxis()->SetBinLabel(14,"fUseFixedNumberOfRandomlySelectedParticles"); fBasePro->Fill(13.5,fUseFixedNumberOfRandomlySelectedParticles);
+ fBasePro->GetXaxis()->SetBinLabel(15,"fFixedNumberOfRandomlySelectedParticles"); fBasePro->Fill(14.5,fFixedNumberOfRandomlySelectedParticles);
  fBaseList->Add(fBasePro);
 
 } // void AliAnalysisTaskMuPa::BookBaseProfile()
@@ -1999,6 +2048,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
   for(Int_t rs=0;rs<2;rs++)
   {
    if(fRealData && 1==rs){continue;}
+
    for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4 TBI 20210512 this is not enforced to be in sync with the definition of enums
    {
     fKinematicsHist[ba][rs][kv] = new TH1D(Form("fKinematicsHist[%d][%d][%d]",ba,rs,kv),Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fKinematicsBins[kv][0],fKinematicsBins[kv][1],fKinematicsBins[kv][2]); 
@@ -2099,6 +2149,10 @@ void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
     fCorrelationsPro[k][n][v]->SetStats(kFALSE);
     fCorrelationsPro[k][n][v]->Sumw2();
     fCorrelationsPro[k][n][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
+    if(fUseFixedNumberOfRandomlySelectedParticles && 1==v) // just a warning for the meaning of multiplicity in this special case
+    {
+     fCorrelationsPro[k][n][1]->GetXaxis()->SetTitle("WARNING: for each multiplicity, fFixedNumberOfRandomlySelectedParticles is selected randomly in Q-vector");
+    }
     //fCorrelationsPro[k][n][v]->SetFillColor(colorsW[v]-10);
     //fCorrelationsPro[k][n][v]->SetLineColor(colorsW[v]);
     fCorrelationsList->Add(fCorrelationsPro[k][n][v]);
@@ -2160,6 +2214,10 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
     fNestedLoopsPro[k][n][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
     //fNestedLoopsPro[k][n][v]->SetFillColor(colorsW[v]-10);
     //fNestedLoopsPro[k][n][v]->SetLineColor(colorsW[v]);
+    if(fUseFixedNumberOfRandomlySelectedParticles && 1==v) // just a warning for the meaning of multiplicity in this special case
+    {
+     fNestedLoopsPro[k][n][1]->GetXaxis()->SetTitle("WARNING: for each multiplicity, fFixedNumberOfRandomlySelectedParticles is selected randomly in Q-vector");
+    }
     fNestedLoopsList->Add(fNestedLoopsPro[k][n][v]);
    } // for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
   } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
@@ -2246,8 +2304,9 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
  // Book all Test0 histograms.
 
  // a) Book the profile holding flags;
- // b) Generate all labels;
- // c) ...
+ // b) Make sure all labels are stored in the placeholder;
+ // c) Retreive labels from placeholder;
+ // d) Book what needs to be booked.
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
@@ -2260,10 +2319,22 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
 
  if(!fCalculateTest0){return;}
  
- // b) Generate all labels:
- this->GenerateCorrelationsLabels();  
+ // b) Make sure all labels are stored in the placeholder:
+ if(!fTest0LabelsWereStoredInPlaceholder)
+ {
+  Yellow("INFO: Generating Test0 labels internally and dumping them in TH1I* fTest0LabelsPlaceholder");
+  this->StoreLabelsInPlaceholder("internal"); // generate labels at runtime
+ }
+ else
+ {
+  Yellow("INFO: All Test0 labels were generated from external file, and they were dumped into TH1I* fTest0LabelsPlaceholder");
+ }
+ if(fTest0LabelsPlaceholder){fTest0List->Add(fTest0LabelsPlaceholder);}
 
- // c) ...
+ // c) Retreive labels from placeholder:
+ if(!(this->RetrieveCorrelationsLabels())){cout<<__LINE__<<endl;exit(1);}
+
+ // d) Book what needs to be booked:
  Int_t vvvariableNBins[3] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0]};
  Double_t vvvariableMinMax[3][2] = { {0.,1.}, // integrated 
                                     {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
@@ -2275,7 +2346,7 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
  { 
   for(Int_t mi=0;mi<gMaxIndex;mi++) 
   { 
-   if(fTest0Labels[mo][mi]) // book only explicitly requested correlators, either via external file, or with hardcoded loops 
+   if(!fTest0Labels[mo][mi]){continue;} 
    {
     for(Int_t v=0;v<3;v++) 
     { 
@@ -2283,11 +2354,15 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
      fTest0Pro[mo][mi][v]->SetStats(kFALSE);
      fTest0Pro[mo][mi][v]->Sumw2();
      fTest0Pro[mo][mi][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
-     fTest0List->Add(fTest0Pro[mo][mi][v]);
-    }
+     if(fUseFixedNumberOfRandomlySelectedParticles && 1==v) // just a warning for the meaning of multiplicity in this special case
+     {
+      fTest0Pro[mo][mi][1]->GetXaxis()->SetTitle("WARNING: for each multiplicity, fFixedNumberOfRandomlySelectedParticles is selected randomly in Q-vector");
+     }
+     fTest0List->Add(fTest0Pro[mo][mi][v]); // yes, this has to be here
+    } // for(Int_t v=0;v<3;v++) 
    } // if(fTest0Labels[mo][mi]) 
-  }
- }
+  } // for(Int_t mi=0;mi<gMaxIndex;mi++) 
+ } // for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
 
 } // void AliAnalysisTaskMuPa::BookTest0Histograms()
 
@@ -3363,9 +3438,15 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
   // Trivial cuts:
   if(fUseOnlyPrimaries)
   {
-   if(!aodmcParticle->IsPrimary()) return kFALSE; // take into account only generated primaries 
-   //if(!aodmcParticle->IsPhysicalPrimary()) return kFALSE; // take into account only what ALICE defines as primaries
-  }
+   if(fPrimaryDefinitionInMonteCarlo.EqualTo("IsPhysicalPrimary"))
+   {
+    if(!aodmcParticle->IsPhysicalPrimary()) return kFALSE; // take into account only what ALICE defines as primaries
+   }
+   else if(fPrimaryDefinitionInMonteCarlo.EqualTo("IsPrimary"))
+   {
+    if(!aodmcParticle->IsPrimary()) return kFALSE; // take into account only generated primaries 
+   }
+  } // if(fUseOnlyPrimaries)
 
   // Kinematics:
   if(fUseKinematicsCuts[PHI])
@@ -5184,6 +5265,34 @@ TObject* AliAnalysisTaskMuPa::GetObjectFromList(TList *list, Char_t *objectName)
 
 //=======================================================================================
 
+Int_t AliAnalysisTaskMuPa::NumberOfNonEmptyLines(const char *externalFile)
+{
+ // Count number of non-empty lines in some external file.
+
+ if(gSystem->AccessPathName(externalFile,kFileExists))
+ {
+  Red(Form("if(gSystem->AccessPathName(externalFile,kFileExists)), externalFile = %s",externalFile)); 
+  cout<<__LINE__<<endl;
+  exit(1);
+ }
+
+ string line;
+ ifstream myfile;
+ myfile.open(externalFile);
+ Int_t nLines = 0;
+ while (getline(myfile,line))
+ { 
+  if(TString(line).EqualTo("")){continue;}
+  nLines++;
+ }
+ myfile.close();
+
+ return nLines;
+
+} // Int_t AliAnalysisTaskMuPa::NumberOfNonEmptyLines(const char *externalFile)
+
+//=======================================================================================
+
 void AliAnalysisTaskMuPa::MakeLookUpTable(AliAODEvent *aAOD, AliMCEvent *aMC)
 {
  // For Monte Carlo analysis, establish a look up table between reco and kine particles.
@@ -5211,6 +5320,24 @@ void AliAnalysisTaskMuPa::MakeLookUpTable(AliAODEvent *aAOD, AliMCEvent *aMC)
   // * number of clusters that did not in fact belong to this track. *
   // => In most analysis, fake tracks can be taken, use task->SetUseFakeTracks(kTRUE); to check the difference
   fSimReco->Add(label,iTrack); // "key" = label, "value" = iTrack
+
+  /*
+  // If you get a warning "Error in <TExMap::Add>: key 16818 is not unique", that means (AB) that
+  // the same Monte Carlo track was reconstructed 2 times. These are split tracks with similar kinematics, as the following demonstrates: 
+  
+     cout<<label<<" : "<<iTrack<<" : "<<aodTrack->Pt()<<" "<<aodTrack->Phi()<<" "<<aodTrack->Eta()<<" "<<endl;
+     E-TExMap::Add: key 16818 is not unique
+     16818 : 4186 : 0.507678 1.4243 -0.219647  
+     16818 : 4421 : 0.509203 1.42869 -0.211075 
+
+     E-TExMap::Add: key 46022 is not unique
+     46022 : 4384 : 0.381138 0.483679 -0.578404 
+     46022 : 4513 : 0.379616 0.479594 -0.577281 
+
+  // In this case, only the 1st particle is added to TExMap, while the 2nd one is automatically ignored with the above warning.
+  // This shall not have too much of an impact on pT weights calculations, since if particles are not reconstructed in some pT range, 
+  // then both split tracks (very close to each other) won't be reconstructed. TBI but do perhaps some study nevertheless
+  */
 
   /* 
   // Use this code snippet to cross-check that the mapping went allright:
@@ -5324,17 +5451,54 @@ void AliAnalysisTaskMuPa::RandomIndices(AliVEvent *ave)
 
 //=======================================================================================
 
-void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
+Bool_t AliAnalysisTaskMuPa::RetrieveCorrelationsLabels()
 {
- // Generate the labels of all correlations of interest.
- // Algorithm: a) If external file is specified, parse through it and fetch line by line all labels. FS is comma.
- //            b) If external file is NOT specified, determine the labels from the hardcoded loops below.
+ // Generate the labels of all correlations of interest, i.e. retrieve them from TH1I *fTest0LabelsPlaceholder
 
  Int_t counter[gMaxCorrelator] = {0}; // is this safe?
  for(Int_t o=0;o<gMaxCorrelator;o++){counter[o] = 0;} // now it's safe
-  
- if(fFileWithLabels && !gSystem->AccessPathName(fFileWithLabels->Data(),kFileExists))
+
+ Int_t nBins = fTest0LabelsPlaceholder->GetXaxis()->GetNbins();
+
+ Int_t order = -44;
+ for(Int_t b=1;b<=nBins;b++)
  {
+  order = TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)).Tokenize(" ")->GetEntries();
+  if(0 == order){continue;} // empty lines, or the label format which is not supported
+  // 1-p => 0, 2-p => 1, etc.:
+  fTest0Labels[order-1][counter[order-1]] = new TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)); // okay...  
+  //cout<<__LINE__<<": "<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl;
+  counter[order-1]++;
+ } // for(Int_t b=1;b<=nBins;b++)
+
+ return kTRUE;
+
+} // void AliAnalysisTaskMuPa::RetrieveCorrelationsLabels() 
+
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
+{
+ // Storal all Test0 labels in the temporary placeholder. 
+
+ // source = "external" => fetch Test0 labels from external file
+ // source = "internal" => generate all Test0 labels automatocally with internal code
+
+ if(!(TString(source).EqualTo("external") || TString(source).EqualTo("internal"))){cout<<__LINE__<<endl;exit(1);}
+
+ Int_t counter[gMaxCorrelator] = {0}; // is this safe?
+ for(Int_t o=0;o<gMaxCorrelator;o++){counter[o] = 0;} // now it's safe
+
+ if(TString(source).EqualTo("external"))
+ {
+  // Count quickly number of Test0 labels:
+  Int_t nLabels = NumberOfNonEmptyLines(fFileWithLabels->Data());
+  if(!(nLabels > 0)){cout<<__LINE__<<endl;exit(1);}
+
+  // Book the placeholder for all labels (temporary workaround): 
+  fTest0LabelsPlaceholder = new TH1I("fTest0LabelsPlaceholder",Form("placeholder for all labels, %d in total",nLabels),nLabels,0,nLabels);  
+
+  Int_t bin = 1; // used only for fTest0LabelsPlaceholder
   // external file exist locally, get all labels of interest from there:
   string line;
   ifstream myfile;
@@ -5346,19 +5510,28 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
    if(0 == order){continue;} // empty lines, or the label format which is not supported
    // 1-p => 0, 2-p => 1, etc.:
    fTest0Labels[order-1][counter[order-1]] = new TString(line); // okay...  
-   //cout<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl;
+   fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[order-1][counter[order-1]]->Data());
+   //cout<<__LINE__<<": "<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl;
    counter[order-1]++;
    //cout<<TString(line).Data()<<endl;
    //cout<<oa->GetEntries()<<endl;    
   }
   myfile.close();
+  fTest0LabelsWereStoredInPlaceholder = kTRUE;
  }
- else
+ else if(TString(source).EqualTo("internal"))
  {
   // get all labels of interest systematically from loops below:
   // TBI 20210902 buggy, some entries are duplicated
+  // TBI 20210914 when hitting at gMaxIndex, there is seg. violation
 
-  cout<<__LINE__<<" : this branch is not validated yet"<<endl; exit(1);
+  Yellow("\nWARNING : this branch is not validated and optimized yet, some entries are duplicated!!\n"); sleep(1.44);
+
+  // Book the placeholder for all labels (temporary workaround): 
+  fTest0LabelsPlaceholder = new TH1I("fTest0LabelsPlaceholder","placeholder for all labels (temporary workaround)",gMaxCorrelator*gMaxIndex,0,gMaxCorrelator*gMaxIndex);  
+  // TBI 20210914 instead of upper limit gMaxCorrelator*gMaxIndex, use in the previous line the exact number of bins
+
+  Int_t bin = 1; // used only for fTest0LabelsPlaceholder
 
   // 1p:
   // TBI 20210902 
@@ -5375,7 +5548,8 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
     if(h2>h1){continue;} // eliminating trivial permutations
     if(abs(h2)>abs(h1)){continue;} // eliminating -1*(...) symmetry
     if(0 != h1+h2){continue;} // isotropy
-    fTest0Labels[1][index2p] = new TString(Form("%d,%d",h1,h2));
+    fTest0Labels[1][index2p] = new TString(Form("%d %d",h1,h2));
+    fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[1][index2p]->Data());
     index2p++;
     //cout<<Form("%d,%d",h1,h2)<<endl;
    }
@@ -5397,7 +5571,8 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
      if(h3>h1||h3>h2){continue;} // eliminating trivial permutations
      if(abs(h3)>abs(h1)||abs(h2)>abs(h1)){continue;} // eliminating -1*(...) symmetry
      if(0 != h1+h2+h3){continue;} // isotropy
-     fTest0Labels[2][index3p] = new TString(Form("%d,%d,%d",h1,h2,h3));
+     fTest0Labels[2][index3p] = new TString(Form("%d %d %d",h1,h2,h3));
+     fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[2][index3p]->Data());
      index3p++;
      //cout<<Form("%d,%d,%d",h1,h2,h3)<<endl;
     }
@@ -5424,7 +5599,8 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
       if(h4>h1||h4>h2||h4>h3){continue;} // eliminating trivial permutations
       if(abs(h4)>abs(h1)){continue;} // eliminating -1*(...) symmetry
       if(0 != h1+h2+h3+h4){continue;} // isotropy
-      fTest0Labels[3][index4p] = new TString(Form("%d,%d,%d,%d",h1,h2,h3,h4));
+      fTest0Labels[3][index4p] = new TString(Form("%d %d %d %d",h1,h2,h3,h4));
+      fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[3][index4p]->Data());
       index4p++;
       //cout<<Form("%d,%d,%d,%d",h1,h2,h3,h4)<<endl;
      }
@@ -5457,7 +5633,8 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
        if(h5>h1||h5>h2||h5>h3||h5>h4){continue;} // eliminating trivial permutations
        if(abs(h5)>abs(h1)){continue;} // eliminating -1*(...) symmetry
        if(0 != h1+h2+h3+h4+h5){continue;} // isotropy
-       fTest0Labels[4][index5p] = new TString(Form("%d,%d,%d,%d,%d",h1,h2,h3,h4,h5));
+       fTest0Labels[4][index5p] = new TString(Form("%d %d %d %d %d",h1,h2,h3,h4,h5));
+       fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[4][index5p]->Data());
        index5p++;
        //cout<<Form("%d,%d,%d,%d,%d",h1,h2,h3,h4,h5)<<endl;
       }
@@ -5496,7 +5673,8 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
         if(h6>h1||h6>h2||h6>h3||h6>h4||h6>h5){continue;} // eliminating trivial permutations
         if(abs(h6)>abs(h1)){continue;} // eliminating -1*(...) symmetry
         if(0 != h1+h2+h3+h4+h5+h6){continue;} // isotropy
-        fTest0Labels[5][index6p] = new TString(Form("%d,%d,%d,%d,%d,%d",h1,h2,h3,h4,h5,h6));
+        fTest0Labels[5][index6p] = new TString(Form("%d %d %d %d %d %d",h1,h2,h3,h4,h5,h6));
+        fTest0LabelsPlaceholder->GetXaxis()->SetBinLabel(bin++,fTest0Labels[5][index6p]->Data());
         index6p++;
         //cout<<Form("%d,%d,%d,%d,%d,%d",h1,h2,h3,h4,h5,h6)<<endl;
        }
@@ -5506,9 +5684,11 @@ void AliAnalysisTaskMuPa::GenerateCorrelationsLabels()
    }
   }
 
- } // else
+  fTest0LabelsWereStoredInPlaceholder = kTRUE;
 
-} // void AliAnalysisTaskMuPa::GenerateCorrelationsLabels() 
+ } // else if(TString(source).EqualTo("internal"))
+ 
+} // void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
 
 //=======================================================================================
 
@@ -5526,7 +5706,7 @@ void AliAnalysisTaskMuPa::CalculateTest0()
   { 
    // TBI 20210913 I do not have to loop each time all the way up to gMaxCorrelator and gMaxIndex, but nevermind now, it's not a big efficiency loss.
 
-   // Sanitize the labels (if necessary, locally this is irrelevant): 
+   // Sanitize the labels (If necessary. Locally this is irrelevant): 
    if(!fTest0Labels[mo][mi]) // I do not stream them, so trying to get them from the booked profiles, where they are stored in the titles
    {
     for(Int_t v=0;v<3;v++) 
@@ -5544,6 +5724,7 @@ void AliAnalysisTaskMuPa::CalculateTest0()
     // Extract harmonics from TString, FS is " ": 
     for(Int_t h=0;h<=mo;h++)
     {
+     //cout<<Form("h = %d, fTest0Labels[%d][%d] = ",h,mo,mi)<<fTest0Labels[mo][mi]->Data()<<endl;
      n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi();
     }
 

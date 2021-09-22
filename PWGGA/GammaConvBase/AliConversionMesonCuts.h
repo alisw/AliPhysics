@@ -232,6 +232,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
     Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
     Int_t    GetAlphaInTaskMode() const {return fAlphaInTaskMode;}
+
+    // Jet specific function
+    Bool_t  IsParticleInJet(std::vector<Double_t> vectorJetEta, std::vector<Double_t> vectorJetPhi, Double_t JetRadius, Double_t partEta, Double_t partPhi, Int_t &matchedJet, Double_t &RJetPi0Cand);
+
   protected:
     TRandom3    fRandom;                        ///<
     AliCaloPhotonCuts* fCaloPhotonCuts;         ///< CaloPhotonCutObject belonging to same main task
@@ -272,6 +276,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t    fPBremSmearing;                 ///
     Double_t    fPSigSmearing;                  ///
     Double_t    fPSigSmearingCte;               ///
+    Double_t    fPSigSmearingRatio;             ///
     Double_t    fDCAGammaGammaCut;              ///< cut value for the maximum distance between the two photons [cm]
     Double_t    fDCAZMesonPrimVtxCut;           ///< cut value for the maximum distance in Z between the production point of the Meson & the primary vertex [cm]
     Double_t    fDCARMesonPrimVtxCut;           ///< cut value for the maximum distance in R between the production point of the Meson & the primary vertex [cm]
@@ -352,7 +357,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,49)
+    ClassDef(AliConversionMesonCuts,51)
     /// \endcond
 };
 

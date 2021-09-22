@@ -247,6 +247,12 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   TProfile      *fAvgSin3PsivsCentEtaPos; //!
   TProfile      *fAvgCos3PsivsCentEtaNeg; //!
   TProfile      *fAvgSin3PsivsCentEtaNeg; //!  
+
+  TH2F         *fHistV0CDetqVectorvsCent; //!!
+  TH2F         *fHistV0ADetqVectorvsCent; //!!
+  TH2F         *fHistTPCPosqVectorvsCent; //!!
+  TH2F         *fHistTPCNegqVectorvsCent; //!!    
+    
   
   TH1F          *fHistVertexZcm;     //!
   TProfile      *fHistVxvsVzMinBias; //!
@@ -325,6 +331,8 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
 
 
   //// NUA, NUE, V0 Weights for Corrections:
+  TH2F         *fHCorrectV0ChWeghts; //!
+  
   TH3F         *fHCorrectNUAChrgPos; //!
   TH3F         *fHCorrectNUAChrgNeg; //!
   TH3F         *fHCorrectNUAkPIDPos; //!
@@ -340,10 +348,15 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   TH1D         *fHCorrectMCNegKaon; //!
   TH1D         *fHCorrectMCNegProt; //!
 
-  TH1D         *fHCorrectTPCQxEtaPos; //!
-  TH1D         *fHCorrectTPCQyEtaPos; //!
-  TH1D         *fHCorrectTPCQxEtaNeg; //!
-  TH1D         *fHCorrectTPCQyEtaNeg; //!
+  TH1D         *fHCorrectTPCQnxEtaPos; //!
+  TH1D         *fHCorrectTPCQnyEtaPos; //!
+  TH1D         *fHCorrectTPCQnxEtaNeg; //!
+  TH1D         *fHCorrectTPCQnyEtaNeg; //!
+
+  TH1D         *fHCorrectTPCQ3xEtaPos; //!
+  TH1D         *fHCorrectTPCQ3yEtaPos; //!
+  TH1D         *fHCorrectTPCQ3xEtaNeg; //!
+  TH1D         *fHCorrectTPCQ3yEtaNeg; //!  
 
 
 
@@ -396,7 +409,7 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
 
   ///Custom Functions:
   void  GetNUACorrectionHist(Int_t run=0,Int_t kParticleID=0);
-  //void  GetV0MCorrectionHist(Int_t run=0,Int_t kHarmonic=0);
+  void  GetV0MCorrectionHist(Int_t run=0,Int_t kHarmonic=0);
   void  GetMCCorrectionHist();
   
   Bool_t CheckEventIsPileUp(AliAODEvent* faod);

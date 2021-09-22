@@ -388,7 +388,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTrackingUncertaintiesAOT::UserExec(Option_t *)
 {
-  printf("======> UserExec!!! \n\n\n");
+  //  printf("======> UserExec!!! \n\n\n");
   //
   // main event loop
   //
@@ -596,7 +596,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
   //
   AliMCSpectraWeightsHandler* mcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fESD->FindListObject("fMCSpectraWeights"));
   AliMCSpectraWeights* fMCSpectraWeights = (mcWeightsHandler) ? mcWeightsHandler->fMCSpectraWeight : nullptr;  
-  Double_t weight = -9999.9999;
+  Double_t weight = 1.0;
   TParticle* partTP;
   Float_t como;
   AliMCParticle* mcPartTP;
@@ -633,7 +633,10 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
     else fHistSelV0multNTPCout->Fill(V0mult,nTPCout);
   }
 
-  Int_t countTracksFill=0;
+
+  //
+  //  start loop on tracks
+  //
 
   for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
 
@@ -641,32 +644,44 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
     code=-999;
     mfl=-999;
     uniqueID=-999;
-    //
     isLambda=0;
     iWeightedPart=0;
     //
+    // here we have the track!
     //
-
     AliESDtrack *track =fESD->GetTrack(i);
     if (!track) continue;
-
-
-
     track->SetESDEvent(fESD);
+    //
+    // track comes from the vertex
+    //
     if(!track->RelateToVertex(fVertex,fESD->GetMagneticField(),100)) continue;
+    //
     //fill TPCcls histo
     nTPC+=track->GetTPCncls();
     nITS+=track->GetITSNcls();
 
     track->GetImpactParameters(dca, cov);
+    //
+    // It's MC and we have the event
+    //
     if(fMC && mcEvent){
       Int_t absLabel=TMath::Abs(track->GetLabel());
       AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(absLabel);
       part = (TParticle*)mcEvent->Particle(absLabel);
+      //
+      // check if it's a good AliMCParticle and e can get a TParticle from it
+      //
       if(mcPart && part){
-        pdgPart = part->GetPDG();
+	//
+        // it's a pdg particle
+	//
+	pdgPart = part->GetPDG();
+	//
+	//
         if(pdgPart){
           code    = pdgPart->PdgCode();
+	  abscode = TMath::Abs(code);
           if(mcEvent->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) isph=1;
           else {
             isph = 0;
@@ -763,13 +778,17 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
             if(mfl==3 && uniqueID == kPDecay) partType = 1; //secondaries from strangeness
             else partType = 2;  //from material
           }
-          if(TMath::Abs(code)==11)   specie = 0;
-          if(TMath::Abs(code)==211)  specie = 1;
-          if(TMath::Abs(code)==321)  specie = 2;
-          if(TMath::Abs(code)==2212) specie = 3;
+          if(abscode ==  11)  specie = 0;
+          if(abscode == 211)  specie = 1;
+          if(abscode == 321)  specie = 2;
+          if(abscode ==2212)  specie = 3;
         }
+	// end if pdgPart 
       }
+      //end if mcPart && part 
     }
+    // end if fMC and mcEvent and 
+    //
     //
     // relevant variables
     //
@@ -839,7 +858,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
             if(IsConsistentWithPid(iSpec, track)) {
               Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_d,dca[0]};
               if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
-              histTpcItsMatch->Fill(vecHistTpcItsMatch);
+              histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
               if(fMC){
                 if(fDCAz)
                 {
@@ -890,17 +909,15 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
           if(IsConsistentWithPid(iSpec, track)) {
             Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_n,dca[0]};
             if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
-            histTpcItsMatch->Fill(vecHistTpcItsMatch);
+            histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
             if(fMC){
               if(fDCAz){
                 Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n};
                 fHistMC->Fill(vec4Sparse,weight);
-		countTracksFill+=1;
               }
               else {
                 Double_t vec4Sparse[8] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_n};
                 fHistMC->Fill(vec4Sparse,weight);
-		countTracksFill+=1;
               }
             }
             else {
@@ -946,7 +963,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
       fHistMCWeights->Fill(weight,iWeightedPart);
     }
   } // end of track loop
-  //  cout<<" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    n of tracks filled histo MC in event    "<<countTracksFill<<endl;
+
   TH2F * histTPCITS = (TH2F *) fListHist->FindObject("histTPCITS");
   TH2F * histTPCCL1 = (TH2F *) fListHist->FindObject("histTPCCL1");
   TH2F * histTPCntrkl = (TH2F *) fListHist->FindObject("histTPCntrkl");

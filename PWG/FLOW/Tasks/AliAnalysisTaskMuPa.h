@@ -49,7 +49,7 @@ const Int_t gGenericCorrelations = 5; // correlations between various quantities
 const Int_t gMaxBins = 10000; // max number of kine bins
 const Int_t gMaxCorrelator = 12; // 
 const Int_t gMaxHarmonic = 6; // 
-const Int_t gMaxIndex = 100; // per order
+const Int_t gMaxIndex = 300; // per order
 
 // enums:
 enum eBins {nBins,min,max};
@@ -132,7 +132,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void MakeLookUpTable(AliAODEvent *aAOD, AliMCEvent *aMC);
   virtual void RandomIndices(AliVEvent *ave);
   virtual void CalculateTest0();
-  virtual void GenerateCorrelationsLabels();
+  virtual void StoreLabelsInPlaceholder(const char *source); 
+  virtual Bool_t RetrieveCorrelationsLabels();
 
   // 3) Methods called in Terminate(Option_t *):
   //    a) Get pointers:
@@ -161,6 +162,11 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // 5) Setters and getters:
   void SetRealData(Bool_t rd){this->fRealData = rd;};
   void SetUseFisherYates(Bool_t ufy){this->fUseFisherYates = ufy;};
+  void SetFixedNumberOfRandomlySelectedParticles(Int_t fnorsp)
+  {
+   this->fFixedNumberOfRandomlySelectedParticles = fnorsp;
+   this->fUseFixedNumberOfRandomlySelectedParticles = kTRUE;
+  };
   void SetDataTakingPeriod(const char *dtp) {this->fDataTakingPeriod = dtp;};
   void SetAODNumber(const char *an) {this->fAODNumber = an;};
   void SetRunNumber(const char *rn) {this->fRunNumber = rn;};
@@ -311,6 +317,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Int_t GetFilterBit() const {return this->fFilterBit;};
   void SetUseOnlyPrimaries(Bool_t uop) {this->fUseOnlyPrimaries = uop;};
   Int_t GetUseOnlyPrimaries() const {return this->fUseOnlyPrimaries;};
+  void SetPrimaryDefinitionInMonteCarlo(const char *pdimc) {this->fPrimaryDefinitionInMonteCarlo = pdimc;};
 
   // Needed only for PID studies, setting FilterBit avoids double-counting:
   void SetFilterGlobalTracksAOD(const Bool_t fgta){this->fFilterGlobalTracksAOD = fgta;}; 
@@ -427,9 +434,17 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
 
   void SetCalculateTest0(Bool_t c) {this->fCalculateTest0 = c;};
   Bool_t GetCalculateTest0() const {return this->fCalculateTest0;};
-  void SetFileWithLabels(const char *externalFile){this->fFileWithLabels = new TString(externalFile);}
-  TProfile* GetTest0Pro(const Int_t order, const Int_t index, const Int_t var){return this->fTest0Pro[order][index][var];}
- 
+  void SetFileWithLabels(const char *externalFile) 
+  {
+   this->fFileWithLabels = new TString(externalFile); 
+   if(gSystem->AccessPathName(fFileWithLabels->Data(),kFileExists)){exit(1);} // convention is opposite to Bash
+   this->StoreLabelsInPlaceholder("external");
+  }
+
+  void SetTest0List(TList* const list) {this->fTest0List = list;};
+  TList* GetTest0List() const {return this->fTest0List;} 
+  TProfile* GetTest0Pro(const Int_t order, const Int_t index, const Int_t var) {return this->fTest0Pro[order][index][var];}
+
   void SetCalculateNestedLoops(Bool_t cnl) {this->fCalculateNestedLoops = cnl;};
   Bool_t GetCalculateNestedLoops() const {return this->fCalculateNestedLoops;};
 
@@ -488,6 +503,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void Yellow(const char* text);
   void Blue(const char* text);
   TObject* GetObjectFromList(TList *list, Char_t *objectName); // see .cxx
+  Int_t NumberOfNonEmptyLines(const char *externalFile);  
 
   // *.) Online monitoring:
   void SetUpdateOutputFile(const Int_t uf, const char *uqof)
@@ -530,7 +546,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TString fTaskName; // e.g. Form("Task=>%.1f-%.1f",centrMin,centrMax)
   TString fDataTakingPeriod; // the data taking period, use e.g. task->SetDataTakingPeriod("LHC10h")
   TString fAODNumber; // the AOD number, use e.g. task->SetAODNumber("AOD160")
-  TString fRunNumber; // the run number, use e.g. task->SetRunNumber("000123456"). For sim, strip off 000 
+  TString fRunNumber; // the run number, use e.g. task->SetRunNumber("000123456"). For sim, strip off 000.
   Bool_t fFillQAHistograms; // fill QA histograms (this shall be done only in one task, since these histos are heavy 2D objects). Additional loops over particles is performed.
   Bool_t fFillQAHistogramsAll; // if kFALSE, only most important QA histograms a filled
   Bool_t fTerminateAfterQA; // in UserExec(), bail out immediately after QA histograms are filled 
@@ -539,6 +555,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   UInt_t fRandomSeed; // argument to TRandom3 constructor. By default is 0, use SetRandomSeed(...) to change it
   TString fTrigger; // offline trigger, use e.g. task->SetTrigger("kMB")
   Bool_t fUseTrigger; // kFALSE by default. Set automatically when task->SetTrigger(...) is called
+  Bool_t fUseFixedNumberOfRandomlySelectedParticles; // use or not fixed number of randomly selected particles in each event. Use always in combination with SetUseFisherYates(kTRUE)
+  Int_t fFixedNumberOfRandomlySelectedParticles; // set here a fixed number of randomly selected particles in each event. Use always in combination with SetUseFisherYates(kTRUE)
 
   // 1) QA:
   TList *fQAList; // base list to hold all QA output object
@@ -612,6 +630,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fFilterGlobalTracksAOD; // by default kFALSE, set to kTRUE when task->SetFilterGlobalTracksAOD(); is used. Neded only for PID studies, setting FilterBit avoids double-counting
   Int_t fFilterBit; // filter bit (its meaning can change from one production to another)
   Bool_t fUseOnlyPrimaries; // cut e.g. on AliAODTrack::kPrimary or aodmcParticle->IsPhysicalPrimary()
+  TString fPrimaryDefinitionInMonteCarlo; // supported: "IsPhysicalPrimary" (default), "IsPrimary", ... Set via task->SetPrimaryDefinitionInMonteCarlo("...")
+
   //    Kinematics:
   TH1D *fKinematicsHist[2][2][gKinematicVariables]; // kinematics [before,after track cuts][reco,sim][phi,pt,eta,energy,charge]
   Double_t fKinematicsBins[gKinematicVariables][3]; // [phi,pt,eta,energy,charge][nBins,min,max]
@@ -686,12 +706,14 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Int_t fMultRangeInternalValidation[2];  // min and max values for uniform multiplicity distribution in on-the-fly analysis
 
   //11) Test0:  
-  TList *fTest0List;            // TBI
-  TProfile *fTest0FlagsPro;     // TBI 
-  Bool_t fCalculateTest0;       // TBI
-  TProfile *fTest0Pro[gMaxCorrelator][gMaxIndex][3]; //! TBI [order][index][0=integrated,1=vs. multiplicity,2=vs. centrality]
+  TList *fTest0List; // list to hold all objects for Test0
+  TProfile *fTest0FlagsPro; // store all flags for Test0
+  Bool_t fCalculateTest0; // calculate or not Test0 in general. Which one specifically, that's governed with fCalculateSpecificTest0[gMaxCorrelator][gMaxIndex]
+  Bool_t fTest0LabelsWereStoredInPlaceholder; // Test0 labels were stored successfully in fTest0LabelsPlaceholder. From there, they will be extracted at run-time when booking
+  TProfile *fTest0Pro[gMaxCorrelator][gMaxIndex][3]; // [gMaxCorrelator][gMaxIndex][3] [order][index][0=integrated,1=vs. multiplicity,2=vs. centrality]
   TString *fFileWithLabels; // external file which specifies all labels of interest
   TString *fTest0Labels[gMaxCorrelator][gMaxIndex]; // all labels: k-p'th order is stored in k-1'th index. So yes, I also store 1-p
+  TH1I *fTest0LabelsPlaceholder; // temporary workaround: store all Test0 labels in this histogram, until I find a better implementation
 
   // * Final results:
   TList *fFinalResultsList; // list to hold all histograms with final results
@@ -716,7 +738,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,22);
+  ClassDef(AliAnalysisTaskMuPa,25);
 
 };
 

@@ -155,7 +155,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   THnSparse *fHistData;             //! sparse of the tracks on data and ITS-TPC matching
   TH2F *fHistAllV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (all)
   TH2F *fHistSelV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (sel)
-  TH2F *fHistMCWeights;             //! histo for V0mult vs #tracks TPCout (sel)
+  TH2F *fHistMCWeights;             //! histo of MC weights per particle type
 
   Bool_t   fMC;                     //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fRequireVtxTracks;       //flag to require track vertex, if false accepts also SPD
@@ -197,7 +197,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   // number of bins for histTpcItsMatch
   Int_t fnBinsDCAxy_histTpcItsMatch; ///
 
-  // set use of MC Spectra Weights
+  // switch on (if set) MC spectra weights
   Bool_t       fUseMCWeights;     ///
 
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);

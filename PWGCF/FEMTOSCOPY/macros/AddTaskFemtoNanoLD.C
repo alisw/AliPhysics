@@ -50,7 +50,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   DeuteronCuts->SetDCAVtxXY(0.1);
   DeuteronCuts->SetCutSharedCls(true);
   DeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
-  DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 3.);
+  DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 2.5);
   DeuteronCuts->SetITSnSigmaCut(true);
   DeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   DeuteronCuts->SetRejLowPtPionsTOF(true);
@@ -58,9 +58,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
 
   if (suffix == "1") {
     //pairCleanerSetting = 0;
-    DeuteronCuts->SetPtRange(2.0, 4.0);
+    //DeuteronCuts->SetPtRange(2.0, 4.0);
     //DeuteronCuts->SetFilterBit(256);
-    //DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 60.);
+    DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 2.);
     //DeuteronCuts->SetITSnSigmaCut(true);
     //DeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
@@ -101,7 +101,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   AntiDeuteronCuts->SetDCAVtxXY(0.1);
   AntiDeuteronCuts->SetCutSharedCls(true);
   AntiDeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
-  AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 3.);
+  AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 2.5);
   AntiDeuteronCuts->SetITSnSigmaCut(true);
   AntiDeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   AntiDeuteronCuts->SetRejLowPtPionsTOF(true);
@@ -109,9 +109,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
 
   if (suffix == "1") {
     //pairCleanerSetting = 0;
-    AntiDeuteronCuts->SetPtRange(2.0, 4.0);
+    //AntiDeuteronCuts->SetPtRange(2.0, 4.0);
     //AntiDeuteronCuts->SetFilterBit(256);
-    //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 60.);
+    AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 2.);
     //AntiDeuteronCuts->SetITSnSigmaCut(true);
     //AntiDeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
