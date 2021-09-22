@@ -152,6 +152,9 @@ public:
   void SetForceMassAndZ(float mass, float z = 1) { fPDGMass = mass; fPDGMassOverZ = mass / z; }
   void SetITSelectronRejection(float nsigma = 2.) { fITSelectronRejectionSigma = nsigma; }
 
+  void SetRequirePrimaryFromDistance(bool primaryFromDistance) { fRequirePrimaryFromDistance = primaryFromDistance; }
+  void SetDistCut(double distCut) { fDistCut = distCut; }
+
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
   void SetDCABins (Int_t nbins, Float_t* bins);
@@ -214,6 +217,7 @@ private:
   Bool_t IsSelectedTPCGeoCut(AliAODTrack *track);
   Bool_t IsSelectedTPCGeoCut(AliNanoAODTrack *track);
 
+  Bool_t IsPrimaryFromDistance(const AliVVertex *vert, const AliAODMCParticle *part);
 
   TString               fCurrentFileName;       ///<  Currently analysed file name
   TF1                  *fTOFfunction;           //!<! TOF signal function
@@ -285,6 +289,9 @@ private:
   Float_t               fITSelectronRejectionSigma; ///< nSigma rejection band in ITS response around the electron band for TPC only analysis
   Float_t               fBeamRapidity;          ///< Beam rapidity in case of asymmetric colliding systems
   Int_t                 fEstimator;             ///< Choose the centrality estimator from AliEventCuts
+
+  Bool_t                fRequirePrimaryFromDistance;///<  Define primary particles in MC from production vertex
+  Double_t              fDistCut;               ///<  Cut on the distance between PV and particle vertex to define primaries
 
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
 
@@ -428,7 +435,10 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     const int iC = part->Charge() > 0 ? 1 : 0;
     if (std::abs(part->PdgCode()) == fPDG) {
       for (int iR = iTof; iR >= 0; iR--) {
-        if (part->IsPhysicalPrimary()) {
+        bool isPrimary = false;
+        if (part->IsPhysicalPrimary() && !fRequirePrimaryFromDistance) isPrimary = true;
+        else if (fRequirePrimaryFromDistance) isPrimary = IsPrimaryFromDistance(MCEvent()->GetPrimaryVertex(), part);
+        if (isPrimary) {
           if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy &&
               (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
               (!iR || pid_check) && (iR || pid_mask & 8))
@@ -438,7 +448,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
             fPtCorrection[iC]->Fill(pT,part->Pt()-pT);
             fPcorrectionTPC[iC]->Fill(p_TPC,part->P()-p_TPC);
             } // Fill it only once.
-        } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
+        } else if ( (part->IsSecondaryFromMaterial() && !isFromHyperNucleus) || (!isPrimary && fRequirePrimaryFromDistance))
           fDCASecondary[iR][iC]->Fill(fCentrality,pT,dca[0]);
         else
           fDCASecondaryWeak[iR][iC]->Fill(fCentrality,pT,dca[0]);

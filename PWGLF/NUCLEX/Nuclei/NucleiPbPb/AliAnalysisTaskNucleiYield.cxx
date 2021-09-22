@@ -193,6 +193,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fITSelectronRejectionSigma{-1.}
    ,fBeamRapidity{0.f}
    ,fEstimator{0}
+   ,fRequirePrimaryFromDistance{true}
+   ,fDistCut{1.}
    ,fEnableFlattening{false}
    ,fSaveTrees{false}
    ,fTOFminPtTrees{100}
@@ -992,4 +994,13 @@ Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliNanoAODTrack *track) {
     return kTRUE;
   else
     return kFALSE;
+}
+
+bool AliAnalysisTaskNucleiYield::IsPrimaryFromDistance(const AliVVertex *vert, const AliAODMCParticle *part) {
+  double primVert[3];
+  double partVert[3];
+  part->XvYvZv(partVert);
+  vert->GetXYZ(primVert);
+  double distance = Dist(primVert, partVert);
+  return distance < fDistCut;
 }
