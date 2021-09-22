@@ -2,8 +2,8 @@
 * See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef AliAnalysisTaskCentralTau_H
-#define AliAnalysisTaskCentralTau_H
+#ifndef ALIANALYSISTASKCENTRALTAU_H
+#define ALIANALYSISTASKCENTRALTAU_H
 
 class TH1;
 class TH2;
@@ -62,7 +62,7 @@ class AliAnalysisTaskCentralTau : public AliAnalysisTaskSE {
   AliAnalysisTaskCentralTau(const AliAnalysisTaskCentralTau&); //not implemented
   AliAnalysisTaskCentralTau& operator =(const AliAnalysisTaskCentralTau&); //not implemented
   
-  ClassDef(AliAnalysisTaskCentralTau, 20);
+  ClassDef(AliAnalysisTaskCentralTau, 25);
 };
 
 #endif
