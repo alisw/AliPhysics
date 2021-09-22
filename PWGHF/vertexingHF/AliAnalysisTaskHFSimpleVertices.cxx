@@ -353,6 +353,10 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
       delete fHistPtRecoPrompt[i];
       delete fHistPtRecoFeeddw[i];
     }
+    if(fHistCPUTimeTrackVsNTracks) delete fHistCPUTimeTrackVsNTracks;
+    if(fHistCPUTimeCandVsNTracks) delete fHistCPUTimeCandVsNTracks;
+    if(fHistWallTimeTrackVsNTracks) delete fHistWallTimeTrackVsNTracks;
+    if(fHistWallTimeCandVsNTracks) delete fHistWallTimeCandVsNTracks;
   }
   delete fOutput;
   delete fTrackCuts2pr;
@@ -360,10 +364,6 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
   delete fTrackCutsBach;
   delete fTrackCutsV0Dau;
   delete fVertexerTracks;
-  if(fHistCPUTimeTrackVsNTracks) delete fHistCPUTimeTrackVsNTracks;
-  if(fHistCPUTimeCandVsNTracks) delete fHistCPUTimeCandVsNTracks;
-  if(fHistWallTimeTrackVsNTracks) delete fHistWallTimeTrackVsNTracks;
-  if(fHistWallTimeCandVsNTracks) delete fHistWallTimeCandVsNTracks;
 }
 
 //___________________________________________________________________________
@@ -651,7 +651,6 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
         AliWarning(Form("3prong %d %d, %d, %f", nc2Prong, ib, jc, cutsSingleTrack2Prong[ib][jc]));
       }
     }
-
     Double_t etamax2 = GetJsonFloat(filename.Data(), "etaMax2Prong");
     printf("Max eta  (2 prong) = %f\n", etamax2);
     if(etamax2>0) fTrackCuts2pr->SetEtaRange(-etamax2, +etamax2);
@@ -1663,7 +1662,9 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   }
   delete[] status;
   delete twoTrackArray;
+  delete twoTrackArrayCasc;
   delete threeTrackArray;
+  delete rd4massCalc2;
   delete rd4massCalc3;
   delete vertexAODp;
 
