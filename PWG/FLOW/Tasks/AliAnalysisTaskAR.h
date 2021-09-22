@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 16.09.2021
+ * Last Modified Date: 22.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -20,6 +20,8 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliVEvent.h"
 #include <Riostream.h>
+#include <RtypesCore.h>
+#include <TArrayI.h>
 #include <TComplex.h>
 #include <TDataType.h>
 #include <TExMap.h>
@@ -27,6 +29,7 @@
 #include <TFile.h>
 #include <TH1D.h>
 #include <TH2D.h>
+#include <THnSparse.h>
 #include <TProfile.h>
 #include <TRandom3.h>
 #include <TString.h>
@@ -90,6 +93,7 @@ const TString kBAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
 const Color_t kFillColor[LAST_EBEFOREAFTER] = {kRed - 10, kGreen - 10};
 enum kMode { kRECO, kSIM, LAST_EMODE };
 const TString kModeName[LAST_EMODE] = {"[kRECO]", "[kSIM]"};
+enum kMCPrimaryDef { kMCPrim, kMCPhysicalPrim };
 
 class AliAnalysisTaskAR : public AliAnalysisTaskSE {
 public:
@@ -341,6 +345,9 @@ public:
   void SetChargedOnlyCut(Bool_t option) { this->fChargedOnly = option; }
   // cut all non-primary particles away
   void SetPrimaryOnlyCut(Bool_t option) { this->fPrimaryOnly = option; }
+  void SetPrimaryDefinitionInMC(kMCPrimaryDef def) {
+    this->fMCPrimaryDef = def;
+  }
   // cut all non-global track away
   void SetGlobalTracksOnlyCut(Bool_t option) {
     this->fGlobalTracksOnly = option;
@@ -440,6 +447,16 @@ public:
       fFinalResultProfileBins[i][kUEDGE] = fCorrelators.size();
     }
   }
+  // use fischer-yates for indices randomization
+  void SetFisherYates(Bool_t option) { this->fUseFisherYates = option; }
+  // use a fixed multiplicity
+  void SetFixedMultiplicity(Int_t FixedMultiplicity) {
+    this->fUseFixedMultplicity = kTRUE;
+    this->fFixedMultiplicy = FixedMultiplicity;
+  }
+  void SetFixedMultiplicity(Bool_t option) {
+    this->fUseFixedMultplicity = option;
+  }
 
 private:
   AliAnalysisTaskAR(const AliAnalysisTaskAR &aatmpf);
@@ -518,12 +535,14 @@ private:
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
   Bool_t fUseTrackCuts[LAST_ETRACK];
   TH1D *fTrackCutsCounter[LAST_EMODE];
+  THnSparseD *fTrackCutsCounterCumulative;
   TH1D *fTrackCutsValues;
   TString fTrackCutsCounterNames[LAST_EMODE];
   TString fTrackCutsCounterBinNames[LAST_ETRACK][LAST_EMINMAX];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
   Bool_t fUseEventCuts[LAST_EEVENT];
   TH1D *fEventCutsCounter[LAST_EMODE];
+  THnSparseD *fEventCutsCounterCumulative;
   TH1D *fEventCutsValues;
   TString fEventCutsCounterNames[LAST_EMODE];
   TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
@@ -531,6 +550,7 @@ private:
   Bool_t fUseFilterbit;
   Bool_t fChargedOnly;
   Bool_t fPrimaryOnly;
+  kMCPrimaryDef fMCPrimaryDef;
   Bool_t fGlobalTracksOnly;
   kCenEstimators fCentralityEstimator;
   Double_t fCenCorCut[2];
@@ -569,6 +589,13 @@ private:
 
   // Look up tabel between MC and data particles
   TExMap *fLookUpTable;
+
+  // use Fisher-Yates algorithm to randomize tracks
+  Bool_t fUseFisherYates;
+  std::vector<Int_t> fRandomizedTrackIndices;
+  // need when sampling a fixed number of tracks per event
+  Bool_t fUseFixedMultplicity;
+  Int_t fFixedMultiplicy;
 
   // qvectors
   TComplex fQvector[kMaxHarmonic][kMaxPower];
