@@ -31,6 +31,7 @@ public:
       kInvMassMother, // pair invariant mass, always returns mass of mother
       kInvMassRes,    // pair invariant mass resolution
       kInvMassDiff,   // pair invariant mass difference (MC - reconstructed)
+      kPhi,           // pair angle phi
       kEta,           // pair pseudo-rapidity
       kMt,            // pair transverse mass (need a reference mass)
       kY,             // pair rapidity (need a reference mass)
