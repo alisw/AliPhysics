@@ -193,8 +193,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fITSelectronRejectionSigma{-1.}
    ,fBeamRapidity{0.f}
    ,fEstimator{0}
-   ,fRequirePrimaryFromDistance{true}
-   ,fDistCut{1.}
+   ,fRequirePrimaryFromDistance{false}
+   ,fDistCut{0.001}
    ,fEnableFlattening{false}
    ,fSaveTrees{false}
    ,fTOFminPtTrees{100}

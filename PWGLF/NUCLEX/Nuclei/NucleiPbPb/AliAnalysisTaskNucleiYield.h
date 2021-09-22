@@ -435,9 +435,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     const int iC = part->Charge() > 0 ? 1 : 0;
     if (std::abs(part->PdgCode()) == fPDG) {
       for (int iR = iTof; iR >= 0; iR--) {
-        bool isPrimary = false;
-        if (part->IsPhysicalPrimary() && !fRequirePrimaryFromDistance) isPrimary = true;
-        else if (fRequirePrimaryFromDistance) isPrimary = IsPrimaryFromDistance(MCEvent()->GetPrimaryVertex(), part);
+        bool isPrimary = (part->IsPhysicalPrimary() && !fRequirePrimaryFromDistance) || (fRequirePrimaryFromDistance && IsPrimaryFromDistance(MCEvent()->GetPrimaryVertex(), part));
         if (isPrimary) {
           if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy &&
               (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
