@@ -30,6 +30,7 @@
 #include <TLorentzVector.h>
 #include "AliESDtrack.h"
 #include "AliEventCuts.h"
+#include "AliAODTrack.h"
 #include <AliMCEvent.h>
 #include <AliAODMCParticle.h>
 
@@ -152,6 +153,7 @@ public:
   void SetForceMassAndZ(float mass, float z = 1) { fPDGMass = mass; fPDGMassOverZ = mass / z; }
   void SetITSelectronRejection(float nsigma = 2.) { fITSelectronRejectionSigma = nsigma; }
 
+  void SetRequireLongMCTracks(bool longMCTracks) { fRequireLongMCTracks = longMCTracks; }
   void SetRequirePrimaryFromDistance(bool primaryFromDistance) { fRequirePrimaryFromDistance = primaryFromDistance; }
   void SetDistCut(double distCut) { fDistCut = distCut; }
 
@@ -218,6 +220,8 @@ private:
   Bool_t IsSelectedTPCGeoCut(AliNanoAODTrack *track);
 
   Bool_t IsPrimaryFromDistance(const AliAODMCParticle *part);
+  Bool_t IsLongMCTrack(AliAODTrack *track);
+  Bool_t IsLongMCTrack(AliNanoAODTrack *track) { return false; };
 
   TString               fCurrentFileName;       ///<  Currently analysed file name
   TF1                  *fTOFfunction;           //!<! TOF signal function
@@ -290,6 +294,7 @@ private:
   Float_t               fBeamRapidity;          ///< Beam rapidity in case of asymmetric colliding systems
   Int_t                 fEstimator;             ///< Choose the centrality estimator from AliEventCuts
 
+  Bool_t                fRequireLongMCTracks;   ///<  Require MC tracks to reach TOF
   Bool_t                fRequirePrimaryFromDistance;///<  Define primary particles in MC from production vertex
   Double_t              fDistCut;               ///<  Cut on the distance between PV and particle vertex to define primaries
 
@@ -437,9 +442,9 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       for (int iR = iTof; iR >= 0; iR--) {
         bool isPrimary = (part->IsPhysicalPrimary() && !fRequirePrimaryFromDistance) || (fRequirePrimaryFromDistance && IsPrimaryFromDistance(part));
         if (isPrimary) {
-          if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy &&
+          if ( (TMath::Abs(dca[0]) <= fRequireMaxDCAxy &&
               (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
-              (!iR || pid_check) && (iR || pid_mask & 8))
+              (!iR || pid_check) && (iR || pid_mask & 8)) && (!fRequireLongMCTracks || (fRequireLongMCTracks && IsLongMCTrack(track)) ) )
             fReconstructed[iR][iC]->Fill(fCentrality,pT);
           fDCAPrimary[iR][iC]->Fill(fCentrality,pT,dca[0]);
           if (!iR) {
