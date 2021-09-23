@@ -217,7 +217,7 @@ private:
   Bool_t IsSelectedTPCGeoCut(AliAODTrack *track);
   Bool_t IsSelectedTPCGeoCut(AliNanoAODTrack *track);
 
-  Bool_t IsPrimaryFromDistance(const AliVVertex *vert, const AliAODMCParticle *part);
+  Bool_t IsPrimaryFromDistance(const AliAODMCParticle *part);
 
   TString               fCurrentFileName;       ///<  Currently analysed file name
   TF1                  *fTOFfunction;           //!<! TOF signal function
@@ -435,7 +435,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     const int iC = part->Charge() > 0 ? 1 : 0;
     if (std::abs(part->PdgCode()) == fPDG) {
       for (int iR = iTof; iR >= 0; iR--) {
-        bool isPrimary = (part->IsPhysicalPrimary() && !fRequirePrimaryFromDistance) || (fRequirePrimaryFromDistance && IsPrimaryFromDistance(MCEvent()->GetPrimaryVertex(), part));
+        bool isPrimary = (part->IsPhysicalPrimary() && !fRequirePrimaryFromDistance) || (fRequirePrimaryFromDistance && IsPrimaryFromDistance(part));
         if (isPrimary) {
           if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy &&
               (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
