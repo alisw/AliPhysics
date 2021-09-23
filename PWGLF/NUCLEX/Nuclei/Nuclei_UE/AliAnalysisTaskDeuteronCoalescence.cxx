@@ -46,6 +46,7 @@ fOutputList(nullptr),
 fQAList(nullptr),
 fAverage_Nch_Transv(7.2),
 hProtonWeights(nullptr),
+fDeuteronWF(nullptr),
 hNumberOfEvents(nullptr),
 hTransverseMult(nullptr),
 hRtDistribution(nullptr),
@@ -61,7 +62,8 @@ hNeutrons_Transv(nullptr),
 hNeutrons_Away(nullptr),
 hRparticles(nullptr),
 hRapidityProtons(nullptr),
-hRapidityNeutrons(nullptr)
+hRapidityNeutrons(nullptr),
+hDeltaP(nullptr)
 {}
 //____________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskDeuteronCoalescence::AliAnalysisTaskDeuteronCoalescence(const char *name):
@@ -75,6 +77,7 @@ fOutputList(nullptr),
 fQAList(nullptr),
 fAverage_Nch_Transv(7.2),
 hProtonWeights(nullptr),
+fDeuteronWF(nullptr),
 hNumberOfEvents(nullptr),
 hTransverseMult(nullptr),
 hRtDistribution(nullptr),
@@ -90,7 +93,8 @@ hNeutrons_Transv(nullptr),
 hNeutrons_Away(nullptr),
 hRparticles(nullptr),
 hRapidityProtons(nullptr),
-hRapidityNeutrons(nullptr)
+hRapidityNeutrons(nullptr),
+hDeltaP(nullptr)
 {
     DefineInput (0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -107,6 +111,7 @@ AliAnalysisTaskDeuteronCoalescence::~AliAnalysisTaskDeuteronCoalescence()  {
     delete fOutputList;
     delete fQAList;
     delete hProtonWeights;
+    delete fDeuteronWF;
     delete hNumberOfEvents;
     delete hTransverseMult;
     delete hRtDistribution;
@@ -123,6 +128,7 @@ AliAnalysisTaskDeuteronCoalescence::~AliAnalysisTaskDeuteronCoalescence()  {
     delete hRparticles;
     delete hRapidityProtons;
     delete hRapidityNeutrons;
+    delete hDeltaP;
 }
 //____________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDeuteronCoalescence::UserCreateOutputObjects()  {
@@ -188,22 +194,43 @@ void AliAnalysisTaskDeuteronCoalescence::UserCreateOutputObjects()  {
 
     
     //p_{T} Spectra Deuterons
-    for (Int_t i=0 ; i<10 ; i++)  {
+    for (Int_t i=0 ; i<50 ; i++)  {
         
-        hDeuteronsINELgtZERO[i] = new TH1D (Form("hDeuteronsINELgtZERO[%d]",i),"",nPtDeuteron,pt_deuteron);
-        hDeuterons_Toward[i]    = new TH1D (Form("hDeuterons_Toward[%d]",i),"",400,0,4);
-        hDeuterons_Transv[i]    = new TH1D (Form("hDeuterons_Transv[%d]",i),"",400,0,4);
-        hDeuterons_Away[i]      = new TH1D (Form("hDeuterons_Away[%d]",i),"",400,0,4);
-        hDeuteronsINELgtZERO[i] -> Sumw2();
-        hDeuterons_Toward[i]    -> Sumw2();
-        hDeuterons_Transv[i]    -> Sumw2();
-        hDeuterons_Away[i]      -> Sumw2();
-        fOutputList -> Add(hDeuteronsINELgtZERO[i]);
-        fOutputList -> Add(hDeuterons_Toward[i]);
-        fOutputList -> Add(hDeuterons_Transv[i]);
-        fOutputList -> Add(hDeuterons_Away[i]);
-    }
+        //p_{T} Spectra: Deuterons (Simple Coalescence)
+        hDeuteronsINELgtZERO_simpleCoal[i] = new TH1D (Form("hDeuteronsINELgtZERO_simpleCoal[%d]",i),"",nPtDeuteron,pt_deuteron);
+        hDeuterons_Toward_simpleCoal[i]    = new TH1D (Form("hDeuterons_Toward_simpleCoal[%d]",i),"",400,0,4);
+        hDeuterons_Transv_simpleCoal[i]    = new TH1D (Form("hDeuterons_Transv_simpleCoal[%d]",i),"",400,0,4);
+        hDeuteronsINELgtZERO_simpleCoal[i] -> Sumw2();
+        hDeuterons_Toward_simpleCoal[i]    -> Sumw2();
+        hDeuterons_Transv_simpleCoal[i]    -> Sumw2();
+        fOutputList -> Add(hDeuteronsINELgtZERO_simpleCoal[i]);
+        fOutputList -> Add(hDeuterons_Toward_simpleCoal[i]);
+        fOutputList -> Add(hDeuterons_Transv_simpleCoal[i]);
+           
+        //p_{T} Spectra: Deuterons (Wigner Gaussian)
+        hDeuteronsINELgtZERO_wignerGaus[i] = new TH1D (Form("hDeuteronsINELgtZERO_wignerGaus[%d]",i),"",nPtDeuteron,pt_deuteron);
+        hDeuterons_Toward_wignerGaus[i]    = new TH1D (Form("hDeuterons_Toward_wignerGaus[%d]",i),"",400,0,4);
+        hDeuterons_Transv_wignerGaus[i]    = new TH1D (Form("hDeuterons_Transv_wignerGaus[%d]",i),"",400,0,4);
+        hDeuteronsINELgtZERO_wignerGaus[i] -> Sumw2();
+        hDeuterons_Toward_wignerGaus[i]    -> Sumw2();
+        hDeuterons_Transv_wignerGaus[i]    -> Sumw2();
+        fOutputList -> Add(hDeuteronsINELgtZERO_wignerGaus[i]);
+        fOutputList -> Add(hDeuterons_Toward_wignerGaus[i]);
+        fOutputList -> Add(hDeuterons_Transv_wignerGaus[i]);
 
+        //p_{T} Spectra: Deuterons (Wigner Argonne)
+        hDeuteronsINELgtZERO_wignerArg[i] = new TH1D (Form("hDeuteronsINELgtZERO_wignerArg[%d]",i),"",nPtDeuteron,pt_deuteron);
+        hDeuterons_Toward_wignerArg[i]    = new TH1D (Form("hDeuterons_Toward_wignerArg[%d]",i),"",400,0,4);
+        hDeuterons_Transv_wignerArg[i]    = new TH1D (Form("hDeuterons_Transv_wignerArg[%d]",i),"",400,0,4);
+        hDeuteronsINELgtZERO_wignerArg[i] -> Sumw2();
+        hDeuterons_Toward_wignerArg[i]    -> Sumw2();
+        hDeuterons_Transv_wignerArg[i]    -> Sumw2();
+        fOutputList -> Add(hDeuteronsINELgtZERO_wignerArg[i]);
+        fOutputList -> Add(hDeuterons_Toward_wignerArg[i]);
+        fOutputList -> Add(hDeuterons_Transv_wignerArg[i]);
+    }
+    
+    
     //R_{T} Intervals
     Double_t Rt_Intervals[]={0.0,0.5,1.5,5.0};
     Int_t nRtIntervals=sizeof(Rt_Intervals)/sizeof(Double_t)-1;
@@ -232,7 +259,7 @@ void AliAnalysisTaskDeuteronCoalescence::UserCreateOutputObjects()  {
 
     
     //QA Histograms & Debug
-    hRparticles = new TH1D ("hRparticles","",1000,0,1e-5);
+    hRparticles = new TH1D ("hRparticles","",1000,0,1);
     hRparticles -> Sumw2();
     fOutputList -> Add(hRparticles);
     
@@ -243,6 +270,11 @@ void AliAnalysisTaskDeuteronCoalescence::UserCreateOutputObjects()  {
     hRapidityNeutrons -> Sumw2();
     fOutputList -> Add(hRapidityProtons);
     fOutputList -> Add(hRapidityNeutrons);
+    
+    //DeltaP Distribution
+    hDeltaP = new TH1D ("hDeltaP","",1000,0,1);
+    hDeltaP -> Sumw2();
+    fOutputList -> Add(hDeltaP);
 
 
     PostData(1, fOutputList);
@@ -251,9 +283,11 @@ void AliAnalysisTaskDeuteronCoalescence::UserCreateOutputObjects()  {
 //____________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDeuteronCoalescence::UserExec(Option_t *)  {
     
+    //Seed Random Number
+    gRandom->SetSeed(0);
     
     //Coalescence Momentum
-    Double_t p0[]={0.230,0.235,0.240,0.245,0.250,0.255,0.260,0.265,0.270};
+    Double_t p0[]={0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.30,0.31,0.32,0.33,0.34,0.35,0.36,0.37,0.38,0.39,0.40,0.41,0.42,0.43,0.44,0.45,0.46,0.47,0.48,0.49,0.50};
     const Int_t nTrials = sizeof(p0)/sizeof(Double_t);
     
     //Get Input Event (INEL>0 Selection)
@@ -289,17 +323,35 @@ void AliAnalysisTaskDeuteronCoalescence::UserExec(Option_t *)  {
     }
     
     
-    //Save Deuteron Properties
-    const Int_t nDeut_max=20;
-    Double_t pt_deuteron     [nTrials][nDeut_max];
-    Double_t phi_deuteron    [nTrials][nDeut_max];
-    Double_t weight_deuteron [nTrials][nDeut_max];
-    Int_t nDeuterons[nTrials];
+    //Save Deuteron Properties (Simple Coalescence)
+    Double_t pt_deuteron_simpleCoal     [nTrials][20];
+    Double_t phi_deuteron_simpleCoal    [nTrials][20];
+    Double_t weight_deuteron_simpleCoal [nTrials][20];
+    Int_t nDeuterons_simpleCoal[nTrials];
     
-    //Initialize Counters
-    for (Int_t iTrial=0 ; iTrial<nTrials ; iTrial++) {nDeuterons[iTrial]=0;}
+    //Save Deuteron Properties (Wigner Gaus)
+    Double_t pt_deuteron_wignerGaus     [nTrials][20];
+    Double_t phi_deuteron_wignerGaus    [nTrials][20];
+    Double_t weight_deuteron_wignerGaus [nTrials][20];
+    Int_t nDeuterons_wignerGaus[nTrials];
+
+    //Save Deuteron Properties (Wigner Argonne18)
+    Double_t pt_deuteron_wignerArg     [nTrials][20];
+    Double_t phi_deuteron_wignerArg    [nTrials][20];
+    Double_t weight_deuteron_wignerArg [nTrials][20];
+    Int_t nDeuterons_wignerArg[nTrials];
     
-    //Loop over different trials
+    
+    //Initialize Deuteron Counters
+    for (Int_t iTrial=0 ; iTrial<nTrials ; iTrial++) {
+        
+        nDeuterons_simpleCoal[iTrial]=0;
+        nDeuterons_wignerGaus[iTrial]=0;
+        nDeuterons_wignerArg[iTrial]=0;
+    }
+    
+    
+    //************************************************** SIMPLE COALESCENCE **************************************************//
     for (Int_t iTrial=0 ; iTrial<nTrials ; iTrial++)  {
         
         //Reset Neutron Status
@@ -312,7 +364,6 @@ void AliAnalysisTaskDeuteronCoalescence::UserExec(Option_t *)  {
 
             for (Int_t in=0 ; in<(Int_t)neutron_ID.size() ; in++)  {
 
-                if (neutron_status[in]==1) continue;//Skip already used neutrons
                 AliMCParticle *neutron = (AliMCParticle*) fMCEvent->GetTrack(neutron_ID[in]);
                 TVector3 p_neutron (neutron->Px(),neutron->Py(),neutron->Pz());
                 
@@ -320,36 +371,138 @@ void AliAnalysisTaskDeuteronCoalescence::UserExec(Option_t *)  {
                 TVector3 p_deuteron = p_proton+p_neutron;
                 Double_t deltaP = (p_proton-p_neutron).Mag();
                 Double_t deutWeight = GetDeuteronWeight (p_proton.Pt(),p_neutron.Pt());
+                
+                //Fill DeltaP Distribution
+                if (iTrial==0) hDeltaP->Fill(deltaP);
 
-                //Rapidities
-                Double_t yp = proton->Y();
-                Double_t yn = neutron->Y();
+                if (neutron_status[in]==1) continue;//Skip already used neutrons
 
-                //Coalescence
+                //Simple Coalescence Condition
                 if (deltaP<p0[iTrial]) {
                     
                     neutron_status[in]=1;
                     Double_t y = GetRapidity (p_deuteron);
                     if (TMath::Abs(y)<0.5) {
                         
-                        hDeuteronsINELgtZERO[iTrial] -> Fill(p_deuteron.Pt(),deutWeight);
+                        hDeuteronsINELgtZERO_simpleCoal[iTrial] -> Fill(p_deuteron.Pt(),deutWeight);
                         
                         //Store Deuteron Properties
-                        phi_deuteron[iTrial][nDeuterons[iTrial]] = TVector2::Phi_0_2pi(p_deuteron.Phi());
-                        pt_deuteron[iTrial][nDeuterons[iTrial]]  = p_deuteron.Pt();
-                        weight_deuteron[iTrial][nDeuterons[iTrial]] = deutWeight;
-                        nDeuterons[iTrial]++;
+                        phi_deuteron_simpleCoal[iTrial][nDeuterons_simpleCoal[iTrial]]    = TVector2::Phi_0_2pi(p_deuteron.Phi());
+                        pt_deuteron_simpleCoal[iTrial][nDeuterons_simpleCoal[iTrial]]     = p_deuteron.Pt();
+                        weight_deuteron_simpleCoal[iTrial][nDeuterons_simpleCoal[iTrial]] = deutWeight;
+                        nDeuterons_simpleCoal[iTrial]++;
                         
                         //Rapidity Distributions of Protons and Neutrons
-                        hRapidityProtons  -> Fill (yp);
-                        hRapidityNeutrons -> Fill (yn);
+                        hRapidityProtons  -> Fill (proton->Y());
+                        hRapidityNeutrons -> Fill (neutron->Y());
                     }
                     break;
                 }
             }
         }
     }
+    //******************************************************************************************************************************//
+
     
+    //************************************************** COALESCENCE: WIGNER GAUS **************************************************//
+    for (Int_t iTrial=0 ; iTrial<nTrials ; iTrial++)  {
+        
+        //Reset Neutron Status
+        for (Int_t in=0 ; in<(Int_t)neutron_ID.size() ; in++)  {neutron_status[in]=0;}
+        
+        for (Int_t ip=0 ; ip<(Int_t)proton_ID.size() ; ip++)  {
+            
+            AliMCParticle *proton = (AliMCParticle*) fMCEvent->GetTrack(proton_ID[ip]);
+            TVector3 p_proton (proton->Px(),proton->Py(),proton->Pz());
+
+            for (Int_t in=0 ; in<(Int_t)neutron_ID.size() ; in++)  {
+
+                AliMCParticle *neutron = (AliMCParticle*) fMCEvent->GetTrack(neutron_ID[in]);
+                TVector3 p_neutron (neutron->Px(),neutron->Py(),neutron->Pz());
+                
+                //Deuteron
+                TVector3 p_deuteron = p_proton+p_neutron;
+                Double_t deltaX = GetSpatialDistance (p_proton,p_neutron);
+                Double_t deltaP = (p_proton-p_neutron).Mag();
+                Double_t deutWeight = GetDeuteronWeight (p_proton.Pt(),p_neutron.Pt());
+
+                //Fill DeltaP Distribution
+                if (iTrial==0) hDeltaP->Fill(deltaP);
+
+                if (neutron_status[in]==1) continue;//Skip already used neutrons
+
+                //Coalescence Condition
+                if (DoCoalescence(deltaX,deltaP,p0[iTrial],"Gaus"))  {
+                    
+                    neutron_status[in]=1;
+                    Double_t y = GetRapidity (p_deuteron);
+                    if (TMath::Abs(y)<0.5) {
+                        
+                        hDeuteronsINELgtZERO_wignerGaus[iTrial] -> Fill(p_deuteron.Pt(),deutWeight);
+                        
+                        //Store Deuteron Properties
+                        phi_deuteron_wignerGaus[iTrial][nDeuterons_wignerGaus[iTrial]]    = TVector2::Phi_0_2pi(p_deuteron.Phi());
+                        pt_deuteron_wignerGaus[iTrial][nDeuterons_wignerGaus[iTrial]]     = p_deuteron.Pt();
+                        weight_deuteron_wignerGaus[iTrial][nDeuterons_wignerGaus[iTrial]] = deutWeight;
+                        nDeuterons_wignerGaus[iTrial]++;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    //*********************************************************************************************************************************//
+
+    
+    //************************************************** COALESCENCE: WIGNER ARGONNE **************************************************//
+    for (Int_t iTrial=0 ; iTrial<nTrials ; iTrial++)  {
+        
+        //Reset Neutron Status
+        for (Int_t in=0 ; in<(Int_t)neutron_ID.size() ; in++)  {neutron_status[in]=0;}
+        
+        for (Int_t ip=0 ; ip<(Int_t)proton_ID.size() ; ip++)  {
+            
+            AliMCParticle *proton = (AliMCParticle*) fMCEvent->GetTrack(proton_ID[ip]);
+            TVector3 p_proton (proton->Px(),proton->Py(),proton->Pz());
+
+            for (Int_t in=0 ; in<(Int_t)neutron_ID.size() ; in++)  {
+
+                AliMCParticle *neutron = (AliMCParticle*) fMCEvent->GetTrack(neutron_ID[in]);
+                TVector3 p_neutron (neutron->Px(),neutron->Py(),neutron->Pz());
+                
+                //Deuteron
+                TVector3 p_deuteron = p_proton+p_neutron;
+                Double_t deltaX = GetSpatialDistance (p_proton,p_neutron);
+                Double_t deltaP = (p_proton-p_neutron).Mag();
+                Double_t deutWeight = GetDeuteronWeight (p_proton.Pt(),p_neutron.Pt());
+
+                //Fill DeltaP Distribution
+                if (iTrial==0) hDeltaP->Fill(deltaP);
+
+                if (neutron_status[in]==1) continue;//Skip already used neutrons
+
+                //Coalescence Condition
+                if (DoCoalescence(deltaX,deltaP,p0[iTrial],"Arg"))  {
+                    
+                    neutron_status[in]=1;
+                    Double_t y = GetRapidity (p_deuteron);
+                    if (TMath::Abs(y)<0.5) {
+                        
+                        hDeuteronsINELgtZERO_wignerArg[iTrial] -> Fill(p_deuteron.Pt(),deutWeight);
+                        
+                        //Store Deuteron Properties
+                        phi_deuteron_wignerArg[iTrial][nDeuterons_wignerArg[iTrial]]    = TVector2::Phi_0_2pi(p_deuteron.Phi());
+                        pt_deuteron_wignerArg[iTrial][nDeuterons_wignerArg[iTrial]]     = p_deuteron.Pt();
+                        weight_deuteron_wignerArg[iTrial][nDeuterons_wignerArg[iTrial]] = deutWeight;
+                        nDeuterons_wignerArg[iTrial]++;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    //*********************************************************************************************************************************//
+
     
     //Selection of Leading Particle
     Int_t lp = GetLeadingParticle();
@@ -386,20 +539,48 @@ void AliAnalysisTaskDeuteronCoalescence::UserExec(Option_t *)  {
         if (IsParticleInAwayRegion(phi_particle,phi_leading))       hProtons_Away->Fill(pt,protWeight);
     }
     
-   
-    //Fill Deuteron Spectra in Azimuthal Region
+    //Fill Deuteron Spectra in Azimuthal Regions: Simple Coalescence
     for (Int_t iTrial=0 ; iTrial<nTrials ; iTrial++)  {
-        for (Int_t i=0 ; i<nDeuterons[iTrial] ; i++)  {
+        for (Int_t i=0 ; i<nDeuterons_simpleCoal[iTrial] ; i++)  {
 
             //Variables
-            Double_t pt = pt_deuteron[iTrial][i];
-            Double_t phi_particle = phi_deuteron[iTrial][i];
-            Double_t deutWeight = weight_deuteron[iTrial][i];
+            Double_t pt           = pt_deuteron_simpleCoal[iTrial][i];
+            Double_t phi_particle = phi_deuteron_simpleCoal[iTrial][i];
+            Double_t deutWeight   = weight_deuteron_simpleCoal[iTrial][i];
                   
-            //Fill p_{T} Spectra Protons
-            if (IsParticleInTowardRegion(phi_particle,phi_leading))     hDeuterons_Toward[iTrial]->Fill(pt,deutWeight);
-            if (IsParticleInTransverseRegion(phi_particle,phi_leading)) hDeuterons_Transv[iTrial]->Fill(pt,deutWeight);
-            if (IsParticleInAwayRegion(phi_particle,phi_leading))       hDeuterons_Away[iTrial]  ->Fill(pt,deutWeight);
+            //Fill p_{T} Spectra Deuterons
+            if (IsParticleInTowardRegion(phi_particle,phi_leading))     hDeuterons_Toward_simpleCoal[iTrial]->Fill(pt,deutWeight);
+            if (IsParticleInTransverseRegion(phi_particle,phi_leading)) hDeuterons_Transv_simpleCoal[iTrial]->Fill(pt,deutWeight);
+        }
+    }
+    
+    //Fill Deuteron Spectra in Azimuthal Regions: Wigner Gaus
+    for (Int_t iTrial=0 ; iTrial<nTrials ; iTrial++)  {
+        for (Int_t i=0 ; i<nDeuterons_wignerGaus[iTrial] ; i++)  {
+
+            //Variables
+            Double_t pt           = pt_deuteron_wignerGaus[iTrial][i];
+            Double_t phi_particle = phi_deuteron_wignerGaus[iTrial][i];
+            Double_t deutWeight   = weight_deuteron_wignerGaus[iTrial][i];
+                  
+            //Fill p_{T} Spectra Deuterons
+            if (IsParticleInTowardRegion(phi_particle,phi_leading))     hDeuterons_Toward_wignerGaus[iTrial]->Fill(pt,deutWeight);
+            if (IsParticleInTransverseRegion(phi_particle,phi_leading)) hDeuterons_Transv_wignerGaus[iTrial]->Fill(pt,deutWeight);
+        }
+    }
+
+    //Fill Deuteron Spectra in Azimuthal Regions: Wigner Argonne
+    for (Int_t iTrial=0 ; iTrial<nTrials ; iTrial++)  {
+        for (Int_t i=0 ; i<nDeuterons_wignerArg[iTrial] ; i++)  {
+
+            //Variables
+            Double_t pt           = pt_deuteron_wignerArg[iTrial][i];
+            Double_t phi_particle = phi_deuteron_wignerArg[iTrial][i];
+            Double_t deutWeight   = weight_deuteron_wignerArg[iTrial][i];
+                  
+            //Fill p_{T} Spectra Deuterons
+            if (IsParticleInTowardRegion(phi_particle,phi_leading))     hDeuterons_Toward_wignerArg[iTrial]->Fill(pt,deutWeight);
+            if (IsParticleInTransverseRegion(phi_particle,phi_leading)) hDeuterons_Transv_wignerArg[iTrial]->Fill(pt,deutWeight);
         }
     }
     
@@ -539,9 +720,70 @@ Double_t AliAnalysisTaskDeuteronCoalescence::GetDeuteronWeight (Double_t pt_prot
     
     Double_t wp = hProtonWeights->GetBinContent(hProtonWeights->FindBin(pt_prot));
     Double_t wn = hProtonWeights->GetBinContent(hProtonWeights->FindBin(pt_neut));
-    w = (3.0/4.0)*wp*wn;
+    Double_t spin_factor    = 3.0/4.0;
+    Double_t isospin_factor = 1.0/2.0;
+    w = spin_factor*isospin_factor*wp*wn;
 
     return w;
+}
+//____________________________________________________________________________________________________________________________________________________
+Double_t AliAnalysisTaskDeuteronCoalescence::GetSpatialDistance (TVector3 p_proton, TVector3 p_neutron)  {
+    
+    //Initialization
+    Double_t deltaX(0);
+    
+    //Source Radius
+    const Double_t Rsource = 1.2;//From Proton-Proton Correlations
+    
+    //Proton Coordinates
+    Double_t rp      = TMath::Abs(gRandom->Gaus(0.0,Rsource));
+    Double_t theta_p = p_proton.Theta();
+    Double_t phi_p   = p_proton.Phi();
+    Double_t xp = rp*TMath::Sin(theta_p)*TMath::Cos(phi_p);
+    Double_t yp = rp*TMath::Sin(theta_p)*TMath::Sin(phi_p);
+    Double_t zp = rp*TMath::Cos(theta_p);
+    
+    //Neutron Coordinates
+    Double_t rn      = rp;
+    Double_t theta_n = p_neutron.Theta();
+    Double_t phi_n   = p_neutron.Phi();
+    Double_t xn = rn*TMath::Sin(theta_n)*TMath::Cos(phi_n);
+    Double_t yn = rn*TMath::Sin(theta_n)*TMath::Sin(phi_n);
+    Double_t zn = rn*TMath::Cos(theta_n);
+    
+    //Spatial Distance
+    TVector3 pos_p (xp,yp,zp);
+    TVector3 pos_n (xn,yn,zn);
+    deltaX = (pos_p-pos_n).Mag();
+    
+    return deltaX;
+}
+//____________________________________________________________________________________________________________________________________________________
+Bool_t AliAnalysisTaskDeuteronCoalescence::DoCoalescence (Double_t deltaX, Double_t deltaP, Double_t sigma_p, const char *func)  {
+    
+    //Initialization
+    Bool_t doCoalescence=(kFALSE);
+    
+    //Constants
+    Double_t sigma_x = 3.2;//(fm) Parameter related to deuteron radius (arxiv.org/abs/1812.05175)
+    Double_t max = fDeuteronWF->GetMaximum();
+    
+    //Wave Function in Momentum Space
+    Double_t Psi_momentum = TMath::Exp(-(deltaP*deltaP)/(sigma_p*sigma_p));
+
+    //Wave Function in Coordinate Space
+    Double_t Psi_space(0);
+    if (strcmp(func,"Gaus")==0) Psi_space = TMath::Exp(-(deltaX*deltaX)/(sigma_x*sigma_x));
+    if (strcmp(func,"Arg")==0)  Psi_space = (1.0/max)*fDeuteronWF->Eval(deltaX);
+
+    //Wigner Density
+    Double_t wigner = Psi_space*Psi_momentum;
+    
+    //Coalescence Probability
+    Double_t rndm = gRandom->Uniform(0.0,1.0);
+    if (rndm<wigner) doCoalescence=kTRUE;
+    
+    return doCoalescence;
 }
 //____________________________________________________________________________________________________________________________________________________
 Int_t AliAnalysisTaskDeuteronCoalescence::GetLeadingParticle ()  {
@@ -567,7 +809,7 @@ Int_t AliAnalysisTaskDeuteronCoalescence::GetLeadingParticle ()  {
         Double_t y = particle->Yv();
         Double_t z = particle->Zv();
         Double_t r = TMath::Sqrt(x*x+y*y+z*z);
-        hRparticles -> Fill(r);
+        if (particle->IsPhysicalPrimary()) hRparticles -> Fill(r);
         //if (r>1e-10) continue;
         
         Bool_t isFSParticle = (kFALSE);
