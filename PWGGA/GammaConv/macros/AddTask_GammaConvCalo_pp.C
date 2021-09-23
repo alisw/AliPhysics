@@ -3476,6 +3476,17 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310b100000010"); //b: alpha meson variation 1 0.2<alpha<0.6
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310c100000010"); //c: alpha meson variation 1 0.6<alpha<1.0
 
+  } else if ( trainConfig == 3143){// without smearing, different M02, TM cuts
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 5
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901097e3n230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 7
+  } else if ( trainConfig == 3144){// without smearing, different cuts
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n240000","0r63103100000010"); // no smearing, M02 < 0.4, TM 5
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n250000","0r63103100000010"); // no smearing, M02 < 0.3, TM 5
+  } else if ( trainConfig == 3144){// without smearing, different cuts
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310a100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0-0.2
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310b100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.2-0.6
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310c100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.6-1
+
 
     // Variations for systematics PCM-EDC 13 TeV EG1
     // Variations of EDC Part
@@ -3592,6 +3603,16 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310b100000010"); //b: alpha meson variation 1 0.2<alpha<0.6
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310c100000010"); //c: alpha meson variation 1 0.6<alpha<1.0
 
+  } else if ( trainConfig == 3243){// without smearing, different M02, TM cuts
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 5
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901097e3n230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 7
+  } else if ( trainConfig == 3244){// without smearing, different cuts
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n240000","0r63103100000010"); // no smearing, M02 < 0.4, TM 5
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n250000","0r63103100000010"); // no smearing, M02 < 0.3, TM 5
+  } else if ( trainConfig == 3244){// without smearing, different cuts
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310a100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0-0.2
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310b100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.2-0.6
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310c100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.6-1
 
 
 
@@ -3944,6 +3965,16 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100c00010"); // old std. smearing (pol2)
   } else if ( trainConfig == 3542){// new smearing with pol2
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100n00010"); // new smearing (pol2)
+  } else if ( trainConfig == 3543){// without smearing, different M02, TM cuts
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901095e3n230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 5
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901097e3n230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 7
+  } else if ( trainConfig == 3544){// without smearing, different cuts
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901095e3n240000","0r63103100000010"); // no smearing, M02 < 0.4, TM 5
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901095e3n250000","0r63103100000010"); // no smearing, M02 < 0.3, TM 5
+  } else if ( trainConfig == 3544){// without smearing, different cuts
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310a100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0-0.2
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310b100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.2-0.6
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310c100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.6-1
 
   //*************************************************************************************************
   //PCM-EMC in Jet
@@ -3972,7 +4003,7 @@ void AddTask_GammaConvCalo_pp(
 
   //////////////////////    Mult slices  pp 13 TeV   //////////////////////////////////
 // INT7 trigger	V0M high mult	EG2	EG1	SPD high mult PHI7
-// bit: 10	bit: 76	bit 8e	bit: 8d	bit: 75 bit: 62 
+// bit: 10	bit: 76	bit 8e	bit: 8d	bit: 75 bit: 62
 
   } else if (trainConfig == 4090){  // MB
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //
