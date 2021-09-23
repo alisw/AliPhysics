@@ -996,11 +996,13 @@ Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliNanoAODTrack *track) {
     return kFALSE;
 }
 
-bool AliAnalysisTaskNucleiYield::IsPrimaryFromDistance(const AliVVertex *vert, const AliAODMCParticle *part) {
+bool AliAnalysisTaskNucleiYield::IsPrimaryFromDistance(const AliAODMCParticle *part) {
+  AliVEvent *evt = InputEvent();
+  AliAODMCHeader* header = (AliAODMCHeader *)evt->GetList()->FindObject(AliAODMCHeader::StdBranchName());
   double primVert[3];
   double partVert[3];
   part->XvYvZv(partVert);
-  vert->GetXYZ(primVert);
+  primVert[0] = header->GetVtxX(), primVert[1] = header->GetVtxY(), primVert[2] = header->GetVtxZ();
   double distance = Dist(primVert, partVert);
   return distance < fDistCut;
 }
