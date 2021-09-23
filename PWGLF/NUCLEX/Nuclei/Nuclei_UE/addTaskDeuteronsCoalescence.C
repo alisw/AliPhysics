@@ -11,10 +11,12 @@
 //_________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskDeuteronCoalescence *addTaskDeuteronsCoalescence (Double_t Nch_Transv=7.295)  {
     
-    //Get Reweighting
-    TFile *inputfile = TFile::Open ("alien:///alice/cern.ch/user/a/alcaliva/reshaping_protons_pythia/reshaping_protons.root");
-    TH1D *hProtWeights = (TH1D*)inputfile->Get("hDataToPythia");
-    
+    //Proton Re-weighting & Deuteron Wave Function
+    TFile *inputfileWeights = TFile::Open ("alien:///alice/cern.ch/user/a/alcaliva/reshaping_protons_pythia/reshaping_protons.root");
+    TFile *inputfileDeutWF  = TFile::Open ("alien:///alice/cern.ch/user/a/alcaliva/deuteron_wave_function/deuteron_wave_function.root");
+    TH1D  *hProtWeights = (TH1D*)inputfileWeights->Get("hDataToPythia");
+    TF1   *fDeuteronWF  = (TF1*) inputfileDeutWF->Get("deuteron_wf");
+
     //Get Analysis Manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) return 0x0;
@@ -30,6 +32,7 @@ AliAnalysisTaskDeuteronCoalescence *addTaskDeuteronsCoalescence (Double_t Nch_Tr
     AliAnalysisTaskDeuteronCoalescence *task = new AliAnalysisTaskDeuteronCoalescence ("task_deuteron_coalescence");
     task -> AliAnalysisTaskDeuteronCoalescence::SetAverageTransverseMultiplicity(Nch_Transv);
     task -> AliAnalysisTaskDeuteronCoalescence::SetReshapingProtons (hProtWeights);
+    task -> AliAnalysisTaskDeuteronCoalescence::SetDeuteronWaveFunc (fDeuteronWF);
     mgr  -> AddTask(task);
     mgr  -> ConnectInput (task,0,mgr->GetCommonInputContainer());
     mgr  -> ConnectOutput(task,1,mgr->CreateContainer("Coalescence",  TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
