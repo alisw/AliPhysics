@@ -126,6 +126,8 @@ UInt_t AliJCorrectionMapTask::ConnectInputContainer(const TString fname, const T
 		TGrid::Connect("alien:");
 		TFile *pfile = TFile::Open(fname);
 		TList *plist = (TList*)pfile->Get(listName);
+		if(!plist)
+			cout<<"ERROR: Correction map TList does not exists: "<<listName.Data()<<endl;
 		pCorrMapCont = mgr->CreateContainer(containerName,
 			TList::Class(),AliAnalysisManager::kInputContainer);
 		pCorrMapCont->SetData(plist);
@@ -137,7 +139,7 @@ UInt_t AliJCorrectionMapTask::ConnectInputContainer(const TString fname, const T
 }
 
 void AliJCorrectionMapTask::EnablePhiCorrection(UInt_t id, const TString fname){
-	phiInputIndex[id] = ConnectInputContainer(fname,Form("PhiWeights_%u",id));
+	phiInputIndex[id] = ConnectInputContainer(fname,"PhiWeights");
 	cout<<"Phi correction enabled: "<<fname.Data()<<" (id "<<id<<", index "<<phiInputIndex[id]<<")"<<endl;
 }
 
