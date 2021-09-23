@@ -169,6 +169,7 @@ set(SRCS
   AliFemtoCorrFctnPairsForCorrFit.cxx
   AliFemtoWRzTrackCut.cxx
   AliFemtoCorrFctnDYDPhiSimpleWithCorrections.cxx
+  AliFemtoTrackCutPdtHe3.cxx	# p-d/t/He3 track cut
   )
 
 

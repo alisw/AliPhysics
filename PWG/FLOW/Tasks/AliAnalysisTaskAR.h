@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 03.09.2021
+ * Last Modified Date: 13.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -38,8 +38,9 @@ const Int_t kMaxCorrelator = 20;
 const Int_t kMaxPower = 20;
 // global constants for QA filterbit scan
 const Int_t kMaxFilterbit = 15; // 2^(15-1)=16384
-const Int_t kNumberofTestFilterBit = 5;
-const Int_t kTestFilterbit[5] = {1, 128, 256, 512, 768};
+const Int_t kNumberofTestFilterBit = 6;
+const Int_t kTestFilterbit[kNumberofTestFilterBit] = {1,   92,  128,
+                                                      256, 512, 768};
 // centrality estimators
 enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
 const TString kCenEstimatorNames[LAST_ECENESTIMATORS] = {"V0M", "CL0", "CL1",
@@ -175,15 +176,18 @@ public:
 
   // setters for QA histograms
   void SetFillQAHistograms(Bool_t option) { fFillQAHistograms = option; }
+  void SetFillQACorHistogramsOnly(Bool_t option) {
+    fFillQACorHistogramsOnly = option;
+  }
   // generic setter for centrality correlation QA histogram binning
-  void SetCenCorQAHistogramBinning(kCenEstimators cen1, Int_t xnbins,
+  void SetCenCorQAHistogramBinning(Int_t cen1, Int_t xnbins,
                                    Double_t xlowerEdge, Double_t xupperEdge,
-                                   kCenEstimators cen2, Int_t ynbins,
+                                   Int_t cen2, Int_t ynbins,
                                    Double_t ylowerEdge, Double_t yupperEdge);
   // generic setter for multiplicity correlation QA histogram binning
-  void SetMulCorQAHistogramBinning(kCenEstimators mul1, Int_t xnbins,
+  void SetMulCorQAHistogramBinning(Int_t mul1, Int_t xnbins,
                                    Double_t xlowerEdge, Double_t xupperEdge,
-                                   kCenEstimators mul2, Int_t ynbins,
+                                   Int_t mul2, Int_t ynbins,
                                    Double_t ylowerEdge, Double_t yupperEdge);
   // generic setter for track scan QA histograms
   void SetFBTrackScanQAHistogramBinning(kTrack Track, Int_t nbins,
@@ -223,6 +227,10 @@ public:
     this->fSelfCorQAHistogramBins[Track][kBIN] = nbins;
     this->fSelfCorQAHistogramBins[Track][kLEDGE] = lowerEdge;
     this->fSelfCorQAHistogramBins[Track][kUEDGE] = upperEdge;
+  }
+  // only fill control histograms
+  void SetFillControlHistogramsOnly(Bool_t option) {
+    this->fFillControlHistogramsOnly = option;
   }
   // generic setter for track control histogram binning
   void SetTrackControlHistogramBinning(kTrack Track, Int_t nbins,
@@ -286,6 +294,7 @@ public:
     }
     this->fTrackCuts[Track][kMIN] = min;
     this->fTrackCuts[Track][kMAX] = max;
+    this->fUseTrackCuts[Track] = kTRUE;
   }
   // generic setter for event cuts
   void SetEventCuts(kEvent Event, Double_t min, Double_t max) {
@@ -300,34 +309,45 @@ public:
     }
     this->fEventCuts[Event][kMIN] = min;
     this->fEventCuts[Event][kMAX] = max;
+    this->fUseEventCuts[Event] = kTRUE;
   }
-  // setter for centrality correlation cut
-  // void SetCenCorCut(Double_t m, Double_t t) {
-  //   if (m < 1.) {
-  //     std::cout << __LINE__ << ": slope too small" << std::endl;
-  //     Fatal("SetCenCorCut", "slope too small");
-  //   }
-  //   if (t < 1.) {
-  //     std::cout << __LINE__ << ": offset too small" << std::endl;
-  //     Fatal("SetCenCorCut", "offset too small");
-  //   }
-  //   this->fCenCorCut[0] = m;
-  //   this->fCenCorCut[1] = t;
   void SetCenCorCut(Double_t m, Double_t t) {
     this->fCenCorCut[0] = m;
     this->fCenCorCut[1] = t;
+    this->fUseCenCorCuts = kTRUE;
   }
   // setter for multiplicity correlation cut
   void SetMulCorCut(Double_t m, Double_t t) {
     this->fMulCorCut[0] = m;
     this->fMulCorCut[1] = t;
+    this->fUseMulCorCuts = kTRUE;
   }
   // filterbit
   // depends strongly on the data set
   // typical choices are 1,128,256,768
-  void SetFilterbit(Int_t Filterbit) { this->fFilterbit = Filterbit; }
+  void SetFilterbit(Int_t Filterbit) {
+    this->fFilterbit = Filterbit;
+    this->fUseFilterbit = kTRUE;
+  }
+  // cut all neutral particles away
+  void SetChargedOnlyCut(Bool_t option) { this->fChargedOnly = option; }
   // cut all non-primary particles away
   void SetPrimaryOnlyCut(Bool_t option) { this->fPrimaryOnly = option; }
+  // cut all non-global track away
+  void SetGlobalTracksOnlyCut(Bool_t option) {
+    this->fGlobalTracksOnly = option;
+  }
+  // flatten centrality if necessary
+  void SetCenFlattenHist(TH1D *hist) {
+    if (!hist) {
+      std::cout << __LINE__ << ": Did not get centrality flattening histogram"
+                << std::endl;
+      Fatal("SetCenFlattenHist", "Invalid pointer");
+    }
+    this->fUseCenFlatten = kTRUE;
+    this->fCenFlattenHist = hist;
+  };
+  void SetCenFlattenHist(const char *Filename, const char *Histname);
 
   // setters for MC on the fly analysis
   void SetMCOnTheFly(Bool_t option) { this->fMCOnTheFly = option; }
@@ -425,6 +445,8 @@ private:
   TList *fQAHistogramsList;
   TString fQAHistogramsListName;
   Bool_t fFillQAHistograms;
+  // only fill correlation histograms
+  Bool_t fFillQACorHistogramsOnly;
   // array holding all centrality estimates
   Double_t fCentrality[LAST_ECENESTIMATORS];
   // centrality correlation histograms
@@ -486,18 +508,29 @@ private:
 
   // cuts
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
+  Bool_t fUseTrackCuts[LAST_ETRACK];
   TH1D *fTrackCutsCounter[LAST_EMODE];
+  TH1D *fTrackCutsValues;
   TString fTrackCutsCounterNames[LAST_EMODE];
   TString fTrackCutsCounterBinNames[LAST_ETRACK][LAST_EMINMAX];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
+  Bool_t fUseEventCuts[LAST_EEVENT];
   TH1D *fEventCutsCounter[LAST_EMODE];
+  TH1D *fEventCutsValues;
   TString fEventCutsCounterNames[LAST_EMODE];
   TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
   Int_t fFilterbit;
+  Bool_t fUseFilterbit;
+  Bool_t fChargedOnly;
   Bool_t fPrimaryOnly;
+  Bool_t fGlobalTracksOnly;
   kCenEstimators fCentralityEstimator;
   Double_t fCenCorCut[2];
+  Bool_t fUseCenCorCuts;
   Double_t fMulCorCut[2];
+  Bool_t fUseMulCorCuts;
+  Bool_t fUseCenFlatten;
+  TH1D *fCenFlattenHist;
 
   // Final results
   TList *fFinalResultsList;
@@ -510,6 +543,8 @@ private:
   TProfile *fFinalResultProfiles[LAST_EFINALPROFILE];
   TString fFinalResultProfileNames[LAST_EFINALPROFILE][LAST_ENAME];
   Double_t fFinalResultProfileBins[LAST_EFINALPROFILE][LAST_EBINS];
+  // only fill control histograms
+  Bool_t fFillControlHistogramsOnly;
 
   // Monte Carlo on the fly/closure
   Bool_t fMCOnTheFly;
@@ -541,7 +576,7 @@ private:
   std::vector<std::vector<Int_t>> fCorrelators;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 10);
+  ClassDef(AliAnalysisTaskAR, 11);
 };
 
 #endif

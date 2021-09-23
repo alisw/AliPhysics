@@ -54,6 +54,10 @@ class AliMCEvent;
 
 // EMCAL includes
 #include "AliEMCALRecoUtilsBase.h"
+#include "AliEMCALCalibData.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliCaloConstants.h"
 class AliEMCALGeometry;
 class AliEMCALPIDUtils;
 class AliESDtrack;
@@ -169,6 +173,7 @@ public:
   void     SetNonLinearityThreshold(Int_t threshold)     { fNonLinearThreshold = threshold ; } //only for Alexie's non linearity correction
   Int_t    GetNonLinearityThreshold()              const { return fNonLinearThreshold      ; }
   void     SetUseTowerShaperNonlinarityCorrection(Bool_t doCorr)     { fUseShaperNonlin = doCorr ; }
+  void     SetUseDetermineLowGain(Bool_t doCorr)     { fUseDetermineLowGain = doCorr ; }
   void     SetUseTowerAdditionalScaleCorrection(Bool_t doCorr)       { fUseAdditionalScale = doCorr;}
   void     SetTowerAdditionalScaleCorrection(Int_t i, Float_t val)   { if(i < 3 && i >= 0) fAdditionalScaleSM[i] = val;
                                                                        else AliInfo(Form("fAdditionalScaleSM index %d larger than 3 or negative, do nothing\n",i));}
@@ -231,7 +236,7 @@ public:
   void     SetEMCALChannelRecalibrationFactor1D(UInt_t icell, Double_t c = 1) {
     if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors1D() ;
     ((TH1S*)fEMCALRecalibrationFactors->At(0))->SetBinContent(icell,c) ; }
-
+  Bool_t   GetCellLGInfoFromADC(Int_t absId, AliVCaloCells* cells) ; // 
   // Recalibrate channels energy with run dependent corrections
   Bool_t   IsRunDepRecalibrationOn()               const { return fUseRunCorrectionFactors ; }
   void     SwitchOffRunDepCorrection()                   { fUseRunCorrectionFactors = kFALSE ; }
@@ -408,7 +413,7 @@ public:
   void     SetEMCALChannelStatusMap(Int_t iSM , const TH2I* h);
   void     SetEMCALChannelStatusMap1D(const TH1C* h);
   Bool_t   ClusterContainsBadChannel(const AliEMCALGeometry* geom, const UShort_t* cellList, Int_t nCells);
-
+  void     SetEMCALCalibData(AliEMCALCalibData* cfile);
   //-----------------------------------------------------
   // Recalculate other cluster parameters
   //-----------------------------------------------------
@@ -630,6 +635,8 @@ private:
   Float_t    fNonLinearityParams[10];    ///< Parameters for the non linearity function
   Int_t	     fNonLinearThreshold;        ///< Non linearity threshold value for kBeamTest non linearity function
   Bool_t     fUseShaperNonlin;           ///< Shaper non linearity correction for towers
+  Bool_t     fUseDetermineLowGain;       ///< If set on true, wether a cell is low gain or high gain is not taken from cell info but calculated directly from cell ADC value
+  AliEMCALCalibData* fCalibData;         ///< EMCAL calib data
   Bool_t     fUseAdditionalScale;        ///< Switch for additional scale on cell level. Should not be used for standard Analyses
   Float_t    fAdditionalScaleSM[3];      ///< Value for additional scale on cell level. Should not be used for standard Analyses
 
@@ -750,7 +757,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 42) ;
+  ClassDef(AliEMCALRecoUtils, 43) ;
   /// \endcond
 
 };

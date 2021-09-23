@@ -89,6 +89,10 @@ AliAnalysisTaskJPsi_DG::AliAnalysisTaskJPsi_DG() : // initializer list
     // Histograms:
     hCounterCuts(0),
     hCounterTrigger(0),
+    hVertexContrib(0),
+    hVertexZ(0),
+    hADdecision(0),
+    hV0decision(0),
     // PID, sigmas:
     fTrk1SigIfMu(0),
     fTrk1SigIfEl(0),
@@ -98,6 +102,8 @@ AliAnalysisTaskJPsi_DG::AliAnalysisTaskJPsi_DG() : // initializer list
     fPt(0), fPhi(0), fY(0), fM(0),
     // Two tracks:
     fPt1(0), fPt2(0), fEta1(0), fEta2(0), fPhi1(0), fPhi2(0), fQ1(0), fQ2(0),
+    // Vertex info:
+    fVertexZ(0), fVertexContrib(0),
     // Info from the detectors:
     // ZDC
     fZNA_energy(0), fZNC_energy(0),
@@ -123,6 +129,10 @@ AliAnalysisTaskJPsi_DG::AliAnalysisTaskJPsi_DG(const char* name) : // initialize
     // Histograms:
     hCounterCuts(0),
     hCounterTrigger(0),
+    hVertexContrib(0),
+    hVertexZ(0),
+    hADdecision(0),
+    hV0decision(0),
     // PID, sigmas:
     fTrk1SigIfMu(0),
     fTrk1SigIfEl(0),
@@ -132,6 +142,8 @@ AliAnalysisTaskJPsi_DG::AliAnalysisTaskJPsi_DG(const char* name) : // initialize
     fPt(0), fPhi(0), fY(0), fM(0),
     // Two tracks:
     fPt1(0), fPt2(0), fEta1(0), fEta2(0), fPhi1(0), fPhi2(0), fQ1(0), fQ2(0),
+    // Vertex info:
+    fVertexZ(0), fVertexContrib(0),
     // Info from the detectors:
     // ZDC
     fZNA_energy(0), fZNC_energy(0),
@@ -175,7 +187,7 @@ void AliAnalysisTaskJPsi_DG::UserCreateOutputObjects()
     // OUTPUT TREE:
 
     fTreeJPsi = new TTree("fTreeJPsi", "fTreeJPsi");
-    // Basic things
+    // Basic things:
     fTreeJPsi->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
     fTreeJPsi->Branch("fTriggerName", &fTriggerName);
     // PID, sigmas:
@@ -197,12 +209,15 @@ void AliAnalysisTaskJPsi_DG::UserCreateOutputObjects()
     fTreeJPsi->Branch("fPhi2", &fPhi2, "fPhi2/D");
     fTreeJPsi->Branch("fQ1", &fQ1, "fQ1/D");
     fTreeJPsi->Branch("fQ2", &fQ2, "fQ2/D");
+    // Vertex info:
+    fTreeJPsi->Branch("fVertexZ", &fVertexZ, "fVertexZ/D");
+    fTreeJPsi->Branch("fVertexContrib", &fVertexContrib, "fVertexContrib/I");    
     // Info from the detectors:
-    // ZDC
+    // ZDC:
     fTreeJPsi->Branch("fZNA_energy", &fZNA_energy, "fZNA_energy/D");
     fTreeJPsi->Branch("fZNC_energy", &fZNC_energy, "fZNC_energy/D");
-    fTreeJPsi->Branch("fZNA_time", &fZNA_time[0], "fZNA_TDC[4]/D");
-    fTreeJPsi->Branch("fZNA_time", &fZNC_time[0], "fZNC_TDC[4]/D");
+    fTreeJPsi->Branch("fZNA_time", &fZNA_time[0], "fZNA_time[4]/D");
+    fTreeJPsi->Branch("fZNC_time", &fZNC_time[0], "fZNC_time[4]/D");
     // V0:
     fTreeJPsi->Branch("fV0A_dec", &fV0A_dec, "fV0A_dec/I");
     fTreeJPsi->Branch("fV0C_dec", &fV0C_dec, "fV0C_dec/I");
@@ -213,7 +228,7 @@ void AliAnalysisTaskJPsi_DG::UserCreateOutputObjects()
     fTreeJPsi->Branch("fADC_dec", &fADC_dec, "fADC_dec/I");
     fTreeJPsi->Branch("fADA_time", &fADA_time, "fADA_time/D");
     fTreeJPsi->Branch("fADC_time", &fADC_time, "fADC_time/D");
-    // Matching SPD clusters with FOhits
+    // Matching SPD clusters with FOhits:
     fTreeJPsi->Branch("fMatchingSPD", &fMatchingSPD, "fMatchingSPD/O");
     
     PostData(1, fTreeJPsi);
@@ -244,6 +259,18 @@ void AliAnalysisTaskJPsi_DG::UserCreateOutputObjects()
 
     hCounterTrigger = new TH1F("hCounterTrigger", "# of events per run passing central triggers", nRuns, nFirstRun-0.5, nLastRun+0.5);
     fOutputList->Add(hCounterTrigger);
+
+    hVertexZ = new TH1F("hVertexZ","hVertexZ",600,-30,30);
+    fOutputList->Add(hVertexZ);
+
+    hVertexContrib = new TH1F("hVertexContrib","hVertexContrib",103,-2,100);
+    fOutputList->Add(hVertexContrib);
+
+    hADdecision = new TH2I("hADdecision","hADdecision",7,-2,5,7,-2,5);
+    fOutputList->Add(hADdecision);
+
+    hV0decision = new TH2I("hV0decision","hV0decision",7,-2,5,7,-2,5);
+    fOutputList->Add(hV0decision);
 
     PostData(2, fOutputList); 
 
@@ -301,17 +328,64 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
         iSelectionCounter++;
     // ##########################################################
 
-    // Get the run number associated to the ESD event
+    // Get the run number associated with the ESD event
     fRunNumber = fEvent->GetRunNumber(); 
 
     // Time range cuts: https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGRunList18r 
     fTimeRangeCut.InitFromEvent(InputEvent());
     if(fTimeRangeCut.CutEvent(InputEvent())) return;
 
+    // Check the central UPC trigger CCUP31
+    // Fill the hCounterTrigger (to calculate the integrated lumi of the analysed sample)
+    // Cut on trigger will be performed later (# 4)
+    fTriggerName = fEvent->GetFiredTriggerClasses();
+    Bool_t triggered = kFALSE;
+    if(fRunNumber < 295881){
+        if(fTriggerName.Contains("CCUP31-B-NOPF-CENTNOTRD")){
+            triggered = kTRUE;
+            hCounterTrigger->Fill(fRunNumber);
+        } 
+    }
+    if(fRunNumber >= 295881){
+        if(fTriggerName.Contains("CCUP31-B-SPD2-CENTNOTRD")){
+            triggered = kTRUE;
+            hCounterTrigger->Fill(fRunNumber);
+        }
+    }
+
+    // Forward detectors
+    // Store the data to the analysis tree
+    // and fill the 2D histograms with V0 and AD responses
+    
+    // AD
+    AliVAD *fADdata = fEvent->GetADData();
+
+    fADA_dec = fADdata->GetADADecision();
+    fADC_dec = fADdata->GetADCDecision();
+    fADA_time = fADdata->GetADATime();
+    fADC_time = fADdata->GetADCTime();
+    hADdecision->Fill(fADA_dec,fADC_dec);
+
+    // V0
+    AliVVZERO *fV0data = fEvent->GetVZEROData();
+
+    fV0A_dec = fV0data->GetV0ADecision();
+    fV0C_dec = fV0data->GetV0CDecision();
+    fV0A_time = fV0data->GetV0ATime();
+    fV0C_time = fV0data->GetV0CTime();
+    hV0decision->Fill(fV0A_dec,fV0C_dec);
+    
     // ##########################################################
         // CUT 1 & 2
         // Check if each event has at maximum 1 vertex within 15 cm from the IP in beam direction
         const AliVVertex *fVertex = fEvent->GetPrimaryVertex();
+
+        // Fill the trees and histograms
+        fVertexZ = fVertex->GetZ();
+        hVertexZ->Fill(fVertexZ);
+        fVertexContrib = fVertex->GetNContributors();
+        hVertexContrib->Fill(fVertexContrib);
+
         // At least two tracks associated with the vertex
         if(fVertex->GetNContributors()<2)
         {                                          
@@ -321,6 +395,7 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
         }
         hCounterCuts->Fill(iSelectionCounter);
         iSelectionCounter++;
+
         // Distance from the IP lower than 15 cm
         if(TMath::Abs(fVertex->GetZ())>15)
         {                                          
@@ -367,21 +442,6 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
     // ##########################################################
         // CUT 4
         // Central UPC trigger CCUP31
-        // Filling the histograms for the purposes of luminosity calculation
-        fTriggerName = fEvent->GetFiredTriggerClasses();
-        Bool_t triggered = kFALSE;
-        if(fRunNumber < 295881){
-            if(fTriggerName.Contains("CCUP31-B-NOPF-CENTNOTRD")){
-                triggered = kTRUE;
-                hCounterTrigger->Fill(fRunNumber);
-            } 
-        }
-        if(fRunNumber >= 295881){
-            if(fTriggerName.Contains("CCUP31-B-SPD2-CENTNOTRD")){
-                triggered = kTRUE;
-                hCounterTrigger->Fill(fRunNumber);
-            }
-        }
         if(!triggered)
         {
             PostData(1, fTreeJPsi);
@@ -438,27 +498,10 @@ void AliAnalysisTaskJPsi_DG::UserExec(Option_t *)
     delete [] fIndicesOfGoodTracks;
 
     // ##########################################################
-    // Data from the other detectors
 
-    // AD
-    AliVAD *fADdata = fEvent->GetADData();
-    // Store the data to the analysis tree
-    fADA_dec = fADdata->GetADADecision();
-    fADC_dec = fADdata->GetADCDecision();
-    fADA_time = fADdata->GetADATime();
-    fADC_time = fADdata->GetADCTime();
-
-    // V0
-    AliVVZERO *fV0data = fEvent->GetVZEROData();
-    // Store the data to the analysis tree
-    fV0A_dec = fV0data->GetV0ADecision();
-    fV0C_dec = fV0data->GetV0CDecision();
-    fV0A_time = fV0data->GetV0ATime();
-    fV0C_time = fV0data->GetV0CTime();
-
-    // ZDC
+    // Data from the ZDC
   	AliESDZDC *fZDCdata = (AliESDZDC*)fEvent->GetZDCData();
-      // Store the data to the analysis tree
+    // Store the data to the analysis tree
   	fZNA_energy = fZDCdata->GetZNATowerEnergy()[0];
   	fZNC_energy = fZDCdata->GetZNCTowerEnergy()[0];
 
@@ -548,8 +591,8 @@ Bool_t AliAnalysisTaskJPsi_DG::IsSTGFired(TBits bits, Int_t dphiMin, Int_t dphiM
     for (Int_t dphi=dphiMin;dphi<=dphiMax;dphi++) for (Int_t i=0; i<20; ++i) stg |= phi[i] & phi[(i+dphi)%20];
     return stg;
 }
-void AliAnalysisTaskJPsi_DG::Terminate(Option_t *)
 //_____________________________________________________________________________
+void AliAnalysisTaskJPsi_DG::Terminate(Option_t *)
 {
     // the end
 }

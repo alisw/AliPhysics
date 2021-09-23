@@ -223,6 +223,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
     	TH2F* fHadronEtaPhi;	    // eta vs. phi (hadron)
         
     	TH1F* fHist_Tracklet;
+
+	TH2F *fNsigma_Electron;
+	TH2F *fNsigma_Hadron;
     
     
         //---- MC output ----//

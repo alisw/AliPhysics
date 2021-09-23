@@ -158,6 +158,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDisableITSatHighPt{100.f}
    ,fDisableTPCpidAtHighPt{100.f}
    ,fEnablePtCorrection{false}
+   ,fRequireITSrefit{true}
+   ,fRequireTPCrefit{true}
    ,fRequireITSrecPoints{2u}
    ,fRequireTPCrecPoints{0u}
    ,fRequireITSsignal{0u}
@@ -169,6 +171,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireYmin{-0.5f}
    ,fRequireYmax{0.5f}
    ,fRequireMaxChi2{4.f}
+   ,fRequireMaxITSChi2{36.f}
    ,fRequireMaxDCAxy{0.12f}
    ,fRequireMaxDCAz{1.f}
    ,fRequireTPCpidSigmas{3.f}
@@ -190,6 +193,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fITSelectronRejectionSigma{-1.}
    ,fBeamRapidity{0.f}
    ,fEstimator{0}
+   ,fRequirePrimaryFromDistance{false}
+   ,fDistCut{0.001}
    ,fEnableFlattening{false}
    ,fSaveTrees{false}
    ,fTOFminPtTrees{100}
@@ -989,4 +994,15 @@ Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliNanoAODTrack *track) {
     return kTRUE;
   else
     return kFALSE;
+}
+
+bool AliAnalysisTaskNucleiYield::IsPrimaryFromDistance(const AliAODMCParticle *part) {
+  AliVEvent *evt = InputEvent();
+  AliAODMCHeader* header = (AliAODMCHeader *)evt->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  double primVert[3];
+  double partVert[3];
+  part->XvYvZv(partVert);
+  primVert[0] = header->GetVtxX(), primVert[1] = header->GetVtxY(), primVert[2] = header->GetVtxZ();
+  double distance = Dist(primVert, partVert);
+  return distance < fDistCut;
 }
