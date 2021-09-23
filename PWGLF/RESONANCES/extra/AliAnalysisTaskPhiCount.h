@@ -1,5 +1,5 @@
 // TODO LIST
-// TODO: You're all set!
+// TODO: Add Invariant Mass to the Efficiency ( Migrate from canidate MC tree ? Add rec px, py, pz ? ) to check the Invariant Mass dependence of the Phi meson ( Rec (Gen IM) / Gen (Gen IM) ) not ( Rec (Rec IM) / Gen (Gen IM) )
 
 #ifndef AliAnalysisTaskPhiCount_H
 #define AliAnalysisTaskPhiCount_H
@@ -36,6 +36,8 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        SetMCFlag                   ( Bool_t    MCFlag )            { kMCbool = MCFlag; };
     void                        SetPhiFlag                  ( Bool_t    PhiFlag )           { kPhibool = PhiFlag; };
     void                        SetKaonFlag                 ( Bool_t    KaonFlag )          { kKaonbool = KaonFlag; };
+    void                        SetSPCompute                ( Bool_t    SPFlag )            { kComputeSpherocity = SPFlag; };
+    void                        SetSPWighted                ( Bool_t    SPWeightFlag )      { kSpherocityPTWeight = SPWeightFlag; };
     void                        SetFilterBit                ( Int_t     FilterBit )         { kFilterBit = FilterBit; };
     void                        SetVertexCut                ( Float_t   VertexCut )         { kVertexCut = VertexCut; };
     void                        SetDCAzCut                  ( Float_t   DCAzCut )           { kDCAzCut = DCAzCut; };
@@ -67,6 +69,8 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        fSetZero                    ( );
     //
     Bool_t                      kMCbool;                    //  MC Flag
+    Bool_t                      kComputeSpherocity;         //  Spherocity Flag
+    Bool_t                      kSpherocityPTWeight;        //  Spherocity PT Weighted Flag
     Bool_t                      kPhibool;                   //  Phi tree Flag
     Bool_t                      kKaonbool;                  //  Kaon tree Flag
     Float_t                     kVertexCut;                 //  VertexCut
@@ -97,6 +101,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     bool                        fCheckINELgt0               ( );
     void                        fFillEventEnumerate         ( Int_t iIndex );
     void                        fFillEventEnumerate         ( TString iBinName );
+    void                        uCalculateSpherocity        ( );
     //
     AliAODEvent                *fAOD;                       //! input event AOD Format
     AliESDEvent                *fESD;                       //! input event ESD Format
@@ -144,8 +149,8 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Float_t                     fBetaFromTOFSignal;         //! Particle beta from TOF signal
     Float_t                     fTPCSignal;                 //! Particle dE/dX in TPC
     Float_t                     kSgTPC_Alone;               // TPC Alone Sigma limit
-    Float_t                     kSgTPC_TOFVt;               // TPC Alone Sigma limit
-    Float_t                     kSgTOF_Veto;                // TPC Alone Sigma limit
+    Float_t                     kSgTPC_TOFVt;               // TPC TOF Veto Sigma limit
+    Float_t                     kSgTOF_Veto;                // TOF Veto Sigma limit
     //
     //>->->     PID Kaons QC
     //
@@ -198,9 +203,6 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     TH3F                       *fQC_Kaons_TOF_PT;           //! Kaons TOF Signal in Transverse Momentum
     TH3F                       *fQC_Kaons_TPC_P;            //! Kaons TPC Signal in Momentum
     TH3F                       *fQC_Kaons_TPC_PT;           //! Kaons TPC Signal in Transverse Momentum
-    
-    /* - - - */
-    
     //
     //>->->     PID
     //
@@ -221,11 +223,19 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     TH3F                       *fQC_PID_TPC_Sgnl_SEL_Kaons_P;   //! Analysis output list
     TH3F                       *fQC_PID_TPC_Sgnl_SEL_Kaons_PT;  //! Analysis output list
     //
+    //>->->     GENERAL
+    //
+    TH2F                       *fQC_Phi_InvMass_Rec;            //! Test
+    TH2F                       *fQC_Phi_InvMass_Gen;            //! Test
+    TH2F                       *fQC_Phi_InvMass_Eff;            //! Test
+    //
+    
     //>->->->->->->->->->->->->->->->->->->->->->->->->->-> Output
     //
     // Event Variables
     //
     //>->   General Utilities
+    Float_t                     fCurrent_SPH;               //! Event Spherocity
     Float_t                     fCurrent_V0M;               //! Event Multiplicity
     Float_t                     fCurrent_TRK;               //! Event Multiplicity
     Int_t                       fCurrent_Run;               //! Current Run Number
