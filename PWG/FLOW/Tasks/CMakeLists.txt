@@ -98,6 +98,7 @@ set(SRCS
   AliAnalysisTaskMuPa.cxx
   AliAnalysisTaskAR.cxx
   AliAnalysisTaskGammaDeltaPID.cxx
+  AliAnalysisTaskCMWESE.cxx
 )
 
 # Headers from sources
