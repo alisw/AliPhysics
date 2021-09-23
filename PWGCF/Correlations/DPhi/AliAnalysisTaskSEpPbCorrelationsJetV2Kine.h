@@ -21,7 +21,7 @@ class AliAnalysisTaskSEpPbCorrelationsJetV2Kine : public AliAnalysisTaskSE {
  void SetTrigPtBinning(Int_t nBins, Double_t *limits);
  void SetAssocPtBinning(Int_t nBins, Double_t *limits);
  void SetCentBinning(Int_t nBins, Double_t *limits);
- void FillCorrelationTracksTPCTPC(TObjArray *triggerArray, TObjArray *associateArray, AliTHn *triggerHist, AliTHn *correlationHist, TObjArray *selected_TPC_Pairs, Double_t dCentrality);
+ void FillCorrelationTracksTPCTPC(TObjArray *triggerArray, TObjArray *associateArray, AliTHn *triggerHist, AliTHn *correlationHist, TObjArray *selected_TPC_Pairs, Double_t dcentrality);
  void FillCorrelationTracksTPCTPCMixed(Double_t centrality, TObjArray *triggerArray, TObjArray *associateArray, AliTHn *MixedCorrelation);
  void FillCorrelationTracksTPCTPCFMDA(TObjArray *triggerArray, TObjArray *associateArray, AliTHn *triggerHist, AliTHn *correlationHist);
  void FillCorrelationTracksTPCTPCFMDA_Mixed(Double_t centrality, TObjArray *triggerArray, TObjArray *associateArray, AliTHn *correlationHist);

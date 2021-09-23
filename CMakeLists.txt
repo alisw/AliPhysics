@@ -97,6 +97,7 @@ endif()
 unset(isSystemDir)
 
 # Optional: Doxygen for reference doc generation
+set(DOXYGEN_EXECUTABLE "")
 find_package(Doxygen)
 if(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
   message(STATUS "Doxygen ${DOXYGEN_VERSION} and Graphviz found: ${DOXYGEN_EXECUTABLE}, ${DOXYGEN_DOT_EXECUTABLE}")
@@ -297,8 +298,8 @@ foreach(TEST_LIB ${ALILIBSTESTED})
   add_test(load_library_${TEST_LIB}
     env
     PATH=$ENV{PATH}
-    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
-    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=${KFPARTICLE}/lib:${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${KFPARTICLE}/lib:${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
     ROOT_HIST=0
     root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/test/load_library/LoadLib.C(\"lib${TEST_LIB}\")")
 endforeach()

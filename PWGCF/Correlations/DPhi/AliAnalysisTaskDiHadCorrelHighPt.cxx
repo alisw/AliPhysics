@@ -2200,11 +2200,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodPrimaryTrackESD(const AliESDtra
  {      
           // Pseudorapidity cut
           if (TMath::Abs(t->Eta())>=fEtaCut) return kFALSE;
-          const AliESDEvent* esdEvent = (AliESDEvent*) t->GetESDEvent();
-          if(!esdEvent) {
-            cout << "No ESD event" << endl;
-            return kFALSE;
-          }
+          
           if(fFilterBit==16||fFilterBit==256){
             fESDTrackCuts->SetMaxDCAToVertexXY(2.4); 
             fESDTrackCuts->SetMaxDCAToVertexZ(3.2); 
@@ -2717,7 +2713,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
         triggEta = trig->Eta();
         triggPhi = trig->Phi();
         if(triggPt<fPtTrigMin) continue;
-        if(trig->WhichCandidate()<4) continue;
+        if(trig->WhichCandidate()<4&&trig->WhichCandidate()>0) continue;
         if(Xih) massTrig=trig->M();
 
         Int_t idbintrigg [4];

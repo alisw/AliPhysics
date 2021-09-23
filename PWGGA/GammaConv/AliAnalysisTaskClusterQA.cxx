@@ -23,7 +23,6 @@
 #include "TChain.h"
 #include "TRandom.h"
 #include "AliAnalysisManager.h"
-#include "TParticle.h"
 #include "TVectorF.h"
 #include "AliPIDResponse.h"
 #include "TFile.h"
@@ -646,7 +645,7 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
     if (cluster->GetNLabels()>0){
       if((cluster->GetLabelAt(0)!=-1)){
         if(fInputEvent->IsA()==AliESDEvent::Class()){
-          fBuffer_Mother_MC_Label = (fMCEvent->Particle(cluster->GetLabelAt(0)))->GetPdgCode();   // mother of leading contribution
+          fBuffer_Mother_MC_Label = (fMCEvent->GetTrack(cluster->GetLabelAt(0)))->PdgCode();   // mother of leading contribution
         } else if(fInputEvent->IsA()==AliAODEvent::Class()){
           TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
           if (AODMCTrackArray == NULL) return;
@@ -766,7 +765,7 @@ Int_t AliAnalysisTaskClusterQA::MakePhotonCandidates(AliVCluster* clus, AliVCalo
   // Float_t   maxEList[nc];
 
   // GetNLM
-  // Int_t nlm = fClusterCutsEMC->GetNumberOfLocalMaxima(clus,fInputEvent,absCellIdList,maxEList);
+  // fClusterCutsEMC->GetNumberOfLocalMaxima(clus,fInputEvent,absCellIdList,maxEList);
 
   // split clusters according to their shares in the cluster (NLM == 1) needs to be treated differently
   if (fMinNLMCut == 1 && fMaxNLMCut == 1 ){
@@ -1015,8 +1014,8 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
-  TParticle *Photon = NULL;
-  TParticle *Pi0Dummy = NULL;
+  AliMCParticle *Photon = NULL;
+  AliMCParticle *Pi0Dummy = NULL;
   if (TrueClusterCandidate->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
   if (TrueClusterCandidate->GetCaloPhotonMCLabel(0) < 0){
       mcLabelCluster = -10;
@@ -1029,16 +1028,16 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0){
     fBuffer_Cluster_MC_EFracFirstLabel = cluster->GetClusterMCEdepFraction(0);
 
-    fBuffer_Cluster_MC_TrueEFirstLabel = fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMCLabel(0))->Energy();
-    fBuffer_Cluster_MC_FirstLabel = fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMCLabel(0))->GetPdgCode();
+    fBuffer_Cluster_MC_TrueEFirstLabel = ((AliMCParticle*) fMCEvent->GetTrack(TrueClusterCandidate->GetCaloPhotonMCLabel(0)))->E();
+    fBuffer_Cluster_MC_FirstLabel = ((AliMCParticle*) fMCEvent->GetTrack(TrueClusterCandidate->GetCaloPhotonMCLabel(0)))->PdgCode();
 
     if(TrueClusterCandidate->GetNNeutralPionMCLabels()>0){
       if(TrueClusterCandidate->GetLeadingNeutralPionIndex()>-1){
         fBuffer_Cluster_MC_EFracLeadingPi0 = TrueClusterCandidate->GetNeutralPionEnergyFraction(TrueClusterCandidate->GetLeadingNeutralPionIndex());
-        Pi0Dummy         = fMCEvent->Particle(TrueClusterCandidate->GetNeutralPionMCLabel(TrueClusterCandidate->GetLeadingNeutralPionIndex()));
+        Pi0Dummy         = (AliMCParticle*) fMCEvent->GetTrack(TrueClusterCandidate->GetNeutralPionMCLabel(TrueClusterCandidate->GetLeadingNeutralPionIndex()));
         if(Pi0Dummy){
           fBuffer_Cluster_MC_LeadingPi0_Pt = Pi0Dummy->Pt();
-          fBuffer_Cluster_MC_LeadingPi0_E = Pi0Dummy->Energy();
+          fBuffer_Cluster_MC_LeadingPi0_E = Pi0Dummy->E();
           if(fSaveEventsInVector) fVTrueNeutralPionDaughterIndex.push_back(TrueClusterCandidate->GetNeutralPionMCLabel(TrueClusterCandidate->GetLeadingNeutralPionIndex()));
         } else {
           if(fSaveEventsInVector) fVTrueNeutralPionDaughterIndex.push_back(-1);
@@ -1056,10 +1055,10 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
     // -> the leading neutral pion has a larger cluster energy fraction than the cluster label 0
     if( TrueClusterCandidate->GetNNeutralPionMCLabels()>0 && TrueClusterCandidate->GetLeadingNeutralPionDaughterIndex()!=0 && TrueClusterCandidate->GetNeutralPionEnergyFraction(TrueClusterCandidate->GetLeadingNeutralPionIndex())>cluster->GetClusterMCEdepFraction(0)) {
       // load particle corresponding to largest daughter of leading pi0
-      Photon         = fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMCLabel(TrueClusterCandidate->GetLeadingNeutralPionDaughterIndex()));
+      Photon         = (AliMCParticle*) fMCEvent->GetTrack(TrueClusterCandidate->GetCaloPhotonMCLabel(TrueClusterCandidate->GetLeadingNeutralPionDaughterIndex()));
     } else {
       // load particle corresponding to MC label 0 in cluster
-      Photon         = fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMCLabel(0));
+      Photon         = (AliMCParticle*) fMCEvent->GetTrack(TrueClusterCandidate->GetCaloPhotonMCLabel(0));
     }
   } else {
     // return if there are no MC labels in the cluster
@@ -1099,7 +1098,7 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
       motherLab       = TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0);
   } else if (TrueClusterCandidate->GetNCaloPhotonMotherMCLabels()> 0){
     if (TrueClusterCandidate->IsLargestComponentElectron() || TrueClusterCandidate->IsLargestComponentPhoton()){
-      if (TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) > -1 && (fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->GetPdgCode() == 111 || fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->GetPdgCode() == 221) ){
+      if (TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) > -1 && (fMCEvent->GetTrack(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->PdgCode() == 111 || fMCEvent->GetTrack(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->PdgCode() == 221) ){
         if ( TrueClusterCandidate->IsConversion() && !TrueClusterCandidate->IsConversionFullyContained() ){
           clusterClass  = 3;
           motherLab       = TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0);
@@ -1111,7 +1110,7 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
     } else if (TrueClusterCandidate->IsSubLeadingEM()){
       if (TrueClusterCandidate->GetNCaloPhotonMotherMCLabels()> 1){
         if ( TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1) > -1){
-          if (fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1))->GetPdgCode() == 111 || fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1))->GetPdgCode() == 221 ){
+          if (fMCEvent->GetTrack(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1))->PdgCode() == 111 || fMCEvent->GetTrack(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1))->PdgCode() == 221 ){
             clusterClass  = 2;
             motherLab       = TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1);
           }
@@ -1123,12 +1122,12 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
   }
 
   // Get Mother particle
-  TParticle *mother = NULL;
-  Int_t motherPDG   = -1;
+  AliMCParticle *mother = NULL;
+  Int_t motherPDG = -1;
   if (motherLab > -1)
-     mother           = fMCEvent->Particle(motherLab);
+     mother = (AliMCParticle*) fMCEvent->GetTrack(motherLab);
   if (mother)
-      motherPDG = TMath::Abs(mother->GetPdgCode());
+      motherPDG = TMath::Abs(mother->PdgCode());
 
   //
   if (clusterClass == 1 || clusterClass == 2 || clusterClass == 3 ){
@@ -1179,23 +1178,23 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
       else if (motherLab == 11)                 mcLabelCluster = 42; // photon from electron
       else if (motherLab == 22){ // check for frag photon
 
-        TParticle *dummyMother = fMCEvent->Particle(motherLab);
+        AliMCParticle *dummyMother = (AliMCParticle*) fMCEvent->GetTrack(motherLab);
         Bool_t originReached   = kFALSE;
         Bool_t isFragPhoton    = kFALSE;
 
-        while (dummyMother->GetPdgCode() == 22 && !originReached){ // follow photon's history, as long as the mother is a photon
-          if (dummyMother->GetMother(0) > -1){
-            dummyMother = fMCEvent->Particle(dummyMother->GetMother(0));
-            if (TMath::Abs(dummyMother->GetPdgCode()) == 22){ // if mother of mother is again a photon, continue
-              if (dummyMother->GetMother(0) > -1){
-                dummyMother   = fMCEvent->Particle(dummyMother->GetMother(0));
+        while (dummyMother->PdgCode() == 22 && !originReached){ // follow photon's history, as long as the mother is a photon
+          if (dummyMother->GetMother() > -1){
+            dummyMother = (AliMCParticle*) fMCEvent->GetTrack(dummyMother->GetMother());
+            if (TMath::Abs(dummyMother->PdgCode()) == 22){ // if mother of mother is again a photon, continue
+              if (dummyMother->GetMother() > -1){
+                dummyMother   = (AliMCParticle*) fMCEvent->GetTrack(dummyMother->GetMother());
               } else {
                 originReached = kTRUE;
               }
             } else {
               originReached = kTRUE;
             }
-            isFragPhoton = (TMath::Abs(dummyMother->GetPdgCode()) < 6);// photon stems from quark = fragmentation photon
+            isFragPhoton = (TMath::Abs(dummyMother->PdgCode()) < 6);// photon stems from quark = fragmentation photon
           } else {
             originReached = kTRUE;
           }

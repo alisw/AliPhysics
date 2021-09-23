@@ -221,6 +221,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   THnSparse                   *HFjetCorr2;
   THnSparse                   *HFjetCorr3;
   THnSparse                   *HFjetCorrUE;
+  THnSparse                   *HFjetCorrUE_bgfrac;
   THnSparse                   *HFjetParticle;
   TH2D                        *HFjetDCA_c;
   TH2D                        *HFjetDCA_b;
@@ -247,6 +248,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistBGfrac;
   TH1F                        *fHistBGfracHFEev;
   TH1F                        *fHistBGrandHFEev;
+	TH2D                        *fHistNtrBGfrac;
   TH1F                        *fHistUE_org;
   TH1F                        *fHistUE_true;
   TH1F                        *fHistUE_reco;
@@ -273,23 +275,25 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TF1                         *fFONLL_B;
   TH2F                        *fzvtx_Ntrkl;
   TH2F                        *fzvtx_Ntrkl_Corr;
-	TH2F                        *fNchNtr;
-	TF1                         *fCorrZvtx;
-	TF1                         *fCorrNtrkl;
-	TH1F                        *fzvtx_Corr;
-	TH1F                        *fNtrkl_Corr;
-	TH2F                        *fzvtx_Nch;
-	TH2F                        *fNchNtr_Corr;
+  TH2F                        *fNchNtr;
+  TF1                         *fCorrZvtx;
+  TF1                         *fCorrNtrkl;
+  TH1F                        *fzvtx_Corr;
+  TH1F                        *fNtrkl_Corr;
+  TH2F                        *fzvtx_Nch;
+  TH2F                        *fNchNtr_Corr;
   TH1D                        *fweightNtrkl;
-	THnSparse                   *fNtrklcorr_HFjet;
-	THnSparse                   *fNtrklcorr_ULSjet;
-	THnSparse                   *fNtrklcorr_LSjet;
+  THnSparse                   *fNtrklcorr_HFjet;
+  THnSparse                   *fNtrklcorr_ULSjet;
+  THnSparse                   *fNtrklcorr_LSjet;
   THnSparse                   *fNtrklcorr_Hadjet;
-	THnSparse                   *fNtrklEopHFE;
-	THnSparse                   *fNtrklEopHad;
-	TH1D                        *fHistphoPi0MC;
-	TH1D                        *fHistphoEtaMC;
-	TH2D                        *fNtrklRhoarea;
+  THnSparse                   *fNtrklEopHFE;
+  THnSparse                   *fNtrklEopHad;
+  TH1D                        *fHistphoPi0MC;
+  TH1D                        *fHistphoEtaMC;
+  TH2D                        *fNtrklRhoarea;
+  TString fbgfracFile;
+  TH1D                        *fDelta_pT;
 
   TRandom                     *generator;
 

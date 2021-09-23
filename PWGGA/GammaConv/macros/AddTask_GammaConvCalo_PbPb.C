@@ -453,6 +453,37 @@ void AddTask_GammaConvCalo_PbPb(
   } else if (trainConfig == 107){ // PHOS clusters no timing
     cuts.AddCutPCMCalo("50900013","00200009297002008250400000","2444400002033200000","0163103100000010"); // 0-90%
 
+  } else if (trainConfig == 107){ // EMCAL clusters
+    cuts.AddCutPCMCalo("50910013","00200009f9730000dge0404000","11111010500a2220000","01331031000000d0"); // 0-90%
+    cuts.AddCutPCMCalo("50110013","00200009f9730000dge0404000","11111010500a2220000","01331061000000d0"); //
+    cuts.AddCutPCMCalo("51310013","00200009f9730000dge0404000","11111010500b2220000","01331061000000d0"); //
+    cuts.AddCutPCMCalo("53510013","00200009f9730000dge0404000","1111101050032220000","01331031000000d0"); //
+    cuts.AddCutPCMCalo("55910013","00200009f9730000dge0404000","1111101050032220000","01331031000000d0"); //
+  } else if (trainConfig == 108){ // EMCAL clusters no timing cut
+    cuts.AddCutPCMCalo("50980013","00200009f9730000dge0404000","11111010500a2220000","01331031000000d0"); // 0-90%
+    cuts.AddCutPCMCalo("50180013","00200009f9730000dge0404000","11111010500a2220000","01331061000000d0"); //
+    cuts.AddCutPCMCalo("51380013","00200009f9730000dge0404000","11111010500b2220000","01331061000000d0"); //
+    cuts.AddCutPCMCalo("53580013","00200009f9730000dge0404000","1111101050032220000","01331031000000d0"); //
+    cuts.AddCutPCMCalo("55980013","00200009f9730000dge0404000","1111101050032220000","01331031000000d0"); //
+  } else if (trainConfig == 109){ // EMCAL clusters
+    cuts.AddCutPCMCalo("50910013","00200009f9730000dge0404000","11111010500a2220000","01331031000000d0"); // 0-90%
+    cuts.AddCutPCMCalo("50110013","00200009f9730000dge0404000","11111010500a2220000","01331061000000d0"); //
+    cuts.AddCutPCMCalo("51310013","00200009f9730000dge0404000","11111010500b2220000","01331061000000d0"); //
+    cuts.AddCutPCMCalo("53510013","00200009f9730000dge0404000","1111101050032220000","01331031000000d0"); //
+    cuts.AddCutPCMCalo("55910013","00200009f9730000dge0404000","1111101050032220000","01331031000000d0"); //
+  } else if (trainConfig == 110){ // EMCAL clusters
+    cuts.AddCutPCMCalo("50910013","00200009f9730000dge0404000","11111010500a2220000","01331031000000d0"); // 0-90%
+    cuts.AddCutPCMCalo("50110013","00200009f9730000dge0404000","11111010500a2220000","01331061000000d0"); //
+    cuts.AddCutPCMCalo("51310013","00200009f9730000dge0404000","11111010500b2220000","01331061000000d0"); //
+    cuts.AddCutPCMCalo("53510013","00200009f9730000dge0404000","1111101050032220000","01331031000000d0"); //
+    cuts.AddCutPCMCalo("55910013","00200009f9730000dge0404000","1111101050032220000","01331031000000d0"); //
+  } else if (trainConfig == 111){ // EMCAL clusters
+    cuts.AddCutPCMCalo("50910013","00200009f9730000dge0404000","11111010500a2220000","01331031000000d0"); // 0-90%
+    cuts.AddCutPCMCalo("50110013","00200009f9730000dge0404000","11111010500a2220000","01331061000000d0"); //
+    cuts.AddCutPCMCalo("51310013","00200009f9730000dge0404000","11111010500b2220000","01331061000000d0"); //
+    cuts.AddCutPCMCalo("53510013","00200009f9730000dge0404000","1111101050032220000","01331031000000d0"); //
+    cuts.AddCutPCMCalo("55910013","00200009f9730000dge0404000","1111101050032220000","01331031000000d0"); //
+    
   //****************************************************************************************************
   // EMCal 5TeV Pb-Pb LHC15o
   //****************************************************************************************************
@@ -1303,6 +1334,17 @@ void AddTask_GammaConvCalo_PbPb(
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
 
+    if (trainConfig == 109 ){
+      analysisEventCuts[i]->SelectSpecialTrigger(AliVEvent::kMB, "AliVEvent::kMB" );
+    }
+    if (trainConfig == 110 ){
+      analysisEventCuts[i]->SelectSpecialTrigger(AliVEvent::kCentral,"AliVEvent::kCentral" );
+    }
+    if (trainConfig == 111 ){
+      analysisEventCuts[i]->SelectSpecialTrigger(AliVEvent::kSemiCentral,"AliVEvent::kSemiCentral" );
+    }
+    
+    
     if(periodNameAnchor.Contains("LHC11h") && enableFlattening){
       cout << "entering the cent. flattening loop -> searching for file: " << fileNameCentFlattening.Data() << endl;
 

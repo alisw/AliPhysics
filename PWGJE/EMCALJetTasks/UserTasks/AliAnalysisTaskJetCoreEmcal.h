@@ -49,8 +49,11 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void		 SetFillRecoilTHnSparse(Bool_t b){fFillRecoilTHnSparse=b;}
 	virtual void		 SetFillInclusiveTree(Bool_t b){fFillInclusiveTree=b;}
 	virtual void		 SetFillRecoilTree(Bool_t b){fFillRecoilTree=b;}
+	virtual void		 SetFillResponseInclusiveTHnSparse(Bool_t b){fFillResponseInclusiveTHnSparse=b;}
+	virtual void		 SetFillResponseRecoilTHnSparse(Bool_t b){fFillResponseRecoilTHnSparse=b;}
 	virtual void		 SetPtHardBin(Int_t bin){fPtHardBin=bin;}
 	virtual void		 SetRejectionFactorInclusiveJets(Int_t f){fRejectionFactorInclusiveJets=f;}
+	virtual void		 SetRejectionFactorRecoilJets(Int_t f){fRejectionFactorRecoilJets=f;}
 	virtual void     SetMoreTreeVars(Bool_t more){fMoreTreeVars=more;} 
 	virtual void     SetDoDeltaPtInclusive(Bool_t b){fDoDeltaPtInclusive=b;} 
 	virtual void     SetDoDeltaPtRecoil(Bool_t b){fDoDeltaPtRecoil=b;} 
@@ -69,7 +72,8 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
     kDetEmbPart = 3, // embedding
     kDetEmbPartCorr = 4, // embedding, do embedded h+jet correlation
     kDetPart = 5, // pp response
-    kDetEmbDet = 6 // pp data embedding
+    kDetEmbDet = 6, // pp data embedding
+    kMCKine = 7 // generator level for kine trains
 //    kDetEmb = 3,  //detector embedded jets
 //    kPythiaDef = 5,
 //    kDetEmbPartPythia=6,
@@ -124,6 +128,8 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Bool_t fFillRecoilTHnSparse; ///< switch to fill recoil THnSparse for main analysis
 	Bool_t fFillInclusiveTree; ///< switch to fill embedding tree with inclusive jet info
 	Bool_t fFillRecoilTree; ///< switch to fill embedding tree with recoil jet info
+	Bool_t fFillResponseInclusiveTHnSparse; ///< switch to fill embedding THnSparse with inclusive jet info
+	Bool_t fFillResponseRecoilTHnSparse; ///< switch to fill embedding THnSparse with recoil jet info
 	Bool_t fMoreTreeVars; ///< add more variables to the output tree
 	Bool_t fDoDeltaPtInclusive; ///< calculate delta pT for inclusive jets
 	Bool_t fDoDeltaPtRecoil; ///< calculate delta pT for recoil jets 
@@ -131,6 +137,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   Double_t fRhoShiftReference; ///< shift rho in reference events by this much
 	Int_t fPtHardBin; ///< pt hard bin if running embedding
 	Int_t fRejectionFactorInclusiveJets; ///< factor to reject inclusive jets, to reduce size of ttree
+	Int_t fRejectionFactorRecoilJets; ///< factor to reject inclusive jets, to reduce size of ttree
 	//
 	TRandom3 *fRandom; ///<
 	Float_t fTreeVarsInclusive[9]; ///<
@@ -141,6 +148,8 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH1I *fHistEvtSelection; //!<!
 	// recoil jet info contained in THnSparse
 	THnSparse *fHJetSpec;  //!<!
+	THnSparse *fHJetResponseInclusive;  //!<!
+	THnSparse *fHJetResponseRecoil;  //!<!
 	// recoil histograms
 	TH1D *fh1TrigRef; //!<!
 	TH1D *fh1TrigSig; //!<!
@@ -152,8 +161,8 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH2F *fhDphiPtSigPi; //!<!
 	TH2F *fhDphiPtSig; //!<!
 	TH2F *fhDphiPtRefPi; //!<!
-	TH2F *fhDphiPtRef; //!<!
 	TH3F *fhDphiPtShiftRefPi; //!<!
+	TH2F *fhDphiPtRef; //!<!
   TH1F *fhDeltaPtRCinclusive; //!<!
   TH2F *fhDeltaPtJetPtRCinclusive; //!<!
   TH2F *fhDeltaPtaRhoRCinclusive; //!<!
@@ -206,7 +215,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 15);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 16);
   /// \endcond
 };
 #endif

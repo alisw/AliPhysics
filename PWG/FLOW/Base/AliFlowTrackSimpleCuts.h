@@ -16,6 +16,7 @@
 class AliFlowTrackSimple;
 class TParticle;
 class TH2;
+class TF1;
 
 class AliFlowTrackSimpleCuts : public TNamed {
 
@@ -39,6 +40,9 @@ class AliFlowTrackSimpleCuts : public TNamed {
   void SetMassMax(Double_t max) {this->fMassMax = max; fCutMass=kTRUE; }
   void SetMassMin(Double_t min) {this->fMassMin = min; fCutMass=kTRUE; }
   void SetEtaPhiEff(TH2* eff)   {this->fEtaPhiEff = eff; fCutEtaPhiEff=kTRUE; }
+
+  //efficiency parametrization
+  void SetEfficiencyParametrization(TF1 *gParametrisation) {this->fEfficiencyParametrization = gParametrisation; fCutEfficiencyParametrization = kTRUE;}
   
   //getters
   Double_t GetPtMax() const     {return this->fPtMax; }
@@ -87,6 +91,9 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Bool_t   fCutEtaPhiEff; //apply eta, phi efficiency map?
   Int_t    fPOItype; //which poi type do we produce? (RP=0, POI=1,2,3,4,5...)
 
+  TF1 *fEfficiencyParametrization; //efficiency x acceptance vs pT
+  Bool_t fCutEfficiencyParametrization; //use the efficiency parametrization
+  
   // not implemented: copy and assignment operator
   AliFlowTrackSimpleCuts(const AliFlowTrackSimpleCuts&);        
   AliFlowTrackSimpleCuts& operator=(const AliFlowTrackSimpleCuts&);

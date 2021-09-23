@@ -2,20 +2,19 @@
 #define ALICONVERSIONPHOTONBASE_H
 
 #include "TMath.h"
-#include "TParticle.h"
+// #include "TParticle.h"
 #include "AliLog.h"
 #include "TObject.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
-#include "AliKFParticle.h"
-#include "TParticle.h"
+#include "AliGAKFParticle.h"
 #include <vector>
 #include "AliESDpid.h"
 #include "TF1.h"
 #include "TRandom3.h"
 #include "AliPID.h"
 #include "AliESDtrack.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliMCEventHandler.h"
 #include "AliESDtrackCuts.h"
 #include "AliGenCocktailEventHeader.h"
@@ -72,10 +71,10 @@ class AliConversionPhotonBase {
   // GetMCParticle
 
   Bool_t IsTruePhoton(AliMCEvent *mcEvent);
-  TParticle *GetMCParticle(AliMCEvent *mcEvent);
-  TParticle *GetPositiveMCDaughter(AliMCEvent *mcEvent){return GetMCDaughter(mcEvent,0);}
-  TParticle *GetNegativeMCDaughter(AliMCEvent *mcEvent){return GetMCDaughter(mcEvent,1);}
-  TParticle *GetMCDaughter(AliMCEvent *mcEvent,Int_t label);
+  AliVParticle *GetMCParticle(AliMCEvent *mcEvent);
+  AliVParticle *GetPositiveMCDaughter(AliMCEvent *mcEvent){return GetMCDaughter(mcEvent,0);}
+  AliVParticle *GetNegativeMCDaughter(AliMCEvent *mcEvent){return GetMCDaughter(mcEvent,1);}
+  AliVParticle *GetMCDaughter(AliMCEvent *mcEvent,Int_t label);
 
   // V0Index
   Int_t GetV0Index() const {return fV0Index;}
@@ -136,7 +135,8 @@ class AliConversionPhotonBase {
                                   // 2: 1 track TPC only
                                   // 3: both tracks more than 1 ITS cluster
     Bool_t fTagged;               // Is it tagged as decay pion (only for gammas)
-  ClassDef(AliConversionPhotonBase,6);
+
+   ClassDef(AliConversionPhotonBase,6)
 };
 
 

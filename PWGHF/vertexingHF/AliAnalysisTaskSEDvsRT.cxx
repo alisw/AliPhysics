@@ -71,6 +71,15 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT():
    fHistPtLead(0),
    fRTvsZvtxvsMult(0),
    fNChargedInTrans(0),
+   fNChargedInToward(0),
+   fNChargedInAway(0),
+   fNCharged(0),
+   fPhiDistribution(0),
+   fEtaDistribution(0),
+   fPTDistributionInToward(0),
+   fPTDistributionInTransverse(0),
+   fPTDistributionInAway(0),
+   fPTDistributionGlobal(0),
    fCounter(0),
    fReadMC(kFALSE),
    fMCOption(0),
@@ -109,6 +118,15 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT(const char *name, Int_t pdgSpecie
    fHistPtLead(0),
    fRTvsZvtxvsMult(0),
    fNChargedInTrans(0),
+   fNChargedInToward(0),
+   fNChargedInAway(0),
+   fNCharged(0),
+   fPhiDistribution(0),
+   fEtaDistribution(0),
+   fPTDistributionInToward(0),
+   fPTDistributionInTransverse(0),
+   fPTDistributionInAway(0),
+   fPTDistributionGlobal(0),
    fCounter(0),
    fReadMC(kFALSE),
    fMCOption(0),
@@ -138,7 +156,7 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT(const char *name, Int_t pdgSpecie
         Double_t minMass = massDs-0.5*nInvMassBins*MassBinSize;
         Double_t maxMass = massDs+0.5*nInvMassBins*MassBinSize;
         SetMassLimits(minMass,maxMass);
-        SetNMassBins(nInvMassBins); 
+        SetNMassBins(nInvMassBins);
       }else if(fPdgSpecies == 4122) {
         Double_t massLc  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
         Int_t nInvMassBins = 500;
@@ -157,8 +175,8 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT(const char *name, Int_t pdgSpecie
       DefineOutput(3,TList::Class()); //Output slot 3: normalisation counters
       DefineOutput(4,TList::Class()); // Output slot 4: list for QA plots
       for (Int_t i = 0; i < 18; i++) {fTrackFilter[i] = 0;}
-}   
-   
+}
+
 //________________________________________________________________________
 AliAnalysisTaskSEDvsRT::~AliAnalysisTaskSEDvsRT()
 {
@@ -173,7 +191,7 @@ AliAnalysisTaskSEDvsRT::~AliAnalysisTaskSEDvsRT()
       delete fListCuts;
       fListCuts = 0x0;
    }
-  
+
    if (fOutputCounters) {
       delete fOutputCounters;
       fOutputCounters = 0x0;
@@ -207,13 +225,13 @@ void AliAnalysisTaskSEDvsRT::Init(){
    //
    /// Initialisation
    //
-   
+
    printf("AliAnalysisTaskSEDvsRT_0::Init() \n");
-   
+
    fListCuts = new TList();
    fListCuts->SetOwner();
    fListCuts->SetName("CutsList");
-   
+
    if(fPdgSpecies==411){
     AliRDHFCutsDplustoKpipi* copycut=new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fRDCutsAnalysis)));
     copycut->SetName("AnalysisCutsDplus");
@@ -248,9 +266,9 @@ void AliAnalysisTaskSEDvsRT::Init(){
 void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
 {
    /// Create output containers
-   
+
    if (fDebug > 1) printf("AliAnalysisTaskSEDvsRT::UserCreateOutputObjects() \n");
-   
+
    // TList for output
    fOutput = new TList();
    fOutput->SetOwner();
@@ -274,12 +292,12 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    fPtvsMassvsRTAway = new TH3D("hPtvsMassvsRTAway", "D candidates in away region: p_{T} vs mass vs R_{T};R_{T};Mass [GeV/c^{2}];p_{T} [GeV/c]",nRTbins,firstRTbin,lastRTbin, fNMassBins,fLowmasslimit,fUpmasslimit,nPTbins, ptmin, ptmax);
 
    fPtvsMassvsRTTrans = new TH3D("hPtvsMassvsRTTrans", "D candidates in transverse region: p_{T} vs mass vs R_{T};R_{T};Mass [GeV/c^{2}];p_{T} [GeV/c}",nRTbins,firstRTbin,lastRTbin, fNMassBins, fLowmasslimit, fUpmasslimit, nPTbins, ptmin, ptmax);
-  
+
    fOutput->Add(fPtvsMassvsRTToward);
    fOutput->Add(fPtvsMassvsRTAway);
    fOutput->Add(fPtvsMassvsRTTrans);
-   
-   
+
+
    fHistNEvents = new TH1F("fHistNEvents", "number of events ",12,-0.5,11.5);
    fHistNEvents->GetXaxis()->SetBinLabel(1,"nEvents total");
    fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents with Z vertex");
@@ -293,45 +311,45 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    fHistNEvents->GetXaxis()->SetBinLabel(10,"D after cuts (No PID)");
    fHistNEvents->GetXaxis()->SetBinLabel(11,"D after cuts + PID)");
    fHistNEvents->GetXaxis()->SetBinLabel(12,"nEvents with RT calc");
-   
-   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);  
+
+   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
    fHistNEvents->Sumw2();
    fHistNEvents->SetMinimum(0);
    fOutput->Add(fHistNEvents);
-   
-   
+
+
    //THnSparse notation
    //axes: pt, mass, rtval, candidate phi
    Double_t phimin = -TMath::PiOver2(); Double_t phimax = 3*TMath::PiOver2();
    Int_t nPhibins  = 100;
-   
+
    static const Int_t sparsendim = 4;
    Double_t sparsemin[sparsendim] = {ptmin, fLowmasslimit, firstRTbin, phimin};
    Double_t sparsemax[sparsendim] = {ptmax, fUpmasslimit,  lastRTbin,  phimax};
    Int_t sparsenbins[sparsendim] = {nPTbins, fNMassBins, nRTbins, nPhibins};
-   
-   
+
+
    if(fUseNsparse) { // define NSparse object if set to use
    fOutNsparse = new THnSparseD("hNsparse", ";pT (GeV/c);Mass (MeV/c^2);RT; #Delta#phi(cand)", sparsendim, sparsenbins,  sparsemin, sparsemax);
    fOutput->Add(fOutNsparse);
    }
-   
+
    ///settings for track filter used in RT determination
   AliESDtrackCuts* esdTrackCutsRun2[18] = {0};
-	
+
   for ( int iTc = 0 ; iTc < 18 ; iTc++ )
   {
 	// standar parameters ------------------- //
-    double maxdcaz = 2.;  
+    double maxdcaz = 2.;
     double minratiocrossrowstpcover = 0.8;
-    double maxfraclusterstpcshared = 0.4; 
-    double maxchi2perclustertpc = 4.0; 
-    double maxchi2perclusterits = 36.; 
+    double maxfraclusterstpcshared = 0.4;
+    double maxchi2perclustertpc = 4.0;
+    double maxchi2perclusterits = 36.;
     double geowidth = 3.;
     double geolenght = 130.;
     double maxchi2tpcglobal = 36.;
 	// ------------------------------------- //
-	
+
 	// variations of the track cuts -------- //
     if ( iTc == 1) maxdcaz = 1.0;
     if ( iTc == 2) maxdcaz = 5.0;
@@ -347,34 +365,33 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
     if ( iTc == 15) geowidth = 4.0;
     if ( iTc == 16) geolenght = 120.0;
     if ( iTc == 17) geolenght = 140.0;
-	
+
 	// variations of the track cuts -------- //
-    
-    
+
+
     fTrackFilter[iTc] = new AliAnalysisFilter(Form("fTrackFilter%d",iTc));
-    if (iTc != 0) esdTrackCutsRun2[iTc] = new AliESDtrackCuts(Form("esdTrackCutsRun2%d",iTc));
-    
+    esdTrackCutsRun2[iTc] = new AliESDtrackCuts(Form("esdTrackCutsRun2%d",iTc));
+
     // TPC
-    if (iTc != 0) { //variations using ITS-TPC
     esdTrackCutsRun2[iTc]->SetCutGeoNcrNcl(geowidth,geolenght,1.5,0.85,0.7);
     esdTrackCutsRun2[iTc]->SetRequireTPCRefit(kTRUE);
-    esdTrackCutsRun2[iTc]->SetMinRatioCrossedRowsOverFindableClustersTPC(minratiocrossrowstpcover); 
+    esdTrackCutsRun2[iTc]->SetMinRatioCrossedRowsOverFindableClustersTPC(minratiocrossrowstpcover);
     esdTrackCutsRun2[iTc]->SetMaxChi2PerClusterTPC(maxchi2perclustertpc);
-    esdTrackCutsRun2[iTc]->SetMaxFractionSharedTPCClusters(maxfraclusterstpcshared); 
-    //esdTrackCutsRun2[iTc]->SetMaxChi2TPCConstrainedGlobal(maxchi2tpcglobal); TODO VZ: check this cut   
+    esdTrackCutsRun2[iTc]->SetMaxFractionSharedTPCClusters(maxfraclusterstpcshared);
+    //esdTrackCutsRun2[iTc]->SetMaxChi2TPCConstrainedGlobal(maxchi2tpcglobal); TODO VZ: check this cut
     // ITS
     esdTrackCutsRun2[iTc]->SetRequireITSRefit(kTRUE);
     if ( iTc != 13 )
     esdTrackCutsRun2[iTc]->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-    
+
     esdTrackCutsRun2[iTc]->SetMaxChi2PerClusterITS(maxchi2perclusterits);
 
     // primary selection
     esdTrackCutsRun2[iTc]->SetDCAToVertex2D(kFALSE);
     esdTrackCutsRun2[iTc]->SetRequireSigmaToVertex(kFALSE);
-    esdTrackCutsRun2[iTc]->SetMaxDCAToVertexZ(maxdcaz); 
+    esdTrackCutsRun2[iTc]->SetMaxDCAToVertexZ(maxdcaz);
     esdTrackCutsRun2[iTc]->SetAcceptKinkDaughters(kFALSE);
-    
+
     if ( iTc == 3 )
       // esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("4*(0.0026+0.0050/pt^1.01)");
     	esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("6.5*(0.0026+0.0050/pt^1.01)");
@@ -383,36 +400,52 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
     	esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("7.5*(0.0026+0.0050/pt^1.01)");
     else
       esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); // (7*(------))
-    }
-    else { //Default: TPC-only track filter
-      esdTrackCutsRun2[iTc] = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    }
-       
-  
-  
+
+
     fTrackFilter[iTc]->AddCuts(esdTrackCutsRun2[iTc]);
   }
-   
-   
+
+
    fListQAhists = new TList();
    fListQAhists->SetOwner();
    fListQAhists->SetName("QAhists");
-   
+
    fGlobalRT = new TH1F("fGlobalRT","RT for all events;R_{T};Entries",100,0,10);
    fHistPtLead = new TH1F("fHistPtLead","pT distribution of leading track;p_{T} (GeV/c);Entries",100,0,100);
    fRTvsZvtxvsMult= new TH3F("fRTvsZvtxvsMult","RT vs Zvtx vs mult;R_{T};Z_{vtx} (cm);N_{trk}",100,0,10,200,-10,10,200,0,200);
-   
+
    fNChargedInTrans = new TH1F("fNChargedInTrans","Charged Tracks in Transvers region;N_{ch};Entries",200,0,200);
+   fNChargedInToward = new TH1F("fNChargedInToward","Charged Tracks in Toward region;N_{ch};Entries",200,0,200);
+   fNChargedInAway = new TH1F("fNChargedInAway","Charged Tracks in Away region;N_{ch};Entries",200,0,200);
+   fNCharged = new TH1F("fNCharged","Charged Tracks in all regions;N_{ch};Entries",200,0,200);
+
+   fPhiDistribution = new TH1F("fPhiDistribution","Phi distribution of all charged particles",320,0,6.4);
+   fEtaDistribution = new TH1F("fEtaDistribution","Eta distribution of all charged particles",400,-5,5);
+
+   fPTDistributionInToward = new TH1F("fPTDistributionInToward","pT distribution of all charged particles in Toward region",250,0,50);
+   fPTDistributionInTransverse = new TH1F("fPTDistributionInTransverse","pT distribution of all charged particles in Transverse region",250,0,50);
+   fPTDistributionInAway = new TH1F("fPTDistributionInAway","pT distribution of all charged particles in Away region",250,0,50);
+   fPTDistributionGlobal = new TH1F("fPTDistributionGlobal","pT distribution of all charged particles in all regions",250,0,50);
 
    fListQAhists->Add(fGlobalRT);
    fListQAhists->Add(fHistPtLead);
-   fListQAhists->Add(fRTvsZvtxvsMult); 
-   fListQAhists->Add(fNChargedInTrans); 
-   
+   fListQAhists->Add(fRTvsZvtxvsMult);
+   fListQAhists->Add(fNChargedInTrans);
+   fListQAhists->Add(fNChargedInToward);
+   fListQAhists->Add(fNChargedInAway);
+   fListQAhists->Add(fNCharged);
+   fListQAhists->Add(fPhiDistribution);
+   fListQAhists->Add(fEtaDistribution);
+   fListQAhists->Add(fPTDistributionInToward);
+   fListQAhists->Add(fPTDistributionInTransverse);
+   fListQAhists->Add(fPTDistributionInAway);
+   fListQAhists->Add(fPTDistributionGlobal);
+
+
    PostData(1,fOutput);
    PostData(3,fOutputCounters);
    PostData(4,fListQAhists);
-   return;   
+   return;
 }
 
 //________________________________________________________________________
@@ -420,7 +453,7 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
 {
    /// Execute analysis for current event:
    /// heavy flavour candidates as function of RT
-   
+
    AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
    AliESDEvent *esd = dynamic_cast<AliESDEvent*> (InputEvent());
    //  AliAODTracklets* tracklets = aod->GetTracklets();
@@ -434,8 +467,8 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
       return;
     }
   }
-   
-    
+
+
   TClonesArray *arrayCand = 0;
   TString arrayName="";
   UInt_t pdgDau[3];
@@ -443,7 +476,7 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
   Int_t selbit=0;
   if(fPdgSpecies==411){
     arrayName="Charm3Prong";
-    pdgDau[0]=211; pdgDau[1]=321; pdgDau[2]=211; 
+    pdgDau[0]=211; pdgDau[1]=321; pdgDau[2]=211;
     nDau=3;
     selbit=AliRDHFCuts::kDplusCuts;
   }else if(fPdgSpecies==421){
@@ -479,17 +512,17 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
     UInt_t pdgdaughtersD0[2] = {211,321}; //pi, K
     UInt_t pdgdaughtersD0bar[2] = {321,211}; //K, pi
     UInt_t pdgDsKKpi[3] = {321,321,211};
-    UInt_t pdgDspiKK[3] = {311, 321,321};  
-  
-  
-  
+    UInt_t pdgDspiKK[3] = {311, 321,321};
+
+
+
   if(!aod && AODEvent() && IsStandardAOD()) {
-    // In case there is an AOD handler writing a standard AOD, use the AOD 
-    // event in memory rather than the input (ESD) event.    
+    // In case there is an AOD handler writing a standard AOD, use the AOD
+    // event in memory rather than the input (ESD) event.
     aod = dynamic_cast<AliAODEvent*> (AODEvent());
     // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
     // have to taken from the AOD event hold by the AliAODExtension
-    AliAODHandler* aodHandler = (AliAODHandler*) 
+    AliAODHandler* aodHandler = (AliAODHandler*)
       ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if(aodHandler->GetExtensions()) {
       AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
@@ -507,7 +540,7 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
 
   if(fisPPbData && fReadMC){
     Int_t runnumber = aod->GetRunNumber();
-    if(aod->GetTriggerMask()==0 && 
+    if(aod->GetTriggerMask()==0 &&
        (runnumber>=195344 && runnumber<=195677)){
       AliDebug(3,"Event rejected because of null trigger mask");
       return;
@@ -516,7 +549,7 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
   fHistNEvents->Fill(0); // count event
 
 
-  // fix for temporary bug in ESDfilter 
+  // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
    switch (fRDCutsAnalysis->GetWhyRejection()) {
@@ -524,22 +557,22 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
       case 7: fHistNEvents->Fill(4); break;
       case 6: fHistNEvents->Fill(5); break;
       case 1: fHistNEvents->Fill(6); break;
-      
-   }  
+
+   }
     Bool_t isEvSel = fRDCutsAnalysis->IsEventSelected(aod); //?
   if(!isEvSel)return;
   fHistNEvents->Fill(2);
-  
-  
-  
+
+
+
   ///!----- l.797-833 for multiplicity estimation; RT determination goes here
-  
+
   Double_t rtval = CalculateRTVal(aod);
   if (rtval < 0.) return;  // event rejected during RT calculation
   fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,rtval);
-  fHistNEvents->Fill(11); 
+  fHistNEvents->Fill(11);
   fGlobalRT->Fill(rtval);
-  
+
   AliAODTracklets* tracklets = aod->GetTracklets();
   Int_t nTr = tracklets->GetNumberOfTracklets();
   Int_t countMult = 0;
@@ -553,12 +586,12 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
   fRTvsZvtxvsMult->Fill(rtval,vtx1->GetZ(),countMult);  /// QA plot for RT vs Zvtx vs Ntrk
   Double_t weight = 1.; //dummy weight for filling (needed later?)
   //!----l.839-888: multiplicity correction
-  
 
 
 
-//l.948-1094: MC multiplicity counting/reweighting  
-  
+
+//l.948-1094: MC multiplicity counting/reweighting
+
   Int_t nCand = arrayCand->GetEntriesFast();
   Int_t nSelectedNoPID=0,nSelectedPID=0,nSelectedInMassPeak=0;
   Double_t mD0PDG    = TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -566,13 +599,13 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
   Double_t mDstarPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
   Double_t mDsPDG    = TDatabasePDG::Instance()->GetParticle(431)->Mass();
   Double_t mLcPDG    = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
-  
+
   // PDG of daughters for D*
   UInt_t pdgDgDStartoD0pi[2] = {421, 211};
-  
+
   // PDG of daughters for Lc2pK0
   UInt_t pdgDgLctopK0S[2] = {2212, 310};
- //Load MC info if MC  
+ //Load MC info if MC
 TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
 
@@ -580,31 +613,31 @@ TClonesArray *arrayMC=0;
 
   // load MC particles
   if(fReadMC){
-     
+
     //arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC) {
       printf("AliAnalysisTaskSEDvsMultiplicity::UserExec: MC particles branch not found!\n");
       return;
-    }  
+    }
     // load MC header
    // mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if(!mcHeader) {
       printf("AliAnalysisTaskSEDvsMultiplicity::UserExec: MC header branch not found!\n");
       return;
     }
- } 
+ }
    // omitting "aveMult" l.1110
-  
+
   //TODO:  Loop on candidates, perform selection, !!determine phi of candidate wrt leading particle, fill corresponding histo (toward/away)
-  
+
   for (Int_t iCand = 0; iCand < nCand; iCand++) {  //Loop over candidates
-     
+
      AliAODRecoDecayHF *d =(AliAODRecoDecayHF*)arrayCand->UncheckedAt(iCand);
      AliAODRecoCascadeHF *dCascade = NULL;
      if (fPdgSpecies == 413 || (fPdgSpecies==4122 && fLctoV0)) dCascade = (AliAODRecoCascadeHF*)d;
-     
+
      fHistNEvents->Fill(7);
-     
+
      if(fPdgSpecies == 4122) { //V0 selection for LctopK0
         if(fLctoV0) {
            AliAODv0 *v0part = (AliAODv0*)dCascade->Getv0();
@@ -614,7 +647,7 @@ TClonesArray *arrayMC=0;
            fHistNEvents->Fill(8); continue;
         }
      }
-    
+
      if (fPdgSpecies != 4122 && fUseBit && !d->HasSelectionBit(selbit)) { //check selection bit for all others
          fHistNEvents->Fill(8); continue;
      }
@@ -623,7 +656,7 @@ TClonesArray *arrayMC=0;
      Double_t rapid = d->Y(fPdgSpecies);
      Bool_t isInFidAcc = fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
      if (!isInFidAcc) continue;
-     TClonesArray *arrayMC =0; 
+     TClonesArray *arrayMC =0;
      Int_t labD = -1;
      if(fReadMC) {
       if(fPdgSpecies==413){
@@ -635,9 +668,9 @@ TClonesArray *arrayMC=0;
       }
       // FillMCMassHistos(arrayMC,labD, countMult,nchWeight);  ////!TODO be implemented
      }
-     
+
      Int_t passAllCuts = 0, passTopolCuts = 0;
-     
+
      if (fPdgSpecies == 4122) {  //special cuts cases for Lc
         if (fLctoV0) { //LctopK0
            passAllCuts = (((fRDCutsAnalysis->IsSelected(d, AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr));
@@ -652,7 +685,7 @@ TClonesArray *arrayMC=0;
          passAllCuts = fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
          passTopolCuts = fRDCutsAnalysis->GetIsSelectedCuts();
      }
-     
+
      if (fPdgSpecies != 431 && passTopolCuts == 0) continue;
      nSelectedNoPID++;
      fHistNEvents->Fill(9);
@@ -662,15 +695,15 @@ TClonesArray *arrayMC=0;
         fHistNEvents->Fill(10);
      }
      //daughter subtraction from multiplicity, l.1169-1192
-     
+
  //    Bool_t isPrimary = kTRUE;
  //    Double_t trueImpParXY = 9999.;
  //    Double_t impparXY = d->ImpParXY()*10000.;
  //     Double_t dlen = 0.1;
-     
 
-     
-     
+
+
+
      Double_t mass[2];  //Calculate inv mass and check if in peak region
      if (fPdgSpecies == 411) {   //D+
          mass[0] = d->InvMass(nDau,pdgDau);
@@ -702,19 +735,19 @@ TClonesArray *arrayMC=0;
             if (TMath::Abs(mass[0] - mLcPDG) < 0.02 ) nSelectedInMassPeak++;
          }
      }
-            
+
      for (Int_t iHyp = 0; iHyp < 2; iHyp++) {
         if (mass[iHyp] < 0.) continue; //for D+ , D*, Lc2pK0, only one mass hypothesis
         Double_t invMass = mass[iHyp];
-     
-        if (fReadMC) {//TODO: add MC selections (l.1238-1279 in mult task) 
+
+        if (fReadMC) {//TODO: add MC selections (l.1238-1279 in mult task)
         }
-      
+
         if (fPdgSpecies ==421) {
            if (iHyp == 0 && !(passAllCuts&1)) continue; // candidate not passing as D0
            if (iHyp == 1 && !(passAllCuts&2)) continue; // candidate not passing as D0bar
         }
-        
+
         if (fPdgSpecies == 431) {
            if (iHyp == 0 && !(passAllCuts&4)) continue; // candidate Ds not passing as kk(phi)pi
            if (iHyp == 1 && !(passAllCuts&8)) continue; // candidate Ds not passing as pikk(phi)
@@ -723,33 +756,33 @@ TClonesArray *arrayMC=0;
            if (iHyp == 0 && !(passTopolCuts&1)) continue; // candidate not passing as Lc->pKpi
            if (iHyp == 1 && !(passTopolCuts&2)) continue; // candidate not passing as Lc->piKp
         }
-     
+
       if (passAllCuts) {
          // if using nsparse, fill it
-         
+
          //select phi region and fill appropriate histo
          Double_t phiCand = d->Phi();
          Double_t candDeltaPhi = phiCand - fPhiLeading; //delta-phi wrt leading particle
 
-           
+
          if (candDeltaPhi <= -TMath::PiOver2()) candDeltaPhi += TMath::TwoPi();
          if (candDeltaPhi > 3*TMath::PiOver2()) candDeltaPhi-=TMath::TwoPi();
-         
-         Double_t arrayForSparse[4] = {ptCand, invMass, rtval, candDeltaPhi};  
-         if (fUseNsparse) {fOutNsparse->Fill(arrayForSparse,weight); } 
-        
+
+         Double_t arrayForSparse[4] = {ptCand, invMass, rtval, candDeltaPhi};
+         if (fUseNsparse) {fOutNsparse->Fill(arrayForSparse,weight); }
+
          Double_t fDeltaPhiMinCut = TMath::DegToRad()*60.;
          Double_t fDeltaPhiMaxCut = TMath::DegToRad()*120.;
          Int_t region = 0;
          if ((candDeltaPhi < -fDeltaPhiMinCut) || (candDeltaPhi > 2*fDeltaPhiMaxCut)) region = -1; //left
          if ((candDeltaPhi >  fDeltaPhiMinCut) && (candDeltaPhi < fDeltaPhiMaxCut))   region = 1; //right
-         
+
          if ((candDeltaPhi > -fDeltaPhiMinCut) && (candDeltaPhi < fDeltaPhiMinCut))   region = 2; // toward
          if ((candDeltaPhi > fDeltaPhiMinCut) && (candDeltaPhi < 2*fDeltaPhiMaxCut))   region = -2; //away
-         
+
          if ((region == 1) || (region == -1)) { // fill transverse histo
          fPtvsMassvsRTTrans->Fill(rtval,invMass,ptCand,weight);
-        
+
          }
          if (region == 2) { // fill toward histo
          fPtvsMassvsRTToward->Fill(rtval,invMass,ptCand,weight);
@@ -757,13 +790,13 @@ TClonesArray *arrayMC=0;
          if (region == -2) { // fill away histo
          fPtvsMassvsRTAway->Fill(rtval,invMass,ptCand,weight);
          }
-         
-      }     
+
       }
-    } 
-  
-  
-  
+      }
+    }
+
+
+
   PostData(1, fOutput);
   PostData(2, fListCuts);
   PostData(3, fOutputCounters);
@@ -778,20 +811,20 @@ Double_t AliAnalysisTaskSEDvsRT::CalculateRTVal(AliAODEvent* esdEvent)
    Int_t eventId = 0;
    Double_t trackRTval = -1;
    if (esdEvent->GetHeader()) eventId = GetEventIdAsLong(esdEvent->GetHeader());
-   
+
    const Int_t nESDTracks = esdEvent->GetNumberOfTracks();
    TObjArray *fCTSTracks = new TObjArray();
    Double_t nRecTracks = 0;
    AliVParticle* part = 0x0;
-   Double_t eta, pt, LeadingPt = -1; 
-   for (Int_t iT = 0; iT < nESDTracks; iT++) 
+   Double_t eta, pt, LeadingPt = -1;
+   for (Int_t iT = 0; iT < nESDTracks; iT++)
    {
       part = esdEvent->GetTrack(iT);
       eta = part->Eta();
       pt  = part->Pt();
       if (TMath::Abs(eta) > fEtaCut) continue;
       if (!(TMath::Abs(pt) > 0.15)) continue;
-      
+
       // Default track filter (to be checked)
       for ( Int_t i = 0; i < 1; i++)
       {
@@ -804,12 +837,12 @@ Double_t AliAnalysisTaskSEDvsRT::CalculateRTVal(AliAODEvent* esdEvent)
                continue;
             }
             /// fill tracks array
-            fCTSTracks->Add(part); 
+            fCTSTracks->Add(part);
             if (!part) continue;
          }
-      }           
-   }      
-   
+      }
+   }
+
    //find leading object
    TObjArray *LeadingTrackReco = FindLeading(fCTSTracks);
    if (LeadingTrackReco) {
@@ -820,20 +853,29 @@ Double_t AliAnalysisTaskSEDvsRT::CalculateRTVal(AliAODEvent* esdEvent)
       if (LeadingPt > fLeadMin && LeadingPt < 300. ) {// calculate only if leading pt is in acceptable range
          //Sorting
          TObjArray *regionSortedParticlesReco = SortRegions((AliVParticle*)LeadingTrackReco->At(0), fCTSTracks);
+
+         //Checking multiplicity in toward and away regions
+         TList *NChargedInToward = (TList*)regionSortedParticlesReco->At(0);
+         TList *NChargedInAway = (TList*)regionSortedParticlesReco->At(1);
+         TList *NCharged = (TList*)regionSortedParticlesReco->At(4);
+         fNCharged->Fill(NCharged->GetEntries());
+         fNChargedInToward->Fill(NChargedInToward->GetEntries());
+         fNChargedInAway->Fill(NChargedInAway->GetEntries());
+
          // Transverse regions
          TObjArray *regionsMinMaxReco = GetMinMaxRegion((TList*)regionSortedParticlesReco->At(2),(TList*)regionSortedParticlesReco->At(3));
          TList *listMax = (TList*)regionsMinMaxReco->At(0);
          TList *listMin = (TList*)regionsMinMaxReco->At(1);
-         
+
          trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / fAveMultiInTrans; //sum of transverse regions / average
 	 fNChargedInTrans->Fill(listMax->GetEntries() + listMin->GetEntries());
          fHistPtLead->Fill(LeadingPt);
       }
-      
+
    }
-   
- 
-  return trackRTval; 
+
+
+  return trackRTval;
 }
 
 
@@ -849,29 +891,29 @@ void AliAnalysisTaskSEDvsRT::Terminate(Option_t */*option*/)
 {
    /// Terminate analysis
    ///
-   
+
    if (fDebug > 1) printf("AliAnalysisTaskSEDvsRT: Terminate() \n");
    fOutput = dynamic_cast<TList*> (GetOutputData(1));
    if (!fOutput) {
       printf("ERROR: fOutput not found\n");
       return;
    }
-   
+
    fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
    if (!fHistNEvents){
       printf("ERROR: fHistNEvents not found\n");
       return;
    }
    printf("Number of events analysed = %d\n",(Int_t)fHistNEvents->GetBinContent(3));
-   return; 
+   return;
 }
 
-TObjArray *AliAnalysisTaskSEDvsRT::FindLeading(TObjArray *array) 
+TObjArray *AliAnalysisTaskSEDvsRT::FindLeading(TObjArray *array)
 {
    if (!array) return 0;
    Int_t nTracks = array->GetEntriesFast();
    if (!nTracks) return 0;
-   
+
    TObjArray *tracks = new TObjArray(nTracks);
    for (Int_t ipart = 0; ipart < nTracks; ipart++) {
       AliVParticle *part = (AliVParticle*)(array->At(ipart));
@@ -915,18 +957,18 @@ void AliAnalysisTaskSEDvsRT::QSortTracks(TObjArray &a, Int_t first, Int_t last)
     a[j] = tmp;
     if (j - first < last - (j + 1)) {
       QSortTracks(a, first, j);
-      first = j + 1;   
+      first = j + 1;
     } else {
       QSortTracks(a, j + 1, last);
-      last = j;      
+      last = j;
     }
   }
 }
 
 
-      
-      
-   
+
+
+
 
 
 
@@ -935,21 +977,23 @@ TObjArray *AliAnalysisTaskSEDvsRT::SortRegions(const AliVParticle* leading, TObj
    if (!array) return 0;
    static const Double_t k60rad = 60.*TMath::Pi()/180.;
    static const Double_t k120rad = 120.*TMath::Pi()/180.;
-   
+
    // define output lists of particles
    TList *toward = new TList();
    TList *away = new TList();
    TList *transverse1 = new TList();
    TList *transverse2 = new TList();
+   TList *allregions = new TList();
    TObjArray *regionParticles = new TObjArray;
    regionParticles->SetOwner();
-   
+
    regionParticles->AddLast(toward);
    regionParticles->AddLast(away);
    regionParticles->AddLast(transverse1);
    regionParticles->AddLast(transverse2);
+   regionParticles->AddLast(allregions);
    if (!leading) return regionParticles;
-   
+
    TVector3 leadVect(leading->Px(),leading->Py(),leading->Pz());
    Int_t nTracks = array->GetEntriesFast();
    if (!nTracks) return 0;
@@ -969,24 +1013,34 @@ TObjArray *AliAnalysisTaskSEDvsRT::SortRegions(const AliVParticle* leading, TObj
 
       //transverse regions
 
+      fPhiDistribution->Fill(part->Phi());
+      fEtaDistribution->Fill(part->Eta());
+
       if((deltaPhi<-fUeDeltaPhiMinCut) || (deltaPhi >2*fUeDeltaPhiMaxCut))region = -1; //left
       if((deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi <fUeDeltaPhiMaxCut)) region = 1;   //right
-   
+
       if(deltaPhi > -fUeDeltaPhiMinCut && deltaPhi < fUeDeltaPhiMinCut) region = 2;    //forward
       if(deltaPhi > fUeDeltaPhiMaxCut && deltaPhi < 2*fUeDeltaPhiMaxCut) region = -2;  //backward
-   
-      // skip leading particle   
+
+      // skip leading particle
       if(leading == part) continue;
       if(part->Pt() >= leading->Pt()) continue;
       if(!region)continue;
-   
+
       if(region == 1) transverse1->Add(part);
       if(region == -1) transverse2->Add(part);
       if(region == 2) toward->Add(part);
       if(region == -2) away->Add(part);
+
+      if(region == 1 || region == -1) fPTDistributionInTransverse->Fill(part->Pt());
+      if(region == 2) fPTDistributionInToward->Fill(part->Pt());
+      if(region == -2) fPTDistributionInAway->Fill(part->Pt());
+      fPTDistributionGlobal->Fill(part->Pt());
+
+      allregions->Add(part);
    }//end loop on tracks
 
-   return regionParticles;   
+   return regionParticles;
 }
 
 
@@ -1014,7 +1068,7 @@ TObjArray* AliAnalysisTaskSEDvsRT::GetMinMaxRegion(TList *transv1, TList *transv
   TObjArray *regionParticles = new TObjArray;
   if(sumpT2 >= sumpT1){
    regionParticles->AddLast(transv1); // MIN
-   regionParticles->AddLast(transv2); // MAX 
+   regionParticles->AddLast(transv2); // MAX
    }
   else{
    regionParticles->AddLast(transv2); // MIN
@@ -1023,4 +1077,3 @@ TObjArray* AliAnalysisTaskSEDvsRT::GetMinMaxRegion(TList *transv1, TList *transv
 
   return regionParticles;
 }
-

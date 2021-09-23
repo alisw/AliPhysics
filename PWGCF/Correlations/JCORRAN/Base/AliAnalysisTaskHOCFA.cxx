@@ -161,7 +161,7 @@ void AliAnalysisTaskHOCFA::InitialiseArrayMembers()
     fHistoEta[i] = NULL;
     fHistoPhi[i] = NULL;
     fHistoCharge[i] = NULL;
-    for (Int_t j = 0; j < 6; j++) {fCorrelTerms[j][i] = NULL;}
+    for (Int_t j = 0; j < 6; j++) {fCorrelTerms[j][i] = NULL; fErrorTerms[j][i] = NULL;}
   }
   fCentralityArray[16] = 0.;
 
@@ -267,6 +267,11 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
       fCorrelTerms[j][i]->SetName(Form("fCorrelTerms_Combi%d%d%d_Bin%d", fHarmoArray[j][0], fHarmoArray[j][1], fHarmoArray[j][2], i));
       fCorrelTerms[j][i]->Sumw2();
       fCentralityList[i]->Add(fCorrelTerms[j][i]);
+
+      fErrorTerms[j][i] = new TProfile("", "", 35, 0., 35.);
+      fErrorTerms[j][i]->SetName(Form("fErrorTerms_Combi%d%d%d_Bin%d", fHarmoArray[j][0], fHarmoArray[j][1], fHarmoArray[j][2], i));
+      fErrorTerms[j][i]->Sumw2();
+      fCentralityList[i]->Add(fErrorTerms[j][i]);
     }
   }
 }
@@ -382,6 +387,13 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
   for (Int_t iCombi = 0; iCombi < fNCombi; iCombi++){
   // Customise the corresponding TProfile.
     fCorrelTerms[iCombi][fCentralityBin]->SetTitle(Form("Harmonics: (%d,%d,%d), centrality bin: %d", fHarmoArray[iCombi][0], fHarmoArray[iCombi][1], fHarmoArray[iCombi][2], fCentralityBin));
+    fErrorTerms[iCombi][fCentralityBin]->SetTitle(Form("Errors (format 3-SC), Harmonics: (%d,%d,%d), centrality bin: %d", fHarmoArray[iCombi][0], fHarmoArray[iCombi][1], fHarmoArray[iCombi][2], fCentralityBin));
+
+  // Define the variables needed for the error propagation.
+    Int_t i = 0;  // Index for the input array.
+    Double_t inputArray[7] = {0.};   // Array with the single-event correlators needed to get the error propagation terms.
+    Double_t inputWeights[7] = {0.};  // Array with the event weights needed for the error propagation.
+    Double_t* tempData = new Double_t[2]; // Temporary array to output the error-related information.
 
   // Fill the list of harmonics for the correlator itself.
     for (Int_t jTerm = 0; jTerm < nTerms; jTerm++) {
@@ -401,13 +413,31 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
       }
 
     // Calculate the multiparticle correlator itself using the recursion method.
-      CalculateCorrelator(iCombi, jTerm, nPart, jHarmonics);
+      CalculateCorrelator(iCombi, jTerm, nPart, jHarmonics, tempData);
+
+    // Fill the input array to calculate all the terms needed for the error propagation.
+      if ( (jTerm < 8) && (jTerm !=3) ) {
+        inputArray[i] = tempData[0];
+        inputWeights[i] = tempData[1];
+        i++;
+      }
     }
+
+    // Fill the output array and profile. Note: The filling corresponds to SC(k,l,m) as 2-harmonic SC can be obtained from it.
+    // The list for NSC(k,l,m) contains the same elements in a different order.
+    Double_t outputArray[35] = {inputArray[0], inputArray[1], inputArray[2], inputArray[0]*inputArray[0], inputArray[0]*inputArray[1], inputArray[1]*inputArray[1], inputArray[0]*inputArray[2], inputArray[1]*inputArray[2], inputArray[2]*inputArray[2], inputArray[3], inputArray[0]*inputArray[3], inputArray[1]*inputArray[3], inputArray[2]*inputArray[3], inputArray[3]*inputArray[3], inputArray[4], inputArray[0]*inputArray[4], inputArray[1]*inputArray[4], inputArray[2]*inputArray[4], inputArray[3]*inputArray[4], inputArray[4]*inputArray[4], inputArray[5], inputArray[0]*inputArray[5], inputArray[1]*inputArray[5], inputArray[2]*inputArray[5], inputArray[3]*inputArray[5], inputArray[4]*inputArray[5], inputArray[5]*inputArray[5], inputArray[6], inputArray[0]*inputArray[6], inputArray[1]*inputArray[6], inputArray[2]*inputArray[6], inputArray[3]*inputArray[6], inputArray[4]*inputArray[6], inputArray[5]*inputArray[6], inputArray[6]*inputArray[6]};
+    Double_t outputWeights[35] = {inputWeights[0], inputWeights[1], inputWeights[2], inputWeights[0]*inputWeights[0], inputWeights[0]*inputWeights[1], inputWeights[1]*inputWeights[1], inputWeights[0]*inputWeights[2], inputWeights[1]*inputWeights[2], inputWeights[2]*inputWeights[2], inputWeights[3], inputWeights[0]*inputWeights[3], inputWeights[1]*inputWeights[3], inputWeights[2]*inputWeights[3], inputWeights[3]*inputWeights[3], inputWeights[4], inputWeights[0]*inputWeights[4], inputWeights[1]*inputWeights[4], inputWeights[2]*inputWeights[4], inputWeights[3]*inputWeights[4], inputWeights[4]*inputWeights[4], inputWeights[5], inputWeights[0]*inputWeights[5], inputWeights[1]*inputWeights[5], inputWeights[2]*inputWeights[5], inputWeights[3]*inputWeights[5], inputWeights[4]*inputWeights[5], inputWeights[5]*inputWeights[5], inputWeights[6], inputWeights[0]*inputWeights[6], inputWeights[1]*inputWeights[6], inputWeights[2]*inputWeights[6], inputWeights[3]*inputWeights[6], inputWeights[4]*inputWeights[6], inputWeights[5]*inputWeights[6], inputWeights[6]*inputWeights[6]};
+    for (Int_t iO = 0; iO < 35; iO++) {
+      fErrorTerms[iCombi][fCentralityBin]->Fill((Float_t)iO + 0.5, outputArray[iO], outputWeights[iO]);  // LOKI: What about event weight?
+      fErrorTerms[iCombi][fCentralityBin]->GetXaxis()->SetBinLabel(iO+1, Form("corr%d", iO+1));
+    }
+
+    delete [] tempData;
   }
 }
 
 // ------------------------------------------------------------------------- //
-void AliAnalysisTaskHOCFA::CalculateCorrelator(Int_t combi, Int_t bin, Int_t nParticles, Int_t harmonics[])
+void AliAnalysisTaskHOCFA::CalculateCorrelator(Int_t combi, Int_t bin, Int_t nParticles, Int_t harmonics[],  Double_t *errorTerms)
 {
 // Calculate the multiparticle correlator corresponding to harmonics[].
   if (fDebugLevel > 5) {printf("Calculate the correlator for the provided harmonics[].\n");}
@@ -462,10 +492,14 @@ void AliAnalysisTaskHOCFA::CalculateCorrelator(Int_t combi, Int_t bin, Int_t nPa
   fCorrelTerms[combi][fCentralityBin]->Fill( (Float_t)bin + 0.5, rCorrel, eventWeight );
   fCorrelTerms[combi][fCentralityBin]->GetXaxis()->SetBinLabel(bin+1, Form("{%d,%d,%d}", fPowers[bin][0], fPowers[bin][1], fPowers[bin][2]));
 
+// Fill the temporary informations.
+  errorTerms[0] = rCorrel;
+  errorTerms[1] = eventWeight;
+
 // Reset the local variables for the next call.
   cCorrel = TComplex(0., 0.);
-  eventWeight = 0.;
   rCorrel = 0.;
+  eventWeight = 0.;
 }
 
 // ------------------------------------------------------------------------- //

@@ -310,10 +310,13 @@ private:
   AliMultVariable *fNTracksTPCout;             //!  no. tracks
   
   Int_t fNTracksITSrefit;
-  Int_t fNTracksDCAxyABS;
-  Int_t fNTracksDCAzABS;
-  Int_t fNTracksDCAxySQ;
-  Int_t fNTracksDCAzSQ;
+  Float_t fNTracksDCAxyABS;
+  Float_t fNTracksDCAzABS;
+  Float_t fNTracksDCAxySQ;
+  Float_t fNTracksDCAzSQ;
+  Float_t fNTracksMaxDCAz;
+  Float_t fNTracksMaxDCAz01;
+  Float_t fNTracksMaxDCAz00;
   
   AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
   AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)

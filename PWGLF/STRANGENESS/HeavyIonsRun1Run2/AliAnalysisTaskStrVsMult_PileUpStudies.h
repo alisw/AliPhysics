@@ -16,8 +16,8 @@ class AliAnalysisTaskStrVsMult_PileUpStudies : public AliAnalysisTaskSE {
     virtual ~AliAnalysisTaskStrVsMult_PileUpStudies();
 
     // enum and names.
-    enum cutnumb_V0{kV0_DcaV0Daught, kV0_DcaPosToPV, kV0_DcaNegToPV, kV0_V0CosPA, kV0_V0Rad, kV0_y, kV0_etaDaugh, kV0_LeastCRaws, kV0_LeastCRawsOvF, kV0_NSigPID, kV0_PropLifetK0s, kV0_PropLifetLam, kV0_TOFBunchCrossing, kV0cutsnum}; 
-    enum cutnumb_Casc{kCasc_DcaCascDaught, kCasc_CascCosPA, kCasc_CascRad, kCasc_NSigPID, kCasc_LeastCRaws, kCasc_LeastCRawsOvF, kCasc_InvMassLam, kCasc_DcaV0Daught, kCasc_V0CosPA, kCasc_DcaV0ToPV, kCasc_DcaBachToPV, kCasc_ITSTOFtracks, kCasc_y, kCasc_etaDaugh, kCasc_PropLifetXi, kCasc_PropLifetOm, kCasc_V0Rad, kCasc_DcaMesToPV, kCasc_DcaBarToPV, kCasc_BacBarCosPA, kCasccutsnum}; // kCasc_etaPos, kCasc_etaNeg, kCasc_etaBac, kCasc_kinkidx,
+    enum cutnumb_V0{kV0_DcaV0Daught, kV0_DcaPosToPV, kV0_DcaNegToPV, kV0_V0CosPA, kV0_V0Rad, kV0_y, kV0_etaDaugh, kV0_LeastCRaws, kV0_LeastCRawsOvF, kV0_LeastTPCcls, kV0_NSigPID, kV0_PropLifetK0s, kV0_PropLifetLam, kV0_TOFBunchCrossing, kV0cutsnum}; 
+    enum cutnumb_Casc{kCasc_DcaCascDaught, kCasc_CascCosPA, kCasc_CascRad, kCasc_NSigPID, kCasc_LeastCRaws, kCasc_LeastCRawsOvF, kCasc_LeastTPCcls, kCasc_InvMassLam, kCasc_DcaV0Daught, kCasc_V0CosPA, kCasc_DcaV0ToPV, kCasc_DcaBachToPV, kCasc_ITSTOFtracks, kCasc_y, kCasc_etaDaugh, kCasc_PropLifetXi, kCasc_PropLifetOm, kCasc_V0Rad, kCasc_DcaMesToPV, kCasc_DcaBarToPV, kCasc_BacBarCosPA, kCasccutsnum}; // kCasc_etaPos, kCasc_etaNeg, kCasc_etaBac, kCasc_kinkidx,
     enum particles{kK0s, kLam, kXi, kOm, knumpart}; 
     enum signedparticles{kk0s, klam, kalam, kxip, kxim, komp, komm, ksignednumpart}; 
 
@@ -88,6 +88,7 @@ class AliAnalysisTaskStrVsMult_PileUpStudies : public AliAnalysisTaskSE {
     double fV0_InvMassALam;                                   //!
     double fV0_LeastCRaws;                                    //!
     double fV0_LeastCRawsOvF;                                 //!
+    double fV0_LeastTPCcls;                                   //!
     double fV0_NSigPosProton;                                 //!
     double fV0_NSigPosPion;                                   //!
     double fV0_NSigNegProton;                                 //!
@@ -115,6 +116,7 @@ class AliAnalysisTaskStrVsMult_PileUpStudies : public AliAnalysisTaskSE {
     double fCasc_NSigBacKaon;                                 //!
     double fCasc_LeastCRaws;                                  //!
     double fCasc_LeastCRawsOvF;                               //!
+    double fCasc_LeastTPCcls;                                 //!
     double fCasc_InvMassLam;                                  //!
     double fCasc_DcaV0Daught;                                 //!
     double fCasc_V0CosPA;                                     //!

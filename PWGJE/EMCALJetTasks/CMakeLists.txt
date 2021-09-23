@@ -149,7 +149,6 @@ set(SRCS
     Tracks/AliAnalysisEmcalTriggerSelectionHelper.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
-    Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
     Tracks/AliAnalysisTaskEmcalResponseOutliers.cxx
     Tracks/AliAnalysisTaskEmcalOutliersGen.cxx
     Tracks/AliAnalysisTaskEmcalPatchMultCorr.cxx
@@ -194,6 +193,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetHdEdxCorrelations.cxx
     UserTasks/AliAnalysisTaskEmcalJetHUtils.cxx
     UserTasks/AliAnalysisTaskEmcalJetHPerformance.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHPerformanceConstits.cxx
     UserTasks/AliAnalysisTaskEmcalJetHCorrelations.cxx
     UserTasks/AliAnalysisTaskEmcalJetMassBkg.cxx
     UserTasks/AliAnalysisTaskEmcalJetMass.cxx
@@ -235,6 +235,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskPrepareInputForEmbedding.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSOH.cxx
+    UserTasks/AliAnalysisTaskTrackSkim.cxx
 
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
@@ -309,6 +310,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
 	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
+        Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx

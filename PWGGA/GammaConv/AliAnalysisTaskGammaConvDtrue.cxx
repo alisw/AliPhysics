@@ -28,7 +28,7 @@
 #include <THistManager.h>
 #include <TList.h>
 #include <TMath.h>
-#include <TParticle.h>
+// #include <TParticle.h>
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"

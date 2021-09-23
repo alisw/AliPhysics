@@ -21,6 +21,7 @@ class AliPIDResponse;
 class AliHFJetsTaggingVertex;
 class AliRDHFJetsCutsVertex;
 class AliVertexerTracks;
+class AliFJWrapper; 
 
 class AliAnalysisTaskBJetTC : public AliAnalysisTaskEmcalJet
 {
@@ -42,10 +43,12 @@ public:
     virtual ~AliAnalysisTaskBJetTC();
     virtual void UserCreateOutputObjects();
     virtual void Terminate(Option_t *);
-    virtual Bool_t Run();
-    virtual Double_t GetDeltaPtRandomCone();
-    virtual Double_t GetDeltaPtRandomConeWithSignal();
     virtual Bool_t Notify();
+    virtual Bool_t Run();
+    
+    Double_t GetDeltaPtRandomCone();
+    Double_t GetDeltaPtRandomConeWithSignal();
+    Double_t GetDeltaPtPerpEmbedding(Double_t signalEta, Double_t signalPhi);
 
     void SetPtHardBin(Int_t b) { fSelectPtHardBin = b; }
     void SetPtHardThreshold(Double_t b) { fPtHardThreshold = b; }
@@ -172,6 +175,8 @@ public:
 
     void SetDoDeltaPtWithSignal(Bool_t value) { fDoDeltaPtWithSignal = value; }
 
+    void SetEmbeddPerpendicular(Bool_t EmbeddPerpendicular = kTRUE) { fEmbeddPerpendicular = EmbeddPerpendicular; }; //EMB_clus
+
     void SetDoTaggedJetsDRM(Bool_t value) { fDoTaggedDRM = value; }
 
     Int_t FindVertices6Prong(const AliEmcalJet *jet,
@@ -247,6 +252,7 @@ private:
     Bool_t fVertexConstraint;       //!
     Double_t fThresholdIP;          //
     Bool_t fDoDeltaPtWithSignal;    //
+    Bool_t fEmbeddPerpendicular;    // EMB_clus use perpendicular track embedding
 
     AliESDVertex *fDiamond;       //!
     AliVertexerTracks *fVertexer; //!
@@ -254,6 +260,9 @@ private:
     AliPIDResponse *fRespoPID; //!
 
     TRandom3 *fRandom; //! Random cone input
+
+    AliFJWrapper *fFastJetWrapper; ///< EMB_clus wrapper for fast jet finding
+    TRandom *fTrackGenerator;      ///< EMB_clus generator for track perpendicular to signal jet
 
     TH1D *fh1dEventRejectionRDHFCuts; //! Store Rejection reasons and number of accepted events
     TH1D *fh1dVertexZ;                //!
@@ -286,6 +295,8 @@ private:
     TH2D *f2histRhoVsDeltaPtFirst;  //!
     TH2D *f2histRhoVsDeltaPtSecond; //!
     TH2D *f2histRhoVsDeltaPtThird;  //!
+
+    TH2D *fh2DeltaPtEmbeddCorrelationPerpendicular; //!
 
     TH2D *f2histRhoVsDeltaPtWithSignal;       //!
     TH2D *f2histRhoVsDeltaPtWithSignalFirst;  //!

@@ -30,10 +30,16 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fUseNewRunDepTempCalib(0)
   ,fDisableTempCalib(0)
   ,fUseShaperCorrection(0)
-  ,fUseAdditionalScale(1)
+  ,fUseDetermineLowGain(0)
+  ,fUseAdditionalScale(kFALSE)
+  ,fAdditionalScaleSM(0)
   ,fCustomRecalibFilePath("")
   ,fLoad1DRecalibFactors(0)
 {
+  for(unsigned int i = 0; i < 3; ++i){
+    fAdditionalScaleSM.push_back(1); // set default values to 1
+  }
+
 }
 
 /**
@@ -64,8 +70,14 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   // check the YAML configuration if the shaper nonlinearity correction is requested (default is false)
   GetProperty("enableShaperCorrection",fUseShaperCorrection);
 
+  // check the YAML configuration if custom determination of LG/HG is requested (default is false)
+  GetProperty("enableLGDetermination",fUseDetermineLowGain);
+
   // check the YAML configuration if an additional cell correction scale is requested (default is 1 -> no scale shift)
   GetProperty("enableAdditionalScale",fUseAdditionalScale);
+
+  // check the YAML configuration for values for additional scale (default is 1 for each SM category )
+  GetProperty("additionalScaleValuesSM",fAdditionalScaleSM);
 
   // check the YAML configuration if a custom energy calibration is requested (default is empty string "")
   GetProperty("customRecalibFilePath",fCustomRecalibFilePath);
@@ -260,6 +272,19 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
       h->SetDirectory(0);
       fRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
     }
+  }
+  if(fUseDetermineLowGain){
+    
+    AliCDBManager *cdb = AliCDBManager::Instance();
+    if(!cdb)  AliFatal("Could not get CDB instance");
+    cdb->SetRun(runRC);
+
+    AliCDBEntry *entry = static_cast<AliCDBEntry*>(cdb->Get("EMCAL/Calib/Data"));
+    AliEMCALCalibData*  calib = NULL;
+    if (entry) calib =  static_cast<AliEMCALCalibData*>(entry->GetObject());
+    if (!calib) AliFatal("Calibration parameters not found in CDB!");
+    fRecoUtils->SetUseDetermineLowGain(kTRUE);
+    fRecoUtils->SetEMCALCalibData(calib);
   }
 
   return 1;
@@ -512,9 +537,12 @@ Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
     fRecoUtils->SetUseTowerShaperNonlinarityCorrection(kTRUE);
   }
 
-  if(fUseAdditionalScale > 0 && fUseAdditionalScale != 1)
+  if(fUseAdditionalScale)
   {
-    fRecoUtils->SetUseTowerAdditionalScaleCorrection(kTRUE, fUseAdditionalScale);
+    fRecoUtils->SetUseTowerAdditionalScaleCorrection(kTRUE);
+    for(int i = 0; i < 3; ++i){
+      fRecoUtils->SetTowerAdditionalScaleCorrection(i, fAdditionalScaleSM[i]);
+    }
   }
 
   return runChanged;

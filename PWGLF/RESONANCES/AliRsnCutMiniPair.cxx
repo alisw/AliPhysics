@@ -82,6 +82,9 @@ Bool_t AliRsnCutMiniPair::IsSelected(TObject *obj)
          return OkRangeD();
       case kPassesOOBPileupCut:
          return pair->PassesOOBPileupCut();
+      case kPtMC:
+         fCutValueD = pair->Pt(1);
+         return OkRangeD();
 
    default:
          AliWarning("Undefined enum value");

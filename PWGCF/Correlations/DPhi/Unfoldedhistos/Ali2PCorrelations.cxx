@@ -64,8 +64,10 @@ Ali2PCorrelations::Ali2PCorrelations() :
     /* histograms */
     fhN2_12_vsPtPt{nullptr,nullptr,nullptr,nullptr},
     fhN2_12_vsDEtaDPhi{nullptr,nullptr,nullptr,nullptr},
+    fhN2_12_vsDEtaDPhi_na{nullptr,nullptr,nullptr,nullptr},
     fhSum2PtPt_12_vsDEtaDPhi{nullptr,nullptr,nullptr,nullptr},
     fhSum2DptDpt_12_vsDEtaDPhi{nullptr,nullptr,nullptr,nullptr},
+    fhSum2DptDpt_12_vsDEtaDPhi_na{nullptr,nullptr,nullptr,nullptr},
     /* vs centrality profiles */
     fhN2_12_vsC{nullptr,nullptr,nullptr,nullptr},
     fhSum2PtPt_12_vsC{nullptr,nullptr,nullptr,nullptr},
@@ -108,8 +110,10 @@ Ali2PCorrelations::Ali2PCorrelations(const char *name) :
     /* histograms */
     fhN2_12_vsPtPt{nullptr,nullptr,nullptr,nullptr},
     fhN2_12_vsDEtaDPhi{nullptr,nullptr,nullptr,nullptr},
+    fhN2_12_vsDEtaDPhi_na{nullptr,nullptr,nullptr,nullptr},
     fhSum2PtPt_12_vsDEtaDPhi{nullptr,nullptr,nullptr,nullptr},
     fhSum2DptDpt_12_vsDEtaDPhi{nullptr,nullptr,nullptr,nullptr},
+    fhSum2DptDpt_12_vsDEtaDPhi_na{nullptr,nullptr,nullptr,nullptr},
     fhN2_12_vsC{nullptr,nullptr,nullptr,nullptr},
     fhSum2PtPt_12_vsC{nullptr,nullptr,nullptr,nullptr},
     fhSum2DptDpt_12_vsC{nullptr,nullptr,nullptr,nullptr},
@@ -238,9 +242,13 @@ void Ali2PCorrelations::Initialize()
       const char *pname = TrackPairsNames[i];
       fhN2_12_vsDEtaDPhi[i] = new TH2F(TString::Format("n2_12_vsDEtaDPhi_%s",pname),TString::Format("#LT n_{2} #GT (%s);#Delta#eta;#Delta#varphi;#LT n_{2} #GT",pname),
           fNBins_deltaeta,fMin_deltaeta,fMax_deltaeta,fNBins_deltaphi,fMin_deltaphi,fMax_deltaphi);
+      fhN2_12_vsDEtaDPhi_na[i] = new TH2F(TString::Format("n2_12_vsDEtaDPhiNa_%s",pname),TString::Format("#LT n_{2} #GT na (%s);#Delta#eta;#Delta#varphi;#LT n_{2} #GT",pname),
+          fNBins_deltaeta,fMin_deltaeta,fMax_deltaeta,fNBins_deltaphi,fMin_deltaphi,fMax_deltaphi);
       fhSum2PtPt_12_vsDEtaDPhi[i] = new TH2F(TString::Format("sumPtPt_12_vsDEtaDPhi_%s",pname),TString::Format("#LT #Sigma p_{t,1}p_{t,2} #GT (%s);#Delta#eta;#Delta#varphi;#LT #Sigma p_{t,1}p_{t,2} #GT (GeV^{2})",pname),
           fNBins_deltaeta,fMin_deltaeta,fMax_deltaeta,fNBins_deltaphi,fMin_deltaphi,fMax_deltaphi);
       fhSum2DptDpt_12_vsDEtaDPhi[i] = new TH2F(TString::Format("sumDptDpt_12_vsDEtaDPhi_%s",pname),TString::Format("#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (%s);#Delta#eta;#Delta#varphi;#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (GeV^{2})",pname),
+          fNBins_deltaeta,fMin_deltaeta,fMax_deltaeta,fNBins_deltaphi,fMin_deltaphi,fMax_deltaphi);
+      fhSum2DptDpt_12_vsDEtaDPhi_na[i] = new TH2F(TString::Format("sumDptDpt_12_vsDEtaDPhiNa_%s",pname),TString::Format("#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT na (%s);#Delta#eta;#Delta#varphi;#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (GeV^{2})",pname),
           fNBins_deltaeta,fMin_deltaeta,fMax_deltaeta,fNBins_deltaphi,fMin_deltaphi,fMax_deltaphi);
       fhN2_12_vsPtPt[i] = new TH2F(TString::Format("n2_12_vsPtVsPt_%s",pname),TString::Format("#LT n_{2} #GT (%s);p_{t,1} (GeV/c);p_{t,2} (GeV/c);#LT n_{2} #GT",pname),
           fNBins_pt_1,fMin_pt_1,fMax_pt_1,fNBins_pt_2,fMin_pt_2,fMax_pt_2);
@@ -254,8 +262,10 @@ void Ali2PCorrelations::Initialize()
 
     for (int i = 0; i<nTrackPairs; ++i) {
       fOutput->Add(fhN2_12_vsDEtaDPhi[i]);
+      fOutput->Add(fhN2_12_vsDEtaDPhi_na[i]);
       fOutput->Add(fhSum2PtPt_12_vsDEtaDPhi[i]);
       fOutput->Add(fhSum2DptDpt_12_vsDEtaDPhi[i]);
+      fOutput->Add(fhSum2DptDpt_12_vsDEtaDPhi_na[i]);
       fOutput->Add(fhN2_12_vsPtPt[i]);
       fOutput->Add(fhN2_12_vsC[i]);
       fOutput->Add(fhSum2PtPt_12_vsC[i]);
@@ -366,7 +376,7 @@ Bool_t Ali2PCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Fl
       fFlags_1[fNoOfTracks1]        = 0x0;
       fPt_1[fNoOfTracks1]           = pT;
       fEta_1[fNoOfTracks1]          = eta;
-      fPhi_1[fNoOfTracks1]          = ophi;
+      fPhi_1[fNoOfTracks1]          = phi;
       fAvgPt_1[fNoOfTracks1]        = (fhPositivePtAverage != nullptr) ? fhPositivePtAverage->GetBinContent(ixEta+1,ixPhi+1) : 0.0;
       fCorrection_1[fNoOfTracks1]   = corr;
       fN1_1                         += corr;
@@ -459,7 +469,7 @@ Bool_t Ali2PCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Fl
       fFlags_2[fNoOfTracks2]        = 0x0;
       fPt_2[fNoOfTracks2]           = pT;
       fEta_2[fNoOfTracks2]          = eta;
-      fPhi_2[fNoOfTracks2]          = ophi;
+      fPhi_2[fNoOfTracks2]          = phi;
       fAvgPt_2[fNoOfTracks2]        = (fhNegativePtAverage != nullptr) ? fhNegativePtAverage->GetBinContent(ixEta+1,ixPhi+1) : 0.0;
       fCorrection_2[fNoOfTracks2]   = corr;
       fN1_2                         += corr;
@@ -532,6 +542,8 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
       float corr_1   = fCorrection_1[ix1];
       float pt_1     = fPt_1[ix1];
       float avgpt_1  = fAvgPt_1[ix1];
+      float eta_1    = fEta_1[ix1];
+      float phi_1    = fPhi_1[ix1];
 
       for (Int_t ix2 = ix1+1; ix2 < fNoOfTracks1; ix2++) {
         /* excluded self correlations */
@@ -540,6 +552,12 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
         int ixDeltaPhi_d   = ixPhi_1-fIxPhi_1[ix2]; if (ixDeltaPhi_d < 0) ixDeltaPhi_d += fNBins_phi_1;
         int ixDeltaEta_c   = fIxEta_1[ix2]-ixEta_1+fNBins_eta_1-1;
         int ixDeltaPhi_c   = fIxPhi_1[ix2]-ixPhi_1; if (ixDeltaPhi_c < 0) ixDeltaPhi_c += fNBins_phi_1;
+        float deltaEta_d   = eta_1 - fEta_1[ix2];
+        float deltaEta_c   = - deltaEta_d;
+        float deltaPhi_d   = float(TVector2::Phi_0_2pi(phi_1 - fPhi_1[ix2]));
+        if (not(deltaPhi_d < fMax_deltaphi)) deltaPhi_d -= TMath::TwoPi();
+        float deltaPhi_c   = float(TVector2::Phi_0_2pi(fPhi_1[ix2] - phi_1));
+        if (not(deltaPhi_c < fMax_deltaphi)) deltaPhi_c -= TMath::TwoPi();
 
         /* apply the pair correction if applicable */
         if (effcorr != NULL) {
@@ -552,11 +570,15 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
 
         int globalbin_d = fhN2_12_vsDEtaDPhi[kOO]->GetBin(ixDeltaEta_d+1,ixDeltaPhi_d+1);
         int globalbin_c = fhN2_12_vsDEtaDPhi[kOO]->GetBin(ixDeltaEta_c+1,ixDeltaPhi_c+1);
+        int globalbin_na_d = fhN2_12_vsDEtaDPhi_na[kOO]->FindBin(deltaEta_d,deltaPhi_d);
+        int globalbin_na_c = fhN2_12_vsDEtaDPhi_na[kOO]->FindBin(deltaEta_c,deltaPhi_c);
 
         fNnw2_12               += 2;
         fN2_12                 += 2*corr;
         fhN2_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_d,corr);
         fhN2_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_c,corr);
+        fhN2_12_vsDEtaDPhi_na[kOO]->AddBinContent(globalbin_na_d,corr);
+        fhN2_12_vsDEtaDPhi_na[kOO]->AddBinContent(globalbin_na_c,corr);
         float ptpt              = pt_1*fPt_1[ix2];
         fSum2PtPtnw_12         += 2*ptpt;
         fSum2PtPt_12           += 2*corr*ptpt;
@@ -567,6 +589,8 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
         fSum2DptDpt_12         += 2*corr*dptdpt;
         fhSum2DptDpt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_d,corr*dptdpt);
         fhSum2DptDpt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_c,corr*dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[kOO]->AddBinContent(globalbin_na_d,corr*dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[kOO]->AddBinContent(globalbin_na_c,corr*dptdpt);
         fhN2_12_vsPtPt[kOO]->Fill(pt_1,fPt_1[ix2],corr);
         fhN2_12_vsPtPt[kOO]->Fill(fPt_1[ix2],pt_1,corr);
       } //ix2
@@ -580,8 +604,10 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
 
     /* update the number of entries in the differential histograms filled with AddBinContent */
     fhN2_12_vsDEtaDPhi[kOO]->SetEntries(fhN2_12_vsDEtaDPhi[kOO]->GetEntries() + fNnw2_12);
+    fhN2_12_vsDEtaDPhi_na[kOO]->SetEntries(fhN2_12_vsDEtaDPhi_na[kOO]->GetEntries() + fNnw2_12);
     fhSum2PtPt_12_vsDEtaDPhi[kOO]->SetEntries(fhSum2PtPt_12_vsDEtaDPhi[kOO]->GetEntries() + fNnw2_12);
     fhSum2DptDpt_12_vsDEtaDPhi[kOO]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi[kOO]->GetEntries() + fNnw2_12);
+    fhSum2DptDpt_12_vsDEtaDPhi_na[kOO]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi_na[kOO]->GetEntries() + fNnw2_12);
   }
   else if (bank == 2) {
     /* let's select the pair efficiency correction histogram */
@@ -598,6 +624,8 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
       float corr_1   = fCorrection_2[ix1];
       float pt_1     = fPt_2[ix1];
       float avgpt_1  = fAvgPt_2[ix1];
+      float eta_1    = fEta_2[ix1];
+      float phi_1    = fPhi_2[ix1];
 
       for (Int_t ix2 = ix1+1; ix2 < fNoOfTracks2; ix2++) {
         /* excluded self correlations */
@@ -606,6 +634,12 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
         int ixDeltaPhi_d   = ixPhi_1-fIxPhi_2[ix2]; if (ixDeltaPhi_d < 0) ixDeltaPhi_d += fNBins_phi_1;
         int ixDeltaEta_c   = fIxEta_2[ix2]-ixEta_1+fNBins_eta_1-1;
         int ixDeltaPhi_c   = fIxPhi_2[ix2]-ixPhi_1; if (ixDeltaPhi_c < 0) ixDeltaPhi_c += fNBins_phi_1;
+        float deltaEta_d   = eta_1 - fEta_2[ix2];
+        float deltaEta_c   = - deltaEta_d;
+        float deltaPhi_d   = float(TVector2::Phi_0_2pi(phi_1 - fPhi_2[ix2]));
+        if (not(deltaPhi_d < fMax_deltaphi)) deltaPhi_d -= TMath::TwoPi();
+        float deltaPhi_c   = float(TVector2::Phi_0_2pi(fPhi_2[ix2] - phi_1));
+        if (not(deltaPhi_c < fMax_deltaphi)) deltaPhi_c -= TMath::TwoPi();
 
         /* apply the pair correction if applicable */
         if (effcorr != NULL) {
@@ -618,11 +652,15 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
 
         int globalbin_d = fhN2_12_vsDEtaDPhi[kTT]->GetBin(ixDeltaEta_d+1,ixDeltaPhi_d+1);
         int globalbin_c = fhN2_12_vsDEtaDPhi[kTT]->GetBin(ixDeltaEta_c+1,ixDeltaPhi_c+1);
+        int globalbin_na_d = fhN2_12_vsDEtaDPhi_na[kTT]->FindBin(deltaEta_d,deltaPhi_d);
+        int globalbin_na_c = fhN2_12_vsDEtaDPhi_na[kTT]->FindBin(deltaEta_c,deltaPhi_c);
 
         fNnw2_12               += 2;
         fN2_12                 += 2*corr;
         fhN2_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_d,corr);
         fhN2_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_c,corr);
+        fhN2_12_vsDEtaDPhi_na[kTT]->AddBinContent(globalbin_na_d,corr);
+        fhN2_12_vsDEtaDPhi_na[kTT]->AddBinContent(globalbin_na_c,corr);
         float ptpt              = pt_1*fPt_2[ix2];
         fSum2PtPtnw_12         += 2*ptpt;
         fSum2PtPt_12           += 2*corr*ptpt;
@@ -633,6 +671,8 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
         fSum2DptDpt_12         += 2*corr*dptdpt;
         fhSum2DptDpt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_d,corr*dptdpt);
         fhSum2DptDpt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_c,corr*dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[kTT]->AddBinContent(globalbin_na_d,corr*dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[kTT]->AddBinContent(globalbin_na_c,corr*dptdpt);
         fhN2_12_vsPtPt[kTT]->Fill(pt_1,fPt_2[ix2],corr);
         fhN2_12_vsPtPt[kTT]->Fill(fPt_2[ix2],pt_1,corr);
       } //ix2
@@ -646,8 +686,10 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
 
     /* update the number of entries in the differential histograms filled with AddBinContent */
     fhN2_12_vsDEtaDPhi[kTT]->SetEntries(fhN2_12_vsDEtaDPhi[kTT]->GetEntries() + fNnw2_12);
+    fhN2_12_vsDEtaDPhi_na[kTT]->SetEntries(fhN2_12_vsDEtaDPhi_na[kTT]->GetEntries() + fNnw2_12);
     fhSum2PtPt_12_vsDEtaDPhi[kTT]->SetEntries(fhSum2PtPt_12_vsDEtaDPhi[kTT]->GetEntries() + fNnw2_12);
     fhSum2DptDpt_12_vsDEtaDPhi[kTT]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi[kTT]->GetEntries() + fNnw2_12);
+    fhSum2DptDpt_12_vsDEtaDPhi_na[kTT]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi_na[kTT]->GetEntries() + fNnw2_12);
   }
 }
 
@@ -681,6 +723,8 @@ void Ali2PCorrelations::ProcessUnlikeSignPairs() {
     float corr_1   = fCorrection_1[ix1];
     float pt_1     = fPt_1[ix1];
     float avgpt_1  = fAvgPt_1[ix1];
+    float eta_1    = fEta_1[ix1];
+    float phi_1    = fPhi_1[ix1];
 
     for (Int_t ix2 = 0; ix2 < fNoOfTracks2; ix2++) {
       /* process the resonance suppression for this pair if needed */
@@ -711,6 +755,12 @@ void Ali2PCorrelations::ProcessUnlikeSignPairs() {
         int ixDeltaPhi_d   = ixPhi_1-fIxPhi_2[ix2]; if (ixDeltaPhi_d < 0) ixDeltaPhi_d += fNBins_phi_1;
         int ixDeltaEta_c   = fIxEta_2[ix2]-ixEta_1+fNBins_eta_1-1;
         int ixDeltaPhi_c   = fIxPhi_2[ix2]-ixPhi_1; if (ixDeltaPhi_c < 0) ixDeltaPhi_c += fNBins_phi_1;
+        float deltaEta_d   = eta_1 - fEta_2[ix2];
+        float deltaEta_c   = - deltaEta_d;
+        float deltaPhi_d   = float(TVector2::Phi_0_2pi(phi_1 - fPhi_2[ix2]));
+        if (not(deltaPhi_d < fMax_deltaphi)) deltaPhi_d -= TMath::TwoPi();
+        float deltaPhi_c   = float(TVector2::Phi_0_2pi(fPhi_2[ix2] - phi_1));
+        if (not(deltaPhi_c < fMax_deltaphi)) deltaPhi_c -= TMath::TwoPi();
 
         /* apply the pair correction if applicable */
         if (effcorr != NULL) {
@@ -723,11 +773,15 @@ void Ali2PCorrelations::ProcessUnlikeSignPairs() {
 
         int globalbin_d = fhN2_12_vsDEtaDPhi[kOT]->GetBin(ixDeltaEta_d+1,ixDeltaPhi_d+1);
         int globalbin_c = fhN2_12_vsDEtaDPhi[kTO]->GetBin(ixDeltaEta_c+1,ixDeltaPhi_c+1);
+        int globalbin_na_d = fhN2_12_vsDEtaDPhi_na[kOT]->FindBin(deltaEta_d,deltaPhi_d);
+        int globalbin_na_c = fhN2_12_vsDEtaDPhi_na[kTO]->FindBin(deltaEta_c,deltaPhi_c);
 
         fNnw2_12               += 1;
         fN2_12                 += corr;
         fhN2_12_vsDEtaDPhi[kOT]->AddBinContent(globalbin_d,corr);
         fhN2_12_vsDEtaDPhi[kTO]->AddBinContent(globalbin_c,corr);
+        fhN2_12_vsDEtaDPhi_na[kOT]->AddBinContent(globalbin_na_d,corr);
+        fhN2_12_vsDEtaDPhi_na[kTO]->AddBinContent(globalbin_na_c,corr);
         float ptpt              = pt_1*fPt_2[ix2];
         fSum2PtPtnw_12         += ptpt;
         fSum2PtPt_12           += corr*ptpt;
@@ -738,6 +792,8 @@ void Ali2PCorrelations::ProcessUnlikeSignPairs() {
         fSum2DptDpt_12         += corr*dptdpt;
         fhSum2DptDpt_12_vsDEtaDPhi[kOT]->AddBinContent(globalbin_d,corr*dptdpt);
         fhSum2DptDpt_12_vsDEtaDPhi[kTO]->AddBinContent(globalbin_c,corr*dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[kOT]->AddBinContent(globalbin_na_d,corr*dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[kTO]->AddBinContent(globalbin_na_c,corr*dptdpt);
         fhN2_12_vsPtPt[kOT]->Fill(pt_1,fPt_2[ix2],corr);
         fhN2_12_vsPtPt[kTO]->Fill(fPt_2[ix2],pt_1,corr);
       }
@@ -759,10 +815,14 @@ void Ali2PCorrelations::ProcessUnlikeSignPairs() {
   /* update the number of entries in the differential histograms filled with AddBinContent */
   fhN2_12_vsDEtaDPhi[kOT]->SetEntries(fhN2_12_vsDEtaDPhi[kOT]->GetEntries() + fNnw2_12);
   fhN2_12_vsDEtaDPhi[kTO]->SetEntries(fhN2_12_vsDEtaDPhi[kTO]->GetEntries() + fNnw2_12);
+  fhN2_12_vsDEtaDPhi_na[kOT]->SetEntries(fhN2_12_vsDEtaDPhi_na[kOT]->GetEntries() + fNnw2_12);
+  fhN2_12_vsDEtaDPhi_na[kTO]->SetEntries(fhN2_12_vsDEtaDPhi_na[kTO]->GetEntries() + fNnw2_12);
   fhSum2PtPt_12_vsDEtaDPhi[kOT]->SetEntries(fhSum2PtPt_12_vsDEtaDPhi[kOT]->GetEntries() + fNnw2_12);
   fhSum2PtPt_12_vsDEtaDPhi[kTO]->SetEntries(fhSum2PtPt_12_vsDEtaDPhi[kTO]->GetEntries() + fNnw2_12);
   fhSum2DptDpt_12_vsDEtaDPhi[kOT]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi[kOT]->GetEntries() + fNnw2_12);
   fhSum2DptDpt_12_vsDEtaDPhi[kTO]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi[kTO]->GetEntries() + fNnw2_12);
+  fhSum2DptDpt_12_vsDEtaDPhi_na[kOT]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi_na[kOT]->GetEntries() + fNnw2_12);
+  fhSum2DptDpt_12_vsDEtaDPhi_na[kTO]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi_na[kTO]->GetEntries() + fNnw2_12);
 }
 
 /// \brief Fill the histograms once the whole process is finished
@@ -784,8 +844,10 @@ void  Ali2PCorrelations::FinalizeProcess()
     fhSum1Pt_2_vsEtaPhi->Sumw2(false);
     for (int i = 0; i<nTrackPairs; ++i) {
       fhN2_12_vsDEtaDPhi[i]->Sumw2(false);
+      fhN2_12_vsDEtaDPhi_na[i]->Sumw2(false);
       fhSum2PtPt_12_vsDEtaDPhi[i]->Sumw2(false);
       fhSum2DptDpt_12_vsDEtaDPhi[i]->Sumw2(false);
+      fhSum2DptDpt_12_vsDEtaDPhi_na[i]->Sumw2(false);
       fhN2_12_vsPtPt[i]->Sumw2(false);
     }
   }

@@ -48,7 +48,9 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE {
     TH2F            *fHistEtaCuts;
     TH2F            *fHistPosKaons;
     TH2F            *fHistNegKaons;
-    TH2F            *fHistV0s;
+    TH1F            *fHistV0M;
+//    TH1F            *fHistV0s;
+    TH2F            *fHistK0s;
     
     Double_t        fLpTCut;        //not a pointer???
 	Double_t        fUpTCut;

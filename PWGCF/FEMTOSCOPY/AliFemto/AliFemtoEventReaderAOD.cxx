@@ -587,7 +587,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     Double_t NewPt =  aodtrack->Pt();
     Double_t NewEta = aodtrack->Eta();
 
-    if(NewPt > Ptmax){
+    if(NewPt > Ptmax && TMath::Abs(NewEta)<0.8){
       Ptmax = NewPt;
       Phimax = NewPhi;
       Etamax = NewEta;
@@ -671,8 +671,10 @@ if(fjets>0){
    if(fjets>0){
     Bool_t isSelected;
     Double_t tPhi = aodtrack->Phi();
+    Double_t tEta = aodtrack->Eta();
     Double_t dphi= TMath::Abs(Phimax-tPhi);
-    isSelected = (Ptmax>fPtmax && dphi<1.0 && dphi!=0);
+    Double_t deta= TMath::Abs(Etamax-tEta);
+    isSelected = (Ptmax>fPtmax && dphi<1.0 && dphi!=0 && deta<1.2);
     if(!isSelected){
     continue;
     }

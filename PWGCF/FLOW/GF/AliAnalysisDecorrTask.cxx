@@ -37,7 +37,11 @@
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
 #include "AliGenHijingEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 #include "AliDecorrFlowCorrTask.h"
+#include "AliVParticle.h"
+#include "AliVTrack.h"
+#include "AliAODMCParticle.h"
 
 #include "AliAnalysisDecorrTask.h"
 
@@ -80,10 +84,11 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fIndexSampling{0},
     fAOD(nullptr),
     fIsMC(kFALSE),
-    fMCEvent(0),
-    fEvent(0),
+    fMCEvent(nullptr),
+    fEvent(nullptr),
     fInitTask{kFALSE},  
-    fOnTheFly(kFALSE), 
+    fOnTheFly(kFALSE),
+    fImpactParameterMC{0.0},
     fVecCorrTask{},
 
     fSampling{kFALSE},
@@ -104,6 +109,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fCentAxis(new TAxis()),
     fCentMin{0.0},
     fCentMax{50.0},
+    fPVtxCutX{3.},
+    fPVtxCutY{3.},
     fPVtxCutZ{10.0},
     fRequireHighPtTracks{kFALSE},
     fNHighPtTracks{1},
@@ -172,10 +179,11 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, Bool_t IsMC) : Al
     fIndexSampling{0},
     fAOD(nullptr),
     fIsMC(IsMC),
-    fMCEvent(0),
-    fEvent(0),
+    fMCEvent(nullptr),
+    fEvent(nullptr),
     fInitTask{kFALSE}, 
     fOnTheFly(kFALSE),  
+    fImpactParameterMC{0.0},
     fVecCorrTask{},
 
     fSampling{kFALSE},
@@ -196,6 +204,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, Bool_t IsMC) : Al
     fCentAxis(new TAxis()),
     fCentMin{0.0},
     fCentMax{50.0},
+    fPVtxCutX{3.},
+    fPVtxCutY{3.},
     fPVtxCutZ{10.0},
     fRequireHighPtTracks{kFALSE},
     fNHighPtTracks{0},
@@ -273,9 +283,9 @@ Bool_t AliAnalysisDecorrTask::InitTask()
     }
 
     AliInfo("Weight List loaded");
-
+    
     if(fIsMC) AliInfo("Running over MC data!");
-
+    AliInfo("Creating output objects");
     return kTRUE;
 }
 
@@ -533,6 +543,7 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         fQA->Add(fhQAEventsfMultTPCvsESD);
     }
 
+    AliInfo("Output objects created");
     PostData(1, fFlowList);
     PostData(2, fFlowWeights);
     PostData(3, fQA);
@@ -706,17 +717,26 @@ void AliAnalysisDecorrTask::FillAfterWeights()
 //_____________________________________________________________________________
 void AliAnalysisDecorrTask::UserExec(Option_t *)
 {
-
-
     if(!fInitTask) { AliFatal("Something went wrong! Task not initialized"); return; }
     
-    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!fAOD) { return; }
-    
+    AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
+    AliVEventHandler* inputHandler = (AliVEventHandler*) (man->GetInputEventHandler());
     if(fIsMC) {
-        fMCEvent = dynamic_cast<AliMCEvent*>(MCEvent());
+        fMCEvent = inputHandler->MCEvent();
         if (!fMCEvent) return;
     }
+    else if(fOnTheFly)
+    {
+        fEvent = dynamic_cast<AliVEvent*>(MCEvent());
+    }
+    else
+    {   
+        fEvent = dynamic_cast<AliVEvent*>(InputEvent());
+        fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+        if(!fAOD) { return; }
+    }
+    if(!fEvent) { AliFatal("fEvent not found!"); return; }
+
     //Event selection
     if(fFillQA) {
         TH1D* fhEventSel = (TH1D*)fQA->FindObject("fhEventSel");
@@ -726,17 +746,16 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     if(fOnTheFly)
     {
         if(!IsMCEventSelected()) { return; }
+
     }
     else
     {
         if(!IsEventSelected(fhEventSel)) { return; }
     }
     
+    if(!fOnTheFly && fFillQA) FillWeights();
 
-    
-    FillWeights();
-
-    if(!fUseWeightsOne)
+    if(!fUseWeightsOne && !fOnTheFly)
     {
         if(!LoadWeights())
         {
@@ -744,7 +763,6 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
             return;
         }
     }
-
     //Get centrality of event
     Float_t centrality(0);
     //Use Nch for small systems
@@ -757,20 +775,24 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         if(centrality>0) {
             fhCentVsCharged->Fill(SmallSyscentrality,centrality);
         }
-
+    }
+    else if(fOnTheFly)
+    {
+        centrality = GetCentralityFromImpactParameter();
     }
     //Else uses centrality from selected centrality estimator
     else {
         AliMultSelection *multSelect =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
         if(multSelect) centrality = multSelect->GetMultiplicityPercentile(fCentEstimator);
     }
-    if(fFillAfterWeights)
+    if(centrality < 0) return;
+
+    if(fFillAfterWeights && !fOnTheFly)
     {
         FillAfterWeights();
     }
     //Subsampling - 10 subsamples
     fIndexSampling = GetSamplingIndex();
-
     //Multiplicity
     //Int_t iTracks(fAOD->GetNumberOfTracks());
     //Fill RP vectors
@@ -780,7 +802,6 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     {
         const AliDecorrFlowCorrTask* const task = fVecCorrTask.at(iTask);
         if(!task) { AliError("AliDecorrFlowCorrTask does not exist"); return; }
-
         FillRPvectors(task);
         bRef = task->fbDoRef;
         bDiff = task->fbDoDiff;
@@ -788,7 +809,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         bPtRef = task->fbDoPtRef; 
         bPtB = task->fbDoPtB; 
         if(bRef) { CalculateCorrelations(task, centrality, -1.0, -1.0, bRef, kFALSE, kFALSE, kFALSE, kFALSE); }
-
+        
         int iNumPtBins = fPtAxis->GetNbins();
 
         //Loop over Pt bins
@@ -1090,7 +1111,6 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
 //Method to fill RP vectors and stat histograms
 void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const task)
 {
-
     ResetFlowVector(Qvector);
     ResetFlowVector(Qvector10P);
     ResetFlowVector(Qvector10M);
@@ -1100,16 +1120,23 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
     double dGap = task->fdGaps[0]; 
     if(dGap > -1.0) { bHasGap = kTRUE; } else { bHasGap = kFALSE; }
     double dEtaLimit = 0.5*dGap;
-    double dVz = fAOD->GetPrimaryVertex()->GetZ();
+    double dVz = (fOnTheFly)?0.0:fAOD->GetPrimaryVertex()->GetZ();
     
     if(fOnTheFly)
     {
-        Int_t iNumTracks = fMCEvent->GetNumberOfPrimaries();
+        AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+        Int_t iNumTracks = ev->GetNumberOfPrimaries();
         if(iNumTracks < 1) { return; }
         for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) 
         {
-            AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
+            AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
+
             if(!track) { continue; }
+            
+            //excluding non stable particles
+            if(!(ev->IsPhysicalPrimary(iTrack))) continue;
+            if(track->Charge() == 0) continue;
+            
             bIsRP = IsWithinRP(track);
             if (!bIsRP) { continue; }
 
@@ -1300,16 +1327,22 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
     if(dGap > -1.0) { bHasGap = kTRUE; } else { bHasGap = kFALSE; }
     double dEtaLimit = 0.5*dGap;
 
-    double dVz = fAOD->GetPrimaryVertex()->GetZ();
+    double dVz = (fOnTheFly)?0.0:fAOD->GetPrimaryVertex()->GetZ();
     Int_t TrackCounter = 0;
     if(fOnTheFly)
     {
-        Int_t iNumTracks = fMCEvent->GetNumberOfPrimaries();
+        AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+        Int_t iNumTracks = ev->GetNumberOfPrimaries();
         if(iNumTracks < 1) { return 0; }
         for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) 
         {
-            AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
+            AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
             if(!track) { continue; }
+
+            //excluding non stable particles
+            if(!(ev->IsPhysicalPrimary(iTrack))) continue;
+            if(track->Charge() == 0) continue;
+
             double dPt = track->Pt();
             double dPhi = track->Phi();
             double dEta = track->Eta();
@@ -1563,15 +1596,21 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
     if(dGap > -1.0) { bHasGap = kTRUE; } else { bHasGap = kFALSE; }
     double dEtaLimit = 0.5*dGap;
 
-    double dVz = fAOD->GetPrimaryVertex()->GetZ();
+    double dVz = (fOnTheFly)?0.0:fAOD->GetPrimaryVertex()->GetZ();
     if(fOnTheFly)
     {
-        Int_t iNumTracks = fMCEvent->GetNumberOfPrimaries();
+        AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+        Int_t iNumTracks = ev->GetNumberOfPrimaries();
         if(iNumTracks < 1) { return; }
         for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) 
         {
-            AliMCParticle* track = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTrack));
+            AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
             if(!track) { continue; }
+
+            //excluding non stable particles
+            if(!(ev->IsPhysicalPrimary(iTrack))) continue;
+            if(track->Charge() == 0) continue;
+
             double dPt = track->Pt();
             double dPhi = track->Phi();
             double dEta = track->Eta();
@@ -1845,41 +1884,62 @@ Int_t AliAnalysisDecorrTask::GetSamplingIndex() const
     return index;
 }
 
+Double_t AliAnalysisDecorrTask::GetCentralityFromImpactParameter()
+{
+    Double_t b[] = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,9999};
+    Double_t cent[] = {2.5,7.5,15.,25.,35.,45.,55.,65.,75.,90.};
+    for(Int_t i(0);i<10;i++)
+    {
+        if(fImpactParameterMC <= b[i+1] && fImpactParameterMC > b[i]) 
+        {
+            return cent[i];
+        }
+        else 
+        {
+            continue;
+        }
+    }
+    return -1.0;
+}
+
 Bool_t AliAnalysisDecorrTask::IsMCEventSelected()
 {
-  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
-  if(!ev) { AliFatal("MC event not found!"); return kFALSE; }
+    AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+    if(!ev) { AliFatal("MC event not found!"); return kFALSE; }
 
-  AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
-  if(!header) { AliFatal("MC event not generated!"); return kFALSE; }
+    AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
+    if(!header) { AliFatal("MC event not generated!"); return kFALSE; }
 
-  const AliVVertex *vertex = ev->GetPrimaryVertex();
-  if(!ev) { AliError("Vertex of MC not found!"); }
+    const AliVVertex *vertex = ev->GetPrimaryVertex();
+    if(!ev) { AliError("Vertex of MC not found!"); }
 
-  //if(TMath::Abs(vertex->GetX()) > fVxMax) return kFALSE;
-  //if(TMath::Abs(vertex->GetY()) > fVyMax) return kFALSE;
-  if(TMath::Abs(vertex->GetZ()) > fPVtxCutZ) return kFALSE;
+    if(TMath::Abs(vertex->GetX()) > fPVtxCutX) return kFALSE;
+    if(TMath::Abs(vertex->GetY()) > fPVtxCutY) return kFALSE;
+    if(TMath::Abs(vertex->GetZ()) > fPVtxCutZ) return kFALSE;
 
-
-  AliCollisionGeometry* headerH;
-  TString genName;
-  TList *ltgen = (TList*)ev->GetCocktailList();
-  if (ltgen) {
-  for(auto&& listObject: *ltgen){
-    genName = Form("%s",listObject->GetName());
-    if (genName.Contains("Hijing")) {
-      headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
-      break;
-      }
+    AliCollisionGeometry* headerH;
+    AliGenHepMCEventHeader* headertmp;
+    TString genName;
+    TList *ltgen = (TList*)ev->GetCocktailList();
+    if (ltgen) {
+        for(auto&& listObject: *ltgen){
+            genName = Form("%s",listObject->GetName());
+            if (genName.Contains("Hijing")) {
+                headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+                break;
+            }
+        }
     }
-  }
-  else
-    headerH = dynamic_cast<AliCollisionGeometry*>(ev->GenEventHeader());
-  if(headerH){
-      fImpactParameterMC = headerH->ImpactParameter();
-  }
-
-  return kTRUE;
+    else 
+    {
+        headertmp = dynamic_cast<AliGenHepMCEventHeader*>(ev->GenEventHeader());
+    }
+    if(headertmp){
+        fImpactParameterMC = headertmp->impact_parameter();
+        if(!fImpactParameterMC) { AliFatal("Impact parameter not found"); return kFALSE; }
+    } 
+    else return kFALSE;  
+    return kTRUE;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisDecorrTask::IsEventSelected(TH1D* h)
