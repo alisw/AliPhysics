@@ -133,6 +133,7 @@ class AliAnalysisTaskGenRT : public AliAnalysisTaskSE { //
 		TH1D * fMultTSRec;
 		TH2D * fSoWeighedVsNchPtL;
 
+		TH1D * hPtLeadingGen;
 		TH2D * fMultTSvsPtLeading;
 		TH2D * fHistPtVsNchNS[11];
 		TH2D * fHistPtVsNchAS[11];
