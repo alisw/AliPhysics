@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 22.09.2021
+ * Last Modified Date: 23.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -37,7 +37,7 @@
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
-// #include <THnSparse.h>
+#include <THnSparse.h>
 #include <TMath.h>
 #include <TRandom3.h>
 #include <TSystem.h>
@@ -413,6 +413,13 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       {"fFBTrackScanQAHistogram[kCHARGE]", "Filterbitscan Charge", "Q", ""},
       {"fFBTrackScanQAHistogram[kTPCNCLS]",
        "Filterbitscan number of TPC clusters", "", ""},
+      {"fFBTrackScanQAHistogram[kTPCCROSSEDROWS]",
+       "Filterbitscan number of rows crossed in TPC", "N_{TPCCROSSEDROWS}"},
+      {"fFBTrackScanQAHistogram[kTPCNCLSFRACTIONSHARED]",
+       "Filterbitscan number of clusters shared with TPC",
+       "N_{TPCNCLSFRACTIONSHARED}"},
+      {"fFBTrackScanQAHistogram[kTPCCHI2PERNDF]",
+       "Filterbitscan #chi^{2}/NDF of TPC track", "N_{TPCCHI2PERNDF}"},
       {"fFBTrackScanQAHistogram[kITSNCLS]",
        "Filterbitscan number of ITS clusters", "", ""},
       {"fFBTrackScanQAHistogram[kCHI2PERNDF]", "Filterbitscan #chi^{2}/NDF", "",
@@ -440,9 +447,12 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
       // kBIN kLEDGE kUEDGE
       {100., 0., 10.},            // kPT
       {360., 0., TMath::TwoPi()}, // kPHI
-      {200., -2., 2.},            // kETA
+      {400., -2., 2.},            // kETA
       {7., -3.5, 3.5},            // kCHARGE
       {160., 0., 160.},           // kTPCNCLS
+      {160., 0., 160.},           // kTPCCROSSEDROWS
+      {100., 0., 1.},             // kTPCNCLSFRACTIONSHARED
+      {100., 0., 10.},            // kTPCCHI2PERNDF
       {10., 0., 10.},             // kITSNCLS
       {100., 0., 10.},            // kCHI2PERNDF
       {100., -10., 10.},          // kDCAZ
@@ -524,9 +534,15 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
       {"fTrackControlHistograms[kCHARGE]", "Charge", "Q [e]", ""},
       {"fTrackControlHistograms[kTPCNCLS]", "Number of clusters in TPC",
        "N_{TPCNCLS}"},
+      {"fTrackControlHistograms[kTPCCROSSEDROWS]",
+       "Number of rows crossed in TPC", "N_{TPCCROSSEDROWS}"},
+      {"fTrackControlHistograms[kTPCNCLSFRACTIONSHARED]",
+       "Number of clusters shared with TPC", "N_{TPCNCLSFRACTIONSHARED}"},
+      {"fTrackControlHistograms[kTPCCHI2PERNDF]", "#chi^{2}/NDF of TPC track",
+       "N_{TPCCHI2PERNDF}"},
       {"fTrackControlHistograms[kITSNCLS]", "Number of clusters in ITS",
        "N_{ITSNCLS}"},
-      {"fTrackControlHistograms[kCHI2PERNDF]", "CHI2PERNDF of track",
+      {"fTrackControlHistograms[kCHI2PERNDF]", "#chi^{2}/NDF of track",
        "#chi^{2}/NDF", ""},
       {"fTrackControlHistograms[kDCAZ]", "DCA in Z", "DCA_{Z} [cm]"},
       {"fTrackControlHistograms[kDCAXY]", "DCA in XY", "DCA_{XY} [cm]"},
@@ -550,23 +566,12 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
   }
 
   // set default bins
-  Double_t BinsTrackControlHistogramDefaults[LAST_ETRACK][LAST_EBINS] = {
-      // kBIN kLEDGE kUEDGE
-      {100., 0., 10.},            // kPT
-      {360., 0., TMath::TwoPi()}, // kPHI
-      {200., -2., 2.},            // kETA
-      {7., -3.5, 3.5},            // kCHARGE
-      {160., 0., 160.},           // kTPCNCLS
-      {1000., 0., 1000.},         // kITSNCLS
-      {100., 0., 10.},            // kCHI2PERNDF
-      {100., -10., 10.},          // kDCAZ
-      {100, -10., 10.},           // kDCAXY
-  };
+  Double_t BinsTrackControlHistogramDefaults[LAST_EBINS] = {100., 0., 1000.};
   // initialize default bins
   for (int var = 0; var < LAST_ETRACK; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
       fTrackControlHistogramBins[var][bin] =
-          BinsTrackControlHistogramDefaults[var][bin];
+          BinsTrackControlHistogramDefaults[bin];
     }
   }
   // initialize track cuts counter histograms
@@ -644,24 +649,12 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
   }
 
   // set default bins
-  Double_t BinsEventControlHistogramDefaults[LAST_EEVENT][LAST_EBINS] = {
-      // kBIN kLEDGE kUEDGE
-      {200., 0., 10000.}, // kMUL
-      {200., 0., 10000.}, // kMULQ
-      {200., 0., 10000.}, // kMULW
-      {200., 0., 10000.}, // kMULREF
-      {100., 0., 10000.}, // kNCONTRIB
-      {10., 0., 100},     // kCEN
-      {40., -20., 20.},   // kX
-      {40., -20., 20.},   // kY
-      {40., -20., 20.},   // kZ
-      {100., 0., 100.},   // kVPOS
-  };
+  Double_t BinsEventControlHistogramDefaults[LAST_EBINS] = {100., 0., 10000.};
   // initialize default bins
   for (int var = 0; var < LAST_EEVENT; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
       fEventControlHistogramBins[var][bin] =
-          BinsEventControlHistogramDefaults[var][bin];
+          BinsEventControlHistogramDefaults[bin];
     }
   }
   // initialize event cuts counter histogram
@@ -688,65 +681,32 @@ void AliAnalysisTaskAR::InitializeArraysForEventControlHistograms() {
 void AliAnalysisTaskAR::InitializeArraysForCuts() {
   // initialize all arrays for cuts
 
-  // default track cuts
-  Double_t TrackCutDefaults[LAST_ETRACK][LAST_EMINMAX] = {
-      // MIN MAX
-      {-99., -99.}, // kPT
-      {-99., -99.}, // kPHI
-      {-99., -99.}, // kETA
-      {-99., -99.}, // kCHARGE
-      {-99., -99.}, // kTPCNCLS
-      {-99., -99.}, // kITSNCLS
-      {-99., -99.}, // kCHI2PERNDF
-      {-99., -99.}, // kDCAZ
-      {-99., -99.}, // kDCAXY
-  };
   // initialize array for track cuts
   for (int var = 0; var < LAST_ETRACK; ++var) {
     fUseTrackCuts[var] = kFALSE;
     for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
-      fTrackCuts[var][mm] = TrackCutDefaults[var][mm];
+      fTrackCuts[var][mm] = -99.;
     }
   }
 
-  // default event cuts
-  Double_t EventCutDefaults[LAST_EEVENT][LAST_EMINMAX]{
-      // MIN MAX
-      {-999., -999.}, // kMUL
-      {-999., -999.}, // kMULQ
-      {-999., -999.}, // kMULW
-      {-999., -999.}, // kMULREF
-      {-999., -999.}, // kNCONTRIB
-      {-999., -999.}, // kCEN
-      {-999., -999.}, // kX
-      {-999., -999.}, // kY
-      {-999., -999.}, // kZ
-      {-999., -999.}, // kVPOS
-  };
   // initialize array for event cuts
   for (int var = 0; var < LAST_EEVENT; ++var) {
     fUseEventCuts[var] = kFALSE;
     for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
-      fEventCuts[var][mm] = EventCutDefaults[var][mm];
+      fEventCuts[var][mm] = -999;
     }
   }
 
-  // default parameters for cutting on centrality correlation
-  Double_t DefaultCenCorCut[2] = {// m t
-                                  1.3, 10.};
   for (int i = 0; i < 2; ++i) {
-    fCenCorCut[i] = DefaultCenCorCut[i];
+    fCenCorCut[i] = -999.;
   }
   // initialize array for centrality estimators
   for (int cen = 0; cen < LAST_ECENESTIMATORS; ++cen) {
     fCentrality[cen] = 0;
   }
 
-  // default parameters for cutting on multiplicity correlation
-  Double_t DefaultMulCorCut[2] = {// m t
-                                  1.3, 700.};
   for (int i = 0; i < 2; ++i) {
-    fMulCorCut[i] = DefaultMulCorCut[i];
+    fMulCorCut[i] = -999.;
   }
   // initialize array for multiplicity estimators
   for (int mul = 0; mul < kMulEstimators; ++mul) {
@@ -1731,6 +1691,14 @@ void AliAnalysisTaskAR::FillTrackControlHistograms(kBeforeAfter BA,
     fTrackControlHistograms[kRECO][kETA][BA]->Fill(track->Eta());
     fTrackControlHistograms[kRECO][kCHARGE][BA]->Fill(track->Charge());
     fTrackControlHistograms[kRECO][kTPCNCLS][BA]->Fill(track->GetTPCNcls());
+    fTrackControlHistograms[kRECO][kTPCCROSSEDROWS][BA]->Fill(
+        track->GetTPCCrossedRows());
+    if (track->GetTPCNcls() != 0) {
+      fTrackControlHistograms[kRECO][kTPCNCLSFRACTIONSHARED][BA]->Fill(
+          (Double_t)track->GetTPCnclsS() / (Double_t)track->GetTPCNcls());
+      fTrackControlHistograms[kRECO][kTPCCHI2PERNDF][BA]->Fill(
+          track->GetTPCchi2() / track->GetTPCNcls());
+    }
     fTrackControlHistograms[kRECO][kITSNCLS][BA]->Fill(track->GetITSNcls());
     fTrackControlHistograms[kRECO][kCHI2PERNDF][BA]->Fill(track->Chi2perNDF());
     fTrackControlHistograms[kRECO][kDCAZ][BA]->Fill(track->ZAtDCA());
@@ -1824,6 +1792,14 @@ void AliAnalysisTaskAR::FillFBScanQAHistograms(AliAODTrack *track) {
       fFBTrackScanQAHistograms[kETA][fb]->Fill(track->Eta());
       fFBTrackScanQAHistograms[kCHARGE][fb]->Fill(track->Charge());
       fFBTrackScanQAHistograms[kTPCNCLS][fb]->Fill(track->GetTPCNcls());
+      fFBTrackScanQAHistograms[kTPCCROSSEDROWS][fb]->Fill(
+          track->GetTPCCrossedRows());
+      if (track->GetTPCNcls() != 0) {
+        fFBTrackScanQAHistograms[kTPCNCLSFRACTIONSHARED][fb]->Fill(
+            (Double_t)track->GetTPCnclsS() / (Double_t)track->GetTPCNcls());
+        fFBTrackScanQAHistograms[kTPCCHI2PERNDF][fb]->Fill(track->GetTPCchi2() /
+                                                           track->GetTPCNcls());
+      }
       fFBTrackScanQAHistograms[kITSNCLS][fb]->Fill(track->GetITSNcls());
       fFBTrackScanQAHistograms[kCHI2PERNDF][fb]->Fill(track->Chi2perNDF());
       fFBTrackScanQAHistograms[kDCAZ][fb]->Fill(track->ZAtDCA());
@@ -2174,6 +2150,74 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
           fTrackCutsCounter[kRECO]->Fill(2 * kTPCNCLS + kMAX + 0.5);
         }
         CutBit += TMath::Power(2, kTPCNCLS);
+        Flag = kFALSE;
+      }
+    }
+    if (fUseTrackCuts[kTPCCROSSEDROWS]) {
+      // cut on crossed rows in the TPC
+      if (aTrack->GetTPCNCrossedRows() < fTrackCuts[kTPCCROSSEDROWS][kMIN]) {
+        if (FillCounter) {
+          fTrackCutsCounter[kRECO]->Fill(2 * kTPCCROSSEDROWS + kMIN + 0.5);
+        }
+        CutBit += TMath::Power(2, kTPCCROSSEDROWS);
+        Flag = kFALSE;
+      }
+      if (aTrack->GetTPCNCrossedRows() > fTrackCuts[kTPCCROSSEDROWS][kMAX]) {
+        if (FillCounter) {
+          fTrackCutsCounter[kRECO]->Fill(2 * kTPCCROSSEDROWS + kMAX + 0.5);
+        }
+        CutBit += TMath::Power(2, kTPCCROSSEDROWS);
+        Flag = kFALSE;
+      }
+    }
+
+    if (fUseTrackCuts[kTPCNCLSFRACTIONSHARED]) {
+      // cut on ratio of shared clusters in the TPC
+      Double_t tpcnclsfractionshared;
+      if (aTrack->GetTPCNcls() != 0) {
+        tpcnclsfractionshared =
+            (Double_t)aTrack->GetTPCnclsS() / (Double_t)aTrack->GetTPCNcls();
+      } else {
+        tpcnclsfractionshared = 1.;
+      }
+      if (tpcnclsfractionshared < fTrackCuts[kTPCNCLSFRACTIONSHARED][kMIN]) {
+        if (FillCounter) {
+          fTrackCutsCounter[kRECO]->Fill(2 * kTPCNCLSFRACTIONSHARED + kMIN +
+                                         0.5);
+        }
+        CutBit += TMath::Power(2, kTPCNCLSFRACTIONSHARED);
+        Flag = kFALSE;
+      }
+      if (tpcnclsfractionshared > fTrackCuts[kTPCNCLSFRACTIONSHARED][kMAX]) {
+        if (FillCounter) {
+          fTrackCutsCounter[kRECO]->Fill(2 * kTPCNCLSFRACTIONSHARED + kMAX +
+                                         0.5);
+        }
+        CutBit += TMath::Power(2, kTPCNCLSFRACTIONSHARED);
+        Flag = kFALSE;
+      }
+    }
+    if (fUseTrackCuts[kTPCCHI2PERNDF]) {
+      // cut on chi^2/NDF of the tracks in the TPC
+      Double_t tpcchi2perndf;
+      if (aTrack->GetTPCNcls() != 0) {
+        tpcchi2perndf =
+            (Double_t)aTrack->GetTPCchi2() / (Double_t)aTrack->GetTPCNcls();
+      } else {
+        tpcchi2perndf = 5;
+      }
+      if (tpcchi2perndf < fTrackCuts[kTPCCHI2PERNDF][kMIN]) {
+        if (FillCounter) {
+          fTrackCutsCounter[kRECO]->Fill(2 * kTPCCHI2PERNDF + kMIN + 0.5);
+        }
+        CutBit += TMath::Power(2, kTPCCHI2PERNDF);
+        Flag = kFALSE;
+      }
+      if (tpcchi2perndf > fTrackCuts[kTPCCHI2PERNDF][kMAX]) {
+        if (FillCounter) {
+          fTrackCutsCounter[kRECO]->Fill(2 * kTPCCHI2PERNDF + kMAX + 0.5);
+        }
+        CutBit += TMath::Power(2, kTPCCHI2PERNDF);
         Flag = kFALSE;
       }
     }
