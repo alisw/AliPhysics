@@ -21,9 +21,9 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	};
 	//loading correction map
 	TString s_smooth = "";
-	//if(mapsmooth) s_smooth = "Smooth_"; //enable when needed again
-	//const TString MAPdirname="alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
-	const TString MAPdirname="alien:///alice/cern.ch/user/j/jparkkil/legotrain/NUA/";
+	if(mapsmooth) s_smooth = "Smooth_"; //enable when needed again
+	const TString MAPdirname="alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
+	//const TString MAPdirname="alien:///alice/cern.ch/user/j/jparkkil/legotrain/NUA/";
 	AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
 	if(period == lhc18q || period == lhc18r) {
 		cmaptask->EnableCentFlattening(Form("alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root",speriod[period].Data()));//centrality flattening
@@ -32,19 +32,19 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	if(period == lhc15o) {
 		cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root",speriod[period].Data()));//efficiency cirrection
 	}
-	const TString mapFilesLHC15o[Nsets] = { //correction maps used for 2020 publication
-		"PhiWeights_LHC15o_hybrid_3d-rebin2-ROOT5.root",
-		"PhiWeights_LHC15o_global_3d-rebin-ROOT5.root",
-		"PhiWeights_LHC15o_s_charge_nqq_3d-rebin2-ROOT5.root",
-		"PhiWeights_LHC15o_hybrid_3d-rebin2-ROOT5.root",
-		"PhiWeights_LHC15o_s_SPD_3d-rebin2-ROOT5.root",
-		"PhiWeights_LHC15o_s_zvtx_3d-rebin2-ROOT5.root",
-		"PhiWeights_LHC15o_s_pileup_3d-rebin2-ROOT5.root"
-	};
-	cout<<"Using LHC15o correction maps.\n";
+	//const TString mapFilesLHC15o[Nsets] = { //correction maps used for 2020 publication
+	//	"PhiWeights_LHC15o_hybrid_3d-rebin2-ROOT5.root",
+	//	"PhiWeights_LHC15o_global_3d-rebin-ROOT5.root",
+	//	"PhiWeights_LHC15o_s_charge_nqq_3d-rebin2-ROOT5.root",
+	//	"PhiWeights_LHC15o_hybrid_3d-rebin2-ROOT5.root",
+	//	"PhiWeights_LHC15o_s_SPD_3d-rebin2-ROOT5.root",
+	//	"PhiWeights_LHC15o_s_zvtx_3d-rebin2-ROOT5.root",
+	//	"PhiWeights_LHC15o_s_pileup_3d-rebin2-ROOT5.root"
+	//};
+	//cout<<"Using LHC15o correction maps.\n";
 	for(int i=0;i<Nsets;i++) {
-		//TString MAPfilename = Form("%sPhiWeights_LHC%s_Error_%spt%02d_s_%s.root",MAPdirname.Data(), speriod[period].Data(),s_smooth.Data(), Int_t(ptmin*10), configNames[i].Data()); //azimuthal correction
-		cmaptask->EnablePhiCorrection(i,MAPdirname+mapFilesLHC15o[i]); // i is index for set file correction ->SetPhiCorrectionIndex(i);
+		TString MAPfilename = Form("%sPhiWeights_LHC%s_Error_%spt%02d_s_%s.root",MAPdirname.Data(), speriod[period].Data(),s_smooth.Data(), Int_t(ptmin*10), configNames[i].Data()); //azimuthal correction
+		cmaptask->EnablePhiCorrection(i,MAPfilename); // i is index for set file correction ->SetPhiCorrectionIndex(i);
 	}
 	mgr->AddTask((AliAnalysisTask*) cmaptask);
     
