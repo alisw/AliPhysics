@@ -1282,7 +1282,7 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
     ic->SwitchOffConeExcessCorrection();
   
   ic->SetConeSizeBandGap(0.0);
-  if ( thresType > AliIsolationCut::kSumBkgSubIC )
+  if ( thresType >= AliIsolationCut::kSumBkgSubIC )
   {
     // do not count UE particles near the cone limit > R+x
 
@@ -1429,12 +1429,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 0, 360) ;
   }
   
-  // Branch AOD settings
-  
-  ana->SetInputAODName(Form("%sTrigger_%s",particle.Data(),kAnaCaloTrackCorr.Data()));
-  ana->SetAODObjArrayName(Form("IC%sTrigger_%s_R%1.1f_ThMin%1.1f",particle.Data(),kAnaCaloTrackCorr.Data(),cone,pth));
-  
-  //
   // Do settings for main isolation cut class
   //
   AliIsolationCut * ic =  ana->GetIsolationCut();
@@ -1506,7 +1500,24 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   if ( bTrackCutUE && kAnaCutsString.Contains("MultiIso") && thresType >=AliIsolationCut::kSumBkgSubIC)
     ana->SwitchOffIsolationControlHistoFill();
 
-  if ( printSettings ) ic ->Print("");
+  // Branch AOD settings
+
+  ana->SetInputAODName(Form("%sTrigger_%s",particle.Data(),kAnaCaloTrackCorr.Data()));
+  //ana->SetAODObjArrayName(Form("IC%sTrigger_%s_R%1.2f_ThMin%1.1f",particle.Data(),kAnaCaloTrackCorr.Data(),cone,pth));
+
+  TString refName = Form("IC%sTrigger_%s",particle.Data(),kAnaCaloTrackCorr.Data());
+  if ( kAnaCutsString.Contains("MultiIsoR") )
+    refName += Form("_R%1.2f",ic->GetConeSize());
+  if ( kAnaCutsString.Contains("MultiIsoRAndGap") )
+    refName += Form("_Rmin%1.2f_UEGap%1.2f",ic->GetMinDistToTrigger(),ic->GetConeSizeBandGap());
+  ana->SetAODObjArrayName(refName);
+  //
+
+  if ( printSettings )
+  {
+    ana->Print("");
+    ic ->Print("");
+  }
   
   return ana;
 }
@@ -2164,15 +2175,26 @@ void ConfigureCaloTrackCorrAnalysis
   
   kAnaCaloTrackCorr = Form("%s",anaList->GetName());
 
+  if ( tm         > 0 ) kAnaCaloTrackCorr+=Form("_TM%d"  ,tm     );
+  if ( leading    > 0 ) kAnaCaloTrackCorr+=Form("_Lead%d",leading);
+
+  if ( analysisString.Contains("DistToBadOff") )
+    kAnaCaloTrackCorr+= "_DistToBadOff";
+
   if ( analysisString.Contains("Isolation") )
-    kAnaCaloTrackCorr+= Form("_Iso_Meth%d_Part%d_Pt%1.2f_R%1.2f",isoMethod,isoContent,isoPtTh,isoCone);
+  {
+    if ( !analysisString.Contains("MultiIsoR")  )
+      kAnaCaloTrackCorr+= Form("_Iso_Meth%d_Part%d_R%1.2f",isoMethod,isoContent,isoCone);
+    else
+      kAnaCaloTrackCorr+= Form("_Iso_Meth%d_Part%d",isoMethod,isoContent);
+
+    if ( isoConeMin > 0 && !kAnaCutsString.Contains("MultiIsoRAndGap") )
+      kAnaCaloTrackCorr+=Form("_Rmin%1.2f",isoConeMin);
+  }
+
   if ( analysisString.Contains("Corr") && analysisString.Contains("Photon") && shshMax > 0)
     kAnaCaloTrackCorr+= Form("_CorrM02_%1.2f",shshMax);
-  
-  if ( isoConeMin > 0 ) kAnaCaloTrackCorr+=Form("_Rmin%1.2f",isoConeMin);
-  if ( leading    > 0 ) kAnaCaloTrackCorr+=Form("_Lead%d"   ,leading);
-  if ( tm         > 0 ) kAnaCaloTrackCorr+=Form("_TM%d"     ,tm);
- 
+
   printf("ConfigureCaloTrackCorrAnalysis() <<<< TMP branch internal NAME: %s >>>>>\n",kAnaCaloTrackCorr.Data());
   
   TString trigger = triggerStr;
@@ -2372,11 +2394,15 @@ void ConfigureCaloTrackCorrAnalysis
                           conesize[isize],isoConeMin, 0.,isoPtTh,0,
                           col,simulation,calorimeter,year,tm,printSettings,debug,histoString2), n++);
 
-          histoString2 = Form("%s_Rmin%1.2f_UEGapFix05",histoString.Data(),isoConeMin);
-          anaList->AddAt(ConfigureIsolationAnalysis
-                         ("Photon",leading,isoContent,isoMethod,
-                          conesize[isize],isoConeMin,0.5-conesize[isize],isoPtTh,0,
-                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString2), n++);
+          // In case gap is 0.1 avoid since it is default case
+          if ( (0.5 - conesize[isize])  > 0.1 )
+          {
+            histoString2 = Form("%s_Rmin%1.2f_UEGapFix05",histoString.Data(),isoConeMin);
+            anaList->AddAt(ConfigureIsolationAnalysis
+                           ("Photon",leading,isoContent,isoMethod,
+                            conesize[isize],isoConeMin,0.5-conesize[isize],isoPtTh,0,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString2), n++);
+          }
         }
       }
       else if (analysisString.Contains("MultiIsoR"))
