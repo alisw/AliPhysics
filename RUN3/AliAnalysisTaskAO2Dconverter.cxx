@@ -409,7 +409,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   }
 
   // This call is necessary to initialize event cuts according to the current run number
-  bool alieventcut = fEventCuts.AcceptEvent(fESD);
+  bool alieventcut = fEventCuts.AcceptEvent(fVEvent);
   
   // In case of ESD we skip events like in the AOD filtering, for AOD this is not needed
   // We can use event cuts to avoid cases where we have zero reconstructed tracks
