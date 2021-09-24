@@ -42,9 +42,12 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	//	"PhiWeights_LHC15o_s_pileup_3d-rebin2-ROOT5.root"
 	//};
 	//cout<<"Using LHC15o correction maps.\n";
-	for(int i=0;i<Nsets;i++) {
-		TString MAPfilename = Form("%sPhiWeights_LHC%s_Error_%spt%02d_s_%s.root",MAPdirname.Data(), speriod[period].Data(),s_smooth.Data(), Int_t(ptmin*10), configNames[i].Data()); //azimuthal correction
-		cmaptask->EnablePhiCorrection(i,MAPfilename); // i is index for set file correction ->SetPhiCorrectionIndex(i);
+	//Load phi correction maps for a limited set of configurations. The rest of the configs will use the map for the default configuration.
+	const UInt_t mapIndices[] = {0,1,2,4,5};
+	for(UInt_t i = 0; i < sizeof(mapIndices)/sizeof(mapIndices[0]); ++i){
+		UInt_t ci = mapIndices[i];
+		TString MAPfilename = Form("%sPhiWeights_LHC%s_Error_%spt%02d_s_%s.root",MAPdirname.Data(), speriod[period].Data(),s_smooth.Data(), Int_t(ptmin*10), configNames[ci].Data()); //azimuthal correction
+		cmaptask->EnablePhiCorrection(i,MAPdirname);
 	}
 	mgr->AddTask((AliAnalysisTask*) cmaptask);
     
@@ -68,7 +71,15 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 		myTask[i]->SetEtaRange(0.4, 0.8);
 		myTask[i]->SetPtRange(ptmin, 5.0);
 		myTask[i]->SetEffConfig(1,hybridCut);
-		myTask[i]->SetPhiCorrectionIndex(i);//cmaptask->EnablePhiCorrection(i,MAPfilenames[i]);
+		//myTask[i]->SetPhiCorrectionIndex(i);//cmaptask->EnablePhiCorrection(i,MAPfilenames[i]);
+		//Find if this configuration uses its own phi correction map, otherwise, use default.
+		UInt_t mapIndex = 0;
+		for(UInt_t j = 0; j < sizeof(mapIndices)/sizeof(mapIndices[0]); ++j)
+			if(mapIndices[j] == i){
+				mapIndex = j;
+				break;
+			}
+		myTask[i]->SetPhiCorrectionIndex(mapIndex);//cmaptask->EnablePhiCorrection(i,MAPfilenames[i]);
 		myTask[i]->SetRemoveBadArea(removebadarea);
 		myTask[i]->SetZVertexCut(8.);
 	}
