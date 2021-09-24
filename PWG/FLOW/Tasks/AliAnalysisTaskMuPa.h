@@ -89,6 +89,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    virtual void InitializeArraysForInternalValidation();
    virtual void InitializeArraysForTest0();
    virtual void InitializeArraysForCommonLabels();
+  virtual void DefaultConfiguration();
+  virtual void DefaultBinning();
+  virtual void DefaultCuts();
 
   // 1) Methods called in UserCreateOutputObjects():
   virtual void InsanityChecks(); 
@@ -176,6 +179,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
 
   void SetControlEventHistogramsList(TList* const cehl) {this->fControlEventHistogramsList = cehl;};
   TList* GetControlEventHistogramsList() const {return this->fControlEventHistogramsList;} 
+
   // QA:
   void SetFillQAHistograms(Bool_t fqah) {this->fFillQAHistograms = fqah;};
   Bool_t GetFillQAHistograms() const {return this->fFillQAHistograms;};
@@ -315,6 +319,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
 
   void SetFilterBit(Int_t fb) {this->fFilterBit = fb;};
   Int_t GetFilterBit() const {return this->fFilterBit;};
+  void SetUseDefaultFilterBitCuts(Int_t fb); // see .cxx
   void SetUseOnlyPrimaries(Bool_t uop) {this->fUseOnlyPrimaries = uop;};
   Int_t GetUseOnlyPrimaries() const {return this->fUseOnlyPrimaries;};
   void SetPrimaryDefinitionInMonteCarlo(const char *pdimc) {this->fPrimaryDefinitionInMonteCarlo = pdimc;};
@@ -335,20 +340,6 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fKinematicsBins[var][0] = nbins;
    this->fKinematicsBins[var][1] = min;
    this->fKinematicsBins[var][2] = max;
-  }
-  void SetNonEqualKinematicsBins(const char* kv, const Int_t nbins, Double_t *ranges)
-  {
-   // this has an effect only on QV and final results histograms, but not on control histograms, which are always booked with equal-sized bins
-   Int_t var = -44;
-   if(TString(kv).EqualTo("phi")){var = PHI;} 
-   else if (TString(kv).EqualTo("pt")){var = PT;} 
-   else if (TString(kv).EqualTo("eta")){var = ETA;}
-   else if (TString(kv).EqualTo("e")){var = E;}
-   else if (TString(kv).EqualTo("charge")){var = CHARGE;}
-   else{exit(1);}
-   this->fNonEqualKinematicsnBins[var] = nbins;
-   this->fNonEqualKinematicsRanges[var] = TArrayD(nbins,ranges);
-   this->fUseNonEqualKinematicsBins[var] = kTRUE;
   }
 
   void SetKinematicsCuts(const char* kc, const Double_t min, const Double_t max)
@@ -581,6 +572,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // 2) Control event histograms:  
   TList *fControlEventHistogramsList; // list to hold all control event histograms
   TProfile *fControlEventHistogramsPro; // keeps flags relevant for the control event histograms
+
   //    Multiplicities:
   Double_t fMultiplicity;        // defined as a sum of track weights used to calculate Q-vectors (see below also fSelectedTracks) 
   TH1D *fMultiplicityHist;       // this is distribution of my multiplicity
@@ -635,9 +627,6 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   //    Kinematics:
   TH1D *fKinematicsHist[2][2][gKinematicVariables]; // kinematics [before,after track cuts][reco,sim][phi,pt,eta,energy,charge]
   Double_t fKinematicsBins[gKinematicVariables][3]; // [phi,pt,eta,energy,charge][nBins,min,max]
-  Int_t fNonEqualKinematicsnBins[gKinematicVariables]; // [phi,pt,eta,energy,charge] just nBins -> TBI most likely, I won't ever need this, remove
-  TArrayD fNonEqualKinematicsRanges[gKinematicVariables]; // [phi,pt,eta,energy,charge] bin ranges -> TBI most likely, I won't ever need this, remove
-  Bool_t fUseNonEqualKinematicsBins[gKinematicVariables]; // kFALSE by default. In that case, equal-sized bins are used -> TBI most likely, I won't ever need this, remove
   Double_t fKinematicsCuts[gKinematicVariables][2]; // [phi,pt,eta,energy,charge][min,max]
   Bool_t fUseKinematicsCuts[gKinematicVariables];   // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
   //    DCA:
@@ -710,7 +699,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TProfile *fTest0FlagsPro; // store all flags for Test0
   Bool_t fCalculateTest0; // calculate or not Test0 in general. Which one specifically, that's governed with fCalculateSpecificTest0[gMaxCorrelator][gMaxIndex]
   Bool_t fTest0LabelsWereStoredInPlaceholder; // Test0 labels were stored successfully in fTest0LabelsPlaceholder. From there, they will be extracted at run-time when booking
-  TProfile *fTest0Pro[gMaxCorrelator][gMaxIndex][3]; // [gMaxCorrelator][gMaxIndex][3] [order][index][0=integrated,1=vs. multiplicity,2=vs. centrality]
+  TProfile *fTest0Pro[gMaxCorrelator][gMaxIndex][3]; //! [gMaxCorrelator][gMaxIndex][3] [order][index][0=integrated,1=vs. multiplicity,2=vs. centrality]
   TString *fFileWithLabels; // external file which specifies all labels of interest
   TString *fTest0Labels[gMaxCorrelator][gMaxIndex]; // all labels: k-p'th order is stored in k-1'th index. So yes, I also store 1-p
   TH1I *fTest0LabelsPlaceholder; // temporary workaround: store all Test0 labels in this histogram, until I find a better implementation
@@ -738,7 +727,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,25);
+  ClassDef(AliAnalysisTaskMuPa,26);
 
 };
 
