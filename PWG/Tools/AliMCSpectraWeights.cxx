@@ -117,6 +117,7 @@ fUseMultiplicity(kTRUE), fUseMBFractions(kFALSE) {
         10.0, 13.0, 20.0, 30.0, 50.0, 80.0, 100.0, 200.0};
     // multiplicity binning
     if (fstCollisionSystem == "pp") {
+        fBinsPt = {0.0, 0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,4.5,5,5.5,6,6.5,7,8,10,13,20, 30, 50, 80, 100, 200};
         fNCentralities = 10;
         std::vector<std::string> tmpCent{};
         tmpCent.reserve(fNCentralities);

@@ -90,6 +90,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetRejectGeneratedEventsWithPileup(Bool_t opt=kTRUE){
     fRejectGeneratedEventsWithPileup=opt;
   }
+  void SetRejectParticlesFromOutOfBunchPileup(Bool_t opt=kTRUE){
+    fRejectParticlesFromOutOfBunchPileup=opt;
+  }
 
   AliESDtrackCuts* GetTrackCutObject() const {return fTrCutsTPC;}
 
@@ -124,13 +127,16 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistNtracksSPDanyVsV0aftEvSel;    //!<!  histo of tracks vs. centr.
 
   TH2F* fHistdEdxVsP[9];              //!<!  histo of dE/dx for hypos (all tracks)
-  TH2F* fHistdEdxVsPTPCsel[9];        //!<!  histo of dE/dx for hypos (TPC cuts)
+  TH2F* fHistdEdxVsPTPCselNoTOFbc[9]; //!<!  histo of dE/dx for hypos (TPC cuts)
+  TH2F* fHistdEdxVsPTPCselTOFbc[9];   //!<!  histo of dE/dx for hypos (TPC cuts)
   TH2F* fHistdEdxVsPTPCselITSref[9];  //!<!  histo of dE/dx for hypos (ITSrefit)
   TH2F* fHistdEdxVsP0[9];              //!<!  histo of dE/dx for hypos (all tracks)
   TH2F* fHistdEdxVsPTPCsel0[9];        //!<!  histo of dE/dx for hypos (TPC cuts)
   TH2F* fHistdEdxVsPTPCselITSref0[9];  //!<!  histo of dE/dx for hypos (ITSrefit)
-  TH2F* fHistCorrelHypo0HypoTPCsel;        //!<!  correl. f PID hypos in tracking steps
-  TH2F* fHistCorrelHypo0HypoTPCselITSref;  //!<!  correl. f PID hypos in tracking steps
+  TH2F* fHistHypoVsPTPCselNoTOFbc;     //!<!  PID hypo in tracking vs p
+  TH2F* fHistHypoVsPTPCselTOFbc;     //!<!  PID hypo in tracking vs p
+  TH2F* fHistCorrelHypo0HypoTPCsel;        //!<!  correl. of PID hypos in tracking steps
+  TH2F* fHistCorrelHypo0HypoTPCselITSref;  //!<!  correl. of PID hypos in tracking steps
 
   TH2F* fHistnSigmaVsPdEdxTPCsel[9];  //!<!  histo of nSigma for particle species
 
@@ -179,10 +185,12 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistNtrackeltsPtTPCselSPDanyTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
 
   TH3F* fHistTPCchi2PerClusPhiPtTPCsel;        //!<!  histo of chi2 vs. pt and phi;
+  TH3F* fHistTPCchi2PerClusPhiPtTPCselTOFbc;   //!<!  histo of chi2 vs. pt and phi;
   TH3F* fHistTPCchi2PerClusPhiPtTPCselITSref;  //!<!  histo of chi2 vs. pt and phi;
   TH3F* fHistTPCchi2PerClusPhiPtTPCselSPDany;  //!<!  histo of chi2 vs. pt and phi;
 
   TH3F* fHistSig1ptCovMatPhiPtTPCsel;        //!<!  histo of sigma 1/pt vs. pt and phi;
+  TH3F* fHistSig1ptCovMatPhiPtTPCselTOFbc;   //!<!  histo of sigma 1/pt vs. pt and phi;
   TH3F* fHistSig1ptCovMatPhiPtTPCselITSref;  //!<!  histo of sigma 1/pt vs. pt and phi;
   TH3F* fHistSig1ptCovMatPhiPtTPCselSPDany;  //!<!  histo of sigma 1/pt vs. pt and phi;
 
@@ -260,6 +268,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Bool_t  fUsePileupCut;       // flag use/not use phys pileup cut
   Bool_t  fRejectGeneratedEventsWithPileup;  // reject events with generated pileup
+  Bool_t  fRejectParticlesFromOutOfBunchPileup; // flag to reject tracks from particles generated in out of bunch pileup
   Int_t   fTriggerMask;        // mask used in physics selection
   Bool_t fSelectOnCentrality;  // flag to activate cut on centrality
   Double_t fMinCentrality;     // centrality: lower limit
@@ -275,7 +284,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
   Bool_t  fFillSparses;        // flag to control fill of THnSparse
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,29);
+  ClassDef(AliAnalysisTaskCheckESDTracks,32);
 };
 
 

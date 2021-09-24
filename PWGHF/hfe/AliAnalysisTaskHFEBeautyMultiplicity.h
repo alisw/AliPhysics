@@ -73,7 +73,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	void SetDCA(Double_t xy, Double_t z) {DCAxy = xy, DCAz = z;};
 	void SetTrackClust(Int_t TPC, Int_t ITS, Int_t Crossed, Double_t dEdx) {NTPCClust = TPC, NITSClust = ITS, NCrossedRow = Crossed, TPCdEdx = dEdx;};
 	void SetDiff(Double_t diff) {EtaPhiDiff = diff;};
-	void SetMass(Double_t invmass) {PhotInvMass = invmass;};
+	void SetMass(Double_t invmass, Double_t photPt) {PhotInvMass = invmass, PhotMinPt = photPt;};
 	
 
 
@@ -122,6 +122,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	Int_t NCrossedRow;
 	Double_t EtaPhiDiff;
 	Double_t PhotInvMass;
+	Double_t PhotMinPt;
 
 
     
@@ -222,6 +223,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
     	TH2F* fHadronEtaPhi;	    // eta vs. phi (hadron)
         
     	TH1F* fHist_Tracklet;
+
+	TH2F *fNsigma_Electron;
+	TH2F *fNsigma_Hadron;
     
     
         //---- MC output ----//
@@ -279,6 +283,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH2F*	fDCAxy_MC_ele;
 	TH2F*	fDCAxy_MC_Phot;
     	
+	TH1F*	fHistPt_B_TrkCut;
 	TH1F*	fHistPt_B_TrkCut0;
 	TH1F*	fHistPt_B_TrkCut1;
 	TH1F*	fHistPt_B_TrkCut2;
@@ -289,7 +294,11 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*	fHistPt_B_TrkCut7;
 	TH1F*	fHistPt_B_TrkCut8;
 	TH1F*	fHistPt_B_TrkCut9;
+	TH1F*	fHistPt_B_TrkCut10;
+	TH1F*	fHistPt_B_TrkCut11;
+	TH1F*	fHistPt_B_TrkCut12;
 
+	TH1F*	fHistPt_D_TrkCut;
 	TH1F*	fHistPt_D_TrkCut0;
 	TH1F*	fHistPt_D_TrkCut1;
 	TH1F*	fHistPt_D_TrkCut2;
@@ -300,6 +309,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*	fHistPt_D_TrkCut7;
 	TH1F*	fHistPt_D_TrkCut8;
 	TH1F*	fHistPt_D_TrkCut9;
+	TH1F*	fHistPt_D_TrkCut10;
+	TH1F*	fHistPt_D_TrkCut11;
+	TH1F*	fHistPt_D_TrkCut12;
 
 	TH2F*	fNtrkletNch;
 	TH2F*	fNtrkletNch_Corr;

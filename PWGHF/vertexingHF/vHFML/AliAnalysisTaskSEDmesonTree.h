@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKSEDMESONTREE_H
 #define ALIANALYSISTASKSEDMESONTREE_H
 
-/* Copyright(c) 1998-2020, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2021, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 //*************************************************************************
@@ -107,6 +107,11 @@ public:
         fMLOutputMax[0] = maxBkg; fMLOutputMax[1] = maxPrompt; fMLOutputMax[2] = maxFD;
     }
 
+    void SetIsDependentOnMLSelector(bool flag=true, std::string name="MLSelector") {
+        fDependOnMLSelector = flag;
+        fMLSelectorName = name;
+    }
+
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void LocalInit();
@@ -115,17 +120,15 @@ public:
 private:
     enum
     {
-        knVarForSparseAcc    = 2,
-        knVarForSparseAccFD  = 3,
-        knVarForSparseReco   = 6,
-        knVarForSparseRecoFD = 7
+        knVarForSparseAcc    = 4,
+        knVarForSparseReco   = 8
     };
 
     AliAnalysisTaskSEDmesonTree(const AliAnalysisTaskSEDmesonTree &source);
     AliAnalysisTaskSEDmesonTree &operator=(const AliAnalysisTaskSEDmesonTree &source);
 
-    int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx);
-    void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+    int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx, bool &isInSignalRegion);
+    void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, int Ntracklets);
     bool CheckDaugAcc(TClonesArray *arrayMC, int nProng, int *labDau);
     void CreateEffSparses();
     void CreateRecoSparses();
@@ -140,6 +143,9 @@ private:
                                                                                 ///[1]: Acc step FD D
     AliHFMLVarHandler *fMLhandler = nullptr;                                    //!<! object to handle ML tree creation and filling
     TTree *fMLtree = nullptr;                                                   //!<! tree with candidates for ML
+    TH2F *fSPDMultVsCent = nullptr;                                             //!<! hist. of spd mult vs. centrality percentile
+    TH2F *fSPDMultVsCentCand = nullptr;                                         //!<! hist. of spd mult vs. centrality percentile for events with D candidates
+    TH2F *fSPDMultVsCentCandInMass = nullptr;                                   //!<! hist. of spd mult vs. centrality percentile for events with D candidates in the mass range
 
     int fDecChannel = kD0toKpi;                                                 /// channel to analyse
     int fPdgD = 421;                                                            /// pdg code of the D meson
@@ -169,7 +175,7 @@ private:
     std::string fCentEstimator = "V0M";                                         /// centrality estimator for tree
                     
     // ML tree application
-    THnSparseF* fnSparseReco[4] = {nullptr, nullptr, nullptr, nullptr};         //!<! THnSparse for reco candidates
+    THnSparseF* fnSparseReco[5] = {nullptr, nullptr, nullptr, nullptr, nullptr};         //!<! THnSparse for reco candidates
     bool fApplyML = false;                                                      /// flag to enable ML application
     bool fMultiClass = false;                                                   /// flag to enable multi-class models (Bkg, Prompt, FD)
     std::string fConfigPath = "";                                               /// path to ML config file
@@ -177,9 +183,14 @@ private:
     int fNMLBins[3] = {1000, 100, 100};                                         /// number of bins for ML output axis in THnSparse
     double fMLOutputMin[3] = {0., 0., 0.};                                      /// min for ML output axis in THnSparse
     double fMLOutputMax[3] = {1., 1., 1.};                                      /// max for ML output axis in THnSparse
+    bool fDependOnMLSelector = false;                                           /// flag to read ML scores from a AliAnalysisTaskSECharmHadronMLSelector task
+    std::vector<float> fPtLimsML{};                                             /// pT bins in case application of ML model is done in MLSelector task   
+    std::vector<std::vector<double> > fMLScoreCuts{};                           /// score cuts used in case application of ML model is done in MLSelector task   
+    std::vector<std::vector<std::string> > fMLOptScoreCuts{};                   /// score cut options (lower, upper) used in case application of ML model is done in MLSelector task                                           
+    std::string fMLSelectorName = "MLSelector";                                 /// name of MLSelector task
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDmesonTree, 3); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDmesonTree, 6); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 

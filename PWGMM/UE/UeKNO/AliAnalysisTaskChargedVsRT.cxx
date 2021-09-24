@@ -27,7 +27,6 @@ class TTree;
 class AliPPVsMultUtils;
 class AliESDtrackCuts;
 
-
 #include <Riostream.h>
 #include "TChain.h"
 #include "TH1.h"
@@ -1369,7 +1368,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				}
 			}
 
-
+            delete newTrack;
 		}
 	}else{
 		for(Int_t iT = 0; iT < nTracks; ++iT) {
@@ -1492,7 +1491,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				}
 			}
 
-
+            delete newTrack;
 		}
 	}
 	return nNchRec;

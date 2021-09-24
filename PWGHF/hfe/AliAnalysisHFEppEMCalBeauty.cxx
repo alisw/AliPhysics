@@ -116,7 +116,7 @@ fDCalDG2(kFALSE),
 
 fRecalIP(kTRUE),
 
-fEtarange(0.7),
+fEtarange(0.6),
 fTPCNCrRows(70),
 fRatioCrossedRowOverFindable(0.8),
 fITSNclus(3),
@@ -336,6 +336,7 @@ fRVsULSElecPt(0),
 fRVsLSElecPt(0),
 
 fnBinsDCAHisto(400),
+
 fCalculateMCTemplWeightCalc(kFALSE),
 fFillMCTemplates(kFALSE),
 
@@ -586,7 +587,7 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
  
     fHistPhi = new TH1F("fHistPhi", "Phi distribution of global tracks;#phi;Counts", 100,0, 2*TMath::Pi() ); 
     fHistPhi->Sumw2();
-    fOutputList->Add(fHistPhi);   	  
+    fOutputList->Add(fHistPhi);       
 
     fHistEtaPhi_TPC = new TH2F("fHistEtaPhi_TPC","#eta-#phi distribution of TPC tracks;#eta;#phi",300,-1.5,1.5,200,-1.0,7.0);
     fHistEtaPhi_TPC->Sumw2();
@@ -666,11 +667,11 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
 
 
 //THnSparse
-  Int_t bins[6]		=      	{500, 200, 200, 200, 200,500};
-  Double_t xmin[6]	=	{  0,  -10,   0,   0,   0,    0 };
-  Double_t xmax[6]	=	{  100,   10,   2,   2,  2,    50};
+  Int_t bins[6]   =       {500, 200, 200, 200, 200,500};
+  Double_t xmin[6]  = {  0,  -10,   0,   0,   0,    0 };
+  Double_t xmax[6]  = {  100,   10,   2,   2,  2,    50};
 
-  fSparseElectron 	= new THnSparseD ("Electron","Electron;#it{p}(GeV/#it{c});n#sigma;E/#it{p}(GeV/#it{c});M02;M20;Cluster Energy(GeV);",6 ,bins,xmin,xmax);
+  fSparseElectron   = new THnSparseD ("Electron","Electron;#it{p}(GeV/#it{c});n#sigma;E/#it{p}(GeV/#it{c});M02;M20;Cluster Energy(GeV);",6 ,bins,xmin,xmax);
   fSparseElectron->GetAxis(0)->SetName("pT");     
   fSparseElectron->GetAxis(1)->SetName("nSigma");
   fSparseElectron->GetAxis(2)->SetName("E/p");
@@ -757,8 +758,8 @@ if(fIsMC)
   fPthfe_rec_TrkSel = new TH1F("fPthfe_rec_TrkSel","; p_{T} [GeV/c]; Counts",100,0,10);   
   fOutputList->Add(fPthfe_rec_TrkSel);
 
-//nonhfe efficiency
-
+//nonhfe tagging efficiency
+  if(fCalculateWeight){
   Int_t bin[5] =     {250,30,2,10,100}; //pT, PDG, EnhancedSigOrNot, pi0etaType, Radius
   Double_t xminWt[5] = {0,0,0,-1,0};
   Double_t xmaxWt[5] = {50,3,2,9,10};
@@ -771,7 +772,7 @@ if(fIsMC)
   fSprsPi0EtaWeightCal->GetAxis(4)->SetName("Radius");
   fSprsPi0EtaWeightCal->Sumw2();
   fOutputList->Add(fSprsPi0EtaWeightCal);
-
+ 
   Int_t nbinspt[3] = {400, 30, 10};
   Double_t binlow[3] = {0., 0, -1.};
   Double_t binup[3] = {40, 3, 9};
@@ -781,7 +782,6 @@ if(fIsMC)
   fPi0EtaSpectraSp->GetAxis(2)->SetName("type");
   fPi0EtaSpectraSp->Sumw2();
   fOutputList->Add(fPi0EtaSpectraSp);
- 
 
   pi0MC= new TH1F("pi0MC",";p_{t} (GeV/c)",250,0,50.);
   pi0MC->Sumw2();
@@ -794,15 +794,15 @@ if(fIsMC)
   gammaMC= new TH1F("gammaMC",";p_{t} (GeV/c)",250,0,50.);
   gammaMC->Sumw2();
   fOutputList->Add(gammaMC);
-
+  }
+  
+  if(fCalculateNonHFEEffi){
   fRealInclsElecPt = new TH1F("fRealInclsElecPt","p_{T} distribution of MC tagged inclusive electrons;p_{T} (GeV/c);counts",250,0,50);
   fOutputList->Add(fRealInclsElecPt);
-
 
   fNonHFeTrkPt = new TH1F("fNonHFeTrkPt","Non-HF electrons from all generators;p_{T} (GeV/c);counts",250,0,50);
   fNonHFeTrkPt->Sumw2();
   fOutputList->Add(fNonHFeTrkPt);
-
 
   fNonHFeEmbTrkPt = new TH1F("fNonHFeEmbTrkPt","Non-HF electrons from embedded #pi^{0} and #eta + No mom;p_{T} (GeV/c);counts",250,0,50);
   fNonHFeEmbTrkPt->Sumw2();
@@ -839,7 +839,6 @@ if(fIsMC)
   fRecoEtaeEmbWeightTrkPt = new TH1F("fRecoEtaeEmbWeightTrkPt","Reco Non-HF electrons from embedded #eta  + No mom with weight;p_{T} (GeV/c);counts",250,0,50);
   fRecoEtaeEmbWeightTrkPt->Sumw2();
   fOutputList->Add(fRecoEtaeEmbWeightTrkPt);
-
 
   fNonHFePairInvmassLS = new TH1F("fNonHFePairInvmassLS", "Inv mass of LS (e,e) if both e- are Non-HFE; mass(GeV/c^2); counts;",  50,0,0.5);
   fNonHFePairInvmassLS->Sumw2();
@@ -929,7 +928,6 @@ if(fIsMC)
   fRecoEtaULSeEmbWeightTrkPt->Sumw2();
   fOutputList->Add(fRecoEtaULSeEmbWeightTrkPt);
 
-  
   fRVsULSElecPt  = new TH2F("fRVsULSElecPt","#it{p}_{T} distribution of ULS electrons;#it{p}_{T} (GeV/#it{c});Radius",250,0,50,300,0,30);
   fRVsULSElecPt->Sumw2();
   fOutputList->Add(fRVsULSElecPt);
@@ -953,7 +951,6 @@ if(fIsMC)
   fHFeConvRadius = new TH2F("fHFeConvRadius","Conv Radius distribution of HF electrons;#it{p}_{T} (GeV/#it{c});Radius",250,0,50,300,0,30);
   fHFeConvRadius->Sumw2();
   fOutputList->Add(fHFeConvRadius);
-
   //-----------------------------------------R-Tagg-----------------------------------------------------------
   fNonHFeEmbTrkRConv = new TH2F("fNonHFeEmbTrkRConv","Conv Radius distribution of ;#it{p}_{T} (GeV/#it{c});Radius",250,0,50,300,0,30);
   fNonHFeEmbTrkRConv->Sumw2();
@@ -986,11 +983,11 @@ if(fIsMC)
   fRecoEtaeEmbWeightTrkRConv = new TH2F("fRecoEtaeEmbWeightTrkRConv","Conv Radius distribution of ;#it{p}_{T} (GeV/#it{c});Radius",250,0,50,300,0,30);
   fRecoEtaeEmbWeightTrkRConv->Sumw2();
   fOutputList->Add(fRecoEtaeEmbWeightTrkRConv);
-
+  }
 //---------------------------DCA Templates --------------------------------------------------------------------------------------------------
 
-  //if(fCalculateMCTemplWeightCalc)
-  //{
+  if(fCalculateMCTemplWeightCalc)
+  {
     fBHadpT = new TH1F("fBHadpT","B hadron pT;p_{T} (GeV/c);counts",500,0,50);
     fBHadpT->Sumw2();
     fOutputList->Add(fBHadpT);
@@ -1026,10 +1023,10 @@ if(fIsMC)
     fLambdaCpT = new TH1F("fLambdaCpT","Prompt Lammda_c pT;p_{T} (GeV/c);counts",500,0,50);
     fLambdaCpT->Sumw2();
     fOutputList->Add(fLambdaCpT);
-  //}
+  }
 
-  //if(fFillMCTemplates)
-  //{
+  if(fFillMCTemplates)
+  {
         fDElecDCA = new TH2F("fDElecDCA","D meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 70,0,35., fnBinsDCAHisto,-0.4,0.4);
         fOutputList->Add(fDElecDCA);
         
@@ -1080,7 +1077,7 @@ if(fIsMC)
         fSprsTemplatesWeightVar2->Sumw2();
         fOutputList->Add(fSprsTemplatesWeightVar2);
         
-  //}
+  }
 
 
 }
@@ -1150,21 +1147,21 @@ void AliAnalysisHFEppEMCalBeauty::UserExec(Option_t *)
   fHistEvent->Fill(7);
 
   Bool_t isPileupfromSPDmulbins=fAOD->IsPileupFromSPDInMultBins(); //This function checks if there was a pile up reconstructed with SPD
-	if(isPileupfromSPDmulbins) return;
+  if(isPileupfromSPDmulbins) return;
   fHistEvent->Fill(9);
 
  Int_t minContributors=5;    //minimum contributors to the pilup vertices, multi-vertex
  Double_t minChi2=5.; 
  Double_t minWeiZDiff=15;   //minimum of the sqrt of weighted distance between the primary and the pilup vertex, multi-vertex
  Bool_t checkPlpFromDifferentBC=kFALSE;
-	
+  
  AliAnalysisUtils utils;
  utils.SetMinPlpContribMV(minContributors); //Multi Vertex pileup selection
  utils.SetMaxPlpChi2MV(minChi2);   //max value of Chi2perNDF of the pileup vertex, multi-vertex
  utils.SetMinWDistMV(minWeiZDiff);
  utils.SetCheckPlpFromDifferentBCMV(checkPlpFromDifferentBC); //SPD Pileup slection
  Bool_t isPileupFromMV = utils.IsPileUpMV(fAOD);      //check for multi-vertexer pile-up
-	
+  
  if(isPileupFromMV) return;
  fHistEvent->Fill(11);
 
@@ -1196,8 +1193,6 @@ void AliAnalysisHFEppEMCalBeauty::UserExec(Option_t *)
     if(fAOD->GetMagneticField()<0) fMagSign = -1;
 
   //cout<<"  CXX fIsMC  ===    "<< fIsMC<<endl;
-  //cout<<"  CXX fCalculateMCTemplWeightCalc  ===    "<< fCalculateMCTemplWeightCalc<<endl;  
-  //cout<<"  CXX fFillMCTemplates  ===    "<< fFillMCTemplates<<endl; 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
   ///////////////////////////////////
   //Initialization for MC analysis///
@@ -1223,15 +1218,13 @@ if(fIsMC)
         
         /////////////////////////////////
         //Calculate Pi0 and Eta weight //
-        /////////////////////////////////
-        fCalculateWeight=kFALSE;
+        ///////////////////////////////// 
+        if(fCalculateWeight) GetPi0EtaWeight(fSprsPi0EtaWeightCal);
         
-        GetPi0EtaWeight(fSprsPi0EtaWeightCal);
-
         /////////////////////////////////
         //Histos for MC template Weight//
         /////////////////////////////////    
-        GetMCTemplateWeight();
+        if(fCalculateMCTemplWeightCalc) GetMCTemplateWeight();
     
     }
     if (!fMCHeader) {
@@ -1320,7 +1313,14 @@ for(Int_t icl=0; icl<Nclust; icl++)
       fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
      
      if(clust->IsEMCAL())
-     {    
+     {
+        //Removing exotic clusters using IsExotic function in data and using M02 min cut
+        if(!fIsMC)
+        if(clust->GetIsExotic()) continue;
+        Double_t m02 = clust->GetM02();
+        if(m02 < 0.02) continue;
+            
+
          AliAODCaloCells &cells = *(fAOD->GetEMCALCells());
          Double_t clustE = clust->E(); //clust->E();
          if(clustE < 0.3) continue;
@@ -1389,7 +1389,7 @@ for(Int_t icl=0; icl<Nclust; icl++)
     if(track->PropagateToDCA(vertex, fAOD->GetMagneticField(), 20., d0z0, cov))  
     fHistdcaxy->Fill(d0z0[0],pt);
     fHistdcaz->Fill( d0z0[1],pt);
-    EtaPhiWoC->Fill(track->Eta(),track->Phi());   	
+    EtaPhiWoC->Fill(track->Eta(),track->Phi());     
    
     if(tracktypeTrig!=1) continue;    //==========TRACK cuts Applied =====
     Nch++;
@@ -1438,7 +1438,7 @@ for(Int_t icl=0; icl<Nclust; icl++)
     fTrkDCA = d0z0[0] * track->Charge() * fMagSign;
 
     Bool_t fFillTem = kFALSE;
-    if(fIsMC)   //
+    if(fFillMCTemplates)   //
     {
        fFillTem = GetMCDCATemplates(track, fTrkDCA);
     }
@@ -1453,16 +1453,16 @@ for(Int_t icl=0; icl<Nclust; icl++)
   if(EMCalIndex < 0) continue;
   
   if( pt < 0.5) continue;      
-	fHistPtMatch->Fill(track->Pt());
+  fHistPtMatch->Fill(track->Pt());
 
-	AliAODCaloCluster *clustMatch=0x0;
+  AliAODCaloCluster *clustMatch=0x0;
 
-	if(!fUseTender) if(EMCalIndex >= 0) clustMatch = (AliAODCaloCluster*)fAOD->GetCaloCluster(EMCalIndex) ;
+  if(!fUseTender) if(EMCalIndex >= 0) clustMatch = (AliAODCaloCluster*)fAOD->GetCaloCluster(EMCalIndex) ;
   if(fUseTender) if(EMCalIndex >= 0)clustMatch = dynamic_cast<AliAODCaloCluster*>(fCaloClusters_tender->At(EMCalIndex));
-				
-	Short_t NcellsInCluster = clustMatch->GetNCells();
+        
+  Short_t NcellsInCluster = clustMatch->GetNCells();
 
-	      Double_t emcphi = -999, emceta=-999;
+        Double_t emcphi = -999, emceta=-999;
         fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
         if(clustMatch && clustMatch->IsEMCAL())
         {
@@ -1485,14 +1485,20 @@ for(Int_t icl=0; icl<Nclust; icl++)
             
             if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
             if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
-        		
+            
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
-	          if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
-     
-	          fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
-	          fEMCTrkMatch_Phi->Fill(track->Pt(),fPhiDiff);
-	          fEMCTrkMatch_Eta->Fill(track->Pt(),fEtaDiff);        
-	          fEMCClsEtaPhiTrkMatch->Fill(emceta,emcphi);
+            if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+
+            Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
+            if(!fIsMC){
+              if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
+              //if(TMath::Abs(clustTime) > 50) continue; //50ns time cut to remove pileup not sure if I need this cut
+            }
+
+            fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
+            fEMCTrkMatch_Phi->Fill(track->Pt(),fPhiDiff);
+            fEMCTrkMatch_Eta->Fill(track->Pt(),fEtaDiff);        
+            fEMCClsEtaPhiTrkMatch->Fill(emceta,emcphi);
    
            Double_t Etrkmatch = -999.0, Eoptrk = -999.0 , M02trkmatch = -999.0, M20trkmatch = -999.0;
            Etrkmatch = clustMatch->E(); //clustMatch->E();
@@ -1507,7 +1513,7 @@ for(Int_t icl=0; icl<Nclust; icl++)
            fvalueElectron[3] = M02trkmatch; // shower shape cut
            fvalueElectron[4] = M20trkmatch;
            fvalueElectron[5] = Etrkmatch; //cluster energy after matching
-	         fSparseElectron->Fill(fvalueElectron); //Electron information spa
+           fSparseElectron->Fill(fvalueElectron); //Electron information spa
      
            EtaPhiAfTCATM->Fill(track->Eta(),track->Phi());
            EMCalEta_TPCpT->Fill(track->Pt());
@@ -2742,7 +2748,7 @@ void AliAnalysisHFEppEMCalBeauty::GetMCTemplateWeight()
 //====================================================================================================================================
 
 //________________________________________________________________________
-Bool_t AliAnalysisHFEppEMCalBeauty::GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA)
+Bool_t AliAnalysisHFEppEMCalBeauty::GetMCDCATemplates(AliAODTrack *track, Double_t TrkDCA)
 {
     //Fill MC template histograms
     

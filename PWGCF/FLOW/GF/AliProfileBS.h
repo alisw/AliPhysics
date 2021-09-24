@@ -1,7 +1,11 @@
+/*
+Author: Vytautas Vislavicius
+Container to store multiple profiles used for bootstrapping.
+Extra layer to calculate the moments. Current implementation supports only the first and second moments.
+If used, modified, or distributed, please aknowledge the original author of this code.
+*/
 #ifndef ALIPROFILEBS__H
 #define ALIPROFILEBS__H
-//Container to store bootstrapping profiles
-//Vytautas Vislavicius
 #include "TProfile.h"
 #include "TList.h"
 #include "TString.h"

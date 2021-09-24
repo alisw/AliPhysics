@@ -73,6 +73,8 @@ AliAnalysisTaskCorrelationhCascDATA::AliAnalysisTaskCorrelationhCascDATA() :AliA
   fEtaV0Assoc(0.8),
   fFilterBitValue(128),
   fYear(2016),
+  lPercentilesMin(0),
+  lPercentilesMax(0),
   fisHM(0),
   fHistPt(0), 
   fHistDCAxym1(0),
@@ -231,6 +233,8 @@ AliAnalysisTaskCorrelationhCascDATA::AliAnalysisTaskCorrelationhCascDATA(const c
   fEtaV0Assoc(0.8),
   fFilterBitValue(128),
   fYear(2016),
+  lPercentilesMin(0),
+  lPercentilesMax(0),
   fisHM(0),
   fHistPt(0), 
   fHistDCAxym1(0),
@@ -1217,10 +1221,20 @@ void AliAnalysisTaskCorrelationhCascDATA::UserExec(Option_t *)
     PostData(4, fOutputList2);  
     PostData(5, fOutputList3);     
     PostData(6, fOutputList4);
-    // cout << "event does not fulfil centrality selection criteria " << endl;          
+    // cout << "event does not fulfil centrality selection criteria " << endl;      
     return;
   }
   
+  if (lPercentiles < lPercentilesMin || lPercentiles > lPercentilesMax){
+    PostData(1, fOutputList );
+    PostData(2, fSignalTree );
+    PostData(3, fBkgTree);
+    PostData(4, fOutputList2);
+    PostData(5, fOutputList3);
+    PostData(6, fOutputList4);
+    return;
+  }
+
   fHist_multiplicityAllSelEvents->Fill(lPercentiles);
   //  cout << "event has passed selection criteria.... first and second particles to be analyzed ...."<< endl;
 

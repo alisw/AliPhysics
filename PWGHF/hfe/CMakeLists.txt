@@ -149,6 +149,7 @@ set(SRCS
   AliAnalysisTaskHFEBeautyMultiplicity.cxx 
   AliAnalysisHFEppEMCalBeauty.cxx
   AliAnalysisTaskIPResolBeautyppCal.cxx
+  AliAnalysisTaskBEpp13TeV.cxx
   )
 
 # Headers from sources

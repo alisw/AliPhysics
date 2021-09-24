@@ -47,8 +47,8 @@ void AliMultDepSpecAnalysisTaskUE::DefineDefaultAxes(int maxMult)
 
   // additional dimensions for UE studies
   std::vector<double> ptBins
-    = { 0.1, 1.0, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0,  3.2,  3.4,  3.6,  3.8,  4.0, 4.5,
-        5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0 };
+    = { 0.1, 0.15, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0,  3.2,  3.4,  3.6,
+        3.8,  4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0 };
 
   std::vector<double> sumptBins
     = { 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 3.2, 3.4, 3.6, 3.8, 4.0,
@@ -77,6 +77,7 @@ void AliMultDepSpecAnalysisTaskUE::BookHistograms()
   // book UE specific histograms
   BookHistogram(fHistLeadPt, "fHistLeadPt", { pt_lead_meas });
   BookHistogram(fHistLeadPhi, "fHistLeadPhi", { phi_lead_meas });
+  BookHistogram(fHistLeadPtPhi, "fHistLeadPtPhi", { pt_lead_meas, phi_lead_meas });
   BookHistogram(fHistDeltaPhi, "fHistDeltaPhi", { delta_phi });
   BookHistogram(fHistPtLeadCutLoss, "fHistPtLeadCutLoss", { pt_meas });
   BookHistogram(fHistPlateau, "fHistPlateau", { pt_lead_meas, mult_meas });
@@ -84,6 +85,9 @@ void AliMultDepSpecAnalysisTaskUE::BookHistograms()
   BookHistogram(fHistMultCorr, "fHistMultCorr", { mult_meas, mult_meas });
   BookHistogram(fHistMeanSumPt, "fHistMeanSumPt", { sum_pt });
   BookHistogram(fHistMeanMult, "fHistMeanMult", { mult_meas });
+  BookHistogram(fHistMeanSumPtMultTot, "fHistMeanSumPtMultTot", { mult_meas});
+  BookHistogram(fHistSumPtMult, "fHistSumPtMult", { mult_meas, sum_pt });
+
 
   if(fIsMC)
   {
@@ -94,6 +98,8 @@ void AliMultDepSpecAnalysisTaskUE::BookHistograms()
     BookHistogram(fHistMCMultCorr, "fHistMCMultCorr", { mult_meas, mult_meas });
     BookHistogram(fHistMCMeanSumPt, "fHistMCMeanSumPt", { sum_pt });
     BookHistogram(fHistMCMeanMult, "fHistMCMeanMult", { mult_meas });
+    BookHistogram(fHistMCMeanSumPtMultTot, "fHistMCMeanSumPtMultTot", { mult_meas});
+    BookHistogram(fHistMCSumPtMult, "fHistMCSumPtMult", { mult_meas, sum_pt });
   }
 
   // check additional required memory
@@ -103,7 +109,10 @@ void AliMultDepSpecAnalysisTaskUE::BookHistograms()
                           + fHistSumPt.GetSize() + fHistMultCorr.GetSize()
                           + fHistMeanSumPt.GetSize() + fHistMeanMult.GetSize()
                           + fHistMCMeanSumPt.GetSize() + fHistMCMeanMult.GetSize()
-                          + fHistMCPlateau.GetSize()+ fHistMCSumPt.GetSize() + fHistMCMultCorr.GetSize();
+                          + fHistMCPlateau.GetSize() + fHistMCSumPt.GetSize() + fHistMCMultCorr.GetSize()
+                          + fHistLeadPtPhi.GetSize() + fHistMeanSumPtMultTot.GetSize()
+                          + fHistMCMeanSumPtMultTot.GetSize() + fHistSumPtMult.GetSize()
+                          + fHistMCSumPtMult.GetSize();
 
   AliError(Form("Estimated additional memory usage of histograms from UE analysis: %.2f MiB.",
                 requiredMemory / 1048576));
@@ -228,22 +237,27 @@ void AliMultDepSpecAnalysisTaskUE::FillEventHistos()
 
   fHistSumPt.Fill(fSumPtMeasTot, fSumPtMeas);
   fHistMultCorr.Fill(fMultMeasTot, fMultMeas);
+  fHistSumPtMult.Fill(fMultMeas, fSumPtMeas);
 
   fHistMeanSumPt.FillWeight(fSumPtMeas, fSumPtMeasTot);
   fHistMeanMult.FillWeight(fMultMeas, fMultMeasTot);
+  fHistMeanSumPtMultTot.FillWeight(fSumPtMeas, fMultMeasTot);
 
   if(fMultMeas == 0) return; // ensure that number of tracks is non-zero
   fHistLeadPt.Fill(fPtLead);
   fHistLeadPhi.Fill(fPhiLead);
   fHistPlateau.Fill(fPtLead, fMultMeas);
+  fHistLeadPtPhi.Fill(fPtLead, fPhiLead);
 
   if(fIsMC)
   {
     fHistMCSumPt.Fill(fSumPtTrueTot, fSumPtTrue);
     fHistMCMultCorr.Fill(fMultTrueTot, fMultTrue);
+    fHistMCSumPtMult.Fill(fMultTrue, fSumPtTrue);
 
     fHistMCMeanSumPt.FillWeight(fSumPtTrue, fSumPtTrueTot);
     fHistMCMeanMult.FillWeight(fMultTrue, fMultTrueTot); //first weight then position
+    fHistMCMeanSumPtMultTot.FillWeight(fSumPtTrue, fMultTrueTot);
 
     if (fMultTrue == 0) return;
     fHistMCPlateau.Fill(fMCPtOfLead, fMultTrue);
