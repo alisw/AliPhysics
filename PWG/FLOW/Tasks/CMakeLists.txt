@@ -96,6 +96,7 @@ set(SRCS
   AliAnalysisTaskCMWPUuncAch.cxx
   AliAnalysisTaskMuPa.cxx
   AliAnalysisTaskAR.cxx
+  AliAnalysisTaskEbECumulants.cxx
 )
 
 # Headers from sources

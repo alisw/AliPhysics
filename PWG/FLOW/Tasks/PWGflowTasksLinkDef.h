@@ -68,5 +68,6 @@
 #pragma link C++ class AliAnalysisTaskCMWPUuncAch+;
 #pragma link C++ class AliAnalysisTaskMuPa+;
 #pragma link C++ class AliAnalysisTaskAR+;
+#pragma link C++ class AliAnalysisTaskEbECumulants+;
 #endif
 
