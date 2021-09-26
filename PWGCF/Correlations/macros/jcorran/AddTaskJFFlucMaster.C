@@ -47,7 +47,8 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	for(UInt_t i = 0; i < sizeof(mapIndices)/sizeof(mapIndices[0]); ++i){
 		UInt_t ci = mapIndices[i];
 		TString MAPfilename = Form("%sPhiWeights_LHC%s_Error_%spt%02d_s_%s.root",MAPdirname.Data(), speriod[period].Data(),s_smooth.Data(), Int_t(ptmin*10), configNames[ci].Data()); //azimuthal correction
-		cmaptask->EnablePhiCorrection(i,MAPdirname);
+		cout << MAPfilename.Data() << endl;
+		cmaptask->EnablePhiCorrection(i,MAPfilename);
 	}
 	mgr->AddTask((AliAnalysisTask*) cmaptask);
     
