@@ -31,7 +31,7 @@ const Double_t dcamin = 0;  // micron
 const Double_t dcamax = 600;  // micron
 const Double_t d0xd0min = -80000;  // micron
 const Double_t d0xd0max = 100000;  // micron
-const Double_t phimin = 0.0;  
+const Double_t phimin = 0.0;
 const Int_t    mintrackrefsTPC = 2 ;
 const Int_t    mintrackrefsITS = 3 ;
 const Int_t    charge  = 1 ;
@@ -85,12 +85,12 @@ const Float_t multmax_100_400 = 400; // Only for pPb
   }
   else if (configuration == AliCFTaskVertexingHF::kRT) {
     printf("The configuration is set to be for RT analysis --> using pt, y, multiplicity, RT, delta-phi leading to fill the CF\n");
-  }  
+  }
 	else{
 		printf("The configuration is not defined! returning\n");
 		return NULL;
 	}
-	       
+
 	gSystem->Sleep(2000);
 
 	// isSign = 0 --> D0 only
@@ -112,17 +112,17 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	}
 
 	TFile* fileCuts = TFile::Open(cutFile);
-	if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){ 
+	if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){
 	  Printf("ERROR: Wrong cut file");
 	  return 0x0;
 	}
 
 	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get(cutObjectName.Data());
-	
+
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
 	//  for now the binning is the same than for all D's
 	if(isKeepDfromBOnly) isKeepDfromB = true;
-	
+
 	Double_t ptmin_0_6;
 	Double_t ptmax_0_6;
 	Double_t ptmin_6_8;
@@ -131,7 +131,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	Double_t ptmax_8_16;
 	Double_t ptmin_16_24;
 	Double_t ptmax_16_24;
-	
+
 	ptmin_0_6 =  0.0 ;
 	ptmax_0_6 =  6.0 ;
 	ptmin_6_8 =  6.0 ;
@@ -145,11 +145,11 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	//CONTAINER DEFINITION
 	Info("AliCFTaskVertexingHF","SETUP CONTAINER");
 	const Double_t phimax = 2*TMath::Pi();
-	UInt_t nstep = 10; //number of selection steps: MC with limited acceptance, MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included), RecoPID 
+	UInt_t nstep = 10; //number of selection steps: MC with limited acceptance, MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included), RecoPID
 
 	//const UInt_t ipT, iy, icosThetaStar, ipTpi, ipTk, icT, idca, id0xd0, ipointing, iphi, izvtx, icent, ifake, ipointingXY, iNormDecayLXY, imult;
 	const Int_t nbiny  = 24 ; //bins in y
-	const Int_t nbincosThetaStar  = 42 ; //bins in cosThetaStar 
+	const Int_t nbincosThetaStar  = 42 ; //bins in cosThetaStar
 	const Int_t nbincT  = 15 ; //bins in cT
 	const Int_t nbindca  = 20 ; //bins in dca
 	const Int_t nbind0xd0  = 90 ; //bins in d0xd0
@@ -192,13 +192,13 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	const UInt_t ipointingXY = 13;
 	const UInt_t inormDecayLXY = 14;
 	const UInt_t imult = 15;
-	
+
 	//Setting the bins: pt, ptPi, and ptK are considered seprately because for them you can either define the binning by hand, or using the cuts file
-	
+
 	//arrays for the number of bins in each dimension
 	Int_t iBin[nvarTot];
-	
-	//OPTION 1: defining the pt, ptPi, ptK bins by hand...		
+
+	//OPTION 1: defining the pt, ptPi, ptK bins by hand...
 	/*
 	  const Int_t nbinpt_0_6  = 6 ; //bins in pt from 0 to 6 GeV
 	  const Int_t nbinpt_6_8  = 1 ; //bins in pt from 6 to 8 GeV
@@ -218,56 +218,56 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	  Double_t *binLimpT=new Double_t[iBin[0]+1];
 	  Double_t *binLimpTpi=new Double_t[iBin[3]+1];
 	  Double_t *binLimpTk=new Double_t[iBin[4]+1];
-	  
+
 	  // values for bin lower bounds
 	  // pt
-	  for(Int_t i=0; i<=nbinpt_0_6; i++) binLimpT[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpt_0_6*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpt_0_6; i++) binLimpT[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpt_0_6*(Double_t)i ;
 	  if (binLimpT[nbinpt_0_6] != ptmin_6_8)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpt_6_8; i++) binLimpT[i+nbinpt_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpt_6_8*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpt_6_8; i++) binLimpT[i+nbinpt_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpt_6_8*(Double_t)i ;
 	  if (binLimpT[nbinpt_0_6+nbinpt_6_8] != ptmin_8_16)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpt_8_16; i++) binLimpT[i+nbinpt_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpt_8_16*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpt_8_16; i++) binLimpT[i+nbinpt_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpt_8_16*(Double_t)i ;
 	  if (binLimpT[nbinpt_0_6+nbinpt_6_8+nbinpt_8_16] != ptmin_16_24)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpt_16_24; i++) binLimpT[i+nbinpt_0_6+nbinpt_6_8+nbinpt_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpt_16_24*(Double_t)i ; 
-	  
+	  for(Int_t i=0; i<=nbinpt_16_24; i++) binLimpT[i+nbinpt_0_6+nbinpt_6_8+nbinpt_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpt_16_24*(Double_t)i ;
+
 	  // ptPi
-	  for(Int_t i=0; i<=nbinpTpi_0_6; i++) binLimpTpi[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpTpi_0_6*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTpi_0_6; i++) binLimpTpi[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpTpi_0_6*(Double_t)i ;
 	  if (binLimpTpi[nbinpTpi_0_6] != ptmin_6_8)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpTpi_6_8; i++) binLimpTpi[i+nbinpTpi_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpTpi_6_8*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTpi_6_8; i++) binLimpTpi[i+nbinpTpi_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpTpi_6_8*(Double_t)i ;
 	  if (binLimpTpi[nbinpTpi_0_6+nbinpTpi_6_8] != ptmin_8_16)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpTpi_8_16; i++) binLimpTpi[i+nbinpTpi_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpTpi_8_16*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTpi_8_16; i++) binLimpTpi[i+nbinpTpi_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpTpi_8_16*(Double_t)i ;
 	  if (binLimpTpi[nbinpTpi_0_6+nbinpTpi_6_8+nbinpTpi_8_16] != ptmin_16_24)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpTpi_16_24; i++) binLimpTpi[i+nbinpTpi_0_6+nbinpTpi_6_8+nbinpTpi_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpTpi_16_24*(Double_t)i ; 
-	  
+	  for(Int_t i=0; i<=nbinpTpi_16_24; i++) binLimpTpi[i+nbinpTpi_0_6+nbinpTpi_6_8+nbinpTpi_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpTpi_16_24*(Double_t)i ;
+
 	  // ptKa
-	  for(Int_t i=0; i<=nbinpTk_0_6; i++) binLimpTk[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpTk_0_6*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTk_0_6; i++) binLimpTk[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpTk_0_6*(Double_t)i ;
 	  if (binLimpTk[nbinpTk_0_6] != ptmin_6_8)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpTk_6_8; i++) binLimpTk[i+nbinpTk_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpTk_6_8*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTk_6_8; i++) binLimpTk[i+nbinpTk_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpTk_6_8*(Double_t)i ;
 	  if (binLimpTk[nbinpTk_0_6+nbinpTk_6_8] != ptmin_8_16)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpTk_8_16; i++) binLimpTk[i+nbinpTk_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpTk_8_16*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTk_8_16; i++) binLimpTk[i+nbinpTk_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpTk_8_16*(Double_t)i ;
 	  if (binLimpTk[nbinpTk_0_6+nbinpTk_6_8+nbinpTk_8_16] != ptmin_16_24)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpTk_16_24; i++) binLimpTk[i+nbinpTk_0_6+nbinpTk_6_8+nbinpTk_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpTk_16_24*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTk_16_24; i++) binLimpTk[i+nbinpTk_0_6+nbinpTk_6_8+nbinpTk_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpTk_16_24*(Double_t)i ;
 	*/
-	
+
 	//OPTION 2: ...or from the cuts file
-	
+
 	const Int_t nbinpt = cutsD0toKpi->GetNPtBins(); // bins in pT
 	iBin[ipT]=nbinpt;
 	iBin[ipTpi]=nbinpt;
@@ -282,8 +282,8 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 		binLimpTpi[ibin0] = (Double_t)floatbinLimpT[ibin0];
 		binLimpTk[ibin0] = (Double_t)floatbinLimpT[ibin0];
 	}
-	for(Int_t i=0; i<=nbinpt; i++) printf("binLimpT[%d]=%f\n",i,binLimpT[i]);  
-	
+	for(Int_t i=0; i<=nbinpt; i++) printf("binLimpT[%d]=%f\n",i,binLimpT[i]);
+
 	printf("pT: nbin (from cuts file) = %d\n",nbinpt);
 
 	Double_t *binLimpTFine=new Double_t[400+1];
@@ -311,7 +311,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	const Int_t nbinmultTot=nbinmultTmp;
 
 	// defining now the binning for the other variables:
-	
+
 	iBin[iy]=nbiny;
 	iBin[icosThetaStar]=nbincosThetaStar;
 	iBin[icT]=nbincT;
@@ -325,7 +325,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	iBin[ipointingXY]=nbinpointingXY;
 	iBin[inormDecayLXY]=nbinnormDecayLXY;
 	iBin[imult]=nbinmultTot;
-	
+
 	//arrays for lower bounds :
 	Double_t *binLimy=new Double_t[iBin[iy]+1];
 	Double_t *binLimcosThetaStar=new Double_t[iBin[icosThetaStar]+1];
@@ -347,7 +347,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 
 	// cosThetaStar
 	for(Int_t i=0; i<=nbincosThetaStar; i++) binLimcosThetaStar[i]=(Double_t)cosminTS  + (cosmaxTS-cosminTS)  /nbincosThetaStar*(Double_t)i ;
-	
+
 	// cT
 	for(Int_t i=0; i<=nbincT; i++) binLimcT[i]=(Double_t)cTmin  + (cTmax-cTmin)  /nbincT*(Double_t)i ;
 
@@ -369,7 +369,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	}
 
 	// centrality
-	for(Int_t i=0; i<=nbincent_0_10; i++) binLimcent[i]=(Double_t)centmin_0_10 + (centmax_0_10-centmin_0_10)/nbincent_0_10*(Double_t)i ; 
+	for(Int_t i=0; i<=nbincent_0_10; i++) binLimcent[i]=(Double_t)centmin_0_10 + (centmax_0_10-centmin_0_10)/nbincent_0_10*(Double_t)i ;
 	if (binLimcent[nbincent_0_10] != centmin_10_60)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 1st range - differs from expected!\n");
 	}
@@ -391,25 +391,25 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	for(Int_t i=0; i<=nbinnormDecayLXY; i++) binLimnormDecayLXY[i]=(Double_t)normDecLXYmin  + (normDecLXYmax-normDecLXYmin)  /nbinnormDecayLXY*(Double_t)i ;
 
 	// multiplicity
-	for(Int_t i=0; i<=nbinmult_0_20; i++) binLimmult[i]=(Double_t)multmin_0_20 + (multmax_0_20-multmin_0_20)/nbinmult_0_20*(Double_t)i ; 
+	for(Int_t i=0; i<=nbinmult_0_20; i++) binLimmult[i]=(Double_t)multmin_0_20 + (multmax_0_20-multmin_0_20)/nbinmult_0_20*(Double_t)i ;
 	if (binLimmult[nbinmult_0_20] != multmin_20_50)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 1st range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbinmult_20_50; i++) binLimmult[i+nbinmult_0_20]=(Double_t)multmin_20_50 + (multmax_20_50-multmin_20_50)/nbinmult_20_50*(Double_t)i ; 
+	for(Int_t i=0; i<=nbinmult_20_50; i++) binLimmult[i+nbinmult_0_20]=(Double_t)multmin_20_50 + (multmax_20_50-multmin_20_50)/nbinmult_20_50*(Double_t)i ;
 	if (binLimmult[nbinmult_0_20+nbinmult_20_50] != multmin_50_80)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbinmult_50_80; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_80 + (multmax_50_80-multmin_50_80)/nbinmult_50_80*(Double_t)i ; 
+	for(Int_t i=0; i<=nbinmult_50_80; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_80 + (multmax_50_80-multmin_50_80)/nbinmult_50_80*(Double_t)i ;
 	if (binLimmult[nbinmult_0_20+nbinmult_20_50+nbinmult_50_80] != multmin_80_100)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbinmult_80_100; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80]=(Double_t)multmin_80_100 + (multmax_80_100-multmin_80_100)/nbinmult_80_100*(Double_t)i ; 
+	for(Int_t i=0; i<=nbinmult_80_100; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80]=(Double_t)multmin_80_100 + (multmax_80_100-multmin_80_100)/nbinmult_80_100*(Double_t)i ;
 	if (binLimmult[nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100] != multmin_100_400)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
 	}
 
 	if(isPPbData){
-	  for(Int_t i=0; i<=nbinmult_100_400; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100]=(Double_t)multmin_100_400 + (multmax_100_400-multmin_100_400)/nbinmult_100_400*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinmult_100_400; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100]=(Double_t)multmin_100_400 + (multmax_100_400-multmin_100_400)/nbinmult_100_400*(Double_t)i ;
 	}
 
 	if(multiplicityEstimator==AliCFTaskVertexingHF::kVZERO) {
@@ -427,10 +427,10 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 		nameContainer="CFHFccontainer0DfromB";
 	}
 	else  {
-		nameContainer="CFHFccontainer0allD";	  
+		nameContainer="CFHFccontainer0allD";
 	}
 	nameContainer += suffix;
-	//Setting up the container grid... 
+	//Setting up the container grid...
 
 	AliCFContainer* container;
 
@@ -438,7 +438,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 		container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvarTot,iBin);
 		//setting the bin limits
 		printf("pt\n");
-		if(isFinePtBin) container -> SetBinLimits(ipT,binLimpTFine); 
+		if(isFinePtBin) container -> SetBinLimits(ipT,binLimpTFine);
 		else      	container -> SetBinLimits(ipT,binLimpT);
 		printf("y\n");
 		container -> SetBinLimits(iy,binLimy);
@@ -514,7 +514,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 
 		container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinFast);
 		printf("pt\n");
-		if(isFinePtBin) container -> SetBinLimits(ipTFast,binLimpTFine); 
+		if(isFinePtBin) container -> SetBinLimits(ipTFast,binLimpTFine);
 		else      	container -> SetBinLimits(ipTFast,binLimpT);
 		printf("y\n");
 		container -> SetBinLimits(iyFast,binLimy);
@@ -558,7 +558,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 
 		container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinSuperFast);
 		printf("pt\n");
-		if(isFinePtBin) container -> SetBinLimits(ipTSuperFast,binLimpTFine); 
+		if(isFinePtBin) container -> SetBinLimits(ipTSuperFast,binLimpTFine);
 		else      	container -> SetBinLimits(ipTSuperFast,binLimpT);
 		printf("y\n");
 		container -> SetBinLimits(iySuperFast,binLimy);
@@ -576,16 +576,16 @@ const Float_t multmax_100_400 = 400; // Only for pPb
   else if (configuration == AliCFTaskVertexingHF::kESE){
     //arrays for the number of bins in each dimension
     const Int_t nvar = 6;
-    
+
     const UInt_t ipTESE = 0;
     const UInt_t iyESE = 1;
     const UInt_t icentESE = 2;
     const UInt_t imultESE = 3;
     const UInt_t ilocalmultESE = 4;
     const UInt_t iq2ESE = 5;
-    
+
     const Int_t iBinESE[nvar] = {iBin[ipT],iBin[iy],100,50,50,100};
-    
+
     Double_t binLimcentESE[iBinESE[icentESE]+1];
     for(Int_t iCent=0; iCent<iBinESE[icentESE]+1; iCent++) {
       binLimcentESE[iCent] = iCent;
@@ -602,7 +602,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
     for(Int_t iq2=0; iq2<iBinESE[iq2ESE]+1; iq2++) {
       binLimq2ESE[iq2] = iq2*5./iBinESE[iq2ESE];
     }
-    
+
     container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinESE);
     printf("pt\n");
     container -> SetBinLimits(ipTESE,binLimpT);
@@ -616,7 +616,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
     container -> SetBinLimits(ilocalmultESE,binLimlocalmultESE);
     printf("q2\n");
     container -> SetBinLimits(iq2ESE,binLimq2ESE);
-    
+
     container -> SetVarTitle(ipTESE,"pt");
     container -> SetVarTitle(iyESE,"y");
     container -> SetVarTitle(icentESE, "centrality");
@@ -641,14 +641,14 @@ const Float_t multmax_100_400 = 400; // Only for pPb
     for (Int_t jRT = 0; jRT < iBinRT[iRT]+1; jRT++) {
        binLimRT[jRT] = jRT / 10.;
     }
-    
+
     Double_t binLimDeltaPhi[iBinRT[idelphiRT]+1];
     for (Int_t jDelPhi =0; jDelPhi < iBinRT[idelphiRT]+1; jDelPhi++) {
        binLimDeltaPhi[jDelPhi] = -TMath::PiOver2() + (jDelPhi * TMath::TwoPi()/iBinRT[idelphiRT]);
     }
-    
+
     container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinRT);
-    
+
     container -> SetBinLimits(ipTRT,binLimpT);
     printf("pt\n");
     container -> SetBinLimits(iyRT,binLimy);
@@ -659,13 +659,13 @@ const Float_t multmax_100_400 = 400; // Only for pPb
     printf("RT\n");
     container -> SetBinLimits(idelphiRT,binLimDeltaPhi);
     printf("delta phi leading\n");
-    
+
     container -> SetVarTitle(ipTRT,"pt");
     container -> SetVarTitle(iyRT,"y");
     container -> SetVarTitle(imultRT,"multiplicity");
     container -> SetVarTitle(iRT,"rt");
     container -> SetVarTitle(idelphiRT,"deltaphileading");
-    
+
   }
 	container -> SetStepTitle(0, "MCLimAcc");
 	container -> SetStepTitle(1, "MC");
@@ -681,11 +681,11 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	//return container;
 
 	//CREATE THE  CUTS -----------------------------------------------
-	
+
 	// Gen-Level kinematic cuts
 	AliCFTrackKineCuts *mcKineCuts = new AliCFTrackKineCuts("mcKineCuts","MC-level kinematic cuts");
-	
-	//Particle-Level cuts:  
+
+	//Particle-Level cuts:
 	AliCFParticleGenCuts* mcGenCuts = new AliCFParticleGenCuts("mcGenCuts","MC particle generation cuts");
 	Bool_t useAbsolute = kTRUE;
 	if (isSign != 2){
@@ -693,7 +693,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	}
 	mcGenCuts->SetRequirePdgCode(pdgCode, useAbsolute);  // kTRUE set in order to include D0_bar
 	mcGenCuts->SetAODMC(1); //special flag for reading MC in AOD tree (important)
-	
+
 	// Acceptance cuts:
 	AliCFAcceptanceCuts* accCuts = new AliCFAcceptanceCuts("accCuts", "Acceptance cuts");
 	AliCFTrackKineCuts *kineAccCuts = new AliCFTrackKineCuts("kineAccCuts","Kine-Acceptance cuts");
@@ -702,26 +702,26 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 
 	// Rec-Level kinematic cuts
 	AliCFTrackKineCuts *recKineCuts = new AliCFTrackKineCuts("recKineCuts","rec-level kine cuts");
-	
+
 	AliCFTrackQualityCuts *recQualityCuts = new AliCFTrackQualityCuts("recQualityCuts","rec-level quality cuts");
-	
+
 	AliCFTrackIsPrimaryCuts *recIsPrimaryCuts = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts","rec-level isPrimary cuts");
-	
+
 	printf("CREATE MC KINE CUTS\n");
 	TObjArray* mcList = new TObjArray(0) ;
 	mcList->AddLast(mcKineCuts);
 	mcList->AddLast(mcGenCuts);
-	
+
 	printf("CREATE ACCEPTANCE CUTS\n");
 	TObjArray* accList = new TObjArray(0) ;
 	accList->AddLast(kineAccCuts);
 
 	printf("CREATE RECONSTRUCTION CUTS\n");
-	TObjArray* recList = new TObjArray(0) ;   // not used!! 
+	TObjArray* recList = new TObjArray(0) ;   // not used!!
 	recList->AddLast(recKineCuts);
 	recList->AddLast(recQualityCuts);
 	recList->AddLast(recIsPrimaryCuts);
-	
+
 	TObjArray* emptyList = new TObjArray(0);
 
 	//CREATE THE INTERFACE TO CORRECTION FRAMEWORK USED IN THE TASK
@@ -730,22 +730,22 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	man->SetParticleContainer(container);
 	man->SetParticleCutsList(0 , mcList); // MC, Limited Acceptance
 	man->SetParticleCutsList(1 , mcList); // MC
-	man->SetParticleCutsList(2 , accList); // Acceptance 
-	man->SetParticleCutsList(3 , emptyList); // Vertex 
-	man->SetParticleCutsList(4 , emptyList); // Refit 
+	man->SetParticleCutsList(2 , accList); // Acceptance
+	man->SetParticleCutsList(3 , emptyList); // Vertex
+	man->SetParticleCutsList(4 , emptyList); // Refit
 	man->SetParticleCutsList(5 , emptyList); // AOD
 	man->SetParticleCutsList(6 , emptyList); // AOD in Acceptance
 	man->SetParticleCutsList(7 , emptyList); // AOD with required n. of ITS clusters
 	man->SetParticleCutsList(8 , emptyList); // AOD Reco (PPR cuts implemented in Task)
 	man->SetParticleCutsList(9 , emptyList); // AOD Reco PID
-	
+
 	// Get the pointer to the existing analysis manager via the static access method.
 	//==============================================================================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
 	  ::Error("AddTaskCompareHF", "No analysis manager to connect to.");
 	  return NULL;
-	}   
+	}
 	//CREATE THE TASK
 	printf("CREATE TASK\n");
 
@@ -767,7 +767,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	task->SetIsPPData(isPPData);
 
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
-	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);	
+	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);
 
 	TF1* funcWeight = 0x0;
 	if (task->GetUseWeight()) {
@@ -801,14 +801,14 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	  if(hNchMeasured) task->SetMeasuredNchHisto(hNchMeasured);
 	  if(useNtrkWeight) task->SetUseNchTrackletsWeight();
 	}
-	
-	if(isPPbData) { 
-	  task->SetIsPPbData(kTRUE); 
+
+	if(isPPbData) {
+	  task->SetIsPPbData(kTRUE);
 	}
 	if(isPP13TeVData) {
-	  task->SetIsPP13TeVData(kTRUE);	
+	  task->SetIsPP13TeVData(kTRUE);
 	}
-   
+
 	if(estimatorFilename.EqualTo("") ) {
 	  printf("Estimator file not provided, multiplicity corrected histograms will not be filled\n");
 	  task->SetUseZvtxCorrectedNtrkEstimator(kFALSE);
@@ -816,7 +816,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 
 	  TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
 	  if(!fileEstimator)  {
-	    Printf("FATAL: File with multiplicity estimator not found"); 
+	    Printf("FATAL: File with multiplicity estimator not found");
 	    return NULL;
 	  }
 
@@ -866,9 +866,9 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	  }
 
 	}
-	
 
-	Printf("***************** CONTAINER SETTINGS *****************");	
+
+	Printf("***************** CONTAINER SETTINGS *****************");
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
 	Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());
 	Printf("Dselection = %d",(Int_t)task->GetDselection());
@@ -893,8 +893,8 @@ const Float_t multmax_100_400 = 400; // Only for pPb
         Bool_t AcceptanceUnf = kTRUE; // unfold at acceptance level, otherwise PPR
 
         Int_t thnDim[4];
-        
-        //first half  : reconstructed 
+
+        //first half  : reconstructed
         //second half : MC
 
         thnDim[0] = iBin[0];
@@ -931,31 +931,33 @@ const Float_t multmax_100_400 = 400; // Only for pPb
         correlation->SetBinEdges(3,binEdges[1]);
 
         correlation->Sumw2();
-  
+
         // correlation matrix ready
         //------------------------------------------------//
 
         task->SetCorrelationMatrix(correlation); // correlation matrix for unfolding
-	
+
 	// Create and connect containers for input/output
-	
+
 	// ------ input data ------
 	AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
-	
+
 	// ----- output data -----
-	
+
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
 	TString output1name="", output2name="", output3name="",output4name="", output5name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
 	output4name= "Cuts";
 	output5name= "coutProf";
+	output6name= "checkRT";
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskD0toKpi";
 		output1name="CFHFchist0";
 		output3name+="_cOnly";
 		output4name+="_cOnly";
 		output5name+="_cOnly";
+		output6name+="_cOnly";
 	}
 	else  if(isKeepDfromBOnly){
 		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromBOnly";
@@ -963,6 +965,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 		output3name+="_bOnly";
 		output4name+="_bOnly";
 		output5name+="_bOnly";
+		output6name+="_bOnly";
 	}
 	else{
 		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromB";
@@ -970,12 +973,14 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 		output3name+="_all";
 		output4name+="_all";
 		output5name+="_all";
+		output6name+="_all";
 	}
 
 	outputfile += suffix;
 	output1name += suffix;
 	output4name += suffix;
 	output5name += suffix;
+	output6name += suffix;
 
 	//now comes user's output objects :
 	// output TH1I for event counting
@@ -989,17 +994,19 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	// estimators list
 	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(output5name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
+	AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(output6name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+
 
 	mgr->AddTask(task);
-	
+
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	mgr->ConnectOutput(task,1,coutput1);
 	mgr->ConnectOutput(task,2,coutput2);
         mgr->ConnectOutput(task,3,coutput3);
 	mgr->ConnectOutput(task,4,coutput4);
 	mgr->ConnectOutput(task,5,coutput5);
+	mgr->ConnectOutput(task,6,coutput6);
 
 	return task;
-	
-}
 
+}
