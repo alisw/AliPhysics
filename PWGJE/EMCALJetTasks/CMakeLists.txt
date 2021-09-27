@@ -273,6 +273,7 @@ if(FASTJET_FOUND)
         AliEmcalJetUtilitySoftDrop.cxx
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
+      AliHelperClassFastSimulation.cxx
         AliJetEmbeddingFromAODTask.cxx
 	    AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
