@@ -19,6 +19,7 @@
 #include <THnSparse.h>
 #include <TArrayD.h>
 #include <TFile.h>
+#include <TRandom.h>
 #include "AliRDHFCuts.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
@@ -101,6 +102,8 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    TH1F *fPTDistributionInTransverse; //!<! hist for Pt distribution of charged particles in Transverse region
    TH1F *fPTDistributionInAway; //!<! hist for Pt distribution of charged particles in Away region
    TH1F *fPTDistributionGlobal; //!<! hist for Pt distribution of charged particles in all regions
+   TH2F *fResponseMatrix; //!<! hist for response matrix in Transverse region
+   TH1F *fNTracklets; //!<! hist for number of particle tracks in Transverse region
    
    AliNormalizationCounter *fCounter;  //!<! Counter for normalisation
    Bool_t fReadMC;         /// flag for reading MC

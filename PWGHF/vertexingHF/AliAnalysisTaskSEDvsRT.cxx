@@ -32,6 +32,7 @@
 #include <TH3F.h>
 #include <THnSparse.h>
 #include <TProfile.h>
+#include <TRandom.h>
 #include "AliAnalysisManager.h"
 #include "AliRDHFCuts.h"
 #include "AliRDHFCutsDplustoKpipi.h"
@@ -80,6 +81,8 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT():
    fPTDistributionInTransverse(0),
    fPTDistributionInAway(0),
    fPTDistributionGlobal(0),
+   fResponseMatrix(0),
+   fNTracklets(0),
    fCounter(0),
    fReadMC(kFALSE),
    fMCOption(0),
@@ -127,6 +130,8 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT(const char *name, Int_t pdgSpecie
    fPTDistributionInTransverse(0),
    fPTDistributionInAway(0),
    fPTDistributionGlobal(0),
+   fResponseMatrix(0),
+   fNTracklets(0),
    fCounter(0),
    fReadMC(kFALSE),
    fMCOption(0),
@@ -370,10 +375,9 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
 
 
     fTrackFilter[iTc] = new AliAnalysisFilter(Form("fTrackFilter%d",iTc));
-    if (iTc != 0) esdTrackCutsRun2[iTc] = new AliESDtrackCuts(Form("esdTrackCutsRun2%d",iTc));
+    esdTrackCutsRun2[iTc] = new AliESDtrackCuts(Form("esdTrackCutsRun2%d",iTc));
 
     // TPC
-    if (iTc != 0) { //variations using ITS-TPC
     esdTrackCutsRun2[iTc]->SetCutGeoNcrNcl(geowidth,geolenght,1.5,0.85,0.7);
     esdTrackCutsRun2[iTc]->SetRequireTPCRefit(kTRUE);
     esdTrackCutsRun2[iTc]->SetMinRatioCrossedRowsOverFindableClustersTPC(minratiocrossrowstpcover);
@@ -401,11 +405,6 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
     	esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("7.5*(0.0026+0.0050/pt^1.01)");
     else
       esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); // (7*(------))
-    }
-    else { //Default: TPC-only track filter
-      esdTrackCutsRun2[iTc] = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    }
-
 
 
     fTrackFilter[iTc]->AddCuts(esdTrackCutsRun2[iTc]);
@@ -432,6 +431,8 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    fPTDistributionInTransverse = new TH1F("fPTDistributionInTransverse","pT distribution of all charged particles in Transverse region",250,0,50);
    fPTDistributionInAway = new TH1F("fPTDistributionInAway","pT distribution of all charged particles in Away region",250,0,50);
    fPTDistributionGlobal = new TH1F("fPTDistributionGlobal","pT distribution of all charged particles in all regions",250,0,50);
+   fResponseMatrix = new TH2F("fResponseMatrix","Response matrix in Transverse region",200,0,200,200,0,200);
+   fNTracklets = new TH1F("fNTracklets","Number of particle tracklets in Transverse region");
 
    fListQAhists->Add(fGlobalRT);
    fListQAhists->Add(fHistPtLead);
@@ -446,6 +447,8 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    fListQAhists->Add(fPTDistributionInTransverse);
    fListQAhists->Add(fPTDistributionInAway);
    fListQAhists->Add(fPTDistributionGlobal);
+   fListQAhists->Add(fResponseMatrix);
+   fListQAhists->Add(fNTracklets);
 
 
    PostData(1,fOutput);
@@ -874,8 +877,18 @@ Double_t AliAnalysisTaskSEDvsRT::CalculateRTVal(AliAODEvent* esdEvent)
          TList *listMin = (TList*)regionsMinMaxReco->At(1);
 
          trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / fAveMultiInTrans; //sum of transverse regions / average
-	 fNChargedInTrans->Fill(listMax->GetEntries() + listMin->GetEntries());
+	       fNChargedInTrans->Fill(listMax->GetEntries() + listMin->GetEntries());
          fHistPtLead->Fill(LeadingPt);
+         Double_t Randomizer = gRandom->Uniform();
+         if(Randomizer<0.5)
+         {
+            fResponseMatrix->Fill(listMax->GetEntries() + listMin->GetEntries(),nESDTracks);
+         }
+         else
+         {
+            fNTracklets->Fill(nESDTracks);
+         }
+
       }
 
    }
