@@ -273,7 +273,6 @@ if(FASTJET_FOUND)
         AliEmcalJetUtilitySoftDrop.cxx
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
-      AliHelperClassFastSimulation.cxx
         AliJetEmbeddingFromAODTask.cxx
 	    AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
@@ -296,6 +295,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
         UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
+        UserTasks/AliHelperClassFastSimulation.cxx
         UserTasks/AliAnalysisTaskJetExtractor.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
