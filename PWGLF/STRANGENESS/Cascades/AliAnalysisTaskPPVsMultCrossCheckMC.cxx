@@ -839,13 +839,16 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     Int_t nSPDtrackl0815 = -1;
     if ( !lPureMonteCarlo )
     {
-     fV0MAmplitude = GetV0MAmplitude( lESDevent );
-     if(fkMultSelection){
-       AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
-       nSPDtrackl08 = MultSelection->GetEstimator("SPDTracklets08")->GetValue(); // raw value not corrected for z-vtx
-       nSPDtrackl0815 = MultSelection->GetEstimator("SPDTracklets08to15")->GetValue(); // raw value not corrected for z-vtx
-     }
-     
+      fV0MAmplitude = GetV0MAmplitude( lESDevent );
+      if(fkMultSelection){
+        AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
+        if( MultSelection ){
+          nSPDtrackl08 = MultSelection->GetEstimator("SPDTracklets08")->GetValue(); // raw value not corrected for z-vtx
+          nSPDtrackl0815 = MultSelection->GetEstimator("SPDTracklets08to15")->GetValue(); // raw value not corrected for z-vtx
+        } else {
+          AliError("Missing AliMultSelection object");
+        }
+      }
     }
     //------------------------------------------------
     // Get All Conditionals

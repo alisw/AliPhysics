@@ -176,6 +176,15 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
   // Initialize all arrays:
   this->InitializeArrays();
 
+  // Default configuration:
+  this->DefaultConfiguration();
+
+  // Default binning:
+  this->DefaultBinning();
+ 
+  // Default cuts (has to be called after DefaultBinning(), since some default cuts are defined through default binning, to ease bookeeping):
+  this->DefaultCuts();
+
   // Define input and output slots here
   // Input slot #0 works with an AliFlowEventSimple
   //DefineInput(0, AliFlowEventSimple::Class());  
@@ -327,6 +336,15 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
 
   // Initialize all arrays:
   this->InitializeArrays();
+
+  // Default configuration:
+  this->DefaultConfiguration();
+
+  // Default binning:
+  this->DefaultBinning();
+ 
+  // Default cuts (has to be called after DefaultBinning(), since some default cuts are defined through default binning, to ease bookeeping):
+  this->DefaultCuts();
 
   AliDebug(2,"AliAnalysisTaskMuPa::AliAnalysisTaskMuPa()");
 
@@ -795,8 +813,8 @@ void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
  fDataTakingPeriod = TString("not set"); // can be customized with e.g. task->SetDataTakingPeriod("LHC10h");
  fAODNumber = TString("not set"); // can be customized with e.g. task->SetAODNumber("AOD160"); 
  fRunNumber = TString("not set"); // can be customized with e.g. task->SetRunNumber("000123456"); 
- fCentralityEstimator = TString("V0M"); // by default, we use V0M as centrality estimator. Can be customized with task->SetCentralityEstimator("V0M") 
- fPrimaryDefinitionInMonteCarlo = TString("IsPhysicalPrimary"); // supported: "IsPhysicalPrimary" (default), "IsPrimary", ... Set via task->SetPrimaryDefinitionInMonteCarlo("...")
+ fCentralityEstimator = TString("not set"); // by default, we use V0M as centrality estimator. Can be customized with task->SetCentralityEstimator("V0M") 
+ fPrimaryDefinitionInMonteCarlo = TString("not set"); // supported: "IsPhysicalPrimary" (default), "IsPrimary", ... Set via task->SetPrimaryDefinitionInMonteCarlo("...")
  fTrigger = TString("not set"); 
 
 } // void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
@@ -1037,9 +1055,6 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Multiplicities:
- fMultiplicityBins[0] = 3000.;
- fMultiplicityBins[1] = 0.;
- fMultiplicityBins[2] = 3000.;
  fSelectedTracksCuts[0] = 0;
  fSelectedTracksCuts[1] = 1e6;
  for(Int_t m=0;m<gCentralMultiplicity;m++)
@@ -1051,9 +1066,6 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  } // for(Int_t m=0;m<gCentralMultiplicity;m++)
 
  // b) Centrality:
- fCentralityBins[0] = 100.; 
- fCentralityBins[1] = 0.;
- fCentralityBins[2] = 100.;
  for(Int_t ba=0;ba<2;ba++) // before/after cuts
  { 
   fCentralityHist[ba] = NULL;
@@ -1070,9 +1082,6 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  } // for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++) // first centrality estimator
  
  // c) Vertex:
- fVertexBins[0] = 20000.;
- fVertexBins[1] = -50.;
- fVertexBins[2] = 50.;
  for(Int_t ba=0;ba<2;ba++)
  {
   for(Int_t rs=0;rs<2;rs++)
@@ -1093,9 +1102,6 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  fUseVertexCuts[Y] = kFALSE;
  fUseVertexCuts[Z] = kFALSE;
 
- fNContributorsBins[0] = 3000.;
- fNContributorsBins[1] = 0.;
- fNContributorsBins[2] = 3000.;
  for(Int_t ba=0;ba<2;ba++)
  {
   for(Int_t rs=0;rs<2;rs++)
@@ -1114,14 +1120,6 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
    fEventHistograms[ba][oeh] = NULL;
   }
  } // for(Int_t ba=0;ba<2;ba++)
-
- // defaults bins:
- fEventBins[MagneticField][0] = 20;
- fEventBins[MagneticField][1] = -20.;
- fEventBins[MagneticField][2] = 10.;
- fEventBins[PrimaryVertex][0] = 1;
- fEventBins[PrimaryVertex][1] = 0.;
- fEventBins[PrimaryVertex][2] = 1.;
 
  // default cuts:
  fEventCuts[MagneticField][0] = -5.5;
@@ -1164,39 +1162,6 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t ba=0;ba<2;ba++)
 
- // default phi binning:
- fKinematicsBins[PHI][0] = 360;
- fKinematicsBins[PHI][1] = 0.;
- fKinematicsBins[PHI][2] = TMath::TwoPi();
-
- // default pt binning:
- fKinematicsBins[PT][0] = 1000;
- fKinematicsBins[PT][1] = 0.;
- fKinematicsBins[PT][2] = 100.;
-
- // default eta binning:
- fKinematicsBins[ETA][0] = 200;
- fKinematicsBins[ETA][1] = -2.;
- fKinematicsBins[ETA][2] = 2.;
-
- // default e binning:
- fKinematicsBins[E][0] = 1000;
- fKinematicsBins[E][1] = 0.;
- fKinematicsBins[E][2] = 100.;
-
- // default charge binning:
- fKinematicsBins[CHARGE][0] = 5;
- fKinematicsBins[CHARGE][1] = -2.;
- fKinematicsBins[CHARGE][2] = 3.;
-
- // non-equal bins:
- for(Int_t kv=0;kv<gKinematicVariables;kv++)
- {
-  fNonEqualKinematicsnBins[kv] = 0;
-  fNonEqualKinematicsRanges[kv] = TArrayD(0,NULL); // yes!
-  fUseNonEqualKinematicsBins[kv] = kFALSE;
- }
-
  // b) DCA:
  for(Int_t ba=0;ba<2;ba++)
  {
@@ -1209,16 +1174,6 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t ba=0;ba<2;ba++)
 
- // default DCA xy binning:
- fDCABins[0][0] = 1000;
- fDCABins[0][1] = -20.;
- fDCABins[0][2] = 20.;
-
- // default DCA z binning:
- fDCABins[1][0] = 1000;
- fDCABins[1][1] = -20.;
- fDCABins[1][2] = 20.;
-
  // c) Remaining particle histograms:
  for(Int_t ba=0;ba<2;ba++)
  {
@@ -1230,102 +1185,6 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
    } // for(Int_t t=0;t<gParticleHistograms;t++)
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t ba=0;ba<2;ba++)
-
- // default binning, see enum 'eParticle':
- fParticleBins[TPCNcls][0] = 200;
- fParticleBins[TPCNcls][1] = 0.;
- fParticleBins[TPCNcls][2] = 200.;
-
- fParticleBins[TPCnclsS][0] = 200;
- fParticleBins[TPCnclsS][1] = 0.;
- fParticleBins[TPCnclsS][2] = 200.;
-
- fParticleBins[TPCnclsFractionShared][0] = 2000;
- fParticleBins[TPCnclsFractionShared][1] = 0.;
- fParticleBins[TPCnclsFractionShared][2] = 2.;
-
- fParticleBins[TPCNCrossedRows][0] = 200;
- fParticleBins[TPCNCrossedRows][1] = 0.;
- fParticleBins[TPCNCrossedRows][2] = 200.;
-
- fParticleBins[TPCChi2perNDF][0] = 1000;
- fParticleBins[TPCChi2perNDF][1] = 0.;
- fParticleBins[TPCChi2perNDF][2] = 10.;
-
- fParticleBins[TPCFoundFraction][0] = 100;
- fParticleBins[TPCFoundFraction][1] = 0.;
- fParticleBins[TPCFoundFraction][2] = 2.;
-
- fParticleBins[Chi2TPCConstrainedVsGlobal][0] = 400;
- fParticleBins[Chi2TPCConstrainedVsGlobal][1] = -2.;
- fParticleBins[Chi2TPCConstrainedVsGlobal][2] = 2.;
-
- fParticleBins[ITSNcls][0] = 100;
- fParticleBins[ITSNcls][1] = 0.;
- fParticleBins[ITSNcls][2] = 10.;
-
- fParticleBins[ITSChi2perNDF][0] = 100;
- fParticleBins[ITSChi2perNDF][1] = 0.;
- fParticleBins[ITSChi2perNDF][2] = 1.;
-
- fParticleBins[TPCNclsF][0] = 100;
- fParticleBins[TPCNclsF][1] = 0.;
- fParticleBins[TPCNclsF][2] = 1.;
-
- fParticleBins[HasPointOnITSLayer][0] = 6;
- fParticleBins[HasPointOnITSLayer][1] = 0.;
- fParticleBins[HasPointOnITSLayer][2] = 6.;
-
- fParticleBins[IsGlobalConstrained][0] = 2;
- fParticleBins[IsGlobalConstrained][1] = 0.;
- fParticleBins[IsGlobalConstrained][2] = 2.;
-
- // d) The default particle cuts: 
- //  These cuts are used by default, if you want other cuts, indicate that via dedicated setters.
- //  d1) Kinematics:
- //    default phi cuts:
- fKinematicsCuts[PHI][0] = fKinematicsBins[PHI][1];
- fKinematicsCuts[PHI][1] = fKinematicsBins[PHI][2];
- fUseKinematicsCuts[PHI] = kFALSE;
-
- //    default pt cuts:
- fKinematicsCuts[PT][0] = fKinematicsBins[PT][1];
- fKinematicsCuts[PT][1] = fKinematicsBins[PT][2];
- fUseKinematicsCuts[PT] = kFALSE;
-
- //    default eta cuts:
- fKinematicsCuts[ETA][0] = fKinematicsBins[ETA][1];
- fKinematicsCuts[ETA][1] = fKinematicsBins[ETA][2];
- fUseKinematicsCuts[ETA] = kFALSE;
-
- //    default e cuts:
- fKinematicsCuts[E][0] = fKinematicsBins[E][1];
- fKinematicsCuts[E][1] = fKinematicsBins[E][2];
- fUseKinematicsCuts[E] = kFALSE;
-
- //    default charge cuts:
- fKinematicsCuts[CHARGE][0] = fKinematicsBins[CHARGE][1];
- fKinematicsCuts[CHARGE][1] = fKinematicsBins[CHARGE][2];
- fUseKinematicsCuts[CHARGE] = kFALSE;
-
- //  d2) DCA:
- //    default DCA xy cuts:
- fDCACuts[0][0] = fDCABins[0][1];
- fDCACuts[0][1] = fDCABins[0][2];
- //    default DCA z cuts:
- fDCACuts[1][0] = fDCABins[1][1];
- fDCACuts[1][1] = fDCABins[1][2];
- //    corresponding booleans:
- fUseDCACuts[0] = kFALSE;
- fUseDCACuts[1] = kFALSE;
-
- //  d3) Remaining particle cuts:
- for(Int_t t=0;t<gParticleHistograms;t++)
- {
-  fParticleCuts[t][0] = fParticleBins[t][1];
-  fParticleCuts[t][1] = fParticleBins[t][2];
-  fUseParticleCuts[t] = kFALSE;
- }
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
 
@@ -1885,32 +1744,35 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
- fControlEventHistogramsPro = new TProfile("fControlEventHistogramsPro","flags for control event histograms",22,0.,22.);
+ fControlEventHistogramsPro = new TProfile("fControlEventHistogramsPro","flags for control event histograms",25,0.,25.);
  fControlEventHistogramsPro->SetStats(kFALSE);
  fControlEventHistogramsPro->SetLineColor(COLOR);
  fControlEventHistogramsPro->SetFillColor(FILLCOLOR);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(1,Form("fCentralityEstimator = %s",fCentralityEstimator.Data()));
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(2,"minSelected"); fControlEventHistogramsPro->Fill(1.5,fSelectedTracksCuts[0]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(3,"maxSelected"); fControlEventHistogramsPro->Fill(2.5,fSelectedTracksCuts[1]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(4,"minCent"); fControlEventHistogramsPro->Fill(3.5,fCentralityCuts[0]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(5,"maxCent"); fControlEventHistogramsPro->Fill(4.5,fCentralityCuts[1]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(6,"minNContr"); fControlEventHistogramsPro->Fill(5.5,fNContributorsCuts[0]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(7,"maxNContr"); fControlEventHistogramsPro->Fill(6.5,fNContributorsCuts[1]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(8,"fMinVertexDistance"); fControlEventHistogramsPro->Fill(7.5,fMinVertexDistance);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(9,"minVtxX"); fControlEventHistogramsPro->Fill(8.5,fVertexCuts[X][0]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(10,"maxVtxX"); fControlEventHistogramsPro->Fill(9.5,fVertexCuts[X][1]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(11,"minVtxY"); fControlEventHistogramsPro->Fill(10.5,fVertexCuts[Y][0]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(12,"maxVtxY"); fControlEventHistogramsPro->Fill(11.5,fVertexCuts[Y][1]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(13,"minVtxZ"); fControlEventHistogramsPro->Fill(12.5,fVertexCuts[Z][0]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(14,"maxVtxZ"); fControlEventHistogramsPro->Fill(13.5,fVertexCuts[Z][1]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(15,"centCorrCut[0][1]"); fControlEventHistogramsPro->Fill(14.5,fCentralityCorrelationsCuts[0][1]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(16,"centCorrCut[0][2]"); fControlEventHistogramsPro->Fill(15.5,fCentralityCorrelationsCuts[0][2]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(17,"centCorrCut[0][3]"); fControlEventHistogramsPro->Fill(16.5,fCentralityCorrelationsCuts[0][3]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(18,"centCorrCut[1][2]"); fControlEventHistogramsPro->Fill(17.5,fCentralityCorrelationsCuts[1][2]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(19,"centCorrCut[1][3]"); fControlEventHistogramsPro->Fill(18.5,fCentralityCorrelationsCuts[1][3]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(20,"centCorrCut[2][3]"); fControlEventHistogramsPro->Fill(19.5,fCentralityCorrelationsCuts[2][3]);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(21,"fCentralityCorrelationCutVersion"); fControlEventHistogramsPro->Fill(20.5,fCentralityCorrelationCutVersion);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(22,"fUseGenericCorrelationsCuts[0]"); fControlEventHistogramsPro->Fill(21.5,fUseGenericCorrelationsCuts[0]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(1,"TBI 1");
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(2,"TBI 2");
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(3,"TBI 3");
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(4,Form("fCentralityEstimator = %s",fCentralityEstimator.Data()));
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(5,"minSelected"); fControlEventHistogramsPro->Fill(4.5,fSelectedTracksCuts[0]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(6,"maxSelected"); fControlEventHistogramsPro->Fill(5.5,fSelectedTracksCuts[1]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(7,"minCent"); fControlEventHistogramsPro->Fill(6.5,fCentralityCuts[0]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(8,"maxCent"); fControlEventHistogramsPro->Fill(7.5,fCentralityCuts[1]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(9,"minNContr"); fControlEventHistogramsPro->Fill(8.5,fNContributorsCuts[0]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(10,"maxNContr"); fControlEventHistogramsPro->Fill(9.5,fNContributorsCuts[1]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(11,"fMinVertexDistance"); fControlEventHistogramsPro->Fill(10.5,fMinVertexDistance);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(12,"minVtxX"); fControlEventHistogramsPro->Fill(11.5,fVertexCuts[X][0]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(13,"maxVtxX"); fControlEventHistogramsPro->Fill(12.5,fVertexCuts[X][1]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(14,"minVtxY"); fControlEventHistogramsPro->Fill(13.5,fVertexCuts[Y][0]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(15,"maxVtxY"); fControlEventHistogramsPro->Fill(14.5,fVertexCuts[Y][1]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(16,"minVtxZ"); fControlEventHistogramsPro->Fill(15.5,fVertexCuts[Z][0]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(17,"maxVtxZ"); fControlEventHistogramsPro->Fill(16.5,fVertexCuts[Z][1]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(18,"centCorrCut[0][1]"); fControlEventHistogramsPro->Fill(17.5,fCentralityCorrelationsCuts[0][1]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(19,"centCorrCut[0][2]"); fControlEventHistogramsPro->Fill(18.5,fCentralityCorrelationsCuts[0][2]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(20,"centCorrCut[0][3]"); fControlEventHistogramsPro->Fill(19.5,fCentralityCorrelationsCuts[0][3]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(21,"centCorrCut[1][2]"); fControlEventHistogramsPro->Fill(20.5,fCentralityCorrelationsCuts[1][2]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(22,"centCorrCut[1][3]"); fControlEventHistogramsPro->Fill(21.5,fCentralityCorrelationsCuts[1][3]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(23,"centCorrCut[2][3]"); fControlEventHistogramsPro->Fill(22.5,fCentralityCorrelationsCuts[2][3]);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(24,"fCentralityCorrelationCutVersion"); fControlEventHistogramsPro->Fill(23.5,fCentralityCorrelationCutVersion);
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(25,"fUseGenericCorrelationsCuts[0]"); fControlEventHistogramsPro->Fill(24.5,fUseGenericCorrelationsCuts[0]);
  fControlEventHistogramsList->Add(fControlEventHistogramsPro);
 
  // b) Common local labels:
@@ -4412,14 +4274,26 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
 
  cout<<"fSelectedTracks = "<<fSelectedTracks<<endl;
 
+ Int_t nParticles = fSelectedTracks;
+ if(fUseFixedNumberOfRandomlySelectedParticles)
+ {
+  nParticles = 0;
+  for(Int_t i=0;i<ftaNestedLoops[0]->GetSize();i++)
+  {
+   if(TMath::Abs(ftaNestedLoops[0]->GetAt(i)) > 0. && TMath::Abs(ftaNestedLoops[1]->GetAt(i)) > 0.){nParticles++;}
+  }
+ }
+
+ cout<<"nParticles = "<<nParticles<<endl;
+
  // 2p:
- if(fSelectedTracks<2){return;}
+ if(nParticles<2){return;}
  cout<<"      CalculateNestedLoops(void), 2-p correlations .... "<<endl;
- for(int i1=0; i1<fSelectedTracks; i1++)
+ for(int i1=0; i1<nParticles; i1++)
  {
   Double_t dPhi1 = ftaNestedLoops[0]->GetAt(i1);
   Double_t dW1 = ftaNestedLoops[1]->GetAt(i1);
-  for(int i2=0; i2<fSelectedTracks; i2++)
+  for(int i2=0; i2<nParticles; i2++)
   {
    if(i2==i1){continue;}
    Double_t dPhi2 = ftaNestedLoops[0]->GetAt(i2);
@@ -4437,23 +4311,23 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
  } // for(int i1=0; i1<nTracks; ++i1)
 
  // 4p:
- if(fSelectedTracks<4){return;}
+ if(nParticles<4){return;}
  cout<<"      CalculateNestedLoops(void), 4-p correlations .... "<<endl;
- for(int i1=0; i1<fSelectedTracks; i1++)
+ for(int i1=0; i1<nParticles; i1++)
  {
   Double_t dPhi1 = ftaNestedLoops[0]->GetAt(i1);
   Double_t dW1 = ftaNestedLoops[1]->GetAt(i1);
-  for(int i2=0; i2<fSelectedTracks; i2++)
+  for(int i2=0; i2<nParticles; i2++)
   {
    if(i2==i1){continue;}
    Double_t dPhi2 = ftaNestedLoops[0]->GetAt(i2);
    Double_t dW2 = ftaNestedLoops[1]->GetAt(i2);
-   for(int i3=0; i3<fSelectedTracks; i3++)
+   for(int i3=0; i3<nParticles; i3++)
    {
     if(i3==i1||i3==i2){continue;}
     Double_t dPhi3 = ftaNestedLoops[0]->GetAt(i3);
     Double_t dW3 = ftaNestedLoops[1]->GetAt(i3);
-    for(int i4=0; i4<fSelectedTracks; i4++)
+    for(int i4=0; i4<nParticles; i4++)
     {
      if(i4==i1||i4==i2||i4==i3){continue;}
      Double_t dPhi4 = ftaNestedLoops[0]->GetAt(i4);
@@ -4467,39 +4341,39 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
       // fill cos, 4p, all harmonics, vs. centrality: 
       if(fNestedLoopsPro[1][h][1]){fNestedLoopsPro[1][h][2]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1+dPhi2-dPhi3-dPhi4)),dW1*dW2*dW3*dW4);}
      } // for(int h=0; h<6; h++)
-    } // for(int i4=0; i4<fSelectedTracks; i4++)   
-   } // for(int i3=0; i3<fSelectedTracks; i3++)
+    } // for(int i4=0; i4<nParticles; i4++)   
+   } // for(int i3=0; i3<nParticles; i3++)
   } // for(int i2=0; i2<nTracks; ++i2)
  } // for(int i1=0; i1<nTracks; ++i1)
 
  // 6p:
- if(fSelectedTracks<6){return;}
+ if(nParticles<6){return;}
  cout<<"      CalculateNestedLoops(void), 6-p correlations .... "<<endl;
- for(int i1=0; i1<fSelectedTracks; i1++)
+ for(int i1=0; i1<nParticles; i1++)
  {
   Double_t dPhi1 = ftaNestedLoops[0]->GetAt(i1);
   Double_t dW1 = ftaNestedLoops[1]->GetAt(i1);
-  for(int i2=0; i2<fSelectedTracks; i2++)
+  for(int i2=0; i2<nParticles; i2++)
   {
    if(i2==i1){continue;}
    Double_t dPhi2 = ftaNestedLoops[0]->GetAt(i2);
    Double_t dW2 = ftaNestedLoops[1]->GetAt(i2);
-   for(int i3=0; i3<fSelectedTracks; i3++)
+   for(int i3=0; i3<nParticles; i3++)
    {
     if(i3==i1||i3==i2){continue;}
     Double_t dPhi3 = ftaNestedLoops[0]->GetAt(i3);
     Double_t dW3 = ftaNestedLoops[1]->GetAt(i3);
-    for(int i4=0; i4<fSelectedTracks; i4++)
+    for(int i4=0; i4<nParticles; i4++)
     {
      if(i4==i1||i4==i2||i4==i3){continue;}
      Double_t dPhi4 = ftaNestedLoops[0]->GetAt(i4);
      Double_t dW4 = ftaNestedLoops[1]->GetAt(i4);
-     for(int i5=0; i5<fSelectedTracks; i5++)
+     for(int i5=0; i5<nParticles; i5++)
      {
       if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
       Double_t dPhi5 = ftaNestedLoops[0]->GetAt(i5);
       Double_t dW5 = ftaNestedLoops[1]->GetAt(i5);
-      for(int i6=0; i6<fSelectedTracks; i6++)
+      for(int i6=0; i6<nParticles; i6++)
       {
        if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
        Double_t dPhi6 = ftaNestedLoops[0]->GetAt(i6);
@@ -4515,49 +4389,49 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
        } // for(int h=0; h<6; h++)
       } // if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
      } // if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
-    } // for(int i4=0; i4<fSelectedTracks; i4++)   
-   } // for(int i3=0; i3<fSelectedTracks; i3++)
+    } // for(int i4=0; i4<nParticles; i4++)   
+   } // for(int i3=0; i3<nParticles; i3++)
   } // for(int i2=0; i2<nTracks; ++i2)
  } // for(int i1=0; i1<nTracks; ++i1)
 
  // 8p:
- if(fSelectedTracks<8){return;}
+ if(nParticles<8){return;}
  cout<<"      CalculateNestedLoops(void), 8-p correlations .... "<<endl;
- for(int i1=0; i1<fSelectedTracks; i1++)
+ for(int i1=0; i1<nParticles; i1++)
  {
   Double_t dPhi1 = ftaNestedLoops[0]->GetAt(i1);
   Double_t dW1 = ftaNestedLoops[1]->GetAt(i1);
-  for(int i2=0; i2<fSelectedTracks; i2++)
+  for(int i2=0; i2<nParticles; i2++)
   {
    if(i2==i1){continue;}
    Double_t dPhi2 = ftaNestedLoops[0]->GetAt(i2);
    Double_t dW2 = ftaNestedLoops[1]->GetAt(i2);
-   for(int i3=0; i3<fSelectedTracks; i3++)
+   for(int i3=0; i3<nParticles; i3++)
    {
     if(i3==i1||i3==i2){continue;}
     Double_t dPhi3 = ftaNestedLoops[0]->GetAt(i3);
     Double_t dW3 = ftaNestedLoops[1]->GetAt(i3);
-    for(int i4=0; i4<fSelectedTracks; i4++)
+    for(int i4=0; i4<nParticles; i4++)
     {
      if(i4==i1||i4==i2||i4==i3){continue;}
      Double_t dPhi4 = ftaNestedLoops[0]->GetAt(i4);
      Double_t dW4 = ftaNestedLoops[1]->GetAt(i4);
-     for(int i5=0; i5<fSelectedTracks; i5++)
+     for(int i5=0; i5<nParticles; i5++)
      {
       if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
       Double_t dPhi5 = ftaNestedLoops[0]->GetAt(i5);
       Double_t dW5 = ftaNestedLoops[1]->GetAt(i5);
-      for(int i6=0; i6<fSelectedTracks; i6++)
+      for(int i6=0; i6<nParticles; i6++)
       {
        if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
        Double_t dPhi6 = ftaNestedLoops[0]->GetAt(i6);
        Double_t dW6 = ftaNestedLoops[1]->GetAt(i6);
-       for(int i7=0; i7<fSelectedTracks; i7++)
+       for(int i7=0; i7<nParticles; i7++)
        {
         if(i7==i1||i7==i2||i7==i3||i7==i4||i7==i5||i7==i6){continue;}
         Double_t dPhi7 = ftaNestedLoops[0]->GetAt(i7);
         Double_t dW7 = ftaNestedLoops[1]->GetAt(i7);
-        for(int i8=0; i8<fSelectedTracks; i8++)
+        for(int i8=0; i8<nParticles; i8++)
         {
          if(i8==i1||i8==i2||i8==i3||i8==i4||i8==i5||i8==i6||i8==i7){continue;}
          Double_t dPhi8 = ftaNestedLoops[0]->GetAt(i8);
@@ -4571,14 +4445,14 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
           // fill cos, 8p, all harmonics, vs. M: 
           if(fNestedLoopsPro[3][h][2]){fNestedLoopsPro[3][h][2]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3+dPhi4-dPhi5-dPhi6-dPhi7-dPhi8)),dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8);}
          } // for(int h=0; h<6; h++)
-        } // for(int i8=0; i8<fSelectedTracks; i8++)
-       } // for(int i7=0; i7<fSelectedTracks; i7++)
-      } // if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
-     } // if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
-    } // for(int i4=0; i4<fSelectedTracks; i4++)   
-   } // for(int i3=0; i3<fSelectedTracks; i3++)
-  } // for(int i2=0; i2<nTracks; ++i2)
- } // for(int i1=0; i1<nTracks; ++i1)
+        } // for(int i8=0; i8<nParticles; i8++)
+       } // for(int i7=0; i7<nParticles; i7++)
+      } // for(int i6=0; i6<nParticles; i6++) 
+     } // for(int i5=0; i5<nParticles; i6++) 
+    } // for(int i4=0; i4<nParticles; i4++)   
+   } // for(int i3=0; i3<nParticles; i3++)
+  } // for(int i2=0; i2<nParticles; ++i2)
+ } // for(int i1=0; i1<nParticles; ++i1)
 
 } // void AliAnalysisTaskMuPa::CalculateNestedLoops(void) 
 
@@ -4595,6 +4469,16 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
 
  if(!harmonics){cout<<__LINE__<<endl;exit(1);}
 
+ Int_t nParticles = fSelectedTracks;
+ if(fUseFixedNumberOfRandomlySelectedParticles)
+ {
+  nParticles = 0;
+  for(Int_t i=0;i<ftaNestedLoops[0]->GetSize();i++)
+  {
+   if(TMath::Abs(ftaNestedLoops[0]->GetAt(i)) > 0. && TMath::Abs(ftaNestedLoops[1]->GetAt(i)) > 0.){nParticles++;}
+  }
+ }
+
  // a) Determine the order of correlator;
  Int_t order = harmonics->GetSize();
  if(0==order||order>fMaxCorrelator){cout<<__LINE__<<endl;exit(1);}
@@ -4604,9 +4488,8 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
  //profile->Sumw2();
  Double_t value = 0.; // cos of current multiplet
  Double_t weight = 1.; // weight of current multiplet
- for(int i1=0; i1<fSelectedTracks; i1++)
+ for(int i1=0; i1<nParticles; i1++)
  {
-  //if(i1==fSelectedTracks-1){cout<<"done with loop #1"<<endl;}
   Double_t dPhi1 = ftaNestedLoops[0]->GetAt(i1);
   Double_t dW1 = ftaNestedLoops[1]->GetAt(i1);
   if(1==order)
@@ -4616,9 +4499,8 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
    profile->Fill(0.5,value,weight);
    continue;
   }
-  for(int i2=0; i2<fSelectedTracks; i2++)
+  for(int i2=0; i2<nParticles; i2++)
   {
-   //if(i2==fSelectedTracks-1){cout<<"done with loop #2"<<endl;}
    if(i2==i1){continue;}
    Double_t dPhi2 = ftaNestedLoops[0]->GetAt(i2);
    Double_t dW2 = ftaNestedLoops[1]->GetAt(i2);
@@ -4629,9 +4511,8 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
     profile->Fill(0.5,value,weight);
     continue;
    }
-   for(int i3=0; i3<fSelectedTracks; i3++)
+   for(int i3=0; i3<nParticles; i3++)
    {
-    //if(i3==fSelectedTracks-1){cout<<"done with loop #3"<<endl;}
     if(i3==i1||i3==i2){continue;}
     Double_t dPhi3 = ftaNestedLoops[0]->GetAt(i3);
     Double_t dW3 = ftaNestedLoops[1]->GetAt(i3);
@@ -4642,9 +4523,8 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
      profile->Fill(0.5,value,weight);
      continue;
     }
-    for(int i4=0; i4<fSelectedTracks; i4++)
+    for(int i4=0; i4<nParticles; i4++)
     {
-     //if(i4==fSelectedTracks-1){cout<<"done with loop #4"<<endl;}
      if(i4==i1||i4==i2||i4==i3){continue;}
      Double_t dPhi4 = ftaNestedLoops[0]->GetAt(i4);
      Double_t dW4 = ftaNestedLoops[1]->GetAt(i4);
@@ -4655,9 +4535,8 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
       profile->Fill(0.5,value,weight);
       continue;
      }
-     for(int i5=0; i5<fSelectedTracks; i5++)
+     for(int i5=0; i5<nParticles; i5++)
      {
-      //if(i5==fSelectedTracks-1){cout<<"done with loop #5"<<endl;}
       if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
       Double_t dPhi5 = ftaNestedLoops[0]->GetAt(i5);
       Double_t dW5 = ftaNestedLoops[1]->GetAt(i5);
@@ -4668,9 +4547,8 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
        profile->Fill(0.5,value,weight);
        continue;
       }
-      for(int i6=0; i6<fSelectedTracks; i6++)
+      for(int i6=0; i6<nParticles; i6++)
       {
-       //if(i6==fSelectedTracks-1){cout<<"done with loop #6"<<endl;}
        if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
        Double_t dPhi6 = ftaNestedLoops[0]->GetAt(i6);
        Double_t dW6 = ftaNestedLoops[1]->GetAt(i6);
@@ -4682,9 +4560,8 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
         profile->Fill(0.5,value,weight);
         continue;
        }
-       for(int i7=0; i7<fSelectedTracks; i7++)
+       for(int i7=0; i7<nParticles; i7++)
        {
-        //if(i7==fSelectedTracks-1){cout<<"done with loop #7"<<endl;}
         if(i7==i1||i7==i2||i7==i3||i7==i4||i7==i5||i7==i6){continue;}
         Double_t dPhi7 = ftaNestedLoops[0]->GetAt(i7);
         Double_t dW7 = ftaNestedLoops[1]->GetAt(i7);
@@ -4696,9 +4573,8 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
          profile->Fill(0.5,value,weight);
          continue;
         }
-        for(int i8=0; i8<fSelectedTracks; i8++)
+        for(int i8=0; i8<nParticles; i8++)
         {
-         //if(i8==fSelectedTracks-1){cout<<"done with loop #8"<<endl;}
          if(i8==i1||i8==i2||i8==i3||i8==i4||i8==i5||i8==i6||i8==i7){continue;}
          Double_t dPhi8 = ftaNestedLoops[0]->GetAt(i8);
          Double_t dW8 = ftaNestedLoops[1]->GetAt(i8);
@@ -4710,9 +4586,8 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
           profile->Fill(0.5,value,weight);
           continue;
          }
-         for(int i9=0; i9<fSelectedTracks; i9++)
+         for(int i9=0; i9<nParticles; i9++)
          {
-          //if(i9==fSelectedTracks-1){cout<<"done with loop #9"<<endl;}
           if(i9==i1||i9==i2||i9==i3||i9==i4||i9==i5||i9==i6||i9==i7||i9==i8){continue;}
           Double_t dPhi9 = ftaNestedLoops[0]->GetAt(i9);
           Double_t dW9 = ftaNestedLoops[1]->GetAt(i9);
@@ -4724,9 +4599,8 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
            profile->Fill(0.5,value,weight);
            continue;
           }
-          for(int i10=0; i10<fSelectedTracks; i10++)
+          for(int i10=0; i10<nParticles; i10++)
           {
-           //if(i10==fSelectedTracks-1){cout<<"done with loop #10"<<endl;}
            if(i10==i1||i10==i2||i10==i3||i10==i4||i10==i5||i10==i6||i10==i7||i10==i8||i10==i9){continue;}
            Double_t dPhi10 = ftaNestedLoops[0]->GetAt(i10);
            Double_t dW10 = ftaNestedLoops[1]->GetAt(i10);
@@ -4738,9 +4612,8 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
             profile->Fill(0.5,value,weight);
             continue;
            }
-           for(int i11=0; i11<fSelectedTracks; i11++)
+           for(int i11=0; i11<nParticles; i11++)
            {
-            //if(i11==fSelectedTracks-1){cout<<"done with loop #11"<<endl;}
             if(i11==i1||i11==i2||i11==i3||i11==i4||i11==i5||i11==i6||i11==i7||i11==i8||i11==i9||i11==i10){continue;}
             Double_t dPhi11 = ftaNestedLoops[0]->GetAt(i11);
             Double_t dW11 = ftaNestedLoops[1]->GetAt(i11);
@@ -4753,9 +4626,8 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
              profile->Fill(0.5,value,weight);
              continue;
             }
-            for(int i12=0; i12<fSelectedTracks; i12++)
+            for(int i12=0; i12<nParticles; i12++)
             {
-             //if(i12==fSelectedTracks-1){cout<<"done with loop #12"<<endl;}
              if(i12==i1||i12==i2||i12==i3||i12==i4||i12==i5||i12==i6||i12==i7||i12==i8||i12==i9||i12==i10||i12==i11){continue;}
              Double_t dPhi12 = ftaNestedLoops[0]->GetAt(i12);
              Double_t dW12 = ftaNestedLoops[1]->GetAt(i12);
@@ -4771,18 +4643,18 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
 
              // ... it's easy to continue the above pattern here
 
-            } // for(int i12=0; i12<fSelectedTracks; i12++)
-           } // for(int i11=0; i11<fSelectedTracks; i11++)
-          } // for(int i10=0; i10<fSelectedTracks; i10++)
-         } // for(int i9=0; i9<fSelectedTracks; i9++)
-        } // for(int i8=0; i8<fSelectedTracks; i8++)
-       } // for(int i7=0; i7<fSelectedTracks; i7++)
-      } // for(int i6=0; i6<fSelectedTracks; i6++)
-     } // for(int i5=0; i5<fSelectedTracks; i5++)
-    } // for(int i4=0; i4<fSelectedTracks; i4++)   
-   } // for(int i3=0; i3<fSelectedTracks; i3++)
-  } // for(int i2=0; i2<fSelectedTracks; i2++)
- } // for(int i1=0; i1<fSelectedTracks; i1++)
+            } // for(int i12=0; i12<nParticles; i12++)
+           } // for(int i11=0; i11<nParticles; i11++)
+          } // for(int i10=0; i10<nParticles; i10++)
+         } // for(int i9=0; i9<nParticles; i9++)
+        } // for(int i8=0; i8<nParticles; i8++)
+       } // for(int i7=0; i7<nParticles; i7++)
+      } // for(int i6=0; i6<nParticles; i6++)
+     } // for(int i5=0; i5<nParticles; i5++)
+    } // for(int i4=0; i4<nParticles; i4++)   
+   } // for(int i3=0; i3<nParticles; i3++)
+  } // for(int i2=0; i2<nParticles; i2++)
+ } // for(int i1=0; i1<nParticles; i1++)
 
  // c) Return value:
  Double_t finalValue = profile->GetBinContent(1);
@@ -5806,7 +5678,8 @@ void AliAnalysisTaskMuPa::CalculateTest0()
      }
      if(!(weight>0.))
      {
-      cout<<fTest0Labels[mo][mi]->Data()<<endl;   
+      cout<<fTest0Labels[mo][mi]->Data()<<endl;
+      Red("Is perhaps order of correlator bigger than the number of particles?");   
       cout<<__LINE__<<endl; exit(1); 
      }
      if(TMath::Abs(correlation/weight - this->CalculateCustomNestedLoop(harmonics))>1.e-5)
@@ -6059,14 +5932,432 @@ TComplex AliAnalysisTaskMuPa::TheoreticalValue(TArrayI *harmonics, TArrayD *ampl
 
 } // TComplex AliAnalysisTaskMuPa::TheoreticalValue(TArrayI *harmonics, TArrayD *amplitudes, TArrayD *planes)
 
+//=======================================================================================
 
+void AliAnalysisTaskMuPa::DefaultBinning()
+{
+ // Define all default binning here. Each hardwired setting can be overruled with a dedicated setter, e.g. task->SetMultiplicityBins(1000,0.,5000.), etc.
 
+ // a) Default binning of (control) event histograms;
+ // b) Default binning of (control) particle histograms.
 
+ // a) Default binning of (control) event histograms:
+ // task->SetMultiplicityBins(1000,0.,5000.);
+ fMultiplicityBins[0] = 1000;
+ fMultiplicityBins[1] = 0.;
+ fMultiplicityBins[2] = 5000.;
+ 
+ // task->SetCentralityBins(100,0.,100.);
+ fCentralityBins[0] = 100;
+ fCentralityBins[1] = 0.;
+ fCentralityBins[2] = 100.;
 
+ // task->SetVertexBins(10000,-10.,10.); // this sets bins and ranges for vz. bins for vx and vy are the same, but their ranges are automatically divided by 10 in the code 
+ fVertexBins[0] = 10000;
+ fVertexBins[1] = -10.;
+ fVertexBins[2] = 10.;
 
+ // task->SetNContributorsBins(3000,0.,3000.);
+ fNContributorsBins[0] = 3000;
+ fNContributorsBins[1] = 0.;
+ fNContributorsBins[2] = 3000.;
 
+ // task->SetEventBins("MagneticField",20,-10.,10.); // Solenoid Magnetic Field in kG (1G = 10^-4 T), it's either -5 or 5
+ fEventBins[MagneticField][0] = 20;
+ fEventBins[MagneticField][1] = -10.;
+ fEventBins[MagneticField][2] = 10.;
 
+ // task->SetEventBins("PrimaryVertex",1,0.,1.); // yes, since here we only count # of events with valid pointer aAOD->GetPrimaryVertex()  
+ fEventBins[PrimaryVertex][0] = 1;
+ fEventBins[PrimaryVertex][1] = 0.;
+ fEventBins[PrimaryVertex][2] = 1.;
 
+ // -------------------------------------------------------------------
 
+ // b) Default binning of (control) particle histograms:
+ // task->SetKinematicsBins("phi",360,0.,TMath::TwoPi());
+ fKinematicsBins[PHI][0] = 360;
+ fKinematicsBins[PHI][1] = 0.;
+ fKinematicsBins[PHI][2] = TMath::TwoPi();
 
+ // task->SetKinematicsBins("pt",100,0.,20.);
+ fKinematicsBins[PT][0] = 1000;
+ fKinematicsBins[PT][1] = 0.;
+ fKinematicsBins[PT][2] = 20.;
+
+ // task->SetKinematicsBins("eta",200,-1.,1.);
+ fKinematicsBins[ETA][0] = 200;
+ fKinematicsBins[ETA][1] = -1.;
+ fKinematicsBins[ETA][2] = 1.;
+
+ // task->SetKinematicsBins("e",1000,0.,100.);
+ fKinematicsBins[E][0] = 1000;
+ fKinematicsBins[E][1] = 0.;
+ fKinematicsBins[E][2] = 100.;
+
+ // task->SetKinematicsBins("charge",20,-10.,10.);
+ fKinematicsBins[CHARGE][0] = 20;
+ fKinematicsBins[CHARGE][1] = -10.;
+ fKinematicsBins[CHARGE][2] = 10.;
+
+ // task->SetDCABins("xy",1000,-4.,4.); 
+ fDCABins[0][0] = 1000;
+ fDCABins[0][1] = -4.;
+ fDCABins[0][2] = 4.;
+
+ // task->SetDCABins("z",1000,-4.,4.); 
+ fDCABins[1][0] = 1000;
+ fDCABins[1][1] = -4.;
+ fDCABins[1][2] = 4.;
+
+ // task->SetParticleBins("TPCNcls",200,0.,200.); 
+ fParticleBins[TPCNcls][0] = 200;
+ fParticleBins[TPCNcls][1] = 0.;
+ fParticleBins[TPCNcls][2] = 200.;
+
+ // task->SetParticleBins("TPCnclsS",200,0.,200.);  
+ fParticleBins[TPCnclsS][0] = 200;
+ fParticleBins[TPCnclsS][1] = 0.;
+ fParticleBins[TPCnclsS][2] = 200.;
+  
+ // task->SetParticleBins("TPCnclsFractionShared",200,0.,2.);  
+ fParticleBins[TPCnclsFractionShared][0] = 2000;
+ fParticleBins[TPCnclsFractionShared][1] = 0.;
+ fParticleBins[TPCnclsFractionShared][2] = 2.;
+
+ // task->SetParticleBins("TPCNCrossedRows",200,0.,200.);  
+ fParticleBins[TPCNCrossedRows][0] = 200;
+ fParticleBins[TPCNCrossedRows][1] = 0.;
+ fParticleBins[TPCNCrossedRows][2] = 200.;
+
+ // task->SetParticleBins("TPCChi2perNDF",1000,0.,10.);
+ fParticleBins[TPCChi2perNDF][0] = 1000;
+ fParticleBins[TPCChi2perNDF][1] = 0.;
+ fParticleBins[TPCChi2perNDF][2] = 10.;
+
+ // task->SetParticleBins("TPCFoundFraction",200,0.,2.); // TBI
+ fParticleBins[TPCFoundFraction][0] = 2000;
+ fParticleBins[TPCFoundFraction][1] = -1000.;
+ fParticleBins[TPCFoundFraction][2] = 1000.;
+
+ // task->SetParticleBins("Chi2TPCConstrainedVsGlobal",4,-2.,2.); // TBI
+ fParticleBins[Chi2TPCConstrainedVsGlobal][0] = 2000;
+ fParticleBins[Chi2TPCConstrainedVsGlobal][1] = -1000.;
+ fParticleBins[Chi2TPCConstrainedVsGlobal][2] = 1000.;
+ 
+ // task->SetParticleBins("ITSNcls",4,-2.,2.); // TBI
+ fParticleBins[ITSNcls][0] = 2000;
+ fParticleBins[ITSNcls][1] = -1000.;
+ fParticleBins[ITSNcls][2] = 1000.;
+
+ // task->SetParticleBins("ITSChi2perNDF",100,0.,1.); 
+ fParticleBins[ITSChi2perNDF][0] = 100;
+ fParticleBins[ITSChi2perNDF][1] = 0.;
+ fParticleBins[ITSChi2perNDF][2] = 1.;
+
+ // task->SetParticleBins("TPCNclsF",100,0.,1.); 
+ fParticleBins[TPCNclsF][0] = 100;
+ fParticleBins[TPCNclsF][1] = 0.;
+ fParticleBins[TPCNclsF][2] = 1.;
+
+ // task->SetParticleBins("HasPointOnITSLayer",6,0.,6.); 
+ fParticleBins[HasPointOnITSLayer][0] = 6;
+ fParticleBins[HasPointOnITSLayer][1] = 0.;
+ fParticleBins[HasPointOnITSLayer][2] = 6.;
+
+ // task->SetParticleBins("IsGlobalConstrained",2,0.,2.); 
+ fParticleBins[IsGlobalConstrained][0] = 2;
+ fParticleBins[IsGlobalConstrained][1] = 0.;
+ fParticleBins[IsGlobalConstrained][2] = 2.;
+
+} // void AliAnalysisTaskMuPa::DefaultBinning()
+
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::DefaultCuts()
+{
+ // Define all default cuts here. Defaults cuts are adjusted for 128. Each hardwired default setting can be overruled with:
+ //  1. on top of default cuts, use predefined cuts for some specific data-taking period with SetUseHardwiredEventsCuts(const char* eventsCutsPeriod, const char* eventsCutsOption)
+ //  2. each indivudial cut can be modified directly with a dedicated setter, e.g. task->SetVertexCuts("z",-10.,10.), etc.
+
+ // a) Default event cuts;
+ // b) Default particle cuts.
+
+ // a) Default event cuts:
+
+ // task->SetTrigger("kMB"); 
+ fTrigger = "kMB"; 
+ fUseTrigger = kTRUE;
+
+ // task->SetSelectedTracksCuts(12,3000);
+ fSelectedTracksCuts[0] = 12;
+ fSelectedTracksCuts[1] = 3000;
+ fUseSelectedTracksCuts = kTRUE;
+
+ // task->SetCentralityEstimator("V0M"); // default centrality estimator. Supported: V0M, SPDTracklets, CL0, CL1
+ fCentralityEstimator = "V0M";
+
+ // task->SetCentralityCuts(centrMin,centrMax); // this applies to default centrality estimator
+ fCentralityCuts[0] = 0.;
+ fCentralityCuts[1] = 100.;
+ fUseCentralityCuts = kTRUE;
+
+ // task->SetVertexCuts("x",-1.,1.);
+ fVertexCuts[X][0] = -1.;
+ fVertexCuts[X][1] = 1.;
+ fUseVertexCuts[X] = kFALSE;
+
+ // task->SetVertexCuts("y",-1.,1.);
+ fVertexCuts[Y][0] = -1.;
+ fVertexCuts[Y][1] = 1.;
+ fUseVertexCuts[Y] = kFALSE;
+
+ // task->SetVertexCuts("z",-10.,10.);
+ fVertexCuts[Z][0] = -10.;
+ fVertexCuts[Z][1] = 10.;
+ fUseVertexCuts[Z] = kTRUE;
+
+ // task->SetNContributorsCuts(2,1e6);
+ fNContributorsCuts[0] = 2;
+ fNContributorsCuts[1] = 1e6; 
+ fUseNContributorsCuts = kTRUE;
+
+ // task->SetMinVertexDistance(1.e-6); // if sqrt(vx^2+vy^2+vz^2) < fMinVertexDistance, the event is reject. This way, I remove suspicious events with |vertex| = 0.
+ fMinVertexDistance = 1.e-6;
+ fUseMinVertexDistanceCut = kTRUE;
+
+ // task->SetEventCuts("MagneticField",-999,999); // Solenoid Magnetic Field in kG (1G = 10^-4 T), it's either -5 or 5. Note that it makes sense to select runs a priori based on magnetic field
+ fEventCuts[MagneticField][0] = fEventBins[MagneticField][1];
+ fEventCuts[MagneticField][1] = fEventBins[MagneticField][2];
+ fUseEventCuts[MagneticField] = kFALSE;
+
+ // task->SetEventCuts("PrimaryVertex",-10.,10.); // TBI I do not need this any longer 
+ fEventCuts[PrimaryVertex][0] = fEventBins[PrimaryVertex][1];
+ fEventCuts[PrimaryVertex][1] = fEventBins[PrimaryVertex][2];
+ fUseEventCuts[PrimaryVertex] = kFALSE;
+
+ // -------------------------------------------------------------------
+
+ // b) Default particle cuts:
+
+ // task->SetFilterBit(128);
+ fFilterBit = 128;
+
+ // task->SetUseFakeTracks(kTRUE); // VAL this is relevant only when running over Monte Carlo. If kTRUE, the Monte Carlo particle is obtained as TMath:Abs(aRecoTrack->GetLabel())
+ fUseFakeTracks = kTRUE;
+
+ // task->SetUseOnlyPrimaries(kTRUE);
+ fUseOnlyPrimaries = kTRUE;
+
+ // task->SetPrimaryDefinitionInMonteCarlo("IsPhysicalPrimary"); 
+ fPrimaryDefinitionInMonteCarlo = "IsPhysicalPrimary"; 
+
+ // task->SetKinematicsCuts("phi",0.,TMath::TwoPi());
+ fKinematicsCuts[PHI][0] = fKinematicsBins[PHI][1];
+ fKinematicsCuts[PHI][1] = fKinematicsBins[PHI][2];
+ fUseKinematicsCuts[PHI] = kFALSE; // yes!
+
+ // task->SetKinematicsCuts("pt",0.2,5.);
+ fKinematicsCuts[PT][0] = 0.2;
+ fKinematicsCuts[PT][1] = 5.0;
+ fUseKinematicsCuts[PT] = kTRUE;
+
+ // task->SetKinematicsCuts("eta",-0.8,0.8);
+ fKinematicsCuts[ETA][0] = -0.8;
+ fKinematicsCuts[ETA][1] = 0.8;
+ fUseKinematicsCuts[ETA] = kTRUE;
+
+ // task->SetKinematicsCuts("e",0.,100.);
+ fKinematicsCuts[E][0] = fKinematicsBins[E][1];
+ fKinematicsCuts[E][1] = fKinematicsBins[E][2];
+ fUseKinematicsCuts[E] = kFALSE;
+
+ // task->SetKinematicsCuts("charge",-1.5,1.5); // it is hardcoded that I do not take neutral particles, as soon as this setter is called
+ fKinematicsCuts[CHARGE][0] = -1.5;
+ fKinematicsCuts[CHARGE][1] = 1.5;
+ fUseKinematicsCuts[CHARGE] = kTRUE;
+
+ // task->SetDCACuts("xy",-2.4,2.4); // use only for filter bit 128
+ fDCACuts[0][0] = -2.4;
+ fDCACuts[0][1] = 2.4;
+ fUseDCACuts[0] = kTRUE;
+
+ // task->SetDCACuts("z",-3.2,3.2); // use only for filter bit 128
+ fDCACuts[1][0] = -3.2;
+ fDCACuts[1][1] = 3.2;
+ fUseDCACuts[1] = kTRUE;
+
+ // task->SetParticleCuts("TPCNcls",70,160); // VAL
+ fParticleCuts[TPCNcls][0] = 70;
+ fParticleCuts[TPCNcls][1] = 160;
+ fUseParticleCuts[TPCNcls] = kTRUE;
+
+ // task->SetParticleCuts("TPCnclsS",0,200) on this one I do not cut directly, rather I request that TPCnclsFractionShared > 0.4 (JFGO+RS)
+ fParticleCuts[TPCnclsS][0] = fParticleBins[TPCnclsS][1];
+ fParticleCuts[TPCnclsS][1] = fParticleBins[TPCnclsS][2];
+ fUseParticleCuts[TPCnclsS] = kFALSE;
+
+ // task->SetParticleCuts("TPCnclsFractionShared",0.4,-44); // VAL
+ fParticleCuts[TPCnclsFractionShared][0] = 0.4;
+ fParticleCuts[TPCnclsFractionShared][1] = -44.;
+ fUseParticleCuts[TPCnclsFractionShared] = kTRUE;
+ // particles with > 0.4 are rejected (JFGO+RS). Upper cut is NOT applied at the moment (the check is commented out)
+
+ // task->SetParticleCuts("TPCNCrossedRows",70,160); // VAL 
+ fParticleCuts[TPCNCrossedRows][0] = 70;
+ fParticleCuts[TPCNCrossedRows][1] = 160;
+ fUseParticleCuts[TPCNCrossedRows] = kTRUE;
+
+ // task->SetParticleCuts("TPCChi2perNDF",4.,-44); // VAL 
+ fParticleCuts[TPCChi2perNDF][0] = 4.;
+ fParticleCuts[TPCChi2perNDF][1] = -44.;
+ fUseParticleCuts[TPCChi2perNDF] = kTRUE;
+ // particles with > 4. are rejected (FP). Upper cut is NOT applied at the moment (the check is commented out)
+ // FP: Use (Double_t)aodTrack->GetTPCchi2()/(Double_t)aodTrack->GetTPCNcls(), instead of aodTrack->Chi2perNDF()) 
+
+ // task->SetParticleCuts("TPCFoundFraction",-999,999);
+ fParticleCuts[TPCFoundFraction][0] = fParticleBins[TPCFoundFraction][1];
+ fParticleCuts[TPCFoundFraction][1] = fParticleBins[TPCFoundFraction][2];
+ fUseParticleCuts[TPCFoundFraction] = kFALSE;
+ // Float_t  GetTPCFoundFraction() const { return fTPCNCrossedRows>0 ? float(GetTPCNcls())/fTPCNCrossedRows : 0;} 
+
+ // task->SetParticleCuts("Chi2TPCConstrainedVsGlobal",-999,999);  
+ fParticleCuts[Chi2TPCConstrainedVsGlobal][0] = fParticleBins[Chi2TPCConstrainedVsGlobal][1];
+ fParticleCuts[Chi2TPCConstrainedVsGlobal][1] = fParticleBins[Chi2TPCConstrainedVsGlobal][2];
+ fUseParticleCuts[Chi2TPCConstrainedVsGlobal] = kFALSE;
+
+ // task->SetParticleCuts("ITSNcls",2,999); // VAL
+ fParticleCuts[ITSNcls][0] = fParticleBins[ITSNcls][1];
+ fParticleCuts[ITSNcls][1] = fParticleBins[ITSNcls][2];
+ fUseParticleCuts[ITSNcls] = kFALSE;
+ // clearly, do not use for TPC-only tracks. 
+ // 768: if you use >=4, you get NUA, for >=6 even with holes
+ // NM: In addition, the tracks are requested to have at least two associated ITS clusters in addition to having a hit in any of the two SPD layers. 
+ // 1: has no effect on NUA     
+
+ // task->SetParticleCuts("ITSChi2perNDF",-999,999);
+ fParticleCuts[ITSChi2perNDF][0] = fParticleBins[ITSChi2perNDF][1];
+ fParticleCuts[ITSChi2perNDF][1] = fParticleBins[ITSChi2perNDF][2];
+ fUseParticleCuts[ITSChi2perNDF] = kFALSE;
+ // do not use for TPC-only
+
+ // task->SetParticleCuts("TPCNclsF",-999,999);
+ fParticleCuts[TPCNclsF][0] = fParticleBins[TPCNclsF][1];
+ fParticleCuts[TPCNclsF][1] = fParticleBins[TPCNclsF][2];
+ fUseParticleCuts[TPCNclsF] = kFALSE;
+ // TBI this one is alays empty. The expert suggests the following cut: TPCNCrossedRows/TPCNclsF > 0.8
+
+ // task->SetAtLeastOnePointInTheSPD(kTRUE); // VAL 
+ fAtLeastOnePointInTheSPD = kFALSE;
+ // 1 or 2 points in SPD. Do not use for TPC-only. If used for 1,768, NUA is the same
+ 
+ // task->SetIgnoreGlobalConstrained(kFALSE); // VAL 
+ fIgnoreGlobalConstrained = kFALSE;
+ // kFALSE by default. Use: kFALSE for 768, otherwise NUA with holes; kTRUE for 96, NUA stays roughly the same
+
+} // void AliAnalysisTaskMuPa::DefaultCuts()
+
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::DefaultConfiguration()
+{
+ // Define the default task configuration. Whatever you dislike here, modify with the dedicated setters, e.g. task->SetUseFisherYates(kTRUE); task->SetCalculateNestedLoops(kTRUE); etc.
+
+ // task->SetUseFisherYates(kFALSE); // TBI validated only for real data at the moment
+ fUseFisherYates = kFALSE;
+
+ // task->SetVerbose(kFALSE);
+ fVerbose = kFALSE;
+
+ // task->SetRandomSeed(0);
+ fRandomSeed = 0;
+ 
+ // task->SetFillQAHistograms(kTRUE); // by default, only selection of most important ones 
+ fFillQAHistograms = kTRUE;
+
+ // task->SetFillQAHistogramsAll(kFALSE); // all QA histograms, also heavy 2D ones 
+ fFillQAHistogramsAll = kTRUE;
+
+ // task->SetTerminateAfterQA(kFALSE);
+ fTerminateAfterQA = kFALSE;
+
+ // task->SetQACheckSelfCorrelations(kFALSE); // check self-correlations in reconstructed sample (fQASelfCorrelations), also between simulated and reconstructed (fQASimRecoSelfCorrelations)
+ fQACheckSelfCorrelations = kFALSE;
+
+ // task->SetFilterGlobalTracksAOD(kFALSE); // Needed only for PID studies, setting FilterBit avoids double-counting:
+ fFilterGlobalTracksAOD = kFALSE;
+
+ // task->SetCalculateQvector(kTRUE);
+ fCalculateQvector = kTRUE;
+ 
+ // task->SetCalculateCorrelations(kTRUE); // only basic same-harmonic correlations, 0=integrated,1=vs. multiplicity,2=vs. centrality]
+ fCalculateCorrelations = kTRUE; 
+
+ // task->SetCalculateTest0(kTRUE); // all "Test0" correlations [0=integrated,1=vs. multiplicity,2=vs. centrality] 
+ fCalculateTest0 = kFALSE;
+
+ // task->SetCalculateNestedLoops(kFALSE);
+ fCalculateNestedLoops = kFALSE;
+ 
+ // task->SetCalculateCustomNestedLoop(kFALSE); // independent e-b-e cross-check with custom nested loop
+ fCalculateCustomNestedLoop = kFALSE;
+
+} // void AliAnalysisTaskMuPa::DefaultConfiguration()
+
+//=======================================================================================
+
+void AliAnalysisTaskMuPa::SetUseDefaultFilterBitCuts(Int_t fb)
+{
+ // For non-default filter bits, set some additional cuts among default cuts. 
+ // By this point, DefaultCuts with 128 particle cuts have been initialized, so some of them have to be overwritten
+
+ switch(fb)
+ {
+  case 1:  
+   fFilterBit = 1;
+   fUseDCACuts[0] = kFALSE; // nice!
+   fUseDCACuts[1] = kFALSE; // nice!
+   // task->SetParticleCuts("ITSNcls",2,999);
+   fParticleCuts[ITSNcls][0] = 2;
+   fParticleCuts[ITSNcls][1] = fParticleBins[ITSNcls][2];
+   fUseParticleCuts[ITSNcls] = kTRUE;
+   // task->SetAtLeastOnePointInTheSPD(kTRUE); // VAL 
+   fAtLeastOnePointInTheSPD = kTRUE;
+  break;
+
+  case 96:  
+   fFilterBit = 96;
+   fUseDCACuts[0] = kFALSE; // nice!
+   fUseDCACuts[1] = kFALSE; // nice!
+   // task->SetParticleCuts("ITSNcls",2,999);
+   fParticleCuts[ITSNcls][0] = 2;
+   fParticleCuts[ITSNcls][1] = fParticleBins[ITSNcls][2];
+   fUseParticleCuts[ITSNcls] = kTRUE;
+   // task->SetAtLeastOnePointInTheSPD(kTRUE); // VAL 
+   fAtLeastOnePointInTheSPD = kTRUE;
+  break;
+
+  case 128:  
+   return; // yes, since default cuts are already set for 128 in DefaultCuts()
+  break;
+
+  case 768:  
+   fFilterBit = 96;
+   fUseDCACuts[0] = kFALSE; // nice!
+   fUseDCACuts[1] = kFALSE; // nice!
+   // task->SetParticleCuts("ITSNcls",2,999);
+   fParticleCuts[ITSNcls][0] = 2;
+   fParticleCuts[ITSNcls][1] = fParticleBins[ITSNcls][2];
+   fUseParticleCuts[ITSNcls] = kTRUE;
+   // task->SetAtLeastOnePointInTheSPD(kTRUE); // VAL 
+   fAtLeastOnePointInTheSPD = kTRUE;
+  break;
+
+  default:
+   Red(Form("Filterbit %d is not supported (yet)",fb));
+   cout<<__LINE__<<endl; exit(1);
+  break; 
+ } // switch(fCentralityCorrelationCutVersion)  
+
+} // void AliAnalysisTaskMuPa::SetUseDefaultFilterBitCuts(Int_t fb)
 

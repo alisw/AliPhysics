@@ -30,6 +30,7 @@
 #include <TLorentzVector.h>
 #include "AliESDtrack.h"
 #include "AliEventCuts.h"
+#include "AliAODTrack.h"
 #include <AliMCEvent.h>
 #include <AliAODMCParticle.h>
 
@@ -152,6 +153,7 @@ public:
   void SetForceMassAndZ(float mass, float z = 1) { fPDGMass = mass; fPDGMassOverZ = mass / z; }
   void SetITSelectronRejection(float nsigma = 2.) { fITSelectronRejectionSigma = nsigma; }
 
+  void SetRequireLongMCTracks(bool longMCTracks) { fRequireLongMCTracks = longMCTracks; }
   void SetRequirePrimaryFromDistance(bool primaryFromDistance) { fRequirePrimaryFromDistance = primaryFromDistance; }
   void SetDistCut(double distCut) { fDistCut = distCut; }
 
@@ -217,7 +219,9 @@ private:
   Bool_t IsSelectedTPCGeoCut(AliAODTrack *track);
   Bool_t IsSelectedTPCGeoCut(AliNanoAODTrack *track);
 
-  Bool_t IsPrimaryFromDistance(const AliVVertex *vert, const AliAODMCParticle *part);
+  Bool_t IsPrimaryFromDistance(const AliAODMCParticle *part);
+  Bool_t IsLongMCTrack(AliAODTrack *track);
+  Bool_t IsLongMCTrack(AliNanoAODTrack *track) { return false; };
 
   TString               fCurrentFileName;       ///<  Currently analysed file name
   TF1                  *fTOFfunction;           //!<! TOF signal function
@@ -290,6 +294,7 @@ private:
   Float_t               fBeamRapidity;          ///< Beam rapidity in case of asymmetric colliding systems
   Int_t                 fEstimator;             ///< Choose the centrality estimator from AliEventCuts
 
+  Bool_t                fRequireLongMCTracks;   ///<  Require MC tracks to reach TOF
   Bool_t                fRequirePrimaryFromDistance;///<  Define primary particles in MC from production vertex
   Double_t              fDistCut;               ///<  Cut on the distance between PV and particle vertex to define primaries
 
@@ -435,21 +440,22 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     const int iC = part->Charge() > 0 ? 1 : 0;
     if (std::abs(part->PdgCode()) == fPDG) {
       for (int iR = iTof; iR >= 0; iR--) {
-        bool isPrimary = (part->IsPhysicalPrimary() && !fRequirePrimaryFromDistance) || (fRequirePrimaryFromDistance && IsPrimaryFromDistance(MCEvent()->GetPrimaryVertex(), part));
-        if (isPrimary) {
-          if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy &&
-              (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
-              (!iR || pid_check) && (iR || pid_mask & 8))
-            fReconstructed[iR][iC]->Fill(fCentrality,pT);
-          fDCAPrimary[iR][iC]->Fill(fCentrality,pT,dca[0]);
-          if (!iR) {
-            fPtCorrection[iC]->Fill(pT,part->Pt()-pT);
-            fPcorrectionTPC[iC]->Fill(p_TPC,part->P()-p_TPC);
-            } // Fill it only once.
-        } else if ( (part->IsSecondaryFromMaterial() && !isFromHyperNucleus) || (!isPrimary && fRequirePrimaryFromDistance))
-          fDCASecondary[iR][iC]->Fill(fCentrality,pT,dca[0]);
-        else
-          fDCASecondaryWeak[iR][iC]->Fill(fCentrality,pT,dca[0]);
+        if ( ( (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
+              (!iR || pid_check) && (iR || pid_mask & 8)) && (!fRequireLongMCTracks || (fRequireLongMCTracks && IsLongMCTrack(track))) ) {
+          bool isPrimary = (part->IsPhysicalPrimary() && !fRequirePrimaryFromDistance) || (fRequirePrimaryFromDistance && IsPrimaryFromDistance(part));
+          if (isPrimary) {
+            if ( TMath::Abs(dca[0]) <= fRequireMaxDCAxy )
+              fReconstructed[iR][iC]->Fill(fCentrality,pT);
+            fDCAPrimary[iR][iC]->Fill(fCentrality,pT,dca[0]);
+            if (!iR) {
+              fPtCorrection[iC]->Fill(pT,part->Pt()-pT);
+              fPcorrectionTPC[iC]->Fill(p_TPC,part->P()-p_TPC);
+              } // Fill it only once.
+          } else if ( (part->IsSecondaryFromMaterial() && !isFromHyperNucleus) || (!isPrimary && fRequirePrimaryFromDistance) )
+            fDCASecondary[iR][iC]->Fill(fCentrality,pT,dca[0]);
+          else
+            fDCASecondaryWeak[iR][iC]->Fill(fCentrality,pT,dca[0]);
+        }
       }
     }
   } else {
@@ -469,7 +475,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
 
       /// TPC asymmetric cut to avoid contamination from protons in the DCA distributions. TOF sigma cut is set to 4
       /// to compensate for the shift in the sigma (to be rechecked in case of update of TOF PID response)
-      if (tpc_n_sigma > -2. && tpc_n_sigma < 3. && (fabs(tof_n_sigma) < 4. || !iTof)) {
+      if (tpc_n_sigma > -3. && tpc_n_sigma < 3. && (fabs(tof_n_sigma) < 4. || !iTof)) {
         fDCAxy[iR][iC]->Fill(fCentrality, pT, dca[0]);
         fDCAz[iR][iC]->Fill(fCentrality, pT, dca[1]);
       }

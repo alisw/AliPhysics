@@ -25,7 +25,6 @@
 #include <limits.h>
 #include <float.h>
 #include "TH2.h"
-#include "TF1.h"
 #include "TAxis.h"
 #include "TRandom.h"
 #include "TNamed.h"
@@ -60,9 +59,7 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const char* name):
   fMassMin(-FLT_MAX),
   fEtaPhiEff(0x0),
   fCutEtaPhiEff(kFALSE),
-  fPOItype(1),
-  fEfficiencyParametrization(0x0),
-  fCutEfficiencyParametrization(kFALSE)
+  fPOItype(1)
 {
   //constructor 
 }
@@ -133,10 +130,6 @@ Bool_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
   if(fCutEtaPhiEff) {
       Int_t binX(fEtaPhiEff->GetXaxis()->FindBin(track->Eta())), binY(fEtaPhiEff->GetYaxis()->FindBin(track->Phi()+fEtaPhiEff->GetYaxis()->GetXmin()));
       if(fEtaPhiEff->GetBinContent(binX, binY) < gRandom->Uniform(0,1)*(fEtaPhiEff->GetMaximum())) return kFALSE;
-  }
-  if(fCutEfficiencyParametrization) {
-    if(fEfficiencyParametrization->Eval(track->Pt()) < gRandom->Uniform(0,1))
-      return kFALSE;
   }
   
   return kTRUE;

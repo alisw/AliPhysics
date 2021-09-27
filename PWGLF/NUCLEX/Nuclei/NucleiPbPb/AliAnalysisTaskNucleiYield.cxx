@@ -36,7 +36,6 @@
 #include "AliMCEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliVEventHandler.h"
-#include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliAODVertex.h"
 
@@ -193,6 +192,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fITSelectronRejectionSigma{-1.}
    ,fBeamRapidity{0.f}
    ,fEstimator{0}
+   ,fRequireLongMCTracks{false}
    ,fRequirePrimaryFromDistance{false}
    ,fDistCut{0.001}
    ,fEnableFlattening{false}
@@ -996,11 +996,20 @@ Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliNanoAODTrack *track) {
     return kFALSE;
 }
 
-bool AliAnalysisTaskNucleiYield::IsPrimaryFromDistance(const AliVVertex *vert, const AliAODMCParticle *part) {
+bool AliAnalysisTaskNucleiYield::IsPrimaryFromDistance(const AliAODMCParticle *part) {
+  AliVEvent *evt = InputEvent();
+  AliAODMCHeader* header = (AliAODMCHeader *)evt->GetList()->FindObject(AliAODMCHeader::StdBranchName());
   double primVert[3];
   double partVert[3];
   part->XvYvZv(partVert);
-  vert->GetXYZ(primVert);
+  primVert[0] = header->GetVtxX(), primVert[1] = header->GetVtxY(), primVert[2] = header->GetVtxZ();
   double distance = Dist(primVert, partVert);
   return distance < fDistCut;
+}
+
+bool AliAnalysisTaskNucleiYield::IsLongMCTrack(AliAODTrack *track){
+  int label = std::abs(track->GetLabel());
+  int p[3]={0,0,0};
+  track->GetTOFLabel(p);
+  return (p[0]==label || p[1]==label || p[2]==label);
 }

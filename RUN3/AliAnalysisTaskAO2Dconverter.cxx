@@ -28,6 +28,7 @@
 #include <TTimeStamp.h>
 #include <TClonesArray.h>
 #include <TRandom.h>
+#include <TH2.h>
 #include <TSystem.h>
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -260,6 +261,24 @@ void AliAnalysisTaskAO2Dconverter::NotifyRun(){
   if (!triggerContainer) AliFatal("Cannot fetch OADB container for trigger analysis");
   AliOADBTriggerAnalysis* oadbTriggerAnalysis = (AliOADBTriggerAnalysis*) triggerContainer->GetObject(fCurrentRunNumber, "Default");
   fTriggerAnalysis.SetParameters(oadbTriggerAnalysis);
+  //read PHOS trigger bad map
+  AliOADBContainer phosBadmapContainer(Form("phosTriggerBadMap"));
+  phosBadmapContainer.InitFromFile(Form("%s/PHOS/PHOSTrigBadMaps.root", AliAnalysisManager::GetOADBPath()),              
+                                   "phosTriggerBadMap");
+  TObjArray *maps = (TObjArray*)phosBadmapContainer.GetObject(fCurrentRunNumber,"phosTriggerBadMap");
+  if(!maps){
+    AliFatal(Form("Can not read PHOS Trigger Bad map for run %d. \n",fCurrentRunNumber)) ;    
+  }
+  else{
+    for(Int_t mod=0; mod<5;mod++){
+      if(fPHOSBadMap[mod]) 
+        delete fPHOSBadMap[mod] ;
+      TH2I * h = (TH2I*)maps->At(mod) ;      
+      if(h)
+        fPHOSBadMap[mod]=new TH2I(*h) ;
+    }
+  }
+    
 }
 
 
@@ -409,7 +428,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   }
 
   // This call is necessary to initialize event cuts according to the current run number
-  bool alieventcut = fEventCuts.AcceptEvent(fESD);
+  bool alieventcut = fEventCuts.AcceptEvent(fVEvent);
   
   // In case of ESD we skip events like in the AOD filtering, for AOD this is not needed
   // We can use event cuts to avoid cases where we have zero reconstructed tracks
@@ -2012,10 +2031,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   // add PHOS trigger digits to list of phos cells
   AliVCaloTrigger *phostriggers = fVEvent->GetCaloTrigger("PHOS");
   phostriggers->Reset();
-  Int_t nphostriggers_filled = 0; // total number of PHOS triggers filled per event
+  calotrigger.fIndexBCs = fBCCount;
   int relid[3]; 
   Float_t amplitude;
-  Int_t nphoscells_filled = 0;
   while (phostriggers->Next())
   {
     //Write trigger digits to same stream as readout cells  
@@ -2024,7 +2042,15 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     phostriggers->GetTriggerBits(triggerbits);
     int mod, absId;
     phostriggers->GetPosition(mod, absId);
-    //here absId is normal readout absId
+    //here absId is normal Run2 readout absId
+    //Remove noisy triggers
+    Int_t phosmodulenumber = (Int_t)TMath:: Ceil(absId/3584) ; 
+    int id = absId - ( phosmodulenumber - 1 ) * 3584 ; 
+    int ix = (Int_t)TMath::Ceil( id / 64 )  ;
+    int iz = (Int_t)( id - ( ix - 1 ) * 64 ) ; 
+    if(fPHOSBadMap[phosmodulenumber]->GetBinContent(ix,iz)>0) { //bad channel
+      continue ;
+    }
     //transform to Run3 truID
     absId--;
     relid[0] = absId / 3584  ; 
@@ -2043,26 +2069,30 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     // filter null entries: they usually have negative entries and no trigger bits
     // in case of trigger bits the energy can be 0 or negative but the trigger position is marked
     // store trigger
-    calo.fCellNumber = truId ;
+    calotrigger.fCaloType = 0 ; //PHOS
+    calotrigger.fFastOrAbsID = truId;
 
     phostriggers->GetAmplitude(amplitude);
-    calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude/mPHOSCalib, 0xFFF); //12 bit
+    calotrigger.fLnAmplitude = AliMathBase::TruncateFloatFraction(amplitude/mPHOSCalib, 0xFFF); //12 bit
     if(triggerbits==0){ //L0 trigger
-      calo.fCellType =0 ; //0:L0, 1:L1
+      calotrigger.fTriggerBits =0 ; //0:L0, 1:L1
     }
     else{
       int timesum;
       phostriggers->GetL1TimeSum(timesum);
-      calo.fCellType =timesum ; // 1,2,3:L1
+      calotrigger.fTriggerBits =timesum ; // 1,2,3:L1
     }
-    calo.fTime = 0.;  //13 bit, no time info
-    FillTree(kCalo);
-    if (fTreeStatus[kCalo])
-      nphoscells_filled++;
+    FillTree(kCaloTrigger);
+    if (fTreeStatus[kCaloTrigger])
+      ncalotriggers_filled++;
   }
-  eventextra.fNentries[kCaloTrigger] = nphostriggers_filled; //DP: Should we fill separate branches for PHOS and EMCAL?
+  eventextra.fNentries[kCaloTrigger] = ncalotriggers_filled; 
+
+
+
   
   AliVCaloCells * phoscells = fVEvent->GetPHOSCells();
+  Int_t nphoscells_filled = 0;
   Int_t nPHCells = phoscells->GetNumberOfCells();
   for (Short_t icp = 0; icp < nPHCells; ++icp)
   {

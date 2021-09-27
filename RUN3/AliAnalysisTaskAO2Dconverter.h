@@ -23,6 +23,7 @@ class AliAODEvent;
 class TFile;
 class TDirectory;
 class TParticle;
+class TH2I ;
 
 class AliAnalysisTaskAO2Dconverter : public AliAnalysisTaskSE
 {
@@ -173,6 +174,7 @@ private:
   AliESDEvent *fESD  = nullptr; //! input ESD event
   AliAODEvent *fAOD  = nullptr; //! input AOD event
   TList *fOutputList = nullptr; //! output list
+  TH2I * fPHOSBadMap[5] = {};   //! PHOS trigger bad map
 
   Int_t fCollisionCount = 0; //! collision count
   Int_t fBCCount = 0;        //! BC count
@@ -597,7 +599,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 21);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 22);
 };
 
 #endif

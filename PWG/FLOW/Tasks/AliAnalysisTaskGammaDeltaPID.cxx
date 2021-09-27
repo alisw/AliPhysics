@@ -122,6 +122,8 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name): Al
   fMinVzCut(-10.0),
   fMaxVzCut(10.0),
   sCentrEstimator("V0M"),
+  sDetectorforEP("kNone"),
+  bUseV0EventPlane(kFALSE),  
   bSkipAnalysis(kFALSE),
   
   fV0PtMin(0.5),
@@ -244,14 +246,22 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name): Al
   fHCorrectMCNegPion(NULL),
   fHCorrectMCNegKaon(NULL),
   fHCorrectMCNegProt(NULL),  
-  fHCorrectTPCQnxEtaPos(NULL),
-  fHCorrectTPCQnyEtaPos(NULL),
-  fHCorrectTPCQnxEtaNeg(NULL),
-  fHCorrectTPCQnyEtaNeg(NULL),
+  fHCorrectTPCQNxEtaPos(NULL),
+  fHCorrectTPCQNyEtaPos(NULL),
+  fHCorrectTPCQNxEtaNeg(NULL),
+  fHCorrectTPCQNyEtaNeg(NULL),
   fHCorrectTPCQ3xEtaPos(NULL),
   fHCorrectTPCQ3yEtaPos(NULL),
   fHCorrectTPCQ3xEtaNeg(NULL),
   fHCorrectTPCQ3yEtaNeg(NULL),    
+  fHCorrectQNxV0C(NULL),
+  fHCorrectQNyV0C(NULL),    
+  fHCorrectQNxV0A(NULL),
+  fHCorrectQNyV0A(NULL),  
+  fHCorrectQ3xV0C(NULL),
+  fHCorrectQ3yV0C(NULL),    
+  fHCorrectQ3xV0A(NULL),
+  fHCorrectQ3yV0A(NULL),
   
   fHistV0Pt(NULL),              
   fHistV0Eta(NULL),              
@@ -334,6 +344,8 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   fMinVzCut(-10.0),
   fMaxVzCut(10.0),
   sCentrEstimator("V0M"),
+  sDetectorforEP("kNone"),
+  bUseV0EventPlane(kFALSE),   
   bSkipAnalysis(kFALSE),
   
   fV0PtMin(0.5),
@@ -456,15 +468,23 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   fHCorrectMCNegPion(NULL),
   fHCorrectMCNegKaon(NULL),
   fHCorrectMCNegProt(NULL),
-  fHCorrectTPCQnxEtaPos(NULL),
-  fHCorrectTPCQnyEtaPos(NULL),
-  fHCorrectTPCQnxEtaNeg(NULL),
-  fHCorrectTPCQnyEtaNeg(NULL),
+  fHCorrectTPCQNxEtaPos(NULL),
+  fHCorrectTPCQNyEtaPos(NULL),
+  fHCorrectTPCQNxEtaNeg(NULL),
+  fHCorrectTPCQNyEtaNeg(NULL),
   fHCorrectTPCQ3xEtaPos(NULL),
   fHCorrectTPCQ3yEtaPos(NULL),
   fHCorrectTPCQ3xEtaNeg(NULL),
   fHCorrectTPCQ3yEtaNeg(NULL),  
-  
+  fHCorrectQNxV0C(NULL),
+  fHCorrectQNyV0C(NULL),    
+  fHCorrectQNxV0A(NULL),
+  fHCorrectQNyV0A(NULL),  
+  fHCorrectQ3xV0C(NULL),
+  fHCorrectQ3yV0C(NULL),    
+  fHCorrectQ3xV0A(NULL),
+  fHCorrectQ3yV0A(NULL),
+
   fHistV0Pt(NULL),              
   fHistV0Eta(NULL),              
   fHistV0DcatoPrimVertex(NULL), 
@@ -956,8 +976,22 @@ void AliAnalysisTaskGammaDeltaPID::UserCreateOutputObjects()
   else{
     sprintf(pairname,"ch-ch");
   }
-      
-  std::cout<<"\n FB: "<<fFilterBit<<", Ncls: "<<fTPCclustMin<<", Harmonic: "<<gHarmonic<<", pair: "<<pairname<<",\n\n"<<std::endl;
+
+
+  if(sDetectorforEP.Contains("V0")){
+    if(sDetectorforEP.Contains("V0C")){
+      fHistAnalysisInfo->SetBinContent(11,1);
+    }
+    else{
+      fHistAnalysisInfo->SetBinContent(12,1);
+    }
+  }
+  else{
+    fHistAnalysisInfo->SetBinContent(13,1);
+  }
+  
+  
+  std::cout<<"\n FB: "<<fFilterBit<<", Ncls: "<<fTPCclustMin<<", Harmonic: "<<gHarmonic<<", pair: "<<pairname<<" detforEP = "<<sDetectorforEP<<",\n\n"<<std::endl;
 
 
 
@@ -1163,9 +1197,10 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
   Double_t fQxV0CHarmN=0,fQyV0CHarmN=0,fQxV0AHarmN=0,fQyV0AHarmN=0;
   Double_t fQxV0CHarm3=0,fQyV0CHarm3=0,fQxV0AHarm3=0,fQyV0AHarm3=0;  
-  Double_t fSumMV0A = 0;
-  Double_t fSumMV0C = 0;
-  Int_t ibinV0;
+  Double_t fSumMV0A = 0,fSumMV0C = 0;
+  Double_t fSelectedV0PsiN=0.,fSelectedV0Psi3=0.;
+  Int_t    ibinV0, icentbin=1;
+
   
   for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
 
@@ -1215,9 +1250,35 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   Double_t fQ3yV0A = fQyV0AHarm3/fSumMV0A;  
 
 
+  /// Correct the Q vector from V0 detectors:
+
+  ///<Q> correction for PsiN:
+  if(fHCorrectQNxV0C && fHCorrectQNyV0C){ ///prevents Code break!
+    icentbin = fHCorrectQNxV0C->FindBin(centrCL1);   ///Hardcode CL1 centrality to avoid mismatched Centrality estimator! 
+    fQnxV0C -= fHCorrectQNxV0C->GetBinContent(icentbin); 
+    fQnyV0C -= fHCorrectQNyV0C->GetBinContent(icentbin);   /// ***Careful with Names => Qx and Qy DONT MISS-match!!!
+  }
+  if(fHCorrectQNxV0A && fHCorrectQNyV0A){ 
+    icentbin = fHCorrectQNxV0A->FindBin(centrCL1);
+    fQnxV0A -= fHCorrectQNxV0A->GetBinContent(icentbin); 
+    fQnyV0A -= fHCorrectQNyV0A->GetBinContent(icentbin);  
+  }
+
+  ///<Q> correction for Psi3:
+  if(fHCorrectQ3xV0C && fHCorrectQ3yV0C){
+    icentbin = fHCorrectQ3xV0C->FindBin(centrCL1);
+    fQ3xV0C -= fHCorrectQ3xV0C->GetBinContent(icentbin); 
+    fQ3yV0C -= fHCorrectQ3yV0C->GetBinContent(icentbin);   
+  }
+  if(fHCorrectQ3xV0A && fHCorrectQ3yV0A){
+    icentbin = fHCorrectQ3xV0A->FindBin(centrCL1);
+    fQ3xV0A -= fHCorrectQ3xV0A->GetBinContent(icentbin); 
+    fQ3yV0A -= fHCorrectQ3yV0A->GetBinContent(icentbin);  
+  }
+  
   
   ////---- fill the <Q> vector from V0A/C vs Cent:-----------
-  hAvgQNXvsCentV0C->Fill(centrCL1,fQnxV0C);
+  hAvgQNXvsCentV0C->Fill(centrCL1,fQnxV0C); /// to Avoid self correlation, V0 <Q> is filled with CL1 centrality! 
   hAvgQNYvsCentV0C->Fill(centrCL1,fQnyV0C);  
   hAvgQNXvsCentV0A->Fill(centrCL1,fQnxV0A);
   hAvgQNYvsCentV0A->Fill(centrCL1,fQnyV0A);
@@ -1260,6 +1321,29 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   fHistV0CPsi3EventPlane->Fill(centrality,fPsi3V0C);
   fHistV0APsi3EventPlane->Fill(centrality,fPsi3V0A);    
 
+
+  /// if V0 Event Plane is not selected then Default is TPC EP
+  
+  if(sDetectorforEP.Contains("V0"))
+    bUseV0EventPlane = kTRUE;
+  
+  if(bUseV0EventPlane){
+    if(sDetectorforEP.Contains("V0C")){
+      fSelectedV0PsiN = fPsiNV0C;
+      fSelectedV0Psi3 = fPsi3V0C;
+    }
+    else if(sDetectorforEP.Contains("V0A")){
+      fSelectedV0PsiN = fPsiNV0A;
+      fSelectedV0Psi3 = fPsi3V0A;
+    }
+    else{ /// Default is V0A EP
+      fSelectedV0PsiN = fPsiNV0A;
+      fSelectedV0Psi3 = fPsi3V0A;
+    }
+  }
+
+
+  
 
   
   //=============== Get the ZDC data ====================
@@ -1450,46 +1534,45 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 		    
 
   ///------ Apply TPC <Q> vector corrections:--------
-  Int_t icentbin=1;
   
   ///<Q> correction for Psi2:
-  if(fHCorrectTPCQnxEtaPos && fHCorrectTPCQnyEtaPos){ ///prevents Code break!
-    icentbin = fHCorrectTPCQnxEtaPos->FindBin(centrality);
-    fQnxPos -= fHCorrectTPCQnxEtaPos->GetBinContent(icentbin); 
-    fQnyPos -= fHCorrectTPCQnyEtaPos->GetBinContent(icentbin);   /// ***Careful with Names => Qx and Qy DONT MISS-match!!!
+  if(fHCorrectTPCQNxEtaPos && fHCorrectTPCQNyEtaPos){ ///prevents Code break!
+    icentbin = fHCorrectTPCQNxEtaPos->FindBin(centrV0M); //centrV0M is hardcoded to avoid mismatch in Estimator.
+    fQnxPos -= fHCorrectTPCQNxEtaPos->GetBinContent(icentbin); 
+    fQnyPos -= fHCorrectTPCQNyEtaPos->GetBinContent(icentbin);   /// ***Careful with Names => Qx and Qy DONT MISS-match!!!
   }
-  if(fHCorrectTPCQnxEtaNeg && fHCorrectTPCQnyEtaNeg){ ///prevents Code break!
-    icentbin = fHCorrectTPCQnxEtaNeg->FindBin(centrality);
-    fQnxNeg -= fHCorrectTPCQnxEtaNeg->GetBinContent(icentbin);
-    fQnyNeg -= fHCorrectTPCQnyEtaNeg->GetBinContent(icentbin);    /// ***Careful with Names => Qx and Qy 
+  if(fHCorrectTPCQNxEtaNeg && fHCorrectTPCQNyEtaNeg){ 
+    icentbin = fHCorrectTPCQNxEtaNeg->FindBin(centrV0M);
+    fQnxNeg -= fHCorrectTPCQNxEtaNeg->GetBinContent(icentbin);
+    fQnyNeg -= fHCorrectTPCQNyEtaNeg->GetBinContent(icentbin); 
   }
 
   ///<Q> correction for Psi3:
-  if(fHCorrectTPCQ3xEtaPos && fHCorrectTPCQ3yEtaPos){ ///prevents Code break!
-    icentbin = fHCorrectTPCQ3xEtaPos->FindBin(centrality);
+  if(fHCorrectTPCQ3xEtaPos && fHCorrectTPCQ3yEtaPos){ 
+    icentbin = fHCorrectTPCQ3xEtaPos->FindBin(centrV0M);
     fQ3xPos -= fHCorrectTPCQ3xEtaPos->GetBinContent(icentbin); 
-    fQ3yPos -= fHCorrectTPCQ3yEtaPos->GetBinContent(icentbin);   /// ***Careful with Names => Qx and Qy DONT MISS-match!!!
+    fQ3yPos -= fHCorrectTPCQ3yEtaPos->GetBinContent(icentbin);   
   }
-  if(fHCorrectTPCQ3xEtaNeg && fHCorrectTPCQ3yEtaNeg){ ///prevents Code break!
-    icentbin = fHCorrectTPCQ3xEtaNeg->FindBin(centrality);
+  if(fHCorrectTPCQ3xEtaNeg && fHCorrectTPCQ3yEtaNeg){ 
+    icentbin = fHCorrectTPCQ3xEtaNeg->FindBin(centrV0M);
     fQ3xNeg -= fHCorrectTPCQ3xEtaNeg->GetBinContent(icentbin);
-    fQ3yNeg -= fHCorrectTPCQ3yEtaNeg->GetBinContent(icentbin);    /// ***Careful with Names => Qx and Qy 
+    fQ3yNeg -= fHCorrectTPCQ3yEtaNeg->GetBinContent(icentbin);   
   }
   //-------------------------------------------------
 
 
   
-  /// <Q> vector for TPC event plane (if Recentering is needed):
-  fAvgCosNPsivsCentEtaPos->Fill(centrality,fQnxPos); 
-  fAvgSinNPsivsCentEtaPos->Fill(centrality,fQnyPos); 
-  fAvgCosNPsivsCentEtaNeg->Fill(centrality,fQnxNeg);
-  fAvgSinNPsivsCentEtaNeg->Fill(centrality,fQnyNeg);
+  /// <Q> vector for Psi2 TPC event plane:
+  fAvgCosNPsivsCentEtaPos->Fill(centrV0M,fQnxPos);   //centrV0M is hardcoded to avoid mismatch in Estimator.
+  fAvgSinNPsivsCentEtaPos->Fill(centrV0M,fQnyPos); 
+  fAvgCosNPsivsCentEtaNeg->Fill(centrV0M,fQnxNeg);
+  fAvgSinNPsivsCentEtaNeg->Fill(centrV0M,fQnyNeg);
 
-  /// Psi3:
-  fAvgCos3PsivsCentEtaPos->Fill(centrality,fQ3xPos); 
-  fAvgSin3PsivsCentEtaPos->Fill(centrality,fQ3yPos); 
-  fAvgCos3PsivsCentEtaNeg->Fill(centrality,fQ3xNeg);
-  fAvgSin3PsivsCentEtaNeg->Fill(centrality,fQ3yNeg);
+  /// <Q> vector for Psi3:
+  fAvgCos3PsivsCentEtaPos->Fill(centrV0M,fQ3xPos); 
+  fAvgSin3PsivsCentEtaPos->Fill(centrV0M,fQ3yPos); 
+  fAvgCos3PsivsCentEtaNeg->Fill(centrV0M,fQ3xNeg);
+  fAvgSin3PsivsCentEtaNeg->Fill(centrV0M,fQ3yNeg);
 
 
   
@@ -1803,16 +1886,22 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	///Decide which TPC EP to use based on eta of 1st track.
 	
 	Double_t fPsiNEvent = 0, fPsi3Event = 0;
-		
-	if(trk1Eta > 0){
-	  fPsiNEvent = fPsiNTPCNeg;
-	  fPsi3Event = fPsi3TPCNeg;
+
+	///Choose whether to use TPC or V0EP
+	if(bUseV0EventPlane){
+	  fPsiNEvent = fSelectedV0PsiN;
+	  fPsi3Event = fSelectedV0Psi3;
 	}
-	else{
-	  fPsiNEvent = fPsiNTPCPos;
-	  fPsi3Event = fPsi3TPCPos;
+	else{ 
+	  if(trk1Eta > 0){
+	    fPsiNEvent = fPsiNTPCNeg;
+	    fPsi3Event = fPsi3TPCNeg;
+	  }
+	  else{
+	    fPsiNEvent = fPsiNTPCPos;
+	    fPsi3Event = fPsi3TPCPos;
+	  }
 	}
-	
 	//// If I am here then I have one partner. Lets look for the other one: ////
 	
 
@@ -2150,72 +2239,82 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	  //double qx = TMath::Cos(2*phi_1);   //<--- Not needed! as we use EP from opposite eta of track!
 	  //double qy = TMath::Sin(2*phi_1);
 	  
-	  //Remove AutoCorrelation:
-	  Double_t fTPCQxTemp = 0, fTPCQyTemp = 0; ///Get the Total sum of Qx,Qy  locally, then Remove AutoCorr if needed.
+	 
+	  Double_t fPsiNNoAuto = 0.;
+	  
+	  Double_t fTPCQxTemp = 0, fTPCQyTemp = 0; /// Get the Total sum of Qx,Qy  locally, then Remove AutoCorr if needed.
 	  Double_t qx=0, qy=0;
-	    
-	  if(eta_1 > 0){ // use EP from opposite eta than the charged track! One way to remove AutoCorrelation.
-	    fTPCQxTemp = SumQnxTPCNeg;   
-	    fTPCQyTemp = SumQnyTPCNeg;
-	    
-	    if(find(vecNegEPTrkID.begin(),vecNegEPTrkID.end(), id_posDaughter) != vecNegEPTrkID.end()){
 
-	      vector<int>::iterator iter = find(vecNegEPTrkID.begin(), vecNegEPTrkID.end(), id_posDaughter);
-	      if (iter != vecNegEPTrkID.end()){
-		int iPosDaughter = distance(vecNegEPTrkID.begin(), iter);
-		qx += TMath::Cos(2*vecPhi[iPosDaughter]);   
-		qy += TMath::Sin(2*vecPhi[iPosDaughter]);
-	      }
-	    }
+	  
+	  if(bUseV0EventPlane){ /// If we want to use V0 Event Plane, no Auto,short-range Correlation.
+	    fPsiNNoAuto = fSelectedV0PsiN;	 
+	  }
+	  else{ //Use TPC EP and Remove AutoCorrelation:
 	    
-	    if(find(vecNegEPTrkID.begin(),vecNegEPTrkID.end(), id_negDaughter) != vecNegEPTrkID.end()){
+	    if(eta_1 > 0) { // use EP from opposite eta than the charged track! One way to remove AutoCorrelation.
 	      
-	      vector<int>::iterator iter = find(vecNegEPTrkID.begin(), vecNegEPTrkID.end(), id_negDaughter);
-	      if (iter != vecNegEPTrkID.end()){
-		int iNegDaughter = distance(vecNegEPTrkID.begin(), iter);
-		qx += TMath::Cos(2*vecPhi[iNegDaughter]);   
-		qy += TMath::Sin(2*vecPhi[iNegDaughter]);
-	      }
-	    }
-	  }///for -ve EP
-	  else{
+	      fTPCQxTemp = SumQnxTPCNeg;   
+	      fTPCQyTemp = SumQnyTPCNeg;
 	    
-	    fTPCQxTemp = SumQnxTPCPos;   
-	    fTPCQyTemp = SumQnyTPCPos;
+	      if(find(vecNegEPTrkID.begin(),vecNegEPTrkID.end(), id_posDaughter) != vecNegEPTrkID.end()){
 
-	    if(find(vecPosEPTrkID.begin(),vecPosEPTrkID.end(), id_posDaughter) != vecPosEPTrkID.end()){
-
-	      vector<int>::iterator iter = find(vecPosEPTrkID.begin(), vecPosEPTrkID.end(), id_posDaughter);
-	      if (iter != vecPosEPTrkID.end()){
-		int iPosDaughter = distance(vecPosEPTrkID.begin(), iter);
-		qx += TMath::Cos(2*vecPhi[iPosDaughter]);   
-		qy += TMath::Sin(2*vecPhi[iPosDaughter]);
+		vector<int>::iterator iter = find(vecNegEPTrkID.begin(), vecNegEPTrkID.end(), id_posDaughter);
+		if (iter != vecNegEPTrkID.end()){
+		  int iPosDaughter = distance(vecNegEPTrkID.begin(), iter);
+		  qx += TMath::Cos(2*vecPhi[iPosDaughter]);   
+		  qy += TMath::Sin(2*vecPhi[iPosDaughter]);
+		}
 	      }
-	    }
 	    
-	    if(find(vecPosEPTrkID.begin(),vecPosEPTrkID.end(), id_negDaughter) != vecPosEPTrkID.end()){
+	      if(find(vecNegEPTrkID.begin(),vecNegEPTrkID.end(), id_negDaughter) != vecNegEPTrkID.end()){
 	      
-	      vector<int>::iterator iter = find(vecPosEPTrkID.begin(), vecPosEPTrkID.end(), id_negDaughter);
-	      if (iter != vecPosEPTrkID.end()){
-		int iNegDaughter = distance(vecPosEPTrkID.begin(), iter);
-		qx += TMath::Cos(2*vecPhi[iNegDaughter]);   
-		qy += TMath::Sin(2*vecPhi[iNegDaughter]);
+		vector<int>::iterator iter = find(vecNegEPTrkID.begin(), vecNegEPTrkID.end(), id_negDaughter);
+		if (iter != vecNegEPTrkID.end()){
+		  int iNegDaughter = distance(vecNegEPTrkID.begin(), iter);
+		  qx += TMath::Cos(2*vecPhi[iNegDaughter]);   
+		  qy += TMath::Sin(2*vecPhi[iNegDaughter]);
+		}
 	      }
-	    }
-	  }/// for PosEP 
+	    }///for -ve EP
+	    else{
+	    
+	      fTPCQxTemp = SumQnxTPCPos;   
+	      fTPCQyTemp = SumQnyTPCPos;
+
+	      if(find(vecPosEPTrkID.begin(),vecPosEPTrkID.end(), id_posDaughter) != vecPosEPTrkID.end()){
+
+		vector<int>::iterator iter = find(vecPosEPTrkID.begin(), vecPosEPTrkID.end(), id_posDaughter);
+		if (iter != vecPosEPTrkID.end()){
+		  int iPosDaughter = distance(vecPosEPTrkID.begin(), iter);
+		  qx += TMath::Cos(2*vecPhi[iPosDaughter]);   
+		  qy += TMath::Sin(2*vecPhi[iPosDaughter]);
+		}
+	      }
+	    
+	      if(find(vecPosEPTrkID.begin(),vecPosEPTrkID.end(), id_negDaughter) != vecPosEPTrkID.end()){
+	      
+		vector<int>::iterator iter = find(vecPosEPTrkID.begin(), vecPosEPTrkID.end(), id_negDaughter);
+		if (iter != vecPosEPTrkID.end()){
+		  int iNegDaughter = distance(vecPosEPTrkID.begin(), iter);
+		  qx += TMath::Cos(2*vecPhi[iNegDaughter]);   
+		  qy += TMath::Sin(2*vecPhi[iNegDaughter]);
+		}
+	      }
+	    }/// for PosEP 
 
 	  
-	  fTPCQxTemp -= qx;   /// qx=0,qy=0 if Lambda daughters are on the opposite eta of the EP used.. 
-	  fTPCQyTemp -= qy;   	      
-	  
+	    fTPCQxTemp -= qx;   /// qx=0,qy=0 if Lambda daughters are on the opposite eta of the EP used.. 
+	    fTPCQyTemp -= qy;   	      
+	    fPsiNNoAuto = (1./gPsiN)*TMath::ATan2(fTPCQyTemp,fTPCQxTemp);   //AutoCorrelation Removed EP.
+	    if(fPsiNNoAuto < 0) fPsiNNoAuto += TMath::TwoPi()/gPsiN;  	  
+
+	  }///case if TPC Event Plane is used...
 
 	  
-	  Double_t fPsiNTPCNoAuto = (1./gPsiN)*TMath::ATan2(fTPCQyTemp,fTPCQxTemp);   //AutoCorrelation Removed EP.
-	  if(fPsiNTPCNoAuto < 0) fPsiNTPCNoAuto += TMath::TwoPi()/gPsiN;  	  
 
 	        
 	  Double_t delta = TMath::Cos(phi_lambda - phi_1);
-	  Double_t gammaTPC  = TMath::Cos(phi_lambda + phi_1 - 2 *fPsiNTPCNoAuto);
+	  Double_t gammaTPC  = TMath::Cos(phi_lambda + phi_1 - 2 *fPsiNNoAuto);
 
 
 	  if(code_1 > 0){
@@ -2240,77 +2339,78 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	  if(id_1 == id_posDaughter || id_1 == id_negDaughter) continue;
 
 
-	  //Remove AutoCorrelation:	  
+	 
+	  Double_t fPsiNNoAuto = 0.;
 	  Double_t fTPCQxTemp = 0, fTPCQyTemp = 0; ///Get the Total sum of Qx,Qy  locally, then Remove AutoCorr if needed.
 	  Double_t qx=0, qy=0;
 	  
-
-
-	  if(eta_1 > 0){ // use EP from opposite eta than the charged track! One way to remove AutoCorrelation.
-	    fTPCQxTemp = SumQnxTPCNeg;   
-	    fTPCQyTemp = SumQnyTPCNeg;
+	  if(bUseV0EventPlane){ /// If we want to use V0 Event Plane, no Auto,short-range Correlation.
+	    fPsiNNoAuto = fSelectedV0PsiN;	 
+	  }
+	  else{ //Use TPC EP and Remove AutoCorrelation:
 	    
-	    if(find(vecNegEPTrkID.begin(),vecNegEPTrkID.end(), id_posDaughter) != vecNegEPTrkID.end()){
+	    if(eta_1 > 0){ // use EP from opposite eta than the charged track! One way to remove AutoCorrelation.
 
-	      vector<int>::iterator iter = find(vecNegEPTrkID.begin(), vecNegEPTrkID.end(), id_posDaughter);
-	      if (iter != vecNegEPTrkID.end()){
-		int iPosDaughter = distance(vecNegEPTrkID.begin(), iter);
-		qx += TMath::Cos(2*vecPhi[iPosDaughter]);   
-		qy += TMath::Sin(2*vecPhi[iPosDaughter]);
+	      fTPCQxTemp = SumQnxTPCNeg;   
+	      fTPCQyTemp = SumQnyTPCNeg;
+	    
+	      if(find(vecNegEPTrkID.begin(),vecNegEPTrkID.end(), id_posDaughter) != vecNegEPTrkID.end()){
+
+		vector<int>::iterator iter = find(vecNegEPTrkID.begin(), vecNegEPTrkID.end(), id_posDaughter);
+		if (iter != vecNegEPTrkID.end()){
+		  int iPosDaughter = distance(vecNegEPTrkID.begin(), iter);
+		  qx += TMath::Cos(2*vecPhi[iPosDaughter]);   
+		  qy += TMath::Sin(2*vecPhi[iPosDaughter]);
+		}
 	      }
-	    }
 	    
-	    if(find(vecNegEPTrkID.begin(),vecNegEPTrkID.end(), id_negDaughter) != vecNegEPTrkID.end()){
+	      if(find(vecNegEPTrkID.begin(),vecNegEPTrkID.end(), id_negDaughter) != vecNegEPTrkID.end()){
 	      
-	      vector<int>::iterator iter = find(vecNegEPTrkID.begin(), vecNegEPTrkID.end(), id_negDaughter);
-	      if (iter != vecNegEPTrkID.end()){
-		int iNegDaughter = distance(vecNegEPTrkID.begin(), iter);
-		qx += TMath::Cos(2*vecPhi[iNegDaughter]);   
-		qy += TMath::Sin(2*vecPhi[iNegDaughter]);
+		vector<int>::iterator iter = find(vecNegEPTrkID.begin(), vecNegEPTrkID.end(), id_negDaughter);
+		if (iter != vecNegEPTrkID.end()){
+		  int iNegDaughter = distance(vecNegEPTrkID.begin(), iter);
+		  qx += TMath::Cos(2*vecPhi[iNegDaughter]);   
+		  qy += TMath::Sin(2*vecPhi[iNegDaughter]);
+		}
 	      }
-	    }
-	  }///for -ve EP
-	  else{
+	    }///for -ve EP
+	    else{
 	    
-	    fTPCQxTemp = SumQnxTPCPos;   
-	    fTPCQyTemp = SumQnyTPCPos;
+	      fTPCQxTemp = SumQnxTPCPos;   
+	      fTPCQyTemp = SumQnyTPCPos;
 
-	    if(find(vecPosEPTrkID.begin(),vecPosEPTrkID.end(), id_posDaughter) != vecPosEPTrkID.end()){
+	      if(find(vecPosEPTrkID.begin(),vecPosEPTrkID.end(), id_posDaughter) != vecPosEPTrkID.end()){
 
-	      vector<int>::iterator iter = find(vecPosEPTrkID.begin(), vecPosEPTrkID.end(), id_posDaughter);
-	      if (iter != vecPosEPTrkID.end()){
-		int iPosDaughter = distance(vecPosEPTrkID.begin(), iter);
-		qx += TMath::Cos(2*vecPhi[iPosDaughter]);   
-		qy += TMath::Sin(2*vecPhi[iPosDaughter]);
+		vector<int>::iterator iter = find(vecPosEPTrkID.begin(), vecPosEPTrkID.end(), id_posDaughter);
+		if (iter != vecPosEPTrkID.end()){
+		  int iPosDaughter = distance(vecPosEPTrkID.begin(), iter);
+		  qx += TMath::Cos(2*vecPhi[iPosDaughter]);   
+		  qy += TMath::Sin(2*vecPhi[iPosDaughter]);
+		}
 	      }
-	    }
 	    
-	    if(find(vecPosEPTrkID.begin(),vecPosEPTrkID.end(), id_negDaughter) != vecPosEPTrkID.end()){
+	      if(find(vecPosEPTrkID.begin(),vecPosEPTrkID.end(), id_negDaughter) != vecPosEPTrkID.end()){
 	      
-	      vector<int>::iterator iter = find(vecPosEPTrkID.begin(), vecPosEPTrkID.end(), id_negDaughter);
-	      if (iter != vecPosEPTrkID.end()){
-		int iNegDaughter = distance(vecPosEPTrkID.begin(), iter);
-		qx += TMath::Cos(2*vecPhi[iNegDaughter]);   
-		qy += TMath::Sin(2*vecPhi[iNegDaughter]);
+		vector<int>::iterator iter = find(vecPosEPTrkID.begin(), vecPosEPTrkID.end(), id_negDaughter);
+		if (iter != vecPosEPTrkID.end()){
+		  int iNegDaughter = distance(vecPosEPTrkID.begin(), iter);
+		  qx += TMath::Cos(2*vecPhi[iNegDaughter]);   
+		  qy += TMath::Sin(2*vecPhi[iNegDaughter]);
+		}
 	      }
-	    }
-	  }/// for PosEP 
+	    }/// for PosEP 
 
 	  
-	  fTPCQxTemp -= qx;   /// qx=0,qy=0 if Lambda daughters are on the opposite eta of the EP used.. 
-	  fTPCQyTemp -= qy;   	      
-	  
+	    fTPCQxTemp -= qx;   /// qx=0,qy=0 if Lambda daughters are on the opposite eta of the EP used.. 
+	    fTPCQyTemp -= qy;
+
+	    fPsiNNoAuto = (1./gPsiN)*TMath::ATan2(fTPCQyTemp,fTPCQxTemp);
+	    if(fPsiNNoAuto < 0) fPsiNNoAuto += TMath::TwoPi()/gPsiN; 
+	  }
 
 
-
-	  
-	  Double_t fPsiNTPCNoAuto = (1./gPsiN)*TMath::ATan2(fTPCQyTemp,fTPCQxTemp);
-	  if(fPsiNTPCNoAuto < 0) fPsiNTPCNoAuto += TMath::TwoPi()/gPsiN;  	  
-
-
- 
 	  Double_t delta = TMath::Cos(phi_antiLambda - phi_1);
-	  Double_t gammaTPC = TMath::Cos(phi_antiLambda + phi_1 - 2*fPsiNTPCNoAuto);
+	  Double_t gammaTPC = TMath::Cos(phi_antiLambda + phi_1 - 2*fPsiNNoAuto);
 
 	  //antiLambda - h+
 	  if(code_1 > 0){
@@ -2959,10 +3059,9 @@ void AliAnalysisTaskGammaDeltaPID::SetupEventAndTaskConfigInfo(){
   //if(fListV0MCorr){
   //fHistAnalysisInfo->SetBinContent(10,1);
   //}
-  
-  fHistAnalysisInfo->GetXaxis()->SetBinLabel(11,"Reserved");
-  fHistAnalysisInfo->GetXaxis()->SetBinLabel(12,"Reserved");
-  fHistAnalysisInfo->GetXaxis()->SetBinLabel(13,"Reserved");
+  fHistAnalysisInfo->GetXaxis()->SetBinLabel(11,"V0CEP");
+  fHistAnalysisInfo->GetXaxis()->SetBinLabel(12,"V0AEP");
+  fHistAnalysisInfo->GetXaxis()->SetBinLabel(13,"TPCEP");
   fHistAnalysisInfo->GetXaxis()->SetBinLabel(14,"Reserved");
 
 
@@ -3035,21 +3134,17 @@ void AliAnalysisTaskGammaDeltaPID::GetNUACorrectionHist(Int_t run, Int_t kPartic
     //if(fHCorrectNUAChrgPos && fHCorrectNUAChrgNeg){
     //cout<<"\n=========== Info:: Setting up NUA corrections for run "<<run<<"============"<<endl;   
     //}
-
-
     /// Now Get Average Q vector:
-    fHCorrectTPCQnxEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCosNPsivsCentEtaPosRun%d",run));
-    fHCorrectTPCQnyEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSinNPsivsCentEtaPosRun%d",run));
-    fHCorrectTPCQnxEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCosNPsivsCentEtaNegRun%d",run));
-    fHCorrectTPCQnyEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSinNPsivsCentEtaNegRun%d",run));
+    fHCorrectTPCQNxEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCosNPsivsCentEtaPosRun%d",run));
+    fHCorrectTPCQNyEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSinNPsivsCentEtaPosRun%d",run));
+    fHCorrectTPCQNxEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCosNPsivsCentEtaNegRun%d",run));
+    fHCorrectTPCQNyEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSinNPsivsCentEtaNegRun%d",run));
 
     fHCorrectTPCQ3xEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCos3PsivsCentEtaPosRun%d",run));
     fHCorrectTPCQ3yEtaPos = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSin3PsivsCentEtaPosRun%d",run));
     fHCorrectTPCQ3xEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgCos3PsivsCentEtaNegRun%d",run));
     fHCorrectTPCQ3yEtaNeg = (TH1D *) fListNUACorr->FindObject(Form("fHisAvgSin3PsivsCentEtaNegRun%d",run));
-          
-
-    
+             
     //if(fHCorrectNUAChrgPos && fHCorrectNUAChrgNeg){
     //cout<<"\n=========== Info:: Found TPC <Q> vectors for run "<<run<<"============"<<endl;   
     //}
@@ -3079,12 +3174,23 @@ void AliAnalysisTaskGammaDeltaPID::GetMCCorrectionHist(){
     }
 }
 
-void AliAnalysisTaskGammaDeltaPID::GetV0MCorrectionHist(Int_t run, Int_t kHarmonic){ 
+void AliAnalysisTaskGammaDeltaPID::GetV0MCorrectionHist(Int_t run){ 
 
   if(fListV0MCorr){
+    
     fHCorrectV0ChWeghts = (TH2F *) fListV0MCorr->FindObject(Form("hWgtV0ChannelsvsVzRun%d",run));
-    if(fHCorrectV0ChWeghts){
-      printf("\n ::Info() V0 Channel Weights Found for Run %d ",run);
+
+    if(fHCorrectV0ChWeghts){ // Load <Q> vector if Gain Correction is available, otherwise no Point.
+      //printf("\n ::Info() V0 Channel Weights Found for Run %d ",run);
+      fHCorrectQNxV0C = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQNxvsCentV0CRun%d",run));
+      fHCorrectQNyV0C = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQNyvsCentV0CRun%d",run));    
+      fHCorrectQNxV0A = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQNxvsCentV0ARun%d",run));
+      fHCorrectQNyV0A = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQNyvsCentV0ARun%d",run));
+	
+      fHCorrectQ3xV0C = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQ3xvsCentV0CRun%d",run));
+      fHCorrectQ3yV0C = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQ3yvsCentV0CRun%d",run));    
+      fHCorrectQ3xV0A = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQ3xvsCentV0ARun%d",run));
+      fHCorrectQ3yV0A = (TH1D *) fListV0MCorr->FindObject(Form("fHisAvgQ3yvsCentV0ARun%d",run));
     }
   }
   else{
