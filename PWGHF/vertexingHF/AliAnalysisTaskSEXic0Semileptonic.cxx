@@ -217,6 +217,9 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	fEvtCuts->SetUsePhysicsSelection(kTRUE);
 	fEvtCuts->SetTriggerClass("");
 	fEvtCuts->SetUseInt7TriggerPP2012();
+	fEvtCuts->SetTriggerMask(AliVEvent::kINT7);
+	fEvtCuts->SetOptPileup(AliRDHFCuts::kRejectMVPileupEvent); // multi vertexer pileup rejection
+	
 	//fEvtCuts->ResetMaskAndEnableMBTrigger();
 
 	//kimc, Mar. 18
@@ -224,6 +227,7 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	fEvtCuts_HMV0->SetUsePhysicsSelection(kTRUE);
 	fEvtCuts_HMV0->SetTriggerClass(""); //kimc: keep this - otherwise floating point exception occur
 	fEvtCuts_HMV0->SetTriggerMask(AliVEvent::kHighMultV0);
+	fEvtCuts_HMV0->SetOptPileup(AliRDHFCuts::kRejectMVPileupEvent); // multi vertexer pileup rejection
 
 	//*******************************************
 
@@ -252,7 +256,7 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 
 	fHistos = new THistManager("histogram");
 
-	vector<TString> Event = {"All","ProperB","RDHCCutsSel","Sel","MB","PSpileup","Goodz","Goodzcut", "HMV0","HMSPD"};
+	vector<TString> Event = {"All","ProperB","RDHCCutsSel","Sel","MB","PSpileup_SPD","PSpileup_MV","Goodz","Goodzcut", "HMV0","HMSPD"};
 	auto hEventCount = fHistos->CreateTH1("hEventNumbers", "", Event.size(), 0, Event.size());
 	for (auto i=0u; i<Event.size(); i++) hEventCount->GetXaxis()->SetBinLabel(i+1,Event.at(i).Data());
 
@@ -579,10 +583,10 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 		else nContributor = 5; //>= 50, valid for high multiplicity pp and p-Pb
 	}
 	if (nContributor == -999) { cout <<"ERROR in pileup cut!\n"; assert(false); }
-	if (!IsMC && fEvt->IsPileupFromSPD(nContributor, 0.8, 3., 2., 5.)) return;
+	//if (!IsMC && fEvt->IsPileupFromSPD(nContributor, 0.8, 3., 2., 5.)) return;
 	//if (!IsMC && fEvt->IsPileupFromSPD(3.,0.8,3.,2.,5.)) return; //Conventional setting before Sep. 17, 2021
 	
-	fHistos->FillTH1("hEventNumbers", "PSpileup", 1);
+	 if (!(!IsMC && fEvt->IsPileupFromSPD(nContributor, 0.8, 3., 2., 5.))) fHistos->FillTH1("hEventNumbers", "PSpileup_SPD", 1);
 
 	//Primary Vertex Selection
 	fVtxZ = 9999; //kimc
@@ -599,6 +603,8 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
     if (fCentrality >=  0.1 && fCentrality <=  30.0) fCounter_MB_0p1to30 ->StoreEvent(fEvt, fEvtCuts, IsMC);
     if (fCentrality >= 30.0 && fCentrality <= 100.0) fCounter_MB_30to100 ->StoreEvent(fEvt, fEvtCuts, IsMC);
     if (fCentrality >=  0.0 && fCentrality <=   0.1) fCounter_HMV0_0to0p1->StoreEvent(fEvt, fEvtCuts_HMV0, IsMC);
+	
+	fHistos->FillTH1("hEventNumbers", "PSpileup_MV", 1);
 
 	//kimc, June 23
 	if (fIsINELLgtZERO)
