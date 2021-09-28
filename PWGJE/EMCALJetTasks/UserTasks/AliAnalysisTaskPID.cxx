@@ -1270,12 +1270,12 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   }
   
   if (GetDoTPCclusterStudies()) {
-    Int_t nBinsPrime = 320;
-    Double_t primeLow = 0.4;
-    Double_t primeHigh = 2.0;
-    Int_t arrNumbers = 4;
+    const Int_t nBinsPrime = 320;
+    const Double_t primeLow = 0.4;
+    const Double_t primeHigh = 2.0;
+    const Int_t arrNumbers = 4;
     fTPCclusterStudies = new TObjArray*[arrNumbers];
-    Int_t histNumbers = 3;
+    const Int_t histNumbers = 3;
     
     const Int_t nBinsY[histNumbers+1] = {8, 4, 11, 15};
     Float_t twopi = 2.0 * TMath::Pi();
@@ -1566,7 +1566,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         
         if (fDoPID) {
           Double_t valuesGenYield[kGenYieldNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), centralityPercentile, -1, -1, -1, -1 };
-          valuesGenYield[GetIndexOfChargeAxisGenYield(), -1, -1] = chargeMC;
+          valuesGenYield[GetIndexOfChargeAxisGenYield()] = chargeMC;
           
           if (isMultSelected)
             fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);
@@ -1582,7 +1582,8 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
           Double_t valueEff[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), mcPart->Eta(), chargeMC, centralityPercentile,
                                             -1, -1, -1, -1, -1 };
           
-          if (isMultSelected)            fContainerEff->Fill(valueEff, kStepGenWithGenCuts);
+          if (isMultSelected)            
+            fContainerEff->Fill(valueEff, kStepGenWithGenCuts);
           
           if (isMBSelected) {
             valueEff[kEffCentrality] = -13;
