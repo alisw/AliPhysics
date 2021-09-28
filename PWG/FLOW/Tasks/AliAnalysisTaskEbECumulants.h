@@ -11,11 +11,12 @@
 #ifndef ALIANALYSISTASKEBECUMULANTS_H
 #define ALIANALYSISTASKEBECUMULANTS_H
 
-#include "AliAnalysisTaskSE.h"
-#include "AliAODTrack.h"
-#include "AliAODEvent.h"
-#include "AliVEvent.h"
-#include "TH1F.h"
+#include <AliAnalysisTaskSE.h>
+#include <AliAODTrack.h>
+#include <AliAODEvent.h>
+#include <AliVEvent.h>
+#include <TSystem.h>
+#include <TH1F.h>
 
 //================================================================================================================
 
@@ -53,6 +54,14 @@ class AliAnalysisTaskEbECumulants : public AliAnalysisTaskSE{
    this->fMaxBinPt = max;
   };
 
+  // Utility:
+  void Red(const char* text);
+  void Green(const char* text);
+  void Yellow(const char* text);
+  void Blue(const char* text);
+  TObject* GetObjectFromList(TList *list, Char_t *objectName); // see .cxx
+  Int_t NumberOfNonEmptyLines(const char *externalFile);  
+
  private:
   AliAnalysisTaskEbECumulants(const AliAnalysisTaskEbECumulants& aatmpf);
   AliAnalysisTaskEbECumulants& operator=(const AliAnalysisTaskEbECumulants& aatmpf);
@@ -71,7 +80,7 @@ class AliAnalysisTaskEbECumulants : public AliAnalysisTaskSE{
   TList *fFinalResultsList; // list to hold all histograms with final results
 
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskEbECumulants,1);
+  ClassDef(AliAnalysisTaskEbECumulants,2);
 
 };
 

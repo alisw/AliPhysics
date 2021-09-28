@@ -170,7 +170,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
   fBaseList->SetOwner(kTRUE);
 
   // Initialize all non-built in types:
-  fTaskName = name;
+  fTaskName = name; // the default name from constructor can be overwritten with SetTaskName(...)
   this->InitializeNonBuiltInTypes();
 
   // Initialize all arrays:
@@ -6273,10 +6273,10 @@ void AliAnalysisTaskMuPa::DefaultConfiguration()
  fRandomSeed = 0;
  
  // task->SetFillQAHistograms(kTRUE); // by default, only selection of most important ones 
- fFillQAHistograms = kTRUE;
+ fFillQAHistograms = kFALSE;
 
  // task->SetFillQAHistogramsAll(kFALSE); // all QA histograms, also heavy 2D ones 
- fFillQAHistogramsAll = kTRUE;
+ fFillQAHistogramsAll = kFALSE;
 
  // task->SetTerminateAfterQA(kFALSE);
  fTerminateAfterQA = kFALSE;
@@ -6342,7 +6342,7 @@ void AliAnalysisTaskMuPa::SetUseDefaultFilterBitCuts(Int_t fb)
   break;
 
   case 768:  
-   fFilterBit = 96;
+   fFilterBit = 768;
    fUseDCACuts[0] = kFALSE; // nice!
    fUseDCACuts[1] = kFALSE; // nice!
    // task->SetParticleCuts("ITSNcls",2,999);

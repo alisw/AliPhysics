@@ -218,6 +218,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fUseCentralityCuts = kTRUE;
   }
   void SetCentralityEstimator(const char *ce) {this->fCentralityEstimator = ce;};
+  void SetTaskName(const char *tn) {this->fTaskName = tn;};
 
   void SetCentralityCorrelationsCuts(const char* firstEstimator, const char* secondEstimator, const Double_t cut, const int cutVersion)
   {
@@ -727,7 +728,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,26);
+  ClassDef(AliAnalysisTaskMuPa,27);
 
 };
 
