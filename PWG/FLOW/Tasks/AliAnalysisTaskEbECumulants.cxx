@@ -17,15 +17,17 @@
 * template class for student projects * 
 **************************************/ 
   
-#include "Riostream.h"
-#include "AliAnalysisTaskEbECumulants.h"
-#include "AliLog.h"
-#include "AliAODEvent.h"
-#include "AliAODInputHandler.h"
-#include "TFile.h"
+#include <Riostream.h>
+#include <AliAnalysisTaskEbECumulants.h>
+#include <AliLog.h>
+#include <AliAODEvent.h>
+#include <AliAODInputHandler.h>
+#include <TFile.h>
 
 using std::cout;
 using std::endl;
+using std::string;
+using std::ifstream;
 
 ClassImp(AliAnalysisTaskEbECumulants)
 
@@ -265,4 +267,103 @@ void AliAnalysisTaskEbECumulants::BookFinalResultsHistograms()
 } // void AliAnalysisTaskEbECumulants::BookFinalResultsHistograms()
 
 //=======================================================================================================================
+
+void AliAnalysisTaskEbECumulants::Red(const char* text)
+{ 
+ cout<<"\n\033[1;31m"<<text<<"\033[0m\n"<<endl;
+} 
+
+//=======================================================================================
+
+void AliAnalysisTaskEbECumulants::Green(const char* text)
+{ 
+ cout<<"\n\033[1;32m"<<text<<"\033[0m\n"<<endl;
+}
+//=======================================================================================
+
+void AliAnalysisTaskEbECumulants::Yellow(const char* text)
+{ 
+ cout<<"\n\033[1;33m"<<text<<"\033[0m\n"<<endl;
+} 
+
+//=======================================================================================
+
+void AliAnalysisTaskEbECumulants::Blue(const char* text)
+{ 
+ cout<<"\n\033[1;34m"<<text<<"\033[0m\n"<<endl;
+} 
+
+//=======================================================================================
+
+TObject* AliAnalysisTaskEbECumulants::GetObjectFromList(TList *list, Char_t *objectName)
+{
+ // Get TObject pointer from TList, even if it's in some nested TList. Foreseen to be used to fetch histograms or profiles from files directly. 
+ // Some ideas taken from TCollection::ls() 
+ // If you have added histograms directly to files (without TList's), then you can fetch them directly with file->Get("hist-name"). 
+ 
+ // Usage: TH1D *hist = (TH1D*) GetObjectFromList("some-valid-TList-pointer","some-object-name");
+
+ // Example: GetObjectFromList("some-valid-TList-pointer","some-object-name")->Draw(); // yes, for histograms and profiles this is just fine
+
+ // Last update: 20210911
+
+ // To do: 
+ // a) If I have objects with same name, nested in different TLists, what then?
+ 
+ // Insanity checks:  
+ if(!list){cout<<__LINE__<<endl;exit(1);}
+ if(!objectName){cout<<__LINE__<<endl;exit(1);}
+ if(0 == list->GetEntries()){return NULL;}
+
+ // The object is in the current base list:
+ TObject *objectFinal = list->FindObject(objectName); // final object I am after
+ if(objectFinal) return objectFinal;
+
+ // Search for object recursively in the nested lists:
+ TObject *objectIter; // iterator object in the loop below
+ TIter next(list);
+ while((objectIter = next())) // double round braces are to silent the warnings
+ {
+  if(TString(objectIter->ClassName()).EqualTo("TList"))
+  {
+   objectFinal = GetObjectFromList((TList*)objectIter,objectName);
+   if(objectFinal) return objectFinal;
+  }
+ } // while(objectIter = next()) 
+
+ return NULL;
+
+} // TObject* AliAnalysisTaskEbECumulants::GetObjectFromList(TList *list, Char_t *objectName)
+
+//=======================================================================================
+
+Int_t AliAnalysisTaskEbECumulants::NumberOfNonEmptyLines(const char *externalFile)
+{
+ // Count number of non-empty lines in some external file.
+
+ if(gSystem->AccessPathName(externalFile,kFileExists))
+ {
+  Red(Form("if(gSystem->AccessPathName(externalFile,kFileExists)), externalFile = %s",externalFile)); 
+  cout<<__LINE__<<endl;
+  exit(1);
+ }
+
+ string line;
+ ifstream myfile;
+ myfile.open(externalFile);
+ Int_t nLines = 0;
+ while (getline(myfile,line))
+ { 
+  if(TString(line).EqualTo("")){continue;}
+  nLines++;
+ }
+ myfile.close();
+
+ return nLines;
+
+} // Int_t AliAnalysisTaskEbECumulants::NumberOfNonEmptyLines(const char *externalFile)
+
+//=======================================================================================
+
+
 
