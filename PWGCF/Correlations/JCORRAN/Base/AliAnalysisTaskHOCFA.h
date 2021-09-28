@@ -58,7 +58,7 @@ public:
   TComplex Q(Int_t n, Int_t p);
   TComplex CalculateRecursion(Int_t n, Int_t *harmonic, Int_t mult=1, Int_t skip=0);
   virtual void ComputeAllTerms(); // TBC: Do I need to pass the angles and weights?
-  virtual void CalculateCorrelator(Int_t combi, Int_t bin, Int_t nParticles, Int_t harmonics[]);
+  virtual void CalculateCorrelator(Int_t combi, Int_t bin, Int_t nParticles, Int_t harmonics[], Double_t *errorTerms);
 
 
 private:
@@ -93,8 +93,9 @@ private:
   TH1I *fHistoCharge[16]; //! Charge distribution of the trimmed tracks.
   TProfile *fCorrelTerms[6][16];  //! Combinations of correlators for SCs/ACs.
     // 6: Max number of SCs/ACs, 16: Max number of centrality bins.
+  TProfile *fErrorTerms[6][16]; //! Terms for the error propagation for NSC(k,l,m).
 
-  ClassDef(AliAnalysisTaskHOCFA, 1);
+  ClassDef(AliAnalysisTaskHOCFA, 2);
 };
 
 #endif

@@ -20,11 +20,8 @@
 
 /**
  * \class AliAnalysisTaskEmcalJetEnergyFlow
- * \brief Implementation of analysis task which calculates the energy flow between jets of increasing
- *  jet radii. It derives from AliAnalysisTaskEmcalJet.
- *  After performing a geometrical matching for the jets of the different radii, it calculates the pt
- *  difference between subsequent pairs of them. Additionally some basic analysis on track and jet
- *  spectra is performed.
+ * \brief Implementation of analysis task which calculates the energy flow between jets of increasing jet radii. It derives from AliAnalysisTaskEmcalJet.
+ *  After performing a geometrical matching for the jets of the different radii, it calculates the pt difference between subsequent pairs of them. Additionally some basic analysis on track and jet spectra is performed.
  */
 
 class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
@@ -68,14 +65,14 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void                    DoCellLoop()                            ; ///<May remove later
 
         Bool_t                  IsMCprod                                ;///<Flag for MC productions
-	THistManager            fHistManager                            ;///< Histogram manager
+	THistManager            fHistManager                            ;///<Hist manager
 //	TList*			fOutput					;///!<! Output list
  	private:
  	 AliAnalysisTaskEmcalJetEnergyFlow(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
   	/// \cond CLASSIMP
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow, 9);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,12);
 	/// \endcond
 };
 #endif

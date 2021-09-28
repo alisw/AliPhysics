@@ -53,7 +53,8 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
 	AliParticleContainer *trackContPartLevel = 0x0;
 	AliParticleContainer *trackContTrueLevel = 0x0;
 
-	if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kMCTrue) {
+	if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kMCTrue || 
+      jetShapeType == AliAnalysisTaskJetCoreEmcal::kMCKine) {
 		trackCont = task->AddMCParticleContainer("mcparticles");
 	}
 	else if (jetShapeType == AliAnalysisTaskJetCoreEmcal::kData) {
@@ -87,6 +88,7 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
   AliJetContainer* jetContPart = 0x0;
 	if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kData ||
 			jetShapeType == AliAnalysisTaskJetCoreEmcal::kMCTrue ||
+			jetShapeType == AliAnalysisTaskJetCoreEmcal::kMCKine ||
 			jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPartCorr) { 
 
 		jetContBase = task->AddJetContainer(njetsBase,typeStr,R);

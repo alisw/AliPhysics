@@ -111,6 +111,8 @@ fCutTPCNCls(80.),
 fCutITSNCls(3.),
 fCutDCAxy(2.4),
 fCutDCAz(3.2),
+fCutDeltaEta(0.01),
+fCutDeltaPhi(0.01),
 fCutTrackEta(0.7),
 fCutpTMin(1.),
 //PID Cut
@@ -305,6 +307,8 @@ fCutTPCNCls(80.),
 fCutITSNCls(3.),
 fCutDCAxy(2.4),
 fCutDCAz(3.2),
+fCutDeltaEta(0.01),
+fCutDeltaPhi(0.01),
 fCutTrackEta(0.7),
 fCutpTMin(1),
 //PID Cut
@@ -1269,7 +1273,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             fEMCTrkMatchcluster->Fill(fPhiDiff,fEtaDiff);
-            if(TMath::Abs(fPhiDiff) > 0.01 || TMath::Abs(fEtaDiff)> 0.01) continue;
+            if(TMath::Abs(fPhiDiff) > fCutDeltaPhi || TMath::Abs(fEtaDiff)> fCutDeltaEta) continue;
             
             Float_t EMCalpos[3];
             clustMatch -> GetPosition(EMCalpos);

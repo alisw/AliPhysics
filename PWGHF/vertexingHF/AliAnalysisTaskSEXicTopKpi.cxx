@@ -209,6 +209,12 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fPtSoftPionCand_insideScLoop(0)
   ,fKeepGenPtMC(kTRUE)
   ,fAbsValueScCharge(-1)
+  ,fSwitchOffTopCuts(kFALSE)
+  ,fSwitchOffPIDafterFilt(kFALSE)
+  ,fnProt(999)
+  ,fnKaon(999)
+  ,fnPion(999)
+  ,fRejEvWoutpKpi(kFALSE)
 {
   /// Default constructor
 
@@ -336,6 +342,12 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fPtSoftPionCand_insideScLoop(0)
   ,fKeepGenPtMC(kTRUE)
   ,fAbsValueScCharge(-1)
+  ,fSwitchOffTopCuts(kFALSE)
+  ,fSwitchOffPIDafterFilt(kFALSE)
+  ,fnProt(999)
+  ,fnKaon(999)
+  ,fnPion(999)
+  ,fRejEvWoutpKpi(kFALSE)
 {
   /// Default constructor
 
@@ -562,6 +574,13 @@ void AliAnalysisTaskSEXicTopKpi::Init()
     printf("===== !!! INPUT VALUE NOT VALID !!! Putting it to -1 (keep both Sc0 and Sc++)\n\n");
     fAbsValueScCharge = -1;
   }
+
+  printf("\n\n##### fRejEvWoutpKpi: %d\n",fRejEvWoutpKpi);
+  if(fRejEvWoutpKpi)  printf("\t===> Events without recognised p, K, pi rejected!\n");
+  printf("\n\n##### fSwitchOffTopCuts: %d\n",fSwitchOffTopCuts);
+  if(fSwitchOffTopCuts) printf("\t===> Topological selections not applied!\n");
+  printf("\n\n##### fSwitchOffPIDafterFilt: %d\n",fSwitchOffPIDafterFilt);
+  if(fSwitchOffTopCuts && fSwitchOffPIDafterFilt) printf("===> PID selections after filtering not applied!\n");
 
   return;
 }
@@ -1158,6 +1177,22 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     return;
   }
 
+  // if required, reject events without a recognised p, K or pi track
+  if(fRejEvWoutpKpi){
+    // the event must have at least 1 proton, or 1 kaon, or 1 pion
+    if(fnProt==0 || fnKaon==0 || fnPion==0){
+      fnProt=999;
+      fnKaon=999;
+      fnPion=999;
+      delete fvHF;
+      PostData(1,fNentries);
+      PostData(2,fCounter);
+      PostData(3,fOutput);
+      PostData(4,fTreeVar);
+      return;
+    }
+  }
+
   
   //  Int_t pdgDg[3]={211,321,2212};
   
@@ -1343,7 +1378,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	}
   fCandCounter_onTheFly->Fill(4); // in fiducial acceptance
 
-	if(io3Prong->GetReducedChi2()>fMaxVtxChi2Cut){
+	if(io3Prong->GetReducedChi2()>fMaxVtxChi2Cut && !fSwitchOffTopCuts){
 	  AliAODVertex *vtx3 = (AliAODVertex*)io3Prong->GetSecondaryVtx();
 	  if(vtx3){delete vtx3;vtx3=0;}
 	  if(unsetvtx)io3Prong->UnsetOwnPrimaryVtx();
@@ -1652,8 +1687,18 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  // POSTPONED HERE !!!
 	  //
 	  //massHypothesis=isSeleCuts&massHypothesis;
-	  if(fExplore_PIDstdCuts)   massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
-	  else                      massHypothesis=isSeleCuts&massHypothesis;
+
+    if(fSwitchOffTopCuts) { // here we switch the topological selections on candidates off
+      //
+      // if wee keep the selection on PID, modify the massHypothesis
+      // otherwise, do not touch it
+      if(!fSwitchOffPIDafterFilt) massHypothesis=resp_onlyPID&massHypothesis;
+    }
+    else {  // this is the default
+      if(fExplore_PIDstdCuts)   massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
+	    else                      massHypothesis=isSeleCuts&massHypothesis;
+    }
+
 	  //
 	  //
 
@@ -2687,6 +2732,13 @@ void AliAnalysisTaskSEXicTopKpi::IsSelectedPID(AliAODTrack *track,Int_t &iSelPio
     }
   }
 
+  if(fRejEvWoutpKpi) {
+    // update the number of recognised p, K, pi
+    if(iSelProton>0)  fnProt++;
+    if(iSelKaon>0)    fnKaon++;
+    if(iSelPion>0)    fnPion++;
+  }
+
 }
 
 
@@ -3120,6 +3172,13 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
   ftrackSelStatusProton->Reset();
   ftrackSelStatusKaon->Reset();
   ftrackSelStatusPion->Reset();
+
+
+  if(fRejEvWoutpKpi) {
+    fnProt = 0; // number of PID selected protons
+    fnKaon = 0; // number of PID selected kaons
+    fnPion = 0; // number of PID selected pions
+  }
 
   for(Int_t itrack=0;itrack<aod->GetNumberOfTracks();itrack++){
     fhistMonitoring->Fill(3);

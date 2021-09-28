@@ -39,30 +39,25 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   // Proton cut variations
 
   // Track Cuts
-  AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
-      isMC, true, false, false);
-  TrackCuts->SetFilterBit(128);
-  TrackCuts->SetCutCharge(1);
-  if (std::abs(pdgDmesonBuddy) == 211) {
-    TrackCuts->SetPID(AliPID::kPion, 0.5);
-    TrackCuts->SetRejLowPtPionsTOF(kFALSE);
-  } else if (std::abs(pdgDmesonBuddy) == 321) {
-    TrackCuts->SetPID(AliPID::kKaon, 0.4);
-  } else {
-    Error("AddTaskAnyCharmingFemto()", "Particle not implemented.");
-    return nullptr;
+  AliFemtoDreamTrackCuts *TrackCuts = nullptr;
+  AliFemtoDreamTrackCuts *AntiTrackCuts = nullptr;
+  if(std::abs(pdgDmesonBuddy) == 2212) {
+    TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+    TrackCuts->SetFilterBit(128);
+    TrackCuts->SetCutCharge(1);
+    AntiTrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+    AntiTrackCuts->SetFilterBit(128);
+    AntiTrackCuts->SetCutCharge(-1);
   }
-
-  AliFemtoDreamTrackCuts *AntiTrackCuts =
-      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
-  AntiTrackCuts->SetFilterBit(128);
-  AntiTrackCuts->SetCutCharge(-1);
-  if (std::abs(pdgDmesonBuddy) == 211) {
-    AntiTrackCuts->SetPID(AliPID::kPion, 0.5);
-    AntiTrackCuts->SetRejLowPtPionsTOF(kFALSE);
-  } else if (std::abs(pdgDmesonBuddy) == 321) {
-    AntiTrackCuts->SetPID(AliPID::kKaon, 0.4);
-  } else {
+  if(std::abs(pdgDmesonBuddy) == 211) {
+    TrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+    TrackCuts->SetFilterBit(96);
+    TrackCuts->SetCutCharge(1);
+    AntiTrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+    AntiTrackCuts->SetFilterBit(96);
+    AntiTrackCuts->SetCutCharge(-1);
+  }
+  else {
     Error("AddTaskAnyCharmingFemto()", "Particle not implemented.");
     return nullptr;
   }
@@ -118,15 +113,14 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   closeRejection[0] = true;  // pp
   closeRejection[4] = true;  // barp barp
 
-  pairQA[0] = 11;   // pp
-  pairQA[4] = 11;   // pbarpbar
-  pairQA[2] = 13;   // pDplus
-  pairQA[3] = 13;   // pDminus
-  pairQA[5] = 13;   // barp Dplus
-  pairQA[6] = 13;   // barp Dminus
+  pairQA[0] = 11;   // light-light
+  pairQA[4] = 11;   // antilight-antilight
+  pairQA[2] = 13;   // light-charm
+  pairQA[3] = 13;   // light-anticharm
+  pairQA[5] = 13;   // antilight charm
+  pairQA[6] = 13;   // antilight anticharm
 
-  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
-                                                                "Femto");
+  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
   if (trigger == "kHighMultV0") {
     std::vector<int> MultBins = AliFemtoDreamCollConfig::GetHMMultBins();
     config->SetMultBins(MultBins);

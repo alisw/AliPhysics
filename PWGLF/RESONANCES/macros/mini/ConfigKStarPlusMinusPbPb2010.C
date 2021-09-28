@@ -255,8 +255,8 @@ Bool_t ConfigKStarPlusMinusPbPb2010
       out->AddAxis(ptID, ptbin, lptbin, hptbin);
       
       // axis W: Centrality                                                                                                                         
-      //out->AddAxis(centID, multbin, lmultbin, hmultbin);
-      out->AddAxis(sdpt,200,0.,20.);
+      out->AddAxis(centID, multbin, lmultbin, hmultbin);
+      //out->AddAxis(sdpt,200,0.,20.);
     
 }
 

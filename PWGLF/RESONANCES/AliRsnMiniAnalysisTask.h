@@ -30,6 +30,7 @@
 #include "AliEventCuts.h"
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisFilter.h"
+//#include "AliPPVsMultUtils.h"
 
 class TList;
 
@@ -75,14 +76,13 @@ public:
    void                SetCheckMomentumConservation(Bool_t checkP) {fCheckP = checkP;}
    void                SetCheckFeedDown(Bool_t checkFeedDown)      {fCheckFeedDown = checkFeedDown;}
    void                SetDselection(UShort_t originDselection);
-   void 	              SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
+   void 	       SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
    void                SetMotherAcceptanceCutMinPt(Float_t minPt)  {fMotherAcceptanceCutMinPt = minPt;}
    void                SetMotherAcceptanceCutMaxEta(Float_t maxEta){fMotherAcceptanceCutMaxEta = maxEta;}
    void                KeepMotherInAcceptance(Bool_t keepMotherInAcceptance) {fKeepMotherInAcceptance = keepMotherInAcceptance;}
    void                SaveRsnTreeInFile(Bool_t saveInFile=kTRUE) {fRsnTreeInFile = saveInFile;}
    void                SetComputeSpherocity(Bool_t doit=kTRUE) {fComputeSpherocity = doit;}
    void                SetTrackCuts(AliAnalysisFilter* fTrackFilter);
-
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}

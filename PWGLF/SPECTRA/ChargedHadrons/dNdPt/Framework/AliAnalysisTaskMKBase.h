@@ -191,6 +191,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     AliCentrality*                  fCentrality;                //!<!  AliCentrality                                                     --InitEventCent()
     Int_t                           fNTracksESD;                //!<!  number of esd tracks in the event                                 --InitEvent()
     Int_t                           fNTracksAcc;                //!<!  number of accepted trackswith trackcuts                           --InitEvent()
+    Int_t                           fNPartEta05;                //!<!  number of accepted trackswith trackcuts                           --InitEvent()
     Bool_t                          fIsMC;                      //!<!  do we have an MC event?                                           --ReadMCEvent()
     Int_t                           fRunNumber;                 //!<!  run number                                                             --InitEvent()
     TString                         fRunNumberString;           //!<!  run number as string                                              --InitEvent()
@@ -321,6 +322,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Int_t                           fMCLabel;                   //!<!  mc label                                                          --
     Double_t                        fMCPt;                      //!<!  mc pt                                                             --InitMCParticle()
     Double_t                        fMCEta;                     //!<!  mc eta                                                            --InitMCParticle()
+    Double_t                        fMCY;                     //!<!  mc y                                                            --InitMCParticle()
     Double_t                        fMCPhi;                     //!<!  mc phi                                                            --InitMCParticle()
     Bool_t                          fMCisPrim;                  //!<!  is physical primary?                                              --InitMCParticle()
     Bool_t                          fMCisSec;                   //!<!  is secondary?                                                     --InitMCParticle()

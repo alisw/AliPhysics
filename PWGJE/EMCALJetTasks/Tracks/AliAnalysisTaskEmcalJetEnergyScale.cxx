@@ -122,8 +122,18 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH1("hAllQuarks", "Pt of the hardest parton in case it is a quark", 1000, 0., 1000.);
   fHistos->CreateTH1("hAllGluons", "Pt of the hardest parton in case it is a gluon", 1000, 0., 1000.);
   fHistos->CreateTH2("hJetEnergyScale", "Jet Energy scale; p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleCharged", "Jet Energy scale (charged part); p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleNeutral", "Jet Energy scale (neutral part); p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleChargedVsFull", "Jet Energy scale (charged part, vs. full jet pt); p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleNeutralVsFull", "Jet Energy scale (neutral part, vs. full jet pt); p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
   fHistos->CreateTH2("hJetEnergyScaleDet", "Jet Energy scale (det); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleDetCharged", "Jet Energy scale (det, charged part); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleDetNeutral", "Jet Energy scale (det, neutral part); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleDetChargedVsFull", "Jet Energy scale (det, charged part, vs. full jet pt); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleDetNeutralVsFull", "Jet Energy scale (det, neutral part, vs. full jet pt); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
   fHistos->CreateTH2("hJetResponseFine", "Response matrix, fine binning", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH2("hJetResponseFineCharged", "Response matrix, fine binning", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH2("hJetResponseFineNeutral", "Response matrix, fine binning", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH2("hJetResponseFineClosure", "Response matrix, fine binning, for closure test", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH2("hJetResponseFineNoClosure", "Response matrix, fine binning, for closure test", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH1("hJetSpectrumPartAll", "Part level jet pt spectrum ", kNPtBinsPart, 0., kPtPartMax);
@@ -345,9 +355,22 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       fHistos->FillTHnSparse("hPtDiff", pointDiff);
       fHistos->FillTHnSparse("hPtCorr", pointCorr);
     }
+
+    double detptcharged = detpt * (1 - detjet->NEF()), detptneutral = detpt * detjet->NEF(),
+           partptcharged = partjet->Pt() * (1 - partjet->NEF()),  partptneutral = partjet->Pt() * partjet->NEF();
     fHistos->FillTH2("hJetResponseFine", detpt, partjet->Pt());
+    fHistos->FillTH1("hJetResponseFineCharged", detptcharged, partptcharged);
+    fHistos->FillTH1("hJetResponseFineNeutral", detptneutral, partptneutral);
     fHistos->FillTH1("hJetEnergyScale", partjet->Pt(), (detpt - partjet->Pt())/partjet->Pt());
+    fHistos->FillTH1("hJetEnergyScaleCharged", partptcharged, (detptcharged - partptcharged)/partptcharged);
+    fHistos->FillTH1("hJetEnergyScaleNeutral", partptneutral, (detptneutral - partptneutral)/partptneutral);
+    fHistos->FillTH1("hJetEnergyScaleChargedVsFull", partjet->Pt(), (detptcharged - partptcharged)/partptcharged);
+    fHistos->FillTH1("hJetEnergyScaleNeutralVsFull", partjet->Pt(), (detptneutral - partptneutral)/partptneutral);
     fHistos->FillTH1("hJetEnergyScaleDet", detpt, (detpt - partjet->Pt())/partjet->Pt());
+    fHistos->FillTH1("hJetEnergyScaleDetCharged", detptcharged, (detptcharged - partptcharged)/partptcharged);
+    fHistos->FillTH1("hJetEnergyScaleDetNeutral", detptneutral, (detptneutral - partptneutral)/partptneutral);
+    fHistos->FillTH1("hJetEnergyScaleDetChargedVsFull", detpt, (detptcharged - partptcharged)/partptcharged);
+    fHistos->FillTH1("hJetEnergyScaleDetNeutralVsFull", detpt, (detptneutral - partptneutral)/partptneutral);
     // splitting for closure test
     if(isClosure) {
       fHistos->FillTH2("hJetResponseFineClosure", detpt, partjet->Pt());

@@ -337,7 +337,7 @@ AliAnalysisTaskV0ChCorrelationsys::AliAnalysisTaskV0ChCorrelationsys(const char 
    // Input slot #0 works with a TChain - it is connected to the default input container
    // Output slot #1 writes into a TH1 container
   fMassMean[0] = 0.497614; fMassMean[1] = 1.115683; 
-  fMassRes[0] = 0.005; fMassRes[1] = 0.0025; 
+  fMassRes[0] = 0.007; fMassRes[1] = 0.0025; 
   
   for(Int_t i = 0; i < 3; i++){
     fMassLowK0s[i] = 0.;
@@ -637,26 +637,26 @@ void AliAnalysisTaskV0ChCorrelationsys::UserCreateOutputObjects()
 
    //-------------------------------------------
 
-   fMassLowK0s[0] = fMassMean[0]-8.*fMassRes[0];
+   fMassLowK0s[0] = fMassMean[0]-10.*fMassRes[0];
    fMassLowK0s[1] = fMassMean[0]-3.*fMassRes[0];
-   fMassLowK0s[2] = fMassMean[0]+5.*fMassRes[0];
-   fMassHighK0s[0] = fMassMean[0]-5.*fMassRes[0];
+   fMassLowK0s[2] = fMassMean[0]+7.*fMassRes[0];
+   fMassHighK0s[0] = fMassMean[0]-7.*fMassRes[0];
    fMassHighK0s[1] = fMassMean[0]+3.*fMassRes[0];
-   fMassHighK0s[2] = fMassMean[0]+8.*fMassRes[0];
+   fMassHighK0s[2] = fMassMean[0]+10.*fMassRes[0];
    
-   fMassLowLambda[0] = fMassMean[1]-8.*fMassRes[1];
+   fMassLowLambda[0] = fMassMean[1]-10.*fMassRes[1];
    fMassLowLambda[1] = fMassMean[1]-3.*fMassRes[1];
-   fMassLowLambda[2] = fMassMean[1]+5.*fMassRes[1];
-   fMassHighLambda[0] = fMassMean[1]-5.*fMassRes[1];
+   fMassLowLambda[2] = fMassMean[1]+7.*fMassRes[1];
+   fMassHighLambda[0] = fMassMean[1]-7.*fMassRes[1];
    fMassHighLambda[1] = fMassMean[1]+3.*fMassRes[1];
-   fMassHighLambda[2] = fMassMean[1]+8.*fMassRes[1];
+   fMassHighLambda[2] = fMassMean[1]+10.*fMassRes[1];
   
-   fMassLowAntiLambda[0] = fMassMean[1]-8.*fMassRes[1];
+   fMassLowAntiLambda[0] = fMassMean[1]-10.*fMassRes[1];
    fMassLowAntiLambda[1] = fMassMean[1]-3.*fMassRes[1];
-   fMassLowAntiLambda[2] = fMassMean[1]+5.*fMassRes[1];
-   fMassHighAntiLambda[0] = fMassMean[1]-5.*fMassRes[1];
+   fMassLowAntiLambda[2] = fMassMean[1]+7.*fMassRes[1];
+   fMassHighAntiLambda[0] = fMassMean[1]-7.*fMassRes[1];
    fMassHighAntiLambda[1] = fMassMean[1]+3.*fMassRes[1];
-   fMassHighAntiLambda[2] = fMassMean[1]+8.*fMassRes[1];
+   fMassHighAntiLambda[2] = fMassMean[1]+10.*fMassRes[1];
 
    //-----------------------------------------------------------
    // Settings for event mixing 

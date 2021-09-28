@@ -95,6 +95,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Bool_t                  IsEventRejectedAddPileUp(const int fPileupCut) const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
         Int_t                   GetSamplingIndex() const;
+        Double_t                GetCentralityFromImpactParameter();
         //Weights and QA hists
         AliGFWWeights*          fWeights;                   //!
         TList*                  fWeightList;                //!
@@ -225,7 +226,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         AliVEvent*              fEvent;                     //!
         Bool_t                  fInitTask;                  //Initialization
         Bool_t                  fOnTheFly;                  
-        Bool_t                  fImpactParameterMC;
+        Double_t                fImpactParameterMC;
         std::vector<AliDecorrFlowCorrTask*>    fVecCorrTask;   //
         
         //cuts & selection: Analysis
@@ -251,6 +252,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                PtEdges[NPtBinMax+1];
         Double_t                fCentMin;
         Double_t                fCentMax;
+        Double_t                fPVtxCutX;
+        Double_t                fPVtxCutY;
         Double_t                fPVtxCutZ;
         Bool_t                  fRequireHighPtTracks;
         Int_t                   fNHighPtTracks;

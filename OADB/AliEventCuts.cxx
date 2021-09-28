@@ -932,11 +932,13 @@ void AliEventCuts::SetupRun1PbPb() {
   fMinVtz = -10.f;
   fMaxVtz = 10.f;
 
-  fCentralityFramework = 2;
-  fCentEstimators[0] = "V0M";
-  fCentEstimators[1] = "CL0";
-  fMinCentrality = 0.f;
-  fMaxCentrality = 90.f;
+  if (!fOverrideCentralityFramework) {
+    fCentralityFramework = 2; // FIXME: for the pass3 (and maybe also previous passes?) we might want to use the AliMultSelection
+    fCentEstimators[0] = "V0M";
+    fCentEstimators[1] = "CL0";
+    fMinCentrality = 0.f;
+    fMaxCentrality = 90.f;
+  }
 
   fUseEstimatorsCorrelationCut = false;
   array<double,5> vzero_tpcout_polcut{-1391.46,1.44779,4.78352e-05,-5.96914e-10,0.0};

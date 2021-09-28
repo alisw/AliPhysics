@@ -113,6 +113,11 @@ public:
         fCutDCAz=DCAzCut;
     }
     
+    void             SetEMCalMatching(Double_t DeltaEta,Double_t DeltaPhi){
+        fCutDeltaEta=DeltaEta;
+        fCutDeltaPhi=DeltaPhi;
+    }
+    
     //------------Setters for PID electron------------------
     void             SetTPCnsigma(Double_t TPCNSigMin,Double_t TPCNSigMax){
         fCutNsigmaEMin=TPCNSigMin;
@@ -153,6 +158,8 @@ private:
     Int_t            fCutITSNCls;
     Double_t         fCutDCAxy;
     Double_t         fCutDCAz;
+    Double_t         fCutDeltaEta;
+    Double_t         fCutDeltaPhi;
     Double_t         fCutTrackEta;
     Double_t         fCutpTMin;
     //--------------------PID Cut------------------
