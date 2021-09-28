@@ -132,7 +132,6 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   hCorrectNUAPos(NULL),
   hCorrectNUANeg(NULL),
   hMultV0Read(NULL),
-  hMultV0(NULL),
   hQnPercentile(NULL),
   hQnPercentile_centThisEvt(NULL),
   sp(NULL),
@@ -167,10 +166,13 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   for (int i = 0; i < 3; ++i)   pV0XMeanRead[i]=NULL; 
   for (int i = 0; i < 3; ++i)   pV0YMeanRead[i]=NULL;
 
-  for (int i = 0; i < 2; ++i)   hQx2mV0[i]=NULL;
-  for (int i = 0; i < 2; ++i)   hQy2mV0[i]=NULL;
-  for (int i = 0; i < 2; ++i)   hQx2sV0[i]=NULL;
-  for (int i = 0; i < 2; ++i)   hQy2sV0[i]=NULL;
+  for (int i = 0; i < 138; ++i){
+    hMultV0[i]=NULL; //Dobrin
+    for (int j = 0; j < 2; ++j)   hQx2mV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQy2mV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQx2sV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQy2sV0[i][j]=NULL;
+  }
   for (int i = 0; i < 64; ++i) fMultV0Ch[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0XMean[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0YMean[i]=-999.;
@@ -271,7 +273,6 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   hCorrectNUAPos(NULL),
   hCorrectNUANeg(NULL),
   hMultV0Read(NULL),
-  hMultV0(NULL),
   hQnPercentile(NULL),
   hQnPercentile_centThisEvt(NULL),
   sp(NULL),
@@ -306,10 +307,13 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   for (int i = 0; i < 3; ++i)   pV0XMeanRead[i]=NULL; 
   for (int i = 0; i < 3; ++i)   pV0YMeanRead[i]=NULL;
 
-  for (int i = 0; i < 2; ++i)   hQx2mV0[i]=NULL;
-  for (int i = 0; i < 2; ++i)   hQy2mV0[i]=NULL;
-  for (int i = 0; i < 2; ++i)   hQx2sV0[i]=NULL;
-  for (int i = 0; i < 2; ++i)   hQy2sV0[i]=NULL;
+  for (int i = 0; i < 138; ++i){
+    hMultV0[i]=NULL; //Dobrin
+    for (int j = 0; j < 2; ++j)   hQx2mV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQy2mV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQx2sV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQy2sV0[i][j]=NULL;
+  }
   for (int i = 0; i < 64; ++i) fMultV0Ch[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0XMean[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0YMean[i]=-999.;
@@ -451,7 +455,6 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   hCorrectNUAPos(NULL),
   hCorrectNUANeg(NULL),
   hMultV0Read(NULL),
-  hMultV0(NULL),
   hQnPercentile(NULL),
   hQnPercentile_centThisEvt(NULL),
   sp(NULL),
@@ -486,10 +489,13 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   for (int i = 0; i < 3; ++i)   pV0XMeanRead[i]=NULL; 
   for (int i = 0; i < 3; ++i)   pV0YMeanRead[i]=NULL;
 
-  for (int i = 0; i < 2; ++i)   hQx2mV0[i]=NULL;
-  for (int i = 0; i < 2; ++i)   hQy2mV0[i]=NULL;
-  for (int i = 0; i < 2; ++i)   hQx2sV0[i]=NULL;
-  for (int i = 0; i < 2; ++i)   hQy2sV0[i]=NULL;
+  for (int i = 0; i < 138; ++i){
+    hMultV0[i]=NULL; //Dobrin
+    for (int j = 0; j < 2; ++j)   hQx2mV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQy2mV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQx2sV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQy2sV0[i][j]=NULL;
+  }
   for (int i = 0; i < 64; ++i) fMultV0Ch[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0XMean[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0YMean[i]=-999.;
@@ -611,6 +617,145 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
         hRunNumBin->GetXaxis()->SetBinLabel(i+1,runNumList[i].Data());
       }
       fOutputList->Add(hRunNumBin);
+
+      // Open Info for A.Dobrin V0 Calib
+      if (!gGrid) {
+          TGrid::Connect("alien://");
+      }
+      TFile* fileV0Calib15o = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/calibV015oP2.root");
+      if(!fileV0Calib15o){
+          printf("OADB V0 calibration file cannot be opened\n");
+          return;
+      }
+  
+      // Mult
+      AliOADBContainer* contMult = (AliOADBContainer*) fileV0Calib15o->Get("hMultV0BefCorPfpx");
+      if(!contMult){
+          printf("OADB object hMultV0BefCorr is not available in the file\n");
+          return;
+      }
+  
+      // V0C Qx Mean 
+      AliOADBContainer* contQx2cm = (AliOADBContainer*) fileV0Calib15o->Get("fqxc2m");
+      if(!contQx2cm){
+          printf("OADB object fqxc2m is not available in the file\n");
+          return;
+      }
+  
+      // V0C Qy Mean 
+      AliOADBContainer* contQy2cm = (AliOADBContainer*) fileV0Calib15o->Get("fqyc2m");
+      if(!contQy2cm){
+          printf("OADB object fqyc2m is not available in the file\n");
+          return;
+      }
+  
+      // V0A Qx Mean 
+      AliOADBContainer* contQx2am = (AliOADBContainer*) fileV0Calib15o->Get("fqxa2m");
+      if(!contQx2am){
+          printf("OADB object fqxa2m is not available in the file\n");
+          return;
+      }
+  
+      // V0A Qy Mean 
+      AliOADBContainer* contQy2am = (AliOADBContainer*) fileV0Calib15o->Get("fqya2m");
+      if(!contQy2am){
+          printf("OADB object fqya2m is not available in the file\n");
+          return;
+      }
+  
+      // V0C Qx Sigma
+      AliOADBContainer* contQx2cs = (AliOADBContainer*) fileV0Calib15o->Get("fqxc2s");
+      if(!contQx2cs){
+          printf("OADB object fqxc2s is not available in the file\n");
+          return;
+      }
+  
+      // V0C Qy Sigma
+      AliOADBContainer* contQy2cs = (AliOADBContainer*) fileV0Calib15o->Get("fqyc2s");
+      if(!contQy2cs){
+          printf("OADB object fqyc2s is not available in the file\n");
+          return;
+      }
+  
+       // V0A Qx Sigma
+      AliOADBContainer* contQx2as = (AliOADBContainer*) fileV0Calib15o->Get("fqxa2s");
+      if(!contQx2as){
+          printf("OADB object fqxa2s is not available in the file\n");
+          return;
+      }
+  
+      // V0A Qy Sigma
+      AliOADBContainer* contQy2as = (AliOADBContainer*) fileV0Calib15o->Get("fqya2s");
+      if(!contQy2as){
+          printf("OADB object fqya2s is not available in the file\n");
+          return;
+      }
+  
+      for (int iRun = 0; iRun < 138; ++iRun){
+  
+        // Mult   
+        if(!(contMult->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object hMultV0BefCorPfpx is not available for run %i\n", runNumList[iRun].Atoi() );
+            return;
+        }
+        hMultV0[iRun] = ((TH1D*) contMult->GetObject(runNumList[iRun].Atoi()));
+  
+        // V0C Qx Mean 
+        if(!(contQx2cm->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqxc2m is not available for run %i\n", runNumList[iRun].Atoi() );
+            return;
+        }
+        hQx2mV0[iRun][0] = ((TH1D*) contQx2cm->GetObject(runNumList[iRun].Atoi() ) );
+  
+        // V0C Qy Mean 
+        if(!(contQy2cm->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqyc2m is not available for run %i\n", runNumList[iRun].Atoi() );
+            return;
+        }
+        hQy2mV0[iRun][0] = ((TH1D*) contQy2cm->GetObject(runNumList[iRun].Atoi() ) );
+  
+        // V0A Qx Mean
+        if(!(contQx2am->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqxa2m is not available for run %i\n", runNumList[iRun].Atoi() );
+            return;
+        }
+        hQx2mV0[iRun][1] = ((TH1D*) contQx2am->GetObject(runNumList[iRun].Atoi() ) );
+  
+        // V0A Qy Mean
+        if(!(contQy2am->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqya2m is not available for run %i\n", runNumList[iRun].Atoi() );
+            return;
+        }
+        hQy2mV0[iRun][1] = ((TH1D*) contQy2am->GetObject(runNumList[iRun].Atoi() ) );
+  
+        // V0C Qx Sigma
+        if(!(contQx2cs->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqxc2s is not available for run %i\n", runNumList[iRun].Atoi() );
+            return;
+        }
+        hQx2sV0[iRun][0] = ((TH1D*) contQx2cs->GetObject(runNumList[iRun].Atoi() ) );
+  
+        // V0C Qy Sigma
+        if(!(contQy2cs->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqyc2s is not available for run %i\n", runNumList[iRun].Atoi() );
+            return;
+        }
+        hQy2sV0[iRun][0] = ((TH1D*) contQy2cs->GetObject(runNumList[iRun].Atoi() ) );
+  
+        // V0A Qx Sigma
+        if(!(contQx2as->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqxa2s is not available for run %i\n", runNumList[iRun].Atoi() );
+            return;
+        }
+        hQx2sV0[iRun][1] = ((TH1D*) contQx2as->GetObject(runNumList[iRun].Atoi() ) );
+  
+        // V0A Qy Sigma
+        if(!(contQy2as->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqya2s is not available for run %i\n", runNumList[iRun].Atoi() );
+            return;
+        }
+        hQy2sV0[iRun][1] = ((TH1D*) contQy2as->GetObject(runNumList[iRun].Atoi() ) );    
+      }
   }
 
   // Copy TList
@@ -912,7 +1057,7 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
   fMultCutPU->SetParameters(parFB32);
 
 
-  // Rihan Pile-up function 18?
+  // Rihan Pile-up function 18
   // fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
 
   // Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
@@ -1875,9 +2020,8 @@ bool AliAnalysisTaskCMWESE::GetV0CalibHisto(AliAODEvent* fAOD, AliAODVertex* fVt
       }    
       return true;
   } else if (fPeriod.EqualTo("LHC15o") ){ // A.Dobrin's V0Calib; "calibV0HIR.root"
-      OpenInfoCalbration(fRunNum);
       for(int iCh = 0; iCh < 64; ++iCh) {
-        fMultV0Ch[iCh] = hMultV0->GetBinContent(iCh+1);
+        fMultV0Ch[iCh] = hMultV0[fRunNumBin]->GetBinContent(iCh+1);
       } 
       // AliCentrality* centrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
       // Double_t centSPD = centrality->GetCentralityPercentile("CL1");
@@ -1892,10 +2036,10 @@ bool AliAnalysisTaskCMWESE::GetV0CalibHisto(AliAODEvent* fAOD, AliAODVertex* fVt
       fV0XMean[0] = -999.; fV0YMean[0] = -999.; 
       fV0XSigma[0] = -999.; fV0YSigma[0] = -999.; 
       for(int i = 0; i < 2; ++i) {   // [1]: C; [2]: A;
-        fV0XMean[i+1] = hQx2mV0[i]->GetBinContent(iCentSPD+1);
-        fV0YMean[i+1] = hQy2mV0[i]->GetBinContent(iCentSPD+1);
-        fV0XSigma[i+1] = hQx2sV0[i]->GetBinContent(iCentSPD+1);
-        fV0YSigma[i+1] = hQy2sV0[i]->GetBinContent(iCentSPD+1);
+        fV0XMean[i+1] = hQx2mV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
+        fV0YMean[i+1] = hQy2mV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
+        fV0XSigma[i+1] = hQx2sV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
+        fV0YSigma[i+1] = hQy2sV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
       }   
   }
   else return false;
@@ -2064,138 +2208,4 @@ int AliAnalysisTaskCMWESE::GetPercCode(double perc)
 
     return percCode;
 
-}
-
-//---------------------------------------------------
-
-void AliAnalysisTaskCMWESE::OpenInfoCalbration(int run)
-{
-    if (!gGrid) {
-        TGrid::Connect("alien://");
-    }
-
-    TFile* fileV0Calib15o = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/calibV015oP2.root");
-
-    if(!fileV0Calib15o){
-        printf("OADB V0 calibration file cannot be opened\n");
-        return;
-    }
-
-    // Mult
-    AliOADBContainer* contMult = (AliOADBContainer*) fileV0Calib15o->Get("hMultV0BefCorPfpx");
-    if(!contMult){
-        printf("OADB object hMultV0BefCorr is not available in the file\n");
-        return;
-    }
-    if(!(contMult->GetObject(run))){
-        printf("OADB object hMultV0BefCorPfpx is not available for run %i\n", run);
-        return;
-    }
-    hMultV0 = ((TH1D*) contMult->GetObject(run));
-
-
-    // V0C Qx Mean 
-    AliOADBContainer* contQx2cm = (AliOADBContainer*) fileV0Calib15o->Get("fqxc2m");
-    if(!contQx2cm){
-        printf("OADB object fqxc2m is not available in the file\n");
-        return;
-    }
-    if(!(contQx2cm->GetObject(run))){
-        printf("OADB object fqxc2m is not available for run %i\n", run);
-        return;
-    }
-    hQx2mV0[0] = ((TH1D*) contQx2cm->GetObject(run));
-
-
-    // V0C Qy Mean 
-    AliOADBContainer* contQy2cm = (AliOADBContainer*) fileV0Calib15o->Get("fqyc2m");
-    if(!contQy2cm){
-        printf("OADB object fqyc2m is not available in the file\n");
-        return;
-    }
-    if(!(contQy2cm->GetObject(run))){
-        printf("OADB object fqyc2m is not available for run %i\n", run);
-        return;
-    }
-    hQy2mV0[0] = ((TH1D*) contQy2cm->GetObject(run));
-
-
-    // V0A Qx Mean 
-    AliOADBContainer* contQx2am = (AliOADBContainer*) fileV0Calib15o->Get("fqxa2m");
-    if(!contQx2am){
-        printf("OADB object fqxa2m is not available in the file\n");
-        return;
-    }
-    if(!(contQx2am->GetObject(run))){
-        printf("OADB object fqxa2m is not available for run %i\n", run);
-        return;
-    }
-    hQx2mV0[1] = ((TH1D*) contQx2am->GetObject(run));
-
-
-    // V0A Qy Mean 
-    AliOADBContainer* contQy2am = (AliOADBContainer*) fileV0Calib15o->Get("fqya2m");
-    if(!contQy2am){
-        printf("OADB object fqya2m is not available in the file\n");
-        return;
-    }
-    if(!(contQy2am->GetObject(run))){
-        printf("OADB object fqya2m is not available for run %i\n", run);
-        return;
-    }
-    hQy2mV0[1] = ((TH1D*) contQy2am->GetObject(run));
-
-
-    // V0C Qx Sigma
-    AliOADBContainer* contQx2cs = (AliOADBContainer*) fileV0Calib15o->Get("fqxc2s");
-    if(!contQx2cs){
-        printf("OADB object fqxc2s is not available in the file\n");
-        return;
-    }
-    if(!(contQx2cs->GetObject(run))){
-        printf("OADB object fqxc2s is not available for run %i\n", run);
-        return;
-    }
-    hQx2sV0[0] = ((TH1D*) contQx2cs->GetObject(run));
-
-
-    // V0C Qy Sigma
-    AliOADBContainer* contQy2cs = (AliOADBContainer*) fileV0Calib15o->Get("fqyc2s");
-    if(!contQy2cs){
-        printf("OADB object fqyc2s is not available in the file\n");
-        return;
-    }
-    if(!(contQy2cs->GetObject(run))){
-        printf("OADB object fqyc2s is not available for run %i\n", run);
-        return;
-    }
-    hQy2sV0[0] = ((TH1D*) contQy2cs->GetObject(run));
-
-     // V0A Qx Sigma
-    AliOADBContainer* contQx2as = (AliOADBContainer*) fileV0Calib15o->Get("fqxa2s");
-    if(!contQx2as){
-        printf("OADB object fqxa2s is not available in the file\n");
-        return;
-    }
-    if(!(contQx2as->GetObject(run))){
-        printf("OADB object fqxa2s is not available for run %i\n", run);
-        return;
-    }
-    hQx2sV0[1] = ((TH1D*) contQx2as->GetObject(run));
-
-
-    // V0A Qy Sigma
-    AliOADBContainer* contQy2as = (AliOADBContainer*) fileV0Calib15o->Get("fqya2s");
-    if(!contQy2as){
-        printf("OADB object fqya2s is not available in the file\n");
-        return;
-    }
-    if(!(contQy2as->GetObject(run))){
-        printf("OADB object fqya2s is not available for run %i\n", run);
-        return;
-    }
-    hQy2sV0[1] = ((TH1D*) contQy2as->GetObject(run));
-    
-
-    return;
 }

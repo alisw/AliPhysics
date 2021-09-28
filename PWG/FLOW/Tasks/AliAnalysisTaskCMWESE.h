@@ -136,7 +136,6 @@ private:
   int             GetQnPercTPC(AliAODEvent* fAOD);
   double      GetEventPlane(double qx, double qy);
   int             GetPercCode(double perc);
-  void          OpenInfoCalbration(int run);
 
     // Cuts and options
     int                     fDebug; // debug level controls amount of output statements
@@ -195,7 +194,6 @@ private:
     TH3F*              hCorrectNUAPos; // Protty
     TH3F*              hCorrectNUANeg; // Protty
     TH2D*             hMultV0Read;
-    TH1D*             hMultV0; //Dobrin
     TH2D*             hQnPercentile;
     TH1D*             hQnPercentile_centThisEvt;
     TSpline3*        sp; 
@@ -233,10 +231,11 @@ private:
     TProfile3D*     pV0XMeanRead[3]; 
     TProfile3D*     pV0YMeanRead[3];
     // Run2 A.Dorbin
-    TH1D*             hQx2mV0[2];
-    TH1D*             hQy2mV0[2];
-    TH1D*             hQx2sV0[2];
-    TH1D*             hQy2sV0[2];
+    TH1D*             hMultV0[138]; //Dobrin
+    TH1D*             hQx2mV0[138][2];
+    TH1D*             hQy2mV0[138][2];
+    TH1D*             hQx2sV0[138][2];
+    TH1D*             hQy2sV0[138][2];
     double             fMultV0Ch[64];
     double             fV0XMean[3];
     double             fV0YMean[3];
