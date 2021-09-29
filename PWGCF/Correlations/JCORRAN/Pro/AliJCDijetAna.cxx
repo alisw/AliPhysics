@@ -267,7 +267,7 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
         eta = trk->Eta();
         if (pt>fParticlePtCut && TMath::Abs(eta) < fParticleEtaCut){
             if(ftrackingIneff>0.0 && randomGenerator->Uniform(0.0,1.0) < ftrackingIneff) continue;
-            phi = trk->Phi();
+            phi = trk->Phi() > TMath::Pi() ? trk->Phi()-2*TMath::Pi() : trk->Phi();
             if(DeltaR(randConeEta, eta, randConePhi, phi) < fJetCone) randConePt += pt;
             if(fusePionMass) {
                 chparticles.push_back(fastjet::PseudoJet(trk->Px(), trk->Py(), trk->Pz(), TMath::Sqrt(trk->Px()*trk->Px() + trk->Py()*trk->Py() + trk->Pz()*trk->Pz() + pionmass*pionmass)));
@@ -581,17 +581,118 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
             }
         }
     }
+
+    // deltaM calculations here:
+    if(bHasDeltaPhiDijet) {
+        double firstJetPhi = dijets.at(iAcc).at(1).at(0).phi() - TMath::Pi(); //-pi to pi
+        double firstConePhi = firstJetPhi-TMath::Pi()/2.0 < -TMath::Pi() ? firstJetPhi+3.0*TMath::Pi()/2.0 : firstJetPhi-TMath::Pi()/2.0;
+        double coneDeltaPhi = GetDeltaPhi(dijets.at(iAcc).at(1).at(0), dijets.at(iAcc).at(1).at(1)); // 0-2pi
+        double secondConePhi = firstConePhi+coneDeltaPhi > TMath::Pi() ? firstConePhi+coneDeltaPhi-2*TMath::Pi() : firstConePhi+coneDeltaPhi;
+        double firstConeEta = dijets.at(iAcc).at(1).at(0).eta();
+        double secondConeEta = dijets.at(iAcc).at(1).at(1).eta();
+        fastjet::PseudoJet holderJet;
+        fastjet::PseudoJet firstConeP;
+        fastjet::PseudoJet secondConeP;
+        fastjet::PseudoJet firstConeDeltaP;
+        fastjet::PseudoJet secondConeDeltaP;
+        pt = 0;
+        pt2 = 0;
+        for (utrack = 0; utrack < chparticles.size(); utrack++) {
+            phi = chparticles.at(utrack).phi();
+            eta = chparticles.at(utrack).eta();
+            if(DeltaR(firstConeEta, eta, firstConePhi, phi) < fJetCone) {
+                holderJet = fastjet::PseudoJet(chparticles.at(utrack).px(), chparticles.at(utrack).py(), chparticles.at(utrack).pz(), chparticles.at(utrack).E());
+                firstConeP += holderJet;
+                pt += holderJet.pt();
+                    
+            }
+            if(DeltaR(secondConeEta, eta, secondConePhi, phi) < fJetCone) {
+                holderJet = fastjet::PseudoJet(chparticles.at(utrack).px(), chparticles.at(utrack).py(), chparticles.at(utrack).pz(), chparticles.at(utrack).E());
+                secondConeP += holderJet;
+                pt2 += holderJet.pt();
+            }
+        }
+        //Turn the cones back to jet direction
+        firstConeP.reset_PtYPhiM(firstConeP.perp(),firstConeP.rap(),dijets.at(iAcc).at(1).at(0).phi(),firstConeP.m());
+        secondConeP.reset_PtYPhiM(secondConeP.perp(),secondConeP.rap(),dijets.at(iAcc).at(1).at(1).phi(),secondConeP.m());
+
+        jetAreaVector = dijets.at(iAcc).at(1).at(0).area_4vector();
+        firstConeDeltaP = firstConeP - fastjet::PseudoJet(rho*jetAreaVector.px(),rho*jetAreaVector.py(),(rho+rhom)*jetAreaVector.pz(),(rho+rhom)*jetAreaVector.E());
+        jetAreaVector = dijets.at(iAcc).at(1).at(1).area_4vector();
+        secondConeDeltaP = secondConeP - fastjet::PseudoJet(rho*jetAreaVector.px(),rho*jetAreaVector.py(),(rho+rhom)*jetAreaVector.pz(),(rho+rhom)*jetAreaVector.E());
+        fastjet::PseudoJet doubleDeltaCone = firstConeDeltaP + secondConeDeltaP;
+
+        fhistos->fh_dijetdeltaM1->Fill(doubleDeltaCone.m());
+
+        // The second method
+        dijet = dijets.at(iAcc).at(1).at(0) + dijets.at(iAcc).at(1).at(1);
+        double doubSquared = doubleDeltaCone.E()*doubleDeltaCone.E() - doubleDeltaCone.px()*doubleDeltaCone.px() - doubleDeltaCone.py()*doubleDeltaCone.py() - doubleDeltaCone.pz()*doubleDeltaCone.pz();
+        double dijetTimesDeltaCones = dijet.E()*doubleDeltaCone.E() - dijet.px()*doubleDeltaCone.px() - dijet.py()*doubleDeltaCone.py() - dijet.pz()*doubleDeltaCone.pz();
+
+        double mass2;
+        if(doubSquared + 2*dijetTimesDeltaCones > 0.0) mass2 = TMath::Sqrt(doubSquared + 2*dijetTimesDeltaCones);
+        else mass2 = -TMath::Sqrt(-(doubSquared + 2*dijetTimesDeltaCones));
+        fhistos->fh_dijetdeltaM2->Fill(mass2);
+
+        // The third method
+        fastjet::PseudoJet doubleCone = firstConeP + secondConeP;
+        fhistos->fh_doubleConeM->Fill(doubleCone.m());
+        double conesTimesDeltaCones = doubleCone.E()*doubleDeltaCone.E() - doubleCone.px()*doubleDeltaCone.px() - doubleCone.py()*doubleDeltaCone.py() - doubleCone.pz()*doubleDeltaCone.pz();
+
+        double mass3;
+        if(doubSquared + 2*conesTimesDeltaCones > 0.0) mass3 = TMath::Sqrt(doubSquared + 2*conesTimesDeltaCones);
+        else mass3 = -TMath::Sqrt(-(doubSquared + 2*conesTimesDeltaCones));
+        fhistos->fh_dijetdeltaM3->Fill(mass3);
+
+        // The fourth method
+        double localRho1 = pt/(TMath::Pi()*0.4*0.4);
+        double localRho2 = pt2/(TMath::Pi()*0.4*0.4);
+        double deltaRho1 = rho-localRho1;
+        double deltaRho2 = rho-localRho2;
+        fastjet::PseudoJet deltaPmu1_fourth = deltaRho1*dijets.at(iAcc).at(1).at(0).area_4vector();
+        fastjet::PseudoJet deltaPmu2_fourth = deltaRho2*dijets.at(iAcc).at(1).at(1).area_4vector();
+        fastjet::PseudoJet doubleDeltaCone_fourth = deltaPmu1_fourth + deltaPmu2_fourth;
+
+        fhistos->fh_dijetdeltaM4->Fill(doubleDeltaCone_fourth.m());
+
+        // THe fifth method
+        deltaPmu1_fourth = localRho1*dijets.at(iAcc).at(1).at(0).area_4vector();
+        deltaPmu2_fourth = localRho2*dijets.at(iAcc).at(1).at(1).area_4vector();
+        fastjet::PseudoJet bgsubtrJeFifth1 = fastjet::PseudoJet(dijets.at(iAcc).at(1).at(0).px() - localRho1 * dijets.at(iAcc).at(1).at(0).area_4vector().px(),
+                                                                dijets.at(iAcc).at(1).at(0).py() - localRho1 * dijets.at(iAcc).at(1).at(0).area_4vector().py(),
+                                                                dijets.at(iAcc).at(1).at(0).pz() - localRho1 * dijets.at(iAcc).at(1).at(0).area_4vector().pz(),
+                                                                dijets.at(iAcc).at(1).at(0).E()  - localRho1 * dijets.at(iAcc).at(1).at(0).area_4vector().E());
+        fastjet::PseudoJet bgsubtrJeFifth2 = fastjet::PseudoJet(dijets.at(iAcc).at(1).at(1).px() - localRho2 * dijets.at(iAcc).at(1).at(1).area_4vector().px(),
+                                                                dijets.at(iAcc).at(1).at(1).py() - localRho2 * dijets.at(iAcc).at(1).at(1).area_4vector().py(),
+                                                                dijets.at(iAcc).at(1).at(1).pz() - localRho2 * dijets.at(iAcc).at(1).at(1).area_4vector().pz(),
+                                                                dijets.at(iAcc).at(1).at(1).E()  - localRho2 * dijets.at(iAcc).at(1).at(1).area_4vector().E());
+        doubleDeltaCone_fourth = bgsubtrJeFifth1 + bgsubtrJeFifth2;
+        //doubleDeltaCone_fourth =   dijets.at(iAcc).at(1).at(0) - deltaPmu1_fourth
+        //                         + dijets.at(iAcc).at(1).at(1) - deltaPmu2_fourth;
+
+        dijet = dijets.at(iBGSubtr).at(1).at(0) + dijets.at(iBGSubtr).at(1).at(1);
+
+        fDeltaM=dijet.m()-doubleDeltaCone_fourth.m();
+        fhistos->fh_dijetdeltaM5->Fill(fDeltaM);
+        fhistos->fh_deltaMResponse->Fill(dijet.m()+fDeltaM, dijet.m());
+
+        double dBinCenter = 0;
+        for(int iby = 1 ; iby <= fhistos->fh_deltaMResponseEvery->GetNbinsY(); iby++){
+            dBinCenter = fhistos->fh_deltaMResponseEvery->GetYaxis()->GetBinCenter(iby);
+            fhistos->fh_deltaMResponseEvery->Fill(dBinCenter+fDeltaPt,dBinCenter);
+        }
+    }
     return;
 }
 
 // Response matrices are calculated in this function.
-void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos) {
+void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos, int iJetSetPart, int iJetSetDet) {
     if(fDebug>8) cout << "===== BEGIN RESPONSE CALC =====" << endl;
     
     vector<vector<fastjet::PseudoJet>> jetsDetMC = anaDetMC->GetJets();
 
-    unsigned Njets = jets.at(iAcc).size();
-    unsigned NjetsDetMC = jetsDetMC.at(iAcc).size();
+    unsigned Njets = jets.at(iJetSetPart).size();
+    unsigned NjetsDetMC = jetsDetMC.at(iJetSetDet).size();
     //cout << "Response true jets: " << Njets << endl;
     //cout << "Response det jets size:     " << NjetsDetMC << endl;
     double maxpt=0;
@@ -623,23 +724,23 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
         deltaR=0;
         deltaRMatch=0;
         minR=999.0;
-        ptTrue = jets.at(iAcc).at(ujet).pt();
+        ptTrue = jets.at(iJetSetPart).at(ujet).pt();
         fhistos->fh_deltaPtResponse->Fill(ptTrue+fDeltaPt,ptTrue);
         fhistos->fh_deltaPtResponse_ALICE->Fill(ptTrue+fDeltaPt,ptTrue);
         for (ujetDetMC = 0; ujetDetMC < NjetsDetMC; ujetDetMC++) { //Det MC jets
-            deltaR = DeltaR(jets.at(iAcc).at(ujet), jetsDetMC.at(iAcc).at(ujetDetMC));
+            deltaR = DeltaR(jets.at(iJetSetPart).at(ujet), jetsDetMC.at(iJetSetDet).at(ujetDetMC));
             if(deltaR<minR) minR=deltaR;
-            if(deltaR < matchingR && jetsDetMC.at(iAcc).at(ujetDetMC).pt() > maxpt) {
-                maxpt = jetsDetMC.at(iAcc).at(ujetDetMC).pt();
+            if(deltaR < matchingR && jetsDetMC.at(iJetSetDet).at(ujetDetMC).pt() > maxpt) {
+                maxpt = jetsDetMC.at(iJetSetDet).at(ujetDetMC).pt();
                 maxptIndex = ujetDetMC;
                 deltaRMatch = deltaR;
                 bfound = true;
-                //cout << "found, detPt vs truePt: " << maxpt << " <> " << jets[iAcc][ujet].pt() << ", index: " << maxptIndex << endl;
+                //cout << "found, detPt vs truePt: " << maxpt << " <> " << jets[iJetSetPart][ujet].pt() << ", index: " << maxptIndex << endl;
             }
         }
         fhistos->fh_jetResponseDeltaRClosest->Fill(minR);
         if(bfound) {
-            ptDetMC = jetsDetMC.at(iAcc).at(maxptIndex).pt();
+            ptDetMC = jetsDetMC.at(iJetSetDet).at(maxptIndex).pt();
             fhistos->fh_jetResponse->Fill(ptDetMC, ptTrue);
             fhistos->fh_jetResponse_ALICE->Fill(ptDetMC, ptTrue);
             fhistos->fh_jetResponseDeltaR->Fill(deltaRMatch);
@@ -662,19 +763,19 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
         cout << "True jets:" << endl;
         for (ujet = 0; ujet < Njets; ujet++) { //True MC jets
             cout << "jet(E, pt, phi, eta) = " <<
-                "(" << jets.at(iAcc).at(ujet).E()   << ", "
-                << jets.at(iAcc).at(ujet).pt()  << ", "
-                << jets.at(iAcc).at(ujet).phi() << ", "
-                << jets.at(iAcc).at(ujet).eta() << ") "
+                "(" << jets.at(iJetSetPart).at(ujet).E()   << ", "
+                << jets.at(iJetSetPart).at(ujet).pt()  << ", "
+                << jets.at(iJetSetPart).at(ujet).phi() << ", "
+                << jets.at(iJetSetPart).at(ujet).eta() << ") "
                 << (bTrueJetMatch.at(ujet) ? "match" : "no match") << endl;
         }
         cout << "Det jets:" <<  endl;
         for (ujetDetMC = 0; ujetDetMC < NjetsDetMC; ujetDetMC++) { //Det MC jets
             cout << "jet(E, pt, phi, eta) = " <<
-                "(" << jetsDetMC.at(iAcc).at(ujetDetMC).E()   << ", "
-                << jetsDetMC.at(iAcc).at(ujetDetMC).pt()  << ", "
-                << jetsDetMC.at(iAcc).at(ujetDetMC).phi() << ", "
-                << jetsDetMC.at(iAcc).at(ujetDetMC).eta() << ") "
+                "(" << jetsDetMC.at(iJetSetDet).at(ujetDetMC).E()   << ", "
+                << jetsDetMC.at(iJetSetDet).at(ujetDetMC).pt()  << ", "
+                << jetsDetMC.at(iJetSetDet).at(ujetDetMC).phi() << ", "
+                << jetsDetMC.at(iJetSetDet).at(ujetDetMC).eta() << ") "
                 << (bDetJetMatch.at(ujetDetMC) ? "match" : "no match") << endl;
         }
     }
@@ -688,25 +789,25 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
             cout << "Normal dijet:" << endl;
             cout << "True dijet" << endl;
             cout << "leading jet(E, pt, phi, eta) =    " <<
-                "(" << dijets.at(iAcc).at(0).at(0).E()   << ", "
-                << dijets.at(iAcc).at(0).at(0).pt()  << ", "
-                << dijets.at(iAcc).at(0).at(0).phi() << ", "
-                << dijets.at(iAcc).at(0).at(0).eta() << ")" << endl;
+                "(" << dijets.at(iJetSetPart).at(0).at(0).E()   << ", "
+                << dijets.at(iJetSetPart).at(0).at(0).pt()  << ", "
+                << dijets.at(iJetSetPart).at(0).at(0).phi() << ", "
+                << dijets.at(iJetSetPart).at(0).at(0).eta() << ")" << endl;
             cout << "subleading jet(E, pt, phi, eta) = " <<
-                "(" << dijets.at(iAcc).at(0).at(1).E()   << ", "
-                << dijets.at(iAcc).at(0).at(1).pt()  << ", "
-                << dijets.at(iAcc).at(0).at(1).phi() << ", "
-                << dijets.at(iAcc).at(0).at(1).eta() << ")" << endl;
+                "(" << dijets.at(iJetSetPart).at(0).at(1).E()   << ", "
+                << dijets.at(iJetSetPart).at(0).at(1).pt()  << ", "
+                << dijets.at(iJetSetPart).at(0).at(1).phi() << ", "
+                << dijets.at(iJetSetPart).at(0).at(1).eta() << ")" << endl;
         }
-        dijet = dijets.at(iAcc).at(0).at(0) + dijets.at(iAcc).at(0).at(1);
+        dijet = dijets.at(iJetSetPart).at(0).at(0) + dijets.at(iJetSetPart).at(0).at(1);
         if(anaDetMC->HasDijet()) {
 
             // Check that leading and subleading jets match.
             // It is also ok if leading and subleading jets change places in det level.
-            deltaRLL = DeltaR(dijets.at(iAcc).at(0).at(0),dijetsDetMC.at(iAcc).at(0).at(0)); //leading, leading
-            deltaRLS = DeltaR(dijets.at(iAcc).at(0).at(0),dijetsDetMC.at(iAcc).at(0).at(1)); //leading, subleading
-            deltaRSS = DeltaR(dijets.at(iAcc).at(0).at(1),dijetsDetMC.at(iAcc).at(0).at(1)); //subleading, subleading
-            deltaRSL = DeltaR(dijets.at(iAcc).at(0).at(1),dijetsDetMC.at(iAcc).at(0).at(0)); //subleading, leading
+            deltaRLL = DeltaR(dijets.at(iJetSetPart).at(0).at(0),dijetsDetMC.at(iJetSetDet).at(0).at(0)); //leading, leading
+            deltaRLS = DeltaR(dijets.at(iJetSetPart).at(0).at(0),dijetsDetMC.at(iJetSetDet).at(0).at(1)); //leading, subleading
+            deltaRSS = DeltaR(dijets.at(iJetSetPart).at(0).at(1),dijetsDetMC.at(iJetSetDet).at(0).at(1)); //subleading, subleading
+            deltaRSL = DeltaR(dijets.at(iJetSetPart).at(0).at(1),dijetsDetMC.at(iJetSetDet).at(0).at(0)); //subleading, leading
 
             if(deltaRLL < matchingR || deltaRLS < matchingR) bLeadingMatch    = true;
             if(deltaRSS < matchingR || deltaRSL < matchingR) bSubleadingMatch = true;
@@ -714,17 +815,17 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
             if(fDebug>8) {
                 cout << "Det dijet" << endl;
                 cout << "leading jet(E, pt, phi, eta) =    " <<
-                    "(" << dijetsDetMC.at(iAcc).at(0).at(0).E()   << ", "
-                    << dijetsDetMC.at(iAcc).at(0).at(0).pt()  << ", "
-                    << dijetsDetMC.at(iAcc).at(0).at(0).phi() << ", "
-                    << dijetsDetMC.at(iAcc).at(0).at(0).eta() << ")" << endl;
+                    "(" << dijetsDetMC.at(iJetSetDet).at(0).at(0).E()   << ", "
+                    << dijetsDetMC.at(iJetSetDet).at(0).at(0).pt()  << ", "
+                    << dijetsDetMC.at(iJetSetDet).at(0).at(0).phi() << ", "
+                    << dijetsDetMC.at(iJetSetDet).at(0).at(0).eta() << ")" << endl;
                 cout << "subleading jet(E, pt, phi, eta) = " <<
-                    "(" << dijetsDetMC.at(iAcc).at(0).at(1).E()   << ", "
-                    << dijetsDetMC.at(iAcc).at(0).at(1).pt()  << ", "
-                    << dijetsDetMC.at(iAcc).at(0).at(1).phi() << ", "
-                    << dijetsDetMC.at(iAcc).at(0).at(1).eta() << ")" << endl;
+                    "(" << dijetsDetMC.at(iJetSetDet).at(0).at(1).E()   << ", "
+                    << dijetsDetMC.at(iJetSetDet).at(0).at(1).pt()  << ", "
+                    << dijetsDetMC.at(iJetSetDet).at(0).at(1).phi() << ", "
+                    << dijetsDetMC.at(iJetSetDet).at(0).at(1).eta() << ")" << endl;
             }
-            dijetDetMC = dijetsDetMC.at(iAcc).at(0).at(0) + dijetsDetMC.at(iAcc).at(0).at(1);
+            dijetDetMC = dijetsDetMC.at(iJetSetDet).at(0).at(0) + dijetsDetMC.at(iJetSetDet).at(0).at(1);
             if(bLeadingMatch && bSubleadingMatch) {
                 fhistos->fh_dijetResponse->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseTrunc->Fill(dijetDetMC.m(), dijet.m());
@@ -738,7 +839,7 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
         }
     } else {
         if(anaDetMC->HasDijet()) {
-            //dijetDetMC = dijetsDetMC.at(iAcc).at(0).at(0) + dijetsDetMC.at(iAcc).at(0).at(1);
+            //dijetDetMC = dijetsDetMC.at(iJetSetDet).at(0).at(0) + dijetsDetMC.at(iJetSetDet).at(0).at(1);
             fhistos->fh_responseInfo->Fill("Dijet true not found",1.0);
         }
     }
@@ -750,38 +851,38 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
             cout << "Delta Phi dijet:" << endl;
             cout << "True dijet" << endl;
             cout << "leading jet(E, pt, phi, eta) =    " <<
-                "(" << dijets.at(iAcc).at(1).at(0).E()   << ", "
-                << dijets.at(iAcc).at(1).at(0).pt()  << ", "
-                << dijets.at(iAcc).at(1).at(0).phi() << ", "
-                << dijets.at(iAcc).at(1).at(0).eta() << ")" << endl;
+                "(" << dijets.at(iJetSetPart).at(1).at(0).E()   << ", "
+                << dijets.at(iJetSetPart).at(1).at(0).pt()  << ", "
+                << dijets.at(iJetSetPart).at(1).at(0).phi() << ", "
+                << dijets.at(iJetSetPart).at(1).at(0).eta() << ")" << endl;
             cout << "subleading jet(E, pt, phi, eta) = " <<
-                "(" << dijets.at(iAcc).at(1).at(1).E()   << ", "
-                << dijets.at(iAcc).at(1).at(1).pt()  << ", "
-                << dijets.at(iAcc).at(1).at(1).phi() << ", "
-                << dijets.at(iAcc).at(1).at(1).eta() << ")" << endl;
+                "(" << dijets.at(iJetSetPart).at(1).at(1).E()   << ", "
+                << dijets.at(iJetSetPart).at(1).at(1).pt()  << ", "
+                << dijets.at(iJetSetPart).at(1).at(1).phi() << ", "
+                << dijets.at(iJetSetPart).at(1).at(1).eta() << ")" << endl;
         }
-        dijet = dijets.at(iAcc).at(1).at(0) + dijets.at(iAcc).at(1).at(1);
+        dijet = dijets.at(iJetSetPart).at(1).at(0) + dijets.at(iJetSetPart).at(1).at(1);
         if(anaDetMC->HasDeltaPhiDijet()) {
         
             // Leading jets are the same as without delta phi cut.
-            deltaRSS = DeltaR(dijets.at(iAcc).at(1).at(1),dijetsDetMC.at(iAcc).at(1).at(1)); //subleading, subleading
-            deltaRSL = DeltaR(dijets.at(iAcc).at(1).at(1),dijetsDetMC.at(iAcc).at(1).at(0)); //subleading, leading
+            deltaRSS = DeltaR(dijets.at(iJetSetPart).at(1).at(1),dijetsDetMC.at(iJetSetDet).at(1).at(1)); //subleading, subleading
+            deltaRSL = DeltaR(dijets.at(iJetSetPart).at(1).at(1),dijetsDetMC.at(iJetSetDet).at(1).at(0)); //subleading, leading
             if(deltaRSS < matchingR || deltaRSL < matchingR) bSubleadingMatchDeltaPhi = true;
 
             if(fDebug>8) {
                 cout << "Det dijet" << endl;
                 cout << "leading jet(E, pt, phi, eta) =    " <<
-                    "(" << dijetsDetMC.at(iAcc).at(1).at(0).E()   << ", "
-                    << dijetsDetMC.at(iAcc).at(1).at(0).pt()  << ", "
-                    << dijetsDetMC.at(iAcc).at(1).at(0).phi() << ", "
-                    << dijetsDetMC.at(iAcc).at(1).at(0).eta() << ")" << endl;
+                    "(" << dijetsDetMC.at(iJetSetDet).at(1).at(0).E()   << ", "
+                    << dijetsDetMC.at(iJetSetDet).at(1).at(0).pt()  << ", "
+                    << dijetsDetMC.at(iJetSetDet).at(1).at(0).phi() << ", "
+                    << dijetsDetMC.at(iJetSetDet).at(1).at(0).eta() << ")" << endl;
                 cout << "subleading jet(E, pt, phi, eta) = " <<
-                    "(" << dijetsDetMC.at(iAcc).at(1).at(1).E()   << ", "
-                    << dijetsDetMC.at(iAcc).at(1).at(1).pt()  << ", "
-                    << dijetsDetMC.at(iAcc).at(1).at(1).phi() << ", "
-                    << dijetsDetMC.at(iAcc).at(1).at(1).eta() << ")" << endl;
+                    "(" << dijetsDetMC.at(iJetSetDet).at(1).at(1).E()   << ", "
+                    << dijetsDetMC.at(iJetSetDet).at(1).at(1).pt()  << ", "
+                    << dijetsDetMC.at(iJetSetDet).at(1).at(1).phi() << ", "
+                    << dijetsDetMC.at(iJetSetDet).at(1).at(1).eta() << ")" << endl;
             }
-            dijetDetMC = dijetsDetMC.at(iAcc).at(1).at(0) + dijetsDetMC.at(iAcc).at(1).at(1);
+            dijetDetMC = dijetsDetMC.at(iJetSetDet).at(1).at(0) + dijetsDetMC.at(iJetSetDet).at(1).at(1);
             // Check subleading jet match.
 
             if(bLeadingMatch && bSubleadingMatchDeltaPhi) {
@@ -797,7 +898,7 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
         }
     } else {
         if(anaDetMC->HasDeltaPhiDijet()) {
-            //dijetDetMC = dijetsDetMC.at(iAcc).at(1).at(0) + dijetsDetMC.at(iAcc).at(1).at(1);
+            //dijetDetMC = dijetsDetMC.at(iJetSetDet).at(1).at(0) + dijetsDetMC.at(iJetSetDet).at(1).at(1);
             fhistos->fh_responseInfo->Fill("Dijet DPhi true not found",1.0);
         }
     }

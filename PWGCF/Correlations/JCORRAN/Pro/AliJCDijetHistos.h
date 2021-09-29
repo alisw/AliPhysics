@@ -116,6 +116,15 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH2D fh_deltaPtResponseEvery;          //! // delta-pt response matrix, filled for every true bin
         AliJTH2D fh_deltaPtResponseEvery_ALICE;    //! // delta-pt response matrix with ALICE bin, filled for every true bin
         AliJTH2D fh_dijetResponse;                 //! // Dijet response matrix
+
+        AliJTH1D fh_doubleConeM;              //! // Double cone invariant mass
+        AliJTH1D fh_dijetdeltaM1;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaM2;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaM3;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaM4;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaM5;             //! // Dijet deltaM
+        AliJTH2D fh_deltaMResponse;           //! // deltaM response matrix 
+        AliJTH2D fh_deltaMResponseEvery;      //! // deltaM response matrix 
         AliJTH2D fh_dijetResponseTrunc;            //! // Dijet response matrix truncated from above and below
         AliJTH2D fh_dijetResponseTrunc2;            //! // Dijet response matrix truncated from above and below
         AliJTH2D fh_dijetResponseDeltaPhiCut;      //! // Dijet response matrix with deltaPhi cut

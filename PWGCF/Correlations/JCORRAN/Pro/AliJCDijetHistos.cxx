@@ -85,6 +85,14 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_deltaPtResponseEvery(),
     fh_deltaPtResponseEvery_ALICE(),
     fh_dijetResponse(),
+    fh_doubleConeM(),
+    fh_dijetdeltaM1(),
+    fh_dijetdeltaM2(),
+    fh_dijetdeltaM3(),
+    fh_dijetdeltaM4(),
+    fh_dijetdeltaM5(),
+    fh_deltaMResponse(),
+    fh_deltaMResponseEvery(),
     fh_dijetResponseTrunc(),
     fh_dijetResponseTrunc2(),
     fh_dijetResponseDeltaPhiCut(),
@@ -153,6 +161,14 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_deltaPtResponseEvery(obj.fh_deltaPtResponseEvery),
     fh_deltaPtResponseEvery_ALICE(obj.fh_deltaPtResponseEvery_ALICE),
     fh_dijetResponse(obj.fh_dijetResponse),
+    fh_doubleConeM(obj.fh_doubleConeM),
+    fh_dijetdeltaM1(obj.fh_dijetdeltaM1),
+    fh_dijetdeltaM2(obj.fh_dijetdeltaM2),
+    fh_dijetdeltaM3(obj.fh_dijetdeltaM3),
+    fh_dijetdeltaM4(obj.fh_dijetdeltaM4),
+    fh_dijetdeltaM5(obj.fh_dijetdeltaM5),
+    fh_deltaMResponse(obj.fh_deltaMResponse),
+    fh_deltaMResponseEvery(obj.fh_deltaMResponseEvery),
     fh_dijetResponseTrunc(obj.fh_dijetResponseTrunc),
     fh_dijetResponseTrunc2(obj.fh_dijetResponseTrunc2),
     fh_dijetResponseDeltaPhiCut(obj.fh_dijetResponseDeltaPhiCut),
@@ -505,6 +521,38 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << TH2D("h_dijetResponse", "h_dijetResponse", NBINSDijet, logBinsXDijet, NBINSDijet, logBinsXDijet )
         << "END" ;
 
+    fh_doubleConeM
+        << TH1D("h_doubleConeM", "h_doubleConeM", 500, 0, 500)
+        << "END" ;
+    
+    fh_dijetdeltaM1
+        << TH1D("h_dijetdeltaM1", "h_dijetdeltaM1", 500, -250, 250)
+        << "END" ;
+
+    fh_dijetdeltaM2
+        << TH1D("h_dijetdeltaM2", "h_dijetdeltaM2", 500, -250, 250)
+        << "END" ;
+
+    fh_dijetdeltaM3
+        << TH1D("h_dijetdeltaM3", "h_dijetdeltaM3", 500, -250, 250)
+        << "END" ;
+
+    fh_dijetdeltaM4
+        << TH1D("h_dijetdeltaM4", "h_dijetdeltaM4", 500, -250, 250)
+        << "END" ;
+
+    fh_dijetdeltaM5
+        << TH1D("h_dijetdeltaM5", "h_dijetdeltaM5", 500, -250, 250)
+        << "END" ;
+
+    fh_deltaMResponse
+        << TH2D("h_deltaMResponse", "h_deltaMResponse", NBINSDijet, logBinsXDijet, NBINSDijet, logBinsXDijet )
+        << "END" ;
+
+    fh_deltaMResponseEvery
+        << TH2D("h_deltaMResponseEvery", "h_deltaMResponseEvery", NBINSDijet, logBinsXDijet, NBINSDijet, logBinsXDijet )
+        << "END" ;
+
     fh_dijetResponseTrunc
         << TH2D("h_dijetResponseTrunc", "h_dijetResponseTrunc", 50, 30, 280, 50, 30, 280)
         << "END" ;
@@ -524,6 +572,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     fh_dijetResponseDeltaPhiCutTrunc2
         << TH2D("h_dijetResponseDeltaPhiCutTrunc2", "h_dijetResponseDeltaPhiCutTrunc2", 100, 30, 530, 100, 30, 530)
         << "END" ;
+
 }
 
 int AliJCDijetHistos::GetCentralityClass(Double_t fCent){
