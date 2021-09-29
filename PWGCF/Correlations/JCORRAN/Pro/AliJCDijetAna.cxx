@@ -558,6 +558,7 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                 mjj = dijet.m();
                 ptpair = dijet.pt();
                 fhistos->fh_dijetInvM[lCBin][udijet]->Fill(mjj);
+                fhistos->fh_dijetInvMLin[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetInvMTrunc[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetInvMTrunc2[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetPtPair[lCBin][udijet]->Fill(ptpair);
@@ -573,6 +574,7 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                 mjj = dijet.m();
                 ptpair = dijet.pt();
                 fhistos->fh_dijetInvMDeltaPhiCut[lCBin][udijet]->Fill(mjj);
+                fhistos->fh_dijetInvMDeltaPhiCutLin[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetInvMDeltaPhiCutTrunc[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetInvMDeltaPhiCutTrunc2[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetPtPairDeltaPhiCut[lCBin][udijet]->Fill(ptpair);
@@ -828,6 +830,7 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
             dijetDetMC = dijetsDetMC.at(iJetSetDet).at(0).at(0) + dijetsDetMC.at(iJetSetDet).at(0).at(1);
             if(bLeadingMatch && bSubleadingMatch) {
                 fhistos->fh_dijetResponse->Fill(dijetDetMC.m(), dijet.m());
+                fhistos->fh_dijetResponseLin->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseTrunc->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseTrunc2->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_responseInfo->Fill("Dijet match",1.0);
