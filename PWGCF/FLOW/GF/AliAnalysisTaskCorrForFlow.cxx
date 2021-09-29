@@ -269,9 +269,6 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
     }
 
     if(!fTracksTrigCharged->IsEmpty()){
-      FillCorrelations();
-      FillCorrelationsMixed();
-
       if(fDoPID){
         for(Int_t i(0); i < 3; i++){
           if(!fTracksTrigPID[i]->IsEmpty()){
@@ -283,6 +280,8 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
           }
         }
       } // end do PID
+      FillCorrelations();
+      FillCorrelationsMixed();
     }
 
     fTracksTrigCharged->Clear();
