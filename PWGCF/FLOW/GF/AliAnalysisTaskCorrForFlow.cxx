@@ -297,6 +297,7 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
 void AliAnalysisTaskCorrForFlow::Terminate(Option_t *)
 {
    if (fPoolMgr) delete fPoolMgr;
+   if(fOutputListCharged) delete fOutputListCharged;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCorrForFlow::IsEventSelected()
