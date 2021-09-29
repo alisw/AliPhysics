@@ -4,6 +4,7 @@
 #include "TObject.h"
 #include "AliTOFPIDResponse.h"
 #include "TF1.h"
+#include "TList.h"
 
 class AliAnalysisPIDCascadeEvent :
 public TObject
@@ -39,6 +40,8 @@ public TObject
   void SetRefMult05(Float_t multi) { fRefMult05 = multi;}; // setter
   void SetSPDTracklets(Float_t multi) { fSPDTracklets = multi;}; // setter
 
+  void SetLocalEstimatorList(TList* list) {fLocalEstimatorList = list;};
+  
   void SetEventFlags(Int_t NewFlag) { fEventFlags = NewFlag; };
   Int_t GetEventFlags() { return fEventFlags; };
   Bool_t HasEventFlag(Int_t CheckFlag) { return (fEventFlags&CheckFlag)==CheckFlag; };
@@ -55,6 +58,8 @@ public TObject
   Float_t GetV0Amultiplicity() { return fV0Amultiplicity;}; //getter
   Float_t GetV0Cmultiplicity() { return fV0Cmultiplicity;}; //getter
 
+  TList *GetLocalEstimatorList() { return fLocalEstimatorList; } 
+  
   Float_t GetV0Asignal() { return fV0Asignal;}; //getter
   Float_t GetV0Csignal() { return fV0Csignal;}; //getter
 
@@ -120,6 +125,7 @@ public TObject
   Float_t fRefMult08;
   Float_t fRefMult05;
   Float_t fSPDTracklets;
+  TList* fLocalEstimatorList;
   //  Float_t fV0CellAmplitude[64];
   Int_t fMCMultiplicity; // MC multiplicity
   /*** TPC event info ***/
