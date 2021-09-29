@@ -70,18 +70,18 @@ void AddTask_ElectronStudies(
       TaskClusterCutnumberEMC           = "4117900060l30000000";
                                          //411792106fe32220000 latest and greates
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "4117900062l30000000";
+      TaskTMCut                         = "411790006ml30000000";
   } else if(trainConfig == 2){  // trigger
       TaskEventCutnumber                = "0008e113";
       TaskClusterCutnumberEMC           = "4117900060l30000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "4117900062l30000000"; // only used for track mathing
+      TaskTMCut                         = "411790006ml30000000"; // only used for track mathing
 
   } else if(trainConfig == 3){  // trigger
       TaskEventCutnumber                = "0008d113";
       TaskClusterCutnumberEMC           = "4117900060l30000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "4117900062l30000000";
+      TaskTMCut                         = "411790006ml30000000";
   // Same cluster cuts as default
   // but trying to replicate track cuts used for electrons as close as possible
   } else if(trainConfig == 4){  // mb

@@ -6221,7 +6221,8 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
             }
             if(CheckClass.Contains("0")) isSelected = 0;
           }
-          else if(firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
+          // commented out as trigger overlap rejection "disabled" by that condition
+          // else if(firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
         }
       }
     }
@@ -6818,11 +6819,11 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   Bool_t isMC = kFALSE;
   if (mcEvent){isMC = kTRUE;}
 
-  if ( !IsTriggerSelected(event, isMC) )
-    return 3;
-
   if( !(IsCentralitySelected(event,mcEvent)))
     return 1; // Check Centrality --> Not Accepted => eventQuality = 1
+
+  if ( !IsTriggerSelected(event, isMC) )
+    return 3;
 
   Bool_t hasV0And = ReaderCuts->HasV0AND();
   Bool_t isSDDFired = ReaderCuts->IsSDDFired();

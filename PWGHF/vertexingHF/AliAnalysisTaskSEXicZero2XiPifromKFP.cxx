@@ -3811,15 +3811,44 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
            if (fIsMC) {
              if (!fIsAnaOmegac0) lab_Xic0 = MatchToMCXic0(ptrack, ntrack, btrack, trackP[itrkBP], mcArray);
              if (fIsAnaOmegac0) lab_Xic0  = MatchToMCOmegac0(ptrack, ntrack, btrack, trackP[itrkBP], mcArray);
-             if (lab_Xic0>=0) FillTreeRecXic0FromCasc(kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0);
+             if (lab_Xic0>=0) FillTreeRecXic0FromCasc(1, kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0);
            }
            if (!fIsMC) {
-             FillTreeRecXic0FromCasc(kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0);
+             FillTreeRecXic0FromCasc(1, kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0);
            }
          }
          kfpXic0.Clear();
          kfpBP.Clear();
       } // Loop for first bachelor pion+
+      // ----------------- Like-sign pairs -----------------
+      for (Int_t itrkBP_LS=0; itrkBP_LS<flag_trkN; itrkBP_LS++) {
+        if ( trackN[itrkBP_LS]->GetID()==ntrack->GetID() || trackN[itrkBP_LS]->GetID()==btrack->GetID() ) continue;
+        if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackN[itrkBP_LS]) ) continue;
+        KFParticle kfpBP_LS = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackN[itrkBP_LS], -211);
+        // reconstruct Xic0 bkg (Like-sign pairs)
+        KFParticle kfpXic0_LS;
+        const KFParticle *vXic0Ds_LS[2] = {&kfpBP_LS, &kfpXiMinus_m};
+        kfpXic0_LS.Construct(vXic0Ds_LS, NDaughters);
+        // chi2>0 && NDF>0
+        if ( kfpXic0_LS.GetNDF()<=0 || kfpXic0_LS.GetChi2()<=0 ) continue;
+        // Prefilter
+        if ( kfpXic0_LS.GetChi2()/kfpXic0_LS.GetNDF() >= fAnaCuts->GetKFPXic0_Chi2geoMax() ) continue;
+        if ( kfpXic0_LS.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
+        // check rapidity of Xic0
+        if ( TMath::Abs(kfpXic0_LS.GetE())<=TMath::Abs(kfpXic0_LS.GetPz()) ) continue;
+        // check covariance matrix
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXic0_LS) ) continue;
+        // err_massXic0 > 0
+        Float_t massXic0_LS_Rec, err_massXic0_LS;
+        kfpXic0_LS.GetMass(massXic0_LS_Rec, err_massXic0_LS);
+        if ( err_massXic0_LS<=0 ) continue;
+        if (fWriteXic0Tree) {
+          Int_t lab_Xic0_LS = -9999;
+          FillTreeRecXic0FromCasc(0, kfpXic0_LS, trackN[itrkBP_LS], kfpBP_LS, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0_LS);
+        }
+        kfpXic0_LS.Clear();
+        kfpBP_LS.Clear();
+      }
       kfpXiMinus_m.Clear();
       kfpXiMinus.Clear();
       kfpPionOrKaon.Clear();
@@ -3943,15 +3972,44 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
           if (fIsMC) {
             if (!fIsAnaOmegac0) lab_AntiXic0 = MatchToMCAntiXic0(ntrack, ptrack, btrack, trackN[itrkBP], mcArray);
             if (fIsAnaOmegac0)  lab_AntiXic0 = MatchToMCAntiOmegac0(ntrack, ptrack, btrack, trackN[itrkBP], mcArray);
-            if (lab_AntiXic0>=0) FillTreeRecXic0FromCasc(kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0);
+            if (lab_AntiXic0>=0) FillTreeRecXic0FromCasc(1, kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0);
           }
           if (!fIsMC) {
-            FillTreeRecXic0FromCasc(kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0);
+            FillTreeRecXic0FromCasc(1, kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0);
           }
         }
         kfpAntiXic0.Clear();
         kfpBP.Clear();
       } // Loop for first bachelor pion-
+      // ----------------- Like-sign pairs -----------------
+      for (Int_t itrkBP_LS=0; itrkBP_LS<flag_trkP; itrkBP_LS++) {
+        if ( trackP[itrkBP_LS]->GetID()==ptrack->GetID() || trackP[itrkBP_LS]->GetID()==btrack->GetID() ) continue;
+        if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackP[itrkBP_LS]) ) continue;
+        KFParticle kfpBP_LS = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackP[itrkBP_LS], 211);
+        // reconstruct Anti-Xic0 bkg (Like-sign pairs)
+        KFParticle kfpAntiXic0_LS;
+        const KFParticle *vAntiXic0Ds_LS[2] = {&kfpBP_LS, &kfpXiPlus_m};
+        kfpAntiXic0_LS.Construct(vAntiXic0Ds_LS, NDaughters);
+        // chi2>0 && NDF>0
+        if ( kfpAntiXic0_LS.GetNDF()<=0 || kfpAntiXic0_LS.GetChi2()<=0 ) continue;
+        // Prefilter
+        if ( kfpAntiXic0_LS.GetChi2()/kfpAntiXic0_LS.GetNDF() >= fAnaCuts->GetKFPXic0_Chi2geoMax() ) continue;
+        if ( kfpAntiXic0_LS.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
+        // check rapidity of Xic0
+        if ( TMath::Abs(kfpAntiXic0_LS.GetE())<=TMath::Abs(kfpAntiXic0_LS.GetPz()) ) continue;
+        // check covariance matrix
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiXic0_LS) ) continue;
+        // err_massXic0 > 0
+        Float_t massAntiXic0_LS_Rec, err_massAntiXic0_LS;
+        kfpAntiXic0_LS.GetMass(massAntiXic0_LS_Rec, err_massAntiXic0_LS);
+        if ( err_massAntiXic0_LS<=0 ) continue;
+        if (fWriteXic0Tree) {
+          Int_t lab_AntiXic0_LS = -9999;
+          FillTreeRecXic0FromCasc(0, kfpAntiXic0_LS, trackP[itrkBP_LS], kfpBP_LS, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0_LS);
+        }
+        kfpAntiXic0_LS.Clear();
+        kfpBP_LS.Clear();
+      }
       kfpXiPlus_m.Clear();
       kfpXiPlus.Clear();
       kfpPionOrKaon.Clear();
@@ -4556,7 +4614,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0 = new TTree(nameoutput, "Xic0 variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0 = new TTree(nameoutput, "Omegac0 variables tree");
-  Int_t nVar = 47;
+  Int_t nVar = 48;
   fVar_Xic0 = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -4612,6 +4670,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   fVarNames[41] = "PA_Xic0ToPV"; // pointing angle of Xic0 (pointing back to PV)
   fVarNames[42] = "ldl_Xic0"; // l/dl of Xic0
   fVarNames[43] = "ct_Xic0"; // lifetime of Xic0
+  fVarNames[44] = "flag_UnlikeOrLike_Sign"; // flag of unlike sign or like sign pair
   }
 
   if (fIsAnaOmegac0) {
@@ -4664,10 +4723,11 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
     fVarNames[41] = "PA_Omegac0ToPV"; // pointing angle of Omegac0 (pointing back to PV)
     fVarNames[42] = "ldl_Omegac0"; // ldl of Omegac0
     fVarNames[43] = "ct_Omegac0"; // lifetime of Omegac0
+    fVarNames[44] = "flag_UnlikeOrLike_Sign"; // flag of unlike sign or like sign pair
   }
-  fVarNames[44] = "weight";
-  fVarNames[45] = "weight_up";
-  fVarNames[46] = "weight_dw";
+  fVarNames[45] = "weight";
+  fVarNames[46] = "weight_up";
+  fVarNames[47] = "weight_dw";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -5161,10 +5221,10 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpX
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
+void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
 {
 
-  for (Int_t i=0; i<47; i++) {
+  for (Int_t i=0; i<48; i++) {
     fVar_Xic0[i] = -9999.;
   }
 
@@ -5363,9 +5423,9 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
       AliAODMCParticle *mcPiFromXic0 = static_cast<AliAODMCParticle*>(mcArray->At(labelPiFromXic0));
       Int_t IndexXic0 = mcPiFromXic0->GetMother();
       AliAODMCParticle *mcXic0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexXic0));
-      fVar_Xic0[44] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
       fVar_Xic0[45] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
       fVar_Xic0[46] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
+      fVar_Xic0[47] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
     }
   }
 
@@ -5387,6 +5447,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
   Float_t ct_Xic0=0., err_ct_Xic0=0.;
   kfpXic0_PV.GetLifeTime(ct_Xic0, err_ct_Xic0);
   fVar_Xic0[43] = ct_Xic0; // lifetime of Xic0
+
+  fVar_Xic0[44] = flagUSorLS; // flag of unlike sign or like sign pair
 
   fTree_Xic0->Fill();
 

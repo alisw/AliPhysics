@@ -610,18 +610,18 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
     //PCM-EMC configs with newest NL (apply only with cell scale!)
   } else if(trainConfig == 210)  { //EDC 13TeV MB, NCell >=2 + NCell efficiency
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","32c51070a","0103603l00000000","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","32c51070m","0103603l00000000","0453503000000000"); // INT7
   } else if(trainConfig == 211)  { //EDC 13TeV MB, NCell >=2 + NCell efficiency
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3n220000","32c51070a","0103603l00000000","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3n220000","32c51070m","0103603l00000000","0453503000000000"); // INT7
   } else if(trainConfig == 212)  { //EDC 13TeV MB, NCell >=2 + NCell efficiency
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe3n220000","32c51070a","0103603l00000000","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe3n220000","32c51070m","0103603l00000000","0453503000000000"); // INT7
     //PCM-EMC configs with newest NL (apply only with cell scale!)
   } else if(trainConfig == 213)  { //EDC 13TeV MB, NCell >=1
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","0103603l00000000","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070m","0103603l00000000","0453503000000000"); // INT7
   } else if(trainConfig == 214)  { //EDC 13TeV MB, NCell >=1
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","0103603l00000000","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070m","0103603l00000000","0453503000000000"); // INT7
   } else if(trainConfig == 215)  { //EDC 13TeV MB, NCell >=1
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","0103603l00000000","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070m","0103603l00000000","0453503000000000"); // INT7
 
   // PCM-PHOS
   } else if ( trainConfig == 250 ) { // INT7 + PHI7
@@ -922,6 +922,12 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
       //NCell 0, NL 01
   } else if(trainConfig == 973)  { //Standard EMCal 13TeV, NCell 0, NL 01
       cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","0103103200000000","0453503000000000"); // INT7
+      //NCell n (2cell + NCell effi), NL 01
+  } else if(trainConfig == 983)  { //Standard EMCal 13TeV, NCell n (NCell >=2 + NCell effi), NL 01
+      cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","32c51070a","0103103200000000","0453503000000000"); // INT7
+      //NCell n (2cell + NCell effi), NL 01
+  } else if(trainConfig == 986)  { //Standard EMCal 13TeV, NCell n (NCell >=2 + NCell effi), NL 01 + PCM photon smearing
+      cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","32c51070a","0103103200b00000","0453503000000000"); // INT7
       //-----
       //Trigger EG2: Calo Variations
       //-----
@@ -960,6 +966,13 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031s3200000000","0453503000000000"); // INT7
   } else if(trainConfig == 1075)  { //EDC 13TeV MB, min/max pt cut v (no min pt, max pt  25gev)
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3200000000","0453503000000000"); // INT7
+
+    //NCell n (2cell + NCell effi), NL 01
+  } else if(trainConfig == 1083)  { //Standard EMCal 13TeV, NCell n (NCell >=2 + NCell effi), NL 01
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3n220000","32c51070a","0103103200000000","0453503000000000"); // EG2
+    //NCell n (2cell + NCell effi), NL 01
+  } else if(trainConfig == 1086)  { //Standard EMCal 13TeV, NCell n (NCell >=2 + NCell effi), NL 01 + PCM photon smearing
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3n220000","32c51070a","0103103200b00000","0453503000000000"); // EG2
       //-----
       //Trigger EG1: Calo Variations
       //-----
@@ -998,6 +1011,13 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031s3200000000","0453503000000000"); // INT7
   } else if(trainConfig == 1175)  { //EDC 13TeV MB, min/max pt cut v (no min pt, max pt  25gev)
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3200000000","0453503000000000"); // INT7
+
+    //NCell n (2cell + NCell effi), NL 01
+  } else if(trainConfig == 1183)  { //Standard EMCal 13TeV, NCell n (NCell >=2 + NCell effi), NL 01
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3n220000","32c51070a","0103103200000000","0453503000000000"); // EG1
+    //NCell n (2cell + NCell effi), NL 01
+  } else if(trainConfig == 1186)  { //Standard EMCal 13TeV, NCell n (NCell >=2 + NCell effi), NL 01 + PCM photon smearing
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3n220000","32c51070a","0103103200b00000","0453503000000000"); // EG1
 
   } else {
     Error(Form("GammaConvNeutralMeson_MixedMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

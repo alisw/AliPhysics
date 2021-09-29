@@ -73,6 +73,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetptCut(TString pte) {pTe = pte;};
 		void                    SetMassMin(Double_t MassMin) {massMin = MassMin;};
 		void                    SetNref(Double_t nref) {Nref = nref;};
+		void                    SetNrefV0(Double_t nrefV0) {NrefV0 = nrefV0;};
 		void                    SetMaxNtr(Double_t maxNtr) {MaxNtr = maxNtr;};
 		void                    SetMinNtr(Double_t minNtr) {MinNtr = minNtr;};
 		void                    SetEstimatorFile(TString filename) {festimatorFile = filename;}
@@ -110,11 +111,13 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TString pTe;
 		Double_t massMin;
 		Double_t Nref;
+		Double_t NrefV0;
 		Int_t Nch;
 		Int_t MinNtr;
 		Int_t MaxNtr;
                 TString festimatorFile;
                 TProfile* estimatorAvg;
+                TProfile* estimatorV0Avg;
                 TH1D* NtrkWeightMC;
                 Int_t fmult_type;
 
@@ -191,6 +194,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		THnSparseD*             fHFArray;      
 		TH2F*                   fzvtx_Ntrkl;
 		TH2F*                   fzvtx_Nch;
+		TH2F*                   fzvtx_Ntrkl_V0;
 		TH2F*                   fzvtx_Ntrkl_Corr;
 		TH1F*                   fzvtx_Corr;
 		TH1F*                   fNtrkl_Corr;

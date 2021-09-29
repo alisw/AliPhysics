@@ -88,7 +88,6 @@ TCanvas* calculateSystematics(TString canvName, TString canvTitle, TH1F** histos
   }
   legend->Draw();
              
-             
   const Int_t nBins = histos[reference]->GetNbinsX();
   Double_t x[nBins];
   Double_t y[nBins];
@@ -382,6 +381,8 @@ Int_t SystematicErrorEstimation(const TString path, const TString outFileTitle, 
   if (!fileNames || numFiles < 1)
     return -1;
   
+  cout << "Start error estimation for outFile " << outFileTitle << endl;
+  
   TFile* f[numFiles];
   TH1F** hFractions[numSpecies];
   for (Int_t i = 0; i < numSpecies; i++)  {
@@ -578,6 +579,7 @@ Int_t SystematicErrorEstimation(const TString path, const TString outFileTitle, 
                                                              ignoreSigmaErrors, setMean, setMeanLowerThreshold,
                                                              setMeanUpperThreshold, kTRUE);
   
+  
   // Yields
   
   // The error of the fractions and the yield is just a constant factor (number of tracks in that bin).
@@ -659,7 +661,7 @@ Int_t SystematicErrorEstimation(const TString path, const TString outFileTitle, 
   
   TString modeString[4] = { "", "_pT", "_z", "_xi" };
     
-  saveFileName = Form("outputSystematics_%s%s_nSigma%.1f__%04d_%02d_%02d.root", outFileTitle.Data(), modeString[mode + 1].Data(),
+  saveFileName = Form("%s%s_nSigma%.1f__%04d_%02d_%02d.root", outFileTitle.Data(), modeString[mode + 1].Data(),
                       nSigma, daTime.GetYear(),
                       daTime.GetMonth(), daTime.GetDay());
     

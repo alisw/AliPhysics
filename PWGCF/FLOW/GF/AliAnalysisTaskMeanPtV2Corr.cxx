@@ -1,6 +1,7 @@
 //Class for <pt>-v2 correlations
 //Author: Vytautas Vislavicius
 
+
 #include "AliAnalysisTaskMeanPtV2Corr.h"
 #include "AliEventCuts.h"
 #include "AliAnalysisManager.h"
@@ -109,6 +110,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fDCAxyVsPt_withChi2(0),
   fWithinDCAvsPt_noChi2(0),
   fV0MMulti(0),
+  fITSvsTPCMulti(0),
   fV2dPtMulti(0),
   fSPDCutPU(0),
   fV0CutPU(0),
@@ -187,6 +189,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fDCAxyVsPt_withChi2(0),
   fWithinDCAvsPt_noChi2(0),
   fV0MMulti(0),
+  fITSvsTPCMulti(0),
   fV2dPtMulti(0),
   fSPDCutPU(0),
   fV0CutPU(0),
@@ -251,8 +254,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   if(!fGFWSelection) SetSystFlag(0);
   fGFWSelection->PrintSetup();
   fSystFlag = fGFWSelection->GetSystFlagIndex();
-  if(fGFWSelection->GetSystFlagIndex() == 13) SetCentralityEstimator("CL0");
-  else if(fGFWSelection->GetSystFlagIndex() == 14) SetCentralityEstimator("CL1");
+  if(fGFWSelection->GetSystFlagIndex() == 20) SetCentralityEstimator("CL0");
+  else if(fGFWSelection->GetSystFlagIndex() == 21) SetCentralityEstimator("CL1");
   OpenFile(1);
   const Int_t temp_NV0MBinsDefault=fExtendV0MAcceptance?11:10;
   Double_t temp_V0MBinsDefault[12] = {0,5,10,20,30,40,50,60,70,80,90,101}; //Last bin to include V0M beyond anchor point
@@ -545,6 +548,9 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fEfficiencyList->Add(fWithinDCAvsPt_noChi2);
     fEfficiencyList->Add(fDCAxyVsPt_withChi2);
     fEfficiencyList->Add(fWithinDCAvsPt_withChi2);
+    //ITS vs TPC tracklets cut for PU
+    fITSvsTPCMulti = new TH2D("TPCvsITSclusters",";TPC clusters; ITS clusters",1000,0,10000,5000,0,50000);
+    fEfficiencyList->Add(fITSvsTPCMulti);
     PostData(1,fEfficiencyList);
   }
   if(fStageSwitch==8) {
@@ -626,6 +632,9 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fptVarList->Add(fMultiVsV0MCorr[1]);
     fptVarList->Add(fMptClosure);
     fptVarList->Add(fESDvsFB128);
+    //ITS vs TPC tracklets cut for PU
+    fITSvsTPCMulti = new TH2D("TPCvsITSclusters",";TPC clusters; ITS clusters",1000,0,10000,5000,0,50000);
+    fptVarList->Add(fITSvsTPCMulti);
     if(fIsMC) {
       fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
       fptVarList->Add(fNchTrueVsReco);
@@ -762,6 +771,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
     }
     Double_t vtxXYZ[] = {0,0,0};
     Double_t vzt=0;
+    FillTPCITSClusters(fESD);
     ProduceEfficiencies(fESD,vzt,l_Cent,vtxXYZ); //Disabling vz vertex
     return;
   }
@@ -778,6 +788,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   Double_t vtxXYZ[] = {0.,0.,0.};
   if(!AcceptAOD(fAOD, vtxXYZ)) return;
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
+  FillTPCITSClusters(fAOD);
   if(!fGFWSelection->AcceptVertex(fAOD)) return;
   if(fStageSwitch==1)
     fIsMC?FillWeightsMC(fAOD, vz,l_Cent,vtxXYZ):FillWeights(fAOD, vz,l_Cent,vtxXYZ);
@@ -793,13 +804,13 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
     QAOnly(fAOD,vz,l_Cent,vtxXYZ);
 };
 void AliAnalysisTaskMeanPtV2Corr::NotifyRun() {
-  if(fStageSwitch==7) return;
-  AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fEventCutFlag || fEventCutFlag>100) { //Only relevant if we're using the standard AliEventCuts
     //Reinitialize AliEventCuts (done automatically on check):
-    Bool_t dummy = fEventCuts.AcceptEvent(fAOD);
+    Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
+    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+
     //Then override PU cut if required:
-    if(fGFWSelection->GetSystFlagIndex()==15)
+    if(fGFWSelection->GetSystFlagIndex()==22)
       fEventCuts.fESDvsTPConlyLinearCut[0] = 1500.;
   };
 }
@@ -807,9 +818,12 @@ void AliAnalysisTaskMeanPtV2Corr::Terminate(Option_t*) {
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::CheckTrigger(Double_t lCent) {
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(!(fTriggerType&fSelMask)) return kFALSE;
-  if((fSelMask&fTriggerType&AliVEvent::kCentral) && lCent>10) return kFALSE;
-  if((fSelMask&fTriggerType&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) return kFALSE;
+  //Apparently, MB trigger can also mark special triggers, leaving depleted regions in multi. To avoid this, pass true, if MB has been triggered.
+  //This would fail if spec. triggers would also flag MB trigger, which seems to NOT be the case.
+  if(!(fTriggerType&fSelMask)) { return kFALSE; }; //printf("Returning from the generic check\n");
+  if(fSelMask&(fTriggerType&(AliVEvent::kINT7+AliVEvent::kMB))) {return kTRUE; }; //printf("Passed by MB trigger!\n");
+  if((fSelMask&fTriggerType&AliVEvent::kCentral) && lCent>10) {return kFALSE; }; //printf("Returnning from kCent case\n");
+  if((fSelMask&fTriggerType&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) {return kFALSE; }; //printf("Returning from kSC case\n");
   return kTRUE;
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxXYZ) {
@@ -853,7 +867,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptESDTrack(AliESDtrack *mtr, UInt_t& pri
     ltrackXYZ[0] = fD;
     ltrackXYZ[1] = fZ;
   } else return kFALSE; //DCA cut is a must for now
-  return fGFWSelection->AcceptTrack(mtr,fSystFlag==1?0:ltrackXYZ,0,primFlag);//All complementary DCA track cuts for FB768 are disabled
+  return fGFWSelection->AcceptTrack(mtr,fSystFlag==1?0:ltrackXYZ,0,primFlag);
 };
 
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot) {
@@ -1347,8 +1361,8 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
       if(lpt<0.1) continue; //if below 100 MeV, just ignore & proceed
       UInt_t primSelFlag;
       if(!AcceptESDTrack(lTrack,primSelFlag,trackXYZ,ptMin,ptMax,0)) continue;
-      Bool_t passChi2=(primSelFlag&1);
-      Bool_t passDCA =(primSelFlag&2);
+      Bool_t passDCA =(primSelFlag&1);
+      Bool_t passChi2=(primSelFlag&2);
       Bool_t passBoth=(passChi2&&passDCA);
       Double_t l_Eta = lTrack->Eta();
       if(fEtaLow>-999) { if((l_Eta<fEtaLow) || (l_Eta>fEta)) continue; }
@@ -1384,9 +1398,9 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
     if (!lPart->IsPhysicalPrimary()) continue;
     if (lPart->Charge()==0.) continue;
     Double_t pt = lPart->Pt();
-    Double_t lEta = TMath::Abs(lPart->Eta());
+    Double_t lEta = lPart->Eta();
     if (pt<0.15 || pt>50.) continue;
-    if(pt>0.2 && pt<3 && lEta<fEtaNch) lNchGen++;
+    if(pt>0.2 && pt<3 && TMath::Abs(lEta)<fEtaNch) lNchGen++;
     if(fEtaLow>-999) { if((lEta<fEtaLow) || (lEta>fEta)) continue; }
     else if(TMath::Abs(lEta) > fEta) continue;
     Double_t CompWeight = 1;
@@ -1406,8 +1420,8 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
     if(lpt>0.2 && lpt<3 && TMath::Abs(lTrack->Eta())<fEtaNch) lNchRec++;
     UInt_t primSelFlag;
     if(!AcceptESDTrack(lTrack,primSelFlag,trackXYZ,ptMin,ptMax,0)) continue;
-    Bool_t passChi2=(primSelFlag&1);
-    Bool_t passDCA =(primSelFlag&2);
+    Bool_t passDCA =(primSelFlag&1);
+    Bool_t passChi2=(primSelFlag&2);
     Bool_t passBoth=(passChi2&&passDCA);
     // if((primSelFlag&3)!=3) continue; //1 for DCA cut passed, 2 for chi2TPCGlobalVsConstrained. Needed for DCAxy dist.
     Int_t fLabel = lTrack->GetLabel();
@@ -1425,6 +1439,8 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
     };
     Int_t pdgcode = lPart->PdgCode();
     Int_t pidind = fDisablePID?0:GetPIDIndex(pdgcode);
+    Int_t pidindBayes = GetBayesPIDIndex(lTrack);
+    if(pidind && (pidind!=pidindBayes+1)) pidind=0; //If the true PID does not correspond to bayesian, then drop this track
     if(lPart->IsPhysicalPrimary()) {
         fDCAxyVsPt_noChi2->Fill(lPart->Pt(),0.,trackXYZ[0],CompWeight);
         if(passDCA) fWithinDCAvsPt_noChi2->Fill(lPart->Pt(),0.,CompWeight);
@@ -1434,7 +1450,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
         }
         if(passBoth) {
           fEfficiency[0]->Fill(lPart->Pt(),l_Cent,CompWeight);
-          if(!fDisablePID && pidind) fEfficiency[pidind]->Fill(lPart->Pt(),l_Cent);
+          if(!fDisablePID && pidind) fEfficiency[pidind]->Fill(lPart->Pt(),l_Cent,CompWeight);
         };
     } else if(lPart->IsSecondaryFromWeakDecay()) {
       fDCAxyVsPt_noChi2->Fill(lPart->Pt(),1.,trackXYZ[0],CompWeight);
@@ -1445,7 +1461,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
       }
       if(passBoth) {
         fEfficiency[2*nSpecies]->Fill(lPart->Pt(),l_Cent);
-        if(!fDisablePID && pidind) fEfficiency[pidind+(2*nSpecies)]->Fill(lPart->Pt(),l_Cent);
+        if(!fDisablePID && pidind) fEfficiency[pidind+(2*nSpecies)]->Fill(lPart->Pt(),l_Cent,CompWeight);
       }
     } else if(lPart->IsSecondaryFromMaterial()) {
       fDCAxyVsPt_noChi2->Fill(lPart->Pt(),2.,trackXYZ[0],CompWeight);
@@ -1456,7 +1472,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
       }
       if(passBoth) {
         fEfficiency[2*nSpecies]->Fill(lPart->Pt(),l_Cent);
-        if(!fDisablePID && pidind) fEfficiency[pidind+(2*nSpecies)]->Fill(lPart->Pt(),l_Cent);
+        if(!fDisablePID && pidind) fEfficiency[pidind+(2*nSpecies)]->Fill(lPart->Pt(),l_Cent,CompWeight);
       }
     };
   };
@@ -1707,7 +1723,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::WithinSigma(Double_t SigmaCut, AliAODTrack *
   Double_t nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(inTrack,partType);
   return (TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF) < SigmaCut);
 }
-Int_t AliAnalysisTaskMeanPtV2Corr::GetBayesPIDIndex(AliAODTrack *l_track) {
+Int_t AliAnalysisTaskMeanPtV2Corr::GetBayesPIDIndex(AliVTrack *l_track) {
   Double_t l_Probs[AliPID::kSPECIES];
   Double_t l_MaxProb[] = {0.95,0.85,0.85};
   Bool_t l_TOFUsed = fBayesPID->ComputeProbabilities(l_track, fPIDResponse, l_Probs) & AliPIDResponse::kDetTOF;
@@ -1879,4 +1895,11 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptCustomEvent(AliESDEvent* fESD) { //Fro
   if(AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.8) < 0) return kFALSE;
   if(fESD->IsIncompleteDAQ()) return kFALSE;
   return kTRUE;
+}
+void AliAnalysisTaskMeanPtV2Corr::FillTPCITSClusters(AliVEvent* inev) {
+  Double_t nTPCClusters = inev->GetNumberOfTPCClusters()/1000.;
+  Int_t nITSClusters = 0;
+  AliVMultiplicity *multiObj = inev->GetMultiplicity();
+  for(Int_t i=2;i<6;i++) nITSClusters += multiObj->GetNumberOfITSClusters(i);
+  fITSvsTPCMulti->Fill(nTPCClusters,nITSClusters);
 }

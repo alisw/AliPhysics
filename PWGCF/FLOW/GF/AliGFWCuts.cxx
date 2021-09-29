@@ -4,18 +4,20 @@ Contains the additional event and track selection used within the <AliGFW> frame
 If used, modified, or distributed, please aknowledge the original author of this code.
 */
 #include "AliGFWCuts.h"
-const Int_t AliGFWCuts::fNTrackFlags=9;
+const Int_t AliGFWCuts::fNTrackFlags=16;
 const Int_t AliGFWCuts::fNEventFlags=10;
 AliESDtrackCuts *AliGFWCuts::fTCFB32=0;
 AliESDtrackCuts *AliGFWCuts::fTCFB64=0;
 AliESDtrackCuts *AliGFWCuts::fTCFB256=0;
 AliESDtrackCuts *AliGFWCuts::fTCFB512=0;
+AliESDtrackCuts *AliGFWCuts::fTCFB16=0;
 AliGFWCuts::AliGFWCuts():
   fSystFlag(0),
   fFilterBit(96),
-  fDCAxyCut(7),
+  fDCAxyCut(7.),
   fDCAzCut(2),
   fTPCNcls(70),
+  fTPCChi2PerCluster(2.5),
   fVtxZ(10),
   fEta(0.8),
   fPtDepXYCut(0x0),
@@ -34,15 +36,18 @@ Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, const Int_t &B
     if ((status&AliESDtrack::kITSrefit)==0) return 0;
     if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)) return 0;
   };
+  if(l_Tr->GetTPCchi2perCluster()>fTPCChi2PerCluster) return 0;
   if(!l_DCA) return 1<<BitShift;
   if(l_DCA[2]>fDCAzCut) return 0;
   if(lDisableDCAxyCheck) return 1<<BitShift;
-  Double_t DCAxycut;
-  if(fFilterBit!=2) DCAxycut = 0.0105+0.0350/TMath::Power(l_Tr->Pt(),1.1);//*fDCAxyCut/7.; //TPC tracks and my ITS cuts
-  else DCAxycut = 0.0231+0.0315/TMath::Power(l_Tr->Pt(),1.3);
   Double_t DCAxyValue = TMath::Sqrt(l_DCA[0]*l_DCA[0] + l_DCA[1]*l_DCA[1]);
-  if(DCAxyValue>DCAxycut*(fDCAxyCut/7.))
-    return 0;
+  if(DCAxyValue > fPtDepXYCut->Eval(l_Tr->Pt())) return 0;
+  return 1<<BitShift;
+  // Double_t DCAxycut;
+  // if(fFilterBit!=2) DCAxycut = 0.0105+0.0350/TMath::Power(l_Tr->Pt(),1.1);//*fDCAxyCut/7.; //TPC tracks and my ITS cuts
+  // else DCAxycut = 0.0231+0.0315/TMath::Power(l_Tr->Pt(),1.3);
+  // if(DCAxyValue>DCAxycut*(fDCAxyCut/7.))
+  //   return 0;
   return 1<<BitShift;
 };
 Int_t AliGFWCuts::AcceptTrack(AliESDtrack* l_Tr, Double_t* l_DCA, const Int_t &BitShift, UInt_t &PrimFlags) {
@@ -73,21 +78,34 @@ Int_t AliGFWCuts::AcceptTrack(AliESDtrack* l_Tr, Double_t* l_DCA, const Int_t &B
     // fTCFB512->SetMaxChi2TPCConstrainedGlobal(36);
     fTCFB512->SetMaxFractionSharedTPCClusters(0.4);
   }
+  if(!fTCFB16) {
+    fTCFB16 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    fTCFB16->SetMaxDCAToVertexXY(2.4);
+    fTCFB16->SetMaxDCAToVertexZ(3.2);
+    fTCFB16->SetDCAToVertex2D(kTRUE);
+  }
+
   Double_t l_Pt = l_Tr->Pt();
   if(l_Pt<0.01) return 0; //If below 10 MeV, throw away the track immediatelly -> Otherwise, problems calculating DCAxy value
   PrimFlags=0; //Initial value for primary selection -- initially, not a primary
   if(TMath::Abs(l_Tr->Eta())>fEta) return 0;
   if(fFilterBit==96) {
     if(!fTCFB32->AcceptTrack(l_Tr) && !fTCFB64->AcceptTrack(l_Tr)) return 0;
-    if(TMath::Abs(l_DCA[0]) < fPtDepXYCut->Eval(l_Pt)) PrimFlags+=1;
+    if(l_DCA) if(TMath::Abs(l_DCA[0]) < fPtDepXYCut->Eval(l_Pt)) PrimFlags+=1;
   }
   if(fFilterBit==768) {
     if(!fTCFB256->AcceptTrack(l_Tr) && !fTCFB512->AcceptTrack(l_Tr)) return 0;
-    PrimFlags+=1; //Here assume DCA cut is passed by default -- it's implemented in ESDtrackCuts
+    if(l_DCA) if(TMath::Abs(l_DCA[0]) < fPtDepXYCut->Eval(l_Pt)) PrimFlags+=1; //Here assume DCA cut is passed by default -- it's implemented in ESDtrackCuts
+  }
+  if(fFilterBit==16) {
+    if(!fTCFB16->AcceptTrack(l_Tr)) return 0;
+    if(l_DCA) if(TMath::Abs(l_DCA[0]) < fPtDepXYCut->Eval(l_Pt)) PrimFlags+=1; //Here assume DCA cut is passed by default -- it's implemented in ESDtrackCuts
   }
   //chi2 TPC vs global constrained could be a custom number, but it's 36 everywhere anyways
   Double_t chi2TPCConstrained = GetChi2TPCConstrained(l_Tr);
   if(!(chi2TPCConstrained<0) && chi2TPCConstrained<36.) PrimFlags+=2;
+  Double_t TPCChi2PerCluster = l_Tr->GetTPCchi2()/Double_t(l_Tr->GetTPCclusters(0));
+  if(TPCChi2PerCluster>fTPCChi2PerCluster || TPCChi2PerCluster<0) return 0;
   if(!l_DCA) return 1<<BitShift;
   if(l_DCA[1]>fDCAzCut) return 0;
   // if(lDisableDCAxyCheck) return 1<<BitShift;
@@ -126,19 +144,20 @@ void AliGFWCuts::ResetCuts() {
   fTPCNcls=70;
   fVtxZ=10;
   fEta=0.8;
+  fTPCChi2PerCluster=2.5;
   fRequiresExtraWeight=kTRUE;
-  SetPtDepDCAXY("[0]*(0.0015 + 0.005/(x^1.1))");//"0.0105+0.0350/(x^1.1)");
+  SetPtDepDCAXY("[0]*(0.0026+0.005/(x^1.01))");//[0]*(0.0015 + 0.005/(x^1.1))");//"0.0105+0.0350/(x^1.1)");
   fPtDepXYCut->SetParameter(0,fDCAxyCut);
 };
 void AliGFWCuts::PrintSetup() {
   printf("**********\n");
   printf("Syst. flag: %i\n",fSystFlag);
   printf("Eta: %f\n",fEta);
-  printf("(Flag 1) Filter bit: %i\n",fFilterBit);
-  printf("(Flag 2,3) DCAxy cut: %2.0f sigma\n",fDCAxyCut);
+  printf("(Flag 1, 10-16) Filter bit: %i\n",fFilterBit);
+  printf("(Flag 2,3,12,16) DCAxy cut: %2.0f sigma \n",fDCAxyCut);
   printf("(Flag 4,5) DCAz cut: %f\n",fDCAzCut);
   printf("(Flag 6-8) TPC Ncls: %i\n",fTPCNcls);
-  printf("(Flag 9) ITS tracks\n");
+  printf("(Flag 10-16) TPC chi2/Ncls: %2.0f \n",fTPCChi2PerCluster);
   printf("Rest of the flags are global per event. Total flag = %i + vtx/ev flag\n",fNTrackFlags);
   printf("(Flag 1-3) Vertex selection: |z|<%2.1f\n",fVtxZ);
   printf("(Flag 4-5) CL1, CL2 multi. estimator (no weights)\n");
@@ -157,12 +176,12 @@ void AliGFWCuts::SetupTrackCuts(Int_t sysflag) {
     fRequiresExtraWeight=kTRUE;
     break;
   case 2:
-    fDCAxyCut=10.;
+    fDCAxyCut=10;
     fRequiresExtraWeight=kTRUE;
     fPtDepXYCut->SetParameter(0,fDCAxyCut);
     break;
   case 3:
-    fDCAxyCut=4.;
+    fDCAxyCut=7;
     fPtDepXYCut->SetParameter(0,fDCAxyCut);
     fRequiresExtraWeight=kTRUE;
     break;
@@ -187,9 +206,69 @@ void AliGFWCuts::SetupTrackCuts(Int_t sysflag) {
     fRequiresExtraWeight=kTRUE;
     break;
   case 9:
-    fFilterBit=2;
-    fEta=1.6;
     fRequiresExtraWeight=kTRUE;
+    fFilterBit=768;
+    fDCAzCut=10;//Arbitrary large value to disable the cut -> implemented as 2.4 in the AliESDtrackCuts (2D cut)
+    fDCAxyCut=7;
+    fTPCChi2PerCluster=2.5;
+    fPtDepXYCut->SetParameter(0,fDCAxyCut);
+    break;
+  case 10:
+    fRequiresExtraWeight=kTRUE;
+    fFilterBit=768;
+    fDCAzCut=10;//Arbitrary large value to disable the cut -> implemented as 2.4 in the AliESDtrackCuts (2D cut)
+    fDCAxyCut=7;
+    fTPCChi2PerCluster=2;
+    fPtDepXYCut->SetParameter(0,fDCAxyCut);
+    break;
+  case 11:
+    fRequiresExtraWeight=kTRUE;
+    fFilterBit=768;
+    fDCAzCut=10;//Arbitrary large value to disable the cut -> implemented as 2.4 in the AliESDtrackCuts (2D cut)
+    fDCAxyCut=7;
+    fTPCChi2PerCluster=3;
+    fPtDepXYCut->SetParameter(0,fDCAxyCut);
+    break;
+  case 12:
+    fRequiresExtraWeight=kTRUE;
+    fFilterBit=768;
+    fDCAzCut=10;//Arbitrary large value to disable the cut -> implemented as 2.4 in the AliESDtrackCuts (2D cut)
+    fDCAxyCut=8;
+    fTPCChi2PerCluster=2.5;
+    fPtDepXYCut->SetParameter(0,fDCAxyCut);
+    break;
+  case 13:
+    fRequiresExtraWeight=kTRUE;
+    fFilterBit=16;
+    fDCAzCut=10;//Arbitrary large value to disable the cut -> implemented as 2.4 in the AliESDtrackCuts (2D cut)
+    fDCAxyCut=7;
+    fTPCChi2PerCluster=2.5;
+    fPtDepXYCut->SetParameter(0,fDCAxyCut);
+    break;
+  case 14:
+    fRequiresExtraWeight=kTRUE;
+    fFilterBit=16;
+    fDCAzCut=10;//Arbitrary large value to disable the cut -> implemented as 2.4 in the AliESDtrackCuts (2D cut)
+    fDCAxyCut=7;
+    fTPCChi2PerCluster=2;
+    fPtDepXYCut->SetParameter(0,fDCAxyCut);
+    break;
+  case 15:
+    fRequiresExtraWeight=kTRUE;
+    fFilterBit=16;
+    fDCAzCut=10;//Arbitrary large value to disable the cut -> implemented as 2.4 in the AliESDtrackCuts (2D cut)
+    fDCAxyCut=7;
+    fTPCChi2PerCluster=3;
+    fPtDepXYCut->SetParameter(0,fDCAxyCut);
+    break;
+  case 16:
+    fRequiresExtraWeight=kTRUE;
+    fFilterBit=16;
+    fDCAzCut=10;//Arbitrary large value to disable the cut -> implemented as 2.4 in the AliESDtrackCuts (2D cut)
+    fDCAxyCut=8;
+    fTPCChi2PerCluster=2.5;
+    fPtDepXYCut->SetParameter(0,fDCAxyCut);
+    break;
   default:
     break;
   };
@@ -277,6 +356,28 @@ TString *AliGFWCuts::GetTrackFlagDescriptor(Int_t sysflag) {
   case 9:
     retstr->Append("ITS tracklets");
     break;
+  case 10:
+    retstr->Append("Debug case 1");
+    break;
+  case 11:
+    retstr->Append("Debug case 2");
+    break;
+  case 12:
+    retstr->Append("Debug case 3");
+    break;
+  case 13:
+    retstr->Append("Debug case 4");
+    break;
+  case 14:
+    retstr->Append("Debug case 5");
+    break;
+  case 15:
+    retstr->Append("Debug case 6");
+    break;
+  case 16:
+    retstr->Append("Debug case 7");
+    break;
+
   default:
     break;
   };

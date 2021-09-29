@@ -40,6 +40,7 @@ class AliGFWCuts {
   Double_t fDCAxyCut;//=-1;
   Double_t fDCAzCut;//=2;
   Int_t fTPCNcls;//=70;
+  Double_t fTPCChi2PerCluster;//= 4 or 2.5?
   Double_t fVtxZ;// = 10
   Double_t fEta;
   static const Int_t fNTrackFlags;
@@ -48,6 +49,7 @@ class AliGFWCuts {
   static AliESDtrackCuts *fTCFB64;
   static AliESDtrackCuts *fTCFB256;
   static AliESDtrackCuts *fTCFB512;
+  static AliESDtrackCuts *fTCFB16;
   Bool_t NeedsExtraWeight() { return fRequiresExtraWeight; };
  private:
   TF1 *fPtDepXYCut;

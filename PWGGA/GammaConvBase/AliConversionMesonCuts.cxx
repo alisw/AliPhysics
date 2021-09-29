@@ -113,6 +113,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fPBremSmearing(1.),
   fPSigSmearing(0),
   fPSigSmearingCte(0),
+  fPSigSmearingRatio(1),
   fDCAGammaGammaCut(1000),
   fDCAZMesonPrimVtxCut(1000),
   fDCARMesonPrimVtxCut(1000),
@@ -237,6 +238,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fPBremSmearing(ref.fPBremSmearing),
   fPSigSmearing(ref.fPSigSmearing),
   fPSigSmearingCte(ref.fPSigSmearingCte),
+  fPSigSmearingRatio(ref.fPSigSmearingRatio),
   fDCAGammaGammaCut(ref.fDCAGammaGammaCut),
   fDCAZMesonPrimVtxCut(ref.fDCAZMesonPrimVtxCut),
   fDCARMesonPrimVtxCut(ref.fDCARMesonPrimVtxCut),
@@ -3817,7 +3819,7 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPSigSmearing     = -2.3334e-05;
       fPSigSmearingCte  = 8.34844e-05;
       break;
-    case 15:     //f            pol1 with 10% additional Bremsstrahlung 
+    case 15:     //f            pol1 with 10% additional Bremsstrahlung
       fUseMCPSmearing   = 2;
       fPBremSmearing    = 0.114*0.01;
       fPSigSmearing     = -2.3334e-05;
@@ -3835,7 +3837,46 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPSigSmearing     = -2.3334e-05;
       fPSigSmearingCte  = 8.34844e-05;
       break;
-    case 24:     //o             10% additional Bremsstrahlung 
+    case 18:     //i             indirect fit on ratio data/MC with powerlaw
+      fUseMCPSmearing   = 4;
+      fPSigSmearing     = 0.000639119;
+      fPSigSmearingCte  = -0.997739;
+      fPSigSmearingRatio= 1.1635;
+      break;
+    case 19:     //j             indirect fit on ratio data/MC with powerlaw + Bremsstarhlung
+      fUseMCPSmearing   = 4;
+      fPBremSmearing    = 0.114*0.1; // 10% Bremsstarhlung
+      fPSigSmearing     = 0.000639119;
+      fPSigSmearingCte  = -0.997739;
+      fPSigSmearingRatio= 1.1635;
+      break;
+    case 20:     //k             indirect fit on ratio data/MC with powerlaw + Bremsstarhlung
+      fUseMCPSmearing   = 4;
+      fPBremSmearing    = 0.114*0.2; // 20% Bremsstarhlung
+      fPSigSmearing     = 0.000639119;
+      fPSigSmearingCte  = -0.997739;
+      fPSigSmearingRatio= 1.1635;
+      break;
+    case 21:     //l             indirect fit on ratio data/MC with powerlaw + Bremsstarhlung
+      fUseMCPSmearing   = 4;
+      fPBremSmearing    = 0.114*0.3; // 30% Bremsstarhlung
+      fPSigSmearing     = 0.000639119;
+      fPSigSmearingCte  = -0.997739;
+      fPSigSmearingRatio= 1.1635;
+      break;
+    case 22:     //m             indirect fit on ratio data/MC with powerlaw + Bremsstarhlung
+      fUseMCPSmearing   = 4;
+      fPBremSmearing    = 0.114*1.2; // additional 20% Bremsstarhlung
+      fPSigSmearing     = 0.000639119;
+      fPSigSmearingCte  = -0.997739;
+      fPSigSmearingRatio= 1.1635;
+      break;
+    case 23:     //n        new implementation pol2, est. from EMC trigg data
+      fUseMCPSmearing   = 3;
+      fPSigSmearing     = 9.61405e-05;
+      fPSigSmearingCte  = -5.45058e-06;
+      break;
+    case 24:     //o             10% additional Bremsstrahlung
       fUseMCPSmearing   = 0;
       fPBremSmearing    = 0.114*0.01;
       break;
@@ -4422,7 +4463,13 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
     } else if (fUseMCPSmearing == 2) {
       facPSig = fRandom.Gaus(P,TMath::Sqrt(fPSigSmearingCte+fPSigSmearing*P));
     } else if (fUseMCPSmearing == 3) {
-      facPSig = fRandom.Gaus(P,TMath::Sqrt(fPSigSmearingCte+fPSigSmearing*P*P));
+      Double_t sigma = fPSigSmearingCte+fPSigSmearing*P*P;
+      if(sigma < 0) sigma = 0;
+      facPSig = fRandom.Gaus(P,TMath::Sqrt(sigma));
+    } else if (fUseMCPSmearing == 4) {
+      Double_t sigma = P*(TMath::Power(P,fPSigSmearing) + fPSigSmearingCte) *(TMath::Sqrt(fPSigSmearingRatio*fPSigSmearingRatio - 1))/0.135;
+      if(sigma < 0) sigma = 0;
+      facPSig = fRandom.Gaus(P,sigma);
     }
   }
 
@@ -4715,3 +4762,87 @@ Bool_t AliConversionMesonCuts::ArmenterosLikeQtCut(Double_t alpha, Double_t qT){
   }
 }
 
+///_____________________________________________________________________________
+/// Function to check if particle fullfills the required inJet criterium (inJet, out of Jet etc.)
+Bool_t AliConversionMesonCuts::IsParticleInJet(std::vector<Double_t> vectorJetEta, std::vector<Double_t> vectorJetPhi, Double_t JetRadius, Double_t partEta, Double_t partPhi, Int_t &matchedJet, Double_t &RJetPi0Cand){
+
+  // set up important variables
+  matchedJet = 0;
+  RJetPi0Cand = 100; // set to a random high value such that the first jet will overwrite this value
+
+  Int_t NJets = vectorJetEta.size();
+  if(NJets == 0){
+    // return true if no Jets are found and particle should be outside of Jet
+    // otherwise return false
+    if(fDoOutOfJet == 1) return kTRUE;
+    else return kFALSE;
+  }
+
+  // generally dont assume the particle is in Jet.
+  Bool_t particleInJet = kFALSE;
+  // For out of Jet (==1) assume particle is in Jet and Set value to false if it is
+  if(fDoOutOfJet == 1) particleInJet = kTRUE;
+
+  for(Int_t j=0; j<NJets; j++){
+    Double_t DeltaEta = vectorJetEta.at(j)-partEta;
+    Double_t DeltaPhi = abs(vectorJetPhi.at(j)-partPhi);
+    if(fDoOutOfJet == 2 || fDoOutOfJet == 4){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
+      DeltaEta = vectorJetEta.at(j) + partEta;
+      DeltaPhi = abs(TMath::Pi() - DeltaPhi);
+    }
+    if(DeltaPhi > TMath::Pi()) {
+      DeltaPhi = 2*TMath::Pi() - DeltaPhi;
+    }
+    Double_t RJetPi0Cand_tmp = TMath::Sqrt(DeltaEta*DeltaEta+DeltaPhi*DeltaPhi);
+    if(JetRadius > 0 ){
+      if(fDoOutOfJet == 0){ // in jet
+        if(RJetPi0Cand_tmp < JetRadius){
+          // if the particle is in multiple Jet cones, take the nearest Jet
+          if(RJetPi0Cand_tmp < RJetPi0Cand) RJetPi0Cand = RJetPi0Cand_tmp;
+          matchedJet = j;
+          particleInJet = kTRUE;
+        }
+      } else if(fDoOutOfJet == 1){ // out of jet
+        if(RJetPi0Cand_tmp < JetRadius){
+          particleInJet = kFALSE; // particle is in Jet so it cant be out of Jet
+          // can break for out of Jet as there is no associated Jet
+          break;
+        }
+      } else if(fDoOutOfJet == 2){ // out of jet on away side
+        if(RJetPi0Cand_tmp < JetRadius){
+          // if the particle is in multiple Jet cones, take the nearest Jet
+          if(RJetPi0Cand_tmp < RJetPi0Cand) RJetPi0Cand = RJetPi0Cand_tmp;
+          matchedJet = j;
+          particleInJet = kTRUE;
+        }
+      } else if(fDoOutOfJet == 3){ // out of jet in interval [R, R+0.2]
+        if((RJetPi0Cand_tmp > JetRadius) && (RJetPi0Cand_tmp < JetRadius + 0.2)){
+          // if the particle is in multiple Jet cones, take the nearest Jet
+          if(RJetPi0Cand_tmp < RJetPi0Cand) RJetPi0Cand = RJetPi0Cand_tmp;
+          matchedJet = j;
+          particleInJet = kTRUE;
+        }
+      } else if(fDoOutOfJet == 4){ // in jet on away side (like case 2 but additionally particle has to be inside Jet)
+        if(RJetPi0Cand_tmp < JetRadius){
+          // loop over all Jets and see if particle is not only opposite to Jet, but also in Jet
+          for(Int_t k=0; k<NJets; k++){
+            Double_t dEta = vectorJetEta.at(k)-partEta;
+            Double_t dPhi = abs(vectorJetPhi.at(k)-partPhi);
+            if(dEta > TMath::Pi()) {
+              dEta = 2*TMath::Pi() - dEta;
+            }
+            Double_t RJetPi0CandInJet = TMath::Sqrt(dEta*dEta+dPhi*dPhi);
+            if(RJetPi0CandInJet < JetRadius){
+              // if the particle is in multiple Jet cones, take the nearest Jet
+              if(RJetPi0Cand_tmp < RJetPi0Cand) RJetPi0Cand = RJetPi0Cand_tmp;
+              matchedJet = j;
+              particleInJet = kTRUE;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return particleInJet;
+}
