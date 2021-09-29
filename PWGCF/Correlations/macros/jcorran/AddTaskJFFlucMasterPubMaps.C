@@ -1,5 +1,5 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t period = 0, double ptmin = 0.5, Bool_t removebadarea = kFALSE, Bool_t mapsmooth = kFALSE){
+AliAnalysisTask *AddTaskJFFlucMasterPubMaps(TString taskName="JFFlucMaster", UInt_t period = 0, double ptmin = 0.5, Bool_t removebadarea = kFALSE, Bool_t mapsmooth = kFALSE){
 	// Load Custom Configuration and parameters
 	enum { lhc15o=0, lhc18q=1, lhc18r=2 };
 	const TString speriod[3]= {"15o","18q","18r"}; //needed string to load correct map config based on string
