@@ -914,6 +914,8 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
   Int_t EventSelectionFlag = 0;
   Float_t V0MPercentile = -1000;
   AliMultSelection *ams = (AliMultSelection*)fESDEvent->FindListObject("MultSelection");
+  if(ams)
+    fAnalysisEvent->SetLocalEstimatorList(ams->GetEstimatorList());
   if(!ams)
     V0MPercentile = -999;
   else {
