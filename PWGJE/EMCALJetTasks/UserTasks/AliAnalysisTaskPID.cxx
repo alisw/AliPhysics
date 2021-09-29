@@ -1277,7 +1277,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     fTPCclusterStudies = new TObjArray*[arrNumbers];
     const Int_t histNumbers = 3;
     
-    const Int_t nBinsY[histNumbers+1] = {8, 4, 11, 15};
+    constexpr const Int_t nBinsY[histNumbers+1] = {8, 4, 11, 15};
     Float_t twopi = 2.0 * TMath::Pi();
     
     Double_t binsPrime[nBinsPrime+1];
@@ -1285,15 +1285,15 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
       binsPrime[i] = primeLow + i*(primeHigh - primeLow)/nBinsPrime;
     }
     
-    Double_t binsYEta[nBinsY[0] + 1] = {-0.9, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.9};
-    Double_t binsYPhi[nBinsY[1] + 1] = {0.0, twopi/4.0, twopi/2.0, 3.0 * twopi/4.0, twopi};
-    Double_t binsYMult[nBinsY[2] + 1] = {0, 100, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000};
+    constexpr Double_t binsYEta[nBinsY[0] + 1] = {-0.9, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.9};
+    constexpr Double_t binsYPhi[nBinsY[1] + 1] = {0.0, twopi/4.0, twopi/2.0, 3.0 * twopi/4.0, twopi};
+    constexpr Double_t binsYMult[nBinsY[2] + 1] = {0, 100, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000};
 //     for (Int_t i=0;i<nBinsY[2] + 1;++i) {
 //       binsYMult[i] = i * 5.0;
 //     }
     
-    Double_t binsYclusters[nBinsY[3] + 1] = {1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160};
-    const Double_t* binsY[histNumbers+1] = {binsYEta, binsYPhi, binsYMult, binsYclusters};
+    constexpr Double_t binsYclusters[nBinsY[3] + 1] = {1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160};
+    constexpr Double_t* binsY[histNumbers+1] = {binsYEta, binsYPhi, binsYMult, binsYclusters};
     
 //     Double_t binsYNearTracks[nBinsY[3] + 1] = {0,1,2,3,4,5,6,7,8,9,10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
 //     const Double_t* binsY[histNumbers+1] = {binsYEta, binsYPhi, binsYMult, binsYNearTracks};    
