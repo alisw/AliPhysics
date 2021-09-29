@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 27.09.2021
+ * Last Modified Date: 29.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -946,12 +946,13 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   // Book all control histograms
 
   // book histogram for counting trackcuts
-  // add 4 bins manually for filterbit, charged only, primary only and global
-  // tracks only cut
+  // add 5 bins manually for filterbit, charged only, primary only, global only
+  // and MCClosure tracks only cut
+  Int_t AddBins = 5;
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     fTrackCutsCounter[mode] =
         new TH1D(fTrackCutsCounterNames[mode], fTrackCutsCounterNames[mode],
-                 2 * LAST_ETRACK + 4, 0, 2 * LAST_ETRACK + 4);
+                 2 * LAST_ETRACK + AddBins, 0, 2 * LAST_ETRACK + AddBins);
     fTrackCutsCounter[mode]->SetFillColor(kFillColor[kAFTER]);
     for (int bin = 0; bin < LAST_ETRACK; ++bin) {
       for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
@@ -967,6 +968,8 @@ void AliAnalysisTaskAR::BookControlHistograms() {
                                                      "PrimaryOnly");
     fTrackCutsCounter[mode]->GetXaxis()->SetBinLabel(2 * LAST_ETRACK + 4,
                                                      "GlobalTracksOnly");
+    fTrackCutsCounter[mode]->GetXaxis()->SetBinLabel(2 * LAST_ETRACK + 5,
+                                                     "MC Closure");
     fTrackControlHistogramsList->Add(fTrackCutsCounter[mode]);
   }
   // book histogram holding cumulative track cuts
@@ -977,9 +980,11 @@ void AliAnalysisTaskAR::BookControlHistograms() {
                                                "fTrackCutsCounterCumulative", 1,
                                                ctcbins, ctcxmin, ctcxmax);
   fTrackControlHistogramsList->Add(fTrackCutsCounterCumulative);
+
   // book histogram holding values of all track cuts
-  fTrackCutsValues = new TH1D("fTrackCutsValues", "fTrackCutsValues",
-                              2 * LAST_ETRACK + 4, 0, 2 * LAST_ETRACK + 4);
+  fTrackCutsValues =
+      new TH1D("fTrackCutsValues", "fTrackCutsValues",
+               2 * LAST_ETRACK + AddBins, 0, 2 * LAST_ETRACK + AddBins);
   fTrackCutsValues->SetFillColor(kFillColor[kAFTER]);
 
   for (int bin = 0; bin < LAST_ETRACK; ++bin) {
@@ -1014,7 +1019,14 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   }
   fTrackCutsValues->GetXaxis()->SetBinLabel(2 * LAST_ETRACK + 4,
                                             "GlobalTracksOnly");
+  if (fMCClosure) {
+    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 5, 99);
+  } else {
+    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 5, -99);
+  }
+  fTrackCutsValues->GetXaxis()->SetBinLabel(2 * LAST_ETRACK + 5, "MC Closure");
   fTrackControlHistogramsList->Add(fTrackCutsValues);
+
   // book track control histograms
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     for (int var = 0; var < LAST_ETRACK; ++var) {
@@ -1202,43 +1214,6 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
   }
 }
 
-// void AliAnalysisTaskAR::BookMCOnTheFlyObjects() {
-//   // book objects need for MC analysis
-
-//   // check if fMCFlowHarmonics is empty
-//   if (fMCFlowHarmonics.empty()) {
-//     std::cout << __LINE__ << ": no flow harmonics defined" << std::endl;
-//     Fatal("BookMCObjects", "Invalid Pointer");
-//   }
-
-//   // base setup for the pdf for MC analysis with flow harmonics
-//   // generate formula, i.e. fourier series
-//   // set flow harmonics as parameters as given by fMCFlowHarmonics
-//   // leave symmetry planes and set them later on a event by event basis
-
-//   // generate formula, f(phi) = [1 + 2*Sum_{i=1}{N} v_i
-//   // cos(i*(phi-Psi_i))]/(2pi)
-//   TString Formula = "1+";
-//   for (std::size_t i = 0; i < fMCFlowHarmonics.size(); ++i) {
-//     // we set 2n parameters
-//     // [2i] -> v_i
-//     // [2i+1] -> Psi_i
-//     Formula += Form("2*[%d]*TMath::Cos(%d*(x-[%d]))", int(2 * i), int(i + 1),
-//                     int(2 * i + 1));
-//     if (i < fMCFlowHarmonics.size() - 1) {
-//       Formula += "+";
-//     }
-//   }
-//   Formula = "(" + Formula + ")/TMath::TwoPi()";
-//   // create TF1 object with formaul
-//   fMCPdf = new TF1(fMCPdfName, Formula, 0., TMath::TwoPi());
-
-//   // set flow harmonics
-//   for (std::size_t i = 0; i < fMCFlowHarmonics.size(); ++i) {
-//     fMCPdf->SetParameter(2 * i, fMCFlowHarmonics.at(i));
-//   }
-// }
-
 void AliAnalysisTaskAR::UserExec(Option_t *) {
 
   // general strategy
@@ -1258,10 +1233,10 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   AliMCEvent *aMC = nullptr;
   aMC = MCEvent();
 
-  // compute event objects
-  // this requries an inital loop over all tracks in the event
-
+  // fill event control and QA histograms when running over data
   if (!fMCOnTheFly) {
+    // compute event objects
+    // this requries an inital loop over all tracks in the event
     FillEventObjects(aAOD, aMC);
     // fill event histograms before cut
     if (fFillQAHistograms || fFillQACorHistogramsOnly) {
@@ -1290,21 +1265,21 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
   // get number of all tracks in current event
   Int_t nTracks = 0;
+  // only running over AOD
   if (aAOD && !aMC) {
-    // only running over AOD
     if (fUseFixedMultplicity) {
       nTracks = fFixedMultiplicy;
     } else {
       nTracks = aAOD->GetNumberOfTracks();
     }
-  } else if (aAOD && aMC) {
     // running over AOD and MC data
+  } else if (aAOD && aMC) {
     nTracks = aMC->GetNumberOfTracks();
-  } else if (fMCOnTheFly) {
     // running over on the fly generated MC data
+  } else if (fMCOnTheFly) {
     nTracks = static_cast<Int_t>(fMCMultiplicity->GetRandom());
   } else {
-    std::cout << __LINE__ << ": dit not get number of tracks" << std::endl;
+    std::cout << __LINE__ << ": did not get number of tracks" << std::endl;
     Fatal("UserExec", "did not get number of tracks in the event");
   }
 
@@ -1313,9 +1288,9 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
   for (int iTrack = 0; iTrack < nTracks; ++iTrack) {
 
-    // if we have monte carlo data
+    // if we have AOD and MC data
     if (aAOD && aMC) {
-      // get a pointer to a MCparticle
+      // get a pointer to a AliAODMCparticle
       MCParticle = dynamic_cast<AliAODMCParticle *>(aMC->GetTrack(iTrack));
       if (!MCParticle) {
         continue;
@@ -1323,8 +1298,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       // and get corresponding AODTrack, if it exists
       aTrack = dynamic_cast<AliAODTrack *>(
           aAOD->GetTrack(fLookUpTable->GetValue(Int_t(iTrack))));
-    } else if (aAOD && !aMC) {
       // if running over AOD only
+    } else if (aAOD && !aMC) {
       // get AODtrack directly
       // randomize tracks if necessary
       if (fUseFisherYates) {
@@ -1333,8 +1308,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       } else {
         aTrack = dynamic_cast<AliAODTrack *>(aAOD->GetTrack(iTrack));
       }
+      // run over on the fly generated
     } else if (fMCOnTheFly) {
-      // generate data on the fly
       if (fMCKinematicPDFs[kPT]) {
         fMCKinematicVariables[kPT] = fMCKinematicPDFs[kPT]->GetRandom();
       }
@@ -1349,8 +1324,8 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       Fatal("UserExec", "did not get kinematic variables");
     }
 
+    // run over data
     if (!fMCOnTheFly) {
-      // run over data
 
       // fill QA track scan histograms
       if (fFillQAHistograms && !fFillQACorHistogramsOnly) {
@@ -1365,6 +1340,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       if (!SurviveTrackCut(MCParticle, kTRUE)) {
         continue;
       }
+
       // fill track control histogram after track cut on MC particle
       FillTrackControlHistograms(kAFTER, MCParticle);
 
@@ -1375,17 +1351,20 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
       // fill track control histogram after track cut on reconstructed track
       FillTrackControlHistograms(kAFTER, aTrack);
+
+      // run over on the fly generated data
     } else {
-      // run over generated data
 
       FillTrackControlHistograms(kBEFORE, nullptr);
+
       if (!SurviveTrackCut(nullptr, kFALSE)) {
         continue;
       }
+
       FillTrackControlHistograms(kAFTER, nullptr);
     }
 
-    // fill kinematics and weights into track objects
+    // fill kinematic variables and weights into track objects
     FillTrackObjects(aTrack);
   }
 
@@ -1395,8 +1374,12 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   }
 
   // aggregate weights
+  // i.e. multiply pt, phi and eta weights track by track and push it into one
+  // vector
   AggregateWeights();
 
+  // fill event control histograms for on the fly generated data
+  // if we run over real data, we can do this step in the very beginning
   if (fMCOnTheFly) {
     fMultiplicity[kMUL] = nTracks;
     fMultiplicity[kMULQ] = fKinematics[kPHI].size();
@@ -1424,9 +1407,11 @@ void AliAnalysisTaskAR::ClearVectors() {
   }
 }
 
-void AliAnalysisTaskAR::FillTrackObjects(AliAODTrack *track) {
+void AliAnalysisTaskAR::FillTrackObjects(AliVParticle *avp) {
   // fill kinematic variables and weights into event objects
-  // check if pointer is valid
+
+  // AOD track
+  AliAODTrack *track = dynamic_cast<AliAODTrack *>(avp);
   if (track) {
     fKinematics[kPT].push_back(track->Pt());
     if (fWeightHistogram[kPT]) {
@@ -1443,25 +1428,47 @@ void AliAnalysisTaskAR::FillTrackObjects(AliAODTrack *track) {
       fKinematicWeights[kETA].push_back(fWeightHistogram[kETA]->GetBinContent(
           fWeightHistogram[kETA]->FindBin(track->Eta())));
     }
-  } else {
-    // if not, we are producing our own data
+  }
+
+  // MC particles
+  AliAODMCParticle *MCparticle = dynamic_cast<AliAODMCParticle *>(avp);
+  if (MCparticle) {
+    fKinematics[kPT].push_back(MCparticle->Pt());
+    if (fWeightHistogram[kPT]) {
+      fKinematicWeights[kPT].push_back(fWeightHistogram[kPT]->GetBinContent(
+          fWeightHistogram[kPT]->FindBin(MCparticle->Pt())));
+    }
+    fKinematics[kPHI].push_back(MCparticle->Phi());
+    if (fWeightHistogram[kPHI]) {
+      fKinematicWeights[kPHI].push_back(fWeightHistogram[kPHI]->GetBinContent(
+          fWeightHistogram[kPHI]->FindBin(MCparticle->Phi())));
+    }
+    fKinematics[kETA].push_back(MCparticle->Eta());
+    if (fWeightHistogram[kETA]) {
+      fKinematicWeights[kETA].push_back(fWeightHistogram[kETA]->GetBinContent(
+          fWeightHistogram[kETA]->FindBin(MCparticle->Eta())));
+    }
+  }
+
+  // if neither, we run over on the fly generated data
+  if (!track && !MCparticle && fMCOnTheFly) {
     if (fMCKinematicPDFs[kPT]) {
       fKinematics[kPT].push_back(fMCKinematicVariables[kPT]);
-      if (fWeightHistogram[kPT] && fUseWeights[kPT]) {
+      if (fWeightHistogram[kPT]) {
         fKinematicWeights[kPT].push_back(fWeightHistogram[kPT]->GetBinContent(
             fWeightHistogram[kPT]->FindBin(fMCKinematicVariables[kPT])));
       }
     }
     if (fMCKinematicPDFs[kPHI]) {
       fKinematics[kPHI].push_back(fMCKinematicVariables[kPHI]);
-      if (fWeightHistogram[kPHI] && fUseWeights[kPHI]) {
+      if (fWeightHistogram[kPHI]) {
         fKinematicWeights[kPHI].push_back(fWeightHistogram[kPHI]->GetBinContent(
             fWeightHistogram[kPHI]->FindBin(fMCKinematicVariables[kPHI])));
       }
     }
     if (fMCKinematicPDFs[kETA]) {
       fKinematics[kETA].push_back(fMCKinematicVariables[kETA]);
-      if (fWeightHistogram[kETA] && fUseWeights[kETA]) {
+      if (fWeightHistogram[kETA]) {
         fKinematicWeights[kETA].push_back(fWeightHistogram[kETA]->GetBinContent(
             fWeightHistogram[kETA]->FindBin(fMCKinematicVariables[kETA])));
       }
@@ -1470,7 +1477,8 @@ void AliAnalysisTaskAR::FillTrackObjects(AliAODTrack *track) {
 }
 
 void AliAnalysisTaskAR::AggregateWeights() {
-  // aggregate all kinematic weights into one vector
+  // aggregate all kinematic weights into one vector track by track
+
   Double_t w[kKinematic];
   Double_t tmp;
   fWeightsAggregated.clear();
@@ -1492,8 +1500,8 @@ void AliAnalysisTaskAR::AggregateWeights() {
 
 Int_t AliAnalysisTaskAR::IndexCorHistograms(Int_t i, Int_t j, Int_t N) {
   // helper function for computing index of correlation histograms
-  // this function project 2D indeces of the entries above the diagonal to a
-  // 1D index
+  // this function projects 2D indeces of a matrix above the diagonal
+  // to a 1D index
   //
   // example with N=4
   //    i->
@@ -2195,6 +2203,40 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
       }
     }
     fTrackCutsCounterCumulative->Fill(&CutBit);
+
+    if (fMCClosure) {
+
+      if (fAcceptanceHistogram[kPT]) {
+        if (fAcceptanceHistogram[kPT]->GetBinContent(
+                fAcceptanceHistogram[kPT]->FindBin(aTrack->Pt())) <
+            gRandom->Uniform()) {
+          if (FillCounter) {
+            fTrackCutsCounter[kRECO]->Fill(2 * LAST_ETRACK + 4.5);
+          }
+          Flag = kFALSE;
+        }
+      }
+      if (fAcceptanceHistogram[kPHI]) {
+        if (fAcceptanceHistogram[kPHI]->GetBinContent(
+                fAcceptanceHistogram[kPHI]->FindBin(aTrack->Phi())) <
+            gRandom->Uniform()) {
+          if (FillCounter) {
+            fTrackCutsCounter[kRECO]->Fill(2 * LAST_ETRACK + 4.5);
+          }
+          Flag = kFALSE;
+        }
+      }
+      if (fAcceptanceHistogram[kETA]) {
+        if (fAcceptanceHistogram[kETA]->GetBinContent(
+                fAcceptanceHistogram[kETA]->FindBin(aTrack->Eta())) <
+            gRandom->Uniform()) {
+          if (FillCounter) {
+            fTrackCutsCounter[kRECO]->Fill(2 * LAST_ETRACK + 4.5);
+          }
+          Flag = kFALSE;
+        }
+      }
+    }
   }
 
   // check MC particle
@@ -2284,10 +2326,11 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
   }
 
   // when we pass invalid pointer, check if we produced our own data
-  if (!aTrack && !MCParticle && fMCOnTheFly) {
+  if ((!aTrack && !MCParticle && fMCOnTheFly)) {
+
     if (fAcceptanceHistogram[kPT]) {
       if (fAcceptanceHistogram[kPT]->GetBinContent(
-              fAcceptanceHistogram[kPHI]->FindBin(fMCKinematicVariables[kPT])) <
+              fAcceptanceHistogram[kPT]->FindBin(fMCKinematicVariables[kPT])) <
           gRandom->Uniform()) {
         Flag = kFALSE;
       }
@@ -3062,7 +3105,7 @@ void AliAnalysisTaskAR::SetMulCorQAHistogramBinning(
 void AliAnalysisTaskAR::SetAcceptanceHistogram(kTrack kinematic,
                                                const char *Filename,
                                                const char *Histname) {
-  // set a acceptance histogram for monte carlo closure
+  // set a acceptance histograms
 
   // check if index is out of range
   if (kinematic > kKinematic) {

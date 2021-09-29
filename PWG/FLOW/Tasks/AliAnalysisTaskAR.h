@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 27.09.2021
+ * Last Modified Date: 29.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -136,7 +136,7 @@ public:
   virtual Bool_t SurviveTrackCut(AliVParticle *aTrack, Bool_t FillCounter);
   virtual void FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC);
   virtual void ClearVectors();
-  virtual void FillTrackObjects(AliAODTrack *track);
+  virtual void FillTrackObjects(AliVParticle *avp);
   virtual void AggregateWeights();
   virtual Int_t IndexCorHistograms(Int_t i, Int_t j, Int_t N);
 
@@ -195,6 +195,14 @@ public:
   };
   TList *GetFinalResultProfilesList() const {
     return this->fFinalResultProfilesList;
+  }
+  void GetCorrelatorValues(std::vector<Double_t> *cor) {
+    cor->clear();
+    TList *list;
+    for (auto List : *fFinalResultProfilesList) {
+      list = dynamic_cast<TList *>(List);
+      cor->push_back(dynamic_cast<TProfile *>(list->At(0))->GetBinContent(1));
+    }
   }
 
   // setters for QA histograms
