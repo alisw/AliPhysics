@@ -269,9 +269,6 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
     }
 
     if(!fTracksTrigCharged->IsEmpty()){
-      FillCorrelations();
-      FillCorrelationsMixed();
-
       if(fDoPID){
         for(Int_t i(0); i < 3; i++){
           if(!fTracksTrigPID[i]->IsEmpty()){
@@ -283,6 +280,8 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
           }
         }
       } // end do PID
+      FillCorrelations();
+      FillCorrelationsMixed();
     }
 
     fTracksTrigCharged->Clear();
@@ -298,6 +297,7 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
 void AliAnalysisTaskCorrForFlow::Terminate(Option_t *)
 {
    if (fPoolMgr) delete fPoolMgr;
+   if(fOutputListCharged) delete fOutputListCharged;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCorrForFlow::IsEventSelected()
@@ -436,8 +436,6 @@ void AliAnalysisTaskCorrForFlow::FillCorrelations()
         Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
         Double_t dPhiStarHigh = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 2.5);
 
-        if(TMath::Abs(dPhiStarLow) < fMergingCut || TMath::Abs(dPhiStarHigh) < fMergingCut) continue;
-
         const Double_t kLimit = 3.0*fMergingCut;
 
         if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
@@ -505,8 +503,6 @@ void AliAnalysisTaskCorrForFlow::FillCorrelationsMixed()
           if(TMath::Abs(binscont[0]) < fMergingCut){
             Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
             Double_t dPhiStarHigh = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 2.5);
-
-            if(TMath::Abs(dPhiStarLow) < fMergingCut || TMath::Abs(dPhiStarHigh) < fMergingCut) continue;
 
             const Double_t kLimit = 3.0*fMergingCut;
 
@@ -578,8 +574,6 @@ void AliAnalysisTaskCorrForFlow::FillCorrelationsPID(const Int_t pid)
         Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
         Double_t dPhiStarHigh = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 2.5);
 
-        if(TMath::Abs(dPhiStarLow) < fMergingCut || TMath::Abs(dPhiStarHigh) < fMergingCut) continue;
-
         const Double_t kLimit = 3.0*fMergingCut;
 
         if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
@@ -647,8 +641,6 @@ void AliAnalysisTaskCorrForFlow::FillCorrelationsMixedPID(const Int_t pid)
           if(TMath::Abs(binscont[0]) < fMergingCut){
             Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
             Double_t dPhiStarHigh = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 2.5);
-
-            if(TMath::Abs(dPhiStarLow) < fMergingCut || TMath::Abs(dPhiStarHigh) < fMergingCut) continue;
 
             const Double_t kLimit = 3.0*fMergingCut;
 

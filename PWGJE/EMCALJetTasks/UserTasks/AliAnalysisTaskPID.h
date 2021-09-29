@@ -25,6 +25,7 @@ class AliPPVsMultUtils;
 class AliTOFPIDResponse;
 class AliVEvent;
 class AliVTrack;
+class AliTrackContainer;
 
 #include "TAxis.h"
 #include "TH1D.h"
@@ -79,6 +80,15 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   enum EffSteps { kStepGenWithGenCuts = 0, kStepRecWithGenCuts = 1, kStepRecWithGenCutsMeasuredObs = 2,
                   kStepRecWithRecCutsMeasuredObs = 3, kStepRecWithRecCutsMeasuredObsPrimaries = 4,
                   kStepRecWithRecCutsMeasuredObsStrangenessScaled = 5, kStepRecWithRecCutsPrimaries = 6, kNumSteps = 7};
+  /*                
+  kStepGenWithGenCuts: in eta range, physical primary, no  neutral particles (drawn from MC particles)
+  kStepRecWithGenCuts: Reconstructed track has survived geo and dEdx cuts (normal detector level cuts) and has associated MC track, MC track survives GenCuts (eta range, physical primary), filled with observables from gentrack
+  kStepRecWithGenCutsMeasuredObs: Same as kStepRecWithGenCuts, but values (Pt, Eta, charge) come from the reconstructed track
+  kStepRecWithRecCutsMeasuredObs: Using tracks used for analysis (therefore: surviving all track cuts), if they have an associated MC track, filled with observables from the reconstructed track, no cut on the MC track
+  kStepRecWithRecCutsMeasuredObsStrangenessScaled: same as kStepRecWithRecCutsMeasuredObs, but scaled with strangeness (Check)
+  kStepRecWithRecCutsMeasuredObsPrimaries: Same as kStepRecWithRecCutsMeasuredObs, but the MC track has to be a physical primary
+  kStepRecWithRecCutsPrimaries: Same cuts as kStepRecWithRecCutsMeasuredObsPrimaries, but filled with values from the MC track
+  */
   
   enum TOFpidInfo { kNoTOFinfo = -2, kNoTOFpid = -1, kTOFpion = 0, kTOFkaon = 1, kTOFproton = 2, kNumTOFspecies = 3,
                     kNumTOFpidInfoBins = 5 };
@@ -88,11 +98,11 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   enum CutHistoType { kMCPtHardCut = 0 };
   
-  enum EventGenerator { kPythia6Perugia0 = 0, kPythia6Perugia2011 = 0 };
+  enum EventGenerator { kPythia6Perugia0 = 0, kPythia6Perugia2011 = 1 , kDPMJET = 2};
   
   static Int_t PDGtoMCID(Int_t pdg);
   
-  static void GetJetTrackObservables(Double_t trackPt, Double_t jetPt, Double_t& z, Double_t& xi, Bool_t storeXi = kTRUE);
+  static void GetJetTrackObservables(Double_t trackPt, Double_t jetPt, Double_t& z, Double_t& xi);
   
   static Double_t GetMCStrangenessFactorCMS(Int_t motherPDG, Double_t motherGenPt);
   static Double_t GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliMCParticle* daughter);
@@ -138,8 +148,13 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   void PrintSystematicsSettings() const;
   
-  Bool_t ProcessTrack(const AliVTrack* track, Int_t particlePDGcode, Double_t centralityPercentile, Double_t jetPt, Bool_t isMBSelected = kFALSE, 
-                      Bool_t isMultSelected = kTRUE, Bool_t storeXi = kTRUE, Double_t radialDistanceToJet = -1, Double_t jT = -1);
+  Bool_t ProcessTrack(const AliVTrack* track, Int_t particlePDGcode, Double_t centralityPercentile, Double_t jetPt, Bool_t isMBSelected = kFALSE, Bool_t isMultSelected = kTRUE, Double_t radialDistanceToJet = -1, Double_t jT = -1);
+  
+  void FillDCA(AliVTrack* track, Double_t dEdxTPC, const AliVVertex* primvtx, AliMCEvent* mcEvent = 0x0, Double_t jetPt = 0.0);
+  
+  void DoTPCclusterStudies(AliVTrack* track, Int_t v0tag, Int_t multiplicity, Double_t dEdx = -1, Int_t PiTracksEnabled = -1, AliTrackContainer* trackContainer = 0x0);
+  Int_t GetNumberOfNearTracks(AliVTrack* track, AliTrackContainer* trackContainer);
+  void FillTPCclusterStudiesHistograms(TObjArray* histarray, Double_t deltaPrime, const Int_t nparam, Double_t param[]);
   
   ErrorCode GenerateDetectorResponse(ErrorCode errCode, Double_t mean, Double_t sigma, Double_t* responses,
                                      Int_t nResponses,
@@ -175,11 +190,65 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t GetDoBinZeroStudy() const { return fDoBinZeroStudy; };
   void SetDoBinZeroStudy(Bool_t flag) { fDoBinZeroStudy = flag; };
   
+  Bool_t GetDoTPCclusterStudies() const { return fDoTPCclusterStudies; };
+  void SetDoTPCclusterStudies(Bool_t flag) { fDoTPCclusterStudies = flag; };  
+  
+  Double_t GetClusterStudiesPiMomentumFirstLow() const { return fClusterStudiesPiMomentumFirstLow; };
+  void SetClusterStudiesPiMomentumFirstLow(Double_t value) { fClusterStudiesPiMomentumFirstLow = value; };
+  
+  Double_t GetClusterStudiesPiMomentumFirstHigh() const { return fClusterStudiesPiMomentumFirstHigh; };
+  void SetClusterStudiesPiMomentumFirstHigh(Double_t value) { fClusterStudiesPiMomentumFirstHigh = value; };
+
+  Double_t GetClusterStudiesPiMomentumSecondLow() const { return fClusterStudiesPiMomentumSecondLow; };
+  void SetClusterStudiesPiMomentumSecondLow(Double_t value) { fClusterStudiesPiMomentumSecondLow = value; };
+  
+  Double_t GetClusterStudiesPiMomentumSecondHigh() const { return fClusterStudiesPiMomentumSecondHigh; };
+  void SetClusterStudiesPiMomentumSecondHigh(Double_t value) { fClusterStudiesPiMomentumSecondHigh = value; };
+
+  Double_t GetClusterStudiesKaMomentumLow() const { return fClusterStudiesKaMomentumLow; };
+  void SetClusterStudiesKaMomentumLow(Double_t value) { fClusterStudiesKaMomentumLow = value; };
+  
+  Double_t GetClusterStudiesKaMomentumHigh() const { return fClusterStudiesKaMomentumHigh; };
+  void SetClusterStudiesKaMomentumHigh(Double_t value) { fClusterStudiesKaMomentumHigh = value; };
+  
+  Double_t GetClusterStudiesPrMomentumLow() const { return fClusterStudiesPrMomentumLow; };
+  void SetClusterStudiesPrMomentumLow(Double_t value) { fClusterStudiesPrMomentumLow = value; };
+  
+  Double_t GetClusterStudiesPrMomentumHigh() const { return fClusterStudiesPrMomentumHigh; };
+  void SetClusterStudiesPrMomentumHigh(Double_t value) { fClusterStudiesPrMomentumHigh = value; };  
+  
+  Double_t GetVicinityCut() const { return fVicinityCut; };
+  void SetVicinityCut(Double_t value) { fVicinityCut = value; };    
+  
+  Bool_t GetDoDCATemplateGeneration() const { return fDoDCATemplateGeneration; };
+  void SetDoDCATemplateGeneration(Bool_t flag) { fDoDCATemplateGeneration = flag; };
+  
+  Double_t GetDCAUpperpTLimit() const { return fDCAUpperpTLimit; };
+  void SetDCAUpperpTLimit(Double_t value) { fDCAUpperpTLimit = value; };
+  
+  Double_t GetSigmaFactorCutForDCATemplateGeneration() const { return fSigmaFactorCutForDCATemplateGeneration; };
+  void SetSigmaFactorCutForDCATemplateGeneration(Double_t value) { fSigmaFactorCutForDCATemplateGeneration = value; };
+  
   Bool_t GetStoreCentralityPercentile() const { return fStoreCentralityPercentile; };
   void SetStoreCentralityPercentile(Bool_t flag) { fStoreCentralityPercentile = flag; };
   
   Bool_t GetStoreAdditionalJetInformation() const { return fStoreAdditionalJetInformation; };
   void SetStoreAdditionalJetInformation(Bool_t flag) { fStoreAdditionalJetInformation = flag; };
+  
+  Bool_t GetStorePt() const { return fStorePt; };
+  void SetStorePt(Bool_t flag) { fStorePt = flag; };   
+  
+  Bool_t GetStoreZ() const { return fStoreZ; };
+  void SetStoreZ(Bool_t flag) { fStoreZ = flag; }; 
+  
+  Bool_t GetStoreXi() const { return fStoreXi; };
+  void SetStoreXi(Bool_t flag) { fStoreXi = flag; }; 
+  
+  Bool_t GetStoreRadialDistance() const { return fStoreRadialDistance; };
+  void SetStoreRadialDistance(Bool_t flag) { fStoreRadialDistance = flag; }; 
+
+  Bool_t GetStorejT() const { return fStorejT; };
+  void SetStorejT(Bool_t flag) { fStorejT = flag; };   
   
   Bool_t GetUseMCidForGeneration() const { return fUseMCidForGeneration; };
   void SetUseMCidForGeneration(Bool_t flag) { fUseMCidForGeneration = flag; };
@@ -230,7 +299,10 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Double_t GetSystematicScalingSplinesAboveThreshold() const { return fSystematicScalingSplinesAboveThreshold; };
   void SetSystematicScalingSplinesAboveThreshold(Double_t scaleFactor) 
     { fSystematicScalingSplinesAboveThreshold = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
-  
+    
+  TH1F* GetMultBinSystematics() const { return fMultBinSystematics; };
+  void SetMultBinSystematics(Int_t nMultBins, Double_t* multBins, Double_t* uncertainties);
+    
   Double_t GetSystematicScalingEtaCorrectionMomentumThr() const { return fSystematicScalingEtaCorrectionMomentumThr; };
   void SetSystematicScalingEtaCorrectionMomentumThr(Double_t threshold) { fSystematicScalingEtaCorrectionMomentumThr = threshold; };
   
@@ -324,11 +396,21 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t fDoPtResolution; // Do pT resolution processing (and post the output), if flag is set to kTRUE
   Bool_t fDoDeDxCheck; // Check dEdx, if flag set to kTRUE
   Bool_t fDoBinZeroStudy; // Do bin zero study, if flag is set to kTRUE
+  Bool_t fDoTPCclusterStudies;
+  Bool_t fDoDCATemplateGeneration;  //Generates the DCA distribution 
+  
+  Bool_t fDCAUpperpTLimit;
+  Bool_t fSigmaFactorCutForDCATemplateGeneration;
   
   static AliAnalysisTaskPID::EventGenerator fgEventGenerator;
   
   Bool_t fStoreCentralityPercentile; // If set to kTRUE, store centrality percentile for each event. In case of kFALSE (appropriate for pp), centrality percentile will be set to -1 for every event
   Bool_t fStoreAdditionalJetInformation; // If set to kTRUE, additional jet information like jetPt, z, xi will be stored in the THnSparses
+  Bool_t fStorePt;
+  Bool_t fStoreZ;
+  Bool_t fStoreXi;
+  Bool_t fStoreRadialDistance;
+  Bool_t fStorejT;
 
   Bool_t fTakeIntoAccountMuons; // Also take into account muons for the generation of the expected response and the most probable PID
   Bool_t fUseITS; // Use ITS for PID combined probabilities
@@ -360,6 +442,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Double_t fSystematicScalingSplinesThreshold;         // beta-gamma threshold for the systematic spline scale factor
   Double_t fSystematicScalingSplinesBelowThreshold;        // Systematic scale factor for the splines (1. = no systematics) below threshold
   Double_t fSystematicScalingSplinesAboveThreshold;        // Systematic scale factor for the splines (1. = no systematics) above threshold
+  TH1F* fMultBinSystematics;
   Double_t fSystematicScalingEtaCorrectionMomentumThr;  // Momentum threshold for the systematic scale factor for the eta correction (separates low-p from high-p
   Double_t fSystematicScalingEtaCorrectionLowMomenta;   // Systematic scale factor for the eta correction (1. = no systematics) at low momenta
   Double_t fSystematicScalingEtaCorrectionHighMomenta;  // Systematic scale factor for the eta correction (1. = no systematics) at high momenta
@@ -462,6 +545,19 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   TObjArray* fQAContainer; //! output data container for QA
   
+  TObjArray** fTPCclusterStudies;
+  TH1** fhclusterStudies;
+  
+  Double_t fClusterStudiesPiMomentumFirstLow;
+  Double_t fClusterStudiesPiMomentumFirstHigh;
+  Double_t fClusterStudiesPiMomentumSecondLow;
+  Double_t fClusterStudiesPiMomentumSecondHigh;
+  Double_t fClusterStudiesKaMomentumLow;
+  Double_t fClusterStudiesKaMomentumHigh;
+  Double_t fClusterStudiesPrMomentumLow;
+  Double_t fClusterStudiesPrMomentumHigh;
+  Double_t fVicinityCut;
+  
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
@@ -469,6 +565,16 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t fIsUEPID;
   TH2D* fh2UEDensity;
   TH1D* fh1JetArea;
+  
+  //For fDCA
+  TH3D* fh3DCA_XY_Positive;
+  TH3D* fh3DCA_XY_Primaries_Positive;
+  TH3D* fh3DCA_XY_WeakDecays_Positive;
+  TH3D* fh3DCA_XY_Material_Positive;
+  TH3D* fh3DCA_XY_Negative;
+  TH3D* fh3DCA_XY_Primaries_Negative;
+  TH3D* fh3DCA_XY_WeakDecays_Negative;
+  TH3D* fh3DCA_XY_Material_Negative;  
   
   ClassDef(AliAnalysisTaskPID, 23);
 };
@@ -487,7 +593,7 @@ inline Bool_t AliAnalysisTaskPID::FillEfficiencyContainer(const Double_t* values
     AliError("Efficiency container not initialised -> cannot be filled!");
     return kFALSE;
   }
-  
+
   fContainerEff->Fill(values, step, weight);    
   
   return kTRUE;
@@ -643,6 +749,16 @@ inline Bool_t AliAnalysisTaskPID::SetEtaAbsCutRange(Double_t lowerLimit, Double_
   return kTRUE;
 };
 
+inline void AliAnalysisTaskPID::SetMultBinSystematics(Int_t nMultBins, Double_t* multBins, Double_t* uncertainties) {
+  if (fMultBinSystematics) {
+    delete fMultBinSystematics;
+  }
+  
+  fMultBinSystematics = new TH1F("MultBinSystematics", "MultBinSystematics", nMultBins, multBins);
+  for (Int_t i=1;i<=nMultBins+1;++i) {
+    fMultBinSystematics->SetBinContent(i,1.0 + uncertainties[i-1]);
+  }
+}
 
 //_____________________________________________________________________________
 inline Double_t AliAnalysisTaskPID::GetConvolutedGaussTransitionPar(Int_t index) const
@@ -712,5 +828,7 @@ inline void AliAnalysisTaskPID::PostOutputData()
   if (fDoPtResolution || fDoDeDxCheck)
     PostData(3, fQAContainer);
 }
+
+
 
 #endif

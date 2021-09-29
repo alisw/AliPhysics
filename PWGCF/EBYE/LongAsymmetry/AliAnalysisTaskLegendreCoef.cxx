@@ -392,13 +392,13 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
 
         //Rescale background so integral matches mult
   double intb = background->Integral();
-  background->Scale(double(ntracks)/intb);
+  //background->Scale(double(ntracks)/intb);
   
   for(int j =0;j<ntracks;j++){
       histeu->Fill(gRandom->Uniform(-fEta,fEta));
       hister->Fill(background->GetRandom());
   }
-  histeu->Scale(16./double(ntracks));
+  histeu->Scale(16./double(intb));
   //printf("ranhist histeu normal is %f\n",histeu->Integral());
 
   hister->Divide(background);
@@ -409,7 +409,9 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
 
   //normalizing signal hist
   signal->Divide(background);
-  signal->Scale(16.0/signal->Integral());
+  //printf("signal before scale to 16/signal normal is %f\n",signal->Integral());
+
+  //signal->Scale(16.0/signal->Integral());
 
   //printf("signal normal is %f\n",signal->Integral());
 

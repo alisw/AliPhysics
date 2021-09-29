@@ -154,7 +154,7 @@ public AliAnalysisTaskSE
   TList *fMCHistoList; // MC histo list
 
   
-  ClassDef(AliAnalysisTaskTPCTOFCascade, 3);
+  ClassDef(AliAnalysisTaskTPCTOFCascade, 4);
 };
 
 #endif /* ALIANALYSISTASKTPCTOFCascade_H */
