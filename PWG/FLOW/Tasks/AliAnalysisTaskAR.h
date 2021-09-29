@@ -152,9 +152,9 @@ public:
   TComplex TwoNestedLoops(Int_t n1, Int_t n2);
   TComplex ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3);
   TComplex FourNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4);
-  // TComplex FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
-  // TComplex SixNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5,
-  // Int_t n6);
+  TComplex FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
+  TComplex SixNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5,
+                          Int_t n6);
   Double_t CombinatorialWeight(Int_t n);
 
   // GetPointers Methods in case we need to manually trigger Terminate()
@@ -391,8 +391,13 @@ public:
   };
   void SetCenFlattenHist(const char *Filename, const char *Histname);
 
-  // setters for MC on the fly analysis
+  // setters for MC on the fly/closure analysis
+  void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
   void SetMCOnTheFly(Bool_t option) { this->fMCOnTheFly = option; }
+  void SetCustomSeed(const UInt_t seed) {
+    this->fSeed = seed;
+    this->fUseCustomSeed = kTRUE;
+  }
   void SetMCMultiplicityPdf(TF1 *pdf) { this->fMCMultiplicity = pdf; }
   void SetMCKinematicPdf(Int_t kinematic, TF1 *pdf) {
     if (kinematic >= kKinematic) {
@@ -401,20 +406,6 @@ public:
     }
     this->fMCKinematicPDFs[kinematic] = pdf;
   }
-  void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
-  void SetUseWeights(kTrack kinematic, Bool_t option) {
-    if (kinematic >= kKinematic) {
-      std::cout << __LINE__ << ": Out of range" << std::endl;
-      Fatal("SetUseWeights", "Out of range");
-    }
-    this->fUseWeights[kinematic] = option;
-  }
-  void SetUseCustomSeed(const UInt_t seed) {
-    this->fSeed = seed;
-    this->fUseCustomSeed = kTRUE;
-  }
-
-  // setters for acceptance and weight histograms for monte carlo closure
   void SetAcceptanceHistogram(kTrack kinematic, TH1D *AcceptanceHistogram) {
     if (!AcceptanceHistogram) {
       std::cout << __LINE__ << ": Did not get acceptance histogram"
@@ -429,6 +420,15 @@ public:
   }
   void SetAcceptanceHistogram(kTrack kinematic, const char *Filename,
                               const char *Histname);
+
+  // setters for weight histograms
+  void SetUseWeights(kTrack kinematic, Bool_t option) {
+    if (kinematic >= kKinematic) {
+      std::cout << __LINE__ << ": Out of range" << std::endl;
+      Fatal("SetUseWeights", "Out of range");
+    }
+    this->fUseWeights[kinematic] = option;
+  }
   void SetWeightHistogram(kTrack kinematic, TH1D *WeightHistogram) {
     if (!WeightHistogram) {
       std::cout << __LINE__ << ": Did not get weight histogram" << std::endl;
@@ -448,6 +448,10 @@ public:
   void SetCorrelators(std::vector<std::vector<Int_t>> correlators) {
     this->fCorrelators = correlators;
   }
+
+  // use nested loops for computation of correlators
+  void SetUseNestedLoops(Bool_t option) { this->fUseNestedLoops = option; }
+
   // use fischer-yates for indices randomization
   void SetFisherYates(Bool_t option) { this->fUseFisherYates = option; }
   // use a fixed multiplicity
@@ -455,7 +459,7 @@ public:
     this->fUseFixedMultplicity = kTRUE;
     this->fFixedMultiplicy = FixedMultiplicity;
   }
-  void SetFixedMultiplicity(Bool_t option) {
+  void SetUseFixedMultiplicity(Bool_t option) {
     this->fUseFixedMultplicity = option;
   }
 
@@ -576,6 +580,7 @@ private:
   TString fFinalResultProfilesListName;
   // only fill control histograms
   Bool_t fFillControlHistogramsOnly;
+  Bool_t fUseNestedLoops;
 
   // Seed for RNG
   Bool_t fUseCustomSeed;
@@ -595,7 +600,7 @@ private:
   // use Fisher-Yates algorithm to randomize tracks
   Bool_t fUseFisherYates;
   std::vector<Int_t> fRandomizedTrackIndices;
-  // need when sampling a fixed number of tracks per event
+  // needed when sampling a fixed number of tracks per event
   Bool_t fUseFixedMultplicity;
   Int_t fFixedMultiplicy;
 
@@ -610,7 +615,7 @@ private:
   std::vector<std::vector<Int_t>> fCorrelators;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 11);
+  ClassDef(AliAnalysisTaskAR, 12);
 };
 
 #endif

@@ -94,7 +94,7 @@ ClassImp(AliAnalysisTaskAR)
       fFinalResultHistogramsListName("fFinalResultHistograms"),
       fFinalResultProfilesList(nullptr),
       fFinalResultProfilesListName("fFinalResultProfiles"),
-      fFillControlHistogramsOnly(kFALSE),
+      fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
       fMCMultiplicity(nullptr), fLookUpTable(nullptr), fUseFisherYates(kFALSE),
@@ -159,7 +159,7 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fFinalResultHistogramsListName("fFinalResultHistograms"),
       fFinalResultProfilesList(nullptr),
       fFinalResultProfilesListName("fFinalResultProfiles"),
-      fFillControlHistogramsOnly(kFALSE),
+      fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
       fMCMultiplicity(nullptr), fLookUpTable(nullptr), fUseFisherYates(kFALSE),
@@ -1220,9 +1220,9 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   // Get pointer(s) to event: reconstructed, simulated or none
   // Fill event objects
   // Check event cut
-  // Start Analysis either
+  // Start Analysis
   // -> over AOD only or
-  // -> over AOD and MC (TBI over MC only)
+  // -> over AOD and MC (TBI over MC only) or
   // -> generate monte carlo data on the fly
   // PostData
 
@@ -1265,28 +1265,29 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
   // get number of all tracks in current event
   Int_t nTracks = 0;
-  // only running over AOD
-  if (aAOD && !aMC) {
-    if (fUseFixedMultplicity) {
-      nTracks = fFixedMultiplicy;
-    } else {
-      nTracks = aAOD->GetNumberOfTracks();
-    }
-    // running over AOD and MC data
-  } else if (aAOD && aMC) {
+  if (aAOD && !aMC) { // only running over AOD
+    nTracks = aAOD->GetNumberOfTracks();
+  } else if (aAOD && aMC) { // running over AOD and MC data
     nTracks = aMC->GetNumberOfTracks();
-    // running over on the fly generated MC data
-  } else if (fMCOnTheFly) {
-    nTracks = static_cast<Int_t>(fMCMultiplicity->GetRandom());
+  } else if (fMCOnTheFly) { // running over on the fly generated MC data
+    nTracks = TMath::Ceil(fMCMultiplicity->GetRandom());
   } else {
     std::cout << __LINE__ << ": did not get number of tracks" << std::endl;
     Fatal("UserExec", "did not get number of tracks in the event");
   }
 
-  AliAODTrack *aTrack = nullptr;
+  AliAODTrack *track = nullptr;
   AliAODMCParticle *MCParticle = nullptr;
+  Int_t Counter = 0;
 
   for (int iTrack = 0; iTrack < nTracks; ++iTrack) {
+
+    // break loop if we hit fixed multiplicity
+    if (fUseFixedMultplicity) {
+      if (Counter >= fFixedMultiplicy) {
+        break;
+      }
+    }
 
     // if we have AOD and MC data
     if (aAOD && aMC) {
@@ -1296,17 +1297,17 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
         continue;
       }
       // and get corresponding AODTrack, if it exists
-      aTrack = dynamic_cast<AliAODTrack *>(
+      track = dynamic_cast<AliAODTrack *>(
           aAOD->GetTrack(fLookUpTable->GetValue(Int_t(iTrack))));
       // if running over AOD only
     } else if (aAOD && !aMC) {
       // get AODtrack directly
       // randomize tracks if necessary
       if (fUseFisherYates) {
-        aTrack = dynamic_cast<AliAODTrack *>(
+        track = dynamic_cast<AliAODTrack *>(
             aAOD->GetTrack(fRandomizedTrackIndices.at(iTrack)));
       } else {
-        aTrack = dynamic_cast<AliAODTrack *>(aAOD->GetTrack(iTrack));
+        track = dynamic_cast<AliAODTrack *>(aAOD->GetTrack(iTrack));
       }
       // run over on the fly generated
     } else if (fMCOnTheFly) {
@@ -1329,12 +1330,12 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
       // fill QA track scan histograms
       if (fFillQAHistograms && !fFillQACorHistogramsOnly) {
-        FillFBScanQAHistograms(aTrack);
+        FillFBScanQAHistograms(track);
       }
 
       // fill control histogram before cutting
       FillTrackControlHistograms(kBEFORE, MCParticle);
-      FillTrackControlHistograms(kBEFORE, aTrack);
+      FillTrackControlHistograms(kBEFORE, track);
 
       // cut on monte carlo data, if we have any
       if (!SurviveTrackCut(MCParticle, kTRUE)) {
@@ -1345,12 +1346,12 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       FillTrackControlHistograms(kAFTER, MCParticle);
 
       // cut on reconstructed track
-      if (!SurviveTrackCut(aTrack, kTRUE)) {
+      if (!SurviveTrackCut(track, kTRUE)) {
         continue;
       }
 
       // fill track control histogram after track cut on reconstructed track
-      FillTrackControlHistograms(kAFTER, aTrack);
+      FillTrackControlHistograms(kAFTER, track);
 
       // run over on the fly generated data
     } else {
@@ -1365,10 +1366,13 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     }
 
     // fill kinematic variables and weights into track objects
-    FillTrackObjects(aTrack);
+    FillTrackObjects(track);
+
+    // increase counter, in case we want to fix multiplicity
+    Counter++;
   }
 
-  // bail out if you only want to fill control histograms
+  // bail out if we only want to fill control histograms
   if (fFillControlHistogramsOnly) {
     return;
   }
@@ -1884,8 +1888,10 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
       Double_t t_mul = fMulCorCut[1];
       for (int i = 0; i < kMulEstimators; ++i) {
         for (int j = i + 1; j < kMulEstimators; ++j) {
-          // skip kMul since it is a bad multiplicity estimate
-          if (i == kMUL || j == kMUL) {
+          // skip kMUL since it is a bad multiplicity estimate
+          // skip kMULW since it will differ greatly from kMULQ when we have to
+          // use large weights
+          if (i == kMUL || j == kMUL || i == kMULW || j == kMULW) {
             continue;
             ;
           }
@@ -2204,7 +2210,7 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
     }
     fTrackCutsCounterCumulative->Fill(&CutBit);
 
-    if (fMCClosure) {
+    if (fMCClosure && FillCounter) {
 
       if (fAcceptanceHistogram[kPT]) {
         if (fAcceptanceHistogram[kPT]->GetBinContent(
@@ -2505,60 +2511,113 @@ void AliAnalysisTaskAR::FillFinalResultProfile() {
     // protect against insufficient amount of statistics i.e. number of
     // particles is lower then the order of correlator due to track cuts
     if (fKinematics[kPHI].size() < fCorrelators.at(i).size()) {
+      std::cout << "Not enough tracks in this event to compute the correlator"
+                << std::endl;
       continue;
     }
 
     // compute correlator
-    switch (static_cast<int>(fCorrelators.at(i).size())) {
-    case 2:
-      corr = Two(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1)).Re();
-      weight = Two(0, 0).Re();
-      break;
-    case 3:
-      corr = Three(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
-                   fCorrelators.at(i).at(2))
-                 .Re();
-      weight = Three(0, 0, 0).Re();
-      break;
-    case 4:
-      corr = Four(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
-                  fCorrelators.at(i).at(2), fCorrelators.at(i).at(3))
-                 .Re();
-      weight = Four(0, 0, 0, 0).Re();
-      break;
-    case 5:
-      corr = Five(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
-                  fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
-                  fCorrelators.at(i).at(4))
-                 .Re();
-      weight = Five(0, 0, 0, 0, 0).Re();
-      break;
-    case 6:
-      corr = Six(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
-                 fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
-                 fCorrelators.at(i).at(4), fCorrelators.at(i).at(5))
-                 .Re();
-      weight = Six(0, 0, 0, 0, 0, 0).Re();
-      break;
-    default:
-      corr =
-          Recursion(fCorrelators.at(i).size(), fCorrelators.at(i).data()).Re();
-      weight =
-          Recursion(fCorrelators.at(i).size(),
-                    std::vector<Int_t>(fCorrelators.at(i).size(), 0).data())
-              .Re();
+    if (fUseNestedLoops) {
+      // using nested loops
+      weight = CombinatorialWeight(fCorrelators.at(i).size());
+      switch (static_cast<int>(fCorrelators.at(i).size())) {
+      case 2:
+        corr =
+            TwoNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1))
+                .Re();
+        break;
+      case 3:
+        corr =
+            ThreeNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                             fCorrelators.at(i).at(2))
+                .Re();
+        break;
+      case 4:
+        corr =
+            FourNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                            fCorrelators.at(i).at(2), fCorrelators.at(i).at(3))
+                .Re();
+        break;
+      case 5:
+        corr =
+            FiveNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                            fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
+                            fCorrelators.at(i).at(4))
+                .Re();
+        break;
+      case 6:
+        corr =
+            SixNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                           fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
+                           fCorrelators.at(i).at(4), fCorrelators.at(i).at(5))
+                .Re();
+        break;
+      default:
+        corr = 1.;
+        weight = 1.;
+        std::cout
+            << "Correlators of order >6 are not implemented with nested loops"
+            << std::endl;
+      }
+    } else {
+      // using Qvectors
+      switch (static_cast<int>(fCorrelators.at(i).size())) {
+      case 2:
+        corr = Two(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1)).Re();
+        weight = Two(0, 0).Re();
+        break;
+      case 3:
+        corr = Three(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                     fCorrelators.at(i).at(2))
+                   .Re();
+        weight = Three(0, 0, 0).Re();
+        break;
+      case 4:
+        corr = Four(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                    fCorrelators.at(i).at(2), fCorrelators.at(i).at(3))
+                   .Re();
+        weight = Four(0, 0, 0, 0).Re();
+        break;
+      case 5:
+        corr = Five(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                    fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
+                    fCorrelators.at(i).at(4))
+                   .Re();
+        weight = Five(0, 0, 0, 0, 0).Re();
+        break;
+      case 6:
+        corr = Six(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                   fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
+                   fCorrelators.at(i).at(4), fCorrelators.at(i).at(5))
+                   .Re();
+        weight = Six(0, 0, 0, 0, 0, 0).Re();
+        break;
+      default:
+        corr = Recursion(fCorrelators.at(i).size(), fCorrelators.at(i).data())
+                   .Re();
+        weight =
+            Recursion(fCorrelators.at(i).size(),
+                      std::vector<Int_t>(fCorrelators.at(i).size(), 0).data())
+                .Re();
+      }
     }
 
-    // fill final result profile
+    // correlators are not normalized yet
+    corr /= weight;
+
+    // fill final result profiles
+    // integrated correlator
     dynamic_cast<TProfile *>(
         dynamic_cast<TList *>(fFinalResultProfilesList->At(i))->At(0))
-        ->Fill(0.5, corr / weight, weight);
+        ->Fill(0.5, corr, weight);
+    // correlator as a function of centrality
     dynamic_cast<TProfile *>(
         dynamic_cast<TList *>(fFinalResultProfilesList->At(i))->At(1))
-        ->Fill(fCentrality[fCentralityEstimator], corr / weight, weight);
+        ->Fill(fCentrality[fCentralityEstimator], corr, weight);
+    // correlator as a function of multiplicity
     dynamic_cast<TProfile *>(
         dynamic_cast<TList *>(fFinalResultProfilesList->At(i))->At(2))
-        ->Fill(fMultiplicity[kMULQ], corr / weight, weight);
+        ->Fill(fMultiplicity[kMULQ], corr, weight);
   }
 }
 
@@ -2925,9 +2984,127 @@ Double_t AliAnalysisTaskAR::CombinatorialWeight(Int_t n) {
     Fatal("Combinatorial weight",
           "order of correlator is larger then number of particles");
   }
-  Double_t w = 1.0;
-  for (int i = 0; i < n; ++i) {
-    w *= (fKinematics[kPHI].size() - i);
+  Double_t w = 0.;
+  if (fWeightsAggregated.empty()) {
+    w = 1.;
+    for (int i = 0; i < n; ++i) {
+      w *= (fKinematics[kPHI].size() - i);
+    }
+  } else {
+    w = 0;
+    switch (n) {
+    case 2:
+      for (std::size_t i1 = 0; i1 < fWeightsAggregated.size(); i1++) {
+        for (std::size_t i2 = 0; i2 < fWeightsAggregated.size(); i2++) {
+          if (i2 == i1) {
+            continue;
+          }
+          w += fWeightsAggregated.at(i1) * fWeightsAggregated.at(i2);
+        }
+      }
+      break;
+    case 3:
+      for (std::size_t i1 = 0; i1 < fWeightsAggregated.size(); i1++) {
+        for (std::size_t i2 = 0; i2 < fWeightsAggregated.size(); i2++) {
+          if (i2 == i1) {
+            continue;
+          }
+          for (std::size_t i3 = 0; i3 < fWeightsAggregated.size(); i3++) {
+            if (i3 == i2 || i3 == i1) {
+              continue;
+            }
+            w += fWeightsAggregated.at(i1) * fWeightsAggregated.at(i2) *
+                 fWeightsAggregated.at(i3);
+          }
+        }
+      }
+      break;
+    case 4:
+      for (std::size_t i1 = 0; i1 < fWeightsAggregated.size(); i1++) {
+        for (std::size_t i2 = 0; i2 < fWeightsAggregated.size(); i2++) {
+          if (i2 == i1) {
+            continue;
+          }
+          for (std::size_t i3 = 0; i3 < fWeightsAggregated.size(); i3++) {
+            if (i3 == i2 || i3 == i1) {
+              continue;
+            }
+            for (std::size_t i4 = 0; i4 < fWeightsAggregated.size(); i4++) {
+              if (i4 == i3 || i4 == i2 || i4 == i1) {
+                continue;
+              }
+              w += fWeightsAggregated.at(i1) * fWeightsAggregated.at(i2) *
+                   fWeightsAggregated.at(i3) * fWeightsAggregated.at(i4);
+            }
+          }
+        }
+      }
+      break;
+    case 5:
+      for (std::size_t i1 = 0; i1 < fWeightsAggregated.size(); i1++) {
+        for (std::size_t i2 = 0; i2 < fWeightsAggregated.size(); i2++) {
+          if (i2 == i1) {
+            continue;
+          }
+
+          for (std::size_t i3 = 0; i3 < fWeightsAggregated.size(); i3++) {
+            if (i3 == i2 || i3 == i1) {
+              continue;
+            }
+            for (std::size_t i4 = 0; i4 < fWeightsAggregated.size(); i4++) {
+              if (i4 == i3 || i4 == i2 || i4 == i1) {
+                continue;
+              }
+              for (std::size_t i5 = 0; i5 < fWeightsAggregated.size(); i5++) {
+                if (i5 == i4 || i5 == i3 || i5 == i2 || i5 == i1) {
+                  continue;
+                }
+                w += fWeightsAggregated.at(i1) * fWeightsAggregated.at(i2) *
+                     fWeightsAggregated.at(i3) * fWeightsAggregated.at(i4) *
+                     fWeightsAggregated.at(i5);
+              }
+            }
+          }
+        }
+      }
+      break;
+    case 6:
+      for (std::size_t i1 = 0; i1 < fWeightsAggregated.size(); i1++) {
+        for (std::size_t i2 = 0; i2 < fWeightsAggregated.size(); i2++) {
+          if (i2 == i1) {
+            continue;
+          }
+
+          for (std::size_t i3 = 0; i3 < fWeightsAggregated.size(); i3++) {
+            if (i3 == i2 || i3 == i1) {
+              continue;
+            }
+            for (std::size_t i4 = 0; i4 < fWeightsAggregated.size(); i4++) {
+              if (i4 == i3 || i4 == i2 || i4 == i1) {
+                continue;
+              }
+              for (std::size_t i5 = 0; i5 < fWeightsAggregated.size(); i5++) {
+                if (i5 == i4 || i5 == i3 || i5 == i2 || i5 == i1) {
+                  continue;
+                }
+                for (std::size_t i6 = 0; i6 < fWeightsAggregated.size(); i6++) {
+                  if (i6 == i5 || i6 == i4 || i6 == i3 || i6 == i2 ||
+                      i6 == i1) {
+                    continue;
+                  }
+                  w += fWeightsAggregated.at(i1) * fWeightsAggregated.at(i2) *
+                       fWeightsAggregated.at(i3) * fWeightsAggregated.at(i4) *
+                       fWeightsAggregated.at(i5) * fWeightsAggregated.at(i6);
+                }
+              }
+            }
+          }
+        }
+      }
+      break;
+    default:
+      std::cout << "Suck it" << std::endl;
+    }
   }
   return w;
 }
@@ -2941,10 +3118,9 @@ TComplex AliAnalysisTaskAR::TwoNestedLoops(Int_t n1, Int_t n2) {
   Double_t phi1 = 0., phi2 = 0.; // particle angle
   Double_t w1 = 1., w2 = 1.;     // particle weight
   for (std::size_t i1 = 0; i1 < fKinematics[kPHI].size(); i1++) {
-
     phi1 = fKinematics[kPHI].at(i1);
     if (fUseWeightsAggregated) {
-      w1 *= fWeightsAggregated.at(i1);
+      w1 = fWeightsAggregated.at(i1);
     }
     for (std::size_t i2 = 0; i2 < fKinematics[kPHI].size(); i2++) {
       if (i2 == i1) {
@@ -2952,13 +3128,13 @@ TComplex AliAnalysisTaskAR::TwoNestedLoops(Int_t n1, Int_t n2) {
       } // Get rid of autocorrelations
       phi2 = fKinematics[kPHI].at(i2);
       if (fUseWeightsAggregated) {
-        w2 *= fWeightsAggregated.at(i2);
+        w2 = fWeightsAggregated.at(i2);
       }
-      Two += TComplex(TMath::Cos(n1 * w1 * phi1 + n2 * w2 * phi2),
-                      TMath::Sin(n1 * w1 * phi1 + n2 * w2 * phi2));
+      Two += TComplex(w1 * w2 * TMath::Cos(n1 * phi1 + n2 * phi2),
+                      w1 * w2 * TMath::Sin(n1 * phi1 + n2 * phi2));
     }
   }
-  return Two / CombinatorialWeight(2);
+  return Two;
 }
 
 TComplex AliAnalysisTaskAR::ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3) {
@@ -2990,12 +3166,12 @@ TComplex AliAnalysisTaskAR::ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3) {
           w3 = fWeightsAggregated.at(i3);
         }
         Q += TComplex(
-            TMath::Cos(n1 * w1 * phi1 + n2 * w2 * phi2 + n3 * w3 * phi3),
-            TMath::Sin(n1 * w1 * phi1 + n2 * w2 * phi2 + n3 * w3 * phi3));
+            w1 * w2 * w3 * TMath::Cos(n1 * phi1 + n2 * phi2 + n3 * phi3),
+            w1 * w2 * w3 * TMath::Sin(n1 * phi1 + n2 * phi2 + n3 * phi3));
       }
     }
   }
-  return Q / CombinatorialWeight(3);
+  return Q;
 }
 
 TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2, Int_t n3,
@@ -3035,15 +3211,147 @@ TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2, Int_t n3,
           if (fUseWeightsAggregated) {
             w4 = fWeightsAggregated.at(i4);
           }
-          Q += TComplex(TMath::Cos(n1 * w1 * phi1 + n2 * w2 * phi2 +
-                                   n3 * w3 * phi3 + n4 * w4 * phi4),
-                        TMath::Sin(n1 * w1 * phi1 + n2 * w2 * phi2 +
-                                   n3 * w3 * phi3 + n4 * w4 * phi4));
+          Q += TComplex(
+              w1 * w2 * w3 * w4 *
+                  TMath::Cos(n1 * phi1 + n2 * phi2 + n3 * phi3 + n4 * phi4),
+              w1 * w2 * w3 * w4 *
+                  TMath::Sin(n1 * phi1 + n2 * phi2 + n3 * phi3 + n4 * phi4));
         }
       }
     }
   }
-  return Q / CombinatorialWeight(4);
+  return Q;
+}
+
+TComplex AliAnalysisTaskAR::FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3,
+                                            Int_t n4, Int_t n5) {
+  // Calculation of <cos(n1*phi1+n2*phi2+n3*phi3+n4*phi4+n5*phi5)> and
+  // <sin(n1*phi1+n2*phi2+n3*phi3+n4*phi4+n5*phi5)> with four nested loops.
+
+  TComplex Q(0., 0.);
+  Double_t phi1 = 0., phi2 = 0., phi3 = 0., phi4 = 0.,
+           phi5 = 0.;                                   // particle angle
+  Double_t w1 = 1., w2 = 1., w3 = 1., w4 = 1., w5 = 1.; // particle weight
+  for (std::size_t i1 = 0; i1 < fKinematics[kPHI].size(); i1++) {
+    phi1 = fKinematics[kPHI].at(i1);
+    if (fUseWeightsAggregated) {
+      w1 = fWeightsAggregated.at(i1);
+    }
+    for (std::size_t i2 = 0; i2 < fKinematics[kPHI].size(); i2++) {
+      if (i2 == i1) {
+        continue;
+      } // Get rid of autocorrelations
+      phi2 = fKinematics[kPHI].at(i2);
+      if (fUseWeightsAggregated) {
+        w2 = fWeightsAggregated.at(i2);
+      }
+      for (std::size_t i3 = 0; i3 < fKinematics[kPHI].size(); i3++) {
+        if (i3 == i1 || i3 == i2) {
+          continue;
+        } // Get rid of autocorrelations
+        phi3 = fKinematics[kPHI].at(i3);
+        if (fUseWeightsAggregated) {
+          w3 = fWeightsAggregated.at(i3);
+        }
+        for (std::size_t i4 = 0; i4 < fKinematics[kPHI].size(); i4++) {
+          if (i4 == i1 || i4 == i2 || i4 == i3) {
+            continue;
+          } // Get rid of autocorrelations
+          phi4 = fKinematics[kPHI].at(i4);
+          if (fUseWeightsAggregated) {
+            w4 = fWeightsAggregated.at(i4);
+          }
+          for (std::size_t i5 = 0; i5 < fKinematics[kPHI].size(); i5++) {
+            if (i5 == i1 || i5 == i2 || i5 == i3 || i5 == i4) {
+              continue;
+            } // Get rid of autocorrelations
+            phi5 = fKinematics[kPHI].at(i5);
+            if (fUseWeightsAggregated) {
+              w5 = fWeightsAggregated.at(i5);
+            }
+            Q += TComplex(w1 * w2 * w3 * w4 * w5 *
+                              TMath::Cos(n1 * phi1 + n2 * phi2 + n3 * phi3 +
+                                         n4 * phi4 + n5 * phi5),
+                          w1 * w2 * w3 * w4 * w5 *
+                              TMath::Sin(n1 * phi1 + n2 * phi2 + n3 * phi3 +
+                                         n4 * phi4 + n5 * phi5));
+          }
+        }
+      }
+    }
+  }
+  return Q;
+}
+
+TComplex AliAnalysisTaskAR::SixNestedLoops(Int_t n1, Int_t n2, Int_t n3,
+                                           Int_t n4, Int_t n5, Int_t n6) {
+  // Calculation of <cos(n1*phi1+n2*phi2+n3*phi3+n4*phi4+n5*phi5*n6*phi6)>
+  // and <sin(n1*phi1+n2*phi2+n3*phi3+n4*phi4+n5*phi5+n6*phi6)> with four
+  // nested loops.
+
+  TComplex Q(0., 0.);
+  Double_t phi1 = 0., phi2 = 0., phi3 = 0., phi4 = 0., phi5 = 0.,
+           phi6 = 0.; // particle angle
+  Double_t w1 = 1., w2 = 1., w3 = 1., w4 = 1., w5 = 1.,
+           w6 = 1.; // particle weight
+  for (std::size_t i1 = 0; i1 < fKinematics[kPHI].size(); i1++) {
+    phi1 = fKinematics[kPHI].at(i1);
+    if (fUseWeightsAggregated) {
+      w1 = fWeightsAggregated.at(i1);
+    }
+    for (std::size_t i2 = 0; i2 < fKinematics[kPHI].size(); i2++) {
+      if (i2 == i1) {
+        continue;
+      } // Get rid of autocorrelations
+      phi2 = fKinematics[kPHI].at(i2);
+      if (fUseWeightsAggregated) {
+        w2 = fWeightsAggregated.at(i2);
+      }
+      for (std::size_t i3 = 0; i3 < fKinematics[kPHI].size(); i3++) {
+        if (i3 == i1 || i3 == i2) {
+          continue;
+        } // Get rid of autocorrelations
+        phi3 = fKinematics[kPHI].at(i3);
+        if (fUseWeightsAggregated) {
+          w3 = fWeightsAggregated.at(i3);
+        }
+        for (std::size_t i4 = 0; i4 < fKinematics[kPHI].size(); i4++) {
+          if (i4 == i1 || i4 == i2 || i4 == i3) {
+            continue;
+          } // Get rid of autocorrelations
+          phi4 = fKinematics[kPHI].at(i4);
+          if (fUseWeightsAggregated) {
+            w4 = fWeightsAggregated.at(i4);
+          }
+          for (std::size_t i5 = 0; i5 < fKinematics[kPHI].size(); i5++) {
+            if (i5 == i1 || i5 == i2 || i5 == i3 || i5 == i4) {
+              continue;
+            } // Get rid of autocorrelations
+            phi5 = fKinematics[kPHI].at(i5);
+            if (fUseWeightsAggregated) {
+              w5 = fWeightsAggregated.at(i5);
+            }
+            for (std::size_t i6 = 0; i6 < fKinematics[kPHI].size(); i6++) {
+              if (i6 == i1 || i6 == i2 || i6 == i3 || i6 == i4 || i6 == i5) {
+                continue;
+              } // Get rid of autocorrelations
+              phi6 = fKinematics[kPHI].at(i6);
+              if (fUseWeightsAggregated) {
+                w6 = fWeightsAggregated.at(i6);
+              }
+              Q += TComplex(w1 * w2 * w3 * w4 * w5 * w6 *
+                                TMath::Cos(n1 * phi1 + n2 * phi2 + n3 * phi3 +
+                                           n4 * phi4 + n5 * phi5 + n6 * phi6),
+                            w1 * w2 * w3 * w4 * w5 * w6 *
+                                TMath::Sin(n1 * phi1 + n2 * phi2 + n3 * phi3 +
+                                           n4 * phi4 + n5 * phi5 + n6 * phi6));
+            }
+          }
+        }
+      }
+    }
+  }
+  return Q;
 }
 
 void AliAnalysisTaskAR::SetCenCorQAHistogramBinning(
