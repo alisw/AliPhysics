@@ -582,7 +582,7 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 		else if ( fNSPDTracklets < 50 ) nContributor = 4; //20 ~ 50
 		else nContributor = 5; //>= 50, valid for high multiplicity pp and p-Pb
 	}
-	if (nContributor == -999) { cout <<"ERROR in pileup cut!\n"; assert(false); }
+	if (nContributor == -999) cout <<"ERROR in pileup cut!\n";
 	//if (!IsMC && fEvt->IsPileupFromSPD(nContributor, 0.8, 3., 2., 5.)) return;
 	//if (!IsMC && fEvt->IsPileupFromSPD(3.,0.8,3.,2.,5.)) return; //Conventional setting before Sep. 17, 2021
 	
