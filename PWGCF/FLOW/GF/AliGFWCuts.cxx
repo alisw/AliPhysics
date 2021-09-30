@@ -326,6 +326,7 @@ void AliGFWCuts::SetupCuts(Int_t sysflag) {
   if(sysflag<=fNTrackFlags) SetupTrackCuts(sysflag);
   else SetupEventCuts(sysflag-fNTrackFlags);
 };
+
 TString *AliGFWCuts::GetTrackFlagDescriptor(Int_t sysflag) {
   TString *retstr = new TString("");
   switch(sysflag) {
@@ -354,30 +355,29 @@ TString *AliGFWCuts::GetTrackFlagDescriptor(Int_t sysflag) {
     retstr->Append("TPC N_{Cls} > 100");
     break;
   case 9:
-    retstr->Append("ITS tracklets");
+    retstr->Append("FB768, #chi^{2}/N_{TPCcls} < 2.5");
     break;
   case 10:
-    retstr->Append("Debug case 1");
+    retstr->Append("FB768, #chi^{2}/N_{TPCcls} < 2");
     break;
   case 11:
-    retstr->Append("Debug case 2");
+    retstr->Append("FB768, #chi^{2}/N_{TPCcls} < 3");
     break;
   case 12:
-    retstr->Append("Debug case 3");
+    retstr->Append("FB768, DCA_{xy} 8#sigma");
     break;
   case 13:
-    retstr->Append("Debug case 4");
+    retstr->Append("FB16, #chi^{2}/N_{TPCcls} < 2.5");
     break;
   case 14:
-    retstr->Append("Debug case 5");
+    retstr->Append("FB16, #chi^{2}/N_{TPCcls} < 2");
     break;
   case 15:
-    retstr->Append("Debug case 6");
+    retstr->Append("FB16, #chi^{2}/N_{TPCcls} < 3");
     break;
   case 16:
-    retstr->Append("Debug case 7");
+    retstr->Append("FB16, DCA_{xy} 8#sigma");
     break;
-
   default:
     break;
   };
