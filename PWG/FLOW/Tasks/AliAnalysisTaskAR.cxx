@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 29.09.2021
+ * Last Modified Date: 30.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -81,8 +81,12 @@ ClassImp(AliAnalysisTaskAR)
       fEventControlHistogramsList(nullptr),
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
-      fTrackCutsCounterCumulative(nullptr), fTrackCutsValues(nullptr),
-      fEventCutsCounterCumulative(nullptr), fEventCutsValues(nullptr),
+      fTrackCutsCounterCumulativeName("TrackCutsCounterCumulative"),
+      fTrackCutsCounterCumulative(nullptr),
+      fTrackCutsValuesName("TrackCutValues"), fTrackCutsValues(nullptr),
+      fEventCutsCounterCumulativeName("EventCutsCounterCumulative"),
+      fEventCutsCounterCumulative(nullptr),
+      fEventCutsValuesName("EventCutValues"), fEventCutsValues(nullptr),
       fFilterbit(128), fUseFilterbit(kFALSE), fChargedOnly(kFALSE),
       fPrimaryOnly(kFALSE), fMCPrimaryDef(kMCPhysicalPrim),
       fGlobalTracksOnly(kFALSE), fCentralityEstimator(kV0M),
@@ -91,9 +95,9 @@ ClassImp(AliAnalysisTaskAR)
       // final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       fFinalResultHistogramsList(nullptr),
-      fFinalResultHistogramsListName("fFinalResultHistograms"),
+      fFinalResultHistogramsListName("FinalResultHistograms"),
       fFinalResultProfilesList(nullptr),
-      fFinalResultProfilesListName("fFinalResultProfiles"),
+      fFinalResultProfilesListName("FinalResultProfiles"),
       fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
@@ -146,8 +150,12 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fEventControlHistogramsList(nullptr),
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
-      fTrackCutsCounterCumulative(nullptr), fTrackCutsValues(nullptr),
-      fEventCutsCounterCumulative(nullptr), fEventCutsValues(nullptr),
+      fTrackCutsCounterCumulativeName("TrackCutsCounterCumulative"),
+      fTrackCutsCounterCumulative(nullptr),
+      fTrackCutsValuesName("TrackCutValues"), fTrackCutsValues(nullptr),
+      fEventCutsCounterCumulativeName("EventCutsCounterCumulative"),
+      fEventCutsCounterCumulative(nullptr),
+      fEventCutsValuesName("EventCutValues"), fEventCutsValues(nullptr),
       fFilterbit(128), fUseFilterbit(kFALSE), fChargedOnly(kFALSE),
       fPrimaryOnly(kFALSE), fMCPrimaryDef(kMCPhysicalPrim),
       fGlobalTracksOnly(kFALSE), fCentralityEstimator(kV0M),
@@ -976,14 +984,14 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   Double_t ctcxmin[1] = {-0.5};
   Double_t ctcxmax[1] = {std::pow(2, LAST_ETRACK + 3) - 0.5};
   Int_t ctcbins[1] = {static_cast<Int_t>(::pow(2, LAST_ETRACK + 3))};
-  fTrackCutsCounterCumulative = new THnSparseD("fTrackCutsCounterCumulative",
-                                               "fTrackCutsCounterCumulative", 1,
-                                               ctcbins, ctcxmin, ctcxmax);
+  fTrackCutsCounterCumulative = new THnSparseD(fTrackCutsCounterCumulativeName,
+                                               fTrackCutsCounterCumulativeName,
+                                               1, ctcbins, ctcxmin, ctcxmax);
   fTrackControlHistogramsList->Add(fTrackCutsCounterCumulative);
 
   // book histogram holding values of all track cuts
   fTrackCutsValues =
-      new TH1D("fTrackCutsValues", "fTrackCutsValues",
+      new TH1D(fTrackCutsValuesName, fTrackCutsValuesName,
                2 * LAST_ETRACK + AddBins, 0, 2 * LAST_ETRACK + AddBins);
   fTrackCutsValues->SetFillColor(kFillColor[kAFTER]);
 
@@ -1079,12 +1087,12 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   Double_t cecxmin[1] = {-0.5};
   Double_t cecxmax[1] = {std::pow(2, LAST_EEVENT + 2) - 0.5};
   Int_t cecbins[1] = {static_cast<Int_t>(TMath::Power(2, LAST_EEVENT + 2))};
-  fEventCutsCounterCumulative = new THnSparseD("fEventCutsCounterCumulative",
-                                               "fEventCutsCounterCumulative", 1,
-                                               cecbins, cecxmin, cecxmax);
+  fEventCutsCounterCumulative = new THnSparseD(fEventCutsCounterCumulativeName,
+                                               fEventCutsCounterCumulativeName,
+                                               1, cecbins, cecxmin, cecxmax);
   fEventControlHistogramsList->Add(fEventCutsCounterCumulative);
   // book histogram holding values of all event cuts
-  fEventCutsValues = new TH1D("fEventCutsValues", "fEventCutsValues",
+  fEventCutsValues = new TH1D(fEventCutsValuesName, fEventCutsValuesName,
                               2 * LAST_EEVENT + 5, 0, 2 * LAST_EEVENT + 5);
   fEventCutsValues->SetFillColor(kFillColor[kAFTER]);
 
@@ -3523,104 +3531,88 @@ void AliAnalysisTaskAR::GetPointersForQAHistograms() {
     return;
   }
 
-  // get pointer for fCenCorQAHistogramsList
+  // get pointer for fCenCorQAHistogramsList, if it is there
   fCenCorQAHistogramsList = dynamic_cast<TList *>(
       fQAHistogramsList->FindObject(fCenCorQAHistogramsListName));
-  if (!fCenCorQAHistogramsList) {
-    std::cout << __LINE__ << ": Did not get " << fCenCorQAHistogramsListName
-              << std::endl;
-    Fatal("GetPointersForQAHistograms", "Invalid Pointer");
-  }
 
-  // get pointers for centrality correlation histograms
-  for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
-       ++cen) {
-    for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
-      fCenCorQAHistograms[cen][ba] =
-          dynamic_cast<TH2D *>(fCenCorQAHistogramsList->FindObject(
-              fCenCorQAHistogramNames[cen][ba][kNAME]));
-      if (!fCenCorQAHistograms[cen][ba]) {
-        std::cout << __LINE__ << ": Did not get "
-                  << fCenCorQAHistogramNames[cen][ba][kNAME] << std::endl;
-        Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+  if (fCenCorQAHistogramsList) {
+    // get pointers for centrality correlation histograms
+    for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
+         ++cen) {
+      for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+        fCenCorQAHistograms[cen][ba] =
+            dynamic_cast<TH2D *>(fCenCorQAHistogramsList->FindObject(
+                fCenCorQAHistogramNames[cen][ba][kNAME]));
+        if (!fCenCorQAHistograms[cen][ba]) {
+          std::cout << __LINE__ << ": Did not get "
+                    << fCenCorQAHistogramNames[cen][ba][kNAME] << std::endl;
+          Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+        }
       }
     }
   }
 
-  // get pointer for fMulCorQAHistogramsList
+  // get pointer for fMulCorQAHistogramsList, if it is there
   fMulCorQAHistogramsList = dynamic_cast<TList *>(
       fQAHistogramsList->FindObject(fMulCorQAHistogramsListName));
-  if (!fMulCorQAHistogramsList) {
-    std::cout << __LINE__ << ": Did not get " << fMulCorQAHistogramsList
-              << std::endl;
-    Fatal("GetPointersForQAHistograms", "Invalid Pointer");
-  }
 
-  // get pointers for multiplicity correlation histograms
-  for (int mul = 0; mul < kMulEstimators; ++mul) {
-    for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
-      fMulCorQAHistograms[mul][ba] =
-          dynamic_cast<TH2D *>(fMulCorQAHistogramsList->FindObject(
-              fMulCorQAHistogramNames[mul][ba][kNAME]));
-      if (!fMulCorQAHistograms[mul][ba]) {
-        std::cout << __LINE__ << ": Did not get "
-                  << fMulCorQAHistogramNames[mul][ba][kNAME] << std::endl;
-        Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+  if (fMulCorQAHistogramsList) {
+    // get pointers for multiplicity correlation histograms
+    for (int mul = 0; mul < kMulEstimators; ++mul) {
+      for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+        fMulCorQAHistograms[mul][ba] =
+            dynamic_cast<TH2D *>(fMulCorQAHistogramsList->FindObject(
+                fMulCorQAHistogramNames[mul][ba][kNAME]));
+        if (!fMulCorQAHistograms[mul][ba]) {
+          std::cout << __LINE__ << ": Did not get "
+                    << fMulCorQAHistogramNames[mul][ba][kNAME] << std::endl;
+          Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+        }
       }
     }
   }
 
-  // get pointer for fFBScanQAHistogramsList
+  // get pointer for fFBScanQAHistogramsList, if it is there
   fFBScanQAHistogramsList = dynamic_cast<TList *>(
       fQAHistogramsList->FindObject(fFBScanQAHistogramsListName));
-  if (!fFBScanQAHistogramsList) {
-    std::cout << __LINE__ << ": Did not get " << fFBScanQAHistogramsListName
-              << std::endl;
-    Fatal("GetPointersForQAHistograms", "Invalid Pointer");
-  }
 
-  // get pointer for filter bit scan histogram
-  fFBScanQAHistogram = dynamic_cast<TH1D *>(
-      fFBScanQAHistogramsList->FindObject(fFBScanQAHistogramName[kNAME]));
-  if (!fFBScanQAHistogram) {
-    std::cout << __LINE__ << ": Did not get " << fFBScanQAHistogramName
-              << std::endl;
-    Fatal("GetPointersForQAHistograms", "Invalid Pointer");
-  }
+  if (fFBScanQAHistogramsList) {
+    // get pointer for filter bit scan histogram
+    fFBScanQAHistogram = dynamic_cast<TH1D *>(
+        fFBScanQAHistogramsList->FindObject(fFBScanQAHistogramName[kNAME]));
 
-  // get pointer track scan filterbit QA histograms
-  for (int track = 0; track < LAST_ETRACK; ++track) {
-    for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
-      fFBTrackScanQAHistograms[track][fb] =
-          dynamic_cast<TH1D *>(fFBScanQAHistogramsList->FindObject(
-              fFBTrackScanQAHistogramNames[track][fb][kNAME]));
-      if (!fFBTrackScanQAHistograms[track][fb]) {
-        std::cout << __LINE__ << ": Did not get "
-                  << fFBTrackScanQAHistogramNames[track][fb][kNAME]
-                  << std::endl;
-        Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+    // get pointer track scan filterbit QA histograms
+    for (int track = 0; track < LAST_ETRACK; ++track) {
+      for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
+        fFBTrackScanQAHistograms[track][fb] =
+            dynamic_cast<TH1D *>(fFBScanQAHistogramsList->FindObject(
+                fFBTrackScanQAHistogramNames[track][fb][kNAME]));
+        if (!fFBTrackScanQAHistograms[track][fb]) {
+          std::cout << __LINE__ << ": Did not get "
+                    << fFBTrackScanQAHistogramNames[track][fb][kNAME]
+                    << std::endl;
+          Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+        }
       }
     }
   }
 
-  // get pointer for fSelfCorQAHistogramsList
+  // get pointer for fSelfCorQAHistogramsList, if it is there
   fSelfCorQAHistogramsList = dynamic_cast<TList *>(
       fQAHistogramsList->FindObject(fSelfCorQAHistogramsListName));
-  if (!fSelfCorQAHistogramsList) {
-    std::cout << __LINE__ << ": Did not get " << fSelfCorQAHistogramsListName
-              << std::endl;
-    Fatal("GetPointersForQAHistograms", "Invalid Pointer");
-  }
-  // get pointers for self correlation QA histograms
-  for (int var = 0; var < kKinematic; ++var) {
-    for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
-      fSelfCorQAHistograms[var][ba] =
-          dynamic_cast<TH1D *>(fSelfCorQAHistogramsList->FindObject(
-              fSelfCorQAHistogramNames[var][ba][kNAME]));
-      if (!fSelfCorQAHistograms[var][ba]) {
-        std::cout << __LINE__ << ": Did not get "
-                  << fSelfCorQAHistogramNames[var][ba][kNAME] << std::endl;
-        Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+
+  if (fSelfCorQAHistogramsList) {
+    // get pointers for self correlation QA histograms
+    for (int var = 0; var < kKinematic; ++var) {
+      for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+        fSelfCorQAHistograms[var][ba] =
+            dynamic_cast<TH1D *>(fSelfCorQAHistogramsList->FindObject(
+                fSelfCorQAHistogramNames[var][ba][kNAME]));
+        if (!fSelfCorQAHistograms[var][ba]) {
+          std::cout << __LINE__ << ": Did not get "
+                    << fSelfCorQAHistogramNames[var][ba][kNAME] << std::endl;
+          Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+        }
       }
     }
   }
@@ -3652,6 +3644,13 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
     fTrackCutsCounter[mode] = dynamic_cast<TH1D *>(
         fTrackControlHistogramsList->FindObject(fTrackCutsCounterNames[mode]));
   }
+
+  fTrackCutsValues = dynamic_cast<TH1D *>(
+      fTrackControlHistogramsList->FindObject(fTrackCutsValuesName));
+
+  fTrackCutsCounterCumulative = dynamic_cast<THnSparseD *>(
+      fTrackControlHistogramsList->FindObject(fTrackCutsCounterCumulativeName));
+
   // get all pointers for track control histograms
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     for (int var = 0; var < LAST_ETRACK; ++var) {
@@ -3683,6 +3682,13 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
     fEventCutsCounter[mode] = dynamic_cast<TH1D *>(
         fEventControlHistogramsList->FindObject(fEventCutsCounterNames[mode]));
   }
+
+  fEventCutsValues = dynamic_cast<TH1D *>(
+      fEventControlHistogramsList->FindObject(fEventCutsValuesName));
+
+  fEventCutsCounterCumulative = dynamic_cast<THnSparseD *>(
+      fEventControlHistogramsList->FindObject(fEventCutsCounterCumulativeName));
+
   // get all pointers for event control histograms
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     for (int var = 0; var < LAST_EEVENT; ++var) {
@@ -3729,7 +3735,7 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
     if (!fFinalResultHistograms[var]) {
       std::cout << __LINE__ << ": Did not get "
                 << fFinalResultHistogramNames[var][kNAME] << std::endl;
-      Fatal("GetPointersForOutputHistograms", "Invalid Pointer");
+      Fatal("GetPointersForFinalResults", "Invalid Pointer");
     }
   }
 

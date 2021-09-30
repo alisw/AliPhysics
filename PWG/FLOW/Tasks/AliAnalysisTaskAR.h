@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 29.09.2021
+ * Last Modified Date: 30.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -164,6 +164,20 @@ public:
   virtual void GetPointersForFinalResults();
 
   // setters and getters for list objects
+  TList *GetCenCorQAHistogramList() const { return fCenCorQAHistogramsList; }
+  TObject *GetCenCorQAHistogram(kBeforeAfter ba, kCenEstimators cen1,
+                                kCenEstimators cen2) {
+    return fCenCorQAHistogramsList->FindObject(
+        fCenCorQAHistogramNames[IndexCorHistograms(
+            cen1, cen2, LAST_ECENESTIMATORS)][ba][0]);
+  }
+  TList *GetMulCorQAHistogramList() const { return fMulCorQAHistogramsList; }
+  TObject *GetMulCorQAHistogram(kBeforeAfter ba, Int_t mul1, Int_t mul2) {
+    return fMulCorQAHistogramsList->FindObject(
+        fMulCorQAHistogramNames[IndexCorHistograms(mul1, mul2, kMulEstimators)]
+                               [ba][0]);
+  }
+  TList *GetSelfCorQAHistogramList() const { return fSelfCorQAHistogramsList; }
   void SetControlHistogramsList(TList *const chl) {
     this->fControlHistogramsList = chl;
   };
@@ -189,7 +203,6 @@ public:
   TList *GetFinalResultHistogramssList() const {
     return this->fFinalResultHistogramsList;
   }
-
   void SetFinalResultProfilesList(TList *const frl) {
     this->fFinalResultProfilesList = frl;
   };
@@ -540,14 +553,18 @@ private:
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
   Bool_t fUseTrackCuts[LAST_ETRACK];
   TH1D *fTrackCutsCounter[LAST_EMODE];
+  TString fTrackCutsCounterCumulativeName;
   THnSparseD *fTrackCutsCounterCumulative;
+  TString fTrackCutsValuesName;
   TH1D *fTrackCutsValues;
   TString fTrackCutsCounterNames[LAST_EMODE];
   TString fTrackCutsCounterBinNames[LAST_ETRACK][LAST_EMINMAX];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
   Bool_t fUseEventCuts[LAST_EEVENT];
   TH1D *fEventCutsCounter[LAST_EMODE];
+  TString fEventCutsCounterCumulativeName;
   THnSparseD *fEventCutsCounterCumulative;
+  TString fEventCutsValuesName;
   TH1D *fEventCutsValues;
   TString fEventCutsCounterNames[LAST_EMODE];
   TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
