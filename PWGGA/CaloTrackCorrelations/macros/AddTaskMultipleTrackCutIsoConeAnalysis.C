@@ -46,6 +46,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// \param gloCutsString : A string with list of global cuts/parameters (activate pile-up ...)
 /// \param nonLinOn : A bool to set the use of the non linearity correction
 /// \param analysisString : String that contains what analysis to activate, options: Photon, DecayPi0, MergedPi0, Charged, QA, Isolation, Correlation, Generator
+/// \param exoCut : A float setting the exoticity cut, set only if tighter than in reader
 /// \param shshMax : A float setting the maximum value of the shower shape of the clusters for the correlation analysis
 /// \param isoCone : A float setting the isolation cone size higher limit
 /// \param isoPtTh : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
@@ -74,6 +75,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
  Bool_t   calibrate     = kFALSE,
  Bool_t   nonLinOn      = kFALSE,
  TString  analysisString= "Photon_MergedPi0_DecayPi0_Isolation_Correlation_QA_Charged",
+ Float_t  exoCut        = 2.,
  Float_t  shshMax       = 0.27,
  Float_t  isoCone       = 0.4,
  Float_t  isoPtTh       = 2,
@@ -144,6 +146,17 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
   ( anaList, calorimeter, simulation, year, col, analysisString+"_DistToBadOff", histoString,
    shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
    leading, tmFix, mixOn, printSettings, debug);
+
+  // Analysis with tighter exoticity, fixed min cone distance and track match option
+  if ( exoCut < 1 )
+  {
+    TString histoString = Form("TM%d_ExoCut%0.2f",tmFix,exoCut);
+
+    ConfigureCaloTrackCorrAnalysis
+    ( anaList, calorimeter, simulation, year, col, analysisString+Form("_ExoCut%0.2f",exoCut), histoString,
+     shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
+     leading, tmFix, mixOn, printSettings, debug);
+  }
 
   // Analysis with different UE estimation size region
   histoString = Form("TM%d_MultiIsoRAndGaps",tmFix);
