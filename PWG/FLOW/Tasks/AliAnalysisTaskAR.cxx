@@ -2218,8 +2218,10 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
     }
     fTrackCutsCounterCumulative->Fill(&CutBit);
 
+    // when doing monte carlo closure, check if we accept the track
+    // also check if we will the counter, i.e. we run in the main loop
+    // we do not want to loose events because we get unlucky here
     if (fMCClosure && FillCounter) {
-
       if (fAcceptanceHistogram[kPT]) {
         if (fAcceptanceHistogram[kPT]->GetBinContent(
                 fAcceptanceHistogram[kPT]->FindBin(aTrack->Pt())) <
@@ -2339,8 +2341,9 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
     }
   }
 
-  // when we pass invalid pointer, check if we produced our own data
-  if ((!aTrack && !MCParticle && fMCOnTheFly)) {
+  // if both aTrack and MCParticle are null, check if we generated monte carlo
+  // data on the fly
+  if (!aTrack && !MCParticle && fMCOnTheFly) {
 
     if (fAcceptanceHistogram[kPT]) {
       if (fAcceptanceHistogram[kPT]->GetBinContent(
@@ -2527,24 +2530,26 @@ void AliAnalysisTaskAR::FillFinalResultProfile() {
     // compute correlator
     if (fUseNestedLoops) {
       // using nested loops
-      weight = CombinatorialWeight(fCorrelators.at(i).size());
       switch (static_cast<int>(fCorrelators.at(i).size())) {
       case 2:
         corr =
             TwoNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1))
                 .Re();
+        weight = TwoNestedLoops(0, 0).Re();
         break;
       case 3:
         corr =
             ThreeNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
                              fCorrelators.at(i).at(2))
                 .Re();
+        weight = ThreeNestedLoops(0, 0, 0).Re();
         break;
       case 4:
         corr =
             FourNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
                             fCorrelators.at(i).at(2), fCorrelators.at(i).at(3))
                 .Re();
+        weight = FourNestedLoops(0, 0, 0, 0).Re();
         break;
       case 5:
         corr =
@@ -2552,6 +2557,7 @@ void AliAnalysisTaskAR::FillFinalResultProfile() {
                             fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
                             fCorrelators.at(i).at(4))
                 .Re();
+        weight = FiveNestedLoops(0, 0, 0, 0, 0).Re();
         break;
       case 6:
         corr =
@@ -2559,10 +2565,9 @@ void AliAnalysisTaskAR::FillFinalResultProfile() {
                            fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
                            fCorrelators.at(i).at(4), fCorrelators.at(i).at(5))
                 .Re();
+        weight = SixNestedLoops(0, 0, 0, 0, 0, 0).Re();
         break;
       default:
-        corr = 1.;
-        weight = 1.;
         std::cout
             << "Correlators of order >6 are not implemented with nested loops"
             << std::endl;
@@ -2981,140 +2986,6 @@ TComplex AliAnalysisTaskAR::Recursion(Int_t n, Int_t *harmonic,
   if (mult == 1)
     return c - c2;
   return c - Double_t(mult) * c2;
-}
-
-Double_t AliAnalysisTaskAR::CombinatorialWeight(Int_t n) {
-  // calculate combinatrial weight for Qvectors
-  // used mainly for nested loops
-  if (n >= static_cast<Int_t>(fKinematics[kPHI].size())) {
-    std::cout << __LINE__ << ": Two few particles for this correlator"
-              << std::endl;
-    Fatal("Combinatorial weight",
-          "order of correlator is larger then number of particles");
-  }
-  Double_t w = 0.;
-  if (fWeightsAggregated.empty()) {
-    w = 1.;
-    for (int i = 0; i < n; ++i) {
-      w *= (fKinematics[kPHI].size() - i);
-    }
-  } else {
-    w = 0;
-    switch (n) {
-    case 2:
-      for (std::size_t i1 = 0; i1 < fWeightsAggregated.size(); i1++) {
-        for (std::size_t i2 = 0; i2 < fWeightsAggregated.size(); i2++) {
-          if (i2 == i1) {
-            continue;
-          }
-          w += fWeightsAggregated.at(i1) * fWeightsAggregated.at(i2);
-        }
-      }
-      break;
-    case 3:
-      for (std::size_t i1 = 0; i1 < fWeightsAggregated.size(); i1++) {
-        for (std::size_t i2 = 0; i2 < fWeightsAggregated.size(); i2++) {
-          if (i2 == i1) {
-            continue;
-          }
-          for (std::size_t i3 = 0; i3 < fWeightsAggregated.size(); i3++) {
-            if (i3 == i2 || i3 == i1) {
-              continue;
-            }
-            w += fWeightsAggregated.at(i1) * fWeightsAggregated.at(i2) *
-                 fWeightsAggregated.at(i3);
-          }
-        }
-      }
-      break;
-    case 4:
-      for (std::size_t i1 = 0; i1 < fWeightsAggregated.size(); i1++) {
-        for (std::size_t i2 = 0; i2 < fWeightsAggregated.size(); i2++) {
-          if (i2 == i1) {
-            continue;
-          }
-          for (std::size_t i3 = 0; i3 < fWeightsAggregated.size(); i3++) {
-            if (i3 == i2 || i3 == i1) {
-              continue;
-            }
-            for (std::size_t i4 = 0; i4 < fWeightsAggregated.size(); i4++) {
-              if (i4 == i3 || i4 == i2 || i4 == i1) {
-                continue;
-              }
-              w += fWeightsAggregated.at(i1) * fWeightsAggregated.at(i2) *
-                   fWeightsAggregated.at(i3) * fWeightsAggregated.at(i4);
-            }
-          }
-        }
-      }
-      break;
-    case 5:
-      for (std::size_t i1 = 0; i1 < fWeightsAggregated.size(); i1++) {
-        for (std::size_t i2 = 0; i2 < fWeightsAggregated.size(); i2++) {
-          if (i2 == i1) {
-            continue;
-          }
-
-          for (std::size_t i3 = 0; i3 < fWeightsAggregated.size(); i3++) {
-            if (i3 == i2 || i3 == i1) {
-              continue;
-            }
-            for (std::size_t i4 = 0; i4 < fWeightsAggregated.size(); i4++) {
-              if (i4 == i3 || i4 == i2 || i4 == i1) {
-                continue;
-              }
-              for (std::size_t i5 = 0; i5 < fWeightsAggregated.size(); i5++) {
-                if (i5 == i4 || i5 == i3 || i5 == i2 || i5 == i1) {
-                  continue;
-                }
-                w += fWeightsAggregated.at(i1) * fWeightsAggregated.at(i2) *
-                     fWeightsAggregated.at(i3) * fWeightsAggregated.at(i4) *
-                     fWeightsAggregated.at(i5);
-              }
-            }
-          }
-        }
-      }
-      break;
-    case 6:
-      for (std::size_t i1 = 0; i1 < fWeightsAggregated.size(); i1++) {
-        for (std::size_t i2 = 0; i2 < fWeightsAggregated.size(); i2++) {
-          if (i2 == i1) {
-            continue;
-          }
-
-          for (std::size_t i3 = 0; i3 < fWeightsAggregated.size(); i3++) {
-            if (i3 == i2 || i3 == i1) {
-              continue;
-            }
-            for (std::size_t i4 = 0; i4 < fWeightsAggregated.size(); i4++) {
-              if (i4 == i3 || i4 == i2 || i4 == i1) {
-                continue;
-              }
-              for (std::size_t i5 = 0; i5 < fWeightsAggregated.size(); i5++) {
-                if (i5 == i4 || i5 == i3 || i5 == i2 || i5 == i1) {
-                  continue;
-                }
-                for (std::size_t i6 = 0; i6 < fWeightsAggregated.size(); i6++) {
-                  if (i6 == i5 || i6 == i4 || i6 == i3 || i6 == i2 ||
-                      i6 == i1) {
-                    continue;
-                  }
-                  w += fWeightsAggregated.at(i1) * fWeightsAggregated.at(i2) *
-                       fWeightsAggregated.at(i3) * fWeightsAggregated.at(i4) *
-                       fWeightsAggregated.at(i5) * fWeightsAggregated.at(i6);
-                }
-              }
-            }
-          }
-        }
-      }
-      break;
-    default:
-      std::cout << "Suck it" << std::endl;
-    }
-  }
-  return w;
 }
 
 TComplex AliAnalysisTaskAR::TwoNestedLoops(Int_t n1, Int_t n2) {
