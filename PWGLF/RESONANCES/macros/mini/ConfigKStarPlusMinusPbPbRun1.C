@@ -427,7 +427,8 @@ Bool_t ConfigKStarPlusMinusPbPbRun1
     outpsf->AddAxis(sdpt,30,0.,3.);
     outpsf->AddAxis(ptID,300,0.,3.);
 	
-    }*/
+    }
+    */
     return kTRUE;
 }
 

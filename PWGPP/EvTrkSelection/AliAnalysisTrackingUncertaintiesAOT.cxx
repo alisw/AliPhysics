@@ -46,6 +46,10 @@
 #include "AliMultSelection.h"
 #include "AliLog.h"
 //
+// MC weights from Patrick Huhn
+//
+#include "AliMCSpectraWeights.h"
+//
 #include "AliAnalysisTrackingUncertaintiesAOT.h"
 
 
@@ -72,6 +76,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fHistCent(0x0),
   fHistMC(0x0),
   fHistMCTPConly(0x0),
+  fHistMCWeights(0x0),
   fHistData(0x0),
   fHistAllV0multNTPCout(0),
   fHistSelV0multNTPCout(0),
@@ -101,6 +106,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   ,fAliEventCuts(0)
   ,fKeepOnlyPileUp(kFALSE)
   ,fnBinsDCAxy_histTpcItsMatch(30)
+  ,fUseMCWeights(kFALSE)
 {
 
   fAliEventCuts.SetManualMode();
@@ -126,6 +132,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   fHistCent(0x0),
   fHistMC(0x0),
   fHistMCTPConly(0x0),
+  fHistMCWeights(0x0),
   fHistData(0x0),
   fHistAllV0multNTPCout(0),
   fHistSelV0multNTPCout(0),
@@ -155,6 +162,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   ,fAliEventCuts(0)
   ,fKeepOnlyPileUp(kFALSE)
   ,fnBinsDCAxy_histTpcItsMatch(30)
+  ,fUseMCWeights(kFALSE)
 {
   //
   // standard constructur
@@ -175,6 +183,7 @@ AliAnalysisTrackingUncertaintiesAOT::~AliAnalysisTrackingUncertaintiesAOT()
 
     delete fHistMC;
     delete fHistMCTPConly;
+    delete fHistMCWeights;
     delete fHistData;
 
     delete fHistAllV0multNTPCout;
@@ -330,8 +339,16 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
         fHistMCTPConly->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
       }
     }
+    fHistMCWeights=new TH2F("fHistMCWeights","fHistMCWeights",300,0.0,3.0,6,0.5,6.5);
+    fHistMCWeights->GetYaxis()->SetBinLabel(1,"pions");
+    fHistMCWeights->GetYaxis()->SetBinLabel(2,"kaons");
+    fHistMCWeights->GetYaxis()->SetBinLabel(3,"protons");
+    fHistMCWeights->GetYaxis()->SetBinLabel(4,"Lambda");
+    fHistMCWeights->GetYaxis()->SetBinLabel(5,"Other");
+    //
     fListHist->Add(fHistMC);
     fListHist->Add(fHistMCTPConly);
+    fListHist->Add(fHistMCWeights);
   }
   else {
     if(fDCAz){
@@ -371,6 +388,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTrackingUncertaintiesAOT::UserExec(Option_t *)
 {
+  //  printf("======> UserExec!!! \n\n\n");
   //
   // main event loop
   //
@@ -563,7 +581,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
 
   TParticle *part=0;
   TParticlePDG *pdgPart=0;
-  Int_t code=-999, isph=-1,mfl=-999,uniqueID=-999;
+  Int_t code=-999, abscode=-999, isph=-1,mfl=-999,uniqueID=-999;
   Float_t partType=-1;
   Float_t label = 1;
   Float_t specie = -10;
@@ -572,6 +590,24 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
   Int_t ntracklets=0;
   //  fESD->InitMagneticField();
   Int_t ncl1=0;
+  //
+  //
+  // Initialize MCSpectraWeights as of Patrick's recipe
+  //
+  AliMCSpectraWeightsHandler* mcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fESD->FindListObject("fMCSpectraWeights"));
+  AliMCSpectraWeights* fMCSpectraWeights = (mcWeightsHandler) ? mcWeightsHandler->fMCSpectraWeight : nullptr;  
+  Double_t weight = 1.0;
+  TParticle* partTP;
+  Float_t como;
+  AliMCParticle* mcPartTP;
+  Int_t iMoTP, isLambda, iWeightedPart;
+  Int_t allowedParticles[4]={211,321,2212,3122}; 
+  //
+  // fake Sigma to get the weight which will be used for lambdas
+  TParticle *fakeSigma=new TParticle();
+  //
+  //
+  //
   const AliMultiplicity* mult=fESD->GetMultiplicity();
   if(mult){
     ntracklets = mult->GetNumberOfTracklets();
@@ -597,38 +633,137 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
     else fHistSelV0multNTPCout->Fill(V0mult,nTPCout);
   }
 
+
+  //
+  //  start loop on tracks
+  //
+
   for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
 
     isph=-1;
     code=-999;
     mfl=-999;
     uniqueID=-999;
-
+    isLambda=0;
+    iWeightedPart=0;
+    //
+    // here we have the track!
+    //
     AliESDtrack *track =fESD->GetTrack(i);
     if (!track) continue;
-
-
-
     track->SetESDEvent(fESD);
+    //
+    // track comes from the vertex
+    //
     if(!track->RelateToVertex(fVertex,fESD->GetMagneticField(),100)) continue;
+    //
     //fill TPCcls histo
     nTPC+=track->GetTPCncls();
     nITS+=track->GetITSNcls();
 
     track->GetImpactParameters(dca, cov);
+    //
+    // It's MC and we have the event
+    //
     if(fMC && mcEvent){
       Int_t absLabel=TMath::Abs(track->GetLabel());
       AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(absLabel);
       part = (TParticle*)mcEvent->Particle(absLabel);
+      //
+      // check if it's a good AliMCParticle and e can get a TParticle from it
+      //
       if(mcPart && part){
-        pdgPart = part->GetPDG();
+	//
+        // it's a pdg particle
+	//
+	pdgPart = part->GetPDG();
+	//
+	//
         if(pdgPart){
           code    = pdgPart->PdgCode();
+	  abscode = TMath::Abs(code);
           if(mcEvent->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) isph=1;
           else {
             isph = 0;
             uniqueID = part->GetUniqueID();
           }
+
+	  //
+	  // Start of SpectraWeights
+	  //
+	  // Gets the weight for the particle yield to correct MC - P. Huhn
+	  //
+	  //   1) physical primaries only isphi==1 is assigned the weight - no further check
+	  //   2) NOT physical primaries: if a proton or a pi- check if mother is a Lambda (and check that it's a physical primary)
+	  //
+	  weight = 1.0; 
+	  if (fUseMCWeights) {
+	    if(isph==1) {
+	      if(fMCSpectraWeights) weight = fMCSpectraWeights->GetMCSpectraWeight(mcPart->Particle(), 0);
+	      iWeightedPart=666; // switch on writing the weight in a histogram
+	      // // for systematics
+	      // if(fMCSpectraWeights) weight = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 1);
+	      //	    cout<<" last part pdg, weight "<<code<<" "<<weight<<endl;
+	    }
+	    // end if physical primary
+	    //
+	    if(isph==0) {
+	      //
+	      // Climb decay tree if particle is a p+ or a pi- to verify if it comes from Lambda
+	      //
+	      if (abscode == 2212 || abscode == 211) {
+		// it's a proton or pi-
+		// 
+		mcPartTP=mcPart;
+		iMoTP=mcPartTP->GetMother();
+		if (iMoTP>=0) {
+		  mcPartTP =  (AliMCParticle*) mcEvent->GetTrack(iMoTP);
+		  como=mcPartTP->PdgCode();
+		  //
+		  //  if it's a Lambda physical primary...
+		  //
+		  if (TMath::Abs(como) == 3122 && mcPartTP->IsPhysicalPrimary()) {
+		    isLambda=1;
+		    //
+		    // create a Sigma+ TParticle with same momentum and status code as this Lambda - Sigma+ because Sigma0 weight is not defined
+		    //
+		    fakeSigma->SetPdgCode(3222);
+		    fakeSigma->SetMomentum(mcPartTP->Px(),mcPartTP->Py(),mcPartTP->Pz(),mcPartTP->E());
+		    fakeSigma->SetProductionVertex(mcPartTP->Xv(),mcPartTP->Yv(),mcPartTP->Zv(),mcPartTP->T());
+		    fakeSigma->SetStatusCode(mcPartTP->MCStatusCode());
+		    //
+		    // pick the weight for this ''Sigma''
+		    //
+		    if(fMCSpectraWeights) weight = fMCSpectraWeights->GetMCSpectraWeight(fakeSigma, 0);
+		    iWeightedPart=666; // switch on writing the weight in a histogram
+		    //
+		    // clean up
+		    //
+		    fakeSigma->SetPdgCode(-9999);
+		    fakeSigma->SetMomentum(-9999,-9999,-9999,-9999);
+		    fakeSigma->SetProductionVertex(-9999,-9999,-9999,-9999);
+		    fakeSigma->SetStatusCode(-9999);
+		  }
+		  // end if primary lambda
+		  //
+		}
+		// end if valid mother is found
+		// 
+	      }
+	      // end if proton or pi-
+	      //
+	    }
+	    // end if NOT physical primary
+	    //
+	    //
+	    //   end of SpectraWeights 
+	    //
+	  }
+	  //
+	  //   end if fUseMCWeights
+	  //
+	  //
+ 
           Int_t indexMoth=mcPart->GetMother();
           if(indexMoth>=0){
             TParticle* moth = mcEvent->Particle(indexMoth);
@@ -643,13 +778,17 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
             if(mfl==3 && uniqueID == kPDecay) partType = 1; //secondaries from strangeness
             else partType = 2;  //from material
           }
-          if(TMath::Abs(code)==11)   specie = 0;
-          if(TMath::Abs(code)==211)  specie = 1;
-          if(TMath::Abs(code)==321)  specie = 2;
-          if(TMath::Abs(code)==2212) specie = 3;
+          if(abscode ==  11)  specie = 0;
+          if(abscode == 211)  specie = 1;
+          if(abscode == 321)  specie = 2;
+          if(abscode ==2212)  specie = 3;
         }
+	// end if pdgPart 
       }
+      //end if mcPart && part 
     }
+    // end if fMC and mcEvent and 
+    //
     //
     // relevant variables
     //
@@ -719,16 +858,16 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
             if(IsConsistentWithPid(iSpec, track)) {
               Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_d,dca[0]};
               if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
-              histTpcItsMatch->Fill(vecHistTpcItsMatch);
+              histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
               if(fMC){
                 if(fDCAz)
                 {
                   Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_d};
-                  fHistMCTPConly->Fill(vec4Sparse);
+                  fHistMCTPConly->Fill(vec4Sparse,weight);
                 }
                 else{
                   Double_t vec4Sparse[8] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_d};
-                  fHistMCTPConly->Fill(vec4Sparse);
+                  fHistMCTPConly->Fill(vec4Sparse,weight);
                 }
               }
               else{
@@ -770,15 +909,15 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
           if(IsConsistentWithPid(iSpec, track)) {
             Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_n,dca[0]};
             if(fMC && fUseGenPt) vecHistTpcItsMatch[1] = part->Pt();
-            histTpcItsMatch->Fill(vecHistTpcItsMatch);
+            histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
             if(fMC){
               if(fDCAz){
                 Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n};
-                fHistMC->Fill(vec4Sparse);
+                fHistMC->Fill(vec4Sparse,weight);
               }
               else {
                 Double_t vec4Sparse[8] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_n};
-                fHistMC->Fill(vec4Sparse);
+                fHistMC->Fill(vec4Sparse,weight);
               }
             }
             else {
@@ -799,7 +938,32 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
         }
       }
     }
+    // distribution of weights per particle/antiparticle type
+    //
+    // assign bin number to particle types - if there is a Lambda as mother either p or pi are tagged Lambda
+    //
+    if (iWeightedPart==666 && fUseMCWeights) { // only if flag on
+      if (isLambda==0) {
+    	switch (abscode) {
+    	case 211:
+    	  iWeightedPart=1;
+    	  break;
+    	case 321:
+    	  iWeightedPart=2;
+    	  break;
+    	case 2212:
+    	  iWeightedPart=3;
+    	  break;
+    	default:
+    	  iWeightedPart=5; //all other particles
+    	}
+      }
+      else iWeightedPart=4;
+      //      cout<<" >>>>>>>>>>>>>>>>>>>>>>>>         islambda weight abscode iWeightedPart!!!!    "<<isLambda<<" "<<weight<<" "<<" "<<abscode<<" "<<iWeightedPart<<endl;
+      fHistMCWeights->Fill(weight,iWeightedPart);
+    }
   } // end of track loop
+
   TH2F * histTPCITS = (TH2F *) fListHist->FindObject("histTPCITS");
   TH2F * histTPCCL1 = (TH2F *) fListHist->FindObject("histTPCCL1");
   TH2F * histTPCntrkl = (TH2F *) fListHist->FindObject("histTPCntrkl");

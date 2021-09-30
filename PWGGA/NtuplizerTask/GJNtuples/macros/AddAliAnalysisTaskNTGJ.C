@@ -180,8 +180,8 @@ AddAliAnalysisTaskNTGJ(TString name,
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
   TString filename = mgr->GetCommonFileName();
-  filename += ":AliAnalysisTaskNTGJ_";
-  filename += name.Data();
+  filename += ":AliAnalysisTaskNTGJ";
+  //filename += name.Data();
     
   mgr->ConnectOutput(task, 1,
                      mgr->CreateContainer("tree", TTree::Class(),

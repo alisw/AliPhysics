@@ -40,7 +40,6 @@ set(SRCS
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKBase.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKTest.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskTPCMatchEff.cxx
-  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskDCArStudy.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskPtResStudy.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskEffContStudy.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskUEStudy.cxx
@@ -125,6 +124,7 @@ set(SRCS
   AntiprotonToProton/train/AliAnalysisTaskProton.cxx
   AntiprotonToProton/train/AliAnalysisTaskProtonQA.cxx
   AntiprotonToProton/train/AliAnalysisTaskProtonAbsorbtion.cxx
+  Spherocity/AliAnalysisTaskS0.cxx
   Spherocity/AliTransverseEventShape.cxx
   Spherocity/AliSpherocityEstimator.cxx
   Spherocity/AliSpherocityUtils.cxx
@@ -134,6 +134,7 @@ if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx)
   list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTaskOLD.cxx)
   list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTaskUE.cxx)
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskDCArStudy.cxx)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskCutStudies.cxx)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraEtaPhi.cxx)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraINEL0.cxx)

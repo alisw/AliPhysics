@@ -748,7 +748,7 @@ Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliMCEven
   if( labelParticle < 0 || labelParticle >= mcESDEvent->GetNumberOfTracks() ) return kFALSE;
   //if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE; //Ask Ana
   std::unique_ptr<AliDalitzAODESDMC> particle = std::unique_ptr<AliDalitzAODESDMC>(mcAODESDEvent->Particle(labelParticle));
-  //TParticle* particle = mcEvent->Particle(labelParticle);
+  //AliMCParticle* particle = mcEvent->GetTrack(labelParticle);
 
   if( TMath::Abs( particle->GetPdgCodeG() ) != 11 )  return kFALSE;
 
@@ -1883,6 +1883,10 @@ Bool_t AliDalitzElectronCuts::SetPtCut(Int_t ptCut)
       break;
     case 8:
       fPtMinCut = 1.1;
+      fPtMaxCut = 9999;
+      break;
+    case 9:
+      fPtMinCut = 0.02;
       fPtMaxCut = 9999;
       break;
     default:

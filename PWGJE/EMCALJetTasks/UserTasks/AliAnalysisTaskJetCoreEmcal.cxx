@@ -591,7 +591,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fhDphiPtRefPi = new TH2F("hDphiPtRPi","recoil #Delta #phi vs jet pT reference",200,0,2*TMath::Pi(),25000,-50,200);  
 	fhDphiPtRefPi->GetXaxis()->SetTitle("#Delta #phi"); 
 	fhDphiPtRefPi->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
-  fhDphiPtShiftRefPi=new TH3F("hDphiPtShiftRefPi","#phi vs jet pT (shifted) vs rho shift reference",20,0,2*TMath::Pi(),250,-50,200,8,-0.3,0.4);
+  fhDphiPtShiftRefPi=new TH3F("hDphiPtShiftRefPi","#phi vs jet pT (shifted) vs rho shift reference",200,0,2*TMath::Pi(),250,-50,200,11,-0.5,0.6);
 	fhDphiPtShiftRefPi->GetXaxis()->SetTitle("#Delta #phi"); 
 	fhDphiPtShiftRefPi->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
 	fhDphiPtShiftRefPi->GetZaxis()->SetTitle("#rho shift (GeV)"); 
@@ -815,7 +815,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
       // phiRec (10,pi/2,pi)
       // matchedJetDistanceRec (15,0.1,0.4)
       const Int_t dimSpec = 5;
-      const Int_t nBinsSpec[dimSpec]     = {300, 40           , 250 , 40            , 20 };
+      const Int_t nBinsSpec[dimSpec]     = {300, 100          , 250 , 100            , 20 };
       const Double_t lowBinSpec[dimSpec] = {0.  , 0., -50., 0., 0. };
       const Double_t hiBinSpec[dimSpec]  = {300., TMath::Pi()  , 200. , TMath::Pi()   , 0.4 };
 
@@ -1065,8 +1065,8 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 			else         {
         fhDphiPtRefPi->Fill(dPhiShiftPi,ptcorr);
         fhDphiPtRef->Fill(dPhiShift,ptcorr);
-        for(Int_t i=0;i<7;i++) {
-          Double_t rhoshift = -0.3 + Double_t(i)*0.1;
+        for(Int_t i=0;i<11;i++) {
+          Double_t rhoshift = -0.5 + Double_t(i)*0.1;
           Double_t ptcorrshift=ptbig-(rho+rhoshift)*areabig;
           fhDphiPtShiftRefPi->Fill(dPhiShiftPi,ptcorrshift,rhoshift+0.001);
         }

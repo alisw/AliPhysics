@@ -91,11 +91,15 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	pTe("name"),
 	massMin(0),
 	Nref(0),
+	NrefV0(0),
 	Nch(0),
 	MinNtr(0),
 	MaxNtr(0),
         festimatorFile(""),
         estimatorAvg(0),
+        estimatorV0Avg(0),
+        NtrkWeightMC(0),
+        fmult_type(0),
 	//==== basic parameters ====
 	fNevents(0),
 	fNDB(0),
@@ -167,9 +171,12 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHFArray(0),
 	fzvtx_Ntrkl(0),
 	fzvtx_Nch(0),
+	fzvtx_Ntrkl_V0(0),
 	fzvtx_Ntrkl_Corr(0),
 	fzvtx_Corr(0),
 	fNtrkl_Corr(0),
+	fNtrkl_noCorr(0),
+	fzvtx_V0M(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
 	fDCAxy_Pt_ele(0),
@@ -234,7 +241,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistWeOrg(0),
         fHistWeOrgPos(0),
         fHistWeOrgNeg(0),
-        fMultEstimatorAvg(0)
+        fMultEstimatorAvg(0),
+        fweightNtrkl(0)
 
 {
 	// default constructor, don't allocate memory here!
@@ -271,11 +279,15 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	pTe("name"),
 	massMin(0),
 	Nref(0),
+	NrefV0(0),
 	Nch(0),
 	MinNtr(0),
 	MaxNtr(0),
         festimatorFile(""),
         estimatorAvg(0),
+        estimatorV0Avg(0),
+        NtrkWeightMC(0),
+        fmult_type(0),
 	//==== basic parameters ====
 	fNevents(0),
 	fNDB(0),
@@ -347,11 +359,14 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHFArray(0),
 	fzvtx_Ntrkl(0),
 	fzvtx_Nch(0),
+	fzvtx_Ntrkl_V0(0),
 	fzvtx_Ntrkl_Corr(0),
 	fzvtx_Corr(0),
 	fNtrkl_Corr(0),
+	fNtrkl_noCorr(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
+	fzvtx_V0M(0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
 	fDCAxy_Pt_LS(0),
@@ -414,7 +429,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistWeOrg(0),
         fHistWeOrgPos(0),
         fHistWeOrgNeg(0),
-        fMultEstimatorAvg(0)
+        fMultEstimatorAvg(0),
+        fweightNtrkl(0)
 {
 	// constructor
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -521,11 +537,15 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 
         fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
 	fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",400,-20.,20.,301,-0.5,300.5);
-	fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
+	fzvtx_Ntrkl_V0 = new TH2F("fzvtx_Ntrkl_V0","N tracklet vs V0 after correction; SPD Tracklets; V0",1501,-0.5,1500.5,1501,-0.5,1500.5);
+	fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",400,-20.,20.0,1501,-0.5,1500.5);
 	fzvtx_Corr = new TH1F("fzvtx_Corr","Zvertex after correction; zvtx; counts",400,-20.,20.);
-	fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",301,-0.5,300.5);
-	fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
-	fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
+	fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",1501,-0.5,1500.5);
+	fNtrkl_noCorr = new TH1F("fNtrkl_noCorr","N_{tracklet} w.o. correction; zvtx; counts",1501,-0.5,1500.5);
+	fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",1501,-0.5,1500.5,301,-0.5,300.5);
+	fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",1501,-0.5,1500.5,301,-0.5,300.5);
+
+        fzvtx_V0M = new TH2F("fzvtx_V0M","Zvertex vs V0M; zvtx; V0M",400,-20.,20.,1501,-0.5,1500.5);
 
 	fDCAxy_Pt_ele = new TH2F("fDCAxy_Pt_ele","DCA_{xy} vs Pt (electron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 	fDCAxy_Pt_had = new TH2F("fDCAxy_Pt_had","DCA_{xy} vs Pt (hadron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
@@ -683,9 +703,12 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fWh_phidiff);
 	fOutputList->Add(fzvtx_Ntrkl);
 	fOutputList->Add(fzvtx_Nch);
+	fOutputList->Add(fzvtx_Ntrkl_V0);
 	fOutputList->Add(fzvtx_Ntrkl_Corr);
 	fOutputList->Add(fzvtx_Corr);
 	fOutputList->Add(fNtrkl_Corr);
+	fOutputList->Add(fNtrkl_noCorr);
+	fOutputList->Add(fzvtx_V0M);
 	fOutputList->Add(fNchNtr);
 	fOutputList->Add(fNchNtr_Corr);
 	fOutputList->Add(fDCAxy_Pt_ele);
@@ -927,6 +950,14 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	fHist_VertexZ->Fill(Zvertex);                     // plot the pt value of the track in a histogram
 
 
+        
+	//////////////////////////////
+	// Get generated W
+	//////////////////////////////
+	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
+	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
+
+
 	//////////////////////////////
 	// Get sign of B field
 	//////////////////////////////
@@ -965,46 +996,68 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	}
 	fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
+        //------------ V0 mult ----------------------
+
+        AliAODVZERO *vzeroAOD = dynamic_cast<AliAODVZERO *>( dynamic_cast<AliAODEvent *>(fAOD)->GetVZEROData());
+        Int_t V0AMult = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
+        Int_t V0CMult = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
+        Int_t V0Mult=V0AMult+V0CMult;
+
+	fzvtx_V0M->Fill(Zvertex,V0Mult);
 
 	//-----------Tracklet correction-------------------------
 
-        if(!estimatorAvg)
+        if(!estimatorAvg || !estimatorV0Avg)
           {
             cout << "No estimatorAvg and get one " << endl;
+            cout << "type =  " << fmult_type << endl;
             TFile* fEstimator = TFile::Open(festimatorFile.Data());
-            //fEstimator = TFile::Open(festimatorFile.Data());
-	    if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
-	    if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
+            cout << " fEstimator =  " <<  fEstimator << endl;
+	    if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD,0);  // get SPD vs. Z
+	    if(!fMCarray)estimatorV0Avg = GetEstimatorHistogram(fEstimator,fAOD,1); // get V0 vs.Z
+	    if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD,fmult_type); 
+ 
+	    if(fMCarray && !NtrkWeightMC)
+	    {
+	       NtrkWeightMC = GetNtrkWeightMC(fEstimator, fmult_type);
+	    }
+
 	   }
 
 	Double_t correctednAcc   = nAcc;
+	Double_t correctedV0nAcc   = V0Mult;
+ 
 	Double_t fRefMult = Nref;
+	Double_t fRefMultV0 = NrefV0;
 	Double_t WeightNtrkl = -1.;
 	Double_t WeightZvtx = -1.;
 	//TProfile* estimatorAvg;
 	//if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD);
 	//if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD);
 
-
 	if(estimatorAvg){
-		correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
-		//correctednAcc= AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(estimatorAvg,nAcc,Zvertex,fRefMult);
+		correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));  // SPD correction
+	}
 
-	} 
+	if(estimatorV0Avg){
+		correctedV0nAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorV0Avg,V0Mult,Zvertex,fRefMultV0));  // V0 correction
+	}
+ 
+	fzvtx_Ntrkl_V0->Fill(correctednAcc,correctedV0nAcc);
 	fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
         //fEstimator->Close();
 
-	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
-	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
-
+	//if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
+	//if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
 
 	fNchNtr->Fill(correctednAcc,Nch);
 	if(fMCarray){
 		WeightZvtx = fCorrZvtx->Eval(Zvertex);
-		//WeightNtrkl = fweightNtrkl->GetBinContent(fweightNtrkl->FindBin(correctednAcc));
+		WeightNtrkl = NtrkWeightMC->GetBinContent(NtrkWeightMC->FindBin(correctednAcc));
 		fzvtx_Corr->Fill(Zvertex,WeightZvtx);
 		fNtrkl_Corr->Fill(correctednAcc,WeightNtrkl);
+		fNtrkl_noCorr->Fill(correctednAcc);
 		fNchNtr_Corr->Fill(correctednAcc,Nch,WeightNtrkl);
 		fzvtx_Nch->Fill(Zvertex,Nch,WeightZvtx);
 	}
@@ -1013,6 +1066,9 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	//////////////////////////////////
 	// Separate by multiplicity class
 	//////////////////////////////////
+
+        if(fmult_type==1) correctednAcc = correctedV0nAcc; // for V0 mult dep study
+
 	if(correctednAcc<CutMinNtr || correctednAcc > CutMaxNtr) return;
 	fNevents->Fill(7); 
 
@@ -2147,75 +2203,98 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 
 }
 //____________________________________________________________________________
-TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(TFile* fEstimator, const AliAODEvent* fAOD)
+TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(TFile* fEstimator, const AliAODEvent* fAOD, Int_t mtype)
 {
-    
+
 	//TString estimaterFile = "alien:///alice/cern.ch/user/s/ssakai/Multiplicity_pp13/estimator.root";  
 	//if(!gGrid){
 	//	TGrid::Connect("alien//");
 	//}   
 
-  Int_t runNo  = fAOD->GetRunNumber();
- 
-  //cout << "========== runNo ====" << runNo << endl;
+	Int_t runNo  = fAOD->GetRunNumber();
 
-  Char_t periodNames[100];
-  
-  if(fEMCEG1)
-    {
-	    if (runNo>=256941 && runNo<=258537) sprintf(periodNames, "SPDTrklEG1_LHC16k"); 
-	    if (runNo>=258962 && runNo<=259888) sprintf(periodNames, "SPDTrklEG1_LHC16l"); 
-	    if (runNo>=262418 && runNo<=264035) sprintf(periodNames, "SPDTrklEG1_LHC16o"); 
-	    if (runNo>=264076 && runNo<=264347) sprintf(periodNames, "SPDTrklEG1_LHC16p"); 
-	    if (runNo>=271868 && runNo<=273103) sprintf(periodNames, "SPDTrklEG1_LHC17h"); 
-	    if (runNo>=273591 && runNo<=274442) sprintf(periodNames, "SPDTrklEG1_LHC17i"); 
-	    if (runNo>=274593 && runNo<=274671) sprintf(periodNames, "SPDTrklEG1_LHC17j"); 
-	    if (runNo>=274690 && runNo<=276508) sprintf(periodNames, "SPDTrklEG1_LHC17k"); 
-	    if (runNo>=276551 && runNo<=278216) sprintf(periodNames, "SPDTrklEG1_LHC17l"); 
-	    if (runNo>=278914 && runNo<=280140) sprintf(periodNames, "SPDTrklEG1_LHC17m"); 
-	    if (runNo>=280282 && runNo<=281961) sprintf(periodNames, "SPDTrklEG1_LHC17o"); 
-	    if (runNo>=282528 && runNo<=282704) sprintf(periodNames, "SPDTrklEG1_LHC17r"); 
-	    if (runNo>=285008 && runNo<=285447) sprintf(periodNames, "SPDTrklEG1_LHC18b"); 
-	    if (runNo>=285978 && runNo<=286350) sprintf(periodNames, "SPDTrklEG1_LHC18d"); 
-	    if (runNo>=286380 && runNo<=286937) sprintf(periodNames, "SPDTrklEG1_LHC18e"); 
-	    if (runNo>=287000 && runNo<=287977) sprintf(periodNames, "SPDTrklEG1_LHC18f"); 
-	    if (runNo>=289240 && runNo<=289971) sprintf(periodNames, "SPDTrklEG1_LHC18l"); 
-	    if (runNo>=288619 && runNo<=288750) sprintf(periodNames, "SPDTrklEG1_LHC18g"); 
-	    if (runNo>=288861 && runNo<=288909) sprintf(periodNames, "SPDTrklEG1_LHC18i"); 
-	    if (runNo>=290222 && runNo<=292839) sprintf(periodNames, "SPDTrklEG1_LHC18m"); 
-	    if (runNo>=293357 && runNo<=293359) sprintf(periodNames, "SPDTrklEG1_LHC18n"); 
-	    if (runNo>=293368 && runNo<=293898) sprintf(periodNames, "SPDTrklEG1_LHC18o"); 
-	    if (runNo>=294009 && runNo<=294925) sprintf(periodNames, "SPDTrklEG1_LHC18p"); 
-    }
-  else
-    {
-	    if (runNo>=256941 && runNo<=258537) sprintf(periodNames, "SPDTrklMB_LHC16k");
-	    if (runNo>=258962 && runNo<=259888) sprintf(periodNames, "SPDTrklMB_LHC16l");
-	    if (runNo>=262418 && runNo<=264035) sprintf(periodNames, "SPDTrklMB_LHC16o");
-	    if (runNo>=264076 && runNo<=264347) sprintf(periodNames, "SPDTrklMB_LHC16p");
-	    if (runNo>=271868 && runNo<=273103) sprintf(periodNames, "SPDTrklMB_LHC17h");
-	    if (runNo>=273591 && runNo<=274442) sprintf(periodNames, "SPDTrklMB_LHC17i");
-	    if (runNo>=274593 && runNo<=274671) sprintf(periodNames, "SPDTrklMB_LHC17j");
-	    if (runNo>=274690 && runNo<=276508) sprintf(periodNames, "SPDTrklMB_LHC17k");
-	    if (runNo>=276551 && runNo<=278216) sprintf(periodNames, "SPDTrklMB_LHC17l");
-	    if (runNo>=278914 && runNo<=280140) sprintf(periodNames, "SPDTrklMB_LHC17m");
-	    if (runNo>=280282 && runNo<=281961) sprintf(periodNames, "SPDTrklMB_LHC17o");
-	    if (runNo>=282528 && runNo<=282704) sprintf(periodNames, "SPDTrklMB_LHC17r");
-	    if (runNo>=285008 && runNo<=285447) sprintf(periodNames, "SPDTrklMB_LHC18b");
-	    if (runNo>=285978 && runNo<=286350) sprintf(periodNames, "SPDTrklMB_LHC18d");
-	    if (runNo>=286380 && runNo<=286937) sprintf(periodNames, "SPDTrklMB_LHC18e");
-	    if (runNo>=287000 && runNo<=287977) sprintf(periodNames, "SPDTrklMB_LHC18f");
-	    if (runNo>=289240 && runNo<=289971) sprintf(periodNames, "SPDTrklMB_LHC18l");
-	    if (runNo>=288619 && runNo<=288750) sprintf(periodNames, "SPDTrklMB_LHC18g"); 
-	    if (runNo>=288861 && runNo<=288909) sprintf(periodNames, "SPDTrklMB_LHC18i"); 
-	    if (runNo>=290222 && runNo<=292839) sprintf(periodNames, "SPDTrklMB_LHC18m"); 
-	    if (runNo>=293357 && runNo<=293359) sprintf(periodNames, "SPDTrklMB_LHC18n"); 
-	    if (runNo>=293368 && runNo<=293898) sprintf(periodNames, "SPDTrklMB_LHC18o"); 
-	    if (runNo>=294009 && runNo<=294925) sprintf(periodNames, "SPDTrklMB_LHC18p"); 
-    }    
+	//cout << "========== runNo ====" << runNo << endl;
+
+	Char_t periodNames[100];
+
+	if(mtype==0)
+	{
+		if(fEMCEG1)
+		{
+			if (runNo>=256941 && runNo<=258537) sprintf(periodNames, "SPDTrklEG1_LHC16k"); 
+			if (runNo>=258962 && runNo<=259888) sprintf(periodNames, "SPDTrklEG1_LHC16l"); 
+			if (runNo>=262418 && runNo<=264035) sprintf(periodNames, "SPDTrklEG1_LHC16o"); 
+			if (runNo>=264076 && runNo<=264347) sprintf(periodNames, "SPDTrklEG1_LHC16p"); 
+			if (runNo>=271868 && runNo<=273103) sprintf(periodNames, "SPDTrklEG1_LHC17h"); 
+			if (runNo>=273591 && runNo<=274442) sprintf(periodNames, "SPDTrklEG1_LHC17i"); 
+			if (runNo>=274593 && runNo<=274671) sprintf(periodNames, "SPDTrklEG1_LHC17j"); 
+			if (runNo>=274690 && runNo<=276508) sprintf(periodNames, "SPDTrklEG1_LHC17k"); 
+			if (runNo>=276551 && runNo<=278216) sprintf(periodNames, "SPDTrklEG1_LHC17l"); 
+			if (runNo>=278914 && runNo<=280140) sprintf(periodNames, "SPDTrklEG1_LHC17m"); 
+			if (runNo>=280282 && runNo<=281961) sprintf(periodNames, "SPDTrklEG1_LHC17o"); 
+			if (runNo>=282528 && runNo<=282704) sprintf(periodNames, "SPDTrklEG1_LHC17r"); 
+			if (runNo>=285008 && runNo<=285447) sprintf(periodNames, "SPDTrklEG1_LHC18b"); 
+			if (runNo>=285978 && runNo<=286350) sprintf(periodNames, "SPDTrklEG1_LHC18d"); 
+			if (runNo>=286380 && runNo<=286937) sprintf(periodNames, "SPDTrklEG1_LHC18e"); 
+			if (runNo>=287000 && runNo<=287977) sprintf(periodNames, "SPDTrklEG1_LHC18f"); 
+			if (runNo>=289240 && runNo<=289971) sprintf(periodNames, "SPDTrklEG1_LHC18l"); 
+			if (runNo>=288619 && runNo<=288750) sprintf(periodNames, "SPDTrklEG1_LHC18g"); 
+			if (runNo>=288861 && runNo<=288909) sprintf(periodNames, "SPDTrklEG1_LHC18i"); 
+			if (runNo>=290222 && runNo<=292839) sprintf(periodNames, "SPDTrklEG1_LHC18m"); 
+			if (runNo>=293357 && runNo<=293359) sprintf(periodNames, "SPDTrklEG1_LHC18n"); 
+			if (runNo>=293368 && runNo<=293898) sprintf(periodNames, "SPDTrklEG1_LHC18o"); 
+			if (runNo>=294009 && runNo<=294925) sprintf(periodNames, "SPDTrklEG1_LHC18p"); 
+		}
+		else
+		{
+			if (runNo>=256941 && runNo<=258537) sprintf(periodNames, "SPDTrklMB_LHC16k");
+			if (runNo>=258962 && runNo<=259888) sprintf(periodNames, "SPDTrklMB_LHC16l");
+			if (runNo>=262418 && runNo<=264035) sprintf(periodNames, "SPDTrklMB_LHC16o");
+			if (runNo>=264076 && runNo<=264347) sprintf(periodNames, "SPDTrklMB_LHC16p");
+			if (runNo>=271868 && runNo<=273103) sprintf(periodNames, "SPDTrklMB_LHC17h");
+			if (runNo>=273591 && runNo<=274442) sprintf(periodNames, "SPDTrklMB_LHC17i");
+			if (runNo>=274593 && runNo<=274671) sprintf(periodNames, "SPDTrklMB_LHC17j");
+			if (runNo>=274690 && runNo<=276508) sprintf(periodNames, "SPDTrklMB_LHC17k");
+			if (runNo>=276551 && runNo<=278216) sprintf(periodNames, "SPDTrklMB_LHC17l");
+			if (runNo>=278914 && runNo<=280140) sprintf(periodNames, "SPDTrklMB_LHC17m");
+			if (runNo>=280282 && runNo<=281961) sprintf(periodNames, "SPDTrklMB_LHC17o");
+			if (runNo>=282528 && runNo<=282704) sprintf(periodNames, "SPDTrklMB_LHC17r");
+			if (runNo>=285008 && runNo<=285447) sprintf(periodNames, "SPDTrklMB_LHC18b");
+			if (runNo>=285978 && runNo<=286350) sprintf(periodNames, "SPDTrklMB_LHC18d");
+			if (runNo>=286380 && runNo<=286937) sprintf(periodNames, "SPDTrklMB_LHC18e");
+			if (runNo>=287000 && runNo<=287977) sprintf(periodNames, "SPDTrklMB_LHC18f");
+			if (runNo>=289240 && runNo<=289971) sprintf(periodNames, "SPDTrklMB_LHC18l");
+			if (runNo>=288619 && runNo<=288750) sprintf(periodNames, "SPDTrklMB_LHC18g"); 
+			if (runNo>=288861 && runNo<=288909) sprintf(periodNames, "SPDTrklMB_LHC18i"); 
+			if (runNo>=290222 && runNo<=292839) sprintf(periodNames, "SPDTrklMB_LHC18m"); 
+			if (runNo>=293357 && runNo<=293359) sprintf(periodNames, "SPDTrklMB_LHC18n"); 
+			if (runNo>=293368 && runNo<=293898) sprintf(periodNames, "SPDTrklMB_LHC18o"); 
+			if (runNo>=294009 && runNo<=294925) sprintf(periodNames, "SPDTrklMB_LHC18p"); 
+		}    
+	}  // SPD estimator
+	else
+	{
+		if(fEMCEG1)
+		{
+			if (runNo>=256941 && runNo<=264347) sprintf(periodNames, "V0TrklEG1_LHC16");
+			if (runNo>=271868 && runNo<=282704) sprintf(periodNames, "V0TrklEG1_LHC17");
+			if (runNo>=285008 && runNo<=294925) sprintf(periodNames, "V0TrklEG1_LHC18");
+		}
+		else
+		{
+			if (runNo>=256941 && runNo<=264347) sprintf(periodNames, "V0TrklMB_LHC16");
+			if (runNo>=271868 && runNo<=282704) sprintf(periodNames, "V0TrklMB_LHC17");
+			if (runNo>=285008 && runNo<=294925) sprintf(periodNames, "V0TrklMB_LHC18");
+
+		}
+
+	} // V0 estimator
+
+
 
   //TFile* fEstimator = TFile::Open("alien:///alice/cern.ch/user/s/ssakai/Multiplicity_pp13/estimator.root");
   //cout << "runNo = " << runNo << " ; " << periodNames << " ; " << festimatorFile.Data() << endl;
+  cout << "<------------------ estimator name = "<< periodNames  << endl;
 
   //TFile* fEstimator = TFile::Open(festimatorFile.Data());
 
@@ -2234,22 +2313,76 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(TFile* fEstimator, con
   return fMultEstimatorAvg;
 }
 //____________________________________________________________________________
-TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(TFile* fEstimator, const AliAODEvent* fAOD)
+TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(TFile* fEstimator, const AliAODEvent* fAOD, Int_t mtype)
 {
     
+  cout << "getting file for mtype ;" << mtype << endl; 
+
   Int_t runNo  = fAOD->GetRunNumber();
    
-  Char_t *periodNames;
+  Char_t periodNames[100];
+ 
+  if(mtype==0)
+  {
+	  if (runNo>=256941 && runNo<=264347) sprintf(periodNames, "SPDTrklMC_LHC16");  //LHC16
+	  if (runNo>=270581 && runNo<=282704) sprintf(periodNames, "SPDTrklMC_LHC17"); //LHC17
+	  if (runNo>=285009 && runNo<=294925) sprintf(periodNames, "SPDTrklMC_LHC18"); //LHC18
+  } 
+  else
+  {
+	  if (runNo>=256941 && runNo<=264347) sprintf(periodNames, "V0TrklMC_LHC16");  //LHC16
+	  if (runNo>=270581 && runNo<=282704) sprintf(periodNames, "V0TrklMC_LHC17"); //LHC17
+	  if (runNo>=285009 && runNo<=294925) sprintf(periodNames, "V0TrklMC_LHC18"); //LHC18
+  } 
 
-  if (runNo>=256504 && runNo<=258537) periodNames = "SPDTrklMC_LHC16k";  //LHC16k
-  if (runNo>=258919 && runNo<=259888) periodNames = "SPDTrklMC_LHC16l"; //LHC16l
-  if (runNo>=259888) periodNames = "SPDTrklMC_LHC17"; //LHC17
-    
+
+  cout << "<------------------ estimator name = "<< periodNames  << endl;
+
   //TFile* fEstimator = TFile::Open(festimatorFile.Data());
-  fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames))->Clone(periodNames);
+  //fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames))->Clone(periodNames);
     
+  if(!fEstimator){
+	AliFatal("File with estimator not found!");
+	}
+
+  cout << "fEstimator = " << fEstimator << endl;
+
+  if(!fEstimator->Get(periodNames))cout << "no estimator !" << endl;
+
+  fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames));
+
+  if(!fMultEstimatorAvg){
+	AliFatal("fMultEstimatorAvg not found!");
+	}
+
+
   return fMultEstimatorAvg;
 }
+//____________________________________________________________________________
+TH1D* AliAnalysisTaskCaloHFEpp::GetNtrkWeightMC(TFile* fEstimator, Int_t mtype)
+{
+    
+  if(!fEstimator){
+	AliFatal("File with estimator not found!");
+	}
+
+  if(mtype==0) 
+    {
+     fweightNtrkl = (TProfile*)(fEstimator->Get("weightNtrkl"));
+    }
+   else
+    {
+     fweightNtrkl = (TProfile*)(fEstimator->Get("weightV0"));
+    }
+  
+
+  if(!fMultEstimatorAvg){
+	AliFatal("fMultEstimatorAvg not found!");
+	}
+
+  return fweightNtrkl;
+}
+
  //____________________________________________________________________________
 Double_t AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult)
 {

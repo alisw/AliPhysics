@@ -1,6 +1,9 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572 by A. Bilandzic et al.)
+A part of <AliGFW.cxx/h>
+A container to store Q vectors for one subevent with an extra layer to recursively calculate particle correlations.
+If used, modified, or distributed, please aknowledge the author of this code.
 */
 #ifndef ALIGFWCUMULANT__H
 #define ALIGFWCUMULANT__H
