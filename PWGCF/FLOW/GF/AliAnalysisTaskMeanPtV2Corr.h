@@ -56,33 +56,20 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
   Bool_t CheckTrigger(Double_t);
   Bool_t AcceptAOD(AliAODEvent*, Double_t lvtxXYZ[3]);
-  Bool_t AcceptParticle(AliVParticle*);
   void SetTriggerType(UInt_t newval) {fTriggerType = newval; };
   void SetEventCutFlag(Int_t newval) { fEventCutFlag = newval; };
   void FillWeights(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void FillWeightsMC(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void FillMeanPtCounter(Double_t l_pt, Double_t &l_sum, Double_t &l_count, AliGFWWeights *inWeight); //passing by ref., considering how ofter this is called
-  void FillMeanPtCounterWW(const Double_t &l_pt, Double_t &l_sum, Double_t &l_count, const Double_t &inWeight); //passing by ref., considering how ofter this is called
-  void FillMeanPt(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void FillMeanPtMC(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void FillCK(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void ProduceFBSpectra(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void ProduceEfficiencies(AliESDEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void MCClosure_MeanPt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void CovSkipMpt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void QAOnly(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
   void LoadWeightAndMPT();
   void GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf="");
-  Bool_t WithinSigma(Double_t SigmaCut, AliAODTrack *inTrack, AliPID::EParticleType partType);
   void FillWPCounter(Double_t[5], Double_t, Double_t);
-  void CalculateMptValues(Double_t[4], Double_t[5]);
   Bool_t LoadMyWeights(const Int_t &lRunNo = 0);
   Int_t GetBayesPIDIndex(AliVTrack*);
-  Double_t GetMyWeight(Double_t eta, Double_t phi, Int_t pidind);
-  void ChangeMptSet(Bool_t newval) {fmptSet = newval; };
   Int_t GetPIDIndex(const Int_t &pdgcode);
   void SetDisablePID(Bool_t newval) { fDisablePID = newval; };
   void SetPtBins(Int_t nBins, Double_t *ptbins);
@@ -99,7 +86,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetConsistencyFlag(UInt_t newval) { fConsistencyFlag = newval; };
   void SetCentralityEstimator(TString newval) { if(fCentEst) delete fCentEst; fCentEst = new TString(newval); };
-  void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); if(!fContSubfix->IsNull()) fContSubfix->Prepend("_"); };
+  void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); };
   void OverrideMCFlag(Bool_t newval) { fIsMC = newval; };
   Int_t GetNtotTracks(AliAODEvent*, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
   void SetUseRecoNchForMC(Bool_t newval) { fUseRecoNchForMC = newval; };
@@ -144,10 +131,6 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
   TList *fQAList; //
-  TList *fMPTList; //!
-  TList *fMPTListMC; //!
-  TProfile **fmPT; //!
-  TProfile *fMptClosure; //!
   TH1D *fMultiDist;
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
@@ -156,17 +139,13 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TProfile *fNchInBins;
   TList *fptVarList;
   AliCkContainer *fCkCont;
-  AliProfileBS **fptvar; //!
   TList *fCovList;
   TList *fV2dPtList;
   AliProfileBS **fCovariance; //!
-  Bool_t fmptSet;
   UInt_t fTriggerType;
   TList *fWeightList; //!
   AliGFWWeights **fWeights;//! This should be stored in TList
   TString fWeightSubfix;
-  TList *fNUAList; //!
-  TH2D **fNUAHist; //!
   Int_t fRunNo; //!
   AliGFWCuts *fGFWSelection;
   AliGFWCuts *fGFWNtotSelection;
