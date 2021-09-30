@@ -1277,7 +1277,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     fTPCclusterStudies = new TObjArray*[arrNumbers];
     const Int_t histNumbers = 3;
     
-    constexpr const Int_t nBinsY[histNumbers+1] = {8, 4, 11, 15};
+    constexpr Int_t nBinsY[histNumbers+1] = {8, 4, 11, 15};
     Float_t twopi = 2.0 * TMath::Pi();
     
     Double_t binsPrime[nBinsPrime+1];
