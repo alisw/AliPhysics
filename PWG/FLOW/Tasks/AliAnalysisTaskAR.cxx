@@ -33,7 +33,6 @@
 #include "AliVEvent.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
-#include <RtypesCore.h>
 #include <TColor.h>
 #include <TFile.h>
 #include <TH1.h>

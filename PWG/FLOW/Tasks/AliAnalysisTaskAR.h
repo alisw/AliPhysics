@@ -22,8 +22,6 @@
 #include "AliVEvent.h"
 #include "AliVParticle.h"
 #include <Riostream.h>
-#include <RtypesCore.h>
-#include <TArrayI.h>
 #include <TComplex.h>
 #include <TDataType.h>
 #include <TExMap.h>
@@ -631,7 +629,7 @@ private:
   std::vector<std::vector<Int_t>> fCorrelators;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 12);
+  ClassDef(AliAnalysisTaskAR, 13);
 };
 
 #endif
