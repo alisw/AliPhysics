@@ -675,6 +675,18 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     if ( kAnaCutsString.Contains("DistToBadOff") )
       ana->SetMinDistanceToBadChannel(0, 4, 6);
 
+    if ( kAnaCutsString.Contains("ExoCut") )
+    {
+      if ( kAnaCutsString.Contains("ExoCut0.97") ) ana->SetExoCut(0.97);
+      if ( kAnaCutsString.Contains("ExoCut0.96") ) ana->SetExoCut(0.96);
+      if ( kAnaCutsString.Contains("ExoCut0.95") ) ana->SetExoCut(0.95);
+      if ( kAnaCutsString.Contains("ExoCut0.94") ) ana->SetExoCut(0.94);
+      if ( kAnaCutsString.Contains("ExoCut0.93") ) ana->SetExoCut(0.93);
+      if ( kAnaCutsString.Contains("ExoCut0.92") ) ana->SetExoCut(0.92);
+      if ( kAnaCutsString.Contains("ExoCut0.90") ) ana->SetExoCut(0.90);
+      printf("ConfigurePhotonAnalysis() >>> EXO CUT %f\n", ana->GetExoCut());
+    }
+
     // NLM cut, used in all, exclude clusters with more than 2 maxima
     // Not needed if M02 cut is already strong or clusterizer V2
     ana->SetNLMCut(1, 2) ;
@@ -2180,6 +2192,9 @@ void ConfigureCaloTrackCorrAnalysis
 
   if ( analysisString.Contains("DistToBadOff") )
     kAnaCaloTrackCorr+= "_DistToBadOff";
+
+  if ( analysisString.Contains("ExoCut") )
+    kAnaCaloTrackCorr+= "_ExoCut";
 
   if ( analysisString.Contains("Isolation") )
   {
