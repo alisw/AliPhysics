@@ -417,7 +417,7 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
     // Here response matrix calculation.
     if(fIsMC) {
 #if !defined(__CINT__) && !defined(__MAKECINT__)
-        fana->CalculateResponse(fanaMC,fhistosDetMC);
+        fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iAcc,AliJCDijetAna::iAcc);
 #endif
     }
 

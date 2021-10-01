@@ -12,34 +12,33 @@
 
 // used in local and grid execution
 
-#ifndef ALIJCDIJETANA_H
-#define ALIJCDIJETANA_H
+#ifndef ALIJEMCALDIJETANA_H
+#define ALIJEMCALDIJETANA_H
 
 #include <TH1D.h>
 #include <TClonesArray.h>
 #include "AliJBaseTrack.h"
-#include "AliJCDijetHistos.h"
 #include "TRandom3.h"
+#include "THistManager.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
 // Fastjet includes
 #include "FJ_includes.h"
 
-class AliJCDijetHistos;
-
-class AliJCDijetAna : public TObject
+class AliJEmcalDijetAna : public AliAnalysisTaskSE
 {
     public:
-        AliJCDijetAna(); // Default contructor
-        virtual ~AliJCDijetAna(); // Destructor
-        AliJCDijetAna(const AliJCDijetAna& obj); // Copy constructor
-        AliJCDijetAna& operator=(const AliJCDijetAna& obj); // Equal sign operator
+        AliJEmcalDijetAna(); // Default contructor
+        virtual ~AliJEmcalDijetAna(); // Destructor
+        AliJEmcalDijetAna(const AliJEmcalDijetAna& obj); // Copy constructor
+        AliJEmcalDijetAna& operator=(const AliJEmcalDijetAna& obj); // Equal sign operator
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         vector<vector<fastjet::PseudoJet>> GetJets() { return jets; }
         vector<vector<vector<fastjet::PseudoJet>>> GetDijets() { return dijets; }
         bool HasDijet() { return bHasDijet; }
         bool HasDeltaPhiDijet() { return bHasDeltaPhiDijet; }
-        void InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBins);
+        void InitHistos(bool bIsMC);
 
         void SetSettings(int    lDebug,
                          double lParticleEtaCut,
@@ -58,22 +57,32 @@ class AliJCDijetAna : public TObject
                          double lmatchingR,
                          double ltrackingIneff);
 
-        int CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin);
+        int CalculateJets(TClonesArray *inList, int lCBin);
         void SetJets(vector<fastjet::PseudoJet> jetsOutside);
         void SetPtHardBin(double flptHardBin) {fptHardBin = flptHardBin; }
-        void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin);
-        void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos, int iJetSetPart, int iJetSetDet);
+        void SetParticleCollArray(TObjArray arr) {fParticleCollArray = arr; }
+        void SetCentBins(int ncents) {fNcentBins = ncents; }
+        void FillJetsDijets(int lCBin);
+        void CalculateResponse(AliJEmcalDijetAna *anaDetMC, int iJetSetPart, int iJetSetDet);
         void ResetObjects();
         double DeltaR(fastjet::PseudoJet jet1, fastjet::PseudoJet jet2);
         double DeltaR(double eta1, double eta2, double phi1, double phi2);
         bool CheckDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet, double deltaPhiCut);
         double GetDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet);
+        //void SetBinning(TH1F *h) {hBinning=h;}
+        //void SetBinningALICE(TH1F *h) {hBinningALICE=h;}
+        //void SetHistGroupName(TString groupname) { fGroupname = groupname; }
 
         enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, jetClassesSize};
 #endif
 
+    protected:
+        void AllocateTrackHistograms();
+        THistManager fhistos ;///< Histogram manager
+
     private:
         int fDebug;
+        int fNcentBins;
         double fParticleEtaCut;
         double fParticlePtCut;
         bool fusePionMass;
@@ -108,6 +117,12 @@ class AliJCDijetAna : public TObject
         double randConeEta;
         double randConePt;
         double fDeltaM;
+        //TH1F *hBinning;
+        //TH1F *hBinningALICE;
+        TString fGroupname;
+        TString fHistname;
+        TObjArray fParticleCollArray;
+        AliEmcalList *fOutput;                     //!<!output list
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         vector<fastjet::PseudoJet> chparticles;
@@ -142,7 +157,7 @@ class AliJCDijetAna : public TObject
         unique_ptr<fastjet::ClusterSequenceArea> cs_bge;
 #endif
 
-        ClassDef(AliJCDijetAna, 1); // ClassDef needed if inheriting from TObject
+        ClassDef(AliJEmcalDijetAna, 1); // ClassDef needed if inheriting from TObject
 
 };
 
