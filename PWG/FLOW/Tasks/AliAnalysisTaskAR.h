@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 13.09.2021
+ * Last Modified Date: 30.09.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -16,9 +16,11 @@
 #define ALIANALYSISTASKAR_H
 
 #include "AliAODEvent.h"
+#include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliVEvent.h"
+#include "AliVParticle.h"
 #include <Riostream.h>
 #include <TComplex.h>
 #include <TDataType.h>
@@ -27,6 +29,7 @@
 #include <TFile.h>
 #include <TH1D.h>
 #include <TH2D.h>
+#include <THnSparse.h>
 #include <TProfile.h>
 #include <TRandom3.h>
 #include <TString.h>
@@ -70,6 +73,9 @@ enum kTrack {
   kETA,
   kCHARGE,
   kTPCNCLS,
+  kTPCCROSSEDROWS,
+  kTPCNCLSFRACTIONSHARED,
+  kTPCCHI2PERNDF,
   kITSNCLS,
   kCHI2PERNDF,
   kDCAZ,
@@ -79,8 +85,6 @@ enum kTrack {
 // kinematic variables
 const Int_t kKinematic = kETA + 1;
 // various gloabl objects
-enum kFinalHist { kPHIAVG, LAST_EFINALHIST };
-enum kFinalProfile { kHARDATA, kHARDATARESET, kHARTHEO, LAST_EFINALPROFILE };
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
 enum kName { kNAME, kTITLE, kXAXIS, kYAXIS, LAST_ENAME };
 enum kMinMax { kMIN, kMAX, LAST_EMINMAX };
@@ -90,6 +94,7 @@ const TString kBAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
 const Color_t kFillColor[LAST_EBEFOREAFTER] = {kRed - 10, kGreen - 10};
 enum kMode { kRECO, kSIM, LAST_EMODE };
 const TString kModeName[LAST_EMODE] = {"[kRECO]", "[kSIM]"};
+enum kMCPrimaryDef { kMCPrim, kMCPhysicalPrim };
 
 class AliAnalysisTaskAR : public AliAnalysisTaskSE {
 public:
@@ -109,7 +114,6 @@ public:
   virtual void InitializeArraysForWeights();
   virtual void InitializeArraysForQvectors();
   virtual void InitializeArraysForFinalResultHistograms();
-  virtual void InitializeArraysForFinalResultProfiles();
   virtual void InitializeArraysForMCAnalysis();
 
   // methods called in UserCreateOutputObjects()
@@ -118,27 +122,21 @@ public:
   virtual void BookControlHistograms();
   virtual void BookFinalResultHistograms();
   virtual void BookFinalResultProfiles();
-  virtual void BookMCOnTheFlyObjects();
 
   // functions called in UserExec()
-  virtual void MCOnTheFlyExec();
-  virtual void FillEventQAHistograms(kBeforeAfter BA, AliVEvent *event);
+  virtual void FillEventQAHistograms(kBeforeAfter BA, AliAODEvent *AODEvent,
+                                     AliMCEvent *MCEvent);
   virtual void FillFBScanQAHistograms(AliAODTrack *track);
-  virtual void FillEventControlHistograms(kBeforeAfter BA, AliVEvent *event);
-  virtual void FillTrackControlHistograms(kBeforeAfter BA, AliVParticle *avp);
-  virtual void FillFinalResultProfile(kFinalProfile fp);
-  virtual Bool_t SurviveEventCut(AliVEvent *ave);
+  virtual void FillEventControlHistograms(kBeforeAfter BA, AliVEvent *Event);
+  virtual void FillTrackControlHistograms(kBeforeAfter BA, AliVParticle *track);
+  virtual void FillFinalResultProfile();
+  virtual Bool_t SurviveEventCut(AliAODEvent *aAOD);
   virtual Bool_t SurviveTrackCut(AliVParticle *aTrack, Bool_t FillCounter);
   virtual void FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC);
   virtual void ClearVectors();
-  virtual void FillTrackObjects(AliAODTrack *track);
+  virtual void FillTrackObjects(AliVParticle *avp);
   virtual void AggregateWeights();
-  virtual void ResetWeights();
   virtual Int_t IndexCorHistograms(Int_t i, Int_t j, Int_t N);
-
-  // methods called in MCOnTheFlyExec()
-  virtual void MCPdfSymmetryPlanesSetup();
-  virtual Int_t GetMCNumberOfParticlesPerEvent();
 
   // methods for computing qvectors
   void CalculateQvectors();
@@ -152,27 +150,70 @@ public:
   TComplex TwoNestedLoops(Int_t n1, Int_t n2);
   TComplex ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3);
   TComplex FourNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4);
-  // TComplex FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
-  // TComplex SixNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5,
-  // Int_t n6);
-  Double_t CombinatorialWeight(Int_t n);
+  TComplex FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
+  TComplex SixNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5,
+                          Int_t n6);
 
   // GetPointers Methods in case we need to manually trigger Terminate()
   virtual void GetPointers(TList *list);
   virtual void GetPointersForQAHistograms();
   virtual void GetPointersForControlHistograms();
-  virtual void GetPointersForFinalResultHistograms();
-  virtual void GetPointersForFinalResultProfiles();
+  virtual void GetPointersForFinalResults();
 
   // setters and getters for list objects
+  TList *GetCenCorQAHistogramList() const { return fCenCorQAHistogramsList; }
+  TObject *GetCenCorQAHistogram(kBeforeAfter ba, kCenEstimators cen1,
+                                kCenEstimators cen2) {
+    return fCenCorQAHistogramsList->FindObject(
+        fCenCorQAHistogramNames[IndexCorHistograms(
+            cen1, cen2, LAST_ECENESTIMATORS)][ba][0]);
+  }
+  TList *GetMulCorQAHistogramList() const { return fMulCorQAHistogramsList; }
+  TObject *GetMulCorQAHistogram(kBeforeAfter ba, Int_t mul1, Int_t mul2) {
+    return fMulCorQAHistogramsList->FindObject(
+        fMulCorQAHistogramNames[IndexCorHistograms(mul1, mul2, kMulEstimators)]
+                               [ba][0]);
+  }
+  TList *GetSelfCorQAHistogramList() const { return fSelfCorQAHistogramsList; }
   void SetControlHistogramsList(TList *const chl) {
     this->fControlHistogramsList = chl;
   };
   TList *GetControlHistogramsList() const {
     return this->fControlHistogramsList;
   }
+  TObject *GetEventControlHistogram(kMode mode, kEvent event,
+                                    kBeforeAfter ba) const {
+    return fEventControlHistogramsList->FindObject(
+        fEventControlHistogramNames[mode][event][ba][0]);
+  }
+  TObject *GetTrackControlHistogram(kMode mode, kTrack track,
+                                    kBeforeAfter ba) const {
+    return fTrackControlHistogramsList->FindObject(
+        fTrackControlHistogramNames[mode][track][ba][0]);
+  }
   void SetFinalResultsList(TList *const frl) { this->fFinalResultsList = frl; };
   TList *GetFinalResultsList() const { return this->fFinalResultsList; }
+
+  void SetFinalResultHistogramsList(TList *const frl) {
+    this->fFinalResultHistogramsList = frl;
+  };
+  TList *GetFinalResultHistogramssList() const {
+    return this->fFinalResultHistogramsList;
+  }
+  void SetFinalResultProfilesList(TList *const frl) {
+    this->fFinalResultProfilesList = frl;
+  };
+  TList *GetFinalResultProfilesList() const {
+    return this->fFinalResultProfilesList;
+  }
+  void GetCorrelatorValues(std::vector<Double_t> *cor) {
+    cor->clear();
+    TList *list;
+    for (auto List : *fFinalResultProfilesList) {
+      list = dynamic_cast<TList *>(List);
+      cor->push_back(dynamic_cast<TProfile *>(list->At(0))->GetBinContent(1));
+    }
+  }
 
   // setters for QA histograms
   void SetFillQAHistograms(Bool_t option) { fFillQAHistograms = option; }
@@ -296,6 +337,9 @@ public:
     this->fTrackCuts[Track][kMAX] = max;
     this->fUseTrackCuts[Track] = kTRUE;
   }
+  void SetTrackCuts(kTrack Track, Bool_t option) {
+    this->fUseTrackCuts[Track] = option;
+  }
   // generic setter for event cuts
   void SetEventCuts(kEvent Event, Double_t min, Double_t max) {
     if (Event >= LAST_EEVENT) {
@@ -311,17 +355,22 @@ public:
     this->fEventCuts[Event][kMAX] = max;
     this->fUseEventCuts[Event] = kTRUE;
   }
+  void SetEventCuts(kEvent Event, Bool_t option) {
+    this->fUseEventCuts[Event] = option;
+  }
   void SetCenCorCut(Double_t m, Double_t t) {
     this->fCenCorCut[0] = m;
     this->fCenCorCut[1] = t;
     this->fUseCenCorCuts = kTRUE;
   }
+  void SetCenCorCut(Bool_t option) { this->fUseCenCorCuts = option; }
   // setter for multiplicity correlation cut
   void SetMulCorCut(Double_t m, Double_t t) {
     this->fMulCorCut[0] = m;
     this->fMulCorCut[1] = t;
     this->fUseMulCorCuts = kTRUE;
   }
+  void SetMulCorCut(Bool_t option) { this->fUseMulCorCuts = option; }
   // filterbit
   // depends strongly on the data set
   // typical choices are 1,128,256,768
@@ -333,6 +382,9 @@ public:
   void SetChargedOnlyCut(Bool_t option) { this->fChargedOnly = option; }
   // cut all non-primary particles away
   void SetPrimaryOnlyCut(Bool_t option) { this->fPrimaryOnly = option; }
+  void SetPrimaryDefinitionInMC(kMCPrimaryDef def) {
+    this->fMCPrimaryDef = def;
+  }
   // cut all non-global track away
   void SetGlobalTracksOnlyCut(Bool_t option) {
     this->fGlobalTracksOnly = option;
@@ -349,51 +401,21 @@ public:
   };
   void SetCenFlattenHist(const char *Filename, const char *Histname);
 
-  // setters for MC on the fly analysis
-  void SetMCOnTheFly(Bool_t option) { this->fMCOnTheFly = option; }
+  // setters for MC on the fly/closure analysis
   void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
-  void SetUseWeights(kTrack kinematic, Bool_t option) {
-    if (kinematic >= kKinematic) {
-      std::cout << __LINE__ << ": Out of range" << std::endl;
-      Fatal("SetUseWeights", "Out of range");
-    }
-    this->fUseWeights[kinematic] = option;
-  }
-  // reset weights and redo the analysis
-  void SetResetWeights(kTrack kinematic, Bool_t option) {
-    if (kinematic >= kKinematic) {
-      std::cout << __LINE__ << ": Out of range" << std::endl;
-      Fatal("SetResetWeights", "Out of range");
-    }
-    this->fResetWeights[kinematic] = option;
-  }
-  void SetUseCustomSeed(const UInt_t seed) {
+  void SetMCOnTheFly(Bool_t option) { this->fMCOnTheFly = option; }
+  void SetCustomSeed(const UInt_t seed) {
     this->fSeed = seed;
     this->fUseCustomSeed = kTRUE;
   }
-  // set flow harmonics for pdf
-  void SetMCFlowHarmonics(std::vector<Double_t> FlowHarmonics) {
-    if (FlowHarmonics.size() >= kMaxHarmonic) {
-      std::cout << __LINE__ << ": Vector exceeds maximum allowed harmonic"
-                << std::endl;
-      Fatal("SetFlowHarmonics", "Too many harmonics");
+  void SetMCMultiplicityPdf(TF1 *pdf) { this->fMCMultiplicity = pdf; }
+  void SetMCKinematicPdf(Int_t kinematic, TF1 *pdf) {
+    if (kinematic >= kKinematic) {
+      std::cout << __LINE__ << ": Out of range" << std::endl;
+      Fatal("SetMCKinematicPdf", "Out of range");
     }
-    fMCFlowHarmonics = FlowHarmonics;
+    this->fMCKinematicPDFs[kinematic] = pdf;
   }
-  void SetMCPdfRange(Double_t min, Double_t max) {
-    fMCPdfRange[kMIN] = min;
-    fMCPdfRange[kMAX] = max;
-  }
-  void SetMCNumberOfParticlesPerEvent(Int_t n) {
-    fMCNumberOfParticlesPerEvent = n;
-  }
-  void SetMCNumberOfParticlesPerEventRange(Int_t min, Int_t max) {
-    fMCNumberOfParticlesPerEventFluctuations = kTRUE;
-    fMCNumberOfParticlesPerEventRange[kMIN] = min;
-    fMCNumberOfParticlesPerEventRange[kMAX] = max;
-  }
-
-  // setters for acceptance and weight histograms for monte carlo closure
   void SetAcceptanceHistogram(kTrack kinematic, TH1D *AcceptanceHistogram) {
     if (!AcceptanceHistogram) {
       std::cout << __LINE__ << ": Did not get acceptance histogram"
@@ -408,6 +430,15 @@ public:
   }
   void SetAcceptanceHistogram(kTrack kinematic, const char *Filename,
                               const char *Histname);
+
+  // setters for weight histograms
+  void SetUseWeights(kTrack kinematic, Bool_t option) {
+    if (kinematic >= kKinematic) {
+      std::cout << __LINE__ << ": Out of range" << std::endl;
+      Fatal("SetUseWeights", "Out of range");
+    }
+    this->fUseWeights[kinematic] = option;
+  }
   void SetWeightHistogram(kTrack kinematic, TH1D *WeightHistogram) {
     if (!WeightHistogram) {
       std::cout << __LINE__ << ": Did not get weight histogram" << std::endl;
@@ -426,11 +457,20 @@ public:
   // set correlators to be computed
   void SetCorrelators(std::vector<std::vector<Int_t>> correlators) {
     this->fCorrelators = correlators;
-    for (int i = 0; i < LAST_EFINALPROFILE; ++i) {
-      fFinalResultProfileBins[i][kBIN] = fCorrelators.size();
-      fFinalResultProfileBins[i][kLEDGE] = 0;
-      fFinalResultProfileBins[i][kUEDGE] = fCorrelators.size();
-    }
+  }
+
+  // use nested loops for computation of correlators
+  void SetUseNestedLoops(Bool_t option) { this->fUseNestedLoops = option; }
+
+  // use fischer-yates for indices randomization
+  void SetFisherYates(Bool_t option) { this->fUseFisherYates = option; }
+  // use a fixed multiplicity
+  void SetFixedMultiplicity(Int_t FixedMultiplicity) {
+    this->fUseFixedMultplicity = kTRUE;
+    this->fFixedMultiplicy = FixedMultiplicity;
+  }
+  void SetUseFixedMultiplicity(Bool_t option) {
+    this->fUseFixedMultplicity = option;
   }
 
 private:
@@ -510,12 +550,18 @@ private:
   Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
   Bool_t fUseTrackCuts[LAST_ETRACK];
   TH1D *fTrackCutsCounter[LAST_EMODE];
+  TString fTrackCutsCounterCumulativeName;
+  THnSparseD *fTrackCutsCounterCumulative;
+  TString fTrackCutsValuesName;
   TH1D *fTrackCutsValues;
   TString fTrackCutsCounterNames[LAST_EMODE];
   TString fTrackCutsCounterBinNames[LAST_ETRACK][LAST_EMINMAX];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
   Bool_t fUseEventCuts[LAST_EEVENT];
   TH1D *fEventCutsCounter[LAST_EMODE];
+  TString fEventCutsCounterCumulativeName;
+  THnSparseD *fEventCutsCounterCumulative;
+  TString fEventCutsValuesName;
   TH1D *fEventCutsValues;
   TString fEventCutsCounterNames[LAST_EMODE];
   TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
@@ -523,6 +569,7 @@ private:
   Bool_t fUseFilterbit;
   Bool_t fChargedOnly;
   Bool_t fPrimaryOnly;
+  kMCPrimaryDef fMCPrimaryDef;
   Bool_t fGlobalTracksOnly;
   kCenEstimators fCentralityEstimator;
   Double_t fCenCorCut[2];
@@ -536,47 +583,53 @@ private:
   TList *fFinalResultsList;
   TString fFinalResultsListName;
   // array holding final result histograms
-  TH1D *fFinalResultHistograms[LAST_EFINALHIST];
-  TString fFinalResultHistogramNames[LAST_EFINALHIST][LAST_ENAME];
-  Double_t fFinalResultHistogramBins[LAST_EFINALHIST][LAST_EBINS];
-  // array holding final result profiles
-  TProfile *fFinalResultProfiles[LAST_EFINALPROFILE];
-  TString fFinalResultProfileNames[LAST_EFINALPROFILE][LAST_ENAME];
-  Double_t fFinalResultProfileBins[LAST_EFINALPROFILE][LAST_EBINS];
+  TList *fFinalResultHistogramsList;
+  TString fFinalResultHistogramsListName;
+  TH1D *fFinalResultHistograms[kKinematic];
+  TString fFinalResultHistogramNames[kKinematic][LAST_ENAME];
+  Double_t fFinalResultHistogramBins[kKinematic][LAST_EBINS];
+  // final result profiles
+  // will be generated by CreateUserObjects depending on the correlators we have
+  TList *fFinalResultProfilesList;
+  TString fFinalResultProfilesListName;
   // only fill control histograms
   Bool_t fFillControlHistogramsOnly;
+  Bool_t fUseNestedLoops;
 
-  // Monte Carlo on the fly/closure
+  // Seed for RNG
+  Bool_t fUseCustomSeed;
+  UInt_t fSeed;
+
+  // Monte Carlo on the fly/Closure
   Bool_t fMCOnTheFly;
   Bool_t fMCClosure;
-  UInt_t fSeed;
-  Bool_t fUseCustomSeed;
-  TF1 *fMCPdf;
-  TString fMCPdfName;
-  Double_t fMCPdfRange[LAST_EMINMAX];
-  std::vector<Double_t> fMCFlowHarmonics;
-  Bool_t fMCNumberOfParticlesPerEventFluctuations;
-  Int_t fMCNumberOfParticlesPerEvent;
-  Int_t fMCNumberOfParticlesPerEventRange[LAST_EMINMAX];
+  TF1 *fMCKinematicPDFs[kKinematic];
+  Double_t fMCKinematicVariables[kKinematic];
+  TH1D *fAcceptanceHistogram[kKinematic];
+  TF1 *fMCMultiplicity;
 
   // Look up tabel between MC and data particles
   TExMap *fLookUpTable;
+
+  // use Fisher-Yates algorithm to randomize tracks
+  Bool_t fUseFisherYates;
+  std::vector<Int_t> fRandomizedTrackIndices;
+  // needed when sampling a fixed number of tracks per event
+  Bool_t fUseFixedMultplicity;
+  Int_t fFixedMultiplicy;
 
   // qvectors
   TComplex fQvector[kMaxHarmonic][kMaxPower];
   std::vector<Double_t> fKinematics[kKinematic];
   std::vector<Double_t> fKinematicWeights[kKinematic];
   std::vector<Double_t> fWeightsAggregated;
-  TH1D *fAcceptanceHistogram[kKinematic];
   TH1D *fWeightHistogram[kKinematic];
   Bool_t fUseWeights[kKinematic];
   Bool_t fUseWeightsAggregated;
-  Bool_t fResetWeights[kKinematic];
-  Bool_t fResetWeightsAggregated;
   std::vector<std::vector<Int_t>> fCorrelators;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 11);
+  ClassDef(AliAnalysisTaskAR, 13);
 };
 
 #endif
