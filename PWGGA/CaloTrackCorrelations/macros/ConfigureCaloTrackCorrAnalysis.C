@@ -2695,7 +2695,7 @@ void ConfigureCaloTrackCorrAnalysis
   }
   
   // Exotics
-  if ( analysisString.Contains("Exo") ) 
+  if ( analysisString.Contains("Exotic") )
   { 
     anaList->AddAt(ConfigureExoticAnalysis(col,simulation,calorimeter,year,printSettings,debug,histoString) , n++);
   }
