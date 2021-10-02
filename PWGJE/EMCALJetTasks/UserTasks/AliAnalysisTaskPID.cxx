@@ -1278,7 +1278,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     const Int_t histNumbers = 3;
     
     constexpr Int_t nBinsY[histNumbers+1] = {8, 4, 11, 15};
-    Float_t twopi = 2.0 * TMath::Pi();
+    constexpr Float_t twopi = 2.0 * TMath::Pi();
     
     Double_t binsPrime[nBinsPrime+1];
     for (Int_t i=0;i<=nBinsPrime;i++) {
@@ -1293,7 +1293,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
 //     }
     
     constexpr Double_t binsYclusters[nBinsY[3] + 1] = {1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160};
-    constexpr Double_t* binsY[histNumbers+1] = {binsYEta, binsYPhi, binsYMult, binsYclusters};
+    const Double_t* binsY[histNumbers+1] = {binsYEta, binsYPhi, binsYMult, binsYclusters};
     
 //     Double_t binsYNearTracks[nBinsY[3] + 1] = {0,1,2,3,4,5,6,7,8,9,10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
 //     const Double_t* binsY[histNumbers+1] = {binsYEta, binsYPhi, binsYMult, binsYNearTracks};    
