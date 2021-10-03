@@ -108,6 +108,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  // Centrality weights:
  fCentralityWeightsList(NULL),
  fCentralityWeightsFlagsPro(NULL),
+ fUseCentralityWeights(kFALSE),
+ fCentralityWeightsHist(NULL),
 
  // Correlations:
  fCorrelationsList(NULL),        
@@ -274,6 +276,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  // Centrality weights:
  fCentralityWeightsList(NULL),
  fCentralityWeightsFlagsPro(NULL),
+ fUseCentralityWeights(kFALSE),
+ fCentralityWeightsHist(NULL),
 
  // Correlations:
  fCorrelationsList(NULL),        
@@ -356,16 +360,20 @@ AliAnalysisTaskMuPa::~AliAnalysisTaskMuPa()
 {
  // Destructor.
 
- if(fBaseList) delete fBaseList;
+ if(fBaseList) 
+ {
+  delete fBaseList;
+  fBaseList = NULL;
+ }
 
  if(fFilterGlobalTracksAOD)
  { 
-  if(fGlobalTracksAOD) delete fGlobalTracksAOD;
+  if(fGlobalTracksAOD){ delete fGlobalTracksAOD; fGlobalTracksAOD = NULL; }
  } 
  
- if(fSimReco) delete fSimReco;
+ if(fSimReco) { delete fSimReco; fSimReco = NULL; }
 
- if(fUseFisherYates) delete fRandomIndices;
+ if(fUseFisherYates) { delete fRandomIndices; fRandomIndices = NULL; }
 
 } // AliAnalysisTaskMuPa::~AliAnalysisTaskMuPa()
 
@@ -754,7 +762,7 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
  // e) Fisher-Yates algorithm:
  if(fUseFisherYates)
  {
-  delete fRandomIndices;
+  delete fRandomIndices; fRandomIndices = NULL; 
  }
 
 } // void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
@@ -879,11 +887,7 @@ void AliAnalysisTaskMuPa::InitializeArraysForCentralityWeights()
 {
  // Initialize all arrays for centrality weights.
 
- for(Int_t w=0;w<gCentralityEstimators;w++) 
- {
-  fUseCentralityWeights[w] = kFALSE;
-  fCentralityWeightsHist[w] = NULL;
- }
+ // ...
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForCentralityWeights()
 
@@ -1230,12 +1234,7 @@ void AliAnalysisTaskMuPa::InsanityChecks()
       fCentralityEstimator.EqualTo("CL0")||fCentralityEstimator.EqualTo("CL1"))){cout<<__LINE__<<endl;exit(1);}
 
  // c) Centrality weights:
- Int_t sum = 0;
- for(Int_t ce=0;ce<gCentralityEstimators;ce++)
- {
-  sum += (Int_t) fUseCentralityWeights[ce];
- }
- if(sum>1){Red("\n Usage of only one centrality weight is supported at the moment.\n");cout<<__LINE__<<endl;exit(1);}
+ // ...
 
  // d) Toy NUA:
  if(fUseToyNUA[PHI])
@@ -2329,51 +2328,39 @@ void AliAnalysisTaskMuPa::BookCentralityWeightsHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);} 
 
  // a) Book the profile holding flags:
- fCentralityWeightsFlagsPro = new TProfile("fCentralityWeightsFlagsPro","flags for centrality weights",4,0.,4.);
+ fCentralityWeightsFlagsPro = new TProfile("fCentralityWeightsFlagsPro","flags for centrality weights",1,0.,1.);
  fCentralityWeightsFlagsPro->SetStats(kFALSE);
  fCentralityWeightsFlagsPro->SetLineColor(COLOR);
  fCentralityWeightsFlagsPro->SetFillColor(FILLCOLOR);
  fCentralityWeightsFlagsPro->GetXaxis()->SetLabelSize(0.05);  
- fCentralityWeightsFlagsPro->GetXaxis()->SetBinLabel(1,"w_{V0M}");   \
- fCentralityWeightsFlagsPro->GetXaxis()->SetBinLabel(2,"w_{SPDTracklets}");  
- fCentralityWeightsFlagsPro->GetXaxis()->SetBinLabel(3,"w_{CL0}"); 
- fCentralityWeightsFlagsPro->GetXaxis()->SetBinLabel(4,"w_{CL1}"); 
- for(Int_t w=0;w<gCentralityEstimators;w++) // use weights [phi,pt,eta]
- { 
-  if(fUseCentralityWeights[w])fCentralityWeightsFlagsPro->Fill(w+0.5,1.);
- }
+ fCentralityWeightsFlagsPro->GetXaxis()->SetBinLabel(1,"fUseCentralityWeights");
+ if(fUseCentralityWeights){fCentralityWeightsFlagsPro->Fill(0.5,1.);}
  fCentralityWeightsList->Add(fCentralityWeightsFlagsPro);
 
  // b) Common local labels:
- TString sce[gCentralityEstimators] = {"V0M", "SPDTracklets", "CL0", "CL1"}; // keep this in sync with enum eCentralityEstimator in .h
- TString sCentralityWeights[gCentralityEstimators] = {"w_{V0M}","w_{SPDTracklets}","w_{CL0}","w_{CL1}"};
+ // ...
 
  // c) Histograms:
- for(Int_t w=0;w<gCentralityEstimators;w++) // use centrality weights ["V0M", "SPDTracklets", "CL0", "CL1"]
+ if(!fUseCentralityWeights){return;}
+ if(!fCentralityWeightsHist) // yes, because this histogram is cloned from the external one, see SetCentralityWeightsHist(TH1D* const hist, const char *estimator)
  {
-  if(!fUseCentralityWeights[w]){continue;}
-  if(!fCentralityWeightsHist[w]) // yes, because these histos are cloned from the exteral ones, see SetCentralityWeightsHist(TH1D* const hist, const char *estimator)
-  {
-   fCentralityWeightsHist[w] = new TH1D(Form("fCentralityWeightsHist[%d]",w),"",(Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2]);
-   fCentralityWeightsHist[w]->SetTitle(Form("Centrality weights for %s",sCentralityWeights[w].Data()));
-   fCentralityWeightsHist[w]->SetStats(kFALSE);
-   fCentralityWeightsHist[w]->GetXaxis()->SetTitle(sce[w].Data());
-   fCentralityWeightsHist[w]->SetFillColor(FILLCOLOR);
-   fCentralityWeightsHist[w]->SetLineColor(COLOR);
-  }
-  fCentralityWeightsList->Add(fCentralityWeightsHist[w]);
- } // for(Int_t w=0;w<gCentralityEstimators;w++) // use centrality weights ["V0M", "SPDTracklets", "CL0", "CL1"]
+  fCentralityWeightsHist = new TH1D("fCentralityWeightsHist","",(Int_t)fCentralityBins[0],fCentralityBins[1],fCentralityBins[2]);
+  fCentralityWeightsHist->SetTitle(Form("Centrality weights for %s",fCentralityEstimator.Data()));
+  fCentralityWeightsHist->SetStats(kFALSE);
+  fCentralityWeightsHist->GetXaxis()->SetTitle(Form("w_{%s}",fCentralityEstimator.Data()));
+  fCentralityWeightsHist->SetFillColor(FILLCOLOR);
+  fCentralityWeightsHist->SetLineColor(COLOR);
+ }
+ fCentralityWeightsList->Add(fCentralityWeightsHist);
 
  // Quick sanity check for consistent binning:
- for(Int_t w=0;w<gCentralityEstimators;w++) // use centrality weights ["V0M", "SPDTracklets", "CL0", "CL1"]
+ if(!fUseCentralityWeights){return;}
+ if((Int_t)(fCentralityWeightsHist->GetNbinsX()) != (Int_t)(fCentralityHist[1]->GetNbinsX()))
  {
-  if(!fUseCentralityWeights[w]){continue;}
-  if((Int_t)(fCentralityWeightsHist[w]->GetNbinsX()) != (Int_t)(fCentralityHist[0]->GetNbinsX()))
-  {
-   cout<<Form("w = %d",w)<<endl;
-   cout<<__LINE__<<endl;exit(1);
-  }
- } // for(Int_t w=0;w<gCentralityEstimators;w++) // use centrality weights ["V0M", "SPDTracklets", "CL0", "CL1"]
+  cout<<Form("fCentralityWeightsHist->GetNbinsX() = %d",fCentralityWeightsHist->GetNbinsX())<<endl;
+  cout<<Form("fCentralityHist[1]->GetNbinsX() = %d",fCentralityHist[1]->GetNbinsX())<<endl;
+  cout<<__LINE__<<endl;exit(1);
+ }
 
 } // void AliAnalysisTaskMuPa::BookCentralityWeightsHistograms()
 
@@ -2831,13 +2818,10 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
   // Remark: since I am getting centrality weights from centrality distribution after the events cuts, flattening is applied here after all other event cuts:
   if(!ams){cout<<__LINE__<<endl;exit(1);} // pointer was obtained previously
   Double_t centralityWeight = -44.;
-  for(Int_t ce=0;ce<gCentralityEstimators;ce++)
+  if(fUseCentralityWeights)
   {
-   if(fUseCentralityWeights[ce])
-   {
-    centralityWeight = CentralityWeight(ams->GetMultiplicityPercentile(sce[ce].Data()),sce[ce].Data());
-    if(gRandom->Uniform(0,1) > centralityWeight) return kFALSE; // yes, since centralityWeight is normalized probability (see CentralityWeight(...))
-   } 
+   centralityWeight = CentralityWeight(ams->GetMultiplicityPercentile(fCentralityEstimator.Data()));
+   if(gRandom->Uniform(0,1) > centralityWeight) return kFALSE; // yes, since centralityWeight is normalized probability (see CentralityWeight(...))  
   }
 
   if(fUseGenericCorrelationsCuts[0])
@@ -2964,13 +2948,10 @@ void AliAnalysisTaskMuPa::EventCutCounter(AliVEvent *ave)
   // Remark: since I am getting centrality weights from centrality distribution after the events cuts, flattening is applied here after all other event cuts:
   if(!ams){cout<<__LINE__<<endl;exit(1);} // pointer was obtained previously
   Double_t centralityWeight = -44.;
-  for(Int_t ce=0;ce<gCentralityEstimators;ce++)
+  if(fUseCentralityWeights)
   {
-   if(fUseCentralityWeights[ce])
-   {
-    centralityWeight = CentralityWeight(ams->GetMultiplicityPercentile(sce[ce].Data()),sce[ce].Data());
-    if(gRandom->Uniform(0,1) > centralityWeight) fQAEventCutCounter->Fill(21.5);
-   } 
+   centralityWeight = CentralityWeight(ams->GetMultiplicityPercentile(fCentralityEstimator.Data()));
+   if(gRandom->Uniform(0,1) > centralityWeight) fQAEventCutCounter->Fill(21.5); 
   }
 
   // Generic correlations:
@@ -3096,13 +3077,10 @@ void AliAnalysisTaskMuPa::SequentialEventCutCounter(AliVEvent *ave)
   // Remark: since I am getting centrality weights from centrality distribution after the events cuts, flattening is applied here after all other event cuts:
   if(!ams){cout<<__LINE__<<endl;exit(1);} // pointer was obtained previously
   Double_t centralityWeight = -44.;
-  for(Int_t ce=0;ce<gCentralityEstimators;ce++)
+  if(fUseCentralityWeights)
   {
-   if(fUseCentralityWeights[ce])
-   {
-    centralityWeight = CentralityWeight(ams->GetMultiplicityPercentile(sce[ce].Data()),sce[ce].Data());
-    if(gRandom->Uniform(0,1) > centralityWeight) { fQASequentialEventCutCounter->Fill(21.5); return; }
-   } 
+   centralityWeight = CentralityWeight(ams->GetMultiplicityPercentile(fCentralityEstimator.Data()));
+   if(gRandom->Uniform(0,1) > centralityWeight) { fQASequentialEventCutCounter->Fill(21.5); return; } 
   }
 
   // Generic correlations:
@@ -4141,7 +4119,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
     cout<<Form("=> e-b-e check with CustomNestedLoop is OK for isotropic 2-p, harmonic %d",h)<<endl;
     //cout<<Form("   value = %f",twoC.Re())<<endl;
    }
-   delete harmonics;
+   delete harmonics; harmonics = NULL;
   } // if(fCalculateCustomNestedLoop)
   if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
      TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){twoC/=pow(fInternalValidationAmplitudes->GetAt(h-1),2.);}
@@ -4175,7 +4153,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
     cout<<Form("=> e-b-e check with CustomNestedLoop is OK for isotropic 4-p, harmonic %d",h)<<endl;
     //cout<<Form("   value = %f",fourC.Re())<<endl;
    }
-   delete harmonics;
+   delete harmonics; harmonics = NULL;
   } // if(fCalculateCustomNestedLoop)
   if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
      TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){fourC/=pow(fInternalValidationAmplitudes->GetAt(h-1),4.);}
@@ -4211,7 +4189,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
     cout<<Form("=> e-b-e check with CustomNestedLoop is OK for isotropic 6-p, harmonic %d",h)<<endl;
    // cout<<Form("   value = %f",sixC.Re())<<endl;
    }
-   delete harmonics;
+   delete harmonics; harmonics = NULL;
   } // if(fCalculateCustomNestedLoop)
   if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
      TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){sixC/=pow(fInternalValidationAmplitudes->GetAt(h-1),6.);}
@@ -4249,7 +4227,7 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
     cout<<Form("=> e-b-e check with CustomNestedLoop is OK for isotropic 8-p, harmonic %d",h)<<endl;
     //cout<<Form("   value = %f",eightC.Re())<<endl;
    }
-   delete harmonics;
+   delete harmonics; harmonics = NULL;
   } // if(fCalculateCustomNestedLoop)
   if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
      TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){eightC/=pow(fInternalValidationAmplitudes->GetAt(h-1),8.);}
@@ -4658,7 +4636,7 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
 
  // c) Return value:
  Double_t finalValue = profile->GetBinContent(1);
- delete profile;
+ delete profile; profile = NULL;
  return finalValue;
  
 } // Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
@@ -4805,30 +4783,21 @@ Double_t AliAnalysisTaskMuPa::Weight(const Double_t &value, const char *variable
 
 //=======================================================================================================================
 
-Double_t AliAnalysisTaskMuPa::CentralityWeight(const Double_t &value, const char *estimator) // value, [V0M, SPDTracklets, CL0, CL1]
+Double_t AliAnalysisTaskMuPa::CentralityWeight(const Double_t &value) // centrality value
 {
  // Determine centrality weight. 
 
- // Basic protection:
- if(!(TString(estimator).EqualTo("V0M") || TString(estimator).EqualTo("SPDTracklets") || TString(estimator).EqualTo("CL0") || TString(estimator).EqualTo("CL1"))){cout<<__LINE__<<endl;exit(1);}
+ if(!fCentralityWeightsHist){cout<<__LINE__<<endl;exit(1);}
 
- Int_t ce = -1; // this part has to be in sync. with enum eCentralityEstimator
- if(TString(estimator).EqualTo("V0M")){ce=V0M;} 
- if(TString(estimator).EqualTo("SPDTracklets")){ce=SPDTracklets;} 
- if(TString(estimator).EqualTo("CL0")){ce=CL0;} 
- if(TString(estimator).EqualTo("CL1")){ce=CL1;} 
-
- if(!fCentralityWeightsHist[ce]){cout<<__LINE__<<endl;exit(1);}
-
- Int_t bin = fCentralityWeightsHist[ce]->FindBin(value);
+ Int_t bin = fCentralityWeightsHist->FindBin(value);
  Double_t weight = 0.; 
- if(bin > fCentralityWeightsHist[ce]->GetNbinsX())
+ if(bin > fCentralityWeightsHist->GetNbinsX())
  {
   weight = 0.; // we are in the overflow, ignore this particle TBI_20210524 is this really the correct procedure?
  } 
  else
  {
-  weight = fCentralityWeightsHist[ce]->GetBinContent(bin)*fCentralityWeightsHist[ce]->GetBinWidth(bin); // yes, since fCentralityWeightsHist is normalized p.d.f. (ensure that with the macro)
+  weight = fCentralityWeightsHist->GetBinContent(bin)*fCentralityWeightsHist->GetBinWidth(bin); // yes, since fCentralityWeightsHist is normalized p.d.f. (ensure that with the macro)
  }
   
  // In this context, it is assumed that centrality weight is a normalized probability (ensure that with the macro):
@@ -4864,26 +4833,16 @@ void AliAnalysisTaskMuPa::SetWeightsHist(TH1D* const hist, const char *variable)
 
 //=======================================================================================================================
 
-void AliAnalysisTaskMuPa::SetCentralityWeightsHist(TH1D* const hist, const char *estimator)
+void AliAnalysisTaskMuPa::SetCentralityWeightsHist(TH1D* const hist)
 {
  // Copy histogram holding weights from an external file to the corresponding data member. 
   
- // Basic protection:
- if(!(TString(estimator).EqualTo("V0M") || TString(estimator).EqualTo("SPDTracklets") || TString(estimator).EqualTo("CL0") || TString(estimator).EqualTo("CL1"))){cout<<__LINE__<<endl;exit(1);}
-
- Int_t ce = -1; // this part has to be in sync. with enum eCentralityEstimator
- if(TString(estimator).EqualTo("V0M")){ce=V0M;} 
- if(TString(estimator).EqualTo("SPDTracklets")){ce=SPDTracklets;} 
- if(TString(estimator).EqualTo("CL0")){ce=CL0;} 
- if(TString(estimator).EqualTo("CL1")){ce=CL1;} 
-
- // Finally:
  hist->SetDirectory(0);
- fCentralityWeightsHist[ce] = (TH1D*)hist->Clone();
- if(!fCentralityWeightsHist[ce]){cout<<__LINE__<<endl; exit(1);}
+ fCentralityWeightsHist = (TH1D*)hist->Clone();
+ if(!fCentralityWeightsHist){cout<<__LINE__<<endl; exit(1);}
 
  // Flag:
- fUseCentralityWeights[ce] = kTRUE; 
+ fUseCentralityWeights = kTRUE; 
 
 } // void AliAnalysisTaskMuPa::SetWeightsHist(TH1D* const hwh, const char *type, const char *variable)
 
@@ -4905,26 +4864,6 @@ TH1D* AliAnalysisTaskMuPa::GetWeightsHist(const char *variable)
  return fWeightsHist[ppe];
 
 } // TH1D* AliAnalysisTaskMuPa::GetWeightsHist(const char *variable)
-
-//=======================================================================================================================
-
-TH1D* AliAnalysisTaskMuPa::GetCentralityWeightsHist(const char *estimator)
-{
- // The standard getter. 
-  
- // Basic protection:
- if(!(TString(estimator).EqualTo("V0M") || TString(estimator).EqualTo("SPDTracklets") || TString(estimator).EqualTo("CL0") || TString(estimator).EqualTo("CL1"))){cout<<__LINE__<<endl;exit(1);}
-
- Int_t ce = -1; //  this part has to be in sync. with enum eCentralityEstimator
- if(TString(estimator).EqualTo("V0M")){ce=V0M;} 
- if(TString(estimator).EqualTo("SPDTracklets")){ce=SPDTracklets;} 
- if(TString(estimator).EqualTo("CL0")){ce=CL0;} 
- if(TString(estimator).EqualTo("CL1")){ce=CL1;} 
-
- // Finally:
- return fCentralityWeightsHist[ce];
-
-} // TH1D* AliAnalysisTaskMuPa::GetWeightsHist(const char *estimator)
 
 //=======================================================================================
 
@@ -4962,8 +4901,8 @@ TH1D *AliAnalysisTaskMuPa::GetHistogramWithWeights(const char *filePath, const c
  hist->SetDirectory(0);
  hist->SetTitle(filePath);
 
- // e) Close the external ROOT file: 
- weightsFile->Close(); delete weightsFile;
+ // e) Close the external ROOT file:  
+ weightsFile->Close(); delete weightsFile; weightsFile = NULL;
 
  return hist;
 
@@ -5006,7 +4945,7 @@ TH1D *AliAnalysisTaskMuPa::GetHistogramWithCentralityWeights(const char *filePat
  hist->SetTitle(filePath);
 
  // e) Close the external ROOT file: 
- weightsFile->Close(); delete weightsFile;
+ weightsFile->Close(); delete weightsFile; weightsFile = NULL;
 
  return hist;
 
@@ -5693,7 +5632,7 @@ void AliAnalysisTaskMuPa::CalculateTest0()
      {
       cout<<Form("=> e-b-e check with CustomNestedLoop is OK for %d-p Test0 corr. %s",mo+1,fTest0Labels[mo][mi]->Data())<<endl;
      }
-     delete harmonics;
+     delete harmonics; harmonics = NULL;
     } // if(fCalculateCustomNestedLoop)
   
     // To ease comparison, rescale with theoretical value. Now all Test0 results shall be at 1:
@@ -5709,7 +5648,7 @@ void AliAnalysisTaskMuPa::CalculateTest0()
      {     
       correlation /= theoreticalValue.Re();
      }
-     delete harmonics;
+     delete harmonics; harmonics = NULL;
     } // if(fUseInternalValidation && fRescaleWithTheoreticalInput)
 
     // Finally, fill:

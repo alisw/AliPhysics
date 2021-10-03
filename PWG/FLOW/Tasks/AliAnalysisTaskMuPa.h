@@ -33,6 +33,11 @@
 #include <TF1.h>
 #include <TStopwatch.h>
 
+using std::cout;
+using std::endl;
+using std::string;
+using std::ifstream;
+
 // Global variables:
 const Int_t gCentralityEstimators = 4; // set here number of supported centrality estimators
 const Int_t gKinematicVariables = 5; // number of supported kinematic variables: [phi,pt,eta,e,charge]
@@ -125,7 +130,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t SurvivesParticleCuts(AliVParticle *vParticle); // applied e.g. on TPC-only
   void ParticleCutCounter(AliVParticle *vParticle); // only for QA
   virtual Double_t Weight(const Double_t &value, const char *variable);
-  virtual Double_t CentralityWeight(const Double_t &value, const char *estimator);
+  virtual Double_t CentralityWeight(const Double_t &value);
   virtual void CalculateCorrelations();
   virtual void CalculateNestedLoops(); // calculate all standard isotropic correlations  
   virtual Double_t CalculateCustomNestedLoop(TArrayI *harmonics); // calculate nested loop for the specified harmonics
@@ -218,6 +223,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fUseCentralityCuts = kTRUE;
   }
   void SetCentralityEstimator(const char *ce) {this->fCentralityEstimator = ce;};
+  TString GetCentralityEstimator() const {return this->fCentralityEstimator;};
   void SetTaskName(const char *tn) {this->fTaskName = tn;};
 
   void SetCentralityCorrelationsCuts(const char* firstEstimator, const char* secondEstimator, const Double_t cut, const int cutVersion)
@@ -429,7 +435,11 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetFileWithLabels(const char *externalFile) 
   {
    this->fFileWithLabels = new TString(externalFile); 
-   if(gSystem->AccessPathName(fFileWithLabels->Data(),kFileExists)){exit(1);} // convention is opposite to Bash
+   if(gSystem->AccessPathName(fFileWithLabels->Data(),kFileExists)) // convention is opposite to Bash
+   {
+    cout<<Form("The file %s doesn't exist",externalFile)<<endl;
+    cout<<__LINE__<<endl; exit(1);
+   }
    this->StoreLabelsInPlaceholder("external");
   }
 
@@ -452,8 +462,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D* GetHistogramWithWeights(const char *filePath, const char *variable); // .cxx
  
   // Centrality weights:
-  void SetCentralityWeightsHist(TH1D* const hist, const char *estimator); // .cxx
-  TH1D* GetCentralityWeightsHist(const char *estimator); // . cxx
+  void SetCentralityWeightsHist(TH1D* const hist); // .cxx
+  TH1D* GetCentralityWeightsHist() const {return this->fCentralityWeightsHist;} 
   TH1D* GetHistogramWithCentralityWeights(const char *filePath, const char *estimator); // .cxx
 
   // Toy NUA:
@@ -659,10 +669,10 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fWeightsHist[gWeights]; // histograms holding weights [phi,pt,eta]
 
   // 6) Centrality weights: 
-  TList *fCentralityWeightsList;                       // list to hold all Q-vector objects       
-  TProfile *fCentralityWeightsFlagsPro;                // profile to hold all flags for CentralityWeights
-  Bool_t fUseCentralityWeights[gCentralityEstimators]; // use centrality weights [V0M, SPDTracklets, CL0, CL1]
-  TH1D *fCentralityWeightsHist[gCentralityEstimators]; // histograms holding centrality weights [V0M, SPDTracklets, CL0, CL1]
+  TList *fCentralityWeightsList;        // list to hold all Q-vector objects       
+  TProfile *fCentralityWeightsFlagsPro; // profile to hold all flags for CentralityWeights
+  Bool_t fUseCentralityWeights;         // use centrality weights [V0M, SPDTracklets, CL0, CL1]
+  TH1D *fCentralityWeightsHist;         // histograms holding centrality weights [V0M, SPDTracklets, CL0, CL1]
 
   // 7) Correlations:
   TList *fCorrelationsList;            // list to hold all correlations objects
@@ -728,7 +738,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,27);
+  ClassDef(AliAnalysisTaskMuPa,28);
 
 };
 
