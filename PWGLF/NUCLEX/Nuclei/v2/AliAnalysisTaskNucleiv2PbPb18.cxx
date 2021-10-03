@@ -101,7 +101,9 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18():
   fhMassTOF(0),
   EPVzAvsCentrality(0), 
   EPVzCvsCentrality(0), 
-  q2vsCentrality(0), 
+  q2TPCvsCentrality(0), 
+  q2V0AvsCentrality(0), 
+  q2V0CvsCentrality(0), 
   hQVzAQVzCvsCentrality(0),
   hQVzAQTPCvsCentrality(0),
   hQVzCQTPCvsCentrality(0),
@@ -118,7 +120,8 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18():
   eventtype(-999),
   ftree(0),           
   tCentrality(0),        
-  tq2(0),     
+  tq2TPC(0),     
+  tq2V0C(0),     
   tType(0),  
   tHasTOF(0),    
   tpT(0),  
@@ -173,7 +176,9 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18(const char *name):
     fhMassTOF(0),
     EPVzAvsCentrality(0), 
     EPVzCvsCentrality(0), 
-    q2vsCentrality(0), 
+    q2TPCvsCentrality(0), 
+    q2V0AvsCentrality(0), 
+    q2V0CvsCentrality(0), 
     hQVzAQVzCvsCentrality(0),
     hQVzAQTPCvsCentrality(0),
     hQVzCQTPCvsCentrality(0),
@@ -190,7 +195,8 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18(const char *name):
     eventtype(-999),
     ftree(0),           
     tCentrality(0),     
-    tq2(0),  
+    tq2TPC(0),  
+    tq2V0C(0),  
     tType(0),  
     tHasTOF(0),    
     tpT(0),  
@@ -333,8 +339,12 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
   fListHist->Add(EPVzCvsCentrality);
   
 
-  q2vsCentrality = new TH2D("q2vsCentrality" , "q2vsCentrality", 105,0,105 , 2000,0,20);
-  fListHist->Add(q2vsCentrality);
+  q2TPCvsCentrality = new TH2D("q2TPCvsCentrality" , "q2TPCvsCentrality", 105,0,105 , 2000,0,20);
+  fListHist->Add(q2TPCvsCentrality);
+  q2V0AvsCentrality = new TH2D("q2V0AvsCentrality" , "q2V0AvsCentrality", 105,0,105 , 2000,0,20);
+  fListHist->Add(q2V0AvsCentrality);
+  q2V0CvsCentrality = new TH2D("q2V0CvsCentrality" , "q2V0CvsCentrality", 105,0,105 , 2000,0,20);
+  fListHist->Add(q2V0CvsCentrality);
 
     
   // if(fNHarm < 3){
@@ -389,7 +399,8 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
     ftree = new TTree(Form("ftree_%i",fptc),Form("ftree_%i",fptc));
  
     ftree->Branch("tCentrality"      ,&tCentrality      ,"tCentrality/D"    );
-    ftree->Branch("tq2"              ,&tq2              ,"tq2/D"            );
+    ftree->Branch("tq2TPC"           ,&tq2TPC           ,"tq2TPC/D"         );
+    ftree->Branch("tq2V0C"           ,&tq2V0C           ,"tq2V0C/D"         );
     ftree->Branch("tType"            ,&tType            ,"tType/D"          );
     ftree->Branch("tHasTOF"          ,&tHasTOF          ,"tHasTOF/D"        );
     ftree->Branch("tpT"              ,&tpT              ,"tpT/D"            );
@@ -778,6 +789,24 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
  
   EPVzAvsCentrality  ->Fill(evPlAngV0A  , iCen); 
   EPVzCvsCentrality  ->Fill(evPlAngV0C  , iCen); 
+
+  /*
+    Qxcn += TMath::Cos(fNHarm*phiV0) * multCorC;
+    Qycn += TMath::Sin(fNHarm*phiV0) * multCorC;
+    sumMc = sumMc + multCorC;
+    Double_t QxanCor = Qxan;
+    Double_t QyanCor = (Qyan - fQynmV0A->GetBinContent(iCen+1))/fQynsV0A->GetBinContent(iCen+1);
+    Double_t QxcnCor = Qxcn;
+    Double_t QycnCor = (Qycn - fQynmV0C->GetBinContent(iCen+1))/fQynsV0C->GetBinContent(iCen+1);
+  */
+
+  Double_t q2v0c = 0.;
+  if(sumMc >0) q2v0c = TMath::Sqrt(QxcnCor*QxcnCor+QycnCor*QycnCor)/TMath::Sqrt(sumMc );
+  Double_t q2v0a = 0.;
+  if(sumMa >0) q2v0a = TMath::Sqrt(QxanCor*QxanCor+QyanCor*QyanCor)/TMath::Sqrt(sumMa );
+
+  q2V0CvsCentrality  ->Fill( iCen, q2v0c); 
+  q2V0AvsCentrality  ->Fill( iCen, q2v0a); 
   
   const Int_t nTracks = aod->GetNumberOfTracks();
   // cout<<"TPC ev plane "<<nTracks<<endl;
@@ -814,7 +843,7 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
   Double_t q2 = 0.;
   if(multQvec>0) q2 = TMath::Sqrt(q2Vec[0]*q2Vec[0]+q2Vec[1]*q2Vec[1])/TMath::Sqrt(multQvec);
   
-  q2vsCentrality  ->Fill( iCen, q2); 
+  q2TPCvsCentrality  ->Fill( iCen, q2); 
   // TBC
   Double_t evPlAngTPC = TMath::ATan2(Qytn, Qxtn)/fNHarm;
 
@@ -1009,7 +1038,8 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
       uqV0C = TMath::Cos(fNHarm*tPhi)*QxcnCor+TMath::Sin(fNHarm*tPhi)*QycnCor;
 	  
       tCentrality      = iCen;
-      tq2              = q2;
+      tq2TPC           = q2;
+      tq2V0C           = q2v0c;
       tType            = eventtype;
       tHasTOF          = hasTOF;
       tpT              = pt;

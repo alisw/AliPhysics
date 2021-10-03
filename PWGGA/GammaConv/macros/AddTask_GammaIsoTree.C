@@ -580,6 +580,66 @@ void AddTask_GammaIsoTree(
       doChargedIso = kTRUE;
       doTagging = kFALSE;
       doCellIso = kFALSE;
+
+  // EMCAL + DCAL
+       // stricter track eta cut
+  } else if(trainConfig == 70){  // pPb INT7
+      TaskEventCutnumber                = "80010103";
+      TaskClusterCutnumberEMC           = "4117932060032000000";
+      TaskTMCut = TaskClusterCutnumberEMC.Data();
+      TaskTMCut.Replace(9,1,"5");
+      TaskClusterCutnumberIsolationEMC  = "411793206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "411793206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+      fEtaCut = 0.8;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kFALSE;
+      doChargedIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
+  } else if(trainConfig == 71){  // EG2 DG2
+      TaskEventCutnumber                = "8008e103";
+      TaskClusterCutnumberEMC           = "4117932060032000000";
+      TaskTMCut = TaskClusterCutnumberEMC.Data();
+      TaskTMCut.Replace(9,1,"5");
+      TaskClusterCutnumberIsolationEMC  = "411793206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "411793206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+      fEtaCut = 0.8;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kFALSE;
+      doChargedIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
+  } else if(trainConfig == 72){  // EG1 DG1
+      TaskEventCutnumber                = "8008d103";
+      TaskClusterCutnumberEMC           = "4117932060032000000";
+      TaskTMCut = TaskClusterCutnumberEMC.Data();
+      TaskTMCut.Replace(9,1,"5");
+      TaskClusterCutnumberIsolationEMC  = "411793206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "411793206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+      fEtaCut = 0.8;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kFALSE;
+      doChargedIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
   }
   
 

@@ -1481,6 +1481,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     if (passedVertexSelectionMB) {
       IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut); 
       if (passedVertexZSelectionMB) {
+
         IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
         if (!isPileUpMB) {
   /*      ATTENTION: Is this the right place for the pile-up rejection? Important to have still the proper bin-0 correction,

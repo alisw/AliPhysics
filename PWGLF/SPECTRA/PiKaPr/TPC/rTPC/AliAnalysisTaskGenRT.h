@@ -95,6 +95,7 @@ class AliAnalysisTaskGenRT : public AliAnalysisTaskSE { //
 		Int_t       fIndexLeadingRec;
 		Double_t    fMinPtLeading;
 		Double_t    fMaxPtLeading;
+		Double_t    fPtLeadingGen;
 		Float_t     fSizeStep;
 		//Int_t       fNso_gen;
 		//Int_t       fNso_rec;
@@ -132,6 +133,8 @@ class AliAnalysisTaskGenRT : public AliAnalysisTaskSE { //
 		TH1D * fMultTSRec;
 		TH2D * fSoWeighedVsNchPtL;
 
+		TH1D * hPtLeadingGen;
+		TH2D * fMultTSvsPtLeading;
 		TH2D * fHistPtVsNchNS[11];
 		TH2D * fHistPtVsNchAS[11];
 		TH2D * fHistPtVsNchTS[11];

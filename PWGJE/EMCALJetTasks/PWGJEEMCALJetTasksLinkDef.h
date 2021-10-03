@@ -186,7 +186,6 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetIterativeDeclustering+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalFastorMultiplicity+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalQoverPtShift++;
-#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetSpectrumSDPart+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerBase+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliCutValueRange<float>+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliCutValueRange<double>+;
@@ -286,6 +285,7 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::JetSubstructureSplittings+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskJetHardestKt+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetSpectrumSDPart+;
 #pragma link C++ class AliAnalysisTaskHardestBranch+;
 #pragma link C++ class AliAnalysisTaskEmcalJetShapesMC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetShapeExtra+;

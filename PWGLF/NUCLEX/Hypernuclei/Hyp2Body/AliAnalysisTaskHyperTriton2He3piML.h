@@ -231,6 +231,7 @@ private:
   float fCustomResolution;
 
   /// Control histograms to monitor the filtering
+  TH2D *fHistCentTrigger;          //! 
   TH2D *fHistNsigmaHe3;          //! # sigma TPC proton for the positive prong
   TH2D *fHistNsigmaPi;           //! # sigma TPC pion for the negative prong
   TH2D *fHistInvMass;            //! # Invariant mass histogram

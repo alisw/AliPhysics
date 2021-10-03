@@ -46,7 +46,7 @@ public TObject
   /*** tools ***/
   static TLorentzVector fgLorentzVector;
 
-  ClassDef(AliAnalysisPIDCascadeParticle, 3);
+  ClassDef(AliAnalysisPIDCascadeParticle, 4);
 
 };
 

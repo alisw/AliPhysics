@@ -31,7 +31,7 @@ ClassImp(AliAnalysisTaskForStudents)
 
 //================================================================================================================
 
-AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t useParticleWeights): 
+AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name): 
  AliAnalysisTaskSE(name), 
  fHistList(NULL),
  // Control histograms:
@@ -45,7 +45,7 @@ AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t 
  {
   // Constructor.
  
-  AliDebug(2,"AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t useParticleWeights)");
+  AliDebug(2,"AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name)");
 
   // Base list:
   fHistList = new TList();
@@ -55,7 +55,9 @@ AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t 
   // Initialize all arrays:
   this->InitializeArrays();
 
-  // Define input and output slots here
+  // Define input and output slots here. 
+  // Below is the old example, now obsolete.
+
   // Input slot #0 works with an AliFlowEventSimple
   //DefineInput(0, AliFlowEventSimple::Class());  
   // Input slot #1 is needed for the weights input file:
@@ -68,12 +70,7 @@ AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t 
 
   DefineOutput(1, TList::Class());  
 
-  if(useParticleWeights)
-  {
-   // not needed for the time being
-  }
-
-} // AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(const char *name, Bool_t useParticleWeights): 
+} // AliAnalysisTaskForStudents::AliAnalysisTaskForStudents(): 
 
 //================================================================================================================
 
@@ -154,7 +151,7 @@ void AliAnalysisTaskForStudents::UserExec(Option_t *)
  {
   AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to a track
   if(!aTrack){continue;} // protection against NULL pointers
-  if(!aTrack->TestFilterBit(128)){continue;} // filter bit 128 denotes TPC-only tracks, use only them for the analysis
+  if(!aTrack->TestFilterBit(128)){continue;} // filter bit 128 denotes TPC-only tracks
 
   // example variables for each track: (for more options, please see class STEER/AOD/AliAODTrack.h)  
   Double_t pt = aTrack->Pt(); // Pt

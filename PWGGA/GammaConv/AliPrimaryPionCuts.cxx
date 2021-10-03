@@ -383,9 +383,9 @@ Bool_t AliPrimaryPionCuts::PionIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEv
     if( labelParticle < 0 || labelParticle >= mcEvent->GetNumberOfTracks() ) return kFALSE;
 // 	if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE;  // moved to actual tasks
 
-    TParticle* particle = mcEvent->Particle(labelParticle);
+    AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(labelParticle);
 
-	if( TMath::Abs( particle->GetPdgCode() ) != 211 )  return kFALSE;
+    if( TMath::Abs( particle->PdgCode() ) != 211 )  return kFALSE;
 	
 	if( fDoEtaCut ){
 	if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
@@ -1489,8 +1489,12 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
             fDoMassCut = kTRUE;
             fMassCut = 0.520;
             break;
-		default:
-			cout<<"Warning: MassCut not defined "<<massCut<<endl;
+	case 22: //m cut at eta prime mass
+		fDoMassCut = kTRUE;
+		fMassCut = 0.95778;
+		break;
+	default:
+		cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;
     } 
     return kTRUE;

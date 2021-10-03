@@ -1,9 +1,9 @@
-/* Copyright(c) 1998-2020, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2021, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 //*************************************************************************
 // \class AliAnalysisTaskSEDmesonTree
-// \brief Analysis task to produce trees of Lc candidates for ML analyses of non-prompt Lc
+// \brief Analysis task to produce trees of D-meson candidates for ML analyses
 // \authors:
 // F. Grosa, fabrizio.grosa@cern.ch
 /////////////////////////////////////////////////////////////
@@ -150,12 +150,12 @@ void AliAnalysisTaskSEDmesonTree::UserCreateOutputObjects()
     fHistNEvents->SetMinimum(0);
     fOutput->Add(fHistNEvents);
 
-    fSPDMult = new TH1F("hSPDMult", "Tracklets multiplicity; Tracklets ; Entries", 201, -0.5, 200.5);
-    fSPDMultCand = new TH1F("hSPDMultCand", "Tracklets multiplicity; Tracklets ; Entries", 201, -0.5, 200.5);
-    fSPDMultCandInMass = new TH1F("hSPDMultCandInMass", "Tracklets multiplicity; Tracklets ; Entries", 201, -0.5, 200.5);
-    fOutput->Add(fSPDMult);
-    fOutput->Add(fSPDMultCand);
-    fOutput->Add(fSPDMultCandInMass);
+    fSPDMultVsCent = new TH2F("hSPDMultVsCent", "Tracklets multiplicity vs. centrality; Centrality (%); Tracklets", 100, 0., 100., 201, -0.5, 200.5);
+    fSPDMultVsCentCand = new TH2F("hSPDMultVsCentCand", "Tracklets multiplicity vs. centrality; Centrality (%); Tracklets", 100, 0., 100., 201, -0.5, 200.5);
+    fSPDMultVsCentCandInMass = new TH2F("hSPDMultVsCentCandInMass", "Tracklets multiplicity vs. centrality; Centrality (%); Tracklets", 100, 0., 100., 201, -0.5, 200.5);
+    fOutput->Add(fSPDMultVsCent);
+    fOutput->Add(fSPDMultVsCentCand);
+    fOutput->Add(fSPDMultVsCentCandInMass);
 
     // Sparses for efficiencies (only gen)
     if(fReadMC)
@@ -355,6 +355,11 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
     AliAODMCHeader *mcHeader = nullptr;
     int Ntracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAOD, -1., 1.);
 
+    double centrality = -999.;
+    AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
+    if(multSelection)
+        centrality = multSelection->GetMultiplicityPercentile(fCentEstimator.data());
+
     // load MC particles
     if (fReadMC)
     {
@@ -386,7 +391,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
     }
 
     fHistNEvents->Fill(4); // accepted event
-    fSPDMult->Fill(Ntracklets);
+    fSPDMultVsCent->Fill(centrality, Ntracklets);
 
     // check if the train includes the common ML selector for the given charm-hadron species
     AliAnalysisTaskSECharmHadronMLSelector *taskMLSelect = nullptr;
@@ -510,7 +515,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     {
                         if (labD >= 0)
                         {
-                            if (pdgCode0 == 211)
+                            if (pdgCode0 == 321)
                                 isRefl = true;
                             if (orig == 4)
                                 isPrompt = true;
@@ -544,7 +549,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     {
                         if (labD >= 0)
                         {
-                            if (pdgCode0 == 321)
+                            if (pdgCode0 == 211)
                                 isRefl = true;
                             if (orig == 4)
                                 isPrompt = true;
@@ -609,10 +614,6 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
             std::vector<double> modelPred = {};
             bool isMLsel = false;
             double ptCand = dMeson->Pt();
-            double centrality = -999.;
-            AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
-            if(multSelection)
-                centrality = multSelection->GetMultiplicityPercentile(fCentEstimator.data());
 
             if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kDstartoD0pi)
             {
@@ -666,13 +667,27 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                         fnSparseReco[0]->Fill(var4nSparse.data());
                     else
                     {
-                        if(labD >= 0 && orig == 4)
+                        if(labD >= 0)
                         {
-                            fnSparseReco[1]->Fill(var4nSparse.data());
-                        }
-                        else if(labD >= 0 && orig == 5)
-                        {
-                            fnSparseReco[2]->Fill(var4nSparse.data());
+                            if(fDecChannel == kD0toKpi)
+                            {
+                                if(pdgCode0 == 321)fnSparseReco[4]->Fill(var4nSparse.data());
+                                else if(orig == 4 && pdgCode0 != 321)fnSparseReco[1]->Fill(var4nSparse.data());
+                                else if(orig == 5 && pdgCode0 != 321)
+                                {
+                                    var4nSparse.insert(var4nSparse.end(), ptB);
+                                    fnSparseReco[2]->Fill(var4nSparse.data());
+                                }
+                            }
+                            else
+                            {
+                                if(orig == 4)fnSparseReco[1]->Fill(var4nSparse.data());
+                                if(orig == 5)
+                                {
+                                    var4nSparse.insert(var4nSparse.end(), ptB);
+                                    fnSparseReco[2]->Fill(var4nSparse.data());
+                                }
+                            }
                         }
                         else if(labD < 0)
                         {
@@ -727,13 +742,15 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                         fnSparseReco[0]->Fill(var4nSparse.data());
                     else
                     {
-                        if(labD >= 0 && orig == 4)
+                        if(labD >= 0)
                         {
-                            fnSparseReco[1]->Fill(var4nSparse.data());
-                        }
-                        else if(labD >= 0 && orig == 5)
-                        {
-                            fnSparseReco[2]->Fill(var4nSparse.data());
+                            if(pdgCode0 == 211)fnSparseReco[4]->Fill(var4nSparse.data());
+                            else if(orig == 4 && pdgCode0 != 211)fnSparseReco[1]->Fill(var4nSparse.data());
+                            else if(orig == 5 && pdgCode0 != 211)
+                            {
+                                var4nSparse.insert(var4nSparse.end(), ptB);
+                                fnSparseReco[2]->Fill(var4nSparse.data());
+                            }
                         }
                         else if(labD < 0)
                         {
@@ -752,9 +769,9 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
 
     if(nSelected > 0)
     {
-        fSPDMultCand->Fill(Ntracklets);
+        fSPDMultVsCentCand->Fill(centrality, Ntracklets);
         if(nSelectedInMass > 0)
-            fSPDMultCandInMass->Fill(Ntracklets);
+            fSPDMultVsCentCandInMass->Fill(centrality, Ntracklets);
     }
 
     PostData(1, fOutput);
@@ -1070,8 +1087,8 @@ void AliAnalysisTaskSEDmesonTree::CreateRecoSparses()
     if(fMultiClass)
         nVars = 8;
 
-    TString label[4] = {"all", "fromC", "fromB", "bkg"};
-    for (int iHist = 0; iHist < 4; iHist++)
+    TString label[5] = {"all", "fromC", "fromB", "bkg", "refl"};
+    for (int iHist = 0; iHist < 5; iHist++)
     {
         TString titleSparse = Form("Reco nSparse - %s", label[iHist].Data());
         fnSparseReco[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist].Data()), titleSparse.Data(), nVars, nBinsReco, xminReco, xmaxReco);

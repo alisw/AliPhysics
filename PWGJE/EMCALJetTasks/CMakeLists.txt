@@ -149,7 +149,6 @@ set(SRCS
     Tracks/AliAnalysisEmcalTriggerSelectionHelper.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
-    Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
     Tracks/AliAnalysisTaskEmcalResponseOutliers.cxx
     Tracks/AliAnalysisTaskEmcalOutliersGen.cxx
     Tracks/AliAnalysisTaskEmcalPatchMultCorr.cxx
@@ -313,6 +312,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
 	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
+        Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx

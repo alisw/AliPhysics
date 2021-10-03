@@ -113,6 +113,11 @@ Double_t PtBins08[nPtBins08+1] = {
 	2.0 ,  2.2 , 2.4,  2.6 , 2.8,  3.0 , 3.2,  3.4 , 3.6,  3.8 ,
 	4.0 ,  4.5 , 5.0,  5.5 , 6.0,  6.5 , 7.0,  8.0 , 9.0,  10.0};
 
+const Int_t nPtBinsLeading = 24;
+Double_t PtBinsLeading[nPtBinsLeading+1] = {
+	0.0 , 0.5 , 1.0 , 1.5  , 2.0  , 2.5  , 3.0  , 3.5  , 4.0  , 4.5  , 5.0  , 6.0, 
+	7.0 , 8.0 , 9.0 , 10.0 , 12.0 , 14.0 , 16.0 , 18.0 , 20.0 , 25.0 , 30.0 , 40.0 , 100.0 };
+
 const Int_t nSoBins = 200;
 Double_t SoBins[nSoBins+1]={
 	0.000, 0.005, 0.01,  0.015, 0.02,  0.025, 0.03,  0.035, 0.04,  0.045, 
@@ -164,6 +169,7 @@ ClassImp( AliAnalysisTaskGenRT )
 		fIndexLeadingRec(-1),
 		fMinPtLeading(5.0),
 		fMaxPtLeading(40.0),
+		fPtLeadingGen(0.0),
 		fSizeStep(0.1),
 		//fNso_gen(3),
 		//fNso_rec(3),
@@ -190,6 +196,8 @@ ClassImp( AliAnalysisTaskGenRT )
 		fDphiTSRec(0x0),
 		fMultTSRec(0x0),
 		fSoWeighedVsNchPtL(0x0),
+		hPtLeadingGen(0x0),
+		fMultTSvsPtLeading(0x0),
 		fListOfObjects(0)
 {
 
@@ -274,6 +282,7 @@ AliAnalysisTaskGenRT::AliAnalysisTaskGenRT(const char *name):
 	fIndexLeadingRec(-1),
 	fMinPtLeading(5.0),
 	fMaxPtLeading(40.0),
+	fPtLeadingGen(0.0),
 	fSizeStep(0.1),
 	//fNso_gen(3),
 	//fNso_rec(3),
@@ -300,6 +309,8 @@ AliAnalysisTaskGenRT::AliAnalysisTaskGenRT(const char *name):
 	fDphiTSRec(0x0),
 	fMultTSRec(0x0),
 	fSoWeighedVsNchPtL(0x0),
+	hPtLeadingGen(0x0),
+	fMultTSvsPtLeading(0x0),
 	fListOfObjects(0)
 {
 
@@ -495,6 +506,14 @@ void AliAnalysisTaskGenRT::UserCreateOutputObjects(){
 		TSBins[i]=i*1.0-0.5;
 	}
 	TSBins[nTSBins]=99.5;
+
+	hPtLeadingGen = 0;
+	hPtLeadingGen = new TH1D("hPtLeadingGen","", nPtBinsLeading, PtBinsLeading);
+	fListOfObjects->Add(hPtLeadingGen);
+
+	fMultTSvsPtLeading = 0;
+	fMultTSvsPtLeading = new TH2D("fMultTSvsPtLeading","", nTSBins, TSBins, nPtBinsLeading, PtBinsLeading);
+	fListOfObjects->Add(fMultTSvsPtLeading);
 
 	for(Int_t i_pid=0; i_pid<11; ++i_pid){
 
@@ -827,6 +846,7 @@ void AliAnalysisTaskGenRT::UserExec(Option_t *){
 	TParticle* mcPartLeadingGen         = 0x0;
 	if(fIndexLeadingGen>=0){
 		mcPartLeadingGen                    = (TParticle *)fMcEvent->Particle(fIndexLeadingGen);
+		hPtLeadingGen->Fill(mcPartLeadingGen->Pt());
 		if((mcPartLeadingGen->Pt()>=fMinPtLeading) && (mcPartLeadingGen->Pt()<fMaxPtLeading)){
 			MakeRTAnalysis(kFALSE);
 		}
@@ -968,6 +988,7 @@ Int_t AliAnalysisTaskGenRT::GetIndexLeading(Bool_t fIsPseudoRec){
 		if(mcPart -> Pt()>ptleading){
 			ptleading = mcPart->Pt();
 			index_leading = ipart;
+			fPtLeadingGen = ptleading;
 		}
 
 
@@ -1138,6 +1159,7 @@ void AliAnalysisTaskGenRT::MakeRTAnalysis(Bool_t fIsPseudoRec){
 	else
 		fMultTS->Fill(multTS);
 
+	fMultTSvsPtLeading->Fill(multTS,fPtLeadingGen);
 
 	// selecting topological regions
 	pidCodeMC = 0;

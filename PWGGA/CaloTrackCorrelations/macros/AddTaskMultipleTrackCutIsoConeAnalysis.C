@@ -20,14 +20,15 @@
 #include <TROOT.h>
 
 // Analysis
-#include "AliIsolationCut.h"
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliAnaCaloTrackCorrMaker.h"
+#include "AliIsolationCut.h"
 
 // Macros
-#include "AddTaskCaloTrackCorrBase.C"
-#include "ConfigureCaloTrackCorrAnalysis.C"
-#include "GetAlienGlobalProductionVariables.C"
-
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include "PWGGA/CaloTrackCorrelations/macros/AddTaskCaloTrackCorrBase.C"
+#include "PWGGA/CaloTrackCorrelations/macros/ConfigureCaloTrackCorrAnalysis.C"
+#include "PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C"
 #endif
 
 ///
@@ -45,6 +46,7 @@
 /// \param gloCutsString : A string with list of global cuts/parameters (activate pile-up ...)
 /// \param nonLinOn : A bool to set the use of the non linearity correction
 /// \param analysisString : String that contains what analysis to activate, options: Photon, DecayPi0, MergedPi0, Charged, QA, Isolation, Correlation, Generator
+/// \param exoCut : A float setting the exoticity cut, set only if tighter than in reader
 /// \param shshMax : A float setting the maximum value of the shower shape of the clusters for the correlation analysis
 /// \param isoCone : A float setting the isolation cone size higher limit
 /// \param isoPtTh : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
@@ -73,6 +75,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
  Bool_t   calibrate     = kFALSE,
  Bool_t   nonLinOn      = kFALSE,
  TString  analysisString= "Photon_MergedPi0_DecayPi0_Isolation_Correlation_QA_Charged",
+ Float_t  exoCut        = 2.,
  Float_t  shshMax       = 0.27,
  Float_t  isoCone       = 0.4,
  Float_t  isoPtTh       = 2,
@@ -121,36 +124,58 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
   TList * anaList = task->GetAnalysisMaker()->GetListOfAnalysisContainers();
   printf("TList name: %s\n",anaList->GetName());
   
-  // Configure the different analysis
-  //
-  Float_t rMin[] = {-1,0.05,0.1};
-  
-  // 3 exclusion of isolation cone options, no cut and 2 cuts
-  for(Int_t irmin = 0; irmin < 3; irmin++)
+  // Default settings when not varied
+  Float_t rMinFix = 0.05;
+  Int_t   tmFix   = 2; // pT depedent track matching cuts
+
+  // Test 2 track matching options (no track matching and open track matching with fix cuts)
+  for(Int_t itm = 0; itm < 2; itm++)
   {
-    // Add this string to deacticate the correlation without isolation
-    // and other histograms in the Photon and Pi0 selection task
-    if(irmin == 1 ) analysisString+="_MultiIso";
-    
-    // Test 3 track matching options (no track mathing)
-    for(Int_t itm = 0; itm < 3; itm++)
-    {
-      
-      TString histoString = Form("TM%d",itm);
-      if ( irmin > 0 ) histoString+=Form("_Rmin%1.2f",rMin[irmin]);
-      
-      
-      ConfigureCaloTrackCorrAnalysis
-      ( anaList, calorimeter, simulation, year, col, analysisString, histoString, 
-       shshMax, isoCone, rMin[irmin], isoPtTh, isoMethod, isoContent,
-       leading, itm, mixOn, printSettings, debug);
-    }
+    TString histoStringTM = Form("TM%d",itm);
+
+    ConfigureCaloTrackCorrAnalysis
+    ( anaList, calorimeter, simulation, year, col, analysisString, histoStringTM,
+     shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
+     leading, itm, mixOn, printSettings, debug);
   }
-  
-  // Execute some control task only
+
+  // Analysis with open bad distance, fixed min cone distance and track match option
+  TString histoString = Form("TM%d_DistToBadOff",tmFix);
+
   ConfigureCaloTrackCorrAnalysis
-  ( anaList, calorimeter, simulation, year, col, "QA_Charged", "", 
-   -1, -1, -1, -1, -1, -1,-1,-1,0, printSettings, debug);
+  ( anaList, calorimeter, simulation, year, col, analysisString+"_DistToBadOff", histoString,
+   shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
+   leading, tmFix, mixOn, printSettings, debug);
+
+  // Analysis with tighter exoticity, fixed min cone distance and track match option
+  if ( exoCut < 1 )
+  {
+    TString histoString = Form("TM%d_ExoCut%0.2f",tmFix,exoCut);
+
+    ConfigureCaloTrackCorrAnalysis
+    ( anaList, calorimeter, simulation, year, col, analysisString+Form("_ExoCut%0.2f",exoCut), histoString,
+     shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
+     leading, tmFix, mixOn, printSettings, debug);
+  }
+
+  // Analysis with different UE estimation size region
+  histoString = Form("TM%d_MultiIsoRAndGaps",tmFix);
+  TString analysisString2 = analysisString;
+  if ( analysisString.Contains("MultiIsoR") )
+    analysisString2.ReplaceAll("MultiIsoR","MultiIsoRAndGaps");
+  else
+    analysisString2+="_MultiIsoRAndGaps";
+  
+  ConfigureCaloTrackCorrAnalysis
+  ( anaList, calorimeter, simulation, year, col, analysisString2, histoString,
+   shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
+   leading, tmFix, mixOn, printSettings, debug);
+
+
+//  // Execute some control task only
+//  ConfigureCaloTrackCorrAnalysis
+//  ( anaList, calorimeter, simulation, year, col, "QA_Charged", "",
+//   -1, -1, -1, -1, -1, -1,-1,-1,0, printSettings, debug);
   
   printf("AddTaskMultipleTrackCutIsoConeAnalysis::End configuration\n");
   

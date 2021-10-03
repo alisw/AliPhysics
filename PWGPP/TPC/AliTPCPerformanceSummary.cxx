@@ -3340,7 +3340,7 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
     // Title
     canvasRawQA0->cd();
     TPaveText *p = new TPaveText(titleWidth + itype * plotWidth, 1. - titleWidth - titleGap, titleWidth + (itype+1) * plotWidth, 1. - titleGap, "NDC");
-    p->AddText(padInput[itype]->GetTitle());
+    p->AddText(typeNames[itype]);
     p->SetFillColor(10);
     p->SetBorderSize(1);
     p->Draw();

@@ -27,6 +27,7 @@
 #include "AliPIDResponse.h"
 #include "AliAODInputHandler.h"
 #include "AliVertexingHFUtils.h"
+#include "AliVVertex.h"
 
 // includes added to play with KFParticle
 #include <vector>
@@ -75,9 +76,9 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
 
         void SetWriteLcQATree(Bool_t a) {fWriteLcQATree = a;}
         Bool_t GetWriteLcQATree() const {return fWriteLcQATree;}
-        void FillEventROOTObjects();
+        void FillEventROOTObjects(AliAODEvent* aodEvent);
         void FillTreeGenLc(AliAODMCParticle *mcpart, Int_t CheckOrigin, AliAODMCHeader *mcHeader, AliAODEvent *aodEvent);
-        void FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst, AliAODEvent *aodEvent);
+        void FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst, AliAODEvent *aodEvent, AliAODVertex *ownPVtx);
         void SetWeightFunction(TF1* weight) {fWeight=weight;}
 
         void SetUseWeights(Bool_t opt) { fUseWeights = opt;}
@@ -128,6 +129,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         AliPIDCombined*         fPIDCombined;         //!<! combined PID response object
         AliRDHFCutsKFP*         fAnaCuts;             ///< Cuts
         AliAODVertex*           fpVtx;                //!<! primary vertex
+        AliVVertex*           fpVtxOff;                //!<! primary vertex const off
         AliMCEvent*             fMCEvent;             //!<! corresponding mc event
         Double_t                fBzkG;                ///< magnetic field value [kG]
         Float_t                 fCentrality;           ///< Centrality
