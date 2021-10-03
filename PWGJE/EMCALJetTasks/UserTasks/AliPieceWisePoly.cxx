@@ -57,7 +57,7 @@ AliPieceWisePoly::AliPieceWisePoly(Int_t parts, Double_t* cutxvalues, Int_t* pol
 AliPieceWisePoly::~AliPieceWisePoly() {
   delete [] cuts;
   cuts = 0x0;
-  delete piecewisepolynom;
+  delete[] piecewisepolynom;
   piecewisepolynom = 0x0;
 }
 
