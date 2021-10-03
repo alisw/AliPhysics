@@ -1273,9 +1273,9 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     Int_t nBinsPrime = 320;
     Double_t primeLow = 0.4;
     Double_t primeHigh = 2.0;
-    Int_t arrNumbers = 4;
+    const Int_t arrNumbers = 4;
     fTPCclusterStudies = new TObjArray*[arrNumbers];
-    Int_t histNumbers = 3;
+    const Int_t histNumbers = 3;
     
     const Int_t nBinsY[histNumbers+1] = {8, 4, 11, 15};
     Float_t twopi = 2.0 * TMath::Pi();
