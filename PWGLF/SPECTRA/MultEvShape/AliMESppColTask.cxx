@@ -1,4 +1,4 @@
-//taskul ruleaza analiza de multiplicitate pentru care am modificat intervalul de pseudorapiditate la +/- 0.7 ca sa facem o comparatie cu rezultatele din teza 
+//taskul ruleaza analiza de multiplicitate pentru care am modificat intervalul de pseudorapiditate la +/- 0.6 ca sa facem o comparatie cu rezultatele din teza 
 
 #include "AliLog.h"
 
@@ -154,7 +154,7 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
   for(Int_t it(0); it<fTracks->GetEntries(); it++){
     if(!(t = (AliMEStrackInfo*)fTracks->At(it))) continue;
 	 if( !(t->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
-	 if( TMath::Abs(t->Eta())> 0.7 ) continue;
+	 if( TMath::Abs(t->Eta())> 0.6 ) continue;
 	 if( t->Pt()< 0.2 ) continue;
 	 if( HasMCdata() ){
 		if( !(tMC= (AliMEStrackInfo*)fMCtracks->At(t->GetLabel())) ) continue;
@@ -171,7 +171,7 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
 	  for(Int_t it(0); it<fMCtracks->GetEntries(); it++){
     	if(!(tMC = (AliMEStrackInfo*)fMCtracks->At(it))) continue;
 		if( !(tMC->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
-		if( TMath::Abs(tMC->Eta())> 0.7 ) continue;
+		if( TMath::Abs(tMC->Eta())> 0.6 ) continue;
 		if( tMC->Pt()< 0.2 ) continue;
 		if((tMC->Pt())>pTMClead){
 			pTMClead = tMC->Pt();
@@ -181,63 +181,63 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
 		}
 	  }
 	}
-		  //---------------end of ESD loop for leading determination--------------------
-//basic track info sparse  
-    Double_t vec_hbTrk[6];
-	THnSparseD *hbTrk = (THnSparseD*)fHistosQA->At(147);
-    Double_t vec_hbMCTrk[6];
-    THnSparseD *hbMCTrk = (THnSparseD*)fHistosQA->At(148);
-
-
-    for(Int_t it(0); it<fTracks->GetEntries(); it++){
-    if(!(t = (AliMEStrackInfo*)fTracks->At(it))) continue;
-	 if( !(t->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
-	 if( TMath::Abs(t->Eta())> 0.8 ) continue;
-	 if( t->Pt()< 0.2 ) continue;
-	 if( HasMCdata() ){
-		if( !(tMC= (AliMEStrackInfo*)fMCtracks->At(t->GetLabel())) ) continue;
-	}
-        vec_hbTrk[0]=mult_comb08;
-        if(sfer > 0.0 ) {vec_hbTrk[1]=sfer;}
-            else vec_hbTrk[1]= -999.;
-        if(idLead == it) {vec_hbTrk[2]= pTlead; vec_hbTrk[6]= 1;} 
-            else {vec_hbTrk[2]= -999.; vec_hbTrk[6]= -1;}
-        if(((t->Pt()) < pTlead) && (idLead != it)) {vec_hbTrk[3] = t->Pt();
-                                                    vec_hbTrk[4] = etaL - t->Eta();
-                                                    vec_hbTrk[5] = RangePhi(phiL- t->Phi());
-                                                    vec_hbTrk[6]= 0;
-                                                    } 
-            else {vec_hbTrk[3] = -999.;
-                  vec_hbTrk[4] = -999.;
-                  vec_hbTrk[5] = -999.;
-                }
-		hbTrk->Fill(vec_hbTrk);
-  }
-
-		if( HasMCdata() ){
-	  for(Int_t it(0); it<fMCtracks->GetEntries(); it++){
-    	if(!(tMC = (AliMEStrackInfo*)fMCtracks->At(it))) continue;
-		if( !(tMC->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
-		if( TMath::Abs(tMC->Eta())> 0.8 ) continue;
-		if( tMC->Pt()< 0.2 ) continue;
-            vec_hbMCTrk[0]=MC_mult_glob08;
-            if(MC_sfer > 0.0 ) {vec_hbMCTrk[1]=MC_sfer;}
-                else vec_hbMCTrk[1]= -999.;
-            if(idMCLead == it) {vec_hbMCTrk[2]= pTMClead; vec_hbMCTrk[6]= 1;} 
-                else {vec_hbMCTrk[2]= -999.; vec_hbMCTrk[6]= -1;}
-            if(((tMC->Pt()) < pTMClead) && (idMCLead != it)) {vec_hbMCTrk[3] = tMC->Pt();
-                                                              vec_hbMCTrk[4] = etaMCL - tMC->Eta();
-                                                              vec_hbMCTrk[5] = RangePhi(phiMCL- tMC->Phi());
-                                                              vec_hbMCTrk[6]= 0;
-                                                            } 
-                else {vec_hbMCTrk[3] = -999.;
-                    vec_hbMCTrk[4] = -999.;
-                    vec_hbMCTrk[5] = -999.;
-                }
-            hbMCTrk->Fill(vec_hbMCTrk);
-	  }
-	}
-		  //---------------end of ESD loop for basic info trk sparse --------------------
+// 		  //---------------end of ESD loop for leading determination--------------------
+// //basic track info sparse  
+//     Double_t vec_hbTrk[6];
+// 	THnSparseD *hbTrk = (THnSparseD*)fHistosQA->At(147);
+//     Double_t vec_hbMCTrk[6];
+//     THnSparseD *hbMCTrk = (THnSparseD*)fHistosQA->At(148);
+// 
+// 
+//     for(Int_t it(0); it<fTracks->GetEntries(); it++){
+//     if(!(t = (AliMEStrackInfo*)fTracks->At(it))) continue;
+// 	 if( !(t->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
+// 	 if( TMath::Abs(t->Eta())> 0.8 ) continue;
+// 	 if( t->Pt()< 0.2 ) continue;
+// 	 if( HasMCdata() ){
+// 		if( !(tMC= (AliMEStrackInfo*)fMCtracks->At(t->GetLabel())) ) continue;
+// 	}
+//         vec_hbTrk[0]=mult_comb08;
+//         if(sfer > 0.0 ) {vec_hbTrk[1]=sfer;}
+//             else vec_hbTrk[1]= -999.;
+//         if(idLead == it) {vec_hbTrk[2]= pTlead; vec_hbTrk[6]= 1;} 
+//             else {vec_hbTrk[2]= -999.; vec_hbTrk[6]= -1;}
+//         if(((t->Pt()) < pTlead) && (idLead != it)) {vec_hbTrk[3] = t->Pt();
+//                                                     vec_hbTrk[4] = etaL - t->Eta();
+//                                                     vec_hbTrk[5] = RangePhi(phiL- t->Phi());
+//                                                     vec_hbTrk[6]= 0;
+//                                                     } 
+//             else {vec_hbTrk[3] = -999.;
+//                   vec_hbTrk[4] = -999.;
+//                   vec_hbTrk[5] = -999.;
+//                 }
+// 		hbTrk->Fill(vec_hbTrk);
+//   }
+// 
+// 		if( HasMCdata() ){
+// 	  for(Int_t it(0); it<fMCtracks->GetEntries(); it++){
+//     	if(!(tMC = (AliMEStrackInfo*)fMCtracks->At(it))) continue;
+// 		if( !(tMC->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
+// 		if( TMath::Abs(tMC->Eta())> 0.8 ) continue;
+// 		if( tMC->Pt()< 0.2 ) continue;
+//             vec_hbMCTrk[0]=MC_mult_glob08;
+//             if(MC_sfer > 0.0 ) {vec_hbMCTrk[1]=MC_sfer;}
+//                 else vec_hbMCTrk[1]= -999.;
+//             if(idMCLead == it) {vec_hbMCTrk[2]= pTMClead; vec_hbMCTrk[6]= 1;} 
+//                 else {vec_hbMCTrk[2]= -999.; vec_hbMCTrk[6]= -1;}
+//             if(((tMC->Pt()) < pTMClead) && (idMCLead != it)) {vec_hbMCTrk[3] = tMC->Pt();
+//                                                               vec_hbMCTrk[4] = etaMCL - tMC->Eta();
+//                                                               vec_hbMCTrk[5] = RangePhi(phiMCL- tMC->Phi());
+//                                                               vec_hbMCTrk[6]= 0;
+//                                                             } 
+//                 else {vec_hbMCTrk[3] = -999.;
+//                     vec_hbMCTrk[4] = -999.;
+//                     vec_hbMCTrk[5] = -999.;
+//                 }
+//             hbMCTrk->Fill(vec_hbMCTrk);
+// 	  }
+// 	}
+// 	//	  ---------------end of ESD loop for basic info trk sparse --------------------
 
 	
 	
@@ -373,7 +373,7 @@ TObjArray*  AliMESppColTask::SelectedTracks(TObjArray *obj, Int_t MC, Int_t idL,
           }
           if( !(part->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
       // Accept tracks in a limited pT & rapidity range
-			 if( TMath::Abs(part->Eta())> 0.7 ) continue;
+			 if( TMath::Abs(part->Eta())> 0.6 ) continue;
 			 if(ipart != idL && part->Pt()>=1.0 && part->Pt()<=2.0) tracks->AddLast(part);
 			 if(ipart == idL) tracks->AddLast(part);
     }
@@ -393,7 +393,7 @@ TObjArray*  AliMESppColTask::SelectedTracks(TObjArray *obj, Int_t MC, Int_t idL,
           if(!(partMC = (AliMEStrackInfo*)obj ->At(ipart))) continue;
           if(!(partMC->HasOrigin(AliMEStrackInfo::kPrimary))) continue;
         // Accept tracks in a limited pT & rapidity range
-          if( TMath::Abs(partMC->Eta())> 0.7 ) continue;
+          if( TMath::Abs(partMC->Eta())> 0.6 ) continue;
 			 if(ipart != idLMC && partMC->Pt()>=1.0 && partMC->Pt()<=2.0) tracksMC->AddLast(partMC);
 			 if(ipart == idLMC) tracksMC->AddLast(partMC);
         }
@@ -432,7 +432,7 @@ TObjArray*  AliMESppColTask::FindLeadingObjects(TObjArray *obj, Int_t MC)
           if( !(part->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
       // Accept tracks in a limited pT & rapidity range
 //           if(part->Pt()<0.2 || part->Pt()>3.3) continue;
-          if( TMath::Abs(part->Eta())> 0.7 ) continue;
+          if( TMath::Abs(part->Eta())> 0.6 ) continue;
           tracks->AddLast(part);
     }
     // Order tracks by pT, first track is LeadingParticle
@@ -451,7 +451,7 @@ TObjArray*  AliMESppColTask::FindLeadingObjects(TObjArray *obj, Int_t MC)
           if(!(partMC->HasOrigin(AliMEStrackInfo::kPrimary))) continue;
         // Accept tracks in a limited pT & rapidity range
 //           if(partMC->Pt()<0.2 || partMC->Pt()>3.3) continue;
-          if( TMath::Abs(partMC->Eta())> 0.7 ) continue;
+          if( TMath::Abs(partMC->Eta())> 0.6 ) continue;
           tracksMC->AddLast(partMC);
         }
       QSortTracks( *tracksMC, 0, tracksMC->GetEntriesFast() );
@@ -584,7 +584,7 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 	AliMEStrackInfo* trigger = (AliMEStrackInfo*)selectedArray->At(0);
 	if(!trigger) return;
 	if(jm<0 || trigger->Pt()<pTtrigMin[jm] || trigger->Pt()>pTtrigMax[jm]) return;
-	if( TMath::Abs(trigger->Eta())> 0.7 ) return;
+	if( TMath::Abs(trigger->Eta())> 0.6 ) return;
                       
 	Double_t ptL  = trigger->Pt();
 	Double_t phiL = trigger->Phi();
@@ -595,7 +595,7 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 		AliMEStrackInfo* associate = (AliMEStrackInfo*)selectedArray->At(j);
 		if(!associate) continue;
 		if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
-		if( TMath::Abs(associate->Eta())> 0.7 ) continue;
+		if( TMath::Abs(associate->Eta())> 0.6 ) continue;
 
 		Double_t ptAs = associate->Pt();
 		Double_t phiAs = associate->Phi();
@@ -698,14 +698,14 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
             Double_t phiL = trigger->Phi();
             Double_t etaL = trigger->Eta();
             if(trigger->Pt() < pTtrigMin[jm] || trigger->Pt() > pTtrigMax[jm]) continue;
-            if( TMath::Abs(trigger->Eta())> 0.7 ) continue;
+            if( TMath::Abs(trigger->Eta())> 0.6 ) continue;
         
             for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
           //		 AliInfo("In a doua bucla!!!!!!");
               AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
               if(!associate)continue;
               if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
-              if( TMath::Abs(associate->Eta())> 0.7 ) continue;
+              if( TMath::Abs(associate->Eta())> 0.6 ) continue;
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
@@ -853,13 +853,13 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
             Double_t phiL = trigger->Phi();
             Double_t etaL = trigger->Eta();
             if(trigger->Pt()<pTtrigMin[jm] || trigger->Pt()>pTtrigMax[jm]) continue;
-            if( TMath::Abs(trigger->Eta())> 0.7 ) continue;
+            if( TMath::Abs(trigger->Eta())> 0.6 ) continue;
         
             for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
               AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
               if(!associate)continue;
               if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
-              if( TMath::Abs(associate->Eta())> 0.7 ) continue;
+              if( TMath::Abs(associate->Eta())> 0.6 ) continue;
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
