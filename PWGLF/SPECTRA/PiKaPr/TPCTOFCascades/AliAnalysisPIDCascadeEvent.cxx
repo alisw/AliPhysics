@@ -35,6 +35,14 @@ AliAnalysisPIDCascadeEvent::AliAnalysisPIDCascadeEvent() :
   fCentralityQuality(0),
   fReferenceMultiplicity(0),
   fV0Mmultiplicity(0.),
+  fV0Amultiplicity(0.),
+  fV0Cmultiplicity(0.),
+  fV0Asignal(0.),
+  fV0Csignal(0.),
+
+  fRefMult08(0.),
+  fRefMult05(0.),
+  fSPDTracklets(0.),
   fMCMultiplicity(0),
   fEventFlags(0),
   fMagneticField(0.),
@@ -57,6 +65,14 @@ AliAnalysisPIDCascadeEvent::AliAnalysisPIDCascadeEvent(const AliAnalysisPIDCasca
   fCentralityQuality(source.fCentralityQuality),
   fReferenceMultiplicity(0),
   fV0Mmultiplicity(source.fV0Mmultiplicity),
+  fV0Amultiplicity(source.fV0Amultiplicity),
+  fV0Cmultiplicity(source.fV0Cmultiplicity),
+  fV0Asignal(source.fV0Asignal),
+  fV0Csignal(source.fV0Csignal),
+
+  fRefMult08(source.fRefMult08),
+  fRefMult05(source.fRefMult05),
+  fSPDTracklets(source.fSPDTracklets),
   fMCMultiplicity(source.fMCMultiplicity),
   fEventFlags(source.fEventFlags),
   fMagneticField(source.fMagneticField),
@@ -68,6 +84,14 @@ AliAnalysisPIDCascadeEvent::AliAnalysisPIDCascadeEvent(const AliAnalysisPIDCasca
 
     fReferenceMultiplicity = source.fReferenceMultiplicity;
     fV0Mmultiplicity = source.fV0Mmultiplicity;
+    fV0Cmultiplicity = source.fV0Cmultiplicity;
+    fV0Amultiplicity = source.fV0Amultiplicity;
+    fV0Csignal = source.fV0Csignal;
+    fV0Asignal = source.fV0Asignal;
+
+    fRefMult08=source.fRefMult08;
+    fRefMult05=source.fRefMult05;
+    fSPDTracklets=source.fSPDTracklets;
 }
 
 //___________________________________________________________
@@ -89,7 +113,15 @@ AliAnalysisPIDCascadeEvent::operator=(const AliAnalysisPIDCascadeEvent &source)
   fVertexZ = source.fVertexZ;
   fCentralityQuality = source.fCentralityQuality;
   fReferenceMultiplicity = source.fReferenceMultiplicity;
+  fRefMult08=source.fRefMult08;
+  fRefMult05=source.fRefMult05;
+  fSPDTracklets=source.fSPDTracklets;  
   fV0Mmultiplicity = source.fV0Mmultiplicity;
+  fV0Amultiplicity = source.fV0Amultiplicity;
+  fV0Cmultiplicity = source.fV0Cmultiplicity;
+  fV0Asignal = source.fV0Asignal;
+  fV0Csignal = source.fV0Csignal;
+
   fMCMultiplicity = source.fMCMultiplicity;
   fEventFlags = source.fEventFlags;
   fMagneticField=source.fMagneticField;
@@ -125,6 +157,9 @@ AliAnalysisPIDCascadeEvent::Reset()
   fCentralityQuality = 0;
   fReferenceMultiplicity = 0;
   fMCMultiplicity = 0;
+  fRefMult08=0;
+  fRefMult05=0;
+  fSPDTracklets=0;
   fV0Mmultiplicity = 0;
   fEventFlags = 0;
   fMagneticField=0;
