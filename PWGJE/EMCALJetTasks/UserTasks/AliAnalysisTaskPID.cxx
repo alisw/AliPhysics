@@ -1278,7 +1278,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     const Int_t histNumbers = 3;
     
     constexpr Int_t nBinsY[histNumbers+1] = {8, 4, 11, 15};
-    constexpr Float_t twopi = 2.0 * TMath::Pi();
+    const Float_t twopi = 2.0 * TMath::Pi();
     
     Double_t binsPrime[nBinsPrime+1];
     for (Int_t i=0;i<=nBinsPrime;i++) {
