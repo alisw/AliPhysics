@@ -703,6 +703,7 @@ void AliAnalysisTaskMuPa::Terminate(Option_t *)
  if(!fBaseList)
  {
   fBaseList = (TList*)GetOutputData(1);
+
   if(!fBaseList){cout<<__LINE__<<endl;exit(1);}
   this->GetPointers(fBaseList);
  }
@@ -785,10 +786,22 @@ void AliAnalysisTaskMuPa::OnlineMonitoring()
   {
    //cout<<Form("nEvts: %d",currentEventNo)<<endl;
    cout<<Form("\nPer request, updating after %d events the file %s .\n",currentEventNo,fUpdateFile->Data())<<endl;
+   TFile *f = new TFile(fUpdateFile->Data(),"update");
+   TDirectoryFile *dirFile = dynamic_cast<TDirectoryFile*>(f->Get("outputMuPaAnalysis"));
+   if(!dirFile)
+   {  
+    // this is relevany why I run a train, since I have on TDirectoryFile for all tasks (i.e. TList's)
+    dirFile = new TDirectoryFile("outputMuPaAnalysis","outputMuPaAnalysis");
+   }
+   //fBaseList->SetName(fTaskName.Data()); // this is to resemble what mgr is doing in Terminate(), output files from two approaches are mergeable
+   TList *list = (TList*) fBaseList->Clone(fTaskName.Data());
+   dirFile->Add(list,kTRUE);
+   dirFile->Write(dirFile->GetName(), TObject::kSingleKey + TObject::kOverwrite);
+   delete dirFile; dirFile = NULL;
+   f->Close();  
+   cout<<Form("Done for task %s. Now it's safe to bail out (in case all tasks you want were dumped for this event) ...",fTaskName.Data())<<endl;
    sleep(2);
-   TFile *f = new TFile(fUpdateFile->Data(),"recreate");
-   fBaseList->Write(fBaseList->GetName(),TObject::kSingleKey);
-   f->Close();
+   cout<<"OK, continuing then."<<endl; sleep(1);
   }
  } // if(fUpdateOutputFile)
 
@@ -800,9 +813,14 @@ void AliAnalysisTaskMuPa::OnlineMonitoring()
   if(fMaxNumberOfEvents == currentEventNo)
   {
    cout<<Form("\nPer request, bailing out after %d events in the file %s .\n",fMaxNumberOfEvents,fBailOutFile->Data())<<endl;
+   cout<<Form("Output is dumped correctly only if there is 1 task in the train, due to exit(1) below.")<<endl;
    sleep(2);
    TFile *f = new TFile(fBailOutFile->Data(),"recreate");
-   fBaseList->Write(fBaseList->GetName(),TObject::kSingleKey);
+   TDirectoryFile *dirFile = new TDirectoryFile("outputMuPaAnalysis","outputMuPaAnalysis");
+   fBaseList->SetName(fTaskName.Data()); // this is to resemble what mgr is doing in Terminate(), output files from two approaches are mergeable
+   dirFile->Add(fBaseList,kTRUE);
+   dirFile->Write(dirFile->GetName(), TObject::kSingleKey + TObject::kOverwrite);
+   delete dirFile; dirFile = NULL;
    f->Close();
    exit(1);
   }
