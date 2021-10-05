@@ -31,6 +31,7 @@ public:
   TProfile *getProfile(Int_t ind=-1);
   Int_t getNSubs() { return fListOfEntries->GetEntries(); };
   void PresetWeights(AliProfileBS *targetBS) { fPresetWeights = targetBS; };
+  void ResetBin(Int_t nbin) { ResetBin((TProfile*)this,nbin); for(Int_t i=0;i<fListOfEntries->GetEntries(); i++) ResetBin((TProfile*)fListOfEntries->At(i),nbin); };
   ClassDef(AliProfileBS,2);
 protected:
   TH1* getHistRebinned(TProfile *inpf); //Performs rebinning, if required, and returns a projection of profile
@@ -40,5 +41,6 @@ protected:
   Int_t fMultiRebin; //! externaly set runtime, no need to store
   Double_t *fMultiRebinEdges; //! externaly set runtime, no need to store
   AliProfileBS *fPresetWeights; //! AliProfileBS whose weights we should copy
+  void ResetBin(TProfile *tpf, Int_t nbin) {tpf->SetBinEntries(nbin,0); tpf->SetBinContent(nbin,0); tpf->SetBinError(nbin,0); };
 };
 #endif
