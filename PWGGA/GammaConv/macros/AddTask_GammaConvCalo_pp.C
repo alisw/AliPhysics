@@ -3478,16 +3478,21 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310c100000010"); //c: alpha meson variation 1 0.6<alpha<1.0
 
   } else if ( trainConfig == 3143){// without smearing, different M02, TM cuts
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 5
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901097e3n230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 7
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); // no smearing, M02 < 0.5, TM f
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e30230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 5
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901097e30230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 7
   } else if ( trainConfig == 3144){// without smearing, different cuts
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n240000","0r63103100000010"); // no smearing, M02 < 0.4, TM 5
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n250000","0r63103100000010"); // no smearing, M02 < 0.3, TM 5
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e30240000","0r63103100000010"); // no smearing, M02 < 1.0, TM 5
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e30240000","0r63103100000010"); // no smearing, M02 < 0.4, TM 5
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e30250000","0r63103100000010"); // no smearing, M02 < 0.3, TM 5
   } else if ( trainConfig == 3145){// without smearing, different cuts
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310a100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0-0.2
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310b100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.2-0.6
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310c100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.6-1
-
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e30230000","0r6310a100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0-0.2
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e30230000","0r6310b100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.2-0.6
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e30230000","0r6310c100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.6-1
+  } else if ( trainConfig == 3146){// without smearing, different cuts
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100000010"); // NCell >= 2
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3n230000","0r63103100000010"); // NCell >= 2, M02 < 0.5
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901095e3n230000","0r63103100000010"); // NCell >= 2, M02 < 0.5, TM 5
 
     // Variations for systematics PCM-EDC 13 TeV EG1
     // Variations of EDC Part
@@ -3605,15 +3610,21 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","0r6310c100000010"); //c: alpha meson variation 1 0.6<alpha<1.0
 
   } else if ( trainConfig == 3243){// without smearing, different M02, TM cuts
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 5
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901097e3n230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 7
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); // no smearing, M02 < 0.5, TM f
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e30230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 5
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901097e30230000","0r63103100000010"); // no smearing, M02 < 0.5, TM 7
   } else if ( trainConfig == 3244){// without smearing, different cuts
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n240000","0r63103100000010"); // no smearing, M02 < 0.4, TM 5
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n250000","0r63103100000010"); // no smearing, M02 < 0.3, TM 5
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e30240000","0r63103100000010"); // no smearing, M02 < 1.0, TM 5
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e30240000","0r63103100000010"); // no smearing, M02 < 0.4, TM 5
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e30250000","0r63103100000010"); // no smearing, M02 < 0.3, TM 5
   } else if ( trainConfig == 3245){// without smearing, different cuts
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310a100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0-0.2
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310b100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.2-0.6
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n230000","0r6310c100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.6-1
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e30230000","0r6310a100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0-0.2
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e30230000","0r6310b100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.2-0.6
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e30230000","0r6310c100000010"); // no smearing, M02 < 0.5, TM 5, alpha 0.6-1
+  } else if ( trainConfig == 3246){// without smearing, different cuts
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100000010"); // NCell >= 2
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe3n230000","0r63103100000010"); // NCell >= 2, M02 < 0.5
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901095e3n230000","0r63103100000010"); // NCell >= 2, M02 < 0.5, TM 5
 
 
 
