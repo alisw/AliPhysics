@@ -854,12 +854,17 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistPosNegTracks->GetXaxis()->SetTitle("p_{T}");
     fHistPosNegTracks->GetYaxis()->SetTitle("charge");
 
-    fHistLambdaFeedDown = new TH3F("fHistLambdaFeedDown","fHistLambdaFeedDown",fNumberOfPtBinsAssoc,fPtAsocMin,fPtAssocMax,fNumberOfPtBinsAssoc,fPtAsocMin,fPtAssocMax,2,0,2);
+    Int_t binsFeedDown[4]= {fNumberOfPtBinsAssoc,fNumberOfPtBinsAssoc,2,300};
+    Double_t minsFeedDown[4] = {fPtAsocMin,fPtAsocMin,0,1.08};
+    Double_t maxsFeedDown[4] = {fPtAssocMax,fPtAssocMax,2,1.15};
+
+    fHistLambdaFeedDown = new THnSparseF("fHistLambdaFeedDown","fHistLambdaFeedDown",4,binsFeedDown,minsFeedDown,maxsFeedDown);
     fHistLambdaFeedDown->Sumw2();
     fOutputList->Add(fHistLambdaFeedDown);
-    fHistLambdaFeedDown->GetXaxis()->SetTitle("V0 p_{T}");
-    fHistLambdaFeedDown->GetYaxis()->SetTitle("cascade p_{T}");
-    fHistLambdaFeedDown->GetZaxis()->SetTitle("V0 type");
+    fHistLambdaFeedDown->GetAxis(0)->SetTitle("V0 p_{T}");
+    fHistLambdaFeedDown->GetAxis(1)->SetTitle("cascade p_{T}");
+    fHistLambdaFeedDown->GetAxis(2)->SetTitle("V0 type");
+    fHistLambdaFeedDown->GetAxis(3)->SetTitle("V0 invarinat mass");
 
     fHistMultVZEROTracklets= new TH3D("fHistMultVZEROTracklets","fHistMultVZEROTracklets",1000,0,1000,100,0,100,16,0,100);
     fHistMultVZEROTracklets->Sumw2();
@@ -3107,7 +3112,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::FillMC(const AliVParticle *V0,Int_t pdgV0
     Double_t V0mcPt = mcPosMother->Pt();
 
     if(IsFromXi){
-        fHistLambdaFeedDown->Fill(V0->Pt(),xiPt,triggerType-1.5);
+        Double_t feed[4] = {V0->Pt(),xiPt,triggerType-1.5,mass};
+        fHistLambdaFeedDown->Fill(feed);
     }
    
     if(IsParticleFromMC){
