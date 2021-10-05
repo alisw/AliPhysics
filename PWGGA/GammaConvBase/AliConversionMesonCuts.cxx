@@ -4592,19 +4592,29 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
       }
   } else if (fUsePtDepSelectionWindow){
       // Determine correct mass parametrisation depending on what method is used
-      Float_t pt   = meson->Pt();
+      Float_t pt        = meson->Pt();
+      Float_t pt_used;
       Float_t mass = 0;
       Float_t sigma = 999;
       switch(fMassParamFunction){
         case 0: // EMC-EMC
-          if ( pt>45. ){
-              Double_t pt_fix=45.;
-              mass = (0.125281) + ((0.0023329) * pt_fix) + ((-0.000272107) * pt_fix * pt_fix) + ((1.57169e-05) * pt_fix * pt_fix * pt_fix) + ((-1.93425e-07) * pt_fix * pt_fix * pt_fix * pt_fix);
-              sigma = (0.0208639) + ((-0.00227399) * pt_fix ) + ((0.000162993) * pt_fix * pt_fix) + ((-1.94142e-06) * pt_fix * pt_fix * pt_fix);
+          if (pt<2.0){
+              pt_used=pt;
+          } else if (pt>35.0) {
+              pt_used=pt;
           } else {
-              mass = (0.125281) + ((0.0023329) * pt) + ((-0.000272107) * pt * pt) + ((1.57169e-05) * pt * pt * pt) + ((-1.93425e-07) * pt * pt * pt * pt);
-              sigma = (0.0208639) + ((-0.00227399) * pt ) + ((0.000162993) * pt * pt) + ((-1.94142e-06) * pt * pt * pt);
+              pt_used = pt;
           }
+          mass = (0.128551) + ((0.00282138) * pt_used) + ((-0.000352964) * pt_used * pt_used) + ((1.92779e-05) * pt_used * pt_used * pt_used) + ((-2.87512e-07) * pt_used * pt_used * pt_used * pt_used);
+          if (pt<3.0){
+              pt_used=pt;
+          } else if (pt>35.0) {
+              pt_used=pt;
+          } else {
+              pt_used = pt;
+          }
+          sigma = (0.0139566) + ((-0.000959814) * pt_used ) + ((8.4667e-05) * pt_used * pt_used) + ((-7.26973e-08) * pt_used * pt_used * pt_used);
+
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
