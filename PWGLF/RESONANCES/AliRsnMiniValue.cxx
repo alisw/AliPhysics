@@ -104,7 +104,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kTracklets:    return "EventTracklets";
       case kPlaneAngle:   return "EventPlane";
       case kLeadingPt:    return "EventLeadingPt";
-      case kLeadingPhi:   return "EventLeadingPhi"
+      case kLeadingPhi:   return "EventLeadingPhi";
       case kPt:           return "Pt";
       case kPz:           return "Pz";
       case kInvMass:      return "InvMass";
@@ -112,7 +112,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kInvMassRes:   return "InvMassResolution";
       case kInvMassDiff:  return "InvMassDifference";
       case kEta:          return "Eta";
-      case kPhi:          return "Phi"
+      case kPhi:          return "Phi";
       case kMt:           return "Mt";
       case kY:            return "Y";
       case kPtRatio:      return "PtRatio";
@@ -191,7 +191,10 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          l = event->LeadingParticle(fUseMCInfo);
          if (l) {
             l->Set4Vector(v,-1.0,fUseMCInfo);
-            return v.Phi();
+            Double_t angle = v.Phi();
+            while (angle >= 1.5 * TMath::Pi()) angle -= 2 * TMath::Pi();
+            while (angle < -0.5 * TMath::Pi()) angle += 2 * TMath::Pi();
+            return angle;
          }
          return 0.0;
       case kPt:
@@ -203,7 +206,10 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kEta:
          return pair->Eta(fUseMCInfo);
       case kPhi:
-         return pair->Phi(fUseMCInfo);
+           Double_t angle1 = pair->Sum(fUseMCInfo).Phi();
+            while (angle1 >= 1.5 * TMath::Pi()) angle1 -= 2 * TMath::Pi();
+            while (angle1 < -0.5 * TMath::Pi()) angle1 += 2 * TMath::Pi();
+            return angle1;
       case kInvMassRes:
          return pair->InvMassRes();
       case kInvMassDiff:
