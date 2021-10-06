@@ -24,6 +24,7 @@ public:
       kTracklets,     // event tracklets
       kPlaneAngle,    // event reaction plane angle
       kLeadingPt,     // event leading particle momentum
+      kLeadingPhi,     // event leading particle phi angle
       kEventCuts,     // -- limit of event cuts ----------------------------------------------------
       kPt,            // pair transverse momentum
       kPz,            // pair longitudinal momentum
