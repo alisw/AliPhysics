@@ -16,6 +16,8 @@ Bool_t ConfigKstarLeading(
     /* pt of leading    */ Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
     /* multiplicity     */ Int_t multID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
     /* delta eta  */ Int_t detaID  = task->CreateValue(AliRsnMiniValue::kDeltaEta, kFALSE);
+    /* phi of leading    */ Int_t philID = task->CreateValue(AliRsnMiniValue::kLeadingPhi, kFALSE);
+   /* phi angle         */ Int_t phiID = task->CreateValue(AliRsnMiniValue::kPhi, kFALSE);
 
 
    
@@ -65,14 +67,16 @@ Bool_t ConfigKstarLeading(
         out->SetMotherMass(motherMass[i]);
 
         out->AddAxis(imID, 85, 0.77, 1.20);
-        out->AddAxis(ptID, 4, 2., 10.);
-        if(!isPP ) out->AddAxis(multID,9,0.,90.);
+        out->AddAxis(ptID, 1, 2., 10.);
+        if(!isPP ) out->AddAxis(multID,5,0.,50.);
         else out->AddAxis(multID, 10, 0., 100.); 
 
 
-        out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
-        out->AddAxis(ptlID, 26, 4., 30.); 
+       // out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
+        out->AddAxis(ptlID, 1, 4., 30.); 
        //  out->AddAxis(detaID, 16, -1.6, 1.6);   
+        out->AddAxis(philID, 18, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+        out->AddAxis(phiID, 18, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
     }
     return kTRUE;
 }
