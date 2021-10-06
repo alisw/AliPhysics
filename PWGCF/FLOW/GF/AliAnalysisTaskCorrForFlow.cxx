@@ -36,10 +36,12 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow() : AliAnalysisTaskSE(),
     fTrigger(AliVEvent::kINT7),
     fIsHMpp(kFALSE),
     fDoPID(kFALSE),
+    fUseNch(kFALSE),
     fUseEfficiency(kFALSE),
     fEfficiencyEtaDependent(kFALSE),
     fFilterBit(96),
     fbSign(0),
+    fNofTracks(0),
     fPtMinTrig(0.5),
     fPtMaxTrig(10.0),
     fPtMinAss(0.5),
@@ -75,10 +77,12 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name, Bool_t 
     fTrigger(AliVEvent::kINT7),
     fIsHMpp(kFALSE),
     fDoPID(kFALSE),
+    fUseNch(kFALSE),
     fUseEfficiency(bUseEff),
     fEfficiencyEtaDependent(kFALSE),
     fFilterBit(96),
     fbSign(0),
+    fNofTracks(0),
     fPtMinTrig(0.5),
     fPtMaxTrig(10.0),
     fPtMinAss(0.5),
@@ -109,11 +113,8 @@ void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
     OpenFile(1);
     PrintSetup();
 
-    // //just for testing
-    // fPtBinsTrigCharged = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0};
-    // fPtBinsAss = {0.5, 1.0, 1.5, 2.0, 3.0};
     fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
-    fCentBins = {0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100};
+    //fCentBins = {0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100};
 
     fOutputListCharged = new TList();
     fOutputListCharged->SetOwner(kTRUE);
@@ -250,7 +251,10 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
         if(!track || !IsTrackSelected(track)) { continue; }
 
         Double_t trackPt = track->Pt();
-        if(trackPt > fPtMinAss && trackPt < fPtMaxAss) fTracksAss->Add((AliAODTrack*)track);
+        if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {
+          fTracksAss->Add((AliAODTrack*)track);
+          fNofTracks++;
+        }
         if(trackPt > fPtMinTrig && trackPt < fPtMaxTrig) {
           fTracksTrigCharged->Add((AliAODTrack*)track);
           fhTrigTracks->Fill(trackPt, fPVz);
@@ -267,6 +271,8 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
         //example histogram
         fHistPhiEta->Fill(track->Phi(), track->Eta());
     }
+
+    if(fUseNch) fCentrality = (Double_t)fNofTracks;
 
     if(!fTracksTrigCharged->IsEmpty()){
       if(fDoPID){
@@ -712,10 +718,13 @@ Double_t AliAnalysisTaskCorrForFlow::GetEff(const Double_t dPt, const Int_t spec
 void AliAnalysisTaskCorrForFlow::PrintSetup(){
   printf("\n\n\n ************** Parameters ************** \n");
   printf("\t fDoPID: (Bool_t) %s\n",    fDoPID ? "kTRUE" : "kFALSE");
+  printf("\t fUseNch: (Bool_t) %s\n",    fUseNch ? "kTRUE" : "kFALSE");
+  printf("\t fIsHMpp: (Bool_t) %s\n",    fIsHMpp ? "kTRUE" : "kFALSE");
   printf("\t fUseEfficiency: (Bool_t) %s\n",    fUseEfficiency ? "kTRUE" : "kFALSE");
   printf("\t fEfficiencyEtaDependent: (Bool_t) %s\n",    fEfficiencyEtaDependent ? "kTRUE" : "kFALSE");
   printf("\n **************************** \n");
   printf("\t fAbsEtaMax: (Double_t) %f\n",    fAbsEtaMax);
   printf("\t fPtMinTrig -- fPtMaxTrig: (Double_t) %f -- %f\n",    fPtMinTrig, fPtMaxTrig);
   printf("\t fPtMinAss -- fPtMaxAss: (Double_t) %f -- %f\n",    fPtMinAss, fPtMaxAss);
+  printf("\t fCentMin -- fCentMax: (Double_t) %f -- %f\n",    fCentMin, fCentMax);
 }
