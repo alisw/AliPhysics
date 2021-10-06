@@ -4599,7 +4599,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
       switch(fMassParamFunction){
         case 0: // EMC-EMC
           if (pt<2.0){
-              pt_used=3.0;
+              pt_used=2.0;
           } else if (pt>50.0) {
               pt_used=50.;
           } else {
