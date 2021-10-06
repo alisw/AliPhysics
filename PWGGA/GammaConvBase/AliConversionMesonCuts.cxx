@@ -4599,17 +4599,17 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
       switch(fMassParamFunction){
         case 0: // EMC-EMC
           if (pt<2.0){
-              pt_used=pt;
+              pt_used=3.0;
           } else if (pt>50.0) {
-              pt_used=pt;
+              pt_used=50.;
           } else {
               pt_used = pt;
           }
           mass = (0.123412) + ((0.00592567) * pt_used) + ((-0.000965584) * pt_used * pt_used) + ((7.25294e-05) * pt_used * pt_used * pt_used) + ((-2.50606e-06) * pt_used * pt_used * pt_used * pt_used) + ((4.19909e-08) * pt_used * pt_used * pt_used * pt_used * pt_used) + ((-2.73255e-10) * pt_used * pt_used * pt_used * pt_used * pt_used * pt_used);
           if (pt<3.0){
-              pt_used=pt;
+              pt_used=3.0;
           } else if (pt>35.0) {
-              pt_used=pt;
+              pt_used=35.;
           } else {
               pt_used = pt;
           }
