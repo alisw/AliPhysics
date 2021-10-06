@@ -4592,28 +4592,27 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
       }
   } else if (fUsePtDepSelectionWindow){
       // Determine correct mass parametrisation depending on what method is used
-      Float_t pt        = meson->Pt();
-      Float_t pt_used;
+      Float_t pt   = meson->Pt();
       Float_t mass = 0;
       Float_t sigma = 999;
       switch(fMassParamFunction){
         case 0: // EMC-EMC
-          if (pt<2.0){
-              pt_used=2.0;
-          } else if (pt>50.0) {
-              pt_used=50.;
+          if ((meson->Pt())<2.0){
+              pt=2.0;
+          } else if ((meson->Pt())>50.0) {
+              pt=50.;
           } else {
-              pt_used = pt;
+              pt = (meson->Pt());
           }
-          mass = (0.123412) + ((0.00592567) * pt_used) + ((-0.000965584) * pt_used * pt_used) + ((7.25294e-05) * pt_used * pt_used * pt_used) + ((-2.50606e-06) * pt_used * pt_used * pt_used * pt_used) + ((4.19909e-08) * pt_used * pt_used * pt_used * pt_used * pt_used) + ((-2.73255e-10) * pt_used * pt_used * pt_used * pt_used * pt_used * pt_used);
-          if (pt<3.0){
-              pt_used=3.0;
-          } else if (pt>35.0) {
-              pt_used=35.;
+          mass = (0.123412) + ((0.00592567) * pt) + ((-0.000965584) * pt * pt) + ((7.25294e-05) * pt * pt * pt) + ((-2.50606e-06) * pt * pt * pt * pt) + ((4.19909e-08) * pt * pt * pt * pt * pt) + ((-2.73255e-10) * pt * pt * pt * pt * pt * pt);
+          if ((meson->Pt())<3.0){
+              pt=3.0;
+          } else if ((meson->Pt())>35.0) {
+              pt=35.;
           } else {
-              pt_used = pt;
+              pt = (meson->Pt());
           }
-          sigma = (0.0141177) + ((-0.00103254) * pt_used ) + ((9.33798e-05) * pt_used * pt_used) + ((-2.89213e-07) * pt_used * pt_used * pt_used);
+          sigma = (0.0141177) + ((-0.00103254) * pt ) + ((9.33798e-05) * pt * pt) + ((-2.89213e-07) * pt * pt * pt);
 
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
