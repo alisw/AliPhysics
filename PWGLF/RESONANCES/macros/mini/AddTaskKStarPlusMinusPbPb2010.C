@@ -151,8 +151,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPb2010
     TString taskName = Form("KStarPlusMinus%s%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
     AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
 	//task->SelectCollisionCandidates(AliVEvent::kMB);
-	//task->UseESDTriggerMask(triggerMask);
-    task->SelectCollisionCandidates(triggerMask);
+	task->UseESDTriggerMask(triggerMask);
+    //task->SelectCollisionCandidates(triggerMask);
 	/*if (isPP)
 	 task->UseMultiplicity("QUALITY");
        else

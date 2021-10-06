@@ -68,7 +68,8 @@ class AliAnalysisTaskCMWPU2018eqAch : public AliAnalysisTaskSE {
   void SetVzRangeMax(Double_t vzMax)                {this->fMaxVzCut       =  vzMax;}
 
   void SetPileUpCutParam(Float_t m,Float_t c) {this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
-  void SetFlagSkipPileUpCuts(Bool_t b)        {this->bSkipNUA  = b;}
+  //void SetFlagSkipPileUpCuts(Bool_t b)        {this->bSkipNUA  = b;}
+  void SetDataset(Int_t b)        {this->bdataset  = b;}
   
 
   /******* Track Cut Ranges ******/
@@ -136,7 +137,8 @@ class AliAnalysisTaskCMWPU2018eqAch : public AliAnalysisTaskSE {
   Float_t                 fChi2; 
   Double_t         fPileUpSlopeParm;  //
   Double_t         fPileUpConstParm;  //
-  Bool_t             bSkipNUA;  //
+  //Bool_t             bSkipNUA;  //
+  Int_t             bdataset;  //
   Double_t              fEtaGapNeg;  //
   Double_t              fEtaGapPos;  //
   Float_t              fMinEtaCut;  //
@@ -157,9 +159,6 @@ class AliAnalysisTaskCMWPU2018eqAch : public AliAnalysisTaskSE {
   //QA histograms:
   TH1F                  *fCentDistBeforCut;    //! Cent before Any Cut
   TH1F                  *fCentDistAfterCut;    //! Cent After All Cuts
-  TH2F                  *fHistEtaPtBeforCut;   //! Eta-Pt before Any Cut
-  TH2F                  *fHistEtaPhiBeforCut;  //! Eta-Phi before Any Cut
-  TH2F                  *fHistEtaPhiAfterCut;  //! Eta-Phi after trk Cut    
  
 
 
@@ -177,56 +176,57 @@ class AliAnalysisTaskCMWPU2018eqAch : public AliAnalysisTaskSE {
   TH1D          *fHCorrectMCnegKaon;
   TH1D          *fHCorrectMCnegProt;
 
+  TH3F          *fHCorrectNUAposChrg;   //!  = centrality bins
+  TH3F          *fHCorrectNUAnegChrg;   //! 
+  TH3F          *fHCorrectNUAposPion;   //! 
+  TH3F          *fHCorrectNUAnegPion;   //! 
+  TH3F          *fHCorrectNUAposKaon;   //! 
+  TH3F          *fHCorrectNUAnegKaon;   //! 
+  TH3F          *fHCorrectNUAposProt;   //! 
+  TH3F          *fHCorrectNUAnegProt;   //! 
 
+  TF1           *fSPDCutPU;     //!
+  TF1           *fV0CutPU;      //!
+  TF1           *fMultCutPU;    //!
+  TF1           *fCenCutLowPU;  //!
+  TF1           *fCenCutHighPU; //!
+  
 
 
 
   
   //QA and Stepcount 
-  TH2F            *fHistAChrgVsCent;  //!
 
-  TH2F            *fHistTPConlyVsCL1Before;   //!  
-  TH2F            *fHistTPConlyVsV0MBefore;   //!
-  TH2F            *fHistCL0VsV0MBefore;   //!       
-  TH2F            *fHistTPConlyVsCL1After;   //!    
-  TH2F            *fHistTPConlyVsV0MAfter;   //!   
-  TH2F            *fHistCL0VsV0MAfter;   //!   
-  TH2F            *fHistGlobalVsV0MBefore;   //!   
-  TH2F            *fHistGlobalVsV0MAfter;   //
-  TH2F            *fTPCvsGlobalTrkBefore; //!  Global vs TPC tracks for QA
-  TH2F            *fTPCvsGlobalTrkAfter; //!  Global vs TPC tracks for QA
-  TH2F            *fHistTPCVsESDTrkBefore;   //!  
-  TH2F            *fHistTPCVsESDTrkAfter;   //
-  TH1F            *fHistPileUpCount;   //!
-
+  
   TH1F            *fHistEventCount;   //!
   TH1F  	  *fHCorrectEVNTWGTChrg;   //!   //eventwgt for charge
 
 
 
   ///v2 vs Ach (Results)
-  TProfile     *fHistv2AchChrgPos[1][10];
-  TProfile     *fHistv2AchPionPos[1][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonPos[1][10]; //!
-  TProfile     *fHistv2AchProtPos[1][10]; //!
-  TProfile     *fHistv2AchChrgNeg[1][10];
-  TProfile     *fHistv2AchPionNeg[1][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonNeg[1][10]; //!
-  TProfile     *fHistv2AchProtNeg[1][10]; //!
+  TProfile     *fHistv2AchChrgPos[1][9];
+  TProfile     *fHistv2AchPionPos[1][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonPos[1][9]; //!
+  TProfile     *fHistv2AchProtPos[1][9]; //!
+  TProfile     *fHistv2AchChrgNeg[1][9];
+  TProfile     *fHistv2AchPionNeg[1][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonNeg[1][9]; //!
+  TProfile     *fHistv2AchProtNeg[1][9]; //!
 
-  TProfile     *fHistv2AchChrgPosChrgNeg[1][10];
-  TProfile     *fHistv2AchPionPosPionNeg[1][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonPosKaonNeg[1][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchProtPosProtNeg[1][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchChrgPosChrgNeg[1][9];
+  TProfile     *fHistv2AchPionPosPionNeg[1][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonPosKaonNeg[1][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchProtPosProtNeg[1][9]; //! [1st] = method, [2nd] = centrality.
     
-  TProfile     *fHistv2AchChrgNegChrgPos[1][10];
-  TProfile     *fHistv2AchPionNegPionPos[1][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonNegKaonPos[1][10];
-  TProfile     *fHistv2AchProtNegProtPos[1][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchChrgNegChrgPos[1][9];
+  TProfile     *fHistv2AchPionNegPionPos[1][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonNegKaonPos[1][9];
+  TProfile     *fHistv2AchProtNegProtPos[1][9]; //! [1st] = method, [2nd] = centrality.
     
 
 
   ///Used For NUA Corrections:
+  /*
   TH3F          *fHCorrectNUAposChrg[5];   //! [5] = centrality bins
   TH3F          *fHCorrectNUAnegChrg[5];   //! 
   TH3F          *fHCorrectNUAposPion[5];   //! 
@@ -235,18 +235,24 @@ class AliAnalysisTaskCMWPU2018eqAch : public AliAnalysisTaskSE {
   TH3F          *fHCorrectNUAnegKaon[5];   //! 
   TH3F          *fHCorrectNUAposProt[5];   //! 
   TH3F          *fHCorrectNUAnegProt[5];   //! 
-
+  */
+  /*
+  TH3F          *fHCorrectNUAposChrg;   //!  = centrality bins
+  TH3F          *fHCorrectNUAnegChrg;   //! 
+  TH3F          *fHCorrectNUAposPion;   //! 
+  TH3F          *fHCorrectNUAnegPion;   //! 
+  TH3F          *fHCorrectNUAposKaon;   //! 
+  TH3F          *fHCorrectNUAnegKaon;   //! 
+  TH3F          *fHCorrectNUAposProt;   //! 
+  TH3F          *fHCorrectNUAnegProt;   //! 
+  */
 
   /// TO fill NUA for new Cut:
-  TH3F          *fHFillNUAPosPID[5];    //! 
-  TH3F          *fHFillNUANegPID[5];    //! 
 
  
   
-  TProfile      *fHistv2cumAchChrgAll[10];  //! Charge inclusive
+  TProfile      *fHistv2cumAchChrgAll[9];  //! Charge inclusive
 
-
-  
   
 
   ///Custom Functions:

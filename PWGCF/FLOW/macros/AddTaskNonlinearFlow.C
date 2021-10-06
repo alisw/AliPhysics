@@ -120,9 +120,13 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
         
 	Int_t inSlotCounter=1;
 	TGrid::Connect("alien:");
+
+        TObjArray *AllContainers = mgr->GetContainers();
 	if(fNUA) {
-		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
-               
+
+                if(!AllContainers->FindObject("NUA")) {
+
+		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);
                 TFile *inNUA;
 
                 if (fPeriod.EqualTo("LHC15o")) {
@@ -181,13 +185,19 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                 }
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUA);
 		inSlotCounter++;
+		} else {
+		    mgr->ConnectInput(taskFlowEp,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUA"));
+		    inSlotCounter++;
+		    printf("NUA already loaded\n");
+		}
 	}
 
 	if(fNUE) {
 
+                if(!AllContainers->FindObject("NUE")) {
                 TFile *inNUE = NULL;
 
-		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
+		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE"), TList::Class(), AliAnalysisManager::kInputContainer);
                 if (fPeriod.EqualTo("LHC15o")) {
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC18e1_MBEff_FD_wSyst_v2.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
@@ -213,6 +223,12 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                 }
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUE);
 		inSlotCounter++;
+           	} else {
+		    mgr->ConnectInput(taskFlowEp,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUE"));
+		    inSlotCounter++;
+		    printf("NUE already loaded\n");
+		}
+
 	} 
 
 	// Return task pointer at the end

@@ -20,7 +20,7 @@
 class AliAnalysisTaskStrangeCascadesTriggerAODRun2 : public AliAnalysisTaskSE  {
 public:
                             AliAnalysisTaskStrangeCascadesTriggerAODRun2();
-                            AliAnalysisTaskStrangeCascadesTriggerAODRun2(const char *name, Bool_t lSaveV0s, Bool_t lSaveRsn, Bool_t lSavePrimaries, Bool_t lUseEventMixing);
+                            AliAnalysisTaskStrangeCascadesTriggerAODRun2(const char *name, Bool_t lSaveV0s, Bool_t lSaveRsn, Bool_t lSavePrimaries, TString lcompType);
     virtual                 ~AliAnalysisTaskStrangeCascadesTriggerAODRun2();
     
     virtual void            UserCreateOutputObjects();
@@ -52,14 +52,14 @@ public:
     Int_t       GetNumberOfTrackCuts() { return fRsnTrackCuts.GetEntries(); }
     
     Bool_t      EventsMatch(AliRsnMiniEvent* event1, AliRsnMiniEvent *event2);
-    Int_t       FillPair(AliRsnMiniEvent *miniEventRef, AliRsnMiniEvent *fRsnMiniEvent, TObjArray &lPairList, Bool_t refFirst);
+    Int_t       FillPair(AliRsnMiniEvent *miniEventRef, AliRsnMiniEvent *fRsnMiniEvent, TObjArray &lPairList, TString lcompType);
     Double_t    ComputeSpherocity();
     Double_t    ComputeAngle();
     //---------------------------------------------------------------------------------------    
     void        SetSaveV0s                  (Bool_t use = kTRUE)        { fSaveV0s = use ;}
     void        SetSaveResonances           (Bool_t use = kTRUE)        { fSaveRsn = use ;}
     void        SetSavePrimaries            (Bool_t use = kTRUE)        { fSavePrimaries = use ;}
-    void        SetUseEventMixing           (Bool_t use = kFALSE)       { fUseEventMixing = use ;}
+    void        SetCompType                 (TString use = ""  )        { fComputationType = use ;}
     
     void        SetNMix                     (Int_t val)                 { fNMix = val;}
     void        SetMaxDiffVz                (Double_t val)              { fMaxDiffVz = val;}
@@ -88,7 +88,7 @@ private:
     TTree  *fTreeV0;                   //! Output Tree, V0s
     TTree  *fTreeCascade;              //! Output Tree, Cascades
     TTree  *fTreeRsn;                  //! Output Tree, Resonances
-    TTree  *fTreeRsnMixed;             //! Output Tree, Mixed-event resonances
+    TTree  *fTreeRsnBkg;             //! Output Tree, Mixed-event resonances
     TTree  *fTreePrimTrack;            //! Output Tree, Primary tracks
     
     TTree  *fDummyTree;                //! Dummy output Tree, Needed for event mixing on resonances
@@ -114,7 +114,13 @@ private:
     Bool_t      fSaveV0s;
     Bool_t      fSaveRsn;
     Bool_t      fSavePrimaries;
-    Bool_t      fUseEventMixing; // kTRUE = Perform event mixing
+    //Describe the computation for the background of resonances
+    //Computation :
+    //  -- ""           --> no computation, no background computed and stored
+    //  -- "MIX"        --> event-mixing
+    //  -- "ROTATE1"    --> rotated background (rotate first track)
+    //  -- "ROTATE2"    --> rotated background (rotate second track)
+    TString     fComputationType;
     //---> Variables controlling PV selections
     Double_t    fkMaxPVR2D;
     Double_t    fkMaxPVZ;
@@ -138,7 +144,7 @@ private:
     Double_t    fMaxDiffVz;     // Max diff of the PVz between two events (event mixing)
     Double_t    fMaxDiffMult;   // Max diff in multiplity (percentiles) between two events (event mixing)
     Double_t    fMaxDiffAngle;  // Max diff in plane angle between two events (event mixing)
-
+    
 //===========================================================================================
 //   Variables for Cascade Tree
 //===========================================================================================
@@ -193,6 +199,8 @@ private:
     Int_t fTreeCascVarVZEROMultSigCorr;    //! Corrected VZERO Multiplicity - VZER0 signal
     Int_t fTreeCascVarSPDMult;             //! SPD Multiplicity             - SPD Tracklets
     UInt_t fTreeCascVar_TriggerMask; //! save full info for checking later
+    Bool_t fTreeCascVarIsIncompleteDAQ;//!
+    Bool_t fTreeCascVarSPDPileupFlag; //!
     Bool_t fTreeCascVarMVPileupFlag; //!
     Bool_t fTreeCascVarOOBPileupFlag; //!
     //-----------DECAY-LENGTH-INFO--------------------
@@ -482,13 +490,13 @@ private:
 //===========================================================================================
     Int_t       fTreeRsnFoundMixEvts;//!
     
-    Int_t       fTreeRsnMixedVarCutIDrsn; //!
-    Float_t     fTreeRsnMixedVarPx; //!
-    Float_t     fTreeRsnMixedVarPy; //!
-    Float_t     fTreeRsnMixedVarPz; //!
-    Double_t    fTreeRsnMixedVarInvMass; //!
-    Bool_t      fTreeRsnMixedVarPassesOOBPileupCut; //! ITSRefit AND/OR TOF hit (that is, at least ITS or TOF hit)
-    ULong64_t   fTreeRsnMixedVarEventNumber; //!
+    Int_t       fTreeRsnBkgVarCutIDrsn; //!
+    Float_t     fTreeRsnBkgVarPx; //!
+    Float_t     fTreeRsnBkgVarPy; //!
+    Float_t     fTreeRsnBkgVarPz; //!
+    Double_t    fTreeRsnBkgVarInvMass; //!
+    Bool_t      fTreeRsnBkgVarPassesOOBPileupCut; //! ITSRefit AND/OR TOF hit (that is, at least ITS or TOF hit)
+    ULong64_t   fTreeRsnBkgVarEventNumber; //!
     
 //===========================================================================================
 //   Variables for Primary tracks Tree
@@ -563,6 +571,7 @@ private:
     Int_t fTreePrimVarRunNumber;//!
     ULong64_t fTreePrimVarEventNumber; //!
     
+    
 //===========================================================================================
 //   Histograms
 //===========================================================================================
@@ -572,7 +581,9 @@ private:
     AliAnalysisTaskStrangeCascadesTriggerAODRun2(const AliAnalysisTaskStrangeCascadesTriggerAODRun2&); // not implemented
     AliAnalysisTaskStrangeCascadesTriggerAODRun2& operator=(const AliAnalysisTaskStrangeCascadesTriggerAODRun2&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrangeCascadesTriggerAODRun2, 1);
+    
+    //TString     fComputationType;
+    ClassDef(AliAnalysisTaskStrangeCascadesTriggerAODRun2, 2);
 };
 
 //_____________________________________________________________________________

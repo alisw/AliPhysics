@@ -185,6 +185,9 @@ fZpcFired(0),
 fNTracks(0),
 fNTracksTPCout(0),
 fNTracksITSrefit(0),
+fNTracksMaxDCAz(0),
+fNTracksMaxDCAz01(0),
+fNTracksMaxDCAz00(0),
 fNTracksDCAxyABS(0),
 fNTracksDCAzABS(0),
 fNTracksDCAxySQ(0),
@@ -354,6 +357,9 @@ fZpcFired(0),
 fNTracks(0),
 fNTracksTPCout(0),
 fNTracksITSrefit(0),
+fNTracksMaxDCAz(0),
+fNTracksMaxDCAz01(0),
+fNTracksMaxDCAz00(0),
 fNTracksDCAxyABS(0),
 fNTracksDCAzABS(0),
 fNTracksDCAxySQ(0),
@@ -735,19 +741,23 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fTreeEvent->Branch("fMC_IsPileup", &fMC_IsPileup, "fMC_IsPileup/O");
     
     if(!fkLightTree){
-      fTreeEvent->Branch("fNTracksDCAxyABS", &fNTracksDCAxyABS, "fNTracksDCAxyABS/I");
-      fTreeEvent->Branch("fNTracksDCAzABS", &fNTracksDCAzABS, "fNTracksDCAzABS/I");
-      fTreeEvent->Branch("fNTracksDCAxySQ", &fNTracksDCAxySQ, "fNTracksDCAxySQ/I");
-      fTreeEvent->Branch("fNTracksDCAzSQ", &fNTracksDCAzSQ, "fNTracksDCAzSQ/I");
+      fTreeEvent->Branch("fNTracksMaxDCAz", &fNTracksMaxDCAz, "fNTracksMaxDCAz/F");
+      fTreeEvent->Branch("fNTracksMaxDCAz01", &fNTracksMaxDCAz01, "fNTracksMaxDCAz01/F");
+      fTreeEvent->Branch("fNTracksMaxDCAz00", &fNTracksMaxDCAz00, "fNTracksMaxDCAz00/F");
+      fTreeEvent->Branch("fNTracksDCAxyABS", &fNTracksDCAxyABS, "fNTracksDCAxyABS/F");
+      fTreeEvent->Branch("fNTracksDCAzABS", &fNTracksDCAzABS, "fNTracksDCAzABS/F");
+      fTreeEvent->Branch("fNTracksDCAxySQ", &fNTracksDCAxySQ, "fNTracksDCAxySQ/F");
+      fTreeEvent->Branch("fNTracksDCAzSQ", &fNTracksDCAzSQ, "fNTracksDCAzSQ/F");
       fTreeEvent->Branch("fNTracksITSrefit", &fNTracksITSrefit, "fNTracksITSrefit/I");
     }
     
     //Automatic Loop for linking directly to AliMultInput
     for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
       if(lStoreIfLight[iVar] || !fkLightTree){
-        Printf(Form("Connecting variable: %s",AliMultInput::VarName[iVar].Data()));
+        Printf(Form("Connecting variable number %i: %s",iVar,AliMultInput::VarName[iVar].Data()));
         if( !fInput->GetVariable(AliMultInput::VarName[iVar])){
           Printf(Form("Problem finding variable: %s ! Please check!",AliMultInput::VarName[iVar].Data()));
+          continue;
         }
         if( !fInput->GetVariable(AliMultInput::VarName[iVar])->IsInteger()  ) {
           fTreeEvent->Branch(fInput->GetVariable(AliMultInput::VarName[iVar])->GetName(), &fInput->GetVariable(AliMultInput::VarName[iVar])->GetRValue(), Form("%s/F",fInput->GetVariable(AliMultInput::VarName[iVar])->GetName()) );
@@ -1604,22 +1614,28 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fNTracksITSsa2010           -> SetValueInteger( 0 );
     
     // Set DCA variables to default
-    Double_t dcaxyABS = 0;
-    Double_t dcazABS = 0;
-    Double_t dcaxySQ = 0;
-    Double_t dcazSQ = 0;
+    Float_t dcaxyABS = 0;
+    Float_t dcazABS = 0;
+    Float_t dcaxySQ = 0;
+    Float_t dcazSQ = 0;
+    Float_t Maxdcaz = 0;
+    Float_t Maxdcaz01 = 0;
+    Float_t Maxdcaz00 = 0;
 
-    Double_t averageDCAxyABS = 0;
-    Double_t averageDCAzABS = 0;
-    Double_t averageDCAxySQ = 0;
-    Double_t averageDCAzSQ = 0;
+    Float_t averageDCAxyABS = 0;
+    Float_t averageDCAzABS = 0;
+    Float_t averageDCAxySQ = 0;
+    Float_t averageDCAzSQ = 0;
 
     fNTracksDCAxyABS=0;
     fNTracksDCAzABS=0;
     fNTracksDCAxySQ=0;
     fNTracksDCAzSQ=0;
+    fNTracksMaxDCAz=0;
+    fNTracksMaxDCAz01=0;
+    fNTracksMaxDCAz00=0;
 
-    Long_t ITSrefitTracks = 0;
+    Int_t ITSrefitTracks = 0;
     fNTracksITSrefit=0;
     
     // Getting Primary Vertex
@@ -1650,10 +1666,29 @@ void AliMultSelectionTask::UserExec(Option_t *)
         
         dcaxySQ = dcaxySQ + dzz[0]*dzz[0];
         dcazSQ = dcazSQ + dzz[1]*dzz[1];
+
+	//without DCAxy Cut:
+	if (TMath::Abs(dzz[1])>Maxdcaz){
+		Maxdcaz = TMath::Abs(dzz[1]);		
+	}
+
+	//with DCAxy Cut:
+	if (TMath::Abs(dzz[0])<0.1){ // "loose" DCAxy cut
+		if (TMath::Abs(dzz[1])>Maxdcaz01){
+			Maxdcaz01 = TMath::Abs(dzz[1]);		
+		}	
+	}
+
+	if (TMath::Abs(dzz[0])<(0.0182 + 0.0350/(track->Pt()))){ //"strict" DCAxy Cut 
+		if (TMath::Abs(dzz[1])>Maxdcaz00){
+			Maxdcaz00 = TMath::Abs(dzz[1]);		
+		}	
+	}
+	
       }
       
       // Get ITSrefit counts
-      if((track->GetStatus() & AliVTrack::kITSrefit)==1) ITSrefitTracks++;
+      if(!((track->GetStatus() & AliVTrack::kITSrefit)==0)) ITSrefitTracks++;
             
       //Only ITSsa tracks
       if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
@@ -1677,19 +1712,21 @@ void AliMultSelectionTask::UserExec(Option_t *)
     }
     
     if (lVevent->GetNumberOfTracks()>0){
-      double_t averageDCAxyABS = dcaxyABS/(lVevent->GetNumberOfTracks());
-      double_t averageDCAzABS = dcazABS/(lVevent->GetNumberOfTracks());
-      double_t averageDCAxySQ = dcaxySQ/(lVevent->GetNumberOfTracks());
-      double_t averageDCAzSQ = dcazSQ/(lVevent->GetNumberOfTracks());
+      averageDCAxyABS = dcaxyABS/(lVevent->GetNumberOfTracks());
+      averageDCAzABS = dcazABS/(lVevent->GetNumberOfTracks());
+      averageDCAxySQ = dcaxySQ/(lVevent->GetNumberOfTracks());
+      averageDCAzSQ = dcazSQ/(lVevent->GetNumberOfTracks());
      }
     else {
-      
-      double_t averageDCAxyABS = dcaxyABS/(-1);
-      double_t averageDCAzABS = dcazABS/(-1);
-      double_t averageDCAxySQ = dcaxySQ/(-1);
-      double_t averageDCAzSQ = dcazSQ/(-1);
+      averageDCAxyABS = dcaxyABS/(-1);
+      averageDCAzABS = dcazABS/(-1);
+      averageDCAxySQ = dcaxySQ/(-1);
+      averageDCAzSQ = dcazSQ/(-1);
      }
 
+    fNTracksMaxDCAz=Maxdcaz;
+    fNTracksMaxDCAz01=Maxdcaz01;
+    fNTracksMaxDCAz00=Maxdcaz00;
     fNTracksDCAxyABS=averageDCAxyABS;
     fNTracksDCAzABS=averageDCAzABS;
     fNTracksDCAxySQ=averageDCAxySQ;

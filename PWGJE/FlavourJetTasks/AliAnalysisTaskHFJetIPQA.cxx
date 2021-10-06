@@ -2308,10 +2308,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
         if(fDoLundPlane)RecursiveParents(jetrec, jetconrec,fJetConstTrackID);
 
-        //Rejection jets with pt>100 GeV/c and pt<5 GeV/c for the TC tagging as lnjp lookup has exactly these boundaries
-        if((fJetRecPt>100.)||(fJetRecPt<5.)){
-          continue;
-        }
+
 
         //_____________________________
         //Determination of impact parameters
@@ -2407,7 +2404,16 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           FillHist("fh2dnTracksvsJetPt",nTracks,fJetRecPt,1);
           continue;
         }
-        if(nTracks>0) FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi());
+        if(!(nTracks>0)){
+          continue;
+        }
+        FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi());
+
+        //Rejection jets with pt>100 GeV/c and pt<5 GeV/c for the TC tagging as lnjp lookup has exactly these boundaries
+        if((fJetRecPt>fAnalysisCuts[bAnalysisCut_MaxJetPt])||(fJetRecPt<fAnalysisCuts[bAnalysisCut_MinJetPt])){
+          continue;
+        }
+        //printf("jetpt=%0.2f, ptacc=%0.2f-%0.2f\n", fJetRecPt, fAnalysisCuts[bAnalysisCut_MinJetPt],fAnalysisCuts[bAnalysisCut_MaxJetPt]);
 
         //FillHist("fh1dParticlesPerJet",NJetParticles,1);
 
@@ -2816,8 +2822,10 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
 void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
     AliJetContainer *  jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
-    fAnalysisCuts[bAnalysisCut_MinJetPt]=jetconrec->GetJetPtCut();
-    fAnalysisCuts[bAnalysisCut_MaxJetPt]=jetconrec->GetJetPtCutMax();
+    //fAnalysisCuts[bAnalysisCut_MinJetPt]=jetconrec->GetJetPtCut();
+    //fAnalysisCuts[bAnalysisCut_MaxJetPt]=jetconrec->GetJetPtCutMax();
+    if(fAnalysisCuts[bAnalysisCut_MinJetPt]<jetconrec->GetJetPtCut()) AliError(Form("Min JetPt analysis cut (%f) < cut of jet finder (%f)", fAnalysisCuts[bAnalysisCut_MinJetPt], jetconrec->GetJetPtCut()));
+    if(fAnalysisCuts[bAnalysisCut_MaxJetPt]>jetconrec->GetJetPtCutMax()) AliError(Form("Max JetPt analysis cut (%f) > cut of jet finder (%f)", fAnalysisCuts[bAnalysisCut_MaxJetPt], jetconrec->GetJetPtCutMax()));
     fAnalysisCuts[bAnalysisCut_MinJetEta]=jetconrec->GetMinEta();
     fAnalysisCuts[bAnalysisCut_MaxJetEta]=jetconrec->GetMaxEta();
 
@@ -4796,10 +4804,10 @@ Float_t AliAnalysisTaskHFJetIPQA::IntegrateIP(Float_t jetpt, Float_t IP, Int_t i
   GetLowUpperBinNo(iStartIPBin, iIPBin, -fAnalysisCuts[bAnalysisCut_MaxIPLNJP], -IP,"x",iN);
 
   //if jetpt=binboundary->take higher bin
-  fChi2JetPt=jetpt+100*bChi2GT2;
+  fChi2JetPt=jetpt+200*bChi2GT2;
   iJetPtBin=h2DProbLookup[iN]->GetYaxis()->FindBin(fChi2JetPt);
-  if(TMath::Abs(100-h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin))<0.000001) AliError(Form("%s: Invalid lower boundary (%f) of h2DProbLookup bin!\n",__FUNCTION__, h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin)));
-  if(TMath::Abs(105-h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1))<0.000001) AliError(Form("%s: Invalid upper boundary (%f) of h2DProbLookup bin!\n",__FUNCTION__, h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1)));
+  if(TMath::Abs(400-h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin))<0.000001) AliError(Form("%s: Invalid lower boundary (%f) of h2DProbLookup bin!\n",__FUNCTION__, h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin)));
+  if(TMath::Abs(405-h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1))<0.000001) AliError(Form("%s: Invalid upper boundary (%f) of h2DProbLookup bin!\n",__FUNCTION__, h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1)));
 
  // printf("%s: jetpt=%f, chi2=%f\n", __FUNCTION__, jetpt, Chi2);
  // printf("%s: IP=%f, jetpt=%f, chi2=%f, fChi2JetPt=%f, iJetPtBin=%i, %f<jetptchi2<%f\n", __FUNCTION__, IP, jetpt, Chi2, fChi2JetPt, iJetPtBin, h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin), h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1));
@@ -4807,8 +4815,12 @@ Float_t AliAnalysisTaskHFJetIPQA::IntegrateIP(Float_t jetpt, Float_t IP, Int_t i
   Float_t probnomi=h2DProbLookup[iN]->Integral(iStartIPBin,iIPBin,iJetPtBin,iJetPtBin);
   Float_t probdenomi=h2DProbLookup[iN]->Integral(iStartIPBin,iZeroIPBin,iJetPtBin,iJetPtBin);
   //printf("probnomi=%f, probdenomi=%f\n",probnomi, probdenomi);
-  if(!(probdenomi>0)) AliError(Form("%s: probdenomi=%f, iStartIPBin=%i, iZeroIPBin=%i, iJetPtBin=%i, jetpt=%f\n",__FUNCTION__, probdenomi, iStartIPBin, iZeroIPBin, iJetPtBin, jetpt));
-  Float_t prob=probnomi/probdenomi;
+
+  Float_t prob=0;  //setting prob default value to 0 leads to prob=0 for all jets which are not in the jetpt range of the lookup histogram
+                   //these jets are rejected in GetTrackProbability() with nIPTracksAboveZero=0
+  if(probdenomi>0){
+    prob=probnomi/probdenomi;
+  }
   //printf("Integrate: Zero=%f, StartIP(-25)=%f, IPValue=%f, lowy=%f, upy=%f, prob=%f\n", h2DProbLookup[iN]->GetXaxis()->GetBinLowEdge(iZeroIPBin), h2DProbLookup[iN]->GetXaxis()->GetBinLowEdge(iStartIPBin),h2DProbLookup[iN]->GetXaxis()->GetBinLowEdge(iIPBin),h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin),h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1),prob);
 
   return prob;
@@ -4837,13 +4849,13 @@ Float_t AliAnalysisTaskHFJetIPQA::GetTrackProbability(Float_t jetpt, Int_t nGood
     //printf("iN=%i: jetpt=%f, ipval[%i]=%f, prob=%f\n",iN, jetpt, iN, ipval[iN],probval);
     fTrackProb[iN]=probval;
     prob=prob*probval;
-    nIPTracksAboveZero++;
+    if(prob>0)nIPTracksAboveZero++;
   }
-
   Float_t LNExpo=1;
   Float_t Faculty=1;
-  Float_t LNFunc=TMath::Log(prob);
+  Float_t LNFunc=0;
   Float_t JP=0;
+  if(prob>0) LNFunc=TMath::Log(prob);
 
   //printf("nIPTracksAboveZero=%i, prob=%f, LNExpo=%f, Faculty=%f, LNFunc=%f, JP=%f\n", nIPTracksAboveZero, prob, LNExpo, Faculty, LNFunc, JP);
   if(nIPTracksAboveZero>0)JP=prob;

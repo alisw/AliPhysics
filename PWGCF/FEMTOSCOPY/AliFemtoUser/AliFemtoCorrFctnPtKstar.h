@@ -38,6 +38,10 @@ private:
 
   TH2D *fPtKstar2part;   // pt vs k* 
   TH2D *fPtKstarDen2part;   // pt vs k* mixed pairs 
+  
+  TH2D *fPairPtKstar2part;   // pair pt vs k* 
+  TH2D *fPairPtKstarDen2part;   // pair pt vs k* mixed pairs 
+
 
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnPtKstar, 1)

@@ -98,7 +98,11 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3()
    fDebugNtuple (0),
    fDebugVars   (0), 
    fNDebug      (0),
-   fOnlyProcessFilledCand(kFALSE)
+   fOnlyProcessFilledCand(kFALSE),
+   fScaleDCA(kFALSE),
+   fScaleDCAFraction(1.),
+   fScaled0rp(1.),
+   fScaled0z(1.)
 {
   //
   // Default constructor.
@@ -163,7 +167,11 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
    fDebugNtuple (0),
    fDebugVars   (0),
    fNDebug      (ndebug),
-   fOnlyProcessFilledCand(kFALSE)
+   fOnlyProcessFilledCand(kFALSE),
+   fScaleDCA(kFALSE),
+   fScaleDCAFraction(1.),
+   fScaled0rp(1.),
+   fScaled0z(1.)
 {
   //
   // Constructor to be used to create the task.
@@ -572,6 +580,12 @@ void AliAnalysisTaskSEImproveITS3::SmearTrack(AliAODTrack *track,const TClonesAr
   // Check if the track was already "improved" (this is done with a trick using layer 7 (ie the 8th))
   if (TESTBIT(track->GetITSClusterMap(),7)) return;
 
+  // smear a fraction of the tracks (only in case the DCA is being scaled)
+  if(fScaleDCA) { 
+    Double_t pt = track->Pt()*1000.;  
+    if(TMath::Abs(pt - floor(pt)) > fScaleDCAFraction) return;
+  }
+
   // Get reconstructed track parameters
   AliExternalTrackParam et; et.CopyFromVTrack(track);
   Double_t *param=const_cast<Double_t*>(et.GetParameter());
@@ -670,6 +684,10 @@ void AliAnalysisTaskSEImproveITS3::SmearTrack(AliAODTrack *track,const TClonesAr
   Double_t dpt1o =pt1o-pt1mc;
   Double_t dpt1n =dpt1o *(spt1o >0. ? (spt1n /spt1o ) : 1.);
   Double_t pt1n  =pt1mc+dpt1n;
+  if(fScaleDCA) {
+    d0rpn*=fScaled0rp;
+    d0zn*=fScaled0z;
+  }
   param[0]=d0rpn;
   param[1]=d0zn ;
   param[4]=pt1n ;

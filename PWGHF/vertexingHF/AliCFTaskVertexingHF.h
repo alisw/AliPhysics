@@ -298,6 +298,9 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Double_t GetMinLeadPtRT() const {return fMinLeadPtRT;}
   void SetMinLeadPtRT(Double_t opt) {fMinLeadPtRT = opt;}
 
+  void SetAveMultInTransForRT(Double_t opt) {fAveMultInTransForRT=opt;}
+  Double_t GetAveMultInTransForRT() const {return fAveMultInTransForRT;}
+
   void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetRejectOOBPileupEvents() {fRejectOOBPileUpEvents=kTRUE; fKeepOnlyOOBPileupEvents=kFALSE;}
   void SetKeepOnlyOOBPileupEvents() {fRejectOOBPileUpEvents=kFALSE; fKeepOnlyOOBPileupEvents=kTRUE;}
@@ -305,6 +308,12 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
  protected:
   AliCFManager   *fCFManager;   ///  pointer to the CF manager
   TH1I *fHistEventsProcessed;   //!<! simple histo for monitoring the number of events processed
+  TH1F* fNChargedInTrans;       /// Number of charged tracks in the transverse region
+  TH1F* fPTDistributionInTransverse; ///Pt ditribution of charged tracks in transverse region
+  TH1F* fGlobalRT;              /// Global RT distribution
+  TH1F* fStepRecoPIDRT;              ///RT ditribution for events with a D meson at the kRecoPID step
+  TH1F* fHistPtLead;            ///Pt distribution of leading track
+  TList *fOutputRT; //Additional output to check RT
   THnSparse* fCorrelation;      ///  response matrix for unfolding
   TList  *fListProfiles; //list of profile histos for z-vtx correction
   Int_t fCountMC;               ///  MC particle found
@@ -366,13 +375,14 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Bool_t fFillMinimumSteps;   /// Skip filling the unneed steps for most of the analyses to save disk space
   Float_t fCutOnMomConservation; /// cut on momentum conservation
   Double_t fMinLeadPtRT;   /// minimum pT cut for leading particle in RT calculation
+  Double_t fAveMultInTransForRT; ///Average multiplicity in transverse region
   Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
                                 /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   Bool_t fRejectOOBPileUpEvents; /// flag to enable rejection of events with simulated pileup
   Bool_t fKeepOnlyOOBPileupEvents; /// flag to keep only events with simulated pileup
 
   /// \cond CLASSIMP
-  ClassDef(AliCFTaskVertexingHF,31); /// class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHF,33); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 

@@ -291,7 +291,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   }
   AliDebugStream(2) << "Found downscale weight " << weight << " for trigger " << fTriggerSelectionString << std::endl;
   fHistos->FillTH1("hEventCounterAbs", 1.);
-  fHistos->FillTH1("hEventCounter", weight);
+  fHistos->FillTH1("hEventCounter", 1., weight);
   fHistos->FillTH1("hEventCounterRun", fRunNumber);
   fHistos->FillTH1("hEventCounterRunWeighted", fRunNumber, weight);
   fHistos->FillProfile("hDownscaleFactorsRunwise", fRunNumber, 1./weight);

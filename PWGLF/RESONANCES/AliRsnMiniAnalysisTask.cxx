@@ -50,6 +50,7 @@
 #include "AliRsnMiniAnalysisTask.h"
 #include "AliRsnMiniResonanceFinder.h"
 //#include "AliSpherocityUtils.h"
+#include "AliPPVsMultUtils.h"
 
 #include "AliTimeRangeCut.h"
 
@@ -1151,7 +1152,33 @@ Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
 	 }
 
 	 return MultSelection->GetMultiplicityPercentile(s.Data());
-      } else {
+      } 
+          else if (!fCentralityType.CompareTo("MULTV0M")){
+
+	Double_t computedRefMulti = -10.0;
+        Double_t mult=0;
+	
+	
+        if (isESD){AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(fInputEvent);
+    if (!esdevent) return kFALSE;
+    
+    AliPPVsMultUtils *mult_perc =new AliPPVsMultUtils();
+    mult= mult_perc->GetMultiplicityPercentile(esdevent, "V0M", kFALSE);
+    computedRefMulti=mult;}
+    	
+    else {
+    AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(fInputEvent);
+    if (!aodevent) return kFALSE;
+    AliPPVsMultUtils *mult_perc = new AliPPVsMultUtils();
+
+     mult= mult_perc->GetMultiplicityPercentile(aodevent, "V0M", kFALSE);
+    computedRefMulti=mult;
+      }  
+                   return computedRefMulti;
+		   
+      }
+
+        else {
          AliError(Form("String '%s' does not define a possible multiplicity/centrality computation", fCentralityType.Data()));
          return -1.0;
       }
@@ -1498,8 +1525,10 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
          miniPair.P2(1) = p2;
 
          // do computations and fill output
-         def->FillMother(&miniPair, miniEvent, &fValues);
-         if (fKeepMotherInAcceptance){
+         if (def->IsMother() || def->IsMotherNoPileup()){
+             def->FillMother(&miniPair, miniEvent, &fValues);
+         }
+         if (fKeepMotherInAcceptance && def->IsMotherInAcc()){
 	         if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
 	         def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
 	      }
@@ -1628,15 +1657,17 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
 	 // assign momenta to computation object
          miniPair.Sum(0) = miniPair.Sum(1) = (p1 + p2);
          miniPair.FillRef(def->GetMotherMass());
-	 miniPair.P1(1) = p1;
-	 miniPair.P2(1) = p2;
+         miniPair.P1(1) = p1;
+	     miniPair.P2(1) = p2;
 
          // do computations
-         def->FillMother(&miniPair, miniEvent, &fValues);
-	 if(fKeepMotherInAcceptance){
-	      if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
-	      def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
-	 }
+         if (def->IsMother() || def->IsMotherNoPileup()){
+              def->FillMother(&miniPair, miniEvent, &fValues);
+         }
+	     if(fKeepMotherInAcceptance && def->IsMotherInAcc()){
+	          if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
+	          def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
+	     }
 
       }
    }

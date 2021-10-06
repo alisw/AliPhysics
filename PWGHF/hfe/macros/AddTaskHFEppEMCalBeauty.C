@@ -15,6 +15,10 @@ AliAnalysisHFEppEMCalBeauty* AddTaskHFEppEMCalBeauty(
 TString name = "", 
 Bool_t isMC=kFALSE,
 AliVEvent::EOfflineTriggerTypes trigger=AliVEvent::kINT7,
+Bool_t SwitchPi0EtaWeight=kTRUE,
+Bool_t SwitchNHFEeffi = kTRUE,
+Bool_t SwitchMCTempWeight= kFALSE,
+Bool_t SwitchFillMCTemp = kFALSE,
 Bool_t isEG1=kFALSE,
 Bool_t useTender = kTRUE,
 Bool_t ClsTypeEMC = kTRUE,
@@ -40,10 +44,11 @@ Double_t M02Max2= 0.7,
 Double_t M02Max3= 0.5,
 Double_t InvmassCut= 0.14,   
 Int_t AssoTPCCluster= 60,
-Bool_t AssoITSRefit= kTRUE ,
-Double_t AssopTMin= 0.1  ,
-Double_t AssoEtarange= 0.9 ,
+Bool_t AssoITSRefit= kTRUE,
+Double_t AssopTMin= 0.1,
+Double_t AssoEtarange= 0.9,
 Double_t AssoTPCnsig=  3.0
+
 
 )
 
@@ -109,7 +114,12 @@ if(trigger==AliVEvent::kINT7)
     HFeTask->SetEMCalTriggerEG2(kFALSE);
     HFeTask->SetEMCalTriggerDG2(kFALSE);
 
-    if(isMC)
+    HFeTask->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeight);
+    HFeTask->SetNonHFEEffi(SwitchNHFEeffi);
+    HFeTask->SwitchMCTemplateWeightCalc(SwitchMCTempWeight);
+    HFeTask->SwitchFillMCTemplate(SwitchFillMCTemp);
+
+    if(SwitchFillMCTemp)
     {
         TString DMesonWeightMaps, BMesonWeightMaps, CharmpTWeightMaps;
         

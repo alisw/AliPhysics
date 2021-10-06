@@ -48,9 +48,10 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Bool_t                  IsPdecay(int mpid);
 		Bool_t                  IsDdecay(int mpid);
 		Bool_t                  IsBdecay(int mpid);
-		TProfile* 		GetEstimatorHistogram(TFile* fEstimator, const AliAODEvent *fAOD);
-		TProfile* 		GetEstimatorHistogramMC(TFile* fEstimator, const AliAODEvent *fAOD);
-		Double_t      GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
+		TProfile* 		GetEstimatorHistogram(TFile* fEstimator, const AliAODEvent *fAOD, Int_t mtype);
+		TProfile* 		GetEstimatorHistogramMC(TFile* fEstimator, const AliAODEvent *fAOD, Int_t mtype);
+		TH1D* 		        GetNtrkWeightMC(TFile* fEstimator, Int_t mtype);
+		Double_t                GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
 		void                    SetEG1(Bool_t flagEG1) { fEMCEG1= flagEG1;};
 		void                    SetEG2(Bool_t flagEG2) { fEMCEG2= flagEG2;};
@@ -72,9 +73,11 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetptCut(TString pte) {pTe = pte;};
 		void                    SetMassMin(Double_t MassMin) {massMin = MassMin;};
 		void                    SetNref(Double_t nref) {Nref = nref;};
+		void                    SetNrefV0(Double_t nrefV0) {NrefV0 = nrefV0;};
 		void                    SetMaxNtr(Double_t maxNtr) {MaxNtr = maxNtr;};
 		void                    SetMinNtr(Double_t minNtr) {MinNtr = minNtr;};
 		void                    SetEstimatorFile(TString filename) {festimatorFile = filename;}
+		void                    SetMultType(Int_t mult_type) {fmult_type = mult_type;}
                
 
 		//void      SetWeightNtrkl(TH1D* hWeight){
@@ -108,11 +111,15 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TString pTe;
 		Double_t massMin;
 		Double_t Nref;
+		Double_t NrefV0;
 		Int_t Nch;
 		Int_t MinNtr;
 		Int_t MaxNtr;
                 TString festimatorFile;
                 TProfile* estimatorAvg;
+                TProfile* estimatorV0Avg;
+                TH1D* NtrkWeightMC;
+                Int_t fmult_type;
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
@@ -182,14 +189,17 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fRiso_phidiff_LS;
 		TH2F*                   fRiso_phidiff_35;
 		TH2F*                   fRiso_phidiff_LS_35;
-		TH2F*                   fWh_phidiff;
+		THnSparseD*             fWh_phidiff;
 		THnSparseD*             fIsoArray;      
 		THnSparseD*             fHFArray;      
 		TH2F*                   fzvtx_Ntrkl;
 		TH2F*                   fzvtx_Nch;
+		TH2F*                   fzvtx_Ntrkl_V0;
 		TH2F*                   fzvtx_Ntrkl_Corr;
 		TH1F*                   fzvtx_Corr;
 		TH1F*                   fNtrkl_Corr;
+		TH1F*                   fNtrkl_noCorr;
+		TH2F*                   fzvtx_V0M;
 		TH2F*                   fNchNtr;
 		TH2F*                   fNchNtr_Corr;
 		TH2F*                   fDCAxy_Pt_ele;
@@ -261,7 +271,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		Int_t fetarange;
 		TProfile*		fMultEstimatorAvg;
-		//TH1D*       fweightNtrkl;
+		TH1D*       fweightNtrkl;
 
 
 		ClassDef(AliAnalysisTaskCaloHFEpp, 1);

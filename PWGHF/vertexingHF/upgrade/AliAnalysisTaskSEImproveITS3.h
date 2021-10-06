@@ -37,6 +37,8 @@ public:
   void SetUpdateSTCovMatrix(Bool_t opt=kTRUE){fUpdateSTCovMatrix=opt;}
   void SetUpdateSecVertCovMat(Bool_t flag=kTRUE) { fUpdateSecVertCovMat=flag; return; }
   void SetOnlyProcessFilledCand(Bool_t flag=kTRUE){ fOnlyProcessFilledCand = flag;}
+  void SetScaleDCA(Bool_t flag=kTRUE, Double_t rp=1., Double_t z=1.){ fScaleDCA=flag; fScaled0rp=rp; fScaled0z=z;}
+  void SetScaleDCAFraction(Double_t opt=1.) { fScaleDCAFraction=opt;}
 
 private:
   AliAnalysisTaskSEImproveITS3(const AliAnalysisTaskSEImproveITS3&);
@@ -100,8 +102,12 @@ private:
   Float_t *fDebugVars;   //! variables to store as degug info 
   Int_t   fNDebug;       // Max number of debug entries into Ntuple
   Bool_t fOnlyProcessFilledCand; ///Flag to only process already filled candidates and skip others
+  Bool_t fScaleDCA; // Flag to scale the DCA by an arbitrary amount
+  Double_t fScaleDCAFraction; // Flag to scale the DCA by an arbitrary amount
+  Double_t fScaled0rp; // scaling factor for DCA(xy)
+  Double_t fScaled0z; // scaling factor for DCA(z)
 
-  ClassDef(AliAnalysisTaskSEImproveITS3,7);
+  ClassDef(AliAnalysisTaskSEImproveITS3,8);
 };
 
 #endif

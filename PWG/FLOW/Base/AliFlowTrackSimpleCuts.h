@@ -86,7 +86,7 @@ class AliFlowTrackSimpleCuts : public TNamed {
   TH2*     fEtaPhiEff; //eta, phi efficiency map
   Bool_t   fCutEtaPhiEff; //apply eta, phi efficiency map?
   Int_t    fPOItype; //which poi type do we produce? (RP=0, POI=1,2,3,4,5...)
-
+  
   // not implemented: copy and assignment operator
   AliFlowTrackSimpleCuts(const AliFlowTrackSimpleCuts&);        
   AliFlowTrackSimpleCuts& operator=(const AliFlowTrackSimpleCuts&);

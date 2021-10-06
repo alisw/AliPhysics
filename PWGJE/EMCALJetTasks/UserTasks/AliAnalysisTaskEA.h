@@ -158,10 +158,13 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   Bool_t      Run();
   Bool_t      FillHistograms();
 
+
+
   void AnalyzeParticleLevel();
   void InitEventProperties();
   void EmbeddingFromTxtFile();
   void EmbeddingFromAODFile();
+  void FindDetectorLevelTT(); //fk
   void FillResponseMatrix();
   void FillResponseMatrix2D();
   void GeneralTrackProperties();
@@ -391,18 +394,22 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliFJWrapper*               fFastJetWrapper;          ///< EMB_clus wrapper for fast jet finding
 
 
-   TH3D* fhPtTrkTruePrimGen;                            //! physical primary mc particle eta vs pT  vs V0Mnorm
-   TH3D* fhPtTrkTruePrimRec;                            //! physical primary detector level track eta vs pT vs V0Mnorm
-   TH3D* fhPtTrkSecOrFakeRec;                           //! secondary tracks eta vs pT vs V0Mnorm
+   TH3D* fhPtTrkTruePrimGen;                                  //! physical primary mc particle eta vs pT  vs V0Mnorm
+   TH3D* fhPtTrkTruePrimRec;                                  //! physical primary detector level track eta vs pT vs V0Mnorm
+   TH3D* fhPtTrkSecOrFakeRec;                                 //! secondary tracks eta vs pT vs V0Mnorm
 
-   TH1D* fhJetPtPartLevelCorr;                          //! response matrix normalization spectrum, jet pT corrected on rho
-   TH1D* fhJetPtPartLevelZero;                          //! response matrix normalization spectrum, jet pT is not corrected on rho
-   TH1D* fhRecoilJetPtPartLevelCorr[fkTTbins];                    //! response matrix normalization spectrum, jet pT corrected on rho,  built from recoil jets //FF
+   // 1D Unfolding
+   TH1D* fhJetPtPartLevelCorr;                                //! response matrix normalization spectrum, jet pT corrected on rho
+   TH1D* fhJetPtPartLevelZero;                                //! response matrix normalization spectrum, jet pT is not corrected on rho
+   TH1D* fhRecoilJetPtPartLevelCorr[fkTTbins];                //! response matrix normalization spectrum, jet pT corrected on rho,  built from recoil jets //FF
 
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr;           //! response matrix jet pT corrected on rho
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelZero;           //! response matrix jet pT not corrected on rho
-   TH2D* fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr;     //! response matrix part level jet pT is not corrected on rho, detectot level jet pT is corrected on rho (added by KA)
-   TH2D* fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[fkTTbins];  //! response matrix jet pT corrected on rho built from recoil jets //FF
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr;                 //! response matrix jet pT corrected on rho
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelZero;                 //! response matrix jet pT not corrected on rho
+   TH2D* fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr;           //! response matrix part level jet pT is not corrected on rho, detectot level jet pT is corrected on rho (added by KA)
+   TH2D* fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[fkTTbins]; //! response matrix jet pT corrected on rho built from recoil jets //FF
+
+   TH2D* fhImpurityInclusive_DetJetPtVsPartJetPtCorr;         //! Impurity distribution: matched jets where det. level jet is within |0.5| and part. one is out for inclusive jets //KA
+   TH2D* fhImpurityRecoil_DetJetPtVsPartJetPtCorr[fkTTbins];  //! Impurity distribution: matched jets where det. level jet is within |0.5| and part. one is out for recoil jets    //KA
 
    //2D unfolding
    // Jet pT is CORRECTED on Rhokt (particle and detector levels)
@@ -487,6 +494,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    //TProfile *fhXsectionEMB[kTG];  //! Xsection     after  event selection in      embedding
    TH1F *fhPtHardEMB[kTG];        //! pthard
 
+   THnSparse* fhNotMatchedJetPt[fkTTbins];  //!   fk    pt, area, eta, phi and Delta phi of jets which do not have matched particle level jet
+
    Double_t fZVertexCut;                              // vertex cut in z
 
    Int_t    fnHadronTTBins;                           // number of TT bins charged hadron
@@ -561,7 +570,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 33); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 35); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }

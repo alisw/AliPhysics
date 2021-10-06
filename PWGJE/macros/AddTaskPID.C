@@ -162,7 +162,11 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
   }
   //connect containers
   mgr->ConnectInput  (task,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput (task,  0, mgr->GetCommonOutputContainer()); // comment to run local
+  
+  if (mgr->GetCommonOutputContainer()) {
+    //Not present for local runs
+    mgr->ConnectOutput (task,  0, mgr->GetCommonOutputContainer());
+  }
   mgr->ConnectOutput (task,  1, coutput1);
 
   return task;

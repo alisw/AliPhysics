@@ -298,7 +298,7 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2016MCPPB5TeV(const char *dataset
 }
 
 Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2016MCPPB8TeV(const char *dataset) const {
-  std::vector<TString> supportedProductions = {"lhc17g6b", "lhc18f3b", "lhc18f3c", "lhc18b9b", "lhc18b9c"};
+  std::vector<TString> supportedProductions = {"lhc17g6b", "lhc18f3b", "lhc18f3c", "lhc18b9b", "lhc18b9c","lhc20f11d","lhc21d2a","lhc21d2b","lhc21d2c"};
   return IsSupportedMCSample(dataset, supportedProductions);
 }
 

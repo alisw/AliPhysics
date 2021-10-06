@@ -210,32 +210,37 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     }
   }
   
-  //WARNING/FIXME- This will not allow for event selections to change in the middle of the processed dataset
-  //This will shortly be replaced with a proper selection
-  //in which the OADB is queried and a run range mapping object is created
+//  //WARNING/FIXME- This will not allow for event selections to change in the middle of the processed dataset
+//  //This will shortly be replaced with a proper selection
+//  //in which the OADB is queried and a run range mapping object is created
+//  fTree->GetEntry ( 0 ) ;
+//  oadbMultSelection = (AliOADBMultSelection* )oadbContMS->GetObject(fRunNumber, "Default");
+//  if(!oadbMultSelection) {
+//    AliWarningF("OADB object for run %i not found! Aborting...", fRunNumber );
+//    return kFALSE;
+//  }
+//  AliInfoF("OADB object acquired for run %i, setting up",fRunNumber);
+//  fSelection         = oadbMultSelection->GetMultSelection();
+//  fMultSelectionCuts = oadbMultSelection->GetEventCuts();
+//  AliInfo("Setup complete!");
+//  cout<<" * Event Selection Read from OADB: "<<endl;
+//
+//
+//  //============================================================
+//  // Calibration pre-optimization and setup
+//  //============================================================
+//  //Pre-optimize and create TFormulas
+//  cout<<" * Reading auto-vertex-Z calib"<<endl;
+//  fInput->SetupAutoVtxZCorrection(oadbMultSelection); //no extra action needed here, move along
+//  cout<<" * Done reading auto-vertex-Z calib, setting up!"<<endl;
+//  fSelection->Setup ( fInput );
+//  //============================================================
+  
   fTree->GetEntry ( 0 ) ;
   oadbMultSelection = (AliOADBMultSelection* )oadbContMS->GetObject(fRunNumber, "Default");
-  if(!oadbMultSelection) {
-    AliWarningF("OADB object for run %i not found! Aborting...", fRunNumber );
-    return kFALSE;
-  }
-  AliInfoF("OADB object acquired for run %i, setting up",fRunNumber);
-  fSelection         = oadbMultSelection->GetMultSelection();
   fMultSelectionCuts = oadbMultSelection->GetEventCuts();
-  AliInfo("Setup complete!");
   cout<<" * Event Selection Read from OADB: "<<endl;
   fMultSelectionCuts -> Print();
-  
-  
-  //============================================================
-  // Calibration pre-optimization and setup
-  //============================================================
-  //Pre-optimize and create TFormulas
-  cout<<" * Reading auto-vertex-Z calib"<<endl;
-  fInput->SetupAutoVtxZCorrection(oadbMultSelection); //no extra action needed here, move along
-  cout<<" * Done reading auto-vertex-Z calib, setting up!"<<endl;
-  fSelection->Setup ( fInput );
-  //============================================================
   
   Long64_t lNEv = fTree->GetEntries();
   cout<<"(1) Data File opened, event count is "<<lNEv<<endl;
@@ -275,19 +280,24 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
   
   const int lNEstimators = fSelection->GetNEstimators();
   //For computing average values of estimators
-  Double_t lAvEst[lNEstimators][lMax];
+  const int kMaxEstimators = 30;
+  Double_t lAvEst[kMaxEstimators][lMax];
   //For computing extreme values (useful for integer calibration mode)
-  Double_t lMaxEst[lNEstimators][lMax];
-  Double_t lMinEst[lNEstimators][lMax];
+  Double_t lMaxEst[kMaxEstimators][lMax];
+  Double_t lMinEst[kMaxEstimators][lMax];
+  
+  //Sanity check. If insane, add kNoCalib histogram
+  Bool_t lInsane[kMaxEstimators][lMax];
   
   //Index of first value above anchor point threshold
-  Long64_t lAnchorEst[lNEstimators][lMax];
+  Long64_t lAnchorEst[kMaxEstimators][lMax];
   
-  for(Long_t iEst=0; iEst<lNEstimators; iEst++) {
+  for(Long_t iEst=0; iEst<kMaxEstimators; iEst++) {
     for(Long_t iRun=0; iRun<lMax; iRun++) lAvEst[iEst][iRun] = 0;
     for(Long_t iRun=0; iRun<lMax; iRun++) lMaxEst[iEst][iRun] = -1e+3;
     for(Long_t iRun=0; iRun<lMax; iRun++) lMinEst[iEst][iRun] =  1e+6; //not more than a million, I hope?
     for(Long_t iRun=0; iRun<lMax; iRun++) lAnchorEst[iEst][iRun] = -1; //invalid index
+    for(Long_t iRun=0; iRun<lMax; iRun++) lInsane[iEst][iRun] = kFALSE; //we're nice people. We assume no insanity unless there's proof otherwise
   }
   
   //Add Timer
@@ -503,15 +513,68 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
   cout<<"(4) Look at average values"<<endl;
   for(Int_t iRun=0; iRun<lNRuns; iRun++) {
     const Long64_t ntot = (Long64_t) sTree[iRun]->GetEntries();
-    cout<<"(4) --- Processing run number "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"), with "<<ntot<<" events..."<<endl;
-    sTree[iRun]->SetEstimate(ntot+1);
+    cout<<"* Starting calibration of run "<<lRunNumbers[iRun]<<" (event count: "<<ntot<<")"<<endl;
+    if(ntot<1){
+      AliInfo("Run too small to calibrate! Skipping!");
+      continue;
+    }
+    cout<<"Opening OADB..."<<endl;
+    //Calibration pre-optimization and setup
+    oadbMultSelection = (AliOADBMultSelection* )oadbContMS->GetObject(lRunNumbers[iRun], "Default");
+    if(!oadbMultSelection) {
+      AliWarningF("OADB object for run %i not found! Aborting...", lRunNumbers[iRun] );
+      return kFALSE;
+    }
+    AliInfoF("OADB object acquired for run %i, setting up",lRunNumbers[iRun]);
+    fSelection         = oadbMultSelection->GetMultSelection();
+    if( !fSelection ) {
+      AliInfo("Calibration object missing! Skipping!");
+      continue;
+    }
+    AliInfo("Setup complete!");
+    
+    //============================================================
+    // Calibration pre-optimization and setup
+    //============================================================
+    //Pre-optimize and create TFormulas
+    cout<<" * Reading auto-vertex-Z calib"<<endl;
+    fInput->SetupAutoVtxZCorrection(oadbMultSelection); //no extra action needed here, move along
+    cout<<" * Done reading auto-vertex-Z calib, setting up!"<<endl;
+    fSelection->Setup ( fInput );
+    //============================================================
+    
+    const Int_t lNEstimatorsThis = fSelection->GetNEstimators();
+  
+    cout<<"--- Processing run "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"), with "<<ntot<<" events..."<<endl;
+    if( ntot < 1 ){ cout<<"Sample empty! Skipping..."<<endl; continue; }
+    //sTree[iRun]->SetEstimate(ntot+1);
     //Cast Run Number into drawing conditions
-    for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
-      lRunStats[iRun] = sTree[iRun]->Draw(fSelection->GetEstimator(iEst)->GetDefinition(),"","goff");
-      lValues = sTree[iRun]->GetV1();
-      cout<<"(4) --- Calculating values for "<<fSelection->GetEstimator(iEst)->GetName()<<":\t"<<flush;
-      for( Long64_t iEntry=0; iEntry<ntot; iEntry++) {
-        Float_t lThisVal = lValues[iEntry]; //Test
+  
+    timer->Reset();
+    timer->Start ( kTRUE );
+    lEventsPerSecond = 0;
+    
+    for( Long64_t iEntry=0; iEntry<ntot; iEntry++) {
+
+      if ( iEntry % 10000 == 0 ) {
+        cout << "\r" << "--- Looping over tree [ "<<Form("%.3f",100.*iEntry/ntot)<<"% ] [ ETA: "<< flush;
+        timer->Stop();
+        Double_t time = timer->RealTime();
+        
+        //events per hour:
+        lEventsPerSecond = ( ( Double_t ) ( iEntry ) ) /time;
+        
+        timer->Start ( kFALSE );
+        Double_t secondsperstep = time / ( Double_t ) ( iEntry+1 );
+        Double_t secondsleft = ( Double_t ) ( ntot-iEntry-1 ) * secondsperstep;
+        Long_t minutesleft = ( Long_t ) ( secondsleft / 60. );
+        secondsleft = ( Double_t ) ( ( Long_t ) ( secondsleft ) % 60 );
+        cout << minutesleft << "min " << secondsleft << "s ] [ Speed: "<<lEventsPerSecond<<" events/s ]" << flush;
+      }
+      sTree[iRun]->GetEntry(iEntry); //Get all variables
+      fSelection->Evaluate ( fInput ); //Evaluate based on current variables
+      for(Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) {
+        Double_t lThisVal = fSelection->GetEstimator(iEst)->GetValue();
         lAvEst[iEst][iRun] += lThisVal;
         if( lThisVal < lMinEst[iEst][iRun] ) {
           lMinEst[iEst][iRun] = lThisVal;
@@ -520,12 +583,20 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
           lMaxEst[iEst][iRun] = lThisVal;
         }
       }
+    }
+    cout<<endl;
+    
+    for(Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) {
       if( sTree[iRun]->GetEntries() < 1 ) {
         lAvEst[iEst][iRun] = -1;
       } else {
         lAvEst[iEst][iRun] /= ( (Double_t) (sTree[iRun]->GetEntries()) );
       }
       cout<<" Min = "<<lMinEst[iEst][iRun]<<", Max = "<<lMaxEst[iEst][iRun]<<", Av = "<<lAvEst[iEst][iRun]<<endl;
+      
+      if ( TMath::Abs( lMinEst[iEst][iRun] - lMaxEst[iEst][iRun] ) < 1e-6 ){
+        lInsane[iEst][iRun] = kTRUE; //No valid information to do calibration, please be careful !
+      }
     }
   }
   
@@ -550,6 +621,27 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
   cout<<"(5) Creating histograms..."<<endl;
   
   for(Int_t iRun=0; iRun<lNRuns; iRun++) {
+    
+    //Calibration pre-optimization and setup
+    oadbMultSelection = (AliOADBMultSelection* )oadbContMS->GetObject(lRunNumbers[iRun], "Default");
+    if(!oadbMultSelection) {
+      AliWarningF("OADB object for run %i not found! Aborting...", lRunNumbers[iRun] );
+      return kFALSE;
+    }
+    AliInfoF("OADB object acquired for run %i, setting up",lRunNumbers[iRun]);
+    fSelection         = oadbMultSelection->GetMultSelection();
+    AliInfo("Setup complete!");
+    
+    //============================================================
+    // Calibration pre-optimization and setup
+    //============================================================
+    //Pre-optimize and create TFormulas
+    cout<<" * Reading auto-vertex-Z calib"<<endl;
+    fInput->SetupAutoVtxZCorrection(oadbMultSelection); //no extra action needed here, move along
+    cout<<" * Done reading auto-vertex-Z calib, setting up!"<<endl;
+    fSelection->Setup ( fInput );
+    //============================================================
+    
     for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
       //May need later adjustment: axis scaling factor
       Float_t lSPDRange = (Int_t) ( lGlobalAxisScaling*lMaxEst[iEstSPDtracklets][iRun]+1.0 );
@@ -580,34 +672,30 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
       }
     }
   }
-  
-  //DEPRECATED: must now be based on AliMultInput-based evaluate call
-  /*
-   //Prepare 2D correlations
-   for(Int_t iRun=0; iRun<lNRuns; iRun++) {
-   for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
-   //Data Loop
-   cout<<"Filling run "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"): Data..."<<flush;
-   TString lEvalMe = "";
-   lEvalMe.Append(Form("fnTracklets:%s>>l2dTrackletVsEstimatorData_%i_%s",((TString)fSelection->GetEstimator(iEst)->GetDefinition()).Data(),lRunNumbers[iRun], fSelection->GetEstimator(iEst)->GetName()));
-   sTree[iRun] -> Draw( lEvalMe.Data() , "", "goff" );
-   //MC loop
-   cout<<"Done! MC..."<<flush;
-   TString current = fSelection->GetEstimator(iEst)->GetDefinition();
-   lEvalMe = "";
-   //Ignore fired condition ONLY in MC
-   current.ReplaceAll("fZnaFired", "1");
-   current.ReplaceAll("fZncFired", "1");
-   current.ReplaceAll("fZpaFired", "1");
-   current.ReplaceAll("fZpcFired", "1");
-   lEvalMe.Append(Form("fnTracklets:%s>>l2dTrackletVsEstimatorMC_%i_%s", current.Data(), lRunNumbers[iRun], fSelection->GetEstimator(iEst)->GetName()));
-   sTreeMC[iRun] -> Draw( lEvalMe.Data() , "", "goff" );
-   cout<<"Done!"<<endl;
-   }
-   }
-   */
+
   //Prepare 2D correlations
   for(Int_t iRun=0; iRun<lNRuns; iRun++) {
+    
+    //Calibration pre-optimization and setup
+    oadbMultSelection = (AliOADBMultSelection* )oadbContMS->GetObject(lRunNumbers[iRun], "Default");
+    if(!oadbMultSelection) {
+      AliWarningF("OADB object for run %i not found! Aborting...", lRunNumbers[iRun] );
+      return kFALSE;
+    }
+    AliInfoF("OADB object acquired for run %i, setting up",lRunNumbers[iRun]);
+    fSelection         = oadbMultSelection->GetMultSelection();
+    AliInfo("Setup complete!");
+    
+    //============================================================
+    // Calibration pre-optimization and setup
+    //============================================================
+    //Pre-optimize and create TFormulas
+    cout<<" * Reading auto-vertex-Z calib"<<endl;
+    fInput->SetupAutoVtxZCorrection(oadbMultSelection); //no extra action needed here, move along
+    cout<<" * Done reading auto-vertex-Z calib, setting up!"<<endl;
+    fSelection->Setup ( fInput );
+    //============================================================
+    
     for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
       //Data Loop
       cout << "\r" << "---["<<iRun<<"/"<<lNRuns<<"]["<<iEst<<"/"<<lNEstimators<<"] Looping over data tree [ 0% ] "<< flush;
@@ -684,6 +772,27 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
   if(fkUseQuadraticMapping) fFormula = "[0]+[1]*TMath::Power(x,[2])";
   
   for(Int_t iRun=0; iRun<lNRuns; iRun++) {
+    
+    //Calibration pre-optimization and setup
+    oadbMultSelection = (AliOADBMultSelection* )oadbContMS->GetObject(lRunNumbers[iRun], "Default");
+    if(!oadbMultSelection) {
+      AliWarningF("OADB object for run %i not found! Aborting...", lRunNumbers[iRun] );
+      return kFALSE;
+    }
+    AliInfoF("OADB object acquired for run %i, setting up",lRunNumbers[iRun]);
+    fSelection         = oadbMultSelection->GetMultSelection();
+    AliInfo("Setup complete!");
+    
+    //============================================================
+    // Calibration pre-optimization and setup
+    //============================================================
+    //Pre-optimize and create TFormulas
+    cout<<" * Reading auto-vertex-Z calib"<<endl;
+    fInput->SetupAutoVtxZCorrection(oadbMultSelection); //no extra action needed here, move along
+    cout<<" * Done reading auto-vertex-Z calib, setting up!"<<endl;
+    fSelection->Setup ( fInput );
+    //============================================================
+    
     for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
       
       //Check if anchored, disregard anchored range if the case
@@ -768,6 +877,27 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
   }
   
   for(Int_t iRun=0; iRun<lNRuns; iRun++) {
+    
+    //Calibration pre-optimization and setup
+    oadbMultSelection = (AliOADBMultSelection* )oadbContMS->GetObject(lRunNumbers[iRun], "Default");
+    if(!oadbMultSelection) {
+      AliWarningF("OADB object for run %i not found! Aborting...", lRunNumbers[iRun] );
+      return kFALSE;
+    }
+    AliInfoF("OADB object acquired for run %i, setting up",lRunNumbers[iRun]);
+    fSelection         = oadbMultSelection->GetMultSelection();
+    AliInfo("Setup complete!");
+    
+    //============================================================
+    // Calibration pre-optimization and setup
+    //============================================================
+    //Pre-optimize and create TFormulas
+    cout<<" * Reading auto-vertex-Z calib"<<endl;
+    fInput->SetupAutoVtxZCorrection(oadbMultSelection); //no extra action needed here, move along
+    cout<<" * Done reading auto-vertex-Z calib, setting up!"<<endl;
+    fSelection->Setup ( fInput );
+    //============================================================
+    
     cout<<"Run Report: "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"): "<<endl;
     for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
       cout<<"Estimator: "<<fSelection->GetEstimator(iEst)->GetName()<<" Data: "<<fitdata[iRun][iEst]->GetParameter(0)<<" MC: "<<fitmc[iRun][iEst]->GetParameter(0)<<endl;
@@ -854,6 +984,27 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
   //Loop over existing runs and write objects as needed
   for(Int_t iRun=0; iRun<lNRuns; iRun++) {
     cout<<"Processing run number "<<lRunNumbers[iRun]<<endl;
+    
+    //Calibration pre-optimization and setup
+    oadbMultSelection = (AliOADBMultSelection* )oadbContMS->GetObject(lRunNumbers[iRun], "Default");
+    if(!oadbMultSelection) {
+      AliWarningF("OADB object for run %i not found! Aborting...", lRunNumbers[iRun] );
+      return kFALSE;
+    }
+    AliInfoF("OADB object acquired for run %i, setting up",lRunNumbers[iRun]);
+    fSelection         = oadbMultSelection->GetMultSelection();
+    AliInfo("Setup complete!");
+    
+    //============================================================
+    // Calibration pre-optimization and setup
+    //============================================================
+    //Pre-optimize and create TFormulas
+    cout<<" * Reading auto-vertex-Z calib"<<endl;
+    fInput->SetupAutoVtxZCorrection(oadbMultSelection); //no extra action needed here, move along
+    cout<<" * Done reading auto-vertex-Z calib, setting up!"<<endl;
+    fSelection->Setup ( fInput );
+    //============================================================
+    
     if ( sTreeMC[iRun]->GetEntries() > 10 && sTree[iRun]->GetEntries() > 10 ){
       oadbMultSelectionout = new AliOADBMultSelection();
       cuts              = new AliMultSelectionCuts();
