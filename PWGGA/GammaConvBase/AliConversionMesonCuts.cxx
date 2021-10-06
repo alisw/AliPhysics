@@ -4600,12 +4600,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
         case 0: // EMC-EMC
           if (pt<2.0){
               pt_used=pt;
-          } else if (pt>35.0) {
+          } else if (pt>50.0) {
               pt_used=pt;
           } else {
               pt_used = pt;
           }
-          mass = (0.128551) + ((0.00282138) * pt_used) + ((-0.000352964) * pt_used * pt_used) + ((1.92779e-05) * pt_used * pt_used * pt_used) + ((-2.87512e-07) * pt_used * pt_used * pt_used * pt_used);
+          mass = (0.123412) + ((0.00592567) * pt_used) + ((-0.000965584) * pt_used * pt_used) + ((7.25294e-05) * pt_used * pt_used * pt_used) + ((-2.50606e-06) * pt_used * pt_used * pt_used * pt_used) + ((4.19909e-08) * pt_used * pt_used * pt_used * pt_used * pt_used) + ((-2.73255e-10) * pt_used * pt_used * pt_used * pt_used * pt_used * pt_used);
           if (pt<3.0){
               pt_used=pt;
           } else if (pt>35.0) {
@@ -4613,7 +4613,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           } else {
               pt_used = pt;
           }
-          sigma = (0.0139566) + ((-0.000959814) * pt_used ) + ((8.4667e-05) * pt_used * pt_used) + ((-7.26973e-08) * pt_used * pt_used * pt_used);
+          sigma = (0.0141177) + ((-0.00103254) * pt_used ) + ((9.33798e-05) * pt_used * pt_used) + ((-2.89213e-07) * pt_used * pt_used * pt_used);
 
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
