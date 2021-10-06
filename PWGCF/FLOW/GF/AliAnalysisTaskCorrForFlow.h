@@ -49,6 +49,7 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
         void                    SetPtBins(std::vector<Double_t> bins) { fPtBinsTrigCharged = bins; }
         void                    SetPtBinsAss(std::vector<Double_t> bins) { fPtBinsAss = bins; }
+        void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         void                    SetDoPID(Bool_t pid = kTRUE) { fDoPID = pid; }
         void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
         void                    SetUseEtaDependentEfficiencies(Bool_t ef = kTRUE) { fEfficiencyEtaDependent = ef; }
@@ -103,10 +104,12 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         AliVEvent::EOfflineTriggerTypes    fTrigger;
         Bool_t                  fIsHMpp; // [kFALSE]
         Bool_t                  fDoPID; // [kFALSE]
+        Bool_t                  fUseNch; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fEfficiencyEtaDependent; // [kFALSE]
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
+        Int_t                   fNofTracks;
         Double_t                fPtMinTrig;
         Double_t                fPtMaxTrig;
         Double_t                fPtMinAss;
@@ -131,7 +134,7 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlow, 3);
+        ClassDef(AliAnalysisTaskCorrForFlow, 4);
 };
 
 #endif
