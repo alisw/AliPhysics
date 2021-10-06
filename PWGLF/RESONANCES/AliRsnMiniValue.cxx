@@ -104,6 +104,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kTracklets:    return "EventTracklets";
       case kPlaneAngle:   return "EventPlane";
       case kLeadingPt:    return "EventLeadingPt";
+      case kLeadingPhi:   return "EventLeadingPhi"
       case kPt:           return "Pt";
       case kPz:           return "Pz";
       case kInvMass:      return "InvMass";
@@ -184,6 +185,13 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          if (l) {
             l->Set4Vector(v,-1.0,fUseMCInfo);
             return v.Pt();
+         }
+         return 0.0;
+      case kLeadingPhi:
+         l = event->LeadingParticle(fUseMCInfo);
+         if (l) {
+            l->Set4Vector(v,-1.0,fUseMCInfo);
+            return v.Phi();
          }
          return 0.0;
       case kPt:
