@@ -41,11 +41,11 @@ AliAnalysisTaskDeuteronCoalescence *addTaskDeuteronsCoalescence (Double_t Nch_Tr
     
     //Analysis Task
     AliAnalysisTaskDeuteronCoalescence *task = new AliAnalysisTaskDeuteronCoalescence ("task_deuteron_coalescence");
-    task -> AliAnalysisTaskDeuteronCoalescenceLocal::SetAverageTransverseMultiplicity(Nch_Transv);
-    task -> AliAnalysisTaskDeuteronCoalescenceLocal::SetReshapingProtons (hProtWeights,fProtWeights);
-    task -> AliAnalysisTaskDeuteronCoalescenceLocal::SetReshapingProtonsDiff (hWeight_toward,hWeight_transv,hWeight_away);
-    task -> AliAnalysisTaskDeuteronCoalescenceLocal::SetDeuteronWaveFunc (fDeuteronWF);
-    task -> AliAnalysisTaskDeuteronCoalescenceLocal::SetSourceSizeRadius (hSourceR0);
+    task -> AliAnalysisTaskDeuteronCoalescence::SetAverageTransverseMultiplicity(Nch_Transv);
+    task -> AliAnalysisTaskDeuteronCoalescence::SetReshapingProtons (hProtWeights,fProtWeights);
+    task -> AliAnalysisTaskDeuteronCoalescence::SetReshapingProtonsDiff (hWeight_toward,hWeight_transv,hWeight_away);
+    task -> AliAnalysisTaskDeuteronCoalescence::SetDeuteronWaveFunc (fDeuteronWF);
+    task -> AliAnalysisTaskDeuteronCoalescence::SetSourceSizeRadius (hSourceR0);
     mgr -> AddTask(task);
     mgr -> ConnectInput (task,0,mgr->GetCommonInputContainer());
     mgr -> ConnectOutput(task,1,mgr->CreateContainer("Results", TList::Class(),AliAnalysisManager::kOutputContainer,fileName.Data()));
