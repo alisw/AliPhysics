@@ -29,6 +29,7 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow() : AliAnalysisTaskSE(),
     fPIDCombined(0),
     fPoolMgr(0),
     fhEventCounter(0),
+    fhEventMultiplicity(0),
     fHistPhiEta(0),
     fhTrigTracks(0),
     fhChargedSE(0),
@@ -42,6 +43,8 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow() : AliAnalysisTaskSE(),
     fFilterBit(96),
     fbSign(0),
     fNofTracks(0),
+    fNchMin(0),
+    fNchMax(100000),
     fPtMinTrig(0.5),
     fPtMaxTrig(10.0),
     fPtMinAss(0.5),
@@ -70,6 +73,7 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name, Bool_t 
     fPIDCombined(0),
     fPoolMgr(0),
     fhEventCounter(0),
+    fhEventMultiplicity(0),
     fHistPhiEta(0),
     fhTrigTracks(0),
     fhChargedSE(0),
@@ -83,6 +87,8 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name, Bool_t 
     fFilterBit(96),
     fbSign(0),
     fNofTracks(0),
+    fNchMin(0),
+    fNchMax(100000),
     fPtMinTrig(0.5),
     fPtMaxTrig(10.0),
     fPtMinAss(0.5),
@@ -114,7 +120,6 @@ void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
     PrintSetup();
 
     fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
-    //fCentBins = {0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100};
 
     fOutputListCharged = new TList();
     fOutputListCharged->SetOwner(kTRUE);
@@ -122,7 +127,10 @@ void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
     fhEventCounter = new TH1D("fhEventCounter","Event Counter",10,0,10);
     fOutputListCharged->Add(fhEventCounter);
 
-    fHistPhiEta = new TH2D("fHistPhiEta", "fHistPhiEta; phi; eta", 100, -0.5, 7, 100, -1.5, 1.5);
+    fhEventMultiplicity = new TH1D("fhEventMultiplicity","Event multiplicity; N_{ch}",200,0,200);
+    fOutputListCharged->Add(fhEventMultiplicity);
+
+    fHistPhiEta = new TH2D("fHistPhiEta", "fHistPhiEta; phi; eta", 100, 0.0, TMath::TwoPi(), 100, -1.0, 1.0);
     fOutputListCharged->Add(fHistPhiEta);
 
     fhTrigTracks = new TH2D("fhTrigTracks", "fhTrigTracks; pT (trig); PVz", fPtBinsTrigCharged.size() - 1, fPtBinsTrigCharged.data(), 10, -10, 10);
@@ -246,6 +254,8 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
 
     if(fUseEfficiency && !AreEfficienciesLoaded()) { return; }
 
+    fNofTracks = 0;
+
     for(Int_t i(0); i < iTracks; i++) {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track || !IsTrackSelected(track)) { continue; }
@@ -271,8 +281,11 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
         //example histogram
         fHistPhiEta->Fill(track->Phi(), track->Eta());
     }
+    fhEventMultiplicity->Fill(fNofTracks);
 
-    if(fUseNch) fCentrality = (Double_t)fNofTracks;
+    if(fUseNch){
+      if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return; }
+    }
 
     if(!fTracksTrigCharged->IsEmpty()){
       if(fDoPID){
