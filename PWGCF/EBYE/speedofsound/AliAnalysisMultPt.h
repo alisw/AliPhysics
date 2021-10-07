@@ -6,14 +6,6 @@
 #define PI 3.1415927
 
 
-//class AliAODEvent;
-//class AliMCEvent;
-//class TList;
-//class TTree;
-//class TH3D;
-
-
-
 class AliAnalysisMultPt : public AliAnalysisTaskSE
 {
     public:
@@ -45,29 +37,13 @@ class AliAnalysisMultPt : public AliAnalysisTaskSE
         //TH2D*                   fHistRatio;       //! Ratio of pTs
         AliMCEvent*             fMCEvent;         //! corresponding MC event
        
-    
-       Bool_t fIsMC;
-
-    
-      /*
         Bool_t fIsMC;
-        Double_t fChi2DoF;
-        Int_t fTPCNcls;
-
-        AliEventCuts fEventCuts;
-        Float_t mNMC;
-        Float_t mSpTMC;
-    */
     
-     
-    
-       int mMode;
-      
+        int mMode;
 
    AliAnalysisMultPt(const AliAnalysisMultPt&); // not implemented
    AliAnalysisMultPt& operator=(const AliAnalysisMultPt&); // not implemented
 
         ClassDef(AliAnalysisMultPt, 1);    /// yaaaa1 ya 2   ???????????
 };
-
 #endif
