@@ -48,11 +48,6 @@
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisMultPt.h"
 
-//#include "AliAODVertex.h"
-
-
-
-
 class AliAnalysisMultPt;    // your analysis class
 using namespace std;            // std namespace: so you can do things like 'cout'
 
@@ -97,10 +92,7 @@ mixer(0)
 
 {
 
-
-    //DefineInput(0, TChain::Class());
     mMode = 0;
-
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
     //DefineOutput(1, TTree::Class());
@@ -128,7 +120,6 @@ void AliAnalysisMultPt::ProcessMCParticles()
 
       AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
       if (!particle) continue;
-      //cout << "PDG CODE = " << particle->GetPdgCode() << endl;
     }
 }
 
@@ -139,16 +130,7 @@ void AliAnalysisMultPt::UserCreateOutputObjects()
         //fOutputList = new TTree();
         //fOutputList->SetOwner(true);
         fOutputList->SetOwner(kTRUE);
-        
-
-        //ostad
-        // Create histograms
-        // Called once
-          //Init();// Initialize my settings
-         // OpenFile(1,"RECREATE");
-            //double PtBins[20] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.2,1.4,1.6,1.8,2,2.5,3,3.5,4,4.5,5};
-
-        
+     
         // create our histo and add it to the list
         fHistPt = new TH1D("fHistPt", "fHistPt", 50, 0, 5);
         fOutputList->Add(fHistPt);
@@ -175,21 +157,14 @@ void AliAnalysisMultPt::UserCreateOutputObjects()
         fHistMultPtMC = new TH2D("fHistMultPtMC", "fHistMultPtMC",50, 0, 5, 350, 0, 3500);  //?????
         fOutputList->Add(fHistMultPtMC);
 
-            
-        //fHistRatio = new TH2D("fHistRatio", "fHistRatio", 50, 0, 5, 350, 0, 3500);  //?????
-        //fOutputList->Add(fHistRatio);
-        
         fHistRatio = new TH1D("fHistRatio", "fHistRatio", 50, 0,5);  //?????
-        //TH1D *fHistRatio;
         fOutputList->Add(fHistRatio);
         
-            
         fHistFitMC = new TH1D("fHistFitMC", "fHistFitMC", 350, 0, 3500);
         fOutputList->Add(fHistFitMC);
         
         fHistProjMC = new TH1D("fHistProjMC", "fHistProjMC", 50, 0, 5);
         fOutputList->Add(fHistProjMC);
- 
         
         // add the list to our output file
         PostData(1,fOutputList);
@@ -205,19 +180,12 @@ void AliAnalysisMultPt::UserExec(Option_t *)
     // check if there actually is an event:
     if(!fAOD) return;
     // ::Fatal("AliAnalysisMultPt::UserExec", "No AOD event found, check the event handler.");
-    // let's loop over the tracks and fill our histogram,
     // first we get the number of tracks:
     Int_t iTracks(fAOD->GetNumberOfTracks());
     // and then loop over them:
     Double_t Mult=0.0; //For charged particle
     Double_t Mult1=0.0; //For positive
     Double_t Mult2=0.0; //For negative
-    
-    
-    
-    
-//TCanvas *c1 = new TCanvas("c1","c1",800,600) ;
- //   c1->Divide(2,2);
     
     // loop over all these tracks:
     for(Int_t i(0); i < iTracks; i++) {
@@ -236,8 +204,6 @@ void AliAnalysisMultPt::UserExec(Option_t *)
               }
               }
          }
-    
-    
     
     for(Int_t i(0); i < iTracks; i++) {
          // get a track (type AliAODTrack) from the event:
@@ -258,9 +224,6 @@ void AliAnalysisMultPt::UserExec(Option_t *)
     
     TH1D *fHistProj = fHistMultPt->ProjectionX("fHistProj", 0, 3500); // where firstYbin = 0 and lastYbin = 5
 
-//    c1->cd(1);
-    //fHistProj->Draw();
-    
     fHistMultPt->GetXaxis()->SetTitle("pT");
     fHistMultPt->GetYaxis()->SetTitle("Multiplicity");
     
@@ -279,7 +242,6 @@ void AliAnalysisMultPt::UserExec(Option_t *)
      
      Double_t mNMC  = 0.0;
      //Double_t  mSpTMC = 0.0;
-     
      
      for (Int_t i(0); i < nMCTracks; i++) {
          
@@ -300,10 +262,6 @@ void AliAnalysisMultPt::UserExec(Option_t *)
      }
     
 
-
- 
-
-     
      for (Int_t i(0); i < nMCTracks; i++) {
          
          AliAODMCParticle *particle=(AliAODMCParticle*)stack->UncheckedAt(i);
@@ -320,51 +278,15 @@ void AliAnalysisMultPt::UserExec(Option_t *)
          }
         }
      }
-            //fHistMultPtMC->Draw();
-            TH1D *fHistProjMC = fHistMultPtMC->ProjectionX("fHistProjMC", 0, 3500); // where firstYbin = 0 and lastYbin = 5
-            //fHistProjMC->Draw();
-            //fHistProjMC-> SetLineColor(kRed);
-            //fHistProj->Divide(fHistProjMC);
-            //fHistRatio->Draw
-    //c1->cd(2);
-   // fHistProjMC->Draw();
-            
-            //fHistRatio->Fill(fHistProj/fHistProjMC);
-            fHistMultPtMC->GetXaxis()->SetTitle("pT-MC");
-            fHistMultPtMC->GetYaxis()->SetTitle("Multiplicity-MC");
-       
-            //TH2D *fHistRatio->(fHistMultPtMC->Divide(fHistMultPt));
-           // fHistRatio->Draw();
-           
-           //TH1D *hratio = new TH1D(*fHistProj);
-          //hratio->Divide(fHistProjMC);
-          // hratio->Draw();
+         TH1D *fHistProjMC = fHistMultPtMC->ProjectionX("fHistProjMC", 0, 3500); // where firstYbin = 0 and lastYbin = 5
 
-     //fHistProj->Draw();
-  
+         fHistMultPtMC->GetXaxis()->SetTitle("pT-MC");
+         fHistMultPtMC->GetYaxis()->SetTitle("Multiplicity-MC");
 
          fHistRatio = (TH1D*)fHistProj->Clone();
          fHistRatio->Divide(fHistProjMC);
          fHistRatio->Draw();
-     
-    /*
-            TH1D *hratio = new TH1D(*fHistProj);
-            hratio->Divide(fHistProjMC);
-            hratio->Draw();
-     */
-    
-    //hratio->SetNameTitle("hratio", "h1 / h2");
-    
-        //cout<<"Charged particle = " << Mult<< endl;
-       // fHistMult->Fill(Mult);
-        //fHistMult->Draw();
-        //fHistFit->Fill(); ??
-        //fHistFit->Draw();
-       //cout<<"Positive = " << Mult1 << endl;
-       //cout<<"Negative = " << Mult2 << endl;
-      // and save the data gathered in this iteration
-
-       
+ 
    
    PostData(1, fOutputList);
 }
