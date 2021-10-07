@@ -4597,14 +4597,23 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
       Float_t sigma = 999;
       switch(fMassParamFunction){
         case 0: // EMC-EMC
-          if ( pt>45. ){
-              Double_t pt_fix=45.;
-              mass = (0.125281) + ((0.0023329) * pt_fix) + ((-0.000272107) * pt_fix * pt_fix) + ((1.57169e-05) * pt_fix * pt_fix * pt_fix) + ((-1.93425e-07) * pt_fix * pt_fix * pt_fix * pt_fix);
-              sigma = (0.0208639) + ((-0.00227399) * pt_fix ) + ((0.000162993) * pt_fix * pt_fix) + ((-1.94142e-06) * pt_fix * pt_fix * pt_fix);
+          if ((meson->Pt())<2.0){
+              pt=2.0;
+          } else if ((meson->Pt())>50.0) {
+              pt=50.;
           } else {
-              mass = (0.125281) + ((0.0023329) * pt) + ((-0.000272107) * pt * pt) + ((1.57169e-05) * pt * pt * pt) + ((-1.93425e-07) * pt * pt * pt * pt);
-              sigma = (0.0208639) + ((-0.00227399) * pt ) + ((0.000162993) * pt * pt) + ((-1.94142e-06) * pt * pt * pt);
+              pt = (meson->Pt());
           }
+          mass = (0.123412) + ((0.00592567) * pt) + ((-0.000965584) * pt * pt) + ((7.25294e-05) * pt * pt * pt) + ((-2.50606e-06) * pt * pt * pt * pt) + ((4.19909e-08) * pt * pt * pt * pt * pt) + ((-2.73255e-10) * pt * pt * pt * pt * pt * pt);
+          if ((meson->Pt())<3.0){
+              pt=3.0;
+          } else if ((meson->Pt())>35.0) {
+              pt=35.;
+          } else {
+              pt = (meson->Pt());
+          }
+          sigma = (0.0141177) + ((-0.00103254) * pt ) + ((9.33798e-05) * pt * pt) + ((-2.89213e-07) * pt * pt * pt);
+
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
