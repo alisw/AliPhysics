@@ -126,10 +126,10 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
 	tTwoTracks ->Branch("fVectParticle", &vParticle[0][0],"vParticle[5][2]/O");
 	tTwoTracks ->Branch("fPIDTPC", &fPIDTPC[0],"fPIDTPC[5]/F");
 	tTwoTracks ->Branch("fPIDTOF", &fPIDTOF[0],"fPIDTOF[5]/F");
-	tTwoTracks ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/F");
-	tTwoTracks ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/F");
-	tTwoTracks ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/F");
-	tTwoTracks ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
+	tTwoTracks ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
+	tTwoTracks ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/D");
+	tTwoTracks ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/D");
+	tTwoTracks ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/D");
 	tTwoTracks ->Branch("fSign", &fSign, "fSign/I");
 	tTwoTracks ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
 	tTwoTracks ->Branch("fTriggers", &fTriggers, Form("fTriggers[%i]/O",(Int_t)(sizeof(fTriggers)/sizeof(fTriggers[0]))));
@@ -137,9 +137,9 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
 	tTwoTracks ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");
 	tTwoTracks ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
 	tTwoTracks ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
-	tTwoTracks ->Branch("fPIDpt", &fPIDpt[0], "fPIDpt[2]/F");
-	tTwoTracks ->Branch("fTPCsignal", &fTPCsignal[0], "fTPCsignal[2]/F");
-	tTwoTracks ->Branch("fTOFsignal", &fTOFsignal[0], "fTOFsignal[2]/F");
+	tTwoTracks ->Branch("fPIDpt", &fPIDpt[0], "fPIDpt[2]/D");
+	tTwoTracks ->Branch("fTPCsignal", &fTPCsignal[0], "fTPCsignal[2]/D");
+	tTwoTracks ->Branch("fTOFsignal", &fTOFsignal[0], "fTOFsignal[2]/D");
 	tTwoTracks ->Branch("fTPCmostProbableTrackType", &fTPCmostProbableTrackType[0], "fTPCmostProbableTrackType[2]/I");
 	tTwoTracks ->Branch("fTOFmostProbableTrackType", &fTOFmostProbableTrackType[0], "fTOFmostProbableTrackType[2]/I");
 	fOutputList->Add(tTwoTracks);
@@ -153,9 +153,9 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
 	fOutputPID ->SetOwner(); // @suppress("Ambiguous problem")
 
 	tPID = new TTree("tPID", "tPID");
-	tPID ->Branch("fPIDpt", &fPIDpt[0], "fPIDpt[2]/F");
-	tPID ->Branch("fTPCsignal", &fTPCsignal[0], "fTPCsignal[2]/F");
-	tPID ->Branch("fTOFsignal", &fTOFsignal[0], "fTOFsignal[2]/F");
+	tPID ->Branch("fPIDpt", &fPIDpt[0], "fPIDpt[2]/D");
+	tPID ->Branch("fTPCsignal", &fTPCsignal[0], "fTPCsignal[2]/D");
+	tPID ->Branch("fTOFsignal", &fTOFsignal[0], "fTOFsignal[2]/D");
 	tPID ->Branch("fTPCmostProbableTrackType", &fTPCmostProbableTrackType[0], "fTPCmostProbableTrackType[2]/I");
 	tPID ->Branch("fTOFmostProbableTrackType", &fTOFmostProbableTrackType[0], "fTOFmostProbableTrackType[2]/I");
 	fOutputPID->Add(tPID);
@@ -313,7 +313,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
 			//
 			// Fast-OR chips crossed STG
 			//
-			AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
+			auto *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
 			if(trk->Pt()>10.) return; // just skip this event completelly
 			crossedFO[0] = trk->GetITSModuleIndex(0);
 			crossedFO[1] = trk->GetITSModuleIndex(1);

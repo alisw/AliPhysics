@@ -61,7 +61,7 @@ private:
 		AliAnalysisTaskCentralTau(const AliAnalysisTaskCentralTau&); //not implemented
 		AliAnalysisTaskCentralTau& operator =(const AliAnalysisTaskCentralTau&); //not implemented
 
-ClassDef(AliAnalysisTaskCentralTau, 27);
+ClassDef(AliAnalysisTaskCentralTau, 28);
 };
 
 #endif
