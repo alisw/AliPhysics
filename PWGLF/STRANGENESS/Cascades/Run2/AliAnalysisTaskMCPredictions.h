@@ -98,15 +98,15 @@ private:
   TH1D *fHistNMPI;
   TH2D *fHistNchVsNMPI;
   
-  TH1D *fHistPt[52];              //! for keeping track of base spectra
-  TH1D *fHistEta[52];              //! for keeping track of base spectra
-  TH2D *fHistPtVsV0MMult[52];     //! for keeping track of base spectra
-  TH2D *fHistPtVsSPDMult[52];     //! for keeping track of base spectra
-  TH2D *fHistEtaVsSPDMult[52];    //! for keeping track of base spectra
-  TH2D *fHistYVsSPDMult[52];    //! for keeping track of base spectra
-  TH2D *fHistPtVsNpart[52];       //! for keeping track of base spectra
-  TH2D *fHistPtVsB[52];           //! for keeping track of base spectra
-  TH2D *fHistPtVsNMPI[52];       //! for keeping track of base spectra
+  TH1D *fHistPt[64];              //! for keeping track of base spectra
+  TH1D *fHistEta[64];              //! for keeping track of base spectra
+  TH2D *fHistPtVsV0MMult[64];     //! for keeping track of base spectra
+  TH2D *fHistPtVsSPDMult[64];     //! for keeping track of base spectra
+  TH2D *fHistEtaVsSPDMult[64];    //! for keeping track of base spectra
+  TH2D *fHistYVsSPDMult[64];    //! for keeping track of base spectra
+  TH2D *fHistPtVsNpart[64];       //! for keeping track of base spectra
+  TH2D *fHistPtVsB[64];           //! for keeping track of base spectra
+  TH2D *fHistPtVsNMPI[64];       //! for keeping track of base spectra
   
   Bool_t fkDo2pc;
   Float_t fMinPtTriggerCharged; //for charged trigger
@@ -115,9 +115,9 @@ private:
   TH1D *fEtaTriggerCharged;
   TH1D *fEtaTriggerXi;
   TH1D *fEtaTriggerPhi;
-  //TH3D *fHist3d2pcSE[52]; //!
-  //TH3D *fHist3d2pcXiSE[52]; //!
-  //TH3D *fHist3d2pcPhiSE[52]; //!
+  //TH3D *fHist3d2pcSE[64]; //!
+  //TH3D *fHist3d2pcXiSE[64]; //!
+  //TH3D *fHist3d2pcPhiSE[64]; //!
   
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
