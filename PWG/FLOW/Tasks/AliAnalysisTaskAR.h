@@ -238,6 +238,11 @@ public:
                                    Double_t xlowerEdge, Double_t xupperEdge,
                                    Int_t mul2, Int_t ynbins,
                                    Double_t ylowerEdge, Double_t yupperEdge);
+  // generic setter for multiplicity correlation QA histogram binning
+  void SetCenMulCorQAHistogramBinning(Int_t xnbins, Double_t xlowerEdge,
+                                      Double_t xupperEdge, Int_t mul,
+                                      Int_t ynbins, Double_t ylowerEdge,
+                                      Double_t yupperEdge);
   // generic setter for track scan QA histograms
   void SetFBTrackScanQAHistogramBinning(kTrack Track, Int_t nbins,
                                         Double_t lowerEdge,
@@ -519,6 +524,13 @@ private:
                                  [LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fMulCorQAHistogramBins[kMulEstimators * (kMulEstimators - 1) / 2]
                                  [2 * LAST_EBINS];
+  // multiplicity-centrality correlation histograms
+  TList *fCenMulCorQAHistogramsList;
+  TString fCenMulCorQAHistogramsListName;
+  TH2D *fCenMulCorQAHistograms[kMulEstimators][LAST_EBEFOREAFTER];
+  TString fCenMulCorQAHistogramNames[kMulEstimators][LAST_EBEFOREAFTER]
+                                    [LAST_ENAME];
+  Double_t fCenMulCorQAHistogramBins[kMulEstimators][2 * LAST_EBINS];
   // filterbit scans histograms
   TList *fFBScanQAHistogramsList;
   TString fFBScanQAHistogramsListName;
