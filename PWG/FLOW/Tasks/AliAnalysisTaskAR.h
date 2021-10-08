@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 30.09.2021
+ * Last Modified Date: 08.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -29,7 +29,7 @@
 #include <TFile.h>
 #include <TH1D.h>
 #include <TH2D.h>
-#include <THnSparse.h>
+// #include <THnSparse.h>
 #include <TProfile.h>
 #include <TRandom3.h>
 #include <TString.h>
@@ -99,7 +99,7 @@ enum kMCPrimaryDef { kMCPrim, kMCPhysicalPrim };
 class AliAnalysisTaskAR : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskAR();
-  AliAnalysisTaskAR(const char *name, Bool_t useParticleWeights = kFALSE);
+  AliAnalysisTaskAR(const char *name);
   virtual ~AliAnalysisTaskAR();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -122,6 +122,12 @@ public:
   virtual void BookControlHistograms();
   virtual void BookFinalResultHistograms();
   virtual void BookFinalResultProfiles();
+
+  // functions for setting default values for binning/cuts
+  void SetDefaultConfiguration();
+  void SetDefaultBinning();
+  void SetDefaultCuts(Int_t Filterbit = 128, Double_t cenMin = 0,
+                      Double_t cenMax = 100);
 
   // functions called in UserExec()
   virtual void FillEventQAHistograms(kBeforeAfter BA, AliAODEvent *AODEvent,
@@ -551,7 +557,7 @@ private:
   Bool_t fUseTrackCuts[LAST_ETRACK];
   TH1D *fTrackCutsCounter[LAST_EMODE];
   TString fTrackCutsCounterCumulativeName;
-  THnSparseD *fTrackCutsCounterCumulative;
+  // THnSparseD *fTrackCutsCounterCumulative;
   TString fTrackCutsValuesName;
   TH1D *fTrackCutsValues;
   TString fTrackCutsCounterNames[LAST_EMODE];
@@ -560,7 +566,7 @@ private:
   Bool_t fUseEventCuts[LAST_EEVENT];
   TH1D *fEventCutsCounter[LAST_EMODE];
   TString fEventCutsCounterCumulativeName;
-  THnSparseD *fEventCutsCounterCumulative;
+  // THnSparseD *fEventCutsCounterCumulative;
   TString fEventCutsValuesName;
   TH1D *fEventCutsValues;
   TString fEventCutsCounterNames[LAST_EMODE];
