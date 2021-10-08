@@ -191,7 +191,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     AliAnalysisTaskLMeeCocktailMC(const AliAnalysisTaskLMeeCocktailMC&); // Prevent copy-construction
     AliAnalysisTaskLMeeCocktailMC &operator=(const AliAnalysisTaskLMeeCocktailMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskLMeeCocktailMC, 3);
+    ClassDef(AliAnalysisTaskLMeeCocktailMC, 4);
 };
 
 #endif
