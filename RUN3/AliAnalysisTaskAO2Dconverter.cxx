@@ -2044,11 +2044,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     phostriggers->GetPosition(mod, absId);
     //here absId is normal Run2 readout absId
     //Remove noisy triggers
-    Int_t phosmodulenumber = (Int_t)TMath:: Ceil(absId/3584) ; 
+    Int_t phosmodulenumber = TMath:: Ceil(float(absId)/3584) ; 
     int id = absId - ( phosmodulenumber - 1 ) * 3584 ; 
     int ix = (Int_t)TMath::Ceil( id / 64 )  ;
     int iz = (Int_t)( id - ( ix - 1 ) * 64 ) ; 
-    if(fPHOSBadMap[phosmodulenumber]->GetBinContent(ix,iz)>0) { //bad channel
+    if(fPHOSBadMap[phosmodulenumber] != nullptr && fPHOSBadMap[phosmodulenumber]->GetBinContent(ix,iz)>0) { //bad channel
       continue ;
     }
     //transform to Run3 truID

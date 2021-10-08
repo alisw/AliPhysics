@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 30.09.2021
+ * Last Modified Date: 08.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -37,7 +37,7 @@
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <THnSparse.h>
+// #include <THnSparse.h>
 #include <TMath.h>
 #include <TRandom3.h>
 #include <TSystem.h>
@@ -49,8 +49,7 @@
 
 ClassImp(AliAnalysisTaskAR)
 
-    AliAnalysisTaskAR::AliAnalysisTaskAR(const char *name,
-                                         Bool_t useParticleWeights)
+    AliAnalysisTaskAR::AliAnalysisTaskAR(const char *name)
     : AliAnalysisTaskSE(name),
       // Constructor
       // Base list for all output objects
@@ -81,10 +80,10 @@ ClassImp(AliAnalysisTaskAR)
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
       fTrackCutsCounterCumulativeName("TrackCutsCounterCumulative"),
-      fTrackCutsCounterCumulative(nullptr),
+      // fTrackCutsCounterCumulative(nullptr),
       fTrackCutsValuesName("TrackCutValues"), fTrackCutsValues(nullptr),
       fEventCutsCounterCumulativeName("EventCutsCounterCumulative"),
-      fEventCutsCounterCumulative(nullptr),
+      // fEventCutsCounterCumulative(nullptr),
       fEventCutsValuesName("EventCutValues"), fEventCutsValues(nullptr),
       fFilterbit(128), fUseFilterbit(kFALSE), fChargedOnly(kFALSE),
       fPrimaryOnly(kFALSE), fMCPrimaryDef(kMCPhysicalPrim),
@@ -106,7 +105,7 @@ ClassImp(AliAnalysisTaskAR)
       // qvectors
       fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}) {
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR(const "
-              "char *name, Bool_t useParticleWeights)");
+              "char *name");
 
   // create base list
   fHistList = new TList();
@@ -150,10 +149,10 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fEventControlHistogramsListName("EventControlHistograms"),
       // cuts
       fTrackCutsCounterCumulativeName("TrackCutsCounterCumulative"),
-      fTrackCutsCounterCumulative(nullptr),
+      // fTrackCutsCounterCumulative(nullptr),
       fTrackCutsValuesName("TrackCutValues"), fTrackCutsValues(nullptr),
       fEventCutsCounterCumulativeName("EventCutsCounterCumulative"),
-      fEventCutsCounterCumulative(nullptr),
+      // fEventCutsCounterCumulative(nullptr),
       fEventCutsValuesName("EventCutValues"), fEventCutsValues(nullptr),
       fFilterbit(128), fUseFilterbit(kFALSE), fChargedOnly(kFALSE),
       fPrimaryOnly(kFALSE), fMCPrimaryDef(kMCPhysicalPrim),
@@ -310,7 +309,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   Double_t CorCenEstimatorQAHistogramBins[2 * LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE kBIN+LAST_EBINS kLEDGE+LAST_EBINS
       // kUEDGE+LAST_EBINS
-      50., 0., 100., 50., 0., 100.};
+      100., 0., 100., 100., 0., 100.};
   // initialize default bins
   for (int cen = 0; cen < LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2;
        ++cen) {
@@ -352,7 +351,7 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   Double_t MulCorQAHistogramBins[2 * LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE kBIN+LAST_EBINS kLEDGE+LAST_EBINS
       // kUEDGE+LAST_EBINS
-      50., 0., 3000., 50., 0., 3000.};
+      1000., 0., 5000., 1000., 0., 5000.};
   // initialize default bins
   for (int mul = 0; mul < kMulEstimators * (kMulEstimators - 1) / 2; ++mul) {
     for (int bin = 0; bin < 2 * LAST_EBINS; ++bin) {
@@ -568,8 +567,18 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
   }
   // set bin names of track cuts counter histogram
   TString TrackCutsCounterBinNames[LAST_ETRACK] = {
-      "kPT",      "kPHI",        "kETA",  "kCHARGE", "kTPCNCLS",
-      "kITSNCLS", "kCHI2PERNDF", "kDCAZ", "kDCAXY",
+      "kPT",
+      "kPHI",
+      "kETA",
+      "kCHARGE",
+      "kTPCNCLS",
+      "kTPCCROSSEDROWS",
+      "kTPCNCLSFRACTIONSHARED",
+      "kTPCCHI2PERNDF",
+      "kITSNCLS",
+      "kCHI2PERNDF",
+      "kDCAZ",
+      "kDCAXY",
   };
   // initialize bin names of track cuts counter histogram
   for (int name = 0; name < LAST_ETRACK; name++) {
@@ -980,13 +989,14 @@ void AliAnalysisTaskAR::BookControlHistograms() {
     fTrackControlHistogramsList->Add(fTrackCutsCounter[mode]);
   }
   // book histogram holding cumulative track cuts
-  Double_t ctcxmin[1] = {-0.5};
-  Double_t ctcxmax[1] = {std::pow(2, LAST_ETRACK + 3) - 0.5};
-  Int_t ctcbins[1] = {static_cast<Int_t>(::pow(2, LAST_ETRACK + 3))};
-  fTrackCutsCounterCumulative = new THnSparseD(fTrackCutsCounterCumulativeName,
-                                               fTrackCutsCounterCumulativeName,
-                                               1, ctcbins, ctcxmin, ctcxmax);
-  fTrackControlHistogramsList->Add(fTrackCutsCounterCumulative);
+  // Double_t ctcxmin[1] = {-0.5};
+  // Double_t ctcxmax[1] = {std::pow(2, LAST_ETRACK + 3) - 0.5};
+  // Int_t ctcbins[1] = {static_cast<Int_t>(::pow(2, LAST_ETRACK + 3))};
+  // fTrackCutsCounterCumulative = new
+  // THnSparseD(fTrackCutsCounterCumulativeName,
+  //                                              fTrackCutsCounterCumulativeName,
+  //                                              1, ctcbins, ctcxmin, ctcxmax);
+  // fTrackControlHistogramsList->Add(fTrackCutsCounterCumulative);
 
   // book histogram holding values of all track cuts
   fTrackCutsValues =
@@ -1083,13 +1093,14 @@ void AliAnalysisTaskAR::BookControlHistograms() {
     fEventControlHistogramsList->Add(fEventCutsCounter[mode]);
   }
   // book histogram holding cumulative event cuts
-  Double_t cecxmin[1] = {-0.5};
-  Double_t cecxmax[1] = {std::pow(2, LAST_EEVENT + 2) - 0.5};
-  Int_t cecbins[1] = {static_cast<Int_t>(TMath::Power(2, LAST_EEVENT + 2))};
-  fEventCutsCounterCumulative = new THnSparseD(fEventCutsCounterCumulativeName,
-                                               fEventCutsCounterCumulativeName,
-                                               1, cecbins, cecxmin, cecxmax);
-  fEventControlHistogramsList->Add(fEventCutsCounterCumulative);
+  // Double_t cecxmin[1] = {-0.5};
+  // Double_t cecxmax[1] = {std::pow(2, LAST_EEVENT + 2) - 0.5};
+  // Int_t cecbins[1] = {static_cast<Int_t>(TMath::Power(2, LAST_EEVENT + 2))};
+  // fEventCutsCounterCumulative = new
+  // THnSparseD(fEventCutsCounterCumulativeName,
+  //                                              fEventCutsCounterCumulativeName,
+  //                                              1, cecbins, cecxmin, cecxmax);
+  // fEventControlHistogramsList->Add(fEventCutsCounterCumulative);
   // book histogram holding values of all event cuts
   fEventCutsValues = new TH1D(fEventCutsValuesName, fEventCutsValuesName,
                               2 * LAST_EEVENT + 5, 0, 2 * LAST_EEVENT + 5);
@@ -1219,6 +1230,190 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
       corList->Add(corProfile[i]);
     }
   }
+}
+
+void AliAnalysisTaskAR::SetDefaultConfiguration() {
+  // set default configuration
+
+  // do not fill QA histograms by default
+  fFillQAHistograms = kFALSE;
+  // not even the correlation histograms only
+  fFillQACorHistogramsOnly = kFALSE;
+  // use nested loops only for testing and with fixed multiplicity
+  fUseNestedLoops = kFALSE;
+  // only use custom seed if it is supplied with dedicated setter
+  fUseCustomSeed = kFALSE;
+  // do not generate data on the fly by default
+  fMCOnTheFly = kFALSE;
+  // only do a MC closure for validation
+  fMCClosure = kFALSE;
+  // do not use fischer yates by default
+  fUseFisherYates = kFALSE;
+  // needed in combination with fischer yates
+  fUseFixedMultplicity = kFALSE;
+}
+
+void AliAnalysisTaskAR::SetDefaultBinning() {
+  // set default binning for all histograms
+
+  // default binning of track histograms
+  Double_t DefaultTrackBins[LAST_ETRACK][LAST_EBINS] = {
+      // kBIN kLEDGE kUEDGE
+      {1000., 0., 20},            // kPT
+      {360., 0., TMath::TwoPi()}, // kPHI
+      {200., -1., 1.},            // kETA
+      {21., -10.5, 10.5},         // kCHARGE
+      {200., 0, 200},             // kTPCNCLS
+      {200., 0, 200},             // kTPCCROSSEDROWS
+      {2000., 0., 2.},            // kTPCNCLSFRACTIONSHARED
+      {1000., 0., 10.},           // kTPCCHI2PERNDF
+      {10., 0., 10.},             // kITSNCLS
+      {1000., 0., 10.},           // kCHI2PERNDF
+      {1000., -4., 4},            // kDCAZ
+      {1000., -4., 4},            // kDCAXY
+  };
+
+  for (int track = 0; track < LAST_ETRACK; track++) {
+    fTrackControlHistogramBins[track][kBIN] = DefaultTrackBins[track][kBIN];
+    fTrackControlHistogramBins[track][kLEDGE] = DefaultTrackBins[track][kLEDGE];
+    fTrackControlHistogramBins[track][kUEDGE] = DefaultTrackBins[track][kUEDGE];
+  }
+
+  // default binning of event histograms
+  Double_t DefaultEventBins[LAST_EEVENT][LAST_EBINS] = {
+      // kBIN kLEDGE kUEDGE
+      {1000., 0., 20000}, // kMUL
+      {1000., 0., 5000},  // kMULQ
+      {1000., 0., 5000},  // kMULW
+      {1000., 0., 5000},  // kMULREF
+      {1000., 0., 5000},  // kNCONTRIB
+      {100., 0., 100},    // kCEN
+      {1000., -20., 20},  // kX
+      {1000., -20., 20.}, // kY
+      {1000., -20., 20.}, // kZ
+      {1000., 0., 20.},   // kVPOS
+  };
+
+  for (int event = 0; event < LAST_EEVENT; event++) {
+    fEventControlHistogramBins[event][kBIN] = DefaultEventBins[event][kBIN];
+    fEventControlHistogramBins[event][kLEDGE] = DefaultEventBins[event][kLEDGE];
+    fEventControlHistogramBins[event][kUEDGE] = DefaultEventBins[event][kUEDGE];
+  }
+}
+
+void AliAnalysisTaskAR::SetDefaultCuts(Int_t Filterbit, Double_t cenMin,
+                                       Double_t cenMax) {
+  // set default track cuts depending on the filterbit
+
+  // set filterbit
+  fUseFilterbit = kTRUE;
+  switch (Filterbit) {
+  case 1:
+    fFilterbit = Filterbit;
+  case 92:
+    fFilterbit = Filterbit;
+  case 128:
+    fFilterbit = Filterbit;
+
+    // there are no cuts on dca with filterbit 128
+    fTrackCuts[kDCAXY][kMIN] = -2.4;
+    fTrackCuts[kDCAXY][kMAX] = 2.4;
+    fUseTrackCuts[kDCAXY] = kTRUE;
+
+    fTrackCuts[kDCAZ][kMIN] = -3.2;
+    fTrackCuts[kDCAZ][kMAX] = 3.2;
+    fUseTrackCuts[kDCAZ] = kTRUE;
+
+    break;
+  case 768:
+    fFilterbit = Filterbit;
+  default:
+    std::cout << "Filterbit " << Filterbit << "not supported" << std::endl;
+  }
+
+  // default track cuts independent of filterbit
+  fPrimaryOnly = kTRUE;
+  fChargedOnly = kTRUE;
+  // never use global tracks in combination with filterbit
+  fGlobalTracksOnly = kFALSE;
+  // only need for MC
+  fMCPrimaryDef = kMCPhysicalPrim;
+
+  fTrackCuts[kPT][kMIN] = 0.2;
+  fTrackCuts[kPT][kMAX] = 5.;
+  fUseTrackCuts[kPT] = kTRUE;
+
+  fTrackCuts[kPHI][kMIN] = 0.;
+  fTrackCuts[kPHI][kMAX] = TMath::TwoPi();
+  fUseTrackCuts[kPHI] = kTRUE;
+
+  fTrackCuts[kETA][kMIN] = -0.8;
+  fTrackCuts[kETA][kMAX] = 0.8;
+  fUseTrackCuts[kETA] = kTRUE;
+
+  fTrackCuts[kCHARGE][kMIN] = -1.5;
+  fTrackCuts[kCHARGE][kMAX] = 1.5;
+  fUseTrackCuts[kCHARGE] = kTRUE;
+
+  fTrackCuts[kTPCNCLS][kMIN] = 70;
+  fTrackCuts[kTPCNCLS][kMAX] = 160;
+  fUseTrackCuts[kTPCNCLS] = kTRUE;
+
+  fTrackCuts[kTPCCROSSEDROWS][kMIN] = 70;
+  fTrackCuts[kTPCCROSSEDROWS][kMAX] = 160;
+  fUseTrackCuts[kTPCCROSSEDROWS] = kTRUE;
+
+  fTrackCuts[kTPCNCLSFRACTIONSHARED][kMIN] = 0;
+  fTrackCuts[kTPCNCLSFRACTIONSHARED][kMAX] = 0.4;
+  fUseTrackCuts[kTPCNCLSFRACTIONSHARED] = kTRUE;
+
+  fTrackCuts[kTPCCHI2PERNDF][kMIN] = 0.;
+  fTrackCuts[kTPCCHI2PERNDF][kMAX] = 4.;
+  fUseTrackCuts[kTPCCHI2PERNDF] = kTRUE;
+
+  // event cuts
+  // cut only on multiplicity estimated by number of tracks in the Q-vector
+  fEventCuts[kMULQ][kMIN] = 12.;
+  fEventCuts[kMULQ][kMAX] = 3000.;
+  fUseEventCuts[kMULQ] = kTRUE;
+
+  fEventCuts[kNCONTRIB][kMIN] = 2.;
+  fEventCuts[kNCONTRIB][kMAX] = 1e4;
+  fUseEventCuts[kNCONTRIB] = kTRUE;
+
+  // cut on multiplicity correlation
+  fUseMulCorCuts = kTRUE;
+  fMulCorCut[0] = 1.4;
+  fMulCorCut[1] = 300.;
+
+  // cut on vertex position
+  fEventCuts[kX][kMIN] = -1.;
+  fEventCuts[kX][kMAX] = 1.;
+  fUseEventCuts[kX] = kTRUE;
+
+  fEventCuts[kY][kMIN] = -1.;
+  fEventCuts[kY][kMAX] = 1.;
+  fUseEventCuts[kY] = kTRUE;
+
+  fEventCuts[kZ][kMIN] = -10.;
+  fEventCuts[kZ][kMAX] = 10.;
+  fUseEventCuts[kZ] = kTRUE;
+
+  fEventCuts[kVPOS][kMIN] = 1e-6;
+  fEventCuts[kVPOS][kMAX] = 15.;
+  fUseEventCuts[kVPOS] = kTRUE;
+
+  // cut on centrality
+  // should be overwritten in most cases, but keep the cut open by default
+  fCentralityEstimator = kV0M;
+  fEventCuts[kCEN][kMIN] = cenMin;
+  fEventCuts[kCEN][kMAX] = cenMax;
+  fUseEventCuts[kCEN] = kTRUE;
+
+  // cut on centrality correlation
+  fUseCenCorCuts = kTRUE;
+  fCenCorCut[0] = 1.;
+  fCenCorCut[1] = 10.;
 }
 
 void AliAnalysisTaskAR::UserExec(Option_t *) {
@@ -1716,7 +1911,7 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
   // Check if the current event survives event cuts
   // return flag at the end, if one cut is not passed, set it to kFALSE
   Bool_t Flag = kTRUE;
-  Double_t CutBit = 0;
+  // Double_t CutBit = 0;
 
   // only cut if we pass a valid pointer
   if (aAOD) {
@@ -1726,12 +1921,12 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
     if (fUseEventCuts[kMUL]) {
       if (fMultiplicity[kMUL] < fEventCuts[kMUL][kMIN]) {
         fEventCutsCounter[kRECO]->Fill(2 * kMUL + kMIN + 0.5);
-        CutBit += TMath::Power(2, kMUL);
+        // CutBit += TMath::Power(2, kMUL);
         Flag = kFALSE;
       }
       if (fMultiplicity[kMUL] > fEventCuts[kMUL][kMAX]) {
         fEventCutsCounter[kRECO]->Fill(2 * kMUL + kMAX + 0.5);
-        CutBit += TMath::Power(2, kMUL);
+        // CutBit += TMath::Power(2, kMUL);
         Flag = kFALSE;
       }
     }
@@ -1739,12 +1934,12 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
     if (fUseEventCuts[kMULQ]) {
       if (fMultiplicity[kMULQ] < fEventCuts[kMULQ][kMIN]) {
         fEventCutsCounter[kRECO]->Fill(2 * kMULQ + kMIN + 0.5);
-        CutBit += TMath::Power(2, kMULQ);
+        // CutBit += TMath::Power(2, kMULQ);
         Flag = kFALSE;
       }
       if (fMultiplicity[kMULQ] > fEventCuts[kMULQ][kMAX]) {
         fEventCutsCounter[kRECO]->Fill(2 * kMULQ + kMAX + 0.5);
-        CutBit += TMath::Power(2, kMULQ);
+        // CutBit += TMath::Power(2, kMULQ);
         Flag = kFALSE;
       }
     }
@@ -1752,12 +1947,12 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
       // sum of weighted surviving tracks
       if (fMultiplicity[kMULW] < fEventCuts[kMULW][kMIN]) {
         fEventCutsCounter[kRECO]->Fill(2 * kMULW + kMIN + 0.5);
-        CutBit += TMath::Power(2, kMULW);
+        // CutBit += TMath::Power(2, kMULW);
         Flag = kFALSE;
       }
       if (fMultiplicity[kMULW] > fEventCuts[kMULW][kMAX]) {
         fEventCutsCounter[kRECO]->Fill(2 * kMULW + kMAX + 0.5);
-        CutBit += TMath::Power(2, kMULW);
+        // CutBit += TMath::Power(2, kMULW);
         Flag = kFALSE;
       }
     }
@@ -1765,12 +1960,12 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
       // numbers of contriubters to the vertex
       if (fMultiplicity[kNCONTRIB] < fEventCuts[kNCONTRIB][kMIN]) {
         fEventCutsCounter[kRECO]->Fill(2 * kNCONTRIB + kMIN + 0.5);
-        CutBit += TMath::Power(2, kNCONTRIB);
+        // CutBit += TMath::Power(2, kNCONTRIB);
         Flag = kFALSE;
       }
       if (fMultiplicity[kNCONTRIB] > fEventCuts[kNCONTRIB][kMAX]) {
         fEventCutsCounter[kRECO]->Fill(2 * kNCONTRIB + kMAX + 0.5);
-        CutBit += TMath::Power(2, kNCONTRIB);
+        // CutBit += TMath::Power(2, kNCONTRIB);
         Flag = kFALSE;
       }
     }
@@ -1778,12 +1973,12 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
       // cut event if it is not within the reference centrality percentile
       if (fMultiplicity[kMULREF] < fEventCuts[kMULREF][kMIN]) {
         fEventCutsCounter[kRECO]->Fill(2 * kMULREF + kMIN + 0.5);
-        CutBit += TMath::Power(2, kMULREF);
+        // CutBit += TMath::Power(2, kMULREF);
         Flag = kFALSE;
       }
       if (fMultiplicity[kMULREF] > fEventCuts[kMULREF][kMAX]) {
         fEventCutsCounter[kRECO]->Fill(2 * kMULREF + kMAX + 0.5);
-        CutBit += TMath::Power(2, kMULREF);
+        // CutBit += TMath::Power(2, kMULREF);
         Flag = kFALSE;
       }
     }
@@ -1791,12 +1986,12 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
       // cut event if it is not within the centrality percentile
       if (fCentrality[fCentralityEstimator] < fEventCuts[kCEN][kMIN]) {
         fEventCutsCounter[kRECO]->Fill(2 * kCEN + kMIN + 0.5);
-        CutBit += TMath::Power(2, kCEN);
+        // CutBit += TMath::Power(2, kCEN);
         Flag = kFALSE;
       }
       if (fCentrality[fCentralityEstimator] > fEventCuts[kCEN][kMAX]) {
         fEventCutsCounter[kRECO]->Fill(2 * kCEN + kMAX + 0.5);
-        CutBit += TMath::Power(2, kCEN);
+        // CutBit += TMath::Power(2, kCEN);
         Flag = kFALSE;
       }
     }
@@ -1809,36 +2004,36 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
       // cut event if primary vertex is too out of center
       if (PrimaryVertex->GetX() < fEventCuts[kX][kMIN]) {
         fEventCutsCounter[kRECO]->Fill(2 * kX + kMIN + 0.5);
-        CutBit += TMath::Power(2, kX);
+        // CutBit += TMath::Power(2, kX);
         Flag = kFALSE;
       }
       if (PrimaryVertex->GetX() > fEventCuts[kX][kMAX]) {
         fEventCutsCounter[kRECO]->Fill(2 * kX + kMAX + 0.5);
-        CutBit += TMath::Power(2, kX);
+        // CutBit += TMath::Power(2, kX);
         Flag = kFALSE;
       }
     }
     if (fUseEventCuts[kY]) {
       if (PrimaryVertex->GetY() < fEventCuts[kY][kMIN]) {
         fEventCutsCounter[kRECO]->Fill(2 * kY + kMIN + 0.5);
-        CutBit += TMath::Power(2, kY);
+        // CutBit += TMath::Power(2, kY);
         Flag = kFALSE;
       }
       if (PrimaryVertex->GetY() > fEventCuts[kY][kMAX]) {
         fEventCutsCounter[kRECO]->Fill(2 * kY + kMAX + 0.5);
-        CutBit += TMath::Power(2, kY);
+        // CutBit += TMath::Power(2, kY);
         Flag = kFALSE;
       }
     }
     if (fUseEventCuts[kZ]) {
       if (PrimaryVertex->GetZ() < fEventCuts[kZ][kMIN]) {
         fEventCutsCounter[kRECO]->Fill(2 * kZ + kMIN + 0.5);
-        CutBit += TMath::Power(2, kZ);
+        // CutBit += TMath::Power(2, kZ);
         Flag = kFALSE;
       }
       if (PrimaryVertex->GetZ() > fEventCuts[kZ][kMAX]) {
         fEventCutsCounter[kRECO]->Fill(2 * kZ + kMAX + 0.5);
-        CutBit += TMath::Power(2, kZ);
+        // CutBit += TMath::Power(2, kZ);
         Flag = kFALSE;
       }
     }
@@ -1850,12 +2045,12 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
                                 PrimaryVertex->GetZ() * PrimaryVertex->GetZ());
       if (VPos < fEventCuts[kVPOS][kMIN]) {
         fEventCutsCounter[kRECO]->Fill(2 * kVPOS + kMIN + 0.5);
-        CutBit += TMath::Power(2, kVPOS);
+        // CutBit += TMath::Power(2, kVPOS);
         Flag = kFALSE;
       }
       if (VPos > fEventCuts[kVPOS][kMAX]) {
         fEventCutsCounter[kRECO]->Fill(2 * kVPOS + kMAX + 0.5);
-        CutBit += TMath::Power(2, kVPOS);
+        // CutBit += TMath::Power(2, kVPOS);
         Flag = kFALSE;
       }
     }
@@ -1875,12 +2070,12 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
         for (int j = i + 1; j < LAST_ECENESTIMATORS; ++j) {
           if (fCentrality[j] > m_cen * fCentrality[i] + t_cen) {
             fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + kMAX + 0.5);
-            CutBit += TMath::Power(2, LAST_EEVENT + 0);
+            // CutBit += TMath::Power(2, LAST_EEVENT + 0);
             Flag = kFALSE;
           }
           if (fCentrality[j] < (fCentrality[i] - t_cen) / m_cen) {
             fEventCutsCounter[kRECO]->Fill(2 * LAST_EEVENT + kMIN + 0.5);
-            CutBit += TMath::Power(2, LAST_EEVENT + 0);
+            // CutBit += TMath::Power(2, LAST_EEVENT + 0);
             Flag = kFALSE;
           }
         }
@@ -1904,12 +2099,12 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
           }
           if (fMultiplicity[j] > m_mul * fMultiplicity[i] + t_mul) {
             fEventCutsCounter[kRECO]->Fill(2 * (LAST_EEVENT + 1) + kMAX + 0.5);
-            CutBit += TMath::Power(2, LAST_EEVENT + 1);
+            // CutBit += TMath::Power(2, LAST_EEVENT + 1);
             Flag = kFALSE;
           }
           if (fMultiplicity[j] < (fMultiplicity[i] - t_mul) / m_mul) {
             fEventCutsCounter[kRECO]->Fill(2 * (LAST_EEVENT + 1) + kMIN + 0.5);
-            CutBit += TMath::Power(2, LAST_EEVENT + 1);
+            // CutBit += TMath::Power(2, LAST_EEVENT + 1);
             Flag = kFALSE;
           }
         }
@@ -1924,11 +2119,11 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
           fCenFlattenHist->FindBin(fCentrality[fCentralityEstimator]));
       if (gRandom->Uniform() > CenProb) {
         fEventCutsCounter[kRECO]->Fill(2 * (LAST_EEVENT + 2) + 0.5);
-        CutBit += TMath::Power(2, LAST_EEVENT + 2);
+        // CutBit += TMath::Power(2, LAST_EEVENT + 2);
         Flag = kFALSE;
       }
     }
-    fEventCutsCounterCumulative->Fill(&CutBit);
+    // fEventCutsCounterCumulative->Fill(&CutBit);
   }
   return Flag;
 }
@@ -1938,7 +2133,7 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
   // check if current track survives track cut
   // return flag at the end, if one cut fails, set it to false
   Bool_t Flag = kTRUE;
-  Double_t CutBit = 0;
+  // Double_t CutBit = 0;
 
   // only cut if we get valid pointer
   AliAODTrack *aTrack = dynamic_cast<AliAODTrack *>(avp);
@@ -1950,14 +2145,14 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kPT + kMIN + 0.5);
         }
-        CutBit += TMath::Power(2, kPT);
+        // CutBit += TMath::Power(2, kPT);
         Flag = kFALSE;
       }
       if (aTrack->Pt() > fTrackCuts[kPT][kMAX]) {
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kPT + kMAX + 0.5);
         }
-        CutBit += TMath::Power(2, kPT);
+        // CutBit += TMath::Power(2, kPT);
         Flag = kFALSE;
       }
     }
@@ -1967,14 +2162,14 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kPHI + kMIN + 0.5);
         }
-        CutBit += TMath::Power(2, kPHI);
+        // CutBit += TMath::Power(2, kPHI);
         Flag = kFALSE;
       }
       if (aTrack->Phi() > fTrackCuts[kPHI][kMAX]) {
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kPHI + kMAX + 0.5);
         }
-        CutBit += TMath::Power(2, kPHI);
+        // CutBit += TMath::Power(2, kPHI);
         Flag = kFALSE;
       }
     }
@@ -1984,14 +2179,14 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kETA + kMIN + 0.5);
         }
-        CutBit += TMath::Power(2, kETA);
+        // CutBit += TMath::Power(2, kETA);
         Flag = kFALSE;
       }
       if (aTrack->Eta() > fTrackCuts[kETA][kMAX]) {
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kETA + kMAX + 0.5);
         }
-        CutBit += TMath::Power(2, kETA);
+        // CutBit += TMath::Power(2, kETA);
         Flag = kFALSE;
       }
     }
@@ -2001,14 +2196,14 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kCHARGE + kMIN + 0.5);
         }
-        CutBit += TMath::Power(2, kCHARGE);
+        // CutBit += TMath::Power(2, kCHARGE);
         Flag = kFALSE;
       }
       if (aTrack->Charge() > fTrackCuts[kCHARGE][kMAX]) {
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kCHARGE + kMAX + 0.5);
         }
-        CutBit += TMath::Power(2, kCHARGE);
+        // CutBit += TMath::Power(2, kCHARGE);
         Flag = kFALSE;
       }
     }
@@ -2018,14 +2213,14 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kTPCNCLS + kMIN + 0.5);
         }
-        CutBit += TMath::Power(2, kTPCNCLS);
+        // CutBit += TMath::Power(2, kTPCNCLS);
         Flag = kFALSE;
       }
       if (aTrack->GetTPCNcls() > fTrackCuts[kTPCNCLS][kMAX]) {
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kTPCNCLS + kMAX + 0.5);
         }
-        CutBit += TMath::Power(2, kTPCNCLS);
+        // CutBit += TMath::Power(2, kTPCNCLS);
         Flag = kFALSE;
       }
     }
@@ -2035,14 +2230,14 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kTPCCROSSEDROWS + kMIN + 0.5);
         }
-        CutBit += TMath::Power(2, kTPCCROSSEDROWS);
+        // CutBit += TMath::Power(2, kTPCCROSSEDROWS);
         Flag = kFALSE;
       }
       if (aTrack->GetTPCNCrossedRows() > fTrackCuts[kTPCCROSSEDROWS][kMAX]) {
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kTPCCROSSEDROWS + kMAX + 0.5);
         }
-        CutBit += TMath::Power(2, kTPCCROSSEDROWS);
+        // CutBit += TMath::Power(2, kTPCCROSSEDROWS);
         Flag = kFALSE;
       }
     }
@@ -2061,7 +2256,7 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
           fTrackCutsCounter[kRECO]->Fill(2 * kTPCNCLSFRACTIONSHARED + kMIN +
                                          0.5);
         }
-        CutBit += TMath::Power(2, kTPCNCLSFRACTIONSHARED);
+        // CutBit += TMath::Power(2, kTPCNCLSFRACTIONSHARED);
         Flag = kFALSE;
       }
       if (tpcnclsfractionshared > fTrackCuts[kTPCNCLSFRACTIONSHARED][kMAX]) {
@@ -2069,7 +2264,7 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
           fTrackCutsCounter[kRECO]->Fill(2 * kTPCNCLSFRACTIONSHARED + kMAX +
                                          0.5);
         }
-        CutBit += TMath::Power(2, kTPCNCLSFRACTIONSHARED);
+        // CutBit += TMath::Power(2, kTPCNCLSFRACTIONSHARED);
         Flag = kFALSE;
       }
     }
@@ -2086,14 +2281,14 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kTPCCHI2PERNDF + kMIN + 0.5);
         }
-        CutBit += TMath::Power(2, kTPCCHI2PERNDF);
+        // CutBit += TMath::Power(2, kTPCCHI2PERNDF);
         Flag = kFALSE;
       }
       if (tpcchi2perndf > fTrackCuts[kTPCCHI2PERNDF][kMAX]) {
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kTPCCHI2PERNDF + kMAX + 0.5);
         }
-        CutBit += TMath::Power(2, kTPCCHI2PERNDF);
+        // CutBit += TMath::Power(2, kTPCCHI2PERNDF);
         Flag = kFALSE;
       }
     }
@@ -2103,14 +2298,14 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kITSNCLS + kMIN + 0.5);
         }
-        CutBit += TMath::Power(2, kITSNCLS);
+        // CutBit += TMath::Power(2, kITSNCLS);
         Flag = kFALSE;
       }
       if (aTrack->GetITSNcls() > fTrackCuts[kITSNCLS][kMAX]) {
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kITSNCLS + kMAX + 0.5);
         }
-        CutBit += TMath::Power(2, kITSNCLS);
+        // CutBit += TMath::Power(2, kITSNCLS);
         Flag = kFALSE;
       }
     }
@@ -2120,14 +2315,14 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kCHI2PERNDF + kMIN + 0.5);
         }
-        CutBit += TMath::Power(2, kCHI2PERNDF);
+        // CutBit += TMath::Power(2, kCHI2PERNDF);
         Flag = kFALSE;
       }
       if (aTrack->Chi2perNDF() > fTrackCuts[kCHI2PERNDF][kMAX]) {
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kCHI2PERNDF + kMAX + 0.5);
         }
-        CutBit += TMath::Power(2, kCHI2PERNDF);
+        // CutBit += TMath::Power(2, kCHI2PERNDF);
         Flag = kFALSE;
       }
     }
@@ -2139,7 +2334,7 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
           // if track is not constrained it returns dummy value -999
           // makes the counter blow up
         }
-        CutBit += TMath::Power(2, kDCAZ);
+        // CutBit += TMath::Power(2, kDCAZ);
         Flag = kFALSE;
       }
       if (aTrack->ZAtDCA() > fTrackCuts[kDCAZ][kMAX]) {
@@ -2148,7 +2343,7 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
           // if track is not constrained it returns dummy value -999
           // makes the counter blow up
         }
-        CutBit += TMath::Power(2, kDCAZ);
+        // CutBit += TMath::Power(2, kDCAZ);
         Flag = kFALSE;
       }
     }
@@ -2158,14 +2353,14 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kDCAXY + kMIN + 0.5);
         }
-        CutBit += TMath::Power(2, kDCAXY);
+        // CutBit += TMath::Power(2, kDCAXY);
         Flag = kFALSE;
       }
       if (aTrack->DCA() > fTrackCuts[kDCAXY][kMAX]) {
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * kDCAXY + kMAX + 0.5);
         }
-        CutBit += TMath::Power(2, kDCAXY);
+        // CutBit += TMath::Power(2, kDCAXY);
         Flag = kFALSE;
       }
     }
@@ -2179,7 +2374,7 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * LAST_ETRACK + 0.5);
         }
-        CutBit += TMath::Power(2, LAST_ETRACK + 0);
+        // CutBit += TMath::Power(2, LAST_ETRACK + 0);
         Flag = kFALSE;
       }
     }
@@ -2189,7 +2384,7 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * LAST_ETRACK + 1.5);
         }
-        CutBit += TMath::Power(2, LAST_ETRACK + 1);
+        // CutBit += TMath::Power(2, LAST_ETRACK + 1);
         Flag = kFALSE;
       }
     }
@@ -2200,7 +2395,7 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * LAST_ETRACK + 2.5);
         }
-        CutBit += TMath::Power(2, LAST_ETRACK + 2);
+        // CutBit += TMath::Power(2, LAST_ETRACK + 2);
         Flag = kFALSE;
       }
     }
@@ -2211,11 +2406,11 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         if (FillCounter) {
           fTrackCutsCounter[kRECO]->Fill(2 * LAST_ETRACK + 3.5);
         }
-        CutBit += TMath::Power(2, LAST_ETRACK + 3);
+        // CutBit += TMath::Power(2, LAST_ETRACK + 3);
         Flag = kFALSE;
       }
     }
-    fTrackCutsCounterCumulative->Fill(&CutBit);
+    // fTrackCutsCounterCumulative->Fill(&CutBit);
 
     // when doing monte carlo closure, check if we accept the track
     // also check if we will the counter, i.e. we run in the main loop
@@ -3518,8 +3713,8 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
   fTrackCutsValues = dynamic_cast<TH1D *>(
       fTrackControlHistogramsList->FindObject(fTrackCutsValuesName));
 
-  fTrackCutsCounterCumulative = dynamic_cast<THnSparseD *>(
-      fTrackControlHistogramsList->FindObject(fTrackCutsCounterCumulativeName));
+  // fTrackCutsCounterCumulative = dynamic_cast<THnSparseD *>(
+  //     fTrackControlHistogramsList->FindObject(fTrackCutsCounterCumulativeName));
 
   // get all pointers for track control histograms
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
@@ -3556,8 +3751,8 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
   fEventCutsValues = dynamic_cast<TH1D *>(
       fEventControlHistogramsList->FindObject(fEventCutsValuesName));
 
-  fEventCutsCounterCumulative = dynamic_cast<THnSparseD *>(
-      fEventControlHistogramsList->FindObject(fEventCutsCounterCumulativeName));
+  // fEventCutsCounterCumulative = dynamic_cast<THnSparseD *>(
+  //     fEventControlHistogramsList->FindObject(fEventCutsCounterCumulativeName));
 
   // get all pointers for event control histograms
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
