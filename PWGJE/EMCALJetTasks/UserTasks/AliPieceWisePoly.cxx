@@ -55,9 +55,9 @@ AliPieceWisePoly::AliPieceWisePoly(Int_t parts, Double_t* cutxvalues, Int_t* pol
 }
 
 AliPieceWisePoly::~AliPieceWisePoly() {
-  delete cuts;
+  delete [] cuts;
   cuts = 0x0;
-  delete piecewisepolynom;
+  delete[] piecewisepolynom;
   piecewisepolynom = 0x0;
 }
 
@@ -178,8 +178,8 @@ void AliPieceWisePoly::ReadFSParameters(TString parameterFile, TF1** effFunction
         func->SetParameter(param,(((TObjString*)(arrPar->At(2*nOfParts + param)))->GetString()).Atof());
       }
       effFunctions[2*species + charge] = func;
-			delete nparameters;
-      delete cuts;
+			delete [] nparameters;
+      delete [] cuts;
       delete arrPar;
       delete parString;
     }

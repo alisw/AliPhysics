@@ -36,7 +36,14 @@ public:
     
     //Set Average Charged-Particle Multiplicity, Weights & Deuteron Wave Function
     void SetAverageTransverseMultiplicity (Double_t Nch_Transv) { fAverage_Nch_Transv = Nch_Transv; }
-    void SetReshapingProtons (TH1D *hWeight)   { hProtonWeights = hWeight; }
+    void SetReshapingProtons (TH1D *hWeight, TF1 *fWeight)   { hProtonWeights = hWeight; fProtonWeights = fWeight; }
+    void SetReshapingProtonsDiff (TH1D *hToward, TH1D *hTransv, TH1D *hAway) {
+        
+        hWeightToward = hToward;
+        hWeightTransv = hTransv;
+        hWeightAway   = hAway;
+    }
+    
     void SetDeuteronWaveFunc (TF1 *func)       { fDeuteronWF = func; }
     void SetSourceSizeRadius (TH1F *hSourceR0) { hSourceSize = hSourceR0; }
 
@@ -49,7 +56,9 @@ public:
     Bool_t    IsParticleInTransverseRegion (Double_t phi, Double_t phi_leading);
     Bool_t    IsParticleInAwayRegion       (Double_t phi, Double_t phi_leading);
     Double_t  GetProtonWeight              (Double_t pt);
+    Double_t  GetProtonWeight              (Double_t pt, Int_t region);
     Double_t  GetDeuteronWeight            (Double_t pt_prot, Double_t pt_neut);
+    Double_t  GetDeuteronWeight            (Double_t pt_prot, Double_t pt_neut, Int_t prot_Reg, Int_t neut_Reg);
     Bool_t    IsInjectedParticle           (AliMCParticle *particle);
     Double_t  GetSpatialDistance           (TLorentzVector p_proton, TLorentzVector p_neutron, TVector3 beta_vect);
     Bool_t    DoCoalescence                (Double_t deltaX, Double_t deltaP, Double_t sigma_p, const char *func);
@@ -68,9 +77,13 @@ private:
     //Average Multiplicity
     Double_t fAverage_Nch_Transv;//
     
-    //Re-shaping Protons 
+    //Re-shaping Protons
     TH1D *hProtonWeights;//
-    
+    TF1  *fProtonWeights;//
+    TH1D *hWeightToward;//
+    TH1D *hWeightTransv;//
+    TH1D *hWeightAway;//
+
     //Deuteron Wave Function
     TF1 *fDeuteronWF;//
     
@@ -90,6 +103,10 @@ private:
     TH1D *hProtons_Toward;//!
     TH1D *hProtons_Transv;//!
     TH1D *hProtons_Away;//!
+    TH1D *hProtons_Toward_reshaped;//!
+    TH1D *hProtons_Transv_reshaped;//!
+    TH1D *hProtons_Away_reshaped;//!
+
     
     //p_{T} Spectra: Neutrons
     TH1D *hNeutronsINELgtZERO;//!
@@ -97,6 +114,10 @@ private:
     TH1D *hNeutrons_Toward;//!
     TH1D *hNeutrons_Transv;//!
     TH1D *hNeutrons_Away;//!
+    TH1D *hNeutrons_Toward_reshaped;//!
+    TH1D *hNeutrons_Transv_reshaped;//!
+    TH1D *hNeutrons_Away_reshaped;//!
+
     
     //p_{T} Spectra: Deuterons (Simple Coalescence)
     TH1D *hDeuteronsINELgtZERO_simpleCoal[50];//!
@@ -132,6 +153,7 @@ private:
     TH1D *hDistanceLab;//!
     TH1D *hDistanceDeut;//!
     TH1D *hDistanceDiff;//!
+    TH1D *hPtProtonsFirstBinDeut;//!
 
 
     

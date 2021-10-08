@@ -783,11 +783,17 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
      TH2F* fhmcrapicent=new TH2F("fhmcrapicent","fhmcrapicent",200,-4,6,20,0,100);
      fOutputList2->Add(fhmcrapicent);
 
-     TH2F* fhistprimpteta_all=new TH2F("fhistprimpteta_all","fhistprimpteta_all",200,0,10,100,-1,1);
+     TH2F* fhistprimpteta_all=new TH2F("fhistprimpteta_all","fhistprimpteta_all",51,binning_pt_effi_paper,20,-1,1);
      fOutputList2->Add(fhistprimpteta_all);
 
-     TH2F* fhistrecopteta_all=new TH2F("fhistrecopteta_all","fhistrecopteta_all",200,0,10,100,-1,1);
+     TH2F* fhistrecopteta_all=new TH2F("fhistrecopteta_all","fhistrecopteta_all",51,binning_pt_effi_paper,20,-1,1);
      fOutputList2->Add(fhistrecopteta_all);
+
+     TH2F* fhistprimpteta_secondary=new TH2F("fhistprimpteta_secondary","fhistprimpteta_secondary",51,binning_pt_effi_paper,20,-1,1);
+     fOutputList2->Add(fhistprimpteta_secondary);
+
+     TH2F* fhistrecopteta_secondary=new TH2F("fhistrecopteta_secondary","fhistrecopteta_secondary",51,binning_pt_effi_paper,20,-1,1);
+     fOutputList2->Add(fhistrecopteta_secondary);
      
      TH2F* fhmcpteta[10];
      TH2F* fhrecopteta[10];
@@ -2399,20 +2405,26 @@ if(fAnaMode=="TPCTPC"){
       default:
 	break;
    }
+
+   if(!TrIsPrim && abs(mcTrackEta)<0.8){
+     dynamic_cast<TH2F*>(fOutputList2->FindObject("fhistprimpteta_secondary"))->Fill(mcTrackPt,mcTrackEta);
+   }
    
    if(TrIsPrim){
-     if(fQA) if(mcTrackEta>-1. && mcTrackEta<1.){
-	 if(abs(mcTrackEta)<0.8) {
-	   dynamic_cast<TH1F*>(fOutputList2->FindObject("fhistmcprimpt"))->Fill(mcTrackPt);
-	   dynamic_cast<TH2F*>(fOutputList2->FindObject("fhistprimpteta_all"))->Fill(mcTrackPt,mcTrackEta);
-	 }
-	 if(fasso=="hadron")fhistmcprim->Fill(conmcprim,0);//primay charged partilce distribution(no mother particle)
-	 else if(fasso=="PID" && mcpid<4)fhistmcprim->Fill(conmcprim,mcpid);//primay charged partilce distribution(no mother particle)
+     if(fQA){
+	   if(mcTrackEta>-1. && mcTrackEta<1.){
+		 if(abs(mcTrackEta)<0.8) {
+		   dynamic_cast<TH1F*>(fOutputList2->FindObject("fhistmcprimpt"))->Fill(mcTrackPt);
+		   dynamic_cast<TH2F*>(fOutputList2->FindObject("fhistprimpteta_all"))->Fill(mcTrackPt,mcTrackEta);
+		 }
+		 if(fasso=="hadron")fhistmcprim->Fill(conmcprim,0);//primay charged partilce distribution(no mother particle)
+		 else if(fasso=="PID" && mcpid<4)fhistmcprim->Fill(conmcprim,mcpid);//primay charged partilce distribution(no mother particle)
        }
-     
+	 }
+	     
      if(mcTrackEta>-0.8&& mcTrackEta<0.8) {
        if(mcTrackPt>fPtMin && mcTrackPt<fPtMax) {
-	 nMCtrackssamecut++;
+		 nMCtrackssamecut++;
        }
      }
      
@@ -2460,7 +2472,8 @@ if(fAnaMode=="TPCTPC"){
        if(mcTrackEta>1.7 && mcTrackEta<4.9) selectedTracksMC1->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
        if(mcTrackEta>-3.4  && mcTrackEta<-1.7) selectedTracksMC2->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
      }
-   }			
+   }
+   
  }
  
  dynamic_cast<TH2F*>(fOutputList2->FindObject("fhistmeanpt"))->Fill(nprimtrack,meanpt/(Float_t)nprimtrack);
@@ -2841,14 +2854,17 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksLeading(AliAOD
 		dynamic_cast<TH2F*>(fOutputList2->FindObject("fhistrecopteta_all"))->Fill(aodTrack->Pt(),aodTrack->Eta());
 	      }
 	    }
+	    if(!mcTrack->IsPhysicalPrimary() && mcTrack->Charge()!=0 && abs(aodTrack->Eta())<0.8){
+	      dynamic_cast<TH2F*>(fOutputList2->FindObject("fhistrecopteta_secondary"))->Fill(aodTrack->Pt(),aodTrack->Eta());
+	    }
 	  }
 	    //if(fQA) fHistLeadQA->Fill(pidqa,0);
 	}
-      }else {
+	  }else {
 	  fHistLeadQA->Fill(pidqa,0);
-	}
+	  }
     }
-
+    
     if (TMath::Abs(aodTrack->Eta()) > fEtaMax){
       if (aodTrack->Pt() > fPtMax) continue;
     }

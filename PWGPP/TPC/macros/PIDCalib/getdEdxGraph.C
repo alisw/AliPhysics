@@ -189,7 +189,7 @@ TGraph* getdEdxGraph(AliPID::EParticleType particle, Float_t eta = 0, Float_t mu
     tr.Set(xyz, pxyz, cv, 1);
     Double_t dEdx  = tpcpid.GetExpectedSignal(&tr, particle, AliTPCPIDResponse::kdEdxDefault, useEtaCorrection, useMultiplicityCorrection, usePileupCorrection);
     const Double_t sigma = tpcpid.GetExpectedSigma(&tr, particle, AliTPCPIDResponse::kdEdxDefault, useEtaCorrection, useMultiplicityCorrection, usePileupCorrection);
-    //printf("%.2f +- %.2f (%.2f) %.2f\n", dEdx, sigma, sigma/dEdx, dEdx+nSigma*sigma);
+    //printf("%3d, %.2f : %.2f +- %.2f (%.2f) %.2f\n", ibin, pabs, dEdx, sigma, sigma/dEdx, dEdx+nSigma*sigma);
     dEdx += nSigma*sigma;
     if (dEdx>dEdxMax) {
       continue;
@@ -241,7 +241,7 @@ TGraph* getdEdxGraphPIDReco(Int_t run, AliPID::EParticleType particle, Double_t 
   }
 
   //return getdEdxGraph(run, "0", particle, kFALSE, nSigma, xmin, xmax, dEdxMax);
-  return getdEdxGraph(particle, 0, 0, kTRUE, kTRUE, kTRUE, nSigma, xmin, xmin, dEdxMax);
+  return getdEdxGraph(particle, 0, 0, kTRUE, kTRUE, kTRUE, nSigma, xmin, xmax, dEdxMax);
 }
 
 //______________________________________________________________________________
@@ -328,33 +328,38 @@ TVectorD* MakeLogBinning(Int_t nbinsX, Double_t xmin, Double_t xmax)
 }
 
 //______________________________________________________________________________
-void DrawNsigmaLinesPIDtracking(const int run, const float nSigma=15.f, const int nparticles=int(AliPID::kSPECIES))
+void DrawNsigmaLinesPIDtracking(const int run, const float nSigma=-1., const float xMin = 0.1, const float xMax = 20., const float dEdxMax = 5000., const int nparticles=int(AliPID::kSPECIES))
 {
   AliCDBManager *man = AliCDBManager::Instance();
 
   man->SetDefaultStorage("raw://");
 
-  static int lastRun = 0;
+  //static int lastRun = 0;
   // get configures sigma from OCDB
-  const int colors[AliPID::kSPECIES] = {kBlack, kRed-2, kBlue-2, kMagenta, kGray+2};
+  const int colors[AliPID::kSPECIESC] = {kBlack, kGray + 2, kRed + 3, kOrange + 2, kYellow + 2, kGreen + 2, kBlue-2, kMagenta, kMagenta + 2};
   // draw n-sigma lines for all default particle species
   for (int ipart=0; ipart<nparticles; ++ipart) {
-    TGraph *grTracking    = getdEdxGraphPIDReco(run, AliPID::EParticleType(ipart));
-    const float sigma = AliTPCcalibDB::Instance()->GetParameters()->GetSigmaRangePIDinTracking();
+    TGraph *grTracking    = getdEdxGraphPIDReco(run, (AliPID::EParticleType)ipart, 0, xMin, xMax, dEdxMax);
+    float sigma = AliTPCcalibDB::Instance()->GetParameters()->GetSigmaRangePIDinTracking();
     if (run != lastRun) {
       printf("Found sigma setting: %.1f\n", sigma);
       lastRun = run;
     }
-    TGraph *grTracking_p5 = getdEdxGraphPIDReco(run, AliPID::EParticleType(ipart),sigma);
-    TGraph *grTracking_m5 = getdEdxGraphPIDReco(run, AliPID::EParticleType(ipart),-1*sigma);
+    if (nSigma >= 0) {
+      printf("Using simga setting %.2f instead of %.2f\n", nSigma, sigma);
+      sigma = nSigma;
+    }
 
-    //grTracking    -> SetLineColor(colors[ipart]);
-    //grTracking_p5 -> SetLineColor(colors[ipart]);
-    //grTracking_m5 -> SetLineColor(colors[ipart]);
+    TGraph *grTracking_p5 = getdEdxGraphPIDReco(run, (AliPID::EParticleType)ipart, sigma, xMin, xMin, dEdxMax);
+    TGraph *grTracking_m5 = getdEdxGraphPIDReco(run, (AliPID::EParticleType)ipart, -1 * sigma, xMin, xMin, dEdxMax);
 
-    grTracking    -> SetLineColor(kBlack);
-    grTracking_p5 -> SetLineColor(kBlack);
-    grTracking_m5 -> SetLineColor(kBlack);
+    grTracking    -> SetLineColor(colors[ipart]);
+    grTracking_p5 -> SetLineColor(colors[ipart]);
+    grTracking_m5 -> SetLineColor(colors[ipart]);
+
+    //grTracking    -> SetLineColor(kBlack);
+    //grTracking_p5 -> SetLineColor(kBlack);
+    //grTracking_m5 -> SetLineColor(kBlack);
 
     grTracking    -> SetLineStyle(kSolid);
     grTracking_p5 -> SetLineStyle(kDashed);

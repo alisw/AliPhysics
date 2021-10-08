@@ -117,7 +117,8 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fNEntries(0),
       lCentrality(0),
       calibmode(0),
-      fheffipt(0), 
+      fheffipt(0),
+      fheffipteta(0), 
       bSign(0),
       fZVertex(10.),
       fOutputList(0),
@@ -310,6 +311,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       lCentrality(0),
 	  calibmode(0),
       fheffipt(0), 
+      fheffipteta(0), 
       bSign(0),
       fZVertex(10.),
       fOutputList(0),
@@ -565,13 +567,17 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	TGrid::Connect("alien://");
 	//TFile* file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency.root");
 	//TFile*file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d_3D.root",fcollisiontype.Data(),ffilterbit));
-	TFile*file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+	TFile*file;
+	//	if(fcollisiontype=="PbPb" || fcollisiontype=="pPb")file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+	if(fcollisiontype=="PbPb" || fcollisiontype=="pPb"){
+	  if(calibmode)file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+	  else file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+	}else file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_LHC18_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+	
 	if(!file) AliError("No correction factor");
 
 	if(calibmode){
-	  for(Int_t i=0;i<10;i++){
-		fhcorr[i]=(TH2D*)file->Get(Form("effi_%d",i));
-	  }
+	  fheffipteta=(TH2F*)file->Get("h_effi");
 	}else{
 	  fheffipt=(TH1F*)file->Get("fheffipt");
 	}
@@ -763,8 +769,11 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fHistLeadQA->SetVarTitle(4, "vz");
    fOutputList1->Add(fHistLeadQA);
    
-   Double_t ptspectrum[]={0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.70,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,
-			  5.5,6.0,6.5,7.0,8.0};
+   Double_t ptspectrum[]={0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,
+						  0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,
+						  1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,
+						  2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,
+						  6.0,6.5,7.0,8.0};
    fHistptreco=new TH2D("fHistptreco","fHistptreco",sizeof(ptspectrum)/sizeof(Double_t)-1,ptspectrum,12,binning_cent_leadQA);
    fOutputList1->Add(fHistptreco);
 			
@@ -1306,10 +1315,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    Double_t binning_dphi_vzero[9]={-1.178097,-0.392699,0.392699,1.178097,1.963495,2.748893,3.534291,4.319689,5.105088};
    if(fAnaMode=="TPCTPC") {
      Double_t binning_deta_tpctpc[33] = {-1.6, -1.5,
-					 -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5,
-					 -0.4, -0.3, -0.2, -0.1, 0,    0.1,  0.2,  0.3,  0.4,  0.5,
-					 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5,
-					 1.6};
+										 -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5,
+										 -0.4, -0.3, -0.2, -0.1, 0,    0.1,  0.2,  0.3,  0.4,  0.5,
+										 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5,
+										 1.6};
      const Double_t binning_cent_tpctpc[8]={0.,5.,10.,20.,40.,60.,70.,100.1};
      const Int_t iTrackBin_TPCTPC[6] = {32, 11, 11, 7, 72, 10};
      fHistReconstTrack = new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, 6, iTrackBin_TPCTPC);
@@ -2897,16 +2906,14 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
     Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
     if(fefficalib){
 	  if(calibmode){
-		Int_t iPt=fhcorr[ivzbin-1]->GetXaxis()->FindBin(trackpt);
-		Int_t iEta=fhcorr[ivzbin-1]->GetYaxis()->FindBin(tracketa);
-		//      Int_t iPhi=fhcorr[ivzbin-1]->GetZaxis()->FindBin(trackphi);
-		//      efficiency=fhcorr[ivzbin-1]->GetBinContent(iPt,iEta,iPhi);
-		efficiency=fhcorr[ivzbin-1]->GetBinContent(iPt,iEta);
-		efficiencyerr=fhcorr[ivzbin-1]->GetBinError(iPt,iEta);
+		Int_t iPt=fheffipteta->GetXaxis()->FindBin(trackpt);
+		Int_t iEta=fheffipteta->GetYaxis()->FindBin(tracketa);
+		efficiency=fheffipteta->GetBinContent(iPt,iEta);
+		efficiencyerr=fheffipteta->GetBinError(iPt,iEta);
 		if(efficiency==0.) return 0;
 	  }else{
-		Int_t iPt=fheffipt->GetXaxis()->FindBin(trackpt);
-		efficiency=fheffipt->GetBinContent(iPt);
+		  Int_t iPt=fheffipt->GetXaxis()->FindBin(trackpt);
+		  efficiency=fheffipt->GetBinContent(iPt);
 	  }
     }else{
       efficiency=1.;

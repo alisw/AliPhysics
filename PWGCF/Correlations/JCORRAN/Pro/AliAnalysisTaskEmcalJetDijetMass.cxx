@@ -42,9 +42,11 @@ ClassImp(AliAnalysisTaskEmcalJetDijetMass);
  */
 AliAnalysisTaskEmcalJetDijetMass::AliAnalysisTaskEmcalJetDijetMass() : 
     AliAnalysisTaskEmcalJet(),
-    //fHistManager(),
+    fHistManager(),
     fana(NULL),
-    fhistos(NULL),
+    //fhistos(NULL),
+    //fEmcalHistos(NULL),
+    hTest(NULL),
     fJOutput(NULL)
 {
 }
@@ -56,9 +58,11 @@ AliAnalysisTaskEmcalJetDijetMass::AliAnalysisTaskEmcalJetDijetMass() :
  */
 AliAnalysisTaskEmcalJetDijetMass::AliAnalysisTaskEmcalJetDijetMass(const char *name) : 
     AliAnalysisTaskEmcalJet(name, kTRUE),
-    //fHistManager(name),
+    fHistManager(name),
     fana(NULL),
-    fhistos(NULL),
+    //fhistos(NULL),
+    //fEmcalHistos(NULL),
+    hTest(NULL),
     fJOutput(NULL)
 {
     SetMakeGeneralHistograms(kTRUE);
@@ -69,7 +73,9 @@ AliAnalysisTaskEmcalJetDijetMass::AliAnalysisTaskEmcalJetDijetMass(const char *n
  */
 AliAnalysisTaskEmcalJetDijetMass::~AliAnalysisTaskEmcalJetDijetMass()
 {
-    delete fhistos;
+    //delete fhistos;
+    //delete fEmcalHistos;
+    delete hTest;
     delete fana;
     delete fJOutput;
 }
@@ -105,21 +111,38 @@ void AliAnalysisTaskEmcalJetDijetMass::UserCreateOutputObjects()
     fJOutput->cd();
 
     //fhistos = new AliAnalysisTaskEmcalJetDijetMassHisto();
+    /*
     fhistos = new AliJCDijetHistos();
     fhistos->SetName("jcdijet");
     fhistos->SetCentralityBinsHistos(fcentralityBins);
     fhistos->CreateEventTrackHistos();
     fhistos->fHMG->Print();
+    */
 
-    /* //Work in progress
+    /*
+    fEmcalHistos = new AliAnalysisTaskEmcalJetDijetMassHistos();
+    fEmcalHistos->SetCentralityBinsHistos(fcentralityBins);
+    fEmcalHistos->SetName("jcdijet");
+    fEmcalHistos->CreateHistos();
+    */
+
+    hTest = new TH1D("test","test",4,0.0,10.0);
+
+
+    //Work in progress
     const int fNCentBin = fcentralityBins.size()-1;
+    /*
     TH1D *fh_events[fNCentBin];
     for (int i=0; i<fNCentBin; i++) {
         fh_events[i] = new TH1D(Form("h_eventsCentBin%02d",i), Form("h_eventsCentBin%02d",i), 40, 0.0, 40.0 );
     }
     */
 
-    fana = new AliJCDijetAna();
+    AllocateTrackHistograms();
+
+    fana = new AliJEmcalDijetAna();
+    fana->SetParticleCollArray(fParticleCollArray);
+    fana->SetCentBins(fNCentBin);
 
     TString sktScheme;
     TString santiktScheme;
@@ -188,6 +211,13 @@ void AliAnalysisTaskEmcalJetDijetMass::UserCreateOutputObjects()
         cout << endl;
     }
 
+    TIter next(fHistManager.GetListOfHistograms());
+    TObject* obj = 0;
+    while ((obj = next())) {
+        fOutput->Add(obj);
+    }
+
+
 #if !defined(__CINT__) && !defined(__MAKECINT__)
     fana->SetSettings(fDebug,
                       fparticleEtaCut,
@@ -206,17 +236,11 @@ void AliAnalysisTaskEmcalJetDijetMass::UserCreateOutputObjects()
                       fmatchingR,
                       0.0); //Tracking ineff only for det level.
 
-    fana->InitHistos(fhistos, fIsMC, fcentralityBins.size());
+    //fana->InitHistos(fIsMC);
 #endif
 
 
 
-
-    //TIter next(fHistManager.GetListOfHistograms());
-    //TObject* obj = 0;
-    //while ((obj = next())) {
-    //    fOutput->Add(obj);
-    //}
 
     //PostData(1, fOutput); // Post data for ALL output slots > 0 here.
     PostData(1, fJOutput); // Post data for ALL output slots > 0 here.
@@ -230,8 +254,11 @@ void AliAnalysisTaskEmcalJetDijetMass::UserCreateOutputObjects()
  */
 Bool_t AliAnalysisTaskEmcalJetDijetMass::FillHistograms()
 {
-    //cout << "AliAnalysisTaskEmcalJetDijetMass::FillHistograms" << endl;
-    fhistos->fh_eventSel->Fill("events wo/ cuts",1.0);
+    cout << "AliAnalysisTaskEmcalJetDijetMass::FillHistograms" << endl;
+    //fhistos->fh_eventSel->Fill("events wo/ cuts",1.0);
+    //fEmcalHistos->fh_pt[0]->Fill(1.0);
+    //fh_events[0]->Fill(1.0);
+    hTest->Fill(1.0);
     DoJetLoop();
     DoTrackLoop();
     //DoClusterLoop();
@@ -258,6 +285,8 @@ void AliAnalysisTaskEmcalJetDijetMass::DoJetLoop()
             count++;
 
             histname = TString::Format("%s/histJetPt_%d", groupname.Data(), fCentBin);
+            //fhistos->fh_jetPt[0][0]->Fill(jet->Pt());
+            //cout << "Filling jet pt of " << jet->Pt() << endl;
             //fHistManager.FillTH1(histname, jet->Pt());
 
             histname = TString::Format("%s/histJetArea_%d", groupname.Data(), fCentBin);
@@ -295,13 +324,16 @@ void AliAnalysisTaskEmcalJetDijetMass::DoTrackLoop()
     while ((partCont = static_cast<AliParticleContainer*>(next()))) {
         groupname = partCont->GetName();
         UInt_t count = 0;
-        //fana->CalculateJets(fInputList, fhistos, fCentBin);
+        //fana->CalculateJets(fInputList, fCentBin);
         for(auto part : partCont->accepted()) {
             if (!part) continue;
             count++;
 
             histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), fCentBin);
-            //fHistManager.FillTH1(histname, part->Pt());
+            //fhistos->fh_pt[0]->Fill(part->Pt());
+            //cout << "Filling track pt of " << part->Pt() << endl;
+            fHistManager.FillTH1(histname, part->Pt());
+            //fhistos->fh_pt[0]->Print();
 
             histname = TString::Format("%s/histTrackPhi_%d", groupname.Data(), fCentBin);
             //fHistManager.FillTH1(histname, part->Phi());
@@ -344,6 +376,79 @@ void AliAnalysisTaskEmcalJetDijetMass::DoTrackLoop()
     //fHistManager.FillTH1(histname, sumAcceptedTracks);
 }
 
+/*
+ * This function allocates the histograms for basic tracking QA.
+ * A set of histograms (pT, eta, phi, difference between kinematic properties
+ * at the vertex and at the EMCal surface, number of tracks) is allocated
+ * per each particle container and per each centrality bin.
+ */
+void AliAnalysisTaskEmcalJetDijetMass::AllocateTrackHistograms()
+{
+  TString histname;
+  TString histtitle;
+  TString groupname;
+  AliParticleContainer* partCont = 0;
+  TIter next(&fParticleCollArray);
+  while ((partCont = static_cast<AliParticleContainer*>(next()))) {
+    groupname = partCont->GetName();
+    // Protect against creating the histograms twice
+    if (fHistManager.FindObject(groupname)) {
+      AliWarning(TString::Format("%s: Found groupname %s in hist manager. The track containers will be filled into the same histograms.", GetName(), groupname.Data()));
+      continue;
+    }
+    fHistManager.CreateHistoGroup(groupname);
+    for (Int_t cent = 0; cent < fNcentBins; cent++) {
+      histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{p}_{T,track} (GeV/#it{c});counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+      histname = TString::Format("%s/histTrackPhi_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{#phi}_{track};counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
+
+      histname = TString::Format("%s/histTrackEta_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{#eta}_{track};counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
+
+      if (TClass(partCont->GetClassName()).InheritsFrom("AliVTrack")) {
+        histname = TString::Format("%s/fHistDeltaEtaPt_%d", groupname.Data(), cent);
+        histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{#eta}_{track}^{vertex} - #it{#eta}_{track}^{EMCal};counts", histname.Data());
+        fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, 50, -0.5, 0.5);
+
+        histname = TString::Format("%s/fHistDeltaPhiPt_%d", groupname.Data(), cent);
+        histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{#phi}_{track}^{vertex} - #it{#phi}_{track}^{EMCal};counts", histname.Data());
+        fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, 200, -2, 2);
+
+        histname = TString::Format("%s/fHistDeltaPtvsPt_%d", groupname.Data(), cent);
+        histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{p}_{T,track}^{vertex} - #it{p}_{T,track}^{EMCal} (GeV/#it{c});counts", histname.Data());
+        fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, fNbins / 2, -fMaxBinPt/2, fMaxBinPt/2);
+
+        histname = TString::Format("%s/fHistEoverPvsP_%d", groupname.Data(), cent);
+        histtitle = TString::Format("%s;#it{P}_{track} (GeV/#it{c});#it{E}_{cluster} / #it{P}_{track} #it{c};counts", histname.Data());
+        fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, fNbins / 2, 0, 4);
+      }
+
+      histname = TString::Format("%s/histNTracks_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;number of tracks;events", histname.Data());
+      if (fForceBeamType != kpp) {
+        fHistManager.CreateTH1(histname, histtitle, 500, 0, 5000);
+      }
+      else {
+        fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
+      }
+    }
+  }
+
+  histname = "fHistSumNTracks";
+  histtitle = TString::Format("%s;Sum of n tracks;events", histname.Data());
+  if (fForceBeamType != kpp) {
+    fHistManager.CreateTH1(histname, histtitle, 500, 0, 5000);
+  }
+  else {
+    fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
+  }
+}
+
 /**
  * This function is executed automatically for the first event.
  * Some extra initialization can be performed here.
@@ -372,11 +477,14 @@ void AliAnalysisTaskEmcalJetDijetMass::Terminate(Option_t *)
 {
 }
 
+
+
 /**
  * This function adds the task to the analysis manager. Often, this function is called
  * by an AddTask C macro. However, by compiling the code, it ensures that we do not
  * have to deal with difficulties caused by CINT.
  */
+
 AliAnalysisTaskEmcalJetDijetMass *AliAnalysisTaskEmcalJetDijetMass::AddTaskEmcalJetDijetMass(
                                     const char *ntracks,
                                     const char *nclusters,
@@ -608,3 +716,4 @@ AliAnalysisTaskEmcalJetDijetMass *AliAnalysisTaskEmcalJetDijetMass::AddTaskEmcal
 
     return dijetMassTask;
 }
+

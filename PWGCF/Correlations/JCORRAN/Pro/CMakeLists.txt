@@ -62,6 +62,7 @@ if(FASTJET_FOUND)
         AliJHSInterplayTask.cxx
         AliAnalysisTaskGenMCRidge.cxx
         AliAnalysisTaskEmcalJetDijetMass.cxx
+        AliJEmcalDijetAna.cxx
         AliJFJTask.cxx
         )
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})

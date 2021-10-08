@@ -55,7 +55,7 @@ fMinDist(0.),                 fMinDist2(0.),                fMinDist3(0.),
 fRejectTrackMatch(0),         fFillTMHisto(kFALSE),         
 fFillTMHistoAfterCut(0),      fFillTMHistoTrackPt(0),
 fTimeCutMin(-10000),          fTimeCutMax(10000),
-fNCellsCut(0),
+fNCellsCut(0),                fExoCut(2.),
 fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(0),         fFillSSPerSMHistograms(0),
 fFillSSEtaHistograms(0),      fFillEMCALRegionSSHistograms(0),
@@ -909,6 +909,7 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
 /// \param calo    : cluster pointer.
 /// \param sm      : cluster super module number.
 /// \param nMaxima : number of local maxima.
+/// \param absIdMax :  ID number or highest energy cell
 /// \param matched : is cluster matched to a track
 /// \param bEoP: If rejection is due to E over P cut, set it true, else false
 /// \param bRes: If rejection is due to residual eta-phi cut, set it true, else false
@@ -919,7 +920,7 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
 /// \param noverlaps: number of extra MC particles contributing 
 /// \param weightPt: histogram weight depending on particle generated
 //_____________________________________________________________________
-Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima, 
+Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima, Int_t absIdMax,
                                       Bool_t matched, Bool_t bEoP, Bool_t bRes,
                                       Int_t mctag, Float_t mcbin,
                                       Float_t egen, Float_t ptgen,
@@ -1313,6 +1314,35 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
     }
   }
   
+  //.......................................
+  // Additional exoticity (for systematic variations).
+  Float_t readerExoCut = GetCaloUtils()->GetEMCALRecoUtils()->GetExoticCellFractionCut() ;
+  if ( fExoCut < 1 && fExoCut < readerExoCut  )
+  {
+    Float_t ampMax = cells->GetCellAmplitude(absIdMax);
+    Int_t   bc     = GetReader()->GetInputEvent()->GetBunchCrossNumber();
+    Float_t exoticity  = 1-GetCaloUtils()->GetECross(absIdMax,cells,bc)/ampMax;
+    if ( exoticity > fExoCut )
+    {
+      AliDebug(1,Form("Rejected exoticity %f > %f",exoticity,fExoCut));
+      return kFALSE;
+    }
+
+    if ( !IsHighMultiplicityAnalysisOn () )
+    {
+      fhClusterCutsPt[9]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsE[9]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+    }
+    else
+    {
+      fhClusterCutsPtCen[9]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsECen[9]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+    }
+  } // exoticity
+
   AliDebug(1,Form("Current Event %d; After  selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f",
            GetReader()->GetEventNumber(),
            ecluster, ptcluster,fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta()));
@@ -3111,7 +3141,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   // Init the histograms
   //
-  TString cut[] = {"Open","Reader","E","Time","NCells","NLM","Fidutial","Matching","Bad","PID","Embed"};
+  TString cut[] = {"Open","Reader","E","Time","NCells","NLM","Fidutial","Matching","Bad","Exo","PID","Embed"};
 
   for (Int_t i = 0; i < fgkNClusterCuts ;  i++)
   {
@@ -3124,6 +3154,8 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     if ( cut[i] == "Matching" && !fRejectTrackMatch     ) continue;
     if ( cut[i] == "NCells"   && (fNCellsCut <= 0 || fNCellsCut <= GetReader()->GetEMCALNCellsCut())         ) continue;
     if ( cut[i] == "Bad"      && (fMinDist   <= 0 || fMinDist   <= GetReader()->GetEMCALBadChannelMinDist()) ) continue;
+    if ( cut[i] == "Exo"      && (fExoCut    >=  1 ||
+                                  fExoCut    >= GetCaloUtils()->GetEMCALRecoUtils()->GetExoticCellFractionCut())) continue;
 
     if ( !IsHighMultiplicityAnalysisOn() )
     {
@@ -7234,17 +7266,17 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       
       if ( !IsHighMultiplicityAnalysisOn () )
       {
-        fhClusterCutsPt[10]->Fill(fMomentum.Pt(), GetEventWeight());
+        fhClusterCutsPt[11]->Fill(fMomentum.Pt(), GetEventWeight());
         
         if ( !fFillOnlyPtHisto )
-          fhClusterCutsE[10]->Fill(fMomentum.E(), GetEventWeight());
+          fhClusterCutsE[11]->Fill(fMomentum.E(), GetEventWeight());
       }
       else
       {
-        fhClusterCutsPtCen[10]->Fill(fMomentum.Pt(), cen, GetEventWeight());
+        fhClusterCutsPtCen[11]->Fill(fMomentum.Pt(), cen, GetEventWeight());
         
         if ( !fFillOnlyPtHisto )
-          fhClusterCutsECen[10]->Fill(fMomentum.E(), cen, GetEventWeight());
+          fhClusterCutsECen[11]->Fill(fMomentum.E(), cen, GetEventWeight());
       }
     }
     
@@ -7460,7 +7492,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Bool_t bRes = kFALSE, bEoP = kFALSE;
     Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent(),bEoP,bRes);
 
-    if ( !ClusterSelected(calo, nSM, nMaxima, matched, bEoP, bRes,
+    if ( !ClusterSelected(calo, nSM, nMaxima, absIdMax, matched, bEoP, bRes,
                           tag, mcbin, egen, ptgen, noverlaps, weightPt, cen) ) continue;
     
     //----------------------------
@@ -7573,17 +7605,17 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       
       if ( !IsHighMultiplicityAnalysisOn () )
       {
-        fhClusterCutsPt[9]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+        fhClusterCutsPt[10]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
         
         if ( !fFillOnlyPtHisto )
-          fhClusterCutsE[9]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+          fhClusterCutsE[10]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
       }
       else
       {
-        fhClusterCutsPtCen[9]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+        fhClusterCutsPtCen[10]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
         
         if ( !fFillOnlyPtHisto )
-          fhClusterCutsECen[9]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+          fhClusterCutsECen[10]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
       }
     }
     
@@ -8111,6 +8143,7 @@ void AliAnaPhoton::Print(const Option_t * opt) const
   printf("Time Cut: %3.1f < TOF  < %3.1f\n", fTimeCutMin, fTimeCutMax);
   printf("Time shift: shift = %3.1f\n", fConstantTimeShift);
   printf("Number of cells in cluster is  > %d \n", fNCellsCut);
+  if ( fExoCut < 1 ) printf("Exoticity cut  < %1.2f \n", fExoCut);
   printf("Number of local maxima in cluster is  %d < NLM < %d \n", fNLMCutMin,fNLMCutMax);
   printf("Fill shower shape histograms %d, per SM %d, vs eta %d, per EMCal region %d, "
          "only simple %d, per NLM %d, conversion separation %d\n",

@@ -175,6 +175,7 @@ private:
 
   Int_t calibmode;
   TH1F* fheffipt;
+  TH2F* fheffipteta;
   Float_t bSign;
   Double_t fZVertex;
 
