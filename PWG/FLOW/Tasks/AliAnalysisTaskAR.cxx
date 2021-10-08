@@ -250,13 +250,11 @@ void AliAnalysisTaskAR::Terminate(Option_t *) {
     Fatal("Terminate", "Invalid Pointer to fHistList");
   }
 
-  /* get average value of phi and write it into its own histogram */
-  fFinalResultHistograms[kPT]->SetBinContent(
-      1, fTrackControlHistograms[kRECO][kPT][kAFTER]->GetMean());
-  fFinalResultHistograms[kPHI]->SetBinContent(
-      1, fTrackControlHistograms[kRECO][kPHI][kAFTER]->GetMean());
-  fFinalResultHistograms[kETA]->SetBinContent(
-      1, fTrackControlHistograms[kRECO][kETA][kAFTER]->GetMean());
+  // get total number of surviving events/tracks
+  fFinalResultHistograms[kNUMBEROFEVENTS]->SetBinContent(
+      1, fEventControlHistograms[kRECO][kMULQ][kAFTER]->GetEntries());
+  fFinalResultHistograms[kNUMBEROFTRACKS]->SetBinContent(
+      1, fTrackControlHistograms[kRECO][kPT][kAFTER]->GetEntries());
 }
 
 void AliAnalysisTaskAR::InitializeArrays() {
@@ -709,22 +707,21 @@ void AliAnalysisTaskAR::InitializeArraysForCuts() {
 
 void AliAnalysisTaskAR::InitializeArraysForFinalResultHistograms() {
   // initialize array for final result histograms
-  for (int var = 0; var < kKinematic; ++var) {
+  for (int var = 0; var < LAST_EFINALHIST; ++var) {
     fFinalResultHistograms[var] = nullptr;
   }
 
   // set name
-  TString FinalResultHistogramNames[kKinematic][LAST_ENAME] = {
+  TString FinalResultHistogramNames[LAST_EFINALHIST][LAST_ENAME] = {
       // NAME, TITLE, XAXIS
-      {"fFinalResultHistograms[kPT]", "Average p_{T}", "p_{T} [GeV]",
-       ""}, // kPT
-      {"fFinalResultHistograms[kPHI]", "Average #varphi", "#varphi",
-       ""},                                                         // kPHI
-      {"fFinalResultHistograms[kETA]", "Average #eta", "#eta", ""}, // kETA
+      {"fFinalResultHistograms[kNUMBEROFEVENTS]",
+       "Number of surviving of events", "", ""}, // kNUMBEROFEVENTS
+      {"fFinalResultHistograms[kNUMBEROFTRACKS]",
+       "Number of surviving of tracks", "", ""}, // kNUMBEROFTRACKS
   };
 
   // initialize name
-  for (int var = 0; var < kKinematic; ++var) {
+  for (int var = 0; var < LAST_EFINALHIST; ++var) {
     for (int name = 0; name < LAST_ENAME; ++name) {
       fFinalResultHistogramNames[var][name] =
           FinalResultHistogramNames[var][name];
@@ -735,7 +732,7 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultHistograms() {
   Double_t BinsFinalResultHistogramDefaults[LAST_EBINS] = {// BIN LEDGE UEDGE
                                                            1., 0., 1.};
   // initialize default bins
-  for (int var = 0; var < kKinematic; ++var) {
+  for (int var = 0; var < LAST_EFINALHIST; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
       fFinalResultHistogramBins[var][bin] =
           BinsFinalResultHistogramDefaults[bin];
@@ -1171,12 +1168,13 @@ void AliAnalysisTaskAR::BookFinalResultHistograms() {
   Color_t colorFinalResult = kBlue - 10;
 
   // book final result histograms
-  for (int var = 0; var < kKinematic; ++var) {
-    fFinalResultHistograms[var] = new TH1D(
-        fFinalResultHistogramNames[var][0], fFinalResultHistogramNames[var][1],
-        fFinalResultHistogramBins[var][kBIN],
-        fFinalResultHistogramBins[var][kLEDGE],
-        fFinalResultHistogramBins[var][kUEDGE]);
+  for (int var = 0; var < LAST_EFINALHIST; ++var) {
+    fFinalResultHistograms[var] =
+        new TH1D(fFinalResultHistogramNames[var][kNAME],
+                 fFinalResultHistogramNames[var][kTITLE],
+                 fFinalResultHistogramBins[var][kBIN],
+                 fFinalResultHistogramBins[var][kLEDGE],
+                 fFinalResultHistogramBins[var][kUEDGE]);
     fFinalResultHistograms[var]->SetFillColor(colorFinalResult);
     fFinalResultHistograms[var]->GetXaxis()->SetTitle(
         fFinalResultHistogramNames[var][2]);
@@ -3793,7 +3791,7 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
     Fatal("GetPointersForFinalResults", "Invalid Pointer");
   }
   // get pointers for all final result histograms
-  for (int var = 0; var < kKinematic; ++var) {
+  for (int var = 0; var < LAST_EFINALHIST; ++var) {
     fFinalResultHistograms[var] =
         dynamic_cast<TH1D *>(fFinalResultHistogramsList->FindObject(
             fFinalResultHistogramNames[var][kNAME]));
