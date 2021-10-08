@@ -131,6 +131,7 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH2D fh_dijetResponseTrunc;            //! // Dijet response matrix truncated from above and below
         AliJTH2D fh_dijetResponseTrunc2;            //! // Dijet response matrix truncated from above and below
         AliJTH2D fh_dijetResponseDeltaPhiCut;      //! // Dijet response matrix with deltaPhi cut
+        AliJTH2D fh_dijetResponseDeltaPhiCutLin;      //! // Dijet response matrix with deltaPhi cut
         AliJTH2D fh_dijetResponseDeltaPhiCutTrunc; //! // Dijet response matrix with deltaPhi cut truncated from above and below
         AliJTH2D fh_dijetResponseDeltaPhiCutTrunc2; //! // Dijet response matrix with deltaPhi cut truncated from above and below
 };
