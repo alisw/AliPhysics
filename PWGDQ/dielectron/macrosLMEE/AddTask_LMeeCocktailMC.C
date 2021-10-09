@@ -1,4 +1,4 @@
-void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, Float_t MinPt = 0.2, Float_t MaxPt = 8.0, Bool_t WriteTTree = kFALSE, Int_t ResolType = 2 , Bool_t local = kFALSE, Int_t ALTweightType = 1, TString resFileName = "",TString effFileName = "", Int_t version = 0) {
+AliAnalysisTaskLMeeCocktailMC *AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, Float_t MinPt = 0.2, Float_t MaxPt = 8.0, Bool_t WriteTTree = kFALSE, Int_t ResolType = 2 , Bool_t local = kFALSE, Int_t ALTweightType = 1, TString resFileName = "",TString effFileName = "", Int_t version = 0) {
 
   // ================= Load Librariers =================================
   gSystem->Load("libCore");
@@ -65,5 +65,5 @@ void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, F
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
   
-  return;
+  return task;
 }
