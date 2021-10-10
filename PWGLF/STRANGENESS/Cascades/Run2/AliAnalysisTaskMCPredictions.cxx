@@ -102,6 +102,9 @@ fHistChargedEta(0),
 fSmallMultRange(1000),
 fLargeMultRange(2000),
 fRebinFactor(1),
+fkNBBins(1),
+fkNNpartBins(1),
+fkNEtaBins(1),
 fkSelectINELgtZERO(kTRUE),
 fkALICE3SiliconMode(kTRUE),
 fkWideRapiditySpeciesStudy(kFALSE),
@@ -139,7 +142,7 @@ fEtaTriggerPhi(0)
   }
 }
 
-AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning, Int_t lNLargeBinning, Int_t lRebinFactor)
+AliAnalysisTaskMCPredictions::AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning, Int_t lNLargeBinning, Int_t lRebinFactor, Int_t lNBBins, Int_t lNNpartBins, Int_t lNEtaBins)
 : AliAnalysisTaskSE(name),
 fListHist(0),
 fHistEventCounter(0),
@@ -147,6 +150,9 @@ fHistChargedEta(0),
 fSmallMultRange(lNSmallBinning),
 fLargeMultRange(lNLargeBinning),
 fRebinFactor(lRebinFactor),
+fkNBBins(lNBBins),
+fkNEtaBins(lNEtaBins),
+fkNNpartBins(lNNpartBins),
 fkSelectINELgtZERO(kTRUE),
 fkALICE3SiliconMode(kTRUE),
 fkWideRapiditySpeciesStudy(kFALSE),
@@ -212,7 +218,7 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   Int_t lNPtBins = 200;
   Double_t lMaxPt = 20.0;
   
-  Int_t lNEtaBins = 400;
+  Int_t lNEtaBins = fkNEtaBins;
   Double_t lMaxAbsEta = 2;
   
   //Settings for charged particle counters (integers!)
@@ -268,26 +274,26 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   //___________________________________________________
   if(! fHistNpart ) {
     //Histogram Output: Event-by-Event
-    fHistNpart = new TH1D( "fHistNpart", ";N_{part};Count",500,-0.5,499.5);
+    fHistNpart = new TH1D( "fHistNpart", ";N_{part};Count",fkNNpartBins,-0.5,fkNNpartBins-0.5);
     //Keeps track of some basics
     fListHist->Add(fHistNpart);
   }
   if(! fHistNchVsNpart ) {
     //Histogram Output: Event-by-Event
-    fHistNchVsNpart = new TH2D( "fHistNchVsNpart", ";N_{part};Count",500,-0.5,499.5,lNNchBins,lLowNchBound,lHighNchBound);
+    fHistNchVsNpart = new TH2D( "fHistNchVsNpart", ";N_{part};Count",fkNNpartBins,-0.5,fkNNpartBins-0.5,lNNchBins,lLowNchBound,lHighNchBound);
     //Keeps track of some basics
     fListHist->Add(fHistNchVsNpart);
   }
   //___________________________________________________
   if(! fHistB ) {
     //Histogram Output: Event-by-Event
-    fHistB = new TH1D( "fHistB", ";b;Count",400,0,20);
+    fHistB = new TH1D( "fHistB", ";b;Count",fkNBBins,0,20);
     //Keeps track of some basics
     fListHist->Add(fHistB);
   }
   if(! fHistNchVsB ) {
     //Histogram Output: Event-by-Event
-    fHistNchVsB = new TH2D( "fHistNchVsB", ";b;Count",400,0,20,lNNchBins,lLowNchBound,lHighNchBound);
+    fHistNchVsB = new TH2D( "fHistNchVsB", ";b;Count",fkNBBins,0,20,lNNchBins,lLowNchBound,lHighNchBound);
     //Keeps track of some basics
     fListHist->Add(fHistNchVsB);
   }
@@ -368,13 +374,13 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   }
   for(Int_t ih=0; ih<64; ih++){
     if(! fHistPtVsNpart[ih] ) {
-      fHistPtVsNpart[ih] = new TH2D(Form("fHistPtVsNpart_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",500,-0.5,499.5,lNPtBins,0,lMaxPt);
+      fHistPtVsNpart[ih] = new TH2D(Form("fHistPtVsNpart_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",fkNNpartBins,-0.5,fkNNpartBins-0.5,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsNpart[ih]);
     }
   }
   for(Int_t ih=0; ih<64; ih++){
     if(! fHistPtVsB[ih] ) {
-      fHistPtVsB[ih] = new TH2D(Form("fHistPtVsB_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",400,0,20,lNPtBins,0,lMaxPt);
+      fHistPtVsB[ih] = new TH2D(Form("fHistPtVsB_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",fkNBBins,0,20,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsB[ih]);
     }
   }
