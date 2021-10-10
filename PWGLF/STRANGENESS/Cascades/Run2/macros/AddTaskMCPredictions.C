@@ -1,4 +1,4 @@
-AliAnalysisTaskMCPredictions *AddTaskMCPredictions( Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 4000, Int_t lRebinFactor = 1, const TString lMasterJobSessionFlag = "")
+AliAnalysisTaskMCPredictions *AddTaskMCPredictions( Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 2000, Int_t lRebinFactor = 1, Int_t lNBBins = 1, Int_t lNNpartBins = 1, Int_t lNEtaBins = 1, const TString lMasterJobSessionFlag = "")
 {
     // Creates, configures and attaches to the train a cascades check task.
     // Get the pointer to the existing analysis manager via the static access method.
@@ -17,7 +17,7 @@ AliAnalysisTaskMCPredictions *AddTaskMCPredictions( Int_t lNSmallBinning = 1000,
     //TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     
     // Create and configure the task
-    AliAnalysisTaskMCPredictions *taskMCPred = new AliAnalysisTaskMCPredictions("taskMCPred", lNSmallBinning, lNLargeBinning, lRebinFactor);
+    AliAnalysisTaskMCPredictions *taskMCPred = new AliAnalysisTaskMCPredictions("taskMCPred", lNSmallBinning, lNLargeBinning, lRebinFactor, Int_t lNBBins, Int_t lNNpartBins, Int_t lNEtaBins);
 
     mgr->AddTask(taskMCPred);
     TString outputFileName = AliAnalysisManager::GetCommonFileName();

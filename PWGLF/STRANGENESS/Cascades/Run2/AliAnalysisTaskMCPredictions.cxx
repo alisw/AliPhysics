@@ -274,13 +274,13 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   //___________________________________________________
   if(! fHistNpart ) {
     //Histogram Output: Event-by-Event
-    fHistNpart = new TH1D( "fHistNpart", ";N_{part};Count",fkNNpartBins,-0.5,fkNNpartBins-0.5);
+    fHistNpart = new TH1D( "fHistNpart", ";N_{part};Count",fkNNpartBins,-0.5,((double)(fkNNpartBins))-0.5);
     //Keeps track of some basics
     fListHist->Add(fHistNpart);
   }
   if(! fHistNchVsNpart ) {
     //Histogram Output: Event-by-Event
-    fHistNchVsNpart = new TH2D( "fHistNchVsNpart", ";N_{part};Count",fkNNpartBins,-0.5,fkNNpartBins-0.5,lNNchBins,lLowNchBound,lHighNchBound);
+    fHistNchVsNpart = new TH2D( "fHistNchVsNpart", ";N_{part};Count",fkNNpartBins,-0.5,((double)(fkNNpartBins))-0.5,lNNchBins,lLowNchBound,lHighNchBound);
     //Keeps track of some basics
     fListHist->Add(fHistNchVsNpart);
   }
@@ -368,7 +368,7 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   }
   for(Int_t ih=0; ih<64; ih++){
     if(! fHistYVsSPDMult[ih] ) {
-      fHistYVsSPDMult[ih] = new TH2D(Form("fHistYVsSPDMult%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNEtaBins,-10,10);
+      fHistYVsSPDMult[ih] = new TH2D(Form("fHistYVsSPDMult%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,200,-10,10);
       fListHist->Add(fHistYVsSPDMult[ih]);
     }
   }
