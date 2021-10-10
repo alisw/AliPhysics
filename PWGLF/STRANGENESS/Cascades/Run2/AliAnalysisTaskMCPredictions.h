@@ -47,7 +47,7 @@ class AliCFContainer;
 class AliAnalysisTaskMCPredictions : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskMCPredictions();
-  AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 4000, Int_t lRebinFactor = 1);
+  AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 4000, Int_t lRebinFactor = 1, Int_t lNBBins = 1, Int_t lNNpartBins = 1, Int_t lNEtaBins = 1 );
   virtual ~AliAnalysisTaskMCPredictions();
   
   virtual void   UserCreateOutputObjects();
@@ -82,6 +82,11 @@ private:
   Int_t fSmallMultRange;
   Int_t fLargeMultRange;
   Int_t fRebinFactor;
+  
+  Int_t fkNBBins;
+  Int_t fkNNpartBins;
+  Int_t fkNEtaBins; 
+  
   Bool_t fkSelectINELgtZERO;
   Bool_t fkALICE3SiliconMode; //if true, SPD multiplicity == full |eta|<4.0
   Bool_t fkWideRapiditySpeciesStudy; //if true, |y|<4.0 instead of |y|<0.5 for PID
