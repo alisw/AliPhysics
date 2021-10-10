@@ -21,11 +21,13 @@ AliAnalysisTaskLMeeCocktailMC *AddTask_LMeeCocktailMC(Int_t CollisionSystem = 20
   gSystem->Load("libPWGflowTasks");
   gSystem->Load("libPWGGAGammaConv");
 
+  AliAnalysisTaskLMeeCocktailMC *task=NULL;
+  
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTask_LMeeCocktailMC", "No analysis manager found.");
-    return ;
+    return task;
   }
 
   // ================== GetInputEventHandler =============================
@@ -37,7 +39,7 @@ AliAnalysisTaskLMeeCocktailMC *AddTask_LMeeCocktailMC(Int_t CollisionSystem = 20
   //========= Add task to the ANALYSIS manager =====
   //================================================
 
-  AliAnalysisTaskLMeeCocktailMC *task=NULL;
+ 
   task= new AliAnalysisTaskLMeeCocktailMC(Form("LMeeCocktailMC_%1.2f_%d",MaxEta,version));
   task->SetCollisionSystem(CollisionSystem);
   task->SetMaxEta(MaxEta);
