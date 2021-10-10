@@ -362,13 +362,13 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   }
   for(Int_t ih=0; ih<64; ih++){
     if(! fHistEtaVsSPDMult[ih] ) {
-      fHistEtaVsSPDMult[ih] = new TH2D(Form("fHistEtaVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,200,-10,10);
+      fHistEtaVsSPDMult[ih] = new TH2D(Form("fHistEtaVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNEtaBins,-10,10);
       fListHist->Add(fHistEtaVsSPDMult[ih]);
     }
   }
   for(Int_t ih=0; ih<64; ih++){
     if(! fHistYVsSPDMult[ih] ) {
-      fHistYVsSPDMult[ih] = new TH2D(Form("fHistYVsSPDMult%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,200,-10,10);
+      fHistYVsSPDMult[ih] = new TH2D(Form("fHistYVsSPDMult%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNEtaBins,-10,10);
       fListHist->Add(fHistYVsSPDMult[ih]);
     }
   }
