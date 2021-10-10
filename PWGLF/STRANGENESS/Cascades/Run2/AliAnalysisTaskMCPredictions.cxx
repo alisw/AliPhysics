@@ -604,7 +604,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     4122, -4122, 443,
     4332, -4332, 4232, -4232,
     4422, -4422, 4432, -4432,
-    4444, -4444,
+    4444, -4444
   };
   TString lPartNames[64] = {
     "PiPlus", "PiMinus", "KaPlus", "KaMinus", "Proton", "AntiProton",
