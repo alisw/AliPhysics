@@ -586,16 +586,16 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   //Basics: All Processed
   fHistEventCounter->Fill(0.5);
   
-  fHistV0MMult                            -> Fill ( lNchVZEROA+lNchVZEROC );
-  fHistSPDMult                            -> Fill ( lNchEtaWide );
-  fHistNchVsV0MMult                       -> Fill ( lNchVZEROA+lNchVZEROC, lNchEta5  );
-  fHistNchVsSPDMult                       -> Fill ( lNchEtaWide, lNchEta5  );
-  if(fHistNpart)      fHistNpart          -> Fill ( fMC_NPart );
-  if(fHistNchVsNpart) fHistNchVsNpart     -> Fill ( fMC_NPart, lNchEta5  );
-  if(fHistB)          fHistB              -> Fill ( fMC_b );
-  if(fHistNchVsB)     fHistNchVsB         -> Fill ( fMC_b, lNchEta5  );
-  if(fHistNMPI)       fHistNMPI           -> Fill ( fMC_NMPI );
-  if(fHistNchVsNMPI)  fHistNchVsNMPI      -> Fill ( fMC_NMPI, lNchEta5  );
+  if(fHistV0MMult)      fHistV0MMult        -> Fill ( lNchVZEROA+lNchVZEROC );
+  if(fHistSPDMult)      fHistSPDMult        -> Fill ( lNchEtaWide );
+  if(fHistNchVsV0MMult) fHistNchVsV0MMult   -> Fill ( lNchVZEROA+lNchVZEROC, lNchEta5  );
+  if(fHistNchVsSPDMult) fHistNchVsSPDMult   -> Fill ( lNchEtaWide, lNchEta5  );
+  if(fHistNpart)        fHistNpart          -> Fill ( fMC_NPart );
+  if(fHistNchVsNpart)   fHistNchVsNpart     -> Fill ( fMC_NPart, lNchEta5  );
+  if(fHistB)            fHistB              -> Fill ( fMC_b );
+  if(fHistNchVsB)       fHistNchVsB         -> Fill ( fMC_b, lNchEta5  );
+  if(fHistNMPI)         fHistNMPI           -> Fill ( fMC_NMPI );
+  if(fHistNchVsNMPI)    fHistNchVsNMPI      -> Fill ( fMC_NMPI, lNchEta5  );
   
   //------------------------------------------------
   // Fill Spectra as Needed
