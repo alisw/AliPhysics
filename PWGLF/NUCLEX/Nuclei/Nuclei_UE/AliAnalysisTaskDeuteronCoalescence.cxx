@@ -23,6 +23,7 @@
 #include "TMath.h"
 #include "TTree.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
@@ -80,7 +81,11 @@ hSourceRadius_Neut(nullptr),
 hDistanceLab(nullptr),
 hDistanceDeut(nullptr),
 hDistanceDiff(nullptr),
-hPtProtonsFirstBinDeut(nullptr)
+hPtProtonsFirstBinDeut(nullptr),
+hDeltaPhi_Toward(nullptr),
+hDeltaPhi_Transv(nullptr),
+hDeltaPhi_Away(nullptr),
+hDeltaPhi_INELgtZERO(nullptr)
 {}
 //____________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskDeuteronCoalescence::AliAnalysisTaskDeuteronCoalescence(const char *name):
@@ -128,7 +133,11 @@ hSourceRadius_Neut(nullptr),
 hDistanceLab(nullptr),
 hDistanceDeut(nullptr),
 hDistanceDiff(nullptr),
-hPtProtonsFirstBinDeut(nullptr)
+hPtProtonsFirstBinDeut(nullptr),
+hDeltaPhi_Toward(nullptr),
+hDeltaPhi_Transv(nullptr),
+hDeltaPhi_Away(nullptr),
+hDeltaPhi_INELgtZERO(nullptr)
 {
     DefineInput (0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -180,6 +189,11 @@ AliAnalysisTaskDeuteronCoalescence::~AliAnalysisTaskDeuteronCoalescence()  {
     delete hDistanceDeut;
     delete hDistanceDiff;
     delete hPtProtonsFirstBinDeut;
+    delete hDeltaPhi_Toward;
+    delete hDeltaPhi_Transv;
+    delete hDeltaPhi_Away;
+    delete hDeltaPhi_INELgtZERO;
+
 }
 //____________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDeuteronCoalescence::UserCreateOutputObjects()  {
@@ -369,6 +383,20 @@ void AliAnalysisTaskDeuteronCoalescence::UserCreateOutputObjects()  {
     hPtProtonsFirstBinDeut = new TH1D ("hPtProtonsFirstBinDeut","",100,0,1);
     hPtProtonsFirstBinDeut->Sumw2();
     fOutputList->Add(hPtProtonsFirstBinDeut);
+    
+    //Angular Distributions
+    hDeltaPhi_Toward     = new TH2D ("hDeltaPhi_Toward","",50,0,5,200,0,100);
+    hDeltaPhi_Transv     = new TH2D ("hDeltaPhi_Transv","",50,0,5,200,0,100);
+    hDeltaPhi_Away       = new TH2D ("hDeltaPhi_Away","",50,0,5,200,0,100);
+    hDeltaPhi_INELgtZERO = new TH2D ("hDeltaPhi_INELgtZERO","",50,0,5,200,0,100);
+    hDeltaPhi_Toward     -> Sumw2();
+    hDeltaPhi_Transv     -> Sumw2();
+    hDeltaPhi_Away       -> Sumw2();
+    hDeltaPhi_INELgtZERO -> Sumw2();
+    fOutputList->Add(hDeltaPhi_Toward);
+    fOutputList->Add(hDeltaPhi_Transv);
+    fOutputList->Add(hDeltaPhi_Away);
+    fOutputList->Add(hDeltaPhi_INELgtZERO);
 
 
     PostData(1, fOutputList);
@@ -508,6 +536,12 @@ void AliAnalysisTaskDeuteronCoalescence::UserExec(Option_t *)  {
                         //Rapidity Distributions of Protons and Neutrons
                         hRapidityProtons  -> Fill (proton->Y());
                         hRapidityNeutrons -> Fill (neutron->Y());
+                        
+                        //DeltaPhi
+                        TVector3 mom_proton  = p_proton.Vect();
+                        TVector3 mom_neutron = p_neutron.Vect();
+                        Double_t deltaPhi = (180.0/TMath::Pi())*mom_proton.Angle(mom_neutron);
+                        if (iTrial==13) hDeltaPhi_INELgtZERO -> Fill (p_deuteron.Pt(),deltaPhi);
                         
                         //QA Histogram
                         if (p_deuteron.Pt()>0.7 && p_deuteron.Pt()<0.8) hPtProtonsFirstBinDeut->Fill(proton->Pt());
@@ -759,8 +793,22 @@ void AliAnalysisTaskDeuteronCoalescence::UserExec(Option_t *)  {
                         
                         Double_t pt           = p_deuteron.Pt();
                         Double_t phi_particle = TVector2::Phi_0_2pi(p_deuteron.Phi());
+                        
+                        //DeltaPhi
+                        TVector3 mom_proton  = p_proton.Vect();
+                        TVector3 mom_neutron = p_neutron.Vect();
+                        Double_t deltaPhi = (180.0/TMath::Pi())*mom_proton.Angle(mom_neutron);
+                        
                         if (IsParticleInTowardRegion(phi_particle,phi_leading))     hDeuterons_Toward_simpleCoal[iTrial]->Fill(pt,deutWeight);
                         if (IsParticleInTransverseRegion(phi_particle,phi_leading)) hDeuterons_Transv_simpleCoal[iTrial]->Fill(pt,deutWeight);
+                        
+                        //Fill Angular Correlations
+                        if (iTrial==13) {
+                            
+                            if (IsParticleInTowardRegion(phi_particle,phi_leading))     hDeltaPhi_Toward -> Fill (pt,deltaPhi);
+                            if (IsParticleInTransverseRegion(phi_particle,phi_leading)) hDeltaPhi_Transv -> Fill (pt,deltaPhi);
+                            if (IsParticleInAwayRegion(phi_particle,phi_leading))       hDeltaPhi_Away   -> Fill (pt,deltaPhi);
+                        }
                     }
                     break;
                 }
