@@ -102,16 +102,16 @@ private:
   Bool_t fkDoRapidityStudy;
   
   //Basic Histograms for counting events as a function of V0M percentiles...
-  TH1D *fHistV0MMult;
-  TH1D *fHistSPDMult;
-  TH2D *fHistNchVsV0MMult;
-  TH2D *fHistNchVsSPDMult;
-  TH1D *fHistNpart;
-  TH2D *fHistNchVsNpart;
-  TH1D *fHistB;
-  TH2D *fHistNchVsB;
-  TH1D *fHistNMPI;
-  TH2D *fHistNchVsNMPI;
+  TH1D *fHistV0MMult; //!
+  TH1D *fHistSPDMult; //!
+  TH2D *fHistNchVsV0MMult; //!
+  TH2D *fHistNchVsSPDMult; //!
+  TH1D *fHistNpart; //!
+  TH2D *fHistNchVsNpart; //!
+  TH1D *fHistB; //!
+  TH2D *fHistNchVsB; //!
+  TH1D *fHistNMPI; //!
+  TH2D *fHistNchVsNMPI; //!
   
   TH1D *fHistPt[64];              //! for keeping track of base spectra
   TH1D *fHistEta[64];              //! for keeping track of base spectra
@@ -127,9 +127,9 @@ private:
   Float_t fMinPtTriggerCharged; //for charged trigger
   Float_t fMinPtTriggerXi; //for xi trigger
   Float_t fMinPtTriggerPhi; //for phi trigger
-  TH1D *fEtaTriggerCharged;
-  TH1D *fEtaTriggerXi;
-  TH1D *fEtaTriggerPhi;
+  TH1D *fEtaTriggerCharged; //!
+  TH1D *fEtaTriggerXi; //!
+  TH1D *fEtaTriggerPhi; //!
   //TH3D *fHist3d2pcSE[64]; //!
   //TH3D *fHist3d2pcXiSE[64]; //!
   //TH3D *fHist3d2pcPhiSE[64]; //!
