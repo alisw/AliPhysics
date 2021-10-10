@@ -108,6 +108,10 @@ fkNEtaBins(1),
 fkSelectINELgtZERO(kTRUE),
 fkALICE3SiliconMode(kTRUE),
 fkWideRapiditySpeciesStudy(kFALSE),
+fkDoImpactParameterStudy(kFALSE),
+fkDoNpartStudy(kFALSE),
+fkDoNMPIStudy(kTRUE),
+fkDoRapidityStudy(kFALSE),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -151,11 +155,15 @@ fSmallMultRange(lNSmallBinning),
 fLargeMultRange(lNLargeBinning),
 fRebinFactor(lRebinFactor),
 fkNBBins(lNBBins),
-fkNEtaBins(lNEtaBins),
 fkNNpartBins(lNNpartBins),
+fkNEtaBins(lNEtaBins),
 fkSelectINELgtZERO(kTRUE),
 fkALICE3SiliconMode(kTRUE),
 fkWideRapiditySpeciesStudy(kFALSE),
+fkDoImpactParameterStudy(kFALSE),
+fkDoNpartStudy(kFALSE),
+fkDoNMPIStudy(kTRUE),
+fkDoRapidityStudy(kFALSE),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -237,7 +245,7 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     fHistEventCounter->GetXaxis()->SetBinLabel(1, "Processed");
     fListHist->Add(fHistEventCounter);
   }
-  if(! fHistChargedEta ) {
+  if(! fHistChargedEta && fkDoRapidityStudy ) {
     //Histogram Output: Event-by-Event
     fHistChargedEta = new TH1D( "fHistChargedEta", ";#eta;Count",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
     fListHist->Add(fHistChargedEta);
@@ -272,39 +280,39 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     fListHist->Add(fHistNchVsSPDMult);
   }
   //___________________________________________________
-  if(! fHistNpart ) {
+  if(! fHistNpart && fkDoNpartStudy) {
     //Histogram Output: Event-by-Event
-    fHistNpart = new TH1D( "fHistNpart", ";N_{part};Count",fkNNpartBins,-0.5,fkNNpartBins-0.5);
+    fHistNpart = new TH1D( "fHistNpart", ";N_{part};Count",fkNNpartBins,-0.5,((double)(fkNNpartBins))-0.5);
     //Keeps track of some basics
     fListHist->Add(fHistNpart);
   }
-  if(! fHistNchVsNpart ) {
+  if(! fHistNchVsNpart && fkDoNpartStudy ) {
     //Histogram Output: Event-by-Event
-    fHistNchVsNpart = new TH2D( "fHistNchVsNpart", ";N_{part};Count",fkNNpartBins,-0.5,fkNNpartBins-0.5,lNNchBins,lLowNchBound,lHighNchBound);
+    fHistNchVsNpart = new TH2D( "fHistNchVsNpart", ";N_{part};Count",fkNNpartBins,-0.5,((double)(fkNNpartBins))-0.5,lNNchBins,lLowNchBound,lHighNchBound);
     //Keeps track of some basics
     fListHist->Add(fHistNchVsNpart);
   }
   //___________________________________________________
-  if(! fHistB ) {
+  if(! fHistB && fkDoImpactParameterStudy ) {
     //Histogram Output: Event-by-Event
     fHistB = new TH1D( "fHistB", ";b;Count",fkNBBins,0,20);
     //Keeps track of some basics
     fListHist->Add(fHistB);
   }
-  if(! fHistNchVsB ) {
+  if(! fHistNchVsB && fkDoImpactParameterStudy ) {
     //Histogram Output: Event-by-Event
     fHistNchVsB = new TH2D( "fHistNchVsB", ";b;Count",fkNBBins,0,20,lNNchBins,lLowNchBound,lHighNchBound);
     //Keeps track of some basics
     fListHist->Add(fHistNchVsB);
   }
   //___________________________________________________
-  if(! fHistNMPI ) {
+  if(! fHistNMPI && fkDoNMPIStudy ) {
     //Histogram Output: Event-by-Event
     fHistNMPI = new TH1D( "fHistNMPI", ";N_{MPI};Count",50,-0.5,49.5);
     //Keeps track of some basics
     fListHist->Add(fHistNMPI);
   }
-  if(! fHistNchVsNMPI ) {
+  if(! fHistNchVsNMPI && fkDoNMPIStudy ) {
     //Histogram Output: Event-by-Event
     fHistNchVsNMPI = new TH2D( "fHistNchVsNMPI", ";N_{part};Count",50,-0.5,49.5,lNNchBins,lLowNchBound,lHighNchBound);
     //Keeps track of some basics
@@ -343,7 +351,7 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     }
   }
   for(Int_t ih=0; ih<64; ih++){
-    if(! fHistEta[ih] ) {
+    if(! fHistEta[ih] && fkDoRapidityStudy ) {
       fHistEta[ih] = new TH1D(Form("fHistEta_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
       fListHist->Add(fHistEta[ih]);
     }
@@ -361,31 +369,31 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     }
   }
   for(Int_t ih=0; ih<64; ih++){
-    if(! fHistEtaVsSPDMult[ih] ) {
+    if(! fHistEtaVsSPDMult[ih] && fkDoRapidityStudy ) {
       fHistEtaVsSPDMult[ih] = new TH2D(Form("fHistEtaVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNEtaBins,-10,10);
       fListHist->Add(fHistEtaVsSPDMult[ih]);
     }
   }
   for(Int_t ih=0; ih<64; ih++){
-    if(! fHistYVsSPDMult[ih] ) {
+    if(! fHistYVsSPDMult[ih] && fkDoRapidityStudy ) {
       fHistYVsSPDMult[ih] = new TH2D(Form("fHistYVsSPDMult%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNEtaBins,-10,10);
       fListHist->Add(fHistYVsSPDMult[ih]);
     }
   }
   for(Int_t ih=0; ih<64; ih++){
-    if(! fHistPtVsNpart[ih] ) {
+    if(! fHistPtVsNpart[ih] && fkDoNpartStudy ) {
       fHistPtVsNpart[ih] = new TH2D(Form("fHistPtVsNpart_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",fkNNpartBins,-0.5,fkNNpartBins-0.5,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsNpart[ih]);
     }
   }
   for(Int_t ih=0; ih<64; ih++){
-    if(! fHistPtVsB[ih] ) {
+    if(! fHistPtVsB[ih] && fkDoImpactParameterStudy ) {
       fHistPtVsB[ih] = new TH2D(Form("fHistPtVsB_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",fkNBBins,0,20,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsB[ih]);
     }
   }
   for(Int_t ih=0; ih<64; ih++){
-    if(! fHistPtVsNMPI[ih] ) {
+    if(! fHistPtVsNMPI[ih] && fkDoNMPIStudy ) {
       fHistPtVsNMPI[ih] = new TH2D(Form("fHistPtVsNMPI_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",50,-0.5,49.5,lNPtBins,0,lMaxPt);
       fListHist->Add(fHistPtVsNMPI[ih]);
     }
@@ -497,7 +505,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     Double_t geta = particleOne -> Eta();
     
     //keep track of base eta distribution
-    if ( gpt > fMinPtTriggerCharged ) fHistChargedEta->Fill( geta );
+    if ( gpt > fMinPtTriggerCharged && fHistChargedEta ) fHistChargedEta->Fill( geta );
     
     if( TMath::Abs(geta) < 0.5 ) lNchEta5++;
     if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
@@ -578,16 +586,16 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   //Basics: All Processed
   fHistEventCounter->Fill(0.5);
   
-  fHistV0MMult        -> Fill ( lNchVZEROA+lNchVZEROC );
-  fHistSPDMult        -> Fill ( lNchEtaWide );
-  fHistNchVsV0MMult   -> Fill ( lNchVZEROA+lNchVZEROC, lNchEta5  );
-  fHistNchVsSPDMult   -> Fill ( lNchEtaWide, lNchEta5  );
-  fHistNpart          -> Fill ( fMC_NPart );
-  fHistNchVsNpart     -> Fill ( fMC_NPart, lNchEta5  );
-  fHistB              -> Fill ( fMC_b );
-  fHistNchVsB         -> Fill ( fMC_b, lNchEta5  );
-  fHistNMPI           -> Fill ( fMC_NMPI );
-  fHistNchVsNMPI      -> Fill ( fMC_NMPI, lNchEta5  );
+  if(fHistV0MMult)      fHistV0MMult        -> Fill ( lNchVZEROA+lNchVZEROC );
+  if(fHistSPDMult)      fHistSPDMult        -> Fill ( lNchEtaWide );
+  if(fHistNchVsV0MMult) fHistNchVsV0MMult   -> Fill ( lNchVZEROA+lNchVZEROC, lNchEta5  );
+  if(fHistNchVsSPDMult) fHistNchVsSPDMult   -> Fill ( lNchEtaWide, lNchEta5  );
+  if(fHistNpart)        fHistNpart          -> Fill ( fMC_NPart );
+  if(fHistNchVsNpart)   fHistNchVsNpart     -> Fill ( fMC_NPart, lNchEta5  );
+  if(fHistB)            fHistB              -> Fill ( fMC_b );
+  if(fHistNchVsB)       fHistNchVsB         -> Fill ( fMC_b, lNchEta5  );
+  if(fHistNMPI)         fHistNMPI           -> Fill ( fMC_NMPI );
+  if(fHistNchVsNMPI)    fHistNchVsNMPI      -> Fill ( fMC_NMPI, lNchEta5  );
   
   //------------------------------------------------
   // Fill Spectra as Needed
@@ -706,24 +714,24 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
         if( lCheckHFFeeddown[ih] == kTRUE && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
         //Fill Histograms
-        fHistEta[ih] -> Fill ( lPart -> Eta() );
-        fHistEtaVsSPDMult[ih] -> Fill( lNchEtaWide, lPart -> Eta() );
-        fHistYVsSPDMult[ih] -> Fill( lNchEtaWide, lThisRap );
+        if(fHistEta[ih]) fHistEta[ih] -> Fill ( lPart -> Eta() );
+        if(fHistEtaVsSPDMult[ih]) fHistEtaVsSPDMult[ih] -> Fill( lNchEtaWide, lPart -> Eta() );
+        if(fHistYVsSPDMult[ih]) fHistYVsSPDMult[ih] -> Fill( lNchEtaWide, lThisRap );
         if( TMath::Abs(lThisRap) < 0.5 && !fkWideRapiditySpeciesStudy ) {
-          fHistPt[ih]->Fill(lThisPt);
-          fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
-          fHistPtVsSPDMult[ih]->Fill(lNchEtaWide,lThisPt);
-          fHistPtVsNpart[ih]->Fill(fMC_NPart,lThisPt);
-          fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
-          fHistPtVsNMPI[ih]->Fill(fMC_NMPI,lThisPt);
+          if( fHistPt[ih] ) fHistPt[ih]->Fill(lThisPt);
+          if( fHistPtVsV0MMult[ih] ) fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
+          if( fHistPtVsSPDMult[ih] ) fHistPtVsSPDMult[ih]->Fill(lNchEtaWide,lThisPt);
+          if( fHistPtVsNpart[ih] ) fHistPtVsNpart[ih]->Fill(fMC_NPart,lThisPt);
+          if( fHistPtVsB[ih] ) fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
+          if( fHistPtVsNMPI[ih] ) fHistPtVsNMPI[ih]->Fill(fMC_NMPI,lThisPt);
         }
         if( TMath::Abs(lThisRap) < 4.0 && fkWideRapiditySpeciesStudy ) {
-          fHistPt[ih]->Fill(lThisPt);
-          fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
-          fHistPtVsSPDMult[ih]->Fill(lNchEtaWide,lThisPt);
-          fHistPtVsNpart[ih]->Fill(fMC_NPart,lThisPt);
-          fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
-          fHistPtVsNMPI[ih]->Fill(fMC_NMPI,lThisPt);
+          if( fHistPt[ih] ) fHistPt[ih]->Fill(lThisPt);
+          if( fHistPtVsV0MMult[ih] ) fHistPtVsV0MMult[ih]->Fill(lNchVZEROA+lNchVZEROC,lThisPt);
+          if( fHistPtVsSPDMult[ih] ) fHistPtVsSPDMult[ih]->Fill(lNchEtaWide,lThisPt);
+          if( fHistPtVsNpart[ih] ) fHistPtVsNpart[ih]->Fill(fMC_NPart,lThisPt);
+          if( fHistPtVsB[ih] ) fHistPtVsB[ih]->Fill(fMC_b,lThisPt);
+          if( fHistPtVsNMPI[ih] ) fHistPtVsNMPI[ih]->Fill(fMC_NMPI,lThisPt);
         }
         
       }
