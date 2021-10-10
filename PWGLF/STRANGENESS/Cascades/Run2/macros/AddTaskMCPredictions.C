@@ -17,7 +17,7 @@ AliAnalysisTaskMCPredictions *AddTaskMCPredictions( Int_t lNSmallBinning = 1000,
     //TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     
     // Create and configure the task
-    AliAnalysisTaskMCPredictions *taskMCPred = new AliAnalysisTaskMCPredictions("taskMCPred", lNSmallBinning, lNLargeBinning, lRebinFactor, Int_t lNBBins, Int_t lNNpartBins, Int_t lNEtaBins);
+    AliAnalysisTaskMCPredictions *taskMCPred = new AliAnalysisTaskMCPredictions("taskMCPred", lNSmallBinning, lNLargeBinning, lRebinFactor, lNBBins, lNNpartBins, lNEtaBins);
 
     mgr->AddTask(taskMCPred);
     TString outputFileName = AliAnalysisManager::GetCommonFileName();

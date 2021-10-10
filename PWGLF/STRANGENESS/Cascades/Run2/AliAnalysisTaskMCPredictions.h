@@ -67,6 +67,11 @@ public:
   void SetALICE3Mode ( Bool_t lOpt = kTRUE) { fkALICE3SiliconMode = lOpt; }
   void SetWideRapidityCut ( Bool_t lOpt = kTRUE) { fkWideRapiditySpeciesStudy = lOpt; }
   
+  void SetDoImpactParameterStudy ( Bool_t lOpt = kTRUE) { fkDoImpactParameterStudy = lOpt; }
+  void SetDoNpartStudy ( Bool_t lOpt = kTRUE) { fkDoNpartStudy = lOpt; }
+  void SetDoNMPIStudy ( Bool_t lOpt = kTRUE) { fkDoNMPIStudy = lOpt; }
+  void SetDoRapidityStudy ( Bool_t lOpt = kTRUE) { fkDoRapidityStudy = lOpt; }
+  
   //---------------------------------------------------------------------------------------
   
 private:
@@ -85,11 +90,16 @@ private:
   
   Int_t fkNBBins;
   Int_t fkNNpartBins;
-  Int_t fkNEtaBins; 
+  Int_t fkNEtaBins;
   
   Bool_t fkSelectINELgtZERO;
   Bool_t fkALICE3SiliconMode; //if true, SPD multiplicity == full |eta|<4.0
   Bool_t fkWideRapiditySpeciesStudy; //if true, |y|<4.0 instead of |y|<0.5 for PID
+  
+  Bool_t fkDoImpactParameterStudy;
+  Bool_t fkDoNpartStudy;
+  Bool_t fkDoNMPIStudy;
+  Bool_t fkDoRapidityStudy;
   
   //Basic Histograms for counting events as a function of V0M percentiles...
   TH1D *fHistV0MMult;
