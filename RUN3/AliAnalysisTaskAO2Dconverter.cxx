@@ -2046,14 +2046,14 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     //Remove noisy triggers
     Int_t phosmodulenumber = TMath:: Ceil(float(absId)/3584) ; 
     int id = absId - ( phosmodulenumber - 1 ) * 3584 ; 
-    int ix = (Int_t)TMath::Ceil( id / 64 )  ;
+    int ix = (Int_t)TMath::Ceil( float(id) / 64 )  ;
     int iz = (Int_t)( id - ( ix - 1 ) * 64 ) ; 
     if(fPHOSBadMap[phosmodulenumber] != nullptr && fPHOSBadMap[phosmodulenumber]->GetBinContent(ix,iz)>0) { //bad channel
       continue ;
     }
     //transform to Run3 truID
     absId--;
-    relid[0] = absId / 3584  ; 
+    relid[0] = 4 - absId / 3584  ;  //Aliroot<->O2 module numbering 
     absId = absId % 3584  ;  //module 
     relid[1] = absId / 64  ; //x
     relid[2] = absId % 64  ; //z
@@ -2065,7 +2065,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     Int_t truId= relid[0] * 224 + // the offset of PHOS modules
                  relid[1] +       // the offset along phi
                  relid[2] * 8;    // the offset along z    
-    
     // filter null entries: they usually have negative entries and no trigger bits
     // in case of trigger bits the energy can be 0 or negative but the trigger position is marked
     // store trigger
@@ -2080,7 +2079,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     else{
       int timesum;
       phostriggers->GetL1TimeSum(timesum);
-      calotrigger.fTriggerBits =timesum ; // 1,2,3:L1
+      calotrigger.fTriggerBits =1+timesum ; // 1,2,3:L1
     }
     FillTree(kCaloTrigger);
     if (fTreeStatus[kCaloTrigger])
