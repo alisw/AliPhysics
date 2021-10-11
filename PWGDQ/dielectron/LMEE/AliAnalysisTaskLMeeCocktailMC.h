@@ -27,7 +27,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     void SetMaxPt(Float_t MaxPt = 8.0){fMaxPt = MaxPt;}
     void SetNBinsMee(Float_t val = 1200) {fNBinsMee = val;}
     void SetMinMee(Float_t val = 0.0) {fMinMee = val;}
-    void SetMaxMee(Float_t val = 10.) {fMaxMee = val;}
+    void SetMaxMee(Float_t val = 6.) {fMaxMee = val;}
     void SetNBinsPtee(Float_t val = 400) {fNBinsPtee = val;}
     void SetMinPtee(Float_t val = 0.0) {fMinPtee = val;}
     void SetMaxPtee(Float_t val = 10.0) {fMaxPtee = val;}
