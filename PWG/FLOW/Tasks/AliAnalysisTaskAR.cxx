@@ -385,9 +385,9 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   }
 
   // initialize arrays for centrality-multiplicity correlation histograms
-  for (int cen = 0; cen < LAST_ECENESTIMATORS; cen++) {
+  for (int mul = 0; mul < kMulEstimators; mul++) {
     for (int ba = 0; ba < LAST_EBEFOREAFTER; ba++) {
-      fCenMulCorQAHistograms[cen][ba] = nullptr;
+      fCenMulCorQAHistograms[mul][ba] = nullptr;
     }
   }
 
