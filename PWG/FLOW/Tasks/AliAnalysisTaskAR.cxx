@@ -53,7 +53,7 @@ ClassImp(AliAnalysisTaskAR)
     : AliAnalysisTaskSE(name),
       // Constructor
       // Base list for all output objects
-      fHistList(nullptr), fHistListName("outputStudentAnalysis"),
+      fHistList(nullptr), fHistListName("outputAnalysis"),
       // list holding all QA histograms
       fQAHistogramsList(nullptr), fQAHistogramsListName("QAHistograms"),
       fFillQAHistograms(kFALSE), fFillQACorHistogramsOnly(kFALSE),
@@ -109,15 +109,12 @@ ClassImp(AliAnalysisTaskAR)
       fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}) {
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR(const "
               "char *name");
-
   // create base list
   fHistList = new TList();
   fHistList->SetName(fHistListName);
   fHistList->SetOwner(kTRUE);
-
   // initialize all arrays
   this->InitializeArrays();
-
   DefineOutput(1, TList::Class());
 }
 
@@ -125,7 +122,7 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
     : AliAnalysisTaskSE(),
       // Dummy constructor
       // Base list for all output objects
-      fHistList(nullptr), fHistListName("outputStudentAnalysis"),
+      fHistList(nullptr), fHistListName("outputAnalysis"),
       // list holding all QA histograms
       fQAHistogramsList(nullptr), fQAHistogramsListName("QAHistograms"),
       fFillQAHistograms(kFALSE), fFillQACorHistogramsOnly(kFALSE),
@@ -135,6 +132,9 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       // sublist holding multiplicity correlation QA histograms
       fMulCorQAHistogramsList(nullptr),
       fMulCorQAHistogramsListName("MulCorQAHistograms"),
+      // sublist holding centrality-multiplicity correlation QA histograms
+      fCenMulCorQAHistogramsList(nullptr),
+      fCenMulCorQAHistogramsListName("CenMulCorQAHistograms"),
       // sublist holding filterbit scan QA histograms
       fFBScanQAHistogramsList(nullptr),
       fFBScanQAHistogramsListName("FBScanQAHistograms"),
@@ -165,9 +165,9 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       // final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       fFinalResultHistogramsList(nullptr),
-      fFinalResultHistogramsListName("fFinalResultHistograms"),
+      fFinalResultHistogramsListName("FinalResultHistograms"),
       fFinalResultProfilesList(nullptr),
-      fFinalResultProfilesListName("fFinalResultProfiles"),
+      fFinalResultProfilesListName("FinalResultProfiles"),
       fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
@@ -1195,7 +1195,7 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   // fEventControlHistogramsList->Add(fEventCutsCounterCumulative);
   // book histogram holding values of all event cuts
   fEventCutsValues = new TH1D(fEventCutsValuesName, fEventCutsValuesName,
-                              2 * LAST_EEVENT + 5, 0, 2 * LAST_EEVENT + 5);
+                              2 * LAST_EEVENT + 6, 0, 2 * LAST_EEVENT + 6);
   fEventCutsValues->SetFillColor(kFillColor[kAFTER]);
 
   for (int bin = 0; bin < LAST_EEVENT; ++bin) {
@@ -1225,12 +1225,16 @@ void AliAnalysisTaskAR::BookControlHistograms() {
                                             "m_{MUL}");
   fEventCutsValues->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 1) + 2,
                                             "t_{MUL}");
-  if (fUseCenFlatten) {
-    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 1, 999);
-  } else {
-    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 1, -999);
-  }
   fEventCutsValues->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 2) + 1,
+                                            "CentralityEstimator");
+  fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 1,
+                                  fCentralityEstimator);
+  if (fUseCenFlatten) {
+    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 2, 999);
+  } else {
+    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 2, -999);
+  }
+  fEventCutsValues->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 2) + 2,
                                             "fUseCenFlatten");
   fEventControlHistogramsList->Add(fEventCutsValues);
 
