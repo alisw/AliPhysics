@@ -154,6 +154,12 @@ private:
     TH1D *hDistanceDeut;//!
     TH1D *hDistanceDiff;//!
     TH1D *hPtProtonsFirstBinDeut;//!
+    
+    //Angular Distributions
+    TH2D *hDeltaPhi_Toward;//!
+    TH2D *hDeltaPhi_Transv;//!
+    TH2D *hDeltaPhi_Away;//!
+    TH2D *hDeltaPhi_INELgtZERO;//!
 
 
     

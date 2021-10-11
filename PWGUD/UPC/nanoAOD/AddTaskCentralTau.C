@@ -1,19 +1,20 @@
 //#include "AliAnalysisTaskCentralTau.h"
+//#include "AliAnalysisManager.h"
 
-AliAnalysisTaskCentralTau *AddTaskCentralTau(Float_t cutEta = 0.9){
+AliAnalysisTaskCentralTau *AddTaskCentralTau(){
   
   //--- get the current analysis manager ---//
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
       Error("AddTaskCentralTau", "No analysis manager found.");
-      return 0;
+      return nullptr;
    }
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
     Error("AddTaskCentralTau", "This task requires an input event handler.");
-    return 0;
+    return nullptr;
   }
 	
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -21,12 +22,11 @@ AliAnalysisTaskCentralTau *AddTaskCentralTau(Float_t cutEta = 0.9){
   if(inputDataType.Contains("ESD"))isESD = kTRUE;
   if (!isESD) {
       Error("AddTaskCentralTau", "Dataset type is not ESD.");
-      return 0;
+      return nullptr;
    }
   
   // Create tasks
-  AliAnalysisTaskCentralTau *task = new AliAnalysisTaskCentralTau(inputDataType.Data());
-  task->SetParameters(cutEta);
+  auto *task = new AliAnalysisTaskCentralTau(inputDataType.Data());
   mgr->AddTask(task);
 
 

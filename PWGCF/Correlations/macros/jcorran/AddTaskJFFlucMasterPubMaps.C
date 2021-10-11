@@ -1,5 +1,5 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJFFlucMasterPubMaps(TString taskName="JFFlucMaster", UInt_t period = 0, double ptmin = 0.5, Bool_t removebadarea = kFALSE, Bool_t mapsmooth = kFALSE){
+AliAnalysisTask *AddTaskJFFlucMasterPubMaps(TString taskName="JFFlucMasterPubMaps", UInt_t period = 0, double ptmin = 0.5, Bool_t removebadarea = kFALSE, Bool_t mapsmooth = kFALSE){
 	// Load Custom Configuration and parameters
 	enum { lhc15o=0, lhc18q=1, lhc18r=2 };
 	const TString speriod[3]= {"15o","18q","18r"}; //needed string to load correct map config based on string
@@ -8,11 +8,11 @@ AliAnalysisTask *AddTaskJFFlucMasterPubMaps(TString taskName="JFFlucMaster", UIn
 	//-------- Loading Correction Maps ----------
 	
 	//-------- JFlucWagons -------
-    const int Nsets  = 2; // number of configurations
+	const int Nsets  = 1; // number of configurations
  	AliJFFlucTask *myTask[Nsets];
 	const TString configNames[Nsets] = {
 		"hybrid", // 0
-		"global",
+		//"global",
 		//"nqq",    // 2
 		//"subA",
 		//"SPD",    // 4
@@ -34,7 +34,7 @@ AliAnalysisTask *AddTaskJFFlucMasterPubMaps(TString taskName="JFFlucMaster", UIn
 	}
 	const TString mapFilesLHC15o[Nsets] = { //correction maps used for 2020 publication
 		"PhiWeights_LHC15o_hybrid_3d-rebin2-ROOT5.root",
-		"PhiWeights_LHC15o_global_3d-rebin-ROOT5.root",
+		//"PhiWeights_LHC15o_global_3d-rebin-ROOT5.root",
 		//"PhiWeights_LHC15o_s_charge_nqq_3d-rebin2-ROOT5.root",
 		//"PhiWeights_LHC15o_hybrid_3d-rebin2-ROOT5.root",
 		//"PhiWeights_LHC15o_s_SPD_3d-rebin2-ROOT5.root",
@@ -43,11 +43,12 @@ AliAnalysisTask *AddTaskJFFlucMasterPubMaps(TString taskName="JFFlucMaster", UIn
 	};
 	//cout<<"Using LHC15o correction maps.\n";
 	//Load phi correction maps for a limited set of configurations. The rest of the configs will use the map for the default configuration.
-	const UInt_t mapIndices[] = {0,1};//,2,4,5};
+	const UInt_t mapIndices[] = {0};//,1,2,4,5};
 	for(UInt_t i = 0; i < sizeof(mapIndices)/sizeof(mapIndices[0]); ++i){
 		UInt_t ci = mapIndices[i];
 		//TString MAPfilename = Form("%sPhiWeights_LHC%s_Error_%spt%02d_s_%s.root",MAPdirname.Data(), speriod[period].Data(),s_smooth.Data(), Int_t(ptmin*10), configNames[ci].Data()); //azimuthal correction
 		TString MAPfilename = MAPdirname+mapFilesLHC15o[ci];
+		cout << MAPfilename.Data() << endl;
 		cmaptask->EnablePhiCorrection(i,MAPfilename);
 	}
 	mgr->AddTask((AliAnalysisTask*) cmaptask);
@@ -85,13 +86,13 @@ AliAnalysisTask *AddTaskJFFlucMasterPubMaps(TString taskName="JFFlucMaster", UIn
 		myTask[i]->SetZVertexCut(8.);
 	}
 	// s_global
-	int iS = 1;
+	/*int iS = 1;
 	myTask[iS]->SetTestFilterBit(globalCut);
 	myTask[iS]->SetEffConfig(1,globalCut);
 	// s_nqq
 	iS = 2;
 	myTask[iS]->SetParticleCharge(-1);
-    /*// s_subA
+    // s_subA
     iS = 3;
 	myTask[iS]->SelectSubevents(AliJFFlucTask::SUBEVENT_A); // subA
 	//
