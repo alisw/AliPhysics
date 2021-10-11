@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 08.10.2021
+ * Last Modified Date: 11.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -253,11 +253,35 @@ void AliAnalysisTaskAR::Terminate(Option_t *) {
     Fatal("Terminate", "Invalid Pointer to fHistList");
   }
 
-  // get total number of surviving events/tracks
+  // get average azimuthal angle
+  // should be pi, if distribution is flat, nice for trending
+  fFinalResultHistograms[kAVGPHI]->SetBinContent(
+      1, fTrackControlHistograms[kRECO][kPHI][kAFTER]->GetMean());
+  // get average centrality
+  // should be the average of the minimal and maximal centrality, if the
+  // distribution is flat, nice for trending
+  fFinalResultHistograms[kAVGCEN]->SetBinContent(
+      1, fEventControlHistograms[kRECO][kCEN][kAFTER]->GetMean());
+  // get minimum multiplicity
+  // need when running with fixed multiplicity and fischer-yates in later
+  // analysis
+  Int_t MinMulBin = 1;
+  for (int i = 1;
+       i < fEventControlHistograms[kRECO][kMULQ][kAFTER]->GetNbinsX(); i++) {
+    if (fEventControlHistograms[kRECO][kMULQ][kAFTER]->GetBinContent(i) != 0) {
+      MinMulBin = i;
+      break;
+    }
+  }
+  fFinalResultHistograms[kMINMUL]->SetBinContent(
+      1,
+      fEventControlHistograms[kRECO][kMULQ][kAFTER]->GetBinLowEdge(MinMulBin));
+  // count number of events, needed for statistics in the end
   fFinalResultHistograms[kNUMBEROFEVENTS]->SetBinContent(
       1, fEventControlHistograms[kRECO][kMULQ][kAFTER]->GetEntries());
+  // count number of tracks, needed for statistics in the end
   fFinalResultHistograms[kNUMBEROFTRACKS]->SetBinContent(
-      1, fTrackControlHistograms[kRECO][kPT][kAFTER]->GetEntries());
+      1, fTrackControlHistograms[kRECO][kPHI][kAFTER]->GetEntries());
 }
 
 void AliAnalysisTaskAR::InitializeArrays() {
@@ -462,18 +486,18 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   // set default bins
   Double_t FBTrackScanHistogramBins[LAST_ETRACK][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
-      {100., 0., 10.},            // kPT
+      {1000., 0., 10.},           // kPT
       {360., 0., TMath::TwoPi()}, // kPHI
-      {400., -2., 2.},            // kETA
-      {7., -3.5, 3.5},            // kCHARGE
-      {160., 0., 160.},           // kTPCNCLS
-      {160., 0., 160.},           // kTPCCROSSEDROWS
-      {100., 0., 1.},             // kTPCNCLSFRACTIONSHARED
-      {100., 0., 10.},            // kTPCCHI2PERNDF
+      {1000., -2., 2.},           // kETA
+      {11., -5.5, 5.5},           // kCHARGE
+      {200., 0., 200.},           // kTPCNCLS
+      {200., 0., 200.},           // kTPCCROSSEDROWS
+      {200., 0., 2.},             // kTPCNCLSFRACTIONSHARED
+      {1000., 0., 10.},           // kTPCCHI2PERNDF
       {10., 0., 10.},             // kITSNCLS
-      {100., 0., 10.},            // kCHI2PERNDF
-      {100., -10., 10.},          // kDCAZ
-      {100, -10., 10.},           // kDCAXY
+      {1000., 0., 10.},           // kCHI2PERNDF
+      {1000., -10., 10.},         // kDCAZ
+      {1000, -10., 10.},          // kDCAXY
   };
   // initialize default bins
   for (int var = 0; var < LAST_ETRACK; ++var) {
@@ -750,6 +774,12 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultHistograms() {
   // set name
   TString FinalResultHistogramNames[LAST_EFINALHIST][LAST_ENAME] = {
       // NAME, TITLE, XAXIS
+      {"fFinalResultHistograms[kAVGPHI]", "Average #varphi", "#varphi",
+       ""}, // kAVGPHI
+      {"fFinalResultHistograms[kAVGCEN]", "Average centrality",
+       "Centrality Percentile", ""}, // kAVGCEN
+      {"fFinalResultHistograms[kMINMUL]", "Minimal multiplicity [kMULQ]", "M",
+       ""}, // kMINMUL
       {"fFinalResultHistograms[kNUMBEROFEVENTS]",
        "Number of surviving of events", "", ""}, // kNUMBEROFEVENTS
       {"fFinalResultHistograms[kNUMBEROFTRACKS]",

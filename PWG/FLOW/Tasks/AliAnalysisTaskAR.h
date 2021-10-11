@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 08.10.2021
+ * Last Modified Date: 11.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -85,7 +85,14 @@ enum kTrack {
 // kinematic variables
 const Int_t kKinematic = kETA + 1;
 // final result histograms
-enum kFinalHist { kNUMBEROFEVENTS, kNUMBEROFTRACKS, LAST_EFINALHIST };
+enum kFinalHist {
+  kAVGPHI,
+  kAVGCEN,
+  kMINMUL,
+  kNUMBEROFEVENTS,
+  kNUMBEROFTRACKS,
+  LAST_EFINALHIST
+};
 // various gloabl objects
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
 enum kName { kNAME, kTITLE, kXAXIS, kYAXIS, LAST_ENAME };
