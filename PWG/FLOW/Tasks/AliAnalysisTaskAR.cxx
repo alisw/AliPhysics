@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 08.10.2021
+ * Last Modified Date: 11.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -53,7 +53,7 @@ ClassImp(AliAnalysisTaskAR)
     : AliAnalysisTaskSE(name),
       // Constructor
       // Base list for all output objects
-      fHistList(nullptr), fHistListName("outputStudentAnalysis"),
+      fHistList(nullptr), fHistListName("outputAnalysis"),
       // list holding all QA histograms
       fQAHistogramsList(nullptr), fQAHistogramsListName("QAHistograms"),
       fFillQAHistograms(kFALSE), fFillQACorHistogramsOnly(kFALSE),
@@ -63,6 +63,9 @@ ClassImp(AliAnalysisTaskAR)
       // sublist holding multiplicity correlation QA histograms
       fMulCorQAHistogramsList(nullptr),
       fMulCorQAHistogramsListName("MulCorQAHistograms"),
+      // sublist holding centrality-multiplicity correlation QA histograms
+      fCenMulCorQAHistogramsList(nullptr),
+      fCenMulCorQAHistogramsListName("CenMulCorQAHistograms"),
       // sublist holding filterbit scan QA histograms
       fFBScanQAHistogramsList(nullptr),
       fFBScanQAHistogramsListName("FBScanQAHistograms"),
@@ -106,15 +109,12 @@ ClassImp(AliAnalysisTaskAR)
       fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}) {
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR(const "
               "char *name");
-
   // create base list
   fHistList = new TList();
   fHistList->SetName(fHistListName);
   fHistList->SetOwner(kTRUE);
-
   // initialize all arrays
   this->InitializeArrays();
-
   DefineOutput(1, TList::Class());
 }
 
@@ -122,7 +122,7 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
     : AliAnalysisTaskSE(),
       // Dummy constructor
       // Base list for all output objects
-      fHistList(nullptr), fHistListName("outputStudentAnalysis"),
+      fHistList(nullptr), fHistListName("outputAnalysis"),
       // list holding all QA histograms
       fQAHistogramsList(nullptr), fQAHistogramsListName("QAHistograms"),
       fFillQAHistograms(kFALSE), fFillQACorHistogramsOnly(kFALSE),
@@ -132,6 +132,9 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       // sublist holding multiplicity correlation QA histograms
       fMulCorQAHistogramsList(nullptr),
       fMulCorQAHistogramsListName("MulCorQAHistograms"),
+      // sublist holding centrality-multiplicity correlation QA histograms
+      fCenMulCorQAHistogramsList(nullptr),
+      fCenMulCorQAHistogramsListName("CenMulCorQAHistograms"),
       // sublist holding filterbit scan QA histograms
       fFBScanQAHistogramsList(nullptr),
       fFBScanQAHistogramsListName("FBScanQAHistograms"),
@@ -162,9 +165,9 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       // final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       fFinalResultHistogramsList(nullptr),
-      fFinalResultHistogramsListName("fFinalResultHistograms"),
+      fFinalResultHistogramsListName("FinalResultHistograms"),
       fFinalResultProfilesList(nullptr),
-      fFinalResultProfilesListName("fFinalResultProfiles"),
+      fFinalResultProfilesListName("FinalResultProfiles"),
       fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
@@ -250,13 +253,35 @@ void AliAnalysisTaskAR::Terminate(Option_t *) {
     Fatal("Terminate", "Invalid Pointer to fHistList");
   }
 
-  /* get average value of phi and write it into its own histogram */
-  fFinalResultHistograms[kPT]->SetBinContent(
-      1, fTrackControlHistograms[kRECO][kPT][kAFTER]->GetMean());
-  fFinalResultHistograms[kPHI]->SetBinContent(
+  // get average azimuthal angle
+  // should be pi, if distribution is flat, nice for trending
+  fFinalResultHistograms[kAVGPHI]->SetBinContent(
       1, fTrackControlHistograms[kRECO][kPHI][kAFTER]->GetMean());
-  fFinalResultHistograms[kETA]->SetBinContent(
-      1, fTrackControlHistograms[kRECO][kETA][kAFTER]->GetMean());
+  // get average centrality
+  // should be the average of the minimal and maximal centrality, if the
+  // distribution is flat, nice for trending
+  fFinalResultHistograms[kAVGCEN]->SetBinContent(
+      1, fEventControlHistograms[kRECO][kCEN][kAFTER]->GetMean());
+  // get minimum multiplicity
+  // need when running with fixed multiplicity and fischer-yates in later
+  // analysis
+  Int_t MinMulBin = 1;
+  for (int i = 1;
+       i < fEventControlHistograms[kRECO][kMULQ][kAFTER]->GetNbinsX(); i++) {
+    if (fEventControlHistograms[kRECO][kMULQ][kAFTER]->GetBinContent(i) != 0) {
+      MinMulBin = i;
+      break;
+    }
+  }
+  fFinalResultHistograms[kMINMUL]->SetBinContent(
+      1,
+      fEventControlHistograms[kRECO][kMULQ][kAFTER]->GetBinLowEdge(MinMulBin));
+  // count number of events, needed for statistics in the end
+  fFinalResultHistograms[kNUMBEROFEVENTS]->SetBinContent(
+      1, fEventControlHistograms[kRECO][kMULQ][kAFTER]->GetEntries());
+  // count number of tracks, needed for statistics in the end
+  fFinalResultHistograms[kNUMBEROFTRACKS]->SetBinContent(
+      1, fTrackControlHistograms[kRECO][kPHI][kAFTER]->GetEntries());
 }
 
 void AliAnalysisTaskAR::InitializeArrays() {
@@ -359,6 +384,39 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
     }
   }
 
+  // initialize arrays for centrality-multiplicity correlation histograms
+  for (int cen = 0; cen < LAST_ECENESTIMATORS; cen++) {
+    for (int ba = 0; ba < LAST_EBEFOREAFTER; ba++) {
+      fCenMulCorQAHistograms[cen][ba] = nullptr;
+    }
+  }
+
+  // initalize names in a loop
+  for (int mul = 0; mul < kMulEstimators; ++mul) {
+    for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+      fCenMulCorQAHistogramNames[mul][ba][kNAME] =
+          "fCenMulCorQAHistogram[kCENESTIMATOR+" + kMulEstimatorNames[mul] +
+          "]" + kBAName[ba];
+      fCenMulCorQAHistogramNames[mul][ba][kTITLE] =
+          "kCENESTIMATOR vs " + kMulEstimatorNames[mul] + kBAName[ba];
+      fCenMulCorQAHistogramNames[mul][ba][kXAXIS] = "";
+      fCenMulCorQAHistogramNames[mul][ba][kYAXIS] = kMulEstimatorNames[mul];
+    }
+  }
+
+  // set default bins
+  Double_t CenMulCorQAHistogramBins[2 * LAST_EBINS] = {
+      // kBIN kLEDGE kUEDGE kBIN+LAST_EBINS kLEDGE+LAST_EBINS
+      // kUEDGE+LAST_EBINS
+      100., 0., 100., 1000., 0., 5000.};
+
+  // initialize default bins
+  for (int mul = 0; mul < kMulEstimators; ++mul) {
+    for (int bin = 0; bin < 2 * LAST_EBINS; ++bin) {
+      fCenMulCorQAHistogramBins[mul][bin] = CenMulCorQAHistogramBins[bin];
+    }
+  }
+
   // initialize array for filterbit scan QA histograms
   // i.e. count the filterbits associated with all tracks
   fFBScanQAHistogram = nullptr;
@@ -428,18 +486,18 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   // set default bins
   Double_t FBTrackScanHistogramBins[LAST_ETRACK][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
-      {100., 0., 10.},            // kPT
+      {1000., 0., 10.},           // kPT
       {360., 0., TMath::TwoPi()}, // kPHI
-      {400., -2., 2.},            // kETA
-      {7., -3.5, 3.5},            // kCHARGE
-      {160., 0., 160.},           // kTPCNCLS
-      {160., 0., 160.},           // kTPCCROSSEDROWS
-      {100., 0., 1.},             // kTPCNCLSFRACTIONSHARED
-      {100., 0., 10.},            // kTPCCHI2PERNDF
+      {1000., -2., 2.},           // kETA
+      {11., -5.5, 5.5},           // kCHARGE
+      {200., 0., 200.},           // kTPCNCLS
+      {200., 0., 200.},           // kTPCCROSSEDROWS
+      {200., 0., 2.},             // kTPCNCLSFRACTIONSHARED
+      {1000., 0., 10.},           // kTPCCHI2PERNDF
       {10., 0., 10.},             // kITSNCLS
-      {100., 0., 10.},            // kCHI2PERNDF
-      {100., -10., 10.},          // kDCAZ
-      {100, -10., 10.},           // kDCAXY
+      {1000., 0., 10.},           // kCHI2PERNDF
+      {1000., -10., 10.},         // kDCAZ
+      {1000, -10., 10.},          // kDCAXY
   };
   // initialize default bins
   for (int var = 0; var < LAST_ETRACK; ++var) {
@@ -709,22 +767,27 @@ void AliAnalysisTaskAR::InitializeArraysForCuts() {
 
 void AliAnalysisTaskAR::InitializeArraysForFinalResultHistograms() {
   // initialize array for final result histograms
-  for (int var = 0; var < kKinematic; ++var) {
+  for (int var = 0; var < LAST_EFINALHIST; ++var) {
     fFinalResultHistograms[var] = nullptr;
   }
 
   // set name
-  TString FinalResultHistogramNames[kKinematic][LAST_ENAME] = {
+  TString FinalResultHistogramNames[LAST_EFINALHIST][LAST_ENAME] = {
       // NAME, TITLE, XAXIS
-      {"fFinalResultHistograms[kPT]", "Average p_{T}", "p_{T} [GeV]",
-       ""}, // kPT
-      {"fFinalResultHistograms[kPHI]", "Average #varphi", "#varphi",
-       ""},                                                         // kPHI
-      {"fFinalResultHistograms[kETA]", "Average #eta", "#eta", ""}, // kETA
+      {"fFinalResultHistograms[kAVGPHI]", "Average #varphi", "#varphi",
+       ""}, // kAVGPHI
+      {"fFinalResultHistograms[kAVGCEN]", "Average centrality",
+       "Centrality Percentile", ""}, // kAVGCEN
+      {"fFinalResultHistograms[kMINMUL]", "Minimal multiplicity [kMULQ]", "M",
+       ""}, // kMINMUL
+      {"fFinalResultHistograms[kNUMBEROFEVENTS]",
+       "Number of surviving of events", "", ""}, // kNUMBEROFEVENTS
+      {"fFinalResultHistograms[kNUMBEROFTRACKS]",
+       "Number of surviving of tracks", "", ""}, // kNUMBEROFTRACKS
   };
 
   // initialize name
-  for (int var = 0; var < kKinematic; ++var) {
+  for (int var = 0; var < LAST_EFINALHIST; ++var) {
     for (int name = 0; name < LAST_ENAME; ++name) {
       fFinalResultHistogramNames[var][name] =
           FinalResultHistogramNames[var][name];
@@ -735,7 +798,7 @@ void AliAnalysisTaskAR::InitializeArraysForFinalResultHistograms() {
   Double_t BinsFinalResultHistogramDefaults[LAST_EBINS] = {// BIN LEDGE UEDGE
                                                            1., 0., 1.};
   // initialize default bins
-  for (int var = 0; var < kKinematic; ++var) {
+  for (int var = 0; var < LAST_EFINALHIST; ++var) {
     for (int bin = 0; bin < LAST_EBINS; ++bin) {
       fFinalResultHistogramBins[var][bin] =
           BinsFinalResultHistogramDefaults[bin];
@@ -800,6 +863,12 @@ void AliAnalysisTaskAR::BookAndNestAllLists() {
     fMulCorQAHistogramsList->SetName(fMulCorQAHistogramsListName);
     fMulCorQAHistogramsList->SetOwner(kTRUE);
     fQAHistogramsList->Add(fMulCorQAHistogramsList);
+
+    // centrality-multiplicity correlation QA histograms
+    fCenMulCorQAHistogramsList = new TList();
+    fCenMulCorQAHistogramsList->SetName(fCenMulCorQAHistogramsListName);
+    fCenMulCorQAHistogramsList->SetOwner(kTRUE);
+    fQAHistogramsList->Add(fCenMulCorQAHistogramsList);
 
     if (!fFillQACorHistogramsOnly) {
       // filterbit QA histograms
@@ -899,6 +968,27 @@ void AliAnalysisTaskAR::BookQAHistograms() {
     }
   }
 
+  // book centrality-multiplicity correlation QA histograms
+  for (int mul = 0; mul < kMulEstimators; ++mul) {
+    for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+      fCenMulCorQAHistograms[mul][ba] =
+          new TH2D(fCenMulCorQAHistogramNames[mul][ba][kNAME],
+                   fCenMulCorQAHistogramNames[mul][ba][kTITLE],
+                   fCenMulCorQAHistogramBins[mul][kBIN],
+                   fCenMulCorQAHistogramBins[mul][kLEDGE],
+                   fCenMulCorQAHistogramBins[mul][kUEDGE],
+                   fCenMulCorQAHistogramBins[mul][kBIN + LAST_EBINS],
+                   fCenMulCorQAHistogramBins[mul][kLEDGE + LAST_EBINS],
+                   fCenMulCorQAHistogramBins[mul][kUEDGE + LAST_EBINS]);
+      fCenMulCorQAHistograms[mul][ba]->SetOption("colz");
+      fCenMulCorQAHistograms[mul][ba]->GetXaxis()->SetTitle(
+          kCenEstimatorNames[fCentralityEstimator]);
+      fCenMulCorQAHistograms[mul][ba]->GetYaxis()->SetTitle(
+          fCenMulCorQAHistogramNames[mul][ba][kYAXIS]);
+      fCenMulCorQAHistogramsList->Add(fCenMulCorQAHistograms[mul][ba]);
+    }
+  }
+
   if (fFillQACorHistogramsOnly) {
     return;
   }
@@ -962,8 +1052,8 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   // Book all control histograms
 
   // book histogram for counting trackcuts
-  // add 5 bins manually for filterbit, charged only, primary only, global only
-  // and MCClosure tracks only cut
+  // add 5 bins manually for filterbit, charged only, primary only, global
+  // only and MCClosure tracks only cut
   Int_t AddBins = 5;
   for (int mode = 0; mode < LAST_EMODE; ++mode) {
     fTrackCutsCounter[mode] =
@@ -995,7 +1085,8 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   // fTrackCutsCounterCumulative = new
   // THnSparseD(fTrackCutsCounterCumulativeName,
   //                                              fTrackCutsCounterCumulativeName,
-  //                                              1, ctcbins, ctcxmin, ctcxmax);
+  //                                              1, ctcbins, ctcxmin,
+  //                                              ctcxmax);
   // fTrackControlHistogramsList->Add(fTrackCutsCounterCumulative);
 
   // book histogram holding values of all track cuts
@@ -1095,15 +1186,16 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   // book histogram holding cumulative event cuts
   // Double_t cecxmin[1] = {-0.5};
   // Double_t cecxmax[1] = {std::pow(2, LAST_EEVENT + 2) - 0.5};
-  // Int_t cecbins[1] = {static_cast<Int_t>(TMath::Power(2, LAST_EEVENT + 2))};
-  // fEventCutsCounterCumulative = new
+  // Int_t cecbins[1] = {static_cast<Int_t>(TMath::Power(2, LAST_EEVENT +
+  // 2))}; fEventCutsCounterCumulative = new
   // THnSparseD(fEventCutsCounterCumulativeName,
   //                                              fEventCutsCounterCumulativeName,
-  //                                              1, cecbins, cecxmin, cecxmax);
+  //                                              1, cecbins, cecxmin,
+  //                                              cecxmax);
   // fEventControlHistogramsList->Add(fEventCutsCounterCumulative);
   // book histogram holding values of all event cuts
   fEventCutsValues = new TH1D(fEventCutsValuesName, fEventCutsValuesName,
-                              2 * LAST_EEVENT + 5, 0, 2 * LAST_EEVENT + 5);
+                              2 * LAST_EEVENT + 6, 0, 2 * LAST_EEVENT + 6);
   fEventCutsValues->SetFillColor(kFillColor[kAFTER]);
 
   for (int bin = 0; bin < LAST_EEVENT; ++bin) {
@@ -1133,12 +1225,16 @@ void AliAnalysisTaskAR::BookControlHistograms() {
                                             "m_{MUL}");
   fEventCutsValues->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 1) + 2,
                                             "t_{MUL}");
-  if (fUseCenFlatten) {
-    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 1, 999);
-  } else {
-    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 1, -999);
-  }
   fEventCutsValues->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 2) + 1,
+                                            "CentralityEstimator");
+  fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 1,
+                                  fCentralityEstimator);
+  if (fUseCenFlatten) {
+    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 2, 999);
+  } else {
+    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 2, -999);
+  }
+  fEventCutsValues->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 2) + 2,
                                             "fUseCenFlatten");
   fEventControlHistogramsList->Add(fEventCutsValues);
 
@@ -1171,12 +1267,13 @@ void AliAnalysisTaskAR::BookFinalResultHistograms() {
   Color_t colorFinalResult = kBlue - 10;
 
   // book final result histograms
-  for (int var = 0; var < kKinematic; ++var) {
-    fFinalResultHistograms[var] = new TH1D(
-        fFinalResultHistogramNames[var][0], fFinalResultHistogramNames[var][1],
-        fFinalResultHistogramBins[var][kBIN],
-        fFinalResultHistogramBins[var][kLEDGE],
-        fFinalResultHistogramBins[var][kUEDGE]);
+  for (int var = 0; var < LAST_EFINALHIST; ++var) {
+    fFinalResultHistograms[var] =
+        new TH1D(fFinalResultHistogramNames[var][kNAME],
+                 fFinalResultHistogramNames[var][kTITLE],
+                 fFinalResultHistogramBins[var][kBIN],
+                 fFinalResultHistogramBins[var][kLEDGE],
+                 fFinalResultHistogramBins[var][kUEDGE]);
     fFinalResultHistograms[var]->SetFillColor(colorFinalResult);
     fFinalResultHistograms[var]->GetXaxis()->SetTitle(
         fFinalResultHistogramNames[var][2]);
@@ -1830,12 +1927,18 @@ void AliAnalysisTaskAR::FillEventQAHistograms(kBeforeAfter BA,
       }
     }
 
-    // file multiplicity correlation histograms
+    // fill multiplicity correlation histograms
     for (int i = 0; i < kMulEstimators; ++i) {
       for (int j = i + 1; j < kMulEstimators; ++j) {
         fMulCorQAHistograms[IndexCorHistograms(i, j, kMulEstimators)][BA]->Fill(
             fMultiplicity[i], fMultiplicity[j]);
       }
+    }
+
+    // fill centrality-multiplicity correlation histograms
+    for (int i = 0; i < kMulEstimators; ++i) {
+      fCenMulCorQAHistograms[i][BA]->Fill(fCentrality[fCentralityEstimator],
+                                          fMultiplicity[i]);
     }
 
     if (fFillQACorHistogramsOnly) {
@@ -2091,8 +2194,8 @@ Bool_t AliAnalysisTaskAR::SurviveEventCut(AliAODEvent *aAOD) {
       for (int i = 0; i < kMulEstimators; ++i) {
         for (int j = i + 1; j < kMulEstimators; ++j) {
           // skip kMUL since it is a bad multiplicity estimate
-          // skip kMULW since it will differ greatly from kMULQ when we have to
-          // use large weights
+          // skip kMULW since it will differ greatly from kMULQ when we have
+          // to use large weights
           if (i == kMUL || j == kMUL || i == kMULW || j == kMULW) {
             continue;
             ;
@@ -3483,6 +3586,28 @@ void AliAnalysisTaskAR::SetMulCorQAHistogramBinning(
                               [kUEDGE + LAST_EBINS] = yupperEdge;
 }
 
+void AliAnalysisTaskAR::SetCenMulCorQAHistogramBinning(
+    Int_t xnbins, Double_t xlowerEdge, Double_t xupperEdge, Int_t mul,
+    Int_t ynbins, Double_t ylowerEdge, Double_t yupperEdge) {
+  if (mul >= kMulEstimators) {
+    std::cout << __LINE__ << ": running out of bounds" << std::endl;
+    Fatal("SetCenMulCorQAHistogramBinning",
+          "Running out of bounds in SetMulCorQAHistogramBinning");
+  }
+  if (xupperEdge < xlowerEdge && yupperEdge < ylowerEdge) {
+    std::cout << __LINE__ << ": upper edge has to be larger than the lower edge"
+              << std::endl;
+    Fatal("SetCenMulCorQAHistogramBinning",
+          ": upper edge has to be larger than the lower edge");
+  }
+  this->fCenMulCorQAHistogramBins[mul][kBIN] = xnbins;
+  this->fCenMulCorQAHistogramBins[mul][kLEDGE] = xlowerEdge;
+  this->fCenMulCorQAHistogramBins[mul][kUEDGE] = xupperEdge;
+  this->fCenMulCorQAHistogramBins[mul][kBIN + LAST_EBINS] = ynbins;
+  this->fCenMulCorQAHistogramBins[mul][kLEDGE + LAST_EBINS] = ylowerEdge;
+  this->fCenMulCorQAHistogramBins[mul][kUEDGE + LAST_EBINS] = yupperEdge;
+}
+
 void AliAnalysisTaskAR::SetAcceptanceHistogram(kTrack kinematic,
                                                const char *Filename,
                                                const char *Histname) {
@@ -3631,6 +3756,26 @@ void AliAnalysisTaskAR::GetPointersForQAHistograms() {
         if (!fMulCorQAHistograms[mul][ba]) {
           std::cout << __LINE__ << ": Did not get "
                     << fMulCorQAHistogramNames[mul][ba][kNAME] << std::endl;
+          Fatal("GetPointersForQAHistograms", "Invalid Pointer");
+        }
+      }
+    }
+  }
+
+  // get pointer for fCenMulCorQAHistogramsList, if it is there
+  fCenMulCorQAHistogramsList = dynamic_cast<TList *>(
+      fQAHistogramsList->FindObject(fCenMulCorQAHistogramsListName));
+
+  if (fCenMulCorQAHistogramsList) {
+    // get pointers for multiplicity correlation histograms
+    for (int mul = 0; mul < kMulEstimators; ++mul) {
+      for (int ba = 0; ba < LAST_EBEFOREAFTER; ++ba) {
+        fCenMulCorQAHistograms[mul][ba] =
+            dynamic_cast<TH2D *>(fCenMulCorQAHistogramsList->FindObject(
+                fCenMulCorQAHistogramNames[mul][ba][kNAME]));
+        if (!fCenMulCorQAHistograms[mul][ba]) {
+          std::cout << __LINE__ << ": Did not get "
+                    << fCenMulCorQAHistogramNames[mul][ba][kNAME] << std::endl;
           Fatal("GetPointersForQAHistograms", "Invalid Pointer");
         }
       }
@@ -3793,7 +3938,7 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
     Fatal("GetPointersForFinalResults", "Invalid Pointer");
   }
   // get pointers for all final result histograms
-  for (int var = 0; var < kKinematic; ++var) {
+  for (int var = 0; var < LAST_EFINALHIST; ++var) {
     fFinalResultHistograms[var] =
         dynamic_cast<TH1D *>(fFinalResultHistogramsList->FindObject(
             fFinalResultHistogramNames[var][kNAME]));
