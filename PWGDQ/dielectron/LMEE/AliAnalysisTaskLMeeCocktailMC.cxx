@@ -163,7 +163,7 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fMaxPt(1000),
   fNBinsMee(1200),
   fMinMee(0.0),
-  fMaxMee(10.0),
+  fMaxMee(12.0),
   fNBinsPtee(400),
   fMinPtee(0.0),
   fMaxPtee(10.0),
