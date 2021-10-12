@@ -2388,6 +2388,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       ULong64_t *packedPosNeg = new ULong64_t[nv0];
       ULong64_t *sortedPosNeg = new ULong64_t[nv0];
       Int_t *sortIdx = new Int_t[nv0];
+      
+      //Fill cascades in order
+      Int_t ncas = fVEvent->GetNumberOfCascades();
+      Int_t ncastosort = 0;
+      ULong64_t *packedV0indices       = new ULong64_t[ncas];
+      ULong64_t *packedbachelorindices = new ULong64_t[ncas];
+      Int_t *sortV0Idx = new Int_t[ncas];
 
       //Don't forget that OTF V0s might exist
       Int_t nv0offline = 0;
@@ -2412,7 +2419,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         sortedPosNeg[iv0] = packedPosNeg[sortIdx[iv0]];
       }
 
-      Int_t ncas = fVEvent->GetNumberOfCascades();
       for (Int_t icas = 0; icas < ncas; ++icas)
       {
 	if (fESD) {
@@ -2425,11 +2431,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 	    Int_t v0idx = TMath::BinarySearch(nv0offline, sortedPosNeg, currV0);
 	    // Check if the match is exact
 	    if (sortedPosNeg[v0idx] == currV0) {
-	      cascs.fIndexV0s = sortIdx[v0idx] + fOffsetV0;
-	      cascs.fIndexTracks = cas->GetBindex() + fOffsetTrack;
-	      FillTree(kCascades);
-	      if (fTreeStatus[kCascades])
-		ncascades_filled++;
+        packedV0indices[ncastosort] = sortIdx[v0idx] + fOffsetV0;
+        packedbachelorindices[ncastosort] = cas->GetBindex() + fOffsetTrack;
+        ncastosort++;
 	    }
 	  }
 	}
@@ -2443,19 +2447,32 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 	    Int_t v0idx = TMath::BinarySearch(nv0offline, sortedPosNeg, currV0);
 	    // Check if the match is exact
 	    if (sortedPosNeg[v0idx] == currV0) {
-	      cascs.fIndexV0s = sortIdx[v0idx] + fOffsetV0;
-	      cascs.fIndexTracks = cas->GetBachID() + fOffsetTrack;
-	      FillTree(kCascades);
-	      if (fTreeStatus[kCascades])
-		ncascades_filled++;
+        packedV0indices[ncastosort] = sortIdx[v0idx] + fOffsetV0;
+        packedbachelorindices[ncastosort] = cas->GetBachID() + fOffsetTrack;
+        ncastosort++;
 	    }
 	  }
 	}
       } // End loop on cascades
+      
+      //Sort cascades
+      TMath::Sort(ncastosort, packedV0indices, sortV0Idx, kFALSE);
+      //Fill cascades only after V0 sorting
+      for (Int_t icas = 0; icas < ncastosort; ++icas){
+        //Fill tree only with ordered information
+        cascs.fIndexV0s    = packedV0indices[sortV0Idx[icas]];
+        cascs.fIndexTracks = packedbachelorindices[sortV0Idx[icas]];
+        FillTree(kCascades);
+        ncascades_filled++;
+      }
 
       delete[] packedPosNeg;
       delete[] sortedPosNeg;
       delete[] sortIdx;
+      
+      delete[] packedV0indices;
+      delete[] packedbachelorindices;
+      delete[] sortV0Idx;
     } // End if V0s
     eventextra.fNentries[kCascades] = ncascades_filled;
   }
