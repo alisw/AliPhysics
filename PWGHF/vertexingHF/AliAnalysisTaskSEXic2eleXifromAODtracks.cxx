@@ -977,6 +977,11 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
   fVtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
   if (!fVtx1) return;
 
+  Float_t centrality(0);
+  AliMultSelection *multSelection =static_cast<AliMultSelection*>(aodEvent->FindListObject("MultSelection"));
+  if(multSelection) centrality = multSelection->GetMultiplicityPercentile("V0M");
+  if(centrality >=  0.1 && centrality <=  1) return;
+
   Double_t pos[3],cov[6];
   fVtx1->GetXYZ(pos);
   fVtx1->GetCovarianceMatrix(cov);
@@ -1025,13 +1030,14 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
 		else if(countCorr>=31 && countCorr<=49) fCentrality = 55.;
 		else fCentrality = 65.;
 	}else{
-		fCentrality = 1.;
+		//fCentrality = 1.;
 	}
   if(fCentrality<0.||fCentrality>100.-0.0000001) {
     delete fV1;
     return;
   }
-  fHCentrality->Fill(fCentrality);
+  //fHCentrality->Fill(fCentrality);
+  fHCentrality->Fill(centrality);
 
   if(fUseEventPlane>0){
     AliEventplane *pl=aodEvent->GetEventplane();
