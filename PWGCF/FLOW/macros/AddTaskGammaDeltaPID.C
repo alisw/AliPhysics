@@ -16,51 +16,51 @@ void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fP
   list1OutName += ":Results";         // This directory contains result histograms
 
 
-  TString TaskCMWPID;
-  TaskCMWPID.Form("gTaskBugTest%d_%d_%s", gFilterBit, gNclustTPC, suffix);
+  TString TaskName;
+  TaskName.Form("gTaskGammaDeltaPID%d_%d_%s", gFilterBit, gNclustTPC, suffix);
 
-  AliAnalysisTaskGammaDeltaPID *task_CMW = new AliAnalysisTaskGammaDeltaPID(TaskCMWPID);
+  AliAnalysisTaskGammaDeltaPID *taskGammaPID = new AliAnalysisTaskGammaDeltaPID(TaskName);
 
   ///-------> Analysis Object Created, now pass the arguments
   if(sTrigger=="kMB" || sTrigger=="kmb" || sTrigger=="MB"){   // if We want MB Trigger
-    task_CMW->SelectCollisionCandidates(AliVEvent::kMB);
+    taskGammaPID->SelectCollisionCandidates(AliVEvent::kMB);
     printf("\n =========> AddTaskCMW::Info() Trigger = kMB  \n");
   }
   else if(sTrigger=="kSemiCentral" || sTrigger=="SemiCentral" || sTrigger=="semicentral"){
-    task_CMW->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+    taskGammaPID->SelectCollisionCandidates(AliVEvent::kSemiCentral);
     printf("\n =========> AddTaskCMW::Info() Trigger = kSemiCentral \n");
   }
   else if(sTrigger=="kCentral" || sTrigger=="Central" || sTrigger=="central"){
-    task_CMW->SelectCollisionCandidates(AliVEvent::kCentral);
+    taskGammaPID->SelectCollisionCandidates(AliVEvent::kCentral);
     printf("\n =========> AddTaskCMW::Info() Trigger = kCentral \n");
   }
   else if(sTrigger=="kAny" || sTrigger=="kAll"){
-    task_CMW->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kSemiCentral | AliVEvent::kCentral);
+    taskGammaPID->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kSemiCentral | AliVEvent::kCentral);
   }
   else{//if trigger==kINT7 or no trigger provided:
-    task_CMW->SelectCollisionCandidates(AliVEvent::kINT7);      // default is kINT7
+    taskGammaPID->SelectCollisionCandidates(AliVEvent::kINT7);      // default is kINT7
     printf("\n =========> AddTaskCMW::Info() Trigger = kINT7 \n");
   }
   
 
   ///Set Event cuts:
-  task_CMW->SetVzRangeMin(fVzMin);
-  task_CMW->SetVzRangeMax(fVzMax);
-  task_CMW->SetFlagSkipPileUpCuts(bSkipPileUp);  
-  task_CMW->SetFlagSkipAnalysis(bSkipAnalysis);
+  taskGammaPID->SetVzRangeMin(fVzMin);
+  taskGammaPID->SetVzRangeMax(fVzMax);
+  taskGammaPID->SetFlagSkipPileUpCuts(bSkipPileUp);  
+  taskGammaPID->SetFlagSkipAnalysis(bSkipAnalysis);
 
 
 
   cout<<"=========> AddTaskCMW::Info() setting Event Plane Det: "<<sDetForEP<<endl;
-  task_CMW->SetDetectorforEventPlane(sDetForEP);
+  taskGammaPID->SetDetectorforEventPlane(sDetForEP);
 
 
   
   if(sCentEstimator=="V0" || sCentEstimator=="V0M"){ 
-    task_CMW->SetCentralityEstimator("V0M");    
+    taskGammaPID->SetCentralityEstimator("V0M");    
   }
   else{
-    task_CMW->SetCentralityEstimator(sCentEstimator);  //  use the Estimator provided in AddTask.
+    taskGammaPID->SetCentralityEstimator(sCentEstimator);  //  use the Estimator provided in AddTask.
   }
 
 
@@ -68,23 +68,23 @@ void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fP
   
   //Set Track cuts:
 
-  task_CMW->SetPtRangeMin(fPtMin);
-  task_CMW->SetPtRangeMax(fPtMax);
-  task_CMW->SetEtaRangeMin(fEtaMin);
-  task_CMW->SetEtaRangeMax(fEtaMax);
-  task_CMW->SetTrackCutChi2Min(0.1);
-  task_CMW->SetTrackCutdEdxMin(10.0);  
-  task_CMW->SetFilterBit(gFilterBit);
-  task_CMW->SetNSigmaCutTPC(nSigTPC);    /// For PID only.Does not apply to Inclusive Charged Tracks
-  task_CMW->SetNSigmaCutTOF(nSigTOF);
-  task_CMW->SetParticlePID(fparticle);
-  task_CMW->SetTrackCutChi2Max(fChi2max);
-  task_CMW->SetFlagUseKinkTracks(kFALSE);
-  task_CMW->SetCumulantHarmonic(vnHarmonic);
-  task_CMW->SetTrackCutNclusterMin(gNclustTPC);  
+  taskGammaPID->SetPtRangeMin(fPtMin);
+  taskGammaPID->SetPtRangeMax(fPtMax);
+  taskGammaPID->SetEtaRangeMin(fEtaMin);
+  taskGammaPID->SetEtaRangeMax(fEtaMax);
+  taskGammaPID->SetTrackCutChi2Min(0.1);
+  taskGammaPID->SetTrackCutdEdxMin(10.0);  
+  taskGammaPID->SetFilterBit(gFilterBit);
+  taskGammaPID->SetNSigmaCutTPC(nSigTPC);    /// For PID only.Does not apply to Inclusive Charged Tracks
+  taskGammaPID->SetNSigmaCutTOF(nSigTOF);
+  taskGammaPID->SetParticlePID(fparticle);
+  taskGammaPID->SetTrackCutChi2Max(fChi2max);
+  taskGammaPID->SetFlagUseKinkTracks(kFALSE);
+  taskGammaPID->SetCumulantHarmonic(vnHarmonic);
+  taskGammaPID->SetTrackCutNclusterMin(gNclustTPC);  
  
   Bool_t bFillLambda=kFALSE;
-  task_CMW->SetFlagAnalyseLambda(bFillLambda);
+  taskGammaPID->SetFlagAnalyseLambda(bFillLambda);
    ///  -----> Separate AddTask Added For Lambda-X correlation
    ///  AddTaskGammaDeltaPID.C  
  
@@ -101,7 +101,7 @@ void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fP
     fListMC = dynamic_cast <TList*> (fMCFile->FindObjectAny("fMcEffiHij"));
 
     if(fListMC) {
-      task_CMW->SetListForTrkCorr(fListMC); 
+      taskGammaPID->SetListForTrkCorr(fListMC); 
     }
     else{
       printf("\n\n *** AddTask::WARNING \n => MC file Exist, But TList Not Found!!! \n AddTask::Info() ===> NO MC Correction!! \n\n");
@@ -122,7 +122,7 @@ void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fP
     std::cout<<" \n ==============> TList found for NUA, here is all the histograms : "<<std::endl;
     //fListNUA->ls();
     if(fListNUA) {
-      task_CMW->SetListForNUACorr(fListNUA);
+      taskGammaPID->SetListForNUACorr(fListNUA);
     }
     else{
       printf("\n\n *** AddTask::WARNING => NUA file Exist,But TList Not Found!!\n AddTask::Info() ===> NO NUA Correction!! \n\n");
@@ -142,7 +142,7 @@ void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fP
     // fListDetWgts->ls(); 
 
     if(fListDetWgts) {
-      task_CMW->SetListForV0MCorr(fListDetWgts);
+      taskGammaPID->SetListForV0MCorr(fListDetWgts);
     }
     else{
       printf("\n\n *** AddTask::WARNING => V0/ZDC Weights file Exist, But TList Not Found!!");
@@ -160,8 +160,8 @@ void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fP
 
   ///---> Now Pass data and containers to Analysis Object ----
  
-  mgr->AddTask(task_CMW);                        // connect the task to the analysis manager
-  mgr->ConnectInput(task_CMW, 0, cinput);        // give AOD event to my Task..!!
+  mgr->AddTask(taskGammaPID);                        // connect the task to the analysis manager
+  mgr->ConnectInput(taskGammaPID, 0, cinput);        // give AOD event to my Task..!!
 
 
   AliAnalysisDataContainer  *cOutPut1;
@@ -169,11 +169,11 @@ void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fP
   sMyOutName.Form("SimpleTask_%s",suffix);
   
   cOutPut1 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName,TList::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
-  mgr->ConnectOutput(task_CMW, 1, cOutPut1);
+  mgr->ConnectOutput(taskGammaPID, 1, cOutPut1);
   
  
   printf("\n\n ================> AddTask was Configured properly... <==================\n\n");
 
-  //return task_CMW;
+  //return taskGammaPID;
 
 }//Task Ends

@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 11.10.2021
+ * Last Modified Date: 14.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -97,8 +97,10 @@ ClassImp(AliAnalysisTaskAR)
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       fFinalResultHistogramsList(nullptr),
       fFinalResultHistogramsListName("FinalResultHistograms"),
-      fFinalResultProfilesList(nullptr),
-      fFinalResultProfilesListName("FinalResultProfiles"),
+      fFinalResultCorrelatorsList(nullptr),
+      fFinalResultCorrelatorsListName("FinalResultCorrelator"),
+      fFinalResultSymmetricCumulantsList(nullptr),
+      fFinalResultSymmetricCumulantsListName("FinalResultSymmetricCumulant"),
       fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
@@ -106,7 +108,8 @@ ClassImp(AliAnalysisTaskAR)
       fRandomizedTrackIndices({}), fUseFixedMultplicity(kFALSE),
       fFixedMultiplicy(2),
       // qvectors
-      fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}) {
+      fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}),
+      fSymmetricCumulants({}) {
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR(const "
               "char *name");
   // create base list
@@ -166,8 +169,10 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       fFinalResultHistogramsList(nullptr),
       fFinalResultHistogramsListName("FinalResultHistograms"),
-      fFinalResultProfilesList(nullptr),
-      fFinalResultProfilesListName("FinalResultProfiles"),
+      fFinalResultCorrelatorsList(nullptr),
+      fFinalResultCorrelatorsListName("FinalResultCorrelator"),
+      fFinalResultSymmetricCumulantsList(nullptr),
+      fFinalResultSymmetricCumulantsListName("FinalResultSymmetricCumulant"),
       fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
@@ -175,7 +180,8 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fRandomizedTrackIndices({}), fUseFixedMultplicity(kFALSE),
       fFixedMultiplicy(2),
       // qvectors
-      fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}) {
+      fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}),
+      fSymmetricCumulants({}) {
   // initialize arrays
   this->InitializeArrays();
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR()");
@@ -222,7 +228,8 @@ void AliAnalysisTaskAR::UserCreateOutputObjects() {
   }
   this->BookControlHistograms();
   this->BookFinalResultHistograms();
-  this->BookFinalResultProfiles();
+  this->BookFinalResultSymmetricCumulants();
+  this->BookFinalResultCorrelators();
   this->fLookUpTable = new TExMap();
 
   // seed RNG
@@ -915,11 +922,18 @@ void AliAnalysisTaskAR::BookAndNestAllLists() {
   fFinalResultHistogramsList->SetOwner(kTRUE);
   fFinalResultsList->Add(fFinalResultHistogramsList);
 
-  // final result profiles
-  fFinalResultProfilesList = new TList();
-  fFinalResultProfilesList->SetName(fFinalResultProfilesListName);
-  fFinalResultProfilesList->SetOwner(kTRUE);
-  fFinalResultsList->Add(fFinalResultProfilesList);
+  // final result profiles of correlators
+  fFinalResultCorrelatorsList = new TList();
+  fFinalResultCorrelatorsList->SetName(fFinalResultCorrelatorsListName);
+  fFinalResultCorrelatorsList->SetOwner(kTRUE);
+  fFinalResultsList->Add(fFinalResultCorrelatorsList);
+
+  // final result histograms of symmetric cummulants
+  fFinalResultSymmetricCumulantsList = new TList();
+  fFinalResultSymmetricCumulantsList->SetName(
+      fFinalResultSymmetricCumulantsListName);
+  fFinalResultSymmetricCumulantsList->SetOwner(kTRUE);
+  fFinalResultsList->Add(fFinalResultSymmetricCumulantsList);
 }
 
 void AliAnalysisTaskAR::BookQAHistograms() {
@@ -1281,9 +1295,9 @@ void AliAnalysisTaskAR::BookFinalResultHistograms() {
   }
 }
 
-void AliAnalysisTaskAR::BookFinalResultProfiles() {
-  // Book final result profiles
-  // 6 profiles for each correlator
+void AliAnalysisTaskAR::BookFinalResultCorrelators() {
+  // Book final result profiles holding correlators
+  // 3 profiles for each correlator
   //  - integrated
   //  - as a function of centrality
   //  - as a function of multiplicity
@@ -1317,7 +1331,7 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
     corList = new TList();
     corList->SetName(corListName);
     corList->SetOwner(kTRUE);
-    fFinalResultProfilesList->Add(corList);
+    fFinalResultCorrelatorsList->Add(corList);
 
     for (int i = 0; i < 3; i++) {
       corProfile[i] = new TProfile(corListName + Names[i],
@@ -1327,6 +1341,39 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
       corList->Add(corProfile[i]);
     }
   }
+}
+
+void AliAnalysisTaskAR::BookFinalResultSymmetricCumulants() {
+  // book histograms holding symmetric cumulants
+  // these cumulants are computed from multi paritcle correlators during
+  // Terminate
+
+  TH1D *hist;
+  TString histName;
+  std::vector<Int_t> CorrelatorForSC;
+  std::vector<std::vector<Int_t>> Correlators;
+  for (std::vector<Int_t> SC : fSymmetricCumulants) {
+
+    histName = "SC(";
+    for (std::size_t i = 0; i < SC.size(); i++) {
+      if (i != SC.size() - 1) {
+        histName += Form("%d,", (int)i);
+      } else {
+        histName += Form("%d,", (int)i);
+      }
+    }
+    hist = new TH1D(histName, histName, 1, 0, 1);
+
+    // CorrelatorForSC = SC(SC);
+    Correlators.push_back(CorrelatorForSC);
+  }
+
+  fCorrelators = Correlators;
+}
+
+std::vector<Int_t> AliAnalysisTaskAR::SC(std::vector<Int_t> sc) {
+  std::vector<Int_t> v = {1, 2};
+  return v;
 }
 
 void AliAnalysisTaskAR::SetDefaultConfiguration() {
@@ -1696,7 +1743,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   CalculateQvectors();
 
   // fill final result profile
-  FillFinalResultProfile();
+  FillFinalResultCorrelators();
 
   PostData(1, fHistList);
 }
@@ -2809,7 +2856,7 @@ void AliAnalysisTaskAR::CalculateQvectors() {
   }
 }
 
-void AliAnalysisTaskAR::FillFinalResultProfile() {
+void AliAnalysisTaskAR::FillFinalResultCorrelators() {
   // fill final result profiles
 
   Double_t corr = 0.0;
@@ -2918,15 +2965,15 @@ void AliAnalysisTaskAR::FillFinalResultProfile() {
     // fill final result profiles
     // integrated correlator
     dynamic_cast<TProfile *>(
-        dynamic_cast<TList *>(fFinalResultProfilesList->At(i))->At(0))
+        dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))->At(0))
         ->Fill(0.5, corr, weight);
     // correlator as a function of centrality
     dynamic_cast<TProfile *>(
-        dynamic_cast<TList *>(fFinalResultProfilesList->At(i))->At(1))
+        dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))->At(1))
         ->Fill(fCentrality[fCentralityEstimator], corr, weight);
     // correlator as a function of multiplicity
     dynamic_cast<TProfile *>(
-        dynamic_cast<TList *>(fFinalResultProfilesList->At(i))->At(2))
+        dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))->At(2))
         ->Fill(fMultiplicity[kMULQ], corr, weight);
   }
 }
@@ -3950,10 +3997,10 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
   }
 
   // get pointers for fFinalResultProfilesList
-  fFinalResultProfilesList = dynamic_cast<TList *>(
-      fFinalResultsList->FindObject(fFinalResultProfilesListName));
-  if (!fFinalResultProfilesList) {
-    std::cout << __LINE__ << ": Did not get " << fFinalResultProfilesListName
+  fFinalResultCorrelatorsList = dynamic_cast<TList *>(
+      fFinalResultsList->FindObject(fFinalResultCorrelatorsListName));
+  if (!fFinalResultCorrelatorsList) {
+    std::cout << __LINE__ << ": Did not get " << fFinalResultCorrelatorsListName
               << std::endl;
     Fatal("GetPointersForFinalResults", "Invalid Pointer");
   }
