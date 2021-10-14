@@ -54,6 +54,8 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         void                    MakeAnaXicZeroFromV0(AliAODEvent *AODEvent, TClonesArray *mcArray, KFParticle PV);
         void                    MakeAnaXicZeroFromCasc(AliAODEvent *AODEvent, TClonesArray *mcArray, KFParticle PV);
         Int_t                   MatchToMCXic0(AliAODTrack *trackProton, AliAODTrack *trackPion3, AliAODTrack *trackPion2, AliAODTrack *trackAntiPion1, TClonesArray *mcArray);
+        Int_t                   MatchToMCOmegaMinus(AliAODTrack *trackProton, AliAODTrack *trackPionMinus, AliAODTrack *trackKaon, TClonesArray *mcArray);
+        Int_t                   MatchToMCOmegaPlus(AliAODTrack *trackProton, AliAODTrack *trackPionMinus, AliAODTrack *trackKaon, TClonesArray *mcArray);
         Int_t                   MatchToMCOmegac0(AliAODTrack *trackProton, AliAODTrack *trackPionMinus, AliAODTrack *trackKaon, AliAODTrack *trackPionPlus, TClonesArray *mcArray);
         Int_t                   MatchToMCAntiXic0(AliAODTrack *trackAntiProton, AliAODTrack *trackAntiPion3, AliAODTrack *trackAntiPion2, AliAODTrack *trackPion1, TClonesArray *mcArray);
         Int_t                   MatchToMCAntiOmegac0(AliAODTrack *trackAntiProton, AliAODTrack *trackPionPlus, AliAODTrack *trackKaon, AliAODTrack *trackPionMinus, TClonesArray *mcArray);
@@ -383,6 +385,10 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         TH1F*                   fHistMCpdg_All;     //!<! PDG of all particle
         TH1F*                   fHistMCpdg_Dau_XicZero;     //!<! PDG of all particle from Xic0 decay
         TH1F*                   fHistMCpdg_Dau_XicPM;     //!<! PDG of all particle from Xic+- decay
+        TH1F*                   fHistPt_OmegaNotFromOmegac0_Rec; //!<! Histogram of pt of Omega in rec.
+        TH1F*                   fHistPt_OmegaNotFromOmegac0_Gen; //!<! Histogram of pt of Omega in gen.
+        TH2F*                   f2DHist_YvsPt_OmegaNotFromOmegac0_Rec; //!<! 2D Histogram of Y vs. pt of Omega in rec.
+        TH2F*                   f2DHist_YvsPt_OmegaNotFromOmegac0_Gen; //!<! 2D Histogram of Y vs. pt of Omega in gen.
         THnSparseF*             fHistMCGen_XicZeroTot;  //!<! mcArray
         THnSparseF*             fHistMCGen_XicZero;     //!<! mcArray
         THnSparseF*             fHistMCGen_AntiXicZero; //!<! mcArray
@@ -404,7 +410,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSEXicZero2XiPifromKFP(const AliAnalysisTaskSEXicZero2XiPifromKFP &source); // not implemented
         AliAnalysisTaskSEXicZero2XiPifromKFP& operator=(const AliAnalysisTaskSEXicZero2XiPifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 7);
+        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 8);
 };
 
 #endif
