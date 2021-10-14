@@ -8,6 +8,7 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskSE.h"
 #include "THistManager.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
   public:
@@ -56,6 +57,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //objects retreived from input handler
     AliPIDResponse *fPIDResponse;                             //!
     UInt_t fTriggerMask;                                      //!
+
+    //AliEventCuts object
+    AliEventCuts fEventCuts;                                  //!
 
     //MC-realted variables
     bool fisMC;                                               //
@@ -172,8 +176,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 7); 
-    //version 7: introduced chi^2 per TPC cluster selection
+    ClassDef(AliAnalysisTaskStrVsMult, 8); 
+    //version 8: introduced AliEventCuts
 };
 
 #endif

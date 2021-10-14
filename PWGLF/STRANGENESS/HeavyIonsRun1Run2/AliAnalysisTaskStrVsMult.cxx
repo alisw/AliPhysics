@@ -30,6 +30,7 @@ class AliAODcascade;
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisUtils.h"
 #include "AliAODMCHeader.h"
+#include "AliEventCuts.h"
 
 #include "AliAnalysisTaskStrVsMult.h"
 
@@ -50,6 +51,8 @@ fHistos_OmPlu(nullptr),
 //objects from the manager
 fPIDResponse(0),
 fTriggerMask(0),
+//AliEventCuts object
+fEventCuts(0),
 //MC-related variables
 fisMC(kFALSE),
 fisMCassoc(kTRUE),
@@ -146,6 +149,8 @@ fHistos_OmPlu(nullptr),
 //objects from the manager
 fPIDResponse(0),
 fTriggerMask(0),
+//AliEventCuts object
+fEventCuts(0),
 //MC-related variables
 fisMC(kFALSE),
 fisMCassoc(kTRUE),
@@ -251,6 +256,8 @@ fCentLimit_BacBarCosPA(0)
     }
     SetPtbinning(ipart, nptbins[ipart], ptbins[ipart]);
   }
+  //set fEventCuts object to reject pile-up
+  fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
   //Standard output
   DefineOutput(1, TList::Class()); // Event Histograms
   DefineOutput(2, TList::Class()); // K0S Histograms
@@ -282,7 +289,9 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
   fHistos_eve = new THistManager("histos_eve");
 
   fHistos_eve->CreateTH1("hcent", "", 100, 0, 100, "s");  //storing #events in bins of centrality
-  fHistos_eve->CreateTH1("henum", "", 1, 0, 1);  //storing total #events
+  fHistos_eve->CreateTH1("henum", "", 3, -0.5, 2.5);  //storing total #events
+  const char *labels[3] = {"Total", "MultSelection", "AliEventCuts"};
+  for (int iLab=1; iLab<=3; iLab++) ((TH1*)fHistos_eve->FindObject("henum"))->GetXaxis()->SetBinLabel(iLab, labels[iLab-1]);
 
   //histograms for V0 variables
   if (fParticleAnalysisStatus[kk0s]) {
@@ -400,8 +409,8 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
     }
   }
 
-  //dumb histo for checking
-  fHistos_eve->FillTH1("henum", 0.5);
+  //fill total number of events
+  fHistos_eve->FillTH1("henum", 0.);
 
   //get trigger information
   fTriggerMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -424,6 +433,17 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
     DataPosting(); 
     return; 
   }
+
+  //fill number of events after AliMultSelection
+  fHistos_eve->FillTH1("henum", 1.);
+
+  if (!fEventCuts.AcceptEvent(lVevent)) {
+    DataPosting(); 
+    return;
+  }
+
+  //fill number of events after AliEventCuts
+  fHistos_eve->FillTH1("henum", 2.);
 
   //get run number
   int runNumber = (isESD) ? lESDevent->GetRunNumber() : lAODevent->GetRunNumber();
