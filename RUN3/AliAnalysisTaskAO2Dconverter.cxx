@@ -2046,14 +2046,14 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     //Remove noisy triggers
     Int_t phosmodulenumber = TMath:: Ceil(float(absId)/3584) ; 
     int id = absId - ( phosmodulenumber - 1 ) * 3584 ; 
-    int ix = (Int_t)TMath::Ceil( id / 64 )  ;
+    int ix = (Int_t)TMath::Ceil( float(id) / 64 )  ;
     int iz = (Int_t)( id - ( ix - 1 ) * 64 ) ; 
     if(fPHOSBadMap[phosmodulenumber] != nullptr && fPHOSBadMap[phosmodulenumber]->GetBinContent(ix,iz)>0) { //bad channel
       continue ;
     }
     //transform to Run3 truID
     absId--;
-    relid[0] = absId / 3584  ; 
+    relid[0] = 4 - absId / 3584  ;  //Aliroot<->O2 module numbering 
     absId = absId % 3584  ;  //module 
     relid[1] = absId / 64  ; //x
     relid[2] = absId % 64  ; //z
@@ -2065,7 +2065,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     Int_t truId= relid[0] * 224 + // the offset of PHOS modules
                  relid[1] +       // the offset along phi
                  relid[2] * 8;    // the offset along z    
-    
     // filter null entries: they usually have negative entries and no trigger bits
     // in case of trigger bits the energy can be 0 or negative but the trigger position is marked
     // store trigger
@@ -2080,7 +2079,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     else{
       int timesum;
       phostriggers->GetL1TimeSum(timesum);
-      calotrigger.fTriggerBits =timesum ; // 1,2,3:L1
+      calotrigger.fTriggerBits =1+timesum ; // 1,2,3:L1
     }
     FillTree(kCaloTrigger);
     if (fTreeStatus[kCaloTrigger])
@@ -2389,6 +2388,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       ULong64_t *packedPosNeg = new ULong64_t[nv0];
       ULong64_t *sortedPosNeg = new ULong64_t[nv0];
       Int_t *sortIdx = new Int_t[nv0];
+      
+      //Fill cascades in order
+      Int_t ncas = fVEvent->GetNumberOfCascades();
+      Int_t ncastosort = 0;
+      ULong64_t *packedV0indices       = new ULong64_t[ncas];
+      ULong64_t *packedbachelorindices = new ULong64_t[ncas];
+      Int_t *sortV0Idx = new Int_t[ncas];
 
       //Don't forget that OTF V0s might exist
       Int_t nv0offline = 0;
@@ -2413,7 +2419,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         sortedPosNeg[iv0] = packedPosNeg[sortIdx[iv0]];
       }
 
-      Int_t ncas = fVEvent->GetNumberOfCascades();
       for (Int_t icas = 0; icas < ncas; ++icas)
       {
 	if (fESD) {
@@ -2426,11 +2431,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 	    Int_t v0idx = TMath::BinarySearch(nv0offline, sortedPosNeg, currV0);
 	    // Check if the match is exact
 	    if (sortedPosNeg[v0idx] == currV0) {
-	      cascs.fIndexV0s = sortIdx[v0idx] + fOffsetV0;
-	      cascs.fIndexTracks = cas->GetBindex() + fOffsetTrack;
-	      FillTree(kCascades);
-	      if (fTreeStatus[kCascades])
-		ncascades_filled++;
+        packedV0indices[ncastosort] = sortIdx[v0idx] + fOffsetV0;
+        packedbachelorindices[ncastosort] = cas->GetBindex() + fOffsetTrack;
+        ncastosort++;
 	    }
 	  }
 	}
@@ -2444,19 +2447,32 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 	    Int_t v0idx = TMath::BinarySearch(nv0offline, sortedPosNeg, currV0);
 	    // Check if the match is exact
 	    if (sortedPosNeg[v0idx] == currV0) {
-	      cascs.fIndexV0s = sortIdx[v0idx] + fOffsetV0;
-	      cascs.fIndexTracks = cas->GetBachID() + fOffsetTrack;
-	      FillTree(kCascades);
-	      if (fTreeStatus[kCascades])
-		ncascades_filled++;
+        packedV0indices[ncastosort] = sortIdx[v0idx] + fOffsetV0;
+        packedbachelorindices[ncastosort] = cas->GetBachID() + fOffsetTrack;
+        ncastosort++;
 	    }
 	  }
 	}
       } // End loop on cascades
+      
+      //Sort cascades
+      TMath::Sort(ncastosort, packedV0indices, sortV0Idx, kFALSE);
+      //Fill cascades only after V0 sorting
+      for (Int_t icas = 0; icas < ncastosort; ++icas){
+        //Fill tree only with ordered information
+        cascs.fIndexV0s    = packedV0indices[sortV0Idx[icas]];
+        cascs.fIndexTracks = packedbachelorindices[sortV0Idx[icas]];
+        FillTree(kCascades);
+        ncascades_filled++;
+      }
 
       delete[] packedPosNeg;
       delete[] sortedPosNeg;
       delete[] sortIdx;
+      
+      delete[] packedV0indices;
+      delete[] packedbachelorindices;
+      delete[] sortV0Idx;
     } // End if V0s
     eventextra.fNentries[kCascades] = ncascades_filled;
   }
