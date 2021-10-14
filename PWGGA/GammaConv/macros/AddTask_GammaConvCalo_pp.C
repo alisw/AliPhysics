@@ -2930,6 +2930,17 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411791107l032230000","2l63103100000010"); // Standard EDC
   } else if ( trainConfig == 2301){ // Jet QA
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411791107l032230000","3l63103100000010"); //
+  // 13 TeV pp - Jet configurations
+  } else if ( trainConfig == 2350){ // Jet analysis pp 13 TeV EDC
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791107l032230000","2l63103100000010"); // STD + MB
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411791107l032230000","2l63103100000010"); // STD + EG1
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411791107l032230000","2l63103100000010"); // STD + EG2
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791107l032230000","2r63103100000010"); // STD + rotation method
+  } else if ( trainConfig == 2351){ // Jet QA
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791107l032230000","3l63103100000010"); // STD + MB
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411791107l032230000","3l63103100000010"); // STD + EG1
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411791107l032230000","3l63103100000010"); // STD + EG2
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791107l032230000","3r63103100000010"); // STD + rotation method
 
   // TB NL testconfigs diff aggregation thresholds
   } else if ( trainConfig == 2400){ // LHC12 100 MeV aggregation TB NL
