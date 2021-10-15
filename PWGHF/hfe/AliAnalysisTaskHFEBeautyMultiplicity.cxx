@@ -1307,16 +1307,18 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   //     pT weight    //
   //------------------//
   	//B-meson
-	  pTWeight_B = new TF1("pTWeight_B", "pol2");
-	  pTWeight_B->SetParameters(-3.56545e-01,3.11103e-01,3.19225e-03);
+	  //pTWeight_B = new TF1("pTWeight_B", "pol2");
+	  //pTWeight_B->SetParameters(-3.56545e-01,3.11103e-01,3.19225e-03);
 	  
 	//Pi0
 	  pTWeight_Pi0 = new TF1("pTWeight_Pi0", "([0]*exp((-x/[1]) - (x*x/[2])) + x/[3])^[4]");
-	  pTWeight_Pi0->SetParameters(9.64967e-02,1.38490e+06,6.58746e+01,4.98144e+00,-4.51193e+00);
+	  //pTWeight_Pi0->SetParameters(9.64967e-02,1.38490e+06,6.58746e+01,4.98144e+00,-4.51193e+00);
+	  pTWeight_Pi0->SetParameters(7.27836e-02,1.96082e+06,3.89361e+01,5.35823e+00,-4.07299e+00);
 
 	//Eta
 	  pTWeight_Eta = new TF1("pTWeight_Eta", "([0]*exp((-x/[1]) - (x*x/[2])) + x/[3])^[4]");
-	  pTWeight_Eta->SetParameters(2.96266e-01,8.86671e+05,8.01783e+01,4.82405e+00,-5.81330e+00);
+	  //pTWeight_Eta->SetParameters(2.96266e-01,8.86671e+05,8.01783e+01,4.82405e+00,-5.81330e+00);
+	  pTWeight_Eta->SetParameters(2.24285e-01,1.00307e+02,4.85372e+01,4.60808e+00,-4.80392e+00);
 	  
 	  
 
@@ -2053,14 +2055,14 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
 			    			if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423)
 						{
-							fDCAxy_MC_D0  -> Fill(TrkPt, DCA[0]*charge*Bsign);  // no weight
-							fDCAxy_MC_D0_weight  -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+							fDCAxy_MC_D0 -> Fill(TrkPt, DCA[0]*charge*Bsign);  // no weight
+							fDCAxy_MC_D0_weight -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
 						}
 
 			    			if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)==433)
 						{
-							fDCAxy_MC_Ds  -> Fill(TrkPt, DCA[0]*charge*Bsign); // no weight
-							fDCAxy_MC_Ds_weight  -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+							fDCAxy_MC_Ds -> Fill(TrkPt, DCA[0]*charge*Bsign); // no weight
+							fDCAxy_MC_Ds_weight -> Fill(TrkPt, DCA[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
 						}
 
 		    				if(TMath::Abs(pidM)==4122)
