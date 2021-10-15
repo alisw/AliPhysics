@@ -2101,7 +2101,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     Double_t efrac;
 
     calo.fIndexBCs = fBCCount;
-    cells->GetCell(icp, cellNumber, amplitude, time, mclabel, efrac);
+    phoscells->GetCell(icp, cellNumber, amplitude, time, mclabel, efrac);
     //Run2: absId=1..4*56*64 ; Run3: absId = 32*56...4*56*64, module numbering is opposite 
     int mod = cellNumber/3584; 
     calo.fCellNumber = (4-mod)*3584 + cellNumber%3584 ;
@@ -2109,7 +2109,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     // here we assume fixed calibration 
     calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude/mPHOSCalib, 0xFFF); //12 bit
     calo.fTime = AliMathBase::TruncateFloatFraction(time, 0x1FFF);  //13 bit
-    calo.fCellType = cells->GetHighGain(icp) ? 0. : 1.; 
+    calo.fCellType = phoscells->GetHighGain(icp) ? 0. : 1.; 
 
     FillTree(kCalo);
     if (fTreeStatus[kCalo])
