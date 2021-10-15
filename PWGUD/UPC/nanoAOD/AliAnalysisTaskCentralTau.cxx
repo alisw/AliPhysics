@@ -76,10 +76,10 @@ AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau(const char *name)
 		fTOFsignal[it] = -999;
 		fTPCmostProbableTrackType[it] = -1;
 		fTOFmostProbableTrackType[it] = -1;
-	}
-	for (int typ(0);typ<5;typ++){
-		fPIDTPC[typ] = -999.;
-		fPIDTOF[typ] = -999.;
+		for (int typ(0);typ<5;typ++){
+			fPIDTPC[typ][it] = -999.;
+			fPIDTOF[typ][it] = -999.;
+		}
 	}
 	for (int it(0);it<4;it++){
 		fZNAtime[it] = 0.;
@@ -124,8 +124,8 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
 
 	tTwoTracks = new TTree("tTwoTracks", "tTwoTracks");
 	tTwoTracks ->Branch("fVectParticle", &vParticle[0][0],"vParticle[5][2]/O");
-	tTwoTracks ->Branch("fPIDTPC", &fPIDTPC[0],"fPIDTPC[5]/F");
-	tTwoTracks ->Branch("fPIDTOF", &fPIDTOF[0],"fPIDTOF[5]/F");
+	tTwoTracks ->Branch("fPIDTPC", &fPIDTPC[0][0],"fPIDTPC[5][2]/F");
+	tTwoTracks ->Branch("fPIDTOF", &fPIDTOF[0][0],"fPIDTOF[5][2]/F");
 	tTwoTracks ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
 	tTwoTracks ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/D");
 	tTwoTracks ->Branch("fZNAtime", &fZNAtime[0],"fZNAtime[4]/D");
@@ -336,21 +336,22 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
 			vParticle[P_KAON][iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), mass_kaon);
 			vParticle[P_PROTON][iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), mass_proton);
 
-			fPIDTPC[P_ELECTRON] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron));
-			fPIDTPC[P_MUON] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon));
-			fPIDTPC[P_PION] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion));
-			fPIDTPC[P_KAON] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon));
-			fPIDTPC[P_PROTON] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton));
+			fPIDTPC[P_ELECTRON][iTrack] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron));
+			fPIDTPC[P_MUON][iTrack] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon));
+			fPIDTPC[P_PION][iTrack] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion));
+			fPIDTPC[P_KAON][iTrack] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon));
+			fPIDTPC[P_PROTON][iTrack] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton));
 
-			fPIDTOF[P_ELECTRON] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron));
-			fPIDTOF[P_MUON] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon));
-			fPIDTOF[P_PION] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion));
-			fPIDTOF[P_KAON] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon));
-			fPIDTOF[P_PROTON] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton));
+			fPIDTOF[P_ELECTRON][iTrack] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron));
+			fPIDTOF[P_MUON][iTrack] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon));
+			fPIDTOF[P_PION][iTrack] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion));
+			fPIDTOF[P_KAON][iTrack] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon));
+			fPIDTOF[P_PROTON] [iTrack]= TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton));
 
 			fTPCsignal[iTrack] = trk->GetTPCsignal();
 			fTOFsignal[iTrack] = trk->GetTOFsignal();
 			fTrackPIDid[iTrack] = TestPIDhypothesis(trk);
+			fPIDpt[iTrack] = trk->Pt();
 			hParticleTypeCounter->Fill(fTrackPIDid[iTrack]);
 
 		}//Two tracks loop
