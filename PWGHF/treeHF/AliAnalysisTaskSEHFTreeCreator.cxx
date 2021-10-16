@@ -1114,7 +1114,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEHFTreeCreator::FillJetTree() {
+void AliAnalysisTaskSEHFTreeCreator::FillJetTree(AliAODMCHeader* mcHeader) {
   
   // If it is the first event, then execute ExecOnce()
   if (!fLocalInitialized){
@@ -1131,6 +1131,7 @@ void AliAnalysisTaskSEHFTreeCreator::FillJetTree() {
     fTreeHandlerParticle->FillTree(fRunNumber, fEventID, fEventIDExt, fEventIDLong);
     
     if (fTreeHandlerGenParticle) {
+      fTreeHandlerGenParticle->SetMCHeader(mcHeader);
       fTreeHandlerGenParticle->FillTree(fRunNumber, fEventID, fEventIDExt, fEventIDLong);
     }
     
@@ -1608,7 +1609,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   
   // Fill the jet tree
   if (fWriteNJetTrees > 0 || fFillParticleTree) {
-    FillJetTree();
+    FillJetTree(mcHeader);
   }
   if (fFillTrackletTree){
     fTreeHandlerTracklet->SetTrackletContainer(aod->GetTracklets());
