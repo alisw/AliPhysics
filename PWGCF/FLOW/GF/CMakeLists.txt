@@ -32,12 +32,15 @@ include_directories(
     ${AliPhysics_SOURCE_DIR}/PWG/Tools
     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
     ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/GF
+    ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
+		${AliPhysics_SOURCE_DIR}/EVENTMIX
 )
 
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskChargedFlow.cxx
   AliAnalysisTaskCorrForFlow.cxx
+  AliAnalysisTaskCorrForFlowFMD.cxx
   AliAnalysisTaskDeform.cxx
   AliAnalysisTaskFlowExample.cxx
   AliAnalysisTaskGFWFlow.cxx
@@ -51,6 +54,7 @@ set(SRCS
   AliGFWCuts.cxx
   AliGFWFlowContainer.cxx
   AliGFWWeights.cxx
+  AliPartSimpleForCorr.cxx
   AliProfileSubset.cxx
   AliProfileBS.cxx
   AliCkContainer.cxx
