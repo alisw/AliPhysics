@@ -70,15 +70,16 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 
         void                    PrintSetup();
         void                    CreateTHnCorrelations();
-        void                    PrepareFMDTracks();
 
         Bool_t                  IsEventSelected();
         Bool_t                  IsEventRejectedAddPileUp() const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
 
         Double_t                RangePhi(Double_t DPhi);
+        Double_t                GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
         void                    FillCorrelations(const Int_t spec);
         void                    FillCorrelationsMixed(const Int_t spec);
+        Bool_t                  PrepareFMDTracks();
 
         Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
         Bool_t                  HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?
@@ -150,7 +151,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 1);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 2);
 };
 
 #endif

@@ -191,11 +191,10 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     fhEventCounter->Fill("Efficiencies loaded",1);
 
     if(fAnalType != eTPCTPC) {
-      PrepareFMDTracks();
-      fhEventCounter->Fill("FMD cut ok ",1);
-      if(fTracksAss->IsEmpty()) {
+      if(!PrepareFMDTracks()){
         delete fTracksAss;
         delete fTracksTrig[0];
+        PostData(1, fOutputListCharged);
         return;
       }
     }
@@ -313,6 +312,16 @@ Double_t AliAnalysisTaskCorrForFlowFMD::RangePhi(Double_t DPhi) {
   return DPhi;
 }
 //_____________________________________________________________________________
+Double_t AliAnalysisTaskCorrForFlowFMD::GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius){
+  // calculates delta phi *
+  Double_t dPhiStar = phi1 - phi2 - charge1 * fbSign * TMath::ASin(0.075 * radius / pt1) + charge2 * fbSign * TMath::ASin(0.075 * radius / pt2);
+
+  if (dPhiStar > TMath::Pi()) dPhiStar = 2.0*TMath::Pi() - dPhiStar;
+  if (dPhiStar < -TMath::Pi()) dPhiStar = -2.0*TMath::Pi() - dPhiStar;
+
+  return dPhiStar;
+}
+//_____________________________________________________________________________
 Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) const
 {
   // checking detector statuses
@@ -366,8 +375,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigPt = track->Pt();
       Double_t trigEta = track->Eta();
       Double_t trigPhi = track->Phi();
+      Double_t trigCharge = track->Charge();
       Double_t trigEff = 1.0;
       if(fUseEfficiency) trigEff = GetEff(trigPt, spec, trigEta);
+      binscont[3] = trigPt;
 
       for(Int_t iAss(0); iAss < fTracksAss->GetEntriesFast(); iAss++){
         AliAODTrack* trackAss = (AliAODTrack*)fTracksAss->At(iAss);
@@ -376,6 +387,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assPt = trackAss->Pt();
         Double_t assEta = trackAss->Eta();
         Double_t assPhi = trackAss->Phi();
+        Double_t assCharge = trackAss->Charge();
         Double_t assEff = 1.0;
         if(fUseEfficiency) assEff = GetEff(assPt, 0, assEta);
 
@@ -384,8 +396,26 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
 
         binscont[0] = assEta - trigEta;
         binscont[1] = RangePhi(assPhi - trigPhi);
-        binscont[3] = trigPt;
         binscont[4] = assPt;
+
+        if(TMath::Abs(binscont[0]) < fMergingCut){
+          Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
+          Double_t dPhiStarHigh = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 2.5);
+
+          const Double_t kLimit = 3.0*fMergingCut;
+
+          if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
+            Bool_t bIsBelow = kFALSE;
+            for(Double_t rad(0.8); rad < 2.51; rad+=0.01){
+              Double_t dPhiStar = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, rad);
+              if(TMath::Abs(dPhiStar) < fMergingCut) {
+                bIsBelow = kTRUE;
+                break;
+              }
+            } // end loop radius
+            if(bIsBelow) continue;
+          }
+        }
 
         fhSE[spec]->Fill(binscont,0,1./(trigEff*assEff));
       }
@@ -404,6 +434,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigPhi = track->Phi();
       Double_t trigEff = 1.0;
       if(fUseEfficiency) trigEff = GetEff(trigPt, spec, trigEta);
+      binscont[3] = trigPt;
 
       for(Int_t iAss(0); iAss < fTracksAss->GetEntriesFast(); iAss++){
         AliPartSimpleForCorr* trackAss = (AliPartSimpleForCorr*)fTracksAss->At(iAss);
@@ -415,7 +446,6 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
 
         binscont[0] = assEta - trigEta;
         binscont[1] = RangePhi(assPhi - trigPhi);
-        binscont[3] = trigPt;
 
         fhSE[spec]->Fill(binscont,0,assMult/(trigEff));
       }
@@ -473,6 +503,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigPt = track->Pt();
         Double_t trigEta = track->Eta();
         Double_t trigPhi = track->Phi();
+        Double_t trigCharge = track->Charge();
         binscont[2] = trigPt;
 
         for(Int_t eMix(0); eMix < nMix; eMix++){
@@ -484,12 +515,32 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             Double_t assPt = trackAss->Pt();
             Double_t assEta = trackAss->Eta();
             Double_t assPhi = trackAss->Phi();
+            Double_t assCharge = trackAss->Charge();
 
             if(trigPt < assPt) continue;
 
             binscont[0] = assEta - trigEta;
             binscont[1] = RangePhi(assPhi - trigPhi);
             binscont[3] = assPt;
+
+            if(TMath::Abs(binscont[0]) < fMergingCut){
+              Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
+              Double_t dPhiStarHigh = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 2.5);
+
+              const Double_t kLimit = 3.0*fMergingCut;
+
+              if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
+                Bool_t bIsBelow = kFALSE;
+                for(Double_t rad(0.8); rad < 2.51; rad+=0.01){
+                  Double_t dPhiStar = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, rad);
+                  if(TMath::Abs(dPhiStar) < fMergingCut) {
+                    bIsBelow = kTRUE;
+                    break;
+                  }
+                } // end loop radius
+                if(bIsBelow) continue;
+              }
+            }
 
             fhME[spec]->Fill(binscont,0,1./(Double_t)nMix);
           }
@@ -712,12 +763,12 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   return;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
-  if(!fTracksAss) { AliError("Problem with fTracksAss, terminating!"); return; }
-  if(fAnalType == eFMDAFMDC && !fTracksTrig[0]) { AliError("Problem with fTracksTrig (no PID), terminating!"); return; }
+Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
+  if(!fTracksAss) { AliError("Problem with fTracksAss, terminating!"); return kFALSE; }
+  if(fAnalType == eFMDAFMDC && !fTracksTrig[0]) { AliError("Problem with fTracksTrig (no PID), terminating!"); return kFALSE; }
 
   AliAODForwardMult* aodForward=static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
-  if(!aodForward) { AliError("Problem with aodForward, terminating!"); return; }
+  if(!aodForward) { AliError("Problem with aodForward, terminating!"); return kFALSE; }
 
   const TH2D& d2Ndetadphi = aodForward->GetHistogram();
   Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();
@@ -760,20 +811,21 @@ void AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
     if(nFMD_fwd_hits==0 || nFMD_bwd_hits==0) {
       fTracksAss->Clear();
       if(fAnalType == eFMDAFMDC) fTracksTrig[0]->Clear();
-      return;
+      return kFALSE;
     }
     AliAODVZERO *fvzero = fAOD->GetVZEROData();
+    if(!fvzero) { AliError("Problem with VZEROData, terminating!"); return kFALSE; }
     Float_t nV0A_hits = fvzero->GetMTotV0A();
     Float_t nV0C_hits = fvzero->GetMTotV0C();
 
     if((nV0A_hits<(fFMDcutapar0*nFMD_fwd_hits-fFMDcutapar1)) || (nV0C_hits<(fFMDcutcpar0*nFMD_bwd_hits-fFMDcutcpar1))){
       fTracksAss->Clear();
       if(fAnalType == eFMDAFMDC) fTracksTrig[0]->Clear();
-      return;
+      return kFALSE;
     }
   }
 
-  return;
+  return kTRUE;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){

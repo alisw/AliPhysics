@@ -10,8 +10,7 @@ class AliPartSimpleForCorr : public AliVParticle
   public:
         AliPartSimpleForCorr();
 
-        AliPartSimpleForCorr(Short_t charge, Float_t eta, Float_t phi, Float_t pt,
-          Int_t ID, Int_t ID1, Int_t ID2, Short_t candidate, Double_t multiplicity);
+        AliPartSimpleForCorr(Short_t charge, Float_t eta, Float_t phi, Float_t pt, Int_t ID, Int_t ID1, Int_t ID2, Short_t candidate, Double_t multiplicity);
 
         AliPartSimpleForCorr(Float_t eta, Float_t phi, Double_t multiplicity);
 
