@@ -159,6 +159,7 @@ fDphiHHMixed(0)
     DO_SINGLE_TRIGGER = kFALSE;
     SELECT_TRIGGER_EVENTS = kFALSE;
     DO_HIGHEST_TRIGGER = kFALSE;
+    DO_PER_EVENT_SCALING = kFALSE;
 
     KAON_ETA_CUT = 0.8;
     KAON_TPC_CUT = 3.0;
@@ -290,6 +291,7 @@ fDphiHHMixed(0)
     DO_SINGLE_TRIGGER = kFALSE;
     SELECT_TRIGGER_EVENTS = kFALSE;
     DO_HIGHEST_TRIGGER = kFALSE;
+    DO_PER_EVENT_SCALING = kFALSE;
 
     IS_HH = kFALSE;
     MULT_LOW = 0.0;
@@ -758,7 +760,7 @@ void AliAnalysisTaskHadronPhiCorr::UserCreateOutputObjects()
 
 
 //___________________________________________________________________________
-Bool_t AliAnalysisTaskHadronPhiCorr::MakeCorrelations(Int_t triggerIndex, AliHContainer trigger, std::vector<AliPhiContainer> phiVec, THnSparse *fDphi, Double_t zVtx){
+Bool_t AliAnalysisTaskHadronPhiCorr::MakeCorrelations(Int_t triggerIndex,const AliHContainer& trigger, const std::vector<AliPhiContainer>& phiVec, THnSparse *fDphi, Double_t zVtx, Int_t numtrigs = 1){
 
     Double_t dphi_point[5];
     AliPhiContainer phi;
@@ -801,13 +803,16 @@ Bool_t AliAnalysisTaskHadronPhiCorr::MakeCorrelations(Int_t triggerIndex, AliHCo
         }else if(IS_MC_KAON && ftrigEffHist!=0){
             weight = weight*1.0/ftrigEffHist->GetBinContent(ftrigEffHist->GetXaxis()->FindBin((trigger.particle.Pt())));
         }
+        if(DO_PER_EVENT_SCALING){
+            weight = weight/numtrigs;
+        }
         fDphi->Fill(dphi_point, weight);
     }
     return kFALSE;
 }
 
 //___________________________________________________________________________
-Bool_t AliAnalysisTaskHadronPhiCorr::MakeCorrelations(Int_t triggerIndex, AliAODMCParticle *trigger, std::vector<AliPhiContainer> phiVec, THnSparse *fDphi, Double_t zVtx){
+Bool_t AliAnalysisTaskHadronPhiCorr::MakeCorrelations(Int_t triggerIndex, AliAODMCParticle *trigger, const std::vector<AliPhiContainer>& phiVec, THnSparse *fDphi, Double_t zVtx){
 
     Double_t dphi_point[5];
     AliPhiContainer phi;
@@ -865,10 +870,8 @@ void AliAnalysisTaskHadronPhiCorr::MakeMixCorrelations(AliPhiContainer* phi, THn
             dphi_point[4] = phi->particle.M();
 
             Double_t weight = 1.0;
-            if(!IS_MC_TRUE && !IS_MC_KAON && fphiEffHist!=0 && ftrigEffHist!=0){
-                if((phi->particle.Pt() > 1.0 && phi->particle.Pt() < 8.0) && hadron->Pt() > 4.0){
-                    //weight = 1.0/fphiEff->Eval(phi->particle.Pt());
-                    //weight = weight*(1.0/ftrigEff->Eval(hadron->Pt()));
+            if(!IS_MC_TRUE && !IS_MC_KAON && fphiEff!=0 && ftrigEff!=0){
+                if((phi->particle.Pt() > 1.0 && phi->particle.Pt() < 8.0) && hadron->Pt() > 3.0){
                     weight = 1.0/fphiEffHist->GetBinContent(fphiEffHist->GetXaxis()->FindBin(phi->particle.Pt()));
                     weight = weight*(1.0/ftrigEffHist->GetBinContent(ftrigEffHist->GetXaxis()->FindBin(hadron->Pt())));
                     //weight = 21.0;
@@ -925,8 +928,6 @@ void AliAnalysisTaskHadronPhiCorr::MakeHHMixCorrelations(AliCFParticle *assocPar
                 //dphi_point[4] = zVtx;
                 Double_t weight = 1.0;
                 if(fhEffHist !=0 && ftrigEffHist != 0){
-                    //weight = 1.0/fhEff->Eval(assocPart->Pt());
-                    //weight = weight*(1.0/ftrigEff->Eval(hadron->Pt()));
                     weight = 1.0/(fhEffHist->GetBinContent(fhEffHist->GetXaxis()->FindBin(assocPart->Pt())));
                     weight = weight*(1.0/(ftrigEffHist->GetBinContent(ftrigEffHist->GetXaxis()->FindBin((hadron->Pt())))));
                 }
@@ -1222,7 +1223,7 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
 
             //make list of trigger particles
             if(fAOD && !IS_MC_TRUE){
-                if(aKaonTrack->TestBit(TRIG_TRK_BIT) && TMath::Abs(kaonTrack->Eta()) < 0.8 && kaonTrack->Pt() > 3.0 && kaonTrack->Pt() < 8.0){
+                if(aKaonTrack->TestBit(TRIG_TRK_BIT) && TMath::Abs(kaonTrack->Eta()) < 0.8 && kaonTrack->Pt() > 4.0 && kaonTrack->Pt() < 8.0){
                     numTriggers++;
                     AliHContainer trig;
                     trig.trackNum = itrack;
@@ -1333,6 +1334,8 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
 
                 //accept only those kaon pairs that fall within our mass range:
                 if(phi.particle.M() > 1.07 || phi.particle.M()<0.98) continue;
+                //accept only phi candidates that fall in our momentum range:
+                if(phi.particle.Pt() < 0.5 || phi.particle.Pt() > 10) continue;
                 //cut out all reconstructed phi at wide eta
                 if(TMath::Abs(phi.particle.Eta()) >0.8) continue;
 
@@ -1379,7 +1382,6 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
                     //check for eta-phi range set for efficiency crosscheck
                     if(ETA_PHI_REGION <= 0){
                         phiCandidates.push_back(phi);
-                        //Double_t weight = 1.0/fphiEff->Eval(phi.particle.Pt());
                         Double_t weight = 1.0/(fphiEffHist->GetBinContent(fphiEffHist->GetXaxis()->FindBin(phi.particle.Pt())));
                         fKKUSDist->Fill(distPoint, weight);
                     }else if(ETA_PHI_REGION == 1 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] < TMath::Pi()){
@@ -1546,13 +1548,12 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
             }
             trigPoint[2] = triggerTrack.particle.Eta();
             Float_t weight = 1.0;
-            if(ftrigEffHist !=0){ 
-                if(ftrigEffHist->GetBinContent(ftrigEffHist->GetXaxis()->FindBin((triggerTrack.particle.Pt()))) == 0){
-                    AliFatal(Form("Trigger Efficiency Evaluated to 0 for pT %f", triggerTrack.particle.Pt()));
-                }else{
-                    weight = 1.0/ftrigEffHist->GetBinContent(ftrigEffHist->GetXaxis()->FindBin((triggerTrack.particle.Pt())));
-                }
+            if(ftrigEffHist->GetBinContent(ftrigEffHist->GetXaxis()->FindBin((triggerTrack.particle.Pt()))) == 0){
+                AliFatal(Form("Trigger Efficiency Evaluated to 0 for pT %f", triggerTrack.particle.Pt()));
+            }else{
+                weight = 1.0/ftrigEffHist->GetBinContent(ftrigEffHist->GetXaxis()->FindBin((triggerTrack.particle.Pt())));
             }
+            
             fTrigDist->Fill(trigPoint, weight);
 
             //hadron-phi correlations
@@ -1563,8 +1564,8 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
                 Bool_t isTriggerAccptDaughter = kTRUE;
                 Bool_t isTriggerTrueDaughter = kTRUE;
                 
-                isTriggerDaughter = MakeCorrelations(itrack, triggerTrack, phiCandidates, fDphiHPhi[indexZVtx], Zvertex);
-                isTriggerLSDaughter = MakeCorrelations(itrack, triggerTrack, phiLikeSignCandidates, fDphiHKK[indexZVtx], Zvertex);
+                isTriggerDaughter = MakeCorrelations(itrack, triggerTrack, phiCandidates, fDphiHPhi[indexZVtx], Zvertex, trigList.size());
+                isTriggerLSDaughter = MakeCorrelations(itrack, triggerTrack, phiLikeSignCandidates, fDphiHKK[indexZVtx], Zvertex, trigList.size());
 
                 if(!isTriggerDaughter){
                     cfPart = new AliCFParticle(triggerTrack.particle.Pt(), triggerTrack.particle.Eta(), trigPoint[1] ,triggerTrack.charge, 0);
@@ -1589,7 +1590,7 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
 
                         aassocTrack = dynamic_cast<AliAODTrack*>(VassocTrack);
 
-                        if(aassocTrack->TestFilterMask(ASSOC_TRK_BIT) && aassocTrack->Pt() > 0.15 && TMath::Abs(aassocTrack->Eta())<0.8){
+                        if(aassocTrack->TestFilterMask(ASSOC_TRK_BIT) && aassocTrack->Pt() > 0.5 && aassocTrack->Pt() < 10 && TMath::Abs(aassocTrack->Eta())<0.8){
                             hhdphi_point[0] = trigPoint[0];
                             hhdphi_point[1] = aassocTrack->Pt();
                             hhdphi_point[2] = trigPoint[1] - aassocTrack->Phi();
@@ -1605,6 +1606,9 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
                             if(fhEffHist !=0 && ftrigEffHist !=0){
                                 weight = 1.0/fhEffHist->GetBinContent(fhEffHist->GetXaxis()->FindBin((aassocTrack->Pt())));
                                 weight = weight*(1.0/ftrigEffHist->GetBinContent(ftrigEffHist->GetXaxis()->FindBin((trigPoint[0]))));
+                            }
+                            if(DO_PER_EVENT_SCALING){
+                                weight = weight/trigList.size();
                             }
                             fDphiHH[indexZVtx]->Fill(hhdphi_point, weight);
                             hhAssoc->SetPt(aassocTrack->Pt());
