@@ -192,7 +192,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserCreateOutputObjects()
  fHistTPCTPC_Mixed_SS->SetVarTitle(2, "#Delta#eta");
  fHistTPCTPC_Mixed_SS->SetVarTitle(3, "#Delta#phi");
 
- Double_t dCen[] = {0.,10.,60.,100.};
+ Double_t dCen[] = {0.,10.,60.,80.,100.};
  Int_t nCen = sizeof(dCen) / sizeof(Double_t) - 1;
 
  //const Int_t nbins_dTrig[] = {fNbinsPtTrig, nCen};
