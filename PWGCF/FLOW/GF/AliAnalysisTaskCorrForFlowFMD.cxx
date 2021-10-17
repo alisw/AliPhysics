@@ -123,6 +123,8 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     OpenFile(1);
     PrintSetup();
 
+    if(fAnalType == eFMDAFMDC && fDoPID) { AliWarning("PID on when running FMDA-FMDC. Turning off."); fDoPID = kFALSE; } 
+
     fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
 
     fOutputListCharged = new TList();
@@ -187,8 +189,6 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     fTracksTrig[0] = new TObjArray;
 
     if(fUseEfficiency && !AreEfficienciesLoaded()) { return; }
-
-    fhEventCounter->Fill("Efficiencies loaded",1);
 
     if(fAnalType != eTPCTPC) {
       if(!PrepareFMDTracks()){
@@ -394,8 +394,8 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         if(trigPt < assPt) continue;
         if(track->GetID() == trackAss->GetID()) continue;
 
-        binscont[0] = assEta - trigEta;
-        binscont[1] = RangePhi(assPhi - trigPhi);
+        binscont[0] = trigEta - assEta;
+        binscont[1] = RangePhi(trigPhi - assPhi);
         binscont[4] = assPt;
 
         if(TMath::Abs(binscont[0]) < fMergingCut){
@@ -444,8 +444,8 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assPhi = trackAss->Phi();
         Double_t assMult = trackAss->Multiplicity();
 
-        binscont[0] = assEta - trigEta;
-        binscont[1] = RangePhi(assPhi - trigPhi);
+        binscont[0] = trigEta - assEta;
+        binscont[1] = RangePhi(trigPhi - assPhi);
 
         fhSE[spec]->Fill(binscont,0,assMult/(trigEff));
       }
@@ -471,8 +471,8 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assPhi = trackAss->Phi();
         Double_t assMult = trackAss->Multiplicity();
 
-        binscont[0] = assEta - trigEta;
-        binscont[1] = RangePhi(assPhi - trigPhi);
+        binscont[0] = trigEta - assEta;
+        binscont[1] = RangePhi(trigPhi - assPhi);
 
         fhSE[spec]->Fill(binscont,0,assMult*trigMult);
       }
@@ -519,8 +519,8 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
 
             if(trigPt < assPt) continue;
 
-            binscont[0] = assEta - trigEta;
-            binscont[1] = RangePhi(assPhi - trigPhi);
+            binscont[0] = trigEta - assEta;
+            binscont[1] = RangePhi(trigPhi - assPhi);
             binscont[3] = assPt;
 
             if(TMath::Abs(binscont[0]) < fMergingCut){
@@ -570,8 +570,8 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             Double_t assPhi = trackAss->Phi();
             Double_t assMult = trackAss->Multiplicity();
 
-            binscont[0] = assEta - trigEta;
-            binscont[1] = RangePhi(assPhi - trigPhi);
+            binscont[0] = trigEta - assEta;
+            binscont[1] = RangePhi(trigPhi - assPhi);
 
             fhME[spec]->Fill(binscont,0,assMult/(Double_t)nMix);
           }
@@ -600,8 +600,8 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             Double_t assPhi = trackAss->Phi();
             Double_t assMult = trackAss->Multiplicity();
 
-            binscont[0] = assEta - trigEta;
-            binscont[1] = RangePhi(assPhi - trigPhi);
+            binscont[0] = trigEta - assEta;
+            binscont[1] = RangePhi(trigPhi - assPhi);
 
             fhME[spec]->Fill(binscont,0,(trigMult*assMult)/(Double_t)nMix);
           }
@@ -638,6 +638,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::AreEfficienciesLoaded()
     }
     if(!fDoPID) break;
   }
+  fhEventCounter->Fill("Efficiencies loaded",1);
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -689,15 +690,21 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
       if(fAnalType == eTPCFMDA){
         fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, nTrackBin_tpcfmd, iTrackBin_tpcfmdA);
         fhME[i] = new AliTHn(nameM[i], nameM[i], nSteps, nTrackBin_tpcfmd, iTrackBin_tpcfmdA);
-        fhSE[i]->SetBinLimits(2, -6., -0.8);
-        fhME[i]->SetBinLimits(2, -6., -0.8);
+        fhSE[i]->SetBinLimits(0, -6., -0.8);
+        fhME[i]->SetBinLimits(0, -6., -0.8);
       } // TPC - FMDA
       else{
         fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, nTrackBin_tpcfmd, iTrackBin_tpcfmdC);
         fhME[i] = new AliTHn(nameM[i], nameM[i], nSteps, nTrackBin_tpcfmd, iTrackBin_tpcfmdC);
-        fhSE[i]->SetBinLimits(2, 1., 4.);
-        fhME[i]->SetBinLimits(2, 1., 4.);
+        fhSE[i]->SetBinLimits(0, 1., 4.);
+        fhME[i]->SetBinLimits(0, 1., 4.);
       } // TPC - FMDC
+      fhSE[i]->SetBinLimits(3, fPtBinsTrigCharged.data());
+      fhSE[i]->SetVarTitle(3, "p_{T} [GeV/c] (trig)");
+      fhME[i]->SetBinLimits(3, fPtBinsTrigCharged.data());
+      fhME[i]->SetVarTitle(3, "p_{T} [GeV/c] (trig)");
+
+      if(!fDoPID) break;
     }
 
 
@@ -792,16 +799,20 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
       if(mostProbableN > 0) {
     	   if(eta > 0){
     	     nFMD_fwd_hits+=mostProbableN;
-    	     if(fAnalType == eTPCFMDA) fTracksAss->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
-           if(fAnalType == eFMDAFMDC) {
-             fTracksTrig[0]->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
-             fhTrigTracks[0]->Fill(eta,fPVz,mostProbableN);
+           if(eta > 1.8 && eta < 4.8){
+             if(fAnalType == eTPCFMDA) fTracksAss->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
+             if(fAnalType == eFMDAFMDC) {
+               fTracksTrig[0]->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
+               fhTrigTracks[0]->Fill(eta,fPVz,mostProbableN);
+             }
            }
     	   } // eta positive
          else
          {
     	     nFMD_bwd_hits+=mostProbableN;
-    	     if(fAnalType == eTPCFMDC || fAnalType == eFMDAFMDC) fTracksAss->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
+           if(eta < -1.8 && eta > -3.2){
+             if(fAnalType == eTPCFMDC || fAnalType == eFMDAFMDC) fTracksAss->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
+           }
     	   } // eta negative
     	 } // most probable > 0
     } // end phi
@@ -823,6 +834,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
       if(fAnalType == eFMDAFMDC) fTracksTrig[0]->Clear();
       return kFALSE;
     }
+    fhEventCounter->Fill("FMD cuts OK",1);
   }
 
   return kTRUE;
