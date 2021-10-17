@@ -66,7 +66,7 @@ public:
   { fNonlinA=a; fNonlinB=b; fNonlinC=c; fNonlinD=d; fNonlinE=e;}
   void SetEminCut(Double_t  emin=0.1){fEminCut=emin;}
   void SetTimeEffCut(bool c){fDefTof=c;}
-  void SetUnsmear(Double_t a=1., Double_t b=0.){ fUnsmA=a; fUnsmB=b;}
+  void SetUnsmear(Double_t a=1., Double_t b=0.){ fUnsmA=a; fUnsmB=b; fDoUnsmear= true; }
   void SetTrackSelection(trackSelections s=kCENTwSSD){fTrackSelection=s;}
   void SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   void SetJetPthardRatio(Double_t  ratio=2.5){fJetPtHardFactor=ratio;}
@@ -138,6 +138,7 @@ private:
   Bool_t fIsFastMC;       //This is fast MC, bypass event checks
   Bool_t fIsMCWithPileup; //Special MC production with pileup
   Bool_t fDefTof;         // default tof cut eff param or alternative to sys error estimate
+  Bool_t fDoUnsmear;      // do unsmearing
   Double_t fRP;           //! Reaction plane orientation
   Double_t fJetPtHardFactor ; //Maximal Jetpt to pthard bins ratio
   

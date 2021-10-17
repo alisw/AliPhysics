@@ -90,6 +90,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fIsFastMC(0),
   fIsMCWithPileup(0),
   fDefTof(true),
+  fDoUnsmear(false),
   fRP(0.),
   fJetPtHardFactor(2.5),
   fZmax(0.),
@@ -160,6 +161,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fIsFastMC(0),
   fIsMCWithPileup(0),
   fDefTof(true),
+  fDoUnsmear(false),  
   fRP(0.),
   fJetPtHardFactor(2.5),
   fZmax(-60.),
@@ -225,6 +227,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fIsFastMC(0),
   fIsMCWithPileup(0),
   fDefTof(true),
+  fDoUnsmear(false),
   fRP(0.),
   fJetPtHardFactor(2.5),
   fZmax(-60.),
@@ -996,7 +999,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     TLorentzVector momentum ;
     clu->GetMomentum(momentum, vtx5);
     Double_t cluE = NonLinearity(clu->E()); 
-    if(fIsMC){
+    if(fIsMC && fDoUnsmear){
        Int_t primLabel=clu->GetLabelAt(0) ; //FindPrimary(clu,sure) ;
        if(primLabel>-1){
          AliAODMCParticle * prim = (AliAODMCParticle*)fStack->At(primLabel) ;
