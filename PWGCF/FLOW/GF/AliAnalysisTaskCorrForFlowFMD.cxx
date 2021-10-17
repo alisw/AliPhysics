@@ -123,7 +123,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     OpenFile(1);
     PrintSetup();
 
-    if(fAnalType == eFMDAFMDC && fDoPID) { AliWarning("PID on when running FMDA-FMDC. Turning off."); fDoPID = kFALSE; } 
+    if(fAnalType == eFMDAFMDC && fDoPID) { AliWarning("PID on when running FMDA-FMDC. Turning off."); fDoPID = kFALSE; }
 
     fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
 
@@ -504,7 +504,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigEta = track->Eta();
         Double_t trigPhi = track->Phi();
         Double_t trigCharge = track->Charge();
-        binscont[2] = trigPt;
+        binscont[3] = trigPt;
 
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
@@ -521,7 +521,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
 
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);
-            binscont[3] = assPt;
+            binscont[4] = assPt;
 
             if(TMath::Abs(binscont[0]) < fMergingCut){
               Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
@@ -558,7 +558,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigPt = track->Pt();
         Double_t trigEta = track->Eta();
         Double_t trigPhi = track->Phi();
-        binscont[2] = trigPt;
+        binscont[3] = trigPt;
 
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
