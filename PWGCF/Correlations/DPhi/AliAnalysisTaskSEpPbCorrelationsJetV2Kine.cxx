@@ -142,6 +142,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserCreateOutputObjects()
   
   fListOutput->Add(new TH2D("hEta_Phi",  "", 80, -2.5, 5.5, 72, 0 ,2.*TMath::Pi()));
 
+  fListOutput->Add(new TH2D("hPt_Cen","", 40, 0., 20., 100, 0., 100.));
  /*
   TObject *p(nullptr);
   TIter next(fListOutput);
@@ -191,7 +192,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserCreateOutputObjects()
  fHistTPCTPC_Mixed_SS->SetVarTitle(2, "#Delta#eta");
  fHistTPCTPC_Mixed_SS->SetVarTitle(3, "#Delta#phi");
 
- Double_t dCen[] = {0.,10.,60.,80.,100.};
+ Double_t dCen[] = {0.,10.,60.,100.};
  Int_t nCen = sizeof(dCen) / sizeof(Double_t) - 1;
 
  //const Int_t nbins_dTrig[] = {fNbinsPtTrig, nCen};
@@ -464,7 +465,31 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
  (static_cast<TH1D*>(fListOutput->FindObject("hCentrality")))->Fill(fCentrality);
  (static_cast<TH2D*>(fListOutput->FindObject("hCentrality_MidCharged")))->Fill(fCentrality,nCharged_mid);
  if(fMode == "Centrality") return;
+
+ for (auto i=0; i<ev->GetNumberOfTracks(); ++i)
+ {
+  AliMCParticle *mcTrack = (AliMCParticle *)ev->GetTrack(i);
+   if (!mcTrack) {
+      Error("ReadEventAODMC", "Could not receive particle %d", i);
+      continue;
+   }
+  Int_t pdgabs=TMath::Abs(mcTrack->PdgCode());
+  Bool_t TrIsPrim=mcTrack->IsPhysicalPrimary();
+  Bool_t TrCharge=mcTrack->Charge()!=0;
+
+  if (!TrCharge)        continue;
+  if (!TrIsPrim)           continue;
+  if (mcTrack->Pt() < 0.001 || mcTrack->Pt() > 50.) continue;
+  if (pdgabs!=211 && pdgabs!=321 && pdgabs!=2212) continue; //only charged pi+K+p
+  if (pdgabs==9902210) return; //no diffractive protons 
+
+  const auto dEtapp(mcTrack->Eta());
+  const auto dEtappt(mcTrack->Pt());
  
+  (static_cast<TH2D*>(fListOutput->FindObject("hPt_Cen")))->Fill(dEtappt,fCentrality);
+ } 
+
+ if(fMode == "RCP") return;
  if(fCentrality <fCen1 || fCentrality>fCen2) return;
 
 //Construct the container for "TPC" and "FMD"
