@@ -670,11 +670,6 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   TString nameS[4] = {"fhChargedSE", "fhPidSE_Pion", "fhPidSE_Kaon", "fhPidSE_Proton" };
   TString nameM[4] = {"fhChargedME", "fhPidME_Pion", "fhPidME_Kaon", "fhPidME_Proton" };
 
-  // Double_t binning_dphi_reduce[] = { -1.570796,  -1.221730, -0.872665, -0.523599, -0.174533,  0.174533,  0.523599,
-  //      0.872665,  1.221730,   1.570796, 1.919862,  2.268928,   2.617994, 2.967060,  3.316126,  3.665191,
-  //      4.014257,  4.363323,   4.712389};
-  // Int_t nbinning_dphi_reduce = sizeof(binning_dphi_reduce)/sizeof(Double_t) - 1;
-
   if(fAnalType == eTPCFMDA || fAnalType == eTPCFMDC){
     Double_t binning_detaFMDTPC[]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1., -0.8};
     Double_t binning_detaFMDCTPC[]={ 1., 1.2, 1.4, 1.6, 1.8, 2. , 2.2, 2.4, 2.6, 2.8, 3., 3.2, 3.4, 3.6, 3.8, 4.};
@@ -699,8 +694,10 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
         fhSE[i]->SetBinLimits(0, 1., 4.);
         fhME[i]->SetBinLimits(0, 1., 4.);
       } // TPC - FMDC
+      fhSE[i]->SetBinLimits(1, binning_dphi);
       fhSE[i]->SetBinLimits(3, fPtBinsTrigCharged.data());
       fhSE[i]->SetVarTitle(3, "p_{T} [GeV/c] (trig)");
+      fhME[i]->SetBinLimits(1, binning_dphi);
       fhME[i]->SetBinLimits(3, fPtBinsTrigCharged.data());
       fhME[i]->SetVarTitle(3, "p_{T} [GeV/c] (trig)");
 
@@ -710,16 +707,18 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
 
   } // end TPC - FMD
   else if(fAnalType == eFMDAFMDC){
-    Int_t iTrackBin_fmdAfmdC[] = {48, 72, 10};
-    // Int_t iTrackBin_fmdAfmdC[] = {48, 36, 10};
+    // Int_t iTrackBin_fmdAfmdC[] = {48, 72, 10};
+    Int_t iTrackBin_fmdAfmdC[] = {48, 36, 10};
     Int_t nTrackBin_fmdAfmdC = sizeof(iTrackBin_fmdAfmdC) / sizeof(Int_t);
 
     for(Int_t i(0); i < 4; i++){
       fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, nTrackBin_fmdAfmdC, iTrackBin_fmdAfmdC);
       fhSE[i]->SetBinLimits(0, 3.4,8.2);
+      fhSE[i]->SetBinLimits(1, -0.5*TMath::Pi(), (3./2.)*TMath::Pi());
 
       fhME[i] = new AliTHn(nameM[i], nameM[i], nSteps, nTrackBin_fmdAfmdC, iTrackBin_fmdAfmdC);
       fhME[i]->SetBinLimits(0, 3.4,8.2);
+      fhME[i]->SetBinLimits(1, -0.5*TMath::Pi(), (3./2.)*TMath::Pi());
 
       if(!fDoPID) break;
     }
@@ -731,6 +730,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     for(Int_t i(0); i < 4; i++){
       fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, 5, iBinningTPCTPC);
       fhSE[i]->SetBinLimits(0, binning_deta_tpctpc);
+      fhSE[i]->SetBinLimits(1, binning_dphi);
       fhSE[i]->SetBinLimits(3, fPtBinsTrigCharged.data());
       fhSE[i]->SetBinLimits(4, fPtBinsAss.data());
       fhSE[i]->SetVarTitle(3, "p_{T} [GeV/c] (trig)");
@@ -738,6 +738,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
 
       fhME[i] = new AliTHn(nameM[i], nameM[i], nSteps, 5, iBinningTPCTPC);
       fhME[i]->SetBinLimits(0, binning_deta_tpctpc);
+      fhME[i]->SetBinLimits(1, binning_dphi);
       fhME[i]->SetBinLimits(3, fPtBinsTrigCharged.data());
       fhME[i]->SetBinLimits(4, fPtBinsAss.data());
       fhME[i]->SetVarTitle(3, "p_{T} [GeV/c] (trig)");
@@ -750,14 +751,12 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
 
   // all
   for(Int_t i(0); i < 4; i++){
-    fhSE[i]->SetBinLimits(1, binning_dphi);
     fhSE[i]->SetBinLimits(2, -10,10);
     fhSE[i]->SetVarTitle(0, "#Delta#eta");
     fhSE[i]->SetVarTitle(1, "#Delta#phi");
     fhSE[i]->SetVarTitle(2, "PVz [cm]");
     fOutputListCharged->Add(fhSE[i]);
 
-    fhME[i]->SetBinLimits(1, binning_dphi);
     fhME[i]->SetBinLimits(2, -10,10);
     fhME[i]->SetVarTitle(0, "#Delta#eta");
     fhME[i]->SetVarTitle(1, "#Delta#phi");
