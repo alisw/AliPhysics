@@ -74,6 +74,7 @@ public:
     void SetSingleTrigger(Bool_t doSingleTrigger) { DO_SINGLE_TRIGGER = doSingleTrigger; };
     void SetSelectTrigger(Bool_t selectTriggerEvents) { SELECT_TRIGGER_EVENTS = selectTriggerEvents; };
     void SetHighestTriggerOnly(Bool_t doHighestTrigger) { DO_HIGHEST_TRIGGER = doHighestTrigger; };
+    void SetPerEventScaling(Bool_t doPerEventScaling) { DO_PER_EVENT_SCALING = doPerEventScaling; };
 
     void LoadEfficiencies(TFile* filename);
     void LoadEfficiencies(TF1* phieff, TF1* heff, TF1* trigeff);
@@ -89,6 +90,7 @@ private:
     Bool_t DO_SINGLE_TRIGGER;
     Bool_t SELECT_TRIGGER_EVENTS;
     Bool_t DO_HIGHEST_TRIGGER;
+    Bool_t DO_PER_EVENT_SCALING;
 
     Bool_t IS_HH;
     Float_t MULT_LOW;
@@ -118,8 +120,8 @@ private:
  
        
     TObjArray* AddToTracks();
-    Bool_t MakeCorrelations(Int_t itrack, AliHContainer trigger, std::vector<AliPhiContainer> phiVec, THnSparse *fDphi, Double_t zVtx);
-    Bool_t MakeCorrelations(Int_t itrack, AliAODMCParticle *trigger, std::vector<AliPhiContainer> phiVec, THnSparse *fDphi, Double_t zVtx);
+    Bool_t MakeCorrelations(Int_t itrack, const AliHContainer& trigger, const std::vector<AliPhiContainer>& phiVec, THnSparse *fDphi, Double_t zVtx, Int_t numtrigs);
+    Bool_t MakeCorrelations(Int_t itrack, AliAODMCParticle *trigger, const std::vector<AliPhiContainer>& phiVec, THnSparse *fDphi, Double_t zVtx);
     void MakeMixCorrelations(AliPhiContainer* phiVec, THnSparse *fDphiMixed, Float_t mult, Double_t zVtx, AliEventPool* fPool, Bool_t isLS);
     void MakeHHMixCorrelations(AliCFParticle *cfPart, THnSparse *fDphiMixed, Float_t mult, Double_t zVtx);
   
@@ -136,12 +138,11 @@ private:
     TF1         *fphiEff;// phi Efficiency
     TF1         *fhEff;// hadron Efficiency
     TF1         *ftrigEff;// trigger Efficiency
-
+ 
     TH1D         *fphiEffHist;// phi Efficiency
     TH1D         *fhEffHist;// hadron Efficiency
     TH1D         *ftrigEffHist;// trigger Efficiency
-
-    
+   
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
     TH1F        *fNumTracks;//! number of Tracks/evt
@@ -225,7 +226,7 @@ private:
     AliAnalysisTaskHadronPhiCorr(const AliAnalysisTaskHadronPhiCorr&); // not implemented
     AliAnalysisTaskHadronPhiCorr& operator=(const AliAnalysisTaskHadronPhiCorr&); // not implemented
    
-    ClassDef(AliAnalysisTaskHadronPhiCorr, 3); 
+    ClassDef(AliAnalysisTaskHadronPhiCorr, 3); // 
 };
 
 #endif
