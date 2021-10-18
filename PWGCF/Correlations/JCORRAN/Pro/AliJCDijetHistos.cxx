@@ -99,6 +99,7 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_dijetResponseTrunc(),
     fh_dijetResponseTrunc2(),
     fh_dijetResponseDeltaPhiCut(),
+    fh_dijetResponseDeltaPhiCutLin(),
     fh_dijetResponseDeltaPhiCutTrunc(),
     fh_dijetResponseDeltaPhiCutTrunc2()
 {
@@ -178,6 +179,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_dijetResponseTrunc(obj.fh_dijetResponseTrunc),
     fh_dijetResponseTrunc2(obj.fh_dijetResponseTrunc2),
     fh_dijetResponseDeltaPhiCut(obj.fh_dijetResponseDeltaPhiCut),
+    fh_dijetResponseDeltaPhiCutLin(obj.fh_dijetResponseDeltaPhiCutLin),
     fh_dijetResponseDeltaPhiCutTrunc(obj.fh_dijetResponseDeltaPhiCutTrunc),
     fh_dijetResponseDeltaPhiCutTrunc2(obj.fh_dijetResponseDeltaPhiCutTrunc2)
 {
@@ -583,6 +585,10 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_dijetResponseDeltaPhiCut
         << TH2D("h_dijetResponseDeltaPhiCut", "h_dijetResponseDeltaPhiCut", NBINSDijet, logBinsXDijet, NBINSDijet, logBinsXDijet )
+        << "END" ;
+
+    fh_dijetResponseDeltaPhiCutLin
+        << TH2D("h_dijetResponseDeltaPhiCutLin", "h_dijetResponseDeltaPhiCutLin", 1000, 0, 1000, 1000, 0, 1000 )
         << "END" ;
 
     fh_dijetResponseDeltaPhiCutTrunc
