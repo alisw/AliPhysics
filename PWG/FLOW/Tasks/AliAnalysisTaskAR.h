@@ -677,7 +677,7 @@ private:
   std::vector<Int_t> fSymmetricCumulants;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 16);
+  ClassDef(AliAnalysisTaskAR, 17);
 };
 
 #endif
