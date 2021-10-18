@@ -49,7 +49,7 @@ private:
 
 		Double_t  fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4];
 		TLorentzVector vParticle[5][2];
-		Float_t fPIDTPC[5], fPIDTOF[5];
+		Float_t fPIDTPC[5][2], fPIDTOF[5][2];
 		Int_t fRunNumber, fADAdecision, fADCdecision, fV0Adecision, fV0Cdecision, fSign;
 		Int_t fTrackPIDid[2];
 		Bool_t fTriggers[10], fTriggerClass[3];
@@ -61,7 +61,7 @@ private:
 		AliAnalysisTaskCentralTau(const AliAnalysisTaskCentralTau&); //not implemented
 		AliAnalysisTaskCentralTau& operator =(const AliAnalysisTaskCentralTau&); //not implemented
 
-ClassDef(AliAnalysisTaskCentralTau, 28);
+ClassDef(AliAnalysisTaskCentralTau, 29);
 };
 
 #endif

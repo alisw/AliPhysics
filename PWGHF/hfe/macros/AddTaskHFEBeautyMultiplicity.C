@@ -31,7 +31,8 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 	Double_t maxNtrklet = 9999,
 	Bool_t   iGPMC = kFALSE,
 	TString estimatorFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/estimatorAvg.root",
-	TString pTWeightFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/pTWeight.root"
+	//TString pTWeightFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/pTWeight.root"
+	TString pTWeightFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/pTWeight_Fix.root"
 
 	)
 {
@@ -106,13 +107,14 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
     }
     TGraphErrors* WeightPt_Dmeson = (TGraphErrors*)fpTWeight->Get("pTWeight_Dmeson")->Clone("WeightPt_Dmeson");
     TGraphErrors* WeightPt_Lc     = (TGraphErrors*)fpTWeight->Get("pTWeight_Lc")->Clone("WeightPt_Lc");
+    TGraphErrors* WeightPt_Bmeson = (TGraphErrors*)fpTWeight->Get("pTWeight_Bmeson")->Clone("WeightPt_Bmeson");
     //TF1* 	  WeightPt_Bmeson = (TF1*)fpTWeight->Get("pTWeight_Bmeson")->Clone("WeightPt_Bmeson");
     //TF1* 	  WeightPt_Pi0 	  = (TF1*)fpTWeight->Get("pTWeight_Pi0")->Clone("WeightPt_Pi0");
     //TF1* 	  WeightPt_Eta    = (TF1*)fpTWeight->Get("pTWeight_Eta")->Clone("WeightPt_Eta");
 
     task->SetWeightDmeson(WeightPt_Dmeson);
     task->SetWeightLc(WeightPt_Lc);
-    //task->SetWeightBmeson(WeightPt_Bmeson);
+    task->SetWeightBmeson(WeightPt_Bmeson);
     //task->SetWeightPi0(WeightPt_Pi0);
     //task->SetWeightEta(WeightPt_Eta);
 

@@ -17,6 +17,12 @@
 #include "AliMultSelection.h"
 #include "AliMultiplicity.h"
 #include "AliPWG0Helper.h"
+#include "AliAnalysisFilter.h"
+#include "AliAODEvent.h"
+#include "AliESDtrackCuts.h"
+#include "AliESDUtils.h"
+#include "AliVEvent.h"
+
 
 #include "TH1D.h"
 #include "TH2F.h"
@@ -26,7 +32,10 @@ ClassImp(AliTaskLeadingMC)
 
 //________________________________________________________________________
 AliTaskLeadingMC::AliTaskLeadingMC(const char *name) :
-AliAnalysisTask(name, "")
+AliAnalysisTask(name, ""),
+fTrackFilter(0x0),
+fSpherocity(-10),
+fNTracksSpherocity(0)
 {
   // Constructor
 
@@ -94,6 +103,12 @@ void AliTaskLeadingMC::CreateOutputObjects()
 {
   // Called once
   fDB = TDatabasePDG::Instance();
+
+  //initialize quality trackcuts for spherocity
+  if(!fTrackFilter){	
+    fTrackFilter = new AliAnalysisFilter("trackFilter2015");
+    SetTrackCuts(fTrackFilter);
+  }
   
   //Create output tree
   fTree=new TTree("fTree", "ZDC");
@@ -143,6 +158,9 @@ void AliTaskLeadingMC::CreateOutputObjects()
   fTree->Branch("sumPtPi", &fSumPtPiEta, "sumPtPi/F");
   fTree->Branch("maxChargePt", &fMaxChargePt, "maxChargePt/F");
   fTree->Branch("effEnergy",&fEffEnergy, "effEnergy/F");
+  fTree->Branch("spherocity",&fSpherocity, "spherocity/F");
+  fTree->Branch("ntracksspherocity",&fNTracksSpherocity, "ntracksspherocity/I");
+
 
   // ZDC recon infos
   fTree->Branch("adcZDCN1",fAdcZDCN1,"adcZDCN1[5]/F");
@@ -320,6 +338,7 @@ void AliTaskLeadingMC::Exec(Option_t *)
      }
   }
 
+  fSpherocity = ComputeSpherocity(); //Calculates event spherocity
 
   // fill signal reconstructed in ZDCs
   fillZDCreco();
@@ -745,3 +764,98 @@ void AliTaskLeadingMC::Terminate(Option_t *)
 
   system("touch ok.job");
 }
+
+//__________________________________________________________________________________________________
+/// Computes event spherocity. From: AliPhysics/PWGLF/RESONANCES/AliRsnMiniAnalysisTask.cxx 
+/// 
+/// For AODs, the filter bit 5 is used to select tracks for the computation. 
+/// For tESDs, the track filter set externally is used to select tracks. 
+///
+/// \return Spherocity value if at least 10 good tracks are used for the computation. If not, returns -10.
+/// 
+Double_t AliTaskLeadingMC::ComputeSpherocity()
+{
+  AliVEvent * evTypeS = fESD;
+  Int_t ntracksLoop = evTypeS->GetNumberOfTracks();
+  fNTracksSpherocity = 0;
+  Float_t spherocity = -10.0;
+  Float_t pFull = 0;
+  Float_t Spherocity = 2;
+  Float_t pt[10000],phi[1000];
+  
+  //computing total pt
+  Float_t sumapt = 0;
+  for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
+    AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
+    AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
+    AliESDtrack *esdt  = dynamic_cast<AliESDtrack *>(track);
+    if (aodt) if (!aodt->TestFilterBit(5)) continue;
+    if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
+    if (track->Pt() < 0.15) continue;
+    if(TMath::Abs(track->Eta()) > 0.8) continue;
+    //pt[i1] = track->Pt();
+    pt[i1] = 1.0;
+    sumapt += pt[i1];
+    fNTracksSpherocity++;
+  }
+  if (fNTracksSpherocity < 3) return -10.0;
+  //Getting thrust
+  for(Int_t i = 0; i < 360/0.1; ++i){
+	Float_t numerador = 0;
+	Float_t phiparam  = 0;
+	Float_t nx = 0;
+	Float_t ny = 0;
+	phiparam=( (TMath::Pi()) * i * 0.1 ) / 180; // parametrization of the angle
+	nx = TMath::Cos(phiparam);            // x component of an unitary vector n
+	ny = TMath::Sin(phiparam);            // y component of an unitary vector n
+	for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
+	  AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
+	  AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
+	  AliESDtrack *esdt  = dynamic_cast<AliESDtrack *>(track);
+	  if (aodt) if (!aodt->TestFilterBit(5)) continue;
+	  if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
+	  if (track->Pt() < 0.15) continue;
+	  if(TMath::Abs(track->Eta()) > 0.8) continue;
+	  //pt[i1] = track->Pt();
+	  pt[i1] = 1.0;
+	  phi[i1] = track->Phi();
+	  Float_t pxA = pt[i1] * TMath::Cos( phi[i1] );
+	  Float_t pyA = pt[i1] * TMath::Sin( phi[i1] );
+	  numerador += TMath::Abs( ny * pxA - nx * pyA );//product between p  proyection in XY plane and the unitary vector
+	}
+	pFull=TMath::Power( (numerador / sumapt),2 );
+	if(pFull < Spherocity)//maximization of pFull
+	  {
+	    Spherocity = pFull;
+	  }
+  }
+  spherocity=((Spherocity)*TMath::Pi()*TMath::Pi())/4.0;
+  if (fNTracksSpherocity > 2) return spherocity;
+  else return -10.0;
+}
+
+//----------------------------------------------------------------------------------
+/// Defines track cuts for Spherocity computation. From: AliPhysics/PWGLF/RESONANCES/AliRsnMiniAnalysisTask.cxx 
+///
+/// Uses a track filter to set the quality cuts for the spherocity calculation.
+/// Implementation only used for ESDs. AOD filtering is done via the filter bit. 
+///
+/// \param fTrackFilter Pointer to the AliAnalysisFilter 
+///
+void AliTaskLeadingMC::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
+
+	AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
+	//TPC Only
+	esdTrackCuts->SetMinNClustersTPC(50);
+	esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+	esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+	esdTrackCuts->SetMaxDCAToVertexZ(3.2);
+	esdTrackCuts->SetMaxDCAToVertexXY(2.4);
+	esdTrackCuts->SetDCAToVertex2D(kTRUE);
+	
+	esdTrackCuts->SetRequireTPCRefit(kTRUE);// TPC Refit
+	esdTrackCuts->SetRequireITSRefit(kTRUE);// ITS Refit
+	fTrackFilter->AddCuts(esdTrackCuts);
+   return;
+}
+

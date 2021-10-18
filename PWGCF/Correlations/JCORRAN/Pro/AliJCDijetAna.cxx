@@ -890,6 +890,7 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
 
             if(bLeadingMatch && bSubleadingMatchDeltaPhi) {
                 fhistos->fh_dijetResponseDeltaPhiCut->Fill(dijetDetMC.m(), dijet.m());
+                fhistos->fh_dijetResponseDeltaPhiCutLin->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseDeltaPhiCutTrunc->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_dijetResponseDeltaPhiCutTrunc2->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_responseInfo->Fill("Dijet DPhi match",1.0);
