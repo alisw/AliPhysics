@@ -107,6 +107,7 @@ const TString kMMName[LAST_EMINMAX] = {"[kMIN]", "[kMAX]"};
 enum kBeforeAfter { kBEFORE, kAFTER, LAST_EBEFOREAFTER };
 const TString kBAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
 const Color_t kFillColor[LAST_EBEFOREAFTER] = {kRed - 10, kGreen - 10};
+const Color_t kcolorFinalResult = kBlue - 10;
 enum kMode { kRECO, kSIM, LAST_EMODE };
 const TString kModeName[LAST_EMODE] = {"[kRECO]", "[kSIM]"};
 enum kMCPrimaryDef { kMCPrim, kMCPhysicalPrim };
@@ -176,6 +177,10 @@ public:
   TComplex FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
   TComplex SixNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5,
                           Int_t n6);
+
+  // methods for calculating symmetric cumulants
+  void SC2(kFinalResultProfile rp);
+  void SC3(kFinalResultProfile rp);
 
   // GetPointers Methods in case we need to manually trigger Terminate()
   virtual void GetPointers(TList *list);
