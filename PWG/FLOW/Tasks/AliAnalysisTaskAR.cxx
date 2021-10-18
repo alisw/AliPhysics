@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 14.10.2021
+ * Last Modified Date: 18.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -270,7 +270,7 @@ void AliAnalysisTaskAR::Terminate(Option_t *) {
   fFinalResultHistograms[kAVGCEN]->SetBinContent(
       1, fEventControlHistograms[kRECO][kCEN][kAFTER]->GetMean());
   // get minimum multiplicity
-  // need when running with fixed multiplicity and fischer-yates in later
+  // needed when running with fixed multiplicity and fischer-yates in later
   // analysis
   Int_t MinMulBin = 1;
   for (int i = 1;
@@ -289,6 +289,11 @@ void AliAnalysisTaskAR::Terminate(Option_t *) {
   // count number of tracks, needed for statistics in the end
   fFinalResultHistograms[kNUMBEROFTRACKS]->SetBinContent(
       1, fTrackControlHistograms[kRECO][kPHI][kAFTER]->GetEntries());
+
+  // compute symmetric cumulant
+  if (!fSymmetricCumulants.empty()) {
+    FillSymmetricCumulant();
+  }
 }
 
 void AliAnalysisTaskAR::InitializeArrays() {
@@ -1303,8 +1308,8 @@ void AliAnalysisTaskAR::BookFinalResultCorrelators() {
   //  - as a function of multiplicity
 
   TList *corList;
-  TProfile *corProfile[3];
-  Double_t bins[3][3] = {
+  TProfile *corProfile[LAST_EFINALRESULTPROFILE];
+  Double_t bins[LAST_EBINS][LAST_EFINALRESULTPROFILE] = {
       {1, 0, 1},
       {fEventControlHistogramBins[kCEN][kBIN],
        fEventControlHistogramBins[kCEN][kLEDGE],
@@ -1313,8 +1318,10 @@ void AliAnalysisTaskAR::BookFinalResultCorrelators() {
        fEventControlHistogramBins[kMULQ][kLEDGE],
        fEventControlHistogramBins[kMULQ][kUEDGE]},
   };
-  TString Names[3] = {"integrated", "(CP)", "(M)"};
-  TString xaxis[3] = {"", "Centrality Percentile", "Multiplicity"};
+  TString Names[LAST_EFINALRESULTPROFILE] = {"[kINTEGRATED]", "[kCENDEP]",
+                                             "[kMULDEP]"};
+  TString xaxis[LAST_EFINALRESULTPROFILE] = {"", "Centrality Percentile",
+                                             "Multiplicity"};
   TString corListName;
   TString corName;
   for (std::size_t i = 0; i < fCorrelators.size(); i++) {
@@ -1333,7 +1340,7 @@ void AliAnalysisTaskAR::BookFinalResultCorrelators() {
     corList->SetOwner(kTRUE);
     fFinalResultCorrelatorsList->Add(corList);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < LAST_EFINALRESULTPROFILE; i++) {
       corProfile[i] = new TProfile(corListName + Names[i],
                                    corListName + TString(" ") + Names[i],
                                    bins[i][0], bins[i][1], bins[i][2]);
@@ -1344,36 +1351,75 @@ void AliAnalysisTaskAR::BookFinalResultCorrelators() {
 }
 
 void AliAnalysisTaskAR::BookFinalResultSymmetricCumulants() {
-  // book histograms holding symmetric cumulants
+  // book histogram holding symmetric cumulant
+  // at the moment you can only compute one symmetric cumulant per task
   // these cumulants are computed from multi paritcle correlators during
-  // Terminate
+  // Terminate, therefore we have histograms
 
-  TH1D *hist;
-  TString histName;
-  std::vector<Int_t> CorrelatorForSC;
-  std::vector<std::vector<Int_t>> Correlators;
-  for (std::vector<Int_t> SC : fSymmetricCumulants) {
-
-    histName = "SC(";
-    for (std::size_t i = 0; i < SC.size(); i++) {
-      if (i != SC.size() - 1) {
-        histName += Form("%d,", (int)i);
-      } else {
-        histName += Form("%d,", (int)i);
-      }
+  TH1D *Hist[LAST_EFINALRESULTPROFILE];
+  Double_t bins[LAST_EBINS][LAST_EFINALRESULTPROFILE] = {
+      {1, 0, 1},
+      {fEventControlHistogramBins[kCEN][kBIN],
+       fEventControlHistogramBins[kCEN][kLEDGE],
+       fEventControlHistogramBins[kCEN][kUEDGE]},
+      {fEventControlHistogramBins[kMULQ][kBIN],
+       fEventControlHistogramBins[kMULQ][kLEDGE],
+       fEventControlHistogramBins[kMULQ][kUEDGE]},
+  };
+  TString Name;
+  Name += "SC(";
+  for (std::size_t i = 0; i < fSymmetricCumulants.size(); i++) {
+    Name += Form("%d", fSymmetricCumulants.at(i));
+    if (i < fSymmetricCumulants.size() - 1) {
+      Name += ",";
     }
-    hist = new TH1D(histName, histName, 1, 0, 1);
+  }
+  Name += ")";
+  TString Names[LAST_EFINALRESULTPROFILE] = {"[kINTEGRATED]", "[kCENDEP]",
+                                             "[kMULDEP]"};
+  TString xaxis[LAST_EFINALRESULTPROFILE] = {"", "Centrality Percentile",
+                                             "Multiplicity"};
 
-    // CorrelatorForSC = SC(SC);
-    Correlators.push_back(CorrelatorForSC);
+  for (int i = 0; i < LAST_EFINALRESULTPROFILE; i++) {
+    Hist[i] = new TH1D(Name + Names[i], Name + TString(" ") + Names[i],
+                       bins[i][0], bins[i][1], bins[i][2]);
+    Hist[i]->GetXaxis()->SetTitle(xaxis[i]);
+    fFinalResultSymmetricCumulantsList->Add(Hist[i]);
   }
 
-  fCorrelators = Correlators;
-}
-
-std::vector<Int_t> AliAnalysisTaskAR::SC(std::vector<Int_t> sc) {
-  std::vector<Int_t> v = {1, 2};
-  return v;
+  // book final result correlators according to symmetric cumulant
+  switch (fSymmetricCumulants.size()) {
+  case 2:
+    fCorrelators = {
+        {-fSymmetricCumulants.at(0), -fSymmetricCumulants.at(1),
+         fSymmetricCumulants.at(1),
+         fSymmetricCumulants.at(0)}, // <4>_{-m,-n,n,m}
+        {-fSymmetricCumulants.at(0), fSymmetricCumulants.at(0)},  // <2>_{-m,m}
+        {-fSymmetricCumulants.at(1), fSymmetricCumulants.at(1)}}; // <2>_{-n,n}
+    break;
+  case 3:
+    fCorrelators = {
+        {-fSymmetricCumulants.at(0), -fSymmetricCumulants.at(1),
+         -fSymmetricCumulants.at(2), fSymmetricCumulants.at(2),
+         fSymmetricCumulants.at(1),
+         fSymmetricCumulants.at(0)}, // <6>_{-k,-l,-n,n,l,k}
+        {-fSymmetricCumulants.at(0), -fSymmetricCumulants.at(1),
+         fSymmetricCumulants.at(1),
+         fSymmetricCumulants.at(0)}, // <4>_{-k,-l,l,k}
+        {-fSymmetricCumulants.at(0), -fSymmetricCumulants.at(2),
+         fSymmetricCumulants.at(2),
+         fSymmetricCumulants.at(0)}, // <4>_{-k,-n,n,k}
+        {-fSymmetricCumulants.at(1), -fSymmetricCumulants.at(2),
+         fSymmetricCumulants.at(2),
+         fSymmetricCumulants.at(1)}, // <4>_{-l,-n,n,l}
+        {-fSymmetricCumulants.at(0), fSymmetricCumulants.at(0)},  // <2>_{-k,k}
+        {-fSymmetricCumulants.at(1), fSymmetricCumulants.at(1)},  // <2>_{-l,l}
+        {-fSymmetricCumulants.at(2), fSymmetricCumulants.at(2)}}; // <2>_{-n,n}
+    break;
+  default:
+    std::cout << "higher order symmetric cumulants are not implemented (yet)"
+              << std::endl;
+  }
 }
 
 void AliAnalysisTaskAR::SetDefaultConfiguration() {
@@ -2975,6 +3021,37 @@ void AliAnalysisTaskAR::FillFinalResultCorrelators() {
     dynamic_cast<TProfile *>(
         dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))->At(2))
         ->Fill(fMultiplicity[kMULQ], corr, weight);
+  }
+}
+
+void AliAnalysisTaskAR::FillSymmetricCumulant() {
+
+  switch (fSymmetricCumulants.size()) {
+
+  case 2:
+    dynamic_cast<TH1D *>(fFinalResultSymmetricCumulantsList->At(kINTEGRATED))
+        ->SetBinContent(
+            1, dynamic_cast<TProfile *>(
+                   dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(0))
+                       ->At(kINTEGRATED))
+                       ->GetBinContent(1) -
+                   dynamic_cast<TProfile *>(
+                       dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(1))
+                           ->At(kINTEGRATED))
+                           ->GetBinContent(1) *
+                       dynamic_cast<TProfile *>(
+                           dynamic_cast<TList *>(
+                               fFinalResultCorrelatorsList->At(2))
+                               ->At(kINTEGRATED))
+                           ->GetBinContent(1));
+    break;
+  case 3:
+    std::cout << "Higher order symmetric cumulants not implemented (yet)"
+              << std::endl;
+    break;
+  default:
+    std::cout << "Higher order symmetric cumulants not implemented (yet)"
+              << std::endl;
   }
 }
 
