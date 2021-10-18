@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 12.10.2021
+ * Last Modified Date: 18.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -85,13 +85,19 @@ enum kTrack {
 // kinematic variables
 const Int_t kKinematic = kETA + 1;
 // final result histograms
-enum kFinalHist {
+enum kFinalResultHist {
   kAVGPHI,
   kAVGCEN,
   kMINMUL,
   kNUMBEROFEVENTS,
   kNUMBEROFTRACKS,
   LAST_EFINALHIST
+};
+enum kFinalResultProfile {
+  kINTEGRATED,
+  kCENDEP,
+  kMULDEP,
+  LAST_EFINALRESULTPROFILE
 };
 // various gloabl objects
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
@@ -146,6 +152,7 @@ public:
   virtual void FillEventControlHistograms(kBeforeAfter BA, AliVEvent *Event);
   virtual void FillTrackControlHistograms(kBeforeAfter BA, AliVParticle *track);
   virtual void FillFinalResultCorrelators();
+  virtual void FillSymmetricCumulant();
   virtual Bool_t SurviveEventCut(AliAODEvent *aAOD);
   virtual Bool_t SurviveTrackCut(AliVParticle *aTrack, Bool_t FillCounter);
   virtual void FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC);
@@ -169,7 +176,6 @@ public:
   TComplex FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
   TComplex SixNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5,
                           Int_t n6);
-  std::vector<Int_t> SC(std::vector<Int_t> sc);
 
   // GetPointers Methods in case we need to manually trigger Terminate()
   virtual void GetPointers(TList *list);
@@ -481,6 +487,11 @@ public:
     this->fCorrelators = correlators;
   }
 
+  // set symmetric cumulant to be computed
+  void SetSymmetricCumulant(std::vector<Int_t> SC) {
+    this->fSymmetricCumulants = SC;
+  }
+
   // use nested loops for computation of correlators
   void SetUseNestedLoops(Bool_t option) { this->fUseNestedLoops = option; }
 
@@ -658,7 +669,7 @@ private:
   Bool_t fUseWeights[kKinematic];
   Bool_t fUseWeightsAggregated;
   std::vector<std::vector<Int_t>> fCorrelators;
-  std::vector<std::vector<Int_t>> fSymmetricCumulants;
+  std::vector<Int_t> fSymmetricCumulants;
 
   // increase this counter in each new version
   ClassDef(AliAnalysisTaskAR, 16);
