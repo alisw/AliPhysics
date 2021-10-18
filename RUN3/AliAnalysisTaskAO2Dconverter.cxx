@@ -2324,30 +2324,32 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
   //---------------------------------------------------------------------------
   // AD (FDD)
-  fdd.fIndexBCs = fBCCount;
-  if (fESD) {
-    AliESDAD *esdad = fESD->GetADData();
-    for (Int_t ich = 0; ich < 4; ++ich)
-      fdd.fAmplitudeA[ich] = 0; // not filled for the moment
-    for (Int_t ich = 0; ich < 4; ++ich)
-      fdd.fAmplitudeC[ich] = 0; // not filled for the moment
-    fdd.fTimeA = AliMathBase::TruncateFloatFraction(esdad->GetADATime(), mADTime);
-    fdd.fTimeC = AliMathBase::TruncateFloatFraction(esdad->GetADCTime(), mADTime);
-    fdd.fTriggerMask = 0; // not filled for the moment
+  if (fVEvent->GetADData()) {
+    fdd.fIndexBCs = fBCCount;
+    if (fESD) {
+      AliESDAD *esdad = fESD->GetADData();
+      for (Int_t ich = 0; ich < 4; ++ich)
+        fdd.fAmplitudeA[ich] = 0; // not filled for the moment
+      for (Int_t ich = 0; ich < 4; ++ich)
+        fdd.fAmplitudeC[ich] = 0; // not filled for the moment
+      fdd.fTimeA = AliMathBase::TruncateFloatFraction(esdad->GetADATime(), mADTime);
+      fdd.fTimeC = AliMathBase::TruncateFloatFraction(esdad->GetADCTime(), mADTime);
+      fdd.fTriggerMask = 0; // not filled for the moment
+    }
+    else {
+      AliAODAD *aodad = fAOD->GetADData();
+      for (Int_t ich = 0; ich < 4; ++ich)
+        fdd.fAmplitudeA[ich] = 0; // not filled for the moment
+      for (Int_t ich = 0; ich < 4; ++ich)
+        fdd.fAmplitudeC[ich] = 0; // not filled for the moment
+      fdd.fTimeA = AliMathBase::TruncateFloatFraction(aodad->GetADATime(), mADTime);
+      fdd.fTimeC = AliMathBase::TruncateFloatFraction(aodad->GetADCTime(), mADTime);
+      fdd.fTriggerMask = 0; // not filled for the moment
+    }
+    FillTree(kFDD);
+    if (fTreeStatus[kFDD])
+      eventextra.fNentries[kFDD] = 1;
   }
-  else {
-    AliAODAD *aodad = fAOD->GetADData();
-    for (Int_t ich = 0; ich < 4; ++ich)
-      fdd.fAmplitudeA[ich] = 0; // not filled for the moment
-    for (Int_t ich = 0; ich < 4; ++ich)
-      fdd.fAmplitudeC[ich] = 0; // not filled for the moment
-    fdd.fTimeA = AliMathBase::TruncateFloatFraction(aodad->GetADATime(), mADTime);
-    fdd.fTimeC = AliMathBase::TruncateFloatFraction(aodad->GetADCTime(), mADTime);
-    fdd.fTriggerMask = 0; // not filled for the moment
-  }
-  FillTree(kFDD);
-  if (fTreeStatus[kFDD])
-    eventextra.fNentries[kFDD] = 1;
 
   Int_t nv0_filled = 0; // total number of v0's filled per event
   if (fillCollision)
