@@ -1283,8 +1283,6 @@ void AliAnalysisTaskAR::BookControlHistograms() {
 void AliAnalysisTaskAR::BookFinalResultHistograms() {
   // Book final result histograms
 
-  Color_t colorFinalResult = kBlue - 10;
-
   // book final result histograms
   for (int var = 0; var < LAST_EFINALHIST; ++var) {
     fFinalResultHistograms[var] =
@@ -1293,7 +1291,7 @@ void AliAnalysisTaskAR::BookFinalResultHistograms() {
                  fFinalResultHistogramBins[var][kBIN],
                  fFinalResultHistogramBins[var][kLEDGE],
                  fFinalResultHistogramBins[var][kUEDGE]);
-    fFinalResultHistograms[var]->SetFillColor(colorFinalResult);
+    fFinalResultHistograms[var]->SetFillColor(kcolorFinalResult);
     fFinalResultHistograms[var]->GetXaxis()->SetTitle(
         fFinalResultHistogramNames[var][2]);
     fFinalResultHistogramsList->Add(fFinalResultHistograms[var]);
@@ -1384,6 +1382,7 @@ void AliAnalysisTaskAR::BookFinalResultSymmetricCumulants() {
     Hist[i] = new TH1D(Name + Names[i], Name + TString(" ") + Names[i],
                        bins[i][0], bins[i][1], bins[i][2]);
     Hist[i]->GetXaxis()->SetTitle(xaxis[i]);
+    Hist[i]->SetFillColor(kcolorFinalResult);
     fFinalResultSymmetricCumulantsList->Add(Hist[i]);
   }
 
@@ -3025,33 +3024,82 @@ void AliAnalysisTaskAR::FillFinalResultCorrelators() {
 }
 
 void AliAnalysisTaskAR::FillSymmetricCumulant() {
-
+  // fill symmetric cumulant
   switch (fSymmetricCumulants.size()) {
-
   case 2:
-    dynamic_cast<TH1D *>(fFinalResultSymmetricCumulantsList->At(kINTEGRATED))
-        ->SetBinContent(
-            1, dynamic_cast<TProfile *>(
-                   dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(0))
-                       ->At(kINTEGRATED))
-                       ->GetBinContent(1) -
-                   dynamic_cast<TProfile *>(
-                       dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(1))
-                           ->At(kINTEGRATED))
-                           ->GetBinContent(1) *
-                       dynamic_cast<TProfile *>(
-                           dynamic_cast<TList *>(
-                               fFinalResultCorrelatorsList->At(2))
-                               ->At(kINTEGRATED))
-                           ->GetBinContent(1));
+    SC2(kINTEGRATED);
+    SC2(kCENDEP);
+    SC2(kMULDEP);
     break;
   case 3:
-    std::cout << "Higher order symmetric cumulants not implemented (yet)"
-              << std::endl;
+    SC3(kINTEGRATED);
+    SC3(kCENDEP);
+    SC3(kMULDEP);
     break;
   default:
     std::cout << "Higher order symmetric cumulants not implemented (yet)"
               << std::endl;
+  }
+}
+
+void AliAnalysisTaskAR::SC2(kFinalResultProfile rp) {
+  // SC(m,n)=v_mn-v_m*v_n
+  Double_t v_mn, v_m, v_n;
+  for (Int_t bin = 1;
+       bin <= dynamic_cast<TH1D *>(fFinalResultSymmetricCumulantsList->At(rp))
+                  ->GetNbinsX();
+       bin++) {
+    v_mn =
+        dynamic_cast<TProfile *>(
+            dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(0))->At(rp))
+            ->GetBinContent(bin);
+    v_m = dynamic_cast<TProfile *>(
+              dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(1))->At(rp))
+              ->GetBinContent(bin);
+    v_n = dynamic_cast<TProfile *>(
+              dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(2))->At(rp))
+              ->GetBinContent(bin);
+    dynamic_cast<TH1D *>(fFinalResultSymmetricCumulantsList->At(rp))
+        ->SetBinContent(bin, v_mn - v_m * v_n);
+  }
+}
+
+void AliAnalysisTaskAR::SC3(kFinalResultProfile rp) {
+  // SC(k,l,n)= v_kln - v_kl * v_n - v_kn * v_l - v_ln * v_k +
+  // 2. * v_k * v_l * v_n
+  Double_t v_kln, v_kl, v_kn, v_ln, v_k, v_l, v_n;
+  for (Int_t bin = 1;
+       bin <= dynamic_cast<TH1D *>(fFinalResultSymmetricCumulantsList->At(rp))
+                  ->GetNbinsX();
+       bin++) {
+    v_kln =
+        dynamic_cast<TProfile *>(
+            dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(0))->At(rp))
+            ->GetBinContent(bin);
+    v_kl =
+        dynamic_cast<TProfile *>(
+            dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(1))->At(rp))
+            ->GetBinContent(bin);
+    v_kn =
+        dynamic_cast<TProfile *>(
+            dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(2))->At(rp))
+            ->GetBinContent(bin);
+    v_ln =
+        dynamic_cast<TProfile *>(
+            dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(3))->At(rp))
+            ->GetBinContent(bin);
+    v_k = dynamic_cast<TProfile *>(
+              dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(4))->At(rp))
+              ->GetBinContent(bin);
+    v_l = dynamic_cast<TProfile *>(
+              dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(5))->At(rp))
+              ->GetBinContent(bin);
+    v_n = dynamic_cast<TProfile *>(
+              dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(6))->At(rp))
+              ->GetBinContent(bin);
+    dynamic_cast<TH1D *>(fFinalResultSymmetricCumulantsList->At(rp))
+        ->SetBinContent(bin, v_kln - v_kl * v_n - v_kn * v_l - v_ln * v_k +
+                                 2. * v_k * v_l * v_n);
   }
 }
 
