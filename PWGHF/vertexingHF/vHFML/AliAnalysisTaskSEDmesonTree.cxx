@@ -571,7 +571,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     if (okSetVar && !(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl)) // add tag in tree handler for signal from pileup events?
                         fMLhandler->FillTree();
                 }
-                break;
+                continue;
             }
             else
             {
@@ -604,7 +604,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                 bool okSetVar = fMLhandler->SetVariables(dMeson, fAOD->GetMagneticField(), 0, pidHF);
                 if (okSetVar && !(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl)) // add tag in tree handler for signal from pileup events?
                     fMLhandler->FillTree();
-                break;
+                continue;
             }
         }
 

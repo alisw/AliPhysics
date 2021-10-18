@@ -262,20 +262,22 @@ void AliAnalysisTaskAO2Dconverter::NotifyRun(){
   AliOADBTriggerAnalysis* oadbTriggerAnalysis = (AliOADBTriggerAnalysis*) triggerContainer->GetObject(fCurrentRunNumber, "Default");
   fTriggerAnalysis.SetParameters(oadbTriggerAnalysis);
   //read PHOS trigger bad map
-  AliOADBContainer phosBadmapContainer(Form("phosTriggerBadMap"));
-  phosBadmapContainer.InitFromFile(Form("%s/PHOS/PHOSTrigBadMaps.root", AliAnalysisManager::GetOADBPath()),              
-                                   "phosTriggerBadMap");
-  TObjArray *maps = (TObjArray*)phosBadmapContainer.GetObject(fCurrentRunNumber,"phosTriggerBadMap");
-  if(!maps){
-    AliFatal(Form("Can not read PHOS Trigger Bad map for run %d. \n",fCurrentRunNumber)) ;    
-  }
-  else{
-    for(Int_t mod=0; mod<5;mod++){
-      if(fPHOSBadMap[mod]) 
-        delete fPHOSBadMap[mod] ;
-      TH2I * h = (TH2I*)maps->At(mod) ;      
-      if(h)
-        fPHOSBadMap[mod]=new TH2I(*h) ;
+  if (fUsePHOSBadMap){
+    AliOADBContainer phosBadmapContainer(Form("phosTriggerBadMap"));
+    phosBadmapContainer.InitFromFile(Form("%s/PHOS/PHOSTrigBadMaps.root", AliAnalysisManager::GetOADBPath()),              
+                                      "phosTriggerBadMap");
+    TObjArray *maps = (TObjArray*)phosBadmapContainer.GetObject(fCurrentRunNumber,"phosTriggerBadMap");
+    if(!maps){
+      AliFatal(Form("Can not read PHOS Trigger Bad map for run %d. \n",fCurrentRunNumber)) ;    
+    }
+    else{
+      for(Int_t mod=0; mod<5;mod++){
+        if(fPHOSBadMap[mod]) 
+          delete fPHOSBadMap[mod] ;
+        TH2I * h = (TH2I*)maps->At(mod) ;      
+        if(h)
+          fPHOSBadMap[mod]=new TH2I(*h) ;
+      }
     }
   }
     
@@ -2045,11 +2047,14 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     //here absId is normal Run2 readout absId
     //Remove noisy triggers
     Int_t phosmodulenumber = TMath:: Ceil(float(absId)/3584) ; 
-    int id = absId - ( phosmodulenumber - 1 ) * 3584 ; 
-    int ix = (Int_t)TMath::Ceil( float(id) / 64 )  ;
-    int iz = (Int_t)( id - ( ix - 1 ) * 64 ) ; 
-    if(fPHOSBadMap[phosmodulenumber] != nullptr && fPHOSBadMap[phosmodulenumber]->GetBinContent(ix,iz)>0) { //bad channel
-      continue ;
+    if (fUsePHOSBadMap)
+    {    
+      int id = absId - ( phosmodulenumber - 1 ) * 3584 ; 
+      int ix = (Int_t)TMath::Ceil( float(id) / 64 )  ;
+      int iz = (Int_t)( id - ( ix - 1 ) * 64 ) ; 
+      if(fPHOSBadMap[phosmodulenumber] != nullptr && fPHOSBadMap[phosmodulenumber]->GetBinContent(ix,iz)>0) { //bad channel
+        continue ;
+      }
     }
     //transform to Run3 truID
     absId--;
@@ -2101,7 +2106,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     Double_t efrac;
 
     calo.fIndexBCs = fBCCount;
-    cells->GetCell(icp, cellNumber, amplitude, time, mclabel, efrac);
+    phoscells->GetCell(icp, cellNumber, amplitude, time, mclabel, efrac);
     //Run2: absId=1..4*56*64 ; Run3: absId = 32*56...4*56*64, module numbering is opposite 
     int mod = cellNumber/3584; 
     calo.fCellNumber = (4-mod)*3584 + cellNumber%3584 ;
@@ -2109,7 +2114,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     // here we assume fixed calibration 
     calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude/mPHOSCalib, 0xFFF); //12 bit
     calo.fTime = AliMathBase::TruncateFloatFraction(time, 0x1FFF);  //13 bit
-    calo.fCellType = cells->GetHighGain(icp) ? 0. : 1.; 
+    calo.fCellType = phoscells->GetHighGain(icp) ? 0. : 1.; 
 
     FillTree(kCalo);
     if (fTreeStatus[kCalo])

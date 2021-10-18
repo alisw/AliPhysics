@@ -1131,6 +1131,16 @@ void AddTask_GammaConvV1_pp(
   } else if ( trainConfig == 501){
     cuts.AddCutPCM("00010113","00200009327000008250400000","3152103500000000"); // Jet QA
 
+  } else if ( trainConfig == 550){ // Jet analysis pp 13TeV
+    cuts.AddCutPCM("00010113","00200009227300008250404000","2152103500000000"); // standard cut Gamma Pi0 Eta pp 13TeV, V0AND
+	cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","2152103500000000"); // MB
+	cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","2l52103500000000"); // MB
+//	cuts.AddCutPCM("00061113","0dm00009f9730000dge0404000","2152103500000000"); // PHI1
+//	cuts.AddCutPCM("00062113","0dm00009f9730000dge0404000","2152103500000000"); // PHI7 
+  } else if ( trainConfig == 551){
+	cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","3152103500000000"); // MB
+//	cuts.AddCutPCM("00061113","0dm00009f9730000dge0404000","3152103500000000"); // PHI1
+//	cuts.AddCutPCM("00062113","0dm00009f9730000dge0404000","3152103500000000"); // PHI7 
    //----------------------Cuts by A. Marin for 13 TeV-----------------
 
  // Low B Field

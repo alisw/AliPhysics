@@ -90,6 +90,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fIsFastMC(0),
   fIsMCWithPileup(0),
   fDefTof(true),
+  fDoUnsmear(false),
   fRP(0.),
   fJetPtHardFactor(2.5),
   fZmax(0.),
@@ -160,6 +161,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fIsFastMC(0),
   fIsMCWithPileup(0),
   fDefTof(true),
+  fDoUnsmear(false),  
   fRP(0.),
   fJetPtHardFactor(2.5),
   fZmax(-60.),
@@ -225,6 +227,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fIsFastMC(0),
   fIsMCWithPileup(0),
   fDefTof(true),
+  fDoUnsmear(false),
   fRP(0.),
   fJetPtHardFactor(2.5),
   fZmax(-60.),
@@ -411,9 +414,9 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
 
    //Module QA
    for(Int_t mod=1; mod<5; mod++){
-     fhReMod[mod] = new TH2F(Form("hInvM_Re_mod%d",mod),"Two-photon inv. mass (both in m1)",nM,0.,mMax,nPt,ptBins) ;       //!
+     fhReMod[mod] = new TH2D(Form("hInvM_Re_mod%d",mod),"Two-photon inv. mass (both in m1)",nM,0.,mMax,nPt,ptBins) ;       //!
      fOutputContainer->Add(fhReMod[mod]) ;
-     fhMiMod[mod] = new TH2F(Form("hInvM_Mi_mod%d",mod),"Two-photon inv. mass (both in m1)",nM,0.,mMax,nPt,ptBins);       //!
+     fhMiMod[mod] = new TH2D(Form("hInvM_Mi_mod%d",mod),"Two-photon inv. mass (both in m1)",nM,0.,mMax,nPt,ptBins);       //!
      fOutputContainer->Add(fhMiMod[mod]) ;
    }
   
@@ -423,29 +426,29 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   for(Int_t iPID=0; iPID<fNPID; iPID++){
     
     //Inclusive spectra
-    fOutputContainer->Add(new TH1F(Form("hPhot_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
-    fOutputContainer->Add(new TH1F(Form("hPhotWcorr_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
-    fOutputContainer->Add(new TH1F(Form("hPhot_Dist2_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
-    fOutputContainer->Add(new TH1F(Form("hPhot_Dist3_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
+    fOutputContainer->Add(new TH1D(Form("hPhot_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
+    fOutputContainer->Add(new TH1D(Form("hPhotWcorr_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
+    fOutputContainer->Add(new TH1D(Form("hPhot_Dist2_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
+    fOutputContainer->Add(new TH1D(Form("hPhot_Dist3_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,ptBins)) ;
   
     for(Int_t itag=0; itag<18; itag++){
-      fOutputContainer->Add(new TH1F(Form("hPhot_TaggedMult%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of multiply tagged photons",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_TaggedMult%d_Isolation2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of multiply tagged isolated photons",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_Tagged%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of tagged photons",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhotWcorr_Tagged%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of tagged photons",nPt,ptBins)) ;      
-      fOutputContainer->Add(new TH1F(Form("hPhot_Tagged%d_Isolation2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of tagged and isolated photons",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_TrueTagged%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all tagged particles",nPt,ptBins)) ;      
+      fOutputContainer->Add(new TH1D(Form("hPhot_TaggedMult%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of multiply tagged photons",nPt,ptBins)) ;
+      fOutputContainer->Add(new TH1D(Form("hPhot_TaggedMult%d_Isolation2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of multiply tagged isolated photons",nPt,ptBins)) ;
+      fOutputContainer->Add(new TH1D(Form("hPhot_Tagged%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of tagged photons",nPt,ptBins)) ;
+      fOutputContainer->Add(new TH1D(Form("hPhotWcorr_Tagged%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of tagged photons",nPt,ptBins)) ;      
+      fOutputContainer->Add(new TH1D(Form("hPhot_Tagged%d_Isolation2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of tagged and isolated photons",nPt,ptBins)) ;
+      fOutputContainer->Add(new TH1D(Form("hPhot_TrueTagged%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all tagged particles",nPt,ptBins)) ;      
     }    
     for(Int_t kind=0; kind<20; kind++){
-      fOutputContainer->Add(new TH1F(Form("hPhot_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_Tagged_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
+      fOutputContainer->Add(new TH1D(Form("hPhot_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
+      fOutputContainer->Add(new TH1D(Form("hPhot_Tagged_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
     }
     for(Int_t kind=0; kind<20; kind++){
-      fOutputContainer->Add(new TH1F(Form("hPhot_nTagged_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
+      fOutputContainer->Add(new TH1D(Form("hPhot_nTagged_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins)) ;
     }
   }
   for(Int_t kind=0; kind<20; kind++){
-    fhPiIsolation[kind][cen]=new TH1F(Form("hPi_Isolation%d_cent%d",kind,cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins) ;
+    fhPiIsolation[kind][cen]=new TH1D(Form("hPi_Isolation%d_cent%d",kind,cen),"Spectrum of all reconstructed particles, no PID",nPt,ptBins) ;
     fOutputContainer->Add(fhPiIsolation[kind][cen]) ;
   }
 
@@ -455,34 +458,34 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   
   for(Int_t iPID=0; iPID<fNPID; iPID++){
     for(Int_t iEmin=0; iEmin<3; iEmin++){
-       fhRe[iEmin][cen][iPID] = new TH2F(Form("hInvM_Re_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
+       fhRe[iEmin][cen][iPID] = new TH2D(Form("hInvM_Re_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
                                          "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ; 
        fOutputContainer->Add(fhRe[iEmin][cen][iPID] ) ;
-       fhMi[iEmin][cen][iPID] = new TH2F(Form("hInvM_Mi_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
+       fhMi[iEmin][cen][iPID] = new TH2D(Form("hInvM_Mi_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
                                          "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
        fOutputContainer->Add(fhMi[iEmin][cen][iPID]) ;
 
-       fhReSingle[iEmin][cen][iPID]= new TH2F(Form("hSingleInvM_Re_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
+       fhReSingle[iEmin][cen][iPID]= new TH2D(Form("hSingleInvM_Re_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
                                                "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
        fOutputContainer->Add(fhReSingle[iEmin][cen][iPID]) ;
        
-       fhMiSingle[iEmin][cen][iPID]= new TH2F(Form("hSingleInvM_Mi_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
+       fhMiSingle[iEmin][cen][iPID]= new TH2D(Form("hSingleInvM_Mi_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
                                                "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
        fOutputContainer->Add(fhMiSingle[iEmin][cen][iPID]) ;
        
-       fhReSingleIso[iEmin][cen][iPID]= new TH2F(Form("hSingleInvM_Re_Emin%d_Iso_%s_cent%d",iEmin+1,cPID[iPID],cen),
+       fhReSingleIso[iEmin][cen][iPID]= new TH2D(Form("hSingleInvM_Re_Emin%d_Iso_%s_cent%d",iEmin+1,cPID[iPID],cen),
                                                "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
        fOutputContainer->Add(fhReSingleIso[iEmin][cen][iPID]) ;
 
-       fhReTruePi0[iEmin][cen][iPID] = new TH2F(Form("hInvM_ReTruePi0_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
+       fhReTruePi0[iEmin][cen][iPID] = new TH2D(Form("hInvM_ReTruePi0_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
                                          "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ; 
        fOutputContainer->Add(fhReTruePi0[iEmin][cen][iPID] ) ;
 
-       fhReTrueEta[iEmin][cen][iPID] = new TH2F(Form("hInvM_ReTrueEta_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
+       fhReTrueEta[iEmin][cen][iPID] = new TH2D(Form("hInvM_ReTrueEta_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
                                          "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ; 
        fOutputContainer->Add(fhReTrueEta[iEmin][cen][iPID] ) ;
        
-       fhMiSingleIso[iEmin][cen][iPID]= new TH2F(Form("hSingleInvM_Mi_Emin%d_Iso_%s_cent%d",iEmin+1,cPID[iPID],cen),
+       fhMiSingleIso[iEmin][cen][iPID]= new TH2D(Form("hSingleInvM_Mi_Emin%d_Iso_%s_cent%d",iEmin+1,cPID[iPID],cen),
                                                "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
        fOutputContainer->Add(fhMiSingleIso[iEmin][cen][iPID]) ;
     } 
@@ -490,13 +493,13 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     
     
     
-    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
-    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
-    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
+    fOutputContainer->Add(new TH2D(Form("hSingleInvM_Re_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
+    fOutputContainer->Add(new TH2D(Form("hSingleInvM_Re_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
+    fOutputContainer->Add(new TH2D(Form("hSingleInvM_Re_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
 
-    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
-    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
-    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
+    fOutputContainer->Add(new TH2D(Form("hSingleInvM_Mi_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
+    fOutputContainer->Add(new TH2D(Form("hSingleInvM_Mi_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
+    fOutputContainer->Add(new TH2D(Form("hSingleInvM_Mi_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
 
   }  
 
@@ -590,7 +593,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hMC_%s_vertex",partName[ipart]),"vertex",nPt,ptBins,150,0.,600.)) ;
     for(Int_t cen=0; cen<fNCenBin; cen++){
        fOutputContainer->Add(new TH1F(Form("hMC_all_%s_cent%d",partName[ipart],cen),"Spectum (full rapifity)",nPt,ptBins)) ;
-       fOutputContainer->Add(new TH1F(Form("hMC_unitEta_%s_cent%d",partName[ipart],cen),"Spectum, |y|<0.15",nPt,ptBins)) ;
+       fOutputContainer->Add(new TH1D(Form("hMC_unitEta_%s_cent%d",partName[ipart],cen),"Spectum, |y|<0.15",nPt,ptBins)) ;
        fOutputContainer->Add(new TH1F(Form("hMC_rap_%s_cent%d",partName[ipart],cen),"Rapidity",100,-1.,1.)) ;
        fOutputContainer->Add(new TH1F(Form("hMC_phi_%s_cent%d",partName[ipart],cen),"Azimuthal angle",100,0.,TMath::TwoPi())) ;
     }
@@ -600,30 +603,30 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   }
   for(Int_t iPID=0; iPID<fNPID; iPID++){
     for(Int_t iEmin=0; iEmin<3; iEmin++){
-      fhReSingleTruePi0[iEmin][iPID] = new TH2F(Form("hSingleTruePi0InvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
+      fhReSingleTruePi0[iEmin][iPID] = new TH2D(Form("hSingleTruePi0InvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
                                                        "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
       fOutputContainer->Add(fhReSingleTruePi0[iEmin][iPID]) ;
         
-      fhReSingleTruePi0K0s[iEmin][iPID] = new TH2F(Form("hSingleTruePi0K0sInvM_Re_Emin%d_%s",
+      fhReSingleTruePi0K0s[iEmin][iPID] = new TH2D(Form("hSingleTruePi0K0sInvM_Re_Emin%d_%s",
                                                                iEmin+1,cPID[iPID]),
                                             "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
       fOutputContainer->Add(fhReSingleTruePi0K0s[iEmin][iPID]) ;
-      fhReSingleTruePi0Kpm[iEmin][iPID] = new TH2F(Form("hSingleTruePi0KpmInvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
+      fhReSingleTruePi0Kpm[iEmin][iPID] = new TH2D(Form("hSingleTruePi0KpmInvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
                                                        "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
       fOutputContainer->Add(fhReSingleTruePi0Kpm[iEmin][iPID]) ;
-      fhReSingleTruePi0Nbar[iEmin][iPID] = new TH2F(Form("hSingleTruePi0InvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
+      fhReSingleTruePi0Nbar[iEmin][iPID] = new TH2D(Form("hSingleTruePi0InvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
                                                        "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
       fOutputContainer->Add(fhReSingleTruePi0Nbar[iEmin][iPID]) ;
       
         
-      fhReSingleTruePi0K0sC[iEmin][iPID] = new TH2F(Form("hSingleTruePi0K0sCorrInvM_Re_Emin%d_%s",
+      fhReSingleTruePi0K0sC[iEmin][iPID] = new TH2D(Form("hSingleTruePi0K0sCorrInvM_Re_Emin%d_%s",
                                                                iEmin+1,cPID[iPID]),
                                             "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
       fOutputContainer->Add(fhReSingleTruePi0K0sC[iEmin][iPID]) ;
-      fhReSingleTruePi0KpmC[iEmin][iPID] = new TH2F(Form("hSingleTruePi0KpmCorrInvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
+      fhReSingleTruePi0KpmC[iEmin][iPID] = new TH2D(Form("hSingleTruePi0KpmCorrInvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
                                                        "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
       fOutputContainer->Add(fhReSingleTruePi0KpmC[iEmin][iPID]) ;
-      fhReSingleTruePi0NbarC[iEmin][iPID] = new TH2F(Form("hSingleTruePi0NbarCorrInvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
+      fhReSingleTruePi0NbarC[iEmin][iPID] = new TH2D(Form("hSingleTruePi0NbarCorrInvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
                                                        "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
       fOutputContainer->Add(fhReSingleTruePi0NbarC[iEmin][iPID]) ;
       
@@ -639,27 +642,27 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     
        //Sort registered particles spectra according MC information
        for(Int_t iPID=0; iPID<fNPID; iPID++){
-         fOutputContainer->Add(new TH1F(Form("hMCRecPhoton_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecPhotonOnly_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecE_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecPbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecNbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecP_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecPipm_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecKpm_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecN_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecCharg_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecNeutral_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecK0s_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecK0l_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecNoPRim_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecPhoton_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecPhotonOnly_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecE_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecPbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecNbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecP_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecPipm_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecKpm_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecN_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecCharg_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecNeutral_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecK0s_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecK0l_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecNoPRim_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
 
 	 //Decay photons	 
-         fOutputContainer->Add(new TH1F(Form("hMCRecPhotPi0_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecPhotEta_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecPhotOmega_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecPhotOther_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecPhotNoPrim_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecPhotPi0_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecPhotEta_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecPhotOmega_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecPhotOther_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1D(Form("hMCRecPhotNoPrim_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
        
    
     
@@ -996,7 +999,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     TLorentzVector momentum ;
     clu->GetMomentum(momentum, vtx5);
     Double_t cluE = NonLinearity(clu->E()); 
-    if(fIsMC){
+    if(fIsMC && fDoUnsmear){
        Int_t primLabel=clu->GetLabelAt(0) ; //FindPrimary(clu,sure) ;
        if(primLabel>-1){
          AliAODMCParticle * prim = (AliAODMCParticle*)fStack->At(primLabel) ;
@@ -1630,7 +1633,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 //       Double_t w2=fCentWeight*p2->GetWeight() ;
       Double_t w2TOF=1.;
       Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
-      Int_t grandparent,grandParentPDG;
+      Int_t grandparent=-1,grandParentPDG=0;
       Double_t ptGrandParent=0;
       Int_t commonParent = IsSameParent(p1,p2,grandparent);
       if(fIsMC ){ //simulate TOF cut efficiency
@@ -1916,7 +1919,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         if(((oldTag1 & (1<<ibit))!=0) && //Already tagged 
            ((tag1 & (1<<ibit))!=0)){//Multiple tagging
            //Calculate combined probability to pass
-           Float_t wtofOld = p1->GetTagWeight(ibit) ;
+           Double_t wtofOld = p1->GetTagWeight(ibit) ;
 //            wtofOld=1.-(1.-wtofOld)*(1.-w2TOF);
            wtofOld+=w2TOF;
            p1->SetTagWeight(ibit,wtofOld) ;  //Add weight of TOF cut of the partner
@@ -1953,7 +1956,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       for(Int_t ibit=0; ibit<18; ibit++){
         if(((oldTag2 & (1<<ibit))!=0) && //Already tagged 
            ((tag2 & (1<<ibit))!=0)){//Multiple tagging
-           Float_t wtofOld = p2->GetTagWeight(ibit) ;
+           Double_t wtofOld = p2->GetTagWeight(ibit) ;
 //            wtofOld=1.-(1.-wtofOld)*(1.-w1TOF);
            wtofOld+=w1TOF;
            p2->SetTagWeight(ibit,wtofOld) ;  //Add weight of TOF cut of the partner
@@ -2036,9 +2039,9 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       }
     }
     
-   for(Int_t ibit=0; ibit<18; ibit++){
+    for(Int_t ibit=0; ibit<18; ibit++) {
      if((tag & (1<<ibit))!=0){ 
-       FillPIDHistogramsW(Form("hPhot_Tagged%d",ibit),p,p->GetTagWeight(ibit)*w1TOF) ;
+       FillPIDHistogramsW(Form("hPhot_Tagged%d",ibit),p,p->GetTagWeight(ibit)*w1TOF) ; 
        if(fIsMC){
          double wcorr = 1;
          int l = p->GetPrimaryAtVertex() ;
@@ -2262,7 +2265,7 @@ Int_t AliAnalysisTaskTaggedPhotons::IsSameParent(const AliCaloPhoton *p1, const 
   return 0 ;
 }
 //______________________________________________________________________________
-Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(const Float_t * position)const{
+Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(const Float_t position[3])const{
   //calculates in which kind of fiducial area photon hit
 
   TVector3 global1(position) ;
@@ -2366,6 +2369,10 @@ void AliAnalysisTaskTaggedPhotons::FillHistogram(const char * key,Double_t x,Dou
   }
   if(tmp->IsA() == TClass::GetClass("TH1F")){
     ((TH1F*)tmp)->Fill(x,y) ;
+    return ;
+  }
+  if(tmp->IsA() == TClass::GetClass("TH1D")){
+    ((TH1D*)tmp)->Fill(x,y) ;
     return ;
   }
   if(tmp->IsA() == TClass::GetClass("TH2F")){
