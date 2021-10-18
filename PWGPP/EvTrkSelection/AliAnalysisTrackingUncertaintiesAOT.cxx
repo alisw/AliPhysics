@@ -343,8 +343,9 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
     fHistMCWeights->GetYaxis()->SetBinLabel(1,"pions");
     fHistMCWeights->GetYaxis()->SetBinLabel(2,"kaons");
     fHistMCWeights->GetYaxis()->SetBinLabel(3,"protons");
-    fHistMCWeights->GetYaxis()->SetBinLabel(4,"Lambda");
-    fHistMCWeights->GetYaxis()->SetBinLabel(5,"Other");
+    fHistMCWeights->GetYaxis()->SetBinLabel(4,"K0short");
+    fHistMCWeights->GetYaxis()->SetBinLabel(5,"Lambda");
+    fHistMCWeights->GetYaxis()->SetBinLabel(6,"Other");
     //
     fListHist->Add(fHistMC);
     fListHist->Add(fHistMCTPConly);
@@ -600,11 +601,12 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
   TParticle* partTP;
   Float_t como;
   AliMCParticle* mcPartTP;
-  Int_t iMoTP, isLambda, iWeightedPart;
+  Int_t iMoTP, isLambda, isK0short, iWeightedPart;
   Int_t allowedParticles[4]={211,321,2212,3122}; 
   //
-  // fake Sigma to get the weight which will be used for lambdas
+  // fake Sigma and K+ to get the weight which will be used for lambdas
   TParticle *fakeSigma=new TParticle();
+  TParticle *fakeKplus=new TParticle();
   //
   //
   //
@@ -645,6 +647,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
     mfl=-999;
     uniqueID=-999;
     isLambda=0;
+    isK0short=0;
     iWeightedPart=0;
     //
     // here we have the track!
@@ -695,6 +698,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
 	  //
 	  //   1) physical primaries only isphi==1 is assigned the weight - no further check
 	  //   2) NOT physical primaries: if a proton or a pi- check if mother is a Lambda (and check that it's a physical primary)
+	  //   3) K0short case: if a pi+ check if mother is a K0short and assign the weight of K+, the same way as for Lambda's
 	  //
 	  weight = 1.0; 
 	  if (fUseMCWeights) {
@@ -703,7 +707,6 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
 	      iWeightedPart=666; // switch on writing the weight in a histogram
 	      // // for systematics
 	      // if(fMCSpectraWeights) weight = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 1);
-	      //	    cout<<" last part pdg, weight "<<code<<" "<<weight<<endl;
 	    }
 	    // end if physical primary
 	    //
@@ -712,7 +715,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
 	      // Climb decay tree if particle is a p+ or a pi- to verify if it comes from Lambda
 	      //
 	      if (abscode == 2212 || abscode == 211) {
-		// it's a proton or pi-
+		// it's a proton or pi- (or antiparticles)
 		// 
 		mcPartTP=mcPart;
 		iMoTP=mcPartTP->GetMother();
@@ -752,6 +755,50 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
 	      }
 	      // end if proton or pi-
 	      //
+	      //
+	      // Climb decay tree if particle is a pi+/- to verify if it comes from K0short
+	      //
+	      if (abscode == 211) {
+		// it's a proton or pi+/-
+		// 
+		mcPartTP=mcPart;
+		iMoTP=mcPartTP->GetMother();
+		if (iMoTP>=0) {
+		  mcPartTP =  (AliMCParticle*) mcEvent->GetTrack(iMoTP);
+		  como=mcPartTP->PdgCode();
+		  //
+		  //  if it's a K0short physical primary...
+		  //
+		  if (TMath::Abs(como) == 310 && mcPartTP->IsPhysicalPrimary()) {
+		    isK0short=1;
+		    //
+		    // create a K+ TParticle with same momentum and status code as this K0short - because weight is not defined for neutrals (yet)
+		    //
+		    fakeKplus->SetPdgCode(321);
+		    fakeKplus->SetMomentum(mcPartTP->Px(),mcPartTP->Py(),mcPartTP->Pz(),mcPartTP->E());
+		    fakeKplus->SetProductionVertex(mcPartTP->Xv(),mcPartTP->Yv(),mcPartTP->Zv(),mcPartTP->T());
+		    fakeKplus->SetStatusCode(mcPartTP->MCStatusCode());
+		    //
+		    // pick the weight for this ''K+''
+		    //
+		    if(fMCSpectraWeights) weight = fMCSpectraWeights->GetMCSpectraWeight(fakeKplus, 0);
+		    iWeightedPart=666; // switch on writing the weight in a histogram
+		    //
+		    // clean up
+		    //
+		    fakeKplus->SetPdgCode(-9999);
+		    fakeKplus->SetMomentum(-9999,-9999,-9999,-9999);
+		    fakeKplus->SetProductionVertex(-9999,-9999,-9999,-9999);
+		    fakeKplus->SetStatusCode(-9999);
+		  }
+		  // end if primary K0short
+		  //
+		}
+		// end if valid mother is found
+		// 
+	      }
+	      // end if pi+/-
+	      //
 	    }
 	    // end if NOT physical primary
 	    //
@@ -778,10 +825,10 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
             if(mfl==3 && uniqueID == kPDecay) partType = 1; //secondaries from strangeness
             else partType = 2;  //from material
           }
-          if(abscode ==  11)  specie = 0;
-          if(abscode == 211)  specie = 1;
-          if(abscode == 321)  specie = 2;
-          if(abscode ==2212)  specie = 3;
+          if(abscode ==  11)  specie = 0; // e+-
+          if(abscode == 211)  specie = 1; // pi+-
+          if(abscode == 321)  specie = 2; // K+-
+          if(abscode ==2212)  specie = 3; // P+-
         }
 	// end if pdgPart 
       }
@@ -940,10 +987,10 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
     }
     // distribution of weights per particle/antiparticle type
     //
-    // assign bin number to particle types - if there is a Lambda as mother either p or pi are tagged Lambda
+    // assign bin number to particle types - if there is a Lambda or K0short, daughters are tagged as mother (pi- frrom Lambda is tagged Lambda -> take care of double count if you use it)
     //
     if (iWeightedPart==666 && fUseMCWeights) { // only if flag on
-      if (isLambda==0) {
+      if (isLambda==0 && isK0short==0) {
     	switch (abscode) {
     	case 211:
     	  iWeightedPart=1;
@@ -955,11 +1002,11 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
     	  iWeightedPart=3;
     	  break;
     	default:
-    	  iWeightedPart=5; //all other particles
+    	  iWeightedPart=6; //all other particles
     	}
       }
-      else iWeightedPart=4;
-      //      cout<<" >>>>>>>>>>>>>>>>>>>>>>>>         islambda weight abscode iWeightedPart!!!!    "<<isLambda<<" "<<weight<<" "<<" "<<abscode<<" "<<iWeightedPart<<endl;
+      if (isK0short==1) iWeightedPart=4;
+      if (isLambda==1)  iWeightedPart=5;
       fHistMCWeights->Fill(weight,iWeightedPart);
     }
   } // end of track loop
