@@ -59,7 +59,10 @@ class AliAnalysisTaskGenRT : public AliAnalysisTaskSE { //
 		virtual void UserExec(Option_t *option);
 		virtual void Terminate(Option_t *);
 
+		void IsXiAllowed(Bool_t allow){ AllowXi = allow; }
 		void SetYRange(Float_t y){ fY=y; }
+		void SetMinPtLeading(Double_t minpt ){ fMinPtLeading = minpt; }
+		void SetMaxPtLeading(Double_t maxpt ){ fMaxPtLeading = maxpt; }
 
 	private:
 
@@ -81,6 +84,7 @@ class AliAnalysisTaskGenRT : public AliAnalysisTaskSE { //
 
 		AliStack* 	fStack;
 
+		Bool_t AllowXi;
 		Float_t	fY;     	///< rapidity cut
 		Int_t fIndexLeadingGen;
 		Double_t fPtLeadingGen;

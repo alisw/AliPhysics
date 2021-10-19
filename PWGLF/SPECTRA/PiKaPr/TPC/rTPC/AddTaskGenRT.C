@@ -8,7 +8,10 @@ AliAnalysisTask *AddTaskGenRT(TString suffixName =""){
 
   AliAnalysisTaskGenRT* taskSpectraLFMC = new  AliAnalysisTaskGenRT("AliAnalysisTaskPIDvsRT");
   
-  taskSpectraLFMC -> SetYRange(0.5);
+  taskSpectraLFMC->SetYRange(0.5);
+  taskSpectraLFMC->IsXiAllowed(kFALSE);
+  taskSpectraLFMC->SetMinPtLeading(5.0);
+  taskSpectraLFMC->SetMaxPtLeading(40.0);
   
   // Get the pointer to the existing analysis manager via the static access method
   //===========================================================================

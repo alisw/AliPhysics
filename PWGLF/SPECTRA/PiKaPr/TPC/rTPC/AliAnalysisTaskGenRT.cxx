@@ -68,7 +68,7 @@
 #include <iostream>
 using namespace std;
 
-const Char_t * pidNames[11] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero" };
+const Char_t *pidNames[11] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero" };
 Bool_t isPrimary[11] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE };
 
 ClassImp( AliAnalysisTaskGenRT )
@@ -80,6 +80,7 @@ ClassImp( AliAnalysisTaskGenRT )
 		fMcEvent(0x0),
 		fMcHandler(0x0),
 		fStack(0),
+		AllowXi(kFALSE),
 		fY(0.5),
 		fIndexLeadingGen(-1),
 		fPtLeadingGen(0.0),
@@ -114,6 +115,7 @@ AliAnalysisTaskGenRT::AliAnalysisTaskGenRT(const char *name):
 	fMcEvent(0x0),
 	fMcHandler(0x0),
 	fStack(0),
+	AllowXi(kFALSE),
 	fY(0.5),
 	fIndexLeadingGen(-1),
 	fPtLeadingGen(0.0),
@@ -163,7 +165,7 @@ void AliAnalysisTaskGenRT::UserCreateOutputObjects(){
 	fListOfObjects = new TList();
 	fListOfObjects->SetOwner(kTRUE);
 
-////	TString pidNames[11] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero" };
+	////	TString pidNames[11] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero" };
 
 	// ### Create histograms
 	fHistEvt = new TH1I("fHistEvt","fHistEvt",2,0,2) ;
@@ -236,8 +238,8 @@ void AliAnalysisTaskGenRT::UserCreateOutputObjects(){
 
 	}
 
-//	for(Int_t i=0; i<11; i++)
-//		InitHisto<TH1F>(Form("fHistPt_%s",pidNames[i].Data()), "Generated #it{p}_{T} distribution",2000,0.,20., "#it{p}_{T} (GeV/#it{c})", "Entries");
+	//	for(Int_t i=0; i<11; i++)
+	//		InitHisto<TH1F>(Form("fHistPt_%s",pidNames[i].Data()), "Generated #it{p}_{T} distribution",2000,0.,20., "#it{p}_{T} (GeV/#it{c})", "Entries");
 
 	// ### List of outputs
 	PostData(1, fListOfObjects);
@@ -359,6 +361,7 @@ void AliAnalysisTaskGenRT::GetIndexLeading(){
 	Bool_t isPhysPrim = kFALSE;
 	Double_t qPart = 0.0;
 	Double_t etaPart = -10.0;
+	Double_t yPart = -10.0;
 	Int_t pidCodeMC = 0;
 	Int_t pPDG = -10;
 
@@ -371,7 +374,7 @@ void AliAnalysisTaskGenRT::GetIndexLeading(){
 		TParticle* mcPart         = 0x0;
 		mcPart                    = (TParticle *)fMcEvent->Particle(ipart);
 		if (!mcPart) continue;
-		//selection of primary charged particles
+		//! selection of primary charged particles
 		if(!(mcPart->GetPDG())) continue;
 		qPart = mcPart->GetPDG()->Charge()/3.;
 		if(TMath::Abs(qPart)<0.001) continue;
@@ -382,9 +385,12 @@ void AliAnalysisTaskGenRT::GetIndexLeading(){
 		pidCodeMC = GetPidCode(pPDG);
 
 		//! Allow the leading to be a Xi
-		if(TMath::Abs(pidCodeMC)==5) continue; 
+		if(!AllowXi) {
+			if(TMath::Abs(pidCodeMC)==5) continue; 
+		}
 
 		etaPart = mcPart->Eta();
+		yPart = mcPart->Y();
 		if(TMath::Abs(etaPart) > 0.8) continue;
 		if(mcPart->Pt() < 0.15) continue;
 		if(mcPart->Pt()>ptleading){
@@ -393,6 +399,8 @@ void AliAnalysisTaskGenRT::GetIndexLeading(){
 		}
 
 		FillHisto("fHistEvt",1.5);
+		FillHisto("fHistEta",etaPart);
+		FillHisto("fHistY",yPart);
 
 	} // particle loop
 
@@ -437,10 +445,10 @@ void AliAnalysisTaskGenRT::MakeRTAnalysis(){
 		if(TMath::Abs(qPart)<0.001) continue;
 		isPhysPrim = fMcEvent->IsPhysicalPrimary(ipart);
 		if(!isPhysPrim) continue;
-		pPDG = TMath::Abs(mcPart->GetPdgCode());
-		pidCodeMC = GetPidCode(pPDG);
+		////pPDG = TMath::Abs(mcPart->GetPdgCode());
+		////pidCodeMC = GetPidCode(pPDG);
 		etaPart = mcPart->Eta();
-		if(TMath::Abs(etaPart) > 0.8)continue;
+		if(TMath::Abs(etaPart) > 0.8) continue;
 		ipt = mcPart->Pt();
 		if(ipt < 0.15) continue;
 		phiPart = mcPart -> Phi();
