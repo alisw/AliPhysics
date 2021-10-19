@@ -76,6 +76,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
 
         Double_t                RangePhi(Double_t DPhi);
+        Double_t                RangePhiFMD(Double_t DPhi);
         Double_t                GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
         void                    FillCorrelations(const Int_t spec);
         void                    FillCorrelationsMixed(const Int_t spec);
