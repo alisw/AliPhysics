@@ -2302,6 +2302,12 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(TFile* fEstimator, con
 	AliFatal("File with estimator not found!");
 	}
 
+  if(!periodNames){
+	AliFatal("estimator not found in the run!");
+	AliFatal("set LHC16 one");
+	sprintf(periodNames, "SPDTrklMB_LHC16k");
+	}
+
   fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames));
 
   if(!fMultEstimatorAvg){
@@ -2344,6 +2350,13 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(TFile* fEstimator, c
   if(!fEstimator){
 	AliFatal("File with estimator not found!");
 	}
+
+  if(!periodNames){
+	AliFatal("estimator not found in the run!");
+	AliFatal("set LHC16 one");
+	sprintf(periodNames, "SPDTrklMC_LHC16");  //LHC16
+	}
+
 
   cout << "fEstimator = " << fEstimator << endl;
 
