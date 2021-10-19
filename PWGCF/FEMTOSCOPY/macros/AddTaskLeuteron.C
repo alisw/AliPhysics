@@ -310,8 +310,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   if(isHighPt){
 
     // Deuterons and Antideuterons
-    TrackCuts3->SetPtRange(1.4,4.0);
-    TrackCuts4->SetPtRange(1.4,4.0);
+    TrackCuts3->SetPtRange(1.4,2.0);
+    TrackCuts4->SetPtRange(1.4,2.0);
 
   }
 
