@@ -42,6 +42,7 @@ set(SRCS
   Cascades/AliAnalysisTaskCheckCascadePbPb.cxx
   Cascades/AliAnalysisTaskCheckPerformanceCascade.cxx
   Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx
+  Cascades/AliAnalysisTaskXiNucleusInteraction.cxx
   LambdaK0PbPb/AliAnalysisCentralitySelector.cxx
   LambdaK0PbPb/AliAnalysisTaskCTauPbPb.cxx
   LambdaK0PbPb/AliAnalysisTaskCTauPbPbaod.cxx
