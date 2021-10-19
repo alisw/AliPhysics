@@ -157,6 +157,11 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
   if (mEventCuts.PassedCut(AliEventCuts::kTriggerClasses))
     mHeader.mEventMask |= kTriggerClasses;
 
+  if (eventHandler->IsEventSelected() & AliVEvent::kCentral)
+    mHeader.mEventMask |= kCentral;
+  if (eventHandler->IsEventSelected() & AliVEvent::kSemiCentral)
+    mHeader.mEventMask |= kSemiCentral;
+
   bool EventWithPOI = !bool(mEventPOI);
 
   mTracks.clear();
@@ -273,7 +278,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     t.mask = standard_mask | kIsReconstructed;
 
     if (track->GetStatus() & AliVTrack::kTRDrefit) t.mask |= AliAnalysisCODEX::kTRDrefit;
-    
+
     /// Binned information
     float cov[3],dca[2];
     double ITSsamp[4];
