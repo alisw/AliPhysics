@@ -306,6 +306,12 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) 
   return kTRUE;
 }
 //_____________________________________________________________________________
+Double_t AliAnalysisTaskCorrForFlowFMD::RangePhiFMD(Double_t DPhi) {
+  DPhi = TMath::ATan2(TMath::Sin(DPhi), TMath::Cos(DPhi));
+  if (DPhi < (-0.5*TMath::Pi()-0.0001))    DPhi += 2 * TMath::Pi();
+  return DPhi;
+}
+//_____________________________________________________________________________
 Double_t AliAnalysisTaskCorrForFlowFMD::RangePhi(Double_t DPhi) {
   if (DPhi < -TMath::Pi() / 2)   DPhi += 2 * TMath::Pi();
   if (DPhi > 3 * TMath::Pi() / 2) DPhi -= 2*TMath::Pi();
