@@ -119,6 +119,12 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     PostData(2, mOutput);
     return;
   }
+    
+  //Event Trigger Mask
+  mHeader.mEventTriggerMask=0;
+  if (handler->IsEventSelected() & AliVEvent::kINT7)        mHeader.mEventTriggerMask+=1;
+  if (handler->IsEventSelected() & AliVEvent::kCentral)     mHeader.mEventTriggerMask+=2;
+  if (handler->IsEventSelected() & AliVEvent::kSemiCentral) mHeader.mEventTriggerMask+=4;
 
   AliTOFPIDResponse& tofPID = mPIDresponse->GetTOFResponse();
   for (int iB = 0; iB < 10; ++iB) {
@@ -156,11 +162,6 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
 
   if (mEventCuts.PassedCut(AliEventCuts::kTriggerClasses))
     mHeader.mEventMask |= kTriggerClasses;
-
-  if (eventHandler->IsEventSelected() & AliVEvent::kCentral)
-    mHeader.mEventMask |= kCentral;
-  if (eventHandler->IsEventSelected() & AliVEvent::kSemiCentral)
-    mHeader.mEventMask |= kSemiCentral;
 
   bool EventWithPOI = !bool(mEventPOI);
 
@@ -278,7 +279,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     t.mask = standard_mask | kIsReconstructed;
 
     if (track->GetStatus() & AliVTrack::kTRDrefit) t.mask |= AliAnalysisCODEX::kTRDrefit;
-
+    
     /// Binned information
     float cov[3],dca[2];
     double ITSsamp[4];
