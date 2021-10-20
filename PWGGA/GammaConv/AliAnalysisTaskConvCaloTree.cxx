@@ -297,7 +297,7 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
       fPhotonTree->Branch("Conv_Radius",                    &fVBuffer_Conv_R);
       fPhotonTree->Branch("Conv_PsiPair",                   &fVBuffer_Conv_PsiPair);
       fPhotonTree->Branch("Conv_NTPCClus_Elec1",            &fVBuffer_Conv_NTPCClusElec1);
-      fPhotonTree->Branch("Conv_NTPCClus_Elec1",            &fVBuffer_Conv_NTPCClusElec2);
+      fPhotonTree->Branch("Conv_NTPCClus_Elec2",            &fVBuffer_Conv_NTPCClusElec2);
       fPhotonTree->Branch("Conv_dEdx_Elec1",                &fVBuffer_Conv_dEdxElec1);
       fPhotonTree->Branch("Conv_dEdx_Elec2",                &fVBuffer_Conv_dEdxElec2);
       fPhotonTree->Branch("Conv_P_Elec1",                   &fVBuffer_Conv_PElec1);
@@ -620,19 +620,18 @@ void AliAnalysisTaskConvCaloTree::ProcessConversionsAOD(){
         }
 
         if(fSaveConversions > 1){
-          Short_t Charge    = inTrack->Charge();
+          // Short_t Charge    = inTrack->Charge();
           Double_t electronNSigmaTPC = fPIDResponse->NumberOfSigmasTPC(inTrack,AliPID::kElectron);
-          Double_t electronNSigmaTPCCor=0.;
-          Double_t P=inTrack->P();;
-          Double_t Eta=inTrack->Eta();
-          Double_t nSigdEdxCorr = ((AliConversionPhotonCuts*)fConversionCuts)->GetCorrectedElectronTPCResponse(Charge,electronNSigmaTPC,P,Eta,inTrack->GetTPCNcls(),PhotonCandidate->GetConversionRadius());
+          // Double_t P=inTrack->P();;
+          // Double_t Eta=inTrack->Eta();
+          // Double_t nSigdEdxCorr = ((AliConversionPhotonCuts*)fConversionCuts)->GetCorrectedElectronTPCResponse(Charge,electronNSigmaTPC,P,Eta,inTrack->GetTPCNcls(),PhotonCandidate->GetConversionRadius());
           if(iElec == 0){
             fVBuffer_Conv_NTPCClusElec1.push_back(static_cast<UShort_t>(inTrack->GetTPCNcls())); // NTPC clus
-            fVBuffer_Conv_dEdxElec1.push_back(static_cast<Short_t>(nSigdEdxCorr*100)); // dedx
+            fVBuffer_Conv_dEdxElec1.push_back(static_cast<Short_t>(electronNSigmaTPC*100)); // dedx
             fVBuffer_Conv_PElec1.push_back(static_cast<Short_t>(inTrack->P()*100)); // momentum
           } else {
             fVBuffer_Conv_NTPCClusElec2.push_back(static_cast<UShort_t>(inTrack->GetTPCNcls())); // NTPC clus
-            fVBuffer_Conv_dEdxElec2.push_back(static_cast<Short_t>(nSigdEdxCorr*100)); // dedx
+            fVBuffer_Conv_dEdxElec2.push_back(static_cast<Short_t>(electronNSigmaTPC*100)); // dedx
             fVBuffer_Conv_PElec2.push_back(static_cast<Short_t>(inTrack->P()*100)); // momentum
 
           }
