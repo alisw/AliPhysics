@@ -65,6 +65,7 @@ public:
   void SetDebugMaxJetOutliers(bool doDebug)      { fDebugMaxJetOutliers = doDebug; }
   void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
   void SetRequireSameAcceptance(Bool_t doRequire) { fRequireSameAcceptance = doRequire; }
+  void SetDoBkgSubtraction(bool doBkg = true)             { fDoBkgSub = doBkg; }
 
   void ConfigurePtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut);
   void ConfigureMinBias(MCProductionType_t mcprodtype);
@@ -77,6 +78,8 @@ public:
     Double_t                          radius,
     Bool_t                            useDCAL,
     const char *                      namepartcont,
+    const char *                      nRho,
+    const char *                      nRhoMC,
     const char *                      trigger,
     const char *                      suffix
   );
@@ -99,6 +102,7 @@ private:
   Bool_t                      fRequireSameAcceptance;         ///< Require same acceptance type for det. level and part. level jet in response matrix
   Bool_t                      fUseStandardOutlierRejection;   ///< Use standard outlier rejection
   Bool_t                      fDebugMaxJetOutliers;           ///< Debug max jet determination for outlier rejection
+  Bool_t                      fDoBkgSub;                      ///< Do background subtraction
   EJetTypeOutliers_t          fJetTypeOutliers;               ///< Jet type used for outlier detection
   TRandom                     *fSampleSplitter;               //!<! Sample splitter
 

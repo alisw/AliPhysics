@@ -35,6 +35,8 @@
 
 class THistManager;
 class AliEventCuts;
+class AliFJWrapper; 
+class TRandom3;
 
 namespace PWGJE {
 
@@ -84,6 +86,10 @@ public:
   void SetTimeRangeEMCALCusterBias(Double_t mintime, Double_t maxtime) { fMinTimeClusterBias = mintime; fMaxTimeClusterBias = maxtime; }
   void SetMimicEJData(bool doMimic)                { fMimicEJData = doMimic; if(fMimicEJData) fUseTriggerSelectionForData = true; }
 
+  void SetDoBkgSubtraction(bool doBkg = true)             { fDoBkgSub = doBkg; }
+  double GetDeltaPtRandomCone();
+  double GetDeltaPtEmbedding();
+
   void ConfigureMCPtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut);
   void ConfigureMCMinBias(MCProductionType_t mcprodtype);
   void ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc);
@@ -95,6 +101,7 @@ public:
     AliVCluster::VCluUserDefEnergy_t energydef, 
     double radius,
     EMCAL_STRINGVIEW namepartcont, 
+    EMCAL_STRINGVIEW nRho, 
     EMCAL_STRINGVIEW trigger, 
     EMCAL_STRINGVIEW suffix = ""
   );
@@ -129,6 +136,9 @@ private:
   Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
   Bool_t                        fUseMuonCalo;                   ///< Use events from the (muon)-calo-(fast) cluster
   Bool_t                        fUseStandardOutlierRejection;   ///< Use standard outlier rejection
+  Bool_t                        fDoBkgSub;                      ///< Do background subtraction
+  AliFJWrapper                  *fFastJetWrapper;               ///< EMB_clus wrapper for fast jet finding
+  TRandom                       *fTrackGenerator;               ///< EMB_clus generator for track perpendicular to signal jet
   EJetTypeOutliers_t            fJetTypeOutliers;               ///< Jet type used for outlier detection
   Double_t                      fScaleShift;                    ///< Artificial jet energy scale shift
   Double_t                      fEMCALClusterBias;              ///< Requirement of a min. cluster energy in EMCAL
