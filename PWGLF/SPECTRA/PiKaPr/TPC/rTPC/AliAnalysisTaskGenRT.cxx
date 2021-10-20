@@ -424,11 +424,11 @@ Int_t AliAnalysisTaskGenRT::GetIndexLeading(){
 
 		//! Allow the leading to be a Xi
 		if(!AllowXi) {
-			if(TMath::Abs(pidCodeMC)==5) continue; 
+			if( pidCodeMC == 5 ) { continue; }
 		}
 
-		if(TMath::Abs(etaPart) > 0.8) continue;
-		if(mcPart->Pt() < 0.15) continue;
+		if(TMath::Abs(etaPart) > 0.8) { continue; }
+		if(mcPart->Pt() < 0.15) { continue; }
 		if(mcPart->Pt()>ptleading){
 			ptleading = mcPart->Pt();
 			index_leading = ipart;
