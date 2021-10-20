@@ -267,8 +267,8 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		if(flags & FLUC_PHI_CORRECTION)
 			pPhiWeights = fJCorMapTask->GetCorrectionMap(phiMapIndex,fRunNum,fcBin);
 
-		ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
 		ReadVertexInfo( currentEvent, fVertex); // read vertex info
+		ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
 		// Analysis Part
 		fFFlucAna->Init();
 		fFFlucAna->SetInputList( fInputList );
@@ -447,7 +447,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 				itrack->SetID( TrackList->GetEntriesFast() );
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 				itrack->SetParticleType(kJHadron);
-				itrack->SetCharge(track->Charge() );
+				itrack->SetCharge(ch);
 				itrack->SetStatus(track->GetStatus() );
 				//
 				//double fCent = ReadCentrality(aod,fCentDetName);
