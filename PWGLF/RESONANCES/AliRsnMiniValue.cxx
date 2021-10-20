@@ -206,7 +206,12 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kEta:
          return pair->Eta(fUseMCInfo);
       case kPhi:
-         return pair->Sum(fUseMCInfo).Phi();
+          { 
+            Double_t angle1 = pair->Sum(fUseMCInfo).Phi();
+            while (angle1 >= 1.5 * TMath::Pi()) angle1 -= 2 * TMath::Pi();
+            while (angle1 < -0.5 * TMath::Pi()) angle1 += 2 * TMath::Pi();
+            return angle1;
+          }
       case kInvMassRes:
          return pair->InvMassRes();
       case kInvMassDiff:
