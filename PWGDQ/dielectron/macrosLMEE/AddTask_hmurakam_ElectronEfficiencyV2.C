@@ -180,6 +180,15 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   eleFinalStateFromB.SetCheckBothChargesMothers(kTRUE,kTRUE);
   task->AddSingleLegMCSignal(eleFinalStateFromB);
 
+  // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
+  // ordering is according to MCSignals of single legs
+  printf("Init the DielectronsPairNotFromSameMother vector\n");
+  std::vector<bool> DielectronsPairNotFromSameMother;
+  DielectronsPairNotFromSameMother.push_back(false);
+  DielectronsPairNotFromSameMother.push_back(false);
+  DielectronsPairNotFromSameMother.push_back(false);
+  task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+
   if(whichGen == 0 || whichGen == 2){
     //    AddPairMCSignalLFJPsi(task);
     AliDielectronSignalMC pair_sameMother("sameMother","sameMother");
