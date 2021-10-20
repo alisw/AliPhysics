@@ -116,11 +116,13 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoMotherInvMassPtNonIso(NULL),
   fHistoMotherInvMassPtMCRecIsoTrueNonIso(NULL),
   fHistoMotherInvMassPtMCRecNonIsoTrueIso(NULL),
+  fHistoMotherInvMassPtCalib(NULL),
   fHistoMotherEisoPt(NULL),
   fHistoMotherRisoPt(NULL),
   fHistoMotherNtracksIsoPt(NULL),
   sESDMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
+  fHistoMotherBackInvMassPtCalib(NULL),
   sESDMotherBackInvMassPtZM(NULL),
   fHistoMotherInvMassEalpha(NULL),
   fHistoMotherPi0PtY(NULL),
@@ -419,11 +421,13 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoMotherInvMassPtNonIso(NULL),
   fHistoMotherInvMassPtMCRecIsoTrueNonIso(NULL),
   fHistoMotherInvMassPtMCRecNonIsoTrueIso(NULL),
+  fHistoMotherInvMassPtCalib(NULL),
   fHistoMotherEisoPt(NULL),
   fHistoMotherRisoPt(NULL),
   fHistoMotherNtracksIsoPt(NULL),
   sESDMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
+  fHistoMotherBackInvMassPtCalib(NULL),
   sESDMotherBackInvMassPtZM(NULL),
   fHistoMotherInvMassEalpha(NULL),
   fHistoMotherPi0PtY(NULL),
@@ -786,7 +790,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   // get V0 Reader
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
-
 
   if( ((AliConversionPhotonCuts*)fCutArray->At(0))->GetUseBDTPhotonCuts()){
       fEnableBDT  = kTRUE;
