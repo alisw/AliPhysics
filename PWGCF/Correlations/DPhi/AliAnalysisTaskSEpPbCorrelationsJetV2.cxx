@@ -916,7 +916,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
 
     Int_t nCFStepstpcfmd=1;
 
-    Int_t iTrackBin_fmdAfmdC[] = {10, 48, 36};
+    Int_t iTrackBin_fmdAfmdC[] = {10, 48, 20};
     Int_t nTrackBin_fmdAfmdC = sizeof(iTrackBin_fmdAfmdC) / sizeof(Int_t);
 
     fHistReconstTrack = new AliTHn("fHistReconstTrack","fHistReconstTrack",nCFStepstpcfmd,nTrackBin_fmdAfmdC,iTrackBin_fmdAfmdC);

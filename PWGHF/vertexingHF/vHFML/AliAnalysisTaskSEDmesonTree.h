@@ -49,6 +49,7 @@ public:
     void SetCreateMLTree(bool flag = true)                                                        {fCreateMLtree = flag;}
     void SetMLTreePIDopt(int opt)                                                                 {fPIDopt = opt;} // default AliHFMLVarHandler::kNsigmaDetAndCombPID
     void SetMLTreeAddTrackVar(bool flag = true)                                                   {fAddSingleTrackVar = flag;}
+    void SetMLTreeAddMulVar(bool filltrkl = true, bool fillcent = true)                           {fAddNtrkl = filltrkl; fAddCentr = fillcent;}
     void SetKeepOnlyBkgFromHIJING(bool keeponlyhijing = true)                                     {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
 
     void SetDecayChannel(int dec = kD0toKpi)
