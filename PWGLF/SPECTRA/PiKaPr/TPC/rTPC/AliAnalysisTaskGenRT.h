@@ -66,9 +66,9 @@ class AliAnalysisTaskGenRT : public AliAnalysisTaskSE { //
 
 	private:
 
-		void	EventSel(TObject* obj);
-		void	GetIndexLeading();
+		Int_t	GetIndexLeading();
 		void	MakeRTAnalysis();
+		Int_t   GetMultipliciy(std::vector<Int_t> &mult);
 		Double_t DeltaPhi(Double_t phia, Double_t phib,
 				Double_t rangeMin = -TMath::Pi()/2,
 				Double_t rangeMax = 3*TMath::Pi()/2);
@@ -87,7 +87,6 @@ class AliAnalysisTaskGenRT : public AliAnalysisTaskSE { //
 		Bool_t AllowXi;
 		Float_t	fY;     	///< rapidity cut
 		Int_t fIndexLeadingGen;
-		Double_t fPtLeadingGen;
 		Double_t fMinPtLeading;
 		Double_t fMaxPtLeading;
 
@@ -107,6 +106,8 @@ class AliAnalysisTaskGenRT : public AliAnalysisTaskSE { //
 		TH2F* fHistPtVsNchNS[11];
 		TH2F* fHistPtVsNchAS[11];
 		TH2F* fHistPtVsNchTS[11];
+		TH1F* fMult[6];
+		TH1F* fMult2[6];
 
 
 		TList* fListOfObjects;	//!<! Output list of objects
