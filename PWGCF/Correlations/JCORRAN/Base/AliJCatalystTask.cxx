@@ -319,6 +319,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 		Int_t centBin = GetCentralityBin(fcent);
 		if (centBin == -1) {return;}
 
+		//ReadAODTracks depends on the vertex info for phi and efficiency weight
 		ReadVertexInfo(paodEvent, fvertex);	// Read vertex info before selection.
 		if (bSaveAllQA) {
 			fVertexXHistogram[centBin][0]->Fill(fvertex[0]);
@@ -349,7 +350,6 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 		}
 
 		ReadAODTracks( paodEvent, fInputList, fcent ) ; // read tracklist
-		ReadVertexInfo( paodEvent, fvertex); // read vertex info
 	} // AOD
 	fZvert = fvertex[2];
 
