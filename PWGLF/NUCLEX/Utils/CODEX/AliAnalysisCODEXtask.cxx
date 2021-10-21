@@ -91,10 +91,10 @@ void AliAnalysisCODEXtask::UserCreateOutputObjects() {
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if(!man)
   AliFatal("Could not find manager");
-  AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (man->GetInputEventHandler());
-  if(!handler)
+  mEventHandler = dynamic_cast<AliInputEventHandler*> (man->GetInputEventHandler());
+  if(!mEventHandler)
   AliFatal("No input event handler");
-  mPIDresponse = dynamic_cast<AliPIDResponse*>(handler->GetPIDResponse());
+  mPIDresponse = dynamic_cast<AliPIDResponse*>(mEventHandler->GetPIDResponse());
   if (!mPIDresponse)
   AliFatal("PIDResponse object was not created"); // Escalated to fatal. Task is unusable without PID response.
 
@@ -136,16 +136,17 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
   if (event->GetMagneticField() < 0) mHeader.mEventMask |= kNegativeB;
 
   /// Check Monte Carlo information and other access first:
-  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (!eventHandler) {
+  AliMCEventHandler* mcEventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if (!mcEventHandler) {
     if (mMCtrue)
     AliFatal("You asked for MC analysis, but I don't find any MCEventHandler... did you forget to add it to your analysis manager?");
   }
   //
   AliMCEvent* mcEvent = nullptr;
-  if (eventHandler) mcEvent = eventHandler->MCEvent();
-  if (!mcEvent && mMCtrue)
-  AliFatal("Missing MC event");
+  if (mcEventHandler) mcEvent = mcEventHandler->MCEvent();
+  if (!mcEvent && mMCtrue) {
+    AliFatal("Missing MC event");
+  }
   if (mMCtrue) {
     mHeader.mEventMask |= kMCevent;
   }
@@ -157,9 +158,9 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
   if (mEventCuts.PassedCut(AliEventCuts::kTriggerClasses))
     mHeader.mEventMask |= kTriggerClasses;
 
-  if (eventHandler->IsEventSelected() & AliVEvent::kCentral)
+  if (mEventHandler->IsEventSelected() & AliVEvent::kCentral)
     mHeader.mEventMask |= kCentral;
-  if (eventHandler->IsEventSelected() & AliVEvent::kSemiCentral)
+  if (mEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)
     mHeader.mEventMask |= kSemiCentral;
 
   bool EventWithPOI = !bool(mEventPOI);
