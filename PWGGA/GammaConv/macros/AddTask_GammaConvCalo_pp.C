@@ -3778,8 +3778,6 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113", "0dm00089227300008250404000","24466190sa01cc00000","0163103100000010");  // old cuts (run1)
 
   } else if (trainConfig == 3407) {
-    cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","24466190sa01cc00000","0263103100000010"); // variation BG scheme track mult
-    cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","24466190sa01cc00000","0r63103100000010"); // variation BG scheme track mult
     cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","24466190sa01cc00000","0163107100000010"); // alpha meson 0.85
     cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","24466190sa01cc00000","0163105100000010"); // alpha meson 0.75
 
