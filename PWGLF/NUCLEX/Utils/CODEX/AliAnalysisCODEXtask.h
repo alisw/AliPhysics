@@ -56,7 +56,7 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
     TList*   mOutput; //!
     TTree*   mTree;   //!
 
-    AliInputEventHandler* mEventHandler;
+    AliInputEventHandler* mEventHandler; //!
     AliPIDResponse* mPIDresponse; //!
 
     //
