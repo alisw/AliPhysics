@@ -15,6 +15,7 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name, Bool_t IsMC, TStr
   if(stage.Contains("weights")) StageSwitch=1;
   if(stage.Contains("Efficiency")) StageSwitch=7;
   if(stage.Contains("CovSkipMpt")) StageSwitch=9;
+  if(stage.Contains("EfTest")) StageSwitch=10;
   if(StageSwitch==0) return 0;
   TString l_ContName(subfix1);
   if(!subfix2.IsNull()) l_ContName+="_"+subfix2;
@@ -85,6 +86,12 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name, Bool_t IsMC, TStr
     mgr->ConnectOutput(task,4,cOutputQA); //For QA
     return task;
   };
+  if(StageSwitch==10) {
+    AliAnalysisDataContainer *effCont = mgr->CreateContainer(Form("EffList%s",l_ContName.Data()),AliEffFDContainer::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    mgr->ConnectOutput(task,1,effCont);
+    return task;
+  }
+
   return 0;
 }
 AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name="name", Bool_t IsMC=kFALSE, TString stage="Efficiency",
