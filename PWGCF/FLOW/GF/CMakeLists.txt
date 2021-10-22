@@ -68,6 +68,7 @@ set(SRCS
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS AliAnalysisTaskMeanPtV2Corr.cxx)
   list(APPEND SRCS AliAnalysisTaskNonlinearFlow.cxx)
+  list(APPEND SRCS AliEffFDContainer.cxx)
   list(APPEND SRCS CorrelationCalculator.cxx)
 endif()
 
