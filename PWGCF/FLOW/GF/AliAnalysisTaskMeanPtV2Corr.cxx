@@ -41,6 +41,7 @@
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
 #include "AliAODMCHeader.h"
+#include "AliEffFDContainer.h"
 
 ClassImp(AliAnalysisTaskMeanPtV2Corr);
 
@@ -112,7 +113,8 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fStdTPCITS2011(0),
   fDisablePID(kTRUE),
   fConsistencyFlag(3),
-  fRequireReloadOnRunChange(kFALSE)
+  fRequireReloadOnRunChange(kFALSE),
+  fEfFd(0)
 {
 };
 AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_t IsMC, TString stageSwitch, TString ContSubfix):
@@ -183,7 +185,8 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fStdTPCITS2011(0),
   fDisablePID(kTRUE),
   fConsistencyFlag(3),
-  fRequireReloadOnRunChange(kFALSE)
+  fRequireReloadOnRunChange(kFALSE),
+  fEfFd(0)
 {
   fStageSwitch = GetStageSwitch(stageSwitch);
   SetContSubfix(ContSubfix);
@@ -204,6 +207,9 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
     DefineOutput(3,TList::Class());
     DefineOutput(4,TList::Class());
   };
+  if(fStageSwitch==10) {
+    DefineOutput(1,AliEffFDContainer::Class());//AliEffFDContainer::Class());
+  }
   SetNchCorrelationCut(1,0,kFALSE);
 };
 AliAnalysisTaskMeanPtV2Corr::~AliAnalysisTaskMeanPtV2Corr() {
@@ -409,6 +415,16 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fEventCuts.AddQAplotsToList(fQAList,kTRUE);
     PostData(4,fQAList);
   }
+  if(fStageSwitch==10) {
+    fEfFd = new AliEffFDContainer("EffAndFD","EffAndFD");
+    fEfFd->SetCentralityBins(l_NV0MBinsDefault,l_V0MBinsDefault);
+    fEfFd->SetPtBins(fNPtBins,fPtBins);
+    fEfFd->SetEta(fEta);
+    fEfFd->CreateHistograms();
+    AliESDtrackCuts *tc = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+    fEfFd->AddCut(tc);
+    PostData(1,fEfFd);
+  };
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
   if(fExtendV0MAcceptance) {
     fEventCuts.OverrideCentralityFramework(1);
@@ -468,7 +484,31 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
     FillTPCITSClusters(fESD);
     ProduceEfficiencies(fESD,vzt,l_Cent,vtxXYZ); //Disabling vz vertex
     return;
+  };
+  if(fStageSwitch == 10) { //Efficiencies on ESDs
+    AliESDEvent *fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+    if(!fESD) return;
+    //Checking multiplicity & trigger
+    AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+    if(!lMultSel) AliFatal("Mult selection not found!\n");
+    Double_t l_Cent = lMultSel->GetMultiplicityPercentile(fCentEst->Data());
+    if(!fBypassTriggerAndEvetCuts)
+      if(!CheckTrigger(l_Cent)) return;
+    if(fEventCutFlag) if(!AcceptCustomEvent(fESD)) return;
+    Bool_t dummy = fEventCuts.AcceptEvent(fESD); //for QA
+    if(!fEventCutFlag && !dummy) return;
+    if(!fGFWSelection->AcceptVertex(fESD)) return;
+    if(fIsMC) {
+      fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
+      if (!fMCEvent) return;
+    }
+    AliMCSpectraWeightsHandler *flmcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fESD->FindListObject("fMCSpectraWeights"));
+    // printf("Updating event....\n");
+    fEfFd->Fill(*fESD, *fMCEvent);
+    PostData(1,fEfFd);
+    return;
   }
+
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
   if(fIsMC) {
@@ -586,6 +626,7 @@ Int_t AliAnalysisTaskMeanPtV2Corr::GetStageSwitch(TString instr) {
   if(instr.Contains("weights")) return 1;
   if(instr.Contains("Efficiency")) return 7;
   if(instr.Contains("CovSkipMpt")) return 9;
+  if(instr.Contains("EfTest")) return 10;
   return 0;
 }
 void AliAnalysisTaskMeanPtV2Corr::FillWeightsMC(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
@@ -766,7 +807,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliESDEvent *fAOD, const D
     };
     Int_t pdgcode = lPart->PdgCode();
     Int_t pidind = fDisablePID?0:GetPIDIndex(pdgcode);
-    Int_t pidindBayes = GetBayesPIDIndex(lTrack);
+    Int_t pidindBayes = fDisablePID?0:GetBayesPIDIndex(lTrack);
     if(pidind && (pidind!=pidindBayes+1)) pidind=0; //If the true PID does not correspond to bayesian, then drop this track
     if(lPart->IsPhysicalPrimary()) {
         fDCAxyVsPt_noChi2->Fill(lPart->Pt(),0.,trackXYZ[0],CompWeight);
