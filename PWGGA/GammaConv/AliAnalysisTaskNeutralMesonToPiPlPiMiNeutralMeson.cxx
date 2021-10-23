@@ -3596,11 +3596,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
             // Cuts on rotated gammas
             //  Cuts for first swapped pi0
             Int_t cellIDRotatedgamma0 = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationgamma0.Eta(), static_cast<double>((lvRotationgamma0.Phi()<0) ? lvRotationgamma0.Phi() + TMath::Pi()*2. : lvRotationgamma0.Phi()));
-            if(!(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedgamma0, lvRotationgamma0.Phi(), fInputEvent)) && lvRotationgamma0.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())) acceptfirstgamma = false;
+            if(!(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedgamma0, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) && lvRotationgamma0.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())) acceptfirstgamma = false;
 
             //  Cuts for second swapped pi0
             Int_t cellIDRotatedgamma1 = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationgamma1.Eta(), static_cast<double>((lvRotationgamma1.Phi()<0) ? lvRotationgamma1.Phi() + TMath::Pi()*2. : lvRotationgamma1.Phi()));
-            if(!(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedgamma1, lvRotationgamma1.Phi(), fInputEvent)) && lvRotationgamma1.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())) acceptsecondgamma = false;
+            if(!(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedgamma1, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) && lvRotationgamma1.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())) acceptsecondgamma = false;
 
             //__________________________________________________________________
 

@@ -203,6 +203,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoWeightingInSwappBg(){return fDoWeightingInSwappBg;}
     Int_t    GammaSwappMethodBg(){return fGammaSwappMethodBg;}
     Int_t    GetNumberOfSwappsForBg(){return fNumberOfSwappsForBg;}
+    Int_t    GetDistanceToBorderForBg(){return fDistanceToBorderSwappBG;}
     Bool_t   DoJetAnalysis(){return fDoJetAnalysis;}
     Bool_t   DoJetQA(){return fDoJetQA;}
     Int_t    DoOutOfJet(){return fDoOutOfJet;}
@@ -326,6 +327,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoWeightingInSwappBg;          ///< flag to use multiplicity weighting for cluster swapping for background estimation
     Int_t       fGammaSwappMethodBg;            ///< flag to switch between different methods for cluster swapping: 0= 90 degree; 1=random angle
     Int_t       fNumberOfSwappsForBg;           ///< flag to enable multiple rotations for 1 photon pair for cluster swapping Bg
+    Int_t       fDistanceToBorderSwappBG;       ///< flag to enable minimum distance of EMCal cluster to SuperModule border
     Bool_t      fEnableMinOpeningAngleCut;      ///< flag to enable min opening angle cut
     Bool_t      fEnableOneCellDistCut;          ///< flag to enable 1 cell dist cut
     Bool_t      fAllowCombOnlyInSameRecMethod;  ///< flag to disable inv mass pairing among different calo's
@@ -357,7 +359,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,51)
+    ClassDef(AliConversionMesonCuts,52)
     /// \endcond
 };
 
