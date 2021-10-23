@@ -234,24 +234,46 @@ void AliAnalysisTaskXiNucleusInteraction::UserExec(Option_t *)  {
 
         //Xi Selection
         if (isXi)  {
-            if (rC> 2.24) {containsRecXi_R0 = kTRUE; hMassXi_vs_P[0] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[0] -> Fill (p_xi,angle);}
-            if (rC> 3.01) {containsRecXi_R1 = kTRUE; hMassXi_vs_P[1] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[1] -> Fill (p_xi,angle);}
-            if (rC> 3.78) {containsRecXi_R2 = kTRUE; hMassXi_vs_P[2] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[2] -> Fill (p_xi,angle);}
-            if (rC>19.44) {containsRecXi_R3 = kTRUE; hMassXi_vs_P[3] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[3] -> Fill (p_xi,angle);}
-            if (rC>24.39) {containsRecXi_R4 = kTRUE; hMassXi_vs_P[4] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[4] -> Fill (p_xi,angle);}
-            if (rC>34.23) {containsRecXi_R5 = kTRUE; hMassXi_vs_P[5] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[5] -> Fill (p_xi,angle);}
-            if (rC>39.18) {containsRecXi_R6 = kTRUE; hMassXi_vs_P[6] -> Fill (p_xi,m_xi);hXiPointingAngle_vs_P[6] -> Fill (p_xi,angle);}
+            if (rC> 2.24) {containsRecXi_R0 = kTRUE; hMassXi_vs_P[0] -> Fill (p_xi,m_xi);}
+            if (rC> 3.01) {containsRecXi_R1 = kTRUE; hMassXi_vs_P[1] -> Fill (p_xi,m_xi);}
+            if (rC> 3.78) {containsRecXi_R2 = kTRUE; hMassXi_vs_P[2] -> Fill (p_xi,m_xi);}
+            if (rC>19.44) {containsRecXi_R3 = kTRUE; hMassXi_vs_P[3] -> Fill (p_xi,m_xi);}
+            if (rC>24.39) {containsRecXi_R4 = kTRUE; hMassXi_vs_P[4] -> Fill (p_xi,m_xi);}
+            if (rC>34.23) {containsRecXi_R5 = kTRUE; hMassXi_vs_P[5] -> Fill (p_xi,m_xi);}
+            if (rC>39.18) {containsRecXi_R6 = kTRUE; hMassXi_vs_P[6] -> Fill (p_xi,m_xi);}
+        }
+        
+        //Pointing Angle Xi
+        if (isXi && m_xi>1.320 && m_xi<1.327)  {
+            if (rC> 2.24) {hXiPointingAngle_vs_P[0] -> Fill (p_xi,angle);}
+            if (rC> 3.01) {hXiPointingAngle_vs_P[1] -> Fill (p_xi,angle);}
+            if (rC> 3.78) {hXiPointingAngle_vs_P[2] -> Fill (p_xi,angle);}
+            if (rC>19.44) {hXiPointingAngle_vs_P[3] -> Fill (p_xi,angle);}
+            if (rC>24.39) {hXiPointingAngle_vs_P[4] -> Fill (p_xi,angle);}
+            if (rC>34.23) {hXiPointingAngle_vs_P[5] -> Fill (p_xi,angle);}
+            if (rC>39.18) {hXiPointingAngle_vs_P[6] -> Fill (p_xi,angle);}
         }
         
         //AntiXi Selection
         if (isAntiXi)  {
-            if (rC> 2.24) {containsRecAntiXi_R0=kTRUE;hMassAntiXi_vs_P[0]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[0]->Fill(p_antixi,angle);}
-            if (rC> 3.01) {containsRecAntiXi_R1=kTRUE;hMassAntiXi_vs_P[1]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[1]->Fill(p_antixi,angle);}
-            if (rC> 3.78) {containsRecAntiXi_R2=kTRUE;hMassAntiXi_vs_P[2]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[2]->Fill(p_antixi,angle);}
-            if (rC>19.44) {containsRecAntiXi_R3=kTRUE;hMassAntiXi_vs_P[3]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[3]->Fill(p_antixi,angle);}
-            if (rC>24.39) {containsRecAntiXi_R4=kTRUE;hMassAntiXi_vs_P[4]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[4]->Fill(p_antixi,angle);}
-            if (rC>34.23) {containsRecAntiXi_R5=kTRUE;hMassAntiXi_vs_P[5]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[5]->Fill(p_antixi,angle);}
-            if (rC>39.18) {containsRecAntiXi_R6=kTRUE;hMassAntiXi_vs_P[6]->Fill(p_antixi,m_antixi);hAntiXiPointingAngle_vs_P[6]->Fill(p_antixi,angle);}
+            if (rC> 2.24) {containsRecAntiXi_R0=kTRUE;hMassAntiXi_vs_P[0]->Fill(p_antixi,m_antixi);}
+            if (rC> 3.01) {containsRecAntiXi_R1=kTRUE;hMassAntiXi_vs_P[1]->Fill(p_antixi,m_antixi);}
+            if (rC> 3.78) {containsRecAntiXi_R2=kTRUE;hMassAntiXi_vs_P[2]->Fill(p_antixi,m_antixi);}
+            if (rC>19.44) {containsRecAntiXi_R3=kTRUE;hMassAntiXi_vs_P[3]->Fill(p_antixi,m_antixi);}
+            if (rC>24.39) {containsRecAntiXi_R4=kTRUE;hMassAntiXi_vs_P[4]->Fill(p_antixi,m_antixi);}
+            if (rC>34.23) {containsRecAntiXi_R5=kTRUE;hMassAntiXi_vs_P[5]->Fill(p_antixi,m_antixi);}
+            if (rC>39.18) {containsRecAntiXi_R6=kTRUE;hMassAntiXi_vs_P[6]->Fill(p_antixi,m_antixi);}
+        }
+        
+        //Pointing Angle AntiXi
+        if (isAntiXi && m_antixi>1.320 && m_antixi<1.327)  {
+            if (rC> 2.24) {hAntiXiPointingAngle_vs_P[0] -> Fill (p_antixi,angle);}
+            if (rC> 3.01) {hAntiXiPointingAngle_vs_P[1] -> Fill (p_antixi,angle);}
+            if (rC> 3.78) {hAntiXiPointingAngle_vs_P[2] -> Fill (p_antixi,angle);}
+            if (rC>19.44) {hAntiXiPointingAngle_vs_P[3] -> Fill (p_antixi,angle);}
+            if (rC>24.39) {hAntiXiPointingAngle_vs_P[4] -> Fill (p_antixi,angle);}
+            if (rC>34.23) {hAntiXiPointingAngle_vs_P[5] -> Fill (p_antixi,angle);}
+            if (rC>39.18) {hAntiXiPointingAngle_vs_P[6] -> Fill (p_antixi,angle);}
         }
     }
     
