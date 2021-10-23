@@ -4781,15 +4781,15 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaRotationBackground(Int_t i
       std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation2 (new AliAODConversionPhoton(&lvRotationPhoton2));
       std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation1 (new AliAODConversionPhoton(&lvRotationPhoton1));
 
-      if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton3, lvRotationPhoton3.Phi(), fInputEvent) ) || ( lvRotationPhoton3.E() <= ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut) )->GetMinClusterEnergy() ) )
+      if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton3, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()) ) || ( lvRotationPhoton3.E() <= ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut) )->GetMinClusterEnergy() ) )
       {
         backClusterIndex[0] = -1;
       }
-      if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, lvRotationPhoton2.Phi(), fInputEvent) ) || ( lvRotationPhoton2.E() <= ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut) )->GetMinClusterEnergy() ) )
+      if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()) ) || ( lvRotationPhoton2.E() <= ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut) )->GetMinClusterEnergy() ) )
       {
         backClusterIndex[1] = -1;
       }
-      if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent) ) || ( lvRotationPhoton1.E() <= ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut) )->GetMinClusterEnergy() ) )
+      if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()) ) || ( lvRotationPhoton1.E() <= ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut) )->GetMinClusterEnergy() ) )
       {
         backClusterIndex[2] = -1;
       }
@@ -5089,11 +5089,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0RotationBackground(){
           std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation1 (new AliAODConversionPhoton(&lvRotationPhoton1));
           std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation2 (new AliAODConversionPhoton(&lvRotationPhoton2));
 
-          if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent)) || ( lvRotationPhoton1.E() <= ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) )
+          if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) || ( lvRotationPhoton1.E() <= ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) )
           {
             backClusterIndex[2] = -1;
           }
-          if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, lvRotationPhoton2.Phi(), fInputEvent)) || ( lvRotationPhoton2.E() <= ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) )
+          if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) || ( lvRotationPhoton2.E() <= ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) )
           {
             backClusterIndex[1] = -1;
           }

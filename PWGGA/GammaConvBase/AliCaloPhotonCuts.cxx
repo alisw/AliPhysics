@@ -1364,7 +1364,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistCellEnergyHG->GetXaxis()->SetTitle("E_{cell} (GeV)");
         fHistCellEnergyHG->GetYaxis()->SetTitle("counts");
         fHistExtQA->Add(fHistCellEnergyHG);
-        
+
         fHistCellTimevsCellID           = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",600,-timeMax,timeMax, nMaxCellsDCAL, nCellsStart,
                                                    nMaxCellsDCAL+nCellsStart);
         fHistCellTimevsCellID->GetXaxis()->SetTitle("t_{cell} (GeV)");
@@ -3993,7 +3993,7 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannel(AliVCluster* cluster, AliVEv
 }
 
 //________________________________________________________________________
-Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannelSwapping(const Int_t CellID, Double_t phiCluster, AliVEvent* event)
+Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannelSwapping(const Int_t CellID, AliVEvent* event, const Int_t DistanceToBorder)
 {
   if(CellID < 0) return kTRUE;
   if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && !fEMCALInitialized ) InitializeEMCAL(event);
@@ -4010,6 +4010,24 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannelSwapping(const Int_t CellID, 
     } else if(fEMCALBadChannelsMap){
         fGeomEMCAL->GetCellIndex(CellID, iSupMod, iMod, iPhi, iEta);
         if(iSupMod >= 0 && iSupMod < 20) iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(iSupMod))->GetBinContent(iPhi,iEta);
+    }
+
+    // check distance to border in case the cell is okay
+    if(DistanceToBorder > 0 && iBadCell == 0){
+      Int_t irow, icol;
+      fGeomEMCAL->GetCellIndex(CellID, iSupMod, iMod, iPhi, iEta);
+      fGeomEMCAL->GetCellPhiEtaIndexInSModule(iSupMod,iMod,iPhi, iEta,irow,icol);
+
+      // Check rows/phi
+      Int_t iRowLast = 24;
+      if      ( fGeomEMCAL->GetSMType(iSupMod) == AliEMCALGeometry::kEMCAL_Half ) iRowLast /= 2;
+      else if ( fGeomEMCAL->GetSMType(iSupMod) == AliEMCALGeometry::kEMCAL_3rd  ) iRowLast /= 3;// 1/3 sm case
+      else if ( fGeomEMCAL->GetSMType(iSupMod) == AliEMCALGeometry::kDCAL_Ext   ) iRowLast /= 3;// 1/3 sm case
+
+      if(irow < DistanceToBorder || (iRowLast - irow) <=  DistanceToBorder){
+        iBadCell = 1;
+      }
+
     }
 
   } else if( fClusterType == 2){ // PHOS case

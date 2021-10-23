@@ -385,7 +385,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t       FindLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Int_t       FindSecondLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Bool_t      CheckDistanceToBadChannel(AliVCluster* cluster, AliVEvent* event);
-    Bool_t      CheckDistanceToBadChannelSwapping(const Int_t CellID, Double_t phiCluster, AliVEvent* event);
+    Bool_t      CheckDistanceToBadChannelSwapping(const Int_t CellID, AliVEvent* event, const Int_t DistanceToBorder = 0);
     Int_t       ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEvent* event, AliMCEvent* mcEvent, Bool_t isESD);
 
     std::vector<Int_t> GetVectorMatchedTracksToCluster(AliVEvent* event, AliVCluster* cluster);
@@ -738,7 +738,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,124)
+    ClassDef(AliCaloPhotonCuts,125)
 };
 
 #endif
