@@ -51,6 +51,7 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() :
   fCompareRhoScaledName(),
   fRhoFunction(0),
   fScaleFunction(0),
+  fScaleFunctionKind(0),
   fInEventSigmaRho(35.83),
   fAttachToEvent(kTRUE),
   fIsPbPb(kTRUE),
@@ -92,7 +93,7 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name, Bool_t histo) :
   fCompareRhoName(),
   fCompareRhoScaledName(),
   fRhoFunction(0),
-  fScaleFunction(0),
+  fScaleFunctionKind(0),
   fInEventSigmaRho(35.83),
   fAttachToEvent(kTRUE),
   fIsPbPb(kTRUE),
@@ -241,7 +242,7 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
     }
   }
 
-  if (fScaleFunction) {
+  if (fScaleFunction || fScaleFunctionKind) {
     fHistRhoScaledvsCent = new TH2F("fHistRhoScaledvsCent", "fHistRhoScaledvsCent", 101, -1, 100, fNbins, fMinBinPt , fMaxBinPt*2);
     fHistRhoScaledvsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistRhoScaledvsCent->GetYaxis()->SetTitle("#rho_{scaled} (GeV/c * rad^{-1})");
@@ -283,7 +284,7 @@ Bool_t AliAnalysisTaskRhoBase::Run()
   Double_t rho = GetRhoFactor(fCent);
   fOutRho->SetVal(rho);
 
-  if (fScaleFunction) {
+  if (fScaleFunction || fScaleFunctionKind) {
     Double_t rhoScaled = rho * GetScaleFactor(fCent);
     fOutRhoScaled->SetVal(rhoScaled);
   }
@@ -416,7 +417,7 @@ void AliAnalysisTaskRhoBase::ExecOnce()
     }
   }
 
-  if (fScaleFunction && !fOutRhoScaled) {
+  if ((fScaleFunction || fScaleFunctionKind) && !fOutRhoScaled) {
     fOutRhoScaled = new AliRhoParameter(fOutRhoScaledName, 0);
 
     if (fAttachToEvent) {
@@ -459,6 +460,11 @@ Double_t AliAnalysisTaskRhoBase::GetScaleFactor(Double_t cent)
   Double_t scale = 1;
   if (fScaleFunction)
     scale = fScaleFunction->Eval(cent);
+
+  if (fScaleFunctionKind == 1){
+    if(cent){ scale = 1.34214 - 4.23066e-03 * cent + 1.15901e-04 * cent*cent  - 1.00008e-06 * cent*cent*cent;}
+    else scale = 1.2925289;
+  }
   return scale;
 }
 

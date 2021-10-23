@@ -74,6 +74,7 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   void                   SetCompareRhoName(const char *name)                   { fCompareRhoName       = name    ;                   }
   void                   SetCompareRhoScaledName(const char *name)             { fCompareRhoScaledName = name    ;                   }
   void                   SetScaleFunction(TF1* sf)                             { fScaleFunction        = sf      ;                   }
+  void                   SetScaleFunctionKind(Int_t sfk)                             { fScaleFunctionKind        = sfk      ;                   }
   void                   SetRhoFunction(TF1* rf)                               { fRhoFunction          = rf      ;                   }
   /**
    * @brief Load the scale function from a file.
@@ -126,6 +127,7 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   TString                fCompareRhoScaledName;          ///< name of scaled rho object to compare
   TF1                   *fRhoFunction;                   ///< pre-computed rho as a function of centrality
   TF1                   *fScaleFunction;                 ///< pre-computed scale factor as a function of centrality
+  Int_t                   fScaleFunctionKind;                 ///< pre-computed scale factor as a function of centrality
   Double_t               fInEventSigmaRho;               ///< in-event sigma rho
   Bool_t                 fAttachToEvent;                 ///< whether or not attach rho to the event objects list
   Bool_t                 fIsPbPb;                        ///< different histogram ranges for pp/pPb and PbPb
