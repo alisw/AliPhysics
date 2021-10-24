@@ -2,7 +2,8 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = k
                                       Bool_t correctdEdxEtaDependence = kFALSE, Bool_t correctdEdxMultiplicityDependence = kFALSE,
                                       Bool_t setDoAdditionalQA = kFALSE,
                                       Int_t tpcCutType = AliTPCPIDBase::kTPCCutMIGeo /*AliTPCPIDBase::kTPCnclCut*/,
-                                      Bool_t usePhiCut = kFALSE){
+                                      Bool_t usePhiCut = kFALSE
+                                      Bool_t useFilteredTreeCuts = kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -42,6 +43,13 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = k
     printf("NOT storing multiplicity in tree!\n");
   }
   
+  if (useFilteredTreeCuts == kTRUE){
+  esdTrackCutsL->SetMinNClustersTPC(50);
+  esdTrackCutsL->SetMinNCrossedRowsTPC(70);
+  esdTrackCutsL->SetMaxDCAToVertexXY(3.0);
+  esdTrackCutsL->SetMaxDCAToVertexZ(3.0);
+  }
+
   
   task->SetIsPbpOrpPb(isPbpOrpPb);
   if (task->GetIsPbpOrpPb()) {
@@ -77,7 +85,14 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = k
   
   task->SetPtpcPionCut(0.6);
   printf("P_TPC_Pion cut: %.2f\n", task->GetPtpcPionCut());
-  
+
+  task->SetUseFilteredTreeCuts(useFilteredTreeCuts);
+  if (useFilteredTreeCuts == kTRUE){
+  printf("Using additional cuts from filtered tree spline creation!\n");
+  } else {
+  printf("Using old configurations\n");
+  }
+
   task->SetStoreNumOfSubthresholdclusters(kTRUE);
   printf("Store num subthreshold clusters: %d\n", task->GetStoreNumOfSubthresholdclusters());
   
